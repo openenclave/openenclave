@@ -47,4 +47,36 @@ target_include_directories(
     .
     ../../../3rdparty/musl/libc-test/src/common)
 
+# The following variables remain uninitialized on Linux and throw warnings
+# Calling the function maybe_build_using_clangw(libc_enc) skips setting
+# the following variables on linux and returns noop
+set(CMAKE_C_CREATE_STATIC_LIBRARY "")
+set(CMAKE_CXX_CREATE_STATIC_LIBRARY "")
+set(CMAKE_C_STANDARD_LIBRARIES "")
+set(CMAKE_CXX_STANDARD_LIBRARIES "")
+
+maybe_build_using_clangw(libc_enc)
+
+# maybe_build_using_clangw populates variables in its parent scope (ie current scope)
+# Propagate these variables back up to the caller.
+
+# Propagate library names variables
+set(CMAKE_STATIC_LIBRARY_PREFIX "${CMAKE_STATIC_LIBRARY_PREFIX}" PARENT_SCOPE)
+set(CMAKE_STATIC_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}" PARENT_SCOPE)
+
+# Propagate library tool variables
+set(CMAKE_C_CREATE_STATIC_LIBRARY "${CMAKE_C_CREATE_STATIC_LIBRARY}" PARENT_SCOPE)
+set(CMAKE_CXX_CREATE_STATIC_LIBRARY "${CMAKE_CXX_CREATE_STATIC_LIBRARY}" PARENT_SCOPE)
+
+# Propagate linker variables
+set(CMAKE_EXECUTABLE_SUFFIX "${CMAKE_EXECUTABLE_SUFFIX}" PARENT_SCOPE)
+set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES}" PARENT_SCOPE)
+set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_LINK_EXECUTABLE}" PARENT_SCOPE)
+set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES}" PARENT_SCOPE)
+set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}" PARENT_SCOPE)
+
+# Propagate cpmpiler variables
+set(CMAKE_C_COMPILE_OBJECT "${CMAKE_C_COMPILE_OBJECT}" PARENT_SCOPE)
+set(CMAKE_CXX_COMPILE_OBJECT "${CMAKE_CXX_COMPILE_OBJECT}" PARENT_SCOPE)
+
 target_link_libraries(libc_enc oelibc)

@@ -40,10 +40,11 @@ ARG1            EQU [rbp-24]
 ARG2            EQU [rbp-32]
 ARG3            EQU [rbp-40]
 ARG4            EQU [rbp-48]
-ENCLAVE          EQU [rbp-56]
+ENCLAVE         EQU [rbp-56]
 ARG1OUT         EQU [rbp-64]
 ARG2OUT         EQU [rbp-72]
 STACKPTR        EQU [rbp-80]
+MXCSR           EQU [rbp-88]
 
 NESTED_ENTRY oe_enter, _TEXT$00
     END_PROLOGUE
@@ -60,7 +61,7 @@ NESTED_ENTRY oe_enter, _TEXT$00
     ;;     ARG3 := [RBP-40] <- [RBP+48]
     ;;     ARG4 := [RBP-48] <- [RBP+56]
     ;;     ENCLAVE := [RBP-56] <- [RBP+64]
-    ;;
+    ;;     MXCSR := [RBP-88]
     sub rsp, PARAMS_SPACE
     mov TCS, rcx
     mov AEP, rdx
@@ -73,6 +74,11 @@ NESTED_ENTRY oe_enter, _TEXT$00
     mov rax, [rbp+64]
     mov ENCLAVE, rax
 
+    ;;Save the current context
+
+    ;;Save the SSE status and control flags
+    stmxcsr MXCSR
+	
     ;; Save registers:
     push rbx
     push rdi
@@ -83,7 +89,7 @@ NESTED_ENTRY oe_enter, _TEXT$00
     push r15
 
 execute_eenter:
-
+	
     ;; Save the stack pointer so enclave can use the stack.
     mov STACKPTR, rsp
 
@@ -97,7 +103,10 @@ execute_eenter:
 
     mov ARG1OUT, rdi
     mov ARG2OUT, rsi
-
+	
+    ;; Restore the saved MXCSR
+    ldmxcsr MXCSR
+	
 dispatch_ocall:
 
     ;; RAX = __oe_dispatch_ocall(
@@ -153,6 +162,7 @@ return_from_ecall:
     pop rsi
     pop rdi
     pop rbx
+
 
     ;; Return parameters space:
     add rsp, PARAMS_SPACE

@@ -25,6 +25,11 @@ Test constructs supported by `oeedger8r`.
   2. *enc/testbasic.cpp* : Defines ecall implementations. Also `test_enum_edl_ocalls` function to test ocalls.
   3. *host/testbasic.cpp*: Defines ocall implementations. Also `test_enum_edl_ecalls` function to test ecalls.
 
+- **errno.edl**
+  1. *Purpose*: Test propagate_errno annotation. Lock down initial value of errno, propagation/non-propagation of errno value from host to enclave depending on annotation, generation/non-generation of _ocall_errno field.
+  2. *enc/testerrno.cpp* : Defines ecall implementations.
+  3. *host/testerrno.cpp* : Defines ocall implementations.
+
 - **foreign.edl**
   1. *Purpose* : Test ecalls and ocalls for foreign types. Foreign type is a type that is defined outside of EDL and is not a primitive type. Test pass by value and `isary` attributes. Also when an explicit `*` is used, test all pointer semantics.
      Also if `*` is not used but `isptr` attribute is specified (say for `typedef int * my_type`), then pointer semantics are allowed.

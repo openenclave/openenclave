@@ -5,13 +5,19 @@
 - name: Gather Ansible facts
   setup:
 
-- import_role:
+- include_role:
     name: linux/common
-    tasks_from: apt-repo-microsoft.yml
+    tasks_from: apt-repo.yml
+  vars:
+    apt_key_url: "https://packages.microsoft.com/keys/microsoft.asc"
+    apt_repository: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
 
-- import_role:
+- include_role:
     name: linux/common
-    tasks_from: apt-repo-llvm.yml
+    tasks_from: apt-repo.yml
+  vars:
+    apt_key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+    apt_repository: "deb http://apt.llvm.org/{{ ansible_distribution_release }} llvm-toolchain-{{ ansible_distribution_release }}-7 main"
 
 - name: Include vars
   include_vars:
@@ -23,6 +29,10 @@
     state: present
     update_cache: yes
     install_recommends: no
+
+- import_role:
+    name: linux/openenclave
+    tasks_from: opam-setup.yml
 
 - name: Install CMake 3.13.1
   unarchive:

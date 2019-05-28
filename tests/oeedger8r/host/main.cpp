@@ -85,6 +85,11 @@ int main(int argc, const char* argv[])
     test_enum_edl_ecalls(enclave);
     OE_TEST(test_enum_edl_ocalls(enclave) == OE_OK);
 
+    // Change the value of errno on the host side before making the ecall.
+    // Ecalls do not transfer errno values from host to enclave.
+    errno = 0xbadf00d;
+    OE_TEST(test_errno_edl_ocalls(enclave) == OE_OK);
+
     test_foreign_edl_ecalls(enclave);
     OE_TEST(test_foreign_edl_ocalls(enclave) == OE_OK);
 

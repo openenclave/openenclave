@@ -253,8 +253,22 @@ let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
 
 (** Emit [struct], [union], or [enum]. *)
 let emit_composite_type =
-  let emit_struct_or_union (s : struct_def) (union : bool) =
-    [ sprintf "typedef %s %s" (if union then "union" else "struct") s.sname
+  let emit_struct (s : struct_def) =
+    [ sprintf "typedef struct %s" s.sname
+    ; "{"
+    ; String.concat "\n"
+        (List.map
+           (fun (ptype, decl) ->
+             let dims = List.map (fun d -> sprintf "[%d]" d) decl.array_dims in
+             let dims_str = String.concat "" dims in
+             sprintf "    %s %s%s;"
+               (get_tystr (get_param_atype ptype))
+               decl.identifier dims_str )
+           s.smlist)
+    ; sprintf "} %s;\n" s.sname ]
+  in
+  let emit_union (u : union_def) =
+    [ sprintf "typedef union %s" u.uname
     ; "{"
     ; String.concat "\n"
         (List.map
@@ -263,8 +277,8 @@ let emit_composite_type =
              let dims_str = String.concat "" dims in
              sprintf "    %s %s%s;" (get_tystr atype) decl.identifier dims_str
              )
-           s.mlist)
-    ; sprintf "} %s;\n" s.sname ]
+           u.umlist)
+    ; sprintf "} %s;\n" u.uname ]
   in
   let emit_enum (e : enum_def) =
     [ sprintf "typedef enum %s" e.enname
@@ -281,8 +295,8 @@ let emit_composite_type =
     ; sprintf "} %s;\n" e.enname ]
   in
   function
-  | StructDef s -> emit_struct_or_union s false
-  | UnionDef u -> emit_struct_or_union u true
+  | StructDef s -> emit_struct s
+  | UnionDef u -> emit_union u
   | EnumDef e -> emit_enum e
 
 let get_function_id (f : func_decl) (e : string) =

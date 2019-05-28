@@ -8,9 +8,12 @@
 - name: Include vars
   include_vars: "{{ ansible_distribution_release | lower }}.yml"
 
-- import_role:
+- include_role:
     name: linux/common
-    tasks_from: apt-repo-intel.yml
+    tasks_from: apt-repo.yml
+  vars:
+    apt_key_url: "https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key"
+    apt_repository: "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu {{ ansible_distribution_release }} main"
 
 - name: Install the Intel libsgx package dependencies
   apt:

@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# shellcheck disable=SC2068 disable=SC2006 disable=SC2179
+# clangw takes a mix of msvc and gcc/clang command-line agruments generated
+# by cmake on windows, transforms them to their clang equivalents and
+# then passes them along to clang.
+
+# It is similar to clang-cl. However clang-cl cannot be used for 
+# cross-compiling since it also does not understand options like -fPIC,
+# -fvisibility=hidden etc.
+
+# clangw must be called with a single string argument that contains all 
+# the arguments for clang.
+# Example:
+#    clangw "-O2 enclave\core\calls.c"
+# instead of
+#    clangw -O2 enclave\core\calls.c
+# This ensure that the \ is retained when clang receives the arguments.
+function call_clang {
+    args=()
+ 
+    # Transform the arguments from a mix of MSVC and clang syntax
+    # to pure clang syntax
+    for a; do
+        # Ignore the following arguments
+        [ "$a" == "/nologo" ]       && continue
+        [ "$a" == "/TP" ]           && continue
+        [ "$a" == "/DWIN32" ]       && continue
+        [ "$a" == "/D_WINDOWS" ]    && continue
+        [ "$a" == "/W3" ]           && continue
+        [ "$a" == "/GR" ]           && continue
+        [ "$a" == "/EHsc" ]         && continue
+        [ "$a" == "/MD" ]           && continue
+        [ "$a" == "/MDd" ]          && continue
+        [ "$a" == "/Ob0" ]          && continue
+        [ "$a" == "/Ob1" ]          && continue
+        [ "$a" == "/Ob2" ]          && continue
+        [ "$a" == "/Od" ]           && continue
+        [ "$a" == "/RTC1" ]         && continue
+        [ "$a" == "/FS" ]           && continue
+        [ "$a" == "/showIncludes" ] && continue
+
+        # Map the following arguments
+        [ "$a" == "/DNDEBUG" ]   && args+="-DNDEBUG "   && continue
+        [ "$a" == "/Zi" ]        && args+="-g "        && continue
+        [ "$a" == "/O2" ]        && args+="-O2 "        && continue
+        [ "$a" == "-std:c++11" ] && args+="-std=c++11 " && continue
+        [ "$a" == "-std:c++14" ] && args+="-std=c++14 " && continue
+        [ "$a" == "-std:c++17" ] && args+="-std=c++17 " && continue
+
+        # link is passed in when clang is used as a linker
+        [ "$a" == "link" ]  && linking=1 && continue
+
+        # Transform any response files
+        # Response files start with an @
+        if [[ "$a" == \@* ]]; then
+            # Transform directory separators within the response file.
+            sed -i 's/\\/\//g' "${a:1}"
+        fi
+
+        args+="$a "
+    done
+
+    # Call clang with the transformed arguments arguments
+    if [ $linking ]; then
+        clang -target x86_64-pc-linux ${args[@]} -fuse-ld="`which ld.lld`"
+    else
+        clang -target x86_64-pc-linux ${args[@]}
+    fi
+}
+# shellcheck disable=SC2068
+call_clang $@

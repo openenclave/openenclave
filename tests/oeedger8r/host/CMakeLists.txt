@@ -1,47 +1,55 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-oeedl_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../edl/all.edl 
-    host
-    all_u
-    --edl-search-dir ../moreedl
-)
+add_custom_command(
+  OUTPUT all_u.h all_u.c all_args.h
+  DEPENDS
+  ../edl/aliasing.edl
+  ../edl/all.edl
+  ../edl/array.edl
+  ../edl/basic.edl
+  ../edl/enum.edl
+  ../edl/errno.edl
+  ../edl/foreign.edl
+  ../edl/other.edl
+  ../edl/pointer.edl
+  ../edl/string.edl
+  ../edl/struct.edl
+  COMMAND edger8r --untrusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
 
-oeedl_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl/bar.edl 
-    host-headers
-    bar_u
-)
+add_custom_command(
+  OUTPUT bar_u.h bar_args.h
+  DEPENDS ../moreedl/bar.edl
+  COMMAND edger8r --untrusted --header-only --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl bar.edl)
 
-oeedl_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../edl/other.edl
-    host
-    other_u
-)
+add_custom_command(
+  OUTPUT other_u.h other_u.c other_args.h
+  DEPENDS ../edl/other.edl
+  COMMAND edger8r --untrusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl other.edl)
 
-add_executable(edl_host 
+add_executable(edl_host
+    all_u.c
+    bar_u.h
+    other_u.c
     main.cpp
     bar.cpp
     foo.cpp
     testarray.cpp
     testbasic.cpp
     testenum.cpp
+    testerrno.cpp
     testforeign.cpp
     testother.cpp
     testpointer.cpp
     teststring.cpp
     teststruct.cpp
-    ${all_u}
-    ${bar_u}
-    ${other_u}
 )
 
 # The tests intentionally use floats etc in size context.
 # Disable warnings.
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
     set_source_files_properties(
-        ${all_u}
+        all_u.c
         PROPERTIES COMPILE_FLAGS "-Wno-conversion"
     )
     set_source_files_properties(

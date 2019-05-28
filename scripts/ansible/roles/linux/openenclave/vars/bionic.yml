@@ -3,10 +3,10 @@
 
 ---
 apt_packages:
+  - "curl"
   - "clang-7"
   - "clang-format-7"
   - "make"
-  - "ocaml-nox"
   - "ninja-build"
   - "shellcheck"
   - "gcc"

@@ -31,10 +31,6 @@ function(maybe_build_using_clangw OE_TARGET)
         return()
     endif()
 
-    # Add dependency to the clang wrapper
-    add_dependencies(${OE_TARGET} clangw)
-    add_dependencies(${OE_TARGET} llvm-arw)
-
     # Add compile options from compiler_settings.cmake
     target_compile_options(${OE_TARGET} PRIVATE
         -Wall -Werror -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers
@@ -49,31 +45,30 @@ function(maybe_build_using_clangw OE_TARGET)
 
     # Setup library tool variables
     set(CMAKE_C_CREATE_STATIC_LIBRARY 
-        "\"${CMAKE_BINARY_DIR}/windows/clangw/llvm-arw.exe\" qc <TARGET> <OBJECTS>" 
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/llvm-arw\" \"qc <TARGET> <OBJECTS>\""
         PARENT_SCOPE)
     set(CMAKE_CXX_CREATE_STATIC_LIBRARY 
-        "\"${CMAKE_BINARY_DIR}/windows/clangw/llvm-arw.exe\" qc <TARGET> <OBJECTS>" 
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/llvm-arw\" \"qc <TARGET> <OBJECTS>\""
         PARENT_SCOPE)
 
     # Setup linker variables.
-    find_program(LD_LLD "ld.lld.exe")
     set(CMAKE_EXECUTABLE_SUFFIX "" PARENT_SCOPE)
     set(CMAKE_C_STANDARD_LIBRARIES "" PARENT_SCOPE)
     set(CMAKE_C_LINK_EXECUTABLE
-        "clang -target x86_64-pc-linux <OBJECTS> -o <TARGET>  <LINK_LIBRARIES> -fuse-ld=\"${LD_LLD}\""
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"link <OBJECTS> -o <TARGET>  <LINK_LIBRARIES>\""
         PARENT_SCOPE)
     set(CMAKE_CXX_STANDARD_LIBRARIES "" PARENT_SCOPE)
     set(CMAKE_CXX_LINK_EXECUTABLE
-        "clang -target x86_64-pc-linux <OBJECTS> -o <TARGET>  <LINK_LIBRARIES> -fuse-ld=\"${LD_LLD}\""
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"link <OBJECTS> -o <TARGET>  <LINK_LIBRARIES>\""
         PARENT_SCOPE)
 
     # Setup compiler variables.
     set(CMAKE_C_COMPILE_OBJECT
-        "\"${CMAKE_BINARY_DIR}/windows/clangw/clangw.exe\" -target x86_64-pc-linux <DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>"
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"<DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>\""
         PARENT_SCOPE)
 
     set(CMAKE_CXX_COMPILE_OBJECT
-        "\"${CMAKE_BINARY_DIR}/windows/clangw/clangw.exe\" -target x86_64-pc-linux <DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>"
+        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"<DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>\""
         PARENT_SCOPE)
 
     # Loop through assembly files in the list of sources in the
@@ -82,7 +77,11 @@ function(maybe_build_using_clangw OE_TARGET)
     get_target_property(SOURCES ${OE_TARGET} SOURCES)
     foreach(SRC IN LISTS SOURCES)
         if (${SRC} MATCHES ".S$" OR ${SRC} MATCHES ".s$")
-            set_source_files_properties(${SRC} PROPERTIES LANGUAGE C)
+            set_source_files_properties(${SRC} PROPERTIES
+            LANGUAGE C
+            # Prevent warnings due to C options passed to .s files.
+            COMPILE_FLAGS -Wno-unused-command-line-argument)
         endif()
     endforeach()
 endfunction(maybe_build_using_clangw)
+
