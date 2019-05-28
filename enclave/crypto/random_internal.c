@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "random.h"
+#include "random_internal.h"
 #include <mbedtls/entropy.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/raise.h>
@@ -47,7 +47,7 @@ static void _seed_entropy_source_once()
 mbedtls_ctr_drbg_context* oe_mbedtls_get_drbg()
 {
     oe_once(&_seed_once, _seed_entropy_source_once);
-    return &_drbg;
+    return (_seed_result == OE_OK) ? &_drbg : NULL;
 }
 
 /*

@@ -23,10 +23,11 @@ oe_result_t oe_get_entropy(void* output, size_t len)
         {
             uint64_t x = oe_rdrand();
 
-            if (oe_memcpy_s(p, sizeof(uint64_t), &x, sizeof(uint64_t)) != OE_OK)
+            if (oe_memcpy_s(p, len, &x, sizeof(uint64_t)) != OE_OK)
                 goto done;
 
             p += sizeof(uint64_t);
+            len -= sizeof(uint64_t);
         }
     }
 
@@ -36,8 +37,8 @@ oe_result_t oe_get_entropy(void* output, size_t len)
         uint64_t x = oe_rdrand();
         const unsigned char* q = (const unsigned char*)&x;
 
-        while (r--)
-            *p++ = *q++;
+        if (oe_memcpy_s(p, len, q, r) != OE_OK)
+            goto done;
     }
 
     ret = OE_OK;

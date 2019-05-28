@@ -12,7 +12,7 @@ add_library(oecryptombed STATIC
     cmac.c
     hmac.c
     key.c
-    random.c
+    random_internal.c
     rsa.c
     sha.c)
 

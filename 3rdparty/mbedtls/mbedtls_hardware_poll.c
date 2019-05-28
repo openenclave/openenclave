@@ -19,6 +19,9 @@ int mbedtls_hardware_poll(
     int ret = -1;
     OE_UNUSED(data);
 
+    if (olen)
+        *olen = 0;
+
     if (oe_get_entropy(output, len) != OE_OK)
         goto done;
 

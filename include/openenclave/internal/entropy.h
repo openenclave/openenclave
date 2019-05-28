@@ -11,7 +11,7 @@ OE_EXTERNC_BEGIN
 
 /**
  * Generates a sequence of high quality sequence of random bytes that
- * is suitable for a seed to a psuedorandom number generator (PRNG).
+ * is suitable for a seed to a pseudorandom number generator (PRNG).
  *
  * This function will block if there is insufficient hardware entropy.
  *
