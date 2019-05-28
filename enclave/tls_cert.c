@@ -18,9 +18,9 @@
 
 #include <stdio.h>
 #include "../common/common.h"
-#include "ec.h"
-#include "key.h"
-#include "rsa.h"
+#include "crypto/ec.h"
+#include "crypto/key.h"
+#include "crypto/rsa.h"
 
 // Todo: consider set CN with enclave's MRENCLAVE values
 #define SUBJECT_NAME "CN=Open Enclave SDK,O=OESDK TLS,C=US"
