@@ -6,6 +6,8 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <netdb.h>
+#include <openenclave/corelibc/limits.h>
+#include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/internal/posix/types.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -79,17 +81,26 @@ ssize_t oe_posix_readv_ocall(
 
     errno = 0;
 
-    if ((!iov_buf && iovcnt) || !iov_buf_size)
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
     {
         errno = EINVAL;
         goto done;
     }
 
-    _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
 
-    size_read = readv((int)fd, (struct iovec*)iov, iovcnt);
+    {
+        _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
 
-    _relocate_iov_bases(iov, iovcnt, -(ptrdiff_t)iov_buf);
+        size_read = readv((int)fd, (struct iovec*)iov, iovcnt);
+
+        _relocate_iov_bases(iov, iovcnt, -(ptrdiff_t)iov_buf);
+    }
 
     ret = size_read;
 
@@ -111,14 +122,20 @@ ssize_t oe_posix_writev_ocall(
 
     errno = 0;
 
-    if ((!iov_buf && iovcnt) || !iov_buf_size)
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
     {
         errno = EINVAL;
         goto done;
     }
 
-    _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
 
+    _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
     size_written = writev((int)fd, (struct iovec*)iov, iovcnt);
 
     ret = size_written;
@@ -540,25 +557,34 @@ ssize_t oe_posix_recvv_ocall(
 {
     struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
     ssize_t ret = -1;
-    ssize_t size_read;
+    ssize_t size_recv;
 
     OE_UNUSED(iov_buf_size);
 
     errno = 0;
 
-    if ((!iov_buf && iovcnt) || !iov_buf_size)
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
     {
         errno = EINVAL;
         goto done;
     }
 
-    _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
 
-    size_read = readv((int)fd, (struct iovec*)iov, iovcnt);
+    {
+        _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
 
-    _relocate_iov_bases(iov, iovcnt, -(ptrdiff_t)iov_buf);
+        size_recv = recvv((int)fd, (struct iovec*)iov, iovcnt);
 
-    ret = size_read;
+        _relocate_iov_bases(iov, iovcnt, -(ptrdiff_t)iov_buf);
+    }
+
+    ret = size_recv;
 
 done:
     return ret;
@@ -571,24 +597,30 @@ ssize_t oe_posix_sendv_ocall(
     size_t iov_buf_size)
 {
     ssize_t ret = -1;
-    ssize_t size_written;
+    ssize_t size_sent;
     struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
 
     OE_UNUSED(iov_buf_size);
 
     errno = 0;
 
-    if ((!iov_buf && iovcnt) || !iov_buf_size)
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
     {
         errno = EINVAL;
         goto done;
     }
 
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
+
     _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+    size_sent = sendv((int)fd, (struct iovec*)iov, iovcnt);
 
-    size_written = writev((int)fd, (struct iovec*)iov, iovcnt);
-
-    ret = size_written;
+    ret = size_sent;
 
 done:
     return ret;

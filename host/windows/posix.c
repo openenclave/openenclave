@@ -1105,6 +1105,92 @@ done:
     return ret;
 }
 
+ssize_t oe_posix_readv_ocall(
+    oe_host_fd_t fd,
+    void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+    ssize_t ret = -1;
+    ssize_t size_read;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
+
+    {
+        void* buf;
+        size_t count;
+
+        buf = &iov[iovcnt];
+        count = iov_buf_size - ((size_t)iovcnt * sizeof(struct oe_iovec));
+
+        size_read = oe_posix_read_ocall(fd, buf, count);
+    }
+
+    ret = size_read;
+
+done:
+    return ret;
+}
+
+ssize_t oe_posix_writev_ocall(
+    oe_host_fd_t fd,
+    const void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    ssize_t ret = -1;
+    ssize_t size_written;
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
+
+    {
+        const void* buf;
+        size_t count;
+
+        buf = &iov[iovcnt];
+        count = iov_buf_size - ((size_t)iovcnt * sizeof(struct oe_iovec));
+
+        size_written = oe_posix_write_ocall(fd, buf, count);
+    }
+
+    ret = size_written;
+
+done:
+    return ret;
+}
+
 oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
 {
     ssize_t ret = -1;
@@ -1936,6 +2022,92 @@ ssize_t oe_posix_sendto_ocall(
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
+    return ret;
+}
+
+ssize_t oe_posix_recvv_ocall(
+    oe_host_fd_t fd,
+    void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+    ssize_t ret = -1;
+    ssize_t size_recv;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
+
+    {
+        void* buf;
+        size_t count;
+
+        buf = &iov[iovcnt];
+        count = iov_buf_size - ((size_t)iovcnt * sizeof(struct oe_iovec));
+
+        size_recv = oe_posix_recv_ocall(fd, buf, count, 0);
+    }
+
+    ret = size_recv;
+
+done:
+    return ret;
+}
+
+ssize_t oe_posix_sendv_ocall(
+    oe_host_fd_t fd,
+    const void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    ssize_t ret = -1;
+    ssize_t size_sent;
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
+
+    {
+        const void* buf;
+        size_t count;
+
+        buf = &iov[iovcnt];
+        count = iov_buf_size - ((size_t)iovcnt * sizeof(struct oe_iovec));
+
+        size_sent = oe_posix_send_ocall(fd, buf, count, 0);
+    }
+
+    ret = size_sent;
+
+done:
     return ret;
 }
 
