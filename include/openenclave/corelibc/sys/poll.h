@@ -32,7 +32,7 @@ OE_EXTERNC_BEGIN
 #define OE_POLLNVAL   0x020
 // clang-format on
 
-typedef unsigned long int oe_nfds_t;
+typedef uint64_t oe_nfds_t;
 
 struct oe_pollfd
 {
