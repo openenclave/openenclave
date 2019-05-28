@@ -61,6 +61,20 @@ enclave {
             size_t count)
             propagate_errno;
 
+        ssize_t oe_posix_readv_ocall(
+            oe_host_fd_t fd,
+            [in, out, size=iov_buf_size] void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        ssize_t oe_posix_writev_ocall(
+            oe_host_fd_t fd,
+            [in, size=iov_buf_size] const void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
         oe_off_t oe_posix_lseek_ocall(
             oe_host_fd_t fd,
             oe_off_t offset,
@@ -172,8 +186,9 @@ enclave {
             [out, size=msg_namelen] void* msg_name,
             oe_socklen_t msg_namelen,
             [out, count=1] oe_socklen_t* msg_namelen_out,
-            [out, size=msg_buflen] void* msg_buf,
-            size_t msg_buflen,
+            [in, out, size=msg_iov_buf_size] void* msg_iov_buf,
+            size_t msg_iovlen,
+            size_t msg_iov_buf_size,
             [out, size=msg_controllen] void* msg_control,
             size_t msg_controllen,
             [out, count=1] size_t* msg_controllen_out,
@@ -184,8 +199,9 @@ enclave {
             oe_host_fd_t sockfd,
             [in, size=msg_namelen] const void* msg_name,
             oe_socklen_t msg_namelen,
-            [in, size=msg_buflen] const void* msg_buf,
-            size_t msg_buflen,
+            [in, size=msg_iov_buf_size] void* msg_iov_buf,
+            size_t msg_iovlen,
+            size_t msg_iov_buf_size,
             [in, size=msg_controllen] const void* msg_control,
             size_t msg_controllen,
             int flags)
@@ -222,6 +238,20 @@ enclave {
             int flags,
             [in, size=addrlen] const struct oe_sockaddr* dest_addr,
             oe_socklen_t addrlen)
+            propagate_errno;
+
+        ssize_t oe_posix_recvv_ocall(
+            oe_host_fd_t fd,
+            [in, out, size=iov_buf_size] void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        ssize_t oe_posix_sendv_ocall(
+            oe_host_fd_t fd,
+            [in, size=iov_buf_size] const void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
             propagate_errno;
 
         int oe_posix_shutdown_ocall(

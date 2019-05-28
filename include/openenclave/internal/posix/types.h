@@ -4,7 +4,6 @@
 #ifndef _OE_POSIX_TYPES_H
 #define _OE_POSIX_TYPES_H
 
-#include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/defs.h>
 

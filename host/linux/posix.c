@@ -53,6 +53,80 @@ ssize_t oe_posix_write_ocall(oe_host_fd_t fd, const void* buf, size_t count)
     return write((int)fd, buf, count);
 }
 
+static void _relocate_iov_bases(
+    struct oe_iovec* iov,
+    int iovcnt,
+    ptrdiff_t addend)
+{
+    for (int i = 0; i < iovcnt; i++)
+    {
+        if (iov[i].iov_base)
+            iov[i].iov_base = (uint8_t*)iov[i].iov_base + addend;
+    }
+}
+
+ssize_t oe_posix_readv_ocall(
+    oe_host_fd_t fd,
+    void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+    ssize_t ret = -1;
+    ssize_t size_read;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov_buf && iovcnt) || !iov_buf_size)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+
+    size_read = readv((int)fd, (struct iovec*)iov, iovcnt);
+
+    _relocate_iov_bases(iov, iovcnt, -(ptrdiff_t)iov_buf);
+
+    ret = size_read;
+
+done:
+    return ret;
+}
+
+ssize_t oe_posix_writev_ocall(
+    oe_host_fd_t fd,
+    const void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    ssize_t ret = -1;
+    ssize_t size_written;
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov_buf && iovcnt) || !iov_buf_size)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+
+    size_written = writev((int)fd, (struct iovec*)iov, iovcnt);
+
+    ret = size_written;
+
+done:
+    return ret;
+}
+
 oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
 {
     errno = 0;
@@ -321,8 +395,9 @@ ssize_t oe_posix_recvmsg_ocall(
     void* msg_name,
     oe_socklen_t msg_namelen,
     oe_socklen_t* msg_namelen_out,
-    void* msg_buf,
-    size_t msg_buflen,
+    void* msg_iov_buf,
+    size_t msg_iovlen,
+    size_t msg_iov_buf_size,
     void* msg_control,
     size_t msg_controllen,
     size_t* msg_controllen_out,
@@ -330,16 +405,18 @@ ssize_t oe_posix_recvmsg_ocall(
 {
     ssize_t ret = -1;
     struct msghdr msg;
-    struct iovec iov;
+    struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
+
+    OE_UNUSED(msg_iov_buf_size);
 
     errno = 0;
 
-    iov.iov_base = msg_buf;
-    iov.iov_len = msg_buflen;
+    _relocate_iov_bases(msg_iov, (int)msg_iovlen, (ptrdiff_t)msg_iov_buf);
+
     msg.msg_name = msg_name;
     msg.msg_namelen = msg_namelen;
-    msg.msg_iov = &iov;
-    msg.msg_iovlen = 1;
+    msg.msg_iov = (struct iovec*)msg_iov;
+    msg.msg_iovlen = msg_iovlen;
     msg.msg_control = msg_control;
     msg.msg_controllen = msg_controllen;
     msg.msg_flags = 0;
@@ -353,6 +430,8 @@ ssize_t oe_posix_recvmsg_ocall(
             *msg_controllen_out = msg.msg_controllen;
     }
 
+    _relocate_iov_bases(msg_iov, (int)msg_iovlen, -(ptrdiff_t)msg_iov_buf);
+
     return ret;
 }
 
@@ -360,23 +439,26 @@ ssize_t oe_posix_sendmsg_ocall(
     oe_host_fd_t sockfd,
     const void* msg_name,
     oe_socklen_t msg_namelen,
-    const void* msg_buf,
-    size_t msg_buflen,
+    void* msg_iov_buf,
+    size_t msg_iovlen,
+    size_t msg_iov_buf_size,
     const void* msg_control,
     size_t msg_controllen,
     int flags)
 {
     struct msghdr msg;
-    struct iovec iov;
+    struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
+
+    OE_UNUSED(msg_iov_buf_size);
 
     errno = 0;
 
-    iov.iov_base = (void*)msg_buf;
-    iov.iov_len = msg_buflen;
+    _relocate_iov_bases(msg_iov, (int)msg_iovlen, (ptrdiff_t)msg_iov_buf);
+
     msg.msg_name = (void*)msg_name;
     msg.msg_namelen = msg_namelen;
-    msg.msg_iov = (void*)&iov;
-    msg.msg_iovlen = 1;
+    msg.msg_iov = (struct iovec*)msg_iov;
+    msg.msg_iovlen = msg_iovlen;
     msg.msg_control = (void*)msg_control;
     msg.msg_controllen = msg_controllen;
     msg.msg_flags = 0;
@@ -448,6 +530,68 @@ ssize_t oe_posix_sendto_ocall(
         flags,
         (const struct sockaddr*)src_addr,
         addrlen);
+}
+
+ssize_t oe_posix_recvv_ocall(
+    oe_host_fd_t fd,
+    void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+    ssize_t ret = -1;
+    ssize_t size_read;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov_buf && iovcnt) || !iov_buf_size)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+
+    size_read = readv((int)fd, (struct iovec*)iov, iovcnt);
+
+    _relocate_iov_bases(iov, iovcnt, -(ptrdiff_t)iov_buf);
+
+    ret = size_read;
+
+done:
+    return ret;
+}
+
+ssize_t oe_posix_sendv_ocall(
+    oe_host_fd_t fd,
+    const void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    ssize_t ret = -1;
+    ssize_t size_written;
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov_buf && iovcnt) || !iov_buf_size)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+
+    size_written = writev((int)fd, (struct iovec*)iov, iovcnt);
+
+    ret = size_written;
+
+done:
+    return ret;
 }
 
 int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how)
