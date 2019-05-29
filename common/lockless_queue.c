@@ -6,7 +6,7 @@
 
 #if _MSC_VER
 #include <intrin.h>
-#endif
+#endif /* _MSC_VER */
 
 /* functions for oe_lockless_queue_node */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,7 @@ void oe_lockless_queue_init(oe_lockless_queue* p_queue)
 #elif defined __GNUC__
     __atomic_store_n(&(p_queue->p_tail), NULL, __ATOMIC_RELAXED);
     __atomic_store_n(&(p_queue->p_head), NULL, __ATOMIC_RELAXED);
-#endif /* __GNUC__ */
+#endif /* _MSC_VER or __GNUC__ */
 } /* init_oe_lockless_queue */
 
 void oe_lockless_queue_push_back(
@@ -53,7 +53,7 @@ void oe_lockless_queue_push_back(
         1,
         __ATOMIC_ACQ_REL,
         __ATOMIC_ACQUIRE));
-#endif /* __GNUC__ */
+#endif /* _MSC_VER or __GNUC__ */
 } /* oe_lockless_queue_push */
 
 oe_lockless_queue_node* oe_lockless_queue_pop_front(oe_lockless_queue* p_queue)
@@ -65,7 +65,7 @@ oe_lockless_queue_node* oe_lockless_queue_pop_front(oe_lockless_queue* p_queue)
         &(p_queue->p_head), NULL, NULL);
 #elif defined __GNUC__
     popped_node = __atomic_load_n(&(p_queue->p_head), __ATOMIC_ACQUIRE);
-#endif /* __GNUC__ */
+#endif /* _MSC_VER or __GNUC__ */
 
     if (NULL != popped_node)
     {
@@ -79,45 +79,24 @@ oe_lockless_queue_node* oe_lockless_queue_pop_front(oe_lockless_queue* p_queue)
         _InterlockedExchangePointer(&(p_queue->p_head), next_node);
 #elif defined __GNUC__
         __atomic_store_n(&(p_queue->p_head), next_node, __ATOMIC_RELEASE);
-#endif /* __GNUC__ */
+#endif /* _MSC_VER or __GNUC__ */
     }
     else
     {
         /* there wasn't a node at the head
          * so refill the head with the nodes from the tail */
+
+        /* take all of the nodes off of the tail */
 #ifdef _MSC_VER
-        popped_node =
-            (oe_lockless_queue_node*)_InterlockedCompareExchangePointer(
-                &(p_queue->p_tail), NULL, NULL);
+        popped_node = (oe_lockless_queue_node*)_InterlockedExchangePointer(
+            &(p_queue->p_tail), NULL);
 #elif defined __GNUC__
-        popped_node = __atomic_load_n(&(p_queue->p_tail), __ATOMIC_RELAXED);
-#endif /* __GNUC__ */
+        popped_node =
+            __atomic_exchange_n(&(p_queue->p_tail), NULL, __ATOMIC_ACQ_REL);
+#endif /* _MSC_VER or __GNUC__ */
 
         if (NULL != popped_node)
         {
-            /* take all of the nodes off of the tail */
-#ifdef _MSC_VER
-            oe_lockless_queue_node* p_actual = NULL;
-            while (popped_node !=
-                   (p_actual = (oe_lockless_queue_node*)
-                        _InterlockedCompareExchangePointer(
-                            &(p_queue->p_tail), NULL, popped_node)))
-            {
-                popped_node = p_actual;
-            }
-#elif defined __GNUC__
-            while (!__atomic_compare_exchange_n(
-                &(p_queue->p_tail),
-                &popped_node,
-                NULL,
-                1,
-                __ATOMIC_ACQ_REL,
-                __ATOMIC_ACQUIRE))
-            {
-                continue;
-            }
-#endif /* __GNUC__ */
-
             /* reverse the nodes from the tail */
             oe_lockless_queue_node* prev_node = NULL;
             oe_lockless_queue_node* next_node = NULL;
@@ -136,7 +115,7 @@ oe_lockless_queue_node* oe_lockless_queue_pop_front(oe_lockless_queue* p_queue)
             _InterlockedExchangePointer(&(p_queue->p_head), prev_node);
 #elif defined __GNUC__
             __atomic_store_n(&(p_queue->p_head), prev_node, __ATOMIC_RELEASE);
-#endif /* __GNUC__ */
+#endif /* _MSC_VER or __GNUC__ */
         }
     }
     return popped_node;
