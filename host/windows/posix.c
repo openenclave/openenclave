@@ -356,10 +356,11 @@ int oe_posix_kill_ocall(int pid, int signum)
 **==============================================================================
 */
 
-uint64_t oe_posix_getaddrinfo_open_ocall(
+int oe_posix_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
-    const struct oe_addrinfo* hints)
+    const struct oe_addrinfo* hints,
+    uint64_t* handle_out)
 {
     PANIC;
 }
