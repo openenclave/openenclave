@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 if (USE_LIBSGX)
-  install(DIRECTORY remote_attestation local_attestation
+  install(DIRECTORY remote_attestation local_attestation tls_between_enclaves tls_between_host_enclave
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     PATTERN "gen_pubkey_header.sh"
     PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
