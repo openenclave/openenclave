@@ -8,14 +8,17 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <winsock2.h>
 
+// clang-format off
+#include <winsock2.h>
 #include <windows.h>
+// clang-format on
 
 typedef SOCKET socket_t;
 typedef int socklen_t;
 typedef int length_t;
 typedef HANDLE pthread_t;
+typedef void pthread_attr_t;
 
 OE_INLINE int sleep(unsigned int seconds)
 {
@@ -43,8 +46,6 @@ OE_INLINE int get_error(void)
 {
     return WSAGetLastError();
 }
-
-typedef void pthread_attr_t;
 
 OE_INLINE int pthread_create(
     pthread_t* thread,
