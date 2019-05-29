@@ -5,6 +5,7 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/debug/containers/db_unord_container_tests.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/debug/debug_abort.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/nodiscard.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/nodiscard_extensions.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/language.support/support.coroutines/dialect_support.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/fstream.close.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/filesystems/class.path/path.itr/iterator_db.pass.cpp
