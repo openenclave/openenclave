@@ -7,7 +7,8 @@
       "version": "0.0.1",
       "platforms": {
         "arm32v7": "./Dockerfile.arm32v7",
-        "aarch64": "./Dockerfile.aarch64"
+        "aarch64": "./Dockerfile.aarch64",
+        "ls1012": "./Dockerfile.ls1012"
       }
     },
     "buildOptions": []
