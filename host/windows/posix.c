@@ -1883,8 +1883,9 @@ ssize_t oe_posix_recvmsg_ocall(
     void* msg_name,
     oe_socklen_t msg_namelen,
     oe_socklen_t* msg_namelen_out,
-    void* msg_buf,
-    size_t msg_buflen,
+    void* msg_iov_buf,
+    size_t msg_iovlen,
+    size_t msg_iov_buf_size,
     void* msg_control,
     size_t msg_controllen,
     size_t* msg_controllen_out,
@@ -1892,10 +1893,11 @@ ssize_t oe_posix_recvmsg_ocall(
 {
     DWORD rslt = -1;
     DWORD recv_bytes = 0;
-
     WSABUF buf = {0};
-    buf.buf = (void*)msg_buf;
-    buf.len = (DWORD)msg_buflen;
+    struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
+
+    buf.buf = &msg_iov[msg_iovlen];
+    buf.len = msg_iov_buf_size - ((size_t)msg_iovlen * sizeof(struct oe_iovec));
 
     rslt = WSARecv((SOCKET)sockfd, &buf, 1, &recv_bytes, &flags, NULL, NULL);
     if (rslt == SOCKET_ERROR)
@@ -1912,18 +1914,20 @@ ssize_t oe_posix_sendmsg_ocall(
     oe_host_fd_t sockfd,
     const void* msg_name,
     oe_socklen_t msg_namelen,
-    const void* msg_buf,
-    size_t msg_buflen,
+    void* msg_iov_buf,
+    size_t msg_iovlen,
+    size_t msg_iov_buf_size,
     const void* msg_control,
     size_t msg_controllen,
     int flags)
 {
     DWORD rslt = -1;
     DWORD sent_bytes = 0;
-
     WSABUF buf = {0};
-    buf.buf = (void*)msg_buf;
-    buf.len = (DWORD)msg_buflen;
+    struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
+
+    buf.buf = &msg_iov[msg_iovlen];
+    buf.len = msg_iov_buf_size - ((size_t)msg_iovlen * sizeof(struct oe_iovec));
 
     rslt = WSASend((SOCKET)sockfd, &buf, 1, &sent_bytes, flags, NULL, NULL);
     if (rslt == SOCKET_ERROR)
