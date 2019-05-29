@@ -62,6 +62,8 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
     void* ret;
 
 #if defined(_WIN32)
+    static const int TEST_TIMEOUT = 30000;
+
     server = CreateThread(
         NULL, 0, (LPTHREAD_START_ROUTINE)server_proc, NULL, 0, NULL);
     OE_TEST(server != INVALID_HANDLE_VALUE);
@@ -86,8 +88,10 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
 #endif
 
 #if defined(_WIN32)
-    ret = WaitForSingleObject(client, INFINITE);
-    ret = WaitForSingleObject(server, INFINITE);
+    ret = WaitForSingleObject(client, TEST_TIMEOUT);
+    OE_TEST(ret == WAIT_OBJECT_0);
+    ret = WaitForSingleObject(server, TEST_TIMEOUT);
+    OE_TEST(ret == WAIT_OBJECT_0);
 #else
     pthread_join(client, &ret);
     pthread_join(server, &ret);
