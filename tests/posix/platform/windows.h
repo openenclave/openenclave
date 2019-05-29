@@ -19,7 +19,7 @@ typedef HANDLE pthread_t;
 
 OE_INLINE int sleep(unsigned int seconds)
 {
-    Sleep(n * 1000);
+    Sleep(seconds * 1000);
     return 0;
 }
 
@@ -66,7 +66,8 @@ OE_INLINE int pthread_create(
 
 OE_INLINE int pthread_join(pthread_t thread, void** retval)
 {
-    *retval = WaitForSingleObject(client, INFINITE);
+    WaitForSingleObject(thread, INFINITE);
+    *retval = NULL;
     return 0;
 }
 
