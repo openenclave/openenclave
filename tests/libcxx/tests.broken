@@ -223,3 +223,5 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/libcpp_deallocate.sh.cpp
 # The following test hangs after the bump to libcxx 800
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async_race.38682.pass.cpp
+# The following test fails under clang-7 debug due to a memory leak.
+../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/nodiscard_extensions.pass.cpp

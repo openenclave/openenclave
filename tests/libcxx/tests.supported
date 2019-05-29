@@ -89,7 +89,6 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/assertions/version_cassert.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/errno/version_cerrno.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/nodiscard_aftercxx17.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/nodiscard_extensions.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/std.exceptions/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/syserr/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/double_include.sh.cpp
