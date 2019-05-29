@@ -49,6 +49,7 @@ elseif (WIN32)
     crypto/bcrypt/hmac.c
     crypto/bcrypt/rsa.c
     windows/hostthread.c
+    windows/posix.c
     windows/time.c)
 else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
