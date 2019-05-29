@@ -12,28 +12,54 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/uio.h>
+
+#if defined(__linux__)
 #include <unistd.h>
+#elif defined(_WIN32)
+#include <Windows.h>
+#include <io.h>
+#else
+#error "Unsupported OS platform"
+#endif
+
 #include "crypto_u.h"
 
 int f_open(char* path, int flags, int mode)
 {
+#if defined(_WIN32)
+    /* On Windows, files must be opened as binary instead of text explicitly,
+     * otherwise file reads will terminate on the SUB character (0x1A) as EOF.
+     * This also requires use of the ISO ('_' prefixed) and not POSIX versions
+     * of the functions on Windows.
+     *
+     * Ideally, the callers of fopen in read_file.c should be using "rb" as the
+     * file flags, but the MUSL implementation ignores the binary flag and does
+     * not pass it on to the syscall hook for handling. This means that PEM are
+     * also processed as binary (as they would be equivalently on Linux).
+     */
+    flags |= _O_BINARY;
+    return _open(path, flags, mode);
+#else
     return open(path, flags, mode);
+#endif
 }
 
 int f_read(int fd, char* ptr, size_t len)
 {
+#if defined(_WIN32)
+    return (int)_read(fd, ptr, len);
+#else
     return (int)read(fd, ptr, len);
-}
-
-int f_readv(int fd, struct iovec* iov, size_t len)
-{
-    return (int)readv(fd, iov, (int)len);
+#endif
 }
 
 int f_close(int fd)
 {
+#if (defined(_WIN32))
+    return _close(fd);
+#else
     return close(fd);
+#endif
 }
 
 int main(int argc, const char* argv[])

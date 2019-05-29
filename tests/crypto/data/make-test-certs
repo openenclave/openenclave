@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+set -o errexit
+
+##==============================================================================
+##
+## Helper method to work around idiosyncracy in MinGW/MSYS (used by Git Bash)
+##
+##  - MSYS tries to convert POSIX paths to Win32 paths when passing args to
+##    tools not compiled for MSYS(e.g. openssl).
+##  - This method converts '/C=US/ST=CA' to '//C=US\ST=CA' to avoid this. It
+##    does this to exploit another specific idiosyncracy of MSYS arg inference.
+##  - MSYS treats an argument starting with >=2 '/' as an escaped Windows-style
+##    switch and strips extra leading '/'. It also converts any following '\'
+##    to '/' for consistency with the switch style, hence the converted format.
+##  - The rest of the arg cannot already be followed by '/' with, otherwise MSYS
+##    interprets the arg as an UNC path and leaves it unchanged (e.g. //foo/bar)
+##
+## See http://www.mingw.org/wiki/Posix_path_conversion for details.
+##
+##==============================================================================
+convert_slashes_in_dn()
+{
+    # Replace all '/' with '\' characters
+    local RESULT=${1//\//\\}
+
+    # Replace leading '\' character with '//'
+    local RESULT=${RESULT/\\/\/\/}
+
+    echo "${RESULT}"
+}
+
+# Process command line options
+SOURCE_DIR="$1"
+TARGET_DIR="$2"
+BUILD_OPT="$3"
+
+case ${BUILD_OPT} in
+    --gitbash)
+    USE_MINGW=1
+    ;;
+
+    --bash)
+    ;;
+
+    *)
+    echo "$0: unknown BUILD_OPT=${BUILD_OPT}"
+    exit 1
+    ;;
+esac
+
+INTEL_CA_DN="/CN=Intel SGX PCK Processor CA/O=Intel Corporation/L=Santa Clara/ST=CA/C=US"
+TEST_ROOT_DN="/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Root RSA"
+TEST_ROOT_2_DN="/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Root RSA 2"
+TEST_ROOT_EC_DN="/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Root EC"
+TEST_CA_DN="/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Intermediate RSA"
+TEST_CA_2_DN="/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Intermediate RSA 2"
+TEST_CA_EC_DN="/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Intermediate EC"
+TEST_LEAF_DN="/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Leaf RSA"
+TEST_LEAF_EC_DN="/C=US/ST=Ohio/L=Columbus/O=Acme Company/OU=Acme/CN=Leaf EC"
+
+if [[ ${USE_MINGW} -eq 1 ]]; then
+    INTEL_CA_DN=$(convert_slashes_in_dn "${INTEL_CA_DN}")
+    TEST_ROOT_DN=$(convert_slashes_in_dn "${TEST_ROOT_DN}")
+    TEST_ROOT_2_DN=$(convert_slashes_in_dn "${TEST_ROOT_2_DN}")
+    TEST_ROOT_EC_DN=$(convert_slashes_in_dn "${TEST_ROOT_EC_DN}")
+    TEST_CA_DN=$(convert_slashes_in_dn "${TEST_CA_DN}")
+    TEST_CA_2_DN=$(convert_slashes_in_dn "${TEST_CA_2_DN}")
+    TEST_CA_EC_DN=$(convert_slashes_in_dn "${TEST_CA_EC_DN}")
+    TEST_LEAF_DN=$(convert_slashes_in_dn "${TEST_LEAF_DN}")
+    TEST_LEAF_EC_DN=$(convert_slashes_in_dn "${TEST_LEAF_EC_DN}")
+fi
+
+# Create target folder if it does not already exist
+mkdir -p "${TARGET_DIR}"
+
+# x509 V3 extensions required to be able to validate cert chains using a self signed root cert and intermediate cert signed by the root cert.
+# SSL1.1 no longer allows signing certs without the necessary v3 extensions.
+cp -u "${SOURCE_DIR}/root_v3.ext" "${TARGET_DIR}"
+cp -u "${SOURCE_DIR}/intermediate_v3.ext" "${TARGET_DIR}"
+cp -u "${SOURCE_DIR}/sample.cnf" "${TARGET_DIR}"
+cp -u "${SOURCE_DIR}/intermediate.cnf" "${TARGET_DIR}"
+cp -u "${SOURCE_DIR}/root.cnf" "${TARGET_DIR}"
+cp -u "${SOURCE_DIR}/ec_cert_with_ext.cnf" "${TARGET_DIR}"
+cp -u "${SOURCE_DIR}/ec_crl_distribution.cnf" "${TARGET_DIR}"
+
+# ========================= asn_tests ================================
+
+# Create test cert for asn_tests
+openssl ecparam -name prime256v1 -genkey -noout -out prime256v1-key.pem
+openssl req -config sample.cnf -new -x509 -key prime256v1-key.pem -out asn1.cert.pem -subj "${INTEL_CA_DN}" -sha256 -extensions v3_req
+
+# ============ crl_tests (also reused in rsa_tests) ==================
+
+# Create test root CA cert
+openssl genrsa -out root.key.pem
+openssl req -new -x509 -key root.key.pem -out root.cert.pem -days 3650 -subj "${TEST_ROOT_DN}"
+
+# Create a self-signed DER cert
+openssl req -new -x509 -key root.key.pem -out self_signed.cert.der -outform DER -days 3650 -subj "${TEST_ROOT_DN}"
+
+# Sleep between each cert in the chain since the workaround in cert chain ordering code in OE uses ordinality of time
+sleep 1
+
+# Create Intermediate certificate signed by the Root CA
+echo 'Creating Intermediate certificates signed by the root CA ...'
+openssl genrsa -out intermediate.key.pem
+openssl req -new -key intermediate.key.pem -out intermediate.csr -subj "${TEST_CA_DN}"
+openssl x509 -req -in intermediate.csr -CA root.cert.pem -CAkey root.key.pem -CAcreateserial -out intermediate.cert.pem -days 3650 -extfile intermediate_v3.ext
+
+sleep 1
+
+# Create Leaf certificate signed by the Root CA
+echo 'Creating Leaf certificates signed by the root CA ...'
+openssl genrsa -out leaf.key.pem
+openssl req -new -key leaf.key.pem -out leaf.csr -subj "${TEST_LEAF_DN}"
+openssl x509 -req -in leaf.csr -CA root.cert.pem -CAkey root.key.pem -CAcreateserial -out leaf.cert.pem -days 3650
+
+sleep 1
+
+# Create Leaf certificate signed by the Intermediate CA
+echo 'Creating Leaf certificates signed by the Intermediate CA ...'
+openssl genrsa -out leaf2.key.pem
+openssl req -new -key leaf2.key.pem -out leaf2.csr -subj "${TEST_LEAF_DN}"
+openssl x509 -req -in leaf2.csr -CA intermediate.cert.pem -CAkey intermediate.key.pem -CAcreateserial -out leaf2.cert.pem -days 3650
+
+# Create certificate revocation lists (CRL) for the following test cases
+#  - intermediate_crl is issued by intermediate CA and revokes the leaf cert
+#  - root_crl is issued by root CA and also revokes the leaf cert
+
+touch intermediate_index.txt
+touch root_index.txt
+echo "00" > intermediate_crl_number
+echo "00" > root_crl_number
+
+openssl ca -gencrl -config intermediate.cnf -out intermediate.crl.pem
+openssl ca -gencrl -config root.cnf -out root.crl.pem
+
+openssl ca -revoke leaf.cert.pem -keyfile intermediate.key.pem -cert intermediate.cert.pem -config intermediate.cnf
+openssl ca -revoke leaf.cert.pem -keyfile root.key.pem -cert root.cert.pem -config root.cnf
+
+openssl ca -gencrl -config intermediate.cnf -out intermediate.crl.pem
+openssl ca -gencrl -config root.cnf -out root.crl.pem
+
+openssl crl -inform pem -outform der -in intermediate.crl.pem -out intermediate.crl.der
+openssl crl -inform pem -outform der -in root.crl.pem -out root.crl.der
+
+# Take UTC date and time of intermediate.crl for _test_get_dates
+date -u +%Y:%m:%d:%H:%M:%S -r intermediate.crl.pem > time.txt
+
+# ========================= ec_tests ================================
+
+openssl ecparam -name prime256v1 -genkey -noout -out cert_with_ext-key.pem
+openssl req -config ec_cert_with_ext.cnf -new -x509 -key cert_with_ext-key.pem -out ec_cert_with_ext.pem -subj "${INTEL_CA_DN}" -sha256 -extensions v3_req
+
+openssl ecparam -name prime256v1 -genkey -noout -out crl_distribution-key.pem
+openssl req -config ec_crl_distribution.cnf -new -x509 -key crl_distribution-key.pem -out ec_cert_crl_distribution.pem -subj "${INTEL_CA_DN}" -sha256 -extensions v3_req
+
+openssl ecparam -name prime256v1 -genkey -noout -out root.ec.key.pem
+openssl req -new -x509 -key root.ec.key.pem -out root.ec.cert.pem -subj "${TEST_ROOT_EC_DN}"
+
+openssl ecparam -name prime256v1 -genkey -noout -out intermediate.ec.key.pem
+openssl req -new -key intermediate.ec.key.pem -out intermediate.csr -subj "${TEST_CA_EC_DN}"
+openssl x509 -req -in intermediate.csr -CA root.ec.cert.pem -CAkey root.ec.key.pem -CAcreateserial -out intermediate.ec.cert.pem -days 3650 -extfile intermediate_v3.ext
+
+openssl ecparam -name prime256v1 -genkey -noout -out leaf.ec.key.pem
+openssl req -new -key leaf.ec.key.pem -out leaf.csr -subj "${TEST_LEAF_EC_DN}"
+openssl x509 -req -in leaf.csr -CA intermediate.ec.cert.pem -CAkey intermediate.ec.key.pem -CAcreateserial -out leaf.ec.cert.pem -days 3650
+
+openssl ec -in root.ec.key.pem -pubout -out root.ec.public.key.pem
+echo -n "abcdefghijklmnopqrstuvwxyz" > test_sign_alphabet.txt
+openssl dgst -sha256 -sign root.ec.key.pem -out test_ec_signature test_sign_alphabet.txt
+
+openssl ec -in root.ec.key.pem -pubout -outform DER -out root.ec.pubkey.der
+# Extract the coordinates from the ec public key
+tail -c 64 root.ec.pubkey.der > coordinates.bin
+
+# ========================= rsa_tests ================================
+
+# Create alternate root CA certificate
+openssl genrsa -out root2.key.pem
+openssl req -new -x509 -key root2.key.pem -out root2.cert.pem -days 3650 -subj "${TEST_ROOT_2_DN}"
+
+# Create intermediate CA certificate signed by alternate root CA
+echo 'Creating intermediate CA certificate signed by the root CA 2 ...'
+openssl genrsa -out intermediate2.key.pem
+openssl req -new -key intermediate2.key.pem -out intermediate2.csr -subj "${TEST_CA_2_DN}"
+openssl x509 -req -in intermediate2.csr -CA root2.cert.pem -CAkey root2.key.pem -CAcreateserial -out intermediate2.cert.pem -days 3650
+
+# Extract modulus value from leaf certificate in hexadecimal text format
+openssl x509 -inform PEM -in leaf.cert.pem -noout -modulus | awk -F'=' '{print $2}' > leaf_modulus.hex
+
+# Export public key from leaf certificate private key
+openssl rsa -in leaf.key.pem -pubout -out leaf.public.key.pem
+
+# Sign the test alphabet sequence with the leaf certificate private key
+openssl dgst -sha256 -sign leaf.key.pem -out test_rsa_signature test_sign_alphabet.txt
+
