@@ -118,7 +118,6 @@ OE_EXTERNC_BEGIN
 #define OE_AF_KCM OE_PF_KCM
 #define OE_AF_QIPCRTR OE_PF_QIPCRTR
 #define OE_AF_SMC OE_PF_SMC
-#define OE_AF_HOST OE_PF_HOST
 #define OE_AF_MAX OE_PF_MAX
 
 /* oe_setsockopt()/oe_getsockopt() options. */

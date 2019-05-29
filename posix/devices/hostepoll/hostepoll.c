@@ -25,32 +25,41 @@
 #define DEVICE_MAGIC 0x4504f4c
 #define EPOLL_MAGIC 0x708f5a51
 
-/* epoll_ctl(OE_EPOLL_CTL_ADD) establishes this pair. */
-typedef struct _pair
+/* epoll_ctl() adds/modifies/deletes this mapping. */
+typedef struct _mapping
 {
     /* The fd parameter from epoll_ctl(). */
     int fd;
 
     /* The event parameter from epoll_ctl(). */
     struct oe_epoll_event event;
-} pair_t;
+} mapping_t;
 
+/* The epoll device. */
 typedef struct _device
 {
     struct _oe_device base;
+
+    /* Should be DEVICE_MAGIC */
     uint32_t magic;
 } device_t;
 
 typedef struct _epoll
 {
     oe_fd_t base;
+
+    /* Should be EPOLL_MAGIC */
     uint32_t magic;
+
+    /* The host file descriptor created by epoll_create(). */
     oe_host_fd_t host_fd;
 
     /* Mappings added by epoll_ctl(OE_EPOLL_CTL_ADD) */
-    pair_t* map;
+    mapping_t* map;
     size_t map_size;
     size_t map_capacity;
+
+    /* Synchronizes access to this structure. */
     oe_spinlock_t lock;
 } epoll_t;
 
@@ -76,6 +85,7 @@ static epoll_t* _cast_epoll(const oe_fd_t* epoll_)
     return epoll;
 }
 
+/* Reserve space in the mapping array (does not change map_size). */
 static int _map_reserve(epoll_t* epoll, size_t new_capacity)
 {
     int ret = -1;
@@ -84,16 +94,16 @@ static int _map_reserve(epoll_t* epoll, size_t new_capacity)
 
     if (new_capacity > epoll->map_capacity)
     {
-        pair_t* p;
-        size_t n = new_capacity;
+        mapping_t* p;
+        const size_t n = new_capacity;
 
         /* Reallocate the table. */
-        if (!(p = oe_realloc(epoll->map, n * sizeof(pair_t))))
+        if (!(p = oe_realloc(epoll->map, n * sizeof(mapping_t))))
             goto done;
 
         /* Zero-fill the unused portion. */
         {
-            const size_t num_bytes = (n - epoll->map_size) * sizeof(pair_t);
+            const size_t num_bytes = (n - epoll->map_size) * sizeof(mapping_t);
             void* ptr = p + epoll->map_size;
 
             if (oe_memset_s(ptr, num_bytes, 0, num_bytes) != OE_OK)
@@ -101,7 +111,7 @@ static int _map_reserve(epoll_t* epoll, size_t new_capacity)
         }
 
         epoll->map = p;
-        epoll->map_capacity = new_capacity;
+        epoll->map_capacity = n;
     }
 
     ret = 0;
@@ -110,20 +120,24 @@ done:
     return ret;
 }
 
-static pair_t* _map_find(epoll_t* epoll, int fd)
+/* Find the mapping for the given file descriptor. */
+static mapping_t* _map_find(epoll_t* epoll, int fd)
 {
-    for (size_t i = 0; i < epoll->map_size; i++)
-    {
-        pair_t* pair = &epoll->map[i];
+    size_t i;
 
-        if (pair->fd == fd)
-            return pair;
+    for (i = 0; i < epoll->map_size; i++)
+    {
+        mapping_t* mapping = &epoll->map[i];
+
+        if (mapping->fd == fd)
+            return mapping;
     }
 
     /* Not found */
     return NULL;
 }
 
+/* Called by oe_epoll_create1(). */
 static oe_fd_t* _epoll_create1(oe_device_t* device_, int32_t flags)
 {
     oe_fd_t* ret = NULL;
@@ -142,13 +156,13 @@ static oe_fd_t* _epoll_create1(oe_device_t* device_, int32_t flags)
     if (oe_posix_epoll_create1_ocall(&retval, flags) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (retval != -1)
-    {
-        epoll->base.type = OE_FD_TYPE_EPOLL;
-        epoll->base.ops.epoll = _get_epoll_ops();
-        epoll->magic = EPOLL_MAGIC;
-        epoll->host_fd = retval;
-    }
+    if (retval < 0)
+        goto done;
+
+    epoll->base.type = OE_FD_TYPE_EPOLL;
+    epoll->base.ops.epoll = _get_epoll_ops();
+    epoll->magic = EPOLL_MAGIC;
+    epoll->host_fd = retval;
 
     ret = &epoll->base;
     epoll = NULL;
@@ -161,6 +175,7 @@ done:
     return ret;
 }
 
+/* Called by oe_epoll_create(). */
 static oe_fd_t* _epoll_create(oe_device_t* device_, int size)
 {
     /* The size argument is ignored according to the manpage. */
@@ -214,7 +229,7 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
-    if (retval != -1)
+    if (retval == 0)
     {
         oe_spin_lock(&epoll->lock);
         locked = true;
@@ -280,19 +295,19 @@ static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
         OE_RAISE_ERRNO(oe_errno);
     }
 
-    /* Modify the pair. */
+    /* Modify the mapping. */
     if (retval == 0)
     {
-        pair_t* pair;
+        mapping_t* mapping;
 
         oe_spin_lock(&epoll->lock);
         {
-            if ((pair = _map_find(epoll, fd)))
-                pair->event = *event;
+            if ((mapping = _map_find(epoll, fd)))
+                mapping->event = *event;
         }
         oe_spin_unlock(&epoll->lock);
 
-        if (!pair)
+        if (!mapping)
             OE_RAISE_ERRNO(OE_ENOENT);
     }
 
@@ -332,7 +347,7 @@ static int _epoll_ctl_del(epoll_t* epoll, int fd)
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
-    /* Delete the pair. */
+    /* Delete the mapping. */
     if (retval == 0)
     {
         bool found = false;
@@ -362,6 +377,7 @@ done:
     return ret;
 }
 
+/* Called by oe_epoll_ctl(). */
 static int _epoll_ctl(
     oe_fd_t* epoll_,
     int op,
@@ -407,6 +423,7 @@ done:
     return ret;
 }
 
+/* Called by oe_epoll_wait(). */
 static int _epoll_wait(
     oe_fd_t* epoll_,
     struct oe_epoll_event* events,
@@ -441,16 +458,16 @@ static int _epoll_wait(
         for (int i = 0; i < retval; i++)
         {
             struct oe_epoll_event* event = &events[i];
-            const pair_t* pair;
+            const mapping_t* mapping;
 
             oe_spin_lock(&epoll->lock);
             {
-                if ((pair = _map_find(epoll, event->data.fd)))
-                    event->data.u64 = pair->event.data.u64;
+                if ((mapping = _map_find(epoll, event->data.fd)))
+                    event->data.u64 = mapping->event.data.u64;
             }
             oe_spin_unlock(&epoll->lock);
 
-            if (!pair)
+            if (!mapping)
                 OE_RAISE_ERRNO(OE_ENOENT);
         }
     }
@@ -462,6 +479,7 @@ done:
     return ret;
 }
 
+/* Called by oe_close(). */
 static int _epoll_close(oe_fd_t* epoll_)
 {
     int ret = -1;
@@ -491,18 +509,17 @@ done:
     return ret;
 }
 
-static int _epoll_release(oe_device_t* epoll_)
+static int _epoll_release(oe_device_t* device_)
 {
     int ret = -1;
-    device_t* epoll = _cast_device(epoll_);
+    device_t* device = _cast_device(device_);
 
     oe_errno = 0;
 
-    if (!epoll)
+    if (!device)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Release the epoll_ object. */
-    oe_free(epoll);
+    oe_free(device);
 
     ret = 0;
 
@@ -575,10 +592,6 @@ static ssize_t _epoll_write(oe_fd_t* epoll_, const void* buf, size_t count)
 
     oe_errno = 0;
 
-    /* Check parameters. */
-    if (!epoll || (count && !buf))
-        OE_RAISE_ERRNO(OE_EINVAL);
-
     /* Call the host. */
     if (oe_posix_write_ocall(&ret, epoll->host_fd, buf, count) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -597,7 +610,7 @@ static ssize_t _epoll_readv(
     void* buf = NULL;
     size_t buf_size = 0;
 
-    if (!file || (!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if (!file || (iovcnt && !iov) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
@@ -633,7 +646,7 @@ static ssize_t _epoll_writev(
     void* buf = NULL;
     size_t buf_size = 0;
 
-    if (!file || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    if (!file || (iovcnt && !iov) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
@@ -692,12 +705,12 @@ static int _epoll_dup(oe_fd_t* epoll_, oe_fd_t** new_epoll_out)
 
         if (epoll->map && epoll->map_size)
         {
-            pair_t* map;
+            mapping_t* map;
 
-            if (!(map = oe_calloc(epoll->map_size, sizeof(pair_t))))
+            if (!(map = oe_calloc(epoll->map_size, sizeof(mapping_t))))
                 OE_RAISE_ERRNO(OE_ENOMEM);
 
-            memcpy(map, epoll->map, epoll->map_size * sizeof(pair_t));
+            memcpy(map, epoll->map, epoll->map_size * sizeof(mapping_t));
             new_epoll->map = map;
             new_epoll->map_size = epoll->map_size;
         }

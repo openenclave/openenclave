@@ -50,6 +50,7 @@ static sock_t* _new_sock(void)
     sock->base.type = OE_FD_TYPE_SOCKET;
     sock->base.ops.socket = _get_socket_ops();
     sock->magic = SOCK_MAGIC;
+    sock->host_fd = -1;
 
     return sock;
 }
@@ -95,10 +96,6 @@ static oe_fd_t* _hostsock_socket(
     if (!sock)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* ATTN: remove OE_AF_HOST */
-    if (domain == OE_AF_HOST)
-        domain = OE_AF_INET;
-
     if (!(new_sock = _new_sock()))
         OE_RAISE_ERRNO(OE_ENOMEM);
 
@@ -141,9 +138,6 @@ static ssize_t _hostsock_socketpair(
 
     if (!sock)
         OE_RAISE_ERRNO(OE_EINVAL);
-
-    if (domain == OE_AF_HOST)
-        domain = OE_AF_INET;
 
     /* Create the new socket devices. */
     {
@@ -192,12 +186,6 @@ done:
     return ret;
 }
 
-static void _fix_address_family(struct oe_sockaddr* addr)
-{
-    if (addr->sa_family == OE_AF_HOST)
-        addr->sa_family = OE_AF_INET;
-}
-
 typedef struct
 {
     struct oe_sockaddr addr;
@@ -220,8 +208,6 @@ static int _hostsock_connect(
 
     if (oe_memcpy_s(&buf, sizeof(buf), addr, addrlen) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
-
-    _fix_address_family(&buf.addr);
 
     /* Call host. */
     if (oe_posix_connect_ocall(&ret, sock->host_fd, &buf.addr, addrlen) !=
@@ -262,7 +248,6 @@ static oe_fd_t* _hostsock_accept(
         if (oe_memcpy_s(&buf, sizeof(buf), addr, *addrlen) != OE_OK)
             OE_RAISE_ERRNO(OE_EINVAL);
 
-        _fix_address_family(&buf.addr);
         addrlen_in = *addrlen;
     }
 
@@ -314,8 +299,6 @@ static int _hostsock_bind(
 
     if (oe_memcpy_s(&buf, sizeof(buf), addr, addrlen) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
-
-    _fix_address_family(&buf.addr);
 
     /* Call the host. */
     if (oe_posix_bind_ocall(&ret, sock->host_fd, &buf.addr, addrlen) != OE_OK)
