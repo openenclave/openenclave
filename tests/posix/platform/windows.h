@@ -8,8 +8,9 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <windows.h>
 #include <winsock2.h>
+
+#include <windows.h>
 
 typedef SOCKET socket_t;
 typedef int socklen_t;
