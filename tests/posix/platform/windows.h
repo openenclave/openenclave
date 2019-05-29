@@ -4,8 +4,6 @@
 #ifndef _PLATFORM_WINDOWS_H
 #define _PLATFORM_WINDOWS_H
 
-#define OE_NEED_STD_NAMES
-
 #pragma warning(disable : 4005)
 
 #include <openenclave/bits/defs.h>
