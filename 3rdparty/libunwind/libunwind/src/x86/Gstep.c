@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "offsets.h"
 
-PROTECTED int
+int
 unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
@@ -55,9 +55,9 @@ unw_step (unw_cursor_t *cursor)
 
       Debug (13, "dwarf_step() failed (ret=%d), trying frame-chain\n", ret);
 
-      if (unw_is_signal_frame (cursor))
+      if (unw_is_signal_frame (cursor) > 0)
         {
-          ret = unw_handle_signal_frame(cursor);
+          ret = x86_handle_signal_frame(cursor);
           if (ret < 0)
             {
               Debug (2, "returning 0\n");
@@ -90,7 +90,6 @@ unw_step (unw_cursor_t *cursor)
           c->dwarf.loc[EIP] = eip_loc;
           c->dwarf.use_prev_instr = 1;
         }
-      c->dwarf.ret_addr_column = EIP;
 
       if (!DWARF_IS_NULL_LOC (c->dwarf.loc[EBP]))
         {

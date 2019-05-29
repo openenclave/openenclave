@@ -40,6 +40,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 typedef enum
   {
+    UNW_X86_64_FRAME_ALIGNED = -3,       /* frame stack pointer aligned */
     UNW_X86_64_FRAME_STANDARD = -2,     /* regular rbp, rsp +/- offset */
     UNW_X86_64_FRAME_SIGRETURN = -1,    /* special sigreturn frame */
     UNW_X86_64_FRAME_OTHER = 0,         /* not cacheable (special or unrecognised) */
@@ -50,10 +51,10 @@ unw_tdep_frame_type_t;
 typedef struct
   {
     uint64_t virtual_address;
-    int64_t frame_type     : 2;  /* unw_tdep_frame_type_t classification */
+    int64_t frame_type     : 3;  /* unw_tdep_frame_type_t classification */
     int64_t last_frame     : 1;  /* non-zero if last frame in chain */
     int64_t cfa_reg_rsp    : 1;  /* cfa dwarf base register is rsp vs. rbp */
-    int64_t cfa_reg_offset : 30; /* cfa is at this offset from base register value */
+    int64_t cfa_reg_offset : 29; /* cfa is at this offset from base register value */
     int64_t rbp_cfa_offset : 15; /* rbp saved at this offset from cfa (-1 = not saved) */
     int64_t rsp_cfa_offset : 15; /* rsp saved at this offset from cfa (-1 = not saved) */
   }
@@ -196,16 +197,17 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_search_unwind_table        dwarf_search_unwind_table
 #define tdep_find_unwind_table          dwarf_find_unwind_table
 #define tdep_get_elf_image              UNW_ARCH_OBJ(get_elf_image)
+#define tdep_get_exe_image_path         UNW_ARCH_OBJ(get_exe_image_path)
 #define tdep_access_reg                 UNW_OBJ(access_reg)
 #define tdep_access_fpreg               UNW_OBJ(access_fpreg)
-#if defined(__linux__) || defined(__sun)
+#if __linux__
 # define tdep_fetch_frame               UNW_OBJ(fetch_frame)
 # define tdep_cache_frame               UNW_OBJ(cache_frame)
 # define tdep_reuse_frame               UNW_OBJ(reuse_frame)
 #else
 # define tdep_fetch_frame(c,ip,n)       do {} while(0)
-# define tdep_cache_frame(c,rs)         do {} while(0)
-# define tdep_reuse_frame(c,rs)         do {} while(0)
+# define tdep_cache_frame(c)            0
+# define tdep_reuse_frame(c,frame)      do {} while(0)
 #endif
 #define tdep_stash_frame                UNW_OBJ(stash_frame)
 #define tdep_trace                      UNW_OBJ(tdep_trace)
@@ -241,6 +243,7 @@ extern void *x86_64_r_uc_addr (ucontext_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
                                unsigned long *segbase, unsigned long *mapoff,
                                char *path, size_t pathlen);
+extern void tdep_get_exe_image_path (char *path);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
                             unw_word_t *valp, int write);
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
@@ -248,10 +251,9 @@ extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
 #if __linux__
 extern void tdep_fetch_frame (struct dwarf_cursor *c, unw_word_t ip,
                               int need_unwind_info);
-extern void tdep_cache_frame (struct dwarf_cursor *c,
-                              struct dwarf_reg_state *rs);
+extern int tdep_cache_frame (struct dwarf_cursor *c);
 extern void tdep_reuse_frame (struct dwarf_cursor *c,
-                              struct dwarf_reg_state *rs);
+                              int frame);
 extern void tdep_stash_frame (struct dwarf_cursor *c,
                               struct dwarf_reg_state *rs);
 #endif
