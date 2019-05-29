@@ -7,5 +7,5 @@ struct __OE_DIRENT
     oe_off_t d_off;
     uint16_t d_reclen;
     uint8_t d_type;
-    char d_name[256];
+    char d_name[OE_NAME_MAX + 1];
 };

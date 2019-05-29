@@ -28,11 +28,13 @@ enclave {
     include "openenclave/corelibc/sys/socket.h"
     include "openenclave/corelibc/sys/utsname.h"
     include "openenclave/corelibc/sys/stat.h"
-    include "openenclave/internal/device/types.h"
+    include "openenclave/corelibc/dirent.h"
+    include "openenclave/corelibc/poll.h"
+    include "openenclave/internal/posix/types.h"
 
     trusted {
 
-        public int oe_posix_signal_notify_ecall(int signum);
+        public void oe_posix_stub_ecall();
     };
 
     untrusted {
@@ -59,6 +61,20 @@ enclave {
             size_t count)
             propagate_errno;
 
+        ssize_t oe_posix_readv_ocall(
+            oe_host_fd_t fd,
+            [in, out, size=iov_buf_size] void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        ssize_t oe_posix_writev_ocall(
+            oe_host_fd_t fd,
+            [in, size=iov_buf_size] const void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
         oe_off_t oe_posix_lseek_ocall(
             oe_host_fd_t fd,
             oe_off_t offset,
@@ -77,14 +93,10 @@ enclave {
             [in, string] const char* name)
             propagate_errno;
 
+        /* Returns 0 if entry found, 1 if none found, and -1 on error. */
         int oe_posix_readdir_ocall(
             uint64_t dirp,
-            [out, count=1] uint64_t* d_ino,
-            [out, count=1] int64_t* d_off,
-            [out, count=1] uint16_t* d_reclen,
-            [out, count=1] uint8_t* d_type,
-            [out, count=d_namelen] char* d_name,
-            size_t d_namelen)
+            [out, count=1] struct oe_dirent* entry)
             propagate_errno;
 
         void oe_posix_rewinddir_ocall(
@@ -142,7 +154,7 @@ enclave {
             int domain,
             int type,
             int protocol,
-            [in] oe_host_fd_t sv[2])
+            [out] oe_host_fd_t sv[2])
             propagate_errno;
 
         int oe_posix_connect_ocall(
@@ -174,8 +186,9 @@ enclave {
             [out, size=msg_namelen] void* msg_name,
             oe_socklen_t msg_namelen,
             [out, count=1] oe_socklen_t* msg_namelen_out,
-            [out, size=msg_buflen] void* msg_buf,
-            size_t msg_buflen,
+            [in, out, size=msg_iov_buf_size] void* msg_iov_buf,
+            size_t msg_iovlen,
+            size_t msg_iov_buf_size,
             [out, size=msg_controllen] void* msg_control,
             size_t msg_controllen,
             [out, count=1] size_t* msg_controllen_out,
@@ -186,8 +199,9 @@ enclave {
             oe_host_fd_t sockfd,
             [in, size=msg_namelen] const void* msg_name,
             oe_socklen_t msg_namelen,
-            [in, size=msg_buflen] const void* msg_buf,
-            size_t msg_buflen,
+            [in, size=msg_iov_buf_size] void* msg_iov_buf,
+            size_t msg_iovlen,
+            size_t msg_iov_buf_size,
             [in, size=msg_controllen] const void* msg_control,
             size_t msg_controllen,
             int flags)
@@ -226,6 +240,20 @@ enclave {
             oe_socklen_t addrlen)
             propagate_errno;
 
+        ssize_t oe_posix_recvv_ocall(
+            oe_host_fd_t fd,
+            [in, out, size=iov_buf_size] void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        ssize_t oe_posix_sendv_ocall(
+            oe_host_fd_t fd,
+            [in, size=iov_buf_size] const void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
         int oe_posix_shutdown_ocall(
             oe_host_fd_t sockfd,
             int how)
@@ -234,6 +262,12 @@ enclave {
         int oe_posix_fcntl_ocall(
             oe_host_fd_t fd,
             int cmd,
+            uint64_t arg)
+            propagate_errno;
+
+        int oe_posix_ioctl_ocall(
+            oe_host_fd_t fd,
+            uint64_t request,
             uint64_t arg)
             propagate_errno;
 
@@ -277,10 +311,11 @@ enclave {
             int signum)
             propagate_errno;
 
-        uint64_t oe_posix_getaddrinfo_open_ocall(
+        int oe_posix_getaddrinfo_open_ocall(
             [in, string] const char* node,
             [in, string] const char* service,
-            [in, count=1] const struct oe_addrinfo* hints)
+            [in, count=1] const struct oe_addrinfo* hints,
+            [out, count=1] uint64_t* handle)
             propagate_errno;
 
         int oe_posix_getaddrinfo_read_ocall(
@@ -311,9 +346,6 @@ enclave {
             int flags)
             propagate_errno;
 
-        int oe_posix_shutdown_resolver_device_ocall()
-            propagate_errno;
-
         oe_host_fd_t oe_posix_epoll_create1_ocall(
             int flags)
             propagate_errno;
@@ -341,6 +373,12 @@ enclave {
 
         int oe_posix_shutdown_polling_device_ocall(
             oe_host_fd_t fd)
+            propagate_errno;
+
+        int oe_posix_poll_ocall(
+            [in, out, count=nfds] struct oe_host_pollfd* host_fds,
+            oe_nfds_t nfds,
+            int timeout)
             propagate_errno;
 
         int oe_posix_getpid();

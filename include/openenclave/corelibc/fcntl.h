@@ -61,6 +61,9 @@ OE_EXTERNC_BEGIN
 #define OE_F_GETOWNER_UIDS 17
 // clang-format on
 
+#define OE_AT_FDCWD (-100)
+#define OE_AT_REMOVEDIR 0x200
+
 int oe_open(const char* pathname, int flags, oe_mode_t mode);
 
 int oe_open_d(uint64_t devid, const char* pathname, int flags, oe_mode_t mode);
@@ -127,6 +130,9 @@ OE_INLINE int oe_fcntl(int fd, int cmd, ...)
 #define F_SETOWN_EX OE_F_SETOWN_EX
 #define F_GETOWN_EX OE_F_GETOWN_EX
 #define F_GETOWNER_UIDS OE_F_GETOWNER_UIDS
+
+#define AT_FDCWD OE_AT_FDCWD
+#define AT_REMOVEDIR OE_AT_REMOVEDIR
 
 OE_INLINE int open(const char* pathname, int flags, mode_t mode)
 {

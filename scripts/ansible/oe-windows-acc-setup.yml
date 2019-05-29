@@ -17,3 +17,7 @@
     - import_role:
         name: windows/openenclave
         tasks_from: validation.yml
+
+    - import_role:
+        name: windows/az-dcap-client
+        tasks_from: validation.yml

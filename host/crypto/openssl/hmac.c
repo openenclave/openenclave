@@ -55,7 +55,7 @@ oe_result_t oe_hmac_sha256_init(
         HMAC_Init_ex(ctx, (const void*)key, (int)keysize, EVP_sha256(), NULL);
 
     if (openssl_result == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     ((oe_hmac_sha256_context_impl_t*)context)->ctx = ctx;
     ctx = NULL;
@@ -81,7 +81,7 @@ oe_result_t oe_hmac_sha256_update(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (HMAC_Update(impl->ctx, (const uint8_t*)data, size) == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     result = OE_OK;
 
@@ -102,10 +102,10 @@ oe_result_t oe_hmac_sha256_final(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (HMAC_Final(impl->ctx, sha256->buf, &hmac_size) == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (hmac_size != sizeof(sha256->buf))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     result = OE_OK;
 

@@ -738,7 +738,6 @@ OE_CHECK_SIZE(sizeof(sgx_report_t), 432);
 **
 **==============================================================================
 */
-#if defined OE_USE_LIBSGX
 
 OE_PACK_BEGIN
 typedef struct _sgx_quote
@@ -890,47 +889,6 @@ typedef enum _oe_sgx_pckid
 } oe_sgx_pckid_t;
 
 OE_STATIC_ASSERT(sizeof(oe_sgx_pckid_t) == sizeof(unsigned int));
-
-#else
-
-OE_PACK_BEGIN
-typedef struct _sgx_quote
-{
-    /* (0) */
-    uint16_t version;
-
-    /* (2) */
-    uint16_t sign_type;
-
-    /* (4) */
-    sgx_epid_group_id_t epid_group_id;
-
-    /* (8) */
-    uint16_t qe_svn;
-
-    /* (10) */
-    uint16_t pce_svn;
-
-    /* (12) */
-    uint32_t xeid;
-
-    /* (16) */
-    uint8_t basename[32];
-
-    /* (48) */
-    sgx_report_body_t report_body;
-
-    /* (432) */
-    uint32_t signature_len;
-
-    /* (436) signature array (varying length) */
-    OE_ZERO_SIZED_ARRAY uint8_t signature[];
-} sgx_quote_t;
-OE_PACK_END
-
-OE_CHECK_SIZE(sizeof(sgx_quote_t), 436);
-
-#endif
 
 #define OE_SGX_QUOTE_VERSION (3)
 

@@ -100,6 +100,7 @@ typedef enum _oe_func
     OE_OCALL_LOG,
     /* Caution: always add new OCALL function numbers here */
 
+    OE_OCALL_MAX, /* This value is never used */
     __OE_FUNC_MAX = OE_ENUM_MAX,
 } oe_func_t;
 

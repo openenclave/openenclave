@@ -13,8 +13,6 @@
 
 OE_EXTERNC_BEGIN
 
-#ifdef OE_USE_LIBSGX
-
 typedef enum _oe_tcb_level_status
 {
     OE_TCB_LEVEL_STATUS_UNKNOWN,
@@ -100,7 +98,6 @@ oe_result_t oe_parse_qe_identity_info_json(
     const uint8_t* info_json,
     size_t info_json_size,
     oe_parsed_qe_identity_info_t* parsed_info);
-#endif
 
 OE_EXTERNC_END
 

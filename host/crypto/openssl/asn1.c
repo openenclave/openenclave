@@ -133,11 +133,11 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
 
         /* Convert OID to an ASN1 object */
         if (!(obj = d2i_ASN1_OBJECT(&obj, &ptr, (long)oe_asn1_remaining(asn1))))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Convert OID to string format */
         if (!OBJ_obj2txt(oid->buf, sizeof(oe_oid_string_t), obj, 1))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         asn1->ptr = ptr;
     }

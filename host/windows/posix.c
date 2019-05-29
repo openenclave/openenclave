@@ -78,6 +78,24 @@ ssize_t oe_posix_write_ocall(oe_host_fd_t fd, const void* buf, size_t count)
     return _write((int)fd, buf, (uint32_t)count);
 }
 
+ssize_t oe_posix_readv_ocall(
+    oe_host_fd_t fd,
+    void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    PANIC;
+}
+
+ssize_t oe_posix_writev_ocall(
+    oe_host_fd_t fd,
+    const void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    PANIC;
+}
+
 oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
 {
     PANIC;
@@ -281,12 +299,35 @@ ssize_t oe_posix_sendto_ocall(
     PANIC;
 }
 
+ssize_t oe_posix_recvv_ocall(
+    oe_host_fd_t fd,
+    void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    PANIC;
+}
+
+ssize_t oe_posix_sendv_ocall(
+    oe_host_fd_t fd,
+    const void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    PANIC;
+}
+
 int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how)
 {
     PANIC;
 }
 
 int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
+{
+    PANIC;
+}
+
+int oe_posix_ioctl_ocall(oe_host_fd_t fd, uint64_t request, uint64_t arg)
 {
     PANIC;
 }
@@ -356,10 +397,11 @@ int oe_posix_kill_ocall(int pid, int signum)
 **==============================================================================
 */
 
-uint64_t oe_posix_getaddrinfo_open_ocall(
+int oe_posix_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
-    const struct oe_addrinfo* hints)
+    const struct oe_addrinfo* hints,
+    uint64_t* handle_out)
 {
     PANIC;
 }
@@ -405,7 +447,7 @@ int oe_posix_shutdown_resolver_device_ocall()
 /*
 **==============================================================================
 **
-** Polling:
+** epoll:
 **
 **==============================================================================
 */
@@ -444,6 +486,22 @@ int oe_posix_epoll_close_ocall(oe_host_fd_t epfd)
 }
 
 int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
+{
+    PANIC;
+}
+
+/*
+**==============================================================================
+**
+** poll:
+**
+**==============================================================================
+*/
+
+int oe_posix_poll_ocall(
+    struct oe_host_pollfd* host_fds,
+    oe_nfds_t nfds,
+    int timeout)
 {
     PANIC;
 }

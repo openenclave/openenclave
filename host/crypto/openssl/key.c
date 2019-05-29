@@ -70,15 +70,15 @@ oe_result_t oe_private_key_read_pem(
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Read the key object */
     if (!(pkey = PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Verify that it is the right key type */
     if (EVP_PKEY_id(pkey) != key_type)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the key */
     impl->magic = magic;
@@ -127,15 +127,15 @@ oe_result_t oe_public_key_read_pem(
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Read the key object */
     if (!(pkey = PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Verify that it is the right key type */
     if (EVP_PKEY_id(pkey) != key_type)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the key */
     impl->magic = magic;
@@ -177,21 +177,21 @@ oe_result_t oe_private_key_write_pem(
 
     /* Create memory BIO object to write key to */
     if (!(bio = BIO_new(BIO_s_mem())))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Write key to BIO */
     OE_CHECK(private_key_write_pem_callback(bio, impl->pkey));
 
     /* Write a NULL terminator onto BIO */
     if (BIO_write(bio, &null_terminator, sizeof(null_terminator)) <= 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Copy the BIO onto caller's memory */
     {
         BUF_MEM* mem;
 
         if (!BIO_get_mem_ptr(bio, &mem))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* If buffer is too small */
         if (*size < mem->length)
@@ -236,22 +236,22 @@ oe_result_t oe_public_key_write_pem(
 
     /* Create memory BIO object to write key to */
     if (!(bio = BIO_new(BIO_s_mem())))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Write key to BIO */
     if (!PEM_write_bio_PUBKEY(bio, impl->pkey))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Write a NULL terminator onto BIO */
     if (BIO_write(bio, &null_terminator, sizeof(null_terminator)) <= 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Copy the BIO onto caller's memory */
     {
         BUF_MEM* mem;
 
         if (!BIO_get_mem_ptr(bio, &mem))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* If buffer is too small */
         if (*size < mem->length)
@@ -358,22 +358,22 @@ oe_result_t oe_private_key_sign(
 
     /* Create signing context */
     if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Initialize the signing context */
     if (EVP_PKEY_sign_init(ctx) <= 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Set the MD type for the signing operation */
     if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Determine the size of the signature; fail if buffer is too small */
     {
         size_t size;
 
         if (EVP_PKEY_sign(ctx, NULL, &size, hash_data, hash_size) <= 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (size > *signature_size)
         {
@@ -387,7 +387,7 @@ oe_result_t oe_private_key_sign(
     /* Compute the signature */
     if (EVP_PKEY_sign(ctx, signature, signature_size, hash_data, hash_size) <=
         0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     result = OE_OK;
 
@@ -428,15 +428,15 @@ oe_result_t oe_public_key_verify(
 
     /* Create signing context */
     if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Initialize the signing context */
     if (EVP_PKEY_verify_init(ctx) <= 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Set the MD type for the signing operation */
     if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Compute the signature */
     if (EVP_PKEY_verify(ctx, signature, signature_size, hash_data, hash_size) <=

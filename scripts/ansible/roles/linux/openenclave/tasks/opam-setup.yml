@@ -44,7 +44,7 @@
         # error out when installing ocamlformat package.
         DISABLE_SANDBOXING="--disable-sandboxing"
     fi
-    opam init --no-setup --comp={{ ocaml_version }} --root={{ opam_root }} $DISABLE_SANDBOXING
+    opam init --no-setup --root={{ opam_root }} $DISABLE_SANDBOXING
   args:
     executable: /bin/bash
   retries: 10
@@ -57,12 +57,12 @@
     dest: /etc/profile.d/opam-env.sh
     create: yes
     block: |
-      export PATH="{{ opam_root }}/{{ ocaml_version }}/bin:{{ ansible_env.PATH }}"
+      export PATH="{{ opam_root }}/default/bin:{{ ansible_env.PATH }}"
       export OPAMROOT="{{ opam_root }}"
-      export OPAM_SWITCH_PREFIX="{{ opam_root }}/{{ ocaml_version }}"
-      export CAML_LD_LIBRARY_PATH="{{ opam_root }}/{{ ocaml_version }}/lib/stublibs"
-      export OCAML_TOPLEVEL_PATH="{{ opam_root }}/{{ ocaml_version }}/lib/toplevel"
-      export MANPATH="{{ opam_root }}/{{ ocaml_version }}/man"
+      export OPAM_SWITCH_PREFIX="{{ opam_root }}/default"
+      export CAML_LD_LIBRARY_PATH="{{ opam_root }}/default/lib/stublibs"
+      export OCAML_TOPLEVEL_PATH="{{ opam_root }}/default/lib/toplevel"
+      export MANPATH="{{ opam_root }}/default/man"
 
 - name: Install ocamlformat via OPAM
   shell: "source /etc/profile && opam install ocamlformat -y"
@@ -72,3 +72,10 @@
   delay: 5
   register: result
   until: result.rc == 0
+
+- name: Create symbolic link for ocamlformat into /usr/local/bin
+  file:
+    src: "{{ opam_root }}/default/bin/ocamlformat"
+    dest: "/usr/local/bin/ocamlformat"
+    force: yes
+    state: link

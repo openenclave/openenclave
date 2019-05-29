@@ -3,7 +3,7 @@
 
 /* Ignore unused-variable warning in system header */
 #pragma GCC diagnostic ignored "-Wunused-variable"
-#include <openenclave/internal/random.h>
+#include <openenclave/internal/rdrand.h>
 #include <stdlib.h>
 /*
  * Random implementation needed by libcxx as alternative to device oriented

@@ -51,10 +51,10 @@ static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
     EC_KEY* ec = NULL;
 
     if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     result = OE_OK;
 
@@ -100,21 +100,21 @@ static oe_result_t _generate_key_pair(
     {
         /* Create the private key */
         if (!(ec_private = EC_KEY_new_by_curve_name(nid)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Set the EC named-curve flag */
         EC_KEY_set_asn1_flag(ec_private, OPENSSL_EC_NAMED_CURVE);
 
         /* Generate the public/private key pair */
         if (!EC_KEY_generate_key(ec_private))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
     }
 
     /* Create the public EC key */
     {
         /* Create the public key */
         if (!(ec_public = EC_KEY_new_by_curve_name(nid)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Set the EC named-curve flag */
         EC_KEY_set_asn1_flag(ec_public, OPENSSL_EC_NAMED_CURVE);
@@ -124,12 +124,12 @@ static oe_result_t _generate_key_pair(
                   EC_KEY_get0_public_key(ec_private),
                   EC_KEY_get0_group(ec_public))))
         {
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
         }
 
         /* Set the public key */
         if (!EC_KEY_set_public_key(ec_public, point))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Keep from being freed below */
         point = NULL;
@@ -139,11 +139,11 @@ static oe_result_t _generate_key_pair(
     {
         /* Create the private key structure */
         if (!(pkey_private = EVP_PKEY_new()))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the private key from the generated key pair */
         if (!EVP_PKEY_assign_EC_KEY(pkey_private, ec_private))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the private key */
         oe_private_key_init(private_key, pkey_private, _PRIVATE_KEY_MAGIC);
@@ -157,11 +157,11 @@ static oe_result_t _generate_key_pair(
     {
         /* Create the public key structure */
         if (!(pkey_public = EVP_PKEY_new()))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the public key from the generated key pair */
         if (!EVP_PKEY_assign_EC_KEY(pkey_public, ec_public))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the public key */
         oe_public_key_init(public_key, pkey_public, _PUBLIC_KEY_MAGIC);
@@ -225,7 +225,7 @@ static oe_result_t _public_key_equal(
         const EC_POINT* point2 = EC_KEY_get0_public_key(ec2);
 
         if (!ec1 || !ec2 || !group1 || !group2 || !point1 || !point2)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Compare group and public key point */
         if (EC_GROUP_cmp(group1, group2, NULL) == 0 &&
@@ -394,7 +394,7 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     /* Initialize the EC key. */
     key = EC_KEY_new_by_curve_name(_get_nid(curve));
     if (key == NULL)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Set the EC named-curve flag. */
     EC_KEY_set_asn1_flag(key, OPENSSL_EC_NAMED_CURVE);
@@ -403,14 +403,14 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     private_bn = BN_bin2bn(private_key_buf, (int)private_key_buf_size, NULL);
 
     if (private_bn == NULL)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (EC_KEY_set_private_key(key, private_bn) == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     public_point = EC_POINT_new(EC_KEY_get0_group(key));
     if (public_point == NULL)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /*
      * To get the public key, we perform the elliptical curve point
@@ -420,29 +420,29 @@ oe_result_t oe_ec_generate_key_pair_from_private(
     openssl_result = EC_POINT_mul(
         EC_KEY_get0_group(key), public_point, private_bn, NULL, NULL, NULL);
     if (openssl_result == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Sanity check the params. */
     if (EC_KEY_set_public_key(key, public_point) == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (EC_KEY_check_key(key) == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Map the key to the EVP_PKEY wrapper. */
     public_pkey = EVP_PKEY_new();
     if (public_pkey == NULL)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (EVP_PKEY_set1_EC_KEY(public_pkey, key) == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     private_pkey = EVP_PKEY_new();
     if (private_pkey == NULL)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (EVP_PKEY_set1_EC_KEY(private_pkey, key) == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     oe_ec_public_key_init(public_key, public_pkey);
     oe_ec_private_key_init(private_key, private_pkey);
@@ -509,31 +509,31 @@ oe_result_t oe_ec_public_key_from_coordinates(
     /* Create the public EC key */
     {
         if (!(group = EC_GROUP_new_by_curve_name(nid)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (!(ec = EC_KEY_new()))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (!(EC_KEY_set_group(ec, group)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (!(point = EC_POINT_new(group)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (!(x = BN_new()) || !(y = BN_new()))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (!(BN_bin2bn(x_data, (int)x_size, x)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (!(BN_bin2bn(y_data, (int)y_size, y)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (!EC_POINT_set_affine_coordinates_GFp(group, point, x, y, NULL))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (!EC_KEY_set_public_key(ec, point))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         point = NULL;
     }
@@ -542,12 +542,12 @@ oe_result_t oe_ec_public_key_from_coordinates(
     {
         /* Create the public key structure */
         if (!(pkey = EVP_PKEY_new()))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the public key from the generated key pair */
         {
             if (!EVP_PKEY_assign_EC_KEY(pkey, ec))
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE(OE_CRYPTO_ERROR);
 
             ec = NULL;
         }
@@ -609,23 +609,23 @@ oe_result_t oe_ecdsa_signature_write_der(
 
     /* Create new signature object */
     if (!(sig = ECDSA_SIG_new()))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     sig_r = BN_new();
     sig_s = BN_new();
     /* Convert R to big number object */
     if (!(BN_bin2bn(data, (int)size, (BIGNUM*)sig_r)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Convert S to big number object */
     if (!(BN_bin2bn(s_data, (int)s_size, (BIGNUM*)sig_s)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     ECDSA_SIG_set0(sig, sig_r, sig_s);
 
     /* Determine the size of the binary signature */
     if ((sig_len = i2d_ECDSA_SIG(sig, NULL)) <= 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Copy binary signature to output buffer */
     if (signature && ((size_t)sig_len <= *signature_size))
@@ -633,7 +633,7 @@ oe_result_t oe_ecdsa_signature_write_der(
         uint8_t* p = signature;
 
         if (!i2d_ECDSA_SIG(sig, &p))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         if (p - signature != sig_len)
             OE_RAISE(OE_FAILURE);
