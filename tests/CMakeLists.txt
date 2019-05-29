@@ -16,6 +16,7 @@ if (WIN32_SIMULATION)
   message("WIN32_SIMULATION set, failing tests are skipped")
 endif ()
 
+add_subdirectory(lockless_queue)
 add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)
