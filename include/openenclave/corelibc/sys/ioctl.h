@@ -18,6 +18,8 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
+#define OE_TIOCGWINSZ 0x5413
+
 int __oe_ioctl(int fd, unsigned long request, uint64_t arg);
 
 int oe_ioctl(int fd, unsigned long request, ...);
@@ -31,6 +33,8 @@ int oe_ioctl(int fd, unsigned long request, ...);
 */
 
 #if defined(OE_NEED_STDC_NAMES)
+
+#define TIOCGWINSZ OE_TIOCGWINSZ
 
 OE_INLINE int ioctl(int fd, unsigned long request, ...)
 {

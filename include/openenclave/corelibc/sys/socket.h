@@ -67,7 +67,6 @@ OE_EXTERNC_BEGIN
 #define OE_PF_KCM 41           /* Kernel Connection Multiplexor.  */
 #define OE_PF_QIPCRTR 42       /* Qualcomm IPC Router.  */
 #define OE_PF_SMC 43           /* SMC sockets.  */
-#define OE_PF_ENCLAVE 50       /* secure sockets */
 #define OE_PF_HOST 51          /* non-secure host sockets */
 #define OE_PF_MAX 51           /* For now..  */
 
@@ -119,7 +118,6 @@ OE_EXTERNC_BEGIN
 #define OE_AF_KCM OE_PF_KCM
 #define OE_AF_QIPCRTR OE_PF_QIPCRTR
 #define OE_AF_SMC OE_PF_SMC
-#define OE_AF_ENCLAVE OE_PF_ENCLAVE
 #define OE_AF_HOST OE_PF_HOST
 #define OE_AF_MAX OE_PF_MAX
 
