@@ -88,5 +88,14 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         OE_TEST(deepcopy_nested(enclave, &n) == OE_OK);
     }
 
+    {
+        OE_TEST(deepcopy_null(enclave, nullptr) == OE_OK);
+    }
+
+    {
+        CountStruct s{7, 64, nullptr};
+        OE_TEST(deepcopy_null(enclave, &s) == OE_OK);
+    }
+
     printf("=== test_deepcopy_edl_ecalls passed\n");
 }
