@@ -62,9 +62,11 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
     void* ret;
 
 #if defined(_WIN32)
+printf("p1\n");
     server = CreateThread(
         NULL, 0, (LPTHREAD_START_ROUTINE)server_proc, NULL, 0, NULL);
     OE_TEST(server != INVALID_HANDLE_VALUE);
+printf("p2\n");
 #else
     if (pthread_create(&server, NULL, server_proc, NULL) != 0)
     {
@@ -75,9 +77,11 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
     sleep(1);
 
 #if defined(_WIN32)
+printf("p3\n");
     client = CreateThread(
         NULL, 0, (LPTHREAD_START_ROUTINE)client_proc, NULL, 0, NULL);
     OE_TEST(client != INVALID_HANDLE_VALUE);
+printf("p4\n");
 #else
     if (pthread_create(&client, NULL, client_proc, NULL) != 0)
     {
@@ -86,8 +90,8 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
 #endif
 
 #if defined(_WIN32)
-    ret = WaitForSingleObject(client, INFINITE);
-    ret = WaitForSingleObject(server, INFINITE);
+    ret = WaitForSingleObject(client, 30000);
+    ret = WaitForSingleObject(server, 30000);
 #else
     pthread_join(client, &ret);
     pthread_join(server, &ret);
