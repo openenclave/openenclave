@@ -11,7 +11,7 @@
 #include <openenclave/internal/utils.h>
 #include "key.h"
 #include "pem.h"
-#include "random.h"
+#include "random_internal.h"
 
 static uint64_t _PRIVATE_KEY_MAGIC = 0xf12c37bb02814eeb;
 static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;

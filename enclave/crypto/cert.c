@@ -28,7 +28,7 @@
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
-#include "random.h"
+#include "random_internal.h"
 
 /*
 **==============================================================================
