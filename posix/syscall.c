@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safemath.h>
 #include <openenclave/corelibc/dirent.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/fcntl.h>
@@ -49,6 +50,7 @@ static long _syscall(
     /* Handle the software system call. */
     switch (num)
     {
+#if defined(OE_SYS_creat)
         case OE_SYS_creat:
         {
             const char* pathname = (const char*)arg1;
@@ -68,11 +70,34 @@ static long _syscall(
 
             goto done;
         }
+#endif
+#if defined(OE_SYS_open)
         case OE_SYS_open:
         {
             const char* pathname = (const char*)arg1;
             int flags = (int)arg2;
             uint32_t mode = (uint32_t)arg3;
+
+            ret = oe_open(pathname, flags, mode);
+
+            if (ret < 0 && oe_errno == OE_ENOENT)
+                goto done;
+
+            goto done;
+        }
+#endif
+        case OE_SYS_openat:
+        {
+            int dirfd = (int)arg1;
+            const char* pathname = (const char*)arg2;
+            int flags = (int)arg3;
+            uint32_t mode = (uint32_t)arg4;
+
+            if (dirfd != OE_AT_FDCWD)
+            {
+                oe_errno = OE_EBADF;
+                goto done;
+            }
 
             ret = oe_open(pathname, flags, mode);
 
@@ -139,14 +164,32 @@ static long _syscall(
             ret = oe_dup(fd);
             goto done;
         }
+#if defined(OE_SYS_dup2)
         case OE_SYS_dup2:
         {
-            int fd = (int)arg1;
+            int oldfd = (int)arg1;
             int newfd = (int)arg2;
 
-            ret = oe_dup2(fd, newfd);
+            ret = oe_dup2(oldfd, newfd);
             goto done;
         }
+#endif
+        case OE_SYS_dup3:
+        {
+            int oldfd = (int)arg1;
+            int newfd = (int)arg2;
+            int flags = (int)arg3;
+
+            if (flags != 0)
+            {
+                oe_errno = OE_EINVAL;
+                goto done;
+            }
+
+            ret = oe_dup2(oldfd, newfd);
+            goto done;
+        }
+#if defined(OE_SYS_stat)
         case OE_SYS_stat:
         {
             const char* pathname = (const char*)arg1;
@@ -154,14 +197,68 @@ static long _syscall(
             ret = oe_stat(pathname, buf_out);
             goto done;
         }
+#endif
+        case OE_SYS_newfstatat:
+        {
+            int dirfd = (int)arg1;
+            const char* pathname = (const char*)arg2;
+            struct oe_stat* buf_out = (struct oe_stat*)arg3;
+            int flags = (int)arg4;
+
+            if (dirfd != OE_AT_FDCWD)
+            {
+                oe_errno = OE_EBADF;
+                goto done;
+            }
+
+            if (flags != 0)
+            {
+                oe_errno = OE_EINVAL;
+                goto done;
+            }
+
+            ret = oe_stat(pathname, buf_out);
+            goto done;
+        }
+#if defined(OE_SYS_link)
         case OE_SYS_link:
         {
             const char* oldpath = (const char*)arg1;
             const char* newpath = (const char*)arg2;
+            ret = oe_link(oldpath, newpath);
+            goto done;
+        }
+#endif
+        case OE_SYS_linkat:
+        {
+            int olddirfd = (int)arg1;
+            const char* oldpath = (const char*)arg2;
+            int newdirfd = (int)arg3;
+            const char* newpath = (const char*)arg4;
+            int flags = (int)arg5;
+
+            if (olddirfd != OE_AT_FDCWD)
+            {
+                oe_errno = OE_EBADF;
+                goto done;
+            }
+
+            if (newdirfd != OE_AT_FDCWD)
+            {
+                oe_errno = OE_EBADF;
+                goto done;
+            }
+
+            if (flags != 0)
+            {
+                oe_errno = OE_EINVAL;
+                goto done;
+            }
 
             ret = oe_link(oldpath, newpath);
             goto done;
         }
+#if defined(OE_SYS_unlink)
         case OE_SYS_unlink:
         {
             const char* pathname = (const char*)arg1;
@@ -169,10 +266,67 @@ static long _syscall(
             ret = oe_unlink(pathname);
             goto done;
         }
+#endif
+        case OE_SYS_unlinkat:
+        {
+            int dirfd = (int)arg1;
+            const char* pathname = (const char*)arg2;
+            int flags = (int)arg3;
+
+            if (dirfd != OE_AT_FDCWD)
+            {
+                oe_errno = OE_EBADF;
+                goto done;
+            }
+
+            if (flags != OE_AT_REMOVEDIR && flags != 0)
+            {
+                oe_errno = OE_EINVAL;
+                goto done;
+            }
+
+            if (flags == OE_AT_REMOVEDIR)
+                ret = oe_rmdir(pathname);
+            else
+                ret = oe_unlink(pathname);
+
+            goto done;
+        }
+#if defined(OE_SYS_rename)
         case OE_SYS_rename:
         {
             const char* oldpath = (const char*)arg1;
             const char* newpath = (const char*)arg2;
+
+            ret = oe_rename(oldpath, newpath);
+            goto done;
+        }
+#endif
+        case OE_SYS_renameat:
+        {
+            int olddirfd = (int)arg1;
+            const char* oldpath = (const char*)arg2;
+            int newdirfd = (int)arg3;
+            const char* newpath = (const char*)arg4;
+            int flags = (int)arg5;
+
+            if (olddirfd != OE_AT_FDCWD)
+            {
+                oe_errno = OE_EBADF;
+                goto done;
+            }
+
+            if (newdirfd != OE_AT_FDCWD)
+            {
+                oe_errno = OE_EBADF;
+                goto done;
+            }
+
+            if (flags != 0)
+            {
+                oe_errno = OE_EINVAL;
+                goto done;
+            }
 
             ret = oe_rename(oldpath, newpath);
             goto done;
@@ -185,6 +339,7 @@ static long _syscall(
             ret = oe_truncate(path, length);
             goto done;
         }
+#if defined(OE_SYS_mkdir)
         case OE_SYS_mkdir:
         {
             const char* pathname = (const char*)arg1;
@@ -193,16 +348,58 @@ static long _syscall(
             ret = oe_mkdir(pathname, mode);
             goto done;
         }
+#endif
+        case OE_SYS_mkdirat:
+        {
+            int dirfd = (int)arg1;
+            const char* pathname = (const char*)arg2;
+            uint32_t mode = (uint32_t)arg3;
+
+            if (dirfd != OE_AT_FDCWD)
+            {
+                oe_errno = OE_EBADF;
+                goto done;
+            }
+
+            ret = oe_mkdir(pathname, mode);
+            goto done;
+        }
+#if defined(OE_SYS_rmdir)
         case OE_SYS_rmdir:
         {
             const char* pathname = (const char*)arg1;
             ret = oe_rmdir(pathname);
             goto done;
         }
+#endif
+#if defined(OE_SYS_access)
         case OE_SYS_access:
         {
             const char* pathname = (const char*)arg1;
             int mode = (int)arg2;
+
+            ret = oe_access(pathname, mode);
+            goto done;
+        }
+#endif
+        case OE_SYS_faccessat:
+        {
+            int dirfd = (int)arg1;
+            const char* pathname = (const char*)arg2;
+            int mode = (int)arg3;
+            int flags = (int)arg4;
+
+            if (dirfd != OE_AT_FDCWD)
+            {
+                oe_errno = OE_EBADF;
+                goto done;
+            }
+
+            if (flags != 0)
+            {
+                oe_errno = OE_EINVAL;
+                goto done;
+            }
 
             ret = oe_access(pathname, mode);
             goto done;
@@ -421,20 +618,39 @@ static long _syscall(
             ret = oe_uname(buf);
             goto done;
         }
-#if defined(__arm__)
-        case OE_SYS__newselect:
-#else
+#if defined(OE_SYS_select)
         case OE_SYS_select:
+        {
+            int nfds = (int)arg1;
+            oe_fd_set* readfds = (oe_fd_set*)arg2;
+            oe_fd_set* writefds = (oe_fd_set*)arg3;
+            oe_fd_set* efds = (oe_fd_set*)arg4;
+            struct oe_timeval* timeout = (struct oe_timeval*)arg5;
+            ret = oe_select(nfds, readfds, writefds, efds, timeout);
+            goto done;
+        }
 #endif
+        case OE_SYS_pselect6:
         {
             int nfds = (int)arg1;
             oe_fd_set* readfds = (oe_fd_set*)arg2;
             oe_fd_set* writefds = (oe_fd_set*)arg3;
             oe_fd_set* exceptfds = (oe_fd_set*)arg4;
-            struct oe_timeval* tmo = (struct oe_timeval*)arg5;
-            ret = oe_select(nfds, readfds, writefds, exceptfds, tmo);
+            struct oe_timespec* ts = (struct oe_timespec*)arg5;
+            struct oe_timeval buf;
+            struct oe_timeval* tv = NULL;
+
+            if (ts)
+            {
+                tv = &buf;
+                tv->tv_sec = ts->tv_sec;
+                tv->tv_usec = ts->tv_nsec / 1000;
+            }
+
+            ret = oe_select(nfds, readfds, writefds, exceptfds, tv);
             goto done;
         }
+#if defined(OE_SYS_poll)
         case OE_SYS_poll:
         {
             struct oe_pollfd* fds = (struct oe_pollfd*)arg1;
@@ -443,22 +659,69 @@ static long _syscall(
             ret = oe_poll(fds, nfds, millis);
             goto done;
         }
+#endif
+        case OE_SYS_ppoll:
+        {
+            struct oe_pollfd* fds = (struct oe_pollfd*)arg1;
+            oe_nfds_t nfds = (oe_nfds_t)arg2;
+            struct oe_timespec* ts = (struct oe_timespec*)arg3;
+            void* sigmask = (void*)arg4;
+            int timeout = -1;
+
+            if (sigmask != NULL)
+            {
+                oe_errno = OE_EINVAL;
+                goto done;
+            }
+
+            if (ts)
+            {
+                int64_t mul;
+                int64_t div;
+                int64_t sum;
+
+                if (oe_safe_mul_s64(ts->tv_sec, 1000, &mul) != OE_OK)
+                {
+                    oe_errno = OE_EINVAL;
+                    goto done;
+                }
+
+                div = ts->tv_nsec / 1000000;
+
+                if (oe_safe_add_s64(mul, div, &sum) != OE_OK)
+                {
+                    oe_errno = OE_EINVAL;
+                    goto done;
+                }
+
+                if (sum < OE_INT_MIN || sum > OE_INT_MAX)
+                {
+                    oe_errno = OE_EINVAL;
+                    goto done;
+                }
+
+                timeout = (int)sum;
+            }
+
+            ret = oe_poll(fds, nfds, timeout);
+            goto done;
+        }
+#if defined(OE_SYS_epoll_create)
         case OE_SYS_epoll_create:
         {
             int size = (int)arg1;
             ret = oe_epoll_create(size);
             goto done;
         }
+#endif
         case OE_SYS_epoll_create1:
         {
             int flags = (int)arg1;
             ret = oe_epoll_create1(flags);
             goto done;
         }
+#if defined(OE_SYS_epoll_wait)
         case OE_SYS_epoll_wait:
-#if defined(__x86_64__)
-        case OE_SYS_epoll_wait_old:
-#endif
         {
             int epfd = (int)arg1;
             struct oe_epoll_event* events = (struct oe_epoll_event*)arg2;
@@ -467,6 +730,7 @@ static long _syscall(
             ret = oe_epoll_wait(epfd, events, maxevents, timeout);
             goto done;
         }
+#endif
         case OE_SYS_epoll_pwait:
         {
             int epfd = (int)arg1;
@@ -478,9 +742,6 @@ static long _syscall(
             goto done;
         }
         case OE_SYS_epoll_ctl:
-#if defined(__x86_64__)
-        case OE_SYS_epoll_ctl_old:
-#endif
         {
             int epfd = (int)arg1;
             int op = (int)arg2;
@@ -543,11 +804,13 @@ static long _syscall(
             ret = (long)oe_getppid();
             goto done;
         }
+#if defined(OE_SYS_getpgrp)
         case OE_SYS_getpgrp:
         {
             ret = (long)oe_getpgrp();
             goto done;
         }
+#endif
         default:
         {
             oe_errno = OE_ENOSYS;
