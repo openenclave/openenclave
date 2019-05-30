@@ -19,14 +19,18 @@ static const uint16_t PORT = 12347;
 static const size_t NUM_CLIENTS = 16;
 static oe_enclave_t* _enclave;
 
-static void sleep_msec(uint64_t msec)
+static void sleep_msec(uint32_t msec)
 {
+#if defined(_WIN32)
+    Sleep(msec);
+#else
     struct timespec ts;
 
-    ts.tv_sec = msec / 1000;
-    ts.tv_nsec = (msec % 1000) * 1000000;
+    ts.tv_sec = (uint8_t)msec / 1000UL;
+    ts.tv_nsec = ((uint8_t)msec % 1000UL) * 1000000UL;
 
     nanosleep(&ts, NULL);
+#endif
 }
 
 static void* _run_host_client(void* arg)

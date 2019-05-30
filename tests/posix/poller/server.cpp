@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#if defined(WINDOWS_HOST)
+#if defined(_WIN32)
 #include "../platform/windows.h"
 #else
 #include "../platform/linux.h"
@@ -20,6 +20,16 @@ extern "C" void oe_abort();
 
 int set_blocking(socket_t sock, bool blocking)
 {
+#if defined(WINDOWS_HOST)
+
+    unsigned long flag = blocking ? 0 : 1;
+
+    if (ioctlsocket(sock, FIONBIO, &flag) != 0)
+        return -1;
+
+    return 0;
+#else
+
     int flags;
 
     if ((flags = fcntl(sock, F_GETFL, 0)) == -1)
@@ -34,6 +44,7 @@ int set_blocking(socket_t sock, bool blocking)
         return -1;
 
     return 0;
+#endif
 }
 
 socket_t create_listener_socket(uint16_t port)
@@ -144,7 +155,7 @@ void run_server(uint16_t port, size_t num_clients)
                     set_blocking(sock, false);
                     poller.add(sock, POLLER_READ);
 
-                    printf("client %d connect\n", sock);
+                    printf("client %lld connect\n", (int64_t)sock);
                     fflush(stdout);
                 }
                 else
@@ -169,11 +180,15 @@ void run_server(uint16_t port, size_t num_clients)
 
                     errno = 0;
 
+#if defined(_WIN32)
+                    n = recv(client->sock, (char*)buf, sizeof(buf), 0);
+#else
                     n = recv(client->sock, buf, sizeof(buf), 0);
+#endif
 
                     if (n > 0)
                     {
-                        printf("client %d input: %zd bytes\n", client->sock, n);
+                        printf("client %lld input: %zd bytes\n", (int64_t)client->sock, n);
                         fflush(stdout);
 
                         client->out.insert(client->out.end(), buf, buf + n);
@@ -181,7 +196,7 @@ void run_server(uint16_t port, size_t num_clients)
                     }
                     else if (n == 0)
                     {
-                        printf("client %d disconnect\n", client->sock);
+                        printf("client %lld disconnect\n", (int64_t)client->sock);
                         fflush(stdout);
 
                         /* Client disconnect. */
@@ -226,12 +241,16 @@ void run_server(uint16_t port, size_t num_clients)
                     errno = 0;
 
                     /* Send data to client. */
+#if defined(_WIN32)
+                    n = send(client->sock, (char*)&out[0], (int)out.size(), 0);
+#else
                     n = send(client->sock, &out[0], out.size(), 0);
+#endif
 
                     if (n > 0)
                     {
                         printf(
-                            "client %d output: %zd bytes\n", client->sock, n);
+                            "client %lld output: %zd bytes\n", (int64_t)client->sock, n);
                         fflush(stdout);
 
                         out.erase(out.begin(), out.begin() + n);

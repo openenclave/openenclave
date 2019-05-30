@@ -18,7 +18,7 @@
 
 typedef struct _event
 {
-    int sock;
+    socket_t sock;
     uint32_t events;
 } event_t;
 
@@ -84,8 +84,13 @@ class poller
         memcpy(&wfds, &_wfds, sizeof(wfds));
         memcpy(&xfds, &_xfds, sizeof(xfds));
 
+#if defined(_WIN32)
+        if ((nfds = select(0, &rfds, &wfds, &xfds, NULL)) < 0)
+            goto done;
+#else
         if ((nfds = select(_max + 1, &rfds, &wfds, &xfds, NULL)) < 0)
             goto done;
+#endif
 
         for (socket_t sock = 0; sock < _max + 1; sock++)
         {
@@ -112,25 +117,6 @@ class poller
 
     done:
         return ret;
-    }
-
-    void dump(void)
-    {
-        printf("*** poller::dump()\n");
-
-        printf("_max=%d\n", _max);
-
-        for (socket_t sock = 0; sock < _max + 1; sock++)
-        {
-            if (FD_ISSET((uint32_t)sock, &_rfds))
-                printf("RD{%d}\n", sock);
-
-            if (FD_ISSET((uint32_t)sock, &_wfds))
-                printf("WR{%d}\n", sock);
-
-            if (FD_ISSET((uint32_t)sock, &_xfds))
-                printf("EX{%d}\n", sock);
-        }
     }
 
   private:
