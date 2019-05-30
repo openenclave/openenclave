@@ -8,6 +8,7 @@
 #endif
 
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/types.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -155,7 +156,7 @@ void run_server(uint16_t port, size_t num_clients)
                     set_blocking(sock, false);
                     poller.add(sock, POLLER_READ);
 
-                    printf("client %lld connect\n", (int64_t)sock);
+                    printf("client %lld connect\n", OE_LLD((int64_t)sock));
                     fflush(stdout);
                 }
                 else
@@ -188,7 +189,10 @@ void run_server(uint16_t port, size_t num_clients)
 
                     if (n > 0)
                     {
-                        printf("client %lld input: %zd bytes\n", (int64_t)client->sock, n);
+                        printf(
+                            "client %lld input: %zd bytes\n",
+                            OE_LLD((int64_t)client->sock),
+                            n);
                         fflush(stdout);
 
                         client->out.insert(client->out.end(), buf, buf + n);
@@ -196,7 +200,9 @@ void run_server(uint16_t port, size_t num_clients)
                     }
                     else if (n == 0)
                     {
-                        printf("client %lld disconnect\n", (int64_t)client->sock);
+                        printf(
+                            "client %lld disconnect\n",
+                            OE_LLD((int64_t)client->sock));
                         fflush(stdout);
 
                         /* Client disconnect. */
@@ -250,7 +256,9 @@ void run_server(uint16_t port, size_t num_clients)
                     if (n > 0)
                     {
                         printf(
-                            "client %lld output: %zd bytes\n", (int64_t)client->sock, n);
+                            "client %lld output: %zd bytes\n",
+                            OE_LLD((int64_t)client->sock),
+                            n);
                         fflush(stdout);
 
                         out.erase(out.begin(), out.begin() + n);
