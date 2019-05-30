@@ -77,16 +77,42 @@ OE_INLINE int get_error(void)
     return WSAGetLastError();
 }
 
+typedef struct _thread_proc_parameter
+{
+    void* (*start_routine)(void*);
+    void* arg;
+    void* ret;
+} thread_proc_parameter_t;
+
+static DWORD _thread_proc(void* parameter)
+{
+    thread_proc_parameter_t* info = (thread_proc_parameter_t*)parameter;
+
+    info->ret = (*info->start_routine)(info->arg);
+
+    /* ATTN: propagate this return value in thread_joing(). */
+
+    free(info);
+
+    return 0;
+}
+
 OE_INLINE int thread_create(
-    pthread_t* thread,
-    const pthread_attr_t* attr,
+    thread_t* thread,
     void* (*start_routine)(void*),
     void* arg)
 {
     HANDLE handle;
+    thread_proc_parameter_t* parameter;
 
-    handle = CreateThread(
-        NULL, 0, (LPTHREAD_START_ROUTINE)start_routine, arg, 0, NULL);
+    if (!(parameter = calloc(1, sizeof(thread_proc_parameter_t))))
+        return -1;
+
+    parameter->start_routine = start_routine;
+    parameter->arg = arg;
+    parameter->ret = NULL;
+
+    handle = CreateThread(NULL, 0, _thread_proc, parameter, 0, NULL);
 
     if (handle == INVALID_HANDLE_VALUE)
         return -1;
