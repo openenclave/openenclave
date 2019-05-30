@@ -5,5 +5,6 @@ enclave {
     trusted {
         public void run_enclave_server(uint16_t port, size_t num_clients);
         public void run_enclave_client(uint16_t port);
+        public void test_fd_set();
     };
 };

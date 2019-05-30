@@ -147,6 +147,10 @@ int main(int argc, const char* argv[])
     fflush(stdout);
     test_enclave_to_enclave();
 
+    printf("=== start test_fd_set()\n");
+    fflush(stdout);
+    test_fd_set(_enclave);
+
     r = oe_terminate_enclave(_enclave);
     OE_TEST(r == OE_OK);
 
