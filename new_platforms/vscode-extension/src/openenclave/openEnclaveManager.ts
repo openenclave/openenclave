@@ -170,6 +170,7 @@ export class OpenEnclaveManager {
                     this.progressAndOutput("Creating build folders", progress, outputChannel);
                     await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_virt"));
                     await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_armv8a"));
+                    await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "ls-ls1012grapeboard"));
                 }
 
                 // Ensure that the sdk is present on the system
