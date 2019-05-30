@@ -55,7 +55,6 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
 {
     thread_t clients[NUM_CLIENTS];
     thread_t server;
-    void* ret;
 
     if (thread_create(&server, server_proc, NULL) != 0)
     {
@@ -73,9 +72,9 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
     }
 
     for (size_t i = 0; i < NUM_CLIENTS; i++)
-        thread_join(clients[i], &ret);
+        thread_join(clients[i]);
 
-    thread_join(server, &ret);
+    thread_join(server);
 }
 
 void test_host_to_host(void)

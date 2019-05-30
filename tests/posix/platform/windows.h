@@ -47,7 +47,8 @@ OE_INLINE int sock_set_blocking(socket_t sock, bool blocking)
     return 0;
 }
 
-OE_INLINE ssize_t sock_send(socket_t sockfd, const void* buf, size_t len, int flags)
+OE_INLINE ssize_t
+sock_send(socket_t sockfd, const void* buf, size_t len, int flags)
 {
     return send(sockfd, (const char*)buf, (int)len, flags);
 }
@@ -82,16 +83,13 @@ typedef struct _thread_proc_param
 {
     void* (*start_routine)(void*);
     void* arg;
-    void* ret;
 } thread_proc_param_t;
 
 static DWORD _thread_proc(void* param_)
 {
     thread_proc_param_t* param = (thread_proc_param_t*)param_;
 
-    param->ret = (*param->start_routine)(param->arg);
-
-    /* ATTN: propagate this return value in thread_joing(). */
+    (*param->start_routine)(param->arg);
 
     free(param);
 
@@ -111,7 +109,6 @@ OE_INLINE int thread_create(
 
     param->start_routine = start_routine;
     param->arg = arg;
-    param->ret = NULL;
 
     handle = CreateThread(NULL, 0, _thread_proc, param, 0, NULL);
 
@@ -122,11 +119,12 @@ OE_INLINE int thread_create(
     return 0;
 }
 
-OE_INLINE int thread_join(thread_t thread, void** retval)
+OE_INLINE int thread_join(thread_t thread)
 {
-    WaitForSingleObject(thread, INFINITE);
-    *retval = NULL;
-    return 0;
+    if (WaitForSingleObject(thread, INFINITE) == WAIT_OBJECT_0)
+        return 0;
+
+    return -1;
 }
 
 OE_INLINE void sleep_msec(uint32_t msec)

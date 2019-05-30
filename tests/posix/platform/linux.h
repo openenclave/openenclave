@@ -46,7 +46,8 @@ OE_INLINE int sock_set_blocking(socket_t sock, bool blocking)
     return 0;
 }
 
-OE_INLINE ssize_t sock_send(socket_t sockfd, const void* buf, size_t len, int flags)
+OE_INLINE ssize_t
+sock_send(socket_t sockfd, const void* buf, size_t len, int flags)
 {
     return send(sockfd, buf, len, flags);
 }
@@ -104,9 +105,9 @@ OE_INLINE int thread_create(
 #endif
 
 #if !defined(OE_BUILD_ENCLAVE)
-OE_INLINE int thread_join(thread_t thread, void** retval)
+OE_INLINE int thread_join(thread_t thread)
 {
-    return pthread_join(thread, retval);
+    return pthread_join(thread, NULL);
 }
 #endif
 
