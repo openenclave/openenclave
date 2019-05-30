@@ -23,15 +23,15 @@ namespace OpenEnclaveSDK
         {
             if (this.boardGrapeboard.Checked)
             {
-                this.Board = "ls-ls1012grapeboard\\export-ta_arm64";
+                this.Board = "ls-ls1012grapeboard";
             }
             else if (this.boardQemuArm32.Checked)
             {
-                this.Board = "vexpress-qemu_virt\\export-ta_arm32";
+                this.Board = "vexpress-qemu_virt";
             }
             else if (this.boardQemuArm64.Checked)
             {
-                this.Board = "vexpress-qemu_armv8a\\export-ta_arm64";
+                this.Board = "vexpress-qemu_armv8a";
             }
             else if (this.boardOther.Checked)
             {
