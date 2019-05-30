@@ -78,22 +78,22 @@ OE_INLINE int get_error(void)
     return WSAGetLastError();
 }
 
-typedef struct _thread_proc_parameter
+typedef struct _thread_proc_param
 {
     void* (*start_routine)(void*);
     void* arg;
     void* ret;
-} thread_proc_parameter_t;
+} thread_proc_param_t;
 
-static DWORD _thread_proc(void* parameter)
+static DWORD _thread_proc(void* param_)
 {
-    thread_proc_parameter_t* info = (thread_proc_parameter_t*)parameter;
+    thread_proc_param_t* param = (thread_proc_param_t*)param_;
 
-    info->ret = (*info->start_routine)(info->arg);
+    param->ret = (*param->start_routine)(param->arg);
 
     /* ATTN: propagate this return value in thread_joing(). */
 
-    free(info);
+    free(param);
 
     return 0;
 }
@@ -104,16 +104,16 @@ OE_INLINE int thread_create(
     void* arg)
 {
     HANDLE handle;
-    thread_proc_parameter_t* parameter;
+    thread_proc_param_t* param;
 
-    if (!(parameter = calloc(1, sizeof(thread_proc_parameter_t))))
+    if (!(param = (thread_proc_param_t*)calloc(1, sizeof(thread_proc_param_t))))
         return -1;
 
-    parameter->start_routine = start_routine;
-    parameter->arg = arg;
-    parameter->ret = NULL;
+    param->start_routine = start_routine;
+    param->arg = arg;
+    param->ret = NULL;
 
-    handle = CreateThread(NULL, 0, _thread_proc, parameter, 0, NULL);
+    handle = CreateThread(NULL, 0, _thread_proc, param, 0, NULL);
 
     if (handle == INVALID_HANDLE_VALUE)
         return -1;
