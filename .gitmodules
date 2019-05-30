@@ -2,3 +2,7 @@
 	path = 3rdparty/optee/optee_os
 	url = https://github.com/ms-iot/optee_os
 	branch = user/hegatta/cpp
+[submodule "3rdparty/optee/optee_client"]
+	path = 3rdparty/optee/optee_client
+	url = https://github.com/ms-iot/optee_client
+	branch = ms-optee-ocalls
