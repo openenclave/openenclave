@@ -170,6 +170,7 @@ export class OpenEnclaveManager {
                     this.progressAndOutput("Creating build folders", progress, outputChannel);
                     await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_virt"));
                     await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_armv8a"));
+                    await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "ls-ls1012grapeboard"));
                 }
 
                 // Ensure that the sdk is present on the system
@@ -309,35 +310,27 @@ export class OpenEnclaveManager {
 
     private internalMakeCopyOrLink(sharedLocation: string, localLocation: string, useSymLink: boolean): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if (useSymLink) {
-                return fse.symlink(sharedLocation, localLocation, "dir", (err) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                });
-            } else {
-                return fse.copy(sharedLocation, localLocation, (err) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                });
+            try {
+                if (useSymLink) {
+                    fse.symlinkSync(sharedLocation, localLocation);
+                } else {
+                    fse.copySync(sharedLocation, localLocation);
+                }
+                resolve();
+            } catch (error) {
+                reject(error);
             }
         });
     }
 
     private internalMove(originalLocation: string, newLocation: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            return fse.move(originalLocation, newLocation, (err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
+            try {
+                fse.moveSync(originalLocation, newLocation);
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
