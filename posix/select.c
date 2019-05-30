@@ -182,11 +182,11 @@ void OE_FD_CLR(int fd, oe_fd_set* set)
 {
     if (fd >= 0)
     {
-        uint64_t word = ((uint64_t)fd) / (8 * sizeof(uint64_t));
-        uint64_t bit = ((uint64_t)fd) % (8 * sizeof(uint64_t));
-        uint64_t mask = (1UL << bit);
+        uint64_t word = ((uint64_t)fd) / (8UL * sizeof(uint64_t));
+        uint64_t bit = ((uint64_t)fd) % (8UL * sizeof(uint64_t));
+        uint64_t mask = ~(1UL << bit);
 
-        set->fds_bits[word] &= ~mask;
+        set->fds_bits[word] &= mask;
     }
     else
     {
@@ -198,8 +198,8 @@ int OE_FD_ISSET(int fd, oe_fd_set* set)
 {
     if (fd >= 0)
     {
-        uint64_t word = ((uint64_t)fd) / (8 * sizeof(uint64_t));
-        uint64_t bit = ((uint64_t)fd) % (8 * sizeof(uint64_t));
+        uint64_t word = ((uint64_t)fd) / (8UL * sizeof(uint64_t));
+        uint64_t bit = ((uint64_t)fd) % (8UL * sizeof(uint64_t));
         uint64_t mask = (1UL << bit);
 
         return !!(set->fds_bits[word] & mask);
@@ -215,8 +215,8 @@ void OE_FD_SET(int fd, oe_fd_set* set)
 {
     if (fd >= 0)
     {
-        uint64_t word = ((uint64_t)fd) / (8 * sizeof(uint64_t));
-        uint64_t bit = ((uint64_t)fd) % (8 * sizeof(uint64_t));
+        uint64_t word = ((uint64_t)fd) / (8UL * sizeof(uint64_t));
+        uint64_t bit = ((uint64_t)fd) % (8UL * sizeof(uint64_t));
         uint64_t mask = (1UL << bit);
 
         set->fds_bits[word] |= mask;

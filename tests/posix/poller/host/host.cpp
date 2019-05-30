@@ -72,7 +72,7 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
         OE_TEST("pthread_create()" == NULL);
     }
 
-    sleep_msec(100);
+    sleep_msec(50);
 
     for (size_t i = 0; i < NUM_CLIENTS; i++)
     {
