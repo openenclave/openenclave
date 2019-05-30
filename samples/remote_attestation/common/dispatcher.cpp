@@ -351,7 +351,7 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
     uint8_t encrypted_data_buf[ENCLAVE_SECRET_DATA_SIZE];
     uint8_t tag_str[ENCLAVE_SECRET_DATA_SIZE];
     size_t encrypted_data_size;
-    size_t total_size = ENCLAVE_SECRET_DATA_SIZE * 2 + IV_SIZE;
+    size_t total_size;
     uint8_t iv_str[IV_SIZE];
     int ret = 1;
 

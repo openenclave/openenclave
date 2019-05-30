@@ -325,7 +325,7 @@ bool Crypto::encrypt_gcm(
 
     bool result = false;
     int res = -1;
-    size_t tag_len = 16;
+    size_t tag_len = TAG_SIZE;
     size_t add_len = ADD_SIZE;
 
     if (!m_initialized)

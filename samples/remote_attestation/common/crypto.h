@@ -17,6 +17,7 @@
 #include "log.h"
 
 #define PUBLIC_KEY_SIZE 512
+#define TAG_SIZE 16
 #define IV_SIZE 12
 #define ADD_SIZE 4
 

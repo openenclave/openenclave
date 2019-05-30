@@ -8,6 +8,7 @@
 #include "crypto.h"
 
 #define ENCLAVE_SECRET_DATA_SIZE 16
+
 class Attestation
 {
   private:
