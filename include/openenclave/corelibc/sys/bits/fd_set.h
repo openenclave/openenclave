@@ -3,5 +3,5 @@
 
 typedef struct
 {
-    unsigned long fds_bits[OE_FD_SETSIZE / 8 / sizeof(long)];
+    uint64_t fds_bits[OE_FD_SETSIZE / 8 / sizeof(uint64_t)];
 } __OE_FD_SET;

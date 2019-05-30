@@ -6,12 +6,16 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <pthread.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#define INVALID_SOCKET ((socket_t)-1)
 
 typedef int socket_t;
 typedef size_t length_t;
