@@ -210,12 +210,6 @@ OE_INLINE bool _cert_chain_is_valid(const CertChain* impl)
 **==============================================================================
 */
 
-static void _set_err(oe_verify_cert_error_t* error, const char* str)
-{
-    if (error)
-        strlcpy(error->buf, str, sizeof(error->buf));
-}
-
 static bool _x509_buf_equal(
     const mbedtls_x509_buf* x,
     const mbedtls_x509_buf* y)
@@ -1107,7 +1101,7 @@ oe_result_t oe_gen_custom_x509_cert(
     mbedtls_x509write_crt_set_subject_key(&x509cert, &subject_key);
     mbedtls_x509write_crt_set_issuer_key(&x509cert, &issuer_key);
 
-    if ((buff = oe_malloc(cert_buf_size)) == NULL)
+    if ((buff = malloc(cert_buf_size)) == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Get the drbg object */
@@ -1212,7 +1206,7 @@ done:
     // mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_pk_free(&issuer_key);
     mbedtls_pk_free(&subject_key);
-    oe_free(buff);
+    free(buff);
     if (ret)
         result = OE_CRYPTO_ERROR;
 
