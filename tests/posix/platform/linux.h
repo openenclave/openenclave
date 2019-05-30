@@ -46,12 +46,12 @@ OE_INLINE int sock_set_blocking(socket_t sock, bool blocking)
     return 0;
 }
 
-OE_INLINE ssize_t sock_send(int sockfd, const void* buf, size_t len, int flags)
+OE_INLINE ssize_t sock_send(socket_t sockfd, const void* buf, size_t len, int flags)
 {
     return send(sockfd, buf, len, flags);
 }
 
-OE_INLINE ssize_t sock_recv(int sockfd, void* buf, size_t len, int flags)
+OE_INLINE ssize_t sock_recv(socket_t sockfd, void* buf, size_t len, int flags)
 {
     return recv(sockfd, buf, len, flags);
 }

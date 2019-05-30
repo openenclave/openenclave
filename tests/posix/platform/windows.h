@@ -17,8 +17,8 @@
 typedef SOCKET socket_t;
 typedef int socklen_t;
 typedef int length_t;
-typedef HANDLE pthread_t;
 typedef void pthread_attr_t;
+typedef HANDLE thread_t;
 
 OE_INLINE int sleep(unsigned int seconds)
 {
@@ -47,12 +47,12 @@ OE_INLINE int sock_set_blocking(socket_t sock, bool blocking)
     return 0;
 }
 
-OE_INLINE ssize_t sock_send(int sockfd, const void* buf, size_t len, int flags)
+OE_INLINE ssize_t sock_send(socket_t sockfd, const void* buf, size_t len, int flags)
 {
     return send(sockfd, (const char*)buf, (int)len, flags);
 }
 
-OE_INLINE ssize_t sock_recv(int sockfd, void* buf, size_t len, int flags)
+OE_INLINE ssize_t sock_recv(socket_t sockfd, void* buf, size_t len, int flags)
 {
     return recv(sockfd, (char*)buf, (int)len, flags);
 }
@@ -69,7 +69,8 @@ OE_INLINE int sock_select(
     fd_set* exceptfds,
     struct timeval* timeout)
 {
-    return select(nfds, readfds, writefds, exceptfds, timeout);
+    OE_UNUSED(nfds);
+    return select(0, readfds, writefds, exceptfds, timeout);
 }
 
 OE_INLINE int get_error(void)
@@ -78,8 +79,7 @@ OE_INLINE int get_error(void)
 }
 
 OE_INLINE int thread_create(
-    pthread_t* thread,
-    const pthread_attr_t* attr,
+    thread_t* thread,
     void* (*start_routine)(void*),
     void* arg)
 {
@@ -95,7 +95,7 @@ OE_INLINE int thread_create(
     return 0;
 }
 
-OE_INLINE int thread_join(pthread_t thread, void** retval)
+OE_INLINE int thread_join(thread_t thread, void** retval)
 {
     WaitForSingleObject(thread, INFINITE);
     *retval = NULL;
