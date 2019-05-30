@@ -18,7 +18,6 @@ typedef SOCKET socket_t;
 typedef int socklen_t;
 typedef int length_t;
 typedef void pthread_attr_t;
-typedef HANDLE thread_t;
 
 OE_INLINE int sleep(unsigned int seconds)
 {
@@ -79,6 +78,11 @@ OE_INLINE int get_error(void)
     return WSAGetLastError();
 }
 
+typedef struct _thread
+{
+    HANDLE __impl;
+} thread_t;
+
 typedef struct _thread_proc_param
 {
     void* (*start_routine)(void*);
@@ -115,13 +119,13 @@ OE_INLINE int thread_create(
     if (handle == INVALID_HANDLE_VALUE)
         return -1;
 
-    *thread = handle;
+    thread->__impl = handle;
     return 0;
 }
 
 OE_INLINE int thread_join(thread_t thread)
 {
-    if (WaitForSingleObject(thread, INFINITE) == WAIT_OBJECT_0)
+    if (WaitForSingleObject(thread->__impl, INFINITE) == WAIT_OBJECT_0)
         return 0;
 
     return -1;

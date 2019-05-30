@@ -92,7 +92,10 @@ OE_INLINE void sleep_msec(uint32_t msec)
 #endif
 }
 
-typedef pthread_t thread_t;
+typedef struct _thread
+{
+    pthread_t __impl;
+} thread_t;
 
 #if !defined(OE_BUILD_ENCLAVE)
 OE_INLINE int thread_create(
@@ -100,14 +103,14 @@ OE_INLINE int thread_create(
     void* (*start_routine)(void*),
     void* arg)
 {
-    return pthread_create(thread, NULL, start_routine, arg);
+    return pthread_create(&thread->__impl, NULL, start_routine, arg);
 }
 #endif
 
 #if !defined(OE_BUILD_ENCLAVE)
 OE_INLINE int thread_join(thread_t thread)
 {
-    return pthread_join(thread, NULL);
+    return pthread_join(thread.__impl, NULL);
 }
 #endif
 
