@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#if defined(_WIN32)
+#if defined(WINDOWS_HOST)
 #include "../platform/windows.h"
 #else
 #include "../platform/linux.h"
@@ -18,35 +18,6 @@
 #define BUFFER_SIZE 13
 
 extern "C" void oe_abort();
-
-int set_blocking(socket_t sock, bool blocking)
-{
-#if defined(WINDOWS_HOST)
-
-    unsigned long flag = blocking ? 0 : 1;
-
-    if (ioctlsocket(sock, FIONBIO, &flag) != 0)
-        return -1;
-
-    return 0;
-#else
-
-    int flags;
-
-    if ((flags = fcntl(sock, F_GETFL, 0)) == -1)
-        return -1;
-
-    if (blocking)
-        flags &= ~O_NONBLOCK;
-    else
-        flags |= O_NONBLOCK;
-
-    if (fcntl(sock, F_SETFL, flags) == -1)
-        return -1;
-
-    return 0;
-#endif
-}
 
 socket_t create_listener_socket(uint16_t port)
 {
@@ -74,7 +45,7 @@ socket_t create_listener_socket(uint16_t port)
     if (listen(sock, backlog) != 0)
         goto done;
 
-    if (set_blocking(sock, true) != 0)
+    if (sock_set_blocking(sock, true) != 0)
         goto done;
 
     ret = sock;
@@ -83,7 +54,7 @@ socket_t create_listener_socket(uint16_t port)
 done:
 
     if (sock != INVALID_SOCKET)
-        socket_close(sock);
+        sock_close(sock);
 
     return ret;
 }
@@ -114,7 +85,7 @@ void run_server(uint16_t port, size_t num_clients)
     std::vector<client_t> clients;
     size_t num_disconnects = 0;
 
-    socket_startup();
+    sock_startup();
 
     if ((listener = create_listener_socket(port)) == INVALID_SOCKET)
     {
@@ -153,7 +124,7 @@ void run_server(uint16_t port, size_t num_clients)
                     client_t client = {sock};
                     clients.push_back(client);
 
-                    set_blocking(sock, false);
+                    sock_set_blocking(sock, false);
                     poller.add(sock, POLLER_READ);
 
                     printf("client %lld connect\n", OE_LLD((int64_t)sock));
@@ -181,11 +152,7 @@ void run_server(uint16_t port, size_t num_clients)
 
                     errno = 0;
 
-#if defined(_WIN32)
-                    n = recv(client->sock, (char*)buf, sizeof(buf), 0);
-#else
-                    n = recv(client->sock, buf, sizeof(buf), 0);
-#endif
+                    n = sock_recv(client->sock, buf, sizeof(buf), 0);
 
                     if (n > 0)
                     {
@@ -207,7 +174,7 @@ void run_server(uint16_t port, size_t num_clients)
 
                         /* Client disconnect. */
                         poller.remove(client->sock, POLLER_WRITE | POLLER_READ);
-                        socket_close(client->sock);
+                        sock_close(client->sock);
 
                         num_disconnects++;
 
@@ -247,11 +214,7 @@ void run_server(uint16_t port, size_t num_clients)
                     errno = 0;
 
                     /* Send data to client. */
-#if defined(_WIN32)
-                    n = send(client->sock, (char*)&out[0], (int)out.size(), 0);
-#else
-                    n = send(client->sock, &out[0], out.size(), 0);
-#endif
+                    n = sock_send(client->sock, &out[0], out.size(), 0);
 
                     if (n > 0)
                     {
@@ -282,7 +245,7 @@ void run_server(uint16_t port, size_t num_clients)
         }
     }
 
-    socket_close(listener);
+    sock_close(listener);
 
-    socket_cleanup();
+    sock_cleanup();
 }

@@ -24,7 +24,7 @@ void run_client(uint16_t port)
     char buf[1024];
     const size_t N = 10;
 
-    socket_startup();
+    sock_startup();
 
     /* Create the client socket. */
     if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -66,7 +66,7 @@ void run_client(uint16_t port)
         }
     }
 
-    socket_close(sd);
+    sock_close(sd);
 
-    socket_cleanup();
+    sock_cleanup();
 }

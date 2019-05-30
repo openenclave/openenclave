@@ -19,20 +19,6 @@ static const uint16_t PORT = 12347;
 static const size_t NUM_CLIENTS = 16;
 static oe_enclave_t* _enclave;
 
-static void sleep_msec(uint32_t msec)
-{
-#if defined(_WIN32)
-    Sleep(msec);
-#else
-    struct timespec ts;
-
-    ts.tv_sec = (uint8_t)msec / 1000UL;
-    ts.tv_nsec = ((uint8_t)msec % 1000UL) * 1000000UL;
-
-    nanosleep(&ts, NULL);
-#endif
-}
-
 static void* _run_host_client(void* arg)
 {
     OE_UNUSED(arg);
@@ -67,29 +53,29 @@ static void* _run_enclave_client(void* arg)
 
 void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
 {
-    pthread_t clients[NUM_CLIENTS];
-    pthread_t server;
+    thread_t clients[NUM_CLIENTS];
+    thread_t server;
     void* ret;
 
-    if (pthread_create(&server, NULL, server_proc, NULL) != 0)
+    if (thread_create(&server, server_proc, NULL) != 0)
     {
-        OE_TEST("pthread_create()" == NULL);
+        OE_TEST("thread_create()" == NULL);
     }
 
     sleep_msec(50);
 
     for (size_t i = 0; i < NUM_CLIENTS; i++)
     {
-        if (pthread_create(&clients[i], NULL, client_proc, NULL) != 0)
+        if (thread_create(&clients[i], client_proc, NULL) != 0)
         {
-            OE_TEST("pthread_create()" == NULL);
+            OE_TEST("thread_create()" == NULL);
         }
     }
 
     for (size_t i = 0; i < NUM_CLIENTS; i++)
-        pthread_join(clients[i], &ret);
+        thread_join(clients[i], &ret);
 
-    pthread_join(server, &ret);
+    thread_join(server, &ret);
 }
 
 void test_host_to_host(void)

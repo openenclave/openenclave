@@ -27,9 +27,6 @@ class poller
   public:
     poller() : _max(0)
     {
-        memset(&_rfds, 0, sizeof(_rfds));
-        memset(&_wfds, 0, sizeof(_wfds));
-        memset(&_xfds, 0, sizeof(_xfds));
         FD_ZERO(&_rfds);
         FD_ZERO(&_wfds);
         FD_ZERO(&_xfds);
@@ -84,13 +81,8 @@ class poller
         memcpy(&wfds, &_wfds, sizeof(wfds));
         memcpy(&xfds, &_xfds, sizeof(xfds));
 
-#if defined(_WIN32)
-        if ((nfds = select(0, &rfds, &wfds, &xfds, NULL)) < 0)
+        if ((nfds = sock_select(_max + 1, &rfds, &wfds, &xfds, NULL)) < 0)
             goto done;
-#else
-        if ((nfds = select(_max + 1, &rfds, &wfds, &xfds, NULL)) < 0)
-            goto done;
-#endif
 
         for (socket_t sock = 0; sock < _max + 1; sock++)
         {

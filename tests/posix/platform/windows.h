@@ -26,20 +26,50 @@ OE_INLINE int sleep(unsigned int seconds)
     return 0;
 }
 
-OE_INLINE void socket_startup(void)
+OE_INLINE void sock_startup(void)
 {
     static WSADATA wsadata = {0};
     WSAStartup(MAKEWORD(2, 2), &wsadata);
 }
 
-OE_INLINE void socket_cleanup(void)
+OE_INLINE void sock_cleanup(void)
 {
     WSACleanup();
 }
 
-OE_INLINE int socket_close(socket_t sock)
+OE_INLINE int sock_set_blocking(socket_t sock, bool blocking)
+{
+    unsigned long flag = blocking ? 0 : 1;
+
+    if (ioctlsocket(sock, FIONBIO, &flag) != 0)
+        return -1;
+
+    return 0;
+}
+
+OE_INLINE ssize_t sock_send(int sockfd, const void* buf, size_t len, int flags)
+{
+    return send(sockfd, (const char*)buf, (int)len, flags);
+}
+
+OE_INLINE ssize_t sock_recv(int sockfd, void* buf, size_t len, int flags)
+{
+    return recv(sockfd, (char*)buf, (int)len, flags);
+}
+
+OE_INLINE int sock_close(socket_t sock)
 {
     return closesocket(sock);
+}
+
+OE_INLINE int sock_select(
+    socket_t nfds,
+    fd_set* readfds,
+    fd_set* writefds,
+    fd_set* exceptfds,
+    struct timeval* timeout)
+{
+    return select(nfds, readfds, writefds, exceptfds, timeout);
 }
 
 OE_INLINE int get_error(void)
@@ -47,7 +77,7 @@ OE_INLINE int get_error(void)
     return WSAGetLastError();
 }
 
-OE_INLINE int pthread_create(
+OE_INLINE int thread_create(
     pthread_t* thread,
     const pthread_attr_t* attr,
     void* (*start_routine)(void*),
@@ -65,11 +95,16 @@ OE_INLINE int pthread_create(
     return 0;
 }
 
-OE_INLINE int pthread_join(pthread_t thread, void** retval)
+OE_INLINE int thread_join(pthread_t thread, void** retval)
 {
     WaitForSingleObject(thread, INFINITE);
     *retval = NULL;
     return 0;
+}
+
+OE_INLINE void sleep_msec(uint32_t msec)
+{
+    Sleep(msec);
 }
 
 #endif /* _PLATFORM_WINDOWS_H */
