@@ -108,8 +108,15 @@ if (OE_SGX)
   set(PLATFORM_FLAGS "-m64")
 elseif(OE_TRUSTZONE)
   list(APPEND PLATFORM_SRC
-    optee/enclave.c
     optee/log.c)
+  
+  if (UNIX)
+    list(APPEND PLATFORM_SRC
+      optee/linux/enclave.c)
+  else()
+    message(STATUS "Add Windows OP-TEE files.")
+  endif()
+
   set(PLATFORM_FLAGS "")
 endif()
 
@@ -154,16 +161,23 @@ find_package(Threads REQUIRED)
 
 if (UNIX)
   target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)
+
+  if (OE_TRUSTZONE)
+    target_include_directories(oehost PRIVATE
+      ${OE_TZ_OPTEE_CLIENT_INC})
+    target_link_libraries(oehost PRIVATE teec)
+  endif ()
 elseif (WIN32)
   target_include_directories(oehost PRIVATE
     ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   target_link_libraries(oehost PRIVATE bcrypt Crypt32)
+
+  # TODO: Handle TrustZone on Windows.
 endif ()
 
 # For including edge routines.
 target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-# TODO: Handle Trust Zone etc.
 if (USE_LIBSGX)
   find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
   find_library(LIBSGX_QE NAMES sgx_dcap_ql)
