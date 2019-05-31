@@ -139,10 +139,14 @@ int main(int argc, const char* argv[])
     test_enclave_to_host(POLLER_TYPE_SELECT);
     test_host_to_enclave(POLLER_TYPE_SELECT);
     test_enclave_to_enclave(POLLER_TYPE_SELECT);
+
+#ifndef WINDOWS_HOST
     test_host_to_host(POLLER_TYPE_POLL);
     test_enclave_to_host(POLLER_TYPE_POLL);
     test_host_to_enclave(POLLER_TYPE_POLL);
     test_enclave_to_enclave(POLLER_TYPE_POLL);
+#endif
+
     test_fd_set(_enclave);
 
     r = oe_terminate_enclave(_enclave);
