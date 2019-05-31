@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <mbedtls/config.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
@@ -174,7 +173,7 @@ oe_result_t generate_key_pair(
         }
 
         *public_key = local_public_key;
-        // plus one to make sure \0 at the end if counted
+        // plus one to make sure \0 at the end is counted
         *public_key_size = strlen((const char*)local_public_key) + 1;
 
         *private_key = local_private_key;
