@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <tee_internal_api.h>
 
 TEE_Result TA_CreateEntryPoint(void)
