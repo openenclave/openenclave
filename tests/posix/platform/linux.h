@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <poll.h>
 #include <pthread.h>
 #include <sys/select.h>
 #include <sys/socket.h>

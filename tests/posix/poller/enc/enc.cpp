@@ -20,10 +20,13 @@ static void _init(void)
     }
 }
 
-extern "C" void run_enclave_server(uint16_t port, size_t num_clients)
+extern "C" void run_enclave_server(
+    uint16_t port,
+    size_t num_clients,
+    uint32_t poller_type)
 {
     _init();
-    run_server(port, num_clients);
+    run_server(port, num_clients, poller_type_t(poller_type));
 }
 
 extern "C" void run_enclave_client(uint16_t port)

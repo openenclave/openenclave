@@ -77,13 +77,18 @@ client_t* find_client(std::vector<client_t>& clients, socket_t sock)
     return NULL;
 }
 
-void run_server(uint16_t port, size_t num_clients)
+extern "C" void run_server(
+    uint16_t port,
+    size_t num_clients,
+    poller_type_t poller_type)
 {
     socket_t listener;
     bool quit = false;
-    poller poller;
     std::vector<client_t> clients;
     size_t num_disconnects = 0;
+    poller* poller = poller::create(poller_type);
+
+    OE_TEST(poller);
 
     sock_startup();
 
@@ -93,7 +98,7 @@ void run_server(uint16_t port, size_t num_clients)
     }
 
     /* Watch for read events on the listener socket (i.e., connects). */
-    poller.add(listener, POLLER_READ);
+    poller->add(listener, POLLER_READ);
 
     while (!quit)
     {
@@ -101,7 +106,7 @@ void run_server(uint16_t port, size_t num_clients)
         client_t* client;
 
         /* Wait for events. */
-        if (poller.wait(events) < 0)
+        if (poller->wait(events) < 0)
         {
             OE_TEST(false);
             continue;
@@ -125,7 +130,7 @@ void run_server(uint16_t port, size_t num_clients)
                     clients.push_back(client);
 
                     sock_set_blocking(sock, false);
-                    poller.add(sock, POLLER_READ);
+                    poller->add(sock, POLLER_READ);
 
                     printf("client %lld connect\n", OE_LLD((int64_t)sock));
                     fflush(stdout);
@@ -163,7 +168,7 @@ void run_server(uint16_t port, size_t num_clients)
                         fflush(stdout);
 
                         client->out.insert(client->out.end(), buf, buf + n);
-                        poller.add(client->sock, POLLER_WRITE);
+                        poller->add(client->sock, POLLER_WRITE);
                     }
                     else if (n == 0)
                     {
@@ -173,7 +178,8 @@ void run_server(uint16_t port, size_t num_clients)
                         fflush(stdout);
 
                         /* Client disconnect. */
-                        poller.remove(client->sock, POLLER_WRITE | POLLER_READ);
+                        poller->remove(
+                            client->sock, POLLER_WRITE | POLLER_READ);
                         sock_close(client->sock);
 
                         num_disconnects++;
@@ -228,7 +234,7 @@ void run_server(uint16_t port, size_t num_clients)
 
                         if (out.size() == 0)
                         {
-                            poller.remove(event.sock, POLLER_WRITE);
+                            poller->remove(event.sock, POLLER_WRITE);
                             break;
                         }
                     }
@@ -248,4 +254,6 @@ void run_server(uint16_t port, size_t num_clients)
     sock_close(listener);
 
     sock_cleanup();
+
+    poller::destroy(poller);
 }

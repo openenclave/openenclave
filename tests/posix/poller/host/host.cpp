@@ -19,6 +19,11 @@ static const uint16_t PORT = 12347;
 static const size_t NUM_CLIENTS = 16;
 static oe_enclave_t* _enclave;
 
+typedef struct thread_arg
+{
+    poller_type_t poller_type;
+} server_arg_t;
+
 static void* _run_host_client(void* arg)
 {
     OE_UNUSED(arg);
@@ -26,18 +31,20 @@ static void* _run_host_client(void* arg)
     return NULL;
 }
 
-static void* _run_host_server(void* arg)
+static void* _run_host_server(void* arg_)
 {
-    OE_UNUSED(arg);
-    run_server(PORT, NUM_CLIENTS);
+    server_arg_t* arg = (server_arg_t*)arg_;
+
+    run_server(PORT, NUM_CLIENTS, arg->poller_type);
+
     return NULL;
 }
 
-static void* _run_enclave_server(void* arg)
+static void* _run_enclave_server(void* arg_)
 {
-    OE_UNUSED(arg);
+    server_arg_t* arg = (server_arg_t*)arg_;
 
-    run_enclave_server(_enclave, PORT, NUM_CLIENTS);
+    run_enclave_server(_enclave, PORT, NUM_CLIENTS, arg->poller_type);
 
     return NULL;
 }
@@ -51,12 +58,16 @@ static void* _run_enclave_client(void* arg)
     return NULL;
 }
 
-void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
+void run_test(
+    void* (*client_proc)(void*),
+    void* (*server_proc)(void*),
+    poller_type_t poller_type)
 {
     thread_t clients[NUM_CLIENTS];
     thread_t server;
+    server_arg_t arg = {poller_type};
 
-    if (thread_create(&server, server_proc, NULL) != 0)
+    if (thread_create(&server, server_proc, &arg) != 0)
     {
         OE_TEST("thread_create()" == NULL);
     }
@@ -77,31 +88,35 @@ void run_test(void* (*client_proc)(void*), void* (*server_proc)(void*))
     thread_join(server);
 }
 
-void test_host_to_host(void)
+void test_host_to_host(poller_type_t poller_type)
 {
-    run_test(_run_host_client, _run_host_server);
-    printf("=== passed %s()\n", __FUNCTION__);
+    printf("=== start %s(): %s\n", __FUNCTION__, poller::name(poller_type));
+    run_test(_run_host_client, _run_host_server, poller_type);
+    printf("=== passed %s(): %s\n", __FUNCTION__, poller::name(poller_type));
     fflush(stdout);
 }
 
-void test_host_to_enclave(void)
+void test_host_to_enclave(poller_type_t poller_type)
 {
-    run_test(_run_host_client, _run_enclave_server);
-    printf("=== passed %s()\n", __FUNCTION__);
+    printf("=== start %s(): %s\n", __FUNCTION__, poller::name(poller_type));
+    run_test(_run_host_client, _run_enclave_server, poller_type);
+    printf("=== passed %s(): %s\n", __FUNCTION__, poller::name(poller_type));
     fflush(stdout);
 }
 
-void test_enclave_to_host(void)
+void test_enclave_to_host(poller_type_t poller_type)
 {
-    run_test(_run_enclave_client, _run_host_server);
-    printf("=== passed %s()\n", __FUNCTION__);
+    printf("=== start %s(): %s\n", __FUNCTION__, poller::name(poller_type));
+    run_test(_run_enclave_client, _run_host_server, poller_type);
+    printf("=== passed %s(): %s\n", __FUNCTION__, poller::name(poller_type));
     fflush(stdout);
 }
 
-void test_enclave_to_enclave(void)
+void test_enclave_to_enclave(poller_type_t poller_type)
 {
-    run_test(_run_enclave_client, _run_enclave_server);
-    printf("=== passed %s()\n", __FUNCTION__);
+    printf("=== start %s(): %s\n", __FUNCTION__, poller::name(poller_type));
+    run_test(_run_enclave_client, _run_enclave_server, poller_type);
+    printf("=== passed %s(): %s\n", __FUNCTION__, poller::name(poller_type));
     fflush(stdout);
 }
 
@@ -120,24 +135,14 @@ int main(int argc, const char* argv[])
     r = oe_create_poller_enclave(argv[1], type, flags, NULL, 0, &_enclave);
     OE_TEST(r == OE_OK);
 
-    printf("=== start test_host_to_host()\n");
-    fflush(stdout);
-    test_host_to_host();
-
-    printf("=== start test_enclave_to_host()\n");
-    fflush(stdout);
-    test_enclave_to_host();
-
-    printf("=== start test_host_to_enclave()\n");
-    fflush(stdout);
-    test_host_to_enclave();
-
-    printf("=== start test_enclave_to_enclave()\n");
-    fflush(stdout);
-    test_enclave_to_enclave();
-
-    printf("=== start test_fd_set()\n");
-    fflush(stdout);
+    test_host_to_host(POLLER_TYPE_SELECT);
+    test_enclave_to_host(POLLER_TYPE_SELECT);
+    test_host_to_enclave(POLLER_TYPE_SELECT);
+    test_enclave_to_enclave(POLLER_TYPE_SELECT);
+    test_host_to_host(POLLER_TYPE_POLL);
+    test_enclave_to_host(POLLER_TYPE_POLL);
+    test_host_to_enclave(POLLER_TYPE_POLL);
+    test_enclave_to_enclave(POLLER_TYPE_POLL);
     test_fd_set(_enclave);
 
     r = oe_terminate_enclave(_enclave);
