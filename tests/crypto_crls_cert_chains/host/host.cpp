@@ -41,10 +41,10 @@ std::vector<char> read_binary_file(const char* path)
 
 void run_cert_chain_tests(oe_enclave_t* enclave)
 {
-    std::string root = read_text_file("./data/RootCA1.crt.pem");
-    std::string intermediate = read_text_file("./data/IntermediateCA1.crt.pem");
-    std::string leaf = read_text_file("./data/Leaf1.crt.pem");
-    std::string leaf2 = read_text_file("./data/Leaf2.crt.pem");
+    std::string root = read_text_file("./data/root.cert.pem");
+    std::string intermediate = read_text_file("./data/intermediate.cert.pem");
+    std::string leaf = read_text_file("./data/leaf1.cert.pem");
+    std::string leaf2 = read_text_file("./data/leaf2.cert.pem");
 
     test_cert_chain_positive(
         root.c_str(), intermediate.c_str(), leaf.c_str(), leaf2.c_str());
@@ -69,10 +69,10 @@ void run_cert_chain_tests(oe_enclave_t* enclave)
 
 void run_crl_tests(oe_enclave_t* enclave)
 {
-    std::string root = read_text_file("./data/RootCA1.crt.pem");
-    std::string intermediate = read_text_file("./data/IntermediateCA1.crt.pem");
-    std::string leaf = read_text_file("./data/Leaf1.crt.pem");
-    std::string leaf2 = read_text_file("./data/Leaf2.crt.pem");
+    std::string root = read_text_file("./data/root.cert.pem");
+    std::string intermediate = read_text_file("./data/intermediate.cert.pem");
+    std::string leaf = read_text_file("./data/leaf1.cert.pem");
+    std::string leaf2 = read_text_file("./data/leaf2.cert.pem");
     std::vector<char> root_crl1 = read_binary_file("./data/root_crl1.der");
     std::vector<char> root_crl2 = read_binary_file("./data/root_crl2.der");
     std::vector<char> intermediate_crl1 =

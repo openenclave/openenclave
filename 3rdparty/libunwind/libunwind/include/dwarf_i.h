@@ -344,17 +344,17 @@ dwarf_read_sleb128 (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 
 static ALWAYS_INLINE int
 dwarf_read_encoded_pointer_inlined (unw_addr_space_t as, unw_accessors_t *a,
-				    unw_word_t *addr, unsigned char encoding,
-				    unw_word_t gp, unw_word_t start_ip,
-				    unw_word_t *valp, void *arg)
+                                    unw_word_t *addr, unsigned char encoding,
+                                    const unw_proc_info_t *pi,
+                                    unw_word_t *valp, void *arg)
 {
   unw_word_t val, initial_addr = *addr;
   uint16_t uval16;
   uint32_t uval32;
   uint64_t uval64;
-  int16_t sval16;
-  int32_t sval32;
-  int64_t sval64;
+  int16_t sval16 = 0;
+  int32_t sval32 = 0;
+  int64_t sval64 = 0;
   int ret;
 
   /* DW_EH_PE_omit and DW_EH_PE_aligned don't follow the normal
@@ -449,11 +449,11 @@ dwarf_read_encoded_pointer_inlined (unw_addr_space_t as, unw_accessors_t *a,
     case DW_EH_PE_datarel:
       /* XXX For now, assume that data-relative addresses are relative
          to the global pointer.  */
-      val += gp;
+      val += pi->gp;
       break;
 
     case DW_EH_PE_funcrel:
-      val += start_ip;
+      val += pi->start_ip;
       break;
 
     case DW_EH_PE_textrel:

@@ -278,6 +278,7 @@ typedef enum _oe_result
      * The certificate or signature has been revoked.
      */
     OE_VERIFY_REVOKED,
+
     /**
      * An underlying crypto provider returned an error.
      */

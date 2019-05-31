@@ -32,7 +32,7 @@ is_cie_id (unw_word_t val, int is_debug_frame)
      0xffffffffffffffff (for 64-bit ELF).  However, .eh_frame
      uses 0.  */
   if (is_debug_frame)
-    return (val == - (uint32_t) 1 || val == - (uint64_t) 1);
+      return (val == (uint32_t)(-1) || val == (uint64_t)(-1));
   else
     return (val == 0);
 }
@@ -116,10 +116,11 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
   if ((ret = dwarf_readu8 (as, a, &addr, &version, arg)) < 0)
     return ret;
 
-  if (version != 1 && version != DWARF_CIE_VERSION)
+  /* GCC emits version 1??? */
+  if (version != 1 && (version < DWARF_CIE_VERSION || version > DWARF_CIE_VERSION_MAX))
     {
-      Debug (1, "Got CIE version %u, expected version 1 or "
-             STR (DWARF_CIE_VERSION) "\n", version);
+      Debug (1, "Got CIE version %u, expected version 1 or between "
+             STR (DWARF_CIE_VERSION) " and " STR (DWARF_CIE_VERSION_MAX) "\n", version);
       return -UNW_EBADVERSION;
     }
 
@@ -182,7 +183,7 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
         if ((ret = dwarf_readu8 (as, a, &addr, &handler_encoding, arg)) < 0)
           return ret;
         if ((ret = dwarf_read_encoded_pointer (as, a, &addr, handler_encoding,
-                                               pi->gp, pi->start_ip, &dci->handler, arg)) < 0)
+                                               pi, &dci->handler, arg)) < 0)
           return ret;
         break;
 
@@ -240,7 +241,7 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
 
   if (u32val != 0xffffffff)
     {
-      int32_t cie_offset;
+      int32_t cie_offset = 0;
 
       /* In some configurations, an FDE with a 0 length indicates the
          end of the FDE-table.  */
@@ -251,10 +252,6 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
 
       *addrp = fde_end_addr = addr + u32val;
       cie_offset_addr = addr;
-
-      /* CIE must be within the segment. */
-      if (cie_offset_addr < base)
-          return -UNW_ENOINFO;
 
       if ((ret = dwarf_reads32 (as, a, &addr, &cie_offset, arg)) < 0)
         return ret;
@@ -274,7 +271,7 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
     }
   else
     {
-      int64_t cie_offset;
+      int64_t cie_offset = 0;
 
       /* the FDE is in the 64-bit DWARF format */
 
@@ -283,10 +280,6 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
 
       *addrp = fde_end_addr = addr + u64val;
       cie_offset_addr = addr;
-
-      /* CIE must be within the segment. */
-      if (cie_offset_addr < base)
-          return -UNW_ENOINFO;
 
       if ((ret = dwarf_reads64 (as, a, &addr, &cie_offset, arg)) < 0)
         return ret;
@@ -315,9 +308,9 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
   ip_range_encoding = dci.fde_encoding & DW_EH_PE_FORMAT_MASK;
 
   if ((ret = dwarf_read_encoded_pointer (as, a, &addr, dci.fde_encoding,
-                                         pi->gp, pi->start_ip, &start_ip, arg)) < 0
+                                         pi, &start_ip, arg)) < 0
       || (ret = dwarf_read_encoded_pointer (as, a, &addr, ip_range_encoding,
-                                            pi->gp, pi->start_ip, &ip_range, arg)) < 0)
+                                            pi, &ip_range, arg)) < 0)
     return ret;
   pi->start_ip = start_ip;
   pi->end_ip = start_ip + ip_range;
@@ -331,7 +324,7 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
     }
 
   if ((ret = dwarf_read_encoded_pointer (as, a, &addr, dci.lsda_encoding,
-                                         pi->gp, pi->start_ip, &pi->lsda, arg)) < 0)
+                                         pi, &pi->lsda, arg)) < 0)
     return ret;
 
   Debug (15, "FDE covers IP 0x%lx-0x%lx, LSDA=0x%lx\n",

@@ -13,8 +13,8 @@ database    = ./root_index.txt
 crlnumber   = ./root_crl_number  # For certificate revocation lists
 
 # The root key and root certificate.
-private_key       = ../data/RootCA.key.pem
-certificate       = ../data/RootCA.crt.pem
+private_key       = ../data/root.key.pem
+certificate       = ../data/root.cert.pem
 
 
 default_days     = 365        # how long to certify for
