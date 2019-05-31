@@ -209,12 +209,10 @@ add_subdirectory(tests)
 add_subdirectory(tools)
 
 if (BUILD_ENCLAVES)
-  add_subdirectory(enclave/core)
+  add_subdirectory(enclave)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)
-  add_subdirectory(3rdparty/mbedtls)
   add_subdirectory(libcxx)
-  add_subdirectory(enclave)
   add_subdirectory(posix)
 endif()
 
