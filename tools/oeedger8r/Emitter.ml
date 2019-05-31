@@ -129,7 +129,11 @@ let get_deepcopy a structs ep =
   let get_struct = function
     | Ptr a -> (
       match a with
-      | Foreign n | Struct n -> List.assoc_opt n structs
+      | Foreign n | Struct n ->
+          (* TODO: This would simply be [List.assoc_opt] if we had at
+             least 4.05. *)
+          if List.mem_assoc n structs then Some (List.assoc n structs)
+          else None
       | _ -> None )
     | _ -> None
   in
