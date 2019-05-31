@@ -193,7 +193,7 @@ extern "C" void run_server(
 
                         break;
                     }
-                    else if (errno == EAGAIN)
+                    else if (test_would_block())
                     {
                         break;
                     }
@@ -240,7 +240,7 @@ extern "C" void run_server(
                             break;
                         }
                     }
-                    else if (errno == EAGAIN)
+                    else if (test_would_block())
                     {
                         break;
                     }

@@ -16,7 +16,7 @@
 #include "poller_u.h"
 
 static const uint16_t PORT = 12347;
-static const size_t NUM_CLIENTS = 16;
+static const size_t NUM_CLIENTS = 4;
 static oe_enclave_t* _enclave;
 
 typedef struct thread_arg

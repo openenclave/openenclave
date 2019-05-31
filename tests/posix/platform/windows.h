@@ -13,6 +13,8 @@
 #include <winsock2.h>
 #include <windows.h>
 // clang-format on
+//
+#include <stdio.h>
 
 typedef SOCKET socket_t;
 typedef int socklen_t;
@@ -134,6 +136,11 @@ OE_INLINE int thread_join(thread_t thread)
 OE_INLINE void sleep_msec(uint32_t msec)
 {
     Sleep(msec);
+}
+
+OE_INLINE bool test_would_block()
+{
+    return WSAGetLastError() == WSAEWOULDBLOCK;
 }
 
 #endif /* _PLATFORM_WINDOWS_H */

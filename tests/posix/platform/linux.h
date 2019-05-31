@@ -16,6 +16,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #define INVALID_SOCKET ((socket_t)-1)
 
@@ -115,5 +116,10 @@ OE_INLINE int thread_join(thread_t thread)
     return pthread_join(thread.__impl, NULL);
 }
 #endif
+
+OE_INLINE bool test_would_block()
+{
+    return errno = EAGAIN;
+}
 
 #endif /* _PLATFORM_LINUX_H */
