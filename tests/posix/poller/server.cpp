@@ -98,7 +98,7 @@ extern "C" void run_server(
     }
 
     /* Watch for read events on the listener socket (i.e., connects). */
-    poller->add(listener, POLLER_READ);
+    OE_TEST(poller->add(listener, POLLER_READ) == 0);
 
     while (!quit)
     {
@@ -130,7 +130,7 @@ extern "C" void run_server(
                     clients.push_back(client);
 
                     sock_set_blocking(sock, false);
-                    poller->add(sock, POLLER_READ);
+                    OE_TEST(poller->add(sock, POLLER_READ) == 0);
 
                     printf("client %lld connect\n", OE_LLD((int64_t)sock));
                     fflush(stdout);
@@ -168,7 +168,7 @@ extern "C" void run_server(
                         fflush(stdout);
 
                         client->out.insert(client->out.end(), buf, buf + n);
-                        poller->add(client->sock, POLLER_WRITE);
+                        OE_TEST(poller->add(client->sock, POLLER_WRITE) == 0);
                     }
                     else if (n == 0)
                     {
@@ -178,8 +178,9 @@ extern "C" void run_server(
                         fflush(stdout);
 
                         /* Client disconnect. */
-                        poller->remove(
-                            client->sock, POLLER_WRITE | POLLER_READ);
+                        OE_TEST(
+                            poller->remove(
+                                client->sock, POLLER_WRITE | POLLER_READ) == 0);
                         sock_close(client->sock);
 
                         num_disconnects++;
@@ -234,7 +235,8 @@ extern "C" void run_server(
 
                         if (out.size() == 0)
                         {
-                            poller->remove(event.sock, POLLER_WRITE);
+                            OE_TEST(
+                                poller->remove(event.sock, POLLER_WRITE) == 0);
                             break;
                         }
                     }

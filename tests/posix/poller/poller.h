@@ -20,9 +20,8 @@
 enum poller_type_t
 {
     POLLER_TYPE_SELECT,
-#ifndef WINDOWS_HOST
     POLLER_TYPE_POLL,
-#endif
+    POLLER_TYPE_EPOLL,
 };
 
 struct event_t
@@ -57,6 +56,84 @@ class poller
     static poller* create(poller_type_t poller_type);
 
     static void destroy(poller* poller);
+};
+
+class base_poller : public poller
+{
+  public:
+    base_poller()
+    {
+    }
+
+    virtual ~base_poller()
+    {
+    }
+
+    virtual int add(socket_t sock, uint32_t events)
+    {
+        std::vector<event_t>::iterator p = _events.begin();
+        std::vector<event_t>::iterator end = _events.end();
+
+        for (; p != end; p++)
+        {
+            event_t& event = *p;
+
+            if (event.sock == sock)
+            {
+                event.events |= events;
+                return 0;
+            }
+        }
+
+        _events.push_back(event_t(sock, events));
+        return 0;
+    }
+
+    virtual int remove(socket_t sock, uint32_t events)
+    {
+        std::vector<event_t>::iterator p = _events.begin();
+        std::vector<event_t>::iterator end = _events.end();
+
+        for (; p != end; p++)
+        {
+            event_t& event = *p;
+
+            if (event.sock == sock)
+            {
+                event.events &= ~events;
+
+                if (event.events == 0)
+                    _events.erase(p);
+
+                return 0;
+            }
+        }
+
+        return -1;
+    }
+
+    virtual int wait(std::vector<event_t>& events)
+    {
+        OE_UNUSED(events);
+        return -1;
+    }
+
+    bool find(socket_t sock, event_t& event) const
+    {
+        for (size_t i = 0; i < _events.size(); i++)
+        {
+            if (_events[i].sock == sock)
+            {
+                event = _events[i];
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+  protected:
+    std::vector<event_t> _events;
 };
 
 class select_poller : public poller
@@ -146,7 +223,9 @@ class select_poller : public poller
     socket_t _max;
 };
 
-#ifndef WINDOWS_HOST
+#ifdef WINDOWS_HOST
+typedef select_poller poll_poller;
+#else
 class poll_poller : public poller
 {
   public:
@@ -268,16 +347,162 @@ class poll_poller : public poller
 };
 #endif
 
+#ifdef WINDOWS_HOST
+typedef select_poller epoll_poller;
+#else
+class epoll_poller : public base_poller
+{
+  public:
+    epoll_poller()
+    {
+        _epfd = epoll_create1(0);
+    }
+
+    virtual ~epoll_poller()
+    {
+        close(_epfd);
+    }
+
+    virtual int add(socket_t sock, uint32_t events)
+    {
+        event_t event;
+
+        if (find(sock, event))
+        {
+            struct epoll_event epoll_event;
+            event_t event;
+
+            memset(&epoll_event, 0, sizeof(struct epoll_event));
+            epoll_event.data.fd = sock;
+            epoll_event.events = 0;
+
+            events |= event.events;
+
+            if ((events & POLLER_READ))
+                epoll_event.events |= EPOLLIN;
+
+            if ((events & POLLER_WRITE))
+                epoll_event.events |= EPOLLOUT;
+
+            if ((events & POLLER_EXCEPT))
+                epoll_event.events |= EPOLLERR;
+
+            if (epoll_ctl(_epfd, EPOLL_CTL_MOD, sock, &epoll_event) != 0)
+                return -1;
+        }
+        else
+        {
+            struct epoll_event epoll_event;
+            event_t event;
+
+            memset(&epoll_event, 0, sizeof(struct epoll_event));
+            epoll_event.data.fd = sock;
+            epoll_event.events = 0;
+
+            if ((events & POLLER_READ))
+                epoll_event.events |= EPOLLIN;
+
+            if ((events & POLLER_WRITE))
+                epoll_event.events |= EPOLLOUT;
+
+            if ((events & POLLER_EXCEPT))
+                epoll_event.events |= EPOLLERR;
+
+            if (epoll_ctl(_epfd, EPOLL_CTL_ADD, sock, &epoll_event) != 0)
+                return -1;
+        }
+
+        return base_poller::add(sock, events);
+    }
+
+    virtual int remove(socket_t sock, uint32_t events)
+    {
+        event_t event;
+
+        if (base_poller::remove(sock, events) != 0)
+            return -1;
+
+        if (find(sock, event))
+        {
+            struct epoll_event epoll_event;
+
+            memset(&epoll_event, 0, sizeof(struct epoll_event));
+
+            epoll_event.data.fd = sock;
+            epoll_event.events = 0;
+
+            if ((event.events & POLLER_READ))
+                epoll_event.events |= EPOLLIN;
+
+            if ((event.events & POLLER_WRITE))
+                epoll_event.events |= EPOLLOUT;
+
+            if ((event.events & POLLER_EXCEPT))
+                epoll_event.events |= EPOLLERR;
+
+            if (epoll_ctl(_epfd, EPOLL_CTL_MOD, sock, &epoll_event) != 0)
+                return -1;
+        }
+        else
+        {
+            if (epoll_ctl(_epfd, EPOLL_CTL_DEL, sock, NULL) != 0)
+                return -1;
+        }
+
+        return 0;
+    }
+
+    virtual int wait(std::vector<event_t>& events)
+    {
+        const int MAX_EPOLL_EVENTS = 1024;
+        struct epoll_event epoll_events[MAX_EPOLL_EVENTS];
+
+        events.clear();
+
+        int n = epoll_wait(_epfd, epoll_events, MAX_EPOLL_EVENTS, -1);
+
+        if (n < 0)
+            return -1;
+
+        for (int i = 0; i < n; i++)
+        {
+            const struct epoll_event* p = &epoll_events[i];
+            event_t event;
+
+            event.sock = p->data.fd;
+            event.events = 0;
+
+            if ((p->events & EPOLLIN))
+                event.events |= POLLER_READ;
+
+            if ((p->events & EPOLLOUT))
+                event.events |= POLLER_WRITE;
+
+            if ((p->events & EPOLLERR))
+                event.events |= POLLER_EXCEPT;
+
+            events.push_back(event);
+        }
+
+        return 0;
+    }
+
+  private:
+    int _epfd;
+    std::vector<event_t> _events;
+};
+#endif
+
 inline poller* poller::create(poller_type_t poller_type)
 {
     switch (poller_type)
     {
         case POLLER_TYPE_SELECT:
             return new select_poller();
-#ifndef WINDOWS_HOST
         case POLLER_TYPE_POLL:
             return new poll_poller();
-#endif
+        case POLLER_TYPE_EPOLL:
+            return new epoll_poller();
     }
 
     return NULL;
@@ -289,10 +514,10 @@ inline const char* poller::name(poller_type_t poller_type)
     {
         case POLLER_TYPE_SELECT:
             return "select";
-#ifndef WINDOWS_HOST
         case POLLER_TYPE_POLL:
             return "poll";
-#endif
+        case POLLER_TYPE_EPOLL:
+            return "epoll";
     }
 
     return "none";

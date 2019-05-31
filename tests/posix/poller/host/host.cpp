@@ -126,26 +126,34 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
     const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
 
-    if (argc != 2)
+    if (argc != 3)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
+        fprintf(stderr, "Usage: %s ENCLAVE_PATH POLL_TYPE\n", argv[0]);
         return 1;
     }
 
     r = oe_create_poller_enclave(argv[1], type, flags, NULL, 0, &_enclave);
     OE_TEST(r == OE_OK);
 
-    test_host_to_host(POLLER_TYPE_SELECT);
-    test_enclave_to_host(POLLER_TYPE_SELECT);
-    test_host_to_enclave(POLLER_TYPE_SELECT);
-    test_enclave_to_enclave(POLLER_TYPE_SELECT);
+    const char* poller_type_name = argv[2];
+    poller_type_t poller_type;
 
-#ifndef WINDOWS_HOST
-    test_host_to_host(POLLER_TYPE_POLL);
-    test_enclave_to_host(POLLER_TYPE_POLL);
-    test_host_to_enclave(POLLER_TYPE_POLL);
-    test_enclave_to_enclave(POLLER_TYPE_POLL);
-#endif
+    if (strcmp(poller_type_name, "select") == 0)
+        poller_type = POLLER_TYPE_SELECT;
+    else if (strcmp(poller_type_name, "poll") == 0)
+        poller_type = POLLER_TYPE_POLL;
+    else if (strcmp(poller_type_name, "epoll") == 0)
+        poller_type = POLLER_TYPE_EPOLL;
+    else
+    {
+        fprintf(stderr, "Unknown poller type: %s\n", poller_type_name);
+        exit(1);
+    }
+
+    test_host_to_host(poller_type);
+    test_enclave_to_host(poller_type);
+    test_host_to_enclave(poller_type);
+    test_enclave_to_enclave(poller_type);
 
     test_fd_set(_enclave);
 

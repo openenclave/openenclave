@@ -12,6 +12,7 @@
 #include <openenclave/bits/types.h>
 #include <poll.h>
 #include <pthread.h>
+#include <sys/epoll.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>

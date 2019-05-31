@@ -7,4 +7,4 @@ add_executable(poller_enc enc.cpp ../client.cpp ../server.cpp ${gen})
 
 maybe_build_using_clangw(poller_enc)
 
-target_link_libraries(poller_enc oelibcxx oeenclave oehostsock)
+target_link_libraries(poller_enc oelibcxx oeenclave oehostepoll oehostsock)
