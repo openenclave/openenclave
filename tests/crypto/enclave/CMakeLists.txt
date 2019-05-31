@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_subdirectory(enc)
+if (BUILD_ENCLAVES)
+    add_subdirectory(enc)
+endif()
+
 add_subdirectory(host)
-add_test(tests/crypto/enclave host/cryptohost ./enc/cryptoenc)
+add_enclave_test(tests/crypto/enclave cryptohost cryptoenc)

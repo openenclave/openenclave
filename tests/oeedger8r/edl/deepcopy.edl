@@ -1,0 +1,76 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+  include "stdint.h"
+
+  struct ShallowStruct {
+    uint64_t count;
+    size_t size;
+    uint64_t* ptr;
+  };
+
+  struct CountStruct {
+    uint64_t count;
+    size_t size;
+    [count=3] uint64_t* ptr;
+  };
+
+  struct CountParamStruct {
+    uint64_t count;
+    size_t size;
+    [count=count] uint64_t* ptr;
+  };
+
+  struct SizeParamStruct {
+    uint64_t count;
+    size_t size;
+    [size=size] uint64_t* ptr;
+  };
+
+  struct CountSizeParamStruct {
+    uint64_t count;
+    size_t size;
+    [count=count, size=size] uint64_t* ptr;
+  };
+
+  trusted {
+    // Since `s` is passed by value, `s.ptr` is not deep copied.
+    public void deepcopy_value(ShallowStruct s, [user_check] uint64_t* ptr);
+
+    // Although `s` is passed by pointer, because `s.ptr` does not
+    // have any attribute, it is still not deep copied.
+    public void deepcopy_shallow([in, count=1] ShallowStruct* s, [user_check] uint64_t* ptr);
+
+    // Deep copy of one `CountStruct` with an embedded array should
+    // take place.
+    public void deepcopy_count([in, count=1] CountStruct* s);
+
+    // Deep copy of one `CountParamStruct` with an embedded array
+    // should take place.
+    public void deepcopy_countparam([in, count=1] CountParamStruct* s);
+
+    // TODO: We should have a `SizeStruct` to test deep copying where
+    // the size attribute is correctly used with a hard-coded value.
+
+    // Deep copy of one `SizeParamStruct` with an embedded array
+    // should take place.
+    public void deepcopy_sizeparam([in, count=1] SizeParamStruct* s);
+
+    // Deep copy of one `CountSizeParamStruct` with an embedded array
+    // should take place.
+    public void deepcopy_countsizeparam([in, count=1] CountSizeParamStruct* s);
+
+    // Deep copy of two `CountParamStruct`s each with an embedded
+    // array and different counts should take place.
+    public void deepcopy_countparamarray([in, count=2] CountParamStruct* s);
+
+    // Deep copy of two `SizeParamStruct`s each with an embedded
+    // array and different sizes should take place.
+    public void deepcopy_sizeparamarray([in, count=2] SizeParamStruct* s);
+
+    // Deep copy of two `CountSizeParamStruct`s each with an embedded
+    // array and different counts should take place.
+    public void deepcopy_countsizeparamarray([in, count=2] CountSizeParamStruct* s);
+  };
+};

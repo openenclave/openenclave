@@ -73,3 +73,7 @@ set_tests_properties(edger8r_count_signedness_warning PROPERTIES
 add_test(NAME edger8r_size_and_count_warning COMMAND edger8r ${EDGER8R_ARGS} size_and_count.edl)
 set_tests_properties(edger8r_size_and_count_warning PROPERTIES
   PASS_REGULAR_EXPRESSION "Function 'size_and_count': simultaneous 'size' and 'count' parameters 'size' and 'count' are not supported by oeedger8r.")
+
+add_test(NAME edger8r_deepcopy_value_warning COMMAND edger8r ${EDGER8R_ARGS} deepcopy_value.edl)
+set_tests_properties(edger8r_deepcopy_value_warning PROPERTIES
+  PASS_REGULAR_EXPRESSION "error: the structure declaration \"MyStruct\" specifies a deep copy is expected. Referenced by value in function \"deepcopy_value\" detected.")

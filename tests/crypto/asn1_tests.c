@@ -333,7 +333,7 @@ static void _test_asn1_parsing(void)
     oe_result_t r;
 
     printf("=== begin %s()\n", __FUNCTION__);
-    OE_TEST(read_cert("../data/asn1_cert.pem", _CERT) == OE_OK);
+    OE_TEST(read_cert("../data/asn1.cert.pem", _CERT) == OE_OK);
     OE_TEST(oe_cert_read_pem(&cert, _CERT, strlen(_CERT) + 1) == OE_OK);
 
     /* Find the SGX_EXTENSION */

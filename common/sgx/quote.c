@@ -12,8 +12,6 @@
 #include "qeidentity.h"
 #include "revocation.h"
 
-#ifdef OE_USE_LIBSGX
-
 // Public key of Intel's root certificate.
 static const char* g_expected_root_certificate_key =
     "-----BEGIN PUBLIC KEY-----\n"
@@ -304,28 +302,3 @@ done:
     oe_cert_chain_free(&pck_cert_chain);
     return result;
 }
-
-#else
-
-oe_result_t VerifyQuoteImpl(
-    const uint8_t* enc_quote,
-    size_t quote_size,
-    const uint8_t* enc_pem_pck_certificate,
-    size_t pem_pck_certificate_size,
-    const uint8_t* enc_pck_crl,
-    size_t enc_pck_crl_size,
-    const uint8_t* enc_tcb_info_json,
-    size_t enc_tcb_info_json_size)
-{
-    OE_UNUSED(enc_quote);
-    OE_UNUSED(quote_size);
-    OE_UNUSED(enc_pem_pck_certificate);
-    OE_UNUSED(pem_pck_certificate_size);
-    OE_UNUSED(enc_pck_crl);
-    OE_UNUSED(enc_pck_crl_size);
-    OE_UNUSED(enc_tcb_info_json);
-    OE_UNUSED(enc_tcb_info_json_size);
-
-    return OE_UNSUPPORTED;
-}
-#endif

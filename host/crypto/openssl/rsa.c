@@ -74,10 +74,10 @@ static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
     RSA* rsa = NULL;
 
     if (!(rsa = EVP_PKEY_get1_RSA(pkey)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (!PEM_write_bio_RSAPrivateKey(bio, rsa, NULL, NULL, 0, 0, NULL))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     result = OE_OK;
 
@@ -130,22 +130,22 @@ static oe_result_t _generate_key_pair(
         BN_set_word(e, exponent);
         RSA_generate_key_ex(rsa_private, (int32_t)bits, e, 0);
         if (!rsa_private)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Create the public key */
         if (!(rsa_public = RSAPublicKey_dup(rsa_private)))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
     }
 
     /* Create the PKEY private key wrapper */
     {
         /* Create the private key structure */
         if (!(pkey_private = EVP_PKEY_new()))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the private key from the generated key pair */
         if (!EVP_PKEY_assign_RSA(pkey_private, rsa_private))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the private key */
         oe_private_key_init(private_key, pkey_private, _PRIVATE_KEY_MAGIC);
@@ -159,11 +159,11 @@ static oe_result_t _generate_key_pair(
     {
         /* Create the public key structure */
         if (!(pkey_public = EVP_PKEY_new()))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the public key from the generated key pair */
         if (!EVP_PKEY_assign_RSA(pkey_public, rsa_public))
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the public key */
         oe_public_key_init(public_key, pkey_public, _PUBLIC_KEY_MAGIC);
@@ -219,7 +219,7 @@ static oe_result_t _get_public_key_get_modulus_or_exponent(
 
     /* Get RSA key */
     if (!(rsa = EVP_PKEY_get1_RSA(public_key->pkey)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Select modulus or exponent */
     const BIGNUM* e;
@@ -232,7 +232,7 @@ static oe_result_t _get_public_key_get_modulus_or_exponent(
         int n = BN_num_bytes(bn);
 
         if (n <= 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Add one leading byte for the leading zero byte */
         required_size = (size_t)n;
@@ -247,7 +247,7 @@ static oe_result_t _get_public_key_get_modulus_or_exponent(
 
     /* Copy key bytes to the caller's buffer */
     if (!BN_bn2bin(bn, buffer))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     *buffer_size = required_size;
 
@@ -490,35 +490,35 @@ oe_result_t oe_rsa_get_public_key_from_private(
 
     /* Get RSA private key */
     if (!(rsa_private = EVP_PKEY_get1_RSA(private_key_temp->pkey)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     RSA_get0_key(rsa_private, &private_e, &private_n, NULL);
 
     /* Check if it's possible to get the public key. */
-    if (!private_n || !private_n)
-        OE_RAISE(OE_FAILURE);
+    if (!private_e || !private_n)
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Create RSA public key. */
     if (!(rsa_public = RSA_new()))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     RSA_get0_key(rsa_private, &public_e, &public_n, NULL);
 
     if (!public_e)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (!public_n)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (!RSA_set0_key(rsa_public, BN_dup(public_e), BN_dup(public_n), NULL))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     /* Init the OE public key type. */
     if (!(rsa_public_pkey = EVP_PKEY_new()))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     if (EVP_PKEY_set1_RSA(rsa_public_pkey, rsa_public) == 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_CRYPTO_ERROR);
 
     oe_rsa_public_key_init(public_key, rsa_public_pkey);
 

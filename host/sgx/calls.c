@@ -365,6 +365,35 @@ done:
     return result;
 }
 
+static const char* oe_ocall_str(oe_func_t ocall)
+{
+    static const char* func_names[] = {"OE_OCALL_CALL_HOST_FUNCTION",
+                                       "OE_OCALL_GET_QE_TARGET_INFO",
+                                       "OE_OCALL_GET_QUOTE",
+                                       "OE_OCALL_GET_REVOCATION_INFO",
+                                       "OE_OCALL_GET_QE_ID_INFO",
+                                       "OE_OCALL_THREAD_WAKE",
+                                       "OE_OCALL_THREAD_WAIT",
+                                       "OE_OCALL_THREAD_WAKE_WAIT",
+                                       "OE_OCALL_MALLOC",
+                                       "OE_OCALL_REALLOC",
+                                       "OE_OCALL_FREE",
+                                       "OE_OCALL_WRITE",
+                                       "OE_OCALL_SLEEP",
+                                       "OE_OCALL_GET_TIME",
+                                       "OE_OCALL_BACKTRACE_SYMBOLS"
+                                       "OE_OCALL_LOG"};
+
+    OE_STATIC_ASSERT(
+        OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX - 1);
+
+    if (ocall >= OE_OCALL_BASE &&
+        ocall < (OE_OCALL_BASE + OE_COUNTOF(func_names)))
+        return func_names[ocall - OE_OCALL_BASE];
+    else
+        return "UNKNOWN";
+};
+
 /*
 **==============================================================================
 **
@@ -389,6 +418,13 @@ static oe_result_t _handle_ocall(
 
     if (arg_out)
         *arg_out = 0;
+
+    oe_log(
+        OE_LOG_LEVEL_INFO,
+        "%s 0x%x OE_OCALL: %s\n",
+        enclave->path,
+        enclave->addr,
+        oe_ocall_str(func));
 
     switch ((oe_func_t)func)
     {

@@ -6,15 +6,19 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <netdb.h>
-#include <openenclave/internal/device/types.h>
+#include <openenclave/corelibc/limits.h>
+#include <openenclave/corelibc/sys/uio.h>
+#include <openenclave/internal/posix/types.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/ioctl.h>
 #include <sys/poll.h>
 #include <sys/signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 #include "../host/strings.h"
@@ -52,6 +56,95 @@ ssize_t oe_posix_write_ocall(oe_host_fd_t fd, const void* buf, size_t count)
     return write((int)fd, buf, count);
 }
 
+static void _relocate_iov_bases(
+    struct oe_iovec* iov,
+    int iovcnt,
+    ptrdiff_t addend)
+{
+    for (int i = 0; i < iovcnt; i++)
+    {
+        if (iov[i].iov_base)
+            iov[i].iov_base = (uint8_t*)iov[i].iov_base + addend;
+    }
+}
+
+ssize_t oe_posix_readv_ocall(
+    oe_host_fd_t fd,
+    void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+    ssize_t ret = -1;
+    ssize_t size_read;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
+
+    {
+        _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+
+        size_read = readv((int)fd, (struct iovec*)iov, iovcnt);
+
+        _relocate_iov_bases(iov, iovcnt, -(ptrdiff_t)iov_buf);
+    }
+
+    ret = size_read;
+
+done:
+    return ret;
+}
+
+ssize_t oe_posix_writev_ocall(
+    oe_host_fd_t fd,
+    const void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    ssize_t ret = -1;
+    ssize_t size_written;
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
+
+    _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+    size_written = writev((int)fd, (struct iovec*)iov, iovcnt);
+
+    ret = size_written;
+
+done:
+    return ret;
+}
+
 oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
 {
     errno = 0;
@@ -78,14 +171,7 @@ uint64_t oe_posix_opendir_ocall(const char* name)
     return (uint64_t)opendir(name);
 }
 
-int oe_posix_readdir_ocall(
-    uint64_t dirp,
-    uint64_t* d_ino,
-    int64_t* d_off,
-    uint16_t* d_reclen,
-    uint8_t* d_type,
-    char* d_name,
-    size_t d_namelen)
+int oe_posix_readdir_ocall(uint64_t dirp, struct oe_dirent* entry)
 {
     int ret = -1;
     struct dirent* ent;
@@ -98,38 +184,42 @@ int oe_posix_readdir_ocall(
         goto done;
     }
 
-    if (!d_ino || !d_off || !d_reclen || !d_type || !d_name)
+    if (!entry)
     {
         errno = EINVAL;
         goto done;
     }
 
-    errno = 0;
-
-    if (!(ent = readdir((DIR*)dirp)))
+    /* Perform the readdir() operation. */
     {
-        if (errno)
-            goto done;
+        errno = 0;
 
-        ret = -1;
-        goto done;
+        if (!(ent = readdir((DIR*)dirp)))
+        {
+            if (errno)
+                goto done;
+
+            ret = 1;
+            goto done;
+        }
     }
 
+    /* Copy the local entry to the caller's entry structure. */
     {
         size_t len = strlen(ent->d_name);
 
-        *d_ino = ent->d_ino;
-        *d_off = ent->d_off;
-        *d_reclen = ent->d_reclen;
-        *d_type = ent->d_type;
+        entry->d_ino = ent->d_ino;
+        entry->d_off = ent->d_off;
+        entry->d_type = ent->d_type;
+        entry->d_reclen = sizeof(struct oe_dirent);
 
-        if (len >= d_namelen)
+        if (len >= sizeof(entry->d_name))
         {
             errno = ENAMETOOLONG;
             goto done;
         }
 
-        memcpy(d_name, ent->d_name, len + 1);
+        memcpy(entry->d_name, ent->d_name, len + 1);
     }
 
     ret = 0;
@@ -323,8 +413,9 @@ ssize_t oe_posix_recvmsg_ocall(
     void* msg_name,
     oe_socklen_t msg_namelen,
     oe_socklen_t* msg_namelen_out,
-    void* msg_buf,
-    size_t msg_buflen,
+    void* msg_iov_buf,
+    size_t msg_iovlen,
+    size_t msg_iov_buf_size,
     void* msg_control,
     size_t msg_controllen,
     size_t* msg_controllen_out,
@@ -332,16 +423,18 @@ ssize_t oe_posix_recvmsg_ocall(
 {
     ssize_t ret = -1;
     struct msghdr msg;
-    struct iovec iov;
+    struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
+
+    OE_UNUSED(msg_iov_buf_size);
 
     errno = 0;
 
-    iov.iov_base = msg_buf;
-    iov.iov_len = msg_buflen;
+    _relocate_iov_bases(msg_iov, (int)msg_iovlen, (ptrdiff_t)msg_iov_buf);
+
     msg.msg_name = msg_name;
     msg.msg_namelen = msg_namelen;
-    msg.msg_iov = &iov;
-    msg.msg_iovlen = 1;
+    msg.msg_iov = (struct iovec*)msg_iov;
+    msg.msg_iovlen = msg_iovlen;
     msg.msg_control = msg_control;
     msg.msg_controllen = msg_controllen;
     msg.msg_flags = 0;
@@ -355,6 +448,8 @@ ssize_t oe_posix_recvmsg_ocall(
             *msg_controllen_out = msg.msg_controllen;
     }
 
+    _relocate_iov_bases(msg_iov, (int)msg_iovlen, -(ptrdiff_t)msg_iov_buf);
+
     return ret;
 }
 
@@ -362,23 +457,26 @@ ssize_t oe_posix_sendmsg_ocall(
     oe_host_fd_t sockfd,
     const void* msg_name,
     oe_socklen_t msg_namelen,
-    const void* msg_buf,
-    size_t msg_buflen,
+    void* msg_iov_buf,
+    size_t msg_iovlen,
+    size_t msg_iov_buf_size,
     const void* msg_control,
     size_t msg_controllen,
     int flags)
 {
     struct msghdr msg;
-    struct iovec iov;
+    struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
+
+    OE_UNUSED(msg_iov_buf_size);
 
     errno = 0;
 
-    iov.iov_base = (void*)msg_buf;
-    iov.iov_len = msg_buflen;
+    _relocate_iov_bases(msg_iov, (int)msg_iovlen, (ptrdiff_t)msg_iov_buf);
+
     msg.msg_name = (void*)msg_name;
     msg.msg_namelen = msg_namelen;
-    msg.msg_iov = (void*)&iov;
-    msg.msg_iovlen = 1;
+    msg.msg_iov = (struct iovec*)msg_iov;
+    msg.msg_iovlen = msg_iovlen;
     msg.msg_control = (void*)msg_control;
     msg.msg_controllen = msg_controllen;
     msg.msg_flags = 0;
@@ -452,6 +550,83 @@ ssize_t oe_posix_sendto_ocall(
         addrlen);
 }
 
+ssize_t oe_posix_recvv_ocall(
+    oe_host_fd_t fd,
+    void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+    ssize_t ret = -1;
+    ssize_t size_recv;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
+
+    {
+        _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+
+        size_recv = readv((int)fd, (struct iovec*)iov, iovcnt);
+
+        _relocate_iov_bases(iov, iovcnt, -(ptrdiff_t)iov_buf);
+    }
+
+    ret = size_recv;
+
+done:
+    return ret;
+}
+
+ssize_t oe_posix_sendv_ocall(
+    oe_host_fd_t fd,
+    const void* iov_buf,
+    int iovcnt,
+    size_t iov_buf_size)
+{
+    ssize_t ret = -1;
+    ssize_t size_sent;
+    struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
+
+    OE_UNUSED(iov_buf_size);
+
+    errno = 0;
+
+    if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    /* Handle zero data case. */
+    if (!iov || iovcnt == 0)
+    {
+        ret = 0;
+        goto done;
+    }
+
+    _relocate_iov_bases(iov, iovcnt, (ptrdiff_t)iov_buf);
+    size_sent = writev((int)fd, (struct iovec*)iov, iovcnt);
+
+    ret = size_sent;
+
+done:
+    return ret;
+}
+
 int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how)
 {
     errno = 0;
@@ -464,6 +639,13 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
     errno = 0;
 
     return fcntl((int)fd, cmd, arg);
+}
+
+int oe_posix_ioctl_ocall(oe_host_fd_t fd, uint64_t request, uint64_t arg)
+{
+    errno = 0;
+
+    return ioctl((int)fd, request, arg);
 }
 
 int oe_posix_setsockopt_ocall(
@@ -596,39 +778,50 @@ static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
     return handle;
 }
 
-uint64_t oe_posix_getaddrinfo_open_ocall(
+int oe_posix_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
-    const struct oe_addrinfo* hints)
+    const struct oe_addrinfo* hints,
+    uint64_t* handle_out)
 {
-    getaddrinfo_handle_t* ret = NULL;
+    int ret = EAI_FAIL;
     getaddrinfo_handle_t* handle = NULL;
 
     errno = 0;
 
+    if (handle_out)
+        *handle_out = 0;
+
+    if (!handle_out)
+    {
+        ret = EAI_SYSTEM;
+        errno = EINVAL;
+        goto done;
+    }
+
     if (!(handle = calloc(1, sizeof(getaddrinfo_handle_t))))
     {
-        errno = ENOMEM;
+        ret = EAI_MEMORY;
         goto done;
     }
 
-    if (getaddrinfo(
-            node, service, (const struct addrinfo*)hints, &handle->res) != 0)
+    ret =
+        getaddrinfo(node, service, (const struct addrinfo*)hints, &handle->res);
+
+    if (ret == 0)
     {
-        goto done;
+        handle->magic = GETADDRINFO_HANDLE_MAGIC;
+        handle->next = handle->res;
+        *handle_out = (uint64_t)handle;
+        handle = NULL;
     }
-
-    handle->magic = GETADDRINFO_HANDLE_MAGIC;
-    handle->next = handle->res;
-    ret = handle;
-    handle = NULL;
 
 done:
 
     if (handle)
         free(handle);
 
-    return (uint64_t)ret;
+    return ret;
 }
 
 int oe_posix_getaddrinfo_read_ocall(
@@ -753,18 +946,10 @@ int oe_posix_getnameinfo_ocall(
         (const struct sockaddr*)sa, salen, host, hostlen, serv, servlen, flags);
 }
 
-int oe_posix_shutdown_resolver_device_ocall(void)
-{
-    /* No shutdown actions needed for this device. */
-    errno = 0;
-
-    return 0;
-}
-
 /*
 **==============================================================================
 **
-** Polling:
+** epoll:
 **
 **==============================================================================
 */
@@ -1026,6 +1211,60 @@ int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
 /*
 **==============================================================================
 **
+** poll:
+**
+**==============================================================================
+*/
+
+int oe_posix_poll_ocall(
+    struct oe_host_pollfd* host_fds,
+    oe_nfds_t nfds,
+    int timeout)
+{
+    int ret = -1;
+    struct oe_pollfd* fds = NULL;
+
+    errno = 0;
+
+    if (nfds == 0)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    if (!(fds = calloc(nfds, sizeof(struct oe_pollfd))))
+    {
+        errno = ENOMEM;
+        goto done;
+    }
+
+    /* Convert host_fds[] array to fds[] array. */
+    for (oe_nfds_t i = 0; i < nfds; i++)
+    {
+        fds[i].events = host_fds[i].events;
+        fds[i].fd = (int)host_fds[i].fd;
+    }
+
+    if ((ret = poll((struct pollfd*)fds, nfds, timeout)) <= 0)
+        goto done;
+
+    /* Update the revents in the fds[] array. */
+    for (oe_nfds_t i = 0; i < nfds; i++)
+    {
+        host_fds[i].revents = fds[i].revents;
+    }
+
+done:
+
+    if (fds)
+        free(fds);
+
+    return ret;
+}
+
+/*
+**==============================================================================
+**
 ** uid, gid, pid, and groups:
 **
 **==============================================================================
@@ -1172,7 +1411,6 @@ int oe_posix_uname_ocall(struct oe_utsname* buf)
             strcpy(buf->machine, uts.machine);
         }
 
-#if defined(_GNU_SOURCE)
         /* domainname: */
         {
             if (strlen(uts.domainname) >= sizeof(buf->domainname))
@@ -1183,7 +1421,6 @@ int oe_posix_uname_ocall(struct oe_utsname* buf)
 
             strcpy(buf->domainname, uts.domainname);
         }
-#endif
     }
 
 done:

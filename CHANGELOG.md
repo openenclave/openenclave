@@ -59,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `OE_ENCLAVE_TYPE_AUTO` to have the enclave appropriate to your built environment
   be chosen automatically. For instance, building Intel binaries will select SGX
   automatically, where on ARM it will pick TrustZone.
+- Added three new APIs for attestation certificate generation and verification
 
 ### Changed
 

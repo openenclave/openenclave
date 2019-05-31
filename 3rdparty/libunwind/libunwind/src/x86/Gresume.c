@@ -63,10 +63,19 @@ establish_machine_state (struct cursor *c)
             (*access_reg) (as, reg, &val, 1, arg);
         }
     }
+
+  if (c->dwarf.args_size)
+    {
+      if (tdep_access_reg (c, UNW_X86_ESP, &val, 0) >= 0)
+        {
+          val += c->dwarf.args_size;
+          (*access_reg) (as, UNW_X86_ESP, &val, 1, arg);
+        }
+    }
   return 0;
 }
 
-PROTECTED int
+int
 unw_resume (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;

@@ -279,6 +279,11 @@ typedef enum _oe_result
      */
     OE_VERIFY_REVOKED,
 
+    /**
+     * An underlying crypto provider returned an error.
+     */
+    OE_CRYPTO_ERROR,
+
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
 /**< typedef enum _oe_result oe_result_t*/

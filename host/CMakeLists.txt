@@ -39,6 +39,7 @@ if (UNIX)
     crypto/openssl/key.c
     crypto/openssl/random.c
     crypto/openssl/rsa.c
+    crypto/openssl/sha.c
     linux/hostthread.c
     linux/posix.c
     linux/time.c
@@ -47,7 +48,9 @@ elseif (WIN32)
   set(PLATFORM_SRC
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     crypto/bcrypt/hmac.c
+    crypto/bcrypt/random.c
     crypto/bcrypt/rsa.c
+    crypto/bcrypt/sha.c
     windows/hostthread.c
     windows/posix.c
     windows/time.c)
@@ -64,6 +67,7 @@ if (OE_SGX)
     ../common/sgx/revocation.c
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
+    ../common/sgx/tlsverifier.c
     sgx/calls.c
     sgx/create.c
     sgx/elf.c
@@ -138,7 +142,6 @@ add_library(oehost STATIC
   signkey.c
   strings.c
   tests.c
-  crypto/sha.c
   ${PLATFORM_SRC})
 
 target_link_libraries(oehost PUBLIC oe_includes)
@@ -149,12 +152,22 @@ add_dependencies(oehost posix_untrusted_edl)
 # the CMake package.
 if (UNIX)
   find_library(CRYPTO_LIB NAMES crypto)
-  add_library(crypto SHARED IMPORTED)
-  set_target_properties(crypto PROPERTIES IMPORTED_LOCATION ${CRYPTO_LIB})
-
+  if (NOT CRYPTO_LIB)
+    message(FATAL_ERROR "-- Looking for crypto library - not found")
+  else ()
+    message("-- Looking for crypto library - found")
+    add_library(crypto SHARED IMPORTED)
+    set_target_properties(crypto PROPERTIES IMPORTED_LOCATION ${CRYPTO_LIB})
+  endif ()
+  
   find_library(DL_LIB NAMES dl)
-  add_library(dl SHARED IMPORTED)
-  set_target_properties(dl PROPERTIES IMPORTED_LOCATION ${DL_LIB})
+  if(NOT DL_LIB)
+    message(FATAL_ERROR "-- Looking for dl library - not found")
+  else ()
+    message("-- Looking for dl library - found")
+    add_library(dl SHARED IMPORTED)
+    set_target_properties(dl PROPERTIES IMPORTED_LOCATION ${DL_LIB})
+  endif ()
 endif ()
 
 find_package(Threads REQUIRED)

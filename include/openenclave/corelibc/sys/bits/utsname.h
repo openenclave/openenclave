@@ -10,9 +10,5 @@ struct __OE_UTSNAME
     char release[__OE_UTSNAME_FIELD_SIZE];
     char version[__OE_UTSNAME_FIELD_SIZE];
     char machine[__OE_UTSNAME_FIELD_SIZE];
-#ifdef _GNU_SOURCE
     char domainname[__OE_UTSNAME_FIELD_SIZE];
-#else
-    char __domainname[__OE_UTSNAME_FIELD_SIZE];
-#endif
 };

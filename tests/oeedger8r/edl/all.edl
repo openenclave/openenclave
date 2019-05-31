@@ -6,6 +6,7 @@ enclave  {
     from "aliasing.edl" import *;
     from "array.edl"    import *;
     from "basic.edl"    import *;
+    from "deepcopy.edl" import *;
     from "enum.edl"     import *;
     from "errno.edl"    import *;
     from "foreign.edl"  import *;

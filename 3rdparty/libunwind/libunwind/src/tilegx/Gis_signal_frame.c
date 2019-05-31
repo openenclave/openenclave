@@ -40,7 +40,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
     ((unsigned long)TREG_SYSCALL_NR << 31) )
 #define  SWINT1      0x286b180051485000ULL
 
-PROTECTED int
+int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor*) cursor;
@@ -51,7 +51,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   int ret;
 
   as = c->dwarf.as;
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
   arg = c->dwarf.as_arg;
 
   ip = c->dwarf.ip;
@@ -75,8 +75,8 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 }
 
 
-PROTECTED int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+HIDDEN int
+tilegx_handle_signal_frame (unw_cursor_t *cursor)
 {
   int i;
   struct cursor *c = (struct cursor *) cursor;

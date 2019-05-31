@@ -138,4 +138,22 @@ char* oe_strstr(const char* haystack, const char* needle)
     return NULL;
 }
 
+char* oe_strncpy(char* dest, const char* src, size_t n)
+{
+    char* ret = dest;
+
+    if (dest == NULL)
+        return NULL;
+
+    /* Copy at most n bytes. Terminate when src is exhausted. */
+    while (n-- && *src)
+        *dest++ = *src++;
+
+    /* If there is room left, then inject zero-terminator. */
+    if (n)
+        *dest = '\0';
+
+    return ret;
+}
+
 OE_WEAK_ALIAS(oe_strcmp, strcmp);

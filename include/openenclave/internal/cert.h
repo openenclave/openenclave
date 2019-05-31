@@ -50,6 +50,25 @@ oe_result_t oe_cert_read_pem(
     size_t pem_size);
 
 /**
+ * Read a certificate from DER format
+ *
+ * This function reads a certificate from DER data
+ *
+ * The caller is responsible for releasing the certificate by passing it to
+ * oe_cert_free().
+ *
+ * @param cert initialized certificate handle upon return
+ * @param der_data DER data
+ * @param der_size size of the DER data
+ *
+ * @return OE_OK load was successful
+ */
+oe_result_t oe_cert_read_der(
+    oe_cert_t* cert,
+    const void* der_data,
+    size_t der_size);
+
+/**
  * Read a certificate chain from PEM format.
  *
  * This function reads a certificate chain from PEM data with the following PEM
@@ -168,6 +187,25 @@ oe_result_t oe_cert_get_rsa_public_key(
 oe_result_t oe_cert_get_ec_public_key(
     const oe_cert_t* cert,
     oe_ec_public_key_t* public_key);
+
+/**
+ * Get the public key (in PEM format) from a certificate
+ *
+ * This function extracts the public key from the given certificate before
+ * writing to a buffer in PEM format
+ *
+ * @param cert the certificate whose public key is sought
+ * @param pem_data the buffer to hold returned public key in PEM foramt
+ * @param pem_size size of of pem_data buffer
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
+oe_result_t oe_cert_write_public_key_pem(
+    const oe_cert_t* cert,
+    uint8_t* pem_data,
+    size_t* pem_size);
 
 /**
  * Get the length of a certificate chain.
@@ -304,6 +342,34 @@ oe_result_t oe_get_crl_distribution_points(
     size_t* num_urls,
     uint8_t* buffer,
     size_t* buffer_size);
+
+#ifdef _OE_ENCLAVE_H
+
+typedef struct _oe_cert_config
+{
+    uint8_t* private_key_buf;
+    size_t private_key_buf_size;
+    uint8_t* public_key_buf;
+    size_t public_key_buf_size;
+    const unsigned char* subject_name;
+    const unsigned char* issuer_name;
+    unsigned char* date_not_valid_before;
+    unsigned char* date_not_valid_after;
+    uint8_t* ext_data_buf;
+    size_t ext_data_buf_size;
+    char* ext_oid;
+    size_t ext_oid_size;
+} oe_cert_config_t;
+
+#define OE_MAX_CERT_SIZE 8192
+
+oe_result_t oe_gen_custom_x509_cert(
+    oe_cert_config_t* cert_config,
+    unsigned char* cert_buf,
+    size_t cert_buf_size,
+    size_t* bytes_written);
+
+#endif
 
 OE_EXTERNC_END
 
