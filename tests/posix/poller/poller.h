@@ -41,31 +41,11 @@ struct event_t
 class poller
 {
   public:
+    poller()
+    {
+    }
+
     virtual ~poller()
-    {
-    }
-
-    virtual int add(socket_t sock, uint32_t events) = 0;
-
-    virtual int remove(socket_t sock, uint32_t events) = 0;
-
-    virtual int wait(std::vector<event_t>& events) = 0;
-
-    static const char* name(poller_type_t poller_type);
-
-    static poller* create(poller_type_t poller_type);
-
-    static void destroy(poller* poller);
-};
-
-class base_poller : public poller
-{
-  public:
-    base_poller()
-    {
-    }
-
-    virtual ~base_poller()
     {
     }
 
@@ -112,11 +92,13 @@ class base_poller : public poller
         return -1;
     }
 
-    virtual int wait(std::vector<event_t>& events)
-    {
-        OE_UNUSED(events);
-        return -1;
-    }
+    virtual int wait(std::vector<event_t>& events) = 0;
+
+    static const char* name(poller_type_t poller_type);
+
+    static poller* create(poller_type_t poller_type);
+
+    static void destroy(poller* poller);
 
     bool find(socket_t sock, event_t& event) const
     {
@@ -136,7 +118,7 @@ class base_poller : public poller
     std::vector<event_t> _events;
 };
 
-class select_poller : public base_poller
+class select_poller : public poller
 {
   public:
     select_poller()
@@ -201,9 +183,7 @@ class select_poller : public base_poller
     }
 };
 
-#ifdef WINDOWS_HOST
-typedef select_poller poll_poller;
-#else
+#if !defined(WINDOWS_HOST)
 class poll_poller : public poller
 {
   public:
@@ -215,93 +195,38 @@ class poll_poller : public poller
     {
     }
 
-    virtual int add(socket_t sock, uint32_t events)
+    virtual int wait(std::vector<event_t>& events)
     {
-        std::vector<struct pollfd>::iterator p = _pollfds.begin();
-        std::vector<struct pollfd>::iterator end = _pollfds.end();
+        std::vector<struct pollfd> pollfds;
 
-        for (; p != end; p++)
+        events.clear();
+
+        for (size_t i = 0; i < _events.size(); i++)
         {
-            struct pollfd& pollfd = *p;
-
-            if (pollfd.fd == sock)
-            {
-                if ((events & POLLER_READ))
-                    pollfd.events |= (POLLIN | POLLRDNORM | POLLRDBAND);
-
-                if ((events & POLLER_WRITE))
-                    pollfd.events |= (POLLOUT | POLLWRNORM | POLLWRBAND);
-
-                if ((events & POLLER_EXCEPT))
-                    pollfd.events |= (POLLERR | POLLHUP | POLLRDHUP);
-
-                return 0;
-            }
-        }
-
-        {
+            const event_t& event = _events[i];
             struct pollfd pollfd;
 
             memset(&pollfd, 0, sizeof(pollfd));
 
-            pollfd.fd = sock;
+            pollfd.fd = event.sock;
 
-            if ((events & POLLER_READ))
+            if (event.events & POLLER_READ)
                 pollfd.events |= (POLLIN | POLLRDNORM | POLLRDBAND);
 
-            if ((events & POLLER_WRITE))
+            if (event.events & POLLER_WRITE)
                 pollfd.events |= (POLLOUT | POLLWRNORM | POLLWRBAND);
 
-            if ((events & POLLER_EXCEPT))
+            if (event.events & POLLER_EXCEPT)
                 pollfd.events |= (POLLERR | POLLHUP | POLLRDHUP);
 
-            _pollfds.push_back(pollfd);
+            pollfds.push_back(pollfd);
         }
 
-        return 0;
-    }
-
-    virtual int remove(socket_t sock, uint32_t events)
-    {
-        std::vector<struct pollfd>::iterator p = _pollfds.begin();
-        std::vector<struct pollfd>::iterator end = _pollfds.end();
-
-        for (; p != end; p++)
-        {
-            struct pollfd& pollfd = *p;
-
-            if (pollfd.fd == sock)
-            {
-                if ((events & POLLER_READ))
-                    pollfd.events &= ~(POLLIN | POLLRDNORM | POLLRDBAND);
-
-                if ((events & POLLER_WRITE))
-                    pollfd.events &= ~(POLLOUT | POLLWRNORM | POLLWRBAND);
-
-                if ((events & POLLER_EXCEPT))
-                    pollfd.events &= ~(POLLERR | POLLHUP | POLLRDHUP);
-
-                if (pollfd.events == 0)
-                {
-                    _pollfds.erase(p);
-                }
-
-                break;
-            }
-        }
-
-        return 0;
-    }
-
-    virtual int wait(std::vector<event_t>& events)
-    {
-        if (poll(&_pollfds[0], _pollfds.size(), -1) == -1)
+        if (poll(&pollfds[0], pollfds.size(), -1) == -1)
             return -1;
 
-        events.clear();
-
-        std::vector<struct pollfd>::iterator p = _pollfds.begin();
-        std::vector<struct pollfd>::iterator end = _pollfds.end();
+        std::vector<struct pollfd>::iterator p = pollfds.begin();
+        std::vector<struct pollfd>::iterator end = pollfds.end();
 
         for (; p != end; p++)
         {
@@ -321,14 +246,11 @@ class poll_poller : public poller
     }
 
   private:
-    std::vector<struct pollfd> _pollfds;
 };
-#endif
+#endif /* !defined(WINDOWS_HOST) */
 
-#ifdef WINDOWS_HOST
-typedef select_poller epoll_poller;
-#else
-class epoll_poller : public base_poller
+#if !defined(WINDOWS_HOST)
+class epoll_poller : public poller
 {
   public:
     epoll_poller()
@@ -390,14 +312,14 @@ class epoll_poller : public base_poller
                 return -1;
         }
 
-        return base_poller::add(sock, events);
+        return poller::add(sock, events);
     }
 
     virtual int remove(socket_t sock, uint32_t events)
     {
         event_t event;
 
-        if (base_poller::remove(sock, events) != 0)
+        if (poller::remove(sock, events) != 0)
             return -1;
 
         if (find(sock, event))
@@ -469,6 +391,11 @@ class epoll_poller : public base_poller
     int _epfd;
     std::vector<event_t> _events;
 };
+#endif /* !defined(WINDOWS_HOST) */
+
+#if defined(WINDOWS_HOST)
+typedef select_poller epoll_poller;
+typedef select_poller poll_poller;
 #endif
 
 inline poller* poller::create(poller_type_t poller_type)
