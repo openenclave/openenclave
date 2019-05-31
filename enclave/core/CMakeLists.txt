@@ -42,6 +42,7 @@ if (OE_SGX)
     endif()
 elseif(OE_TRUSTZONE)
     list(APPEND PLATFORM_SRC
+        optee/backtrace.c
         optee/bounds.c
         optee/calls.c
         optee/globals.c
@@ -65,6 +66,7 @@ add_library(oecore STATIC
     __stack_chk_fail.c
     assert.c
     atexit.c
+    backtrace.c
     ctype.c
     debugmalloc.c
     errno.c
