@@ -136,49 +136,15 @@ class base_poller : public poller
     std::vector<event_t> _events;
 };
 
-class select_poller : public poller
+class select_poller : public base_poller
 {
   public:
-    select_poller() : _max(0)
+    select_poller()
     {
-        FD_ZERO(&_rfds);
-        FD_ZERO(&_wfds);
-        FD_ZERO(&_xfds);
     }
 
     virtual ~select_poller()
     {
-    }
-
-    virtual int add(socket_t sock, uint32_t events)
-    {
-        if ((events & POLLER_READ))
-            FD_SET((uint32_t)sock, &_rfds);
-
-        if ((events & POLLER_WRITE))
-            FD_SET((uint32_t)sock, &_wfds);
-
-        if ((events & POLLER_EXCEPT))
-            FD_SET((uint32_t)sock, &_xfds);
-
-        if (sock > _max)
-            _max = sock;
-
-        return 0;
-    }
-
-    virtual int remove(socket_t sock, uint32_t events)
-    {
-        if ((events & POLLER_READ))
-            FD_CLR((uint32_t)sock, &_rfds);
-
-        if ((events & POLLER_WRITE))
-            FD_CLR((uint32_t)sock, &_wfds);
-
-        if ((events & POLLER_EXCEPT))
-            FD_CLR((uint32_t)sock, &_xfds);
-
-        return 0;
     }
 
     virtual int wait(std::vector<event_t>& events)
@@ -188,17 +154,35 @@ class select_poller : public poller
         fd_set wfds;
         fd_set xfds;
         int nfds;
+        socket_t max = 0;
 
         events.clear();
 
-        memcpy(&rfds, &_rfds, sizeof(rfds));
-        memcpy(&wfds, &_wfds, sizeof(wfds));
-        memcpy(&xfds, &_xfds, sizeof(xfds));
+        FD_ZERO(&rfds);
+        FD_ZERO(&wfds);
+        FD_ZERO(&xfds);
 
-        if ((nfds = sock_select(_max + 1, &rfds, &wfds, &xfds, NULL)) < 0)
+        for (size_t i = 0; i < _events.size(); i++)
+        {
+            const event_t& event = _events[i];
+
+            if (event.events & POLLER_READ)
+                FD_SET((uint32_t)event.sock, &rfds);
+
+            if (event.events & POLLER_WRITE)
+                FD_SET((uint32_t)event.sock, &wfds);
+
+            if (event.events & POLLER_EXCEPT)
+                FD_SET((uint32_t)event.sock, &xfds);
+
+            if (event.sock > max)
+                max = event.sock;
+        }
+
+        if ((nfds = sock_select(max + 1, &rfds, &wfds, &xfds, NULL)) < 0)
             goto done;
 
-        for (socket_t sock = 0; sock < _max + 1; sock++)
+        for (socket_t sock = 0; sock < max + 1; sock++)
         {
             if (FD_ISSET((uint32_t)sock, &rfds))
                 events.push_back(event_t(sock, POLLER_READ));
@@ -215,12 +199,6 @@ class select_poller : public poller
     done:
         return ret;
     }
-
-  private:
-    fd_set _rfds;
-    fd_set _wfds;
-    fd_set _xfds;
-    socket_t _max;
 };
 
 #ifdef WINDOWS_HOST
