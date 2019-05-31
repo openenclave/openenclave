@@ -53,8 +53,11 @@ apt_packages:
   - "libncurses5-dev"
 
 apt_arm_packages:
+  - "gcc-arm-linux-gnueabi"
+  - "gcc-arm-linux-gnueabihf"
   - "gcc-aarch64-linux-gnu"
   - "g++-aarch64-linux-gnu"
+  - "python-crypto"
   - "libc6-dev:arm64"
   - "libssl-dev:arm64"
 
