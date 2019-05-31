@@ -33,6 +33,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_UNEXPECTED";
         case OE_VERIFY_FAILED:
             return "OE_VERIFY_FAILED";
+        case OE_QEIDENTITY_NOT_RETRIEVABLE:
+            return "OE_QEIDENTITY_NOT_RETRIEVABLE";
         case OE_NOT_FOUND:
             return "OE_NOT_FOUND";
         case OE_INTEGER_OVERFLOW:

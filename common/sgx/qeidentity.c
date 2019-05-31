@@ -37,7 +37,7 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
         // because either get_qe_identity_info API was not supported or
         // unexpected error. Both cases are error conditions.
         OE_RAISE_MSG(
-            OE_VERIFY_FAILED,
+            OE_QEIDENTITY_NOT_RETRIEVABLE,
             "unable to retrieve qe identity from DCAP quote provider",
             NULL);
     }

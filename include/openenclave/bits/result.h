@@ -78,6 +78,11 @@ typedef enum _oe_result
     OE_VERIFY_FAILED,
 
     /**
+     * The QE Identity quote verification collateral was unable to be retrieved.
+     */
+    OE_QEIDENTITY_NOT_RETRIEVABLE,
+
+    /**
      * The function failed to find a resource. Examples of resources include
      * files, directories, and functions (ECALL/OCALL), container elements.
      */
