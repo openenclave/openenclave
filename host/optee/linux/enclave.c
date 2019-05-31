@@ -87,9 +87,11 @@ oe_result_t oe_create_enclave(
 
     /* Check parameters */
     if (!enclave_path || !enclave_out ||
-        ((enclave_type != OE_ENCLAVE_TYPE_SGX) &&
-         (enclave_type != OE_ENCLAVE_TYPE_OPTEE)) ||
-        (flags & OE_ENCLAVE_FLAG_RESERVED) || (flags & OE_ENCLAVE_FLAG_DEBUG) ||
+        ((enclave_type != OE_ENCLAVE_TYPE_OPTEE) &&
+         (enclave_type != OE_ENCLAVE_TYPE_AUTO)) ||
+        (flags & OE_ENCLAVE_FLAG_RESERVED) ||
+        (!(flags & OE_ENCLAVE_FLAG_SIMULATE) &&
+         (flags & OE_ENCLAVE_FLAG_DEBUG)) ||
         config || config_size > 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
