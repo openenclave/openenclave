@@ -44,7 +44,7 @@ target_include_directories(oeenclave PRIVATE
 
 target_link_libraries(oeenclave PUBLIC
     oe_includes
-    mbedcrypto)
+    oecryptombed)
 if(OE_TRUSTZONE)
     target_link_libraries(oeenclave PUBLIC oeutee)
 endif()
