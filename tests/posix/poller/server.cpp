@@ -112,7 +112,7 @@ extern "C" void run_server(
             continue;
 	}
 
-printf("NEVENTS: %zu\n", events.size());
+	OE_TEST(events.size() > 0);
 
         for (size_t i = 0; i < events.size(); i++)
         {

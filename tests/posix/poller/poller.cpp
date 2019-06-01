@@ -229,15 +229,36 @@ int poll_poller::wait(std::vector<event_t>& events)
     for (; p != end; p++)
     {
         struct pollfd& pollfd = *p;
+	short revents = pollfd.revents;
 
-        if (pollfd.revents & (POLLIN | POLLRDNORM | POLLRDBAND))
+	if (!revents)
+	{
+	    printf("no revents\n");
+	    continue;
+	}
+
+        if (revents & (POLLIN | POLLRDNORM | POLLRDBAND))
+	{
+	    revents &= ~(POLLIN | POLLRDNORM | POLLRDBAND);
             events.push_back(event_t(pollfd.fd, POLLER_READ));
+	}
 
-        if (pollfd.revents & (POLLOUT | POLLWRNORM | POLLWRBAND))
+        if (revents & (POLLOUT | POLLWRNORM | POLLWRBAND))
+	{
+            revents &= ~(POLLOUT | POLLWRNORM | POLLWRBAND);
             events.push_back(event_t(pollfd.fd, POLLER_WRITE));
+	}
 
-        if (pollfd.revents & (POLLERR | POLLHUP | POLLRDHUP))
+        if (revents & (POLLERR | POLLHUP | POLLRDHUP))
+	{
+            revents &= (POLLERR | POLLHUP | POLLRDHUP);
             events.push_back(event_t(pollfd.fd, POLLER_EXCEPT));
+	}
+
+	if (revents)
+	{
+printf("revents.leftover=%u\n", revents);
+	}
     }
 
     return 0;

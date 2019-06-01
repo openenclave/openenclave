@@ -3004,13 +3004,53 @@ static short _poll_events_to_windows(short events)
 {
     short ret = 0;
 
-    if (events & OE_POLLIN) ret |= POLLIN;
-    if (events & OE_POLLRDNORM) ret |= POLLRDNORM;
-    if (events & OE_POLLRDBAND) ret |= POLLRDBAND;
-    if (events & OE_POLLOUT) ret |= POLLOUT;
-    if (events & OE_POLLWRNORM) ret |= POLLWRNORM;
-    if (events & OE_POLLERR) ret |= POLLERR;
-    //if (events & OE_POLLHUP) ret |= POLLHUP;
+    if (events & OE_POLLIN) 
+    {
+        events &= ~OE_POLLIN;
+        ret |= POLLIN;
+    }
+
+    if (events & OE_POLLRDNORM) 
+    {
+        events &= ~OE_POLLRDNORM;
+        ret |= POLLRDNORM;
+    }
+
+    if (events & OE_POLLRDBAND) 
+    {
+        events &= ~OE_POLLRDBAND;
+        ret |= POLLRDBAND;
+    }
+
+    if (events & OE_POLLOUT)
+    {
+        events &= ~OE_POLLOUT;
+        ret |= POLLOUT;
+    }
+
+    if (events & OE_POLLWRNORM)
+    {
+        events &= ~OE_POLLWRNORM;
+	ret |= POLLWRNORM;
+    }
+
+    if (events & OE_POLLERR) 
+    {
+        events &= ~OE_POLLERR;
+	ret |= POLLERR;
+    }
+
+    if (events & OE_POLLHUP)
+    {
+        events &= ~OE_POLLHUP;
+        ret |= POLLHUP;
+    }
+
+    if (events)
+    {
+        printf("out.events=%u\n", events);
+        fflush(stdout);
+    }
 
     return ret;
 }
@@ -3069,7 +3109,7 @@ static short _poll_events_to_posix(short events)
 
     if (events)
     {
-        printf("events=%u\n", events);
+        printf("out.events=%u\n", events);
         fflush(stdout);
     }
 
@@ -3116,6 +3156,23 @@ int oe_posix_poll_ocall(
 #endif
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         goto done;
+    }
+
+    printf("HOST.RET=%d\n", ret);
+
+    /* Count the total events. */
+    {
+	short nevents = 0;
+
+	for (int i = 0; i < ret; i++)
+	{
+	    if (fds[i].revents)
+		nevents++;
+	printf("HOST.FD: %u\n", fds[i].fd); fflush(stdout);
+	printf("HOST.REVENTS: %u\n", fds[i].revents); fflush(stdout);
+	}
+
+	printf("HOST.NEVENTS=%u\n", nevents); fflush(stdout);
     }
 
 
