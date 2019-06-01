@@ -50,6 +50,7 @@ _init_once_func(PINIT_ONCE init_once, PVOID parameter, PVOID* context)
     OE_UNUSED(context);
 
     InitializeCriticalSectionAndSpinCount(&_critical_section, 1000);
+    return TRUE;
 }
 
 static void _init_once(void)
@@ -1902,8 +1903,8 @@ ssize_t oe_posix_recvmsg_ocall(
     WSABUF buf = {0};
     struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
 
-    buf.buf = &msg_iov[msg_iovlen];
-    buf.len = msg_iov_buf_size - ((size_t)msg_iovlen * sizeof(struct oe_iovec));
+    buf.buf = (char*)&msg_iov[msg_iovlen];
+    buf.len = (ULONG)(msg_iov_buf_size - ((size_t)msg_iovlen * sizeof(struct oe_iovec)));
 
     rslt = WSARecv((SOCKET)sockfd, &buf, 1, &recv_bytes, &flags, NULL, NULL);
     if (rslt == SOCKET_ERROR)
@@ -1932,8 +1933,8 @@ ssize_t oe_posix_sendmsg_ocall(
     WSABUF buf = {0};
     struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
 
-    buf.buf = &msg_iov[msg_iovlen];
-    buf.len = msg_iov_buf_size - ((size_t)msg_iovlen * sizeof(struct oe_iovec));
+    buf.buf = (char*)&msg_iov[msg_iovlen];
+    buf.len = (ULONG)(msg_iov_buf_size - ((size_t)msg_iovlen * sizeof(struct oe_iovec)));
 
     rslt = WSASend((SOCKET)sockfd, &buf, 1, &sent_bytes, flags, NULL, NULL);
     if (rslt == SOCKET_ERROR)
@@ -1954,6 +1955,7 @@ ssize_t oe_posix_recv_ocall(
     ssize_t ret = -1;
 
     ret = recv((SOCKET)sockfd, buf, (int)len, flags);
+
     if (ret == SOCKET_ERROR)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
@@ -2135,6 +2137,16 @@ int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how)
     return ret;
 }
 
+static int _set_blocking(SOCKET sock, bool blocking)
+{
+    unsigned long flag = blocking ? 0 : 1;
+
+    if (ioctlsocket(sock, FIONBIO, &flag) != 0)
+        return -1;
+
+    return 0;
+}
+
 int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
 {
     switch (cmd)
@@ -2146,7 +2158,7 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
             if (_is_nbio_socket(fd))
                 flags |= OE_O_NONBLOCK;
 
-            printf("oe_posix_fcntl_ocall(): get flags\n");
+            printf("oe_posix_fcntl_ocall(): get flags: %lld\n", fd);
 
             return flags;
         }
@@ -2154,16 +2166,22 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
         {
             if ((arg & OE_O_NONBLOCK))
             {
-                printf("oe_posix_fcntl_ocall(): set non-blocking\n");
+                printf("oe_posix_fcntl_ocall(): set non-blocking: %lld\n", fd);
 
                 if (!_is_nbio_socket(fd) && _add_nbio_socket(fd) != 0)
                     return -1;
+
+		if (_set_blocking(fd, false) != 0)
+		    return -1;
             }
             else
             {
-                printf("oe_posix_fcntl_ocall(): set blocking\n");
+                printf("oe_posix_fcntl_ocall(): set blocking: %lld\n", fd);
 
                 _remove_nbio_socket(fd);
+
+		if (_set_blocking(fd, true) != 0)
+		    return -1;
             }
 
             return 0;
@@ -2462,7 +2480,7 @@ int oe_posix_getaddrinfo_open_ocall(
 
     handle->magic = GETADDRINFO_HANDLE_MAGIC;
     handle->next = handle->res;
-    *handle_out = handle;
+    *handle_out = (uint64_t)handle;
     handle = NULL;
 
 done:
@@ -2982,51 +3000,17 @@ int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
 **==============================================================================
 */
 
-typedef struct _poll_event_pair
-{
-    short posix;
-    short windows;
-    const char* name;
-} poll_event_pair_t;
-
-static poll_event_pair_t _poll_event_map[] = {
-    {OE_POLLIN, POLLIN, "POLLIN"},
-    {OE_POLLRDNORM, POLLRDNORM, "POLLRDNORM"},
-    {OE_POLLRDBAND, POLLRDBAND, "POLLRDBAND"},
-    {OE_POLLOUT, POLLOUT, "POLLOUT"},
-    {OE_POLLWRNORM, POLLWRNORM, "POLLWRNORM"},
-    {OE_POLLWRBAND, POLLWRBAND, "POLLWRBAND"},
-    {OE_POLLERR, POLLERR, "POLLERR"},
-    {OE_POLLHUP, POLLHUP, "POLLHUP"},
-#if 0
-    { OE_POLLRDHUP, POLLRDHUP },
-#endif
-};
-
-static size_t _poll_event_map_size = OE_COUNTOF(_poll_event_map);
-
 static short _poll_events_to_windows(short events)
 {
     short ret = 0;
 
-#ifdef TRACE_POLL
-    printf("=== _poll_events_to_windows()\n");
-    fflush(stdout);
-#endif
-
-    for (size_t i = 0; i < _poll_event_map_size; i++)
-    {
-        poll_event_pair_t* p = &_poll_event_map[i];
-
-        if ((p->posix & events))
-        {
-#ifdef TRACE_POLL
-            printf("IN: %s\n", p->name);
-            fflush(stdout);
-#endif
-            ret |= p->windows;
-        }
-    }
+    if (events & OE_POLLIN) ret |= POLLIN;
+    if (events & OE_POLLRDNORM) ret |= POLLRDNORM;
+    if (events & OE_POLLRDBAND) ret |= POLLRDBAND;
+    if (events & OE_POLLOUT) ret |= POLLOUT;
+    if (events & OE_POLLWRNORM) ret |= POLLWRNORM;
+    if (events & OE_POLLERR) ret |= POLLERR;
+    //if (events & OE_POLLHUP) ret |= POLLHUP;
 
     return ret;
 }
@@ -3035,23 +3019,58 @@ static short _poll_events_to_posix(short events)
 {
     short ret = 0;
 
-#ifdef TRACE_POLL
-    printf("=== _poll_events_to_posix()\n");
-    fflush(stdout);
-#endif
-
-    for (size_t i = 0; i < _poll_event_map_size; i++)
+    if (events & POLLIN) 
     {
-        poll_event_pair_t* p = &_poll_event_map[i];
+	events &= ~POLLIN;
+	ret |= OE_POLLIN;
+    }
 
-        if ((p->windows & events))
-        {
-#ifdef TRACE_POLL
-            printf("OUT: %s\n", p->name);
-            fflush(stdout);
-#endif
-            ret |= p->posix;
-        }
+    if (events & POLLRDNORM) 
+    {
+	events &= ~POLLRDNORM;
+	ret |= OE_POLLRDNORM;
+    }
+
+    if (events & POLLRDBAND)
+    {
+	events &= ~POLLRDBAND;
+        ret |= OE_POLLRDBAND;
+    }
+
+    if (events & POLLOUT)
+    {
+	events &= ~POLLOUT;
+        ret |= OE_POLLOUT;
+    }
+
+    if (events & POLLWRNORM)
+    {
+	events &= ~POLLWRNORM;
+        ret |= OE_POLLWRNORM;
+    }
+
+    if (events & POLLERR)
+    {
+	events &= ~POLLERR;
+        ret |= OE_POLLERR;
+    }
+
+    if (events & POLLHUP)
+    {
+	events &= ~POLLHUP;
+        ret |= OE_POLLIN;
+    }
+
+    if (events & POLLPRI)
+    {
+	events &= ~POLLPRI;
+        ret |= OE_POLLIN;
+    }
+
+    if (events)
+    {
+        printf("events=%u\n", events);
+        fflush(stdout);
     }
 
     return ret;
@@ -3079,19 +3098,26 @@ int oe_posix_poll_ocall(
         goto done;
     }
 
-    // Winsock used different values for poll events, so we have to translate to
-    // and from
+
     for (oe_nfds_t i = 0; i < nfds; i++)
     {
         fds[i].fd = host_fds[i].fd;
         fds[i].events = _poll_events_to_windows(host_fds[i].events);
+#ifdef TRACE_POLL
+	printf("poll_fd.fd=%lld\n", fds[i].fd); fflush(stdout);
+	printf("poll_fd.events=%u\n", fds[i].events); fflush(stdout);
+#endif
     }
 
     if ((ret = WSAPoll(fds, (ULONG)nfds, timeout)) <= 0)
     {
+#ifdef TRACE_POLL
+	printf("oe_posix_poll_ocall: error=%x\n", WSAGetLastError());
+#endif
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         goto done;
     }
+
 
     for (int i = 0; i < ret; i++)
     {

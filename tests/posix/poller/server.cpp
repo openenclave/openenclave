@@ -110,7 +110,9 @@ extern "C" void run_server(
         {
             OE_TEST(false);
             continue;
-        }
+	}
+
+printf("NEVENTS: %zu\n", events.size());
 
         for (size_t i = 0; i < events.size(); i++)
         {
@@ -157,9 +159,7 @@ extern "C" void run_server(
 
                     errno = 0;
 
-                    printf("<<<<<<<<<<<<<<<<<<<<<<<\n");
                     n = sock_recv(client->sock, buf, sizeof(buf), 0);
-                    printf(">>>>>>>>>>>>>>>>>>>>>>>\n");
 
                     if (n > 0)
                     {
@@ -252,6 +252,11 @@ extern "C" void run_server(
                     }
                 }
             }
+
+            if ((event.events & POLLER_EXCEPT))
+	    {
+		OE_TEST("exception" == NULL);
+	    }
         }
     }
 
