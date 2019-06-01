@@ -43,7 +43,7 @@ There are two types of attestation:
 
 ### Secure Communication Channel
 
-Remote Attestation alone is not enough for the remote party to be able to securely deliver their secrets to the requesting enclave. Securely delivering services requires a secure communication channel which is usually guaranteed by Transport Layer Security (TLS). Using Asymmetric/Public-Key encryption in conjunction with generating a symmetric key based on the sealing key provides an alternate mechanism for establishing such a channel in the absence of TLS support.
+Remote Attestation alone is not enough for the remote party to be able to securely deliver their secrets to the requesting enclave. Securely delivering services requires a secure communication channel which is often guaranteed by Transport Layer Security (TLS). Using Asymmetric/Public-Key encryption in conjunction with generating a symmetric key based on the sealing key provides an alternate mechanism for establishing such a non-TLS channel.
 
 In this remote attestation sample, it demonstrates a way to embed public keys in the remote attestation process to help establish a secure communication channel right after the attestation is done.
 

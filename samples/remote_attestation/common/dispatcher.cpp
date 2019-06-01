@@ -10,7 +10,8 @@ ecall_dispatcher::ecall_dispatcher(
     : m_crypto(NULL), m_attestation(NULL)
 {
     m_enclave_config = enclave_config;
-    m_initialized = initialize(name);
+    m_channel_state = UNINITIALIZED_CHANNEL_STATE;
+    initialize(name);
 }
 
 ecall_dispatcher::~ecall_dispatcher()
@@ -68,6 +69,7 @@ bool ecall_dispatcher::initialize(const char* name)
         goto exit;
     }
     ret = true;
+    m_channel_state = INITIAL_CHANNEL_STATE;
 
 exit:
     if (modulus != NULL)
@@ -94,7 +96,7 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
     int ret = 1;
 
     TRACE_ENCLAVE("get_remote_report_with_pubkey");
-    if (m_initialized == false)
+    if (m_channel_state == UNINITIALIZED_CHANNEL_STATE)
     {
         TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
         goto exit;
@@ -130,6 +132,7 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
         *key_size = sizeof(pem_public_key);
 
         ret = 0;
+        m_channel_state |= REMOTE_REPORT_OBTAINED;
         TRACE_ENCLAVE("get_remote_report_with_pubkey succeeded");
     }
     else
@@ -158,7 +161,7 @@ int ecall_dispatcher::verify_report_and_set_pubkey(
 {
     int ret = 1;
 
-    if (m_initialized == false)
+    if (m_channel_state == UNINITIALIZED_CHANNEL_STATE)
     {
         TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
         goto exit;
@@ -176,6 +179,7 @@ int ecall_dispatcher::verify_report_and_set_pubkey(
         goto exit;
     }
     ret = 0;
+    m_channel_state |= REMOTE_REPORT_VERIFIED;
     TRACE_ENCLAVE("verify_report_and_set_pubkey succeeded.");
 
 exit:
@@ -193,9 +197,11 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
 
     int ret = 1;
 
-    if (m_initialized == false)
+    if ((m_channel_state & MUTUAL_ATTESTATION_STATE) !=
+        MUTUAL_ATTESTATION_STATE)
     {
-        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
+        TRACE_ENCLAVE("ecall_dispatcher establish_secure_channel failed as "
+                      "mutual attestation incomplete.");
         goto exit;
     }
 
@@ -222,9 +228,9 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
             &encrypted_key_size))
 
     {
-        // Reason we allocate memory in the host is so that the encrypted data
-        // can be accessed by the hosts - aka real world scenario where we have
-        // 2 hosts and two enclaves
+        // We allocate memory in the host is so that the encrypted data
+        // can be accessed by the hosts. Note that this will not work with
+        // TrustZone. TO DO - File an issue to deprecate oe_host_malloc
         uint8_t* host_buf = (uint8_t*)oe_host_malloc(total_size);
         if (host_buf == NULL)
         {
@@ -244,7 +250,8 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
                       "of the encrypted key");
 
         // Step 4 - Sign this SHA hash with my enclave's private key
-        if (m_crypto->sign(digest, 32, signature, &signature_size) != 0)
+        if (m_crypto->sign(
+                digest, sizeof(digest), signature, &signature_size) != 0)
         {
             goto exit;
         }
@@ -271,6 +278,7 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
         goto exit;
     }
     ret = 0;
+    m_channel_state = SECURE_CHANNEL_STATE;
 exit:
     return ret;
 }
@@ -299,9 +307,11 @@ int ecall_dispatcher::acknowledge_secure_channel(
     data = m_enclave_config->sym_key;
     m_enclave_config->sequence_number = 0;
 
-    if (m_initialized == false)
+    if ((m_channel_state & MUTUAL_ATTESTATION_STATE) !=
+        MUTUAL_ATTESTATION_STATE)
     {
-        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
+        TRACE_ENCLAVE("ecall_dispatcher acknowledge_secure_channel failed as "
+                      "mutual attestation is incomplete");
         goto exit;
     }
 
@@ -342,6 +352,7 @@ int ecall_dispatcher::acknowledge_secure_channel(
     }
 
     ret = 0;
+    m_channel_state = SECURE_CHANNEL_STATE;
 exit:
     return ret;
 }
@@ -355,9 +366,10 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
     uint8_t iv_str[IV_SIZE];
     int ret = 1;
 
-    if (m_initialized == false)
+    if (m_channel_state != SECURE_CHANNEL_STATE)
     {
-        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
+        TRACE_ENCLAVE(
+            "ecall_dispatcher failed as Secure Channel isn't available.");
         goto exit;
     }
 
@@ -424,9 +436,10 @@ int ecall_dispatcher::process_encrypted_msg(
     uint8_t add_str[ADD_SIZE];
     int ret = 1;
 
-    if (m_initialized == false)
+    if (m_channel_state != SECURE_CHANNEL_STATE)
     {
-        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
+        TRACE_ENCLAVE(
+            "ecall_dispatcher failed as Secure Channel isn't available.");
         goto exit;
     }
 

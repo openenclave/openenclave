@@ -27,7 +27,7 @@ enclave {
         // Send back symmetric key after encrypting using other enclave's public key
         // and sign using private key
         public int acknowledge_secure_channel(  [in, count=size] uint8_t* data,
-                                               size_t  size);
+                                                    size_t  size);
 
         // Encrypt message for another enclave using the public key stored for it
         public int generate_encrypted_message(  [out] uint8_t** data,

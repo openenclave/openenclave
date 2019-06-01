@@ -66,7 +66,7 @@ int establish_secure_channel(uint8_t** data, size_t* size)
 }
 
 /**
- * Verify signature, decrypt using private ke
+ * Verify signature, decrypt using private key
  * Send back symmetric key after encrypting using other enclave's public key
  * and sign using private key
  */
