@@ -232,10 +232,7 @@ int poll_poller::wait(std::vector<event_t>& events)
 	short revents = pollfd.revents;
 
 	if (!revents)
-	{
-	    printf("no revents\n");
 	    continue;
-	}
 
         if (revents & (POLLIN | POLLRDNORM | POLLRDBAND))
 	{
@@ -251,13 +248,13 @@ int poll_poller::wait(std::vector<event_t>& events)
 
         if (revents & (POLLERR | POLLHUP | POLLRDHUP))
 	{
-            revents &= (POLLERR | POLLHUP | POLLRDHUP);
+            revents &= ~(POLLERR | POLLHUP | POLLRDHUP);
             events.push_back(event_t(pollfd.fd, POLLER_EXCEPT));
 	}
 
 	if (revents)
 	{
-printf("revents.leftover=%u\n", revents);
+	    printf("%s(): leftover revents: %u\n", revents);
 	}
     }
 

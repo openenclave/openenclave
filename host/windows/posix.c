@@ -30,6 +30,7 @@
 #include "openenclave/corelibc/sys/epoll.h"
 #include "openenclave/corelibc/dirent.h"
 #include "../hostthread.h"
+#include <assert.h>
 
 /*
 **==============================================================================
@@ -1246,13 +1247,17 @@ int oe_posix_close_ocall(oe_host_fd_t fd)
     return 0;
 }
 
-int oe_posix_close_socket_ocall(oe_host_fd_t fd)
+int oe_posix_close_socket_ocall(oe_host_fd_t sockfd)
 {
-    if (closesocket((SOCKET)fd) == SOCKET_ERROR)
+
+    if (closesocket((SOCKET)sockfd) == SOCKET_ERROR)
     {
         _set_errno(_winerr_to_errno(GetLastError()));
         return -1;
     }
+
+    _remove_nbio_socket(sockfd);
+
     return 0;
 }
 
@@ -2168,16 +2173,12 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
             if (_is_nbio_socket(fd))
                 flags |= OE_O_NONBLOCK;
 
-            printf("oe_posix_fcntl_ocall(): get flags: %lld\n", fd);
-
             return flags;
         }
         case OE_F_SETFL:
         {
             if ((arg & OE_O_NONBLOCK))
             {
-                printf("oe_posix_fcntl_ocall(): set non-blocking: %lld\n", fd);
-
                 if (!_is_nbio_socket(fd) && _add_nbio_socket(fd) != 0)
                     return -1;
 
@@ -2186,8 +2187,6 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
             }
             else
             {
-                printf("oe_posix_fcntl_ocall(): set blocking: %lld\n", fd);
-
                 _remove_nbio_socket(fd);
 
 		if (_set_blocking(fd, true) != 0)
@@ -2198,7 +2197,6 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
         }
         default:
         {
-            printf("oe_posix_fcntl_ocall(): not handled\n");
             break;
         }
     }
@@ -3056,71 +3054,64 @@ static short _poll_events_to_windows(short events)
         ret |= POLLHUP;
     }
 
-    if (events)
-    {
-        printf("out.events=%u\n", events);
-        fflush(stdout);
-    }
-
     return ret;
 }
 
-static short _poll_events_to_posix(short events)
+static short _poll_events_to_posix(short events, short revents)
 {
     short ret = 0;
 
-    if (events & POLLIN) 
+    if (revents & POLLIN) 
     {
-	events &= ~POLLIN;
+	revents &= ~POLLIN;
 	ret |= OE_POLLIN;
     }
 
-    if (events & POLLRDNORM) 
+    if (revents & POLLRDNORM) 
     {
-	events &= ~POLLRDNORM;
+	revents &= ~POLLRDNORM;
 	ret |= OE_POLLRDNORM;
     }
 
-    if (events & POLLRDBAND)
+    if (revents & POLLRDBAND)
     {
-	events &= ~POLLRDBAND;
+	revents &= ~POLLRDBAND;
         ret |= OE_POLLRDBAND;
     }
 
-    if (events & POLLOUT)
+    if (revents & POLLOUT)
     {
-	events &= ~POLLOUT;
+	revents &= ~POLLOUT;
         ret |= OE_POLLOUT;
     }
 
-    if (events & POLLWRNORM)
+    if (revents & POLLWRNORM)
     {
-	events &= ~POLLWRNORM;
+	revents &= ~POLLWRNORM;
         ret |= OE_POLLWRNORM;
     }
 
-    if (events & POLLERR)
+    if (revents & POLLERR)
     {
-	events &= ~POLLERR;
+	revents &= ~POLLERR;
         ret |= OE_POLLERR;
     }
 
-    if (events & POLLHUP)
+    if (revents & POLLHUP)
     {
-	events &= ~POLLHUP;
-        ret |= OE_POLLIN;
+	/* If not requeted by caller, change to OE_POLLIN. */
+	if (!(events & POLLHUP))
+	    ret |= OE_POLLIN;
+	else
+	    ret |= OE_POLLHUP;
+
+	revents &= ~POLLHUP;
     }
 
-    if (events & POLLPRI)
+    if (revents & POLLPRI)
     {
-	events &= ~POLLPRI;
-        ret |= OE_POLLIN;
-    }
-
-    if (events)
-    {
-        printf("out.events=%u\n", events);
-        fflush(stdout);
+	revents &= ~POLLPRI;
+        ret |= OE_POLLPRI;
     }
 
     return ret;
@@ -3148,47 +3139,40 @@ int oe_posix_poll_ocall(
         goto done;
     }
 
-
     for (oe_nfds_t i = 0; i < nfds; i++)
     {
         fds[i].fd = host_fds[i].fd;
         fds[i].events = _poll_events_to_windows(host_fds[i].events);
-#ifdef TRACE_POLL
-	printf("poll_fd.fd=%lld\n", fds[i].fd); fflush(stdout);
-	printf("poll_fd.events=%u\n", fds[i].events); fflush(stdout);
-#endif
     }
 
     if ((ret = WSAPoll(fds, (ULONG)nfds, timeout)) <= 0)
     {
-#ifdef TRACE_POLL
-	printf("oe_posix_poll_ocall: error=%x\n", WSAGetLastError());
-#endif
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         goto done;
     }
 
-    printf("HOST.RET=%d\n", ret);
-
-    /* Count the total events. */
+    // WSAPoll() can erroneously return with all revents fields set
+    // to zero. Assert for now if this happens. This assert is triggered
+    // by the poller test when polling on the listener socket. Retrying
+    // WSAPoll() resutls in an infinite loop.
     {
-	short nevents = 0;
+	short found_non_zero_revents = 0;
 
 	for (int i = 0; i < ret; i++)
 	{
+	    printf("HHH.FD=%lld\n", fds[i].fd);
+
 	    if (fds[i].revents)
-		nevents++;
-	printf("HOST.FD: %u\n", fds[i].fd); fflush(stdout);
-	printf("HOST.REVENTS: %u\n", fds[i].revents); fflush(stdout);
+		found_non_zero_revents = true;
 	}
 
-	printf("HOST.NEVENTS=%u\n", nevents); fflush(stdout);
+	assert(found_non_zero_revents == true);
     }
 
 
     for (int i = 0; i < ret; i++)
     {
-        host_fds[i].revents = _poll_events_to_posix(fds[i].revents);
+        host_fds[i].revents = _poll_events_to_posix(fds[i].events, fds[i].revents);
     }
 
 done:
