@@ -193,7 +193,6 @@ elseif(OE_TRUSTZONE)
         -nostdlib -nodefaultlibs -nostartfiles
         --no-undefined
         -pie
-        --build-id
         --sort-section=alignment)
 endif()
 
