@@ -29,8 +29,113 @@
 #include "openenclave/corelibc/fcntl.h"
 #include "openenclave/corelibc/sys/epoll.h"
 #include "openenclave/corelibc/dirent.h"
+#include "../hostthread.h"
 
-static BOOL _winsock_inited = 0;
+/*
+**==============================================================================
+**
+** Shared init-once of as critical section.
+**
+**==============================================================================
+*/
+
+static INIT_ONCE _once = INIT_ONCE_STATIC_INIT;
+static CRITICAL_SECTION _critical_section;
+
+static BOOL CALLBACK
+_init_once_func(PINIT_ONCE init_once, PVOID parameter, PVOID* context)
+{
+    OE_UNUSED(init_once);
+    OE_UNUSED(parameter);
+    OE_UNUSED(context);
+
+    InitializeCriticalSectionAndSpinCount(&_critical_section, 1000);
+}
+
+static void _init_once(void)
+{
+    PVOID context;
+    InitOnceExecuteOnce(&_once, _init_once_func, NULL, &context);
+}
+
+static void _lock(void)
+{
+    _init_once();
+    EnterCriticalSection(&_critical_section);
+}
+
+static void _unlock(void)
+{
+    LeaveCriticalSection(&_critical_section);
+}
+
+/*
+**==============================================================================
+**
+** An array of non-blocking sockets.
+**
+**==============================================================================
+*/
+
+#define MAX_NON_BLOCKING_SOCKETS 1024
+
+static SOCKET _nbio_sockets[MAX_NON_BLOCKING_SOCKETS];
+static size_t _num_nbio_sockets;
+
+bool _is_nbio_socket(SOCKET sock)
+{
+    _lock();
+
+    for (size_t i = 0; i < _num_nbio_sockets; i++)
+    {
+        if (_nbio_sockets[i] == sock)
+        {
+            _unlock();
+            return true;
+        }
+    }
+
+    _unlock();
+
+    return false;
+}
+
+int _add_nbio_socket(SOCKET sock)
+{
+    _lock();
+
+    if (_num_nbio_sockets == MAX_NON_BLOCKING_SOCKETS)
+    {
+        _unlock();
+        return -1;
+    }
+
+    _nbio_sockets[_num_nbio_sockets++] = sock;
+
+    _unlock();
+
+    return 0;
+}
+
+int _remove_nbio_socket(SOCKET sock)
+{
+    _lock();
+
+    for (size_t i = 0; i < _num_nbio_sockets; i++)
+    {
+        if (_nbio_sockets[i] == sock)
+        {
+            _nbio_sockets[i] = _nbio_sockets[_num_nbio_sockets - 1];
+            _num_nbio_sockets--;
+            _unlock();
+            return 0;
+        }
+    }
+
+    _unlock();
+
+    return -1;
+}
 
 /*
 **==============================================================================
@@ -713,6 +818,9 @@ static unsigned win_stat_to_stat(unsigned winstat)
 **
 **==============================================================================
 */
+
+static BOOL _winsock_inited = 0;
+
 static BOOL _winsock_init()
 {
     int ret = -1;
@@ -2029,8 +2137,44 @@ int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how)
 
 int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
 {
-    // Currently we do nothing but accept it.
-    // We will need to define which fcntls do what.
+    switch (cmd)
+    {
+        case OE_F_GETFL:
+        {
+            int flags = 0;
+
+            if (_is_nbio_socket(fd))
+                flags |= OE_O_NONBLOCK;
+
+            printf("oe_posix_fcntl_ocall(): get flags\n");
+
+            return flags;
+        }
+        case OE_F_SETFL:
+        {
+            if ((arg & OE_O_NONBLOCK))
+            {
+                printf("oe_posix_fcntl_ocall(): set non-blocking\n");
+
+                if (!_is_nbio_socket(fd) && _add_nbio_socket(fd) != 0)
+                    return -1;
+            }
+            else
+            {
+                printf("oe_posix_fcntl_ocall(): set blocking\n");
+
+                _remove_nbio_socket(fd);
+            }
+
+            return 0;
+        }
+        default:
+        {
+            printf("oe_posix_fcntl_ocall(): not handled\n");
+            break;
+        }
+    }
+
     return 0;
 }
 
@@ -2843,19 +2987,17 @@ typedef struct _poll_event_pair
     short posix;
     short windows;
     const char* name;
-}
-poll_event_pair_t;
+} poll_event_pair_t;
 
-static poll_event_pair_t _poll_event_map[] =
-{
-    { OE_POLLIN, POLLIN, "POLLIN" },
-    { OE_POLLRDNORM, POLLRDNORM, "POLLRDNORM" },
-    { OE_POLLRDBAND, POLLRDBAND, "POLLRDBAND" },
-    { OE_POLLOUT, POLLOUT, "POLLOUT" },
-    { OE_POLLWRNORM, POLLWRNORM, "POLLWRNORM" },
-    { OE_POLLWRBAND, POLLWRBAND, "POLLWRBAND" },
-    { OE_POLLERR, POLLERR, "POLLERR" },
-    { OE_POLLHUP, POLLHUP, "POLLHUP" },
+static poll_event_pair_t _poll_event_map[] = {
+    {OE_POLLIN, POLLIN, "POLLIN"},
+    {OE_POLLRDNORM, POLLRDNORM, "POLLRDNORM"},
+    {OE_POLLRDBAND, POLLRDBAND, "POLLRDBAND"},
+    {OE_POLLOUT, POLLOUT, "POLLOUT"},
+    {OE_POLLWRNORM, POLLWRNORM, "POLLWRNORM"},
+    {OE_POLLWRBAND, POLLWRBAND, "POLLWRBAND"},
+    {OE_POLLERR, POLLERR, "POLLERR"},
+    {OE_POLLHUP, POLLHUP, "POLLHUP"},
 #if 0
     { OE_POLLRDHUP, POLLRDHUP },
 #endif
@@ -2868,20 +3010,22 @@ static short _poll_events_to_windows(short events)
     short ret = 0;
 
 #ifdef TRACE_POLL
-	printf("=== _poll_events_to_windows()\n"); fflush(stdout);
+    printf("=== _poll_events_to_windows()\n");
+    fflush(stdout);
 #endif
 
     for (size_t i = 0; i < _poll_event_map_size; i++)
     {
-	poll_event_pair_t* p = &_poll_event_map[i];
+        poll_event_pair_t* p = &_poll_event_map[i];
 
-	if ((p->posix & events))
-	{
+        if ((p->posix & events))
+        {
 #ifdef TRACE_POLL
-	    printf("IN: %s\n", p->name); fflush(stdout);
+            printf("IN: %s\n", p->name);
+            fflush(stdout);
 #endif
-	    ret |= p->windows;
-	}
+            ret |= p->windows;
+        }
     }
 
     return ret;
@@ -2892,21 +3036,22 @@ static short _poll_events_to_posix(short events)
     short ret = 0;
 
 #ifdef TRACE_POLL
-    printf("=== _poll_events_to_posix()\n"); fflush(stdout);
+    printf("=== _poll_events_to_posix()\n");
+    fflush(stdout);
 #endif
 
     for (size_t i = 0; i < _poll_event_map_size; i++)
     {
-	poll_event_pair_t* p = &_poll_event_map[i];
+        poll_event_pair_t* p = &_poll_event_map[i];
 
-
-	if ((p->windows & events))
-	{
+        if ((p->windows & events))
+        {
 #ifdef TRACE_POLL
-	    printf("OUT: %s\n", p->name); fflush(stdout);
+            printf("OUT: %s\n", p->name);
+            fflush(stdout);
 #endif
-	    ret |= p->posix;
-	}
+            ret |= p->posix;
+        }
     }
 
     return ret;

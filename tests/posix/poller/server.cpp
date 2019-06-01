@@ -157,9 +157,9 @@ extern "C" void run_server(
 
                     errno = 0;
 
-printf("<<<<<<<<<<<<<<<<<<<<<<<\n");
+                    printf("<<<<<<<<<<<<<<<<<<<<<<<\n");
                     n = sock_recv(client->sock, buf, sizeof(buf), 0);
-printf(">>>>>>>>>>>>>>>>>>>>>>>\n");
+                    printf(">>>>>>>>>>>>>>>>>>>>>>>\n");
 
                     if (n > 0)
                     {

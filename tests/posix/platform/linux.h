@@ -12,11 +12,11 @@
 #include <openenclave/bits/types.h>
 #include <poll.h>
 #include <pthread.h>
+#include <stdio.h>
 #include <sys/epoll.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <stdio.h>
 
 #define INVALID_SOCKET ((socket_t)-1)
 
