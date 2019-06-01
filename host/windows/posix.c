@@ -706,108 +706,6 @@ static unsigned win_stat_to_stat(unsigned winstat)
     return ret_stat;
 }
 
-static short _poll_event_to_win(short poll_events)
-{
-    short ret = 0;
-
-    if (poll_events & OE_POLLIN)
-    {
-        ret |= POLLIN;
-    }
-    if (poll_events & OE_POLLPRI)
-    {
-        // ret |= POLLPRI;
-    }
-    if (poll_events & OE_POLLOUT)
-    {
-        ret |= POLLWRNORM; // poll out is not allowed in winsock poll events
-    }
-    if (poll_events & OE_POLLRDNORM)
-    {
-        ret |= POLLRDNORM;
-    }
-    if (poll_events & OE_POLLRDBAND)
-    {
-        ret |= POLLRDBAND;
-    }
-    if (poll_events & OE_POLLWRNORM)
-    {
-        ret |= POLLWRNORM;
-    }
-    if (poll_events & OE_POLLWRBAND)
-    {
-        // ignore. not allowed in windows
-    }
-    if (poll_events & OE_POLLMSG)
-    {
-        // ignore. not in windows
-    }
-    if (poll_events & OE_POLLRDHUP)
-    {
-        // ignore. not in windows
-    }
-    if (poll_events & OE_POLLERR)
-    {
-        // ignore. not in windows
-    }
-    if (poll_events & OE_POLLHUP)
-    {
-        // ret |= POLLHUP;
-    }
-    if (poll_events & OE_POLLNVAL)
-    {
-        // ret |= POLLNVAL;
-    }
-    return ret;
-}
-
-static short _winpoll_event_to_poll(short winpoll_events)
-{
-    short ret = 0;
-
-    if (winpoll_events & POLLIN)
-    {
-        ret |= OE_POLLIN;
-    }
-    if (winpoll_events & POLLPRI)
-    {
-        ret |= OE_POLLPRI;
-    }
-    if (winpoll_events & POLLOUT)
-    {
-        ret |= OE_POLLOUT;
-    }
-    if (winpoll_events & POLLRDNORM)
-    {
-        ret |= OE_POLLRDNORM;
-    }
-    if (winpoll_events & POLLRDBAND)
-    {
-        ret |= OE_POLLRDBAND;
-    }
-    if (winpoll_events & POLLWRNORM)
-    {
-        ret |= OE_POLLWRNORM;
-    }
-    if (winpoll_events & POLLWRBAND)
-    {
-        ret |= OE_POLLWRBAND;
-    }
-    if (winpoll_events & POLLERR)
-    {
-        ret |= OE_POLLERR;
-    }
-    if (winpoll_events & POLLHUP)
-    {
-        ret |= OE_POLLHUP;
-    }
-    if (winpoll_events & POLLNVAL)
-    {
-        ret |= OE_POLLNVAL;
-    }
-    return ret;
-}
-
 /*
 **==============================================================================
 **
@@ -2932,6 +2830,88 @@ int oe_posix_shutdown_polling_device_ocall(oe_host_fd_t fd)
     return 0;
 }
 
+/*
+**==============================================================================
+**
+** poll()
+**
+**==============================================================================
+*/
+
+typedef struct _poll_event_pair
+{
+    short posix;
+    short windows;
+    const char* name;
+}
+poll_event_pair_t;
+
+static poll_event_pair_t _poll_event_map[] =
+{
+    { OE_POLLIN, POLLIN, "POLLIN" },
+    { OE_POLLRDNORM, POLLRDNORM, "POLLRDNORM" },
+    { OE_POLLRDBAND, POLLRDBAND, "POLLRDBAND" },
+    { OE_POLLOUT, POLLOUT, "POLLOUT" },
+    { OE_POLLWRNORM, POLLWRNORM, "POLLWRNORM" },
+    { OE_POLLWRBAND, POLLWRBAND, "POLLWRBAND" },
+    { OE_POLLERR, POLLERR, "POLLERR" },
+    { OE_POLLHUP, POLLHUP, "POLLHUP" },
+#if 0
+    { OE_POLLRDHUP, POLLRDHUP },
+#endif
+};
+
+static size_t _poll_event_map_size = OE_COUNTOF(_poll_event_map);
+
+static short _poll_events_to_windows(short events)
+{
+    short ret = 0;
+
+#ifdef TRACE_POLL
+	printf("=== _poll_events_to_windows()\n"); fflush(stdout);
+#endif
+
+    for (size_t i = 0; i < _poll_event_map_size; i++)
+    {
+	poll_event_pair_t* p = &_poll_event_map[i];
+
+	if ((p->posix & events))
+	{
+#ifdef TRACE_POLL
+	    printf("IN: %s\n", p->name); fflush(stdout);
+#endif
+	    ret |= p->windows;
+	}
+    }
+
+    return ret;
+}
+
+static short _poll_events_to_posix(short events)
+{
+    short ret = 0;
+
+#ifdef TRACE_POLL
+    printf("=== _poll_events_to_posix()\n"); fflush(stdout);
+#endif
+
+    for (size_t i = 0; i < _poll_event_map_size; i++)
+    {
+	poll_event_pair_t* p = &_poll_event_map[i];
+
+
+	if ((p->windows & events))
+	{
+#ifdef TRACE_POLL
+	    printf("OUT: %s\n", p->name); fflush(stdout);
+#endif
+	    ret |= p->posix;
+	}
+    }
+
+    return ret;
+}
+
 int oe_posix_poll_ocall(
     struct oe_host_pollfd* host_fds,
     oe_nfds_t nfds,
@@ -2948,15 +2928,18 @@ int oe_posix_poll_ocall(
         goto done;
     }
 
-    fds = (WSAPOLLFD*)calloc(1, sizeof(WSAPOLLFD) * nfds);
+    if (!(fds = (WSAPOLLFD*)calloc(nfds, sizeof(WSAPOLLFD))))
+    {
+        _set_errno(OE_ENOMEM);
+        goto done;
+    }
+
     // Winsock used different values for poll events, so we have to translate to
     // and from
-    int i = 0;
-    for (; i < nfds; i++)
+    for (oe_nfds_t i = 0; i < nfds; i++)
     {
-        fds[i].events = _poll_event_to_win(host_fds[i].events);
-        fds[i].revents = 0;
         fds[i].fd = host_fds[i].fd;
+        fds[i].events = _poll_events_to_windows(host_fds[i].events);
     }
 
     if ((ret = WSAPoll(fds, (ULONG)nfds, timeout)) <= 0)
@@ -2964,17 +2947,16 @@ int oe_posix_poll_ocall(
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         goto done;
     }
-    for (; i < nfds; i++)
+
+    for (int i = 0; i < ret; i++)
     {
-        host_fds[i].revents = _winpoll_event_to_poll(fds[i].revents);
+        host_fds[i].revents = _poll_events_to_posix(fds[i].revents);
     }
 
 done:
 
     if (fds)
-    {
         free(fds);
-    }
 
     return ret;
 }
