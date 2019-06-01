@@ -1249,7 +1249,6 @@ int oe_posix_close_ocall(oe_host_fd_t fd)
 
 int oe_posix_close_socket_ocall(oe_host_fd_t sockfd)
 {
-
     if (closesocket((SOCKET)sockfd) == SOCKET_ERROR)
     {
         _set_errno(_winerr_to_errno(GetLastError()));
@@ -1919,7 +1918,8 @@ ssize_t oe_posix_recvmsg_ocall(
     struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
 
     buf.buf = (char*)&msg_iov[msg_iovlen];
-    buf.len = (ULONG)(msg_iov_buf_size - ((size_t)msg_iovlen * sizeof(struct oe_iovec)));
+    buf.len = (ULONG)(
+        msg_iov_buf_size - ((size_t)msg_iovlen * sizeof(struct oe_iovec)));
 
     rslt = WSARecv((SOCKET)sockfd, &buf, 1, &recv_bytes, &flags, NULL, NULL);
     if (rslt == SOCKET_ERROR)
@@ -1949,7 +1949,8 @@ ssize_t oe_posix_sendmsg_ocall(
     struct oe_iovec* msg_iov = (struct oe_iovec*)msg_iov_buf;
 
     buf.buf = (char*)&msg_iov[msg_iovlen];
-    buf.len = (ULONG)(msg_iov_buf_size - ((size_t)msg_iovlen * sizeof(struct oe_iovec)));
+    buf.len = (ULONG)(
+        msg_iov_buf_size - ((size_t)msg_iovlen * sizeof(struct oe_iovec)));
 
     rslt = WSASend((SOCKET)sockfd, &buf, 1, &sent_bytes, flags, NULL, NULL);
     if (rslt == SOCKET_ERROR)
@@ -2182,15 +2183,15 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
                 if (!_is_nbio_socket(fd) && _add_nbio_socket(fd) != 0)
                     return -1;
 
-		if (_set_blocking(fd, false) != 0)
-		    return -1;
+                if (_set_blocking(fd, false) != 0)
+                    return -1;
             }
             else
             {
                 _remove_nbio_socket(fd);
 
-		if (_set_blocking(fd, true) != 0)
-		    return -1;
+                if (_set_blocking(fd, true) != 0)
+                    return -1;
             }
 
             return 0;
@@ -3012,19 +3013,19 @@ static short _poll_events_to_windows(short events)
 {
     short ret = 0;
 
-    if (events & OE_POLLIN) 
+    if (events & OE_POLLIN)
     {
         events &= ~OE_POLLIN;
         ret |= POLLIN;
     }
 
-    if (events & OE_POLLRDNORM) 
+    if (events & OE_POLLRDNORM)
     {
         events &= ~OE_POLLRDNORM;
         ret |= POLLRDNORM;
     }
 
-    if (events & OE_POLLRDBAND) 
+    if (events & OE_POLLRDBAND)
     {
         events &= ~OE_POLLRDBAND;
         ret |= POLLRDBAND;
@@ -3039,13 +3040,13 @@ static short _poll_events_to_windows(short events)
     if (events & OE_POLLWRNORM)
     {
         events &= ~OE_POLLWRNORM;
-	ret |= POLLWRNORM;
+        ret |= POLLWRNORM;
     }
 
-    if (events & OE_POLLERR) 
+    if (events & OE_POLLERR)
     {
         events &= ~OE_POLLERR;
-	ret |= POLLERR;
+        ret |= POLLERR;
     }
 
     if (events & OE_POLLHUP)
@@ -3061,56 +3062,56 @@ static short _poll_events_to_posix(short events, short revents)
 {
     short ret = 0;
 
-    if (revents & POLLIN) 
+    if (revents & POLLIN)
     {
-	revents &= ~POLLIN;
-	ret |= OE_POLLIN;
+        revents &= ~POLLIN;
+        ret |= OE_POLLIN;
     }
 
-    if (revents & POLLRDNORM) 
+    if (revents & POLLRDNORM)
     {
-	revents &= ~POLLRDNORM;
-	ret |= OE_POLLRDNORM;
+        revents &= ~POLLRDNORM;
+        ret |= OE_POLLRDNORM;
     }
 
     if (revents & POLLRDBAND)
     {
-	revents &= ~POLLRDBAND;
+        revents &= ~POLLRDBAND;
         ret |= OE_POLLRDBAND;
     }
 
     if (revents & POLLOUT)
     {
-	revents &= ~POLLOUT;
+        revents &= ~POLLOUT;
         ret |= OE_POLLOUT;
     }
 
     if (revents & POLLWRNORM)
     {
-	revents &= ~POLLWRNORM;
+        revents &= ~POLLWRNORM;
         ret |= OE_POLLWRNORM;
     }
 
     if (revents & POLLERR)
     {
-	revents &= ~POLLERR;
+        revents &= ~POLLERR;
         ret |= OE_POLLERR;
     }
 
     if (revents & POLLHUP)
     {
-	/* If not requeted by caller, change to OE_POLLIN. */
-	if (!(events & POLLHUP))
-	    ret |= OE_POLLIN;
-	else
-	    ret |= OE_POLLHUP;
+        /* If not requeted by caller, change to OE_POLLIN. */
+        if (!(events & POLLHUP))
+            ret |= OE_POLLIN;
+        else
+            ret |= OE_POLLHUP;
 
-	revents &= ~POLLHUP;
+        revents &= ~POLLHUP;
     }
 
     if (revents & POLLPRI)
     {
-	revents &= ~POLLPRI;
+        revents &= ~POLLPRI;
         ret |= OE_POLLPRI;
     }
 
@@ -3156,23 +3157,23 @@ int oe_posix_poll_ocall(
     // by the poller test when polling on the listener socket. Retrying
     // WSAPoll() resutls in an infinite loop.
     {
-	short found_non_zero_revents = 0;
+        short found_non_zero_revents = 0;
 
-	for (int i = 0; i < ret; i++)
-	{
-	    printf("HHH.FD=%lld\n", fds[i].fd);
+        for (int i = 0; i < ret; i++)
+        {
+            printf("HHH.FD=%lld\n", fds[i].fd);
 
-	    if (fds[i].revents)
-		found_non_zero_revents = true;
-	}
+            if (fds[i].revents)
+                found_non_zero_revents = true;
+        }
 
-	assert(found_non_zero_revents == true);
+        assert(found_non_zero_revents == true);
     }
-
 
     for (int i = 0; i < ret; i++)
     {
-        host_fds[i].revents = _poll_events_to_posix(fds[i].events, fds[i].revents);
+        host_fds[i].revents =
+            _poll_events_to_posix(fds[i].events, fds[i].revents);
     }
 
 done:

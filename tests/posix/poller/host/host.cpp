@@ -150,10 +150,10 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    //test_host_to_host(poller_type);
-    //test_enclave_to_host(poller_type);
+    // test_host_to_host(poller_type);
+    // test_enclave_to_host(poller_type);
     test_host_to_enclave(poller_type);
-    //test_enclave_to_enclave(poller_type);
+    // test_enclave_to_enclave(poller_type);
 
     test_fd_set(_enclave);
 
