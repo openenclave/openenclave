@@ -1246,6 +1246,16 @@ int oe_posix_close_ocall(oe_host_fd_t fd)
     return 0;
 }
 
+int oe_posix_close_socket_ocall(oe_host_fd_t fd)
+{
+    if (closesocket((SOCKET)fd) == SOCKET_ERROR)
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        return -1;
+    }
+    return 0;
+}
+
 oe_host_fd_t oe_posix_dup_ocall(oe_host_fd_t oldfd)
 {
     oe_host_fd_t ret = -1;

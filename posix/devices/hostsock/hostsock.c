@@ -551,7 +551,7 @@ static int _hostsock_close(oe_fd_t* sock_)
     if (!sock)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (oe_posix_close_ocall(&ret, sock->host_fd) != OE_OK)
+    if (oe_posix_close_socket_ocall(&ret, sock->host_fd) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (ret == 0)
