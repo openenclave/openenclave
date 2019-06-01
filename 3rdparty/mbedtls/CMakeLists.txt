@@ -147,6 +147,11 @@ add_library(mbedtls STATIC
   mbedtls/library/ssl_ticket.c
   mbedtls/library/ssl_tls.c)
 
+# Make sure that we build with clang on Windows.
+maybe_build_using_clangw(mbedcrypto_static)
+maybe_build_using_clangw(mbedx509)
+maybe_build_using_clangw(mbedtls)
+
 # Change the mbedcrypto_static target to the real mbedcrypto library name.
 set_target_properties(mbedcrypto_static PROPERTIES OUTPUT_NAME "mbedcrypto")
 
