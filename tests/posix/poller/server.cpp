@@ -45,9 +45,6 @@ socket_t create_listener_socket(uint16_t port)
     if (listen(sock, backlog) != 0)
         goto done;
 
-    if (sock_set_blocking(sock, false) != 0)
-        goto done;
-
     ret = sock;
     sock = INVALID_SOCKET;
 
@@ -125,14 +122,8 @@ extern "C" void run_server(
                 {
                     socket_t sock;
 
-                    if (sock_set_blocking(listener, true) != 0)
-                        OE_TEST("sock_set_blocking" == NULL);
-
                     if ((sock = accept(listener, NULL, NULL)) < 0)
                         OE_TEST("accept() failed" == NULL);
-
-                    if (sock_set_blocking(listener, false) != 0)
-                        OE_TEST("sock_set_blocking" == NULL);
 
                     client_t client = {sock};
                     clients.push_back(client);
