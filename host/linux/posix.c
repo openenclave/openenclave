@@ -159,6 +159,13 @@ int oe_posix_close_ocall(oe_host_fd_t fd)
     return close((int)fd);
 }
 
+int oe_posix_close_socket_ocall(oe_host_fd_t fd)
+{
+    errno = 0;
+
+    return close((int)fd);
+}
+
 oe_host_fd_t oe_posix_dup_ocall(oe_host_fd_t oldfd)
 {
     errno = 0;
