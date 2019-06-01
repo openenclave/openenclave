@@ -3124,11 +3124,12 @@ int oe_posix_poll_ocall(
     int timeout)
 {
     int ret = -1;
+    int n;
     WSAPOLLFD* fds = NULL;
 
     _set_errno(0);
 
-    if (nfds == 0)
+    if (nfds <= 0)
     {
         _set_errno(OE_EINVAL);
         goto done;
@@ -3146,35 +3147,19 @@ int oe_posix_poll_ocall(
         fds[i].events = _poll_events_to_windows(host_fds[i].events);
     }
 
-    if ((ret = WSAPoll(fds, (ULONG)nfds, timeout)) <= 0)
+    if ((n = WSAPoll(fds, (ULONG)nfds, timeout)) <= 0)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         goto done;
     }
 
-    // WSAPoll() can erroneously return with all revents fields set
-    // to zero. Assert for now if this happens. This assert is triggered
-    // by the poller test when polling on the listener socket. Retrying
-    // WSAPoll() resutls in an infinite loop.
-    {
-        short found_non_zero_revents = 0;
-
-        for (int i = 0; i < ret; i++)
-        {
-            printf("HHH.FD=%lld\n", fds[i].fd);
-
-            if (fds[i].revents)
-                found_non_zero_revents = true;
-        }
-
-        assert(found_non_zero_revents == true);
-    }
-
-    for (int i = 0; i < ret; i++)
+    for (int i = 0; i < nfds; i++)
     {
         host_fds[i].revents =
             _poll_events_to_posix(fds[i].events, fds[i].revents);
     }
+
+    ret = n;
 
 done:
 
