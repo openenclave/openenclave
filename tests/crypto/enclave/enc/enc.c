@@ -6,12 +6,12 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
+#include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
-#include <openenclave/internal/sha.h>
 #include <openenclave/internal/syscall.h>
 #include <openenclave/internal/tests.h>
 #include <stdarg.h>

@@ -10,9 +10,9 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/types.h>
+#include "crypto/sha.h"
 #include "epid.h"
 #include "jump.h"
-#include "sha.h"
 
 OE_EXTERNC_BEGIN
 

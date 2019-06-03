@@ -6,7 +6,7 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/hash.h>
+#include <openenclave/internal/crypto/hash.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 

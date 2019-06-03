@@ -4,7 +4,7 @@
 #ifndef _TESTS_CRYPTO_HASH_H
 #define _TESTS_CRYPTO_HASH_H
 
-#include <openenclave/internal/sha.h>
+#include <openenclave/internal/crypto/sha.h>
 
 /* Upper case alphabet */
 extern const char* ALPHABET;

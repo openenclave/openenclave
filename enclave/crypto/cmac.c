@@ -5,7 +5,7 @@
 #include <mbedtls/pk.h>
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/cmac.h>
+#include <openenclave/internal/crypto/cmac.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 

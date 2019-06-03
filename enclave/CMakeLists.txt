@@ -36,9 +36,7 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
 target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
 endif()
 
-target_link_libraries(oeenclave PUBLIC
-    oe_includes
-    oecryptombed)
+target_link_libraries(oeenclave PUBLIC oecryptombed)
 
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 

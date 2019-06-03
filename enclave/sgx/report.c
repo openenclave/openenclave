@@ -6,10 +6,10 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/cmac.h>
-#include <openenclave/internal/keys.h>
+#include <openenclave/internal/crypto/cmac.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/sgxkeys.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>

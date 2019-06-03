@@ -7,7 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/sha.h>
+#include <openenclave/internal/crypto/sha.h>
 
 OE_EXTERNC_BEGIN
 

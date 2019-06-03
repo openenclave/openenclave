@@ -6,7 +6,7 @@
 
 #include <mbedtls/pk.h>
 
-#include <openenclave/internal/ec.h>
+#include <openenclave/internal/crypto/ec.h>
 
 OE_INLINE bool oe_is_ec_key(const mbedtls_pk_context* pk)
 {

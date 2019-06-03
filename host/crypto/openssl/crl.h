@@ -4,7 +4,7 @@
 #ifndef _OE_HOST_CRYPTO_CRL_H
 #define _OE_HOST_CRYPTO_CRL_H
 
-#include <openenclave/internal/crl.h>
+#include <openenclave/internal/crypto/crl.h>
 #include <openssl/x509.h>
 
 typedef struct _crl

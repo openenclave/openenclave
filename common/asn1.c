@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "asn1.h"
-#include <openenclave/internal/asn1.h>
+#include <openenclave/internal/crypto/asn1.h>
 #include <openenclave/internal/raise.h>
 
 oe_result_t oe_asn1_get_tag(

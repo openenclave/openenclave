@@ -6,7 +6,7 @@
 
 #include <mbedtls/x509_crl.h>
 
-#include <openenclave/internal/crl.h>
+#include <openenclave/internal/crypto/crl.h>
 
 typedef struct _crl
 {

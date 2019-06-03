@@ -8,7 +8,7 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/hash.h>
+#include <openenclave/internal/crypto/hash.h>
 
 typedef struct _oe_private_key
 {

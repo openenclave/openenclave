@@ -6,7 +6,7 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include "utils.h"
+#include <openenclave/internal/utils.h>
 
 OE_EXTERNC_BEGIN
 
