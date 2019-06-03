@@ -168,6 +168,91 @@ done:
     return result;
 }
 
+oe_result_t oe_ecall(
+    oe_enclave_t* enclave,
+    uint16_t func,
+    uint64_t arg,
+    uint64_t* arg_out_ptr)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    // oe_code_t code = OE_CODE_ECALL;
+    oe_code_t code_out = 0;
+    // uint16_t func_out = 0;
+    uint16_t result_out = 0;
+    uint64_t arg_out = 0;
+
+    if (!enclave)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Perform ECALL or ORET */
+    OE_UNUSED(func);
+    OE_UNUSED(arg);
+
+    /* Process OCALLS */
+    if (code_out != OE_CODE_ERET)
+        OE_RAISE(OE_UNEXPECTED);
+
+    if (arg_out_ptr)
+        *arg_out_ptr = arg_out;
+
+    result = (oe_result_t)result_out;
+
+done:
+
+    return result;
+}
+
+oe_result_t oe_call_enclave_function_by_table_id(
+    oe_enclave_t* enclave,
+    uint64_t table_id,
+    uint64_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_enclave_function_args_t args;
+
+    /* Reject invalid parameters */
+    if (!enclave)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Initialize the call_enclave_args structure */
+    {
+        args.table_id = table_id;
+        args.function_id = function_id;
+        args.input_buffer = input_buffer;
+        args.input_buffer_size = input_buffer_size;
+        args.output_buffer = output_buffer;
+        args.output_buffer_size = output_buffer_size;
+        args.output_bytes_written = 0;
+        args.result = OE_UNEXPECTED;
+    }
+
+    /* Perform the ECALL */
+    {
+        uint64_t arg_out = 0;
+
+        OE_CHECK(oe_ecall(
+            enclave,
+            OE_ECALL_CALL_ENCLAVE_FUNCTION,
+            (uint64_t)&args,
+            &arg_out));
+        OE_CHECK((oe_result_t)arg_out);
+    }
+
+    /* Check the result */
+    OE_CHECK(args.result);
+
+    *output_bytes_written = args.output_bytes_written;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 oe_result_t oe_call_enclave_function(
     oe_enclave_t* enclave,
     uint32_t function_id,
@@ -177,15 +262,15 @@ oe_result_t oe_call_enclave_function(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    OE_UNUSED(enclave);
-    OE_UNUSED(function_id);
-    OE_UNUSED(input_buffer);
-    OE_UNUSED(input_buffer_size);
-    OE_UNUSED(output_buffer);
-    OE_UNUSED(output_buffer_size);
-    OE_UNUSED(output_bytes_written);
-
-    return OE_UNSUPPORTED;
+    return oe_call_enclave_function_by_table_id(
+        enclave,
+        OE_UINT64_MAX,
+        function_id,
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        output_bytes_written);
 }
 
 oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
