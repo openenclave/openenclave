@@ -25,7 +25,7 @@
     path: "{{ packages['7z']['dest'] }}"
 
 - name: Microsoft Visual Studio 2017 - Install
-  raw: "{{ packages['vs_2017']['dest'] }} --quiet --wait --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.CMake.Project --includeRecommended"
+  raw: "{{ packages['vs_2017']['dest'] }} --quiet --wait --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.CMake.Project --add Microsoft.VisualStudio.Component.Windows10SDK.17134 --includeRecommended"
 
 - name: Clang 7 - Install
   raw: "{{ packages['clang7']['dest'] }} /S"
