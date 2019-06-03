@@ -122,31 +122,6 @@ let open_file (filename : string) (dir : string) =
   fprintf os " */\n" ;
   os
 
-(** We need to check Ptrs for Foreign or Struct types, then check
-    those against the user's structs, and then check if any members
-    should be deep copied. *)
-let get_deepcopy a structs ep =
-  let get_struct = function
-    | Ptr a -> (
-      match a with
-      | Foreign n | Struct n ->
-          (* TODO: This would simply be [List.assoc_opt] if we had at
-             least 4.05. *)
-          if List.mem_assoc n structs then Some (List.assoc n structs)
-          else None
-      | _ -> None )
-    | _ -> None
-  in
-  let s = get_struct a in
-  let should_deepcopy_member (ptype, _) =
-    match ptype with
-    | PTPtr (_, attr) -> attr.pa_size <> empty_ptr_size
-    | PTVal _ -> false
-  in
-  if ep.experimental then
-    match s with Some s -> List.filter should_deepcopy_member s | None -> []
-  else []
-
 (** [oe_get_param_size] is the most complex function. For a parameter,
     get its size expression. *)
 let oe_get_param_size (ptype, decl, argstruct) =
@@ -196,6 +171,17 @@ let oe_get_param_size (ptype, decl, argstruct) =
       else pa_size
   | _ -> ""
 
+(** Generate the prototype for a given function. Optionally add an
+    [oe_enclave_t*] first parameter. *)
+let oe_gen_prototype (fd : func_decl) =
+  let get_plist_str (plist : pdecl list) =
+    if List.length plist = 0 then "void"
+    else
+      (if List.length plist = 1 then "" else "\n    ")
+      ^ String.concat ",\n    " (List.map gen_parm_str plist)
+  in
+  sprintf "%s %s(%s)" (get_tystr fd.rtype) fd.fname (get_plist_str fd.plist)
+
 (** TODO: Refactor!  *)
 let oe_get_param_count (ptype, decl, argstruct) =
   (* Get the base type of the parameter, that is, recursively
@@ -240,17 +226,6 @@ let oe_get_param_count (ptype, decl, argstruct) =
       else if pa_size = "" then decl_size
       else pa_size
   | _ -> "1"
-
-(** Generate the prototype for a given function. Optionally add an
-    [oe_enclave_t*] first parameter. *)
-let oe_gen_prototype (fd : func_decl) =
-  let get_plist_str (plist : pdecl list) =
-    if List.length plist = 0 then "void"
-    else
-      (if List.length plist = 1 then "" else "\n    ")
-      ^ String.concat ",\n    " (List.map gen_parm_str plist)
-  in
-  sprintf "%s %s(%s)" (get_tystr fd.rtype) fd.fname (get_plist_str fd.plist)
 
 let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
   let args = List.map gen_parm_str fd.plist in
@@ -315,136 +290,11 @@ let emit_composite_type =
   | UnionDef u -> emit_union u
   | EnumDef e -> emit_enum e
 
-let get_function_id (f : func_decl) (e : string) =
-  sprintf "%s_fcn_id_%s" e f.fname
-
-(** Emit IDs in enum for trusted functions. *)
-let emit_trusted_function_ids (tfs : trusted_func list) (name : string) =
-  [ "enum"
-  ; "{"
-  ; String.concat "\n"
-      (List.mapi
-         (fun i f -> sprintf "    %s = %d," (get_function_id f.tf_fdecl name) i)
-         tfs)
-  ; sprintf "    %s_fcn_id_trusted_call_id_max = OE_ENUM_MAX" name
-  ; "};" ]
-
-(** Emit IDs in enum for untrusted functions. *)
-let emit_untrusted_function_ids (ufs : untrusted_func list) (name : string) =
-  [ "enum"
-  ; "{"
-  ; String.concat "\n"
-      (List.mapi
-         (fun i f -> sprintf "    %s = %d," (get_function_id f.uf_fdecl name) i)
-         ufs)
-  ; sprintf "    %s_fcn_id_untrusted_call_max = OE_ENUM_MAX" name
-  ; "};" ]
-
 (** This transforms the [Struct] types embedded in a [composite_type
    list] into an association list of the struct name to its parameter
    list, which is much easier to deal with. *)
 let get_structs =
   filter_map (function StructDef s -> Some (s.sname, s.smlist) | _ -> None)
-
-(** Generate [args.h] which contains [struct]s for ecalls and ocalls *)
-let oe_gen_args_header (ec : enclave_content) (dir : string) =
-  let oe_gen_marshal_struct (fd : func_decl) (errno : bool) =
-    let gen_member_decl (ptype, decl) =
-      let aty = get_param_atype ptype in
-      let tystr = get_tystr aty in
-      let tystr =
-        if is_foreign_array ptype then
-          sprintf "/* foreign array of type %s */ void*" tystr
-        else tystr
-      in
-      let need_strlen p =
-        (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
-      in
-      let id = decl.identifier in
-      [ [sprintf "%s %s;" tystr id]
-      ; (if need_strlen ptype then [sprintf "size_t %s_len;" id] else []) ]
-      |> List.flatten
-    in
-    let struct_name = fd.fname ^ "_args_t" in
-    let retval_decl = {identifier= "_retval"; array_dims= []} in
-    let members =
-      [ ["oe_result_t _result;"]
-      ; ( if fd.rtype = Void then []
-        else gen_member_decl (PTVal fd.rtype, retval_decl) )
-      ; (if errno then ["int _ocall_errno;"] else [])
-      ; flatten_map gen_member_decl (List.map conv_array_to_ptr fd.plist) ]
-      |> List.flatten
-    in
-    [ sprintf "typedef struct _%s" struct_name
-    ; "{"
-    ; "    " ^ String.concat "\n    " members
-    ; sprintf "} %s;" struct_name
-    ; "" ]
-  in
-  let oe_gen_user_includes (includes : string list) =
-    if includes <> [] then List.map (sprintf "#include \"%s\"") includes
-    else ["/* There were no user includes. */"]
-  in
-  let oe_gen_user_types (cts : composite_type list) =
-    if cts <> [] then flatten_map emit_composite_type cts
-    else ["/* There were no user defined types. */"; ""]
-  in
-  let oe_gen_ecall_marshal_structs (tfs : trusted_func list) =
-    if tfs <> [] then
-      flatten_map (fun tf -> oe_gen_marshal_struct tf.tf_fdecl false) tfs
-    else ["/* There were no ecalls. */"; ""]
-  in
-  let oe_gen_ocall_marshal_structs (ufs : untrusted_func list) =
-    if ufs <> [] then
-      flatten_map
-        (fun uf -> oe_gen_marshal_struct uf.uf_fdecl uf.uf_propagate_errno)
-        ufs
-    else ["/* There were no ocalls. */"; ""]
-  in
-  let with_errno =
-    List.exists (fun uf -> uf.uf_propagate_errno) ec.ufunc_decls
-  in
-  let guard_macro =
-    sprintf "EDGER8R_%s_ARGS_H" (String.uppercase ec.enclave_name)
-  in
-  let content =
-    [ sprintf "#ifndef %s" guard_macro
-    ; sprintf "#define %s" guard_macro
-    ; ""
-    ; "#include <stdint.h>"
-    ; "#include <stdlib.h> /* for wchar_t */"
-    ; ""
-    ; ( if with_errno then "#include <errno.h>"
-      else
-        "/* #include <errno.h> - Errno propagation not enabled so not \
-         included. */" )
-    ; ""
-    ; "#include <openenclave/bits/result.h>"
-    ; ""
-    ; "/**** User includes. ****/"
-    ; String.concat "\n" (oe_gen_user_includes ec.include_list)
-    ; ""
-    ; "/**** User defined types in EDL. ****/"
-    ; String.concat "\n" (oe_gen_user_types ec.comp_defs)
-    ; "/**** ECALL marshalling structs. ****/"
-    ; String.concat "\n" (oe_gen_ecall_marshal_structs ec.tfunc_decls)
-    ; "/**** OCALL marshalling structs. ****/"
-    ; String.concat "\n" (oe_gen_ocall_marshal_structs ec.ufunc_decls)
-    ; "/**** Trusted function IDs ****/"
-    ; String.concat "\n"
-        (emit_trusted_function_ids ec.tfunc_decls ec.enclave_name)
-    ; ""
-    ; "/**** Untrusted function IDs. ****/"
-    ; String.concat "\n"
-        (emit_untrusted_function_ids ec.ufunc_decls ec.enclave_name)
-    ; ""
-    ; sprintf "#endif // %s" guard_macro
-    ; "" ]
-  in
-  let fname = sprintf "%s_args.h" ec.file_shortnm in
-  let os = open_file fname dir in
-  fprintf os "%s" (String.concat "\n" content) ;
-  close_out os
 
 (** Generate a cast expression for a pointer argument. Pointer
     arguments need to be cast to their root type, since the marshalling
@@ -469,138 +319,6 @@ let get_cast_to_mem_expr (ptype, decl) (parens : bool) =
         sprintf "/* foreign array of type %s */ %s" tystr s
       else if parens then sprintf "(%s)" tystr
       else tystr
-
-(** Prepare [input_buffer]. *)
-let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs ep =
-  let oe_compute_buffer_size (buffer : string)
-      (predicate : parameter_type * declarator -> bool) (plist : pdecl list) =
-    let rec gen_add_size prefix count (ptype, decl) =
-      let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
-      let arg = prefix ^ decl.identifier in
-      [ gen_c_for count
-      ; [sprintf "if (%s) OE_ADD_SIZE(%s, %s);" arg buffer size]
-      ; (let param_count =
-           oe_get_param_count (ptype, decl, "_args." ^ prefix)
-         in
-         flatten_map
-           (gen_add_size (arg ^ gen_c_deref param_count) param_count)
-           (get_deepcopy (get_param_atype ptype) structs ep)) ]
-      |> List.flatten
-    in
-    let params =
-      flatten_map (gen_add_size "" "1") (List.filter predicate plist)
-    in
-    (* Note that the indentation for the first line is applied by the
-     parent function. *)
-    if params <> [] then String.concat "\n    " params
-    else "/* There were no corresponding parameters. */"
-  in
-  let oe_compute_input_buffer_size =
-    oe_compute_buffer_size "_input_buffer_size" (fun (p, _) ->
-        is_in_ptr p || is_inout_ptr p )
-  in
-  let oe_compute_output_buffer_size =
-    oe_compute_buffer_size "_output_buffer_size" (fun (p, _) ->
-        is_out_ptr p || is_inout_ptr p )
-  in
-  let oe_serialize_buffer_inputs (plist : pdecl list) =
-    let rec gen_serialize prefix count (ptype, decl) =
-      let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
-      let tystr = get_cast_to_mem_expr (ptype, decl) false in
-      let arg = prefix ^ decl.identifier in
-      (* These need to be in order and so done together. *)
-      [ gen_c_for count
-      ; [ sprintf "OE_WRITE_%s_PARAM(%s, %s, %s, %s);"
-            (if is_in_ptr ptype then "IN" else "IN_OUT")
-            arg arg size tystr ]
-      ; (let param_count =
-           oe_get_param_count (ptype, decl, "_args." ^ prefix)
-         in
-         flatten_map
-           (gen_serialize (arg ^ gen_c_deref param_count) param_count)
-           (get_deepcopy (get_param_atype ptype) structs ep)) ]
-      |> List.flatten
-    in
-    let params =
-      flatten_map (gen_serialize "" "1")
-        (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
-    in
-    (* Note that the indentation for the first line is applied by the
-     parent function. *)
-    if params <> [] then String.concat "\n    " params
-    else "/* There were no in nor in-out parameters. */"
-  in
-  [ "/* Compute input buffer size. Include in and in-out parameters. */"
-  ; sprintf "OE_ADD_SIZE(_input_buffer_size, sizeof(%s_args_t));" fd.fname
-  ; oe_compute_input_buffer_size fd.plist
-  ; ""
-  ; "/* Compute output buffer size. Include out and in-out parameters. */"
-  ; sprintf "OE_ADD_SIZE(_output_buffer_size, sizeof(%s_args_t));" fd.fname
-  ; oe_compute_output_buffer_size fd.plist
-  ; ""
-  ; "/* Allocate marshalling buffer. */"
-  ; "_total_buffer_size = _input_buffer_size;"
-  ; "OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);"
-  ; sprintf "_buffer = (uint8_t*)%s(_total_buffer_size);" alloc_func
-  ; "_input_buffer = _buffer;"
-  ; "_output_buffer = _buffer + _input_buffer_size;"
-  ; "if (_buffer == NULL)"
-  ; "{"
-  ; "    _result = OE_OUT_OF_MEMORY;"
-  ; "    goto done;"
-  ; "}"
-  ; ""
-  ; "/* Serialize buffer inputs (in and in-out parameters). */"
-  ; sprintf "_pargs_in = (%s_args_t*)_input_buffer;" fd.fname
-  ; "OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));"
-  ; oe_serialize_buffer_inputs fd.plist
-  ; ""
-  ; "/* Copy args structure (now filled) to input buffer. */"
-  ; "memcpy(_pargs_in, &_args, sizeof(*_pargs_in));" ]
-
-let oe_process_output_buffer (fd : func_decl) =
-  [ [ (* Verify that the ecall succeeded *)
-      "/* Setup output arg struct pointer. */"
-    ; sprintf "_pargs_out = (%s_args_t*)_output_buffer;" fd.fname
-    ; "OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));"
-    ; ""
-    ; "/* Check if the call succeeded. */"
-    ; "if ((_result = _pargs_out->_result) != OE_OK)"
-    ; "    goto done;"
-    ; ""
-    ; "/* Currently exactly _output_buffer_size bytes must be written. */"
-    ; "if (_output_bytes_written != _output_buffer_size)"
-    ; "{"
-    ; "    _result = OE_FAILURE;"
-    ; "    goto done;"
-    ; "}"
-    ; ""
-    ; "/* Unmarshal return value and out, in-out parameters. */"
-    ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
-      else "/* No return value. */" ) ]
-  ; (* This does not use String.concat because the elements are multiple lines. *)
-    (* TODO: Fix for deep copy. *)
-    flatten_map
-      (fun (ptype, decl) ->
-        let size = oe_get_param_size (ptype, decl, "_args.") in
-        (* These need to be in order and so done together. *)
-        if is_out_ptr ptype then
-          [sprintf "OE_READ_OUT_PARAM(%s, (size_t)(%s));" decl.identifier size]
-        else if is_inout_ptr ptype then
-          (* Check that strings are null terminated. Note output
-              buffer has already been copied into the enclave. *)
-          [ ( if is_str_ptr ptype || is_wstr_ptr ptype then
-              sprintf
-                "OE_CHECK_NULL_TERMINATOR%s(_output_buffer + \
-                 _output_buffer_offset, _args.%s_len);\n"
-                (if is_wstr_ptr ptype then "_WIDE" else "")
-                decl.identifier
-            else "" )
-            ^ sprintf "OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));" decl.identifier
-                size ]
-        else [] )
-      fd.plist ]
-  |> List.flatten
 
 (** Generate a cast expression to a specific pointer type. For example,
     [int*] needs to be cast to
@@ -631,322 +349,6 @@ let oe_gen_call_user_function (fd : func_decl) =
            sprintf "    %spargs_in->%s" cast_expr decl.identifier )
          fd.plist)
     ^ ");" ]
-
-let rec oe_gen_set_pointers prefix count structs ep setter (ptype, decl) =
-  let size = oe_get_param_size (ptype, decl, "pargs_in->" ^ prefix) in
-  let tystr = get_cast_to_mem_expr (ptype, decl) false in
-  let arg = prefix ^ decl.identifier in
-  [ gen_c_for count
-  ; [sprintf "OE_%s_POINTER(%s, %s, %s);" (setter ptype) arg size tystr]
-  ; (let param_count =
-       oe_get_param_count (ptype, decl, "pargs_in->" ^ prefix)
-     in
-     flatten_map
-       (oe_gen_set_pointers
-          (arg ^ gen_c_deref param_count)
-          param_count structs ep setter)
-       (get_deepcopy (get_param_atype ptype) structs ep)) ]
-  |> List.flatten
-
-let oe_gen_in_and_inout_setters (plist : pdecl list) structs ep =
-  let params =
-    flatten_map
-      (oe_gen_set_pointers "" "1" structs ep (fun p ->
-           if is_inout_ptr p then "SET_IN_OUT" else "SET_IN" ))
-      (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
-  in
-  "    "
-  ^ String.concat "\n    "
-      [ "/* Set in and in-out pointers. */"
-      ; ( if params <> [] then String.concat "\n    " params
-        else "/* There were no in nor in-out parameters. */" ) ]
-
-let oe_gen_out_and_inout_setters (plist : pdecl list) structs ep =
-  let params =
-    flatten_map
-      (oe_gen_set_pointers "" "1" structs ep (fun p ->
-           if is_inout_ptr p then "COPY_AND_SET_IN_OUT" else "SET_OUT" ))
-      (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
-  in
-  "    "
-  ^ String.concat "\n    "
-      [ "/* Set out and in-out pointers. */"
-      ; "/* In-out parameters are copied to output buffer. */"
-      ; ( if params <> [] then String.concat "\n    " params
-        else "/* There were no out nor in-out parameters. */" ) ]
-
-(** Generate ecall function. *)
-let oe_gen_ecall_function structs ep (tf : trusted_func) =
-  let fd = tf.tf_fdecl in
-  [ sprintf "void ecall_%s(" fd.fname
-  ; "    uint8_t* input_buffer,"
-  ; "    size_t input_buffer_size,"
-  ; "    uint8_t* output_buffer,"
-  ; "    size_t output_buffer_size,"
-  ; "    size_t* output_bytes_written)"
-  ; "{"
-  ; (* Variable declarations *)
-    "    oe_result_t _result = OE_FAILURE;"
-  ; ""
-  ; "    /* Prepare parameters. */"
-  ; sprintf "    %s_args_t* pargs_in = (%s_args_t*)input_buffer;" fd.fname
-      fd.fname
-  ; sprintf "    %s_args_t* pargs_out = (%s_args_t*)output_buffer;" fd.fname
-      fd.fname
-  ; ""
-  ; "    size_t input_buffer_offset = 0;"
-  ; "    size_t output_buffer_offset = 0;"
-  ; "    OE_ADD_SIZE(input_buffer_offset, sizeof(*pargs_in));"
-  ; "    OE_ADD_SIZE(output_buffer_offset, sizeof(*pargs_out));"
-  ; ""
-  ; (* Buffer validation *)
-    "    /* Make sure input and output buffers lie within the enclave. */"
-  ; "    if (!input_buffer || !oe_is_within_enclave(input_buffer, \
-     input_buffer_size))"
-  ; "        goto done;"
-  ; ""
-  ; "    if (!output_buffer || !oe_is_within_enclave(output_buffer, \
-     output_buffer_size))"
-  ; "        goto done;"
-  ; ""
-  ; (* Prepare in and in-out parameters *)
-    oe_gen_in_and_inout_setters fd.plist structs ep
-  ; ""
-  ; (* Prepare out and in-out parameters. The in-out parameter is copied
-     to output buffer. *)
-    oe_gen_out_and_inout_setters fd.plist structs ep
-  ; ""
-  ; "    /* Check that in/in-out strings are null terminated. */"
-    (* TODO: Fix for deep copy. *)
-  ; (let params =
-       List.map
-         (fun (ptype, decl) ->
-           sprintf
-             "    OE_CHECK_NULL_TERMINATOR%s(pargs_in->%s, pargs_in->%s_len);"
-             (if is_wstr_ptr ptype then "_WIDE" else "")
-             decl.identifier decl.identifier )
-         (List.filter
-            (fun (p, _) ->
-              (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
-              )
-            fd.plist)
-     in
-     if params <> [] then String.concat "\n" params
-     else "    /* There were no in nor in-out string parameters. */")
-  ; ""
-  ; "    /* lfence after checks. */"
-  ; "    oe_lfence();"
-  ; ""
-  ; (* Call the enclave function *)
-    "    " ^ String.concat "\n    " (oe_gen_call_user_function fd)
-  ; ""
-  ; (* Mark call as success *)
-    "    /* Success. */"
-  ; "    _result = OE_OK;"
-  ; "    *output_bytes_written = output_buffer_offset;"
-  ; ""
-  ; "done:"
-  ; "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))"
-  ; "        pargs_out->_result = _result;"
-  ; "}"
-  ; "" ]
-
-let gen_fill_marshal_struct (fd : func_decl) structs ep =
-  (* Generate assignment argument to corresponding field in args. This
-     is necessary for all arguments, not just copy-as-value, because
-     they are used directly by later marshalling code. *)
-  let rec gen_assignment prefix count (ptype, decl) =
-    let id = decl.identifier in
-    let arg = prefix ^ id in
-    [ gen_c_for count
-    ; [ sprintf "_args.%s = %s%s;" arg
-          (get_cast_to_mem_expr (ptype, decl) true)
-          arg ]
-    ; (* for string parameter fill the len field *)
-      ( if is_str_ptr ptype then
-        [sprintf "_args.%s_len = (%s) ? (strlen(%s) + 1) : 0;" arg id id]
-      else if is_wstr_ptr ptype then
-        [sprintf "_args.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" arg id id]
-      else [] )
-    ; (let param_count = oe_get_param_count (ptype, decl, "_args." ^ prefix) in
-       flatten_map
-         (gen_assignment (arg ^ gen_c_deref param_count) param_count)
-         (get_deepcopy (get_param_atype ptype) structs ep)) ]
-    |> List.flatten
-  in
-  flatten_map (gen_assignment "" "1") fd.plist
-
-(** Generate host ECALL wrapper function. *)
-let oe_gen_host_ecall_wrapper (name : string) structs ep (tf : trusted_func) =
-  let fd = tf.tf_fdecl in
-  [ oe_gen_wrapper_prototype fd true
-  ; "{"
-  ; "    oe_result_t _result = OE_FAILURE;"
-  ; ""
-  ; "    /* Marshalling struct. */"
-  ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
-      fd.fname
-  ; ""
-  ; "    /* Marshalling buffer and sizes. */"
-  ; "    size_t _input_buffer_size = 0;"
-  ; "    size_t _output_buffer_size = 0;"
-  ; "    size_t _total_buffer_size = 0;"
-  ; "    uint8_t* _buffer = NULL;"
-  ; "    uint8_t* _input_buffer = NULL;"
-  ; "    uint8_t* _output_buffer = NULL;"
-  ; "    size_t _input_buffer_offset = 0;"
-  ; "    size_t _output_buffer_offset = 0;"
-  ; "    size_t _output_bytes_written = 0;"
-  ; ""
-  ; "    /* Fill marshalling struct. */"
-  ; "    memset(&_args, 0, sizeof(_args));"
-  ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd structs ep)
-  ; ""
-  ; "    "
-    ^ String.concat "\n    " (oe_prepare_input_buffer fd "malloc" structs ep)
-  ; ""
-  ; "    /* Call enclave function. */"
-  ; "    if ((_result = oe_call_enclave_function("
-  ; "             "
-    ^ String.concat ",\n             "
-        [ "enclave"
-        ; get_function_id fd name
-        ; "_input_buffer"
-        ; "_input_buffer_size"
-        ; "_output_buffer"
-        ; "_output_buffer_size"
-        ; "&_output_bytes_written)) != OE_OK)" ]
-  ; "        goto done;"
-  ; ""
-  ; "    " ^ String.concat "\n    " (oe_process_output_buffer fd)
-  ; ""
-  ; "    _result = OE_OK;"
-  ; ""
-  ; "done:"
-  ; "    if (_buffer)"
-  ; "        free(_buffer);"
-  ; "    return _result;"
-  ; "}"
-  ; "" ]
-
-(** Generate enclave OCALL wrapper function. *)
-let oe_gen_enclave_ocall_wrapper (name : string) structs ep
-    (uf : untrusted_func) =
-  let fd = uf.uf_fdecl in
-  [ oe_gen_wrapper_prototype fd false
-  ; "{"
-  ; "    oe_result_t _result = OE_FAILURE;"
-  ; ""
-  ; "    /* If the enclave is in crashing/crashed status, new OCALL should fail"
-  ; "       immediately. */"
-  ; "    if (oe_get_enclave_status() != OE_OK)"
-  ; "        return oe_get_enclave_status();"
-  ; ""
-  ; "    /* Marshalling struct. */"
-  ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
-      fd.fname
-  ; ""
-  ; "    /* Marshalling buffer and sizes. */"
-  ; "    size_t _input_buffer_size = 0;"
-  ; "    size_t _output_buffer_size = 0;"
-  ; "    size_t _total_buffer_size = 0;"
-  ; "    uint8_t* _buffer = NULL;"
-  ; "    uint8_t* _input_buffer = NULL;"
-  ; "    uint8_t* _output_buffer = NULL;"
-  ; "    size_t _input_buffer_offset = 0;"
-  ; "    size_t _output_buffer_offset = 0;"
-  ; "    size_t _output_bytes_written = 0;"
-  ; ""
-  ; "    /* Fill marshalling struct. */"
-  ; "    memset(&_args, 0, sizeof(_args));"
-  ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd structs ep)
-  ; ""
-  ; "    "
-    ^ String.concat "\n    "
-        (oe_prepare_input_buffer fd "oe_allocate_ocall_buffer" structs ep)
-  ; ""
-  ; "    /* Call host function. */"
-  ; "    if ((_result = oe_call_host_function("
-  ; "             "
-    ^ String.concat ",\n             "
-        [ get_function_id fd name
-        ; "_input_buffer"
-        ; "_input_buffer_size"
-        ; "_output_buffer"
-        ; "_output_buffer_size"
-        ; "&_output_bytes_written)) != OE_OK)" ]
-  ; "        goto done;"
-  ; ""
-  ; "    " ^ String.concat "\n    " (oe_process_output_buffer fd)
-  ; ""
-  ; "    /* Retrieve propagated errno from OCALL. */"
-  ; ( if uf.uf_propagate_errno then "    errno = _pargs_out->_ocall_errno;\n"
-    else sprintf "    /* Errno propagation not enabled. */" )
-  ; ""
-  ; "    _result = OE_OK;"
-  ; ""
-  ; "done:"
-  ; "    if (_buffer)"
-  ; "        oe_free_ocall_buffer(_buffer);"
-  ; "    return _result;"
-  ; "}"
-  ; "" ]
-
-(** Generate ocall function. *)
-let oe_gen_ocall_function structs ep (uf : untrusted_func) =
-  let fd = uf.uf_fdecl in
-  [ sprintf "void ocall_%s(" fd.fname
-  ; "    uint8_t* input_buffer,"
-  ; "    size_t input_buffer_size,"
-  ; "    uint8_t* output_buffer,"
-  ; "    size_t output_buffer_size,"
-  ; "    size_t* output_bytes_written)"
-  ; "{"
-  ; (* Variable declarations *)
-    "    oe_result_t _result = OE_FAILURE;"
-  ; "    OE_UNUSED(input_buffer_size);"
-  ; ""
-  ; "    /* Prepare parameters. */"
-  ; sprintf "    %s_args_t* pargs_in = (%s_args_t*)input_buffer;" fd.fname
-      fd.fname
-  ; sprintf "    %s_args_t* pargs_out = (%s_args_t*)output_buffer;" fd.fname
-      fd.fname
-  ; ""
-  ; "    size_t input_buffer_offset = 0;"
-  ; "    size_t output_buffer_offset = 0;"
-  ; "    OE_ADD_SIZE(input_buffer_offset, sizeof(*pargs_in));"
-  ; "    OE_ADD_SIZE(output_buffer_offset, sizeof(*pargs_out));"
-  ; ""
-  ; (* Buffer validation *)
-    "    /* Make sure input and output buffers are valid. */"
-  ; "    if (!input_buffer || !output_buffer) {"
-  ; "        _result = OE_INVALID_PARAMETER;"
-  ; "        goto done;"
-  ; "    }"
-  ; ""
-  ; (* Prepare in and in-out parameters *)
-    oe_gen_in_and_inout_setters fd.plist structs ep
-  ; ""
-  ; (* Prepare out and in-out parameters. The in-out parameter is copied to output buffer. *)
-    oe_gen_out_and_inout_setters fd.plist structs ep
-  ; ""
-  ; (* Call the host function *)
-    "    " ^ String.concat "\n    " (oe_gen_call_user_function fd)
-  ; ""
-  ; "    /* Propagate errno back to enclave. */"
-  ; ( if uf.uf_propagate_errno then "    pargs_out->_ocall_errno = errno;"
-    else "    /* Errno propagation not enabled. */" )
-  ; ""
-  ; (* Mark call as success *)
-    "    /* Success. */"
-  ; "    _result = OE_OK;"
-  ; "    *output_bytes_written = output_buffer_offset;"
-  ; ""
-  ; "done:"
-  ; "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))"
-  ; "        pargs_out->_result = _result;"
-  ; "}"
-  ; "" ]
 
 (** Check if any of the parameters or the return type has the given
     root type. *)
@@ -1047,277 +449,889 @@ let warn_size_and_count_params (fd : func_decl) =
       | _ -> () )
     fd.plist
 
-(** Validate Open Enclave supported EDL features. *)
-let validate_oe_support (ec : enclave_content) (ep : edger8r_params) =
-  (* check supported options *)
-  if ep.use_prefix then
-    failwithf "--use_prefix option is not supported by oeedger8r." ;
-  List.iter
-    (fun f ->
-      if f.tf_is_priv then
-        failwithf
-          "Function '%s': 'private' specifier is not supported by oeedger8r"
-          f.tf_fdecl.fname ;
-      if f.tf_is_switchless then
-        failwithf
-          "Function '%s': switchless ecalls and ocalls are not yet supported \
-           by Open Enclave SDK."
-          f.tf_fdecl.fname )
-    ec.tfunc_decls ;
-  List.iter
-    (fun f ->
-      ( if f.uf_fattr.fa_convention <> CC_NONE then
-        let cconv_str = get_call_conv_str f.uf_fattr.fa_convention in
-        printf
-          "Warning: Function '%s': Calling convention '%s' for ocalls is not \
-           supported by oeedger8r.\n"
-          f.uf_fdecl.fname cconv_str ) ;
-      if f.uf_fattr.fa_dllimport then
-        failwithf "Function '%s': dllimport is not supported by oeedger8r."
-          f.uf_fdecl.fname ;
-      if f.uf_allow_list != [] then
-        printf
-          "Warning: Function '%s': Reentrant ocalls are not supported by Open \
-           Enclave. Allow list ignored.\n"
-          f.uf_fdecl.fname ;
-      if f.uf_is_switchless then
-        failwithf
-          "Function '%s': switchless ecalls and ocalls are not yet supported \
-           by Open Enclave SDK."
-          f.uf_fdecl.fname )
-    ec.ufunc_decls ;
-  (* Map warning functions over trusted and untrusted function
-     declarations *)
-  let ufuncs = List.map (fun f -> f.uf_fdecl) ec.ufunc_decls in
-  let tfuncs = List.map (fun f -> f.tf_fdecl) ec.tfunc_decls in
-  let funcs = List.append ufuncs tfuncs in
-  List.iter
-    (fun f ->
-      warn_non_portable_types f ;
-      warn_signed_size_or_count_types f ;
-      warn_size_and_count_params f )
-    funcs
-
-(** Includes are emitted in [args.h]. Imported functions have already
-    been brought into function lists. *)
-let gen_t_h (ec : enclave_content) (ep : edger8r_params) =
-  let oe_gen_tfunc_prototypes (tfs : trusted_func list) =
-    if tfs <> [] then
-      List.map (fun f -> sprintf "%s;" (oe_gen_prototype f.tf_fdecl)) tfs
-    else ["/* There were no ecalls. */"]
-  in
-  let oe_gen_ufunc_wrapper_prototypes (ufs : untrusted_func list) =
-    if ufs <> [] then
-      List.map
-        (fun f -> sprintf "%s;" (oe_gen_wrapper_prototype f.uf_fdecl false))
-        ufs
-    else ["/* There were no ocalls. */"]
-  in
-  let guard = sprintf "EDGER8R_%s_T_H" (String.uppercase ec.file_shortnm) in
-  let content =
-    [ sprintf "#ifndef %s" guard
-    ; sprintf "#define %s" guard
-    ; ""
-    ; "#include <openenclave/enclave.h>"
-    ; ""
-    ; sprintf "#include \"%s_args.h\"" ec.file_shortnm
-    ; ""
-    ; "OE_EXTERNC_BEGIN"
-    ; ""
-    ; "/**** ECALL prototypes. ****/"
-    ; String.concat "\n\n" (oe_gen_tfunc_prototypes ec.tfunc_decls)
-    ; ""
-    ; "/**** OCALL prototypes. ****/"
-    ; String.concat "\n\n" (oe_gen_ufunc_wrapper_prototypes ec.ufunc_decls)
-    ; ""
-    ; "OE_EXTERNC_END"
-    ; ""
-    ; sprintf "#endif // %s" guard
-    ; "" ]
-  in
-  let fname = ec.file_shortnm ^ "_t.h" in
-  let os = open_file fname ep.trusted_dir in
-  fprintf os "%s" (String.concat "\n" content) ;
-  close_out os
-
-let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
-  let tfs = ec.tfunc_decls in
-  let ufs = ec.ufunc_decls in
-  let structs = get_structs ec.comp_defs in
-  let oe_gen_ecall_functions =
-    if tfs <> [] then flatten_map (oe_gen_ecall_function structs ep) tfs
-    else ["/* There were no ecalls. */"]
-  in
-  let oe_gen_ecall_table =
-    let table = "__oe_ecalls_table" in
-    if tfs <> [] then
-      [ sprintf "oe_ecall_func_t %s[] = {" table
-      ; "    "
-        ^ String.concat ",\n    "
-            (List.map
-               (fun f -> sprintf "(oe_ecall_func_t) ecall_%s" f.tf_fdecl.fname)
-               tfs)
-      ; "};"
-      ; ""
-      ; sprintf "size_t %s_size = OE_COUNTOF(%s);" table table ]
-    else ["/* There were no ecalls. */"]
-  in
-  let oe_gen_enclave_ocall_wrappers =
-    if ufs <> [] then
-      flatten_map (oe_gen_enclave_ocall_wrapper ec.enclave_name structs ep) ufs
-    else ["/* There were no ocalls. */"]
-  in
-  let content =
-    [ sprintf "#include \"%s_t.h\"" ec.file_shortnm
-    ; ""
-    ; "#include <openenclave/edger8r/enclave.h>"
-    ; ""
-    ; "#include <stdlib.h>"
-    ; "#include <string.h>"
-    ; "#include <wchar.h>"
-    ; ""
-    ; "OE_EXTERNC_BEGIN"
-    ; ""
-    ; "/**** ECALL functions. ****/"
-    ; ""
-    ; String.concat "\n" oe_gen_ecall_functions
-    ; "/**** ECALL function table. ****/"
-    ; ""
-    ; String.concat "\n" oe_gen_ecall_table
-    ; ""
-    ; "/**** OCALL function wrappers. ****/"
-    ; ""
-    ; String.concat "\n" oe_gen_enclave_ocall_wrappers
-    ; "OE_EXTERNC_END"
-    ; "" ]
-  in
-  let ecalls_fname = ec.file_shortnm ^ "_t.c" in
-  let os = open_file ecalls_fname ep.trusted_dir in
-  fprintf os "%s" (String.concat "\n" content) ;
-  close_out os
-
-let gen_u_h (ec : enclave_content) (ep : edger8r_params) =
-  let oe_gen_tfunc_wrapper_prototypes (tfs : trusted_func list) =
-    if tfs <> [] then
-      List.map
-        (fun f -> sprintf "%s;" (oe_gen_wrapper_prototype f.tf_fdecl true))
-        tfs
-    else ["/* There were no ecalls. */"]
-  in
-  let oe_gen_ufunc_prototypes (ufs : untrusted_func list) =
-    if ufs <> [] then
-      List.map (fun f -> sprintf "%s;" (oe_gen_prototype f.uf_fdecl)) ufs
-    else ["/* There were no ocalls. */"]
-  in
-  let guard = sprintf "EDGER8R_%s_U_H" (String.uppercase ec.file_shortnm) in
-  let content =
-    [ sprintf "#ifndef %s" guard
-    ; sprintf "#define %s" guard
-    ; ""
-    ; "#include <openenclave/host.h>"
-    ; ""
-    ; sprintf "#include \"%s_args.h\"" ec.file_shortnm
-    ; ""
-    ; "OE_EXTERNC_BEGIN"
-    ; ""
-    ; sprintf "oe_result_t oe_create_%s_enclave(" ec.enclave_name
-    ; "    const char* path,"
-    ; "    oe_enclave_type_t type,"
-    ; "    uint32_t flags,"
-    ; "    const void* config,"
-    ; "    uint32_t config_size,"
-    ; "    oe_enclave_t** enclave);"
-    ; ""
-    ; "/**** ECALL prototypes. ****/"
-    ; String.concat "\n\n" (oe_gen_tfunc_wrapper_prototypes ec.tfunc_decls)
-    ; ""
-    ; "/**** OCALL prototypes. ****/"
-    ; String.concat "\n\n" (oe_gen_ufunc_prototypes ec.ufunc_decls)
-    ; ""
-    ; "OE_EXTERNC_END"
-    ; ""
-    ; sprintf "#endif // %s" guard
-    ; "" ]
-  in
-  let fname = ec.file_shortnm ^ "_u.h" in
-  let os = open_file fname ep.untrusted_dir in
-  fprintf os "%s" (String.concat "\n" content) ;
-  close_out os
-
-let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
-  let tfs = ec.tfunc_decls in
-  let ufs = ec.ufunc_decls in
-  let structs = get_structs ec.comp_defs in
-  let oe_gen_host_ecall_wrappers =
-    if tfs <> [] then
-      flatten_map (oe_gen_host_ecall_wrapper ec.enclave_name structs ep) tfs
-    else ["/* There were no ecalls. */"]
-  in
-  let oe_gen_ocall_functions =
-    if ufs <> [] then flatten_map (oe_gen_ocall_function structs ep) ufs
-    else ["/* There were no ocalls. */"]
-  in
-  let oe_gen_ocall_table =
-    [ sprintf "static oe_ocall_func_t __%s_ocall_function_table[] = {"
-        ec.enclave_name
-    ; "    "
-      ^ String.concat "\n    "
-          (List.map
-             (fun f -> sprintf "(oe_ocall_func_t) ocall_%s," f.uf_fdecl.fname)
-             ufs)
-    ; "    NULL"
-    ; "};" ]
-  in
-  let content =
-    [ sprintf "#include \"%s_u.h\"" ec.file_shortnm
-    ; ""
-    ; "#include <openenclave/edger8r/host.h>"
-    ; ""
-    ; "#include <stdlib.h>"
-    ; "#include <string.h>"
-    ; "#include <wchar.h>"
-    ; ""
-    ; "OE_EXTERNC_BEGIN"
-    ; ""
-    ; "/**** ECALL function wrappers. ****/"
-    ; ""
-    ; String.concat "\n" oe_gen_host_ecall_wrappers
-    ; "/**** OCALL functions. ****/"
-    ; ""
-    ; String.concat "\n" oe_gen_ocall_functions
-    ; "/**** OCALL function table. ****/"
-    ; ""
-    ; String.concat "\n" oe_gen_ocall_table
-    ; ""
-    ; sprintf "oe_result_t oe_create_%s_enclave(" ec.enclave_name
-    ; "    const char* path,"
-    ; "    oe_enclave_type_t type,"
-    ; "    uint32_t flags,"
-    ; "    const void* config,"
-    ; "    uint32_t config_size,"
-    ; "    oe_enclave_t** enclave)"
-    ; "{"
-    ; "    return oe_create_enclave("
-    ; "               path,"
-    ; "               type,"
-    ; "               flags,"
-    ; "               config,"
-    ; "               config_size,"
-    ; sprintf "               __%s_ocall_function_table," ec.enclave_name
-    ; sprintf "               %d," (List.length ufs)
-    ; "               enclave);"
-    ; "}"
-    ; ""
-    ; "OE_EXTERNC_END"
-    ; "" ]
-  in
-  let ecalls_fname = ec.file_shortnm ^ "_u.c" in
-  let os = open_file ecalls_fname ep.untrusted_dir in
-  fprintf os "%s" (String.concat "\n" content) ;
-  close_out os
-
 (** Generate the Enclave code. *)
 let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
+  (* We need to check Ptrs for Foreign or Struct types, then check
+    those against the user's structs, and then check if any members
+    should be deep copied. *)
+  let get_deepcopy a structs ep =
+    let get_struct = function
+      | Ptr a -> (
+        match a with
+        | Foreign n | Struct n ->
+            (* TODO: This would simply be [List.assoc_opt] if we had at
+             least 4.05. *)
+            if List.mem_assoc n structs then Some (List.assoc n structs)
+            else None
+        | _ -> None )
+      | _ -> None
+    in
+    let s = get_struct a in
+    let should_deepcopy_member (ptype, _) =
+      match ptype with
+      | PTPtr (_, attr) -> attr.pa_size <> empty_ptr_size
+      | PTVal _ -> false
+    in
+    if ep.experimental then
+      match s with
+      | Some s -> List.filter should_deepcopy_member s
+      | None -> []
+    else []
+  in
+  let get_function_id (f : func_decl) (e : string) =
+    sprintf "%s_fcn_id_%s" e f.fname
+  in
+  (* Emit IDs in enum for trusted functions. *)
+  let emit_trusted_function_ids (tfs : trusted_func list) (name : string) =
+    [ "enum"
+    ; "{"
+    ; String.concat "\n"
+        (List.mapi
+           (fun i f ->
+             sprintf "    %s = %d," (get_function_id f.tf_fdecl name) i )
+           tfs)
+    ; sprintf "    %s_fcn_id_trusted_call_id_max = OE_ENUM_MAX" name
+    ; "};" ]
+  in
+  (* Emit IDs in enum for untrusted functions. *)
+  let emit_untrusted_function_ids (ufs : untrusted_func list) (name : string) =
+    [ "enum"
+    ; "{"
+    ; String.concat "\n"
+        (List.mapi
+           (fun i f ->
+             sprintf "    %s = %d," (get_function_id f.uf_fdecl name) i )
+           ufs)
+    ; sprintf "    %s_fcn_id_untrusted_call_max = OE_ENUM_MAX" name
+    ; "};" ]
+  in
+  (* Generate [args.h] which contains [struct]s for ecalls and ocalls *)
+  let oe_gen_args_header (ec : enclave_content) (dir : string) =
+    let oe_gen_marshal_struct (fd : func_decl) (errno : bool) =
+      let gen_member_decl (ptype, decl) =
+        let aty = get_param_atype ptype in
+        let tystr = get_tystr aty in
+        let tystr =
+          if is_foreign_array ptype then
+            sprintf "/* foreign array of type %s */ void*" tystr
+          else tystr
+        in
+        let need_strlen p =
+          (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
+        in
+        let id = decl.identifier in
+        [ [sprintf "%s %s;" tystr id]
+        ; (if need_strlen ptype then [sprintf "size_t %s_len;" id] else []) ]
+        |> List.flatten
+      in
+      let struct_name = fd.fname ^ "_args_t" in
+      let retval_decl = {identifier= "_retval"; array_dims= []} in
+      let members =
+        [ ["oe_result_t _result;"]
+        ; ( if fd.rtype = Void then []
+          else gen_member_decl (PTVal fd.rtype, retval_decl) )
+        ; (if errno then ["int _ocall_errno;"] else [])
+        ; flatten_map gen_member_decl (List.map conv_array_to_ptr fd.plist) ]
+        |> List.flatten
+      in
+      [ sprintf "typedef struct _%s" struct_name
+      ; "{"
+      ; "    " ^ String.concat "\n    " members
+      ; sprintf "} %s;" struct_name
+      ; "" ]
+    in
+    let oe_gen_user_includes (includes : string list) =
+      if includes <> [] then List.map (sprintf "#include \"%s\"") includes
+      else ["/* There were no user includes. */"]
+    in
+    let oe_gen_user_types (cts : composite_type list) =
+      if cts <> [] then flatten_map emit_composite_type cts
+      else ["/* There were no user defined types. */"; ""]
+    in
+    let oe_gen_ecall_marshal_structs (tfs : trusted_func list) =
+      if tfs <> [] then
+        flatten_map (fun tf -> oe_gen_marshal_struct tf.tf_fdecl false) tfs
+      else ["/* There were no ecalls. */"; ""]
+    in
+    let oe_gen_ocall_marshal_structs (ufs : untrusted_func list) =
+      if ufs <> [] then
+        flatten_map
+          (fun uf -> oe_gen_marshal_struct uf.uf_fdecl uf.uf_propagate_errno)
+          ufs
+      else ["/* There were no ocalls. */"; ""]
+    in
+    let with_errno =
+      List.exists (fun uf -> uf.uf_propagate_errno) ec.ufunc_decls
+    in
+    let guard_macro =
+      sprintf "EDGER8R_%s_ARGS_H" (String.uppercase ec.enclave_name)
+    in
+    let content =
+      [ sprintf "#ifndef %s" guard_macro
+      ; sprintf "#define %s" guard_macro
+      ; ""
+      ; "#include <stdint.h>"
+      ; "#include <stdlib.h> /* for wchar_t */"
+      ; ""
+      ; ( if with_errno then "#include <errno.h>"
+        else
+          "/* #include <errno.h> - Errno propagation not enabled so not \
+           included. */" )
+      ; ""
+      ; "#include <openenclave/bits/result.h>"
+      ; ""
+      ; "/**** User includes. ****/"
+      ; String.concat "\n" (oe_gen_user_includes ec.include_list)
+      ; ""
+      ; "/**** User defined types in EDL. ****/"
+      ; String.concat "\n" (oe_gen_user_types ec.comp_defs)
+      ; "/**** ECALL marshalling structs. ****/"
+      ; String.concat "\n" (oe_gen_ecall_marshal_structs ec.tfunc_decls)
+      ; "/**** OCALL marshalling structs. ****/"
+      ; String.concat "\n" (oe_gen_ocall_marshal_structs ec.ufunc_decls)
+      ; "/**** Trusted function IDs ****/"
+      ; String.concat "\n"
+          (emit_trusted_function_ids ec.tfunc_decls ec.enclave_name)
+      ; ""
+      ; "/**** Untrusted function IDs. ****/"
+      ; String.concat "\n"
+          (emit_untrusted_function_ids ec.ufunc_decls ec.enclave_name)
+      ; ""
+      ; sprintf "#endif // %s" guard_macro
+      ; "" ]
+    in
+    let fname = sprintf "%s_args.h" ec.file_shortnm in
+    let os = open_file fname dir in
+    fprintf os "%s" (String.concat "\n" content) ;
+    close_out os
+  in
+  (* Prepare [input_buffer]. *)
+  let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs ep
+      =
+    let oe_compute_buffer_size (buffer : string)
+        (predicate : parameter_type * declarator -> bool) (plist : pdecl list)
+        =
+      let rec gen_add_size prefix count (ptype, decl) =
+        let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
+        let arg = prefix ^ decl.identifier in
+        [ gen_c_for count
+        ; [sprintf "if (%s) OE_ADD_SIZE(%s, %s);" arg buffer size]
+        ; (let param_count =
+             oe_get_param_count (ptype, decl, "_args." ^ prefix)
+           in
+           flatten_map
+             (gen_add_size (arg ^ gen_c_deref param_count) param_count)
+             (get_deepcopy (get_param_atype ptype) structs ep)) ]
+        |> List.flatten
+      in
+      let params =
+        flatten_map (gen_add_size "" "1") (List.filter predicate plist)
+      in
+      (* Note that the indentation for the first line is applied by the
+     parent function. *)
+      if params <> [] then String.concat "\n    " params
+      else "/* There were no corresponding parameters. */"
+    in
+    let oe_compute_input_buffer_size =
+      oe_compute_buffer_size "_input_buffer_size" (fun (p, _) ->
+          is_in_ptr p || is_inout_ptr p )
+    in
+    let oe_compute_output_buffer_size =
+      oe_compute_buffer_size "_output_buffer_size" (fun (p, _) ->
+          is_out_ptr p || is_inout_ptr p )
+    in
+    let oe_serialize_buffer_inputs (plist : pdecl list) =
+      let rec gen_serialize prefix count (ptype, decl) =
+        let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
+        let tystr = get_cast_to_mem_expr (ptype, decl) false in
+        let arg = prefix ^ decl.identifier in
+        (* These need to be in order and so done together. *)
+        [ gen_c_for count
+        ; [ sprintf "OE_WRITE_%s_PARAM(%s, %s, %s, %s);"
+              (if is_in_ptr ptype then "IN" else "IN_OUT")
+              arg arg size tystr ]
+        ; (let param_count =
+             oe_get_param_count (ptype, decl, "_args." ^ prefix)
+           in
+           flatten_map
+             (gen_serialize (arg ^ gen_c_deref param_count) param_count)
+             (get_deepcopy (get_param_atype ptype) structs ep)) ]
+        |> List.flatten
+      in
+      let params =
+        flatten_map (gen_serialize "" "1")
+          (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
+      in
+      (* Note that the indentation for the first line is applied by the
+     parent function. *)
+      if params <> [] then String.concat "\n    " params
+      else "/* There were no in nor in-out parameters. */"
+    in
+    [ "/* Compute input buffer size. Include in and in-out parameters. */"
+    ; sprintf "OE_ADD_SIZE(_input_buffer_size, sizeof(%s_args_t));" fd.fname
+    ; oe_compute_input_buffer_size fd.plist
+    ; ""
+    ; "/* Compute output buffer size. Include out and in-out parameters. */"
+    ; sprintf "OE_ADD_SIZE(_output_buffer_size, sizeof(%s_args_t));" fd.fname
+    ; oe_compute_output_buffer_size fd.plist
+    ; ""
+    ; "/* Allocate marshalling buffer. */"
+    ; "_total_buffer_size = _input_buffer_size;"
+    ; "OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);"
+    ; sprintf "_buffer = (uint8_t*)%s(_total_buffer_size);" alloc_func
+    ; "_input_buffer = _buffer;"
+    ; "_output_buffer = _buffer + _input_buffer_size;"
+    ; "if (_buffer == NULL)"
+    ; "{"
+    ; "    _result = OE_OUT_OF_MEMORY;"
+    ; "    goto done;"
+    ; "}"
+    ; ""
+    ; "/* Serialize buffer inputs (in and in-out parameters). */"
+    ; sprintf "_pargs_in = (%s_args_t*)_input_buffer;" fd.fname
+    ; "OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));"
+    ; oe_serialize_buffer_inputs fd.plist
+    ; ""
+    ; "/* Copy args structure (now filled) to input buffer. */"
+    ; "memcpy(_pargs_in, &_args, sizeof(*_pargs_in));" ]
+  in
+  let oe_process_output_buffer (fd : func_decl) =
+    [ [ (* Verify that the ecall succeeded *)
+        "/* Setup output arg struct pointer. */"
+      ; sprintf "_pargs_out = (%s_args_t*)_output_buffer;" fd.fname
+      ; "OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));"
+      ; ""
+      ; "/* Check if the call succeeded. */"
+      ; "if ((_result = _pargs_out->_result) != OE_OK)"
+      ; "    goto done;"
+      ; ""
+      ; "/* Currently exactly _output_buffer_size bytes must be written. */"
+      ; "if (_output_bytes_written != _output_buffer_size)"
+      ; "{"
+      ; "    _result = OE_FAILURE;"
+      ; "    goto done;"
+      ; "}"
+      ; ""
+      ; "/* Unmarshal return value and out, in-out parameters. */"
+      ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
+        else "/* No return value. */" ) ]
+    ; (* This does not use String.concat because the elements are multiple lines. *)
+      (* TODO: Fix for deep copy. *)
+      flatten_map
+        (fun (ptype, decl) ->
+          let size = oe_get_param_size (ptype, decl, "_args.") in
+          (* These need to be in order and so done together. *)
+          if is_out_ptr ptype then
+            [ sprintf "OE_READ_OUT_PARAM(%s, (size_t)(%s));" decl.identifier
+                size ]
+          else if is_inout_ptr ptype then
+            (* Check that strings are null terminated. Note output
+              buffer has already been copied into the enclave. *)
+            [ ( if is_str_ptr ptype || is_wstr_ptr ptype then
+                sprintf
+                  "OE_CHECK_NULL_TERMINATOR%s(_output_buffer + \
+                   _output_buffer_offset, _args.%s_len);\n"
+                  (if is_wstr_ptr ptype then "_WIDE" else "")
+                  decl.identifier
+              else "" )
+              ^ sprintf "OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));"
+                  decl.identifier size ]
+          else [] )
+        fd.plist ]
+    |> List.flatten
+  in
+  let rec oe_gen_set_pointers prefix count structs ep setter (ptype, decl) =
+    let size = oe_get_param_size (ptype, decl, "pargs_in->" ^ prefix) in
+    let tystr = get_cast_to_mem_expr (ptype, decl) false in
+    let arg = prefix ^ decl.identifier in
+    [ gen_c_for count
+    ; [sprintf "OE_%s_POINTER(%s, %s, %s);" (setter ptype) arg size tystr]
+    ; (let param_count =
+         oe_get_param_count (ptype, decl, "pargs_in->" ^ prefix)
+       in
+       flatten_map
+         (oe_gen_set_pointers
+            (arg ^ gen_c_deref param_count)
+            param_count structs ep setter)
+         (get_deepcopy (get_param_atype ptype) structs ep)) ]
+    |> List.flatten
+  in
+  let oe_gen_in_and_inout_setters (plist : pdecl list) structs ep =
+    let params =
+      flatten_map
+        (oe_gen_set_pointers "" "1" structs ep (fun p ->
+             if is_inout_ptr p then "SET_IN_OUT" else "SET_IN" ))
+        (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
+    in
+    "    "
+    ^ String.concat "\n    "
+        [ "/* Set in and in-out pointers. */"
+        ; ( if params <> [] then String.concat "\n    " params
+          else "/* There were no in nor in-out parameters. */" ) ]
+  in
+  let oe_gen_out_and_inout_setters (plist : pdecl list) structs ep =
+    let params =
+      flatten_map
+        (oe_gen_set_pointers "" "1" structs ep (fun p ->
+             if is_inout_ptr p then "COPY_AND_SET_IN_OUT" else "SET_OUT" ))
+        (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
+    in
+    "    "
+    ^ String.concat "\n    "
+        [ "/* Set out and in-out pointers. */"
+        ; "/* In-out parameters are copied to output buffer. */"
+        ; ( if params <> [] then String.concat "\n    " params
+          else "/* There were no out nor in-out parameters. */" ) ]
+  in
+  (* Generate ecall function. *)
+  let oe_gen_ecall_function structs ep (tf : trusted_func) =
+    let fd = tf.tf_fdecl in
+    [ sprintf "void ecall_%s(" fd.fname
+    ; "    uint8_t* input_buffer,"
+    ; "    size_t input_buffer_size,"
+    ; "    uint8_t* output_buffer,"
+    ; "    size_t output_buffer_size,"
+    ; "    size_t* output_bytes_written)"
+    ; "{"
+    ; (* Variable declarations *)
+      "    oe_result_t _result = OE_FAILURE;"
+    ; ""
+    ; "    /* Prepare parameters. */"
+    ; sprintf "    %s_args_t* pargs_in = (%s_args_t*)input_buffer;" fd.fname
+        fd.fname
+    ; sprintf "    %s_args_t* pargs_out = (%s_args_t*)output_buffer;" fd.fname
+        fd.fname
+    ; ""
+    ; "    size_t input_buffer_offset = 0;"
+    ; "    size_t output_buffer_offset = 0;"
+    ; "    OE_ADD_SIZE(input_buffer_offset, sizeof(*pargs_in));"
+    ; "    OE_ADD_SIZE(output_buffer_offset, sizeof(*pargs_out));"
+    ; ""
+    ; (* Buffer validation *)
+      "    /* Make sure input and output buffers lie within the enclave. */"
+    ; "    if (!input_buffer || !oe_is_within_enclave(input_buffer, \
+       input_buffer_size))"
+    ; "        goto done;"
+    ; ""
+    ; "    if (!output_buffer || !oe_is_within_enclave(output_buffer, \
+       output_buffer_size))"
+    ; "        goto done;"
+    ; ""
+    ; (* Prepare in and in-out parameters *)
+      oe_gen_in_and_inout_setters fd.plist structs ep
+    ; ""
+    ; (* Prepare out and in-out parameters. The in-out parameter is copied
+     to output buffer. *)
+      oe_gen_out_and_inout_setters fd.plist structs ep
+    ; ""
+    ; "    /* Check that in/in-out strings are null terminated. */"
+      (* TODO: Fix for deep copy. *)
+    ; (let params =
+         List.map
+           (fun (ptype, decl) ->
+             sprintf
+               "    OE_CHECK_NULL_TERMINATOR%s(pargs_in->%s, pargs_in->%s_len);"
+               (if is_wstr_ptr ptype then "_WIDE" else "")
+               decl.identifier decl.identifier )
+           (List.filter
+              (fun (p, _) ->
+                (is_str_ptr p || is_wstr_ptr p)
+                && (is_in_ptr p || is_inout_ptr p) )
+              fd.plist)
+       in
+       if params <> [] then String.concat "\n" params
+       else "    /* There were no in nor in-out string parameters. */")
+    ; ""
+    ; "    /* lfence after checks. */"
+    ; "    oe_lfence();"
+    ; ""
+    ; (* Call the enclave function *)
+      "    " ^ String.concat "\n    " (oe_gen_call_user_function fd)
+    ; ""
+    ; (* Mark call as success *)
+      "    /* Success. */"
+    ; "    _result = OE_OK;"
+    ; "    *output_bytes_written = output_buffer_offset;"
+    ; ""
+    ; "done:"
+    ; "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))"
+    ; "        pargs_out->_result = _result;"
+    ; "}"
+    ; "" ]
+  in
+  let gen_fill_marshal_struct (fd : func_decl) structs ep =
+    (* Generate assignment argument to corresponding field in args. This
+     is necessary for all arguments, not just copy-as-value, because
+     they are used directly by later marshalling code. *)
+    let rec gen_assignment prefix count (ptype, decl) =
+      let id = decl.identifier in
+      let arg = prefix ^ id in
+      [ gen_c_for count
+      ; [ sprintf "_args.%s = %s%s;" arg
+            (get_cast_to_mem_expr (ptype, decl) true)
+            arg ]
+      ; (* for string parameter fill the len field *)
+        ( if is_str_ptr ptype then
+          [sprintf "_args.%s_len = (%s) ? (strlen(%s) + 1) : 0;" arg id id]
+        else if is_wstr_ptr ptype then
+          [sprintf "_args.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" arg id id]
+        else [] )
+      ; (let param_count =
+           oe_get_param_count (ptype, decl, "_args." ^ prefix)
+         in
+         flatten_map
+           (gen_assignment (arg ^ gen_c_deref param_count) param_count)
+           (get_deepcopy (get_param_atype ptype) structs ep)) ]
+      |> List.flatten
+    in
+    flatten_map (gen_assignment "" "1") fd.plist
+  in
+  (* Generate host ECALL wrapper function. *)
+  let oe_gen_host_ecall_wrapper (name : string) structs ep (tf : trusted_func)
+      =
+    let fd = tf.tf_fdecl in
+    [ oe_gen_wrapper_prototype fd true
+    ; "{"
+    ; "    oe_result_t _result = OE_FAILURE;"
+    ; ""
+    ; "    /* Marshalling struct. */"
+    ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
+        fd.fname
+    ; ""
+    ; "    /* Marshalling buffer and sizes. */"
+    ; "    size_t _input_buffer_size = 0;"
+    ; "    size_t _output_buffer_size = 0;"
+    ; "    size_t _total_buffer_size = 0;"
+    ; "    uint8_t* _buffer = NULL;"
+    ; "    uint8_t* _input_buffer = NULL;"
+    ; "    uint8_t* _output_buffer = NULL;"
+    ; "    size_t _input_buffer_offset = 0;"
+    ; "    size_t _output_buffer_offset = 0;"
+    ; "    size_t _output_bytes_written = 0;"
+    ; ""
+    ; "    /* Fill marshalling struct. */"
+    ; "    memset(&_args, 0, sizeof(_args));"
+    ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd structs ep)
+    ; ""
+    ; "    "
+      ^ String.concat "\n    " (oe_prepare_input_buffer fd "malloc" structs ep)
+    ; ""
+    ; "    /* Call enclave function. */"
+    ; "    if ((_result = oe_call_enclave_function("
+    ; "             "
+      ^ String.concat ",\n             "
+          [ "enclave"
+          ; get_function_id fd name
+          ; "_input_buffer"
+          ; "_input_buffer_size"
+          ; "_output_buffer"
+          ; "_output_buffer_size"
+          ; "&_output_bytes_written)) != OE_OK)" ]
+    ; "        goto done;"
+    ; ""
+    ; "    " ^ String.concat "\n    " (oe_process_output_buffer fd)
+    ; ""
+    ; "    _result = OE_OK;"
+    ; ""
+    ; "done:"
+    ; "    if (_buffer)"
+    ; "        free(_buffer);"
+    ; "    return _result;"
+    ; "}"
+    ; "" ]
+  in
+  (* Generate enclave OCALL wrapper function. *)
+  let oe_gen_enclave_ocall_wrapper (name : string) structs ep
+      (uf : untrusted_func) =
+    let fd = uf.uf_fdecl in
+    [ oe_gen_wrapper_prototype fd false
+    ; "{"
+    ; "    oe_result_t _result = OE_FAILURE;"
+    ; ""
+    ; "    /* If the enclave is in crashing/crashed status, new OCALL should \
+       fail"
+    ; "       immediately. */"
+    ; "    if (oe_get_enclave_status() != OE_OK)"
+    ; "        return oe_get_enclave_status();"
+    ; ""
+    ; "    /* Marshalling struct. */"
+    ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
+        fd.fname
+    ; ""
+    ; "    /* Marshalling buffer and sizes. */"
+    ; "    size_t _input_buffer_size = 0;"
+    ; "    size_t _output_buffer_size = 0;"
+    ; "    size_t _total_buffer_size = 0;"
+    ; "    uint8_t* _buffer = NULL;"
+    ; "    uint8_t* _input_buffer = NULL;"
+    ; "    uint8_t* _output_buffer = NULL;"
+    ; "    size_t _input_buffer_offset = 0;"
+    ; "    size_t _output_buffer_offset = 0;"
+    ; "    size_t _output_bytes_written = 0;"
+    ; ""
+    ; "    /* Fill marshalling struct. */"
+    ; "    memset(&_args, 0, sizeof(_args));"
+    ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd structs ep)
+    ; ""
+    ; "    "
+      ^ String.concat "\n    "
+          (oe_prepare_input_buffer fd "oe_allocate_ocall_buffer" structs ep)
+    ; ""
+    ; "    /* Call host function. */"
+    ; "    if ((_result = oe_call_host_function("
+    ; "             "
+      ^ String.concat ",\n             "
+          [ get_function_id fd name
+          ; "_input_buffer"
+          ; "_input_buffer_size"
+          ; "_output_buffer"
+          ; "_output_buffer_size"
+          ; "&_output_bytes_written)) != OE_OK)" ]
+    ; "        goto done;"
+    ; ""
+    ; "    " ^ String.concat "\n    " (oe_process_output_buffer fd)
+    ; ""
+    ; "    /* Retrieve propagated errno from OCALL. */"
+    ; ( if uf.uf_propagate_errno then "    errno = _pargs_out->_ocall_errno;\n"
+      else sprintf "    /* Errno propagation not enabled. */" )
+    ; ""
+    ; "    _result = OE_OK;"
+    ; ""
+    ; "done:"
+    ; "    if (_buffer)"
+    ; "        oe_free_ocall_buffer(_buffer);"
+    ; "    return _result;"
+    ; "}"
+    ; "" ]
+  in
+  (* Generate ocall function. *)
+  let oe_gen_ocall_function structs ep (uf : untrusted_func) =
+    let fd = uf.uf_fdecl in
+    [ sprintf "void ocall_%s(" fd.fname
+    ; "    uint8_t* input_buffer,"
+    ; "    size_t input_buffer_size,"
+    ; "    uint8_t* output_buffer,"
+    ; "    size_t output_buffer_size,"
+    ; "    size_t* output_bytes_written)"
+    ; "{"
+    ; (* Variable declarations *)
+      "    oe_result_t _result = OE_FAILURE;"
+    ; "    OE_UNUSED(input_buffer_size);"
+    ; ""
+    ; "    /* Prepare parameters. */"
+    ; sprintf "    %s_args_t* pargs_in = (%s_args_t*)input_buffer;" fd.fname
+        fd.fname
+    ; sprintf "    %s_args_t* pargs_out = (%s_args_t*)output_buffer;" fd.fname
+        fd.fname
+    ; ""
+    ; "    size_t input_buffer_offset = 0;"
+    ; "    size_t output_buffer_offset = 0;"
+    ; "    OE_ADD_SIZE(input_buffer_offset, sizeof(*pargs_in));"
+    ; "    OE_ADD_SIZE(output_buffer_offset, sizeof(*pargs_out));"
+    ; ""
+    ; (* Buffer validation *)
+      "    /* Make sure input and output buffers are valid. */"
+    ; "    if (!input_buffer || !output_buffer) {"
+    ; "        _result = OE_INVALID_PARAMETER;"
+    ; "        goto done;"
+    ; "    }"
+    ; ""
+    ; (* Prepare in and in-out parameters *)
+      oe_gen_in_and_inout_setters fd.plist structs ep
+    ; ""
+    ; (* Prepare out and in-out parameters. The in-out parameter is copied to output buffer. *)
+      oe_gen_out_and_inout_setters fd.plist structs ep
+    ; ""
+    ; (* Call the host function *)
+      "    " ^ String.concat "\n    " (oe_gen_call_user_function fd)
+    ; ""
+    ; "    /* Propagate errno back to enclave. */"
+    ; ( if uf.uf_propagate_errno then "    pargs_out->_ocall_errno = errno;"
+      else "    /* Errno propagation not enabled. */" )
+    ; ""
+    ; (* Mark call as success *)
+      "    /* Success. */"
+    ; "    _result = OE_OK;"
+    ; "    *output_bytes_written = output_buffer_offset;"
+    ; ""
+    ; "done:"
+    ; "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))"
+    ; "        pargs_out->_result = _result;"
+    ; "}"
+    ; "" ]
+  in
+  (* Validate Open Enclave supported EDL features. *)
+  let validate_oe_support (ec : enclave_content) (ep : edger8r_params) =
+    (* check supported options *)
+    if ep.use_prefix then
+      failwithf "--use_prefix option is not supported by oeedger8r." ;
+    List.iter
+      (fun f ->
+        if f.tf_is_priv then
+          failwithf
+            "Function '%s': 'private' specifier is not supported by oeedger8r"
+            f.tf_fdecl.fname ;
+        if f.tf_is_switchless then
+          failwithf
+            "Function '%s': switchless ecalls and ocalls are not yet \
+             supported by Open Enclave SDK."
+            f.tf_fdecl.fname )
+      ec.tfunc_decls ;
+    List.iter
+      (fun f ->
+        ( if f.uf_fattr.fa_convention <> CC_NONE then
+          let cconv_str = get_call_conv_str f.uf_fattr.fa_convention in
+          printf
+            "Warning: Function '%s': Calling convention '%s' for ocalls is \
+             not supported by oeedger8r.\n"
+            f.uf_fdecl.fname cconv_str ) ;
+        if f.uf_fattr.fa_dllimport then
+          failwithf "Function '%s': dllimport is not supported by oeedger8r."
+            f.uf_fdecl.fname ;
+        if f.uf_allow_list != [] then
+          printf
+            "Warning: Function '%s': Reentrant ocalls are not supported by \
+             Open Enclave. Allow list ignored.\n"
+            f.uf_fdecl.fname ;
+        if f.uf_is_switchless then
+          failwithf
+            "Function '%s': switchless ecalls and ocalls are not yet \
+             supported by Open Enclave SDK."
+            f.uf_fdecl.fname )
+      ec.ufunc_decls ;
+    (* Map warning functions over trusted and untrusted function
+     declarations *)
+    let ufuncs = List.map (fun f -> f.uf_fdecl) ec.ufunc_decls in
+    let tfuncs = List.map (fun f -> f.tf_fdecl) ec.tfunc_decls in
+    let funcs = List.append ufuncs tfuncs in
+    List.iter
+      (fun f ->
+        warn_non_portable_types f ;
+        warn_signed_size_or_count_types f ;
+        warn_size_and_count_params f )
+      funcs
+  in
+  (* Includes are emitted in [args.h]. Imported functions have already
+    been brought into function lists. *)
+  let gen_t_h (ec : enclave_content) (ep : edger8r_params) =
+    let oe_gen_tfunc_prototypes (tfs : trusted_func list) =
+      if tfs <> [] then
+        List.map (fun f -> sprintf "%s;" (oe_gen_prototype f.tf_fdecl)) tfs
+      else ["/* There were no ecalls. */"]
+    in
+    let oe_gen_ufunc_wrapper_prototypes (ufs : untrusted_func list) =
+      if ufs <> [] then
+        List.map
+          (fun f -> sprintf "%s;" (oe_gen_wrapper_prototype f.uf_fdecl false))
+          ufs
+      else ["/* There were no ocalls. */"]
+    in
+    let guard = sprintf "EDGER8R_%s_T_H" (String.uppercase ec.file_shortnm) in
+    let content =
+      [ sprintf "#ifndef %s" guard
+      ; sprintf "#define %s" guard
+      ; ""
+      ; "#include <openenclave/enclave.h>"
+      ; ""
+      ; sprintf "#include \"%s_args.h\"" ec.file_shortnm
+      ; ""
+      ; "OE_EXTERNC_BEGIN"
+      ; ""
+      ; "/**** ECALL prototypes. ****/"
+      ; String.concat "\n\n" (oe_gen_tfunc_prototypes ec.tfunc_decls)
+      ; ""
+      ; "/**** OCALL prototypes. ****/"
+      ; String.concat "\n\n" (oe_gen_ufunc_wrapper_prototypes ec.ufunc_decls)
+      ; ""
+      ; "OE_EXTERNC_END"
+      ; ""
+      ; sprintf "#endif // %s" guard
+      ; "" ]
+    in
+    let fname = ec.file_shortnm ^ "_t.h" in
+    let os = open_file fname ep.trusted_dir in
+    fprintf os "%s" (String.concat "\n" content) ;
+    close_out os
+  in
+  let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
+    let tfs = ec.tfunc_decls in
+    let ufs = ec.ufunc_decls in
+    let structs = get_structs ec.comp_defs in
+    let oe_gen_ecall_functions =
+      if tfs <> [] then flatten_map (oe_gen_ecall_function structs ep) tfs
+      else ["/* There were no ecalls. */"]
+    in
+    let oe_gen_ecall_table =
+      let table = "__oe_ecalls_table" in
+      if tfs <> [] then
+        [ sprintf "oe_ecall_func_t %s[] = {" table
+        ; "    "
+          ^ String.concat ",\n    "
+              (List.map
+                 (fun f ->
+                   sprintf "(oe_ecall_func_t) ecall_%s" f.tf_fdecl.fname )
+                 tfs)
+        ; "};"
+        ; ""
+        ; sprintf "size_t %s_size = OE_COUNTOF(%s);" table table ]
+      else ["/* There were no ecalls. */"]
+    in
+    let oe_gen_enclave_ocall_wrappers =
+      if ufs <> [] then
+        flatten_map
+          (oe_gen_enclave_ocall_wrapper ec.enclave_name structs ep)
+          ufs
+      else ["/* There were no ocalls. */"]
+    in
+    let content =
+      [ sprintf "#include \"%s_t.h\"" ec.file_shortnm
+      ; ""
+      ; "#include <openenclave/edger8r/enclave.h>"
+      ; ""
+      ; "#include <stdlib.h>"
+      ; "#include <string.h>"
+      ; "#include <wchar.h>"
+      ; ""
+      ; "OE_EXTERNC_BEGIN"
+      ; ""
+      ; "/**** ECALL functions. ****/"
+      ; ""
+      ; String.concat "\n" oe_gen_ecall_functions
+      ; "/**** ECALL function table. ****/"
+      ; ""
+      ; String.concat "\n" oe_gen_ecall_table
+      ; ""
+      ; "/**** OCALL function wrappers. ****/"
+      ; ""
+      ; String.concat "\n" oe_gen_enclave_ocall_wrappers
+      ; "OE_EXTERNC_END"
+      ; "" ]
+    in
+    let ecalls_fname = ec.file_shortnm ^ "_t.c" in
+    let os = open_file ecalls_fname ep.trusted_dir in
+    fprintf os "%s" (String.concat "\n" content) ;
+    close_out os
+  in
+  let gen_u_h (ec : enclave_content) (ep : edger8r_params) =
+    let oe_gen_tfunc_wrapper_prototypes (tfs : trusted_func list) =
+      if tfs <> [] then
+        List.map
+          (fun f -> sprintf "%s;" (oe_gen_wrapper_prototype f.tf_fdecl true))
+          tfs
+      else ["/* There were no ecalls. */"]
+    in
+    let oe_gen_ufunc_prototypes (ufs : untrusted_func list) =
+      if ufs <> [] then
+        List.map (fun f -> sprintf "%s;" (oe_gen_prototype f.uf_fdecl)) ufs
+      else ["/* There were no ocalls. */"]
+    in
+    let guard = sprintf "EDGER8R_%s_U_H" (String.uppercase ec.file_shortnm) in
+    let content =
+      [ sprintf "#ifndef %s" guard
+      ; sprintf "#define %s" guard
+      ; ""
+      ; "#include <openenclave/host.h>"
+      ; ""
+      ; sprintf "#include \"%s_args.h\"" ec.file_shortnm
+      ; ""
+      ; "OE_EXTERNC_BEGIN"
+      ; ""
+      ; sprintf "oe_result_t oe_create_%s_enclave(" ec.enclave_name
+      ; "    const char* path,"
+      ; "    oe_enclave_type_t type,"
+      ; "    uint32_t flags,"
+      ; "    const void* config,"
+      ; "    uint32_t config_size,"
+      ; "    oe_enclave_t** enclave);"
+      ; ""
+      ; "/**** ECALL prototypes. ****/"
+      ; String.concat "\n\n" (oe_gen_tfunc_wrapper_prototypes ec.tfunc_decls)
+      ; ""
+      ; "/**** OCALL prototypes. ****/"
+      ; String.concat "\n\n" (oe_gen_ufunc_prototypes ec.ufunc_decls)
+      ; ""
+      ; "OE_EXTERNC_END"
+      ; ""
+      ; sprintf "#endif // %s" guard
+      ; "" ]
+    in
+    let fname = ec.file_shortnm ^ "_u.h" in
+    let os = open_file fname ep.untrusted_dir in
+    fprintf os "%s" (String.concat "\n" content) ;
+    close_out os
+  in
+  let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
+    let tfs = ec.tfunc_decls in
+    let ufs = ec.ufunc_decls in
+    let structs = get_structs ec.comp_defs in
+    let oe_gen_host_ecall_wrappers =
+      if tfs <> [] then
+        flatten_map (oe_gen_host_ecall_wrapper ec.enclave_name structs ep) tfs
+      else ["/* There were no ecalls. */"]
+    in
+    let oe_gen_ocall_functions =
+      if ufs <> [] then flatten_map (oe_gen_ocall_function structs ep) ufs
+      else ["/* There were no ocalls. */"]
+    in
+    let oe_gen_ocall_table =
+      [ sprintf "static oe_ocall_func_t __%s_ocall_function_table[] = {"
+          ec.enclave_name
+      ; "    "
+        ^ String.concat "\n    "
+            (List.map
+               (fun f -> sprintf "(oe_ocall_func_t) ocall_%s," f.uf_fdecl.fname)
+               ufs)
+      ; "    NULL"
+      ; "};" ]
+    in
+    let content =
+      [ sprintf "#include \"%s_u.h\"" ec.file_shortnm
+      ; ""
+      ; "#include <openenclave/edger8r/host.h>"
+      ; ""
+      ; "#include <stdlib.h>"
+      ; "#include <string.h>"
+      ; "#include <wchar.h>"
+      ; ""
+      ; "OE_EXTERNC_BEGIN"
+      ; ""
+      ; "/**** ECALL function wrappers. ****/"
+      ; ""
+      ; String.concat "\n" oe_gen_host_ecall_wrappers
+      ; "/**** OCALL functions. ****/"
+      ; ""
+      ; String.concat "\n" oe_gen_ocall_functions
+      ; "/**** OCALL function table. ****/"
+      ; ""
+      ; String.concat "\n" oe_gen_ocall_table
+      ; ""
+      ; sprintf "oe_result_t oe_create_%s_enclave(" ec.enclave_name
+      ; "    const char* path,"
+      ; "    oe_enclave_type_t type,"
+      ; "    uint32_t flags,"
+      ; "    const void* config,"
+      ; "    uint32_t config_size,"
+      ; "    oe_enclave_t** enclave)"
+      ; "{"
+      ; "    return oe_create_enclave("
+      ; "               path,"
+      ; "               type,"
+      ; "               flags,"
+      ; "               config,"
+      ; "               config_size,"
+      ; sprintf "               __%s_ocall_function_table," ec.enclave_name
+      ; sprintf "               %d," (List.length ufs)
+      ; "               enclave);"
+      ; "}"
+      ; ""
+      ; "OE_EXTERNC_END"
+      ; "" ]
+    in
+    let ecalls_fname = ec.file_shortnm ^ "_u.c" in
+    let os = open_file ecalls_fname ep.untrusted_dir in
+    fprintf os "%s" (String.concat "\n" content) ;
+    close_out os
+  in
   validate_oe_support ec ep ;
   if ep.gen_trusted then (
     oe_gen_args_header ec ep.trusted_dir ;
