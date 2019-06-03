@@ -3,11 +3,11 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
-#include <openenclave/corelibc/stdlib.h>
-#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
+#include <stdlib.h>
+#include <string.h>
 #include "../common/sgx/revocation.h"
 
 /**
@@ -24,7 +24,7 @@ static oe_result_t _copy_buffer_to_enclave(
         dst == NULL || dst_size == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    *dst = oe_malloc(src_size);
+    *dst = malloc(src_size);
     if (*dst == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -57,8 +57,8 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     // arguments.
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
-        result = oe_safe_add_sizet(
-            oe_strlen(args->crl_urls[i]), 1, &crl_url_sizes[i]);
+        result =
+            oe_safe_add_sizet(strlen(args->crl_urls[i]), 1, &crl_url_sizes[i]);
         if (result != OE_OK)
             goto done;
 
@@ -152,11 +152,11 @@ void oe_cleanup_get_revocation_info_args(oe_get_revocation_info_args_t* args)
     // Free buffers on the enclave side.
     for (int32_t i = (int32_t)(args->num_crl_urls - 1); i >= 0; --i)
     {
-        oe_free(args->crl_issuer_chain[i]);
-        oe_free(args->crl[i]);
+        free(args->crl_issuer_chain[i]);
+        free(args->crl[i]);
     }
-    oe_free(args->tcb_issuer_chain);
-    oe_free(args->tcb_info);
+    free(args->tcb_issuer_chain);
+    free(args->tcb_info);
 
     if (args->host_out_buffer)
         oe_host_free(args->host_out_buffer);

@@ -1,22 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-// clang-format off
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/enclave.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/cert.h>
-#include <openenclave/corelibc/stdlib.h>
-#include <openenclave/corelibc/string.h>
-#include <openenclave/corelibc/unistd.h>
-#include <openenclave/internal/print.h>
-// clang-format on
-
 #include <stdio.h>
+
 #include "../common/common.h"
 #include "crypto/ec.h"
 #include "crypto/key.h"

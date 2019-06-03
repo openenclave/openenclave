@@ -343,7 +343,7 @@ oe_result_t oe_get_crl_distribution_points(
     uint8_t* buffer,
     size_t* buffer_size);
 
-#ifdef _OE_ENCLAVE_H
+#ifdef OE_BUILD_ENCLAVE
 
 typedef struct _oe_cert_config
 {

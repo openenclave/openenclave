@@ -22,7 +22,7 @@ typedef struct _oe_thread_wake_wait_args
     const void* self_tcs;
 } oe_thread_wake_wait_args_t;
 
-#ifdef _OE_ENCLAVE_H
+#ifdef OE_BUILD_ENCLAVE
 OE_EXTERNC_BEGIN
 
 typedef uint64_t oe_thread_t;
@@ -640,6 +640,6 @@ void* oe_thread_getspecific(oe_thread_key_t key);
 
 OE_EXTERNC_END
 
-#endif //_OE_ENCLAVE_H
+#endif // OE_BUILD_ENCLAVE
 
 #endif //_OE_INCLUDE_THREAD_H
