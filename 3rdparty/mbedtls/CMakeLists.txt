@@ -56,12 +56,6 @@ if (USE_CLANGW)
   set(CMAKE_AR ${LLVM_AR})
 endif()
 
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
-  list(APPEND MBEDTLS_COMPILE_OPTS "-O0")
-else()
-  list(APPEND MBEDTLS_COMPILE_OPTS "-O2")
-endif()
-
 # Sources for the three mbedtls libraries. We name the mbedcrypto library
 # as "mbedcrypto_static" because the exported target for all 3 mbedtls
 # libraries in OE is called "mbedcrypto."
