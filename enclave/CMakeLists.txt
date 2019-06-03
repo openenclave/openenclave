@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+add_subdirectory(core)
 add_subdirectory(crypto)
 
 if (OE_SGX)
@@ -34,9 +35,6 @@ maybe_build_using_clangw(oeenclave)
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
 target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
 endif()
-
-target_include_directories(oeenclave PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
 target_link_libraries(oeenclave PUBLIC
     oe_includes

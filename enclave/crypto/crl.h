@@ -4,12 +4,7 @@
 #ifndef _OE_ENCLAVE_CRL_H
 #define _OE_ENCLAVE_CRL_H
 
-/* Nest mbedtls header includes with required corelibc defines */
-// clang-format off
-#include "mbedtls_corelibc_defs.h"
 #include <mbedtls/x509_crl.h>
-#include "mbedtls_corelibc_undef.h"
-// clang-format on
 
 #include <openenclave/internal/crl.h>
 

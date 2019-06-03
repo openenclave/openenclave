@@ -18,9 +18,6 @@ add_library(oecryptombed STATIC
 
 maybe_build_using_clangw(oecryptombed)
 
-target_include_directories(oecryptombed PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
-
 target_link_libraries(oecryptombed PUBLIC
     oe_includes
     mbedcrypto)

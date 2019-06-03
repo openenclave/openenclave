@@ -1,21 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-/* Nest mbedtls header includes with required corelibc defines */
-// clang-format off
-#include "mbedtls_corelibc_defs.h"
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/debug.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/error.h>
 #include <mbedtls/oid.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/error.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include "mbedtls_corelibc_undef.h"
-// clang-format on
 
 #include <openenclave/bits/safecrt.h>
-#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/cert.h>
@@ -24,11 +18,12 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+#include <string.h>
 #include "crl.h"
 #include "ec.h"
 #include "pem.h"
-#include "rsa.h"
 #include "random_internal.h"
+#include "rsa.h"
 
 /*
 **==============================================================================
@@ -432,7 +427,7 @@ static bool _find_extension(
     OE_UNUSED(index);
     OE_UNUSED(critical);
 
-    if (oe_strcmp(oid, args->oid) == 0)
+    if (strcmp(oid, args->oid) == 0)
     {
         /* If buffer is too small */
         if (size > *args->size)
@@ -621,7 +616,7 @@ oe_result_t oe_cert_read_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (oe_strnlen((const char*)pem_data, pem_size) != pem_size - 1)
+    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Allocate memory for the certificate */
@@ -740,7 +735,7 @@ oe_result_t oe_cert_chain_read_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (oe_strnlen((const char*)pem_data, pem_size) != pem_size - 1)
+    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Create the referent */
@@ -834,7 +829,7 @@ oe_result_t oe_cert_verify(
                 OE_RAISE_MSG(
                     OE_INVALID_PARAMETER, "Invalid crls parameter", NULL);
 
-            if (!(p = oe_malloc(sizeof(mbedtls_x509_crl))))
+            if (!(p = malloc(sizeof(mbedtls_x509_crl))))
                 OE_RAISE(OE_OUT_OF_MEMORY);
 
             OE_CHECK(oe_memcpy_s(
@@ -894,7 +889,7 @@ done:
         for (mbedtls_x509_crl* p = crl_list; p;)
         {
             mbedtls_x509_crl* next = p->next;
-            oe_free(p);
+            free(p);
             p = next;
         }
     }
@@ -1106,7 +1101,7 @@ oe_result_t oe_gen_custom_x509_cert(
     mbedtls_x509write_crt_set_subject_key(&x509cert, &subject_key);
     mbedtls_x509write_crt_set_issuer_key(&x509cert, &issuer_key);
 
-    if ((buff = oe_malloc(cert_buf_size)) == NULL)
+    if ((buff = malloc(cert_buf_size)) == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Get the drbg object */
@@ -1211,7 +1206,7 @@ done:
     // mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_pk_free(&issuer_key);
     mbedtls_pk_free(&subject_key);
-    oe_free(buff);
+    free(buff);
     if (ret)
         result = OE_CRYPTO_ERROR;
 
