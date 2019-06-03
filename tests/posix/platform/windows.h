@@ -127,7 +127,7 @@ OE_INLINE int thread_create(
 
 OE_INLINE int thread_join(thread_t thread)
 {
-    if (WaitForSingleObject(thread.__impl, INFINITE) == WAIT_OBJECT_0)
+    if (WaitForSingleObject(thread.__impl, 60000) == WAIT_OBJECT_0)
         return 0;
 
     return -1;
