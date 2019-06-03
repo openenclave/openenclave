@@ -18,9 +18,7 @@ add_library(oecryptombed STATIC
 
 maybe_build_using_clangw(oecryptombed)
 
-target_link_libraries(oecryptombed PUBLIC
-    oe_includes
-    mbedcrypto)
+target_link_libraries(oecryptombed PUBLIC mbedcrypto)
 
 set_property(TARGET oecryptombed PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
