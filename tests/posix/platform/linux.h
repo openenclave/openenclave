@@ -119,7 +119,7 @@ OE_INLINE int thread_join(thread_t thread)
 
 OE_INLINE bool test_would_block()
 {
-    return errno = EAGAIN;
+    return errno == EAGAIN;
 }
 
 #endif /* _PLATFORM_LINUX_H */
