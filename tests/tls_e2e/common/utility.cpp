@@ -115,7 +115,8 @@ oe_result_t generate_certificate_and_pkey(
     OE_TRACE_INFO("public_key_buf_size:[%ld]\n", public_key_buf_size);
     OE_TRACE_INFO("public key used:\n[%s]", public_key_buf);
 
-    result = oe_gen_tls_cert(
+    result = oe_generate_attestation_certificate(
+        (const unsigned char*)"CN=Open Enclave SDK,O=OESDK TLS,C=US",
         private_key_buf,
         private_key_buf_size,
         public_key_buf,
@@ -142,7 +143,7 @@ oe_result_t generate_certificate_and_pkey(
 done:
     oe_free_key(private_key_buf, private_key_buf_size, NULL, 0);
     oe_free_key(public_key_buf, public_key_buf_size, NULL, 0);
-    oe_free_tls_cert(output_cert);
+    oe_free_attestation_certificate(output_cert);
 
     return result;
 }
@@ -162,7 +163,7 @@ bool verify_mrsigner(
     bool ret = false;
     unsigned char* signer = NULL;
 
-    signer = (unsigned char*)oe_malloc(signer_id_buf_size);
+    signer = (unsigned char*)malloc(signer_id_buf_size);
     if (signer == NULL)
     {
         OE_TRACE_ERROR("Out of memory\n");
@@ -198,7 +199,7 @@ bool verify_mrsigner(
     rsa_ctx = mbedtls_pk_rsa(ctx);
     modulus_size = mbedtls_rsa_get_len(rsa_ctx);
     OE_TRACE_INFO("modulus_size = [%zu]\n", modulus_size);
-    modulus = (uint8_t*)oe_malloc(modulus_size);
+    modulus = (uint8_t*)malloc(modulus_size);
     if (modulus == NULL)
     {
         OE_TRACE_ERROR(
@@ -247,10 +248,10 @@ bool verify_mrsigner(
     ret = true;
 done:
     if (signer)
-        oe_free(signer);
+        free(signer);
 
     if (modulus != NULL)
-        oe_free(modulus);
+        free(modulus);
 
     mbedtls_pk_free(&ctx);
     return ret;
@@ -298,18 +299,18 @@ int cert_verify_callback(
     if (cert_size <= 0)
         goto done;
 
-    OE_TRACE_INFO("Calling oe_verify_tls_cert\n");
+    OE_TRACE_INFO("Calling oe_verify_attestation_certificate\n");
     if (g_control_config.fail_oe_verify_tls_cert)
         goto done;
 
-    result = oe_verify_tls_cert(
+    result = oe_verify_attestation_certificate(
         cert_buf, cert_size, enclave_identity_verifier, NULL);
     OE_CHECK_MSG(
         result,
-        "oe_verify_tls_cert failed with result = %s\n",
+        "oe_verify_attestation_certificate failed with result = %s\n",
         oe_result_str(result));
 
-    OE_TRACE_INFO("\nReturned from oe_verify_tls_cert\n");
+    OE_TRACE_INFO("\nReturned from oe_verify_attestation_certificate\n");
     ret = 0;
     *flags = 0;
 done:

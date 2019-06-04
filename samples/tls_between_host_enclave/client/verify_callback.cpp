@@ -147,7 +147,8 @@ int verify_callback(int preverify_ok, X509_STORE_CTX* ctx)
 #endif
 
     // verify tls certificate
-    result = oe_verify_tls_cert(der, der_len, enclave_identity_verifier, NULL);
+    result = oe_verify_attestation_certificate(
+        der, der_len, enclave_identity_verifier, NULL);
     if (result != OE_OK)
     {
         printf(TLS_CLIENT "result=%s\n", oe_result_str(result));

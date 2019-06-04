@@ -80,12 +80,12 @@ static int cert_verify_callback(
     if (cert_size <= 0)
         goto exit;
 
-    result = oe_verify_tls_cert(
+    result = oe_verify_attestation_certificate(
         cert_buf, cert_size, enclave_identity_verifier_callback, NULL);
     if (result != OE_OK)
     {
         printf(
-            "oe_verify_tls_cert failed with result = %s\n",
+            "oe_verify_attestation_certificate failed with result = %s\n",
             oe_result_str(result));
         goto exit;
     }
@@ -171,17 +171,18 @@ int setup_tls_server(char* server_port)
     const char* pers = "tls_server";
 
     // Explicitly enabling features
-    if ((result = oe_load_module_hostresolver()) != OE_OK)
+    if ((result = oe_load_module_host_resolver()) != OE_OK)
     {
         printf(
-            "oe_load_module_hostresolver failed with %s\n",
+            "oe_load_module_host_resolver failed with %s\n",
             oe_result_str(result));
         goto exit;
     }
-    if ((result = oe_load_module_hostsock()) != OE_OK)
+    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
     {
         printf(
-            "oe_load_module_hostsock failed with %s\n", oe_result_str(result));
+            "oe_load_module_host_socket_interface failed with %s\n",
+            oe_result_str(result));
         goto exit;
     }
 

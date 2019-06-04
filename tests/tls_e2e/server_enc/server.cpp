@@ -4,24 +4,24 @@
 // clang-format off
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#define OE_NEED_STDC_NAMES
+//#define OE_NEED_STDC_NAMES
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/corelibc/sys/socket.h>
 
-#include <stdarg.h>
+//#include <stdarg.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <bits/stdfile.h>
+//#include <bits/stdfile.h>
 #include <errno.h>
 
-#include <openenclave/corelibc/arpa/inet.h>
-#include <openenclave/corelibc/netdb.h>
-#include <openenclave/corelibc/netinet/in.h>
-#include <openenclave/internal/device.h>
+// #include <openenclave/corelibc/arpa/inet.h>
+// #include <openenclave/corelibc/netdb.h>
+// #include <openenclave/corelibc/netinet/in.h>
+#include <openenclave/internal/posix/device.h>
 
 #include <mbedtls/pk.h>
 #include <mbedtls/rsa.h>
@@ -213,8 +213,8 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     // mbedtls' TLS feature
     if (!oe_module_loaded)
     {
-        OE_CHECK(oe_load_module_hostsock());
-        OE_CHECK(oe_load_module_hostresolver());
+        OE_CHECK(oe_load_module_host_socket_interface());
+        OE_CHECK(oe_load_module_host_resolver());
         oe_module_loaded = true;
     }
 
@@ -252,7 +252,7 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
              mbedtls_entropy_func,
              &entropy,
              (const unsigned char*)pers,
-             oe_strlen(pers))) != 0)
+             strlen(pers))) != 0)
     {
         OE_TRACE_ERROR(" failed\n  ! mbedtls_ctr_drbg_seed returned %d\n", ret);
         goto done;
@@ -320,7 +320,7 @@ waiting_for_connection_request:
         OE_TRACE_ERROR(
             "server mbedtls_ssl_handshake failed with uret = 0x%x\n", uret);
         mbedtls_ssl_close_notify(&ssl);
-        ret = MBEDTLS_EXIT_FAILURE;
+        ret = 1;
         goto done;
     }
 
@@ -365,7 +365,7 @@ waiting_for_connection_request:
                 "ERROR: expected reading %d bytes but only got %d bytes\n",
                 CLIENT_REQUEST_PAYLOAD_SIZE,
                 len);
-            ret = MBEDTLS_EXIT_FAILURE;
+            ret = 1;
             goto done;
         }
 

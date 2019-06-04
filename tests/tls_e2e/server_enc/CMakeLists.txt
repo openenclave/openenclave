@@ -14,9 +14,9 @@ set_source_files_properties(
    tls_e2e_t.c
    PROPERTIES COMPILE_FLAGS "-Wno-conversion")
 
-target_include_directories(tls_server_enc PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+target_include_directories(tls_server_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    #    ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(tls_server_enc oeenclave)
+#target_include_directories(tls_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries(tls_server_enc oeenclave oelibc oehostsock oehostresolver)

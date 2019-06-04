@@ -131,17 +131,17 @@ int setup_tls_server(char* server_port)
     printf("\nStarting" TLS_SERVER "\n\n\n");
 
     // Explicitly enabling features
-    if ((result = oe_load_module_hostresolver()) != OE_OK)
+    if ((result = oe_load_module_host_resolver()) != OE_OK)
     {
         printf(
-            TLS_SERVER "oe_load_module_hostresolver failed with %s\n",
+            TLS_SERVER "oe_load_module_host_resolver failed with %s\n",
             oe_result_str(result));
         goto exit;
     }
-    if ((result = oe_load_module_hostsock()) != OE_OK)
+    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
     {
         printf(
-            TLS_SERVER "oe_load_module_hostsock failed with %s\n",
+            TLS_SERVER "oe_load_module_host_socket_interface failed with %s\n",
             oe_result_str(result));
         goto exit;
     }

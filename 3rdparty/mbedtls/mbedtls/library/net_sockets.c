@@ -117,7 +117,7 @@ static int net_prepare( void )
     }
 #else
 #if !defined(EFIX64) && !defined(EFI32)
-    signal( SIGPIPE, SIG_IGN );
+    //signal( SIGPIPE, SIG_IGN );
 #endif
 #endif
     return( 0 );

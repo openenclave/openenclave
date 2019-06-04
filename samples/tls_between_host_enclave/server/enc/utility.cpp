@@ -92,7 +92,8 @@ oe_result_t generate_certificate_and_pkey(
     printf("\n\npublic_key_buf_size:[%ld]\n", public_key_buf_size);
     printf("public key used:\n[%s]\n\n", public_key_buf);
 
-    result = oe_gen_tls_cert(
+    result = oe_generate_attestation_certificate(
+        (const unsigned char*)"CN=Open Enclave SDK,O=OESDK TLS,C=US",
         private_key_buf,
         private_key_buf_size,
         public_key_buf,
@@ -131,6 +132,6 @@ oe_result_t generate_certificate_and_pkey(
 exit:
     oe_free_key(private_key_buf, private_key_buf_size, NULL, 0);
     oe_free_key(public_key_buf, public_key_buf_size, NULL, 0);
-    oe_free_tls_cert(output_cert);
+    oe_free_attestation_certificate(output_cert);
     return result;
 }

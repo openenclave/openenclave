@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#undef OE_NEED_STDC_NAMES
+//#undef OE_NEED_STDC_NAMES
+
 // clang-format off
-#include "../../../../enclave/mbedtls_corelibc_defs.h"
+//#include "../../../../enclave/mbedtls_corelibc_defs.h"
 #include <mbedtls/pk.h>
 #include <mbedtls/rsa.h>
 #include <mbedtls/sha256.h>
 #include <mbedtls/x509_crt.h>
 #include <mbedtls/platform.h>
-#include "../../../../enclave/mbedtls_corelibc_undef.h"
+//#include "../../../../enclave/mbedtls_corelibc_undef.h"
 // clang-format on
 
 #include <openenclave/internal/print.h>

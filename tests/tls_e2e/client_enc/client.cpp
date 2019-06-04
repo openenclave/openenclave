@@ -3,7 +3,7 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#define OE_NEED_STDC_NAMES
+//#define OE_NEED_STDC_NAMES
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
@@ -12,10 +12,10 @@
 #include <openenclave/corelibc/arpa/inet.h>
 #include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/netinet/in.h>
-#include <openenclave/internal/device.h>
+#include <openenclave/internal/posix/device.h>
 
-#include <bits/stdfile.h> // For stderr & FILE
-#include <errno.h>        // For errno & error defs
+//#include <bits/stdfile.h> // For stderr & FILE
+#include <errno.h> // For errno & error defs
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -225,8 +225,8 @@ int launch_tls_client(
     // mbedtls' TLS feature
     if (!oe_module_loaded)
     {
-        OE_CHECK(oe_load_module_hostsock());
-        OE_CHECK(oe_load_module_hostresolver());
+        OE_CHECK(oe_load_module_host_socket_interface());
+        OE_CHECK(oe_load_module_host_resolver());
         oe_module_loaded = true;
     }
 
