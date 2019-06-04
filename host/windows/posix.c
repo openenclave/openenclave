@@ -33,19 +33,37 @@
 /*
 **==============================================================================
 **
-** Errno/GetLastError conversion
+** PANIC -- remove this when no longer needed.
 **
 **==============================================================================
 */
 
-typedef _error_entry
+__declspec(noreturn) static void _panic(
+    const char* file,
+    unsigned int line,
+    const char* function)
+{
+    fprintf(stderr, "%s(%u): %s(): panic\n", file, line, function);
+    abort();
+}
+
+#define PANIC _panic(__FILE__, __LINE__, __FUNCTION__)
+
+/*
+**==============================================================================
+**
+** Windows-POSIX error conversion:
+**
+**==============================================================================
+*/
+
+typedef struct _error_entry
 {
     DWORD winerr;
-    int error_no;
-}
-error_entry_t;
+    int err;
+} error_entry_t;
 
-static error_entry_t errno2winerr[] = {
+static error_entry_t _error_table[] = {
     {ERROR_ACCESS_DENIED, OE_EACCES},
     {ERROR_ACTIVE_CONNECTIONS, OE_EAGAIN},
     {ERROR_ALREADY_EXISTS, OE_EEXIST},
@@ -169,39 +187,32 @@ static error_entry_t errno2winerr[] = {
     {ERROR_UNEXP_NET_ERR, OE_EIO},
     {ERROR_WAIT_NO_CHILDREN, OE_ECHILD},
     {ERROR_WORKING_SET_QUOTA, OE_EAGAIN},
-    {ERROR_WRITE_PROTECT, OE_EROFS},
-    {0, 0}};
+    {ERROR_WRITE_PROTECT, OE_EROFS}};
+
+static size_t _error_table_size = OE_COUNTOF(_error_table);
 
 static DWORD _errno_to_winerr(int errno)
 {
-    error_entry_t* pent = errno2winerr;
+    size_t i;
 
-    do
+    for (size_t i = 0; i < _error_table_size; i++)
     {
-        if (pent->error_no == errno)
-        {
-            return pent->winerr;
-        }
-        pent++;
-
-    } while (pent->error_no != 0);
+        if (_error_table[i].err == errno)
+            return _error_table[i].winerr;
+    }
 
     return ERROR_INVALID_PARAMETER;
 }
 
 static int _winerr_to_errno(DWORD winerr)
 {
-    error_entry_t* pent = errno2winerr;
+    size_t i;
 
-    do
+    for (size_t i = 0; i < _error_table_size; i++)
     {
-        if (pent->winerr == winerr)
-        {
-            return pent->error_no;
-        }
-        pent++;
-
-    } while (pent->winerr != 0);
+        if (_error_table[i].winerr == winerr)
+            return _error_table[i].errno;
+    }
 
     return OE_EINVAL;
 }
@@ -433,25 +444,6 @@ WCHAR* oe_posix_path_to_win(const char* path, const char* post)
     }
     return wpath;
 }
-
-/*
-**==============================================================================
-**
-** Local definitions.
-**
-**==============================================================================
-*/
-
-__declspec(noreturn) static void _panic(
-    const char* file,
-    unsigned int line,
-    const char* function)
-{
-    fprintf(stderr, "%s(%u): %s(): panic\n", file, line, function);
-    abort();
-}
-
-#define PANIC _panic(__FILE__, __LINE__, __FUNCTION__);
 
 /*
 **==============================================================================
