@@ -211,7 +211,7 @@ static int _winerr_to_errno(DWORD winerr)
     for (i = 0; i < _error_table_size; i++)
     {
         if (_error_table[i].winerr == winerr)
-            return _error_table[i].errno;
+            return _error_table[i].err;
     }
 
     return OE_EINVAL;
