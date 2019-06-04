@@ -21,7 +21,6 @@ enum poller_type_t
 {
     POLLER_TYPE_SELECT,
     POLLER_TYPE_POLL,
-    POLLER_TYPE_EPOLL,
 };
 
 struct event_t
@@ -87,28 +86,7 @@ class poll_poller : public poller
 };
 #endif /* !defined(WINDOWS_HOST) */
 
-#if !defined(WINDOWS_HOST)
-class epoll_poller : public poller
-{
-  public:
-    epoll_poller();
-
-    virtual ~epoll_poller();
-
-    virtual int add(socket_t sock, uint32_t events);
-
-    virtual int remove(socket_t sock, uint32_t events);
-
-    virtual int wait(std::vector<event_t>& events);
-
-  private:
-    int _epfd;
-    std::vector<event_t> _events;
-};
-#endif /* !defined(WINDOWS_HOST) */
-
 #if defined(WINDOWS_HOST)
-typedef select_poller epoll_poller;
 typedef select_poller poll_poller;
 #endif
 

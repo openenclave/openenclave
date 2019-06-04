@@ -69,8 +69,6 @@ const char* poller::name(poller_type_t poller_type)
             return "select";
         case POLLER_TYPE_POLL:
             return "poll";
-        case POLLER_TYPE_EPOLL:
-            return "epoll";
     }
 
     return "none";
@@ -84,8 +82,6 @@ poller* poller::create(poller_type_t poller_type)
             return new select_poller();
         case POLLER_TYPE_POLL:
             return new poll_poller();
-        case POLLER_TYPE_EPOLL:
-            return new epoll_poller();
     }
 
     return NULL;
@@ -256,150 +252,6 @@ int poll_poller::wait(std::vector<event_t>& events)
         {
             printf("%s(): leftover revents: %u\n", __FUNCTION__, revents);
         }
-    }
-
-    return 0;
-}
-
-#endif /* !defined(WINDOWS_HOST) */
-
-//==============================================================================
-//
-// class epoll_poller:
-//
-//==============================================================================
-
-#if !defined(WINDOWS_HOST)
-
-epoll_poller::epoll_poller()
-{
-    _epfd = epoll_create1(0);
-}
-
-epoll_poller::~epoll_poller()
-{
-    close(_epfd);
-}
-
-int epoll_poller::add(socket_t sock, uint32_t events)
-{
-    event_t event;
-
-    if (find(sock, event))
-    {
-        struct epoll_event epoll_event;
-        event_t event;
-
-        memset(&epoll_event, 0, sizeof(struct epoll_event));
-        epoll_event.data.fd = sock;
-        epoll_event.events = 0;
-
-        events |= event.events;
-
-        if ((events & POLLER_READ))
-            epoll_event.events |= EPOLLIN;
-
-        if ((events & POLLER_WRITE))
-            epoll_event.events |= EPOLLOUT;
-
-        if ((events & POLLER_EXCEPT))
-            epoll_event.events |= EPOLLERR;
-
-        if (epoll_ctl(_epfd, EPOLL_CTL_MOD, sock, &epoll_event) != 0)
-            return -1;
-    }
-    else
-    {
-        struct epoll_event epoll_event;
-        event_t event;
-
-        memset(&epoll_event, 0, sizeof(struct epoll_event));
-        epoll_event.data.fd = sock;
-        epoll_event.events = 0;
-
-        if ((events & POLLER_READ))
-            epoll_event.events |= EPOLLIN;
-
-        if ((events & POLLER_WRITE))
-            epoll_event.events |= EPOLLOUT;
-
-        if ((events & POLLER_EXCEPT))
-            epoll_event.events |= EPOLLERR;
-
-        if (epoll_ctl(_epfd, EPOLL_CTL_ADD, sock, &epoll_event) != 0)
-            return -1;
-    }
-
-    return poller::add(sock, events);
-}
-
-int epoll_poller::remove(socket_t sock, uint32_t events)
-{
-    event_t event;
-
-    if (poller::remove(sock, events) != 0)
-        return -1;
-
-    if (find(sock, event))
-    {
-        struct epoll_event epoll_event;
-
-        memset(&epoll_event, 0, sizeof(struct epoll_event));
-
-        epoll_event.data.fd = sock;
-        epoll_event.events = 0;
-
-        if ((event.events & POLLER_READ))
-            epoll_event.events |= EPOLLIN;
-
-        if ((event.events & POLLER_WRITE))
-            epoll_event.events |= EPOLLOUT;
-
-        if ((event.events & POLLER_EXCEPT))
-            epoll_event.events |= EPOLLERR;
-
-        if (epoll_ctl(_epfd, EPOLL_CTL_MOD, sock, &epoll_event) != 0)
-            return -1;
-    }
-    else
-    {
-        if (epoll_ctl(_epfd, EPOLL_CTL_DEL, sock, NULL) != 0)
-            return -1;
-    }
-
-    return 0;
-}
-
-int epoll_poller::wait(std::vector<event_t>& events)
-{
-    const int MAX_EPOLL_EVENTS = 1024;
-    struct epoll_event epoll_events[MAX_EPOLL_EVENTS];
-
-    events.clear();
-
-    int n = epoll_wait(_epfd, epoll_events, MAX_EPOLL_EVENTS, -1);
-
-    if (n < 0)
-        return -1;
-
-    for (int i = 0; i < n; i++)
-    {
-        const struct epoll_event* p = &epoll_events[i];
-        event_t event;
-
-        event.sock = p->data.fd;
-        event.events = 0;
-
-        if ((p->events & EPOLLIN))
-            event.events |= POLLER_READ;
-
-        if ((p->events & EPOLLOUT))
-            event.events |= POLLER_WRITE;
-
-        if ((p->events & EPOLLERR))
-            event.events |= POLLER_EXCEPT;
-
-        events.push_back(event);
     }
 
     return 0;

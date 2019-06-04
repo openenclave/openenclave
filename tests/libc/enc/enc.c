@@ -91,7 +91,6 @@ int test()
     OE_TEST(oe_load_module_host_file_system() == OE_OK);
     OE_TEST(oe_load_module_host_socket_interface() == OE_OK);
     OE_TEST(oe_load_module_host_resolver() == OE_OK);
-    OE_TEST(oe_load_module_host_epoll() == OE_OK);
     OE_TEST(oe_load_module_host_resolver() == OE_OK);
 
     if (mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL) != 0)

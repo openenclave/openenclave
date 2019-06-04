@@ -142,8 +142,6 @@ int main(int argc, const char* argv[])
         poller_type = POLLER_TYPE_SELECT;
     else if (strcmp(poller_type_name, "poll") == 0)
         poller_type = POLLER_TYPE_POLL;
-    else if (strcmp(poller_type_name, "epoll") == 0)
-        poller_type = POLLER_TYPE_EPOLL;
     else
     {
         fprintf(stderr, "Unknown poller type: %s\n", poller_type_name);

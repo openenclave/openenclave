@@ -8,4 +8,4 @@ add_executable(poller_enc
 
 maybe_build_using_clangw(poller_enc)
 
-target_link_libraries(poller_enc oelibcxx oeenclave oehostepoll oehostsock)
+target_link_libraries(poller_enc oelibcxx oeenclave oehostsock)

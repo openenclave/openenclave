@@ -16,7 +16,6 @@ static void _init(void)
     if (!_initialized)
     {
         OE_TEST(oe_load_module_host_socket_interface() == OE_OK);
-        OE_TEST(oe_load_module_host_epoll() == OE_OK);
         _initialized = true;
     }
 }

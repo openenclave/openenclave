@@ -48,4 +48,4 @@ target_include_directories(
     ../../../3rdparty/musl/libc-test/src/common)
 
 target_link_libraries(libc_enc
-    oelibc oehostfs oehostsock oehostresolver oehostepoll)
+    oelibc oehostfs oehostsock oehostresolver)
