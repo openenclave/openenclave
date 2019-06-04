@@ -792,22 +792,7 @@ done:
 
 oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
 {
-    ssize_t ret = -1;
-    DWORD sfp_rtn = 0;
-    LARGE_INTEGER new_offset = {0};
-
-    new_offset.QuadPart = offset;
-    if (!SetFilePointerEx(
-            (HANDLE)fd, new_offset, (PLARGE_INTEGER)&new_offset, whence))
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-    ret = (oe_off_t)new_offset.QuadPart;
-
-done:
-    return ret;
+    PANIC;
 }
 
 int oe_posix_close_ocall(oe_host_fd_t fd)
@@ -830,11 +815,13 @@ int oe_posix_close_ocall(oe_host_fd_t fd)
         default:
             break;
     }
+
     if (!CloseHandle((HANDLE)fd))
     {
         _set_errno(OE_EINVAL);
         return -1;
     }
+
     return 0;
 }
 
@@ -870,182 +857,37 @@ int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf)
 
 int oe_posix_access_ocall(const char* pathname, int mode)
 {
-    int ret = -1;
-    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
-
-    int winmode = mode & ~1; // X_OK is a noop but makes access unhappy
-    ret = _waccess(wpathname, winmode);
-    if (ret < 0)
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-done:
-    if (wpathname)
-    {
-        free(wpathname);
-    }
-    return ret;
+    PANIC;
 }
 
 int oe_posix_link_ocall(const char* oldpath, const char* newpath)
 {
-    int ret = -1;
-    WCHAR* woldpath = oe_posix_path_to_win(oldpath, NULL);
-    WCHAR* wnewpath = oe_posix_path_to_win(newpath, NULL);
-
-    if (!CreateHardLinkW(wnewpath, woldpath, NULL))
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-    ret = 0;
-
-done:
-    if (woldpath)
-    {
-        free(woldpath);
-    }
-
-    if (wnewpath)
-    {
-        free(wnewpath);
-    }
-    return ret;
+    PANIC;
 }
 
 int oe_posix_unlink_ocall(const char* pathname)
 {
-    int ret = -1;
-    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
-
-    ret = _wunlink(wpathname);
-    if (ret < 0)
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-done:
-    if (wpathname)
-    {
-        free(wpathname);
-    }
-    return ret;
+    PANIC;
 }
 
 int oe_posix_rename_ocall(const char* oldpath, const char* newpath)
 {
-    int ret = -1;
-    WCHAR* woldpath = oe_posix_path_to_win(oldpath, NULL);
-    WCHAR* wnewpath = oe_posix_path_to_win(newpath, NULL);
-
-    ret = _wrename(woldpath, wnewpath);
-    if (ret < 0)
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-done:
-    if (woldpath)
-    {
-        free(woldpath);
-    }
-
-    if (wnewpath)
-    {
-        free(wnewpath);
-    }
-    return ret;
+    PANIC;
 }
 
 int oe_posix_truncate_ocall(const char* pathname, oe_off_t length)
 {
-    int ret = -1;
-    DWORD sfp_rtn = 0;
-    LARGE_INTEGER new_offset = {0};
-    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
-
-    HANDLE h = CreateFileW(
-        wpathname,
-        GENERIC_WRITE,
-        FILE_SHARE_WRITE,
-        NULL,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
-    if (h == INVALID_HANDLE_VALUE)
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-    new_offset.QuadPart = length;
-    if (!SetFilePointerEx(
-            h, new_offset, (PLARGE_INTEGER)&new_offset, FILE_BEGIN))
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-    if (!SetEndOfFile(h))
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-    CloseHandle(h);
-
-    ret = 0;
-
-done:
-    if (wpathname)
-    {
-        free(wpathname);
-    }
-    return ret;
+    PANIC;
 }
 
 int oe_posix_mkdir_ocall(const char* pathname, oe_mode_t mode)
 {
-    int ret = -1;
-    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
-
-    ret = _wmkdir(wpathname);
-    if (ret < 0)
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-done:
-    if (wpathname)
-    {
-        free(wpathname);
-    }
-    return ret;
+    PANIC;
 }
 
 int oe_posix_rmdir_ocall(const char* pathname)
 {
-    int ret = -1;
-    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
-
-    ret = _wrmdir(wpathname);
-    if (ret < 0)
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-done:
-    if (wpathname)
-    {
-        free(wpathname);
-    }
-    return ret;
+    PANIC;
 }
 
 /*
