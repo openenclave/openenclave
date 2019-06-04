@@ -27,6 +27,7 @@
 #include <openenclave/corelibc/sys/epoll.h>
 #include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/dirent.h>
+#include <openenclave/corelibc/unistd.h>
 #include "../hostthread.h"
 #include "posix_u.h"
 
@@ -52,7 +53,7 @@ __declspec(noreturn) static void _panic(
 /*
 **==============================================================================
 **
-** Windows-POSIX error conversion:
+** Error handling and conversion:
 **
 **==============================================================================
 */
@@ -453,16 +454,20 @@ WCHAR* oe_posix_path_to_win(const char* path, const char* post)
 **==============================================================================
 */
 
+/* Mask to extract open() access mode flags: O_RDONLY, O_WRONLY, O_RDWR. */
+#define OPEN_ACCESS_MODE_MASK 0x00000003
+
 oe_host_fd_t oe_posix_open_ocall(
     const char* pathname,
     int flags,
     oe_mode_t mode)
 {
     oe_host_fd_t ret = -1;
+    WCHAR* wpathname = NULL;
 
     if (strcmp(pathname, "/dev/stdin") == 0)
     {
-        if ((flags & 0x00000003) != OE_O_RDONLY)
+        if ((flags & OPEN_ACCESS_MODE_MASK) != OE_O_RDONLY)
         {
             _set_errno(OE_EINVAL);
             goto done;
@@ -483,7 +488,7 @@ oe_host_fd_t oe_posix_open_ocall(
     }
     else if (strcmp(pathname, "/dev/stdout") == 0)
     {
-        if ((flags & 0x00000003) != OE_O_WRONLY)
+        if ((flags & OPEN_ACCESS_MODE_MASK) != OE_O_WRONLY)
         {
             _set_errno(OE_EINVAL);
             goto done;
@@ -504,7 +509,7 @@ oe_host_fd_t oe_posix_open_ocall(
     }
     else if (strcmp(pathname, "/dev/stderr") == 0)
     {
-        if ((flags & 0x00000003) != OE_O_WRONLY)
+        if ((flags & OPEN_ACCESS_MODE_MASK) != OE_O_WRONLY)
         {
             _set_errno(OE_EINVAL);
             goto done;
@@ -529,18 +534,21 @@ oe_host_fd_t oe_posix_open_ocall(
         DWORD share_mode = 0;
         DWORD create_dispos = OPEN_EXISTING;
         DWORD file_flags = (FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS);
-        WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
+
+        if (!(wpathname = oe_posix_path_to_win(pathname, NULL)))
+        {
+            _set_errno(OE_ENOMEM);
+            goto done;
+        }
 
         if ((flags & OE_O_DIRECTORY) != 0)
         {
-            file_flags |=
-                FILE_FLAG_BACKUP_SEMANTICS; // This will make a directory. Not
-                                            // obvious but there it is
+            /* This creates a directory. */
+            file_flags |= FILE_FLAG_BACKUP_SEMANTICS;
         }
 
-        /* Open flags are neither a bitmask nor a sequence, so switching or
-         * masking don't really work. */
-
+        // Open flags are neither a bitmask nor a sequence, so switching or
+        // masking doesn't work.
         if ((flags & OE_O_CREAT) != 0)
         {
             create_dispos = OPEN_ALWAYS;
@@ -557,41 +565,45 @@ oe_host_fd_t oe_posix_open_ocall(
             }
         }
 
-        // in linux land, we can always share files for read and write unless
-        // they have been opened exclusive
+        // In Linux land, we can always share files for read and write unless
+        // they have been opened exclusively.
         share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
-        const int ACCESS_FLAGS = 0x3; // Covers rdonly, wronly rdwr
-        switch (flags & ACCESS_FLAGS)
+
+        switch ((flags & OPEN_ACCESS_MODE_MASK))
         {
-            case OE_O_RDONLY: // 0
+            case OE_O_RDONLY:
+            {
                 desired_access |= GENERIC_READ;
+
                 if (flags & OE_O_EXCL)
-                {
                     share_mode = FILE_SHARE_WRITE;
-                }
-                break;
 
-            case OE_O_WRONLY: // 1
+                break;
+            }
+            case OE_O_WRONLY:
+            {
                 desired_access |= GENERIC_WRITE;
+
                 if (flags & OE_O_EXCL)
-                {
                     share_mode = FILE_SHARE_READ;
-                }
-                break;
 
-            case OE_O_RDWR: // 2 or 3
+                break;
+            }
+            case OE_O_RDWR:
+            {
                 desired_access |= GENERIC_READ | GENERIC_WRITE;
-                if (flags & OE_O_EXCL)
-                {
-                    share_mode = 0;
-                }
-                break;
 
+                if (flags & OE_O_EXCL)
+                    share_mode = 0;
+
+                break;
+            }
             default:
+            {
                 ret = -1;
                 _set_errno(OE_EINVAL);
                 goto done;
-                break;
+            }
         }
 
         if (mode & OE_S_IRUSR)
@@ -607,6 +619,7 @@ oe_host_fd_t oe_posix_open_ocall(
             create_dispos,
             file_flags,
             NULL);
+
         if (h == INVALID_HANDLE_VALUE)
         {
             _set_errno(_winerr_to_errno(GetLastError()));
@@ -614,12 +627,13 @@ oe_host_fd_t oe_posix_open_ocall(
         }
 
         ret = (oe_host_fd_t)h;
-
-        if (wpathname)
-            free(wpathname);
     }
 
 done:
+
+    if (wpathname)
+        free(wpathname);
+
     return ret;
 }
 
@@ -627,25 +641,6 @@ ssize_t oe_posix_read_ocall(oe_host_fd_t fd, void* buf, size_t count)
 {
     ssize_t ret = -1;
     DWORD bytes_returned = 0;
-
-    // Convert fd 0, 1, 2 as needed
-    switch (fd)
-    {
-        case 0:
-            fd = (oe_host_fd_t)GetStdHandle(STD_INPUT_HANDLE);
-            break;
-
-        case 1:
-            _set_errno(OE_EBADF);
-            goto done;
-
-        case 2:
-            _set_errno(OE_EBADF);
-            goto done;
-
-        default:
-            break;
-    }
 
     if (!ReadFile((HANDLE)fd, buf, (DWORD)count, &bytes_returned, NULL))
     {
@@ -663,26 +658,6 @@ ssize_t oe_posix_write_ocall(oe_host_fd_t fd, const void* buf, size_t count)
 {
     ssize_t ret = -1;
     DWORD bytes_written = 0;
-
-    // Convert fd 0, 1, 2 as needed
-    switch (fd)
-    {
-        case 0:
-            // Error. You cant write to stdin
-            _set_errno(OE_EBADF);
-            goto done;
-
-        case 1:
-            fd = (oe_host_fd_t)GetStdHandle(STD_OUTPUT_HANDLE);
-            break;
-
-        case 2:
-            fd = (oe_host_fd_t)GetStdHandle(STD_ERROR_HANDLE);
-            break;
-
-        default:
-            break;
-    }
 
     if (!WriteFile((HANDLE)fd, buf, (DWORD)count, &bytes_written, NULL))
     {
@@ -789,25 +764,6 @@ oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
 
 int oe_posix_close_ocall(oe_host_fd_t fd)
 {
-    // Convert fd 0, 1, 2 as needed
-    switch (fd)
-    {
-        case 0:
-            fd = (oe_host_fd_t)GetStdHandle(STD_INPUT_HANDLE);
-            break;
-
-        case 1:
-            fd = (oe_host_fd_t)GetStdHandle(STD_OUTPUT_HANDLE);
-            break;
-
-        case 2:
-            fd = (oe_host_fd_t)GetStdHandle(STD_ERROR_HANDLE);
-            break;
-
-        default:
-            break;
-    }
-
     if (!CloseHandle((HANDLE)fd))
     {
         _set_errno(OE_EINVAL);
