@@ -445,38 +445,40 @@ let warn_size_and_count_params (fd : func_decl) =
 
 (** Generate the Enclave code. *)
 let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
-  (* We need to check Ptrs for Foreign or Struct types, then check
-     those against the user's structs, and then check if any members
-     should be deep copied. *)
-  let get_deepcopy a =
-    (* This transforms the [Struct] types embedded in a [composite_type
-       list] into an association list of the struct name to its parameter
-       list, which is much easier to deal with. *)
+  (* Given [name], return the corresponding [StructDef], or [None]. *)
+  let get_struct_by_name name =
+    (* [ec.comp_defs] is a list of all composite types, but we're only
+       interested in the structs, so we filter out the rest and unwrap
+       them from [composite_type]. *)
     let structs =
-      filter_map
-        (function StructDef s -> Some (s.sname, s.smlist) | _ -> None)
-        ec.comp_defs
+      filter_map (function StructDef s -> Some s | _ -> None) ec.comp_defs
     in
-    let get_struct = function
-      | Ptr a -> (
-        match a with
-        | Foreign n | Struct n ->
-            (* TODO: This would simply be [List.assoc_opt] if we had at
-               least 4.05. *)
-            if List.mem_assoc n structs then Some (List.assoc n structs)
-            else None
-        | _ -> None )
+    (* TODO: [List.find_opt] is better, but requires 4.05. *)
+    if List.exists (fun s -> s.sname = name) structs then
+      Some (List.find (fun s -> s.sname = name) structs)
+    else None
+  in
+  (* We need to check [Ptr]s for [Foreign] or [Struct] types, then
+     check those against the user's [Struct]s, and then check if any
+     members should be deep copied. What we return is the list of
+     members of the [Struct] which should be deep-copied, otherwise we
+     return an empty list. *)
+  let get_deepcopy_members (a : atype) =
+    let should_deepcopy_a = function
+      | Ptr (Struct n) | Ptr (Foreign n) -> get_struct_by_name n
       | _ -> None
     in
-    let s = get_struct a in
+    (* This tests if the member has a non-empty size attribute,
+       implying that deep-copy is expected. *)
     let should_deepcopy_member (ptype, _) =
       match ptype with
       | PTPtr (_, attr) -> attr.pa_size <> empty_ptr_size
       | PTVal _ -> false
     in
+    (* Only enabled with --experimental! *)
     if ep.experimental then
-      match s with
-      | Some s -> List.filter should_deepcopy_member s
+      match should_deepcopy_a a with
+      | Some s -> List.filter should_deepcopy_member s.smlist
       | None -> []
     else []
   in
@@ -622,7 +624,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
            in
            flatten_map
              (gen_add_size (arg ^ gen_c_deref param_count) param_count)
-             (get_deepcopy (get_param_atype ptype))) ]
+             (get_deepcopy_members (get_param_atype ptype))) ]
         |> List.flatten
       in
       let params =
@@ -656,7 +658,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
            in
            flatten_map
              (gen_serialize (arg ^ gen_c_deref param_count) param_count)
-             (get_deepcopy (get_param_atype ptype))) ]
+             (get_deepcopy_members (get_param_atype ptype))) ]
         |> List.flatten
       in
       let params =
@@ -754,7 +756,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
          (oe_gen_set_pointers
             (arg ^ gen_c_deref param_count)
             param_count setter)
-         (get_deepcopy (get_param_atype ptype))) ]
+         (get_deepcopy_members (get_param_atype ptype))) ]
     |> List.flatten
   in
   let oe_gen_in_and_inout_setters (plist : pdecl list) =
@@ -882,7 +884,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
          in
          flatten_map
            (gen_assignment (arg ^ gen_c_deref param_count) param_count)
-           (get_deepcopy (get_param_atype ptype))) ]
+           (get_deepcopy_members (get_param_atype ptype))) ]
       |> List.flatten
     in
     flatten_map (gen_assignment "" "1") fd.plist
