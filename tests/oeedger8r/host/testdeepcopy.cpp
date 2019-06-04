@@ -38,10 +38,6 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         OE_TEST(deepcopy_shallow(enclave, &s[0], data) == OE_OK);
     }
 
-    // TODO: These should succeed only once deep copy is enabled, so
-    // for now we ignore their failures.
-    fprintf(stderr, "=== test_deepcopy_edl_ecalls ignoring failures...\n");
-
     {
         auto s = init_structs<CountStruct>();
         OE_TEST(deepcopy_count(enclave, &s[0]) == OE_OK);
@@ -83,5 +79,14 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         OE_TEST(deepcopy_countsizeparamarray(enclave, s.data()) == OE_OK);
     }
 
-    printf("=== test_deepcopy_edl_ecalls failures ignored!\n");
+    {
+        auto s = init_structs<CountStruct>();
+        int ints[]{0, 1, 2, 3};
+        ShallowStruct shallow{1, 8, nullptr};
+        CountStruct counts[]{s[0], s[0], s[0]};
+        NestedStruct n{13, ints, &shallow, counts};
+        OE_TEST(deepcopy_nested(enclave, &n) == OE_OK);
+    }
+
+    printf("=== test_deepcopy_edl_ecalls passed\n");
 }

@@ -420,7 +420,7 @@ static oe_result_t _handle_ocall(
         *arg_out = 0;
 
     oe_log(
-        OE_LOG_LEVEL_INFO,
+        OE_LOG_LEVEL_VERBOSE,
         "%s 0x%x OE_OCALL: %s\n",
         enclave->path,
         enclave->addr,

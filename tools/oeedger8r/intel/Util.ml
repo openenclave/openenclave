@@ -69,6 +69,7 @@ let usage (progname: string) =
 --trusted             Generate trusted proxy and bridge\n\
 --untrusted-dir <dir> Specify the directory for saving untrusted code\n\
 --trusted-dir   <dir> Specify the directory for saving trusted code\n\
+--experimental        Enable experimental features\n\
 --help                Print this help message\n";
   eprintf "\n\
 If neither `--untrusted' nor `--trusted' is specified, generate both.\n";
@@ -84,6 +85,7 @@ type edger8r_params = {
   gen_trusted   : bool;         (* User specified `--trusted' *)
   untrusted_dir : string;       (* Directory to save untrusted code *)
   trusted_dir   : string;       (* Directory to save trusted code *)
+  experimental  : bool;         (* Enable experimental features *)
 }
 
 (* The search paths are recored in the array below.
@@ -106,6 +108,7 @@ let rec parse_cmdline (progname: string) (cmdargs: string list) =
   let hd_only  = ref false in
   let untrusted= ref false in
   let trusted  = ref false in
+  let experi   = ref false in
   let u_dir    = ref "." in
   let t_dir    = ref "." in
   let files    = ref [] in
@@ -119,6 +122,7 @@ let rec parse_cmdline (progname: string) (cmdargs: string list) =
             | "--header-only"-> hd_only := true; local_parser ops
             | "--untrusted"  -> untrusted := true; local_parser ops
             | "--trusted"    -> trusted := true; local_parser ops
+            | "--experimental" -> experi := true; local_parser ops
             | "--untrusted-dir" ->
               (match ops with
                 []    -> usage progname
@@ -143,6 +147,7 @@ let rec parse_cmdline (progname: string) (cmdargs: string list) =
       { input_files = List.rev !files; use_prefix = !use_pref;
         header_only = !hd_only; gen_untrusted = true; gen_trusted = true;
         untrusted_dir = !u_dir; trusted_dir = !t_dir;
+        experimental = !experi;
       }
     in
       if !untrusted || !trusted (* User specified '--untrusted' or '--trusted' *)
