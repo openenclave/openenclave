@@ -28,6 +28,8 @@
  *      This can be applied to POD types, as well as to types with constructors
  *      and/or destructors.
  *
+ * Note: __thread is shadowed by OE_THREAD_LOCAL_STORAGE.
+ *
  * Thread-local variables that are explicitly initialized to constant values are
  * put in .tdata section. Thread-local variables that are not initialized or
  * that have complex initializers and/or destructors are put in .tbss section.
@@ -201,8 +203,8 @@ static volatile uint64_t _tbss_align = 1;
 static volatile bool _thread_locals_relocated = false;
 
 /* Thread local variables to track functions to call on thread exit */
-static __thread oe_tls_atexit_t* _tls_atexit_functions;
-static __thread uint64_t _num_tls_atexit_functions;
+static OE_THREAD_LOCAL_STORAGE oe_tls_atexit_t* _tls_atexit_functions;
+static OE_THREAD_LOCAL_STORAGE uint64_t _num_tls_atexit_functions;
 
 /**
  * Get the address of the FS segment given a thread data object.

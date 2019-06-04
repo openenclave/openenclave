@@ -14,8 +14,8 @@
 #include "visibility.h"
 
 // These variables will be put in .tdata
-VISIBILITY_SPEC __thread volatile int __thread_int = 1;
-VISIBILITY_SPEC __thread volatile int g_x[10] = {8};
+VISIBILITY_SPEC OE_THREAD_LOCAL_STORAGE volatile int __thread_int = 1;
+VISIBILITY_SPEC OE_THREAD_LOCAL_STORAGE volatile int g_x[10] = {8};
 
 struct thread_local_struct
 {

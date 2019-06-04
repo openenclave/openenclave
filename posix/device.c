@@ -280,7 +280,7 @@ done:
 **==============================================================================
 */
 
-static __thread uint64_t _devid;
+static OE_THREAD_LOCAL_STORAGE uint64_t _devid;
 
 oe_result_t oe_set_thread_devid(uint64_t devid)
 {

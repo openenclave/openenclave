@@ -142,4 +142,16 @@
 #define OE_DEPRECATED(FUNC, MSG) FUNC
 #endif
 
+/* OP-TEE provides single-threaded enclaves only, and its ELF loader does not
+ * support thread-local relocations. Hence, any enclave that includes a
+ * variable marked with __thread will not only not work, but it will fail to
+ * load altogether.
+ */
+#if defined(_ARM_) || defined(_M_ARM) || defined(__arm__) || \
+    defined(__thumb__) || defined(__aarch64__)
+#define OE_THREAD_LOCAL_STORAGE
+#else
+#define OE_THREAD_LOCAL_STORAGE __thread
+#endif
+
 #endif /* _OE_BITS_DEFS_H */

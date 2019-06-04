@@ -48,7 +48,8 @@ OE_STATIC_ASSERT(sizeof(pthread_mutex_t) >= sizeof(oe_mutex_t));
 OE_STATIC_ASSERT(sizeof(pthread_cond_t) >= sizeof(oe_cond_t));
 OE_STATIC_ASSERT(sizeof(pthread_rwlock_t) >= sizeof(oe_rwlock_t));
 
-static __thread struct __pthread _pthread_self = {.locale = C_LOCALE};
+static OE_THREAD_LOCAL_STORAGE struct __pthread _pthread_self = {.locale =
+                                                                     C_LOCALE};
 
 pthread_t __pthread_self()
 {

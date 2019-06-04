@@ -22,7 +22,7 @@ struct foo
     void* ook;
 };
 
-static __thread struct foo _local_foo;
+static OE_THREAD_LOCAL_STORAGE struct foo _local_foo;
 
 void enc_set_value(uint64_t value)
 {
