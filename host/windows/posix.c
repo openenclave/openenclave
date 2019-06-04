@@ -840,245 +840,32 @@ int oe_posix_close_ocall(oe_host_fd_t fd)
 
 oe_host_fd_t oe_posix_dup_ocall(oe_host_fd_t oldfd)
 {
-    oe_host_fd_t ret = -1;
-    oe_host_fd_t newfd = -1;
-    char pibuff[1024] = {0};
-    struct _WSAPROTOCOL_INFOA* pi = (struct _WSAPROTOCOL_INFOA*)pibuff;
-
-    // Convert fd 0, 1, 2 as needed
-    switch (oldfd)
-    {
-        case 0:
-            oldfd = (oe_host_fd_t)GetStdHandle(STD_INPUT_HANDLE);
-            break;
-
-        case 1:
-            oldfd = (oe_host_fd_t)GetStdHandle(STD_OUTPUT_HANDLE);
-            break;
-
-        case 2:
-            oldfd = (oe_host_fd_t)GetStdHandle(STD_ERROR_HANDLE);
-            break;
-
-        default:
-            break;
-    }
-
-    ret = WSADuplicateSocketA((SOCKET)oldfd, GetCurrentProcessId(), pi);
-    if (ret < 0)
-    {
-        int sockerr = WSAGetLastError();
-
-        if (sockerr != WSAENOTSOCK && sockerr != WSANOTINITIALISED)
-        {
-            _set_errno(_winsockerr_to_errno(WSAGetLastError()));
-            goto done;
-        }
-    }
-    else
-    {
-        newfd = WSASocketA(-1, -1, -1, pi, 0, 0);
-        ret = newfd;
-        _set_errno(0);
-        goto done;
-    }
-
-    if (!DuplicateHandle(
-            GetCurrentProcess(),
-            (HANDLE)oldfd,
-            GetCurrentProcess(),
-            (HANDLE*)&ret,
-            0,
-            FALSE,
-            DUPLICATE_SAME_ACCESS))
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-done:
-    return ret;
+    PANIC;
 }
-
-struct WIN_DIR_DATA
-{
-    HANDLE hFind;
-    WIN32_FIND_DATAW FindFileData;
-    int dir_offs;
-    WCHAR* pdirpath;
-};
 
 uint64_t oe_posix_opendir_ocall(const char* pathname)
 {
-    struct WIN_DIR_DATA* pdir =
-        (struct WIN_DIR_DATA*)calloc(1, sizeof(struct WIN_DIR_DATA));
-    WCHAR* wpathname = oe_posix_path_to_win(pathname, "/*");
-
-    pdir->hFind = FindFirstFileW(wpathname, &pdir->FindFileData);
-    if (pdir->hFind == INVALID_HANDLE_VALUE)
-    {
-        free(wpathname);
-        free(pdir);
-        return 0;
-    }
-    pdir->dir_offs = 0;
-    pdir->pdirpath = wpathname;
-    return (uint64_t)pdir;
+    PANIC;
 }
 
 int oe_posix_readdir_ocall(uint64_t dirp, struct oe_dirent* entry)
 {
-    struct WIN_DIR_DATA* pdir = (struct WIN_DIR_DATA*)dirp;
-    int nlen = -1;
-
-    _set_errno(0);
-
-    if (!dirp || !entry)
-    {
-        _set_errno(OE_EINVAL);
-        return -1;
-    }
-
-    // Find file next doesn't return '.' because it shows up in opendir and we
-    // lose it but we know it is there, so we can just return it
-    if (pdir->dir_offs == 0)
-    {
-        entry->d_off = pdir->dir_offs++;
-        entry->d_type = OE_DT_DIR;
-        entry->d_reclen = sizeof(struct oe_dirent);
-        entry->d_name[0] = '.';
-        entry->d_name[1] = '\0';
-        return 0;
-    }
-
-    if (!FindNextFileW(pdir->hFind, &pdir->FindFileData))
-    {
-        DWORD winerr = GetLastError();
-
-        if (winerr == ERROR_NO_MORE_FILES)
-        {
-            /* Return 1 to indicate there no more entries. */
-            return 1;
-        }
-        else
-        {
-            _set_errno(_winerr_to_errno(winerr));
-            return -1;
-        }
-    }
-
-    nlen = WideCharToMultiByte(
-        CP_UTF8, 0, pdir->FindFileData.cFileName, -1, NULL, 0, NULL, NULL);
-    (void)WideCharToMultiByte(
-        CP_UTF8,
-        0,
-        pdir->FindFileData.cFileName,
-        nlen,
-        entry->d_name,
-        sizeof(entry->d_name),
-        NULL,
-        NULL);
-
-    entry->d_type = 0;
-    if (pdir->FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-    {
-        entry->d_type = OE_DT_DIR;
-    }
-    else if (pdir->FindFileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-    {
-        entry->d_type = OE_DT_LNK;
-    }
-    else
-    {
-        entry->d_type = OE_DT_REG;
-    }
-
-    entry->d_off = pdir->dir_offs++;
-    entry->d_reclen = sizeof(struct oe_dirent);
-
-    return 0;
+    PANIC;
 }
 
 void oe_posix_rewinddir_ocall(uint64_t dirp)
 {
-    DWORD err = 0;
-    struct WIN_DIR_DATA* pdir = (struct WIN_DIR_DATA*)dirp;
-    WCHAR* wpathname = pdir->pdirpath;
-    // Undo abosolute path forcing again. We do this over because we need to
-    // preserve the allocation address for free.
-    if (wpathname[0] == '/' && wpathname[2] == ':')
-    {
-        wpathname++;
-    }
-
-    FindClose(pdir->hFind);
-    memset(&pdir->FindFileData, 0, sizeof(pdir->FindFileData));
-
-    pdir->hFind = FindFirstFileW(wpathname, &pdir->FindFileData);
-    if (pdir->hFind == INVALID_HANDLE_VALUE)
-    {
-        err = GetLastError();
-    }
-    pdir->dir_offs = 0;
+    PANIC;
 }
 
 int oe_posix_closedir_ocall(uint64_t dirp)
 {
-    struct WIN_DIR_DATA* pdir = (struct WIN_DIR_DATA*)dirp;
-
-    if (!dirp)
-    {
-        return -1;
-    }
-    if (!FindClose(pdir->hFind))
-    {
-        return -1;
-    }
-    free(pdir->pdirpath);
-    pdir->pdirpath = NULL;
-    free(pdir);
-    return 0;
+    PANIC;
 }
 
 int oe_posix_stat_ocall(const char* pathname, struct oe_stat* buf)
 {
-    int ret = -1;
-    WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
-    struct _stat64 winstat = {0};
-
-    ret = _wstat64(wpathname, &winstat);
-    if (ret < 0)
-    {
-        // How do we get to  wstat's error
-
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-#undef st_atime
-#undef st_mtime
-#undef st_ctime
-
-    buf->st_dev = winstat.st_dev;
-    buf->st_ino = winstat.st_ino;
-    buf->st_mode = win_stat_to_stat(winstat.st_mode);
-    buf->st_nlink = winstat.st_nlink;
-    buf->st_uid = winstat.st_uid;
-    buf->st_gid = winstat.st_gid;
-    buf->st_rdev = winstat.st_rdev;
-    buf->st_size = winstat.st_size;
-    buf->st_atim.tv_sec = winstat.st_atime;
-    buf->st_mtim.tv_sec = winstat.st_mtime;
-    buf->st_ctim.tv_sec = winstat.st_ctime;
-
-done:
-
-    if (wpathname)
-    {
-        free(wpathname);
-    }
-
-    return ret;
+    PANIC;
 }
 
 int oe_posix_access_ocall(const char* pathname, int mode)
@@ -1637,7 +1424,7 @@ int oe_posix_getpgrp(void)
 
 unsigned int oe_posix_getuid(void)
 {
-    return USER_ID;
+    PANIC;
 }
 
 unsigned int oe_posix_geteuid(void)
