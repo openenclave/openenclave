@@ -13,6 +13,7 @@
 */
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include <direct.h>
 #include <io.h>
 #include <stdint.h>
@@ -22,14 +23,12 @@
 #include <windows.h>
 // clang-format on
 
-#include "posix_u.h"
-
-#include "openenclave/corelibc/errno.h"
-#include "openenclave/corelibc/fcntl.h"
-#include "openenclave/corelibc/sys/epoll.h"
-#include "openenclave/corelibc/dirent.h"
+#include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/sys/epoll.h>
+#include <openenclave/corelibc/fcntl.h>
+#include <openenclave/corelibc/dirent.h>
 #include "../hostthread.h"
-#include <assert.h>
+#include "posix_u.h"
 
 /*
 **==============================================================================
@@ -39,13 +38,14 @@
 **==============================================================================
 */
 
-struct errno_tab_entry
+typedef _error_entry
 {
     DWORD winerr;
     int error_no;
-};
+}
+error_entry_t;
 
-static struct errno_tab_entry errno2winerr[] = {
+static error_entry_t errno2winerr[] = {
     {ERROR_ACCESS_DENIED, OE_EACCES},
     {ERROR_ACTIVE_CONNECTIONS, OE_EAGAIN},
     {ERROR_ALREADY_EXISTS, OE_EEXIST},
@@ -174,7 +174,7 @@ static struct errno_tab_entry errno2winerr[] = {
 
 static DWORD _errno_to_winerr(int errno)
 {
-    struct errno_tab_entry* pent = errno2winerr;
+    error_entry_t* pent = errno2winerr;
 
     do
     {
@@ -191,7 +191,7 @@ static DWORD _errno_to_winerr(int errno)
 
 static int _winerr_to_errno(DWORD winerr)
 {
-    struct errno_tab_entry* pent = errno2winerr;
+    error_entry_t* pent = errno2winerr;
 
     do
     {
