@@ -381,11 +381,10 @@ static const char* oe_ocall_str(oe_func_t ocall)
                                        "OE_OCALL_WRITE",
                                        "OE_OCALL_SLEEP",
                                        "OE_OCALL_GET_TIME",
-                                       "OE_OCALL_BACKTRACE_SYMBOLS"
+                                       "OE_OCALL_BACKTRACE_SYMBOLS",
                                        "OE_OCALL_LOG"};
 
-    OE_STATIC_ASSERT(
-        OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX - 1);
+    OE_STATIC_ASSERT(OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX);
 
     if (ocall >= OE_OCALL_BASE &&
         ocall < (OE_OCALL_BASE + OE_COUNTOF(func_names)))
@@ -421,9 +420,10 @@ static oe_result_t _handle_ocall(
 
     oe_log(
         OE_LOG_LEVEL_VERBOSE,
-        "%s 0x%x OE_OCALL: %s\n",
+        "%s 0x%x %s: %s\n",
         enclave->path,
         enclave->addr,
+        func == OE_OCALL_CALL_HOST_FUNCTION ? "EDL_OCALL" : "OE_OCALL",
         oe_ocall_str(func));
 
     switch ((oe_func_t)func)
