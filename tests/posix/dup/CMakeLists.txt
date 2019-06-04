@@ -9,10 +9,6 @@ endif()
 
 set(TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/tmp")
 
-if (UNIX)
-add_test(tests/dup1 /bin/rm -rf "${TMP_DIR}")
-else ()
-add_test(tests/dup1 powershell.exe -Command " (rm -recurse -force ${TMP_DIR} ) >$null")
-endif ()
+add_test(tests/dup1 cmake -E remove_directory "${TMP_DIR}")
 
-add_enclave_test(tests/dup dup_host dup_enc "${TMP_DIR}")
+add_enclave_test(tests/dup2 dup_host dup_enc "${TMP_DIR}")
