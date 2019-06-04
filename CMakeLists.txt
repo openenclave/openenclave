@@ -214,6 +214,7 @@ if (BUILD_ENCLAVES)
   add_subdirectory(libc)
   add_subdirectory(libcxx)
   add_subdirectory(posix)
+  add_subdirectory(posix/devices)
 endif()
 
 if (UNIX)

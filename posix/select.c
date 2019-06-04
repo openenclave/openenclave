@@ -56,7 +56,7 @@ int _fdset_to_fds(poll_fds_t* fds, short events, oe_fd_set* set, int nfds)
     int ret = -1;
     int fd;
 
-    for (fd = 0; fd < nfds; fd++)
+    for (fd = 0; fd < nfds + 10; fd++)
     {
         if (OE_FD_ISSET(fd, set))
         {
@@ -180,24 +180,51 @@ done:
 
 void OE_FD_CLR(int fd, oe_fd_set* set)
 {
-    int l = fd >> 5;   // long index
-    int b = fd & 0x1f; // bit shift
-    set->fds_bits[l] &= ~(1UL << b);
+    if (fd >= 0)
+    {
+        uint64_t word = ((uint64_t)fd) / (8UL * sizeof(uint64_t));
+        uint64_t bit = ((uint64_t)fd) % (8UL * sizeof(uint64_t));
+        uint64_t mask = ~(1UL << bit);
+
+        set->fds_bits[word] &= mask;
+    }
+    else
+    {
+        oe_assert("OE_FD_SET: out of bounds" == NULL);
+    }
 }
 
 int OE_FD_ISSET(int fd, oe_fd_set* set)
 {
-    int l = fd >> 5;   // long index
-    int b = fd & 0x1f; // bit shift
-    return (set->fds_bits[l] & (1UL << b)) != 0;
+    if (fd >= 0)
+    {
+        uint64_t word = ((uint64_t)fd) / (8UL * sizeof(uint64_t));
+        uint64_t bit = ((uint64_t)fd) % (8UL * sizeof(uint64_t));
+        uint64_t mask = (1UL << bit);
+
+        return !!(set->fds_bits[word] & mask);
+    }
+    else
+    {
+        oe_assert("OE_FD_ISSET: out of bounds" == NULL);
+        return 0;
+    }
 }
 
 void OE_FD_SET(int fd, oe_fd_set* set)
 {
-    int l = fd >> 5;   // long index
-    int b = fd & 0x1f; // bit shift
+    if (fd >= 0)
+    {
+        uint64_t word = ((uint64_t)fd) / (8UL * sizeof(uint64_t));
+        uint64_t bit = ((uint64_t)fd) % (8UL * sizeof(uint64_t));
+        uint64_t mask = (1UL << bit);
 
-    set->fds_bits[l] |= (1UL << b);
+        set->fds_bits[word] |= mask;
+    }
+    else
+    {
+        oe_assert("OE_FD_SET: out of bounds" == NULL);
+    }
 }
 
 void OE_FD_ZERO(oe_fd_set* set)

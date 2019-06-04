@@ -89,6 +89,21 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size)
     return (size_t)(src - start);
 }
 
+char* oe_strncpy(char* dest, const char* src, size_t n)
+{
+    char* ret = dest;
+
+    /* Copy at most n bytes. Terminate when src is exhausted. */
+    while (n-- && *src)
+        *dest++ = *src++;
+
+    /* If there is room left, then inject zero-terminator. */
+    if (n)
+        *dest = '\0';
+
+    return ret;
+}
+
 size_t oe_strlcat(char* dest, const char* src, size_t size)
 {
     size_t n = 0;
@@ -138,22 +153,85 @@ char* oe_strstr(const char* haystack, const char* needle)
     return NULL;
 }
 
-char* oe_strncpy(char* dest, const char* src, size_t n)
+char* oe_strdup(const char* s)
 {
-    char* ret = dest;
+    size_t len;
+    char* p;
 
-    if (dest == NULL)
+    if (!s)
         return NULL;
 
-    /* Copy at most n bytes. Terminate when src is exhausted. */
-    while (n-- && *src)
-        *dest++ = *src++;
+    len = oe_strlen(s);
 
-    /* If there is room left, then inject zero-terminator. */
-    if (n)
-        *dest = '\0';
+    if (!(p = oe_malloc(len + 1)))
+        return NULL;
 
-    return ret;
+    return memcpy(p, s, len + 1);
 }
 
 OE_WEAK_ALIAS(oe_strcmp, strcmp);
+
+char* oe_strchr(const char* s, int c)
+{
+    while (*s && *s != c)
+        s++;
+
+    if (*s == c)
+        return (char*)s;
+
+    return NULL;
+}
+
+char* oe_strrchr(const char* s, int c)
+{
+    char* p = (char*)s + oe_strlen(s);
+
+    if (c == '\0')
+        return p;
+
+    while (p != s)
+    {
+        if (*--p == c)
+            return p;
+    }
+
+    return NULL;
+}
+
+char* oe_strchrnul(const char* s, int c)
+{
+    char* p;
+
+    if (!(p = oe_strchr(s, c)))
+        p = (char*)(s + oe_strlen(s));
+
+    return p;
+}
+
+size_t oe_strspn(const char* s, const char* accept)
+{
+    const char* p = s;
+
+    while (*p)
+    {
+        if (!oe_strchr(accept, *p))
+            break;
+        p++;
+    }
+
+    return (size_t)(p - s);
+}
+
+size_t oe_strcspn(const char* s, const char* reject)
+{
+    const char* p = s;
+
+    while (*p)
+    {
+        if (oe_strchr(reject, *p))
+            break;
+        p++;
+    }
+
+    return (size_t)(p - s);
+}

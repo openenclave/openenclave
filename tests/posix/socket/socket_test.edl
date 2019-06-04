@@ -1,0 +1,16 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+
+    trusted {
+        /* define ECALLs here. */
+        public int ecall_run_client([in, out, count=1024]char *buf, [in, out, count=1]ssize_t *buflen);
+        public int ecall_run_server();
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+    
+    };
+};

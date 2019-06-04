@@ -38,10 +38,6 @@ int oe_vprintf(const char* format, oe_va_list ap);
 OE_PRINTF_FORMAT(1, 2)
 int oe_printf(const char* format, ...);
 
-int oe_puts(const char* s);
-
-int oe_putchar(int c);
-
 int oe_fputc(int c, OE_FILE* stream);
 
 int oe_vfprintf(OE_FILE* stream, const char* format, oe_va_list ap);
@@ -260,16 +256,6 @@ OE_INLINE int fileno(FILE* stream)
 OE_INLINE FILE* fdopen(int fd, const char* mode)
 {
     return (FILE*)oe_fdopen(fd, mode);
-}
-
-OE_INLINE int puts(const char* s)
-{
-    return oe_puts(s);
-}
-
-OE_INLINE int putchar(int c)
-{
-    return oe_putchar(c);
 }
 
 OE_INLINE int fputc(int c, FILE* stream)
