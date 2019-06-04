@@ -87,8 +87,8 @@ OE_INLINE void sleep_msec(uint32_t msec)
 #else
     struct timespec ts;
 
-    ts.tv_sec = (uint64_t)msec / 1000UL;
-    ts.tv_nsec = ((uint64_t)msec % 1000UL) * 1000000UL;
+    ts.tv_sec = (uint64_t)msec / 1000;
+    ts.tv_nsec = ((int64_t)msec % 1000) * 1000000;
 
     nanosleep(&ts, NULL);
 #endif
