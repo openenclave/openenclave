@@ -191,13 +191,13 @@ static error_entry_t _error_table[] = {
 
 static size_t _error_table_size = OE_COUNTOF(_error_table);
 
-static DWORD _errno_to_winerr(int errno)
+static DWORD _errno_to_winerr(int err)
 {
     size_t i;
 
-    for (size_t i = 0; i < _error_table_size; i++)
+    for (i = 0; i < _error_table_size; i++)
     {
-        if (_error_table[i].err == errno)
+        if (_error_table[i].err == err)
             return _error_table[i].winerr;
     }
 
@@ -208,7 +208,7 @@ static int _winerr_to_errno(DWORD winerr)
 {
     size_t i;
 
-    for (size_t i = 0; i < _error_table_size; i++)
+    for (i = 0; i < _error_table_size; i++)
     {
         if (_error_table[i].winerr == winerr)
             return _error_table[i].errno;
