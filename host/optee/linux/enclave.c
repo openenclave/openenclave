@@ -4,9 +4,41 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/edger8r/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 
 #include "enclave.h"
+
+#define HI_U32(x) ((uint32_t)(((x) >> 32) & 0xFFFFFFFF))
+#define LO_U32(x) ((uint32_t)((x)&0xFFFFFFFF))
+
+#define PARAM_TYPES_IN_OUT      \
+    (TEEC_PARAM_TYPES(          \
+        TEEC_VALUE_INPUT,       \
+        TEEC_VALUE_INPUT,       \
+        TEEC_MEMREF_TEMP_INPUT, \
+        TEEC_MEMREF_TEMP_OUTPUT))
+#define PARAM_TYPES_IN_NO_OUT   \
+    (TEEC_PARAM_TYPES(          \
+        TEEC_VALUE_INPUT,       \
+        TEEC_VALUE_INPUT,       \
+        TEEC_MEMREF_TEMP_INPUT, \
+        TEEC_NONE))
+#define PARAM_TYPES_NO_IN_OUT \
+    (TEEC_PARAM_TYPES(        \
+        TEEC_VALUE_INPUT,     \
+        TEEC_VALUE_INPUT,     \
+        TEEC_NONE,            \
+        TEEC_MEMREF_TEMP_OUTPUT))
+#define PARAM_TYPES_NO_IN_NO_OUT \
+    (TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT, TEEC_NONE, TEEC_NONE))
+
+/* This value is defined in the TEE Client API headers. At the time of this
+ * writing, the value is four (4). If the header were to ever change to a lower
+ * value, it would cause trouble for all TEE clients. As a result, it's highly
+ * unlikely it will ever change. Nevertheless, it doesn't hurt to ensure that
+ * the value is indeed at least as large as we assume it to be. */
+OE_STATIC_ASSERT(TEEC_CONFIG_PAYLOAD_REF_COUNT >= 4);
 
 static void* _grpc_thread_proc(void* param)
 {
@@ -168,42 +200,9 @@ done:
     return result;
 }
 
-oe_result_t oe_ecall(
+static oe_result_t _oe_invoke_command(
     oe_enclave_t* enclave,
-    uint16_t func,
-    uint64_t arg,
-    uint64_t* arg_out_ptr)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    // oe_code_t code = OE_CODE_ECALL;
-    oe_code_t code_out = 0;
-    // uint16_t func_out = 0;
-    uint16_t result_out = 0;
-    uint64_t arg_out = 0;
-
-    if (!enclave)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Perform ECALL or ORET */
-    OE_UNUSED(func);
-    OE_UNUSED(arg);
-
-    /* Process OCALLS */
-    if (code_out != OE_CODE_ERET)
-        OE_RAISE(OE_UNEXPECTED);
-
-    if (arg_out_ptr)
-        *arg_out_ptr = arg_out;
-
-    result = (oe_result_t)result_out;
-
-done:
-
-    return result;
-}
-
-oe_result_t oe_call_enclave_function_by_table_id(
-    oe_enclave_t* enclave,
+    uint32_t oe_function_id,
     uint64_t table_id,
     uint64_t function_id,
     const void* input_buffer,
@@ -212,41 +211,61 @@ oe_result_t oe_call_enclave_function_by_table_id(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    oe_result_t result = OE_UNEXPECTED;
-    oe_call_enclave_function_args_t args;
+    oe_result_t result = OE_FAILURE;
+
+    TEEC_Result res;
+    TEEC_Operation op;
+    uint32_t err_origin;
 
     /* Reject invalid parameters */
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Initialize the call_enclave_args structure */
+    /* Fill in marshalling structure */
+    op.params[0].value.a = HI_U32(table_id);
+    op.params[0].value.b = LO_U32(table_id);
+
+    op.params[1].value.a = HI_U32(function_id);
+    op.params[1].value.b = LO_U32(function_id);
+
+    if (input_buffer)
     {
-        args.table_id = table_id;
-        args.function_id = function_id;
-        args.input_buffer = input_buffer;
-        args.input_buffer_size = input_buffer_size;
-        args.output_buffer = output_buffer;
-        args.output_buffer_size = output_buffer_size;
-        args.output_bytes_written = 0;
-        args.result = OE_UNEXPECTED;
+        op.params[2].tmpref.buffer = (void*)input_buffer;
+        op.params[2].tmpref.size = input_buffer_size;
     }
+
+    if (output_buffer)
+    {
+        op.params[3].tmpref.buffer = (void*)output_buffer;
+        op.params[3].tmpref.size = output_buffer_size;
+    }
+
+    /* Fill in parameter types */
+    if (input_buffer && output_buffer)
+        op.paramTypes = PARAM_TYPES_IN_OUT;
+    else if (input_buffer)
+        op.paramTypes = PARAM_TYPES_IN_NO_OUT;
+    else if (output_buffer)
+        op.paramTypes = PARAM_TYPES_NO_IN_OUT;
+    else
+        op.paramTypes = PARAM_TYPES_NO_IN_NO_OUT;
 
     /* Perform the ECALL */
-    {
-        uint64_t arg_out = 0;
-
-        OE_CHECK(oe_ecall(
-            enclave,
-            OE_ECALL_CALL_ENCLAVE_FUNCTION,
-            (uint64_t)&args,
-            &arg_out));
-        OE_CHECK((oe_result_t)arg_out);
-    }
+    res =
+        TEEC_InvokeCommand(&enclave->session, oe_function_id, &op, &err_origin);
 
     /* Check the result */
-    OE_CHECK(args.result);
+    if (res != TEEC_SUCCESS)
+        OE_RAISE_MSG(
+            OE_PLATFORM_ERROR,
+            "TEEC_InvokeCommand failed with 0x%x and error origin 0x%x",
+            res,
+            err_origin);
 
-    *output_bytes_written = args.output_bytes_written;
+    /* Done */
+    if (output_bytes_written)
+        *output_bytes_written = output_buffer_size;
+
     result = OE_OK;
 
 done:
@@ -262,8 +281,9 @@ oe_result_t oe_call_enclave_function(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    return oe_call_enclave_function_by_table_id(
+    return _oe_invoke_command(
         enclave,
+        OE_ECALL_CALL_ENCLAVE_FUNCTION,
         OE_UINT64_MAX,
         function_id,
         input_buffer,
@@ -275,6 +295,32 @@ oe_result_t oe_call_enclave_function(
 
 oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 {
-    OE_UNUSED(enclave);
-    return OE_UNSUPPORTED;
+    oe_result_t result = OE_UNEXPECTED;
+
+    /* Check parameters */
+    if (!enclave || enclave->magic != ENCLAVE_MAGIC)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Clear the magic number */
+    enclave->magic = 0;
+
+    /* Close the session with the TA */
+    TEEC_CloseSession(&enclave->session);
+
+    /* Finalize the context against OP-TEE */
+    TEEC_FinalizeContext(&enclave->ctx);
+
+    /* Destroy the concurrency mutex */
+    pthread_mutex_destroy(&enclave->mutex);
+
+    /* Clear the contents of the enclave structure */
+    memset(enclave, 0, sizeof(oe_enclave_t));
+
+    /* Free the enclave structure */
+    free(enclave);
+
+    result = OE_OK;
+
+done:
+    return result;
 }
