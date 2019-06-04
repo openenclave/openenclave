@@ -11,7 +11,3 @@ add_subdirectory(resolver)
 add_subdirectory(socket)
 add_subdirectory(socketpair)
 add_subdirectory(sendmsg)
-
-if(UNIX)
-add_subdirectory(sgxfs)
-endif()

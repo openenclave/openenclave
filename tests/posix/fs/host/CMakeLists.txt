@@ -15,7 +15,7 @@ add_executable(fs_host host.c ${gen})
 
 target_include_directories(fs_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-if (UNIX)
+if (TEST_SGXFS)
     target_compile_definitions(fs_host PRIVATE TEST_SGXFS=1)
     set(OESGXFSHOST oesgxfshost)
 endif()

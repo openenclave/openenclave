@@ -15,7 +15,7 @@ add_enclave(TARGET fs_enc SOURCES enc.cpp ${gen})
 
 target_include_directories(fs_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-if (UNIX)
+if (TEST_SGXFS)
     target_compile_definitions(fs_enc PRIVATE TEST_SGXFS=1)
     set(OESGXFSENCLAVE oesgxfsenclave)
 endif()
