@@ -15,11 +15,11 @@ add_executable(fs_host host.c ${gen})
 
 target_include_directories(fs_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-set(OESGXFSHOST "")
-
 if (TEST_SGXFS)
     target_compile_definitions(fs_host PRIVATE TEST_SGXFS=1)
     set(OESGXFSHOST oesgxfshost)
+else()
+    set(OESGXFSHOST "")
 endif()
 
 target_link_libraries(fs_host ${OESGXFSHOST} oehostapp)
