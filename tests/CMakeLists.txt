@@ -26,7 +26,7 @@ add_subdirectory(aesm)
 add_subdirectory(debugger)
 endif()
 
-if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
+if (UNIX OR USE_CLANGW)
     if (OE_SGX)
         # The following tests currently fail in Windows simulation mode
         if (NOT WIN32_SIMULATION)
