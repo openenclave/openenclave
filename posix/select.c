@@ -56,7 +56,7 @@ int _fdset_to_fds(poll_fds_t* fds, short events, oe_fd_set* set, int nfds)
     int ret = -1;
     int fd;
 
-    for (fd = 0; fd < nfds + 10; fd++)
+    for (fd = 0; fd < nfds; fd++)
     {
         if (OE_FD_ISSET(fd, set))
         {
