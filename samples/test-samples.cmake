@@ -65,10 +65,9 @@ foreach (SAMPLE ${SAMPLES_LIST})
     endif ()
 
     # Build with pkg-config
-    # TODO: Use INSTALL_DIR for pkg-config after it is made relocatable.
     message(STATUS "Samples test '${SAMPLE}' with pkg-config running...")
     execute_process(
-      COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${BUILD_DIR}/pkgconfig OE_PREFIX=${INSTALL_DIR} make -C ${SAMPLE_SOURCE_DIR} clean build run
+      COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig/ make -C ${SAMPLE_SOURCE_DIR} clean build run
       RESULT_VARIABLE TEST_RESULT)
       if (TEST_RESULT)
         message(WARNING "Samples test '${SAMPLE}' with pkg-config failed!")
@@ -94,10 +93,10 @@ foreach (SAMPLE ${SAMPLES_LIST})
     endif ()
 
     # Build with pkg-config
-    # TODO: Use INSTALL_DIR for pkg-config after it is made relocatable.
     message(STATUS "Samples test '${SAMPLE}' in simulation with pkg-config running...")
+    message(WARNING "PKG_CONFIG_PATH=${INSTALL_DIR}")
     execute_process(
-      COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${BUILD_DIR}/pkgconfig OE_PREFIX=${INSTALL_DIR} make -C ${SAMPLE_SOURCE_DIR} clean build simulate
+      COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig make -C ${SAMPLE_SOURCE_DIR} clean build simulate
       RESULT_VARIABLE TEST_SIMULATE_RESULT)
     if (TEST_SIMULATE_RESULT)
       message(WARNING "Samples test '${SAMPLE}' in simulation with pkg-config failed!")
