@@ -281,13 +281,11 @@
         <ClCompile>
             <!-- OP-TEE Simulation -->
             <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsNewPlatforms) == True">OE_SIMULATE_OPTEE;OE_ENCLAVE_TYPE_AUTO=OE_ENCLAVE_TYPE_UNDEFINED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsMaster) == True">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
             <!-- Others -->
             <PreprocessorDefinitions Condition="($(OEIsTz) == False Or $(OEIsSim) == False) And $(OEIsNewPlatforms) == True">OE_ENCLAVE_TYPE_AUTO=OE_ENCLAVE_TYPE_UNDEFINED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
             <PreprocessorDefinitions Condition="($(OEIsTz) == False Or $(OEIsSim) == False) And $(OEIsLinux) == True And $(OEIsDebug) == True">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-
-            <!-- OP-TEE Simulation -->
-            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsMaster) == True">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
         </ClCompile>
     </ItemDefinitionGroup>
 
@@ -337,10 +335,10 @@
             <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsNewPlatforms) == True">$(OESgxHwX64)\oeenclave.lib;$(OESgxHwX64)\oesocket_enc.lib;$(OESgxHwX64)\oestdio_enc.lib;$(OESgxHwLibsT)</AdditionalDependencies>
 
             <!-- x86-SGX-Simulation-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True And $(OEIsNewPlatforms) == True">$(OESgxSimX86)\oeenclave.lib;$(OESgxSimX86)\oesocket_enc.lib;$(OESgxSimX86)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX86) == True And $(OEIsSim) == True And $(OEIsNewPlatforms) == True">$(OESgxSimX86)\oeenclave.lib;$(OESgxSimX86)\oesocket_enc.lib;$(OESgxSimX86)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
 
             <!-- x64-SGX-Simulation-* -->
-            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsNewPlatforms) == True">$(OESgxSimX64)\oeenclave.lib;$(OESgxSimX64)\oesocket_enc.lib;$(OESgxSimX64)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
+            <AdditionalDependencies Condition="$(OEIsSgx) == True And $(OEIsX64) == True And $(OEIsSim) == True And $(OEIsNewPlatforms) == True">$(OESgxSimX64)\oeenclave.lib;$(OESgxSimX64)\oesocket_enc.lib;$(OESgxSimX64)\oestdio_enc.lib;$(OESgxSimLibsT)</AdditionalDependencies>
 
             <!-- x86-OPTEE-Simulation-Debug -->
             <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OEOpteeSimX86)\oeenclave.lib;$(OEOpteeSimX86)\oesocket_enc.lib;$(OEOpteeSimX86)\oestdio_enc.lib;$(OEOpteeSimX86)\oeenclave_opteesim.lib;$(OEOpteeSimX86)\mbedcrypto.lib;$(OEOpteeSimX86)\mbedx509.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
