@@ -82,45 +82,78 @@
     <OEHostItem_Content Include="..\ItemTemplates\oehost\__TemplateIcon.ico">
       <Link>OEHost Template\__TemplateIcon.ico</Link>
     </OEHostItem_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\ecalls.c">
-      <Link>OEEnclave Template\ecalls.c</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\enclave.vstemplate">
-      <Link>OEEnclave Template\enclave.vstemplate</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\linux_gcc.mak">
-      <Link>OEEnclave Template\linux_gcc.mak</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\MyEnclave.config.xml">
-      <Link>OEEnclave Template\MyEnclave.config.xml</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\MyEnclave.edl">
-      <Link>OEEnclave Template\MyEnclave.edl</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\MyEnclave.vcxproj">
-      <Link>OEEnclave Template\MyEnclave.vcxproj</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\MyEnclave.vcxproj.filters">
-      <Link>OEEnclave Template\MyEnclave.vcxproj.filters</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\MyEnclave.vcxproj.user">
-      <Link>OEEnclave Template\MyEnclave.vcxproj.user</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\MyEnclave_private.pem">
-      <Link>OEEnclave Template\MyEnclave_private.pem</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\sub.mk">
-      <Link>OEEnclave Template\sub.mk</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\user_ta_header_defines.h">
-      <Link>OEEnclave Template\user_ta_header_defines.h</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\uuids.reg">
-      <Link>OEEnclave Template\uuids.reg</Link>
-    </OEEnclaveProject_Content>
-    <OEEnclaveProject_Content Include="..\ProjectTemplates\oeenclave\__TemplateIcon.ico">
-      <Link>OEEnclave Template\__TemplateIcon.ico</Link>
-    </OEEnclaveProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\ecalls.c">
+      <Link>OEEnclave Windows Template\ecalls.c</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\enclave.vstemplate">
+      <Link>OEEnclave Windows Template\enclave.vstemplate</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\linux_gcc.mak">
+      <Link>OEEnclave Windows Template\linux_gcc.mak</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\MyEnclave.config.xml">
+      <Link>OEEnclave Windows Template\MyEnclave.config.xml</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\MyEnclave.edl">
+      <Link>OEEnclave Windows Template\MyEnclave.edl</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\MyEnclave.vcxproj">
+      <Link>OEEnclave Windows Template\MyEnclave.vcxproj</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\MyEnclave.vcxproj.filters">
+      <Link>OEEnclave Windows Template\MyEnclave.vcxproj.filters</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\MyEnclave.vcxproj.user">
+      <Link>OEEnclave Windows Template\MyEnclave.vcxproj.user</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\MyEnclave_private.pem">
+      <Link>OEEnclave Windows Template\MyEnclave_private.pem</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\sub.mk">
+      <Link>OEEnclave Windows Template\sub.mk</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\user_ta_header_defines.h">
+      <Link>OEEnclave Windows Template\user_ta_header_defines.h</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\uuids.reg">
+      <Link>OEEnclave Windows Template\uuids.reg</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveWindowsProject_Content Include="..\ProjectTemplates\oeenclave-windows\__TemplateIcon.ico">
+      <Link>OEEnclave Windows Template\__TemplateIcon.ico</Link>
+    </OEEnclaveWindowsProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\ecalls.c">
+      <Link>OEEnclave Linux Template\ecalls.c</Link>
+    </OEEnclaveLinuxProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\enclave.vstemplate">
+      <Link>OEEnclave Linux Template\enclave.vstemplate</Link>
+    </OEEnclaveLinuxProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\MyEnclave.conf">
+      <Link>OEEnclave Linux Template\MyEnclave.conf</Link>
+    </OEEnclaveLinuxProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\MyEnclave.edl">
+      <Link>OEEnclave Linux Template\MyEnclave.edl</Link>
+    </OEEnclaveLinuxProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\makekey.sh">
+      <Link>OEEnclave Linux Template\makekey.sh</Link>
+    </OEEnclaveLinuxProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\MyEnclave.vcxproj">
+      <Link>OEEnclave Linux Template\MyEnclave.vcxproj</Link>
+    </OEEnclaveLinuxProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\MyEnclave.vcxproj.filters">
+      <Link>OEEnclave Linux Template\MyEnclave.vcxproj.filters</Link>
+    </OEEnclaveLinuxProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\linux_gcc.mak">
+      <Link>OEEnclave Linux Template\linux_gcc.mak</Link>
+    </OEEnclaveLinuxProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\sub.mk">
+      <Link>OEEnclave Linux Template\sub.mk</Link>
+    </OEEnclaveLinuxProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\user_ta_header_defines.h">
+      <Link>OEEnclave Linux Template\user_ta_header_defines.h</Link>
+    </OEEnclaveLinuxProject_Content>
+    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\uuids.reg">
+      <Link>OEEnclave Linux Template\uuids.reg</Link>
+    </OEEnclaveLinuxProject_Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -282,7 +315,8 @@
   <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
   <Target Name="PlaceTemplates">
     <!-- Zip the Template files. -->
-    <Zip Files="@(OEEnclaveProject_Content);" Flatten="True" ZipFileName="..\ProjectTemplates\Built\OEEnclaveProject.zip" />
+    <Zip Files="@(OEEnclaveWindowsProject_Content);" Flatten="True" ZipFileName="..\ProjectTemplates\Built\OEEnclaveWindowsProject.zip" />
+    <Zip Files="@(OEEnclaveLinuxProject_Content);" Flatten="True" ZipFileName="..\ProjectTemplates\Built\OEEnclaveLinuxProject.zip" />
     <Zip Files="@(OEHostItem_Content);" Flatten="True" ZipFileName="..\ItemTemplates\Built\OEHostItem.zip" />
     <!--
       Mark the Templates for copying to the VSIX file.
@@ -293,14 +327,20 @@
 
         Tree target: Visual C++ > Open Enclave App
         Path: ProjectTemplates\VC\<Template File>.zip
-            (The <Name> node in the Template file is "OEEnclaveProject".)
+            (The <Name> node in the Template file is "OEEnclaveWindowsProject".)
 
         For reference, the names of language directories (CSharp, etc.) are under:
             <Program Files>\Microsoft Visual Studio 14.0\Common7\IDE\ProjectTemplates.
     -->
     <ItemGroup>
-      <Content Include="..\ProjectTemplates\Built\OEEnclaveProject.zip">
-        <Link>ProjectTemplates\VC\OEEnclaveProject.zip</Link>
+      <Content Include="..\ProjectTemplates\Built\OEEnclaveWindowsProject.zip">
+        <Link>ProjectTemplates\VC\OEEnclaveWindowsProject.zip</Link>
+        <IncludeInVSIX>true</IncludeInVSIX>
+      </Content>
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="..\ProjectTemplates\Built\OEEnclaveLinuxProject.zip">
+        <Link>ProjectTemplates\VC\OEEnclaveLinuxProject.zip</Link>
         <IncludeInVSIX>true</IncludeInVSIX>
       </Content>
     </ItemGroup>

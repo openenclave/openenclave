@@ -213,7 +213,7 @@ namespace OpenEnclaveSDK
             }
         }
 
-        private void AddProjectItem(string zipName, string language, string fileName)
+        private void AddProjectItem(string zipName, string language, bool isWindows, string fileName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -223,6 +223,7 @@ namespace OpenEnclaveSDK
                 var solution = dte.Solution as EnvDTE80.Solution2;
                 Project project = GetActiveProject(dte);
 
+                // TODO: pick the correct source file based on isWindows true vs false
                 string filename = solution.GetProjectItemTemplate(zipName, language);
                 ProjectItem item = project.ProjectItems.AddFromTemplate(filename, fileName);
                 var file = item.Object as VCFile;
@@ -321,10 +322,13 @@ namespace OpenEnclaveSDK
                         project,
                         packageVersions);
 
+                    // See whether the enclave is a Linux project or a Windows project.
+                    bool isWindows = true; // XXX
+
                     // Add any configurations/platforms to the project.
                     AddConfiguration(project, "OPTEE-Simulation-Debug", "Debug");
                     AddConfiguration(project, "SGX-Simulation-Debug", "Debug");
-                    if (HavePlatform(project, "Win32"))
+                    if (isWindows && HavePlatform(project, "Win32"))
                     {
                         AddPlatform(project, "ARM", "Win32");
                     }
@@ -333,7 +337,6 @@ namespace OpenEnclaveSDK
                         AddPlatform(project, "ARM", "x64");
                     }
 
-                    // Set the debugger.
                     var vcProject = project.Object as VCProject;
                     foreach (var config in vcProject.Configurations)
                     {
@@ -344,14 +347,32 @@ namespace OpenEnclaveSDK
                             string value = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
                             clRule.SetPropertyValue("PreprocessorDefinitions", "_ARM_;" + value);
 
-                            var config3 = config as VCConfiguration3;
-                            config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARMSupport", "true");
-                            config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARM64Support", "true");
+                            if (isWindows) {
+                                // Enable compiling Win32 for ARM.
+                                var config3 = config as VCConfiguration3;
+                                config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARMSupport", "true");
+                                config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARM64Support", "true");
+                            }
                         }
 
+                        if (!isWindows && name.Contains("Debug"))
+                        {
+                            // GCC has no preprocessor define for debug mode, but the template code expects
+                            // _DEBUG, so set it here.
+                            var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
+                            string value = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
+                            clRule.SetPropertyValue("PreprocessorDefinitions", "_DEBUG;" + value);
+                        }
+
+#if true
                         // Change OutDir to $(SolutionDir)bin\$(Platform)\$(Configuration)\
                         // so it's the same as the enclave.
                         config.OutputDirectory = "$(SolutionDir)bin\\$(Platform)\\$(Configuration)\\";
+#else
+                        // TODO: instead add a post-build event to copy the enclave binary to the existing
+                        // OutDir.  For example, for Linux this would be
+                        // 'cp $(RemoteRootDir)/LinuxEnclave/bin/$(Platform)/$(Configuration)/LinuxEnclave.signed $(RemoteOutDir)'
+#endif
 
                         if (name.Contains("OPTEE") || name.Contains("ARM"))
                         {
@@ -361,19 +382,25 @@ namespace OpenEnclaveSDK
                             continue;
                         }
 
-                        // See if the Intel SGX SDK is installed.
-                        var sgxRule = config.Rules.Item("SGXDebugLauncher") as IVCRulePropertyStorage;
-                        if (sgxRule != null)
+                        if (isWindows) {
+                            // See if the Intel SGX SDK is installed.
+                            var sgxRule = config.Rules.Item("SGXDebugLauncher") as IVCRulePropertyStorage;
+                            if (sgxRule != null)
+                            {
+                                // Configure SGX debugger settings.
+                                var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
+                                generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
+                                sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+                            }
+                        }
+                        else
                         {
-                            // Configure SGX debugger settings.
-                            var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
-                            generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
-                            sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+                            // TODO: set oegdb as the debugger
                         }
                     }
 
                     // Add a host code item to the project.
-                    AddProjectItem("OEHostItem", "VC", baseName + "_host.c");
+                    AddProjectItem("OEHostItem", "VC", isWindows, baseName + "_host.c");
 
                     Cursor.Current = Cursors.Default;
                 }
