@@ -81,7 +81,7 @@ static ssize_t _hostsock_read(oe_fd_t*, void* buf, size_t count);
 
 static int _hostsock_close(oe_fd_t*);
 
-static oe_fd_t* _hostsock_socket(
+static oe_fd_t* _hostsock_device_socket(
     oe_device_t* dev,
     int domain,
     int type,
@@ -123,7 +123,7 @@ done:
     return ret;
 }
 
-static ssize_t _hostsock_socketpair(
+static ssize_t _hostsock_device_socketpair(
     oe_device_t* dev,
     int domain,
     int type,
@@ -839,7 +839,7 @@ done:
     return ret;
 }
 
-static int _hostsock_socket_shutdown(oe_fd_t* sock_, int how)
+static int _hostsock_shutdown(oe_fd_t* sock_, int how)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
@@ -857,7 +857,8 @@ done:
     return ret;
 }
 
-static int _hostsock_release(oe_device_t* device_)
+/* The release method for the socket interface device. */
+static int _hostsock_device_release(oe_device_t* device_)
 {
     int ret = -1;
     device_t* device = _cast_device(device_);
@@ -866,6 +867,9 @@ static int _hostsock_release(oe_device_t* device_)
 
     if (!device)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    // This device is registered by oe_load_module_host_socket_interface() and
+    // is static, so there are no resources to reclaim here.
 
     ret = 0;
 
@@ -893,7 +897,7 @@ static oe_socket_ops_t _sock_ops = {
     .accept = _hostsock_accept,
     .bind = _hostsock_bind,
     .listen = _hostsock_listen,
-    .shutdown = _hostsock_socket_shutdown,
+    .shutdown = _hostsock_shutdown,
     .getsockopt = _hostsock_getsockopt,
     .setsockopt = _hostsock_setsockopt,
     .getpeername = _hostsock_getpeername,
@@ -918,9 +922,9 @@ static device_t _device = {
     .base.name = OE_DEVICE_NAME_HOST_SOCKET_INTERFACE,
     .base.ops.socket =
     {
-        .base.release = _hostsock_release,
-        .socket = _hostsock_socket,
-        .socketpair = _hostsock_socketpair,
+        .base.release = _hostsock_device_release,
+        .socket = _hostsock_device_socket,
+        .socketpair = _hostsock_device_socketpair,
     },
     .magic = DEVICE_MAGIC,
 };
