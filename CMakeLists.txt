@@ -160,7 +160,7 @@ include(package_settings)
 include(add_enclave)
 
 # User configurable options
-# DCAP Libraries are supported for Windows but we still default to USE_LIBSGX OFF
+# DCAP library support on Windows is experimental and is disabled by default
 if (UNIX)
   option(USE_LIBSGX "Build oehost using SGX library requiring FLC" ON)
 elseif (WIN32)

@@ -38,6 +38,10 @@ sc query aesmservice
 
 The state of the service should be "running" (4). Follow Intel's documentation for troubleshooting.
 
+Note that Open Enclave is only compatible with the Intel PSW 2.2.
+To use Intel PSW 2.3 and higher, please refer _Building with Intel Data Center Attestation
+Primitives (DCAP) libraries_ below.
+
 Microsoft Visual Studio 2017
 ---------------------------------
 Install [Microsoft Visual Studio 2017](https://visualstudio.microsoft.com/vs/older-downloads/).
@@ -46,18 +50,27 @@ Note cmake in Visual Studio 2019 is not fully supported yet.
 For more information about cmake support, refer to
 https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/
 
-
 Git for Windows 64-bit
 ---------------------------------
 Install Git and add Git's bash to the path.
 Typically, Git's bash is located in C:\Program Files\Git\bin.
 Currently the Open Enclave SDK build system uses bash scripts to configure
-and process few 3rd-party libraries.
+and build Linux-based 3rd-party libraries.
 
 Open a command prompt and ensure that bash is available in the path:
 ```cmd
 C:\>where bash
 C:\Program Files\Git\bin\bash.exe
+```
+
+Tools available in the Git bash environment are also used for test and sample
+builds. For example, OpenSSL is used to generate test certificates, so it is
+also useful to have the `Git\mingw64\bin` folder pathed. This can be checked
+from the command prompt as well:
+
+```cmd
+C:\>where openssl
+C:\Program Files\Git\mingw64\bin\openssl.exe
 ```
 
 Clang
@@ -142,13 +155,14 @@ For example:
 ```
 C:\openenclave\build\x64-Debug
 ```
-
 ### Building on Windows using Developer Command Prompt
 
 1. Launch the [x64 Native Tools Command Prompt for VS 2017](
 https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 Normally this is accessible under the `Visual Studio 2017` folder in the Start Menu.
+
 2. At the x64 Native Tools command prompt, use cmake and ninja to build the debug version:
+
    ```cmd
    cd C:\openenclave
    mkdir build\x64-Debug
@@ -166,19 +180,134 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
    ninja
    ```
 
+### Building with Intel Data Center Attestation Primitives (DCAP) [Experimental]
+
+#### Installing additional dependencies for DCAP
+To use the Intel DCAP libraries for upcoming support for SGX attestation on Windows Server 2016,
+you will need to install the following dependencies:
+
+##### [Intel Platform Software for Windows (PSW) v2.3](http://registrationcenter-download.intel.com/akdlm/irc_nas/15369/Intel%20SGX%20PSW%20for%20Windows%20v2.3.100.49777.exe)
+
+After unpacking the self-extracting ZIP executable, install the *PSW_EXE_RS2_and_before* version for Windows Server 2016:
+```cmd
+C:\Intel SGX PSW for Windows v2.3.100.49777\PSW_EXE_RS2_and_before\Intel(R)_SGX_Windows_x64_PSW_2.3.100.49777.exe
+```
+##### [Intel Data Center Attestation Primitives (DCAP) Libraries v1.1](http://registrationcenter-download.intel.com/akdlm/irc_nas/15384/Intel%20SGX%20DCAP%20for%20Windows%20v1.1.100.49925.exe)
+After unpacking the self-extracting ZIP executable, you can refer to the *Intel SGX DCAP Windows SW Installation Guide.pdf*
+for more details on how to install the contents of the package.
+
+The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.1.100.49925`:
+
+1. Unzip the required drivers from the extracted subfolders:
+    - `LC_driver_WinServer2016\Signed_1152921504627955523.zip`
+    - `DCAP_INF\WinServer2016\Signed_1152921504627956768.zip`
+
+   The following instructions will assume that these have been unzipped into the `LC_driver` and `DCAP_INF` folders respectively.
+
+2. Allow the SGX Launch Configuration driver (LC_driver) to run:
+    - From an elevated command prompt:
+      ```cmd
+      reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters /v "SGX_Launch_Config_Optin" /t REG_DWORD /d 1
+      reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters /v "SGX_Launch_Config_Optin"
+      ```
+    - If the driver is already installed and running, the machine will need to be rebooted for the change to take effect.
+
+3. Install the drivers:
+    - `devcon.exe` from the [Windows Driver Kit for Windows 10](https://go.microsoft.com/fwlink/?linkid=2026156)
+      can be used to install the drivers from an elevated command prompt:
+      ```cmd
+      devcon.exe install LC_driver\drivers\269d7f2d-bda1-4ce8-8f0b-7d65f8a0170e\sgx_base_dev.inf root\SgxLCDevice
+      devcon.exe install DCAP_INF\drivers\27e5c4c3-2f1b-45b0-abb7-234a0df70a5b\sgx_dcap_dev.inf root\SgxLCDevice_DCAP
+      ```
+    - Note that `devcon.exe` is usually installed to `C:\Program Files (x86)\Windows Kits\10\tools\x64` and is *not* pathed by default.
+
+4. Install the DCAP nuget packages:
+    - The standalone `nuget.exe` [CLI tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) can be used to do this from the command prompt:
+      ```cmd
+      nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.1.100.49925\nupkg" -OutputDirectory C:\openenclave\prereqs\nuget
+      nuget.exe install DCAP_Components -ExclueVersion -Source "C:\Intel SGX DCAP for Windows v1.1.100.49925\nupkg" -OutputDirectory C\openenclave\prereqs\nuget
+      ```
+
+##### [Azure DCAP client for Windows](https://github.com/Microsoft/Azure-DCAP-Client/tree/master/src/Windows) [optional]
+
+Integration with the Azure DCAP client is not yet enabled on Windows in Open Enclave, and the Microsoft.Azure.DCAP.Client.1.0.0.nupkg
+is not yet available as a binary drop.
+
+For experimental purposes, it can be built from sources using [instructions](https://github.com/microsoft/Azure-DCAP-Client/blob/master/src/Windows/README.MD)
+on the GitHub repo:
+
+- The Azure DCAP Client has a build dependency on version 17134 of the Windows 10 SDK.
+   - This can be added via the Visual Studio Installer under Individual Components > Windows 10 SDK (10.0.17134.0).
+- Assuming the resulting .nupkg is put into the `C:\Azure-DCAP-Client` folder, it can be installed using:
+  ```cmd
+  nuget.exe install Microsoft.Azure.DCAP.Client -ExcludeVersion -Source "C:\Azure-DCAP-Client;nuget.org" -OutputDirectory C:\openenclave\prereqs\nuget
+  ```
+
+  Note the inclusion of `nuget.org` as one of the sources. This is necessary because Azure DCAP Client
+  has a dependency on curl and this allows `nuget.exe` to install the curl package dependency tree at the
+  same time. This includes:
+    - curl
+    - curl.redist
+    - libssh2
+    - libssh2.redist
+    - openssl
+    - openssl.redist
+    - zlib
+    - zlib.redist
+
+#### Building with DCAP libraries using Visual Studio 2017
+To build with the DCAP libraries in Visual Studio, you will need to add the
+`-DUSE_LIBSGX=1` to `cmakeCommandArgs` in the CMakeSettings.json file for each of the
+configurations you want to build with it.
+
+For example, to enable it for x64-Debug, do this in your json file:
+
+```json
+  ...
+  "configurations": [
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${workspaceRoot}\\build\\x64-Debug",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DBUILD_ENCLAVES=1 -DUSE_LIBSGX=1",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+```
+
+The CMake > Build All menu option will work as usual once this is configured.
+
+#### Building with DCAP libraries using Developer Command Prompt
+
+To build with the DCAP libraries in the x64 Native Tools Command Prompt for VS 2017,
+just add the `-DUSE_LIBSGX=1` option to the `cmake` call before starting the `ninja`
+build. For example, for the x64-Debug configuration:
+
+```cmd
+cd C:\openenclave
+mkdir build\x64-Debug
+cd build\x64-Debug
+cmake -G Ninja -DBUILD_ENCLAVES=1 -DUSE_LIBSGX=1 ../..
+ninja
+```
+
 Testing
 -------
 
+Note that the use of Simulation Mode via the `OE_SIMULATION` flag is _not_ supported on Windows.
+See [#1753](https://github.com/microsoft/openenclave/issues/1753) for details.
+
 ### Running ctests in Visual Studio 2017
 
-How to build the CMake project using Visual Studio 2017
---------------------------------------------------------
-1. Open CMake project in Visual Studio from menu File > Open > CMake...
+1. Open the CMake project in Visual Studio from menu File > Open > CMake...
    and select top level CMakeLists.txt file which is present in openenclave folder.
 2. Select menu CMake > Tests > Run Open Enclave SDK CTests.
 
-### Running ctests on the command line
-At the x64 Native Tools command prompt do: 
+### Running ctests on the Developer Command Prompt
+On the x64 Native Tools Command Prompt for VS 2017:
 
 ```cmd
 ctest
@@ -187,6 +316,4 @@ ctest
 Known Issues
 ------------
 * Samples have not yet been ported to Windows
-* Not all tests currently run on Windows. See See tests/CMakeLists for a list of supported tests.  
-* Simulation mode is disabled on Windows due to issue [#1753](https://github.com/microsoft/openenclave/issues/1753).
-  ```
+* Not all tests currently run on Windows. See tests/CMakeLists.txt for a list of supported tests.
