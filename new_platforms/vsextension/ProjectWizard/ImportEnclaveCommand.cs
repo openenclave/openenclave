@@ -123,6 +123,12 @@ namespace OpenEnclaveSDK
             return folder;
         }
 
+        /// <summary>
+        /// Create a new configuration by copying an existing one
+        /// </summary>
+        /// <param name="project">Project to add the configuration to</param>
+        /// <param name="newName">Name of new configuration</param>
+        /// <param name="baseName">Name of configuration to copy from</param>
         private void AddConfiguration(Project project, string newName, string baseName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -213,7 +219,13 @@ namespace OpenEnclaveSDK
             }
         }
 
-        private void AddProjectItem(string zipName, string language, bool isWindows, string fileName)
+        /// <summary>
+        /// Add a file to an existing project.
+        /// </summary>
+        /// <param name="templateName">Template name</param>
+        /// <param name="language">Programming language</param>
+        /// <param name="destinationFileName">Destination file name</param>
+        private void AddProjectItem(string templateName, string language, string destinationFileName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -223,9 +235,8 @@ namespace OpenEnclaveSDK
                 var solution = dte.Solution as EnvDTE80.Solution2;
                 Project project = GetActiveProject(dte);
 
-                // TODO: pick the correct source file based on isWindows true vs false
-                string filename = solution.GetProjectItemTemplate(zipName, language);
-                ProjectItem item = project.ProjectItems.AddFromTemplate(filename, fileName);
+                string templateFileName = solution.GetProjectItemTemplate(templateName, language);
+                ProjectItem item = project.ProjectItems.AddFromTemplate(templateFileName, destinationFileName);
                 var file = item.Object as VCFile;
                 foreach (var config in file.FileConfigurations)
                 {
@@ -244,14 +255,15 @@ namespace OpenEnclaveSDK
         /// See the constructor to see how the menu item is associated with this function using
         /// OleMenuCommandService service and MenuCommand class.
         /// </summary>
-        /// <param name="sender">Event sender.</param>
-        /// <param name="e">Event args.</param>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event args</param>
         private async void Execute(object sender, EventArgs e)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
             Project project = GetActiveProject(dte);
+            var vcProject = project.Object as VCProject;
 
             var filePath = string.Empty;
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -269,7 +281,7 @@ namespace OpenEnclaveSDK
                     filePath = openFileDialog.FileName;
                     WizardImplementation.EdlLocation = Path.GetDirectoryName(filePath);
 
-                    // Extract base name.
+                    // Extract base name of enclave.
                     string baseName = System.IO.Path.GetFileNameWithoutExtension(filePath);
 
                     // Add list of generated files to the project.
@@ -322,8 +334,7 @@ namespace OpenEnclaveSDK
                         project,
                         packageVersions);
 
-                    // See whether the enclave is a Linux project or a Windows project.
-                    bool isWindows = true; // XXX
+                    bool isWindows = (vcProject.keyword != "Linux");
 
                     // Add any configurations/platforms to the project.
                     AddConfiguration(project, "OPTEE-Simulation-Debug", "Debug");
@@ -337,9 +348,9 @@ namespace OpenEnclaveSDK
                         AddPlatform(project, "ARM", "x64");
                     }
 
-                    var vcProject = project.Object as VCProject;
-                    foreach (var config in vcProject.Configurations)
+                    foreach (VCConfiguration config in vcProject.Configurations)
                     {
+                        var config3 = config as VCConfiguration3;
                         string name = config.Name;
                         if (name.Contains("ARM"))
                         {
@@ -349,7 +360,6 @@ namespace OpenEnclaveSDK
 
                             if (isWindows) {
                                 // Enable compiling Win32 for ARM.
-                                var config3 = config as VCConfiguration3;
                                 config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARMSupport", "true");
                                 config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARM64Support", "true");
                             }
@@ -400,7 +410,7 @@ namespace OpenEnclaveSDK
                     }
 
                     // Add a host code item to the project.
-                    AddProjectItem("OEHostItem", "VC", isWindows, baseName + "_host.c");
+                    AddProjectItem("OEHostItem", "VC", baseName + "_host.c");
 
                     Cursor.Current = Cursors.Default;
                 }
