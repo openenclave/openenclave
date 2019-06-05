@@ -33,20 +33,19 @@ static TEE_Result _handle_call_enclave_function(
     uint32_t param_type_third;
     uint32_t param_type_fourth;
 
-    uint64_t table_id;
-    uint64_t function_id;
+    oe_call_enclave_function_args_t args, *u_args_ptr;
 
     oe_ecall_func_t func;
     ecall_table_t ecall_table;
 
-    const void* u_input_buffer;
-    size_t u_input_buffer_size;
+    const void* u_input_buffer = NULL;
+    size_t u_input_buffer_size = 0;
 
-    void* u_output_buffer;
-    size_t u_output_buffer_size;
+    void* u_output_buffer = NULL;
+    size_t u_output_buffer_size = 0;
 
-    void* input_buffer;
-    void* output_buffer;
+    void* input_buffer = NULL;
+    void* output_buffer = NULL;
 
     size_t output_bytes_written = 0;
 
@@ -57,96 +56,99 @@ static TEE_Result _handle_call_enclave_function(
     param_type_fourth = TEE_PARAM_TYPE_GET(param_types, 3);
 
     /* Assert the parameter types are what we expect */
-    if ((param_type_first != TEE_PARAM_TYPE_VALUE_INPUT) ||
-        (param_type_second != TEE_PARAM_TYPE_VALUE_INPUT) ||
-        ((param_type_third != TEE_PARAM_TYPE_NONE) &&
-         (param_type_third != TEE_PARAM_TYPE_MEMREF_INPUT)) ||
-        ((param_type_fourth != TEE_PARAM_TYPE_NONE) &&
-         (param_type_fourth != TEE_PARAM_TYPE_MEMREF_OUTPUT)))
-    {
+    if (param_type_first != TEE_PARAM_TYPE_NONE &&
+        param_type_first != TEE_PARAM_TYPE_VALUE_INPUT)
         return TEE_ERROR_BAD_PARAMETERS;
-    }
 
-    /* Reconstruct the table_id parameter */
-    table_id = HILO_U64(params[0].value.a, params[0].value.b);
+    if (param_type_second != TEE_PARAM_TYPE_MEMREF_INOUT)
+        return TEE_ERROR_BAD_PARAMETERS;
 
-    /* Reconstruct the function_id parameter */
-    function_id = HILO_U64(params[1].value.a, params[1].value.b);
+    if (param_type_third != TEE_PARAM_TYPE_NONE &&
+        param_type_third != TEE_PARAM_TYPE_MEMREF_INPUT)
+        return TEE_ERROR_BAD_PARAMETERS;
+
+    if (param_type_fourth != TEE_PARAM_TYPE_NONE &&
+        param_type_fourth != TEE_PARAM_TYPE_MEMREF_OUTPUT)
+        return TEE_ERROR_BAD_PARAMETERS;
+
+    /* On Windows, the OP-TEE miniport driver requires a key to associate an
+     * OCALL with the ECALL whence it originates, so see if we have one and
+     * save it if we do to use it when sending an OCALL out */
+    if (param_type_first == TEE_PARAM_TYPE_VALUE_INPUT)
+        __oe_windows_ecall_key = params[0].value.a;
+
+    /* Copy the ECALL arguments structure into TA memory */
+    if (params[1].memref.size != sizeof(oe_call_enclave_function_args_t))
+        return TEE_ERROR_BAD_PARAMETERS;
+
+    u_args_ptr = (oe_call_enclave_function_args_t*)params[1].memref.buffer;
+    args = *u_args_ptr;
 
     /* Extract the input parameters buffer, if present */
-    if (param_type_third == TEE_PARAM_TYPE_NONE)
-    {
-        u_input_buffer = NULL;
-        u_input_buffer_size = 0;
-    }
-    else if (param_type_third == TEE_PARAM_TYPE_MEMREF_INPUT)
+    if (param_type_third == TEE_PARAM_TYPE_MEMREF_INPUT)
     {
         u_input_buffer = params[2].memref.buffer;
         u_input_buffer_size = params[2].memref.size;
     }
-    else
-    {
-        oe_assert(false);
-    }
 
     /* Extract the output parameters buffer, if present */
-    if (param_type_fourth == TEE_PARAM_TYPE_NONE)
-    {
-        u_output_buffer = NULL;
-        u_output_buffer_size = 0;
-    }
-    else if (param_type_fourth == TEE_PARAM_TYPE_MEMREF_OUTPUT)
+    if (param_type_fourth == TEE_PARAM_TYPE_MEMREF_OUTPUT)
     {
         u_output_buffer = params[3].memref.buffer;
         u_output_buffer_size = params[3].memref.size;
     }
-    else
-    {
-        oe_assert(false);
-    }
 
-    /* Resolve which ecall table to use. */
-    if (table_id == OE_UINT64_MAX)
+    /* Resolve which ECALL table to use. */
+    if (args.table_id == OE_UINT64_MAX)
     {
         ecall_table.ecalls = __oe_ecalls_table;
         ecall_table.num_ecalls = __oe_ecalls_table_size;
     }
     else
     {
-        if (table_id >= OE_MAX_ECALL_TABLES)
+        if (args.table_id >= OE_MAX_ECALL_TABLES)
             return TEE_ERROR_ITEM_NOT_FOUND;
 
-        ecall_table.ecalls = _ecall_tables[table_id].ecalls;
-        ecall_table.num_ecalls = _ecall_tables[table_id].num_ecalls;
+        ecall_table.ecalls = _ecall_tables[args.table_id].ecalls;
+        ecall_table.num_ecalls = _ecall_tables[args.table_id].num_ecalls;
 
         if (!ecall_table.ecalls)
             return TEE_ERROR_ITEM_NOT_FOUND;
     }
 
     /* Fetch matching function */
-    if (function_id >= ecall_table.num_ecalls)
+    if (args.function_id >= ecall_table.num_ecalls)
         return TEE_ERROR_ITEM_NOT_FOUND;
 
-    func = ecall_table.ecalls[function_id];
+    func = ecall_table.ecalls[args.function_id];
 
     if (func == NULL)
         return TEE_ERROR_ITEM_NOT_FOUND;
 
-    /* Copy the input and output buffers into the TA */
+    /* Allocate an input buffer in the TA for copy */
+    if (u_input_buffer)
+    {
     input_buffer = oe_malloc(u_input_buffer_size);
     if (!input_buffer)
         return TEE_ERROR_OUT_OF_MEMORY;
+    }
 
+    /* Allocate an output buffer in the TA for copy */
+    if (u_output_buffer)
+    {
     output_buffer = oe_malloc(u_output_buffer_size);
     if (!output_buffer)
     {
-        oe_free(input_buffer);
-        return TEE_ERROR_OUT_OF_MEMORY;
+            result = TEE_ERROR_OUT_OF_MEMORY;
+            goto done;
+        }
     }
 
+    /* Copy the input buffer into the TA */
     if (u_input_buffer)
         memcpy(input_buffer, u_input_buffer, u_input_buffer_size);
 
+    /* Copy the output buffer into the TA */
     if (u_output_buffer)
         memcpy(output_buffer, u_output_buffer, u_output_buffer_size);
 
@@ -163,8 +165,17 @@ static TEE_Result _handle_call_enclave_function(
 
     /* Copy outputs to host memory, if necessary */
     if (result == OE_OK && u_output_buffer)
+    {
+        if (u_output_buffer)
+        {
         memcpy(u_output_buffer, output_buffer, output_bytes_written);
+            u_args_ptr->output_bytes_written = output_bytes_written;
+        }
 
+        u_args_ptr->result = OE_OK;
+    }
+
+done:
     /* Free local copies */
     if (input_buffer)
         oe_free(input_buffer);
@@ -172,10 +183,9 @@ static TEE_Result _handle_call_enclave_function(
     if (output_buffer)
         oe_free(output_buffer);
 
-    /* Calling into the TA succeeded, but the ECALL itself (i.e. the enclave
-     * function pointed to by 'func') may well have complained about something.
-     */
-    return TEE_SUCCESS;
+    return result == OE_OK ? TEE_SUCCESS : TEE_ERROR_GENERIC;
+}
+
 }
 
 TEE_Result TA_CreateEntryPoint(void)

@@ -9,29 +9,23 @@
 
 #include "enclave.h"
 
-#define HI_U32(x) ((uint32_t)(((x) >> 32) & 0xFFFFFFFF))
-#define LO_U32(x) ((uint32_t)((x)&0xFFFFFFFF))
-
 #define PARAM_TYPES_IN_OUT      \
     (TEEC_PARAM_TYPES(          \
-        TEEC_VALUE_INPUT,       \
-        TEEC_VALUE_INPUT,       \
+        TEEC_NONE,              \
+        TEEC_MEMREF_TEMP_INOUT, \
         TEEC_MEMREF_TEMP_INPUT, \
         TEEC_MEMREF_TEMP_OUTPUT))
-#define PARAM_TYPES_IN_NO_OUT   \
-    (TEEC_PARAM_TYPES(          \
-        TEEC_VALUE_INPUT,       \
-        TEEC_VALUE_INPUT,       \
-        TEEC_MEMREF_TEMP_INPUT, \
-        TEEC_NONE))
-#define PARAM_TYPES_NO_IN_OUT \
+#define PARAM_TYPES_IN_NO_OUT \
     (TEEC_PARAM_TYPES(        \
-        TEEC_VALUE_INPUT,     \
-        TEEC_VALUE_INPUT,     \
-        TEEC_NONE,            \
+        TEEC_NONE, TEEC_MEMREF_TEMP_INOUT, TEEC_MEMREF_TEMP_INPUT, TEEC_NONE))
+#define PARAM_TYPES_NO_IN_OUT   \
+    (TEEC_PARAM_TYPES(          \
+        TEEC_NONE,              \
+        TEEC_MEMREF_TEMP_INOUT, \
+        TEEC_NONE,              \
         TEEC_MEMREF_TEMP_OUTPUT))
 #define PARAM_TYPES_NO_IN_NO_OUT \
-    (TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT, TEEC_NONE, TEEC_NONE))
+    (TEEC_PARAM_TYPES(TEEC_NONE, TEEC_MEMREF_TEMP_INOUT, TEEC_NONE, TEEC_NONE))
 
 /* This value is defined in the TEE Client API headers. At the time of this
  * writing, the value is four (4). If the header were to ever change to a lower
@@ -200,18 +194,14 @@ done:
     return result;
 }
 
-static oe_result_t _oe_invoke_command(
+oe_result_t oe_ecall(
     oe_enclave_t* enclave,
-    uint32_t oe_function_id,
-    uint64_t table_id,
-    uint64_t function_id,
-    const void* input_buffer,
-    size_t input_buffer_size,
-    void* output_buffer,
-    size_t output_buffer_size,
-    size_t* output_bytes_written)
+    uint16_t func,
+    uint64_t arg,
+    uint64_t* arg_out_ptr)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_enclave_function_args_t* args;
 
     TEEC_Result res;
     TEEC_Operation op;
@@ -221,76 +211,57 @@ static oe_result_t _oe_invoke_command(
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Fill in marshalling structure */
-    op.params[0].value.a = HI_U32(table_id);
-    op.params[0].value.b = LO_U32(table_id);
+    /* Retrieve the ECALL arguments structure */
+    args = (oe_call_enclave_function_args_t*)arg;
 
-    op.params[1].value.a = HI_U32(function_id);
-    op.params[1].value.b = LO_U32(function_id);
+    /* Host OS-specific data (only used on Windows) */
+    memset(&op.params[0], 0, sizeof(op.params[0]));
 
-    if (input_buffer)
+    /* Open Enclave-specific data */
+    op.params[1].tmpref.buffer = &args;
+    op.params[1].tmpref.size = sizeof(args);
+
+    /* Input buffer */
+    if (args->input_buffer)
     {
-        op.params[2].tmpref.buffer = (void*)input_buffer;
-        op.params[2].tmpref.size = input_buffer_size;
+        op.params[2].tmpref.buffer = (void*)args->input_buffer;
+        op.params[2].tmpref.size = args->input_buffer_size;
     }
 
-    if (output_buffer)
+    if (args->output_buffer)
     {
-        op.params[3].tmpref.buffer = (void*)output_buffer;
-        op.params[3].tmpref.size = output_buffer_size;
+        op.params[3].tmpref.buffer = (void*)args->output_buffer;
+        op.params[3].tmpref.size = args->output_buffer_size;
     }
 
     /* Fill in parameter types */
-    if (input_buffer && output_buffer)
+    if (args->input_buffer && args->output_buffer)
         op.paramTypes = PARAM_TYPES_IN_OUT;
-    else if (input_buffer)
+    else if (args->input_buffer)
         op.paramTypes = PARAM_TYPES_IN_NO_OUT;
-    else if (output_buffer)
+    else if (args->output_buffer)
         op.paramTypes = PARAM_TYPES_NO_IN_OUT;
     else
         op.paramTypes = PARAM_TYPES_NO_IN_NO_OUT;
 
     /* Perform the ECALL */
-    res =
-        TEEC_InvokeCommand(&enclave->session, oe_function_id, &op, &err_origin);
+    res = TEEC_InvokeCommand(&enclave->session, func, &op, &err_origin);
 
-    /* Check the result */
+    /* Check the result. */
     if (res != TEEC_SUCCESS)
         OE_RAISE_MSG(
-            OE_PLATFORM_ERROR,
+            OE_UNEXPECTED,
             "TEEC_InvokeCommand failed with 0x%x and error origin 0x%x",
             res,
             err_origin);
 
-    /* Done */
-    if (output_bytes_written)
-        *output_bytes_written = output_buffer_size;
+    if (arg_out_ptr)
+        *arg_out_ptr = *(oe_result_t*)args->output_buffer;
 
     result = OE_OK;
 
 done:
     return result;
-}
-
-oe_result_t oe_call_enclave_function(
-    oe_enclave_t* enclave,
-    uint32_t function_id,
-    const void* input_buffer,
-    size_t input_buffer_size,
-    void* output_buffer,
-    size_t output_buffer_size,
-    size_t* output_bytes_written)
-{
-    return _oe_invoke_command(
-        enclave,
-        OE_ECALL_CALL_ENCLAVE_FUNCTION,
-        OE_UINT64_MAX,
-        function_id,
-        input_buffer,
-        input_buffer_size,
-        output_buffer,
-        output_buffer_size,
-        output_bytes_written);
 }
 
 oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
