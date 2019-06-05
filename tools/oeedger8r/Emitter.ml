@@ -290,12 +290,6 @@ let emit_composite_type =
   | UnionDef u -> emit_union u
   | EnumDef e -> emit_enum e
 
-(** This transforms the [Struct] types embedded in a [composite_type
-   list] into an association list of the struct name to its parameter
-   list, which is much easier to deal with. *)
-let get_structs =
-  filter_map (function StructDef s -> Some (s.sname, s.smlist) | _ -> None)
-
 (** Generate a cast expression for a pointer argument. Pointer
     arguments need to be cast to their root type, since the marshalling
     struct has the root pointer. For example:
@@ -451,58 +445,66 @@ let warn_size_and_count_params (fd : func_decl) =
 
 (** Generate the Enclave code. *)
 let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
-  (* We need to check Ptrs for Foreign or Struct types, then check
-    those against the user's structs, and then check if any members
-    should be deep copied. *)
-  let get_deepcopy a structs ep =
-    let get_struct = function
-      | Ptr a -> (
-        match a with
-        | Foreign n | Struct n ->
-            (* TODO: This would simply be [List.assoc_opt] if we had at
-             least 4.05. *)
-            if List.mem_assoc n structs then Some (List.assoc n structs)
-            else None
-        | _ -> None )
+  (* Given [name], return the corresponding [StructDef], or [None]. *)
+  let get_struct_by_name name =
+    (* [ec.comp_defs] is a list of all composite types, but we're only
+       interested in the structs, so we filter out the rest and unwrap
+       them from [composite_type]. *)
+    let structs =
+      filter_map (function StructDef s -> Some s | _ -> None) ec.comp_defs
+    in
+    (* TODO: [List.find_opt] is better, but requires 4.05. *)
+    if List.exists (fun s -> s.sname = name) structs then
+      Some (List.find (fun s -> s.sname = name) structs)
+    else None
+  in
+  (* We need to check [Ptr]s for [Foreign] or [Struct] types, then
+     check those against the user's [Struct]s, and then check if any
+     members should be deep copied. What we return is the list of
+     members of the [Struct] which should be deep-copied, otherwise we
+     return an empty list. *)
+  let get_deepcopy_members (a : atype) =
+    let should_deepcopy_a = function
+      | Ptr (Struct n) | Ptr (Foreign n) -> get_struct_by_name n
       | _ -> None
     in
-    let s = get_struct a in
+    (* This tests if the member has a non-empty size attribute,
+       implying that deep-copy is expected. *)
     let should_deepcopy_member (ptype, _) =
       match ptype with
       | PTPtr (_, attr) -> attr.pa_size <> empty_ptr_size
       | PTVal _ -> false
     in
+    (* Only enabled with --experimental! *)
     if ep.experimental then
-      match s with
-      | Some s -> List.filter should_deepcopy_member s
+      match should_deepcopy_a a with
+      | Some s -> List.filter should_deepcopy_member s.smlist
       | None -> []
     else []
   in
-  let get_function_id (f : func_decl) (e : string) =
-    sprintf "%s_fcn_id_%s" e f.fname
+  let get_function_id (f : func_decl) =
+    sprintf "%s_fcn_id_%s" ec.enclave_name f.fname
   in
   (* Emit IDs in enum for trusted functions. *)
-  let emit_trusted_function_ids (tfs : trusted_func list) (name : string) =
+  let emit_trusted_function_ids (tfs : trusted_func list) =
     [ "enum"
     ; "{"
     ; String.concat "\n"
         (List.mapi
-           (fun i f ->
-             sprintf "    %s = %d," (get_function_id f.tf_fdecl name) i )
+           (fun i f -> sprintf "    %s = %d," (get_function_id f.tf_fdecl) i)
            tfs)
-    ; sprintf "    %s_fcn_id_trusted_call_id_max = OE_ENUM_MAX" name
+    ; sprintf "    %s_fcn_id_trusted_call_id_max = OE_ENUM_MAX" ec.enclave_name
     ; "};" ]
   in
   (* Emit IDs in enum for untrusted functions. *)
-  let emit_untrusted_function_ids (ufs : untrusted_func list) (name : string) =
+  let emit_untrusted_function_ids (ufs : untrusted_func list) =
     [ "enum"
     ; "{"
     ; String.concat "\n"
         (List.mapi
-           (fun i f ->
-             sprintf "    %s = %d," (get_function_id f.uf_fdecl name) i )
+           (fun i f -> sprintf "    %s = %d," (get_function_id f.uf_fdecl) i)
            ufs)
-    ; sprintf "    %s_fcn_id_untrusted_call_max = OE_ENUM_MAX" name
+    ; sprintf "    %s_fcn_id_untrusted_call_max = OE_ENUM_MAX" ec.enclave_name
     ; "};" ]
   in
   (* Generate [args.h] which contains [struct]s for ecalls and ocalls *)
@@ -590,12 +592,10 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       ; "/**** OCALL marshalling structs. ****/"
       ; String.concat "\n" (oe_gen_ocall_marshal_structs ec.ufunc_decls)
       ; "/**** Trusted function IDs ****/"
-      ; String.concat "\n"
-          (emit_trusted_function_ids ec.tfunc_decls ec.enclave_name)
+      ; String.concat "\n" (emit_trusted_function_ids ec.tfunc_decls)
       ; ""
       ; "/**** Untrusted function IDs. ****/"
-      ; String.concat "\n"
-          (emit_untrusted_function_ids ec.ufunc_decls ec.enclave_name)
+      ; String.concat "\n" (emit_untrusted_function_ids ec.ufunc_decls)
       ; ""
       ; sprintf "#endif // %s" guard_macro
       ; "" ]
@@ -606,8 +606,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     close_out os
   in
   (* Prepare [input_buffer]. *)
-  let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) structs ep
-      =
+  let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
     let oe_compute_buffer_size (buffer : string)
         (predicate : parameter_type * declarator -> bool) (plist : pdecl list)
         =
@@ -621,14 +620,14 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
            in
            flatten_map
              (gen_add_size (arg ^ gen_c_deref param_count) param_count)
-             (get_deepcopy (get_param_atype ptype) structs ep)) ]
+             (get_deepcopy_members (get_param_atype ptype))) ]
         |> List.flatten
       in
       let params =
         flatten_map (gen_add_size "" "1") (List.filter predicate plist)
       in
       (* Note that the indentation for the first line is applied by the
-     parent function. *)
+         parent function. *)
       if params <> [] then String.concat "\n    " params
       else "/* There were no corresponding parameters. */"
     in
@@ -655,7 +654,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
            in
            flatten_map
              (gen_serialize (arg ^ gen_c_deref param_count) param_count)
-             (get_deepcopy (get_param_atype ptype) structs ep)) ]
+             (get_deepcopy_members (get_param_atype ptype))) ]
         |> List.flatten
       in
       let params =
@@ -663,7 +662,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
           (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
       in
       (* Note that the indentation for the first line is applied by the
-     parent function. *)
+         parent function. *)
       if params <> [] then String.concat "\n    " params
       else "/* There were no in nor in-out parameters. */"
     in
@@ -726,7 +725,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
                 size ]
           else if is_inout_ptr ptype then
             (* Check that strings are null terminated. Note output
-              buffer has already been copied into the enclave. *)
+                buffer has already been copied into the enclave. *)
             [ ( if is_str_ptr ptype || is_wstr_ptr ptype then
                 sprintf
                   "OE_CHECK_NULL_TERMINATOR%s(_output_buffer + \
@@ -740,7 +739,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         fd.plist ]
     |> List.flatten
   in
-  let rec oe_gen_set_pointers prefix count structs ep setter (ptype, decl) =
+  let rec oe_gen_set_pointers prefix count setter (ptype, decl) =
     let size = oe_get_param_size (ptype, decl, "pargs_in->" ^ prefix) in
     let tystr = get_cast_to_mem_expr (ptype, decl) false in
     let arg = prefix ^ decl.identifier in
@@ -752,14 +751,14 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
        flatten_map
          (oe_gen_set_pointers
             (arg ^ gen_c_deref param_count)
-            param_count structs ep setter)
-         (get_deepcopy (get_param_atype ptype) structs ep)) ]
+            param_count setter)
+         (get_deepcopy_members (get_param_atype ptype))) ]
     |> List.flatten
   in
-  let oe_gen_in_and_inout_setters (plist : pdecl list) structs ep =
+  let oe_gen_in_and_inout_setters (plist : pdecl list) =
     let params =
       flatten_map
-        (oe_gen_set_pointers "" "1" structs ep (fun p ->
+        (oe_gen_set_pointers "" "1" (fun p ->
              if is_inout_ptr p then "SET_IN_OUT" else "SET_IN" ))
         (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
     in
@@ -769,10 +768,10 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         ; ( if params <> [] then String.concat "\n    " params
           else "/* There were no in nor in-out parameters. */" ) ]
   in
-  let oe_gen_out_and_inout_setters (plist : pdecl list) structs ep =
+  let oe_gen_out_and_inout_setters (plist : pdecl list) =
     let params =
       flatten_map
-        (oe_gen_set_pointers "" "1" structs ep (fun p ->
+        (oe_gen_set_pointers "" "1" (fun p ->
              if is_inout_ptr p then "COPY_AND_SET_IN_OUT" else "SET_OUT" ))
         (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
     in
@@ -784,7 +783,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
           else "/* There were no out nor in-out parameters. */" ) ]
   in
   (* Generate ecall function. *)
-  let oe_gen_ecall_function structs ep (tf : trusted_func) =
+  let oe_gen_ecall_function (tf : trusted_func) =
     let fd = tf.tf_fdecl in
     [ sprintf "void ecall_%s(" fd.fname
     ; "    uint8_t* input_buffer,"
@@ -818,11 +817,11 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "        goto done;"
     ; ""
     ; (* Prepare in and in-out parameters *)
-      oe_gen_in_and_inout_setters fd.plist structs ep
+      oe_gen_in_and_inout_setters fd.plist
     ; ""
     ; (* Prepare out and in-out parameters. The in-out parameter is copied
-     to output buffer. *)
-      oe_gen_out_and_inout_setters fd.plist structs ep
+           to output buffer. *)
+      oe_gen_out_and_inout_setters fd.plist
     ; ""
     ; "    /* Check that in/in-out strings are null terminated. */"
       (* TODO: Fix for deep copy. *)
@@ -859,10 +858,10 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "}"
     ; "" ]
   in
-  let gen_fill_marshal_struct (fd : func_decl) structs ep =
+  let gen_fill_marshal_struct (fd : func_decl) =
     (* Generate assignment argument to corresponding field in args. This
-     is necessary for all arguments, not just copy-as-value, because
-     they are used directly by later marshalling code. *)
+       is necessary for all arguments, not just copy-as-value, because
+       they are used directly by later marshalling code. *)
     let rec gen_assignment prefix count (ptype, decl) =
       let id = decl.identifier in
       let arg = prefix ^ id in
@@ -881,14 +880,13 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
          in
          flatten_map
            (gen_assignment (arg ^ gen_c_deref param_count) param_count)
-           (get_deepcopy (get_param_atype ptype) structs ep)) ]
+           (get_deepcopy_members (get_param_atype ptype))) ]
       |> List.flatten
     in
     flatten_map (gen_assignment "" "1") fd.plist
   in
   (* Generate host ECALL wrapper function. *)
-  let oe_gen_host_ecall_wrapper (name : string) structs ep (tf : trusted_func)
-      =
+  let oe_gen_host_ecall_wrapper (tf : trusted_func) =
     let fd = tf.tf_fdecl in
     [ oe_gen_wrapper_prototype fd true
     ; "{"
@@ -911,17 +909,16 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; ""
     ; "    /* Fill marshalling struct. */"
     ; "    memset(&_args, 0, sizeof(_args));"
-    ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd structs ep)
+    ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd)
     ; ""
-    ; "    "
-      ^ String.concat "\n    " (oe_prepare_input_buffer fd "malloc" structs ep)
+    ; "    " ^ String.concat "\n    " (oe_prepare_input_buffer fd "malloc")
     ; ""
     ; "    /* Call enclave function. */"
     ; "    if ((_result = oe_call_enclave_function("
     ; "             "
       ^ String.concat ",\n             "
           [ "enclave"
-          ; get_function_id fd name
+          ; get_function_id fd
           ; "_input_buffer"
           ; "_input_buffer_size"
           ; "_output_buffer"
@@ -941,8 +938,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "" ]
   in
   (* Generate enclave OCALL wrapper function. *)
-  let oe_gen_enclave_ocall_wrapper (name : string) structs ep
-      (uf : untrusted_func) =
+  let oe_gen_enclave_ocall_wrapper (uf : untrusted_func) =
     let fd = uf.uf_fdecl in
     [ oe_gen_wrapper_prototype fd false
     ; "{"
@@ -971,17 +967,17 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; ""
     ; "    /* Fill marshalling struct. */"
     ; "    memset(&_args, 0, sizeof(_args));"
-    ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd structs ep)
+    ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd)
     ; ""
     ; "    "
       ^ String.concat "\n    "
-          (oe_prepare_input_buffer fd "oe_allocate_ocall_buffer" structs ep)
+          (oe_prepare_input_buffer fd "oe_allocate_ocall_buffer")
     ; ""
     ; "    /* Call host function. */"
     ; "    if ((_result = oe_call_host_function("
     ; "             "
       ^ String.concat ",\n             "
-          [ get_function_id fd name
+          [ get_function_id fd
           ; "_input_buffer"
           ; "_input_buffer_size"
           ; "_output_buffer"
@@ -1005,7 +1001,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "" ]
   in
   (* Generate ocall function. *)
-  let oe_gen_ocall_function structs ep (uf : untrusted_func) =
+  let oe_gen_ocall_function (uf : untrusted_func) =
     let fd = uf.uf_fdecl in
     [ sprintf "void ocall_%s(" fd.fname
     ; "    uint8_t* input_buffer,"
@@ -1037,10 +1033,10 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    }"
     ; ""
     ; (* Prepare in and in-out parameters *)
-      oe_gen_in_and_inout_setters fd.plist structs ep
+      oe_gen_in_and_inout_setters fd.plist
     ; ""
     ; (* Prepare out and in-out parameters. The in-out parameter is copied to output buffer. *)
-      oe_gen_out_and_inout_setters fd.plist structs ep
+      oe_gen_out_and_inout_setters fd.plist
     ; ""
     ; (* Call the host function *)
       "    " ^ String.concat "\n    " (oe_gen_call_user_function fd)
@@ -1100,7 +1096,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
             f.uf_fdecl.fname )
       ec.ufunc_decls ;
     (* Map warning functions over trusted and untrusted function
-     declarations *)
+       declarations *)
     let ufuncs = List.map (fun f -> f.uf_fdecl) ec.ufunc_decls in
     let tfuncs = List.map (fun f -> f.tf_fdecl) ec.tfunc_decls in
     let funcs = List.append ufuncs tfuncs in
@@ -1112,7 +1108,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       funcs
   in
   (* Includes are emitted in [args.h]. Imported functions have already
-    been brought into function lists. *)
+     been brought into function lists. *)
   let gen_t_h (ec : enclave_content) (ep : edger8r_params) =
     let oe_gen_tfunc_prototypes (tfs : trusted_func list) =
       if tfs <> [] then
@@ -1156,9 +1152,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
     let tfs = ec.tfunc_decls in
     let ufs = ec.ufunc_decls in
-    let structs = get_structs ec.comp_defs in
     let oe_gen_ecall_functions =
-      if tfs <> [] then flatten_map (oe_gen_ecall_function structs ep) tfs
+      if tfs <> [] then flatten_map oe_gen_ecall_function tfs
       else ["/* There were no ecalls. */"]
     in
     let oe_gen_ecall_table =
@@ -1177,10 +1172,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       else ["/* There were no ecalls. */"]
     in
     let oe_gen_enclave_ocall_wrappers =
-      if ufs <> [] then
-        flatten_map
-          (oe_gen_enclave_ocall_wrapper ec.enclave_name structs ep)
-          ufs
+      if ufs <> [] then flatten_map oe_gen_enclave_ocall_wrapper ufs
       else ["/* There were no ocalls. */"]
     in
     let content =
@@ -1263,14 +1255,12 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
     let tfs = ec.tfunc_decls in
     let ufs = ec.ufunc_decls in
-    let structs = get_structs ec.comp_defs in
     let oe_gen_host_ecall_wrappers =
-      if tfs <> [] then
-        flatten_map (oe_gen_host_ecall_wrapper ec.enclave_name structs ep) tfs
+      if tfs <> [] then flatten_map oe_gen_host_ecall_wrapper tfs
       else ["/* There were no ecalls. */"]
     in
     let oe_gen_ocall_functions =
-      if ufs <> [] then flatten_map (oe_gen_ocall_function structs ep) ufs
+      if ufs <> [] then flatten_map oe_gen_ocall_function ufs
       else ["/* There were no ocalls. */"]
     in
     let oe_gen_ocall_table =
