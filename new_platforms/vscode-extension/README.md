@@ -39,14 +39,14 @@ the subsystem.
 
 The underlying system used to build is CMake.  
 
-There will be configure and build tasks for each target (ARMv7-A and AArch64/ARMv8-A).  The 
+There will be configure and build tasks for each target (ARMv7-A, AArch64/ARMv8-A, and LS1012).  The 
 configure task will invoke CMake to create the required build files.  This is only required to be run once.  
 The build task will do the actual compiling and linking.
 
 1. **F1** or **CTRL-Shift-P**
 1. Select `Tasks: Run Task`
-1. Select `Configure for QEMU (ARMv7-A | AArch64/ARMv8-A)`
-1. Select `Build for QEMU (ARMv7-A | AArch64/ARMv8-A)`
+1. Select `Configure for QEMU (ARMv7-A | AArch64/ARMv8-A | LS1012)`
+1. Select `Build for QEMU (ARMv7-A | AArch64/ARMv8-A | LS1012)`
 
 ### Debug your Open Enclave solution.
 
@@ -55,8 +55,8 @@ Debugging your standalone project's enclave is easy.
 1. Set breakpoints in the files you wish to debug.  Breakpoints in the enclave may only be added before
 the emulator (QEMU) starts or when the debugger is already broken inside the enclave.
 1. Choose the architecture you are interested in debugging by navigating to the Visual 
-Studio `Debug` view (**CTRL-Shift-D**) and selecting either `(gdb) Launch QEMU (ARMv7-A)` or 
-`(gdb) Launch QEMU (AArch64/ARMv8-A)` from the debug configuration dropdown.
+Studio `Debug` view (**CTRL-Shift-D**) and selecting either `(gdb) Launch QEMU (ARMv7-A)`, 
+`(gdb) Launch QEMU (AArch64/ARMv8-A)`, or `(gdb) Launch QEMU (LS1012)` from the debug configuration dropdown.
 1. You can simply hit `F5`.  This will run cmake configuration, run the build, start QEMU, and load 
 the host and enclave symbols into an instance of the debugger.
 1. Open the **Terminal** view
@@ -74,23 +74,23 @@ dockerfiles.  The container can be built by:
 
 1. Right click on `modules/<solution-name>/module.json`
 1. Select `Build IoT Edge Module Image`
-1. Select desired architecture and configuration from picker
+1. Select `ls1012`, `arm32v7-qemu` or `aarch64-qemu` from Platform picker
 
 ### Deploy your Open Enclave solution.
 
 Deploying your Azure IoT Edge container project is fairly simple:
 
-1. Select the desired platform:
-    1. **F1** or **CTRL-Shift-P**
-    1. Select `Azure IoT Edge: Set Default Target Platform for Edge Solution`
-    1. Choose from `arm32v7` or `aarch64`
 1. Right click on `modules/<solution-name>/module.json`
 1. Select `Build and Push IoT Edge Module Image`
-1. Select desired architecture and configuration from picker
+1. Select `ls1012`, `arm32v7-qemu` or `aarch64-qemu` from Platform picker
 
 Azure IoT Edge deployment template files have been provided.  To create
 a new deployment configuration based on the current settings in `module.json`:
 
+1. Select the desired platform:
+    1. **F1** or **CTRL-Shift-P**
+    1. Select `Azure IoT Edge: Set Default Target Platform for Edge Solution`
+    1. Choose from `ls1012`, `arm32v7-qemu` or `aarch64-qemu`
 1. Right click on `deployment.template.json` (or `deployment.debug.template.json`)
 1. Select `Generate IoT Edge Deployment Manifest`.  This will generate or replace the apppropriate deployment json file in the `config` folder.
 
