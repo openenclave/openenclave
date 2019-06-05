@@ -130,6 +130,7 @@ add_library(oehost STATIC
   ../common/kdf.c
   ../common/safecrt.c
   asym_keys.c
+  calls.c
   dupenv.c
   error.c
   files.c
