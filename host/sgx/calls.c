@@ -396,15 +396,15 @@ static const char* oe_ocall_str(oe_func_t ocall)
 
 static const char* oe_ecall_str(oe_func_t ecall)
 {
-    static const char* func_names[] = {"OE_ECALL_DESTRUCTOR",
-                                       "OE_ECALL_INIT_ENCLAVE",
-                                       "OE_ECALL_CALL_ENCLAVE_FUNCTION",
-                                       "OE_ECALL_VERIFY_REPORT",
-                                       "OE_ECALL_GET_SGX_REPORT",
-                                       "OE_ECALL_VIRTUAL_EXCEPTION_HANDLER",
-                                       "OE_ECALL_LOG_INIT",
-                                       "OE_ECALL_GET_PUBLIC_KEY_BY_POLICY",
-                                       "OE_ECALL_GET_PUBLIC_KEY"};
+    static const char* func_names[] = {"DESTRUCTOR",
+                                       "INIT_ENCLAVE",
+                                       "CALL_ENCLAVE_FUNCTION",
+                                       "VERIFY_REPORT",
+                                       "GET_SGX_REPORT",
+                                       "VIRTUAL_EXCEPTION_HANDLER",
+                                       "LOG_INIT",
+                                       "GET_PUBLIC_KEY_BY_POLICY",
+                                       "GET_PUBLIC_KEY"};
 
     OE_STATIC_ASSERT(OE_ECALL_BASE + OE_COUNTOF(func_names) == OE_ECALL_MAX);
 
@@ -765,9 +765,10 @@ oe_result_t oe_ecall(
 
     oe_log(
         OE_LOG_LEVEL_VERBOSE,
-        "%s 0x%x OE_ECALL: %s\n",
+        "%s 0x%x %s: %s\n",
         enclave->path,
         enclave->addr,
+        func == OE_ECALL_CALL_ENCLAVE_FUNCTION ? "EDL_ECALL" : "OE_ECALL",
         oe_ecall_str(func));
 
     /* Perform ECALL or ORET */
