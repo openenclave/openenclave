@@ -1,10 +1,11 @@
 {
     "azure-iot-edge.defaultPlatform": {
-        "platform": "arm32v7",
+        "platform": "ls1012",
         "alias": null
       },
       "azure-iot-edge.platforms": {
-        "arm32v7": [],
-        "aarch64": []
+        "arm32v7-qemu": [],
+        "aarch64-qemu": [],
+        "ls1012": [],
     }
 }
