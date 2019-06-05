@@ -144,7 +144,7 @@ let oe_get_param_size (ptype, decl, argstruct) =
     match av with
     | None -> ""
     | Some (ANumber n) -> string_of_int n
-    | Some (AString s) -> sprintf "%s%s" argstruct s
+    | Some (AString s) -> argstruct ^ s
     (* another parameter name *)
   in
   let pa_size_to_string pa =
@@ -203,12 +203,12 @@ let oe_get_param_count (ptype, decl, argstruct) =
     match av with
     | None -> "1"
     | Some (ANumber n) -> string_of_int n
-    | Some (AString s) -> sprintf "%s%s" argstruct s
+    | Some (AString s) -> argstruct ^ s
     (* another parameter name *)
   in
   let pa_size_to_string pa =
     let c = attr_value_to_string pa.ps_count in
-    if c <> "" then sprintf "%s" c
+    if c <> "" then c
     else
       sprintf "(%s / sizeof(%s))" (attr_value_to_string pa.ps_size) type_expr
   in
@@ -230,7 +230,7 @@ let oe_get_param_count (ptype, decl, argstruct) =
 let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
   let args = List.map gen_parm_str fd.plist in
   let args =
-    if fd.rtype <> Void then sprintf "%s* _retval" (get_tystr fd.rtype) :: args
+    if fd.rtype <> Void then (get_tystr fd.rtype ^ "* _retval") :: args
     else args
   in
   let args = if is_ecall then "oe_enclave_t* enclave" :: args else args in
@@ -242,7 +242,7 @@ let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
 (** Emit [struct], [union], or [enum]. *)
 let emit_composite_type =
   let emit_struct (s : struct_def) =
-    [ sprintf "typedef struct %s" s.sname
+    [ "typedef struct " ^ s.sname
     ; "{"
     ; String.concat "\n"
         (List.map
@@ -253,11 +253,11 @@ let emit_composite_type =
                (get_tystr (get_param_atype ptype))
                decl.identifier dims_str )
            s.smlist)
-    ; sprintf "} %s;" s.sname
+    ; "} " ^ s.sname ^ ";"
     ; "" ]
   in
   let emit_union (u : union_def) =
-    [ sprintf "typedef union %s" u.uname
+    [ "typedef union " ^ u.uname
     ; "{"
     ; String.concat "\n"
         (List.map
@@ -267,11 +267,11 @@ let emit_composite_type =
              sprintf "    %s %s%s;" (get_tystr atype) decl.identifier dims_str
              )
            u.umlist)
-    ; sprintf "} %s;" u.uname
+    ; "} " ^ u.uname ^ ";"
     ; "" ]
   in
   let emit_enum (e : enum_def) =
-    [ sprintf "typedef enum %s" e.enname
+    [ "typedef enum " ^ e.enname
     ; "{"
     ; String.concat ",\n"
         (List.map
@@ -282,7 +282,7 @@ let emit_composite_type =
                | EnumVal (ANumber n) -> " = " ^ string_of_int n
                | EnumValNone -> "" ) )
            e.enbody)
-    ; sprintf "} %s;" e.enname
+    ; "} " ^ e.enname ^ ";"
     ; "" ]
   in
   function
@@ -483,32 +483,36 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     else []
   in
   let get_function_id (f : func_decl) =
-    sprintf "%s_fcn_id_%s" ec.enclave_name f.fname
+    ec.enclave_name ^ "_fcn_id_" ^ f.fname
   in
+  (* Short aliases for the trusted and untrusted function
+     declarations. *)
+  let tfs = ec.tfunc_decls in
+  let ufs = ec.ufunc_decls in
   (* Emit IDs in enum for trusted functions. *)
-  let emit_trusted_function_ids (tfs : trusted_func list) =
+  let emit_trusted_function_ids =
     [ "enum"
     ; "{"
     ; String.concat "\n"
         (List.mapi
            (fun i f -> sprintf "    %s = %d," (get_function_id f.tf_fdecl) i)
            tfs)
-    ; sprintf "    %s_fcn_id_trusted_call_id_max = OE_ENUM_MAX" ec.enclave_name
+    ; "    " ^ ec.enclave_name ^ "_fcn_id_trusted_call_id_max = OE_ENUM_MAX"
     ; "};" ]
   in
   (* Emit IDs in enum for untrusted functions. *)
-  let emit_untrusted_function_ids (ufs : untrusted_func list) =
+  let emit_untrusted_function_ids =
     [ "enum"
     ; "{"
     ; String.concat "\n"
         (List.mapi
            (fun i f -> sprintf "    %s = %d," (get_function_id f.uf_fdecl) i)
            ufs)
-    ; sprintf "    %s_fcn_id_untrusted_call_max = OE_ENUM_MAX" ec.enclave_name
+    ; "    " ^ ec.enclave_name ^ "_fcn_id_untrusted_call_max = OE_ENUM_MAX"
     ; "};" ]
   in
   (* Generate [args.h] which contains [struct]s for ecalls and ocalls *)
-  let oe_gen_args_header (ec : enclave_content) (dir : string) =
+  let oe_gen_args_header (dir : string) =
     let oe_gen_marshal_struct (fd : func_decl) (errno : bool) =
       let gen_member_decl (ptype, decl) =
         let aty = get_param_atype ptype in
@@ -522,7 +526,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
           (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
         in
         let id = decl.identifier in
-        [ [sprintf "%s %s;" tystr id]
+        [ [tystr ^ " " ^ id ^ ";"]
         ; (if need_strlen ptype then [sprintf "size_t %s_len;" id] else []) ]
         |> List.flatten
       in
@@ -536,10 +540,10 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         ; flatten_map gen_member_decl (List.map conv_array_to_ptr fd.plist) ]
         |> List.flatten
       in
-      [ sprintf "typedef struct _%s" struct_name
+      [ "typedef struct _" ^ struct_name
       ; "{"
       ; "    " ^ String.concat "\n    " members
-      ; sprintf "} %s;" struct_name
+      ; "} " ^ struct_name ^ ";"
       ; "" ]
     in
     let oe_gen_user_includes (includes : string list) =
@@ -550,27 +554,25 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       if cts <> [] then flatten_map emit_composite_type cts
       else ["/* There were no user defined types. */"; ""]
     in
-    let oe_gen_ecall_marshal_structs (tfs : trusted_func list) =
+    let oe_gen_ecall_marshal_structs =
       if tfs <> [] then
         flatten_map (fun tf -> oe_gen_marshal_struct tf.tf_fdecl false) tfs
       else ["/* There were no ecalls. */"; ""]
     in
-    let oe_gen_ocall_marshal_structs (ufs : untrusted_func list) =
+    let oe_gen_ocall_marshal_structs =
       if ufs <> [] then
         flatten_map
           (fun uf -> oe_gen_marshal_struct uf.uf_fdecl uf.uf_propagate_errno)
           ufs
       else ["/* There were no ocalls. */"; ""]
     in
-    let with_errno =
-      List.exists (fun uf -> uf.uf_propagate_errno) ec.ufunc_decls
-    in
+    let with_errno = List.exists (fun uf -> uf.uf_propagate_errno) ufs in
     let guard_macro =
-      sprintf "EDGER8R_%s_ARGS_H" (String.uppercase ec.enclave_name)
+      "EDGER8R_" ^ String.uppercase ec.enclave_name ^ "_ARGS_H"
     in
     let content =
-      [ sprintf "#ifndef %s" guard_macro
-      ; sprintf "#define %s" guard_macro
+      [ "#ifndef " ^ guard_macro
+      ; "#define " ^ guard_macro
       ; ""
       ; "#include <stdint.h>"
       ; "#include <stdlib.h> /* for wchar_t */"
@@ -588,19 +590,19 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       ; "/**** User defined types in EDL. ****/"
       ; String.concat "\n" (oe_gen_user_types ec.comp_defs)
       ; "/**** ECALL marshalling structs. ****/"
-      ; String.concat "\n" (oe_gen_ecall_marshal_structs ec.tfunc_decls)
+      ; String.concat "\n" oe_gen_ecall_marshal_structs
       ; "/**** OCALL marshalling structs. ****/"
-      ; String.concat "\n" (oe_gen_ocall_marshal_structs ec.ufunc_decls)
+      ; String.concat "\n" oe_gen_ocall_marshal_structs
       ; "/**** Trusted function IDs ****/"
-      ; String.concat "\n" (emit_trusted_function_ids ec.tfunc_decls)
+      ; String.concat "\n" emit_trusted_function_ids
       ; ""
       ; "/**** Untrusted function IDs. ****/"
-      ; String.concat "\n" (emit_untrusted_function_ids ec.ufunc_decls)
+      ; String.concat "\n" emit_untrusted_function_ids
       ; ""
-      ; sprintf "#endif // %s" guard_macro
+      ; "#endif // " ^ guard_macro
       ; "" ]
     in
-    let fname = sprintf "%s_args.h" ec.file_shortnm in
+    let fname = ec.file_shortnm ^ "_args.h" in
     let os = open_file fname dir in
     fprintf os "%s" (String.concat "\n" content) ;
     close_out os
@@ -1057,7 +1059,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "" ]
   in
   (* Validate Open Enclave supported EDL features. *)
-  let validate_oe_support (ec : enclave_content) (ep : edger8r_params) =
+  let validate_oe_support (ep : edger8r_params) =
     (* check supported options *)
     if ep.use_prefix then
       failwithf "--use_prefix option is not supported by oeedger8r." ;
@@ -1072,7 +1074,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
             "Function '%s': switchless ecalls and ocalls are not yet \
              supported by Open Enclave SDK."
             f.tf_fdecl.fname )
-      ec.tfunc_decls ;
+      tfs ;
     List.iter
       (fun f ->
         ( if f.uf_fattr.fa_convention <> CC_NONE then
@@ -1094,11 +1096,11 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
             "Function '%s': switchless ecalls and ocalls are not yet \
              supported by Open Enclave SDK."
             f.uf_fdecl.fname )
-      ec.ufunc_decls ;
+      ufs ;
     (* Map warning functions over trusted and untrusted function
        declarations *)
-    let ufuncs = List.map (fun f -> f.uf_fdecl) ec.ufunc_decls in
-    let tfuncs = List.map (fun f -> f.tf_fdecl) ec.tfunc_decls in
+    let ufuncs = List.map (fun f -> f.uf_fdecl) ufs in
+    let tfuncs = List.map (fun f -> f.tf_fdecl) tfs in
     let funcs = List.append ufuncs tfuncs in
     List.iter
       (fun f ->
@@ -1109,23 +1111,23 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   in
   (* Includes are emitted in [args.h]. Imported functions have already
      been brought into function lists. *)
-  let gen_t_h (ec : enclave_content) (ep : edger8r_params) =
-    let oe_gen_tfunc_prototypes (tfs : trusted_func list) =
+  let gen_t_h (ep : edger8r_params) =
+    let oe_gen_tfunc_prototypes =
       if tfs <> [] then
         List.map (fun f -> sprintf "%s;" (oe_gen_prototype f.tf_fdecl)) tfs
       else ["/* There were no ecalls. */"]
     in
-    let oe_gen_ufunc_wrapper_prototypes (ufs : untrusted_func list) =
+    let oe_gen_ufunc_wrapper_prototypes =
       if ufs <> [] then
         List.map
           (fun f -> sprintf "%s;" (oe_gen_wrapper_prototype f.uf_fdecl false))
           ufs
       else ["/* There were no ocalls. */"]
     in
-    let guard = sprintf "EDGER8R_%s_T_H" (String.uppercase ec.file_shortnm) in
+    let guard = "EDGER8R_" ^ String.uppercase ec.file_shortnm ^ "_T_H" in
     let content =
-      [ sprintf "#ifndef %s" guard
-      ; sprintf "#define %s" guard
+      [ "#ifndef " ^ guard
+      ; "#define " ^ guard
       ; ""
       ; "#include <openenclave/enclave.h>"
       ; ""
@@ -1134,14 +1136,14 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       ; "OE_EXTERNC_BEGIN"
       ; ""
       ; "/**** ECALL prototypes. ****/"
-      ; String.concat "\n\n" (oe_gen_tfunc_prototypes ec.tfunc_decls)
+      ; String.concat "\n\n" oe_gen_tfunc_prototypes
       ; ""
       ; "/**** OCALL prototypes. ****/"
-      ; String.concat "\n\n" (oe_gen_ufunc_wrapper_prototypes ec.ufunc_decls)
+      ; String.concat "\n\n" oe_gen_ufunc_wrapper_prototypes
       ; ""
       ; "OE_EXTERNC_END"
       ; ""
-      ; sprintf "#endif // %s" guard
+      ; "#endif // " ^ guard
       ; "" ]
     in
     let fname = ec.file_shortnm ^ "_t.h" in
@@ -1149,9 +1151,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     fprintf os "%s" (String.concat "\n" content) ;
     close_out os
   in
-  let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
-    let tfs = ec.tfunc_decls in
-    let ufs = ec.ufunc_decls in
+  let gen_t_c (ep : edger8r_params) =
     let oe_gen_ecall_functions =
       if tfs <> [] then flatten_map oe_gen_ecall_function tfs
       else ["/* There were no ecalls. */"]
@@ -1163,8 +1163,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         ; "    "
           ^ String.concat ",\n    "
               (List.map
-                 (fun f ->
-                   sprintf "(oe_ecall_func_t) ecall_%s" f.tf_fdecl.fname )
+                 (fun f -> "(oe_ecall_func_t) ecall_" ^ f.tf_fdecl.fname)
                  tfs)
         ; "};"
         ; ""
@@ -1204,23 +1203,21 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     fprintf os "%s" (String.concat "\n" content) ;
     close_out os
   in
-  let gen_u_h (ec : enclave_content) (ep : edger8r_params) =
-    let oe_gen_tfunc_wrapper_prototypes (tfs : trusted_func list) =
+  let gen_u_h (ep : edger8r_params) =
+    let oe_gen_tfunc_wrapper_prototypes =
       if tfs <> [] then
-        List.map
-          (fun f -> sprintf "%s;" (oe_gen_wrapper_prototype f.tf_fdecl true))
-          tfs
+        List.map (fun f -> oe_gen_wrapper_prototype f.tf_fdecl true ^ ";") tfs
       else ["/* There were no ecalls. */"]
     in
-    let oe_gen_ufunc_prototypes (ufs : untrusted_func list) =
+    let oe_gen_ufunc_prototypes =
       if ufs <> [] then
-        List.map (fun f -> sprintf "%s;" (oe_gen_prototype f.uf_fdecl)) ufs
+        List.map (fun f -> oe_gen_prototype f.uf_fdecl ^ ";") ufs
       else ["/* There were no ocalls. */"]
     in
-    let guard = sprintf "EDGER8R_%s_U_H" (String.uppercase ec.file_shortnm) in
+    let guard = "EDGER8R_" ^ String.uppercase ec.file_shortnm ^ "_U_H" in
     let content =
-      [ sprintf "#ifndef %s" guard
-      ; sprintf "#define %s" guard
+      [ "#ifndef " ^ guard
+      ; "#define " ^ guard
       ; ""
       ; "#include <openenclave/host.h>"
       ; ""
@@ -1237,14 +1234,14 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       ; "    oe_enclave_t** enclave);"
       ; ""
       ; "/**** ECALL prototypes. ****/"
-      ; String.concat "\n\n" (oe_gen_tfunc_wrapper_prototypes ec.tfunc_decls)
+      ; String.concat "\n\n" oe_gen_tfunc_wrapper_prototypes
       ; ""
       ; "/**** OCALL prototypes. ****/"
-      ; String.concat "\n\n" (oe_gen_ufunc_prototypes ec.ufunc_decls)
+      ; String.concat "\n\n" oe_gen_ufunc_prototypes
       ; ""
       ; "OE_EXTERNC_END"
       ; ""
-      ; sprintf "#endif // %s" guard
+      ; "#endif // " ^ guard
       ; "" ]
     in
     let fname = ec.file_shortnm ^ "_u.h" in
@@ -1252,9 +1249,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     fprintf os "%s" (String.concat "\n" content) ;
     close_out os
   in
-  let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
-    let tfs = ec.tfunc_decls in
-    let ufs = ec.ufunc_decls in
+  let gen_u_c (ep : edger8r_params) =
     let oe_gen_host_ecall_wrappers =
       if tfs <> [] then flatten_map oe_gen_host_ecall_wrapper tfs
       else ["/* There were no ecalls. */"]
@@ -1269,7 +1264,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       ; "    "
         ^ String.concat "\n    "
             (List.map
-               (fun f -> sprintf "(oe_ocall_func_t) ocall_%s," f.uf_fdecl.fname)
+               (fun f -> "(oe_ocall_func_t) ocall_" ^ f.uf_fdecl.fname ^ ",")
                ufs)
       ; "    NULL"
       ; "};" ]
@@ -1322,15 +1317,17 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     fprintf os "%s" (String.concat "\n" content) ;
     close_out os
   in
-  validate_oe_support ec ep ;
+  (* NOTE: The below code is all I/O side effects to emit warnings or
+     generate files. *)
+  validate_oe_support ep ;
   if ep.gen_trusted then (
-    oe_gen_args_header ec ep.trusted_dir ;
-    gen_t_h ec ep ;
-    if not ep.header_only then gen_t_c ec ep ) ;
+    oe_gen_args_header ep.trusted_dir ;
+    gen_t_h ep ;
+    if not ep.header_only then gen_t_c ep ) ;
   if ep.gen_untrusted then (
-    oe_gen_args_header ec ep.untrusted_dir ;
-    gen_u_h ec ep ;
-    if not ep.header_only then gen_u_c ec ep ) ;
+    oe_gen_args_header ep.untrusted_dir ;
+    gen_u_h ep ;
+    if not ep.header_only then gen_u_c ep ) ;
   printf "Success.\n"
 
 (** Install the plugin. *)
