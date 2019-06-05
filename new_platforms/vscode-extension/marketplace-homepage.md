@@ -30,7 +30,7 @@ some code that implements the required Azure IoT Hub communication.
 
 **Note:** On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) and the 
 Visual Studio Code [Remote-Development extension](https://code.visualstudio.com/docs/remote/remote-overview) to utilize 
-[Standalone](#Standalone%20projects) on a Windows desktop.  In this case, you will need to install the [requirements](#Requirements) in
+[Standalone](#Standalone%20projects) projects on a Windows desktop.  In this case, you will need to install the [requirements](#Requirements) in
 the subsystem.
 
 ## Standalone projects
@@ -134,13 +134,13 @@ requirements will be presented in a Visual Studio Code warning window.
             * Enable docker cross-building on Ubuntu 19.04 and 18.10 by:
 
                 ```bash
-                sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+                sudo apt-get install -y qemu qemu-system-misc qemu-user-static qemu-user binfmt-support
                 ```
 
             * Enable docker cross-building on Ubuntu 18.04 and 16.04 by:
 
                 ```bash
-                sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+                sudo apt-get install -y qemu qemu qemu-system-misc qemu-user-static qemu-user binfmt-support
                 sudo mkdir -p /lib/binfmt.d
                 sudo sh -c 'echo :qemu-arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-arm-static:F > /lib/binfmt.d/qemu-arm-static.conf'
                 sudo sh -c 'echo :qemu-aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-aarch64-static:F > /lib/binfmt.d/qemu-aarch64-static.conf'
@@ -160,7 +160,7 @@ requirements will be presented in a Visual Studio Code warning window.
             ```bash
             sudo usermod -a -G docker $USER
             ```
-        * On Windows, be sure Docker is configured to use linux containers.  See docker help regarding **Switch between Windows and Linux containers** [here](https://docs.docker.com/docker-for-windows/).
+        * On Windows, be sure Docker is configured to use Linux containers.  See docker help regarding **Switch between Windows and Linux containers** [here](https://docs.docker.com/docker-for-windows/).
 
     * The [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
 
