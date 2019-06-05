@@ -68,12 +68,15 @@ add_library(oelibc STATIC
     freeaddrinfo.c
     getaddrinfo.c
     getnameinfo.c
+    kill.c
     libunwind_stubs.c
     link.c
     locale.c
     malloc.c
     pthread.c
     sched_yield.c
+    sigaction.c
+    signal.c
     stdlib.c
     strerror.c
     sysconf.c
@@ -521,7 +524,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/select/select.c
     ${MUSLSRC}/select/poll.c
     ${MUSLSRC}/linux/epoll.c
-    ${MUSLSRC}/signal/kill.c
     #${MUSLSRC}/signal/signal.c
     #${MUSLSRC}/signal/sigaction.c
     #${MUSLSRC}/signal/sigaddset.c
