@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/ctype.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
@@ -140,18 +141,21 @@ char* oe_strstr(const char* haystack, const char* needle)
 
 char* oe_strdup(const char* s)
 {
-    size_t len;
     char* p;
+    size_t n;
 
     if (!s)
         return NULL;
 
-    len = oe_strlen(s);
+    n = oe_strlen(s) + 1;
 
-    if (!(p = oe_malloc(len + 1)))
+    if (!(p = oe_malloc(n)))
         return NULL;
 
-    return memcpy(p, s, len + 1);
+    if (oe_memcpy_s(p, n, s, n) != OE_OK)
+        return NULL;
+
+    return p;
 }
 
 OE_WEAK_ALIAS(oe_strcmp, strcmp);
