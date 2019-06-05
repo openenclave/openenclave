@@ -1,26 +1,60 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/raise.h>
 #include "../atexit.h"
 #include "../calls.h"
 #include "init.h"
 
 #include <tee_internal_api.h>
 
-#define HILO_U64(hi, lo) ((((uint64_t)(hi)) << 32) | (lo))
+#include <pta_rpc.h>
 
-uint8_t __oe_initialized = 0;
+/* TEE Parameter Types used when invoking the Remote Procedure Call Pseudo
+ * Trusted Application (RPC PTA). PTAs are extensions of OP-TEE, running in
+ * S:EL1 and are accessed via the TA2TA (Trusted Application-to-Trusted
+ * Application) API. The TA2TA API is implemented as a system service by OP-TEE
+ * and thus require a system call (ERET) to access; this is done on our behalf
+ * by OP-TEE's implementation of the GlobalPlatform TEE Internal Core API in
+ * libutee.
+ */
 
-static void _handle_init_enclave(void)
-{
-    oe_call_init_functions();
+#define PARAM_TYPES_IN_OUT           \
+    (TEE_PARAM_TYPES(                \
+        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_MEMREF_INOUT, \
+        TEE_PARAM_TYPE_MEMREF_INPUT, \
+        TEE_PARAM_TYPE_MEMREF_OUTPUT))
+#define PARAM_TYPES_IN_NO_OUT        \
+    (TEE_PARAM_TYPES(                \
+        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_MEMREF_INOUT, \
+        TEE_PARAM_TYPE_MEMREF_INPUT, \
+        TEE_PARAM_TYPE_NONE))
+#define PARAM_TYPES_NO_IN_OUT        \
+    (TEE_PARAM_TYPES(                \
+        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_MEMREF_INOUT, \
+        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_MEMREF_OUTPUT))
+#define PARAM_TYPES_NO_IN_NO_OUT     \
+    (TEE_PARAM_TYPES(                \
+        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_MEMREF_INOUT, \
+        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_NONE))
 
-    __oe_initialized = 1;
-}
+static uint8_t __oe_initialized = 0;
+static uint32_t __oe_windows_ecall_key = 0;
+
+static TEE_TASessionHandle __oe_rpc_pta_session = TEE_HANDLE_NULL;
 
 static TEE_Result _handle_call_enclave_function(
     uint32_t param_types,
@@ -128,17 +162,17 @@ static TEE_Result _handle_call_enclave_function(
     /* Allocate an input buffer in the TA for copy */
     if (u_input_buffer)
     {
-    input_buffer = oe_malloc(u_input_buffer_size);
-    if (!input_buffer)
-        return TEE_ERROR_OUT_OF_MEMORY;
+        input_buffer = oe_malloc(u_input_buffer_size);
+        if (!input_buffer)
+            return TEE_ERROR_OUT_OF_MEMORY;
     }
 
     /* Allocate an output buffer in the TA for copy */
     if (u_output_buffer)
     {
-    output_buffer = oe_malloc(u_output_buffer_size);
-    if (!output_buffer)
-    {
+        output_buffer = oe_malloc(u_output_buffer_size);
+        if (!output_buffer)
+        {
             result = TEE_ERROR_OUT_OF_MEMORY;
             goto done;
         }
@@ -168,7 +202,7 @@ static TEE_Result _handle_call_enclave_function(
     {
         if (u_output_buffer)
         {
-        memcpy(u_output_buffer, output_buffer, output_bytes_written);
+            memcpy(u_output_buffer, output_buffer, output_bytes_written);
             u_args_ptr->output_bytes_written = output_bytes_written;
         }
 
@@ -186,13 +220,87 @@ done:
     return result == OE_OK ? TEE_SUCCESS : TEE_ERROR_GENERIC;
 }
 
+oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
+{
+    oe_call_host_function_args_t* args = NULL;
+
+    TEE_Result tee_res;
+
+    TEE_Param params[TEE_NUM_PARAMS];
+    uint32_t param_types;
+
+    /* Retrieve the ECALL arguments structure */
+    args = (oe_call_host_function_args_t*)arg_in;
+
+    /* The PTA RPC does not understand Open Enclave function codes */
+    params[0].value.a = func;
+
+    /* Host OS-specific data (used only on Windows) */
+    params[0].value.b = __oe_windows_ecall_key;
+
+    /* Open Enclave-specific data */
+    params[1].memref.buffer = &args;
+    params[1].memref.size = sizeof(args);
+
+    /* Input buffer */
+    if (args->input_buffer)
+    {
+        if (args->input_buffer_size > OE_UINT32_MAX)
+            return OE_OUT_OF_BOUNDS;
+
+        params[2].memref.buffer = (void*)args->input_buffer;
+        params[2].memref.size = (uint32_t)args->input_buffer_size;
+    }
+
+    if (args->output_buffer)
+    {
+        if (args->output_buffer_size > OE_UINT32_MAX)
+            return OE_OUT_OF_BOUNDS;
+
+        params[3].memref.buffer = (void*)args->output_buffer;
+        params[3].memref.size = (uint32_t)args->output_buffer_size;
+    }
+
+    /* Fill in parameter types */
+    if (args->input_buffer && args->output_buffer)
+        param_types = PARAM_TYPES_IN_OUT;
+    else if (args->input_buffer)
+        param_types = PARAM_TYPES_IN_NO_OUT;
+    else if (args->output_buffer)
+        param_types = PARAM_TYPES_NO_IN_OUT;
+    else
+        param_types = PARAM_TYPES_NO_IN_NO_OUT;
+
+    /* Ask the RPC PTA to perform an OCALL on our behalf via the TA2TA API */
+    tee_res = TEE_InvokeTACommand(
+        __oe_rpc_pta_session, 0, PTA_RPC_EXECUTE, param_types, params, NULL);
+
+    if (arg_out)
+        *arg_out = args->result;
+
+    return tee_res == TEE_SUCCESS ? OE_OK : OE_FAILURE;
 }
 
 TEE_Result TA_CreateEntryPoint(void)
 {
-    _handle_init_enclave();
+    TEE_Result result = TEE_SUCCESS;
 
-    return TEE_SUCCESS;
+    TEE_UUID pta_uuid = PTA_RPC_UUID;
+
+    /* Open a TA2TA session against the RPC Pseudo TA (PTA), required for
+     * making OCALLs. If we cannot open one, fail to initialize the TA */
+    result =
+        TEE_OpenTASession(&pta_uuid, 0, 0, NULL, &__oe_rpc_pta_session, NULL);
+    if (result != TEE_SUCCESS)
+        return result;
+
+    /* Call compiler-generated initialization functions */
+    oe_call_init_functions();
+
+    /* Done */
+    __oe_initialized = 1;
+
+    return result;
 }
 
 TEE_Result TA_OpenSessionEntryPoint(
