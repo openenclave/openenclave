@@ -367,22 +367,22 @@ done:
 
 static const char* oe_ocall_str(oe_func_t ocall)
 {
-    static const char* func_names[] = {"OE_OCALL_CALL_HOST_FUNCTION",
-                                       "OE_OCALL_GET_QE_TARGET_INFO",
-                                       "OE_OCALL_GET_QUOTE",
-                                       "OE_OCALL_GET_REVOCATION_INFO",
-                                       "OE_OCALL_GET_QE_ID_INFO",
-                                       "OE_OCALL_THREAD_WAKE",
-                                       "OE_OCALL_THREAD_WAIT",
-                                       "OE_OCALL_THREAD_WAKE_WAIT",
-                                       "OE_OCALL_MALLOC",
-                                       "OE_OCALL_REALLOC",
-                                       "OE_OCALL_FREE",
-                                       "OE_OCALL_WRITE",
-                                       "OE_OCALL_SLEEP",
-                                       "OE_OCALL_GET_TIME",
-                                       "OE_OCALL_BACKTRACE_SYMBOLS",
-                                       "OE_OCALL_LOG"};
+    static const char* func_names[] = {"CALL_HOST_FUNCTION",
+                                       "GET_QE_TARGET_INFO",
+                                       "GET_QUOTE",
+                                       "GET_REVOCATION_INFO",
+                                       "GET_QE_ID_INFO",
+                                       "THREAD_WAKE",
+                                       "THREAD_WAIT",
+                                       "THREAD_WAKE_WAIT",
+                                       "MALLOC",
+                                       "REALLOC",
+                                       "FREE",
+                                       "WRITE",
+                                       "SLEEP",
+                                       "GET_TIME",
+                                       "BACKTRACE_SYMBOLS",
+                                       "LOG"};
 
     OE_STATIC_ASSERT(OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX);
 
