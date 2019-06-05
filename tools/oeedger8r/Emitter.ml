@@ -508,7 +508,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "};" ]
   in
   (* Generate [args.h] which contains [struct]s for ecalls and ocalls *)
-  let oe_gen_args_header (ec : enclave_content) (dir : string) =
+  let oe_gen_args_header (dir : string) =
     let oe_gen_marshal_struct (fd : func_decl) (errno : bool) =
       let gen_member_decl (ptype, decl) =
         let aty = get_param_atype ptype in
@@ -1057,7 +1057,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "" ]
   in
   (* Validate Open Enclave supported EDL features. *)
-  let validate_oe_support (ec : enclave_content) (ep : edger8r_params) =
+  let validate_oe_support (ep : edger8r_params) =
     (* check supported options *)
     if ep.use_prefix then
       failwithf "--use_prefix option is not supported by oeedger8r." ;
@@ -1109,7 +1109,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   in
   (* Includes are emitted in [args.h]. Imported functions have already
      been brought into function lists. *)
-  let gen_t_h (ec : enclave_content) (ep : edger8r_params) =
+  let gen_t_h (ep : edger8r_params) =
     let oe_gen_tfunc_prototypes (tfs : trusted_func list) =
       if tfs <> [] then
         List.map (fun f -> sprintf "%s;" (oe_gen_prototype f.tf_fdecl)) tfs
@@ -1149,7 +1149,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     fprintf os "%s" (String.concat "\n" content) ;
     close_out os
   in
-  let gen_t_c (ec : enclave_content) (ep : edger8r_params) =
+  let gen_t_c (ep : edger8r_params) =
     let tfs = ec.tfunc_decls in
     let ufs = ec.ufunc_decls in
     let oe_gen_ecall_functions =
@@ -1203,7 +1203,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     fprintf os "%s" (String.concat "\n" content) ;
     close_out os
   in
-  let gen_u_h (ec : enclave_content) (ep : edger8r_params) =
+  let gen_u_h (ep : edger8r_params) =
     let oe_gen_tfunc_wrapper_prototypes (tfs : trusted_func list) =
       if tfs <> [] then
         List.map (fun f -> oe_gen_wrapper_prototype f.tf_fdecl true ^ ";") tfs
@@ -1249,7 +1249,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     fprintf os "%s" (String.concat "\n" content) ;
     close_out os
   in
-  let gen_u_c (ec : enclave_content) (ep : edger8r_params) =
+  let gen_u_c (ep : edger8r_params) =
     let tfs = ec.tfunc_decls in
     let ufs = ec.ufunc_decls in
     let oe_gen_host_ecall_wrappers =
@@ -1319,15 +1319,17 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     fprintf os "%s" (String.concat "\n" content) ;
     close_out os
   in
-  validate_oe_support ec ep ;
+  (* NOTE: The below code is all I/O side effects to emit warnings or
+     generate files. *)
+  validate_oe_support ep ;
   if ep.gen_trusted then (
-    oe_gen_args_header ec ep.trusted_dir ;
-    gen_t_h ec ep ;
-    if not ep.header_only then gen_t_c ec ep ) ;
+    oe_gen_args_header ep.trusted_dir ;
+    gen_t_h ep ;
+    if not ep.header_only then gen_t_c ep ) ;
   if ep.gen_untrusted then (
-    oe_gen_args_header ec ep.untrusted_dir ;
-    gen_u_h ec ep ;
-    if not ep.header_only then gen_u_c ec ep ) ;
+    oe_gen_args_header ep.untrusted_dir ;
+    gen_u_h ep ;
+    if not ep.header_only then gen_u_c ep ) ;
   printf "Success.\n"
 
 (** Install the plugin. *)
