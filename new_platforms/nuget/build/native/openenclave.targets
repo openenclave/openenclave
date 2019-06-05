@@ -137,13 +137,6 @@
                Text="OP-TEE Simulation builds are only allowed for x86." />
         <Error Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsRelease) == True"
                Text="OP-TEE Simulation builds are only allowed in a Debug configuration." />
-        <Message Text="OEType = $(OEType)" Importance="High" />
-        <Message Text="OEIsSgx = $(OEIsSgx)" Importance="High" />
-        <Message Text="OEIsMaster = $(OEIsMaster)" Importance="High" />
-        <Message Text="OEIsNewPlatforms = $(OEIsNewPlatforms)" Importance="High" />
-        <Message Text="OEIsWindows = $(OEIsWindows)" Importance="High" />
-        <Message Text="OEIsLinux = $(OEIsLinux)" Importance="High" />
-        <Message Text="ApplicationType = $(ApplicationType)" Importance="High" />
     </Target>
 
     <!--
@@ -287,10 +280,11 @@
     <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave'">
         <ClCompile>
             <!-- OP-TEE Simulation -->
-            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsNewPlatforms) == True">OE_SIMULATE_OPTEE;OE_ENCLAVE_TYPE_AUTO=OE_ENCLAVE_TYPE_UNDEFINED%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsNewPlatforms) == True">OE_SIMULATE_OPTEE;OE_ENCLAVE_TYPE_AUTO=OE_ENCLAVE_TYPE_UNDEFINED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
             <!-- Others -->
             <PreprocessorDefinitions Condition="($(OEIsTz) == False Or $(OEIsSim) == False) And $(OEIsNewPlatforms) == True">OE_ENCLAVE_TYPE_AUTO=OE_ENCLAVE_TYPE_UNDEFINED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="($(OEIsTz) == False Or $(OEIsSim) == False) And $(OEIsLinux) == True And $(OEIsDebug) == True">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
             <!-- OP-TEE Simulation -->
             <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsMaster) == True">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -399,7 +393,7 @@
     -->
 
     <!-- Post-Build Events for Enclaves -->
-    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And '$(ConfigurationType)' == 'DynamicLibrary'">
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And '$(ConfigurationType)' == 'DynamicLibrary' And $(OEIsNewPlatforms) == True">
         <!-- *-SGX-* & *-SGX-Simulation-* -->
         <PostBuildEvent Condition="$(OEIsSgx) == True">
             <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" sign -key "$(ProjectDir)$(TargetName)_private.pem" -enclave "$(OutDir)$(TargetFileName)" -out "$(OutDir)$(TargetName).signed.dll" -config "$(ProjectDir)$(TargetName).config.xml"</Command>
@@ -407,9 +401,19 @@
         </PostBuildEvent>
 
         <!-- *-SGX-Release -->
-        <PostBuildEvent Condition="$(OEIsSgx) == True And '$(ConfigurationType)' == 'DynamicLibrary' And $(OEIsSim) == False And $(OEIsRelease) == True">
+        <PostBuildEvent Condition="$(OEIsSgx) == True And $(OEIsSim) == False And $(OEIsRelease) == True">
             <Command>"$(SGXSDKInstallPath)bin\win32\release\sgx_sign.exe" gendata -enclave "$(OutDir)$(TargetFileName)" -out "$(OutDir)$(TargetName).hex" -config "$(ProjectDir)$(TargetName).config.xml"</Command>
             <Message>Generate the enclave signing material for Intel SGX.</Message>
+        </PostBuildEvent>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And '$(ConfigurationType)' == 'DynamicLibrary' And $(OEIsMaster) == True">
+        <PreLinkEvent>
+            <Command>bash ./makekey.sh</Command>
+            <Message>Get signing key.</Message>
+        </PreLinkEvent>
+        <PostBuildEvent>
+            <Command>/opt/openenclave/bin/oesign sign -e $(RemoteOutDir)$(TargetName) -c $(TargetName).conf -k private.pem</Command>
+            <Message>Sign the enclave.</Message>
         </PostBuildEvent>
     </ItemDefinitionGroup>
 

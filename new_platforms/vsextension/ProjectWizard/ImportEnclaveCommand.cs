@@ -367,22 +367,27 @@ namespace OpenEnclaveSDK
 
                         if (!isWindows && name.Contains("Debug"))
                         {
-                            // GCC has no preprocessor define for debug mode, but the template code expects
-                            // _DEBUG, so set it here.
+                            // GCC has no preprocessor define for debug mode, but the generated host file
+                            // expects _DEBUG, so set it here.
                             var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
                             string value = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
                             clRule.SetPropertyValue("PreprocessorDefinitions", "_DEBUG;" + value);
                         }
 
-#if true
-                        // Change OutDir to $(SolutionDir)bin\$(Platform)\$(Configuration)\
-                        // so it's the same as the enclave.
-                        config.OutputDirectory = "$(SolutionDir)bin\\$(Platform)\\$(Configuration)\\";
-#else
-                        // TODO: instead add a post-build event to copy the enclave binary to the existing
-                        // OutDir.  For example, for Linux this would be
-                        // 'cp $(RemoteRootDir)/LinuxEnclave/bin/$(Platform)/$(Configuration)/LinuxEnclave.signed $(RemoteOutDir)'
-#endif
+                        if (isWindows)
+                        {
+                            // Change OutDir to $(SolutionDir)bin\$(Platform)\$(Configuration)\
+                            // so it's the same as the enclave.
+                            config.OutputDirectory = "$(SolutionDir)bin\\$(Platform)\\$(Configuration)\\";
+                        }
+                        else
+                        {
+                            // Add a post-build event to copy the enclave binary to the existing OutDir.
+                            string cmd = "cp $(RemoteRootDir)/" + baseName + "/bin/$(Platform)/$(Configuration)/" + baseName + ".signed $(RemoteOutDir)";
+                            var clRule = config.Rules.Item("ConfigurationBuildEvents") as IVCRulePropertyStorage;
+                            clRule.SetPropertyValue("RemotePostBuildCommand", cmd);
+                            clRule.SetPropertyValue("RemotePostBuildMessage", "Copying enclave binary");
+                        }
 
                         if (name.Contains("OPTEE") || name.Contains("ARM"))
                         {
@@ -392,7 +397,8 @@ namespace OpenEnclaveSDK
                             continue;
                         }
 
-                        if (isWindows) {
+                        if (isWindows)
+                        {
                             // See if the Intel SGX SDK is installed.
                             var sgxRule = config.Rules.Item("SGXDebugLauncher") as IVCRulePropertyStorage;
                             if (sgxRule != null)
@@ -405,7 +411,14 @@ namespace OpenEnclaveSDK
                         }
                         else
                         {
-                            // TODO: set oegdb as the debugger
+                            // Configure gdb like the oe-gdb script does.
+                            var gdbRule = config.Rules.Item("LinuxDebugger");
+                            if (gdbRule != null)
+                            {
+                                // Configure GDB debugger settings.
+                                gdbRule.SetPropertyValue("PreLaunchCommand", "export PYTHONPATH=/opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin;export LD_PRELOAD=/opt/openenclave/lib/openenclave/debugger/liboe_ptrace.so");
+                                gdbRule.SetPropertyValue("AdditionalDebuggerCommands", "directory /opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin;source /opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin/gdb_sgx_plugin.py;set environment LD_PRELOAD;add-auto-load-safe-path /usr/lib");
+                            }
                         }
                     }
 
