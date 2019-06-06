@@ -63,19 +63,26 @@ add_library(oelibc STATIC
     arc4random.c
     atexit.c
     dladdr.c
+    errno.c
+    exit.c
+    freeaddrinfo.c
+    getaddrinfo.c
+    getnameinfo.c
+    kill.c
     libunwind_stubs.c
     link.c
     locale.c
     malloc.c
     pthread.c
     sched_yield.c
+    sigaction.c
+    signal.c
     stdlib.c
     strerror.c
     sysconf.c
     time.c
     __printf_chk.c
     __vfprintf_chk.c
-
     ${MUSLSRC}/complex/cabs.c
     ${MUSLSRC}/complex/cabsf.c
     ${MUSLSRC}/complex/cabsl.c
@@ -169,18 +176,19 @@ add_library(oelibc STATIC
     ${MUSLSRC}/ctype/wctrans.c
     ${MUSLSRC}/ctype/wcwidth.c
     ${MUSLSRC}/dirent/opendir.c
-    ${MUSLSRC}/dirent/closedir.c
     ${MUSLSRC}/dirent/readdir.c
-    ${MUSLSRC}/dirent/readdir_r.c
+    ${MUSLSRC}/dirent/rewinddir.c
+    ${MUSLSRC}/dirent/closedir.c
     ${MUSLSRC}/fcntl/open.c
+    ${MUSLSRC}/fcntl/fcntl.c
     ${MUSLSRC}/env/clearenv.c
     ${MUSLSRC}/env/__environ.c
     ${MUSLSRC}/env/getenv.c
     ${MUSLSRC}/env/putenv.c
     ${MUSLSRC}/env/setenv.c
     ${MUSLSRC}/env/unsetenv.c
-    ${MUSLSRC}/errno/__errno_location.c
     ${MUSLSRC}/exit/assert.c
+    ${MUSLSRC}/exit/_Exit.c
     ${MUSLSRC}/fenv/fegetexceptflag.c
     ${MUSLSRC}/fenv/feholdexcept.c
     ${MUSLSRC}/fenv/fesetexceptflag.c
@@ -191,7 +199,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/internal/intscan.c
     ${MUSLSRC}/internal/libc.c
     ${MUSLSRC}/internal/shgetc.c
-    ${MUSLSRC}/internal/syscall_ret.c
     ${MUSLSRC}/legacy/getpagesize.c
     ${MUSLSRC}/locale/bind_textdomain_codeset.c
     ${MUSLSRC}/locale/catclose.c
@@ -213,6 +220,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/locale/textdomain.c
     ${MUSLSRC}/locale/wcscoll.c
     ${MUSLSRC}/locale/wcsxfrm.c
+    ${MUSLSRC}/linux/mount.c
     ${MUSLSRC}/math/acos.c
     ${MUSLSRC}/math/acosf.c
     ${MUSLSRC}/math/acosh.c
@@ -421,6 +429,10 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/truncl.c
     ${MUSLSRC}/misc/basename.c
     ${MUSLSRC}/misc/dirname.c
+    ${MUSLSRC}/misc/getdomainname.c
+    ${MUSLSRC}/misc/ioctl.c
+    ${MUSLSRC}/misc/nftw.c
+    ${MUSLSRC}/misc/uname.c
     ${MUSLSRC}/mman/mmap.c
     ${MUSLSRC}/mman/munmap.c
     ${MUSLSRC}/multibyte/btowc.c
@@ -443,8 +455,52 @@ add_library(oelibc STATIC
     ${MUSLSRC}/multibyte/wcstombs.c
     ${MUSLSRC}/multibyte/wctob.c
     ${MUSLSRC}/multibyte/wctomb.c
+    ${MUSLSRC}/network/getpeername.c
+    ${MUSLSRC}/network/getsockname.c
+    ${MUSLSRC}/network/getsockopt.c
     ${MUSLSRC}/network/ntohl.c
     ${MUSLSRC}/network/ntohs.c
+    ${MUSLSRC}/network/htonl.c
+    ${MUSLSRC}/network/htons.c
+    ${MUSLSRC}/network/inet_ntop.c
+    ${MUSLSRC}/network/inet_addr.c
+    ${MUSLSRC}/network/inet_aton.c
+    ${MUSLSRC}/network/inet_ntoa.c
+    ${MUSLSRC}/network/inet_pton.c
+    ${MUSLSRC}/network/socket.c
+    ${MUSLSRC}/network/socketpair.c
+    ${MUSLSRC}/network/setsockopt.c
+    ${MUSLSRC}/network/getsockopt.c
+    ${MUSLSRC}/network/gai_strerror.c
+    ${MUSLSRC}/network/gethostbyaddr.c
+    ${MUSLSRC}/network/gethostbyaddr_r.c
+    ${MUSLSRC}/network/gethostbyname2.c
+    ${MUSLSRC}/network/gethostbyname2_r.c
+    ${MUSLSRC}/network/gethostbyname.c
+    ${MUSLSRC}/network/gethostbyname_r.c
+    ${MUSLSRC}/network/accept.c
+    ${MUSLSRC}/network/bind.c
+    ${MUSLSRC}/network/inet_pton.c
+    ${MUSLSRC}/network/listen.c
+    ${MUSLSRC}/network/connect.c
+    ${MUSLSRC}/network/shutdown.c
+    ${MUSLSRC}/network/send.c
+    ${MUSLSRC}/network/sendto.c
+    ${MUSLSRC}/network/sendmsg.c
+    ${MUSLSRC}/network/recv.c
+    ${MUSLSRC}/network/recvfrom.c
+    ${MUSLSRC}/network/recvmsg.c
+    ${MUSLSRC}/network/res_msend.c
+    ${MUSLSRC}/network/res_mkquery.c
+    ${MUSLSRC}/network/if_nametoindex.c
+    ${MUSLSRC}/network/dn_expand.c
+    ${MUSLSRC}/network/dns_parse.c
+    ${MUSLSRC}/network/res_query.c
+    ${MUSLSRC}/network/resolvconf.c
+    ${MUSLSRC}/network/lookup_ipliteral.c
+    ${MUSLSRC}/network/res_msend.c
+    ${MUSLSRC}/network/lookup_serv.c
+    ${MUSLSRC}/network/lookup_name.c
     ${MUSLSRC}/prng/drand48.c
     ${MUSLSRC}/prng/lcong48.c
     ${MUSLSRC}/prng/lrand48.c
@@ -456,7 +512,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/prng/__seed48.c
     ${MUSLSRC}/prng/seed48.c
     ${MUSLSRC}/prng/srand48.c
-    #${MUSLSRC}/regex/fnmatch.c
+    ${MUSLSRC}/regex/fnmatch.c
     #${MUSLSRC}/regex/glob.c
     #${MUSLSRC}/regex/regcomp.c
     #${MUSLSRC}/regex/regerror.c
@@ -465,6 +521,10 @@ add_library(oelibc STATIC
     ${MUSLSRC}/search/hsearch.c
     ${MUSLSRC}/search/insque.c
     ${MUSLSRC}/search/lsearch.c
+    ${MUSLSRC}/select/select.c
+    ${MUSLSRC}/select/poll.c
+    ${MUSLSRC}/linux/epoll.c
+    ${MUSLSRC}/stat/mkdir.c
     ${MUSLSRC}/search/tdelete.c
     ${MUSLSRC}/search/tfind.c
     ${MUSLSRC}/search/tsearch.c
@@ -552,6 +612,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/stdio/sscanf.c
     ${MUSLSRC}/stdio/stderr.c
     ${MUSLSRC}/stdio/stdin.c
+    ${MUSLSRC}/stdio/tmpfile.c
     ${MUSLSRC}/stdio/__stdio_close.c
     ${MUSLSRC}/stdio/__stdio_exit.c
     ${MUSLSRC}/stdio/__stdio_read.c
@@ -669,6 +730,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/string/wmemcpy.c
     ${MUSLSRC}/string/wmemmove.c
     ${MUSLSRC}/string/wmemset.c
+    ${MUSLSRC}/temp/__randname.c
     ${MUSLSRC}/thread/__lock.c
     ${MUSLSRC}/thread/__wait.c
     ${MUSLSRC}/time/clock_gettime.c
@@ -684,10 +746,34 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/time.c
     ${MUSLSRC}/time/__tm_to_secs.c
     ${MUSLSRC}/time/__year_to_secs.c
+    ${MUSLSRC}/unistd/access.c
+    ${MUSLSRC}/unistd/chdir.c
     ${MUSLSRC}/unistd/close.c
+    ${MUSLSRC}/unistd/getgid.c
+    ${MUSLSRC}/unistd/getegid.c
+    ${MUSLSRC}/unistd/getuid.c
+    ${MUSLSRC}/unistd/geteuid.c
+    ${MUSLSRC}/unistd/getpid.c
+    ${MUSLSRC}/unistd/getppid.c
+    ${MUSLSRC}/unistd/getpgrp.c
+    ${MUSLSRC}/unistd/getgroups.c
     ${MUSLSRC}/unistd/dup.c
+    ${MUSLSRC}/unistd/dup2.c
     ${MUSLSRC}/unistd/dup3.c
-    ${PLATFORM_SRC})
+    ${MUSLSRC}/unistd/getcwd.c
+    ${MUSLSRC}/unistd/gethostname.c
+    ${MUSLSRC}/unistd/link.c
+    ${MUSLSRC}/unistd/lseek.c
+    ${MUSLSRC}/unistd/read.c
+    ${MUSLSRC}/unistd/readv.c
+    ${MUSLSRC}/unistd/rmdir.c
+    ${MUSLSRC}/unistd/sleep.c
+    ${MUSLSRC}/unistd/truncate.c
+    ${MUSLSRC}/unistd/unlink.c
+    ${MUSLSRC}/unistd/write.c
+    ${MUSLSRC}/unistd/writev.c
+    ${PLATFORM_SRC}
+)
 
 maybe_build_using_clangw(oelibc)
 
@@ -749,7 +835,7 @@ endif ()
 # This project (and its dependents) require the enclave headers and
 # library, and the musl headers.
 target_link_libraries(oelibc
-  PUBLIC oecore oelibc_includes
+  PUBLIC oeposix oecore oelibc_includes
   PRIVATE oelibasm)
 
 if (OE_SGX)

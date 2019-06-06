@@ -4,10 +4,15 @@
 #ifndef _OE_HOST_STDLIB_H
 #define _OE_HOST_STDLIB_H
 
+#include <errno.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if defined(_MSC_VER)
+#include <malloc.h>
+#endif
 
 OE_EXTERNC_BEGIN
 
@@ -45,7 +50,27 @@ void* oe_realloc(void* ptr, size_t size)
 OE_INLINE
 int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
 {
+#if defined(_MSC_VER)
+    /* posix_memalign() enforces a minimum alignment of sizeof(void*). */
+    if (alignment < sizeof(void*))
+        alignment = sizeof(void*);
+
+    if (!memptr)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if ((*memptr = _aligned_malloc(size, alignment)))
+    {
+        errno = ENOMEM;
+        return -1;
+    }
+
+    return 0;
+#else
     return posix_memalign(memptr, alignment, size);
+#endif
 }
 
 OE_INLINE

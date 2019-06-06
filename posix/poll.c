@@ -44,7 +44,7 @@ int oe_poll(struct oe_pollfd* fds, oe_nfds_t nfds, int timeout)
 
     /* Update fds[] with any recieved events. */
     for (i = 0; i < nfds; i++)
-        fds[i].revents = host_fds[i].events;
+        fds[i].revents = host_fds[i].revents;
 
     ret = retval;
 

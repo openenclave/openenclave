@@ -65,3 +65,5 @@ set_source_files_properties(
 
 install(TARGETS oeposix EXPORT openenclave-targets ARCHIVE
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+add_subdirectory(devices)

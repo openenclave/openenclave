@@ -139,6 +139,10 @@ add_library(oehost STATIC
 
 target_link_libraries(oehost PUBLIC oe_includes)
 
+if(WIN32)
+    target_link_libraries(oehost PUBLIC ws2_32)
+endif()
+
 add_dependencies(oehost posix_untrusted_edl)
 
 # TODO: Replace these with `find_package` and add as dependencies to
