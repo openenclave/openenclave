@@ -284,7 +284,10 @@ static oe_result_t _handle_call_builtin_function(
     if (arg_out)
         *arg_out = args->result;
 
-    return tee_res == TEE_SUCCESS ? OE_OK : OE_FAILURE;
+void oe_abort(void)
+{
+    /* No return */
+    TEE_Panic(TEE_ERROR_GENERIC);
 }
 
 TEE_Result TA_CreateEntryPoint(void)

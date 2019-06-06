@@ -73,10 +73,3 @@ oe_result_t oe_call_host_function(
         output_buffer_size,
         output_bytes_written);
 }
-
-void oe_abort(void)
-{
-    // TODO: Determine the appropriate call to make into OP-TEE on TA abort.
-    while (1)
-        ;
-}
