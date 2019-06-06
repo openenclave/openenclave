@@ -547,22 +547,51 @@ oe_host_fd_t oe_posix_open_ocall(
             file_flags |= FILE_FLAG_BACKUP_SEMANTICS;
         }
 
-        // Open flags are neither a bitmask nor a sequence, so switching or
+        // Translate POSIX to windows open flags.
         // masking doesn't work.
-        if ((flags & OE_O_CREAT) != 0)
+
+        switch (flags & (OE_O_CREAT | OE_O_EXCL | OE_O_TRUNC))
         {
-            create_dispos = OPEN_ALWAYS;
-        }
-        else
-        {
-            if ((flags & OE_O_TRUNC) != 0)
+            case OE_O_CREAT:
             {
+                // Create a new file or open an existing file.
+                create_dispos = OPEN_ALWAYS;
+                break;
+            }
+            case OE_O_CREAT | OE_O_EXCL:
+            case OE_O_CREAT | OE_O_EXCL | OE_O_TRUNC:
+            {
+                // Create a new file, but fail if it already exists.
+                // Ignore `O_TRUNC` with `O_CREAT | O_EXCL`
+                create_dispos = CREATE_NEW;
+                break;
+            }
+            case OE_O_CREAT | OE_O_TRUNC:
+            {
+                // Truncate file if it already exists.
+                create_dispos = CREATE_ALWAYS;
+                break;
+            }
+            case OE_O_TRUNC:
+            case OE_O_TRUNC | OE_O_EXCL:
+            {
+                // Truncate file if it exists, otherwise fail. Ignore O_EXCL
+                // flag.
                 create_dispos = TRUNCATE_EXISTING;
+                break;
             }
-            else if ((flags & OE_O_APPEND) != 0)
+            case OE_O_EXCL:
+            default:
             {
-                desired_access = FILE_APPEND_DATA;
+                // Open file if it exists, otherwise fail. Ignore O_EXCL flag.
+                create_dispos = OPEN_EXISTING;
+                break;
             }
+        }
+
+        if ((flags & OE_O_APPEND) != 0)
+        {
+            desired_access = FILE_APPEND_DATA;
         }
 
         // In Linux land, we can always share files for read and write unless
