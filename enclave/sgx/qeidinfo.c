@@ -60,7 +60,13 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     host_args = (oe_get_qe_identity_info_args_t*)host_args_buffer;
     *host_args = *args;
 
-    result = oe_ocall(OE_OCALL_GET_QE_ID_INFO, (uint64_t)host_args, NULL);
+    result = oe_ocall(
+        OE_OCALL_GET_QE_ID_INFO,
+        (uint64_t)host_args,
+        sizeof(*host_args),
+        true,
+        NULL,
+        0);
     OE_CHECK(result);
 
     // Copy args to prevent TOCTOU issues.

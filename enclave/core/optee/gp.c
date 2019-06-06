@@ -220,7 +220,13 @@ done:
     return result == OE_OK ? TEE_SUCCESS : TEE_ERROR_GENERIC;
 }
 
-oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
+static oe_result_t _handle_call_builtin_function(
+    uint16_t func,
+    uint64_t arg_in,
+    size_t arg_in_size,
+    bool arg_in_is_pointer,
+    uint64_t* arg_out,
+    size_t arg_out_size)
 {
     oe_call_host_function_args_t* args = NULL;
 

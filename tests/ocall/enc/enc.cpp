@@ -83,7 +83,8 @@ uint64_t enc_test_my_ocall()
 
     /* Test low-level OCALL of illegal function number */
     {
-        oe_result_t result = oe_ocall(0xffff, 0, NULL);
+        uint64_t arg = 0;
+        oe_result_t result = oe_ocall(0xffff, arg, sizeof(arg), false, NULL, 0);
         OE_TEST(OE_NOT_FOUND == result);
     }
 

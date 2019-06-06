@@ -88,7 +88,13 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         p += crl_url_sizes[i];
     }
 
-    OE_CHECK(oe_ocall(OE_OCALL_GET_REVOCATION_INFO, (uint64_t)host_args, NULL));
+    OE_CHECK(oe_ocall(
+        OE_OCALL_GET_REVOCATION_INFO,
+        (uint64_t)host_args,
+        sizeof(*host_args),
+        true,
+        NULL,
+        0));
 
     // Copy args to prevent TOCTOU issues.
     tmp_args = *host_args;

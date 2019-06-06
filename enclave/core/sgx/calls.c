@@ -526,8 +526,18 @@ oe_result_t oe_get_enclave_status()
 **==============================================================================
 */
 
-oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
+oe_result_t oe_ocall(
+    uint16_t func,
+    uint64_t arg_in,
+    size_t arg_in_size,
+    bool arg_in_is_pointer,
+    uint64_t* arg_out,
+    size_t arg_out_size)
 {
+    OE_UNUSED(arg_in_size);
+    OE_UNUSED(arg_in_is_pointer);
+    OE_UNUSED(arg_out_size);
+
     oe_result_t result = OE_UNEXPECTED;
     td_t* td = oe_get_td();
     Callsite* callsite = td->callsites;
@@ -613,7 +623,13 @@ oe_result_t oe_call_host_function_by_table_id(
     }
 
     /* Call the host function with this address */
-    OE_CHECK(oe_ocall(OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args, NULL));
+    OE_CHECK(oe_ocall(
+        OE_OCALL_CALL_HOST_FUNCTION,
+        (uint64_t)args,
+        sizeof(*args),
+        true,
+        NULL,
+        0));
 
     /* Check the result */
     OE_CHECK(args->result);

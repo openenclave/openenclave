@@ -29,7 +29,13 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
     args->size = size;
     args->ret = NULL;
 
-    if (oe_ocall(OE_OCALL_BACKTRACE_SYMBOLS, (uint64_t)args, NULL) != OE_OK)
+    if (oe_ocall(
+            OE_OCALL_BACKTRACE_SYMBOLS,
+            (uint64_t)args,
+            sizeof(*args),
+            true,
+            NULL,
+            0) != OE_OK)
         goto done;
 
     ret = args->ret;

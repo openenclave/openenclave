@@ -127,7 +127,13 @@ static oe_result_t _get_sgx_target_info(sgx_target_info_t* target_info)
     if (args == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    OE_CHECK(oe_ocall(OE_OCALL_GET_QE_TARGET_INFO, (uint64_t)args, NULL));
+    OE_CHECK(oe_ocall(
+        OE_OCALL_GET_QE_TARGET_INFO,
+        (uint64_t)args,
+        sizeof(*args),
+        true,
+        NULL,
+        0));
 
     result = args->result;
     if (result == OE_OK)
@@ -169,7 +175,8 @@ static oe_result_t _get_quote(
     if (args == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    OE_CHECK(oe_ocall(OE_OCALL_GET_QUOTE, (uint64_t)args, NULL));
+    OE_CHECK(oe_ocall(
+        OE_OCALL_GET_QUOTE, (uint64_t)args, sizeof(*args), true, NULL, 0));
     result = args->result;
 
     if (result == OE_OK || result == OE_BUFFER_TOO_SMALL)

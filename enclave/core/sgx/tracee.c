@@ -185,7 +185,8 @@ oe_result_t oe_log(log_level_t level, const char* fmt, ...)
         goto done;
 
     // send over to the host
-    if (oe_ocall(OE_OCALL_LOG, (uint64_t)args, NULL) != OE_OK)
+    if (oe_ocall(OE_OCALL_LOG, (uint64_t)args, sizeof(*args), true, NULL, 0) !=
+        OE_OK)
         goto done;
 
     result = OE_OK;

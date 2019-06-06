@@ -16,7 +16,13 @@ void* oe_host_malloc(size_t size)
     uint64_t arg_in = size;
     uint64_t arg_out = 0;
 
-    if (oe_ocall(OE_OCALL_MALLOC, arg_in, &arg_out) != OE_OK)
+    if (oe_ocall(
+            OE_OCALL_MALLOC,
+            arg_in,
+            sizeof(arg_in),
+            false,
+            &arg_out,
+            sizeof(arg_out)) != OE_OK)
     {
         return NULL;
     }
@@ -53,7 +59,13 @@ void* oe_host_realloc(void* ptr, size_t size)
     arg_in->ptr = ptr;
     arg_in->size = size;
 
-    if (oe_ocall(OE_OCALL_REALLOC, (uint64_t)arg_in, &arg_out) != OE_OK)
+    if (oe_ocall(
+            OE_OCALL_REALLOC,
+            (uint64_t)arg_in,
+            sizeof(*arg_in),
+            true,
+            &arg_out,
+            sizeof(arg_out)) != OE_OK)
     {
         arg_out = 0;
         goto done;
@@ -69,7 +81,7 @@ done:
 
 void oe_host_free(void* ptr)
 {
-    oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, NULL);
+    oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, sizeof(ptr), false, NULL, 0);
 }
 
 char* oe_host_strndup(const char* str, size_t n)
@@ -132,7 +144,9 @@ int oe_host_write(int device, const char* str, size_t len)
     args->str[len] = '\0';
 
     /* Perform OCALL */
-    if (oe_ocall(OE_OCALL_WRITE, (uint64_t)args, NULL) != OE_OK)
+    if (oe_ocall(
+            OE_OCALL_WRITE, (uint64_t)args, sizeof(*args), true, NULL, 0) !=
+        OE_OK)
         goto done;
 
     ret = 0;
