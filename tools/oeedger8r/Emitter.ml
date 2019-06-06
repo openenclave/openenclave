@@ -697,9 +697,9 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         let arg = prefix ^ decl.identifier in
         (* These need to be in order and so done together. *)
         [ gen_c_for count
-        ; [ sprintf "OE_WRITE_%s_PARAM(%s, %s, %s, %s);"
+        ; [ sprintf "OE_WRITE_%s_PARAM(%s, %s, %s);"
               (if is_in_ptr ptype then "IN" else "IN_OUT")
-              arg arg size tystr ]
+              arg size tystr ]
         ; (let param_count =
              oe_get_param_count (ptype, decl, "_args." ^ prefix)
            in

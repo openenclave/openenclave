@@ -13,7 +13,7 @@ set(EDL_FILE ${EDL_DIR}/posix.edl)
 
 add_custom_command(
     OUTPUT posix_u.h posix_u.c posix_args.h
-    DEPENDS ${EDL_FILE}
+    DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${EDL_FILE})
 
 add_custom_target(posix_untrusted_edl
