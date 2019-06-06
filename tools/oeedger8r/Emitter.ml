@@ -449,6 +449,61 @@ let warn_size_and_count_params (fd : func_decl) =
 
 (** Generate the Enclave code. *)
 let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
+  (* Short aliases for the trusted and untrusted function
+     declarations. *)
+  let tfs = ec.tfunc_decls in
+  let ufs = ec.ufunc_decls in
+  (* Validate Open Enclave supported EDL features. NOTE: This
+     validation has the side effects of printed warnings or failure
+     with an error message. *)
+  if ep.use_prefix then
+    failwithf "--use_prefix option is not supported by oeedger8r." ;
+  List.iter
+    (fun f ->
+      if f.tf_is_priv then
+        failwithf
+          "Function '%s': 'private' specifier is not supported by oeedger8r"
+          f.tf_fdecl.fname ;
+      if f.tf_is_switchless then
+        failwithf
+          "Function '%s': switchless ecalls and ocalls are not yet supported \
+           by Open Enclave SDK."
+          f.tf_fdecl.fname )
+    tfs ;
+  List.iter
+    (fun f ->
+      ( if f.uf_fattr.fa_convention <> CC_NONE then
+        let cconv_str = get_call_conv_str f.uf_fattr.fa_convention in
+        printf
+          "Warning: Function '%s': Calling convention '%s' for ocalls is not \
+           supported by oeedger8r.\n"
+          f.uf_fdecl.fname cconv_str ) ;
+      if f.uf_fattr.fa_dllimport then
+        failwithf "Function '%s': dllimport is not supported by oeedger8r."
+          f.uf_fdecl.fname ;
+      if f.uf_allow_list != [] then
+        printf
+          "Warning: Function '%s': Reentrant ocalls are not supported by Open \
+           Enclave. Allow list ignored.\n"
+          f.uf_fdecl.fname ;
+      if f.uf_is_switchless then
+        failwithf
+          "Function '%s': switchless ecalls and ocalls are not yet supported \
+           by Open Enclave SDK."
+          f.uf_fdecl.fname )
+    ufs ;
+  (* Map warning functions over trusted and untrusted function
+     declarations *)
+  let ufuncs = List.map (fun f -> f.uf_fdecl) ufs in
+  let tfuncs = List.map (fun f -> f.tf_fdecl) tfs in
+  let funcs = List.append ufuncs tfuncs in
+  List.iter
+    (fun f ->
+      warn_non_portable_types f ;
+      warn_signed_size_or_count_types f ;
+      warn_size_and_count_params f )
+    funcs ;
+  (* End EDL validation. *)
   (* Given [name], return the corresponding [StructDef], or [None]. *)
   let get_struct_by_name name =
     (* [ec.comp_defs] is a list of all composite types, but we're only
@@ -489,10 +544,6 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   let get_function_id (f : func_decl) =
     ec.enclave_name ^ "_fcn_id_" ^ f.fname
   in
-  (* Short aliases for the trusted and untrusted function
-     declarations. *)
-  let tfs = ec.tfunc_decls in
-  let ufs = ec.ufunc_decls in
   (* Emit IDs in enum for trusted functions. *)
   let emit_trusted_function_ids =
     [ "enum"
@@ -1056,57 +1107,6 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "}"
     ; "" ]
   in
-  (* Validate Open Enclave supported EDL features. *)
-  let validate_oe_support =
-    (* check supported options *)
-    if ep.use_prefix then
-      failwithf "--use_prefix option is not supported by oeedger8r." ;
-    List.iter
-      (fun f ->
-        if f.tf_is_priv then
-          failwithf
-            "Function '%s': 'private' specifier is not supported by oeedger8r"
-            f.tf_fdecl.fname ;
-        if f.tf_is_switchless then
-          failwithf
-            "Function '%s': switchless ecalls and ocalls are not yet \
-             supported by Open Enclave SDK."
-            f.tf_fdecl.fname )
-      tfs ;
-    List.iter
-      (fun f ->
-        ( if f.uf_fattr.fa_convention <> CC_NONE then
-          let cconv_str = get_call_conv_str f.uf_fattr.fa_convention in
-          printf
-            "Warning: Function '%s': Calling convention '%s' for ocalls is \
-             not supported by oeedger8r.\n"
-            f.uf_fdecl.fname cconv_str ) ;
-        if f.uf_fattr.fa_dllimport then
-          failwithf "Function '%s': dllimport is not supported by oeedger8r."
-            f.uf_fdecl.fname ;
-        if f.uf_allow_list != [] then
-          printf
-            "Warning: Function '%s': Reentrant ocalls are not supported by \
-             Open Enclave. Allow list ignored.\n"
-            f.uf_fdecl.fname ;
-        if f.uf_is_switchless then
-          failwithf
-            "Function '%s': switchless ecalls and ocalls are not yet \
-             supported by Open Enclave SDK."
-            f.uf_fdecl.fname )
-      ufs ;
-    (* Map warning functions over trusted and untrusted function
-       declarations *)
-    let ufuncs = List.map (fun f -> f.uf_fdecl) ufs in
-    let tfuncs = List.map (fun f -> f.tf_fdecl) tfs in
-    let funcs = List.append ufuncs tfuncs in
-    List.iter
-      (fun f ->
-        warn_non_portable_types f ;
-        warn_signed_size_or_count_types f ;
-        warn_size_and_count_params f )
-      funcs
-  in
   (* Includes are emitted in [args.h]. Imported functions have already
      been brought into function lists. *)
   let gen_t_h =
@@ -1291,9 +1291,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "OE_EXTERNC_END"
     ; "" ]
   in
-  (* NOTE: The below code is all I/O side effects to emit warnings or
-     generate files. *)
-  validate_oe_support ;
+  (* NOTE: The below code encapsulates all our file I/O. *)
   let args_h = ec.file_shortnm ^ "_args.h" in
   if ep.gen_trusted then (
     write_file oe_gen_args_header args_h ep.trusted_dir ;
