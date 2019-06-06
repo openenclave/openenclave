@@ -4,8 +4,8 @@
 #ifndef _OE_SYS_STAT_H
 #define _OE_SYS_STAT_H
 
-#include <openenclave/bits/defs.h>
 #include <openenclave/corelibc/bits/types.h>
+#include <openenclave/internal/defs.h>
 
 OE_EXTERNC_BEGIN
 
