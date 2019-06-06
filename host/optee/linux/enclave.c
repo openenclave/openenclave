@@ -2,11 +2,14 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/edger8r/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 
+#include "../../calls.h"
+#include "../../ocalls.h"
 #include "enclave.h"
 
 #define PARAM_TYPES_IN_OUT      \
@@ -34,10 +37,182 @@
  * the value is indeed at least as large as we assume it to be. */
 OE_STATIC_ASSERT(TEEC_CONFIG_PAYLOAD_REF_COUNT >= 4);
 
+static oe_result_t _handle_call_host_function(
+    void* inout_buffer,
+    size_t inout_buffer_size,
+    void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    oe_enclave_t* enclave)
+{
+    oe_result_t result = OE_OK;
+
+    oe_call_host_function_args_t* args_ptr;
+
+    oe_ocall_func_t func;
+    ocall_table_t ocall_table;
+
+    size_t buffer_size;
+
+    /* Check parameters */
+    if (!inout_buffer ||
+        inout_buffer_size != sizeof(oe_call_host_function_args_t))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* The in/out buffer contains the OCALL parameters structure */
+    args_ptr = (oe_call_host_function_args_t*)inout_buffer;
+    if (args_ptr == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Resolve which OCALL table to use. */
+    if (args_ptr->table_id == OE_UINT64_MAX)
+    {
+        ocall_table.ocalls = enclave->ocalls;
+        ocall_table.num_ocalls = enclave->num_ocalls;
+    }
+    else
+    {
+        if (args_ptr->table_id >= OE_MAX_OCALL_TABLES)
+            OE_RAISE(OE_NOT_FOUND);
+
+        ocall_table.ocalls = _ocall_tables[args_ptr->table_id].ocalls;
+        ocall_table.num_ocalls = _ocall_tables[args_ptr->table_id].num_ocalls;
+
+        if (!ocall_table.ocalls)
+            OE_RAISE(OE_NOT_FOUND);
+    }
+
+    /* Fetch matching function */
+    if (args_ptr->function_id >= ocall_table.num_ocalls)
+        OE_RAISE(OE_NOT_FOUND);
+
+    func = ocall_table.ocalls[args_ptr->function_id];
+    if (func == NULL)
+    {
+        result = OE_NOT_FOUND;
+        goto done;
+    }
+
+    /* TODO: Is due to limits imposed by the ECALL/ERET mechanism and therefore
+     * SGX-specific?
+     */
+    OE_CHECK(
+        oe_safe_add_u64(input_buffer_size, output_buffer_size, &buffer_size));
+
+    /* Buffer sizes must be pointer aligned */
+    if ((input_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if ((output_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Call the function */
+    func(
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        &args_ptr->output_bytes_written);
+
+    /* The ocall succeeded */
+    args_ptr->result = OE_OK;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static TEEC_Result _handle_generic_rpc(
+    int func,
+    void* inout_buffer,
+    size_t inout_buffer_size,
+    void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    void* context)
+{
+    oe_enclave_t* enclave = (oe_enclave_t*)context;
+
+    switch ((oe_func_t)func)
+    {
+        case OE_OCALL_CALL_HOST_FUNCTION:
+            _handle_call_host_function(
+                inout_buffer,
+                inout_buffer_size,
+                input_buffer,
+                input_buffer_size,
+                output_buffer,
+                output_buffer_size,
+                enclave);
+            break;
+
+        case OE_OCALL_MALLOC:
+            HandleMalloc(*(uint64_t*)input_buffer, (uint64_t*)output_buffer);
+            break;
+
+        case OE_OCALL_REALLOC:
+            HandleRealloc((uint64_t)input_buffer, (uint64_t*)output_buffer);
+            break;
+
+        case OE_OCALL_FREE:
+            HandleFree(*(uint64_t*)input_buffer);
+            break;
+
+        case OE_OCALL_WRITE:
+            HandlePrint((uint64_t)input_buffer);
+            break;
+
+        case OE_OCALL_THREAD_WAIT:
+            return TEEC_ERROR_NOT_SUPPORTED;
+
+        case OE_OCALL_THREAD_WAKE:
+            return TEEC_ERROR_NOT_SUPPORTED;
+
+        case OE_OCALL_THREAD_WAKE_WAIT:
+            return TEEC_ERROR_NOT_SUPPORTED;
+
+        case OE_OCALL_GET_QUOTE:
+            return TEEC_ERROR_NOT_SUPPORTED;
+
+        case OE_OCALL_GET_QE_TARGET_INFO:
+            return TEEC_ERROR_NOT_SUPPORTED;
+
+        case OE_OCALL_SLEEP:
+            oe_handle_sleep(*(uint64_t*)input_buffer);
+            break;
+
+        case OE_OCALL_GET_TIME:
+            oe_handle_get_time(
+                *(uint64_t*)input_buffer, (uint64_t*)output_buffer);
+            break;
+
+        case OE_OCALL_BACKTRACE_SYMBOLS:
+            return TEEC_ERROR_NOT_SUPPORTED;
+
+        case OE_OCALL_LOG:
+            return TEEC_ERROR_NOT_SUPPORTED;
+
+        default:
+        {
+            /* No function found with the number */
+            return TEEC_ERROR_ITEM_NOT_FOUND;
+        }
+    }
+
+    return TEEC_SUCCESS;
+}
+
 static void* _grpc_thread_proc(void* param)
 {
-    OE_UNUSED(param);
-    return NULL;
+    TEEC_Result res;
+    oe_enclave_t* enclave = (oe_enclave_t*)param;
+
+    res = TEEC_ReceiveReplyGenericRpc(
+        &enclave->session, _handle_generic_rpc, enclave);
+
+    return (void*)(uintptr_t)res;
 }
 
 static oe_result_t _uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
@@ -218,8 +393,8 @@ oe_result_t oe_ecall(
     memset(&op.params[0], 0, sizeof(op.params[0]));
 
     /* Open Enclave-specific data */
-    op.params[1].tmpref.buffer = &args;
-    op.params[1].tmpref.size = sizeof(args);
+    op.params[1].tmpref.buffer = args;
+    op.params[1].tmpref.size = sizeof(*args);
 
     /* Input buffer */
     if (args->input_buffer)

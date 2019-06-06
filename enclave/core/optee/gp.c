@@ -26,27 +26,52 @@
  * libutee.
  */
 
-#define PARAM_TYPES_IN_OUT           \
+#define PT_BUILTIN_CALL_IN_OUT       \
     (TEE_PARAM_TYPES(                \
+        TEE_PARAM_TYPE_VALUE_INPUT,  \
         TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_MEMREF_INPUT, \
+        TEE_PARAM_TYPE_MEMREF_OUTPUT))
+#define PT_BUILTIN_CALL_IN_NO_OUT    \
+    (TEE_PARAM_TYPES(                \
+        TEE_PARAM_TYPE_VALUE_INPUT,  \
+        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_MEMREF_INPUT, \
+        TEE_PARAM_TYPE_NONE))
+#define PT_BUILTIN_CALL_NO_IN_OUT   \
+    (TEE_PARAM_TYPES(               \
+        TEE_PARAM_TYPE_VALUE_INPUT, \
+        TEE_PARAM_TYPE_NONE,        \
+        TEE_PARAM_TYPE_NONE,        \
+        TEE_PARAM_TYPE_MEMREF_OUTPUT))
+#define PT_BUILTIN_CALL_NO_IN_NO_OUT \
+    (TEE_PARAM_TYPES(                \
+        TEE_PARAM_TYPE_VALUE_INPUT,  \
+        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_NONE))
+
+#define PT_HOST_CALL_IN_OUT          \
+    (TEE_PARAM_TYPES(                \
+        TEE_PARAM_TYPE_VALUE_INPUT,  \
         TEE_PARAM_TYPE_MEMREF_INOUT, \
         TEE_PARAM_TYPE_MEMREF_INPUT, \
         TEE_PARAM_TYPE_MEMREF_OUTPUT))
-#define PARAM_TYPES_IN_NO_OUT        \
+#define PT_HOST_CALL_IN_NO_OUT       \
     (TEE_PARAM_TYPES(                \
-        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_VALUE_INPUT,  \
         TEE_PARAM_TYPE_MEMREF_INOUT, \
         TEE_PARAM_TYPE_MEMREF_INPUT, \
         TEE_PARAM_TYPE_NONE))
-#define PARAM_TYPES_NO_IN_OUT        \
+#define PT_HOST_CALL_NO_IN_OUT       \
     (TEE_PARAM_TYPES(                \
-        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_VALUE_INPUT,  \
         TEE_PARAM_TYPE_MEMREF_INOUT, \
         TEE_PARAM_TYPE_NONE,         \
         TEE_PARAM_TYPE_MEMREF_OUTPUT))
-#define PARAM_TYPES_NO_IN_NO_OUT     \
+#define PT_HOST_CALL_NO_IN_NO_OUT    \
     (TEE_PARAM_TYPES(                \
-        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_VALUE_INPUT,  \
         TEE_PARAM_TYPE_MEMREF_INOUT, \
         TEE_PARAM_TYPE_NONE,         \
         TEE_PARAM_TYPE_NONE))
@@ -225,18 +250,63 @@ static oe_result_t _handle_call_builtin_function(
     uint64_t* arg_out,
     size_t arg_out_size)
 {
-    oe_call_host_function_args_t* args = NULL;
-
     TEE_Result tee_res;
 
     TEE_Param params[TEE_NUM_PARAMS];
     uint32_t param_types;
 
-    /* Retrieve the ECALL arguments structure */
-    args = (oe_call_host_function_args_t*)arg_in;
-
     /* The PTA RPC does not understand Open Enclave function codes */
     params[0].value.a = func;
+
+    /* Host OS-specific data (used only on Windows) */
+    params[0].value.b = __oe_windows_ecall_key;
+
+    /* Input buffer */
+    if (arg_in_size > 0)
+    {
+        if (arg_in_size > OE_UINT32_MAX)
+            return OE_OUT_OF_BOUNDS;
+
+        params[2].memref.buffer = arg_in_is_pointer ? (void*)arg_in : &arg_in;
+        params[2].memref.size = (uint32_t)arg_in_size;
+    }
+
+    if (arg_out_size > 0)
+    {
+        if (arg_out_size > OE_UINT32_MAX)
+            return OE_OUT_OF_BOUNDS;
+
+        params[3].memref.buffer = (void*)arg_out;
+        params[3].memref.size = (uint32_t)arg_out_size;
+    }
+
+    /* Fill in parameter types */
+    if (arg_in_size > 0 && arg_out_size > 0)
+        param_types = PT_BUILTIN_CALL_IN_OUT;
+    else if (arg_in_size > 0)
+        param_types = PT_BUILTIN_CALL_IN_NO_OUT;
+    else if (arg_out_size > 0)
+        param_types = PT_BUILTIN_CALL_NO_IN_OUT;
+    else
+        param_types = PT_BUILTIN_CALL_NO_IN_NO_OUT;
+
+    /* Ask the RPC PTA to perform an OCALL on our behalf via the TA2TA API */
+    tee_res = TEE_InvokeTACommand(
+        __oe_rpc_pta_session, 0, PTA_RPC_EXECUTE, param_types, params, NULL);
+
+    return tee_res == TEE_SUCCESS ? OE_OK : OE_FAILURE;
+}
+
+static oe_result_t _handle_call_host_function(
+    oe_call_host_function_args_t* args)
+{
+    TEE_Result tee_res;
+
+    TEE_Param params[TEE_NUM_PARAMS];
+    uint32_t param_types;
+
+    /* The PTA RPC does not understand Open Enclave function codes */
+    params[0].value.a = OE_OCALL_CALL_HOST_FUNCTION;
 
     /* Host OS-specific data (used only on Windows) */
     params[0].value.b = __oe_windows_ecall_key;
@@ -266,20 +336,45 @@ static oe_result_t _handle_call_builtin_function(
 
     /* Fill in parameter types */
     if (args->input_buffer && args->output_buffer)
-        param_types = PARAM_TYPES_IN_OUT;
+        param_types = PT_HOST_CALL_IN_OUT;
     else if (args->input_buffer)
-        param_types = PARAM_TYPES_IN_NO_OUT;
+        param_types = PT_HOST_CALL_IN_NO_OUT;
     else if (args->output_buffer)
-        param_types = PARAM_TYPES_NO_IN_OUT;
+        param_types = PT_HOST_CALL_NO_IN_OUT;
     else
-        param_types = PARAM_TYPES_NO_IN_NO_OUT;
+        param_types = PT_HOST_CALL_NO_IN_NO_OUT;
 
     /* Ask the RPC PTA to perform an OCALL on our behalf via the TA2TA API */
     tee_res = TEE_InvokeTACommand(
         __oe_rpc_pta_session, 0, PTA_RPC_EXECUTE, param_types, params, NULL);
 
-    if (arg_out)
-        *arg_out = args->result;
+    return tee_res == TEE_SUCCESS ? OE_OK : OE_FAILURE;
+}
+
+oe_result_t oe_ocall(
+    uint16_t func,
+    uint64_t arg_in,
+    size_t arg_in_size,
+    bool arg_in_is_pointer,
+    uint64_t* arg_out,
+    size_t arg_out_size)
+{
+    if (func == OE_OCALL_CALL_HOST_FUNCTION)
+    {
+        return _handle_call_host_function(
+            (oe_call_host_function_args_t*)arg_in);
+    }
+    else
+    {
+        return _handle_call_builtin_function(
+            func,
+            arg_in,
+            arg_in_size,
+            arg_in_is_pointer,
+            arg_out,
+            arg_out_size);
+    }
+}
 
 void oe_abort(void)
 {
