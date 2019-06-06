@@ -2,10 +2,44 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/edger8r/host.h>
 #include <openenclave/host.h>
-#include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
+
+#include "calls.h"
+
+/*
+**==============================================================================
+**
+** oe_register_ocall_function_table()
+**
+** Register an ocall table with the given table_id.
+**
+**==============================================================================
+*/
+
+ocall_table_t _ocall_tables[OE_MAX_OCALL_TABLES];
+static oe_mutex _ocall_tables_lock = OE_H_MUTEX_INITIALIZER;
+
+oe_result_t oe_register_ocall_function_table(
+    uint64_t table_id,
+    const oe_ocall_func_t* ocalls,
+    size_t num_ocalls)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (table_id >= OE_MAX_OCALL_TABLES || !ocalls)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    oe_mutex_lock(&_ocall_tables_lock);
+    _ocall_tables[table_id].ocalls = ocalls;
+    _ocall_tables[table_id].num_ocalls = num_ocalls;
+    oe_mutex_unlock(&_ocall_tables_lock);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
 
 /*
 **==============================================================================
