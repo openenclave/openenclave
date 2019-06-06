@@ -53,7 +53,7 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
 #if defined(_MSC_VER)
     /* posix_memalign() enforces a minimum alignment of sizeof(void*). */
     if (alignment < sizeof(void*))
-        alignment = sieof(void*);
+        alignment = sizeof(void*);
 
     if (!memptr)
     {

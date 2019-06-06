@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#if defined(WINDOWS_HOST)
+#if defined(_MSC_VER)
 #include "../platform/windows.h"
 #else
 #include "../platform/linux.h"

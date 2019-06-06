@@ -4,7 +4,7 @@
 #ifndef _POLLER_H
 #define _POLLER_H
 
-#if defined(WINDOWS_HOST)
+#if defined(_MSC_VER)
 #include "../platform/windows.h"
 #else
 #include "../platform/linux.h"
@@ -72,7 +72,7 @@ class select_poller : public poller
     virtual int wait(std::vector<event_t>& events);
 };
 
-#if !defined(WINDOWS_HOST)
+#if !defined(_MSC_VER)
 class poll_poller : public poller
 {
   public:
@@ -84,9 +84,9 @@ class poll_poller : public poller
 
   private:
 };
-#endif /* !defined(WINDOWS_HOST) */
+#endif /* !defined(_MSC_VER) */
 
-#if defined(WINDOWS_HOST)
+#if defined(_MSC_VER)
 typedef select_poller poll_poller;
 #endif
 

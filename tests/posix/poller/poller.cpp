@@ -179,7 +179,7 @@ done:
 //
 //==============================================================================
 
-#if !defined(WINDOWS_HOST)
+#if !defined(_MSC_VER)
 
 poll_poller::poll_poller()
 {
@@ -257,4 +257,4 @@ int poll_poller::wait(std::vector<event_t>& events)
     return 0;
 }
 
-#endif /* !defined(WINDOWS_HOST) */
+#endif /* !defined(_MSC_VER) */

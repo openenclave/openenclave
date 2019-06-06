@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "server.h"
-#if defined(WINDOWS_HOST)
+#if defined(_MSC_VER)
 #pragma warning(disable : 4005)
 // clang-format off
 #include <winsock2.h>
@@ -33,7 +33,7 @@ typedef int socket_t;
 
 void oe_abort(void);
 
-#if defined(WINDOWS_HOST)
+#if defined(_MSC_VER)
 void run_server(uint16_t port)
 {
     socket_t listen_sd;

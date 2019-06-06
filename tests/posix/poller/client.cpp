@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#if defined(WINDOWS_HOST)
+#if defined(_MSC_VER)
 #include "../platform/windows.h"
 #else
 #include "../platform/linux.h"

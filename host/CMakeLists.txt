@@ -240,10 +240,6 @@ set_property(TARGET oehost PROPERTY
 # -rdynamic link flag).
 add_library(oehostapp INTERFACE)
 
-if(WIN32)
-    target_compile_definitions(oehostapp INTERFACE -DWINDOWS_HOST )
-endif()
-
 target_link_libraries(oehostapp INTERFACE oehost)
 
 if (UNIX)
