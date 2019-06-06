@@ -84,26 +84,27 @@ let filter_map f l =
 (* Helper to flatten and map at the same time. *)
 let flatten_map f l = List.flatten (List.map f l)
 
-let is_in_ptr (ptype : parameter_type) =
-  match ptype with
+let is_in_ptr = function
   | PTVal _ -> false
   | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrIn
 
-let is_out_ptr (ptype : parameter_type) =
-  match ptype with
+let is_out_ptr = function
   | PTVal _ -> false
   | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrOut
 
-let is_inout_ptr (ptype : parameter_type) =
-  match ptype with
+let is_inout_ptr = function
   | PTVal _ -> false
   | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrInOut
 
-let is_str_ptr (ptype : parameter_type) =
-  match ptype with PTVal _ -> false | PTPtr (_, a) -> a.pa_isstr
+let is_in_or_inout_ptr (p, _) = is_in_ptr p || is_inout_ptr p
 
-let is_wstr_ptr (ptype : parameter_type) =
-  match ptype with PTVal _ -> false | PTPtr (_, a) -> a.pa_iswstr
+let is_out_or_inout_ptr (p, _) = is_out_ptr p || is_inout_ptr p
+
+let is_str_ptr = function PTVal _ -> false | PTPtr (_, a) -> a.pa_isstr
+
+let is_wstr_ptr = function PTVal _ -> false | PTPtr (_, a) -> a.pa_iswstr
+
+let is_str_or_wstr_ptr (p, _) = is_str_ptr p || is_wstr_ptr p
 
 let gen_c_for i =
   if i = "1" then [] else [sprintf "for (size_t _i = 0; _i < %s; ++_i)" i]
@@ -577,12 +578,12 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
             sprintf "/* foreign array of type %s */ void*" tystr
           else tystr
         in
-        let need_strlen p =
-          (is_str_ptr p || is_wstr_ptr p) && (is_in_ptr p || is_inout_ptr p)
+        let need_strlen =
+          is_str_or_wstr_ptr (ptype, decl) && is_in_or_inout_ptr (ptype, decl)
         in
         let id = decl.identifier in
         [ [tystr ^ " " ^ id ^ ";"]
-        ; (if need_strlen ptype then [sprintf "size_t %s_len;" id] else []) ]
+        ; (if need_strlen then [sprintf "size_t %s_len;" id] else []) ]
         |> List.flatten
       in
       let struct_name = fd.fname ^ "_args_t" in
@@ -683,12 +684,10 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       else "/* There were no corresponding parameters. */"
     in
     let oe_compute_input_buffer_size =
-      oe_compute_buffer_size "_input_buffer_size" (fun (p, _) ->
-          is_in_ptr p || is_inout_ptr p )
+      oe_compute_buffer_size "_input_buffer_size" is_in_or_inout_ptr
     in
     let oe_compute_output_buffer_size =
-      oe_compute_buffer_size "_output_buffer_size" (fun (p, _) ->
-          is_out_ptr p || is_inout_ptr p )
+      oe_compute_buffer_size "_output_buffer_size" is_out_or_inout_ptr
     in
     let oe_serialize_buffer_inputs (plist : pdecl list) =
       let rec gen_serialize prefix count (ptype, decl) =
@@ -710,7 +709,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       in
       let params =
         flatten_map (gen_serialize "" "1")
-          (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
+          (List.filter is_in_or_inout_ptr plist)
       in
       (* Note that the indentation for the first line is applied by the
          parent function. *)
@@ -811,7 +810,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       flatten_map
         (oe_gen_set_pointers "" "1" (fun p ->
              if is_inout_ptr p then "SET_IN_OUT" else "SET_IN" ))
-        (List.filter (fun (p, _) -> is_in_ptr p || is_inout_ptr p) plist)
+        (List.filter is_in_or_inout_ptr plist)
     in
     "    "
     ^ String.concat "\n    "
@@ -824,7 +823,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       flatten_map
         (oe_gen_set_pointers "" "1" (fun p ->
              if is_inout_ptr p then "COPY_AND_SET_IN_OUT" else "SET_OUT" ))
-        (List.filter (fun (p, _) -> is_out_ptr p || is_inout_ptr p) plist)
+        (List.filter is_out_or_inout_ptr plist)
     in
     "    "
     ^ String.concat "\n    "
@@ -884,9 +883,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
                (if is_wstr_ptr ptype then "_WIDE" else "")
                decl.identifier decl.identifier )
            (List.filter
-              (fun (p, _) ->
-                (is_str_ptr p || is_wstr_ptr p)
-                && (is_in_ptr p || is_inout_ptr p) )
+              (fun p -> is_str_or_wstr_ptr p && is_in_or_inout_ptr p)
               fd.plist)
        in
        if params <> [] then String.concat "\n" params
