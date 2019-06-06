@@ -249,6 +249,28 @@ namespace OpenEnclaveSDK
 
             }
         }
+        
+        Project FindProject(Solution solution, string projectFolder)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var projects = solution.Projects;
+            foreach (var p in projects)
+            {
+                var project = p as Project;
+                var vcProject = project.Object as VCProject;
+                if (vcProject != null)
+                {
+                    string folder = Path.GetDirectoryName(vcProject.ProjectDirectory);
+                    if (projectFolder == folder)
+                    {
+                        return project;
+                    }
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// This function is the callback used to execute the command when the menu item is clicked.
@@ -424,6 +446,13 @@ namespace OpenEnclaveSDK
 
                     // Add a host code item to the project.
                     AddProjectItem("OEHostItem", "VC", baseName + "_host.c");
+
+                    // Add a reference to the enclave project if it's in the same solution.
+                    Project enclaveProject = FindProject(dte.Solution, WizardImplementation.EdlLocation);
+                    if (enclaveProject != null)
+                    {
+                        vcProject.AddProjectReference(enclaveProject);
+                    }
 
                     Cursor.Current = Cursors.Default;
                 }
