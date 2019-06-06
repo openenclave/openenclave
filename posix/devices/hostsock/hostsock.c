@@ -796,8 +796,11 @@ static ssize_t _hostsock_readv(
     }
 
     /* Synchronize data read with IO vector. */
-    if (oe_iov_sync(iov, iovcnt, buf, buf_size) != 0)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    if (ret > 0)
+    {
+        if (oe_iov_sync(iov, iovcnt, buf, buf_size) != 0)
+            OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
 

@@ -511,6 +511,8 @@ static int _hostfs_getdents64(
     {
         struct oe_dirent* ent;
 
+        oe_errno = 0;
+
         if (!(ent = _hostfs_readdir(file->dir)))
         {
             if (oe_errno)
@@ -575,8 +577,11 @@ static ssize_t _hostfs_readv(
     }
 
     /* Synchronize data read with IO vector. */
-    if (oe_iov_sync(iov, iovcnt, buf, buf_size) != 0)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    if (ret > 0)
+    {
+        if (oe_iov_sync(iov, iovcnt, buf, buf_size) != 0)
+            OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
 
@@ -643,7 +648,7 @@ static int _hostfs_rewinddir(oe_fd_t* desc)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_posix_rewinddir_ocall(dir->host_dir) != OE_OK)
-        OE_RAISE_ERRNO(oe_errno);
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     ret = 0;
 
@@ -802,13 +807,14 @@ static oe_fd_t* _hostfs_opendir(oe_device_t* device, const char* name)
     if (_make_host_path(fs, name, host_name) != 0)
         OE_RAISE_ERRNO_MSG(oe_errno, "name=%s", name);
 
+    if (!(dir = oe_calloc(1, sizeof(dir_t))))
+        OE_RAISE_ERRNO(OE_ENOMEM);
+
     if (oe_posix_opendir_ocall(&retval, host_name) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
+    if (retval == 0)
     {
-        if (!(dir = oe_calloc(1, sizeof(dir_t))))
-            OE_RAISE_ERRNO(OE_ENOMEM);
-
         dir->base.type = OE_FD_TYPE_FILE;
         dir->magic = DIR_MAGIC;
         dir->base.ops.file = _get_file_ops();
