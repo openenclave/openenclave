@@ -331,14 +331,13 @@ static oe_result_t _get_sig_struct(
     sgx_sigstruct_t* sigstruct)
 {
     oe_result_t result = OE_UNEXPECTED;
+    sgx_sigstruct_t* p = (sgx_sigstruct_t*)properties->sigstruct;
 
     memset(sigstruct, 0, sizeof(sgx_sigstruct_t));
 
     /* If sigstruct doesn't have expected header, treat enclave as unsigned */
-    if (memcmp(
-            ((sgx_sigstruct_t*)properties->sigstruct)->header,
-            SGX_SIGSTRUCT_HEADER,
-            sizeof(SGX_SIGSTRUCT_HEADER)) != 0)
+    if (memcmp(p->header, SGX_SIGSTRUCT_HEADER, sizeof(SGX_SIGSTRUCT_HEADER)) !=
+        0)
     {
         /* Only debug-sign unsigned enclaves in debug mode, fail otherwise */
         if (!(properties->config.attributes & SGX_FLAGS_DEBUG))
