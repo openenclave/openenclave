@@ -68,13 +68,18 @@ def AArch64GNUTest(String version, String build_type) {
                 cleanWs()
                 checkout scm
                 def task = """
-                            curl ${DEVKITS_URI} | tar xvz -C ${WORKSPACE} --no-same-permissions
-                            cmake ${WORKSPACE}                                                                 \
-                                -G Ninja                                                                       \
-                                -DCMAKE_BUILD_TYPE=${build_type}                                               \
-                                -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/cmake/arm-cross.cmake                      \
-                                -DOE_TA_DEV_KIT_DIR=${WORKSPACE}/devkits/vexpress-qemu_armv8a/export-ta_arm64  \
-                                -DUSE_LIBSGX=OFF                                                               \
+                            if [ ! -d /devkits ] || \
+                               ( [ -d /devkits ] && \
+                                 ( [ ! -f /devkits/TARBALL ] ||
+                                   [ $(< /devkits/TARBALL) != "${DEVKITS_URI##*/}" ] ) ); then
+                                curl ${DEVKITS_URI} | tar xvz -C / --no-same-permissions --no-same-owner
+                            fi
+                            cmake ${WORKSPACE}                                                     \
+                                -G Ninja                                                           \
+                                -DCMAKE_BUILD_TYPE=${build_type}                                   \
+                                -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/cmake/arm-cross.cmake          \
+                                -DOE_TA_DEV_KIT_DIR=/devkits/vexpress-qemu_armv8a/export-ta_arm64  \
+                                -DUSE_LIBSGX=OFF                                                   \
                                 -Wdev
                             ninja -v
                             """
