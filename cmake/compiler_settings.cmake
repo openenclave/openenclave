@@ -73,8 +73,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # to fix warnings as they arise, so they don't accumulate "to be fixed later".
   add_compile_options(-Wall -Werror -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers)
 
-  add_compile_options(-fno-strict-aliasing)
-
   # Enables XSAVE intrinsics
   if (OE_SGX)
       add_compile_options(-mxsave)
