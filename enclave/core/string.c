@@ -31,16 +31,6 @@ size_t oe_strlen(const char* s)
     return 0;
 }
 
-size_t oe_strnlen(const char* s, size_t n)
-{
-    const char* p = s;
-
-    while (n-- && *p)
-        p++;
-
-    return (size_t)(p - s);
-}
-
 int oe_strcmp(const char* s1, const char* s2)
 {
     while ((*s1 && *s2) && (*s1 == *s2))

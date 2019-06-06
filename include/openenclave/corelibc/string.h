@@ -25,8 +25,6 @@ void* memset(void* dest, int c, size_t n);
 
 size_t oe_strlen(const char* s);
 
-size_t oe_strnlen(const char* s, size_t n);
-
 int oe_strcmp(const char* s1, const char* s2);
 
 int oe_strncmp(const char* s1, const char* s2, size_t n);
@@ -69,12 +67,6 @@ OE_INLINE
 size_t strlen(const char* s)
 {
     return oe_strlen(s);
-}
-
-OE_INLINE
-size_t strnlen(const char* s, size_t n)
-{
-    return oe_strnlen(s, n);
 }
 
 OE_INLINE
