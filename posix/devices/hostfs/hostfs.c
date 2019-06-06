@@ -813,7 +813,7 @@ static oe_fd_t* _hostfs_opendir(oe_device_t* device, const char* name)
     if (oe_posix_opendir_ocall(&retval, host_name) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (retval == 0)
+    if (retval != 0)
     {
         dir->base.type = OE_FD_TYPE_FILE;
         dir->magic = DIR_MAGIC;
