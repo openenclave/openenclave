@@ -149,7 +149,7 @@ target_compile_options(oecore PUBLIC
     # symbol error when a built-in was inlined. However, we only do
     # this for our code as we don't want to force these flags on the
     # user. There are valid reasons for an end user to use built-ins.
-    $<BUILD_INTERFACE:-fno-builtin-malloc -fno-builtin-calloc -fno-builtin>)
+    $<BUILD_INTERFACE:-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-floor -fno-builtin-floorf -fno-builtin-rint -fno-builtin-rintf>)
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 

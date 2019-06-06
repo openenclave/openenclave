@@ -36,7 +36,7 @@ function(maybe_build_using_clangw OE_TARGET)
         -Wall -Werror -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers
         -fno-strict-aliasing
         -mxsave
-        -fno-builtin-malloc -fno-builtin-calloc -fno-builtin
+        -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-floor -fno-builtin-floorf -fno-builtin-rint -fno-builtin-rintf
         -mllvm -x86-speculative-load-hardening)
 
     # Setup library names variables
