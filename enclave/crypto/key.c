@@ -4,9 +4,10 @@
 #include "key.h"
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/internal/hash.h>
+#include <openenclave/internal/crypto/hash.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+#include <string.h>
 #include "pem.h"
 
 typedef oe_result_t (*oe_copy_key)(
@@ -147,7 +148,7 @@ oe_result_t oe_private_key_read_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (oe_strnlen((const char*)pem_data, pem_size) != pem_size - 1)
+    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse PEM format into key structure */
@@ -195,7 +196,7 @@ oe_result_t oe_private_key_write_pem(
 
     /* Handle case where caller's buffer is too small */
     {
-        size_t size = oe_strlen((char*)buf) + 1;
+        size_t size = strlen((char*)buf) + 1;
 
         if (*pem_size < size)
         {
@@ -232,7 +233,7 @@ oe_result_t oe_public_key_read_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (oe_strnlen((const char*)pem_data, pem_size) != pem_size - 1)
+    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse PEM format into key structure */
@@ -280,7 +281,7 @@ oe_result_t oe_public_key_write_pem(
 
     /* Handle case where caller's buffer is too small */
     {
-        size_t size = oe_strlen((char*)buf) + 1;
+        size_t size = strlen((char*)buf) + 1;
 
         if (*pem_size < size)
         {

@@ -4,15 +4,15 @@
 #include "report.h"
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/cmac.h>
-#include <openenclave/internal/keys.h>
+#include <openenclave/internal/crypto/cmac.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/sgxkeys.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
+#include <stdlib.h>
 #include "../common/sgx/quote.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
@@ -132,7 +132,7 @@ static oe_result_t _safe_copy_verify_report_args(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Caller is expected to free the allocated buffer.
-    *buffer = oe_calloc(1, safe_arg->report_size);
+    *buffer = calloc(1, safe_arg->report_size);
     if (*buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -182,5 +182,5 @@ void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
 done:
     arg.result = result;
     _safe_copy_verify_report_args_ouput(&arg, arg_in);
-    oe_free(buffer);
+    free(buffer);
 }

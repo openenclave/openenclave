@@ -7,7 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/cert.h>
+#include <openenclave/internal/crypto/cert.h>
 
 OE_EXTERNC_BEGIN
 

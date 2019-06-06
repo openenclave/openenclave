@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safecrt.h>
-#include <openenclave/internal/asn1.h>
-#include <openenclave/internal/cert.h>
+#include <openenclave/internal/crypto/asn1.h>
+#include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include "common.h"

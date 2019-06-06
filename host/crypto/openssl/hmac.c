@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/internal/crypto/hmac.h>
 #include <openenclave/internal/defs.h>
-#include <openenclave/internal/hmac.h>
 #include <openenclave/internal/raise.h>
 #include <openssl/hmac.h>
 

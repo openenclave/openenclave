@@ -3,13 +3,13 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
-#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "../common/sgx/qeidentity.h"
 
-#include <stdio.h>
 /**
  * Validate and copy buffer to enclave memory.
  */
@@ -24,7 +24,7 @@ static oe_result_t _copy_buffer_to_enclave(
         dst == NULL || dst_size == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    *dst = oe_malloc(src_size);
+    *dst = malloc(src_size);
     if (*dst == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -115,8 +115,8 @@ void oe_cleanup_qe_identity_info_args(oe_get_qe_identity_info_args_t* args)
         return;
 
     // Free buffers on the enclave side.
-    oe_free(args->issuer_chain);
-    oe_free(args->qe_id_info);
+    free(args->issuer_chain);
+    free(args->qe_id_info);
 
     if (args->host_out_buffer)
         oe_host_free(args->host_out_buffer);

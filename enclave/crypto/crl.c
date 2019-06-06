@@ -5,10 +5,11 @@
 #include <mbedtls/platform.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/internal/crl.h>
+#include <openenclave/internal/crypto/crl.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+#include <string.h>
 
 /* Randomly generated magic number */
 #define OE_CRL_MAGIC 0xf8cf8e04f4ed40f3
