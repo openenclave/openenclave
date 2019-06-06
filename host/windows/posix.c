@@ -596,22 +596,26 @@ oe_host_fd_t oe_posix_open_ocall(
 
         // In Linux land, we can always share files for read and write unless
         // they have been opened exclusively.
-        share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+        share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
 
         switch ((flags & OPEN_ACCESS_MODE_MASK))
         {
             case OE_O_RDONLY:
             {
-                desired_access |= GENERIC_READ;
-
-                if (flags & OE_O_EXCL)
-                    share_mode = FILE_SHARE_WRITE;
+                desired_access = GENERIC_READ;
 
                 break;
             }
             case OE_O_WRONLY:
             {
-                desired_access |= GENERIC_WRITE;
+                if (flags & OE_O_APPEND)
+                {
+                    desired_access |= FILE_APPEND_DATA;
+                }
+                else
+                {
+                    desired_access |= GENERIC_WRITE;
+                }
 
                 if (flags & OE_O_EXCL)
                     share_mode = FILE_SHARE_READ;
