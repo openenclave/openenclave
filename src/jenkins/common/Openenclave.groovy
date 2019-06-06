@@ -29,29 +29,27 @@ def ContainerRun(String imageName, String compiler, String task, String runArgs=
 }
 
 def azureEnvironment(String task) {
-    timeout(60) {
-        withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
-                                          passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
-                                          usernameVariable: 'SERVICE_PRINCIPAL_ID'),
-                         string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
-                         string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
-            docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
-                def image = docker.image("oetools-deploy:latest")
-                image.pull()
-                image.inside {
-                    sh """#!/usr/bin/env bash
-                          set -o errexit
-                          set -o pipefail
-                          source /etc/profile
-                          ${task}
-                       """
-                }
+    withCredentials([usernamePassword(credentialsId: 'SERVICE_PRINCIPAL_OSTCLAB',
+                                      passwordVariable: 'SERVICE_PRINCIPAL_PASSWORD',
+                                      usernameVariable: 'SERVICE_PRINCIPAL_ID'),
+                     string(credentialsId: 'OSCTLabSubID', variable: 'SUBSCRIPTION_ID'),
+                     string(credentialsId: 'TenantID', variable: 'TENANT_ID')]) {
+        docker.withRegistry("https://oejenkinscidockerregistry.azurecr.io", "oejenkinscidockerregistry") {
+            def image = docker.image("oetools-deploy:latest")
+            image.pull()
+            image.inside {
+                sh """#!/usr/bin/env bash
+                      set -o errexit
+                      set -o pipefail
+                      source /etc/profile
+                      ${task}
+                   """
             }
         }
     }
 }
 
-def runTask(String task, Integer timeoutMinutes) {
+def runTask(String task) {
     timeout(timeoutMinutes) {
         dir("${WORKSPACE}/build") {
             sh """#!/usr/bin/env bash
@@ -64,7 +62,7 @@ def runTask(String task, Integer timeoutMinutes) {
     }
 }
 
-def Run(String compiler, String task, Integer timeoutMinutes = 30) {
+def Run(String compiler, String task) {
     if (compiler == "cross") {
         // In this case, the compiler is set by the CMake toolchain file. As
         // such, it is not necessary to specify anything in the environment.

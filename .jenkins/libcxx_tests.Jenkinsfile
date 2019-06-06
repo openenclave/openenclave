@@ -4,6 +4,9 @@ import hudson.model.*
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
+// The below timeout is set in minutes
+GLOBAL_TIMEOUT = 240
+
 XENIAL_LABEL = "LIBCXX-${BUILD_NUMBER}-1604"
 BIONIC_LABEL = "LIBCXX-${BUILD_NUMBER}-1804"
 XENIAL_RG = "oe-${XENIAL_LABEL}"
@@ -24,11 +27,13 @@ String hostsList(String label, String region) {
 def ACCDeployVM(String agent_name, String agent_type, String region, String resource_group, String vhd_url) {
     stage("Deploy ${agent_name}") {
         node("nonSGX") {
-            cleanWs()
-            checkout scm
-            withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}", "VHD_URL=${vhd_url}"]) {
-                dir("${WORKSPACE}/.jenkins/provision") {
-                    oe.azureEnvironment("./deploy-agent.sh")
+            timeout(GLOBAL_TIMEOUT) {
+                cleanWs()
+                checkout scm
+                withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}", "VHD_URL=${vhd_url}"]) {
+                    dir("${WORKSPACE}/.jenkins/provision") {
+                        oe.azureEnvironment("./deploy-agent.sh")
+                    }
                 }
             }
         }
@@ -38,20 +43,22 @@ def ACCDeployVM(String agent_name, String agent_type, String region, String reso
 def registerJenkinsSlaves() {
     stage("Register Jenkins Slaves") {
         node("nonSGX") {
-            cleanWs()
-            checkout scm
-            withCredentials([usernamePassword(credentialsId: 'oe-ci',
-                                              passwordVariable: 'JENKINS_ADMIN_PASSWORD',
-                                              usernameVariable: 'JENKINS_ADMIN_NAME'),
-                             string(credentialsId: 'JENKINS_PRIVATE_URL',
-                                    variable: 'JENKINS_PRIVATE_URL')]) {
-                withEnv(["JENKINS_URL=${JENKINS_PRIVATE_URL}",
-                         "XENIAL_LABEL=${XENIAL_LABEL}",
-                         "BIONIC_LABEL=${BIONIC_LABEL}",
-                         "XENIAL_HOSTS=${hostsList(XENIAL_LABEL, 'eastus').join(',')}",
-                         "BIONIC_HOSTS=${hostsList(BIONIC_LABEL, 'westeurope').join(',')}"]) {
-                    dir(WORKSPACE) {
-                        oe.azureEnvironment("${WORKSPACE}/.jenkins/provision/register-agents.sh")
+            timeout(GLOBAL_TIMEOUT) {
+                cleanWs()
+                checkout scm
+                withCredentials([usernamePassword(credentialsId: 'oe-ci',
+                                                  passwordVariable: 'JENKINS_ADMIN_PASSWORD',
+                                                  usernameVariable: 'JENKINS_ADMIN_NAME'),
+                                 string(credentialsId: 'JENKINS_PRIVATE_URL',
+                                        variable: 'JENKINS_PRIVATE_URL')]) {
+                    withEnv(["JENKINS_URL=${JENKINS_PRIVATE_URL}",
+                             "XENIAL_LABEL=${XENIAL_LABEL}",
+                             "BIONIC_LABEL=${BIONIC_LABEL}",
+                             "XENIAL_HOSTS=${hostsList(XENIAL_LABEL, 'eastus').join(',')}",
+                             "BIONIC_HOSTS=${hostsList(BIONIC_LABEL, 'westeurope').join(',')}"]) {
+                        dir(WORKSPACE) {
+                            oe.azureEnvironment("${WORKSPACE}/.jenkins/provision/register-agents.sh")
+                        }
                     }
                 }
             }
@@ -62,9 +69,11 @@ def registerJenkinsSlaves() {
 def unregisterJenkinsSlaves() {
     stage("Unregister Jenkins Slaves") {
         node("nonSGX") {
-            for (s in hudson.model.Hudson.instance.slaves) {
-                if(s.getLabelString() == XENIAL_LABEL || s.getLabelString() == BIONIC_LABEL) {
-                    s.getComputer().doDoDelete()
+            timeout(GLOBAL_TIMEOUT) {
+                for (s in hudson.model.Hudson.instance.slaves) {
+                    if(s.getLabelString() == XENIAL_LABEL || s.getLabelString() == BIONIC_LABEL) {
+                        s.getComputer().doDoDelete()
+                    }
                 }
             }
         }
@@ -74,23 +83,27 @@ def unregisterJenkinsSlaves() {
 def ACClibcxxTest(String label, String compiler, String build_type) {
     stage("${label} SGX1FLC ${compiler} ${build_type}") {
         node("${label}") {
-            cleanWs()
-            checkout scm
-            def task = """
-                       cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=ON -DENABLE_FULL_LIBCXX_TESTS=ON
-                       make
-                       ctest -VV -debug
-                       """
-            oe.Run(compiler, task, 180)
+            timeout(GLOBAL_TIMEOUT) {
+                cleanWs()
+                checkout scm
+                def task = """
+                           cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=ON -DENABLE_FULL_LIBCXX_TESTS=ON
+                           make
+                           ctest -VV -debug
+                           """
+                oe.Run(compiler, task)
+            }
         }
     }
 }
 
 def cleanup(){
     node("nonSGX") {
-        cleanWs()
-        checkout scm
-        oe.deleteRG([XENIAL_RG, BIONIC_RG])
+        timeout(GLOBAL_TIMEOUT) {
+            cleanWs()
+            checkout scm
+            oe.deleteRG([XENIAL_RG, BIONIC_RG])
+        }
     }
 }
 
