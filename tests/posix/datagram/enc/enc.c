@@ -16,7 +16,7 @@ void init_ecall(void)
     OE_TEST(oe_load_module_host_socket_interface() == 0);
 }
 
-const short PORT = 12345;
+#define PORT 12345
 
 static const char MSG[] = "abcdefghijklmnopqrstuvwxyz";
 static const size_t NUM_MESSAGES = 1000;
