@@ -1,17 +1,22 @@
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
+// The below timeout is set in minutes
+GLOBAL_TIMEOUT = 240
+
 XENIAL_RG = "oe-deb-test-${BUILD_NUMBER}-1604"
 BIONIC_RG = "oe-deb-test-${BUILD_NUMBER}-1804"
 
 def ACCDeployVM(String agent_name, String agent_type, String region, String resource_group, String vhd_url) {
     stage("Deploy ${agent_name}") {
         node("nonSGX") {
-            cleanWs()
-            checkout scm
-            withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}", "VHD_URL=${vhd_url}"]) {
-                dir("${WORKSPACE}/.jenkins/provision") {
-                    oe.azureEnvironment("./deploy-agent.sh")
+            timeout(GLOBAL_TIMEOUT) {
+                cleanWs()
+                checkout scm
+                withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}", "VHD_URL=${vhd_url}"]) {
+                    dir("${WORKSPACE}/.jenkins/provision") {
+                        oe.azureEnvironment("./deploy-agent.sh")
+                    }
                 }
             }
         }
@@ -37,18 +42,22 @@ def AccDebTesting(String version, String region, String deb_url) {
 
     stage("OE Nightly Package Testing ${version}") {
         node("nonSGX") {
-            cleanWs()
-            checkout scm
-            oe.azureEnvironment("${script}")
+            timeout(GLOBAL_TIMEOUT) {
+                cleanWs()
+                checkout scm
+                oe.azureEnvironment("${script}")
+            }
         }
     }
 }
 
 def cleanup(){
     node("nonSGX") {
-        cleanWs()
-        checkout scm
-        oe.deleteRG([XENIAL_RG, BIONIC_RG])
+        timeout(GLOBAL_TIMEOUT) {
+            cleanWs()
+            checkout scm
+            oe.deleteRG([XENIAL_RG, BIONIC_RG])
+        }
     }
 }
 
