@@ -53,402 +53,6 @@ __declspec(noreturn) static void _panic(
 /*
 **==============================================================================
 **
-** Error handling and conversion:
-**
-**==============================================================================
-*/
-
-typedef struct _error_entry
-{
-    DWORD winerr;
-    int err;
-} error_entry_t;
-
-static error_entry_t _error_table[] = {
-    {ERROR_ACCESS_DENIED, OE_EACCES},
-    {ERROR_ACTIVE_CONNECTIONS, OE_EAGAIN},
-    {ERROR_ALREADY_EXISTS, OE_EEXIST},
-    {ERROR_BAD_DEVICE, OE_ENODEV},
-    {ERROR_BAD_EXE_FORMAT, OE_ENOEXEC},
-    {ERROR_BAD_NETPATH, OE_ENOENT},
-    {ERROR_BAD_NET_NAME, OE_ENOENT},
-    {ERROR_BAD_NET_RESP, OE_ENOSYS},
-    {ERROR_BAD_PATHNAME, OE_ENOENT},
-    {ERROR_BAD_PIPE, OE_EINVAL},
-    {ERROR_BAD_UNIT, OE_ENODEV},
-    {ERROR_BAD_USERNAME, OE_EINVAL},
-    {ERROR_BEGINNING_OF_MEDIA, OE_EIO},
-    {ERROR_BROKEN_PIPE, OE_EPIPE},
-    {ERROR_BUSY, OE_EBUSY},
-    {ERROR_BUS_RESET, OE_EIO},
-    {ERROR_CALL_NOT_IMPLEMENTED, OE_ENOSYS},
-    {ERROR_CANCELLED, OE_EINTR},
-    {ERROR_CANNOT_MAKE, OE_EPERM},
-    {ERROR_CHILD_NOT_COMPLETE, OE_EBUSY},
-    {ERROR_COMMITMENT_LIMIT, OE_EAGAIN},
-    {ERROR_CONNECTION_REFUSED, OE_ECONNREFUSED},
-    {ERROR_CRC, OE_EIO},
-    {ERROR_DEVICE_DOOR_OPEN, OE_EIO},
-    {ERROR_DEVICE_IN_USE, OE_EAGAIN},
-    {ERROR_DEVICE_REQUIRES_CLEANING, OE_EIO},
-    {ERROR_DEV_NOT_EXIST, OE_ENOENT},
-    {ERROR_DIRECTORY, OE_ENOTDIR},
-    {ERROR_DIR_NOT_EMPTY, OE_ENOTEMPTY},
-    {ERROR_DISK_CORRUPT, OE_EIO},
-    {ERROR_DISK_FULL, OE_ENOSPC},
-    {ERROR_DS_GENERIC_ERROR, OE_EIO},
-    {ERROR_DUP_NAME, OE_ENOTUNIQ},
-    {ERROR_EAS_DIDNT_FIT, OE_ENOSPC},
-    {ERROR_EAS_NOT_SUPPORTED, OE_ENOTSUP},
-    {ERROR_EA_LIST_INCONSISTENT, OE_EINVAL},
-    {ERROR_EA_TABLE_FULL, OE_ENOSPC},
-    {ERROR_END_OF_MEDIA, OE_ENOSPC},
-    {ERROR_EOM_OVERFLOW, OE_EIO},
-    {ERROR_EXE_MACHINE_TYPE_MISMATCH, OE_ENOEXEC},
-    {ERROR_EXE_MARKED_INVALID, OE_ENOEXEC},
-    {ERROR_FILEMARK_DETECTED, OE_EIO},
-    {ERROR_FILENAME_EXCED_RANGE, OE_ENAMETOOLONG},
-    {ERROR_FILE_CORRUPT, OE_EEXIST},
-    {ERROR_FILE_EXISTS, OE_EEXIST},
-    {ERROR_FILE_INVALID, OE_ENXIO},
-    {ERROR_FILE_NOT_FOUND, OE_ENOENT},
-    {ERROR_HANDLE_DISK_FULL, OE_ENOSPC},
-    {ERROR_HANDLE_EOF, OE_ENODATA},
-    {ERROR_INVALID_ADDRESS, OE_EINVAL},
-    {ERROR_INVALID_AT_INTERRUPT_TIME, OE_EINTR},
-    {ERROR_INVALID_BLOCK_LENGTH, OE_EIO},
-    {ERROR_INVALID_DATA, OE_EINVAL},
-    {ERROR_INVALID_DRIVE, OE_ENODEV},
-    {ERROR_INVALID_EA_NAME, OE_EINVAL},
-    {ERROR_INVALID_EXE_SIGNATURE, OE_ENOEXEC},
-    {ERROR_INVALID_FUNCTION, OE_EBADRQC},
-    {ERROR_INVALID_HANDLE, OE_EBADF},
-    {ERROR_INVALID_NAME, OE_ENOENT},
-    {ERROR_INVALID_PARAMETER, OE_EINVAL},
-    {ERROR_INVALID_SIGNAL_NUMBER, OE_EINVAL},
-    {ERROR_IOPL_NOT_ENABLED, OE_ENOEXEC},
-    {ERROR_IO_DEVICE, OE_EIO},
-    {ERROR_IO_INCOMPLETE, OE_EAGAIN},
-    {ERROR_IO_PENDING, OE_EAGAIN},
-    {ERROR_LOCK_VIOLATION, OE_EBUSY},
-    {ERROR_MAX_THRDS_REACHED, OE_EAGAIN},
-    {ERROR_META_EXPANSION_TOO_LONG, OE_EINVAL},
-    {ERROR_MOD_NOT_FOUND, OE_ENOENT},
-    {ERROR_MORE_DATA, OE_EMSGSIZE},
-    {ERROR_NEGATIVE_SEEK, OE_EINVAL},
-    {ERROR_NETNAME_DELETED, OE_ENOENT},
-    {ERROR_NOACCESS, OE_EFAULT},
-    {ERROR_NONE_MAPPED, OE_EINVAL},
-    {ERROR_NONPAGED_SYSTEM_RESOURCES, OE_EAGAIN},
-    {ERROR_NOT_CONNECTED, OE_ENOLINK},
-    {ERROR_NOT_ENOUGH_MEMORY, OE_ENOMEM},
-    {ERROR_NOT_ENOUGH_QUOTA, OE_EIO},
-    {ERROR_NOT_OWNER, OE_EPERM},
-    {ERROR_NOT_READY, OE_ENOMEDIUM},
-    {ERROR_NOT_SAME_DEVICE, OE_EXDEV},
-    {ERROR_NOT_SUPPORTED, OE_ENOSYS},
-    {ERROR_NO_DATA, OE_EPIPE},
-    {ERROR_NO_DATA_DETECTED, OE_EIO},
-    {ERROR_NO_MEDIA_IN_DRIVE, OE_ENOMEDIUM},
-    {ERROR_NO_MORE_FILES, OE_ENFILE},
-    {ERROR_NO_MORE_ITEMS, OE_ENFILE},
-    {ERROR_NO_MORE_SEARCH_HANDLES, OE_ENFILE},
-    {ERROR_NO_PROC_SLOTS, OE_EAGAIN},
-    {ERROR_NO_SIGNAL_SENT, OE_EIO},
-    {ERROR_NO_SYSTEM_RESOURCES, OE_EFBIG},
-    {ERROR_NO_TOKEN, OE_EINVAL},
-    {ERROR_OPEN_FAILED, OE_EIO},
-    {ERROR_OPEN_FILES, OE_EAGAIN},
-    {ERROR_OUTOFMEMORY, OE_ENOMEM},
-    {ERROR_PAGED_SYSTEM_RESOURCES, OE_EAGAIN},
-    {ERROR_PAGEFILE_QUOTA, OE_EAGAIN},
-    {ERROR_PATH_NOT_FOUND, OE_ENOENT},
-    {ERROR_PIPE_BUSY, OE_EBUSY},
-    {ERROR_PIPE_CONNECTED, OE_EBUSY},
-    {ERROR_PIPE_LISTENING, OE_ECOMM},
-    {ERROR_PIPE_NOT_CONNECTED, OE_ECOMM},
-    {ERROR_POSSIBLE_DEADLOCK, OE_EDEADLOCK},
-    {ERROR_PRIVILEGE_NOT_HELD, OE_EPERM},
-    {ERROR_PROCESS_ABORTED, OE_EFAULT},
-    {ERROR_PROC_NOT_FOUND, OE_ESRCH},
-    {ERROR_REM_NOT_LIST, OE_ENONET},
-    {ERROR_SECTOR_NOT_FOUND, OE_EINVAL},
-    {ERROR_SEEK, OE_EINVAL},
-    {ERROR_SERVICE_REQUEST_TIMEOUT, OE_EBUSY},
-    {ERROR_SETMARK_DETECTED, OE_EIO},
-    {ERROR_SHARING_BUFFER_EXCEEDED, OE_ENOLCK},
-    {ERROR_SHARING_VIOLATION, OE_EBUSY},
-    {ERROR_SIGNAL_PENDING, OE_EBUSY},
-    {ERROR_SIGNAL_REFUSED, OE_EIO},
-    {ERROR_SXS_CANT_GEN_ACTCTX, OE_ELIBBAD},
-    {ERROR_THREAD_1_INACTIVE, OE_EINVAL},
-    {ERROR_TIMEOUT, OE_EBUSY},
-    {ERROR_TOO_MANY_LINKS, OE_EMLINK},
-    {ERROR_TOO_MANY_OPEN_FILES, OE_EMFILE},
-    {ERROR_UNEXP_NET_ERR, OE_EIO},
-    {ERROR_WAIT_NO_CHILDREN, OE_ECHILD},
-    {ERROR_WORKING_SET_QUOTA, OE_EAGAIN},
-    {ERROR_WRITE_PROTECT, OE_EROFS}};
-
-static size_t _error_table_size = OE_COUNTOF(_error_table);
-
-static DWORD _errno_to_winerr(int err)
-{
-    size_t i;
-
-    for (i = 0; i < _error_table_size; i++)
-    {
-        if (_error_table[i].err == err)
-            return _error_table[i].winerr;
-    }
-
-    return ERROR_INVALID_PARAMETER;
-}
-
-static int _winerr_to_errno(DWORD winerr)
-{
-    size_t i;
-
-    for (i = 0; i < _error_table_size; i++)
-    {
-        if (_error_table[i].winerr == winerr)
-            return _error_table[i].err;
-    }
-
-    return OE_EINVAL;
-}
-
-/*
-**==============================================================================
-**
-** Path conversion:
-**
-**==============================================================================
-*/
-
-// Allocates char* string which follows the expected rules for
-// enclaves. Paths in the format
-// <driveletter>:\<item>\<item> -> /<driveletter>/<item>/item>
-// <driveletter>:/<item>/<item> -> /<driveletter>/<item>/item>
-// paths without drive letter are detected and the drive added
-// /<item>/<item> -> /<current driveletter>/<item>/item>
-// relative paths are translated to absolute with drive letter
-// returns null if the string is illegal
-//
-// The string  must be freed
-// ATTN: we don't handle paths which start with the "\\?\" thing. don't really
-// think we need them
-//
-char* oe_win_path_to_posix(const char* path)
-{
-    size_t required_size = 0;
-    size_t current_dir_len = 0;
-    char* current_dir = NULL;
-    char* enclave_path = NULL;
-
-    if (!path)
-    {
-        return NULL;
-    }
-    // Relative or incomplete path?
-
-    // absolute path with drive letter.
-    // we do not handle device type paths ("CON:) or double-letter paths in case
-    // of really large numbers of disks (>26). If you have those, mount on
-    // windows
-    //
-    if (isalpha(path[0]) && path[1] == ':')
-    {
-        // Abosolute path is drive letter
-        required_size = strlen(path) + 1;
-    }
-    else if (path[0] == '/' || path[0] == '\\')
-    {
-        required_size = strlen(path) + 3; // Add a drive letter to the path
-    }
-    else
-    {
-        current_dir = _getcwd(NULL, 32767);
-        current_dir_len = strlen(current_dir);
-
-        if (isalpha(*current_dir) && (current_dir[1] == ':'))
-        {
-            // This is expected. We convert drive: to /drive.
-
-            char drive_letter = *current_dir;
-            *current_dir = '/';
-            current_dir[1] = drive_letter;
-        }
-        // relative path. If the path starts with "." or ".." we accomodate
-        required_size = strlen(path) + current_dir_len + 1;
-    }
-
-    enclave_path = (char*)calloc(1, required_size);
-
-    const char* psrc = path;
-    const char* plimit = path + strlen(path);
-    char* pdst = enclave_path;
-
-    if (isalpha(*psrc) && psrc[1] == ':')
-    {
-        *pdst++ = '/';
-        *pdst++ = *psrc;
-        psrc += 2;
-    }
-    else if (*psrc == '/')
-    {
-        *pdst++ = '/';
-        *pdst++ = _getdrive() + 'a';
-    }
-    else if (*psrc == '.')
-    {
-        memcpy(pdst, current_dir, current_dir_len);
-        if (psrc[1] == '/' || psrc[1] == '\\')
-        {
-            pdst += current_dir_len;
-            psrc++;
-        }
-        else if (psrc[1] == '.' && (psrc[2] == '/' || psrc[2] == '\\'))
-        {
-            char* rstr = strrchr(
-                current_dir, '\\'); // getcwd always returns at least '\'
-            pdst += current_dir_len - (rstr - current_dir);
-            // When we shortend the curdir by 1 slash, we perform the ".."
-            // operation we could leave it in here, but at least sometimes this
-            // will allow a path that would otherwise be too long
-            psrc += 2;
-        }
-        else
-        {
-            // It is an incomplete which starts with a file which starts with .
-            // so we dont increment psrc at all
-            pdst += current_dir_len;
-            *pdst = '/';
-        }
-    }
-    else
-    {
-        // Still a relative path
-        memcpy(pdst, current_dir, current_dir_len);
-        pdst += current_dir_len;
-        *pdst++ = '/';
-    }
-
-    // Since we have to translater slashes, use a loop rather than memcpy
-    while (psrc < plimit)
-    {
-        if (*psrc == '\\')
-        {
-            *pdst = '/';
-        }
-        else
-        {
-            *pdst = *psrc;
-        }
-        psrc++;
-        pdst++;
-    }
-    *pdst = '\0';
-
-    if (current_dir)
-    {
-        free(current_dir);
-    }
-    return enclave_path;
-}
-
-// Allocates WCHAR* string which follows the expected rules for
-// enclaves comminication with the host file system API. Paths in the format
-// /<driveletter>/<item>/<item>  become <driveletter>:/<item>/<item>
-//
-// The resulting string, especially with a relative path, will probably contain
-// mixed slashes. We beleive Windows handles this.
-//
-// Adds the string "post" to the resulting string end
-//
-// The string  must be freed
-WCHAR* oe_posix_path_to_win(const char* path, const char* post)
-{
-    size_t required_size = 0;
-    size_t current_dir_len = 0;
-    char* current_dir = NULL;
-    int pathlen = MultiByteToWideChar(CP_UTF8, 0, path, -1, NULL, 0);
-    size_t postlen = MultiByteToWideChar(CP_UTF8, 0, post, -1, NULL, 0);
-    if (post)
-    {
-        postlen = MultiByteToWideChar(CP_UTF8, 0, post, -1, NULL, 0);
-    }
-
-    WCHAR* wpath = NULL;
-
-    if (path[0] == '/')
-    {
-        if (isalpha(path[1]) && path[2] == '/')
-        {
-            wpath =
-                (WCHAR*)(calloc((pathlen + postlen + 1) * sizeof(WCHAR), 1));
-            MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, (int)pathlen);
-            if (postlen)
-            {
-                MultiByteToWideChar(
-                    CP_UTF8, 0, post, -1, wpath + pathlen - 1, (int)postlen);
-            }
-            WCHAR drive_letter = wpath[1];
-            wpath[0] = drive_letter;
-            wpath[1] = ':';
-        }
-        else
-        {
-            // Absolute path needs drive letter
-            wpath =
-                (WCHAR*)(calloc((pathlen + postlen + 3) * sizeof(WCHAR), 1));
-            MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath + 2, (int)pathlen);
-            if (postlen)
-            {
-                MultiByteToWideChar(
-                    CP_UTF8, 0, post, -1, wpath + pathlen - 1, (int)postlen);
-            }
-            WCHAR drive_letter = _getdrive() + 'A';
-            wpath[0] = drive_letter;
-            wpath[1] = ':';
-        }
-    }
-    else
-    {
-        // Relative path
-        WCHAR* current_dir = _wgetcwd(NULL, 32767);
-        if (!current_dir)
-        {
-            _set_errno(OE_ENOMEM);
-            return NULL;
-        }
-        size_t current_dir_len = wcslen(current_dir);
-
-        wpath = (WCHAR*)(calloc(
-            (pathlen + current_dir_len + postlen + 1) * sizeof(WCHAR), 1));
-        memcpy(wpath, current_dir, current_dir_len);
-        wpath[current_dir_len] = '/';
-        MultiByteToWideChar(
-            CP_UTF8, 0, path, -1, wpath + current_dir_len, pathlen);
-        if (postlen)
-        {
-            MultiByteToWideChar(
-                CP_UTF8,
-                0,
-                path,
-                -1,
-                wpath + current_dir_len + pathlen - 1,
-                (int)postlen);
-        }
-
-        free(current_dir);
-    }
-    return wpath;
-}
-
-/*
-**==============================================================================
-**
 ** File and directory I/O:
 **
 **==============================================================================
@@ -463,7 +67,6 @@ oe_host_fd_t oe_posix_open_ocall(
     oe_mode_t mode)
 {
     oe_host_fd_t ret = -1;
-    WCHAR* wpathname = NULL;
 
     if (strcmp(pathname, "/dev/stdin") == 0)
     {
@@ -473,18 +76,8 @@ oe_host_fd_t oe_posix_open_ocall(
             goto done;
         }
 
-        if (!DuplicateHandle(
-                GetCurrentProcess(),
-                GetStdHandle(STD_INPUT_HANDLE),
-                GetCurrentProcess(),
-                (HANDLE*)&ret,
-                0,
-                FALSE,
-                DUPLICATE_SAME_ACCESS))
-        {
-            _set_errno(_winerr_to_errno(GetLastError()));
-            goto done;
-        }
+	ret = _dup(OE_STDIN_FILENO);
+	goto done;
     }
     else if (strcmp(pathname, "/dev/stdout") == 0)
     {
@@ -494,18 +87,8 @@ oe_host_fd_t oe_posix_open_ocall(
             goto done;
         }
 
-        if (!DuplicateHandle(
-                GetCurrentProcess(),
-                GetStdHandle(STD_OUTPUT_HANDLE),
-                GetCurrentProcess(),
-                (HANDLE*)&ret,
-                0,
-                FALSE,
-                DUPLICATE_SAME_ACCESS))
-        {
-            _set_errno(_winerr_to_errno(GetLastError()));
-            goto done;
-        }
+	ret = _dup(OE_STDOUT_FILENO);
+	goto done;
     }
     else if (strcmp(pathname, "/dev/stderr") == 0)
     {
@@ -515,189 +98,28 @@ oe_host_fd_t oe_posix_open_ocall(
             goto done;
         }
 
-        if (!DuplicateHandle(
-                GetCurrentProcess(),
-                GetStdHandle(STD_ERROR_HANDLE),
-                GetCurrentProcess(),
-                (HANDLE*)&ret,
-                0,
-                FALSE,
-                DUPLICATE_SAME_ACCESS))
-        {
-            _set_errno(_winerr_to_errno(GetLastError()));
-            goto done;
-        }
+	ret = _dup(OE_STDERR_FILENO);
+	goto done;
     }
     else
     {
-        DWORD desired_access = 0;
-        DWORD share_mode = 0;
-        DWORD create_dispos = OPEN_EXISTING;
-        DWORD file_flags = (FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS);
-
-        if (!(wpathname = oe_posix_path_to_win(pathname, NULL)))
-        {
-            _set_errno(OE_ENOMEM);
-            goto done;
-        }
-
-        if ((flags & OE_O_DIRECTORY) != 0)
-        {
-            /* This creates a directory. */
-            file_flags |= FILE_FLAG_BACKUP_SEMANTICS;
-        }
-
-        // Translate POSIX to windows open flags.
-        // masking doesn't work.
-
-        switch (flags & (OE_O_CREAT | OE_O_EXCL | OE_O_TRUNC))
-        {
-            case OE_O_CREAT:
-            {
-                // Create a new file or open an existing file.
-                create_dispos = OPEN_ALWAYS;
-                break;
-            }
-            case OE_O_CREAT | OE_O_EXCL:
-            case OE_O_CREAT | OE_O_EXCL | OE_O_TRUNC:
-            {
-                // Create a new file, but fail if it already exists.
-                // Ignore `O_TRUNC` with `O_CREAT | O_EXCL`
-                create_dispos = CREATE_NEW;
-                break;
-            }
-            case OE_O_CREAT | OE_O_TRUNC:
-            {
-                // Truncate file if it already exists.
-                create_dispos = CREATE_ALWAYS;
-                break;
-            }
-            case OE_O_TRUNC:
-            case OE_O_TRUNC | OE_O_EXCL:
-            {
-                // Truncate file if it exists, otherwise fail. Ignore O_EXCL
-                // flag.
-                create_dispos = TRUNCATE_EXISTING;
-                break;
-            }
-            case OE_O_EXCL:
-            default:
-            {
-                // Open file if it exists, otherwise fail. Ignore O_EXCL flag.
-                create_dispos = OPEN_EXISTING;
-                break;
-            }
-        }
-
-        if ((flags & OE_O_APPEND) != 0)
-        {
-            desired_access = FILE_APPEND_DATA;
-        }
-
-        // In Linux land, we can always share files for read and write unless
-        // they have been opened exclusively.
-        share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
-
-        switch ((flags & OPEN_ACCESS_MODE_MASK))
-        {
-            case OE_O_RDONLY:
-            {
-                desired_access |= GENERIC_READ;
-
-                if (flags & OE_O_EXCL)
-                    share_mode = FILE_SHARE_WRITE;
-
-                break;
-            }
-            case OE_O_WRONLY:
-            {
-                desired_access |= GENERIC_WRITE;
-
-                if (flags & OE_O_EXCL)
-                    share_mode = FILE_SHARE_READ;
-
-                break;
-            }
-            case OE_O_RDWR:
-            {
-                desired_access |= GENERIC_READ | GENERIC_WRITE;
-
-                if (flags & OE_O_EXCL)
-                    share_mode = 0;
-
-                break;
-            }
-            default:
-            {
-                ret = -1;
-                _set_errno(OE_EINVAL);
-                goto done;
-            }
-        }
-
-        if (mode & OE_S_IRUSR)
-            desired_access |= GENERIC_READ;
-        if (mode & OE_S_IWUSR)
-            desired_access |= GENERIC_WRITE;
-
-        HANDLE h = CreateFileW(
-            wpathname,
-            desired_access,
-            share_mode,
-            NULL,
-            create_dispos,
-            file_flags,
-            NULL);
-
-        if (h == INVALID_HANDLE_VALUE)
-        {
-            _set_errno(_winerr_to_errno(GetLastError()));
-            goto done;
-        }
-
-        ret = (oe_host_fd_t)h;
+	/* Opening of files not supported on Windows yet. */
+	PANIC;
     }
 
 done:
-
-    if (wpathname)
-        free(wpathname);
 
     return ret;
 }
 
 ssize_t oe_posix_read_ocall(oe_host_fd_t fd, void* buf, size_t count)
 {
-    ssize_t ret = -1;
-    DWORD bytes_returned = 0;
-
-    if (!ReadFile((HANDLE)fd, buf, (DWORD)count, &bytes_returned, NULL))
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-    ret = (ssize_t)bytes_returned;
-
-done:
-    return ret;
+    return _read(fd, buf, count);
 }
 
 ssize_t oe_posix_write_ocall(oe_host_fd_t fd, const void* buf, size_t count)
 {
-    ssize_t ret = -1;
-    DWORD bytes_written = 0;
-
-    if (!WriteFile((HANDLE)fd, buf, (DWORD)count, &bytes_written, NULL))
-    {
-        _set_errno(_winerr_to_errno(GetLastError()));
-        goto done;
-    }
-
-    ret = (ssize_t)bytes_written;
-
-done:
-    return ret;
+    return _write(fd, buf, count);
 }
 
 ssize_t oe_posix_readv_ocall(
@@ -793,13 +215,7 @@ oe_off_t oe_posix_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
 
 int oe_posix_close_ocall(oe_host_fd_t fd)
 {
-    if (!CloseHandle((HANDLE)fd))
-    {
-        _set_errno(OE_EINVAL);
-        return -1;
-    }
-
-    return 0;
+    return _close(fd);
 }
 
 oe_host_fd_t oe_posix_dup_ocall(oe_host_fd_t oldfd)
