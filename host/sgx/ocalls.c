@@ -30,28 +30,6 @@
 #include "quote.h"
 #include "sgxquoteprovider.h"
 
-void HandleMalloc(uint64_t arg_in, uint64_t* arg_out)
-{
-    if (arg_out)
-        *arg_out = (uint64_t)malloc(arg_in);
-}
-
-void HandleRealloc(uint64_t arg_in, uint64_t* arg_out)
-{
-    oe_realloc_args_t* args = (oe_realloc_args_t*)arg_in;
-
-    if (args)
-    {
-        if (arg_out)
-            *arg_out = (uint64_t)realloc(args->ptr, args->size);
-    }
-}
-
-void HandleFree(uint64_t arg)
-{
-    free((void*)arg);
-}
-
 void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg_in)
 {
     const uint64_t tcs = arg_in;

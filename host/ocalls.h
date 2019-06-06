@@ -6,6 +6,9 @@
 
 #include <stdint.h>
 
+void HandleMalloc(uint64_t arg_in, uint64_t* arg_out);
+void HandleRealloc(uint64_t arg_in, uint64_t* arg_out);
+void HandleFree(uint64_t arg);
 void HandlePrint(uint64_t arg_in);
 
 void oe_handle_sleep(uint64_t arg_in);
