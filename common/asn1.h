@@ -4,7 +4,7 @@
 #ifndef _OE_COMMON_ASN1_H
 #define _OE_COMMON_ASN1_H
 
-#include <openenclave/internal/asn1.h>
+#include <openenclave/internal/crypto/asn1.h>
 
 OE_INLINE const uint8_t* oe_asn1_end(const oe_asn1_t* asn1)
 {

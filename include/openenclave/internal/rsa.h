@@ -6,8 +6,8 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include "hash.h"
-#include "sha.h"
+#include "crypto/hash.h"
+#include "crypto/sha.h"
 
 OE_EXTERNC_BEGIN
 

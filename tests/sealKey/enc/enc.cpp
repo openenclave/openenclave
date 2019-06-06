@@ -5,10 +5,10 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/ec.h>
-#include <openenclave/internal/keys.h>
+#include <openenclave/internal/sgxkeys.h>
 #include <openenclave/internal/sgxtypes.h>
-#include <openenclave/internal/sha.h>
 #include <openenclave/internal/tests.h>
 #include <stdlib.h>
 #include <string.h>

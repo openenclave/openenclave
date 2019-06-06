@@ -4,7 +4,7 @@
 #include "crl.h"
 #include <limits.h>
 #include <openenclave/bits/safecrt.h>
-#include <openenclave/internal/crl.h>
+#include <openenclave/internal/crypto/crl.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>

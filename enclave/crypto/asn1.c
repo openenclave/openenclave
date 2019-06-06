@@ -1,22 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../common/asn1.h"
+#include "../../common/asn1.h"
 
-/* Nest mbedtls header includes with required corelibc defines */
-// clang-format off
-#include "mbedtls_corelibc_defs.h"
 #include <mbedtls/asn1.h>
 #include <mbedtls/oid.h>
-#include "mbedtls_corelibc_undef.h"
-// clang-format on
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/internal/asn1.h>
+#include <openenclave/internal/crypto/asn1.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+
+#include <string.h>
 
 OE_STATIC_ASSERT(MBEDTLS_ASN1_CONSTRUCTED == OE_ASN1_TAG_CONSTRUCTED);
 OE_STATIC_ASSERT(MBEDTLS_ASN1_SEQUENCE == OE_ASN1_TAG_SEQUENCE);

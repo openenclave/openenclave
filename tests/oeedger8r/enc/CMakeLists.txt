@@ -17,7 +17,7 @@ add_custom_command(
   ../edl/pointer.edl
   ../edl/string.edl
   ../edl/struct.edl
-  COMMAND edger8r --trusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
+  COMMAND edger8r --experimental --trusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
 
 # Dummy target used for generating from EDL on demand.
 add_custom_target(edl_enc_trusted DEPENDS all_t.h all_t.c all_args.h)

@@ -45,7 +45,7 @@ void deepcopy_count(CountStruct* s)
     OE_TEST(s->size == 64);
     for (size_t i = 0; i < 3; ++i)
         OE_TEST(s->ptr[i] == data[i]);
-    OE_TEST_IGNORE(oe_is_within_enclave(s->ptr, 3 * sizeof(uint64_t)));
+    OE_TEST(oe_is_within_enclave(s->ptr, 3 * sizeof(uint64_t)));
 }
 
 // Assert that the struct is deep-copied such that `s->ptr` has a copy
@@ -56,7 +56,7 @@ void deepcopy_countparam(CountParamStruct* s)
     OE_TEST(s->size == 64);
     for (size_t i = 0; i < s->count; ++i)
         OE_TEST(s->ptr[i] == data[i]);
-    OE_TEST_IGNORE(oe_is_within_enclave(s->ptr, s->count * sizeof(uint64_t)));
+    OE_TEST(oe_is_within_enclave(s->ptr, s->count * sizeof(uint64_t)));
 }
 
 // Assert that the struct is deep-copied such that `s->ptr` has a copy
@@ -67,7 +67,7 @@ void deepcopy_sizeparam(SizeParamStruct* s)
     OE_TEST(s->size == 64);
     for (size_t i = 0; i < s->size / sizeof(uint64_t); ++i)
         OE_TEST(s->ptr[i] == data[i]);
-    OE_TEST_IGNORE(oe_is_within_enclave(s->ptr, s->size));
+    OE_TEST(oe_is_within_enclave(s->ptr, s->size));
 }
 
 // Assert that the struct is deep-copied such that `s->ptr` has a copy
@@ -78,7 +78,7 @@ void deepcopy_countsizeparam(CountSizeParamStruct* s)
     OE_TEST(s->size == 4);
     for (size_t i = 0; i < (s->count * s->size) / sizeof(uint64_t); ++i)
         OE_TEST(s->ptr[i] == data[i]);
-    OE_TEST_IGNORE(oe_is_within_enclave(s->ptr, s->count * s->size));
+    OE_TEST(oe_is_within_enclave(s->ptr, s->count * s->size));
 }
 
 // Assert that the struct array is deep-copied such that each
@@ -90,15 +90,13 @@ void deepcopy_countparamarray(CountParamStruct* s)
     OE_TEST(s[0].size == 64);
     for (size_t i = 0; i < s[0].count; ++i)
         OE_TEST(s[0].ptr[i] == data[i]);
-    OE_TEST_IGNORE(
-        oe_is_within_enclave(s[0].ptr, s[0].count * sizeof(uint64_t)));
+    OE_TEST(oe_is_within_enclave(s[0].ptr, s[0].count * sizeof(uint64_t)));
 
     OE_TEST(s[1].count == 3);
     OE_TEST(s[1].size == 32);
     for (size_t i = 0; i < s[1].count; ++i)
         OE_TEST(s[1].ptr[i] == data[4 + i]);
-    OE_TEST_IGNORE(
-        oe_is_within_enclave(s[1].ptr, s[1].count * sizeof(uint64_t)));
+    OE_TEST(oe_is_within_enclave(s[1].ptr, s[1].count * sizeof(uint64_t)));
 }
 
 // Assert that the struct array is deep-copied such that each
@@ -110,13 +108,13 @@ void deepcopy_sizeparamarray(SizeParamStruct* s)
     OE_TEST(s[0].size == 64);
     for (size_t i = 0; i < s[0].size / sizeof(uint64_t); ++i)
         OE_TEST(s[0].ptr[i] == data[i]);
-    OE_TEST_IGNORE(oe_is_within_enclave(s[0].ptr, s[0].size));
+    OE_TEST(oe_is_within_enclave(s[0].ptr, s[0].size));
 
     OE_TEST(s[1].count == 3);
     OE_TEST(s[1].size == 32);
     for (size_t i = 0; i < s[1].size / sizeof(uint64_t); ++i)
         OE_TEST(s[1].ptr[i] == data[4 + i]);
-    OE_TEST_IGNORE(oe_is_within_enclave(s[1].ptr, s[1].size));
+    OE_TEST(oe_is_within_enclave(s[1].ptr, s[1].size));
 }
 
 // Assert that the struct array is deep-copied such that each
@@ -128,11 +126,28 @@ void deepcopy_countsizeparamarray(CountSizeParamStruct* s)
     OE_TEST(s[0].size == 4);
     for (size_t i = 0; i < (s[0].count * s[0].size) / sizeof(uint64_t); ++i)
         OE_TEST(s[0].ptr[i] == data[i]);
-    OE_TEST_IGNORE(oe_is_within_enclave(s[0].ptr, s[0].count * s[0].size));
+    OE_TEST(oe_is_within_enclave(s[0].ptr, s[0].count * s[0].size));
 
     OE_TEST(s[1].count == 3);
     OE_TEST(s[1].size == 8);
     for (size_t i = 0; i < (s[1].count * s[1].size) / sizeof(uint64_t); ++i)
         OE_TEST(s[1].ptr[i] == data[4 + i]);
-    OE_TEST_IGNORE(oe_is_within_enclave(s[1].ptr, s[1].count * s[1].size));
+    OE_TEST(oe_is_within_enclave(s[1].ptr, s[1].count * s[1].size));
+}
+
+void deepcopy_nested(NestedStruct* n)
+{
+    OE_TEST(oe_is_within_enclave(n, sizeof(NestedStruct)));
+
+    OE_TEST(n->plain_int == 13);
+
+    OE_TEST(oe_is_within_enclave(n->array_of_int, 4 * sizeof(int)));
+    for (int i = 0; i < 4; ++i)
+        OE_TEST(n->array_of_int[i] == i);
+
+    OE_TEST(oe_is_outside_enclave(n->shallow_struct, sizeof(ShallowStruct)));
+
+    OE_TEST(oe_is_within_enclave(n->array_of_struct, 3 * sizeof(CountStruct)));
+    for (size_t i = 0; i < 3; ++i)
+        deepcopy_count(&(n->array_of_struct[i]));
 }

@@ -3,13 +3,13 @@
 
 #include "asym_keys.h"
 #include <openenclave/bits/safecrt.h>
-#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/asym_keys.h>
-#include <openenclave/internal/ec.h>
+#include <openenclave/internal/crypto/ec.h>
 #include <openenclave/internal/kdf.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+#include <stdlib.h>
 
 static inline oe_result_t _check_asymmetric_key_params(
     const oe_asymmetric_key_params_t* key_params)
@@ -199,7 +199,7 @@ static oe_result_t _export_keypair(
         OE_RAISE(result);
 
     /* Call again with the allocated memory. */
-    key = (uint8_t*)oe_malloc(key_size);
+    key = (uint8_t*)malloc(key_size);
     if (key == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -220,7 +220,7 @@ done:
     if (key != NULL)
     {
         oe_secure_zero_fill(key, key_size);
-        oe_free(key);
+        free(key);
     }
 
     return result;
@@ -327,19 +327,19 @@ done:
     if (key_buffer_local != NULL)
     {
         oe_secure_zero_fill(key_buffer_local, key_buffer_size_local);
-        oe_free(key_buffer_local);
+        free(key_buffer_local);
     }
 
     if (key_info_local != NULL)
     {
         oe_secure_zero_fill(key_info_local, key_info_size_local);
-        oe_free(key_info_local);
+        free(key_info_local);
     }
 
     if (key != NULL)
     {
         oe_secure_zero_fill(key, key_size);
-        oe_free(key);
+        free(key);
     }
 
     return result;
@@ -386,13 +386,13 @@ done:
     if (key_buffer_local != NULL)
     {
         oe_secure_zero_fill(key_buffer_local, key_buffer_size_local);
-        oe_free(key_buffer_local);
+        free(key_buffer_local);
     }
 
     if (key != NULL)
     {
         oe_secure_zero_fill(key, key_size);
-        oe_free(key);
+        free(key);
     }
 
     return result;
@@ -470,13 +470,13 @@ void oe_free_key(
     if (key_buffer)
     {
         oe_secure_zero_fill(key_buffer, key_buffer_size);
-        oe_free(key_buffer);
+        free(key_buffer);
     }
 
     if (key_info)
     {
         oe_secure_zero_fill(key_info, key_info_size);
-        oe_free(key_info);
+        free(key_info);
     }
 }
 
@@ -508,7 +508,7 @@ static oe_result_t _copy_to_from_host(
         /* Copy host -> enclave. */
         if (!oe_is_outside_enclave(data, data_size))
             OE_RAISE(OE_INVALID_PARAMETER);
-        out_local = (uint8_t*)oe_malloc(data_size);
+        out_local = (uint8_t*)malloc(data_size);
     }
 
     if (out_local == NULL)
@@ -526,7 +526,7 @@ done:
         if (to_host)
             oe_host_free(out_local);
         else
-            oe_free(out_local);
+            free(out_local);
     }
     return result;
 }
@@ -588,13 +588,13 @@ done:
     uarg->result = result;
 
     if (enclave_user_data != NULL)
-        oe_free(enclave_user_data);
+        free(enclave_user_data);
 
     if (arg.key_buffer != NULL)
-        oe_free(arg.key_buffer);
+        free(arg.key_buffer);
 
     if (arg.key_info != NULL)
-        oe_free(arg.key_info);
+        free(arg.key_info);
 
     if (host_key_info != NULL)
         oe_host_free(host_key_info);
@@ -654,13 +654,13 @@ done:
     uarg->result = result;
 
     if (enclave_user_data != NULL)
-        oe_free(enclave_user_data);
+        free(enclave_user_data);
 
     if (enclave_key_info != NULL)
-        oe_free(enclave_key_info);
+        free(enclave_key_info);
 
     if (arg.key_buffer != NULL)
-        oe_free(arg.key_buffer);
+        free(arg.key_buffer);
 
     if (host_key_buffer != NULL)
         oe_host_free(host_key_buffer);

@@ -118,6 +118,7 @@ void run_test(oe_enclave_t* enclave, int test_type)
 
 int main(int argc, const char* argv[])
 {
+#ifdef OE_USE_LIBSGX
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
@@ -142,4 +143,12 @@ int main(int argc, const char* argv[])
     OE_TEST(result == OE_OK);
     OE_TRACE_INFO("=== passed all tests (tls)\n");
     return 0;
+#else
+    // this test should not run on any platforms where OE_USE_LIBSGX is not
+    // defined
+    OE_UNUSED(argc);
+    OE_UNUSED(argv);
+    OE_TRACE_INFO("=== tests skipped when built with OE_USE_LIBSGX=OFF\n");
+    return SKIP_RETURN_CODE;
+#endif
 }

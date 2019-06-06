@@ -16,4 +16,11 @@ set(GRAPHVIZ_IGNORE_TARGETS
   "^libmbedtest"
   "^mbedtest_"
   "^SampleApp"
-  "^pingpong-")
+  "^pingpong-"
+  "^str$"
+  "^aesm$"
+  "^cryptohost$"
+  "^hostcrypto$"
+  "^cryptoenc$"
+  "^mem$"
+  "^safemath$")

@@ -133,12 +133,12 @@ done:
 /**
  * Copy an input parameter to input buffer.
  */
-#define OE_WRITE_IN_PARAM(argname, argsize, argtype)                     \
-    if (argname)                                                         \
-    {                                                                    \
-        _args.argname = (argtype)(_input_buffer + _input_buffer_offset); \
-        OE_ADD_SIZE(_input_buffer_offset, (size_t)(argsize));            \
-        memcpy((void*)_args.argname, argname, (size_t)(argsize));        \
+#define OE_WRITE_IN_PARAM(argname, argsname, argsize, argtype)            \
+    if (argname)                                                          \
+    {                                                                     \
+        _args.argsname = (argtype)(_input_buffer + _input_buffer_offset); \
+        OE_ADD_SIZE(_input_buffer_offset, (size_t)(argsize));             \
+        memcpy((void*)_args.argsname, argname, (size_t)(argsize));        \
     }
 
 #define OE_WRITE_IN_OUT_PARAM OE_WRITE_IN_PARAM

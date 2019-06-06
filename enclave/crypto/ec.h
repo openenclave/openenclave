@@ -4,14 +4,9 @@
 #ifndef _OE_ENCLAVE_EC_H
 #define _OE_ENCLAVE_EC_H
 
-/* Nest mbedtls header includes with required corelibc defines */
-// clang-format off
-#include "mbedtls_corelibc_defs.h"
 #include <mbedtls/pk.h>
-#include "mbedtls_corelibc_undef.h"
-// clang-format on
 
-#include <openenclave/internal/ec.h>
+#include <openenclave/internal/crypto/ec.h>
 
 OE_INLINE bool oe_is_ec_key(const mbedtls_pk_context* pk)
 {

@@ -1,43 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/pk.h>
+#include <mbedtls/rsa.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/tests.h>
-
-/* Nest mbedtls header includes with required corelibc defines */
-
-/* Only map CHAR_BIT out of limits.h to scope potential standard definition
- * name conflicts in enclave sources.
- */
-#if !defined(CHAR_BIT)
-#define CHAR_BIT OE_CHAR_BIT
-#endif
-
-/* Custom redefine of the pthread_mutex_t to oe_pthread_t.
- * This uses a define rather than the typedef in pthread.h so that its use
- * can be scoped to the mbedtls headers and subsequently undefined afterwards.
- */
-#if !defined(pthread_mutex_t)
-#define pthread_mutex_t oe_pthread_mutex_t
-#endif
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/pk.h>
-#include <mbedtls/rsa.h>
-/* Remove the CHAR_BIT mappings provided by limits.h */
-#if defined(CHAR_BIT)
-#undef CHAR_BIT
-#endif
-
-/* Undefine the custom pthread_mutex_t redefine */
-#if defined(pthread_mutex_t)
-#undef pthread_mutex_t
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -172,12 +144,12 @@ oe_result_t generate_key_pair(
         }
 
         /* Call again with the allocated memory. */
-        local_public_key = (uint8_t*)oe_malloc(local_public_key_size);
+        local_public_key = (uint8_t*)malloc(local_public_key_size);
         if (local_public_key == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
         memset((void*)local_public_key, 0, local_public_key_size);
 
-        local_private_key = (uint8_t*)oe_malloc(local_private_key_size);
+        local_private_key = (uint8_t*)malloc(local_private_key_size);
         if (local_private_key == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
         memset((void*)local_private_key, 0, local_private_key_size);
@@ -201,11 +173,11 @@ oe_result_t generate_key_pair(
         }
 
         *public_key = local_public_key;
-        // plus one to make sure \0 at the end if counted
-        *public_key_size = oe_strlen((const char*)local_public_key) + 1;
+        // plus one to make sure \0 at the end is counted
+        *public_key_size = strlen((const char*)local_public_key) + 1;
 
         *private_key = local_private_key;
-        *private_key_size = oe_strlen((const char*)local_private_key) + 1;
+        *private_key_size = strlen((const char*)local_private_key) + 1;
 
         local_public_key = NULL;
         local_private_key = NULL;
@@ -226,9 +198,9 @@ oe_result_t generate_key_pair(
 
 done:
     if (local_public_key)
-        oe_free(local_public_key);
+        free(local_public_key);
     if (local_private_key)
-        oe_free(local_private_key);
+        free(local_private_key);
 
     return result;
 }
@@ -311,8 +283,8 @@ oe_result_t get_tls_cert_signed_with_key(
 
 done:
 
-    oe_free(private_key);
-    oe_free(public_key);
+    free(private_key);
+    free(public_key);
     oe_free_attestation_certificate(output_cert);
 
     return result;
