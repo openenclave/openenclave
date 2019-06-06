@@ -1,16 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-//#undef OE_NEED_STDC_NAMES
-
 // clang-format off
-//#include "../../../../enclave/mbedtls_corelibc_defs.h"
 #include <mbedtls/pk.h>
 #include <mbedtls/rsa.h>
 #include <mbedtls/sha256.h>
 #include <mbedtls/x509_crt.h>
 #include <mbedtls/platform.h>
-//#include "../../../../enclave/mbedtls_corelibc_undef.h"
 // clang-format on
 
 #include <openenclave/internal/print.h>
@@ -37,5 +33,3 @@ bool verify_mrsigner(
 
 #define CLIENT_REQUEST_PAYLOAD_SIZE 18
 #define SERVER_RESPONSE_PAYLOAD_SIZE 194
-
-//#define printf oe_host_printf

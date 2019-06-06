@@ -2,12 +2,10 @@
 // Licensed under the MIT License.
 
 enclave {
-    from "../../../include/openenclave/socket.edl" import *;
-
     struct tls_control_args {
         bool fail_cert_verify_callback;
         bool fail_enclave_identity_verifier_callback;
-        bool fail_oe_verify_tls_cert;
+        bool fail_oe_verify_attestation_certificate;
     };
 
     trusted {

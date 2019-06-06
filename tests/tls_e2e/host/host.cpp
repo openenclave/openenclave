@@ -137,7 +137,7 @@ void* server_thread(void* arg)
         g_server_thread_exit_code);
     if (config->args.fail_cert_verify_callback ||
         config->args.fail_enclave_identity_verifier_callback ||
-        config->args.fail_oe_verify_tls_cert)
+        config->args.fail_oe_verify_attestation_certificate)
     {
         OE_TRACE_INFO("This is a negative test case: expecting "
                       "g_server_thread_exit_code returns 1\n");
@@ -178,7 +178,7 @@ void* client_thread(void* arg)
 
     if (client_config->args.fail_cert_verify_callback ||
         client_config->args.fail_enclave_identity_verifier_callback ||
-        client_config->args.fail_oe_verify_tls_cert)
+        client_config->args.fail_oe_verify_attestation_certificate)
         OE_TEST(g_client_thread_exit_code != 0);
 
     OE_TRACE_INFO("Waiting for the server thread to terminate...\n");
@@ -189,7 +189,7 @@ void* client_thread(void* arg)
     OE_TRACE_INFO("server returns retval = [%d]\n", *(int*)retval);
     if (server_config->args.fail_cert_verify_callback ||
         server_config->args.fail_enclave_identity_verifier_callback ||
-        server_config->args.fail_oe_verify_tls_cert)
+        server_config->args.fail_oe_verify_attestation_certificate)
     {
         OE_TRACE_INFO("This is a negative test case: expecting server returns "
                       "retval non-zero value\n");
@@ -200,10 +200,10 @@ void* client_thread(void* arg)
     // cleanly (0)
     if (!client_config->args.fail_cert_verify_callback &&
         !client_config->args.fail_enclave_identity_verifier_callback &&
-        !client_config->args.fail_oe_verify_tls_cert &&
+        !client_config->args.fail_oe_verify_attestation_certificate &&
         !server_config->args.fail_cert_verify_callback &&
         !server_config->args.fail_enclave_identity_verifier_callback &&
-        !server_config->args.fail_oe_verify_tls_cert)
+        !server_config->args.fail_oe_verify_attestation_certificate)
     {
         OE_TEST(g_client_thread_exit_code == 0);
     }
@@ -267,7 +267,7 @@ int run_scenarios_tests()
 
     test_cases_config_t unittests_configs[4] = {
         {"\n------positive_test\n", {false, false, false}, POSITIVE_TEST},
-        {"\n------negative_fail_oe_verify_tls_cert\n",
+        {"\n------negative_fail_oe_verify_attestation_certificate\n",
          {true, false, false},
          NEGATIVE_TEST},
         {"\n------negative_fail_cert_verify_callback\n",

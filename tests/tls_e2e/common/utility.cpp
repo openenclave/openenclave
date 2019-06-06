@@ -300,7 +300,7 @@ int cert_verify_callback(
         goto done;
 
     OE_TRACE_INFO("Calling oe_verify_attestation_certificate\n");
-    if (g_control_config.fail_oe_verify_tls_cert)
+    if (g_control_config.fail_oe_verify_attestation_certificate)
         goto done;
 
     result = oe_verify_attestation_certificate(

@@ -4,24 +4,16 @@
 // clang-format off
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-//#define OE_NEED_STDC_NAMES
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/corelibc/sys/socket.h>
-
-//#include <stdarg.h>
+#include <openenclave/internal/posix/device.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <bits/stdfile.h>
 #include <errno.h>
-
-// #include <openenclave/corelibc/arpa/inet.h>
-// #include <openenclave/corelibc/netdb.h>
-// #include <openenclave/corelibc/netinet/in.h>
-#include <openenclave/internal/posix/device.h>
 
 #include <mbedtls/pk.h>
 #include <mbedtls/rsa.h>
@@ -48,10 +40,8 @@ extern "C"
         char* server_name,
         char* server_port);
 };
-    //#define printf oe_host_printf
 
 #define SERVER_IP "127.0.0.1"
-
 #define HTTP_RESPONSE                                    \
     "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n" \
     "<h2>mbed TLS Test Server</h2>\r\n"                  \
@@ -89,7 +79,11 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
     for (int i = 0; i < OE_SIGNER_ID_SIZE; i++)
         OE_TRACE_INFO("0x%0x ", (uint8_t)identity->signer_id[i]);
 
-    // if (!verify_mrsigner((char *)OTHER_ENCLAVE_PUBLIC_KEY,
+    // On a real enclave product, this is the place to check again the enclave
+    // signing key by calling function like verify_mrsigner below. However, we
+    // are not siging test cases, so this checking will be skipped.
+    // tls_between_enclaves sample will have code show how to dothis checking if
+    // (!verify_mrsigner((char *)OTHER_ENCLAVE_PUBLIC_KEY,
     //                     sizeof(OTHER_ENCLAVE_PUBLIC_KEY),
     //                     identity->signer_id,
     //                     sizeof(identity->signer_id)))
@@ -270,7 +264,7 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     }
 
 waiting_for_connection_request:
-    // fflush(stdout);
+
     if (ret != 0)
     {
         char error_buf[100];
@@ -412,6 +406,7 @@ waiting_for_connection_request:
     }
 
     ret = 0;
+    // uncomment the following lien if you want this tls server run in loop
     // goto waiting_for_connection_request;
 done:
     if (ret != 0)
