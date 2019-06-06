@@ -17,6 +17,7 @@
 
 #define POSITIVE_TEST false
 #define NEGATIVE_TEST true
+#define SKIP_RETURN_CODE 2
 
 typedef struct _tls_thread_context_config
 {
@@ -329,6 +330,7 @@ done:
 
 int main(int argc, const char* argv[])
 {
+#ifdef OE_USE_LIBSGX
     oe_result_t result = OE_FAILURE;
     uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
     int ret = 0;
@@ -343,6 +345,9 @@ int main(int argc, const char* argv[])
     // oe_resolver_install_hostresolver();
 
     flags = oe_get_create_flags();
+    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
+        return SKIP_RETURN_CODE;
+
     if ((result = oe_create_tls_e2e_enclave(
              argv[1],
              OE_ENCLAVE_TYPE_SGX,
@@ -380,4 +385,12 @@ done:
     OE_TRACE_INFO("=== passed all tests (tls)\n");
 
     return 0;
+#else
+    // this test should not run on any platforms where OE_USE_LIBSGX is not
+    // defined
+    OE_UNUSED(argc);
+    OE_UNUSED(argv);
+    OE_TRACE_INFO("=== tests skipped when built with OE_USE_LIBSGX=OFF\n");
+    return SKIP_RETURN_CODE;
+#endif
 }
