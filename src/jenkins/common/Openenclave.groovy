@@ -50,15 +50,13 @@ def azureEnvironment(String task) {
 }
 
 def runTask(String task) {
-    timeout(timeoutMinutes) {
-        dir("${WORKSPACE}/build") {
-            sh """#!/usr/bin/env bash
-                    set -o errexit
-                    set -o pipefail
-                    source /etc/profile
-                    ${task}
-                """
-        }
+    dir("${WORKSPACE}/build") {
+        sh """#!/usr/bin/env bash
+                set -o errexit
+                set -o pipefail
+                source /etc/profile
+                ${task}
+            """
     }
 }
 
@@ -66,7 +64,7 @@ def Run(String compiler, String task) {
     if (compiler == "cross") {
         // In this case, the compiler is set by the CMake toolchain file. As
         // such, it is not necessary to specify anything in the environment.
-        runTask(task, timeoutMinutes);
+        runTask(task);
     } else {
         def c_compiler = "clang-7"
         def cpp_compiler = "clang++-7"
@@ -76,7 +74,7 @@ def Run(String compiler, String task) {
         }
 
         withEnv(["CC=${c_compiler}","CXX=${cpp_compiler}"]) {
-            runTask(task, timeoutMinutes);
+            runTask(task);
         }
     }
 }
