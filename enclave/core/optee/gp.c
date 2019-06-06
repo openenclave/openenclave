@@ -62,10 +62,10 @@ static TEE_Result _handle_call_enclave_function(
 {
     oe_result_t result = OE_OK;
 
-    uint32_t param_type_first;
-    uint32_t param_type_second;
-    uint32_t param_type_third;
-    uint32_t param_type_fourth;
+    uint32_t pt_os;
+    uint32_t pt_inout;
+    uint32_t pt_in;
+    uint32_t pt_out;
 
     oe_call_enclave_function_args_t args, *u_args_ptr;
 
@@ -84,31 +84,28 @@ static TEE_Result _handle_call_enclave_function(
     size_t output_bytes_written = 0;
 
     /* Retrieve the type of the call parameters */
-    param_type_first = TEE_PARAM_TYPE_GET(param_types, 0);
-    param_type_second = TEE_PARAM_TYPE_GET(param_types, 1);
-    param_type_third = TEE_PARAM_TYPE_GET(param_types, 2);
-    param_type_fourth = TEE_PARAM_TYPE_GET(param_types, 3);
+    pt_os = TEE_PARAM_TYPE_GET(param_types, 0);
+    pt_inout = TEE_PARAM_TYPE_GET(param_types, 1);
+    pt_in = TEE_PARAM_TYPE_GET(param_types, 2);
+    pt_out = TEE_PARAM_TYPE_GET(param_types, 3);
 
     /* Assert the parameter types are what we expect */
-    if (param_type_first != TEE_PARAM_TYPE_NONE &&
-        param_type_first != TEE_PARAM_TYPE_VALUE_INPUT)
+    if (pt_os != TEE_PARAM_TYPE_NONE && pt_os != TEE_PARAM_TYPE_VALUE_INPUT)
         return TEE_ERROR_BAD_PARAMETERS;
 
-    if (param_type_second != TEE_PARAM_TYPE_MEMREF_INOUT)
+    if (pt_inout != TEE_PARAM_TYPE_MEMREF_INOUT)
         return TEE_ERROR_BAD_PARAMETERS;
 
-    if (param_type_third != TEE_PARAM_TYPE_NONE &&
-        param_type_third != TEE_PARAM_TYPE_MEMREF_INPUT)
+    if (pt_in != TEE_PARAM_TYPE_NONE && pt_in != TEE_PARAM_TYPE_MEMREF_INPUT)
         return TEE_ERROR_BAD_PARAMETERS;
 
-    if (param_type_fourth != TEE_PARAM_TYPE_NONE &&
-        param_type_fourth != TEE_PARAM_TYPE_MEMREF_OUTPUT)
+    if (pt_out != TEE_PARAM_TYPE_NONE && pt_out != TEE_PARAM_TYPE_MEMREF_OUTPUT)
         return TEE_ERROR_BAD_PARAMETERS;
 
     /* On Windows, the OP-TEE miniport driver requires a key to associate an
      * OCALL with the ECALL whence it originates, so see if we have one and
      * save it if we do to use it when sending an OCALL out */
-    if (param_type_first == TEE_PARAM_TYPE_VALUE_INPUT)
+    if (pt_os == TEE_PARAM_TYPE_VALUE_INPUT)
         __oe_windows_ecall_key = params[0].value.a;
 
     /* Copy the ECALL arguments structure into TA memory */
@@ -119,14 +116,14 @@ static TEE_Result _handle_call_enclave_function(
     args = *u_args_ptr;
 
     /* Extract the input parameters buffer, if present */
-    if (param_type_third == TEE_PARAM_TYPE_MEMREF_INPUT)
+    if (pt_in == TEE_PARAM_TYPE_MEMREF_INPUT)
     {
         u_input_buffer = params[2].memref.buffer;
         u_input_buffer_size = params[2].memref.size;
     }
 
     /* Extract the output parameters buffer, if present */
-    if (param_type_fourth == TEE_PARAM_TYPE_MEMREF_OUTPUT)
+    if (pt_out == TEE_PARAM_TYPE_MEMREF_OUTPUT)
     {
         u_output_buffer = params[3].memref.buffer;
         u_output_buffer_size = params[3].memref.size;
