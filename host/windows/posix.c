@@ -76,8 +76,8 @@ oe_host_fd_t oe_posix_open_ocall(
             goto done;
         }
 
-	ret = _dup(OE_STDIN_FILENO);
-	goto done;
+        ret = _dup(OE_STDIN_FILENO);
+        goto done;
     }
     else if (strcmp(pathname, "/dev/stdout") == 0)
     {
@@ -87,8 +87,8 @@ oe_host_fd_t oe_posix_open_ocall(
             goto done;
         }
 
-	ret = _dup(OE_STDOUT_FILENO);
-	goto done;
+        ret = _dup(OE_STDOUT_FILENO);
+        goto done;
     }
     else if (strcmp(pathname, "/dev/stderr") == 0)
     {
@@ -98,13 +98,13 @@ oe_host_fd_t oe_posix_open_ocall(
             goto done;
         }
 
-	ret = _dup(OE_STDERR_FILENO);
-	goto done;
+        ret = _dup(OE_STDERR_FILENO);
+        goto done;
     }
     else
     {
-	/* Opening of files not supported on Windows yet. */
-	PANIC;
+        /* Opening of files not supported on Windows yet. */
+        PANIC;
     }
 
 done:
@@ -131,8 +131,6 @@ ssize_t oe_posix_readv_ocall(
     struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
     ssize_t ret = -1;
     ssize_t size_read;
-
-    OE_UNUSED(iov_buf_size);
 
     errno = 0;
 
@@ -174,8 +172,6 @@ ssize_t oe_posix_writev_ocall(
     ssize_t ret = -1;
     ssize_t size_written;
     struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
-
-    OE_UNUSED(iov_buf_size);
 
     errno = 0;
 
