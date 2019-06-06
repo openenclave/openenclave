@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
        - Link with `-Wl,-z,noexecstack`.
        - Note that `-Wl,-z,now` is _not_ enabled by default, but app authors
          should enable it themselves after assessing its startup impact.
+- Removed support for the previously deprecated `OE_API_VERSION=1` APIs.
 
 [v0.5.0] - 2019-4-9
 -------------------
