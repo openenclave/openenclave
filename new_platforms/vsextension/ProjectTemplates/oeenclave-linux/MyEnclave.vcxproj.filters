@@ -32,9 +32,6 @@
     <ClInclude Include="$projectname$_t.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="optee/user_ta_header_defines.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -43,21 +40,6 @@
     </None>
     <None Include="makekey.sh">
       <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="optee/linux_gcc.mak">
-      <Filter>Resource Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="optee/sub.mk">
-      <Filter>Resource Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="optee/uuids.reg">
-      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

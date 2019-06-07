@@ -142,18 +142,6 @@
     <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\MyEnclave.vcxproj.filters">
       <Link>OEEnclave Linux Template\MyEnclave.vcxproj.filters</Link>
     </OEEnclaveLinuxProject_Content>
-    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\linux_gcc.mak">
-      <Link>OEEnclave Linux Template\linux_gcc.mak</Link>
-    </OEEnclaveLinuxProject_Content>
-    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\sub.mk">
-      <Link>OEEnclave Linux Template\sub.mk</Link>
-    </OEEnclaveLinuxProject_Content>
-    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\user_ta_header_defines.h">
-      <Link>OEEnclave Linux Template\user_ta_header_defines.h</Link>
-    </OEEnclaveLinuxProject_Content>
-    <OEEnclaveLinuxProject_Content Include="..\ProjectTemplates\oeenclave-linux\uuids.reg">
-      <Link>OEEnclave Linux Template\uuids.reg</Link>
-    </OEEnclaveLinuxProject_Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

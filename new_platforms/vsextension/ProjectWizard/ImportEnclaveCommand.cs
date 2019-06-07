@@ -359,13 +359,16 @@ namespace OpenEnclaveSDK
                     bool isWindows = (vcProject.keyword != "Linux");
 
                     // Add any configurations/platforms to the project.
-                    AddConfiguration(project, "OPTEE-Simulation-Debug", "Debug");
+                    if (isWindows)
+                    {
+                        AddConfiguration(project, "OPTEE-Simulation-Debug", "Debug");
+                    }
                     AddConfiguration(project, "SGX-Simulation-Debug", "Debug");
                     if (isWindows && HavePlatform(project, "Win32"))
                     {
                         AddPlatform(project, "ARM", "Win32");
                     }
-                    else if (HavePlatform(project, "x64"))
+                    else if (isWindows && HavePlatform(project, "x64"))
                     {
                         AddPlatform(project, "ARM", "x64");
                     }

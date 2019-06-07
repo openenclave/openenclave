@@ -1,41 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="OPTEE-Simulation-Debug|ARM">
-      <Configuration>OPTEE-Simulation-Debug</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="OPTEE-Simulation-Debug|x86">
-      <Configuration>OPTEE-Simulation-Debug</Configuration>
-      <Platform>x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="OPTEE-Simulation-Debug|x64">
-      <Configuration>OPTEE-Simulation-Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x86">
       <Configuration>Debug</Configuration>
       <Platform>x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|ARM">
-      <Configuration>Debug</Configuration>
-      <Platform>ARM</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Prerelease|x86">
       <Configuration>Prerelease</Configuration>
       <Platform>x86</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Prerelease|ARM">
-      <Configuration>Prerelease</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x86">
       <Configuration>Release</Configuration>
       <Platform>x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|ARM">
-      <Configuration>Release</Configuration>
-      <Platform>ARM</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="SGX-Simulation-Debug|x86">
       <Configuration>SGX-Simulation-Debug</Configuration>
@@ -76,18 +52,6 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
-    <ConfigurationType>Makefile</ConfigurationType>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x86'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|ARM'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x86'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
@@ -96,16 +60,8 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
-    <ConfigurationType>Makefile</ConfigurationType>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x86'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'" Label="Configuration">
-    <ConfigurationType>Makefile</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x86'" Label="Configuration">
@@ -114,10 +70,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x64'" Label="Configuration">
@@ -150,28 +102,6 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <GenerateManifest>false</GenerateManifest>
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(NoInherit)</IncludePath>
-    <LibraryPath>$(NoInherit)</LibraryPath>
-    <NMakeBuildCommandLine>%WINDIR%\Sysnative\bash -c "make -C optee -f linux_gcc.mak"</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>%WINDIR%\Sysnative\bash -c "make -C optee -f linux_gcc.mak clean;make -C optee -f linux_gcc.mak"</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>%WINDIR%\Sysnative\bash -c "make -C optee -f linux_gcc.mak clean"</NMakeCleanCommandLine>
-    <NMakeOutput>$(SolutionDir)bin\ARM\optee\$guid1$.ta</NMakeOutput>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x86'">
-    <GenerateManifest>false</GenerateManifest>
-    <LinkIncremental>false</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <TargetName>$guid1$</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|ARM'">
-    <GenerateManifest>false</GenerateManifest>
-    <LinkIncremental>false</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <TargetName>$guid1$</TargetName>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x86'">
     <GenerateManifest>false</GenerateManifest>
     <LinkIncremental>false</LinkIncremental>
@@ -184,31 +114,11 @@
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <GenerateManifest>false</GenerateManifest>
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(NoInherit)</IncludePath>
-    <LibraryPath>$(NoInherit)</LibraryPath>
-    <NMakeBuildCommandLine>%WINDIR%\Sysnative\bash -c "make -C optee -f linux_gcc.mak"</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>%WINDIR%\Sysnative\bash -c "make -C optee -f linux_gcc.mak clean;make -C optee -f linux_gcc.mak"</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>%WINDIR%\Sysnative\bash -c "make -C optee -f linux_gcc.mak clean"</NMakeCleanCommandLine>
-    <NMakeOutput>$(SolutionDir)bin\ARM\optee\$guid1$.ta</NMakeOutput>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x86'">
     <GenerateManifest>false</GenerateManifest>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|ARM'">
-    <GenerateManifest>false</GenerateManifest>
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(NoInherit)</IncludePath>
-    <LibraryPath>$(NoInherit)</LibraryPath>
-    <NMakeBuildCommandLine>%WINDIR%\Sysnative\bash -c "make -C optee -f linux_gcc.mak"</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>%WINDIR%\Sysnative\bash -c "make -C optee -f linux_gcc.mak clean;make -C optee -f linux_gcc.mak"</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>%WINDIR%\Sysnative\bash -c "make -C optee -f linux_gcc.mak clean"</NMakeCleanCommandLine>
-    <NMakeOutput>$(SolutionDir)bin\ARM\optee\$guid1$.ta</NMakeOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -221,15 +131,6 @@
     <RemoteLdCommmandTimeout />
     <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
     <TargetExt />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x64'">
-    <GenerateManifest>false</GenerateManifest>
-    <LinkIncremental>false</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <TargetName>$guid1$</TargetName>
-    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -267,26 +168,6 @@
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x86'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <WarningLevel>Level3</WarningLevel>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|ARM'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <WarningLevel>Level3</WarningLevel>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -355,16 +236,6 @@
       <Message>Getting signing key</Message>
     </RemotePreLinkEvent>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x64'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <WarningLevel>Level3</WarningLevel>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -412,7 +283,6 @@
   <ItemGroup>
     <ClInclude Include="$projectname$_args.h" />
     <ClInclude Include="$projectname$_t.h" />
-    <ClInclude Include="optee/user_ta_header_defines.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="$projectname$.edl">
@@ -423,20 +293,11 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x86'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x86'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x64'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x86'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|ARM'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x86'">Creating proxy/bridge routines</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|ARM'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|x86'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='OPTEE-Simulation-Debug|ARM'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x86'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|x86'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x86'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
@@ -457,9 +318,6 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating signing key</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">private.pem;public.pem;%(Outputs)</Outputs>
     </None>
-    <None Include="optee/sub.mk" />
-    <None Include="optee/linux_gcc.mak" />
-    <None Include="optee/uuids.reg" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
