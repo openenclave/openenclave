@@ -6,6 +6,8 @@ oe = new jenkins.common.Openenclave()
 
 // The below timeout is set in minutes
 GLOBAL_TIMEOUT = 240
+// ctest timeout is set in seconds
+CTEST_TIMEOUT = 480
 
 XENIAL_LABEL = "LIBCXX-${BUILD_NUMBER}-1604"
 BIONIC_LABEL = "LIBCXX-${BUILD_NUMBER}-1804"
@@ -89,7 +91,7 @@ def ACClibcxxTest(String label, String compiler, String build_type) {
                 def task = """
                            cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=ON -DENABLE_FULL_LIBCXX_TESTS=ON
                            make
-                           ctest -VV -debug
+                           ctest -VV -debug --timeout ${CTEST_TIMEOUT}
                            """
                 oe.Run(compiler, task)
             }
