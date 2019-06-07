@@ -106,14 +106,19 @@ char* oe_host_strndup(const char* str, size_t n)
     if (len == OE_SIZE_MAX)
         return NULL;
 
-    arg_in_sz = sizeof(oe_strndup_args_t) + len + 1;
-    arg_in = (oe_strndup_args_t*)oe_malloc(arg_in_sz);
+    if (oe_safe_add_sizet(len + 1, sizeof(oe_strndup_args_t), &arg_in_sz) !=
+        OE_OK)
+        return NULL;
+
+    arg_in = (oe_strndup_args_t*)oe_calloc(1, arg_in_sz);
     if (!arg_in)
         return NULL;
 
     arg_in->n = len + 1;
 
-    oe_memcpy_s(arg_in->str, len + 1, str, len);
+    if (oe_memcpy_s(arg_in->str, len + 1, str, len) != OE_OK)
+        goto done;
+
     arg_in->str[len] = '\0';
 
     if (oe_ocall(
