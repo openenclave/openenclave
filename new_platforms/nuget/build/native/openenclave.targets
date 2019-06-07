@@ -338,7 +338,7 @@
             <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True And $(OEIsNewPlatforms) == True">$(OEOpteeSimX86)\oeenclave.lib;$(OEOpteeSimX86)\oesocket_enc.lib;$(OEOpteeSimX86)\oestdio_enc.lib;$(OEOpteeSimX86)\oeenclave_opteesim.lib;$(OEOpteeSimX86)\mbedcrypto.lib;$(OEOpteeSimX86)\mbedx509.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- Master branch -->
-            <AdditionalOptions Condition="$(OEIsMaster) == True">-nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,--build-id</AdditionalOptions>
+            <AdditionalOptions Condition="$(OEIsSgx) == True And $(OEIsLinux) == True And $(OEIsMaster) == True">-nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,--build-id</AdditionalOptions>
             <LibraryDependencies Condition="$(OEIsMaster) == True">oeenclave;mbedx509;mbedcrypto;oelibcxx;oelibc;oecore;%(LibraryDependencies)</LibraryDependencies>
         </Link>
     </ItemDefinitionGroup>
