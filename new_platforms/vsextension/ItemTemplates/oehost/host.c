@@ -15,7 +15,7 @@ oe_result_t create_$enclavename$_enclave(const char* enclave_name, oe_enclave_t*
 #endif
     result = oe_create_$enclavename$_enclave(
         enclave_name,
-        OE_ENCLAVE_TYPE_UNDEFINED,
+        OE_ENCLAVE_TYPE_AUTO,
         enclave_flags,
         NULL,
         0,
@@ -50,18 +50,17 @@ void sample_enclave_call(void)
     }
 
     /* Make calls into the enclave... */
-    /*
-        result = ecall_DoWorkInEnclave(enclave);
-        if (result != OE_OK)
-        {
-            fprintf(
-                stderr,
-                "calling into ecall_DoWorkInEnclave failed: result=%u (%s)\n",
-                result,
-                oe_result_str(result));
-            goto exit;
-        }
-    */
+    int retval;
+    result = ecall_DoWorkInEnclave(enclave, &retval);
+    if (result != OE_OK)
+    {
+        fprintf(
+            stderr,
+            "calling into ecall_DoWorkInEnclave failed: result=%u (%s)\n",
+            result,
+            oe_result_str(result));
+        goto exit;
+    }
 
 exit:
     /* Clean up the enclave if we created one. */
@@ -72,10 +71,7 @@ exit:
 }
 
 /* Add implementations of any OCALLs here. */
-/*
 void ocall_DoWorkInHost(void)
 {
-    ... Implement your OCALL here. ...
+    printf("Hello from within ocall_DoWorkInHost\n");
 }
-
-*/

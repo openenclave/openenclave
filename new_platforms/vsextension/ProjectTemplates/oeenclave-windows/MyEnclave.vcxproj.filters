@@ -21,7 +21,7 @@
     <ClCompile Include="$projectname$_t.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="ecalls.c">
+    <ClCompile Include="$projectname$_ecalls.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

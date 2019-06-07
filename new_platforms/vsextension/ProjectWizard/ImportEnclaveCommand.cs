@@ -123,6 +123,12 @@ namespace OpenEnclaveSDK
             return folder;
         }
 
+        /// <summary>
+        /// Create a new configuration by copying an existing one
+        /// </summary>
+        /// <param name="project">Project to add the configuration to</param>
+        /// <param name="newName">Name of new configuration</param>
+        /// <param name="baseName">Name of configuration to copy from</param>
         private void AddConfiguration(Project project, string newName, string baseName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -213,7 +219,13 @@ namespace OpenEnclaveSDK
             }
         }
 
-        private void AddProjectItem(string zipName, string language, string fileName)
+        /// <summary>
+        /// Add a file to an existing project.
+        /// </summary>
+        /// <param name="templateName">Template name</param>
+        /// <param name="language">Programming language</param>
+        /// <param name="destinationFileName">Destination file name</param>
+        private void AddProjectItem(string templateName, string language, string destinationFileName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -223,8 +235,8 @@ namespace OpenEnclaveSDK
                 var solution = dte.Solution as EnvDTE80.Solution2;
                 Project project = GetActiveProject(dte);
 
-                string filename = solution.GetProjectItemTemplate(zipName, language);
-                ProjectItem item = project.ProjectItems.AddFromTemplate(filename, fileName);
+                string templateFileName = solution.GetProjectItemTemplate(templateName, language);
+                ProjectItem item = project.ProjectItems.AddFromTemplate(templateFileName, destinationFileName);
                 var file = item.Object as VCFile;
                 foreach (var config in file.FileConfigurations)
                 {
@@ -237,20 +249,43 @@ namespace OpenEnclaveSDK
 
             }
         }
+        
+        Project FindProject(Solution solution, string projectFolder)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var projects = solution.Projects;
+            foreach (var p in projects)
+            {
+                var project = p as Project;
+                var vcProject = project.Object as VCProject;
+                if (vcProject != null)
+                {
+                    string folder = Path.GetDirectoryName(vcProject.ProjectDirectory);
+                    if (projectFolder == folder)
+                    {
+                        return project;
+                    }
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// This function is the callback used to execute the command when the menu item is clicked.
         /// See the constructor to see how the menu item is associated with this function using
         /// OleMenuCommandService service and MenuCommand class.
         /// </summary>
-        /// <param name="sender">Event sender.</param>
-        /// <param name="e">Event args.</param>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event args</param>
         private async void Execute(object sender, EventArgs e)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
             Project project = GetActiveProject(dte);
+            var vcProject = project.Object as VCProject;
 
             var filePath = string.Empty;
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -268,7 +303,7 @@ namespace OpenEnclaveSDK
                     filePath = openFileDialog.FileName;
                     WizardImplementation.EdlLocation = Path.GetDirectoryName(filePath);
 
-                    // Extract base name.
+                    // Extract base name of enclave.
                     string baseName = System.IO.Path.GetFileNameWithoutExtension(filePath);
 
                     // Add list of generated files to the project.
@@ -321,22 +356,26 @@ namespace OpenEnclaveSDK
                         project,
                         packageVersions);
 
+                    bool isWindows = (vcProject.keyword != "Linux");
+
                     // Add any configurations/platforms to the project.
-                    AddConfiguration(project, "OPTEE-Simulation-Debug", "Debug");
+                    if (isWindows)
+                    {
+                        AddConfiguration(project, "OPTEE-Simulation-Debug", "Debug");
+                    }
                     AddConfiguration(project, "SGX-Simulation-Debug", "Debug");
-                    if (HavePlatform(project, "Win32"))
+                    if (isWindows && HavePlatform(project, "Win32"))
                     {
                         AddPlatform(project, "ARM", "Win32");
                     }
-                    else if (HavePlatform(project, "x64"))
+                    else if (isWindows && HavePlatform(project, "x64"))
                     {
                         AddPlatform(project, "ARM", "x64");
                     }
 
-                    // Set the debugger.
-                    var vcProject = project.Object as VCProject;
-                    foreach (var config in vcProject.Configurations)
+                    foreach (VCConfiguration config in vcProject.Configurations)
                     {
+                        var config3 = config as VCConfiguration3;
                         string name = config.Name;
                         if (name.Contains("ARM"))
                         {
@@ -344,14 +383,36 @@ namespace OpenEnclaveSDK
                             string value = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
                             clRule.SetPropertyValue("PreprocessorDefinitions", "_ARM_;" + value);
 
-                            var config3 = config as VCConfiguration3;
-                            config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARMSupport", "true");
-                            config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARM64Support", "true");
+                            if (isWindows) {
+                                // Enable compiling Win32 for ARM.
+                                config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARMSupport", "true");
+                                config3.SetPropertyValue("Configuration", true, "WindowsSDKDesktopARM64Support", "true");
+                            }
                         }
 
-                        // Change OutDir to $(SolutionDir)bin\$(Platform)\$(Configuration)\
-                        // so it's the same as the enclave.
-                        config.OutputDirectory = "$(SolutionDir)bin\\$(Platform)\\$(Configuration)\\";
+                        if (!isWindows && name.Contains("Debug"))
+                        {
+                            // GCC has no preprocessor define for debug mode, but the generated host file
+                            // expects _DEBUG, so set it here.
+                            var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
+                            string value = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
+                            clRule.SetPropertyValue("PreprocessorDefinitions", "_DEBUG;" + value);
+                        }
+
+                        if (isWindows)
+                        {
+                            // Change OutDir to $(SolutionDir)bin\$(Platform)\$(Configuration)\
+                            // so it's the same as the enclave.
+                            config.OutputDirectory = "$(SolutionDir)bin\\$(Platform)\\$(Configuration)\\";
+                        }
+                        else
+                        {
+                            // Add a post-build event to copy the enclave binary to the existing OutDir.
+                            string cmd = "cp $(RemoteRootDir)/" + baseName + "/bin/$(Platform)/$(Configuration)/" + baseName + ".signed $(RemoteOutDir)";
+                            var clRule = config.Rules.Item("ConfigurationBuildEvents") as IVCRulePropertyStorage;
+                            clRule.SetPropertyValue("RemotePostBuildCommand", cmd);
+                            clRule.SetPropertyValue("RemotePostBuildMessage", "Copying enclave binary");
+                        }
 
                         if (name.Contains("OPTEE") || name.Contains("ARM"))
                         {
@@ -361,19 +422,40 @@ namespace OpenEnclaveSDK
                             continue;
                         }
 
-                        // See if the Intel SGX SDK is installed.
-                        var sgxRule = config.Rules.Item("SGXDebugLauncher") as IVCRulePropertyStorage;
-                        if (sgxRule != null)
+                        if (isWindows)
                         {
-                            // Configure SGX debugger settings.
-                            var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
-                            generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
-                            sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+                            // See if the Intel SGX SDK is installed.
+                            var sgxRule = config.Rules.Item("SGXDebugLauncher") as IVCRulePropertyStorage;
+                            if (sgxRule != null)
+                            {
+                                // Configure SGX debugger settings.
+                                var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
+                                generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
+                                sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+                            }
+                        }
+                        else
+                        {
+                            // Configure gdb like the oe-gdb script does.
+                            var gdbRule = config.Rules.Item("LinuxDebugger");
+                            if (gdbRule != null)
+                            {
+                                // Configure GDB debugger settings.
+                                gdbRule.SetPropertyValue("PreLaunchCommand", "export PYTHONPATH=/opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin;export LD_PRELOAD=/opt/openenclave/lib/openenclave/debugger/liboe_ptrace.so");
+                                gdbRule.SetPropertyValue("AdditionalDebuggerCommands", "directory /opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin;source /opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin/gdb_sgx_plugin.py;set environment LD_PRELOAD;add-auto-load-safe-path /usr/lib");
+                            }
                         }
                     }
 
                     // Add a host code item to the project.
                     AddProjectItem("OEHostItem", "VC", baseName + "_host.c");
+
+                    // Add a reference to the enclave project if it's in the same solution.
+                    Project enclaveProject = FindProject(dte.Solution, WizardImplementation.EdlLocation);
+                    if (enclaveProject != null)
+                    {
+                        vcProject.AddProjectReference(enclaveProject);
+                    }
 
                     Cursor.Current = Cursors.Default;
                 }

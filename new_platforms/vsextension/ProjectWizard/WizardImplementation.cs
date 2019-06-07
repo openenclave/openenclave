@@ -97,8 +97,16 @@ namespace OpenEnclaveSDK
         }
 
         // Set the path to the OpenEnclave libs and TA Dev Kit.
-        private bool SetOELibPath(Dictionary<string, string> replacementsDictionary)
+        private bool SetOELibPath(Dictionary<string, string> replacementsDictionary, bool isWindows)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (!isWindows)
+            {
+                // No ARM support implemented yet for Linux.
+                return false;
+            }
+
             // First try picking the board from a menu.
             BoardPickerPage picker = new BoardPickerPage();
             DialogResult result = picker.ShowDialog();
@@ -222,6 +230,11 @@ namespace OpenEnclaveSDK
             WizardRunKind runKind,
             object[] customParams)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            string templatePath = customParams[0] as string;
+            bool isWindows = !templatePath.Contains("Linux");
+
             try
             {
                 // Get the $guid1$ value that has already been generated, and
@@ -240,7 +253,7 @@ namespace OpenEnclaveSDK
                 }
                 else
                 {
-                    SetOELibPath(replacementsDictionary);
+                    SetOELibPath(replacementsDictionary, isWindows);
                 }
             }
             catch (Exception ex)

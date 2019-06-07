@@ -1,6 +1,6 @@
 <VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Project">
   <TemplateData>
-    <Name>Open Enclave TEE Project</Name>
+    <Name>Open Enclave TEE Project (Windows)</Name>
     <Description>A project file for creating an Open Enclave enclave</Description>
     <ProjectType>VC</ProjectType>
     <SortOrder>1000</SortOrder>
