@@ -118,7 +118,7 @@ void* oe_realloc(void* ptr, size_t size)
     return p;
 }
 
-int oe_syscall_memalign(void** memptr, size_t alignment, size_t size)
+int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
 {
     int rc = POSIX_MEMALIGN(memptr, alignment, size);
 

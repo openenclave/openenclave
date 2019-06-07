@@ -37,7 +37,7 @@ void* memalign(size_t alignment, size_t size)
 OE_INLINE
 int posix_memalign(void** memptr, size_t alignment, size_t size)
 {
-    return oe_syscall_memalign(memptr, alignment, size);
+    return oe_posix_memalign(memptr, alignment, size);
 }
 
 #endif /* _OE_BITS_MALLOC_H */

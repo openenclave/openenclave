@@ -33,7 +33,7 @@ void* oe_realloc(void* ptr, size_t size);
 
 void* oe_memalign(size_t alignment, size_t size);
 
-int oe_syscall_memalign(void** memptr, size_t alignment, size_t size);
+int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
