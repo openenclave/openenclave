@@ -251,11 +251,6 @@
             <AdditionalIncludeDirectories>$(SGXSDKInstallPath)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
-    <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave' And $(OEIsSgx) == True And $(OEIsMaster) == True">
-        <ClCompile>
-            <AdditionalIncludeDirectories>/opt/openenclave/include/openenclave/3rdparty/libc;/opt/openenclave/include/openenclave/3rdparty/libcxx;/opt/openenclave/include/openenclave/3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-        </ClCompile>
-    </ItemDefinitionGroup>
 
     <!--
         =======================================================================
@@ -281,7 +276,6 @@
         <ClCompile>
             <!-- OP-TEE Simulation -->
             <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsNewPlatforms) == True">OE_SIMULATE_OPTEE;OE_ENCLAVE_TYPE_AUTO=OE_ENCLAVE_TYPE_UNDEFINED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsMaster) == True">OE_SIMULATE_OPTEE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
             <!-- Others -->
             <PreprocessorDefinitions Condition="($(OEIsTz) == False Or $(OEIsSim) == False) And $(OEIsNewPlatforms) == True">OE_ENCLAVE_TYPE_AUTO=OE_ENCLAVE_TYPE_UNDEFINED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -375,10 +369,17 @@
             <LibraryDependencies Condition="$(OEIsSgx) == True">$(OESgxLibsU);%(LibraryDependencies)</LibraryDependencies>
 
             <!-- arm-TZ-OPTEE-* -->
-            <LibraryDependencies Condition="$(OEIsTz) == True And $(OEIsARM) == True">$(OETzHwArm)\oehost.lib;$(OETzHwArm)\oesocket_host.lib;$(OETzHwArm)\oestdio_host.lib;$(OETzHwArm)\mbedcrypto.lib;$(OETzHwArm)\mbedx509.lib;onecore.lib;rpcrt4.lib;%(LibraryDependencies)</LibraryDependencies>
+            <LibraryDependencies Condition="$(OEIsTz) == True And $(OEIsARM) == True And $(OEIsNewPlatforms) == True">$(OETzHwArm)\oehost.lib;$(OETzHwArm)\oesocket_host.lib;$(OETzHwArm)\oestdio_host.lib;$(OETzHwArm)\mbedcrypto.lib;$(OETzHwArm)\mbedx509.lib;onecore.lib;rpcrt4.lib;%(LibraryDependencies)</LibraryDependencies>
 
             <!-- x86-OPTEE-Simulation-Debug -->
-            <LibraryDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True">$(OEOpteeSimX86)\oehost.lib;$(OEOpteeSimX86)\oesocket_host.lib;$(OEOpteeSimX86)\oestdio_host.lib;$(OEOpteeSimX86)\oehost_opteesim.lib;$(OEOpteeSimX86)\mbedcrypto.lib;$(OEOpteeSimX86)\mbedx509.lib;onecore.lib;rpcrt4.lib;%(LibraryDependencies)</LibraryDependencies>
+            <LibraryDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True And $(OEIsNewPlatforms) == True">$(OEOpteeSimX86)\oehost.lib;$(OEOpteeSimX86)\oesocket_host.lib;$(OEOpteeSimX86)\oestdio_host.lib;$(OEOpteeSimX86)\oehost_opteesim.lib;$(OEOpteeSimX86)\mbedcrypto.lib;$(OEOpteeSimX86)\mbedx509.lib;onecore.lib;rpcrt4.lib;%(LibraryDependencies)</LibraryDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsMaster) == True">
+        <Link>
+            <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+            <AdditionalOptions>-nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,--build-id</AdditionalOptions>
+            <LibraryDependencies>oeenclave;mbedx509;mbedcrypto;oelibcxx;oelibc;oecore;%(LibraryDependencies)</LibraryDependencies>
         </Link>
     </ItemDefinitionGroup>
 
@@ -405,14 +406,14 @@
         </PostBuildEvent>
     </ItemDefinitionGroup>
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And '$(ConfigurationType)' == 'DynamicLibrary' And $(OEIsMaster) == True">
-        <PreLinkEvent>
+        <RemotePreLinkEvent>
             <Command>bash ./makekey.sh</Command>
-            <Message>Get signing key.</Message>
-        </PreLinkEvent>
-        <PostBuildEvent>
-            <Command>/opt/openenclave/bin/oesign sign -e $(RemoteOutDir)$(TargetName) -c $(TargetName).conf -k private.pem</Command>
-            <Message>Sign the enclave.</Message>
-        </PostBuildEvent>
+            <Message>Getting signing key</Message>
+        </RemotePreLinkEvent>
+        <RemotePostBuildEvent>
+            <Command>/opt/openenclave/bin/oesign sign -e $(RemoteOutDir)$(TargetName) -c $(ProjectName).conf -k private.pem</Command>
+            <Message>Signing the enclave</Message>
+        </RemotePostBuildEvent>
     </ItemDefinitionGroup>
 
 </Project>

@@ -5,10 +5,6 @@
       <Configuration>Debug</Configuration>
       <Platform>x86</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Prerelease|x86">
-      <Configuration>Prerelease</Configuration>
-      <Platform>x86</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x86">
       <Configuration>Release</Configuration>
       <Platform>x86</Platform>
@@ -19,10 +15,6 @@
     </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Prerelease|x64">
-      <Configuration>Prerelease</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
@@ -49,7 +41,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x86'" Label="Configuration">
@@ -69,7 +61,7 @@
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x64'" Label="Configuration">
@@ -101,24 +93,24 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
+    <TargetExt />
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x86'">
     <GenerateManifest>false</GenerateManifest>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
+    <TargetExt />
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <GenerateManifest>false</GenerateManifest>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x86'">
-    <GenerateManifest>false</GenerateManifest>
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(NoInherit)</IncludePath>
-    <LibraryPath>$(NoInherit)</LibraryPath>
+    <TargetExt />
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -131,6 +123,7 @@
     <RemoteLdCommmandTimeout />
     <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
     <TargetExt />
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -140,6 +133,8 @@
     <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
     <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
     <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <TargetExt />
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -149,15 +144,8 @@
     <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
     <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
     <RemoteLdToolExe>clang-7</RemoteLdToolExe>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
-    <GenerateManifest>false</GenerateManifest>
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(NoInherit)</IncludePath>
-    <LibraryPath>$(NoInherit)</LibraryPath>
-    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <TargetExt />
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile>
@@ -166,8 +154,6 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);OE_ECALL=</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -178,8 +164,6 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);OE_ECALL=</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -191,22 +175,6 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);OE_ECALL=</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x86'">
-    <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);OE_ECALL=</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
@@ -216,25 +184,12 @@
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);OE_ECALL=</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(ClCompile.AdditionalIncludeDirectories);/opt/openenclave/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories);/opt/openenclave/lib/openenclave/enclave</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalOptions>-nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,--build-id</AdditionalOptions>
-      <LibraryDependencies>oeenclave;mbedx509;mbedcrypto;oelibc;oecore;%(LibraryDependencies)</LibraryDependencies>
       <ShowProgress>false</ShowProgress>
       <Version>false</Version>
     </Link>
-    <RemotePostBuildEvent>
-      <Command>/opt/openenclave/bin/oesign sign -e $(RemoteOutDir)$(TargetName) -c $(TargetName).conf -k private.pem</Command>
-      <Message>Signing enclave binary</Message>
-    </RemotePostBuildEvent>
-    <RemotePreLinkEvent>
-      <Command>bash ./makekey.sh</Command>
-      <Message>Getting signing key</Message>
-    </RemotePreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x64'">
     <ClCompile>
@@ -243,8 +198,6 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);OE_ECALL=</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -256,22 +209,6 @@
       <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);OE_ECALL=</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
-    <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions);OE_ECALL=</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
@@ -298,18 +235,12 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x86'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|x86'">Creating proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x86'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x86'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x86'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x86'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x64'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x64'">Creating proxy/bridge routines</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(OEEdger8rPath)" --trusted "%(FullPath)" --search-path "$(OEIncludePath)"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">Creating proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">%(Filename)_t.h;%(Filename)_t.c;%(Outputs)</Outputs>
     </CustomBuild>
     <None Include="$projectname$.conf" />
     <None Include="makekey.sh">
