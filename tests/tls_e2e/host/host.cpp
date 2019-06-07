@@ -97,9 +97,9 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
 
     // the unique ID for the enclave
     // For SGX enclaves, this is the MRENCLAVE value
-    OE_TRACE_INFO("identity->signer_id :\n");
+    OE_TRACE_INFO("identity->unique_id :\n");
     for (int i = 0; i < OE_UNIQUE_ID_SIZE; i++)
-        OE_TRACE_INFO("0x%0x ", (uint8_t)identity->signer_id[i]);
+        OE_TRACE_INFO("0x%0x ", (uint8_t)identity->unique_id[i]);
 
     // The signer ID for the enclave.
     // For SGX enclaves, this is the MRSIGNER value

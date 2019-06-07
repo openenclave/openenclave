@@ -1,20 +1,17 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/arpa/inet.h>
+#include <openenclave/corelibc/netdb.h>
+#include <openenclave/corelibc/netinet/in.h>
+#include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-//#define OE_NEED_STDC_NAMES
-#include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/tests.h>
 
-#include <openenclave/corelibc/arpa/inet.h>
-#include <openenclave/corelibc/netdb.h>
-#include <openenclave/corelibc/netinet/in.h>
-#include <openenclave/internal/posix/device.h>
-
-//#include <bits/stdfile.h> // For stderr & FILE
 #include <errno.h> // For errno & error defs
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,9 +46,9 @@ extern "C"
 
 struct tls_control_args g_control_config;
 
-// This is the identity validation callback. An TLS connecting party (client or
+// This is the identity validation callback. A TLS connecting party (client or
 // server) can verify the passed in "identity" information to decide whether to
-// accept an connection reqest
+// accept an connection request
 oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
 {
     oe_result_t result = OE_VERIFY_FAILED;
@@ -72,11 +69,11 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
     }
 
     // Dump an enclave's unique ID, signer ID and Product ID. They are
-    // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves In a real scenario,
+    // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves. In a real scenario,
     // custom id checking should be done here
-    OE_TRACE_INFO("\nidentity->signer_id :\n");
+    OE_TRACE_INFO("\nidentity->unique_id :\n");
     for (int i = 0; i < OE_UNIQUE_ID_SIZE; i++)
-        OE_TRACE_INFO("0x%0x ", (uint8_t)identity->signer_id[i]);
+        OE_TRACE_INFO("0x%0x ", (uint8_t)identity->unique_id[i]);
 
     OE_TRACE_INFO("\nparsed_report->identity.signer_id :\n");
     for (int i = 0; i < OE_SIGNER_ID_SIZE; i++)
@@ -148,39 +145,9 @@ int configure_client_ssl(
     // mbedtls_ssl_get_verify_result() can be called after the handshake is
     // complete.
     mbedtls_ssl_conf_authmode(conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
-
     mbedtls_ssl_conf_verify(conf, cert_verify_callback, NULL);
 
-    // enable TLS server to send a list of acceptable CAs in CertificateRequest
-    // messages. mbedtls_ssl_conf_cert_req_ca_list( &conf,
-    // MBEDTLS_SSL_CERT_REQ_CA_LIST_ENABLED); mbedtls_ssl_conf_ca_chain(conf,
-    // server_cert->next, NULL);
-
     // Set own certificate chain and private key.
-    // Note
-    // own_cert should contain in order from the bottom up your certificate
-    // chain. The top certificate (self-signed) can be omitted. On server, this
-    // function can be called multiple times to provision more than
-    //            one cert/key pair (eg one ECDSA, one RSA with SHA-256, one RSA
-    //            with SHA-1). An adequate certificate will be selected
-    //            according to the client's advertised capabilities. In case
-    //            multiple certificates are adequate, preference is given to the
-    //            one set by the first call to this function, then second, etc.
-    // On client, only the first call has any effect. That is, only one client
-    // certificate
-    //            can be provisioned. The server's preferences in its
-    //            CertficateRequest message will be ignored and our only cert
-    //            will be sent regardless of whether it matches those
-    //            preferences - the server can then decide what it wants to do
-    //            with it.
-    //
-    // The provided pk_key needs to match the public key in the first
-    // certificate in own_cert, or all handshakes using that certificate will
-    // fail. It is your responsibility to ensure that; this function will not
-    // perform any check. You may use mbedtls_pk_check_pair() in order to
-    // perform this check yourself, but be aware that this function can be
-    // computationally expensive on some key types.
-
     if ((ret = mbedtls_ssl_conf_own_cert(conf, client_cert, private_key)) != 0)
     {
         OE_TRACE_ERROR(
