@@ -194,6 +194,14 @@ static TEEC_Result _handle_generic_rpc(
         case OE_OCALL_LOG:
             return TEEC_ERROR_NOT_SUPPORTED;
 
+        case OE_OCALL_CALLOC:
+            HandleCalloc((uint64_t)input_buffer, (uint64_t*)output_buffer);
+            break;
+
+        case OE_OCALL_MEMSET:
+            HandleMemset((uint64_t)input_buffer, (uint64_t*)output_buffer);
+            break;
+
         default:
         {
             /* No function found with the number */
