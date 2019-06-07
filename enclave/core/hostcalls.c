@@ -38,33 +38,6 @@ void oe_host_free(void* ptr)
     oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, sizeof(ptr), false, NULL, 0);
 }
 
-char* oe_host_strndup(const char* str, size_t n)
-{
-    char* p;
-    size_t len;
-
-    if (!str)
-        return NULL;
-
-    len = oe_strlen(str);
-
-    if (n < len)
-        len = n;
-
-    /* Would be an integer overflow in the next statement. */
-    if (len == OE_SIZE_MAX)
-        return NULL;
-
-    if (!(p = oe_host_malloc(len + 1)))
-        return NULL;
-
-    if (oe_memcpy_s(p, len + 1, str, len) != OE_OK)
-        return NULL;
-    p[len] = '\0';
-
-    return p;
-}
-
 int oe_host_write(int device, const char* str, size_t len)
 {
     int ret = -1;

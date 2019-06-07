@@ -45,6 +45,14 @@ void HandleFree(uint64_t arg)
     free((void*)arg);
 }
 
+void HandleStrndup(uint64_t arg_in, uint64_t* arg_out)
+{
+    oe_strndup_args_t* args = (oe_strndup_args_t*)arg_in;
+
+    if (args)
+        *arg_out = (uint64_t)strndup(args->str, args->n);
+}
+
 void HandlePrint(uint64_t arg_in)
 {
     oe_print_args_t* args = (oe_print_args_t*)arg_in;
