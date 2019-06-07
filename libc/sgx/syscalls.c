@@ -235,7 +235,7 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
         /* The hook ignored the syscall so fall through */
     }
 
-    /* Let liboeposix handle select system calls. */
+    /* Let liboesyscall handle select system calls. */
     {
         long ret;
 

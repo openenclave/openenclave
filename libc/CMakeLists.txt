@@ -835,7 +835,7 @@ endif ()
 # This project (and its dependents) require the enclave headers and
 # library, and the musl headers.
 target_link_libraries(oelibc
-  PUBLIC oeposix oecore oelibc_includes
+  PUBLIC oesyscall oecore oelibc_includes
   PRIVATE oelibasm)
 
 if (OE_SGX)

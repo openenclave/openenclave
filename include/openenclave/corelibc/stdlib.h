@@ -18,10 +18,10 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
-typedef struct _oe_posix_path
+typedef struct _oe_syscall_path
 {
     char buf[OE_PATH_MAX];
-} oe_posix_path_t;
+} oe_syscall_path_t;
 
 void* oe_malloc(size_t size);
 
@@ -33,7 +33,7 @@ void* oe_realloc(void* ptr, size_t size);
 
 void* oe_memalign(size_t alignment, size_t size);
 
-int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
+int oe_syscall_memalign(void** memptr, size_t alignment, size_t size);
 
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
@@ -41,7 +41,7 @@ long int oe_strtol(const char* nptr, char** endptr, int base);
 
 int oe_atexit(void (*function)(void));
 
-char* oe_realpath(const char* path, oe_posix_path_t* resolved_path);
+char* oe_realpath(const char* path, oe_syscall_path_t* resolved_path);
 
 void oe_abort(void);
 
@@ -70,7 +70,7 @@ OE_INLINE long int strtol(const char* nptr, char** endptr, int base)
 
 OE_INLINE char* realpath(const char* path, char* resolved_path)
 {
-    return oe_realpath(path, (oe_posix_path_t*)resolved_path);
+    return oe_realpath(path, (oe_syscall_path_t*)resolved_path);
 }
 
 OE_INLINE void abort(void)
