@@ -336,15 +336,12 @@ let oe_gen_call_user_function (fd : func_decl) =
          fd.plist)
     ^ ");" ]
 
-(** Check if any of the parameters or the return type has the given
-    root type. *)
-let uses_type (root_type : atype) (fd : func_decl) =
-  let param_match =
-    List.exists (fun (pt, decl) -> root_type = get_param_atype pt) fd.plist
-  in
-  if param_match then param_match else root_type = fd.rtype
-
 let warn_non_portable_types (fd : func_decl) =
+  (* Check if any of the parameters or the return type has the given
+     root type. *)
+  let uses_type (t : atype) =
+    t = fd.rtype || List.exists (fun (p, _) -> t = get_param_atype p) fd.plist
+  in
   let print_portability_warning ty =
     printf
       "Warning: Function '%s': %s has different sizes on Windows and Linux. \
@@ -362,13 +359,13 @@ let warn_non_portable_types (fd : func_decl) =
   (* longs are represented as an Int type *)
   let long_t = Int {ia_signedness= Signed; ia_shortness= ILong} in
   let ulong_t = Int {ia_signedness= Unsigned; ia_shortness= ILong} in
-  if uses_type WChar fd then print_portability_warning "wchar_t" ;
-  if uses_type LDouble fd then print_portability_warning "long double" ;
+  if uses_type WChar then print_portability_warning "wchar_t" ;
+  if uses_type LDouble then print_portability_warning "long double" ;
   (* Handle long type *)
-  if uses_type (Long Signed) fd || uses_type long_t fd then
+  if uses_type (Long Signed) || uses_type long_t then
     print_portability_warning_with_recommendation "long" "int64_t or int32_t" ;
   (* Handle unsigned long type *)
-  if uses_type (Long Unsigned) fd || uses_type ulong_t fd then
+  if uses_type (Long Unsigned) || uses_type ulong_t then
     print_portability_warning_with_recommendation "unsigned long"
       "uint64_t or uint32_t"
 
@@ -383,37 +380,34 @@ let warn_signed_size_or_count_types (fd : func_decl) =
   let size_params =
     filter_map
       (fun (ptype, _) ->
-        (* The size may be either a [count] or [size], and then either a
-         number or string. We are interested in the strings, as the
-         indicate named [size] or [count] parameters. *)
+        (* The size may be either a [count] or [size], and then
+           either a number or string. We are interested in the
+           strings, as they indicate named [size] or [count]
+           parameters. *)
         let param_name {ps_size; ps_count} =
           match (ps_size, ps_count) with
           (* [s] is the name of the parameter as a string. *)
           | None, Some (AString s) | Some (AString s), None -> Some s
-          (* TODO: Check for [Some (ANumber n)] that [n > 0] *)
+          (* TODO: Check for [Some (ANumber n)] that [n < 1] *)
           | _ -> None
         in
         (* Only variables that are pointers where [chkptr] is true may
-         have size parameters. TODO: Validate this! *)
+           have size parameters. *)
         match ptype with
-        | PTPtr (_, ptr_attr) when ptr_attr.pa_chkptr ->
-            param_name ptr_attr.pa_size
+        | PTPtr (_, a) when a.pa_chkptr -> param_name a.pa_size
         | _ -> None )
       fd.plist
   in
   (* Print warnings for size parameters that are [Signed]. *)
   List.iter
     (fun (ptype, decl) ->
-      (* TODO: Maybe make this a utility function. *)
-      let get_int_signedness (i : int_attr) = i.ia_signedness in
-      let name = decl.identifier in
-      if List.mem name size_params then
+      let id = decl.identifier in
+      if List.mem id size_params then
         match ptype with
-        (* TODO: Combine these two patterns. *)
         | PTVal (Long s | LLong s) when s = Signed ->
-            print_signedness_warning name
-        | PTVal (Int i) when get_int_signedness i = Signed ->
-            print_signedness_warning name
+            print_signedness_warning id
+        | PTVal (Int i) when i.ia_signedness = Signed ->
+            print_signedness_warning id
         | _ -> () )
     fd.plist
 
