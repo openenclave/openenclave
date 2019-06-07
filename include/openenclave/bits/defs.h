@@ -10,7 +10,7 @@
 
 /* OE_API_VERSION */
 #ifndef OE_API_VERSION
-#define OE_API_VERSION 1
+#define OE_API_VERSION 2
 #endif
 
 /* OE_PRINTF_FORMAT */

@@ -148,7 +148,7 @@ done:
     return result;
 }
 
-oe_result_t oe_get_report_v1(
+static oe_result_t _oe_get_report_internal(
     oe_enclave_t* enclave,
     uint32_t flags,
     const void* opt_params,
@@ -234,7 +234,7 @@ oe_result_t oe_get_report_v2(
     *report_buffer = NULL;
     *report_buffer_size = 0;
 
-    result = oe_get_report_v1(
+    result = _oe_get_report_internal(
         enclave,
         flags,
         opt_params,
@@ -256,7 +256,7 @@ oe_result_t oe_get_report_v2(
         return OE_OUT_OF_MEMORY;
     }
 
-    result = oe_get_report_v1(
+    result = _oe_get_report_internal(
         enclave,
         flags,
         opt_params,

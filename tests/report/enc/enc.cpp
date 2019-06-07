@@ -36,8 +36,6 @@ void test_minimum_issue_date(oe_datetime_t now)
 #ifdef OE_USE_LIBSGX
     static uint8_t* report;
     size_t report_size = 0;
-    static uint8_t report_v1[OE_MAX_REPORT_SIZE];
-    size_t report_v1_size = sizeof(report_v1);
     static uint8_t* report_v2;
     size_t report_v2_size = 0;
 
@@ -54,20 +52,6 @@ void test_minimum_issue_date(oe_datetime_t now)
 
     // Verify the report.
     OE_TEST(oe_verify_report(report, report_size, NULL) == OE_OK);
-
-    // Generate reports.
-    OE_TEST(
-        oe_get_report_v1(
-            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
-            NULL,
-            0,
-            NULL,
-            0,
-            report_v1,
-            &report_v1_size) == OE_OK);
-
-    // Verify the report.
-    OE_TEST(oe_verify_report(report_v1, report_v1_size, NULL) == OE_OK);
 
     // Generate reports.
     OE_TEST(
@@ -104,10 +88,6 @@ void test_minimum_issue_date(oe_datetime_t now)
     // Verify the report.
     OE_TEST(
         oe_verify_report(report, report_size, NULL) ==
-        OE_INVALID_REVOCATION_INFO);
-
-    OE_TEST(
-        oe_verify_report(report_v1, report_v1_size, NULL) ==
         OE_INVALID_REVOCATION_INFO);
 
     OE_TEST(
