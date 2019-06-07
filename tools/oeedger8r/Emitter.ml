@@ -812,7 +812,11 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     let params =
       flatten_map
         (oe_gen_set_pointers [] "1" (fun p ->
-             if is_inout_ptr p then "SET_IN_OUT" else "SET_IN" ))
+             (* TODO: Right now we assume all nested pointers should
+                be [SET_IN_OUT], since nested pointers don't actually
+                satisfy either [is_in_ptr] or [is_inout_ptr]
+                predicates. *)
+             if is_in_ptr p then "SET_IN" else "SET_IN_OUT" ))
         (List.filter is_in_or_inout_ptr plist)
     in
     "    "
@@ -825,7 +829,11 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     let params =
       flatten_map
         (oe_gen_set_pointers [] "1" (fun p ->
-             if is_inout_ptr p then "COPY_AND_SET_IN_OUT" else "SET_OUT" ))
+             (* TODO: Right now we assume all nested pointers should
+                be [COPY_AND_SET_IN_OUT], since nested pointers don't
+                actually satisfy either [is_out_ptr] or [is_inout_ptr]
+                predicates. *)
+             if is_out_ptr p then "SET_OUT" else "COPY_AND_SET_IN_OUT" ))
         (List.filter is_out_or_inout_ptr plist)
     in
     "    "
