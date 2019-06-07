@@ -140,3 +140,41 @@ done:
     oe_free(arg_in);
     return (void*)arg_out;
 }
+
+int oe_host_write(int device, const char* str, size_t len)
+{
+    oe_print_args_t* arg_in = NULL;
+    size_t arg_in_sz;
+    int ret = -1;
+
+    if ((device != 0 && device != 1) || !str)
+        goto done;
+
+    if (len == (size_t)-1)
+        len = oe_strlen(str);
+
+    if (oe_safe_add_sizet(len + 1, sizeof(oe_print_args_t), &arg_in_sz) !=
+        OE_OK)
+        goto done;
+
+    arg_in = (oe_print_args_t*)oe_calloc(1, arg_in_sz);
+    if (!arg_in)
+        goto done;
+
+    arg_in->device = device;
+
+    if (oe_memcpy_s(arg_in->str, len + 1, str, len) != OE_OK)
+        goto done;
+
+    arg_in->str[len] = '\0';
+
+    if (oe_ocall(OE_OCALL_WRITE, (uint64_t)arg_in, arg_in_sz, true, NULL, 0) !=
+        OE_OK)
+        goto done;
+
+    ret = 0;
+
+done:
+    oe_free(arg_in);
+    return ret;
+}

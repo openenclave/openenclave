@@ -334,7 +334,7 @@ oe_result_t oe_register_ecall_function_table(
 typedef struct _oe_print_args
 {
     int device;
-    char* str;
+    char str[];
 } oe_print_args_t;
 
 /*
@@ -399,8 +399,6 @@ typedef struct _oe_memset_args
 typedef struct _oe_strndup_args
 {
     size_t n;
-
-    /* This member is dynamically-sized and must remain at the end */
     char str[];
 } oe_strndup_args_t;
 
