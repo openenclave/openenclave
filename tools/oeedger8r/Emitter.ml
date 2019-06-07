@@ -22,7 +22,7 @@ let is_foreign_array (pt : parameter_type) =
     size. *)
 let get_array_dims (ns : int list) =
   let get_dim n = if n = -1 then "[]" else sprintf "[%d]" n in
-  if ns = [] then "" else List.fold_left (fun acc n -> acc ^ get_dim n) "" ns
+  String.concat "" (List.map get_dim ns)
 
 let get_typed_declr_str (ty : atype) (declr : declarator) =
   let tystr = get_tystr ty in
@@ -155,17 +155,14 @@ let attr_value_to_string argstruct = function
 let oe_get_param_size (ptype, decl, argstruct) =
   let type_expr = get_type_expr ptype in
   (* TODO: Handle edge case of [size * count]. *)
-  let get_ptr_or_decl_size (p : ptr_size) (d : declarator) =
+  let get_ptr_or_decl_size (p : ptr_size) =
     match attr_value_to_string argstruct p.ps_count with
     | Some s -> sprintf "(%s * sizeof(%s))" s type_expr
     | None -> (
       match attr_value_to_string argstruct p.ps_size with
       | Some s -> s
       | None ->
-          let dims =
-            List.map (fun i -> "[" ^ string_of_int i ^ "]") d.array_dims
-          in
-          sprintf "sizeof(%s%s)" type_expr (String.concat "" dims) )
+          sprintf "sizeof(%s%s)" type_expr (get_array_dims decl.array_dims) )
   in
   match ptype with
   | PTPtr (_, ptr_attr) ->
@@ -173,7 +170,7 @@ let oe_get_param_size (ptype, decl, argstruct) =
         argstruct ^ decl.identifier ^ "_len * sizeof(char)"
       else if ptr_attr.pa_iswstr then
         argstruct ^ decl.identifier ^ "_len * sizeof(wchar_t)"
-      else get_ptr_or_decl_size ptr_attr.pa_size decl
+      else get_ptr_or_decl_size ptr_attr.pa_size
   (* Values have no marshalling size. *)
   | _ -> ""
 
@@ -181,14 +178,14 @@ let oe_get_param_size (ptype, decl, argstruct) =
 let oe_get_param_count (ptype, decl, argstruct) =
   let type_expr = get_type_expr ptype in
   (* TODO: Handle edge case of [size * count]. *)
-  let get_ptr_or_decl_count (p : ptr_size) (d : declarator) =
+  let get_ptr_or_decl_count (p : ptr_size) =
     match attr_value_to_string argstruct p.ps_count with
     | Some s -> s
     | None -> (
       match attr_value_to_string argstruct p.ps_size with
       | Some s -> sprintf "(%s / sizeof(%s))" s type_expr
       | None ->
-          let dims = List.map string_of_int d.array_dims in
+          let dims = List.map string_of_int decl.array_dims in
           String.concat " * " dims )
   in
   match ptype with
@@ -198,7 +195,7 @@ let oe_get_param_count (ptype, decl, argstruct) =
         (* TODO: Double-check that this length includes the
            null-terminator. *)
         argstruct ^ decl.identifier ^ "_len"
-      else get_ptr_or_decl_count ptr_attr.pa_size decl
+      else get_ptr_or_decl_count ptr_attr.pa_size
   (* Values are always a count of 1. *)
   | _ -> "1"
 
@@ -239,11 +236,10 @@ let emit_composite_type =
     ; String.concat "\n"
         (List.map
            (fun (ptype, decl) ->
-             let dims = List.map (sprintf "[%d]") decl.array_dims in
-             let dims_str = String.concat "" dims in
              sprintf "    %s %s%s;"
                (get_tystr (get_param_atype ptype))
-               decl.identifier dims_str )
+               decl.identifier
+               (get_array_dims decl.array_dims) )
            s.smlist)
     ; "} " ^ s.sname ^ ";"
     ; "" ]
@@ -254,10 +250,8 @@ let emit_composite_type =
     ; String.concat "\n"
         (List.map
            (fun (atype, decl) ->
-             let dims = List.map (sprintf "[%d]") decl.array_dims in
-             let dims_str = String.concat "" dims in
-             sprintf "    %s %s%s;" (get_tystr atype) decl.identifier dims_str
-             )
+             sprintf "    %s %s%s;" (get_tystr atype) decl.identifier
+               (get_array_dims decl.array_dims) )
            u.umlist)
     ; "} " ^ u.uname ^ ";"
     ; "" ]
