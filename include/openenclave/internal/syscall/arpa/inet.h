@@ -1,22 +1,14 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved. */
 /* Licensed under the MIT License. */
 
-#ifndef _OE_ARPA_INET_H
-#define _OE_ARPA_INET_H
+#ifndef OE_SYSCALL_ARPA_INET_H
+#define OE_SYSCALL_ARPA_INET_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/syscall/netinet/in.h>
 
 OE_EXTERNC_BEGIN
-
-/*
-**==============================================================================
-**
-** OE names:
-**
-**==============================================================================
-*/
 
 #define __OE_LITTLE_ENDIAN 1234
 #define __OE_BIG_ENDIAN 4321
@@ -67,43 +59,6 @@ OE_INLINE uint16_t oe_htons(uint16_t x)
 
 uint32_t oe_inet_addr(const char* cp);
 
-/*
-**==============================================================================
-**
-** Standard-C names:
-**
-**==============================================================================
-*/
-
-#if defined(OE_NEED_STDC_NAMES)
-
-OE_INLINE uint32_t ntohl(uint32_t x)
-{
-    return oe_ntohl(x);
-}
-
-OE_INLINE uint16_t ntohs(uint16_t x)
-{
-    return oe_ntohs(x);
-}
-
-OE_INLINE uint32_t htonl(uint32_t x)
-{
-    return oe_htonl(x);
-}
-
-OE_INLINE uint16_t htons(uint16_t x)
-{
-    return oe_htons(x);
-}
-
-OE_INLINE uint32_t inet_addr(const char* cp)
-{
-    return oe_inet_addr(cp);
-}
-
-#endif /* defined(OE_NEED_STDC_NAMES) */
-
 OE_EXTERNC_END
 
-#endif /* _OE_ARPA_INET_H */
+#endif /* OE_SYSCALL_ARPA_INET_H */

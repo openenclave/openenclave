@@ -3,14 +3,13 @@
 
 #ifndef _OE_SYSCALL_FD_H
 #define _OE_SYSCALL_FD_H
-// clang-format off
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/syscall/types.h>
-#include <openenclave/internal/syscall/sys/socket.h>
 #include <openenclave/internal/syscall/sys/epoll.h>
+#include <openenclave/internal/syscall/sys/socket.h>
 #include <openenclave/internal/syscall/sys/uio.h>
+#include <openenclave/internal/syscall/types.h>
 
 OE_EXTERNC_BEGIN
 
@@ -32,9 +31,9 @@ typedef struct _oe_fd_ops
 
     ssize_t (*write)(oe_fd_t* desc, const void* buf, size_t count);
 
-    ssize_t (*readv)(oe_fd_t* desc, const struct oe_iovec *iov, int iovcnt);
+    ssize_t (*readv)(oe_fd_t* desc, const struct oe_iovec* iov, int iovcnt);
 
-    ssize_t (*writev)(oe_fd_t* desc, const struct oe_iovec *iov, int iovcnt);
+    ssize_t (*writev)(oe_fd_t* desc, const struct oe_iovec* iov, int iovcnt);
 
     int (*dup)(oe_fd_t* desc, oe_fd_t** new_fd);
 
@@ -45,8 +44,7 @@ typedef struct _oe_fd_ops
     int (*close)(oe_fd_t* desc);
 
     oe_host_fd_t (*get_host_fd)(oe_fd_t* desc);
-}
-oe_fd_ops_t;
+} oe_fd_ops_t;
 
 /* File operations. */
 typedef struct _oe_file_ops
@@ -57,8 +55,7 @@ typedef struct _oe_file_ops
     oe_off_t (*lseek)(oe_fd_t* file, oe_off_t offset, int whence);
 
     int (*getdents64)(oe_fd_t* file, struct oe_dirent* dirp, uint32_t count);
-}
-oe_file_ops_t;
+} oe_file_ops_t;
 
 /* Socket operations .*/
 typedef struct _oe_socket_ops
@@ -81,21 +78,11 @@ typedef struct _oe_socket_ops
         const struct oe_sockaddr* addr,
         oe_socklen_t addrlen);
 
-    int (*listen)(
-        oe_fd_t* sock,
-        int backlog);
+    int (*listen)(oe_fd_t* sock, int backlog);
 
-    ssize_t (*send)(
-        oe_fd_t* sock,
-        const void* buf,
-        size_t len,
-        int flags);
+    ssize_t (*send)(oe_fd_t* sock, const void* buf, size_t len, int flags);
 
-    ssize_t (*recv)(
-        oe_fd_t* sock,
-        void* buf,
-        size_t len,
-        int flags);
+    ssize_t (*recv)(oe_fd_t* sock, void* buf, size_t len, int flags);
 
     ssize_t (*sendto)(
         oe_fd_t* sock,
@@ -113,19 +100,11 @@ typedef struct _oe_socket_ops
         const struct oe_sockaddr* src_addr,
         oe_socklen_t* addrlen);
 
-    ssize_t (*sendmsg)(
-        oe_fd_t* sock,
-        const struct oe_msghdr* msg,
-        int flags);
+    ssize_t (*sendmsg)(oe_fd_t* sock, const struct oe_msghdr* msg, int flags);
 
-    ssize_t (*recvmsg)(
-        oe_fd_t* sock,
-        struct oe_msghdr* msg,
-        int flags);
+    ssize_t (*recvmsg)(oe_fd_t* sock, struct oe_msghdr* msg, int flags);
 
-    int (*shutdown)(
-        oe_fd_t* sock,
-        int how);
+    int (*shutdown)(oe_fd_t* sock, int how);
 
     int (*getsockopt)(
         oe_fd_t* sock,
@@ -150,8 +129,7 @@ typedef struct _oe_socket_ops
         oe_fd_t* sock,
         struct oe_sockaddr* addr,
         oe_socklen_t* addrlen);
-}
-oe_socket_ops_t;
+} oe_socket_ops_t;
 
 /* epoll operations. */
 typedef struct _oe_epoll_ops
@@ -170,8 +148,7 @@ typedef struct _oe_epoll_ops
         struct oe_epoll_event* events,
         int maxevents,
         int timeout);
-}
-oe_epoll_ops_t;
+} oe_epoll_ops_t;
 
 struct _oe_fd
 {

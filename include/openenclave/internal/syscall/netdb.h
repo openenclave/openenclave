@@ -8,14 +8,6 @@
 
 OE_EXTERNC_BEGIN
 
-/*
-**==============================================================================
-**
-** OE names:
-**
-**==============================================================================
-*/
-
 #define OE_AI_PASSIVE 0x01
 #define OE_AI_CANONNAME 0x02
 #define OE_AI_NUMERICHOST 0x04
@@ -74,95 +66,6 @@ int oe_getnameinfo(
     char* serv,
     oe_socklen_t servlen,
     int flags);
-
-/*
-**==============================================================================
-**
-** Standard-C names:
-**
-**==============================================================================
-*/
-
-#if defined(OE_NEED_STDC_NAMES)
-
-#define AI_PASSIVE OE_AI_PASSIVE
-#define AI_CANONNAME OE_AI_CANONNAME
-#define AI_NUMERICHOST OE_AI_NUMERICHOST
-#define AI_V4MAPPED OE_AI_V4MAPPED
-#define AI_ALL OE_AI_ALL
-#define AI_ADDRCONFIG OE_AI_ADDRCONFIG
-#define AI_NUMERICSERV OE_AI_NUMERICSERV
-#define NI_NUMERICHOST OE_NI_NUMERICHOST
-#define NI_NUMERICSERV OE_NI_NUMERICSERV
-#define NI_NOFQDN OE_NI_NOFQDN
-#define NI_NAMEREQD OE_NI_NAMEREQD
-#define NI_DGRAM OE_NI_DGRAM
-#define NI_NUMERICSCOPE OE_NI_NUMERICSCOPE
-#define EAI_BADFLAGS OE_EAI_BADFLAGS
-#define EAI_NONAME OE_EAI_NONAME
-#define EAI_AGAIN OE_EAI_AGAIN
-#define EAI_FAIL OE_EAI_FAIL
-#define EAI_FAMILY OE_EAI_FAMILY
-#define EAI_SOCKTYPE OE_EAI_SOCKTYPE
-#define EAI_SERVICE OE_EAI_SERVICE
-#define EAI_MEMORY OE_EAI_MEMORY
-#define EAI_SYSTEM OE_EAI_SYSTEM
-#define EAI_OVERFLOW OE_EAI_OVERFLOW
-#define EAI_NODATA OE_EAI_NODATA
-#define EAI_ADDRFAMILY OE_EAI_ADDRFAMILY
-#define EAI_INPROGRESS OE_EAI_INPROGRESS
-#define EAI_CANCELED OE_EAI_CANCELED
-#define EAI_NOTCANCELED OE_EAI_NOTCANCELED
-#define EAI_ALLDONE OE_EAI_ALLDONE
-#define EAI_INTR OE_EAI_INTR
-#define EAI_IDN_ENCODE OE_EAI_IDN_ENCODE
-#define NI_MAXHOST OE_NI_MAXHOST
-#define NI_MAXSERV OE_NI_MAXSERV
-
-#define __OE_ADDRINFO addrinfo
-#define __OE_SOCKADDR sockaddr
-#include <openenclave/internal/syscall/bits/addrinfo.h>
-#undef __OE_ADDRINFO
-#undef __OE_SOCKADDR
-
-OE_INLINE int getaddrinfo(
-    const char* node,
-    const char* service,
-    const struct addrinfo* hints,
-    struct addrinfo** res)
-{
-    return oe_getaddrinfo(
-        node,
-        service,
-        (const struct oe_addrinfo*)hints,
-        (struct oe_addrinfo**)res);
-}
-
-OE_INLINE void freeaddrinfo(struct addrinfo* res)
-{
-    return oe_freeaddrinfo((struct oe_addrinfo*)res);
-}
-
-OE_INLINE int getnameinfo(
-    const struct sockaddr* sa,
-    socklen_t salen,
-    char* host,
-    socklen_t hostlen,
-    char* serv,
-    socklen_t servlen,
-    int flags)
-{
-    return oe_getnameinfo(
-        (const struct oe_sockaddr*)sa,
-        salen,
-        host,
-        hostlen,
-        serv,
-        servlen,
-        flags);
-}
-
-#endif /* defined(OE_NEED_STDC_NAMES) */
 
 OE_EXTERNC_END
 

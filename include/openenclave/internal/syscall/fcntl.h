@@ -10,14 +10,6 @@
 
 OE_EXTERNC_BEGIN
 
-/*
-**==============================================================================
-**
-** OE names:
-**
-**==============================================================================
-*/
-
 // clang-format off
 #define OE_O_RDONLY        000000000
 #define OE_O_WRONLY        000000001
@@ -81,75 +73,6 @@ OE_INLINE int oe_fcntl(int fd, int cmd, ...)
     return r;
 }
 #endif /* !defined(WIN32) */
-
-/*
-**==============================================================================
-**
-** Standard-C names:
-**
-**==============================================================================
-*/
-
-#if defined(OE_NEED_STDC_NAMES)
-
-#define O_RDONLY OE_O_RDONLY
-#define O_WRONLY OE_O_WRONLY
-#define O_RDWR OE_O_RDWR
-#define O_CREAT OE_O_CREAT
-#define O_EXCL OE_O_EXCL
-#define O_NOCTTY OE_O_NOCTTY
-#define O_TRUNC OE_O_TRUNC
-#define O_APPEND OE_O_APPEND
-#define O_NONBLOCK OE_O_NONBLOCK
-#define O_DSYNC OE_O_DSYNC
-#define O_SYNC OE_O_SYNC
-#define O_RSYNC OE_O_RSYNC
-#define O_DIRECTORY OE_O_DIRECTORY
-#define O_NOFOLLOW OE_O_NOFOLLOW
-#define O_CLOEXEC OE_O_CLOEXEC
-#define O_ASYNC OE_O_ASYNC
-#define O_DIRECT OE_O_DIRECT
-#define O_LARGEFILE OE_O_LARGEFILE
-#define O_NOATIME OE_O_NOATIME
-#define O_PATH OE_O_PATH
-#define O_TMPFILE OE_O_TMPFILE
-#define O_NDELAY OE_O_NDELAY
-
-#define F_DUPFD OE_F_DUPFD
-#define F_GETFD OE_F_GETFD
-#define F_SETFD OE_F_SETFD
-#define F_GETFL OE_F_GETFL
-#define F_SETFL OE_F_SETFL
-#define F_GETLK OE_F_GETLK
-#define F_SETLK OE_F_SETLK
-#define F_SETLKW OE_F_SETLKW
-#define F_SETOWN OE_F_SETOWN
-#define F_GETOWN OE_F_GETOWN
-#define F_SETSIG OE_F_SETSIG
-#define F_GETSIG OE_F_GETSIG
-#define F_SETOWN_EX OE_F_SETOWN_EX
-#define F_GETOWN_EX OE_F_GETOWN_EX
-#define F_GETOWNER_UIDS OE_F_GETOWNER_UIDS
-
-#define AT_FDCWD OE_AT_FDCWD
-#define AT_REMOVEDIR OE_AT_REMOVEDIR
-
-OE_INLINE int open(const char* pathname, int flags, mode_t mode)
-{
-    return oe_open(pathname, flags, mode);
-}
-
-OE_INLINE int fcntl(int fd, int cmd, ...)
-{
-    oe_va_list ap;
-    oe_va_start(ap, cmd);
-    int r = __oe_fcntl(fd, cmd, oe_va_arg(ap, uint64_t));
-    oe_va_end(ap);
-
-    return r;
-}
-
-#endif /* defined(OE_NEED_STDC_NAMES) */
 
 OE_EXTERNC_END
 

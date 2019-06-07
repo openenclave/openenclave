@@ -1,21 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_SYS_POLL_H
-#define _OE_SYS_POLL_H
+#ifndef _OE_SYSCALL_SYS_POLL_H
+#define _OE_SYSCALL_SYS_POLL_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
-
-/*
-**==============================================================================
-**
-** OE names:
-**
-**==============================================================================
-*/
 
 // clang-format off
 #define OE_POLLIN     0x001
@@ -43,45 +35,6 @@ struct oe_pollfd
 
 int oe_poll(struct oe_pollfd* fds, oe_nfds_t nfds, int timeout);
 
-/*
-**==============================================================================
-**
-** Standard-C names:
-**
-**==============================================================================
-*/
-
-#if defined(OE_NEED_STDC_NAMES)
-
-#define POLLIN OE_POLLIN
-#define POLLPRI OE_POLLPRI
-#define POLLOUT OE_POLLOUT
-#define POLLRDNORM OE_POLLRDNORM
-#define POLLRDBAND OE_POLLRDBAND
-#define POLLWRNORM OE_POLLWRNORM
-#define POLLWRBAND OE_POLLWRBAND
-#define POLLMSG OE_POLLMSG
-#define POLLRDHUP OE_POLLRDHUP
-#define POLLERR OE_POLLERR
-#define POLLHUP OE_POLLHUP
-#define POLLNVAL OE_POLLNVAL
-
-struct pollfd
-{
-    int fd;
-    short int events;
-    short int revents;
-};
-
-typedef oe_nfds_t nfds_t;
-
-OE_INLINE int poll(struct pollfd* fds, nfds_t nfds, int timeout)
-{
-    return oe_poll((struct oe_pollfd*)fds, nfds, timeout);
-}
-
-#endif /* defined(OE_NEED_STDC_NAMES) */
-
 OE_EXTERNC_END
 
-#endif /* _OE_SYS_POLL_H */
+#endif /* _OE_SYSCALL_SYS_POLL_H */

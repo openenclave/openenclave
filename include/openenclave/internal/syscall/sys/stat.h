@@ -1,21 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_SYS_STAT_H
-#define _OE_SYS_STAT_H
+#ifndef _OE_SYSCALL_SYS_STAT_H
+#define _OE_SYSCALL_SYS_STAT_H
 
 #include <openenclave/corelibc/bits/types.h>
 #include <openenclave/internal/defs.h>
 
 OE_EXTERNC_BEGIN
-
-/*
-**==============================================================================
-**
-** OE names:
-**
-**==============================================================================
-*/
 
 #define OE_S_IFMT 0170000
 #define OE_S_IFDIR 0040000
@@ -77,68 +69,6 @@ int oe_mkdir(const char* pathname, oe_mode_t mode);
 
 int oe_mkdir_d(uint64_t devid, const char* pathname, oe_mode_t mode);
 
-/*
-**==============================================================================
-**
-** Standard-C names:
-**
-**==============================================================================
-*/
-
-#if defined(OE_NEED_STDC_NAMES)
-
-#define S_IFMT OE_S_IFMT
-#define S_IFDIR OE_S_IFDIR
-#define S_IFCHR OE_S_IFCHR
-#define S_IFBLK OE_S_IFBLK
-#define S_IFREG OE_S_IFREG
-#define S_IFIFO OE_S_IFIFO
-#define S_IFLNK OE_S_IFLNK
-#define S_IFSOCK OE_S_IFSOCK
-
-#define S_ISDIR(mode) OE_S_ISDIR(mode)
-#define S_ISCHR(mode) OE_S_ISCHR(mode)
-#define S_ISBLK(mode) OE_S_ISBLK(mode)
-#define S_ISREG(mode) OE_S_ISREG(mode)
-#define S_ISFIFO(mode) OE_S_ISFIFO(mode)
-#define S_ISLNK(mode) OE_S_ISLNK(mode)
-#define S_ISSOCK(mode) OE_S_ISSOCK(mode)
-#define S_ISUID(mode) OE_S_ISUID(mode)
-#define S_ISGID(mode) OE_S_ISGID(mode)
-#define S_ISVTX(mode) OE_S_ISVTX(mode)
-
-#define S_IRUSR OE_S_IRUSR
-#define S_IWUSR OE_S_IWUSR
-#define S_IXUSR OE_S_IXUSR
-#define S_IRGRP OE_S_IRGRP
-#define S_IWGRP OE_S_IWGRP
-#define S_IXGRP OE_S_IXGRP
-#define S_IROTH OE_S_IROTH
-#define S_IWOTH OE_S_IWOTH
-#define S_IXOTH OE_S_IXOTH
-#define S_IRWXUSR OE_S_IRWXUSR
-#define S_IRWXGRP OE_S_IRWXGRP
-#define S_IRWXOTH OE_S_IRWXOTH
-#define S_IRWUSR OE_S_IRWUSR
-#define S_IRWGRP OE_S_IRWGRP
-#define S_IRWOTH OE_S_IRWOTH
-
-#define __OE_STAT stat
-#include <openenclave/internal/syscall/sys/bits/stat.h>
-#undef __OE_STAT
-
-OE_INLINE int stat(const char* pathname, struct stat* buf)
-{
-    return oe_stat(pathname, (struct oe_stat*)buf);
-}
-
-OE_INLINE int mkdir(const char* pathname, mode_t mode)
-{
-    return oe_mkdir(pathname, mode);
-}
-
-#endif /* defined(OE_NEED_STDC_NAMES) */
-
 OE_EXTERNC_END
 
-#endif /* _OE_SYS_STAT_H */
+#endif /* _OE_SYSCALL_SYS_STAT_H */

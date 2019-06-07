@@ -5,30 +5,12 @@ oeedl_file(../sendmsg.edl enclave gen)
 
 ##==============================================================================
 ##
-## sendmsg_enc1:
+## sendmsg_enc:
 ##
 ##==============================================================================
 
-add_executable(sendmsg_enc1 enc1.c ../client.c ../server.c ${gen})
+add_executable(sendmsg_enc enc.c ../client.c ../server.c ${gen})
 
-maybe_build_using_clangw(sendmsg_enc1)
+maybe_build_using_clangw(sendmsg_enc)
 
-target_link_libraries(sendmsg_enc1 oelibc oeenclave oehostsock)
-
-
-##==============================================================================
-##
-## sendmsg_enc2:
-##
-##==============================================================================
-
-add_executable(sendmsg_enc2 enc2.c ../client.c ../server.c ${gen})
-
-maybe_build_using_clangw(sendmsg_enc2)
-
-target_include_directories(sendmsg_enc2 PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
-
-add_definitions(-DOE_NEED_STDC_NAMES)
-
-target_link_libraries(sendmsg_enc2 oesyscall oeenclave oehostsock)
+target_link_libraries(sendmsg_enc oelibc oeenclave oehostsock)

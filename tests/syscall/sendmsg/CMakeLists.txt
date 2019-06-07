@@ -7,5 +7,4 @@ if (BUILD_ENCLAVES)
     add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/sendmsg1 sendmsg_host sendmsg_enc1)
-add_enclave_test(tests/sendmsg2 sendmsg_host sendmsg_enc2)
+add_enclave_test(tests/sendmsg sendmsg_host sendmsg_enc)
