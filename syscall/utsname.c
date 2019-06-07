@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/errno.h>
-#include <openenclave/corelibc/sys/utsname.h>
 #include <openenclave/internal/syscall/raise.h>
+#include <openenclave/internal/syscall/sys/utsname.h>
 #include <openenclave/internal/trace.h>
 #include "syscall_t.h"
 

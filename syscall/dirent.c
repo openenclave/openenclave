@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/corelibc/dirent.h>
-#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/corelibc/stdlib.h>
-#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/syscall/device.h>
+#include <openenclave/internal/syscall/dirent.h>
+#include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/internal/syscall/fdtable.h>
 #include <openenclave/internal/syscall/raise.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/trace.h>
 
 #define DIR_MAGIC 0x09180827

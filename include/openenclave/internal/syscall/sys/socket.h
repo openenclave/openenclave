@@ -7,7 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/bits/types.h>
-#include <openenclave/corelibc/sys/uio.h>
+#include <openenclave/internal/syscall/sys/uio.h>
 
 OE_EXTERNC_BEGIN
 
@@ -148,16 +148,16 @@ OE_EXTERNC_BEGIN
 #define OE_MSG_PEEK 0x0002
 
 #define __OE_SOCKADDR oe_sockaddr
-#include <openenclave/corelibc/sys/bits/sockaddr.h>
+#include <openenclave/internal/syscall/sys/bits/sockaddr.h>
 #undef __OE_SOCKADDR
 
 #define __OE_SOCKADDR_STORAGE oe_sockaddr_storage
-#include <openenclave/corelibc/sys/bits/sockaddr_storage.h>
+#include <openenclave/internal/syscall/sys/bits/sockaddr_storage.h>
 #undef __OE_SOCKADDR_STORAGE
 
 #define __OE_IOVEC oe_iovec
 #define __OE_MSGHDR oe_msghdr
-#include <openenclave/corelibc/sys/bits/msghdr.h>
+#include <openenclave/internal/syscall/sys/bits/msghdr.h>
 #undef __OE_IOVEC
 #undef __OE_MSGHDR
 
@@ -358,16 +358,16 @@ int oe_getsockname(int sockfd, struct oe_sockaddr* addr, oe_socklen_t* addrlen);
 #define MSG_PEEK OE_MSG_PEEK
 
 #define __OE_SOCKADDR sockaddr
-#include <openenclave/corelibc/sys/bits/sockaddr.h>
+#include <openenclave/internal/syscall/sys/bits/sockaddr.h>
 #undef __OE_SOCKADDR
 
 #define __OE_SOCKADDR_STORAGE sockaddr_storage
-#include <openenclave/corelibc/sys/bits/sockaddr_storage.h>
+#include <openenclave/internal/syscall/sys/bits/sockaddr_storage.h>
 #undef __OE_SOCKADDR_STORAGE
 
 #define __OE_IOVEC iovec
 #define __OE_MSGHDR msghdr
-#include <openenclave/corelibc/sys/bits/msghdr.h>
+#include <openenclave/internal/syscall/sys/bits/msghdr.h>
 #undef __OE_IOVEC
 #undef __OE_MSGHDR
 

@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdio.h>
-#include <openenclave/corelibc/sys/select.h>
-#include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/syscall/sys/select.h>
+#include <openenclave/internal/syscall/sys/socket.h>
 #include <openenclave/internal/tests.h>
 #include "../client.h"
 #include "../server.h"

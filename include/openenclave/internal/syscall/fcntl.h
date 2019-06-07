@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_FCNTL_H
-#define _OE_FCNTL_H
+#ifndef _OE_SYSCALL_FCNTL_H
+#define _OE_SYSCALL_FCNTL_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/corelibc/bits/types.h>
@@ -153,4 +153,4 @@ OE_INLINE int fcntl(int fd, int cmd, ...)
 
 OE_EXTERNC_END
 
-#endif /* _OE_FCNTL_H */
+#endif /* _OE_SYSCALL_FCNTL_H */

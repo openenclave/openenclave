@@ -5,11 +5,11 @@
 #include <openenclave/internal/time.h>
 
 // enclave.h must come before socket.h
-#include <openenclave/corelibc/arpa/inet.h>
 #include <openenclave/corelibc/errno.h>
-#include <openenclave/corelibc/netinet/in.h>
-#include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/corelibc/unistd.h>
+#include <openenclave/internal/syscall/arpa/inet.h>
+#include <openenclave/internal/syscall/netinet/in.h>
+#include <openenclave/internal/syscall/sys/socket.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/tests.h>
 #include <unistd.h>
 

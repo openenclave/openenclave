@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/corelibc/netdb.h>
+#include <openenclave/internal/syscall/netdb.h>
 
 struct addrinfo;
 

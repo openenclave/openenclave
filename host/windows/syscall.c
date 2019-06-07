@@ -24,10 +24,10 @@
 // clang-format on
 
 #include <openenclave/corelibc/errno.h>
-#include <openenclave/corelibc/sys/epoll.h>
-#include <openenclave/corelibc/fcntl.h>
-#include <openenclave/corelibc/dirent.h>
-#include <openenclave/corelibc/unistd.h>
+#include <openenclave/internal/syscall/sys/epoll.h>
+#include <openenclave/internal/syscall/fcntl.h>
+#include <openenclave/internal/syscall/dirent.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include "../hostthread.h"
 #include "syscall_u.h"
 

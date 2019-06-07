@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/internal/syscall/device.h>
 #include <openenclave/internal/syscall/raise.h>
+#include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/trace.h>
 #include "mount.h"
 

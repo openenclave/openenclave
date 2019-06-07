@@ -6,9 +6,9 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/sys/time.h>
 #include <openenclave/corelibc/time.h>
-#include <openenclave/corelibc/unistd.h>
+#include <openenclave/internal/syscall/sys/time.h>
+#include <openenclave/internal/syscall/unistd.h>
 
 OE_EXTERNC_BEGIN
 
@@ -23,7 +23,7 @@ OE_EXTERNC_BEGIN
 #define OE_FD_SETSIZE 1024
 
 #define __OE_FD_SET oe_fd_set
-#include <openenclave/corelibc/sys/bits/fd_set.h>
+#include <openenclave/internal/syscall/sys/bits/fd_set.h>
 #undef __OE_FD_SET
 
 int oe_select(
@@ -54,7 +54,7 @@ void OE_FD_ZERO(oe_fd_set* set);
 #define FD_SETSIZE 1024
 
 #define __OE_FD_SET fd_set
-#include <openenclave/corelibc/sys/bits/fd_set.h>
+#include <openenclave/internal/syscall/sys/bits/fd_set.h>
 #undef __OE_FD_SET
 
 OE_INLINE int select(

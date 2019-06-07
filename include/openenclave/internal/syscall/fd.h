@@ -8,9 +8,9 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/syscall/types.h>
-#include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/corelibc/sys/epoll.h>
-#include <openenclave/corelibc/sys/uio.h>
+#include <openenclave/internal/syscall/sys/socket.h>
+#include <openenclave/internal/syscall/sys/epoll.h>
+#include <openenclave/internal/syscall/sys/uio.h>
 
 OE_EXTERNC_BEGIN
 

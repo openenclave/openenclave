@@ -15,7 +15,7 @@
 
 #define OE_LIBC_SUPPRESS_DEPRECATIONS
 #if defined(_MSC_VER)
-#include <openenclave/corelibc/netinet/in.h>
+#include <openenclave/internal/syscall/netinet/in.h>
 #include <openenclave/internal/tests.h>
 #include <windows.h>
 

@@ -6,9 +6,9 @@
 
 #include <openenclave/bits/fs.h>
 #include <openenclave/bits/result.h>
-#include <openenclave/corelibc/sys/epoll.h>
-#include <openenclave/corelibc/sys/stat.h>
 #include <openenclave/internal/syscall/fd.h>
+#include <openenclave/internal/syscall/sys/epoll.h>
+#include <openenclave/internal/syscall/sys/stat.h>
 
 OE_EXTERNC_BEGIN
 

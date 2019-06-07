@@ -4,9 +4,9 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/time.h>
 
-#include <openenclave/corelibc/arpa/inet.h>
-#include <openenclave/corelibc/netdb.h>
-#include <openenclave/corelibc/netinet/in.h>
+#include <openenclave/internal/syscall/arpa/inet.h>
+#include <openenclave/internal/syscall/netdb.h>
+#include <openenclave/internal/syscall/netinet/in.h>
 #include <openenclave/internal/tests.h>
 
 #include <resolver_test_t.h>

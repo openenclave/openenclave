@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_DIRENT_H
-#define _OE_DIRENT_H
+#ifndef _OE_SYSCALL_DIRENT_H
+#define _OE_SYSCALL_DIRENT_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/corelibc/bits/types.h>
@@ -32,7 +32,7 @@ OE_EXTERNC_BEGIN
 typedef struct _OE_DIR OE_DIR;
 
 #define __OE_DIRENT oe_dirent
-#include <openenclave/corelibc/bits/dirent.h>
+#include <openenclave/internal/syscall/bits/dirent.h>
 #undef __OE_DIRENT
 
 OE_DIR* oe_opendir(const char* pathname);
@@ -68,7 +68,7 @@ int oe_getdents64(unsigned int fd, struct oe_dirent* dirp, unsigned int count);
 #define DT_WHT OE_DT_WHT
 
 #define __OE_DIRENT dirent
-#include <openenclave/corelibc/bits/dirent.h>
+#include <openenclave/internal/syscall/bits/dirent.h>
 #undef __OE_DIRENT
 
 OE_INLINE DIR* opendir(const char* pathname)
@@ -95,4 +95,4 @@ OE_INLINE int closedir(DIR* dir)
 
 OE_EXTERNC_END
 
-#endif /* _OE_DIRENT_H */
+#endif /* _OE_SYSCALL_DIRENT_H */

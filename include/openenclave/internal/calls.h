@@ -6,9 +6,9 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include "backtrace.h"
 
 OE_EXTERNC_BEGIN

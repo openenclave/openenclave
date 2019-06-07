@@ -3,10 +3,10 @@
 
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/corelibc/stdlib.h>
-#include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/syscall/device.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>

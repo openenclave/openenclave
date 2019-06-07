@@ -46,7 +46,7 @@ struct oe_in_addr
 };
 
 #define __OE_IN6_ADDR oe_in6_addr
-#include <openenclave/corelibc/netinet/bits/in6_addr.h>
+#include <openenclave/internal/syscall/netinet/bits/in6_addr.h>
 #undef __OE_IN6_ADDR
 
 #define oe_s6_addr __in6_union.__s6_addr
@@ -54,11 +54,11 @@ struct oe_in_addr
 #define oe_s6_addr32 __in6_union.__s6_addr32
 
 #define __OE_SOCKADDR_IN oe_sockaddr_in
-#include <openenclave/corelibc/netinet/bits/sockaddr_in.h>
+#include <openenclave/internal/syscall/netinet/bits/sockaddr_in.h>
 #undef __OE_SOCKADDR_IN
 
 #define __OE_SOCKADDR_IN6 oe_sockaddr_in6
-#include <openenclave/corelibc/netinet/bits/sockaddr_in6.h>
+#include <openenclave/internal/syscall/netinet/bits/sockaddr_in6.h>
 #undef __OE_SOCKADDR_IN6
 
 /*
@@ -91,15 +91,15 @@ struct in_addr
 };
 
 #define __OE_IN6_ADDR in6_addr
-#include <openenclave/corelibc/netinet/bits/in6_addr.h>
+#include <openenclave/internal/syscall/netinet/bits/in6_addr.h>
 #undef __OE_IN6_ADDR
 
 #define __OE_SOCKADDR_IN sockaddr_in
-#include <openenclave/corelibc/netinet/bits/sockaddr_in.h>
+#include <openenclave/internal/syscall/netinet/bits/sockaddr_in.h>
 #undef __OE_SOCKADDR_IN
 
 #define __OE_SOCKADDR_IN6 sockaddr_in6
-#include <openenclave/corelibc/netinet/bits/sockaddr_in6.h>
+#include <openenclave/internal/syscall/netinet/bits/sockaddr_in6.h>
 #undef __OE_SOCKADDR_IN6
 
 #endif /* defined(OE_NEED_STDC_NAMES) */

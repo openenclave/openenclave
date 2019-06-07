@@ -9,8 +9,8 @@
 
 #include <openenclave/internal/syscall/device.h>
 #include <openenclave/internal/syscall/raise.h>
-#include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/corelibc/netdb.h>
+#include <openenclave/internal/syscall/sys/socket.h>
+#include <openenclave/internal/syscall/netdb.h>
 #include <openenclave/internal/syscall/resolver.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>

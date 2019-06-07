@@ -23,12 +23,12 @@
 
 #include <openenclave/internal/syscall/device.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/corelibc/dirent.h>
-#include <openenclave/corelibc/sys/mount.h>
+#include <openenclave/internal/syscall/dirent.h>
+#include <openenclave/internal/syscall/sys/mount.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/corelibc/fcntl.h>
-#include <openenclave/corelibc/sys/ioctl.h>
+#include <openenclave/internal/syscall/fcntl.h>
+#include <openenclave/internal/syscall/sys/ioctl.h>
 #include <openenclave/internal/syscall/raise.h>
 #include <openenclave/internal/syscall/iov.h>
 #include <openenclave/internal/raise.h>

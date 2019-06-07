@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/corelibc/netdb.h>
 #include <openenclave/corelibc/stdlib.h>
-#include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/internal/syscall/netdb.h>
 #include <openenclave/internal/syscall/raise.h>
 #include <openenclave/internal/syscall/resolver.h>
+#include <openenclave/internal/syscall/sys/socket.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 

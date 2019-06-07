@@ -7,9 +7,9 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/corelibc/sys/uio.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/syscall/iov.h>
+#include <openenclave/internal/syscall/sys/uio.h>
 #include <openenclave/internal/syscall/types.h>
 #include <openenclave/internal/utils.h>
 

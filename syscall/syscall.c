@@ -2,29 +2,29 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safemath.h>
-#include <openenclave/corelibc/dirent.h>
 #include <openenclave/corelibc/errno.h>
-#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/setjmp.h>
-#include <openenclave/corelibc/signal.h>
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/corelibc/sys/epoll.h>
-#include <openenclave/corelibc/sys/ioctl.h>
-#include <openenclave/corelibc/sys/mount.h>
-#include <openenclave/corelibc/sys/poll.h>
-#include <openenclave/corelibc/sys/select.h>
-#include <openenclave/corelibc/sys/socket.h>
-#include <openenclave/corelibc/sys/stat.h>
-#include <openenclave/corelibc/sys/syscall.h>
-#include <openenclave/corelibc/sys/uio.h>
-#include <openenclave/corelibc/sys/utsname.h>
-#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/syscall/device.h>
+#include <openenclave/internal/syscall/dirent.h>
+#include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/internal/syscall/raise.h>
+#include <openenclave/internal/syscall/signal.h>
+#include <openenclave/internal/syscall/sys/epoll.h>
+#include <openenclave/internal/syscall/sys/ioctl.h>
+#include <openenclave/internal/syscall/sys/mount.h>
+#include <openenclave/internal/syscall/sys/poll.h>
+#include <openenclave/internal/syscall/sys/select.h>
+#include <openenclave/internal/syscall/sys/socket.h>
+#include <openenclave/internal/syscall/sys/stat.h>
+#include <openenclave/internal/syscall/sys/syscall.h>
+#include <openenclave/internal/syscall/sys/uio.h>
+#include <openenclave/internal/syscall/sys/utsname.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/trace.h>
 
 typedef int (*ioctl_proc)(

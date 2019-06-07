@@ -7,7 +7,7 @@
 #include <limits.h>
 #include <netdb.h>
 #include <openenclave/corelibc/limits.h>
-#include <openenclave/corelibc/sys/uio.h>
+#include <openenclave/internal/syscall/sys/uio.h>
 #include <openenclave/internal/syscall/types.h>
 #include <pthread.h>
 #include <stdio.h>

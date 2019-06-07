@@ -3,17 +3,17 @@
 
 #include <openenclave/enclave.h>
 
-#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/corelibc/sys/ioctl.h>
-#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/internal/syscall/fd.h>
 #include <openenclave/internal/syscall/fdtable.h>
 #include <openenclave/internal/syscall/iov.h>
 #include <openenclave/internal/syscall/raise.h>
+#include <openenclave/internal/syscall/sys/ioctl.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include "syscall_t.h"

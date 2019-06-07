@@ -6,8 +6,8 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/syscall/raise.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/trace.h>
 
 char* oe_realpath(const char* path, oe_syscall_path_t* resolved_path)

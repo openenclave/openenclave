@@ -10,7 +10,7 @@
 #include <openenclave/internal/syscall/device.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/corelibc/string.h>
-#include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/internal/syscall/sys/socket.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/syscall/raise.h>
 #include <openenclave/internal/syscall/iov.h>

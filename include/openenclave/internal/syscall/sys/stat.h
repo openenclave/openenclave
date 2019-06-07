@@ -54,7 +54,7 @@ OE_EXTERNC_BEGIN
 #define OE_S_IRWOTH (OE_S_IROTH | OE_S_IWOTH)
 
 #define __OE_STAT oe_stat
-#include <openenclave/corelibc/sys/bits/stat.h>
+#include <openenclave/internal/syscall/sys/bits/stat.h>
 #undef __OE_STAT
 
 #ifndef st_atime
@@ -124,7 +124,7 @@ int oe_mkdir_d(uint64_t devid, const char* pathname, oe_mode_t mode);
 #define S_IRWOTH OE_S_IRWOTH
 
 #define __OE_STAT stat
-#include <openenclave/corelibc/sys/bits/stat.h>
+#include <openenclave/internal/syscall/sys/bits/stat.h>
 #undef __OE_STAT
 
 OE_INLINE int stat(const char* pathname, struct stat* buf)

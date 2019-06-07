@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_UNISTD_H
-#define _OE_UNISTD_H
+#ifndef _OE_SYSCALL_UNISTD_H
+#define _OE_SYSCALL_UNISTD_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
-#include <openenclave/corelibc/unistd.h>
+#include <openenclave/internal/syscall/unistd.h>
 
 OE_EXTERNC_BEGIN
 
@@ -111,6 +111,7 @@ int oe_getgroups(int size, oe_gid_t list[]);
 **==============================================================================
 */
 
+#if 0
 #if defined(OE_NEED_STDC_NAMES)
 
 #define STDIN_FILENO OE_STDIN_FILENO
@@ -256,7 +257,8 @@ OE_INLINE int getgroups(int size, gid_t list[])
 }
 
 #endif /* defined(OE_NEED_STDC_NAMES) */
+#endif
 
 OE_EXTERNC_END
 
-#endif /* _OE_UNISTD_H */
+#endif /* _OE_SYSCALL_UNISTD_H */

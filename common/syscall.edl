@@ -21,14 +21,14 @@
 
 enclave {
 
-    include "openenclave/corelibc/netdb.h"
-    include "openenclave/corelibc/sys/epoll.h"
-    include "openenclave/corelibc/sys/poll.h"
-    include "openenclave/corelibc/sys/socket.h"
-    include "openenclave/corelibc/sys/utsname.h"
-    include "openenclave/corelibc/sys/stat.h"
-    include "openenclave/corelibc/dirent.h"
-    include "openenclave/corelibc/poll.h"
+    include "openenclave/internal/syscall/netdb.h"
+    include "openenclave/internal/syscall/sys/epoll.h"
+    include "openenclave/internal/syscall/sys/poll.h"
+    include "openenclave/internal/syscall/sys/socket.h"
+    include "openenclave/internal/syscall/sys/utsname.h"
+    include "openenclave/internal/syscall/sys/stat.h"
+    include "openenclave/internal/syscall/dirent.h"
+    include "openenclave/internal/syscall/poll.h"
     include "openenclave/internal/syscall/types.h"
 
     trusted {

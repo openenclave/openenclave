@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_SIGNAL_H
-#define _OE_SIGNAL_H
+#ifndef _OE_SYSCALL_SIGNAL_H
+#define _OE_SYSCALL_SIGNAL_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
@@ -75,11 +75,11 @@ union oe_sigval {
 };
 
 #define __OE_SIGINFO_T oe_siginfo_t
-#include <openenclave/corelibc/bits/siginfo.h>
+#include <openenclave/internal/syscall/bits/siginfo.h>
 #undef __OE_SIGINFO_T
 
 #define __OE_SIGACTION oe_sigaction
-#include <openenclave/corelibc/bits/sigaction.h>
+#include <openenclave/internal/syscall/bits/sigaction.h>
 #undef __OE_SIGACTION
 
 oe_sighandler_t oe_signal(int signum, oe_sighandler_t handler);
@@ -146,11 +146,11 @@ union sigval {
 };
 
 #define __OE_SIGINFO_T siginfo_t
-#include <openenclave/corelibc/bits/siginfo.h>
+#include <openenclave/internal/syscall/bits/siginfo.h>
 #undef __OE_SIGINFO_T
 
 #define __OE_SIGACTION sigaction
-#include <openenclave/corelibc/bits/sigaction.h>
+#include <openenclave/internal/syscall/bits/sigaction.h>
 #undef __OE_SIGACTION
 
 #define sa_handler oe_sa_handler
@@ -194,4 +194,4 @@ OE_INLINE int sigaction(
 
 OE_EXTERNC_END
 
-#endif /* _OE_SIGNAL_H */
+#endif /* _OE_SYSCALL_SIGNAL_H */

@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_CORELIBC_NETDB_H_
-#define _OE_CORELIBC_NETDB_H_
+#ifndef _OE_SYSCALL_NETDB_H_
+#define _OE_SYSCALL_NETDB_H_
 
-#include <openenclave/corelibc/sys/socket.h>
+#include <openenclave/internal/syscall/sys/socket.h>
 
 OE_EXTERNC_BEGIN
 
@@ -54,7 +54,7 @@ OE_EXTERNC_BEGIN
 
 #define __OE_ADDRINFO oe_addrinfo
 #define __OE_SOCKADDR oe_sockaddr
-#include <openenclave/corelibc/bits/addrinfo.h>
+#include <openenclave/internal/syscall/bits/addrinfo.h>
 #undef __OE_ADDRINFO
 #undef __OE_SOCKADDR
 
@@ -121,7 +121,7 @@ int oe_getnameinfo(
 
 #define __OE_ADDRINFO addrinfo
 #define __OE_SOCKADDR sockaddr
-#include <openenclave/corelibc/bits/addrinfo.h>
+#include <openenclave/internal/syscall/bits/addrinfo.h>
 #undef __OE_ADDRINFO
 #undef __OE_SOCKADDR
 
