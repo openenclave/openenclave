@@ -98,6 +98,8 @@ typedef enum _oe_func
     OE_OCALL_GET_TIME,
     OE_OCALL_BACKTRACE_SYMBOLS,
     OE_OCALL_LOG,
+    OE_OCALL_CALLOC,
+    OE_OCALL_MEMSET,
     /* Caution: always add new OCALL function numbers here */
 
     OE_OCALL_MAX, /* This value is never used */
@@ -349,6 +351,39 @@ typedef struct _oe_realloc_args
     void* ptr;
     size_t size;
 } oe_realloc_args_t;
+
+/*
+**==============================================================================
+**
+** oe_calloc_args_t
+**
+**     void* calloc(size_t nmemb, size_t size)
+**
+**==============================================================================
+*/
+
+typedef struct _oe_calloc_args
+{
+    size_t nmemb;
+    size_t size;
+} oe_calloc_args_t;
+
+/*
+**==============================================================================
+**
+** oe_memset_args_t
+**
+**     void* memset(void* ptr, int value, size_t num)
+**
+**==============================================================================
+*/
+
+typedef struct _oe_memset_args
+{
+    void* ptr;
+    int value;
+    size_t num;
+} oe_memset_args_t;
 
 /*
 **==============================================================================

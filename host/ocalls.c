@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/trace.h>
@@ -20,10 +21,23 @@ void HandleRealloc(uint64_t arg_in, uint64_t* arg_out)
     oe_realloc_args_t* args = (oe_realloc_args_t*)arg_in;
 
     if (args)
-    {
-        if (arg_out)
-            *arg_out = (uint64_t)realloc(args->ptr, args->size);
-    }
+        *arg_out = (uint64_t)realloc(args->ptr, args->size);
+}
+
+void HandleCalloc(uint64_t arg_in, uint64_t* arg_out)
+{
+    oe_calloc_args_t* args = (oe_calloc_args_t*)arg_in;
+
+    if (args)
+        *arg_out = (uint64_t)calloc(args->nmemb, args->size);
+}
+
+void HandleMemset(uint64_t arg_in, uint64_t* arg_out)
+{
+    oe_memset_args_t* args = (oe_memset_args_t*)arg_in;
+
+    if (args)
+        *arg_out = (uint64_t)memset(args->ptr, args->value, args->num);
 }
 
 void HandleFree(uint64_t arg)

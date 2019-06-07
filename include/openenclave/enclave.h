@@ -161,6 +161,21 @@ void* oe_host_realloc(void* ptr, size_t size);
 void* oe_host_calloc(size_t nmemb, size_t size);
 
 /**
+ * Fill block of memory.
+ *
+ * This function sets the first **num** bytes of the block of memory pointed by
+ * **ptr** to value specified by **value**.
+ *
+ * @param ptr The memory block to fill.
+ * @param value The value to use as a filler.
+ * @param num The number of elements to fill.
+ *
+ * @returns **ptr** is returned.
+ *
+ */
+void* oe_host_memset(void* ptr, int value, size_t num);
+
+/**
  * Release allocated memory.
  *
  * This function releases memory allocated with oe_host_malloc() or
