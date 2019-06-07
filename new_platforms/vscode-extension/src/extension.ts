@@ -19,13 +19,20 @@ export function activate(context: vscode.ExtensionContext) {
     const outputChannel: vscode.OutputChannel = vscode.window.createOutputChannel(Constants.openEnclaveDisplayName);
     const openEnclaveManager = new OpenEnclaveManager(context);
 
-    RequirementsChecker.checkRequirements();
+    RequirementsChecker.checkRequirements(false, false);
 
     // Add Open Solution command
     initCommandAsync(context, outputChannel,
         "msiot-vscode-openenclave.newSolution",
         (): Promise<void> => {
-            return openEnclaveManager.createOpenEnclaveSolution();
+            return openEnclaveManager.createOpenEnclaveSolution(outputChannel);
+        });
+
+    // Add Check System Requirements command
+    initCommandAsync(context, outputChannel,
+        "msiot-vscode-openenclave.checkSystemRequirements",
+        (): Promise<void> => {
+            return openEnclaveManager.checkRequirements(outputChannel);
         });
 }
 

@@ -2,21 +2,13 @@
 
 A [Visual Studio Code](https://code.visualstudio.com/) [extension](https://marketplace.visualstudio.com/VSCode) supporting [Open Enclave](https://openenclave.io/sdk/), including development, debugging, emulators, and deployment!
 
-For more information on the technology, [see here](https://github.com/Microsoft/openenclave/blob/feature.new_platforms/new_platforms/README.md).
+For more information on the technology, [see here](https://github.com/Microsoft/openenclave/blob/master/new_platforms/README.md).
 
 ## Getting started
 
 Ensure that the [requirements](#Requirements) are met.
 
-You can directly install the [Microsoft Open Enclave extension](https://marketplace.visualstudio.com/items?itemName=ms-iot.msiot-vscode-openenclave).
-
-Alternatively, you can run the extension from this repository by following these instructions:
-
-1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave --branch feature.new_platforms`.
-1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
-1. Run npm to install the dependencies: `npm install` (see the [requirements](#Requirements) section for npm installation link).
-1. Start VSCode: `code .`.
-1. Start the extension using `F5`.
+Install the [Microsoft Open Enclave extension](https://marketplace.visualstudio.com/items?itemName=ms-iot.msiot-vscode-openenclave).
 
 ## Features
 
@@ -82,6 +74,8 @@ to an Azure Edge device by:
 1. Navigate to the `config` folder and right click on `deployment.*.json`
 1. Select `Create Deployment for Single Device` or `Create Deployment at Scale`.
 
+To set up an actual device to receive a deployment, you can follow [these](./SetUpDevice.md) instructions.
+
 ### Debug your Open Enclave solution.
 
 Debugging your standalone project's enclave is easy.  
@@ -99,23 +93,70 @@ the host and enclave symbols into an instance of the debugger.
 
         Note: The debugger has been configured to break at TA_InvokeCommandEntryPoint.  This will happen once when the enclave starts and once for each ECALL.
 
+### Check your system for Open Enclave requirements.
+
+You can use the `Microsoft Open Enclave: Check System Requirements` command (commands can be found using **F1** or **CTRL-Shift-P**) 
+to validate your system.
+
+The command will query whether the [required tools and the required versions](#Requirements) are present on your system.  Any unmet
+requirements will be presented in a Visual Studio Code warning window.
+
+**Note:** as long as unmet requirements are found, this requirements check will run whenever the extension is activated automatically.
+
 ## Requirements
 
 * Install [Visual Studio Code](https://code.visualstudio.com/)
 * Install [git](https://git-scm.com/downloads)
-    * On Windows, please make sure that long paths are enabled: `git config --system core.longpaths true`
-* Install [CMake 3.12 or higher](https://cmake.org/download/)
-* On Linux, install the required build components
+    * On Windows, please make sure that long paths are enabled: `git config --global core.longpaths true`
+* On Linux
 
-      sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch python
-
-* Make sure that the [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug) is installed.
+    * Make sure that the [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug) is installed.
+    * Install [CMake 3.12 or higher](https://cmake.org/download/)
+    * Install the required build components: 
+        
+        ```bash
+        sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch python
+        ```
+    
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
-    * Ensure that [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
-        * On Linux, if you are seeing permissions issues when connecting to the docker daemon, this has helped some people: `sudo usermod -a -G docker $USER`
-    * Ensure that the [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
+    * [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
+        * On Linux, for Edge projects, you will need to enable cross-building.
 
-          pip install --upgrade iotedgehubdev
+            * Enable docker cross-building on Ubuntu 19.04 and 18.10 by:
+
+                ```bash
+                sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+                ```
+
+            * Enable docker cross-building on Ubuntu 18.04 and 16.04 by:
+
+                ```bash
+                sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+                sudo mkdir -p /lib/binfmt.d
+                sudo sh -c 'echo :qemu-arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-arm-static:F > /lib/binfmt.d/qemu-arm-static.conf'
+                sudo sh -c 'echo :qemu-aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-aarch64-static:F > /lib/binfmt.d/qemu-aarch64-static.conf'
+                sudo systemctl restart systemd-binfmt.service
+                ```
+
+            * To validate that your system is configured for cross-building, you can try testing the docker containers that will be needed in the build:
+
+                ```bash
+                docker run arm32v7/ubuntu:xenial
+                docker run aarch64/ubuntu:xenial
+                docker run amd64/ubuntu:xenial
+                ```
+
+        * On Linux, if you are seeing permission issues related to connecting to the Docker daemon, add your Linux user to the docker group. This will allow your user to connect and issue commands to the Docker daemon:
+        
+            ```bash
+            sudo usermod -a -G docker $USER
+            ```
+
+    * The [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
+
+        ```bash
+        pip install --upgrade iotedgehubdev
+        ```
 
     * Create a container repository, like [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/)
         * To push Edge containers to the container registry, find the username and password for your container registry and use them to log into docker (the --pasword-stdin option will prevent your password from appearing in the command line history): `docker login --password-stdin -u <username> <container-url>`
@@ -127,10 +168,20 @@ the host and enclave symbols into an instance of the debugger.
         1. **F1** or **CTRL-Shift-P**
         1. `Azure IoT Hub: Select IoT Hub`
 
-### For development of this extension, or running from source code directly
+## Build and run extension from source code
+
+For development of this extension, or running from source code directly
 
 * Install [node](https://nodejs.org/en/)
 * Install [npm](https://www.npmjs.com/get-npm)
+
+To run the extension from this repository, following these instructions:
+
+1. Clone this repository `git clone --recursive https://github.com/microsoft/openenclave --branch master`.
+1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
+1. Run npm to install the dependencies: `npm install` (see the [requirements](#Requirements) section for npm installation link).
+1. Start VSCode: `code .`.
+1. Start the extension using `F5`.
 
 ## Data/Telemetry
 
@@ -142,12 +193,28 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
 ## Known Issues
 
 * Building SGX enclaves is not currently supported.
+* We've had reports that downloading the SDK from git can be slow from within the extension. To work around any issue, you can run these commands
+    * Linux:
+        
+        ```bash
+        rm -rf /home/$USER/.config/Code/User/globalStorage/ms-iot.msiot-vscode-openenclave/1.0.3/3rdparty/openenclave
+        git clone --recursive --branch master https://github.com/Microsoft/openenclave /home/$USER/.config/Code/User/globalStorage/ms-iot.msiot-vscode-openenclave/1.0.3/3rdparty/openenclave
+        ```
+    
+    * Windows (from CMD prompt): 
+
+        ```bat
+        rmdir /S /Q  %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
+        git clone --recursive --branch master https://github.com/Microsoft/openenclave %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
+        ```
+
+
 
 ## Release Notes
 
-### 1.0.4
+### 1.1.0
 
-GA
+Public Preview
 
 ### 1.0.1
 

@@ -179,6 +179,37 @@
                     }
                 }
             ]
+        },
+        {
+            "label": "Configure for Grapeboard (LS1012)",
+            "type": "process",
+            "command": "cmake",
+            "options": {
+                "cwd": "[[build-folder]]/ls-ls1012grapeboard"
+            },
+            "args": [
+                "-DOE_TEE=TZ",
+                "-DTA_DEV_KIT_DIR=[[devkit-folder]]/devkits/ls-ls1012grapeboard/export-ta_arm64",
+                "-DOE_TA_TOOLCHAIN_PREFIX=aarch64-linux-gnu-",
+                "-DOE_TOOLCHAIN_PREFIX=aarch64-linux-gnu-",
+                "-DCMAKE_TOOLCHAIN_FILE=[[sdk-folder]]/new_platforms/cmake/linux-aarch64-v6.cmake",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "[[solution-folder]]"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Build for Grapeboard (LS1012)",
+            "type": "process",
+            "command": "make",
+            "options": {
+                "cwd": "[[build-folder]]/ls-ls1012grapeboard"
+            },
+            "args": [
+                "-j"
+            ],
+            "problemMatcher": [],
+            "dependsOn": [ "Configure for Grapeboard (LS1012)" ]
         }
     ]
 }

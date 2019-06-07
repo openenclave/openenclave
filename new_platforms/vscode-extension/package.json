@@ -2,10 +2,11 @@
 	"name": "msiot-vscode-openenclave",
 	"displayName": "Microsoft Open Enclave",
 	"description": "Develop, deploy, and debug your Microsoft Open Enclave",
-	"version": "1.0.4",
+	"version": "1.1.0",
 	"publisher": "ms-iot",
 	"aiKey": "specifyt-here-alap-pins-ightskeyhere",
 	"icon": "openenclave.png",
+	"preview": true,
 	"engines": {
 		"vscode": "^1.32.0"
 	},
@@ -13,7 +14,7 @@
 		"type": "git",
 		"url": "https://github.com/microsoft/openenclave.git"
 	},
-	"homepage": "https://github.com/microsoft/openenclave/blob/feature.new_platforms/new_platforms/vscode-extension/marketplace-homepage.md",
+	"homepage": "https://github.com/microsoft/openenclave/blob/master/new_platforms/vscode-extension/marketplace-homepage.md",
 	"bugs": "https://github.com/microsoft/openenclave/issues",
 	"license": "MIT",
 	"categories": [
@@ -39,8 +40,24 @@
 				"command": "msiot-vscode-openenclave.newSolution",
 				"title": "New Open Enclave Solution",
 				"category": "Microsoft Open Enclave"
+			},
+			{
+				"command": "msiot-vscode-openenclave.checkSystemRequirements",
+				"title": "Check System Requirements",
+				"category": "Microsoft Open Enclave"
 			}
-		]
+		],
+		"configuration": {
+			"type": "object",
+			"title": "Microsoft Open Enclave configuration",
+			"properties": {
+				"msiot-vscode-openenclave.systemRequirementsPassed": {
+					"type": "string",
+					"default": "0.0.0",
+					"description": "System requirement checks have all passed for this machine based on specified version."
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
