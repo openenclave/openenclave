@@ -93,24 +93,39 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
+    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
+    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x86'">
     <GenerateManifest>false</GenerateManifest>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
+    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
+    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <GenerateManifest>false</GenerateManifest>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(NoInherit)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
+    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
+    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -121,9 +136,9 @@
     <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
     <RemoteLdToolExe>clang-7</RemoteLdToolExe>
     <RemoteLdCommmandTimeout />
-    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
+    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SGX-Simulation-Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -133,8 +148,10 @@
     <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
     <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
     <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
+    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
@@ -144,8 +161,10 @@
     <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
     <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
     <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteLdCommmandTimeout />
     <TargetExt />
     <TargetName>$(ProjectName)</TargetName>
+    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile>
@@ -253,12 +272,12 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\openenclave.0.2.0-CI-20190521-020719\build\native\openenclave.targets" Condition="Exists('..\packages\openenclave.0.2.0-CI-20190521-020719\build\native\openenclave.targets')" />
+    <Import Project="..\packages\openenclave.0.2.0-CI-20190607-222616\build\native\openenclave.targets" Condition="Exists('..\packages\openenclave.0.2.0-CI-20190607-222616\build\native\openenclave.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\openenclave.0.2.0-CI-20190521-020719\build\native\openenclave.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\openenclave.0.2.0-CI-20190521-020719\build\native\openenclave.targets'))" />
+    <Error Condition="!Exists('..\packages\openenclave.0.2.0-CI-20190607-222616\build\native\openenclave.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\openenclave.0.2.0-CI-20190607-222616\build\native\openenclave.targets'))" />
   </Target>
 </Project>
