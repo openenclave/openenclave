@@ -209,6 +209,7 @@ static void* _grpc_thread_proc(void* param)
     TEEC_Result res;
     oe_enclave_t* enclave = (oe_enclave_t*)param;
 
+    /* This function only returns when the TA is terminated */
     res = TEEC_ReceiveReplyGenericRpc(
         &enclave->session, _handle_generic_rpc, enclave);
 
@@ -224,7 +225,7 @@ static oe_result_t _uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
 
     id_copy = strdup(uuid_str);
 
-    /* Remove ".ta" extension, if one is present. */
+    /* Remove ".ta" extension, if one is present */
     size_t len = strlen(id_copy);
     if ((len > 3) && (strcmp(&id_copy[len - 3], ".ta") == 0))
     {
