@@ -212,6 +212,7 @@ bool TestOEGetSealKey()
         // The seal keys should match.
         if ((memcmp(key_buffer_ptr, third_key_ptr, sizeof(sgx_key_t)) != 0))
         {
+            oe_free_seal_key(third_key_ptr, NULL);
             return false;
         }
 
@@ -229,6 +230,10 @@ bool TestOEGetSealKey()
             &third_key_ptr_size);
         if (ret != OE_INVALID_ISVSVN)
         {
+            if (ret == OE_OK)
+            {
+                oe_free_seal_key(third_key_ptr, NULL);
+            }
             return false;
         }
 
@@ -246,6 +251,10 @@ bool TestOEGetSealKey()
             &third_key_ptr_size);
         if (ret != OE_INVALID_CPUSVN)
         {
+            if (ret == OE_OK)
+            {
+                oe_free_seal_key(third_key_ptr, NULL);
+            }
             return false;
         }
 

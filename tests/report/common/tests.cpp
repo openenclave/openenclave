@@ -580,6 +580,7 @@ void test_remote_report()
                     report_ptr_size,
                     report_data,
                     report_data_size + 1) == false);
+            oe_free_report(report_buffer_ptr);
         }
     }
 #endif
