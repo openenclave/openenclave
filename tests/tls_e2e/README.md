@@ -20,12 +20,12 @@ The following 3 test hooks are available for enabling test scenarios.
 Here are the scenarios covered in these tests via running run_scenarios_tests()
 
 1. A positive scenario
-    This is the case we hope always happen when both TLS connecting parties successfully validate each other's certificate and enclave identity.
-    And everything works correctly all test hooks mentioned above set to false.
+    This is the case we hope it will always happen when both TLS connecting parties successfully validate each other's certificate and enclave identity.
+    And everything works correctly when all test hooks mentioned above set to false.
 
 2. Negative scenarios
 
-    We run TLS connection tests three times, each with a TLS connecting party set to true one of the following hook configurations while the other connecting party with all hooks set to false.
+    We run TLS connection tests three times, each with a TLS connecting party set to true to one of the following hook configurations while the other connecting party with all hooks set to false.
 
     fail_cert_verify_callback
     fail_enclave_identity_verifier_callback
