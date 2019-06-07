@@ -638,47 +638,47 @@ int oe_syscall_poll_ocall(
 **==============================================================================
 */
 
-int oe_syscall_getpid(void)
+int oe_syscall_getpid_ocall(void)
 {
     PANIC;
 }
 
-int oe_syscall_getppid(void)
+int oe_syscall_getppid_ocall(void)
 {
     PANIC;
 }
 
-int oe_syscall_getpgrp(void)
+int oe_syscall_getpgrp_ocall(void)
 {
     PANIC;
 }
 
-unsigned int oe_syscall_getuid(void)
+unsigned int oe_syscall_getuid_ocall(void)
 {
     PANIC;
 }
 
-unsigned int oe_syscall_geteuid(void)
+unsigned int oe_syscall_geteuid_ocall(void)
 {
     PANIC;
 }
 
-unsigned int oe_syscall_getgid(void)
+unsigned int oe_syscall_getgid_ocall(void)
 {
     PANIC;
 }
 
-unsigned int oe_syscall_getegid(void)
+unsigned int oe_syscall_getegid_ocall(void)
 {
     PANIC;
 }
 
-int oe_syscall_getpgid(int pid)
+int oe_syscall_getpgid_ocall(int pid)
 {
     PANIC;
 }
 
-int oe_syscall_getgroups(size_t size, unsigned int* list)
+int oe_syscall_getgroups_ocall(size_t size, unsigned int* list)
 {
     PANIC;
 }

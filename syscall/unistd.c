@@ -149,49 +149,49 @@ unsigned int oe_sleep(unsigned int seconds)
 oe_pid_t oe_getpid(void)
 {
     oe_pid_t ret = 0;
-    oe_syscall_getpid(&ret);
+    oe_syscall_getpid_ocall(&ret);
     return ret;
 }
 
 oe_pid_t oe_getppid(void)
 {
     oe_pid_t ret = 0;
-    oe_syscall_getppid(&ret);
+    oe_syscall_getppid_ocall(&ret);
     return ret;
 }
 
 oe_pid_t oe_getpgrp(void)
 {
     oe_pid_t ret = 0;
-    oe_syscall_getpgrp(&ret);
+    oe_syscall_getpgrp_ocall(&ret);
     return ret;
 }
 
 oe_uid_t oe_getuid(void)
 {
     oe_uid_t ret = 0;
-    oe_syscall_getuid(&ret);
+    oe_syscall_getuid_ocall(&ret);
     return ret;
 }
 
 oe_uid_t oe_geteuid(void)
 {
     oe_uid_t ret = 0;
-    oe_syscall_geteuid(&ret);
+    oe_syscall_geteuid_ocall(&ret);
     return ret;
 }
 
 oe_gid_t oe_getgid(void)
 {
     oe_gid_t ret = 0;
-    oe_syscall_getgid(&ret);
+    oe_syscall_getgid_ocall(&ret);
     return ret;
 }
 
 oe_gid_t oe_getegid(void)
 {
     oe_gid_t ret = 0;
-    oe_syscall_getegid(&ret);
+    oe_syscall_getegid_ocall(&ret);
     return ret;
 }
 
@@ -200,7 +200,7 @@ oe_pid_t oe_getpgid(oe_pid_t pid)
     oe_pid_t ret = -1;
     oe_pid_t retval = -1;
 
-    if (oe_syscall_getpgid(&retval, pid) != OE_OK)
+    if (oe_syscall_getpgid_ocall(&retval, pid) != OE_OK)
     {
         oe_errno = OE_EINVAL;
         goto done;
@@ -217,7 +217,7 @@ int oe_getgroups(int size, oe_gid_t list[])
     int ret = -1;
     int retval = -1;
 
-    if (oe_syscall_getgroups(&retval, (size_t)size, list) != OE_OK)
+    if (oe_syscall_getgroups_ocall(&retval, (size_t)size, list) != OE_OK)
     {
         oe_errno = OE_EINVAL;
         goto done;

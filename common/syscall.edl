@@ -384,25 +384,25 @@ enclave {
             int timeout)
             propagate_errno;
 
-        int oe_syscall_getpid();
+        int oe_syscall_getpid_ocall();
 
-        int oe_syscall_getppid();
+        int oe_syscall_getppid_ocall();
 
-        int oe_syscall_getpgrp();
+        int oe_syscall_getpgrp_ocall();
 
-        unsigned int oe_syscall_getuid();
+        unsigned int oe_syscall_getuid_ocall();
 
-        unsigned int oe_syscall_geteuid();
+        unsigned int oe_syscall_geteuid_ocall();
 
-        unsigned int oe_syscall_getgid();
+        unsigned int oe_syscall_getgid_ocall();
 
-        unsigned int oe_syscall_getegid();
+        unsigned int oe_syscall_getegid_ocall();
 
-        int oe_syscall_getpgid(
+        int oe_syscall_getpgid_ocall(
             int pid)
             propagate_errno;
 
-        int oe_syscall_getgroups(
+        int oe_syscall_getgroups_ocall(
             size_t size,
             [out, count=size] unsigned int* list)
             propagate_errno;
