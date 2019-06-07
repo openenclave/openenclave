@@ -202,28 +202,34 @@ let oe_get_param_count (ptype, decl, argstruct) =
   (* Values are always a count of 1. *)
   | _ -> "1"
 
-(** Generate the prototype for a given function. Optionally add an
-    [oe_enclave_t*] first parameter. *)
+(** Generate the prototype for a given function. *)
 let oe_gen_prototype (fd : func_decl) =
-  let get_plist_str (plist : pdecl list) =
-    if List.length plist = 0 then "void"
-    else
-      (if List.length plist = 1 then "" else "\n    ")
-      ^ String.concat ",\n    " (List.map gen_parm_str plist)
+  let plist_str =
+    let args = List.map gen_parm_str fd.plist in
+    match args with
+    | [] -> "void"
+    | [arg] -> arg
+    | _ -> "\n    " ^ String.concat ",\n    " args
   in
-  sprintf "%s %s(%s)" (get_tystr fd.rtype) fd.fname (get_plist_str fd.plist)
+  sprintf "%s %s(%s)" (get_tystr fd.rtype) fd.fname plist_str
 
+(** Generate the wrapper prototype for a given function. Optionally
+    add an [oe_enclave_t*] first parameter. *)
 let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
-  let args = List.map gen_parm_str fd.plist in
-  let args =
-    if fd.rtype <> Void then (get_tystr fd.rtype ^ "* _retval") :: args
-    else args
+  let plist_str =
+    let args =
+      [ (if is_ecall then ["oe_enclave_t* enclave"] else [])
+      ; ( match fd.rtype with
+        | Void -> []
+        | _ -> [get_tystr fd.rtype ^ "* _retval"] )
+      ; List.map gen_parm_str fd.plist ]
+      |> List.flatten
+    in
+    match args with
+    | [arg] -> arg
+    | _ -> "\n    " ^ String.concat ",\n    " args
   in
-  let args = if is_ecall then "oe_enclave_t* enclave" :: args else args in
-  sprintf "oe_result_t %s(%s)" fd.fname
-    ( if List.length args = 0 then ""
-    else if List.length args = 1 then List.hd args
-    else "\n    " ^ String.concat ",\n    " args )
+  sprintf "oe_result_t %s(%s)" fd.fname plist_str
 
 (** Emit [struct], [union], or [enum]. *)
 let emit_composite_type =
