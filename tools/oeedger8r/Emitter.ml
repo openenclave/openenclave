@@ -739,49 +739,69 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "memcpy(_pargs_in, &_args, sizeof(*_pargs_in));" ]
   in
   let oe_process_output_buffer (fd : func_decl) =
-    [ [ (* Verify that the ecall succeeded *)
-        "/* Setup output arg struct pointer. */"
-      ; sprintf "_pargs_out = (%s_args_t*)_output_buffer;" fd.fname
-      ; "OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));"
-      ; ""
-      ; "/* Check if the call succeeded. */"
-      ; "if ((_result = _pargs_out->_result) != OE_OK)"
-      ; "    goto done;"
-      ; ""
-      ; "/* Currently exactly _output_buffer_size bytes must be written. */"
-      ; "if (_output_bytes_written != _output_buffer_size)"
-      ; "{"
-      ; "    _result = OE_FAILURE;"
-      ; "    goto done;"
-      ; "}"
-      ; ""
-      ; "/* Unmarshal return value and out, in-out parameters. */"
-      ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
-        else "/* No return value. */" ) ]
-    ; (* This does not use String.concat because the elements are multiple lines. *)
-      (* TODO: Fix for deep copy. *)
-      flatten_map
-        (fun (ptype, decl) ->
-          let size = oe_get_param_size (ptype, decl, "_args.") in
-          (* These need to be in order and so done together. *)
-          if is_out_ptr ptype then
-            [ sprintf "OE_READ_OUT_PARAM(%s, (size_t)(%s));" decl.identifier
-                size ]
-          else if is_inout_ptr ptype then
-            (* Check that strings are null terminated. Note output
-                buffer has already been copied into the enclave. *)
-            [ ( if is_str_ptr ptype || is_wstr_ptr ptype then
-                sprintf
-                  "OE_CHECK_NULL_TERMINATOR%s(_output_buffer + \
-                   _output_buffer_offset, _args.%s_len);\n"
-                  (if is_wstr_ptr ptype then "_WIDE" else "")
-                  decl.identifier
-              else "" )
-              ^ sprintf "OE_READ_IN_OUT_PARAM(%s, (size_t)(%s));"
-                  decl.identifier size ]
-          else [] )
-        fd.plist ]
-    |> List.flatten
+    let oe_serialize_buffer_outputs (plist : pdecl list) =
+      let rec gen_serialize args count (ptype, decl) =
+        let argstruct =
+          match args with
+          | [] -> "_args."
+          | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
+        in
+        let size = oe_get_param_size (ptype, decl, argstruct) in
+        let arg =
+          match args with
+          | [] -> decl.identifier
+          | hd :: _ -> hd ^ gen_c_deref count ^ decl.identifier
+        in
+        gen_c_for count
+          ( [ ( if is_str_or_wstr_ptr (ptype, decl) then
+                [ sprintf
+                    "OE_CHECK_NULL_TERMINATOR%s(_output_buffer + \
+                     _output_buffer_offset, _args.%s_len);"
+                    (if is_wstr_ptr ptype then "_WIDE" else "")
+                    arg ]
+              else [] )
+            ; ( match args with
+              | [] -> []
+              | _ ->
+                  [ sprintf "if (%s)" arg
+                  ; sprintf "    %s = _args.%s; /* restore original pointer */"
+                      arg arg ] )
+            ; [ sprintf "OE_READ_%s_PARAM(%s, (size_t)(%s));"
+                  (if is_out_ptr ptype then "OUT" else "IN_OUT")
+                  arg size ]
+            ; (let param_count = oe_get_param_count (ptype, decl, argstruct) in
+               flatten_map
+                 (gen_serialize (arg :: args) param_count)
+                 (get_deepcopy_members (get_param_atype ptype))) ]
+          |> List.flatten )
+      in
+      let params =
+        flatten_map (gen_serialize [] "1")
+          (List.filter is_out_or_inout_ptr plist)
+      in
+      if params <> [] then String.concat "\n    " params
+      else "/* There were no out nor in-out parameters. */"
+    in
+    [ (* Verify that the ecall succeeded *)
+      "/* Setup output arg struct pointer. */"
+    ; sprintf "_pargs_out = (%s_args_t*)_output_buffer;" fd.fname
+    ; "OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));"
+    ; ""
+    ; "/* Check if the call succeeded. */"
+    ; "if ((_result = _pargs_out->_result) != OE_OK)"
+    ; "    goto done;"
+    ; ""
+    ; "/* Currently exactly _output_buffer_size bytes must be written. */"
+    ; "if (_output_bytes_written != _output_buffer_size)"
+    ; "{"
+    ; "    _result = OE_FAILURE;"
+    ; "    goto done;"
+    ; "}"
+    ; ""
+    ; "/* Unmarshal return value and out, in-out parameters. */"
+    ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
+      else "/* No return value. */" )
+    ; oe_serialize_buffer_outputs fd.plist ]
   in
   let rec oe_gen_set_pointers args count setter (ptype, decl) =
     let argstruct =
