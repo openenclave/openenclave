@@ -225,7 +225,7 @@ The following summary will assume that the contents were extracted to `C:\Intel 
     - The standalone `nuget.exe` [CLI tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) can be used to do this from the command prompt:
       ```cmd
       nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.1.100.49925\nupkg" -OutputDirectory C:\openenclave\prereqs\nuget
-      nuget.exe install DCAP_Components -ExclueVersion -Source "C:\Intel SGX DCAP for Windows v1.1.100.49925\nupkg" -OutputDirectory C\openenclave\prereqs\nuget
+      nuget.exe install DCAP_Components -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.1.100.49925\nupkg" -OutputDirectory C\openenclave\prereqs\nuget
       ```
 
 ##### [Azure DCAP client for Windows](https://github.com/Microsoft/Azure-DCAP-Client/tree/master/src/Windows) [optional]
@@ -263,7 +263,6 @@ configurations you want to build with it.
 For example, to enable it for x64-Debug, do this in your json file:
 
 ```json
-  ...
   "configurations": [
     {
       "name": "x64-Debug",
@@ -300,13 +299,13 @@ Testing
 Note that the use of Simulation Mode via the `OE_SIMULATION` flag is _not_ supported on Windows.
 See [#1753](https://github.com/microsoft/openenclave/issues/1753) for details.
 
-### Running ctests in Visual Studio 2017
+### Running tests in Visual Studio 2017
 
 1. Open the CMake project in Visual Studio from menu File > Open > CMake...
    and select top level CMakeLists.txt file which is present in openenclave folder.
 2. Select menu CMake > Tests > Run Open Enclave SDK CTests.
 
-### Running ctests on the Developer Command Prompt
+### Running tests on the Developer Command Prompt
 On the x64 Native Tools Command Prompt for VS 2017:
 
 ```cmd
