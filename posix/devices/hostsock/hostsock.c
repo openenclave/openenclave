@@ -12,6 +12,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/internal/posix/raise.h>
 #include <openenclave/internal/posix/iov.h>
 #include <openenclave/internal/posix/fd.h>
@@ -20,6 +21,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/bits/safecrt.h>
 #include "posix_t.h"
+#include "print.h"
 
 #define DEVICE_MAGIC 0x536f636b
 #define SOCK_MAGIC 0xe57a696d
@@ -566,15 +568,59 @@ static int _hostsock_fcntl(oe_fd_t* sock_, int cmd, uint64_t arg)
 {
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
+    void *argout = NULL;
+    uint64_t argsize = 0;
 
     oe_errno = 0;
 
     if (!sock)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (oe_posix_fcntl_ocall(&ret, sock->host_fd, cmd, arg) != OE_OK)
-        OE_RAISE_ERRNO(OE_EINVAL);
+    switch(cmd) {
+    case OE_F_GETFD:
+    case OE_F_SETFD:
+    case OE_F_GETFL:
+    case OE_F_SETFL:
+        break;
 
+    default:
+    case OE_F_DUPFD:
+    case OE_F_GETLK:
+    case OE_F_OFD_GETLK:
+    case OE_F_SETLKW:
+    case OE_F_SETLK:
+    case OE_F_GETLK64:
+    case OE_F_SETLK64:
+    case OE_F_SETLKW64:
+    case OE_F_OFD_SETLK:
+    case OE_F_OFD_SETLKW:
+        oe_host_printf("unsupported ioctl %d\n", cmd);
+        OE_RAISE_ERRNO(OE_EINVAL);
+        break;
+
+    // for sockets
+    case OE_F_GETSIG: // Returns in return value
+    case OE_F_SETSIG: // arg is data value
+        break;
+
+    case OE_F_GETOWN: // Returns in return value
+    case OE_F_SETOWN: // arg is data value
+        break;
+       
+    case OE_F_SETOWN_EX:
+    case OE_F_GETOWN_EX:
+        argsize = sizeof(struct oe_f_owner_ex);
+        argout = (void*)arg;
+        break;
+
+    case OE_F_GETOWNER_UIDS: 
+        argsize = sizeof(oe_uid_t[2]);
+        argout = (void*)arg;
+        break;
+    } 
+
+    if (oe_posix_fcntl_ocall(&ret, sock->host_fd, cmd, arg, argsize, argout) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
 done:
 
     return ret;
@@ -689,7 +735,7 @@ static int _hostsock_ioctl(oe_fd_t* sock_, unsigned long request, uint64_t arg)
     if (!sock)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (oe_posix_ioctl_ocall(&ret, sock->host_fd, request, arg) != OE_OK)
+    if (oe_posix_ioctl_ocall(&ret, sock->host_fd, request, arg, 0, NULL) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:

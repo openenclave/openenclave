@@ -555,11 +555,14 @@ oe_result_t oe_sgx_create_enclave(
             sizeof(ENCLAVE_CREATE_INFO_SGX),
             &enclave_error);
 
-        if (!base)
+        if (!base) 
+        {
+            DWORD winerr = GetLastError();
             OE_RAISE_MSG(
                 OE_PLATFORM_ERROR,
-                "CreateEnclave failed (err=%#x)",
-                enclave_error);
+                "CreateEnclave failed (err=%#x) (winerr=%d)",
+                enclave_error, winerr);
+        }
 
         secs->base = (uint64_t)base;
 
