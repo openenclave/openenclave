@@ -245,7 +245,7 @@ static oe_result_t _uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
     }
 
     if (strlen(id_copy) != 36)
-        return OE_INVALID_PARAMETER;
+        return OE_FAILURE;
 
     i = 5;
     current_token = strtok(id_copy, "-");
@@ -258,7 +258,7 @@ static oe_result_t _uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
     free(id_copy);
 
     if (i != 0)
-        return OE_INVALID_PARAMETER;
+        return OE_FAILURE;
 
     uuid->timeLow = (uint32_t)uuid_parts[4];
     uuid->timeMid = (uint16_t)uuid_parts[3];
