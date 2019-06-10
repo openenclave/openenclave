@@ -46,6 +46,7 @@ elseif(OE_TRUSTZONE)
         optee/backtrace.c
         optee/bounds.c
         optee/calls.c
+        optee/entropy.c
         optee/globals.c
         optee/gp.c
         optee/hostcalls.c
