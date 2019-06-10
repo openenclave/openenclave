@@ -640,28 +640,31 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   in
   (* Prepare [input_buffer]. *)
   let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
-    let oe_compute_buffer_size (buffer : string)
-        (predicate : parameter_type * declarator -> bool) (plist : pdecl list)
-        =
-      let rec gen_add_size parent prefix count (ptype, decl) =
-        let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
-        let arg = prefix ^ decl.identifier in
-        let check_expr =
-          String.concat " && " (List.filter (( <> ) "") [parent; arg])
+    let oe_compute_buffer_size buffer predicate plist =
+      let rec gen_add_size args count (ptype, decl) =
+        let argstruct =
+          match args with
+          | [] -> "_args."
+          | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
+        in
+        let size = oe_get_param_size (ptype, decl, argstruct) in
+        let arg =
+          match args with
+          | [] -> decl.identifier
+          | hd :: _ -> hd ^ gen_c_deref count ^ decl.identifier
         in
         gen_c_for count
-          ( [ [sprintf "if (%s)" check_expr]
+          ( [ [ sprintf "if (%s)"
+                  (String.concat " && " (List.rev (arg :: args))) ]
             ; [sprintf "    OE_ADD_SIZE(%s, %s);" buffer size]
-            ; (let param_count =
-                 oe_get_param_count (ptype, decl, "_args." ^ prefix)
-               in
+            ; (let param_count = oe_get_param_count (ptype, decl, argstruct) in
                flatten_map
-                 (gen_add_size arg (arg ^ gen_c_deref param_count) param_count)
+                 (gen_add_size (arg :: args) param_count)
                  (get_deepcopy_members (get_param_atype ptype))) ]
           |> List.flatten )
       in
       let params =
-        flatten_map (gen_add_size "" "" "1") (List.filter predicate plist)
+        flatten_map (gen_add_size [] "1") (List.filter predicate plist)
       in
       (* Note that the indentation for the first line is applied by the
          parent function. *)
@@ -675,30 +678,35 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       oe_compute_buffer_size "_output_buffer_size" is_out_or_inout_ptr
     in
     let oe_serialize_buffer_inputs (plist : pdecl list) =
-      let rec gen_serialize parent prefix count (ptype, decl) =
-        let size = oe_get_param_size (ptype, decl, "_args." ^ prefix) in
-        let tystr = get_cast_to_mem_expr (ptype, decl) false in
-        let arg = prefix ^ decl.identifier in
-        let check_expr =
-          String.concat " && " (List.filter (( <> ) "") [parent; arg])
+      let rec gen_serialize args count (ptype, decl) =
+        let argstruct =
+          match args with
+          | [] -> "_args."
+          | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
         in
+        let size = oe_get_param_size (ptype, decl, argstruct) in
+        let arg =
+          match args with
+          | [] -> decl.identifier
+          | hd :: _ -> hd ^ gen_c_deref count ^ decl.identifier
+        in
+        let tystr = get_cast_to_mem_expr (ptype, decl) false in
         (* These need to be in order and so done together. *)
         gen_c_for count
           ( [ (* NOTE: This makes the embedded check in the `OE_` macro superfluous. *)
-              [sprintf "if (%s)" check_expr]
+              [ sprintf "if (%s)"
+                  (String.concat " && " (List.rev (arg :: args))) ]
             ; [ sprintf "    OE_WRITE_%s_PARAM(%s, %s, %s);"
                   (if is_in_ptr ptype then "IN" else "IN_OUT")
                   arg size tystr ]
-            ; (let param_count =
-                 oe_get_param_count (ptype, decl, "_args." ^ prefix)
-               in
+            ; (let param_count = oe_get_param_count (ptype, decl, argstruct) in
                flatten_map
-                 (gen_serialize arg (arg ^ gen_c_deref param_count) param_count)
+                 (gen_serialize (arg :: args) param_count)
                  (get_deepcopy_members (get_param_atype ptype))) ]
           |> List.flatten )
       in
       let params =
-        flatten_map (gen_serialize "" "" "1")
+        flatten_map (gen_serialize [] "1")
           (List.filter is_in_or_inout_ptr plist)
       in
       (* Note that the indentation for the first line is applied by the
@@ -779,33 +787,35 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         fd.plist ]
     |> List.flatten
   in
-  let rec oe_gen_set_pointers parent prefix count setter (ptype, decl) =
-    let size = oe_get_param_size (ptype, decl, "pargs_in->" ^ prefix) in
-    let tystr = get_cast_to_mem_expr (ptype, decl) false in
-    let arg = prefix ^ decl.identifier in
-    let check_expr =
-      "pargs_in->"
-      ^ String.concat " && pargs_in->" (List.filter (( <> ) "") [parent; arg])
+  let rec oe_gen_set_pointers args count setter (ptype, decl) =
+    let argstruct =
+      match args with
+      | [] -> "pargs_in->"
+      | hd :: _ -> "pargs_in->" ^ hd ^ gen_c_deref count
     in
+    let size = oe_get_param_size (ptype, decl, argstruct) in
+    let arg =
+      match args with
+      | [] -> decl.identifier
+      | hd :: _ -> hd ^ gen_c_deref count ^ decl.identifier
+    in
+    let tystr = get_cast_to_mem_expr (ptype, decl) false in
     gen_c_for count
       ( [ (* NOTE: This makes the embedded check in the `OE_` macro superfluous. *)
-          [sprintf "if (%s)" check_expr]
+          [ sprintf "if (pargs_in->%s)"
+              (String.concat " && pargs_in->" (List.rev (arg :: args))) ]
         ; [ sprintf "    OE_%s_POINTER(%s, %s, %s);" (setter ptype) arg size
               tystr ]
-        ; (let param_count =
-             oe_get_param_count (ptype, decl, "pargs_in->" ^ prefix)
-           in
+        ; (let param_count = oe_get_param_count (ptype, decl, argstruct) in
            flatten_map
-             (oe_gen_set_pointers arg
-                (arg ^ gen_c_deref param_count)
-                param_count setter)
+             (oe_gen_set_pointers (arg :: args) param_count setter)
              (get_deepcopy_members (get_param_atype ptype))) ]
       |> List.flatten )
   in
   let oe_gen_in_and_inout_setters (plist : pdecl list) =
     let params =
       flatten_map
-        (oe_gen_set_pointers "" "" "1" (fun p ->
+        (oe_gen_set_pointers [] "1" (fun p ->
              if is_inout_ptr p then "SET_IN_OUT" else "SET_IN" ))
         (List.filter is_in_or_inout_ptr plist)
     in
@@ -818,7 +828,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   let oe_gen_out_and_inout_setters (plist : pdecl list) =
     let params =
       flatten_map
-        (oe_gen_set_pointers "" "" "1" (fun p ->
+        (oe_gen_set_pointers [] "1" (fun p ->
              if is_inout_ptr p then "COPY_AND_SET_IN_OUT" else "SET_OUT" ))
         (List.filter is_out_or_inout_ptr plist)
     in
@@ -907,16 +917,23 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     (* Generate assignment argument to corresponding field in args. This
        is necessary for all arguments, not just copy-as-value, because
        they are used directly by later marshalling code. *)
-    let rec gen_assignment parent prefix count (ptype, decl) =
+    let rec gen_assignment args count (ptype, decl) =
       let id = decl.identifier in
-      let arg = prefix ^ id in
-      let check_expr =
-        String.concat " && " (List.filter (( <> ) "") [parent; arg])
+      let argstruct =
+        match args with
+        | [] -> "_args."
+        | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
+      in
+      let arg =
+        match args with [] -> id | hd :: _ -> hd ^ gen_c_deref count ^ id
       in
       gen_c_for count
-        ( [ (if prefix <> "" then [sprintf "if (%s)" check_expr] else [])
+        ( [ ( match args with
+            | [] -> []
+            | _ -> [sprintf "if (%s)" (String.concat " && " (List.rev args))]
+            )
           ; [ sprintf "%s_args.%s = %s%s;"
-                (if prefix <> "" then "    " else "")
+                (match args with [] -> "" | _ -> "    ")
                 arg
                 (get_cast_to_mem_expr (ptype, decl) true)
                 arg ]
@@ -926,15 +943,13 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
             else if is_wstr_ptr ptype then
               [sprintf "_args.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" arg id id]
             else [] )
-          ; (let param_count =
-               oe_get_param_count (ptype, decl, "_args." ^ prefix)
-             in
+          ; (let param_count = oe_get_param_count (ptype, decl, argstruct) in
              flatten_map
-               (gen_assignment arg (arg ^ gen_c_deref param_count) param_count)
+               (gen_assignment (arg :: args) param_count)
                (get_deepcopy_members (get_param_atype ptype))) ]
         |> List.flatten )
     in
-    flatten_map (gen_assignment "" "" "1") fd.plist
+    flatten_map (gen_assignment [] "1") fd.plist
   in
   (* Generate host ECALL wrapper function. *)
   let oe_gen_host_ecall_wrapper (tf : trusted_func) =
