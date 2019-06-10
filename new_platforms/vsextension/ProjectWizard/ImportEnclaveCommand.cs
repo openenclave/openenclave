@@ -345,7 +345,7 @@ namespace OpenEnclaveSDK
                     // Add nuget package to project.
                     // See https://stackoverflow.com/questions/41803738/how-to-programmatically-install-a-nuget-package/41895490#41895490
                     // and more particularly https://docs.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio
-                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190521-020719" } };
+                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190607-222616" } };
                     var componentModel = (IComponentModel)(await this.ServiceProvider.GetServiceAsync(typeof(SComponentModel)));
                     var packageInstaller = componentModel.GetService<IVsPackageInstaller2>();
                     packageInstaller.InstallPackagesFromVSExtensionRepository(
@@ -408,7 +408,7 @@ namespace OpenEnclaveSDK
                         else
                         {
                             // Add a post-build event to copy the enclave binary to the existing OutDir.
-                            string cmd = "cp $(RemoteRootDir)/" + baseName + "/bin/$(Platform)/$(Configuration)/" + baseName + ".signed $(RemoteOutDir)";
+                            string cmd = "cp $(RemoteRootDir)/" + baseName + "/bin/$(Platform)/$(Configuration)/" + baseName + ".signed $(RemoteOutDir)" + baseName;
                             var clRule = config.Rules.Item("ConfigurationBuildEvents") as IVCRulePropertyStorage;
                             clRule.SetPropertyValue("RemotePostBuildCommand", cmd);
                             clRule.SetPropertyValue("RemotePostBuildMessage", "Copying enclave binary");
@@ -441,7 +441,12 @@ namespace OpenEnclaveSDK
                             if (gdbRule != null)
                             {
                                 // Configure GDB debugger settings.
-                                gdbRule.SetPropertyValue("PreLaunchCommand", "export PYTHONPATH=/opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin;export LD_PRELOAD=/opt/openenclave/lib/openenclave/debugger/liboe_ptrace.so");
+                                string gdbEnvironmentSettings = "export PYTHONPATH=/opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin;export LD_PRELOAD=/opt/openenclave/lib/openenclave/debugger/liboe_ptrace.so";
+                                if (name.Contains("Simulation"))
+                                {
+                                    gdbEnvironmentSettings += ";export OE_SIMULATION=1";
+                                }
+                                gdbRule.SetPropertyValue("PreLaunchCommand", gdbEnvironmentSettings);
                                 gdbRule.SetPropertyValue("AdditionalDebuggerCommands", "directory /opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin;source /opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin/gdb_sgx_plugin.py;set environment LD_PRELOAD;add-auto-load-safe-path /usr/lib");
                             }
                         }

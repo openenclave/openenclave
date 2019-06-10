@@ -16,7 +16,7 @@
         <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="File" Path="ProjectTemplates" d:TargetPath="ProjectTemplates\Built\OEEnclaveWindowsProject.zip" />
         <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="File" Path="ProjectTemplates" d:TargetPath="ProjectTemplates\Built\OEEnclaveLinuxProject.zip" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" AssemblyName="|%CurrentProject%;AssemblyName|" />
-        <Asset Type="openenclave.0.2.0-CI-20190521-020719.nupkg" d:Source="File" Path="Packages\openenclave.0.2.0-CI-20190521-020719.nupkg" d:VsixSubPath="Packages" />
+        <Asset Type="openenclave.0.2.0-CI-20190607-222616.nupkg" d:Source="File" Path="Packages\openenclave.0.2.0-CI-20190607-222616.nupkg" d:VsixSubPath="Packages" />
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
         <Asset Type="Microsoft.VisualStudio.ItemTemplate" d:Source="File" Path="ItemTemplates" d:TargetPath="ItemTemplates\Built\OEHostItem.zip" />
     </Assets>
