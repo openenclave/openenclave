@@ -15,7 +15,7 @@ static void _test_invalid_param(const char* path, uint32_t flags)
 
     /* Null path. */
     oe_result_t result = oe_create_create_errors_enclave(
-        NULL, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+        NULL, OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
@@ -27,25 +27,30 @@ static void _test_invalid_param(const char* path, uint32_t flags)
 
     /* Invalid flags. */
     result = oe_create_create_errors_enclave(
-        path, OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_RESERVED, NULL, 0, &enclave);
+        path,
+        OE_ENCLAVE_TYPE_AUTO,
+        OE_ENCLAVE_FLAG_RESERVED,
+        NULL,
+        0,
+        &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* Content field filled. */
     result = oe_create_create_errors_enclave(
-        path, OE_ENCLAVE_TYPE_SGX, flags, &enclave, 0, &enclave);
+        path, OE_ENCLAVE_TYPE_AUTO, flags, &enclave, 0, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* Content size non-zero. */
     result = oe_create_create_errors_enclave(
-        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 1, &enclave);
+        path, OE_ENCLAVE_TYPE_AUTO, flags, NULL, 1, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* NULL enclave. */
     result = oe_create_create_errors_enclave(
-        path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, NULL);
+        path, OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, NULL);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 }
@@ -57,13 +62,13 @@ static void _test_enclave_path(uint32_t flags)
 
     /* Test empty path. */
     result = oe_create_create_errors_enclave(
-        "", OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+        "", OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
 
     OE_TEST(result == OE_FAILURE);
 
     /* Test nonexistent path. */
     result = oe_create_create_errors_enclave(
-        "/as2/1/fv/invalid", OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+        "/as2/1/fv/invalid", OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
 
     OE_TEST(result == OE_FAILURE);
 
