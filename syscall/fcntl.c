@@ -17,7 +17,8 @@ int __oe_fcntl(int fd, int cmd, uint64_t arg)
     int ret = -1;
     oe_fd_t* desc;
 
-    if (cmd == OE_F_DUPFD) {
+    if (cmd == OE_F_DUPFD)
+    {
         return oe_dup(fd);
     }
 

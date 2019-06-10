@@ -8,7 +8,8 @@
 #include <openenclave/corelibc/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
 
-struct oe_flock {
+struct oe_flock
+{
     short l_type;
     short l_whence;
     oe_off_t l_start;
@@ -18,9 +19,10 @@ struct oe_flock {
 
 #define oe_flock64 oe_flock
 
-struct oe_f_owner_ex {
+struct oe_f_owner_ex
+{
     int type;
-    oe_pid_t  pid;
+    oe_pid_t pid;
 };
 
 OE_EXTERNC_BEGIN
