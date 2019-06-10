@@ -1,0 +1,18 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+
+    trusted {
+        public void test_ids(
+            int32_t pid,
+            int32_t ppid,
+            uint32_t uid,
+            uint32_t euid,
+            uint32_t gid,
+            uint32_t egid,
+            int32_t pgrp,
+            [in, count=num_groups] const uint32_t* groups,
+            size_t num_groups);
+    };
+};

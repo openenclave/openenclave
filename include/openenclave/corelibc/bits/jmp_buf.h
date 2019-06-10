@@ -8,6 +8,9 @@
  */
 typedef struct ___OE_JMP_BUF
 {
+#if defined(__aarch64__)
+    uint64_t __jmp_buf[22];
+#else
     uint64_t rsp;
     uint64_t rbp;
     uint64_t rip;
@@ -16,6 +19,7 @@ typedef struct ___OE_JMP_BUF
     uint64_t r13;
     uint64_t r14;
     uint64_t r15;
+#endif
     /* Added these to align with size of MUSL jmp_buf */
     uint64_t __fl;
     uint64_t __ss[128 / sizeof(long)];

@@ -85,6 +85,10 @@ enclave {
             oe_host_fd_t fd)
             propagate_errno;
 
+        int oe_posix_close_socket_ocall(
+            oe_host_fd_t sockfd)
+            propagate_errno;
+
         oe_host_fd_t oe_posix_dup_ocall(
             oe_host_fd_t oldfd)
             propagate_errno;
