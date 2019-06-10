@@ -132,3 +132,15 @@ done:
     oe_host_free(args);
     return ret;
 }
+
+// Function used by oeedger8r for allocating ocall buffers.
+void* oe_allocate_ocall_buffer(size_t size)
+{
+    return oe_host_malloc(size);
+}
+
+// Function used by oeedger8r for freeing ocall buffers.
+void oe_free_ocall_buffer(void* buffer)
+{
+    oe_host_free(buffer);
+}

@@ -178,3 +178,19 @@ done:
     oe_free(arg_in);
     return ret;
 }
+
+// Function used by oeedger8r for allocating ocall buffers.
+//
+// TODO: These are allocated inside the TA and subsequently marshalled by
+//       oe_ocall via libutee. This means that the arguments structure is
+//       needlessly copied twice in OP-TEE.
+void* oe_allocate_ocall_buffer(size_t size)
+{
+    return oe_malloc(size);
+}
+
+// Function used by oeedger8r for freeing ocall buffers.
+void oe_free_ocall_buffer(void* buffer)
+{
+    oe_free(buffer);
+}
