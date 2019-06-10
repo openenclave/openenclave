@@ -16,6 +16,8 @@
 
 #include "bits/defs.h"
 #include "bits/exception.h"
+#include "bits/fs.h"
+#include "bits/module.h"
 #include "bits/properties.h"
 #include "bits/report.h"
 #include "bits/result.h"
@@ -246,50 +248,10 @@ void __oe_assert_fail(
 #endif
 
 #if (OE_API_VERSION < 2)
-#define oe_get_report oe_get_report_v1
+#error "Only OE_API_VERSION of 2 is supported"
 #else
 #define oe_get_report oe_get_report_v2
 #endif
-
-/**
- * Get a report signed by the enclave platform for use in attestation.
- *
- * This function creates a report to be used in local or remote attestation. The
- * report shall contain the data given by the **report_data** parameter.
- *
- * If the *report_buffer* is NULL or *report_size* parameter is too small,
- * this function returns OE_BUFFER_TOO_SMALL.
- *
- * @deprecated This function is deprecated. Use oe_get_report_v2() instead.
- *
- * @param flags Specifying default value (0) generates a report for local
- * attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a
- * report for remote attestation.
- * @param report_data The report data that will be included in the report.
- * @param report_data_size The size of the **report_data** in bytes.
- * @param opt_params Optional additional parameters needed for the current
- * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
- * @param opt_params_size The size of the **opt_params** buffer.
- * @param report_buffer The buffer to where the resulting report will be copied.
- * @param report_buffer_size The size of the **report** buffer. This is set to
- * the
- * required size of the report buffer on return.
- *
- * @retval OE_OK The report was successfully created.
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL The **report_buffer** buffer is NULL or too
- * small.
- * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
- *
- */
-oe_result_t oe_get_report_v1(
-    uint32_t flags,
-    const uint8_t* report_data,
-    size_t report_data_size,
-    const void* opt_params,
-    size_t opt_params_size,
-    uint8_t* report_buffer,
-    size_t* report_buffer_size);
 
 /**
  * Get a report signed by the enclave platform for use in attestation.
@@ -331,41 +293,10 @@ oe_result_t oe_get_report_v2(
 void oe_free_report(uint8_t* report_buffer);
 
 #if (OE_API_VERSION < 2)
-#define oe_get_target_info oe_get_target_info_v1
+#error "Only OE_API_VERSION of 2 is supported"
 #else
 #define oe_get_target_info oe_get_target_info_v2
 #endif
-
-/**
- * Extracts additional platform specific data from the report and writes
- * it to *target_info_buffer*. After calling this function, the
- * *target_info_buffer* can used for the *opt_params* field in *oe_get_report*.
- *
- * For example, on SGX, the *target_info_buffer* can be used as a
- * sgx_target_info_t for local attestation.
- *
- * If the *target_info_buffer* is NULL or the *target_info_size* parameter is
- * too small, this function returns OE_BUFFER_TOO_SMALL.
- *
- * @deprecated This function is deprecated. Use oe_get_target_info_v2() instead.
- *
- * @param report The report returned by **oe_get_report**.
- * @param report_size The size of **report** in bytes.
- * @param target_info_buffer The buffer to where the platform specific data
- * will be placed.
- * @param target_info_size The size of **target_info_buffer**. This is set to
- * the required size of **target_info_buffer** on return.
- *
- * @retval OE_OK The platform specific data was successfully extracted.
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL **target_info_buffer** is NULL or too small.
- *
- */
-oe_result_t oe_get_target_info_v1(
-    const uint8_t* report,
-    size_t report_size,
-    void* target_info_buffer,
-    size_t* target_info_size);
 
 /**
  * Extracts additional platform specific data from the report and writes
@@ -444,46 +375,10 @@ oe_result_t oe_verify_report(
     oe_report_t* parsed_report);
 
 #if (OE_API_VERSION < 2)
-#define oe_get_seal_key_by_policy oe_get_seal_key_by_policy_v1
+#error "Only OE_API_VERSION of 2 is supported"
 #else
 #define oe_get_seal_key_by_policy oe_get_seal_key_by_policy_v2
 #endif
-
-/**
- * Get a symmetric encryption key derived from the specified policy and coupled
- * to the enclave platform.
- *
- * @deprecated This function is deprecated. Use oe_get_seal_key_by_policy_v2()
- instead.
- *
- * @param seal_policy The policy for the identity properties used to derive the
- * seal key.
- * @param key_buffer The buffer to write the resulting seal key to.
- * @param key_buffer_size The size of the **key_buffer** buffer. If this is too
- * small, this function sets it to the required size and returns
- * OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
- * to key_buffer is set to it.
- * @param key_info Optional buffer for the enclave-specific key information
- which
- * can be used to retrieve the same key later, on a newer security version.
- * @param key_info_size The size of the **key_info** buffer. If this is too
- small,
- * this function sets it to the required size and returns OE_BUFFER_TOO_SMALL.
- * When this function success, the number of bytes written to key_info is set to
- * it.
- *
- * @retval OE_OK The seal key was successfully requested.
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL The **key_buffer** or **key_info** buffer is too
- * small.
- * @retval OE_UNEXPECTED An unexpected error happened.
- */
-oe_result_t oe_get_seal_key_by_policy_v1(
-    oe_seal_policy_t seal_policy,
-    uint8_t* key_buffer,
-    size_t* key_buffer_size,
-    uint8_t* key_info,
-    size_t* key_info_size);
 
 /**
  * Get a symmetric encryption key derived from the specified policy and coupled
@@ -516,39 +411,10 @@ oe_result_t oe_get_seal_key_by_policy_v2(
     size_t* key_info_size);
 
 #if (OE_API_VERSION < 2)
-#define oe_get_seal_key oe_get_seal_key_v1
+#error "Only OE_API_VERSION of 2 is supported"
 #else
 #define oe_get_seal_key oe_get_seal_key_v2
 #endif
-
-/**
- * Get a symmetric encryption key from the enclave platform using existing key
- * information.
- *
- * @deprecated This function is deprecated. Use oe_get_seal_key_v2() instead.
- *
- * @param key_info The enclave-specific key information to derive the seal key
- * with.
- * @param key_info_size The size of the **key_info** buffer.
- * @param key_buffer The buffer to write the resulting seal key to. It will not
- * be changed if this function fails.
- * @param key_buffer_size The size of the **key_buffer** buffer. If this is too
- * small, this function sets it to the required size and returns
- * OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
- * to key_buffer is set to it.
- *
- * @retval OE_OK The seal key was successfully requested.
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL The **key_buffer** buffer is too small.
- * @retval OE_INVALID_CPUSVN **key_info** contains an invalid CPUSVN.
- * @retval OE_INVALID_ISVSVN **key_info** contains an invalid ISVSVN.
- * @retval OE_INVALID_KEYNAME **key_info** contains an invalid KEYNAME.
- */
-oe_result_t oe_get_seal_key_v1(
-    const uint8_t* key_info,
-    size_t key_info_size,
-    uint8_t* key_buffer,
-    size_t* key_buffer_size);
 
 /**
  * Returns a public key that is associated with the identity of the enclave

@@ -7,7 +7,7 @@
 #include <openenclave/bits/types.h>
 
 typedef int64_t oe_intptr_t;
-typedef unsigned oe_mode_t;
+typedef uint32_t oe_mode_t;
 typedef int64_t oe_off_t;
 typedef uint64_t oe_ino_t;
 typedef uint64_t oe_dev_t;

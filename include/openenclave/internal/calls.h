@@ -82,6 +82,8 @@ typedef enum _oe_func
     OE_ECALL_GET_PUBLIC_KEY,
     /* Caution: always add new ECALL function numbers here */
 
+    OE_ECALL_MAX,
+
     OE_OCALL_CALL_HOST_FUNCTION = OE_OCALL_BASE,
     OE_OCALL_GET_QE_TARGET_INFO,
     OE_OCALL_GET_QUOTE,

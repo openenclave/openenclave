@@ -5,7 +5,7 @@
 # IMPORTANT- Please update the version number in the next sentence
 # when you create a new docker image.
 #
-# This Dockerfile script builds an image for tag oetools-full-18.04:0.5
+# This Dockerfile script builds an image for tag oetools-full-18.04:0.8
 
 # To use this Dockerfile, you will need to install docker-ce.
 # Instructions for installing it on Ubuntu 16.04 LTS are at:
@@ -13,10 +13,16 @@
 #
 # Once installed, build a docker image from .jenkins folder and
 # it will use this Dockerfile by default:
-#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=<ubuntu_version> -t oetools-full-<ubuntu_version>:<version> -f .jenkins/Dockerfile.full .
+#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=<ubuntu_version> --build-arg devkits_uri=<devkits_uri> -t oetools-full-<ubuntu_version>:<version> -f .jenkins/Dockerfile.full .
 #
 # For example, for version 1.x with Ubuntu 18.04 :
-#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=18.04 -t oetools-full-18.04:1.x -f .jenkins/Dockerfile.full .
+#     openenclave$ sudo docker build \
+#         --no-cache=true \
+#         --build-arg ubuntu_version=18.04 \
+#         --build-arg devkits_uri=https://tcpsbuild.blob.core.windows.net/tcsp-build/OE-CI-devkits-dd4c992d.tar.gz \
+#         -t oetools-full-18.04:1.x \
+#         -f .jenkins/Dockerfile.full \
+#         .
 #
 # Note that DNS forwarding in a VM can interfere with Docker
 # getting updates from Ubuntu apt-get repositories as part of the
@@ -51,6 +57,7 @@ ARG GID=1000
 
 ADD scripts/ansible /ansible
 
+ARG devkits_uri
 RUN /ansible/install-ansible.sh && \
     ansible localhost --playbook-dir=/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv && \
     /ansible/remove-ansible.sh && \
@@ -59,4 +66,6 @@ RUN /ansible/install-ansible.sh && \
     git config --global user.email "oeciteam@microsoft.com" && \
     git config --global user.name "OE CI Team" && \
     groupadd --gid ${GID} ${GNAME} && \
-    useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
+    useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME} && \
+    curl ${devkits_uri} | tar xvz --no-same-permissions --no-same-owner && \
+    echo ${devkits_uri##*/} > /devkits/TARBALL

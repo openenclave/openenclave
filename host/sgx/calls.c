@@ -354,6 +354,27 @@ static const char* oe_ocall_str(oe_func_t ocall)
         return "UNKNOWN";
 };
 
+static const char* oe_ecall_str(oe_func_t ecall)
+{
+    static const char* func_names[] = {"DESTRUCTOR",
+                                       "INIT_ENCLAVE",
+                                       "CALL_ENCLAVE_FUNCTION",
+                                       "VERIFY_REPORT",
+                                       "GET_SGX_REPORT",
+                                       "VIRTUAL_EXCEPTION_HANDLER",
+                                       "LOG_INIT",
+                                       "GET_PUBLIC_KEY_BY_POLICY",
+                                       "GET_PUBLIC_KEY"};
+
+    OE_STATIC_ASSERT(OE_ECALL_BASE + OE_COUNTOF(func_names) == OE_ECALL_MAX);
+
+    if (ecall >= OE_ECALL_BASE &&
+        ecall < (OE_ECALL_BASE + OE_COUNTOF(func_names)))
+        return func_names[ecall - OE_ECALL_BASE];
+    else
+        return "UNKNOWN";
+};
+
 /*
 **==============================================================================
 **
@@ -702,6 +723,14 @@ oe_result_t oe_ecall(
     /* Assign a td_t for this operation */
     if (!(tcs = _assign_tcs(enclave)))
         OE_RAISE(OE_OUT_OF_THREADS);
+
+    oe_log(
+        OE_LOG_LEVEL_VERBOSE,
+        "%s 0x%x %s: %s\n",
+        enclave->path,
+        enclave->addr,
+        func == OE_ECALL_CALL_ENCLAVE_FUNCTION ? "EDL_ECALL" : "OE_ECALL",
+        oe_ecall_str(func));
 
     /* Perform ECALL or ORET */
     OE_CHECK(_do_eenter(

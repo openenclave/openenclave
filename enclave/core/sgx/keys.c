@@ -122,41 +122,6 @@ oe_result_t oe_get_key(
     return _get_key_imp(sgx_key_request, sgx_key);
 }
 
-oe_result_t oe_get_seal_key_v1(
-    const uint8_t* key_info,
-    size_t key_info_size,
-    uint8_t* key_buffer,
-    size_t* key_buffer_size)
-{
-    oe_result_t ret;
-
-    // Check parameters.
-    if ((key_info == NULL) || (key_info_size != sizeof(sgx_key_request_t)))
-    {
-        return OE_INVALID_PARAMETER;
-    }
-
-    if ((key_buffer == NULL) || (key_buffer_size == NULL))
-    {
-        return OE_INVALID_PARAMETER;
-    }
-
-    if (*key_buffer_size < sizeof(sgx_key_t))
-    {
-        *key_buffer_size = sizeof(sgx_key_t);
-        return OE_BUFFER_TOO_SMALL;
-    }
-
-    // Get the key based on input key info.
-    ret = oe_get_key((sgx_key_request_t*)key_info, (sgx_key_t*)key_buffer);
-    if (ret == OE_OK)
-    {
-        *key_buffer_size = sizeof(sgx_key_t);
-    }
-
-    return ret;
-}
-
 oe_result_t oe_get_seal_key_v2(
     const uint8_t* key_info,
     size_t key_info_size,
@@ -253,7 +218,7 @@ done:
     return result;
 }
 
-oe_result_t oe_get_seal_key_by_policy_v1(
+static oe_result_t _oe_get_seal_key_by_policy_internal(
     oe_seal_policy_t seal_policy,
     uint8_t* key_buffer,
     size_t* key_buffer_size,
@@ -375,7 +340,7 @@ oe_result_t oe_get_seal_key_by_policy_v2(
         }
     }
 
-    result = oe_get_seal_key_by_policy_v1(
+    result = _oe_get_seal_key_by_policy_internal(
         seal_policy, key_buffer, &key_buffer_size, key_info, &key_info_size);
     if (result != OE_OK)
     {
