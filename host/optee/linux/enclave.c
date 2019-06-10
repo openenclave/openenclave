@@ -202,6 +202,10 @@ static TEEC_Result _handle_generic_rpc(
             HandleMemset((uint64_t)input_buffer, (uint64_t*)output_buffer);
             break;
 
+        case OE_OCALL_STRNDUP:
+            HandleStrndup((uint64_t)input_buffer, (uint64_t*)output_buffer);
+            break;
+
         default:
         {
             /* No function found with the number */

@@ -100,6 +100,7 @@ typedef enum _oe_func
     OE_OCALL_LOG,
     OE_OCALL_CALLOC,
     OE_OCALL_MEMSET,
+    OE_OCALL_STRNDUP,
     /* Caution: always add new OCALL function numbers here */
 
     OE_OCALL_MAX, /* This value is never used */
@@ -333,7 +334,7 @@ oe_result_t oe_register_ecall_function_table(
 typedef struct _oe_print_args
 {
     int device;
-    char* str;
+    char str[];
 } oe_print_args_t;
 
 /*
@@ -384,6 +385,22 @@ typedef struct _oe_memset_args
     int value;
     size_t num;
 } oe_memset_args_t;
+
+/*
+**==============================================================================
+**
+** oe_strndup_args_t
+**
+**     char* oe_host_strndup(const char* str, size_t n)
+**
+**==============================================================================
+*/
+
+typedef struct _oe_strndup_args
+{
+    size_t n;
+    char str[];
+} oe_strndup_args_t;
 
 /*
 **==============================================================================

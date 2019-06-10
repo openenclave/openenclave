@@ -59,33 +59,76 @@ done:
 
 void* oe_host_memset(void* ptr, int value, size_t num)
 {
-    oe_memset_args_t* arg_in = NULL;
-    uint64_t arg_out = 0;
+    return memset(ptr, value, num);
+}
 
-    if (!(arg_in =
-              (oe_memset_args_t*)oe_host_calloc(1, sizeof(oe_memset_args_t))))
+char* oe_host_strndup(const char* str, size_t n)
+{
+    char* p;
+    size_t len;
+
+    if (!str)
+        return NULL;
+
+    len = oe_strlen(str);
+
+    if (n < len)
+        len = n;
+
+    /* Would be an integer overflow in the next statement. */
+    if (len == OE_SIZE_MAX)
+        return NULL;
+
+    if (!(p = oe_host_malloc(len + 1)))
+        return NULL;
+
+    if (oe_memcpy_s(p, len + 1, str, len) != OE_OK)
+        return NULL;
+    p[len] = '\0';
+
+    return p;
+}
+
+int oe_host_write(int device, const char* str, size_t len)
+{
+    int ret = -1;
+    oe_print_args_t* args = NULL;
+
+    /* Reject invalid arguments */
+    if ((device != 0 && device != 1) || !str)
         goto done;
 
-    arg_in->ptr = ptr;
-    arg_in->value = value;
-    arg_in->num = num;
+    /* Determine the length of the string */
+    if (len == (size_t)-1)
+        len = oe_strlen(str);
 
+    /* Check for integer overflow and allocate space for the arguments followed
+     * by null-terminated string */
+    size_t total_size;
+    if (oe_safe_add_sizet(len, 1 + sizeof(oe_print_args_t), &total_size) !=
+        OE_OK)
+        goto done;
+
+    if (!(args = (oe_print_args_t*)oe_host_calloc(1, total_size)))
+        goto done;
+
+    /* Initialize the arguments */
+    args->device = device;
+
+    if (oe_memcpy_s(args->str, len, str, len) != OE_OK)
+        goto done;
+
+    args->str[len] = '\0';
+
+    /* Perform OCALL */
     if (oe_ocall(
-            OE_OCALL_MEMSET,
-            (uint64_t)arg_in,
-            sizeof(*arg_in),
-            true,
-            &arg_out,
-            sizeof(arg_out)) != OE_OK)
-    {
-        arg_out = 0;
+            OE_OCALL_WRITE, (uint64_t)args, sizeof(*args), true, NULL, 0) !=
+        OE_OK)
         goto done;
-    }
 
-    if (arg_out && !oe_is_outside_enclave((void*)arg_out, num))
-        oe_abort();
+    ret = 0;
 
 done:
-    oe_host_free(arg_in);
-    return (void*)arg_out;
+    oe_host_free(args);
+    return ret;
 }

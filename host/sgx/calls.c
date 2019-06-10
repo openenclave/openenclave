@@ -345,7 +345,8 @@ static const char* oe_ocall_str(oe_func_t ocall)
                                        "BACKTRACE_SYMBOLS",
                                        "LOG",
                                        "CALLOC",
-                                       "MEMSET"};
+                                       "MEMSET",
+                                       "STRNDUP"};
 
     OE_STATIC_ASSERT(OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX);
 
@@ -463,6 +464,10 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_MEMSET:
             HandleMemset(arg_in, arg_out);
+            break;
+
+        case OE_OCALL_STRNDUP:
+            HandleStrndup(arg_in, arg_out);
             break;
 
         default:
