@@ -227,6 +227,8 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/musl/pleval.c
     3rdparty/musl/libc-test/src/regression/fgets-eof.c
     3rdparty/musl/libc-test/src/regression/iconv-roundtrips.c
+    3rdparty/musl/libc-test/src/regression/inet_ntop-v4mapped.c
+    3rdparty/musl/libc-test/src/regression/inet_pton-empty-last-field.c
     3rdparty/musl/libc-test/src/regression/putenv-doublefree.c
     3rdparty/musl/libc-test/src/regression/strverscmp.c
     3rdparty/musl/libc-test/src/functional/random.c

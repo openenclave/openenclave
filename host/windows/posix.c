@@ -1070,60 +1070,74 @@ oe_host_fd_t oe_posix_open_ocall(
                                             // obvious but there it is
         }
 
-        /* Open flags are neither a bitmask nor a sequence, so switching or
-         * masking don't really work. */
-
-        if ((flags & OE_O_CREAT) != 0)
+        switch (flags & (OE_O_CREAT | OE_O_EXCL | OE_O_TRUNC))
         {
-            create_dispos = OPEN_ALWAYS;
-        }
-        else
-        {
-            if ((flags & OE_O_TRUNC) != 0)
-            {
-                create_dispos = TRUNCATE_EXISTING;
+            case OE_O_CREAT: {
+              // Create a new file or open an existing file.
+              create_dispos = OPEN_ALWAYS;
+              break;
             }
-            else if ((flags & OE_O_APPEND) != 0)
-            {
-                desired_access = FILE_APPEND_DATA;
+            case OE_O_CREAT | OE_O_EXCL:
+            case OE_O_CREAT | OE_O_EXCL | OE_O_TRUNC: {
+              // Create a new file, but fail if it already exists.
+              // Ignore `O_TRUNC` with `O_CREAT | O_EXCL`
+              create_dispos = CREATE_NEW;
+              break;
+            }
+            case OE_O_CREAT | OE_O_TRUNC: {
+              // Truncate file if it already exists.
+              create_dispos = CREATE_ALWAYS;
+              break;
+            }
+            case OE_O_TRUNC:
+            case OE_O_TRUNC | OE_O_EXCL: {
+              // Truncate file if it exists, otherwise fail. Ignore O_EXCL flag.
+              create_dispos = TRUNCATE_EXISTING;
+              break;
+            }
+            case OE_O_EXCL:
+            default: {
+              // Open file if it exists, otherwise fail. Ignore O_EXCL flag.
+              create_dispos = OPEN_EXISTING;
+              break;
             }
         }
 
         // in linux land, we can always share files for read and write unless
         // they have been opened exclusive
-        share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+        share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
         const int ACCESS_FLAGS = 0x3; // Covers rdonly, wronly rdwr
         switch (flags & ACCESS_FLAGS)
         {
-            case OE_O_RDONLY: // 0
-                desired_access |= GENERIC_READ;
-                if (flags & OE_O_EXCL)
-                {
-                    share_mode = FILE_SHARE_WRITE;
-                }
-                break;
-
-            case OE_O_WRONLY: // 1
-                desired_access |= GENERIC_WRITE;
-                if (flags & OE_O_EXCL)
-                {
-                    share_mode = FILE_SHARE_READ;
-                }
-                break;
-
-            case OE_O_RDWR: // 2 or 3
-                desired_access |= GENERIC_READ | GENERIC_WRITE;
-                if (flags & OE_O_EXCL)
-                {
-                    share_mode = 0;
-                }
-                break;
-
-            default:
-                ret = -1;
-                _set_errno(OE_EINVAL);
-                goto done;
-                break;
+        case OE_O_RDONLY: {
+            desired_access = GENERIC_READ;
+            if (flags & OE_O_EXCL)
+            {
+                 share_mode = FILE_SHARE_WRITE;
+            }
+            break;
+        }
+        case OE_O_WRONLY: {
+            desired_access = (flags & OE_O_APPEND) ? FILE_APPEND_DATA : GENERIC_WRITE;
+            if (flags & OE_O_EXCL)
+            {
+                share_mode = FILE_SHARE_READ;
+            }
+            break;
+        }
+        case OE_O_RDWR: {
+            desired_access = GENERIC_READ | ((flags & OE_O_APPEND) ? FILE_APPEND_DATA : GENERIC_WRITE);
+            if (flags & OE_O_EXCL)
+            {
+                share_mode = 0;
+            }
+            break;
+        }
+        default:
+            ret = -1;
+            _set_errno(OE_EINVAL);
+            goto done;
+            break;
         }
 
         if (mode & OE_S_IRUSR)
