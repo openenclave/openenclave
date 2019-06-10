@@ -496,8 +496,12 @@ static int _winsockerr_to_errno(DWORD winsockerr)
 // returns null if the string is illegal
 //
 // The string  must be freed
-// ATTN: we don't handle paths which start with the "\\?\" thing. don't really
-// think we need them
+//
+// we don't handle paths which start with the "\\?\" thing. Since we convert everything to wchar, 
+// we have normal paths up to 32767 chars long. We never use the 8 bit version of the win32 apis.
+// That said, we get paths in 8 bit characters from the enclave because there is no "wopen" in linux
+//
+// We always convert in the ocall function.
 //
 char* oe_win_path_to_posix(const char* path)
 {
@@ -558,7 +562,7 @@ char* oe_win_path_to_posix(const char* path)
     else if (*psrc == '/')
     {
         *pdst++ = '/';
-        *pdst++ = _getdrive() + 'a';
+        *pdst++ = _getdrive() + 'a' - 1;
     }
     else if (*psrc == '.')
     {
@@ -632,11 +636,24 @@ WCHAR* oe_posix_path_to_win(const char* path, const char* post)
     size_t required_size = 0;
     size_t current_dir_len = 0;
     char* current_dir = NULL;
-    int pathlen = MultiByteToWideChar(CP_UTF8, 0, path, -1, NULL, 0);
-    size_t postlen = MultiByteToWideChar(CP_UTF8, 0, post, -1, NULL, 0);
+    int pathlen =  -1;
+    size_t postlen = 0;
+
+    if (!path)
+    {
+        return NULL;
+    }
+
+    pathlen = MultiByteToWideChar(CP_UTF8, 0, path, -1, NULL, 0);
     if (post)
     {
         postlen = MultiByteToWideChar(CP_UTF8, 0, post, -1, NULL, 0);
+        // 0 is the error return.
+        if (postlen == 0)
+        {
+            fprintf(stderr, "oe_posix_path_to_win string conversion failed winerr=%x\n", GetLastError());
+            return NULL;
+        }
     }
 
     WCHAR* wpath = NULL;
@@ -668,7 +685,7 @@ WCHAR* oe_posix_path_to_win(const char* path, const char* post)
                 MultiByteToWideChar(
                     CP_UTF8, 0, post, -1, wpath + pathlen - 1, (int)postlen);
             }
-            WCHAR drive_letter = _getdrive() + 'A';
+            WCHAR drive_letter = _getdrive() + 'a' - 1; // getdrive returns 1 for A:
             wpath[0] = drive_letter;
             wpath[1] = ':';
         }
@@ -687,7 +704,7 @@ WCHAR* oe_posix_path_to_win(const char* path, const char* post)
         wpath = (WCHAR*)(calloc(
             (pathlen + current_dir_len + postlen + 1) * sizeof(WCHAR), 1));
         memcpy(wpath, current_dir, current_dir_len);
-        wpath[current_dir_len] = '/';
+        wpath[current_dir_len++] = '/';
         MultiByteToWideChar(
             CP_UTF8, 0, path, -1, wpath + current_dir_len, pathlen);
         if (postlen)
@@ -960,7 +977,7 @@ static BOOL _winsock_init()
     ret = WSAStartup(MAKEWORD(2, 2), &startup_data);
     if (ret != 0)
     {
-        printf("WSAStartup failed: %d\n", ret);
+        fprintf(stderr, "WSAStartup failed: %d\n", ret);
         return FALSE;
     }
     return TRUE;
@@ -1111,26 +1128,14 @@ oe_host_fd_t oe_posix_open_ocall(
         {
         case OE_O_RDONLY: {
             desired_access = GENERIC_READ;
-            if (flags & OE_O_EXCL)
-            {
-                 share_mode = FILE_SHARE_WRITE;
-            }
             break;
         }
         case OE_O_WRONLY: {
             desired_access = (flags & OE_O_APPEND) ? FILE_APPEND_DATA : GENERIC_WRITE;
-            if (flags & OE_O_EXCL)
-            {
-                share_mode = FILE_SHARE_READ;
-            }
             break;
         }
         case OE_O_RDWR: {
             desired_access = GENERIC_READ | ((flags & OE_O_APPEND) ? FILE_APPEND_DATA : GENERIC_WRITE);
-            if (flags & OE_O_EXCL)
-            {
-                share_mode = 0;
-            }
             break;
         }
         default:
@@ -1161,17 +1166,20 @@ oe_host_fd_t oe_posix_open_ocall(
 
         ret = (oe_host_fd_t)h;
 
-#if 0
-	// Windows doesn't do mode very well. We translate. Win32 only cares about 
-	// user read/write. 
-	int wmode = ( (mode & OE_S_IRUSR)? _S_IREAD : 0) | ((mode & OE_S_IWUSR)?  _S_IWRITE: 0);
+	// Windows doesn't do mode in the same way as linux. We can set user read/write and thats about it.
+        // There are elaborate ACLs and the such for code which is purpose written, but the only part of 
+        // file mode expressed in windows is the read-only bit, and only for the owner.
+        if (flags & OE_O_CREAT)
+        {
+	    int wmode = ( (mode & OE_S_IRUSR)? _S_IREAD : 0) | ((mode & OE_S_IWUSR)?  _S_IWRITE: 0);
 
-        int retx = _wchmod(wpathname, wmode);
-	if (retx < 0)
-	{
-	     printf("chmod failed, err = %d\n", GetLastError());
+            int retx = _wchmod(wpathname, wmode);
+            if (retx < 0)
+            {
+                fprintf(stderr, "chmod failed, err = %d\n", GetLastError());
+            }
 	}
-#endif
+
         if (wpathname)
         {
             free(wpathname);
@@ -1265,10 +1273,7 @@ ssize_t oe_posix_readv_ocall(
     ssize_t ret = -1;
     ssize_t size_read;
 
-    OE_UNUSED(iov_buf_size);
-
     errno = 0;
-
     if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
     {
         errno = EINVAL;
@@ -1308,10 +1313,7 @@ ssize_t oe_posix_writev_ocall(
     ssize_t size_written;
     struct oe_iovec* iov = (struct oe_iovec*)iov_buf;
 
-    OE_UNUSED(iov_buf_size);
-
     errno = 0;
-
     if ((!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
     {
         errno = EINVAL;
