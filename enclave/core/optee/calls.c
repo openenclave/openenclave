@@ -17,7 +17,7 @@ oe_result_t oe_call_host_function_by_table_id(
     size_t* output_bytes_written)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_call_host_function_args_t* args = NULL;
+    oe_call_host_function_args_t args = {0};
 
     /* Reject invalid parameters */
     if (!input_buffer || input_buffer_size == 0)
@@ -25,34 +25,31 @@ oe_result_t oe_call_host_function_by_table_id(
 
     /* Initialize the arguments */
     {
-        args->table_id = table_id;
-        args->function_id = function_id;
-        args->input_buffer = input_buffer;
-        args->input_buffer_size = input_buffer_size;
-        args->output_buffer = output_buffer;
-        args->output_buffer_size = output_buffer_size;
-        args->result = OE_UNEXPECTED;
+        args.table_id = table_id;
+        args.function_id = function_id;
+        args.input_buffer = input_buffer;
+        args.input_buffer_size = input_buffer_size;
+        args.output_buffer = output_buffer;
+        args.output_buffer_size = output_buffer_size;
+        args.result = OE_UNEXPECTED;
     }
 
     /* Call the host function with this address */
     OE_CHECK(oe_ocall(
         OE_OCALL_CALL_HOST_FUNCTION,
-        (uint64_t)args,
-        sizeof(*args),
+        (uint64_t)&args,
+        sizeof(args),
         true,
         NULL,
         0));
 
     /* Check the result */
-    OE_CHECK(args->result);
+    OE_CHECK(args.result);
 
-    *output_bytes_written = args->output_bytes_written;
+    *output_bytes_written = args.output_bytes_written;
     result = OE_OK;
 
 done:
-
-    oe_host_free(args);
-
     return result;
 }
 
