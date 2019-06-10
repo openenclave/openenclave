@@ -127,7 +127,8 @@ static int _consolefs_ioctl(oe_fd_t* file_, unsigned long request, uint64_t arg)
         goto done;
     }
 
-    if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg, 0, NULL) != OE_OK)
+    if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg, 0, NULL) !=
+        OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
@@ -138,67 +139,68 @@ static int _consolefs_fcntl(oe_fd_t* file_, int cmd, uint64_t arg)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
-    void *argout = NULL;
+    void* argout = NULL;
     uint64_t argsize = 0;
 
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    switch(cmd) {
-
-    case OE_F_GETFD:
-    case OE_F_SETFD:
-    case OE_F_GETFL:
-    case OE_F_SETFL:
-        break;
-
-    case OE_F_GETLK:
-    case OE_F_OFD_GETLK:
-        argsize = sizeof(struct oe_flock);
-        argout  = (void*)arg;
-        break;
-
-    case OE_F_SETLKW:
-    case OE_F_SETLK:
+    switch (cmd)
     {
-        void *srcp = (void*)arg;
-        argsize = sizeof(struct oe_flock);
-        argout  = (void*)arg;
-        memcpy(argout, srcp, argsize);
-        break;
+        case OE_F_GETFD:
+        case OE_F_SETFD:
+        case OE_F_GETFL:
+        case OE_F_SETFL:
+            break;
+
+        case OE_F_GETLK:
+        case OE_F_OFD_GETLK:
+            argsize = sizeof(struct oe_flock);
+            argout = (void*)arg;
+            break;
+
+        case OE_F_SETLKW:
+        case OE_F_SETLK:
+        {
+            void* srcp = (void*)arg;
+            argsize = sizeof(struct oe_flock);
+            argout = (void*)arg;
+            memcpy(argout, srcp, argsize);
+            break;
+        }
+
+        case OE_F_GETLK64:
+            argsize = sizeof(struct oe_flock64);
+            argout = (void*)arg;
+            break;
+
+        case OE_F_SETLK64:
+        case OE_F_SETLKW64:
+        case OE_F_OFD_SETLK:
+        case OE_F_OFD_SETLKW:
+        {
+            void* srcp = (void*)arg;
+            argsize = sizeof(struct oe_flock64);
+            argout = (void*)arg;
+            memcpy(argout, srcp, argsize);
+            break;
+        }
+
+        // for sockets
+        default:
+        case OE_F_DUPFD:
+        case OE_F_SETOWN:
+        case OE_F_GETOWN:
+        case OE_F_SETSIG:
+        case OE_F_GETSIG:
+        case OE_F_SETOWN_EX:
+        case OE_F_GETOWN_EX:
+        case OE_F_GETOWNER_UIDS:
+            OE_RAISE_ERRNO(OE_EINVAL);
     }
 
-    case OE_F_GETLK64:
-        argsize = sizeof(struct oe_flock64);
-        argout  = (void*)arg;
-        break;
-
-    case OE_F_SETLK64:
-    case OE_F_SETLKW64:
-    case OE_F_OFD_SETLK:
-    case OE_F_OFD_SETLKW:
-    {
-        void *srcp = (void*)arg;
-        argsize = sizeof(struct oe_flock64);
-        argout  = (void*)arg;
-        memcpy(argout, srcp, argsize);
-        break;
-    }
-
-    // for sockets
-    default:
-    case OE_F_DUPFD:
-    case OE_F_SETOWN:
-    case OE_F_GETOWN:
-    case OE_F_SETSIG:
-    case OE_F_GETSIG:
-    case OE_F_SETOWN_EX:
-    case OE_F_GETOWN_EX:
-    case OE_F_GETOWNER_UIDS:
-        OE_RAISE_ERRNO(OE_EINVAL);
-    } 
-
-    if (oe_posix_fcntl_ocall(&ret, file->host_fd, cmd, arg, argsize, argout) != OE_OK)
+    if (oe_posix_fcntl_ocall(&ret, file->host_fd, cmd, arg, argsize, argout) !=
+        OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
