@@ -19,13 +19,13 @@ to create a new Open Enclave solution.
 You will be prompted to:
 
 1. Select a folder for your solution.  
-1. On Linux, you will have the option to create a [Standalone](#Standalone%20projects) project or an [Azure IoT Edge](#Azure%20IoT%20Edge%20projects) container 
-    project.  Otherwise, you will only have the option to create an [Azure IoT Edge](#Azure%20IoT%20Edge%20projects) container project.
-1. If you choose a container project, you will be prompted to provide your container repository.
+1. On Linux, you will have the option to create a [Standalone](#Standalone%20projects) project or an [Azure IoT Edge Module](#Azure%20IoT%20Edge%20projects) 
+    project.  Otherwise, you will only have the option to create an [Azure IoT Edge Module](#Azure%20IoT%20Edge%20projects) project.
+1. If you choose an Azure IoT Edge Module project, you will be prompted to provide your container repository.
 1. You will be prompted to provide a name for your host/enclave.
 
 A new solution will be created in the folder you've selected.  That solution will contain both the host
-and enclave as well as the required EDL file.  If you've chosen to build a container, the host will include
+and enclave as well as the required EDL file.  If you've chosen to build an Azure IoT Edge Module, the host will include
 some code that implements the required Azure IoT Hub communication.
 
 **Note:** On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) and the 
@@ -45,7 +45,6 @@ The build task will do the actual compiling and linking.
 
 1. **F1** or **CTRL-Shift-P**
 1. Select `Tasks: Run Task`
-1. Select `Configure for QEMU (ARMv7-A | AArch64/ARMv8-A | LS1012)`
 1. Select `Build for QEMU (ARMv7-A | AArch64/ARMv8-A | LS1012)`
 
 ### Debug your Open Enclave solution.
@@ -70,19 +69,19 @@ the host and enclave symbols into an instance of the debugger.
 ### Build your Open Enclave solution.
 
 Ubuntu containers are used to configure and build.  The build task will invoke docker and leverage project 
-dockerfiles.  The container can be built by:
+dockerfiles.  The build the Azure IoT Edge Module:
 
 1. Right click on `modules/<solution-name>/module.json`
 1. Select `Build IoT Edge Module Image`
-1. Select `ls1012`, `arm32v7-qemu` or `aarch64-qemu` from Platform picker
+1. Select `ls1012`, `arm32v7-qemu` or `aarch64-qemu` from the Platform picker
 
 ### Deploy your Open Enclave solution.
 
-Deploying your Azure IoT Edge container project is fairly simple:
+Deploying your Azure IoT Edge Module project is fairly simple:
 
 1. Right click on `modules/<solution-name>/module.json`
 1. Select `Build and Push IoT Edge Module Image`
-1. Select `ls1012`, `arm32v7-qemu` or `aarch64-qemu` from Platform picker
+1. Select `ls1012`, `arm32v7-qemu` or `aarch64-qemu` from the Platform picker
 
 Azure IoT Edge deployment template files have been provided.  To create
 a new deployment configuration based on the current settings in `module.json`:
@@ -97,8 +96,9 @@ a new deployment configuration based on the current settings in `module.json`:
 Once your deployment json has been created in the `config` folder, you can deploy
 to an Azure Edge device by:
 
-1. Navigate to the `config` folder and right click on `deployment.*.json`
-1. Select `Create Deployment for Single Device` or `Create Deployment at Scale`.
+1. Navigating to the `config` folder
+1. Right clicking on `deployment.*.json`
+1. Selecting `Create Deployment for Single Device` or `Create Deployment at Scale`.
 
 To set up an actual device to receive a deployment, you can follow [these](./SetUpDevice.md) instructions.
 
@@ -126,7 +126,7 @@ requirements will be presented in a Visual Studio Code warning window.
         ```bash
         sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch python
         ```
-    
+
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
     * [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
         * On Linux, for Edge projects, you will need to enable cross-building.
