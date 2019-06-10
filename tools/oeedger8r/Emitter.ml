@@ -154,15 +154,16 @@ let attr_value_to_string argstruct = function
 (** For a parameter, get its size expression. *)
 let oe_get_param_size (ptype, decl, argstruct) =
   let type_expr = get_type_expr ptype in
-  (* TODO: Handle edge case of [size * count]. *)
   let get_ptr_or_decl_size (p : ptr_size) =
-    match attr_value_to_string argstruct p.ps_count with
-    | Some s -> sprintf "(%s * sizeof(%s))" s type_expr
-    | None -> (
-      match attr_value_to_string argstruct p.ps_size with
-      | Some s -> s
-      | None ->
-          sprintf "sizeof(%s%s)" type_expr (get_array_dims decl.array_dims) )
+    let size = attr_value_to_string argstruct p.ps_size
+    and count = attr_value_to_string argstruct p.ps_count in
+    match (size, count) with
+    | Some s, None -> s
+    | None, Some c -> sprintf "(%s * sizeof(%s))" c type_expr
+    (* TODO: Check that this is an even multiple of the size of type. *)
+    | Some s, Some c -> sprintf "(%s * %s)" s c
+    | None, None ->
+        sprintf "sizeof(%s%s)" type_expr (get_array_dims decl.array_dims)
   in
   match ptype with
   | PTPtr (_, ptr_attr) ->
@@ -177,16 +178,17 @@ let oe_get_param_size (ptype, decl, argstruct) =
 (** For a parameter, get its count expression. *)
 let oe_get_param_count (ptype, decl, argstruct) =
   let type_expr = get_type_expr ptype in
-  (* TODO: Handle edge case of [size * count]. *)
   let get_ptr_or_decl_count (p : ptr_size) =
-    match attr_value_to_string argstruct p.ps_count with
-    | Some s -> s
-    | None -> (
-      match attr_value_to_string argstruct p.ps_size with
-      | Some s -> sprintf "(%s / sizeof(%s))" s type_expr
-      | None ->
-          let dims = List.map string_of_int decl.array_dims in
-          String.concat " * " dims )
+    let size = attr_value_to_string argstruct p.ps_size
+    and count = attr_value_to_string argstruct p.ps_count in
+    match (size, count) with
+    (* TODO: Check that these are even multiples of the size of type. *)
+    | Some s, None -> sprintf "(%s / sizeof(%s))" s type_expr
+    | None, Some c -> c
+    | Some s, Some c -> sprintf "((%s * %s) / sizeof(%s))" s c type_expr
+    | None, None ->
+        let dims = List.map string_of_int decl.array_dims in
+        String.concat " * " dims
   in
   match ptype with
   | PTPtr (_, ptr_attr) ->
