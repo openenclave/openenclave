@@ -641,18 +641,44 @@ int oe_posix_shutdown_ocall(oe_host_fd_t sockfd, int how)
     return shutdown((int)sockfd, how);
 }
 
-int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
+int oe_posix_fcntl_ocall(
+    oe_host_fd_t fd,
+    int cmd,
+    uint64_t arg,
+    uint64_t argsize,
+    void* argout)
 {
     errno = 0;
+    (void)argsize;
 
-    return fcntl((int)fd, cmd, arg);
+    if (!argout)
+    {
+        return fcntl((int)fd, cmd, arg);
+    }
+    else
+    {
+        return fcntl((int)fd, cmd, argout);
+    }
 }
 
-int oe_posix_ioctl_ocall(oe_host_fd_t fd, uint64_t request, uint64_t arg)
+int oe_posix_ioctl_ocall(
+    oe_host_fd_t fd,
+    uint64_t request,
+    uint64_t arg,
+    uint64_t argsize,
+    void* argout)
 {
     errno = 0;
+    (void)argsize;
 
-    return ioctl((int)fd, request, arg);
+    if (!argout)
+    {
+        return ioctl((int)fd, request, arg);
+    }
+    else
+    {
+        return ioctl((int)fd, request, argout);
+    }
 }
 
 int oe_posix_setsockopt_ocall(

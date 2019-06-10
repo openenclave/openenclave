@@ -82,11 +82,11 @@ static void _unlock(void)
 
 #define MAX_NON_BLOCKING_SOCKETS 1024
 
-static const unsigned long FLAG_NONBLOCK =  0x800;
-static const unsigned long FLAG_CLOEXEC  =  0x80000;
+static const unsigned long FLAG_NONBLOCK = 0x800;
+static const unsigned long FLAG_CLOEXEC = 0x80000;
 
-
-struct _sock_desc {
+struct _sock_desc
+{
     SOCKET sockfd;
     unsigned long flags;
 };
@@ -115,7 +115,7 @@ bool _set_nbio_socket_flags(SOCKET sock, unsigned long flags)
     return false;
 }
 
-bool _get_nbio_socket_flags(SOCKET sock, unsigned long *flags)
+bool _get_nbio_socket_flags(SOCKET sock, unsigned long* flags)
 {
     _lock();
 
@@ -170,7 +170,7 @@ bool _is_nbio_socket(SOCKET sock, unsigned long flags)
     {
         if (_nbio_sockets[i].sockfd == sock)
         {
-            if ((_nbio_sockets[i].flags & flags) == flags  )
+            if ((_nbio_sockets[i].flags & flags) == flags)
             {
                 _unlock();
                 return true;
@@ -188,7 +188,6 @@ bool _is_nbio_socket(SOCKET sock, unsigned long flags)
     return false;
 }
 
-
 int _add_nbio_socket(SOCKET sock, unsigned long flags)
 {
     _lock();
@@ -199,7 +198,7 @@ int _add_nbio_socket(SOCKET sock, unsigned long flags)
         return -1;
     }
 
-    _nbio_sockets[_num_nbio_sockets].sockfd  = sock;
+    _nbio_sockets[_num_nbio_sockets].sockfd = sock;
     _nbio_sockets[_num_nbio_sockets].flags = flags;
     _num_nbio_sockets++;
 
@@ -1835,15 +1834,15 @@ oe_host_fd_t oe_posix_socket_ocall(int domain, int type, int protocol)
 
     // We are hoping, and think it is true, that accept in winsock returns the
     // same error returns as accept everywhere else
-    ret = socket(domain, type&~(FLAG_CLOEXEC|FLAG_NONBLOCK), protocol);
+    ret = socket(domain, type & ~(FLAG_CLOEXEC | FLAG_NONBLOCK), protocol);
     if (ret == SOCKET_ERROR)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
-    if (type&(FLAG_CLOEXEC|FLAG_NONBLOCK))
+    if (type & (FLAG_CLOEXEC | FLAG_NONBLOCK))
     {
-        if (_add_nbio_socket(ret, type&(FLAG_CLOEXEC|FLAG_NONBLOCK)) < 0)
+        if (_add_nbio_socket(ret, type & (FLAG_CLOEXEC | FLAG_NONBLOCK)) < 0)
         {
             _set_errno(OE_ENFILE);
             closesocket(ret);
@@ -1851,7 +1850,7 @@ oe_host_fd_t oe_posix_socket_ocall(int domain, int type, int protocol)
         }
     }
 
-    if (type&FLAG_NONBLOCK)
+    if (type & FLAG_NONBLOCK)
     {
         if (_set_blocking(ret, false) != 0)
         {
@@ -1995,15 +1994,17 @@ int oe_posix_connect_ocall(
 
     do
     {
-        ret = connect((SOCKET)sockfd, (const struct sockaddr*)addr, (int)addrlen);
+        ret =
+            connect((SOCKET)sockfd, (const struct sockaddr*)addr, (int)addrlen);
         if (ret == SOCKET_ERROR)
         {
             DWORD winerr = WSAGetLastError();
-            switch (winerr) 
+            switch (winerr)
             {
-                // Windows returns all kinds of complex errors in a nonblocking socket even when successful.
-                // This confuses the enclave so we have to handle them here. 
-                // We just sleep and try again rather than waiting on the connection using WSAEventSelect
+                // Windows returns all kinds of complex errors in a nonblocking
+                // socket even when successful. This confuses the enclave so we
+                // have to handle them here. We just sleep and try again rather
+                // than waiting on the connection using WSAEventSelect
                 default:
                     _set_errno(_winsockerr_to_errno(WSAGetLastError()));
                     return -1;
@@ -2339,33 +2340,38 @@ static int _set_blocking(SOCKET sock, bool blocking)
     return 0;
 }
 
-int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg, uint64_t argsize, void *argout)
+int oe_posix_fcntl_ocall(
+    oe_host_fd_t fd,
+    int cmd,
+    uint64_t arg,
+    uint64_t argsize,
+    void* argout)
 {
     switch (cmd)
     {
         case OE_F_GETFD:
         {
             int flags = 0;
-            if (!_get_nbio_socket_flags(fd, &flags) )
+            if (!_get_nbio_socket_flags(fd, &flags))
             {
                 return -1;
             }
-            return (flags & FLAG_CLOEXEC) != 0; // True if 
+            return (flags & FLAG_CLOEXEC) != 0; // True if
         }
         case OE_F_SETFD:
         {
             int flags = *(int*)arg;
 
-            if (flags&FLAG_CLOEXEC)
+            if (flags & FLAG_CLOEXEC)
             {
-                if (!_set_nbio_socket_flags(fd, FLAG_CLOEXEC) )
+                if (!_set_nbio_socket_flags(fd, FLAG_CLOEXEC))
                 {
                     return -1;
                 }
             }
-            else 
+            else
             {
-                if (!_clear_nbio_socket_flags(fd, FLAG_CLOEXEC)) 
+                if (!_clear_nbio_socket_flags(fd, FLAG_CLOEXEC))
                 {
                     return -1;
                 }
@@ -2388,7 +2394,8 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg, uint64_t argsiz
         {
             if ((arg & OE_O_NONBLOCK))
             {
-                if (!_is_nbio_socket(fd, FLAG_NONBLOCK) && _add_nbio_socket(fd, FLAG_NONBLOCK) != 0)
+                if (!_is_nbio_socket(fd, FLAG_NONBLOCK) &&
+                    _add_nbio_socket(fd, FLAG_NONBLOCK) != 0)
                 {
                     return -1;
                 }
@@ -2418,7 +2425,12 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg, uint64_t argsiz
 #define TIOCGWINSZ 0x5413
 #define TIOCSWINSZ 0x5414
 
-int oe_posix_ioctl_ocall(oe_host_fd_t fd, uint64_t request, uint64_t arg, uint64_t argsize, void *argout)
+int oe_posix_ioctl_ocall(
+    oe_host_fd_t fd,
+    uint64_t request,
+    uint64_t arg,
+    uint64_t argsize,
+    void* argout)
 {
     errno = 0;
 
