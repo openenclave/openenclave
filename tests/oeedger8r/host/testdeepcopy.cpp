@@ -61,6 +61,20 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
     }
 
     {
+        auto s = init_structs<CountSizeParamStruct>();
+        s[0].count = 1;
+        s[0].size = 4 * sizeof(uint64_t);
+        OE_TEST(deepcopy_countsizeparam_size(enclave, &s[0]) == OE_OK);
+    }
+
+    {
+        auto s = init_structs<CountSizeParamStruct>();
+        s[0].count = 4;
+        s[0].size = sizeof(uint64_t);
+        OE_TEST(deepcopy_countsizeparam_count(enclave, &s[0]) == OE_OK);
+    }
+
+    {
         auto s = init_structs<CountParamStruct>();
         OE_TEST(deepcopy_countparamarray(enclave, s.data()) == OE_OK);
     }
