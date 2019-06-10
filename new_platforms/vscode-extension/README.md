@@ -49,7 +49,8 @@ The build task will do the actual compiling and linking.
 
 ### Debug your Open Enclave solution.
 
-Debugging your standalone project's enclave is easy.  
+Debugging your standalone project's enclave is easy.  Please ensure that all of the [QEMU dependencies](#Requirements) are installed
+in your development environment.
 
 1. Set breakpoints in the files you wish to debug.  Breakpoints in the enclave may only be added before
 the emulator (QEMU) starts or when the debugger is already broken inside the enclave.
@@ -125,6 +126,11 @@ requirements will be presented in a Visual Studio Code warning window.
         
         ```bash
         sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch python
+        ```
+    * Ensure that all QEMU dependencies are installed.  On Ubuntu 18.04 run:
+        
+        ```bash
+        sudo apt update && sudo apt install -y libpixman-1-0 zlib1g libc6 libfdt1 libglib2.0-0 libpcre3 libstdc++6
         ```
 
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
