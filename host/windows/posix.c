@@ -1993,11 +1993,33 @@ int oe_posix_connect_ocall(
         sadd.sin_addr.S_un.S_un_b.s_b3,
         sadd.sin_addr.S_un.S_un_b.s_b4);
 
-    ret = connect((SOCKET)sockfd, (const struct sockaddr*)addr, (int)addrlen);
-    if (ret == SOCKET_ERROR)
+    do
     {
-        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
-    }
+        ret = connect((SOCKET)sockfd, (const struct sockaddr*)addr, (int)addrlen);
+        if (ret == SOCKET_ERROR)
+        {
+            DWORD winerr = WSAGetLastError();
+            switch (winerr) 
+            {
+                // Windows returns all kinds of complex errors in a nonblocking socket even when successful.
+                // This confuses the enclave so we have to handle them here. 
+                // We just sleep and try again rather than waiting on the connection using WSAEventSelect
+                default:
+                    _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+                    return -1;
+
+                case WSAEALREADY:
+                case WSAEWOULDBLOCK:
+                    ret = 0; // retry
+                    Sleep(100);
+                    break;
+
+                case WSAEISCONN:
+                    return ret;
+            }
+        }
+    } while (ret < 0);
+
     return ret;
 }
 
@@ -2011,6 +2033,11 @@ oe_host_fd_t oe_posix_accept_ocall(
 
     // We are hoping, and think it is true, that accept in winsock returns the
     // same error returns as accept everywhere else
+
+    if (addrlen_out)
+    {
+        *addrlen_out = addrlen_in;
+    }
     ret = accept((SOCKET)sockfd, (struct sockaddr*)addr, (int*)addrlen_out);
     if (ret == SOCKET_ERROR)
     {
