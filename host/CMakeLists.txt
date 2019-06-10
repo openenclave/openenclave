@@ -13,7 +13,7 @@ set(EDL_FILE ${EDL_DIR}/posix.edl)
 
 add_custom_command(
     OUTPUT posix_u.h posix_u.c posix_args.h
-    DEPENDS ${EDL_FILE}
+    DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${EDL_FILE})
 
 add_custom_target(posix_untrusted_edl
@@ -121,6 +121,7 @@ endif()
 add_library(oehost STATIC
   ../common/datetime.c
   ../common/kdf.c
+  ../common/lockless_queue.c
   ../common/safecrt.c
   asym_keys.c
   dupenv.c
@@ -138,6 +139,10 @@ add_library(oehost STATIC
   ${PLATFORM_SRC})
 
 target_link_libraries(oehost PUBLIC oe_includes)
+
+if(WIN32)
+    target_link_libraries(oehost PUBLIC ws2_32)
+endif()
 
 add_dependencies(oehost posix_untrusted_edl)
 

@@ -83,6 +83,7 @@ add_library(oecore STATIC
     stdio.c
     strerror.c
     string.c
+    strtok_r.c
     strtoul.c
     time.c
     ${PLATFORM_SRC})

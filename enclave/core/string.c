@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/ctype.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
@@ -28,16 +29,6 @@ size_t oe_strlen(const char* s)
 
     /* Unreachable */
     return 0;
-}
-
-size_t oe_strnlen(const char* s, size_t n)
-{
-    const char* p = s;
-
-    while (n-- && *p)
-        p++;
-
-    return (size_t)(p - s);
 }
 
 int oe_strcmp(const char* s1, const char* s2)
@@ -138,22 +129,88 @@ char* oe_strstr(const char* haystack, const char* needle)
     return NULL;
 }
 
-char* oe_strncpy(char* dest, const char* src, size_t n)
+char* oe_strdup(const char* s)
 {
-    char* ret = dest;
+    char* p;
+    size_t n;
 
-    if (dest == NULL)
+    if (!s)
         return NULL;
 
-    /* Copy at most n bytes. Terminate when src is exhausted. */
-    while (n-- && *src)
-        *dest++ = *src++;
+    n = oe_strlen(s) + 1;
 
-    /* If there is room left, then inject zero-terminator. */
-    if (n)
-        *dest = '\0';
+    if (!(p = oe_malloc(n)))
+        return NULL;
 
-    return ret;
+    if (oe_memcpy_s(p, n, s, n) != OE_OK)
+        return NULL;
+
+    return p;
 }
 
 OE_WEAK_ALIAS(oe_strcmp, strcmp);
+
+char* oe_strchr(const char* s, int c)
+{
+    while (*s && *s != c)
+        s++;
+
+    if (*s == c)
+        return (char*)s;
+
+    return NULL;
+}
+
+char* oe_strrchr(const char* s, int c)
+{
+    char* p = (char*)s + oe_strlen(s);
+
+    if (c == '\0')
+        return p;
+
+    while (p != s)
+    {
+        if (*--p == c)
+            return p;
+    }
+
+    return NULL;
+}
+
+char* oe_strchrnul(const char* s, int c)
+{
+    char* p;
+
+    if (!(p = oe_strchr(s, c)))
+        p = (char*)(s + oe_strlen(s));
+
+    return p;
+}
+
+size_t oe_strspn(const char* s, const char* accept)
+{
+    const char* p = s;
+
+    while (*p)
+    {
+        if (!oe_strchr(accept, *p))
+            break;
+        p++;
+    }
+
+    return (size_t)(p - s);
+}
+
+size_t oe_strcspn(const char* s, const char* reject)
+{
+    const char* p = s;
+
+    while (*p)
+    {
+        if (oe_strchr(reject, *p))
+            break;
+        p++;
+    }
+
+    return (size_t)(p - s);
+}

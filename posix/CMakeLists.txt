@@ -13,7 +13,7 @@ set(EDL_FILE ${EDL_DIR}/posix.edl)
 
 add_custom_command(
     OUTPUT posix_t.h posix_t.c posix_args.h
-    DEPENDS ${EDL_FILE}
+    DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --search-path ${EDL_DIR} --trusted ${EDL_FILE})
 
 add_custom_target(posix_trusted_edl
@@ -65,3 +65,5 @@ set_source_files_properties(
 
 install(TARGETS oeposix EXPORT openenclave-targets ARCHIVE
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+add_subdirectory(devices)

@@ -3,6 +3,8 @@ oe = new jenkins.common.Openenclave()
 
 // The below timeout is set in minutes
 GLOBAL_TIMEOUT = 240
+// ctest timeout is set in seconds
+CTEST_TIMEOUT = 480
 
 def ACCTest(String label, String compiler, String build_type) {
     stage("${label} ${compiler} SGX1FLC ${build_type}") {
@@ -13,7 +15,7 @@ def ACCTest(String label, String compiler, String build_type) {
                 def task = """
                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                            ninja -v
-                           ctest --output-on-failure
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT}
                            """
                 oe.Run(compiler, task)
             }
@@ -30,7 +32,7 @@ def ACCGNUTest() {
                 def task = """
                            cmake ${WORKSPACE} -DUSE_LIBSGX=ON
                            make
-                           ctest --output-on-failure
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT}
                            """
                 oe.Run("gcc", task)
             }
@@ -52,7 +54,7 @@ def simulationTest(String version, String platform_mode, String build_type) {
                     def task = """
                                cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx} -Wdev
                                ninja -v
-                               ctest --output-on-failure
+                               ctest --output-on-failure --timeout ${CTEST_TIMEOUT}
                                """
                     oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE")
                 }
@@ -98,7 +100,7 @@ def ACCContainerTest(String label, String version) {
                 def task = """
                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -Wdev
                            ninja -v
-                           ctest --output-on-failure
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT}
                            """
                 oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
             }
@@ -163,7 +165,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                       vcvars64.bat x64 && \
                       cmake.exe ${WORKSPACE} -G \"Visual Studio 15 2017 Win64\" -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -Wdev && \
                       msbuild ALL_BUILD.vcxproj -p:Configuration=${build_type} && \
-                      ctest.exe -V -C ${build_type}
+                      ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT}
                       """
                 }
             }
@@ -182,7 +184,7 @@ def win2016CrossCompile(String build_type) {
                       vcvars64.bat x64 && \
                       cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -Wdev && \
                       ninja.exe && \
-                      ctest.exe -V -C ${build_type}
+                      ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT}
                       """
                 }
             }

@@ -278,6 +278,7 @@ The Makefile's `build` target is for compiling enclave source code and linking i
 - mbedx509
 - mbedcrypto
 - oelibc
+- oeposix
 - oecore
 
 `helloworldenc is the resulting enclave executable (unsigned)

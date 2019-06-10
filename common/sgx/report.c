@@ -154,7 +154,7 @@ done:
     return result;
 }
 
-oe_result_t oe_get_target_info_v1(
+static oe_result_t _oe_get_target_info_internal(
     const uint8_t* report,
     size_t report_size,
     void* target_info_buffer,
@@ -211,7 +211,8 @@ oe_result_t oe_get_target_info_v2(
     *target_info_buffer = NULL;
     *target_info_size = 0;
 
-    result = oe_get_target_info_v1(report, report_size, NULL, &temp_size);
+    result =
+        _oe_get_target_info_internal(report, report_size, NULL, &temp_size);
     if (result != OE_BUFFER_TOO_SMALL)
     {
         if (result == OE_OK)
@@ -228,7 +229,8 @@ oe_result_t oe_get_target_info_v2(
         return OE_OUT_OF_MEMORY;
     }
 
-    result = oe_get_target_info_v1(report, report_size, temp_info, &temp_size);
+    result = _oe_get_target_info_internal(
+        report, report_size, temp_info, &temp_size);
     if (result != OE_OK)
     {
         oe_free(temp_info);

@@ -3,6 +3,8 @@ oe = new jenkins.common.Openenclave()
 
 // The below timeout is set in minutes
 GLOBAL_TIMEOUT = 240
+// ctest timeout is set in seconds
+CTEST_TIMEOUT = 480
 
 def packageUpload(String version, String build_type) {
     stage("Ubuntu${version} SGX1FLC Package ${build_type}") {
@@ -13,7 +15,7 @@ def packageUpload(String version, String build_type) {
                 def task = """
                            cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${build_type} -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB
                            make
-                           ctest --output-on-failure
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT}
                            make package
                            """
                 oe.Run("clang-7", task)

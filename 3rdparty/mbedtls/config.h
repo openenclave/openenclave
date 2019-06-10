@@ -1917,7 +1917,7 @@
  * This module provides debugging functions.
  */
 // Open Enclave: Enabled conditionally
-#cmakedefine MBEDTLS_DEBUG_C
+#define MBEDTLS_DEBUG_C
 
 /**
  * \def MBEDTLS_DES_C
@@ -2216,7 +2216,7 @@
  * This module provides networking routines.
  */
 // Open Enclave: disabled, network I/O is currently unsupported in enclaves
-//#define MBEDTLS_NET_C
+#define MBEDTLS_NET_C
 
 /**
  * \def MBEDTLS_OID_C
