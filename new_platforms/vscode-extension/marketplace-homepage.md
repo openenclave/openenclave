@@ -10,9 +10,8 @@ Ensure that the [requirements](#Requirements) are met.
 
 Install the [Microsoft Open Enclave extension](https://marketplace.visualstudio.com/items?itemName=ms-iot.msiot-vscode-openenclave).
 
-## Features
 
-### Create a new Open Enclave solution.
+## Create a new Open Enclave solution.
 
 You can use the `Microsoft Open Enclave: New Open Enclave Solution` command (commands can be found using **F1** or **CTRL-Shift-P**) 
 to create a new Open Enclave solution.  
@@ -20,71 +19,44 @@ to create a new Open Enclave solution.
 You will be prompted to:
 
 1. Select a folder for your solution.  
-1. On Linux, you will have the option to create a standalone project or an Azure IoT Edge container 
-    project.  Otherwise, you will only have the option to create an Azure IoT Edge container project.
-1. If you choose a container project, you will be prompted to provide your container repository.
+1. On Linux, you will have the option to create a [Standalone](#Standalone%20projects) project or an [Azure IoT Edge Module](#Azure%20IoT%20Edge%20projects) 
+    project.  Otherwise, you will only have the option to create an [Azure IoT Edge Module](#Azure%20IoT%20Edge%20projects) project.
+1. If you choose an Azure IoT Edge Module project, you will be prompted to provide your container repository.
 1. You will be prompted to provide a name for your host/enclave.
 
 A new solution will be created in the folder you've selected.  That solution will contain both the host
-and enclave as well as the required EDL file.  If you've chosen to build a container, the host will include
+and enclave as well as the required EDL file.  If you've chosen to build an Azure IoT Edge Module, the host will include
 some code that implements the required Azure IoT Hub communication.
+
+**Note:** On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) and the 
+Visual Studio Code [Remote-Development extension](https://code.visualstudio.com/docs/remote/remote-overview) to utilize 
+[Standalone](#Standalone%20projects) projects on a Windows desktop.  In this case, you will need to install the [requirements](#Requirements) in
+the subsystem.
+
+## Standalone projects
 
 ### Build your Open Enclave solution.
 
-There are build tasks for both standalone and Azure IoT Edge container projects.  The underlying system used 
-to build is CMake.  
+The underlying system used to build is CMake.  
 
-For a standalone project, there will be configure and build tasks for each target (ARMv7-A and AArch64/ARMv8-A).  The 
+There will be configure and build tasks for each target (ARMv7-A, AArch64/ARMv8-A, and LS1012).  The 
 configure task will invoke CMake to create the required build files.  This is only required to be run once.  
 The build task will do the actual compiling and linking.
 
 1. **F1** or **CTRL-Shift-P**
 1. Select `Tasks: Run Task`
-1. Select `Configure for QEMU (ARMv7-A | AArch64/ARMv8-A)`
-1. Select `Build for QEMU (ARMv7-A | AArch64/ARMv8-A)`
-
-For an Azure IoT Edge container project, containers are used to configure and build.  The build task in a
-container project will invoke docker and leverage project dockerfiles.  The container can be built by:
-
-1. Right click on `modules/<solution-name>/module.json`
-1. Select `Build IoT Edge Module Image`
-1. Select desired architecture and configuration from picker
-
-### Deploy your Open Enclave solution.
-
-Deploying an Azure IoT Edge container project is fairly simple:
-
-1. Select the desired platform:
-    1. **F1** or **CTRL-Shift-P**
-    1. Select `Azure IoT Edge: Set Default Target Platform for Edge Solution`
-    1. Choose from `arm32v7` or `aarch64`
-1. Right click on `modules/<solution-name>/module.json`
-1. Select `Build and Push IoT Edge Module Image`
-1. Select desired architecture and configuration from picker
-
-Azure IoT Edge deployment template files have been provided.  To create
-a new deployment configuration based on the current settings in `module.json`:
-
-1. Right click on `deployment.template.json` (or `deployment.debug.template.json`)
-1. Select `Generate IoT Edge Deployment Manifest`.  This will generate or replace the apppropriate deployment json file in the `config` folder.
-
-Once your deployment json has been created in the `config` folder, you can deploy
-to an Azure Edge device by:
-
-1. Navigate to the `config` folder and right click on `deployment.*.json`
-1. Select `Create Deployment for Single Device` or `Create Deployment at Scale`.
-
-To set up an actual device to receive a deployment, you can follow [these](./SetUpDevice.md) instructions.
+1. Select `Build for QEMU (ARMv7-A | AArch64/ARMv8-A | LS1012)`
 
 ### Debug your Open Enclave solution.
 
-Debugging your standalone project's enclave is easy.  
+Debugging your standalone project's enclave is easy.  Please ensure that all of the [QEMU dependencies](#Requirements) are installed
+in your development environment.
 
 1. Set breakpoints in the files you wish to debug.  Breakpoints in the enclave may only be added before
 the emulator (QEMU) starts or when the debugger is already broken inside the enclave.
 1. Choose the architecture you are interested in debugging by navigating to the Visual 
-Studio `Debug` view (**CTRL-Shift-D**) and selecting either `(gdb) Launch QEMU (ARMv7-A)` or 
-`(gdb) Launch QEMU (AArch64/ARMv8-A)` from the debug configuration dropdown.
+Studio `Debug` view (**CTRL-Shift-D**) and selecting either `(gdb) Launch QEMU (ARMv7-A)`, 
+`(gdb) Launch QEMU (AArch64/ARMv8-A)`, or `(gdb) Launch QEMU (LS1012)` from the debug configuration dropdown.
 1. You can simply hit `F5`.  This will run cmake configuration, run the build, start QEMU, and load 
 the host and enclave symbols into an instance of the debugger.
 1. Open the **Terminal** view
@@ -93,7 +65,45 @@ the host and enclave symbols into an instance of the debugger.
 
         Note: The debugger has been configured to break at TA_InvokeCommandEntryPoint.  This will happen once when the enclave starts and once for each ECALL.
 
-### Check your system for Open Enclave requirements.
+## Azure IoT Edge projects
+
+### Build your Open Enclave solution.
+
+Ubuntu containers are used to configure and build.  The build task will invoke docker and leverage project 
+dockerfiles.  The build the Azure IoT Edge Module:
+
+1. Right click on `modules/<solution-name>/module.json`
+1. Select `Build IoT Edge Module Image`
+1. Select `ls1012`, `arm32v7-qemu` or `aarch64-qemu` from the Platform picker
+
+### Deploy your Open Enclave solution.
+
+Deploying your Azure IoT Edge Module project is fairly simple:
+
+1. Right click on `modules/<solution-name>/module.json`
+1. Select `Build and Push IoT Edge Module Image`
+1. Select `ls1012`, `arm32v7-qemu` or `aarch64-qemu` from the Platform picker
+
+Azure IoT Edge deployment template files have been provided.  To create
+a new deployment configuration based on the current settings in `module.json`:
+
+1. Select the desired platform:
+    1. **F1** or **CTRL-Shift-P**
+    1. Select `Azure IoT Edge: Set Default Target Platform for Edge Solution`
+    1. Choose from `ls1012`, `arm32v7-qemu` or `aarch64-qemu`
+1. Right click on `deployment.template.json` (or `deployment.debug.template.json`)
+1. Select `Generate IoT Edge Deployment Manifest`.  This will generate or replace the apppropriate deployment json file in the `config` folder.
+
+Once your deployment json has been created in the `config` folder, you can deploy
+to an Azure Edge device by:
+
+1. Navigating to the `config` folder
+1. Right clicking on `deployment.*.json`
+1. Selecting `Create Deployment for Single Device` or `Create Deployment at Scale`.
+
+To set up an actual device to receive a deployment, you can follow [these](./SetUpDevice.md) instructions.
+
+## Check your system for Open Enclave requirements.
 
 You can use the `Microsoft Open Enclave: Check System Requirements` command (commands can be found using **F1** or **CTRL-Shift-P**) 
 to validate your system.
@@ -117,7 +127,12 @@ requirements will be presented in a Visual Studio Code warning window.
         ```bash
         sudo apt update && sudo apt install -y build-essential cmake gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-aarch64-linux-gnu gdb-multiarch python
         ```
-    
+    * Ensure that all QEMU dependencies are installed.  On Ubuntu 18.04 run:
+        
+        ```bash
+        sudo apt update && sudo apt install -y libpixman-1-0 zlib1g libc6 libfdt1 libglib2.0-0 libpcre3 libstdc++6
+        ```
+
 * Ensure that the requirements are met for the [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
     * [Docker is installed and running: https://docs.docker.com/install/](https://docs.docker.com/install/).
         * On Linux, for Edge projects, you will need to enable cross-building.
@@ -125,13 +140,13 @@ requirements will be presented in a Visual Studio Code warning window.
             * Enable docker cross-building on Ubuntu 19.04 and 18.10 by:
 
                 ```bash
-                sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+                sudo apt-get install -y qemu qemu-system-misc qemu-user-static qemu-user binfmt-support
                 ```
 
             * Enable docker cross-building on Ubuntu 18.04 and 16.04 by:
 
                 ```bash
-                sudo apt-get install -y qemu qemu-user-static qemu-user binfmt-support
+                sudo apt-get install -y qemu qemu qemu-system-misc qemu-user-static qemu-user binfmt-support
                 sudo mkdir -p /lib/binfmt.d
                 sudo sh -c 'echo :qemu-arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-arm-static:F > /lib/binfmt.d/qemu-arm-static.conf'
                 sudo sh -c 'echo :qemu-aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-aarch64-static:F > /lib/binfmt.d/qemu-aarch64-static.conf'
@@ -151,6 +166,7 @@ requirements will be presented in a Visual Studio Code warning window.
             ```bash
             sudo usermod -a -G docker $USER
             ```
+        * On Windows, be sure Docker is configured to use Linux containers.  See docker help regarding **Switch between Windows and Linux containers** [here](https://docs.docker.com/docker-for-windows/).
 
     * The [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool is installed
 
@@ -207,7 +223,8 @@ data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false
         rmdir /S /Q  %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
         git clone --recursive --branch master https://github.com/Microsoft/openenclave %APPDATA%\Code\User\globalStorage\ms-iot.msiot-vscode-openenclave\1.0.3\3rdparty\openenclave
         ```
-
+* The Visual Studio Code global data directory is used to download the Open Enclave SDK.  You can specify where this directory exists for Visual
+Studio Code by using the --user-data-dir command line switch.
 
 
 ## Release Notes
