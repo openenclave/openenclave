@@ -21,7 +21,6 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/bits/safecrt.h>
 #include "posix_t.h"
-#include "print.h"
 
 #define DEVICE_MAGIC 0x536f636b
 #define SOCK_MAGIC 0xe57a696d
@@ -594,7 +593,6 @@ static int _hostsock_fcntl(oe_fd_t* sock_, int cmd, uint64_t arg)
     case OE_F_SETLKW64:
     case OE_F_OFD_SETLK:
     case OE_F_OFD_SETLKW:
-        oe_host_printf("unsupported ioctl %d\n", cmd);
         OE_RAISE_ERRNO(OE_EINVAL);
         break;
 

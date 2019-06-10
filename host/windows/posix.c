@@ -32,6 +32,7 @@
 #include "../hostthread.h"
 #include <assert.h>
 
+static int _set_blocking(SOCKET sock, bool blocking);
 /*
 **==============================================================================
 **
@@ -1834,16 +1835,27 @@ oe_host_fd_t oe_posix_socket_ocall(int domain, int type, int protocol)
 
     // We are hoping, and think it is true, that accept in winsock returns the
     // same error returns as accept everywhere else
-    ret = socket(domain, type&~FLAG_CLOEXEC, protocol);
+    ret = socket(domain, type&~(FLAG_CLOEXEC|FLAG_NONBLOCK), protocol);
     if (ret == SOCKET_ERROR)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
-    if (type&FLAG_CLOEXEC)
+    if (type&(FLAG_CLOEXEC|FLAG_NONBLOCK))
     {
-        if (_add_nbio_socket(ret, FLAG_CLOEXEC) < 0)
+        if (_add_nbio_socket(ret, type&(FLAG_CLOEXEC|FLAG_NONBLOCK)) < 0)
         {
+            _set_errno(OE_ENFILE);
+            closesocket(ret);
+            return -1;
+        }
+    }
+
+    if (type&FLAG_NONBLOCK)
+    {
+        if (_set_blocking(ret, false) != 0)
+        {
+            _set_errno(_winsockerr_to_errno(WSAGetLastError()));
             closesocket(ret);
             return -1;
         }
@@ -2311,7 +2323,7 @@ int oe_posix_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg, uint64_t argsiz
             {
                 return -1;
             }
-            return flags & FLAG_CLOEXEC; // Only cloexec is expected
+            return (flags & FLAG_CLOEXEC) != 0; // True if 
         }
         case OE_F_SETFD:
         {
