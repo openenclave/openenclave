@@ -22,6 +22,7 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/search_insque.c
     3rdparty/musl/libc-test/src/functional/search_lsearch.c
     3rdparty/musl/libc-test/src/functional/search_tsearch.c
+    3rdparty/musl/libc-test/src/functional/socket.c
     3rdparty/musl/libc-test/src/functional/snprintf.c
     3rdparty/musl/libc-test/src/functional/sscanf.c
     3rdparty/musl/libc-test/src/functional/string.c
@@ -286,7 +287,6 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/sem_init.c
         3rdparty/musl/libc-test/src/functional/sem_open.c
         3rdparty/musl/libc-test/src/functional/setjmp.c
-        3rdparty/musl/libc-test/src/functional/socket.c
         3rdparty/musl/libc-test/src/functional/spawn.c
         3rdparty/musl/libc-test/src/functional/stat.c
         3rdparty/musl/libc-test/src/functional/strftime.c

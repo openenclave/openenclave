@@ -2,10 +2,12 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/syscall/device.h>
 #include <openenclave/internal/syscall/fdtable.h>
 #include <openenclave/internal/syscall/raise.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/trace.h>
 #include "mount.h"
 #include "syscall_t.h"
@@ -14,6 +16,10 @@ int __oe_fcntl(int fd, int cmd, uint64_t arg)
 {
     int ret = -1;
     oe_fd_t* desc;
+
+    if (cmd == OE_F_DUPFD) {
+        return oe_dup(fd);
+    }
 
     if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
         OE_RAISE_ERRNO(oe_errno);

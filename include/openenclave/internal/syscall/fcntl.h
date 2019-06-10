@@ -8,6 +8,21 @@
 #include <openenclave/corelibc/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
 
+struct oe_flock {
+    short l_type;
+    short l_whence;
+    oe_off_t l_start;
+    oe_off_t l_len;
+    oe_pid_t l_pid;
+};
+
+#define oe_flock64 oe_flock
+
+struct oe_f_owner_ex {
+    int type;
+    oe_pid_t  pid;
+};
+
 OE_EXTERNC_BEGIN
 
 // clang-format off
@@ -48,9 +63,16 @@ OE_EXTERNC_BEGIN
 #define OE_F_GETOWN         9
 #define OE_F_SETSIG        10
 #define OE_F_GETSIG        11
+#define OE_F_GETLK64       12
+#define OE_F_SETLK64       13
+#define OE_F_SETLKW64      14
 #define OE_F_SETOWN_EX     15
 #define OE_F_GETOWN_EX     16
 #define OE_F_GETOWNER_UIDS 17
+#define OE_F_OFD_GETLK     36
+#define OE_F_OFD_SETLK     37
+#define OE_F_OFD_SETLKW    38
+
 // clang-format on
 
 #define OE_AT_FDCWD (-100)
