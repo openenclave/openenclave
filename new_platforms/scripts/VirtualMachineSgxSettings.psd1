@@ -7,6 +7,6 @@ RootModule = "VirtualMachineSgxSettings.psm1"
 ModuleVersion="1.0.0.0"
 PowerShellVersion="5.0"
 ClrVersion="4.0"
-FunctionsToExport="Get-VMSgxSettings", "Set-VMSgxSettings"
+FunctionsToExport="Get-VMSgx", "Set-VMSgx"
 HelpInfoUri="https://github.com/Microsoft/openenclave"
 }

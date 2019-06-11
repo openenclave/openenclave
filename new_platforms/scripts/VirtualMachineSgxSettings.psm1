@@ -46,13 +46,13 @@ Import-LocalizedData Strings -FileName VirtualMachineSgxSettings.Strings.psd1 -E
 ### Classes
 ### -----------------------------------
 
-Class VirtualMachineSgxSettings{
+Class VirtualMachineSgx{
     [bool] $IsSgxEnabled;
     [UInt64] $SgxSize;
     [String] $SgxLaunchControlDefault;
     [UInt32] $SgxLaunchControlMode;
 
-    VirtualMachineSgxSettings([System.Management.ManagementObject] $VmSgx) {
+    VirtualMachineSgx([System.Management.ManagementObject] $VmSgx) {
         $This.IsSgxEnabled = $VmSgx.SgxEnabled;
         $This.SgxSize = $VmSgx.SgxSize;
         $This.SgxLaunchControlDefault = $VmSgx.SgxLaunchControlDefault;
@@ -96,10 +96,10 @@ Function Get-VMSgxManagementService()
 }
 
 ### -----------------------------------
-### Get-VMSgxSettings Cmdlet
+### Get-VMSgx Cmdlet
 ### -----------------------------------
 
-Function Get-VMSgxSettings
+Function Get-VMSgx
 {
     [CmdletBinding()]
     Param
@@ -123,15 +123,15 @@ Function Get-VMSgxSettings
         }
 
         $Mem = Get-VMSgxMemorySettingData $Vm
-        Return [VirtualMachineSgxSettings]::New($Mem)
+        Return [VirtualMachineSgx]::New($Mem)
     }
 }
 
 ### -----------------------------------
-### Set-VMSgxSettings Cmdlet
+### Set-VMSgx Cmdlet
 ### -----------------------------------
 
-Function Set-VMSgxSettings
+Function Set-VMSgx
 {
     [CmdletBinding()]
     Param
@@ -275,8 +275,8 @@ Function Set-VMSgxSettings
         }
 
         # Write out the new values.
-        Get-VMSgxSettings -Vm $Vm
+        Get-VMSgx -Vm $Vm
     }
 }
 
-Export-ModuleMember -Function Get-VMSgxSettings, Set-VMSgxSettings
+Export-ModuleMember -Function Get-VMSgx, Set-VMSgx
