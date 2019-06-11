@@ -4,7 +4,7 @@
 ### Constants
 ### -----------------------------------
 
-$VM_MEMORY_SETTINGS_GUID="4764334d-e001-4176-82ee-5594ec9b530e"
+$VM_MEMORY_SETTINGS_GUID = "4764334d-e001-4176-82ee-5594ec9b530e"
 
 Set-StrictMode -Version 5
 
@@ -15,18 +15,17 @@ $InformationPreference = "Continue"
 ### Strings
 ### -----------------------------------
 
-Data Strings
-{
-# culture="en-US"
-ConvertFrom-StringData @'
-    ERR_NO_MEM_SETTING_DATA_OBJECT = Could not retreive the Memory Setting Data object for VM '{0}' from WMI.
-    ERR_NO_VMM = Could not retreive the instance of the Virtual System Management Service from WMI.
-    ERR_VM_STATE = "The VM '{0}' must be Off before its SGX settings may be modified."
+Data Strings {
+    # culture="en-US"
+    ConvertFrom-StringData @'
+    ERR_NO_MEM_SETTING_DATA_OBJECT = Could not retrieve the Memory Setting Data object for VM '{0}' from WMI.
+    ERR_NO_VMM = Could not retrieve the instance of the Virtual System Management Service from WMI.
+    ERR_VM_STATE = The VM '{0}' must be Off before its SGX settings may be modified.
     ERR_NO_SETTINGS_TO_MODIFY = Specify at least one SGX setting to modify.
     ERR_NO_SGX_MEM_TO_ENABLE = To enable SGX, some SGX EPC memory is required (-SgxSize).
     ERR_COULD_NOT_MODIFY_SETTINGS = Could not modify SGX settings for VM '{0}' via WMI with error value '{1}'.
 
-    WARN_GEN2_TITLE = The VM {0}' is not a Generation 2 or later VM.
+    WARN_GEN2_TITLE = The VM '{0}' is not a Generation 2 or later VM.
     WARN_GEN2_TEXT = > Enabling SGX may not work.
 
     WARN_SECURE_BOOT_TITLE = The VM '{0}' has Secure Boot on.
@@ -44,7 +43,7 @@ Import-LocalizedData Strings -FileName VirtualMachineSgxSettings.Strings.psd1 -E
 ### Classes
 ### -----------------------------------
 
-Class VirtualMachineSgx{
+Class VirtualMachineSgx {
     [bool] $IsSgxEnabled;
     [UInt64] $SgxSize;
     [String] $SgxLaunchControlDefault;
@@ -62,31 +61,27 @@ Class VirtualMachineSgx{
 ### Helper Functions
 ### -----------------------------------
 
-Function Get-VMSgxMemorySettingData([Microsoft.HyperV.PowerShell.VirtualMachine] $Vm)
-{
-    $Mem =  Get-WmiObject -Namespace root/virtualization/v2 -Class Msvm_MemorySettingData |
-        Where-Object { $_.InstanceId -eq "Microsoft:$($Vm.Id)\$VM_MEMORY_SETTINGS_GUID" }
+Function Get-VMSgxMemorySettingData([Microsoft.HyperV.PowerShell.VirtualMachine] $Vm) {
+    $Mem = Get-WmiObject -Namespace root/virtualization/v2 -Class Msvm_MemorySettingData |
+    Where-Object { $_.InstanceId -eq "Microsoft:$($Vm.Id)\$VM_MEMORY_SETTINGS_GUID" }
 
-    If (!$Mem)
-    {
+    If (!$Mem) {
         Write-Error ($Strings.ERR_NO_MEM_SETTING_DATA_OBJECT -f $Vm.Name)
     }
 
     Return $Mem
 }
 
-Function Get-VMSgxManagementService()
-{
+Function Get-VMSgxManagementService() {
     $Svc = Get-WmiObject -Namespace root/virtualization/v2 -Class Msvm_VirtualSystemManagementService |
-        Where-Object {
-            ($_.CreationClassName -eq "Msvm_VirtualSystemManagementService") -and
-            ($_.Name -eq "vmms") -and
-            ($_.SystemCreationClassName -eq "Msvm_ComputerSystem") -and
-            ($_.SystemName -eq $env:COMPUTERNAME)
-        }
+    Where-Object {
+        ($_.CreationClassName -eq "Msvm_VirtualSystemManagementService") -and
+        ($_.Name -eq "vmms") -and
+        ($_.SystemCreationClassName -eq "Msvm_ComputerSystem") -and
+        ($_.SystemName -eq $env:COMPUTERNAME)
+    }
 
-    If (!$Svc)
-    {
+    If (!$Svc) {
         Write-Error $Strings.ERR_NO_VMM
     }
 
@@ -97,26 +92,23 @@ Function Get-VMSgxManagementService()
 ### Get-VMSgx Cmdlet
 ### -----------------------------------
 
-Function Get-VMSgx
-{
+Function Get-VMSgx {
     [CmdletBinding()]
     Param
     (
         # Name of the VM to get the SGX settings for.
-        [Parameter(Mandatory=$True, ParameterSetName="ByName", Position=0)]
+        [Parameter(Mandatory = $True, ParameterSetName = "ByName", Position = 0)]
         [ValidateNotNullOrEmpty()]
         [String]$VmName,
 
         # VM to get the SGX settings for.
-        [Parameter(Mandatory=$True, ParameterSetName="ByObject", Position=0)]
+        [Parameter(Mandatory = $True, ParameterSetName = "ByObject", Position = 0)]
         [ValidateNotNull()]
         [Microsoft.HyperV.PowerShell.VirtualMachine]$Vm
     )
 
-    Process
-    {
-        If (!$Vm)
-        {
+    Process {
+        If (!$Vm) {
             $Vm = Get-VM $VmName
         }
 
@@ -129,35 +121,34 @@ Function Get-VMSgx
 ### Set-VMSgx Cmdlet
 ### -----------------------------------
 
-Function Set-VMSgx
-{
+Function Set-VMSgx {
     [CmdletBinding()]
     Param
     (
         # Name of the VM to configure.
-        [Parameter(Mandatory=$True, ParameterSetName="ByName", Position=0)]
+        [Parameter(Mandatory = $True, ParameterSetName = "ByName", Position = 0)]
         [ValidateNotNullOrEmpty()]
         [String]$VmName,
 
         # VM to configure.
-        [Parameter(Mandatory=$True, ParameterSetName="ByObject", Position=0)]
+        [Parameter(Mandatory = $True, ParameterSetName = "ByObject", Position = 0)]
         [ValidateNotNull()]
         [Microsoft.HyperV.PowerShell.VirtualMachine]$Vm,
 
         # Whether SGX is enabled in the VM.
-        [Parameter(Position=1)]
+        [Parameter(Position = 1)]
         [Bool]$IsSgxEnabled = $False,
 
         # Desired SGX EPC Memory Size for the VM (in MB).
-        [Parameter(Position=2)]
+        [Parameter(Position = 2)]
         [UInt64]$SgxSize = 0,
 
         # Desired default SGX Launch Control Mode for the VM.
-        [Parameter(Position=3)]
+        [Parameter(Position = 3)]
         [String]$SgxLaunchControlDefault = [String]::Empty,
 
         # Desired SGX Launch Control Mode for the VM.
-        [Parameter(Position=4)]
+        [Parameter(Position = 4)]
         [UInt32]$SgxLaunchControlMode = 0,
 
         # Ignore warnings.
@@ -165,17 +156,14 @@ Function Set-VMSgx
         [Switch]$Force = $False
     )
 
-    Process
-    {
+    Process {
         # If the user passed a VM name, retrieve the VM object.
-        If ($Vm -eq $Null)
-        {
+        If ($Null -eq $Vm) {
             $Vm = Get-VM $VmName
         }
 
         # If the VM is not Off, the function cannot proceed.
-        If ($Vm.State -ne [Microsoft.HyperV.PowerShell.VMState]::Off)
-        {
+        If ($Vm.State -ne [Microsoft.HyperV.PowerShell.VMState]::Off) {
             Write-Error ($Strings.ERR_VM_STATE -f $Vm.Name)
         }
 
@@ -187,30 +175,25 @@ Function Set-VMSgx
         #      Note: Only Gen2 VMs support Secure Boot.
         # 2. Checkpoints are not supported with SGX turned on.
 
-        If (!$Force -and $IsSgxEnabled)
-        {
+        If (!$Force -and $IsSgxEnabled) {
             # Check VM generation.
-            If ($Vm.Generation -lt 2)
-            {
+            If ($Vm.Generation -lt 2) {
                 Write-Warning ($Strings.WARN_GEN2_TITLE -f $Vm.Name)
                 Write-Warning $Strings.WARN_GEN2_TEXT
             }
     
             # Check Secure Boot settings.
-            If ($Vm.Generation -ge 2)
-            {
+            If ($Vm.Generation -ge 2) {
                 $Fw = $Vm | Get-VMFirmware
 
-                If ($Fw.SecureBoot -eq [Microsoft.HyperV.PowerShell.OnOffState]::On)
-                {
+                If ($Fw.SecureBoot -eq [Microsoft.HyperV.PowerShell.OnOffState]::On) {
                     Write-Information ($Strings.WARN_SECURE_BOOT_TITLE -f $Vm.Name)
                     Write-Information $Strings.WARN_SECURE_BOOT_TEXT
                 }
             }
 
             # Check Checkpoint settings.
-            If ($Vm.CheckpointType -ne [Microsoft.HyperV.PowerShell.CheckpointType]::Disabled -and $IsSgxEnabled)
-            {
+            If ($Vm.CheckpointType -ne [Microsoft.HyperV.PowerShell.CheckpointType]::Disabled -and $IsSgxEnabled) {
                 Write-Information ($Strings.WARN_CHECKPOINT_TITLE -f $Vm.Name)
                 Write-Information $Strings.WARN_CHECKPOINT_TEXT
             }
@@ -227,42 +210,36 @@ Function Set-VMSgx
         $HasWorkToDo = $False
 
         # Enable/Disable SGX.
-        If ($PSBoundParameters.ContainsKey('IsSgxEnabled'))
-        {
+        If ($PSBoundParameters.ContainsKey('IsSgxEnabled')) {
             $Mem.SgxEnabled = $IsSgxEnabled
             $HasWorkToDo = $True
         }
 
         # SGX EPC size (in MB).
-        If ($PSBoundParameters.ContainsKey('SgxSize'))
-        {
+        If ($PSBoundParameters.ContainsKey('SgxSize')) {
             $Mem.SgxSize = $SgxSize
             $HasWorkToDo = $True
         }
 
         # Default FLC Mode.
-        If ($PSBoundParameters.ContainsKey('SgxLaunchControlDefault'))
-        {
+        If ($PSBoundParameters.ContainsKey('SgxLaunchControlDefault')) {
             $Mem.SgxLaunchControlDefault = $SgxLaunchControlDefault
             $HasWorkToDo = $True
         }
 
         # FLC Mode.
-        If ($PSBoundParameters.ContainsKey('SgxLaunchControlMode'))
-        {
+        If ($PSBoundParameters.ContainsKey('SgxLaunchControlMode')) {
             $Mem.SgxLaunchControlMode = $SgxLaunchControlMode
             $HasWorkToDo = $True
         }
 
         # If no settings were passed to the cmdlet, bail out.
-        If (!$HasWorkToDo)
-        {
+        If (!$HasWorkToDo) {
             Write-Error $Strings.ERR_NO_SETTINGS_TO_MODIFY
         }
 
         # Check that some memory was specified to enable SGX.
-        If (!$Force -and $IsSgxEnabled -and ($SgxSize -eq 0))
-        {
+        If (!$Force -and $IsSgxEnabled -and ($SgxSize -eq 0)) {
             Write-Error $Strings.ERR_NO_SGX_MEM_TO_ENABLE
         }
 
@@ -270,8 +247,7 @@ Function Set-VMSgx
         $Ret = $Svc.ModifyResourceSettings($Mem.GetText(1))
 
         # Inform the user as to the result.
-        If ($Ret.ReturnValue -ne 0)
-        {
+        If ($Ret.ReturnValue -ne 0) {
             Write-Error ($Strings.ERR_COULD_NOT_MODIFY_SETTINGS -f $Vm.Name, $Ret.ReturnValue)
         }
 
