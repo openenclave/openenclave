@@ -644,6 +644,11 @@ WCHAR* oe_posix_path_to_win(const char* path, const char* post)
         return NULL;
     }
 
+    if (strcmp(path, "/dev/null") == 0)
+    {
+        path = "NUL:";
+    }
+
     pathlen = MultiByteToWideChar(CP_UTF8, 0, path, -1, NULL, 0);
     if (post)
     {
@@ -1079,6 +1084,11 @@ oe_host_fd_t oe_posix_open_ocall(
         DWORD create_dispos = OPEN_EXISTING;
         DWORD file_flags = (FILE_ATTRIBUTE_NORMAL | FILE_FLAG_POSIX_SEMANTICS);
         WCHAR* wpathname = oe_posix_path_to_win(pathname, NULL);
+
+        if (strcmp(pathname, "/dev/null") == 0)
+        {
+            pathname = "nul";
+        }
 
         if ((flags & OE_O_DIRECTORY) != 0)
         {
