@@ -100,21 +100,11 @@ Function Get-VMSgxManagementService() {
     .Description
         Intel Software Guard Extensions (SGX) provide developers the ability to
         run code inside a Trusted Execution Environment (TEE) known as an
-        enclave. Hyper-V provides system administrators the ability to
-        virtualize SGX resources and expose this ability to guests on an
-        SGX-capable host. This function retrieves the active settings for SGX
-        virtualization for the given virtual machine.
+        enclave. Hyper-V allows system administrators to virtualize SGX
+        resources and expose this ability to guests on an SGX-capable host.
+        This function retrieves the settings for SGX virtualization for the
+        given virtual machine:
 
-    .Parameter VmName
-        Name of the virtual machine for which to retrieve the active SGX
-        virtualization settings.
-
-    .Parameter Vm
-        The virtual machine object for which to retrieve the active SGX
-        virtualization settings.
-
-    .Outputs
-        An object containing four fields:
         - IsSgxEnabled: Whether SGX virtualization is enabled for the given
             virtual machine.
         - SgxSize: The size, in MB, of the host's SGX EPC memory the given
@@ -125,6 +115,24 @@ Function Get-VMSgxManagementService() {
         - SgxLaunchControlMode: The current SGX Launch Control Mode for the
             given virtual machine, if the host supports Flexible Launch Control
             (FLC) mode.
+
+    .Parameter VmName
+        Name of the virtual machine for which to retrieve the SGX
+        virtualization settings.
+
+    .Parameter Vm
+        The virtual machine object for which to retrieve the SGX
+        virtualization settings.
+
+    .Example
+        To retrieve the settings for SGX virtualization for a virtual machine
+        by name, do:
+
+        Get-VMSgx -VmName MySGXVm
+
+        You can also write:
+
+        Get-VMSgx MySgxVM
 
     .Link
         https://openenclave.io/
@@ -166,10 +174,21 @@ Function Get-VMSgx {
     .Description
         Intel Software Guard Extensions (SGX) provide developers the ability to
         run code inside a Trusted Execution Environment (TEE) known as an
-        enclave. Hyper-V provides system administrators the ability to
-        virtualize SGX resources and expose this ability to guests on an
-        SGX-capable host. This function modifies the settings for SGX
-        virtualization for the given virtual machine.
+        enclave. Hyper-V allows system administrators to virtualize SGX
+        resources and expose this ability to guests on an SGX-capable host.
+        This function modifies the settings for SGX virtualization for the
+        given virtual machine and then retrieves the same from Hyper-V:
+
+        - IsSgxEnabled: Whether SGX virtualization is enabled for the given
+            virtual machine.
+        - SgxSize: The size, in MB, of the host's SGX EPC memory the given
+            virtual machine is allowed to use.
+        - SgxLaunchControlDefault: The default SGX Launch Control Mode for the
+            given virtual machine, if the host supports Flexible Launch Control
+            (FLC) mode.
+        - SgxLaunchControlMode: The current SGX Launch Control Mode for the
+            given virtual machine, if the host supports Flexible Launch Control
+            (FLC) mode.
 
     .Parameter VmName
         Name of the virtual machine for which to modify the SGX virtualization
@@ -194,18 +213,24 @@ Function Get-VMSgx {
         The current SGX Launch Control Mode for the given virtual machine, if
         the host supports Flexible Launch Control (FLC) mode.
 
-    .Outputs
-        An object containing four fields:
-        - IsSgxEnabled: Whether SGX virtualization is enabled for the given
-            virtual machine.
-        - SgxSize: The size, in MB, of the host's SGX EPC memory the given
-            virtual machine is allowed to use.
-        - SgxLaunchControlDefault: The default SGX Launch Control Mode for the
-            given virtual machine, if the host supports Flexible Launch Control
-            (FLC) mode.
-        - SgxLaunchControlMode: The current SGX Launch Control Mode for the
-            given virtual machine, if the host supports Flexible Launch Control
-            (FLC) mode.
+    .Example
+        To enable SGX virtualization on a virtual machine by name and set its
+        SGX EPC memory size to 32M, do:
+
+        Set-VMSgx -VmName MySgxVM -IsSgxEnabled $True -SgxSize 32
+
+        You may also write:
+
+        Set-VMSgx MySgxVM $True 32
+
+    .Example
+        To disable SGX virtualization on a virtual machine by name, do:
+
+        Set-VMSgx -VmName MySgxVM -IsSgxEnabled $False -SgxSize 0
+
+        Alternately:
+
+        Set-VMSgx MySgxVM $False 0
 
     .Link
         https://openenclave.io/
