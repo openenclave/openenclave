@@ -33,6 +33,15 @@ development machine configured as follows:
 1. Disable Secure Boot as follows.  In Hyper-V Manager, right click on the VM you created while it is stopped,
   and select Settings... -> Security and uncheck Enable Secure Boot.
 1. Uncheck "Enable checkpoints" under the VM's Settings -> Checkpoints.
+1. Enable SGX for the VM as follows (this cannot be done from Hyper-V Manager):
+   - Download [VirtualMachineSgxSettings.psm1](https://raw.githubusercontent.com/microsoft/openenclave/f28cedce63be9673e20fe54563987189f2565637/new_platforms/scripts/VirtualMachineSgxSettings.psm1)
+   - Open an elevated PowerShell window (e.g., type "powershell" and click Run as Administrator)
+   - Invoke the following commands, using the path to where you downloaded the file, and replacing MyVM with your VM name:
+```
+   Set-ExecutionPolicy Bypass -Scope Process
+   Import-Module Drive:\Path\to\VirtualMachineSgxSettings.psm1
+   Set-VMSgx -VmName MyVM -IsSgxEnabled $True -SgxSize 32
+```
 1. Using [vmadmin.wsf](https://microsoft.visualstudio.com/OS/_git/os?path=%2Fvm%2Ftest%2Fperf%2Fvmphu%2Fscripts%2Fvmadmin%2Fvmadmin.wsf&version=GBofficial%2Frsmaster), run "vmadmin.wsf setsgx <vmname> 32" as Administrator,
    to configure SGX to use 32MB of memory. A larger number is also fine.
 1. Start the VM and connect to it (right click, Connect...), finish the initial setup, reboot, and login.
