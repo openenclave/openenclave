@@ -1,6 +1,4 @@
-﻿#Require -Version 5.0
-
-Import-Module Hyper-V
+﻿Import-Module Hyper-V
 
 ### -----------------------------------
 ### Constants
