@@ -3,10 +3,8 @@
 
 oeedl_file(../crypto.edl enclave gen)
 
-add_enclave(TARGET cryptoenc UUID f0be7db0-ce7c-4dc4-b8c8-b161f4216225
-    SOURCES
+set(SRCS
     enc.c
-    ../../../../common/sgx/rand.S
     ../../read_file.c
     ../../asn1_tests.c
     ../../crl_tests.c
@@ -15,12 +13,19 @@ add_enclave(TARGET cryptoenc UUID f0be7db0-ce7c-4dc4-b8c8-b161f4216225
     ../../hmac_tests.c
     ../../kdf_tests.c
     ../../random_tests.c
-    ../../rdrand_test.c
     ../../rsa_tests.c
     ../../sha_tests.c
     ../../tests.c
-    ../../utils.c
-    ${gen})
+    ../../utils.c)
+
+if (OE_SGX)
+    list(APPEND SRCS
+        ../../../../common/sgx/rand.S
+        ../../rdrand_test.c)
+endif ()
+
+add_enclave(TARGET cryptoenc UUID f0be7db0-ce7c-4dc4-b8c8-b161f4216225
+    SOURCES ${SRCS} ${gen})
 
 target_include_directories(cryptoenc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(cryptoenc oelibc)
