@@ -162,7 +162,9 @@ class TodoIssueTracker(IssueTracker):
         super().__init__()
         self.heading = "TODO present:"
         self.files_exemptions = [
-            __file__, "benchmark.c", "pull_request_template.md"
+            os.path.basename(__file__),
+            "benchmark.c",
+            "pull_request_template.md",
         ]
 
     def issue_with_line(self, line):
@@ -183,7 +185,6 @@ class IntegrityChecker(object):
         self.excluded_paths = list(map(os.path.normpath, [
             'cov-int',
             'examples',
-            'yotta/module'
         ]))
         self.issues_to_check = [
             PermissionIssueTracker(),
