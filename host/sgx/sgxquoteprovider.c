@@ -1,47 +1,29 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <dlfcn.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/report.h>
 #include <openenclave/internal/trace.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../hostthread.h"
-#include "../platformquoteprovider.h"
-#include "../sgxquoteprovider.h"
+#include "../hostthread.h"
+#include "sgxquoteprovider.h"
 
 /**
- * This file manages the libdcap_quoteprov.so shared library.
- * It loads the .so during program startup and keeps it loaded till application
- * exit. Intel's quoting library repeatedly loads and unloads
- * libdcap_quoteprov.so.
- * This causes a crash in libssl.so. (See
+ * This file manages the dcap_quoteprov shared library.
+ * It loads the library during program startup and keeps it loaded until the
+ * application exits. Intel's quoting library repeatedly loads and unloads
+ * dcap_quoteprov, but this causes a crash in libssl.so. (See
  * https://rt.openssl.org/Ticket/Display.html?user=guest&pass=guest&id=2325).
- * Keeping libdcap_quoteprov.so pinned in memory solves the libssl.so crash.
+ * Keeping dcap_quoteprov pinned in memory solves the libssl.so crash.
  */
 
-static void* _lib_handle = 0;
-static sgx_ql_get_revocation_info_t _get_revocation_info = 0;
-static sgx_ql_free_revocation_info_t _free_revocation_info = 0;
-static sgx_get_qe_identity_info_t _get_qe_identity_info = 0;
-static sgx_free_qe_identity_info_t _free_qe_identity_info = 0;
+extern oe_sgx_quote_provider_t provider;
 
-static void _unload_quote_provider()
-{
-    OE_TRACE_INFO("_unload_quote_provider libdcap_quoteprov.so\n");
-    if (_lib_handle)
-    {
-        dlclose(_lib_handle);
-        _lib_handle = 0;
-    }
-}
-
-static void _quote_provider_log(sgx_ql_log_level_t level, const char* message)
+void oe_quote_provider_log(sgx_ql_log_level_t level, const char* message)
 {
     const char* level_string = level == 0 ? "ERROR" : "INFO";
     char formatted[1024];
@@ -50,81 +32,20 @@ static void _quote_provider_log(sgx_ql_log_level_t level, const char* message)
 
     formatted[sizeof(formatted) - 1] = 0;
 
-    OE_TRACE_INFO("libdcap_quoteprov.so: %s", formatted);
-}
-
-static void _load_quote_provider()
-{
-    if (_lib_handle == 0)
-    {
-        OE_TRACE_INFO("_load_quote_provider libdcap_quoteprov.so\n");
-        _lib_handle = dlopen("libdcap_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
-        if (_lib_handle != 0)
-        {
-            _get_revocation_info =
-                dlsym(_lib_handle, "sgx_ql_get_revocation_info");
-            _free_revocation_info =
-                dlsym(_lib_handle, "sgx_ql_free_revocation_info");
-
-            OE_TRACE_INFO(
-                "sgxquoteprovider: _get_revocation_info = 0x%lx\n",
-                (uint64_t)_get_revocation_info);
-            OE_TRACE_INFO(
-                "sgxquoteprovider: _free_revocation_info = 0x%lx\n",
-                (uint64_t)_free_revocation_info);
-
-            sgx_ql_set_logging_function_t set_log_fcn =
-                (sgx_ql_set_logging_function_t)dlsym(
-                    _lib_handle, "sgx_ql_set_logging_function");
-            if (set_log_fcn != NULL)
-            {
-                OE_UNUSED(_quote_provider_log);
-
-                OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
-                if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
-                {
-                    // If info tracing is enabled, install the logging function.
-                    set_log_fcn(_quote_provider_log);
-                }
-            }
-            else
-            {
-                OE_TRACE_ERROR("sgxquoteprovider: sgx_ql_set_logging_function "
-                               "not found\n");
-            }
-
-            _get_qe_identity_info =
-                dlsym(_lib_handle, "sgx_get_qe_identity_info");
-            _free_qe_identity_info =
-                dlsym(_lib_handle, "sgx_free_qe_identity_info");
-
-            OE_TRACE_INFO(
-                "sgxquoteprovider: _get_qe_identity_info = 0x%lx\n",
-                (uint64_t)_get_qe_identity_info);
-            OE_TRACE_INFO(
-                "sgxquoteprovider: _free_qe_identity_info = 0x%lx\n",
-                (uint64_t)_free_qe_identity_info);
-
-            atexit(_unload_quote_provider);
-        }
-        else
-        {
-            OE_TRACE_ERROR(
-                "sgxquoteprovider: libdcap_quoteprov.so not found \n");
-        }
-    }
+    OE_TRACE_INFO("dcap_quoteprov: %s", formatted);
 }
 
 oe_result_t oe_initialize_quote_provider()
 {
     oe_result_t result = OE_OK;
     static oe_once_type once = OE_H_ONCE_INITIALIZER;
-    oe_once(&once, _load_quote_provider);
+    oe_once(&once, oe_load_quote_provider);
 
-    if (!_lib_handle)
+    if (!provider.handle)
         OE_RAISE_MSG(
             OE_QUOTE_PROVIDER_LOAD_ERROR,
-            "oe_initialize_quote_provider failed");
+            "oe_initialize_quote_provider failed",
+            NULL);
 done:
     return result;
 }
@@ -141,7 +62,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
 
     OE_CHECK(oe_initialize_quote_provider());
 
-    if (!_get_revocation_info || !_free_revocation_info)
+    if (!provider.get_revocation_info || !provider.free_revocation_info)
         OE_RAISE(OE_QUOTE_PROVIDER_LOAD_ERROR);
 
     params.version = SGX_QL_REVOCATION_INFO_VERSION_1;
@@ -161,7 +82,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         }
     }
 
-    r = _get_revocation_info(&params, &revocation_info);
+    r = provider.get_revocation_info(&params, &revocation_info);
 
     if (r != SGX_PLAT_ERROR_OK || revocation_info == NULL)
     {
@@ -171,14 +92,15 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     if (revocation_info->tcb_info == NULL ||
         revocation_info->tcb_info_size == 0)
     {
-        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_info is NULL");
+        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_info is NULL", NULL);
     }
     host_buffer_size += revocation_info->tcb_info_size + 1;
 
     if (revocation_info->tcb_issuer_chain == NULL ||
         revocation_info->tcb_issuer_chain_size == 0)
     {
-        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_issuer_chain is NULL");
+        OE_RAISE_MSG(
+            OE_INVALID_REVOCATION_INFO, "tcb_issuer_chain is NULL", NULL);
     }
     host_buffer_size += revocation_info->tcb_issuer_chain_size + 1;
 
@@ -305,7 +227,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     result = OE_OK;
 done:
     if (revocation_info != NULL)
-        _free_revocation_info(revocation_info);
+        provider.free_revocation_info(revocation_info);
 
     return result;
 }
@@ -327,11 +249,11 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     uint32_t host_buffer_size = 0;
     uint8_t* p = 0;
     uint8_t* p_end = 0;
-    OE_TRACE_INFO("Calling %s\n", __PRETTY_FUNCTION__);
+    OE_TRACE_INFO("Calling %s\n", __FUNCTION__);
 
     OE_CHECK(oe_initialize_quote_provider());
 
-    if (!_get_qe_identity_info || !_free_qe_identity_info)
+    if (!provider.get_qe_identity_info || !provider.free_qe_identity_info)
     {
         OE_TRACE_WARNING(
             "Warning: QE Identity was not supported by quote provider\n");
@@ -340,7 +262,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     }
 
     // fetch qe identity information
-    r = _get_qe_identity_info(&identity);
+    r = provider.get_qe_identity_info(&identity);
     if (r != SGX_PLAT_ERROR_OK || identity == NULL)
     {
         OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
@@ -354,7 +276,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     host_buffer_size += identity->qe_id_info_size + 1;
 
     if (identity->issuer_chain == NULL || identity->issuer_chain_size == 0)
-        OE_RAISE_MSG(OE_INVALID_QE_IDENTITY_INFO, "issuer_chain is NULL");
+        OE_RAISE_MSG(OE_INVALID_QE_IDENTITY_INFO, "issuer_chain is NULL", NULL);
 
     host_buffer_size += identity->issuer_chain_size + 1;
     p = (uint8_t*)calloc(1, host_buffer_size);
@@ -402,7 +324,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
 done:
     if (identity != NULL)
     {
-        _free_qe_identity_info(identity);
+        provider.free_qe_identity_info(identity);
     }
     return result;
 }

@@ -82,5 +82,8 @@ enclave {
 
     // Maybe test for recursive copying.
     public void deepcopy_nested([in, count=1] NestedStruct* n);
+
+    // Test handling of null values.
+    public void deepcopy_null([in, count=1] CountStruct* s);
   };
 };

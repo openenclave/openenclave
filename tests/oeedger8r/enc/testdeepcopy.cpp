@@ -151,3 +151,8 @@ void deepcopy_nested(NestedStruct* n)
     for (size_t i = 0; i < 3; ++i)
         deepcopy_count(&(n->array_of_struct[i]));
 }
+
+void deepcopy_null(CountStruct* s)
+{
+    OE_UNUSED(s);
+}

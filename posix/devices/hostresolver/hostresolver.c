@@ -258,8 +258,7 @@ static int _hostresolver_release(oe_resolver_t* resolv_)
     if (!resolver)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Release the resolv_ object. */
-    oe_free(resolver);
+    // resolv_ is a static object, there is no need to free
     ret = 0;
 
 done:
