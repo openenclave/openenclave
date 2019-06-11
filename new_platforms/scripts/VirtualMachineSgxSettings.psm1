@@ -9,6 +9,7 @@ Import-Module Hyper-V
 $VM_MEMORY_SETTINGS_GUID="4764334d-e001-4176-82ee-5594ec9b530e"
 
 Set-StrictMode -Version 5
+
 $ErrorActionPreference = "Stop"
 $InformationPreference = "Continue"
 
@@ -38,7 +39,7 @@ ConvertFrom-StringData @'
 '@
 }
 
-# Import localized strings
+# Import localized strings.
 Import-LocalizedData Strings -FileName VirtualMachineSgxSettings.Strings.psd1 -ErrorAction SilentlyContinue
 
 ### -----------------------------------
@@ -103,15 +104,17 @@ Function Get-VMSgxSettings
     [CmdletBinding()]
     Param
     (
+        # Name of the VM to get the SGX settings for..
         [Parameter(Mandatory=$True, ParameterSetName="ByName", Position=0)]
         [ValidateNotNullOrEmpty()]
         [String]$VmName,
 
+        # VM to get the SGX settings for.
         [Parameter(Mandatory=$True, ParameterSetName="ByObject", Position=0)]
         [ValidateNotNull()]
         [Microsoft.HyperV.PowerShell.VirtualMachine]$Vm
     )
-    
+
     Process
     {
         If (!$Vm)
@@ -133,7 +136,7 @@ Function Set-VMSgxSettings
     [CmdletBinding()]
     Param
     (
-        # Name of VM to configure.
+        # Name of the VM to configure.
         [Parameter(Mandatory=$True, ParameterSetName="ByName", Position=0)]
         [ValidateNotNullOrEmpty()]
         [String]$VmName,
@@ -177,7 +180,7 @@ Function Set-VMSgxSettings
         {
             Write-Error ($Strings.ERR_VM_STATE -f $Vm.Name)
         }
-        
+
         # At the time of this writing, the following conditions hold:
         #
         # 1. SGX virtualization is only supported on Gen2 VMs:
@@ -264,7 +267,7 @@ Function Set-VMSgxSettings
 
         # Try to change the settings.
         $Ret = $Svc.ModifyResourceSettings($Mem.GetText(1))
-        
+
         # Inform the user as to the result.
         If ($Ret.ReturnValue -ne 0)
         {
