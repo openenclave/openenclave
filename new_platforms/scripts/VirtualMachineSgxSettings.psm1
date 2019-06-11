@@ -150,11 +150,11 @@ Function Set-VMSgx
         [Parameter(Position=1)]
         [Bool]$IsSgxEnabled = $False,
 
-        # Desired SGX EPC Memory Sixe for the VM (in MB).
+        # Desired SGX EPC Memory Size for the VM (in MB).
         [Parameter(Position=2)]
         [UInt64]$SgxSize = 0,
 
-        # Default SGX Launch Control Mode for the VM.
+        # Desired default SGX Launch Control Mode for the VM.
         [Parameter(Position=3)]
         [String]$SgxLaunchControlDefault = [String]::Empty,
 
