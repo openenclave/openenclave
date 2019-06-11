@@ -34,8 +34,9 @@
             this.label1 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.boardNone = new System.Windows.Forms.RadioButton();
             this.boardQemuArm64 = new System.Windows.Forms.RadioButton();
+            this.boardNone = new System.Windows.Forms.RadioButton();
+            this.button2 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -89,7 +90,7 @@
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button1.Location = new System.Drawing.Point(35, 446);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(675, 45);
+            this.button1.Size = new System.Drawing.Size(330, 45);
             this.button1.TabIndex = 4;
             this.button1.Text = "OK";
             this.button1.UseVisualStyleBackColor = true;
@@ -107,17 +108,6 @@
             this.panel1.Size = new System.Drawing.Size(675, 345);
             this.panel1.TabIndex = 6;
             // 
-            // boardNone
-            // 
-            this.boardNone.AutoSize = true;
-            this.boardNone.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.boardNone.Location = new System.Drawing.Point(37, 270);
-            this.boardNone.Name = "boardNone";
-            this.boardNone.Size = new System.Drawing.Size(216, 33);
-            this.boardNone.TabIndex = 3;
-            this.boardNone.Text = "None (SGX only)";
-            this.boardNone.UseVisualStyleBackColor = true;
-            // 
             // boardQemuArm64
             // 
             this.boardQemuArm64.AutoSize = true;
@@ -129,12 +119,36 @@
             this.boardQemuArm64.Text = "QEMU (Emulated) [AArch64/ARMv8-A]";
             this.boardQemuArm64.UseVisualStyleBackColor = true;
             // 
+            // boardNone
+            // 
+            this.boardNone.AutoSize = true;
+            this.boardNone.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.boardNone.Location = new System.Drawing.Point(37, 270);
+            this.boardNone.Name = "boardNone";
+            this.boardNone.Size = new System.Drawing.Size(216, 33);
+            this.boardNone.TabIndex = 3;
+            this.boardNone.Text = "None (SGX only)";
+            this.boardNone.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button2.Location = new System.Drawing.Point(380, 446);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(330, 45);
+            this.button2.TabIndex = 7;
+            this.button2.Text = "Cancel";
+            this.button2.UseVisualStyleBackColor = true;
+            // 
             // BoardPickerPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.button2;
             this.ClientSize = new System.Drawing.Size(742, 512);
             this.ControlBox = false;
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button1);
@@ -158,5 +172,6 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.RadioButton boardNone;
         private System.Windows.Forms.RadioButton boardQemuArm64;
+        private System.Windows.Forms.Button button2;
     }
 }

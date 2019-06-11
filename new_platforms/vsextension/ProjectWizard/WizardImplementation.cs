@@ -96,7 +96,12 @@ namespace OpenEnclaveSDK
             return unixPath;
         }
 
-        // Set the path to the OpenEnclave libs and TA Dev Kit.
+        /// <summary>
+        /// Set the path to the OpenEnclave libs and TA Dev Kit, as required for ARM builds.
+        /// </summary>
+        /// <param name="replacementsDictionary">macro dictionary to update</param>
+        /// <param name="isWindows">true if creating a Windows project</param>
+        /// <returns>false if canceled, true otherwise</returns>
         private bool SetOELibPath(Dictionary<string, string> replacementsDictionary, bool isWindows)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -104,16 +109,21 @@ namespace OpenEnclaveSDK
             if (!isWindows)
             {
                 // No ARM support implemented yet for Linux.
-                return false;
+                return true;
             }
 
             // First try picking the board from a menu.
             BoardPickerPage picker = new BoardPickerPage();
             DialogResult result = picker.ShowDialog();
-            if (result != DialogResult.OK || picker.Board == "None")
+            if (result != DialogResult.OK)
+            {
+                // Canceled.
+                return false;
+            }
+            if (picker.Board == "None")
             {
                 // No ARM support requested.
-                return false;
+                return true;
             }
 
             string oeFolder = null;
@@ -235,6 +245,7 @@ namespace OpenEnclaveSDK
             string templatePath = customParams[0] as string;
             bool isWindows = !templatePath.Contains("Linux");
 
+            bool canceled = false;
             try
             {
                 // Get the $guid1$ value that has already been generated, and
@@ -253,12 +264,22 @@ namespace OpenEnclaveSDK
                 }
                 else
                 {
-                    SetOELibPath(replacementsDictionary, isWindows);
+                    if (!SetOELibPath(replacementsDictionary, isWindows))
+                    {
+                        // Operation canceled.
+                        canceled = true;
+                    }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
+            }
+
+            if (canceled)
+            {
+                // Throw a canceled exception to tell VS to clean up the project creation.
+                throw new WizardCancelledException();
             }
         }
 
