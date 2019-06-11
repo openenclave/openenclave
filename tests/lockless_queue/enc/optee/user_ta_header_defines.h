@@ -14,11 +14,11 @@
 #define TA_STACK_SIZE (12 * 1024)      /* 12 KB */
 #define TA_DATA_SIZE (1 * 1024 * 1024) /* 1 MB */
 
-#define TA_CURRENT_TA_EXT_PROPERTIES                                    \
-    {"gp.ta.description", USER_TA_PROP_TYPE_STRING, "hexdump test TA"}, \
-    {                                                                   \
-        "gp.ta.version", USER_TA_PROP_TYPE_U32, &(const uint32_t)       \
-        {                                                               \
-            0x0010                                                      \
-        }                                                               \
+#define TA_CURRENT_TA_EXT_PROPERTIES                                           \
+    {"gp.ta.description", USER_TA_PROP_TYPE_STRING, "lockless queue test TA"}, \
+    {                                                                          \
+        "gp.ta.version", USER_TA_PROP_TYPE_U32, &(const uint32_t)              \
+        {                                                                      \
+            0x0010                                                             \
+        }                                                                      \
     }
