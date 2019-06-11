@@ -79,10 +79,10 @@ Function Get-VMSgxManagementService()
 {
     $Svc = Get-WmiObject -Namespace root/virtualization/v2 -Class Msvm_VirtualSystemManagementService |
         Where-Object {
-            $_.CreationClassName -eq "Msvm_VirtualSystemManagementService" -and
-            $_.Name -eq "vmms" -and
-            $_.SystemCreationClassName -eq "Msvm_ComputerSystem" -and
-            $_.SystemName -eq $env:COMPUTERNAME
+            ($_.CreationClassName -eq "Msvm_VirtualSystemManagementService") -and
+            ($_.Name -eq "vmms") -and
+            ($_.SystemCreationClassName -eq "Msvm_ComputerSystem") -and
+            ($_.SystemName -eq $env:COMPUTERNAME)
         }
 
     If (!$Svc)
