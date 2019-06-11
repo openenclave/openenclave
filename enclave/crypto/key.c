@@ -3,7 +3,6 @@
 
 #include "key.h"
 #include <openenclave/bits/safecrt.h>
-#include <openenclave/corelibc/string.h>
 #include <openenclave/internal/crypto/hash.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>

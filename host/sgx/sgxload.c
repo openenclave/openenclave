@@ -298,8 +298,6 @@ static oe_result_t _sgx_free_enclave_memory(
     size_t size,
     bool is_simulation)
 {
-#if defined(__linux__)
-
 #if defined(OE_USE_LIBSGX)
     if (!is_simulation)
     {
@@ -311,16 +309,19 @@ static oe_result_t _sgx_free_enclave_memory(
             return OE_PLATFORM_ERROR;
         }
     }
-    else /* FLC simulation mode needs to munmap. */
+    else /* Fallthrough to simulation mode cleanup based on OS. */
 #endif
     {
         OE_UNUSED(is_simulation);
+#if defined(__linux__)
+        /* munmap memory created for either AESM or simulation enclave */
         munmap(addr, size);
-    }
-
 #elif defined(_WIN32)
-    VirtualFree(addr, 0, MEM_RELEASE);
+        /* VirtualFree is used for enclave addr return by CreateEnclave and
+           simulation enclave allocated by VirtualAlloc */
+        VirtualFree(addr, 0, MEM_RELEASE);
 #endif
+    }
 
     return OE_OK;
 }

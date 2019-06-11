@@ -58,6 +58,8 @@ Please do:
   changing even if it diverges from the general guidelines.
 - **DO** include tests when adding new features. When fixing bugs, start with
   adding a test that highlights how the current behavior is broken.
+- **DO** use feature flags, e.g. `--experimental` or `#if ENABLED`, to
+  incrementally build, review, test, and submit large features.
 - **DO** update README.md files in the source tree and other documents to be up
   to date with changes in the code.
 - **DO** keep the discussions focused. When a new or related topic comes up it's
@@ -97,6 +99,10 @@ Please do not:
 - **DON'T** surprise us with big pull requests. Instead, file an issue and start
   a discussion so we can agree on a direction before you invest a large amount
   of time.
+- **DON'T** try to merge a giant feature in a single PR. Instead, break it into
+  pieces with feature flags (pre-processor guards or `--experimental` flags),
+  and submit multiple, smaller PRs to review each piece. Once the whole feature
+  is in, agreed on, and tested, submit a PR to remove the guards.
 - **DON'T** commit code that you didn't write. If you find code that you think
   is a good fit to add to Open Enclave, file an issue and start a discussion
   before proceeding.
