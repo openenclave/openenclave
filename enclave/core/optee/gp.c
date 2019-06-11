@@ -312,8 +312,8 @@ static oe_result_t _handle_call_host_function(
     params[0].value.b = __oe_windows_ecall_key;
 
     /* Open Enclave-specific data */
-    params[1].memref.buffer = &args;
-    params[1].memref.size = sizeof(args);
+    params[1].memref.buffer = args;
+    params[1].memref.size = sizeof(*args);
 
     /* Input buffer */
     if (args->input_buffer)
