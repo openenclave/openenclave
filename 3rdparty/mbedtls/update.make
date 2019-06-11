@@ -4,7 +4,7 @@
 # Licensed under the MIT License.
 
 # mbedTLS library definitions
-VERSION=2.7.9
+VERSION=2.16.1
 BASE=mbedtls-$(VERSION)
 PKG=$(BASE)-apache.tgz
 
@@ -18,7 +18,6 @@ update-mbedtls:
 	mv $(BASE) mbedtls
 	rm -rf $(PKG)
 	rm mbedtls/.gitignore
-	rm mbedtls/yotta/.gitignore
 	rm mbedtls/programs/.gitignore
 	rm mbedtls/include/.gitignore
 	rm mbedtls/library/.gitignore
