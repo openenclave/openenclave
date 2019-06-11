@@ -1,0 +1,20 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#ifndef SAMPLES_TLS_BETWEEN_ENCLAVES_CLIENT_TLS_CERT_PUBLIC_KEY_H
+#define SAMPLES_TLS_BETWEEN_ENCLAVES_CLIENT_TLS_CERT_PUBLIC_KEY_H
+
+const char CLIENT_ENCLAVE_TLS_CERT_PUBLIC_KEY[] =
+    "-----BEGIN PUBLIC KEY-----\n"
+    "MIIBoDANBgkqhkiG9w0BAQEFAAOCAY0AMIIBiAKCAYEAt+UODLMJ8s0CnTTK44Po\n"
+    "6c5IS8pn97PAU4/SENMSjGDr/+OBRyb4ssMLjQm8UQ/zSs9ubwHyxtSylmrsTrzp\n"
+    "jkRt63Pnv+rEu/N8U8Iz103jGy076V4OB+LkfJsYaMrCo+yTz22+GAFB3baHkLWw\n"
+    "VSqDSTanmwym5kPFqlBzglw/Aq63+PI2W0HJHTjFgNFDY0TcZz05th4LbYroRTSS\n"
+    "lURaL3DRiF2pLK8RIetVjqLIieK1sd7YjZc8MoRYZzyJrk0K0rPUONWrqIPJ2JH4\n"
+    "m2mejh0tkPpMwdNcsqpH9LPZPSkE+7l49Xe0fvnwfp8PHCM4dzUTZRHImnhqLYg6\n"
+    "bNXpYoTG3oeQdT6cPCGHib0YmSgXDtqCKNL50nURczfwc8pPKGMfpys91DiJ66lc\n"
+    "tNwvRL453U6VbZsZwajnUpbkGMnoh4veknyzGQhMAn0w4dVfJqNSX2FC5P18Fa6J\n"
+    "QEOih8+zxGp2YWGQ2sHqEuYUm88vwmjJ+ZiXQh1VhNgRAgED\n"
+    "-----END PUBLIC KEY-----\n";
+
+#endif /* SAMPLES_TLS_BETWEEN_ENCLAVES_CLIENT_TLS_CERT_PUBLIC_KEY_H */
