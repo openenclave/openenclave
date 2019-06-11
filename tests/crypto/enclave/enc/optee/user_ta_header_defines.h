@@ -11,8 +11,8 @@
     }
 
 #define TA_FLAGS (TA_FLAG_MULTI_SESSION | TA_FLAG_EXEC_DDR)
-#define TA_STACK_SIZE (12 * 1024)      /* 12 KB */
-#define TA_DATA_SIZE (1 * 1024 * 1024) /* 1 MB */
+#define TA_STACK_SIZE (24 * 1024)      /* 24 KB */
+#define TA_DATA_SIZE (2 * 1024 * 1024) /* 2 MB */
 
 #define TA_CURRENT_TA_EXT_PROPERTIES                                   \
     {"gp.ta.description", USER_TA_PROP_TYPE_STRING, "crypto test TA"}, \
