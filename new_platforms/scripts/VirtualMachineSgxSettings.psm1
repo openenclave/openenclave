@@ -196,13 +196,17 @@ Function Set-VMSgx
                 Write-Warning $Strings.WARN_GEN2_TEXT
             }
 
+    
             # Check Secure Boot settings.
-            $Fw = $Vm | Get-VMFirmware
-
-            If ($Fw.SecureBoot -eq [Microsoft.HyperV.PowerShell.OnOffState]::On)
+            If ($Vm.Generation -ge 2)
             {
-                Write-Information ($Strings.WARN_SECURE_BOOT_TITLE -f $Vm.Name)
-                Write-Information $Strings.WARN_SECURE_BOOT_TEXT
+                $Fw = $Vm | Get-VMFirmware
+
+                If ($Fw.SecureBoot -eq [Microsoft.HyperV.PowerShell.OnOffState]::On)
+                {
+                    Write-Information ($Strings.WARN_SECURE_BOOT_TITLE -f $Vm.Name)
+                    Write-Information $Strings.WARN_SECURE_BOOT_TEXT
+                }
             }
 
             # Check Checkpoint settings.
