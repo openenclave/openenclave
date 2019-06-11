@@ -6,8 +6,8 @@
 import * as vscode from "vscode";
 import { Constants } from "./common/constants";
 import { ErrorData } from "./common/ErrorData";
+import { Reporter, reporter } from "./common/Reporter";
 import { RequirementsChecker } from "./common/requirementsChecker";
-import { TelemetryClient } from "./common/telemetryClient";
 import { UserCancelledError } from "./common/userCancelledError";
 import { OpenEnclaveManager } from "./openenclave/openEnclaveManager";
 
@@ -15,7 +15,9 @@ import { OpenEnclaveManager } from "./openenclave/openEnclaveManager";
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-    TelemetryClient.sendEvent("extensionActivated: " + Constants.ExtensionId);
+    context.subscriptions.push(new Reporter(context));
+
+    reporter.sendTelemetryEvent(`extensionActivated`);
     const outputChannel: vscode.OutputChannel = vscode.window.createOutputChannel(Constants.openEnclaveDisplayName);
     const openEnclaveManager = new OpenEnclaveManager(context);
 

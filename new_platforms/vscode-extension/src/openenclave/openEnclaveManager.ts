@@ -10,8 +10,8 @@ import * as zlib from "zlib";
 import { AcrManager } from "../common/acrManager";
 import { Constants } from "../common/constants";
 import { GitHelper } from "../common/gitHelper";
+import { reporter } from "../common/Reporter";
 import { RequirementsChecker } from "../common/requirementsChecker";
-import { TelemetryClient } from "../common/telemetryClient";
 import { UserCancelledError } from "../common/userCancelledError";
 import { Utility } from "../common/utility";
 
@@ -102,7 +102,7 @@ export class OpenEnclaveManager {
                     createEdgeSolution = (oeProjectStyle === Constants.edgeProjectType);
                 }
 
-                TelemetryClient.sendEvent(`msiot-vscode-openenclave.newSolution.${createEdgeSolution ? "edge" : "standalone"}`);
+                reporter.sendTelemetryEvent(`newSolution.${createEdgeSolution ? "edge" : "standalone"}`);
 
                 // Prompt user for solution name
                 const openEnclaveName: string | undefined =
@@ -208,7 +208,7 @@ export class OpenEnclaveManager {
                 resolve(openEnclaveFolder);
 
             } catch (error) {
-                TelemetryClient.sendEvent(`msiot-vscode-openenclave.newSolution.Failure`, {error: (error) ? error.message : "unknown"});
+                reporter.sendTelemetryEvent(`newSolution.Failure`, {error: (error) ? error.message : "unknown"});
                 this.progressAndOutput("Failed to create new Open Enclave solution", progress, outputChannel);
                 reject(error);
             }
