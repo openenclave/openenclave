@@ -21,17 +21,30 @@ On the Windows development machine:
 
 You will also need a build machine running Ubuntu 16.04 or Ubuntu 18.04.  This can be
 a remote Linux machine, but can simply be a "Generation 2" Linux VM on the Windows
-development machine contigured as follows:
+development machine configured as follows:
 
-- Using [vmadmin.wsf](https://microsoft.visualstudio.com/OS/_git/os?path=%2Fvm%2Ftest%2Fperf%2Fvmphu%2Fscripts%2Fvmadmin%2Fvmadmin.wsf&version=GBofficial%2Frsmaster), run "vmadmin.wsf setsgx <vmname> 256" as Administrator
+1. Download an ISO for Ubuntu [18.04](http://releases.ubuntu.com/18.04/) or [16.04](http://releases.ubuntu.com/16.04/).
+   A "Server install image" is sufficient.
+1. Create a VM as follows.  Open "Hyper-V Manager", and do Action -> New -> Virtual Machine....  
+   - On the Specify Generation screen, choose Generation 2.
+   - On the Configure Networking screen, choose Default Switch to ensure you can connect to it with a debugger.
+   - On the Installation Options screen, choose the ISO file you downloaded.
+   - All other options can be either left as the defaults or changed as desired.
+1. Disable Secure Boot as follows.  In Hyper-V Manager, right click on the VM you created while it is stopped,
+  and select Settings... -> Security and uncheck Enable Secure Boot.
+1. Uncheck "Enable checkpoints" under the VM's Settings -> Checkpoints.
+1. Using [vmadmin.wsf](https://microsoft.visualstudio.com/OS/_git/os?path=%2Fvm%2Ftest%2Fperf%2Fvmphu%2Fscripts%2Fvmadmin%2Fvmadmin.wsf&version=GBofficial%2Frsmaster), run "vmadmin.wsf setsgx <vmname> 32" as Administrator,
+   to configure SGX to use 32MB of memory. A larger number is also fine.
+1. Start the VM and connect to it (right click, Connect...), finish the initial setup, reboot, and login.
+   - Enable OpenSSH server installation when given the choice during setup.
+   - All other options are sufficient to leave as the defaults or changed as desired.
 
 On the Linux build machine or VM:
 
-- The Open Enclave SDK.  See [installation instructions for Ubuntu 16.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md)
-  or [installation instructions for Ubuntu 18.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md)
--- Note: a recent issue was observed where the SGX driver installed on 18.04 as above
-   did not work, and as a workaround, one needed to also build from source using the instructions
-   [here](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/Contributors/building_oe_sdk.md)
+- Install the Open Enclave SDK.  See [installation instructions for Ubuntu 16.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md)
+  or [installation instructions for Ubuntu 18.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md), except that step 2 on that page is outdated and result
+  in SGX not working.  Instead, replace step 2 with the instructions
+   [here](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/Contributors/SGX1GettingStarted.md).
 
 Finally, configure Visual Studio with the address (or name) of your Linux build machine,
 via Tools -> Options -> Cross Platform -> Connection Manager -> Add.
