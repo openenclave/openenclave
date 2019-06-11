@@ -40,8 +40,6 @@ development machine configured as follows:
    Import-Module Drive:\Path\to\VirtualMachineSgxSettings.psm1
    Set-VMSgx -VmName MyVM -IsSgxEnabled $True -SgxSize 32
 ```
-1. Using [vmadmin.wsf](https://microsoft.visualstudio.com/OS/_git/os?path=%2Fvm%2Ftest%2Fperf%2Fvmphu%2Fscripts%2Fvmadmin%2Fvmadmin.wsf&version=GBofficial%2Frsmaster), run "vmadmin.wsf setsgx <vmname> 32" as Administrator,
-   to configure SGX to use 32MB of memory. A larger number is also fine.
 1. Start the VM and connect to it (right click, Connect...), finish the initial setup, reboot, and login.
    - Enable OpenSSH server installation when given the choice during setup.
    - All other options are sufficient to leave as the defaults or changed as desired.
@@ -49,7 +47,7 @@ development machine configured as follows:
 On the Linux build machine or VM:
 
 - Install the Open Enclave SDK.  See [installation instructions for Ubuntu 16.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md)
-  or [installation instructions for Ubuntu 18.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md), except that step 2 on that page is outdated and result
+  or [installation instructions for Ubuntu 18.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md), except that step 2 on those pages is outdated and result
   in SGX not working.  Instead, replace step 2 with the instructions
    [here](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/Contributors/SGX1GettingStarted.md).
 
@@ -94,9 +92,9 @@ We will now walk through the process of creating a C/C++ application that uses a
    ecall\_DoWorkInEnclave(), and also contains a sample implementation of a ocall\_DoWorkInHost()
    method that just prints a message when called.  Although the app could be compiled and run
    at this point, sample\_enclave\_call() is still not called from anywhere.
-7. Open the applications main.cpp (or if you are starting from another existing application,
+7. Open the application's main.cpp (or if you are starting from another existing application,
    whatever file you want to invoke enclave code from), and add a call to sample\_enclave\_call().
-   For example, update the main.cpp to look like this, where the extern C declaration is needed
+   For example, update the main.cpp file to look like this, where the extern C declaration is needed
    because main.cpp is a C++ file whereas the _YourEnclaveProjectName_\_host.c file is a C file:
 ```C
 #include <cstdio>
