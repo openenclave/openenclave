@@ -102,7 +102,7 @@ Function Get-VMSgx
     [CmdletBinding()]
     Param
     (
-        # Name of the VM to get the SGX settings for..
+        # Name of the VM to get the SGX settings for.
         [Parameter(Mandatory=$True, ParameterSetName="ByName", Position=0)]
         [ValidateNotNullOrEmpty()]
         [String]$VmName,
@@ -162,7 +162,7 @@ Function Set-VMSgx
 
         # Ignore warnings.
         [Parameter()]
-        [Switch]$Force
+        [Switch]$Force = $False
     )
 
     Process
