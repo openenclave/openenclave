@@ -195,7 +195,6 @@ Function Set-VMSgx
                 Write-Warning ($Strings.WARN_GEN2_TITLE -f $Vm.Name)
                 Write-Warning $Strings.WARN_GEN2_TEXT
             }
-
     
             # Check Secure Boot settings.
             If ($Vm.Generation -ge 2)
