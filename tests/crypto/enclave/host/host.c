@@ -44,6 +44,15 @@ int f_open(char* path, int flags, int mode)
 #endif
 }
 
+int f_openat(int dirfd, char* path, int flags, int mode)
+{
+#if defined(_WIN32)
+    return -1;
+#else
+    return openat(dirfd, path, flags, mode);
+#endif
+}
+
 int f_read(int fd, char* ptr, size_t len)
 {
 #if defined(_WIN32)
@@ -76,7 +85,7 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     if ((result = oe_create_crypto_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+             argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave)) != OE_OK)
     {
         oe_put_err("oe_create_crypto_enclave(): result=%u", result);
     }

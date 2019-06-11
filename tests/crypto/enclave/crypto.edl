@@ -12,6 +12,12 @@ enclave {
             int flags,
             int mode);
 
+        int f_openat(
+            int dirfd,
+            [in, string]char* path,
+            int flags,
+            int mode);
+
         int f_read(
             int fd,
             [in, out, size=len] char* ptr,
