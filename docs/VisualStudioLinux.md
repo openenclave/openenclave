@@ -7,9 +7,7 @@ Studio Code on a development machine running either Windows or Linux, see the
 
 ## Prerequisites
 
-To develop Linux applications using a Windows development machine, you will need the following.
-
-On the Windows development machine:
+To develop Linux applications using a Windows development machine, you will need the following:
 
 - [Visual Studio](https://visualstudio.microsoft.com/downloads/) 2017 or 2019
   (Community edition, or any other edition)
