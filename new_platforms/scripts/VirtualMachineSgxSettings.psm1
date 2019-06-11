@@ -153,7 +153,7 @@ Function Set-VMSgx {
 
         # Ignore warnings.
         [Parameter()]
-        [Switch]$Force = $False
+        [Switch]$Force
     )
 
     Process {
