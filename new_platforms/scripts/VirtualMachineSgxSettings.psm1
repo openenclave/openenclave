@@ -107,11 +107,14 @@ Function Get-VMSgxManagementService() {
 
         - IsSgxEnabled: Whether SGX virtualization is enabled for the given
             virtual machine.
+
         - SgxSize: The size, in MB, of the host's SGX EPC memory the given
             virtual machine is allowed to use.
+
         - SgxLaunchControlDefault: The default SGX Launch Control Mode for the
             given virtual machine, if the host supports Flexible Launch Control
             (FLC) mode.
+
         - SgxLaunchControlMode: The current SGX Launch Control Mode for the
             given virtual machine, if the host supports Flexible Launch Control
             (FLC) mode.
@@ -181,11 +184,14 @@ Function Get-VMSgx {
 
         - IsSgxEnabled: Whether SGX virtualization is enabled for the given
             virtual machine.
+
         - SgxSize: The size, in MB, of the host's SGX EPC memory the given
             virtual machine is allowed to use.
+
         - SgxLaunchControlDefault: The default SGX Launch Control Mode for the
             given virtual machine, if the host supports Flexible Launch Control
             (FLC) mode.
+
         - SgxLaunchControlMode: The current SGX Launch Control Mode for the
             given virtual machine, if the host supports Flexible Launch Control
             (FLC) mode.
