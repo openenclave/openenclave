@@ -92,6 +92,43 @@ Function Get-VMSgxManagementService() {
 ### Get-VMSgx Cmdlet
 ### -----------------------------------
 
+<#
+    .SYNOPSIS
+        Retrieves the Hyper-V virtualization settings for Intel Software Guard
+        Extensions (SGX).
+
+    .Description
+        Intel Software Guard Extensions (SGX) provide developers the ability to
+        run code inside a Trusted Execution Environment (TEE) known as an
+        enclave. Hyper-V provides system administrators the ability to
+        virtualize SGX resources and expose this ability to guests on an
+        SGX-capable host. This function retrieves the active settings for SGX
+        virtualization for the given virtual machine.
+
+    .Parameter VmName
+        Name of the virtual machine for which to retrieve the active SGX
+        virtualization settings.
+
+    .Parameter Vm
+        The virtual machine object for which to retrieve the active SGX
+        virtualization settings.
+
+    .Outputs
+        An object containing four fields:
+        - IsSgxEnabled: Whether SGX virtualization is enabled for the given
+            virtual machine.
+        - SgxSize: The size, in MB, of the host's SGX EPC memory the given
+            virtual machine is allowed to use.
+        - SgxLaunchControlDefault: The default SGX Launch Control Mode for the
+            given virtual machine, if the host supports Flexible Launch Control
+            (FLC) mode.
+        - SgxLaunchControlMode: The current SGX Launch Control Mode for the
+            given virtual machine, if the host supports Flexible Launch Control
+            (FLC) mode.
+
+    .Link
+        https://openenclave.io/
+#>
 Function Get-VMSgx {
     [CmdletBinding()]
     Param
@@ -121,6 +158,58 @@ Function Get-VMSgx {
 ### Set-VMSgx Cmdlet
 ### -----------------------------------
 
+<#
+    .SYNOPSIS
+        Modifies the Hyper-V virtualization settings for Intel Software Guard
+        Extensions (SGX).
+
+    .Description
+        Intel Software Guard Extensions (SGX) provide developers the ability to
+        run code inside a Trusted Execution Environment (TEE) known as an
+        enclave. Hyper-V provides system administrators the ability to
+        virtualize SGX resources and expose this ability to guests on an
+        SGX-capable host. This function modifies the settings for SGX
+        virtualization for the given virtual machine.
+
+    .Parameter VmName
+        Name of the virtual machine for which to modify the SGX virtualization
+        settings.
+
+    .Parameter Vm
+        The virtual machine object for which to modify the SGX virtualization
+        settings.
+
+    .Parameter IsSgxEnabled
+        Whether SGX virtualization is enabled for the given virtual machine.
+
+    .Parameter SgxSize
+        The size, in MB, of the host's SGX EPC memory the given virtual machine
+        is allowed to use.
+
+    .Parameter SgxLaunchControlDefault
+        The default SGX Launch Control Mode for the given virtual machine, if
+        the host supports Flexible Launch Control (FLC) mode.
+
+    .Parameter SgxLaunchControlMode
+        The current SGX Launch Control Mode for the given virtual machine, if
+        the host supports Flexible Launch Control (FLC) mode.
+
+    .Outputs
+        An object containing four fields:
+        - IsSgxEnabled: Whether SGX virtualization is enabled for the given
+            virtual machine.
+        - SgxSize: The size, in MB, of the host's SGX EPC memory the given
+            virtual machine is allowed to use.
+        - SgxLaunchControlDefault: The default SGX Launch Control Mode for the
+            given virtual machine, if the host supports Flexible Launch Control
+            (FLC) mode.
+        - SgxLaunchControlMode: The current SGX Launch Control Mode for the
+            given virtual machine, if the host supports Flexible Launch Control
+            (FLC) mode.
+
+    .Link
+        https://openenclave.io/
+#>
 Function Set-VMSgx {
     [CmdletBinding()]
     Param
@@ -181,7 +270,7 @@ Function Set-VMSgx {
                 Write-Warning ($Strings.WARN_GEN2_TITLE -f $Vm.Name)
                 Write-Warning $Strings.WARN_GEN2_TEXT
             }
-    
+
             # Check Secure Boot settings.
             If ($Vm.Generation -ge 2) {
                 $Fw = $Vm | Get-VMFirmware
