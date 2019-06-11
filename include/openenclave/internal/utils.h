@@ -34,6 +34,18 @@ OE_INLINE uint64_t oe_round_u64_to_pow2(uint64_t n)
     return x + 1;
 }
 
+OE_INLINE bool oe_is_pow2(size_t n)
+{
+    return (n != 0) && ((n & (n - 1)) == 0);
+}
+
+OE_INLINE bool oe_is_ptrsize_multiple(size_t n)
+{
+    size_t d = n / sizeof(void*);
+    size_t r = n % sizeof(void*);
+    return (d >= 1 && r == 0);
+}
+
 OE_INLINE unsigned int oe_checksum(const void* data, size_t size)
 {
     const unsigned char* p = (const unsigned char*)data;

@@ -10,7 +10,7 @@
         }                                                  \
     }
 
-#define TA_FLAGS (TA_FLAG_MULTI_SESSION | TA_FLAG_EXEC_DDR)
+#define TA_FLAGS (TA_FLAG_EXEC_DDR)
 #define TA_STACK_SIZE (12 * 1024)      /* 12 KB */
 #define TA_DATA_SIZE (1 * 1024 * 1024) /* 1 MB */
 
