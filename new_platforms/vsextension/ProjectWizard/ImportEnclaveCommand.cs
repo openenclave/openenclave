@@ -272,6 +272,16 @@ namespace OpenEnclaveSDK
             return null;
         }
 
+        private bool IsEnclave(Project project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var vcProject = project.Object as VCProject;
+            VCConfiguration vcConfig = vcProject.ActiveConfiguration;
+            string oeType = vcConfig.Evaluate("$(OEType)");
+            return (oeType == "Enclave");
+        }
+
         /// <summary>
         /// This function is the callback used to execute the command when the menu item is clicked.
         /// See the constructor to see how the menu item is associated with this function using
@@ -286,6 +296,12 @@ namespace OpenEnclaveSDK
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
             Project project = GetActiveProject(dte);
             var vcProject = project.Object as VCProject;
+
+            if (IsEnclave(project))
+            {
+                MessageBox.Show("The project to import into must not be another enclave");
+                return;
+            }
 
             var filePath = string.Empty;
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
