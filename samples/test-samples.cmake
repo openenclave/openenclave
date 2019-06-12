@@ -24,7 +24,7 @@ else ()
   # These tests can only run with SGX-FLC, meaning they were built
   # against SGX.
   if (USE_LIBSGX)
-    list(APPEND SAMPLES_LIST local_attestation remote_attestation)
+    list(APPEND SAMPLES_LIST local_attestation remote_attestation tls_between_enclaves tls_between_host_enclave)
   endif ()
 endif ()
 
