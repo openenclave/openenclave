@@ -126,3 +126,6 @@ define new APIs between the enclave and the application:
 2. Edit the _YourProjectName_\_ecalls.c file, and fill in implementations of the ECALL(s) you added.
 3. Edit your application sources and fill in implementations of the OCALL(s) you added.
 
+## Known Issues
+
+- Building Trusted Applications for TrustZone is not yet supported.
