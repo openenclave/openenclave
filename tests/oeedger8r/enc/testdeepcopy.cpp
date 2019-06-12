@@ -81,6 +81,30 @@ void deepcopy_countsizeparam(CountSizeParamStruct* s)
     OE_TEST(oe_is_within_enclave(s->ptr, s->count * s->size));
 }
 
+// Assert that the struct is deep-copied such that `s->ptr` has a copy
+// of `s->count * s->size` bytes of `data` in enclave memory, not just
+// `s->count` copies.
+void deepcopy_countsizeparam_size(CountSizeParamStruct* s)
+{
+    OE_TEST(s->count == 1);
+    OE_TEST(s->size == (4 * sizeof(uint64_t)));
+    for (size_t i = 0; i < 4; ++i)
+        OE_TEST(s->ptr[i] == data[i]);
+    OE_TEST(oe_is_within_enclave(s->ptr, (4 * sizeof(uint64_t))));
+}
+
+// Assert that the struct is deep-copied such that `s->ptr` has a copy
+// of `s->count * s->size` bytes of `data` in enclave memory, not just
+// `s->size` bytes.
+void deepcopy_countsizeparam_count(CountSizeParamStruct* s)
+{
+    OE_TEST(s->count == 4);
+    OE_TEST(s->size == sizeof(uint64_t));
+    for (size_t i = 0; i < 4; ++i)
+        OE_TEST(s->ptr[i] == data[i]);
+    OE_TEST(oe_is_within_enclave(s->ptr, (4 * sizeof(uint64_t))));
+}
+
 // Assert that the struct array is deep-copied such that each
 // element's `ptr` has a copy of its `count` elements of `data` in
 // enclave memory.
