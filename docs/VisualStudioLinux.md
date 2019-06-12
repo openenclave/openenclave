@@ -12,7 +12,7 @@ To develop Linux applications using a Windows development machine, you will need
 - [Visual Studio](https://visualstudio.microsoft.com/downloads/) 2017 or 2019
   (Community edition, or any other edition)
 - ["Linux development with C++" Visual Studio workload](https://devblogs.microsoft.com/cppblog/linux-development-with-c-in-visual-studio/),
-  installable via Tools -> Get Tools and Features (on VS2017) or Features (on VS2019) ->
+  installable via Tools -> Get Tools and Features (on VS2017) or Tools (on VS2019) ->
   Workloads -> Other Toolsets -> Linux Development with C++
 - [Open Enclave Wizard - Preview](https://marketplace.visualstudio.com/items?itemName=MS-TCPS.OpenEnclaveSDK-VSIX)
   Visual Studio extension, v0.5 or later.  The extension can be installed via that marketplace link, or from within
