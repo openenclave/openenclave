@@ -22,7 +22,6 @@
 enclave {
 
     include "openenclave/internal/syscall/netdb.h"
-    include "openenclave/internal/syscall/sys/epoll.h"
     include "openenclave/internal/syscall/sys/poll.h"
     include "openenclave/internal/syscall/sys/socket.h"
     include "openenclave/internal/syscall/sys/utsname.h"
@@ -347,35 +346,6 @@ enclave {
             [out, size=servlen] char* serv,
             oe_socklen_t servlen,
             int flags)
-            propagate_errno;
-
-        oe_host_fd_t oe_syscall_epoll_create1_ocall(
-            int flags)
-            propagate_errno;
-
-        int oe_syscall_epoll_wait_ocall(
-            int64_t epfd,
-            [out, count=maxevents] struct oe_epoll_event *events,
-            unsigned int maxevents,
-            int timeout)
-            propagate_errno;
-
-        int oe_syscall_epoll_wake_ocall()
-            propagate_errno;
-
-        int oe_syscall_epoll_ctl_ocall(
-            int64_t epfd,
-            int op,
-            int64_t fd,
-            [in, count=1] struct oe_epoll_event* event)
-            propagate_errno;
-
-        int oe_syscall_epoll_close_ocall(
-            oe_host_fd_t epfd)
-            propagate_errno;
-
-        int oe_syscall_shutdown_polling_device_ocall(
-            oe_host_fd_t fd)
             propagate_errno;
 
         int oe_syscall_poll_ocall(

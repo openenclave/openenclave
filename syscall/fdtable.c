@@ -188,12 +188,6 @@ static void _assert_fd(oe_fd_t* desc)
             oe_assert(desc->ops.socket.getsockname);
             break;
         }
-        case OE_FD_TYPE_EPOLL:
-        {
-            oe_assert(desc->ops.epoll.epoll_ctl);
-            oe_assert(desc->ops.epoll.epoll_wait);
-            break;
-        }
     }
 }
 #endif /* !defined(NDEBUG) */

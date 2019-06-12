@@ -523,7 +523,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/search/lsearch.c
     ${MUSLSRC}/select/select.c
     ${MUSLSRC}/select/poll.c
-    ${MUSLSRC}/linux/epoll.c
     ${MUSLSRC}/stat/mkdir.c
     ${MUSLSRC}/search/tdelete.c
     ${MUSLSRC}/search/tfind.c

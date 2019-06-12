@@ -13,8 +13,6 @@
 #include <openenclave/internal/syscall/dirent.h>
 #include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/internal/syscall/raise.h>
-#include <openenclave/internal/syscall/signal.h>
-#include <openenclave/internal/syscall/sys/epoll.h>
 #include <openenclave/internal/syscall/sys/ioctl.h>
 #include <openenclave/internal/syscall/sys/mount.h>
 #include <openenclave/internal/syscall/sys/poll.h>
@@ -704,50 +702,6 @@ static long _syscall(
             }
 
             ret = oe_poll(fds, nfds, timeout);
-            goto done;
-        }
-#if defined(OE_SYS_epoll_create)
-        case OE_SYS_epoll_create:
-        {
-            int size = (int)arg1;
-            ret = oe_epoll_create(size);
-            goto done;
-        }
-#endif
-        case OE_SYS_epoll_create1:
-        {
-            int flags = (int)arg1;
-            ret = oe_epoll_create1(flags);
-            goto done;
-        }
-#if defined(OE_SYS_epoll_wait)
-        case OE_SYS_epoll_wait:
-        {
-            int epfd = (int)arg1;
-            struct oe_epoll_event* events = (struct oe_epoll_event*)arg2;
-            int maxevents = (int)arg3;
-            int timeout = (int)arg4;
-            ret = oe_epoll_wait(epfd, events, maxevents, timeout);
-            goto done;
-        }
-#endif
-        case OE_SYS_epoll_pwait:
-        {
-            int epfd = (int)arg1;
-            struct oe_epoll_event* events = (struct oe_epoll_event*)arg2;
-            int maxevents = (int)arg3;
-            int timeout = (int)arg4;
-            const oe_sigset_t* sigmask = (const oe_sigset_t*)arg5;
-            ret = oe_epoll_pwait(epfd, events, maxevents, timeout, sigmask);
-            goto done;
-        }
-        case OE_SYS_epoll_ctl:
-        {
-            int epfd = (int)arg1;
-            int op = (int)arg2;
-            int fd = (int)arg3;
-            struct oe_epoll_event* event = (struct oe_epoll_event*)arg4;
-            ret = oe_epoll_ctl(epfd, op, fd, event);
             goto done;
         }
         case OE_SYS_exit_group:

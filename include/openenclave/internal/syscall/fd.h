@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/syscall/sys/epoll.h>
 #include <openenclave/internal/syscall/sys/socket.h>
 #include <openenclave/internal/syscall/sys/uio.h>
 #include <openenclave/internal/syscall/types.h>
@@ -19,7 +18,6 @@ typedef enum _oe_fd_type
     OE_FD_TYPE_ANY,
     OE_FD_TYPE_FILE,
     OE_FD_TYPE_SOCKET,
-    OE_FD_TYPE_EPOLL,
 } oe_fd_type_t;
 
 typedef struct _oe_fd oe_fd_t;
@@ -131,25 +129,6 @@ typedef struct _oe_socket_ops
         oe_socklen_t* addrlen);
 } oe_socket_ops_t;
 
-/* epoll operations. */
-typedef struct _oe_epoll_ops
-{
-    /* Inherited operations. */
-    oe_fd_ops_t fd;
-
-    int (*epoll_ctl)(
-        oe_fd_t* epoll,
-        int op,
-        int fd,
-        struct oe_epoll_event* event);
-
-    int (*epoll_wait)(
-        oe_fd_t* epoll,
-        struct oe_epoll_event* events,
-        int maxevents,
-        int timeout);
-} oe_epoll_ops_t;
-
 struct _oe_fd
 {
     oe_fd_type_t type;
@@ -157,7 +136,6 @@ struct _oe_fd
         oe_fd_ops_t fd;
         oe_file_ops_t file;
         oe_socket_ops_t socket;
-        oe_epoll_ops_t epoll;
     } ops;
 };
 
