@@ -33,6 +33,7 @@ development machine configured as follows:
 1. Disable Secure Boot as follows.  In Hyper-V Manager, right click on the VM you created while it is stopped,
   and select Settings... -> Security and uncheck Enable Secure Boot.
 1. Uncheck "Enable checkpoints" under the VM's Settings -> Checkpoints, since SGX will not work with checkpoints.
+1. If planning to run software on SGX-capable hardware, check if the remote Linux machine or the Windows host of the Linux VM is SGX-capable (instructions [here](https://software.intel.com/en-us/articles/properly-detecting-intel-software-guard-extensions-in-your-applications)) and has SGX configured (instructions [here](https://software.intel.com/en-us/articles/getting-started-with-sgx-sdk-for-windows)). Alternatively, run software in simulation and omit the next step "Enable SGX for the VM".
 1. Enable SGX for the VM as follows (this cannot be done from Hyper-V Manager):
    - Download [VirtualMachineSgxSettings.psm1](https://raw.githubusercontent.com/microsoft/openenclave/f28cedce63be9673e20fe54563987189f2565637/new_platforms/scripts/VirtualMachineSgxSettings.psm1)
    - Open an elevated PowerShell window (e.g., type "powershell" and click Run as Administrator)
