@@ -17,7 +17,7 @@ To develop Linux applications using a Windows development machine, you will need
 - [Open Enclave Wizard - Preview](https://marketplace.visualstudio.com/items?itemName=MS-TCPS.OpenEnclaveSDK-VSIX)
   Visual Studio extension, v0.5 or later.  The extension can be installed via that marketplace link, or from within
   Visual Studio.  (For VS2017, do Tools -> Extensions and Updates -> search for "enclave".  For VS2019,
-  do Extensions -> Manage Extensions -> search for "enclave.)
+  do Extensions -> Manage Extensions -> search for "enclave".)
 
 You will also need a build machine running Ubuntu 16.04 (64-bit) or Ubuntu 18.04.  This can be
 a remote Linux machine, but can simply be a "Generation 2" Linux VM on the Windows
@@ -46,7 +46,7 @@ development machine configured as follows:
    - Enable OpenSSH server installation when given the choice during setup.
    - All other options are sufficient to leave as the defaults or changed as desired.
 
-On the Linux build machine or VM:
+On the Linux build machine or ssh into the VM:
 
 - Install the Open Enclave SDK.  See [installation instructions for Ubuntu 16.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md)
   or [installation instructions for Ubuntu 18.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md), except that step 2 on those pages is outdated and result
