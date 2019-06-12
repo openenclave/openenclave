@@ -37,11 +37,11 @@ development machine configured as follows:
    - Download [VirtualMachineSgxSettings.psm1](https://raw.githubusercontent.com/microsoft/openenclave/f28cedce63be9673e20fe54563987189f2565637/new_platforms/scripts/VirtualMachineSgxSettings.psm1)
    - Open an elevated PowerShell window (e.g., type "powershell" and click Run as Administrator)
    - Invoke the following commands, using the path to where you downloaded the file, and replacing MyVM with your VM name:
-```
+   ```
    Set-ExecutionPolicy Bypass -Scope Process
    Import-Module Drive:\Path\to\VirtualMachineSgxSettings.psm1
    Set-VMSgx -VmName MyVM -IsSgxEnabled $True -SgxSize 32
-```
+   ```
 1. Start the VM and connect to it (right click, Connect...), finish the initial setup, reboot, and login.
    - Enable OpenSSH server installation when given the choice during setup.
    - All other options are sufficient to leave as the defaults or changed as desired.
