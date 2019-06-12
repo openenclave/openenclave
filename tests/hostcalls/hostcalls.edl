@@ -11,20 +11,20 @@ enclave {
     trusted {
         public void test_host_malloc(
             size_t in_size,
-            [user_check] void_ptr* out_ptr);
+            [out] void_ptr* out_ptr);
         public void test_host_calloc(
             size_t in_num,
             size_t in_size,
-            [user_check] void_ptr* out_ptr);
+            [out] void_ptr* out_ptr);
         public void test_host_realloc(
             [user_check, isptr] void_ptr in_ptr,
             size_t old_size,
             size_t new_size,
-            [user_check] void_ptr* out_ptr);
+            [out] void_ptr* out_ptr);
         public void test_host_strndup(
-            [user_check] const char* in_str,
+            [in, size=in_size] const char* in_str,
             size_t in_size,
-            [user_check] char** out_str);
+            [out] char** out_str);
         public void test_host_free(
             [user_check, isptr] void_ptr in_ptr);
     };
