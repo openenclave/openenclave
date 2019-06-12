@@ -84,6 +84,7 @@ if (OE_SGX)
     sgx/sgxload.c
     sgx/sgxmeasure.c
     sgx/sgxquote.c
+    sgx/sgxquoteprovider.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
     sgx/traceh.c)
@@ -97,7 +98,7 @@ if (OE_SGX)
       sgx/linux/entersim.S
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
-      sgx/linux/sgxquoteprovider.c
+      sgx/linux/sgxquoteproviderloader.c
       sgx/linux/xstate.c)
   else()
     list(APPEND PLATFORM_SRC
@@ -106,6 +107,7 @@ if (OE_SGX)
       sgx/windows/enter.asm
       sgx/windows/entersim.asm
       sgx/windows/exception.c
+      sgx/windows/sgxquoteproviderloader.c
       sgx/windows/xstate.c)
   endif()
 
@@ -121,6 +123,7 @@ endif()
 add_library(oehost STATIC
   ../common/datetime.c
   ../common/kdf.c
+  ../common/lockless_queue.c
   ../common/safecrt.c
   asym_keys.c
   dupenv.c
@@ -156,7 +159,7 @@ if (UNIX)
     add_library(crypto SHARED IMPORTED)
     set_target_properties(crypto PROPERTIES IMPORTED_LOCATION ${CRYPTO_LIB})
   endif ()
-  
+
   find_library(DL_LIB NAMES dl)
   if(NOT DL_LIB)
     message(FATAL_ERROR "-- Looking for dl library - not found")
@@ -182,24 +185,40 @@ target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 # TODO: Handle Trust Zone etc.
 if (USE_LIBSGX)
-  find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
-  find_library(LIBSGX_QE NAMES sgx_dcap_ql)
-  find_library(LIBSGX_URTS NAMES sgx_urts)
-
-  if (NOT LIBSGX_COMMON OR NOT LIBSGX_QE OR NOT LIBSGX_URTS)
-    message(FATAL_ERROR "No SGX libraries found, aborting! Set -DUSE_LIBSGX=OFF to ignore.")
+  if (WIN32)
+    set(LIBPATHS
+      ${CMAKE_SOURCE_DIR}/prereqs/nuget/EnclaveCommonAPI/lib/native/x64-Release
+      ${CMAKE_SOURCE_DIR}/prereqs/nuget/DCAP_Components/build/lib/native/Libraries)
+    set(INCPATHS
+      "${CMAKE_SOURCE_DIR}/prereqs/nuget/EnclaveCommonAPI/Header Files"
+      "${CMAKE_SOURCE_DIR}/prereqs/nuget/DCAP_Components/build/Header Files")
+    set(WINSYSLOCATION
+       $ENV{WINDIR}/System32)
   endif ()
 
+  find_library(LIBSGX_COMMON NAMES sgx_enclave_common PATHS ${LIBPATHS})
+  find_library(LIBSGX_QE NAMES sgx_dcap_ql PATHS ${LIBPATHS})
+  if (NOT LIBSGX_COMMON OR NOT LIBSGX_QE)
+    message(FATAL_ERROR "No SGX libraries found, aborting! Set -DUSE_LIBSGX=OFF to ignore.")
+  endif ()
   add_library(sgx_enclave_common SHARED IMPORTED)
-  set_target_properties(sgx_enclave_common PROPERTIES IMPORTED_LOCATION ${LIBSGX_COMMON})
-
   add_library(sgx_dcap_ql SHARED IMPORTED)
-  set_target_properties(sgx_dcap_ql PROPERTIES IMPORTED_LOCATION ${LIBSGX_QE})
 
-  add_library(sgx_urts SHARED IMPORTED)
-  set_target_properties(sgx_urts PROPERTIES IMPORTED_LOCATION ${LIBSGX_URTS})
+  if (UNIX)
+    set_target_properties(sgx_enclave_common PROPERTIES IMPORTED_LOCATION ${LIBSGX_COMMON})
+    set_target_properties(sgx_dcap_ql PROPERTIES IMPORTED_LOCATION ${LIBSGX_QE})
+  elseif (WIN32)
+    set_target_properties(sgx_enclave_common PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${INCPATHS}"
+      IMPORTED_LOCATION ${WINSYSLOCATION}
+      IMPORTED_IMPLIB ${LIBSGX_COMMON})
+    set_target_properties(sgx_dcap_ql PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${INCPATHS}"
+      IMPORTED_LOCATION ${WINSYSLOCATION}
+      IMPORTED_IMPLIB ${LIBSGX_QE})
+  endif ()
 
-  target_link_libraries(oehost PUBLIC sgx_enclave_common sgx_dcap_ql sgx_urts)
+  target_link_libraries(oehost PUBLIC sgx_enclave_common sgx_dcap_ql)
   target_compile_definitions(oehost PUBLIC OE_USE_LIBSGX)
 endif ()
 

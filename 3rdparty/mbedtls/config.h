@@ -1917,7 +1917,7 @@
  * This module provides debugging functions.
  */
 // Open Enclave: Enabled conditionally
-#cmakedefine MBEDTLS_DEBUG_C
+#define MBEDTLS_DEBUG_C
 
 /**
  * \def MBEDTLS_DES_C

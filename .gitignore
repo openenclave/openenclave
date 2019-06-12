@@ -20,5 +20,6 @@ prereqs/aesm/dynamic-application-loader-host-interface/
 prereqs/aesm/linux-sgx/
 prereqs/isgx/linux-sgx-driver/
 prereqs/dcap/*.deb
+prereqs/nuget/*
 prereqs/packages/.packages
 prereqs/sgx-driver/*.bin
