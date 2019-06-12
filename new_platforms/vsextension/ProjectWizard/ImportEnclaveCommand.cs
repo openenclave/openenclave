@@ -299,7 +299,7 @@ namespace OpenEnclaveSDK
 
             if (IsEnclave(project))
             {
-                MessageBox.Show("The project to import into must not be another enclave");
+                MessageBox.Show("The project to import into must not be another enclave.");
                 return;
             }
 
