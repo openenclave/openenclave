@@ -14,6 +14,7 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void))
     if (!once)
         return OE_INVALID_PARAMETER;
 
+    oe_once_t status = *once;
     /* Double checked locking (DCLP). */
     /* DCLP Acquire barrier. */
     OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
@@ -25,7 +26,7 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void))
       function invocation to complete. Otherwise, this thread can try to take
       ownership of invoking the function
     */
-    if (*once != FUNC_INVOKED)
+    if (status != FUNC_INVOKED)
     {
         /*
           Multiple threads could reach here simultaneously after checking
