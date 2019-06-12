@@ -19,6 +19,7 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/dirname.c
     3rdparty/musl/libc-test/src/functional/env.c
     3rdparty/musl/libc-test/src/functional/fdopen.c
+    3rdparty/musl/libc-test/src/functional/fwscanf.c
     3rdparty/musl/libc-test/src/functional/fnmatch.c
     3rdparty/musl/libc-test/src/functional/inet_pton.c
     3rdparty/musl/libc-test/src/functional/qsort.c
@@ -278,9 +279,7 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/crypt.c
         3rdparty/musl/libc-test/src/functional/dlopen.c
         3rdparty/musl/libc-test/src/functional/fcntl.c
-        3rdparty/musl/libc-test/src/functional/fdopen.c
-        3rdparty/musl/libc-test/src/functional/fscanf.c 
-        3rdparty/musl/libc-test/src/functional/fwscanf.c
+        3rdparty/musl/libc-test/src/functional/fscanf.c   # uses pipe
         3rdparty/musl/libc-test/src/functional/ipc_msg.c
         3rdparty/musl/libc-test/src/functional/ipc_sem.c
         3rdparty/musl/libc-test/src/functional/ipc_shm.c
@@ -298,7 +297,7 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/sem_init.c
         3rdparty/musl/libc-test/src/functional/sem_open.c
         3rdparty/musl/libc-test/src/functional/setjmp.c
-        3rdparty/musl/libc-test/src/functional/spawn.c
+        3rdparty/musl/libc-test/src/functional/spawn.c   # uses pipe
         3rdparty/musl/libc-test/src/functional/stat.c
         3rdparty/musl/libc-test/src/functional/strftime.c
         3rdparty/musl/libc-test/src/functional/strptime.c
@@ -307,7 +306,7 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/tls_init.c
         3rdparty/musl/libc-test/src/functional/tls_init_dlopen.c
         3rdparty/musl/libc-test/src/functional/tls_local_exec.c
-        3rdparty/musl/libc-test/src/functional/vfork.c
+        3rdparty/musl/libc-test/src/functional/vfork.c  # uses fork, execv
         3rdparty/musl/libc-test/src/math/acosh.c
         3rdparty/musl/libc-test/src/math/asinh.c
         3rdparty/musl/libc-test/src/math/fmal.c
@@ -329,8 +328,8 @@ if (FALSE)
         3rdparty/musl/libc-test/src/regression/dn_expand-ptr-0.c
         3rdparty/musl/libc-test/src/regression/execle-env.c
         3rdparty/musl/libc-test/src/regression/fflush-exit.c
-        3rdparty/musl/libc-test/src/regression/fgetwc-buffering.c
-        3rdparty/musl/libc-test/src/regression/flockfile-list.c
+        3rdparty/musl/libc-test/src/regression/fgetwc-buffering.c   # missing support for pipe
+        3rdparty/musl/libc-test/src/regression/flockfile-list.c     # missing support for unmap
         3rdparty/musl/libc-test/src/regression/ftello-unflushed-append.c
         3rdparty/musl/libc-test/src/regression/getpwnam_r-crash.c
         3rdparty/musl/libc-test/src/regression/getpwnam_r-errno.c
