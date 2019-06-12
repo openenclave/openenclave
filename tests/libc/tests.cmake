@@ -18,6 +18,9 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/clock_gettime.c
     3rdparty/musl/libc-test/src/functional/dirname.c
     3rdparty/musl/libc-test/src/functional/env.c
+    3rdparty/musl/libc-test/src/functional/fdopen.c
+    3rdparty/musl/libc-test/src/functional/fnmatch.c
+    3rdparty/musl/libc-test/src/functional/inet_pton.c
     3rdparty/musl/libc-test/src/functional/qsort.c
     3rdparty/musl/libc-test/src/functional/search_insque.c
     3rdparty/musl/libc-test/src/functional/search_lsearch.c
@@ -40,6 +43,7 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/strtold.c
     3rdparty/musl/libc-test/src/functional/tls_align.c
     3rdparty/musl/libc-test/src/functional/udiv.c
+    3rdparty/musl/libc-test/src/functional/ungetc.c
     3rdparty/musl/libc-test/src/functional/wcsstr.c
     3rdparty/musl/libc-test/src/functional/wcstol.c
     3rdparty/musl/libc-test/src/math/acos.c
@@ -209,10 +213,17 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/regression/mbsrtowcs-overflow.c
     3rdparty/musl/libc-test/src/regression/memmem-oob.c
     3rdparty/musl/libc-test/src/regression/memmem-oob-read.c
+    3rdparty/musl/libc-test/src/regression/mkdtemp-failure.c
+    3rdparty/musl/libc-test/src/regression/mkstemp-failure.c
     3rdparty/musl/libc-test/src/regression/printf-1e9-oob.c
     3rdparty/musl/libc-test/src/regression/printf-fmt-g-round.c
     3rdparty/musl/libc-test/src/regression/printf-fmt-g-zeros.c
     3rdparty/musl/libc-test/src/regression/printf-fmt-n.c
+    3rdparty/musl/libc-test/src/regression/regex-backref-0.c
+    3rdparty/musl/libc-test/src/regression/regex-bracket-icase.c
+    3rdparty/musl/libc-test/src/regression/regexec-nosub.c
+    3rdparty/musl/libc-test/src/regression/regex-ere-backref.c
+    3rdparty/musl/libc-test/src/regression/regex-negated-range.c
     3rdparty/musl/libc-test/src/regression/scanf-bytes-consumed.c
     3rdparty/musl/libc-test/src/regression/scanf-match-literal-eof.c
     3rdparty/musl/libc-test/src/regression/scanf-nullbyte-char.c
@@ -268,10 +279,8 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/dlopen.c
         3rdparty/musl/libc-test/src/functional/fcntl.c
         3rdparty/musl/libc-test/src/functional/fdopen.c
-        3rdparty/musl/libc-test/src/functional/fnmatch.c
-        3rdparty/musl/libc-test/src/functional/fscanf.c
+        3rdparty/musl/libc-test/src/functional/fscanf.c 
         3rdparty/musl/libc-test/src/functional/fwscanf.c
-        3rdparty/musl/libc-test/src/functional/inet_pton.c
         3rdparty/musl/libc-test/src/functional/ipc_msg.c
         3rdparty/musl/libc-test/src/functional/ipc_sem.c
         3rdparty/musl/libc-test/src/functional/ipc_shm.c
@@ -298,7 +307,6 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/tls_init.c
         3rdparty/musl/libc-test/src/functional/tls_init_dlopen.c
         3rdparty/musl/libc-test/src/functional/tls_local_exec.c
-        3rdparty/musl/libc-test/src/functional/ungetc.c
         3rdparty/musl/libc-test/src/functional/vfork.c
         3rdparty/musl/libc-test/src/math/acosh.c
         3rdparty/musl/libc-test/src/math/asinh.c
@@ -326,12 +334,8 @@ if (FALSE)
         3rdparty/musl/libc-test/src/regression/ftello-unflushed-append.c
         3rdparty/musl/libc-test/src/regression/getpwnam_r-crash.c
         3rdparty/musl/libc-test/src/regression/getpwnam_r-errno.c
-        3rdparty/musl/libc-test/src/regression/inet_ntop-v4mapped.c
-        3rdparty/musl/libc-test/src/regression/inet_pton-empty-last-field.c
         3rdparty/musl/libc-test/src/regression/malloc-brk-fail.c
         3rdparty/musl/libc-test/src/regression/malloc-oom.c
-        3rdparty/musl/libc-test/src/regression/mkdtemp-failure.c
-        3rdparty/musl/libc-test/src/regression/mkstemp-failure.c
         3rdparty/musl/libc-test/src/regression/pthread_atfork-errno-clobber.c
         3rdparty/musl/libc-test/src/regression/pthread_cancel-sem_wait.c
         3rdparty/musl/libc-test/src/regression/pthread_condattr_setclock.c
@@ -344,12 +348,7 @@ if (FALSE)
         3rdparty/musl/libc-test/src/regression/pthread-robust-detach.c
         3rdparty/musl/libc-test/src/regression/pthread_rwlock-ebusy.c
         3rdparty/musl/libc-test/src/regression/raise-race.c
-        3rdparty/musl/libc-test/src/regression/regex-backref-0.c
-        3rdparty/musl/libc-test/src/regression/regex-bracket-icase.c
-        3rdparty/musl/libc-test/src/regression/regexec-nosub.c
-        3rdparty/musl/libc-test/src/regression/regex-ere-backref.c
         3rdparty/musl/libc-test/src/regression/regex-escaped-high-byte.c
-        3rdparty/musl/libc-test/src/regression/regex-negated-range.c
         3rdparty/musl/libc-test/src/regression/rewind-clear-error.c
         3rdparty/musl/libc-test/src/regression/rlimit-open-files.c
         3rdparty/musl/libc-test/src/regression/setenv-oom.c

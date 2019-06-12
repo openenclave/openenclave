@@ -24,6 +24,7 @@ add_enclave(TARGET libc_enc
     enc.c
     ${CMAKE_CURRENT_BINARY_DIR}/tests.c
     ${test_dependencies}
+    ../../../3rdparty/musl/libc-test/src/common/vmfill.c
     ../../../3rdparty/musl/libc-test/src/common/mtest.c
     ../../../3rdparty/musl/libc-test/src/common/rand.c
     ../../../3rdparty/musl/libc-test/src/functional/tls_align_dso.c

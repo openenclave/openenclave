@@ -756,6 +756,8 @@ static int _hostfs_ioctl(oe_fd_t* desc, unsigned long request, uint64_t arg)
 {
     int ret = -1;
     file_t* file = _cast_file(desc);
+    uint64_t argsize = 0;
+    void *argout = NULL;
 
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -766,13 +768,17 @@ static int _hostfs_ioctl(oe_fd_t* desc, unsigned long request, uint64_t arg)
      * by Windows hosts, so the error is handled on the enclave side. This is
      * the correct behavior since host files are not terminal devices.
      */
-    if (request == OE_TIOCGWINSZ)
-        OE_RAISE_ERRNO(OE_ENOTTY);
+    switch (request) 
+    {
+        default:
+            OE_RAISE_ERRNO(OE_ENOTTY);
+    }
 
     /* Call the host to perform the ioctl() operation. */
-    if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg, 0, NULL) !=
-        OE_OK)
+    if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg, argsize, argout) != OE_OK)
+    {
         OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
     return ret;
