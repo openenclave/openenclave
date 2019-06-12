@@ -16,12 +16,14 @@ To develop Linux applications using a Windows development machine, you will need
   Workloads -> Other Toolsets -> Linux Development with C++
 - [Open Enclave Wizard - Preview](https://marketplace.visualstudio.com/items?itemName=MS-TCPS.OpenEnclaveSDK-VSIX)
   Visual Studio extension, v0.5 or later.  The extension can be installed via that marketplace link, or from within
-  Visual Studio.  (For VS2017, do Tools -> Extensions and Updates -> search for "enclave".  For VS2019,
-  do Extensions -> Manage Extensions -> search for "enclave".)
+  Visual Studio.  (For VS2017, do Tools -> Extensions and Updates -> Online -> search for "enclave".  For VS2019,
+  do Extensions -> Manage Extensions -> Online -> search for "enclave".)
 
 You will also need a build machine running Ubuntu 16.04 (64-bit) or Ubuntu 18.04.  This can be
-a remote Linux machine, but can simply be a "Generation 2" Linux VM on the Windows
-development machine configured as follows:
+a remote Linux machine, or can simply be a "Generation 2" Linux VM on the Windows
+development machine.  Ideally, the machine should be SGX capable (see [here](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/SGXSupportLevel.md) for how to
+determine this), but a non-SGX machine can still be used in simulation mode.  To set up a Linux VM
+on your Windows machine, do the following:
 
 1. Download an ISO for Ubuntu [18.04](http://releases.ubuntu.com/18.04/) or [16.04](http://releases.ubuntu.com/16.04/).
    A "Server install image" is sufficient.
@@ -33,7 +35,7 @@ development machine configured as follows:
 1. Disable Secure Boot as follows.  In Hyper-V Manager, right click on the VM you created while it is stopped,
   and select Settings... -> Security and uncheck Enable Secure Boot.
 1. Uncheck "Enable checkpoints" under the VM's Settings -> Checkpoints, since SGX will not work with checkpoints.
-1. Enable SGX for the VM as follows (this cannot be done from Hyper-V Manager):
+1. If using an SGX-capable machine, enable SGX for the VM as follows (this cannot be done from Hyper-V Manager):
    - Download [VirtualMachineSgxSettings.psm1](https://raw.githubusercontent.com/microsoft/openenclave/f28cedce63be9673e20fe54563987189f2565637/new_platforms/scripts/VirtualMachineSgxSettings.psm1)
    - Open an elevated PowerShell window (e.g., type "powershell" and click Run as Administrator)
    - Invoke the following commands, using the path to where you downloaded the file, and replacing MyVM with your VM name:
@@ -46,15 +48,18 @@ development machine configured as follows:
    - Enable OpenSSH server installation when given the choice during setup.
    - All other options are sufficient to leave as the defaults or changed as desired.
 
-On the Linux build machine or ssh into the VM:
+On the Linux build machine, or after opening an ssh session into the VM:
 
 - Install the Open Enclave SDK.  See [installation instructions for Ubuntu 16.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md)
   or [installation instructions for Ubuntu 18.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md), except that step 2 on those pages is outdated and result
   in SGX not working.  Instead, replace step 2 with the instructions
-   [here](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/Contributors/SGX1GettingStarted.md).
+  [here](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/Contributors/SGX1GettingStarted.md)
+  prior to the Install section, which should work with either 16.04 or 18.04 even though
+  the page only mentions 16.04.
 
 Finally, configure Visual Studio with the address (or name) of your Linux build machine,
-via Tools -> Options -> Cross Platform -> Connection Manager -> Add.
+via Tools -> Options -> Cross Platform -> Connection Manager -> Add. This step may take
+a minute or two, as Visual Studio will copy some files locally for use by IntelliSense.
 
 ## Walkthrough: Creating a C/C++ Enclave Application
 
@@ -62,15 +67,16 @@ We will now walk through the process of creating a C/C++ application that uses a
 
 1. Create a new Linux application using File -> New -> Project and find the Linux console
    app template.  In VS2017, this is called "Console Application (Linux)", and in VS2019,
-   it is called "Console App" with the Linux keyword.  Give it a name, LinuxApp for example.
-   This will create a "Hello World" console application.  
+   it is called "Console App" (note: NOT the "Console App (.NET Core)") with the Linux
+   keyword.  Give the project a name, LinuxApp for example.  This will create a "Hello World" console application.  
    Alternatively, if you already have such a Linux application using a Visual Studio project
    file (.vcxproj file), you can start from your existing application.
 2. Configure the application project to use your Linux build environment, by right clicking
    on the project in the Solution Explorer and selecting Properties -> Configuration
    Properties -> General -> Remote Build Machine, and explicitly set it to the build machine
    you configured in the Connection Manager.  (Due to a current Visual Studio bug, this step
-   is required even if the correct value is shown by default.)
+   is required even if the correct value is shown by default. In other words, make sure the
+   connection is shown in **bold**.)
 3. If using Visual Studio 2019, also update Configuration Properties -> Debugging -> Remote
    Debug Machine to your build machine, again due to a current Visual Studio 2019 bug.
    (This step is not needed on Visual Studio 2017.)  At this point, you should be able to
@@ -107,7 +113,7 @@ extern "C" {
 
 int main()
 {
-    printf("hello from LinuxApp2!\n");
+    printf("hello from LinuxApp!\n");
     sample_enclave_call();
     return 0;
 }
@@ -118,6 +124,8 @@ int main()
 The solution will have three configurations: Debug, SGX-Simulation-Debug, and Release.
 The SGX-Simulation-Debug will work the same as Debug, except that SGX support will be emulated
 rather than using hardware support.  This allows debugging on hardware that does not support SGX.
+The Debug and Release configurations can only be run (whether natively or in a VM) successfully on 
+SGX-capable hardware.
 
 For the platform, use x64, since Open Enclave currently only supports 64-bit enclaves.
 
