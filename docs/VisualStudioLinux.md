@@ -15,9 +15,11 @@ To develop Linux applications using a Windows development machine, you will need
   installable via Tools -> Get Tools and Features (on VS2017) or Features (on VS2019) ->
   Workloads -> Other Toolsets -> Linux Development with C++
 - [Open Enclave Wizard - Preview](https://marketplace.visualstudio.com/items?itemName=MS-TCPS.OpenEnclaveSDK-VSIX)
-  Visual Studio extension, v0.5 or later
+  Visual Studio extension, v0.5 or later.  The extension can be installed via that marketplace link, or from within
+  Visual Studio.  (For VS2017, do Tools -> Extensions and Updates -> search for "enclave".  For VS2019,
+  do Extensions -> Manage Extensions -> search for "enclave.)
 
-You will also need a build machine running Ubuntu 16.04 or Ubuntu 18.04.  This can be
+You will also need a build machine running Ubuntu 16.04 (64-bit) or Ubuntu 18.04.  This can be
 a remote Linux machine, but can simply be a "Generation 2" Linux VM on the Windows
 development machine configured as follows:
 
@@ -30,7 +32,7 @@ development machine configured as follows:
    - All other options can be either left as the defaults or changed as desired.
 1. Disable Secure Boot as follows.  In Hyper-V Manager, right click on the VM you created while it is stopped,
   and select Settings... -> Security and uncheck Enable Secure Boot.
-1. Uncheck "Enable checkpoints" under the VM's Settings -> Checkpoints.
+1. Uncheck "Enable checkpoints" under the VM's Settings -> Checkpoints, since SGX will not work with checkpoints.
 1. Enable SGX for the VM as follows (this cannot be done from Hyper-V Manager):
    - Download [VirtualMachineSgxSettings.psm1](https://raw.githubusercontent.com/microsoft/openenclave/f28cedce63be9673e20fe54563987189f2565637/new_platforms/scripts/VirtualMachineSgxSettings.psm1)
    - Open an elevated PowerShell window (e.g., type "powershell" and click Run as Administrator)
@@ -112,6 +114,12 @@ int main()
 ```
 8. You can now set breakpoints in Visual Studio, e.g., inside ecall\_DoWorkInEnclave() and inside
    ocall\_DoWorkInHost() and run and debug the enclave application just like any other application.
+
+The solution will have three configurations: Debug, SGX-Simulation-Debug, and Release.
+The SGX-Simulation-Debug will work the same as Debug, except that SGX support will be emulated
+rather than using hardware support.  This allows debugging on hardware that does not support SGX.
+
+For the platform, use x64, since Open Enclave currently only supports 64-bit enclaves.
 
 ## Modifying the application
 
