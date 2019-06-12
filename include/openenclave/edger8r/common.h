@@ -51,7 +51,7 @@ OE_INLINE oe_result_t oe_add_size(size_t* total, size_t size)
         goto done;
     }
 
-    // Add rounded-size and check for overlow.
+    // Add rounded-size and check for overflow.
     sum = *total + rsize;
     if (sum < *total)
     {
