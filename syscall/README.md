@@ -1,5 +1,5 @@
-liboesyscall
-============
+liboesyscall:
+=============
 
 This directory contains the source for **liboesyscall**, which routes
 syscalls to devices (e.g., file systems, socket layers). Clients of this
