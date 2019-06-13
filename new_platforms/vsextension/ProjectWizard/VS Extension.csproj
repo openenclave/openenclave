@@ -328,7 +328,7 @@
     </ItemGroup>
     <ItemGroup>
       <Content Include="..\ProjectTemplates\Built\OEEnclaveLinuxProject.zip">
-        <Link>ProjectTemplates\VC\OEEnclaveLinuxProject.zip</Link>
+        <Link>ProjectTemplates\VC\Cross Platform\Linux\OEEnclaveLinuxProject.zip</Link>
         <IncludeInVSIX>true</IncludeInVSIX>
       </Content>
     </ItemGroup>
