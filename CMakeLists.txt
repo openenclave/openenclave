@@ -177,10 +177,6 @@ else ()
   option(USE_DEBUG_MALLOC "Build oeenclave with memory leak detection capability." OFF)
 endif ()
 
-if (USE_DEBUG_MALLOC AND WIN32)
-  message(FATAL_ERROR "USE_DEBUG_MALLOC is not supported on Windows. Disable this when calling cmake with -DUSE_DEBUG_MALLOC=OFF")
-endif ()
-
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
 # Warning: turning on simulation mode on Windows may cause test failures and random crashes
 option(WIN32_SIMULATION "Windows Simulation Mode" OFF)
