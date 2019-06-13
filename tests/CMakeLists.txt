@@ -63,7 +63,6 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
     endif()
 
 add_subdirectory(create-errors)
-add_subdirectory(crypto)
 add_subdirectory(hexdump)
 add_subdirectory(hostcalls)
 add_subdirectory(initializers)
@@ -80,13 +79,13 @@ if ( UNIX )
         add_subdirectory(memory)
     endif()
 add_subdirectory(create-rapid)
+add_subdirectory(crypto)
 endif()
 
 if (OE_SGX AND UNIX)
    # ecall_ocall enclave size cannot be handled by Windows ninja CI
    add_subdirectory(ecall_ocall)
    add_subdirectory(libunwind)
-   add_subdirectory(crypto)
    add_subdirectory(crypto_crls_cert_chains)
 
    # Attestation supported only on Linux
