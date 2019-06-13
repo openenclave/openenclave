@@ -11,10 +11,12 @@
 #include <openenclave/internal/raise.h>
 #include "../atexit.h"
 #include "../calls.h"
+#include "globals.h"
 #include "init.h"
 
 #include <tee_internal_api.h>
 
+#include <pta_cyres.h>
 #include <pta_rpc.h>
 
 /* TEE Parameter Types used when invoking the Remote Procedure Call Pseudo
@@ -76,10 +78,11 @@
         TEE_PARAM_TYPE_NONE,         \
         TEE_PARAM_TYPE_NONE))
 
-static uint8_t __oe_initialized = 0;
-static uint32_t __oe_windows_ecall_key = 0;
+uint8_t __oe_initialized = 0;
+uint32_t __oe_windows_ecall_key = 0;
 
-static TEE_TASessionHandle __oe_rpc_pta_session = TEE_HANDLE_NULL;
+TEE_TASessionHandle __oe_rpc_pta_session = TEE_HANDLE_NULL;
+TEE_TASessionHandle __oe_cyres_pta_session = TEE_HANDLE_NULL;
 
 static TEE_Result _handle_call_enclave_function(
     uint32_t param_types,
@@ -386,14 +389,21 @@ TEE_Result TA_CreateEntryPoint(void)
 {
     TEE_Result result = TEE_SUCCESS;
 
-    TEE_UUID pta_uuid = PTA_RPC_UUID;
+    TEE_UUID rpc_pta_uuid = PTA_RPC_UUID;
+    TEE_UUID cyres_pta_uuid = PTA_CYRES_UUID;
 
-    /* Open a TA2TA session against the RPC Pseudo TA (PTA), required for
+    /* Open a TA2TA session against the RPC Pseudo-TA (PTA), required for
      * making OCALLs. If we cannot open one, fail to initialize the TA */
-    result =
-        TEE_OpenTASession(&pta_uuid, 0, 0, NULL, &__oe_rpc_pta_session, NULL);
+    result = TEE_OpenTASession(
+        &rpc_pta_uuid, 0, 0, NULL, &__oe_rpc_pta_session, NULL);
     if (result != TEE_SUCCESS)
         return result;
+
+    /* Open a TA2TA session against the CyReS Pseudo-TA (PTA), required for
+     * retreiving boot certificate chains. If we cannot open one, the
+     * associated SDK functionality will be unavailable. */
+    TEE_OpenTASession(
+        &cyres_pta_uuid, 0, 0, NULL, &__oe_cyres_pta_session, NULL);
 
     /* Call compiler-generated initialization functions */
     oe_call_init_functions();
