@@ -2,9 +2,7 @@
 # Licensed under the MIT License.
 
 if(UNIX)
-# This directory must be built first.
 add_subdirectory(cpio)
-
 add_subdirectory(datagram)
 add_subdirectory(dup)
 add_subdirectory(fs)
