@@ -139,7 +139,7 @@ int oe_mount(
     bool locked = false;
     oe_posix_path_t source_path;
     oe_posix_path_t target_path;
-    mount_point_t mount_point;
+    mount_point_t mount_point = {0};
 
     if (!target || !filesystemtype)
         OE_RAISE_ERRNO(OE_EINVAL);
