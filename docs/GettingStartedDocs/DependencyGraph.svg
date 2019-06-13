@@ -307,7 +307,7 @@
 <g id="node24" class="node">
 <title>node1566</title>
 <polygon fill="none" stroke="#000000" points="55,-180 8.719,-162 55,-144 101.281,-162 55,-180"/>
-<text text-anchor="middle" x="55" y="-158.9" font-family="Times,serif" font-size="12.00" fill="#000000">oeposix</text>
+<text text-anchor="middle" x="55" y="-158.9" font-family="Times,serif" font-size="12.00" fill="#000000">oesyscall</text>
 </g>
 <!-- node1566&#45;&gt;node1464 -->
 <g id="edge27" class="edge">

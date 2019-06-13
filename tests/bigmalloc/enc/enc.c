@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/corelibc/unistd.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include "bigmalloc_t.h"
 
 /* Test a large memory allocation */

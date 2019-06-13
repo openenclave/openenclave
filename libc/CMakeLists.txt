@@ -523,7 +523,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/search/lsearch.c
     ${MUSLSRC}/select/select.c
     ${MUSLSRC}/select/poll.c
-    ${MUSLSRC}/linux/epoll.c
     ${MUSLSRC}/stat/mkdir.c
     ${MUSLSRC}/search/tdelete.c
     ${MUSLSRC}/search/tfind.c
@@ -835,7 +834,7 @@ endif ()
 # This project (and its dependents) require the enclave headers and
 # library, and the musl headers.
 target_link_libraries(oelibc
-  PUBLIC oeposix oecore oelibc_includes
+  PUBLIC oesyscall oecore oelibc_includes
   PRIVATE oelibasm)
 
 if (OE_SGX)

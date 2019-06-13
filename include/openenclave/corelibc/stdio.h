@@ -8,7 +8,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/corelibc/stdint.h>
-#include <openenclave/corelibc/unistd.h>
+#include <openenclave/internal/syscall/unistd.h>
 
 OE_EXTERNC_BEGIN
 

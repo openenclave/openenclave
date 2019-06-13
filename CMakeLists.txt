@@ -210,7 +210,7 @@ if (BUILD_ENCLAVES)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)
   add_subdirectory(libcxx)
-  add_subdirectory(posix)
+  add_subdirectory(syscall)
 endif()
 
 if (UNIX)
