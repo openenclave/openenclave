@@ -394,19 +394,11 @@ namespace OpenEnclaveSDK
                         var config3 = config as VCConfiguration3;
                         string name = config.Name;
 
-                        var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
-                        string preprocessorDefinitions = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
-                        if (isWindows)
-                        {
-                            // Allow calling getenv() in the generated host code.
-                            preprocessorDefinitions = "_CRT_SECURE_NO_WARNINGS;" + preprocessorDefinitions;
-                            clRule.SetPropertyValue("PreprocessorDefinitions", preprocessorDefinitions);
-                        }
-
                         if (name.Contains("ARM"))
                         {
-                            preprocessorDefinitions = "_ARM_;" + preprocessorDefinitions;
-                            clRule.SetPropertyValue("PreprocessorDefinitions", preprocessorDefinitions);
+                            var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
+                            string value = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
+                            clRule.SetPropertyValue("PreprocessorDefinitions", "_ARM_;" + value);
 
                             if (isWindows) {
                                 // Enable compiling Win32 for ARM.
@@ -419,8 +411,9 @@ namespace OpenEnclaveSDK
                         {
                             // GCC has no preprocessor define for debug mode, but the generated host file
                             // expects _DEBUG, so set it here.
-                            preprocessorDefinitions = "_DEBUG;" + preprocessorDefinitions;
-                            clRule.SetPropertyValue("PreprocessorDefinitions", preprocessorDefinitions);
+                            var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
+                            string value = clRule.GetUnevaluatedPropertyValue("PreprocessorDefinitions");
+                            clRule.SetPropertyValue("PreprocessorDefinitions", "_DEBUG;" + value);
                         }
 
                         if (isWindows)
