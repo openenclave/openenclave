@@ -53,9 +53,9 @@ oe_result_t read_sign(char* filename, uint8_t* sign, size_t* sign_size);
 
 oe_result_t read_pem_key(
     const char* filename,
-    char* key,
-    size_t key_size,
-    size_t* key_size_out);
+    char* data,
+    size_t data_size,
+    size_t* data_size_out);
 
 oe_result_t read_coordinates(
     char* filename,
