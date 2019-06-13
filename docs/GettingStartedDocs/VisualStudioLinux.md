@@ -14,6 +14,8 @@ To develop Linux applications using a Windows development machine, you will need
 - ["Linux development with C++" Visual Studio workload](https://devblogs.microsoft.com/cppblog/linux-development-with-c-in-visual-studio/),
   installable via Tools -> Get Tools and Features (on VS2017) or Tools (on VS2019) ->
   Workloads -> Other Toolsets -> Linux Development with C++
+- NuGet Package Manager feature, installable via Tools -> Get Tools and Features (on VS2017) or Tools (on VS2019) ->
+  Individual components -> Code tools -> NuGet Package Manager
 - [Open Enclave Wizard - Preview](https://marketplace.visualstudio.com/items?itemName=MS-TCPS.OpenEnclaveSDK-VSIX)
   Visual Studio extension, v0.5 or later.  The extension can be installed via that marketplace link, or from within
   Visual Studio.  (For VS2017, do Tools -> Extensions and Updates -> Online -> search for "enclave".  For VS2019,
@@ -68,7 +70,9 @@ We will now walk through the process of creating a C/C++ application that uses a
 1. Create a new Linux application using File -> New -> Project and find the Linux console
    app template.  In VS2017, this is called "Console Application (Linux)", and in VS2019,
    it is called "Console App" (note: NOT the "Console App (.NET Core)") with the Linux
-   keyword.  Give the project a name, LinuxApp for example.  This will create a "Hello World" console application.  
+   keyword.  (If it is not immediately visible, the template can be found under
+   Installed -> Visual C++ -> Cross Platform -> Linux.)
+   Give the project a name, LinuxApp for example.  This will create a "Hello World" console application.  
    Alternatively, if you already have such a Linux application using a Visual Studio project
    file (.vcxproj file), you can start from your existing application.
 2. Configure the application project to use your Linux build environment, by right clicking
@@ -83,7 +87,8 @@ We will now walk through the process of creating a C/C++ application that uses a
    build and debug the Hello World application. For further discussion, see the
    [Linux debugging walkthrough](https://docs.microsoft.com/en-us/cpp/linux/deploy-run-and-debug-your-linux-project?view=vs-2019).
 4. Create an enclave library project by right clicking on the solution in the Solution Explorer
-   and selecting Add -> New Project -> Open Enclave TEE Project (Linux).   Give it a name,
+   and selecting Add -> New Project -> Open Enclave TEE Project (Linux).  (If it is not
+   immediately visible, look under Installed -> Visual C++ -> Cross Platform -> Linux.)  Give it a name,
    LinuxEnclave for example.  This will create a sample enclave with an ecall\_DoWorkInEnclave()
    method exposed to applications, that will simply call an ocall\_DoWorkInHost() method that
    will be implemented in the application.   In this walkthrough, we'll leave this project
