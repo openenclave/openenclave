@@ -262,41 +262,65 @@ oe_result_t read_sign(char* filename, uint8_t* sign, size_t* sign_size)
     return OE_OK;
 }
 
-oe_result_t read_key(char* filename, char* key)
+static oe_result_t _load_file_without_crls(
+    const char* filename,
+    char* data,
+    size_t data_size,
+    size_t* data_size_out)
 {
-    size_t len_key;
-    FILE* kfp = fopen(filename, "r");
-    if (kfp != NULL)
-    {
-        len_key = fread(key, sizeof(char), max_key_size, kfp);
-    }
-    else
-    {
-        return OE_FAILURE;
-    }
-    key[len_key] = '\0';
+    oe_result_t result = OE_UNEXPECTED;
+    size_t size = 0;
+    FILE* stream = NULL;
+    int c;
 
-    fclose(kfp);
-    return OE_OK;
+    if (!filename || !data)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Open file in binary mode. */
+    if (!(stream = fopen(filename, "rb")))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Read character-by-character, removing any <CR> characters. */
+    while ((c = fgetc(stream)) != EOF && size < data_size)
+    {
+        if (c != '\r')
+            data[size++] = (char)c;
+    }
+
+    if (size == data_size)
+    {
+        result = OE_BUFFER_TOO_SMALL;
+        goto done;
+    }
+
+    data[size] = '\0';
+
+    if (data_size_out)
+        *data_size_out = size;
+
+    result = OE_OK;
+
+done:
+
+    if (stream)
+        fclose(stream);
+
+    return result;
 }
 
-oe_result_t read_pem_key(char* filename, uint8_t* key, size_t* key_size)
+oe_result_t read_pem_key(
+    const char* filename,
+    char* key,
+    size_t key_size,
+    size_t* key_size_out)
 {
-    size_t len_key;
-    FILE* kfp = fopen(filename, "r");
-    if (kfp != NULL)
-    {
-        len_key = fread(key, sizeof(char), max_key_size, kfp);
-    }
-    else
-    {
-        return OE_FAILURE;
-    }
-    key[len_key] = '\0';
-    *key_size = len_key;
-
-    fclose(kfp);
-    return OE_OK;
+    return _load_file_without_crls(filename, key, key_size, key_size_out);
 }
 
 oe_result_t read_coordinates(
