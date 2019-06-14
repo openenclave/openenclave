@@ -393,6 +393,7 @@ namespace OpenEnclaveSDK
                     {
                         var config3 = config as VCConfiguration3;
                         string name = config.Name;
+
                         if (name.Contains("ARM"))
                         {
                             var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
@@ -425,9 +426,9 @@ namespace OpenEnclaveSDK
                         {
                             // Add a post-build event to copy the enclave binary to the existing OutDir.
                             string cmd = "cp $(RemoteRootDir)/" + baseName + "/bin/$(Platform)/$(Configuration)/" + baseName + ".signed $(RemoteOutDir)" + baseName;
-                            var clRule = config.Rules.Item("ConfigurationBuildEvents") as IVCRulePropertyStorage;
-                            clRule.SetPropertyValue("RemotePostBuildCommand", cmd);
-                            clRule.SetPropertyValue("RemotePostBuildMessage", "Copying enclave binary");
+                            var cbeRule = config.Rules.Item("ConfigurationBuildEvents") as IVCRulePropertyStorage;
+                            cbeRule.SetPropertyValue("RemotePostBuildCommand", cmd);
+                            cbeRule.SetPropertyValue("RemotePostBuildMessage", "Copying enclave binary");
                         }
 
                         if (name.Contains("OPTEE") || name.Contains("ARM"))
@@ -448,6 +449,9 @@ namespace OpenEnclaveSDK
                                 var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
                                 generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
                                 sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+
+                                // We don't set OE_SIMULATION=1 here because when using the Intel SGX SDK,
+                                // simulation mode is not controllable at runtime, only at link time.
                             }
                         }
                         else
