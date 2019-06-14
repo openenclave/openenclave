@@ -207,6 +207,7 @@ waiting_for_connection_request:
         len = ret;
         printf(" %d bytes received from client:\n[%s]\n", len, (char*)buf);
 
+        // For testing purpose, valdiate received data's content and size
 #ifdef ADD_TEST_CHECKING
         if ((len != CLIENT_PAYLOAD_SIZE) ||
             (memcmp(CLIENT_PAYLOAD, buf, len) != 0))
@@ -220,7 +221,7 @@ waiting_for_connection_request:
         }
         printf("Verified: the contents of client payload were expected\n\n");
 #endif
-        if (ret > 0)
+        if (ret == CLIENT_PAYLOAD_SIZE)
             break;
     } while (1);
 

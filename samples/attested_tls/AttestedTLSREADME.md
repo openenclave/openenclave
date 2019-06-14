@@ -1,6 +1,6 @@
 # Secure Channel in OE SDK
 
-  As Open Enclave SDK getting adopted into more realistic scenarios, we are receiving requests from OE SDK developers for adding secure channel support.
+  As Open Enclave SDK is getting adopted into more realistic scenarios, we are receiving requests from OE SDK developers for adding secure channel support.
 
   We do have the remote_attestation sample that shows how to conduct remote attestation between two enclaves and establish a `proprietary` channel based on asymmetric keys exchanged during the attestation process. It demonstrates how to conduct mutual attestation but it does not go all the way to show how to establish a fully secure channel.
 
@@ -8,19 +8,19 @@
 
 # What is an Attested TLS channel
 
-The remote attestation feature that comes with TEE (such as Intel SGX or ARM's TrustZone enclave, in the context of this doc) could significantly improve a TLS endpoint (client or server) trustworthiness for a TLS connection starting or terminating inside an enclave. An Attested TLS channel is a TLS channel that integrates remote attestation validation as part of the TLS channel establishing process. Once established, it guarantees that an attested connecting party is running inside a TEE with expected identity.
+The remote attestation feature that comes with TEE (such as Intel SGX or ARM's TrustZone enclave, in the context of this doc) could significantly improve a TLS endpoint's (client or server) trustworthiness for a TLS connection starting or terminating inside an enclave. An Attested TLS channel is a TLS channel that integrates remote attestation validation as part of the TLS channel establishing process. Once established, it guarantees that an attested connecting party is running inside a TEE with expected identity.
 
 There are two types of Attested TLS connections:
 1. Both ends of an Attested TLS channel terminate inside TEE
     - Guarantee that both parties of a TLS channel are running inside trustes TEEs
     - OE SDK sample: tls_between_enclave
 2. Only one end of an Attested TLS channel terminate inside TEE
-    - In this case, the assumption is that the end not terminated inside an TEE is a trust party. The most common use case is, this non-Tee party might have secrets to securely share with the other party through an Attested TLS channel.
+    - In this case, the assumption is that the end not terminated inside an TEE is a trust party. The most common use case is, this non-TEE party might have secrets to securely share with the other party through an Attested TLS channel.
     - OE SDK sample: tls_between_host_enclave
 
 ## Prerequisites
 
-  The audience is assumed to be familiar:
+  The audience is assumed to be familiar with:
 
   - [Transport Layer Security (TLS)](https://en.wikipedia.org/wiki/Transport_Layer_Security) a cryptographic protocol designed to provide communications security over a computer network.
 
@@ -31,7 +31,7 @@ combination of HW and SW gaining the trust of a remote provider or producer.
 
   By taking advantage of the fact that TLS involving parties use public-key cryptography for identity authentication during the [TLS handshaking process](https://en.wikipedia.org/wiki/Transport_Layer_Security#TLS_handshake), the Attested TLS feature uses a self-signed X509.V3 certificate to represent a TLS endpoint's identity. We make this certificate cryptographically bound to this specific enclave instance by adding a custom certificate extension (called quote extension) with this enclave's attestation quote that has the certificate's public key information embedded.
 
-  A new API oe_generate_attestation_certificate was added for generation such a self-signed certificate for use in the TLS handshaking process
+  A new API oe_generate_attestation_certificate was added for generating such a self-signed certificate for use in the TLS handshaking process
 
 #### Generate TLS certificate
 
@@ -95,7 +95,7 @@ For example:
 
 The following four validation steps are performed inside the cert_verify_callback
   1. Validate certificate
-     - Verify the signature on the self-signed certificate to ascertain that the attestation report is genuine and unmodified.
+     - Verify the signature of the self-signed certificate to ascertain that the attestation report is genuine and unmodified.
   2. Validate the quote
      - Extract this quote extension from the certificate
      - Perform quote validation
@@ -107,7 +107,7 @@ The following four validation steps are performed inside the cert_verify_callbac
 
   A new OE API, oe_verify_attestation_certificate(), was added to perform step 1-3 and leaving step 4 to application for business logic, which can be done inside a caller-registered callback, enclave_identity_callback, a callback parameter to oe_verify_attestation_certificate() call.
 
-  A caller wants to fail cert_verify_callback with non-zero code if either certificate signature validation failed or unexpected TEE identity was found. This failure return will cause the TLS handshaking process to terminate immediately, thus preventing establishing connection with a unqualified connecting party.
+  A caller wants to fail cert_verify_callback with non-zero code if either certificate signature validation failed or unexpected TEE identity was found. This failure return will cause the TLS handshaking process to terminate immediately, thus preventing establishing connection with an unqualified connecting party.
 
 ```
 /**
