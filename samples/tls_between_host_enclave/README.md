@@ -8,7 +8,7 @@
 
 It has the following properties:
 
-- Demonstrates attested TLS feature between a host and an enclave
+- Demonstrates attested TLS feature between an enclave application and a non enclave application
 - Use of mbedTLS within enclaves for TLS
 - Enclave APIs used:
   - oe_generate_attestation_certificate
@@ -21,17 +21,17 @@ It has the following properties:
 
  ![Attested TLS channel between a host and an enclave](tls_between_host_enclave.png)
 
-In this sample, there is one regular applcation functioning as an TLS client and an enclave application
-instantiating an enclave which hosts an TLS server. Both of them can run on the same machine or separate machines. For convienence, you can run both of on the same machine.
+In this sample, there is one regular applcation functioning as a TLS client and an enclave application
+instantiating an enclave which hosts an TLS server. Both of them can run on the same machine or separate machines. For convenience, you can run both of on the same machine.
 
 ### Server application
   - Host part (tls_server_host)
     - Instantiate an enclave before transitioning the control into the enclave via an ecall.
-  - Encalve (tls_server_enclave.signed)
+  - Enclave (tls_server_enclave.signed)
     - Calls oe_generate_attestation_certificate to genreate an certificate
     - Use Mbedtls API to configure an TLS server after configuring above certificate as the server's certificate
     - Launch a TLS server and wait for client connection request
-    - Read client payalod and reply with server payload
+    - Read client payload and reply with server payload
   - How to launch a server instance
 
 ```
@@ -40,9 +40,9 @@ instantiating an enclave which hosts an TLS server. Both of them can run on the 
 
 ### Client application
  - Connect to server port via socket
- - Use OpenSSL API to configure an TLS client
+ - Use OpenSSL API to configure a TLS client
  - Call oe_verify_attestation_certificate to validate server's certificate
- - Send client payalod and wait for server's payload
+ - Send client payload and wait for server's payload
 
 ```
 	./client/tls_client -server:localhost -port:12341

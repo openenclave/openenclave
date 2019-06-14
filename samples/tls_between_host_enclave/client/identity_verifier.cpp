@@ -75,7 +75,7 @@ done:
 
 // The return value of verify_callback controls the strategy of the further
 // verification process. If verify_callback returns 0, the verification process
-// is immediately stopped with "verification failed" state and A verification
+// is immediately stopped with "verification failure" state and A verification
 // failure alert is sent to the peer and the TLS/SSL handshake is terminated. If
 // verify_callback returns 1, the verification process is continued.
 int verify_callback(int preverify_ok, X509_STORE_CTX* ctx)

@@ -29,7 +29,7 @@ combination of HW and SW gaining the trust of a remote provider or producer.
 
 ### How it works
 
-  By taking advantage of the fact that TLS involving parties use public-key cryptography for identity authentication during the [TLS handshaking process](https://en.wikipedia.org/wiki/Transport_Layer_Security#TLS_handshake), the Attested TLS feature uses a self-signed X509.V3 certificate to represent a TLS endpoint's identity. In this certificate, we make it cryptographically bound to this specific enclave instance by adding a custom certificate extension (called quote extension) with this enclave's attestation quote that has the certificate's public key information embedded.
+  By taking advantage of the fact that TLS involving parties use public-key cryptography for identity authentication during the [TLS handshaking process](https://en.wikipedia.org/wiki/Transport_Layer_Security#TLS_handshake), the Attested TLS feature uses a self-signed X509.V3 certificate to represent a TLS endpoint's identity. We make this certificate cryptographically bound to this specific enclave instance by adding a custom certificate extension (called quote extension) with this enclave's attestation quote that has the certificate's public key information embedded.
 
   A new API oe_generate_attestation_certificate was added for generation such a self-signed certificate for use in the TLS handshaking process
 
@@ -73,7 +73,7 @@ oe_result_t oe_generate_attestation_certificate(
 ```
 #### Authenticate peer certificate
 
-Upon receiving a certificate from the peer endpoint, a connecting party need to perform peer certificate validation.
+Upon receiving a certificate from the peer endpoint, a connecting party needs to perform peer certificate validation.
 
 In this feature, instead of using the TLS API's default authentication routine, which validates the certificate against a pre-determined CAs for authentication, an application needs to conduct "Extended custom certificate validation" inside the peer custom certificate verification callback (cert_verify_callback), which is supported by all the popular TLS APIs.
 
@@ -105,9 +105,9 @@ The following four validation steps are performed inside the cert_verify_callbac
   4. Validate peer enclave's identity
      - Validate the enclave’s identity (e.g., MRENCLAVE in SGX) against the expected list. This check ensures only the intended party is allowed to connect to.
 
-  A new OE API, oe_verify_attestation_certificate(), was added to perform step 1-3 and leaving step 4 to application for business logics, which can be done inside a caller-registered callback, enclave_identity_callback, a callback parameter to oe_verify_attestation_certificate() call.
+  A new OE API, oe_verify_attestation_certificate(), was added to perform step 1-3 and leaving step 4 to application for business logic, which can be done inside a caller-registered callback, enclave_identity_callback, a callback parameter to oe_verify_attestation_certificate() call.
 
-  A caller wants to fail cert_verify_callback with non-zero code if either certificate signature validation failed or unexpected TEE identity found. This failure return will cause the TLS handshaking process to terminate immediately, thus preventing establishing connection with a unqualified connecting party.
+  A caller wants to fail cert_verify_callback with non-zero code if either certificate signature validation failed or unexpected TEE identity was found. This failure return will cause the TLS handshaking process to terminate immediately, thus preventing establishing connection with a unqualified connecting party.
 
 ```
 /**

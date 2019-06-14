@@ -74,7 +74,6 @@ int configure_server_ssl(
     if (result != OE_OK)
     {
         printf("failed with %s\n", oe_result_str(result));
-        ret = 1;
         goto exit;
     }
 

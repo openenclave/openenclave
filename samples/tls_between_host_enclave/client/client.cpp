@@ -270,11 +270,17 @@ int main(int argc, char** argv)
     if (serversocket != -1)
         close(serversocket);
 
-    SSL_free(ssl);
-    X509_free(cert);
-    SSL_CTX_free(ctx);
     ret = 0;
 done:
+    if (ssl)
+        SSL_free(ssl);
+
+    if (cert)
+        X509_free(cert);
+
+    if (ctx)
+        SSL_CTX_free(ctx);
+
     printf(TLS_CLIENT " %s\n", (ret == 0) ? "success" : "failed");
     return (ret);
 }
