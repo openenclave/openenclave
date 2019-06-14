@@ -106,6 +106,12 @@ let is_wstr_ptr = function PTVal _ -> false | PTPtr (_, a) -> a.pa_iswstr
 
 let is_str_or_wstr_ptr (p, _) = is_str_ptr p || is_wstr_ptr p
 
+(* This tests if the member has a non-empty size attribute,
+   implying that it should be marshalled. *)
+let is_marshalled_ptr = function
+  | PTPtr (_, attr) -> attr.pa_size <> empty_ptr_size
+  | PTVal _ -> false
+
 let gen_c_for count body =
   if count = "1" then body
   else
@@ -505,17 +511,10 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       | Ptr (Struct n) | Ptr (Foreign n) -> get_struct_by_name n
       | _ -> None
     in
-    (* This tests if the member has a non-empty size attribute,
-       implying that deep-copy is expected. *)
-    let should_deepcopy_member (ptype, _) =
-      match ptype with
-      | PTPtr (_, attr) -> attr.pa_size <> empty_ptr_size
-      | PTVal _ -> false
-    in
     (* Only enabled with --experimental! *)
     if ep.experimental then
       match should_deepcopy_a a with
-      | Some s -> List.filter should_deepcopy_member s.smlist
+      | Some s -> List.filter (fun (p, _) -> is_marshalled_ptr p) s.smlist
       | None -> []
     else []
   in
