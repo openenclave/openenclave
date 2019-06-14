@@ -57,9 +57,10 @@ bool verify_mrsigner_openssl(
         printf(TLS_CLIENT "Out of memory\n");
         goto done;
     }
-    printf(TLS_CLIENT "expected_signer_size=[%lu]\n", expected_signer_size);
-    printf(TLS_CLIENT "public key buffer size[%lu]\n", pem_key_buffer_len);
-    printf(TLS_CLIENT "public key\n[%s]\n", pem_key_buffer);
+    // The following printf are for debugging
+    // printf(TLS_CLIENT "expected_signer_size=[%lu]\n", expected_signer_size);
+    // printf(TLS_CLIENT "public key buffer size[%lu]\n", pem_key_buffer_len);
+    // printf(TLS_CLIENT "public key\n[%s]\n", pem_key_buffer);
 
     // convert a public key in buffer format into a rsa key
     bufio = BIO_new(BIO_s_mem());

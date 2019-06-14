@@ -34,12 +34,16 @@ int cert_verify_callback(
 
     (void)data;
 
-    printf(" cert_verify_callback with depth = %d\n", depth);
+    printf(TLS_CLIENT "Received TLS certificate from server\n");
+    printf(TLS_CLIENT "cert_verify_callback with depth = %d\n", depth);
 
     cert_buf = crt->raw.p;
     cert_size = crt->raw.len;
 
-    printf("crt->version = %d cert_size = %zu\n", crt->version, cert_size);
+    printf(
+        TLS_CLIENT "crt->version = %d cert_size = %zu\n",
+        crt->version,
+        cert_size);
 
     if (cert_size <= 0)
         goto exit;
@@ -49,6 +53,7 @@ int cert_verify_callback(
     if (result != OE_OK)
     {
         printf(
+            TLS_CLIENT
             "oe_verify_attestation_certificate failed with result = %s\n",
             oe_result_str(result));
         goto exit;

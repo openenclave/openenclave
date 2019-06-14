@@ -184,8 +184,9 @@ bool verify_mrsigner(
     }
 
     printf("Verify connecting client's identity\n");
-    printf("public key buffer size[%lu]\n", sizeof(siging_public_key_buf));
-    printf("public key\n[%s]\n", siging_public_key_buf);
+    // the following printfs are for debuging
+    // printf("public key buffer size[%lu]\n", sizeof(siging_public_key_buf));
+    // printf("public key\n[%s]\n", siging_public_key_buf);
 
     mbedtls_pk_init(&ctx);
     res = mbedtls_pk_parse_public_key(

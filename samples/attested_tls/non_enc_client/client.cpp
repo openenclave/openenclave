@@ -80,7 +80,7 @@ int communicate_with_server(SSL* ssl)
         goto done;
     }
 
-    printf(TLS_CLIENT "\n\n%d bytes written\n%s\n", bytes_written, (char*)buf);
+    printf(TLS_CLIENT "\n\n%d bytes written\n\n", bytes_written);
 
     // Read the HTTP response from server
     printf(TLS_CLIENT "\n\n<-- Read from server:\n");
@@ -100,7 +100,7 @@ int communicate_with_server(SSL* ssl)
             break;
         }
 
-        printf(TLS_CLIENT " %d bytes read\n%s", bytes_read, (char*)buf);
+        printf(TLS_CLIENT " %d bytes read\n", bytes_read);
 #ifdef ADD_TEST_CHECKING
         // check to to see if received payload is expected
         if ((bytes_read != SERVER_PAYLOAD_SIZE) ||

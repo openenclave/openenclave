@@ -23,9 +23,14 @@ oe_result_t enclave_identity_verifier_callback(
     oe_identity_t* identity,
     void* arg);
 
-// If set, the verify callback is called for each certificate in the chain.
-// The verification callback is supposed to return 0 on success. Otherwise, the
-// verification failed.
+// The server end of this established is inside an enclave. If the connecting
+// client provides a certificate during the TLS handshaking,
+// cert_verify_callback will be called with client's certificate. When everthing
+// is validated successfully, mainly passing
+// oe_verify_attestation_certificate(), we can be sure the established TLS
+// channel is an Attested TLS channel between two enclaves. In the case of
+// establishing an Attested TLS channel between an non-enclave client and
+// enclave, cert_verify_callback won't be called in our sample.
 int cert_verify_callback(
     void* data,
     mbedtls_x509_crt* crt,
@@ -39,12 +44,17 @@ int cert_verify_callback(
 
     (void)data;
 
-    printf(" cert_verify_callback with depth = %d\n", depth);
+    printf(TLS_SERVER
+           "\n** Received client certificate and started validating it**\n\n");
+    printf(TLS_SERVER "cert_verify_callback with depth = %d\n", depth);
 
     cert_buf = crt->raw.p;
     cert_size = crt->raw.len;
 
-    printf("crt->version = %d cert_size = %zu\n", crt->version, cert_size);
+    printf(
+        TLS_SERVER "crt->version = %d cert_size = %zu\n",
+        crt->version,
+        cert_size);
 
     if (cert_size <= 0)
         goto exit;
@@ -54,12 +64,15 @@ int cert_verify_callback(
     if (result != OE_OK)
     {
         printf(
+            TLS_SERVER
             "oe_verify_attestation_certificate failed with result = %s\n",
             oe_result_str(result));
         goto exit;
     }
     ret = 0;
     *flags = 0;
+    printf(TLS_SERVER "\n\n---------Establishing an Attested TLS channel "
+                      "between two enclaves---------\n\n");
 exit:
     return ret;
 }
