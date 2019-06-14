@@ -146,6 +146,7 @@ int oe_iov_sync(
 
             /* Sync the base data for this element. */
             {
+                /* Note: buf[i].iov_base is an offset here (not a pointer). */
                 uint8_t* src = (uint8_t*)buf[i].iov_base + (uint64_t)buf;
                 size_t src_size = buf[i].iov_len;
                 uint8_t* dest = (uint8_t*)iov[i].iov_base;
