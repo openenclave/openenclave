@@ -51,7 +51,7 @@ build:
 	oeedger8r ../tls_client.edl --trusted --trusted-dir .
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp client.cpp cert_verifier.cpp identity_verifier.cpp ../../common/utility.cpp crypto.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) ./tls_client_t.c
-	$(CXX) -o tls_client_enclave ecalls.o crypto.o client.o cert_verifier.o identity_verifier.o utility.o tls_client_t.o $(LDFLAGS) -lmbedtls -lmbedcrypto -loehostsock -loehostresolver -loecore -loelibc
+	$(CXX) -o tls_client_enclave ecalls.o crypto.o client.o cert_verifier.o identity_verifier.o utility.o tls_client_t.o $(LDFLAGS) -lmbedtls -lmbedcrypto -loehostsock -loehostresolver -loecore -loelibc -loesyscall
 
 sign:
 	oesign sign -e tls_client_enclave -c  enc.conf -k private.pem
