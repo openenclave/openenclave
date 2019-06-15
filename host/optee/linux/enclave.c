@@ -299,8 +299,8 @@ oe_result_t oe_create_enclave(
     if (enclave_out)
         *enclave_out = NULL;
 
-    /* Install the POSIX ocall function table. */
-    oe_register_posix_ocall_function_table();
+    /* Install the SYSCALL ocall function table. */
+    oe_register_syscall_ocall_function_table();
 
     /* Check parameters */
     if (!enclave_path || !enclave_out ||
