@@ -25,7 +25,7 @@ const void* __oe_get_enclave_base()
 
 const void* __oe_get_enclave_elf_header(void)
 {
-    return (void*)(tahead_get_rva() + sizeof(struct ta_head));
+    return (const uint8_t*)__oe_get_enclave_base() + sizeof(struct ta_head);
 }
 
 /*
