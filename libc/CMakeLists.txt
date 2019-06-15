@@ -50,7 +50,6 @@ else()
         ${MUSLSRC}/math/exp2l.c
         optee/abort.c
         optee/arc4random.c
-        optee/exp2l.c
         optee/syscalls.c
         optee/trace.c)
 endif()
