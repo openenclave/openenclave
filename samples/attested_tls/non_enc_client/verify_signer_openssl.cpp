@@ -4,9 +4,28 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <stdint.h>
 #include <string.h>
 #include "../common/common.h"
 #include "../common/tls_server_enc_pubkey.h"
+
+// Need the following block for supporting both OPENSSL 1.0 and 1.1
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+/* Needed for compatibility with ssl1.1 */
+static void RSA_get0_key(
+    const RSA* r,
+    const BIGNUM** n,
+    const BIGNUM** e,
+    const BIGNUM** d)
+{
+    if (n != NULL)
+        *n = r->n;
+    if (e != NULL)
+        *e = r->e;
+    if (d != NULL)
+        *d = r->d;
+}
+#endif
 
 // Compute the sha256 hash of given data.
 static int Sha256(const uint8_t* data, size_t data_size, uint8_t* sha256)

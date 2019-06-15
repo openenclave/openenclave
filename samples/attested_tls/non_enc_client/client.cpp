@@ -209,7 +209,7 @@ int main(int argc, char** argv)
         goto done;
     }
 
-    if ((ctx = SSL_CTX_new(TLS_client_method())) == NULL)
+    if ((ctx = SSL_CTX_new(SSLv23_client_method())) == NULL)
     {
         printf(TLS_CLIENT "TLS client: unable to create a new SSL context\n");
         goto done;
