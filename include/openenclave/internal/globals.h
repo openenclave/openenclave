@@ -13,6 +13,7 @@ OE_EXTERNC_BEGIN
 /* Enclave */
 const void* __oe_get_enclave_base(void);
 size_t __oe_get_enclave_size(void);
+const void* __oe_get_enclave_elf_header(void);
 
 /* Reloc */
 const void* __oe_get_reloc_base(void);

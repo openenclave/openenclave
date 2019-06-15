@@ -158,6 +158,11 @@ size_t __oe_get_enclave_size()
     return oe_enclave_properties_sgx.image_info.enclave_size;
 }
 
+const void* __oe_get_enclave_elf_header(void)
+{
+    return __oe_get_enclave_base();
+}
+
 /*
 **==============================================================================
 **
