@@ -121,9 +121,10 @@ typedef enum _oe_enclave_type
      * other than x64 will not support this and will generate errors.
      */
     OE_ENCLAVE_TYPE_SGX = 2,
-    /** OE_ENCLAVE_TYPE_OPTEE will force the platform to use OP-TEE, but any
-     * platform other than AArch64 with ARM TrustZone will not support this
-     * and will generate errors.
+    /**
+     * OE_ENCLAVE_TYPE_OPTEE will force the platform to use OP-TEE, but any
+     * platform other than one that implements ARM TrustZone with OP-TEE as its
+     * secure kernel will not support this and will generate errors.
      */
     OE_ENCLAVE_TYPE_OPTEE = 3,
     /**

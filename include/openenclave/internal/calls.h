@@ -514,8 +514,8 @@ oe_result_t oe_ecall(
  * not whether it was successful. The ECALL implementation must define its own
  * error reporting scheme based on its parameters.
  *
- * The argument description parameters (*_size and *_is_pointer) are only used
- * for OP-TEE.
+ * The argument description parameters (*_size and *_is_pointer) are not used
+ * for SGX.
  *
  * @param func The number of the function to be called.
  * @param arg_in The input argument passed to the function.
