@@ -3,21 +3,21 @@
 
 ##==============================================================================
 ##
-## These rules generate the edge routines for the POSIX interface, which is
-## installed by oe_register_posix_ecall_function_table().
+## These rules generate the edge routines for the SYSCALL interface, which is
+## installed by oe_register_syscall_ecall_function_table().
 ##
 ##==============================================================================
 
 set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
-set(EDL_FILE ${EDL_DIR}/posix.edl)
+set(EDL_FILE ${EDL_DIR}/syscall.edl)
 
 add_custom_command(
-    OUTPUT posix_u.h posix_u.c posix_args.h
-    DEPENDS ${EDL_FILE} edger8r
+    OUTPUT syscall_u.h syscall_u.c syscall_args.h
+    DEPENDS ${EDL_FILE}
     COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${EDL_FILE})
 
-add_custom_target(posix_untrusted_edl
-    DEPENDS posix_u.h posix_u.c posix_args.h)
+add_custom_target(syscall_untrusted_edl
+    DEPENDS syscall_u.h syscall_u.c syscall_args.h)
 
 ##==============================================================================
 ##
@@ -41,7 +41,7 @@ if (UNIX)
     crypto/openssl/rsa.c
     crypto/openssl/sha.c
     linux/hostthread.c
-    linux/posix.c
+    linux/syscall.c
     linux/time.c
     linux/windows.c)
 elseif (WIN32)
@@ -52,7 +52,7 @@ elseif (WIN32)
     crypto/bcrypt/rsa.c
     crypto/bcrypt/sha.c
     windows/hostthread.c
-    windows/posix.c
+    windows/syscall.c
     windows/time.c)
 else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
@@ -131,7 +131,7 @@ add_library(oehost STATIC
   files.c
   fopen.c
   hexdump.c
-  posix_u_wrapper.c
+  syscall_u_wrapper.c
   memalign.c
   ocalls.c
   result.c
@@ -146,7 +146,7 @@ if(WIN32)
     target_link_libraries(oehost PUBLIC ws2_32)
 endif()
 
-add_dependencies(oehost posix_untrusted_edl)
+add_dependencies(oehost syscall_untrusted_edl)
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
