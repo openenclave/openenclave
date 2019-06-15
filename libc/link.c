@@ -14,7 +14,7 @@ int dl_iterate_phdr(
     int (*callback)(struct dl_phdr_info* info, size_t size, void* data),
     void* data)
 {
-    const Elf64_Ehdr* ehdr = (Elf64_Ehdr*)__oe_get_enclave_base();
+    const Elf64_Ehdr* ehdr = (Elf64_Ehdr*)__oe_get_enclave_elf_header();
 
     const uint8_t ident[] = {0x7f, 'E', 'L', 'F'};
 
@@ -26,7 +26,7 @@ int dl_iterate_phdr(
 
     struct dl_phdr_info info;
     memset(&info, 0, sizeof(info));
-    info.dlpi_addr = (Elf64_Addr)ehdr;
+    info.dlpi_addr = (Elf64_Addr)__oe_get_enclave_base();
     info.dlpi_name = "";
     info.dlpi_phdr = (Elf64_Phdr*)((uint8_t*)ehdr + ehdr->e_phoff);
     info.dlpi_phnum = ehdr->e_phnum;
