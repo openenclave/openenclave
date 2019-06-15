@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="OpenEnclaveVisualStudioExtension-1" Version="0.5" Language="en-US" Publisher="Microsoft" />
+        <Identity Id="OpenEnclaveVisualStudioExtension-1" Version="0.6" Language="en-US" Publisher="Microsoft" />
         <DisplayName>Open Enclave Wizard - Preview</DisplayName>
         <Description xml:space="preserve">Support for developing and debugging Trusted Execution Environment enclaves that can run on both SGX and TrustZone, and using them from your own applications.</Description>
         <MoreInfo>https://github.com/Microsoft/openenclave/blob/feature.new_platforms/new_platforms/docs/visualstudio_dev.md</MoreInfo>

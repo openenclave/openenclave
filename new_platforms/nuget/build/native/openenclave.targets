@@ -339,7 +339,7 @@
 
             <!-- Master branch -->
             <AdditionalOptions Condition="$(OEIsSgx) == True And $(OEIsLinux) == True And $(OEIsMaster) == True">-nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,--build-id</AdditionalOptions>
-            <LibraryDependencies Condition="$(OEIsMaster) == True">oeenclave;mbedx509;mbedcrypto;oelibcxx;oelibc;oecore;%(LibraryDependencies)</LibraryDependencies>
+            <AdditionalOptions Condition="$(OEIsMaster) == True">%(AdditionalOptions) -loeenclave /opt/openenclave/lib/openenclave/enclave/libmbedx509.a /opt/openenclave/lib/openenclave/enclave/libmbedcrypto.a -loelibcxx -loelibc -loecore</AdditionalOptions>
         </Link>
     </ItemDefinitionGroup>
 
