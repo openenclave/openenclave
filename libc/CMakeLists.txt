@@ -43,7 +43,6 @@ set (PLATFORM_SRC "")
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
-        sgx/link.c
         sgx/syscalls.c)
 
     if (UNIX OR USE_CLANGW)
@@ -57,7 +56,6 @@ else()
     list(APPEND PLATFORM_SRC
         optee/abort.c
         optee/exp2l.c
-        optee/link.c
         optee/syscalls.c
         optee/trace.c)
 endif()
@@ -73,6 +71,7 @@ add_library(oelibc STATIC
     getnameinfo.c
     kill.c
     libunwind_stubs.c
+    link.c
     locale.c
     malloc.c
     pthread.c
