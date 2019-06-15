@@ -44,14 +44,12 @@ set (PLATFORM_SRC "")
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
         sgx/arc4random.c
-        sgx/link.c
         sgx/syscalls.c)
 else()
     list(APPEND PLATFORM_SRC
         ${MUSLSRC}/math/exp2l.c
         optee/abort.c
         optee/arc4random.c
-        optee/link.c
         optee/syscalls.c
         optee/trace.c)
 endif()
@@ -66,6 +64,7 @@ add_library(oelibc STATIC
     getnameinfo.c
     kill.c
     libunwind_stubs.c
+    link.c
     locale.c
     malloc.c
     pthread.c
