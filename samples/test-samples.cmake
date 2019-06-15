@@ -24,7 +24,7 @@ else ()
   # These tests can only run with SGX-FLC, meaning they were built
   # against SGX.
   if (USE_LIBSGX)
-    list(APPEND SAMPLES_LIST local_attestation remote_attestation)
+    list(APPEND SAMPLES_LIST local_attestation remote_attestation attested_tls)
   endif ()
 endif ()
 
@@ -54,14 +54,18 @@ foreach (SAMPLE ${SAMPLES_LIST})
   if (NOT SIMULATION)
     # Build with the CMake package
     message(STATUS "Samples test '${SAMPLE}' with CMake running...")
-    execute_process(
-      COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
-      RESULT_VARIABLE TEST_RESULT)
-    if (TEST_RESULT)
-      message(WARNING "Samples test '${SAMPLE}' with CMake failed!")
-      set(ALL_TEST_RESULT 1)
+    if (NOT (${SAMPLE} MATCHES "(attested_tls)"))
+        execute_process(
+        COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
+        RESULT_VARIABLE TEST_RESULT)
+        if (TEST_RESULT)
+          message(WARNING "Samples test '${SAMPLE}' with CMake failed!")
+          set(ALL_TEST_RESULT 1)
+	else ()
+	  message(STATUS "Samples test '${SAMPLE}' with CMake passed!")
+	endif ()
     else ()
-      message(STATUS "Samples test '${SAMPLE}' with CMake passed!")
+	message(STATUS "Skipped!")
     endif ()
 
     # Build with pkg-config
@@ -73,8 +77,8 @@ foreach (SAMPLE ${SAMPLES_LIST})
         message(WARNING "Samples test '${SAMPLE}' with pkg-config failed!")
         set(ALL_TEST_RESULT 1)
       else ()
-        message(STATUS "Samples test '${SAMPLE}' with pkg-config passed!")
-    endif ()
+	message(STATUS "Samples test '${SAMPLE}' with pkg-config passed!")
+      endif ()
   endif ()
 
   # The file-encryptor and helloworld are special cases which also
