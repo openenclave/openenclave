@@ -40,7 +40,7 @@ if (OE_SGX)
             ../../common/sgx/rand.asm
             sgx/windows/reloc.c)
     endif()
-elseif(OE_TRUSTZONE)
+elseif (OE_TRUSTZONE)
     list(APPEND PLATFORM_SRC
         optee/backtrace.c
         optee/bounds.c
@@ -48,13 +48,16 @@ elseif(OE_TRUSTZONE)
         optee/globals.c
         optee/gp.c
         optee/printf.c
-        optee/reloc.c
         optee/sched_yield.c
         optee/spinlock.c
         optee/start.c
         optee/stubs.c
         optee/thread.c)
 endif()
+
+if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
+    list(APPEND PLATFORM_SRC init_fini.c)
+endif ()
 
 add_library(oecore STATIC
     ../../common/safecrt.c
