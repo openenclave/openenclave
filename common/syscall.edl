@@ -1,0 +1,381 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** syscall.edl:
+**
+**     This file declares OCALLs and ECALLs needed by the enclave to implement
+**     various system operations, such as file and socket I/O. Implementations
+**     are provided for both Linux and Windows here:
+**
+**         ../host/linux/syscall.c
+**         ../host/windows/syscall.c
+**
+**     The file declares host-side support for the SYSCALL feature. Within the
+**     enclave, this subset functions as a portable abstration layer.
+**
+**==============================================================================
+*/
+
+enclave {
+
+    include "openenclave/internal/syscall/netdb.h"
+    include "openenclave/internal/syscall/sys/poll.h"
+    include "openenclave/internal/syscall/sys/socket.h"
+    include "openenclave/internal/syscall/sys/utsname.h"
+    include "openenclave/internal/syscall/sys/stat.h"
+    include "openenclave/internal/syscall/dirent.h"
+    include "openenclave/internal/syscall/poll.h"
+    include "openenclave/internal/syscall/types.h"
+
+    trusted {
+
+        public void oe_syscall_stub_ecall();
+    };
+
+    untrusted {
+
+        int oe_syscall_uname_ocall(
+            [out, count=1] struct oe_utsname* buf)
+            propagate_errno;
+
+        oe_host_fd_t oe_syscall_open_ocall(
+            [in, string] const char* pathname,
+            int flags,
+            oe_mode_t mode)
+            propagate_errno;
+
+        ssize_t oe_syscall_read_ocall(
+            oe_host_fd_t fd,
+            [out, size=count] void* buf,
+            size_t count)
+            propagate_errno;
+
+        ssize_t oe_syscall_write_ocall(
+            oe_host_fd_t fd,
+            [in, size=count] const void* buf,
+            size_t count)
+            propagate_errno;
+
+        ssize_t oe_syscall_readv_ocall(
+            oe_host_fd_t fd,
+            [in, out, size=iov_buf_size] void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        ssize_t oe_syscall_writev_ocall(
+            oe_host_fd_t fd,
+            [in, size=iov_buf_size] const void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        oe_off_t oe_syscall_lseek_ocall(
+            oe_host_fd_t fd,
+            oe_off_t offset,
+            int whence)
+            propagate_errno;
+
+        int oe_syscall_close_ocall(
+            oe_host_fd_t fd)
+            propagate_errno;
+
+        int oe_syscall_close_socket_ocall(
+            oe_host_fd_t sockfd)
+            propagate_errno;
+
+        oe_host_fd_t oe_syscall_dup_ocall(
+            oe_host_fd_t oldfd)
+            propagate_errno;
+
+        uint64_t oe_syscall_opendir_ocall(
+            [in, string] const char* name)
+            propagate_errno;
+
+        /* Returns 0 if entry found, 1 if none found, and -1 on error. */
+        int oe_syscall_readdir_ocall(
+            uint64_t dirp,
+            [out, count=1] struct oe_dirent* entry)
+            propagate_errno;
+
+        void oe_syscall_rewinddir_ocall(
+            uint64_t dirp);
+
+        int oe_syscall_closedir_ocall(
+            uint64_t dirp)
+            propagate_errno;
+
+        int oe_syscall_stat_ocall(
+            [in, string] const char* pathname,
+            [out, count=1] struct oe_stat* buf)
+            propagate_errno;
+
+        int oe_syscall_access_ocall(
+            [in, string] const char* pathname,
+            int mode)
+            propagate_errno;
+
+        int oe_syscall_link_ocall(
+            [in, string] const char* oldpath,
+            [in, string] const char* newpath)
+            propagate_errno;
+
+        int oe_syscall_unlink_ocall(
+            [in, string] const char* pathname)
+            propagate_errno;
+
+        int oe_syscall_rename_ocall(
+            [in, string] const char* oldpath,
+            [in, string] const char* newpath)
+            propagate_errno;
+
+        int oe_syscall_truncate_ocall(
+            [in, string] const char* path,
+            oe_off_t length)
+            propagate_errno;
+
+        int oe_syscall_mkdir_ocall(
+            [in, string] const char* pathname,
+            oe_mode_t mode)
+            propagate_errno;
+
+        int oe_syscall_rmdir_ocall(
+            [in, string] const char* pathname)
+            propagate_errno;
+
+       oe_host_fd_t oe_syscall_socket_ocall(
+            int domain,
+            int type,
+            int protocol)
+            propagate_errno;
+
+        int oe_syscall_socketpair_ocall(
+            int domain,
+            int type,
+            int protocol,
+            [out] oe_host_fd_t sv[2])
+            propagate_errno;
+
+        int oe_syscall_connect_ocall(
+            oe_host_fd_t sockfd,
+            [in, size=addrlen] const struct oe_sockaddr* addr,
+            oe_socklen_t addrlen)
+            propagate_errno;
+
+        oe_host_fd_t oe_syscall_accept_ocall(
+            oe_host_fd_t sockfd,
+            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
+            oe_socklen_t addrlen_in,
+            [out, count=1] oe_socklen_t* addrlen_out)
+            propagate_errno;
+
+        int oe_syscall_bind_ocall(
+            oe_host_fd_t sockfd,
+            [in, size=addrlen] const struct oe_sockaddr* addr,
+            oe_socklen_t addrlen)
+            propagate_errno;
+
+        int oe_syscall_listen_ocall(
+            oe_host_fd_t sockfd,
+            int backlog)
+            propagate_errno;
+
+        ssize_t oe_syscall_recvmsg_ocall(
+            oe_host_fd_t sockfd,
+            [out, size=msg_namelen] void* msg_name,
+            oe_socklen_t msg_namelen,
+            [out, count=1] oe_socklen_t* msg_namelen_out,
+            [in, out, size=msg_iov_buf_size] void* msg_iov_buf,
+            size_t msg_iovlen,
+            size_t msg_iov_buf_size,
+            [out, size=msg_controllen] void* msg_control,
+            size_t msg_controllen,
+            [out, count=1] size_t* msg_controllen_out,
+            int flags)
+            propagate_errno;
+
+        ssize_t oe_syscall_sendmsg_ocall(
+            oe_host_fd_t sockfd,
+            [in, size=msg_namelen] const void* msg_name,
+            oe_socklen_t msg_namelen,
+            [in, size=msg_iov_buf_size] void* msg_iov_buf,
+            size_t msg_iovlen,
+            size_t msg_iov_buf_size,
+            [in, size=msg_controllen] const void* msg_control,
+            size_t msg_controllen,
+            int flags)
+            propagate_errno;
+
+        ssize_t oe_syscall_recv_ocall(
+            oe_host_fd_t sockfd,
+            [in, out, size=len] void* buf,
+            size_t len,
+            int flags)
+            propagate_errno;
+
+        ssize_t oe_syscall_recvfrom_ocall(
+            oe_host_fd_t sockfd,
+            [out, size=len] void* buf,
+            size_t len,
+            int flags,
+            [in, out, size=addrlen_in] struct oe_sockaddr* src_addr,
+            oe_socklen_t addrlen_in,
+            [out, count=1] oe_socklen_t* addrlen_out)
+            propagate_errno;
+
+        ssize_t oe_syscall_send_ocall(
+            oe_host_fd_t sockfd,
+            [in, size=len] const void* buf,
+            size_t len,
+            int flags)
+            propagate_errno;
+
+        ssize_t oe_syscall_sendto_ocall(
+            oe_host_fd_t sockfd,
+            [in, size=len] const void* buf,
+            size_t len,
+            int flags,
+            [in, size=addrlen] const struct oe_sockaddr* dest_addr,
+            oe_socklen_t addrlen)
+            propagate_errno;
+
+        ssize_t oe_syscall_recvv_ocall(
+            oe_host_fd_t fd,
+            [in, out, size=iov_buf_size] void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        ssize_t oe_syscall_sendv_ocall(
+            oe_host_fd_t fd,
+            [in, size=iov_buf_size] const void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        int oe_syscall_shutdown_ocall(
+            oe_host_fd_t sockfd,
+            int how)
+            propagate_errno;
+
+        int oe_syscall_fcntl_ocall(
+            oe_host_fd_t fd,
+            int cmd,
+            uint64_t arg)
+            propagate_errno;
+
+        int oe_syscall_ioctl_ocall(
+            oe_host_fd_t fd,
+            uint64_t request,
+            uint64_t arg)
+            propagate_errno;
+
+        int oe_syscall_setsockopt_ocall(
+            oe_host_fd_t sockfd,
+            int level,
+            int optname,
+            [in, size=optlen] const void* optval,
+            oe_socklen_t optlen)
+            propagate_errno;
+
+        int oe_syscall_getsockopt_ocall(
+            oe_host_fd_t sockfd,
+            int level,
+            int optname,
+            [out, size=optlen_in] void* optval,
+            oe_socklen_t optlen_in,
+            [out] oe_socklen_t* optlen_out)
+            propagate_errno;
+
+        int oe_syscall_getsockname_ocall(
+            oe_host_fd_t sockfd,
+            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
+            oe_socklen_t addrlen_in,
+            [out, size=1] oe_socklen_t* addrlen_out)
+            propagate_errno;
+
+        int oe_syscall_getpeername_ocall(
+            oe_host_fd_t sockfd,
+            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
+            oe_socklen_t addrlen_in,
+            [out, size=1] oe_socklen_t* addrlen_out)
+            propagate_errno;
+
+        int oe_syscall_shutdown_sockets_device_ocall(
+            oe_host_fd_t sockfd)
+            propagate_errno;
+
+        int oe_syscall_kill_ocall(
+            int pid,
+            int signum)
+            propagate_errno;
+
+        int oe_syscall_getaddrinfo_open_ocall(
+            [in, string] const char* node,
+            [in, string] const char* service,
+            [in, count=1] const struct oe_addrinfo* hints,
+            [out, count=1] uint64_t* handle)
+            propagate_errno;
+
+        int oe_syscall_getaddrinfo_read_ocall(
+            uint64_t handle,
+            [out, count=1] int* ai_flags,
+            [out, count=1] int* ai_family,
+            [out, count=1] int* ai_socktype,
+            [out, count=1] int* ai_protocol,
+            oe_socklen_t ai_addrlen_in,
+            [out, count=1] oe_socklen_t* ai_addrlen,
+            [out, size=ai_addrlen_in] struct oe_sockaddr* ai_addr,
+            size_t ai_canonnamelen_in,
+            [out, count=1] size_t* ai_canonnamelen,
+            [out, size=ai_canonnamelen_in] char* ai_canonname)
+            propagate_errno;
+
+        int oe_syscall_getaddrinfo_close_ocall(
+            uint64_t handle)
+            propagate_errno;
+
+        int oe_syscall_getnameinfo_ocall(
+            [in, size=salen] const struct oe_sockaddr* sa,
+            oe_socklen_t salen,
+            [out, size=hostlen] char* host,
+            oe_socklen_t hostlen,
+            [out, size=servlen] char* serv,
+            oe_socklen_t servlen,
+            int flags)
+            propagate_errno;
+
+        int oe_syscall_poll_ocall(
+            [in, out, count=nfds] struct oe_host_pollfd* host_fds,
+            oe_nfds_t nfds,
+            int timeout)
+            propagate_errno;
+
+        int oe_syscall_getpid_ocall();
+
+        int oe_syscall_getppid_ocall();
+
+        int oe_syscall_getpgrp_ocall();
+
+        unsigned int oe_syscall_getuid_ocall();
+
+        unsigned int oe_syscall_geteuid_ocall();
+
+        unsigned int oe_syscall_getgid_ocall();
+
+        unsigned int oe_syscall_getegid_ocall();
+
+        int oe_syscall_getpgid_ocall(
+            int pid)
+            propagate_errno;
+
+        int oe_syscall_getgroups_ocall(
+            size_t size,
+            [out, count=size] unsigned int* list)
+            propagate_errno;
+
+    };
+};

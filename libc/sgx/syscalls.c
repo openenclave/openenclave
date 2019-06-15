@@ -6,11 +6,11 @@
 
 #include <errno.h>
 #include <openenclave/corelibc/errno.h>
-#include <openenclave/corelibc/sys/stat.h>
-#include <openenclave/corelibc/sys/syscall.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/syscall.h>
+#include <openenclave/internal/syscall/sys/stat.h>
+#include <openenclave/internal/syscall/sys/syscall.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/time.h>
 #include <stdarg.h>
@@ -235,7 +235,7 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
         /* The hook ignored the syscall so fall through */
     }
 
-    /* Let liboeposix handle select system calls. */
+    /* Let liboesyscall handle select system calls. */
     {
         long ret;
 

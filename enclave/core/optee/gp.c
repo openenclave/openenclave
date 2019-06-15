@@ -11,8 +11,8 @@
 #include <openenclave/internal/raise.h>
 #include "../atexit.h"
 #include "../calls.h"
+#include "../init_fini.h"
 #include "globals.h"
-#include "init.h"
 
 #include <tee_internal_api.h>
 

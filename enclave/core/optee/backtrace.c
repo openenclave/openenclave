@@ -5,8 +5,9 @@
 
 int oe_backtrace(void** buffer, int size)
 {
-    OE_UNUSED(buffer);
     OE_UNUSED(size);
+
+    *buffer = NULL;
 
     return 0;
 }

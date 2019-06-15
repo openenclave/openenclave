@@ -5,8 +5,8 @@
  * into oecore. It scopes down the determination of __BYTE_ORDER
  * relevant to memcpy avoiding GNUC/BSD specializations.
  */
-#ifndef _OE_ENDIAN_H
-#define _OE_ENDIAN_H
+#ifndef _OE_CORELIBC_ENDIAN_H
+#define _OE_CORELIBC_ENDIAN_H
 
 #define __LITTLE_ENDIAN 1234
 #define __BIG_ENDIAN 4321
@@ -22,4 +22,4 @@
 #define __BYTE_ORDER __LITTLE_ENDIAN
 #endif
 
-#endif /* _OE_ENDIAN_H */
+#endif /* _OE_CORELIBC_ENDIAN_H */
