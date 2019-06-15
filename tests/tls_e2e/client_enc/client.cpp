@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/corelibc/arpa/inet.h>
-#include <openenclave/corelibc/netdb.h>
-#include <openenclave/corelibc/netinet/in.h>
-#include <openenclave/corelibc/sys/socket.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/posix/device.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/syscall/arpa/inet.h>
+#include <openenclave/internal/syscall/device.h>
+#include <openenclave/internal/syscall/netdb.h>
+#include <openenclave/internal/syscall/netinet/in.h>
+#include <openenclave/internal/syscall/sys/socket.h>
 #include <openenclave/internal/tests.h>
 
 #include <errno.h> // For errno & error defs

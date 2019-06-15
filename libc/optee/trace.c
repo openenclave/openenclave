@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/print.h>
 #include <stdarg.h>
-#include <stdio.h>
 
 void trace_printf(
     const char* function,
@@ -15,9 +15,9 @@ void trace_printf(
 {
     va_list ap;
 
-    printf("[%i (%i)] %s:%i ", level, level_ok, function, line);
+    oe_host_printf("[%i (%i)] %s:%i ", level, level_ok, function, line);
 
     va_start(ap, fmt);
-    vfprintf(stdout, fmt, ap);
+    oe_host_vfprintf(0, fmt, ap);
     va_end(ap);
 }

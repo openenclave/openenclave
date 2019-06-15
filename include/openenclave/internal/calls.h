@@ -6,9 +6,9 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/unistd.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/syscall/unistd.h>
 #include "backtrace.h"
 
 OE_EXTERNC_BEGIN
@@ -490,19 +490,19 @@ oe_result_t oe_ocall(
 /*
 **==============================================================================
 **
-** The POSIX function tables.
+** The SYSCALL function tables.
 **
 **==============================================================================
 */
 
-#define OE_POSIX_OCALL_FUNCTION_TABLE_ID 0
-#define OE_POSIX_ECALL_FUNCTION_TABLE_ID 0
+#define OE_SYSCALL_OCALL_FUNCTION_TABLE_ID 0
+#define OE_SYSCALL_ECALL_FUNCTION_TABLE_ID 0
 
-/* Register the OCALL table needed by the POSIX interface (host side). */
-void oe_register_posix_ocall_function_table(void);
+/* Register the OCALL table needed by the SYSCALL interface (host side). */
+void oe_register_syscall_ocall_function_table(void);
 
-/* Register the ECALL table needed by the POSIX interface (enclave side). */
-void oe_register_posix_ecall_function_table(void);
+/* Register the ECALL table needed by the SYSCALL interface (enclave side). */
+void oe_register_syscall_ecall_function_table(void);
 
 OE_EXTERNC_END
 
