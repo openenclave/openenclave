@@ -4,9 +4,37 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
 
+#include <user_ta_header.h>
+
 // These are defined in liboeutee.
 extern uint8_t ta_heap[];
 extern const size_t ta_heap_size;
+
+/*
+**==============================================================================
+**
+** Enclave boundaries:
+**
+**==============================================================================
+*/
+
+const void* __oe_get_enclave_base()
+{
+    return (void*)tahead_get_rva();
+}
+
+const void* __oe_get_enclave_elf_header(void)
+{
+    return (void*)(tahead_get_rva() + sizeof(struct ta_head));
+}
+
+/*
+**==============================================================================
+**
+** Heap boundaries:
+**
+**==============================================================================
+*/
 
 const void* __oe_get_heap_base()
 {
