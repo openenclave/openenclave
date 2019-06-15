@@ -28,9 +28,7 @@ add_library(oeutee
   ${OE_TZ_LIBUTEE_SRC}/tee_tcpudp_socket.c
   ${OE_TZ_LIBUTEE_SRC}/tee_socket_pta.c
   ${OE_TZ_LIBUTEE_SRC}/arch/arm/user_ta_entry.c
-  ${OE_TZ_LIBUTEE_SRC}/arch/arm/utee_misc.c
-  ${OE_TZ_LIBUTILS_EXT_SRC}/snprintk.c
-  ${OE_TZ_LIBUTILS_EXT_SRC}/buf_compare_ct.c)
+  ${OE_TZ_LIBUTEE_SRC}/arch/arm/utee_misc.c)
 set_property(TARGET oeutee PROPERTY C_STANDARD 99)
 target_compile_options(oeutee PUBLIC
   -include ${OE_TZ_TA_DEV_KIT_CONF})
@@ -53,7 +51,6 @@ set_source_files_properties(
   ${OE_TZ_LIBUTEE_SRC}/tee_tcpudp_socket.c
   ${OE_TZ_LIBUTEE_SRC}/tee_socket_pta.c
   ${OE_TZ_LIBUTEE_SRC}/arch/arm/user_ta_entry.c
-  ${OE_TZ_LIBUTILS_EXT_SRC}/snprintk.c
   PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 
