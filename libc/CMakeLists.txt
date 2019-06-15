@@ -42,9 +42,6 @@ endif ()
 set (PLATFORM_SRC "")
 
 if (OE_SGX)
-    list(APPEND PLATFORM_SRC
-        sgx/syscalls.c)
-
     if (UNIX OR USE_CLANGW)
         list(APPEND PLATFORM_SRC
             ../common/sgx/rand.S)
@@ -56,7 +53,6 @@ else()
     list(APPEND PLATFORM_SRC
         optee/abort.c
         optee/exp2l.c
-        optee/syscalls.c
         optee/trace.c)
 endif()
 
@@ -80,6 +76,7 @@ add_library(oelibc STATIC
     signal.c
     stdlib.c
     strerror.c
+    syscalls.c
     sysconf.c
     time.c
     __printf_chk.c
