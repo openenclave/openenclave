@@ -55,15 +55,3 @@ int verify_report_and_set_pubkey(
     return dispatcher.verify_report_and_set_pubkey(
         pem_key, key_size, remote_report, remote_report_size);
 }
-
-// Encrypt message for another enclave using the public key stored for it.
-int generate_encrypted_message(uint8_t** data, size_t* size)
-{
-    return dispatcher.generate_encrypted_message(data, size);
-}
-
-// Process encrypted message
-int process_encrypted_msg(uint8_t* data, size_t size)
-{
-    return dispatcher.process_encrypted_msg(data, size);
-}

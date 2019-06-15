@@ -43,9 +43,13 @@ There are two types of attestation:
 
 ### Secure Communication Channel
 
-Remote Attestation alone is not enough for the remote party to be able to securely deliver their secrets to the requesting enclave. Securely delivering services requires a secure communication channel. Using Asymmetric/Public-Key encryption is a mechanism for establishing such a channel.
+Remote Attestation alone is not enough for the remote party to be able to securely deliver their secrets to the requesting enclave. Securely delivering services requires a secure communication channel which is often guaranteed by Transport Layer Security (TLS).
 
-In this remote attestation sample, it demonstrates a way to embed public keys in the remote attestation process to help establish a secure communication channel right after the attestation is done.
+A few alternatives for establishing a secure communication channel without TLS are:
+1) Use the established ephemeral private keys to perform a signed Diffie-Hellman key exchange and use symmetric key cryptography to communicate after that point.
+2) Generate an ephemeral symmetric key in one of the enclaves, say enclave_a, encrypt with the public key of enclave_b, sign with your private key and then send it to enclave_b. This will ensure that the symmetric key is only known to the two enclaves and the root of trust is in the remote attestation.
+
+This remote attestation sample only demonstrates the remote attestation process but does not establish a secure communication channel or communicate secrets after that. Please note that the established public keys cannot be used to encrypt the messages as they are visible to the external world, including the host. The host can fake messages on behalf of the enclaves.
 
 Here is a good article about [Intel SGX attestation](
 https://software.intel.com/sites/default/files/managed/57/0e/ww10-2016-sgx-provisioning-and-attestation-final.pdf), which describes how Intel's SGX attestation works. The current Open Enclave's implementation was based on it for the SGX platform.
@@ -93,7 +97,7 @@ The host does the following in this sample:
 
       Where:
 
-        - `pem_key` holds the public key that identifying enclave_a and will be used for establishing a secure communication channel between the enclave_a and the enclave_b once the attestation was done.
+        - `pem_key` holds the public key that identifies enclave_a
 
         - `remote_report` contains a remote report signed by the enclave platform for use in remote attestation
 
@@ -104,27 +108,11 @@ The host does the following in this sample:
       oe_call_enclave(enclave, "VerifyReportAndSetPKey", &args);
       ```
 
-      In the enclave_b's implmentation of `VerifyReportAndSetPKey`, it calls `oe_verify_report`, which will be described in the enclave section to handle all the platform specfic report validation operations (including PCK certificate chain checking). If successful the public key in `RemoteReportWithPKey.pem_key` will be stored inside the enclave for future use
+      In the enclave_b's implementation of `VerifyReportAndSetPKey`, it calls `oe_verify_report`, which will be described in the enclave section to handle all the platform specfic report validation operations (including PCK certificate chain checking). If successful the public key in `RemoteReportWithPKey.pem_key` will be stored inside the enclave for future use
 
    4. Repeat step 2 and 3 for asking enclave_a to validate enclave_b
-  
-   5. After both enclaves successfully attest each other, use Asymmetric/Public-Key Encryption to establish secure communications between the two attesting enclaves.
-  
-      The fact that each enclave has the other enclave's public key makes it possible to establish a secure communication channel.
-  
-   6. Send encrypted messages securely between enclaves
 
-      ```c
-      // Ask enclave_a to encrypt an internal data with its private key and output encrypted message in encrypted_msg
-      generate_encrypted_message(enclave_a, &encrypted_msg, &encrypted_msg_size);
-
-      // Send encrypted_msg to the enclave_b, which will decrypt it and comparing with its internal data,
-      // In this sample, it starts both enclaves with the exact same data contents for the purpose of
-      // demonstrating that the encryption works as expected
-      process_encrypted_msg(enclave_b, encrypted_msg, encrypted_msg_size);
-      ```
-
-   7. Free the resource used, including the host memory allocated by the enclaves and the enclaves themselves
+   5. Free the resource used, including the host memory allocated by the enclaves and the enclaves themselves
   
       For example:
 
@@ -161,12 +149,12 @@ In the context of Open Enclave on Intel SGX platform, a remote report is verifie
 
 At this point, the challenger knows that the report originated from an enclave running in a TEE, and that the information in the report can be trusted.
 
-Note that for the Public Preview, remote attestation verification is only supported in the Azure ACC VMs, but Intel will be expanding support for this with Open Enclave SDK more broadly moving forwards.
+Note that for the Public Preview, remote attestation verification is only supported in the Azure ACC VMs, but Intel will be expanding support for this with Open Enclave SDK more broadly moving forward.
 
 ##### 3) Verifying the enclave identity
 
 Finally, it is up to the enclave app to check that identity and properties of the enclave reflected in the report matches its expectation.
-Open Enclave exposes a generalized identity model to support this process across TEE types. In the sample, the app-specific `AttestQuote` method calls `oe_parse_report` to obtain an `oe_report_t`. This data structure surfaces:
+Open Enclave exposes a generalized identity model to support this process across TEE types. In the sample, the app-specific `AttestQuote` method calls `oe_parse_report` to obtain an `oe_report_t`. This data structure contains:
 
 - The `reportData` signed into the report
 - The generalized identity structure as defined by `oe_identity_t`:
