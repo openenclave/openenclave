@@ -48,7 +48,7 @@ oe_result_t _get_oe_result_from_tee_result(TEE_Result status)
 static void* _find_terminator(uint8_t* buf, size_t buf_size)
 {
     while (buf < (buf + buf_size))
-        if (buf++ == '\0')
+        if (*(buf++) == '\0')
             return buf;
 
     return NULL;
