@@ -608,10 +608,10 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "#include <stdint.h>"
     ; "#include <stdlib.h> /* for wchar_t */"
     ; ""
-    ; ( if with_errno then "#include <errno.h>"
-      else
-        "/* #include <errno.h> - Errno propagation not enabled so not \
-         included. */" )
+    ; (let s = "#include <errno.h>" in
+       if with_errno then s
+       else
+         sprintf "/* %s - Errno propagation not enabled so not included. */" s)
     ; ""
     ; "#include <openenclave/bits/result.h>"
     ; ""
