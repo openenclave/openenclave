@@ -615,8 +615,8 @@ static int _hostsock_fcntl(oe_fd_t* sock_, int cmd, uint64_t arg)
             break;
     }
 
-    if (oe_posix_fcntl_ocall(&ret, sock->host_fd, cmd, arg, argsize, argout) !=
-        OE_OK)
+    if (oe_syscall_fcntl_ocall(
+            &ret, sock->host_fd, cmd, arg, argsize, argout) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 done:
 
@@ -732,7 +732,7 @@ static int _hostsock_ioctl(oe_fd_t* sock_, unsigned long request, uint64_t arg)
     if (!sock)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (oe_posix_ioctl_ocall(&ret, sock->host_fd, request, arg, 0, NULL) !=
+    if (oe_syscall_ioctl_ocall(&ret, sock->host_fd, request, arg, 0, NULL) !=
         OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 

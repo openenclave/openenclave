@@ -775,7 +775,7 @@ static int _hostfs_ioctl(oe_fd_t* desc, unsigned long request, uint64_t arg)
     }
 
     /* Call the host to perform the ioctl() operation. */
-    if (oe_posix_ioctl_ocall(
+    if (oe_syscall_ioctl_ocall(
             &ret, file->host_fd, request, arg, argsize, argout) != OE_OK)
     {
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -842,8 +842,8 @@ static int _hostfs_fcntl(oe_fd_t* desc, int cmd, uint64_t arg)
             OE_RAISE_ERRNO(OE_EINVAL);
     }
 
-    if (oe_posix_fcntl_ocall(&ret, file->host_fd, cmd, arg, argsize, argout) !=
-        OE_OK)
+    if (oe_syscall_fcntl_ocall(
+            &ret, file->host_fd, cmd, arg, argsize, argout) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:

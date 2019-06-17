@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/errno.h>
-#include <openenclave/corelibc/fcntl.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/syscall/device.h>
+#include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/internal/syscall/fdtable.h>
 #include <openenclave/internal/syscall/raise.h>
 #include <openenclave/internal/syscall/unistd.h>
