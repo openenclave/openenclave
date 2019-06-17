@@ -133,7 +133,7 @@ namespace OpenEnclaveSDK
                 // User picked a specific board for which we have binaries in the nuget package.
                 string solutionDirectory;
                 replacementsDictionary.TryGetValue("$solutiondirectory$", out solutionDirectory);
-                oeFolder = Path.Combine(solutionDirectory, "packages\\openenclave.0.2.0-CI-20190607-222616\\lib\\native\\gcc6\\optee\\v3.3.0\\" + board);
+                oeFolder = Path.Combine(solutionDirectory, "packages\\openenclave.0.2.0-CI-20190617-205644\\lib\\native\\gcc6\\optee\\v3.3.0\\" + board);
             }
             else
             {
@@ -214,13 +214,16 @@ namespace OpenEnclaveSDK
                 // Try to get enclave guid from the enclave project.
                 string enclaveguid = "FILL THIS IN";
                 string makFileName = Path.Combine(EdlLocation, "optee", "linux_gcc.mak");
-                foreach (string line in File.ReadLines(makFileName))
+                if (File.Exists(makFileName))
                 {
-                    int index = line.IndexOf("BINARY=");
-                    if (index >= 0)
+                    foreach (string line in File.ReadLines(makFileName))
                     {
-                        enclaveguid = line.Substring(index + 7).Trim();
-                        break;
+                        int index = line.IndexOf("BINARY=");
+                        if (index >= 0)
+                        {
+                            enclaveguid = line.Substring(index + 7).Trim();
+                            break;
+                        }
                     }
                 }
                 replacementsDictionary.Add("$enclaveguid$", enclaveguid);
@@ -229,7 +232,6 @@ namespace OpenEnclaveSDK
             }
             catch (Exception)
             {
-
             }
             return false;
         }
