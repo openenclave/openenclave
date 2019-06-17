@@ -585,11 +585,8 @@ static int _hostsock_fcntl(oe_fd_t* sock_, int cmd, uint64_t arg)
 
         default:
         case OE_F_DUPFD:
-        case OE_F_GETLK:
-        case OE_F_OFD_GETLK:
-        case OE_F_SETLKW:
-        case OE_F_SETLK:
         case OE_F_GETLK64:
+        case OE_F_OFD_GETLK:
         case OE_F_SETLK64:
         case OE_F_SETLKW64:
         case OE_F_OFD_SETLK:

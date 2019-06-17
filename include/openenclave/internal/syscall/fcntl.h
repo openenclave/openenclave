@@ -65,9 +65,9 @@ OE_EXTERNC_BEGIN
 #define OE_F_GETOWN         9
 #define OE_F_SETSIG        10
 #define OE_F_GETSIG        11
-#define OE_F_GETLK64       12
-#define OE_F_SETLK64       13
-#define OE_F_SETLKW64      14
+#define OE_F_GETLK64       OE_F_GETLK
+#define OE_F_SETLK64       OE_F_SETLK
+#define OE_F_SETLKW64      OE_F_SETLKW
 #define OE_F_SETOWN_EX     15
 #define OE_F_GETOWN_EX     16
 #define OE_F_GETOWNER_UIDS 17

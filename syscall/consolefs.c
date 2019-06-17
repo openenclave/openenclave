@@ -163,19 +163,12 @@ static int _consolefs_fcntl(oe_fd_t* file_, int cmd, uint64_t arg)
         case OE_F_SETLK:
         {
             void* srcp = (void*)arg;
-            argsize = sizeof(struct oe_flock);
+            argsize = sizeof(struct oe_flock64);
             argout = (void*)arg;
             memcpy(argout, srcp, argsize);
             break;
         }
 
-        case OE_F_GETLK64:
-            argsize = sizeof(struct oe_flock64);
-            argout = (void*)arg;
-            break;
-
-        case OE_F_SETLK64:
-        case OE_F_SETLKW64:
         case OE_F_OFD_SETLK:
         case OE_F_OFD_SETLKW:
         {

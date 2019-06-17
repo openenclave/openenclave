@@ -757,7 +757,7 @@ static int _hostfs_ioctl(oe_fd_t* desc, unsigned long request, uint64_t arg)
     int ret = -1;
     file_t* file = _cast_file(desc);
     uint64_t argsize = 0;
-    void *argout = NULL;
+    void* argout = NULL;
 
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
@@ -768,14 +768,15 @@ static int _hostfs_ioctl(oe_fd_t* desc, unsigned long request, uint64_t arg)
      * by Windows hosts, so the error is handled on the enclave side. This is
      * the correct behavior since host files are not terminal devices.
      */
-    switch (request) 
+    switch (request)
     {
         default:
             OE_RAISE_ERRNO(OE_ENOTTY);
     }
 
     /* Call the host to perform the ioctl() operation. */
-    if (oe_posix_ioctl_ocall(&ret, file->host_fd, request, arg, argsize, argout) != OE_OK)
+    if (oe_posix_ioctl_ocall(
+            &ret, file->host_fd, request, arg, argsize, argout) != OE_OK)
     {
         OE_RAISE_ERRNO(OE_EINVAL);
     }
@@ -802,29 +803,22 @@ static int _hostfs_fcntl(oe_fd_t* desc, int cmd, uint64_t arg)
         case OE_F_SETFL:
             break;
 
-        case OE_F_GETLK:
+        case OE_F_GETLK64:
         case OE_F_OFD_GETLK:
             argsize = sizeof(struct oe_flock);
             argout = (void*)arg;
             break;
 
-        case OE_F_SETLKW:
-        case OE_F_SETLK:
+        case OE_F_SETLKW64:
+        case OE_F_SETLK64:
         {
             void* srcp = (void*)arg;
-            argsize = sizeof(struct oe_flock);
+            argsize = sizeof(struct oe_flock64);
             argout = (void*)arg;
             memcpy(argout, srcp, argsize);
             break;
         }
 
-        case OE_F_GETLK64:
-            argsize = sizeof(struct oe_flock64);
-            argout = (void*)arg;
-            break;
-
-        case OE_F_SETLK64:
-        case OE_F_SETLKW64:
         case OE_F_OFD_SETLK:
         case OE_F_OFD_SETLKW:
         {
