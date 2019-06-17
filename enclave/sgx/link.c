@@ -18,5 +18,7 @@ void oe_link_enclave(void)
 
     oe_handle_get_public_key_upcall = oe_handle_get_public_key;
 
+#if defined(OE_USE_DEBUG_MALLOC)
     oe_debug_malloc_check_upcall = oe_debug_malloc_check;
+#endif /* defined(OE_USE_DEBUG_MALLOC) */
 }
