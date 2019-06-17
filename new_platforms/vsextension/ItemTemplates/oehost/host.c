@@ -6,6 +6,14 @@ oe_result_t create_$enclavename$_enclave(const char* enclave_name, oe_enclave_t*
     oe_enclave_t* enclave = NULL;
     uint32_t enclave_flags = 0;
     oe_result_t result;
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+    const char* simulation = getenv("OE_SIMULATION");
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
     *out_enclave = NULL;
 
@@ -13,6 +21,10 @@ oe_result_t create_$enclavename$_enclave(const char* enclave_name, oe_enclave_t*
 #ifdef _DEBUG
     enclave_flags |= OE_ENCLAVE_FLAG_DEBUG;
 #endif
+    if (simulation && (strcmp(simulation, "1") == 0))
+    {
+        enclave_flags |= OE_ENCLAVE_FLAG_SIMULATE;
+    }
     result = oe_create_$enclavename$_enclave(
         enclave_name,
         OE_ENCLAVE_TYPE_AUTO,

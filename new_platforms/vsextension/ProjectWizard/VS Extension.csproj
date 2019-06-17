@@ -155,7 +155,7 @@
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
-    <Content Include="Packages\openenclave.0.2.0-CI-20190607-222616.nupkg">
+    <Content Include="Packages\openenclave.0.2.0-CI-20190617-205644.nupkg">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <None Include="source.extension.vsixmanifest">
@@ -328,7 +328,7 @@
     </ItemGroup>
     <ItemGroup>
       <Content Include="..\ProjectTemplates\Built\OEEnclaveLinuxProject.zip">
-        <Link>ProjectTemplates\VC\OEEnclaveLinuxProject.zip</Link>
+        <Link>ProjectTemplates\VC\Cross Platform\Linux\OEEnclaveLinuxProject.zip</Link>
         <IncludeInVSIX>true</IncludeInVSIX>
       </Content>
     </ItemGroup>

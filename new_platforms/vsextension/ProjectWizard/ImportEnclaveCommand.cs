@@ -272,6 +272,16 @@ namespace OpenEnclaveSDK
             return null;
         }
 
+        private bool IsEnclave(Project project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var vcProject = project.Object as VCProject;
+            VCConfiguration vcConfig = vcProject.ActiveConfiguration;
+            string oeType = vcConfig.Evaluate("$(OEType)");
+            return (oeType == "Enclave");
+        }
+
         /// <summary>
         /// This function is the callback used to execute the command when the menu item is clicked.
         /// See the constructor to see how the menu item is associated with this function using
@@ -286,6 +296,12 @@ namespace OpenEnclaveSDK
             var dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
             Project project = GetActiveProject(dte);
             var vcProject = project.Object as VCProject;
+
+            if (IsEnclave(project))
+            {
+                MessageBox.Show("The project to import into must not be another enclave.");
+                return;
+            }
 
             var filePath = string.Empty;
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -345,7 +361,7 @@ namespace OpenEnclaveSDK
                     // Add nuget package to project.
                     // See https://stackoverflow.com/questions/41803738/how-to-programmatically-install-a-nuget-package/41895490#41895490
                     // and more particularly https://docs.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio
-                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190607-222616" } };
+                    var packageVersions = new Dictionary<string, string>() { { "openenclave", "0.2.0-CI-20190617-205644" } };
                     var componentModel = (IComponentModel)(await this.ServiceProvider.GetServiceAsync(typeof(SComponentModel)));
                     var packageInstaller = componentModel.GetService<IVsPackageInstaller2>();
                     packageInstaller.InstallPackagesFromVSExtensionRepository(
@@ -377,6 +393,7 @@ namespace OpenEnclaveSDK
                     {
                         var config3 = config as VCConfiguration3;
                         string name = config.Name;
+
                         if (name.Contains("ARM"))
                         {
                             var clRule = config.Rules.Item("CL") as IVCRulePropertyStorage;
@@ -409,9 +426,9 @@ namespace OpenEnclaveSDK
                         {
                             // Add a post-build event to copy the enclave binary to the existing OutDir.
                             string cmd = "cp $(RemoteRootDir)/" + baseName + "/bin/$(Platform)/$(Configuration)/" + baseName + ".signed $(RemoteOutDir)" + baseName;
-                            var clRule = config.Rules.Item("ConfigurationBuildEvents") as IVCRulePropertyStorage;
-                            clRule.SetPropertyValue("RemotePostBuildCommand", cmd);
-                            clRule.SetPropertyValue("RemotePostBuildMessage", "Copying enclave binary");
+                            var cbeRule = config.Rules.Item("ConfigurationBuildEvents") as IVCRulePropertyStorage;
+                            cbeRule.SetPropertyValue("RemotePostBuildCommand", cmd);
+                            cbeRule.SetPropertyValue("RemotePostBuildMessage", "Copying enclave binary");
                         }
 
                         if (name.Contains("OPTEE") || name.Contains("ARM"))
@@ -432,6 +449,9 @@ namespace OpenEnclaveSDK
                                 var generalRule = config.Rules.Item("DebuggerGeneralProperties") as IVCRulePropertyStorage;
                                 generalRule.SetPropertyValue("DebuggerFlavor", "SGXDebugLauncher");
                                 sgxRule.SetPropertyValue("IntelSGXDebuggerWorkingDirectory", "$(OutDir)");
+
+                                // We don't set OE_SIMULATION=1 here because when using the Intel SGX SDK,
+                                // simulation mode is not controllable at runtime, only at link time.
                             }
                         }
                         else
