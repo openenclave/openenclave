@@ -62,19 +62,21 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
     {
         auto s = init_struct<CountStruct>();
         OE_TEST(deepcopy_count(enclave, &s) == OE_OK);
-        test_struct(s);
+        test_struct(s, 3);
     }
 
     {
         auto s = init_struct<CountParamStruct>();
         OE_TEST(deepcopy_countparam(enclave, &s) == OE_OK);
-        test_struct(s);
+        OE_TEST(s.count == 7);
+        test_struct(s, s.count);
     }
 
     {
         auto s = init_struct<SizeParamStruct>();
         OE_TEST(deepcopy_sizeparam(enclave, &s) == OE_OK);
-        test_struct(s);
+        OE_TEST(s.size == 64);
+        test_struct(s, s.size / sizeof(uint64_t));
     }
 
     {
@@ -82,7 +84,9 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         s.count = 8;
         s.size = 4;
         OE_TEST(deepcopy_countsizeparam(enclave, &s) == OE_OK);
-        test_struct(s);
+        OE_TEST(s.count == 8);
+        OE_TEST(s.size == 4);
+        test_struct(s, (s.count * s.size) / sizeof(uint64_t));
     }
 
     {
@@ -90,7 +94,9 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         s.count = 1;
         s.size = 4 * sizeof(uint64_t);
         OE_TEST(deepcopy_countsizeparam_size(enclave, &s) == OE_OK);
-        test_struct(s);
+        OE_TEST(s.count == 1);
+        OE_TEST(s.size == 4 * sizeof(uint64_t));
+        test_struct(s, 4);
     }
 
     {
@@ -98,19 +104,23 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         s.count = 4;
         s.size = sizeof(uint64_t);
         OE_TEST(deepcopy_countsizeparam_count(enclave, &s) == OE_OK);
-        test_struct(s);
+        OE_TEST(s.count == 4);
+        OE_TEST(s.size == sizeof(uint64_t));
+        test_struct(s, 4);
     }
 
     {
         auto s = init_structs<CountParamStruct>();
         OE_TEST(deepcopy_countparamarray(enclave, s.data()) == OE_OK);
-        test_structs(s);
+        test_struct(s[0], 7);
+        test_struct(s[1], 3, 4);
     }
 
     {
         auto s = init_structs<SizeParamStruct>();
         OE_TEST(deepcopy_sizeparamarray(enclave, s.data()) == OE_OK);
-        test_structs(s);
+        test_struct(s[0], s[0].size / sizeof(uint64_t));
+        test_struct(s[1], s[1].size / sizeof(uint64_t), 4);
     }
 
     {
@@ -120,7 +130,8 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         s[1].count = 3;
         s[1].size = 8;
         OE_TEST(deepcopy_countsizeparamarray(enclave, s.data()) == OE_OK);
-        test_structs(s);
+        test_struct(s[0], (s[0].count * s[0].size) / sizeof(uint64_t));
+        test_struct(s[1], (s[1].count * s[1].size) / sizeof(uint64_t), 4);
     }
 
     {
