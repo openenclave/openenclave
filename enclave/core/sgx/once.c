@@ -14,10 +14,10 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void))
     if (!once)
         return OE_INVALID_PARAMETER;
 
-    oe_once_t status = *once;
     /* Double checked locking (DCLP). */
     /* DCLP Acquire barrier. */
-    OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
+
+    oe_once_t status = __atomic_load_n(once, __ATOMIC_ACQUIRE);
 
     /*
       Use an atomic-acquire load operation to check if the function has not been
@@ -36,38 +36,42 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void))
           To determine who gets to invoke the function, each thread atomically
           compares the value of once to FUNC_NOT_INVOKED and if equal, sets the
           value to FUNC_BEING_INVOKED to signal to other threads that the
-          function is being invoked. The return value of
-          __sync_val_compare_and_swap determines which thread takes ownership.
-          If __sync_val_compare_and_swap returns FUNC_NOT_INVOKED, then that
-          means this thread successfully set once to FUNC_BEING_INVOKED, and can
-          now safely call func. If __sync_val_compare_and_swap returns
-          FUNC_BEING_INVOKED, this means another thread's
-          __sync_val_compare_and_swap succeeded first and therefore this thread
-          now has to wait for the other thread to complete (ie wait for once to
-          become FUNC_INVOKED. If __sync_val_compare_and_swap returns
-          FUNC_INVOKED, that means another thread has already called the
-          function and marked the once as complete. This thread can safely
-          proceed.
+          function is being invoked.
+
+          If the compare and exchange succeeds, then this thread owns the
+          responsibility of invoking the function.
+
+          If the compar and exchange fails, then another thread has taken
+          ownership of calling the function and therefore this thread must
+          wait for the other thread to complete the invocation.
+
         */
-        oe_once_t retval = __sync_val_compare_and_swap(
-            once, FUNC_NOT_INVOKED, FUNC_BEING_INVOKED);
-        if (retval == FUNC_NOT_INVOKED)
+        oe_once_t expected = FUNC_NOT_INVOKED;
+        bool retval = __atomic_compare_exchange_n(
+            once,
+            &expected, // If the current value of once if FUNC_NOT_INVOKED
+            FUNC_BEING_INVOKED, // take ownership of calling the function.
+            false,              // Use a strong compare exchange.
+            __ATOMIC_RELEASE,   // If exchange was successful, use release
+                                // barrier.
+            __ATOMIC_ACQUIRE);  // Otherwise use acquire barrier.
+
+        if (retval)
         {
             if (func)
                 func();
 
-            OE_ATOMIC_MEMORY_BARRIER_RELEASE();
-            *once = FUNC_INVOKED;
+            // Inform other threads that func has completed by setting it to
+            // FUNC_INVOKED. Use a release barrier.
+            __atomic_store_n(once, FUNC_INVOKED, __ATOMIC_RELEASE);
         }
-        else if (retval == FUNC_BEING_INVOKED)
+        else
         {
             /*
               Another thread is invoking the function. Wait for that thread to
-              finish the invocation and mark the once variable to FUNC_INVOKED.
+              finish the invocation.
             */
-            while (__sync_val_compare_and_swap(
-                       once, FUNC_BEING_INVOKED, FUNC_BEING_INVOKED) !=
-                   FUNC_BEING_INVOKED)
+            while (__atomic_load_n(once, __ATOMIC_ACQUIRE) != FUNC_INVOKED)
             {
                 // Relinquish CPU
                 asm volatile("pause");
