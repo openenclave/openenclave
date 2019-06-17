@@ -81,6 +81,9 @@ add_library(oelibc STATIC
     strerror.c
     sysconf.c
     time.c
+    regcomp.c
+    regexec.c
+    tre-mem.c
     __printf_chk.c
     __vfprintf_chk.c
     ${MUSLSRC}/complex/cabs.c
@@ -514,10 +517,10 @@ add_library(oelibc STATIC
     ${MUSLSRC}/prng/srand48.c
     ${MUSLSRC}/regex/fnmatch.c
     ${MUSLSRC}/regex/glob.c
-    ${MUSLSRC}/regex/regcomp.c
+    #${MUSLSRC}/regex/regcomp.c
     ${MUSLSRC}/regex/regerror.c
-    ${MUSLSRC}/regex/regexec.c
-    ${MUSLSRC}/regex/tre-mem.c
+    #${MUSLSRC}/regex/regexec.c
+    #${MUSLSRC}/regex/tre-mem.c
     ${MUSLSRC}/search/hsearch.c
     ${MUSLSRC}/search/insque.c
     ${MUSLSRC}/search/lsearch.c
