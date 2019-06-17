@@ -231,7 +231,9 @@
 
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsMaster) == True">
         <ClCompile>
-            <AdditionalIncludeDirectories>/opt/openenclave/include/openenclave/3rdparty/libc;/opt/openenclave/include/openenclave/3rdparty/libcxx;/opt/openenclave/include/openenclave/3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <!-- Compile as C++ as a workaround for not being able to have separate include paths for C vs C++ -->
+            <CompileAs>CompileAsCpp</CompileAs>
+            <AdditionalIncludeDirectories>/opt/openenclave/include/openenclave/3rdparty/libcxx;/opt/openenclave/include/openenclave/3rdparty/libc;/opt/openenclave/include/openenclave/3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
             <AdditionalOptions>-nostdinc -m64 -fPIE -ftls-model=local-exec -mllvm -x86-speculative-load-hardening %(AdditionalOptions)</AdditionalOptions>
             <PositionIndependentCode>false</PositionIndependentCode>
         </ClCompile>
@@ -313,7 +315,8 @@
     <!-- Additional Library Directories for Enclaves only -->
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsMaster) == True">
         <Link>
-            <AdditionalLibraryDirectories>/opt/openenclave/lib/openenclave/enclave;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+            <!-- Use AdditionalOptions instead of AdditionalLibraryDirectories to avoid -Wl, prefix -->
+            <AdditionalOptions>-L/opt/openenclave/lib/openenclave/enclave %(AdditionalOptions)</AdditionalOptions>
         </Link>
     </ItemDefinitionGroup>
 
@@ -346,8 +349,8 @@
             <AdditionalDependencies Condition="$(OEIsTz) == True And $(OEIsX86) == True And $(OEIsSim) == True And $(OEIsNewPlatforms) == True">$(OEOpteeSimX86)\oeenclave.lib;$(OEOpteeSimX86)\oesocket_enc.lib;$(OEOpteeSimX86)\oestdio_enc.lib;$(OEOpteeSimX86)\oeenclave_opteesim.lib;$(OEOpteeSimX86)\mbedcrypto.lib;$(OEOpteeSimX86)\mbedx509.lib;onecore.lib;%(AdditionalDependencies)</AdditionalDependencies>
 
             <!-- Master branch -->
-            <AdditionalOptions Condition="$(OEIsSgx) == True And $(OEIsLinux) == True And $(OEIsMaster) == True">-nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,--build-id</AdditionalOptions>
-            <AdditionalOptions Condition="$(OEIsMaster) == True">%(AdditionalOptions) -loeenclave /opt/openenclave/lib/openenclave/enclave/libmbedx509.a /opt/openenclave/lib/openenclave/enclave/libmbedcrypto.a -loelibcxx -loelibc -loecore</AdditionalOptions>
+            <AdditionalOptions Condition="$(OEIsSgx) == True And $(OEIsLinux) == True And $(OEIsMaster) == True">-nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,--build-id %(AdditionalOptions)</AdditionalOptions>
+            <LibraryDependencies Condition="$(OEIsMaster) == True">oeenclave;mbedx509;mbedcrypto;oelibcxx;oelibc;oecore;%(LibraryDependencies)</LibraryDependencies>
         </Link>
     </ItemDefinitionGroup>
 
