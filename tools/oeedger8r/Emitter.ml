@@ -650,6 +650,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         in
         gen_c_for count
           ( [ [ sprintf "if (%s)"
+                  (* TODO: Check hd[i] too. *)
                   (String.concat " && " (List.rev (arg :: args))) ]
             ; [sprintf "    OE_ADD_SIZE(%s, %s);" buffer size]
             ; (let param_count = oe_get_param_count (ptype, decl, argstruct) in
@@ -690,6 +691,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         gen_c_for count
           ( [ (* NOTE: This makes the embedded check in the `OE_` macro superfluous. *)
               [ sprintf "if (%s)"
+                  (* TODO: Check hd[i] too. *)
                   (String.concat " && " (List.rev (arg :: args))) ]
             ; [ sprintf "    OE_WRITE_%s_PARAM(%s, %s, %s);"
                   (if is_in_ptr ptype then "IN" else "IN_OUT")
@@ -759,15 +761,21 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
                     (if is_wstr_ptr ptype then "_WIDE" else "")
                     arg ]
               else [] )
-            ; ( match args with
-              | [] -> []
-              | _ ->
-                  [ sprintf "if (%s)" arg
-                  ; sprintf "    %s = _args.%s; /* restore original pointer */"
-                      arg arg ] )
-            ; [ sprintf "OE_READ_%s_PARAM(%s, (size_t)(%s));"
-                  (if is_out_ptr ptype then "OUT" else "IN_OUT")
-                  arg size ]
+            ; (let s =
+                 sprintf "OE_READ_%s_PARAM(%s, (size_t)(%s));"
+                   (if is_out_ptr ptype then "OUT" else "IN_OUT")
+                   arg size
+               in
+               match args with
+               | [] -> [s]
+               | _ ->
+                   [ (* TODO: Check hd[i] too. *)
+                     sprintf "if (%s)" (String.concat " && " (List.rev args))
+                   ; "{"
+                   ; "    /* restore original pointer */"
+                   ; sprintf "    %s = _ptrs[_ptrs_index++];" arg
+                   ; "    " ^ s
+                   ; "}" ])
             ; (let param_count = oe_get_param_count (ptype, decl, argstruct) in
                flatten_map
                  (gen_serialize (arg :: args) param_count)
@@ -800,6 +808,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "/* Unmarshal return value and out, in-out parameters. */"
     ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
       else "/* No return value. */" )
+    ; "_ptrs_index = 0; /* For deep copy. */"
     ; oe_serialize_buffer_outputs fd.plist ]
   in
   let rec oe_gen_set_pointers args count setter (ptype, decl) =
@@ -940,7 +949,22 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     (* Generate assignment argument to corresponding field in args. This
        is necessary for all arguments, not just copy-as-value, because
        they are used directly by later marshalling code. *)
-    let rec gen_assignment args count (ptype, decl) =
+    let gen_assignment (ptype, decl) =
+      let arg = decl.identifier in
+      [ [ sprintf "_args.%s = %s%s;" arg
+            (get_cast_to_mem_expr (ptype, decl) true)
+            arg ]
+      ; (* for string parameter fill the len field *)
+        ( if is_str_ptr ptype then
+          [sprintf "_args.%s_len = (%s) ? (strlen(%s) + 1) : 0;" arg arg arg]
+        else if is_wstr_ptr ptype then
+          [sprintf "_args.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" arg arg arg]
+        else [] ) ]
+      |> List.flatten
+    in
+    flatten_map gen_assignment fd.plist
+    @
+    let rec gen_save_ptrs args count (ptype, decl) =
       let id = decl.identifier in
       let argstruct =
         match args with
@@ -951,28 +975,19 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         match args with [] -> id | hd :: _ -> hd ^ gen_c_deref count ^ id
       in
       gen_c_for count
-        ( [ ( match args with
-            | [] -> []
-            | _ -> [sprintf "if (%s)" (String.concat " && " (List.rev args))]
-            )
-          ; [ sprintf "%s_args.%s = %s%s;"
-                (match args with [] -> "" | _ -> "    ")
-                arg
-                (get_cast_to_mem_expr (ptype, decl) true)
-                arg ]
-          ; (* for string parameter fill the len field *)
-            ( if is_str_ptr ptype then
-              [sprintf "_args.%s_len = (%s) ? (strlen(%s) + 1) : 0;" arg id id]
-            else if is_wstr_ptr ptype then
-              [sprintf "_args.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" arg id id]
+        ( [ ( if args <> [] then
+              [sprintf "if (%s)" (String.concat " && " (List.rev args))]
+            else [] )
+          ; ( if args <> [] && is_marshalled_ptr ptype then
+              ["    _ptrs[_ptrs_index++] = (void*)" ^ arg ^ ";"]
             else [] )
           ; (let param_count = oe_get_param_count (ptype, decl, argstruct) in
              flatten_map
-               (gen_assignment (arg :: args) param_count)
+               (gen_save_ptrs (arg :: args) param_count)
                (get_deepcopy_members (get_param_atype ptype))) ]
         |> List.flatten )
     in
-    flatten_map (gen_assignment [] "1") fd.plist
+    flatten_map (gen_save_ptrs [] "1") fd.plist
   in
   (* Generate host ECALL wrapper function. *)
   let oe_gen_host_ecall_wrapper (tf : trusted_func) =
@@ -986,6 +1001,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    /* Marshalling struct. */"
     ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
         fd.fname
+    ; "    void* _ptrs[512]; (void)_ptrs;"
+    ; "    size_t _ptrs_index = 0;"
     ; ""
     ; "    /* Marshalling buffer and sizes. */"
     ; "    size_t _input_buffer_size = 0;"
@@ -1054,6 +1071,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    /* Marshalling struct. */"
     ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
         fd.fname
+    ; "    void* _ptrs[512]; (void)_ptrs;"
+    ; "    size_t _ptrs_index = 0;"
     ; ""
     ; "    /* Marshalling buffer and sizes. */"
     ; "    size_t _input_buffer_size = 0;"
