@@ -55,5 +55,47 @@ set_source_files_properties(
   PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 
+set(OEUTEE_DIR ${CMAKE_CURRENT_BINARY_DIR}/liboeutee)
+
+include (ExternalProject)
+ExternalProject_Add(oelibutee_includes_copy
+  DOWNLOAD_COMMAND ""
+  PATCH_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/compiler.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTILS_EXT_INC}/trace_levels.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTILS_EXT_INC}/trace.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTILS_EXT_INC}/util.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_api_defines.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_api_types.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_api.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_internal_api.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_ta_api.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/user_ta_header.h ${OEUTEE_DIR}
+  BUILD_BYPRODUCTS ${OEUTEE_DIR}
+  INSTALL_COMMAND "")
+
+add_library(oelibutee_includes INTERFACE)
+
+add_dependencies(oelibutee_includes oelibutee_includes_copy)
+
+target_include_directories(oelibutee_includes
+  INTERFACE
+  $<BUILD_INTERFACE:${OEUTEE_DIR}>
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/optee/liboeutee>)
+
+add_library(oelibutee INTERFACE)
+
+target_link_libraries(oelibutee INTERFACE
+  oeutee
+  oelibutee_includes)
+
+install(TARGETS oelibutee oelibutee_includes EXPORT openenclave-targets)
+
+install(DIRECTORY ${OEUTEE_DIR}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/optee/liboeutee)
+
 install(TARGETS oeutee oeuteeasm EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

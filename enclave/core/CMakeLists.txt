@@ -106,6 +106,9 @@ set_source_files_properties(__secs_to_tm.c PROPERTIES
 maybe_build_using_clangw(oecore)
 
 target_link_libraries(oecore PUBLIC oe_includes)
+if (OE_TRUSTZONE)
+    target_link_libraries(oecore PUBLIC oelibutee_includes)
+endif ()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)

@@ -63,6 +63,13 @@ typedef struct _oe_enclave_properties_header
     TCS_COUNT)
 #endif
 
+#if __aarch64__
+#include "optee/opteeproperties.h"
+#else
+#define OE_SET_ENCLAVE_OPTEE( \
+    UUID, HEAP_SIZE, STACK_SIZE, FLAGS, VERSION, DESCRIPTION)
+#endif
+
 /**
  * This function sets the minimum value of issue dates of CRL and TCB info
  * accepted by the enclave. CRL and TCB info issued before this date

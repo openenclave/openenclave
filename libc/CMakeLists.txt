@@ -835,18 +835,16 @@ target_link_libraries(oelibc
   PUBLIC oesyscall oecore oelibc_includes
   PRIVATE oelibasm)
 
-if (OE_SGX)
 target_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
+
+if (OE_SGX)
+target_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
 else()
 target_include_directories(oelibc PRIVATE
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64
-  ${OE_TZ_LIBUTILS_EXT_INC}
-  ${OE_TZ_LIBUTEE_INC})
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64)
 endif()
 
 set_property(TARGET oelibc PROPERTY
