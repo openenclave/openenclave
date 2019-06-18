@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Transferred repository from [microsoft/openenclave](https://github.com/microsoft/openenclave) to [openenclave/openenclave](https://github.com/openenclave/openenclave).
+
+[v0.6.0] - 2019-06-29
+---------------------
+
+### Changed
+
 - Rename `oe-gdb` to `oegdb` for consistency with other tools, such as `oesign`.
 - Update pkg-config and CMake exports to include the following hardening build
   flags by default:
@@ -26,8 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
          should enable it themselves after assessing its startup impact.
 - Removed support for the previously deprecated `OE_API_VERSION=1` APIs.
 
-[v0.5.0] - 2019-4-9
--------------------
+[v0.5.0] - 2019-04-09
+---------------------
 
 ### Added
 
