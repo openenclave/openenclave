@@ -164,5 +164,15 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         OE_TEST(s.ptr == nullptr);
     }
 
+    {
+        CountStruct s{};
+        uint64_t p[3] = {0, 0, 0};
+        s.ptr = p;
+        OE_TEST(deepcopy_out_count(enclave, &s) == OE_OK);
+        OE_TEST(s.count == 7);
+        OE_TEST(s.size == 64);
+        test_struct(s, 3);
+    }
+
     printf("=== test_deepcopy_edl_ecalls passed\n");
 }

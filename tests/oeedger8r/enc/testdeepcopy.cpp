@@ -180,3 +180,15 @@ void deepcopy_null(CountStruct* s)
 {
     OE_UNUSED(s);
 }
+
+void deepcopy_out_count(CountStruct* s)
+{
+    OE_TEST(s->count == 0);
+    OE_TEST(s->size == 0);
+    for (size_t i = 0; i < 3; ++i)
+        OE_TEST(s->ptr[i] == 0);
+    s->count = 7;
+    s->size = 64;
+    for (size_t i = 0; i < 3; ++i)
+        s->ptr[i] = data[i];
+}
