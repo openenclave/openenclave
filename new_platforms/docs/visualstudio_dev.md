@@ -6,5 +6,5 @@ including ARM TrustZone and Intel SGX, with a Windows or Linux host application.
 includes support for testing your enclave under simulation when developing for SGX or TrustZone.
 
 ## Getting Started Guides
-- [Developing Linux applications](../../docs/GettingStarted/VisualStudioLinux.md)
+- [Developing Linux applications](../../docs/GettingStartedDocs/VisualStudioLinux.md)
 - [Developing Windows applications](VisualStudioWindows.md)
