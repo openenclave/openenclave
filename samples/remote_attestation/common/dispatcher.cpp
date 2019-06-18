@@ -452,12 +452,12 @@ int ecall_dispatcher::process_encrypted_msg(
         &encrypted_data[ENCLAVE_SECRET_DATA_SIZE + IV_SIZE],
         ENCLAVE_SECRET_DATA_SIZE);
 
-    // Convert sequence number to 4 character bytes
     m_enclave_config->sequence_number++;
-    add_str[0] = m_enclave_config->sequence_number & 0xff;
-    add_str[1] = m_enclave_config->sequence_number & 0xff00;
-    add_str[2] = m_enclave_config->sequence_number & 0xff0000;
-    add_str[3] = m_enclave_config->sequence_number & 0xff000000;
+
+    // Convert sequence number to 4 character bytes
+    // Since both enclaves are on the same machine, memcpy should suffice
+    memset(add_str, 0x00, sizeof(add_str));
+    memcpy(add_str, &(m_enclave_config->sequence_number), 4);
 
     if (m_crypto->decrypt_gcm(
             m_enclave_config->sym_key,

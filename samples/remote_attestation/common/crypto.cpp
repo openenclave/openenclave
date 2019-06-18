@@ -337,12 +337,11 @@ bool Crypto::encrypt_gcm(
     memset(iv_str, 0x00, IV_SIZE);
     mbedtls_ctr_drbg_random(&m_ctr_drbg_contex, iv_str, IV_SIZE);
     memset(tag_output, 0x00, 16);
-    memset(add_str, 0x00, ADD_SIZE);
 
-    add_str[0] = sequence_num & 0xff;
-    add_str[1] = sequence_num & 0xff00;
-    add_str[2] = sequence_num & 0xff0000;
-    add_str[3] = sequence_num & 0xff000000;
+    // Convert sequence number to 4 character bytes
+    // Since both enclaves are on the same machine, memcpy should suffice
+    memset(add_str, 0x00, sizeof(add_str));
+    memcpy(add_str, &sequence_num, ADD_SIZE);
 
     res = mbedtls_gcm_setkey(&gcm_context, MBEDTLS_CIPHER_ID_AES, sym_key, 256);
     if (res != 0)
