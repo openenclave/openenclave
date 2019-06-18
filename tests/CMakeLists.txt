@@ -53,7 +53,6 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
         add_subdirectory(enclaveparam)
         add_subdirectory(getenclave)
         add_subdirectory(hostcalls)
-        add_subdirectory(libc)
         add_subdirectory(ocall)
         add_subdirectory(print)
         add_subdirectory(props)
@@ -87,6 +86,7 @@ if (OE_SGX AND UNIX)
    # ecall_ocall enclave size cannot be handled by Windows ninja CI
    add_subdirectory(ecall_ocall)
    add_subdirectory(libunwind)
+   add_subdirectory(libc)
 
    # Attestation supported only on Linux
    add_subdirectory(qeidentity)
