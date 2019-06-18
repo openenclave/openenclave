@@ -20,6 +20,9 @@
 #define TAG_SIZE 16
 #define IV_SIZE 12
 #define ADD_SIZE 4
+#define SIGNATURE_SIZE 256
+#define ENCRYPTED_KEY_SIZE 256
+#define DIGEST_SIZE 32
 
 class Crypto
 {

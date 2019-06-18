@@ -188,12 +188,12 @@ exit:
 
 int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
 {
-    uint8_t encrypted_key_buf[512];
-    uint8_t signature[256];
-    uint8_t digest[32];
-    size_t encrypted_key_size = 256;
-    size_t signature_size = 256;
-    size_t total_size = 512;
+    uint8_t encrypted_key_buf[(DIGEST_SIZE * 8) + ENCRYPTED_KEY_SIZE];
+    uint8_t signature[SIGNATURE_SIZE];
+    uint8_t digest[DIGEST_SIZE]; // in bytes
+    size_t encrypted_key_size = ENCRYPTED_KEY_SIZE;
+    size_t signature_size = sizeof(signature);
+    size_t total_size = sizeof(encrypted_key_buf);
 
     int ret = 1;
 
@@ -207,7 +207,7 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
 
     // Step 1 - Create an ephemeral symmetric key;
     // Initialize sequence number to 0, numbering will start at 1
-    if (oe_random(m_enclave_config->sym_key, 32) != OE_OK)
+    if (oe_random(m_enclave_config->sym_key, DIGEST_SIZE) != OE_OK)
     {
         TRACE_ENCLAVE("ecall_dispatcher initialization failed to generate "
                       "ephemeral symmetric key.");
@@ -223,14 +223,14 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
     if (m_crypto->encrypt(
             m_crypto->get_the_other_enclave_public_key(),
             m_enclave_config->sym_key,
-            32,
+            DIGEST_SIZE,
             encrypted_key_buf,
             &encrypted_key_size))
 
     {
         // We allocate memory in the host is so that the encrypted data
-        // can be accessed by the hosts. Note that this will not work with
-        // TrustZone. TO DO - File an issue to deprecate oe_host_malloc
+        // can be accessed by the hosts. Filed issue #1956 to deprecate
+        // oe_host_malloc
         uint8_t* host_buf = (uint8_t*)oe_host_malloc(total_size);
         if (host_buf == NULL)
         {
@@ -260,7 +260,8 @@ int ecall_dispatcher::establish_secure_channel(uint8_t** key, size_t* key_size)
             "enclave: establish_secure_channel: signature_size = %ld",
             signature_size);
 
-        if ((encrypted_key_size != 256) || (signature_size != 256))
+        if ((encrypted_key_size != ENCRYPTED_KEY_SIZE) ||
+            (signature_size != SIGNATURE_SIZE))
         {
             TRACE_ENCLAVE("enclave: establish_secure_channel: failed as "
                           "encrypted data size or signature size is not 256");
@@ -283,8 +284,7 @@ exit:
     return ret;
 }
 
-/* Encrypted key_buf should contain encrypted key followed by signature, each of
- * 256 bits
+/* Encrypted key_buf should contain encrypted key followed by signature
  */
 int ecall_dispatcher::acknowledge_secure_channel(
     uint8_t* encrypted_key_buf,
@@ -292,8 +292,8 @@ int ecall_dispatcher::acknowledge_secure_channel(
 {
     int ret = 1;
     uint8_t* data;
-    size_t data_size = 32;
-    uint8_t digest[32];
+    size_t data_size = DIGEST_SIZE;
+    uint8_t digest[DIGEST_SIZE];
     int rc;
 
     /* Steps --
@@ -301,8 +301,8 @@ int ecall_dispatcher::acknowledge_secure_channel(
      *   2) Decrypt the key using your own private key
      *   3) Now use this key with sequence number to communicate further
      */
-    unsigned char* signature = &encrypted_key_buf[256];
-    size_t signature_size = 256;
+    unsigned char* signature = &encrypted_key_buf[ENCRYPTED_KEY_SIZE];
+    size_t signature_size = SIGNATURE_SIZE;
 
     data = m_enclave_config->sym_key;
     m_enclave_config->sequence_number = 0;
@@ -315,7 +315,7 @@ int ecall_dispatcher::acknowledge_secure_channel(
         goto exit;
     }
 
-    if (m_crypto->sha256(encrypted_key_buf, 256, digest) != 0)
+    if (m_crypto->sha256(encrypted_key_buf, ENCRYPTED_KEY_SIZE, digest) != 0)
     {
         goto exit;
     }
@@ -323,7 +323,7 @@ int ecall_dispatcher::acknowledge_secure_channel(
     rc = m_crypto->verify_sign(
         m_crypto->get_the_other_enclave_public_key(),
         digest,
-        32,
+        DIGEST_SIZE,
         signature,
         signature_size);
     if (rc != 0)
@@ -337,7 +337,8 @@ int ecall_dispatcher::acknowledge_secure_channel(
 
     TRACE_ENCLAVE("enclave: acknowledge_secure_channel: signature verified ok");
 
-    if (m_crypto->decrypt(encrypted_key_buf, 256, data, &data_size))
+    if (m_crypto->decrypt(
+            encrypted_key_buf, ENCRYPTED_KEY_SIZE, data, &data_size))
     {
         TRACE_ENCLAVE(
             "enclave: acknowledge_secure_channel: extracted symmetric key size "
