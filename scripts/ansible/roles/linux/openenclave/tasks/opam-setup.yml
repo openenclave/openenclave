@@ -65,7 +65,11 @@
       export MANPATH="{{ opam_root }}/default/man"
 
 - name: Install ocamlformat via OPAM
-  shell: "source /etc/profile && opam install ocamlformat -y"
+  shell: |
+    set -e
+    source /etc/profile
+    CHECK_IF_PREINSTALLED=false opam install ocamlbuild -y
+    opam install ocamlformat -y
   args:
     executable: /bin/bash
   retries: 10
