@@ -24,6 +24,7 @@ add_enclave(TARGET libc_enc
     enc.c
     ${CMAKE_CURRENT_BINARY_DIR}/tests.c
     ${test_dependencies}
+    ../../../3rdparty/musl/libc-test/src/common/vmfill.c
     ../../../3rdparty/musl/libc-test/src/common/mtest.c
     ../../../3rdparty/musl/libc-test/src/common/rand.c
     ../../../3rdparty/musl/libc-test/src/functional/tls_align_dso.c
@@ -79,4 +80,4 @@ set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}" PARENT_SCOPE)
 set(CMAKE_C_COMPILE_OBJECT "${CMAKE_C_COMPILE_OBJECT}" PARENT_SCOPE)
 set(CMAKE_CXX_COMPILE_OBJECT "${CMAKE_CXX_COMPILE_OBJECT}" PARENT_SCOPE)
 
-target_link_libraries(libc_enc oelibc)
+target_link_libraries(libc_enc oelibc oesyscall oehostresolver oehostfs oehostsock )
