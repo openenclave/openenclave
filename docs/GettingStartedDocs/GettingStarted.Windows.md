@@ -25,6 +25,15 @@ Windows.
 - [OCaml for Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/)
 - [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
 
+To deploy all the prerequisities for building Open Enclave, you can run the ```scripts/install-windows-prereqs.ps1```
+
+```powershell
+cd scripts
+.\install-windows-prereqs.ps1
+```
+
+To deploy each prerequisite individually, refer to the sections below.
+
 Intel® SGX Platform Software for Windows (PSW)
 ---------------------------------
 
