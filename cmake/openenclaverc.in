@@ -1,11 +1,26 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# Remove __OPEN_ENCLAVE_CURRENT_BINDIR from path and extend the path.
+extend_open_enclave_path()
+{
+    # Delete __OPEN_ENCLAVE_CURRENT_BINDIR from PATH:
+    if [ ! -z "${__OPEN_ENCLAVE_CURRENT_BINDIR}" ]; then
+        export PATH=${PATH/:${__OPEN_ENCLAVE_CURRENT_BINDIR}/}
+    fi
+
+    # Save this variable so it can be removed when path is extended again.
+    export __OPEN_ENCLAVE_CURRENT_BINDIR=$1
+
+    # Add ${__OPEN_ENCLAVE_CURRENT_BINDIR} to the path:
+    export PATH=${PATH}:${__OPEN_ENCLAVE_CURRENT_BINDIR}
+}
+
 # Update PKG_CONFIG_PATH.
 export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_DATADIR@/pkgconfig
 
-# Set CMake Config-package path
+# Set CMake Config-package path.
 export OpenEnclave_DIR=@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/openenclave/cmake
 
-# Update PATH.
-export PATH=${PATH}:@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@
+# Place the Open Enclave binary directory on the path.
+extend_open_enclave_path @CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@
