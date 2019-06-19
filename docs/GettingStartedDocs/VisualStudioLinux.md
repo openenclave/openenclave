@@ -19,36 +19,17 @@ To develop Linux applications using a Windows development machine, you will need
 - [Open Enclave Wizard - Preview](https://marketplace.visualstudio.com/items?itemName=MS-TCPS.OpenEnclaveSDK-VSIX)
   Visual Studio extension, v0.5 or later.  The extension can be installed via that marketplace link, or from within
   Visual Studio.  (For VS2017, do Tools -> Extensions and Updates -> Online -> search for "enclave".  For VS2019,
-  do Extensions -> Manage Extensions -> Online -> search for "enclave".)
+  do Extensions -> Manage Extensions -> Online -> search for "enclave".)  You must restart Visual Studio after
+  installing the extension.
 
 You will also need a build machine running Ubuntu 16.04 (64-bit) or Ubuntu 18.04.  This can be
-a remote Linux machine, or can simply be a "Generation 2" Linux VM on the Windows
-development machine.  Ideally, the machine should be SGX capable (see [here](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/SGXSupportLevel.md) for how to
-determine this), but a non-SGX machine can still be used in simulation mode.  To set up a Linux VM
-on your Windows machine, do the following:
+any of the following:
+- a remote Linux machine
+- an [Azure Confidential Computing VM](https://azure.microsoft.com/en-us/solutions/confidential-compute/)
+- a [Linux VM running on the Windows development machine](HyperVLinuxVMSetup.md)
 
-1. Download an ISO for Ubuntu [18.04](http://releases.ubuntu.com/18.04/) or [16.04](http://releases.ubuntu.com/16.04/).
-   A "Server install image" is sufficient.
-1. Create a VM as follows.  Open "Hyper-V Manager", and do Action -> New -> Virtual Machine....  
-   - On the Specify Generation screen, choose Generation 2.
-   - On the Configure Networking screen, choose Default Switch to ensure you can connect to it with a debugger.
-   - On the Installation Options screen, choose the ISO file you downloaded.
-   - All other options can be either left as the defaults or changed as desired.
-1. Disable Secure Boot as follows.  In Hyper-V Manager, right click on the VM you created while it is stopped,
-  and select Settings... -> Security and uncheck Enable Secure Boot.
-1. Uncheck "Enable checkpoints" under the VM's Settings -> Checkpoints, since SGX will not work with checkpoints.
-1. If using an SGX-capable machine, enable SGX for the VM as follows (this cannot be done from Hyper-V Manager):
-   - Download [VirtualMachineSgxSettings.psm1](https://raw.githubusercontent.com/microsoft/openenclave/f28cedce63be9673e20fe54563987189f2565637/new_platforms/scripts/VirtualMachineSgxSettings.psm1)
-   - Open an elevated PowerShell window (e.g., type "powershell" and click Run as Administrator)
-   - Invoke the following commands, using the path to where you downloaded the file, and replacing MyVM with your VM name:
-   ```
-   Set-ExecutionPolicy Bypass -Scope Process
-   Import-Module Drive:\Path\to\VirtualMachineSgxSettings.psm1
-   Set-VMSgx -VmName MyVM -IsSgxEnabled $True -SgxSize 32
-   ```
-1. Start the VM and connect to it (right click, Connect...), finish the initial setup, reboot, and login.
-   - Enable OpenSSH server installation when given the choice during setup.
-   - All other options are sufficient to leave as the defaults or changed as desired.
+Ideally, the machine should be SGX capable (see [here](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/SGXSupportLevel.md) for how to
+determine this), but a non-SGX machine can still be used in simulation mode.
 
 On the Linux build machine, or after opening an ssh session into the VM:
 
@@ -72,7 +53,7 @@ We will now walk through the process of creating a C/C++ application that uses a
    it is called "Console App" (note: NOT the "Console App (.NET Core)") with the Linux
    keyword.  (If it is not immediately visible, the template can be found under
    Installed -> Visual C++ -> Cross Platform -> Linux.)
-   Give the project a name, LinuxApp for example.  This will create a "Hello World" console application.  
+   Give the project a name, LinuxApp for example.  This will create a "Hello World" console application.
    Alternatively, if you already have such a Linux application using a Visual Studio project
    file (.vcxproj file), you can start from your existing application.
 2. Configure the application project to use your Linux build environment, by right clicking
@@ -129,7 +110,7 @@ int main()
 The solution will have three configurations: Debug, SGX-Simulation-Debug, and Release.
 The SGX-Simulation-Debug will work the same as Debug, except that SGX support will be emulated
 rather than using hardware support.  This allows debugging on hardware that does not support SGX.
-The Debug and Release configurations can only be run (whether natively or in a VM) successfully on 
+The Debug and Release configurations can only be run (whether natively or in a VM) successfully on
 SGX-capable hardware.
 
 For the platform, use x64, since Open Enclave currently only supports 64-bit enclaves.
