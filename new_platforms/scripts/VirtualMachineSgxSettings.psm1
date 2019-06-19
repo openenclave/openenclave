@@ -37,6 +37,8 @@ Data Strings {
     WARN_SGX_SIZE_TOO_LARGE_TITLE = The specified {0}MB of SGX EPC memory might be too large.
     WARN_SGX_SIZE_TOO_LARGE_TEXT = > Consult your hardware's manual for its supported SGX version and associated EPC memory limits, if any.
 
+    WARN_FORCE = Try calling Set-VMSgx without -Force to test for additional possible error conditions.
+
     INFO_SECURE_BOOT_TITLE = The VM '{0}' has Secure Boot on.
     INFO_SECURE_BOOT_TEXT = > If you plan on running Linux, you will have to sign your Intel SGX kernel module with a custom Secure Boot key.
 '@
@@ -405,6 +407,10 @@ Function Set-VMSgx {
             If ($HasSgxSize -and ($SgxSize -lt 10)) {
                 Write-Warning ($Strings.WARN_SGX_SIZE_TOO_LITTLE_TITLE -f $SgxSize)
                 Write-Warning $Strings.WARN_SGX_SIZE_TOO_LITTLE_TEXT
+            }
+
+            If ($Force) {
+                Write-Warning $Strings.WARN_FORCE
             }
 
             Write-Error ($Strings.ERR_COULD_NOT_MODIFY_SETTINGS -f $Vm.Name, $Ret.ReturnValue)
