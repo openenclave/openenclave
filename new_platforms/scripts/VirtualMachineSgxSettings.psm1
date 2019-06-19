@@ -44,13 +44,13 @@ Import-LocalizedData Strings -FileName VirtualMachineSgxSettings.Strings.psd1 -E
 ### -----------------------------------
 
 Class VirtualMachineSgx {
-    [bool] $IsSgxEnabled;
+    [bool] $SgxEnabled;
     [UInt64] $SgxSize;
     [String] $SgxLaunchControlDefault;
     [UInt32] $SgxLaunchControlMode;
 
     VirtualMachineSgx([System.Management.ManagementObject] $VmSgx) {
-        $This.IsSgxEnabled = $VmSgx.SgxEnabled;
+        $This.SgxEnabled = $VmSgx.SgxEnabled;
         $This.SgxSize = $VmSgx.SgxSize;
         $This.SgxLaunchControlDefault = $VmSgx.SgxLaunchControlDefault;
         $This.SgxLaunchControlMode = $VmSgx.SgxLaunchControlMode;
@@ -105,7 +105,7 @@ Function Get-VMSgxManagementService() {
         This function retrieves the settings for SGX virtualization for the
         given virtual machine:
 
-        - IsSgxEnabled: Whether SGX virtualization is enabled for the given
+        - SgxEnabled: Whether SGX virtualization is enabled for the given
             virtual machine.
 
         - SgxSize: The size, in MB, of the host's SGX EPC memory the given
@@ -182,7 +182,7 @@ Function Get-VMSgx {
         This function modifies the settings for SGX virtualization for the
         given virtual machine and then retrieves the same from Hyper-V:
 
-        - IsSgxEnabled: Whether SGX virtualization is enabled for the given
+        - SgxEnabled: Whether SGX virtualization is enabled for the given
             virtual machine.
 
         - SgxSize: The size, in MB, of the host's SGX EPC memory the given
@@ -204,7 +204,7 @@ Function Get-VMSgx {
         The virtual machine object for which to modify the SGX virtualization
         settings.
 
-    .Parameter IsSgxEnabled
+    .Parameter SgxEnabled
         Whether SGX virtualization is enabled for the given virtual machine.
 
     .Parameter SgxSize
@@ -223,7 +223,7 @@ Function Get-VMSgx {
         To enable SGX virtualization on a virtual machine by name and set its
         SGX EPC memory size to 32M, do:
 
-        Set-VMSgx -VmName MySgxVM -IsSgxEnabled $True -SgxSize 32
+        Set-VMSgx -VmName MySgxVM -SgxEnabled $True -SgxSize 32
 
         You may also write:
 
@@ -232,7 +232,7 @@ Function Get-VMSgx {
     .Example
         To disable SGX virtualization on a virtual machine by name, do:
 
-        Set-VMSgx -VmName MySgxVM -IsSgxEnabled $False -SgxSize 0
+        Set-VMSgx -VmName MySgxVM -SgxEnabled $False -SgxSize 0
 
         Alternately:
 
@@ -257,7 +257,7 @@ Function Set-VMSgx {
 
         # Whether SGX is enabled in the VM.
         [Parameter(Position = 1)]
-        [Bool]$IsSgxEnabled = $False,
+        [Bool]$SgxEnabled = $False,
 
         # Desired SGX EPC Memory Size for the VM (in MB).
         [Parameter(Position = 2)]
@@ -295,7 +295,7 @@ Function Set-VMSgx {
         #      Note: Only Gen2 VMs support Secure Boot.
         # 2. Checkpoints are not supported with SGX turned on.
 
-        If (!$Force -and $IsSgxEnabled) {
+        If (!$Force -and $SgxEnabled) {
             # Check VM generation.
             If ($Vm.Generation -lt 2) {
                 Write-Warning ($Strings.WARN_GEN2_TITLE -f $Vm.Name)
@@ -313,7 +313,7 @@ Function Set-VMSgx {
             }
 
             # Check Checkpoint settings.
-            If ($Vm.CheckpointType -ne [Microsoft.HyperV.PowerShell.CheckpointType]::Disabled -and $IsSgxEnabled) {
+            If ($Vm.CheckpointType -ne [Microsoft.HyperV.PowerShell.CheckpointType]::Disabled -and $SgxEnabled) {
                 Write-Information ($Strings.WARN_CHECKPOINT_TITLE -f $Vm.Name)
                 Write-Information $Strings.WARN_CHECKPOINT_TEXT
             }
@@ -330,8 +330,8 @@ Function Set-VMSgx {
         $HasWorkToDo = $False
 
         # Enable/Disable SGX.
-        If ($PSBoundParameters.ContainsKey('IsSgxEnabled')) {
-            $Mem.SgxEnabled = $IsSgxEnabled
+        If ($PSBoundParameters.ContainsKey('SgxEnabled')) {
+            $Mem.SgxEnabled = $SgxEnabled
             $HasWorkToDo = $True
         }
 
@@ -359,7 +359,7 @@ Function Set-VMSgx {
         }
 
         # Check that some memory was specified to enable SGX.
-        If (!$Force -and $IsSgxEnabled -and ($SgxSize -eq 0)) {
+        If (!$Force -and $SgxEnabled -and ($SgxSize -eq 0)) {
             Write-Error $Strings.ERR_NO_SGX_MEM_TO_ENABLE
         }
 
