@@ -24,7 +24,7 @@ There are two types of Attested TLS connections:
 
   - [Transport Layer Security (TLS)](https://en.wikipedia.org/wiki/Transport_Layer_Security) a cryptographic protocol designed to provide communications security over a computer network.
 
-  - [Open Enclave Remote Attestation](https://github.com/Microsoft/openenclave/tree/master/samples/remote_attestation#what-is-attestation): Remote Attestation is the concept of a HW entity or of a
+  - [Open Enclave Remote Attestation](https://github.com/openenclave/openenclave/tree/master/samples/remote_attestation#what-is-attestation): Remote Attestation is the concept of a HW entity or of a
 combination of HW and SW gaining the trust of a remote provider or producer.
 
 ### How it works

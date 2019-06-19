@@ -190,8 +190,8 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased]: https://github.com/microsoft/openenclave/compare/v0.5.0...HEAD
-[v0.5.0]: https://github.com/microsoft/openenclave/compare/v0.4.1...v0.5.0
-[v0.4.1]: https://github.com/microsoft/openenclave/compare/v0.4.0...v0.4.1
-[v0.4.0]: https://github.com/microsoft/openenclave/compare/v0.1.0...v0.4.0
-[v0.1.0]: https://github.com/microsoft/openenclave/compare/beb546f...v0.1.0
+[Unreleased]: https://github.com/openenclave/openenclave/compare/v0.5.0...HEAD
+[v0.5.0]: https://github.com/openenclave/openenclave/compare/v0.4.1...v0.5.0
+[v0.4.1]: https://github.com/openenclave/openenclave/compare/v0.4.0...v0.4.1
+[v0.4.0]: https://github.com/openenclave/openenclave/compare/v0.1.0...v0.4.0
+[v0.1.0]: https://github.com/openenclave/openenclave/compare/beb546f...v0.1.0
