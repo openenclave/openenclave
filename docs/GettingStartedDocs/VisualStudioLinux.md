@@ -19,7 +19,8 @@ To develop Linux applications using a Windows development machine, you will need
 - [Open Enclave Wizard - Preview](https://marketplace.visualstudio.com/items?itemName=MS-TCPS.OpenEnclaveSDK-VSIX)
   Visual Studio extension, v0.5 or later.  The extension can be installed via that marketplace link, or from within
   Visual Studio.  (For VS2017, do Tools -> Extensions and Updates -> Online -> search for "enclave".  For VS2019,
-  do Extensions -> Manage Extensions -> Online -> search for "enclave".)
+  do Extensions -> Manage Extensions -> Online -> search for "enclave".)  You must restart Visual Studio after
+  installing the extension.
 
 You will also need a build machine running Ubuntu 16.04 (64-bit) or Ubuntu 18.04.  This can be
 a remote Linux machine, or can simply be a "Generation 2" Linux VM on the Windows
