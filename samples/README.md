@@ -142,8 +142,8 @@ The following samples demonstrate how to develop enclave applications using OE A
 
 #### [Attested TLS](attested_tls/README.md)
 
-- Explain what is an Attested TLS channel
+- Explain what an Attested TLS channel is
 - Demonstrate an implementation for how to establish an Attested TLS channel
   - between two enclaves
-  - between one non-enclave application and an enclave
+  - between one non-enclave client and an enclave
 

@@ -29,10 +29,10 @@ all: build
 
 build:
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I/usr/include/openssl client.cpp identity_verifier.cpp verify_signer_openssl.cpp
-	$(CXX) -o tls_client client.o identity_verifier.o verify_signer_openssl.o $(LDFLAGS)
+	$(CXX) -o tls_non_enc_client client.o identity_verifier.o verify_signer_openssl.o $(LDFLAGS)
 
 clean:
 	rm -f tls_client *.o ../cert.der
 
 run:
-	./tls_client -server:localhost -port:12341
+	./tls_non_enc_client -server:localhost -port:12341

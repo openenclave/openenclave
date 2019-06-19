@@ -62,17 +62,31 @@ Note: Both of them can run on the same machine or separate machines.
  - Send client payload and wait for server's payload
 
 ```
-	../client/tls_client -server:localhost -port:12341
+../client/tls_non_enc_client -server:localhost -port:12341
 ```
 
 ## Build and run
 
-You can go build from the sample's root directory or go to tls_between_enclaves or ls_between_non_enclave_enclave subdirectory to build each sub-sample
+Note that there are two different build systems supported, one using GNU Make and
+`pkg-config`, the other using CMake.
+
+You can go build from the sample's root directory or go to tls_between_enclaves or tls_between_non_enclave_enclave subdirectory to build each sub-sample
 
 ### GNU Make
 
 ```bash
 cd attested_tls
-make build
+make
+make run
+```
+
+### CMake
+
+This uses the CMake package provided by the Open Enclave SDK.
+
+```bash
+cd attested_tls
+mkdir build && cd build
+cmake ..
 make run
 ```
