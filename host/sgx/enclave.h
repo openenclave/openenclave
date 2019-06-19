@@ -12,6 +12,7 @@
 #include <openenclave/internal/sgxcreate.h>
 #include <stdbool.h>
 #include "../hostthread.h"
+#include "../switchless_manager.h"
 #include "asmdefs.h"
 
 #if defined(_WIN32)
@@ -124,6 +125,9 @@ struct _oe_enclave
 
     /* Meta-data needed by debugrt  */
     oe_debug_enclave_t* debug_enclave;
+
+    /* Switchless calling */
+    oe_switchless_manager_t switchless_manager;
 };
 
 // Static asserts for consistency with

@@ -101,3 +101,27 @@ void* oe_thread_getspecific(oe_thread_key key)
 {
     return pthread_getspecific(key);
 }
+
+/*
+**==============================================================================
+**
+** oe_thread_create
+**
+**==============================================================================
+*/
+int oe_thread_create(oe_thread* thread, oe_thread_op_t op, oe_thread_arg_t arg)
+{
+    return pthread_create(thread, NULL, op, arg);
+}
+
+/*
+**==============================================================================
+**
+** oe_thread_join
+**
+**==============================================================================
+*/
+void oe_thread_join(oe_thread thread)
+{
+    pthread_join(thread, NULL);
+}

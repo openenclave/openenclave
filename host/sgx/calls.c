@@ -403,7 +403,8 @@ static const char* oe_ecall_str(oe_func_t ecall)
                                        "VIRTUAL_EXCEPTION_HANDLER",
                                        "LOG_INIT",
                                        "GET_PUBLIC_KEY_BY_POLICY",
-                                       "GET_PUBLIC_KEY"};
+                                       "GET_PUBLIC_KEY",
+                                       "LAUNCH_ENCLAVE_WORKER"};
 
     OE_STATIC_ASSERT(OE_ECALL_BASE + OE_COUNTOF(func_names) == OE_ECALL_MAX);
 
@@ -897,6 +898,55 @@ oe_result_t oe_call_enclave_function(
         output_buffer_size,
         output_bytes_written);
 }
+
+static int _atomic_try_lock(uint32_t* lock)
+{
+#ifdef _MSC_VER
+    return !(uint32_t)_InterlockedCompareExchange(lock, 1, 0);
+#elif defined __GNUC__
+    uint32_t zero = 0;
+    return __atomic_compare_exchange_n(
+        lock, &zero, 1, 1, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE);
+#endif /* _MSC_VER or __GNUC__ */
+} /* _atomic_try_lock */
+
+oe_result_t oe_call_synchronous_switchless_enclave_function(
+    oe_enclave_t* enclave,
+    oe_switchless_synchronous_ecall_t* node)
+{
+    oe_result_t result = OE_FAILURE;
+    node->result = OE_UNEXPECTED;
+
+    /* Reject invalid parameters */
+    if (NULL == enclave)
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    if (NULL == node)
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    /* start the switchless worker thread if needed */
+    oe_switchless_manager_startup(enclave);
+
+    /* set the synchronization flag */
+    node->lock = 1;
+    oe_lockless_queue_push_back(
+        &(enclave->switchless_manager.switchless.ecall_queue), &(node->_node));
+
+    /* wait for the flag to clear */
+    while (!_atomic_try_lock(&(node->lock)))
+    {
+        continue;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+} /* oe_call_synchronous_switchless_enclave_function */
 
 /*
 ** These two functions are needed to notify the debugger. They should not be

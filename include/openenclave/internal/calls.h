@@ -80,6 +80,7 @@ typedef enum _oe_func
     OE_ECALL_LOG_INIT,
     OE_ECALL_GET_PUBLIC_KEY_BY_POLICY,
     OE_ECALL_GET_PUBLIC_KEY,
+    OE_ECALL_LAUNCH_ENCLAVE_WORKER,
     /* Caution: always add new ECALL function numbers here */
 
     OE_ECALL_MAX,

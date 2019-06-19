@@ -91,6 +91,7 @@ if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
 endif ()
 
 add_library(oecore STATIC
+    ../../common/lockless_queue.c
     ../../common/safecrt.c
     ${MUSL_SRC_DIR}/prng/rand.c
     ${MUSL_SRC_DIR}/string/memcmp.c

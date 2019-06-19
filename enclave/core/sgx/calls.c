@@ -6,6 +6,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
+#include <openenclave/edger8r/switchless.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/fault.h>
@@ -237,125 +238,239 @@ done:
     return result;
 }
 
-/**
- * This is the preferred way to call enclave functions.
- */
-static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
+static oe_result_t _handle_ecall_function(
+    uint64_t table_id,
+    uint64_t function_id,
+    const uint8_t* host_input_buffer,
+    size_t input_buffer_size,
+    uint8_t* host_output_buffer,
+    size_t output_buffer_size,
+    size_t* host_output_bytes_written,
+    oe_result_t* host_result)
 {
-    oe_call_enclave_function_args_t args, *args_ptr;
     oe_result_t result = OE_OK;
-    oe_ecall_func_t func = NULL;
     uint8_t* buffer = NULL;
-    uint8_t* input_buffer = NULL;
-    uint8_t* output_buffer = NULL;
     size_t buffer_size = 0;
-    size_t output_bytes_written = 0;
+    uint8_t* enc_input_buffer = NULL;
+    uint8_t* enc_output_buffer = NULL;
+    size_t enc_output_bytes_written = 0;
     ecall_table_t ecall_table;
-
-    // Ensure that args lies outside the enclave.
-    if (!oe_is_outside_enclave(
-            (void*)arg_in, sizeof(oe_call_enclave_function_args_t)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    // Copy args to enclave memory to avoid TOCTOU issues.
-    args_ptr = (oe_call_enclave_function_args_t*)arg_in;
-    args = *args_ptr;
+    oe_ecall_func_t func = NULL;
 
     // Ensure that input buffer is valid.
     // Input buffer must be able to hold atleast an oe_result_t.
-    if (args.input_buffer == NULL ||
-        args.input_buffer_size < sizeof(oe_result_t) ||
-        !oe_is_outside_enclave(args.input_buffer, args.input_buffer_size))
+    if (host_input_buffer == NULL || input_buffer_size < sizeof(oe_result_t) ||
+        !oe_is_outside_enclave(host_input_buffer, input_buffer_size))
+    {
         OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
     // Ensure that output buffer is valid.
     // Output buffer must be able to hold atleast an oe_result_t.
-    if (args.output_buffer == NULL ||
-        args.output_buffer_size < sizeof(oe_result_t) ||
-        !oe_is_outside_enclave(args.output_buffer, args.output_buffer_size))
+    if (host_output_buffer == NULL ||
+        output_buffer_size < sizeof(oe_result_t) ||
+        !oe_is_outside_enclave(host_output_buffer, output_buffer_size))
+    {
         OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
     // Validate output and input buffer sizes.
     // Buffer sizes must be correctly aligned.
-    if ((args.input_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+    if ((input_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+    {
         OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
-    if ((args.output_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+    if ((output_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+    {
         OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
-    OE_CHECK(oe_safe_add_u64(
-        args.input_buffer_size, args.output_buffer_size, &buffer_size));
+    OE_CHECK(
+        oe_safe_add_u64(input_buffer_size, output_buffer_size, &buffer_size));
 
     // Resolve which ecall table to use.
-    if (args_ptr->table_id == OE_UINT64_MAX)
+    if (OE_UINT64_MAX == table_id)
     {
         ecall_table.ecalls = __oe_ecalls_table;
         ecall_table.num_ecalls = __oe_ecalls_table_size;
     }
     else
     {
-        if (args_ptr->table_id >= OE_MAX_ECALL_TABLES)
+        if (table_id >= OE_MAX_ECALL_TABLES)
+        {
             OE_RAISE(OE_NOT_FOUND);
+        }
 
-        ecall_table.ecalls = _ecall_tables[args_ptr->table_id].ecalls;
-        ecall_table.num_ecalls = _ecall_tables[args_ptr->table_id].num_ecalls;
+        ecall_table.ecalls = _ecall_tables[table_id].ecalls;
+        ecall_table.num_ecalls = _ecall_tables[table_id].num_ecalls;
 
         if (!ecall_table.ecalls)
+        {
             OE_RAISE(OE_NOT_FOUND);
+        }
     }
 
     // Fetch matching function.
-    if (args.function_id >= ecall_table.num_ecalls)
+    if (function_id >= ecall_table.num_ecalls)
+    {
         OE_RAISE(OE_NOT_FOUND);
+    }
 
-    func = ecall_table.ecalls[args.function_id];
+    func = ecall_table.ecalls[function_id];
 
-    if (func == NULL)
+    if (NULL == func)
+    {
         OE_RAISE(OE_NOT_FOUND);
+    }
 
     // Allocate buffers in enclave memory
-    buffer = input_buffer = oe_malloc(buffer_size);
-    if (buffer == NULL)
+    buffer = enc_input_buffer = oe_malloc(buffer_size);
+    if (NULL == buffer)
+    {
         OE_RAISE(OE_OUT_OF_MEMORY);
+    }
 
     // Copy input buffer to enclave buffer.
-    memcpy(input_buffer, args.input_buffer, args.input_buffer_size);
+    memcpy(enc_input_buffer, host_input_buffer, input_buffer_size);
 
     // Clear out output buffer.
     // This ensures reproducible behavior if say the function is reading from
     // output buffer.
-    output_buffer = buffer + args.input_buffer_size;
-    memset(output_buffer, 0, args.output_buffer_size);
+    enc_output_buffer = buffer + input_buffer_size;
+    memset(enc_output_buffer, 0, output_buffer_size);
 
     // Call the function.
     func(
-        input_buffer,
-        args.input_buffer_size,
-        output_buffer,
-        args.output_buffer_size,
-        &output_bytes_written);
+        enc_input_buffer,
+        input_buffer_size,
+        enc_output_buffer,
+        output_buffer_size,
+        &enc_output_bytes_written);
 
     // The output_buffer is expected to point to a marshaling struct,
     // whose first field is an oe_result_t. The function is expected
     // to fill this field with the status of the ecall.
-    result = *(oe_result_t*)output_buffer;
+    result = *(oe_result_t*)enc_output_buffer;
 
-    if (result == OE_OK)
+    if (OE_OK == result)
     {
         // Copy outputs to host memory.
-        memcpy(args.output_buffer, output_buffer, output_bytes_written);
+        memcpy(host_output_buffer, enc_output_buffer, enc_output_bytes_written);
 
         // The ecall succeeded.
-        args_ptr->output_bytes_written = output_bytes_written;
-        args_ptr->result = OE_OK;
+        *host_output_bytes_written = enc_output_bytes_written;
+        *host_result = OE_OK;
     }
 
 done:
     if (buffer)
+    {
         oe_free(buffer);
+    }
 
     return result;
+} /* _handle_ecall_function */
+
+static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
+{
+    oe_call_enclave_function_args_t* args_ptr =
+        (oe_call_enclave_function_args_t*)arg_in;
+    oe_result_t result = OE_OK;
+
+    // Ensure that args lies outside the enclave.
+    if (!oe_is_outside_enclave(
+            (void*)arg_in, sizeof(oe_call_enclave_function_args_t)))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    result = _handle_ecall_function(
+        args_ptr->table_id,
+        args_ptr->function_id,
+        (const uint8_t*)args_ptr->input_buffer,
+        args_ptr->input_buffer_size,
+        args_ptr->output_buffer,
+        args_ptr->output_buffer_size,
+        &(args_ptr->output_bytes_written),
+        &(args_ptr->result));
+
+done:
+    return result;
 }
+
+static oe_result_t _handle_synchronous_switchless_ecall(
+    oe_switchless_synchronous_ecall_t* ecall)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    // Ensure that args lies outside the enclave.
+    if (!oe_is_outside_enclave(
+            (void*)ecall, sizeof(oe_switchless_synchronous_ecall_t)))
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    result = _handle_ecall_function(
+        ecall->table_id,
+        ecall->function_id,
+        ecall->input_buffer,
+        ecall->input_buffer_size,
+        ecall->output_buffer,
+        ecall->output_buffer_size,
+        &(ecall->output_bytes_written),
+        &(ecall->result));
+
+done:
+    __atomic_exchange_n(&(ecall->lock), 0, __ATOMIC_RELEASE);
+
+    return result;
+} /* _handle_synchronous_switchless_ecall */
+
+static oe_switchless_state_t _get_switchless_state(oe_switchless_t* switchless)
+{
+    oe_switchless_state_t state;
+    state = __atomic_load_n(&(switchless->state), __ATOMIC_ACQUIRE);
+    return state;
+} /* _get_switchless_state */
+
+static oe_result_t _handle_launch_enclave_worker(uint64_t arg_in)
+{
+    oe_result_t result = OE_FAILURE;
+    oe_enc_switchless_worker_start_args_t* volatile args =
+        (oe_enc_switchless_worker_start_args_t*)arg_in;
+    oe_switchless_t* switchless = NULL;
+
+    /* ensure that args lies outside the enclave */
+    if (!oe_is_outside_enclave(
+            args, sizeof(oe_enc_switchless_worker_start_args_t)) ||
+        !oe_is_outside_enclave(args->switchless, sizeof(oe_switchless_t)))
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    /* arg_in will no longer be valid after the lock is released */
+    switchless = args->switchless;
+    args->result = OE_OK;
+    __atomic_exchange_n(&(args->lock), 0, __ATOMIC_RELEASE);
+
+    result = OE_OK;
+
+    /* loop until the state changes to stopping */
+    while (OE_SWITCHLESS_STATE_STOPPING != _get_switchless_state(switchless))
+    {
+        /* note: this pop needs to be protected by a lock if there is more than
+         * one worker thread */
+        oe_switchless_synchronous_ecall_t* ecall_node =
+            (oe_switchless_synchronous_ecall_t*)oe_lockless_queue_pop_front(
+                &(switchless->ecall_queue));
+        if (NULL != ecall_node)
+        {
+            _handle_synchronous_switchless_ecall(ecall_node);
+        }
+    }
+
+done:
+    return result;
+} /* _handle_launch_enclave_worker */
 
 /*
 **==============================================================================
@@ -495,6 +610,11 @@ static void _handle_ecall(
         case OE_ECALL_GET_PUBLIC_KEY:
         {
             oe_handle_get_public_key(arg_in);
+            break;
+        }
+        case OE_ECALL_LAUNCH_ENCLAVE_WORKER:
+        {
+            result = _handle_launch_enclave_worker(arg_in);
             break;
         }
         default:

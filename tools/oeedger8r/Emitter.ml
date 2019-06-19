@@ -442,11 +442,11 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         failwithf
           "Function '%s': 'private' specifier is not supported by oeedger8r"
           f.tf_fdecl.fname ;
-      if f.tf_is_switchless then
+      if f.tf_is_switchless && not ep.experimental then
         failwithf
           "Function '%s': switchless ecalls and ocalls are not yet supported \
            by Open Enclave SDK."
-          f.tf_fdecl.fname )
+          f.tf_fdecl.fname ) 
     tfs ;
   List.iter
     (fun f ->
@@ -464,7 +464,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
           "Warning: Function '%s': Reentrant ocalls are not supported by Open \
            Enclave. Allow list ignored.\n"
           f.uf_fdecl.fname ;
-      if f.uf_is_switchless then
+      if f.uf_is_switchless && not ep.experimental then
         failwithf
           "Function '%s': switchless ecalls and ocalls are not yet supported \
            by Open Enclave SDK."
@@ -635,7 +635,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "" ]
   in
   (* Prepare [input_buffer]. *)
-  let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
+  let oe_prepare_input_buffer (fd : func_decl)(is_switchless : bool)
+      (alloc_func : string) =
     let oe_compute_buffer_size buffer predicate plist =
       let rec gen_add_size args count (ptype, decl) =
         let argstruct =
@@ -719,11 +720,18 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; oe_compute_output_buffer_size fd.plist
     ; ""
     ; "/* Allocate marshalling buffer. */"
-    ; "_total_buffer_size = _input_buffer_size;"
+    ; ( if is_switchless
+          then "OE_ADD_SIZE(_total_buffer_size, _input_buffer_size);"
+          else "_total_buffer_size = _input_buffer_size;" )
     ; "OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);"
     ; sprintf "_buffer = (uint8_t*)%s(_total_buffer_size);" alloc_func
-    ; "_input_buffer = _buffer;"
-    ; "_output_buffer = _buffer + _input_buffer_size;"
+    ]
+    @ ( if is_switchless
+      then [ "_node = (oe_switchless_synchronous_ecall_t*)_buffer;"
+            ; "_input_buffer = _buffer + sizeof(oe_switchless_synchronous_ecall_t);"
+            ]
+      else [ "_input_buffer = _buffer;" ] )
+    @ [ "_output_buffer = _input_buffer + _input_buffer_size;"
     ; "if (_buffer == NULL)"
     ; "{"
     ; "    _result = OE_OUT_OF_MEMORY;"
@@ -738,7 +746,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "/* Copy args structure (now filled) to input buffer. */"
     ; "memcpy(_pargs_in, &_args, sizeof(*_pargs_in));" ]
   in
-  let oe_process_output_buffer (fd : func_decl) =
+  let oe_process_output_buffer (fd : func_decl)(is_switchless : bool) =
     [ [ (* Verify that the ecall succeeded *)
         "/* Setup output arg struct pointer. */"
       ; sprintf "_pargs_out = (%s_args_t*)_output_buffer;" fd.fname
@@ -749,7 +757,9 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       ; "    goto done;"
       ; ""
       ; "/* Currently exactly _output_buffer_size bytes must be written. */"
-      ; "if (_output_bytes_written != _output_buffer_size)"
+      ; ( if is_switchless
+            then "if (_node->output_bytes_written != _output_buffer_size)"
+            else "if (_output_bytes_written != _output_buffer_size)" )
       ; "{"
       ; "    _result = OE_FAILURE;"
       ; "    goto done;"
@@ -961,34 +971,62 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    /* Marshalling buffer and sizes. */"
     ; "    size_t _input_buffer_size = 0;"
     ; "    size_t _output_buffer_size = 0;"
-    ; "    size_t _total_buffer_size = 0;"
+    ; ( if tf.tf_is_switchless
+          then "    size_t _total_buffer_size = sizeof(\
+               oe_switchless_synchronous_ecall_t);"
+          else "    size_t _total_buffer_size = 0;" )
     ; "    uint8_t* _buffer = NULL;"
     ; "    uint8_t* _input_buffer = NULL;"
     ; "    uint8_t* _output_buffer = NULL;"
     ; "    size_t _input_buffer_offset = 0;"
     ; "    size_t _output_buffer_offset = 0;"
-    ; "    size_t _output_bytes_written = 0;"
+    ; ( if tf.tf_is_switchless
+          then "    oe_switchless_synchronous_ecall_t* _node = NULL;"
+          else "    size_t _output_bytes_written = 0;" )
     ; ""
     ; "    /* Fill marshalling struct. */"
     ; "    memset(&_args, 0, sizeof(_args));"
     ; "    " ^ String.concat "\n    " (gen_fill_marshal_struct fd)
     ; ""
-    ; "    " ^ String.concat "\n    " (oe_prepare_input_buffer fd "malloc")
+    ; "    " ^ String.concat "\n    " (oe_prepare_input_buffer fd
+        tf.tf_is_switchless "malloc")
     ; ""
-    ; "    /* Call enclave function. */"
-    ; "    if ((_result = oe_call_enclave_function("
-    ; "             "
-      ^ String.concat ",\n             "
-          [ "enclave"
-          ; get_function_id fd
-          ; "_input_buffer"
-          ; "_input_buffer_size"
-          ; "_output_buffer"
-          ; "_output_buffer_size"
-          ; "&_output_bytes_written)) != OE_OK)" ]
-    ; "        goto done;"
-    ; ""
-    ; "    " ^ String.concat "\n    " (oe_process_output_buffer fd)
+    ]
+    @ ( if tf.tf_is_switchless
+        then [ "    oe_lockless_queue_node_init(&(_node->_node));"
+             ; "    _node->table_id = OE_UINT64_MAX;"
+             ; "    _node->lock = 1;"
+             ; sprintf "    _node->function_id = %s;"(get_function_id fd)
+             ; "    _node->input_buffer = _input_buffer;"
+             ; "    _node->input_buffer_size = _input_buffer_size;"
+             ; "    _node->output_buffer = _output_buffer;"
+             ; "    _node->output_buffer_size = _output_buffer_size;"
+             ; "    _node->output_bytes_written = 0;"
+             ; "    _node->result = OE_FAILURE;"
+             ; ""
+             ; "    /* enqueue the node */"
+             ; "    _result = oe_call_synchronous_switchless_enclave_function(
+                 enclave, _node);"
+             ; "    if (OE_OK != _result ||"
+             ; "        OE_OK != (_result = _node->result))"
+             ; "    {"
+             ; "        goto done;"
+             ; "    }" ]
+        else ( [ "    /* Call enclave function. */"
+             ; "    if ((_result = oe_call_enclave_function("
+             ; "             enclave,"
+             ; sprintf "             %s,"(get_function_id fd)
+             ; "             _input_buffer,"
+             ; "             _input_buffer_size,"
+             ; "             _output_buffer,"
+             ; "             _output_buffer_size,"
+             ; "             &_output_bytes_written)) != OE_OK)"
+             ; "    {"
+             ; "        goto done;"
+             ; "    }" ] ) )
+    @ [ ""
+    ; "    " ^ String.concat "\n    " (oe_process_output_buffer fd
+        tf.tf_is_switchless)
     ; ""
     ; "    _result = OE_OK;"
     ; ""
@@ -1033,7 +1071,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; ""
     ; "    "
       ^ String.concat "\n    "
-          (oe_prepare_input_buffer fd "oe_allocate_ocall_buffer")
+          (oe_prepare_input_buffer fd false "oe_allocate_ocall_buffer")
     ; ""
     ; "    /* Call host function. */"
     ; "    if ((_result = oe_call_host_function("
@@ -1047,7 +1085,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
           ; "&_output_bytes_written)) != OE_OK)" ]
     ; "        goto done;"
     ; ""
-    ; "    " ^ String.concat "\n    " (oe_process_output_buffer fd)
+    ; "    " ^ String.concat "\n    " (oe_process_output_buffer fd false)
     ; ""
     ; "    /* Retrieve propagated errno from OCALL. */"
     ; ( if uf.uf_propagate_errno then "    errno = _pargs_out->_ocall_errno;\n"

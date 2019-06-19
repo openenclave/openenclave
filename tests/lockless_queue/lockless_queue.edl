@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 enclave {
-    include "openenclave/internal/lockless_queue.h"
+    include "openenclave/bits/lockless_queue.h"
 
     enum constants {
         TEST_COUNT = 1024,
@@ -30,6 +30,12 @@ enclave {
             [user_check] oe_lockless_queue* p_queue,
             size_t count);
 
+        public void enc_unsafe_pop_nodes(
+            [user_check] oe_lockless_queue* p_queue,
+            size_t count);
+
         public void enc_test_queue_single_threaded();
+
+        public void enc_negative_test();
     };
 };

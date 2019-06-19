@@ -128,3 +128,28 @@ void* oe_thread_getspecific(oe_thread_key key)
 {
     return TlsGetValue(key);
 }
+
+/*
+**==============================================================================
+**
+** oe_thread_create
+**
+**==============================================================================
+*/
+int oe_thread_create(oe_thread* thread, oe_thread_op_t op, oe_thread_arg_t arg)
+{
+    *thread = CreateThread(NULL, 0, op, arg, 0, NULL);
+    return NULL == *thread;
+}
+
+/*
+**==============================================================================
+**
+** oe_thread_join
+**
+**==============================================================================
+*/
+void oe_thread_join(oe_thread thread)
+{
+    WaitForSingleObject(thread, INFINITE);
+}

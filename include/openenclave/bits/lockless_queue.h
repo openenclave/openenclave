@@ -4,7 +4,8 @@
 #ifndef _LOCKLESS_QUEUE_H_
 #define _LOCKLESS_QUEUE_H_
 
-#include <openenclave/internal/defs.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/result.h>
 
 OE_EXTERNC_BEGIN
 
@@ -143,6 +144,30 @@ void oe_lockless_queue_push_back(
  *       calling oe_lockless_queue_push_back() from any number of threads.
  */
 oe_lockless_queue_node* oe_lockless_queue_pop_front(oe_lockless_queue* p_queue);
+
+/**
+ * @function oe_lockless_queue_unsafe_pop_front
+ *
+ * @brief Attempts to remove and return an _oe_lockless_queue_node from the head
+ *        of an _oe_lockless_queue.
+ *
+ * @param p_queue The _oe_lockless_queue to remove a node from.
+ * @param pp_node_out The popped node will be assigned to this pointer. This
+ *        will be NULL if there are no items in the queue.
+ * @return OE_OK will be returned if the nodes in the queue are outside of
+ *         enclave memory. OE_FAILURE will be returned otherwise.
+ *         the queue or NULL if there was not a node in the queue.
+ * @pre p_queue is non-NULL and points to an initialized queue and p_node is
+ *      non-NULL and points to an initialized node.
+ *
+ * @note It is not safe to call this method concurrently from more than one
+ *       thread.  However it is safe to call this method while concurrently
+ *       calling oe_lockless_queue_push_back() from any number of threads.
+ *       If this function returns OE_FAILURE, it is unsafe to use this queue.
+ */
+oe_result_t oe_lockless_queue_unsafe_pop_front(
+    oe_lockless_queue* p_queue,
+    oe_lockless_queue_node** pp_node_out);
 
 OE_EXTERNC_END
 

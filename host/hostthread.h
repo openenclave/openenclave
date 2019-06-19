@@ -35,6 +35,11 @@ typedef pthread_mutex_t oe_mutex;
 
 typedef pthread_key_t oe_thread_key;
 
+typedef void* oe_thread_return_t;
+#define OE_THREAD_RETURN_VAL NULL
+typedef void* oe_thread_arg_t;
+typedef oe_thread_return_t (*oe_thread_op_t)(oe_thread_arg_t);
+
 #elif _MSC_VER
 
 typedef INIT_ONCE oe_once_type;
@@ -46,6 +51,11 @@ typedef HANDLE oe_mutex;
 #define OE_H_MUTEX_INITIALIZER INVALID_HANDLE_VALUE
 
 typedef DWORD oe_thread_key;
+
+#define oe_thread_return_t DWORD WINAPI
+#define OE_THREAD_RETURN_VAL 0
+typedef LPVOID oe_thread_arg_t;
+typedef DWORD (*oe_thread_op_t)(oe_thread_arg_t);
 
 #endif
 
@@ -212,6 +222,25 @@ int oe_thread_setspecific(oe_thread_key key, void* value);
  * @return Returns the TSD value.
  */
 void* oe_thread_getspecific(oe_thread_key key);
+
+/**
+ * Creates a thread.
+ *
+ * @param thread Pointer to an uninitialized oe_thread object.  This will be
+ *        given a thread value upon successful completion.
+ * @param op The function for the thread.
+ * @param arg Pointer to arguments for the thread.
+ *
+ * @return Returns zero on success.
+ */
+int oe_thread_create(oe_thread* thread, oe_thread_op_t op, oe_thread_arg_t arg);
+
+/**
+ * Joins a thread.
+ *
+ * @param thread The thread to join.
+ */
+void oe_thread_join(oe_thread thread);
 
 OE_EXTERNC_END
 

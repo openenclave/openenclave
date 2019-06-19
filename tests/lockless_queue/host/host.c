@@ -187,6 +187,17 @@ THREAD_RETURN_TYPE enc_reader_thread_wrapper(THREAD_ARG_TYPE _data)
     return THREAD_RETURN_VAL;
 } /* host_reader_thread */
 
+THREAD_RETURN_TYPE enc_unsafe_reader_thread_wrapper(THREAD_ARG_TYPE _data)
+{
+    thread_data* data = (thread_data*)_data;
+    printf("    enc_unsafe_reader_thread started\n");
+    OE_TEST(
+        OE_OK == enc_unsafe_pop_nodes(
+                     data->enclave, data->p_queue, TEST_COUNT * THREAD_COUNT));
+    printf("    enc_unsafe_reader_thread finished\n");
+    return THREAD_RETURN_VAL;
+} /* host_reader_thread */
+
 static void host_queue_multi_thread_test()
 {
     size_t barrier = 0;
@@ -322,7 +333,7 @@ static void host_enq_enc_deq_single_thread_test(oe_enclave_t* enclave)
             &queue, (oe_lockless_queue_node*)&(nodes[i]._node));
     }
 
-    OE_TEST(OE_OK == enc_pop_nodes(enclave, &queue, TEST_COUNT));
+    OE_TEST(OE_OK == enc_unsafe_pop_nodes(enclave, &queue, TEST_COUNT));
 
     for (size_t i = 0; i < TEST_COUNT; ++i)
     {
@@ -355,7 +366,7 @@ static void host_enq_enc_deq_multi_thread_test(oe_enclave_t* enclave)
     OE_TEST(
         0 == thread_create(
                  &(reader_thread.thread),
-                 enc_reader_thread_wrapper,
+                 enc_unsafe_reader_thread_wrapper,
                  &reader_thread));
 
     for (size_t i = 0; i < THREAD_COUNT; ++i)
@@ -500,6 +511,8 @@ int main(int argc, const char** argv)
      * host */
     enc_enq_host_deq_single_thread_test(enclave);
     enc_enq_host_deq_multi_thread_test(enclave);
+
+    OE_TEST(OE_OK == enc_negative_test(enclave));
 
     oe_terminate_enclave(enclave);
 

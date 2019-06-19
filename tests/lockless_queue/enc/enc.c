@@ -64,6 +64,26 @@ void enc_pop_nodes(oe_lockless_queue* p_queue, size_t count)
     }
 } /* enc_pop_nodes */
 
+void enc_unsafe_pop_nodes(oe_lockless_queue* p_queue, size_t count)
+{
+    size_t node_count = 0;
+
+    /* pop the nodes off of the queue */
+    while (node_count < count)
+    {
+        oe_lockless_queue_node* p_node = NULL;
+        oe_result_t result =
+            oe_lockless_queue_unsafe_pop_front(p_queue, &p_node);
+        if (OE_OK == result && NULL != p_node)
+        {
+            test_node* p_test_node = (test_node*)p_node;
+            ++(p_test_node->count);
+            p_test_node->pop_order = node_count;
+            ++node_count;
+        }
+    }
+} /* enc_unsafe_pop_nodes */
+
 void enc_test_queue_single_threaded()
 {
     oe_lockless_queue queue;
@@ -90,6 +110,25 @@ void enc_test_queue_single_threaded()
         OE_TEST(p_node == nodes + i);
     }
 } /* enc_test_queue_single_threaded */
+
+void enc_negative_test()
+{
+    oe_lockless_queue queue;
+    oe_lockless_queue_node node;
+    oe_lockless_queue_node* p_node = NULL;
+    oe_result_t result = OE_OK;
+
+    oe_lockless_queue_init(&queue);
+
+    oe_lockless_queue_node_init(&node);
+
+    oe_lockless_queue_push_back(&queue, &node);
+
+    result = oe_lockless_queue_unsafe_pop_front(&queue, &p_node);
+
+    OE_TEST(NULL == p_node);
+    OE_TEST(OE_OK != result);
+} /* enc_negative_test */
 
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */

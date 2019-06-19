@@ -21,6 +21,7 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/edger8r/common.h>
+#include <openenclave/edger8r/switchless.h>
 #include <openenclave/host.h> // for oe_ocall_func_t
 
 OE_EXTERNC_BEGIN
@@ -65,6 +66,27 @@ oe_result_t oe_call_enclave_function(
     void* output_buffer,
     size_t output_buffer_size,
     size_t* output_bytes_written);
+
+/**
+ * Perform a high-level enclave function call via the switchless calling
+ * mechanism (ECALL).
+ *
+ * Call the enclave function that matches the given function-id.
+ *
+ * Note that the return value of this function only indicates the success of
+ * the call and not of the underlying function. The ECALL implementation must
+ * define its own error reporting scheme via the arguments or return value.
+ *
+ * @param enclave The enclave that will handle this function.
+ * @param node The completed declaration for the function call.
+ *
+ * @return OE_OK the call was successful.
+ * @return OE_INVALID_PARAMETER a parameter is invalid.
+ *
+ */
+oe_result_t oe_call_synchronous_switchless_enclave_function(
+    oe_enclave_t* enclave,
+    oe_switchless_synchronous_ecall_t* node);
 
 OE_EXTERNC_END
 

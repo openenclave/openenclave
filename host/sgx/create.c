@@ -781,6 +781,9 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     /* Once the enclave destructor has been invoked, the enclave memory
      * and data structures are freed on a best effort basis from here on */
 
+    /* stop the switchless manager */
+    oe_switchless_manager_shutdown(enclave);
+
     /* Remove this enclave from the global list. */
     oe_remove_enclave_instance(enclave);
 

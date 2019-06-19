@@ -159,6 +159,7 @@ add_library(oehost STATIC
   result.c
   signkey.c
   strings.c
+  switchless_manager.c
   tests.c
   ${PLATFORM_SRC})
 
