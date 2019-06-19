@@ -2,7 +2,7 @@
 
 ## oesign sign
 
-The `oesign` tool should be used with the subcommand `sign` to sign enclaves. The samples show how a developer should use this tool to sign their enclave images before using them. Please refer to how one of the samples uses this tool here: https://github.com/Microsoft/openenclave/blob/master/samples/helloworld/enclave/Makefile
+The `oesign` tool should be used with the subcommand `sign` to sign enclaves. The samples show how a developer should use this tool to sign their enclave images before using them. Please refer to how one of the samples uses this tool here: https://github.com/openenclave/openenclave/blob/master/samples/helloworld/enclave/Makefile
 
 All enclave images should be signed before they are used in production.
 

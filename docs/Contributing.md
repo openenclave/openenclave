@@ -40,7 +40,7 @@ Help Wanted
 ------------
 
 The team marks the most straightforward issues as ["help wanted"](
-https://github.com/Microsoft/openenclave/labels/help%20wanted). This set of
+https://github.com/openenclave/openenclave/labels/help%20wanted). This set of
 issues is the place to start if you are interested in contributing but new to
 the codebase.
 

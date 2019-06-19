@@ -22,7 +22,7 @@ This sample is about as simple as you can get regarding creating and calling int
 
 This sample uses the Open Enclave SDK `oeedger8r` tool to generate marshaling code necessary to call functions between the enclave
 and the host. For more information on using the Open Enclave oeedger8r tool refer to
-[Getting started with the Open Enclave edger8r](https://github.com/Microsoft/openenclave/tree/master/docs/GettingStartedDocs/Edger8rGettingStarted.md).
+[Getting started with the Open Enclave edger8r](https://github.com/openenclave/openenclave/tree/master/docs/GettingStartedDocs/Edger8rGettingStarted.md).
 
 First we need to define the functions we want to call between the enclave and host. To do this we create a `helloworld.edl` file:
 
@@ -166,7 +166,7 @@ Each line will now be described in turn.
 #include <stdio.h>
 ```
 
-An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, the decision was made to make only a specific set of APIs available to an enclave library. A complete list of APIs available to an enclave library can be found [here](https://github.com/Microsoft/openenclave/tree/master/docs/GettingStartedDocs/using_oe_sdk.md#api-references)
+An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, the decision was made to make only a specific set of APIs available to an enclave library. A complete list of APIs available to an enclave library can be found [here](https://github.com/openenclave/openenclave/tree/master/docs/GettingStartedDocs/using_oe_sdk.md#api-references)
 
 The `stdio.h` header file is included in this sample because we are calling the CRT function `fprintf` to print a message on the screen. However this function has a dependency on the kernel to print a message on the screen so this code cannot execute within the enclave itself. Instead this function marshals the call through to the host to carry out the call on the enclaves behalf. Only a subset of the CRT is made available through this open enclave library.
 
@@ -298,7 +298,7 @@ ProductID=1
 SecurityVersion=1
 ```
 
-These parameters are described in the [Enclave Building and Signing](https://github.com/Microsoft/openenclave/tree/master/docs/GettingStartedDocs/buildandsign.md#signing-the-enclave) document.
+These parameters are described in the [Enclave Building and Signing](https://github.com/openenclave/openenclave/tree/master/docs/GettingStartedDocs/buildandsign.md#signing-the-enclave) document.
 
 ## Host Application
 

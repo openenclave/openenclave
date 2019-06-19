@@ -105,7 +105,7 @@ For example:
 ```
 
 ##### Note:
-For details on how to configure build and sign options, refer to [Enclave Building and Signing](https://github.com/Microsoft/openenclave/blob/master/docs/GettingStartedDocs/buildandsign.md).
+For details on how to configure build and sign options, refer to [Enclave Building and Signing](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/buildandsign.md).
 
 ## Samples
 
