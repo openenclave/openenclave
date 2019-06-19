@@ -20,6 +20,8 @@
 #include <sys/stat.h>
 
 // clang-format off
+#include <ws2tcpip.h>
+#include <winsock2.h>
 #include <windows.h>
 // clang-format on
 
@@ -215,7 +217,64 @@ int oe_syscall_close_ocall(oe_host_fd_t fd)
 
 oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t oldfd)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+    oe_host_fd_t newfd = -1;
+    char pibuff[1024] = {0};
+    struct _WSAPROTOCOL_INFOA* pi = (struct _WSAPROTOCOL_INFOA*)pibuff;
+
+    // Convert fd 0, 1, 2 as needed
+    switch (oldfd)
+    {
+        case 0:
+            oldfd = (oe_host_fd_t)GetStdHandle(STD_INPUT_HANDLE);
+            break;
+
+        case 1:
+            oldfd = (oe_host_fd_t)GetStdHandle(STD_OUTPUT_HANDLE);
+            break;
+
+        case 2:
+            oldfd = (oe_host_fd_t)GetStdHandle(STD_ERROR_HANDLE);
+            break;
+
+        default:
+            break;
+    }
+
+    ret = WSADuplicateSocketA((SOCKET)oldfd, GetCurrentProcessId(), pi);
+    if (ret < 0)
+    {
+        int sockerr = WSAGetLastError();
+
+        if (sockerr != WSAENOTSOCK && sockerr != WSANOTINITIALISED)
+        {
+            _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+            goto done;
+        }
+    }
+    else
+    {
+        newfd = WSASocketA(-1, -1, -1, pi, 0, 0);
+        ret = newfd;
+        _set_errno(0);
+        goto done;
+    }
+
+    if (!DuplicateHandle(
+            GetCurrentProcess(),
+            (HANDLE)oldfd,
+            GetCurrentProcess(),
+            (HANDLE*)&ret,
+            0,
+            FALSE,
+            DUPLICATE_SAME_ACCESS))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        goto done;
+    }
+
+done:
+    return ret;
 }
 
 uint64_t oe_syscall_opendir_ocall(const char* pathname)
