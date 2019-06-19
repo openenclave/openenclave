@@ -22,7 +22,7 @@ To set up a Linux VM on your Windows machine, do the following:
    ```
    Set-ExecutionPolicy Bypass -Scope Process
    Import-Module Drive:\Path\to\VirtualMachineSgxSettings.psm1
-   Set-VMSgx -VmName MyVM -IsSgxEnabled $True -SgxSize 32
+   Set-VMSgx -VmName MyVM -SgxEnabled $True -SgxSize 32
    ```
 1. Start the VM and connect to it (right click, Connect...), finish the initial setup, reboot, and login.
    - Enable OpenSSH server installation when given the choice during setup.
