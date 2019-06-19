@@ -29,7 +29,7 @@ any of the following:
 - a [Linux VM running on the Windows development machine](HyperVLinuxVMSetup.md)
 
 Ideally, the machine should be SGX capable (see [here](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/SGXSupportLevel.md) for how to
-determine this), but a non-SGX machine can still be used in simulation mode.  
+determine this), but a non-SGX machine can still be used in simulation mode.
 
 On the Linux build machine, or after opening an ssh session into the VM:
 
@@ -53,7 +53,7 @@ We will now walk through the process of creating a C/C++ application that uses a
    it is called "Console App" (note: NOT the "Console App (.NET Core)") with the Linux
    keyword.  (If it is not immediately visible, the template can be found under
    Installed -> Visual C++ -> Cross Platform -> Linux.)
-   Give the project a name, LinuxApp for example.  This will create a "Hello World" console application.  
+   Give the project a name, LinuxApp for example.  This will create a "Hello World" console application.
    Alternatively, if you already have such a Linux application using a Visual Studio project
    file (.vcxproj file), you can start from your existing application.
 2. Configure the application project to use your Linux build environment, by right clicking
@@ -110,7 +110,7 @@ int main()
 The solution will have three configurations: Debug, SGX-Simulation-Debug, and Release.
 The SGX-Simulation-Debug will work the same as Debug, except that SGX support will be emulated
 rather than using hardware support.  This allows debugging on hardware that does not support SGX.
-The Debug and Release configurations can only be run (whether natively or in a VM) successfully on 
+The Debug and Release configurations can only be run (whether natively or in a VM) successfully on
 SGX-capable hardware.
 
 For the platform, use x64, since Open Enclave currently only supports 64-bit enclaves.
