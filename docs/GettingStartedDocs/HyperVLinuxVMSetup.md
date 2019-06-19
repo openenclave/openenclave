@@ -18,8 +18,7 @@ To set up a Linux VM on your Windows machine, do the following:
 1. If using an SGX-capable machine, enable SGX for the VM as follows (this cannot be done from Hyper-V Manager):
    - Download [VirtualMachineSgxSettings.psm1](https://raw.githubusercontent.com/microsoft/openenclave/f28cedce63be9673e20fe54563987189f2565637/new_platforms/scripts/VirtualMachineSgxSettings.psm1)
    - Open an elevated PowerShell window (e.g., type "powershell" and click Run as Administrator)
-   - Invoke the following commands, using the path to where you downloaded the file, and replacing MyVM with your VM nam
-e:
+   - Invoke the following commands, using the path to where you downloaded the file, and replacing MyVM with your VM name:
    ```
    Set-ExecutionPolicy Bypass -Scope Process
    Import-Module Drive:\Path\to\VirtualMachineSgxSettings.psm1
