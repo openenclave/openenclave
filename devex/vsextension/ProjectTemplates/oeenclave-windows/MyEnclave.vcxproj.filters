@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{d6bcc5f3-1d8c-4075-a6d6-4eb70719ec47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{83b531df-6cdf-437c-9097-60c4d7a5753d}</UniqueIdentifier>
+      <Extensions>cpp;c;edl;def;</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{b3972ae7-4530-4053-95bf-8613b2cee28b}</UniqueIdentifier>
+      <Extensions>h;hpp;</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{568e4245-8d0c-41f9-b1d2-32951c9a1a96}</UniqueIdentifier>
+      <Extensions>rc;xml;pem;</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClangCItem Include="$projectname$_t.c">
+      <Filter>Generated Files</Filter>
+    </ClangCItem>
+    <ClangCItem Include="$projectname$_ecalls.c">
+      <Filter>Source Files</Filter>
+    </ClangCItem>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$projectname$_args.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$projectname$_t.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$projectname$_private.pem">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="optee/uuids.reg">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$projectname$.Debug.conf">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$projectname$.Release.conf">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EdlItem Include="$projectname$.edl">
+      <Filter>Source Files</Filter>
+    </EdlItem>
+  </ItemGroup>
+</Project>
