@@ -311,7 +311,7 @@ In this section we will cover how to develop a host to load and run the hellowor
 There are relatively fewer restrictions on developing a host application compared to authoring an enclave.
 In general, you are free to link your choice of additional libraries into the host application. A part of
 a typical host application job is to manage the life cycle of an enclave. Open Enclave SDK provides
-an enclave host runtime, with enclave management functions exposed through [openenclave/host.h](https://microsoft.github.io/openenclave/api/host_8h.html).
+an enclave host runtime, with enclave management functions exposed through [openenclave/host.h](https://openenclave.github.io/openenclave/api/host_8h.html).
 
 The full source for the host implementation is here: [helloworld/host/host.c](host/host.c)
 

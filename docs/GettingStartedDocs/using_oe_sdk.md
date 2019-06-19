@@ -57,7 +57,7 @@ while the host application has full access to the range of libraries and API
 available to all normal mode applications, the enclave is restricted to a much
 more constrained set as described below:
 
-#### [Open Enclave API](https://microsoft.github.io/openenclave/api/index.html)
+#### [Open Enclave API](https://openenclave.github.io/openenclave/api/index.html)
 
 The Doxygen documentation of the API exposed by Open Enclave SDK to both enclave and host.
 
