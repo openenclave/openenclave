@@ -26,13 +26,19 @@ Data Strings {
     ERR_COULD_NOT_MODIFY_SETTINGS = Could not modify SGX settings for VM '{0}' via WMI with error value '{1}'.
 
     WARN_GEN2_TITLE = The VM '{0}' is not a Generation 2 or later VM.
-    WARN_GEN2_TEXT = > Enabling SGX may not work.
-
-    WARN_SECURE_BOOT_TITLE = The VM '{0}' has Secure Boot on.
-    WARN_SECURE_BOOT_TEXT = > If you plan on running Linux, you will have to sign your Intel SGX kernel module with a custom Secure Boot key.
+    WARN_GEN2_TEXT = > Enabling SGX may fail.
 
     WARN_CHECKPOINT_TITLE = The VM '{0}' has checkpoints enabled.
     WARN_CHECKPOINT_TEXT = > Enabling SGX may cause the VM to not start.
+
+    WARN_SGX_SIZE_TOO_LITTLE_TITLE = The specified {0}MB of SGX EPC memory may be insufficient.
+    WARN_SGX_SIZE_TOO_LITTLE_TEXT = > Modifying the SGX EPC memory configuration may fail.
+
+    WARN_SGX_SIZE_TOO_LARGE_TITLE = The specified {0}MB of SGX EPC memory might be too large.
+    WARN_SGX_SIZE_TOO_LARGE_TEXT = > Consult your hardware's manual for its supported SGX version and associated EPC memory limits, if any.
+
+    INFO_SECURE_BOOT_TITLE = The VM '{0}' has Secure Boot on.
+    INFO_SECURE_BOOT_TEXT = > If you plan on running Linux, you will have to sign your Intel SGX kernel module with a custom Secure Boot key.
 '@
 }
 
@@ -287,38 +293,6 @@ Function Set-VMSgx {
             Write-Error ($Strings.ERR_VM_STATE -f $Vm.Name)
         }
 
-        # At the time of this writing, the following conditions hold:
-        #
-        # 1. SGX virtualization is only supported on Gen2 VMs:
-        # 1.1. The Intel SGX driver is not yet merged into mainline Linux and must be compiled manually;
-        #      For VMs with Secure Boot on, this means that the module must be signed with a custom key;
-        #      Note: Only Gen2 VMs support Secure Boot.
-        # 2. Checkpoints are not supported with SGX turned on.
-
-        If (!$Force -and $SgxEnabled) {
-            # Check VM generation.
-            If ($Vm.Generation -lt 2) {
-                Write-Warning ($Strings.WARN_GEN2_TITLE -f $Vm.Name)
-                Write-Warning $Strings.WARN_GEN2_TEXT
-            }
-
-            # Check Secure Boot settings.
-            If ($Vm.Generation -ge 2) {
-                $Fw = $Vm | Get-VMFirmware
-
-                If ($Fw.SecureBoot -eq [Microsoft.HyperV.PowerShell.OnOffState]::On) {
-                    Write-Information ($Strings.WARN_SECURE_BOOT_TITLE -f $Vm.Name)
-                    Write-Information $Strings.WARN_SECURE_BOOT_TEXT
-                }
-            }
-
-            # Check Checkpoint settings.
-            If ($Vm.CheckpointType -ne [Microsoft.HyperV.PowerShell.CheckpointType]::Disabled -and $SgxEnabled) {
-                Write-Information ($Strings.WARN_CHECKPOINT_TITLE -f $Vm.Name)
-                Write-Information $Strings.WARN_CHECKPOINT_TEXT
-            }
-        }
-
         # Fetch the settings for the VM.
         $Mem = Get-VMSgxMemorySettingData $Vm
 
@@ -327,47 +301,112 @@ Function Set-VMSgx {
 
         # The function only changes settings when asked to, it does not assume
         # default values.
-        $HasWorkToDo = $False
+        $HasSgxEnabled = $False
+        $HasSgxSize = $False
+        $HasSgxLaunchControlDefault = $False
+        $HasSgxLaunchControlMode = $False
 
         # Enable/Disable SGX.
         If ($PSBoundParameters.ContainsKey('SgxEnabled')) {
             $Mem.SgxEnabled = $SgxEnabled
-            $HasWorkToDo = $True
+            $HasSgxEnabled = $True
         }
 
         # SGX EPC size (in MB).
         If ($PSBoundParameters.ContainsKey('SgxSize')) {
             $Mem.SgxSize = $SgxSize
-            $HasWorkToDo = $True
+            $HasSgxSize = $True
         }
 
         # Default FLC Mode.
         If ($PSBoundParameters.ContainsKey('SgxLaunchControlDefault')) {
             $Mem.SgxLaunchControlDefault = $SgxLaunchControlDefault
-            $HasWorkToDo = $True
+            $HasSgxLaunchControlDefault = $True
         }
 
         # FLC Mode.
         If ($PSBoundParameters.ContainsKey('SgxLaunchControlMode')) {
             $Mem.SgxLaunchControlMode = $SgxLaunchControlMode
-            $HasWorkToDo = $True
+            $HasSgxLaunchControlMode = $True
         }
 
-        # If no settings were passed to the cmdlet, bail out.
-        If (!$HasWorkToDo) {
+        # If no settings were passed to the cmdlet, exit.
+        If (!$HasSgxEnabled -and
+            !$HasSgxSize -and
+            !$HasSgxLaunchControlDefault -and
+            !$HasSgxLaunchControlMode) {
             Write-Error $Strings.ERR_NO_SETTINGS_TO_MODIFY
         }
 
+        # At the time of this writing, the following conditions hold:
+        #
+        # 1. SGX virtualization is only supported on Gen2 VMs;
+        # 1.1. The Intel SGX driver is not yet merged into mainline Linux and must be compiled manually;
+        #      For VMs with Secure Boot on, this means that the module must be signed with a custom key;
+        #      Note: Only Gen2 VMs support Secure Boot.
+        # 2. Checkpoints are not supported with SGX turned on, even if the modification command succeeds,
+        #    so the VM won't start;
+        # 3. Configuring too little EPC memory may result in an error modifying the VM's settings;
+        # 4. Configuring too much EPC memory may cause the VM to not start, even if the modification
+        #    command succeeds.
+
+        # The conditions checked here do not preclude the modification command from succeeding.
+        If (!$Force) {
+            If ($SgxEnabled) {
+                # Check Secure Boot settings.
+                If ($Vm.Generation -ge 2) {
+                    $Fw = $Vm | Get-VMFirmware
+
+                    If ($Fw.SecureBoot -eq [Microsoft.HyperV.PowerShell.OnOffState]::On) {
+                        Write-Information ($Strings.INFO_SECURE_BOOT_TITLE -f $Vm.Name)
+                        Write-Information $Strings.INFO_SECURE_BOOT_TEXT
+                    }
+                }
+
+                # Check Checkpoint settings.
+                If ($Vm.CheckpointType -ne [Microsoft.HyperV.PowerShell.CheckpointType]::Disabled -and $SgxEnabled) {
+                    Write-Warning ($Strings.WARN_CHECKPOINT_TITLE -f $Vm.Name)
+                    Write-Warning $Strings.WARN_CHECKPOINT_TEXT
+                }
+            }
+
+            # EPC Memory settings
+            If ($SgxSize -ge 100) {
+                # SGX1 supports up to 128M of EPC memory, assuming that the host firmware allows it;
+                # the actual limit may be lower. SGX2 supports dynamic expansion of the EPC memory
+                # pool, if the OS supports it. As such, the upper limit to EPC memory of the host
+                # may vary from machine to machine. Assigning a significant portion of the total
+                # available EPC memory to a single VM may work while only the VM is running, but
+                # other VMs with SGX support turned on may fail to start, or individual enclaves
+                # running either on the host or in other VMs may fail to start, starved of EPC memory.
+                Write-Warning ($Strings.WARN_SGX_SIZE_TOO_LARGE_TITLE -f $SgxSize)
+                Write-Warning $Strings.WARN_SGX_SIZE_TOO_LARGE_TEXT
+            }
+        }
+
         # Check that some memory was specified to enable SGX.
-        If (!$Force -and $SgxEnabled -and ($SgxSize -eq 0)) {
+        If ($SgxEnabled -and ($SgxSize -eq 0)) {
             Write-Error $Strings.ERR_NO_SGX_MEM_TO_ENABLE
         }
 
         # Try to change the settings.
         $Ret = $Svc.ModifyResourceSettings($Mem.GetText(1))
 
-        # Inform the user as to the result.
         If ($Ret.ReturnValue -ne 0) {
+            # If the modification failed, try to diagnose what might have gone
+            # wrong. These checks are not guaranteed to find the root cause,
+            # but some diagnoses are better than only an error code.
+
+            If ($SgxEnabled -and ($Vm.Generation -lt 2)) {
+                Write-Warning ($Strings.WARN_GEN2_TITLE -f $Vm.Name)
+                Write-Warning $Strings.WARN_GEN2_TEXT
+            }
+
+            If ($HasSgxSize -and ($SgxSize -lt 10)) {
+                Write-Warning ($Strings.WARN_SGX_SIZE_TOO_LITTLE_TITLE -f $SgxSize)
+                Write-Warning $Strings.WARN_SGX_SIZE_TOO_LITTLE_TEXT
+            }
+
             Write-Error ($Strings.ERR_COULD_NOT_MODIFY_SETTINGS -f $Vm.Name, $Ret.ReturnValue)
         }
 
