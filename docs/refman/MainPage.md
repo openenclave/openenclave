@@ -13,7 +13,7 @@ The Open Enclave SDK is published on GitHub. Use the following command to downlo
 This creates a source tree under the current directory called openenclave.
 
 ## API reference
-To see a complete list of currently supported APIs, please go [here](https://openenclave.github.io/openenclave/api/index.html).
+To see a complete list of currently supported APIs, please go [here](https://openenclave.github.io/openenclave/api/globals.html).
 
 
 ## Licensing
