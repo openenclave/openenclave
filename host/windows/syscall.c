@@ -236,10 +236,10 @@ oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t oldfd)
             break;
     }
 
-	if (ret == -1)
-		_set_errno(OE_EINVAL);
-	else
-		_set_errno(0);
+    if (ret == -1)
+        _set_errno(OE_EINVAL);
+    else
+        _set_errno(0);
 
     return ret;
 }
