@@ -22,10 +22,11 @@ By default, the Open Enclave SDK is installed to `/opt/openenclave`. It contains
 ## Configure environment variables for Open Enclave SDK
 
 For ease of development, we recommend adding:
-- Open Enclave SDK `pkgconfig` folder to `PKG_CONFIG_PATH`
-- Open Enclave SDK `bin` folder to `PATH`
+- Open Enclave SDK `bin` folder to `PATH`, for use of our tools (such as `oegdb` and `oeedger8r`).
+- Open Enclave SDK `install` folder to `CMAKE_PREFIX_PATH`, for use of the [CMake package](/cmake/sdk_cmake_targets_readme.md).
+- Open Enclave SDK `pkgconfig` folder to `PKG_CONFIG_PATH`, for use of `pkg-config`.
 
-You can do this by sourcing the openenclaverc file that is distributed with the SDK:
+You can do this by sourcing the `openenclaverc` file that is distributed with the SDK:
 
 ```bash
 source /opt/openenclave/share/openenclave/openenclaverc
@@ -33,17 +34,10 @@ source /opt/openenclave/share/openenclave/openenclaverc
 
 ## Samples
 
-A simple way to determine if your machine is correctly configured to build and run
-Open Enclave apps is to execute the samples:
-
-```bash
-cp -r /opt/openenclave/share/openenclave/samples ~
-cd ~/samples
-make world
-```
-
-A description of all the included samples and what each one illustrates can be
-found in [share/openenclave/samples/README.md](/samples/README.md).
+One way to determine if your machine is correctly configured to build and run
+Open Enclave apps is to execute the samples. A description of all the included samples,
+what each one illustrates, and how to build and run them  can be found in
+[share/openenclave/samples/README.md](/samples/README.md).
 
 Additional documentation is also available for:
 - [Building and signing enclaves](/docs/GettingStartedDocs/buildandsign.md)
