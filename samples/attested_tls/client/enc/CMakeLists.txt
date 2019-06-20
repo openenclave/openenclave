@@ -30,13 +30,8 @@ target_include_directories(tls_client_enc PRIVATE
 target_link_libraries(tls_client_enc
                 openenclave::oeenclave
                 openenclave::oelibcxx
-                openenclave::mbedtls
-                openenclave::mbedcrypto
                 openenclave::oehostsock
-                openenclave::oehostresolver
-                openenclave::oecore
-                openenclave::oelibc
-                openenclave::oesyscall)
+                openenclave::oehostresolver)
 
 add_custom_target(tls_client_sign_enc ALL DEPENDS tls_client_enc.signed)
 
