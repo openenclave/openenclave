@@ -158,7 +158,7 @@ let attr_value_to_string argstruct = function
   | Some (AString s) -> Some (argstruct ^ s)
 
 (** For a parameter, get its size expression. *)
-let oe_get_param_size (ptype, decl, argstruct) =
+let get_param_size (ptype, decl, argstruct) =
   let type_expr = get_type_expr ptype in
   let get_ptr_or_decl_size (p : ptr_size) =
     let size = attr_value_to_string argstruct p.ps_size
@@ -174,15 +174,22 @@ let oe_get_param_size (ptype, decl, argstruct) =
   match ptype with
   | PTPtr (_, ptr_attr) ->
       if ptr_attr.pa_isstr then
-        argstruct ^ decl.identifier ^ "_len * sizeof(char)"
+        Some (argstruct ^ decl.identifier ^ "_len * sizeof(char)")
       else if ptr_attr.pa_iswstr then
-        argstruct ^ decl.identifier ^ "_len * sizeof(wchar_t)"
-      else get_ptr_or_decl_size ptr_attr.pa_size
+        Some (argstruct ^ decl.identifier ^ "_len * sizeof(wchar_t)")
+      else if ptr_attr.pa_chkptr then
+        Some (get_ptr_or_decl_size ptr_attr.pa_size)
+      else None
   (* Values have no marshalling size. *)
-  | _ -> ""
+  | _ -> None
+
+let oe_get_param_size (ptype, decl, argstruct) =
+  match get_param_size (ptype, decl, argstruct) with
+  | Some size -> size
+  | None -> failwithf "Error: No size for " ^ decl.identifier
 
 (** For a parameter, get its count expression. *)
-let oe_get_param_count (ptype, decl, argstruct) =
+let get_param_count (ptype, decl, argstruct) =
   let type_expr = get_type_expr ptype in
   let get_ptr_or_decl_count (p : ptr_size) =
     let size = attr_value_to_string argstruct p.ps_size
@@ -202,10 +209,20 @@ let oe_get_param_count (ptype, decl, argstruct) =
       if ptr_attr.pa_isstr || ptr_attr.pa_iswstr then
         (* TODO: Double-check that this length includes the
            null-terminator. *)
-        argstruct ^ decl.identifier ^ "_len"
-      else get_ptr_or_decl_count ptr_attr.pa_size
-  (* Values are always a count of 1. *)
-  | _ -> "1"
+        Some (argstruct ^ decl.identifier ^ "_len")
+      else if ptr_attr.pa_chkptr then
+        Some (get_ptr_or_decl_count ptr_attr.pa_size)
+        (* TODO: Should be able to return [Some "1"] for plain
+           pointers and values. *)
+      else None
+  | PTVal _ -> None
+
+let oe_get_param_count (ptype, decl, argstruct) =
+  match get_param_count (ptype, decl, argstruct) with
+  | Some count -> count
+  (* TODO: This is hit only in tests, not when code is generated. It
+     should instead be [failwithf]. *)
+  | None -> sprintf "/* Error: no count for '%s' */" decl.identifier
 
 (** Generate the prototype for a given function. *)
 let oe_gen_prototype (fd : func_decl) =
@@ -987,9 +1004,37 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
                (get_deepcopy_members (get_param_atype ptype))) ]
         |> List.flatten )
     in
-    flatten_map (gen_save_ptrs [] "1") fd.plist
+    flatten_map (gen_save_ptrs [] "1")
+      (List.filter is_out_or_inout_ptr fd.plist)
   in
   (* Generate host ECALL wrapper function. *)
+  let rec gen_ptr_count args count (ptype, decl) =
+    let argstruct =
+      match args with
+      | [] -> "_args."
+      | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
+    in
+    let arg =
+      match args with
+      | [] -> decl.identifier
+      | hd :: _ -> hd ^ gen_c_deref count ^ decl.identifier
+    in
+    let members = get_deepcopy_members (get_param_atype ptype) in
+    match members with
+    | [] -> []
+    | _ ->
+        let param_count = oe_get_param_count (ptype, decl, argstruct) in
+        param_count
+        :: flatten_map (gen_ptr_count (arg :: args) param_count) members
+  in
+  let gen_ptr_array (plist : pdecl list) =
+    let count =
+      List.map (gen_ptr_count [] "1") (List.filter is_out_or_inout_ptr plist)
+      |> List.flatten |> String.concat " * "
+    in
+    if count <> "" then sprintf "void* _ptrs[%s]; (void)_ptrs;" count
+    else "/* No pointers to deep copy. */"
+  in
   let oe_gen_host_ecall_wrapper (tf : trusted_func) =
     let fd = tf.tf_fdecl in
     let oe_ecall_function =
@@ -1001,7 +1046,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    /* Marshalling struct. */"
     ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
         fd.fname
-    ; "    void* _ptrs[512]; (void)_ptrs;"
+    ; "    " ^ gen_ptr_array fd.plist
     ; "    size_t _ptrs_index = 0;"
     ; ""
     ; "    /* Marshalling buffer and sizes. */"
@@ -1071,7 +1116,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    /* Marshalling struct. */"
     ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
         fd.fname
-    ; "    void* _ptrs[512]; (void)_ptrs;"
+    ; "    " ^ gen_ptr_array fd.plist
     ; "    size_t _ptrs_index = 0;"
     ; ""
     ; "    /* Marshalling buffer and sizes. */"
