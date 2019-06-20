@@ -24,7 +24,7 @@ else ()
   # These tests can only run with SGX-FLC, meaning they were built
   # against SGX.
   if (USE_LIBSGX)
-    list(APPEND SAMPLES_LIST local_attestation remote_attestation)
+    list(APPEND SAMPLES_LIST local_attestation remote_attestation attested_tls)
   endif ()
 endif ()
 
@@ -73,8 +73,8 @@ foreach (SAMPLE ${SAMPLES_LIST})
         message(WARNING "Samples test '${SAMPLE}' with pkg-config failed!")
         set(ALL_TEST_RESULT 1)
       else ()
-        message(STATUS "Samples test '${SAMPLE}' with pkg-config passed!")
-    endif ()
+	message(STATUS "Samples test '${SAMPLE}' with pkg-config passed!")
+      endif ()
   endif ()
 
   # The file-encryptor and helloworld are special cases which also

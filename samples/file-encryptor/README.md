@@ -1,6 +1,6 @@
 # The File-Encryptor Sample
 
-OE SDK comes with a default crypto support library that supports a [subset of the open sources mbedTLS](https://github.com/Microsoft/openenclave/blob/master/docs/MbedtlsSupport.md) library.
+OE SDK comes with a default crypto support library that supports a [subset of the open sources mbedTLS](https://github.com/openenclave/openenclave/blob/master/docs/MbedtlsSupport.md) library.
 This sample demonstrates how to perform simple file cryptographic operations inside an enclave using mbedTLS library.
 
 It has the following properties:
