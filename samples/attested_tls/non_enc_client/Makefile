@@ -28,11 +28,11 @@ LDFLAGS=$(shell pkg-config oehost-$(CXX_COMPILER) --libs)
 all: build
 
 build:
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I/usr/include/openssl client.cpp identity_verifier.cpp verify_signer_openssl.cpp
-	$(CXX) -o tls_non_enc_client client.o identity_verifier.o verify_signer_openssl.o $(LDFLAGS)
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I/usr/include/openssl client.cpp verify_callback.cpp verify_signer_openssl.cpp
+	$(CXX) -o tls_non_enc_client client.o verify_callback.o verify_signer_openssl.o $(LDFLAGS)
 
 clean:
-	rm -f tls_client *.o ../cert.der
+	rm -f tls_client *.o ../cert.der tls_server_enc_pubkey.h
 
 run:
 	./tls_non_enc_client -server:localhost -port:12341

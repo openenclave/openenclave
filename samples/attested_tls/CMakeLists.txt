@@ -25,18 +25,22 @@ add_custom_command(OUTPUT client_private.pem client_public.pem server_private.pe
 # Generate public key header files
 add_custom_command(OUTPUT tls_client_enc_pubkey.h tls_server_enc_pubkey.h
   DEPENDS ${CMAKE_SOURCE_DIR}/scripts/gen_pubkey_header.sh
-  COMMAND ${CMAKE_SOURCE_DIR}/scripts/gen_pubkey_header.sh ${CMAKE_SOURCE_DIR}/common/tls_client_enc_pubkey.h ${CMAKE_BINARY_DIR}/client/enc/client_public.pem
-  COMMAND ${CMAKE_SOURCE_DIR}/scripts/gen_pubkey_header.sh ${CMAKE_SOURCE_DIR}/common/tls_server_enc_pubkey.h ${CMAKE_BINARY_DIR}/server/enc/server_public.pem)
+  COMMAND ${CMAKE_SOURCE_DIR}/scripts/gen_pubkey_header.sh ${CMAKE_BINARY_DIR}/client/enc/tls_client_enc_pubkey.h ${CMAKE_BINARY_DIR}/client/enc/client_public.pem
+  COMMAND ${CMAKE_SOURCE_DIR}/scripts/gen_pubkey_header.sh ${CMAKE_BINARY_DIR}/server/enc/tls_server_enc_pubkey.h ${CMAKE_BINARY_DIR}/server/enc/server_public.pem
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/server/enc/tls_server_enc_pubkey.h ${CMAKE_BINARY_DIR}/client/enc/tls_server_enc_pubkey.h
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/server/enc/tls_server_enc_pubkey.h ${CMAKE_BINARY_DIR}/non_enc_client/tls_server_enc_pubkey.h
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/client/enc/tls_client_enc_pubkey.h ${CMAKE_BINARY_DIR}/server/enc/tls_client_enc_pubkey.h)
 
-add_custom_target(build_common DEPENDS client_private.pem  tls_client_enc_pubkey.h)
+add_custom_target(build_common DEPENDS client_private.pem server_public.pem tls_client_enc_pubkey.h tls_server_enc_pubkey.h tls_client_enc_pubkey.h)
 
 if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
   add_custom_target(run
+    DEPENDS tls_server tls_client tls_non_enc_client tls_client_enc tls_server_enc
     COMMAND ${CMAKE_BINARY_DIR}/server/host/tls_server_host ${CMAKE_BINARY_DIR}/server/enc/tls_server_enc.signed -port:12341 &
-    COMMAND sleep 2
+    COMMAND ${CMAKE_COMMAND} -E sleep 2
     COMMAND ${CMAKE_BINARY_DIR}/client/host/tls_client_host ${CMAKE_BINARY_DIR}/client/enc/tls_client_enc.signed -server:localhost -port:12341
-    COMMAND sleep 2
+    COMMAND ${CMAKE_COMMAND} -E sleep 2
     COMMAND ${CMAKE_BINARY_DIR}/server/host/tls_server_host ${CMAKE_BINARY_DIR}/server/enc/tls_server_enc.signed -port:12341 &
-    COMMAND sleep 2
+    COMMAND ${CMAKE_COMMAND} -E sleep 2
     COMMAND ${CMAKE_BINARY_DIR}/non_enc_client/tls_non_enc_client -server:localhost -port:12341)
 endif ()
