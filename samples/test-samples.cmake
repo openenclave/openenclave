@@ -54,18 +54,14 @@ foreach (SAMPLE ${SAMPLES_LIST})
   if (NOT SIMULATION)
     # Build with the CMake package
     message(STATUS "Samples test '${SAMPLE}' with CMake running...")
-    if (NOT (${SAMPLE} MATCHES "(attested_tls)"))
-        execute_process(
-        COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
-        RESULT_VARIABLE TEST_RESULT)
-        if (TEST_RESULT)
-          message(WARNING "Samples test '${SAMPLE}' with CMake failed!")
-          set(ALL_TEST_RESULT 1)
-	else ()
-	  message(STATUS "Samples test '${SAMPLE}' with CMake passed!")
-	endif ()
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target run
+      RESULT_VARIABLE TEST_RESULT)
+    if (TEST_RESULT)
+      message(WARNING "Samples test '${SAMPLE}' with CMake failed!")
+      set(ALL_TEST_RESULT 1)
     else ()
-	message(STATUS "Skipped!")
+      message(STATUS "Samples test '${SAMPLE}' with CMake passed!")
     endif ()
 
     # Build with pkg-config

@@ -13,7 +13,7 @@
 #include <openssl/err.h>
 #include <openssl/x509_vfy.h>
 #include "../common/common.h"
-#include "../common/tls_server_enc_pubkey.h"
+#include "tls_server_enc_pubkey.h"
 
 bool verify_mrsigner_openssl(
     char* pem_key_buffer,

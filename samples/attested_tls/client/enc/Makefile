@@ -44,7 +44,8 @@ public.pem: private.pem
 # that contains the expected public key that is signed by a trusted CA.
 genkey: public.pem
 	chmod u+x ../../scripts/gen_pubkey_header.sh
-	../../scripts/gen_pubkey_header.sh ../../common/tls_client_enc_pubkey.h $<
+	../../scripts/gen_pubkey_header.sh tls_client_enc_pubkey.h $<
+	cp tls_client_enc_pubkey.h ../../server/enc
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
@@ -57,4 +58,4 @@ sign:
 	oesign sign -e tls_client_enclave -c  enc.conf -k private.pem
 
 clean:
-	rm -f ./*.o tls_client_enclave tls_client_enclave.signed enclave1.signed.so tls_client_t.* tls_client_args.h *.pem ../../common/tls_client_enc_pubkey.h
+	rm -f ./*.o tls_client_enclave tls_client_enclave.signed enclave1.signed.so tls_client_t.* tls_client_args.h *.pem tls_client_enc_pubkey.h tls_server_enc_pubkey.h
