@@ -74,7 +74,7 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void))
             while (__atomic_load_n(once, __ATOMIC_ACQUIRE) != FUNC_INVOKED)
             {
                 // Relinquish CPU
-                asm volatile("pause");
+                OE_CPU_RELAX();
             }
         }
     }
