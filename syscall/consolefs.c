@@ -388,16 +388,6 @@ static oe_fd_t* _new_file(uint32_t fileno)
 {
     oe_fd_t* ret = NULL;
     file_t* file = NULL;
-    struct _args
-    {
-        const char* path;
-        int flags;
-    };
-    struct _args args[] = {
-        {"/dev/stdin", OE_O_RDONLY},
-        {"/dev/stdout", OE_O_WRONLY},
-        {"/dev/stderr", OE_O_WRONLY},
-    };
 
     if (fileno > OE_STDERR_FILENO)
         goto done;
@@ -412,13 +402,11 @@ static oe_fd_t* _new_file(uint32_t fileno)
         file->magic = MAGIC;
     }
 
-    /* Ask the host to open this file. */
+    /* Ask the host to duplicate the file descriptor. */
     {
         oe_host_fd_t retval;
-        const char* path = args[fileno].path;
-        int flags = args[fileno].flags;
 
-        if (oe_syscall_open_ocall(&retval, path, flags, 0) != OE_OK)
+        if (oe_syscall_dup_ocall(&retval, fileno) != OE_OK)
             goto done;
 
         if (retval < 0)

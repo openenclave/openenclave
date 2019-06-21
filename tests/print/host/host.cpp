@@ -47,7 +47,7 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_terminate_enclave(): result=%u", result);
     }
 
-    printf("=== passed all tests (%s)\n", argv[0]);
+    printf("=== passed all tests (host/print_host)\n");
 
     return 0;
 }
