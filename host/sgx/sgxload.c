@@ -13,6 +13,7 @@
 #include "linux/sgxioctl.h"
 #elif defined(_WIN32)
 #include <Windows.h>
+#define MAX_EINIT_RETRY_COUNT 50
 #endif
 
 #include <assert.h>
@@ -918,16 +919,39 @@ oe_result_t oe_sgx_initialize_enclave(
             (void*)&launch_token,
             sizeof(info.EInitToken)));
 
-        if (!InitializeEnclave(
+        BOOL success = FALSE;
+        /*
+         * Adding retry count to prevent the failures seen with Windows CI with
+         * EINIT SGX_UNMASKED_EVENT, presumably due to large number of external
+         * interrupts fired in succession. Mitigating this with retry logic at
+         * the OE SDK level as inhibiting the unmasked events requires Windows
+         * kernel support. Thus far, we have not seen the same issue on Linux,
+         * which has more retries and also does a 20ms sleep between each EINIT
+         * attempt. Did not add any delay or sleep as the context switch to
+         * Windows kernel mode should suffice for the delay.
+         *
+         */
+        for (DWORD i = 0; i < MAX_EINIT_RETRY_COUNT; i++)
+        {
+            enclave_error = 0;
+            success = InitializeEnclave(
                 GetCurrentProcess(),
                 (LPVOID)addr,
                 &info,
                 sizeof(info),
-                &enclave_error))
+                &enclave_error);
+
+            if (enclave_error != SGX_UNMASKED_EVENT)
+                break;
+        }
+
+        if (!success)
+        {
             OE_RAISE_MSG(
                 OE_PLATFORM_ERROR,
                 "InitializeEnclave failed (err=%#x)",
                 enclave_error);
+        }
 #endif
 #endif
     }
