@@ -39,7 +39,7 @@ pkg-config opt/openenclave/share/pkgconfig/oehost-g++.pc --libs
 ## Build options for using Open Enclave SDK with a CMake project
 If you have a CMake project and would like to bring in Open Enclave targets,
 please look at instructions available
-[here](https://github.com/Microsoft/openenclave/blob/master/cmake/sdk_cmake_targets_readme.md).
+[here](https://github.com/openenclave/openenclave/blob/master/cmake/sdk_cmake_targets_readme.md).
 
 ## Signing the Enclave
 

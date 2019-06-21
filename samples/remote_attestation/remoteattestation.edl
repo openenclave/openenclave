@@ -17,14 +17,6 @@ enclave {
                                                                   size_t key_size,
                                                [in, count=remote_report_size] uint8_t *remote_report,
                                                size_t   remote_report_size);
-
-        // Encrypt message for another enclave using the public key stored for it
-        public int generate_encrypted_message(  [out] uint8_t** data,
-                                              [out] size_t*  size);
-
-        // Process encrypted message
-        public int process_encrypted_msg(  [in, count=size] uint8_t* data,
-                                               size_t  size);
     };
 
     //untrusted {

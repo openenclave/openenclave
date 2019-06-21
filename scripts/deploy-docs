@@ -19,14 +19,14 @@ mode=$2
 case $mode in 
     ssh)
         echo "Pushing gh-pages via ssh"
-        remote="git@github.com:Microsoft/openenclave.git"
+        remote="git@github.com:openenclave/openenclave.git"
     ;;
     
     https)
         echo "Pushing gh-pages via https"
         username=$3
         password=$4
-        remote="https://${username}:${password}@github.com/Microsoft/openenclave.git"
+        remote="https://${username}:${password}@github.com/openenclave/openenclave.git"
     ;;
     *)
         echo "Usage: $0 builddir [ ssh | https username pat ]";

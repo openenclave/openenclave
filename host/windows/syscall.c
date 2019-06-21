@@ -429,7 +429,12 @@ int oe_syscall_close_socket_ocall(oe_host_fd_t sockfd)
     PANIC;
 }
 
-int oe_syscall_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
+int oe_syscall_fcntl_ocall(
+    oe_host_fd_t fd,
+    int cmd,
+    uint64_t arg,
+    uint64_t argsize,
+    void* argout)
 {
     PANIC;
 }
@@ -437,7 +442,12 @@ int oe_syscall_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
 #define TIOCGWINSZ 0x5413
 #define TIOCSWINSZ 0x5414
 
-int oe_syscall_ioctl_ocall(oe_host_fd_t fd, uint64_t request, uint64_t arg)
+int oe_syscall_ioctl_ocall(
+    oe_host_fd_t fd,
+    uint64_t request,
+    uint64_t arg,
+    uint64_t argsize,
+    void* argout)
 {
     errno = 0;
 

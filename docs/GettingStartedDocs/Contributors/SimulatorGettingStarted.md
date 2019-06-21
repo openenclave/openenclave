@@ -9,7 +9,7 @@
 Use the following command to download the source code and set the current directory to it.
 
 ```bash
-git clone https://github.com/Microsoft/openenclave.git
+git clone https://github.com/openenclave/openenclave.git
 cd openenclave
 ```
 
