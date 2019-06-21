@@ -89,7 +89,8 @@ oe_result_t oe_sgx_load_properties(
 
     /* Get pointer to and size of the given section */
     if (elf64_find_section(elf, section_name, &section_data, &section_size) !=
-        0)
+            0 ||
+        section_data == NULL)
     {
         result = OE_NOT_FOUND;
         goto done;
