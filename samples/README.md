@@ -105,7 +105,7 @@ For example:
 ```
 
 ##### Note:
-For details on how to configure build and sign options, refer to [Enclave Building and Signing](https://github.com/Microsoft/openenclave/blob/master/docs/GettingStartedDocs/buildandsign.md).
+For details on how to configure build and sign options, refer to [Enclave Building and Signing](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/buildandsign.md).
 
 ## Samples
 
@@ -140,4 +140,10 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Explain the concept of OE local attestation
 - Demonstrate an implementation of local attestation between two enclaves on the same VM
 
+#### [Attested TLS](attested_tls/README.md)
+
+- Explain what an Attested TLS channel is
+- Demonstrate an implementation for how to establish an Attested TLS channel
+  - between two enclaves
+  - between one non-enclave client and an enclave
 

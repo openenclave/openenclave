@@ -146,13 +146,19 @@ int oe_iov_sync(
 
             /* Sync the base data for this element. */
             {
+                /* Note: buf[i].iov_base is an offset here (not a pointer). */
                 uint8_t* src = (uint8_t*)buf[i].iov_base + (uint64_t)buf;
+                size_t src_size = buf[i].iov_len;
                 uint8_t* dest = (uint8_t*)iov[i].iov_base;
+                size_t dest_size = iov[i].iov_len;
+
+                if (src_size != dest_size)
+                    goto done;
 
                 if (src < (uint8_t*)buf || src > (uint8_t*)buf + buf_size)
                     goto done;
 
-                if (oe_memcpy_s(dest, n, src, iov[i].iov_len) != OE_OK)
+                if (oe_memcpy_s(dest, dest_size, src, src_size) != OE_OK)
                     goto done;
             }
         }

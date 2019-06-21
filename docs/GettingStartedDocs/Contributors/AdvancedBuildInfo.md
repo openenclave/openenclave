@@ -78,7 +78,7 @@ Building from within a subtree of the build-tree builds all dependencies for tha
 `make clean` is handy before a spot-rebuild in verbose mode.
 
 A successful build only outputs the HTML API reference into the build-tree.
-To update the Doxygen-generated documentation published to https://microsoft.github.io/openenclave,
+To update the Doxygen-generated documentation published to https://openenclave.github.io/openenclave,
 please follow instructions [here](/docs/refman/doxygen-howto.md)
 
 ## Visualizing the CMake Dependency Graph

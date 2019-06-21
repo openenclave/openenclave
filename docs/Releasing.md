@@ -76,8 +76,8 @@ format, based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/):
 Entries from Unreleased section.
 ...
 
-[Unreleased]: https://github.com/microsoft/openenclave/compare/v0.4.0...HEAD
-[v0.4.0]: https://github.com/microsoft/openenclave/compare/v0.1.0...v0.4.0
+[Unreleased]: https://github.com/openenclave/openenclave/compare/v0.4.0...HEAD
+[v0.4.0]: https://github.com/openenclave/openenclave/compare/v0.1.0...v0.4.0
 ```
 
 The `v0.4.0` comparison URL will be added at the bottom of the file, after the

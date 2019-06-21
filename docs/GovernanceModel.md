@@ -51,7 +51,7 @@ Accepting Contributions
 
 Project maintainers will merge changes that improve the product significantly
 and broadly and that align with the [Open Enclave roadmap](
-https://github.com/Microsoft/openenclave/projects).
+https://github.com/openenclave/openenclave/projects).
 
 Contributions must also satisfy the other [published
 guidelines](Contributing.md). We may revert changes if they are found to be

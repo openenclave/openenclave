@@ -74,6 +74,9 @@ add_library(oelibc STATIC
     syscalls.c
     sysconf.c
     time.c
+    regcomp.c
+    regexec.c
+    tre-mem.c
     __printf_chk.c
     __vfprintf_chk.c
     ${MUSLSRC}/complex/cabs.c
@@ -506,9 +509,9 @@ add_library(oelibc STATIC
     ${MUSLSRC}/prng/seed48.c
     ${MUSLSRC}/prng/srand48.c
     ${MUSLSRC}/regex/fnmatch.c
-    #${MUSLSRC}/regex/glob.c
+    ${MUSLSRC}/regex/glob.c
     #${MUSLSRC}/regex/regcomp.c
-    #${MUSLSRC}/regex/regerror.c
+    ${MUSLSRC}/regex/regerror.c
     #${MUSLSRC}/regex/regexec.c
     #${MUSLSRC}/regex/tre-mem.c
     ${MUSLSRC}/search/hsearch.c
@@ -722,6 +725,12 @@ add_library(oelibc STATIC
     ${MUSLSRC}/string/wmemcpy.c
     ${MUSLSRC}/string/wmemmove.c
     ${MUSLSRC}/string/wmemset.c
+    ${MUSLSRC}/temp/mkdtemp.c
+    ${MUSLSRC}/temp/mkostemp.c
+    ${MUSLSRC}/temp/mkostemps.c
+    ${MUSLSRC}/temp/mkstemp.c
+    ${MUSLSRC}/temp/mkstemps.c
+    ${MUSLSRC}/temp/mktemp.c 
     ${MUSLSRC}/temp/__randname.c
     ${MUSLSRC}/thread/__lock.c
     ${MUSLSRC}/thread/__wait.c

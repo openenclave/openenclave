@@ -131,6 +131,9 @@ dispatch_ocall_sim:
     cmp rax, 0
     jne return_from_ecall_sim
 
+    ;; Stop speculative execution at fallthrough of conditional check
+    lfence
+
     ;; Prepare to reenter the enclave, calling start()
     mov rax, ARG1OUT
     mov ARG1, rax
@@ -139,6 +142,8 @@ dispatch_ocall_sim:
     jmp call_start
 
 return_from_ecall_sim:
+    ;; Stop speculative execution at target of conditional jump
+    lfence
 
     ;; Set ARG3 (out)
     mov rbx, ARG1OUT

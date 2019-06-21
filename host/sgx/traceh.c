@@ -82,7 +82,7 @@ static void _write_header_info_to_stream(FILE* stream)
     fprintf(stream, "%s", asctime(lt));
     fprintf(
         stream,
-        "https://github.com/Microsoft/openenclave branch:%s\n",
+        "https://github.com/openenclave/openenclave branch:%s\n",
         OE_REPO_BRANCH_NAME);
     fprintf(stream, "Last commit:%s\n\n", OE_REPO_LAST_COMMIT);
 }
