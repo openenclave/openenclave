@@ -197,7 +197,7 @@ static oe_result_t _do_eenter(
         *func_out = 0;
 
     if (result_out)
-        *func_out = 0;
+        *result_out = 0;
 
     if (arg_out)
         *arg_out = 0;

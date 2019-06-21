@@ -191,13 +191,11 @@
     - { name: "Microsoft.Azure.DCAP.Client", source: "{{ tmp_dir }}\\Azure_DCAP_Client_nupkg;nuget.org" }
 
 - name: Azure DCAP Client | Enable LC driver
-  block:
-    - name: Azure DCAP Client | Set LC driver registry enable flag
-      win_regedit:
-        path: '{{ lc_driver.reg_path }}'
-        name: '{{ lc_driver.reg_key }}'
-        data: '{{ lc_driver.reg_value }}'
-        type: dword
+  win_regedit:
+    path: '{{ lc_driver.reg_path }}'
+    name: '{{ lc_driver.reg_key }}'
+    data: '{{ lc_driver.reg_value }}'
+    type: dword
 
 - name: Azure DCAP Client | Reboot the node
   win_reboot:

@@ -914,19 +914,32 @@ void TestEC()
             "../data/root.ec.cert.pem",
             _CHAIN,
             OE_COUNTOF(_CHAIN)) == OE_OK);
-    OE_TEST(read_key("../data/root.ec.key.pem", _PRIVATE_KEY) == OE_OK);
-    OE_TEST(read_key("../data/root.ec.public.key.pem", _PUBLIC_KEY) == OE_OK);
+    OE_TEST(
+        read_pem_key(
+            "../data/root.ec.key.pem",
+            _PRIVATE_KEY,
+            sizeof(_PRIVATE_KEY),
+            NULL) == OE_OK);
+    OE_TEST(
+        read_pem_key(
+            "../data/root.ec.public.key.pem",
+            _PUBLIC_KEY,
+            sizeof(_PUBLIC_KEY),
+            NULL) == OE_OK);
     OE_TEST(
         read_sign("../data/test_ec_signature", _SIGNATURE, &sign_size) ==
         OE_OK);
     OE_TEST(
         read_pem_key(
-            "../data/root.ec.key.pem", private_key_pem, &private_key_size) ==
-        OE_OK);
+            "../data/root.ec.key.pem",
+            (char*)private_key_pem,
+            sizeof(private_key_pem),
+            &private_key_size) == OE_OK);
     OE_TEST(
         read_pem_key(
             "../data/root.ec.public.key.pem",
-            public_key_pem,
+            (char*)public_key_pem,
+            sizeof(public_key_pem),
             &public_key_size) == OE_OK);
     OE_TEST(
         read_coordinates(

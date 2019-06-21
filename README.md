@@ -46,4 +46,4 @@ See the [Development Guide](docs/DevelopmentGuide.md) for details about contribu
 Licensing
 =========
 
-This project is released under the [MIT License](https://github.com/Microsoft/openenclave/blob/master/LICENSE).
+This project is released under the [MIT License](https://github.com/openenclave/openenclave/blob/master/LICENSE).

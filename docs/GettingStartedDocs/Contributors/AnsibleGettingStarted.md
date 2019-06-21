@@ -2,7 +2,7 @@
 
 The Open Enclave repository contains various playbooks to configure the supported platforms for either developing Open Enclave applications or maintaining the SDK itself.
 
-If you are interested in the Open Enclave deployment options via Ansible, see [this section](https://github.com/Microsoft/openenclave/tree/master/scripts/ansible#open-enclave-deployment-options-via-ansible) from our Ansible README.
+If you are interested in the Open Enclave deployment options via Ansible, see [this section](https://github.com/openenclave/openenclave/tree/master/scripts/ansible#open-enclave-deployment-options-via-ansible) from our Ansible README.
 
 ## Install the Ansible package
 
@@ -25,7 +25,7 @@ Ansible communicates with the target machines via:
 
 ## Steps to configure target Ansible machines
 
-1. Make sure that the target platform is included in the [supported operating systems](https://github.com/Microsoft/openenclave/blob/master/scripts/ansible/README.md#supported-platforms-by-the-ansible-playbooks) by the Open Enclave playbook files.
+1. Make sure that the target platform is included in the [supported operating systems](https://github.com/openenclave/openenclave/blob/master/scripts/ansible/README.md#supported-platforms-by-the-ansible-playbooks) by the Open Enclave playbook files.
 
 2. Configure SSH / WinRM on the target machines:
 

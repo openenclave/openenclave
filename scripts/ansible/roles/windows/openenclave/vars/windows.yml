@@ -12,30 +12,36 @@ packages:
   7z:
     url: "https://www.7-zip.org/a/7z1806-x64.msi"
     dest: "{{ tmp_dir }}\\7z1806-x64.msi"
+    env_path:
+      - 'C:\Program Files\7-Zip'
   vs_2017:
     url: "https://aka.ms/vs/15/release/vs_buildtools.exe"
     dest: "{{ tmp_dir }}\\vs_buildtools-2017.exe"
+    env_path:
+      - 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\Tools'
+      - 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build'
   ocaml:
     url: "https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip"
     dest: "{{ tmp_dir }}\\ocpwin64-4.02.1-ocp1-mingw64.zip"
+    env_path:
+      - 'C:\Program Files\OCaml\bin'
   clang7:
     url: "http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe"
     dest: "{{ tmp_dir }}\\LLVM-7.0.1-win64.exe"
+    env_path:
+      - 'C:\Program Files\LLVM\bin'
   git:
-    url: "https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/Git-2.20.1-64-bit.exe"
-    dest: "{{ tmp_dir }}\\Git-2.20.1-64-bit.exe"
+    url: "https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe"
+    dest: "{{ tmp_dir }}\\Git-64-bit.exe"
+    env_path:
+      - 'C:\Program Files\Git'
+      - 'C:\Program Files\Git\bin'
+      - 'C:\Program Files\Git\mingw64\bin'
   shellcheck:
     url: "https://storage.googleapis.com/shellcheck/shellcheck-stable.exe"
     dest: "{{ tmp_dir }}\\shellcheck.exe"
-
-packages_env_path:
-  - 'C:\Program Files\7-Zip'
-  - 'C:\Program Files\OCaml\bin'
-  - 'C:\Program Files\LLVM\bin'
-  - 'C:\Program Files\Git\bin'
-  - 'C:\Program Files\Git\mingw64\bin'
-  - 'C:\Program Files\shellcheck'
-  - 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build'
+    env_path:
+      - 'C:\Program Files\shellcheck'
 
 validation_files:
   - "C:\\Program Files\\LLVM\\lib\\libclang.lib"

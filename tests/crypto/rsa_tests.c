@@ -483,8 +483,16 @@ void TestRSA(void)
             "../data/leaf_modulus.hex",
             _CERT1_RSA_MODULUS,
             &rsa_modulus_size) == OE_OK);
-    OE_TEST(read_key("../data/leaf.key.pem", _PRIVATE_KEY) == OE_OK);
-    OE_TEST(read_key("../data/leaf.public.key.pem", _PUBLIC_KEY) == OE_OK);
+    OE_TEST(
+        read_pem_key(
+            "../data/leaf.key.pem", _PRIVATE_KEY, sizeof(_PRIVATE_KEY), NULL) ==
+        OE_OK);
+    OE_TEST(
+        read_pem_key(
+            "../data/leaf.public.key.pem",
+            _PUBLIC_KEY,
+            sizeof(_PUBLIC_KEY),
+            NULL) == OE_OK);
     OE_TEST(
         read_sign("../data/test_rsa_signature", _SIGNATURE, &sign_size) ==
         OE_OK);
