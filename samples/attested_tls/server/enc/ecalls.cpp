@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include "tls_server_enc_pubkey.h"
+#include "../../common/tls_server_enc_pubkey.h"
 #include "tls_server_t.h"
 
 #include <sys/socket.h>

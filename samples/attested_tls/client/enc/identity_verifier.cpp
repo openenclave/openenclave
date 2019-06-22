@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string>
 
+#include "../../common/tls_server_enc_pubkey.h"
 #include "../../common/utility.h"
-#include "tls_server_enc_pubkey.h"
 
 oe_result_t enclave_identity_verifier_callback(
     oe_identity_t* identity,
