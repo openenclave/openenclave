@@ -6,13 +6,21 @@
 all: build
 
 build:
-	$(MAKE) -C tls_between_enclaves 
-	$(MAKE) -C tls_between_non_enclave_enclave
+	$(MAKE) -C server
+	$(MAKE) -C client
+	$(MAKE) -C non_enc_client
 
 clean:
-	$(MAKE) -C tls_between_enclaves clean
-	$(MAKE) -C tls_between_non_enclave_enclave clean
+	$(MAKE) -C server clean
+	$(MAKE) -C client clean
+	$(MAKE) -C non_enc_client clean
 
 run:
-	$(MAKE) -C tls_between_enclaves run
-	$(MAKE) -C tls_between_non_enclave_enclave run
+	echo "Launch processes to establish an Attested TLS between two enclaves"
+	./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341 &
+	sleep 2
+	./client/host/tls_client_host ./client/enc/tls_client_enclave.signed -server:localhost -port:12341
+	echo "Launch processes to establish an Attested TLS between an non-encalve TLS client and an TLS server running inside an enclave"
+	./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341 &
+	sleep 2
+	./non_enc_client/tls_non_enc_client -server:localhost -port:12341
