@@ -23,17 +23,17 @@ oe_result_t enclave_identity_verifier_callback(
         TLS_SERVER "identity->security_version = %d\n",
         identity->security_version);
 
-    // the unique ID for the enclave, for SGX enclaves, this is the MRENCLAVE
-    // value
+    // the unique ID for the enclave, for SGX enclaves, this is client's
+    // MRENCLAVE
     printf(TLS_SERVER "identity->unique_id(MRENCLAVE) :\n");
     for (int i = 0; i < OE_UNIQUE_ID_SIZE; i++)
-        printf(TLS_SERVER "0x%0x ", (uint8_t)identity->unique_id[i]);
+        printf("0x%0x ", (uint8_t)identity->unique_id[i]);
 
     // Check enclave's signer id
     // for SGX enclaves, this is the MRSIGNER value
     printf(TLS_SERVER "\nidentity->signer_id(MRSIGNER) :\n");
     for (int i = 0; i < OE_SIGNER_ID_SIZE; i++)
-        printf(TLS_SERVER "0x%0x ", (uint8_t)identity->signer_id[i]);
+        printf("0x%0x ", (uint8_t)identity->signer_id[i]);
 
     if (!verify_mrsigner(
             (char*)OTHER_ENCLAVE_PUBLIC_KEY,

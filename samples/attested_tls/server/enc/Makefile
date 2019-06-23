@@ -35,6 +35,10 @@ build:
 
 sign:
 	oesign sign -e tls_server_enc -c enc.conf -k private.pem
+	oesign dump -e tls_server_enc.signed > temp.dmp
+	chmod u+x ../../scripts/gen_mrenclave_header.sh
+	../../scripts/gen_mrenclave_header.sh ../../common/tls_server_enc_mrenclave.h temp.dmp
+	rm temp.dmp
 
 clean:
-	rm -f *.o tls_server_enc tls_server_enc.signed tls_server_enc.signed.so tls_server_t.* tls_server_args.h
+	rm -f *.o tls_server_enc tls_server_enc.signed tls_server_enc.signed.so tls_server_t.* tls_server_args.h yy ../../common/tls_server_enc_mrenclave.h

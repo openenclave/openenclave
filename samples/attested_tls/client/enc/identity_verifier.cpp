@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string>
 
+#include "../../common/tls_server_enc_mrenclave.h"
 #include "../../common/tls_server_enc_pubkey.h"
 #include "../../common/utility.h"
 
@@ -26,15 +27,29 @@ oe_result_t enclave_identity_verifier_callback(
 
     // the unique ID for the enclave, for SGX enclaves, this is the MRENCLAVE
     // value
-    printf(TLS_CLIENT "identity->unique_id(MRENCLAVE) :\n");
+    printf(TLS_CLIENT "Validating identity->unique_id(MRENCLAVE) :\n");
     for (int i = 0; i < OE_UNIQUE_ID_SIZE; i++)
-        printf(TLS_CLIENT "0x%0x ", (uint8_t)identity->unique_id[i]);
+    {
+        printf("0x%0x ", (uint8_t)identity->unique_id[i]);
+        if (SERVER_ENCLAVE_MRENCLAVE[i] != (uint8_t)identity->unique_id[i])
+        {
+            printf(
+                TLS_CLIENT
+                "identity->unique_id[%d] expected: 0x%0x  found: 0x%0x ",
+                i,
+                SERVER_ENCLAVE_MRENCLAVE[i],
+                (uint8_t)identity->unique_id[i]);
+            printf(TLS_CLIENT "failed:unique_id not equal!\n");
+            goto exit;
+        }
+    }
+    printf("\n" TLS_CLIENT "unique_id validation passed\n");
 
     // The signer ID for the enclave, for SGX enclaves, this is the MRSIGNER
     // value
     printf(TLS_CLIENT "\nidentity->signer_id(MRSIGNER) :\n");
     for (int i = 0; i < OE_SIGNER_ID_SIZE; i++)
-        printf(TLS_CLIENT "0x%0x ", (uint8_t)identity->signer_id[i]);
+        printf("0x%0x ", (uint8_t)identity->signer_id[i]);
 
     if (!verify_mrsigner(
             (char*)OTHER_ENCLAVE_PUBLIC_KEY,

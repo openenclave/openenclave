@@ -13,6 +13,7 @@
 #include <openssl/err.h>
 #include <openssl/x509_vfy.h>
 #include "../common/common.h"
+#include "../common/tls_server_enc_mrenclave.h"
 #include "../common/tls_server_enc_pubkey.h"
 
 bool verify_mrsigner_openssl(
@@ -40,13 +41,27 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
         TLS_CLIENT "identity.security_version = %d\n",
         identity->security_version);
 
-    printf(TLS_CLIENT "identity->unique_id : ");
+    // the unique ID for the enclave, for SGX enclaves, this is the MRENCLAVE
+    // value
+    printf(TLS_CLIENT "Validating identity->unique_id(MRENCLAVE) :\n");
     for (int i = 0; i < OE_UNIQUE_ID_SIZE; i++)
+    {
         printf("0x%0x ", (uint8_t)identity->unique_id[i]);
+        if (SERVER_ENCLAVE_MRENCLAVE[i] != (uint8_t)identity->unique_id[i])
+        {
+            printf(
+                TLS_CLIENT
+                "identity->unique_id[%d] expected: 0x%0x  found: 0x%0x ",
+                i,
+                SERVER_ENCLAVE_MRENCLAVE[i],
+                (uint8_t)identity->unique_id[i]);
+            printf(TLS_CLIENT "failed:unique_id not equal!\n");
+            goto done;
+        }
+    }
+    printf("\n" TLS_CLIENT "unique_id validation passed\n");
 
-    printf("\n");
-
-    printf(TLS_CLIENT "identity->product_id : ");
+    printf("\n" TLS_CLIENT "identity->product_id : ");
     for (int i = 0; i < OE_PRODUCT_ID_SIZE; i++)
         printf("0x%0x ", (uint8_t)identity->product_id[i]);
     printf("\n");
