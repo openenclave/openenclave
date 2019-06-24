@@ -6,8 +6,9 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/calls.h>
 
-oe_result_t oe_initialize_cpuid(uint64_t arg_in);
+oe_result_t oe_initialize_cpuid(oe_init_enclave_args_t* args);
 
 int oe_emulate_cpuid(
     uint64_t* rax,
