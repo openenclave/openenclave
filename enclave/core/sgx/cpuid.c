@@ -25,7 +25,7 @@ oe_result_t oe_initialize_cpuid(oe_init_enclave_args_t* args)
     oe_result_t result = OE_UNEXPECTED;
 
     if (args == NULL || !oe_is_within_enclave(args, sizeof(*args)))
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     // Abort the enclave if AESNI support is not present in the cached
     // CPUID Feature information (cpuid leaf of 1)
