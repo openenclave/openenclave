@@ -20,27 +20,26 @@ static uint32_t _cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 **
 **==============================================================================
 */
-oe_result_t oe_initialize_cpuid(uint64_t arg_in)
+oe_result_t oe_initialize_cpuid(oe_init_enclave_args_t* args)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)arg_in;
-    if (args != NULL)
-    {
-        // Abort the enclave if AESNI support is not present in the cached
-        // CPUID Feature information (cpuid leaf of 1)
-        if (!(args->cpuid_table[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
-            oe_abort();
 
-        OE_CHECK(oe_memcpy_s(
-            _cpuid_table,
-            OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
-                sizeof(_cpuid_table[0][0]),
-            args->cpuid_table,
-            OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
-                sizeof(args->cpuid_table[0][0])));
+    if (args == NULL || !oe_is_within_enclave(args, sizeof(*args)))
+        OE_RAISE(OE_FAILURE);
 
-        result = OE_OK;
-    }
+    // Abort the enclave if AESNI support is not present in the cached
+    // CPUID Feature information (cpuid leaf of 1)
+    if (!(args->cpuid_table[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
+        oe_abort();
+
+    OE_CHECK(oe_memcpy_s(
+        _cpuid_table,
+        OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT * sizeof(_cpuid_table[0][0]),
+        args->cpuid_table,
+        OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
+            sizeof(args->cpuid_table[0][0])));
+
+    result = OE_OK;
 
 done:
     return result;
