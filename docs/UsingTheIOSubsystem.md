@@ -70,17 +70,16 @@ following.
 Operating system support
 ------------------------
 
-The current version is Limited to Linux hosts but Windows host is under
+The current version is limited to Linux hosts but Windows host is under
 development now.
 
 File system path resolution
 ---------------------------
 
 Path-oriented functions must resolve their path parameter to a file system
-device. There are two mechanisms for doing this. The first mechanisms employs
-the Linux **mount** function defined below.
+device. For this one uses the Linux **mount** function defined below.
 
-```
+```cpp
 #include <sys/mount.h>
 
 int mount(
@@ -91,53 +90,9 @@ int mount(
     const void* data);
 ```
 
-This function attaches a file system to the directory specifies by **target**.
-**filesystemtype** parameter specifies the name of the file system. The next
-section will show how to mount the non-secure host file system.
-
-The second path-resolution mechanism employs the following functions.
-
-```
-oe_result_t oe_set_thread_devid(uint64_t devid);
-oe_result_t oe_clear_thread_devid();
-```
-
-The **oe_set_thread_devid** function sets the device id for the current
-thread. Once set, that device is used by path-oriented functions until
-it is cleared by calling **oe_clear_thread_devid**. These functions can be
-used to wrap calls to path-oriented functions. Consider the following function
-definition.
-
-```
-#include <stdio.h>
-#include <openenclave/enclave.h>
-
-FILE* fopen_by_device(uint64_t devid, const char *path, const char *mode)
-{
-    extern oe_result_t oe_set_thread_devid(uint64_t devid);
-    extern oe_result_t oe_clear_thread_devid(uint64_t devid);
-
-    oe_set_thread_devid(devid);
-    FILE* stream = fopen(path, mode);
-    oe_clear_thread_devid(devid);
-
-    return stream;
-}
-```
-
-This function can then be used to compose device-specific functions. For
-example.
-
-```
-FILE* fopen_host_file_system(const char *path, const char *mode)
-{
-    const uint64_t OE_DEVID_HOST_FILE_SYSTEM = 1;
-
-    return fopen_by_device(OE_DEVID_HOST_FILE_SYSTEM, path, mode);
-}
-```
-
-Caution: the thread-devid functions are experimental in the current release.
+This function attaches a file system to the directory specified by **target**.
+The **filesystemtype** parameter specifies the name of the file system. The next
+section shows how to mount the non-secure host file system.
 
 A file system example
 ----------------------
@@ -146,7 +101,7 @@ This section shows how an enclave may create a file on the host file system.
 First the enclave links **liboehostfs** and then loads the **host file system**
 module and mounts this file system as shown below.
 
-```
+```cpp
 #include <openenclave/enclave.h>
 #include <sys/mount.h>
 
@@ -171,7 +126,7 @@ The **mount()** function is discussed later in this document.
 The following function makes use of the standard C stream functions to create
 a new file that contains the letters of the alphabet.
 
-```
+```cpp
 #include <stdio.h>
 #include <string.h>
 
@@ -206,7 +161,7 @@ to the client, and closes the connection. Before the service can run, the
 appropriate module is loaded as shown below. Also this enclave application
 must be linked with **liboehostsock**.
 
-```
+```cpp
 #include <openenclave/enclave.h>
 
 void setup()
@@ -217,7 +172,7 @@ void setup()
 
 The function that runs the services is listed below.
 
-```
+```cpp
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -290,7 +245,7 @@ void echod_server(uint16_t port)
 
 The client listing follows.
 
-```
+```cpp
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -336,7 +291,7 @@ static void echod_client(uint16_t port, uint64_t value)
 }
 ```
 
-Chapter 1: Supported functions
+Chapter 2: Supported functions
 ==============================
 
 This chapter discusses which system functions are supported by the I/O
@@ -351,42 +306,42 @@ functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| clearerr          |                                                          |
-| dprintf           |                                                          |
-| fclose            |                                                          |
-| fdopen            |                                                          |
-| feof              |                                                          |
-| ferror            |                                                          |
-| fflush            |                                                          |
-| fgetc             |                                                          |
-| fgetln            |                                                          |
-| fgetpos           |                                                          |
-| fgets             |                                                          |
-| fileno            |                                                          |
-| fopen             |                                                          |
-| fprintf           |                                                          |
-| fputs             |                                                          |
-| fread             |                                                          |
-| freopen           |                                                          |
-| fscanf            |                                                          |
-| fseeko            |                                                          |
-| fseek             |                                                          |
-| fsetpos           |                                                          |
-| ftello            |                                                          |
-| ftell             |                                                          |
-| fwrite            |                                                          |
-| getc              |                                                          |
-| gets              |                                                          |
-| remove            |                                                          |
-| rename            |                                                          |
-| rewind            |                                                          |
-| setbuffer         |                                                          |
-| setbuf            |                                                          |
-| setlinebuf        |                                                          |
-| setvbuf           |                                                          |
-| vdprintf          |                                                          |
-| vfprintf          |                                                          |
-| vfscanf           |                                                          |
+| clearerr          | none                                                     |
+| dprintf           | none                                                     |
+| fclose            | none                                                     |
+| fdopen            | none                                                     |
+| feof              | none                                                     |
+| ferror            | none                                                     |
+| fflush            | none                                                     |
+| fgetc             | none                                                     |
+| fgetln            | none                                                     |
+| fgetpos           | none                                                     |
+| fgets             | none                                                     |
+| fileno            | none                                                     |
+| fopen             | none                                                     |
+| fprintf           | none                                                     |
+| fputs             | none                                                     |
+| fread             | none                                                     |
+| freopen           | none                                                     |
+| fscanf            | none                                                     |
+| fseeko            | none                                                     |
+| fseek             | none                                                     |
+| fsetpos           | none                                                     |
+| ftello            | none                                                     |
+| ftell             | none                                                     |
+| fwrite            | none                                                     |
+| getc              | none                                                     |
+| gets              | none                                                     |
+| remove            | none                                                     |
+| rename            | none                                                     |
+| rewind            | none                                                     |
+| setbuffer         | none                                                     |
+| setbuf            | none                                                     |
+| setlinebuf        | none                                                     |
+| setvbuf           | none                                                     |
+| vdprintf          | none                                                     |
+| vfprintf          | none                                                     |
+| vfscanf           | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<stdlib.h>**
@@ -409,7 +364,7 @@ functions.
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
 | fcntl             | Only partial support for command types.                  |
-| open              |                                                          |
+| open              | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<unistd.h>**
@@ -420,30 +375,30 @@ functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| access            |                                                          |
-| chdir             |                                                          |
-| close             |                                                          |
-| dup               |                                                          |
-| dup2              |                                                          |
-| getcwd            |                                                          |
-| getdomainname     |                                                          |
-| getegid           |                                                          |
-| geteuid           |                                                          |
-| getgid            |                                                          |
-| getgroups         |                                                          |
-| gethostname       |                                                          |
-| getpgid           |                                                          |
-| getpgrp           |                                                          |
-| getpid            |                                                          |
-| getppid           |                                                          |
-| getuid            |                                                          |
-| link              |                                                          |
-| lseek             |                                                          |
-| read              |                                                          |
-| rmdir             |                                                          |
-| sleep             |                                                          |
-| unlink            |                                                          |
-| write             |                                                          |
+| access            | none                                                     |
+| chdir             | none                                                     |
+| close             | none                                                     |
+| dup               | none                                                     |
+| dup2              | none                                                     |
+| getcwd            | none                                                     |
+| getdomainname     | none                                                     |
+| getegid           | none                                                     |
+| geteuid           | none                                                     |
+| getgid            | none                                                     |
+| getgroups         | none                                                     |
+| gethostname       | none                                                     |
+| getpgid           | none                                                     |
+| getpgrp           | none                                                     |
+| getpid            | none                                                     |
+| getppid           | none                                                     |
+| getuid            | none                                                     |
+| link              | none                                                     |
+| lseek             | none                                                     |
+| read              | none                                                     |
+| rmdir             | none                                                     |
+| sleep             | none                                                     |
+| unlink            | none                                                     |
+| write             | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<netdb.h>**
@@ -454,9 +409,9 @@ functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| freeaddrinfo      |                                                          |
-| getaddrinfo       |                                                          |
-| getnameinfo       |                                                          |
+| freeaddrinfo      | none                                                     |
+| getaddrinfo       | none                                                     |
+| getnameinfo       | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<socket.h>**
@@ -467,23 +422,23 @@ functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| accept            |                                                          |
-| bind              |                                                          |
-| connect           |                                                          |
-| getpeername       |                                                          |
-| getsockname       |                                                          |
-| getsockopt        |                                                          |
-| listen            |                                                          |
-| recv              |                                                          |
-| recvfrom          |                                                          |
-| recvmsg           |                                                          |
-| send              |                                                          |
-| sendmsg           |                                                          |
-| sendto            |                                                          |
-| setsockopt        |                                                          |
-| shutdown          |                                                          |
-| socket            |                                                          |
-| socketpair        |                                                          |
+| accept            | none                                                     |
+| bind              | none                                                     |
+| connect           | none                                                     |
+| getpeername       | none                                                     |
+| getsockname       | none                                                     |
+| getsockopt        | none                                                     |
+| listen            | none                                                     |
+| recv              | none                                                     |
+| recvfrom          | none                                                     |
+| recvmsg           | none                                                     |
+| send              | none                                                     |
+| sendmsg           | none                                                     |
+| sendto            | none                                                     |
+| setsockopt        | none                                                     |
+| shutdown          | none                                                     |
+| socket            | none                                                     |
+| socketpair        | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<select.h>**
@@ -494,11 +449,11 @@ functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| FD_CLR            |                                                          |
-| FD_ISSET          |                                                          |
-| FD_SET            |                                                          |
-| FD_ZERO           |                                                          |
-| select            |                                                          |
+| FD_CLR            | none                                                     |
+| FD_ISSET          | none                                                     |
+| FD_SET            | none                                                     |
+| FD_ZERO           | none                                                     |
+| select            | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<dirent.h>**
@@ -509,12 +464,12 @@ functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| closedir          |                                                          |
-| opendir           |                                                          |
-| readdir           |                                                          |
-| readdir_r         |                                                          |
-| rewinddir         |                                                          |
-| telldir           |                                                          |
+| closedir          | none                                                     |
+| opendir           | none                                                     |
+| readdir           | none                                                     |
+| readdir_r         | none                                                     |
+| rewinddir         | none                                                     |
+| telldir           | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<poll.h>**
@@ -525,18 +480,7 @@ functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| poll              |                                                          |
-|                   | <img width="1000">                                       |
-
-**<poll.h>**
--------------
-
-For the **<poll.h>** header, the I/O subsystem adds support for the following
-functions.
-
-| Function          | Limitations                                              |
-| :---              | :---                                                     |
-| poll              |                                                          |
+| poll              | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<ioctl.h>**
@@ -558,9 +502,9 @@ functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| mount             |                                                          |
-| umount            |                                                          |
-| umount2           |                                                          |
+| mount             | none                                                     |
+| umount            | none                                                     |
+| umount2           | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<uname.h>**
@@ -571,7 +515,7 @@ functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| uname             |                                                          |
+| uname             | none                                                     |
 |                   | <img width="1000">                                       |
 
 
@@ -583,8 +527,8 @@ functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| readv             |                                                          |
-| writev            |                                                          |
+| readv             | none                                                     |
+| writev            | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<sys/stat.h>**
@@ -595,8 +539,8 @@ following functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| mkdir             |                                                          |
-| stat              |                                                          |
+| mkdir             | none                                                     |
+| stat              | none                                                     |
 |                   | <img width="1000">                                       |
 
 **<arpa/inet.h>**
@@ -607,9 +551,9 @@ following functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
-| htonl             |                                                          |
-| htons             |                                                          |
-| ntohl             |                                                          |
-| ntohs             |                                                          |
-| inet_addr         |                                                          |
+| htonl             | none                                                     |
+| htons             | none                                                     |
+| ntohl             | none                                                     |
+| ntohs             | none                                                     |
+| inet_addr         | none                                                     |
 |                   | <img width="1000">                                       |
