@@ -129,6 +129,20 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
 #define OE_ATOMIC_MEMORY_BARRIER_ACQUIRE() asm volatile("" ::: "memory")
 #define OE_ATOMIC_MEMORY_BARRIER_RELEASE() asm volatile("" ::: "memory")
 
+#if __x86_64__ || _M_X64
+#define OE_CPU_RELAX() asm volatile("pause" ::: "memory")
+#elif __aarch64__ || _M_ARM64
+/**
+ * Future developer:
+ * If adding support for ARMv7, use __memory_barrier() instead, and tend to ARM
+ * erratum 754327. See cpu_relax() in the Linux sources under
+ * arch/arm/include/asm/processor.h.
+ */
+#define OE_CPU_RELAX() asm volatile("yield" ::: "memory")
+#else
+#error OE_CPU_RELAX() not implemented for this architecture.
+#endif
+
 /**
  * oe_secure_zero_fill is intended to be used to zero out secrets.
  * Plain memset/for-loops can get optimized away be the compiler.

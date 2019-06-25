@@ -215,7 +215,33 @@ int oe_syscall_close_ocall(oe_host_fd_t fd)
 
 oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t oldfd)
 {
-    PANIC;
+    oe_host_fd_t ret = -1;
+
+    // Only support duping std file descriptors for now.
+    switch (oldfd)
+    {
+        case 0:
+            ret = _dup(OE_STDIN_FILENO);
+            break;
+
+        case 1:
+            ret = _dup(OE_STDOUT_FILENO);
+            break;
+
+        case 2:
+            ret = _dup(OE_STDERR_FILENO);
+            break;
+
+        default:
+            break;
+    }
+
+    if (ret == -1)
+        _set_errno(OE_EINVAL);
+    else
+        _set_errno(0);
+
+    return ret;
 }
 
 uint64_t oe_syscall_opendir_ocall(const char* pathname)
@@ -429,7 +455,12 @@ int oe_syscall_close_socket_ocall(oe_host_fd_t sockfd)
     PANIC;
 }
 
-int oe_syscall_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
+int oe_syscall_fcntl_ocall(
+    oe_host_fd_t fd,
+    int cmd,
+    uint64_t arg,
+    uint64_t argsize,
+    void* argout)
 {
     PANIC;
 }
@@ -437,7 +468,12 @@ int oe_syscall_fcntl_ocall(oe_host_fd_t fd, int cmd, uint64_t arg)
 #define TIOCGWINSZ 0x5413
 #define TIOCSWINSZ 0x5414
 
-int oe_syscall_ioctl_ocall(oe_host_fd_t fd, uint64_t request, uint64_t arg)
+int oe_syscall_ioctl_ocall(
+    oe_host_fd_t fd,
+    uint64_t request,
+    uint64_t arg,
+    uint64_t argsize,
+    void* argout)
 {
     errno = 0;
 

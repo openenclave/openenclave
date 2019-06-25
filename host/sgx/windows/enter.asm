@@ -108,7 +108,6 @@ execute_eenter:
     ldmxcsr MXCSR
 	
 dispatch_ocall:
-
     ;; RAX = __oe_dispatch_ocall(
     ;;     RCX=arg1
     ;;     RDX=arg2
@@ -135,6 +134,9 @@ dispatch_ocall:
     cmp rax, 0
     jne return_from_ecall
 
+    ;; Stop speculative execution at fallthrough of conditional check
+    lfence
+
     ;; Prepare to reenter the enclave, calling the entry point.
     mov rax, ARG1OUT
     mov ARG1, rax
@@ -143,6 +145,8 @@ dispatch_ocall:
     jmp execute_eenter
 
 return_from_ecall:
+    ;; Stop speculative execution at target of conditional jump
+    lfence
 
     ;; Set ARG3 (out)
     mov rbx, ARG1OUT

@@ -127,7 +127,8 @@ static int _consolefs_ioctl(oe_fd_t* file_, unsigned long request, uint64_t arg)
         goto done;
     }
 
-    if (oe_syscall_ioctl_ocall(&ret, file->host_fd, request, arg) != OE_OK)
+    if (oe_syscall_ioctl_ocall(&ret, file->host_fd, request, arg, 0, NULL) !=
+        OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
@@ -138,11 +139,61 @@ static int _consolefs_fcntl(oe_fd_t* file_, int cmd, uint64_t arg)
 {
     int ret = -1;
     file_t* file = _cast_file(file_);
+    void* argout = NULL;
+    uint64_t argsize = 0;
 
     if (!file)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (oe_syscall_fcntl_ocall(&ret, file->host_fd, cmd, arg) != OE_OK)
+    switch (cmd)
+    {
+        case OE_F_GETFD:
+        case OE_F_SETFD:
+        case OE_F_GETFL:
+        case OE_F_SETFL:
+            break;
+
+        case OE_F_GETLK:
+        case OE_F_OFD_GETLK:
+            argsize = sizeof(struct oe_flock);
+            argout = (void*)arg;
+            break;
+
+        case OE_F_SETLKW:
+        case OE_F_SETLK:
+        {
+            void* srcp = (void*)arg;
+            argsize = sizeof(struct oe_flock64);
+            argout = (void*)arg;
+            memcpy(argout, srcp, argsize);
+            break;
+        }
+
+        case OE_F_OFD_SETLK:
+        case OE_F_OFD_SETLKW:
+        {
+            void* srcp = (void*)arg;
+            argsize = sizeof(struct oe_flock64);
+            argout = (void*)arg;
+            memcpy(argout, srcp, argsize);
+            break;
+        }
+
+        // for sockets
+        default:
+        case OE_F_DUPFD:
+        case OE_F_SETOWN:
+        case OE_F_GETOWN:
+        case OE_F_SETSIG:
+        case OE_F_GETSIG:
+        case OE_F_SETOWN_EX:
+        case OE_F_GETOWN_EX:
+        case OE_F_GETOWNER_UIDS:
+            OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    if (oe_syscall_fcntl_ocall(
+            &ret, file->host_fd, cmd, arg, argsize, argout) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
 done:
@@ -337,16 +388,6 @@ static oe_fd_t* _new_file(uint32_t fileno)
 {
     oe_fd_t* ret = NULL;
     file_t* file = NULL;
-    struct _args
-    {
-        const char* path;
-        int flags;
-    };
-    struct _args args[] = {
-        {"/dev/stdin", OE_O_RDONLY},
-        {"/dev/stdout", OE_O_WRONLY},
-        {"/dev/stderr", OE_O_WRONLY},
-    };
 
     if (fileno > OE_STDERR_FILENO)
         goto done;
@@ -361,13 +402,11 @@ static oe_fd_t* _new_file(uint32_t fileno)
         file->magic = MAGIC;
     }
 
-    /* Ask the host to open this file. */
+    /* Ask the host to duplicate the file descriptor. */
     {
         oe_host_fd_t retval;
-        const char* path = args[fileno].path;
-        int flags = args[fileno].flags;
 
-        if (oe_syscall_open_ocall(&retval, path, flags, 0) != OE_OK)
+        if (oe_syscall_dup_ocall(&retval, fileno) != OE_OK)
             goto done;
 
         if (retval < 0)

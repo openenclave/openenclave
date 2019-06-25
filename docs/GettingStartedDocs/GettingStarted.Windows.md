@@ -111,13 +111,13 @@ Open Enclave is available from GitHub.
 ### In Visual Studio 2017:
 1. Under Team > Manage Connections... > Local Git Repositories, select the Clone
    dropdown
-2. Set the URL to clone as: https://github.com/Microsoft/openenclave.
+2. Set the URL to clone as: https://github.com/openenclave/openenclave.
 3. Set the local path you want to clone the repo to (e.g. C:/openenclave).
 4. Click the Clone button.
 
 ### In Git shell:
 ```
-git clone https://github.com/Microsoft/openenclave
+git clone https://github.com/openenclave/openenclave
 ```
 
 This creates a source tree under the directory called openenclave.
@@ -297,7 +297,7 @@ Testing
 -------
 
 Note that the use of Simulation Mode via the `OE_SIMULATION` flag is _not_ supported on Windows.
-See [#1753](https://github.com/microsoft/openenclave/issues/1753) for details.
+See [#1753](https://github.com/openenclave/openenclave/issues/1753) for details.
 
 ### Running tests in Visual Studio 2017
 

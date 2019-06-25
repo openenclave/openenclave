@@ -13,7 +13,7 @@ set(EDL_FILE ${EDL_DIR}/syscall.edl)
 
 add_custom_command(
     OUTPUT syscall_t.h syscall_t.c syscall_args.h
-    DEPENDS ${EDL_FILE}
+    DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --search-path ${EDL_DIR} --trusted ${EDL_FILE})
 
 add_custom_target(syscall_trusted_edl

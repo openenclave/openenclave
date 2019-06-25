@@ -156,60 +156,7 @@ int main(int argc, const char* argv[])
     free(remote_report);
     remote_report = NULL;
 
-    // exchange data between enclaves, securely
-    printf("Host: Requesting encrypted message from 1st enclave\n");
-    result = generate_encrypted_message(
-        enclave_a, &ret, &encrypted_msg, &encrypted_msg_size);
-    if ((result != OE_OK) || (ret != 0))
-    {
-        printf(
-            "Host: generate_encrypted_message failed. %s",
-            oe_result_str(result));
-        if (ret == 0)
-            ret = 1;
-        goto exit;
-    }
-
-    printf("Host: Sending the encrypted message to 2nd enclave\n");
-    result = process_encrypted_msg(
-        enclave_b, &ret, encrypted_msg, encrypted_msg_size);
-    if ((result != OE_OK) || (ret != 0))
-    {
-        printf("Host: process_encrypted_msg failed. %s", oe_result_str(result));
-        if (ret == 0)
-            ret = 1;
-        goto exit;
-    }
-    printf("Host: Success\n");
-
-    // Free host memory allocated by the first enclave
-    free(encrypted_msg);
-    encrypted_msg = NULL;
-
-    printf("Host: Requesting encrypted message from 2nd enclave\n");
-    result = generate_encrypted_message(
-        enclave_b, &ret, &encrypted_msg, &encrypted_msg_size);
-    if ((result != OE_OK) || (ret != 0))
-    {
-        printf(
-            "Host: generate_encrypted_message failed. %s",
-            oe_result_str(result));
-        if (ret == 0)
-            ret = 1;
-        goto exit;
-    }
-
-    printf("Sending encrypted message to 1st  enclave=====\n");
-    result = process_encrypted_msg(
-        enclave_a, &ret, encrypted_msg, encrypted_msg_size);
-    if ((result != OE_OK) || (ret != 0))
-    {
-        printf("host process_encrypted_msg failed. %s", oe_result_str(result));
-        if (ret == 0)
-            ret = 1;
-        goto exit;
-    }
-    printf("Host: Success\n");
+    printf("Host: Remote attestation Succeeded\n");
 
     // Free host memory allocated by the enclave.
     free(encrypted_msg);
