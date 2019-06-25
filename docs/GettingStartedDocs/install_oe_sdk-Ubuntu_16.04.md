@@ -34,7 +34,10 @@ Note: This may not be the latest Intel SGX DCAP driver. Please check with [Intel
 ```bash
 sudo apt -y install clang-7 libssl-dev gdb libsgx-enclave-common libsgx-enclave-common-dev libprotobuf9v5 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave
 ```
-
+if you wish to use the Ninja build system rather than make, also install
+```bash
+sudo apt -y install ninja-build
+```
 > This step also installs the [az-dcap-client](https://github.com/microsoft/azure-dcap-client)
 > package which is necessary for performing remote attestation in Azure. A general
 > implementation for using Intel DCAP outside the Azure environment is coming soon.
