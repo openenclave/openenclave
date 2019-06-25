@@ -52,17 +52,6 @@ oe_result_t oe_load_module_host_file_system(void);
 oe_result_t oe_load_module_host_socket_interface(void);
 
 /**
- * Load the sgx file sytstem module.
- *
- * This function enables the use of the SGX file system module.
- *
- * @retval OE_OK The module was successfully loaded.
- * @retval OE_FAILURE Module failed to load.
- *
- */
-oe_result_t oe_load_module_sgx_file_system(void);
-
-/**
  * Load the host resolver module.
  *
  * This function loads the host resolver module which is needed
@@ -73,18 +62,6 @@ oe_result_t oe_load_module_sgx_file_system(void);
  * @retval OE_FAILURE Module failed to load.
  */
 oe_result_t oe_load_module_host_resolver(void);
-
-/**
- * Load the event polling module.
- *
- * This function loads the event polling module which is needed
- * for an enclave application to be able to call
- * epoll, poll, and select.
- *
- * @retval OE_OK The module was successfully loaded.
- * @retval OE_FAILURE Module failed to load.
- */
-oe_result_t oe_load_module_host_epoll(void);
 
 OE_EXTERNC_END
 
