@@ -1,6 +1,5 @@
 *.a
 *.o
-*.pem
 *.so
 *.swp
 *.swo
