@@ -134,7 +134,7 @@ void __utee_entry(
         },                                                      \
     };                                                          \
                                                                 \
-    volatile const size_t ta_num_props =                        \
+    const size_t ta_num_props =                                 \
         sizeof(ta_props) / sizeof(ta_props[0]);                 \
                                                                 \
     OE_EXTERNC_END
