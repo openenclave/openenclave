@@ -1342,7 +1342,8 @@ int elf64_find_section(
         {
             *data = _get_section(elf, i);
             *size = sh->sh_size;
-            return 0;
+            /* The section data shouldn't be NULL */
+            return *data == NULL ? -1 : 0;
         }
     }
 
