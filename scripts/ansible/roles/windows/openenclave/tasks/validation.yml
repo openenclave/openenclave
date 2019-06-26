@@ -5,12 +5,10 @@
 - name: Include vars
   include_vars: "{{ ansible_os_family | lower }}.yml"
 
-- name: Check for existing directories used for the packages env path
+- name: Check for existing required folders and files
   win_stat:
-    path: "{{ item.1 }}"
-  with_subelements:
-    - "{{ packages }}"
-    - env_path
+    path: "{{ item }}"
+  with_items: "{{ validation_directories }}"
   register: directory
   failed_when: directory.stat.isdir == False
 

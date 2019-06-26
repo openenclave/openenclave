@@ -6,10 +6,14 @@ add_custom_command(OUTPUT tls_server_t.h tls_server_t.c tls_server_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/server/tls_server.edl
   COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/server/tls_server.edl)
 
-# Sign enclave
-add_custom_command(OUTPUT tls_server_enc.signed
-  DEPENDS tls_server_enc enc.conf ${CMAKE_BINARY_DIR}/server/enc/server_private.pem
-  COMMAND openenclave::oesign sign -e $<TARGET_FILE:tls_server_enc> -c ${CMAKE_SOURCE_DIR}/server/enc/enc.conf -k ${CMAKE_BINARY_DIR}/server/enc/server_private.pem)
+# Sign enclave and generate a header file for server's MRENCLAVE
+add_custom_command(OUTPUT tls_server_enc.signed tls_server_enc_mrenclave.h
+  DEPENDS tls_server_enc enc.conf ${CMAKE_SOURCE_DIR}/server/enc/private.pem ${CMAKE_SOURCE_DIR}/scripts/gen_mrenclave_header.sh
+  COMMAND openenclave::oesign sign -e $<TARGET_FILE:tls_server_enc> -c ${CMAKE_SOURCE_DIR}/server/enc/enc.conf -k ${CMAKE_SOURCE_DIR}/server/enc/private.pem
+  COMMAND openenclave::oesign dump -e tls_server_enc.signed  > temp.dmp
+  COMMAND chmod u+x ${CMAKE_SOURCE_DIR}/scripts/gen_mrenclave_header.sh
+  COMMAND ${CMAKE_SOURCE_DIR}/scripts/gen_mrenclave_header.sh ${CMAKE_SOURCE_DIR}/common/tls_server_enc_mrenclave.h temp.dmp
+  COMMAND ${CMAKE_COMMAND} -E remove temp.dmp)
 
 add_executable(tls_server_enc
 	       ecalls.cpp
@@ -34,4 +38,3 @@ target_link_libraries(tls_server_enc
 		openenclave::oehostresolver)
 
 add_custom_target(tls_server_sign_enc ALL DEPENDS tls_server_enc.signed)
-add_dependencies(tls_server_enc build_common)

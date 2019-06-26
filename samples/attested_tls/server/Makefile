@@ -3,9 +3,6 @@
 
 all: build
 
-genkey:
-	$(MAKE) -C enc genkey
-
 build:
 	$(MAKE) -C enc
 	$(MAKE) -C host

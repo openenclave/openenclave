@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "../common/common.h"
-#include "tls_server_enc_pubkey.h"
+#include "../common/tls_server_enc_pubkey.h"
 
 // Need the following block for supporting both OPENSSL 1.0 and 1.1
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
