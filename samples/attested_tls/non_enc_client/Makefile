@@ -32,7 +32,7 @@ build:
 	$(CXX) -o tls_non_enc_client client.o verify_callback.o verify_signer_openssl.o $(LDFLAGS)
 
 clean:
-	rm -f tls_client *.o ../cert.der tls_server_enc_pubkey.h
+	rm -f tls_non_enc_client *.o ../cert.der
 
 run:
 	./tls_non_enc_client -server:localhost -port:12341

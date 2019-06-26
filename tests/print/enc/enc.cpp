@@ -60,3 +60,19 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
+
+#define TA_UUID                                            \
+    { /* 58f3e795-00c3-45e0-9435-3e6fcf734acc */           \
+        0x58f3e795, 0x00c3, 0x45e0,                        \
+        {                                                  \
+            0x94, 0x35, 0x3e, 0x6f, 0xcf, 0x73, 0x4a, 0xcc \
+        }                                                  \
+    }
+
+OE_SET_ENCLAVE_OPTEE(
+    TA_UUID,
+    1 * 1024 * 1024,
+    12 * 1024,
+    TA_FLAG_EXEC_DDR,
+    "1.0.0",
+    "Print test")

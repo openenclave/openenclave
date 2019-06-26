@@ -197,3 +197,19 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
+
+#define TA_UUID                                            \
+    { /* f0be7db0-ce7c-4dc4-b8c8-b161f4216225 */           \
+        0xf0be7db0, 0xce7c, 0x4dc4,                        \
+        {                                                  \
+            0xb8, 0xc8, 0xb1, 0x61, 0xf4, 0x21, 0x62, 0x25 \
+        }                                                  \
+    }
+
+OE_SET_ENCLAVE_OPTEE(
+    TA_UUID,
+    1 * 1024 * 1024,
+    12 * 1024,
+    TA_FLAG_EXEC_DDR,
+    "1.0.0",
+    "Crypto test")

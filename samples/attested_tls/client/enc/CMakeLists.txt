@@ -8,8 +8,8 @@ add_custom_command(OUTPUT tls_client_t.h tls_client_t.c tls_client_args.h
 
 # Sign enclave
 add_custom_command(OUTPUT tls_client_enc.signed
-  DEPENDS tls_client_enc enc.conf ${CMAKE_BINARY_DIR}/client/enc/client_private.pem
-  COMMAND openenclave::oesign sign -e $<TARGET_FILE:tls_client_enc> -c ${CMAKE_SOURCE_DIR}/client/enc/enc.conf -k ${CMAKE_BINARY_DIR}/client/enc/client_private.pem)
+  DEPENDS tls_client_enc enc.conf ${CMAKE_SOURCE_DIR}/client/enc/private.pem
+  COMMAND openenclave::oesign sign -e $<TARGET_FILE:tls_client_enc> -c ${CMAKE_SOURCE_DIR}/client/enc/enc.conf -k ${CMAKE_SOURCE_DIR}/client/enc/private.pem)
 
 add_executable(tls_client_enc
 	       ecalls.cpp
