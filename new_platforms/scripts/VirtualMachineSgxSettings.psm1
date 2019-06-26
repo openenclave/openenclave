@@ -37,8 +37,6 @@ Data Strings {
     WARN_SGX_SIZE_TOO_LARGE_TITLE = The specified {0}MB of SGX EPC memory might be too large.
     WARN_SGX_SIZE_TOO_LARGE_TEXT = > Consult your hardware's manual for its supported SGX version and associated EPC memory limits, if any.
 
-    WARN_FORCE = Try calling Set-VMSgx without -Force to test for additional possible error conditions.
-
     INFO_SECURE_BOOT_TITLE = The VM '{0}' has Secure Boot on.
     INFO_SECURE_BOOT_TEXT = > If you plan on running Linux, you will have to sign your Intel SGX kernel module with a custom Secure Boot key.
 '@
@@ -265,23 +263,19 @@ Function Set-VMSgx {
 
         # Whether SGX is enabled in the VM.
         [Parameter(Position = 1)]
-        [Bool]$SgxEnabled = $False,
+        [Bool]$SgxEnabled,
 
         # Desired SGX EPC Memory Size for the VM (in MB).
         [Parameter(Position = 2)]
-        [UInt64]$SgxSize = 0,
+        [UInt64]$SgxSize,
 
         # Desired default SGX Launch Control Mode for the VM.
         [Parameter(Position = 3)]
-        [String]$SgxLaunchControlDefault = [String]::Empty,
+        [String]$SgxLaunchControlDefault,
 
         # Desired SGX Launch Control Mode for the VM.
         [Parameter(Position = 4)]
-        [UInt32]$SgxLaunchControlMode = 0,
-
-        # Ignore warnings.
-        [Parameter()]
-        [Switch]$Force
+        [UInt32]$SgxLaunchControlMode
     )
 
     Process {
@@ -353,37 +347,35 @@ Function Set-VMSgx {
         #    command succeeds.
 
         # The conditions checked here do not preclude the modification command from succeeding.
-        If (!$Force) {
-            If ($SgxEnabled) {
-                # Check Secure Boot settings.
-                If ($Vm.Generation -ge 2) {
-                    $Fw = $Vm | Get-VMFirmware
+        If ($SgxEnabled) {
+            # Check Secure Boot settings.
+            If ($Vm.Generation -ge 2) {
+                $Fw = $Vm | Get-VMFirmware
 
-                    If ($Fw.SecureBoot -eq [Microsoft.HyperV.PowerShell.OnOffState]::On) {
-                        Write-Information ($Strings.INFO_SECURE_BOOT_TITLE -f $Vm.Name)
-                        Write-Information $Strings.INFO_SECURE_BOOT_TEXT
-                    }
-                }
-
-                # Check Checkpoint settings.
-                If ($Vm.CheckpointType -ne [Microsoft.HyperV.PowerShell.CheckpointType]::Disabled -and $SgxEnabled) {
-                    Write-Warning ($Strings.WARN_CHECKPOINT_TITLE -f $Vm.Name)
-                    Write-Warning $Strings.WARN_CHECKPOINT_TEXT
+                If ($Fw.SecureBoot -eq [Microsoft.HyperV.PowerShell.OnOffState]::On) {
+                    Write-Information ($Strings.INFO_SECURE_BOOT_TITLE -f $Vm.Name)
+                    Write-Information $Strings.INFO_SECURE_BOOT_TEXT
                 }
             }
 
-            # EPC Memory settings
-            If ($SgxSize -ge 100) {
-                # SGX1 supports up to 128M of EPC memory, assuming that the host firmware allows it;
-                # the actual limit may be lower. SGX2 supports dynamic expansion of the EPC memory
-                # pool, if the OS supports it. As such, the upper limit to EPC memory of the host
-                # may vary from machine to machine. Assigning a significant portion of the total
-                # available EPC memory to a single VM may work while only the VM is running, but
-                # other VMs with SGX support turned on may fail to start, or individual enclaves
-                # running either on the host or in other VMs may fail to start, starved of EPC memory.
-                Write-Warning ($Strings.WARN_SGX_SIZE_TOO_LARGE_TITLE -f $SgxSize)
-                Write-Warning $Strings.WARN_SGX_SIZE_TOO_LARGE_TEXT
+            # Check Checkpoint settings.
+            If ($Vm.CheckpointType -ne [Microsoft.HyperV.PowerShell.CheckpointType]::Disabled -and $SgxEnabled) {
+                Write-Warning ($Strings.WARN_CHECKPOINT_TITLE -f $Vm.Name)
+                Write-Warning $Strings.WARN_CHECKPOINT_TEXT
             }
+        }
+
+        # EPC Memory settings
+        If ($SgxSize -ge 100) {
+            # SGX1 supports up to 128M of EPC memory, assuming that the host firmware allows it;
+            # the actual limit may be lower. SGX2 supports dynamic expansion of the EPC memory
+            # pool, if the OS supports it. As such, the upper limit to EPC memory of the host
+            # may vary from machine to machine. Assigning a significant portion of the total
+            # available EPC memory to a single VM may work while only the VM is running, but
+            # other VMs with SGX support turned on may fail to start, or individual enclaves
+            # running either on the host or in other VMs may fail to start, starved of EPC memory.
+            Write-Warning ($Strings.WARN_SGX_SIZE_TOO_LARGE_TITLE -f $SgxSize)
+            Write-Warning $Strings.WARN_SGX_SIZE_TOO_LARGE_TEXT
         }
 
         # Check that some memory was specified to enable SGX.
@@ -407,10 +399,6 @@ Function Set-VMSgx {
             If ($HasSgxSize -and ($SgxSize -lt 10)) {
                 Write-Warning ($Strings.WARN_SGX_SIZE_TOO_LITTLE_TITLE -f $SgxSize)
                 Write-Warning $Strings.WARN_SGX_SIZE_TOO_LITTLE_TEXT
-            }
-
-            If ($Force) {
-                Write-Warning $Strings.WARN_FORCE
             }
 
             Write-Error ($Strings.ERR_COULD_NOT_MODIFY_SETTINGS -f $Vm.Name, $Ret.ReturnValue)
