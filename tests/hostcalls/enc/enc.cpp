@@ -78,3 +78,19 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     128,  /* StackPageCount */
     16);  /* TCSCount */
+
+#define TA_UUID                                            \
+    { /* 60814a64-61e9-4fd9-9159-e158d73f6a2e */           \
+        0x60814a64, 0x61e9, 0x4fd9,                        \
+        {                                                  \
+            0x91, 0x59, 0xe1, 0x58, 0xd7, 0x3f, 0x6a, 0x2e \
+        }                                                  \
+    }
+
+OE_SET_ENCLAVE_OPTEE(
+    TA_UUID,
+    1 * 1024 * 1024,
+    12 * 1024,
+    TA_FLAG_EXEC_DDR,
+    "1.0.0",
+    "Host Calls test")
