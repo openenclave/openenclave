@@ -43,7 +43,7 @@ endif()
 
 target_link_libraries(oeenclave PUBLIC oecryptombed)
 if(OE_TRUSTZONE)
-    target_link_libraries(oeenclave PUBLIC oeutee)
+    target_link_libraries(oeenclave PUBLIC oelibutee)
 endif()
 
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
