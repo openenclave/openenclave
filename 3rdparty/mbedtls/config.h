@@ -2215,7 +2215,7 @@
  *
  * This module provides networking routines.
  */
-// Open Enclave: disabled, network I/O is currently unsupported in enclaves
+// Open Enclave: enable to support network I/O in enclaves
 #define MBEDTLS_NET_C
 
 /**

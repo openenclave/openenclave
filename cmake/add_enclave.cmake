@@ -189,7 +189,7 @@ macro(add_enclave_optee)
   get_filename_component(LIBGCC_PATH ${LIBGCC_PATH} DIRECTORY)
 
   # Set up the target.
-  add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES} ${OE_TZ_TA_DEV_KIT_HEADER_SOURCE})
+  add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
   set_property(TARGET ${ENCLAVE_TARGET} PROPERTY C_STANDARD 99)
   set_target_properties(${ENCLAVE_TARGET} PROPERTIES OUTPUT_NAME ${ENCLAVE_UUID})
   set_target_properties(${ENCLAVE_TARGET} PROPERTIES SUFFIX ".elf")

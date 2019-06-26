@@ -30,4 +30,4 @@ build:
 	$(CXX) -o tls_server_host host.o tls_server_u.o $(LDFLAGS)
 
 clean:
-	rm -f tls_server_host *.o tls_server_u.*  tls_server_args.h
+	rm -f tls_server_host* *.o tls_server_u.* tls_server_args.h

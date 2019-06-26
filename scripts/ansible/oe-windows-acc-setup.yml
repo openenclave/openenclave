@@ -6,13 +6,11 @@
   any_errors_fatal: true
   become_method: runas
   tasks:
-    - import_role:
-        name: windows/openenclave
-        tasks_from: environment-setup.yml
+    - name: OE setup | Run the install-windows-prereqs.ps1 script (this may take a while)
+      script: ../install-windows-prereqs.ps1 -IntelPSWURL "https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_PSW_for_Windows_v2.3.100.49777.exe" -IntelDCAPURL "https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_DCAP_for_Windows_v1.1.100.49925.exe"
 
-    - import_role:
-        name: windows/az-dcap-client
-        tasks_from: environment-setup.yml
+    - name: OE setup | Reboot the node
+      win_reboot:
 
     - import_role:
         name: windows/openenclave

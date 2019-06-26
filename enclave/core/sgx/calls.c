@@ -143,6 +143,7 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
     OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
     if (o == false)
     {
+        // Assert that arg_in is outside the enclave and is not null.
         if (!oe_is_outside_enclave(
                 (void*)arg_in, sizeof(oe_init_enclave_args_t)))
         {
@@ -155,25 +156,22 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         if (_once == false)
         {
             /* Set the global enclave handle */
-            if (arg_in)
-            {
-                oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)arg_in;
-                oe_init_enclave_args_t safe_args;
+            oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)arg_in;
+            oe_init_enclave_args_t safe_args;
 
-                if (!oe_is_outside_enclave(args, sizeof(*args)))
-                    OE_RAISE(OE_INVALID_PARAMETER);
+            if (!oe_is_outside_enclave(args, sizeof(*args)))
+                OE_RAISE(OE_INVALID_PARAMETER);
 
-                /* Copy structure into enclave memory */
-                safe_args = *args;
+            /* Copy structure into enclave memory */
+            safe_args = *args;
 
-                if (!oe_is_outside_enclave(safe_args.enclave, 1))
-                    OE_RAISE(OE_INVALID_PARAMETER);
+            if (!oe_is_outside_enclave(safe_args.enclave, 1))
+                OE_RAISE(OE_INVALID_PARAMETER);
 
-                oe_enclave = safe_args.enclave;
-            }
+            oe_enclave = safe_args.enclave;
 
             /* Call all enclave state initialization functions */
-            OE_CHECK(oe_initialize_cpuid(arg_in));
+            OE_CHECK(oe_initialize_cpuid(&safe_args));
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */

@@ -34,7 +34,7 @@ md4.h | No  | - |
 md5.h | Yes | - |
 md.h | Yes | - |
 memory_buffer_Alloc.h | No | - |
-net_sockets.h | No | - |
+net_sockets.h | Yes: | - |
 oid.h | Yes | - |
 padlock.h | No  | - |
 pem.h | Yes | - |

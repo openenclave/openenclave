@@ -48,11 +48,16 @@ mkdir build
 cd build
 ```
 
-Then run `cmake` to configure the build and generate the Makefiles, and then build by running `make`:
+Then run `cmake` to configure the build and generate the Makefiles, and then build by running `make` or 'ninja' depending:
 
 ```bash
-cmake ..
+cmake -G "Unix Makefiles" ..
 make
+```
+or
+```bash
+cmake -G "Ninja" ..
+ninja
 ```
 
 Open Enclave will support attestation workflows outside of Azure using DCAP in an upcoming release.

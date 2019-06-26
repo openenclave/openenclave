@@ -7,8 +7,13 @@ not currently need to be installed system-wide, so you could choose to install i
 into your home directory. From the build subfolder in your source tree:
 
 ```bash
-cmake -DCMAKE_INSTALL_PREFIX=~/openenclave-install ..
+cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=~/openenclave-install ..
 make install
+```
+or
+```bash
+cmake -G Ninja  -DCMAKE_INSTALL_PREFIX=~/openenclave-install ..
+ninja
 ```
 
 This would install the [resulting SDK layout](/docs/GettingStartedDocs/using_oe_sdk.md#open-enclave-sdk-layout)

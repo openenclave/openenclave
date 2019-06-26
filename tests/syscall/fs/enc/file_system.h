@@ -132,6 +132,7 @@ class oe_fd_hostfs_file_system : public oe_fd_file_system
     }
 };
 
+#if defined(TEST_SGXFS)
 class oe_fd_sgxfs_file_system : public oe_fd_file_system
 {
   public:
@@ -147,6 +148,7 @@ class oe_fd_sgxfs_file_system : public oe_fd_file_system
         OE_TEST(oe_umount("/") == 0);
     }
 };
+#endif // TEST_SGXFS
 
 class fd_file_system
 {
@@ -258,6 +260,7 @@ class fd_hostfs_file_system : public fd_file_system
     }
 };
 
+#if defined(TEST_SGXFS)
 class fd_sgxfs_file_system : public fd_file_system
 {
   public:
@@ -273,6 +276,7 @@ class fd_sgxfs_file_system : public fd_file_system
         OE_TEST(oe_umount("/") == 0);
     }
 };
+#endif // TEST_SGXFS
 
 class stream_file_system
 {
@@ -490,6 +494,7 @@ class stream_hostfs_file_system : public stream_file_system
     }
 };
 
+#if defined(TEST_SGXFS)
 class stream_sgxfs_file_system : public stream_file_system
 {
   public:
@@ -505,5 +510,6 @@ class stream_sgxfs_file_system : public stream_file_system
         OE_TEST(oe_umount("/") == 0);
     }
 };
+#endif // TEST_SGXFS
 
 #endif /* _file_system_h */
