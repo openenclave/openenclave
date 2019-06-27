@@ -20,3 +20,13 @@ jenkins_agent_executors_count: 2
 jenkins_agent_label: "hardware"
 jenkins_agent_root_dir: "/home/jenkins"
 ```
+
+The Windows CI/CD testing takes place for both Open Enclave and DCAP libraries.
+
+Since the SGX Windows machines configuration is slightly different for these
+two scenarios, one must use the following variable to differentiate the
+targeted Ansible Windows nodes when configuring them:
+
+```
+dcap_testing_node: true
+```
