@@ -262,10 +262,13 @@ function Install-7Zip {
 
 function Install-PSW {
     $tempInstallDir = "$PACKAGES_DIRECTORY\Intel_SGX_PSW"
-    Install-Tool -InstallerPath $PACKAGES["psw"]["local_file"] `
-                 -ArgumentList @('/auto', "$PACKAGES_DIRECTORY\Intel_SGX_PSW")
+    if(Test-Path $tempInstallDir) {
+        Remove-Item -Recurse -Force $tempInstallDir
+    }
+    Install-ZipTool -ZipPath $PACKAGES["psw"]["local_file"] `
+                    -InstallDirectory $tempInstallDir
 
-    $installer = Get-Item "$tempInstallDir\Intel SGX PSW for Windows *\PSW_EXE_RS2_and_before\Intel(R)_SGX_Windows_x64_PSW_*.exe"
+    $installer = Get-Item "$tempInstallDir\Intel*SGX*\PSW_EXE*\Intel(R)_SGX_Windows_x64_PSW_*.exe"
     if(!$installer) {
         Throw "Cannot find the installer executable"
     }
