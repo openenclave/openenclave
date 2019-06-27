@@ -12,6 +12,7 @@ Param(
     [string]$NugetURL = 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15384/Intel%20SGX%20DCAP%20for%20Windows%20v1.1.100.49925.exe',
+    [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$AzureDCAPNupkgURL = 'https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg' # TODO: Update this to official link once this is available
 )
 
@@ -60,6 +61,10 @@ $PACKAGES = @{
     "dcap" = @{
         "url" = $IntelDCAPURL
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Intel_SGX_DCAP.exe"
+    }
+    "vc_runtime_2012" = @{
+        "url" = $VCRuntime2012URL
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "vcredist_x64.exe"
     }
     "azure_dcap_client_nupkg" = @{
         "url" = $AzureDCAPNupkgURL
@@ -469,6 +474,15 @@ function Install-DCAPDrivers {
     New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters" -Name "SGX_Launch_Config_Optin" -Value 1 -PropertyType DWORD -Force
 }
 
+function Install-VCRuntime {
+    Write-Log "Installing VC 2012 runtime"
+    $p = Start-Process -Wait -PassThru -FilePath $PACKAGES["vc_runtime_2012"]["local_file"] -ArgumentList @("/install", "/passive")
+    if($p.ExitCode -ne 0) {
+        Throw ("Failed to install VC 2012 runtime. Exit code: {0}" -f $p.ExitCode)
+    }
+}
+
+
 try {
     Start-LocalPackagesDownload
 
@@ -480,6 +494,7 @@ try {
     Install-Shellcheck
     Install-PSW
     Install-DCAPDrivers
+    Install-VCRuntime
 
     Write-Output 'Please reboot your computer for the configuration to complete.'
 } catch {
