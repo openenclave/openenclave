@@ -36,11 +36,26 @@ target_compile_options(libc_enc PRIVATE
     -Wno-unknown-pragmas
     -Wno-unused-function
     -Wno-return-type
-    -Wno-macro-redefined
     -Wno-unused-variable
-    -Wno-literal-range
     -Wno-missing-braces
-    -Wno-writable-strings)
+    -Wno-unused-parameter
+    -Wno-float-conversion
+    -Wno-sign-conversion
+    -Wno-sign-compare
+    -Wno-conversion
+    -Wno-parentheses
+    -Wno-unused-value
+    -Wno-overflow)
+
+if(OE_SGX)
+    target_compile_options(libc_enc PRIVATE
+        -Wno-macro-redefined
+        -Wno-literal-range
+        -Wno-writable-strings)
+elseif(OE_TRUSTZONE)
+    target_compile_options(libc_enc PRIVATE
+        -Wno-bool-compare)
+endif()
 
 target_include_directories(
     libc_enc PRIVATE

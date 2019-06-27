@@ -56,6 +56,7 @@ Note: Both of them can run on the same machine or separate machines.
 ```
 
 ### Non-enclave Client application
+ - When used in this scenario, this non-enclave client is assumed to be a trusted party holding secrets and only shares it with the server after the server is validated
  - Connect to server port via socket
  - Use OpenSSL API to configure a TLS client
  - Call oe_verify_attestation_certificate to validate server's certificate
@@ -71,6 +72,8 @@ Note that there are two different build systems supported, one using GNU Make an
 `pkg-config`, the other using CMake.
 
 You can go build from the sample's root directory or go to tls_between_enclaves or tls_between_non_enclave_enclave subdirectory to build each sub-sample
+
+Note: This sample uses an OE SDK customized version of mbedtls library for TLS channel connection. It has MBEDTLS_NET_C component enabled, which has a dependecy on the newly added [socket support](../../docs/UsingTheIOSubsystem.md#socketh) in 0.6.0 OE SDK release (for more details see [Using the Open Enclave I/O subsystem](../../docs/UsingTheIOSubsystem.md#opting-in) for details). So in order to build successfully, you would need to link with liboehostsock and libhostresolver libraries to satisfy the dependency.
 
 ### GNU Make
 
