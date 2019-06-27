@@ -19,11 +19,17 @@
 
 #pragma STDC FENV_ACCESS ON
 
+#if defined(__x86_64__) || defined(_M_X64)
+#define XMM_OK
+#endif
+
+#if defined(XMM_OK)
 /* Type of the control word.  */
 typedef unsigned int fpu_control_t __attribute__((__mode__(__HI__)));
 /* Macros for accessing the hardware control word.  */
 #define _FPU_GETCW(cw) __asm__ __volatile__("fnstcw %0" : "=m"(*&cw))
 #define _FPU_SETCW(cw) __asm__ __volatile__("fldcw %0" : : "m"(*&cw))
+#endif
 
 int t_status = 0;
 
@@ -38,6 +44,7 @@ int device_init()
     return 0;
 }
 
+#if defined(XMM_OK)
 int my_printfpu_control()
 {
     fpu_control_t cw;
@@ -56,6 +63,7 @@ void my_setmxcsr(uint32_t csr)
 {
     asm volatile("ldmxcsr %0" : : "m"(csr));
 }
+#endif
 
 int t_printf(const char* s, ...)
 {
@@ -85,6 +93,7 @@ int run_test(const char* name, int (*main)(int argc, const char* argv[]))
     /* Print running message. */
     printf("=== running: %s\n", name);
 
+#if defined(XMM_OK)
     /* Verify that the FPU control word and SSE control/status flags are set
      * correctly before each test */
     uint32_t cw = my_printfpu_control();
@@ -92,6 +101,7 @@ int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 
     uint32_t csr = my_getmxcsr();
     OE_TEST(csr == 0x1f80);
+#endif
 
     /* Disable Open Enclave debug malloc checks. */
     {
@@ -144,3 +154,19 @@ OE_SET_ENCLAVE_SGX(
     512,  /* HeapPageCount */
     256,  /* StackPageCount */
     4);   /* TCSCount */
+
+#define TA_UUID                                            \
+    { /* d7fe296a-24e9-46d1-aa78-9c7395082a41 */           \
+        0xd7fe296a, 0x24e9, 0x46d1,                        \
+        {                                                  \
+            0xaa, 0x78, 0x9c, 0x73, 0x95, 0x08, 0x2a, 0x41 \
+        }                                                  \
+    }
+
+OE_SET_ENCLAVE_OPTEE(
+    TA_UUID,
+    1 * 1024 * 1024,
+    12 * 1024,
+    TA_FLAG_EXEC_DDR,
+    "1.0.0",
+    "libc test")

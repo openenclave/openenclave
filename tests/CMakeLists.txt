@@ -79,6 +79,7 @@ if ( UNIX )
         add_subdirectory(memory)
     endif()
 add_subdirectory(create-rapid)
+add_subdirectory(libc)
 endif()
 
 if (OE_SGX AND UNIX)
@@ -86,7 +87,6 @@ if (OE_SGX AND UNIX)
    # ecall_ocall enclave size cannot be handled by Windows ninja CI
    add_subdirectory(ecall_ocall)
    add_subdirectory(libunwind)
-   add_subdirectory(libc)
 
    # Attestation supported only on Linux
    add_subdirectory(qeidentity)
