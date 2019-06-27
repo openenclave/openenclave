@@ -37,6 +37,10 @@ On the target machine where Open Enclave is desired to be configured, you may se
 
     This assumes that the inventory was properly set up with the `windows-agents` machines.
 
+**Note**: The Ansible scripts only support configuring clean SGX-enabled machines, or any machines already configured with these Ansible scripts.
+
+For instructions to configure non-clean SGX-enabled machines, please follow the [BuildingInADockerContainer.md](/docs/GettingStartedDocs/Contributors/BuildingInADockerContainer.md) documentation.
+
 # Configure new Jenkins slaves
 
 The playbook `jenkins-setup.yml` can be used to set up new Jenkin slaves.

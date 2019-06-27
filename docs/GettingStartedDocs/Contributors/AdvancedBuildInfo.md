@@ -12,6 +12,10 @@ cd openenclave/scripts/ansible
 ansible localhost -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" --become --ask-become-pass
 ```
 
+**Note**: The Ansible scripts only support configuring clean SGX-enabled machines, or any machines already configured with these Ansible scripts.
+
+For instructions to configure non-clean SGX-enabled machines, please follow the [BuildingInADockerContainer.md](/docs/GettingStartedDocs/Contributors/BuildingInADockerContainer.md) documentation.
+
 ## CMake Configuration
 
 In addition to the standard CMake variables, the following CMake variables
