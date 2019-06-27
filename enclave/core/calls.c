@@ -8,6 +8,9 @@
 
 #include "calls.h"
 
+/* If true, disable the debug malloc checking */
+bool oe_disable_debug_malloc_check;
+
 /*
 **==============================================================================
 **
