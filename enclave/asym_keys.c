@@ -542,7 +542,7 @@ void oe_handle_get_public_key_by_policy(uint64_t arg_in)
     uint8_t* host_key_buffer = NULL;
 
     /* Copy arguments to avoid time of use / time of check. */
-    if (!uarg || !oe_is_outside_enclave(uarg, sizeof(uarg)))
+    if (!uarg || !oe_is_outside_enclave(uarg, sizeof(*uarg)))
         return;
 
     arg = *uarg;
@@ -613,7 +613,7 @@ void oe_handle_get_public_key(uint64_t arg_in)
     uint8_t* host_key_buffer = NULL;
 
     /* Copy arguments to avoid time of use / time of check. */
-    if (!uarg || !oe_is_outside_enclave(uarg, sizeof(uarg)))
+    if (!uarg || !oe_is_outside_enclave(uarg, sizeof(*uarg)))
         return;
 
     arg = *uarg;
