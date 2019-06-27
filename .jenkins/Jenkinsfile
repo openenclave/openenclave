@@ -84,6 +84,50 @@ def AArch64GNUTest(String version, String build_type) {
                                 -DUSE_LIBSGX=OFF                                                   \
                                 -Wdev
                             ninja -v
+
+                            cp ${WORKSPACE}/scripts/emu-run-tests.sh .
+                            chmod +x ./emu-run-tests.sh
+
+                            BUILD_DIR=$PWD
+
+                            cd /devkits/emu/aarch64 && \
+                            nohup /devkits/emu/aarch64/qemu-system-aarch64 \
+                                -nographic \
+                                -serial file:ree.log \
+                                -serial file:tee.log \
+                                -smp 1 \
+                                -machine virt,secure=on \
+                                -cpu cortex-a57 \
+                                -m 1057 \
+                                -bios bl1.bin \
+                                -semihosting-config enable,target=native \
+                                -d unimp \
+                                -initrd rootfs.cpio.gz \
+                                -kernel Image \
+                                -no-acpi \
+                                -append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
+                                -virtfs local,id=sh0,path=$BUILD_DIR,security_model=passthrough,readonly,mount_tag=sh0 \
+                                -netdev user,id=net0,hostfwd=tcp::5555-:22 -device virtio-net,netdev=net0 &
+                            disown
+
+                            sleep 10
+
+                            mkdir $HOME/.ssh
+                            ssh-keyscan -T 300 -p 5555 localhost >> $HOME/.ssh/known_hosts
+
+                            CMD="su -c \""
+                            CMD="$CMD mkdir /mnt/oe &&"
+                            CMD="$CMD mount -t 9p -o trans=virtio sh0 /mnt/oe -oversion=9p2000.L &&"
+                            CMD="$CMD cd /mnt/oe/tests &&"
+                            CMD="$CMD ../emu-run-tests.sh"
+                            CMD="$CMD \""
+
+                            sshpass -p test ssh test@localhost -p 5555 "$CMD"
+                            RESULT=$?
+
+                            pkill -9 qemu-system-aar
+
+                            exit $RESULT
                             """
                 oe.ContainerRun("oetools-full-${version}", "cross", task, "--cap-add=SYS_PTRACE")
             }
