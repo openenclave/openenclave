@@ -49,8 +49,7 @@ void __utee_entry(
  */
 
 // Some of the extra fluff in the macro, like the _oe_ta_* locals, is required
-// to for it to function correctly when used in a C++ file. Additionally, the
-// usage of volatile on certain variables prevents them from being discarded.
+// to for it to function correctly when used in a C++ file.
 
 // clang-format off
 #define OE_SET_ENCLAVE_OPTEE(                                   \
