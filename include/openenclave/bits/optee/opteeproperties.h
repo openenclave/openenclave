@@ -23,7 +23,7 @@ OE_EXTERNC_BEGIN
 
 #define OE_TA_HEAD_SECTION_NAME ".ta_head"
 #define OE_TA_HEAD_SECTION_BEGIN \
-    __attribute__((section(OE_TA_HEAD_SECTION_NAME)))
+    OE_EXTERNC __attribute__((section(OE_TA_HEAD_SECTION_NAME)))
 #define OE_TA_HEAD_SECTION_END
 
 struct utee_params;
@@ -49,8 +49,7 @@ void __utee_entry(
  */
 
 // Some of the extra fluff in the macro, like the _oe_ta_* locals, is required
-// to for it to function correctly when used in a C++ file. Additionally, the
-// usage of volatile on certain variables prevents them from being discarded.
+// to for it to function correctly when used in a C++ file.
 
 // clang-format off
 #define OE_SET_ENCLAVE_OPTEE(                                   \
@@ -77,8 +76,8 @@ void __utee_entry(
     };                                                          \
     OE_TA_HEAD_SECTION_END                                      \
                                                                 \
-    volatile uint8_t ta_heap[(HEAP_SIZE)];                      \
-    volatile const size_t ta_heap_size = sizeof(ta_heap);       \
+    OE_USED uint8_t ta_heap[(HEAP_SIZE)];                       \
+    OE_USED size_t ta_heap_size = sizeof(ta_heap);              \
                                                                 \
     const bool _oe_ta_flag_single_instance =                    \
         {((FLAGS) & TA_FLAG_SINGLE_INSTANCE) != 0};             \
