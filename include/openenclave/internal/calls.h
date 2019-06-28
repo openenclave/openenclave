@@ -468,6 +468,7 @@ oe_result_t oe_ecall(
  * @param func The number of the function to be called.
  * @param arg_in The input argument passed to the function.
  * @param arg_in_size The size of the input argument passed to the function.
+ * @param arg_in_is_pointer Declares whether arg_in is a value or a pointer.
  * @param arg_out The output argument passed back from the function.
  * @param arg_out_size The size of the output argument passed back from the
  * function.
