@@ -23,6 +23,13 @@
 /* OE_UNUSED */
 #define OE_UNUSED(P) (void)(P)
 
+/* OE_USED */
+#if defined(__GNUC__)
+#define OE_USED __attribute__((__used__))
+#else
+#error OE_USED not implemented
+#endif
+
 /* OE_ALWAYS_INLINE */
 #if defined(__linux__)
 #define OE_ALWAYS_INLINE __attribute__((always_inline))
