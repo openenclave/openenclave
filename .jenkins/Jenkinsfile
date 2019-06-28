@@ -70,12 +70,6 @@ def AArch64GNUTest(String version, String build_type) {
                 cleanWs()
                 checkout scm
                 def task = """
-                            if [ ! -d /devkits ] || \
-                               ( [ -d /devkits ] && \
-                                 ( [ ! -f /devkits/TARBALL ] ||
-                                   [ $(< /devkits/TARBALL) != "${DEVKITS_URI##*/}" ] ) ); then
-                                curl ${DEVKITS_URI} | tar xvz -C / --no-same-permissions --no-same-owner
-                            fi
                             cmake ${WORKSPACE}                                                     \
                                 -G Ninja                                                           \
                                 -DCMAKE_BUILD_TYPE=${build_type}                                   \
@@ -85,6 +79,7 @@ def AArch64GNUTest(String version, String build_type) {
                                 -Wdev
                             ninja -v
                             """
+                echo "${task}"
                 oe.ContainerRun("oetools-full-${version}", "cross", task, "--cap-add=SYS_PTRACE")
             }
         }
