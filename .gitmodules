@@ -5,4 +5,4 @@
 [submodule "3rdparty/optee/optee_client"]
 	path = 3rdparty/optee/optee_client
 	url = https://github.com/ms-iot/optee_client
-	branch = user/hegatta/openenclave-merger
+	branch = ms-iot-openenclave
