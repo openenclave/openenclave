@@ -5,7 +5,7 @@
 
 oeedl_file(../ecall.edl enclave gen)
 
-add_enclave(TARGET ecall_enc SOURCES enc.cpp ${gen})
+add_enclave(TARGET ecall_enc UUID 985c1ef2-d780-4092-af68-0258d0cc691d SOURCES enc.cpp ${gen})
 
 target_include_directories(ecall_enc PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}

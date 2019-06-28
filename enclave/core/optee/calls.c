@@ -4,6 +4,14 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/edger8r/enclave.h>
 
+oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
+{
+    OE_UNUSED(func);
+    OE_UNUSED(arg_in);
+    OE_UNUSED(arg_out);
+    return OE_UNSUPPORTED;
+}
+
 oe_result_t oe_call_host_function(
     size_t function_id,
     const void* input_buffer,
@@ -21,13 +29,9 @@ oe_result_t oe_call_host_function(
     return OE_UNSUPPORTED;
 }
 
-void* oe_allocate_ocall_buffer(size_t size)
+void oe_abort(void)
 {
-    OE_UNUSED(size);
-    return NULL;
-}
-
-void oe_free_ocall_buffer(void* buffer)
-{
-    OE_UNUSED(buffer);
+    // TODO: Determine the appropriate call to make into OP-TEE on TA abort.
+    while (1)
+        ;
 }

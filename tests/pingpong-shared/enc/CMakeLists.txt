@@ -4,6 +4,6 @@
 
 oeedl_file(../pingpong.edl enclave gen)
 # TODO: Does this need CXX?
-add_enclave(TARGET pingpong-shared_enc SOURCES enc.cpp ${gen})
+add_enclave(TARGET pingpong-shared_enc UUID e229cc0f-3199-4ad3-91a7-47906fcbcc59 SOURCES enc.cpp ${gen})
 target_include_directories(pingpong-shared_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(pingpong-shared_enc oelibc)

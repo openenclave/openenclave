@@ -4,7 +4,7 @@
 
 oeedl_file(../abortStatus.edl enclave gen)
 
-add_enclave(TARGET abortStatus_enc CXX SOURCES enc.cpp ${gen})
+add_enclave(TARGET abortStatus_enc UUID c55a7e2a-b857-4518-98df-4d294d0ab14d CXX SOURCES enc.cpp ${gen})
 
 target_compile_features(abortStatus_enc PRIVATE cxx_generalized_initializers)
 

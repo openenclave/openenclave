@@ -5,7 +5,7 @@
 
 oeedl_file(../SampleApp.edl enclave gen)
 
-add_enclave(TARGET SampleApp SOURCES SampleApp.cpp ${gen})
+add_enclave(TARGET SampleApp UUID 25419627-14f6-4625-9329-cf5f10a57fea SOURCES SampleApp.cpp ${gen})
 
 target_include_directories(SampleApp PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}

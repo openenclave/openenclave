@@ -31,7 +31,7 @@ function(add_mbed_test_enclave NAME)
     ${MBEDTLS_TESTS_DIR}/suites/test_suite_${suite_name}.function
     ${MBEDTLS_TESTS_DIR}/suites/test_suite_${data_name}.data)
 
-  add_enclave(TARGET mbedtest_suite_${NAME}
+  add_enclave(TARGET mbedtest_suite_${NAME} UUID 0e405a1d-dd06-49a4-9d46-3f02440cbf0a
     SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c
     enc.c
@@ -75,7 +75,7 @@ endfunction()
 # This is simpler version of the above for the single "selftest" test
 # suite, which does not generate code.
 function(add_mbed_selftest_enclave)
-  add_enclave(TARGET mbedtest_selftest
+  add_enclave(TARGET mbedtest_selftest UUID f4e07b3e-af0a-4558-bd7e-b692bd441b5d
     SOURCES
     selftest_wrapper.c
     enc.c

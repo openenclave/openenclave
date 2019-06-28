@@ -4,7 +4,7 @@
 
 oeedl_file(../cppException.edl enclave gen)
 
-add_enclave(TARGET cppException_enc CXX SOURCES enc.cpp cppException.cpp ${gen})
+add_enclave(TARGET cppException_enc UUID fdabde1a-a03a-4850-a07d-633eea54af92 CXX SOURCES enc.cpp cppException.cpp ${gen})
 
 target_compile_features(cppException_enc PRIVATE cxx_generalized_initializers)
 

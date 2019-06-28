@@ -42,9 +42,6 @@ endif ()
 set (PLATFORM_SRC "")
 
 if (OE_SGX)
-    list(APPEND PLATFORM_SRC
-        sgx/syscalls.c)
-
     if (UNIX OR USE_CLANGW)
         list(APPEND PLATFORM_SRC
             ../common/sgx/rand.S)
@@ -54,9 +51,9 @@ if (OE_SGX)
     endif()
 else()
     list(APPEND PLATFORM_SRC
-        optee/syscalls.c
         optee/abort.c
-        optee/exp2l.c)
+        optee/exp2l.c
+        optee/trace.c)
 endif()
 
 add_library(oelibc STATIC
@@ -79,6 +76,7 @@ add_library(oelibc STATIC
     signal.c
     stdlib.c
     strerror.c
+    syscalls.c
     sysconf.c
     time.c
     regcomp.c
@@ -846,15 +844,15 @@ target_link_libraries(oelibc
   PUBLIC oesyscall oecore oelibc_includes
   PRIVATE oelibasm)
 
-if (OE_SGX)
 target_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
+  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
+
+if (OE_SGX)
+target_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
 else()
 target_include_directories(oelibc PRIVATE
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
-  ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64)
 endif()
 

@@ -12,7 +12,7 @@ target_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=test)
 
 # helper function to create enclave binary
 function(add_libcxxrt_test_enc NAME CXXFILE)
-    add_enclave(TARGET libcxxrttest-${NAME}_enc CXX SOURCES enc.cpp main.cpp)
+    add_enclave(TARGET libcxxrttest-${NAME}_enc UUID c8f14445-7de0-48de-9886-cf8c7a396e94 CXX SOURCES enc.cpp main.cpp)
     target_include_directories(libcxxrttest-${NAME}_enc PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src

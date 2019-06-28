@@ -6,25 +6,18 @@ set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
-        sgx/atexit.c
         sgx/backtrace.c
         sgx/calls.c
         sgx/cpuid.c
-        sgx/debugmalloc.c
         sgx/entropy.c
-        sgx/errno.c
         sgx/exception.c
         sgx/globals.c
-        sgx/hostcalls.c
         sgx/init.c
         sgx/jump.c
         sgx/keys.c
-        sgx/malloc.c
         sgx/memory.c
-        sgx/once.c
         sgx/properties.c
         sgx/report.c
-        sgx/sbrk.c
         sgx/sched_yield.c
         sgx/spinlock.c
         sgx/td.c
@@ -47,16 +40,25 @@ if (OE_SGX)
             ../../common/sgx/rand.asm
             sgx/windows/reloc.c)
     endif()
-elseif(OE_TRUSTZONE)
-    message("TODO: ADD ARM files.")
+elseif (OE_TRUSTZONE)
     list(APPEND PLATFORM_SRC
-        optee/abort.c
+        optee/backtrace.c
         optee/bounds.c
-        optee/host.c
+        optee/calls.c
+        optee/header.c
+        optee/globals.c
+        optee/gp.c
         optee/printf.c
         optee/sched_yield.c
-        optee/start.c)
+        optee/spinlock.c
+        optee/start.c
+        optee/stubs.c
+        optee/thread.c)
 endif()
+
+if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
+    list(APPEND PLATFORM_SRC init_fini.c)
+endif ()
 
 add_library(oecore STATIC
     ../../common/safecrt.c
@@ -68,13 +70,21 @@ add_library(oecore STATIC
     __secs_to_tm.c
     __stack_chk_fail.c
     assert.c
+    atexit.c
+    backtrace.c
     ctype.c
+    debugmalloc.c
+    errno.c
     gmtime.c
     hexdump.c
+    hostcalls.c
     intstr.c
+    malloc.c
+    once.c
     printf.c
     pthread.c
     result.c
+    sbrk.c
     stdio.c
     strerror.c
     string.c
@@ -96,6 +106,9 @@ set_source_files_properties(__secs_to_tm.c PROPERTIES
 maybe_build_using_clangw(oecore)
 
 target_link_libraries(oecore PUBLIC oe_includes)
+if (OE_TRUSTZONE)
+    target_link_libraries(oecore PUBLIC oelibutee_includes)
+endif ()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oecore PRIVATE -Wjump-misses-init)
@@ -105,12 +118,12 @@ endif()
 target_include_directories(oecore PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
-if (OE_SGX)
-    # Unfortunately dlmalloc uses GNU extension that allows arithmetic
-    # null pointers.
-    set_source_files_properties(sgx/malloc.c
-        PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
+# Unfortunately dlmalloc uses GNU extension that allows arithmetic
+# null pointers.
+set_source_files_properties(malloc.c
+    PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
 
+if (OE_SGX)
     # jump.s must be optimized for the correct call-frame.
     set_source_files_properties(sgx/jump.c PROPERTIES COMPILE_FLAGS -O2)
 
@@ -129,28 +142,34 @@ endif ()
 # Hence the PUBLIC (and INTERFACE) use of these flags instead of -fPIC
 # or POSITION_INDEPENDENT_CODE, which would use the incorrect flag as
 # enclaves actually are executables.
-target_compile_options(oecore PUBLIC
-    -fPIE
-    -nostdinc
-    -fno-stack-protector
-    -fvisibility=hidden
-    # "The default without -fpic is 'initial-exec'; with -fpic the
-    # default is 'global-dynamic'."
-    # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
-    #
-    # Enclaves are linked using -pie and therefore global-dynamic is
-    # too conservative. Of the two efficient static thread-local
-    # storage models, inital-exec and local-exec, we choose the most
-    # optimal one.
-    -ftls-model=local-exec
-    # Disable builtin functions for enclaves, but only in our build.
-    #
-    # We do this to work-around compiler bugs (see #1429) due to our
-    # redefinition of `memmove` to `oe_memmove` causing an undefined
-    # symbol error when a built-in was inlined. However, we only do
-    # this for our code as we don't want to force these flags on the
-    # user. There are valid reasons for an end user to use built-ins.
-    $<BUILD_INTERFACE:-fno-builtin-malloc -fno-builtin-calloc -fno-builtin>)
+if (OE_SGX)
+    target_compile_options(oecore PUBLIC
+        -fPIE
+        -nostdinc
+        -fno-stack-protector
+        -fvisibility=hidden
+        # "The default without -fpic is 'initial-exec'; with -fpic the
+        # default is 'global-dynamic'."
+        # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
+        #
+        # Enclaves are linked using -pie and therefore global-dynamic is
+        # too conservative. Of the two efficient static thread-local
+        # storage models, inital-exec and local-exec, we choose the most
+        # optimal one.
+        -ftls-model=local-exec
+        # Disable builtin functions for enclaves, but only in our build.
+        #
+        # We do this to work-around compiler bugs (see #1429) due to our
+        # redefinition of `memmove` to `oe_memmove` causing an undefined
+        # symbol error when a built-in was inlined. However, we only do
+        # this for our code as we don't want to force these flags on the
+        # user. There are valid reasons for an end user to use built-ins.
+        $<BUILD_INTERFACE:-fno-builtin-malloc -fno-builtin-calloc -fno-builtin>)
+elseif (OE_TRUSTZONE)
+    target_compile_options(oecore PUBLIC
+        -fvisibility=hidden
+        ${OE_TZ_TA_C_FLAGS})
+endif()
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
@@ -172,11 +191,19 @@ if(USE_DEBUG_MALLOC)
 endif()
 
 # Interface link flags for enclaves.
-target_link_libraries(oecore INTERFACE
-    -nostdlib -nodefaultlibs -nostartfiles
-    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
-    -Wl,-z,noexecstack
-    -Wl,-z,now)
+if(OE_SGX)
+    target_link_libraries(oecore INTERFACE
+        -nostdlib -nodefaultlibs -nostartfiles
+        -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
+        -Wl,-z,noexecstack
+        -Wl,-z,now)
+elseif(OE_TRUSTZONE)
+    target_link_libraries(oecore INTERFACE
+        -nostdlib -nodefaultlibs -nostartfiles
+        --no-undefined
+        -pie
+        --sort-section=alignment)
+endif()
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install (TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

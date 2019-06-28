@@ -46,4 +46,15 @@ evaluates this specifically.
 Refer to [Getting Started on Windows](/docs/GettingStartedDocs/GettingStarted.Windows.md) for
 instructions on testing Linux-built enclaves with Windows-built host apps.
 
+# On calls to add_enclave
 
+The test enclave targets are added by calling `add_enclave`, a CMake macro
+defined in `cmake/add_enclave.cmake`. This macro determines at
+configuration-time whether enclaves are being built for Intel SGX or ARM
+TrustZone. SGX enclave binaries can be named anything, and as such their
+on-disk name follows the name given in the TARGET parameter of the `add_enclave`
+macro. ARM TrustZone enclaves are different, and must always be named with a
+UUID. Hence, every call to `add_enclave` includes a friendly CMake target name,
+which is also used for the on-disk name of SGX enclave binaries, and a UUID,
+used for the on-disk name of ARM TrustZone enclave binaries. The CMake target
+name however is always the value of TARGET, never that of UUID.

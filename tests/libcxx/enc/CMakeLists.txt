@@ -37,7 +37,7 @@ target_include_directories(libcxxtest-support PRIVATE
 
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
-    add_enclave(TARGET libcxxtest-${NAME}_enc CXX SOURCES
+    add_enclave(TARGET libcxxtest-${NAME}_enc UUID 486dcdcc-f0c6-4bdd-91e0-c7566794f899 CXX SOURCES
         main.cpp ${gen})
 
     target_include_directories(libcxxtest-${NAME}_enc PRIVATE

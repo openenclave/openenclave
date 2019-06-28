@@ -27,7 +27,7 @@ target_include_directories(libunwindtest-support PUBLIC
     )
 
 function(add_libunwind_test_enc NAME TESTFILE)
-    add_enclave(TARGET libunwindtest-${NAME}_enc CXX
+    add_enclave(TARGET libunwindtest-${NAME}_enc UUID 061c1ea0-22b3-4194-a8cd-44242462f22a CXX
         SOURCES
         enc.c
         ${gen}

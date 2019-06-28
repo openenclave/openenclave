@@ -5,13 +5,10 @@
 #define OE_INIT_H
 
 #include <openenclave/enclave.h>
+#include "../init_fini.h"
 #include "td.h"
 
 void oe_initialize_enclave();
-
-void oe_call_init_functions(void);
-
-void oe_call_fini_functions(void);
 
 bool oe_apply_relocations(void);
 

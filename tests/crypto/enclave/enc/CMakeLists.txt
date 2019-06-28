@@ -3,7 +3,7 @@
 
 oeedl_file(../crypto.edl enclave gen)
 
-add_enclave(TARGET cryptoenc
+add_enclave(TARGET cryptoenc UUID f0be7db0-ce7c-4dc4-b8c8-b161f4216225
     SOURCES
     enc.c
     ../../../../common/sgx/rand.S

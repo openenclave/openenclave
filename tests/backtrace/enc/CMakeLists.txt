@@ -4,7 +4,7 @@
 
 oeedl_file(../backtrace.edl enclave gen)
 
-add_enclave(TARGET backtrace_enc CXX SOURCES enc.cpp ${gen})
+add_enclave(TARGET backtrace_enc UUID c21d0c84-a32b-430a-ad9a-7bf8b47eff0c CXX SOURCES enc.cpp ${gen})
 
 if(USE_DEBUG_MALLOC)
     target_compile_definitions(backtrace_enc PRIVATE OE_USE_DEBUG_MALLOC)

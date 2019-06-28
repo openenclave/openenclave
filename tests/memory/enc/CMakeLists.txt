@@ -4,7 +4,7 @@
 
 oeedl_file(../memory.edl enclave gen)
 
-add_enclave(TARGET memory_enc
+add_enclave(TARGET memory_enc UUID 719ff522-610b-43bd-9991-c4d52a91a7e1
   SOURCES
   basic.c
   boundaries.c
