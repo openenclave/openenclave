@@ -8,14 +8,32 @@
   tasks:
     - name: OE setup | Set installer URLs from the OE storage account
       set_fact:
-        intel_psw_2_2_url: "https://oejenkins.blob.core.windows.net/oejenkins/intel_sgx_win_2.2.100.47975_PV.zip"
-        intel_psw_2_3_url: "https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_PSW_for_Windows_v2.3.100.49777.exe"
-        intel_dcap_url: "https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_DCAP_for_Windows_v1.1.100.49925.exe"
+        intel_psw_2_2_url:  "https://oejenkins.blob.core.windows.net/oejenkins/intel_sgx_win_2.2.100.47975_PV.zip"
+        intel_psw_2_3_url:  "https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_PSW_for_Windows_v2.3.100.49777.exe"
+        intel_dcap_url:     "https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_DCAP_for_Windows_v1.1.100.49925.exe"
+        git_url:            "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.19.1-64-bit.exe"
+        seven_zip_url:      "https://oejenkins.blob.core.windows.net/oejenkins/7z1806-x64.msi"
+        vs_buildtools_2017: "https://oejenkins.blob.core.windows.net/oejenkins/vs_buildtools_2017.exe"
+        ocaml_url:          "https://oejenkins.blob.core.windows.net/oejenkins/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip"
+        clang7_url:         "https://oejenkins.blob.core.windows.net/oejenkins/LLVM-7.0.1-win64.exe"
+        shellcheck_url:     "https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-stable.exe"
+        nuget_url:          "https://oejenkins.blob.core.windows.net/oejenkins/nuget.exe"
+        devcon_package_url: "https://oejenkins.blob.core.windows.net/oejenkins/devcon_package.cab"
+        az_dcap_client_url: "https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg"
 
     - name: OE setup | Run the install-windows-prereqs.ps1 script (this may take a while)
       script: ../install-windows-prereqs.ps1
-        -IntelPSWURL "{{ intel_psw_2_3_url if dcap_testing_node is defined and dcap_testing_node == true else intel_psw_2_2_url }}"
-        -IntelDCAPURL "{{ intel_dcap_url }}"
+        -IntelPSWURL       "{{ intel_psw_2_3_url if dcap_testing_node is defined and dcap_testing_node == true else intel_psw_2_2_url }}"
+        -IntelDCAPURL      "{{ intel_dcap_url }}"
+        -GitURL            "{{ git_url }}"
+        -SevenZipURL       "{{ seven_zip_url }}"
+        -VSBuildToolsURL   "{{ vs_buildtools_2017 }}"
+        -OCamlURL          "{{ ocaml_url }}"
+        -Clang7URL         "{{ clang7_url }}"
+        -ShellCheckURL     "{{ shellcheck_url }}"
+        -NugetURL          "{{ nuget_url }}"
+        -DevconURL         "{{ devcon_package_url }}"
+        -AzureDCAPNupkgURL "{{ az_dcap_client_url }}"
 
     - name: OE setup | Reboot the node
       win_reboot:
