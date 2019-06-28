@@ -79,7 +79,6 @@ def AArch64GNUTest(String version, String build_type) {
                                 -Wdev
                             ninja -v
                             """
-                echo "${task}"
                 oe.ContainerRun("oetools-full-${version}", "cross", task, "--cap-add=SYS_PTRACE")
             }
         }

@@ -27,7 +27,7 @@
 #if defined(__GNUC__)
 #define OE_USED __attribute__((__used__))
 #else
-#error OE_USED not implemented
+#define OE_USED /* empty */
 #endif
 
 /* OE_ALWAYS_INLINE */
