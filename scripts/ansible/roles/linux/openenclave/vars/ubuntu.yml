@@ -60,6 +60,9 @@ apt_arm_packages:
   - "python-crypto"
   - "libc6-dev:arm64"
   - "libssl-dev:arm64"
+  - "libfdt1"
+  - "openssh-client"
+  - "sshpass"
 
 validation_directories:
   - "/usr/local/opam"
