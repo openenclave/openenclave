@@ -3,7 +3,7 @@
 
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
-    [string]$7zURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
+    [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
     [string]$OCamlURL = 'https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
@@ -27,7 +27,7 @@ $PACKAGES = @{
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Git-64-bit.exe"
     }
     "7z" = @{
-        "url" = $7zURL
+        "url" = $SevenZipURL
         "local_file" = Join-Path $PACKAGES_DIRECTORY "7z-x64.msi"
     }
     "vs_buildtools" = @{
