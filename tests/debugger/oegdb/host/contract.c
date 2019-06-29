@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/debugrt/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
@@ -13,37 +14,28 @@
 // If the gdb plugin's assumptions match the layout of the data structures,
 // then the assertions won't be triggered.
 // volatile is used to prevent compiler-optimizations.
-volatile uint64_t OE_ENCLAVE_MAGIC_FIELD = (uint64_t)-1;
-volatile uint64_t OE_ENCLAVE_ADDR_FIELD = (uint64_t)-1;
-volatile uint64_t OE_ENCLAVE_HEADER_LENGTH = (uint64_t)-1;
-volatile char OE_ENCLAVE_HEADER_FORMAT[10];
-volatile uint64_t OE_ENCLAVE_MAGIC_VALUE = (uint64_t)-1;
-volatile uint64_t OE_ENCLAVE_FLAGS_OFFSET = (uint64_t)-1;
-volatile uint64_t OE_ENCLAVE_FLAGS_LENGTH = (uint64_t)-1;
-volatile char OE_ENCLAVE_FLAGS_FORMAT[10];
-volatile uint64_t OE_ENCLAVE_THREAD_BINDING_OFFSET = (uint64_t)-1;
-volatile uint64_t THREAD_BINDING_SIZE = (uint64_t)-1;
-volatile uint64_t THREAD_BINDING_HEADER_LENGTH = (uint64_t)-1;
-volatile char THREAD_BINDING_HEADER_FORMAT[10];
+volatile uint64_t O_MAGIC = (uint64_t)-1;
+volatile uint64_t MAGIC_VALUE = (uint64_t)-1;
+volatile uint64_t O_BASE_ADDRESS = (uint64_t)-1;
+volatile uint64_t O_TCS = (uint64_t)-1;
+volatile uint64_t O_NUM_TCS = (uint64_t)-1;
+volatile uint64_t O_DEBUG = (uint64_t)-1;
+volatile uint64_t O_SIMULATE = (uint64_t)-1;
+volatile uint64_t O_NEXT = (uint64_t)-1;
 
 void assert_debugger_binary_contract_host_side()
 {
-    OE_TEST(OE_ENCLAVE_MAGIC_FIELD == OE_OFFSETOF(oe_enclave_t, magic));
-    OE_TEST(OE_ENCLAVE_ADDR_FIELD == OE_OFFSETOF(oe_enclave_t, addr));
-    OE_TEST(OE_ENCLAVE_HEADER_LENGTH == OE_OFFSETOF(oe_enclave_t, bindings));
-    OE_TEST(strcmp((const char*)OE_ENCLAVE_HEADER_FORMAT, "QQQQQ") == 0);
-    OE_TEST(OE_ENCLAVE_MAGIC_VALUE == ENCLAVE_MAGIC);
-    OE_TEST(OE_ENCLAVE_FLAGS_LENGTH == 2);
+    OE_TEST(O_MAGIC == OE_OFFSETOF(oe_debug_enclave_t, magic));
+    OE_TEST(MAGIC_VALUE == OE_DEBUG_ENCLAVE_MAGIC);
 
-    OE_TEST(OE_ENCLAVE_FLAGS_OFFSET == OE_OFFSETOF(oe_enclave_t, debug));
-    OE_TEST(strcmp((const char*)OE_ENCLAVE_FLAGS_FORMAT, "BB") == 0);
-    OE_TEST(
-        OE_ENCLAVE_THREAD_BINDING_OFFSET ==
-        OE_OFFSETOF(oe_enclave_t, bindings));
+    OE_TEST(O_BASE_ADDRESS == OE_OFFSETOF(oe_debug_enclave_t, base_address));
+    OE_TEST(O_TCS == OE_OFFSETOF(oe_debug_enclave_t, tcs));
+    OE_TEST(O_NUM_TCS == OE_OFFSETOF(oe_debug_enclave_t, num_tcs));
 
-    OE_TEST(THREAD_BINDING_SIZE == sizeof(ThreadBinding));
-    OE_TEST(THREAD_BINDING_HEADER_LENGTH == OE_OFFSETOF(ThreadBinding, thread));
-    OE_TEST(strcmp((const char*)THREAD_BINDING_HEADER_FORMAT, "Q") == 0);
+    OE_TEST(O_DEBUG == OE_OFFSETOF(oe_debug_enclave_t, debug));
+    OE_TEST(O_SIMULATE == OE_OFFSETOF(oe_debug_enclave_t, simulate));
+
+    OE_TEST(O_NEXT == OE_OFFSETOF(oe_debug_enclave_t, next));
 
     printf("Debugger contract validated on host side.\n");
 }
