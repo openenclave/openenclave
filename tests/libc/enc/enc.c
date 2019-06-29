@@ -124,6 +124,9 @@ int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 
         if (main(1, argv) != 0)
         {
+            /* Prevent cascading of false negatives. */
+            t_status = 0;
+
             fprintf(stderr, "*** failed: %s\n", name);
             goto done;
         }
