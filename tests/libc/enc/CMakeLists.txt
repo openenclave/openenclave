@@ -19,15 +19,24 @@ configure_file(tests.c.in tests.c)
 
 oeedl_file(../libc.edl enclave gen)
 
+set(test_extras
+    ../../../3rdparty/musl/libc-test/src/common/vmfill.c
+    ../../../3rdparty/musl/libc-test/src/common/mtest.c
+    ../../../3rdparty/musl/libc-test/src/common/rand.c)
+
+if(NOT OE_TRUSTZONE)
+    # This file requires TLS relocations, which cannot be applied by OP-TEE's
+    # ELF loader.
+    list(APPEND test_extras
+        ../../../3rdparty/musl/libc-test/src/functional/tls_align_dso.c)
+endif()
+
 add_enclave(TARGET libc_enc UUID d7fe296a-24e9-46d1-aa78-9c7395082a41
     SOURCES
     enc.c
     ${CMAKE_CURRENT_BINARY_DIR}/tests.c
     ${test_dependencies}
-    ../../../3rdparty/musl/libc-test/src/common/vmfill.c
-    ../../../3rdparty/musl/libc-test/src/common/mtest.c
-    ../../../3rdparty/musl/libc-test/src/common/rand.c
-    ../../../3rdparty/musl/libc-test/src/functional/tls_align_dso.c
+    ${test_extras}
     ${LIBC_TESTS}
     ${gen})
 
