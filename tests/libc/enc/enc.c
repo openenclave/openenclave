@@ -168,8 +168,8 @@ OE_SET_ENCLAVE_SGX(
 
 OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
-    1 * 1024 * 1024,
-    12 * 1024,
+    3 * 1024 * 1024,
+    48 * 1024,
     TA_FLAG_EXEC_DDR,
     "1.0.0",
     "libc test")
