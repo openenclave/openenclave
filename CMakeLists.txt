@@ -196,7 +196,6 @@ enable_testing()
 include(add_enclave_test)
 
 # Recurse through subdirectories
-add_subdirectory(debugrt)
 add_subdirectory(host)
 add_subdirectory(include)
 add_subdirectory(tests)
@@ -210,10 +209,11 @@ if (BUILD_ENCLAVES)
   add_subdirectory(syscall)
 endif()
 
+if (OE_SGX)
+  add_subdirectory(debugger)
+endif()
+
 if (UNIX)
-  if (OE_SGX)
-    add_subdirectory(debugger)
-  endif()
   add_subdirectory(docs/refman)
   add_subdirectory(pkgconfig)
   add_subdirectory(samples)
