@@ -13,8 +13,9 @@ else()
   #TODO: Switch to DLL on Windows
   add_library(oedebugrt OBJECT
     host.c)
+
   install(TARGETS oedebugrt EXPORT openenclave-targets
-    # TODO:Switch to DLL on Windows
+    # TODO:Determine DLL install location on Windows
     # ARCHIVE DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 endif()

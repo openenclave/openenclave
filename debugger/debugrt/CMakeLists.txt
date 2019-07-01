@@ -3,5 +3,4 @@
 
 if (OE_SGX)
   add_subdirectory(host)
-  #add_subdirectory(enclave)
 endif()
