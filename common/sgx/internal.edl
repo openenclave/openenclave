@@ -1,0 +1,24 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** internal.edl:
+**
+**     This file declares internal ECALLs/OCALLs used by liboehost/liboecore.
+**
+**==============================================================================
+*/
+
+enclave {
+
+    trusted {
+
+        public void oe_destructor_ecall();
+    };
+
+    untrusted {
+
+    };
+};
