@@ -75,17 +75,17 @@ commands 5
     python print("Serializing debugger contract on host side....")
     python import gdb_sgx_plugin
 
-    python gdb.parse_and_eval("O_MAGIC = " + str(oe_debug_enclave_t.O_MAGIC))
+    python gdb.parse_and_eval("OFFSET_MAGIC = " + str(oe_debug_enclave_t.OFFSET_MAGIC))
     python gdb.parse_and_eval("MAGIC_VALUE = " + str(oe_debug_enclave_t.MAGIC_VALUE))
 
-    python gdb.parse_and_eval("O_BASE_ADDRESS = " + str(oe_debug_enclave_t.O_BASE_ADDRESS))
-    python gdb.parse_and_eval("O_TCS = " + str(oe_debug_enclave_t.O_TCS))
-    python gdb.parse_and_eval("O_NUM_TCS = " + str(oe_debug_enclave_t.O_NUM_TCS))
+    python gdb.parse_and_eval("OFFSET_BASE_ADDRESS = " + str(oe_debug_enclave_t.OFFSET_BASE_ADDRESS))
+    python gdb.parse_and_eval("OFFSET_TCS_ARRAY = " + str(oe_debug_enclave_t.OFFSET_TCS_ARRAY))
+    python gdb.parse_and_eval("OFFSET_NUM_TCS = " + str(oe_debug_enclave_t.OFFSET_NUM_TCS))
     
-    python gdb.parse_and_eval("O_DEBUG = " + str(oe_debug_enclave_t.O_DEBUG))
-    python gdb.parse_and_eval("O_SIMULATE = " + str(oe_debug_enclave_t.O_SIMULATE))
+    python gdb.parse_and_eval("OFFSET_DEBUG = " + str(oe_debug_enclave_t.OFFSET_DEBUG))
+    python gdb.parse_and_eval("OFFSET_SIMULATE = " + str(oe_debug_enclave_t.OFFSET_SIMULATE))
     
-    python gdb.parse_and_eval("O_NEXT = " + str(oe_debug_enclave_t.O_NEXT))	
+    python gdb.parse_and_eval("OFFSET_NEXT = " + str(oe_debug_enclave_t.OFFSET_NEXT))
     
 
     python print("Debugger contract serialized on host side.")    

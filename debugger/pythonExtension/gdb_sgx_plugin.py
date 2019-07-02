@@ -12,34 +12,34 @@ POINTER_SIZE = 8
 
 # These constant definitions must align with oe_debug_enclave_t structure defined in debugrt/host.h
 class oe_debug_enclave_t:
-    O_MAGIC = 0
+    OFFSET_MAGIC = 0
     MAGIC_VALUE = 0xabc540ee14fa48ce
-    O_BASE_ADDRESS = 24
-    O_TCS = 32
-    O_NUM_TCS = 40
-    O_DEBUG = 48
-    O_SIMULATE = 49
-    O_NEXT = 56
+    OFFSET_BASE_ADDRESS = 24
+    OFFSET_TCS_ARRAY = 32
+    OFFSET_NUM_TCS = 40
+    OFFSET_DEBUG = 48
+    OFFSET_SIMULATE = 49
+    OFFSET_NEXT = 56
 
     def __init__(self, addr):
         if addr:
-            self.magic = read_int_from_memory(addr + self.O_MAGIC, 8)
+            self.magic = read_int_from_memory(addr + self.OFFSET_MAGIC, 8)
         if not self.is_valid():
             return
         
-        self.base_address = read_int_from_memory(addr + self.O_BASE_ADDRESS, 8)
+        self.base_address = read_int_from_memory(addr + self.OFFSET_BASE_ADDRESS, 8)
         
         self.tcs = []
-        self.num_tcs = read_int_from_memory(addr + self.O_NUM_TCS, 8)
-        tcs_ptr = read_int_from_memory(addr + self.O_TCS, 8)
+        self.num_tcs = read_int_from_memory(addr + self.OFFSET_NUM_TCS, 8)
+        tcs_ptr = read_int_from_memory(addr + self.OFFSET_TCS_ARRAY, 8)
         for i in range(0, self.num_tcs):
             tcs = read_int_from_memory(tcs_ptr, 8)
             self.tcs.append(tcs)
             tcs_ptr += 8
             
-        self.debug = read_int_from_memory(addr + self.O_DEBUG, 1)
-        self.simulate = read_int_from_memory(addr + self.O_SIMULATE, 1)
-        self.next = read_int_from_memory(addr + self.O_NEXT, 8)
+        self.debug = read_int_from_memory(addr + self.OFFSET_DEBUG, 1)
+        self.simulate = read_int_from_memory(addr + self.OFFSET_SIMULATE, 1)
+        self.next = read_int_from_memory(addr + self.OFFSET_NEXT, 8)
 
     def is_valid(self):
         return self.magic == self.MAGIC_VALUE
@@ -240,7 +240,7 @@ class EnclaveTerminationBreakpoint(gdb.Breakpoint):
         enclave_path = struct.unpack_from(dataFormat, enclave_path_blob)[0].decode(encoding='UTF-8')
 
         # Fetch the base address for the enclave
-        enclave_base_address = read_int_from_memory(oe_enclave_addr + oe_debug_enclave_t.O_BASE_ADDRESS, 8)
+        enclave_base_address = read_int_from_memory(oe_enclave_addr + oe_debug_enclave_t.OFFSET_BASE_ADDRESS, 8)
         
         # Unload the enclave symbol. Need not to reset the debug flag for TCSs.
         unload_enclave_symbol(enclave_path, enclave_base_address)

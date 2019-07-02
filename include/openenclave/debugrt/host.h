@@ -34,7 +34,7 @@ typedef struct _debug_enclave_t
 
     const void* base_address;
 
-    struct _sgx_tcs** tcs;
+    struct _sgx_tcs** tcs_array;
     uint64_t num_tcs;
 
     bool debug;
@@ -47,7 +47,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, magic) == 0);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, path) == 8);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, wpath) == 16);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, base_address) == 24);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs) == 32);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs_array) == 32);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, num_tcs) == 40);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, debug) == 48);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, simulate) == 49);
@@ -57,6 +57,7 @@ OE_EXPORT extern oe_debug_enclave_t* oe_debug_enclaves_list;
 
 OE_EXPORT oe_result_t
 oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave);
+
 OE_EXPORT oe_result_t
 oe_debug_notify_enclave_terminated(oe_debug_enclave_t* enclave);
 

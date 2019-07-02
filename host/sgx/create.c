@@ -694,11 +694,11 @@ oe_result_t oe_create_enclave(
         debug_enclave->wpath = NULL;
         debug_enclave->base_address = (void*)enclave->addr;
 
-        debug_enclave->tcs =
+        debug_enclave->tcs_array =
             (sgx_tcs_t**)calloc(enclave->num_bindings, sizeof(sgx_tcs_t*));
         for (uint64_t i = 0; i < enclave->num_bindings; ++i)
         {
-            debug_enclave->tcs[i] = (sgx_tcs_t*)enclave->bindings[i].tcs;
+            debug_enclave->tcs_array[i] = (sgx_tcs_t*)enclave->bindings[i].tcs;
         }
         debug_enclave->num_tcs = enclave->num_bindings;
 
@@ -749,7 +749,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     if (enclave->debug_enclave)
     {
         oe_debug_notify_enclave_terminated(enclave->debug_enclave);
-        free(enclave->debug_enclave->tcs);
+        free(enclave->debug_enclave->tcs_array);
         free(enclave->debug_enclave);
     }
 

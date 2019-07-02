@@ -14,28 +14,29 @@
 // If the gdb plugin's assumptions match the layout of the data structures,
 // then the assertions won't be triggered.
 // volatile is used to prevent compiler-optimizations.
-volatile uint64_t O_MAGIC = (uint64_t)-1;
+volatile uint64_t OFFSET_MAGIC = (uint64_t)-1;
 volatile uint64_t MAGIC_VALUE = (uint64_t)-1;
-volatile uint64_t O_BASE_ADDRESS = (uint64_t)-1;
-volatile uint64_t O_TCS = (uint64_t)-1;
-volatile uint64_t O_NUM_TCS = (uint64_t)-1;
-volatile uint64_t O_DEBUG = (uint64_t)-1;
-volatile uint64_t O_SIMULATE = (uint64_t)-1;
-volatile uint64_t O_NEXT = (uint64_t)-1;
+volatile uint64_t OFFSET_BASE_ADDRESS = (uint64_t)-1;
+volatile uint64_t OFFSET_TCS_ARRAY = (uint64_t)-1;
+volatile uint64_t OFFSET_NUM_TCS = (uint64_t)-1;
+volatile uint64_t OFFSET_DEBUG = (uint64_t)-1;
+volatile uint64_t OFFSET_SIMULATE = (uint64_t)-1;
+volatile uint64_t OFFSET_NEXT = (uint64_t)-1;
 
 void assert_debugger_binary_contract_host_side()
 {
-    OE_TEST(O_MAGIC == OE_OFFSETOF(oe_debug_enclave_t, magic));
+    OE_TEST(OFFSET_MAGIC == OE_OFFSETOF(oe_debug_enclave_t, magic));
     OE_TEST(MAGIC_VALUE == OE_DEBUG_ENCLAVE_MAGIC);
 
-    OE_TEST(O_BASE_ADDRESS == OE_OFFSETOF(oe_debug_enclave_t, base_address));
-    OE_TEST(O_TCS == OE_OFFSETOF(oe_debug_enclave_t, tcs));
-    OE_TEST(O_NUM_TCS == OE_OFFSETOF(oe_debug_enclave_t, num_tcs));
+    OE_TEST(
+        OFFSET_BASE_ADDRESS == OE_OFFSETOF(oe_debug_enclave_t, base_address));
+    OE_TEST(OFFSET_TCS_ARRAY == OE_OFFSETOF(oe_debug_enclave_t, tcs_array));
+    OE_TEST(OFFSET_NUM_TCS == OE_OFFSETOF(oe_debug_enclave_t, num_tcs));
 
-    OE_TEST(O_DEBUG == OE_OFFSETOF(oe_debug_enclave_t, debug));
-    OE_TEST(O_SIMULATE == OE_OFFSETOF(oe_debug_enclave_t, simulate));
+    OE_TEST(OFFSET_DEBUG == OE_OFFSETOF(oe_debug_enclave_t, debug));
+    OE_TEST(OFFSET_SIMULATE == OE_OFFSETOF(oe_debug_enclave_t, simulate));
 
-    OE_TEST(O_NEXT == OE_OFFSETOF(oe_debug_enclave_t, next));
+    OE_TEST(OFFSET_NEXT == OE_OFFSETOF(oe_debug_enclave_t, next));
 
     printf("Debugger contract validated on host side.\n");
 }
