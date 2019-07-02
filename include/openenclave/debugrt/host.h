@@ -23,35 +23,41 @@ typedef int32_t wide_char_t;
 typedef int16_t wide_char_t;
 #endif
 
+#define OE_DEBUG_ENCLAVE_VERSION 1
+
 #define OE_DEBUG_ENCLAVE_MAGIC 0xabc540ee14fa48ce
+
+#define OE_DEBUG_ENCLAVE_MASK_DEBUG 0x01
+#define OE_DEBUG_ENCLAVE_MASK_SIMULATE 0x02
 
 typedef struct _debug_enclave_t
 {
     uint64_t magic;
 
+    uint64_t version;
+
+    struct _debug_enclave_t* next;
+
     const char* path;
-    const wide_char_t* wpath;
+    uint64_t path_length;
 
     const void* base_address;
 
     struct _sgx_tcs** tcs_array;
     uint64_t num_tcs;
 
-    bool debug;
-    bool simulate;
-
-    struct _debug_enclave_t* next;
+    uint64_t flags;
 } oe_debug_enclave_t;
 
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, magic) == 0);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, path) == 8);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, wpath) == 16);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, base_address) == 24);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs_array) == 32);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, num_tcs) == 40);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, debug) == 48);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, simulate) == 49);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, next) == 56);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, version) == 8);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, next) == 16);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, path) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, path_length) == 32);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, base_address) == 40);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs_array) == 48);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, num_tcs) == 56);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, flags) == 64);
 
 OE_EXPORT extern oe_debug_enclave_t* oe_debug_enclaves_list;
 

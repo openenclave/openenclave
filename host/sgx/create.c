@@ -686,12 +686,19 @@ oe_result_t oe_create_enclave(
         OE_RAISE(OE_FAILURE);
     }
 
+    // Create debugging structures only for debug enclaves.
+    if (enclave->debug)
     {
         oe_debug_enclave_t* debug_enclave =
             (oe_debug_enclave_t*)calloc(1, sizeof(*debug_enclave));
+
         debug_enclave->magic = OE_DEBUG_ENCLAVE_MAGIC;
+        debug_enclave->version = OE_DEBUG_ENCLAVE_VERSION;
+        debug_enclave->next = NULL;
+
         debug_enclave->path = enclave->path;
-        debug_enclave->wpath = NULL;
+        debug_enclave->path_length = strlen(enclave->path);
+
         debug_enclave->base_address = (void*)enclave->addr;
 
         debug_enclave->tcs_array =
@@ -702,10 +709,12 @@ oe_result_t oe_create_enclave(
         }
         debug_enclave->num_tcs = enclave->num_bindings;
 
-        debug_enclave->debug = enclave->debug;
-        debug_enclave->simulate = enclave->simulate;
+        debug_enclave->flags = 0;
+        if (enclave->debug)
+            debug_enclave->flags |= OE_DEBUG_ENCLAVE_MASK_DEBUG;
+        if (enclave->simulate)
+            debug_enclave->flags |= OE_DEBUG_ENCLAVE_MASK_SIMULATE;
 
-        enclave->debug_enclave = debug_enclave;
         oe_debug_notify_enclave_created(debug_enclave);
     }
 

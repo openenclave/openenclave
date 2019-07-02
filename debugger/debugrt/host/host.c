@@ -56,26 +56,16 @@ OE_NO_OPTIMIZE_BEGIN
 
 OE_EXPORT
 OE_NEVER_INLINE void oe_notify_gdb_enclave_creation(
-    const oe_debug_enclave_t* enclave,
-    const char* enclave_path,
-    uint64_t enclave_path_length)
+    const oe_debug_enclave_t* enclave)
 {
     OE_UNUSED(enclave);
-    OE_UNUSED(enclave_path);
-    OE_UNUSED(enclave_path_length);
-
     return;
 }
 
 OE_NEVER_INLINE void oe_notify_gdb_enclave_termination(
-    const oe_debug_enclave_t* enclave,
-    const char* enclav_path,
-    uint64_t enclave_path_length)
+    const oe_debug_enclave_t* enclave)
 {
     OE_UNUSED(enclave);
-    OE_UNUSED(enclav_path);
-    OE_UNUSED(enclave_path_length);
-
     return;
 }
 
@@ -110,8 +100,7 @@ oe_result_t oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave)
     result = OE_OK;
 
 #ifdef __linux__
-    oe_notify_gdb_enclave_creation(
-        enclave, enclave->path, strlen(enclave->path));
+    oe_notify_gdb_enclave_creation(enclave);
 #endif
 
 done:
@@ -155,8 +144,7 @@ oe_result_t oe_debug_notify_enclave_terminated(oe_debug_enclave_t* enclave)
     result = OE_OK;
 
 #ifdef __linux__
-    oe_notify_gdb_enclave_termination(
-        enclave, enclave->path, strlen(enclave->path));
+    oe_notify_gdb_enclave_termination(enclave);
 #endif
 
 done:

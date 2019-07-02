@@ -75,20 +75,37 @@ commands 5
     python print("Serializing debugger contract on host side....")
     python import gdb_sgx_plugin
 
-    python gdb.parse_and_eval("OFFSET_MAGIC = " + str(oe_debug_enclave_t.OFFSET_MAGIC))
+    python gdb.parse_and_eval("OFFSETOF_MAGIC = " + str(oe_debug_enclave_t.OFFSETOF_MAGIC))
+    python gdb.parse_and_eval("SIZEOF_MAGIC = " + str(oe_debug_enclave_t.SIZEOF_MAGIC))
     python gdb.parse_and_eval("MAGIC_VALUE = " + str(oe_debug_enclave_t.MAGIC_VALUE))
 
-    python gdb.parse_and_eval("OFFSET_BASE_ADDRESS = " + str(oe_debug_enclave_t.OFFSET_BASE_ADDRESS))
-    python gdb.parse_and_eval("OFFSET_TCS_ARRAY = " + str(oe_debug_enclave_t.OFFSET_TCS_ARRAY))
-    python gdb.parse_and_eval("OFFSET_NUM_TCS = " + str(oe_debug_enclave_t.OFFSET_NUM_TCS))
-    
-    python gdb.parse_and_eval("OFFSET_DEBUG = " + str(oe_debug_enclave_t.OFFSET_DEBUG))
-    python gdb.parse_and_eval("OFFSET_SIMULATE = " + str(oe_debug_enclave_t.OFFSET_SIMULATE))
-    
-    python gdb.parse_and_eval("OFFSET_NEXT = " + str(oe_debug_enclave_t.OFFSET_NEXT))
-    
+    python gdb.parse_and_eval("OFFSETOF_VERSION = " + str(oe_debug_enclave_t.OFFSETOF_VERSION))
+    python gdb.parse_and_eval("SIZEOF_VERSION = " + str(oe_debug_enclave_t.SIZEOF_VERSION))
 
-    python print("Debugger contract serialized on host side.")    
+    python gdb.parse_and_eval("OFFSETOF_NEXT = " + str(oe_debug_enclave_t.OFFSETOF_NEXT))
+    python gdb.parse_and_eval("SIZEOF_NEXT = " + str(oe_debug_enclave_t.SIZEOF_NEXT))
+
+    python gdb.parse_and_eval("OFFSETOF_PATH = " + str(oe_debug_enclave_t.OFFSETOF_PATH))
+    python gdb.parse_and_eval("SIZEOF_PATH = " + str(oe_debug_enclave_t.SIZEOF_PATH))
+
+    python gdb.parse_and_eval("OFFSETOF_PATH_LENGTH = " + str(oe_debug_enclave_t.OFFSETOF_PATH_LENGTH))
+    python gdb.parse_and_eval("SIZEOF_PATH_LENGTH = " + str(oe_debug_enclave_t.SIZEOF_PATH_LENGTH))
+
+    python gdb.parse_and_eval("OFFSETOF_BASE_ADDRESS = " + str(oe_debug_enclave_t.OFFSETOF_BASE_ADDRESS))
+    python gdb.parse_and_eval("SIZEOF_BASE_ADDRESS = " + str(oe_debug_enclave_t.SIZEOF_BASE_ADDRESS))
+
+    python gdb.parse_and_eval("OFFSETOF_TCS_ARRAY = " + str(oe_debug_enclave_t.OFFSETOF_TCS_ARRAY))
+    python gdb.parse_and_eval("SIZEOF_TCS_ARRAY = " + str(oe_debug_enclave_t.SIZEOF_TCS_ARRAY))
+
+    python gdb.parse_and_eval("OFFSETOF_NUM_TCS = " + str(oe_debug_enclave_t.OFFSETOF_NUM_TCS))
+    python gdb.parse_and_eval("SIZEOF_NUM_TCS = " + str(oe_debug_enclave_t.SIZEOF_NUM_TCS))
+
+    python gdb.parse_and_eval("OFFSETOF_FLAGS = " + str(oe_debug_enclave_t.OFFSETOF_FLAGS))
+    python gdb.parse_and_eval("SIZEOF_FLAGS = " + str(oe_debug_enclave_t.SIZEOF_FLAGS))
+    python gdb.parse_and_eval("MASK_DEBUG = " + str(oe_debug_enclave_t.MASK_DEBUG))
+    python gdb.parse_and_eval("MASK_SIMULATE = " + str(oe_debug_enclave_t.MASK_SIMULATE))
+
+    python print("Debugger contract serialized on host side.")
     continue
 end
 
