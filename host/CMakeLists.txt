@@ -3,7 +3,7 @@
 
 ##==============================================================================
 ##
-## These rules generate the edge routines for the internal ECALLs/OCALLS used
+## These rules generate the edge routines for the internal ECALLs/OCALLs used
 ## by liboehost/liboecore.
 ##
 ##==============================================================================
