@@ -21,7 +21,7 @@ enclave {
 
     untrusted {
 
-        /* This function returns value. */
+        /* This function returns its value parameter. */
         int oe_internal_ping_ocall(int value);
     };
 };
