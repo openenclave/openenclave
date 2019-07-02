@@ -8,16 +8,18 @@
 ##
 ##==============================================================================
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
-set(INTERNAL_EDL ${EDL_DIR}/sgx/internal.edl)
+if(OE_SGX)
+    set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+    set(INTERNAL_EDL ${EDL_DIR}/sgx/internal.edl)
 
-add_custom_command(
-    OUTPUT internal_u.h internal_u.c internal_args.h
-    DEPENDS ${INTERNAL_EDL} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${INTERNAL_EDL})
+    add_custom_command(
+        OUTPUT internal_u.h internal_u.c internal_args.h
+        DEPENDS ${INTERNAL_EDL} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${INTERNAL_EDL})
 
-add_custom_target(internal_untrusted_edl
-    DEPENDS internal_u.h internal_u.c internal_args.h)
+    add_custom_target(internal_untrusted_edl
+        DEPENDS internal_u.h internal_u.c internal_args.h)
+endif()
 
 ##==============================================================================
 ##
@@ -92,8 +94,9 @@ if (OE_SGX)
     sgx/elf.c
     sgx/enclave.c
     sgx/enclavemanager.c
-    sgx/internal_u_wrapper.c
     sgx/exception.c
+    sgx/internal_u_wrapper.c
+    sgx/internal.c
     sgx/load.c
     sgx/loadelf.c
     sgx/loadpe.c
@@ -168,7 +171,7 @@ endif()
 add_dependencies(oehost syscall_untrusted_edl)
 
 if(OE_SGX)
-add_dependencies(oehost internal_untrusted_edl)
+    add_dependencies(oehost internal_untrusted_edl)
 endif()
 
 # TODO: Replace these with `find_package` and add as dependencies to

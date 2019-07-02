@@ -31,6 +31,11 @@ static oe_result_t _call_enclave_function(
         output_bytes_written);
 }
 
+/* Ignore missing edge-routine prototypes. */
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#endif
+
 /* Include the generated source. */
 #include "internal_u.c"
 

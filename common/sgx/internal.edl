@@ -15,10 +15,13 @@ enclave {
 
     trusted {
 
-        public void oe_destructor_ecall();
+        /* This functions returns oe_internal_ping_ocall(value). */
+        public int oe_internal_ping_ecall(int value);
     };
 
     untrusted {
+
+        int oe_internal_ping_ocall(int value);
 
     };
 };
