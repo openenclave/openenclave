@@ -15,13 +15,13 @@ enclave {
 
     trusted {
 
-        /* This functions returns oe_internal_ping_ocall(value). */
+        /* This function returns oe_internal_ping_ocall(value). */
         public int oe_internal_ping_ecall(int value);
     };
 
     untrusted {
 
+        /* This function returns value. */
         int oe_internal_ping_ocall(int value);
-
     };
 };
