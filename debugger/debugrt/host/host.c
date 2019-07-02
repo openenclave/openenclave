@@ -4,6 +4,12 @@
 #include <openenclave/debugrt/host.h>
 #include <string.h>
 
+/**
+ * In Windows, debugrt is built as a separate DLL that
+ * OE host applications call into. Hence, this module cannot
+ * use functionality (e.g spinlocks) defined in oehost.
+ */
+
 #ifdef _MSC_VER
 
 #include <Windows.h>
