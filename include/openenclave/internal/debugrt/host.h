@@ -12,16 +12,11 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
-#include <openenclave/bits/types.h>
 #include <openenclave/internal/defs.h> // For OE_STATIC_ASSERT
+#include <stdint.h>
+#include <wchar.h>
 
 OE_EXTERNC_BEGIN
-
-#ifdef __linux__
-typedef int32_t wide_char_t;
-#else
-typedef int16_t wide_char_t;
-#endif
 
 #define OE_DEBUG_ENCLAVE_VERSION 1
 

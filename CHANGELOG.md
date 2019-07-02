@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Transferred repository from [microsoft/openenclave](https://github.com/microsoft/openenclave) to [openenclave/openenclave](https://github.com/openenclave/openenclave).
+- New forwards compatible binary debugging contract for oegdb. Enclaves and hosts built prior to this release cannot be debugged with this version of oegdb.
+
 
 [v0.6.0] - 2019-06-29
 ---------------------

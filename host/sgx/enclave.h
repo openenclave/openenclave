@@ -5,9 +5,9 @@
 #define _OE_HOST_ENCLAVE_H
 
 #include <openenclave/bits/properties.h>
-#include <openenclave/debugrt/host.h>
 #include <openenclave/edger8r/host.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <stdbool.h>

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/debugrt/host.h>
+#include <openenclave/internal/debugrt/host.h>
 #include <string.h>
 
 /**
@@ -73,7 +73,7 @@ OE_NO_OPTIMIZE_END
 
 #else
 
-// Unsupported compiler and/or platform
+#error Unsupported compiler and/or platform
 
 #endif
 
@@ -135,7 +135,7 @@ oe_result_t oe_debug_notify_enclave_terminated(oe_debug_enclave_t* enclave)
 
     if (*itr == NULL)
     {
-        result = OE_FAILURE;
+        result = OE_NOT_FOUND;
         goto done;
     }
 

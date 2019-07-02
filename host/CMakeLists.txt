@@ -143,14 +143,12 @@ add_library(oehost STATIC
 target_link_libraries(oehost PUBLIC oe_includes)
 
 if(WIN32)
-    target_link_libraries(oehost PUBLIC ws2_32)
+  target_link_libraries(oehost PUBLIC ws2_32)
 endif()
-
 
 if(OE_SGX)
   target_link_libraries(oehost PRIVATE oedebugrt)
 endif()
-
 
 add_dependencies(oehost syscall_untrusted_edl)
 
