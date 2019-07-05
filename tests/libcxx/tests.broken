@@ -3,16 +3,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.unique_future/get.pass.cpp
 # The following tests fail to compile on GCC 7, further triage is required
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/fstream.close.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/utilities/optional/optional.object/triviality.abi.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/associative/map/map.modifiers/merge.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/associative/multimap/multimap.modifiers/merge.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/associative/multiset/merge.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/associative/set/merge.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.map/unord.map.modifiers/merge.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.multimap/unord.multimap.modifiers/merge.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.multiset/merge.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/containers/unord/unord.set/merge.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/utilities/optional/optional.object/special_members.pass.cpp
 # The following test raises an assertion when validating the size deallocated
 ../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/libcpp_deallocate.sh.cpp
 # The following test hangs after the bump to libcxx 800
