@@ -202,7 +202,9 @@ static oe_result_t _oe_get_report_internal(
     header->report_type = (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
                               ? OE_REPORT_TYPE_SGX_REMOTE
                               : OE_REPORT_TYPE_SGX_LOCAL;
+    memset((void*)&header->evidence_format, 0, sizeof(header->evidence_format));
     header->report_size = *report_buffer_size;
+    header->custom_evidence_size = 0;
     OE_CHECK(oe_safe_add_u64(
         *report_buffer_size, sizeof(oe_report_header_t), report_buffer_size));
     result = OE_OK;

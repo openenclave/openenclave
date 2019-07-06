@@ -91,7 +91,8 @@ oe_result_t oe_parse_report(
     if (header->version != OE_REPORT_HEADER_VERSION)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (header->report_size + sizeof(oe_report_header_t) != report_size)
+    if ((header->report_size + header->custom_evidence_size +
+         sizeof(oe_report_header_t)) != report_size)
         OE_RAISE(OE_FAILURE);
 
     if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)

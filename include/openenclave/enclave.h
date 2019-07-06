@@ -662,6 +662,55 @@ oe_result_t oe_verify_attestation_certificate(
     oe_identity_verify_callback_t enclave_identity_callback,
     void* arg);
 
+//----------------------------------------------------------------------
+
+typedef oe_result_t (
+    *oe_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
+
+/* attestation operations .*/
+typedef struct _oe_attestation_plugin_ops_t
+{
+    int (*init_plugin)();
+    int (*cleanup_plugin)();
+    int (*get_custom_evidence_size)(size_t* custom_evidence_size);
+    int (*get_custom_evidence)(
+        uint8_t* custom_evidence,
+        size_t custom_evidence_size);
+    int (*verify_custom_evidence)(
+        const uint8_t* custom_evidence,
+        size_t custom_evidence_size,
+        oe_report_t* parsed_report);
+    int (*verify_full_evidence)(
+        const uint8_t* full_evidence,
+        size_t full_evidence_size,
+        oe_report_t* parsed_report);
+} oe_attestation_plugin_callbacks_t;
+
+/* attestation operations .*/
+typedef struct _oe_attestation_plugin_context_t
+{
+    oe_report_type_t report_type;
+    uuid_t evidence_format_uuid;
+    oe_attestation_plugin_callbacks_t* ops;
+} oe_attestation_plugin_context_t;
+
+oe_result_t oe_register_attestation_plugin(
+    oe_attestation_plugin_context_t* context);
+oe_result_t oe_unregister_attestation_plugin(
+    oe_attestation_plugin_context_t* context);
+
+oe_result_t oe_get_attestation_evidence(
+    uuid_t* evidence_format_id,
+    uint8_t** evidence_buffer,
+    size_t* evidence_buffer_size);
+
+void oe_free_attestation_evidence(uint8_t* evidence_buffer);
+
+oe_result_t oe_verify_attestation_evidence(
+    const uint8_t* evidence_buffer,
+    size_t evidence_buffer_size,
+    oe_report_t* parsed_report);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */

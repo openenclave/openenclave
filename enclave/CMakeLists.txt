@@ -27,6 +27,7 @@ add_library(oeenclave STATIC
     ../common/datetime.c
     ../common/lockless_queue.c
     asym_keys.c
+    attest_plugin.c
     random.c
     tls_cert.c
     ${PLATFORM_SRC})

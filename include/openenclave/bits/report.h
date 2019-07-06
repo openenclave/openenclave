@@ -136,6 +136,63 @@ typedef struct _oe_report
 } oe_report_t;
 /**< typedef struct _oe_report oe_report_t*/
 
+/*
+**==============================================================================
+**
+** oe_report_type_t
+**
+**==============================================================================
+*/
+typedef enum _oe_report_type
+{
+    OE_REPORT_TYPE_SGX_LOCAL = 1,
+    OE_REPORT_TYPE_SGX_REMOTE = 2,
+    OE_REPORT_TYPE_CUSTOM = 3,
+    __OE_REPORT_TYPE_MAX = OE_ENUM_MAX
+} oe_report_type_t;
+
+#define UUID_SIZE 16
+typedef struct
+{
+    uint8_t b[UUID_SIZE];
+} uuid_t;
+
+#define UUID_INIT(a, b, c, d0, d1, d2, d3, d4, d5, d6, d7) \
+    ((uuid_t){{((a) >> 24) & 0xff,                         \
+               ((a) >> 16) & 0xff,                         \
+               ((a) >> 8) & 0xff,                          \
+               (a)&0xff,                                   \
+               ((b) >> 8) & 0xff,                          \
+               (b)&0xff,                                   \
+               ((c) >> 8) & 0xff,                          \
+               (c)&0xff,                                   \
+               (d0),                                       \
+               (d1),                                       \
+               (d2),                                       \
+               (d3),                                       \
+               (d4),                                       \
+               (d5),                                       \
+               (d6),                                       \
+               (d7)}})
+
+/*
+**==============================================================================
+**
+** oe_report_header_t
+**
+**==============================================================================
+*/
+typedef struct _oe_report_header
+{
+    uint32_t version;
+    oe_report_type_t report_type; // TEE type
+    uuid_t evidence_format;       // uuid for specific attestation format
+    uint64_t report_size;         // not including custom data
+    uint64_t
+        custom_evidence_size; // custom date follows right after report data
+    uint8_t report[];
+} oe_report_header_t;
+
 OE_EXTERNC_END
 
 #endif /* _OE_BITS_REPORT_H */
