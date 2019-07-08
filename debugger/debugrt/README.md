@@ -1,30 +1,30 @@
 debugrt
 ====
 
-This directory contains the host and enclave side debugger runtimes.
+debugrt provides the following as part of the debugger contract:
 
-The host side debugger runtime is built as an object library on Linux.
-On Windows, it is built as a separate DLL: oedebugrt.dll.
-debugrt implements the binary contract used by the debugger to introspect
-and debug enclaves.
-It contains the following
-- a global, export linked list of enclaves.
-- data types used by the SDK to describe enclaves which act as the binary
-  contract for the debugger.
-- functions to be called by a host application to notify the debugger about
-  enclave creation, enclave termination, thread creation (future), thread
-  deletion (future).
-- On Linux, debugger listens to notifications by putting breakpoints in
-  specific functions.
-- On Windows, debugger listens to RaiseException events raised by the runtime.
+- Exports a global linked-list of enclaves in the current host process.
+- Implements the binary data contract for describing enclave debug information.
+- Implements functions invoked by the Open Enclave host library to notify the
+  debugger of the following events:
+-- Enclave creation
+-- Enclave termination
+-- Thread creation (not yet implemented)
+-- Thread deletion (not yet implemented)
 
-The enclave side runtime consists of
-- function to detect whether debugger has been attached or not.
-- raise C++ exception thrown event to the debugger.
+debugrt has implementation differences depending on the host platform:
+
+- On Linux, debugrt is an object library linked directly into the Open Enclave
+  host library. A Linux debugger hooks into event notifications by injecting
+  internal breakpoints into the notification functions and handling the resulting
+  interrupts.
+- On Windows, debugrt is a DLL loaded at runtime. A Windows debugger hooks into
+  event notifications by handling exceptions raised by the enclave runtime via
+  RaiseException() as part of the notification functions.
 
 Note:
-Enclave side does not make ocalls to communicate with the debugger. Doing so
-will cause extract entries in the stack for ocall. Instead it uses int 3
-preceeded by a known pattern of bytes to raise a debug event that the
-debugger understands to be a special message by scanning the pattern preceeding
-the int 3.
+To avoid modifying the enclave stack when communicating with the debugger, the
+enclave runtime generates an interrupt with the `INT3` instruction instead of
+making an ocall to the host. The `INT3` invocation is preceeded by a well-known
+pattern of bytes as defined in the debugger contract, and the debugger is
+expected to scanfor this pattern when handling the interrupt.
