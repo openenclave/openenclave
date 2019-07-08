@@ -37,7 +37,7 @@ static char* get_fullpath(const char* path)
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/debug.h>
+#include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
@@ -685,13 +685,38 @@ oe_result_t oe_create_enclave(
     {
         OE_RAISE(OE_FAILURE);
     }
-#if defined(__linux__)
 
-    /* Notify GDB that a new enclave is created */
-    oe_notify_gdb_enclave_creation(
-        enclave, enclave->path, (uint32_t)strlen(enclave->path));
+    // Create debugging structures only for debug enclaves.
+    if (enclave->debug)
+    {
+        oe_debug_enclave_t* debug_enclave =
+            (oe_debug_enclave_t*)calloc(1, sizeof(*debug_enclave));
 
-#endif /* defined(__linux__) */
+        debug_enclave->magic = OE_DEBUG_ENCLAVE_MAGIC;
+        debug_enclave->version = OE_DEBUG_ENCLAVE_VERSION;
+        debug_enclave->next = NULL;
+
+        debug_enclave->path = enclave->path;
+        debug_enclave->path_length = strlen(enclave->path);
+
+        debug_enclave->base_address = (void*)enclave->addr;
+
+        debug_enclave->tcs_array =
+            (sgx_tcs_t**)calloc(enclave->num_bindings, sizeof(sgx_tcs_t*));
+        for (uint64_t i = 0; i < enclave->num_bindings; ++i)
+        {
+            debug_enclave->tcs_array[i] = (sgx_tcs_t*)enclave->bindings[i].tcs;
+        }
+        debug_enclave->num_tcs = enclave->num_bindings;
+
+        debug_enclave->flags = 0;
+        if (enclave->debug)
+            debug_enclave->flags |= OE_DEBUG_ENCLAVE_MASK_DEBUG;
+        if (enclave->simulate)
+            debug_enclave->flags |= OE_DEBUG_ENCLAVE_MASK_SIMULATE;
+
+        oe_debug_notify_enclave_created(debug_enclave);
+    }
 
     /* Enclave initialization invokes global constructors which could make
      * ocalls. Therefore setup ocall table prior to initialization. */
@@ -730,13 +755,12 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     /* Call the enclave destructor */
     OE_CHECK(oe_ecall(enclave, OE_ECALL_DESTRUCTOR, 0, NULL));
 
-#if defined(__linux__)
-
-    /* Notify GDB that this enclave is terminated */
-    oe_notify_gdb_enclave_termination(
-        enclave, enclave->path, (uint32_t)strlen(enclave->path));
-
-#endif /* defined(__linux__) */
+    if (enclave->debug_enclave)
+    {
+        oe_debug_notify_enclave_terminated(enclave->debug_enclave);
+        free(enclave->debug_enclave->tcs_array);
+        free(enclave->debug_enclave);
+    }
 
     /* Once the enclave destructor has been invoked, the enclave memory
      * and data structures are freed on a best effort basis from here on */

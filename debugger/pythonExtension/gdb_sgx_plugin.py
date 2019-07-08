@@ -10,24 +10,69 @@ import load_symbol_cmd
 
 POINTER_SIZE = 8
 
-# These constant definitions must align with _oe_enclave structure defined in host\enclave.h
-OE_ENCLAVE_MAGIC_FIELD = 0
-OE_ENCLAVE_ADDR_FIELD = 2
-OE_ENCLAVE_HEADER_LENGTH = 0X28
-OE_ENCLAVE_HEADER_FORMAT = 'QQQQQ'
-OE_ENCLAVE_MAGIC_VALUE = 0x20dc98463a5ad8b8
+# These constant definitions must align with oe_debug_enclave_t structure defined in debugrt/host.h
+class oe_debug_enclave_t:
+    OFFSETOF_MAGIC = 0
+    SIZEOF_MAGIC = 8
+    MAGIC_VALUE = 0xabc540ee14fa48ce
 
-# The following are the offset of the 'debug' and
-# 'simulate' flag fields which must lie one after the other.
-OE_ENCLAVE_FLAGS_OFFSET = 0x788
-OE_ENCLAVE_FLAGS_LENGTH = 2
-OE_ENCLAVE_FLAGS_FORMAT = 'BB'
-OE_ENCLAVE_THREAD_BINDING_OFFSET = 0x28
+    OFFSETOF_VERSION = 8
+    SIZEOF_VERSION = 8
 
-# These constant definitions must align with ThreadBinding structure defined in host\enclave.h
-THREAD_BINDING_SIZE = 0x38
-THREAD_BINDING_HEADER_LENGTH = 0X8
-THREAD_BINDING_HEADER_FORMAT = 'Q'
+    OFFSETOF_NEXT = 16
+    SIZEOF_NEXT = 8
+
+    OFFSETOF_PATH = 24
+    SIZEOF_PATH = 8
+
+    OFFSETOF_PATH_LENGTH = 32
+    SIZEOF_PATH_LENGTH = 8
+
+    OFFSETOF_BASE_ADDRESS = 40
+    SIZEOF_BASE_ADDRESS = 8
+
+    OFFSETOF_TCS_ARRAY = 48
+    SIZEOF_TCS_ARRAY = 8
+
+    OFFSETOF_NUM_TCS = 56
+    SIZEOF_NUM_TCS = 8
+
+    OFFSETOF_FLAGS = 64
+    SIZEOF_FLAGS = 8
+    MASK_DEBUG = 0x01
+    MASK_SIMULATE = 0x02
+
+    def __init__(self, addr):
+        if addr:
+            self.magic = read_int_from_memory(addr + self.OFFSETOF_MAGIC, self.SIZEOF_MAGIC)
+        if not self.is_valid():
+            return
+
+        self.version = read_int_from_memory(addr + self.OFFSETOF_VERSION, self.SIZEOF_VERSION)
+        self.next = read_int_from_memory(addr + self.OFFSETOF_NEXT, self.SIZEOF_NEXT)
+
+        path = read_int_from_memory(addr + self.OFFSETOF_PATH, self.SIZEOF_PATH)
+        path_length = read_int_from_memory(addr + self.OFFSETOF_PATH_LENGTH, self.SIZEOF_PATH_LENGTH)
+        self.path = bytes(read_from_memory(path, path_length)).decode('utf-8')
+
+        self.base_address = read_int_from_memory(addr + self.OFFSETOF_BASE_ADDRESS, self.SIZEOF_BASE_ADDRESS)
+
+        self.tcs = []
+        self.num_tcs = read_int_from_memory(addr + self.OFFSETOF_NUM_TCS, self.SIZEOF_NUM_TCS)
+        tcs_ptr = read_int_from_memory(addr + self.OFFSETOF_TCS_ARRAY, self.SIZEOF_TCS_ARRAY)
+        for i in range(0, self.num_tcs):
+            tcs = read_int_from_memory(tcs_ptr, 8) # sizeof pointer is hard-coded to 8
+            self.tcs.append(tcs)
+            tcs_ptr += 8
+
+        flags = read_int_from_memory(addr + self.OFFSETOF_FLAGS, self.SIZEOF_FLAGS)
+        self.debug = bool(flags & self.MASK_DEBUG)
+        self.simulate = bool(flags & self.MASK_SIMULATE)
+
+
+    def is_valid(self):
+        return self.magic == self.MAGIC_VALUE
+
 
 # This constant definition must align with the OE enclave layout.
 TD_OFFSET_FROM_TCS =  0X4000
@@ -90,6 +135,10 @@ def write_to_memory(addr, buf):
         print ("Can't access memory at {0:x}.".format(int(addr)))
         return -1
 
+def read_int_from_memory(addr, size):
+    mv = read_from_memory(addr, size)
+    return int.from_bytes(mv, 'little')
+
 def target_path_to_host_path(target_path):
     so_name = os.path.basename(target_path)
     strpath = gdb.execute("show solib-search-path", False, True)
@@ -143,40 +192,37 @@ def set_tcs_debug_flag(tcs_addr):
     gdb.execute(gdb_cmd, False, True)
     return True
 
-def enable_oeenclave_debug(oe_enclave_addr, enclave_path):
+def enable_oeenclave_debug(oe_enclave_addr):
     """For a given OE enclave, load its symbol and enable debug flag for all its TCS"""
-    # Check if the magic matches.
-    enclave_blob = read_from_memory(oe_enclave_addr, OE_ENCLAVE_HEADER_LENGTH)
-    enclave_tuple = struct.unpack(OE_ENCLAVE_HEADER_FORMAT, enclave_blob)
-    if enclave_tuple[OE_ENCLAVE_MAGIC_FIELD] != OE_ENCLAVE_MAGIC_VALUE:
+
+    enclave = oe_debug_enclave_t(oe_enclave_addr)
+
+    # Check if magic matches
+    if not enclave.is_valid():
         return False
-    # Check if it's SGX debug mode enclave.
-    flags_blob = read_from_memory(oe_enclave_addr + OE_ENCLAVE_FLAGS_OFFSET, OE_ENCLAVE_FLAGS_LENGTH)
-    flags_tuple = struct.unpack(OE_ENCLAVE_FLAGS_FORMAT, flags_blob)
+
+    # No version specific checks.
+    # The contract will be extended in backwards compatible manner.
+    # Debugger may use version to take specific actions in future.
 
     # Check if debugging is enabled.
-    if flags_tuple[0] == 0:
-        print ("oegdb: Debugging not enabled for enclave %s" % enclave_path)
+    if enclave.debug == 0:
+        print ("oegdb: Debugging not enabled for enclave %s" % enclave.path)
         return False
 
     # Check if the enclave is loaded in simulation mode.
-    if flags_tuple[1] != 0:
-        print ("oegdb: Enclave %s loaded in simulation mode" % enclave_path)
-
-    # Load symbol.
-    if load_enclave_symbol(enclave_path, enclave_tuple[OE_ENCLAVE_ADDR_FIELD]) != 1:
+    if enclave.simulate != 0:
+        print ("oegdb: Enclave %s loaded in simulation mode" % enclave.path)
+        
+    # Load symbols for the enclave
+    if load_enclave_symbol(enclave.path, enclave.base_address) != 1:
         return False
-    # Set debug flag for each TCS in this enclave.
-    thread_binding_addr = oe_enclave_addr + OE_ENCLAVE_THREAD_BINDING_OFFSET
-    thread_binding_blob = read_from_memory(thread_binding_addr, THREAD_BINDING_HEADER_LENGTH)
-    thread_binding_tuple = struct.unpack(THREAD_BINDING_HEADER_FORMAT, thread_binding_blob)
-    while thread_binding_tuple[0] > 0 :
-        # print ("tcs address {0:#x}" .format(thread_binding_tuple[0]))
-        set_tcs_debug_flag(thread_binding_tuple[0])
-        # Iterate the array
-        thread_binding_addr = thread_binding_addr + THREAD_BINDING_SIZE
-        thread_binding_blob = read_from_memory(thread_binding_addr, THREAD_BINDING_HEADER_LENGTH)
-        thread_binding_tuple = struct.unpack(THREAD_BINDING_HEADER_FORMAT, thread_binding_blob)
+
+    print("oegdb: Symbols loaded for enclave \n")
+    for tcs in enclave.tcs:
+        set_tcs_debug_flag(tcs)
+
+    print("oegdb: All tcs set to debug for enclave \n")
     return True
 
 def update_untrusted_ocall_frame(frame_pointer, ocallcontext_tuple):
@@ -197,17 +243,8 @@ class EnclaveCreationBreakpoint(gdb.Breakpoint):
         gdb.Breakpoint.__init__ (self, spec="oe_notify_gdb_enclave_creation", internal=1)
 
     def stop(self):
-        # Get oe_enclave_t.
-        oe_enclave_addr = int(gdb.parse_and_eval("$rdi"))
-        # Get enclave path string.
-        enclave_path_addr = int(gdb.parse_and_eval("$rsi"));
-        enclave_path_length = int(gdb.parse_and_eval("$rdx"));
-        enclave_path_blob = read_from_memory(enclave_path_addr, enclave_path_length)
-        dataFormat = str(enclave_path_length) + 's'
-        enclave_path = struct.unpack_from(dataFormat, enclave_path_blob)[0].decode(encoding='UTF-8')
-        # print ("Enclave path: {}" .format(enclave_path))
-        # Enable enclave debug.
-        enable_oeenclave_debug(oe_enclave_addr, enclave_path)
+        enclave_addr = int(gdb.parse_and_eval("$rdi"))
+        enable_oeenclave_debug(enclave_addr)
         return False
 
 class EnclaveTerminationBreakpoint(gdb.Breakpoint):
@@ -215,18 +252,9 @@ class EnclaveTerminationBreakpoint(gdb.Breakpoint):
         gdb.Breakpoint.__init__ (self, spec="oe_notify_gdb_enclave_termination", internal=1)
 
     def stop(self):
-        # Get oe_enclave_t.
-        oe_enclave_addr = int(gdb.parse_and_eval("$rdi"))
-        enclave_blob = read_from_memory(oe_enclave_addr, OE_ENCLAVE_HEADER_LENGTH)
-        enclave_tuple = struct.unpack(OE_ENCLAVE_HEADER_FORMAT, enclave_blob)
-        # Get enclave path string.
-        enclave_path_addr = int(gdb.parse_and_eval("$rsi"));
-        enclave_path_length = int(gdb.parse_and_eval("$rdx"));
-        enclave_path_blob = read_from_memory(enclave_path_addr, enclave_path_length)
-        dataFormat = str(enclave_path_length) + 's'
-        enclave_path = struct.unpack_from(dataFormat, enclave_path_blob)[0].decode(encoding='UTF-8')
-        # Unload the enclave symbol. Need not to reset the debug flag for TCSs.
-        unload_enclave_symbol(enclave_path, enclave_tuple[OE_ENCLAVE_ADDR_FIELD])
+        enclave_addr = int(gdb.parse_and_eval("$rdi"))
+        enclave = oe_debug_enclave_t(enclave_addr)
+        unload_enclave_symbol(enclave.path, enclave.base_address)
         return False
 
 class OCallStartBreakpoint(gdb.Breakpoint):

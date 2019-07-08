@@ -8,7 +8,6 @@
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/debug.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
@@ -809,36 +808,3 @@ done:
 
     return result;
 }
-
-/*
-** These functions are needed to notify the debugger. They should not be
-** optimized out even though they don't do anything in here.
-*/
-
-OE_NO_OPTIMIZE_BEGIN
-
-OE_NEVER_INLINE void oe_notify_gdb_enclave_termination(
-    const oe_enclave_t* enclave,
-    const char* enclavePath,
-    uint32_t enclavePathLength)
-{
-    OE_UNUSED(enclave);
-    OE_UNUSED(enclavePath);
-    OE_UNUSED(enclavePathLength);
-
-    return;
-}
-
-OE_NEVER_INLINE void oe_notify_gdb_enclave_creation(
-    const oe_enclave_t* enclave,
-    const char* enclavePath,
-    uint32_t enclavePathLength)
-{
-    OE_UNUSED(enclave);
-    OE_UNUSED(enclavePath);
-    OE_UNUSED(enclavePathLength);
-
-    return;
-}
-
-OE_NO_OPTIMIZE_END
