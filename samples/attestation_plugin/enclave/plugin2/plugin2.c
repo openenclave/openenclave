@@ -80,12 +80,14 @@ done:
 }
 
 static int my_verify_custom_evidence(
+    void* context,
     const uint8_t* custom_evidence,
     size_t custom_evidence_size,
     oe_report_t* parsed_report)
 {
     int ret = 1;
 
+    (void)context;
     fprintf(stdout, "my_verify_custom_evidence 2\n");
     if (parsed_report != NULL)
     {

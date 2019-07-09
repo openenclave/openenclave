@@ -335,6 +335,7 @@ void oe_free_attestation_evidence(uint8_t* evidence_buffer)
 }
 
 oe_result_t oe_verify_attestation_evidence(
+    void* context,
     const uint8_t* evidence_buffer,
     size_t evidence_buffer_size,
     oe_report_t* parsed_report)
@@ -368,7 +369,7 @@ oe_result_t oe_verify_attestation_evidence(
         // in this case, a plugin handles validation for the full quote
         // inclduing both normal quote and custom evedence
         ret = plugin->ops->verify_full_evidence(
-            evidence_buffer, evidence_buffer_size, parsed_report);
+            context, evidence_buffer, evidence_buffer_size, parsed_report);
         if (ret != 0)
         {
             result = OE_VERIFY_FAILED;
@@ -426,6 +427,7 @@ oe_result_t oe_verify_attestation_evidence(
     }
 
     ret = plugin->ops->verify_custom_evidence(
+        context,
         header->report + header->report_size,
         header->custom_evidence_size,
         (plugin->report_type == OE_REPORT_TYPE_SGX_REMOTE) ? parsed_report

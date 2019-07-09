@@ -96,6 +96,7 @@ static int my_get_custom_evidence_data(
 }
 
 static int my_verify_full_evidence(
+    void* context,
     const uint8_t* full_evidence_buffer,
     size_t full_evidence_buffer_size,
     oe_report_t* parsed_report)
@@ -107,6 +108,8 @@ static int my_verify_full_evidence(
     uint8_t* custom_evidence = NULL;
     uint8_t sha256_data[SHA256_SIZE];
     oe_report_header_t* header = (oe_report_header_t*)full_evidence_buffer;
+
+    (void)context;
 
     fprintf(stdout, "my_verify_full_evidence 3\n");
     // fprintf(stdout, "evidence_format:%s", header->evidence_format);

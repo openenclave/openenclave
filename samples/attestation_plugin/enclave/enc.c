@@ -35,6 +35,7 @@ void enclave_attestation_plugin()
     uint8_t* custom_data = NULL;
     size_t custom_evidence_size = 0;
     oe_report_t parsed_report = {0};
+    void* context = NULL;
 
     fprintf(stdout, "Hello from encalve::enclave_attestation_plugin\n");
     // unregister all attestation plugins
@@ -96,7 +97,7 @@ void enclave_attestation_plugin()
         evidence_buffer1_size);
 
     result = oe_verify_attestation_evidence(
-        evidence_buffer1, evidence_buffer1_size, &parsed_report);
+        context, evidence_buffer1, evidence_buffer1_size, &parsed_report);
     if (result != OE_OK)
         goto done;
 
@@ -116,7 +117,7 @@ void enclave_attestation_plugin()
         evidence_buffer2_size);
 
     result = oe_verify_attestation_evidence(
-        evidence_buffer2, evidence_buffer2_size, &parsed_report);
+        context, evidence_buffer2, evidence_buffer2_size, &parsed_report);
     if (result != OE_OK)
         goto done;
 
@@ -136,7 +137,7 @@ void enclave_attestation_plugin()
         evidence_buffer3_size);
 
     result = oe_verify_attestation_evidence(
-        evidence_buffer3, evidence_buffer3_size, &parsed_report);
+        context, evidence_buffer3, evidence_buffer3_size, &parsed_report);
     if (result != OE_OK)
         goto done;
 

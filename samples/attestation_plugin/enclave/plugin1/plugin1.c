@@ -57,6 +57,7 @@ static int my_get_custom_evidence_data(
 }
 
 static int my_verify_custom_evidence(
+    void* context,
     const uint8_t* custom_evidence,
     size_t custom_evidence_size,
     oe_report_t* parsed_report)
