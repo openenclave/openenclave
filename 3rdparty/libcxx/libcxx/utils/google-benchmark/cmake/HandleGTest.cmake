@@ -5,7 +5,7 @@ macro(build_external_gtest)
   include(ExternalProject)
   set(GTEST_FLAGS "")
   if (BENCHMARK_USE_LIBCXX)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
       list(APPEND GTEST_FLAGS -stdlib=libc++)
     else()
       message(WARNING "Unsupported compiler (${CMAKE_CXX_COMPILER}) when using libc++")
@@ -45,8 +45,8 @@ macro(build_external_gtest)
         -DCMAKE_BUILD_TYPE:STRING=${GTEST_BUILD_TYPE}
         -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
-        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-        -DCMAKE_INSTALL_LIBDIR=<INSTALL_DIR>/lib
+        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+        -DCMAKE_INSTALL_LIBDIR:PATH=<INSTALL_DIR>/lib
         -DCMAKE_CXX_FLAGS:STRING=${GTEST_FLAGS}
         -Dgtest_force_shared_crt:BOOL=ON
       )
@@ -76,11 +76,11 @@ macro(build_external_gtest)
 endmacro(build_external_gtest)
 
 if (BENCHMARK_ENABLE_GTEST_TESTS)
-  if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/googletest)
-    set(GTEST_ROOT "${CMAKE_SOURCE_DIR}/googletest")
+  if (IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/googletest)
+    set(GTEST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/googletest")
     set(INSTALL_GTEST OFF CACHE INTERNAL "")
     set(INSTALL_GMOCK OFF CACHE INTERNAL "")
-    add_subdirectory(${CMAKE_SOURCE_DIR}/googletest)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/googletest)
     set(GTEST_BOTH_LIBRARIES gtest gmock gmock_main)
     foreach(HEADER test mock)
       # CMake 2.8 and older don't respect INTERFACE_INCLUDE_DIRECTORIES, so we
