@@ -17,6 +17,7 @@ add_custom_command(
   ../edl/pointer.edl
   ../edl/string.edl
   ../edl/struct.edl
+  ../edl/switchless.edl
   COMMAND edger8r --experimental --untrusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
 
 add_custom_command(
@@ -46,6 +47,7 @@ add_executable(edl_host
     testpointer.cpp
     teststring.cpp
     teststruct.cpp
+    testswitchless.cpp
 )
 
 # The tests intentionally use floats etc in size context.

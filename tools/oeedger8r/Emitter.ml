@@ -442,7 +442,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         failwithf
           "Function '%s': 'private' specifier is not supported by oeedger8r"
           f.tf_fdecl.fname ;
-      if f.tf_is_switchless then
+      if f.tf_is_switchless && not ep.experimental then
         failwithf
           "Function '%s': switchless ecalls and ocalls are not yet supported \
            by Open Enclave SDK."
@@ -464,7 +464,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
           "Warning: Function '%s': Reentrant ocalls are not supported by Open \
            Enclave. Allow list ignored.\n"
           f.uf_fdecl.fname ;
-      if f.uf_is_switchless then
+      if f.uf_is_switchless && not ep.experimental then
         failwithf
           "Function '%s': switchless ecalls and ocalls are not yet supported \
            by Open Enclave SDK."
@@ -950,6 +950,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   (* Generate host ECALL wrapper function. *)
   let oe_gen_host_ecall_wrapper (tf : trusted_func) =
     let fd = tf.tf_fdecl in
+    let oe_ecall_function =
+      if tf.tf_is_switchless then "oe_switchless_call_enclave_function" else "oe_call_enclave_function" in
     [ oe_gen_wrapper_prototype fd true
     ; "{"
     ; "    oe_result_t _result = OE_FAILURE;"
@@ -976,7 +978,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    " ^ String.concat "\n    " (oe_prepare_input_buffer fd "malloc")
     ; ""
     ; "    /* Call enclave function. */"
-    ; "    if ((_result = oe_call_enclave_function("
+    ; "    if ((_result = " ^ oe_ecall_function ^ "("
     ; "             "
       ^ String.concat ",\n             "
           [ "enclave"
