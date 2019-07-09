@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/debugrt/host.h>
+#include <stdio.h>
 #include <string.h>
 
 /**
@@ -14,7 +15,7 @@
 
 #include <Windows.h>
 
-static uint64_t _lock = 0;
+static volatile LONG _lock = 0;
 
 static void spin_lock()
 {
@@ -28,6 +29,63 @@ static void spin_lock()
 static void spin_unlock()
 {
     InterlockedExchange(&_lock, 0);
+}
+
+static bool raise_debugger_events()
+{
+    static bool initialized = false;
+
+    if (IsDebuggerPresent())
+    {
+        if (!initialized)
+        {
+            // Set oe_debugger_contract_version from the environment.
+            // Normally the debugger would set the value depending on
+            // the version it supports. Setting it from the environment
+            // allows using a specific version of the contract.
+            char* version = getenv("OE_DEBUGGER_CONTRACT_VERSION");
+            if (version != NULL)
+            {
+                int v = 0;
+                sscanf(version, "%d", &v);
+                oe_debugger_contract_version = (uint32_t)v;
+            }
+
+            initialized = true;
+        }
+        // Events are raised only if the contract is valid.
+        return (oe_debugger_contract_version >= 1);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void oe_notify_debugger_enclave_creation(const oe_debug_enclave_t* enclave)
+{
+    if (raise_debugger_events())
+    {
+        ULONG_PTR args[1] = {(ULONG_PTR)enclave};
+        RaiseException(
+            OE_DEBUGRT_ENCLAVE_CREATED_EVENT,
+            0, // dwFlags
+            1, // number of args
+            args);
+    }
+}
+
+void oe_notify_debugger_enclave_termination(const oe_debug_enclave_t* enclave)
+{
+    if (raise_debugger_events())
+    {
+        ULONG_PTR args[1] = {(ULONG_PTR)enclave};
+        RaiseException(
+            OE_DEBUGRT_ENCLAVE_TERMINATED_EVENT,
+            0, // dwFlags
+            1, // number of args
+            args);
+    }
 }
 
 #elif defined __GNUC__
@@ -55,14 +113,14 @@ static void spin_unlock()
 OE_NO_OPTIMIZE_BEGIN
 
 OE_EXPORT
-OE_NEVER_INLINE void oe_notify_gdb_enclave_creation(
+OE_NEVER_INLINE void oe_notify_debugger_enclave_creation(
     const oe_debug_enclave_t* enclave)
 {
     OE_UNUSED(enclave);
     return;
 }
 
-OE_NEVER_INLINE void oe_notify_gdb_enclave_termination(
+OE_NEVER_INLINE void oe_notify_debugger_enclave_termination(
     const oe_debug_enclave_t* enclave)
 {
     OE_UNUSED(enclave);
@@ -77,6 +135,7 @@ OE_NO_OPTIMIZE_END
 
 #endif
 
+uint32_t oe_debugger_contract_version = 0;
 oe_debug_enclave_t* oe_debug_enclaves_list = NULL;
 
 oe_result_t oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave)
@@ -99,9 +158,7 @@ oe_result_t oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave)
 
     result = OE_OK;
 
-#ifdef __linux__
-    oe_notify_gdb_enclave_creation(enclave);
-#endif
+    oe_notify_debugger_enclave_creation(enclave);
 
 done:
     if (locked)
@@ -143,9 +200,7 @@ oe_result_t oe_debug_notify_enclave_terminated(oe_debug_enclave_t* enclave)
     enclave->next = NULL;
     result = OE_OK;
 
-#ifdef __linux__
-    oe_notify_gdb_enclave_termination(enclave);
-#endif
+    oe_notify_debugger_enclave_termination(enclave);
 
 done:
     if (locked)

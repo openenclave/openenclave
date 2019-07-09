@@ -243,7 +243,7 @@ def update_untrusted_ocall_frame(frame_pointer, ocallcontext_tuple):
 
 class EnclaveCreationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="oe_notify_gdb_enclave_creation", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_debugger_enclave_creation", internal=1)
 
     def stop(self):
         enclave_addr = int(gdb.parse_and_eval("$rdi"))
@@ -252,7 +252,7 @@ class EnclaveCreationBreakpoint(gdb.Breakpoint):
 
 class EnclaveTerminationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="oe_notify_gdb_enclave_termination", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_debugger_enclave_termination", internal=1)
 
     def stop(self):
         enclave_addr = int(gdb.parse_and_eval("$rdi"))
