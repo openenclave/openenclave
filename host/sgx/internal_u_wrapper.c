@@ -38,6 +38,7 @@ static oe_result_t _call_enclave_function(
 
 /* Include the generated source. */
 #include "internal_u.c"
+#include "internal_u.h"
 
 /* Registers the internal OCALL function table. */
 oe_result_t oe_register_internal_ocall_function_table(void)

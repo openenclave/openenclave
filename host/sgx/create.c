@@ -72,6 +72,8 @@ static void _initialize_exception_handling(void)
 static void _initialize_enclave_host()
 {
     oe_once(&_enclave_init_once, _initialize_exception_handling);
+    oe_register_internal_ocall_function_table();
+    oe_register_syscall_ocall_function_table();
 }
 
 static oe_result_t _add_filled_pages(
@@ -640,12 +642,6 @@ oe_result_t oe_create_enclave(
         (flags & OE_ENCLAVE_FLAG_RESERVED) || config || config_size > 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Install the internal ocall function table. */
-    OE_CHECK(oe_register_internal_ocall_function_table());
-
-    /* Install the SYSCALL ocall function table. */
-    oe_register_syscall_ocall_function_table();
-
     /* Allocate and zero-fill the enclave structure */
     if (!(enclave = (oe_enclave_t*)calloc(1, sizeof(oe_enclave_t))))
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -708,7 +704,10 @@ oe_result_t oe_create_enclave(
     /* Setup logging configuration */
     oe_log_enclave_init(enclave);
 
-    /* Peform a two-way ping with the enclave. */
+    /* Peform a two-way ping with the enclave. This function is a placeholder
+     * and will be removed in Part II of this PR.
+     * ATTN: remove this when other EDL calls are ready.
+     */
     {
         const int VALUE = 12345;
         int retval;
