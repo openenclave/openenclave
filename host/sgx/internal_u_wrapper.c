@@ -7,11 +7,11 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 
-/* Override oe_call_enclave_function() calls with _call_enclave_function(). */
-#define oe_call_enclave_function _call_enclave_function
+// Override oe_call_enclave_function() with _call_internal_enclave_function().
+#define oe_call_enclave_function _call_internal_enclave_function
 
 /* The ocall edge routines will use this function to route ecalls. */
-static oe_result_t _call_enclave_function(
+static oe_result_t _call_internal_enclave_function(
     oe_enclave_t* enclave,
     uint32_t function_id,
     const void* input_buffer,
