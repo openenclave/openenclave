@@ -700,6 +700,7 @@ oe_result_t oe_create_enclave(
         debug_enclave->path_length = strlen(enclave->path);
 
         debug_enclave->base_address = (void*)enclave->addr;
+        debug_enclave->size = enclave->size;
 
         debug_enclave->tcs_array =
             (sgx_tcs_t**)calloc(enclave->num_bindings, sizeof(sgx_tcs_t*));
@@ -715,6 +716,7 @@ oe_result_t oe_create_enclave(
         if (enclave->simulate)
             debug_enclave->flags |= OE_DEBUG_ENCLAVE_MASK_SIMULATE;
 
+        enclave->debug_enclave = debug_enclave;
         oe_debug_notify_enclave_created(debug_enclave);
     }
 

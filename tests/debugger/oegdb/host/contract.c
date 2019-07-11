@@ -33,6 +33,9 @@ volatile uint64_t SIZEOF_PATH_LENGTH = (uint64_t)-1;
 volatile uint64_t OFFSETOF_BASE_ADDRESS = (uint64_t)-1;
 volatile uint64_t SIZEOF_BASE_ADDRESS = (uint64_t)-1;
 
+volatile uint64_t OFFSETOF_SIZE = (uint64_t)-1;
+volatile uint64_t SIZEOF_SIZE = (uint64_t)-1;
+
 volatile uint64_t OFFSETOF_TCS_ARRAY = (uint64_t)-1;
 volatile uint64_t SIZEOF_TCS_ARRAY = (uint64_t)-1;
 
@@ -68,6 +71,9 @@ void assert_debugger_binary_contract_host_side()
     OE_TEST(
         OFFSETOF_BASE_ADDRESS == OE_OFFSETOF(oe_debug_enclave_t, base_address));
     OE_TEST(SIZEOF_BASE_ADDRESS == OE_SIZEOF(oe_debug_enclave_t, base_address));
+
+    OE_TEST(OFFSETOF_SIZE == OE_OFFSETOF(oe_debug_enclave_t, size));
+    OE_TEST(SIZEOF_SIZE == OE_SIZEOF(oe_debug_enclave_t, size));
 
     OE_TEST(OFFSETOF_TCS_ARRAY == OE_OFFSETOF(oe_debug_enclave_t, tcs_array));
     OE_TEST(SIZEOF_TCS_ARRAY == OE_SIZEOF(oe_debug_enclave_t, tcs_array));

@@ -94,6 +94,9 @@ commands 5
     python gdb.parse_and_eval("OFFSETOF_BASE_ADDRESS = " + str(oe_debug_enclave_t.OFFSETOF_BASE_ADDRESS))
     python gdb.parse_and_eval("SIZEOF_BASE_ADDRESS = " + str(oe_debug_enclave_t.SIZEOF_BASE_ADDRESS))
 
+    python gdb.parse_and_eval("OFFSETOF_SIZE = " + str(oe_debug_enclave_t.OFFSETOF_SIZE))
+    python gdb.parse_and_eval("SIZEOF_SIZE = " + str(oe_debug_enclave_t.SIZEOF_SIZE))
+
     python gdb.parse_and_eval("OFFSETOF_TCS_ARRAY = " + str(oe_debug_enclave_t.OFFSETOF_TCS_ARRAY))
     python gdb.parse_and_eval("SIZEOF_TCS_ARRAY = " + str(oe_debug_enclave_t.SIZEOF_TCS_ARRAY))
 
