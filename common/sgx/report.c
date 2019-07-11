@@ -79,32 +79,32 @@ oe_result_t oe_parse_report(
 {
     const sgx_report_t* sgx_report = NULL;
     const sgx_quote_t* sgx_quote = NULL;
-    oe_report_header_t* header = (oe_report_header_t*)report;
+    oe_evidence_header_t* header = (oe_evidence_header_t*)report;
     oe_result_t result = OE_FAILURE;
 
     if (report == NULL || parsed_report == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (report_size < sizeof(oe_report_header_t))
+    if (report_size < sizeof(oe_evidence_header_t))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (header->version != OE_REPORT_HEADER_VERSION)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if ((header->report_size + header->custom_evidence_size +
-         sizeof(oe_report_header_t)) != report_size)
+    if ((header->tee_evidence_size + header->custom_evidence_size +
+         sizeof(oe_evidence_header_t)) != report_size)
         OE_RAISE(OE_FAILURE);
 
-    if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
+    if (header->tee_evidence_type == OE_TEE_TYPE_SGX_LOCAL)
     {
-        sgx_report = (const sgx_report_t*)header->report;
+        sgx_report = (const sgx_report_t*)header->tee_evidence;
         OE_CHECK(
             _parse_sgx_report_body(&sgx_report->body, false, parsed_report));
         result = OE_OK;
     }
-    else if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    else if (header->tee_evidence_type == OE_TEE_TYPE_SGX_REMOTE)
     {
-        sgx_quote = (const sgx_quote_t*)header->report;
+        sgx_quote = (const sgx_quote_t*)header->tee_evidence;
         OE_CHECK(_parse_sgx_report_body(
             &sgx_quote->report_body, true, parsed_report));
         result = OE_OK;
@@ -162,7 +162,7 @@ static oe_result_t _oe_get_target_info_internal(
     size_t* target_info_size)
 {
     oe_result_t result = OE_FAILURE;
-    oe_report_header_t* report_header = (oe_report_header_t*)report;
+    oe_evidence_header_t* report_header = (oe_evidence_header_t*)report;
 
     if (!report || report_size < sizeof(*report_header) || !target_info_size)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -171,12 +171,12 @@ static oe_result_t _oe_get_target_info_internal(
     if (report_header->version != OE_REPORT_HEADER_VERSION)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    report_size -= OE_OFFSETOF(oe_report_header_t, report);
-    report += OE_OFFSETOF(oe_report_header_t, report);
-    switch (report_header->report_type)
+    report_size -= OE_OFFSETOF(oe_evidence_header_t, tee_evidence);
+    report += OE_OFFSETOF(oe_evidence_header_t, tee_evidence);
+    switch (report_header->tee_evidence_type)
     {
-        case OE_REPORT_TYPE_SGX_LOCAL:
-        case OE_REPORT_TYPE_SGX_REMOTE:
+        case OE_TEE_TYPE_SGX_LOCAL:
+        case OE_TEE_TYPE_SGX_REMOTE:
             result = _sgx_get_target_info(
                 report, report_size, target_info_buffer, target_info_size);
             if (result == OE_BUFFER_TOO_SMALL)

@@ -157,7 +157,7 @@ static oe_result_t _oe_get_report_internal(
     size_t* report_buffer_size)
 {
     oe_result_t result = OE_FAILURE;
-    oe_report_header_t* header = (oe_report_header_t*)report_buffer;
+    oe_evidence_header_t* header = (oe_evidence_header_t*)report_buffer;
 
 #if defined(OE_USE_LIBSGX)
     // The two host side attestation API's are oe_get_report and
@@ -168,13 +168,13 @@ static oe_result_t _oe_get_report_internal(
     // Reserve space in the buffer for header.
     if (report_buffer && report_buffer_size)
     {
-        if (*report_buffer_size >= sizeof(oe_report_header_t))
+        if (*report_buffer_size >= sizeof(oe_evidence_header_t))
         {
             OE_CHECK(oe_safe_add_u64(
                 (uint64_t)report_buffer,
-                sizeof(oe_report_header_t),
+                sizeof(oe_evidence_header_t),
                 (uint64_t*)&report_buffer));
-            *report_buffer_size -= sizeof(oe_report_header_t);
+            *report_buffer_size -= sizeof(oe_evidence_header_t);
         }
     }
 
@@ -199,20 +199,20 @@ static oe_result_t _oe_get_report_internal(
     }
 
     header->version = OE_REPORT_HEADER_VERSION;
-    header->report_type = (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
-                              ? OE_REPORT_TYPE_SGX_REMOTE
-                              : OE_REPORT_TYPE_SGX_LOCAL;
+    header->tee_evidence_type = (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
+                                    ? OE_TEE_TYPE_SGX_REMOTE
+                                    : OE_TEE_TYPE_SGX_LOCAL;
     memset((void*)&header->evidence_format, 0, sizeof(header->evidence_format));
-    header->report_size = *report_buffer_size;
+    header->tee_evidence_size = *report_buffer_size;
     header->custom_evidence_size = 0;
     OE_CHECK(oe_safe_add_u64(
-        *report_buffer_size, sizeof(oe_report_header_t), report_buffer_size));
+        *report_buffer_size, sizeof(oe_evidence_header_t), report_buffer_size));
     result = OE_OK;
 
 done:
     if (result == OE_BUFFER_TOO_SMALL)
     {
-        *report_buffer_size += sizeof(oe_report_header_t);
+        *report_buffer_size += sizeof(oe_evidence_header_t);
     }
 
     return result;
@@ -291,7 +291,7 @@ oe_result_t oe_verify_report(
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
     oe_verify_report_args_t arg = {0};
-    oe_report_header_t* header = (oe_report_header_t*)report;
+    oe_evidence_header_t* header = (oe_evidence_header_t*)report;
 
     if (report == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -302,7 +302,7 @@ oe_result_t oe_verify_report(
     // Ensure that the report is parseable before using the header.
     OE_CHECK(oe_parse_report(report, report_size, &oe_report));
 
-    if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    if (header->tee_evidence_type == OE_TEE_TYPE_SGX_REMOTE)
     {
         // Intialize the quote provider if we want to verify a remote quote.
         // Note that we don't have the OE_USE_LIBSGX guard here since we don't
@@ -312,9 +312,16 @@ oe_result_t oe_verify_report(
 
         // Quote attestation can be done entirely on the host side.
         OE_CHECK(VerifyQuoteImpl(
-            header->report, header->report_size, NULL, 0, NULL, 0, NULL, 0));
+            header->tee_evidence,
+            header->tee_evidence_size,
+            NULL,
+            0,
+            NULL,
+            0,
+            NULL,
+            0));
     }
-    else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
+    else if (header->tee_evidence_type == OE_TEE_TYPE_SGX_LOCAL)
     {
         if (enclave == NULL)
             OE_RAISE(OE_INVALID_PARAMETER);

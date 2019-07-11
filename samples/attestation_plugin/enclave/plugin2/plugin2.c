@@ -32,17 +32,17 @@ static unsigned char g_custom_evidence[] =
     ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 static size_t g_custom_evidence_size = sizeof(g_custom_evidence);
 
-static int init_plugin()
-{
-    fprintf(stdout, "initializing attetation plugin 2\n");
-    return 0;
-}
+// static int init_plugin()
+// {
+//     fprintf(stdout, "initializing attetation plugin 2\n");
+//     return 0;
+// }
 
-static int cleanup_plugin()
-{
-    fprintf(stdout, "cleaning up attetation plugin 2\n");
-    return 0;
-}
+// static int cleanup_plugin()
+// {
+//     fprintf(stdout, "cleaning up attetation plugin 2\n");
+//     return 0;
+// }
 
 static int my_get_custom_evidence_size(size_t* custom_evidence_size)
 {
@@ -72,7 +72,7 @@ static int my_get_custom_evidence_data(
     }
 
     // fill custom evidence with token info
-    memcpy(custom_evidence, g_custom_evidence, custom_evidence_size);
+    memcpy((void*)custom_evidence, g_custom_evidence, custom_evidence_size);
 
     ret = 0;
 done:
@@ -80,14 +80,14 @@ done:
 }
 
 static int my_verify_custom_evidence(
-    void* context,
+    void* callback_context,
     const uint8_t* custom_evidence,
     size_t custom_evidence_size,
     oe_report_t* parsed_report)
 {
     int ret = 1;
 
-    (void)context;
+    (void)callback_context;
     fprintf(stdout, "my_verify_custom_evidence 2\n");
     if (parsed_report != NULL)
     {
@@ -99,7 +99,7 @@ static int my_verify_custom_evidence(
     {
         fprintf(
             stdout,
-            "unexpected custom_evidence_size(%d)!\n",
+            "unexpected custom_evidence_size(%zu)!\n",
             custom_evidence_size);
         goto done;
     }
@@ -122,8 +122,8 @@ done:
 }
 
 static oe_attestation_plugin_callbacks_t attestation_callbacks = {
-    .init_plugin = init_plugin,
-    .cleanup_plugin = cleanup_plugin,
+    // .init_plugin = init_plugin,
+    // .cleanup_plugin = cleanup_plugin,
     .get_custom_evidence_size = my_get_custom_evidence_size,
     .get_custom_evidence = my_get_custom_evidence_data,
     .verify_custom_evidence = my_verify_custom_evidence,
@@ -135,7 +135,7 @@ static oe_attestation_plugin_callbacks_t attestation_callbacks = {
 // { 0xf36b727e, 0xa818, 0x47b6, { 0xa6, 0xcd, 0x58, 0x53, 0xb8, 0x45, 0x93,
 // 0xa2 } };
 oe_attestation_plugin_context_t my_plugin_context2 = {
-    .report_type = OE_REPORT_TYPE_CUSTOM,
+    .tee_evidence_type = OE_TEE_TYPE_CUSTOM,
     .evidence_format_uuid = UUID_INIT(
         0xF36B727E,
         0xA818,

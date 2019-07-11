@@ -42,17 +42,17 @@ done:
     return ret;
 }
 
-static int init_plugin()
-{
-    fprintf(stdout, "initializing attetation plugin 3\n");
-    return 0;
-}
+// static int init_plugin()
+// {
+//     fprintf(stdout, "initializing attetation plugin 3\n");
+//     return 0;
+// }
 
-static int cleanup_plugin()
-{
-    fprintf(stdout, "cleaning up attetation plugin 3\n");
-    return 0;
-}
+// static int cleanup_plugin()
+// {
+//     fprintf(stdout, "cleaning up attetation plugin 3\n");
+//     return 0;
+// }
 
 static int my_get_custom_evidence_size(size_t* custom_evidence_size)
 {
@@ -96,7 +96,7 @@ static int my_get_custom_evidence_data(
 }
 
 static int my_verify_full_evidence(
-    void* context,
+    void* callback_context,
     const uint8_t* full_evidence_buffer,
     size_t full_evidence_buffer_size,
     oe_report_t* parsed_report)
@@ -107,15 +107,15 @@ static int my_verify_full_evidence(
     uint64_t custom_evidence_size = 0;
     uint8_t* custom_evidence = NULL;
     uint8_t sha256_data[SHA256_SIZE];
-    oe_report_header_t* header = (oe_report_header_t*)full_evidence_buffer;
+    oe_evidence_header_t* header = (oe_evidence_header_t*)full_evidence_buffer;
 
-    (void)context;
+    (void)callback_context;
 
     fprintf(stdout, "my_verify_full_evidence 3\n");
     // fprintf(stdout, "evidence_format:%s", header->evidence_format);
 
     // extract custom data
-    custom_evidence = header->report + header->report_size;
+    custom_evidence = header->tee_evidence + header->tee_evidence_size;
     custom_evidence_size = header->custom_evidence_size;
 
     //
@@ -154,8 +154,8 @@ done:
 }
 
 static oe_attestation_plugin_callbacks_t attestation_callbacks = {
-    .init_plugin = init_plugin,
-    .cleanup_plugin = cleanup_plugin,
+    // .init_plugin = init_plugin,
+    // .cleanup_plugin = cleanup_plugin,
     .get_custom_evidence_size = my_get_custom_evidence_size,
     .get_custom_evidence = my_get_custom_evidence_data,
     .verify_custom_evidence = NULL,
@@ -167,7 +167,7 @@ static oe_attestation_plugin_callbacks_t attestation_callbacks = {
 // { 0xb9ba3261, 0xcb33, 0x4171, { 0x8f, 0xb3, 0xd4, 0xe1, 0xcc, 0xa1, 0xea,
 // 0x40 } };
 oe_attestation_plugin_context_t my_plugin_context3 = {
-    .report_type = OE_REPORT_TYPE_SGX_REMOTE,
+    .tee_evidence_type = OE_TEE_TYPE_SGX_REMOTE,
     .evidence_format_uuid = UUID_INIT(
         0xB9BA3261,
         0xCB33,

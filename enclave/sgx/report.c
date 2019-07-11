@@ -52,7 +52,7 @@ oe_result_t oe_verify_report(
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
     sgx_key_t sgx_key = {{0}};
-    oe_report_header_t* header = (oe_report_header_t*)report;
+    oe_evidence_header_t* header = (oe_evidence_header_t*)report;
 
     sgx_report_t* sgx_report = NULL;
 
@@ -63,14 +63,21 @@ oe_result_t oe_verify_report(
     // Ensure that the report is parseable before using the header.
     OE_CHECK(oe_parse_report(report, report_size, &oe_report));
 
-    if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    if (header->tee_evidence_type == OE_TEE_TYPE_SGX_REMOTE)
     {
         OE_CHECK(VerifyQuoteImpl(
-            header->report, header->report_size, NULL, 0, NULL, 0, NULL, 0));
+            header->tee_evidence,
+            header->tee_evidence_size,
+            NULL,
+            0,
+            NULL,
+            0,
+            NULL,
+            0));
     }
-    else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
+    else if (header->tee_evidence_type == OE_TEE_TYPE_SGX_LOCAL)
     {
-        sgx_report = (sgx_report_t*)header->report;
+        sgx_report = (sgx_report_t*)header->tee_evidence;
 
         OE_CHECK(_get_report_key(sgx_report, &sgx_key));
 

@@ -8,17 +8,17 @@
 
 static size_t g_custom_evidence_size = 1024;
 
-static int init_plugin()
-{
-    fprintf(stdout, "initializing attetation plugin 1\n");
-    return 0;
-}
+// static int init_plugin()
+// {
+//     fprintf(stdout, "initializing attetation plugin 1\n");
+//     return 0;
+// }
 
-static int cleanup_plugin()
-{
-    fprintf(stdout, "cleaning up attetation plugin 1\n");
-    return 0;
-}
+// static int cleanup_plugin()
+// {
+//     fprintf(stdout, "cleaning up attetation plugin 1\n");
+//     return 0;
+// }
 
 static int my_get_custom_evidence_size(size_t* custom_evidence_size)
 {
@@ -43,7 +43,7 @@ static int my_get_custom_evidence_data(
 {
     fprintf(
         stdout,
-        "my_get_custom_evidence_data 1, custom_evidence_size=%d\n",
+        "my_get_custom_evidence_data 1, custom_evidence_size=%zu\n",
         custom_evidence_size);
 
     // create custom data here
@@ -57,13 +57,13 @@ static int my_get_custom_evidence_data(
 }
 
 static int my_verify_custom_evidence(
-    void* context,
+    void* callback_context,
     const uint8_t* custom_evidence,
     size_t custom_evidence_size,
     oe_report_t* parsed_report)
 {
     int ret = 1;
-
+    (void)callback_context;
     fprintf(stdout, "my_verify_custom_evidence 1\n");
 
     for (int i = 0; i < custom_evidence_size; i++)
@@ -81,8 +81,8 @@ done:
 }
 
 static oe_attestation_plugin_callbacks_t attestation_callbacks = {
-    .init_plugin = init_plugin,
-    .cleanup_plugin = cleanup_plugin,
+    // .init_plugin = init_plugin,
+    // .cleanup_plugin = cleanup_plugin,
     .get_custom_evidence_size = my_get_custom_evidence_size,
     .get_custom_evidence = my_get_custom_evidence_data,
     .verify_custom_evidence = my_verify_custom_evidence,
@@ -94,7 +94,7 @@ static oe_attestation_plugin_callbacks_t attestation_callbacks = {
 // { 0x6EBB65E5, 0xF657, 0x48B1, { 0x94, 0xdf, 0x0e, 0xc0, 0xb6, 0x71,0xda,
 // 0x26 } };
 oe_attestation_plugin_context_t my_plugin_context1 = {
-    .report_type = OE_REPORT_TYPE_SGX_REMOTE,
+    .tee_evidence_type = OE_TEE_TYPE_SGX_REMOTE,
     .evidence_format_uuid = UUID_INIT(
         0x6EBB65E5,
         0xF657,

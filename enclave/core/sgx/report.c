@@ -271,16 +271,16 @@ static oe_result_t _oe_get_report_internal(
     size_t* report_buffer_size)
 {
     oe_result_t result = OE_FAILURE;
-    oe_report_header_t* header = (oe_report_header_t*)report_buffer;
+    oe_evidence_header_t* header = (oe_evidence_header_t*)report_buffer;
 
     // Reserve space in the buffer for header.
     // report_buffer and report_buffer_size are both trusted.
     if (report_buffer && report_buffer_size)
     {
-        if (*report_buffer_size >= sizeof(oe_report_header_t))
+        if (*report_buffer_size >= sizeof(oe_evidence_header_t))
         {
-            report_buffer += sizeof(oe_report_header_t);
-            *report_buffer_size -= sizeof(oe_report_header_t);
+            report_buffer += sizeof(oe_evidence_header_t);
+            *report_buffer_size -= sizeof(oe_evidence_header_t);
         }
     }
 
@@ -311,18 +311,18 @@ static oe_result_t _oe_get_report_internal(
         OE_CHECK(result);
 
     header->version = OE_REPORT_HEADER_VERSION;
-    header->report_type = (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
-                              ? OE_REPORT_TYPE_SGX_REMOTE
-                              : OE_REPORT_TYPE_SGX_LOCAL;
-    header->report_size = *report_buffer_size;
+    header->tee_evidence_type = (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
+                                    ? OE_TEE_TYPE_SGX_REMOTE
+                                    : OE_TEE_TYPE_SGX_LOCAL;
+    header->tee_evidence_size = *report_buffer_size;
     OE_CHECK(oe_safe_add_u64(
-        *report_buffer_size, sizeof(oe_report_header_t), report_buffer_size));
+        *report_buffer_size, sizeof(oe_evidence_header_t), report_buffer_size));
     result = OE_OK;
 
 done:
     if (result == OE_BUFFER_TOO_SMALL)
     {
-        *report_buffer_size += sizeof(oe_report_header_t);
+        *report_buffer_size += sizeof(oe_evidence_header_t);
     }
 
     return result;

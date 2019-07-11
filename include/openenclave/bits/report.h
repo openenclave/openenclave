@@ -139,17 +139,19 @@ typedef struct _oe_report
 /*
 **==============================================================================
 **
-** oe_report_type_t
+** oe_tee_evidence_type_t
 **
 **==============================================================================
 */
 typedef enum _oe_report_type
 {
-    OE_REPORT_TYPE_SGX_LOCAL = 1,
-    OE_REPORT_TYPE_SGX_REMOTE = 2,
-    OE_REPORT_TYPE_CUSTOM = 3,
-    __OE_REPORT_TYPE_MAX = OE_ENUM_MAX
-} oe_report_type_t;
+    OE_TEE_TYPE_SGX_LOCAL = 1,
+    OE_TEE_TYPE_SGX_REMOTE = 2,
+    OE_TEE_TYPE_TRUSTZONE_LOCAL = 3,
+    OE_TEE_TYPE_TRUSTZONE_REMOTE = 4,
+    OE_TEE_TYPE_CUSTOM = 3,
+    __OE_TEE_TYPE_MAX = OE_ENUM_MAX
+} oe_tee_evidence_type_t;
 
 #define UUID_SIZE 16
 typedef struct
@@ -178,20 +180,20 @@ typedef struct
 /*
 **==============================================================================
 **
-** oe_report_header_t
+** oe_evidence_header_t
 **
 **==============================================================================
 */
-typedef struct _oe_report_header
+typedef struct _oe_evidence_header
 {
     uint32_t version;
-    oe_report_type_t report_type; // TEE type
-    uuid_t evidence_format;       // uuid for specific attestation format
-    uint64_t report_size;         // not including custom data
-    uint64_t
-        custom_evidence_size; // custom date follows right after report data
-    uint8_t report[];
-} oe_report_header_t;
+    oe_tee_evidence_type_t tee_evidence_type; // TEE type
+    uuid_t evidence_format;        // uuid for specific attestation format
+    uint64_t tee_evidence_size;    // not including custom evidence
+    uint64_t custom_evidence_size; // size of custom evidence, which follows
+                                   // right after report data
+    uint8_t tee_evidence[];
+} oe_evidence_header_t;
 
 OE_EXTERNC_END
 

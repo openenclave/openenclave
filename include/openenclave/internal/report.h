@@ -132,38 +132,39 @@ typedef struct _oe_get_qe_identity_info_args
 // /*
 // **==============================================================================
 // **
-// ** oe_report_type_t
+// ** oe_tee_evidence_type_t
 // **
 // **==============================================================================
 // */
 // typedef enum _oe_report_type
 // {
-//     OE_REPORT_TYPE_SGX_LOCAL = 1,
-//     OE_REPORT_TYPE_SGX_REMOTE = 2,
-//     __OE_REPORT_TYPE_MAX = OE_ENUM_MAX
-// } oe_report_type_t;
+//     OE_TEE_TYPE_SGX_LOCAL = 1,
+//     OE_TEE_TYPE_SGX_REMOTE = 2,
+//     __OE_TEE_TYPE_MAX = OE_ENUM_MAX
+// } oe_tee_evidence_type_t;
 
 /*
 **==============================================================================
 **
-** oe_report_header_t
+** oe_evidence_header_t
 **
 **==============================================================================
 */
-// typedef struct _oe_report_header
+// typedef struct x_oe_report_header
 // {
 //     uint32_t version;
-//     oe_report_type_t report_type; // TEE type
+//     oe_tee_evidence_type_t tee_evidence_type; // TEE type
 //     char evidence_format[40];     // guid for specific attestation format
 //     uint64_t report_size;         // not including custom data
 //     uint64_t
 //         custom_evidence_size; // custom date follows right after report data
 //     uint8_t report[];
-// } oe_report_header_t;
+// } xoe_report_header_t;
 
-// OE_STATIC_ASSERT(sizeof(oe_report_header_t) == 64);
+// OE_STATIC_ASSERT(sizeof(oe_evidence_header_t) == 64);
 // OE_STATIC_ASSERT(
-//     OE_OFFSETOF(oe_report_header_t, report) == sizeof(oe_report_header_t));
+//     OE_OFFSETOF(oe_evidence_header_t, report) ==
+//     sizeof(oe_evidence_header_t));
 
 // ISO(1).ANSI(2).USA(840).Microsoft(113556).ACC(10).Classes(1).Subclass(1)
 #define X509_OID_FOR_QUOTE_EXT                               \

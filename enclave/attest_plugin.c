@@ -29,7 +29,7 @@ static oe_mutex_t g_plugin_list_mutex = OE_MUTEX_INITIALIZER;
 
 struct attestation_plugin_t
 {
-    oe_report_type_t report_type;
+    oe_tee_evidence_type_t tee_evidence_type;
     uuid_t evidence_format_id;
     oe_attestation_plugin_callbacks_t* ops;
     struct attestation_plugin_t* next;
@@ -111,7 +111,7 @@ oe_result_t oe_register_attestation_plugin(
     if (plugin == NULL)
         goto done;
 
-    plugin->report_type = context->report_type;
+    plugin->tee_evidence_type = context->tee_evidence_type;
     memcpy(
         (void*)&plugin->evidence_format_id,
         &(context->evidence_format_uuid),
@@ -119,11 +119,11 @@ oe_result_t oe_register_attestation_plugin(
 
     plugin->ops = context->ops;
     plugin->next = NULL;
-    if (plugin->ops->init_plugin() != 0)
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
+    // if (plugin->ops->init_plugin() != 0)
+    // {
+    //     result = OE_FAILURE;
+    //     goto done;
+    // }
 
     if (g_plugins == NULL)
     {
@@ -161,7 +161,7 @@ oe_result_t oe_unregister_attestation_plugin(
         goto done;
     }
 
-    cur->ops->cleanup_plugin();
+    // cur->ops->cleanup_plugin();
     oe_mutex_lock(&g_plugin_list_mutex);
     if (prev != NULL)
         prev->next = cur->next;
@@ -186,7 +186,7 @@ oe_result_t oe_get_attestation_evidence(
     struct attestation_plugin_t* plugin = NULL;
     oe_sha256_context_t sha256_ctx = {0};
     uint8_t* remote_report_buf = NULL;
-    size_t remote_report_buf_size = sizeof(oe_report_header_t);
+    size_t remote_report_buf_size = sizeof(oe_evidence_header_t);
     uint8_t* total_evidence_buff = NULL;
     uint8_t* custom_data = NULL;
     size_t custom_evidence_size = 0;
@@ -241,7 +241,7 @@ oe_result_t oe_get_attestation_evidence(
     // plugin found
     //
 
-    if (plugin->report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    if (plugin->tee_evidence_type == OE_TEE_TYPE_SGX_REMOTE)
     {
         // generate hash for custom data
         OE_SHA256 sha256 = {0};
@@ -270,9 +270,9 @@ oe_result_t oe_get_attestation_evidence(
     }
     else
     {
-        // for non OE_REPORT_TYPE_SGX_REMOTE report, reserve size for
-        // oe_report_header_t
-        remote_report_buf_size = sizeof(oe_report_header_t);
+        // for non OE_TEE_TYPE_SGX_REMOTE report, reserve size for
+        // oe_evidence_header_t
+        remote_report_buf_size = sizeof(oe_evidence_header_t);
     }
 
     //
@@ -296,9 +296,10 @@ oe_result_t oe_get_attestation_evidence(
         custom_evidence_size);
 
     // update header
-    if (plugin->report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    if (plugin->tee_evidence_type == OE_TEE_TYPE_SGX_REMOTE)
     {
-        oe_report_header_t* header = (oe_report_header_t*)total_evidence_buff;
+        oe_evidence_header_t* header =
+            (oe_evidence_header_t*)total_evidence_buff;
         header->custom_evidence_size = custom_evidence_size;
         memcpy(
             (void*)&header->evidence_format,
@@ -307,11 +308,12 @@ oe_result_t oe_get_attestation_evidence(
     }
     else
     {
-        oe_report_header_t* header = (oe_report_header_t*)total_evidence_buff;
+        oe_evidence_header_t* header =
+            (oe_evidence_header_t*)total_evidence_buff;
         header->version = OE_REPORT_HEADER_VERSION; // TODO: change to 2
-        header->report_type = plugin->report_type;
+        header->tee_evidence_type = plugin->tee_evidence_type;
         header->evidence_format = plugin->evidence_format_id;
-        header->report_size = 0;
+        header->tee_evidence_size = 0;
         header->custom_evidence_size = custom_evidence_size;
         memcpy(
             (void*)&header->evidence_format,
@@ -335,7 +337,7 @@ void oe_free_attestation_evidence(uint8_t* evidence_buffer)
 }
 
 oe_result_t oe_verify_attestation_evidence(
-    void* context,
+    void* callback_context,
     const uint8_t* evidence_buffer,
     size_t evidence_buffer_size,
     oe_report_t* parsed_report)
@@ -345,7 +347,7 @@ oe_result_t oe_verify_attestation_evidence(
     uint64_t custom_evidence_size = 0;
     uint8_t* custom_data = NULL;
     int ret = 0;
-    oe_report_header_t* header = (oe_report_header_t*)evidence_buffer;
+    oe_evidence_header_t* header = (oe_evidence_header_t*)evidence_buffer;
 
     // OE_TRACE_INFO("evidence_format:%s", header->evidence_format);
 
@@ -369,7 +371,10 @@ oe_result_t oe_verify_attestation_evidence(
         // in this case, a plugin handles validation for the full quote
         // inclduing both normal quote and custom evedence
         ret = plugin->ops->verify_full_evidence(
-            context, evidence_buffer, evidence_buffer_size, parsed_report);
+            callback_context,
+            evidence_buffer,
+            evidence_buffer_size,
+            parsed_report);
         if (ret != 0)
         {
             result = OE_VERIFY_FAILED;
@@ -385,7 +390,7 @@ oe_result_t oe_verify_attestation_evidence(
         goto done;
     }
 
-    if (plugin->report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    if (plugin->tee_evidence_type == OE_TEE_TYPE_SGX_REMOTE)
     {
         // call plugin callback to do only the custom evidence valdaiton
         result = oe_verify_report(
@@ -401,7 +406,7 @@ oe_result_t oe_verify_attestation_evidence(
         // Should we record it in the header when quote was generated?
         //
 
-        custom_data = header->report + header->report_size;
+        custom_data = header->tee_evidence + header->tee_evidence_size;
         custom_evidence_size = header->custom_evidence_size;
 
         // verify hash for custom data
@@ -427,11 +432,11 @@ oe_result_t oe_verify_attestation_evidence(
     }
 
     ret = plugin->ops->verify_custom_evidence(
-        context,
-        header->report + header->report_size,
+        callback_context,
+        header->tee_evidence + header->tee_evidence_size,
         header->custom_evidence_size,
-        (plugin->report_type == OE_REPORT_TYPE_SGX_REMOTE) ? parsed_report
-                                                           : NULL);
+        (plugin->tee_evidence_type == OE_TEE_TYPE_SGX_REMOTE) ? parsed_report
+                                                              : NULL);
     if (ret != 0)
     {
         result = OE_VERIFY_FAILED;

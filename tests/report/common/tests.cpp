@@ -45,7 +45,8 @@ oe_result_t VerifyReport(
 
 #endif
 
-#define OE_LOCAL_REPORT_SIZE (sizeof(oe_report_header_t) + sizeof(sgx_report_t))
+#define OE_LOCAL_REPORT_SIZE \
+    (sizeof(oe_evidence_header_t) + sizeof(sgx_report_t))
 
 /*
  * g_unique_id is populated from the first call to oe_parse_report.
@@ -85,7 +86,7 @@ static void ValidateReport(
 {
     sgx_quote_t* sgx_quote = NULL;
     sgx_report_t* sgx_report = NULL;
-    oe_report_header_t* header = (oe_report_header_t*)report_buffer;
+    oe_evidence_header_t* header = (oe_evidence_header_t*)report_buffer;
 
     oe_report_t parsed_report = {0};
 
@@ -102,7 +103,7 @@ static void ValidateReport(
     /* Validate pointer fields. */
     if (remote)
     {
-        sgx_quote = (sgx_quote_t*)header->report;
+        sgx_quote = (sgx_quote_t*)header->tee_evidence;
         OE_TEST(report_size >= sizeof(sgx_quote_t));
 
         OE_TEST(
@@ -116,7 +117,7 @@ static void ValidateReport(
     else
     {
         OE_TEST(report_size == OE_LOCAL_REPORT_SIZE);
-        sgx_report = (sgx_report_t*)header->report;
+        sgx_report = (sgx_report_t*)header->tee_evidence;
 
         OE_TEST(
             parsed_report.report_data == sgx_report->body.report_data.field);
@@ -504,13 +505,13 @@ void test_local_report(sgx_target_info_t* target_info)
         OE_TEST(
             oe_get_target_info_v2(
                 report_buffer_ptr,
-                sizeof(oe_report_header_t) + sizeof(sgx_report_t) - 1,
+                sizeof(oe_evidence_header_t) + sizeof(sgx_report_t) - 1,
                 (void**)&target_ptr,
                 &target_ptr_size) == OE_INVALID_PARAMETER);
         OE_TEST(
             oe_get_target_info(
                 report_buffer_ptr,
-                sizeof(oe_report_header_t) + sizeof(sgx_report_t) - 1,
+                sizeof(oe_evidence_header_t) + sizeof(sgx_report_t) - 1,
                 (void**)&target_ptr,
                 &target_ptr_size) == OE_INVALID_PARAMETER);
 
@@ -701,7 +702,7 @@ void test_parse_report_negative()
     OE_TEST(
         oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
-    oe_report_header_t* header = (oe_report_header_t*)report_buffer;
+    oe_evidence_header_t* header = (oe_evidence_header_t*)report_buffer;
 
     // 5. Header's version is invalid.
     header->version++;
@@ -713,17 +714,17 @@ void test_parse_report_negative()
         oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
     // 6. Header's report_size is invalid.
-    // ie: report_size + sizeof(oe_report_header_t) != report_size
-    header->report_size++;
+    // ie: report_size + sizeof(oe_evidence_header_t) != report_size
+    header->tee_evidence_size++;
     OE_TEST(
         oe_parse_report(report_buffer, report_size, &parsed_report) ==
         OE_FAILURE);
-    header->report_size--;
+    header->tee_evidence_size--;
     OE_TEST(
         oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
-    // 7. Header's report_type is invalid.
-    header->report_type = (oe_report_type_t)20;
+    // 7. Header's tee_evidence_type is invalid.
+    header->tee_evidence_type = (oe_tee_evidence_type_t)20;
     OE_TEST(
         oe_parse_report(report_buffer, report_size, &parsed_report) ==
         OE_REPORT_PARSE_ERROR);
@@ -741,8 +742,8 @@ static void GetSGXTargetInfo(sgx_target_info_t* sgx_target_info)
         GetReport_v2(0, NULL, 0, NULL, 0, &report_buffer, &report_size) ==
         OE_OK);
 
-    oe_report_header_t* header = (oe_report_header_t*)report_buffer;
-    sgx_report_t* sgx_report = (sgx_report_t*)header->report;
+    oe_evidence_header_t* header = (oe_evidence_header_t*)report_buffer;
+    sgx_report_t* sgx_report = (sgx_report_t*)header->tee_evidence;
 
     memset(sgx_target_info, 0, sizeof(*sgx_target_info));
     memcpy(
