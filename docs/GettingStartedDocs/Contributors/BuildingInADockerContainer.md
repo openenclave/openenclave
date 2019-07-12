@@ -10,7 +10,7 @@
 
 2. Install the appropriate Intel SGX Driver for your platform. For example, if you're running on an SGX1 with FLC system, you'll probably want to install the Intel SGX DCAP Driver for your platfrom: https://01.org/intel-software-guard-extensions/downloads
     - If you're running on an SGX with FLC system, you'll probably want to install the Intel SGX DCAP Driver for your platfrom: https://01.org/intel-softwareguard-extensions/downloads/intel-sgx-dcap-linux-1.2-release
-    - If you're running on an SGX without FLC system, you'll want to install the Intel SGX Driver for your platform: https://01.org/intel-softwareguard-extensions/downloads/intel-sgx-linux-2.5-release
+    - If you're running on an SGX without FLC system, you'll want to install the Intel SGX Driver for your platform: https://01.org/intel-softwareguard-extensions/downloads/intel-sgx-linux-2.6-release
     - The driver you're looking for is a ".bin" file, for either Ubuntu 16.04 or 18.04 releases. It will be named something like: `sgx_linux_x64_driver_1.12_c110012.bin`
     - To install this driver, simply run it as root like this:
         - `sudo bash ./sgx_linux_x64_driver_1.12_c110012.bin`
