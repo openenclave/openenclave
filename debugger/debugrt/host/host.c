@@ -66,12 +66,23 @@ void oe_notify_debugger_enclave_creation(const oe_debug_enclave_t* enclave)
 {
     if (raise_debugger_events())
     {
-        ULONG_PTR args[1] = {(ULONG_PTR)enclave};
-        RaiseException(
-            OE_DEBUGRT_ENCLAVE_CREATED_EVENT,
-            0, // dwFlags
-            1, // number of args
-            args);
+        __try
+        {
+            ULONG_PTR args[1] = {(ULONG_PTR)enclave};
+            RaiseException(
+                OE_DEBUGRT_ENCLAVE_CREATED_EVENT,
+                0, // dwFlags
+                1, // number of args
+                args);
+        }
+        __except (
+            GetExceptionCode() == OE_DEBUGRT_ENCLAVE_CREATED_EVENT
+                ? EXCEPTION_EXECUTE_HANDLER
+                : EXCEPTION_CONTINUE_SEARCH)
+        {
+            // Debugger attached but did not handle the event.
+            // Ignore and continue execution.
+        }
     }
 }
 
@@ -79,12 +90,23 @@ void oe_notify_debugger_enclave_termination(const oe_debug_enclave_t* enclave)
 {
     if (raise_debugger_events())
     {
-        ULONG_PTR args[1] = {(ULONG_PTR)enclave};
-        RaiseException(
-            OE_DEBUGRT_ENCLAVE_TERMINATED_EVENT,
-            0, // dwFlags
-            1, // number of args
-            args);
+        __try
+        {
+            ULONG_PTR args[1] = {(ULONG_PTR)enclave};
+            RaiseException(
+                OE_DEBUGRT_ENCLAVE_TERMINATED_EVENT,
+                0, // dwFlags
+                1, // number of args
+                args);
+        }
+        __except (
+            GetExceptionCode() == OE_DEBUGRT_ENCLAVE_TERMINATED_EVENT
+                ? EXCEPTION_EXECUTE_HANDLER
+                : EXCEPTION_CONTINUE_SEARCH)
+        {
+            // Debugger attached but did not handle the event.
+            // Ignore and continue execution.
+        }
     }
 }
 
