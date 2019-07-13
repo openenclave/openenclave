@@ -129,38 +129,6 @@ typedef struct _oe_get_qe_identity_info_args
     uint8_t* host_out_buffer; /* out */
 } oe_get_qe_identity_info_args_t;
 
-// /*
-// **==============================================================================
-// **
-// ** oe_tee_evidence_type_t
-// **
-// **==============================================================================
-// */
-// typedef enum _oe_report_type
-// {
-//     OE_TEE_TYPE_SGX_LOCAL = 1,
-//     OE_TEE_TYPE_SGX_REMOTE = 2,
-//     __OE_TEE_TYPE_MAX = OE_ENUM_MAX
-// } oe_tee_evidence_type_t;
-
-/*
-**==============================================================================
-**
-** oe_evidence_header_t
-**
-**==============================================================================
-*/
-// typedef struct x_oe_report_header
-// {
-//     uint32_t version;
-//     oe_tee_evidence_type_t tee_evidence_type; // TEE type
-//     char evidence_format[40];     // guid for specific attestation format
-//     uint64_t report_size;         // not including custom data
-//     uint64_t
-//         custom_evidence_size; // custom date follows right after report data
-//     uint8_t report[];
-// } xoe_report_header_t;
-
 // OE_STATIC_ASSERT(sizeof(oe_evidence_header_t) == 64);
 // OE_STATIC_ASSERT(
 //     OE_OFFSETOF(oe_evidence_header_t, report) ==

@@ -31,7 +31,7 @@ struct attestation_plugin_t
 {
     oe_attestation_plugin_context_t* plugin_context;
     oe_tee_evidence_type_t tee_evidence_type;
-    uuid_t evidence_format_id;
+    uuid_t evidence_format_uuid;
     oe_attestation_plugin_callbacks_t* callbacks;
     struct attestation_plugin_t* next;
 };
@@ -43,14 +43,14 @@ void dump_attestation_plugin_list()
     struct attestation_plugin_t* cur = NULL;
 
     OE_TRACE_INFO(
-        "Calling oe_register_attestation_plugin: evidence_format_id list\n");
+        "Calling oe_register_attestation_plugin: evidence_format_uuid list\n");
     oe_mutex_lock(&g_plugin_list_mutex);
     cur = g_plugins;
     while (cur)
     {
         for (int i = 0; i < UUID_SIZE; i++)
         {
-            OE_TRACE_INFO("0x%0x\n", cur->evidence_format_id.b[i]);
+            OE_TRACE_INFO("0x%0x\n", cur->evidence_format_uuid.b[i]);
         }
         cur = cur->next;
     }
@@ -73,7 +73,7 @@ struct attestation_plugin_t* find_plugin(
     while (cur)
     {
         if (memcmp(
-                (void*)&cur->evidence_format_id,
+                (void*)&cur->evidence_format_uuid,
                 (void*)target_evidence_format_uuid,
                 sizeof(uuid_t)) == 0)
         {
@@ -113,10 +113,7 @@ oe_result_t oe_register_attestation_plugin(
         goto done;
 
     plugin->tee_evidence_type = context->tee_evidence_type;
-    memcpy(
-        (void*)&plugin->evidence_format_id,
-        &(context->evidence_format_uuid),
-        sizeof(uuid_t));
+    memcpy((void*)&plugin->evidence_format_uuid, &(context->evidence_format_uuid), sizeof(uuid_t));
 
     plugin->callbacks = context->callbacks;
     plugin->next = NULL;
@@ -175,7 +172,7 @@ done:
 }
 
 oe_result_t oe_get_attestation_evidence(
-    uuid_t* evidence_format_id,
+    uuid_t* evidence_format_uuid,
     uint8_t** evidence_buffer,
     size_t* evidence_buffer_size)
 {
@@ -190,7 +187,7 @@ oe_result_t oe_get_attestation_evidence(
     int ret = 1;
 
     // find a plugin for attestation type
-    plugin = find_plugin(evidence_format_id, NULL);
+    plugin = find_plugin(evidence_format_uuid, NULL);
     if (plugin == NULL)
     {
         // no plugin found, perform default operation
@@ -281,10 +278,7 @@ oe_result_t oe_get_attestation_evidence(
         oe_evidence_header_t* header =
             (oe_evidence_header_t*)total_evidence_buff;
         header->custom_evidence_size = custom_evidence_size;
-        memcpy(
-            (void*)&header->evidence_format,
-            evidence_format_id,
-            sizeof(uuid_t));
+        memcpy((void*)&header->evidence_format_uuid, evidence_format_uuid, sizeof(uuid_t));
     }
     else
     {
@@ -292,12 +286,12 @@ oe_result_t oe_get_attestation_evidence(
             (oe_evidence_header_t*)total_evidence_buff;
         header->version = OE_REPORT_HEADER_VERSION; // TODO: change to 2
         header->tee_evidence_type = plugin->tee_evidence_type;
-        header->evidence_format = plugin->evidence_format_id;
+        header->evidence_format_uuid = plugin->evidence_format_uuid;
         header->tee_evidence_size = 0;
         header->custom_evidence_size = custom_evidence_size;
         memcpy(
-            (void*)&header->evidence_format,
-            evidence_format_id,
+            (void*)&header->evidence_format_uuid,
+            evidence_format_uuid,
             sizeof(uuid_t));
     }
 
@@ -330,7 +324,7 @@ oe_result_t oe_verify_attestation_evidence(
     oe_evidence_header_t* header = (oe_evidence_header_t*)evidence_buffer;
 
     (void)callback_context;
-    // OE_TRACE_INFO("evidence_format:%s", header->evidence_format);
+    // OE_TRACE_INFO("evidence_format_uuid:%s", header->evidence_format_uuid);
 
     // TODO:
     // parse the attestation evidence header for attestation type (SGX,
@@ -340,7 +334,7 @@ oe_result_t oe_verify_attestation_evidence(
     // find a plugin by attestation_type
     // if not found, fallback to default operation if its a supported based TEE
     // type (SGX/TrustZone) find a plugin for attestation type
-    plugin = find_plugin(&header->evidence_format, NULL);
+    plugin = find_plugin(&header->evidence_format_uuid, NULL);
     if (plugin == NULL)
     {
         // plugin not found

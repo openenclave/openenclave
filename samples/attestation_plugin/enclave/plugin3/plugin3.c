@@ -42,13 +42,41 @@ done:
     return ret;
 }
 
+// static int my_get_custom_evidence_size(
+//     oe_attestation_plugin_context_t* plugin_context,
+//     size_t* custom_evidence_size)
+// {
+//     int ret = 1;
+
+//     fprintf(stdout, "my_get_custom_evidence_size 3\n");
+
+//     // 1. oe_get_attestation_collaterals();
+
+//     // 2. serialize attestation collaterals and turn it into custom_evidence
+
+//     // 2.1 cache collaterals in preparatin for get_custom_evidence call.
+
+//     // 3. calculate its size before setting it to custom_evidence_size
+//     if (custom_evidence_size == NULL)
+//         goto done;
+
+//     // g_custom_evidence_size = sizeof(attestation_collaterals);
+
+//     *custom_evidence_size = g_custom_evidence_size;
+
+//     ret = 0;
+
+// done:
+//     return ret;
+// }
+
 static int my_get_custom_evidence_data(
     oe_attestation_plugin_context_t* plugin_context,
     uint8_t** custom_evidence,
     size_t* custom_evidence_size)
 {
     int ret = 1;
-    uint8_t* buffer = NULL;
+    uint8_t *buffer = NULL;
 
     fprintf(stdout, "my_get_custom_evidence_data 3\n");
 
@@ -88,7 +116,6 @@ static int my_verify_full_evidence(
     (void)plugin_context;
 
     fprintf(stdout, "my_verify_full_evidence 3\n");
-    // fprintf(stdout, "evidence_format:%s", header->evidence_format);
 
     // extract custom data
     custom_evidence = header->tee_evidence + header->tee_evidence_size;

@@ -714,7 +714,7 @@ oe_result_t oe_unregister_attestation_plugin(
     oe_attestation_plugin_context_t* context);
 
 oe_result_t oe_get_attestation_evidence(
-    uuid_t* evidence_format_id,
+    uuid_t* evidence_format_uuid,
     uint8_t** evidence_buffer,
     size_t* evidence_buffer_size);
 
