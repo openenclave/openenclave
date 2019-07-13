@@ -29,9 +29,10 @@ static oe_mutex_t g_plugin_list_mutex = OE_MUTEX_INITIALIZER;
 
 struct attestation_plugin_t
 {
+    oe_attestation_plugin_context_t* plugin_context;
     oe_tee_evidence_type_t tee_evidence_type;
     uuid_t evidence_format_id;
-    oe_attestation_plugin_callbacks_t* ops;
+    oe_attestation_plugin_callbacks_t* callbacks;
     struct attestation_plugin_t* next;
 };
 
@@ -117,13 +118,10 @@ oe_result_t oe_register_attestation_plugin(
         &(context->evidence_format_uuid),
         sizeof(uuid_t));
 
-    plugin->ops = context->ops;
+    plugin->callbacks = context->callbacks;
     plugin->next = NULL;
-    // if (plugin->ops->init_plugin() != 0)
-    // {
-    //     result = OE_FAILURE;
-    //     goto done;
-    // }
+
+    plugin->plugin_context = context;
 
     if (g_plugins == NULL)
     {
@@ -161,7 +159,6 @@ oe_result_t oe_unregister_attestation_plugin(
         goto done;
     }
 
-    // cur->ops->cleanup_plugin();
     oe_mutex_lock(&g_plugin_list_mutex);
     if (prev != NULL)
         prev->next = cur->next;
@@ -214,7 +211,8 @@ oe_result_t oe_get_attestation_evidence(
     //
     // get custom evidence data from the plugin
     //
-    ret = plugin->ops->get_custom_evidence_size(&custom_evidence_size);
+    ret = plugin->callbacks->get_custom_evidence_size(
+        plugin->plugin_context, &custom_evidence_size);
     if (ret != 0)
     {
         OE_TRACE_ERROR("get_custom_evidence_size failed with ret = %d", ret);
@@ -230,7 +228,8 @@ oe_result_t oe_get_attestation_evidence(
         goto done;
     }
 
-    ret = plugin->ops->get_custom_evidence(custom_data, custom_evidence_size);
+    ret = plugin->callbacks->get_custom_evidence(
+        plugin->plugin_context, custom_data, custom_evidence_size);
     if (ret != 0)
     {
         OE_TRACE_ERROR("get_custom_evidence failed with ret = %d", ret);
@@ -349,6 +348,7 @@ oe_result_t oe_verify_attestation_evidence(
     int ret = 0;
     oe_evidence_header_t* header = (oe_evidence_header_t*)evidence_buffer;
 
+    (void)callback_context;
     // OE_TRACE_INFO("evidence_format:%s", header->evidence_format);
 
     // TODO:
@@ -366,12 +366,12 @@ oe_result_t oe_verify_attestation_evidence(
         goto done;
     }
 
-    if (plugin->ops->verify_full_evidence != NULL)
+    if (plugin->callbacks->verify_full_evidence != NULL)
     {
         // in this case, a plugin handles validation for the full quote
         // inclduing both normal quote and custom evedence
-        ret = plugin->ops->verify_full_evidence(
-            callback_context,
+        ret = plugin->callbacks->verify_full_evidence(
+            plugin->plugin_context,
             evidence_buffer,
             evidence_buffer_size,
             parsed_report);
@@ -431,8 +431,8 @@ oe_result_t oe_verify_attestation_evidence(
         }
     }
 
-    ret = plugin->ops->verify_custom_evidence(
-        callback_context,
+    ret = plugin->callbacks->verify_custom_evidence(
+        plugin->plugin_context,
         header->tee_evidence + header->tee_evidence_size,
         header->custom_evidence_size,
         (plugin->tee_evidence_type == OE_TEE_TYPE_SGX_REMOTE) ? parsed_report

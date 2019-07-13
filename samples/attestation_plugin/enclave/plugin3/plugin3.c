@@ -42,19 +42,9 @@ done:
     return ret;
 }
 
-// static int init_plugin()
-// {
-//     fprintf(stdout, "initializing attetation plugin 3\n");
-//     return 0;
-// }
-
-// static int cleanup_plugin()
-// {
-//     fprintf(stdout, "cleaning up attetation plugin 3\n");
-//     return 0;
-// }
-
-static int my_get_custom_evidence_size(size_t* custom_evidence_size)
+static int my_get_custom_evidence_size(
+    oe_attestation_plugin_context_t* plugin_context,
+    size_t* custom_evidence_size)
 {
     int ret = 1;
 
@@ -81,6 +71,7 @@ done:
 }
 
 static int my_get_custom_evidence_data(
+    oe_attestation_plugin_context_t* plugin_context,
     uint8_t* custom_evidence,
     size_t custom_evidence_size)
 {
@@ -96,7 +87,7 @@ static int my_get_custom_evidence_data(
 }
 
 static int my_verify_full_evidence(
-    void* callback_context,
+    oe_attestation_plugin_context_t* plugin_context,
     const uint8_t* full_evidence_buffer,
     size_t full_evidence_buffer_size,
     oe_report_t* parsed_report)
@@ -109,7 +100,7 @@ static int my_verify_full_evidence(
     uint8_t sha256_data[SHA256_SIZE];
     oe_evidence_header_t* header = (oe_evidence_header_t*)full_evidence_buffer;
 
-    (void)callback_context;
+    (void)plugin_context;
 
     fprintf(stdout, "my_verify_full_evidence 3\n");
     // fprintf(stdout, "evidence_format:%s", header->evidence_format);
@@ -154,8 +145,6 @@ done:
 }
 
 static oe_attestation_plugin_callbacks_t attestation_callbacks = {
-    // .init_plugin = init_plugin,
-    // .cleanup_plugin = cleanup_plugin,
     .get_custom_evidence_size = my_get_custom_evidence_size,
     .get_custom_evidence = my_get_custom_evidence_data,
     .verify_custom_evidence = NULL,
@@ -180,5 +169,5 @@ oe_attestation_plugin_context_t my_plugin_context3 = {
         0xA1,
         0xEA,
         0x40),
-    .ops = &attestation_callbacks,
+    .callbacks = &attestation_callbacks,
 };

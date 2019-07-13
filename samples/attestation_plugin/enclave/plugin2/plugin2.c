@@ -32,19 +32,9 @@ static unsigned char g_custom_evidence[] =
     ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 static size_t g_custom_evidence_size = sizeof(g_custom_evidence);
 
-// static int init_plugin()
-// {
-//     fprintf(stdout, "initializing attetation plugin 2\n");
-//     return 0;
-// }
-
-// static int cleanup_plugin()
-// {
-//     fprintf(stdout, "cleaning up attetation plugin 2\n");
-//     return 0;
-// }
-
-static int my_get_custom_evidence_size(size_t* custom_evidence_size)
+static int my_get_custom_evidence_size(
+    oe_attestation_plugin_context_t* plugin_context,
+    size_t* custom_evidence_size)
 {
     int ret = 1;
 
@@ -60,7 +50,9 @@ done:
 }
 
 static int my_get_custom_evidence_data(
-    uint8_t* custom_evidence,
+    const uint8_t* custom_evidence,
+    oe_attestation_plugin_context_t* plugin_context,
+
     size_t custom_evidence_size)
 {
     int ret = 1;
@@ -72,7 +64,8 @@ static int my_get_custom_evidence_data(
     }
 
     // fill custom evidence with token info
-    memcpy((void*)custom_evidence, g_custom_evidence, custom_evidence_size);
+    memcpy(
+        (void*)custom_evidence, (void*)g_custom_evidence, custom_evidence_size);
 
     ret = 0;
 done:
@@ -80,14 +73,14 @@ done:
 }
 
 static int my_verify_custom_evidence(
-    void* callback_context,
+    oe_attestation_plugin_context_t* plugin_context,
     const uint8_t* custom_evidence,
     size_t custom_evidence_size,
     oe_report_t* parsed_report)
 {
     int ret = 1;
 
-    (void)callback_context;
+    (void)plugin_context;
     fprintf(stdout, "my_verify_custom_evidence 2\n");
     if (parsed_report != NULL)
     {
@@ -122,8 +115,6 @@ done:
 }
 
 static oe_attestation_plugin_callbacks_t attestation_callbacks = {
-    // .init_plugin = init_plugin,
-    // .cleanup_plugin = cleanup_plugin,
     .get_custom_evidence_size = my_get_custom_evidence_size,
     .get_custom_evidence = my_get_custom_evidence_data,
     .verify_custom_evidence = my_verify_custom_evidence,
@@ -148,5 +139,5 @@ oe_attestation_plugin_context_t my_plugin_context2 = {
         0x45,
         0x93,
         0xA2),
-    .ops = &attestation_callbacks,
+    .callbacks = &attestation_callbacks,
 };
