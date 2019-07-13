@@ -32,41 +32,29 @@ static unsigned char g_custom_evidence[] =
     ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 static size_t g_custom_evidence_size = sizeof(g_custom_evidence);
 
-static int my_get_custom_evidence_size(
+static int my_get_custom_evidence_data(
     oe_attestation_plugin_context_t* plugin_context,
+    const uint8_t** custom_evidence,
     size_t* custom_evidence_size)
 {
     int ret = 1;
-
-    fprintf(stdout, "my_get_custom_evidence_size 2\n");
-
-    if (custom_evidence_size == NULL)
-        goto done;
-
-    *custom_evidence_size = g_custom_evidence_size;
-    ret = 0;
-done:
-    return ret;
-}
-
-static int my_get_custom_evidence_data(
-    const uint8_t* custom_evidence,
-    oe_attestation_plugin_context_t* plugin_context,
-
-    size_t custom_evidence_size)
-{
-    int ret = 1;
+    uint8_t* buffer = NULL;
 
     fprintf(stdout, "my_get_custom_evidence_data 2\n");
-    if (custom_evidence_size != g_custom_evidence_size)
+
+    // create custom data here
+    *custom_evidence_size = g_custom_evidence_size;
+    buffer = (uint8_t*)malloc(g_custom_evidence_size);
+    if (buffer == NULL)
     {
+        fprintf(stdout, "failed to allocate memory for custom evidence data");
         goto done;
     }
 
     // fill custom evidence with token info
-    memcpy(
-        (void*)custom_evidence, (void*)g_custom_evidence, custom_evidence_size);
+    memcpy((void*)buffer, (void*)g_custom_evidence, g_custom_evidence_size);
 
+    *custom_evidence = buffer;
     ret = 0;
 done:
     return ret;
@@ -115,7 +103,6 @@ done:
 }
 
 static oe_attestation_plugin_callbacks_t attestation_callbacks = {
-    .get_custom_evidence_size = my_get_custom_evidence_size,
     .get_custom_evidence = my_get_custom_evidence_data,
     .verify_custom_evidence = my_verify_custom_evidence,
     .verify_full_evidence = NULL,

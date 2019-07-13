@@ -208,33 +208,14 @@ oe_result_t oe_get_attestation_evidence(
         goto done;
     }
 
-    //
-    // get custom evidence data from the plugin
-    //
-    ret = plugin->callbacks->get_custom_evidence_size(
-        plugin->plugin_context, &custom_evidence_size);
-    if (ret != 0)
-    {
-        OE_TRACE_ERROR("get_custom_evidence_size failed with ret = %d", ret);
-        goto done;
-    }
-
-    OE_TRACE_INFO("custom_evidence_size = %d", custom_evidence_size);
-
-    custom_data = (uint8_t*)oe_malloc(custom_evidence_size);
-    if (custom_data == NULL)
-    {
-        OE_TRACE_ERROR("failed to allocate memory for custom evidence data");
-        goto done;
-    }
-
     ret = plugin->callbacks->get_custom_evidence(
-        plugin->plugin_context, custom_data, custom_evidence_size);
+        plugin->plugin_context, &custom_data, &custom_evidence_size);
     if (ret != 0)
     {
         OE_TRACE_ERROR("get_custom_evidence failed with ret = %d", ret);
         goto done;
     }
+    OE_TRACE_INFO("custom_evidence_size = %d", custom_evidence_size);
 
     //
     // plugin found

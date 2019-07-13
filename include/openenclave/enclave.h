@@ -686,8 +686,8 @@ struct _oe_attestation_plugin_callbacks_t
         size_t* custom_evidence_size);
     int (*get_custom_evidence)(
         oe_attestation_plugin_context_t* plugin_context,
-        uint8_t* custom_evidence,
-        size_t custom_evidence_size);
+        uint8_t** custom_evidence,
+        size_t* custom_evidence_size);
 
     // verify_custom_evidence will be called if  verify_full_evidence was set
     // not custom_evidence only contains the custom evidence provided through

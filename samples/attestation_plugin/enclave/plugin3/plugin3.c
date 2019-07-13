@@ -42,48 +42,33 @@ done:
     return ret;
 }
 
-static int my_get_custom_evidence_size(
+static int my_get_custom_evidence_data(
     oe_attestation_plugin_context_t* plugin_context,
+    uint8_t** custom_evidence,
     size_t* custom_evidence_size)
 {
     int ret = 1;
+    uint8_t* buffer = NULL;
 
-    fprintf(stdout, "my_get_custom_evidence_size 3\n");
-
-    // 1. oe_get_attestation_collaterals();
-
-    // 2. serialize attestation collaterals and turn it into custom_evidence
-
-    // 2.1 cache collaterals in preparatin for get_custom_evidence call.
-
-    // 3. calculate its size before setting it to custom_evidence_size
-    if (custom_evidence_size == NULL)
-        goto done;
-
-    // g_custom_evidence_size = sizeof(attestation_collaterals);
-
-    *custom_evidence_size = g_custom_evidence_size;
-
-    ret = 0;
-
-done:
-    return ret;
-}
-
-static int my_get_custom_evidence_data(
-    oe_attestation_plugin_context_t* plugin_context,
-    uint8_t* custom_evidence,
-    size_t custom_evidence_size)
-{
     fprintf(stdout, "my_get_custom_evidence_data 3\n");
+
+    buffer = (uint8_t*)malloc(g_custom_evidence_size);
+    if (buffer == NULL)
+    {
+        fprintf(stdout, "failed to allocate memory for custom evidence data");
+        goto done;
+    }
 
     // TODO: copy over the cached collaterals to the custom_evidence buffer
     for (int i = 0; i < g_custom_evidence_size; i++)
     {
-        g_attestation_collateral[i] = i % 256;
+        buffer[i] = i % 256;
     }
 
-    return 0;
+    *custom_evidence = buffer;
+    ret = 0;
+done:
+    return ret;
 }
 
 static int my_verify_full_evidence(
@@ -145,7 +130,6 @@ done:
 }
 
 static oe_attestation_plugin_callbacks_t attestation_callbacks = {
-    .get_custom_evidence_size = my_get_custom_evidence_size,
     .get_custom_evidence = my_get_custom_evidence_data,
     .verify_custom_evidence = NULL,
     .verify_full_evidence = my_verify_full_evidence,
