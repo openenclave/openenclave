@@ -662,7 +662,7 @@ oe_result_t oe_verify_attestation_certificate(
     oe_identity_verify_callback_t enclave_identity_callback,
     void* arg);
 
-//----------------------------------------------------------------------
+//--------- APIs for quote customization plugin --------------
 
 typedef oe_result_t (
     *oe_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
@@ -696,7 +696,8 @@ struct _oe_attestation_plugin_callbacks_t
         oe_attestation_plugin_context_t* plugin_context,
         const uint8_t* custom_evidence,
         size_t custom_evidence_size,
-        oe_report_t* parsed_report);
+        oe_claim_element_t** claims,
+        size_t* claim_count);
 
     // Set verify_full_evidence only if a plug-in wants to validate the whole
     // evidence (inlcuding vlidating the TEE specitfic part) by the plug-in
@@ -705,11 +706,13 @@ struct _oe_attestation_plugin_callbacks_t
         // void* callback_context,
         const uint8_t* full_evidence,
         size_t full_evidence_size,
-        oe_report_t* parsed_report);
+        oe_claim_element_t** claims,
+        size_t* claim_count);
 };
 
 oe_result_t oe_register_attestation_plugin(
     oe_attestation_plugin_context_t* context);
+
 oe_result_t oe_unregister_attestation_plugin(
     oe_attestation_plugin_context_t* context);
 
@@ -724,7 +727,10 @@ oe_result_t oe_verify_attestation_evidence(
     void* context,
     const uint8_t* evidence_buffer,
     size_t evidence_buffer_size,
-    oe_report_t* parsed_report);
+    oe_claim_element_t** claims,
+    size_t* claim_count);
+
+void oe_free_claim_list(oe_claim_element_t* claims, size_t claim_count);
 
 OE_EXTERNC_END
 

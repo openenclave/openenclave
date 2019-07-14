@@ -9,6 +9,7 @@
 // clang-format on
 
 #include <stdio.h>
+#include <stdlib.h>
 
 // This plugin is an example for supporting full evidence validation --  in
 // progress
@@ -76,7 +77,7 @@ static int my_get_custom_evidence_data(
     size_t* custom_evidence_size)
 {
     int ret = 1;
-    uint8_t *buffer = NULL;
+    uint8_t* buffer = NULL;
 
     fprintf(stdout, "my_get_custom_evidence_data 3\n");
 
@@ -103,7 +104,8 @@ static int my_verify_full_evidence(
     oe_attestation_plugin_context_t* plugin_context,
     const uint8_t* full_evidence_buffer,
     size_t full_evidence_buffer_size,
-    oe_report_t* parsed_report)
+    oe_claim_element_t** claims,
+    size_t* claim_count)
 {
     int ret = 1;
     oe_result_t result = OE_FAILURE;
@@ -114,6 +116,8 @@ static int my_verify_full_evidence(
     oe_evidence_header_t* header = (oe_evidence_header_t*)full_evidence_buffer;
 
     (void)plugin_context;
+    (void)claims;
+    (void)claim_count;
 
     fprintf(stdout, "my_verify_full_evidence 3\n");
 

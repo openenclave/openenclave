@@ -3,6 +3,8 @@
 
 #include <openenclave/enclave.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // This plugin is an example for supporting token validation
 
@@ -34,13 +36,13 @@ static size_t g_custom_evidence_size = sizeof(g_custom_evidence);
 
 static int my_get_custom_evidence_data(
     oe_attestation_plugin_context_t* plugin_context,
-    const uint8_t** custom_evidence,
+    uint8_t** custom_evidence,
     size_t* custom_evidence_size)
 {
     int ret = 1;
     uint8_t* buffer = NULL;
 
-    fprintf(stdout, "my_get_custom_evidence_data 2\n");
+    fprintf(stdout, "\nmy_get_custom_evidence_data 2\n");
 
     // create custom data here
     *custom_evidence_size = g_custom_evidence_size;
@@ -52,7 +54,8 @@ static int my_get_custom_evidence_data(
     }
 
     // fill custom evidence with token info
-    memcpy((void*)buffer, (void*)g_custom_evidence, g_custom_evidence_size);
+    memcpy(
+        (void*)buffer, (const void*)g_custom_evidence, g_custom_evidence_size);
 
     *custom_evidence = buffer;
     ret = 0;
@@ -64,17 +67,16 @@ static int my_verify_custom_evidence(
     oe_attestation_plugin_context_t* plugin_context,
     const uint8_t* custom_evidence,
     size_t custom_evidence_size,
-    oe_report_t* parsed_report)
+    oe_claim_element_t** claims,
+    size_t* claim_count)
 {
     int ret = 1;
 
     (void)plugin_context;
+    (void)claims;
+    (void)claim_count;
+
     fprintf(stdout, "my_verify_custom_evidence 2\n");
-    if (parsed_report != NULL)
-    {
-        fprintf(stdout, "parsed_report is not NULL!\n");
-        goto done;
-    }
 
     if (custom_evidence_size != g_custom_evidence_size)
     {

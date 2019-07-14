@@ -147,9 +147,9 @@ typedef enum _oe_report_type
 {
     OE_TEE_TYPE_SGX_LOCAL = 1,
     OE_TEE_TYPE_SGX_REMOTE = 2,
-    OE_TEE_TYPE_TRUSTZONE_LOCAL = 3,
-    OE_TEE_TYPE_TRUSTZONE_REMOTE = 4,
-    OE_TEE_TYPE_CUSTOM = 3,
+    OE_TEE_TYPE_CYRES_LOCAL = 3,
+    OE_TEE_TYPE_CYRES_REMOTE = 4,
+    OE_TEE_TYPE_CUSTOM = 5,
     __OE_TEE_TYPE_MAX = OE_ENUM_MAX
 } oe_tee_evidence_type_t;
 
@@ -188,12 +188,20 @@ typedef struct _oe_evidence_header
 {
     uint32_t version;
     oe_tee_evidence_type_t tee_evidence_type; // TEE type
-    uuid_t evidence_format_uuid;        // uuid for specific attestation format
+    uuid_t evidence_format_uuid;   // uuid for specific attestation format
     uint64_t tee_evidence_size;    // not including custom evidence
     uint64_t custom_evidence_size; // size of custom evidence, which follows
                                    // right after report data
     uint8_t tee_evidence[];
 } oe_evidence_header_t;
+
+// name = value (a byte stream)
+typedef struct _oe_claim_element_t
+{
+    char* name;
+    size_t len;
+    uint8_t* value;
+} oe_claim_element_t;
 
 OE_EXTERNC_END
 

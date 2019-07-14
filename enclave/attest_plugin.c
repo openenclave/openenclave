@@ -57,6 +57,98 @@ void dump_attestation_plugin_list()
     oe_mutex_unlock(&g_plugin_list_mutex);
 }
 
+// convert oe_report_t parsed_report into an array of claims
+int convert_parsed_report_to_claims(
+    oe_report_t* parsed_report,
+    oe_claim_element_t** claims,
+    size_t* claim_count)
+{
+    int ret = 1;
+    size_t count = 5; /* supports  security_version, unique_id, signer_id,
+                         product_id, debug_flag*/
+    oe_claim_element_t* all_claims = NULL;
+    oe_identity_t* identity = NULL;
+
+    identity = &parsed_report->identity;
+    all_claims =
+        (oe_claim_element_t*)oe_malloc(sizeof(oe_claim_element_t) * count);
+    if (all_claims == NULL)
+    {
+        goto done;
+    }
+    oe_secure_zero_fill(all_claims, sizeof(oe_claim_element_t) * count);
+
+    all_claims[0].name = "security_version";
+    all_claims[0].len = sizeof(identity->security_version);
+    all_claims[0].value = (uint8_t*)oe_malloc(all_claims[0].len);
+    if (all_claims[0].value == NULL)
+    {
+        goto done;
+    }
+    memcpy(
+        (void*)all_claims[0].value,
+        &identity->security_version,
+        all_claims[0].len);
+
+    // MRENCLAVE for SGX
+    all_claims[1].name = "unique_id";
+    all_claims[1].len = OE_UNIQUE_ID_SIZE;
+    all_claims[1].value = (uint8_t*)oe_malloc(all_claims[1].len);
+    if (all_claims[0].value == NULL)
+    {
+        goto done;
+    }
+    memcpy((void*)all_claims[1].value, &identity->unique_id, all_claims[1].len);
+
+    all_claims[2].name = "signer_id";
+    all_claims[2].len = OE_SIGNER_ID_SIZE;
+    all_claims[2].value = (uint8_t*)oe_malloc(all_claims[2].len);
+    if (all_claims[0].value == NULL)
+    {
+        goto done;
+    }
+    memcpy((void*)all_claims[2].value, &identity->signer_id, all_claims[2].len);
+
+    all_claims[3].name = "product_id";
+    all_claims[3].len = OE_PRODUCT_ID_SIZE;
+    all_claims[3].value = (uint8_t*)oe_malloc(all_claims[3].len);
+    if (all_claims[0].value == NULL)
+    {
+        goto done;
+    }
+    memcpy(
+        (void*)all_claims[3].value, &identity->product_id, all_claims[3].len);
+
+    all_claims[4].name = "debug_flag";
+    all_claims[4].len = 1;
+    all_claims[4].value = (uint8_t*)oe_malloc(all_claims[4].len);
+    if (all_claims[0].value == NULL)
+    {
+        goto done;
+    }
+    memcpy(
+        (void*)all_claims[4].value, &identity->product_id, all_claims[4].len);
+    *(bool*)all_claims[4].value =
+        (identity->attributes & OE_REPORT_ATTRIBUTES_DEBUG) ? 1 : 0;
+
+    *claims = all_claims;
+    *claim_count = count;
+    ret = 0;
+
+done:
+    if (ret)
+    {
+        if (all_claims)
+        {
+            // free all memory
+            for (size_t i = 0; i < count; i++)
+                oe_free(all_claims[i].value);
+            oe_free(all_claims);
+        }
+    }
+    return ret;
+}
+
 struct attestation_plugin_t* find_plugin(
     uuid_t* target_evidence_format_uuid,
     struct attestation_plugin_t** prev)
@@ -113,7 +205,10 @@ oe_result_t oe_register_attestation_plugin(
         goto done;
 
     plugin->tee_evidence_type = context->tee_evidence_type;
-    memcpy((void*)&plugin->evidence_format_uuid, &(context->evidence_format_uuid), sizeof(uuid_t));
+    memcpy(
+        (void*)&plugin->evidence_format_uuid,
+        &(context->evidence_format_uuid),
+        sizeof(uuid_t));
 
     plugin->callbacks = context->callbacks;
     plugin->next = NULL;
@@ -278,7 +373,10 @@ oe_result_t oe_get_attestation_evidence(
         oe_evidence_header_t* header =
             (oe_evidence_header_t*)total_evidence_buff;
         header->custom_evidence_size = custom_evidence_size;
-        memcpy((void*)&header->evidence_format_uuid, evidence_format_uuid, sizeof(uuid_t));
+        memcpy(
+            (void*)&header->evidence_format_uuid,
+            evidence_format_uuid,
+            sizeof(uuid_t));
     }
     else
     {
@@ -314,7 +412,8 @@ oe_result_t oe_verify_attestation_evidence(
     void* callback_context,
     const uint8_t* evidence_buffer,
     size_t evidence_buffer_size,
-    oe_report_t* parsed_report)
+    oe_claim_element_t** claims,
+    size_t* claim_count)
 {
     oe_result_t result = OE_FAILURE;
     struct attestation_plugin_t* plugin = NULL;
@@ -322,6 +421,7 @@ oe_result_t oe_verify_attestation_evidence(
     uint8_t* custom_data = NULL;
     int ret = 0;
     oe_evidence_header_t* header = (oe_evidence_header_t*)evidence_buffer;
+    oe_report_t parsed_report;
 
     (void)callback_context;
     // OE_TRACE_INFO("evidence_format_uuid:%s", header->evidence_format_uuid);
@@ -341,6 +441,10 @@ oe_result_t oe_verify_attestation_evidence(
         goto done;
     }
 
+    // Init claim output values
+    *claims = NULL;
+    *claim_count = 0;
+
     if (plugin->callbacks->verify_full_evidence != NULL)
     {
         // in this case, a plugin handles validation for the full quote
@@ -349,7 +453,8 @@ oe_result_t oe_verify_attestation_evidence(
             plugin->plugin_context,
             evidence_buffer,
             evidence_buffer_size,
-            parsed_report);
+            claims,
+            claim_count);
         if (ret != 0)
         {
             result = OE_VERIFY_FAILED;
@@ -369,11 +474,20 @@ oe_result_t oe_verify_attestation_evidence(
     {
         // call plugin callback to do only the custom evidence valdaiton
         result = oe_verify_report(
-            evidence_buffer, evidence_buffer_size, parsed_report);
+            evidence_buffer, evidence_buffer_size, &parsed_report);
         if (result != OE_OK)
         {
             OE_TRACE_ERROR(
                 "oe_verify_report failed (%s).\n", oe_result_str(result));
+            goto done;
+        }
+
+        // convert oe_report_t parsed_report into an array of claims
+        ret = convert_parsed_report_to_claims(
+            &parsed_report, claims, claim_count);
+        if (ret != 0)
+        {
+            OE_TRACE_ERROR("convert_parsed_report_to_claims failed.\n");
             goto done;
         }
 
@@ -396,9 +510,8 @@ oe_result_t oe_verify_attestation_evidence(
         OE_CHECK(oe_sha256_final(&sha256_ctx, &sha256));
 
         if (memcmp(
-                parsed_report->report_data,
-                (uint8_t*)&sha256,
-                OE_SHA256_SIZE) != 0)
+                parsed_report.report_data, (uint8_t*)&sha256, OE_SHA256_SIZE) !=
+            0)
         {
             result = OE_VERIFY_FAILED;
             OE_TRACE_ERROR("report_data checking failed (%s).\n");
@@ -410,8 +523,8 @@ oe_result_t oe_verify_attestation_evidence(
         plugin->plugin_context,
         header->tee_evidence + header->tee_evidence_size,
         header->custom_evidence_size,
-        (plugin->tee_evidence_type == OE_TEE_TYPE_SGX_REMOTE) ? parsed_report
-                                                              : NULL);
+        claims,
+        claim_count);
     if (ret != 0)
     {
         result = OE_VERIFY_FAILED;
@@ -423,4 +536,16 @@ oe_result_t oe_verify_attestation_evidence(
     result = OE_OK;
 done:
     return result;
+}
+
+void oe_free_claim_list(oe_claim_element_t* claims, size_t claim_count)
+{
+    if (claims)
+    {
+        // free all memory
+        for (size_t i = 0; i < claim_count; i++)
+            oe_free(claims[i].value);
+
+        oe_free(claims);
+    }
 }
