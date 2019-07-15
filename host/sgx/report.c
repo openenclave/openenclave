@@ -44,9 +44,6 @@ static oe_result_t _get_local_report(
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    if (opt_params_size < sizeof(sgx_target_info_t))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     OE_CHECK(oe_internal_get_sgx_report_ecall(
         enclave,
         &retval,
