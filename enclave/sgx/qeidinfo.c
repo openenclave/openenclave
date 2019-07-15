@@ -18,7 +18,6 @@
 oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args_out)
 {
     oe_result_t result = OE_FAILURE;
-    oe_result_t r;
     const size_t QE_ID_INFO_SIZE = OE_PAGE_SIZE;
     const size_t ISSUER_CHAIN_SIZE = OE_PAGE_SIZE;
     uint32_t retval;
@@ -40,17 +39,24 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args_out)
     args.issuer_chain_size = ISSUER_CHAIN_SIZE;
 
     /* First call (one or more buffers might be too small). */
-    r = oe_internal_get_qe_identify_info(
-        &retval,
-        args.qe_id_info,
-        args.qe_id_info_size,
-        &args.qe_id_info_size,
-        args.issuer_chain,
-        args.issuer_chain_size,
-        &args.issuer_chain_size);
+    if (oe_internal_get_qe_identify_info(
+            &retval,
+            args.qe_id_info,
+            args.qe_id_info_size,
+            &args.qe_id_info_size,
+            args.issuer_chain,
+            args.issuer_chain_size,
+            &args.issuer_chain_size) != OE_OK)
+    {
+        OE_RAISE(OE_FAILURE);
+    }
 
-    /* Subsequent calls (expand the buffers as needed). */
-    while (r == OE_BUFFER_TOO_SMALL)
+    /* Subsequent calls to expand the buffers as needed. Note that the output
+     * buffer sizes returned from the first call might still be too small on
+     * the next call since the qe_id_info and issuer_chain could change
+     * between calls. To compensate, loop until success.
+     */
+    while ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
     {
         if (!(args.qe_id_info = realloc(args.qe_id_info, args.qe_id_info_size)))
         {
@@ -63,18 +69,21 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args_out)
             OE_RAISE(OE_OUT_OF_MEMORY);
         }
 
-        r = oe_internal_get_qe_identify_info(
-            &retval,
-            args.qe_id_info,
-            args.qe_id_info_size,
-            &args.qe_id_info_size,
-            args.issuer_chain,
-            args.issuer_chain_size,
-            &args.issuer_chain_size);
+        if (oe_internal_get_qe_identify_info(
+                &retval,
+                args.qe_id_info,
+                args.qe_id_info_size,
+                &args.qe_id_info_size,
+                args.issuer_chain,
+                args.issuer_chain_size,
+                &args.issuer_chain_size) != OE_OK)
+        {
+            OE_RAISE(OE_FAILURE);
+        }
     }
 
-    if (r != OE_OK)
-        OE_RAISE(r);
+    if ((oe_result_t)retval != OE_OK)
+        OE_RAISE((oe_result_t)retval);
 
     // Check for null terminators.
     if (args.qe_id_info[args.qe_id_info_size - 1] != 0 ||
