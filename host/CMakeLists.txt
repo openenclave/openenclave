@@ -3,18 +3,38 @@
 
 ##==============================================================================
 ##
+## These rules generate the edge routines for the internal ECALLs/OCALLs used
+## by liboehost/liboecore.
+##
+##==============================================================================
+
+if(OE_SGX)
+    set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+    set(INTERNAL_EDL ${EDL_DIR}/sgx/internal.edl)
+
+    add_custom_command(
+        OUTPUT internal_u.h internal_u.c internal_args.h
+        DEPENDS ${INTERNAL_EDL} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${INTERNAL_EDL})
+
+    add_custom_target(internal_untrusted_edl
+        DEPENDS internal_u.h internal_u.c internal_args.h)
+endif()
+
+##==============================================================================
+##
 ## These rules generate the edge routines for the SYSCALL interface, which is
 ## installed by oe_register_syscall_ecall_function_table().
 ##
 ##==============================================================================
 
 set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
-set(EDL_FILE ${EDL_DIR}/syscall.edl)
+set(SYSCALL_EDL ${EDL_DIR}/syscall.edl)
 
 add_custom_command(
     OUTPUT syscall_u.h syscall_u.c syscall_args.h
-    DEPENDS ${EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${EDL_FILE})
+    DEPENDS ${SYSCALL_EDL} edger8r
+    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SYSCALL_EDL})
 
 add_custom_target(syscall_untrusted_edl
     DEPENDS syscall_u.h syscall_u.c syscall_args.h)
@@ -68,12 +88,15 @@ if (OE_SGX)
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c
+    sgx/asym_keys.c
     sgx/calls.c
     sgx/create.c
     sgx/elf.c
     sgx/enclave.c
     sgx/enclavemanager.c
     sgx/exception.c
+    sgx/internal_u_wrapper.c
+    sgx/internal.c
     sgx/load.c
     sgx/loadelf.c
     sgx/loadpe.c
@@ -125,7 +148,6 @@ add_library(oehost STATIC
   ../common/kdf.c
   ../common/lockless_queue.c
   ../common/safecrt.c
-  asym_keys.c
   dupenv.c
   error.c
   files.c
@@ -151,6 +173,10 @@ if(OE_SGX)
 endif()
 
 add_dependencies(oehost syscall_untrusted_edl)
+
+if(OE_SGX)
+    add_dependencies(oehost internal_untrusted_edl)
+endif()
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
