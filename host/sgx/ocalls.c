@@ -212,6 +212,12 @@ uint32_t oe_internal_qe_id_info(
     size_t issuer_chain_size,
     size_t* issuer_chain_size_out)
 {
+    OE_UNUSED(qe_id_info);
+    OE_UNUSED(qe_id_info_size);
+    OE_UNUSED(qe_id_info_size_out);
+    OE_UNUSED(issuer_chain);
+    OE_UNUSED(issuer_chain_size);
+    OE_UNUSED(issuer_chain_size_out);
     return (uint32_t)OE_UNSUPPORTED;
 }
 
