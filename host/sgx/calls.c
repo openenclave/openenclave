@@ -369,7 +369,6 @@ static const char* oe_ocall_str(oe_func_t ocall)
 {
     static const char* func_names[] = {"CALL_HOST_FUNCTION",
                                        "GET_REVOCATION_INFO",
-                                       "GET_QE_ID_INFO",
                                        "THREAD_WAKE",
                                        "THREAD_WAIT",
                                        "THREAD_WAKE_WAIT",
@@ -481,9 +480,6 @@ static oe_result_t _handle_ocall(
         // Quote revocation is supported only on libsgx platforms.
         case OE_OCALL_GET_REVOCATION_INFO:
             HandleGetQuoteRevocationInfo(arg_in);
-            break;
-        case OE_OCALL_GET_QE_ID_INFO:
-            HandleGetQuoteEnclaveIdentityInfo(arg_in);
             break;
 #endif
 

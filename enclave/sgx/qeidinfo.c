@@ -8,96 +8,95 @@
 #include <openenclave/internal/raise.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../common/sgx/qeidentity.h"
-
-/**
- * Validate and copy buffer to enclave memory.
- */
-static oe_result_t _copy_buffer_to_enclave(
-    uint8_t** dst,
-    size_t* dst_size,
-    const uint8_t* src,
-    size_t src_size)
-{
-    oe_result_t result = OE_FAILURE;
-    if (!src || src_size == 0 || !oe_is_outside_enclave(src, src_size) ||
-        dst == NULL || dst_size == NULL)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    *dst = malloc(src_size);
-    if (*dst == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    OE_CHECK(oe_memcpy_s(*dst, src_size, src, src_size));
-    *dst_size = src_size;
-    result = OE_OK;
-
-done:
-    return result;
-}
+#include "internal_t.h"
 
 /**
  * Call into host to fetch qe identity information.
  */
-oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
+oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args_out)
 {
     oe_result_t result = OE_FAILURE;
-    size_t host_args_buffer_size = sizeof(*args);
-    uint8_t* host_args_buffer = NULL;
-    oe_get_qe_identity_info_args_t* host_args = NULL;
-    oe_get_qe_identity_info_args_t tmp_args = {0};
+    oe_result_t r;
+    const size_t QE_ID_INFO_SIZE = OE_PAGE_SIZE;
+    const size_t ISSUER_CHAIN_SIZE = OE_PAGE_SIZE;
+    uint32_t retval;
+    oe_get_qe_identity_info_args_t args;
 
-    if (args == NULL)
+    if (args_out == NULL)
         OE_RAISE(OE_FAILURE);
 
-    // allocate host memory to hold enclave arguments before calling into host
-    // for getting qe identity info
-    host_args_buffer = oe_host_malloc(host_args_buffer_size);
-    if (host_args_buffer == NULL)
+    memset(args_out, 0, sizeof(oe_get_qe_identity_info_args_t));
+    memset(&args, 0, sizeof(oe_get_qe_identity_info_args_t));
+
+    if (!(args.qe_id_info = malloc(QE_ID_INFO_SIZE)))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    // Copy args struct.
-    host_args = (oe_get_qe_identity_info_args_t*)host_args_buffer;
-    *host_args = *args;
+    if (!(args.issuer_chain = malloc(ISSUER_CHAIN_SIZE)))
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
-    result = oe_ocall(OE_OCALL_GET_QE_ID_INFO, (uint64_t)host_args, NULL);
-    OE_CHECK(result);
+    args.qe_id_info_size = QE_ID_INFO_SIZE;
+    args.issuer_chain_size = ISSUER_CHAIN_SIZE;
 
-    // Copy args to prevent TOCTOU issues.
-    tmp_args = *host_args;
-    if (tmp_args.result == OE_QUOTE_PROVIDER_CALL_ERROR)
-        OE_TRACE_WARNING(
-            "Warning: QE Identity was not supported by quote provider\n");
+    /* First call (one or more buffers might be too small). */
+    r = oe_internal_get_qe_identify_info(
+        &retval,
+        args.qe_id_info,
+        args.qe_id_info_size,
+        &args.qe_id_info_size,
+        args.issuer_chain,
+        args.issuer_chain_size,
+        &args.issuer_chain_size);
 
-    OE_CHECK_NO_TRACE(tmp_args.result);
+    /* Subsequent calls (expand the buffers as needed). */
+    while (r == OE_BUFFER_TOO_SMALL)
+    {
+        if (!(args.qe_id_info = realloc(args.qe_id_info, args.qe_id_info_size)))
+        {
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        }
 
-    if (tmp_args.host_out_buffer == NULL ||
-        !oe_is_outside_enclave(tmp_args.host_out_buffer, sizeof(uint8_t)))
-        OE_RAISE(OE_UNEXPECTED);
+        if (!(args.issuer_chain =
+                  realloc(args.issuer_chain, args.issuer_chain_size)))
+        {
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        }
 
-    // Copy the return data back into enclave address space
-    // Ensure that all required outputs exist.
-    OE_CHECK(_copy_buffer_to_enclave(
-        &args->qe_id_info,
-        &args->qe_id_info_size,
-        tmp_args.qe_id_info,
-        tmp_args.qe_id_info_size));
-    OE_CHECK(_copy_buffer_to_enclave(
-        &args->issuer_chain,
-        &args->issuer_chain_size,
-        tmp_args.issuer_chain,
-        tmp_args.issuer_chain_size));
+        r = oe_internal_get_qe_identify_info(
+            &retval,
+            args.qe_id_info,
+            args.qe_id_info_size,
+            &args.qe_id_info_size,
+            args.issuer_chain,
+            args.issuer_chain_size,
+            &args.issuer_chain_size);
+    }
+
+    if (r != OE_OK)
+        OE_RAISE(r);
 
     // Check for null terminators.
-    if (args->qe_id_info[args->qe_id_info_size - 1] != 0 ||
-        args->issuer_chain[args->issuer_chain_size - 1] != 0)
+    if (args.qe_id_info[args.qe_id_info_size - 1] != 0 ||
+        args.issuer_chain[args.issuer_chain_size - 1] != 0)
+    {
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
+    }
+
+    args_out->qe_id_info = args.qe_id_info;
+    args_out->issuer_chain = args.issuer_chain;
+    args.qe_id_info = NULL;
+    args.issuer_chain = NULL;
 
     result = OE_OK;
+
 done:
-    // Free args buffer and buffer allocated by host.
-    if (host_args_buffer)
-        oe_host_free(host_args_buffer);
+
+    if (args.qe_id_info)
+        free(args.qe_id_info);
+
+    if (args.issuer_chain)
+        free(args.issuer_chain);
 
     return result;
 }
@@ -111,7 +110,4 @@ void oe_cleanup_qe_identity_info_args(oe_get_qe_identity_info_args_t* args)
     // Free buffers on the enclave side.
     free(args->issuer_chain);
     free(args->qe_id_info);
-
-    if (args->host_out_buffer)
-        oe_host_free(args->host_out_buffer);
 }

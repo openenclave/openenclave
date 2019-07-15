@@ -43,5 +43,13 @@ enclave {
             [out, size=quote_size] void* quote,
             size_t quote_size,
             [out] size_t* quote_size_out);
+
+        uint32_t oe_internal_get_qe_identify_info(
+            [out, size=qe_id_info_size] void* qe_id_info,
+            size_t qe_id_info_size,
+            [out, count=1] size_t* qe_id_info_size_out,
+            [out, size=issuer_chain_size] void* issuer_chain,
+            size_t issuer_chain_size,
+            [out, count=1] size_t* issuer_chain_size_out);
     };
 };

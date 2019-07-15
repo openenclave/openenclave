@@ -20,6 +20,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/elf.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
@@ -142,7 +143,7 @@ uint32_t oe_internal_get_quote(
     return (uint32_t)result;
 }
 
-#ifdef OE_USE_LIBSGX
+#if !defined(OE_USE_LIBSGX)
 
 void HandleGetQuoteRevocationInfo(uint64_t arg_in)
 {
@@ -154,17 +155,67 @@ void HandleGetQuoteRevocationInfo(uint64_t arg_in)
     args->result = oe_get_revocation_info(args);
 }
 
-void HandleGetQuoteEnclaveIdentityInfo(uint64_t arg_in)
+uint32_t oe_internal_get_qe_identify_info(
+    void* qe_id_info,
+    size_t qe_id_info_size,
+    size_t* qe_id_info_size_out,
+    void* issuer_chain,
+    size_t issuer_chain_size,
+    size_t* issuer_chain_size_out)
 {
-    oe_get_qe_identity_info_args_t* args =
-        (oe_get_qe_identity_info_args_t*)arg_in;
-    if (!args)
-        return;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_get_qe_identity_info_args_t args;
 
-    args->result = oe_get_qe_identity_info(args);
+    if (!qe_id_info_size_out || !issuer_chain_size_out)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    memset(&args, 0, sizeof(args));
+    OE_CHECK(oe_get_qe_identity_info(&args));
+
+    if (args.qe_id_info_size > qe_id_info_size)
+    {
+        *qe_id_info_size_out = args.qe_id_info_size;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    if (args.issuer_chain_size > issuer_chain_size)
+    {
+        *issuer_chain_size_out = args.issuer_chain_size;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    if (qe_id_info)
+        memcpy(qe_id_info, args.qe_id_info, args.qe_id_info_size);
+
+    *qe_id_info_size_out = args.qe_id_info_size;
+
+    if (issuer_chain)
+        memcpy(issuer_chain, args.issuer_chain, args.issuer_chain_size);
+
+    *issuer_chain_size_out = args.issuer_chain_size;
+
+done:
+
+    if (args.host_out_buffer)
+        free(args.host_out_buffer);
+
+    return (uint32_t)result;
 }
 
-#endif
+#else /* !defined(OE_USE_LIBSGX) */
+
+uint32_t oe_internal_qe_id_info(
+    void* qe_id_info,
+    size_t qe_id_info_size,
+    size_t* qe_id_info_size_out,
+    void* issuer_chain,
+    size_t issuer_chain_size,
+    size_t* issuer_chain_size_out)
+{
+    return (uint32_t)OE_UNSUPPORTED;
+}
+
+#endif /* !defined(OE_USE_LIBSGX) */
 
 uint32_t oe_internal_get_qetarget_info(sgx_target_info_t* target_info)
 {
