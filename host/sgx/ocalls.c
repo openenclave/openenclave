@@ -204,7 +204,7 @@ done:
 
 #else /* !defined(OE_USE_LIBSGX) */
 
-uint32_t oe_internal_qe_id_info(
+uint32_t oe_internal_get_qe_identify_info(
     void* qe_id_info,
     size_t qe_id_info_size,
     size_t* qe_id_info_size_out,
