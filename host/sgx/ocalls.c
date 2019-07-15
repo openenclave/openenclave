@@ -26,6 +26,7 @@
 #include <openenclave/internal/utils.h>
 #include "../ocalls.h"
 #include "enclave.h"
+#include "internal_u.h"
 #include "ocalls.h"
 #include "quote.h"
 #include "sgxquoteprovider.h"
@@ -159,13 +160,9 @@ void HandleGetQuoteEnclaveIdentityInfo(uint64_t arg_in)
 
 #endif
 
-void HandleGetQETargetInfo(uint64_t arg_in)
+uint32_t oe_internal_get_qetarget_info(sgx_target_info_t* target_info)
 {
-    oe_get_qetarget_info_args_t* args = (oe_get_qetarget_info_args_t*)arg_in;
-    if (!args)
-        return;
-
-    args->result = sgx_get_qetarget_info(&args->target_info);
+    return sgx_get_qetarget_info(target_info);
 }
 
 static char** _backtrace_symbols(

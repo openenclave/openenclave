@@ -34,5 +34,8 @@ enclave {
 
         /* This function returns its value parameter. */
         int oe_internal_ping_ocall(int value);
+
+        uint32_t oe_internal_get_qetarget_info(
+            [out] sgx_target_info_t* target_info);
     };
 };

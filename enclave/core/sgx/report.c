@@ -122,27 +122,12 @@ done:
 
 static oe_result_t _get_sgx_target_info(sgx_target_info_t* target_info)
 {
-    oe_result_t result = OE_UNEXPECTED;
-    oe_get_qetarget_info_args_t* args =
-        (oe_get_qetarget_info_args_t*)oe_host_calloc(1, sizeof(*args));
-    if (args == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
+    uint32_t retval;
 
-    OE_CHECK(oe_ocall(OE_OCALL_GET_QE_TARGET_INFO, (uint64_t)args, NULL));
+    if (oe_internal_get_qetarget_info(&retval, target_info) != OE_OK)
+        return OE_FAILURE;
 
-    result = args->result;
-    if (result == OE_OK)
-        *target_info = args->target_info;
-
-    result = OE_OK;
-done:
-    if (args)
-    {
-        oe_secure_zero_fill(args, sizeof(*args));
-        oe_host_free(args);
-    }
-
-    return result;
+    return (oe_result_t)retval;
 }
 
 static oe_result_t _get_quote(
@@ -151,7 +136,7 @@ static oe_result_t _get_quote(
     size_t* quote_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t arg_size = sizeof(oe_get_qetarget_info_args_t);
+    size_t arg_size = sizeof(oe_get_quote_args_t);
 
     // If quote buffer is NULL, then ignore passed in quote_size value.
     // This treats scenarios where quote == NULL and *quote_size == large-value
