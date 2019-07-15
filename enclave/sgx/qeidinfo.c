@@ -83,8 +83,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args_out)
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
 
-    args_out->qe_id_info = args.qe_id_info;
-    args_out->issuer_chain = args.issuer_chain;
+    *args_out = args;
     args.qe_id_info = NULL;
     args.issuer_chain = NULL;
 
