@@ -24,6 +24,7 @@
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
+#include "internal_t.h"
 #include "report.h"
 #include "td.h"
 
@@ -470,16 +471,6 @@ static void _handle_ecall(
         case OE_ECALL_INIT_ENCLAVE:
         {
             arg_out = _handle_init_enclave(arg_in);
-            break;
-        }
-        case OE_ECALL_GET_SGX_REPORT:
-        {
-            arg_out = _handle_get_sgx_report(arg_in);
-            break;
-        }
-        case OE_ECALL_VERIFY_REPORT:
-        {
-            oe_handle_verify_report(arg_in, &arg_out);
             break;
         }
         case OE_ECALL_LOG_INIT:

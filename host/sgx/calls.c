@@ -398,8 +398,6 @@ static const char* oe_ecall_str(oe_func_t ecall)
     static const char* func_names[] = {"DESTRUCTOR",
                                        "INIT_ENCLAVE",
                                        "CALL_ENCLAVE_FUNCTION",
-                                       "VERIFY_REPORT",
-                                       "GET_SGX_REPORT",
                                        "VIRTUAL_EXCEPTION_HANDLER",
                                        "LOG_INIT",
                                        "GET_PUBLIC_KEY_BY_POLICY",

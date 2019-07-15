@@ -13,10 +13,21 @@
 
 enclave {
 
+    include "openenclave/internal/sgxtypes.h"
+
     trusted {
 
         /* This function returns oe_internal_ping_ocall(value). */
         public int oe_internal_ping_ecall(int value);
+
+        public uint32_t oe_internal_get_sgx_report_ecall(
+            [in, size=opt_params_size] const void* opt_params,
+            size_t opt_params_size,
+            [out] sgx_report_t* report);
+
+        public uint32_t oe_internal_verify_report(
+            [in, size=report_size] const void* report,
+            size_t report_size);
     };
 
     untrusted {

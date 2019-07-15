@@ -13,6 +13,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
+#include "internal_t.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
@@ -393,36 +394,24 @@ void oe_free_report(uint8_t* report_buffer)
     oe_free(report_buffer);
 }
 
-oe_result_t _handle_get_sgx_report(uint64_t arg_in)
+uint32_t oe_internal_get_sgx_report_ecall(
+    const void* opt_params,
+    size_t opt_params_size,
+    sgx_report_t* report)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_sgx_report_args_t* host_arg = (oe_get_sgx_report_args_t*)arg_in;
-    oe_get_sgx_report_args_t enc_arg;
     size_t report_buffer_size = sizeof(sgx_report_t);
 
-    if (!oe_is_outside_enclave(host_arg, sizeof(*host_arg)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    // Validate and copy args to prevent TOCTOU issues.
-    // oe_get_sgx_report_args_t is a flat structure with no nested pointers.
-    enc_arg = *host_arg;
-
-    // Host is not allowed to pass report data. Otherwise, the host can use the
-    // enclave to put whatever data it wants in a report. The data field is
-    // intended to be used for digital signatures and is not allowed to be
-    // tampered with by the host.
     OE_CHECK(_get_local_report(
         NULL,
         0,
-        (enc_arg.opt_params_size != 0) ? enc_arg.opt_params : NULL,
-        enc_arg.opt_params_size,
-        (uint8_t*)&enc_arg.sgx_report,
+        opt_params,
+        opt_params_size,
+        (uint8_t*)report,
         &report_buffer_size));
 
-    *host_arg = enc_arg;
     result = OE_OK;
-    host_arg->result = result;
-done:
 
-    return result;
+done:
+    return (uint32_t)result;
 }
