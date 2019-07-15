@@ -79,11 +79,9 @@ typedef enum _oe_func
     OE_ECALL_GET_PUBLIC_KEY_BY_POLICY,
     OE_ECALL_GET_PUBLIC_KEY,
     /* Caution: always add new ECALL function numbers here */
-
     OE_ECALL_MAX,
 
     OE_OCALL_CALL_HOST_FUNCTION = OE_OCALL_BASE,
-    OE_OCALL_GET_QUOTE,
     OE_OCALL_GET_REVOCATION_INFO,
     OE_OCALL_GET_QE_ID_INFO,
     OE_OCALL_THREAD_WAKE,
@@ -98,8 +96,8 @@ typedef enum _oe_func
     OE_OCALL_BACKTRACE_SYMBOLS,
     OE_OCALL_LOG,
     /* Caution: always add new OCALL function numbers here */
-
     OE_OCALL_MAX, /* This value is never used */
+
     __OE_FUNC_MAX = OE_ENUM_MAX,
 } oe_func_t;
 

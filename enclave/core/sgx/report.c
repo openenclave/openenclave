@@ -136,7 +136,7 @@ static oe_result_t _get_quote(
     size_t* quote_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t arg_size = sizeof(oe_get_quote_args_t);
+    uint32_t retval;
 
     // If quote buffer is NULL, then ignore passed in quote_size value.
     // This treats scenarios where quote == NULL and *quote_size == large-value
@@ -144,32 +144,11 @@ static oe_result_t _get_quote(
     if (quote == NULL)
         *quote_size = 0;
 
-    // Allocate memory for args structure + quote buffer.
-    arg_size += *quote_size;
-
-    oe_get_quote_args_t* args =
-        (oe_get_quote_args_t*)oe_host_calloc(1, arg_size);
-    args->sgx_report = *sgx_report;
-    args->quote_size = *quote_size;
-
-    if (args == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    OE_CHECK(oe_ocall(OE_OCALL_GET_QUOTE, (uint64_t)args, NULL));
-    result = args->result;
-
-    if (result == OE_OK || result == OE_BUFFER_TOO_SMALL)
-        *quote_size = args->quote_size;
-
-    if (result == OE_OK)
-        OE_CHECK(oe_memcpy_s(quote, *quote_size, args->quote, *quote_size));
+    OE_CHECK(oe_internal_get_quote(
+        &retval, sgx_report, quote, *quote_size, quote_size));
+    result = (oe_result_t)retval;
 
 done:
-    if (args)
-    {
-        oe_secure_zero_fill(args, arg_size);
-        oe_host_free(args);
-    }
 
     return result;
 }

@@ -37,5 +37,11 @@ enclave {
 
         uint32_t oe_internal_get_qetarget_info(
             [out] sgx_target_info_t* target_info);
+
+        uint32_t oe_internal_get_quote(
+            [in] const sgx_report_t* sgx_report,
+            [out, size=quote_size] void* quote,
+            size_t quote_size,
+            [out] size_t* quote_size_out);
     };
 };

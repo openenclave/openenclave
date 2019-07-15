@@ -126,14 +126,20 @@ void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t arg_in)
 #endif
 }
 
-void HandleGetQuote(uint64_t arg_in)
+uint32_t oe_internal_get_quote(
+    const sgx_report_t* sgx_report,
+    void* quote,
+    size_t quote_size,
+    size_t* quote_size_out)
 {
-    oe_get_quote_args_t* args = (oe_get_quote_args_t*)arg_in;
-    if (!args)
-        return;
+    oe_result_t result;
 
-    args->result =
-        sgx_get_quote(&args->sgx_report, args->quote, &args->quote_size);
+    result = sgx_get_quote(sgx_report, quote, &quote_size);
+
+    if (quote_size_out)
+        *quote_size_out = quote_size;
+
+    return (uint32_t)result;
 }
 
 #ifdef OE_USE_LIBSGX

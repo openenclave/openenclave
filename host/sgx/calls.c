@@ -368,7 +368,6 @@ done:
 static const char* oe_ocall_str(oe_func_t ocall)
 {
     static const char* func_names[] = {"CALL_HOST_FUNCTION",
-                                       "GET_QUOTE",
                                        "GET_REVOCATION_INFO",
                                        "GET_QE_ID_INFO",
                                        "THREAD_WAKE",
@@ -476,10 +475,6 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_THREAD_WAKE_WAIT:
             HandleThreadWakeWait(enclave, arg_in);
-            break;
-
-        case OE_OCALL_GET_QUOTE:
-            HandleGetQuote(arg_in);
             break;
 
 #ifdef OE_USE_LIBSGX
