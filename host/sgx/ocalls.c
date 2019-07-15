@@ -143,7 +143,7 @@ uint32_t oe_internal_get_quote(
     return (uint32_t)result;
 }
 
-#if !defined(OE_USE_LIBSGX)
+#if defined(OE_USE_LIBSGX)
 
 void HandleGetQuoteRevocationInfo(uint64_t arg_in)
 {
