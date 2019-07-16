@@ -155,6 +155,9 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
         if (_once == false)
         {
+            /* Install the internal ecall function table. */
+            OE_CHECK(oe_register_internal_ecall_function_table());
+
             /* Set the global enclave handle */
             oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)arg_in;
             oe_init_enclave_args_t safe_args;

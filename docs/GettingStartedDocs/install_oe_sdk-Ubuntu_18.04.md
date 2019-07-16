@@ -2,10 +2,13 @@
 
 ## Platform requirements
 
-- Ubuntu 18.04-LTS 64-bits
+- Ubuntu 18.04-LTS 64-bit.
+     - Instructions are also available for [Ubuntu 16.04-LTS 64-bit](/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md).
 - SGX1-capable system with support for Flexible Launch Control (FLC).
     - You can acquire a VM with the required features from [Azure Confidential Compute](https://azure.microsoft.com/en-us/solutions/confidential-compute/).
-    - Alternatively, you can [check if your existing device supports SGX with FLC](/docs/GettingStartedDocs/Contributors/building_oe_sdk.md#1-determine-the-sgx-support-level-on-your-developmenttarget-system).
+    - If you are setting up your own device, [check if your existing device supports SGX with FLC](/docs/GettingStartedDocs/Contributors/building_oe_sdk.md#1-determine-the-sgx-support-level-on-your-developmenttarget-system).
+        - If your device only supports SGX without FLC, you will need to [clone and build OE SDK](/docs/GettingStartedDocs/Contributors/SGX1GettingStarted.md) for that configuration.
+        - If your device does not support SGX, follow the [instructions for simulation mode](/docs/GettingStartedDocs/install_oe_sdk-Simulation.md).
 
 ### 1. Configure the Intel and Microsoft APT Repositories
 ```bash
@@ -23,7 +26,7 @@ wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add 
 ```bash
 sudo apt update
 sudo apt -y install dkms
-wget https://download.01.org/intel-sgx/dcap-1.1/linux/dcap_installers/ubuntuServer18.04/sgx_linux_x64_driver_dcap_1.1.100.2786ad8.bin -O sgx_linux_x64_driver.bin
+wget https://download.01.org/intel-sgx/dcap-1.2/linux/dcap_installers/ubuntuServer18.04/sgx_linux_x64_driver_1.12_c110012.bin -O sgx_linux_x64_driver.bin
 chmod +x sgx_linux_x64_driver.bin
 sudo ./sgx_linux_x64_driver.bin
 ```
