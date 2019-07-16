@@ -125,7 +125,7 @@ oe_printf("\n");
         {
             if (in.crl_size[i] < out.crl_size[i])
             {
-                if (!(in.crl[i] = realloc(in.crl, out.crl_size[i])))
+                if (!(in.crl[i] = realloc(in.crl[i], out.crl_size[i])))
                     OE_RAISE(OE_OUT_OF_MEMORY);
 
                 in.crl_size[i] = out.crl_size[i];
@@ -144,7 +144,8 @@ oe_printf("\n");
             if (in.crl_issuer_chain_size[i] < out.crl_issuer_chain_size[i])
             {
                 if (!(in.crl_issuer_chain[i] = realloc(
-                          in.crl_issuer_chain, out.crl_issuer_chain_size[i])))
+                          in.crl_issuer_chain[i],
+                          out.crl_issuer_chain_size[i])))
                 {
                     OE_RAISE(OE_OUT_OF_MEMORY);
                 }
