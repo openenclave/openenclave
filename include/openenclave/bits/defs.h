@@ -156,9 +156,7 @@
  */
 #if defined(_ARM_) || defined(_M_ARM) || defined(__arm__) || \
     defined(__thumb__) || defined(__aarch64__)
-#define OE_THREAD_LOCAL_STORAGE
-#else
-#define OE_THREAD_LOCAL_STORAGE __thread
+#define __thread
 #endif
 
 #endif /* _OE_BITS_DEFS_H */
