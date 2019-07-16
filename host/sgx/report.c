@@ -44,7 +44,7 @@ static oe_result_t _get_local_report(
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    OE_CHECK(oe_internal_get_sgx_report_ecall(
+    OE_CHECK(oe_get_sgx_report_ecall(
         enclave,
         &retval,
         opt_params,
@@ -302,8 +302,7 @@ oe_result_t oe_verify_report(
         if (enclave == NULL)
             OE_RAISE(OE_INVALID_PARAMETER);
 
-        OE_CHECK(
-            oe_internal_verify_report(enclave, &retval, report, report_size));
+        OE_CHECK(oe_verify_report_ecall(enclave, &retval, report, report_size));
 
         OE_CHECK(retval);
     }

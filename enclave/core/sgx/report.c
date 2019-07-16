@@ -124,7 +124,7 @@ static oe_result_t _get_sgx_target_info(sgx_target_info_t* target_info)
 {
     uint32_t retval;
 
-    if (oe_internal_get_qetarget_info(&retval, target_info) != OE_OK)
+    if (oe_get_qetarget_info_ocall(&retval, target_info) != OE_OK)
         return OE_FAILURE;
 
     return (oe_result_t)retval;
@@ -144,7 +144,7 @@ static oe_result_t _get_quote(
     if (quote == NULL)
         *quote_size = 0;
 
-    OE_CHECK(oe_internal_get_quote(
+    OE_CHECK(oe_get_quote_ocall(
         &retval, sgx_report, quote, *quote_size, quote_size));
     result = (oe_result_t)retval;
 
@@ -358,7 +358,7 @@ void oe_free_report(uint8_t* report_buffer)
     oe_free(report_buffer);
 }
 
-uint32_t oe_internal_get_sgx_report_ecall(
+uint32_t oe_get_sgx_report_ecall(
     const void* opt_params,
     size_t opt_params_size,
     sgx_report_t* report)

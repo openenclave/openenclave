@@ -63,7 +63,7 @@ oe_result_t oe_get_public_key_by_policy(
             OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
-    if (oe_internal_get_public_key_by_policy(
+    if (oe_get_public_key_by_policy_ecall(
             enclave,
             &retval,
             (uint32_t)seal_policy,
@@ -87,7 +87,7 @@ oe_result_t oe_get_public_key_by_policy(
         if (!(arg.key_info = realloc(arg.key_info, arg.key_info_size)))
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        if (oe_internal_get_public_key_by_policy(
+        if (oe_get_public_key_by_policy_ecall(
                 enclave,
                 &retval,
                 (uint32_t)seal_policy,
@@ -170,7 +170,7 @@ oe_result_t oe_get_public_key(
             OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
-    if (oe_internal_get_public_key(
+    if (oe_get_public_key_ecall(
             enclave,
             &retval,
             key_params,
@@ -189,7 +189,7 @@ oe_result_t oe_get_public_key(
         if (!(arg.key_buffer = realloc(arg.key_buffer, arg.key_buffer_size)))
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        if (oe_internal_get_public_key(
+        if (oe_get_public_key_ecall(
                 enclave,
                 &retval,
                 key_params,

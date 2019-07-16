@@ -39,7 +39,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args_out)
     args.issuer_chain_size = ISSUER_CHAIN_SIZE;
 
     /* First call (one or more buffers might be too small). */
-    if (oe_internal_get_qe_identify_info(
+    if (oe_get_qe_identify_info_ocall(
             &retval,
             args.qe_id_info,
             args.qe_id_info_size,
@@ -69,7 +69,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args_out)
             OE_RAISE(OE_OUT_OF_MEMORY);
         }
 
-        if (oe_internal_get_qe_identify_info(
+        if (oe_get_qe_identify_info_ocall(
                 &retval,
                 args.qe_id_info,
                 args.qe_id_info_size,

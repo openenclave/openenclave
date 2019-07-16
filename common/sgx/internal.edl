@@ -11,23 +11,23 @@
 **==============================================================================
 */
 
-enclave {
-
+enclave
+{
     include "openenclave/bits/types.h"
     include "openenclave/internal/sgxtypes.h"
 
-    trusted {
-
-        public uint32_t oe_internal_get_sgx_report_ecall(
+    trusted
+    {
+        public uint32_t oe_get_sgx_report_ecall(
             [in, size=opt_params_size] const void* opt_params,
             size_t opt_params_size,
             [out] sgx_report_t* report);
 
-        public uint32_t oe_internal_verify_report(
+        public uint32_t oe_verify_report_ecall(
             [in, size=report_size] const void* report,
             size_t report_size);
 
-        public uint32_t oe_internal_get_public_key(
+        public uint32_t oe_get_public_key_ecall(
             [in, count=1] const oe_asymmetric_key_params_t* key_params,
             [in, size=key_info_size] const void* key_info,
             size_t key_info_size,
@@ -35,7 +35,7 @@ enclave {
             size_t key_buffer_size,
             [out, count=1 ] size_t* key_buffer_size_out);
 
-        public uint32_t oe_internal_get_public_key_by_policy(
+        public uint32_t oe_get_public_key_by_policy_ecall(
             uint32_t seal_policy,
             [in, count=1] const oe_asymmetric_key_params_t* key_params,
             [out, size=key_buffer_size] void* key_buffer,
@@ -46,18 +46,18 @@ enclave {
             [out, count=1 ] size_t* key_info_size_out);
     };
 
-    untrusted {
-
-        uint32_t oe_internal_get_qetarget_info(
+    untrusted
+    {
+        uint32_t oe_get_qetarget_info_ocall(
             [out] sgx_target_info_t* target_info);
 
-        uint32_t oe_internal_get_quote(
+        uint32_t oe_get_quote_ocall(
             [in] const sgx_report_t* sgx_report,
             [out, size=quote_size] void* quote,
             size_t quote_size,
             [out] size_t* quote_size_out);
 
-        uint32_t oe_internal_get_qe_identify_info(
+        uint32_t oe_get_qe_identify_info_ocall(
             [out, size=qe_id_info_size] void* qe_id_info,
             size_t qe_id_info_size,
             [out, count=1] size_t* qe_id_info_size_out,
@@ -65,27 +65,18 @@ enclave {
             size_t issuer_chain_size,
             [out, count=1] size_t* issuer_chain_size_out);
 
-        uint32_t oe_internal_get_revocation_info(
-            /* fmspc */
+        uint32_t oe_get_revocation_info_ocall(
             [in] uint8_t fmspc[6],
-
-            /* crl_urls */
             size_t num_crl_urls,
             [in, string] const char* crl_urls0,
             [in, string] const char* crl_urls1,
             [in, string] const char* crl_urls2,
-
-            /* tcb_info */
             [out, size=tcb_info_size] void* tcb_info,
             size_t tcb_info_size,
             [out, count=1] size_t* tcb_info_size_out,
-
-            /* tcb_issuer_chain */
             [out, size=tcb_issuer_chain_size] void* tcb_issuer_chain,
             size_t tcb_issuer_chain_size,
             [out, count=1] size_t* tcb_issuer_chain_size_out,
-
-            /* crl */
             [out, size=crl0_size] void* crl0,
             size_t crl0_size,
             [out, count=1] size_t* crl0_size_out,
@@ -95,8 +86,6 @@ enclave {
             [out, size=crl2_size] void* crl2,
             size_t crl2_size,
             [out, count=1] size_t* crl2_size_out,
-
-            /* crl_issuer_chain */
             [out, size=crl_issuer_chain0_size] void* crl_issuer_chain0,
             size_t crl_issuer_chain0_size,
             [out, count=1] size_t* crl_issuer_chain0_size_out,

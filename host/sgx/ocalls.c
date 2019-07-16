@@ -127,7 +127,7 @@ void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t arg_in)
 #endif
 }
 
-uint32_t oe_internal_get_quote(
+uint32_t oe_get_quote_ocall(
     const sgx_report_t* sgx_report,
     void* quote,
     size_t quote_size,
@@ -170,7 +170,7 @@ done:
     return result;
 }
 
-uint32_t oe_internal_get_revocation_info(
+uint32_t oe_get_revocation_info_ocall(
     uint8_t fmspc[6],
     size_t num_crl_urls,
     const char* crl_urls0,
@@ -297,7 +297,7 @@ done:
 
 #if defined(OE_USE_LIBSGX)
 
-uint32_t oe_internal_get_qe_identify_info(
+uint32_t oe_get_qe_identify_info_ocall(
     void* qe_id_info,
     size_t qe_id_info_size,
     size_t* qe_id_info_size_out,
@@ -346,7 +346,7 @@ done:
 
 #else /* !defined(OE_USE_LIBSGX) */
 
-uint32_t oe_internal_get_qe_identify_info(
+uint32_t oe_get_qe_identify_info_ocall(
     void* qe_id_info,
     size_t qe_id_info_size,
     size_t* qe_id_info_size_out,
@@ -365,7 +365,7 @@ uint32_t oe_internal_get_qe_identify_info(
 
 #endif /* !defined(OE_USE_LIBSGX) */
 
-uint32_t oe_internal_get_qetarget_info(sgx_target_info_t* target_info)
+uint32_t oe_get_qetarget_info_ocall(sgx_target_info_t* target_info)
 {
     return sgx_get_qetarget_info(target_info);
 }

@@ -107,7 +107,7 @@ done:
     return result;
 }
 
-uint32_t oe_internal_verify_report(const void* report, size_t report_size)
+uint32_t oe_verify_report_ecall(const void* report, size_t report_size)
 {
     return (uint32_t)oe_verify_report(report, report_size, NULL);
 }

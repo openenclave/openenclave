@@ -41,7 +41,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     {
         memcpy(&out, &in, sizeof(out));
 
-        if (oe_internal_get_revocation_info(
+        if (oe_get_revocation_info_ocall(
                 &retval,
                 out.fmspc,
                 out.num_crl_urls,
