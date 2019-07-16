@@ -13,6 +13,5 @@ void __oe_assert_fail(
 {
     oe_host_printf(
         "Assertion failed: %s (%s: %s: %d)\n", expr, file, function, line);
-    oe_print_backtrace();
     oe_abort();
 }

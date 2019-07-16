@@ -143,6 +143,8 @@ uint32_t oe_get_quote_ocall(
     return (uint32_t)result;
 }
 
+#if defined(OE_USE_LIBSGX)
+
 /* Copy the source array to an output buffer. */
 static oe_result_t _copy_output_buffer(
     void* dest,
@@ -295,8 +297,6 @@ done:
     return (uint32_t)result;
 }
 
-#if defined(OE_USE_LIBSGX)
-
 uint32_t oe_get_qe_identify_info_ocall(
     void* qe_id_info,
     size_t qe_id_info_size,
@@ -346,6 +346,70 @@ done:
 
 #else /* !defined(OE_USE_LIBSGX) */
 
+uint32_t oe_get_revocation_info_ocall(
+    uint8_t fmspc[6],
+    size_t num_crl_urls,
+    const char* crl_urls0,
+    const char* crl_urls1,
+    const char* crl_urls2,
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_issuer_chain,
+    size_t tcb_issuer_chain_size,
+    size_t* tcb_issuer_chain_size_out,
+    void* crl0,
+    size_t crl0_size,
+    size_t* crl0_size_out,
+    void* crl1,
+    size_t crl1_size,
+    size_t* crl1_size_out,
+    void* crl2,
+    size_t crl2_size,
+    size_t* crl2_size_out,
+    void* crl_issuer_chain0,
+    size_t crl_issuer_chain0_size,
+    size_t* crl_issuer_chain0_size_out,
+    void* crl_issuer_chain1,
+    size_t crl_issuer_chain1_size,
+    size_t* crl_issuer_chain1_size_out,
+    void* crl_issuer_chain2,
+    size_t crl_issuer_chain2_size,
+    size_t* crl_issuer_chain2_size_out)
+{
+    OE_UNUSED(fmspc);
+    OE_UNUSED(num_crl_urls);
+    OE_UNUSED(crl_urls0);
+    OE_UNUSED(crl_urls1);
+    OE_UNUSED(crl_urls2);
+    OE_UNUSED(tcb_info);
+    OE_UNUSED(tcb_info_size);
+    OE_UNUSED(tcb_info_size_out);
+    OE_UNUSED(tcb_issuer_chain);
+    OE_UNUSED(tcb_issuer_chain_size);
+    OE_UNUSED(tcb_issuer_chain_size_out);
+    OE_UNUSED(crl0);
+    OE_UNUSED(crl0_size);
+    OE_UNUSED(crl0_size_out);
+    OE_UNUSED(crl1);
+    OE_UNUSED(crl1_size);
+    OE_UNUSED(crl1_size_out);
+    OE_UNUSED(crl2);
+    OE_UNUSED(crl2_size);
+    OE_UNUSED(crl2_size_out);
+    OE_UNUSED(crl_issuer_chain0);
+    OE_UNUSED(crl_issuer_chain0_size);
+    OE_UNUSED(crl_issuer_chain0_size_out);
+    OE_UNUSED(crl_issuer_chain1);
+    OE_UNUSED(crl_issuer_chain1_size);
+    OE_UNUSED(crl_issuer_chain1_size_out);
+    OE_UNUSED(crl_issuer_chain2);
+    OE_UNUSED(crl_issuer_chain2_size);
+    OE_UNUSED(crl_issuer_chain2_size_out);
+
+    return (uint32_t)OE_UNSUPPORTED;
+}
+
 uint32_t oe_get_qe_identify_info_ocall(
     void* qe_id_info,
     size_t qe_id_info_size,
@@ -360,6 +424,7 @@ uint32_t oe_get_qe_identify_info_ocall(
     OE_UNUSED(issuer_chain);
     OE_UNUSED(issuer_chain_size);
     OE_UNUSED(issuer_chain_size_out);
+
     return (uint32_t)OE_UNSUPPORTED;
 }
 

@@ -3,10 +3,10 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/corelibc/stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../common/sgx/revocation.h"
@@ -80,13 +80,6 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         if (retval != (oe_result_t)OE_BUFFER_TOO_SMALL)
             break;
 
-oe_printf("************************************************************\n");
-oe_printf("************************************************************\n");
-oe_printf("** CASE1                                                  **\n");
-oe_printf("************************************************************\n");
-oe_printf("************************************************************\n");
-oe_printf("\n");
-
         /* tcb_info */
         if (in.tcb_info_size < out.tcb_info_size)
         {
@@ -96,12 +89,6 @@ oe_printf("\n");
             in.tcb_info_size = out.tcb_info_size;
         }
 
-oe_printf("************************************************************\n");
-oe_printf("************************************************************\n");
-oe_printf("** CASE2                                                  **\n");
-oe_printf("************************************************************\n");
-oe_printf("************************************************************\n");
-oe_printf("\n");
         /* tcb_issuer_chain */
         if (in.tcb_issuer_chain_size < out.tcb_issuer_chain_size)
         {
@@ -114,12 +101,6 @@ oe_printf("\n");
             in.tcb_issuer_chain_size = out.tcb_issuer_chain_size;
         }
 
-oe_printf("************************************************************\n");
-oe_printf("************************************************************\n");
-oe_printf("** CASE3                                                  **\n");
-oe_printf("************************************************************\n");
-oe_printf("************************************************************\n");
-oe_printf("\n");
         /* crl */
         for (size_t i = 0; i < OE_COUNTOF(in.crl); i++)
         {
@@ -132,12 +113,6 @@ oe_printf("\n");
             }
         }
 
-oe_printf("************************************************************\n");
-oe_printf("************************************************************\n");
-oe_printf("** CASE4                                                  **\n");
-oe_printf("************************************************************\n");
-oe_printf("************************************************************\n");
-oe_printf("\n");
         /* crl_issuer_chain */
         for (size_t i = 0; i < OE_COUNTOF(in.crl_issuer_chain); i++)
         {
@@ -153,12 +128,6 @@ oe_printf("\n");
                 in.crl_issuer_chain_size[i] = out.crl_issuer_chain_size[i];
             }
         }
-oe_printf("************************************************************\n");
-oe_printf("************************************************************\n");
-oe_printf("** DONE                                                   **\n");
-oe_printf("************************************************************\n");
-oe_printf("************************************************************\n");
-oe_printf("\n");
     }
 
     OE_CHECK((oe_result_t)retval);
