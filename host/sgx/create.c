@@ -731,20 +731,6 @@ oe_result_t oe_create_enclave(
     /* Setup logging configuration */
     oe_log_enclave_init(enclave);
 
-    /* Peform a two-way ping with the enclave. This function is a placeholder
-     * and will be removed in Part II of this PR.
-     * ATTN: remove this when other EDL calls are ready.
-     */
-    {
-        const int VALUE = 12345;
-        int retval;
-
-        OE_CHECK(oe_internal_ping_ecall(enclave, &retval, VALUE));
-
-        if (retval != VALUE)
-            OE_RAISE(OE_FAILURE);
-    }
-
     *enclave_out = enclave;
     result = OE_OK;
 

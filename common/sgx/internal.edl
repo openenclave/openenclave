@@ -13,12 +13,10 @@
 
 enclave {
 
+    include "openenclave/bits/types.h"
     include "openenclave/internal/sgxtypes.h"
 
     trusted {
-
-        /* This function returns oe_internal_ping_ocall(value). */
-        public int oe_internal_ping_ecall(int value);
 
         public uint32_t oe_internal_get_sgx_report_ecall(
             [in, size=opt_params_size] const void* opt_params,
@@ -28,12 +26,19 @@ enclave {
         public uint32_t oe_internal_verify_report(
             [in, size=report_size] const void* report,
             size_t report_size);
+
+        public uint32_t oe_internal_get_public_key_by_policy(
+            uint32_t seal_policy,
+            [in, count=1] const oe_asymmetric_key_params_t* key_params,
+            [out, size=key_buffer_size] void* key_buffer,
+            size_t key_buffer_size,
+            [out, count=1 ] size_t* key_buffer_size_out,
+            [out, size=key_info_size] void* key_info,
+            size_t key_info_size,
+            [out, count=1 ] size_t* key_info_size_out);
     };
 
     untrusted {
-
-        /* This function returns its value parameter. */
-        int oe_internal_ping_ocall(int value);
 
         uint32_t oe_internal_get_qetarget_info(
             [out] sgx_target_info_t* target_info);

@@ -41,7 +41,6 @@ if (OE_SGX)
         sgx/exception.c
         sgx/globals.c
         sgx/init.c
-        sgx/internal.c
         sgx/internal_t_wrapper.c
         sgx/jump.c
         sgx/keys.c

@@ -96,7 +96,6 @@ if (OE_SGX)
     sgx/enclavemanager.c
     sgx/exception.c
     sgx/internal_u_wrapper.c
-    sgx/internal.c
     sgx/load.c
     sgx/loadelf.c
     sgx/loadpe.c

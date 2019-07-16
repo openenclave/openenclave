@@ -3,6 +3,8 @@
 
 #include "asym_keys.h"
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/asym_keys.h>
 #include <openenclave/internal/crypto/ec.h>
@@ -531,76 +533,65 @@ done:
     return result;
 }
 
-void oe_handle_get_public_key_by_policy(uint64_t arg_in)
+uint32_t oe_internal_get_public_key_by_policy(
+    uint32_t seal_policy,
+    const oe_asymmetric_key_params_t* key_params,
+    void* key_buffer,
+    size_t key_buffer_size,
+    size_t* key_buffer_size_out,
+    void* key_info,
+    size_t key_info_size,
+    size_t* key_info_size_out)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_public_key_by_policy_args_t* uarg =
-        (oe_get_public_key_by_policy_args_t*)arg_in;
-    oe_get_public_key_by_policy_args_t arg;
-    uint8_t* enclave_user_data = NULL;
-    uint8_t* host_key_info = NULL;
-    uint8_t* host_key_buffer = NULL;
+    struct
+    {
+        uint8_t* key_buffer;
+        size_t key_buffer_size;
+        uint8_t* key_info;
+        size_t key_info_size;
+    } arg;
 
-    /* Copy arguments to avoid time of use / time of check. */
-    if (!uarg || !oe_is_outside_enclave(uarg, sizeof(*uarg)))
-        return;
+    if (key_buffer_size_out)
+        *key_info_size_out = 0;
 
-    arg = *uarg;
-    arg.key_buffer = NULL;
-    arg.key_buffer_size = 0;
-    arg.key_info = NULL;
-    arg.key_info_size = 0;
+    if (key_info_size_out)
+        *key_info_size_out = 0;
 
-    OE_CHECK(_copy_to_from_host(
-        false,
-        arg.key_params.user_data,
-        arg.key_params.user_data_size,
-        &enclave_user_data));
+    if (!key_buffer_size_out || !key_info_size_out)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
-    arg.key_params.user_data = enclave_user_data;
+    memset(&arg, 0, sizeof(arg));
 
     /* Get the key. */
     OE_CHECK(oe_get_public_key_by_policy(
-        arg.seal_policy,
-        &arg.key_params,
+        (oe_seal_policy_t)seal_policy,
+        key_params,
         &arg.key_buffer,
         &arg.key_buffer_size,
         &arg.key_info,
         &arg.key_info_size));
 
-    /* Copy to host memory. */
-    OE_CHECK(_copy_to_from_host(
-        true, arg.key_info, arg.key_info_size, &host_key_info));
+    *key_buffer_size_out = arg.key_buffer_size;
+    *key_info_size_out = arg.key_info_size;
 
-    OE_CHECK(_copy_to_from_host(
-        true, arg.key_buffer, arg.key_buffer_size, &host_key_buffer));
+    if (key_buffer_size < arg.key_buffer_size)
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
 
-    /* Success. Just copy to unsafe struct now. */
-    uarg->key_info = host_key_info;
-    uarg->key_info_size = arg.key_info_size;
-    uarg->key_buffer = host_key_buffer;
-    uarg->key_buffer_size = arg.key_buffer_size;
-    host_key_info = NULL;
-    host_key_buffer = NULL;
+    if (key_info_size < arg.key_info_size)
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+    memcpy(key_buffer, arg.key_buffer, arg.key_buffer_size);
+    memcpy(key_info, arg.key_info, arg.key_info_size);
+
     result = OE_OK;
 
 done:
-    uarg->result = result;
 
-    if (enclave_user_data != NULL)
-        free(enclave_user_data);
+    oe_free(arg.key_buffer);
+    oe_free(arg.key_info);
 
-    if (arg.key_buffer != NULL)
-        free(arg.key_buffer);
-
-    if (arg.key_info != NULL)
-        free(arg.key_info);
-
-    if (host_key_info != NULL)
-        oe_host_free(host_key_info);
-
-    if (host_key_buffer != NULL)
-        oe_host_free(host_key_buffer);
+    return result;
 }
 
 void oe_handle_get_public_key(uint64_t arg_in)

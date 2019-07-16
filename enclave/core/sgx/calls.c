@@ -478,11 +478,6 @@ static void _handle_ecall(
             _handle_oelog_init(arg_in);
             break;
         }
-        case OE_ECALL_GET_PUBLIC_KEY_BY_POLICY:
-        {
-            oe_handle_get_public_key_by_policy(arg_in);
-            break;
-        }
         case OE_ECALL_GET_PUBLIC_KEY:
         {
             oe_handle_get_public_key(arg_in);
