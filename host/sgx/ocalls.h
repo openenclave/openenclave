@@ -14,11 +14,6 @@ void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg);
 void HandleThreadWake(oe_enclave_t* enclave, uint64_t arg);
 void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t arg_in);
 
-void HandleGetQuote(uint64_t arg_in);
-void HandleGetQETargetInfo(uint64_t arg_in);
-void HandleGetQuoteRevocationInfo(uint64_t arg_in);
-void HandleGetQuoteEnclaveIdentityInfo(uint64_t arg_in);
-
 void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg);
 void oe_handle_log(oe_enclave_t* enclave, uint64_t arg);
 

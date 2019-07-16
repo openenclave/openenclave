@@ -64,5 +64,47 @@ enclave {
             [out, size=issuer_chain_size] void* issuer_chain,
             size_t issuer_chain_size,
             [out, count=1] size_t* issuer_chain_size_out);
+
+        uint32_t oe_internal_get_revocation_info(
+            /* fmspc */
+            [in] uint8_t fmspc[6],
+
+            /* crl_urls */
+            size_t num_crl_urls,
+            [in, string] const char* crl_urls0,
+            [in, string] const char* crl_urls1,
+            [in, string] const char* crl_urls2,
+
+            /* tcb_info */
+            [out, size=tcb_info_size] void* tcb_info,
+            size_t tcb_info_size,
+            [out, count=1] size_t* tcb_info_size_out,
+
+            /* tcb_issuer_chain */
+            [out, size=tcb_issuer_chain_size] void* tcb_issuer_chain,
+            size_t tcb_issuer_chain_size,
+            [out, count=1] size_t* tcb_issuer_chain_size_out,
+
+            /* crl */
+            [out, size=crl0_size] void* crl0,
+            size_t crl0_size,
+            [out, count=1] size_t* crl0_size_out,
+            [out, size=crl1_size] void* crl1,
+            size_t crl1_size,
+            [out, count=1] size_t* crl1_size_out,
+            [out, size=crl2_size] void* crl2,
+            size_t crl2_size,
+            [out, count=1] size_t* crl2_size_out,
+
+            /* crl_issuer_chain */
+            [out, size=crl_issuer_chain0_size] void* crl_issuer_chain0,
+            size_t crl_issuer_chain0_size,
+            [out, count=1] size_t* crl_issuer_chain0_size_out,
+            [out, size=crl_issuer_chain1_size] void* crl_issuer_chain1,
+            size_t crl_issuer_chain1_size,
+            [out, count=1] size_t* crl_issuer_chain1_size_out,
+            [out, size=crl_issuer_chain2_size] void* crl_issuer_chain2,
+            size_t crl_issuer_chain2_size,
+            [out, count=1] size_t* crl_issuer_chain2_size_out);
     };
 };

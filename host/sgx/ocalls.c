@@ -143,17 +143,159 @@ uint32_t oe_internal_get_quote(
     return (uint32_t)result;
 }
 
-#if defined(OE_USE_LIBSGX)
-
-void HandleGetQuoteRevocationInfo(uint64_t arg_in)
+/* Copy the source array to an output buffer. */
+static oe_result_t _copy_output_buffer(
+    void* dest,
+    size_t dest_size,
+    size_t* dest_size_out,
+    const void* src,
+    size_t src_size,
+    bool* buffer_too_small)
 {
-    oe_get_revocation_info_args_t* args =
-        (oe_get_revocation_info_args_t*)arg_in;
-    if (!args)
-        return;
+    oe_result_t result = OE_UNEXPECTED;
 
-    args->result = oe_get_revocation_info(args);
+    if ((dest_size && !dest) || !dest_size_out)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    *dest_size_out = src_size;
+
+    if (dest_size < src_size)
+        *buffer_too_small = true;
+    else
+        memcpy(dest, src, src_size);
+
+    result = OE_OK;
+
+done:
+    return result;
 }
+
+uint32_t oe_internal_get_revocation_info(
+    uint8_t fmspc[6],
+    size_t num_crl_urls,
+    const char* crl_urls0,
+    const char* crl_urls1,
+    const char* crl_urls2,
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_issuer_chain,
+    size_t tcb_issuer_chain_size,
+    size_t* tcb_issuer_chain_size_out,
+    void* crl0,
+    size_t crl0_size,
+    size_t* crl0_size_out,
+    void* crl1,
+    size_t crl1_size,
+    size_t* crl1_size_out,
+    void* crl2,
+    size_t crl2_size,
+    size_t* crl2_size_out,
+    void* crl_issuer_chain0,
+    size_t crl_issuer_chain0_size,
+    size_t* crl_issuer_chain0_size_out,
+    void* crl_issuer_chain1,
+    size_t crl_issuer_chain1_size,
+    size_t* crl_issuer_chain1_size_out,
+    void* crl_issuer_chain2,
+    size_t crl_issuer_chain2_size,
+    size_t* crl_issuer_chain2_size_out)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_get_revocation_info_args_t args;
+    bool buffer_too_small = false;
+
+    memset(&args, 0, sizeof(args));
+
+    /* fmspc */
+    memcpy(args.fmspc, fmspc, sizeof(args.fmspc));
+
+    /* crl_urls */
+    args.num_crl_urls = (uint32_t)num_crl_urls;
+    args.crl_urls[0] = crl_urls0;
+    args.crl_urls[1] = crl_urls1;
+    args.crl_urls[2] = crl_urls2;
+
+    /* Populate the output fields. */
+    OE_CHECK(oe_get_revocation_info(&args));
+
+    OE_CHECK(_copy_output_buffer(
+        tcb_info,
+        tcb_info_size,
+        tcb_info_size_out,
+        args.tcb_info,
+        args.tcb_info_size,
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        tcb_issuer_chain,
+        tcb_issuer_chain_size,
+        tcb_issuer_chain_size_out,
+        args.tcb_issuer_chain,
+        args.tcb_issuer_chain_size,
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl0,
+        crl0_size,
+        crl0_size_out,
+        args.crl[0],
+        args.crl_size[0],
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl1,
+        crl1_size,
+        crl1_size_out,
+        args.crl[1],
+        args.crl_size[1],
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl2,
+        crl2_size,
+        crl2_size_out,
+        args.crl[2],
+        args.crl_size[2],
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl_issuer_chain0,
+        crl_issuer_chain0_size,
+        crl_issuer_chain0_size_out,
+        args.crl_issuer_chain[0],
+        args.crl_issuer_chain_size[0],
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl_issuer_chain1,
+        crl_issuer_chain1_size,
+        crl_issuer_chain1_size_out,
+        args.crl_issuer_chain[1],
+        args.crl_issuer_chain_size[1],
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl_issuer_chain2,
+        crl_issuer_chain2_size,
+        crl_issuer_chain2_size_out,
+        args.crl_issuer_chain[2],
+        args.crl_issuer_chain_size[2],
+        &buffer_too_small));
+
+    if (buffer_too_small)
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+    result = OE_OK;
+
+done:
+
+    free(args.buffer);
+
+    return (uint32_t)result;
+}
+
+#if defined(OE_USE_LIBSGX)
 
 uint32_t oe_internal_get_qe_identify_info(
     void* qe_id_info,
