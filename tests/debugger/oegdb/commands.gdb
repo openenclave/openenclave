@@ -75,25 +75,38 @@ commands 5
     python print("Serializing debugger contract on host side....")
     python import gdb_sgx_plugin
 
-    python gdb.parse_and_eval("OE_ENCLAVE_MAGIC_FIELD = " + str(gdb_sgx_plugin.OE_ENCLAVE_MAGIC_FIELD))
-    python gdb.parse_and_eval("OE_ENCLAVE_ADDR_FIELD = sizeof(void*) * " + str(gdb_sgx_plugin.OE_ENCLAVE_ADDR_FIELD))
-    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_LENGTH = " + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_LENGTH))
-    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[0] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[0]) + "'")
-    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[1] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[1]) + "'")
-    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[2] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[2]) + "'")
-    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[3] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[3]) + "'")
-    python gdb.parse_and_eval("OE_ENCLAVE_HEADER_FORMAT[4] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_HEADER_FORMAT[4]) + "'")
-    python gdb.parse_and_eval("OE_ENCLAVE_MAGIC_VALUE = " + str(gdb_sgx_plugin.OE_ENCLAVE_MAGIC_VALUE))
+    python gdb.parse_and_eval("OFFSETOF_MAGIC = " + str(oe_debug_enclave_t.OFFSETOF_MAGIC))
+    python gdb.parse_and_eval("SIZEOF_MAGIC = " + str(oe_debug_enclave_t.SIZEOF_MAGIC))
+    python gdb.parse_and_eval("MAGIC_VALUE = " + str(oe_debug_enclave_t.MAGIC_VALUE))
 
-    python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_OFFSET = " + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_OFFSET))
-    python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_LENGTH = " + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_LENGTH))
-    python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_FORMAT[0] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_FORMAT[0]) + "'")
-    python gdb.parse_and_eval("OE_ENCLAVE_FLAGS_FORMAT[1] = '" + str(gdb_sgx_plugin.OE_ENCLAVE_FLAGS_FORMAT[1]) + "'")
-    python gdb.parse_and_eval("OE_ENCLAVE_THREAD_BINDING_OFFSET = " + str(gdb_sgx_plugin.OE_ENCLAVE_THREAD_BINDING_OFFSET))
+    python gdb.parse_and_eval("OFFSETOF_VERSION = " + str(oe_debug_enclave_t.OFFSETOF_VERSION))
+    python gdb.parse_and_eval("SIZEOF_VERSION = " + str(oe_debug_enclave_t.SIZEOF_VERSION))
 
-    python gdb.parse_and_eval("THREAD_BINDING_SIZE = " + str(gdb_sgx_plugin.THREAD_BINDING_SIZE))
-    python gdb.parse_and_eval("THREAD_BINDING_HEADER_LENGTH = " + str(gdb_sgx_plugin.THREAD_BINDING_HEADER_LENGTH))
-    python gdb.parse_and_eval("THREAD_BINDING_HEADER_FORMAT[0] = '" + str(gdb_sgx_plugin.THREAD_BINDING_HEADER_FORMAT[0]) + "'")
+    python gdb.parse_and_eval("OFFSETOF_NEXT = " + str(oe_debug_enclave_t.OFFSETOF_NEXT))
+    python gdb.parse_and_eval("SIZEOF_NEXT = " + str(oe_debug_enclave_t.SIZEOF_NEXT))
+
+    python gdb.parse_and_eval("OFFSETOF_PATH = " + str(oe_debug_enclave_t.OFFSETOF_PATH))
+    python gdb.parse_and_eval("SIZEOF_PATH = " + str(oe_debug_enclave_t.SIZEOF_PATH))
+
+    python gdb.parse_and_eval("OFFSETOF_PATH_LENGTH = " + str(oe_debug_enclave_t.OFFSETOF_PATH_LENGTH))
+    python gdb.parse_and_eval("SIZEOF_PATH_LENGTH = " + str(oe_debug_enclave_t.SIZEOF_PATH_LENGTH))
+
+    python gdb.parse_and_eval("OFFSETOF_BASE_ADDRESS = " + str(oe_debug_enclave_t.OFFSETOF_BASE_ADDRESS))
+    python gdb.parse_and_eval("SIZEOF_BASE_ADDRESS = " + str(oe_debug_enclave_t.SIZEOF_BASE_ADDRESS))
+
+    python gdb.parse_and_eval("OFFSETOF_SIZE = " + str(oe_debug_enclave_t.OFFSETOF_SIZE))
+    python gdb.parse_and_eval("SIZEOF_SIZE = " + str(oe_debug_enclave_t.SIZEOF_SIZE))
+
+    python gdb.parse_and_eval("OFFSETOF_TCS_ARRAY = " + str(oe_debug_enclave_t.OFFSETOF_TCS_ARRAY))
+    python gdb.parse_and_eval("SIZEOF_TCS_ARRAY = " + str(oe_debug_enclave_t.SIZEOF_TCS_ARRAY))
+
+    python gdb.parse_and_eval("OFFSETOF_NUM_TCS = " + str(oe_debug_enclave_t.OFFSETOF_NUM_TCS))
+    python gdb.parse_and_eval("SIZEOF_NUM_TCS = " + str(oe_debug_enclave_t.SIZEOF_NUM_TCS))
+
+    python gdb.parse_and_eval("OFFSETOF_FLAGS = " + str(oe_debug_enclave_t.OFFSETOF_FLAGS))
+    python gdb.parse_and_eval("SIZEOF_FLAGS = " + str(oe_debug_enclave_t.SIZEOF_FLAGS))
+    python gdb.parse_and_eval("MASK_DEBUG = " + str(oe_debug_enclave_t.MASK_DEBUG))
+    python gdb.parse_and_eval("MASK_SIMULATE = " + str(oe_debug_enclave_t.MASK_SIMULATE))
 
     python print("Debugger contract serialized on host side.")
     continue

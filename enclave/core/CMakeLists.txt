@@ -1,6 +1,34 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+##==============================================================================
+##
+## These rules generate the edge routines for the internal ECALLs/OCALLs used
+## by liboehost/liboecore.
+##
+##==============================================================================
+
+if(OE_SGX)
+
+    set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+    set(EDL_FILE ${EDL_DIR}/sgx/internal.edl)
+
+    add_custom_command(
+        OUTPUT internal_t.h internal_t.c internal_args.h
+        DEPENDS ${EDL_FILE} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --trusted ${EDL_FILE})
+
+    add_custom_target(internal_trusted_edl
+        DEPENDS internal_t.h internal_t.c internal_args.h)
+
+endif()
+
+##==============================================================================
+##
+## These rules build the oecore target.
+##
+##==============================================================================
+
 set(PLATFORM_SRC "")
 set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
@@ -14,6 +42,8 @@ if (OE_SGX)
         sgx/globals.c
         sgx/hostcalls.c
         sgx/init.c
+        sgx/internal.c
+        sgx/internal_t_wrapper.c
         sgx/jump.c
         sgx/keys.c
         sgx/memory.c
@@ -108,6 +138,11 @@ set_source_files_properties(__secs_to_tm.c PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 
 maybe_build_using_clangw(oecore)
+
+if(OE_SGX)
+    add_dependencies(oecore internal_trusted_edl)
+    target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+endif()
 
 target_link_libraries(oecore PUBLIC oe_includes)
 if (OE_TRUSTZONE)

@@ -7,6 +7,7 @@
 #include <openenclave/bits/properties.h>
 #include <openenclave/edger8r/host.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <stdbool.h>
@@ -120,6 +121,9 @@ struct _oe_enclave
 
     /* Simulation mode */
     bool simulate;
+
+    /* Meta-data needed by debugrt  */
+    oe_debug_enclave_t* debug_enclave;
 };
 
 // Static asserts for consistency with

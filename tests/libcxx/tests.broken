@@ -1,3 +1,13 @@
 # Add broken files here
 # Following test segfaults after upgrade to libcxx 7.0 and merge to libcxx to use larger heap page count of 12K
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.unique_future/get.pass.cpp
+# The following tests hangs on GCC 7 in debug mode because of the following:
+# tid(0x7fe80fa50d40) (E)[ERROR]libcxxtest-libcxx_input.output_file.streams_fstreams_fstream.close.pass_enc:oe_errno=2 [../syscall/fcntl.c oe_open:43]
+# tid(0x7fe80fa50d40) (E)[ERROR]libcxxtest-libcxx_input.output_file.streams_fstreams_fstream.close.pass_enc:path=libcxx.ncHDND oe_errno=2 [../syscall/mount.c oe_mount_resolve:119]
+../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/fstream.close.pass.cpp
+# The following test raises an assertion when validating the size deallocated
+../../3rdparty/libcxx/libcxx/test/libcxx/language.support/support.dynamic/libcpp_deallocate.sh.cpp
+# The following test hangs after the bump to libcxx 800
+../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async_race.38682.pass.cpp
+# The following test fails under clang-7 debug due to a memory leak.
+../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/nodiscard_extensions.pass.cpp
