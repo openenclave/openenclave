@@ -3,7 +3,6 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
-#include "../asym_keys.h"
 #include "internal_t.h"
 #include "report.h"
 
@@ -22,7 +21,7 @@ const void* oe_link_enclave(void)
     static const void* symbols[] = {
         oe_internal_verify_report,
         oe_internal_get_public_key_by_policy,
-        oe_handle_get_public_key,
+        oe_internal_get_public_key,
 #if defined(OE_USE_DEBUG_MALLOC)
         oe_debug_malloc_check,
 #endif /* defined(OE_USE_DEBUG_MALLOC) */

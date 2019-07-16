@@ -396,8 +396,7 @@ static const char* oe_ecall_str(oe_func_t ecall)
                                        "INIT_ENCLAVE",
                                        "CALL_ENCLAVE_FUNCTION",
                                        "VIRTUAL_EXCEPTION_HANDLER",
-                                       "LOG_INIT",
-                                       "GET_PUBLIC_KEY"};
+                                       "LOG_INIT"};
 
     OE_STATIC_ASSERT(OE_ECALL_BASE + OE_COUNTOF(func_names) == OE_ECALL_MAX);
 

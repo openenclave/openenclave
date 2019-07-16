@@ -18,7 +18,6 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include "../../asym_keys.h"
 #include "../../sgx/report.h"
 #include "../atexit.h"
 #include "asmdefs.h"
@@ -476,11 +475,6 @@ static void _handle_ecall(
         case OE_ECALL_LOG_INIT:
         {
             _handle_oelog_init(arg_in);
-            break;
-        }
-        case OE_ECALL_GET_PUBLIC_KEY:
-        {
-            oe_handle_get_public_key(arg_in);
             break;
         }
         default:

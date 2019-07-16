@@ -27,6 +27,14 @@ enclave {
             [in, size=report_size] const void* report,
             size_t report_size);
 
+        public uint32_t oe_internal_get_public_key(
+            [in, count=1] const oe_asymmetric_key_params_t* key_params,
+            [in, size=key_info_size] const void* key_info,
+            size_t key_info_size,
+            [out, size=key_buffer_size] void* key_buffer,
+            size_t key_buffer_size,
+            [out, count=1 ] size_t* key_buffer_size_out);
+
         public uint32_t oe_internal_get_public_key_by_policy(
             uint32_t seal_policy,
             [in, count=1] const oe_asymmetric_key_params_t* key_params,

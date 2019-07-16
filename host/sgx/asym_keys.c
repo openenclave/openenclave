@@ -3,7 +3,6 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/host.h>
-#include <openenclave/internal/asym_keys.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
@@ -142,25 +141,84 @@ oe_result_t oe_get_public_key(
     size_t* key_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_public_key_args_t args;
+    uint32_t retval;
+    const size_t KEY_BUFFER_SIZE = 1024;
+    struct
+    {
+        uint8_t* key_buffer;
+        size_t key_buffer_size;
+    } arg;
 
-    if (!key_buffer || !key_buffer_size)
+    memset(&arg, 0, sizeof(arg));
+
+    if (key_buffer)
+        *key_buffer = NULL;
+
+    if (key_buffer_size)
+        *key_buffer_size = 0;
+
+    if (!key_info || !key_buffer || !key_buffer_size)
+    {
         OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
-    /* Setup input params. */
-    args.key_params = *key_params;
-    args.key_info = key_info;
-    args.key_info_size = key_info_size;
+    /* Allocate the buffers. */
+    {
+        arg.key_buffer_size = KEY_BUFFER_SIZE;
 
-    OE_CHECK(oe_ecall(enclave, OE_ECALL_GET_PUBLIC_KEY, (uint64_t)&args, NULL));
+        if (!(arg.key_buffer = malloc(arg.key_buffer_size)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+    }
 
-    /* Set the output params. */
-    *key_buffer = args.key_buffer;
-    *key_buffer_size = args.key_buffer_size;
+    if (oe_internal_get_public_key(
+            enclave,
+            &retval,
+            key_params,
+            key_info,
+            key_info_size,
+            arg.key_buffer,
+            arg.key_buffer_size,
+            &arg.key_buffer_size) != OE_OK)
+    {
+        OE_RAISE(OE_FAILURE);
+    }
+
+    /* If the buffers were too small, try again with corrected sizes. */
+    if ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
+    {
+        if (!(arg.key_buffer = realloc(arg.key_buffer, arg.key_buffer_size)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        if (oe_internal_get_public_key(
+                enclave,
+                &retval,
+                key_params,
+                key_info,
+                key_info_size,
+                arg.key_buffer,
+                arg.key_buffer_size,
+                &arg.key_buffer_size) != OE_OK)
+        {
+            OE_RAISE(OE_FAILURE);
+        }
+    }
+
+    OE_CHECK((oe_result_t)retval);
+
+    *key_buffer = arg.key_buffer;
+    *key_buffer_size = arg.key_buffer_size;
+    arg.key_buffer = NULL;
 
     result = OE_OK;
 
 done:
+
+    if (arg.key_buffer)
+    {
+        oe_secure_zero_fill(arg.key_buffer, arg.key_buffer_size);
+        free(arg.key_buffer);
+    }
+
     return result;
 }
 

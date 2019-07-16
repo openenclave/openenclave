@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "asym_keys.h"
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/asym_keys.h>
 #include <openenclave/internal/crypto/ec.h>
 #include <openenclave/internal/kdf.h>
 #include <openenclave/internal/raise.h>
@@ -482,57 +480,6 @@ void oe_free_key(
     }
 }
 
-static oe_result_t _copy_to_from_host(
-    bool to_host,
-    const void* data,
-    size_t data_size,
-    uint8_t** out)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    uint8_t* out_local = NULL;
-
-    if (data == NULL)
-    {
-        *out = NULL;
-        result = OE_OK;
-        goto done;
-    }
-
-    if (to_host)
-    {
-        /* Copy enclave -> host. */
-        if (!oe_is_within_enclave(data, data_size))
-            OE_RAISE(OE_INVALID_PARAMETER);
-        out_local = (uint8_t*)oe_host_malloc(data_size);
-    }
-    else
-    {
-        /* Copy host -> enclave. */
-        if (!oe_is_outside_enclave(data, data_size))
-            OE_RAISE(OE_INVALID_PARAMETER);
-        out_local = (uint8_t*)malloc(data_size);
-    }
-
-    if (out_local == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    OE_CHECK(oe_memcpy_s(out_local, data_size, data, data_size));
-
-    *out = out_local;
-    out_local = NULL;
-    result = OE_OK;
-
-done:
-    if (out_local != NULL)
-    {
-        if (to_host)
-            oe_host_free(out_local);
-        else
-            free(out_local);
-    }
-    return result;
-}
-
 uint32_t oe_internal_get_public_key_by_policy(
     uint32_t seal_policy,
     const oe_asymmetric_key_params_t* key_params,
@@ -594,65 +541,49 @@ done:
     return result;
 }
 
-void oe_handle_get_public_key(uint64_t arg_in)
+uint32_t oe_internal_get_public_key(
+    const oe_asymmetric_key_params_t* key_params,
+    const void* key_info,
+    size_t key_info_size,
+    void* key_buffer,
+    size_t key_buffer_size,
+    size_t* key_buffer_size_out)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_public_key_args_t* uarg = (oe_get_public_key_args_t*)arg_in;
-    oe_get_public_key_args_t arg;
-    uint8_t* enclave_user_data = NULL;
-    uint8_t* enclave_key_info = NULL;
-    uint8_t* host_key_buffer = NULL;
+    struct
+    {
+        uint8_t* key_buffer;
+        size_t key_buffer_size;
+    } arg;
 
-    /* Copy arguments to avoid time of use / time of check. */
-    if (!uarg || !oe_is_outside_enclave(uarg, sizeof(*uarg)))
-        return;
+    if (key_buffer_size_out)
+        *key_buffer_size_out = 0;
 
-    arg = *uarg;
-    arg.key_buffer = NULL;
-    arg.key_buffer_size = 0;
+    if (!key_buffer_size_out)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(_copy_to_from_host(
-        false,
-        arg.key_params.user_data,
-        arg.key_params.user_data_size,
-        &enclave_user_data));
-
-    OE_CHECK(_copy_to_from_host(
-        false, arg.key_info, arg.key_info_size, &enclave_key_info));
-
-    arg.key_params.user_data = enclave_user_data;
-    arg.key_info = enclave_key_info;
+    memset(&arg, 0, sizeof(arg));
 
     /* Get the key. */
     OE_CHECK(oe_get_public_key(
-        &arg.key_params,
-        arg.key_info,
-        arg.key_info_size,
+        key_params,
+        key_info,
+        key_info_size,
         &arg.key_buffer,
         &arg.key_buffer_size));
 
-    /* Copy to host memory. */
-    OE_CHECK(_copy_to_from_host(
-        true, arg.key_buffer, arg.key_buffer_size, &host_key_buffer));
+    *key_buffer_size_out = arg.key_buffer_size;
 
-    /* Success. Just copy to unsafe struct now. */
-    uarg->key_buffer = host_key_buffer;
-    uarg->key_buffer_size = arg.key_buffer_size;
-    host_key_buffer = NULL;
+    if (key_buffer_size < arg.key_buffer_size)
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+    memcpy(key_buffer, arg.key_buffer, arg.key_buffer_size);
+
     result = OE_OK;
 
 done:
-    uarg->result = result;
 
-    if (enclave_user_data != NULL)
-        free(enclave_user_data);
+    oe_free(arg.key_buffer);
 
-    if (enclave_key_info != NULL)
-        free(enclave_key_info);
-
-    if (arg.key_buffer != NULL)
-        free(arg.key_buffer);
-
-    if (host_key_buffer != NULL)
-        oe_host_free(host_key_buffer);
+    return result;
 }
