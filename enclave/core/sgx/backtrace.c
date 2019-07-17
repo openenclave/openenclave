@@ -8,6 +8,8 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/vector.h>
+#include "internal_t.h"
 
 #if defined(__INTEL_COMPILER)
 #error "optimized __builtin_return_address() not supported by Intel compiler"
@@ -82,4 +84,100 @@ int oe_backtrace(void** buffer, int size)
 #else
     return 0;
 #endif
+}
+
+char** oe_backtrace_symbols(void* const* buffer, int size)
+{
+    /* Backtrace must use the internal allocator to bypass debug-malloc. */
+    extern void* dlmalloc(size_t size);
+    extern void dlfree(void* ptr);
+    extern void* dlrealloc(void* ptr, size_t size);
+    char** ret = NULL;
+    void* buf = NULL;
+    const size_t BUF_SIZE = 4096;
+    size_t buf_size = BUF_SIZE;
+    size_t buf_size_out;
+    uint32_t retval;
+    char** argv = NULL;
+
+    if (!buffer || size < 0)
+        goto done;
+
+    if (!(buf = dlmalloc(buf_size)))
+        goto done;
+
+    /* First call might return OE_BUFFER_TOO_SMALL. */
+    if (oe_backtrace_symbols_ocall(
+            &retval,
+            oe_get_enclave(),
+            (const uint64_t*)buffer,
+            (size_t)size,
+            buf,
+            buf_size,
+            &buf_size_out) != OE_OK)
+    {
+        goto done;
+    }
+
+    /* Second call uses buffer size returned by first call. */
+    if ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
+    {
+        buf_size = buf_size_out;
+
+        if (!(buf = dlrealloc(buf, buf_size)))
+            goto done;
+
+        if (oe_backtrace_symbols_ocall(
+                &retval,
+                oe_get_enclave(),
+                (const uint64_t*)buffer,
+                (size_t)size,
+                buf,
+                buf_size,
+                &buf_size_out) != OE_OK)
+        {
+            goto done;
+        }
+
+        if ((oe_result_t)retval != OE_OK)
+            goto done;
+    }
+    else if ((oe_result_t)retval != OE_OK)
+    {
+        goto done;
+    }
+
+    /* Convert vector to array of strings. */
+    {
+        oe_vector_t* vec;
+
+        if (!(vec = oe_vector_relocate(buf, (size_t)size)))
+            goto done;
+
+        if (!(argv = oe_vector_to_argv(vec, (size_t)size, dlmalloc, dlfree)))
+        {
+            goto done;
+        }
+    }
+
+    ret = argv;
+    argv = NULL;
+
+done:
+
+    if (buf)
+        dlfree(buf);
+
+    if (argv)
+        dlfree(argv);
+
+    return ret;
+}
+
+void oe_backtrace_symbols_free(char** ptr)
+{
+    /* Backtrace must use the internal allocator to bypass debug-malloc. */
+    extern void dlfree(void* ptr);
+
+    dlfree(ptr);
 }
