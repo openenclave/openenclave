@@ -528,12 +528,7 @@ void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg)
     }
 }
 
-void oe_handle_log(oe_enclave_t* enclave, uint64_t arg)
+void oe_log_ocall(uint32_t log_level, const char* message)
 {
-    oe_log_args_t* args = (oe_log_args_t*)arg;
-    OE_UNUSED(enclave);
-    if (args)
-    {
-        log_message(true, args);
-    }
+    oe_log_message(true, (oe_log_level_t)log_level, message);
 }

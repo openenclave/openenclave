@@ -201,7 +201,7 @@ static oe_result_t _trace_json_string(const uint8_t* str, size_t str_length)
 {
     oe_result_t result = OE_OK;
 
-    if (get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
     {
         char* buffer = (char*)oe_malloc(str_length + 1);
         if (buffer)

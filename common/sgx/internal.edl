@@ -99,5 +99,9 @@ enclave
             [out, size=crl_issuer_chain2_size] void* crl_issuer_chain2,
             size_t crl_issuer_chain2_size,
             [out, count=1] size_t* crl_issuer_chain2_size_out);
+
+        void oe_log_ocall(
+            uint32_t log_level,
+            [in, string] const char* message);
     };
 };

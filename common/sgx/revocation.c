@@ -143,7 +143,7 @@ done:
 
 static void _trace_datetime(const char* msg, const oe_datetime_t* date)
 {
-    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
     {
         char str[21];
         size_t size = sizeof(str);

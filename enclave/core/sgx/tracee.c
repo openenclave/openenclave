@@ -14,10 +14,11 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include "internal_t.h"
 #include "report.h"
 
-static log_level_t _active_log_level = OE_LOG_LEVEL_ERROR;
-static char _enclave_filename[MAX_FILENAME_LEN];
+static oe_log_level_t _active_log_level = OE_LOG_LEVEL_ERROR;
+static char _enclave_filename[OE_MAX_FILENAME_LEN];
 static bool _debug_allowed_enclave = false;
 
 const char* get_filename_from_path(const char* path)
@@ -74,11 +75,11 @@ done:
 **==============================================================================
 */
 
-void oe_log_init_ecall(const char* enclave_path, uint64_t log_level)
+void oe_log_init_ecall(const char* enclave_path, uint32_t log_level)
 {
     const char* filename;
 
-    _active_log_level = (log_level_t)log_level;
+    _active_log_level = (oe_log_level_t)log_level;
 
     if ((filename = get_filename_from_path(enclave_path)))
     {
@@ -92,13 +93,13 @@ void oe_log_init_ecall(const char* enclave_path, uint64_t log_level)
     _debug_allowed_enclave = is_enclave_debug_allowed();
 }
 
-oe_result_t oe_log(log_level_t level, const char* fmt, ...)
+oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
 {
     oe_result_t result = OE_FAILURE;
-    oe_log_args_t* args = NULL;
     oe_va_list ap;
     int n = 0;
     int bytes_written = 0;
+    char message[OE_LOG_MESSAGE_LEN_MAX];
 
     // skip logging for non-debug-allowed enclaves
     if (!_debug_allowed_enclave)
@@ -120,23 +121,15 @@ oe_result_t oe_log(log_level_t level, const char* fmt, ...)
         goto done;
     }
 
-    // Prepare a log record for sending to the host for logging
-    if (!(args = oe_host_malloc(sizeof(oe_log_args_t))))
-    {
-        result = OE_OUT_OF_MEMORY;
-        goto done;
-    }
-
-    bytes_written = oe_snprintf(
-        args->message, OE_LOG_MESSAGE_LEN_MAX, "%s:", _enclave_filename);
+    bytes_written =
+        oe_snprintf(message, OE_LOG_MESSAGE_LEN_MAX, "%s:", _enclave_filename);
 
     if (bytes_written < 0)
         goto done;
 
-    args->level = level;
     oe_va_start(ap, fmt);
     n = oe_vsnprintf(
-        &args->message[bytes_written],
+        &message[bytes_written],
         OE_LOG_MESSAGE_LEN_MAX - (size_t)bytes_written,
         fmt,
         ap);
@@ -145,20 +138,16 @@ oe_result_t oe_log(log_level_t level, const char* fmt, ...)
     if (n < 0)
         goto done;
 
-    // send over to the host
-    if (oe_ocall(OE_OCALL_LOG, (uint64_t)args, NULL) != OE_OK)
+    if (oe_log_ocall(level, message) != OE_OK)
         goto done;
 
     result = OE_OK;
+
 done:
-    if (args)
-    {
-        oe_host_free(args);
-    }
     return result;
 }
 
-log_level_t get_current_logging_level(void)
+oe_log_level_t oe_get_current_logging_level(void)
 {
     return _active_log_level;
 }

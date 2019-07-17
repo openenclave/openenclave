@@ -89,7 +89,6 @@ typedef enum _oe_func
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
     OE_OCALL_BACKTRACE_SYMBOLS,
-    OE_OCALL_LOG,
     /* Caution: always add new OCALL function numbers here */
     OE_OCALL_MAX, /* This value is never used */
 

@@ -367,18 +367,22 @@ done:
 
 static const char* oe_ocall_str(oe_func_t ocall)
 {
-    static const char* func_names[] = {"CALL_HOST_FUNCTION",
-                                       "THREAD_WAKE",
-                                       "THREAD_WAIT",
-                                       "THREAD_WAKE_WAIT",
-                                       "MALLOC",
-                                       "REALLOC",
-                                       "FREE",
-                                       "WRITE",
-                                       "SLEEP",
-                                       "GET_TIME",
-                                       "BACKTRACE_SYMBOLS",
-                                       "LOG"};
+    // clang-format off
+    static const char* func_names[] =
+    {
+        "CALL_HOST_FUNCTION",
+        "THREAD_WAKE",
+        "THREAD_WAIT",
+        "THREAD_WAKE_WAIT",
+        "MALLOC",
+        "REALLOC",
+        "FREE",
+        "WRITE",
+        "SLEEP",
+        "GET_TIME",
+        "BACKTRACE_SYMBOLS"
+    };
+    // clang-format on
 
     OE_STATIC_ASSERT(OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX);
 
@@ -487,10 +491,6 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_BACKTRACE_SYMBOLS:
             oe_handle_backtrace_symbols(enclave, arg_in);
-            break;
-
-        case OE_OCALL_LOG:
-            oe_handle_log(enclave, arg_in);
             break;
 
         default:

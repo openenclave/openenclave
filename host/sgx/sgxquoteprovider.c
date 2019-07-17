@@ -71,7 +71,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     params.crl_urls = args->crl_urls;
     params.crl_url_count = args->num_crl_urls;
 
-    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
     {
         // If info tracing is enabled, install the logging function.
         OE_TRACE_INFO("input: fmspc = \n");
