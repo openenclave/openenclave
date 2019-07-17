@@ -23,13 +23,6 @@ typedef enum _log_level_
 #define OE_LOG_MESSAGE_LEN_MAX 2048U
 #define MAX_FILENAME_LEN 256U
 
-typedef struct _oe_log_filter
-{
-    const char* path;
-    uint64_t path_len;
-    log_level_t level;
-} oe_log_filter_t;
-
 typedef struct _oe_log_args
 {
     log_level_t level;
@@ -39,7 +32,6 @@ typedef struct _oe_log_args
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
 OE_EXTERNC_BEGIN
-oe_result_t _handle_oelog_init(uint64_t arg);
 oe_result_t oe_log(log_level_t level, const char* fmt, ...);
 log_level_t get_current_logging_level(void);
 OE_EXTERNC_END

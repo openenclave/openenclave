@@ -14,6 +14,7 @@
 #include <time.h>
 #include "../hostthread.h"
 #include "enclave.h"
+#include "internal_u.h"
 
 #define LOGGING_FORMAT_STRING "%02d:%02d:%02d:%06ld tid(0x%lx) (%s)[%s]%s"
 static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
@@ -153,29 +154,9 @@ static void _log_session_header()
 
 oe_result_t oe_log_enclave_init(oe_enclave_t* enclave)
 {
-    oe_result_t result = OE_UNEXPECTED;
-    log_level_t level = _log_level;
-
     _initialize_log_config();
 
-    // Populate arg fields.
-    oe_log_filter_t* arg = calloc(1, sizeof(oe_log_filter_t));
-    if (arg == NULL)
-    {
-        result = OE_OUT_OF_MEMORY;
-        goto done;
-    }
-    arg->path = enclave->path;
-    arg->path_len = strlen(enclave->path);
-    arg->level = level;
-    // Call enclave
-    result = oe_ecall(enclave, OE_ECALL_LOG_INIT, (uint64_t)arg, NULL);
-    if (result != OE_OK)
-        goto done;
-
-    result = OE_OK;
-done:
-    return result;
+    return oe_log_init_ecall(enclave, enclave->path, _log_level);
 }
 
 void oe_log(log_level_t level, const char* fmt, ...)

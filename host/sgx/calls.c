@@ -391,11 +391,15 @@ static const char* oe_ocall_str(oe_func_t ocall)
 
 static const char* oe_ecall_str(oe_func_t ecall)
 {
-    static const char* func_names[] = {"DESTRUCTOR",
-                                       "INIT_ENCLAVE",
-                                       "CALL_ENCLAVE_FUNCTION",
-                                       "VIRTUAL_EXCEPTION_HANDLER",
-                                       "LOG_INIT"};
+    // clang-format off
+    static const char* func_names[] =
+    {
+        "DESTRUCTOR",
+        "INIT_ENCLAVE",
+        "CALL_ENCLAVE_FUNCTION",
+        "VIRTUAL_EXCEPTION_HANDLER"
+    };
+    // clang-format on
 
     OE_STATIC_ASSERT(OE_ECALL_BASE + OE_COUNTOF(func_names) == OE_ECALL_MAX);
 

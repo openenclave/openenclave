@@ -44,6 +44,10 @@ enclave
             [out, size=key_info_size] void* key_info,
             size_t key_info_size,
             [out, count=1 ] size_t* key_info_size_out);
+
+        public void oe_log_init_ecall(
+            [in, string] const char* enclave_path,
+            uint32_t log_level);
     };
 
     untrusted

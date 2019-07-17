@@ -75,7 +75,6 @@ typedef enum _oe_func
     OE_ECALL_INIT_ENCLAVE,
     OE_ECALL_CALL_ENCLAVE_FUNCTION,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
-    OE_ECALL_LOG_INIT,
     /* Caution: always add new ECALL function numbers here */
     OE_ECALL_MAX,
 

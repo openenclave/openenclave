@@ -472,11 +472,6 @@ static void _handle_ecall(
             arg_out = _handle_init_enclave(arg_in);
             break;
         }
-        case OE_ECALL_LOG_INIT:
-        {
-            _handle_oelog_init(arg_in);
-            break;
-        }
         default:
         {
             /* No function found with the number */
