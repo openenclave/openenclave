@@ -117,7 +117,10 @@ add_library(mbedcrypto_static STATIC
   # Since we define mbedtls to use an alternate entropy source, it uses an
   # undefined mebdtls_hardware_poll function. We define it to avoid
   # circular library dependecies.
-  mbedtls_hardware_poll.c)
+  mbedtls_hardware_poll.c
+  # platform_util.c contains the function mbedtls_platform_zeroize, used by other source files
+  # it is defined here to avoid build failures
+  mbedtls/library/platform_util.c)
 
 add_library(mbedx509 STATIC
   mbedtls/library/certs.c
