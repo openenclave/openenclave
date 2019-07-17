@@ -52,7 +52,7 @@ typedef struct _oe_vector
  * Or more compactly:
  *
  *     ```
- *     [3][OFFSET0][4][OFFSET1][6][OOF2][5][red\0green\0blue\0]
+ *     [3][OFFSET0][4][OFFSET1][6][OFFSET2][5][red\0green\0blue\0]
  *     ```
  *
  * The **oe_vector_t.data** pointers are translated into integer offsets from
