@@ -110,6 +110,12 @@ static void _assert_device(oe_device_t* device)
             oe_assert(device->ops.socket.socketpair);
             break;
         }
+        case OE_DEVICE_TYPE_EPOLL:
+        {
+            oe_assert(device->ops.epoll.epoll_create);
+            oe_assert(device->ops.epoll.epoll_create1);
+            break;
+        }
         default:
         {
             oe_assert(false);

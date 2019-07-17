@@ -63,6 +63,17 @@ oe_result_t oe_load_module_host_socket_interface(void);
  */
 oe_result_t oe_load_module_host_resolver(void);
 
+/**
+ * Load the event polling module epoll module.
+ *
+ * This function loads the host epoll module which is needed
+ * for an enclave application to be able to call
+ * epoll_create1, epoll_ctl, and epoll_wait
+ *
+ * @retval OE_OK The module was successfully loaded.
+ * @retval OE_FAILURE Module failed to load.
+ */
+oe_result_t oe_load_module_host_epoll(void);
 OE_EXTERNC_END
 
 #endif /* _OE_BITS_MODULE_H */
