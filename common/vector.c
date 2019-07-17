@@ -27,8 +27,8 @@ oe_result_t oe_vector_pack(
         *buf_size_out = 0;
 
     /* Reject invalid parameters. */
-    if (count < 0 || (count > 0 && !vectors) || !buf_out || !buf_size_out ||
-        !malloc || !free)
+    if ((count > 0 && !vectors) || !buf_out || !buf_size_out || !malloc ||
+        !free)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
     }

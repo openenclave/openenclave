@@ -13,9 +13,9 @@
 #include <openenclave/internal/vector.h>
 #include "internal_t.h"
 
+/* Backtrace must use the internal allocator to bypass debug-malloc. */
 void* dlmalloc(size_t size);
 void dlfree(void* ptr);
-void* dlcalloc(size_t nmemb, size_t size);
 void* dlrealloc(void* ptr, size_t size);
 
 char** oe_backtrace_symbols(void* const* buffer, int size)
