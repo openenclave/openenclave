@@ -68,7 +68,9 @@ oe_result_t oe_vector_pack(
     const oe_vector_t* vectors,
     size_t vector_count,
     void** buf_out,
-    size_t* buf_size_out);
+    size_t* buf_size_out,
+    void* (*malloc)(size_t),
+    void (*free)(void*));
 
 /**
  * Relocate a vector array that was packed with **oe_vector_pack**.
@@ -77,6 +79,15 @@ oe_result_t oe_vector_pack(
  * vector. It returns a pointer to the relocated vector.
  */
 oe_vector_t* oe_vector_relocate(void* buf, size_t vector_count);
+
+/**
+ * Convert a vector array to an argv-style string array.
+ */
+char** oe_vector_to_argv(
+    const oe_vector_t* vector,
+    size_t size,
+    void* (*malloc)(size_t),
+    void (*free)(void*));
 
 OE_EXTERNC_END
 

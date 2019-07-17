@@ -2,44 +2,109 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/vector.h>
+#include "internal_t.h"
+
+void* dlmalloc(size_t size);
+void dlfree(void* ptr);
+void* dlcalloc(size_t nmemb, size_t size);
+void* dlrealloc(void* ptr, size_t size);
 
 char** oe_backtrace_symbols(void* const* buffer, int size)
 {
     char** ret = NULL;
-    oe_backtrace_symbols_args_t* args = NULL;
+    void* buf = NULL;
+    const size_t BUF_SIZE = 4096;
+    size_t buf_size = BUF_SIZE;
+    size_t buf_size_out;
+    uint32_t retval;
+    char** argv = NULL;
 
-    if (!buffer || size > OE_BACKTRACE_MAX)
+    if (!buffer || size < 0)
         goto done;
 
-    if (!(args = oe_host_malloc(sizeof(oe_backtrace_symbols_args_t))))
+    if (!(buf = dlmalloc(buf_size)))
         goto done;
 
-    if (oe_memcpy_s(
-            args->buffer,
-            sizeof(void*) * OE_BACKTRACE_MAX,
-            buffer,
-            sizeof(void*) * (size_t)size) != OE_OK)
+    /* First call might return OE_BUFFER_TOO_SMALL. */
+    if (oe_backtrace_symbols_ocall(
+            &retval,
+            oe_get_enclave(),
+            (const uint64_t*)buffer,
+            (size_t)size,
+            buf,
+            buf_size,
+            &buf_size_out) != OE_OK)
+    {
         goto done;
-    args->size = size;
-    args->ret = NULL;
+    }
 
-    if (oe_ocall(OE_OCALL_BACKTRACE_SYMBOLS, (uint64_t)args, NULL) != OE_OK)
+    /* Second call uses buffer size returned by first call. */
+    if ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
+    {
+        buf_size = buf_size_out;
+
+        if (!(buf = dlrealloc(buf, buf_size)))
+            goto done;
+
+        if (oe_backtrace_symbols_ocall(
+                &retval,
+                oe_get_enclave(),
+                (const uint64_t*)buffer,
+                (size_t)size,
+                buf,
+                buf_size,
+                &buf_size_out) != OE_OK)
+        {
+            goto done;
+        }
+
+        if ((oe_result_t)retval != OE_OK)
+            goto done;
+    }
+    else if ((oe_result_t)retval != OE_OK)
+    {
         goto done;
+    }
 
-    ret = args->ret;
+    /* Convert vector to array of strings. */
+    {
+        oe_vector_t* vec;
+
+        if (!(vec = oe_vector_relocate(buf, (size_t)size)))
+            goto done;
+
+        if (!(argv = oe_vector_to_argv(vec, (size_t)size, dlmalloc, dlfree)))
+        {
+            goto done;
+        }
+    }
+
+    ret = argv;
+    argv = NULL;
 
 done:
 
-    if (args)
-        oe_host_free(args);
+    if (buf)
+        dlfree(buf);
+
+    if (argv)
+        dlfree(argv);
 
     return ret;
+}
+
+void oe_backtrace_symbols_free(char** ptr)
+{
+    dlfree(ptr);
 }
 
 oe_result_t oe_print_backtrace(void)
@@ -61,7 +126,7 @@ oe_result_t oe_print_backtrace(void)
         oe_host_printf("%s(): %p\n", syms[i], buffer[i]);
 
     oe_host_printf("\n");
-    oe_host_free(syms);
+    oe_backtrace_symbols_free(syms);
 
     result = OE_OK;
 

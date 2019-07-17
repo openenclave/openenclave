@@ -5,6 +5,7 @@
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/vector.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "vector_t.h"
 
@@ -19,8 +20,11 @@ void test_vector_ecall(void)
     size_t buf_size;
     size_t vector_count = sizeof(vectors1) / sizeof(vectors1[0]);
     oe_vector_t* vectors2;
+    char** argv;
 
-    OE_TEST(oe_vector_pack(vectors1, vector_count, &buf, &buf_size) == OE_OK);
+    OE_TEST(
+        oe_vector_pack(vectors1, vector_count, &buf, &buf_size, malloc, free) ==
+        OE_OK);
 
     vectors2 = oe_vector_relocate(buf, vector_count);
 
@@ -38,7 +42,18 @@ void test_vector_ecall(void)
         OE_TEST(len1 == len2);
     }
 
+    OE_TEST(argv = oe_vector_to_argv(vectors1, vector_count, malloc, free));
+
+    for (size_t i = 0; i < vector_count; i++)
+    {
+        printf("argv[i]=%s\n", argv[i]);
+        OE_TEST(strcmp(argv[i], (const char*)vectors1[i].data) == 0);
+    }
+
+    OE_TEST(argv[vector_count] == NULL);
+
     free(buf);
+    free(argv);
 }
 
 OE_SET_ENCLAVE_SGX(

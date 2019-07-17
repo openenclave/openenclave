@@ -380,7 +380,6 @@ static const char* oe_ocall_str(oe_func_t ocall)
         "WRITE",
         "SLEEP",
         "GET_TIME",
-        "BACKTRACE_SYMBOLS"
     };
     // clang-format on
 
@@ -487,10 +486,6 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_GET_TIME:
             oe_handle_get_time(arg_in, arg_out);
-            break;
-
-        case OE_OCALL_BACKTRACE_SYMBOLS:
-            oe_handle_backtrace_symbols(enclave, arg_in);
             break;
 
         default:

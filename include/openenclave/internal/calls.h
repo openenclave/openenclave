@@ -88,7 +88,6 @@ typedef enum _oe_func
     OE_OCALL_WRITE,
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
-    OE_OCALL_BACKTRACE_SYMBOLS,
     /* Caution: always add new OCALL function numbers here */
     OE_OCALL_MAX, /* This value is never used */
 
@@ -358,24 +357,6 @@ typedef struct _oe_init_enclave_args
     uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     oe_enclave_t* enclave;
 } oe_init_enclave_args_t;
-
-/*
-**==============================================================================
-**
-** oe_backtrace_symbols_args_t
-**
-**     Ask host to print a backtrace collected by the enclave using the
-**     oe_backtrace() function.
-**
-**==============================================================================
-*/
-
-typedef struct _oe_backtrace_symbols_args
-{
-    void* buffer[OE_BACKTRACE_MAX];
-    int size;
-    char** ret;
-} oe_backtrace_symbols_args_t;
 
 /**
  * Perform a low-level enclave function call (ECALL).

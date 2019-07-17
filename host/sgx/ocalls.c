@@ -25,6 +25,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/vector.h>
 #include "../ocalls.h"
 #include "enclave.h"
 #include "internal_u.h"
@@ -518,14 +519,70 @@ done:
     return ret;
 }
 
-void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg)
+uint32_t oe_backtrace_symbols_ocall(
+    oe_enclave_t* oe_enclave,
+    const uint64_t* buffer,
+    size_t size,
+    void* strings_buf,
+    size_t strings_buf_size,
+    size_t* strings_buf_size_out)
 {
-    oe_backtrace_symbols_args_t* args = (oe_backtrace_symbols_args_t*)arg;
+    oe_result_t result = OE_UNEXPECTED;
+    char** strings = NULL;
+    oe_vector_t* vector = NULL;
+    void* buf = NULL;
+    size_t buf_size;
 
-    if (args)
+    /* Reject invalid parameters. */
+    if (!oe_enclave || !buffer || size > OE_INT_MAX || !strings_buf_size_out)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Convert the addresses into symbol strings. */
+    if (!(strings =
+              _backtrace_symbols(oe_enclave, (void* const*)buffer, (int)size)))
     {
-        args->ret = _backtrace_symbols(enclave, args->buffer, args->size);
+        OE_RAISE(OE_FAILURE);
     }
+
+    /* Build a vector from the strings[] array. */
+    {
+        if (!(vector = malloc(sizeof(oe_vector_t) * size)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        for (size_t i = 0; i < size; i++)
+        {
+            vector[i].data = strings[i];
+            vector[i].size = strlen(strings[i]) + 1;
+        }
+    }
+
+    /* Pack the vector into a buffer. */
+    OE_CHECK(oe_vector_pack(vector, size, &buf, &buf_size, malloc, free));
+
+    *strings_buf_size_out = buf_size;
+
+    /* Fail if the caller's buffer is too small. */
+    if (buf_size > strings_buf_size)
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+    /* Copy to the caller's buffer. */
+    if (strings_buf)
+        memcpy(strings_buf, buf, buf_size);
+
+    result = OE_OK;
+
+done:
+
+    if (strings)
+        free(strings);
+
+    if (vector)
+        free(vector);
+
+    if (buf)
+        free(buf);
+
+    return result;
 }
 
 void oe_log_ocall(uint32_t log_level, const char* message)

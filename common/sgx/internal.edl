@@ -103,5 +103,15 @@ enclave
         void oe_log_ocall(
             uint32_t log_level,
             [in, string] const char* message);
+
+        // Translate the addresses in buffer[] into symbol names.
+        // (similar to Linux backtrace_symbols().
+        uint32_t oe_backtrace_symbols_ocall(
+            [user_check] oe_enclave_t* oe_enclave,
+            [in, count=size] const uint64_t* buffer,
+            size_t size,
+            [out, size=strings_buf_size] void* strings_buf,
+            size_t strings_buf_size,
+            [out, count=1] size_t* strings_buf_size_out);
     };
 };
