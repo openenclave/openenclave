@@ -706,16 +706,23 @@ static void _release_tcs(oe_enclave_t* enclave, void* tcs)
 oe_result_t oe_ecall(
     oe_enclave_t* enclave,
     uint16_t func,
-    uint64_t arg,
-    uint64_t* arg_out_ptr)
+    uint64_t arg_in,
+    size_t arg_in_size,
+    bool arg_in_is_pointer,
+    uint64_t* arg_out,
+    size_t arg_out_size)
 {
+    OE_UNUSED(arg_in_size);
+    OE_UNUSED(arg_in_is_pointer);
+    OE_UNUSED(arg_out_size);
+
     oe_result_t result = OE_UNEXPECTED;
     void* tcs = NULL;
     oe_code_t code = OE_CODE_ECALL;
     oe_code_t code_out = 0;
     uint16_t func_out = 0;
     uint16_t result_out = 0;
-    uint64_t arg_out = 0;
+    uint64_t local_arg_out = 0;
 
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -739,18 +746,18 @@ oe_result_t oe_ecall(
         OE_AEP,
         code,
         func,
-        arg,
+        arg_in,
         &code_out,
         &func_out,
         &result_out,
-        &arg_out));
+        &local_arg_out));
 
     /* Process OCALLS */
     if (code_out != OE_CODE_ERET)
         OE_RAISE(OE_UNEXPECTED);
 
-    if (arg_out_ptr)
-        *arg_out_ptr = arg_out;
+    if (arg_out)
+        *arg_out = local_arg_out;
 
     result = (oe_result_t)result_out;
 

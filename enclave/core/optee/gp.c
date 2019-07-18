@@ -261,6 +261,9 @@ static oe_result_t _handle_call_builtin_function(
     /* Host OS-specific data (used only on Windows) */
     params[0].value.b = __oe_windows_ecall_key;
 
+    /* Unused */
+    memset(&params[1], 0, sizeof(params[1]));
+
     /* Input buffer */
     if (arg_in_size > 0)
     {
@@ -271,6 +274,7 @@ static oe_result_t _handle_call_builtin_function(
         params[2].memref.size = (uint32_t)arg_in_size;
     }
 
+    /* Output buffer */
     if (arg_out_size > 0)
     {
         if (arg_out_size > OE_UINT32_MAX)
@@ -325,6 +329,7 @@ static oe_result_t _handle_call_host_function(
         params[2].memref.size = (uint32_t)args->input_buffer_size;
     }
 
+    /* Output buffer */
     if (args->output_buffer)
     {
         if (args->output_buffer_size > OE_UINT32_MAX)
@@ -359,14 +364,17 @@ oe_result_t oe_ocall(
     uint64_t* arg_out,
     size_t arg_out_size)
 {
+    oe_result_t result;
+
+    /* Dispatch OCALL based on function */
     if (func == OE_OCALL_CALL_HOST_FUNCTION)
     {
-        return _handle_call_host_function(
-            (oe_call_host_function_args_t*)arg_in);
+        result =
+            _handle_call_host_function((oe_call_host_function_args_t*)arg_in);
     }
     else
     {
-        return _handle_call_builtin_function(
+        result = _handle_call_builtin_function(
             func,
             arg_in,
             arg_in_size,
@@ -374,6 +382,8 @@ oe_result_t oe_ocall(
             arg_out,
             arg_out_size);
     }
+
+    return result;
 }
 
 void oe_abort(void)
