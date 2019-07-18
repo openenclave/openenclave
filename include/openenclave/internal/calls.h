@@ -469,9 +469,15 @@ typedef struct _oe_backtrace_symbols_args
  * not whether it was successful. The ECALL implementation must define its own
  * error reporting scheme based on its parameters.
  *
+ * The argument description parameters (*_size and *_is_pointer) are not used
+ * for SGX.
+ *
  * @param func The number of the function to be called.
  * @param args_in The input argument passed to the function.
+ * @param arg_in_size The size of the input argument passed to the function.
+ * @param arg_in_is_pointer Declares whether arg_in is a value or a pointer.
  * @param arg_out The output argument passed back from the function.
+ * @param arg_out_size The size of the output argument passed back from the
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -484,7 +490,10 @@ oe_result_t oe_ecall(
     oe_enclave_t* enclave,
     uint16_t func,
     uint64_t arg_in,
-    uint64_t* arg_out);
+    size_t arg_in_size,
+    bool arg_in_is_pointer,
+    uint64_t* arg_out,
+    size_t arg_out_size);
 
 /**
  * Perform a low-level host function call (OCALL).

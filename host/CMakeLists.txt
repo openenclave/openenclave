@@ -142,7 +142,7 @@ elseif(OE_TRUSTZONE)
     list(APPEND PLATFORM_SRC
       optee/linux/enclave.c)
   else()
-    message(STATUS "Add Windows OP-TEE files.")
+    message(FATAL_ERROR "OP-TEE is not yet supported on platforms other than Linux.")
   endif()
 
   set(PLATFORM_FLAGS "")

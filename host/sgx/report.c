@@ -56,7 +56,14 @@ static oe_result_t _get_local_report(
 
     arg->opt_params_size = opt_params_size;
 
-    OE_CHECK(oe_ecall(enclave, OE_ECALL_GET_SGX_REPORT, (uint64_t)arg, NULL));
+    OE_CHECK(oe_ecall(
+        enclave,
+        OE_ECALL_GET_SGX_REPORT,
+        (uint64_t)arg,
+        sizeof(*arg),
+        true,
+        NULL,
+        0));
 
     OE_CHECK(oe_memcpy_s(
         report_buffer,
@@ -326,8 +333,14 @@ oe_result_t oe_verify_report(
         // parsed report since the parsed report will then contain pointers to
         // enclave memory. Instead, pass NULL as the optional parsed_report out
         // parameter and parse the report below if requested.
-        OE_CHECK(
-            oe_ecall(enclave, OE_ECALL_VERIFY_REPORT, (uint64_t)&arg, NULL));
+        OE_CHECK(oe_ecall(
+            enclave,
+            OE_ECALL_VERIFY_REPORT,
+            (uint64_t)&arg,
+            sizeof(arg),
+            true,
+            NULL,
+            0));
         OE_CHECK(arg.result);
     }
 
