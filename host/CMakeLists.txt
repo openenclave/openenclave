@@ -148,7 +148,6 @@ add_library(oehost STATIC
   ../common/lockless_queue.c
   ../common/safecrt.c
   ../common/vector.c
-  ../common/buf.c
   dupenv.c
   error.c
   files.c

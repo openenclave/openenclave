@@ -94,7 +94,6 @@ endif ()
 add_library(oecore STATIC
     ../../common/safecrt.c
     ../../common/vector.c
-    ../../common/buf.c
     ${MUSL_SRC_DIR}/prng/rand.c
     ${MUSL_SRC_DIR}/string/memcmp.c
     ${MUSL_SRC_DIR}/string/memcpy.c
