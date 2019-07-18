@@ -14,6 +14,31 @@
 
 // clang-format off
 
+/**
+ * TEE Parameter Types used when invoking functions inside the TA.
+ *
+ * Each invocation includes four TEEC_Parameter structures, used for the
+ * following purposes, by index, then by component:
+ *
+ * 0: Platform-specific data
+ *    Unused.
+ *
+ * 1: Open Enclave-specific data
+ *    Tmpref: Arguments marshaling structure, if any.
+ *        Note: This parameter is not used for built-in ECALLs.
+ *
+ * 2: Input parameter
+ *    Tmpref: The input parameters buffer, if any.
+ *
+ * 3: Output parameter
+ *    Tmpref: The output parameters buffer, if any.
+ *
+ * A similar pattern is used when the enclave calls into the host via an OCALL.
+ * There is no reason why the pattern is similar, other than for consistency.
+ *
+ * See enclave/core/optee/gp.c.
+ */
+
 #define PT_BUILTIN_CALL_IN_OUT          \
     (TEEC_PARAM_TYPES(                  \
         TEEC_NONE,                      \

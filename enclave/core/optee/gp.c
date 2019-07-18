@@ -17,13 +17,51 @@
 
 #include <pta_rpc.h>
 
-/* TEE Parameter Types used when invoking the Remote Procedure Call Pseudo
+/**
+ * TEE Parameter Types used when invoking the Remote Procedure Call Pseudo
  * Trusted Application (RPC PTA). PTAs are extensions of OP-TEE, running in
  * S:EL1 and are accessed via the TA2TA (Trusted Application-to-Trusted
  * Application) API. The TA2TA API is implemented as a system service by OP-TEE
  * and thus requires a system call (ERET) to access; this is done on our behalf
  * by OP-TEE's implementation of the GlobalPlatform TEE Internal Core API in
  * libutee.
+ *
+ * Each invocation includes four TEE_Param structures, used for the following
+ * purposes, by index, then by component:
+ *
+ * 0: Platform-specific data
+ *    Value A: Open Enclave function ID
+ *        Not exactly platform-specific, depending on how one looks at it. The
+ *        RPC PTA is meant to be generic in terms of the RPCs it executes so
+ *        that there be no Open Enclave-specific code in OP-TEE OS. As a
+ *        result, it cannot interpret Open Enclave function IDs (i.e.,
+ *        OE_OCALL_*). The only command it understands is PTA_RPC_EXECUTE,
+ *        meaning execute an RPC call, its underlying semantics
+ *        notwithstanding. The Open Enclave function ID is only interpreted by
+ *        the host application on the other end of the RPC call. Given that
+ *        each of the four parameters can only have one usage, that there are
+ *        indeed only four, and that the other three are used, the Open Enclave
+ *        function ID is passed through here. The RPC PTA just marshals it out
+ *        to non-secure mode as-is.
+ *    Value B: OCALL Key
+ *        The Windows OP-TEE driver handles RPCs asynchronously and requires a
+ *        way to identify each RPC so as to associate it with saved state.
+ *        TODO: The driver should be redesigned to not require this.
+ *
+ * 1: Open Enclave-specific data
+ *    Memref: Arguments marshaling structure, if any.
+ *        Note: This parameter is not used for built-in OCALLs.
+ *
+ * 2: Input parameter
+ *    Memref: The input parameters buffer, if any.
+ *
+ * 3: Output parameter
+ *    Memref: The output parameters buffer, if any.
+ *
+ * A similar pattern is used when the host calls into the enclave via an ECALL.
+ * There is no reason why the pattern is similar, other than for consistency.
+ *
+ * See host/optee/linux/enclave.c.
  */
 
 #define PT_BUILTIN_CALL_IN_OUT       \
