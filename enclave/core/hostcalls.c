@@ -10,7 +10,6 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/stack_alloc.h>
-#include "internal_t.h"
 
 void* oe_host_malloc(size_t size)
 {
@@ -40,19 +39,6 @@ void* oe_host_calloc(size_t nmemb, size_t size)
         oe_memset_s(ptr, nmemb * size, 0, nmemb * size);
 
     return ptr;
-}
-
-void* oe_host_realloc(void* ptr, size_t size)
-{
-    void* retval = NULL;
-
-    if (!ptr)
-        return oe_host_malloc(size);
-
-    if (oe_realloc_ocall(&retval, ptr, size) != OE_OK)
-        return NULL;
-
-    return retval;
 }
 
 void oe_host_free(void* ptr)
@@ -85,14 +71,6 @@ char* oe_host_strndup(const char* str, size_t n)
     p[len] = '\0';
 
     return p;
-}
-
-int oe_host_write(int device, const char* str, size_t len)
-{
-    if (oe_write_ocall(device, str, len) != OE_OK)
-        return -1;
-
-    return 0;
 }
 
 int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)

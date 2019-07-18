@@ -40,6 +40,7 @@ if (OE_SGX)
         sgx/entropy.c
         sgx/exception.c
         sgx/globals.c
+        sgx/hostcalls.c
         sgx/init.c
         sgx/internal_t_wrapper.c
         sgx/jump.c
