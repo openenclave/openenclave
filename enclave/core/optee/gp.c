@@ -21,7 +21,7 @@
  * Trusted Application (RPC PTA). PTAs are extensions of OP-TEE, running in
  * S:EL1 and are accessed via the TA2TA (Trusted Application-to-Trusted
  * Application) API. The TA2TA API is implemented as a system service by OP-TEE
- * and thus require a system call (ERET) to access; this is done on our behalf
+ * and thus requires a system call (ERET) to access; this is done on our behalf
  * by OP-TEE's implementation of the GlobalPlatform TEE Internal Core API in
  * libutee.
  */
