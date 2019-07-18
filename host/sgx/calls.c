@@ -373,7 +373,6 @@ static const char* oe_ocall_str(oe_func_t ocall)
         "CALL_HOST_FUNCTION",
         "THREAD_WAKE",
         "THREAD_WAIT",
-        "THREAD_WAKE_WAIT",
         "MALLOC",
         "REALLOC",
         "FREE",
@@ -474,10 +473,6 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_THREAD_WAKE:
             HandleThreadWake(enclave, arg_in);
-            break;
-
-        case OE_OCALL_THREAD_WAKE_WAIT:
-            HandleThreadWakeWait(enclave, arg_in);
             break;
 
         case OE_OCALL_SLEEP:

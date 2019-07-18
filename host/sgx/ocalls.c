@@ -108,23 +108,20 @@ void HandleThreadWake(oe_enclave_t* enclave, uint64_t arg_in)
 #endif
 }
 
-void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t arg_in)
+void oe_thread_wake_wait_ocall(
+    oe_enclave_t* enclave,
+    uint64_t waiter_tcs,
+    uint64_t self_tcs)
 {
-    oe_thread_wake_wait_args_t* args = (oe_thread_wake_wait_args_t*)arg_in;
-
-    if (!args)
+    if (!waiter_tcs || !self_tcs)
         return;
 
 #if defined(__linux__)
-
-    HandleThreadWake(enclave, (uint64_t)args->waiter_tcs);
-    HandleThreadWait(enclave, (uint64_t)args->self_tcs);
-
+    HandleThreadWake(enclave, waiter_tcs);
+    HandleThreadWait(enclave, self_tcs);
 #elif defined(_WIN32)
-
-    HandleThreadWake(enclave, (uint64_t)args->waiter_tcs);
-    HandleThreadWait(enclave, (uint64_t)args->self_tcs);
-
+    HandleThreadWake(enclave, waiter_tcs);
+    HandleThreadWait(enclave, self_tcs);
 #endif
 }
 

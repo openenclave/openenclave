@@ -113,5 +113,10 @@ enclave
             [out, size=strings_buf_size] void* strings_buf,
             size_t strings_buf_size,
             [out, count=1] size_t* strings_buf_size_out);
+
+        void oe_thread_wake_wait_ocall(
+            [user_check] oe_enclave_t* oe_enclave,
+            uint64_t waiter_tcs,
+            uint64_t self_tcs);
     };
 };

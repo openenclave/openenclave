@@ -12,7 +12,6 @@ void HandleFree(uint64_t arg);
 
 void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg);
 void HandleThreadWake(oe_enclave_t* enclave, uint64_t arg);
-void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t arg_in);
 
 void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg);
 
