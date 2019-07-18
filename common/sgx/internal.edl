@@ -118,5 +118,9 @@ enclave
             [user_check] oe_enclave_t* oe_enclave,
             uint64_t waiter_tcs,
             uint64_t self_tcs);
+
+        void* oe_realloc_ocall(
+            [user_check] void* ptr,
+            size_t size);
     };
 };

@@ -82,7 +82,6 @@ typedef enum _oe_func
     OE_OCALL_THREAD_WAKE,
     OE_OCALL_THREAD_WAIT,
     OE_OCALL_MALLOC,
-    OE_OCALL_REALLOC,
     OE_OCALL_FREE,
     OE_OCALL_WRITE,
     OE_OCALL_SLEEP,
@@ -322,22 +321,6 @@ typedef struct _oe_print_args
     int device;
     char* str;
 } oe_print_args_t;
-
-/*
-**==============================================================================
-**
-** oe_realloc_args_t
-**
-**     void* realloc(void* ptr, size_t size)
-**
-**==============================================================================
-*/
-
-typedef struct _oe_realloc_args
-{
-    void* ptr;
-    size_t size;
-} oe_realloc_args_t;
 
 /*
 **==============================================================================

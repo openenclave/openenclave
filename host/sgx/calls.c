@@ -374,7 +374,6 @@ static const char* oe_ocall_str(oe_func_t ocall)
         "THREAD_WAKE",
         "THREAD_WAIT",
         "MALLOC",
-        "REALLOC",
         "FREE",
         "WRITE",
         "SLEEP",
@@ -453,10 +452,6 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_MALLOC:
             HandleMalloc(arg_in, arg_out);
-            break;
-
-        case OE_OCALL_REALLOC:
-            HandleRealloc(arg_in, arg_out);
             break;
 
         case OE_OCALL_FREE:

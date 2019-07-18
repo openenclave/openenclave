@@ -10,6 +10,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/stack_alloc.h>
+#include "internal_t.h"
 
 void* oe_host_malloc(size_t size)
 {
@@ -43,28 +44,15 @@ void* oe_host_calloc(size_t nmemb, size_t size)
 
 void* oe_host_realloc(void* ptr, size_t size)
 {
-    oe_realloc_args_t* arg_in = NULL;
-    uint64_t arg_out = 0;
+    void* retval = NULL;
 
-    if (!(arg_in =
-              (oe_realloc_args_t*)oe_host_calloc(1, sizeof(oe_realloc_args_t))))
-        goto done;
+    if (!ptr)
+        return oe_host_malloc(size);
 
-    arg_in->ptr = ptr;
-    arg_in->size = size;
+    if (oe_realloc_ocall(&retval, ptr, size) != OE_OK)
+        return NULL;
 
-    if (oe_ocall(OE_OCALL_REALLOC, (uint64_t)arg_in, &arg_out) != OE_OK)
-    {
-        arg_out = 0;
-        goto done;
-    }
-
-    if (arg_out && !oe_is_outside_enclave((void*)arg_out, size))
-        oe_abort();
-
-done:
-    oe_host_free(arg_in);
-    return (void*)arg_out;
+    return retval;
 }
 
 void oe_host_free(void* ptr)

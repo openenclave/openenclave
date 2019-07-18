@@ -7,7 +7,6 @@
 #include "enclave.h"
 
 void HandleMalloc(uint64_t arg_in, uint64_t* arg_out);
-void HandleRealloc(uint64_t arg_in, uint64_t* arg_out);
 void HandleFree(uint64_t arg);
 
 void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg);
