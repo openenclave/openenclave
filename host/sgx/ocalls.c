@@ -580,3 +580,18 @@ void oe_log_ocall(uint32_t log_level, const char* message)
 {
     oe_log_message(true, (oe_log_level_t)log_level, message);
 }
+
+void oe_write_ocall(int device, const char* str, size_t len)
+{
+    if (str && (device == 0 || device == 1))
+    {
+        FILE* stream = (device == 0) ? stdout : stderr;
+
+        if (len == (size_t)-1)
+            fprintf(stream, "%s", str);
+        else
+            fprintf(stream, "%.*s", (int)len, str);
+
+        fflush(stream);
+    }
+}

@@ -122,5 +122,11 @@ enclave
         void* oe_realloc_ocall(
             [user_check] void* ptr,
             size_t size);
+
+        // Write a string to the console (device: (0=stdout, 1=stderr).
+        void oe_write_ocall(
+            int device,
+            [in, string] const char* str,
+            size_t len);
     };
 };

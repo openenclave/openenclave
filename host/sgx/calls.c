@@ -375,7 +375,6 @@ static const char* oe_ocall_str(oe_func_t ocall)
         "THREAD_WAIT",
         "MALLOC",
         "FREE",
-        "WRITE",
         "SLEEP",
         "GET_TIME",
     };
@@ -456,10 +455,6 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_FREE:
             HandleFree(arg_in);
-            break;
-
-        case OE_OCALL_WRITE:
-            HandlePrint(arg_in);
             break;
 
         case OE_OCALL_THREAD_WAIT:

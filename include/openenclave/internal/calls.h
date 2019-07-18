@@ -83,7 +83,6 @@ typedef enum _oe_func
     OE_OCALL_THREAD_WAIT,
     OE_OCALL_MALLOC,
     OE_OCALL_FREE,
-    OE_OCALL_WRITE,
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
     /* Caution: always add new OCALL function numbers here */
@@ -305,22 +304,6 @@ oe_result_t oe_register_ecall_function_table(
     uint64_t table_id,
     const oe_ecall_func_t* ecalls,
     size_t num_ecalls);
-
-/*
-**==============================================================================
-**
-** oe_print_args_t
-**
-**     Print 'str' to stdout (device == 0) or stderr (device == 1).
-**
-**==============================================================================
-*/
-
-typedef struct _oe_print_args
-{
-    int device;
-    char* str;
-} oe_print_args_t;
 
 /*
 **==============================================================================

@@ -155,7 +155,6 @@ add_library(oehost STATIC
   hexdump.c
   syscall_u_wrapper.c
   memalign.c
-  ocalls.c
   result.c
   signkey.c
   strings.c
