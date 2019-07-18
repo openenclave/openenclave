@@ -332,6 +332,34 @@ done:
     return result;
 }
 
+uint32_t oe_get_cpuid_table_ocall(void* cpuid_table, size_t cpuid_table_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    uint32_t table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
+    unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
+
+    if (!cpuid_table || cpuid_table_size != sizeof(table))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    for (unsigned int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    {
+        oe_get_cpuid(
+            i,
+            subleaf,
+            &table[i][OE_CPUID_RAX],
+            &table[i][OE_CPUID_RBX],
+            &table[i][OE_CPUID_RCX],
+            &table[i][OE_CPUID_RDX]);
+    }
+
+    memcpy(cpuid_table, &table, cpuid_table_size);
+
+    result = OE_OK;
+
+done:
+    return (uint32_t)result;
+}
+
 /*
 **==============================================================================
 **
@@ -346,30 +374,12 @@ done:
 static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_init_enclave_args_t args;
-    unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
+    uint64_t result_out = 0;
 
-    // Initialize enclave cache of CPUID info for emulation
-    for (unsigned int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
-    {
-        oe_get_cpuid(
-            i,
-            subleaf,
-            &args.cpuid_table[i][OE_CPUID_RAX],
-            &args.cpuid_table[i][OE_CPUID_RBX],
-            &args.cpuid_table[i][OE_CPUID_RCX],
-            &args.cpuid_table[i][OE_CPUID_RDX]);
-    }
+    OE_CHECK(oe_ecall(
+        enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)enclave, &result_out));
 
-    // Pass the enclave handle to the enclave.
-    args.enclave = enclave;
-
-    {
-        uint64_t arg_out = 0;
-        OE_CHECK(oe_ecall(
-            enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, &arg_out));
-        OE_CHECK((oe_result_t)arg_out);
-    }
+    OE_CHECK((oe_result_t)result_out);
 
     result = OE_OK;
 

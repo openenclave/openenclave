@@ -142,38 +142,23 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
     OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
     if (o == false)
     {
-        // Assert that arg_in is outside the enclave and is not null.
-        if (!oe_is_outside_enclave(
-                (void*)arg_in, sizeof(oe_init_enclave_args_t)))
-        {
-            OE_RAISE(OE_INVALID_PARAMETER);
-        }
-
         static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
         oe_spin_lock(&_lock);
 
         if (_once == false)
         {
+            oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
+
             /* Install the internal ecall function table. */
             OE_CHECK(oe_register_internal_ecall_function_table());
 
-            /* Set the global enclave handle */
-            oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)arg_in;
-            oe_init_enclave_args_t safe_args;
-
-            if (!oe_is_outside_enclave(args, sizeof(*args)))
+            if (!oe_is_outside_enclave(enclave, 1))
                 OE_RAISE(OE_INVALID_PARAMETER);
 
-            /* Copy structure into enclave memory */
-            safe_args = *args;
+            oe_enclave = enclave;
 
-            if (!oe_is_outside_enclave(safe_args.enclave, 1))
-                OE_RAISE(OE_INVALID_PARAMETER);
-
-            oe_enclave = safe_args.enclave;
-
-            /* Call all enclave state initialization functions */
-            OE_CHECK(oe_initialize_cpuid(&safe_args));
+            /* Initialize the CPUID table before calling global constructors. */
+            OE_CHECK(oe_initialize_cpuid());
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */

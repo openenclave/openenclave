@@ -305,24 +305,6 @@ oe_result_t oe_register_ecall_function_table(
     const oe_ecall_func_t* ecalls,
     size_t num_ecalls);
 
-/*
-**==============================================================================
-**
-** oe_init_enclave_args_t
-**
-**     Runtime state to initialize enclave state with, includes
-**     - First 8 leaves of CPUID for enclave emulation
-**     - Enclave handle obtained by oe_create_enclave()
-**
-**==============================================================================
-*/
-
-typedef struct _oe_init_enclave_args
-{
-    uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
-    oe_enclave_t* enclave;
-} oe_init_enclave_args_t;
-
 /**
  * Perform a low-level enclave function call (ECALL).
  *
