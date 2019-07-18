@@ -33,6 +33,10 @@ cd initializers/host
 ./initializers_host 62f73b00-bdfe-4763-a06a-dc561a3a34d8 || exit 1
 cd ../..
 
+cd libc/host
+./libc_host d7fe296a-24e9-46d1-aa78-9c7395082a41 || exit 1
+cd ../..
+
 cd mixed_c_cpp/host
 ./mixed_c_cpp_host 952c55c8-59f3-47a0-814c-ae3276a9808f || exit 1
 cd ../..

@@ -124,6 +124,9 @@ int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 
         if (main(1, argv) != 0)
         {
+            /* Prevent cascading of false negatives. */
+            t_status = 0;
+
             fprintf(stderr, "*** failed: %s\n", name);
             goto done;
         }
@@ -165,8 +168,8 @@ OE_SET_ENCLAVE_SGX(
 
 OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
-    1 * 1024 * 1024,
-    12 * 1024,
+    3 * 1024 * 1024,
+    48 * 1024,
     TA_FLAG_EXEC_DDR,
     "1.0.0",
     "libc test")

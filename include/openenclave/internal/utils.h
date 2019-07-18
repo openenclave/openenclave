@@ -126,8 +126,10 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
  * understanding see "C++ and the Perils of Double-Checked Locking"
  * http://www.aristeia.com/Papers/DDJ_Jul_Aug_2004_revised.pdf.
  */
-#define OE_ATOMIC_MEMORY_BARRIER_ACQUIRE() asm volatile("" ::: "memory")
-#define OE_ATOMIC_MEMORY_BARRIER_RELEASE() asm volatile("" ::: "memory")
+#define OE_ATOMIC_MEMORY_BARRIER_ACQUIRE() \
+    __atomic_thread_fence(__ATOMIC_ACQUIRE)
+#define OE_ATOMIC_MEMORY_BARRIER_RELEASE() \
+    __atomic_thread_fence(__ATOMIC_RELEASE)
 
 #if __x86_64__ || _M_X64
 #define OE_CPU_RELAX() asm volatile("pause" ::: "memory")

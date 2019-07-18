@@ -169,7 +169,8 @@ oe_result_t oe_log_enclave_init(oe_enclave_t* enclave)
     arg->path_len = strlen(enclave->path);
     arg->level = level;
     // Call enclave
-    result = oe_ecall(enclave, OE_ECALL_LOG_INIT, (uint64_t)arg, NULL);
+    result = oe_ecall(
+        enclave, OE_ECALL_LOG_INIT, (uint64_t)arg, sizeof(*arg), true, NULL, 0);
     if (result != OE_OK)
         goto done;
 

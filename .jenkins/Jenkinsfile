@@ -123,7 +123,6 @@ def AArch64GNUTest(String version, String build_type) {
 
                             exit $RESULT
                             """
-                echo "${task}"
                 oe.ContainerRun("oetools-full-${version}", "cross", task, "--cap-add=SYS_PTRACE")
             }
         }
@@ -252,31 +251,23 @@ parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows(
          "Check CI" :                                           { checkCI() },
          "ACC1604 clang-7 Debug" :                              { ACCTest('ACC-1604', 'clang-7', 'Debug') },
          "ACC1604 clang-7 Release" :                            { ACCTest('ACC-1604', 'clang-7', 'Release') },
-         "ACC1604 clang-7 RelWithDebInfo" :                     { ACCTest('ACC-1604', 'clang-7', 'RelWithDebinfo') },
          "ACC1604 gcc Debug" :                                  { ACCTest('ACC-1604', 'gcc', 'Debug') },
          "ACC1604 gcc Release" :                                { ACCTest('ACC-1604', 'gcc', 'Release') },
-         "ACC1604 gcc RelWithDebInfo" :                         { ACCTest('ACC-1604', 'gcc', 'RelWithDebInfo') },
          "ACC1604 Container RelWithDebInfo" :                   { ACCContainerTest('ACC-1604', '16.04') },
          "ACC1804 clang-7 Debug" :                              { ACCTest('ACC-1804', 'clang-7', 'Debug') },
          "ACC1804 clang-7 Release" :                            { ACCTest('ACC-1804', 'clang-7', 'Release') },
-         "ACC1804 clang-7 RelWithDebInfo" :                     { ACCTest('ACC-1804', 'clang-7', 'RelWithDebinfo') },
          "ACC1804 gcc Debug" :                                  { ACCTest('ACC-1804', 'gcc', 'Debug') },
          "ACC1804 gcc Release" :                                { ACCTest('ACC-1804', 'gcc', 'Release') },
-         "ACC1804 gcc RelWithDebInfo" :                         { ACCTest('ACC-1804', 'gcc', 'RelWithDebInfo') },
          "ACC1804 Container RelWithDebInfo" :                   { ACCContainerTest('ACC-1804', '18.04') },
          "ACC1804 GNU gcc SGX1FLC" :                            { ACCGNUTest() },
          "AArch64 1604 GNU gcc Debug" :                         { AArch64GNUTest('16.04', 'Debug')},
          "AArch64 1604 GNU gcc Release" :                       { AArch64GNUTest('16.04', 'Release')},
-         "AArch64 1604 GNU gcc RelWithDebInfo" :                { AArch64GNUTest('16.04', 'RelWithDebInfo')},
          "AArch64 1804 GNU gcc Debug" :                         { AArch64GNUTest('18.04', 'Debug')},
          "AArch64 1804 GNU gcc Release" :                       { AArch64GNUTest('18.04', 'Release')},
-         "AArch64 1804 GNU gcc RelWithDebInfo" :                { AArch64GNUTest('18.04', 'RelWithDebInfo')},
          "Sim 1804 clang-7 SGX1 Debug" :                        { simulationTest('18.04', 'SGX1', 'Debug')},
          "Sim 1804 clang-7 SGX1 Release" :                      { simulationTest('18.04', 'SGX1', 'Release')},
-         "Sim 1804 clang-7 SGX1 RelWithDebInfo" :               { simulationTest('18.04', 'SGX1', 'RelWithDebInfo')},
          "Sim 1804 clang-7 SGX1-FLC Debug" :                    { simulationTest('18.04', 'SGX1FLC', 'Debug')},
          "Sim 1804 clang-7 SGX1-FLC Release" :                  { simulationTest('18.04', 'SGX1FLC', 'Release')},
-         "Sim 1804 clang-7 SGX1-FLC RelWithDebInfo" :           { simulationTest('18.04', 'SGX1FLC', 'RelWithDebInfo')},
          "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
          "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('16.04', 'clang-7', 'Release') },
          "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug') },
