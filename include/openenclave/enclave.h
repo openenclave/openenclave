@@ -33,6 +33,17 @@ OE_EXTERNC_BEGIN
  */
 
 /**
+ * OP-TEE provides single-threaded enclaves only, and its ELF loader does not
+ * support thread-local relocations. Hence, any enclave that includes a
+ * variable marked with __thread will not only not work, but it will fail to
+ * load altogether.
+ */
+#if defined(_ARM_) || defined(_M_ARM) || defined(__arm__) || \
+    defined(__thumb__) || defined(__aarch64__)
+#define __thread
+#endif
+
+/**
  * Register a new vectored exception handler.
  *
  * Call this function to add a new vectored exception handler. If successful,
