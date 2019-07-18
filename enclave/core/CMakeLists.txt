@@ -78,6 +78,7 @@ elseif (OE_TRUSTZONE)
         optee/header.c
         optee/globals.c
         optee/gp.c
+        optee/hostcalls.c
         optee/printf.c
         optee/sched_yield.c
         optee/spinlock.c
