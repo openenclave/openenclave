@@ -29,10 +29,10 @@ static oe_mutex_t g_plugin_list_mutex = OE_MUTEX_INITIALIZER;
 
 struct attestation_plugin_t
 {
-    oe_attestation_plugin_context_t* plugin_context;
+    oe_quote_customization_plugin_context_t* plugin_context;
     oe_tee_evidence_type_t tee_evidence_type;
     uuid_t evidence_format_uuid;
-    oe_attestation_plugin_callbacks_t* callbacks;
+    oe_quote_customization_plugin_callbacks_t* callbacks;
     struct attestation_plugin_t* next;
 };
 
@@ -182,7 +182,7 @@ struct attestation_plugin_t* find_plugin(
 
 // TODO: need synchronization
 oe_result_t oe_register_attestation_plugin(
-    oe_attestation_plugin_context_t* context)
+    oe_quote_customization_plugin_context_t* context)
 {
     oe_result_t result = OE_FAILURE;
     struct attestation_plugin_t* plugin = NULL;
@@ -231,7 +231,7 @@ done:
 }
 
 oe_result_t oe_unregister_attestation_plugin(
-    oe_attestation_plugin_context_t* context)
+    oe_quote_customization_plugin_context_t* context)
 // const unsigned char attestation_type[40])
 {
     oe_result_t result = OE_FAILURE;
@@ -372,7 +372,7 @@ oe_result_t oe_get_attestation_evidence(
     {
         oe_evidence_header_t* header =
             (oe_evidence_header_t*)total_evidence_buff;
-        header->custom_evidence_size = custom_evidence_size;
+        header->custom_evidence_size = (uint32_t)custom_evidence_size;
         memcpy(
             (void*)&header->evidence_format_uuid,
             evidence_format_uuid,
@@ -386,7 +386,7 @@ oe_result_t oe_get_attestation_evidence(
         header->tee_evidence_type = plugin->tee_evidence_type;
         header->evidence_format_uuid = plugin->evidence_format_uuid;
         header->tee_evidence_size = 0;
-        header->custom_evidence_size = custom_evidence_size;
+        header->custom_evidence_size = (uint32_t)custom_evidence_size;
         memcpy(
             (void*)&header->evidence_format_uuid,
             evidence_format_uuid,
