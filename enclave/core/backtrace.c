@@ -10,7 +10,6 @@
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/vector.h>
 
 oe_result_t oe_print_backtrace(void)
 {

@@ -5,6 +5,6 @@ enclave
 {
     trusted
     {
-        public void test_vector_ecall();
+        public void test_argv_ecall();
     };
 };

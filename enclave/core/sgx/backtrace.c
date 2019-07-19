@@ -2,13 +2,14 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/argv.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/vector.h>
 #include "internal_t.h"
 
 #if defined(__INTEL_COMPILER)
@@ -148,16 +149,10 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
     }
 
     /* Convert vector to array of strings. */
+    if (oe_buffer_to_argv(
+            buf, buf_size_out, &argv, (size_t)size, dlmalloc, dlfree) != OE_OK)
     {
-        oe_vector_t* vec;
-
-        if (!(vec = oe_vector_relocate(buf, (size_t)size)))
-            goto done;
-
-        if (!(argv = oe_vector_to_argv(vec, (size_t)size, dlmalloc, dlfree)))
-        {
-            goto done;
-        }
+        goto done;
     }
 
     ret = argv;

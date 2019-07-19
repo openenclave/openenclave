@@ -7,4 +7,4 @@ if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/vector vector_host vector_enc)
+add_enclave_test(tests/argv argv_host argv_enc)

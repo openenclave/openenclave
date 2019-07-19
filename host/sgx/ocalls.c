@@ -18,6 +18,7 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/argv.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/raise.h>
@@ -25,7 +26,6 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/vector.h>
 #include "../ocalls.h"
 #include "enclave.h"
 #include "internal_u.h"
@@ -520,9 +520,6 @@ uint32_t oe_backtrace_symbols_ocall(
 {
     oe_result_t result = OE_UNEXPECTED;
     char** strings = NULL;
-    oe_vector_t* vector = NULL;
-    void* buf = NULL;
-    size_t buf_size;
 
     /* Reject invalid parameters. */
     if (!oe_enclave || !buffer || size > OE_INT_MAX || !strings_buf_size_out)
@@ -535,30 +532,14 @@ uint32_t oe_backtrace_symbols_ocall(
         OE_RAISE(OE_FAILURE);
     }
 
-    /* Build a vector from the strings[] array. */
-    {
-        if (!(vector = malloc(sizeof(oe_vector_t) * size)))
-            OE_RAISE(OE_OUT_OF_MEMORY);
+    *strings_buf_size_out = strings_buf_size;
 
-        for (size_t i = 0; i < size; i++)
-        {
-            vector[i].data = strings[i];
-            vector[i].size = strlen(strings[i]) + 1;
-        }
-    }
-
-    /* Pack the vector into a buffer. */
-    OE_CHECK(oe_vector_pack(vector, size, &buf, &buf_size, malloc, free));
-
-    *strings_buf_size_out = buf_size;
-
-    /* Fail if the caller's buffer is too small. */
-    if (buf_size > strings_buf_size)
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
-
-    /* Copy to the caller's buffer. */
-    if (strings_buf)
-        memcpy(strings_buf, buf, buf_size);
+    OE_CHECK(oe_argv_to_buffer(
+        (const char**)strings,
+        size,
+        strings_buf,
+        strings_buf_size,
+        strings_buf_size_out));
 
     result = OE_OK;
 
@@ -566,12 +547,6 @@ done:
 
     if (strings)
         free(strings);
-
-    if (vector)
-        free(vector);
-
-    if (buf)
-        free(buf);
 
     return result;
 }

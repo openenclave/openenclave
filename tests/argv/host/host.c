@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "vector_u.h"
+#include "argv_u.h"
 
 int main(int argc, const char* argv[])
 {
@@ -21,10 +21,10 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    result = oe_create_vector_enclave(argv[1], type, flags, NULL, 0, &enclave);
+    result = oe_create_argv_enclave(argv[1], type, flags, NULL, 0, &enclave);
     OE_TEST(result == OE_OK);
 
-    result = test_vector_ecall(enclave);
+    result = test_argv_ecall(enclave);
     OE_TEST(result == OE_OK);
 
     result = oe_terminate_enclave(enclave);
