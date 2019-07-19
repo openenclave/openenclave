@@ -668,32 +668,29 @@ typedef oe_result_t (
     *oe_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
 
 typedef struct _oe_attestation_plugin_callbacks_t
-    oe_attestation_plugin_callbacks_t;
+    oe_quote_customization_plugin_callbacks_t;
 
-typedef struct _oe_attestation_plugin_context_t
+typedef struct _oe_quote_customization_plugin_context_t
 {
     oe_tee_evidence_type_t tee_evidence_type;
     uuid_t evidence_format_uuid;
-    oe_attestation_plugin_callbacks_t* callbacks;
-} oe_attestation_plugin_context_t;
+    oe_quote_customization_plugin_callbacks_t* callbacks;
+} oe_quote_customization_plugin_context_t;
 
-/* attestation operations .*/
+/* quote customization operations .*/
 struct _oe_attestation_plugin_callbacks_t
 {
-    // callbacks for provding custom data
-    int (*get_custom_evidence_size)(
-        oe_attestation_plugin_context_t* plugin_context,
-        size_t* custom_evidence_size);
+    // callbacks for providing custom data
     int (*get_custom_evidence)(
-        oe_attestation_plugin_context_t* plugin_context,
+        oe_quote_customization_plugin_context_t* plugin_context,
         uint8_t** custom_evidence,
         size_t* custom_evidence_size);
 
-    // verify_custom_evidence will be called if  verify_full_evidence was set
-    // not custom_evidence only contains the custom evidence provided through
+    // verify_custom_evidence will be called if verify_full_evidence was not set
+    // custom_evidence only contains the custom evidence provided through
     // get_custom_evidence() call during the quote generation
     int (*verify_custom_evidence)(
-        oe_attestation_plugin_context_t* plugin_context,
+        oe_quote_customization_plugin_context_t* plugin_context,
         const uint8_t* custom_evidence,
         size_t custom_evidence_size,
         oe_claim_element_t** claims,
@@ -702,8 +699,7 @@ struct _oe_attestation_plugin_callbacks_t
     // Set verify_full_evidence only if a plug-in wants to validate the whole
     // evidence (inlcuding vlidating the TEE specitfic part) by the plug-in
     int (*verify_full_evidence)(
-        oe_attestation_plugin_context_t* plugin_context,
-        // void* callback_context,
+        oe_quote_customization_plugin_context_t* plugin_context,
         const uint8_t* full_evidence,
         size_t full_evidence_size,
         oe_claim_element_t** claims,
@@ -711,10 +707,10 @@ struct _oe_attestation_plugin_callbacks_t
 };
 
 oe_result_t oe_register_attestation_plugin(
-    oe_attestation_plugin_context_t* context);
+    oe_quote_customization_plugin_context_t* context);
 
 oe_result_t oe_unregister_attestation_plugin(
-    oe_attestation_plugin_context_t* context);
+    oe_quote_customization_plugin_context_t* context);
 
 oe_result_t oe_get_attestation_evidence(
     uuid_t* evidence_format_uuid,

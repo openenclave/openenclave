@@ -143,7 +143,7 @@ typedef struct _oe_report
 **
 **==============================================================================
 */
-typedef enum _oe_report_type
+typedef enum _oe_tee_evidence_type_t
 {
     OE_TEE_TYPE_SGX_LOCAL = 1,
     OE_TEE_TYPE_SGX_REMOTE = 2,
@@ -189,8 +189,8 @@ typedef struct _oe_evidence_header
     uint32_t version;
     oe_tee_evidence_type_t tee_evidence_type; // TEE type
     uuid_t evidence_format_uuid;   // uuid for specific attestation format
-    uint64_t tee_evidence_size;    // not including custom evidence
-    uint64_t custom_evidence_size; // size of custom evidence, which follows
+    uint32_t tee_evidence_size;    // not including custom evidence
+    uint32_t custom_evidence_size; // size of custom evidence, which follows
                                    // right after report data
     uint8_t tee_evidence[];
 } oe_evidence_header_t;

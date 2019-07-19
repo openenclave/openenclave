@@ -44,7 +44,7 @@ done:
 }
 
 // static int my_get_custom_evidence_size(
-//     oe_attestation_plugin_context_t* plugin_context,
+//     oe_quote_customization_plugin_context_t* plugin_context,
 //     size_t* custom_evidence_size)
 // {
 //     int ret = 1;
@@ -72,7 +72,7 @@ done:
 // }
 
 static int my_get_custom_evidence_data(
-    oe_attestation_plugin_context_t* plugin_context,
+    oe_quote_customization_plugin_context_t* plugin_context,
     uint8_t** custom_evidence,
     size_t* custom_evidence_size)
 {
@@ -101,7 +101,7 @@ done:
 }
 
 static int my_verify_full_evidence(
-    oe_attestation_plugin_context_t* plugin_context,
+    oe_quote_customization_plugin_context_t* plugin_context,
     const uint8_t* full_evidence_buffer,
     size_t full_evidence_buffer_size,
     oe_claim_element_t** claims,
@@ -160,7 +160,7 @@ done:
     return ret;
 }
 
-static oe_attestation_plugin_callbacks_t attestation_callbacks = {
+static oe_quote_customization_plugin_callbacks_t attestation_callbacks = {
     .get_custom_evidence = my_get_custom_evidence_data,
     .verify_custom_evidence = NULL,
     .verify_full_evidence = my_verify_full_evidence,
@@ -170,7 +170,7 @@ static oe_attestation_plugin_callbacks_t attestation_callbacks = {
 // static const GUID <<name>> =
 // { 0xb9ba3261, 0xcb33, 0x4171, { 0x8f, 0xb3, 0xd4, 0xe1, 0xcc, 0xa1, 0xea,
 // 0x40 } };
-oe_attestation_plugin_context_t my_plugin_context3 = {
+oe_quote_customization_plugin_context_t my_plugin_context3 = {
     .tee_evidence_type = OE_TEE_TYPE_SGX_REMOTE,
     .evidence_format_uuid = UUID_INIT(
         0xB9BA3261,

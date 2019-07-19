@@ -16,9 +16,9 @@
 // sdk tool oeedger8r against the attestation_plugin.edl file.
 #include "attestation_plugin_t.h"
 
-extern oe_attestation_plugin_context_t my_plugin_context1;
-extern oe_attestation_plugin_context_t my_plugin_context2;
-extern oe_attestation_plugin_context_t my_plugin_context3;
+extern oe_quote_customization_plugin_context_t my_plugin_context1;
+extern oe_quote_customization_plugin_context_t my_plugin_context2;
+extern oe_quote_customization_plugin_context_t my_plugin_context3;
 
 // This is the function that the host calls. It prints
 // a message in the enclave before calling back out to

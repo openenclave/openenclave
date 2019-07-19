@@ -35,7 +35,7 @@ static unsigned char g_custom_evidence[] =
 static size_t g_custom_evidence_size = sizeof(g_custom_evidence);
 
 static int my_get_custom_evidence_data(
-    oe_attestation_plugin_context_t* plugin_context,
+    oe_quote_customization_plugin_context_t* plugin_context,
     uint8_t** custom_evidence,
     size_t* custom_evidence_size)
 {
@@ -64,7 +64,7 @@ done:
 }
 
 static int my_verify_custom_evidence(
-    oe_attestation_plugin_context_t* plugin_context,
+    oe_quote_customization_plugin_context_t* plugin_context,
     const uint8_t* custom_evidence,
     size_t custom_evidence_size,
     oe_claim_element_t** claims,
@@ -104,7 +104,7 @@ done:
     return ret;
 }
 
-static oe_attestation_plugin_callbacks_t attestation_callbacks = {
+static oe_quote_customization_plugin_callbacks_t attestation_callbacks = {
     .get_custom_evidence = my_get_custom_evidence_data,
     .verify_custom_evidence = my_verify_custom_evidence,
     .verify_full_evidence = NULL,
@@ -114,7 +114,7 @@ static oe_attestation_plugin_callbacks_t attestation_callbacks = {
 // static const GUID <<name>> =
 // { 0xf36b727e, 0xa818, 0x47b6, { 0xa6, 0xcd, 0x58, 0x53, 0xb8, 0x45, 0x93,
 // 0xa2 } };
-oe_attestation_plugin_context_t my_plugin_context2 = {
+oe_quote_customization_plugin_context_t my_plugin_context2 = {
     .tee_evidence_type = OE_TEE_TYPE_CUSTOM,
     .evidence_format_uuid = UUID_INIT(
         0xF36B727E,

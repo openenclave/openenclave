@@ -11,7 +11,7 @@
 static size_t g_custom_evidence_size = 1024;
 
 static int my_get_custom_evidence_data(
-    oe_attestation_plugin_context_t* plugin_context,
+    oe_quote_customization_plugin_context_t* plugin_context,
     uint8_t** custom_evidence,
     size_t* custom_evidence_size)
 {
@@ -41,7 +41,7 @@ done:
 }
 
 static int my_verify_custom_evidence(
-    oe_attestation_plugin_context_t* plugin_context,
+    oe_quote_customization_plugin_context_t* plugin_context,
     const uint8_t* custom_evidence,
     size_t custom_evidence_size,
     oe_claim_element_t** claims,
@@ -65,7 +65,7 @@ static int my_verify_custom_evidence(
         }
     }
 
-    // create new claim after processing above custpm data
+    // create new claim after processing above custom data
     new_claim = (oe_claim_element_t*)malloc(sizeof(oe_claim_element_t));
     if (new_claim == NULL)
     {
@@ -93,8 +93,6 @@ static int my_verify_custom_evidence(
     {
         my_claims[i] = (*claims)[i];
     }
-    // memcpy((void*)my_claims, claims, sizeof(oe_claim_element_t) *
-    // (*claim_count));
     // add one evidence here
     my_claims[*claim_count] = *new_claim;
     free(*claims);
@@ -107,7 +105,7 @@ done:
     return ret;
 }
 
-static oe_attestation_plugin_callbacks_t attestation_callbacks = {
+static oe_quote_customization_plugin_callbacks_t attestation_callbacks = {
     .get_custom_evidence = my_get_custom_evidence_data,
     .verify_custom_evidence = my_verify_custom_evidence,
     .verify_full_evidence = NULL,
@@ -117,7 +115,7 @@ static oe_attestation_plugin_callbacks_t attestation_callbacks = {
 // static const GUID <<name>> =
 // { 0x6EBB65E5, 0xF657, 0x48B1, { 0x94, 0xdf, 0x0e, 0xc0, 0xb6, 0x71,0xda,
 // 0x26 } };
-oe_attestation_plugin_context_t my_plugin_context1 = {
+oe_quote_customization_plugin_context_t my_plugin_context1 = {
     .tee_evidence_type = OE_TEE_TYPE_SGX_REMOTE,
     .evidence_format_uuid = UUID_INIT(
         0x6EBB65E5,
