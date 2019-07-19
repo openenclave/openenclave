@@ -163,7 +163,7 @@ oe_result_t oe_log_enclave_init(oe_enclave_t* enclave)
 oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
 {
     oe_result_t result = OE_UNEXPECTED;
-    char message[OE_LOG_MESSAGE_LEN_MAX];
+    char* message = NULL;
     va_list ap;
 
     if (!fmt)
@@ -181,14 +181,21 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
         }
     }
 
+    if (!(message = malloc(OE_LOG_MESSAGE_LEN_MAX)))
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
     va_start(ap, fmt);
-    vsnprintf(message, sizeof(message), fmt, ap);
+    vsnprintf(message, OE_LOG_MESSAGE_LEN_MAX, fmt, ap);
     va_end(ap);
     oe_log_message(false, level, message);
 
     result = OE_OK;
 
 done:
+
+    if (message)
+        free(message);
+
     return result;
 }
 
