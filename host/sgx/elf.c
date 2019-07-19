@@ -1909,7 +1909,9 @@ oe_result_t elf64_load_relocations(
     for (; p != end; p++)
     {
         uint64_t reloc_type = ELF64_R_TYPE(p->r_info);
-        if (reloc_type != R_X86_64_RELATIVE && reloc_type != R_X86_64_TPOFF64)
+        if (reloc_type != R_X86_64_RELATIVE && reloc_type != R_X86_64_TPOFF64 &&
+            reloc_type != R_X86_64_DPTMOD64 &&
+            reloc_type != R_X86_64_GLOB_DAT && reloc_type != R_X86_64_64)
         {
             // Relocations are critical for correct code behavior.
             // Error out for unsupported relocations
