@@ -497,7 +497,7 @@ uint32_t oe_get_public_key_by_policy_ecall(
         size_t key_buffer_size;
         uint8_t* key_info;
         size_t key_info_size;
-    } arg;
+    } arg = {NULL};
 
     if (key_buffer_size_out)
         *key_info_size_out = 0;
@@ -507,8 +507,6 @@ uint32_t oe_get_public_key_by_policy_ecall(
 
     if (!key_buffer_size_out || !key_info_size_out)
         OE_RAISE(OE_INVALID_PARAMETER);
-
-    memset(&arg, 0, sizeof(arg));
 
     /* Get the key. */
     OE_CHECK(oe_get_public_key_by_policy(
@@ -554,15 +552,13 @@ uint32_t oe_get_public_key_ecall(
     {
         uint8_t* key_buffer;
         size_t key_buffer_size;
-    } arg;
+    } arg = {NULL};
 
     if (key_buffer_size_out)
         *key_buffer_size_out = 0;
 
     if (!key_buffer_size_out)
         OE_RAISE(OE_INVALID_PARAMETER);
-
-    memset(&arg, 0, sizeof(arg));
 
     /* Get the key. */
     OE_CHECK(oe_get_public_key(

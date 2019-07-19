@@ -196,10 +196,8 @@ uint32_t oe_get_revocation_info_ocall(
     size_t* crl_issuer_chain2_size_out)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_revocation_info_args_t args;
+    oe_get_revocation_info_args_t args = {0};
     bool buffer_too_small = false;
-
-    memset(&args, 0, sizeof(args));
 
     /* fmspc */
     memcpy(args.fmspc, fmspc, sizeof(args.fmspc));
@@ -298,12 +296,11 @@ uint32_t oe_get_qe_identify_info_ocall(
     size_t* issuer_chain_size_out)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_qe_identity_info_args_t args;
+    oe_get_qe_identity_info_args_t args = {0};
 
     if (!qe_id_info_size_out || !issuer_chain_size_out)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    memset(&args, 0, sizeof(args));
     OE_CHECK(oe_get_qe_identity_info(&args));
 
     if (args.qe_id_info_size > qe_id_info_size)

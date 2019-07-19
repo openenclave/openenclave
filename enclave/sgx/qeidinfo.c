@@ -21,13 +21,14 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args_out)
     const size_t QE_ID_INFO_SIZE = OE_PAGE_SIZE;
     const size_t ISSUER_CHAIN_SIZE = OE_PAGE_SIZE;
     uint32_t retval;
-    oe_get_qe_identity_info_args_t args;
+    oe_get_qe_identity_info_args_t args = {0};
+    size_t iterations = 0;
+    const size_t MAX_ITERATIONS = 8;
 
     if (args_out == NULL)
         OE_RAISE(OE_FAILURE);
 
     memset(args_out, 0, sizeof(oe_get_qe_identity_info_args_t));
-    memset(&args, 0, sizeof(oe_get_qe_identity_info_args_t));
 
     if (!(args.qe_id_info = malloc(QE_ID_INFO_SIZE)))
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -58,6 +59,12 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args_out)
      */
     while ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
     {
+        /* Give up after MAX_ITERATIONS. */
+        if (iterations++ == MAX_ITERATIONS)
+        {
+            OE_RAISE(OE_FAILURE);
+        }
+
         if (!(args.qe_id_info = realloc(args.qe_id_info, args.qe_id_info_size)))
         {
             OE_RAISE(OE_OUT_OF_MEMORY);

@@ -18,8 +18,8 @@
 oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
 {
     oe_result_t result = OE_FAILURE;
-    oe_get_revocation_info_args_t in;
-    oe_get_revocation_info_args_t out;
+    oe_get_revocation_info_args_t in = {0};
+    oe_get_revocation_info_args_t out = {0};
     uint32_t retval;
 
     if (!args)
@@ -28,8 +28,6 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     /* Verify the crl_urls. */
     if (args->num_crl_urls != 2 || !args->crl_urls[0] || !args->crl_urls[1])
         OE_RAISE(OE_FAILURE);
-
-    memset(&in, 0, sizeof(in));
 
     /* fmspc */
     memcpy(in.fmspc, args->fmspc, sizeof(in.fmspc));
