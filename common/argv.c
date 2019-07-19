@@ -11,6 +11,8 @@
 #include <string.h>
 #endif
 
+#define MAX_LENGTHS 32
+
 oe_result_t oe_argv_to_buffer(
     const char* argv[],
     size_t argc,
@@ -21,7 +23,6 @@ oe_result_t oe_argv_to_buffer(
     oe_result_t result = OE_UNEXPECTED;
     size_t required_size = 0;
     size_t i;
-    static const size_t MAX_LENGTHS = 32;
     size_t lengths[MAX_LENGTHS];
 
     if (!argv || !buf_size_out)
