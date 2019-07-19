@@ -136,6 +136,11 @@ ELF_EXTERNC_BEGIN
 #define STT_LOPROC 13 /* Processor-specific use */
 #define STT_HIPROC 15
 
+/* Added relocation type for supporting SGX-LKL */
+#define R_X86_64_64 1
+#define R_X86_64_GLOB_DAT 6
+#define R_X86_64_DPTMOD64 16
+
 /* elf64_rel.r_info */
 #define R_X86_64_RELATIVE 8
 
