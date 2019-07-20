@@ -120,7 +120,8 @@ static oe_result_t _add_filled_pages(
     {
         uint64_t addr = enclave_addr + *vaddr;
         uint64_t src = (uint64_t)page;
-        uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
+        uint64_t flags =
+            SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W | SGX_SECINFO_X;
 
         OE_CHECK(oe_sgx_load_enclave_data(
             context, enclave_addr, addr, src, flags, extend));
