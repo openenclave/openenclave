@@ -358,7 +358,7 @@ void oe_free_report(uint8_t* report_buffer)
     oe_free(report_buffer);
 }
 
-uint32_t oe_get_sgx_report_ecall(
+oe_result_t oe_get_sgx_report_ecall(
     const void* opt_params,
     size_t opt_params_size,
     sgx_report_t* report)
@@ -377,5 +377,5 @@ uint32_t oe_get_sgx_report_ecall(
     result = OE_OK;
 
 done:
-    return (uint32_t)result;
+    return result;
 }

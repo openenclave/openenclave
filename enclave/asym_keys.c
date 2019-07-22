@@ -480,7 +480,7 @@ void oe_free_key(
     }
 }
 
-uint32_t oe_get_public_key_by_policy_ecall(
+oe_result_t oe_get_public_key_by_policy_ecall(
     uint32_t seal_policy,
     const oe_asymmetric_key_params_t* key_params,
     void* key_buffer,
@@ -539,7 +539,7 @@ done:
     return result;
 }
 
-uint32_t oe_get_public_key_ecall(
+oe_result_t oe_get_public_key_ecall(
     const oe_asymmetric_key_params_t* key_params,
     const void* key_info,
     size_t key_info_size,

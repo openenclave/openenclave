@@ -119,7 +119,7 @@ void oe_thread_wake_wait_ocall(
 #endif
 }
 
-uint32_t oe_get_quote_ocall(
+oe_result_t oe_get_quote_ocall(
     const sgx_report_t* sgx_report,
     void* quote,
     size_t quote_size,
@@ -132,7 +132,7 @@ uint32_t oe_get_quote_ocall(
     if (quote_size_out)
         *quote_size_out = quote_size;
 
-    return (uint32_t)result;
+    return result;
 }
 
 #if defined(OE_USE_LIBSGX)
@@ -164,7 +164,7 @@ done:
     return result;
 }
 
-uint32_t oe_get_revocation_info_ocall(
+oe_result_t oe_get_revocation_info_ocall(
     uint8_t fmspc[6],
     size_t num_crl_urls,
     const char* crl_urls0,
@@ -284,10 +284,10 @@ done:
 
     free(args.buffer);
 
-    return (uint32_t)result;
+    return result;
 }
 
-uint32_t oe_get_qe_identify_info_ocall(
+oe_result_t oe_get_qe_identify_info_ocall(
     void* qe_id_info,
     size_t qe_id_info_size,
     size_t* qe_id_info_size_out,
@@ -330,12 +330,12 @@ done:
     if (args.host_out_buffer)
         free(args.host_out_buffer);
 
-    return (uint32_t)result;
+    return result;
 }
 
 #else /* !defined(OE_USE_LIBSGX) */
 
-uint32_t oe_get_revocation_info_ocall(
+oe_result_t oe_get_revocation_info_ocall(
     uint8_t fmspc[6],
     size_t num_crl_urls,
     const char* crl_urls0,
@@ -396,10 +396,10 @@ uint32_t oe_get_revocation_info_ocall(
     OE_UNUSED(crl_issuer_chain2_size);
     OE_UNUSED(crl_issuer_chain2_size_out);
 
-    return (uint32_t)OE_UNSUPPORTED;
+    return OE_UNSUPPORTED;
 }
 
-uint32_t oe_get_qe_identify_info_ocall(
+oe_result_t oe_get_qe_identify_info_ocall(
     void* qe_id_info,
     size_t qe_id_info_size,
     size_t* qe_id_info_size_out,
@@ -414,12 +414,12 @@ uint32_t oe_get_qe_identify_info_ocall(
     OE_UNUSED(issuer_chain_size);
     OE_UNUSED(issuer_chain_size_out);
 
-    return (uint32_t)OE_UNSUPPORTED;
+    return OE_UNSUPPORTED;
 }
 
 #endif /* !defined(OE_USE_LIBSGX) */
 
-uint32_t oe_get_qetarget_info_ocall(sgx_target_info_t* target_info)
+oe_result_t oe_get_qetarget_info_ocall(sgx_target_info_t* target_info)
 {
     return sgx_get_qetarget_info(target_info);
 }
@@ -507,7 +507,7 @@ done:
     return ret;
 }
 
-uint32_t oe_backtrace_symbols_ocall(
+oe_result_t oe_backtrace_symbols_ocall(
     oe_enclave_t* oe_enclave,
     const uint64_t* buffer,
     size_t size,

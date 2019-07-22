@@ -332,7 +332,7 @@ done:
     return result;
 }
 
-uint32_t oe_get_cpuid_table_ocall(void* cpuid_table, size_t cpuid_table_size)
+oe_result_t oe_get_cpuid_table_ocall(void* cpuid_table, size_t cpuid_table_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     uint32_t table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
@@ -357,7 +357,7 @@ uint32_t oe_get_cpuid_table_ocall(void* cpuid_table, size_t cpuid_table_size)
     result = OE_OK;
 
 done:
-    return (uint32_t)result;
+    return result;
 }
 
 /*

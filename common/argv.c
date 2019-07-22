@@ -92,6 +92,7 @@ oe_result_t oe_buffer_to_argv(
     char** argv = NULL;
     size_t argv_size;
     size_t alloc_size = 0;
+    size_t index = 0;
 
     if (!buf || !argv_out || !malloc_func || !free_func)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -131,7 +132,6 @@ oe_result_t oe_buffer_to_argv(
     {
         const char* p = (char*)buf;
         const char* end = (char*)buf + buf_size;
-        size_t index = 0;
         char* q = (char*)argv + argv_size;
 
         while (p != end)
@@ -153,6 +153,10 @@ oe_result_t oe_buffer_to_argv(
 
         argv[index] = NULL;
     }
+
+    /* Check that the correct number of strings were extracted. */
+    if (index != argc)
+        OE_RAISE(OE_FAILURE);
 
     *argv_out = argv;
     argv = NULL;
