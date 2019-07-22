@@ -701,6 +701,32 @@ oe_result_t oe_call_host_function(
 /*
 **==============================================================================
 **
+** oe_switchless_call_host_function()
+** This is the preferred way to call host functions switchlessly.
+**
+**==============================================================================
+*/
+
+oe_result_t oe_switchless_call_host_function(
+    size_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    OE_UNUSED(function_id);
+    OE_UNUSED(input_buffer);
+    OE_UNUSED(input_buffer_size);
+    OE_UNUSED(output_buffer);
+    OE_UNUSED(output_buffer_size);
+    OE_UNUSED(output_bytes_written);
+    return OE_UNSUPPORTED;
+}
+
+/*
+**==============================================================================
+**
 ** __oe_handle_main()
 **
 **     This function is called by oe_enter(), which is called by the EENTER

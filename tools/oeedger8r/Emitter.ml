@@ -1004,6 +1004,16 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   (* Generate enclave OCALL wrapper function. *)
   let oe_gen_enclave_ocall_wrapper (uf : untrusted_func) =
     let fd = uf.uf_fdecl in
+    let (allocate_buffer, call_function, free_buffer) =
+    (if uf.uf_is_switchless then
+      ("oe_allocate_switchless_ocall_buffer",
+       "oe_switchless_call_host_function",
+       "oe_free_switchless_ocall_buffer")
+      else
+      ("oe_allocate_ocall_buffer",
+       "oe_call_host_function",
+       "oe_free_ocall_buffer"))
+    in
     [ oe_gen_wrapper_prototype fd false
     ; "{"
     ; "    oe_result_t _result = OE_FAILURE;"
@@ -1035,10 +1045,10 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; ""
     ; "    "
       ^ String.concat "\n    "
-          (oe_prepare_input_buffer fd "oe_allocate_ocall_buffer")
+          (oe_prepare_input_buffer fd allocate_buffer)
     ; ""
     ; "    /* Call host function. */"
-    ; "    if ((_result = oe_call_host_function("
+    ; "    if ((_result = " ^ call_function ^ "("
     ; "             "
       ^ String.concat ",\n             "
           [ get_function_id fd
@@ -1059,7 +1069,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; ""
     ; "done:"
     ; "    if (_buffer)"
-    ; "        oe_free_ocall_buffer(_buffer);"
+    ; "        " ^ free_buffer ^ "(_buffer);"
     ; "    return _result;"
     ; "}"
     ; "" ]

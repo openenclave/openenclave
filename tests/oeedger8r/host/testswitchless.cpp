@@ -16,3 +16,13 @@ void test_switchless_edl_ecalls(oe_enclave_t* enclave)
 
     printf("=== test_switchless_edl_ecalls passed\n");
 }
+
+int ocall_sum(int a, int b)
+{
+    return a + b;
+}
+
+int switchless_ocall_sum(int a, int b)
+{
+    return a + b;
+}
