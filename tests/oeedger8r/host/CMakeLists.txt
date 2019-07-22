@@ -30,6 +30,12 @@ add_custom_command(
   DEPENDS ../edl/other.edl
   COMMAND edger8r --untrusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl other.edl)
 
+# Dummy target used for generating from EDL on demand.
+add_custom_target(edl_host_gen DEPENDS
+  all_u.h all_u.c all_args.h
+  bar_u.h bar_args.h
+  other_u.h other_u.c other_args.h)
+
 add_executable(edl_host
     all_u.c
     bar_u.h
