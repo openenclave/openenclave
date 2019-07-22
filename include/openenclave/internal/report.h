@@ -28,7 +28,7 @@ typedef struct _oe_get_revocation_info_args
     size_t crl_size[3];              /* out */
     uint8_t* crl_issuer_chain[3];    /* out */
     size_t crl_issuer_chain_size[3]; /* out */
-    uint8_t* buffer;
+    uint8_t* buffer;                 /* out */
 } oe_get_revocation_info_args_t;
 
 /*

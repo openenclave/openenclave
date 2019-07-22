@@ -5,7 +5,7 @@
 oeedl_file(../argv.edl enclave gen)
 
 add_enclave(TARGET argv_enc
-    UUID 71b0822f-42a3-4543-a97c-ca491f76b82c SOURCES enc.c ${gen})
+    UUID c7d594f3-2d7a-4056-8d38-e0531926c676 SOURCES enc.c ${gen})
 
 target_include_directories(argv_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

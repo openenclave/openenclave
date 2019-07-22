@@ -94,17 +94,17 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
     extern void dlfree(void* ptr);
     extern void* dlrealloc(void* ptr, size_t size);
     char** ret = NULL;
-    void* buf = NULL;
-    const size_t BUF_SIZE = 4096;
-    size_t buf_size = BUF_SIZE;
-    size_t buf_size_out;
+    void* symbols_buffer = NULL;
+    const size_t SYMBOLS_BUFFER_SIZE = 4096;
+    size_t symbols_buffer_size = SYMBOLS_BUFFER_SIZE;
+    size_t symbols_buffer_size_out;
     uint32_t retval;
     char** argv = NULL;
 
     if (!buffer || size < 0)
         goto done;
 
-    if (!(buf = dlmalloc(buf_size)))
+    if (!(symbols_buffer = dlmalloc(symbols_buffer_size)))
         goto done;
 
     /* First call might return OE_BUFFER_TOO_SMALL. */
@@ -113,9 +113,9 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
             oe_get_enclave(),
             (const uint64_t*)buffer,
             (size_t)size,
-            buf,
-            buf_size,
-            &buf_size_out) != OE_OK)
+            symbols_buffer,
+            symbols_buffer_size,
+            &symbols_buffer_size_out) != OE_OK)
     {
         goto done;
     }
@@ -123,9 +123,9 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
     /* Second call uses buffer size returned by first call. */
     if ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
     {
-        buf_size = buf_size_out;
+        symbols_buffer_size = symbols_buffer_size_out;
 
-        if (!(buf = dlrealloc(buf, buf_size)))
+        if (!(symbols_buffer = dlrealloc(symbols_buffer, symbols_buffer_size)))
             goto done;
 
         if (oe_backtrace_symbols_ocall(
@@ -133,9 +133,9 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
                 oe_get_enclave(),
                 (const uint64_t*)buffer,
                 (size_t)size,
-                buf,
-                buf_size,
-                &buf_size_out) != OE_OK)
+                symbols_buffer,
+                symbols_buffer_size,
+                &symbols_buffer_size_out) != OE_OK)
         {
             goto done;
         }
@@ -150,7 +150,12 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
 
     /* Convert vector to array of strings. */
     if (oe_buffer_to_argv(
-            buf, buf_size_out, &argv, (size_t)size, dlmalloc, dlfree) != OE_OK)
+            symbols_buffer,
+            symbols_buffer_size_out,
+            &argv,
+            (size_t)size,
+            dlmalloc,
+            dlfree) != OE_OK)
     {
         goto done;
     }
@@ -160,8 +165,8 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
 
 done:
 
-    if (buf)
-        dlfree(buf);
+    if (symbols_buffer)
+        dlfree(symbols_buffer);
 
     if (argv)
         dlfree(argv);

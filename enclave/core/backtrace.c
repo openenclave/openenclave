@@ -7,7 +7,6 @@
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/globals.h>
-#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 

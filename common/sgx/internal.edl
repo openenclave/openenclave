@@ -33,17 +33,17 @@ enclave
             size_t key_info_size,
             [out, size=key_buffer_size] void* key_buffer,
             size_t key_buffer_size,
-            [out ] size_t* key_buffer_size_out);
+            [out] size_t* key_buffer_size_out);
 
         public oe_result_t oe_get_public_key_by_policy_ecall(
             uint32_t seal_policy,
             [in] const oe_asymmetric_key_params_t* key_params,
             [out, size=key_buffer_size] void* key_buffer,
             size_t key_buffer_size,
-            [out ] size_t* key_buffer_size_out,
+            [out] size_t* key_buffer_size_out,
             [out, size=key_info_size] void* key_info,
             size_t key_info_size,
-            [out ] size_t* key_info_size_out);
+            [out] size_t* key_info_size_out);
 
         public void oe_log_init_ecall(
             [in, string] const char* enclave_path,
@@ -110,9 +110,9 @@ enclave
             [user_check] oe_enclave_t* oe_enclave,
             [in, count=size] const uint64_t* buffer,
             size_t size,
-            [out, size=strings_buf_size] void* strings_buf,
-            size_t strings_buf_size,
-            [out] size_t* strings_buf_size_out);
+            [out, size=symbols_buffer_size] void* symbols_buffer,
+            size_t symbols_buffer_size,
+            [out] size_t* symbols_buffer_size_out);
 
         void oe_thread_wake_wait_ocall(
             [user_check] oe_enclave_t* oe_enclave,

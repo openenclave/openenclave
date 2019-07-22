@@ -12,6 +12,4 @@ void HandleFree(uint64_t arg);
 void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg);
 void HandleThreadWake(oe_enclave_t* enclave, uint64_t arg);
 
-void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg);
-
 #endif /* _OE_HOST_SGX_OCALLS_H */

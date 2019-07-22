@@ -13,6 +13,12 @@ void* oe_host_realloc(void* ptr, size_t size)
     if (oe_realloc_ocall(&retval, ptr, size) != OE_OK)
         return NULL;
 
+    if (retval && !oe_is_outside_enclave(retval, size))
+    {
+        oe_assert("oe_host_realloc_ocall() returned non-host memory" == NULL);
+        oe_abort();
+    }
+
     return retval;
 }
 
