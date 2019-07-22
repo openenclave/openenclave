@@ -10,6 +10,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
@@ -99,7 +100,7 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
     oe_va_list ap;
     int n = 0;
     int bytes_written = 0;
-    char message[OE_LOG_MESSAGE_LEN_MAX];
+    char* message = NULL;
 
     // skip logging for non-debug-allowed enclaves
     if (!_debug_allowed_enclave)
@@ -120,6 +121,9 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
         result = OE_INVALID_PARAMETER;
         goto done;
     }
+
+    if (!(message = oe_malloc(OE_LOG_MESSAGE_LEN_MAX)))
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
     bytes_written =
         oe_snprintf(message, OE_LOG_MESSAGE_LEN_MAX, "%s:", _enclave_filename);
@@ -144,6 +148,10 @@ oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
     result = OE_OK;
 
 done:
+
+    if (message)
+        oe_free(message);
+
     return result;
 }
 
