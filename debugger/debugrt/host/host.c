@@ -39,10 +39,8 @@ static bool raise_debugger_events()
     {
         if (!initialized)
         {
-            // Set oe_debugger_contract_version from the environment.
-            // Normally the debugger would set the value depending on
-            // the version it supports. Setting it from the environment
-            // allows using a specific version of the contract.
+            // If specified, override oe_debugger_contract_version from the
+            // environment.
             char* version = getenv("OE_DEBUGGER_CONTRACT_VERSION");
             if (version != NULL)
             {
@@ -157,7 +155,13 @@ OE_NO_OPTIMIZE_END
 
 #endif
 
-uint32_t oe_debugger_contract_version = 0;
+/**
+ * The version of the debugger contract supported by the runtime.
+ * For development purposes, this value can be overridden by setting
+ * the OE_DEBUGGER_CONTRACT_VERSION enviroment variable.
+ */
+uint32_t oe_debugger_contract_version = 1;
+
 oe_debug_enclave_t* oe_debug_enclaves_list = NULL;
 
 oe_result_t oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave)

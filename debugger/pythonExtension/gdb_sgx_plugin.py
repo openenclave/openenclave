@@ -341,7 +341,7 @@ def oe_debugger_init():
     bps = gdb.breakpoints()
     if bps != None:
         for bp in bps:
-            if bp.location == "oe_notify_gdb_enclave_creation" and bp.is_valid():
+            if bp.location == "oe_notify_debugger_enclave_creation" and bp.is_valid():
                 return
 
     # Cleanup and set breakpoints.

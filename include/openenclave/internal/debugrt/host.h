@@ -61,14 +61,13 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, flags) == 72);
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * The current version of the debugger contract.
- * Defaults to 0 or the value of OE_DEBUGGER_CONTRACT_VERSION environment
- * variable.
+ * The current version of the debugger contract supported by the application
+ * (debugrt).
  *
- * The debugger is expected to set the value of this variable to
- * tell the runtime which version of the contract it supports.
- * The runtime will send notifications appropriate to the version of the
- * debugger.
+ * The debugger is expected to check the value of this variable to determine
+ * if it can debug the application or not. If it cannot debug the application,
+ * the debugger is expected to advise the user to use a newer version of the
+ * that understands the specific version of the contract.
  */
 OE_EXPORT extern uint32_t oe_debugger_contract_version;
 
@@ -83,7 +82,7 @@ OE_EXPORT extern oe_debug_enclave_t* oe_debug_enclaves_list;
 /////////////// Events Raised for Windows Debuggers/////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32) || defined(_WIN32)
+#if defined(_WIN32)
 
 /**
  * The following event is raised by the runtime when an enclave is created:
