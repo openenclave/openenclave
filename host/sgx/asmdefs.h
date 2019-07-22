@@ -37,7 +37,7 @@ void oe_enter(
     uint64_t* arg4,
     oe_enclave_t* enclave);
 
-void OE_AEP(void);
+extern const uint64_t OE_AEP_ADDRESS;
 #endif
 
 #ifndef __ASSEMBLER__

@@ -16,9 +16,6 @@
 //     the host stack region used by enclave host stack allocaiton routines.
 //
 //==============================================================================
-
-.globl OE_AEP
-.type OE_AEP, @function
 OE_AEP:
 .cfi_startproc
 
@@ -34,3 +31,23 @@ OE_AEP:
     ud2
 
 .cfi_endproc
+
+
+//==============================================================================
+//
+// uint64_t OE_AEP_ADDRESS
+//
+//     The address of the ENCLU instruction is stored in this variable.
+//     If the OE_AEP function were to be used in code, the linker could create
+//     thunks that wrap the function. For example, when incremental linking is
+//     enabled, the linker on windows creates an entry in the ILT table for
+//     each function and uses that wherever the function is referenced.
+//     Thus OE_AEP would endup pointing to the thunk in the ILT which is not
+//     what we want. The OE_AEP_ADDRESS variable gives the precise location of
+//     the ENCLU instruction.
+//
+//==============================================================================
+.globl OE_AEP_ADDRESS
+.section .rodata
+.align 8
+OE_AEP_ADDRESS:	.quad .aep

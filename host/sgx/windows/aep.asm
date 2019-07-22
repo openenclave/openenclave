@@ -24,7 +24,8 @@ include ksamd64.inc
 NESTED_ENTRY OE_AEP, _TEXT$00
     END_PROLOGUE
 
-aep:
+
+aep LABEL FAR
     ;; ATTN: port not complete but these are probably not needed
     ;; mov rax, ENCLU_ERESUME
     ;; mov rbx, fs:[ThreadBinding_tcs]
@@ -36,5 +37,27 @@ aep:
     BEGIN_EPILOGUE
     ret
 NESTED_END OE_AEP, _TEXT$00
+
+
+;;==============================================================================
+;;
+;; uint64_t OE_AEP_ADDRESS
+;;
+;;     The address of the ENCLU instruction is stored in this variable.
+;;     If the OE_AEP function were to be used in code, the linker could create
+;;     thunks that wrap the function. For example, when incremental linking is
+;;     enabled, the linker on windows creates an entry in the ILT table for
+;;     each function and uses that wherever the function is referenced.
+;;     Thus OE_AEP would endup pointing to the thunk in the ILT which is not
+;;     what we want. The OE_AEP_ADDRESS variable gives the precise location of
+;;     the ENCLU instruction.
+;;
+;;==============================================================================
+;;
+;;
+PUBLIC OE_AEP_ADDRESS; OE_AEP_ADDRESS
+_DATA SEGMENT
+OE_AEP_ADDRESS DQ aep
+_DATA ENDS
 
 END

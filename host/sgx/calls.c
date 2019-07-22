@@ -775,7 +775,7 @@ oe_result_t oe_ecall(
     OE_CHECK(_do_eenter(
         enclave,
         tcs,
-        OE_AEP,
+        (void (*)())OE_AEP_ADDRESS,
         code,
         func,
         arg,
