@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/print.h>
 
 void __oe_assert_fail(

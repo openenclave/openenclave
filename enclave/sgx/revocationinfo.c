@@ -23,11 +23,11 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     uint32_t retval;
 
     if (!args)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Verify the crl_urls. */
     if (args->num_crl_urls != 2 || !args->crl_urls[0] || !args->crl_urls[1])
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* fmspc */
     memcpy(in.fmspc, args->fmspc, sizeof(in.fmspc));

@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/result.h>
 
 OE_STATIC_ASSERT(sizeof(oe_result_t) == sizeof(unsigned int));
 
@@ -110,4 +111,66 @@ const char* oe_result_str(oe_result_t result)
     }
 
     return "UNKNOWN";
+}
+
+bool oe_is_valid_result(uint32_t result)
+{
+    switch ((oe_result_t)result)
+    {
+        case OE_OK:
+        case OE_FAILURE:
+        case OE_BUFFER_TOO_SMALL:
+        case OE_INVALID_PARAMETER:
+        case OE_REENTRANT_ECALL:
+        case OE_OUT_OF_MEMORY:
+        case OE_OUT_OF_THREADS:
+        case OE_UNEXPECTED:
+        case OE_VERIFY_FAILED:
+        case OE_NOT_FOUND:
+        case OE_INTEGER_OVERFLOW:
+        case OE_PUBLIC_KEY_NOT_FOUND:
+        case OE_OUT_OF_BOUNDS:
+        case OE_OVERLAPPED_COPY:
+        case OE_CONSTRAINT_FAILED:
+        case OE_IOCTL_FAILED:
+        case OE_UNSUPPORTED:
+        case OE_READ_FAILED:
+        case OE_SERVICE_UNAVAILABLE:
+        case OE_ENCLAVE_ABORTING:
+        case OE_ENCLAVE_ABORTED:
+        case OE_PLATFORM_ERROR:
+        case OE_INVALID_CPUSVN:
+        case OE_INVALID_ISVSVN:
+        case OE_INVALID_KEYNAME:
+        case OE_DEBUG_DOWNGRADE:
+        case OE_REPORT_PARSE_ERROR:
+        case OE_MISSING_CERTIFICATE_CHAIN:
+        case OE_BUSY:
+        case OE_NOT_OWNER:
+        case OE_INVALID_SGX_CERTIFICATE_EXTENSIONS:
+        case OE_MEMORY_LEAK:
+        case OE_BAD_ALIGNMENT:
+        case OE_JSON_INFO_PARSE_ERROR:
+        case OE_TCB_LEVEL_INVALID:
+        case OE_QUOTE_PROVIDER_LOAD_ERROR:
+        case OE_QUOTE_PROVIDER_CALL_ERROR:
+        case OE_INVALID_REVOCATION_INFO:
+        case OE_INVALID_UTC_DATE_TIME:
+        case OE_INVALID_QE_IDENTITY_INFO:
+        case OE_UNSUPPORTED_ENCLAVE_IMAGE:
+        case OE_VERIFY_CRL_EXPIRED:
+        case OE_VERIFY_CRL_MISSING:
+        case OE_VERIFY_REVOKED:
+        case OE_CRYPTO_ERROR:
+        {
+            return true;
+        }
+        case __OE_RESULT_MAX:
+        {
+            return false;
+        }
+            /* Please do not add a default case! */
+    }
+
+    return false;
 }

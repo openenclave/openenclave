@@ -480,6 +480,9 @@ void oe_free_key(
     }
 }
 
+/* If this function is modified to produce larger keys, please increase the
+ * DEFAULT_KEY_BUFFER_SIZE definition on the host side accordingly.
+ */
 oe_result_t oe_get_public_key_by_policy_ecall(
     uint32_t seal_policy,
     const oe_asymmetric_key_params_t* key_params,
@@ -539,6 +542,9 @@ done:
     return result;
 }
 
+/* If this function is modified to produce larger keys, please increase the
+ * DEFAULT_KEY_BUFFER_SIZE definition on the host side accordingly.
+ */
 oe_result_t oe_get_public_key_ecall(
     const oe_asymmetric_key_params_t* key_params,
     const void* key_info,

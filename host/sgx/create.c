@@ -42,6 +42,7 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/result.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
@@ -332,13 +333,19 @@ done:
     return result;
 }
 
-oe_result_t oe_get_cpuid_table_ocall(void* cpuid_table, size_t cpuid_table_size)
+oe_result_t oe_get_cpuid_table_ocall(
+    void* cpuid_table_buffer,
+    size_t cpuid_table_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint32_t table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
+    uint32_t* leaf;
+    size_t size;
 
-    if (!cpuid_table || cpuid_table_size != sizeof(table))
+    leaf = (uint32_t*)cpuid_table_buffer;
+    size = sizeof(uint32_t) * OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT;
+
+    if (!cpuid_table_buffer || cpuid_table_buffer_size != size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     for (unsigned int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
@@ -346,13 +353,13 @@ oe_result_t oe_get_cpuid_table_ocall(void* cpuid_table, size_t cpuid_table_size)
         oe_get_cpuid(
             i,
             subleaf,
-            &table[i][OE_CPUID_RAX],
-            &table[i][OE_CPUID_RBX],
-            &table[i][OE_CPUID_RCX],
-            &table[i][OE_CPUID_RDX]);
-    }
+            &leaf[OE_CPUID_RAX],
+            &leaf[OE_CPUID_RBX],
+            &leaf[OE_CPUID_RCX],
+            &leaf[OE_CPUID_RDX]);
 
-    memcpy(cpuid_table, &table, cpuid_table_size);
+        leaf += OE_CPUID_REG_COUNT;
+    }
 
     result = OE_OK;
 
@@ -378,6 +385,12 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
 
     OE_CHECK(oe_ecall(
         enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)enclave, &result_out));
+
+    if (result_out > OE_UINT32_MAX)
+        OE_RAISE(OE_FAILURE);
+
+    if (!oe_is_valid_result((uint32_t)result_out))
+        OE_RAISE(OE_FAILURE);
 
     OE_CHECK((oe_result_t)result_out);
 

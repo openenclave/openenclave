@@ -12,7 +12,7 @@ int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
-    const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
+    const oe_enclave_type_t type = OE_ENCLAVE_TYPE_AUTO;
     const uint32_t flags = oe_get_create_flags();
 
     if (argc != 2)

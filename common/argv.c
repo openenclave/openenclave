@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/argv.h>
 #include <openenclave/internal/raise.h>
 
@@ -101,23 +102,28 @@ oe_result_t oe_buffer_to_argv(
     {
         const char* p = (const char*)buf;
         const char* end = (const char*)buf + buf_size;
+        size_t sum;
 
         /* Leave room for null argv[argc] entry. */
-        argv_size = sizeof(char*) * (argc + 1);
-        alloc_size += argv_size;
+        OE_CHECK(oe_safe_add_sizet(argc, 1, &sum));
+        OE_CHECK(oe_safe_mul_sizet(sizeof(char*), sum, &argv_size));
+        OE_CHECK(oe_safe_add_sizet(alloc_size, argv_size, &alloc_size));
 
         while (p != end)
         {
             const char* start = p;
+            size_t string_size;
 
             while (*p && p != end)
                 p++;
 
-            if (*p != '\0')
+            if (p == end)
                 OE_RAISE(OE_FAILURE);
 
             p++;
-            alloc_size += (size_t)(p - start);
+
+            string_size = (size_t)(p - start);
+            OE_CHECK(oe_safe_add_sizet(alloc_size, string_size, &alloc_size));
         }
 
         if (p != end)

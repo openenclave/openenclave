@@ -26,11 +26,8 @@ oe_result_t oe_initialize_cpuid(void)
     oe_result_t result = OE_UNEXPECTED;
     uint32_t retval;
 
-    if (oe_get_cpuid_table_ocall(&retval, _cpuid_table, sizeof(_cpuid_table)) !=
-        OE_OK)
-    {
-        OE_RAISE(OE_FAILURE);
-    }
+    OE_CHECK(
+        oe_get_cpuid_table_ocall(&retval, _cpuid_table, sizeof(_cpuid_table)));
 
     OE_CHECK((oe_result_t)retval);
 

@@ -11,6 +11,12 @@
 #include <stdlib.h>
 #include "internal_u.h"
 
+/* This is the maximum default key buffer size. If the enclave produces
+ * a key bigger than this, consider expanding this size so that the host
+ * needn't make two ECALLs to determine the key size.
+ */
+#define DEFAULT_KEY_BUFFER_SIZE 512
+
 oe_result_t oe_get_public_key_by_policy(
     oe_enclave_t* enclave,
     oe_seal_policy_t seal_policy,
@@ -22,7 +28,7 @@ oe_result_t oe_get_public_key_by_policy(
 {
     oe_result_t result = OE_UNEXPECTED;
     uint32_t retval;
-    const size_t KEY_BUFFER_SIZE = 1024;
+    const size_t KEY_BUFFER_SIZE = DEFAULT_KEY_BUFFER_SIZE;
     const size_t KEY_INFO_SIZE = 1024;
     struct
     {
@@ -142,7 +148,7 @@ oe_result_t oe_get_public_key(
 {
     oe_result_t result = OE_UNEXPECTED;
     uint32_t retval;
-    const size_t KEY_BUFFER_SIZE = 1024;
+    const size_t KEY_BUFFER_SIZE = DEFAULT_KEY_BUFFER_SIZE;
     struct
     {
         uint8_t* key_buffer;

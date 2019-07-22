@@ -26,7 +26,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args_out)
     const size_t MAX_ITERATIONS = 8;
 
     if (args_out == NULL)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     memset(args_out, 0, sizeof(oe_get_qe_identity_info_args_t));
 
