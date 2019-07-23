@@ -774,24 +774,21 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     in
     let param_count = oe_get_param_count (ptype, decl, argstruct) in
     let members = get_deepcopy_members (get_param_atype ptype) in
-    (* Ignore top-level arguments without members to deep copy. *)
-    if args = [] && members = [] then []
-    else if is_marshalled_ptr ptype then
-      (* This is the base case: a pointer that is meant to be
-         deep-copied but does not point to another struct with more
-         members, and is not the top-level argument (which does not
-         need to be saved/restored).
+    if is_marshalled_ptr ptype then
+      (* The base case is a marshalled pointer. We count 1 for every
+         one of these, except for the top-level pointers as they are
+         the original function arguments, and so do not need to be
+         saved/restored.
 
-         Otherwise we recurse and check if we need to multiply. *)
-      if args <> [] && members = [] then ["1"]
-      else
-        (* This is the edge case where we need to count the pointer to
-           the struct to be deep copied, plus its count times the
-           (recursive) number of members inside that struct. But we
-           again explicitly don't count the top-level argument. *)
-        (if args <> [] then ["1"] else [])
-        @ gen_times param_count
-            (flatten_map (gen_ptr_count (arg :: args) param_count) members)
+         For a marshalled pointer, we then need to recurse. If there
+         are no members to recurse on, then [members] is the empty
+         list and the recursion is a no-op, leaving us back at the
+         base case of counting 1. If there are members to recurse on,
+         then we count 1 plus the current [param_count] times the
+         number of members for each nested structure. *)
+      (if args <> [] then ["1"] else [])
+      @ gen_times param_count
+          (flatten_map (gen_ptr_count (arg :: args) param_count) members)
     else []
   in
   let gen_ptr_array (plist : pdecl list) =
