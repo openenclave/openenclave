@@ -1,0 +1,15 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+  trusted {
+    public int ecall_sum(int a, int b);
+    public int switchless_ecall_sum(int a, int b) transition_using_threads;
+
+    public void test_switchless_edl_ocalls();
+  };
+  untrusted {
+    int ocall_sum(int a, int b);
+    int switchless_ocall_sum(int a, int b) transition_using_threads;
+  };
+};

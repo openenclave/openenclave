@@ -197,7 +197,9 @@ int oe_host_fprintf(int device, const char* fmt, ...)
     return n;
 }
 
-// Function used by oeedger8r for allocating ocall buffers.
+// Function used by oeedger8r for allocating ocall buffers. This function can be
+// optimized by allocating a buffer for making ocalls and pass it in to the
+// ecall and making it available for use here.
 void* oe_allocate_ocall_buffer(size_t size)
 {
     return oe_host_malloc(size);
@@ -205,6 +207,28 @@ void* oe_allocate_ocall_buffer(size_t size)
 
 // Function used by oeedger8r for freeing ocall buffers.
 void oe_free_ocall_buffer(void* buffer)
+{
+    oe_host_free(buffer);
+}
+
+// Function used by oeedger8r for allocating switchless ocall buffers.
+// There are two possible approaches to implementing this function:
+//    1. Preallocate a pool of host memory per thread for switchless ocalls
+//       and then allocate memory from that pool. Since OE does not support
+//       reentrant ecalls in the same thread, there can at most be one ecall
+//       and one ocall active in a thread. This can enable implementing
+//       host memory pools more efficiently.
+//   2. The alternative is to allocate the  buffer in enclave memory.
+//      Then while issuing the underling SDK call to make the switchless ocall,
+//      use a ring-buffer to transfer the contents of the memory to the host
+//      and to transfer the results back.
+void* oe_allocate_switchless_ocall_buffer(size_t size)
+{
+    return oe_host_malloc(size);
+}
+
+// Function used by oeedger8r for freeing ocall buffers.
+void oe_free_switchless_ocall_buffer(void* buffer)
 {
     oe_host_free(buffer);
 }
