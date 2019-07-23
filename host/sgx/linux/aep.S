@@ -42,7 +42,7 @@ OE_AEP:
 //     thunks that wrap the function. For example, when incremental linking is
 //     enabled, the linker on windows creates an entry in the ILT table for
 //     each function and uses that wherever the function is referenced.
-//     Thus OE_AEP would endup pointing to the thunk in the ILT which is not
+//     Thus OE_AEP would end up pointing to the thunk in the ILT which is not
 //     what we want. The OE_AEP_ADDRESS variable gives the precise location of
 //     the ENCLU instruction.
 //
