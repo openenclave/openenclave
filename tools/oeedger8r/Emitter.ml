@@ -758,9 +758,9 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   in
   let gen_times count body =
     (* The first two conditionals check for the multiplicative identity
-     and prevent unnecessary expressions from being generated.
-     Otherwise we multiply the sum of [body] by [count]. *)
-    if count = "1" then body
+       and prevent unnecessary expressions from being generated.
+       Otherwise we multiply the sum of [body] by [count]. *)
+    if count = "1" || body = [] then body
     else if List.length body = 1 && List.hd body = "1" then [count]
     else [count ^ " * (" ^ String.concat " + " body ^ ")"]
   in
@@ -984,8 +984,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; (* Prepare in and in-out parameters *)
       oe_gen_in_and_inout_setters fd.plist
     ; ""
-    ; (* Prepare out and in-out parameters. The in-out parameter is copied
-           to output buffer. *)
+    ; (* Prepare out and in-out parameters. The in-out parameter is
+         copied to output buffer. *)
       oe_gen_out_and_inout_setters fd.plist
     ; ""
     ; "    /* Check that in/in-out strings are null terminated. */"
