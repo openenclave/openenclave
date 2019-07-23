@@ -45,8 +45,10 @@ static bool raise_debugger_events()
             if (version != NULL)
             {
                 int v = 0;
-                sscanf(version, "%d", &v);
-                oe_debugger_contract_version = (uint32_t)v;
+                if (sscanf(version, "%d", &v) == 1)
+                {
+                    oe_debugger_contract_version = (uint32_t)v;
+                }
             }
 
             initialized = true;
