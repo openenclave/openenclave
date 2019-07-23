@@ -756,6 +756,65 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "/* Copy args structure (now filled) to input buffer. */"
     ; "memcpy(_pargs_in, &_args, sizeof(*_pargs_in));" ]
   in
+  let gen_times count body =
+    (* The first two conditionals check for the multiplicative identity
+     and prevent unnecessary expressions from being generated.
+     Otherwise we multiply the sum of [body] by [count]. *)
+    if count = "1" then body
+    else if List.length body = 1 && List.hd body = "1" then [count]
+    else [count ^ " * (" ^ String.concat " + " body ^ ")"]
+  in
+  let rec gen_ptr_count args count (ptype, decl) =
+    let id = decl.identifier in
+    let argstruct =
+      match args with
+      | [] -> "_args."
+      | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
+    in
+    let arg =
+      match args with [] -> id | hd :: _ -> hd ^ gen_c_deref count ^ id
+    in
+    let param_count = oe_get_param_count (ptype, decl, argstruct) in
+    let members = get_deepcopy_members (get_param_atype ptype) in
+    (* Ignore top-level arguments without members to deep copy. *)
+    if args = [] && members = [] then []
+    else if is_marshalled_ptr ptype then
+      (* This is the base case: a pointer that is meant to be
+         deep-copied but does not point to another struct with more
+         members, and is not the top-level argument (which does not
+         need to be saved/restored).
+
+         Otherwise we recurse and check if we need to multiply. *)
+      if args <> [] && members = [] then ["1"]
+      else
+        (* This is the edge case where we need to count the pointer to
+           the struct to be deep copied, plus its count times the
+           (recursive) number of members inside that struct. But we
+           again explicitly don't count the top-level argument. *)
+        (if args <> [] then ["1"] else [])
+        @ gen_times param_count
+            (flatten_map (gen_ptr_count (arg :: args) param_count) members)
+    else []
+  in
+  let gen_ptr_array (plist : pdecl list) =
+    let count =
+      flatten_map (gen_ptr_count [] "1")
+        (List.filter is_out_or_inout_ptr plist)
+    in
+    if count <> [] then
+      (* TODO: Switch to malloc() to handle variable lengths. *)
+      [ sprintf "void* _ptrs[%s];" (String.concat " + " count)
+      ; "size_t _ptrs_index = 0;" ]
+    else ["/* No pointers to save for deep copy. */"]
+  in
+  let gen_reset_ptr_index (plist : pdecl list) =
+    let count =
+      flatten_map (gen_ptr_count [] "1")
+        (List.filter is_out_or_inout_ptr plist)
+    in
+    if count <> [] then "_ptrs_index = 0; /* For deep copy. */"
+    else "/* No pointers to restore for deep copy. */"
+  in
   let oe_process_output_buffer (fd : func_decl) =
     let oe_serialize_buffer_outputs (plist : pdecl list) =
       let rec gen_serialize args count (ptype, decl) =
@@ -789,7 +848,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
                    [ (* TODO: Check hd[i] too. *)
                      sprintf "if (%s)" (String.concat " && " (List.rev args))
                    ; "{"
-                   ; "    /* restore original pointer */"
+                   ; "    /* Restore original pointer. */"
                    ; sprintf "    %s = _ptrs[_ptrs_index++];" arg
                    ; "    " ^ s
                    ; "}" ])
@@ -825,7 +884,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "/* Unmarshal return value and out, in-out parameters. */"
     ; ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
       else "/* No return value. */" )
-    ; "_ptrs_index = 0; /* For deep copy. */"
+    ; gen_reset_ptr_index fd.plist
     ; oe_serialize_buffer_outputs fd.plist ]
   in
   let rec oe_gen_set_pointers args count setter (ptype, decl) =
@@ -1008,55 +1067,6 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       (List.filter is_out_or_inout_ptr fd.plist)
   in
   (* Generate host ECALL wrapper function. *)
-  let gen_times count body =
-    (* The first two conditionals check for the multiplicative identity
-     and prevent unnecessary expressions from being generated.
-     Otherwise we multiply the sum of [body] by [count]. *)
-    if count = "1" then body
-    else if List.length body = 1 && List.hd body = "1" then [count]
-    else [count ^ " * (" ^ String.concat " + " body ^ ")"]
-  in
-  let rec gen_ptr_count args count (ptype, decl) =
-    let id = decl.identifier in
-    let argstruct =
-      match args with
-      | [] -> "_args."
-      | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
-    in
-    let arg =
-      match args with [] -> id | hd :: _ -> hd ^ gen_c_deref count ^ id
-    in
-    let param_count = oe_get_param_count (ptype, decl, argstruct) in
-    let members = get_deepcopy_members (get_param_atype ptype) in
-    (* Ignore top-level arguments without members to deep copy. *)
-    if args = [] && members = [] then []
-    else if is_marshalled_ptr ptype then
-      (* This is the base case: a pointer that is meant to be
-         deep-copied but does not point to another struct with more
-         members, and is not the top-level argument (which does not
-         need to be saved/restored).
-
-         Otherwise we recurse and check if we need to multiply. *)
-      if args <> [] && members = [] then ["1"]
-      else
-        (* This is the edge case where we need to count the pointer to
-           the struct to be deep copied, plus its count times the
-           (recursive) number of members inside that struct. But we
-           again explicitly don't count the top-level argument. *)
-        (if args <> [] then ["1"] else [])
-        @ gen_times param_count
-            (flatten_map (gen_ptr_count (arg :: args) param_count) members)
-    else []
-  in
-  let gen_ptr_array (plist : pdecl list) =
-    let count =
-      flatten_map (gen_ptr_count [] "1")
-        (List.filter is_out_or_inout_ptr plist)
-    in
-    if count <> [] then
-      sprintf "void* _ptrs[%s]; (void)_ptrs;" (String.concat " + " count)
-    else "/* No pointers to deep copy. */"
-  in
   let oe_gen_host_ecall_wrapper (tf : trusted_func) =
     let fd = tf.tf_fdecl in
     let oe_ecall_function =
@@ -1068,8 +1078,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    /* Marshalling struct. */"
     ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
         fd.fname
-    ; "    " ^ gen_ptr_array fd.plist
-    ; "    size_t _ptrs_index = 0;"
+    ; "    " ^ String.concat "\n    " (gen_ptr_array fd.plist)
     ; ""
     ; "    /* Marshalling buffer and sizes. */"
     ; "    size_t _input_buffer_size = 0;"
@@ -1138,8 +1147,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    /* Marshalling struct. */"
     ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
         fd.fname
-    ; "    " ^ gen_ptr_array fd.plist
-    ; "    size_t _ptrs_index = 0;"
+    ; "    " ^ String.concat "\n    " (gen_ptr_array fd.plist)
     ; ""
     ; "    /* Marshalling buffer and sizes. */"
     ; "    size_t _input_buffer_size = 0;"
