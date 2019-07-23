@@ -89,10 +89,10 @@ enclave {
     public void deepcopy_countsizeparamarray([in, out, count=2] CountSizeParamStruct* s);
 
     // Maybe test for recursive copying.
-    public void deepcopy_nested([in, count=1] NestedStruct* n);
+    public void deepcopy_nested([in, out, count=1] NestedStruct* n);
 
     // Test handling of null values.
-    public void deepcopy_null([in, count=1] CountStruct* s);
+    public void deepcopy_null([in, out, count=1] CountStruct* s);
 
     // Deep copy of one `CountStruct` with an embedded array out
     // should take place.
