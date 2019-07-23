@@ -220,9 +220,7 @@ let get_param_count (ptype, decl, argstruct) =
 let oe_get_param_count (ptype, decl, argstruct) =
   match get_param_count (ptype, decl, argstruct) with
   | Some count -> count
-  (* TODO: This is hit only in tests, not when code is generated. It
-     should instead be [failwithf]. *)
-  | None -> sprintf "/* Error: no count for '%s' */" decl.identifier
+  | None -> failwithf "Error: No count for " ^ decl.identifier
 
 (** Generate the prototype for a given function. *)
 let oe_gen_prototype (fd : func_decl) =
