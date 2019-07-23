@@ -11,6 +11,11 @@
 #include <string.h>
 #include "tls_u.h"
 
+#if defined(_WIN32)
+#include <ShlObj.h>
+#include <Windows.h>
+#endif
+
 #define TEST_EC_KEY 0
 #define TEST_RSA_KEY 1
 #define SKIP_RETURN_CODE 2
@@ -119,6 +124,46 @@ void run_test(oe_enclave_t* enclave, int test_type)
 int main(int argc, const char* argv[])
 {
 #ifdef OE_USE_LIBSGX
+
+#ifdef _WIN32
+    /* This is a workaround for running in Visual Studio 2017 Test Explorer
+     * where the environment variables are not correctly propagated to the
+     * test. This is resolved in Visual Studio 2019 */
+    WCHAR path[_MAX_PATH];
+
+    if (!GetEnvironmentVariableW(L"SystemRoot", path, _MAX_PATH))
+    {
+        if (GetLastError() != ERROR_ENVVAR_NOT_FOUND)
+            exit(1);
+
+        UINT path_length = GetSystemWindowsDirectoryW(path, _MAX_PATH);
+        if (path_length == 0 || path_length > _MAX_PATH)
+            exit(1);
+
+        if (SetEnvironmentVariableW(L"SystemRoot", path) == 0)
+            exit(1);
+    }
+
+    if (!GetEnvironmentVariableW(L"LOCALAPPDATA", path, _MAX_PATH))
+    {
+        if (GetLastError() != ERROR_ENVVAR_NOT_FOUND)
+            exit(1);
+
+        WCHAR* local_path = NULL;
+        if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &local_path) !=
+            S_OK)
+        {
+            exit(1);
+        }
+
+        BOOL success = SetEnvironmentVariableW(L"LOCALAPPDATA", local_path);
+        CoTaskMemFree(local_path);
+
+        if (!success)
+            exit(1);
+    }
+#endif
+
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
