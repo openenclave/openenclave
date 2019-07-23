@@ -8,7 +8,7 @@
 //
 // void __morestack(
 //     [IN] void* tcs,                  /* RDI */
-//     [IN] void (*aep)(),              /* RSI */
+//     [IN] uint64_t aep,               /* RSI */
 //     [IN] uint64_t arg1,              /* RDX */
 //     [IN] uint64_t arg2,              /* RCX */
 //     [OUT] uint64_t* arg3,            /* R8 */

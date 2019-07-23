@@ -104,7 +104,7 @@ ThreadBinding* GetThreadBinding()
 static oe_result_t _enter_sim(
     oe_enclave_t* enclave,
     void* tcs_,
-    void (*aep)(void),
+    uint64_t aep,
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,
@@ -178,7 +178,7 @@ OE_ALWAYS_INLINE
 static oe_result_t _do_eenter(
     oe_enclave_t* enclave,
     void* tcs,
-    void (*aep)(void),
+    uint64_t aep,
     oe_code_t code_in,
     uint16_t func_in,
     uint64_t arg_in,
@@ -775,7 +775,7 @@ oe_result_t oe_ecall(
     OE_CHECK(_do_eenter(
         enclave,
         tcs,
-        OE_AEP,
+        OE_AEP_ADDRESS,
         code,
         func,
         arg,
