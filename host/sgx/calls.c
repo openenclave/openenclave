@@ -22,6 +22,7 @@
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -618,6 +619,11 @@ static void* _assign_tcs(oe_enclave_t* enclave)
             {
                 binding->count++;
                 tcs = (void*)binding->tcs;
+
+                /* Notify the debugger runtime */
+                if (enclave->debug && enclave->debug_enclave != NULL)
+                    oe_debug_push_thread_binding(
+                        enclave->debug_enclave, (sgx_tcs_t*)tcs);
                 break;
             }
         }
@@ -639,6 +645,11 @@ static void* _assign_tcs(oe_enclave_t* enclave)
                     /* Set into TSD so asynchronous exceptions can get it */
                     _set_thread_binding(binding);
                     assert(GetThreadBinding() == binding);
+
+                    /* Notify the debugger runtime */
+                    if (enclave->debug && enclave->debug_enclave != NULL)
+                        oe_debug_push_thread_binding(
+                            enclave->debug_enclave, (sgx_tcs_t*)tcs);
                     break;
                 }
             }
@@ -674,6 +685,10 @@ static void _release_tcs(oe_enclave_t* enclave, void* tcs)
                 (void*)binding->tcs == tcs)
             {
                 binding->count--;
+
+                /* Notify the debugger runtime */
+                if (enclave->debug && enclave->debug_enclave != NULL)
+                    oe_debug_pop_thread_binding();
 
                 if (binding->count == 0)
                 {

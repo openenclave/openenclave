@@ -56,6 +56,27 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs_array) == 56);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, num_tcs) == 64);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, flags) == 72);
 
+#define OE_DEBUG_THREAD_BINDING_MAGIC 0x24cb0317d077d636
+
+typedef struct _debug_thread_binding_t
+{
+    uint64_t magic;
+    uint64_t version;
+
+    uint64_t thread_id;
+    oe_debug_enclave_t* enclave;
+    struct _sgx_tcs* tcs;
+
+    struct _debug_thread_binding_t* next;
+} oe_debug_thread_binding_t;
+
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, magic) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, version) == 8);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, thread_id) == 16);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, enclave) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, tcs) == 32);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, next) == 40);
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////// Symbols Exported by the Runtime ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,6 +98,13 @@ OE_EXPORT extern uint32_t oe_debugger_contract_version;
  * and configure the enclaves for debugging.
  */
 OE_EXPORT extern oe_debug_enclave_t* oe_debug_enclaves_list;
+
+/**
+ * The list of active thread bindings.
+ * The debugger can scan this list to find the list of bindings.
+ * Note: Ideally, this list could be stored per thread in thread-local storage.
+ */
+OE_EXPORT extern oe_debug_thread_binding_t* oe_debug_thread_bindings_list;
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////// Events Raised for Windows Debuggers/////////////////////////////
@@ -128,6 +156,17 @@ oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave);
  */
 OE_EXPORT oe_result_t
 oe_debug_notify_enclave_terminated(oe_debug_enclave_t* enclave);
+
+/**
+ * Notify debugrt about a new binding for current thread.
+ */
+OE_EXPORT oe_result_t
+oe_debug_push_thread_binding(oe_debug_enclave_t* enclave, struct _sgx_tcs* tcs);
+
+/**
+ * Pop the last binding for the current thread.
+ */
+OE_EXPORT oe_result_t oe_debug_pop_thread_binding();
 
 OE_EXTERNC_END
 
