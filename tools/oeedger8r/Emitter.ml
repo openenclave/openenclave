@@ -773,8 +773,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
        nested parameter are not yet supported. *)
     let argstruct =
       match args with
-      | [] -> "_args."
-      | hd :: _ -> "_args." ^ hd ^ gen_c_deref (List.length args) count
+      | [] -> ""
+      | hd :: _ -> hd ^ gen_c_deref (List.length args) count
     in
     let arg =
       match args with
