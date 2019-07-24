@@ -66,6 +66,7 @@ if (UNIX)
     linux/windows.c)
 elseif (WIN32)
   set(PLATFORM_SRC
+    ../3rdparty/mbedtls/mbedtls/library/platform_util.c # if not added here, the build of Windows fails because of its dependecies in bignum.c file
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     crypto/bcrypt/hmac.c
     crypto/bcrypt/random.c
