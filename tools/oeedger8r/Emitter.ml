@@ -112,16 +112,17 @@ let is_marshalled_ptr = function
   | PTPtr (_, attr) -> attr.pa_size <> empty_ptr_size
   | PTVal _ -> false
 
-let gen_c_for count body =
+let gen_c_for level count body =
   if count = "1" then body
   else
-    [ [sprintf "for (size_t _i = 0; _i < %s; _i++)" count]
+    let i = sprintf "_i_%i" level in
+    [ [sprintf "for (size_t %s = 0; %s < %s; %s++)" i i count i]
     ; ["{"]
     ; List.map (( ^ ) "    ") body
     ; ["}"] ]
     |> List.flatten
 
-let gen_c_deref i = if i = "1" then "->" else "[_i]."
+let gen_c_deref level i = if i = "1" then "->" else sprintf "[_i_%i]." level
 
 (** [write_file] opens [filename] in the directory [dir] and emits a
     comment noting the file is auto generated followed by the
@@ -655,15 +656,16 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         let argstruct =
           match args with
           | [] -> "_args."
-          | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
+          | hd :: _ -> "_args." ^ hd ^ gen_c_deref (List.length args) count
         in
         let size = oe_get_param_size (ptype, decl, argstruct) in
         let arg =
           match args with
           | [] -> decl.identifier
-          | hd :: _ -> hd ^ gen_c_deref count ^ decl.identifier
+          | hd :: _ ->
+              hd ^ gen_c_deref (List.length args) count ^ decl.identifier
         in
-        gen_c_for count
+        gen_c_for (List.length args) count
           ( [ [ sprintf "if (%s)"
                   (* TODO: Check hd[i] too. *)
                   (String.concat " && " (List.rev (arg :: args))) ]
@@ -693,17 +695,18 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         let argstruct =
           match args with
           | [] -> "_args."
-          | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
+          | hd :: _ -> "_args." ^ hd ^ gen_c_deref (List.length args) count
         in
         let size = oe_get_param_size (ptype, decl, argstruct) in
         let arg =
           match args with
           | [] -> decl.identifier
-          | hd :: _ -> hd ^ gen_c_deref count ^ decl.identifier
+          | hd :: _ ->
+              hd ^ gen_c_deref (List.length args) count ^ decl.identifier
         in
         let tystr = get_cast_to_mem_expr (ptype, decl) false in
         (* These need to be in order and so done together. *)
-        gen_c_for count
+        gen_c_for (List.length args) count
           ( [ (* NOTE: This makes the embedded check in the `OE_` macro superfluous. *)
               [ sprintf "if (%s)"
                   (* TODO: Check hd[i] too. *)
@@ -764,13 +767,19 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   in
   let rec gen_ptr_count args count (ptype, decl) =
     let id = decl.identifier in
+    (* TODO: The use of [gen_c_deref] does not work here as we are not
+       within a [gen_c_for] loop when producing the count. Therefore
+       arrays of structs which use members for the count of another
+       nested parameter are not yet supported. *)
     let argstruct =
       match args with
       | [] -> "_args."
-      | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
+      | hd :: _ -> "_args." ^ hd ^ gen_c_deref (List.length args) count
     in
     let arg =
-      match args with [] -> id | hd :: _ -> hd ^ gen_c_deref count ^ id
+      match args with
+      | [] -> id
+      | hd :: _ -> hd ^ gen_c_deref (List.length args) count ^ id
     in
     let param_count = oe_get_param_count (ptype, decl, argstruct) in
     let members = get_deepcopy_members (get_param_atype ptype) in
@@ -816,15 +825,16 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         let argstruct =
           match args with
           | [] -> "_args."
-          | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
+          | hd :: _ -> "_args." ^ hd ^ gen_c_deref (List.length args) count
         in
         let size = oe_get_param_size (ptype, decl, argstruct) in
         let arg =
           match args with
           | [] -> decl.identifier
-          | hd :: _ -> hd ^ gen_c_deref count ^ decl.identifier
+          | hd :: _ ->
+              hd ^ gen_c_deref (List.length args) count ^ decl.identifier
         in
-        gen_c_for count
+        gen_c_for (List.length args) count
           ( [ ( if is_str_or_wstr_ptr (ptype, decl) then
                 [ sprintf
                     "OE_CHECK_NULL_TERMINATOR%s(_output_buffer + \
@@ -886,16 +896,16 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     let argstruct =
       match args with
       | [] -> "pargs_in->"
-      | hd :: _ -> "pargs_in->" ^ hd ^ gen_c_deref count
+      | hd :: _ -> "pargs_in->" ^ hd ^ gen_c_deref (List.length args) count
     in
     let size = oe_get_param_size (ptype, decl, argstruct) in
     let arg =
       match args with
       | [] -> decl.identifier
-      | hd :: _ -> hd ^ gen_c_deref count ^ decl.identifier
+      | hd :: _ -> hd ^ gen_c_deref (List.length args) count ^ decl.identifier
     in
     let tystr = get_cast_to_mem_expr (ptype, decl) false in
-    gen_c_for count
+    gen_c_for (List.length args) count
       ( [ (* NOTE: This makes the embedded check in the `OE_` macro superfluous. *)
           [ sprintf "if (pargs_in->%s)"
               (String.concat " && pargs_in->" (List.rev (arg :: args))) ]
@@ -1040,12 +1050,14 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       let argstruct =
         match args with
         | [] -> "_args."
-        | hd :: _ -> "_args." ^ hd ^ gen_c_deref count
+        | hd :: _ -> "_args." ^ hd ^ gen_c_deref (List.length args) count
       in
       let arg =
-        match args with [] -> id | hd :: _ -> hd ^ gen_c_deref count ^ id
+        match args with
+        | [] -> id
+        | hd :: _ -> hd ^ gen_c_deref (List.length args) count ^ id
       in
-      gen_c_for count
+      gen_c_for (List.length args) count
         ( [ ( if args <> [] then
               [sprintf "if (%s)" (String.concat " && " (List.rev args))]
             else [] )
