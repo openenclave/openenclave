@@ -96,7 +96,6 @@ if (OE_SGX)
     sgx/enclavemanager.c
     sgx/exception.c
     sgx/internal_u_wrapper.c
-    sgx/internal.c
     sgx/load.c
     sgx/loadelf.c
     sgx/loadpe.c
@@ -148,6 +147,7 @@ add_library(oehost STATIC
   ../common/kdf.c
   ../common/lockless_queue.c
   ../common/safecrt.c
+  ../common/argv.c
   dupenv.c
   error.c
   files.c
@@ -155,7 +155,6 @@ add_library(oehost STATIC
   hexdump.c
   syscall_u_wrapper.c
   memalign.c
-  ocalls.c
   result.c
   signkey.c
   strings.c

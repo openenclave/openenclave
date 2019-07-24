@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/assert.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>

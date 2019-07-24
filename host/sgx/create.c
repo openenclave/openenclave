@@ -42,6 +42,7 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/result.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
@@ -332,6 +333,40 @@ done:
     return result;
 }
 
+oe_result_t oe_get_cpuid_table_ocall(
+    void* cpuid_table_buffer,
+    size_t cpuid_table_buffer_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
+    uint32_t* leaf;
+    size_t size;
+
+    leaf = (uint32_t*)cpuid_table_buffer;
+    size = sizeof(uint32_t) * OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT;
+
+    if (!cpuid_table_buffer || cpuid_table_buffer_size != size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    for (unsigned int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    {
+        oe_get_cpuid(
+            i,
+            subleaf,
+            &leaf[OE_CPUID_RAX],
+            &leaf[OE_CPUID_RBX],
+            &leaf[OE_CPUID_RCX],
+            &leaf[OE_CPUID_RDX]);
+
+        leaf += OE_CPUID_REG_COUNT;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 /*
 **==============================================================================
 **
@@ -346,30 +381,18 @@ done:
 static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_init_enclave_args_t args;
-    unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
+    uint64_t result_out = 0;
 
-    // Initialize enclave cache of CPUID info for emulation
-    for (unsigned int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
-    {
-        oe_get_cpuid(
-            i,
-            subleaf,
-            &args.cpuid_table[i][OE_CPUID_RAX],
-            &args.cpuid_table[i][OE_CPUID_RBX],
-            &args.cpuid_table[i][OE_CPUID_RCX],
-            &args.cpuid_table[i][OE_CPUID_RDX]);
-    }
+    OE_CHECK(oe_ecall(
+        enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)enclave, &result_out));
 
-    // Pass the enclave handle to the enclave.
-    args.enclave = enclave;
+    if (result_out > OE_UINT32_MAX)
+        OE_RAISE(OE_FAILURE);
 
-    {
-        uint64_t arg_out = 0;
-        OE_CHECK(oe_ecall(
-            enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, &arg_out));
-        OE_CHECK((oe_result_t)arg_out);
-    }
+    if (!oe_is_valid_result((uint32_t)result_out))
+        OE_RAISE(OE_FAILURE);
+
+    OE_CHECK((oe_result_t)result_out);
 
     result = OE_OK;
 
@@ -730,20 +753,6 @@ oe_result_t oe_create_enclave(
 
     /* Setup logging configuration */
     oe_log_enclave_init(enclave);
-
-    /* Peform a two-way ping with the enclave. This function is a placeholder
-     * and will be removed in Part II of this PR.
-     * ATTN: remove this when other EDL calls are ready.
-     */
-    {
-        const int VALUE = 12345;
-        int retval;
-
-        OE_CHECK(oe_internal_ping_ecall(enclave, &retval, VALUE));
-
-        if (retval != VALUE)
-            OE_RAISE(OE_FAILURE);
-    }
 
     *enclave_out = enclave;
     result = OE_OK;

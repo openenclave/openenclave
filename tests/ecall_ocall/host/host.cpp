@@ -165,7 +165,7 @@ static void test_execution_parallel(
     unsigned old_val = ~count;
     while (count < enclave_ids.size() * thread_count)
     {
-        if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+        if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
         {
             if (count != old_val)
             {

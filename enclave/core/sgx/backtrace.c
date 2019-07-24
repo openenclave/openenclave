@@ -2,12 +2,15 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/argv.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include "internal_t.h"
 
 #if defined(__INTEL_COMPILER)
 #error "optimized __builtin_return_address() not supported by Intel compiler"
@@ -82,4 +85,99 @@ int oe_backtrace(void** buffer, int size)
 #else
     return 0;
 #endif
+}
+
+char** oe_backtrace_symbols(void* const* buffer, int size)
+{
+    /* Backtrace must use the internal allocator to bypass debug-malloc. */
+    extern void* dlmalloc(size_t size);
+    extern void dlfree(void* ptr);
+    extern void* dlrealloc(void* ptr, size_t size);
+    char** ret = NULL;
+    void* symbols_buffer = NULL;
+    const size_t SYMBOLS_BUFFER_SIZE = 4096;
+    size_t symbols_buffer_size = SYMBOLS_BUFFER_SIZE;
+    size_t symbols_buffer_size_out;
+    uint32_t retval;
+    char** argv = NULL;
+
+    if (!buffer || size < 0)
+        goto done;
+
+    if (!(symbols_buffer = dlmalloc(symbols_buffer_size)))
+        goto done;
+
+    /* First call might return OE_BUFFER_TOO_SMALL. */
+    if (oe_backtrace_symbols_ocall(
+            &retval,
+            oe_get_enclave(),
+            (const uint64_t*)buffer,
+            (size_t)size,
+            symbols_buffer,
+            symbols_buffer_size,
+            &symbols_buffer_size_out) != OE_OK)
+    {
+        goto done;
+    }
+
+    /* Second call uses buffer size returned by first call. */
+    if ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
+    {
+        symbols_buffer_size = symbols_buffer_size_out;
+
+        if (!(symbols_buffer = dlrealloc(symbols_buffer, symbols_buffer_size)))
+            goto done;
+
+        if (oe_backtrace_symbols_ocall(
+                &retval,
+                oe_get_enclave(),
+                (const uint64_t*)buffer,
+                (size_t)size,
+                symbols_buffer,
+                symbols_buffer_size,
+                &symbols_buffer_size_out) != OE_OK)
+        {
+            goto done;
+        }
+
+        if ((oe_result_t)retval != OE_OK)
+            goto done;
+    }
+    else if ((oe_result_t)retval != OE_OK)
+    {
+        goto done;
+    }
+
+    /* Convert vector to array of strings. */
+    if (oe_buffer_to_argv(
+            symbols_buffer,
+            symbols_buffer_size_out,
+            &argv,
+            (size_t)size,
+            dlmalloc,
+            dlfree) != OE_OK)
+    {
+        goto done;
+    }
+
+    ret = argv;
+    argv = NULL;
+
+done:
+
+    if (symbols_buffer)
+        dlfree(symbols_buffer);
+
+    if (argv)
+        dlfree(argv);
+
+    return ret;
+}
+
+void oe_backtrace_symbols_free(char** ptr)
+{
+    /* Backtrace must use the internal allocator to bypass debug-malloc. */
+    extern void dlfree(void* ptr);
+
+    dlfree(ptr);
 }

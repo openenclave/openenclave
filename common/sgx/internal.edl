@@ -11,17 +11,127 @@
 **==============================================================================
 */
 
-enclave {
+enclave
+{
+    include "openenclave/bits/types.h"
+    include "openenclave/internal/sgxtypes.h"
 
-    trusted {
+    trusted
+    {
+        public oe_result_t oe_get_sgx_report_ecall(
+            [in, size=opt_params_size] const void* opt_params,
+            size_t opt_params_size,
+            [out] sgx_report_t* report);
 
-        /* This function returns oe_internal_ping_ocall(value). */
-        public int oe_internal_ping_ecall(int value);
+        public oe_result_t oe_verify_report_ecall(
+            [in, size=report_size] const void* report,
+            size_t report_size);
+
+        public oe_result_t oe_get_public_key_ecall(
+            [in] const oe_asymmetric_key_params_t* key_params,
+            [in, size=key_info_size] const void* key_info,
+            size_t key_info_size,
+            [out, size=key_buffer_size] void* key_buffer,
+            size_t key_buffer_size,
+            [out] size_t* key_buffer_size_out);
+
+        public oe_result_t oe_get_public_key_by_policy_ecall(
+            uint32_t seal_policy,
+            [in] const oe_asymmetric_key_params_t* key_params,
+            [out, size=key_buffer_size] void* key_buffer,
+            size_t key_buffer_size,
+            [out] size_t* key_buffer_size_out,
+            [out, size=key_info_size] void* key_info,
+            size_t key_info_size,
+            [out] size_t* key_info_size_out);
+
+        public void oe_log_init_ecall(
+            [in, string] const char* enclave_path,
+            uint32_t log_level);
     };
 
-    untrusted {
+    untrusted
+    {
+        oe_result_t oe_get_qetarget_info_ocall(
+            [out] sgx_target_info_t* target_info);
 
-        /* This function returns its value parameter. */
-        int oe_internal_ping_ocall(int value);
+        oe_result_t oe_get_quote_ocall(
+            [in] const sgx_report_t* sgx_report,
+            [out, size=quote_size] void* quote,
+            size_t quote_size,
+            [out] size_t* quote_size_out);
+
+        oe_result_t oe_get_qe_identify_info_ocall(
+            [out, size=qe_id_info_size] void* qe_id_info,
+            size_t qe_id_info_size,
+            [out] size_t* qe_id_info_size_out,
+            [out, size=issuer_chain_size] void* issuer_chain,
+            size_t issuer_chain_size,
+            [out] size_t* issuer_chain_size_out);
+
+        oe_result_t oe_get_revocation_info_ocall(
+            [in] uint8_t fmspc[6],
+            size_t num_crl_urls,
+            [in, string] const char* crl_urls0,
+            [in, string] const char* crl_urls1,
+            [in, string] const char* crl_urls2,
+            [out, size=tcb_info_size] void* tcb_info,
+            size_t tcb_info_size,
+            [out] size_t* tcb_info_size_out,
+            [out, size=tcb_issuer_chain_size] void* tcb_issuer_chain,
+            size_t tcb_issuer_chain_size,
+            [out] size_t* tcb_issuer_chain_size_out,
+            [out, size=crl0_size] void* crl0,
+            size_t crl0_size,
+            [out] size_t* crl0_size_out,
+            [out, size=crl1_size] void* crl1,
+            size_t crl1_size,
+            [out] size_t* crl1_size_out,
+            [out, size=crl2_size] void* crl2,
+            size_t crl2_size,
+            [out] size_t* crl2_size_out,
+            [out, size=crl_issuer_chain0_size] void* crl_issuer_chain0,
+            size_t crl_issuer_chain0_size,
+            [out] size_t* crl_issuer_chain0_size_out,
+            [out, size=crl_issuer_chain1_size] void* crl_issuer_chain1,
+            size_t crl_issuer_chain1_size,
+            [out] size_t* crl_issuer_chain1_size_out,
+            [out, size=crl_issuer_chain2_size] void* crl_issuer_chain2,
+            size_t crl_issuer_chain2_size,
+            [out] size_t* crl_issuer_chain2_size_out);
+
+        void oe_log_ocall(
+            uint32_t log_level,
+            [in, string] const char* message);
+
+        // Translate the addresses in buffer[] into symbol names.
+        // (similar to Linux backtrace_symbols().
+        oe_result_t oe_backtrace_symbols_ocall(
+            [user_check] oe_enclave_t* oe_enclave,
+            [in, count=size] const uint64_t* buffer,
+            size_t size,
+            [out, size=symbols_buffer_size] void* symbols_buffer,
+            size_t symbols_buffer_size,
+            [out] size_t* symbols_buffer_size_out);
+
+        void oe_thread_wake_wait_ocall(
+            [user_check] oe_enclave_t* oe_enclave,
+            uint64_t waiter_tcs,
+            uint64_t self_tcs);
+
+        void* oe_realloc_ocall(
+            [user_check] void* ptr,
+            size_t size);
+
+        // Write a string to the console. Write to STDOUT if device=0. Write
+        // to STDERR if device=1. Write strnlen(str, maxlen) bytes.
+        void oe_write_ocall(
+            int device,
+            [in, string] const char* str,
+            size_t maxlen);
+
+        oe_result_t oe_get_cpuid_table_ocall(
+            [out, size=cpuid_table_buffer_size] void* cpuid_table_buffer,
+            size_t cpuid_table_buffer_size);
     };
 };
