@@ -176,6 +176,17 @@ void deepcopy_nested(NestedStruct* n)
         deepcopy_count(&(n->array_of_struct[i]));
 }
 
+void deepcopy_super_nested(SuperNestedStruct* s, size_t n)
+{
+    OE_TEST(oe_is_within_enclave(s, n * sizeof(SuperNestedStruct)));
+    // This test exists to check that the produced size of `_ptrs` is
+    // `n * (1 + 2 * (1 + 1 + 3))`.
+    OE_TEST(oe_is_within_enclave(
+        s[0].more_structs[0].array_of_struct, 3 * sizeof(CountStruct)));
+    OE_TEST(oe_is_outside_enclave(
+        s[0].more_structs[0].shallow_struct, sizeof(ShallowStruct)));
+}
+
 void deepcopy_null(CountStruct* s)
 {
     OE_UNUSED(s);

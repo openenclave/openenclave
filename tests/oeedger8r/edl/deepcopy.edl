@@ -41,6 +41,11 @@ enclave {
     [count=3] CountStruct* array_of_struct;
   };
 
+  struct SuperNestedStruct {
+    // TODO: We should eventually support count being a member of the struct.
+    [count=2] NestedStruct* more_structs;
+  };
+
   trusted {
     // Since `s` is passed by value, `s.ptr` is not deep copied.
     public void deepcopy_value(ShallowStruct s, [user_check] uint64_t* ptr);
@@ -90,6 +95,9 @@ enclave {
 
     // Maybe test for recursive copying.
     public void deepcopy_nested([in, out, count=1] NestedStruct* n);
+
+    // Really stress the recursion.
+    public void deepcopy_super_nested([in, out, count=n] SuperNestedStruct* s, size_t n);
 
     // Test handling of null values.
     public void deepcopy_null([in, out, count=1] CountStruct* s);

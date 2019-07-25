@@ -140,7 +140,11 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         ShallowStruct shallow{1, 8, nullptr};
         CountStruct counts[]{s, s, s};
         NestedStruct n{13, ints, &shallow, counts};
+        NestedStruct p{7, ints, &shallow, counts};
+        NestedStruct ns[]{p, n};
+        SuperNestedStruct u[]{{ns}, {ns}};
 
+        OE_TEST(deepcopy_super_nested(enclave, u, 2) == OE_OK);
         OE_TEST(deepcopy_nested(enclave, &n) == OE_OK);
 
         for (size_t i = 0; i < 4; ++i)
