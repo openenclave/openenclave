@@ -509,31 +509,6 @@ TEE_Result TA_InvokeCommandEntryPoint(
             result = TEE_ERROR_BAD_STATE;
             break;
         }
-        case OE_ECALL_GET_SGX_REPORT:
-        {
-            result = TEE_ERROR_NOT_IMPLEMENTED;
-            break;
-        }
-        case OE_ECALL_VERIFY_REPORT:
-        {
-            result = TEE_ERROR_NOT_IMPLEMENTED;
-            break;
-        }
-        case OE_ECALL_LOG_INIT:
-        {
-            result = TEE_ERROR_NOT_IMPLEMENTED;
-            break;
-        }
-        case OE_ECALL_GET_PUBLIC_KEY_BY_POLICY:
-        {
-            result = TEE_ERROR_NOT_IMPLEMENTED;
-            break;
-        }
-        case OE_ECALL_GET_PUBLIC_KEY:
-        {
-            result = TEE_ERROR_NOT_IMPLEMENTED;
-            break;
-        }
         default:
         {
             /* No function found with the number */

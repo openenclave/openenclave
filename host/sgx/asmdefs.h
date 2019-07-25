@@ -30,20 +30,20 @@ typedef struct _oe_enclave oe_enclave_t;
 #ifndef __ASSEMBLER__
 void oe_enter(
     void* tcs,
-    void (*aep)(void),
+    uint64_t aep,
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,
     uint64_t* arg4,
     oe_enclave_t* enclave);
 
-void OE_AEP(void);
+extern const uint64_t OE_AEP_ADDRESS;
 #endif
 
 #ifndef __ASSEMBLER__
 void oe_enter_sim(
     void* tcs,
-    void (*aep)(void),
+    uint64_t aep,
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,

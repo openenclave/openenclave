@@ -213,31 +213,14 @@ static TEEC_Result _handle_generic_rpc(
             HandleMalloc(*(uint64_t*)input_buffer, (uint64_t*)output_buffer);
             break;
 
-        case OE_OCALL_REALLOC:
-            HandleRealloc((uint64_t)input_buffer, (uint64_t*)output_buffer);
-            break;
-
         case OE_OCALL_FREE:
             HandleFree(*(uint64_t*)input_buffer);
-            break;
-
-        case OE_OCALL_WRITE:
-            HandlePrint((uint64_t)input_buffer);
             break;
 
         case OE_OCALL_THREAD_WAIT:
             return TEEC_ERROR_NOT_SUPPORTED;
 
         case OE_OCALL_THREAD_WAKE:
-            return TEEC_ERROR_NOT_SUPPORTED;
-
-        case OE_OCALL_THREAD_WAKE_WAIT:
-            return TEEC_ERROR_NOT_SUPPORTED;
-
-        case OE_OCALL_GET_QUOTE:
-            return TEEC_ERROR_NOT_SUPPORTED;
-
-        case OE_OCALL_GET_QE_TARGET_INFO:
             return TEEC_ERROR_NOT_SUPPORTED;
 
         case OE_OCALL_SLEEP:
@@ -248,12 +231,6 @@ static TEEC_Result _handle_generic_rpc(
             oe_handle_get_time(
                 *(uint64_t*)input_buffer, (uint64_t*)output_buffer);
             break;
-
-        case OE_OCALL_BACKTRACE_SYMBOLS:
-            return TEEC_ERROR_NOT_SUPPORTED;
-
-        case OE_OCALL_LOG:
-            return TEEC_ERROR_NOT_SUPPORTED;
 
         default:
         {

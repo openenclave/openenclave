@@ -47,38 +47,6 @@ void* oe_host_calloc(size_t nmemb, size_t size)
     return ptr;
 }
 
-void* oe_host_realloc(void* ptr, size_t size)
-{
-    oe_realloc_args_t* arg_in = NULL;
-    uint64_t arg_out = 0;
-
-    if (!(arg_in =
-              (oe_realloc_args_t*)oe_host_calloc(1, sizeof(oe_realloc_args_t))))
-        goto done;
-
-    arg_in->ptr = ptr;
-    arg_in->size = size;
-
-    if (oe_ocall(
-            OE_OCALL_REALLOC,
-            (uint64_t)arg_in,
-            sizeof(*arg_in),
-            true,
-            &arg_out,
-            sizeof(arg_out)) != OE_OK)
-    {
-        arg_out = 0;
-        goto done;
-    }
-
-    if (arg_out && !oe_is_outside_enclave((void*)arg_out, size))
-        oe_abort();
-
-done:
-    oe_host_free(arg_in);
-    return (void*)arg_out;
-}
-
 void oe_host_free(void* ptr)
 {
     oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, sizeof(ptr), false, NULL, 0);
@@ -109,51 +77,6 @@ char* oe_host_strndup(const char* str, size_t n)
     p[len] = '\0';
 
     return p;
-}
-
-int oe_host_write(int device, const char* str, size_t len)
-{
-    int ret = -1;
-    oe_print_args_t* args = NULL;
-
-    /* Reject invalid arguments */
-    if ((device != 0 && device != 1) || !str)
-        goto done;
-
-    /* Determine the length of the string */
-    if (len == (size_t)-1)
-        len = oe_strlen(str);
-
-    /* Check for integer overflow and allocate space for the arguments followed
-     * by null-terminated string */
-    size_t total_size;
-    if (oe_safe_add_sizet(len, 1 + sizeof(oe_print_args_t), &total_size) !=
-        OE_OK)
-        goto done;
-
-    if (!(args = (oe_print_args_t*)oe_host_calloc(1, total_size)))
-        goto done;
-
-    /* Initialize the arguments */
-    args->device = device;
-    args->str = (char*)(args + 1);
-
-    if (oe_memcpy_s(args->str, len, str, len) != OE_OK)
-        goto done;
-
-    args->str[len] = '\0';
-
-    /* Perform OCALL */
-    if (oe_ocall(
-            OE_OCALL_WRITE, (uint64_t)args, sizeof(*args), true, NULL, 0) !=
-        OE_OK)
-        goto done;
-
-    ret = 0;
-
-done:
-    oe_host_free(args);
-    return ret;
 }
 
 int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
@@ -211,7 +134,9 @@ int oe_host_fprintf(int device, const char* fmt, ...)
     return n;
 }
 
-// Function used by oeedger8r for allocating ocall buffers.
+// Function used by oeedger8r for allocating ocall buffers. This function can be
+// optimized by allocating a buffer for making ocalls and pass it in to the
+// ecall and making it available for use here.
 void* oe_allocate_ocall_buffer(size_t size)
 {
     return oe_host_malloc(size);
@@ -219,6 +144,28 @@ void* oe_allocate_ocall_buffer(size_t size)
 
 // Function used by oeedger8r for freeing ocall buffers.
 void oe_free_ocall_buffer(void* buffer)
+{
+    oe_host_free(buffer);
+}
+
+// Function used by oeedger8r for allocating switchless ocall buffers.
+// There are two possible approaches to implementing this function:
+//    1. Preallocate a pool of host memory per thread for switchless ocalls
+//       and then allocate memory from that pool. Since OE does not support
+//       reentrant ecalls in the same thread, there can at most be one ecall
+//       and one ocall active in a thread. This can enable implementing
+//       host memory pools more efficiently.
+//   2. The alternative is to allocate the  buffer in enclave memory.
+//      Then while issuing the underling SDK call to make the switchless ocall,
+//      use a ring-buffer to transfer the contents of the memory to the host
+//      and to transfer the results back.
+void* oe_allocate_switchless_ocall_buffer(size_t size)
+{
+    return oe_host_malloc(size);
+}
+
+// Function used by oeedger8r for freeing ocall buffers.
+void oe_free_switchless_ocall_buffer(void* buffer)
 {
     oe_host_free(buffer);
 }

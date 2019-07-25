@@ -31,7 +31,6 @@
 #include "../ocalls.h"
 #include "asmdefs.h"
 #include "enclave.h"
-#include "ocalls.h"
 
 /*
 **==============================================================================
@@ -105,7 +104,7 @@ ThreadBinding* GetThreadBinding()
 static oe_result_t _enter_sim(
     oe_enclave_t* enclave,
     void* tcs_,
-    void (*aep)(void),
+    uint64_t aep,
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,
@@ -179,7 +178,7 @@ OE_ALWAYS_INLINE
 static oe_result_t _do_eenter(
     oe_enclave_t* enclave,
     void* tcs,
-    void (*aep)(void),
+    uint64_t aep,
     oe_code_t code_in,
     uint16_t func_in,
     uint64_t arg_in,
@@ -328,22 +327,18 @@ done:
 
 static const char* oe_ocall_str(oe_func_t ocall)
 {
-    static const char* func_names[] = {"CALL_HOST_FUNCTION",
-                                       "GET_QE_TARGET_INFO",
-                                       "GET_QUOTE",
-                                       "GET_REVOCATION_INFO",
-                                       "GET_QE_ID_INFO",
-                                       "THREAD_WAKE",
-                                       "THREAD_WAIT",
-                                       "THREAD_WAKE_WAIT",
-                                       "MALLOC",
-                                       "REALLOC",
-                                       "FREE",
-                                       "WRITE",
-                                       "SLEEP",
-                                       "GET_TIME",
-                                       "BACKTRACE_SYMBOLS",
-                                       "LOG"};
+    // clang-format off
+    static const char* func_names[] =
+    {
+        "CALL_HOST_FUNCTION",
+        "THREAD_WAKE",
+        "THREAD_WAIT",
+        "MALLOC",
+        "FREE",
+        "SLEEP",
+        "GET_TIME",
+    };
+    // clang-format on
 
     OE_STATIC_ASSERT(OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX);
 
@@ -356,15 +351,15 @@ static const char* oe_ocall_str(oe_func_t ocall)
 
 static const char* oe_ecall_str(oe_func_t ecall)
 {
-    static const char* func_names[] = {"DESTRUCTOR",
-                                       "INIT_ENCLAVE",
-                                       "CALL_ENCLAVE_FUNCTION",
-                                       "VERIFY_REPORT",
-                                       "GET_SGX_REPORT",
-                                       "VIRTUAL_EXCEPTION_HANDLER",
-                                       "LOG_INIT",
-                                       "GET_PUBLIC_KEY_BY_POLICY",
-                                       "GET_PUBLIC_KEY"};
+    // clang-format off
+    static const char* func_names[] =
+    {
+        "DESTRUCTOR",
+        "INIT_ENCLAVE",
+        "CALL_ENCLAVE_FUNCTION",
+        "VIRTUAL_EXCEPTION_HANDLER"
+    };
+    // clang-format on
 
     OE_STATIC_ASSERT(OE_ECALL_BASE + OE_COUNTOF(func_names) == OE_ECALL_MAX);
 
@@ -418,16 +413,8 @@ static oe_result_t _handle_ocall(
             HandleMalloc(arg_in, arg_out);
             break;
 
-        case OE_OCALL_REALLOC:
-            HandleRealloc(arg_in, arg_out);
-            break;
-
         case OE_OCALL_FREE:
             HandleFree(arg_in);
-            break;
-
-        case OE_OCALL_WRITE:
-            HandlePrint(arg_in);
             break;
 
         case OE_OCALL_THREAD_WAIT:
@@ -438,42 +425,12 @@ static oe_result_t _handle_ocall(
             HandleThreadWake(enclave, arg_in);
             break;
 
-        case OE_OCALL_THREAD_WAKE_WAIT:
-            HandleThreadWakeWait(enclave, arg_in);
-            break;
-
-        case OE_OCALL_GET_QUOTE:
-            HandleGetQuote(arg_in);
-            break;
-
-#ifdef OE_USE_LIBSGX
-        // Quote revocation is supported only on libsgx platforms.
-        case OE_OCALL_GET_REVOCATION_INFO:
-            HandleGetQuoteRevocationInfo(arg_in);
-            break;
-        case OE_OCALL_GET_QE_ID_INFO:
-            HandleGetQuoteEnclaveIdentityInfo(arg_in);
-            break;
-#endif
-
-        case OE_OCALL_GET_QE_TARGET_INFO:
-            HandleGetQETargetInfo(arg_in);
-            break;
-
         case OE_OCALL_SLEEP:
             oe_handle_sleep(arg_in);
             break;
 
         case OE_OCALL_GET_TIME:
             oe_handle_get_time(arg_in, arg_out);
-            break;
-
-        case OE_OCALL_BACKTRACE_SYMBOLS:
-            oe_handle_backtrace_symbols(enclave, arg_in);
-            break;
-
-        case OE_OCALL_LOG:
-            oe_handle_log(enclave, arg_in);
             break;
 
         default:
@@ -743,7 +700,7 @@ oe_result_t oe_ecall(
     OE_CHECK(_do_eenter(
         enclave,
         tcs,
-        OE_AEP,
+        OE_AEP_ADDRESS,
         code,
         func,
         arg_in,
@@ -772,6 +729,91 @@ done:
     /* SetEnclave(NULL); */
 
     return result;
+}
+
+/*
+**==============================================================================
+**
+** oe_switchless_call_enclave_function_by_table_id()
+**
+** Switchlessly call the enclave function specified by the given table-id and
+*function-id.
+**
+**==============================================================================
+*/
+
+static oe_result_t oe_switchless_call_enclave_function_by_table_id(
+    oe_enclave_t* enclave,
+    uint64_t table_id,
+    uint64_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_enclave_function_args_t args;
+
+    /* Reject invalid parameters */
+    if (!enclave)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Initialize the call_enclave_args structure */
+    {
+        args.table_id = table_id;
+        args.function_id = function_id;
+        args.input_buffer = input_buffer;
+        args.input_buffer_size = input_buffer_size;
+        args.output_buffer = output_buffer;
+        args.output_buffer_size = output_buffer_size;
+        args.output_bytes_written = 0;
+        args.result = OE_UNEXPECTED;
+    }
+
+    /* TODO: @EMumau Perform the Switchless ECALL */
+    {
+        OE_RAISE(OE_UNSUPPORTED);
+    }
+
+    /* Check the result */
+    OE_CHECK(args.result);
+
+    *output_bytes_written = args.output_bytes_written;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+/*
+**==============================================================================
+**
+** oe_switchless_call_enclave_function()
+**
+** Switchlessly call the enclave function specified by the given function-id in
+** the default function table.
+**
+**==============================================================================
+*/
+oe_result_t oe_switchless_call_enclave_function(
+    oe_enclave_t* enclave,
+    uint32_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    return oe_switchless_call_enclave_function_by_table_id(
+        enclave,
+        OE_UINT64_MAX,
+        function_id,
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        output_bytes_written);
 }
 
 /*

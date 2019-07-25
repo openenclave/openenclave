@@ -8,7 +8,7 @@
 //
 // void oe_enter_sim(
 //     [IN] void* tcs,
-//     [IN] void (*aep)(),
+//     [IN] uint64_t aep,
 //     [IN] uint64_t arg1,
 //     [IN] uint64_t arg2,
 //     [OUT] uint64_t* arg3,

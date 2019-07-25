@@ -88,6 +88,7 @@ if (OE_SGX)
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c
+    asym_keys.c
     sgx/calls.c
     sgx/create.c
     sgx/elf.c
@@ -95,7 +96,6 @@ if (OE_SGX)
     sgx/enclavemanager.c
     sgx/exception.c
     sgx/internal_u_wrapper.c
-    sgx/internal.c
     sgx/load.c
     sgx/loadelf.c
     sgx/loadpe.c
@@ -154,8 +154,9 @@ add_library(oehost STATIC
   ../common/kdf.c
   ../common/lockless_queue.c
   ../common/safecrt.c
-  asym_keys.c
+  ../common/argv.c
   calls.c
+  ocalls.c
   dupenv.c
   error.c
   files.c
@@ -163,7 +164,6 @@ add_library(oehost STATIC
   hexdump.c
   syscall_u_wrapper.c
   memalign.c
-  ocalls.c
   result.c
   signkey.c
   strings.c

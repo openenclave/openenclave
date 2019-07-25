@@ -265,7 +265,7 @@ static void _malloc_dump(size_t size, void* addrs[], int num_addrs)
 done:
 
     if (syms)
-        oe_host_free(syms);
+        oe_backtrace_symbols_free(syms);
 }
 
 static void _dump(bool need_lock)

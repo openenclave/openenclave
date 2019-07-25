@@ -40,8 +40,8 @@ if (OE_SGX)
         sgx/entropy.c
         sgx/exception.c
         sgx/globals.c
+        sgx/hostcalls.c
         sgx/init.c
-        sgx/internal.c
         sgx/internal_t_wrapper.c
         sgx/jump.c
         sgx/keys.c
@@ -78,6 +78,7 @@ elseif (OE_TRUSTZONE)
         optee/header.c
         optee/globals.c
         optee/gp.c
+        optee/hostcalls.c
         optee/printf.c
         optee/sched_yield.c
         optee/spinlock.c
@@ -92,6 +93,7 @@ endif ()
 
 add_library(oecore STATIC
     ../../common/safecrt.c
+    ../../common/argv.c
     ${MUSL_SRC_DIR}/prng/rand.c
     ${MUSL_SRC_DIR}/string/memcmp.c
     ${MUSL_SRC_DIR}/string/memcpy.c

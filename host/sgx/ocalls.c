@@ -18,17 +18,24 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/argv.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/elf.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../ocalls.h"
 #include "enclave.h"
-#include "ocalls.h"
+#include "internal_u.h"
 #include "quote.h"
 #include "sgxquoteprovider.h"
+
+void* oe_realloc_ocall(void* ptr, size_t size)
+{
+    return realloc(ptr, size);
+}
 
 void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg_in)
 {
@@ -83,67 +90,326 @@ void HandleThreadWake(oe_enclave_t* enclave, uint64_t arg_in)
 #endif
 }
 
-void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t arg_in)
+void oe_thread_wake_wait_ocall(
+    oe_enclave_t* enclave,
+    uint64_t waiter_tcs,
+    uint64_t self_tcs)
 {
-    oe_thread_wake_wait_args_t* args = (oe_thread_wake_wait_args_t*)arg_in;
-
-    if (!args)
+    if (!waiter_tcs || !self_tcs)
         return;
 
 #if defined(__linux__)
-
-    HandleThreadWake(enclave, (uint64_t)args->waiter_tcs);
-    HandleThreadWait(enclave, (uint64_t)args->self_tcs);
-
+    HandleThreadWake(enclave, waiter_tcs);
+    HandleThreadWait(enclave, self_tcs);
 #elif defined(_WIN32)
-
-    HandleThreadWake(enclave, (uint64_t)args->waiter_tcs);
-    HandleThreadWait(enclave, (uint64_t)args->self_tcs);
-
+    HandleThreadWake(enclave, waiter_tcs);
+    HandleThreadWait(enclave, self_tcs);
 #endif
 }
 
-void HandleGetQuote(uint64_t arg_in)
+oe_result_t oe_get_quote_ocall(
+    const sgx_report_t* sgx_report,
+    void* quote,
+    size_t quote_size,
+    size_t* quote_size_out)
 {
-    oe_get_quote_args_t* args = (oe_get_quote_args_t*)arg_in;
-    if (!args)
-        return;
+    oe_result_t result;
 
-    args->result =
-        sgx_get_quote(&args->sgx_report, args->quote, &args->quote_size);
+    result = sgx_get_quote(sgx_report, quote, &quote_size);
+
+    if (quote_size_out)
+        *quote_size_out = quote_size;
+
+    return result;
 }
 
-#ifdef OE_USE_LIBSGX
+#if defined(OE_USE_LIBSGX)
 
-void HandleGetQuoteRevocationInfo(uint64_t arg_in)
+/* Copy the source array to an output buffer. */
+static oe_result_t _copy_output_buffer(
+    void* dest,
+    size_t dest_size,
+    size_t* dest_size_out,
+    const void* src,
+    size_t src_size,
+    bool* buffer_too_small)
 {
-    oe_get_revocation_info_args_t* args =
-        (oe_get_revocation_info_args_t*)arg_in;
-    if (!args)
-        return;
+    oe_result_t result = OE_UNEXPECTED;
 
-    args->result = oe_get_revocation_info(args);
+    if ((dest_size && !dest) || !dest_size_out)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    *dest_size_out = src_size;
+
+    if (dest_size < src_size)
+        *buffer_too_small = true;
+    else
+        memcpy(dest, src, src_size);
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
-void HandleGetQuoteEnclaveIdentityInfo(uint64_t arg_in)
+oe_result_t oe_get_revocation_info_ocall(
+    uint8_t fmspc[6],
+    size_t num_crl_urls,
+    const char* crl_urls0,
+    const char* crl_urls1,
+    const char* crl_urls2,
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_issuer_chain,
+    size_t tcb_issuer_chain_size,
+    size_t* tcb_issuer_chain_size_out,
+    void* crl0,
+    size_t crl0_size,
+    size_t* crl0_size_out,
+    void* crl1,
+    size_t crl1_size,
+    size_t* crl1_size_out,
+    void* crl2,
+    size_t crl2_size,
+    size_t* crl2_size_out,
+    void* crl_issuer_chain0,
+    size_t crl_issuer_chain0_size,
+    size_t* crl_issuer_chain0_size_out,
+    void* crl_issuer_chain1,
+    size_t crl_issuer_chain1_size,
+    size_t* crl_issuer_chain1_size_out,
+    void* crl_issuer_chain2,
+    size_t crl_issuer_chain2_size,
+    size_t* crl_issuer_chain2_size_out)
 {
-    oe_get_qe_identity_info_args_t* args =
-        (oe_get_qe_identity_info_args_t*)arg_in;
-    if (!args)
-        return;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_get_revocation_info_args_t args = {0};
+    bool buffer_too_small = false;
 
-    args->result = oe_get_qe_identity_info(args);
+    /* fmspc */
+    memcpy(args.fmspc, fmspc, sizeof(args.fmspc));
+
+    /* crl_urls */
+    args.num_crl_urls = (uint32_t)num_crl_urls;
+    args.crl_urls[0] = crl_urls0;
+    args.crl_urls[1] = crl_urls1;
+    args.crl_urls[2] = crl_urls2;
+
+    /* Populate the output fields. */
+    OE_CHECK(oe_get_revocation_info(&args));
+
+    OE_CHECK(_copy_output_buffer(
+        tcb_info,
+        tcb_info_size,
+        tcb_info_size_out,
+        args.tcb_info,
+        args.tcb_info_size,
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        tcb_issuer_chain,
+        tcb_issuer_chain_size,
+        tcb_issuer_chain_size_out,
+        args.tcb_issuer_chain,
+        args.tcb_issuer_chain_size,
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl0,
+        crl0_size,
+        crl0_size_out,
+        args.crl[0],
+        args.crl_size[0],
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl1,
+        crl1_size,
+        crl1_size_out,
+        args.crl[1],
+        args.crl_size[1],
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl2,
+        crl2_size,
+        crl2_size_out,
+        args.crl[2],
+        args.crl_size[2],
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl_issuer_chain0,
+        crl_issuer_chain0_size,
+        crl_issuer_chain0_size_out,
+        args.crl_issuer_chain[0],
+        args.crl_issuer_chain_size[0],
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl_issuer_chain1,
+        crl_issuer_chain1_size,
+        crl_issuer_chain1_size_out,
+        args.crl_issuer_chain[1],
+        args.crl_issuer_chain_size[1],
+        &buffer_too_small));
+
+    OE_CHECK(_copy_output_buffer(
+        crl_issuer_chain2,
+        crl_issuer_chain2_size,
+        crl_issuer_chain2_size_out,
+        args.crl_issuer_chain[2],
+        args.crl_issuer_chain_size[2],
+        &buffer_too_small));
+
+    if (buffer_too_small)
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+    result = OE_OK;
+
+done:
+
+    free(args.buffer);
+
+    return result;
 }
 
-#endif
-
-void HandleGetQETargetInfo(uint64_t arg_in)
+oe_result_t oe_get_qe_identify_info_ocall(
+    void* qe_id_info,
+    size_t qe_id_info_size,
+    size_t* qe_id_info_size_out,
+    void* issuer_chain,
+    size_t issuer_chain_size,
+    size_t* issuer_chain_size_out)
 {
-    oe_get_qetarget_info_args_t* args = (oe_get_qetarget_info_args_t*)arg_in;
-    if (!args)
-        return;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_get_qe_identity_info_args_t args = {0};
 
-    args->result = sgx_get_qetarget_info(&args->target_info);
+    if (!qe_id_info_size_out || !issuer_chain_size_out)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(oe_get_qe_identity_info(&args));
+
+    if (args.qe_id_info_size > qe_id_info_size)
+    {
+        *qe_id_info_size_out = args.qe_id_info_size;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    if (args.issuer_chain_size > issuer_chain_size)
+    {
+        *issuer_chain_size_out = args.issuer_chain_size;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    if (qe_id_info)
+        memcpy(qe_id_info, args.qe_id_info, args.qe_id_info_size);
+
+    *qe_id_info_size_out = args.qe_id_info_size;
+
+    if (issuer_chain)
+        memcpy(issuer_chain, args.issuer_chain, args.issuer_chain_size);
+
+    *issuer_chain_size_out = args.issuer_chain_size;
+
+done:
+
+    if (args.host_out_buffer)
+        free(args.host_out_buffer);
+
+    return result;
+}
+
+#else /* !defined(OE_USE_LIBSGX) */
+
+oe_result_t oe_get_revocation_info_ocall(
+    uint8_t fmspc[6],
+    size_t num_crl_urls,
+    const char* crl_urls0,
+    const char* crl_urls1,
+    const char* crl_urls2,
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_issuer_chain,
+    size_t tcb_issuer_chain_size,
+    size_t* tcb_issuer_chain_size_out,
+    void* crl0,
+    size_t crl0_size,
+    size_t* crl0_size_out,
+    void* crl1,
+    size_t crl1_size,
+    size_t* crl1_size_out,
+    void* crl2,
+    size_t crl2_size,
+    size_t* crl2_size_out,
+    void* crl_issuer_chain0,
+    size_t crl_issuer_chain0_size,
+    size_t* crl_issuer_chain0_size_out,
+    void* crl_issuer_chain1,
+    size_t crl_issuer_chain1_size,
+    size_t* crl_issuer_chain1_size_out,
+    void* crl_issuer_chain2,
+    size_t crl_issuer_chain2_size,
+    size_t* crl_issuer_chain2_size_out)
+{
+    OE_UNUSED(fmspc);
+    OE_UNUSED(num_crl_urls);
+    OE_UNUSED(crl_urls0);
+    OE_UNUSED(crl_urls1);
+    OE_UNUSED(crl_urls2);
+    OE_UNUSED(tcb_info);
+    OE_UNUSED(tcb_info_size);
+    OE_UNUSED(tcb_info_size_out);
+    OE_UNUSED(tcb_issuer_chain);
+    OE_UNUSED(tcb_issuer_chain_size);
+    OE_UNUSED(tcb_issuer_chain_size_out);
+    OE_UNUSED(crl0);
+    OE_UNUSED(crl0_size);
+    OE_UNUSED(crl0_size_out);
+    OE_UNUSED(crl1);
+    OE_UNUSED(crl1_size);
+    OE_UNUSED(crl1_size_out);
+    OE_UNUSED(crl2);
+    OE_UNUSED(crl2_size);
+    OE_UNUSED(crl2_size_out);
+    OE_UNUSED(crl_issuer_chain0);
+    OE_UNUSED(crl_issuer_chain0_size);
+    OE_UNUSED(crl_issuer_chain0_size_out);
+    OE_UNUSED(crl_issuer_chain1);
+    OE_UNUSED(crl_issuer_chain1_size);
+    OE_UNUSED(crl_issuer_chain1_size_out);
+    OE_UNUSED(crl_issuer_chain2);
+    OE_UNUSED(crl_issuer_chain2_size);
+    OE_UNUSED(crl_issuer_chain2_size_out);
+
+    return OE_UNSUPPORTED;
+}
+
+oe_result_t oe_get_qe_identify_info_ocall(
+    void* qe_id_info,
+    size_t qe_id_info_size,
+    size_t* qe_id_info_size_out,
+    void* issuer_chain,
+    size_t issuer_chain_size,
+    size_t* issuer_chain_size_out)
+{
+    OE_UNUSED(qe_id_info);
+    OE_UNUSED(qe_id_info_size);
+    OE_UNUSED(qe_id_info_size_out);
+    OE_UNUSED(issuer_chain);
+    OE_UNUSED(issuer_chain_size);
+    OE_UNUSED(issuer_chain_size_out);
+
+    return OE_UNSUPPORTED;
+}
+
+#endif /* !defined(OE_USE_LIBSGX) */
+
+oe_result_t oe_get_qetarget_info_ocall(sgx_target_info_t* target_info)
+{
+    return sgx_get_qetarget_info(target_info);
 }
 
 static char** _backtrace_symbols(
@@ -229,22 +495,59 @@ done:
     return ret;
 }
 
-void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg)
+oe_result_t oe_backtrace_symbols_ocall(
+    oe_enclave_t* oe_enclave,
+    const uint64_t* buffer,
+    size_t size,
+    void* symbols_buffer,
+    size_t symbols_buffer_size,
+    size_t* symbols_buffer_size_out)
 {
-    oe_backtrace_symbols_args_t* args = (oe_backtrace_symbols_args_t*)arg;
+    oe_result_t result = OE_UNEXPECTED;
+    char** strings = NULL;
 
-    if (args)
+    /* Reject invalid parameters. */
+    if (!oe_enclave || !buffer || size > OE_INT_MAX || !symbols_buffer_size_out)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Convert the addresses into symbol strings. */
+    if (!(strings =
+              _backtrace_symbols(oe_enclave, (void* const*)buffer, (int)size)))
     {
-        args->ret = _backtrace_symbols(enclave, args->buffer, args->size);
+        OE_RAISE(OE_FAILURE);
     }
+
+    *symbols_buffer_size_out = symbols_buffer_size;
+
+    OE_CHECK(oe_argv_to_buffer(
+        (const char**)strings,
+        size,
+        symbols_buffer,
+        symbols_buffer_size,
+        symbols_buffer_size_out));
+
+    result = OE_OK;
+
+done:
+
+    if (strings)
+        free(strings);
+
+    return result;
 }
 
-void oe_handle_log(oe_enclave_t* enclave, uint64_t arg)
+void oe_log_ocall(uint32_t log_level, const char* message)
 {
-    oe_log_args_t* args = (oe_log_args_t*)arg;
-    OE_UNUSED(enclave);
-    if (args)
+    oe_log_message(true, (oe_log_level_t)log_level, message);
+}
+
+void oe_write_ocall(int device, const char* str, size_t maxlen)
+{
+    if (str && (device == 0 || device == 1))
     {
-        log_message(true, args);
+        FILE* stream = (device == 0) ? stdout : stderr;
+        size_t len = strnlen(str, maxlen);
+        fprintf(stream, "%.*s", (int)len, str);
+        fflush(stream);
     }
 }

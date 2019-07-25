@@ -788,7 +788,7 @@ oe_result_t oe_load_elf_enclave_image(
         0)
         OE_RAISE(OE_FAILURE);
 
-    if (get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
         _dump_relocations(image->u.elf.reloc_data, image->reloc_size);
 
     image->type = OE_IMAGE_TYPE_ELF;

@@ -148,8 +148,6 @@ char* oe_strdup(const char* s)
     return p;
 }
 
-OE_WEAK_ALIAS(oe_strcmp, strcmp);
-
 char* oe_strchr(const char* s, int c)
 {
     while (*s && *s != c)

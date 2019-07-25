@@ -8,7 +8,9 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 
-typedef enum _log_level_
+OE_EXTERNC_BEGIN
+
+typedef enum _oe_log_level
 {
     OE_LOG_LEVEL_NONE = 0,
     OE_LOG_LEVEL_FATAL,
@@ -17,41 +19,19 @@ typedef enum _log_level_
     OE_LOG_LEVEL_INFO,
     OE_LOG_LEVEL_VERBOSE,
     OE_LOG_LEVEL_MAX
-} log_level_t;
+} oe_log_level_t;
 
 /* Maximum log length */
 #define OE_LOG_MESSAGE_LEN_MAX 2048U
-#define MAX_FILENAME_LEN 256U
+#define OE_MAX_FILENAME_LEN 256U
 
-typedef struct _oe_log_filter
-{
-    const char* path;
-    uint64_t path_len;
-    log_level_t level;
-} oe_log_filter_t;
-
-typedef struct _oe_log_args
-{
-    log_level_t level;
-    char message[OE_LOG_MESSAGE_LEN_MAX];
-} oe_log_args_t;
-
-#ifdef OE_BUILD_ENCLAVE
-#include <openenclave/enclave.h>
-OE_EXTERNC_BEGIN
-oe_result_t _handle_oelog_init(uint64_t arg);
-oe_result_t oe_log(log_level_t level, const char* fmt, ...);
-log_level_t get_current_logging_level(void);
-OE_EXTERNC_END
-#else
-#include <stdio.h>
-OE_EXTERNC_BEGIN
+#if !defined(OE_BUILD_ENCLAVE)
 oe_result_t oe_log_enclave_init(oe_enclave_t* enclave);
-void oe_log(log_level_t level, const char* fmt, ...);
-log_level_t get_current_logging_level(void);
-void log_message(bool is_enclave, oe_log_args_t* args);
-OE_EXTERNC_END
+void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message);
 #endif
+
+oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...);
+oe_log_level_t oe_get_current_logging_level(void);
 
 #define OE_TRACE(level, ...)        \
     do                              \
@@ -103,5 +83,7 @@ OE_EXTERNC_END
         __FILE__,                  \
         __FUNCTION__,              \
         __LINE__)
+
+OE_EXTERNC_END
 
 #endif

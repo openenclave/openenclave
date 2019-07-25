@@ -48,7 +48,7 @@ void oe_load_quote_provider()
             if (set_log_fcn != NULL)
             {
                 OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
-                if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+                if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
                 {
                     // If info tracing is enabled, install the logging function.
                     set_log_fcn(oe_quote_provider_log);
