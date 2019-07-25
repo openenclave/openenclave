@@ -46,6 +46,12 @@ enclave {
     [count=2] NestedStruct* more_structs;
   };
 
+  struct IOVEC
+  {
+    [size=len] void *base;
+    size_t len;
+  };
+
   trusted {
     // Since `s` is passed by value, `s.ptr` is not deep copied.
     public void deepcopy_value(ShallowStruct s, [user_check] uint64_t* ptr);
@@ -105,5 +111,8 @@ enclave {
     // Deep copy of one `CountStruct` with an embedded array out
     // should take place.
     public void deepcopy_out_count([in, out, count=1] CountStruct* s);
+
+    // Test a real-world scenario.
+    public void deepcopy_iovec([in, out, count=n] IOVEC* iov, size_t n);
   };
 };

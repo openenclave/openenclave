@@ -144,7 +144,7 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         NestedStruct ns[]{p, n};
         SuperNestedStruct u[]{{ns}, {ns}};
 
-        OE_TEST(deepcopy_super_nested(enclave, u, 2) == OE_OK);
+        OE_TEST(deepcopy_super_nested(enclave, u, OE_COUNTOF(u)) == OE_OK);
         OE_TEST(deepcopy_nested(enclave, &n) == OE_OK);
 
         for (size_t i = 0; i < 4; ++i)
@@ -176,6 +176,19 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
         OE_TEST(s.count == 7);
         OE_TEST(s.size == 64);
         test_struct(s, 3);
+    }
+
+    {
+        IOVEC iov[2];
+        char buf0[8] = "red";
+
+        iov[0].base = (void*)buf0;
+        iov[0].len = sizeof(buf0);
+        iov[1].base = NULL;
+        iov[1].len = 0;
+
+        OE_TEST(deepcopy_iovec(enclave, iov, OE_COUNTOF(iov)) == OE_OK);
+        OE_TEST(memcmp(buf0, "0000000", 8) == 0);
     }
 
     printf("=== test_deepcopy_edl_ecalls passed\n");

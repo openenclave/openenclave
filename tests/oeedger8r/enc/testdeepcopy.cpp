@@ -3,8 +3,11 @@
 
 #include "../edltestutils.h"
 
+#include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
+#include <string.h>
 #include "all_t.h"
 
 static uint64_t data[8] = {0x1112131415161718,
@@ -202,4 +205,32 @@ void deepcopy_out_count(CountStruct* s)
     s->size = 64;
     for (size_t i = 0; i < 3; ++i)
         s->ptr[i] = data[i];
+}
+
+void deepcopy_iovec(IOVEC* iov, size_t n)
+{
+    OE_TEST(!(n && !iov));
+    OE_TEST(n == 2);
+
+    for (size_t i = 0; i < n; i++)
+    {
+        char* str = (char*)iov[i].base;
+        size_t len = iov[i].len;
+
+        switch (i)
+        {
+            case 0:
+                OE_TEST(len == 8);
+                OE_TEST(oe_strcmp(str, "red") == 0);
+                memcpy(str, "0000000", 8);
+                break;
+            case 1:
+                OE_TEST(len == 0);
+                OE_TEST(str == NULL);
+                break;
+            default:
+                OE_TEST(false);
+                break;
+        }
+    }
 }
