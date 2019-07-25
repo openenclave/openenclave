@@ -153,6 +153,14 @@ let get_type_expr ptype =
   | PTPtr (_, ptr_attr) when ptr_attr.pa_isptr -> sprintf "*(%s)0" tystr
   | _ -> tystr
 
+(** For a list of args and current count, get the corresponding
+   argstruct variable name. The prefix is usually, but not always,
+   ["_args."].*)
+let oe_get_argstruct prefix args count =
+  match args with
+  | [] -> prefix
+  | hd :: _ -> prefix ^ hd ^ gen_c_deref (List.length args) count
+
 let attr_value_to_string argstruct = function
   | None -> None
   | Some (ANumber n) -> Some (string_of_int n)
@@ -653,11 +661,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   let oe_prepare_input_buffer (fd : func_decl) (alloc_func : string) =
     let oe_compute_buffer_size buffer predicate plist =
       let rec gen_add_size args count (ptype, decl) =
-        let argstruct =
-          match args with
-          | [] -> "_args."
-          | hd :: _ -> "_args." ^ hd ^ gen_c_deref (List.length args) count
-        in
+        let argstruct = oe_get_argstruct "_args." args count in
         let size = oe_get_param_size (ptype, decl, argstruct) in
         let arg =
           match args with
@@ -692,11 +696,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     in
     let oe_serialize_buffer_inputs (plist : pdecl list) =
       let rec gen_serialize args count (ptype, decl) =
-        let argstruct =
-          match args with
-          | [] -> "_args."
-          | hd :: _ -> "_args." ^ hd ^ gen_c_deref (List.length args) count
-        in
+        let argstruct = oe_get_argstruct "_args." args count in
         let size = oe_get_param_size (ptype, decl, argstruct) in
         let arg =
           match args with
@@ -771,11 +771,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
        within a [gen_c_for] loop when producing the count. Therefore
        arrays of structs which use members for the count of another
        nested parameter are not yet supported. *)
-    let argstruct =
-      match args with
-      | [] -> ""
-      | hd :: _ -> hd ^ gen_c_deref (List.length args) count
-    in
+    let argstruct = oe_get_argstruct "" args count in
     let arg =
       match args with
       | [] -> id
@@ -822,11 +818,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   let oe_process_output_buffer (fd : func_decl) =
     let oe_serialize_buffer_outputs (plist : pdecl list) =
       let rec gen_serialize args count (ptype, decl) =
-        let argstruct =
-          match args with
-          | [] -> "_args."
-          | hd :: _ -> "_args." ^ hd ^ gen_c_deref (List.length args) count
-        in
+        let argstruct = oe_get_argstruct "_args." args count in
         let size = oe_get_param_size (ptype, decl, argstruct) in
         let arg =
           match args with
@@ -893,11 +885,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; oe_serialize_buffer_outputs fd.plist ]
   in
   let rec oe_gen_set_pointers args count setter (ptype, decl) =
-    let argstruct =
-      match args with
-      | [] -> "pargs_in->"
-      | hd :: _ -> "pargs_in->" ^ hd ^ gen_c_deref (List.length args) count
-    in
+    let argstruct = oe_get_argstruct "pargs_in->" args count in
     let size = oe_get_param_size (ptype, decl, argstruct) in
     let arg =
       match args with
@@ -1047,11 +1035,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     @
     let rec gen_save_ptrs args count (ptype, decl) =
       let id = decl.identifier in
-      let argstruct =
-        match args with
-        | [] -> "_args."
-        | hd :: _ -> "_args." ^ hd ^ gen_c_deref (List.length args) count
-      in
+      let argstruct = oe_get_argstruct "_args." args count in
       let arg =
         match args with
         | [] -> id
