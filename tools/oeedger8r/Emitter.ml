@@ -671,7 +671,6 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         in
         gen_c_for (List.length args) count
           ( [ [ sprintf "if (%s)"
-                  (* TODO: Check hd[i] too. *)
                   (String.concat " && " (List.rev (arg :: args))) ]
             ; [sprintf "    OE_ADD_SIZE(%s, %s);" buffer size]
             ; (let param_count = oe_get_param_count (ptype, decl, argstruct) in
@@ -709,7 +708,6 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         gen_c_for (List.length args) count
           ( [ (* NOTE: This makes the embedded check in the `OE_` macro superfluous. *)
               [ sprintf "if (%s)"
-                  (* TODO: Check hd[i] too. *)
                   (String.concat " && " (List.rev (arg :: args))) ]
             ; [ sprintf "    OE_WRITE_%s_PARAM(%s, %s, %s);"
                   (if is_in_ptr ptype then "IN" else "IN_OUT")
@@ -842,8 +840,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
                match args with
                | [] -> [s]
                | _ ->
-                   [ (* TODO: Check hd[i] too. *)
-                     sprintf "if (%s)" (String.concat " && " (List.rev args))
+                   [ sprintf "if (%s)" (String.concat " && " (List.rev args))
                    ; "{"
                    ; "    /* Restore original pointer. */"
                    ; sprintf "    %s = _ptrs[_ptrs_index++];" arg
@@ -982,7 +979,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
       oe_gen_out_and_inout_setters fd.plist
     ; ""
     ; "    /* Check that in/in-out strings are null terminated. */"
-      (* TODO: Fix for deep copy. *)
+      (* NOTE: We do not support deep copy for strings, so there is not
+         (yet) anything to do here. *)
     ; (let params =
          List.map
            (fun (ptype, decl) ->
