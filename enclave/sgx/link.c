@@ -8,11 +8,10 @@
 #include "report.h"
 
 //
-// The _start function (see start.S) calls this function to install to
-// install upcalls. Upcalls are callbacks invoked by liboecore to invoke
-// functions in liboeenclave. This backward dependency is required since
-// the upcall handlers use liboelibc and liboembedtls which is unavailable
-// to liboecore.
+// The _start function (see start.S) calls this function to install upcalls.
+// Upcalls are callbacks invoked by liboecore to invoke functions in
+// liboeenclave. This backward dependency is required because the upcalls
+// depend on liboelibc and liboembedtls, which are unavailable to liboecore.
 //
 void oe_link_enclave(void)
 {
