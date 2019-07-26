@@ -15,10 +15,10 @@
 //
 void oe_link_enclave(void)
 {
-    oe_verify_report_upcall = oe_handle_verify_report_upcall;
+    oe_set_verify_report_upcall(oe_handle_verify_report_upcall);
 
-    oe_get_public_key_by_policy_upcall =
-        oe_handle_get_public_key_by_policy_upcall;
+    oe_set_get_public_key_by_policy_upcall(
+        oe_handle_get_public_key_by_policy_upcall);
 
-    oe_get_public_key_upcall = oe_handle_get_public_key_upcall;
+    oe_set_get_public_key_upcall(oe_handle_get_public_key_upcall);
 }

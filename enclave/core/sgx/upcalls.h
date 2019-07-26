@@ -58,4 +58,11 @@ extern oe_get_public_key_by_policy_upcall_t oe_get_public_key_by_policy_upcall;
 
 extern oe_get_public_key_upcall_t oe_get_public_key_upcall;
 
+void oe_set_verify_report_upcall(oe_verify_report_upcall_t upcall);
+
+void oe_set_get_public_key_by_policy_upcall(
+    oe_get_public_key_by_policy_upcall_t upcall);
+
+void oe_set_get_public_key_upcall(oe_get_public_key_upcall_t upcall);
+
 #endif /* _OE_ENCLAVE_UPCALLS_H */
