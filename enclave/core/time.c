@@ -23,9 +23,8 @@ done:
 uint64_t oe_get_time(void)
 {
     uint64_t ret = (uint64_t)-1;
-    uint64_t arg = 0;
 
-    if (oe_ocall(OE_OCALL_GET_TIME, arg, &ret) != OE_OK)
+    if (oe_ocall(OE_OCALL_GET_TIME, 0, &ret) != OE_OK)
     {
         ret = (uint32_t)-1;
         goto done;
