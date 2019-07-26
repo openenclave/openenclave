@@ -10,13 +10,7 @@ int oe_sleep_msec(uint64_t milliseconds)
 {
     int ret = -1;
 
-    if (oe_ocall(
-            OE_OCALL_SLEEP,
-            milliseconds,
-            sizeof(milliseconds),
-            false,
-            NULL,
-            0) != OE_OK)
+    if (oe_ocall(OE_OCALL_SLEEP, milliseconds, NULL) != OE_OK)
         goto done;
 
     ret = 0;
@@ -31,9 +25,7 @@ uint64_t oe_get_time(void)
     uint64_t ret = (uint64_t)-1;
     uint64_t arg = 0;
 
-    if (oe_ocall(
-            OE_OCALL_GET_TIME, arg, sizeof(arg), false, &ret, sizeof(ret)) !=
-        OE_OK)
+    if (oe_ocall(OE_OCALL_GET_TIME, arg, &ret) != OE_OK)
     {
         ret = (uint32_t)-1;
         goto done;

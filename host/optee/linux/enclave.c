@@ -45,24 +45,6 @@
         TEEC_NONE,                      \
         TEEC_MEMREF_TEMP_INPUT,         \
         TEEC_MEMREF_TEMP_OUTPUT))
-#define PT_BUILTIN_CALL_IN_NO_OUT       \
-    (TEEC_PARAM_TYPES(                  \
-        TEEC_NONE,                      \
-        TEEC_NONE,                      \
-        TEEC_MEMREF_TEMP_INPUT,         \
-        TEEC_NONE))
-#define PT_BUILTIN_CALL_NO_IN_OUT       \
-    (TEEC_PARAM_TYPES(                  \
-        TEEC_NONE,                      \
-        TEEC_NONE,                      \
-        TEEC_NONE,                      \
-        TEEC_MEMREF_TEMP_OUTPUT))
-#define PT_BUILTIN_CALL_NO_IN_NO_OUT    \
-    (TEEC_PARAM_TYPES(                  \
-        TEEC_NONE,                      \
-        TEEC_NONE,                      \
-        TEEC_NONE,                      \
-        TEEC_NONE))
 
 #define PT_ENCLAVE_CALL_IN_OUT          \
     (TEEC_PARAM_TYPES(                  \
@@ -264,10 +246,7 @@ static oe_result_t _handle_call_builtin_function(
     oe_enclave_t* enclave,
     uint16_t func,
     uint64_t arg_in,
-    size_t arg_in_size,
-    bool arg_in_is_pointer,
-    uint64_t* arg_out,
-    size_t arg_out_size)
+    uint64_t* arg_out)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -282,35 +261,15 @@ static oe_result_t _handle_call_builtin_function(
     memset(&op.params[1], 0, sizeof(op.params[1]));
 
     /* Input buffer */
-    if (arg_in_size > 0)
-    {
-        if (arg_in_size > OE_UINT32_MAX)
-            return OE_OUT_OF_BOUNDS;
-
-        op.params[2].tmpref.buffer =
-            arg_in_is_pointer ? (void*)arg_in : &arg_in;
-        op.params[2].tmpref.size = (uint32_t)arg_in_size;
-    }
+    op.params[2].tmpref.buffer = &arg_in;
+    op.params[2].tmpref.size = sizeof(arg_in);
 
     /* Output buffer */
-    if (arg_out_size > 0)
-    {
-        if (arg_out_size > OE_UINT32_MAX)
-            return OE_OUT_OF_BOUNDS;
-
-        op.params[3].tmpref.buffer = (void*)arg_out;
-        op.params[3].tmpref.size = (uint32_t)arg_out_size;
-    }
+    op.params[3].tmpref.buffer = (void*)arg_out;
+    op.params[3].tmpref.size = sizeof(*arg_out);
 
     /* Fill in parameter types */
-    if (arg_in_size > 0 && arg_out_size > 0)
-        op.paramTypes = PT_BUILTIN_CALL_IN_OUT;
-    else if (arg_in_size > 0)
-        op.paramTypes = PT_BUILTIN_CALL_IN_NO_OUT;
-    else if (arg_out_size > 0)
-        op.paramTypes = PT_BUILTIN_CALL_NO_IN_OUT;
-    else
-        op.paramTypes = PT_BUILTIN_CALL_NO_IN_NO_OUT;
+    op.paramTypes = PT_BUILTIN_CALL_IN_OUT;
 
     /* Perform the ECALL */
     res = TEEC_InvokeCommand(&enclave->session, func, &op, &err_origin);
@@ -551,10 +510,7 @@ oe_result_t oe_ecall(
     oe_enclave_t* enclave,
     uint16_t func,
     uint64_t arg_in,
-    size_t arg_in_size,
-    bool arg_in_is_pointer,
-    uint64_t* arg_out,
-    size_t arg_out_size)
+    uint64_t* arg_out)
 {
     oe_result_t result;
 
@@ -570,14 +526,7 @@ oe_result_t oe_ecall(
     }
     else
     {
-        result = _handle_call_builtin_function(
-            enclave,
-            func,
-            arg_in,
-            arg_in_size,
-            arg_in_is_pointer,
-            arg_out,
-            arg_out_size);
+        result = _handle_call_builtin_function(enclave, func, arg_in, arg_out);
     }
 
 done:

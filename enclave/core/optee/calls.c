@@ -35,13 +35,7 @@ oe_result_t oe_call_host_function_by_table_id(
     }
 
     /* Call the host function with this address */
-    OE_CHECK(oe_ocall(
-        OE_OCALL_CALL_HOST_FUNCTION,
-        (uint64_t)&args,
-        sizeof(args),
-        true,
-        NULL,
-        0));
+    OE_CHECK(oe_ocall(OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)&args, NULL));
 
     /* Check the result */
     OE_CHECK(args.result);

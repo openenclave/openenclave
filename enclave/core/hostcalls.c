@@ -18,13 +18,7 @@ void* oe_host_malloc(size_t size)
     uint64_t arg_in = size;
     uint64_t arg_out = 0;
 
-    if (oe_ocall(
-            OE_OCALL_MALLOC,
-            arg_in,
-            sizeof(arg_in),
-            false,
-            &arg_out,
-            sizeof(arg_out)) != OE_OK)
+    if (oe_ocall(OE_OCALL_MALLOC, arg_in, &arg_out) != OE_OK)
     {
         return NULL;
     }
@@ -70,7 +64,7 @@ void* oe_host_realloc(void* ptr, size_t size)
 
 void oe_host_free(void* ptr)
 {
-    oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, sizeof(ptr), false, NULL, 0);
+    oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, NULL);
 }
 
 char* oe_host_strndup(const char* str, size_t n)

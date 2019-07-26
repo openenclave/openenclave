@@ -664,15 +664,8 @@ oe_result_t oe_ecall(
     oe_enclave_t* enclave,
     uint16_t func,
     uint64_t arg_in,
-    size_t arg_in_size,
-    bool arg_in_is_pointer,
-    uint64_t* arg_out,
-    size_t arg_out_size)
+    uint64_t* arg_out)
 {
-    OE_UNUSED(arg_in_size);
-    OE_UNUSED(arg_in_is_pointer);
-    OE_UNUSED(arg_out_size);
-
     oe_result_t result = OE_UNEXPECTED;
     void* tcs = NULL;
     oe_code_t code = OE_CODE_ECALL;

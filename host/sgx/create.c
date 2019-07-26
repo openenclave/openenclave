@@ -385,13 +385,7 @@ static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
     uint64_t result_out = 0;
 
     OE_CHECK(oe_ecall(
-        enclave,
-        OE_ECALL_INIT_ENCLAVE,
-        (uint64_t)enclave,
-        sizeof(enclave),
-        false,
-        &result_out,
-        0));
+        enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)enclave, &result_out));
 
     if (result_out > OE_UINT32_MAX)
         OE_RAISE(OE_FAILURE);
@@ -785,7 +779,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Call the enclave destructor */
-    OE_CHECK(oe_ecall(enclave, OE_ECALL_DESTRUCTOR, 0, 0, false, NULL, 0));
+    OE_CHECK(oe_ecall(enclave, OE_ECALL_DESTRUCTOR, 0, NULL));
 
     if (enclave->debug_enclave)
     {
