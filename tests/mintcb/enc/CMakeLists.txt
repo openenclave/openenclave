@@ -6,6 +6,8 @@ oeedl_file(../mintcb.edl enclave gen)
 
 add_executable(mintcb_enc enc.c start.S ${gen})
 
+maybe_build_using_clangw(mintcb_enc)
+
 target_include_directories(mintcb_enc PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc
     ${CMAKE_CURRENT_BINARY_DIR})
