@@ -20,6 +20,8 @@ if (OE_SGX)
         sgx/start.S
     )
 elseif(OE_TRUSTZONE)
+    set(PLATFORM_SRC
+      optee/report.c)
     message("TODO: ADD ARM files.")
 endif()
 
@@ -41,7 +43,7 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
   endif()
 endif()
 
-# Add location of "internal_t.h"
+# Add location of "sgx_t.h"
 target_include_directories(oeenclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/core)
 
 target_link_libraries(oeenclave PUBLIC oecryptombed)

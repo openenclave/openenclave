@@ -7,7 +7,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/raise.h>
-#include "internal_t.h"
+#include "sgx_t.h"
 
 static uint32_t _cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 

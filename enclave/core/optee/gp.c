@@ -12,6 +12,7 @@
 #include "../atexit.h"
 #include "../calls.h"
 #include "../init_fini.h"
+#include "tee_t.h"
 
 #include <tee_internal_api.h>
 
@@ -432,7 +433,7 @@ void oe_abort(void)
 
 TEE_Result TA_CreateEntryPoint(void)
 {
-    TEE_Result result = TEE_SUCCESS;
+    TEE_Result result;
 
     TEE_UUID pta_uuid = PTA_RPC_UUID;
 
@@ -446,10 +447,14 @@ TEE_Result TA_CreateEntryPoint(void)
     /* Call compiler-generated initialization functions */
     oe_call_init_functions();
 
+    /* Install the common TEE ECALL function table. */
+    if (oe_register_tee_ecall_function_table() != OE_OK)
+        return TEE_ERROR_GENERIC;
+
     /* Done */
     __oe_initialized = 1;
 
-    return result;
+    return TEE_SUCCESS;
 }
 
 TEE_Result TA_OpenSessionEntryPoint(

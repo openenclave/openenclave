@@ -12,9 +12,21 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
-#include "../hostthread.h"
-#include "enclave.h"
-#include "internal_u.h"
+#include "hostthread.h"
+
+#if defined(__x86_64__) || defined(_M_X64)
+#include "sgx/enclave.h"
+#elif defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__linux__)
+#include "optee/linux/enclave.h"
+#else
+#error "OP-TEE is not yet supported on non-Linux platforms."
+#endif
+#else
+#error "Open Enclave is not supported on this architecture."
+#endif
+
+#include "tee_u.h"
 
 #define LOGGING_FORMAT_STRING "%02d:%02d:%02d:%06ld tid(0x%lx) (%s)[%s]%s"
 static char* _log_level_strings[OE_LOG_LEVEL_MAX] =

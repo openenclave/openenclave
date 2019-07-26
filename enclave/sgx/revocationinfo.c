@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../common/sgx/revocation.h"
-#include "internal_t.h"
+#include "sgx_t.h"
 
 /**
  * Call into host to fetch revocation information.

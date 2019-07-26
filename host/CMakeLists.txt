@@ -8,17 +8,28 @@
 ##
 ##==============================================================================
 
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+
+set(TEE_EDL_FILE ${EDL_DIR}/tee.edl)
+
+add_custom_command(
+    OUTPUT tee_u.h tee_u.c tee_args.h
+    DEPENDS ${TEE_EDL_FILE} edger8r
+    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${TEE_EDL_FILE})
+
+add_custom_target(tee_untrusted_edl
+    DEPENDS tee_u.h tee_u.c tee_args.h)
+
 if(OE_SGX)
-    set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
-    set(INTERNAL_EDL ${EDL_DIR}/sgx/internal.edl)
+    set(SGX_EDL_FILE ${EDL_DIR}/sgx/sgx.edl)
 
     add_custom_command(
-        OUTPUT internal_u.h internal_u.c internal_args.h
-        DEPENDS ${INTERNAL_EDL} edger8r
-        COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${INTERNAL_EDL})
+        OUTPUT sgx_u.h sgx_u.c sgx_args.h
+        DEPENDS ${SGX_EDL_FILE} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SGX_EDL_FILE})
 
-    add_custom_target(internal_untrusted_edl
-        DEPENDS internal_u.h internal_u.c internal_args.h)
+    add_custom_target(sgx_untrusted_edl
+        DEPENDS sgx_u.h sgx_u.c sgx_args.h)
 endif()
 
 ##==============================================================================
@@ -28,7 +39,6 @@ endif()
 ##
 ##==============================================================================
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
 set(SYSCALL_EDL ${EDL_DIR}/syscall.edl)
 
 add_custom_command(
@@ -95,7 +105,7 @@ if (OE_SGX)
     sgx/enclave.c
     sgx/enclavemanager.c
     sgx/exception.c
-    sgx/internal_u_wrapper.c
+    sgx/sgx_u_wrapper.c
     sgx/load.c
     sgx/loadelf.c
     sgx/loadpe.c
@@ -108,8 +118,7 @@ if (OE_SGX)
     sgx/sgxquote.c
     sgx/sgxquoteprovider.c
     sgx/sgxsign.c
-    sgx/sgxtypes.c
-    sgx/traceh.c)
+    sgx/sgxtypes.c)
 
   # OS specific as well.
   if (UNIX)
@@ -163,11 +172,13 @@ add_library(oehost STATIC
   fopen.c
   hexdump.c
   syscall_u_wrapper.c
+  tee_u_wrapper.c
   memalign.c
   result.c
   signkey.c
   strings.c
   tests.c
+  traceh.c
   ${PLATFORM_SRC})
 
 target_link_libraries(oehost PUBLIC oe_includes)
@@ -181,9 +192,9 @@ if(OE_SGX)
 endif()
 
 add_dependencies(oehost syscall_untrusted_edl)
-
+add_dependencies(oehost tee_untrusted_edl)
 if(OE_SGX)
-    add_dependencies(oehost internal_untrusted_edl)
+    add_dependencies(oehost sgx_untrusted_edl)
 endif()
 
 # TODO: Replace these with `find_package` and add as dependencies to

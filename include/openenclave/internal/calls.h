@@ -422,17 +422,27 @@ oe_result_t oe_ocall(
 **==============================================================================
 */
 
-#define OE_INTERNAL_OCALL_FUNCTION_TABLE_ID 0
-#define OE_INTERNAL_ECALL_FUNCTION_TABLE_ID 0
+#define OE_TEE_OCALL_FUNCTION_TABLE_ID 0
+#define OE_TEE_ECALL_FUNCTION_TABLE_ID 0
 
-#define OE_SYSCALL_OCALL_FUNCTION_TABLE_ID 1
-#define OE_SYSCALL_ECALL_FUNCTION_TABLE_ID 1
+#define OE_SGX_OCALL_FUNCTION_TABLE_ID 1
+#define OE_SGX_ECALL_FUNCTION_TABLE_ID 1
 
-/* Register the OCALL table needed by the internal interface (host side). */
-oe_result_t oe_register_internal_ocall_function_table(void);
+#define OE_SYSCALL_OCALL_FUNCTION_TABLE_ID 2
+#define OE_SYSCALL_ECALL_FUNCTION_TABLE_ID 2
 
-/* Register the ECALL table needed by the internal interface (enclave side). */
-oe_result_t oe_register_internal_ecall_function_table(void);
+/* Register the OCALL table needed by the common TEE interface (host side). */
+oe_result_t oe_register_tee_ocall_function_table(void);
+
+/* Register the ECALL table needed by the common TEE interface (enclave side).
+ */
+oe_result_t oe_register_tee_ecall_function_table(void);
+
+/* Register the OCALL table needed by the SGX interface (host side). */
+oe_result_t oe_register_sgx_ocall_function_table(void);
+
+/* Register the ECALL table needed by the SGX interface (enclave side). */
+oe_result_t oe_register_sgx_ecall_function_table(void);
 
 /* Register the OCALL table needed by the SYSCALL interface (host side). */
 void oe_register_syscall_ocall_function_table(void);

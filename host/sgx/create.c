@@ -52,7 +52,7 @@ static char* get_fullpath(const char* path)
 #include "cpuid.h"
 #include "enclave.h"
 #include "exception.h"
-#include "internal_u.h"
+#include "sgx_u.h"
 #include "sgxload.h"
 
 static oe_once_type _enclave_init_once;
@@ -73,7 +73,8 @@ static void _initialize_exception_handling(void)
 static void _initialize_enclave_host()
 {
     oe_once(&_enclave_init_once, _initialize_exception_handling);
-    oe_register_internal_ocall_function_table();
+    oe_register_tee_ocall_function_table();
+    oe_register_sgx_ocall_function_table();
     oe_register_syscall_ocall_function_table();
 }
 

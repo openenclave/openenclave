@@ -3,8 +3,9 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
-#include "internal_t.h"
 #include "report.h"
+#include "sgx_t.h"
+#include "tee_t.h"
 
 //
 // start.S (the compilation unit containing the entry point) contains a

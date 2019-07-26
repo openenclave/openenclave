@@ -98,6 +98,12 @@
  * the value is indeed at least as large as we assume it to be. */
 OE_STATIC_ASSERT(TEEC_CONFIG_PAYLOAD_REF_COUNT >= 4);
 
+static void _initialize_enclave_host()
+{
+    oe_register_tee_ocall_function_table();
+    oe_register_syscall_ocall_function_table();
+}
+
 static oe_result_t _handle_call_host_function(
     void* inout_buffer,
     size_t inout_buffer_size,
@@ -451,6 +457,8 @@ oe_result_t oe_create_enclave(
     bool have_context = false;
     bool have_session = false;
 
+    _initialize_enclave_host();
+
     if (enclave_out)
         *enclave_out = NULL;
 
@@ -512,6 +520,8 @@ oe_result_t oe_create_enclave(
     /* Fill out the rest of the enclave structure. */
     enclave->magic = ENCLAVE_MAGIC;
     enclave->uuid = teec_uuid;
+    enclave->path = strndup(
+        enclave_path, 38); // 37 + 1 = length of a UUID + NULL terminator
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_table_size;
 
