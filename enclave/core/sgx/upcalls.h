@@ -30,13 +30,6 @@ typedef oe_result_t (*oe_get_public_key_upcall_t)(
     size_t key_buffer_size,
     size_t* key_buffer_size_out);
 
-void oe_set_verify_report_upcall(oe_verify_report_upcall_t upcall);
-
-void oe_set_get_public_key_by_policy_upcall(
-    oe_get_public_key_by_policy_upcall_t upcall);
-
-void oe_set_get_public_key_upcall(oe_get_public_key_upcall_t upcall);
-
 oe_result_t oe_handle_verify_report_upcall(
     const void* report,
     size_t report_size);
