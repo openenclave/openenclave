@@ -5,7 +5,10 @@
 //
 // _start(): 
 //
-//     The default entry point for the enclave image.
+//     The default entry point for the enclave image. This is not used at all
+//     by OP-TEE; it only serves to enable proper symbol resolution at
+//     link-time. This function is set as the entry point in add_enclave.cmake
+//     by passing "--entry _start" to the linker.
 //
 //==============================================================================
 
