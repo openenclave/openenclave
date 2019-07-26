@@ -3,8 +3,8 @@
 
 ##==============================================================================
 ##
-## These rules generate the edge routines for the internal ECALLs/OCALLs used
-## by liboehost/liboecore.
+## These rules generate the edge routines for the internal TEE-agnostic
+## ECALLs/OCALLs used by liboehost/liboecore.
 ##
 ##==============================================================================
 
@@ -19,6 +19,13 @@ add_custom_command(
 
 add_custom_target(tee_untrusted_edl
     DEPENDS tee_u.h tee_u.c tee_args.h)
+
+##==============================================================================
+##
+## These rules generate the edge routines for the internal SGX-specific
+## ECALLs/OCALLs used by liboehost/liboecore.
+##
+##==============================================================================
 
 if(OE_SGX)
     set(SGX_EDL_FILE ${EDL_DIR}/sgx/sgx.edl)
