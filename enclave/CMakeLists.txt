@@ -43,7 +43,8 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
   endif()
 endif()
 
-# Add location of "sgx_t.h"
+# Add location of the oeedger8r-generated trusted headers for internal
+# functions implemented via EDL files.
 target_include_directories(oeenclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/core)
 
 target_link_libraries(oeenclave PUBLIC oecryptombed)
