@@ -4,3 +4,4 @@
 add_subdirectory(hostfs)
 add_subdirectory(hostresolver)
 add_subdirectory(hostsock)
+add_subdirectory(hostepoll)
