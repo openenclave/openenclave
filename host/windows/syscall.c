@@ -606,6 +606,47 @@ int oe_syscall_getnameinfo_ocall(
 /*
 **==============================================================================
 **
+** Polling:
+**
+**==============================================================================
+*/
+
+oe_host_fd_t oe_syscall_epoll_create1_ocall(int flags)
+{
+    PANIC;
+}
+
+int oe_syscall_epoll_wait_ocall(
+    int64_t epfd,
+    struct oe_epoll_event* events,
+    unsigned int maxevents,
+    int timeout)
+{
+    PANIC;
+}
+
+int oe_syscall_epoll_wake_ocall(void)
+{
+    PANIC;
+}
+
+int oe_syscall_epoll_ctl_ocall(
+    int64_t epfd,
+    int op,
+    int64_t fd,
+    struct oe_epoll_event* event)
+{
+    PANIC;
+}
+
+int oe_syscall_epoll_close_ocall(oe_host_fd_t epfd)
+{
+    PANIC;
+}
+
+/*
+**==============================================================================
+**
 ** poll()
 **
 **==============================================================================
