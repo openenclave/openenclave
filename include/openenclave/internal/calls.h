@@ -416,10 +416,11 @@ oe_result_t oe_register_tee_ocall_function_table(void);
  */
 oe_result_t oe_register_tee_ecall_function_table(void);
 
-/* Register the OCALL table needed by the SGX interface (host side). */
+/* Register the OCALL table needed by the SGX-specific interface (host side). */
 oe_result_t oe_register_sgx_ocall_function_table(void);
 
-/* Register the ECALL table needed by the SGX interface (enclave side). */
+/* Register the ECALL table needed by the SGX-specific interface (enclave side).
+ */
 oe_result_t oe_register_sgx_ecall_function_table(void);
 
 /* Register the OCALL table needed by the SYSCALL interface (host side). */
