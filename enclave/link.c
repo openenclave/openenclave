@@ -3,8 +3,6 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
-#include "report.h"
-#include "sgx_t.h"
 #include "tee_t.h"
 
 //

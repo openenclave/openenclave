@@ -13,15 +13,14 @@ if (OE_SGX)
         ../common/sgx/sgxcertextensions.c
         ../common/sgx/tcbinfo.c
         ../common/sgx/tlsverifier.c
-        sgx/link.c
         sgx/qeidinfo.c
         sgx/report.c
         sgx/revocationinfo.c
-        sgx/start.S
-    )
+        sgx/start.S)
 elseif(OE_TRUSTZONE)
     set(PLATFORM_SRC
-      optee/report.c)
+        optee/report.c
+        optee/start.S)
     message("TODO: ADD ARM files.")
 endif()
 
@@ -29,6 +28,7 @@ add_library(oeenclave STATIC
     ../common/datetime.c
     ../common/lockless_queue.c
     asym_keys.c
+    link.c
     random.c
     tls_cert.c
     ${PLATFORM_SRC})

@@ -83,13 +83,14 @@ elseif (OE_TRUSTZONE)
         optee/backtrace.c
         optee/bounds.c
         optee/calls.c
+        optee/entropy.c
         optee/header.c
         optee/globals.c
         optee/gp.c
+        optee/keys.c
         optee/printf.c
         optee/sched_yield.c
         optee/spinlock.c
-        optee/start.c
         optee/stubs.c
         optee/thread.c
         optee/tracee.c)
