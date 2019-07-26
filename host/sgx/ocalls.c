@@ -28,6 +28,7 @@
 #include <openenclave/internal/utils.h>
 #include "../ocalls.h"
 #include "enclave.h"
+#include "ocalls.h"
 #include "quote.h"
 #include "sgx_u.h"
 #include "sgxquoteprovider.h"
