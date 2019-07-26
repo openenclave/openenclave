@@ -34,6 +34,7 @@ set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
+        sgx/asym_keys.c
         sgx/backtrace.c
         sgx/calls.c
         sgx/cpuid.c
@@ -57,6 +58,7 @@ if (OE_SGX)
         sgx/exit.S
         sgx/getkey.S
         sgx/longjmp.S
+        sgx/upcalls.c
         sgx/setjmp.S)
 
     # OS specific sources for SGX.

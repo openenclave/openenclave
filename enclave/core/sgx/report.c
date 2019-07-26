@@ -14,6 +14,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "internal_t.h"
+#include "upcalls.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
@@ -373,6 +374,21 @@ oe_result_t oe_get_sgx_report_ecall(
         opt_params_size,
         (uint8_t*)report,
         &report_buffer_size));
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_verify_report_ecall(const void* report, size_t report_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!oe_verify_report_upcall)
+        OE_RAISE(OE_FAILURE);
+
+    OE_CHECK((*oe_verify_report_upcall)(report, report_size));
 
     result = OE_OK;
 

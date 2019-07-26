@@ -3,29 +3,23 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
+#include "../core/sgx/upcalls.h"
 #include "internal_t.h"
 #include "report.h"
 
 //
-// start.S (the compilation unit containing the entry point) contains a
-// reference to this function, which sets up a dependency chain from the
-// object file containing the entry point to all symbols referenced in
-// the array below (as well as symbols reachable from those symbols).
-// This forces the collection of symbols to be included in the enclave
-// image so that the linker will consider them when resolving symbols in
-// subsequently linked libraries. The main purpose of this mechanism is
-// to resolve reverse dependencies that liboecore has on liboeenclave.
+// The _start function (see start.S) calls this function to install to
+// install upcalls. Upcalls are callbacks invoked by liboecore to invoke
+// functions in liboeenclave. This backward dependency is required since
+// the upcall handlers use liboelibc and liboembedtls which is unavailable
+// to liboecore.
 //
-const void* oe_link_enclave(void)
+void oe_link_enclave(void)
 {
-    static const void* symbols[] = {
-        oe_verify_report_ecall,
-        oe_get_public_key_by_policy_ecall,
-        oe_get_public_key_ecall,
-#if defined(OE_USE_DEBUG_MALLOC)
-        oe_debug_malloc_check,
-#endif /* defined(OE_USE_DEBUG_MALLOC) */
-    };
+    oe_set_verify_report_upcall(oe_handle_verify_report_upcall);
 
-    return symbols;
+    oe_set_get_public_key_by_policy_upcall(
+        oe_handle_get_public_key_by_policy_upcall);
+
+    oe_set_get_public_key_upcall(oe_handle_get_public_key_upcall);
 }

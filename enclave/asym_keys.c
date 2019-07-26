@@ -10,6 +10,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
+#include "core/sgx/upcalls.h"
 
 static inline oe_result_t _check_asymmetric_key_params(
     const oe_asymmetric_key_params_t* key_params)
@@ -483,7 +484,7 @@ void oe_free_key(
 /* If this function is modified to produce larger keys, please increase the
  * DEFAULT_KEY_BUFFER_SIZE definition on the host side accordingly.
  */
-oe_result_t oe_get_public_key_by_policy_ecall(
+oe_result_t oe_handle_get_public_key_by_policy_upcall(
     uint32_t seal_policy,
     const oe_asymmetric_key_params_t* key_params,
     void* key_buffer,
@@ -545,7 +546,7 @@ done:
 /* If this function is modified to produce larger keys, please increase the
  * DEFAULT_KEY_BUFFER_SIZE definition on the host side accordingly.
  */
-oe_result_t oe_get_public_key_ecall(
+oe_result_t oe_handle_get_public_key_upcall(
     const oe_asymmetric_key_params_t* key_params,
     const void* key_info,
     size_t key_info_size,

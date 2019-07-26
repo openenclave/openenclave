@@ -14,6 +14,7 @@
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
 #include "../common/sgx/quote.h"
+#include "../core/sgx/upcalls.h"
 #include "internal_t.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
@@ -107,7 +108,9 @@ done:
     return result;
 }
 
-oe_result_t oe_verify_report_ecall(const void* report, size_t report_size)
+oe_result_t oe_handle_verify_report_upcall(
+    const void* report,
+    size_t report_size)
 {
     return oe_verify_report(report, report_size, NULL);
 }
