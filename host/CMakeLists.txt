@@ -105,7 +105,6 @@ if (OE_SGX)
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c
-    asym_keys.c
     sgx/calls.c
     sgx/create.c
     sgx/elf.c
@@ -171,6 +170,7 @@ add_library(oehost STATIC
   ../common/lockless_queue.c
   ../common/safecrt.c
   ../common/argv.c
+  asym_keys.c
   calls.c
   ocalls.c
   dupenv.c
