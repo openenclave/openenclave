@@ -14,30 +14,37 @@
 
 // clang-format off
 
+/**
+ * TEE Parameter Types used when invoking functions inside the TA.
+ *
+ * Each invocation includes four TEEC_Parameter structures, used for the
+ * following purposes, by index, then by component:
+ *
+ * 0: Platform-specific data
+ *    Unused.
+ *
+ * 1: Open Enclave-specific data
+ *    Tmpref: Arguments marshaling structure, if any.
+ *        Note: This parameter is not used for built-in ECALLs.
+ *
+ * 2: Input parameter
+ *    Tmpref: The input parameters buffer, if any.
+ *
+ * 3: Output parameter
+ *    Tmpref: The output parameters buffer, if any.
+ *
+ * A similar pattern is used when the enclave calls into the host via an OCALL.
+ * There is no reason why the pattern is similar, other than for consistency.
+ *
+ * See enclave/core/optee/gp.c.
+ */
+
 #define PT_BUILTIN_CALL_IN_OUT          \
     (TEEC_PARAM_TYPES(                  \
         TEEC_NONE,                      \
         TEEC_NONE,                      \
         TEEC_MEMREF_TEMP_INPUT,         \
         TEEC_MEMREF_TEMP_OUTPUT))
-#define PT_BUILTIN_CALL_IN_NO_OUT       \
-    (TEEC_PARAM_TYPES(                  \
-        TEEC_NONE,                      \
-        TEEC_NONE,                      \
-        TEEC_MEMREF_TEMP_INPUT,         \
-        TEEC_NONE))
-#define PT_BUILTIN_CALL_NO_IN_OUT       \
-    (TEEC_PARAM_TYPES(                  \
-        TEEC_NONE,                      \
-        TEEC_NONE,                      \
-        TEEC_NONE,                      \
-        TEEC_MEMREF_TEMP_OUTPUT))
-#define PT_BUILTIN_CALL_NO_IN_NO_OUT    \
-    (TEEC_PARAM_TYPES(                  \
-        TEEC_NONE,                      \
-        TEEC_NONE,                      \
-        TEEC_NONE,                      \
-        TEEC_NONE))
 
 #define PT_ENCLAVE_CALL_IN_OUT          \
     (TEEC_PARAM_TYPES(                  \
@@ -72,6 +79,12 @@
  * unlikely it will ever change. Nevertheless, it doesn't hurt to ensure that
  * the value is indeed at least as large as we assume it to be. */
 OE_STATIC_ASSERT(TEEC_CONFIG_PAYLOAD_REF_COUNT >= 4);
+
+static void _initialize_enclave_host()
+{
+    oe_register_tee_ocall_function_table();
+    oe_register_syscall_ocall_function_table();
+}
 
 static oe_result_t _handle_call_host_function(
     void* inout_buffer,
@@ -188,31 +201,14 @@ static TEEC_Result _handle_generic_rpc(
             HandleMalloc(*(uint64_t*)input_buffer, (uint64_t*)output_buffer);
             break;
 
-        case OE_OCALL_REALLOC:
-            HandleRealloc((uint64_t)input_buffer, (uint64_t*)output_buffer);
-            break;
-
         case OE_OCALL_FREE:
             HandleFree(*(uint64_t*)input_buffer);
-            break;
-
-        case OE_OCALL_WRITE:
-            HandlePrint((uint64_t)input_buffer);
             break;
 
         case OE_OCALL_THREAD_WAIT:
             return TEEC_ERROR_NOT_SUPPORTED;
 
         case OE_OCALL_THREAD_WAKE:
-            return TEEC_ERROR_NOT_SUPPORTED;
-
-        case OE_OCALL_THREAD_WAKE_WAIT:
-            return TEEC_ERROR_NOT_SUPPORTED;
-
-        case OE_OCALL_GET_QUOTE:
-            return TEEC_ERROR_NOT_SUPPORTED;
-
-        case OE_OCALL_GET_QE_TARGET_INFO:
             return TEEC_ERROR_NOT_SUPPORTED;
 
         case OE_OCALL_SLEEP:
@@ -222,24 +218,6 @@ static TEEC_Result _handle_generic_rpc(
         case OE_OCALL_GET_TIME:
             oe_handle_get_time(
                 *(uint64_t*)input_buffer, (uint64_t*)output_buffer);
-            break;
-
-        case OE_OCALL_BACKTRACE_SYMBOLS:
-            return TEEC_ERROR_NOT_SUPPORTED;
-
-        case OE_OCALL_LOG:
-            return TEEC_ERROR_NOT_SUPPORTED;
-
-        case OE_OCALL_CALLOC:
-            HandleCalloc((uint64_t)input_buffer, (uint64_t*)output_buffer);
-            break;
-
-        case OE_OCALL_MEMSET:
-            HandleMemset((uint64_t)input_buffer, (uint64_t*)output_buffer);
-            break;
-
-        case OE_OCALL_STRNDUP:
-            HandleStrndup((uint64_t)input_buffer, (uint64_t*)output_buffer);
             break;
 
         default:
@@ -268,10 +246,7 @@ static oe_result_t _handle_call_builtin_function(
     oe_enclave_t* enclave,
     uint16_t func,
     uint64_t arg_in,
-    size_t arg_in_size,
-    bool arg_in_is_pointer,
-    uint64_t* arg_out,
-    size_t arg_out_size)
+    uint64_t* arg_out)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -286,35 +261,15 @@ static oe_result_t _handle_call_builtin_function(
     memset(&op.params[1], 0, sizeof(op.params[1]));
 
     /* Input buffer */
-    if (arg_in_size > 0)
-    {
-        if (arg_in_size > OE_UINT32_MAX)
-            return OE_OUT_OF_BOUNDS;
-
-        op.params[2].tmpref.buffer =
-            arg_in_is_pointer ? (void*)arg_in : &arg_in;
-        op.params[2].tmpref.size = (uint32_t)arg_in_size;
-    }
+    op.params[2].tmpref.buffer = &arg_in;
+    op.params[2].tmpref.size = sizeof(arg_in);
 
     /* Output buffer */
-    if (arg_out_size > 0)
-    {
-        if (arg_out_size > OE_UINT32_MAX)
-            return OE_OUT_OF_BOUNDS;
-
-        op.params[3].tmpref.buffer = (void*)arg_out;
-        op.params[3].tmpref.size = (uint32_t)arg_out_size;
-    }
+    op.params[3].tmpref.buffer = (void*)arg_out;
+    op.params[3].tmpref.size = sizeof(*arg_out);
 
     /* Fill in parameter types */
-    if (arg_in_size > 0 && arg_out_size > 0)
-        op.paramTypes = PT_BUILTIN_CALL_IN_OUT;
-    else if (arg_in_size > 0)
-        op.paramTypes = PT_BUILTIN_CALL_IN_NO_OUT;
-    else if (arg_out_size > 0)
-        op.paramTypes = PT_BUILTIN_CALL_NO_IN_OUT;
-    else
-        op.paramTypes = PT_BUILTIN_CALL_NO_IN_NO_OUT;
+    op.paramTypes = PT_BUILTIN_CALL_IN_OUT;
 
     /* Perform the ECALL */
     res = TEEC_InvokeCommand(&enclave->session, func, &op, &err_origin);
@@ -461,11 +416,10 @@ oe_result_t oe_create_enclave(
     bool have_context = false;
     bool have_session = false;
 
+    _initialize_enclave_host();
+
     if (enclave_out)
         *enclave_out = NULL;
-
-    /* Install the SYSCALL ocall function table. */
-    oe_register_syscall_ocall_function_table();
 
     /* Check parameters */
     if (!enclave_path || !enclave_out ||
@@ -525,6 +479,8 @@ oe_result_t oe_create_enclave(
     /* Fill out the rest of the enclave structure. */
     enclave->magic = ENCLAVE_MAGIC;
     enclave->uuid = teec_uuid;
+    enclave->path = strndup(
+        enclave_path, 38); // 37 + 1 = length of a UUID + NULL terminator
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_table_size;
 
@@ -554,10 +510,7 @@ oe_result_t oe_ecall(
     oe_enclave_t* enclave,
     uint16_t func,
     uint64_t arg_in,
-    size_t arg_in_size,
-    bool arg_in_is_pointer,
-    uint64_t* arg_out,
-    size_t arg_out_size)
+    uint64_t* arg_out)
 {
     oe_result_t result;
 
@@ -573,14 +526,7 @@ oe_result_t oe_ecall(
     }
     else
     {
-        result = _handle_call_builtin_function(
-            enclave,
-            func,
-            arg_in,
-            arg_in_size,
-            arg_in_is_pointer,
-            arg_out,
-            arg_out_size);
+        result = _handle_call_builtin_function(enclave, func, arg_in, arg_out);
     }
 
 done:

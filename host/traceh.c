@@ -12,8 +12,21 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
-#include "../hostthread.h"
-#include "enclave.h"
+#include "hostthread.h"
+
+#if defined(__x86_64__) || defined(_M_X64)
+#include "sgx/enclave.h"
+#elif defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__linux__)
+#include "optee/linux/enclave.h"
+#else
+#error "OP-TEE is not yet supported on non-Linux platforms."
+#endif
+#else
+#error "Open Enclave is not supported on this architecture."
+#endif
+
+#include "tee_u.h"
 
 #define LOGGING_FORMAT_STRING "%02d:%02d:%02d:%06ld tid(0x%lx) (%s)[%s]%s"
 static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
@@ -21,12 +34,12 @@ static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
 static oe_mutex _log_lock = OE_H_MUTEX_INITIALIZER;
 static const char* _log_file_name = NULL;
 static bool _log_creation_failed_before = false;
-static log_level_t _log_level = OE_LOG_LEVEL_ERROR;
+static oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
 
-static log_level_t _env2log_level(void)
+static oe_log_level_t _env2log_level(void)
 {
-    log_level_t level = OE_LOG_LEVEL_ERROR;
+    oe_log_level_t level = OE_LOG_LEVEL_ERROR;
     const char* level_str = getenv("OE_LOG_LEVEL");
 
     if (level_str == NULL)
@@ -90,7 +103,8 @@ static void _write_header_info_to_stream(FILE* stream)
 static void _write_message_to_stream(
     FILE* stream,
     bool is_enclave,
-    oe_log_args_t* args)
+    oe_log_level_t level,
+    const char* message)
 {
 #if defined(__linux__)
     struct timeval time_now;
@@ -116,8 +130,8 @@ static void _write_message_to_stream(
 #endif
         thread_id,
         (is_enclave ? "E" : "H"),
-        _log_level_strings[args->level],
-        args->message);
+        _log_level_strings[level],
+        message);
 }
 
 static void _log_session_header()
@@ -153,55 +167,53 @@ static void _log_session_header()
 
 oe_result_t oe_log_enclave_init(oe_enclave_t* enclave)
 {
-    oe_result_t result = OE_UNEXPECTED;
-    log_level_t level = _log_level;
-
     _initialize_log_config();
 
-    // Populate arg fields.
-    oe_log_filter_t* arg = calloc(1, sizeof(oe_log_filter_t));
-    if (arg == NULL)
-    {
-        result = OE_OUT_OF_MEMORY;
-        goto done;
-    }
-    arg->path = enclave->path;
-    arg->path_len = strlen(enclave->path);
-    arg->level = level;
-    // Call enclave
-    result = oe_ecall(
-        enclave, OE_ECALL_LOG_INIT, (uint64_t)arg, sizeof(*arg), true, NULL, 0);
-    if (result != OE_OK)
-        goto done;
-
-    result = OE_OK;
-done:
-    return result;
+    return oe_log_init_ecall(enclave, enclave->path, _log_level);
 }
 
-void oe_log(log_level_t level, const char* fmt, ...)
+oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
 {
+    oe_result_t result = OE_UNEXPECTED;
+    char* message = NULL;
+    va_list ap;
+
+    if (!fmt)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
     if (_initialized)
     {
         if (level > _log_level)
-            return;
+        {
+            result = OE_OK;
+            goto done;
+        }
     }
 
-    if (!fmt)
-        return;
+    if (!(message = malloc(OE_LOG_MESSAGE_LEN_MAX)))
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
-    oe_log_args_t args;
-    args.level = level;
-    va_list ap;
     va_start(ap, fmt);
-    vsnprintf(args.message, OE_LOG_MESSAGE_LEN_MAX, fmt, ap);
+    vsnprintf(message, OE_LOG_MESSAGE_LEN_MAX, fmt, ap);
     va_end(ap);
-    log_message(false, &args);
+    oe_log_message(false, level, message);
+
+    result = OE_OK;
+
+done:
+
+    if (message)
+        free(message);
+
+    return result;
 }
 
 // This is an expensive operation, it involves acquiring lock
 // and file operation.
-void log_message(bool is_enclave, oe_log_args_t* args)
+void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
 {
     if (!_initialized)
     {
@@ -210,7 +222,7 @@ void log_message(bool is_enclave, oe_log_args_t* args)
     }
     if (_initialized)
     {
-        if (args->level > _log_level)
+        if (level > _log_level)
             return;
     }
 
@@ -219,7 +231,7 @@ void log_message(bool is_enclave, oe_log_args_t* args)
     {
         if (!_log_file_name)
         {
-            _write_message_to_stream(stdout, is_enclave, args);
+            _write_message_to_stream(stdout, is_enclave, level, message);
         }
         else if (!_log_creation_failed_before)
         {
@@ -233,7 +245,7 @@ void log_message(bool is_enclave, oe_log_args_t* args)
                 _log_creation_failed_before = true;
                 return;
             }
-            _write_message_to_stream(log_file, is_enclave, args);
+            _write_message_to_stream(log_file, is_enclave, level, message);
             fflush(log_file);
             fclose(log_file);
         }
@@ -242,7 +254,7 @@ void log_message(bool is_enclave, oe_log_args_t* args)
     }
 }
 
-log_level_t get_current_logging_level(void)
+oe_log_level_t oe_get_current_logging_level(void)
 {
     return _log_level;
 }

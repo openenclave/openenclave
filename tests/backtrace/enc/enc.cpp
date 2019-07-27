@@ -78,7 +78,7 @@ static void _print_backtrace(
 
     oe_host_printf("\n");
 
-    oe_host_free(symbols);
+    oe_backtrace_symbols_free(symbols);
 }
 #endif
 

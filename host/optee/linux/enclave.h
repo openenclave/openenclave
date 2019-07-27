@@ -21,6 +21,9 @@ struct _oe_enclave
     /* UUID of the TA */
     TEEC_UUID uuid;
 
+    /* Path (UUID in string form) of the enclave file */
+    char* path;
+
     /* TEE client context */
     TEEC_Context ctx;
 

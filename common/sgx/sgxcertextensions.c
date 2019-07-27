@@ -200,7 +200,7 @@ done:
 
 static void _trace_hex_dump(const char* tag, const uint8_t* data, size_t size)
 {
-    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
     {
         OE_TRACE_INFO("%s = ", tag);
         oe_hex_dump(data, size);

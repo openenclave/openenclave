@@ -35,7 +35,6 @@ function(add_mbed_test_enclave NAME)
     SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c
     enc.c
-    start.S
     ${gen})
 
   target_compile_options(mbedtest_suite_${NAME} PRIVATE -Wno-error)
@@ -79,7 +78,6 @@ function(add_mbed_selftest_enclave)
     SOURCES
     selftest_wrapper.c
     enc.c
-    start.S
     ${gen})
 
   target_compile_options(mbedtest_selftest PRIVATE -Wno-conversion -Wno-pointer-arith)

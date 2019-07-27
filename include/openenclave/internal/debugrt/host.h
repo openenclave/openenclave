@@ -56,11 +56,76 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs_array) == 56);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, num_tcs) == 64);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, flags) == 72);
 
+////////////////////////////////////////////////////////////////////////////////
+/////////////// Symbols Exported by the Runtime ////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * The current version of the debugger contract supported by the application
+ * (debugrt).
+ *
+ * The debugger is expected to check the value of this variable to determine
+ * if it can debug the application or not. If it cannot debug the application,
+ * the debugger is expected to advise the user to use a newer version of the
+ * that understands the specific version of the contract.
+ */
+OE_EXPORT extern uint32_t oe_debugger_contract_version;
+
+/**
+ * The list of loaded enclaves.
+ * Upon attaching to an application, the debugger can scan this list
+ * and configure the enclaves for debugging.
+ */
 OE_EXPORT extern oe_debug_enclave_t* oe_debug_enclaves_list;
 
+////////////////////////////////////////////////////////////////////////////////
+/////////////// Events Raised for Windows Debuggers/////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined(_WIN32)
+
+/**
+ * The following event is raised by the runtime when an enclave is created:
+ *   ULONG_PTR args[1] = { oe_debug_enclave_t_ptr };
+ *   RaiseException(OE_DEBUGRT_ENCLAVE_CREATED_EVENT,
+ *                  0,  // dwExceptionFlags
+ *                  1,  // always 1 (number of argument)
+ *                  args)
+ * The oe_debug_enclave_t structure corresponding to the created enclave is
+ * passed as the sole element of the argument array.
+ */
+#define OE_DEBUGRT_ENCLAVE_CREATED_EVENT 0x0edeb646
+
+/**
+ * The following event is raised by the runtime after an enclave has been
+ * terminated:
+ *   ULONG_PTR args[1] = { oe_debug_enclave_t_ptr };
+ *   RaiseException(OE_DEBUGRT_ENCLAVE_TERMINATED_EVENT,
+ *                  0,  // dwExceptionFlags
+ *                  1,  // always 1 (number of argument)
+ *                  args)
+ * The oe_debug_enclave_t structure corresponding to the created enclave is
+ * passed as the sole element of the argument array.
+ */
+#define OE_DEBUGRT_ENCLAVE_TERMINATED_EVENT 0x0edeb647
+
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////// Functions called by OE SDK  ////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Notify debugrt that an enclave has been created.
+ * This notification must be done before initializing the enclave.
+ */
 OE_EXPORT oe_result_t
 oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave);
 
+/**
+ * Notify debugrt that and enclave has been terminated.
+ * This notification must be done after calling enclave destructors.
+ */
 OE_EXPORT oe_result_t
 oe_debug_notify_enclave_terminated(oe_debug_enclave_t* enclave);
 

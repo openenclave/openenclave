@@ -42,6 +42,11 @@
 /* OE_FIELD_SIZE */
 #define OE_FIELD_SIZE(TYPE, FIELD) (sizeof(((TYPE*)0)->FIELD))
 
+/* OE_CHECK_FIELD */
+#define OE_CHECK_FIELD(T1, T2, F)                               \
+    OE_STATIC_ASSERT(OE_OFFSETOF(T1, F) == OE_OFFSETOF(T2, F)); \
+    OE_STATIC_ASSERT(sizeof(((T1*)0)->F) == sizeof(((T2*)0)->F));
+
 /* OE_PAGE_SIZE */
 #define OE_PAGE_SIZE 0x1000
 

@@ -5,6 +5,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <stdio.h>
+#include "asmdefs.h"
 #include "enclave.h"
 
 /**
@@ -12,8 +13,6 @@
  * since asmdefs.h is too linux specific at the moment.
  */
 #define ENCLU_ERESUME 3
-
-extern void OE_AEP(void);
 
 oe_enclave_t* oe_query_enclave_instance(void* tcs);
 
@@ -25,7 +24,7 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
     uint64_t exit_address = context->rip;
 
     // Check if the signal happens inside the enclave.
-    if ((exit_address == (uint64_t)OE_AEP) && (exit_code == ENCLU_ERESUME))
+    if ((exit_address == OE_AEP_ADDRESS) && (exit_code == ENCLU_ERESUME))
     {
         // Check if the enclave exception happens inside the first pass
         // exception handler.
@@ -47,14 +46,8 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
 
         // Call into enclave first pass exception handler.
         uint64_t arg_out = 0;
-        oe_result_t result = oe_ecall(
-            enclave,
-            OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
-            0,
-            0,
-            false,
-            &arg_out,
-            sizeof(arg_out));
+        oe_result_t result =
+            oe_ecall(enclave, OE_ECALL_VIRTUAL_EXCEPTION_HANDLER, 0, &arg_out);
 
         // Reset the flag
         thread_data->flags &= (~_OE_THREAD_HANDLING_EXCEPTION);

@@ -19,14 +19,15 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include "../../asym_keys.h"
 #include "../../sgx/report.h"
 #include "../atexit.h"
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
 #include "report.h"
+#include "sgx_t.h"
 #include "td.h"
+#include "tee_t.h"
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -142,38 +143,26 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
     OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
     if (o == false)
     {
-        // Assert that arg_in is outside the enclave and is not null.
-        if (!oe_is_outside_enclave(
-                (void*)arg_in, sizeof(oe_init_enclave_args_t)))
-        {
-            OE_RAISE(OE_INVALID_PARAMETER);
-        }
-
         static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
         oe_spin_lock(&_lock);
 
         if (_once == false)
         {
-            /* Install the internal ecall function table. */
-            OE_CHECK(oe_register_internal_ecall_function_table());
+            oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
 
-            /* Set the global enclave handle */
-            oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)arg_in;
-            oe_init_enclave_args_t safe_args;
+            /* Install the common TEE ECALL function table. */
+            OE_CHECK(oe_register_tee_ecall_function_table());
 
-            if (!oe_is_outside_enclave(args, sizeof(*args)))
+            /* Install the SGX ECALL function table. */
+            OE_CHECK(oe_register_sgx_ecall_function_table());
+
+            if (!oe_is_outside_enclave(enclave, 1))
                 OE_RAISE(OE_INVALID_PARAMETER);
 
-            /* Copy structure into enclave memory */
-            safe_args = *args;
+            oe_enclave = enclave;
 
-            if (!oe_is_outside_enclave(safe_args.enclave, 1))
-                OE_RAISE(OE_INVALID_PARAMETER);
-
-            oe_enclave = safe_args.enclave;
-
-            /* Call all enclave state initialization functions */
-            OE_CHECK(oe_initialize_cpuid(&safe_args));
+            /* Initialize the CPUID table before calling global constructors. */
+            OE_CHECK(oe_initialize_cpuid());
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
@@ -426,31 +415,6 @@ static void _handle_ecall(
             arg_out = _handle_init_enclave(arg_in);
             break;
         }
-        case OE_ECALL_GET_SGX_REPORT:
-        {
-            arg_out = _handle_get_sgx_report(arg_in);
-            break;
-        }
-        case OE_ECALL_VERIFY_REPORT:
-        {
-            oe_handle_verify_report(arg_in, &arg_out);
-            break;
-        }
-        case OE_ECALL_LOG_INIT:
-        {
-            _handle_oelog_init(arg_in);
-            break;
-        }
-        case OE_ECALL_GET_PUBLIC_KEY_BY_POLICY:
-        {
-            oe_handle_get_public_key_by_policy(arg_in);
-            break;
-        }
-        case OE_ECALL_GET_PUBLIC_KEY:
-        {
-            oe_handle_get_public_key(arg_in);
-            break;
-        }
         default:
         {
             /* No function found with the number */
@@ -526,18 +490,8 @@ oe_result_t oe_get_enclave_status()
 **==============================================================================
 */
 
-oe_result_t oe_ocall(
-    uint16_t func,
-    uint64_t arg_in,
-    size_t arg_in_size,
-    bool arg_in_is_pointer,
-    uint64_t* arg_out,
-    size_t arg_out_size)
+oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 {
-    OE_UNUSED(arg_in_size);
-    OE_UNUSED(arg_in_is_pointer);
-    OE_UNUSED(arg_out_size);
-
     oe_result_t result = OE_UNEXPECTED;
     td_t* td = oe_get_td();
     Callsite* callsite = td->callsites;
@@ -623,13 +577,7 @@ oe_result_t oe_call_host_function_by_table_id(
     }
 
     /* Call the host function with this address */
-    OE_CHECK(oe_ocall(
-        OE_OCALL_CALL_HOST_FUNCTION,
-        (uint64_t)args,
-        sizeof(*args),
-        true,
-        NULL,
-        0));
+    OE_CHECK(oe_ocall(OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args, NULL));
 
     /* Check the result */
     OE_CHECK(args->result);
@@ -669,6 +617,32 @@ oe_result_t oe_call_host_function(
         output_buffer,
         output_buffer_size,
         output_bytes_written);
+}
+
+/*
+**==============================================================================
+**
+** oe_switchless_call_host_function()
+** This is the preferred way to call host functions switchlessly.
+**
+**==============================================================================
+*/
+
+oe_result_t oe_switchless_call_host_function(
+    size_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    OE_UNUSED(function_id);
+    OE_UNUSED(input_buffer);
+    OE_UNUSED(input_buffer_size);
+    OE_UNUSED(output_buffer);
+    OE_UNUSED(output_buffer_size);
+    OE_UNUSED(output_bytes_written);
+    return OE_UNSUPPORTED;
 }
 
 /*

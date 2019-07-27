@@ -316,7 +316,7 @@ static oe_result_t _write_request(
     mem_t envelope = MEM_DYNAMIC_INIT;
 
     OE_TRACE_INFO("=== _write_request:\n");
-    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
     {
         oe_hex_dump(mem_ptr(message), mem_size(message));
     }
@@ -412,7 +412,7 @@ static oe_result_t _read_response(
     }
 
     OE_TRACE_INFO("=== _read_response():\n");
-    if (get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
     {
         oe_hex_dump(mem_ptr(message), mem_size(message));
     }

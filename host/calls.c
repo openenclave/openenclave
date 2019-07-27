@@ -87,10 +87,7 @@ oe_result_t oe_call_enclave_function_by_table_id(
             enclave,
             OE_ECALL_CALL_ENCLAVE_FUNCTION,
             (uint64_t)&args,
-            sizeof(args),
-            true,
-            &arg_out,
-            sizeof(arg_out)));
+            &arg_out));
         OE_CHECK((oe_result_t)arg_out);
     }
 

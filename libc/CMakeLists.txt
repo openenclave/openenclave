@@ -58,6 +58,7 @@ add_library(oelibc STATIC
     atexit.c
     dladdr.c
     errno.c
+    epoll.c
     exit.c
     freeaddrinfo.c
     getaddrinfo.c
@@ -219,6 +220,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/locale/wcscoll.c
     ${MUSLSRC}/locale/wcsxfrm.c
     ${MUSLSRC}/linux/mount.c
+    ${MUSLSRC}/linux/epoll.c
     ${MUSLSRC}/math/acos.c
     ${MUSLSRC}/math/acosf.c
     ${MUSLSRC}/math/acosh.c

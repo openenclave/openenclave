@@ -11,18 +11,14 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/stack_alloc.h>
 
+#include "tee_t.h"
+
 void* oe_host_malloc(size_t size)
 {
     uint64_t arg_in = size;
     uint64_t arg_out = 0;
 
-    if (oe_ocall(
-            OE_OCALL_MALLOC,
-            arg_in,
-            sizeof(arg_in),
-            false,
-            &arg_out,
-            sizeof(arg_out)) != OE_OK)
+    if (oe_ocall(OE_OCALL_MALLOC, arg_in, &arg_out) != OE_OK)
     {
         return NULL;
     }
@@ -33,9 +29,69 @@ void* oe_host_malloc(size_t size)
     return (void*)arg_out;
 }
 
+void* oe_host_calloc(size_t nmemb, size_t size)
+{
+    size_t total_size;
+    if (oe_safe_mul_sizet(nmemb, size, &total_size) != OE_OK)
+        return NULL;
+
+    void* ptr = oe_host_malloc(total_size);
+
+    if (ptr)
+        oe_memset_s(ptr, nmemb * size, 0, nmemb * size);
+
+    return ptr;
+}
+
+void* oe_host_realloc(void* ptr, size_t size)
+{
+    void* retval = NULL;
+
+    if (!ptr)
+        return oe_host_malloc(size);
+
+    if (oe_realloc_ocall(&retval, ptr, size) != OE_OK)
+        return NULL;
+
+    if (retval && !oe_is_outside_enclave(retval, size))
+    {
+        oe_assert("oe_host_realloc_ocall() returned non-host memory" == NULL);
+        oe_abort();
+    }
+
+    return retval;
+}
+
 void oe_host_free(void* ptr)
 {
-    oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, sizeof(ptr), false, NULL, 0);
+    oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, NULL);
+}
+
+char* oe_host_strndup(const char* str, size_t n)
+{
+    char* p;
+    size_t len;
+
+    if (!str)
+        return NULL;
+
+    len = oe_strlen(str);
+
+    if (n < len)
+        len = n;
+
+    /* Would be an integer overflow in the next statement. */
+    if (len == OE_SIZE_MAX)
+        return NULL;
+
+    if (!(p = oe_host_malloc(len + 1)))
+        return NULL;
+
+    if (oe_memcpy_s(p, len + 1, str, len) != OE_OK)
+        return NULL;
+    p[len] = '\0';
+
+    return p;
 }
 
 int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
@@ -91,4 +147,34 @@ int oe_host_fprintf(int device, const char* fmt, ...)
     oe_va_end(ap);
 
     return n;
+}
+
+// Function used by oeedger8r for allocating switchless ocall buffers.
+// There are two possible approaches to implementing this function:
+//    1. Preallocate a pool of host memory per thread for switchless ocalls
+//       and then allocate memory from that pool. Since OE does not support
+//       reentrant ecalls in the same thread, there can at most be one ecall
+//       and one ocall active in a thread. This can enable implementing
+//       host memory pools more efficiently.
+//   2. The alternative is to allocate the  buffer in enclave memory.
+//      Then while issuing the underling SDK call to make the switchless ocall,
+//      use a ring-buffer to transfer the contents of the memory to the host
+//      and to transfer the results back.
+void* oe_allocate_switchless_ocall_buffer(size_t size)
+{
+    return oe_host_malloc(size);
+}
+
+// Function used by oeedger8r for freeing ocall buffers.
+void oe_free_switchless_ocall_buffer(void* buffer)
+{
+    oe_host_free(buffer);
+}
+
+int oe_host_write(int device, const char* str, size_t len)
+{
+    if (oe_write_ocall(device, str, len) != OE_OK)
+        return -1;
+
+    return 0;
 }
