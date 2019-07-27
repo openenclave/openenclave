@@ -174,12 +174,12 @@ void* oe_host_realloc(void* ptr, size_t size);
 void* oe_host_calloc(size_t nmemb, size_t size);
 
 /**
- * Fill block of memory.
+ * Fill block of host memory.
  *
- * This function sets the first **num** bytes of the block of memory pointed by
- * **ptr** to value specified by **value**.
+ * This function sets the first **num** bytes of the block of host memory
+ * pointed by **ptr** to value specified by **value**.
  *
- * @param ptr The memory block to fill.
+ * @param ptr The host memory block to fill.
  * @param value The value to use as a filler.
  * @param num The number of elements to fill.
  *

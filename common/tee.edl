@@ -55,6 +55,15 @@ enclave
             [user_check] void* ptr,
             size_t size);
 
+        void* oe_memset_ocall(
+            [user_check] void* ptr,
+            int value,
+            size_t size);
+
+        char* oe_strndup_ocall(
+            [in, string] const char* str,
+            size_t n);
+
         // Write a string to the console. Write to STDOUT if device=0. Write
         // to STDERR if device=1. Write strnlen(str, maxlen) bytes.
         void oe_write_ocall(

@@ -23,6 +23,16 @@ void* oe_realloc_ocall(void* ptr, size_t size)
     return realloc(ptr, size);
 }
 
+void* oe_memset_ocall(void* ptr, int value, size_t size)
+{
+    return memset(ptr, value, size);
+}
+
+char* oe_strndup_ocall(const char* str, size_t n)
+{
+    return strndup(str, n);
+}
+
 void HandleFree(uint64_t arg)
 {
     free((void*)arg);

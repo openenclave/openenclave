@@ -62,6 +62,22 @@ void* oe_host_realloc(void* ptr, size_t size)
     return retval;
 }
 
+void* oe_host_memset(void* ptr, int value, size_t size)
+{
+    void* retval = NULL;
+
+    if (oe_memset_ocall(&retval, ptr, value, size) != OE_OK)
+        return NULL;
+
+    if (retval && !oe_is_outside_enclave(retval, size))
+    {
+        oe_assert("oe_host_memset_ocall() returned non-host memory" == NULL);
+        oe_abort();
+    }
+
+    return retval;
+}
+
 void oe_host_free(void* ptr)
 {
     oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, NULL);
@@ -69,29 +85,18 @@ void oe_host_free(void* ptr)
 
 char* oe_host_strndup(const char* str, size_t n)
 {
-    char* p;
-    size_t len;
+    char* retval = NULL;
 
-    if (!str)
+    if (oe_strndup_ocall(&retval, str, n) != OE_OK)
         return NULL;
 
-    len = oe_strlen(str);
+    if (retval && !oe_is_outside_enclave(retval, n))
+    {
+        oe_assert("oe_host_strndup_ocall() returned non-host memory" == NULL);
+        oe_abort();
+    }
 
-    if (n < len)
-        len = n;
-
-    /* Would be an integer overflow in the next statement. */
-    if (len == OE_SIZE_MAX)
-        return NULL;
-
-    if (!(p = oe_host_malloc(len + 1)))
-        return NULL;
-
-    if (oe_memcpy_s(p, len + 1, str, len) != OE_OK)
-        return NULL;
-    p[len] = '\0';
-
-    return p;
+    return retval;
 }
 
 int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
