@@ -56,6 +56,7 @@ if (OE_SGX)
         sgx/entropy.c
         sgx/exception.c
         sgx/globals.c
+        sgx/hostcalls.c
         sgx/init.c
         sgx/sgx_t_wrapper.c
         sgx/jump.c
@@ -92,6 +93,7 @@ elseif (OE_TRUSTZONE)
         optee/calls.c
         optee/entropy.c
         optee/header.c
+        optee/hostcalls.c
         optee/globals.c
         optee/gp.c
         optee/keys.c
