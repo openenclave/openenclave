@@ -1,21 +1,19 @@
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
-// The below timeout is set in minutes
-GLOBAL_TIMEOUT = 240
-// ctest timeout is set in seconds
-CTEST_TIMEOUT = 480
+GLOBAL_TIMEOUT_MINUTES = 240
+CTEST_TIMEOUT_SECONDS = 480
 
 def ACCTest(String label, String compiler, String build_type) {
     stage("${label} ${compiler} SGX1FLC ${build_type}") {
         node("${label}") {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 def task = """
                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                            ninja -v
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT}
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
                 oe.Run(compiler, task)
             }
@@ -26,13 +24,13 @@ def ACCTest(String label, String compiler, String build_type) {
 def ACCContainerTest(String label, String version) {
     stage("${label} Container RelWithDebInfo") {
         node("${label}") {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 def task = """
                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -Wdev
                            ninja -v
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT}
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
                 oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
             }
@@ -43,7 +41,7 @@ def ACCContainerTest(String label, String version) {
 def win2016CrossCompile(String build_type, String use_libsgx = 'OFF') {
     stage("Windows ${build_type} with SGX ${use_libsgx}") {
         node(WINDOWS_2016_CUSTOM_LABEL) {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 dir("build/X64-${build_type}") {
@@ -56,7 +54,7 @@ def win2016CrossCompile(String build_type, String use_libsgx = 'OFF') {
                       vcvars64.bat x64 && \
                       cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DUSE_LIBSGX=${use_libsgx} -Wdev && \
                       ninja.exe && \
-                      ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT}
+                      ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS}
                       """
                 }
             }

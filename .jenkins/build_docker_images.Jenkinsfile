@@ -1,8 +1,7 @@
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
-// The below timeout is set in minutes
-GLOBAL_TIMEOUT = 240
+GLOBAL_TIMEOUT_MINUTES = 240
 
 OETOOLS_REPO = "https://oejenkinscidockerregistry.azurecr.io"
 OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
@@ -10,7 +9,7 @@ OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID = "oeciteamdockerhub"
 
 def buildDockerImages() {
     node("nonSGX") {
-        timeout(GLOBAL_TIMEOUT) {
+        timeout(GLOBAL_TIMEOUT_MINUTES) {
             stage("Checkout") {
                 cleanWs()
                 checkout scm

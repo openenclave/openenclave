@@ -1,12 +1,11 @@
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
-// The below timeout is set in minutes
-GLOBAL_TIMEOUT = 240
+GLOBAL_TIMEOUT_MINUTES = 240
 
 def buildVHD(String os_type, String version, String imageName) {
     node("nonSGX") {
-        timeout(GLOBAL_TIMEOUT) {
+        timeout(GLOBAL_TIMEOUT_MINUTES) {
             cleanWs()
             checkout scm
 

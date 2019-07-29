@@ -4,12 +4,11 @@ import hudson.model.*
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
-// The below timeout is set in minutes
-GLOBAL_TIMEOUT = 30
+GLOBAL_TIMEOUT_MINUTES = 30
 
 def cleanup(List resourceGroups){
     node("nonSGX") {
-        timeout(GLOBAL_TIMEOUT) {
+        timeout(GLOBAL_TIMEOUT_MINUTES) {
             cleanWs()
             checkout scm
             oe.deleteRG(resourceGroups, OE_DEPLOY_IMAGE)

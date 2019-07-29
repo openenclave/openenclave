@@ -1,13 +1,12 @@
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
-// The below timeout is set in minutes
-GLOBAL_TIMEOUT = 240
+GLOBAL_TIMEOUT_MINUTES = 240
 
 def ACCDeployVM() {
     stage("Deploy ${AGENT_NAME}") {
         node("nonSGX") {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 dir("${WORKSPACE}/.jenkins/provision") {
@@ -61,7 +60,7 @@ def generateVariablesFile() {
 def registerJenkinsSlave() {
     stage("Register Jenkins Slave") {
         node("nonSGX") {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 withCredentials([usernamePassword(credentialsId: 'oe-ci',
@@ -101,7 +100,7 @@ def registerJenkinsSlave() {
 
 def cleanup() {
     node("nonSGX") {
-        timeout(GLOBAL_TIMEOUT) {
+        timeout(GLOBAL_TIMEOUT_MINUTES) {
             cleanWs()
             checkout scm
             oe.deleteRG([RESOURCE_GROUP])
