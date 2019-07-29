@@ -211,6 +211,33 @@ done:
     return result;
 }
 
+oe_result_t oe_cert_chain_get_root_cert(
+    const oe_cert_chain_t* chain,
+    oe_cert_t* cert)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    size_t length = 0;
+
+    OE_CHECK(oe_cert_chain_get_length(chain, &length));
+    if (length == 0)
+        OE_RAISE(OE_NOT_FOUND);
+    OE_CHECK(oe_cert_chain_get_cert(chain, length - 1, cert));
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_cert_chain_get_leaf_cert(
+    const oe_cert_chain_t* chain,
+    oe_cert_t* cert)
+{
+    oe_result_t result = oe_cert_chain_get_cert(chain, 0, cert);
+    if (result == OE_OUT_OF_BOUNDS)
+        result = OE_NOT_FOUND;
+    return result;
+}
+
 oe_result_t oe_cert_write_public_key_pem(
     const oe_cert_t* cert,
     uint8_t* pem_data,
