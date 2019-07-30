@@ -7,10 +7,10 @@ void TestAll()
 {
 #if !defined(_WIN32)
     TestASN1();
+#endif
     TestCRL();
     TestEC();
     TestRSA();
-#endif
     TestRandom();
     TestRdrand();
     TestHMAC();

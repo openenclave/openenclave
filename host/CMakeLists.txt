@@ -84,7 +84,14 @@ if (UNIX)
 elseif (WIN32)
   set(PLATFORM_SRC
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
+    ../common/asn1.c
+    ../common/cert.c
+    crypto/bcrypt/cert.c
+    crypto/bcrypt/crl.c
+    crypto/bcrypt/ec.c
     crypto/bcrypt/hmac.c
+    crypto/bcrypt/key.c
+    crypto/bcrypt/pem.c
     crypto/bcrypt/random.c
     crypto/bcrypt/rsa.c
     crypto/bcrypt/sha.c

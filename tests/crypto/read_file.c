@@ -8,7 +8,7 @@
 oe_result_t read_cert(char* filename, char* cert)
 {
     size_t len_cert;
-    FILE* cfp = fopen(filename, "r");
+    FILE* cfp = fopen(filename, "rb");
     if (cfp != NULL)
     {
         len_cert = fread(cert, sizeof(char), max_cert_size, cfp);
@@ -30,8 +30,8 @@ oe_result_t read_chain(
 {
     size_t len_cert1 = 0, len_cert2 = 0;
     char chain_temp[max_cert_size];
-    FILE* cfp1 = fopen(filename1, "r");
-    FILE* cfp2 = fopen(filename2, "r");
+    FILE* cfp1 = fopen(filename1, "rb");
+    FILE* cfp2 = fopen(filename2, "rb");
 
     if (cfp1 != NULL && cfp2 != NULL)
     {
@@ -61,9 +61,9 @@ oe_result_t read_chains(
     size_t len_cert1 = 0, len_cert2 = 0, len_cert3 = 0;
     char chain_temp1[max_cert_size];
     char chain_temp2[max_cert_size];
-    FILE* cfp1 = fopen(filename1, "r");
-    FILE* cfp2 = fopen(filename2, "r");
-    FILE* cfp3 = fopen(filename3, "r");
+    FILE* cfp1 = fopen(filename1, "rb");
+    FILE* cfp2 = fopen(filename2, "rb");
+    FILE* cfp3 = fopen(filename3, "rb");
 
     if (cfp1 != NULL && cfp2 != NULL && cfp3 != NULL)
     {
@@ -109,7 +109,7 @@ oe_result_t read_dates(char* filename, oe_datetime_t* time)
 {
     size_t len_date = 0;
     char buffer[max_date_size];
-    FILE* dfp = fopen(filename, "r");
+    FILE* dfp = fopen(filename, "rb");
 
     if (dfp != NULL)
     {
@@ -199,7 +199,7 @@ oe_result_t read_mod(char* filename, uint8_t* mod, size_t* mod_size)
     char buffer[(max_mod_size * 2) + 1];
     char* bufp = buffer;
 
-    FILE* mfp = fopen(filename, "r");
+    FILE* mfp = fopen(filename, "rb");
     if (mfp != NULL)
     {
         numchars = fread(buffer, sizeof(char), max_mod_size * 2, mfp);
@@ -246,7 +246,7 @@ oe_result_t read_mixed_chain(
 oe_result_t read_sign(char* filename, uint8_t* sign, size_t* sign_size)
 {
     size_t len_sign;
-    FILE* sfp = fopen(filename, "r");
+    FILE* sfp = fopen(filename, "rb");
     if (sfp != NULL)
     {
         len_sign = fread(sign, sizeof(char), max_sign_size, sfp);
@@ -322,7 +322,7 @@ oe_result_t read_coordinates(
     size_t* y_size)
 {
     size_t len_x, len_y;
-    FILE* cfp = fopen(filename, "r");
+    FILE* cfp = fopen(filename, "rb");
     if (cfp != NULL)
     {
         len_x = fread(x, sizeof(char), max_coordinates_size, cfp);
