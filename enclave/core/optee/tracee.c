@@ -3,11 +3,10 @@
 
 #include <openenclave/enclave.h>
 
-#include <openenclave/corelibc/errno.h>
+#include "../tracee.h"
 
-static __thread int _errno = 0;
-
-int* __oe_errno_location(void)
+bool is_enclave_debug_allowed()
 {
-    return &_errno;
+    // TODO: Eventually, this must be modifiable.
+    return true;
 }

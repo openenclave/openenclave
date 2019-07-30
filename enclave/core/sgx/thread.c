@@ -9,7 +9,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
-#include "internal_t.h"
+#include "sgx_t.h"
 #include "td.h"
 
 /*

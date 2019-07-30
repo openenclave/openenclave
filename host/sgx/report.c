@@ -10,8 +10,9 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../common/sgx/quote.h"
-#include "internal_u.h"
 #include "quote.h"
+#include "sgx_u.h"
+#include "tee_u.h"
 
 #include "sgxquoteprovider.h"
 

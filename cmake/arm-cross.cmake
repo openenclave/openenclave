@@ -69,3 +69,7 @@ set(OE_TZ_LIBUTILS_EXT_INC ${OE_TZ_LIBUTILS_EXT_SRC}/include)
 # Path to OP-TEE's user-mode math library (libmpa).
 set(OE_TZ_LIBMPA_SRC ${OE_TZ_OPTEE_SRC}/lib/libmpa)
 set(OE_TZ_LIBMPA_INC ${OE_TZ_LIBMPA_SRC}/include)
+
+# Path to OP-TEE's non-secure user-mode client.
+set(OE_TZ_OPTEE_CLIENT_SRC ${PROJECT_SOURCE_DIR}/3rdparty/optee/optee_client)
+set(OE_TZ_OPTEE_CLIENT_INC ${OE_TZ_OPTEE_CLIENT_SRC}/public)

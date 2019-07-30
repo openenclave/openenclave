@@ -10,7 +10,8 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include "internal_t.h"
+#include "sgx_t.h"
+#include "tee_t.h"
 
 #if defined(__INTEL_COMPILER)
 #error "optimized __builtin_return_address() not supported by Intel compiler"

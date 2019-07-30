@@ -1,31 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "internal_t.h"
+#include <openenclave/edger8r/enclave.h>
+#include <openenclave/enclave.h>
 
-void* oe_host_realloc(void* ptr, size_t size)
+// Function used by oeedger8r for allocating ocall buffers. This function can be
+// optimized by allocating a buffer for making ocalls and pass it in to the
+// ecall and making it available for use here.
+void* oe_allocate_ocall_buffer(size_t size)
 {
-    void* retval = NULL;
-
-    if (!ptr)
-        return oe_host_malloc(size);
-
-    if (oe_realloc_ocall(&retval, ptr, size) != OE_OK)
-        return NULL;
-
-    if (retval && !oe_is_outside_enclave(retval, size))
-    {
-        oe_assert("oe_host_realloc_ocall() returned non-host memory" == NULL);
-        oe_abort();
-    }
-
-    return retval;
+    return oe_host_malloc(size);
 }
 
-int oe_host_write(int device, const char* str, size_t len)
+// Function used by oeedger8r for freeing ocall buffers.
+void oe_free_ocall_buffer(void* buffer)
 {
-    if (oe_write_ocall(device, str, len) != OE_OK)
-        return -1;
-
-    return 0;
+    oe_host_free(buffer);
 }

@@ -68,9 +68,12 @@ ExternalProject_Add(oelibutee_includes_copy
     COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTILS_EXT_INC}/trace_levels.h ${OEUTEE_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTILS_EXT_INC}/trace.h ${OEUTEE_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTILS_EXT_INC}/util.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/pta_rpc.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_api_defines_extensions.h ${OEUTEE_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_api_defines.h ${OEUTEE_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_api_types.h ${OEUTEE_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_api.h ${OEUTEE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_internal_api_extensions.h ${OEUTEE_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_internal_api.h ${OEUTEE_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/tee_ta_api.h ${OEUTEE_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${OE_TZ_LIBUTEE_INC}/user_ta_header.h ${OEUTEE_DIR}

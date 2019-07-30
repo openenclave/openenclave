@@ -6,7 +6,8 @@
 **
 ** internal.edl:
 **
-**     This file declares internal ECALLs/OCALLs used by liboehost/liboecore.
+**     This file declares internal ECALLs/OCALLs used by liboehost/liboecore
+**     that are specific to SGX.
 **
 **==============================================================================
 */
@@ -22,32 +23,6 @@ enclave
             [in, size=opt_params_size] const void* opt_params,
             size_t opt_params_size,
             [out] sgx_report_t* report);
-
-        public oe_result_t oe_verify_report_ecall(
-            [in, size=report_size] const void* report,
-            size_t report_size);
-
-        public oe_result_t oe_get_public_key_ecall(
-            [in] const oe_asymmetric_key_params_t* key_params,
-            [in, size=key_info_size] const void* key_info,
-            size_t key_info_size,
-            [out, size=key_buffer_size] void* key_buffer,
-            size_t key_buffer_size,
-            [out] size_t* key_buffer_size_out);
-
-        public oe_result_t oe_get_public_key_by_policy_ecall(
-            uint32_t seal_policy,
-            [in] const oe_asymmetric_key_params_t* key_params,
-            [out, size=key_buffer_size] void* key_buffer,
-            size_t key_buffer_size,
-            [out] size_t* key_buffer_size_out,
-            [out, size=key_info_size] void* key_info,
-            size_t key_info_size,
-            [out] size_t* key_info_size_out);
-
-        public void oe_log_init_ecall(
-            [in, string] const char* enclave_path,
-            uint32_t log_level);
     };
 
     untrusted
@@ -100,10 +75,6 @@ enclave
             size_t crl_issuer_chain2_size,
             [out] size_t* crl_issuer_chain2_size_out);
 
-        void oe_log_ocall(
-            uint32_t log_level,
-            [in, string] const char* message);
-
         // Translate the addresses in buffer[] into symbol names.
         // (similar to Linux backtrace_symbols().
         oe_result_t oe_backtrace_symbols_ocall(
@@ -118,17 +89,6 @@ enclave
             [user_check] oe_enclave_t* oe_enclave,
             uint64_t waiter_tcs,
             uint64_t self_tcs);
-
-        void* oe_realloc_ocall(
-            [user_check] void* ptr,
-            size_t size);
-
-        // Write a string to the console. Write to STDOUT if device=0. Write
-        // to STDERR if device=1. Write strnlen(str, maxlen) bytes.
-        void oe_write_ocall(
-            int device,
-            [in, string] const char* str,
-            size_t maxlen);
 
         oe_result_t oe_get_cpuid_table_ocall(
             [out, size=cpuid_table_buffer_size] void* cpuid_table_buffer,

@@ -11,6 +11,8 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/stack_alloc.h>
 
+#include "tee_t.h"
+
 void* oe_host_malloc(size_t size)
 {
     uint64_t arg_in = size;
@@ -39,6 +41,25 @@ void* oe_host_calloc(size_t nmemb, size_t size)
         oe_memset_s(ptr, nmemb * size, 0, nmemb * size);
 
     return ptr;
+}
+
+void* oe_host_realloc(void* ptr, size_t size)
+{
+    void* retval = NULL;
+
+    if (!ptr)
+        return oe_host_malloc(size);
+
+    if (oe_realloc_ocall(&retval, ptr, size) != OE_OK)
+        return NULL;
+
+    if (retval && !oe_is_outside_enclave(retval, size))
+    {
+        oe_assert("oe_host_realloc_ocall() returned non-host memory" == NULL);
+        oe_abort();
+    }
+
+    return retval;
 }
 
 void oe_host_free(void* ptr)
@@ -128,20 +149,6 @@ int oe_host_fprintf(int device, const char* fmt, ...)
     return n;
 }
 
-// Function used by oeedger8r for allocating ocall buffers. This function can be
-// optimized by allocating a buffer for making ocalls and pass it in to the
-// ecall and making it available for use here.
-void* oe_allocate_ocall_buffer(size_t size)
-{
-    return oe_host_malloc(size);
-}
-
-// Function used by oeedger8r for freeing ocall buffers.
-void oe_free_ocall_buffer(void* buffer)
-{
-    oe_host_free(buffer);
-}
-
 // Function used by oeedger8r for allocating switchless ocall buffers.
 // There are two possible approaches to implementing this function:
 //    1. Preallocate a pool of host memory per thread for switchless ocalls
@@ -162,4 +169,12 @@ void* oe_allocate_switchless_ocall_buffer(size_t size)
 void oe_free_switchless_ocall_buffer(void* buffer)
 {
     oe_host_free(buffer);
+}
+
+int oe_host_write(int device, const char* str, size_t len)
+{
+    if (oe_write_ocall(device, str, len) != OE_OK)
+        return -1;
+
+    return 0;
 }
