@@ -1,21 +1,19 @@
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
-// The below timeout is set in minutes
-GLOBAL_TIMEOUT = 240
-// ctest timeout is set in seconds
-CTEST_TIMEOUT = 480
+GLOBAL_TIMEOUT_MINUTES = 240
+CTEST_TIMEOUT_SECONDS = 480
 
 def packageUpload(String version, String build_type) {
     stage("Ubuntu${version} SGX1FLC Package ${build_type}") {
         node("ACC-${version}") {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 def task = """
                            cmake ${WORKSPACE} -DCMAKE_BUILD_TYPE=${build_type} -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB
                            make
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT}
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            make package
                            """
                 oe.Run("clang-7", task)
@@ -29,7 +27,7 @@ def packageUpload(String version, String build_type) {
 def WindowsUpload() {
     stage('Windows Release') {
         node('SGXFLC-Windows') {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 dir('build') {
