@@ -88,6 +88,11 @@ void oe_free(void* ptr)
     FREE(ptr);
 }
 
+void oe_memalign_free(void* ptr)
+{
+    FREE(ptr);
+}
+
 void* oe_calloc(size_t nmemb, size_t size)
 {
     void* p = CALLOC(nmemb, size);

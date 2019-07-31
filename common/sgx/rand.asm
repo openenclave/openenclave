@@ -20,6 +20,6 @@ _rdrand_retry:
 
 	ret
 
-_rdrand ENDP
+oe_rdrand ENDP
 
 END

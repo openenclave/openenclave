@@ -9,10 +9,10 @@ void TestAll()
     TestASN1();
     TestCRL();
     TestEC();
-    TestRandom();
-    TestRdrand();
     TestRSA();
 #endif
+    TestRandom();
+    TestRdrand();
     TestHMAC();
     TestKDF();
     TestSHA();
