@@ -1012,22 +1012,6 @@ done:
     return result;
 }
 
-oe_result_t oe_cert_chain_get_root_cert(
-    const oe_cert_chain_t* chain,
-    oe_cert_t* cert)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    size_t length;
-
-    OE_CHECK(oe_cert_chain_get_length(chain, &length));
-    OE_CHECK(oe_cert_chain_get_cert(chain, length - 1, cert));
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
 oe_result_t oe_cert_find_extension(
     const oe_cert_t* cert,
     const char* oid,
@@ -1055,21 +1039,6 @@ oe_result_t oe_cert_find_extension(
         result = args.result;
         goto done;
     }
-
-done:
-    return result;
-}
-
-oe_result_t oe_cert_chain_get_leaf_cert(
-    const oe_cert_chain_t* chain,
-    oe_cert_t* cert)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    size_t length;
-
-    OE_CHECK(oe_cert_chain_get_length(chain, &length));
-    OE_CHECK(oe_cert_chain_get_cert(chain, 0, cert));
-    result = OE_OK;
 
 done:
     return result;
