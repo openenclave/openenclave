@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/trace.h>
+#include <stdlib.h>
 #include "../../hostthread.h"
 
 static struct
@@ -31,8 +32,8 @@ static void load_oedebugrt(void)
 {
     if (_oedebugrt.hmodule != NULL)
     {
-        OE_TRACE_FATAL("oedebugrt.dll has already been loaded. Multiple load "
-                       "attempts detected.");
+        OE_TRACE_WARNING("oedebugrt.dll has already been loaded.");
+        return;
     }
 
 #ifndef NDEBUG
@@ -88,9 +89,18 @@ static void load_oedebugrt(void)
     }
 }
 
+static void cleanup(void)
+{
+    if (_oedebugrt.hmodule != NULL)
+    {
+        FreeLibrary(_oedebugrt.hmodule);
+    }
+}
+
 static void initialize()
 {
     oe_once(&_oedebugrt.once, &load_oedebugrt);
+    atexit(&cleanup);
 }
 
 oe_result_t oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave)
