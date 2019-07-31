@@ -95,7 +95,6 @@ static void initialize()
 
 oe_result_t oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave)
 {
-    initialize();
     if (_oedebugrt.notify_enclave_created)
         return _oedebugrt.notify_enclave_created(enclave);
 
@@ -104,7 +103,6 @@ oe_result_t oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave)
 
 oe_result_t oe_debug_notify_enclave_terminated(oe_debug_enclave_t* enclave)
 {
-    initialize();
     if (_oedebugrt.notify_enclave_terminated)
         return _oedebugrt.notify_enclave_terminated(enclave);
 
@@ -115,7 +113,6 @@ oe_result_t oe_debug_push_thread_binding(
     oe_debug_enclave_t* enclave,
     struct _sgx_tcs* tcs)
 {
-    initialize();
     if (_oedebugrt.push_thread_binding)
         return _oedebugrt.push_thread_binding(enclave, tcs);
 
@@ -124,7 +121,6 @@ oe_result_t oe_debug_push_thread_binding(
 
 oe_result_t oe_debug_pop_thread_binding()
 {
-    initialize();
     if (_oedebugrt.pop_thread_binding)
         return _oedebugrt.pop_thread_binding();
 
