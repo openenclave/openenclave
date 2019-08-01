@@ -172,7 +172,7 @@ static void _test_sign_and_verify()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _test_generate_common(
+static void _verify_generated_keys(
     const oe_ec_private_key_t* private_key,
     const oe_ec_public_key_t* public_key)
 {
@@ -212,26 +212,6 @@ static void _test_generate_common(
     free(signature);
 }
 
-static void _test_generate()
-{
-    printf("=== begin %s()\n", __FUNCTION__);
-
-    oe_result_t r;
-    oe_ec_private_key_t private_key = {0};
-    oe_ec_public_key_t public_key = {0};
-
-    r = oe_ec_generate_key_pair(
-        OE_EC_TYPE_SECP256R1, &private_key, &public_key);
-    OE_TEST(r == OE_OK);
-
-    _test_generate_common(&private_key, &public_key);
-
-    oe_ec_private_key_free(&private_key);
-    oe_ec_public_key_free(&public_key);
-
-    printf("=== passed %s()\n", __FUNCTION__);
-}
-
 static void _test_generate_from_private()
 {
     printf("=== begin %s()\n", __FUNCTION__);
@@ -260,7 +240,7 @@ static void _test_generate_from_private()
     OE_TEST(r == OE_OK);
 
     /* Test that signing works with ECC key. */
-    _test_generate_common(&private_key, &public_key);
+    _verify_generated_keys(&private_key, &public_key);
 
     /* Test that the key generation is deterministic. */
     r = oe_ec_generate_key_pair_from_private(
@@ -271,7 +251,7 @@ static void _test_generate_from_private()
         &public_key2);
     OE_TEST(r == OE_OK);
 
-    _test_generate_common(&private_key2, &public_key2);
+    _verify_generated_keys(&private_key2, &public_key2);
 
     r = oe_ec_public_key_equal(&public_key, &public_key2, &equal);
     OE_TEST(r == OE_OK);
@@ -326,7 +306,7 @@ static void _test_generate_from_private()
         &public_key);
     OE_TEST(r == OE_OK);
 
-    _test_generate_common(&private_key, &public_key);
+    _verify_generated_keys(&private_key, &public_key);
     oe_ec_private_key_free(&private_key);
     oe_ec_public_key_free(&public_key);
 
@@ -348,7 +328,7 @@ static void _test_generate_from_private()
         &public_key);
     OE_TEST(r == OE_OK);
 
-    _test_generate_common(&private_key, &public_key);
+    _verify_generated_keys(&private_key, &public_key);
     oe_ec_private_key_free(&private_key);
     oe_ec_public_key_free(&public_key);
 
@@ -390,6 +370,7 @@ static void _test_write_private()
     printf("=== begin %s()\n", __FUNCTION__);
 
     oe_result_t r;
+    uint8_t private_raw[32];
     oe_ec_public_key_t public_key = {0};
     oe_ec_private_key_t key1 = {0};
     oe_ec_private_key_t key2 = {0};
@@ -398,7 +379,17 @@ static void _test_write_private()
     uint8_t* pem_data2 = NULL;
     size_t pem_size2 = 0;
 
-    r = oe_ec_generate_key_pair(OE_EC_TYPE_SECP256R1, &key1, &public_key);
+    /* Generate a random 256-bit key with MSB 0 for valid NIST 256P key. */
+    r = oe_random_internal(private_raw, sizeof(private_raw));
+    OE_TEST(r == OE_OK);
+
+    private_raw[0] = private_raw[0] & 0x7F;
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &key1,
+        &public_key);
     OE_TEST(r == OE_OK);
 
     {
@@ -947,7 +938,6 @@ void TestEC()
     _test_cert_without_extensions();
     _test_crl_distribution_points();
     _test_sign_and_verify();
-    _test_generate();
     _test_generate_from_private();
     _test_private_key_limits();
     _test_write_private();

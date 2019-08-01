@@ -129,78 +129,6 @@ done:
     return result;
 }
 
-static oe_result_t _generate_key_pair(
-    uint64_t bits,
-    uint64_t exponent,
-    oe_private_key_t* private_key,
-    oe_public_key_t* public_key)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    mbedtls_ctr_drbg_context* drbg = NULL;
-    mbedtls_pk_context pk;
-    int rc = 0;
-
-    /* Initialize structures */
-    mbedtls_pk_init(&pk);
-
-    if (private_key)
-        oe_secure_zero_fill(private_key, sizeof(*private_key));
-
-    if (public_key)
-        oe_secure_zero_fill(public_key, sizeof(*public_key));
-
-    /* Check for invalid parameters */
-    if (!private_key || !public_key)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Check range of bits and exponent parameters */
-    if (bits > OE_UINT_MAX || exponent > OE_INT_MAX)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the random number generator */
-    if (!(drbg = oe_mbedtls_get_drbg()))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    /* Create key struct */
-    rc = mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
-    if (rc != 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
-
-    /* Generate the RSA key */
-    rc = mbedtls_rsa_gen_key(
-        mbedtls_pk_rsa(pk),
-        mbedtls_ctr_drbg_random,
-        drbg,
-        (unsigned int)bits,
-        (int)exponent);
-    if (rc != 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
-
-    /* Initialize the private key parameter */
-    OE_CHECK(
-        oe_private_key_init(private_key, &pk, _copy_key, _PRIVATE_KEY_MAGIC));
-
-    /* Initialize the public key parameter */
-    OE_CHECK(oe_public_key_init(public_key, &pk, _copy_key, _PUBLIC_KEY_MAGIC));
-
-    result = OE_OK;
-
-done:
-
-    mbedtls_pk_free(&pk);
-
-    if (result != OE_OK)
-    {
-        if (oe_private_key_is_valid(private_key, _PRIVATE_KEY_MAGIC))
-            oe_private_key_free(private_key, _PRIVATE_KEY_MAGIC);
-
-        if (oe_public_key_is_valid(public_key, _PUBLIC_KEY_MAGIC))
-            oe_public_key_free(public_key, _PUBLIC_KEY_MAGIC);
-    }
-
-    return result;
-}
-
 oe_result_t oe_public_key_get_modulus(
     const oe_public_key_t* public_key,
     uint8_t* buffer,
@@ -358,19 +286,6 @@ oe_result_t oe_rsa_public_key_verify(
         signature,
         signature_size,
         _PUBLIC_KEY_MAGIC);
-}
-
-oe_result_t oe_rsa_generate_key_pair(
-    uint64_t bits,
-    uint64_t exponent,
-    oe_rsa_private_key_t* private_key,
-    oe_rsa_public_key_t* public_key)
-{
-    return _generate_key_pair(
-        bits,
-        exponent,
-        (oe_private_key_t*)private_key,
-        (oe_public_key_t*)public_key);
 }
 
 oe_result_t oe_rsa_public_key_get_modulus(
