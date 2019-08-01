@@ -105,6 +105,7 @@ static void initialize()
 
 oe_result_t oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave)
 {
+    initialize();
     if (_oedebugrt.notify_enclave_created)
         return _oedebugrt.notify_enclave_created(enclave);
 
