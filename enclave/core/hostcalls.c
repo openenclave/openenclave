@@ -24,8 +24,10 @@ void* oe_host_malloc(size_t size)
     }
 
     if (arg_out && !oe_is_outside_enclave((void*)arg_out, size))
+    {
+        oe_assert("oe_ocall(OE_OCALL_MALLOC) returned non-host memory" == NULL);
         oe_abort();
-
+    }
     return (void*)arg_out;
 }
 
@@ -41,7 +43,7 @@ void* oe_host_realloc(void* ptr, size_t size)
 
     if (retval && !oe_is_outside_enclave(retval, size))
     {
-        oe_assert("oe_host_realloc_ocall() returned non-host memory" == NULL);
+        oe_assert("oe_realloc_ocall() returned non-host memory" == NULL);
         oe_abort();
     }
 
@@ -57,7 +59,7 @@ void* oe_host_memset(void* ptr, int value, size_t size)
 
     if (retval && !oe_is_outside_enclave(retval, size))
     {
-        oe_assert("oe_host_memset_ocall() returned non-host memory" == NULL);
+        oe_assert("oe_memset_ocall() returned non-host memory" == NULL);
         oe_abort();
     }
 
@@ -81,7 +83,7 @@ char* oe_host_strndup(const char* str, size_t n)
 
     if (retval && !oe_is_outside_enclave(retval, n + 1))
     {
-        oe_assert("oe_host_strndup_ocall() returned non-host memory" == NULL);
+        oe_assert("oe_strndup_ocall() returned non-host memory" == NULL);
         oe_abort();
     }
 
