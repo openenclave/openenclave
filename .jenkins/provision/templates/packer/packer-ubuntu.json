@@ -38,20 +38,12 @@
   }],
   "provisioners": [
     {
-      "type": "file",
-      "source": "/ansible/requirements.txt",
-      "destination": "/tmp/requirements.txt"
-    },
-    {
-      "type": "shell",
-      "execute_command": "echo 'packer' | sudo -S env {{ .Vars }} {{ .Path }}",
-      "script": "/ansible/install-ansible.sh",
-      "pause_before": "10s"
-    },
-    {
-      "type": "ansible-local",
-      "playbook_file": "/ansible/oe-contributors-acc-setup.yml",
-      "role_paths": ["/ansible/roles/common","/ansible/roles/linux"]
+      "type": "ansible",
+      "groups": ["{{ user `ansible_group` }}"],
+      "playbook_file": "{{ user `playbook_file` }}",
+      "ansible_env_vars": [
+          "ANSIBLE_ROLES_PATH=/ansible/roles"
+      ]
     },
     {
      "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",

@@ -35,6 +35,7 @@ add_custom_target(
         root.ec.key.pem
         root.ec.public.key.pem
         root2.cert.pem
+        self_signed.cert.der
         test_ec_signature
         test_rsa_signature
         time.txt

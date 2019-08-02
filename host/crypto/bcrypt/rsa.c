@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../rsa.h"
-#include "bcrypt.h"
-
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
 #include <openenclave/internal/utils.h>
+
+#include "../magic.h"
+#include "../rsa.h"
+#include "bcrypt.h"
 
 /*
  * Note that these structures were copied from the linux crypto/key.h file.
@@ -25,14 +26,6 @@ typedef struct oe_public_key_t
     BCRYPT_KEY_HANDLE pkey;
 } oe_public_key_t;
 
-/*
- * Magic numbers for the RSA key implementation structures. These values
- * were copied from the linux rsa.c file. These can be consolidated once
- * more crypto code is ported to Windows.
- */
-static const uint64_t _PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
-static const uint64_t _PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
-
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 
@@ -42,12 +35,12 @@ OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
  */
 bool oe_private_key_is_valid(const oe_private_key_t* impl)
 {
-    return impl && impl->magic == _PRIVATE_KEY_MAGIC && impl->pkey;
+    return impl && impl->magic == OE_RSA_PRIVATE_KEY_MAGIC && impl->pkey;
 }
 
 bool oe_public_key_is_valid(const oe_public_key_t* impl)
 {
-    return impl && impl->magic == _PUBLIC_KEY_MAGIC && impl->pkey;
+    return impl && impl->magic == OE_RSA_PUBLIC_KEY_MAGIC && impl->pkey;
 }
 
 static oe_result_t _rsa_pem_to_der(
@@ -167,7 +160,7 @@ oe_result_t oe_rsa_private_key_read_pem(
     /* Step 4: Convery BCrypt Handle to OE type. */
     {
         oe_private_key_t* pkey = (oe_private_key_t*)private_key;
-        pkey->magic = _PRIVATE_KEY_MAGIC;
+        pkey->magic = OE_RSA_PRIVATE_KEY_MAGIC;
         pkey->pkey = handle;
         handle = NULL;
     }
@@ -411,7 +404,7 @@ oe_result_t oe_rsa_get_public_key_from_private(
         if (!BCRYPT_SUCCESS(status))
             OE_RAISE(OE_CRYPTO_ERROR);
 
-        ((oe_public_key_t*)public_key)->magic = _PUBLIC_KEY_MAGIC;
+        ((oe_public_key_t*)public_key)->magic = OE_RSA_PUBLIC_KEY_MAGIC;
         ((oe_public_key_t*)public_key)->pkey = public_key_handle;
     }
 

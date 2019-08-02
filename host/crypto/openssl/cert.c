@@ -6,7 +6,6 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
-#include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
@@ -16,9 +15,8 @@
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
 #include <openssl/x509v3.h>
-#include <pthread.h>
-#include <stdio.h>
 #include <string.h>
+#include "../magic.h"
 #include "crl.h"
 #include "ec.h"
 #include "init.h"
@@ -31,9 +29,6 @@
 **
 **==============================================================================
 */
-
-/* Randomly generated magic number */
-#define OE_CERT_MAGIC 0xbc8e184285de4d2a
 
 typedef struct _cert
 {
@@ -63,9 +58,6 @@ static void _cert_clear(Cert* impl)
         impl->x509 = NULL;
     }
 }
-
-/* Randomly generated magic number */
-#define OE_CERT_CHAIN_MAGIC 0xa5ddf70fb28f4480
 
 typedef struct _cert_chain
 {
@@ -892,36 +884,6 @@ oe_result_t oe_cert_chain_get_cert(
 
 done:
 
-    return result;
-}
-
-oe_result_t oe_cert_chain_get_root_cert(
-    const oe_cert_chain_t* chain,
-    oe_cert_t* cert)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    size_t length;
-
-    OE_CHECK(oe_cert_chain_get_length(chain, &length));
-    OE_CHECK(oe_cert_chain_get_cert(chain, length - 1, cert));
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-oe_result_t oe_cert_chain_get_leaf_cert(
-    const oe_cert_chain_t* chain,
-    oe_cert_t* cert)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    size_t length;
-
-    OE_CHECK(oe_cert_chain_get_length(chain, &length));
-    OE_CHECK(oe_cert_chain_get_cert(chain, 0, cert));
-    result = OE_OK;
-
-done:
     return result;
 }
 

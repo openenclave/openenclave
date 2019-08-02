@@ -9,11 +9,11 @@ void TestAll()
     TestASN1();
     TestCRL();
     TestEC();
+    TestRSA();
+#endif
     TestRandom();
 #if defined(__x86_64__) || defined(__i386__)
     TestRdrand();
-#endif
-    TestRSA();
 #endif
     TestHMAC();
     TestKDF();

@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include "../sgxquoteprovider.h"
 
-#ifdef OE_USE_LIBSGX
-
 oe_sgx_quote_provider_t provider = {0};
 
 static void _unload_quote_provider()
@@ -87,5 +85,3 @@ void oe_load_quote_provider()
         }
     }
 }
-
-#endif

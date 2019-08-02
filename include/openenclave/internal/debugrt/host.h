@@ -16,6 +16,26 @@
 #include <stdint.h>
 #include <wchar.h>
 
+/**
+ * If debugrt is built as a shared library, then symbols are exported.
+ * Otherwise, symbols are not exported.
+ *
+ * In Linux, debugrt is built as a static library that the host application
+ * links against. The debugrt is subsumed by the host application.
+ *
+ * In Windows, debugrt is built as a shared library. The host application
+ * dynamically loads oedebugrt.dll and calls functions via a bridge.
+ * This allows applications to be executed even when oedeburt.dll is not found
+ * on the system. Additionally, release enclaves are completely decoupled from
+ * oedeburt.dll. See host/sgx/windows/debugrtbridge.c
+ */
+
+#ifdef OE_BUILDING_DEBUGRT_SHARED_LIBRARY
+#define OE_DEBUGRT_EXPORT OE_EXPORT
+#else
+#define OE_DEBUGRT_EXPORT
+#endif
+
 OE_EXTERNC_BEGIN
 
 #define OE_DEBUG_ENCLAVE_VERSION 1
@@ -56,6 +76,26 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, tcs_array) == 56);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, num_tcs) == 64);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, flags) == 72);
 
+#define OE_DEBUG_THREAD_BINDING_MAGIC 0x24cb0317d077d636
+
+typedef struct _debug_thread_binding_t
+{
+    uint64_t magic;
+    uint64_t version;
+    struct _debug_thread_binding_t* next;
+
+    uint64_t thread_id;
+    oe_debug_enclave_t* enclave;
+    struct _sgx_tcs* tcs;
+} oe_debug_thread_binding_t;
+
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, magic) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, version) == 8);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, next) == 16);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, thread_id) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, enclave) == 32);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, tcs) == 40);
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////// Symbols Exported by the Runtime ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,14 +109,22 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_enclave_t, flags) == 72);
  * the debugger is expected to advise the user to use a newer version of the
  * that understands the specific version of the contract.
  */
-OE_EXPORT extern uint32_t oe_debugger_contract_version;
+OE_DEBUGRT_EXPORT extern uint32_t oe_debugger_contract_version;
 
 /**
  * The list of loaded enclaves.
  * Upon attaching to an application, the debugger can scan this list
  * and configure the enclaves for debugging.
  */
-OE_EXPORT extern oe_debug_enclave_t* oe_debug_enclaves_list;
+OE_DEBUGRT_EXPORT extern oe_debug_enclave_t* oe_debug_enclaves_list;
+
+/**
+ * The list of active thread bindings.
+ * The debugger can scan this list to find the list of bindings.
+ * Note: Ideally, this list could be stored per thread in thread-local storage.
+ */
+OE_DEBUGRT_EXPORT extern oe_debug_thread_binding_t*
+    oe_debug_thread_bindings_list;
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////// Events Raised for Windows Debuggers/////////////////////////////
@@ -119,15 +167,26 @@ OE_EXPORT extern oe_debug_enclave_t* oe_debug_enclaves_list;
  * Notify debugrt that an enclave has been created.
  * This notification must be done before initializing the enclave.
  */
-OE_EXPORT oe_result_t
+OE_DEBUGRT_EXPORT oe_result_t
 oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave);
 
 /**
  * Notify debugrt that and enclave has been terminated.
  * This notification must be done after calling enclave destructors.
  */
-OE_EXPORT oe_result_t
+OE_DEBUGRT_EXPORT oe_result_t
 oe_debug_notify_enclave_terminated(oe_debug_enclave_t* enclave);
+
+/**
+ * Notify debugrt about a new binding for current thread.
+ */
+OE_DEBUGRT_EXPORT oe_result_t
+oe_debug_push_thread_binding(oe_debug_enclave_t* enclave, struct _sgx_tcs* tcs);
+
+/**
+ * Pop the last binding for the current thread.
+ */
+OE_DEBUGRT_EXPORT oe_result_t oe_debug_pop_thread_binding(void);
 
 OE_EXTERNC_END
 

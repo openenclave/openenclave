@@ -49,10 +49,8 @@ static char _CHAIN[max_cert_chains_size];
 static char _PRIVATE_KEY[max_key_size];
 static char _PUBLIC_KEY[max_key_size];
 static uint8_t _SIGNATURE[max_sign_size];
-uint8_t private_key_pem[max_key_size];
-uint8_t public_key_pem[max_key_size];
-uint8_t x_data[max_coordinates_size];
-uint8_t y_data[max_coordinates_size];
+static uint8_t x_data[max_coordinates_size];
+static uint8_t y_data[max_coordinates_size];
 
 size_t private_key_size;
 size_t public_key_size;
@@ -606,12 +604,12 @@ static void _test_key_from_bytes()
 
     /* Load private key */
     r = oe_ec_private_key_read_pem(
-        &private_key, private_key_pem, private_key_size + 1);
+        &private_key, (const uint8_t*)_PRIVATE_KEY, private_key_size + 1);
     OE_TEST(r == OE_OK);
 
     /* Load public key */
     r = oe_ec_public_key_read_pem(
-        &public_key, public_key_pem, public_key_size + 1);
+        &public_key, (const uint8_t*)_PUBLIC_KEY, public_key_size + 1);
     OE_TEST(r == OE_OK);
 
     /* Create a second public key from the key bytes */
@@ -878,7 +876,17 @@ static void _test_crl_distribution_points(void)
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     {
-        OE_ALIGNED(8) uint8_t buffer[buffer_size];
+        uint8_t* buffer = (uint8_t*)oe_memalign(8, buffer_size);
+        if (!buffer)
+        {
+            OE_PRINT(
+                STDERR,
+                "Out of memory error: %s(%u): %s\n",
+                __FILE__,
+                __LINE__,
+                __FUNCTION__);
+            OE_ABORT();
+        }
 
         r = oe_get_crl_distribution_points(
             &cert, &urls, &num_urls, buffer, &buffer_size);
@@ -889,6 +897,7 @@ static void _test_crl_distribution_points(void)
         OE_TEST(strcmp(urls[0], _URL) == 0);
 
         printf("URL{%s}\n", urls[0]);
+        oe_memalign_free(buffer);
 
         OE_TEST(r == OE_OK);
     }
@@ -919,28 +928,16 @@ void TestEC()
             "../data/root.ec.key.pem",
             _PRIVATE_KEY,
             sizeof(_PRIVATE_KEY),
-            NULL) == OE_OK);
+            &private_key_size) == OE_OK);
     OE_TEST(
         read_pem_key(
             "../data/root.ec.public.key.pem",
             _PUBLIC_KEY,
             sizeof(_PUBLIC_KEY),
-            NULL) == OE_OK);
+            &public_key_size) == OE_OK);
     OE_TEST(
         read_sign("../data/test_ec_signature", _SIGNATURE, &sign_size) ==
         OE_OK);
-    OE_TEST(
-        read_pem_key(
-            "../data/root.ec.key.pem",
-            (char*)private_key_pem,
-            sizeof(private_key_pem),
-            &private_key_size) == OE_OK);
-    OE_TEST(
-        read_pem_key(
-            "../data/root.ec.public.key.pem",
-            (char*)public_key_pem,
-            sizeof(public_key_pem),
-            &public_key_size) == OE_OK);
     OE_TEST(
         read_coordinates(
             "../data/coordinates.bin", x_data, y_data, &x_size, &y_size) ==

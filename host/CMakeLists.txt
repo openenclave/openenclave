@@ -163,6 +163,12 @@ elseif(OE_TRUSTZONE)
   set(PLATFORM_FLAGS "")
 endif()
 
+if (OE_SGX AND WIN32)
+  # oedebugrt is accessed via a bridge on Win32 and need not be linked.    
+  list(APPEND PLATFORM_SRC
+    sgx/windows/debugrtbridge.c)
+endif()
+
 # Combine with all other non platform dependent files.
 add_library(oehost STATIC
   ../common/datetime.c
@@ -194,7 +200,8 @@ if(WIN32)
   target_link_libraries(oehost PUBLIC ws2_32)
 endif()
 
-if(OE_SGX)
+if (OE_SGX AND UNIX)
+  # Link oedebugrt static library.
   target_link_libraries(oehost PRIVATE oedebugrt)
 endif()
 

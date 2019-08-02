@@ -1,15 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "ec.h"
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/internal/defs.h>
-#include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/obj_mac.h>
 #include <openssl/pem.h>
-#include <string.h>
+
+#include "../magic.h"
+#include "ec.h"
 #include "init.h"
 #include "key.h"
 
@@ -25,11 +23,7 @@ static int ECDSA_SIG_set0(ECDSA_SIG* sig, BIGNUM* r, BIGNUM* s)
     sig->s = s;
     return 1;
 }
-
 #endif
-/* Magic numbers for the EC key implementation structures */
-static const uint64_t _PRIVATE_KEY_MAGIC = 0x19a751419ae04bbc;
-static const uint64_t _PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
 
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_ec_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_ec_private_key_t));
@@ -146,7 +140,8 @@ static oe_result_t _generate_key_pair(
             OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the private key */
-        oe_private_key_init(private_key, pkey_private, _PRIVATE_KEY_MAGIC);
+        oe_private_key_init(
+            private_key, pkey_private, OE_RSA_PRIVATE_KEY_MAGIC);
 
         /* Keep these from being freed below */
         ec_private = NULL;
@@ -164,7 +159,7 @@ static oe_result_t _generate_key_pair(
             OE_RAISE(OE_CRYPTO_ERROR);
 
         /* Initialize the public key */
-        oe_public_key_init(public_key, pkey_public, _PUBLIC_KEY_MAGIC);
+        oe_public_key_init(public_key, pkey_public, OE_RSA_PUBLIC_KEY_MAGIC);
 
         /* Keep these from being freed below */
         ec_public = NULL;
@@ -192,8 +187,8 @@ done:
 
     if (result != OE_OK)
     {
-        oe_private_key_free(private_key, _PRIVATE_KEY_MAGIC);
-        oe_public_key_free(public_key, _PUBLIC_KEY_MAGIC);
+        oe_private_key_free(private_key, OE_RSA_PRIVATE_KEY_MAGIC);
+        oe_public_key_free(public_key, OE_RSA_PUBLIC_KEY_MAGIC);
     }
 
     return result;
@@ -212,8 +207,8 @@ static oe_result_t _public_key_equal(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!oe_public_key_is_valid(public_key1, _PUBLIC_KEY_MAGIC) ||
-        !oe_public_key_is_valid(public_key2, _PUBLIC_KEY_MAGIC) || !equal)
+    if (!oe_public_key_is_valid(public_key1, OE_RSA_PUBLIC_KEY_MAGIC) ||
+        !oe_public_key_is_valid(public_key2, OE_RSA_PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
@@ -250,14 +245,14 @@ done:
 
 void oe_ec_public_key_init(oe_ec_public_key_t* public_key, EVP_PKEY* pkey)
 {
-    return oe_public_key_init(
-        (oe_public_key_t*)public_key, pkey, _PUBLIC_KEY_MAGIC);
+    oe_public_key_init(
+        (oe_public_key_t*)public_key, pkey, OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 void oe_ec_private_key_init(oe_ec_private_key_t* private_key, EVP_PKEY* pkey)
 {
-    return oe_private_key_init(
-        (oe_private_key_t*)private_key, pkey, _PRIVATE_KEY_MAGIC);
+    oe_private_key_init(
+        (oe_private_key_t*)private_key, pkey, OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_read_pem(
@@ -270,7 +265,7 @@ oe_result_t oe_ec_private_key_read_pem(
         pem_size,
         (oe_private_key_t*)private_key,
         EVP_PKEY_EC,
-        _PRIVATE_KEY_MAGIC);
+        OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_write_pem(
@@ -283,7 +278,7 @@ oe_result_t oe_ec_private_key_write_pem(
         pem_data,
         pem_size,
         _private_key_write_pem_callback,
-        _PRIVATE_KEY_MAGIC);
+        OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_public_key_read_pem(
@@ -296,30 +291,31 @@ oe_result_t oe_ec_public_key_read_pem(
         pem_size,
         (oe_public_key_t*)public_key,
         EVP_PKEY_EC,
-        _PUBLIC_KEY_MAGIC);
+        OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_public_key_write_pem(
-    const oe_ec_public_key_t* private_key,
+    const oe_ec_public_key_t* public_key,
     uint8_t* pem_data,
     size_t* pem_size)
 {
     return oe_public_key_write_pem(
-        (const oe_public_key_t*)private_key,
+        (const oe_public_key_t*)public_key,
         pem_data,
         pem_size,
-        _PUBLIC_KEY_MAGIC);
+        OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* private_key)
 {
     return oe_private_key_free(
-        (oe_private_key_t*)private_key, _PRIVATE_KEY_MAGIC);
+        (oe_private_key_t*)private_key, OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* public_key)
 {
-    return oe_public_key_free((oe_public_key_t*)public_key, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_free(
+        (oe_public_key_t*)public_key, OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_sign(
@@ -337,7 +333,7 @@ oe_result_t oe_ec_private_key_sign(
         hash_size,
         signature,
         signature_size,
-        _PRIVATE_KEY_MAGIC);
+        OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_public_key_verify(
@@ -355,7 +351,7 @@ oe_result_t oe_ec_public_key_verify(
         hash_size,
         signature,
         signature_size,
-        _PUBLIC_KEY_MAGIC);
+        OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_generate_key_pair(
@@ -554,7 +550,7 @@ oe_result_t oe_ec_public_key_from_coordinates(
 
         /* Initialize the public key */
         {
-            oe_public_key_init(impl, pkey, _PUBLIC_KEY_MAGIC);
+            oe_public_key_init(impl, pkey, OE_RSA_PUBLIC_KEY_MAGIC);
             pkey = NULL;
         }
     }
