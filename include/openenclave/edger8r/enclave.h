@@ -21,6 +21,7 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/edger8r/common.h>
+#include <openenclave/edger8r/switchless.h>
 
 OE_EXTERNC_BEGIN
 
@@ -66,6 +67,15 @@ typedef void (*oe_ecall_func_t)(
  * expected.
  */
 oe_result_t oe_call_host_function(
+    size_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written);
+
+oe_result_t oe_switchless_call_host_function(
+    oe_switchless_t* switchless,
     size_t function_id,
     const void* input_buffer,
     size_t input_buffer_size,

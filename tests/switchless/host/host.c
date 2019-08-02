@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <../host/sgx/enclave.h>
 #include <../host/hostthread.h>
 #include <../host/switchless_manager.h>
 #include <limits.h>
@@ -71,9 +72,27 @@ static double timespan_to_sec(oe_timer_t ts)
 
 #endif /*_MSC_VER or __GNUC__ */
 
+int standard_host_sum(int arg1, int arg2)
+{
+    return arg1 + arg2;
+} /* standard_host_sum */
+
+int synchronous_switchless_host_sum(int arg1, int arg2)
+{
+    return arg1 + arg2;
+} /* synchronous_switchless_host_sum */
+
+void batch_host_sum(addition_args* args, size_t count)
+{
+    for (size_t i = 0; i < count; ++i)
+    {
+        args[i].sum = args[i].arg1 + args[i].arg2;
+    }
+}  /* batch_host_sum */
+
 enum
 {
-    SAMPLE_SIZE = 2048
+    SAMPLE_SIZE = 4096
 };
 
 static int generate_random_number()
@@ -240,12 +259,159 @@ oe_thread_return_t contentious_startup_thread(oe_thread_arg_t _data)
     return OE_THREAD_RETURN_VAL;
 } /* contentious_startup_thread */
 
+static double get_ocall_benchmark(oe_enclave_t* enclave)
+{
+    oe_timer_t start, stop;
+
+    /* record start time */
+    get_time(&start);
+
+    for (size_t i = 0; i < SAMPLE_SIZE; ++i)
+    {
+        int rval = 0;
+        OE_TEST(
+            OE_OK ==
+            enc_test(enclave,
+                     &rval,
+                     &(enclave->switchless_manager.switchless),
+                     4,
+                     NULL,
+                     0));
+    }
+
+    /* record stop time */
+    get_time(&stop);
+
+    return timespan_to_sec(elapsed(start, stop)) / (double)SAMPLE_SIZE;
+} /* get_ocall_benchmark */
+
+static double test_standard_host_sum(oe_enclave_t* enclave)
+{
+    oe_timer_t start, stop;
+    addition_args* args =
+        (addition_args*)malloc(sizeof(addition_args) * SAMPLE_SIZE);
+    int rval = 0;
+
+    /* generate sample data */
+    for (size_t i = 0; i < SAMPLE_SIZE; ++i)
+    {
+        args[i].arg1 = generate_random_number();
+        args[i].arg2 = generate_random_number();
+        args[i].sum = 0;
+    }
+
+    /* record start time */
+    get_time(&start);
+
+    OE_TEST(
+        OE_OK ==
+        enc_test(enclave,
+                 &rval,
+                 &(enclave->switchless_manager.switchless),
+                 1,
+                 args,
+                 SAMPLE_SIZE));
+
+    /* record stop time */
+    get_time(&stop);
+
+    /* verify results */
+    for (size_t i = 0; i < SAMPLE_SIZE; ++i)
+    {
+        OE_TEST(args[i].arg1 + args[i].arg2 == args[i].sum);
+    }
+
+    free(args);
+    return timespan_to_sec(elapsed(start, stop));
+} /* test_standard_host_sum */
+
+static double test_synchronous_switchless_host_sum(oe_enclave_t* enclave)
+{
+    oe_timer_t start, stop;
+    addition_args* args =
+        (addition_args*)malloc(sizeof(addition_args) * SAMPLE_SIZE);
+    int rval = 0;
+
+    /* generate sample data */
+    for (size_t i = 0; i < SAMPLE_SIZE; ++i)
+    {
+        args[i].arg1 = generate_random_number();
+        args[i].arg2 = generate_random_number();
+        args[i].sum = 0;
+    }
+
+    /* record start time */
+    get_time(&start);
+
+    OE_TEST(
+        OE_OK ==
+        enc_test(enclave,
+                 &rval,
+                 &(enclave->switchless_manager.switchless),
+                 2,
+                 args,
+                 SAMPLE_SIZE));
+
+    /* record stop time */
+    get_time(&stop);
+
+    /* verify results */
+    for (size_t i = 0; i < SAMPLE_SIZE; ++i)
+    {
+        OE_TEST(args[i].arg1 + args[i].arg2 == args[i].sum);
+    }
+
+    free(args);
+    return timespan_to_sec(elapsed(start, stop));
+} /* test_synchronous_switchless_host_sum */
+
+static double test_batch_host_sum(oe_enclave_t* enclave)
+{
+    oe_timer_t start, stop;
+    addition_args* args =
+        (addition_args*)malloc(sizeof(addition_args) * SAMPLE_SIZE);
+    int rval = 0;
+
+    /* generate sample data */
+    for (size_t i = 0; i < SAMPLE_SIZE; ++i)
+    {
+        args[i].arg1 = generate_random_number();
+        args[i].arg2 = generate_random_number();
+        args[i].sum = 0;
+    }
+
+    /* record start time */
+    get_time(&start);
+
+    OE_TEST(
+        OE_OK ==
+        enc_test(enclave,
+                 &rval,
+                 &(enclave->switchless_manager.switchless),
+                 3,
+                 args,
+                 SAMPLE_SIZE));
+
+    /* record stop time */
+    get_time(&stop);
+
+    /* verify results */
+    for (size_t i = 0; i < SAMPLE_SIZE; ++i)
+    {
+        OE_TEST(args[i].arg1 + args[i].arg2 == args[i].sum);
+    }
+
+    free(args);
+    return timespan_to_sec(elapsed(start, stop));
+} /* test_batch_host_sum */
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
     const uint32_t flags = oe_get_create_flags();
-    double standard_sec, switchless_sec, batch_sec;
+    double standard_sec, switchless_sec, batch_sec, ocall_benchmark,
+        standard_host_sec, switchless_host_sec, batch_host_sec;
 
     if (argc != 2)
     {
@@ -278,6 +444,7 @@ int main(int argc, const char* argv[])
     result = oe_terminate_enclave(enclave);
     OE_TEST(result == OE_OK);
 
+#if (0)
     for (size_t i = 0; i < ATTEMPTS_AT_CONTENTION; ++i)
     {
         /* 1. create an enclave
@@ -307,7 +474,7 @@ int main(int argc, const char* argv[])
                 oe_result_str(result));
         }
 
-        oe_thread_t threads[THREAD_COUNT];
+        oe_thread threads[THREAD_COUNT];
 
         for (size_t j = 0; j < THREAD_COUNT; ++j)
         {
@@ -324,8 +491,43 @@ int main(int argc, const char* argv[])
         result = oe_terminate_enclave(data.enclave);
         OE_TEST(result == OE_OK);
     }
+#endif
 
-    printf("=== passed all tests (switchless)\n");
+    result = oe_create_switchless_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+    if (OE_OK != result)
+    {
+        oe_put_err(
+            "oe_create_switchless_enclave returned: %u(%s)",
+            result,
+            oe_result_str(result));
+    }
+    
+    /* explicitly start the enclave worker thread */
+    oe_switchless_manager_startup(enclave);
+
+    /* ocall tests */
+    ocall_benchmark = get_ocall_benchmark(enclave);
+    printf("\nocall_benchmark elapsed:  %.8lf\n", ocall_benchmark);
+    
+    standard_host_sec = test_standard_host_sum(enclave) - ocall_benchmark;
+    printf("\nstandard host elapsed:    %.8lf\n", standard_host_sec);
+
+    switchless_host_sec =
+        test_synchronous_switchless_host_sum(enclave) - ocall_benchmark;
+    printf("switchless host elapsed:  %.8lf (%2.2lf%%)\n",
+           switchless_host_sec,
+           100.0 * switchless_host_sec / standard_host_sec);
+
+    batch_host_sec = test_batch_host_sum(enclave) - ocall_benchmark;
+    printf("batch host elapsed:       %.8lf (%2.2lf%%)\n",
+           batch_host_sec,
+           100.0 * batch_host_sec / standard_host_sec);
+
+    result = oe_terminate_enclave(enclave);
+    OE_TEST(result == OE_OK);
+    
+    printf("\n=== passed all tests (switchless)\n");
 
     return 0;
 }

@@ -147,6 +147,7 @@ add_library(oehost STATIC
   ../common/datetime.c
   ../common/kdf.c
   ../common/lockless_queue.c
+  ../common/lockless_ring_buffer.c
   ../common/safecrt.c
   dupenv.c
   error.c

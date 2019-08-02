@@ -290,7 +290,7 @@ done:
 **==============================================================================
 */
 
-static oe_result_t _handle_call_host_function(
+/*static*/ oe_result_t _handle_call_host_function(
     uint64_t arg,
     oe_enclave_t* enclave)
 {
@@ -364,6 +364,126 @@ done:
 
     return result;
 }
+
+//oe_result_t handle_synchronous_switchless_ocall(
+    // _handle_launch_enclave_worker
+    // - that is the worker loop - this is the op that the thread calls
+
+    // _handle_synchronous_switchless_ecall
+    // - handles the actual ecall by calling _handle_ecall_function
+
+    // _handle_ecall_function processes the actual message (shared with
+    // _handle_call_enclave_function)
+
+
+    // _handle_synchronous_switchless_ocall -> _handle_synchronous_switchless_ecall
+    // _handle_ocall_function -> _handle_ecall_function
+    
+    // _handle_call_host_function ->_handle_call_enclave_function
+
+
+    // oe_call_host_function_args_t // defined in include/openenclave/internal/calls.h
+
+    // oe_switchless_manager_startup(enclave)
+    // calls _enclave_worker_thread ( // host/switchless_manager.c
+    //    _worker_start_args {oe_enc_switchless_worker_start_args_t,
+    //                        enclave} )
+    //    _oe_enc_switchless_worker_start_args // include/openenclave/edger8r/switchless.h
+    // calls oe_ecall
+    
+//    char* buffer,
+//    size_t size,
+//    oe_enclave_t* enclave)
+//{
+//    oe_call_host_function_args_t* args_ptr = NULL;
+//    oe_result_t result = OE_OK;
+//    oe_ocall_func_t func = NULL;
+////    size_t buffer_size = 0;
+//    ocall_table_t ocall_table;
+//
+//    args_ptr = (oe_call_host_function_args_t*)buffer;
+//    if (args_ptr == NULL && size >= sizeof (oe_call_host_function_args_t))
+//    {
+//        OE_RAISE(OE_INVALID_PARAMETER);
+//    }
+//
+////    // Input and output buffers must not be NULL.
+////    if (args_ptr->input_buffer == NULL || args_ptr->output_buffer == NULL)
+////        OE_RAISE(OE_INVALID_PARAMETER);
+//    // Input buffer size muct be accounted for in size.
+//    if (size < (sizeof(oe_call_host_function_args_t) +
+//                args_ptr->input_buffer_size + args_ptr->output_buffer_size))
+//    {
+//        OE_RAISE(OE_INVALID_PARAMETER);
+//    }
+//    args_ptr->input_buffer = buffer + sizeof(oe_call_host_function_args_t);
+//    args_ptr->output_buffer =
+//        buffer + sizeof(oe_call_host_function_args_t) +
+//        args_ptr->input_buffer_size;
+//
+//
+//    // Resolve which ocall table to use.
+//    if (args_ptr->table_id == OE_UINT64_MAX)
+//    {
+//        ocall_table.ocalls = enclave->ocalls;
+//        ocall_table.num_ocalls = enclave->num_ocalls;
+//    }
+//    else
+//    {
+//        if (args_ptr->table_id >= OE_MAX_OCALL_TABLES)
+//        {
+//            OE_RAISE(OE_NOT_FOUND);
+//        }
+//
+//        ocall_table.ocalls = _ocall_tables[args_ptr->table_id].ocalls;
+//        ocall_table.num_ocalls = _ocall_tables[args_ptr->table_id].num_ocalls;
+//
+//        if (!ocall_table.ocalls)
+//        {
+//            OE_RAISE(OE_NOT_FOUND);
+//        }
+//    }
+//
+//    // Fetch matching function.
+//    if (args_ptr->function_id >= ocall_table.num_ocalls)
+//    {
+//        OE_RAISE(OE_NOT_FOUND);
+//    }
+//
+//    func = ocall_table.ocalls[args_ptr->function_id];
+//    if (func == NULL)
+//    {
+//        result = OE_NOT_FOUND;
+//        goto done;
+//    }
+//
+////    OE_CHECK(oe_safe_add_u64(
+////        args_ptr->input_buffer_size,
+////        args_ptr->output_buffer_size,
+////        &buffer_size));
+////
+////    // Buffer sizes must be pointer aligned.
+////    if ((args_ptr->input_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+////        OE_RAISE(OE_INVALID_PARAMETER);
+////
+////    if ((args_ptr->output_buffer_size % OE_EDGER8R_BUFFER_ALIGNMENT) != 0)
+////        OE_RAISE(OE_INVALID_PARAMETER);
+//
+//    // Call the function.
+//    func(
+//        args_ptr->input_buffer,
+//        args_ptr->input_buffer_size,
+//        args_ptr->output_buffer,
+//        args_ptr->output_buffer_size,
+//        &args_ptr->output_bytes_written);
+//
+//    // The ocall succeeded.
+//    args_ptr->result = OE_OK;
+//    result = OE_OK;
+//done:
+//
+//    return result;
+//} /* handle_synchronous_switchless_ocall */
 
 static const char* oe_ocall_str(oe_func_t ocall)
 {

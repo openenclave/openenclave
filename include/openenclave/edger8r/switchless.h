@@ -7,6 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/lockless_queue.h>
 #include <openenclave/bits/result.h>
+#include <openenclave/bits/lockless_ring_buffer.h>
 #include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
@@ -25,6 +26,18 @@ typedef struct _oe_switchless_synchronous_ecall
     oe_result_t result;
 } oe_switchless_synchronous_ecall_t;
 
+//typedef struct _oe_switchless_synchronous_ocall
+//{
+//    uint64_t table_id;
+//    uint64_t function_id;
+//    const uint8_t* input_buffer;
+//    size_t input_buffer_size;
+//    uint8_t* output_buffer;
+//    size_t output_buffer_size;
+//    size_t output_bytes_written;
+//    oe_result_t result;
+//} oe_switchless_synchronous_ocall_t;
+
 typedef enum _oe_switchless_state
 {
     OE_SWITCHLESS_STATE_STOPPED,
@@ -37,6 +50,8 @@ typedef struct _oe_switchless
 {
     oe_switchless_state_t state;
     oe_lockless_queue ecall_queue;
+    oe_lockless_ring_buffer_t* ocall_buffer;
+    uint32_t host_worker_lock;
 } oe_switchless_t;
 
 typedef struct _oe_enc_switchless_worker_start_args
@@ -45,6 +60,13 @@ typedef struct _oe_enc_switchless_worker_start_args
     oe_result_t result;
     uint32_t lock;
 } oe_enc_switchless_worker_start_args_t;
+
+//typedef struct _oe_host_switchless_worker_start_args
+//{
+////    oe_switchless_t* switchless;
+//    oe_result_t result;
+//    uint32_t lock;
+//} oe_host_switchless_worker_start_args_t;
 
 OE_EXTERNC_END
 

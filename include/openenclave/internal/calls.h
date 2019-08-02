@@ -476,6 +476,12 @@ oe_result_t oe_ecall(
  */
 oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out);
 
+//oe_result_t handle_synchronous_switchless_ocall(
+//    char* buffer,
+//    size_t size,
+//    oe_enclave_t* enclave);
+oe_result_t _handle_call_host_function(uint64_t arg, oe_enclave_t* enclave);
+
 /*
 **==============================================================================
 **

@@ -17,6 +17,7 @@ if (WIN32_SIMULATION)
 endif ()
 
 add_subdirectory(lockless_queue)
+add_subdirectory(lockless_ring_buffer)
 add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)

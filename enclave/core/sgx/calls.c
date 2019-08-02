@@ -420,7 +420,7 @@ static oe_result_t _handle_synchronous_switchless_ecall(
         &(ecall->result));
 
 done:
-    __atomic_exchange_n(&(ecall->lock), 0, __ATOMIC_RELEASE);
+    __atomic_store_n(&(ecall->lock), 0, __ATOMIC_RELEASE);
 
     return result;
 } /* _handle_synchronous_switchless_ecall */
@@ -450,7 +450,7 @@ static oe_result_t _handle_launch_enclave_worker(uint64_t arg_in)
     /* arg_in will no longer be valid after the lock is released */
     switchless = args->switchless;
     args->result = OE_OK;
-    __atomic_exchange_n(&(args->lock), 0, __ATOMIC_RELEASE);
+    __atomic_store_n(&(args->lock), 0, __ATOMIC_RELEASE);
 
     result = OE_OK;
 
@@ -793,6 +793,294 @@ done:
 
     return result;
 }
+
+typedef enum _loop_state {
+    WRITING_INPUT_HEADER,
+    WRITING_INPUT_BUFFER,
+    WRITING_OUTPUT_BUFFER,
+    WAITING_FOR_LOCK,
+    READING_OUTPUT_HEADER,
+    READING_INPUT_BUFFER,
+    READING_OUTPUT_BUFFER,
+    COMPLETE,
+} loop_state_t;
+
+oe_result_t oe_switchless_call_host_function_by_table_id(
+    oe_switchless_t* switchless,
+    uint64_t table_id,
+    uint64_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    //oe_host_printf("<entering oe_switchless_call_host_function>\n");
+    /* todo:
+     *  there should be a lock around this because the lockless_ring_buffer, and
+     *  the way that data is serialized and deserialized is not safe for
+     *  multiple readers or multiple writers  (it is safe for a single reader
+     *  and single writer to be conncurrent)
+     *
+     *  there is also a problem with the oe_switchless_t* pointer here.  the
+     *  enclave needs to have access to this object.  for this demo, the
+     *  switchless ocall is made from a switchless ecall.  this member probably
+     *  needs to be engineered into the elf header so that the enclave has
+     *  access to it.
+     */
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_host_function_args_t input_header = {
+        table_id,
+        function_id,
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        0,
+        OE_FAILURE /* this value is not being changed and is being returned */
+    };
+    oe_call_host_function_args_t output_header;
+    loop_state_t state = WRITING_INPUT_HEADER;
+    size_t total_size = sizeof(oe_call_host_function_args_t);
+    size_t current_size = 0;
+
+    /* Reject invalid parameters */
+    if (!input_buffer || input_buffer_size == 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* worker loop
+     * 1. write the oe_call_host_function_args
+     * 2. write the input buffer
+     * 3. write the output buffer
+     * 4. read the oe_call_host_function_args
+     * 5. read the input buffer (conditionally)
+     * 6. read the output buffer (conditionally)
+     */
+    //oe_host_printf("<** WRITING_INPUT_HEADER>\n");
+    
+    /* when host_worker_lock == 0, the enclave can read
+     * when host_worker_lock == 1, the host can read */
+    __atomic_store_n(&(switchless->host_worker_lock), 1, __ATOMIC_RELEASE);
+    
+    while (OE_SWITCHLESS_STATE_STOPPING != _get_switchless_state(switchless) &&
+           COMPLETE != state)
+    {
+        switch (state)
+        {
+        case WRITING_INPUT_HEADER:
+        {
+            size_t written =
+                oe_lockless_ring_buffer_write(
+                    switchless->ocall_buffer,
+                    ((char*)&input_header) + current_size,
+                    total_size - current_size);
+            current_size += written;
+            //if (0 < written)
+            //{
+            //    oe_host_printf(" **** written: %u ** current: %u ** total: %u\n",
+            //                   (unsigned)written, (unsigned)current_size,
+            //                   (unsigned)total_size);
+            //}
+            /* when the input header is finished writing */
+            if (current_size == total_size)
+            {
+                //oe_host_printf("<** WRITING_INPUT_BUFFER>\n");
+                state = WRITING_INPUT_BUFFER;
+                total_size = input_buffer_size;
+                current_size = 0;
+            }
+            break;
+        }
+        case WRITING_INPUT_BUFFER:
+        {
+            size_t written =
+                oe_lockless_ring_buffer_write(
+                    switchless->ocall_buffer,
+                    ((char*)input_buffer) + current_size,
+                    total_size - current_size);
+            current_size += written;
+            //if (0 < written)
+            //{
+            //    oe_host_printf(" **** written: %u ** current: %u ** total: %u\n",
+            //                   (unsigned)written, (unsigned)current_size,
+            //                   (unsigned)total_size);
+            //}
+            /* when the input buffer is finished writing */
+            if (current_size == total_size)
+            {
+                //oe_host_printf("<** WRITING_OUTPUT_HEADER>\n");
+                state = WRITING_OUTPUT_BUFFER;
+                total_size = output_buffer_size;
+                current_size = 0;
+            }
+            break;
+        }
+        case WRITING_OUTPUT_BUFFER:
+        {
+            /* do we really need to copy the output_buffer
+             * that would require a corresponding change to _host_worker_thread
+             * I didn't take time to see where in/out params are stored */
+            size_t written =
+                oe_lockless_ring_buffer_write(
+                    switchless->ocall_buffer,
+                    ((char*)output_buffer) + current_size,
+                    total_size - current_size);
+            current_size += written;
+            //if (0 < written)
+            //{
+            //    oe_host_printf(" **** written: %u ** current: %u ** total: %u\n",
+            //                   (unsigned)written, (unsigned)current_size,
+            //                   (unsigned)total_size);
+            //}
+            /* when the output buffer is finished writing */
+            if (current_size == total_size)
+            {
+                /* need to wait before reading from this buffer */
+                //oe_host_printf("<** WAITING_FOR_LOCK>\n");
+                state = WAITING_FOR_LOCK;
+            }
+            break;
+        }
+        case WAITING_FOR_LOCK:
+        {
+            /* when host_worker_lock == 0, the enclave can read
+             * when host_worker_lock == 1, the host can read */
+            if (0 == __atomic_load_n(
+                    &(switchless->host_worker_lock), __ATOMIC_ACQUIRE))
+            {
+                //oe_host_printf("<** READING_OUTPUT_HEADER>\n");
+                state = READING_OUTPUT_HEADER;
+                total_size = sizeof(oe_call_host_function_args_t);
+                current_size = 0;
+            }
+            break;
+        }
+        case READING_OUTPUT_HEADER:
+        {
+            size_t read =
+                oe_lockless_ring_buffer_read(
+                    switchless->ocall_buffer,
+                    ((char*)&output_header) + current_size,
+                    total_size - current_size);
+            current_size += read;
+            //if (0 < read)
+            //{
+            //    oe_host_printf(" **** read: %u ** current: %u ** total: %u\n",
+            //                   (unsigned)read, (unsigned)current_size,
+            //                   (unsigned)total_size);
+            //}
+            /* when the output header is finished reading */
+            if (current_size == total_size)
+            {
+                result = input_header.result = output_header.result;
+                /* verify that things match and the results were successful */
+                if (OE_OK == output_header.result)
+                {
+                    if (input_buffer_size != output_header.input_buffer_size ||
+                        output_buffer_size !=
+                        output_header.output_buffer_size ||
+                        output_buffer_size <
+                        output_header.output_bytes_written)
+                    {
+                        //oe_host_printf("<** COMPLETE> (0) error %s\n",
+                        //               oe_result_str(result));
+                        result = OE_FAILURE;
+                        state = COMPLETE;
+                    }
+                    else
+                    {
+                        //oe_host_printf("<** READING_INPUT_HEADER>\n");
+                        state = READING_INPUT_BUFFER;
+                        current_size = 0;
+                        total_size = input_buffer_size;
+                    }
+                }
+                else
+                {
+                    //oe_host_printf("<** COMPLETE> (1) error %s\n",
+                    //               oe_result_str(result));
+                    state = COMPLETE;
+                }
+            }
+            break;
+        }
+        case READING_INPUT_BUFFER:
+        {
+            /* do we really need to copy the input_buffer
+             * that would require a corresponding change to _host_worker_thread
+             * I didn't take time to see where in/out params are stored */
+            size_t read =
+                oe_lockless_ring_buffer_read(
+                    switchless->ocall_buffer,
+                    ((char*)input_buffer) + current_size,
+                    output_header.input_buffer_size - current_size);
+            current_size += read;
+            /* when the input buffer is finished reading */
+            if (current_size == total_size)
+            {
+                //oe_host_printf("<** READING_OUTPUT_BUFFER>\n");
+                state = READING_OUTPUT_BUFFER;
+                total_size = output_buffer_size;
+                current_size = 0;
+            }
+            break;
+        }
+        case READING_OUTPUT_BUFFER:
+        {
+            /* should this read bytes_written instead?
+             * that would require a corresponding change to _host_worker_thread
+             */
+            size_t read =
+                oe_lockless_ring_buffer_read(
+                    switchless->ocall_buffer,
+                    ((char*)output_buffer) + current_size,
+                    output_header.output_buffer_size - current_size);
+            current_size += read;
+            /* when the input buffer is finished reading */
+            if (current_size == total_size)
+            {
+                //oe_host_printf("<** COMPLETE>\n");
+                state = COMPLETE;
+                result = OE_OK;
+            }
+            break;
+        }
+        case COMPLETE:
+            break;
+        }
+    }
+    
+    /* Check the result */
+    OE_CHECK(output_header.result);
+
+    *output_bytes_written = output_header.output_bytes_written;
+    result = OE_OK;
+
+done:
+
+    //oe_host_printf("<exiting oe_switchless_call_host_function>\n");
+    return result;
+} /* oe_switchless_call_host_function_by_table_id */
+
+oe_result_t oe_switchless_call_host_function(
+    oe_switchless_t* switchless,
+    uint64_t function_id,
+    const void* input_buffer,
+    size_t input_buffer_size,
+    void* output_buffer,
+    size_t output_buffer_size,
+    size_t* output_bytes_written)
+{
+    return oe_switchless_call_host_function_by_table_id(
+        switchless,
+        OE_UINT64_MAX,
+        function_id,
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        output_bytes_written);
+} /* oe_switchless_call_host_function */
 
 /*
 **==============================================================================

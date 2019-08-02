@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 enclave {
+    include "openenclave/edger8r/switchless.h"
+    
     struct addition_args {
         int arg1;
         int arg2;
@@ -9,14 +11,31 @@ enclave {
     };
 
     trusted {
-          public int standard_enc_sum(
-              int arg1,
-              int arg2);
-          public int synchronous_switchless_enc_sum(
-              int arg1,
-              int arg2) transition_using_threads;
-          public void batch_enc_sum(
-              [in, out, count=count] addition_args* args,
-              size_t count);
+        public int standard_enc_sum(
+            int arg1,
+            int arg2);
+        public int synchronous_switchless_enc_sum(
+            int arg1,
+            int arg2) transition_using_threads;
+        public void batch_enc_sum(
+            [in, out, count=count] addition_args* args,
+            size_t count);
+        public int enc_test(
+            [user_check] oe_switchless_t* arg,
+            int type,
+            [in, out, count=count] addition_args* args,
+            size_t count) transition_using_threads;
+    };
+
+    untrusted {
+        int standard_host_sum(
+            int arg1,
+            int arg2);
+        int synchronous_switchless_host_sum(
+            int arg1,
+            int arg2);
+        void batch_host_sum(
+            [in, out, count=count] addition_args* args,
+            size_t count);
     };
 };

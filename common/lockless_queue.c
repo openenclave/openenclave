@@ -8,7 +8,7 @@
 #include <openenclave/enclave.h>
 #endif /* OE_BUILD_ENCLAVE */
 
-#if _MSC_VER
+#ifdef _MSC_VER
 #include <intrin.h>
 #endif /* _MSC_VER */
 
