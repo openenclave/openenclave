@@ -146,6 +146,12 @@ static oe_result_t _syscall_hook(
             result = mbed_test_close(&rval, (int)arg1);
             break;
         }
+        case SYS_lseek:
+        {
+            int rval = 0;
+            result = mbed_test_lseek(&rval, (int)arg1, (off_t)arg2, (int)arg3);
+            break;
+        }
         case SYS_readv:
         default:
         {
@@ -157,10 +163,7 @@ done:
     return result;
 }
 
-int test(
-    const char* in_testname,
-    char out_testname[STRLEN],
-    struct mbed_args* args)
+int test(char out_testname[STRLEN], struct mbed_args* args)
 {
     int return_value = -1;
     printf("RUNNING: %s\n", __TEST__);
@@ -182,9 +185,8 @@ int test(
     }
     else
     {
-        static const char* argv[] = {"test", "-v", "NULL"};
+        static const char* argv[] = {"test", "-v"};
         static int argc = sizeof(argv) / sizeof(argv[0]);
-        argv[2] = in_testname;
         return_value = main(argc, argv);
         args->skipped = gmbed_args.skipped;
         args->total = gmbed_args.total;

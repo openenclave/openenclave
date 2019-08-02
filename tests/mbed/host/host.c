@@ -12,72 +12,14 @@
 
 #include "mbed_u.h"
 
-char* find_data_file(char* str, size_t size)
-{
-    char* tail = ".data";
-    char* checker = "test_suite_";
-    char* token;
-
-    if (size < strlen(str) + strlen(tail) + 1)
-    {
-        printf("buffer overflow error");
-        return NULL;
-    }
-    token = strstr(str, checker);
-    if (token == NULL)
-    {
-        printf("!!File is not in format !!!!\n");
-        return token;
-    }
-
-    strncat(str, tail, strlen(tail));
-    printf("######## data_file: %s ###### \n", token);
-    return token;
-}
-
-void datafileloc(char* data_file_name, char* path)
-{
-    char* tail = "3rdparty/mbedtls/mbedtls/tests/suites/";
-#ifdef PROJECT_DIR
-    strcpy(path, PROJECT_DIR);
-#else
-    char* separator;
-
-    if (getcwd(path, 1024) != NULL)
-        fprintf(stdout, "Current working dir: %s\n", path);
-    else
-        perror("getcwd() error");
-    separator = strstr(
-        path, "build"); /* Find address at which string to be separated */
-    if (separator == NULL)
-    {
-        printf("\n separator doesn't get the address\n");
-    }
-
-    *separator = '\0'; /* separating string */
-#endif
-    strcat(path, tail);
-    strcat(path, data_file_name);
-
-    printf("######## data_fileloc: %s ###### \n", path);
-    return;
-}
-
-void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
+void Test(oe_enclave_t* enclave, int selftest)
 {
     char path[1024];
     int return_value = 1;
-    char* in_testname = NULL;
     char out_testname[STRLEN];
     struct mbed_args args = {0};
-    if (!selftest)
-    {
-        datafileloc(data_file_name, path);
-        in_testname = path;
-    }
 
-    oe_result_t result =
-        test(enclave, &return_value, in_testname, out_testname, &args);
+    oe_result_t result = test(enclave, &return_value, out_testname, &args);
     OE_TEST(result == OE_OK);
     if (!selftest)
     {
@@ -108,7 +50,6 @@ int main(int argc, const char* argv[])
     oe_enclave_t* enclave = NULL;
     int selftest = 0;
     uint32_t flags = oe_get_create_flags();
-    char* data_file_name = NULL;
     // Check argument count:
     if (argc != 2)
     {
@@ -127,17 +68,6 @@ int main(int argc, const char* argv[])
     else
     {
         selftest = 0;
-
-        data_file_name = find_data_file(temp, sizeof(temp));
-        if (data_file_name == NULL)
-        {
-            printf("Could not get test data file name from %s\n", temp);
-            return 0;
-        }
-
-        printf(
-            "###after find_data_file call data_file_name is : %s\n",
-            data_file_name);
     }
 
     // Create the enclave:
@@ -146,7 +76,7 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     // Invoke "Test()" in the enclave.
-    Test(enclave, selftest, data_file_name);
+    Test(enclave, selftest);
 
     // Shutdown the enclave.
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
