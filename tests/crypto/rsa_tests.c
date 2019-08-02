@@ -195,55 +195,6 @@ static void _test_mixed_chain()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _test_generate()
-{
-    printf("=== begin %s()\n", __FUNCTION__);
-
-    oe_result_t r;
-    oe_rsa_private_key_t private_key = {0};
-    oe_rsa_public_key_t public_key = {0};
-    uint8_t* signature = NULL;
-    size_t signature_size = 0;
-
-    r = oe_rsa_generate_key_pair(1024, 3, &private_key, &public_key);
-    OE_TEST(r == OE_OK);
-
-    r = oe_rsa_private_key_sign(
-        &private_key,
-        OE_HASH_TYPE_SHA256,
-        &ALPHABET_HASH,
-        sizeof(ALPHABET_HASH),
-        signature,
-        &signature_size);
-    OE_TEST(r == OE_BUFFER_TOO_SMALL);
-
-    OE_TEST(signature = (uint8_t*)malloc(signature_size));
-
-    r = oe_rsa_private_key_sign(
-        &private_key,
-        OE_HASH_TYPE_SHA256,
-        &ALPHABET_HASH,
-        sizeof(ALPHABET_HASH),
-        signature,
-        &signature_size);
-    OE_TEST(r == OE_OK);
-
-    r = oe_rsa_public_key_verify(
-        &public_key,
-        OE_HASH_TYPE_SHA256,
-        &ALPHABET_HASH,
-        sizeof(ALPHABET_HASH),
-        signature,
-        signature_size);
-    OE_TEST(r == OE_OK);
-
-    free(signature);
-    oe_rsa_private_key_free(&private_key);
-    oe_rsa_public_key_free(&public_key);
-
-    printf("=== passed %s()\n", __FUNCTION__);
-}
-
 static void _test_write_private()
 {
     printf("=== begin %s()\n", __FUNCTION__);
@@ -504,7 +455,6 @@ void TestRSA(void)
     _test_der_cert_verify_good();
     _test_cert_verify_bad();
     _test_mixed_chain();
-    _test_generate();
     _test_sign();
     _test_verify();
     _test_write_private();

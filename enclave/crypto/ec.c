@@ -86,81 +86,6 @@ done:
     return result;
 }
 
-static oe_result_t _generate_key_pair(
-    oe_ec_type_t ec_type,
-    oe_private_key_t* private_key,
-    oe_public_key_t* public_key)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    mbedtls_ctr_drbg_context* drbg;
-    mbedtls_pk_context pk;
-    mbedtls_ecp_group_id curve;
-    int rc = 0;
-
-    /* Initialize structures */
-    mbedtls_pk_init(&pk);
-
-    if (private_key)
-        oe_secure_zero_fill(private_key, sizeof(*private_key));
-
-    if (public_key)
-        oe_secure_zero_fill(public_key, sizeof(*public_key));
-
-    /* Check for invalid parameters */
-    if (!private_key || !public_key)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the group id and curve info structure for this EC type */
-    {
-        const mbedtls_ecp_curve_info* info;
-        mbedtls_ecp_group_id group_id;
-
-        if ((group_id = _get_group_id(ec_type)) == MBEDTLS_ECP_DP_NONE)
-            OE_RAISE(OE_FAILURE);
-
-        if (!(info = mbedtls_ecp_curve_info_from_grp_id(group_id)))
-            OE_RAISE(OE_INVALID_PARAMETER);
-
-        curve = info->grp_id;
-    }
-
-    /* Get the drbg object */
-    if (!(drbg = oe_mbedtls_get_drbg()))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    /* Create key struct */
-    rc = mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
-    if (rc != 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x", rc);
-
-    /* Generate the EC key */
-    rc = mbedtls_ecp_gen_key(
-        curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg);
-    if (rc != 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x", rc);
-
-    /* Initialize the private key parameter */
-    OE_CHECK(
-        oe_private_key_init(private_key, &pk, _copy_key, _PRIVATE_KEY_MAGIC));
-
-    /* Initialize the public key parameter */
-    OE_CHECK(oe_public_key_init(public_key, &pk, _copy_key, _PUBLIC_KEY_MAGIC));
-
-    result = OE_OK;
-
-done:
-
-    mbedtls_pk_free(&pk);
-
-    if (result != OE_OK)
-    {
-        oe_private_key_free(private_key, _PRIVATE_KEY_MAGIC);
-        oe_public_key_free(public_key, _PUBLIC_KEY_MAGIC);
-    }
-
-    return result;
-}
-
 static oe_result_t oe_public_key_equal(
     const oe_public_key_t* public_key1,
     const oe_public_key_t* public_key2,
@@ -308,15 +233,6 @@ oe_result_t oe_ec_public_key_verify(
         signature,
         signature_size,
         _PUBLIC_KEY_MAGIC);
-}
-
-oe_result_t oe_ec_generate_key_pair(
-    oe_ec_type_t type,
-    oe_ec_private_key_t* private_key,
-    oe_ec_public_key_t* public_key)
-{
-    return _generate_key_pair(
-        type, (oe_private_key_t*)private_key, (oe_public_key_t*)public_key);
 }
 
 oe_result_t oe_ec_generate_key_pair_from_private(

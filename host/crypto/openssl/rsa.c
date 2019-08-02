@@ -84,116 +84,6 @@ done:
     return result;
 }
 
-static oe_result_t _generate_key_pair(
-    uint64_t bits,
-    uint64_t exponent,
-    oe_private_key_t* private_key,
-    oe_public_key_t* public_key)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    RSA* rsa_private = RSA_new();
-    RSA* rsa_public = RSA_new();
-    EVP_PKEY* pkey_private = NULL;
-    EVP_PKEY* pkey_public = NULL;
-
-    if (private_key)
-        oe_secure_zero_fill(private_key, sizeof(*private_key));
-
-    if (public_key)
-        oe_secure_zero_fill(public_key, sizeof(*public_key));
-
-    /* Check parameters */
-    if (!private_key || !public_key)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Check range of bits parameter */
-    if (bits > INT_MAX)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Check range of exponent */
-    if (exponent > ULONG_MAX)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    oe_initialize_openssl();
-
-    /* Create the public and private RSA keys */
-    {
-        /* Create the private key */
-        BIGNUM* e;
-        e = BN_new();
-        BN_set_word(e, exponent);
-        RSA_generate_key_ex(rsa_private, (int32_t)bits, e, 0);
-        if (!rsa_private)
-            OE_RAISE(OE_CRYPTO_ERROR);
-
-        /* Create the public key */
-        if (!(rsa_public = RSAPublicKey_dup(rsa_private)))
-            OE_RAISE(OE_CRYPTO_ERROR);
-    }
-
-    /* Create the PKEY private key wrapper */
-    {
-        /* Create the private key structure */
-        if (!(pkey_private = EVP_PKEY_new()))
-            OE_RAISE(OE_CRYPTO_ERROR);
-
-        /* Initialize the private key from the generated key pair */
-        if (!EVP_PKEY_assign_RSA(pkey_private, rsa_private))
-            OE_RAISE(OE_CRYPTO_ERROR);
-
-        /* Initialize the private key */
-        oe_private_key_init(
-            private_key, pkey_private, OE_RSA_PRIVATE_KEY_MAGIC);
-
-        /* Keep these from being freed below */
-        rsa_private = NULL;
-        pkey_private = NULL;
-    }
-
-    /* Create the PKEY public key wrapper */
-    {
-        /* Create the public key structure */
-        if (!(pkey_public = EVP_PKEY_new()))
-            OE_RAISE(OE_CRYPTO_ERROR);
-
-        /* Initialize the public key from the generated key pair */
-        if (!EVP_PKEY_assign_RSA(pkey_public, rsa_public))
-            OE_RAISE(OE_CRYPTO_ERROR);
-
-        /* Initialize the public key */
-        oe_public_key_init(public_key, pkey_public, OE_RSA_PUBLIC_KEY_MAGIC);
-
-        /* Keep these from being freed below */
-        rsa_public = NULL;
-        pkey_public = NULL;
-    }
-
-    result = OE_OK;
-
-done:
-
-    if (rsa_private)
-        RSA_free(rsa_private);
-
-    if (rsa_public)
-        RSA_free(rsa_public);
-
-    if (pkey_private)
-        EVP_PKEY_free(pkey_private);
-
-    if (pkey_public)
-        EVP_PKEY_free(pkey_public);
-
-    if (result != OE_OK)
-    {
-        oe_private_key_free(private_key, OE_RSA_PRIVATE_KEY_MAGIC);
-        oe_public_key_free(public_key, OE_RSA_PUBLIC_KEY_MAGIC);
-    }
-
-    return result;
-}
-
 static oe_result_t _get_public_key_get_modulus_or_exponent(
     const oe_public_key_t* public_key,
     uint8_t* buffer,
@@ -425,19 +315,6 @@ oe_result_t oe_rsa_public_key_verify(
         signature,
         signature_size,
         OE_RSA_PUBLIC_KEY_MAGIC);
-}
-
-oe_result_t oe_rsa_generate_key_pair(
-    uint64_t bits,
-    uint64_t exponent,
-    oe_rsa_private_key_t* private_key,
-    oe_rsa_public_key_t* public_key)
-{
-    return _generate_key_pair(
-        bits,
-        exponent,
-        (oe_private_key_t*)private_key,
-        (oe_public_key_t*)public_key);
 }
 
 oe_result_t oe_rsa_public_key_get_modulus(
