@@ -41,6 +41,25 @@ endif()
 
 ##==============================================================================
 ##
+## These rules generate the edge routines for the internal OP-TEE-specific
+## ECALLs/OCALLs used by liboehost/liboecore.
+##
+##==============================================================================
+
+if(OE_TRUSTZONE)
+    set(OPTEE_EDL_FILE ${EDL_DIR}/optee/optee.edl)
+
+    add_custom_command(
+        OUTPUT optee_u.h optee_u.c optee_args.h
+        DEPENDS ${OPTEE_EDL_FILE} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${OPTEE_EDL_FILE})
+
+    add_custom_target(optee_untrusted_edl
+        DEPENDS optee_u.h optee_u.c optee_args.h)
+endif()
+
+##==============================================================================
+##
 ## These rules generate the edge routines for the SYSCALL interface, which is
 ## installed by oe_register_syscall_ecall_function_table().
 ##
@@ -151,7 +170,9 @@ if (OE_SGX)
   set(PLATFORM_FLAGS "-m64")
 elseif(OE_TRUSTZONE)
   list(APPEND PLATFORM_SRC
-    optee/log.c)
+    optee/log.c
+    optee/ocalls.c
+    optee/optee_u_wrapper.c)
   
   if (UNIX)
     list(APPEND PLATFORM_SRC
@@ -209,6 +230,8 @@ add_dependencies(oehost syscall_untrusted_edl)
 add_dependencies(oehost tee_untrusted_edl)
 if(OE_SGX)
     add_dependencies(oehost sgx_untrusted_edl)
+elseif(OE_TRUSTZONE)
+  add_dependencies(oehost optee_untrusted_edl)
 endif()
 
 # TODO: Replace these with `find_package` and add as dependencies to

@@ -83,6 +83,7 @@ OE_STATIC_ASSERT(TEEC_CONFIG_PAYLOAD_REF_COUNT >= 4);
 static void _initialize_enclave_host()
 {
     oe_register_tee_ocall_function_table();
+    oe_register_optee_ocall_function_table();
     oe_register_syscall_ocall_function_table();
 }
 

@@ -5,6 +5,14 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 
+void* oe_host_calloc(size_t nmemb, size_t size)
+{
+    OE_UNUSED(nmemb);
+    OE_UNUSED(size);
+
+    return NULL;
+}
+
 // Function used by oeedger8r for allocating ocall buffers. This function can be
 // optimized by allocating a buffer for making ocalls and pass it in to the
 // ecall and making it available for use here.

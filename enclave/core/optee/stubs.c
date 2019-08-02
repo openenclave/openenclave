@@ -4,6 +4,11 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
 
+/* See syscall/stub.c */
+void oe_optee_stub_ecall(void)
+{
+}
+
 /* These are functions referenced by libutee that are left out while compiling
  * it for inclusion in the SDK.
  */

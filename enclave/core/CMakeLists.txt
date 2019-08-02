@@ -41,6 +41,25 @@ endif()
 
 ##==============================================================================
 ##
+## These rules generate the edge routines for the internal OP-TEE-specific
+## ECALLs/OCALLs used by liboehost/liboecore.
+##
+##==============================================================================
+
+if(OE_TRUSTZONE)
+    set(OPTEE_EDL_FILE ${EDL_DIR}/optee/optee.edl)
+
+    add_custom_command(
+        OUTPUT optee_t.h optee_t.c optee_args.h
+        DEPENDS ${SGX_EDL_FILE} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --trusted ${OPTEE_EDL_FILE})
+
+    add_custom_target(optee_trusted_edl
+        DEPENDS optee_t.h optee_t.c optee_args.h)
+endif()
+
+##==============================================================================
+##
 ## These rules build the oecore target.
 ##
 ##==============================================================================
@@ -97,6 +116,7 @@ elseif (OE_TRUSTZONE)
         optee/globals.c
         optee/gp.c
         optee/keys.c
+        optee/optee_t_wrapper.c
         optee/printf.c
         optee/sched_yield.c
         optee/spinlock.c
@@ -161,6 +181,8 @@ maybe_build_using_clangw(oecore)
 add_dependencies(oecore tee_trusted_edl)
 if(OE_SGX)
     add_dependencies(oecore sgx_trusted_edl)
+elseif(OE_TRUSTZONE)
+    add_dependencies(oecore optee_trusted_edl)
 endif()
 target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

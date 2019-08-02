@@ -292,7 +292,7 @@ static oe_result_t _handle_call_builtin_function(
     /* Output buffer */
     if (arg_out)
     {
-    params[3].memref.buffer = (void*)arg_out;
+        params[3].memref.buffer = (void*)arg_out;
         params[3].memref.size = sizeof(*arg_out);
     }
 
@@ -403,6 +403,10 @@ TEE_Result TA_CreateEntryPoint(void)
 
     /* Install the common TEE ECALL function table. */
     if (oe_register_tee_ecall_function_table() != OE_OK)
+        return TEE_ERROR_GENERIC;
+
+    /* Install the OP-TEE ECALL function table. */
+    if (oe_register_optee_ecall_function_table() != OE_OK)
         return TEE_ERROR_GENERIC;
 
     /* Done */

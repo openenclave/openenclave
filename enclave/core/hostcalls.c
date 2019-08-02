@@ -29,20 +29,6 @@ void* oe_host_malloc(size_t size)
     return (void*)arg_out;
 }
 
-void* oe_host_calloc(size_t nmemb, size_t size)
-{
-    size_t total_size;
-    if (oe_safe_mul_sizet(nmemb, size, &total_size) != OE_OK)
-        return NULL;
-
-    void* ptr = oe_host_malloc(total_size);
-
-    if (ptr)
-        oe_memset_s(ptr, nmemb * size, 0, nmemb * size);
-
-    return ptr;
-}
-
 void* oe_host_realloc(void* ptr, size_t size)
 {
     void* retval = NULL;
