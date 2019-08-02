@@ -87,10 +87,13 @@ char* oe_host_strndup(const char* str, size_t n)
 {
     char* retval = NULL;
 
+    if (!str)
+        return NULL;
+
     if (oe_strndup_ocall(&retval, str, n) != OE_OK)
         return NULL;
 
-    if (retval && !oe_is_outside_enclave(retval, n))
+    if (retval && !oe_is_outside_enclave(retval, n + 1))
     {
         oe_assert("oe_host_strndup_ocall() returned non-host memory" == NULL);
         oe_abort();

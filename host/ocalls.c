@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,7 +31,28 @@ void* oe_memset_ocall(void* ptr, int value, size_t size)
 
 char* oe_strndup_ocall(const char* str, size_t n)
 {
-    return strndup(str, n);
+    char* p;
+    size_t len;
+
+    if (!str)
+        return NULL;
+
+    len = strlen(str);
+
+    if (n < len)
+        len = n;
+
+    /* Would be an integer overflow in the next statement. */
+    if (len == OE_SIZE_MAX)
+        return NULL;
+
+    if (!(p = malloc(len + 1)))
+        return NULL;
+
+    memcpy(p, str, len);
+    p[len] = '\0';
+
+    return p;
 }
 
 void HandleFree(uint64_t arg)
