@@ -43,7 +43,7 @@ done:
 }
 
 // oe_verify_report needs crypto library's cmac computation. oecore does not
-// have crypto functionality. Hence oe_verify report is implemented here instead
+// have crypto functionality. Hence oe_verify_report is implemented here instead
 // of in oecore. Also see ECall_HandleVerifyReport below.
 oe_result_t oe_verify_report(
     const uint8_t* report,
@@ -87,7 +87,7 @@ oe_result_t oe_verify_report(
         oe_secure_memcpy(&report_aes_cmac, sgx_report->mac, aes_cmac_length);
 
         if (!oe_secure_aes_cmac_equal(&computed_aes_cmac, &report_aes_cmac))
-            OE_RAISE(OE_VERIFY_FAILED);
+            OE_RAISE(OE_VERIFY_FAILED_OES_CMAC_MISMATCH);
     }
     else
     {

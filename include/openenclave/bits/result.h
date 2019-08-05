@@ -284,6 +284,26 @@ typedef enum _oe_result
      */
     OE_CRYPTO_ERROR,
 
+    /**
+     * OE report size does not match the expected size.
+     */
+    OE_INCORRECT_REPORT_SIZE,
+
+    /**
+     * Quote verification error.
+     */
+    OE_QUOTE_VERIFICATION_ERROR,
+
+    /**
+     * Quote enclave identify verification failed.
+     */
+    OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
+
+    /**
+     * OES CMAC mismatch when verifying report.
+     */
+    OE_VERIFY_FAILED_OES_CMAC_MISMATCH,
+
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
 /**< typedef enum _oe_result oe_result_t*/

@@ -106,6 +106,14 @@ const char* oe_result_str(oe_result_t result)
             return "OE_VERIFY_REVOKED";
         case OE_CRYPTO_ERROR:
             return "OE_CRYPTO_ERROR";
+        case OE_INCORRECT_REPORT_SIZE:
+            return "OE_INCORRECT_REPORT_SIZE";
+        case OE_QUOTE_VERIFICATION_ERROR:
+            return "OE_QUOTE_VERIFICATION_ERROR";
+        case OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED:
+            return "OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED";
+        case OE_VERIFY_FAILED_OES_CMAC_MISMATCH:
+            return "OE_VERIFY_FAILED_OES_CMAC_MISMATCH";
         case __OE_RESULT_MAX:
             break;
     }
@@ -162,6 +170,10 @@ bool oe_is_valid_result(uint32_t result)
         case OE_VERIFY_CRL_MISSING:
         case OE_VERIFY_REVOKED:
         case OE_CRYPTO_ERROR:
+        case OE_INCORRECT_REPORT_SIZE:
+        case OE_QUOTE_VERIFICATION_ERROR:
+        case OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED:
+        case OE_VERIFY_FAILED_OES_CMAC_MISMATCH:
         {
             return true;
         }

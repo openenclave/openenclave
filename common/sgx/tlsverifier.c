@@ -71,7 +71,6 @@ done:
  * @param[in] arg an optional context pointer argument specified by the caller
  * when setting callback
  * @retval OE_OK on a successful validation
- * @retval OE_VERIFY_FAILED on quote failure
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid
  * @retval OE_FAILURE general failure
  * @retval other appropriate error code

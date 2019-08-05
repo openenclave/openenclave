@@ -53,7 +53,8 @@ static oe_result_t _parse_sgx_report_body(
         sizeof(report_body->mrsigner)));
 
     if (report_body->isvprodid > OE_INT8_MAX)
-        goto done;
+        OE_RAISE(OE_QUOTE_VERIFICATION_ERROR);
+
     parsed_report->identity.product_id[0] =
         (uint8_t)report_body->isvprodid & 0xFF;
     parsed_report->identity.product_id[1] =
@@ -92,7 +93,7 @@ oe_result_t oe_parse_report(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (header->report_size + sizeof(oe_report_header_t) != report_size)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INCORRECT_REPORT_SIZE);
 
     if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
