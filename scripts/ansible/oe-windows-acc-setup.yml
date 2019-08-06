@@ -63,6 +63,7 @@
 
     - name: OE setup | Reboot the node
       win_reboot:
+      when: ansible_user != "packer"
 
     - import_role:
         name: windows/openenclave
