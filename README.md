@@ -1,7 +1,7 @@
 Open Enclave SDK
 ================
 
-[![Join the chat at https://gitter.im/openenclave/community](https://badges.gitter.im/openenclave/community.svg)](https://gitter.im/openenclave/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://oe-jenkins.eastus.cloudapp.azure.com/buildStatus/icon?job=OpenEnclave-nightly_packages)](https://oe-jenkins.eastus.cloudapp.azure.com/job/OpenEnclave-nightly_packages/) [![Join the chat at https://gitter.im/openenclave/community](https://badges.gitter.im/openenclave/community.svg)](https://gitter.im/openenclave/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Introduction
 ------------
