@@ -840,10 +840,11 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
                match args with
                | [] -> [s]
                | _ ->
+                   let tystr = get_cast_to_mem_expr (ptype, decl) true in
                    [ sprintf "if (%s)" (String.concat " && " (List.rev args))
                    ; "{"
                    ; "    /* Restore original pointer. */"
-                   ; sprintf "    %s = _ptrs[_ptrs_index++];" arg
+                   ; sprintf "    %s = %s_ptrs[_ptrs_index++];" arg tystr
                    ; "    " ^ s
                    ; "}" ])
             ; (let param_count = oe_get_param_count (ptype, decl, argstruct) in
