@@ -801,8 +801,14 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     in
     if count <> [] then
       (* TODO: Switch to malloc() to handle variable lengths. *)
-      [ sprintf "void* _ptrs[%s];" (String.concat " + " count)
-      ; "size_t _ptrs_index = 0;" ]
+      [ "size_t _ptrs_index = 0;"
+      ; sprintf "void** _ptrs = malloc(sizeof(void*) * (%s));"
+          (String.concat " + " count)
+      ; "if (_ptrs == NULL)"
+      ; "{"
+      ; "    _result = OE_OUT_OF_MEMORY;"
+      ; "    goto done;"
+      ; "}" ]
     else ["/* No pointers to save for deep copy. */"]
   in
   let gen_reset_ptr_index (plist : pdecl list) =
@@ -812,6 +818,14 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     in
     if count <> [] then "_ptrs_index = 0; /* For deep copy. */"
     else "/* No pointers to restore for deep copy. */"
+  in
+  let gen_free_ptrs (plist : pdecl list) =
+    let count =
+      flatten_map (gen_ptr_count [] "1")
+        (List.filter is_out_or_inout_ptr plist)
+    in
+    if count <> [] then ["if (_ptrs)"; "    free(_ptrs);"]
+    else ["/* No `_ptrs` to free for deep copy. */"]
   in
   let oe_process_output_buffer (fd : func_decl) =
     let oe_serialize_buffer_outputs (plist : pdecl list) =
@@ -1070,7 +1084,6 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    /* Marshalling struct. */"
     ; sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
         fd.fname
-    ; "    " ^ String.concat "\n    " (gen_ptr_array fd.plist)
     ; ""
     ; "    /* Marshalling buffer and sizes. */"
     ; "    size_t _input_buffer_size = 0;"
@@ -1082,6 +1095,9 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    size_t _input_buffer_offset = 0;"
     ; "    size_t _output_buffer_offset = 0;"
     ; "    size_t _output_bytes_written = 0;"
+    ; ""
+    ; "    /* Deep copy buffer. */"
+    ; "    " ^ String.concat "\n    " (gen_ptr_array fd.plist)
     ; ""
     ; "    /* Fill marshalling struct. */"
     ; "    memset(&_args, 0, sizeof(_args));"
@@ -1109,6 +1125,9 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "done:"
     ; "    if (_buffer)"
     ; "        free(_buffer);"
+    ; ""
+    ; "    " ^ String.concat "\n    " (gen_free_ptrs fd.plist)
+    ; ""
     ; "    return _result;"
     ; "}"
     ; "" ]
