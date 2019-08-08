@@ -41,57 +41,78 @@ enclave {
     [count=3] CountStruct* array_of_struct;
   };
 
+  struct SuperNestedStruct {
+    // TODO: We should eventually support count being a member of the struct.
+    [count=2] NestedStruct* more_structs;
+  };
+
+  struct IOVEC
+  {
+    [size=len] void *base;
+    size_t len;
+  };
+
   trusted {
     // Since `s` is passed by value, `s.ptr` is not deep copied.
     public void deepcopy_value(ShallowStruct s, [user_check] uint64_t* ptr);
 
     // Although `s` is passed by pointer, because `s.ptr` does not
     // have any attribute, it is still not deep copied.
-    public void deepcopy_shallow([in, count=1] ShallowStruct* s, [user_check] uint64_t* ptr);
+    public void deepcopy_shallow([in, out, count=1] ShallowStruct* s, [user_check] uint64_t* ptr);
 
     // Deep copy of one `CountStruct` with an embedded array should
     // take place.
-    public void deepcopy_count([in, count=1] CountStruct* s);
+    public void deepcopy_count([in, out, count=1] CountStruct* s);
 
     // Deep copy of one `CountParamStruct` with an embedded array
     // should take place.
-    public void deepcopy_countparam([in, count=1] CountParamStruct* s);
+    public void deepcopy_countparam([in, out, count=1] CountParamStruct* s);
 
     // TODO: We should have a `SizeStruct` to test deep copying where
     // the size attribute is correctly used with a hard-coded value.
 
     // Deep copy of one `SizeParamStruct` with an embedded array
     // should take place.
-    public void deepcopy_sizeparam([in, count=1] SizeParamStruct* s);
+    public void deepcopy_sizeparam([in, out, count=1] SizeParamStruct* s);
 
     // Deep copy of one `CountSizeParamStruct` with an embedded array
     // should take place.
-    public void deepcopy_countsizeparam([in, count=1] CountSizeParamStruct* s);
+    public void deepcopy_countsizeparam([in, out, count=1] CountSizeParamStruct* s);
 
     // Deep copy of one `CountSizeParamStruct` with an embedded array
     // should take place, tests with `size * 1`.
-    public void deepcopy_countsizeparam_size([in, count=1] CountSizeParamStruct* s);
+    public void deepcopy_countsizeparam_size([in, out, count=1] CountSizeParamStruct* s);
 
     // Deep copy of one `CountSizeParamStruct` with an embedded array
     // should take place, tests with `count * 1`.
-    public void deepcopy_countsizeparam_count([in, count=1] CountSizeParamStruct* s);
+    public void deepcopy_countsizeparam_count([in, out, count=1] CountSizeParamStruct* s);
 
     // Deep copy of two `CountParamStruct`s each with an embedded
     // array and different counts should take place.
-    public void deepcopy_countparamarray([in, count=2] CountParamStruct* s);
+    public void deepcopy_countparamarray([in, out, count=2] CountParamStruct* s);
 
     // Deep copy of two `SizeParamStruct`s each with an embedded
     // array and different sizes should take place.
-    public void deepcopy_sizeparamarray([in, count=2] SizeParamStruct* s);
+    public void deepcopy_sizeparamarray([in, out, count=2] SizeParamStruct* s);
 
     // Deep copy of two `CountSizeParamStruct`s each with an embedded
     // array and different counts should take place.
-    public void deepcopy_countsizeparamarray([in, count=2] CountSizeParamStruct* s);
+    public void deepcopy_countsizeparamarray([in, out, count=2] CountSizeParamStruct* s);
 
     // Maybe test for recursive copying.
-    public void deepcopy_nested([in, count=1] NestedStruct* n);
+    public void deepcopy_nested([in, out, count=1] NestedStruct* n);
+
+    // Really stress the recursion.
+    public void deepcopy_super_nested([in, out, count=n] SuperNestedStruct* s, size_t n);
 
     // Test handling of null values.
-    public void deepcopy_null([in, count=1] CountStruct* s);
+    public void deepcopy_null([in, out, count=1] CountStruct* s);
+
+    // Deep copy of one `CountStruct` with an embedded array out
+    // should take place.
+    public void deepcopy_out_count([in, out, count=1] CountStruct* s);
+
+    // Test a real-world scenario.
+    public void deepcopy_iovec([in, out, count=n] IOVEC* iov, size_t n);
   };
 };

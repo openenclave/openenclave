@@ -10,4 +10,6 @@ endif()
 add_enclave_test(tests/oeedger8r edl_host edl_enc)
 add_enclave_test(tests/oeedger8r_other edl_host edl_other_enc)
 
+add_custom_target(edl_gen DEPENDS edl_enc_gen edl_host_gen)
+
 add_subdirectory(behavior)
