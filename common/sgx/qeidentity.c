@@ -16,14 +16,14 @@ static const uint8_t g_qe_mrsigner[32] = {
     0x14, 0x0b, 0x08, 0x1b, 0x09, 0x44, 0x90, 0xc5, 0x7b, 0xff};
 
 // The isvprodid value of Intel's Production quoting enclave.
-static const uint32_t g_qe_isvprodid = 1;
+static const uint16_t g_qe_isvprodid = 1;
 
 // The isvsvn value of Intel's Production quoting enclave.
 static const uint32_t g_qeisvsvn = 2;
 
 extern oe_datetime_t _sgx_minimim_crl_tcb_issue_date;
 
-void dump_info(char* title, uint8_t* data, uint8_t count)
+void dump_info(const char* title, const uint8_t* data, const uint8_t count)
 {
     OE_TRACE_INFO("%s\n", title);
     for (uint8_t i = 0; i < count; i++)
@@ -57,27 +57,37 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
         // enclave's mrsigner.
         if (!oe_constant_time_mem_equal(
                 qe_report_body->mrsigner, g_qe_mrsigner, sizeof(g_qe_mrsigner)))
+        {
+            dump_info(
+                "Expected mrsigner", g_qe_mrsigner, sizeof(g_qe_mrsigner));
+            dump_info(
+                "Actual mrsigner",
+                qe_report_body->mrsigner,
+                sizeof(qe_report_body->mrsigner));
             OE_RAISE_MSG(
-                OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
+                OE_QUOTE_ENCLAVE_IDENTITY_MRSIGNER_MISMATCH,
                 "mrsigner mismatch",
                 NULL);
+        }
 
         if (qe_report_body->isvprodid != g_qe_isvprodid)
             OE_RAISE_MSG(
-                OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
-                "isvprodid mismatch",
-                NULL);
+                QE_QUOTE_ENCLAVE_IDENTITY_ISV_PROD_ID_MISMATCH,
+                "isvprodid mismatch. Expected 0x%04X, actual 0x%04X",
+                g_qe_isvprodid,
+                qe_report_body->isvprodid);
 
         if (qe_report_body->isvsvn < g_qeisvsvn)
             OE_RAISE_MSG(
-                OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
-                "isvsvn is out-of-date",
-                NULL);
+                QE_QUOTE_ENCLAVE_IDENTITY_ISVSVN_UNEXPECTED,
+                "isvsvn is out-of-date. Required SVN 0x%08X, actual SVN 0x%08X",
+                g_qeisvsvn,
+                qe_report_body->isvsvn);
 
         // Ensure that the QE is not a debug supporting enclave.
         if (qe_report_body->attributes.flags & SGX_FLAGS_DEBUG)
             OE_RAISE_MSG(
-                OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
+                OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
                 "QE has SGX_FLAGS_DEBUG set!!",
                 NULL);
 
@@ -128,34 +138,34 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
             sizeof(parsed_info.mrsigner)))
     {
         dump_info(
-            "parsed_info.mrsigner:",
+            "Expected mrsigner, parsed_info.mrsigner:",
             parsed_info.mrsigner,
             sizeof(parsed_info.mrsigner));
         dump_info(
-            "qe_report_body->mrsigner:",
+            "Actual mrsigner, qe_report_body->mrsigner:",
             qe_report_body->mrsigner,
             sizeof(qe_report_body->mrsigner));
-        OE_RAISE(OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED);
+        OE_RAISE(OE_QUOTE_ENCLAVE_IDENTITY_MRSIGNER_MISMATCH);
     }
 
     if (qe_report_body->isvprodid != parsed_info.isvprodid)
         OE_RAISE_MSG(
-            OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
-            "qe_report_body->isvprodid = 0x%x isvprodid = 0x%x",
-            qe_report_body->isvprodid,
-            parsed_info.isvprodid);
+            QE_QUOTE_ENCLAVE_IDENTITY_ISV_PROD_ID_MISMATCH,
+            "isvprodid mismatch. Expected 0x%04X, actual 0x%04X",
+            parsed_info.isvprodid,
+            qe_report_body->isvprodid);
 
     if (qe_report_body->isvsvn < parsed_info.isvsvn)
         OE_RAISE_MSG(
-            OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
-            "qe_report_body->isvsvn = 0x%x isvsvn = 0x%x",
-            qe_report_body->isvsvn,
-            parsed_info.isvsvn);
+            QE_QUOTE_ENCLAVE_IDENTITY_ISVSVN_UNEXPECTED,
+            "isvsvn is out-of-date. Required SVN 0x%08X, actual SVN 0x%08X",
+            parsed_info.isvsvn,
+            qe_report_body->isvsvn);
 
     if ((qe_report_body->miscselect & parsed_info.miscselect_mask) !=
         parsed_info.miscselect)
         OE_RAISE_MSG(
-            OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
+            OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
             "qe_report_body->miscselect = 0x%x miscselect_mask = 0x%x "
             "miscselect = 0x%x",
             qe_report_body->miscselect,
@@ -167,7 +177,7 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
     if ((qe_report_body->attributes.flags &
          parsed_info.attributes_flags_mask) != parsed_info.attributes.flags)
         OE_RAISE_MSG(
-            OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
+            OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
             "qe_report_body->attributes.flags = 0x%lx attributes_flags_mask = "
             "0x%lx attributes.flags = 0x%lx",
             qe_report_body->attributes.flags,
@@ -178,7 +188,7 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
     if ((qe_report_body->attributes.xfrm & parsed_info.attributes_xfrm_mask) !=
         parsed_info.attributes.xfrm)
         OE_RAISE_MSG(
-            OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
+            OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
             "qe_report_body->attributes.xfrm = 0x%lx attributes_xfrm_mask = "
             "0x%lx attributes.xfrm = 0x%lx",
             qe_report_body->attributes.xfrm,

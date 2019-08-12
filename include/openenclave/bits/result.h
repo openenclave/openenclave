@@ -297,7 +297,22 @@ typedef enum _oe_result
     /**
      * Quote enclave identify verification failed.
      */
-    OE_QUOTE_ENCLAVE_IDENTIFY_VERIFICATION_FAILED,
+    OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
+
+    /**
+     * QE identify mrsigner do not match.
+     */
+    OE_QUOTE_ENCLAVE_IDENTITY_MRSIGNER_MISMATCH,
+
+    /**
+     * QE ISV product id do not match.
+     */
+    QE_QUOTE_ENCLAVE_IDENTITY_ISV_PROD_ID_MISMATCH,
+
+    /**
+     * QE ISV SVN was not expected.
+     */
+    QE_QUOTE_ENCLAVE_IDENTITY_ISVSVN_UNEXPECTED,
 
     /**
      * OES CMAC mismatch when verifying report.
