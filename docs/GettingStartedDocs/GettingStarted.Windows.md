@@ -239,34 +239,12 @@ The following summary will assume that the contents were extracted to `C:\Intel 
 
 ##### [Azure DCAP client for Windows](https://github.com/Microsoft/Azure-DCAP-Client/tree/master/src/Windows) [optional]
 
-Integration with the Azure DCAP client is not yet enabled on Windows in Open Enclave, and the Microsoft.Azure.DCAP.Client.1.0.0.nupkg
-is not yet available as a binary drop.
+The Azure DCAP client for Windows is necessary if you would like to perform enclave attestation on a Azure Confidential Computing VM.
+It is available from [nuget.org](https://www.nuget.org/packages/Azure.DCAP.Windows/) and can be installed directly via:
 
-For experimental purposes, it can be built from sources using [instructions](https://github.com/microsoft/Azure-DCAP-Client/blob/master/src/Windows/README.MD)
-on the GitHub repo:
-
-- The Azure DCAP Client has a build dependency on version 17134 of the Windows 10 SDK.
-   - This can be added via the Visual Studio Installer under Individual Components > Windows 10 SDK (10.0.17134.0).
-
-- Assuming the resulting .nupkg is put into the `C:\Azure-DCAP-Client` folder, it can be installed using:
-  ```cmd
-  nuget.exe install Microsoft.Azure.DCAP.Client -ExcludeVersion -Source "C:\Azure-DCAP-Client;nuget.org" -OutputDirectory C:\openenclave\prereqs\nuget
-  ```
-
-  Note the inclusion of `nuget.org` as one of the sources. This is necessary because Azure DCAP Client
-  has a dependency on curl and this allows `nuget.exe` to install the curl package dependency tree at the
-  same time. This includes:
-    - curl
-    - curl.redist
-    - libssh2
-    - libssh2.redist
-    - openssl
-    - openssl.redist
-    - zlib
-    - zlib.redist
-
-- The [Visual C++ Redistributable for Visual Studio 2012](https://www.microsoft.com/en-us/download/confirmation.aspx?id=30679&6B49FDFB-8E5B-4B07-BC31-15695C5A2143=1) will also need to be installed to provide MSVCR110.dll for the Release build of curl.
-  - The redistributable install does not include MSVCR110d.dll needed for the Debug version of curl.
+```cmd
+nuget.exe install Azure.DCAP.Windows -ExcludeVersion -Version 0.0.2 -OutputDirectory C:\openenclave\prereqs\nuget
+```
 
 #### Building with DCAP libraries using Visual Studio 2017
 To build with the DCAP libraries in Visual Studio, you will need to add the
