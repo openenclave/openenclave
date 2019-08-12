@@ -24,8 +24,8 @@ Param(
     [string]$IntelDCAPHash = 'F31E4451CA32E19CA3DCB0AFC49AFE9F4963C47BF62AAF24A8AE436BDA14FD8B',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
-    [string]$AzureDCAPNupkgURL = 'https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg', # TODO: Update this to official link once this is available
-    [string]$AzureDCAPNupkgHash = '152ACE956348E80E533E63E6CB1D3CA20E4CA7DC775FC0B9413F552368F971D6',
+    [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Azure.DCAP.Windows/0.0.2',
+    [string]$AzureDCAPNupkgHash = 'E319A6C2D136FE5EDB8799305F6151B71F4CE4E67D96CA74538D0AD5D2D793F1',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][bool]$WithFLC,
     [Parameter(mandatory=$true)][bool]$WithAzureDCAPClient
@@ -106,7 +106,7 @@ $PACKAGES = @{
     "azure_dcap_client_nupkg" = @{
         "url" = $AzureDCAPNupkgURL
         "hash" = $AzureDCAPNupkgHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "Microsoft.Azure.DCAP.Client.1.0.0.nupkg"
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "Azure.DCAP.Windows"
     }
 }
 
@@ -523,14 +523,14 @@ function Install-DCAPDrivers {
     # Note: the ordering of nuget installs below is important to preserve here until the issue with the EnclaveCommonAPI nuget package gets fixed.
     if ($WithAzureDCAPClient -eq $true)
     {
-        & "$PACKAGES_DIRECTORY\nuget.exe" install 'Microsoft.Azure.DCAP.Client' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+        & "$PACKAGES_DIRECTORY\nuget.exe" install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
         if($LASTEXITCODE -ne 0) {
-            Throw "Failed to install nuget EnclaveCommonAPI"
+            Throw "Failed to install nuget Azure.DCAP.Windows"
         }
     }
     & "$PACKAGES_DIRECTORY\nuget.exe" install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
-        Throw "Failed to install nuget EnclaveCommonAPI"
+        Throw "Failed to install nuget DCAP_Components"
     }
     & "$PACKAGES_DIRECTORY\nuget.exe" install 'EnclaveCommonAPI' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
