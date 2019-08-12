@@ -31,24 +31,25 @@ chmod +x sgx_linux_x64_driver.bin
 sudo ./sgx_linux_x64_driver.bin
 ```
 
-Note: This may not be the latest Intel SGX DCAP driver. Please check with [Intel's SGX site](https://01.org/intel-software-guard-extensions/downloads) if a more recent SGX DCAP driver exists.
+> This may not be the latest Intel SGX DCAP driver.
+> Please check with [Intel's SGX site](https://01.org/intel-software-guard-extensions/downloads)
+> if a more recent SGX DCAP driver exists.
 
 ### 3. Install the Intel and Open Enclave packages and dependencies
 ```bash
 sudo apt -y install clang-7 libssl-dev gdb libsgx-enclave-common libsgx-enclave-common-dev libprotobuf10 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave
 ```
-```
-if you wish to use the Ninja build system rather than make, also install
-```bash
-sudo apt -y install ninja-build
-```
-
 
 > This step also installs the [az-dcap-client](https://github.com/microsoft/azure-dcap-client)
 > package which is necessary for performing remote attestation in Azure. A general
 > implementation for using Intel DCAP outside the Azure environment is coming soon.
 
-Note: If you wish to make use of the Open Enclave CMake package, please install CMake and [follow the instructions here](/cmake/sdk_cmake_targets_readme.md).
+If you wish to use the Ninja build system rather than make, also install
+```bash
+sudo apt -y install ninja-build
+```
+
+If you wish to make use of the Open Enclave CMake package, please install CMake and [follow the instructions here](/cmake/sdk_cmake_targets_readme.md).
 
 ### 4. Verify the Open Enclave SDK install
 
