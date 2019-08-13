@@ -34,23 +34,22 @@ typedef struct _cert
 {
     uint64_t magic;
     X509* x509;
-} Cert;
+} cert_t;
 
-static void _cert_init(Cert* impl, X509* x509)
+OE_STATIC_ASSERT(sizeof(cert_t) <= sizeof(oe_cert_t));
+
+static void _cert_init(cert_t* impl, X509* x509)
 {
-    if (impl)
-    {
-        impl->magic = OE_CERT_MAGIC;
-        impl->x509 = x509;
-    }
+    impl->magic = OE_CERT_MAGIC;
+    impl->x509 = x509;
 }
 
-static bool _cert_is_valid(const Cert* impl)
+static bool _cert_is_valid(const cert_t* impl)
 {
     return impl && (impl->magic == OE_CERT_MAGIC) && impl->x509;
 }
 
-static void _cert_clear(Cert* impl)
+static void _cert_clear(cert_t* impl)
 {
     if (impl)
     {
@@ -63,23 +62,22 @@ typedef struct _cert_chain
 {
     uint64_t magic;
     STACK_OF(X509) * sk;
-} CertChain;
+} cert_chain_t;
 
-static void _cert_chain_init(CertChain* impl, STACK_OF(X509) * sk)
+OE_STATIC_ASSERT(sizeof(cert_chain_t) <= sizeof(oe_cert_chain_t));
+
+static void _cert_chain_init(cert_chain_t* impl, STACK_OF(X509) * sk)
 {
-    if (impl)
-    {
-        impl->magic = OE_CERT_CHAIN_MAGIC;
-        impl->sk = sk;
-    }
+    impl->magic = OE_CERT_CHAIN_MAGIC;
+    impl->sk = sk;
 }
 
-static bool _cert_chain_is_valid(const CertChain* impl)
+static bool _cert_chain_is_valid(const cert_chain_t* impl)
 {
     return impl && (impl->magic == OE_CERT_CHAIN_MAGIC) && impl->sk;
 }
 
-static void _cert_chain_clear(CertChain* impl)
+static void _cert_chain_clear(cert_chain_t* impl)
 {
     if (impl)
     {
@@ -223,7 +221,7 @@ static const STACK_OF(X509_EXTENSION) * X509_get0_extensions(const X509* x)
 
 #endif
 
-static oe_result_t _cert_chain_get_length(const CertChain* impl, int* length)
+static oe_result_t _cert_chain_get_length(const cert_chain_t* impl, int* length)
 {
     oe_result_t result = OE_UNEXPECTED;
     int num;
@@ -481,7 +479,7 @@ oe_result_t oe_cert_read_pem(
     size_t pem_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Cert* impl = (Cert*)cert;
+    cert_t* impl = (cert_t*)cert;
     BIO* bio = NULL;
     X509* x509 = NULL;
 
@@ -530,7 +528,7 @@ oe_result_t oe_cert_read_der(
     size_t der_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Cert* impl = (Cert*)cert;
+    cert_t* impl = (cert_t*)cert;
     X509* x509 = NULL;
     unsigned char* p = NULL;
 
@@ -566,7 +564,7 @@ done:
 oe_result_t oe_cert_free(oe_cert_t* cert)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Cert* impl = (Cert*)cert;
+    cert_t* impl = (cert_t*)cert;
 
     /* Check parameters */
     if (!_cert_is_valid(impl))
@@ -624,12 +622,12 @@ oe_result_t oe_cert_chain_read_pem(
     size_t pem_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    CertChain* impl = (CertChain*)chain;
+    cert_chain_t* impl = (cert_chain_t*)chain;
     STACK_OF(X509)* sk = NULL;
 
     /* Zero-initialize the implementation */
     if (impl)
-        memset(impl, 0, sizeof(CertChain));
+        memset(impl, 0, sizeof(cert_chain_t));
 
     /* Check parameters */
     if (!pem_data || !pem_size || !chain)
@@ -664,7 +662,7 @@ done:
 oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain)
 {
     oe_result_t result = OE_UNEXPECTED;
-    CertChain* impl = (CertChain*)chain;
+    cert_chain_t* impl = (cert_chain_t*)chain;
 
     /* Check the parameter */
     if (!_cert_chain_is_valid(impl))
@@ -689,8 +687,8 @@ oe_result_t oe_cert_verify(
     size_t num_crls)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Cert* cert_impl = (Cert*)cert;
-    CertChain* chain_impl = (CertChain*)chain;
+    cert_t* cert_impl = (cert_t*)cert;
+    cert_chain_t* chain_impl = (cert_chain_t*)chain;
 
     /* Check for invalid cert parameter */
     if (!_cert_is_valid(cert_impl))
@@ -725,7 +723,7 @@ oe_result_t oe_cert_get_rsa_public_key(
     oe_rsa_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const Cert* impl = (const Cert*)cert;
+    const cert_t* impl = (const cert_t*)cert;
     EVP_PKEY* pkey = NULL;
     RSA* rsa = NULL;
 
@@ -767,7 +765,7 @@ oe_result_t oe_cert_get_ec_public_key(
     oe_ec_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const Cert* impl = (const Cert*)cert;
+    const cert_t* impl = (const cert_t*)cert;
     EVP_PKEY* pkey = NULL;
 
     /* Clear public key for all error pathways */
@@ -814,7 +812,7 @@ oe_result_t oe_cert_chain_get_length(
     size_t* length)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const CertChain* impl = (const CertChain*)chain;
+    const cert_chain_t* impl = (const cert_chain_t*)chain;
 
     /* Clear the length (for failed return case) */
     if (length)
@@ -844,7 +842,7 @@ oe_result_t oe_cert_chain_get_cert(
     oe_cert_t* cert)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const CertChain* impl = (const CertChain*)chain;
+    const cert_chain_t* impl = (const cert_chain_t*)chain;
     size_t length;
     X509* x509 = NULL;
 
@@ -878,7 +876,7 @@ oe_result_t oe_cert_chain_get_cert(
     /* Increment the reference count and initialize the output certificate */
     if (!X509_up_ref(x509))
         OE_RAISE(OE_CRYPTO_ERROR);
-    _cert_init((Cert*)cert, x509);
+    _cert_init((cert_t*)cert, x509);
 
     result = OE_OK;
 
@@ -894,7 +892,7 @@ oe_result_t oe_cert_find_extension(
     size_t* size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const Cert* impl = (const Cert*)cert;
+    const cert_t* impl = (const cert_t*)cert;
     const STACK_OF(X509_EXTENSION) * extensions;
     int num_extensions;
 
