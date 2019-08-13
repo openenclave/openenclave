@@ -20,7 +20,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args);
 // Cleanup the args structure.
 void oe_cleanup_qe_identity_info_args(oe_get_qe_identity_info_args_t* args);
 
-void dump_info(char* title, uint8_t* data, uint8_t count);
+void dump_info(const char* title, const uint8_t* data, const uint8_t count);
 
 OE_EXTERNC_END
 
