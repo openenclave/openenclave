@@ -195,32 +195,86 @@ static void _test_mixed_chain()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+ * This method tests oe_rsa_private_key_write_pem which is not used in
+ * production code
+ */
 static void _test_write_private()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
     oe_result_t r;
-    oe_rsa_private_key_t key = {0};
+    oe_rsa_private_key_t pri_key = {0};
+    oe_rsa_public_key_t pub_key = {0};
+    uint8_t* signature = NULL;
+    size_t signature_size = 0;
     void* pem_data = NULL;
     size_t pem_size = 0;
 
     r = oe_rsa_private_key_read_pem(
-        &key, (const uint8_t*)_PRIVATE_KEY, strlen(_PRIVATE_KEY) + 1);
+        &pri_key, (const uint8_t*)_PRIVATE_KEY, strlen(_PRIVATE_KEY) + 1);
     OE_TEST(r == OE_OK);
 
-    r = oe_rsa_private_key_write_pem(&key, pem_data, &pem_size);
+    r = oe_rsa_private_key_write_pem(&pri_key, pem_data, &pem_size);
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     OE_TEST(pem_data = (uint8_t*)malloc(pem_size));
 
-    r = oe_rsa_private_key_write_pem(&key, pem_data, &pem_size);
+    r = oe_rsa_private_key_write_pem(&pri_key, pem_data, &pem_size);
     OE_TEST(r == OE_OK);
 
+    oe_rsa_private_key_free(&pri_key);
+
+    /* BCrypt produces a different but valid encoding of the private exponent
+     * in the export of the RSA key, validate that it produces the same results
+     * when reloaded. */
+#if defined(__linux__)
     OE_TEST((strlen(_PRIVATE_KEY) + 1) == pem_size);
     OE_TEST(memcmp(_PRIVATE_KEY, pem_data, pem_size) == 0);
+#endif
+
+    /* Reload key from written PEM */
+    r = oe_rsa_private_key_read_pem(&pri_key, pem_data, pem_size);
+    OE_TEST(r == OE_OK);
+
+    r = oe_rsa_private_key_sign(
+        &pri_key,
+        OE_HASH_TYPE_SHA256,
+        &ALPHABET_HASH,
+        sizeof(ALPHABET_HASH),
+        signature,
+        &signature_size);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
+
+    OE_TEST(signature = (uint8_t*)malloc(signature_size));
+
+    r = oe_rsa_private_key_sign(
+        &pri_key,
+        OE_HASH_TYPE_SHA256,
+        &ALPHABET_HASH,
+        sizeof(ALPHABET_HASH),
+        signature,
+        &signature_size);
+    OE_TEST(r == OE_OK);
+
+    /* Check that signature produce by roundtripped key can be verified */
+    r = oe_rsa_public_key_read_pem(
+        &pub_key, (const uint8_t*)_PUBLIC_KEY, strlen(_PUBLIC_KEY) + 1);
+    OE_TEST(r == OE_OK);
+
+    r = oe_rsa_public_key_verify(
+        &pub_key,
+        OE_HASH_TYPE_SHA256,
+        &ALPHABET_HASH,
+        sizeof(ALPHABET_HASH),
+        signature,
+        signature_size);
+    OE_TEST(r == OE_OK);
 
     free(pem_data);
-    oe_rsa_private_key_free(&key);
+    free(signature);
+    oe_rsa_private_key_free(&pri_key);
+    oe_rsa_public_key_free(&pub_key);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }

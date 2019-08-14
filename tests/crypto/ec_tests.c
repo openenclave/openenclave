@@ -216,6 +216,11 @@ static void _test_generate_from_private()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
+    const uint8_t _D_FOR_PUBKEY_WITH_LEADING_ZEROS[] = {
+        0x70, 0x68, 0xe6, 0x77, 0x84, 0x31, 0x38, 0xae, 0x8a, 0x92, 0x67,
+        0xf3, 0xd5, 0x37, 0x43, 0x01, 0xc5, 0x2a, 0x51, 0x00, 0x17, 0xfc,
+        0x75, 0x82, 0xbf, 0xf7, 0xd7, 0x0d, 0x7c, 0xc1, 0x60, 0x90};
+
     oe_result_t r;
     uint8_t private_raw[32];
     oe_ec_private_key_t private_key = {0};
@@ -319,6 +324,26 @@ static void _test_generate_from_private()
             sizeof(_P256_GROUP_ORDER)) == OE_OK);
 
     private_raw[sizeof(private_raw) - 1] &= 0xFE;
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r == OE_OK);
+
+    _verify_generated_keys(&private_key, &public_key);
+    oe_ec_private_key_free(&private_key);
+    oe_ec_public_key_free(&public_key);
+
+    /* Test key where public key has leading zero byte passes. */
+    OE_TEST(
+        oe_memcpy_s(
+            private_raw,
+            sizeof(private_raw),
+            _D_FOR_PUBKEY_WITH_LEADING_ZEROS,
+            sizeof(_D_FOR_PUBKEY_WITH_LEADING_ZEROS)) == OE_OK);
 
     r = oe_ec_generate_key_pair_from_private(
         OE_EC_TYPE_SECP256R1,
