@@ -173,7 +173,11 @@ function Add-ToSystemPath {
     if(!$Path) {
         return
     }
-    $systemPath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine').Split(';')
+    # Get system PATH environment variable from the registry
+    $regPathKey = "Registry::HKLM\System\CurrentControlSet\Control\Session Manager\Environment"
+    $regPathValue = (Get-ItemProperty -Path $regPathKey -Name PATH).Path
+
+    $systemPath = $regPathValue.Split(';')
     $currentPath = $env:PATH.Split(';')
     foreach($p in $Path) {
         if($p -notin $systemPath) {
@@ -184,6 +188,7 @@ function Add-ToSystemPath {
         }
     }
     $env:PATH = $currentPath -join ';'
+    Set-ItemProperty -Path $regPathKey -Name PATH -Value $systemPath
     setx.exe /M PATH ($systemPath -join ';')
     if($LASTEXITCODE) {
         Throw "Failed to set the new system path"
