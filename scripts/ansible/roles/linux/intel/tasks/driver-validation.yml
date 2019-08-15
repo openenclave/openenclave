@@ -13,13 +13,6 @@
 - name: Check for existing required directories
   stat:
     path: "{{ item }}"
-  with_items: "{{ validation_directories }}"
+  with_items: "{{ driver_validation_directories }}"
   register: directory
   failed_when: directory.stat.isdir == False
-
-- name: Check for existing required files
-  stat:
-    path: "{{ item }}"
-  with_items: "{{ validation_files }}"
-  register: file
-  failed_when: file.stat.exists == False

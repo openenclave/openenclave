@@ -13,10 +13,6 @@
 
     - import_role:
         name: linux/intel
-        tasks_from: sgx-driver.yml
-
-    - import_role:
-        name: linux/intel
         tasks_from: sgx-packages.yml
 
     - import_role:
@@ -26,10 +22,6 @@
     - import_role:
         name: linux/openenclave
         tasks_from: validation.yml
-
-    - import_role:
-        name: linux/intel
-        tasks_from: driver-validation.yml
 
     - import_role:
         name: linux/intel

@@ -8,9 +8,11 @@ intel_sgx_packages:
   - "libsgx-dcap-ql"
   - "libsgx-dcap-ql-dev"
 
-validation_directories:
+driver_validation_directories:
   - "/opt/intel/sgxdriver"
+
+packages_validation_directories:
   - "/opt/intel/libsgx-enclave-common"
 
-validation_files:
+packages_validation_files:
   - "/usr/lib/x86_64-linux-gnu/libsgx_dcap_ql.so"
