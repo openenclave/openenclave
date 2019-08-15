@@ -29,7 +29,7 @@ To deploy all the prerequisities for building Open Enclave, you can run the ```s
 
 ```powershell
 cd scripts
-.\install-windows-prereqs.ps1
+.\install-windows-prereqs.ps1 <target path for nuget packages>
 ```
 
 To deploy each prerequisite individually, refer to the sections below.

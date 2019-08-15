@@ -22,7 +22,7 @@
         az_dcap_client_url: "https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg"
 
     - name: OE setup | Run the install-windows-prereqs.ps1 script (this may take a while)
-      script: ../install-windows-prereqs.ps1
+      script: ../install-windows-prereqs.ps1 C:\openenclave\prereqs\nuget
         -IntelPSWURL       "{{ intel_psw_2_3_url if dcap_testing_node is defined and dcap_testing_node == true else intel_psw_2_2_url }}"
         -IntelDCAPURL      "{{ intel_dcap_url }}"
         -GitURL            "{{ git_url }}"

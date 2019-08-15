@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 Param(
+    [Parameter(Mandatory=$true)][string]$nugetInstallPath,
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
@@ -19,7 +20,8 @@ Param(
 $ErrorActionPreference = "Stop"
 
 $PACKAGES_DIRECTORY = Join-Path $env:TEMP "packages"
-$OE_NUGET_DIR = Join-Path ${env:SystemDrive} "openenclave\prereqs\nuget"
+$OE_NUGET_DIR = $nugetInstallPath
+Write-Host "Installing nuget dependencies to $OE_NUGET_DIR"
 
 $PACKAGES = @{
     "git" = @{
