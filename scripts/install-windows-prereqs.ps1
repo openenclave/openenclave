@@ -7,11 +7,11 @@ Param(
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
     [string]$OCamlURL = 'https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
-    [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15369/Intel%20SGX%20PSW%20for%20Windows%20v2.3.100.49777.exe',
+    [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15654/Intel%20SGX%20PSW%20for%20Windows%20v2.4.100.51291.exe',
     [string]$ShellCheckURL = 'https://storage.googleapis.com/shellcheck/shellcheck-stable.exe',
     [string]$NugetURL = 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
-    [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15384/Intel%20SGX%20DCAP%20for%20Windows%20v1.1.100.49925.exe',
+    [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15650/Intel%20SGX%20DCAP%20for%20Windows%20v1.2.100.49925.exe',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$AzureDCAPNupkgURL = 'https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg' # TODO: Update this to official link once this is available
 )
