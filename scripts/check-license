@@ -21,7 +21,7 @@ while IFS= read -r i; do
           continue
       fi
       ignore_res+=("$i")
-done <"$root/.check-license.ignore"
+done <"$root/scripts/.check-license.ignore"
 
 
 should_ignore() {
