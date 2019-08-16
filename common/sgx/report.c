@@ -52,9 +52,6 @@ static oe_result_t _parse_sgx_report_body(
         report_body->mrsigner,
         sizeof(report_body->mrsigner)));
 
-    if (report_body->isvprodid > OE_INT8_MAX)
-        OE_RAISE(OE_QUOTE_VERIFICATION_ERROR);
-
     parsed_report->identity.product_id[0] =
         (uint8_t)report_body->isvprodid & 0xFF;
     parsed_report->identity.product_id[1] =
