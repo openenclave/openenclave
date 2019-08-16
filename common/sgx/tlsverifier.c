@@ -127,7 +127,7 @@ oe_result_t oe_verify_attestation_certificate(
 #ifdef OE_BUILD_ENCLAVE
     result = oe_verify_report(report, report_size, &parsed_report);
 #else
-    result = oe_verify_report(NULL, report, report_size, &parsed_report);
+    result = oe_verify_remote_report(report, report_size, &parsed_report);
 #endif
     OE_CHECK(result);
     OE_TRACE_VERBOSE("quote validation succeeded");

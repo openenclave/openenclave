@@ -5,6 +5,7 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include "../common/common.h"
 #include "../common/tls_server_enc_pubkey.h"
