@@ -9,6 +9,7 @@
 #include <openenclave/internal/utils.h>
 #include <openssl/asn1.h>
 #include <openssl/x509.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 

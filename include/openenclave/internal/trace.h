@@ -21,6 +21,8 @@ typedef enum _oe_log_level
     OE_LOG_LEVEL_MAX
 } oe_log_level_t;
 
+extern oe_log_level_t _log_level;
+
 /* Maximum log length */
 #define OE_LOG_MESSAGE_LEN_MAX 2048U
 #define OE_MAX_FILENAME_LEN 256U
@@ -32,6 +34,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message);
 
 oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...);
 oe_log_level_t oe_get_current_logging_level(void);
+void initialize_log_config(void);
 
 #define OE_TRACE(level, ...)        \
     do                              \
