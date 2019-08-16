@@ -449,26 +449,27 @@ function Install-DCAPDrivers {
     $TEMP_NUGET_DIR = "$PACKAGES_DIRECTORY\Azure_DCAP_Client_nupkg"
     New-Directory -Path $OE_NUGET_DIR -RemoveExisting
     New-Directory -Path $TEMP_NUGET_DIR -RemoveExisting
-    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\nupkg"
+    $nupkgDir = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\nuget"
     if(!$nupkgDir) {
         Throw "Cannot find the Intel DCAP nupkg directory"
     }
     if($nupkgDir.Count -gt 1) {
-        Throw "Multiple Intel DCAP nupkg directories found"
+        Throw "Multiple Intel DCAP nuget directories found"
     }
     Copy-Item -Recurse -Force "$nupkgDir\*" $TEMP_NUGET_DIR
     Copy-Item $PACKAGES['azure_dcap_client_nupkg']['local_file'] -Destination $TEMP_NUGET_DIR -Force
-    & "$PACKAGES_DIRECTORY\nuget.exe" install 'EnclaveCommonAPI' -Source "$TEMP_NUGET_DIR" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+
+    & "$PACKAGES_DIRECTORY\nuget.exe" install 'Microsoft.Azure.DCAP.Client' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
         Throw "Failed to install nuget EnclaveCommonAPI"
     }
-    & "$PACKAGES_DIRECTORY\nuget.exe" install 'DCAP_Components' -Source "$TEMP_NUGET_DIR" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+    & "$PACKAGES_DIRECTORY\nuget.exe" install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
-        Throw "Failed to install nuget DCAP_Components"
+        Throw "Failed to install nuget EnclaveCommonAPI"
     }
-    & "$PACKAGES_DIRECTORY\nuget.exe" install 'Microsoft.Azure.DCAP.Client' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+    & "$PACKAGES_DIRECTORY\nuget.exe" install 'EnclaveCommonAPI' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
-        Throw "Failed to install nuget Microsoft.Azure.DCAP.Client"
+        Throw "Failed to install nuget EnclaveCommonAPI"
     }
 
     New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters" -Name "SGX_Launch_Config_Optin" -Value 1 -PropertyType DWORD -Force
