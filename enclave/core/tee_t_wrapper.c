@@ -34,7 +34,8 @@ static oe_result_t _call_host_function(
         input_buffer_size,
         output_buffer,
         output_buffer_size,
-        output_bytes_written);
+        output_bytes_written,
+        false /* non-switchless */);
 }
 
 #include "tee_t.c"

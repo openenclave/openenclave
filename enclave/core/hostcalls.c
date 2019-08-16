@@ -11,6 +11,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/stack_alloc.h>
 
+#include "shm.h"
 #include "tee_t.h"
 
 void* oe_host_malloc(size_t size)
@@ -150,25 +151,23 @@ int oe_host_fprintf(int device, const char* fmt, ...)
 }
 
 // Function used by oeedger8r for allocating switchless ocall buffers.
-// There are two possible approaches to implementing this function:
-//    1. Preallocate a pool of host memory per thread for switchless ocalls
-//       and then allocate memory from that pool. Since OE does not support
-//       reentrant ecalls in the same thread, there can at most be one ecall
-//       and one ocall active in a thread. This can enable implementing
-//       host memory pools more efficiently.
-//   2. The alternative is to allocate the  buffer in enclave memory.
-//      Then while issuing the underling SDK call to make the switchless ocall,
-//      use a ring-buffer to transfer the contents of the memory to the host
-//      and to transfer the results back.
+// Preallocate a pool of shared memory per thread for switchless ocalls
+// and then allocate memory from that pool. Since OE does not support
+// reentrant ecalls in the same thread, there can at most be one ecall
+// and one ocall active in a thread. Although an enclave function can
+// make multiple OCALLs, the OCALLs are serialized. So the allocation
+// for one OCALL doesn't interfere with the allocation for the next OCALL.
+// A stack-based allocation scheme is the most efficient in this case.
 void* oe_allocate_switchless_ocall_buffer(size_t size)
 {
-    return oe_host_malloc(size);
+    return oe_shm_malloc(size);
 }
 
 // Function used by oeedger8r for freeing ocall buffers.
 void oe_free_switchless_ocall_buffer(void* buffer)
 {
-    oe_host_free(buffer);
+    OE_UNUSED(buffer);
+    /* Do nothing. Buffer will be freed on ECALL RETURN */
 }
 
 int oe_host_write(int device, const char* str, size_t len)

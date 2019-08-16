@@ -4,6 +4,6 @@
 enclave {
     trusted {
         // Switchless functions not supported.
-        public void switchless() transition_using_threads;
+        public void foo() switchless;
     };
 };

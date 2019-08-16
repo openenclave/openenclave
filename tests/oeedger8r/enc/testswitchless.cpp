@@ -12,7 +12,7 @@ void test_switchless_edl_ocalls()
     OE_TEST(ocall_sum(&c, 5, 6) == OE_OK);
 
     // Switchless calls are not yet implemented
-    OE_TEST(switchless_ocall_sum(&c, 5, 6) == OE_UNSUPPORTED);
+    OE_TEST(switchless_ocall_sum(&c, 5, 6) == OE_OK);
 
     printf("=== test_switchless_edl_ocalls passed\n");
 }

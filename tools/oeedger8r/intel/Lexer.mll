@@ -88,7 +88,7 @@ rule tokenize = parse
   | "import"     { Timport }
   | "allow"      { Tallow }
   | "public"     { Tpublic }
-  | "transition_using_threads"       { Tswitchless }
+  | "switchless"       { Tswitchless }
   | "include"    { Tinclude }
   | "propagate_errno"      { Tpropagate_errno }
 

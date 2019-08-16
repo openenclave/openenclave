@@ -4,6 +4,6 @@
 enclave {
     untrusted {
         // Switchless functions not supported.
-        void switchless() transition_using_threads;
+        void switchless() switchless;
     };
 };
