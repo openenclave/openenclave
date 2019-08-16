@@ -16,7 +16,7 @@
 .type _start, @function
 _start:
 .cfi_startproc
-    b .
+    b __ta_entry
 .cfi_endproc
 
 .size _start, .-_start
