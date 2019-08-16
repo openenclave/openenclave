@@ -10,10 +10,10 @@
       set_fact:
         intel_psw_2_2_url:   "https://oejenkins.blob.core.windows.net/oejenkins/intel_sgx_win_2.2.100.47975_PV.zip"
         intel_psw_2_2_hash:  "EB479D1E029D51E48E534C284FCF5CCA3A937DA43052DCB2F4C71E5F354CA623"
-        intel_psw_2_3_url:   "https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_PSW_for_Windows_v2.3.100.49777.exe"
-        intel_psw_2_3_hash:  "ABB8CE0E8441D1E6084C8F02F64BF77269D3CD92C64A4FFC81FF240DE6F017B8"
-        intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel_SGX_DCAP_for_Windows_v1.1.100.49925.exe"
-        intel_dcap_hash:     "EF65B3ABE28C373C9634DD767373E9962C1FEF284EC692A934786A1A298DD749"
+        intel_psw_2_4_url:   "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.4.100.51291.exe"
+        intel_psw_2_4_hash:  "79AE32E984B5511CE4BF7568403333F837FBCE7E8D5730271C5D68F55BBF251D"
+        intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20DCAP%20for%20Windows%20v1.2.100.49925.exe"
+        intel_dcap_hash:     "F31E4451CA32E19CA3DCB0AFC49AFE9F4963C47BF62AAF24A8AE436BDA14FD8B"
         git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.19.1-64-bit.exe"
         git_hash:            "5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793"
         seven_zip_url:       "https://oejenkins.blob.core.windows.net/oejenkins/7z1806-x64.msi"
@@ -36,8 +36,8 @@
     - name: OE setup | Run the install-windows-prereqs.ps1 script (this may take a while)
       script: ../install-windows-prereqs.ps1
         -InstallPath        "C:\openenclave"
-        -IntelPSWURL        "{{ intel_psw_2_3_url if dcap_testing_node is defined and dcap_testing_node == true else intel_psw_2_2_url }}"
-        -IntelPSWHash       "{{ intel_psw_2_3_hash if dcap_testing_node is defined and dcap_testing_node == true else intel_psw_2_2_hash }}"
+        -IntelPSWURL        "{{ intel_psw_2_4_url if dcap_testing_node is defined and dcap_testing_node == true else intel_psw_2_2_url }}"
+        -IntelPSWHash       "{{ intel_psw_2_4_hash if dcap_testing_node is defined and dcap_testing_node == true else intel_psw_2_2_hash }}"
         -IntelDCAPURL       "{{ intel_dcap_url }}"
         -IntelDCAPHash      "{{ intel_dcap_hash }}"
         -GitURL             "{{ git_url }}"
