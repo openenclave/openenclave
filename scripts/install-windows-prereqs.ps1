@@ -3,23 +3,36 @@
 
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
+    [string]$GitHash = '5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
+    [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
+    [string]$VSBuildToolsHash = '7D5B0220670BA1C174F0AE1FF2CE87D65A508E66C321431FBD4751F478037E12',
     [string]$OCamlURL = 'https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip',
+    [string]$OCamlHash = '369F900F7CDA543ABF674520ED6004CC75008E10BEED0D34845E8A42866D0F3A',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
+    [string]$Clang7Hash = '672E4C420D6543A8A9F8EC5F1E5F283D88AC2155EF4C57232A399160A02BFF57',
     [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15654/Intel%20SGX%20PSW%20for%20Windows%20v2.4.100.51291.exe',
+    [string]$IntelPSWHash = '79AE32E984B5511CE4BF7568403333F837FBCE7E8D5730271C5D68F55BBF251D',
     [string]$ShellCheckURL = 'https://storage.googleapis.com/shellcheck/shellcheck-stable.exe',
+    [string]$ShellCheckHash = '8AAFDEFF31095613308E92CE6A13E3C41249B51E757FD4FCDFDFC7A81D29286A',
     [string]$NugetURL = 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe',
+    [string]$NugetHash = '0ACE4F53493332C9A75291EE96ACD76B371B4E687175E4852BF85948176D7152',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
+    [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
     [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15650/Intel%20SGX%20DCAP%20for%20Windows%20v1.2.100.49925.exe',
+    [string]$IntelDCAPHash = 'F31E4451CA32E19CA3DCB0AFC49AFE9F4963C47BF62AAF24A8AE436BDA14FD8B',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
+    [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg', # TODO: Update this to official link once this is available
+    [string]$AzureDCAPNupkgHash = '152ACE956348E80E533E63E6CB1D3CA20E4CA7DC775FC0B9413F552368F971D6',
     [switch]$WithoutFLC
 )
 
 if ($WithoutFLC)
 {
   $IntelPSWURL = "https://oejenkins.blob.core.windows.net/oejenkins/intel_sgx_win_2.2.100.47975_PV.zip"
+  $IntelPSWHash = 'EB479D1E029D51E48E534C284FCF5CCA3A937DA43052DCB2F4C71E5F354CA623'
 }
 
 $ErrorActionPreference = "Stop"
@@ -30,50 +43,62 @@ $OE_NUGET_DIR = Join-Path ${env:SystemDrive} "openenclave\prereqs\nuget"
 $PACKAGES = @{
     "git" = @{
         "url" = $GitURL
+        "hash" = $GitHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Git-64-bit.exe"
     }
     "7z" = @{
         "url" = $SevenZipURL
+        "hash" = $SevenZipHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "7z-x64.msi"
     }
     "vs_buildtools" = @{
         "url" = $VSBuildToolsURL
+        "hash" = $VSBuildToolsHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "vs_buildtools.exe"
     }
     "ocaml" = @{
         "url" = $OCamlURL
+        "hash" = $OCamlHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "ocpwin64.zip"
     }
     "clang7" = @{
         "url" = $Clang7URL
+        "hash" = $Clang7Hash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "LLVM-win64.exe"
     }
     "psw" = @{
         "url" = $IntelPSWURL
+        "hash" = $IntelPSWHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Intel_SGX_PSW_for_Windows.exe"
     }
     "shellcheck" = @{
         "url" = $ShellCheckURL
+        "hash" = $ShellCheckHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "shellcheck.exe"
     }
     "nuget" = @{
         "url" = $NugetURL
+        "hash" = $NugetHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "nuget.exe"
     }
     "devcon" = @{
         "url" = $DevconURL
+        "hash" = $DevconHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "devcon_package.cab"
     }
     "dcap" = @{
         "url" = $IntelDCAPURL
+        "hash" = $IntelDCAPHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Intel_SGX_DCAP.exe"
     }
     "vc_runtime_2012" = @{
         "url" = $VCRuntime2012URL
+        "hash" = $VCRuntime2012Hash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "vcredist_x64.exe"
     }
     "azure_dcap_client_nupkg" = @{
         "url" = $AzureDCAPNupkgURL
+        "hash" = $AzureDCAPNupkgHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Microsoft.Azure.DCAP.Client.1.0.0.nupkg"
     }
 }
@@ -113,6 +138,16 @@ function Start-LocalPackagesDownload {
         Write-Output "Downloading: $($PACKAGES[$pkg]["url"])"
         Start-FileDownload -URL $PACKAGES[$pkg]["url"] `
                            -Destination $PACKAGES[$pkg]["local_file"]
+        $downloaded_hash = Get-FileHash $PACKAGES[$pkg]["local_file"]
+        $expected_hash = $PACKAGES[$pkg]["hash"]
+        if ($downloaded_hash.Hash -ne $expected_hash)
+        {
+            Throw "Error: Computed hash ($downloaded_hash) does not match expected hash ($expected_hash)"
+        }
+        else
+        {
+            Write-Output "Computed hash ($downloaded_hash) matches expected hash ($expected_hash)"
+        }
     }
     Write-Output "Finished downloading all the packages"
 }
