@@ -26,6 +26,7 @@ Param(
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg', # TODO: Update this to official link once this is available
     [string]$AzureDCAPNupkgHash = '152ACE956348E80E533E63E6CB1D3CA20E4CA7DC775FC0B9413F552368F971D6',
+    [Parameter(mandatory=$true)][string]$InstallPath,
     [switch]$WithoutFLC
 )
 
@@ -38,7 +39,7 @@ if ($WithoutFLC)
 $ErrorActionPreference = "Stop"
 
 $PACKAGES_DIRECTORY = Join-Path $env:TEMP "packages"
-$OE_NUGET_DIR = Join-Path ${env:SystemDrive} "openenclave\prereqs\nuget"
+$OE_NUGET_DIR = Join-Path $InstallPath "prereqs\nuget"
 
 $PACKAGES = @{
     "git" = @{
