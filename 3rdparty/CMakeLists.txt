@@ -71,10 +71,7 @@ if (OE_TRUSTZONE)
           ${OE_TZ_OPTEE_CLIENT_SRC}
           ${OPTEE_CLIENT_DIR}
       UPDATE_COMMAND ""
-      PATCH_COMMAND
-        patch
-          ${OPTEE_CLIENT_DIR}/libteec/CMakeLists.txt
-          ${CMAKE_CURRENT_LIST_DIR}/optee/patches/libteec-CMakeLists-SHARED-to-STATIC.patch
+      PATCH_COMMAND ""
       CMAKE_ARGS
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
