@@ -65,21 +65,21 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
                 qe_report_body->mrsigner,
                 sizeof(qe_report_body->mrsigner));
             OE_RAISE_MSG(
-                OE_QUOTE_ENCLAVE_IDENTITY_MRSIGNER_MISMATCH,
+                OE_QUOTE_ENCLAVE_IDENTITY_UNIQUEID_MISMATCH,
                 "mrsigner mismatch",
                 NULL);
         }
 
         if (qe_report_body->isvprodid != g_qe_isvprodid)
             OE_RAISE_MSG(
-                QE_QUOTE_ENCLAVE_IDENTITY_ISV_PROD_ID_MISMATCH,
+                QE_QUOTE_ENCLAVE_IDENTITY_PRODUCTID_MISMATCH,
                 "isvprodid mismatch. Expected 0x%04X, actual 0x%04X",
                 g_qe_isvprodid,
                 qe_report_body->isvprodid);
 
         if (qe_report_body->isvsvn < g_qeisvsvn)
             OE_RAISE_MSG(
-                QE_QUOTE_ENCLAVE_IDENTITY_ISVSVN_UNEXPECTED,
+                OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
                 "isvsvn is out-of-date. Required SVN 0x%08X, actual SVN 0x%08X",
                 g_qeisvsvn,
                 qe_report_body->isvsvn);
@@ -145,19 +145,19 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
             "Actual mrsigner, qe_report_body->mrsigner:",
             qe_report_body->mrsigner,
             sizeof(qe_report_body->mrsigner));
-        OE_RAISE(OE_QUOTE_ENCLAVE_IDENTITY_MRSIGNER_MISMATCH);
+        OE_RAISE(OE_QUOTE_ENCLAVE_IDENTITY_UNIQUEID_MISMATCH);
     }
 
     if (qe_report_body->isvprodid != parsed_info.isvprodid)
         OE_RAISE_MSG(
-            QE_QUOTE_ENCLAVE_IDENTITY_ISV_PROD_ID_MISMATCH,
+            QE_QUOTE_ENCLAVE_IDENTITY_PRODUCTID_MISMATCH,
             "isvprodid mismatch. Expected 0x%04X, actual 0x%04X",
             parsed_info.isvprodid,
             qe_report_body->isvprodid);
 
     if (qe_report_body->isvsvn < parsed_info.isvsvn)
         OE_RAISE_MSG(
-            QE_QUOTE_ENCLAVE_IDENTITY_ISVSVN_UNEXPECTED,
+            OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
             "isvsvn is out-of-date. Required SVN 0x%08X, actual SVN 0x%08X",
             parsed_info.isvsvn,
             qe_report_body->isvsvn);

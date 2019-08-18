@@ -87,7 +87,7 @@ oe_result_t oe_verify_report(
         oe_secure_memcpy(&report_aes_cmac, sgx_report->mac, aes_cmac_length);
 
         if (!oe_secure_aes_cmac_equal(&computed_aes_cmac, &report_aes_cmac))
-            OE_RAISE(OE_VERIFY_FAILED_OES_CMAC_MISMATCH);
+            OE_RAISE(OE_VERIFY_FAILED_AES_CMAC_MISMATCH);
     }
     else
     {

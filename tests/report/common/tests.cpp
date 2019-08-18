@@ -836,7 +836,7 @@ void test_local_verify_report()
             &report_size) == OE_OK);
     OE_TEST(
         VerifyReport(report_ptr, report_size, NULL) ==
-        OE_VERIFY_FAILED_OES_CMAC_MISMATCH);
+        OE_VERIFY_FAILED_AES_CMAC_MISMATCH);
     oe_free_report(report_ptr);
 }
 
