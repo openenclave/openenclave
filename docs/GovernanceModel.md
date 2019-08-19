@@ -6,16 +6,20 @@ is to enable a vibrant development community for the Open Enclave SDK. If you
 feel we should make any changes to our guidelines, please start a discussion
 with us.
 
-Our model is based on the [liberal contribution
-policy](https://opensource.guide/leadership-and-governance/). We make decisions
-through a consensus seeking process, rather than a formal voting process.
+Our model is based on the
+[liberal contribution policy](https://opensource.guide/leadership-and-governance/).
+See [below](#accepting-contributions) for more info.
 
 Code of Conduct
 ---------------
 
 In order to maintain a pleasant and welcoming environment, we want to reiterate
-that it is imperative that all community members adhere to our [Code of
-Conduct](Contributing.md#code-of-conduct).
+that it is imperative that all community members adhere to our
+[Code of Conduct](Contributing.md#code-of-conduct).
+Anyone failing to follow the Code of Conduct will be removed from the community
+by the [Community Maintenance Committee](Maintainers.md). If you are made to
+feel uncomfortable, or have any concerns about behavior within the community, we
+encourage you to reach out to members of the Community Maintenance Committee.
 
 Design and Development Discussions
 ----------------------------------
@@ -37,25 +41,40 @@ Remember that security issues should be reported through a separate channel, and
 will receive a response within 24 hours. See [Reporting Security
 Issues](Contributing.md#reporting-security-issues).
 
-Maintainers and Contributors
-----------------------------
+Maintainers, Committers, and Contributors
+-----------------------------------------
 
-We currently define "maintainer" as anyone with direct write access to the Open
-Enclave repository on GitHub, and "contributor" as anyone else. For now, the
-only maintainers are Microsoft employees, but we hope to expand this in the
-future to include consistent contributors. Our process for doing so is not yet
-defined, but if you are interested, let us know!
+We define "maintainer" as members of the Open Enclave "Community Maintenance
+Committee", as listed in the [maintainers document](Maintainers.md). A
+"committer" is anyone with direct write access to the Open Enclave repository on
+GitHub, as granted by the Committee. All maintainers are committers, but not all
+committers are maintainers. Finally, "contributor" is anyone else making
+contributions to the project, including: creating or commenting on issues,
+opening or reviewing pull requests, or other useful contributions such as
+providing support in forums or chats.
+
+See the [maintainers document](Maintainers.md) for the Community Maintenance
+Committee, our process for adding new committers and maintainers, as well the
+areas of expertise for each of the committers.
 
 Accepting Contributions
 -----------------------
 
-Project maintainers will merge changes that improve the product significantly
-and broadly and that align with the [Open Enclave roadmap](
-https://github.com/openenclave/openenclave/projects).
+Project committers will merge changes that improve the product significantly and
+broadly and that align with the
+[Open Enclave roadmap](https://github.com/openenclave/openenclave/projects).
+Contributions must also satisfy the other [published guidelines](Contributing.md).
+Committers may revert changes if they are found to be breaking.
 
-Contributions must also satisfy the other [published
-guidelines](Contributing.md). We may revert changes if they are found to be
-breaking.
+We make most decisions through a consensus seeking process, rather than a formal
+voting process. For example, committers can merge contributions that were
+reviewed without objections. If there are objections that cannot be resolved, an
+issue can be escalated to the Community Maintenance Committee to make a
+decision, which handles issues as discussed in the
+[maintainers document](Maintainers.md).
+
+See the [maintainers document](Maintainers.md) for the list of project
+committers, and how to become one.
 
 Community Approval of Releases
 ------------------------------
