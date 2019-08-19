@@ -27,13 +27,19 @@ Param(
     [string]$AzureDCAPNupkgURL = 'https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg', # TODO: Update this to official link once this is available
     [string]$AzureDCAPNupkgHash = '152ACE956348E80E533E63E6CB1D3CA20E4CA7DC775FC0B9413F552368F971D6',
     [Parameter(mandatory=$true)][string]$InstallPath,
-    [switch]$WithoutFLC
+    [Parameter(mandatory=$true)][bool]$WithAzureDCAPClient,
+    [Parameter(mandatory=$true)][bool]$WithFLC
 )
 
-if ($WithoutFLC)
+if ( ($WithFLC -eq $false) -and ($WithAzureDCAPClient -eq $true) )
 {
-  $IntelPSWURL = "https://oejenkins.blob.core.windows.net/oejenkins/intel_sgx_win_2.2.100.47975_PV.zip"
-  $IntelPSWHash = 'EB479D1E029D51E48E534C284FCF5CCA3A937DA43052DCB2F4C71E5F354CA623'
+    Throw "Error: WithFLC cannot be false while WithAzureDCAPClient is true."
+}
+
+if ($WithFLC -eq $false)
+{
+    $IntelPSWURL = "https://oejenkins.blob.core.windows.net/oejenkins/intel_sgx_win_2.2.100.47975_PV.zip"
+    $IntelPSWHash = 'EB479D1E029D51E48E534C284FCF5CCA3A937DA43052DCB2F4C71E5F354CA623'
 }
 
 $ErrorActionPreference = "Stop"
@@ -501,9 +507,13 @@ function Install-DCAPDrivers {
     Copy-Item -Recurse -Force "$nupkgDir\*" $TEMP_NUGET_DIR
     Copy-Item $PACKAGES['azure_dcap_client_nupkg']['local_file'] -Destination $TEMP_NUGET_DIR -Force
 
-    & "$PACKAGES_DIRECTORY\nuget.exe" install 'Microsoft.Azure.DCAP.Client' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
-    if($LASTEXITCODE -ne 0) {
-        Throw "Failed to install nuget EnclaveCommonAPI"
+    # Note: the ordering of nuget installs below is important to preserve here until the issue with the EnclaveCommonAPI nuget package gets fixed.
+    if ($WithAzureDCAPClient -eq $true)
+    {
+        & "$PACKAGES_DIRECTORY\nuget.exe" install 'Microsoft.Azure.DCAP.Client' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+        if($LASTEXITCODE -ne 0) {
+            Throw "Failed to install nuget EnclaveCommonAPI"
+        }
     }
     & "$PACKAGES_DIRECTORY\nuget.exe" install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
@@ -536,7 +546,10 @@ try {
     Install-OCaml
     Install-Shellcheck
     Install-PSW
-    Install-DCAPDrivers
+    if ($WithFLC -eq $true)
+    {
+        Install-DCAPDrivers
+    }
     Install-VCRuntime
 
     Write-Output 'Please reboot your computer for the configuration to complete.'
