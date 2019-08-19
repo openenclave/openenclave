@@ -15,6 +15,6 @@ enclave {
             [string, in] char* str1,
             [user_check] char* str2,
             [in] char str3[100])
-            switchless;
+            transition_using_threads;
     };
 };

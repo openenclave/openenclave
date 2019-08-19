@@ -4,6 +4,8 @@
 #ifndef _OE_SHM_H
 #define _OE_SHM_H
 
+#include <stddef.h>
+
 typedef struct _shared_memory_pool
 {
     /* Buffer holding the shared memory pool */

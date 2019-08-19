@@ -42,7 +42,10 @@ void* oe_shm_malloc(size_t size)
 
     if (shm.buffer == NULL)
     {
-        shm.buffer = (uint8_t*)oe_reserve_shm(capacity);
+        void* buffer = oe_reserve_shm(capacity);
+        if (buffer == NULL)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        shm.buffer = (uint8_t*)buffer;
         shm.capacity = capacity;
         shm.used = 0;
 
@@ -63,11 +66,15 @@ void* oe_shm_malloc(size_t size)
     size_t used_after;
     OE_CHECK(oe_safe_add_sizet(shm.used, total_size, &used_after));
 
+    // Ok if the incoming malloc puts us below the capacity.
     if (used_after <= shm.capacity)
     {
+        uint8_t* addr = shm.buffer + shm.used;
         shm.used = used_after;
-        return shm.buffer + shm.used - total_size;
+        return addr;
     }
+    else
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
 done:
     return NULL;
