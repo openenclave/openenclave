@@ -27,8 +27,8 @@ Param(
     [string]$AzureDCAPNupkgURL = 'https://oejenkins.blob.core.windows.net/oejenkins/Microsoft.Azure.DCAP.Client.1.0.0.nupkg', # TODO: Update this to official link once this is available
     [string]$AzureDCAPNupkgHash = '152ACE956348E80E533E63E6CB1D3CA20E4CA7DC775FC0B9413F552368F971D6',
     [Parameter(mandatory=$true)][string]$InstallPath,
-    [Parameter(mandatory=$true)][bool]$WithAzureDCAPClient,
-    [Parameter(mandatory=$true)][bool]$WithFLC
+    [Parameter(mandatory=$true)][bool]$WithFLC,
+    [Parameter(mandatory=$true)][bool]$WithAzureDCAPClient
 )
 
 if ( ($WithFLC -eq $false) -and ($WithAzureDCAPClient -eq $true) )
@@ -266,7 +266,7 @@ function Install-Tool {
         $parameters['FilePath'] = 'msiexec.exe'
         $parameters['ArgumentList'] = @("/i", $InstallerPath) + $ArgumentList
     }
-    Write-Output "Installing $InstallerPath"
+    Write-Output "Installing $InstallerPath with " @parameters
     $p = Start-Process @parameters
     if($p.ExitCode -ne 0) {
         Throw "Failed to install: $InstallerPath"
