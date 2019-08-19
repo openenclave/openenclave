@@ -4,7 +4,7 @@
 #ifndef _OE_SHM_H
 #define _OE_SHM_H
 
-#include <stddef.h>
+#include <openenclave/bits/types.h>
 
 typedef struct _shared_memory_pool
 {

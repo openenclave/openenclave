@@ -39,6 +39,7 @@ bool oe_configure_shm_capacity(size_t cap)
 void* oe_shm_malloc(size_t size)
 {
     oe_result_t result = OE_UNEXPECTED;
+    size_t total_size = 0;
 
     if (shm.buffer == NULL)
     {
@@ -57,7 +58,7 @@ void* oe_shm_malloc(size_t size)
     }
 
     // Round up to the nearest alignment size.
-    size_t total_size = oe_round_up_to_multiple(size, ALIGNMENT);
+    total_size = oe_round_up_to_multiple(size, ALIGNMENT);
 
     // check for overflow
     OE_CHECK(total_size < size);
