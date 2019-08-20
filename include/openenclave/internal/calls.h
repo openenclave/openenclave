@@ -255,7 +255,8 @@ oe_result_t oe_call_host_function_by_table_id(
     size_t input_buffer_size,
     void* output_buffer,
     size_t output_buffer_size,
-    size_t* output_bytes_written);
+    size_t* output_bytes_written,
+    bool switchless);
 
 /*
 **==============================================================================

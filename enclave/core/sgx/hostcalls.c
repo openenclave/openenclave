@@ -17,3 +17,13 @@ void oe_free_ocall_buffer(void* buffer)
 {
     oe_host_free(buffer);
 }
+
+void* oe_reserve_shm(size_t capacity)
+{
+    return oe_host_malloc(capacity);
+}
+
+void oe_unreserve_shm(void* buffer)
+{
+    oe_host_free(buffer);
+}

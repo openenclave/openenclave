@@ -474,7 +474,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
           f.tf_fdecl.fname ;
       if f.tf_is_switchless && not ep.experimental then
         failwithf
-          "Function '%s': switchless ecalls and ocalls are not yet supported \
+          "Function '%s': switchless ecalls are not yet supported \
            by Open Enclave SDK."
           f.tf_fdecl.fname )
     tfs ;
@@ -496,9 +496,9 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
           f.uf_fdecl.fname ;
       if f.uf_is_switchless && not ep.experimental then
         failwithf
-          "Function '%s': switchless ecalls and ocalls are not yet supported \
+          "Function '%s': switchless ocalls are not yet supported \
            by Open Enclave SDK."
-          f.uf_fdecl.fname )
+           f.uf_fdecl.fname )
     ufs ;
   (* Map warning functions over trusted and untrusted function
      declarations *)

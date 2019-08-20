@@ -21,6 +21,7 @@
 #include <openenclave/internal/utils.h>
 #include "../../sgx/report.h"
 #include "../atexit.h"
+#include "../shm.h"
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
@@ -386,6 +387,8 @@ static void _handle_ecall(
         case OE_ECALL_CALL_ENCLAVE_FUNCTION:
         {
             arg_out = _handle_call_enclave_function(arg_in);
+            /* clear up shared memory upon ERET */
+            oe_shm_clear();
             break;
         }
         case OE_ECALL_DESTRUCTOR:
@@ -395,6 +398,9 @@ static void _handle_ecall(
 
             /* Call all finalization functions */
             oe_call_fini_functions();
+
+            /* Free shared memory upon destroying enclave */
+            oe_shm_destroy();
 
 #if defined(OE_USE_DEBUG_MALLOC)
 
@@ -550,7 +556,8 @@ oe_result_t oe_call_host_function_by_table_id(
     size_t input_buffer_size,
     void* output_buffer,
     size_t output_buffer_size,
-    size_t* output_bytes_written)
+    size_t* output_bytes_written,
+    bool switchless)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_call_host_function_args_t* args = NULL;
@@ -560,25 +567,31 @@ oe_result_t oe_call_host_function_by_table_id(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the arguments */
-    {
-        if (!(args = oe_host_calloc(1, sizeof(*args))))
-        {
-            /* Fail if the enclave is crashing. */
-            OE_CHECK(__oe_enclave_status);
-            OE_RAISE(OE_OUT_OF_MEMORY);
-        }
+    args = switchless ? oe_shm_calloc(sizeof(*args))
+                      : oe_host_calloc(1, sizeof(*args));
 
-        args->table_id = table_id;
-        args->function_id = function_id;
-        args->input_buffer = input_buffer;
-        args->input_buffer_size = input_buffer_size;
-        args->output_buffer = output_buffer;
-        args->output_buffer_size = output_buffer_size;
-        args->result = OE_UNEXPECTED;
+    if (args == NULL)
+    {
+        /* Fail if the enclave is crashing. */
+        OE_CHECK(__oe_enclave_status);
+        OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
+    args->table_id = table_id;
+    args->function_id = function_id;
+    args->input_buffer = input_buffer;
+    args->input_buffer_size = input_buffer_size;
+    args->output_buffer = output_buffer;
+    args->output_buffer_size = output_buffer_size;
+    args->result = OE_UNEXPECTED;
+
     /* Call the host function with this address */
-    OE_CHECK(oe_ocall(OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args, NULL));
+    // TODO: for switchessless calls, push the job (wrapped in args) to an
+    // available worker thread, and wait for result
+    // if (!switchless)
+    {
+        OE_CHECK(oe_ocall(OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args, NULL));
+    }
 
     /* Check the result */
     OE_CHECK(args->result);
@@ -587,8 +600,10 @@ oe_result_t oe_call_host_function_by_table_id(
     result = OE_OK;
 
 done:
-
-    oe_host_free(args);
+    if (!switchless)
+    {
+        oe_host_free(args);
+    }
 
     return result;
 }
@@ -617,7 +632,8 @@ oe_result_t oe_call_host_function(
         input_buffer_size,
         output_buffer,
         output_buffer_size,
-        output_bytes_written);
+        output_bytes_written,
+        false /* non-switchless */);
 }
 
 /*
@@ -637,13 +653,15 @@ oe_result_t oe_switchless_call_host_function(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    OE_UNUSED(function_id);
-    OE_UNUSED(input_buffer);
-    OE_UNUSED(input_buffer_size);
-    OE_UNUSED(output_buffer);
-    OE_UNUSED(output_buffer_size);
-    OE_UNUSED(output_bytes_written);
-    return OE_UNSUPPORTED;
+    return oe_call_host_function_by_table_id(
+        OE_UINT64_MAX,
+        function_id,
+        input_buffer,
+        input_buffer_size,
+        output_buffer,
+        output_buffer_size,
+        output_bytes_written,
+        true /* switchless */);
 }
 
 /*
@@ -881,6 +899,9 @@ void oe_abort(void)
     {
         __oe_enclave_status = OE_ENCLAVE_ABORTING;
     }
+
+    // Free the shared memory pools
+    oe_shm_destroy();
 
     // Return to the latest ECALL.
     _handle_exit(OE_CODE_ERET, 0, __oe_enclave_status);
