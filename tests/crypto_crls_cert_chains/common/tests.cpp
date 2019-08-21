@@ -53,17 +53,6 @@ void test_cert_chain_positive(
         create_and_read_chain(
             std::vector<const char*>{intermediate, root}, &chain) == OE_OK);
 
-    // Two leaf certs in chain, but starts at intermediate.
-    // For successful validation, each cert's issuer must also be present in the
-    // chain. The order does not matter. The chain will be reordered internally
-    // to leaf->intermediate->root.
-    //
-    OE_TEST(
-        create_and_read_chain(
-            std::vector<const char*>{
-                intermediate, leaf, leaf2, intermediate, root},
-            &chain) == OE_OK);
-
     // Incorrect order. This is accepted and fixed internally.
     OE_TEST(
         create_and_read_chain(
@@ -84,11 +73,30 @@ void test_cert_chain_positive(
             std::vector<const char*>{intermediate, root, leaf}, &chain) ==
         OE_OK);
 
+#if defined(_WIN32)
+    // NOTE: Windows cert chaining implementation does not tolerate extraneous
+    // certs in the cert chain which are not duplicates. Per #1593, the
+    // set of idiosyncratic behaviors arising from the cert ordering code needs
+    // to be simplified and tightened to strictly accept cert chains provided
+    // in the expected order.
+    OE_UNUSED(leaf2);
+#else
     // Incorrect order. Leaf2 is not followed by intermediate.
     OE_TEST(
         create_and_read_chain(
             std::vector<const char*>{leaf, intermediate, leaf2, root},
             &chain) == OE_OK);
+
+    // Two leaf certs in chain, but starts at intermediate.
+    // For successful validation, each cert's issuer must also be present in the
+    // chain. The order does not matter. The chain will be reordered internally
+    // to leaf->intermediate->root.
+    OE_TEST(
+        create_and_read_chain(
+            std::vector<const char*>{
+                intermediate, leaf, leaf2, intermediate, root},
+            &chain) == OE_OK);
+#endif
 
     oe_cert_chain_free(&chain);
 

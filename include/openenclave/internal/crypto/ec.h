@@ -149,23 +149,6 @@ oe_result_t oe_ec_public_key_verify(
     const uint8_t* signature,
     size_t signature_size);
 
-/**
- * Generates an EC private-public key pair
- *
- * This function generates an EC private-public key pair from the given
- * parameters.
- *
- * @param ec_type type of elliptical curve to be generated
- * @param private_key generated private key
- * @param public_key generated public key
- *
- * @return OE_OK on success
- */
-oe_result_t oe_ec_generate_key_pair(
-    oe_ec_type_t ec_type,
-    oe_ec_private_key_t* private_key,
-    oe_ec_public_key_t* public_key);
-
 /*
  * Computes an EC private-public key from a given private key
  *

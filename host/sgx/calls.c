@@ -22,10 +22,12 @@
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
+#include "../calls.h"
 #include "../hostthread.h"
 #include "../ocalls.h"
 #include "asmdefs.h"
@@ -104,7 +106,7 @@ ThreadBinding* GetThreadBinding()
 static oe_result_t _enter_sim(
     oe_enclave_t* enclave,
     void* tcs_,
-    void (*aep)(void),
+    uint64_t aep,
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,
@@ -178,7 +180,7 @@ OE_ALWAYS_INLINE
 static oe_result_t _do_eenter(
     oe_enclave_t* enclave,
     void* tcs,
-    void (*aep)(void),
+    uint64_t aep,
     oe_code_t code_in,
     uint16_t func_in,
     uint64_t arg_in,
@@ -233,46 +235,6 @@ static oe_result_t _do_eenter(
         *result_out = oe_get_result_from_call_arg1(arg3);
         *arg_out = arg4;
     }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-/*
-**==============================================================================
-**
-** oe_register_ocall_function_table()
-**
-** Register an ocall table with the given table_id.
-**
-**==============================================================================
-*/
-
-typedef struct _ocall_table
-{
-    const oe_ocall_func_t* ocalls;
-    size_t num_ocalls;
-} ocall_table_t;
-
-static ocall_table_t _ocall_tables[OE_MAX_OCALL_TABLES];
-static oe_mutex _ocall_tables_lock = OE_H_MUTEX_INITIALIZER;
-
-oe_result_t oe_register_ocall_function_table(
-    uint64_t table_id,
-    const oe_ocall_func_t* ocalls,
-    size_t num_ocalls)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    if (table_id >= OE_MAX_OCALL_TABLES || !ocalls)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    oe_mutex_lock(&_ocall_tables_lock);
-    _ocall_tables[table_id].ocalls = ocalls;
-    _ocall_tables[table_id].num_ocalls = num_ocalls;
-    oe_mutex_unlock(&_ocall_tables_lock);
 
     result = OE_OK;
 
@@ -367,22 +329,18 @@ done:
 
 static const char* oe_ocall_str(oe_func_t ocall)
 {
-    static const char* func_names[] = {"CALL_HOST_FUNCTION",
-                                       "GET_QE_TARGET_INFO",
-                                       "GET_QUOTE",
-                                       "GET_REVOCATION_INFO",
-                                       "GET_QE_ID_INFO",
-                                       "THREAD_WAKE",
-                                       "THREAD_WAIT",
-                                       "THREAD_WAKE_WAIT",
-                                       "MALLOC",
-                                       "REALLOC",
-                                       "FREE",
-                                       "WRITE",
-                                       "SLEEP",
-                                       "GET_TIME",
-                                       "BACKTRACE_SYMBOLS",
-                                       "LOG"};
+    // clang-format off
+    static const char* func_names[] =
+    {
+        "CALL_HOST_FUNCTION",
+        "THREAD_WAKE",
+        "THREAD_WAIT",
+        "MALLOC",
+        "FREE",
+        "SLEEP",
+        "GET_TIME",
+    };
+    // clang-format on
 
     OE_STATIC_ASSERT(OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX);
 
@@ -395,15 +353,15 @@ static const char* oe_ocall_str(oe_func_t ocall)
 
 static const char* oe_ecall_str(oe_func_t ecall)
 {
-    static const char* func_names[] = {"DESTRUCTOR",
-                                       "INIT_ENCLAVE",
-                                       "CALL_ENCLAVE_FUNCTION",
-                                       "VERIFY_REPORT",
-                                       "GET_SGX_REPORT",
-                                       "VIRTUAL_EXCEPTION_HANDLER",
-                                       "LOG_INIT",
-                                       "GET_PUBLIC_KEY_BY_POLICY",
-                                       "GET_PUBLIC_KEY"};
+    // clang-format off
+    static const char* func_names[] =
+    {
+        "DESTRUCTOR",
+        "INIT_ENCLAVE",
+        "CALL_ENCLAVE_FUNCTION",
+        "VIRTUAL_EXCEPTION_HANDLER"
+    };
+    // clang-format on
 
     OE_STATIC_ASSERT(OE_ECALL_BASE + OE_COUNTOF(func_names) == OE_ECALL_MAX);
 
@@ -457,16 +415,8 @@ static oe_result_t _handle_ocall(
             HandleMalloc(arg_in, arg_out);
             break;
 
-        case OE_OCALL_REALLOC:
-            HandleRealloc(arg_in, arg_out);
-            break;
-
         case OE_OCALL_FREE:
             HandleFree(arg_in);
-            break;
-
-        case OE_OCALL_WRITE:
-            HandlePrint(arg_in);
             break;
 
         case OE_OCALL_THREAD_WAIT:
@@ -477,42 +427,12 @@ static oe_result_t _handle_ocall(
             HandleThreadWake(enclave, arg_in);
             break;
 
-        case OE_OCALL_THREAD_WAKE_WAIT:
-            HandleThreadWakeWait(enclave, arg_in);
-            break;
-
-        case OE_OCALL_GET_QUOTE:
-            HandleGetQuote(arg_in);
-            break;
-
-#ifdef OE_USE_LIBSGX
-        // Quote revocation is supported only on libsgx platforms.
-        case OE_OCALL_GET_REVOCATION_INFO:
-            HandleGetQuoteRevocationInfo(arg_in);
-            break;
-        case OE_OCALL_GET_QE_ID_INFO:
-            HandleGetQuoteEnclaveIdentityInfo(arg_in);
-            break;
-#endif
-
-        case OE_OCALL_GET_QE_TARGET_INFO:
-            HandleGetQETargetInfo(arg_in);
-            break;
-
         case OE_OCALL_SLEEP:
             oe_handle_sleep(arg_in);
             break;
 
         case OE_OCALL_GET_TIME:
             oe_handle_get_time(arg_in, arg_out);
-            break;
-
-        case OE_OCALL_BACKTRACE_SYMBOLS:
-            oe_handle_backtrace_symbols(enclave, arg_in);
-            break;
-
-        case OE_OCALL_LOG:
-            oe_handle_log(enclave, arg_in);
             break;
 
         default:
@@ -660,6 +580,11 @@ static void* _assign_tcs(oe_enclave_t* enclave)
             {
                 binding->count++;
                 tcs = (void*)binding->tcs;
+
+                /* Notify the debugger runtime */
+                if (enclave->debug && enclave->debug_enclave != NULL)
+                    oe_debug_push_thread_binding(
+                        enclave->debug_enclave, (sgx_tcs_t*)tcs);
                 break;
             }
         }
@@ -681,6 +606,11 @@ static void* _assign_tcs(oe_enclave_t* enclave)
                     /* Set into TSD so asynchronous exceptions can get it */
                     _set_thread_binding(binding);
                     assert(GetThreadBinding() == binding);
+
+                    /* Notify the debugger runtime */
+                    if (enclave->debug && enclave->debug_enclave != NULL)
+                        oe_debug_push_thread_binding(
+                            enclave->debug_enclave, (sgx_tcs_t*)tcs);
                     break;
                 }
             }
@@ -716,6 +646,10 @@ static void _release_tcs(oe_enclave_t* enclave, void* tcs)
                 (void*)binding->tcs == tcs)
             {
                 binding->count--;
+
+                /* Notify the debugger runtime */
+                if (enclave->debug && enclave->debug_enclave != NULL)
+                    oe_debug_pop_thread_binding();
 
                 if (binding->count == 0)
                 {
@@ -775,7 +709,7 @@ oe_result_t oe_ecall(
     OE_CHECK(_do_eenter(
         enclave,
         tcs,
-        OE_AEP,
+        OE_AEP_ADDRESS,
         code,
         func,
         arg,
@@ -809,14 +743,15 @@ done:
 /*
 **==============================================================================
 **
-** oe_call_enclave_function_by_table_id()
+** oe_switchless_call_enclave_function_by_table_id()
 **
-** Call the enclave function specified by the given table-id and function-id.
+** Switchlessly call the enclave function specified by the given table-id and
+*function-id.
 **
 **==============================================================================
 */
 
-oe_result_t oe_call_enclave_function_by_table_id(
+static oe_result_t oe_switchless_call_enclave_function_by_table_id(
     oe_enclave_t* enclave,
     uint64_t table_id,
     uint64_t function_id,
@@ -845,16 +780,9 @@ oe_result_t oe_call_enclave_function_by_table_id(
         args.result = OE_UNEXPECTED;
     }
 
-    /* Perform the ECALL */
+    /* TODO: @EMumau Perform the Switchless ECALL */
     {
-        uint64_t arg_out = 0;
-
-        OE_CHECK(oe_ecall(
-            enclave,
-            OE_ECALL_CALL_ENCLAVE_FUNCTION,
-            (uint64_t)&args,
-            &arg_out));
-        OE_CHECK((oe_result_t)arg_out);
+        OE_RAISE(OE_UNSUPPORTED);
     }
 
     /* Check the result */
@@ -870,15 +798,14 @@ done:
 /*
 **==============================================================================
 **
-** oe_call_enclave_function()
+** oe_switchless_call_enclave_function()
 **
-** Call the enclave function specified by the given function-id in the default
-** function table.
+** Switchlessly call the enclave function specified by the given function-id in
+** the default function table.
 **
 **==============================================================================
 */
-
-oe_result_t oe_call_enclave_function(
+oe_result_t oe_switchless_call_enclave_function(
     oe_enclave_t* enclave,
     uint32_t function_id,
     const void* input_buffer,
@@ -887,7 +814,7 @@ oe_result_t oe_call_enclave_function(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    return oe_call_enclave_function_by_table_id(
+    return oe_switchless_call_enclave_function_by_table_id(
         enclave,
         OE_UINT64_MAX,
         function_id,

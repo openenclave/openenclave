@@ -186,25 +186,6 @@ oe_result_t oe_rsa_public_key_verify(
     size_t signature_size);
 
 /**
- * Generates an RSA private-public key pair
- *
- * This function generates an RSA private-public key pair from the given
- * parameters.
- *
- * @param bits the number of bits in the key
- * @param exponent the exponent for this key
- * @param private_key generated private key
- * @param public_key generated public key
- *
- * @return OE_OK on success
- */
-oe_result_t oe_rsa_generate_key_pair(
-    uint64_t bits,
-    uint64_t exponent,
-    oe_rsa_private_key_t* private_key,
-    oe_rsa_public_key_t* public_key);
-
-/**
  * Get the modulus from a public RSA key.
  *
  * This function gets the modulus from a public RSA key. The modulus is

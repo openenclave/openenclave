@@ -13,6 +13,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
+#include "sgx_t.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
@@ -121,27 +122,12 @@ done:
 
 static oe_result_t _get_sgx_target_info(sgx_target_info_t* target_info)
 {
-    oe_result_t result = OE_UNEXPECTED;
-    oe_get_qetarget_info_args_t* args =
-        (oe_get_qetarget_info_args_t*)oe_host_calloc(1, sizeof(*args));
-    if (args == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
+    uint32_t retval;
 
-    OE_CHECK(oe_ocall(OE_OCALL_GET_QE_TARGET_INFO, (uint64_t)args, NULL));
+    if (oe_get_qetarget_info_ocall(&retval, target_info) != OE_OK)
+        return OE_FAILURE;
 
-    result = args->result;
-    if (result == OE_OK)
-        *target_info = args->target_info;
-
-    result = OE_OK;
-done:
-    if (args)
-    {
-        oe_secure_zero_fill(args, sizeof(*args));
-        oe_host_free(args);
-    }
-
-    return result;
+    return (oe_result_t)retval;
 }
 
 static oe_result_t _get_quote(
@@ -150,7 +136,7 @@ static oe_result_t _get_quote(
     size_t* quote_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t arg_size = sizeof(oe_get_qetarget_info_args_t);
+    uint32_t retval;
 
     // If quote buffer is NULL, then ignore passed in quote_size value.
     // This treats scenarios where quote == NULL and *quote_size == large-value
@@ -158,32 +144,11 @@ static oe_result_t _get_quote(
     if (quote == NULL)
         *quote_size = 0;
 
-    // Allocate memory for args structure + quote buffer.
-    arg_size += *quote_size;
-
-    oe_get_quote_args_t* args =
-        (oe_get_quote_args_t*)oe_host_calloc(1, arg_size);
-    args->sgx_report = *sgx_report;
-    args->quote_size = *quote_size;
-
-    if (args == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    OE_CHECK(oe_ocall(OE_OCALL_GET_QUOTE, (uint64_t)args, NULL));
-    result = args->result;
-
-    if (result == OE_OK || result == OE_BUFFER_TOO_SMALL)
-        *quote_size = args->quote_size;
-
-    if (result == OE_OK)
-        OE_CHECK(oe_memcpy_s(quote, *quote_size, args->quote, *quote_size));
+    OE_CHECK(oe_get_quote_ocall(
+        &retval, sgx_report, quote, *quote_size, quote_size));
+    result = (oe_result_t)retval;
 
 done:
-    if (args)
-    {
-        oe_secure_zero_fill(args, arg_size);
-        oe_host_free(args);
-    }
 
     return result;
 }
@@ -393,36 +358,24 @@ void oe_free_report(uint8_t* report_buffer)
     oe_free(report_buffer);
 }
 
-oe_result_t _handle_get_sgx_report(uint64_t arg_in)
+oe_result_t oe_get_sgx_report_ecall(
+    const void* opt_params,
+    size_t opt_params_size,
+    sgx_report_t* report)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_sgx_report_args_t* host_arg = (oe_get_sgx_report_args_t*)arg_in;
-    oe_get_sgx_report_args_t enc_arg;
     size_t report_buffer_size = sizeof(sgx_report_t);
 
-    if (!oe_is_outside_enclave(host_arg, sizeof(*host_arg)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    // Validate and copy args to prevent TOCTOU issues.
-    // oe_get_sgx_report_args_t is a flat structure with no nested pointers.
-    enc_arg = *host_arg;
-
-    // Host is not allowed to pass report data. Otherwise, the host can use the
-    // enclave to put whatever data it wants in a report. The data field is
-    // intended to be used for digital signatures and is not allowed to be
-    // tampered with by the host.
     OE_CHECK(_get_local_report(
         NULL,
         0,
-        (enc_arg.opt_params_size != 0) ? enc_arg.opt_params : NULL,
-        enc_arg.opt_params_size,
-        (uint8_t*)&enc_arg.sgx_report,
+        opt_params,
+        opt_params_size,
+        (uint8_t*)report,
         &report_buffer_size));
 
-    *host_arg = enc_arg;
     result = OE_OK;
-    host_arg->result = result;
-done:
 
+done:
     return result;
 }

@@ -3,22 +3,40 @@
 
 ##==============================================================================
 ##
-## These rules generate the edge routines for the internal ECALLs/OCALLs used
-## by liboehost/liboecore.
+## These rules generate the edge routines for the internal TEE-agnostic
+## ECALLs/OCALLs used by liboehost/liboecore.
+##
+##==============================================================================
+
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+
+set(TEE_EDL_FILE ${EDL_DIR}/tee.edl)
+
+add_custom_command(
+    OUTPUT tee_u.h tee_u.c tee_args.h
+    DEPENDS ${TEE_EDL_FILE} edger8r
+    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${TEE_EDL_FILE})
+
+add_custom_target(tee_untrusted_edl
+    DEPENDS tee_u.h tee_u.c tee_args.h)
+
+##==============================================================================
+##
+## These rules generate the edge routines for the internal SGX-specific
+## ECALLs/OCALLs used by liboehost/liboecore.
 ##
 ##==============================================================================
 
 if(OE_SGX)
-    set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
-    set(INTERNAL_EDL ${EDL_DIR}/sgx/internal.edl)
+    set(SGX_EDL_FILE ${EDL_DIR}/sgx/sgx.edl)
 
     add_custom_command(
-        OUTPUT internal_u.h internal_u.c internal_args.h
-        DEPENDS ${INTERNAL_EDL} edger8r
-        COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${INTERNAL_EDL})
+        OUTPUT sgx_u.h sgx_u.c sgx_args.h
+        DEPENDS ${SGX_EDL_FILE} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SGX_EDL_FILE})
 
-    add_custom_target(internal_untrusted_edl
-        DEPENDS internal_u.h internal_u.c internal_args.h)
+    add_custom_target(sgx_untrusted_edl
+        DEPENDS sgx_u.h sgx_u.c sgx_args.h)
 endif()
 
 ##==============================================================================
@@ -28,7 +46,6 @@ endif()
 ##
 ##==============================================================================
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
 set(SYSCALL_EDL ${EDL_DIR}/syscall.edl)
 
 add_custom_command(
@@ -47,28 +64,41 @@ add_custom_target(syscall_untrusted_edl
 
 # OS specific but arch agnostic files.
 if (UNIX)
-  set(PLATFORM_SRC
-    ../common/asn1.c
+  set(PLATFORM_HOST_ONLY_SRC
     ../common/cert.c
     crypto/openssl/asn1.c
     crypto/openssl/cert.c
     crypto/openssl/crl.c
     crypto/openssl/ec.c
-    crypto/openssl/hmac.c
     crypto/openssl/init.c
     crypto/openssl/key.c
-    crypto/openssl/random.c
     crypto/openssl/rsa.c
     crypto/openssl/sha.c
-    linux/hostthread.c
+    linux/hostthread.c)
+
+  set(PLATFORM_SDK_ONLY_SRC
+    ../common/asn1.c
+    crypto/openssl/hmac.c
+    crypto/openssl/random.c
     linux/syscall.c
     linux/time.c
     linux/windows.c)
 elseif (WIN32)
+<<<<<<< HEAD
   set(PLATFORM_SRC
     ../3rdparty/mbedtls/mbedtls/library/platform_util.c # if not added here, the build of Windows fails because of its dependecies in bignum.c file
+=======
+  set(PLATFORM_SDK_ONLY_SRC
+>>>>>>> 205b00ac99a775dbd7ad0538de667614fa7042df
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
+    ../common/asn1.c
+    ../common/cert.c
+    crypto/bcrypt/cert.c
+    crypto/bcrypt/crl.c
+    crypto/bcrypt/ec.c
     crypto/bcrypt/hmac.c
+    crypto/bcrypt/key.c
+    crypto/bcrypt/pem.c
     crypto/bcrypt/random.c
     crypto/bcrypt/rsa.c
     crypto/bcrypt/sha.c
@@ -79,9 +109,9 @@ else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
 
-# SGX specific files
+# SGX specific files.
 if (OE_SGX)
-  list(APPEND PLATFORM_SRC
+  list(APPEND PLATFORM_HOST_ONLY_SRC
     ../common/sgx/qeidentity.c
     ../common/sgx/quote.c
     ../common/sgx/report.c
@@ -89,15 +119,17 @@ if (OE_SGX)
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c
-    sgx/asym_keys.c
+    sgx/hostverify_report.c
+    sgx/sgxquoteprovider.c)
+
+  list(APPEND PLATFORM_SDK_ONLY_SRC
     sgx/calls.c
     sgx/create.c
     sgx/elf.c
     sgx/enclave.c
     sgx/enclavemanager.c
     sgx/exception.c
-    sgx/internal_u_wrapper.c
-    sgx/internal.c
+    sgx/sgx_u_wrapper.c
     sgx/load.c
     sgx/loadelf.c
     sgx/loadpe.c
@@ -108,24 +140,24 @@ if (OE_SGX)
     sgx/sgxload.c
     sgx/sgxmeasure.c
     sgx/sgxquote.c
-    sgx/sgxquoteprovider.c
     sgx/sgxsign.c
-    sgx/sgxtypes.c
-    sgx/traceh.c)
+    sgx/sgxtypes.c)
 
   # OS specific as well.
   if (UNIX)
-    list(APPEND PLATFORM_SRC
+    list(APPEND PLATFORM_HOST_ONLY_SRC
+        sgx/linux/sgxquoteproviderloader.c)
+
+    list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
       sgx/linux/aesm.c
       sgx/linux/enter.S
       sgx/linux/entersim.S
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
-      sgx/linux/sgxquoteproviderloader.c
       sgx/linux/xstate.c)
   else()
-    list(APPEND PLATFORM_SRC
+    list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/windows/aep.asm
       sgx/windows/aesm.c
       sgx/windows/enter.asm
@@ -137,46 +169,77 @@ if (OE_SGX)
 
   set(PLATFORM_FLAGS "-m64")
 elseif(OE_TRUSTZONE)
-  list(APPEND PLATFORM_SRC
-    optee/enclave.c
+  list(APPEND PLATFORM_SDK_ONLY_SRC
     optee/log.c)
+  
+  if (UNIX)
+    list(APPEND PLATFORM_SDK_ONLY_SRC
+      optee/linux/enclave.c)
+  else()
+    message(FATAL_ERROR "OP-TEE is not yet supported on platforms other than Linux.")
+  endif()
+
   set(PLATFORM_FLAGS "")
 endif()
 
-# Combine with all other non platform dependent files.
-add_library(oehost STATIC
+if (OE_SGX AND WIN32)
+  # oedebugrt is accessed via a bridge on Win32 and need not be linked.    
+  list(APPEND PLATFORM_SDK_ONLY_SRC
+    sgx/windows/debugrtbridge.c)
+endif()
+
+# Common host verification files that work on any OS/architecture.
+list(APPEND PLATFORM_HOST_ONLY_SRC
   ../common/datetime.c
+  ../common/safecrt.c
+  hexdump.c
+  result.c
+  traceh.c)
+
+# Common files that are used in the OE SDK only.
+list(APPEND PLATFORM_SDK_ONLY_SRC
   ../common/kdf.c
   ../common/lockless_queue.c
-  ../common/safecrt.c
+  ../common/argv.c
+  asym_keys.c
+  calls.c
+  ocalls.c
   dupenv.c
   error.c
   files.c
   fopen.c
-  hexdump.c
-  syscall_u_wrapper.c
   memalign.c
-  ocalls.c
-  result.c
+  syscall_u_wrapper.c
   signkey.c
   strings.c
+  tee_u_wrapper.c
   tests.c
-  ${PLATFORM_SRC})
+  traceh_enclave.c)
 
+# Combine the following common code along with the platform specific code and
+# host verification code to get the full oehost target provided by the OE SDK.
+add_library(oehost STATIC
+  ${PLATFORM_HOST_ONLY_SRC}
+  ${PLATFORM_SDK_ONLY_SRC})
+
+add_library(oehostverify STATIC ${PLATFORM_HOST_ONLY_SRC})
+
+target_link_libraries(oehostverify PUBLIC oe_includes)
 target_link_libraries(oehost PUBLIC oe_includes)
 
 if(WIN32)
   target_link_libraries(oehost PUBLIC ws2_32)
 endif()
 
-if(OE_SGX)
+if (OE_SGX AND UNIX)
+  # Link oedebugrt static library.
   target_link_libraries(oehost PRIVATE oedebugrt)
 endif()
 
 add_dependencies(oehost syscall_untrusted_edl)
-
+add_dependencies(oehost tee_untrusted_edl)
 if(OE_SGX)
-    add_dependencies(oehost internal_untrusted_edl)
+  add_dependencies(oehost sgx_untrusted_edl)
 endif()
 
 # TODO: Replace these with `find_package` and add as dependencies to
@@ -204,17 +267,25 @@ endif ()
 find_package(Threads REQUIRED)
 
 if (UNIX)
+  target_link_libraries(oehostverify PRIVATE crypto dl Threads::Threads)
   target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)
+
+  if (OE_TRUSTZONE)
+    target_include_directories(oehost PRIVATE
+      ${OE_TZ_OPTEE_CLIENT_INC})
+    target_link_libraries(oehost PRIVATE teec)
+  endif ()
 elseif (WIN32)
   target_include_directories(oehost PRIVATE
     ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   target_link_libraries(oehost PRIVATE bcrypt Crypt32)
+
+  # TODO: Handle TrustZone on Windows.
 endif ()
 
 # For including edge routines.
 target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-# TODO: Handle Trust Zone etc.
 if (USE_LIBSGX)
   if (WIN32)
     set(LIBPATHS
@@ -282,18 +353,31 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oehost PRIVATE -Wjump-misses-init)
 endif ()
 
+# Use the same the compile options and definitions from oehost.
+target_compile_options(oehostverify
+  PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_OPTIONS>
+  INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_OPTIONS>)
+
+target_compile_definitions(oehostverify
+  PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_DEFINITIONS>
+  INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_DEFINITIONS>)
+
+
 # TODO: Remove this hard coded output directory.
 set_property(TARGET oehost PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
 
 # Convenience library for creating a host-app (that needs the
-# -rdynamic link flag).
+# -rdynamic link flag). We do this by default for the oehostverify target too.
 add_library(oehostapp INTERFACE)
 
 target_link_libraries(oehostapp INTERFACE oehost)
 
 if (UNIX)
   target_link_libraries(oehostapp INTERFACE
+      -rdynamic
+      -Wl,-z,noexecstack)
+  target_link_libraries(oehostverify INTERFACE
       -rdynamic
       -Wl,-z,noexecstack)
 endif ()
@@ -303,3 +387,7 @@ install(TARGETS oehost EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
 
 install(TARGETS oehostapp EXPORT openenclave-targets)
+
+install(TARGETS oehostverify EXPORT openenclave-targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
+  COMPONENT OEHOSTVERIFY)

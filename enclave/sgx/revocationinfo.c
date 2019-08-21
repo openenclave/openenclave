@@ -3,38 +3,14 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../common/sgx/revocation.h"
-
-/**
- * Validate and copy buffer to enclave memory.
- */
-static oe_result_t _copy_buffer_to_enclave(
-    uint8_t** dst,
-    size_t* dst_size,
-    const uint8_t* src,
-    size_t src_size)
-{
-    oe_result_t result = OE_FAILURE;
-    if (!src || src_size == 0 || !oe_is_outside_enclave(src, src_size) ||
-        dst == NULL || dst_size == NULL)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    *dst = malloc(src_size);
-    if (*dst == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    OE_CHECK(oe_memcpy_s(*dst, src_size, src, src_size));
-    *dst_size = src_size;
-    result = OE_OK;
-
-done:
-    return result;
-}
+#include "sgx_t.h"
 
 /**
  * Call into host to fetch revocation information.
@@ -42,122 +18,153 @@ done:
 oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
 {
     oe_result_t result = OE_FAILURE;
-    size_t host_args_buffer_size = sizeof(*args);
-    uint8_t* host_args_buffer = NULL;
-    oe_get_revocation_info_args_t* host_args = NULL;
-    oe_get_revocation_info_args_t tmp_args = {0};
-    uint8_t* p = NULL;
-    size_t crl_url_sizes[2] = {0};
+    oe_get_revocation_info_args_t in = {0};
+    oe_get_revocation_info_args_t out = {0};
+    uint32_t retval;
 
-    if (args == NULL || args->num_crl_urls != 2 || args->crl_urls[0] == NULL ||
-        args->crl_urls[1] == NULL)
-        OE_RAISE(OE_FAILURE);
+    if (!args)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
-    // Compute size of buffer to allocate in host memory to marshal the
-    // arguments.
-    for (uint32_t i = 0; i < args->num_crl_urls; ++i)
+    /* Verify the crl_urls. */
+    if (args->num_crl_urls != 2 || !args->crl_urls[0] || !args->crl_urls[1])
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* fmspc */
+    memcpy(in.fmspc, args->fmspc, sizeof(in.fmspc));
+
+    /* crl_urls */
+    memcpy(in.crl_urls, args->crl_urls, sizeof(in.crl_urls));
+    in.num_crl_urls = args->num_crl_urls;
+
+    for (;;)
     {
-        result =
-            oe_safe_add_sizet(strlen(args->crl_urls[i]), 1, &crl_url_sizes[i]);
-        if (result != OE_OK)
-            goto done;
+        memcpy(&out, &in, sizeof(out));
 
-        result = oe_safe_add_sizet(
-            host_args_buffer_size, crl_url_sizes[i], &host_args_buffer_size);
+        if (oe_get_revocation_info_ocall(
+                &retval,
+                out.fmspc,
+                out.num_crl_urls,
+                out.crl_urls[0],
+                out.crl_urls[1],
+                out.crl_urls[2],
+                out.tcb_info,
+                out.tcb_info_size,
+                &out.tcb_info_size,
+                out.tcb_issuer_chain,
+                out.tcb_issuer_chain_size,
+                &out.tcb_issuer_chain_size,
+                out.crl[0],
+                out.crl_size[0],
+                &out.crl_size[0],
+                out.crl[1],
+                out.crl_size[1],
+                &out.crl_size[1],
+                out.crl[2],
+                out.crl_size[2],
+                &out.crl_size[2],
+                out.crl_issuer_chain[0],
+                out.crl_issuer_chain_size[0],
+                &out.crl_issuer_chain_size[0],
+                out.crl_issuer_chain[1],
+                out.crl_issuer_chain_size[1],
+                &out.crl_issuer_chain_size[1],
+                out.crl_issuer_chain[2],
+                out.crl_issuer_chain_size[2],
+                &out.crl_issuer_chain_size[2]) != OE_OK)
+        {
+            OE_RAISE(OE_FAILURE);
+        }
 
-        if (result != OE_OK)
-            goto done;
+        if (retval != (oe_result_t)OE_BUFFER_TOO_SMALL)
+            break;
+
+        /* tcb_info */
+        if (in.tcb_info_size < out.tcb_info_size)
+        {
+            if (!(in.tcb_info = realloc(in.tcb_info, out.tcb_info_size)))
+                OE_RAISE(OE_OUT_OF_MEMORY);
+
+            in.tcb_info_size = out.tcb_info_size;
+        }
+
+        /* tcb_issuer_chain */
+        if (in.tcb_issuer_chain_size < out.tcb_issuer_chain_size)
+        {
+            if (!(in.tcb_issuer_chain =
+                      realloc(in.tcb_issuer_chain, out.tcb_issuer_chain_size)))
+            {
+                OE_RAISE(OE_OUT_OF_MEMORY);
+            }
+
+            in.tcb_issuer_chain_size = out.tcb_issuer_chain_size;
+        }
+
+        /* crl */
+        for (size_t i = 0; i < OE_COUNTOF(in.crl); i++)
+        {
+            if (in.crl_size[i] < out.crl_size[i])
+            {
+                if (!(in.crl[i] = realloc(in.crl[i], out.crl_size[i])))
+                    OE_RAISE(OE_OUT_OF_MEMORY);
+
+                in.crl_size[i] = out.crl_size[i];
+            }
+        }
+
+        /* crl_issuer_chain */
+        for (size_t i = 0; i < OE_COUNTOF(in.crl_issuer_chain); i++)
+        {
+            if (in.crl_issuer_chain_size[i] < out.crl_issuer_chain_size[i])
+            {
+                if (!(in.crl_issuer_chain[i] = realloc(
+                          in.crl_issuer_chain[i],
+                          out.crl_issuer_chain_size[i])))
+                {
+                    OE_RAISE(OE_OUT_OF_MEMORY);
+                }
+
+                in.crl_issuer_chain_size[i] = out.crl_issuer_chain_size[i];
+            }
+        }
     }
 
-    host_args_buffer = oe_host_malloc(host_args_buffer_size);
-    if (host_args_buffer == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
+    OE_CHECK((oe_result_t)retval);
 
-    // Copy args struct.
-    p = host_args_buffer;
-    host_args = (oe_get_revocation_info_args_t*)p;
-    *host_args = *args;
-    p += sizeof(*host_args);
-
-    // Copy input buffers.
-    for (uint32_t i = 0; i < args->num_crl_urls; ++i)
-    {
-        host_args->crl_urls[i] = (const char*)p;
-        OE_CHECK(oe_memcpy_s(
-            p, crl_url_sizes[i], args->crl_urls[i], crl_url_sizes[i]));
-        p += crl_url_sizes[i];
-    }
-
-    OE_CHECK(oe_ocall(OE_OCALL_GET_REVOCATION_INFO, (uint64_t)host_args, NULL));
-
-    // Copy args to prevent TOCTOU issues.
-    tmp_args = *host_args;
-
-    OE_CHECK(tmp_args.result);
-
-    if (tmp_args.host_out_buffer == NULL ||
-        !oe_is_outside_enclave(tmp_args.host_out_buffer, sizeof(uint8_t)))
-        OE_RAISE(OE_UNEXPECTED);
-
-    // Ensure that all required outputs exist.
-    OE_CHECK(_copy_buffer_to_enclave(
-        &args->tcb_info,
-        &args->tcb_info_size,
-        tmp_args.tcb_info,
-        tmp_args.tcb_info_size));
-    OE_CHECK(_copy_buffer_to_enclave(
-        &args->tcb_issuer_chain,
-        &args->tcb_issuer_chain_size,
-        tmp_args.tcb_issuer_chain,
-        tmp_args.tcb_issuer_chain_size));
-
-    for (uint32_t i = 0; i < args->num_crl_urls; ++i)
-    {
-        OE_CHECK(_copy_buffer_to_enclave(
-            &args->crl[i],
-            &args->crl_size[i],
-            tmp_args.crl[i],
-            tmp_args.crl_size[i]));
-        OE_CHECK(_copy_buffer_to_enclave(
-            &args->crl_issuer_chain[i],
-            &args->crl_issuer_chain_size[i],
-            tmp_args.crl_issuer_chain[i],
-            tmp_args.crl_issuer_chain_size[i]));
-    }
-
-    // Check for null terminators.
-    if (args->tcb_info[args->tcb_info_size - 1] != 0 ||
-        args->tcb_issuer_chain[args->tcb_issuer_chain_size - 1] != 0)
-        OE_RAISE(OE_INVALID_REVOCATION_INFO);
-    for (uint32_t i = 0; i < args->num_crl_urls; ++i)
-    {
-        if (args->crl_issuer_chain[i][args->crl_issuer_chain_size[i] - 1] != 0)
-            OE_RAISE(OE_INVALID_REVOCATION_INFO);
-    }
-
+    *args = out;
+    memset(&out, 0, sizeof(out));
     result = OE_OK;
+
 done:
-    // Free args buffer and buffer allocated by host.
-    if (host_args_buffer)
-        oe_host_free(host_args_buffer);
+
+    /* Free out buffer. */
+    if (result != OE_OK)
+    {
+        free(out.tcb_info);
+        free(out.tcb_issuer_chain);
+
+        for (size_t i = 0; i < OE_COUNTOF(out.crl); i++)
+            free(out.crl[i]);
+
+        for (size_t i = 0; i < OE_COUNTOF(out.crl_issuer_chain); i++)
+            free(out.crl_issuer_chain[i]);
+    }
 
     return result;
 }
 
 void oe_cleanup_get_revocation_info_args(oe_get_revocation_info_args_t* args)
 {
-    if (!args)
-        return;
-
-    // Free buffers on the enclave side.
-    for (int32_t i = (int32_t)(args->num_crl_urls - 1); i >= 0; --i)
+    if (args)
     {
-        free(args->crl_issuer_chain[i]);
-        free(args->crl[i]);
-    }
-    free(args->tcb_issuer_chain);
-    free(args->tcb_info);
+        free(args->tcb_info);
+        free(args->tcb_issuer_chain);
 
-    if (args->host_out_buffer)
-        oe_host_free(args->host_out_buffer);
+        for (size_t i = 0; i < OE_COUNTOF(args->crl); i++)
+            free(args->crl[i]);
+
+        for (size_t i = 0; i < OE_COUNTOF(args->crl_issuer_chain); i++)
+            free(args->crl_issuer_chain[i]);
+
+        free(args->buffer);
+    }
 }

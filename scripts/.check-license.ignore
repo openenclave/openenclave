@@ -1,0 +1,66 @@
+# This file uses regular expressions, not shell globs!
+
+# File extensions
+.*\.der$
+.*\.docx$
+.*\.html$
+.*\.json$
+.*\.md$
+.*\.pdf$
+.*\.pem$
+.*\.png$
+.*\.svg$
+.*\.toml$
+.*Jenkinsfile$
+
+# Test lists
+tests/libc/tests\..*$
+tests/libcxx/tests\..*$
+tests/libcxxrt/tests\..*$
+tests/libunwind/tests\..*$
+tests/mbed/tests\..*$
+
+# Directories
+3rdparty/dlmalloc/dlmalloc/.*
+3rdparty/libcxx/libcxx/.*
+3rdparty/libcxxrt/libcxxrt/.*
+3rdparty/libunwind/libunwind/.*
+3rdparty/mbedtls/mbedtls/.*
+3rdparty/musl/libc-test/.*
+3rdparty/musl/musl/.*
+3rdparty/optee/patches/.*
+3rdparty/optee/optee_client/.*
+3rdparty/optee/optee_os/.*
+tools/oeedger8r/intel/.*
+
+# Files
+3rdparty/LICENSES
+3rdparty/libunwind/setcontext\.S
+3rdparty/mbedtls/config\.h
+3rdparty/musl/COPYRIGHT
+3rdparty/musl/endian\.h\.prefix
+3rdparty/musl/endian\.h\.suffix
+3rdparty/optee/optee_client
+3rdparty/optee/optee_os
+LICENSE
+THIRD_PARTY_NOTICES
+VERSION
+\.check-license\.ignore
+\.clang-format
+\.cspellignore
+\.gitattributes
+\.gitignore
+\.gitmodules
+debugger/pythonExtension/load_symbol_cmd\.py
+debugger/pythonExtension/readelf\.py
+host/linux/pe\.h
+include/openenclave/internal/queue\.h
+samples/file-encryptor/testfile
+tests/ocall/debugging\.txt
+tests/print/printhost\.stderr
+tests/print/printhost\.stdout
+tests/str/test1\.txt
+tools/oeedger8r/\.merlin
+tools/oeedger8r/main\.ml
+tools/oesign/getopt\.h
+tools/oesign/getopt_long\.c

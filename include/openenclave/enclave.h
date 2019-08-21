@@ -33,6 +33,17 @@ OE_EXTERNC_BEGIN
  */
 
 /**
+ * OP-TEE provides single-threaded enclaves only, and its ELF loader does not
+ * support thread-local relocations. Hence, any enclave that includes a
+ * variable marked with __thread will not only not work, but it will fail to
+ * load altogether.
+ */
+#if defined(_ARM_) || defined(_M_ARM) || defined(__arm__) || \
+    defined(__thumb__) || defined(__aarch64__)
+#define __thread
+#endif
+
+/**
  * Register a new vectored exception handler.
  *
  * Call this function to add a new vectored exception handler. If successful,
@@ -572,7 +583,9 @@ void oe_free_seal_key(uint8_t* key_buffer, uint8_t* key_info);
  * This function returns the enclave handle for the current enclave. The
  * host obtains this handle by calling **oe_create_enclave()**, which
  * passes the enclave handle to the enclave during initialization. The
- * handle is an address inside the host address space.
+ * handle is an address inside the host address space. This pointer is opaque
+ * and is never dereferenced within the enclave. The corresponding structure
+ * definition (struct _oe_enclave) is not visible from any enclave headers.
  *
  * @returns the enclave handle.
  */

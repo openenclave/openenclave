@@ -32,9 +32,18 @@ We welcome all questions and suggestions. Everyone is encouraged to open issues
 on GitHub to ask or discuss anything related to the Open Enclave SDK. However,
 security issues and bugs are an exception (see above)!
 
+Design Discussion
+-----------------
+
 You are encouraged to start a discussion with us through a GitHub issue before
 implementing any major changes. We want your contributions, but we also want to
 make sure the community is in agreement before you invest your time.
+
+You may be asked by maintainers to provide a design document before writing an
+implementation. The simplest way to provide this is through a Pull Request to
+our repository with a Markdown style document (like this one) to the
+[docs/DesignDocs](DesignDocs) folder, and see its [readme](DesignDocs/README.md)
+for a template.
 
 Help Wanted
 ------------

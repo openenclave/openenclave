@@ -24,6 +24,7 @@
 #include "bits/report.h"
 #include "bits/result.h"
 #include "bits/types.h"
+#include "host_verify.h"
 
 OE_EXTERNC_BEGIN
 
@@ -315,41 +316,6 @@ void oe_free_key(
     size_t key_buffer_size,
     uint8_t* key_info,
     size_t key_info_size);
-
-/**
- * identity validation callback type
- * @param[in] identity a pointer to an enclave's identity information
- * @param[in] arg caller defined context
- */
-typedef oe_result_t (
-    *oe_identity_verify_callback_t)(oe_identity_t* identity, void* arg);
-
-/**
- * oe_verify_attestation_certificate
- *
- * This function perform a custom validation on the input certificate. This
- * validation includes extracting an attestation evidence extension from the
- * certificate before validating this evidence. An optional
- * enclave_identity_callback could be passed in for a calling client to further
- * validate the identity of the enclave creating the quote.
- * @param[in] cert_in_der a pointer to buffer holding certificate contents
- *  in DER format
- * @param[in] cert_in_der_len size of certificate buffer above
- * @param[in] enclave_identity_callback callback routine for custom identity
- * checking
- * @param[in] arg an optional context pointer argument specified by the caller
- * when setting callback
- * @retval OE_OK on a successful validation
- * @retval OE_VERIFY_FAILED on quote failure
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid
- * @retval OE_FAILURE general failure
- * @retval other appropriate error code
- */
-oe_result_t oe_verify_attestation_certificate(
-    uint8_t* cert_in_der,
-    size_t cert_in_der_len,
-    oe_identity_verify_callback_t enclave_identity_callback,
-    void* arg);
 
 OE_EXTERNC_END
 

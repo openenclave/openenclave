@@ -10,14 +10,15 @@ if (UNIX)
 
   install(TARGETS oedebugrt EXPORT openenclave-targets)
 else()
-  #TODO: Switch to DLL on Windows
-  add_library(oedebugrt OBJECT
+  add_library(oedebugrt SHARED
     host.c)
 
+  target_compile_definitions(oedebugrt PRIVATE
+    OE_BUILDING_DEBUGRT_SHARED_LIBRARY)
+  
   install(TARGETS oedebugrt EXPORT openenclave-targets
     # TODO:Determine DLL install location on Windows
-    # ARCHIVE DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 target_include_directories(oedebugrt PRIVATE

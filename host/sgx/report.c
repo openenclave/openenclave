@@ -4,6 +4,7 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
+#include <openenclave/host_verify.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
@@ -11,6 +12,8 @@
 #include <openenclave/internal/utils.h>
 #include "../common/sgx/quote.h"
 #include "quote.h"
+#include "sgx_u.h"
+#include "tee_u.h"
 
 #include "sgxquoteprovider.h"
 
@@ -24,7 +27,7 @@ static oe_result_t _get_local_report(
     size_t* report_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_sgx_report_args_t* arg = NULL;
+    uint32_t retval;
 
     // opt_params, if specified, must be a sgx_target_info_t. When opt_params is
     // NULL, opt_params_size must be zero.
@@ -43,35 +46,18 @@ static oe_result_t _get_local_report(
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    /*
-     * Populate arg fields.
-     */
-    arg = calloc(1, sizeof(*arg));
-    if (arg == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
+    OE_CHECK(oe_get_sgx_report_ecall(
+        enclave,
+        &retval,
+        opt_params,
+        opt_params_size,
+        (sgx_report_t*)report_buffer));
 
-    if (opt_params != NULL)
-        OE_CHECK(oe_memcpy_s(
-            arg->opt_params, opt_params_size, opt_params, opt_params_size));
-
-    arg->opt_params_size = opt_params_size;
-
-    OE_CHECK(oe_ecall(enclave, OE_ECALL_GET_SGX_REPORT, (uint64_t)arg, NULL));
-
-    OE_CHECK(oe_memcpy_s(
-        report_buffer,
-        *report_buffer_size,
-        &arg->sgx_report,
-        sizeof(sgx_report_t)));
     *report_buffer_size = sizeof(sgx_report_t);
-    result = OE_OK;
+
+    result = (oe_result_t)retval;
 
 done:
-    if (arg)
-    {
-        oe_secure_zero_fill(arg, sizeof(*arg));
-        free(arg);
-    }
 
     return result;
 }
@@ -288,7 +274,6 @@ oe_result_t oe_verify_report(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
-    oe_verify_report_args_t arg = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
 
     if (report == NULL)
@@ -309,26 +294,19 @@ oe_result_t oe_verify_report(
         OE_CHECK(oe_initialize_quote_provider());
 
         // Quote attestation can be done entirely on the host side.
-        OE_CHECK(VerifyQuoteImpl(
+        OE_CHECK(oe_verify_quote_internal(
             header->report, header->report_size, NULL, 0, NULL, 0, NULL, 0));
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
+        uint32_t retval;
+
         if (enclave == NULL)
             OE_RAISE(OE_INVALID_PARAMETER);
 
-        // Local report attestation can only be done on the enclave side.
-        arg.report = (uint8_t*)report;
-        arg.report_size = report_size;
-        arg.result = OE_FAILURE;
+        OE_CHECK(oe_verify_report_ecall(enclave, &retval, report, report_size));
 
-        // Call enclave to verify the report. Do not ask the enclave to return a
-        // parsed report since the parsed report will then contain pointers to
-        // enclave memory. Instead, pass NULL as the optional parsed_report out
-        // parameter and parse the report below if requested.
-        OE_CHECK(
-            oe_ecall(enclave, OE_ECALL_VERIFY_REPORT, (uint64_t)&arg, NULL));
-        OE_CHECK(arg.result);
+        OE_CHECK(retval);
     }
 
     else

@@ -1,0 +1,97 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** internal.edl:
+**
+**     This file declares internal ECALLs/OCALLs used by liboehost/liboecore
+**     that are specific to SGX.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    include "openenclave/bits/types.h"
+    include "openenclave/internal/sgxtypes.h"
+
+    trusted
+    {
+        public oe_result_t oe_get_sgx_report_ecall(
+            [in, size=opt_params_size] const void* opt_params,
+            size_t opt_params_size,
+            [out] sgx_report_t* report);
+    };
+
+    untrusted
+    {
+        oe_result_t oe_get_qetarget_info_ocall(
+            [out] sgx_target_info_t* target_info);
+
+        oe_result_t oe_get_quote_ocall(
+            [in] const sgx_report_t* sgx_report,
+            [out, size=quote_size] void* quote,
+            size_t quote_size,
+            [out] size_t* quote_size_out);
+
+        oe_result_t oe_get_qe_identify_info_ocall(
+            [out, size=qe_id_info_size] void* qe_id_info,
+            size_t qe_id_info_size,
+            [out] size_t* qe_id_info_size_out,
+            [out, size=issuer_chain_size] void* issuer_chain,
+            size_t issuer_chain_size,
+            [out] size_t* issuer_chain_size_out);
+
+        oe_result_t oe_get_revocation_info_ocall(
+            [in] uint8_t fmspc[6],
+            size_t num_crl_urls,
+            [in, string] const char* crl_urls0,
+            [in, string] const char* crl_urls1,
+            [in, string] const char* crl_urls2,
+            [out, size=tcb_info_size] void* tcb_info,
+            size_t tcb_info_size,
+            [out] size_t* tcb_info_size_out,
+            [out, size=tcb_issuer_chain_size] void* tcb_issuer_chain,
+            size_t tcb_issuer_chain_size,
+            [out] size_t* tcb_issuer_chain_size_out,
+            [out, size=crl0_size] void* crl0,
+            size_t crl0_size,
+            [out] size_t* crl0_size_out,
+            [out, size=crl1_size] void* crl1,
+            size_t crl1_size,
+            [out] size_t* crl1_size_out,
+            [out, size=crl2_size] void* crl2,
+            size_t crl2_size,
+            [out] size_t* crl2_size_out,
+            [out, size=crl_issuer_chain0_size] void* crl_issuer_chain0,
+            size_t crl_issuer_chain0_size,
+            [out] size_t* crl_issuer_chain0_size_out,
+            [out, size=crl_issuer_chain1_size] void* crl_issuer_chain1,
+            size_t crl_issuer_chain1_size,
+            [out] size_t* crl_issuer_chain1_size_out,
+            [out, size=crl_issuer_chain2_size] void* crl_issuer_chain2,
+            size_t crl_issuer_chain2_size,
+            [out] size_t* crl_issuer_chain2_size_out);
+
+        // Translate the addresses in buffer[] into symbol names.
+        // (similar to Linux backtrace_symbols().
+        oe_result_t oe_backtrace_symbols_ocall(
+            [user_check] oe_enclave_t* oe_enclave,
+            [in, count=size] const uint64_t* buffer,
+            size_t size,
+            [out, size=symbols_buffer_size] void* symbols_buffer,
+            size_t symbols_buffer_size,
+            [out] size_t* symbols_buffer_size_out);
+
+        void oe_thread_wake_wait_ocall(
+            [user_check] oe_enclave_t* oe_enclave,
+            uint64_t waiter_tcs,
+            uint64_t self_tcs);
+
+        oe_result_t oe_get_cpuid_table_ocall(
+            [out, size=cpuid_table_buffer_size] void* cpuid_table_buffer,
+            size_t cpuid_table_buffer_size);
+    };
+};

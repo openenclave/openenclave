@@ -134,7 +134,7 @@ done:
     return result;
 }
 
-oe_result_t VerifyQuoteImpl(
+oe_result_t oe_verify_quote_internal(
     const uint8_t* quote,
     size_t quote_size,
     const uint8_t* pem_pck_certificate,
@@ -177,7 +177,7 @@ oe_result_t VerifyQuoteImpl(
     if (sgx_quote->version != OE_SGX_QUOTE_VERSION)
     {
         OE_RAISE_MSG(
-            OE_VERIFY_FAILED,
+            OE_QUOTE_VERIFICATION_ERROR,
             "Unexpected quote version sgx_quote->version=%d",
             sgx_quote->version);
     }
@@ -186,7 +186,7 @@ oe_result_t VerifyQuoteImpl(
     if (qe_cert_data.type == OE_SGX_PCK_ID_PCK_CERT_CHAIN)
     {
         if (qe_cert_data.size == 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_QUOTE_VERIFICATION_ERROR);
         pem_pck_certificate = qe_cert_data.data;
         pem_pck_certificate_size = qe_cert_data.size;
     }
@@ -226,7 +226,7 @@ oe_result_t VerifyQuoteImpl(
         OE_CHECK(oe_ec_public_key_equal(
             &root_public_key, &expected_root_public_key, &key_equal));
         if (!key_equal)
-            OE_RAISE(OE_VERIFY_FAILED);
+            OE_RAISE(OE_QUOTE_VERIFICATION_ERROR);
 
         OE_CHECK_MSG(
             oe_enforce_revocation(
@@ -267,7 +267,7 @@ oe_result_t VerifyQuoteImpl(
                 &sha256,
                 &quote_auth_data->qe_report_body.report_data,
                 sizeof(sha256)))
-            OE_RAISE(OE_VERIFY_FAILED);
+            OE_RAISE(OE_QUOTE_VERIFICATION_ERROR);
 
         // Verify SHA256 ECDSA (attestation_key, SGX_QUOTE_SIGNED_DATA,
         // signature)

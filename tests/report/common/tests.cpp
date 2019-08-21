@@ -717,7 +717,7 @@ void test_parse_report_negative()
     header->report_size++;
     OE_TEST(
         oe_parse_report(report_buffer, report_size, &parsed_report) ==
-        OE_FAILURE);
+        OE_INCORRECT_REPORT_SIZE);
     header->report_size--;
     OE_TEST(
         oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
@@ -834,7 +834,9 @@ void test_local_verify_report()
             target_info_size,
             &report_ptr,
             &report_size) == OE_OK);
-    OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_VERIFY_FAILED);
+    OE_TEST(
+        VerifyReport(report_ptr, report_size, NULL) ==
+        OE_VERIFY_FAILED_AES_CMAC_MISMATCH);
     oe_free_report(report_ptr);
 }
 

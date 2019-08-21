@@ -7,6 +7,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/raise.h>
+#include "sgx_t.h"
 
 static uint32_t _cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 
@@ -20,28 +21,31 @@ static uint32_t _cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 **
 **==============================================================================
 */
-oe_result_t oe_initialize_cpuid(oe_init_enclave_args_t* args)
+oe_result_t oe_initialize_cpuid(void)
 {
     oe_result_t result = OE_UNEXPECTED;
+    uint32_t retval;
 
-    if (args == NULL || !oe_is_within_enclave(args, sizeof(*args)))
-        OE_RAISE(OE_INVALID_PARAMETER);
+    OE_CHECK(
+        oe_get_cpuid_table_ocall(&retval, _cpuid_table, sizeof(_cpuid_table)));
+
+    OE_CHECK((oe_result_t)retval);
 
     // Abort the enclave if AESNI support is not present in the cached
     // CPUID Feature information (cpuid leaf of 1)
-    if (!(args->cpuid_table[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
+    if (!(_cpuid_table[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
         oe_abort();
-
-    OE_CHECK(oe_memcpy_s(
-        _cpuid_table,
-        OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT * sizeof(_cpuid_table[0][0]),
-        args->cpuid_table,
-        OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
-            sizeof(args->cpuid_table[0][0])));
 
     result = OE_OK;
 
 done:
+
+    if (result != OE_OK)
+    {
+        oe_memset_s(
+            _cpuid_table, sizeof(_cpuid_table), 0, sizeof(_cpuid_table));
+    }
+
     return result;
 }
 

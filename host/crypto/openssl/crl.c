@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "crl.h"
 #include <limits.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/crypto/crl.h>
@@ -10,11 +9,12 @@
 #include <openenclave/internal/utils.h>
 #include <openssl/asn1.h>
 #include <openssl/x509.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
-/* Randomly generated magic number */
-#define OE_CRL_MAGIC 0xe8c993b1cca24906
+#include "../magic.h"
+#include "crl.h"
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 /* Needed for compatibility with ssl1.1 */

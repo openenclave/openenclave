@@ -71,7 +71,6 @@ done:
  * @param[in] arg an optional context pointer argument specified by the caller
  * when setting callback
  * @retval OE_OK on a successful validation
- * @retval OE_VERIFY_FAILED on quote failure
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid
  * @retval OE_FAILURE general failure
  * @retval other appropriate error code
@@ -128,7 +127,7 @@ oe_result_t oe_verify_attestation_certificate(
 #ifdef OE_BUILD_ENCLAVE
     result = oe_verify_report(report, report_size, &parsed_report);
 #else
-    result = oe_verify_report(NULL, report, report_size, &parsed_report);
+    result = oe_verify_remote_report(report, report_size, &parsed_report);
 #endif
     OE_CHECK(result);
     OE_TRACE_VERBOSE("quote validation succeeded");

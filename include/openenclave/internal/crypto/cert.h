@@ -264,7 +264,7 @@ oe_result_t oe_cert_chain_get_cert(
  *
  * @return OE_OK success
  * @return OE_INVALID_PARAMETER a parameter is invalid
- * @return OE_NOT_FOUND no self-signed certificate was found
+ * @return OE_NOT_FOUND chain is empty or no self-signed certificate was found
  * @return OE_FAILURE general failure
  */
 oe_result_t oe_cert_chain_get_root_cert(
@@ -283,6 +283,7 @@ oe_result_t oe_cert_chain_get_root_cert(
  *
  * @return OE_OK success
  * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_NOT_FOUND certificate chain is empty
  * @return OE_FAILURE general failure
  */
 oe_result_t oe_cert_chain_get_leaf_cert(

@@ -4,10 +4,8 @@ import hudson.model.*
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
-// The below timeout is set in minutes
-GLOBAL_TIMEOUT = 240
-// ctest timeout is set in seconds
-CTEST_TIMEOUT = 480
+GLOBAL_TIMEOUT_MINUTES = 240
+CTEST_TIMEOUT_SECONDS = 480
 
 XENIAL_LABEL = "LIBCXX-${BUILD_NUMBER}-1604"
 BIONIC_LABEL = "LIBCXX-${BUILD_NUMBER}-1804"
@@ -29,7 +27,7 @@ String hostsList(String label, String region) {
 def ACCDeployVM(String agent_name, String agent_type, String region, String resource_group, String vhd_url) {
     stage("Deploy ${agent_name}") {
         node("nonSGX") {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 withEnv(["REGION=${region}", "RESOURCE_GROUP=${resource_group}", "AGENT_NAME=${agent_name}", "AGENT_TYPE=${agent_type}", "VHD_URL=${vhd_url}"]) {
@@ -45,7 +43,7 @@ def ACCDeployVM(String agent_name, String agent_type, String region, String reso
 def registerJenkinsSlaves() {
     stage("Register Jenkins Slaves") {
         node("nonSGX") {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 withCredentials([usernamePassword(credentialsId: 'oe-ci',
@@ -71,7 +69,7 @@ def registerJenkinsSlaves() {
 def unregisterJenkinsSlaves() {
     stage("Unregister Jenkins Slaves") {
         node("nonSGX") {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 for (s in hudson.model.Hudson.instance.slaves) {
                     if(s.getLabelString() == XENIAL_LABEL || s.getLabelString() == BIONIC_LABEL) {
                         s.getComputer().doDoDelete()
@@ -85,13 +83,13 @@ def unregisterJenkinsSlaves() {
 def ACClibcxxTest(String label, String compiler, String build_type) {
     stage("${label} SGX1FLC ${compiler} ${build_type}") {
         node("${label}") {
-            timeout(GLOBAL_TIMEOUT) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 def task = """
                            cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=ON -DENABLE_FULL_LIBCXX_TESTS=ON
                            make
-                           ctest -VV -debug --timeout ${CTEST_TIMEOUT}
+                           ctest -VV -debug --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
                 oe.Run(compiler, task)
             }
@@ -101,7 +99,7 @@ def ACClibcxxTest(String label, String compiler, String build_type) {
 
 def cleanup(){
     node("nonSGX") {
-        timeout(GLOBAL_TIMEOUT) {
+        timeout(GLOBAL_TIMEOUT_MINUTES) {
             cleanWs()
             checkout scm
             oe.deleteRG([XENIAL_RG, BIONIC_RG])

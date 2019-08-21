@@ -9,6 +9,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
+#include "sgx_t.h"
 #include "td.h"
 
 /*
@@ -42,21 +43,16 @@ static int _thread_wake(oe_thread_data_t* self)
 static int _thread_wake_wait(oe_thread_data_t* waiter, oe_thread_data_t* self)
 {
     int ret = -1;
-    oe_thread_wake_wait_args_t* args = NULL;
+    uint64_t waiter_tcs = (uint64_t)td_to_tcs((td_t*)waiter);
+    uint64_t self_tcs = (uint64_t)td_to_tcs((td_t*)self);
 
-    if (!(args = oe_host_calloc(1, sizeof(oe_thread_wake_wait_args_t))))
-        goto done;
-
-    args->waiter_tcs = td_to_tcs((td_t*)waiter);
-    args->self_tcs = td_to_tcs((td_t*)self);
-
-    if (oe_ocall(OE_OCALL_THREAD_WAKE_WAIT, (uint64_t)args, NULL) != OE_OK)
+    if (oe_thread_wake_wait_ocall(oe_get_enclave(), waiter_tcs, self_tcs) !=
+        OE_OK)
         goto done;
 
     ret = 0;
 
 done:
-    oe_host_free(args);
     return ret;
 }
 

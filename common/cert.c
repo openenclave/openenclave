@@ -2,11 +2,16 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/safecrt.h>
-#include <openenclave/internal/crypto/asn1.h>
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include "common.h"
+
+/* oe_get_crl_distribution_points is shared between host OpenSSL and
+ * enclave mbedTLS implementations. Windows host uses a different BCrypt
+ * implementation in host/crypto/bcrypt/cert.c. */
+#if defined(__linux__)
+#include <openenclave/internal/asn1.h>
 
 static oe_result_t _find_url(
     const uint8_t* data,
@@ -208,6 +213,34 @@ done:
     if (data)
         oe_free(data);
 
+    return result;
+}
+#endif
+
+oe_result_t oe_cert_chain_get_root_cert(
+    const oe_cert_chain_t* chain,
+    oe_cert_t* cert)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    size_t length = 0;
+
+    OE_CHECK(oe_cert_chain_get_length(chain, &length));
+    if (length == 0)
+        OE_RAISE(OE_NOT_FOUND);
+    OE_CHECK(oe_cert_chain_get_cert(chain, length - 1, cert));
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_cert_chain_get_leaf_cert(
+    const oe_cert_chain_t* chain,
+    oe_cert_t* cert)
+{
+    oe_result_t result = oe_cert_chain_get_cert(chain, 0, cert);
+    if (result == OE_OUT_OF_BOUNDS)
+        result = OE_NOT_FOUND;
     return result;
 }
 

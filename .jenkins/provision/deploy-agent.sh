@@ -14,8 +14,8 @@ if [[ -z $RESOURCE_GROUP ]]; then echo "ERROR: Env variable RESOURCE_GROUP is no
 
 if [[ -z $AGENT_NAME ]]; then echo "ERROR: Env variable AGENT_NAME is not set"; exit 1; fi
 if [[ -z $VHD_URL ]]; then echo "ERROR: Env variable VHD_URL is not set"; exit 1; fi
-if [[ "$AGENT_TYPE" != "xenial" ]] && [[ "$AGENT_TYPE" != "bionic" ]]; then
-    echo "ERROR: Env variable AGENT_TYPE has the wrong value. The allowed values for the script are: xenial, bionic"
+if [[ "$AGENT_TYPE" != "xenial" ]] && [[ "$AGENT_TYPE" != "bionic" ]] && [[ "$AGENT_TYPE" != "windows" ]]; then
+    echo "ERROR: Env variable AGENT_TYPE has the wrong value. The allowed values for the script are: xenial, bionic, windows"
     exit 1
 fi
 
@@ -48,12 +48,21 @@ az login --service-principal -u "${SERVICE_PRINCIPAL_ID}" -p "${SERVICE_PRINCIPA
 az account set --subscription "${SUBSCRIPTION_ID}"
 
 KEY=$(az keyvault secret show --vault-name "oe-ci-test-kv" --name "id-rsa-oe-test-pub" | jq -r .value | base64 -d)
+PASSWORD=$(az keyvault secret show --vault-name "oe-ci-test-kv" --name "windows-pwd" | jq -r .value)
+
+export WINDOWS_ADMIN_PASSWORD="$PASSWORD"
 export SSH_PUBLIC_KEY="$KEY"
+
+if [[ "$AGENT_TYPE" == "windows" ]]; then
+    TEMPLATE="templates/oe-engine/win-2016.json"
+else
+    TEMPLATE="templates/oe-engine/ubuntu-${AGENT_TYPE}.json"
+fi
 
 DIR=$(dirname "$0")
 cd "$DIR"
 eval "cat << EOF
-$(cat "templates/oe-engine/ubuntu-${AGENT_TYPE}.json")
+$(cat "$TEMPLATE")
 EOF
 " > oe-engine-template.json
 oe-engine generate --api-model oe-engine-template.json
@@ -66,5 +75,10 @@ az group deployment create --name "$AGENT_NAME" \
                            --template-file _output/azuredeploy.json \
                            --parameters @_output/azuredeploy.parameters.json \
                            --output table
-az image delete --resource-group "$RESOURCE_GROUP" --name "CustomLinuxImage"
-check_open_port "${AGENT_NAME}.${REGION}.cloudapp.azure.com" "22"
+if  [[ "$AGENT_TYPE" == "windows" ]]; then
+    az image delete --resource-group "$RESOURCE_GROUP" --name "CustomWindowsImage"
+    check_open_port "${AGENT_NAME}.${REGION}.cloudapp.azure.com" "5986"
+else
+    az image delete --resource-group "$RESOURCE_GROUP" --name "CustomLinuxImage"
+    check_open_port "${AGENT_NAME}.${REGION}.cloudapp.azure.com" "22"
+fi

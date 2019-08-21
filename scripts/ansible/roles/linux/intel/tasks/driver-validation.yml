@@ -1,0 +1,18 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}.yml"
+
+- name: Include distribution release specific vars
+  include_vars:
+    file: "{{ ansible_distribution_release | lower }}.yml"
+
+- name: Check for existing required directories
+  stat:
+    path: "{{ item }}"
+  with_items: "{{ driver_validation_directories }}"
+  register: directory
+  failed_when: directory.stat.isdir == False

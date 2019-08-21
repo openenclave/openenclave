@@ -49,10 +49,8 @@ static char _CHAIN[max_cert_chains_size];
 static char _PRIVATE_KEY[max_key_size];
 static char _PUBLIC_KEY[max_key_size];
 static uint8_t _SIGNATURE[max_sign_size];
-uint8_t private_key_pem[max_key_size];
-uint8_t public_key_pem[max_key_size];
-uint8_t x_data[max_coordinates_size];
-uint8_t y_data[max_coordinates_size];
+static uint8_t x_data[max_coordinates_size];
+static uint8_t y_data[max_coordinates_size];
 
 size_t private_key_size;
 size_t public_key_size;
@@ -174,7 +172,7 @@ static void _test_sign_and_verify()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _test_generate_common(
+static void _verify_generated_keys(
     const oe_ec_private_key_t* private_key,
     const oe_ec_public_key_t* public_key)
 {
@@ -214,29 +212,14 @@ static void _test_generate_common(
     free(signature);
 }
 
-static void _test_generate()
-{
-    printf("=== begin %s()\n", __FUNCTION__);
-
-    oe_result_t r;
-    oe_ec_private_key_t private_key = {0};
-    oe_ec_public_key_t public_key = {0};
-
-    r = oe_ec_generate_key_pair(
-        OE_EC_TYPE_SECP256R1, &private_key, &public_key);
-    OE_TEST(r == OE_OK);
-
-    _test_generate_common(&private_key, &public_key);
-
-    oe_ec_private_key_free(&private_key);
-    oe_ec_public_key_free(&public_key);
-
-    printf("=== passed %s()\n", __FUNCTION__);
-}
-
 static void _test_generate_from_private()
 {
     printf("=== begin %s()\n", __FUNCTION__);
+
+    const uint8_t _D_FOR_PUBKEY_WITH_LEADING_ZEROS[] = {
+        0x70, 0x68, 0xe6, 0x77, 0x84, 0x31, 0x38, 0xae, 0x8a, 0x92, 0x67,
+        0xf3, 0xd5, 0x37, 0x43, 0x01, 0xc5, 0x2a, 0x51, 0x00, 0x17, 0xfc,
+        0x75, 0x82, 0xbf, 0xf7, 0xd7, 0x0d, 0x7c, 0xc1, 0x60, 0x90};
 
     oe_result_t r;
     uint8_t private_raw[32];
@@ -262,7 +245,7 @@ static void _test_generate_from_private()
     OE_TEST(r == OE_OK);
 
     /* Test that signing works with ECC key. */
-    _test_generate_common(&private_key, &public_key);
+    _verify_generated_keys(&private_key, &public_key);
 
     /* Test that the key generation is deterministic. */
     r = oe_ec_generate_key_pair_from_private(
@@ -273,7 +256,7 @@ static void _test_generate_from_private()
         &public_key2);
     OE_TEST(r == OE_OK);
 
-    _test_generate_common(&private_key2, &public_key2);
+    _verify_generated_keys(&private_key2, &public_key2);
 
     r = oe_ec_public_key_equal(&public_key, &public_key2, &equal);
     OE_TEST(r == OE_OK);
@@ -328,7 +311,7 @@ static void _test_generate_from_private()
         &public_key);
     OE_TEST(r == OE_OK);
 
-    _test_generate_common(&private_key, &public_key);
+    _verify_generated_keys(&private_key, &public_key);
     oe_ec_private_key_free(&private_key);
     oe_ec_public_key_free(&public_key);
 
@@ -350,7 +333,27 @@ static void _test_generate_from_private()
         &public_key);
     OE_TEST(r == OE_OK);
 
-    _test_generate_common(&private_key, &public_key);
+    _verify_generated_keys(&private_key, &public_key);
+    oe_ec_private_key_free(&private_key);
+    oe_ec_public_key_free(&public_key);
+
+    /* Test key where public key has leading zero byte passes. */
+    OE_TEST(
+        oe_memcpy_s(
+            private_raw,
+            sizeof(private_raw),
+            _D_FOR_PUBKEY_WITH_LEADING_ZEROS,
+            sizeof(_D_FOR_PUBKEY_WITH_LEADING_ZEROS)) == OE_OK);
+
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &private_key,
+        &public_key);
+    OE_TEST(r == OE_OK);
+
+    _verify_generated_keys(&private_key, &public_key);
     oe_ec_private_key_free(&private_key);
     oe_ec_public_key_free(&public_key);
 
@@ -392,6 +395,7 @@ static void _test_write_private()
     printf("=== begin %s()\n", __FUNCTION__);
 
     oe_result_t r;
+    uint8_t private_raw[32];
     oe_ec_public_key_t public_key = {0};
     oe_ec_private_key_t key1 = {0};
     oe_ec_private_key_t key2 = {0};
@@ -400,7 +404,17 @@ static void _test_write_private()
     uint8_t* pem_data2 = NULL;
     size_t pem_size2 = 0;
 
-    r = oe_ec_generate_key_pair(OE_EC_TYPE_SECP256R1, &key1, &public_key);
+    /* Generate a random 256-bit key with MSB 0 for valid NIST 256P key. */
+    r = oe_random_internal(private_raw, sizeof(private_raw));
+    OE_TEST(r == OE_OK);
+
+    private_raw[0] = private_raw[0] & 0x7F;
+    r = oe_ec_generate_key_pair_from_private(
+        OE_EC_TYPE_SECP256R1,
+        private_raw,
+        sizeof(private_raw),
+        &key1,
+        &public_key);
     OE_TEST(r == OE_OK);
 
     {
@@ -606,12 +620,12 @@ static void _test_key_from_bytes()
 
     /* Load private key */
     r = oe_ec_private_key_read_pem(
-        &private_key, private_key_pem, private_key_size + 1);
+        &private_key, (const uint8_t*)_PRIVATE_KEY, private_key_size + 1);
     OE_TEST(r == OE_OK);
 
     /* Load public key */
     r = oe_ec_public_key_read_pem(
-        &public_key, public_key_pem, public_key_size + 1);
+        &public_key, (const uint8_t*)_PUBLIC_KEY, public_key_size + 1);
     OE_TEST(r == OE_OK);
 
     /* Create a second public key from the key bytes */
@@ -878,7 +892,17 @@ static void _test_crl_distribution_points(void)
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     {
-        OE_ALIGNED(8) uint8_t buffer[buffer_size];
+        uint8_t* buffer = (uint8_t*)oe_memalign(8, buffer_size);
+        if (!buffer)
+        {
+            OE_PRINT(
+                STDERR,
+                "Out of memory error: %s(%u): %s\n",
+                __FILE__,
+                __LINE__,
+                __FUNCTION__);
+            OE_ABORT();
+        }
 
         r = oe_get_crl_distribution_points(
             &cert, &urls, &num_urls, buffer, &buffer_size);
@@ -889,6 +913,7 @@ static void _test_crl_distribution_points(void)
         OE_TEST(strcmp(urls[0], _URL) == 0);
 
         printf("URL{%s}\n", urls[0]);
+        oe_memalign_free(buffer);
 
         OE_TEST(r == OE_OK);
     }
@@ -919,28 +944,16 @@ void TestEC()
             "../data/root.ec.key.pem",
             _PRIVATE_KEY,
             sizeof(_PRIVATE_KEY),
-            NULL) == OE_OK);
+            &private_key_size) == OE_OK);
     OE_TEST(
         read_pem_key(
             "../data/root.ec.public.key.pem",
             _PUBLIC_KEY,
             sizeof(_PUBLIC_KEY),
-            NULL) == OE_OK);
+            &public_key_size) == OE_OK);
     OE_TEST(
         read_sign("../data/test_ec_signature", _SIGNATURE, &sign_size) ==
         OE_OK);
-    OE_TEST(
-        read_pem_key(
-            "../data/root.ec.key.pem",
-            (char*)private_key_pem,
-            sizeof(private_key_pem),
-            &private_key_size) == OE_OK);
-    OE_TEST(
-        read_pem_key(
-            "../data/root.ec.public.key.pem",
-            (char*)public_key_pem,
-            sizeof(public_key_pem),
-            &public_key_size) == OE_OK);
     OE_TEST(
         read_coordinates(
             "../data/coordinates.bin", x_data, y_data, &x_size, &y_size) ==
@@ -950,7 +963,6 @@ void TestEC()
     _test_cert_without_extensions();
     _test_crl_distribution_points();
     _test_sign_and_verify();
-    _test_generate();
     _test_generate_from_private();
     _test_private_key_limits();
     _test_write_private();

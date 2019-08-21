@@ -3,8 +3,11 @@
 
 #include "../edltestutils.h"
 
+#include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
+#include <string.h>
 #include "all_t.h"
 
 static uint64_t data[8] = {0x1112131415161718,
@@ -176,7 +179,58 @@ void deepcopy_nested(NestedStruct* n)
         deepcopy_count(&(n->array_of_struct[i]));
 }
 
+void deepcopy_super_nested(SuperNestedStruct* s, size_t n)
+{
+    OE_TEST(oe_is_within_enclave(s, n * sizeof(SuperNestedStruct)));
+    // This test exists to check that the produced size of `_ptrs` is
+    // `n * (1 + 2 * (1 + 1 + 3))`.
+    OE_TEST(oe_is_within_enclave(
+        s[0].more_structs[0].array_of_struct, 3 * sizeof(CountStruct)));
+    OE_TEST(oe_is_outside_enclave(
+        s[0].more_structs[0].shallow_struct, sizeof(ShallowStruct)));
+}
+
 void deepcopy_null(CountStruct* s)
 {
     OE_UNUSED(s);
+}
+
+void deepcopy_out_count(CountStruct* s)
+{
+    OE_TEST(s->count == 0);
+    OE_TEST(s->size == 0);
+    for (size_t i = 0; i < 3; ++i)
+        OE_TEST(s->ptr[i] == 0);
+    s->count = 7;
+    s->size = 64;
+    for (size_t i = 0; i < 3; ++i)
+        s->ptr[i] = data[i];
+}
+
+void deepcopy_iovec(IOVEC* iov, size_t n)
+{
+    OE_TEST(!(n && !iov));
+    OE_TEST(n == 2);
+
+    for (size_t i = 0; i < n; i++)
+    {
+        char* str = (char*)iov[i].base;
+        size_t len = iov[i].len;
+
+        switch (i)
+        {
+            case 0:
+                OE_TEST(len == 8);
+                OE_TEST(oe_strcmp(str, "red") == 0);
+                memcpy(str, "0000000", 8);
+                break;
+            case 1:
+                OE_TEST(len == 0);
+                OE_TEST(str == NULL);
+                break;
+            default:
+                OE_TEST(false);
+                break;
+        }
+    }
 }

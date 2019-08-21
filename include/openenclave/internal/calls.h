@@ -74,35 +74,20 @@ typedef enum _oe_func
     OE_ECALL_DESTRUCTOR = OE_ECALL_BASE,
     OE_ECALL_INIT_ENCLAVE,
     OE_ECALL_CALL_ENCLAVE_FUNCTION,
-    OE_ECALL_VERIFY_REPORT,
-    OE_ECALL_GET_SGX_REPORT,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
-    OE_ECALL_LOG_INIT,
-    OE_ECALL_GET_PUBLIC_KEY_BY_POLICY,
-    OE_ECALL_GET_PUBLIC_KEY,
     /* Caution: always add new ECALL function numbers here */
-
     OE_ECALL_MAX,
 
     OE_OCALL_CALL_HOST_FUNCTION = OE_OCALL_BASE,
-    OE_OCALL_GET_QE_TARGET_INFO,
-    OE_OCALL_GET_QUOTE,
-    OE_OCALL_GET_REVOCATION_INFO,
-    OE_OCALL_GET_QE_ID_INFO,
     OE_OCALL_THREAD_WAKE,
     OE_OCALL_THREAD_WAIT,
-    OE_OCALL_THREAD_WAKE_WAIT,
     OE_OCALL_MALLOC,
-    OE_OCALL_REALLOC,
     OE_OCALL_FREE,
-    OE_OCALL_WRITE,
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
-    OE_OCALL_BACKTRACE_SYMBOLS,
-    OE_OCALL_LOG,
     /* Caution: always add new OCALL function numbers here */
-
     OE_OCALL_MAX, /* This value is never used */
+
     __OE_FUNC_MAX = OE_ENUM_MAX,
 } oe_func_t;
 
@@ -270,7 +255,8 @@ oe_result_t oe_call_host_function_by_table_id(
     size_t input_buffer_size,
     void* output_buffer,
     size_t output_buffer_size,
-    size_t* output_bytes_written);
+    size_t* output_bytes_written,
+    bool switchless);
 
 /*
 **==============================================================================
@@ -319,74 +305,6 @@ oe_result_t oe_register_ecall_function_table(
     uint64_t table_id,
     const oe_ecall_func_t* ecalls,
     size_t num_ecalls);
-
-/*
-**==============================================================================
-**
-** oe_print_args_t
-**
-**     Print 'str' to stdout (device == 0) or stderr (device == 1).
-**
-**==============================================================================
-*/
-
-typedef struct _oe_print_args
-{
-    int device;
-    char* str;
-} oe_print_args_t;
-
-/*
-**==============================================================================
-**
-** oe_realloc_args_t
-**
-**     void* realloc(void* ptr, size_t size)
-**
-**==============================================================================
-*/
-
-typedef struct _oe_realloc_args
-{
-    void* ptr;
-    size_t size;
-} oe_realloc_args_t;
-
-/*
-**==============================================================================
-**
-** oe_init_enclave_args_t
-**
-**     Runtime state to initialize enclave state with, includes
-**     - First 8 leaves of CPUID for enclave emulation
-**     - Enclave handle obtained by oe_create_enclave()
-**
-**==============================================================================
-*/
-
-typedef struct _oe_init_enclave_args
-{
-    uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
-    oe_enclave_t* enclave;
-} oe_init_enclave_args_t;
-
-/*
-**==============================================================================
-**
-** oe_backtrace_symbols_args_t
-**
-**     Ask host to print a backtrace collected by the enclave using the
-**     oe_backtrace() function.
-**
-**==============================================================================
-*/
-
-typedef struct _oe_backtrace_symbols_args
-{
-    void* buffer[OE_BACKTRACE_MAX];
-    int size;
-    char** ret;
-} oe_backtrace_symbols_args_t;
 
 /**
  * Perform a low-level enclave function call (ECALL).
@@ -483,17 +401,28 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out);
 **==============================================================================
 */
 
-#define OE_INTERNAL_OCALL_FUNCTION_TABLE_ID 0
-#define OE_INTERNAL_ECALL_FUNCTION_TABLE_ID 0
+#define OE_TEE_OCALL_FUNCTION_TABLE_ID 0
+#define OE_TEE_ECALL_FUNCTION_TABLE_ID 0
 
-#define OE_SYSCALL_OCALL_FUNCTION_TABLE_ID 1
-#define OE_SYSCALL_ECALL_FUNCTION_TABLE_ID 1
+#define OE_SGX_OCALL_FUNCTION_TABLE_ID 1
+#define OE_SGX_ECALL_FUNCTION_TABLE_ID 1
 
-/* Register the OCALL table needed by the internal interface (host side). */
-oe_result_t oe_register_internal_ocall_function_table(void);
+#define OE_SYSCALL_OCALL_FUNCTION_TABLE_ID 2
+#define OE_SYSCALL_ECALL_FUNCTION_TABLE_ID 2
 
-/* Register the ECALL table needed by the internal interface (enclave side). */
-oe_result_t oe_register_internal_ecall_function_table(void);
+/* Register the OCALL table needed by the common TEE interface (host side). */
+oe_result_t oe_register_tee_ocall_function_table(void);
+
+/* Register the ECALL table needed by the common TEE interface (enclave side).
+ */
+oe_result_t oe_register_tee_ecall_function_table(void);
+
+/* Register the OCALL table needed by the SGX-specific interface (host side). */
+oe_result_t oe_register_sgx_ocall_function_table(void);
+
+/* Register the ECALL table needed by the SGX-specific interface (enclave side).
+ */
+oe_result_t oe_register_sgx_ecall_function_table(void);
 
 /* Register the OCALL table needed by the SYSCALL interface (host side). */
 void oe_register_syscall_ocall_function_table(void);

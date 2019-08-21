@@ -10,6 +10,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 
 size_t errors = 0;

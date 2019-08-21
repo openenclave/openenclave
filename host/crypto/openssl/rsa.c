@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../rsa.h"
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
-#include <string.h>
+
+#include "../magic.h"
+#include "../rsa.h"
 #include "init.h"
 #include "key.h"
 #include "rsa.h"
@@ -61,10 +60,6 @@ static int RSA_set0_key(RSA* r, BIGNUM* n, BIGNUM* e, BIGNUM* d)
 
 #endif
 
-/* Magic numbers for the RSA key implementation structures */
-static const uint64_t _PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
-static const uint64_t _PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
-
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 
@@ -85,115 +80,6 @@ done:
 
     if (rsa)
         RSA_free(rsa);
-
-    return result;
-}
-
-static oe_result_t _generate_key_pair(
-    uint64_t bits,
-    uint64_t exponent,
-    oe_private_key_t* private_key,
-    oe_public_key_t* public_key)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    RSA* rsa_private = RSA_new();
-    RSA* rsa_public = RSA_new();
-    EVP_PKEY* pkey_private = NULL;
-    EVP_PKEY* pkey_public = NULL;
-
-    if (private_key)
-        oe_secure_zero_fill(private_key, sizeof(*private_key));
-
-    if (public_key)
-        oe_secure_zero_fill(public_key, sizeof(*public_key));
-
-    /* Check parameters */
-    if (!private_key || !public_key)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Check range of bits parameter */
-    if (bits > INT_MAX)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Check range of exponent */
-    if (exponent > ULONG_MAX)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    oe_initialize_openssl();
-
-    /* Create the public and private RSA keys */
-    {
-        /* Create the private key */
-        BIGNUM* e;
-        e = BN_new();
-        BN_set_word(e, exponent);
-        RSA_generate_key_ex(rsa_private, (int32_t)bits, e, 0);
-        if (!rsa_private)
-            OE_RAISE(OE_CRYPTO_ERROR);
-
-        /* Create the public key */
-        if (!(rsa_public = RSAPublicKey_dup(rsa_private)))
-            OE_RAISE(OE_CRYPTO_ERROR);
-    }
-
-    /* Create the PKEY private key wrapper */
-    {
-        /* Create the private key structure */
-        if (!(pkey_private = EVP_PKEY_new()))
-            OE_RAISE(OE_CRYPTO_ERROR);
-
-        /* Initialize the private key from the generated key pair */
-        if (!EVP_PKEY_assign_RSA(pkey_private, rsa_private))
-            OE_RAISE(OE_CRYPTO_ERROR);
-
-        /* Initialize the private key */
-        oe_private_key_init(private_key, pkey_private, _PRIVATE_KEY_MAGIC);
-
-        /* Keep these from being freed below */
-        rsa_private = NULL;
-        pkey_private = NULL;
-    }
-
-    /* Create the PKEY public key wrapper */
-    {
-        /* Create the public key structure */
-        if (!(pkey_public = EVP_PKEY_new()))
-            OE_RAISE(OE_CRYPTO_ERROR);
-
-        /* Initialize the public key from the generated key pair */
-        if (!EVP_PKEY_assign_RSA(pkey_public, rsa_public))
-            OE_RAISE(OE_CRYPTO_ERROR);
-
-        /* Initialize the public key */
-        oe_public_key_init(public_key, pkey_public, _PUBLIC_KEY_MAGIC);
-
-        /* Keep these from being freed below */
-        rsa_public = NULL;
-        pkey_public = NULL;
-    }
-
-    result = OE_OK;
-
-done:
-
-    if (rsa_private)
-        RSA_free(rsa_private);
-
-    if (rsa_public)
-        RSA_free(rsa_public);
-
-    if (pkey_private)
-        EVP_PKEY_free(pkey_private);
-
-    if (pkey_public)
-        EVP_PKEY_free(pkey_public);
-
-    if (result != OE_OK)
-    {
-        oe_private_key_free(private_key, _PRIVATE_KEY_MAGIC);
-        oe_public_key_free(public_key, _PUBLIC_KEY_MAGIC);
-    }
 
     return result;
 }
@@ -292,8 +178,8 @@ static oe_result_t _public_key_equal(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!oe_public_key_is_valid(public_key1, _PUBLIC_KEY_MAGIC) ||
-        !oe_public_key_is_valid(public_key2, _PUBLIC_KEY_MAGIC) || !equal)
+    if (!oe_public_key_is_valid(public_key1, OE_RSA_PUBLIC_KEY_MAGIC) ||
+        !oe_public_key_is_valid(public_key2, OE_RSA_PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!(rsa1 = EVP_PKEY_get1_RSA(public_key1->pkey)))
@@ -328,8 +214,8 @@ done:
 
 void oe_rsa_public_key_init(oe_rsa_public_key_t* public_key, EVP_PKEY* pkey)
 {
-    return oe_public_key_init(
-        (oe_public_key_t*)public_key, pkey, _PUBLIC_KEY_MAGIC);
+    oe_public_key_init(
+        (oe_public_key_t*)public_key, pkey, OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_read_pem(
@@ -342,7 +228,7 @@ oe_result_t oe_rsa_private_key_read_pem(
         pem_size,
         (oe_private_key_t*)private_key,
         EVP_PKEY_RSA,
-        _PRIVATE_KEY_MAGIC);
+        OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_write_pem(
@@ -355,7 +241,7 @@ oe_result_t oe_rsa_private_key_write_pem(
         pem_data,
         pem_size,
         _private_key_write_pem_callback,
-        _PRIVATE_KEY_MAGIC);
+        OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_read_pem(
@@ -368,30 +254,31 @@ oe_result_t oe_rsa_public_key_read_pem(
         pem_size,
         (oe_public_key_t*)public_key,
         EVP_PKEY_RSA,
-        _PUBLIC_KEY_MAGIC);
+        OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_write_pem(
-    const oe_rsa_public_key_t* private_key,
+    const oe_rsa_public_key_t* public_key,
     uint8_t* pem_data,
     size_t* pem_size)
 {
     return oe_public_key_write_pem(
-        (const oe_public_key_t*)private_key,
+        (const oe_public_key_t*)public_key,
         pem_data,
         pem_size,
-        _PUBLIC_KEY_MAGIC);
+        OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* private_key)
 {
     return oe_private_key_free(
-        (oe_private_key_t*)private_key, _PRIVATE_KEY_MAGIC);
+        (oe_private_key_t*)private_key, OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* public_key)
 {
-    return oe_public_key_free((oe_public_key_t*)public_key, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_free(
+        (oe_public_key_t*)public_key, OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_sign(
@@ -409,7 +296,7 @@ oe_result_t oe_rsa_private_key_sign(
         hash_size,
         signature,
         signature_size,
-        _PRIVATE_KEY_MAGIC);
+        OE_RSA_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_verify(
@@ -427,20 +314,7 @@ oe_result_t oe_rsa_public_key_verify(
         hash_size,
         signature,
         signature_size,
-        _PUBLIC_KEY_MAGIC);
-}
-
-oe_result_t oe_rsa_generate_key_pair(
-    uint64_t bits,
-    uint64_t exponent,
-    oe_rsa_private_key_t* private_key,
-    oe_rsa_public_key_t* public_key)
-{
-    return _generate_key_pair(
-        bits,
-        exponent,
-        (oe_private_key_t*)private_key,
-        (oe_public_key_t*)public_key);
+        OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_get_modulus(

@@ -17,15 +17,18 @@ add_custom_command(
   ../edl/pointer.edl
   ../edl/string.edl
   ../edl/struct.edl
+  ../edl/switchless.edl
   COMMAND edger8r --experimental --trusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
-
-# Dummy target used for generating from EDL on demand.
-add_custom_target(edl_enc_trusted DEPENDS all_t.h all_t.c all_args.h)
 
 add_custom_command(
   OUTPUT bar_t.h bar_args.h
   DEPENDS ../moreedl/bar.edl
   COMMAND edger8r --trusted --header-only --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl bar.edl)
+
+# Dummy target used for generating from EDL on demand.
+add_custom_target(edl_enc_gen DEPENDS
+  all_t.h all_t.c all_args.h
+  bar_t.h bar_args.h)
 
 add_enclave(TARGET edl_enc UUID e71cbbea-a638-4653-b46e-2e58a2ca3408 CXX
     SOURCES
@@ -44,7 +47,8 @@ add_enclave(TARGET edl_enc UUID e71cbbea-a638-4653-b46e-2e58a2ca3408 CXX
     testforeign.cpp
     testpointer.cpp
     teststring.cpp
-    teststruct.cpp)
+    teststruct.cpp
+    testswitchless.cpp)
 
 # The tests intentionally use floats etc in size context.
 # Disable warnings.

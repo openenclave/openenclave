@@ -13,13 +13,14 @@ if (OE_SGX)
         ../common/sgx/sgxcertextensions.c
         ../common/sgx/tcbinfo.c
         ../common/sgx/tlsverifier.c
-        sgx/link.c
         sgx/qeidinfo.c
         sgx/report.c
         sgx/revocationinfo.c
-        sgx/start.S
-    )
+        sgx/start.S)
 elseif(OE_TRUSTZONE)
+    set(PLATFORM_SRC
+        optee/report.c
+        optee/start.S)
     message("TODO: ADD ARM files.")
 endif()
 
@@ -27,6 +28,7 @@ add_library(oeenclave STATIC
     ../common/datetime.c
     ../common/lockless_queue.c
     asym_keys.c
+    link.c
     random.c
     tls_cert.c
     ${PLATFORM_SRC})
@@ -40,6 +42,10 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
     target_compile_options(oeenclave PUBLIC ${OE_TZ_TA_C_FLAGS})
   endif()
 endif()
+
+# Add location of the oeedger8r-generated trusted headers for internal
+# functions implemented via EDL files.
+target_include_directories(oeenclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/core)
 
 target_link_libraries(oeenclave PUBLIC oecryptombed)
 if(OE_TRUSTZONE)
