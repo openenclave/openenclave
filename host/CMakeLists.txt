@@ -84,12 +84,8 @@ if (UNIX)
     linux/time.c
     linux/windows.c)
 elseif (WIN32)
-<<<<<<< HEAD
-  set(PLATFORM_SRC
-    ../3rdparty/mbedtls/mbedtls/library/platform_util.c # if not added here, the build of Windows fails because of its dependecies in bignum.c file
-=======
   set(PLATFORM_SDK_ONLY_SRC
->>>>>>> 205b00ac99a775dbd7ad0538de667614fa7042df
+    ../3rdparty/mbedtls/mbedtls/library/platform_util.c # if not added here, the build of Windows fails because of its dependecies in bignum.c file
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     ../common/asn1.c
     ../common/cert.c
