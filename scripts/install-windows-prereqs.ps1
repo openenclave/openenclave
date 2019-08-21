@@ -14,10 +14,10 @@ Param(
     [string]$Clang7Hash = '672E4C420D6543A8A9F8EC5F1E5F283D88AC2155EF4C57232A399160A02BFF57',
     [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15654/Intel%20SGX%20PSW%20for%20Windows%20v2.4.100.51291.exe',
     [string]$IntelPSWHash = '79AE32E984B5511CE4BF7568403333F837FBCE7E8D5730271C5D68F55BBF251D',
-    [string]$ShellCheckURL = 'https://storage.googleapis.com/shellcheck/shellcheck-stable.exe',
-    [string]$ShellCheckHash = '8AAFDEFF31095613308E92CE6A13E3C41249B51E757FD4FCDFDFC7A81D29286A',
-    [string]$NugetURL = 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe',
-    [string]$NugetHash = '0ACE4F53493332C9A75291EE96ACD76B371B4E687175E4852BF85948176D7152',
+    [string]$ShellCheckURL = 'https://shellcheck.storage.googleapis.com/shellcheck-v0.7.0.zip',
+    [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
+    [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
+    [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
     [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15650/Intel%20SGX%20DCAP%20for%20Windows%20v1.2.100.49925.exe',
@@ -81,12 +81,12 @@ $PACKAGES = @{
     "shellcheck" = @{
         "url" = $ShellCheckURL
         "hash" = $ShellCheckHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "shellcheck.exe"
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "shellcheck.zip"
     }
     "nuget" = @{
         "url" = $NugetURL
         "hash" = $NugetHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "nuget.exe"
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "nuget.zip"
     }
     "devcon" = @{
         "url" = $DevconURL
@@ -297,6 +297,17 @@ function Install-ZipTool {
     Add-ToSystemPath $EnvironmentPath
 }
 
+function Install-Nuget {
+    $tempInstallDir = "$PACKAGES_DIRECTORY\nuget"
+    if(Test-Path -Path $tempInstallDir) {
+        Remove-Item -Path $tempInstallDir -Force -Recurse
+    }
+    Install-ZipTool -ZipPath $PACKAGES["nuget"]["local_file"] `
+                    -InstallDirectory $tempInstallDir `
+                    -EnvironmentPath @("$tempInstallDir")
+    Copy-Item -Force "$tempInstallDir\build\native\Nuget.exe" $PACKAGES_DIRECTORY
+}
+
 function Install-Git {
     $installDir = Join-Path $env:ProgramFiles "Git"
     Install-Tool -InstallerPath $PACKAGES["git"]["local_file"] `
@@ -369,6 +380,7 @@ function Install-OCaml {
     New-Directory -Path $installDir -RemoveExisting
     Move-Item -Path "$tmpDir\*\*" -Destination $installDir
 }
+
 function Install-LLVM {
     Install-Tool -InstallerPath $PACKAGES["clang7"]["local_file"] `
                  -ArgumentList "/S" `
@@ -376,12 +388,13 @@ function Install-LLVM {
 }
 
 function Install-Shellcheck {
-    $shellcheckDest = Join-Path $env:ProgramFiles "shellcheck"
-    if(Test-Path -Path $shellcheckDest) {
-        Remove-Item -Path $shellcheckDest -Force -Recurse
+    $installDir = Join-Path $env:ProgramFiles "shellcheck"
+    if(Test-Path -Path $installDir) {
+        Remove-Item -Path $installDir -Force -Recurse
     }
-    New-Item -ItemType Directory -Path $shellcheckDest
-    Move-Item "$PACKAGES_DIRECTORY\shellcheck.exe" $shellcheckDest -Force
+    Install-ZipTool -ZipPath $PACKAGES["shellcheck"]["local_file"] `
+                    -InstallDirectory $installDir `
+                    -EnvironmentPath @("$installDir")
     Add-ToSystemPath -Path "${env:ProgramFiles}\shellcheck"
 }
 
@@ -540,6 +553,7 @@ try {
     Start-LocalPackagesDownload
 
     Install-7Zip
+    Install-Nuget
     Install-VisualStudio
     Install-LLVM
     Install-Git
