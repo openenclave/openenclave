@@ -36,8 +36,8 @@
     - name: OE setup | Run the install-windows-prereqs.ps1 script (this may take a while)
       script: ../install-windows-prereqs.ps1
         -InstallPath         "C:\openenclave"
-        -WithFLC             "{{ '$true' if dcap_testing_node is defined and dcap_testing_node == true else '$false' }}"
-        -WithAzureDCAPClient "{{ '$true' if dcap_testing_node is defined and dcap_testing_node == true else '$false' }}"
+        -WithFLC             "{{ 1 if dcap_testing_node is defined and dcap_testing_node == true else 0 }}"
+        -WithAzureDCAPClient "{{ 1 if dcap_testing_node is defined and dcap_testing_node == true else 0 }}"
         -IntelPSWURL         "{{ intel_psw_2_4_url if dcap_testing_node is defined and dcap_testing_node == true else intel_psw_2_2_url }}"
         -IntelPSWHash        "{{ intel_psw_2_4_hash if dcap_testing_node is defined and dcap_testing_node == true else intel_psw_2_2_hash }}"
         -IntelDCAPURL        "{{ intel_dcap_url }}"
