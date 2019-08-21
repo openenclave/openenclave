@@ -30,7 +30,7 @@ function(add_mbed_test_enclave NAME)
                                      " --out-dir ${CMAKE_CURRENT_BINARY_DIR}")
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c
-    COMMAND ${BASH} -c "python3 ${GEN_TEST_CODE_SCRIPT}"
+    COMMAND ${BASH} -c "python ${GEN_TEST_CODE_SCRIPT}"
     DEPENDS
     mbedcrypto
     ${MBEDTLS_TESTS_DIR}/scripts/generate_test_code.py
