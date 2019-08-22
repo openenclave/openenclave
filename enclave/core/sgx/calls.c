@@ -33,8 +33,7 @@
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
 
-/* If true, disable the debug malloc checking */
-bool oe_disable_debug_malloc_check;
+extern bool oe_disable_debug_malloc_check;
 
 /*
 **==============================================================================
