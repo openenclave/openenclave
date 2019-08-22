@@ -93,3 +93,4 @@ instead, it should be brought up with the Community Maintenance Committee.
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
 | Bruce Campbell        | yakman2020          | Windows, SGX                   |
+| Brett McLaren         | BRMcLaren           |                                |
