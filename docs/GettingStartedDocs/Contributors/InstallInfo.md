@@ -64,3 +64,14 @@ as above. For example, to create a Debian package that will install the SDK to
 cmake -DCMAKE_INSTALL_PREFIX=/opt/openenclave ..
 cpack -G DEB
 ```
+
+## Create the host-only report verification package
+
+The host-only report verification package allows non-enclave applications to
+validate remote reports from enclaves. The process to create this package
+is almost the same as the normal OE SDK. The only difference is the `cpack`
+command as shown below:
+
+```bash
+cpack -G DEB -D CPACK_DEB_COMPONENT_INSTALL=ON  -D CPACK_COMPONENTS_ALL=OEHOSTVERIFY
+```

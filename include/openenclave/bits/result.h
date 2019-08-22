@@ -295,29 +295,24 @@ typedef enum _oe_result
     OE_QUOTE_VERIFICATION_ERROR,
 
     /**
-     * Quote enclave identify verification failed.
+     * Quote enclave identity verification failed.
      */
     OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
 
     /**
-     * QE identify mrsigner do not match.
+     * Unique id of the quoting enclave does not match expected value.
      */
-    OE_QUOTE_ENCLAVE_IDENTITY_MRSIGNER_MISMATCH,
+    OE_QUOTE_ENCLAVE_IDENTITY_UNIQUEID_MISMATCH,
 
     /**
-     * QE ISV product id do not match.
+     * Product id of the quoting enclave does not match expected value.
      */
-    QE_QUOTE_ENCLAVE_IDENTITY_ISV_PROD_ID_MISMATCH,
+    QE_QUOTE_ENCLAVE_IDENTITY_PRODUCTID_MISMATCH,
 
     /**
-     * QE ISV SVN was not expected.
+     * AES CMAC of the report does not match the expected value.
      */
-    QE_QUOTE_ENCLAVE_IDENTITY_ISVSVN_UNEXPECTED,
-
-    /**
-     * OES CMAC mismatch when verifying report.
-     */
-    OE_VERIFY_FAILED_OES_CMAC_MISMATCH,
+    OE_VERIFY_FAILED_AES_CMAC_MISMATCH,
 
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;

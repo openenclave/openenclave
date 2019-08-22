@@ -64,25 +64,27 @@ add_custom_target(syscall_untrusted_edl
 
 # OS specific but arch agnostic files.
 if (UNIX)
-  set(PLATFORM_SRC
-    ../common/asn1.c
+  set(PLATFORM_HOST_ONLY_SRC
     ../common/cert.c
     crypto/openssl/asn1.c
     crypto/openssl/cert.c
     crypto/openssl/crl.c
     crypto/openssl/ec.c
-    crypto/openssl/hmac.c
     crypto/openssl/init.c
     crypto/openssl/key.c
-    crypto/openssl/random.c
     crypto/openssl/rsa.c
     crypto/openssl/sha.c
-    linux/hostthread.c
+    linux/hostthread.c)
+
+  set(PLATFORM_SDK_ONLY_SRC
+    ../common/asn1.c
+    crypto/openssl/hmac.c
+    crypto/openssl/random.c
     linux/syscall.c
     linux/time.c
     linux/windows.c)
 elseif (WIN32)
-  set(PLATFORM_SRC
+  set(PLATFORM_SDK_ONLY_SRC
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     ../common/asn1.c
     ../common/cert.c
@@ -102,9 +104,9 @@ else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
 
-# SGX specific files
+# SGX specific files.
 if (OE_SGX)
-  list(APPEND PLATFORM_SRC
+  list(APPEND PLATFORM_HOST_ONLY_SRC
     ../common/sgx/qeidentity.c
     ../common/sgx/quote.c
     ../common/sgx/report.c
@@ -112,6 +114,10 @@ if (OE_SGX)
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c
+    sgx/hostverify_report.c
+    sgx/sgxquoteprovider.c)
+
+  list(APPEND PLATFORM_SDK_ONLY_SRC
     sgx/calls.c
     sgx/create.c
     sgx/elf.c
@@ -129,23 +135,24 @@ if (OE_SGX)
     sgx/sgxload.c
     sgx/sgxmeasure.c
     sgx/sgxquote.c
-    sgx/sgxquoteprovider.c
     sgx/sgxsign.c
     sgx/sgxtypes.c)
 
   # OS specific as well.
   if (UNIX)
-    list(APPEND PLATFORM_SRC
+    list(APPEND PLATFORM_HOST_ONLY_SRC
+        sgx/linux/sgxquoteproviderloader.c)
+
+    list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
       sgx/linux/aesm.c
       sgx/linux/enter.S
       sgx/linux/entersim.S
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
-      sgx/linux/sgxquoteproviderloader.c
       sgx/linux/xstate.c)
   else()
-    list(APPEND PLATFORM_SRC
+    list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/windows/aep.asm
       sgx/windows/aesm.c
       sgx/windows/enter.asm
@@ -157,11 +164,11 @@ if (OE_SGX)
 
   set(PLATFORM_FLAGS "-m64")
 elseif(OE_TRUSTZONE)
-  list(APPEND PLATFORM_SRC
+  list(APPEND PLATFORM_SDK_ONLY_SRC
     optee/log.c)
   
   if (UNIX)
-    list(APPEND PLATFORM_SRC
+    list(APPEND PLATFORM_SDK_ONLY_SRC
       optee/linux/enclave.c)
   else()
     message(FATAL_ERROR "OP-TEE is not yet supported on platforms other than Linux.")
@@ -172,16 +179,22 @@ endif()
 
 if (OE_SGX AND WIN32)
   # oedebugrt is accessed via a bridge on Win32 and need not be linked.    
-  list(APPEND PLATFORM_SRC
+  list(APPEND PLATFORM_SDK_ONLY_SRC
     sgx/windows/debugrtbridge.c)
 endif()
 
-# Combine with all other non platform dependent files.
-add_library(oehost STATIC
+# Common host verification files that work on any OS/architecture.
+list(APPEND PLATFORM_HOST_ONLY_SRC
   ../common/datetime.c
+  ../common/safecrt.c
+  hexdump.c
+  result.c
+  traceh.c)
+
+# Common files that are used in the OE SDK only.
+list(APPEND PLATFORM_SDK_ONLY_SRC
   ../common/kdf.c
   ../common/lockless_queue.c
-  ../common/safecrt.c
   ../common/argv.c
   asym_keys.c
   calls.c
@@ -190,17 +203,23 @@ add_library(oehost STATIC
   error.c
   files.c
   fopen.c
-  hexdump.c
-  syscall_u_wrapper.c
-  tee_u_wrapper.c
   memalign.c
-  result.c
+  syscall_u_wrapper.c
   signkey.c
   strings.c
+  tee_u_wrapper.c
   tests.c
-  traceh.c
-  ${PLATFORM_SRC})
+  traceh_enclave.c)
 
+# Combine the following common code along with the platform specific code and
+# host verification code to get the full oehost target provided by the OE SDK.
+add_library(oehost STATIC
+  ${PLATFORM_HOST_ONLY_SRC}
+  ${PLATFORM_SDK_ONLY_SRC})
+
+add_library(oehostverify STATIC ${PLATFORM_HOST_ONLY_SRC})
+
+target_link_libraries(oehostverify PUBLIC oe_includes)
 target_link_libraries(oehost PUBLIC oe_includes)
 
 if(WIN32)
@@ -215,7 +234,7 @@ endif()
 add_dependencies(oehost syscall_untrusted_edl)
 add_dependencies(oehost tee_untrusted_edl)
 if(OE_SGX)
-    add_dependencies(oehost sgx_untrusted_edl)
+  add_dependencies(oehost sgx_untrusted_edl)
 endif()
 
 # TODO: Replace these with `find_package` and add as dependencies to
@@ -243,6 +262,7 @@ endif ()
 find_package(Threads REQUIRED)
 
 if (UNIX)
+  target_link_libraries(oehostverify PRIVATE crypto dl Threads::Threads)
   target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)
 
   if (OE_TRUSTZONE)
@@ -328,18 +348,31 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oehost PRIVATE -Wjump-misses-init)
 endif ()
 
+# Use the same the compile options and definitions from oehost.
+target_compile_options(oehostverify
+  PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_OPTIONS>
+  INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_OPTIONS>)
+
+target_compile_definitions(oehostverify
+  PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_DEFINITIONS>
+  INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_DEFINITIONS>)
+
+
 # TODO: Remove this hard coded output directory.
 set_property(TARGET oehost PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
 
 # Convenience library for creating a host-app (that needs the
-# -rdynamic link flag).
+# -rdynamic link flag). We do this by default for the oehostverify target too.
 add_library(oehostapp INTERFACE)
 
 target_link_libraries(oehostapp INTERFACE oehost)
 
 if (UNIX)
   target_link_libraries(oehostapp INTERFACE
+      -rdynamic
+      -Wl,-z,noexecstack)
+  target_link_libraries(oehostverify INTERFACE
       -rdynamic
       -Wl,-z,noexecstack)
 endif ()
@@ -349,3 +382,7 @@ install(TARGETS oehost EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
 
 install(TARGETS oehostapp EXPORT openenclave-targets)
+
+install(TARGETS oehostverify EXPORT openenclave-targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
+  COMPONENT OEHOSTVERIFY)

@@ -10,7 +10,7 @@
 
 OE_EXTERNC_BEGIN
 
-oe_result_t VerifyQuoteImpl(
+oe_result_t oe_verify_quote_internal(
     const uint8_t* enc_quote,
     size_t quote_size,
     const uint8_t* enc_pem_pck_certificate,

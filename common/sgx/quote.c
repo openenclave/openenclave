@@ -134,7 +134,7 @@ done:
     return result;
 }
 
-oe_result_t VerifyQuoteImpl(
+oe_result_t oe_verify_quote_internal(
     const uint8_t* quote,
     size_t quote_size,
     const uint8_t* pem_pck_certificate,

@@ -1,0 +1,14 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+prefix=@PREFIX@
+exec_prefix=${prefix}
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+
+Name: Open Enclave
+Description: Open Enclave gcc flags and libraries verifying remote reports on hosts.
+Version: @OE_VERSION@
+Requires: openssl
+Cflags: @HOST_CFLAGS_GCC@ @HOST_INCLUDES@
+Libs: @HOSTVERIFY_CLIBS@

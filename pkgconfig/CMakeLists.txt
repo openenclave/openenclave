@@ -96,8 +96,10 @@ else()
     set(SGX_LIBS "")
 endif()
 
+set(HOSTVERIFY_CLIBS "-rdynamic -Wl,-z,noexecstack -L\${libdir}/openenclave/host -loehostverify -ldl -lpthread")
 set(HOST_CLIBS "-rdynamic -Wl,-z,noexecstack -L\${libdir}/openenclave/host -loehost -ldl -lpthread ${SGX_LIBS}")
 
+set(HOSTVERIFY_CXXLIBS "${HOSTVERIFY_CLIBS}")
 set(HOST_CXXLIBS "${HOST_CLIBS}")
 
 ##==============================================================================
@@ -166,6 +168,40 @@ install(FILES
 
 ##==============================================================================
 ##
+## oehostverify-gcc.pc:
+##
+##==============================================================================
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-gcc.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-gcc.pc
+    @ONLY)
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-gcc.pc
+    DESTINATION
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+    COMPONENT OEHOSTVERIFY)
+
+##==============================================================================
+##
+## oehostverify-g++.pc:
+##
+##==============================================================================
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-g++.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-g++.pc
+    @ONLY)
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-g++.pc
+    DESTINATION
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+    COMPONENT OEHOSTVERIFY)
+
+##==============================================================================
+##
 ## oeenclave-clang.pc:
 ##
 ##==============================================================================
@@ -227,3 +263,37 @@ install(FILES
     ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang++.pc
     DESTINATION
     "${CMAKE_INSTALL_DATADIR}/pkgconfig")
+
+##==============================================================================
+##
+## oehostverify-clang.pc:
+##
+##==============================================================================
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-clang.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang.pc
+    @ONLY)
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang.pc
+    DESTINATION
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+    COMPONENT OEHOSTVERIFY)
+
+##==============================================================================
+##
+## oehostverify-clang++.pc:
+##
+##==============================================================================
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-clang++.pc
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang++.pc
+    @ONLY)
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang++.pc
+    DESTINATION
+    "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+    COMPONENT OEHOSTVERIFY)

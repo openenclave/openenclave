@@ -8,6 +8,10 @@ This document is a work in progress. It describes how to use experimental
 support in the Open Enclave SDK to build Windows host applications that can
 load ELF enclaves built using clang.
 
+Please refer to the following [documentation](/docs/GettingStartedDocs/SGXSupportLevel.md) to determine the SGX support level for your target system. The instructions below work for systems with SGX1+FLC support. Instructions for systems with SGX1 but no FLC support are coming soon. 
+
+'Simulator' mode is not available in Windows.
+
 Prerequisites
 -------------
 

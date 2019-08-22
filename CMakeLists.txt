@@ -221,3 +221,8 @@ endif()
 
 install(FILES LICENSE THIRD_PARTY_NOTICES
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/licenses)
+
+# Configure all the CPACK settings. This must be last because
+# CPack must be aware of all the component information in order
+# for it to create different component based packages.
+include(cpack_settings)
