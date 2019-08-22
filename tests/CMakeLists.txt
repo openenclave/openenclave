@@ -94,4 +94,5 @@ if (OE_SGX AND UNIX)
 
    # Attestation supported only on Linux
    add_subdirectory(tls_e2e)
+   add_subdirectory(switchless)
 endif()

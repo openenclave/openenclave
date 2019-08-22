@@ -22,3 +22,16 @@ void oe_free_ocall_buffer(void* buffer)
 {
     oe_free(buffer);
 }
+
+// TODO
+void* oe_reserve_shm(size_t capacity)
+{
+    OE_UNUSED(capacity);
+    return NULL;
+}
+
+// TODO
+void oe_unreserve_shm(void* buffer)
+{
+    OE_UNUSED(buffer);
+}
