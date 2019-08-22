@@ -13,13 +13,13 @@ TEE_Result __utee_entry(
     struct utee_params* up,
     unsigned long cmd_id);
 
-void __ta_entry(
+void __noreturn __ta_entry(
     unsigned long func,
     unsigned long session_id,
     struct utee_params* up,
-    unsigned long cmd_id) __noreturn;
+    unsigned long cmd_id);
 
-void __ta_entry(
+void __noreturn __ta_entry(
     unsigned long func,
     unsigned long session_id,
     struct utee_params* up,
