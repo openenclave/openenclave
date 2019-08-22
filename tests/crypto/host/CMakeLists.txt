@@ -5,9 +5,11 @@
 if (OE_SGX)
   if (UNIX)
     set(PLATFORM_SRC
+      ../rdrand_test.c
       ../../../common/sgx/rand.S)
   elseif (WIN32)
     set(PLATFORM_SRC
+      ../rdrand_test.c
       ../../../common/sgx/rand.asm)
   else ()
     message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
@@ -27,7 +29,6 @@ set(SRCS
   ../hmac_tests.c
   ../kdf_tests.c
   ../random_tests.c
-  ../rdrand_test.c
   ../read_file.c
   ../rsa_tests.c
   ../sha_tests.c
