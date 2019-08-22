@@ -44,13 +44,6 @@ endif ()
 set (PLATFORM_SRC "")
 
 if (OE_SGX)
-    if (UNIX OR USE_CLANGW)
-        list(APPEND PLATFORM_SRC
-            ../common/sgx/rand.S)
-    elseif (WIN32)
-        set(APPEND PLATFORM_SRC
-            ../common/sgx/rand.asm)
-    endif()
 else()
     list(APPEND PLATFORM_SRC
         optee/abort.c
