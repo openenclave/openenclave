@@ -44,15 +44,17 @@ endif ()
 set (PLATFORM_SRC "")
 
 if (OE_SGX)
+    list(APPEND PLATFORM_SRC
+        sgx/arc4random.c)
 else()
     list(APPEND PLATFORM_SRC
         optee/abort.c
+        optee/arc4random.c
         optee/exp2l.c
         optee/trace.c)
 endif()
 
 add_library(oelibc STATIC
-    arc4random.c
     atexit.c
     dladdr.c
     errno.c
