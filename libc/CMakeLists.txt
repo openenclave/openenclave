@@ -48,9 +48,9 @@ if (OE_SGX)
         sgx/arc4random.c)
 else()
     list(APPEND PLATFORM_SRC
+        ${MUSLSRC}/math/exp2l.c
         optee/abort.c
         optee/arc4random.c
-        optee/exp2l.c
         optee/trace.c)
 endif()
 
