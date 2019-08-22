@@ -25,7 +25,7 @@ Param(
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/packages/Azure.DCAP.Windows/0.0.2',
-    [string]$AzureDCAPNupkgHash = '79571272B5F76A42C077DC5C9D114F5E4E55E6E0F9EB5C95E3755B12108B9B26',
+    [string]$AzureDCAPNupkgHash = '679E4A0D04D683AC1EFBE1DF050AB19B974A0A557549184B0B862AC7B725EDFF',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][bool]$WithFLC,
     [Parameter(mandatory=$true)][bool]$WithAzureDCAPClient
@@ -526,6 +526,7 @@ function Install-DCAPDrivers {
         & "$PACKAGES_DIRECTORY\nuget.exe" install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
         if($LASTEXITCODE -ne 0) {
             Throw "Failed to install nuget Azure.DCAP.Windows"
+        }
     }
     & "$PACKAGES_DIRECTORY\nuget.exe" install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
