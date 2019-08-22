@@ -136,6 +136,7 @@ add_library(oecore STATIC
     pthread.c
     result.c
     sbrk.c
+    shm.c
     stdio.c
     strerror.c
     string.c

@@ -4,6 +4,7 @@
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
+#include <openenclave/host_verify.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
@@ -293,7 +294,7 @@ oe_result_t oe_verify_report(
         OE_CHECK(oe_initialize_quote_provider());
 
         // Quote attestation can be done entirely on the host side.
-        OE_CHECK(VerifyQuoteImpl(
+        OE_CHECK(oe_verify_quote_internal(
             header->report, header->report_size, NULL, 0, NULL, 0, NULL, 0));
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)

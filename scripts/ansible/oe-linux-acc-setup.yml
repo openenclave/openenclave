@@ -29,7 +29,11 @@
 
     - import_role:
         name: linux/intel
-        tasks_from: validation.yml
+        tasks_from: driver-validation.yml
+
+    - import_role:
+        name: linux/intel
+        tasks_from: packages-validation.yml
 
     - import_role:
         name: linux/az-dcap-client

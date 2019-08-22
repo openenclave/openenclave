@@ -14,27 +14,13 @@
 #include <time.h>
 #include "hostthread.h"
 
-#if defined(__x86_64__) || defined(_M_X64)
-#include "sgx/enclave.h"
-#elif defined(__aarch64__) || defined(_M_ARM64)
-#if defined(__linux__)
-#include "optee/linux/enclave.h"
-#else
-#error "OP-TEE is not yet supported on non-Linux platforms."
-#endif
-#else
-#error "Open Enclave is not supported on this architecture."
-#endif
-
-#include "tee_u.h"
-
 #define LOGGING_FORMAT_STRING "%02d:%02d:%02d:%06ld tid(0x%lx) (%s)[%s]%s"
 static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
     {"NONE", "FATAL", "ERROR", "WARN", "INFO", "VERBOSE"};
 static oe_mutex _log_lock = OE_H_MUTEX_INITIALIZER;
 static const char* _log_file_name = NULL;
 static bool _log_creation_failed_before = false;
-static oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
+oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
 
 static oe_log_level_t _env2log_level(void)
@@ -74,7 +60,7 @@ done:
     return level;
 }
 
-static void _initialize_log_config()
+void initialize_log_config()
 {
     if (!_initialized)
     {
@@ -165,13 +151,6 @@ static void _log_session_header()
     }
 }
 
-oe_result_t oe_log_enclave_init(oe_enclave_t* enclave)
-{
-    _initialize_log_config();
-
-    return oe_log_init_ecall(enclave, enclave->path, _log_level);
-}
-
 oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -217,7 +196,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
 {
     if (!_initialized)
     {
-        _initialize_log_config();
+        initialize_log_config();
         _log_session_header();
     }
     if (_initialized)
