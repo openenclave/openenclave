@@ -23,6 +23,8 @@ if (OE_SGX)
         ${MUSLSRC}/setjmp/x86_64/setjmp.s)
 elseif(OE_TRUSTZONE)
     add_library(oelibasm OBJECT
+        ${MUSLSRC}/math/aarch64/sqrt.c
+        ${MUSLSRC}/math/aarch64/sqrtf.c
         ${MUSLSRC}/fenv/aarch64/fenv.s
         ${MUSLSRC}/setjmp/aarch64/longjmp.s
         ${MUSLSRC}/setjmp/aarch64/setjmp.s)
