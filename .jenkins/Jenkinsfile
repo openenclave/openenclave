@@ -100,6 +100,38 @@ def ACCContainerTest(String label, String version) {
     }
 }
 
+def ACCPackageTest(String label, String version) {
+    stage("${label} Container RelWithDebInfo") {
+        node("${label}") {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                def task = """
+                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -Wdev -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB
+                           ninja -v
+                           ninja -v package
+                           sudo ninja -v install
+                           cp -r /opt/openenclave/share/openenclave/samples ~/
+                           cd ~/samples
+                           source /opt/openenclave/share/openenclave/openenclaverc
+                           for i in *; do
+                               if [ -d \${i} ]; then
+                                   cd \${i}
+                                   mkdir build
+                                   cd build
+                                   cmake ..
+                                   make
+                                   make run
+                                   cd ../..
+                               fi
+                           done
+                           """
+                oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
+            }
+        }
+    }
+}
+
 def checkDevFlows(String version) {
     stage('Default compiler') {
         node("nonSGX") {
@@ -209,11 +241,13 @@ parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows(
          "ACC1604 gcc Debug" :                                  { ACCTest('ACC-1604', 'gcc', 'Debug') },
          "ACC1604 gcc Release" :                                { ACCTest('ACC-1604', 'gcc', 'Release') },
          "ACC1604 Container RelWithDebInfo" :                   { ACCContainerTest('ACC-1604', '16.04') },
+         "ACC1604 Package RelWithDebInfo" :                     { ACCPackageTest('ACC-1604', '16.04') },
          "ACC1804 clang-7 Debug" :                              { ACCTest('ACC-1804', 'clang-7', 'Debug') },
          "ACC1804 clang-7 Release" :                            { ACCTest('ACC-1804', 'clang-7', 'Release') },
          "ACC1804 gcc Debug" :                                  { ACCTest('ACC-1804', 'gcc', 'Debug') },
          "ACC1804 gcc Release" :                                { ACCTest('ACC-1804', 'gcc', 'Release') },
          "ACC1804 Container RelWithDebInfo" :                   { ACCContainerTest('ACC-1804', '18.04') },
+         "ACC1804 Package RelWithDebInfo" :                     { ACCPackageTest('ACC-1804', '18.04') },
          "ACC1804 GNU gcc SGX1FLC" :                            { ACCGNUTest() },
          "AArch64 1604 GNU gcc Debug" :                         { AArch64GNUTest('16.04', 'Debug')},
          "AArch64 1604 GNU gcc Release" :                       { AArch64GNUTest('16.04', 'Release')},
