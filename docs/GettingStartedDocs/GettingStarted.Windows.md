@@ -33,7 +33,7 @@ To deploy all the prerequisities for building Open Enclave, you can run the ```s
 
 ```powershell
 cd scripts
-.\install-windows-prereqs.ps1
+.\install-windows-prereqs.ps1 -InstallPath YOUR_WORKSPACE_PATH_HERE -WithFLC $true -WithAzureDCAPClient $true
 ```
 
 To deploy each prerequisite individually, refer to the sections below.
@@ -205,6 +205,38 @@ After unpacking the self-extracting ZIP executable, install the *PSW_EXE_RS2_and
 ```cmd
 C:\Intel SGX PSW for Windows v2.3.100.49777\PSW_EXE_RS2_and_before\Intel(R)_SGX_Windows_x64_PSW_2.3.100.49777.exe
 ```
+
+##### [Azure DCAP client for Windows](https://github.com/Microsoft/Azure-DCAP-Client/tree/master/src/Windows) [optional]
+
+Integration with the Azure DCAP client is not yet enabled on Windows in Open Enclave, and the Microsoft.Azure.DCAP.Client.1.0.0.nupkg
+is not yet available as a binary drop.
+
+For experimental purposes, it can be built from sources using [instructions](https://github.com/microsoft/Azure-DCAP-Client/blob/master/src/Windows/README.MD)
+on the GitHub repo:
+
+- The Azure DCAP Client has a build dependency on version 17134 of the Windows 10 SDK.
+   - This can be added via the Visual Studio Installer under Individual Components > Windows 10 SDK (10.0.17134.0).
+
+- Assuming the resulting .nupkg is put into the `C:\Azure-DCAP-Client` folder, it can be installed using:
+  ```cmd
+  nuget.exe install Microsoft.Azure.DCAP.Client -ExcludeVersion -Source "C:\Azure-DCAP-Client;nuget.org" -OutputDirectory C:\openenclave\prereqs\nuget
+  ```
+
+  Note the inclusion of `nuget.org` as one of the sources. This is necessary because Azure DCAP Client
+  has a dependency on curl and this allows `nuget.exe` to install the curl package dependency tree at the
+  same time. This includes:
+    - curl
+    - curl.redist
+    - libssh2
+    - libssh2.redist
+    - openssl
+    - openssl.redist
+    - zlib
+    - zlib.redist
+
+- The [Visual C++ Redistributable for Visual Studio 2012](https://www.microsoft.com/en-us/download/confirmation.aspx?id=30679&6B49FDFB-8E5B-4B07-BC31-15695C5A2143=1) will also need to be installed to provide MSVCR110.dll for the Release build of curl.
+  - The redistributable install does not include MSVCR110d.dll needed for the Debug version of curl.
+
 ##### [Intel Data Center Attestation Primitives (DCAP) Libraries v1.2](http://registrationcenter-download.intel.com/akdlm/irc_nas/15650/Intel%20SGX%20DCAP%20for%20Windows%20v1.2.100.49925.exe)
 After unpacking the self-extracting ZIP executable, you can refer to the *Intel SGX DCAP Windows SW Installation Guide.pdf*
 for more details on how to install the contents of the package.
@@ -237,40 +269,10 @@ The following summary will assume that the contents were extracted to `C:\Intel 
 4. Install the DCAP nuget packages:
     - The standalone `nuget.exe` [CLI tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) can be used to do this from the command prompt:
       ```cmd
-      nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.2.100.49925\nuget" -OutputDirectory C:\openenclave\prereqs\nuget
       nuget.exe install DCAP_Components -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.2.100.49925\nuget" -OutputDirectory C\openenclave\prereqs\nuget
+      nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.2.100.49925\nuget" -OutputDirectory C:\openenclave\prereqs\nuget
       ```
-
-##### [Azure DCAP client for Windows](https://github.com/Microsoft/Azure-DCAP-Client/tree/master/src/Windows) [optional]
-
-Integration with the Azure DCAP client is not yet enabled on Windows in Open Enclave, and the Microsoft.Azure.DCAP.Client.1.0.0.nupkg
-is not yet available as a binary drop.
-
-For experimental purposes, it can be built from sources using [instructions](https://github.com/microsoft/Azure-DCAP-Client/blob/master/src/Windows/README.MD)
-on the GitHub repo:
-
-- The Azure DCAP Client has a build dependency on version 17134 of the Windows 10 SDK.
-   - This can be added via the Visual Studio Installer under Individual Components > Windows 10 SDK (10.0.17134.0).
-
-- Assuming the resulting .nupkg is put into the `C:\Azure-DCAP-Client` folder, it can be installed using:
-  ```cmd
-  nuget.exe install Microsoft.Azure.DCAP.Client -ExcludeVersion -Source "C:\Azure-DCAP-Client;nuget.org" -OutputDirectory C:\openenclave\prereqs\nuget
-  ```
-
-  Note the inclusion of `nuget.org` as one of the sources. This is necessary because Azure DCAP Client
-  has a dependency on curl and this allows `nuget.exe` to install the curl package dependency tree at the
-  same time. This includes:
-    - curl
-    - curl.redist
-    - libssh2
-    - libssh2.redist
-    - openssl
-    - openssl.redist
-    - zlib
-    - zlib.redist
-
-- The [Visual C++ Redistributable for Visual Studio 2012](https://www.microsoft.com/en-us/download/confirmation.aspx?id=30679&6B49FDFB-8E5B-4B07-BC31-15695C5A2143=1) will also need to be installed to provide MSVCR110.dll for the Release build of curl.
-  - The redistributable install does not include MSVCR110d.dll needed for the Debug version of curl.
+    - *Note:* EnclaveCommonAPI should be installed as the *very last* nuget package as a temporary workaround for a dependency issue.
 
 #### Building with DCAP libraries using Visual Studio 2017
 To build with the DCAP libraries in Visual Studio, you will need to add the
