@@ -131,7 +131,9 @@ openssl x509 -req -in leaf2.csr -CA intermediate.cert.pem -CAkey intermediate.ke
 #  - intermediate_crl is issued by intermediate CA and revokes the leaf cert
 #  - root_crl is issued by root CA and also revokes the leaf cert
 
+rm -f intermediate_index.txt
 touch intermediate_index.txt
+rm -f root_index.txt
 touch root_index.txt
 echo "00" > intermediate_crl_number
 echo "00" > root_crl_number

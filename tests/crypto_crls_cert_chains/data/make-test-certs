@@ -112,9 +112,13 @@ openssl x509 -req -in leaf2.csr -CA intermediate.cert.pem -CAkey intermediate.ke
 # - intermediate_crl1 revokes no certificates
 # - intermediate_crl2 revokes leaf2
 
+rm -f root_index.txt
 touch root_index.txt
+rm -f root_index2.txt
 touch root_index2.txt
+rm -f intermediate_index.txt
 touch intermediate_index.txt
+rm -f intermediate_index2.txt
 touch intermediate_index2.txt
 echo "00" > root_crl_number
 echo "00" > root_crl_number2
