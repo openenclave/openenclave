@@ -314,6 +314,21 @@ typedef enum _oe_result
      */
     OE_VERIFY_FAILED_AES_CMAC_MISMATCH,
 
+    /**
+     * Failed to post a switchless call to host workers
+     */
+    OE_CONTEXT_SWITCHLESS_OCALL_MISSED,
+
+    /**
+     * Thread creation failed.
+     */
+    OE_THREAD_CREATE_ERROR,
+
+    /**
+     * Thread join failed.
+     */
+    OE_THREAD_JOIN_ERROR,
+
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
 /**< typedef enum _oe_result oe_result_t*/

@@ -8,6 +8,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
@@ -20,8 +21,9 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../../sgx/report.h"
+#include "../arena.h"
 #include "../atexit.h"
-#include "../shm.h"
+#include "../switchlesscalls.h"
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
@@ -386,8 +388,6 @@ static void _handle_ecall(
         case OE_ECALL_CALL_ENCLAVE_FUNCTION:
         {
             arg_out = _handle_call_enclave_function(arg_in);
-            /* clear up shared memory upon ERET */
-            oe_shm_clear();
             break;
         }
         case OE_ECALL_DESTRUCTOR:
@@ -397,9 +397,6 @@ static void _handle_ecall(
 
             /* Call all finalization functions */
             oe_call_fini_functions();
-
-            /* Free shared memory upon destroying enclave */
-            oe_shm_destroy();
 
 #if defined(OE_USE_DEBUG_MALLOC)
 
@@ -421,6 +418,11 @@ static void _handle_ecall(
             arg_out = _handle_init_enclave(arg_in);
             break;
         }
+        case OE_ECALL_INIT_CONTEXT_SWITCHLESS:
+        {
+            arg_out = oe_handle_init_switchless(arg_in);
+            break;
+        }
         default:
         {
             /* No function found with the number */
@@ -430,6 +432,12 @@ static void _handle_ecall(
     }
 
 done:
+
+    /* Free shared memory arena before we clear TLS */
+    if (td->depth == 1)
+    {
+        oe_teardown_arena();
+    }
 
     /* Remove ECALL context from front of td_t.ecalls list */
     td_pop_callsite(td);
@@ -566,7 +574,7 @@ oe_result_t oe_call_host_function_by_table_id(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the arguments */
-    args = switchless ? oe_shm_calloc(sizeof(*args))
+    args = switchless ? oe_arena_calloc(1, sizeof(*args))
                       : oe_host_calloc(1, sizeof(*args));
 
     if (args == NULL)
@@ -585,9 +593,31 @@ oe_result_t oe_call_host_function_by_table_id(
     args->result = OE_UNEXPECTED;
 
     /* Call the host function with this address */
-    // TODO: for switchessless calls, push the job (wrapped in args) to an
-    // available worker thread, and wait for result
-    // if (!switchless)
+    if (switchless && oe_is_switchless_initialized())
+    {
+        oe_result_t post_result = oe_post_switchless_ocall(args);
+
+        // Fall back to regular OCALL if host worker threads are unavailable
+        if (post_result == OE_CONTEXT_SWITCHLESS_OCALL_MISSED)
+            OE_CHECK(
+                oe_ocall(OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args, NULL));
+        else
+        {
+            OE_CHECK(post_result);
+            // Wait until args.result is set by the host worker.
+            while (true)
+            {
+                OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
+                if (__atomic_load_n(&args->result, __ATOMIC_SEQ_CST) !=
+                    __OE_RESULT_MAX)
+                    break;
+
+                /* Yield to CPU */
+                asm volatile("pause");
+            }
+        }
+    }
+    else
     {
         OE_CHECK(oe_ocall(OE_OCALL_CALL_HOST_FUNCTION, (uint64_t)args, NULL));
     }
@@ -633,34 +663,6 @@ oe_result_t oe_call_host_function(
         output_buffer_size,
         output_bytes_written,
         false /* non-switchless */);
-}
-
-/*
-**==============================================================================
-**
-** oe_switchless_call_host_function()
-** This is the preferred way to call host functions switchlessly.
-**
-**==============================================================================
-*/
-
-oe_result_t oe_switchless_call_host_function(
-    size_t function_id,
-    const void* input_buffer,
-    size_t input_buffer_size,
-    void* output_buffer,
-    size_t output_buffer_size,
-    size_t* output_bytes_written)
-{
-    return oe_call_host_function_by_table_id(
-        OE_UINT64_MAX,
-        function_id,
-        input_buffer,
-        input_buffer_size,
-        output_buffer,
-        output_buffer_size,
-        output_bytes_written,
-        true /* switchless */);
 }
 
 /*
@@ -900,7 +902,7 @@ void oe_abort(void)
     }
 
     // Free the shared memory pools
-    oe_shm_destroy();
+    oe_teardown_arena();
 
     // Return to the latest ECALL.
     _handle_exit(OE_CODE_ERET, 0, __oe_enclave_status);

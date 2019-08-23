@@ -3,7 +3,9 @@
 
 add_custom_command(
   OUTPUT switchless_u.h switchless_u.c switchless_args.h
-  DEPENDS ../switchless.edl
+  DEPENDS
+  edger8r
+  ../switchless.edl
   COMMAND edger8r --experimental --untrusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/.. switchless.edl)
 
 # Dummy target used for generating from EDL on demand.

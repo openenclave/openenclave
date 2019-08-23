@@ -3,7 +3,10 @@
 
 #include "../hostthread.h"
 #include <assert.h>
+#include <openenclave/corelibc/errno.h>
 #include <openenclave/host.h>
+
+typedef DWORD (*start_routine_t)(void*);
 
 /*
 **==============================================================================
@@ -13,12 +16,30 @@
 **==============================================================================
 */
 
-oe_thread oe_thread_self(void)
+int oe_thread_create(oe_thread_t* thread, void* (*func)(void*), void* arg)
 {
-    return GetCurrentThreadId();
+    start_routine_t start_routine = (start_routine_t)func;
+    *thread = (oe_thread_t)CreateThread(NULL, 0, start_routine, arg, 0, NULL);
+    return *thread == (oe_thread_t)NULL ? OE_EINVAL : 0;
 }
 
-int oe_thread_equal(oe_thread thread1, oe_thread thread2)
+int oe_thread_join(oe_thread_t thread)
+{
+    HANDLE handle = (HANDLE)thread;
+    if (WaitForSingleObject(handle, INFINITE) == WAIT_OBJECT_0)
+    {
+        CloseHandle(handle);
+        return 0;
+    }
+    return OE_EINVAL;
+}
+
+oe_thread_t oe_thread_self(void)
+{
+    return (oe_thread_t)GetCurrentThreadId();
+}
+
+int oe_thread_equal(oe_thread_t thread1, oe_thread_t thread2)
 {
     return thread1 == thread2;
 }

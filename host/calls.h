@@ -17,4 +17,6 @@ typedef struct _ocall_table
 
 extern ocall_table_t _ocall_tables[];
 
+oe_result_t oe_handle_call_host_function(uint64_t arg, oe_enclave_t* enclave);
+
 #endif /* OE_HOST_CALLS_H */
