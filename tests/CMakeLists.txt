@@ -21,6 +21,7 @@ add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)
 add_subdirectory(str)
+add_subdirectory(tools)
 
 if (OE_SGX)
     add_subdirectory(aesm)
@@ -94,5 +95,6 @@ if (OE_SGX AND UNIX)
 
    # Attestation supported only on Linux
    add_subdirectory(tls_e2e)
+   add_subdirectory(host_verify)
    add_subdirectory(switchless)
 endif()
