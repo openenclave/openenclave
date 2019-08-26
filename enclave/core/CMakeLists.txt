@@ -262,7 +262,9 @@ elseif(OE_TRUSTZONE)
         -nostdlib -nodefaultlibs -nostartfiles
         --no-undefined
         -pie
-        --sort-section=alignment)
+        --sort-section=alignment
+        "-z max-page-size=4096"
+        --as-needed)
 endif()
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)

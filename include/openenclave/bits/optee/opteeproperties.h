@@ -16,7 +16,6 @@
 
 OE_EXTERNC_BEGIN
 
-#include <trace.h>
 #include <user_ta_header.h>
 
 #define TA_FRAMEWORK_STACK_SIZE 2048
@@ -25,13 +24,6 @@ OE_EXTERNC_BEGIN
 #define OE_TA_HEAD_SECTION_BEGIN \
     OE_EXTERNC __attribute__((section(OE_TA_HEAD_SECTION_NAME)))
 #define OE_TA_HEAD_SECTION_END
-
-struct utee_params;
-void __utee_entry(
-    unsigned long func,
-    unsigned long session_id,
-    struct utee_params* up,
-    unsigned long cmd_id) OE_NO_RETURN;
 
 /**
  * Defines the OP-TEE properties for an enclave.
@@ -63,16 +55,12 @@ void __utee_entry(
     OE_EXTERNC_BEGIN                                            \
                                                                 \
     OE_TA_HEAD_SECTION_BEGIN                                    \
-    volatile const struct ta_head ta_head =                     \
+    const struct ta_head ta_head =                              \
     {                                                           \
         .uuid = UUID,                                           \
         .stack_size = (STACK_SIZE) + TA_FRAMEWORK_STACK_SIZE,   \
         .flags = (FLAGS),                                       \
-        .entry =                                                \
-        {                                                       \
-            .ptr64 = (uint64_t)__utee_entry,                    \
-        },                                                      \
-        .rva = 0,                                               \
+        .depr_entry = UINT64_MAX,                               \
     };                                                          \
     OE_TA_HEAD_SECTION_END                                      \
                                                                 \

@@ -1,4 +1,0 @@
-36c36
-< add_library (teec SHARED ${SRC})
----
-> add_library (teec STATIC ${SRC})
