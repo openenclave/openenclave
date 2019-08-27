@@ -64,3 +64,4 @@ tools/oeedger8r/\.merlin
 tools/oeedger8r/main\.ml
 tools/oesign/getopt\.h
 tools/oesign/getopt_long\.c
+tests/host_verify/data/.*
