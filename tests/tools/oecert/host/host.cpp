@@ -3,12 +3,13 @@
 
 #include <limits.h>
 #include <openenclave/host.h>
-//#include <openenclave/internal/error.h>
-//#include <openenclave/internal/raise.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "oecert_u.h"
+
+#ifdef OE_USE_LIBSGX
 
 #define INPUT_PARAM_OPTION_CERT "--cert"
 #define INPUT_PARAM_OPTION_REPORT "--report"
@@ -158,7 +159,7 @@ static oe_result_t _gen_report(
         // Write report to file
         {
             FILE* output = NULL;
-            output = fopen(report_filename, "w");
+            output = fopen(report_filename, "wb");
             if (!output)
             {
                 printf("Failed to open report file %s\n", report_filename);
@@ -230,6 +231,16 @@ static int _parse_args(int argc, const char* argv[])
     // save
     _params.enclave_filename = argv[i++];
     _params.out_filename = "out.bin";
+
+    // Verify enclave file is valid
+    FILE* fp = fopen(_params.enclave_filename, "rb");
+    if (!fp)
+    {
+        printf("Failed to find file: %s\n", _params.enclave_filename);
+        return 1;
+    }
+    else
+        fclose(fp);
 
     while (i < argc)
     {
@@ -388,6 +399,8 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     return result;
 }
 
+#endif // OE_USE_LIBSGX
+
 int main(int argc, const char* argv[])
 {
     int ret = 0;
@@ -395,6 +408,13 @@ int main(int argc, const char* argv[])
 #ifdef OE_USE_LIBSGX
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
+
+    const uint32_t flags = oe_get_create_flags();
+    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
+    {
+        printf("oecert not supported in simulation mode.\n");
+        goto exit;
+    }
 
     ret = _parse_args(argc, argv);
     if (ret != 0)
@@ -408,7 +428,10 @@ int main(int argc, const char* argv[])
              0,
              &enclave)) != OE_OK)
     {
-        printf("Failed to create enclave. result=%u", result);
+        printf(
+            "Failed to create enclave. result=%u (%s)\n",
+            result,
+            oe_result_str(result));
         ret = 1;
         goto exit;
     }
@@ -416,9 +439,12 @@ int main(int argc, const char* argv[])
     _process_params(enclave);
 
     result = oe_terminate_enclave(enclave);
-#else
-#error "OE_USE_LIBSGX is not set to ON.  This tool requires SGX libraries."
-#endif
 exit:
+#else
+#pragma message \
+    "OE_USE_LIBSGX is not set to ON.  This tool requires SGX libraries."
+    OE_UNUSED(argc);
+    OE_UNUSED(argv);
+#endif
     return ret;
 }
