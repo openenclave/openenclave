@@ -14,7 +14,6 @@
 **==============================================================================
 */
 
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/thread.h>
 
 #include "stdio_impl.h"
