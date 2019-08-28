@@ -280,7 +280,7 @@ static ssize_t _consolefs_writev(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Only do this when there is something to write. */
-    if (iov && iovcnt)
+    if (iov && iovcnt > 0)
     {
         const int64_t fd = file->host_fd;
 
