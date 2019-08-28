@@ -295,6 +295,10 @@ static ssize_t _consolefs_writev(
         if (oe_syscall_writev_ocall(&ret, fd, buf, iovcnt, buf_size) != OE_OK)
             OE_RAISE_ERRNO(OE_EINVAL);
     }
+    else
+    {
+        ret = 0;
+    }
 
 done:
 
