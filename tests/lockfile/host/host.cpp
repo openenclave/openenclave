@@ -36,16 +36,16 @@ int main(int argc, const char* argv[])
 
     /* Create threads to call into enclave. */
     {
-        threads.reserve(NUM_THREADS);
+        threads.reserve(TCS_COUNT);
 
-        for (size_t i = 0; i < NUM_THREADS; i++)
+        for (size_t i = 0; i < TCS_COUNT; i++)
         {
             threads.push_back(thread(thread_routine, enc));
         }
     }
 
     /* Wait for all threads to finish. */
-    for (size_t i = 0; i < NUM_THREADS; i++)
+    for (size_t i = 0; i < TCS_COUNT; i++)
     {
         threads[i].join();
     }

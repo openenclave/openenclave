@@ -18,9 +18,9 @@ extern "C" void test_lockfile_ecall(void)
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,            /* ProductID */
-    1,            /* SecurityVersion */
-    true,         /* AllowDebug */
-    1024,         /* HeapPageCount */
-    1024,         /* StackPageCount */
-    NUM_THREADS); /* TCSCount */
+    1,          /* ProductID */
+    1,          /* SecurityVersion */
+    true,       /* AllowDebug */
+    1024,       /* HeapPageCount */
+    1024,       /* StackPageCount */
+    TCS_COUNT); /* TCSCount */
