@@ -279,15 +279,21 @@ static ssize_t _consolefs_writev(
     if (!file || (!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
-        OE_RAISE_ERRNO(OE_ENOMEM);
-
-    /* Call the host. */
-    if (oe_syscall_writev_ocall(&ret, file->host_fd, buf, iovcnt, buf_size) !=
-        OE_OK)
+    /* Only do this when there is something to write. */
+    if (iov && iovcnt)
     {
-        OE_RAISE_ERRNO(OE_EINVAL);
+        const int64_t fd = file->host_fd;
+
+        if (fd < 0)
+            OE_RAISE_ERRNO(OE_EBADF);
+
+        /* Flatten the IO vector into contiguous heap memory. */
+        if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
+            OE_RAISE_ERRNO(OE_ENOMEM);
+
+        /* Call the host. */
+        if (oe_syscall_writev_ocall(&ret, fd, buf, iovcnt, buf_size) != OE_OK)
+            OE_RAISE_ERRNO(OE_EINVAL);
     }
 
 done:

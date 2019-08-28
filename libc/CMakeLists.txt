@@ -82,7 +82,11 @@ add_library(oelibc STATIC
     time.c
     regcomp.c
     regexec.c
+    stderr.c
+    stdin.c
+    stdout.c
     tre-mem.c
+    __lockfile.c
     __printf_chk.c
     __vfprintf_chk.c
     ${MUSLSRC}/complex/cabs.c
@@ -584,7 +588,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/stdio/getw.c
     ${MUSLSRC}/stdio/getwc.c
     ${MUSLSRC}/stdio/getwchar.c
-    ${MUSLSRC}/stdio/__lockfile.c
     ${MUSLSRC}/stdio/ofl_add.c
     ${MUSLSRC}/stdio/ofl.c
     ${MUSLSRC}/stdio/open_memstream.c
@@ -612,15 +615,12 @@ add_library(oelibc STATIC
     ${MUSLSRC}/stdio/snprintf.c
     ${MUSLSRC}/stdio/sprintf.c
     ${MUSLSRC}/stdio/sscanf.c
-    ${MUSLSRC}/stdio/stderr.c
-    ${MUSLSRC}/stdio/stdin.c
     ${MUSLSRC}/stdio/tmpfile.c
     ${MUSLSRC}/stdio/__stdio_close.c
     ${MUSLSRC}/stdio/__stdio_exit.c
     ${MUSLSRC}/stdio/__stdio_read.c
     ${MUSLSRC}/stdio/__stdio_seek.c
     ${MUSLSRC}/stdio/__stdio_write.c
-    ${MUSLSRC}/stdio/stdout.c
     ${MUSLSRC}/stdio/__stdout_write.c
     ${MUSLSRC}/stdio/__string_read.c
     ${MUSLSRC}/stdio/swprintf.c

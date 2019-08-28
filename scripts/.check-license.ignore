@@ -55,6 +55,9 @@ debugger/pythonExtension/load_symbol_cmd\.py
 debugger/pythonExtension/readelf\.py
 host/linux/pe\.h
 include/openenclave/internal/queue\.h
+libc/stderr.c
+libc/stdin.c
+libc/stdout.c
 samples/file-encryptor/testfile
 tests/ocall/debugging\.txt
 tests/print/printhost\.stderr
