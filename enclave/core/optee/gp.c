@@ -72,6 +72,12 @@
         TEE_PARAM_TYPE_NONE,         \
         TEE_PARAM_TYPE_MEMREF_INPUT, \
         TEE_PARAM_TYPE_MEMREF_OUTPUT))
+#define PT_BUILTIN_CALL_IN_NO_OUT    \
+    (TEE_PARAM_TYPES(                \
+        TEE_PARAM_TYPE_VALUE_INPUT,  \
+        TEE_PARAM_TYPE_NONE,         \
+        TEE_PARAM_TYPE_MEMREF_INPUT, \
+        TEE_PARAM_TYPE_NONE))
 
 #define PT_HOST_CALL_IN_OUT          \
     (TEE_PARAM_TYPES(                \
@@ -280,19 +286,19 @@ static oe_result_t _handle_call_builtin_function(
     /* Host OS-specific data (used only on Windows) */
     params[0].value.b = __oe_windows_ecall_key;
 
-    /* Unused */
-    memset(&params[1], 0, sizeof(params[1]));
-
     /* Input buffer */
     params[2].memref.buffer = &arg_in;
     params[2].memref.size = sizeof(arg_in);
 
     /* Output buffer */
-    params[3].memref.buffer = (void*)arg_out;
-    params[3].memref.size = sizeof(arg_out);
+    if (arg_out)
+    {
+        params[3].memref.buffer = (void*)arg_out;
+        params[3].memref.size = sizeof(*arg_out);
+    }
 
     /* Fill in parameter types */
-    param_types = PT_BUILTIN_CALL_IN_OUT;
+    param_types = arg_out ? PT_BUILTIN_CALL_IN_OUT : PT_BUILTIN_CALL_IN_NO_OUT;
 
     /* Ask the RPC PTA to perform an OCALL on our behalf via the TA2TA API */
     tee_res = TEE_InvokeTACommand(

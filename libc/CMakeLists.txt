@@ -23,6 +23,8 @@ if (OE_SGX)
         ${MUSLSRC}/setjmp/x86_64/setjmp.s)
 elseif(OE_TRUSTZONE)
     add_library(oelibasm OBJECT
+        ${MUSLSRC}/math/aarch64/sqrt.c
+        ${MUSLSRC}/math/aarch64/sqrtf.c
         ${MUSLSRC}/fenv/aarch64/fenv.s
         ${MUSLSRC}/setjmp/aarch64/longjmp.s
         ${MUSLSRC}/setjmp/aarch64/setjmp.s)
@@ -42,22 +44,17 @@ endif ()
 set (PLATFORM_SRC "")
 
 if (OE_SGX)
-    if (UNIX OR USE_CLANGW)
-        list(APPEND PLATFORM_SRC
-            ../common/sgx/rand.S)
-    elseif (WIN32)
-        set(APPEND PLATFORM_SRC
-            ../common/sgx/rand.asm)
-    endif()
+    list(APPEND PLATFORM_SRC
+        sgx/arc4random.c)
 else()
     list(APPEND PLATFORM_SRC
+        ${MUSLSRC}/math/exp2l.c
         optee/abort.c
-        optee/exp2l.c
+        optee/arc4random.c
         optee/trace.c)
 endif()
 
 add_library(oelibc STATIC
-    arc4random.c
     atexit.c
     dladdr.c
     errno.c

@@ -10,7 +10,11 @@
 #include <cstring>
 #include "libc_u.h"
 
-#if defined(_WIN32)
+#if defined(_WIN32) && (defined(__x86_64__) || defined(_M_X64))
+#define XMM_OK
+#endif
+
+#if defined(XMM_OK)
 #include <xmmintrin.h>
 
 uint32_t my_getmxcsr()
@@ -65,7 +69,7 @@ int main(int argc, const char* argv[])
 
     printf("=== %s: %s\n", argv[0], argv[1]);
 
-#if defined(_WIN32)
+#if defined(XMM_OK)
     volatile uint32_t csr;
     csr = my_getmxcsr();
     OE_TEST(csr == 0x1f80);
@@ -73,17 +77,17 @@ int main(int argc, const char* argv[])
 
     // Create the enclave:
     if ((result = oe_create_libc_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+             argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_libc_enclave(): result=%u", result);
 
-#if defined(_WIN32)
+#if defined(XMM_OK)
     csr = my_getmxcsr();
     OE_TEST(csr == 0x1f80);
 #endif
 
     Test(enclave);
 
-#if defined(_WIN32)
+#if defined(XMM_OK)
     csr = my_getmxcsr();
     OE_TEST(csr == 0x1f80);
 #endif

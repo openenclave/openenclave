@@ -12,7 +12,10 @@ void TestAll()
     TestEC();
     TestRSA();
     TestRandom();
+#if defined(__x86_64__) || defined(__i386__)
+    // This test exercises the rdrand instruction, which is x86/64-specific.
     TestRdrand();
+#endif
     TestHMAC();
     TestKDF();
     TestSHA();

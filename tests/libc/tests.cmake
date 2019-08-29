@@ -42,7 +42,6 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/strtof.c
     3rdparty/musl/libc-test/src/functional/strtol.c
     3rdparty/musl/libc-test/src/functional/strtold.c
-    3rdparty/musl/libc-test/src/functional/tls_align.c
     3rdparty/musl/libc-test/src/functional/udiv.c
     3rdparty/musl/libc-test/src/functional/ungetc.c
     3rdparty/musl/libc-test/src/functional/wcsstr.c
@@ -217,7 +216,6 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/regression/mkdtemp-failure.c
     3rdparty/musl/libc-test/src/regression/mkstemp-failure.c
     3rdparty/musl/libc-test/src/regression/printf-1e9-oob.c
-    3rdparty/musl/libc-test/src/regression/printf-fmt-g-round.c
     3rdparty/musl/libc-test/src/regression/printf-fmt-g-zeros.c
     3rdparty/musl/libc-test/src/regression/printf-fmt-n.c
     3rdparty/musl/libc-test/src/regression/regex-backref-0.c
@@ -246,6 +244,15 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/random.c
     3rdparty/musl/libc-test/src/functional/time.c
 )
+
+# Exclude tests that fail on OP-TEE:
+if (NOT OE_TRUSTZONE)
+    list(APPEND LIBC_TESTS
+        # Depends on tls_align_dso.c, which requires TLS relocations.
+        3rdparty/musl/libc-test/src/functional/tls_align.c
+        # Fails on emulator (seemingly) due to insufficient FP precision.
+        3rdparty/musl/libc-test/src/regression/printf-fmt-g-round.c)
+endif()
 
 # Exclude tests that fail on Clang:
 if (NOT (USE_CLANGW OR MY_COMPILER MATCHES "CLANG"))

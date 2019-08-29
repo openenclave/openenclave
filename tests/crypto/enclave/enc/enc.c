@@ -49,7 +49,9 @@ static oe_result_t _syscall_hook(
 {
     oe_result_t result = OE_UNSUPPORTED;
 
+#if !defined(__aarch64__)
     OE_UNUSED(arg4);
+#endif
     OE_UNUSED(arg5);
     OE_UNUSED(arg6);
 
@@ -65,6 +67,26 @@ static oe_result_t _syscall_hook(
 
     switch (number)
     {
+#if defined(__aarch64__)
+        case SYS_openat:
+        {
+            /* MUSL ORs 'flags' with O_LARGEFILE when forwarding sys_open to
+             * SYS_openat.
+             */
+            const int flags = (const int)arg3;
+            if (((flags & O_ACCMODE) == O_RDONLY))
+            {
+                int rval = -1;
+                OE_TEST(
+                    OE_OK ==
+                    f_openat(
+                        &rval, (int)arg1, (char*)arg2, (int)arg3, (int)arg4));
+                *ret = (long)rval;
+                result = OE_OK;
+            }
+            break;
+        }
+#else
         case SYS_open:
         {
             const int flags = (const int)arg2;
@@ -78,6 +100,7 @@ static oe_result_t _syscall_hook(
             }
             break;
         }
+#endif
         case SYS_read:
         {
             int rval = -1;
@@ -174,3 +197,19 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
+
+#define TA_UUID                                            \
+    { /* f0be7db0-ce7c-4dc4-b8c8-b161f4216225 */           \
+        0xf0be7db0, 0xce7c, 0x4dc4,                        \
+        {                                                  \
+            0xb8, 0xc8, 0xb1, 0x61, 0xf4, 0x21, 0x62, 0x25 \
+        }                                                  \
+    }
+
+OE_SET_ENCLAVE_OPTEE(
+    TA_UUID,
+    2 * 1024 * 1024,
+    24 * 1024,
+    TA_FLAG_EXEC_DDR,
+    "1.0.0",
+    "Crypto test")
