@@ -35,7 +35,7 @@ What are the design details?
 Alternates
 ----------
 
-What other designs were considers?
+What other designs were considered?
 
 Why were they discarded in favor of this design?
 

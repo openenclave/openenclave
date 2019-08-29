@@ -230,9 +230,6 @@ macro(add_enclave_optee)
   #       https://gitlab.kitware.com/cmake/cmake/issues/17210
   set(CMAKE_EXE_LINKER_FLAGS "-T ${TA_LINKER_SCRIPT} -L${LIBGCC_PATH}")
   if(ENCLAVE_CXX)
-    # NOTE: Read enclave/link.c and enclave/optee/start.S to understand why
-    #       --entry is being used. OP-TEE does not actually use the entry point
-    #       for anything.
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --eh-frame-hdr --entry=_start")
   endif()
 endmacro()

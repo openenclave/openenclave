@@ -20,7 +20,7 @@ extern const size_t ta_heap_size;
 
 const void* __oe_get_enclave_base()
 {
-    return (void*)tahead_get_rva();
+    return (void*)tainfo_get_rva();
 }
 
 const void* __oe_get_enclave_elf_header(void)

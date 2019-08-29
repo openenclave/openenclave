@@ -5,10 +5,8 @@
 //
 // _start(): 
 //
-//     The default entry point for the enclave image. This is not used at all
-//     by OP-TEE; it only serves to enable proper symbol resolution at
-//     link-time. This function is set as the entry point in add_enclave.cmake
-//     by passing "--entry _start" to the linker.
+//     The entry point for the enclave image. This function is set as the entry
+//     point in add_enclave.cmake by passing "--entry _start" to the linker.
 //
 //==============================================================================
 
@@ -16,7 +14,7 @@
 .type _start, @function
 _start:
 .cfi_startproc
-    b .
+    b __ta_entry
 .cfi_endproc
 
 .size _start, .-_start

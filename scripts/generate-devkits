@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+OPTEE_OS_PATH=$1
+
+# -------------------------------------
+# Check arguments
+# -------------------------------------
+
+if [ -z "$OPTEE_OS_PATH" ]; then
+    cat<<EOF
+
+OVERVIEW:
+
+Builds OP-TEE OS for supported platforms and creates a tarball that includes
+the resulting TA Dev Kits.
+
+    $ generate-devkits /path/to/optee_os
+
+EOF
+    exit 1
+fi
+
+# -------------------------------------
+# Build OP-TEE
+# -------------------------------------
+
+# Create a directory structure for output.
+if [ ! -d optee ]; then
+    mkdir optee
+fi
+
+if [ ! -d optee/vexpress-qemu_virt ]; then
+    mkdir optee/vexpress-qemu_virt
+fi
+if [ ! -d optee/vexpress-qemu_armv8a ]; then
+    mkdir optee/vexpress-qemu_armv8a
+fi
+if [ ! -d optee/ls-ls1012grapeboard ]; then
+    mkdir optee/ls-ls1012grapeboard
+fi
+
+# Use CCACHE, if available.
+if ! [ -x "$(command -v ccache)" ]; then
+    CCACHE=
+else
+    CCACHE="ccache "
+fi
+
+# Parallelize when possible.
+NPROC=$(nproc)
+
+# Build for QEMU ARM.
+CROSS_COMPILE="${CCACHE}arm-linux-gnueabihf-"
+
+# shellcheck disable=SC2086
+ARCH=arm make -j$NPROC -C "$OPTEE_OS_PATH"         \
+    PLATFORM=vexpress-qemu_virt                    \
+    O="$PWD/optee/vexpress-qemu_virt"              \
+    platform-cflags-optimization=-Os               \
+    CFG_CRYPTO_SIZE_OPTIMIZATION=y                 \
+    CFG_PAGED_USER_TA=n                            \
+    CFG_REE_FS=n                                   \
+    CFG_RPMB_FS=y                                  \
+    CFG_RPMB_TESTKEY=y                             \
+    CFG_RPMB_WRITE_KEY=n                           \
+    CFG_RPMB_RESET_FAT=n                           \
+    CFG_TEE_CORE_DEBUG=y                           \
+    CFG_TEE_CORE_LOG_LEVEL=2                       \
+    CFG_TEE_TA_LOG_LEVEL=4                         \
+    CFG_UNWIND=n                                   \
+    CFG_WITH_PAGER=n                               \
+    CFG_WITH_USER_TA=y                             \
+    CROSS_COMPILE="$CROSS_COMPILE"                 \
+    CROSS_COMPILE_core="$CROSS_COMPILE"            \
+    || exit 1
+
+# Build for QEMU AARCH64.
+CROSS_COMPILE="${CCACHE}aarch64-linux-gnu-"
+TA_CROSS_COMPILE="${CCACHE}aarch64-linux-gnu-"
+TA_CROSS_COMPILE_32="${CCACHE}arm-linux-gnueabi-"
+
+# shellcheck disable=SC2086
+ARCH=arm make -j$NPROC -C "$OPTEE_OS_PATH"         \
+    PLATFORM=vexpress-qemu_armv8a                  \
+    O="$PWD/optee/vexpress-qemu_armv8a"            \
+    platform-cflags-optimization=-Os               \
+    CFG_CRYPTO_SIZE_OPTIMIZATION=y                 \
+    CFG_PAGED_USER_TA=n                            \
+    CFG_REE_FS=n                                   \
+    CFG_RPMB_FS=y                                  \
+    CFG_RPMB_TESTKEY=y                             \
+    CFG_RPMB_WRITE_KEY=n                           \
+    CFG_RPMB_RESET_FAT=n                           \
+    CFG_TEE_CORE_DEBUG=y                           \
+    CFG_TEE_CORE_LOG_LEVEL=2                       \
+    CFG_TEE_TA_LOG_LEVEL=4                         \
+    CFG_UNWIND=n                                   \
+    CFG_WITH_PAGER=n                               \
+    CFG_WITH_USER_TA=y                             \
+    CROSS_COMPILE="$CROSS_COMPILE"                 \
+    CROSS_COMPILE_core="$CROSS_COMPILE"            \
+    CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
+    CROSS_COMPILE_ta_arm32="$TA_CROSS_COMPILE_32"  \
+    CFG_ARM64_core=y                               \
+    || exit 1
+
+# Build for the LS-1012.
+# shellcheck disable=SC2086
+ARCH=arm make -j$NPROC -C "$OPTEE_OS_PATH"         \
+    PLATFORM=ls-ls1012grapeboard                   \
+    O="$PWD/optee/ls-ls1012grapeboard"             \
+    platform-cflags-optimization=-Os               \
+    CFG_CRYPTO_SIZE_OPTIMIZATION=y                 \
+    CFG_PAGED_USER_TA=n                            \
+    CFG_REE_FS=n                                   \
+    CFG_RPMB_FS=y                                  \
+    CFG_RPMB_TESTKEY=y                             \
+    CFG_RPMB_WRITE_KEY=n                           \
+    CFG_RPMB_RESET_FAT=n                           \
+    CFG_TEE_CORE_DEBUG=y                           \
+    CFG_TEE_CORE_LOG_LEVEL=2                       \
+    CFG_TEE_TA_LOG_LEVEL=4                         \
+    CFG_UNWIND=n                                   \
+    CFG_WITH_PAGER=n                               \
+    CFG_WITH_USER_TA=y                             \
+    CROSS_COMPILE="$CROSS_COMPILE"                 \
+    CROSS_COMPILE_core="$CROSS_COMPILE"            \
+    CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
+    CROSS_COMPILE_ta_arm32="$TA_CROSS_COMPILE_32"  \
+    CFG_ARM64_core=y                               \
+    || exit 1
+
+# -------------------------------------
+# Create Tarball
+# -------------------------------------
+
+if [ ! -d devkits ]; then
+    mkdir devkits
+fi
+
+if [ ! -d devkits/vexpress-qemu_virt ]; then
+    mkdir devkits/vexpress-qemu_virt
+fi
+if [ ! -d devkits/vexpress-qemu_armv8a ]; then
+    mkdir devkits/vexpress-qemu_armv8a
+fi
+if [ ! -d devkits/ls-ls1012grapeboard ]; then
+    mkdir devkits/ls-ls1012grapeboard
+fi
+
+mv optee/vexpress-qemu_virt/export-ta_arm32   devkits/vexpress-qemu_virt/
+mv optee/vexpress-qemu_armv8a/export-ta_arm32 devkits/vexpress-qemu_armv8a/
+mv optee/vexpress-qemu_armv8a/export-ta_arm64 devkits/vexpress-qemu_armv8a/
+mv optee/ls-ls1012grapeboard/export-ta_arm64  devkits/ls-ls1012grapeboard/
+
+# Tag the tarball with the revision of OP-TEE being built.
+pushd "$OPTEE_OS_PATH"
+REV=$(git rev-parse --short HEAD)
+popd
+
+tar zcvf "OE-CI-devkits-$REV.tar.gz" devkits
