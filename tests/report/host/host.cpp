@@ -152,35 +152,60 @@ int main(int argc, const char* argv[])
      * Host API tests.
      */
     g_enclave = enclave;
+
+#ifdef OE_USE_LIBSGX
     test_local_report(&target_info);
     test_remote_report();
     test_parse_report_negative();
     test_local_verify_report();
 
-#ifdef OE_USE_LIBSGX
     test_remote_verify_report();
 
     OE_TEST(test_iso8601_time(enclave) == OE_OK);
     OE_TEST(test_iso8601_time_negative(enclave) == OE_OK);
-#endif
 
     /*
      * Enclave API tests.
      */
-
     OE_TEST(enclave_test_local_report(enclave, &target_info) == OE_OK);
-
     OE_TEST(enclave_test_remote_report(enclave) == OE_OK);
 
     OE_TEST(enclave_test_parse_report_negative(enclave) == OE_OK);
 
     OE_TEST(enclave_test_local_verify_report(enclave) == OE_OK);
 
-#ifdef OE_USE_LIBSGX
     OE_TEST(enclave_test_remote_verify_report(enclave) == OE_OK);
 
     TestVerifyTCBInfo(enclave, "./data/tcbInfo.json");
     TestVerifyTCBInfo(enclave, "./data/tcbInfo_with_pceid.json");
+
+    // Get current time and pass it to enclave.
+    std::time_t t = std::time(0);
+    std::tm* tm = std::gmtime(&t);
+
+    // convert std::tm to oe_datetime_t
+    oe_datetime_t now = {(uint32_t)tm->tm_year + 1900,
+                         (uint32_t)tm->tm_mon + 1,
+                         (uint32_t)tm->tm_mday,
+                         (uint32_t)tm->tm_hour,
+                         (uint32_t)tm->tm_min,
+                         (uint32_t)tm->tm_sec};
+
+    test_minimum_issue_date(enclave, now);
+
+    generate_and_save_report(enclave);
+
+#else
+    test_local_report(&target_info);
+    test_parse_report_negative();
+    test_local_verify_report();
+
+    OE_TEST(test_iso8601_time(enclave) == OE_OK);
+    OE_TEST(test_iso8601_time_negative(enclave) == OE_OK);
+
+    OE_TEST(enclave_test_local_report(enclave, &target_info) == OE_OK);
+    OE_TEST(enclave_test_parse_report_negative(enclave) == OE_OK);
+    OE_TEST(enclave_test_local_verify_report(enclave) == OE_OK);
 
     // Get current time and pass it to enclave.
     std::time_t t = std::time(0);

@@ -2,6 +2,9 @@
 # Licensed under the MIT License.
 
 Param(
+    [Parameter(mandatory=$true)][string]$InstallPath,
+    [Parameter(mandatory=$true)][ValidateSet("yes", "no")][string]$WithFLC,
+    [Parameter(mandatory=$true)][ValidateSet("azure")][string]$WithAzureDCAPClient,
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
     [string]$GitHash = '5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
@@ -25,19 +28,15 @@ Param(
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Azure.DCAP.Windows/0.0.2',
-    [string]$AzureDCAPNupkgHash = 'E319A6C2D136FE5EDB8799305F6151B71F4CE4E67D96CA74538D0AD5D2D793F1',
-    [Parameter(mandatory=$true)][string]$InstallPath,
-    [Parameter(mandatory=$true)][bool]$WithFLC,
-    [Parameter(mandatory=$true)][bool]$WithAzureDCAPClient
+    [string]$AzureDCAPNupkgHash = 'E319A6C2D136FE5EDB8799305F6151B71F4CE4E67D96CA74538D0AD5D2D793F1'
 )
 
-if ( ($WithFLC -eq $false) -and ($WithAzureDCAPClient -eq $true) )
+if ($WithFLC -eq "yes")
 {
-    Throw "Error: WithFLC cannot be false while WithAzureDCAPClient is true."
+    Write-Host "**** Installing PSW 2.4 ****"
 }
-
-if ($WithFLC -eq $false)
-{
+else{
+    Write-Host "**** Installing PSW 2.2 ****"
     $IntelPSWURL = "https://oejenkins.blob.core.windows.net/oejenkins/intel_sgx_win_2.2.100.47975_PV.zip"
     $IntelPSWHash = 'EB479D1E029D51E48E534C284FCF5CCA3A937DA43052DCB2F4C71E5F354CA623'
 }
@@ -518,16 +517,7 @@ function Install-DCAPDrivers {
         Throw "Multiple Intel DCAP nuget directories found"
     }
     Copy-Item -Recurse -Force "$nupkgDir\*" $TEMP_NUGET_DIR
-    Copy-Item $PACKAGES['azure_dcap_client_nupkg']['local_file'] -Destination $TEMP_NUGET_DIR -Force
 
-    # Note: the ordering of nuget installs below is important to preserve here until the issue with the EnclaveCommonAPI nuget package gets fixed.
-    if ($WithAzureDCAPClient -eq $true)
-    {
-        & "$PACKAGES_DIRECTORY\nuget.exe" install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
-        if($LASTEXITCODE -ne 0) {
-            Throw "Failed to install nuget Azure.DCAP.Windows"
-        }
-    }
     & "$PACKAGES_DIRECTORY\nuget.exe" install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
         Throw "Failed to install nuget DCAP_Components"
@@ -549,6 +539,23 @@ function Install-VCRuntime {
     }
 }
 
+function Install-AzureDCAPWindows {
+    Write-Log "Installing Azure.DCAP.Windows"
+    Write-Host "Installing Azure.DCAP.Windows"
+
+    Copy-Item $PACKAGES['azure_dcap_client_nupkg']['local_file'] -Destination $TEMP_NUGET_DIR -Force
+
+    & "$PACKAGES_DIRECTORY\nuget.exe" install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+    if($LASTEXITCODE -ne 0) {
+        Throw "Failed to install nuget Azure.DCAP.Windows"
+    }
+
+    $targetPath = [System.Environment]::SystemDirectory
+    Write-Host "Installing Azure.DCAP.Windows library to $targetPath"
+    pushd "$OE_NUGET_DIR\Azure.DCAP.Windows\script"
+    & ".\InstallAzureDCAP.ps1" $targetPath
+    popd
+}
 
 try {
     Start-LocalPackagesDownload
@@ -561,7 +568,19 @@ try {
     Install-OCaml
     Install-Shellcheck
     Install-PSW
-    if ($WithFLC -eq $true)
+    
+    Write-Host "WithAzureDCAPClient option: $WithAzureDCAPClient"
+    if ($WithAzureDCAPClient -eq "azure")
+    {
+        Write-Host "*** Installing Azure.DCAP.Windows ***"
+        Install-AzureDCAPWindows 
+    }
+    else
+    {
+        Write-Host "*** NOT installing Azure.DCAP.Windows ***"
+    }
+
+    if ($WithFLC -eq "yes")
     {
         Install-DCAPDrivers
     }
