@@ -3,6 +3,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# TODO: Do not include deleted files
+# TODO: Skip hook if files is empty
+# TODO: Check authorship against blacklist (e.g. disallow "Ubuntu")
+
 set -o errexit
 
 scripts=$(git rev-parse --show-toplevel)/scripts
