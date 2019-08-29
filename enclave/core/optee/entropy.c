@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_NEED_STDC_NAMES
 #include <openenclave/enclave.h>
 #include <openenclave/internal/entropy.h>
 
