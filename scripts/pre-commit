@@ -3,13 +3,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# TODO: Skip hook if files is empty
 # TODO: Check authorship against blacklist (e.g. disallow "Ubuntu")
 
 set -o errexit
-
-scripts=$(git rev-parse --show-toplevel)/scripts
-mapfile -t files < <(git diff --cached --name-only --diff-filter=ACMR)
 
 exit_() {
     echo ""
@@ -19,6 +15,22 @@ exit_() {
     echo "See '.git/hooks/pre-commit', installed from 'scripts/pre-commit'"
     exit 1
 }
+
+if ! git diff-index --check --cached HEAD --; then
+    exit_ "Commit failed: please fix the conflict markers or whitespace errors"
+fi
+
+mapfile -t files < <(git diff --cached --name-only --diff-filter=ACMR)
+
+if [[ ${#files[@]} -eq 0 ]]; then
+    # When 'git commit --amend' is used, the files list is empty. The
+    # scripts below interpret an empty file set as a directive to
+    # check all the files, which is slow (but used in CI). So in this
+    # Git hook, we just skip the following checks instead.
+    exit 0
+fi
+
+scripts=$(git rev-parse --show-toplevel)/scripts
 
 # shellcheck disable=SC2154
 if ! "$scripts/format-code" --quiet --whatif --files="${files[*]}"; then
@@ -31,8 +43,4 @@ fi
 
 if ! "$scripts/check-linters" "${files[@]}"; then
     exit_ "Commit failed: please run './scripts/check-linters' and fix the warnings"
-fi
-
-if ! git diff-index --check --cached HEAD --; then
-    exit_ "Commit failed: please fix the conflict markers or whitespace errors"
 fi
