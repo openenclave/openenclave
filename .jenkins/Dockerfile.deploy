@@ -20,7 +20,7 @@ RUN apt-get update && \
     apt-key add microsoft.asc && \
     apt-get update && \
     apt-get -y install apt-transport-https azure-cli unzip && \
-    curl https://oejenkins.blob.core.windows.net/oejenkins/oe-engine -o /usr/bin/oe-engine  && \
+    curl https://oejenkinsciartifacts.blob.core.windows.net/oe-engine/latest/bin/oe-engine -o /usr/bin/oe-engine && \
     chmod +x /usr/bin/oe-engine && \
     wget https://releases.hashicorp.com/packer/1.4.2/packer_1.4.2_linux_amd64.zip && \
     unzip packer_1.4.2_linux_amd64.zip -d /usr/sbin && \
