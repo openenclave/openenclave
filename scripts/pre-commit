@@ -3,8 +3,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# TODO: Check authorship against blacklist (e.g. disallow "Ubuntu")
-
 set -o errexit
 
 exit_() {
@@ -15,6 +13,13 @@ exit_() {
     echo "See '.git/hooks/pre-commit', installed from 'scripts/pre-commit'"
     exit 1
 }
+
+if [[ $(git config --get user.name | wc -w) -lt 2 ]]; then
+    # This heuristic avoids bad user names such as "root" or "Ubuntu"
+    # or a computer login name. A full name should (usually) have at
+    # least two words. We can change this if needed later.
+    exit_ "Commit failed: please fix your Git user name (see docs/Contributing.md)"
+fi
 
 if ! git diff-index --check --cached HEAD --; then
     exit_ "Commit failed: please fix the conflict markers or whitespace errors"
