@@ -68,4 +68,5 @@ RUN /ansible/install-ansible.sh && \
     groupadd --gid ${GID} ${GNAME} && \
     useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME} && \
     curl ${devkits_uri} | tar xvz --no-same-permissions --no-same-owner && \
-    echo ${devkits_uri##*/} > /devkits/TARBALL
+    echo ${devkits_uri##*/} > /devkits/TARBALL && \
+    echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
