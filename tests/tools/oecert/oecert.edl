@@ -1,0 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public oe_result_t get_tls_cert_signed_with_key(
+            [in, count=private_key_size] uint8_t *private_key,
+            size_t private_key_size,
+            [in, count=public_key_size] uint8_t *public_key,
+            size_t public_key_size,
+            [out] unsigned char **data, 
+            [out] size_t *data_size);
+    };
+};

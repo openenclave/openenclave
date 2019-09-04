@@ -226,6 +226,53 @@ def win2016CrossCompile(String build_type, String use_libsgx = 'OFF') {
     }
 }
 
+def ACCHostVerificationTest(String version, String build_type) {
+
+        /* Compile tests in SGX machine.  This will generate the necessary certs for the
+        * host_verify test.
+        */
+        stage("ACC-1804 Generate Quote") {
+            node('ACC-1804') {
+                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    cleanWs()
+                    checkout scm
+
+                    println("Generating certificates and reports ...")
+                    def task = """
+                            cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=ON -DCMAKE_BUILD_TYPE=${build_type} -Wdev
+                            ninja -v
+                            tests/tools/oecert/host/oecert tests/tools/oecert/enc/oecert_enc --cert keyec.pem publicec.pem --out sgx_cert_ec.der
+                            tests/tools/oecert/host/oecert tests/tools/oecert/enc/oecert_enc --cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der
+                            tests/tools/oecert/host/oecert tests/tools/oecert/enc/oecert_enc --report --out sgx_report.bin
+                            """
+                    oe.Run("clang-7", task)
+
+                    println("Stashing data ...")
+                    stash includes: 'build/tests/host_verify/host/*.der,build/tests/host_verify/host/*.bin', name: "linux_host_verify-${build_type}-${BUILD_NUMBER}"
+                }
+            }
+        }
+
+        /* Compile the tests with USE_LIBSGX=OFF and copy the certs over for verification.  */
+        stage("Linux nonSGX Verify Quote") {
+            node("nonSGX") {
+                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    cleanWs()
+                    checkout scm
+                    unstash "linux_host_verify-${build_type}-${BUILD_NUMBER}"
+                    def task = """
+                            cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev
+                            ninja -v
+                            ctest -R host_verify --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                            """
+                    // Note: Include the commands to build and run the quote verification test above
+                    oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE")
+                }
+            }
+        }
+
+        /* TODO: Windows nonSGX stage.  Waiting for windows non-SGX VM */
+ }
 
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       artifactNumToKeepStr: '180',
@@ -265,4 +312,6 @@ parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows(
          "Win2016 Debug Cross Compile" :                        { win2016CrossCompile('Debug') },
          "Win2016 Release Cross Compile" :                      { win2016CrossCompile('Release') },
          "Win2016 Debug Cross Compile with DCAP libs" :         { win2016CrossCompile('Debug', 'ON') },
-         "Win2016 Release Cross Compile with DCAP libs" :       { win2016CrossCompile('Release', 'ON') }
+         "Win2016 Release Cross Compile with DCAP libs" :       { win2016CrossCompile('Release', 'ON') },
+         "Linux nonSGX 18.04 Debug" :                           { ACCHostVerificationTest('18.04', 'Debug') },
+         "Linux nonSGX 18.04 Release" :                         { ACCHostVerificationTest('18.04', 'Release') }
