@@ -319,7 +319,7 @@ void oe_virtual_exception_dispatcher(
     uint64_t* arg_out)
 {
     SSA_Info ssa_info = {0};
-    OE_UNUSED(arg_in);
+    oe_exception_record_t* oe_exception_record = (oe_exception_record_t*)arg_in;
 
     // Verify if the first SSA has valid exception info.
     if (_get_enclave_thread_first_ssa_info(td, &ssa_info) != 0)
@@ -327,39 +327,55 @@ void oe_virtual_exception_dispatcher(
         *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
         return;
     }
-
     sgx_ssa_gpr_t* ssa_gpr =
         (sgx_ssa_gpr_t*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
+
     if (!ssa_gpr->exit_info.as_fields.valid)
     {
-        // Not a valid/expected enclave exception;
-        *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
-        return;
-    }
-
-    // Get the exception address, code, and flags.
-    td->base.exception_address = ssa_gpr->rip;
-    td->base.exception_code = OE_EXCEPTION_UNKNOWN;
-    for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
-         i++)
-    {
-        if (g_vector_to_exception_code_mapping[i].sgx_vector ==
-            ssa_gpr->exit_info.as_fields.vector)
+        // Consider manually provided exception information for SGX1
+        if (oe_exception_record)
         {
-            td->base.exception_code =
-                g_vector_to_exception_code_mapping[i].exception_code;
-            break;
+            td->base.exception_address = ssa_gpr->rip;
+
+            /* TODO PRP: We need to read the exception information from
+             * oe_exception_record instead */
+            td->base.exception_code = OE_EXCEPTION_PAGE_FAULT;
+            td->base.exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+        }
+        else
+        {
+            // Not a valid/expected enclave exception;
+            *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
+            return;
         }
     }
+    else
+    {
+        // Get the exception address, code, and flags.
+        td->base.exception_address = ssa_gpr->rip;
+        td->base.exception_code = OE_EXCEPTION_UNKNOWN;
+        for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
+             i++)
+        {
+            if (g_vector_to_exception_code_mapping[i].sgx_vector ==
+                ssa_gpr->exit_info.as_fields.vector)
+            {
+                td->base.exception_code =
+                    g_vector_to_exception_code_mapping[i].exception_code;
+                break;
+            }
+        }
 
-    td->base.exception_flags = 0;
-    if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HARDWARE)
-    {
-        td->base.exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
-    }
-    else if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
-    {
-        td->base.exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        td->base.exception_flags = 0;
+        if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HARDWARE)
+        {
+            td->base.exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+        }
+        else if (
+            ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
+        {
+            td->base.exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        }
     }
 
     if (td->base.exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
