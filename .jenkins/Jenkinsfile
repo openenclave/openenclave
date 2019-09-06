@@ -241,19 +241,43 @@ def ACCHostVerificationTest(String version, String build_type) {
                     def task = """
                             cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=ON -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                             ninja -v
-                            tests/tools/oecert/host/oecert tests/tools/oecert/enc/oecert_enc --cert keyec.pem publicec.pem --out sgx_cert_ec.der
-                            tests/tools/oecert/host/oecert tests/tools/oecert/enc/oecert_enc --cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der
-                            tests/tools/oecert/host/oecert tests/tools/oecert/enc/oecert_enc --report --out sgx_report.bin
+                            pushd tests/host_verify/host
+                            openssl ecparam -name prime256v1 -genkey -noout -out keyec.pem
+                            openssl ec -in keyec.pem -pubout -out publicec.pem
+                            openssl genrsa -out keyrsa.pem 2048
+                            openssl rsa -in keyrsa.pem -outform PEM -pubout -out publicrsa.pem
+                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --cert keyec.pem publicec.pem --out sgx_cert_ec.der
+                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der
+                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --report --out sgx_report.bin
+                            popd
                             """
                     oe.Run("clang-7", task)
 
-                    println("Stashing data ...")
+                    def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
+                    def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
+                    def report_created = fileExists 'build/tests/host_verify/host/sgx_report.bin'
+                    if (ec_cert_created) {
+                        println("EC cert file created successfully!")
+                    } else {
+                        error("Failed to create EC cert file.")
+                    }
+                    if (rsa_cert_created) {
+                        println("RSA cert file created successfully!")
+                    } else {
+                        error("Failed to create RSA cert file.")
+                    }
+                    if (report_created) {
+                        println("SGX report file created successfully!")
+                    } else {
+                        error("Failed to create SGX report file.")
+                    }
+
                     stash includes: 'build/tests/host_verify/host/*.der,build/tests/host_verify/host/*.bin', name: "linux_host_verify-${build_type}-${BUILD_NUMBER}"
                 }
             }
         }
 
-        /* Compile the tests with USE_LIBSGX=OFF and copy the certs over for verification.  */
+        /* Compile the tests with USE_LIBSGX=OFF and unstash the certs over for verification.  */
         stage("Linux nonSGX Verify Quote") {
             node("nonSGX") {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -261,7 +285,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                     checkout scm
                     unstash "linux_host_verify-${build_type}-${BUILD_NUMBER}"
                     def task = """
-                            cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev
+                            cmake ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DUSE_LIBSGX=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                             ninja -v
                             ctest -R host_verify --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                             """
@@ -271,7 +295,25 @@ def ACCHostVerificationTest(String version, String build_type) {
             }
         }
 
-        /* TODO: Windows nonSGX stage.  Waiting for windows non-SGX VM */
+        /* Windows nonSGX stage. */
+        stage("Windows nonSGX Verify Quote") {
+            node("nonSGX-Windows") {
+                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    cleanWs()
+                    checkout scm
+                    unstash "linux_host_verify-${build_type}-${BUILD_NUMBER}"
+                    powershell 'Copy-Item -Recurse C:\\openenclave\\prereqs\\nuget ${env:WORKSPACE}\\prereqs'
+                    dir('build') {
+                        bat """
+                            vcvars64.bat x64 && \
+                            cmake.exe ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DUSE_LIBSGX=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev && \
+                            ninja -v && \
+                            ctest.exe -V -C ${build_type} -R host_verify --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                            """
+                    }
+                }
+            }
+        }
  }
 
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
@@ -313,5 +355,5 @@ parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows(
          "Win2016 Release Cross Compile" :                      { win2016CrossCompile('Release') },
          "Win2016 Debug Cross Compile with DCAP libs" :         { win2016CrossCompile('Debug', 'ON') },
          "Win2016 Release Cross Compile with DCAP libs" :       { win2016CrossCompile('Release', 'ON') },
-         "Linux nonSGX 18.04 Debug" :                           { ACCHostVerificationTest('18.04', 'Debug') },
-         "Linux nonSGX 18.04 Release" :                         { ACCHostVerificationTest('18.04', 'Release') }
+         "Host verification Debug" :                            { ACCHostVerificationTest('18.04', 'Debug') },
+         "Host verification Release" :                          { ACCHostVerificationTest('18.04', 'Release') }
