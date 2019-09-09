@@ -74,6 +74,7 @@ instead, it should be brought up with the Community Maintenance Committee.
 | Amaury Chamayou       | achamayou           | Build, CCF Integration         |
 | Anand Krishnamoorthi  | anakrish            | Debugging, SGX, EDL, Dev Tools |
 | Andrew Schwartzmeyer  | andschwa            | EDL, CMake, Git, Dev Tools     |
+| Brett McLaren         | BRMcLaren           | Build, CMake, CI               |
 | Brian Telfer          | Britel              | TrustZone, Attestation         |
 | Simon Leet            | CodeMonkeyLeet      | SGX, APIs                      |
 | Dave Thaler           | dthaler             | TrustZone, APIs, Dev Tools     |
@@ -91,4 +92,3 @@ instead, it should be brought up with the Community Maintenance Committee.
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
 | Bruce Campbell        | yakman2020          | Windows, SGX                   |
-| Brett McLaren         | BRMcLaren           |                                |
