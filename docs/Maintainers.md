@@ -84,11 +84,9 @@ instead, it should be brought up with the Community Maintenance Committee.
 | Jiri Appl             | jiria               | Attestation, TrustZone         |
 | John Kordich          | johnkord            | Build, CI, Dev Tools           |
 | Xuejun Yang           | jxyang              | SGX                            |
-| Li Li                 | lilyfang            |                                |
 | Mike Brasher          | mikbras             | SGX, APIs, EDL                 |
 | Marius Oprin          | oprinmarius         | Build, CMake, CI, Ansible      |
 | Paul Allen            | paulcallen          | TrustZone                      |
-| Pushkar Chitnis       | pushkarcMS          |                                |
 | Radhika Jandhyala     | radhikaj            | SGX, APIs                      |
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
