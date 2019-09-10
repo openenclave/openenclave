@@ -20,6 +20,7 @@ Committee Members
 |----------------------|-----------|-------------------------------|----------------|
 | Akash Gupta          | Microsoft | akagup@microsoft.com          | gupta-ak       |
 | Amaury Chamayou      | Microsoft | amaury.chamayou@microsoft.com | achamayou      |
+| Anand Krishnamoorthi | Microsoft | anakrish@microsoft.com        | anakrish       |
 | Andrew Schwartzmeyer | Microsoft | andschwa@microsoft.com        | andschwa       |
 | Dave Thaler          | Microsoft | dthaler@microsoft.com         | dthaler        |
 | John Kordich         | Microsoft | johnkord@microsoft.com        | johnkord       |
@@ -74,6 +75,7 @@ instead, it should be brought up with the Community Maintenance Committee.
 | Amaury Chamayou       | achamayou           | Build, CCF Integration         |
 | Anand Krishnamoorthi  | anakrish            | Debugging, SGX, EDL, Dev Tools |
 | Andrew Schwartzmeyer  | andschwa            | EDL, CMake, Git, Dev Tools     |
+| Brett McLaren         | BRMcLaren           | Build, CMake, CI               |
 | Brian Telfer          | Britel              | TrustZone, Attestation         |
 | Simon Leet            | CodeMonkeyLeet      | SGX, APIs                      |
 | Dave Thaler           | dthaler             | TrustZone, APIs, Dev Tools     |
@@ -84,13 +86,10 @@ instead, it should be brought up with the Community Maintenance Committee.
 | Jiri Appl             | jiria               | Attestation, TrustZone         |
 | John Kordich          | johnkord            | Build, CI, Dev Tools           |
 | Xuejun Yang           | jxyang              | SGX                            |
-| Li Li                 | lilyfang            |                                |
 | Mike Brasher          | mikbras             | SGX, APIs, EDL                 |
 | Marius Oprin          | oprinmarius         | Build, CMake, CI, Ansible      |
 | Paul Allen            | paulcallen          | TrustZone                      |
-| Pushkar Chitnis       | pushkarcMS          |                                |
 | Radhika Jandhyala     | radhikaj            | SGX, APIs                      |
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
 | Bruce Campbell        | yakman2020          | Windows, SGX                   |
-| Brett McLaren         | BRMcLaren           |                                |
