@@ -4,12 +4,15 @@
 #include "../common/asn1.h"
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/asn1.h>
+#include <openenclave/internal/datetime.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/asn1.h>
 #include <openssl/pem.h>
 #include <string.h>
+
+#include "asn1.h"
 
 OE_STATIC_ASSERT(V_ASN1_CONSTRUCTED == OE_ASN1_TAG_CONSTRUCTED);
 OE_STATIC_ASSERT(V_ASN1_SEQUENCE == OE_ASN1_TAG_SEQUENCE);
@@ -177,5 +180,94 @@ oe_result_t oe_asn1_get_octet_string(
     result = OE_OK;
 
 done:
+    return result;
+}
+
+oe_result_t oe_asn1_string_to_date(const char* str, oe_datetime_t* date)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    char month[4];
+
+    memset(date, 0, sizeof(oe_datetime_t));
+
+    /* Convert the string to oe_datetime_t struct */
+    if (sscanf(
+            str,
+            "%3s %02u %02u:%02u:%02u %04u",
+            month,
+            &date->day,
+            &date->hours,
+            &date->minutes,
+            &date->seconds,
+            &date->year) != 6)
+    {
+        OE_RAISE(OE_FAILURE);
+    }
+
+    /* Convert the month string to integer */
+    {
+        static const char* _month[] = {"Jan",
+                                       "Feb",
+                                       "Mar",
+                                       "Apr",
+                                       "May",
+                                       "Jun",
+                                       "Jul",
+                                       "Aug",
+                                       "Sep",
+                                       "Oct",
+                                       "Nov",
+                                       "Dec"};
+
+        date->month = UINT_MAX;
+
+        for (uint32_t i = 0; i < OE_COUNTOF(_month); i++)
+        {
+            if (strncmp(month, _month[i], 3) == 0)
+            {
+                date->month = i + 1;
+                break;
+            }
+        }
+
+        if (date->month == UINT_MAX)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_asn1_time_to_date(const ASN1_TIME* time, oe_datetime_t* date)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    struct tm;
+    BIO* bio = NULL;
+    BUF_MEM* mem;
+    const char null_terminator = '\0';
+
+    if (!(bio = BIO_new(BIO_s_mem())))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (!ASN1_TIME_print(bio, time))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (!BIO_get_mem_ptr(bio, &mem))
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    if (BIO_write(bio, &null_terminator, sizeof(null_terminator)) <= 0)
+        OE_RAISE(OE_CRYPTO_ERROR);
+
+    OE_CHECK(oe_asn1_string_to_date(mem->data, date));
+
+    result = OE_OK;
+
+done:
+
+    if (bio)
+        BIO_free(bio);
+
     return result;
 }

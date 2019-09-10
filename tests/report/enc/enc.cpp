@@ -94,6 +94,10 @@ void test_minimum_issue_date(oe_datetime_t now)
         oe_verify_report(report_v2, report_v2_size, NULL) ==
         OE_INVALID_REVOCATION_INFO);
 
+    // Restore default minimum CRL/TCB issue date
+    OE_TEST(
+        __oe_sgx_set_minimum_crl_tcb_issue_date(2017, 3, 17, 0, 0, 0) == OE_OK);
+
     oe_free_report(report);
     oe_free_report(report_v2);
 
@@ -126,6 +130,11 @@ void enclave_test_local_verify_report()
 void enclave_test_remote_verify_report()
 {
     test_remote_verify_report();
+}
+
+void enclave_test_verify_report_with_collaterals()
+{
+    test_verify_report_with_collaterals();
 }
 
 OE_SET_ENCLAVE_SGX(

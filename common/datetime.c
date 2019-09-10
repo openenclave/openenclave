@@ -3,8 +3,10 @@
 
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
+#include <time.h>
 
 #define UNIX_EPOCH_YEAR (1970)
+#define OE_DATETIME_STR_SIZE (21)
 
 oe_result_t oe_datetime_is_valid(const oe_datetime_t* datetime)
 {
@@ -121,10 +123,10 @@ oe_result_t oe_datetime_to_string(
     if (datetime == NULL || str_length == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (str == NULL || *str_length < 21)
+    if (str == NULL || *str_length < OE_DATETIME_STR_SIZE)
     {
-        *str_length = 21;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+        *str_length = OE_DATETIME_STR_SIZE;
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     OE_CHECK(oe_datetime_is_valid(datetime));
@@ -149,7 +151,7 @@ oe_result_t oe_datetime_to_string(
 
     // Null terminator.
     *p++ = 0;
-    *str_length = 21;
+    *str_length = OE_DATETIME_STR_SIZE;
     result = OE_OK;
 done:
     return result;
@@ -220,4 +222,40 @@ int32_t oe_datetime_compare(
         return (date1->seconds < date2->seconds) ? -1 : 1;
 
     return 0;
+}
+
+oe_result_t oe_datetime_now(oe_datetime_t* value)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    time_t now;
+    struct tm* timeinfo;
+
+    if (value == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    time(&now);
+    timeinfo = gmtime(&now);
+
+    value->year = (uint32_t)timeinfo->tm_year + 1900;
+    value->month = (uint32_t)timeinfo->tm_mon + 1;
+    value->day = (uint32_t)timeinfo->tm_mday;
+    value->hours = (uint32_t)timeinfo->tm_hour;
+    value->minutes = (uint32_t)timeinfo->tm_min;
+    value->seconds = (uint32_t)timeinfo->tm_sec;
+
+    result = OE_OK;
+done:
+
+    return result;
+}
+
+void oe_datetime_log_info(const char* msg, const oe_datetime_t* date)
+{
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    {
+        char str[OE_DATETIME_STR_SIZE];
+        size_t size = sizeof(str);
+        oe_datetime_to_string(date, str, &size);
+        OE_TRACE_INFO("%s %s\n", msg, str);
+    }
 }

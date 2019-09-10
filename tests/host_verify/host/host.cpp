@@ -7,12 +7,16 @@
 #include <openenclave/host_verify.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/report.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#include "../../../common/sgx/quote.h"
+#include "../../../host/sgx/sgxquoteprovider.h"
 
 #if defined(__linux__)
 #include <unistd.h>
@@ -31,6 +35,14 @@
 
 #define REPORT_FILENAME "sgx_report.bin"
 #define REPORT_BAD_FILENAME "sgx_report_bad.bin"
+
+//
+// TODO: Report with collaterals tests.  Will to refactor the contentns
+// of the collaterals to be self-contained in order to support
+// serialization.
+//
+//#define COLLATERALS_FILENAME "sgx_report.bin.col"
+//#define COLLATERALS_BAD_FILENAME "sgx_report_bad.bin.col"
 
 #define SKIP_RETURN_CODE 2
 
@@ -110,54 +122,185 @@ static oe_result_t _verify_cert(const char* filename, bool pass)
     return oe_ret;
 }
 
-static int _verify_report(const char* report_filename, bool pass)
+/**
+ * Verify the integrity of the remote report and its signature,
+ * with optional collateral data.
+ *
+ * This function verifies that the report signature is valid. It
+ * verifies that the signing authority is rooted to a trusted authority
+ * such as the enclave platform manufacturer.
+ *
+ * @param report The buffer containing the report to verify.
+ * @param report_size The size of the **report** buffer.
+ * @param collaterals The collateral data that is associated with the report.
+ * @param collaterals_size The size of the **collaterals** buffer.
+ * @param parsed_report Optional **oe_report_t** structure to populate
+ * with the report properties in a standard format.
+ *
+ * @retval OE_OK The report was successfully verified.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ *
+ */
+static oe_result_t oe_verify_remote_report_with_collaterals(
+    const uint8_t* report,
+    size_t report_size,
+    const uint8_t* collaterals,
+    size_t collaterals_size,
+    oe_report_t* parsed_report)
 {
-    FILE* report_fp = NULL;
-    int ret = -1;
-    size_t file_size = 0;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_report_t oe_report = {0};
+    oe_report_header_t* header = (oe_report_header_t*)report;
+
+    if (report == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (report_size == 0 || report_size > OE_MAX_REPORT_SIZE)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // The two host side attestation API's are oe_get_report and
+    // oe_verify_report. Initialize the quote provider in both these APIs.
+    OE_CHECK(oe_initialize_quote_provider());
+
+    // Ensure that the report is parseable before using the header.
+    OE_CHECK(oe_parse_report(report, report_size, &oe_report));
+
+    if (header->report_type != OE_REPORT_TYPE_SGX_REMOTE)
+        OE_RAISE(OE_UNSUPPORTED);
+
+    // Quote attestation can be done entirely on the host side.
+    OE_CHECK(oe_verify_quote_internal_with_collaterals(
+        header->report,
+        header->report_size,
+        collaterals,
+        collaterals_size,
+        NULL));
+
+    // Optionally return parsed report.
+    if (parsed_report != NULL)
+        OE_CHECK(oe_parse_report(report, report_size, parsed_report));
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static size_t _get_filesize(FILE* fp)
+{
+    size_t size = 0;
+    fseek(fp, 0, SEEK_END);
+    size = (size_t)ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    return size;
+}
+
+static void _read_binary_file(
+    const char* filename,
+    uint8_t** data_ptr,
+    size_t* size_ptr)
+{
+    FILE* fp = fopen(filename, "rb");
+    size_t size = 0;
     uint8_t* data = NULL;
-    oe_result_t result = OE_FAILURE;
 
-    OE_TRACE_INFO("\n\nVerifying report %s\n", report_filename);
-    report_fp = fopen(report_filename, "rb");
-    if (report_fp == NULL)
-        OE_TRACE_ERROR("Failed to find file: %s\n", report_fp);
-
-    OE_TEST(report_fp != NULL);
+    if (fp == NULL)
+        OE_TRACE_ERROR("Failed to find file: %s\n", filename);
+    OE_TEST(fp != NULL);
 
     // Find file size
-    fseek(report_fp, 0, SEEK_END);
-    file_size = (size_t)ftell(report_fp);
-    fseek(report_fp, 0, SEEK_SET);
+    size = _get_filesize(fp);
 
-    data = (uint8_t*)malloc((size_t)file_size);
+    data = (uint8_t*)malloc(size);
     OE_TEST(data != NULL);
 
-    size_t bytes_read = fread(data, sizeof(uint8_t), file_size, report_fp);
-    OE_TEST(bytes_read == file_size);
+    size_t bytes_read = fread(data, sizeof(uint8_t), size, fp);
+    OE_TEST(bytes_read == size);
 
-    result = oe_verify_remote_report(data, file_size, NULL);
-    if (pass)
-        OE_TEST(result == OE_OK);
+    if (fp)
+        fclose(fp);
+
+    *data_ptr = data;
+    *size_ptr = bytes_read;
+}
+
+static int _verify_report(
+    const char* report_filename,
+    const char* collaterals_filename,
+    bool pass)
+{
+    int ret = -1;
+    size_t report_file_size = 0;
+    size_t collaterals_file_size = 0;
+    uint8_t* report_data = NULL;
+    uint8_t* collaterals_data = NULL;
+    oe_result_t result = OE_FAILURE;
+
+    OE_TRACE_INFO(
+        "\n\nVerifying report %s, collaterals: %s\n",
+        report_filename,
+        collaterals_filename);
+
+    _read_binary_file(report_filename, &report_data, &report_file_size);
+
+    if (collaterals_filename == NULL)
+    {
+        result = oe_verify_remote_report(report_data, report_file_size, NULL);
+        if (pass)
+            OE_TEST(result == OE_OK);
+        else
+        {
+            // Note: The failure result code is different between linux vs
+            // windows.
+            //
+            OE_TEST(result != OE_OK);
+            OE_TRACE_INFO(
+                "Report %s verification failed as expected. Failure %d(%s)\n",
+                report_filename,
+                result,
+                oe_result_str(result));
+        }
+
+        OE_TRACE_INFO("Report %s verified successfully!\n\n", report_filename);
+    }
     else
     {
-        // Note: Failure results are different when running in linux vs windows.
-        OE_TEST(result != OE_OK);
-        OE_TRACE_INFO(
-            "Report %s verification failed as expected. Failure %d(%s)\n",
-            report_filename,
-            result,
-            oe_result_str(result));
-    }
+        _read_binary_file(
+            collaterals_filename, &collaterals_data, &collaterals_file_size);
 
-    OE_TRACE_INFO("Report %s verified successfully!\n\n", report_filename);
+        result = oe_verify_remote_report_with_collaterals(
+            report_data,
+            report_file_size,
+            collaterals_data,
+            collaterals_file_size,
+            NULL);
+
+        if (pass)
+            OE_TEST(result == OE_OK);
+        else
+        {
+            // Note: The failure result code is different between linux vs
+            // windows.
+            //
+            OE_TEST(result != OE_OK);
+            OE_TRACE_INFO(
+                "Report %s and collateral %s verification failed as expected. "
+                "Failure %d(%s)\n",
+                report_filename,
+                collaterals_filename,
+                result,
+                oe_result_str(result));
+        }
+
+        OE_TRACE_INFO("Report %s verified successfully!\n\n", report_filename);
+    }
     ret = 0;
 
-    if (report_fp != NULL)
-        fclose(report_fp);
-
-    if (data != NULL)
-        free(data);
+    if (report_data != NULL)
+        free(report_data);
+    if (collaterals_data != NULL)
+        free(collaterals_data);
 
     return ret;
 }
@@ -172,6 +315,10 @@ int main()
         return SKIP_RETURN_CODE;
     }
 
+    //
+    // Report only tests
+    //
+
     // These files are generated by oecert and do not always exists.
     // Run these tests if the file exists.  The Jenkins CI/CD system
     // is responsible for running oecert to generate these files.
@@ -183,7 +330,7 @@ int main()
         _verify_cert(CERT_RSA_FILENAME, true);
 
     if (_validate_file(REPORT_FILENAME, false))
-        _verify_report(REPORT_FILENAME, true);
+        _verify_report(REPORT_FILENAME, NULL, true);
 
     // These files are checked in and should always exist.
     if (_validate_file(CERT_EC_BAD_FILENAME, true))
@@ -193,7 +340,18 @@ int main()
         _verify_cert(CERT_RSA_BAD_FILENAME, false);
 
     if (_validate_file(REPORT_BAD_FILENAME, true))
-        _verify_report(REPORT_BAD_FILENAME, false);
+        _verify_report(REPORT_BAD_FILENAME, NULL, false);
+
+    //
+    // TODO: Report with collaterals tests.  Will to refactor the contentns
+    // of the collaterals to be self-contained in order to support
+    // serialization.
+    //
+    // if (_validate_file(REPORT_FILENAME, false))
+    //    _verify_report(REPORT_FILENAME, COLLATERALS_FILENAME, true);
+
+    // if (_validate_file(REPORT_BAD_FILENAME, true))
+    //     _verify_report(REPORT_FILENAME, COLLATERALS_BAD_FILENAME, false);
 
     return 0;
 }

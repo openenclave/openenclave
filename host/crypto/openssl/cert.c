@@ -17,6 +17,7 @@
 #include <openssl/x509v3.h>
 #include <string.h>
 #include "../magic.h"
+#include "asn1.h"
 #include "crl.h"
 #include "ec.h"
 #include "init.h"
@@ -956,5 +957,48 @@ oe_result_t oe_cert_find_extension(
     result = OE_NOT_FOUND;
 
 done:
+    return result;
+}
+
+oe_result_t oe_cert_get_validity_dates(
+    const oe_cert_t* cert,
+    oe_datetime_t* not_before,
+    oe_datetime_t* not_after)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    const cert_t* impl = (const cert_t*)cert;
+
+    if (not_before)
+        memset(not_before, 0, sizeof(oe_datetime_t));
+
+    if (not_after)
+        memset(not_after, 0, sizeof(oe_datetime_t));
+
+    if (!_cert_is_valid(impl))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (not_before)
+    {
+        const ASN1_TIME* time;
+
+        if (!(time = X509_get_notBefore(impl->x509)))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        OE_CHECK(oe_asn1_time_to_date(time, not_before));
+    }
+
+    if (not_after)
+    {
+        const ASN1_TIME* time;
+
+        if (!(time = X509_get_notAfter(impl->x509)))
+            OE_RAISE(OE_CRYPTO_ERROR);
+
+        OE_CHECK(oe_asn1_time_to_date(time, not_after));
+    }
+
+    result = OE_OK;
+done:
+
     return result;
 }

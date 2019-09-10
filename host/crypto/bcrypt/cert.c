@@ -17,6 +17,7 @@
 #include "key.h"
 #include "pem.h"
 #include "rsa.h"
+#include "util.h"
 
 /*
 **==============================================================================
@@ -28,9 +29,8 @@
 
 #define _OE_CERT_CHAIN_LENGTH_ANY 0
 
-static const DWORD _OE_DEFAULT_GET_CRL_FLAGS = CERT_STORE_SIGNATURE_FLAG |
-                                               CERT_STORE_TIME_VALIDITY_FLAG |
-                                               CERT_STORE_BASE_CRL_FLAG;
+static const DWORD _OE_DEFAULT_GET_CRL_FLAGS =
+    CERT_STORE_SIGNATURE_FLAG | CERT_STORE_TIME_VALIDITY_FLAG;
 
 static const CERT_CHAIN_POLICY_PARA _OE_DEFAULT_CERT_CHAIN_POLICY = {
     .cbSize = sizeof(CERT_CHAIN_POLICY_PARA),
@@ -1294,5 +1294,41 @@ oe_result_t oe_cert_find_extension(
     result = OE_OK;
 
 done:
+    return result;
+}
+
+oe_result_t oe_cert_get_validity_dates(
+    const oe_cert_t* cert,
+    oe_datetime_t* not_before,
+    oe_datetime_t* not_after)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    const cert_t* impl = (const cert_t*)cert;
+
+    if (not_before)
+        memset(not_before, 0, sizeof(oe_datetime_t));
+
+    if (not_after)
+        memset(not_after, 0, sizeof(oe_datetime_t));
+
+    if (!_cert_is_valid(impl))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (not_before)
+    {
+        OE_CHECK(oe_util_filetime_to_oe_datetime(
+            &impl->cert->pCertInfo->NotBefore, not_before));
+    }
+
+    if (not_after)
+    {
+        OE_CHECK(oe_util_filetime_to_oe_datetime(
+            &impl->cert->pCertInfo->NotAfter, not_after));
+    }
+
+    result = OE_OK;
+
+done:
+
     return result;
 }

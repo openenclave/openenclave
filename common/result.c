@@ -100,6 +100,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_UNSUPPORTED_ENCLAVE_IMAGE";
         case OE_VERIFY_CRL_EXPIRED:
             return "OE_VERIFY_CRL_EXPIRED";
+        case OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD:
+            return "OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD";
         case OE_VERIFY_CRL_MISSING:
             return "OE_VERIFY_CRL_MISSING";
         case OE_VERIFY_REVOKED:
@@ -177,6 +179,7 @@ bool oe_is_valid_result(uint32_t result)
         case OE_INVALID_QE_IDENTITY_INFO:
         case OE_UNSUPPORTED_ENCLAVE_IMAGE:
         case OE_VERIFY_CRL_EXPIRED:
+        case OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD:
         case OE_VERIFY_CRL_MISSING:
         case OE_VERIFY_REVOKED:
         case OE_CRYPTO_ERROR:

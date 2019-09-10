@@ -280,6 +280,11 @@ typedef enum _oe_result
     OE_VERIFY_REVOKED,
 
     /**
+     * Could not find a valid validity period.
+     */
+    OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+
+    /**
      * An underlying crypto provider returned an error.
      */
     OE_CRYPTO_ERROR,

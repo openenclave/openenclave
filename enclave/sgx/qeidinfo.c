@@ -117,7 +117,7 @@ done:
 }
 
 // Cleanup the args structure.
-void oe_cleanup_qe_identity_info_args(oe_get_qe_identity_info_args_t* args)
+void oe_free_qe_identity_info_args(oe_get_qe_identity_info_args_t* args)
 {
     if (!args)
         return;
