@@ -16,7 +16,7 @@ To set up a Linux VM on your Windows machine, do the following:
   and select Settings... -> Security and uncheck Enable Secure Boot.
 1. Uncheck "Enable checkpoints" under the VM's Settings -> Checkpoints, since SGX will not work with checkpoints.
 1. If using an SGX-capable machine, enable SGX for the VM as follows (this cannot be done from Hyper-V Manager):
-   - Download [VirtualMachineSgxSettings.psm1](https://raw.githubusercontent.com/microsoft/openenclave/scripts/VirtualMachineSgxSettings.psm1)
+   - Download [VirtualMachineSgxSettings.psm1](https://raw.githubusercontent.com/openenclave/openenclave/scripts/VirtualMachineSgxSettings.psm1)
    - Open an elevated PowerShell window (e.g., type "powershell" and click Run as Administrator)
    - Invoke the following commands, using the path to where you downloaded the file, and replacing MyVM with your VM name:
    ```
