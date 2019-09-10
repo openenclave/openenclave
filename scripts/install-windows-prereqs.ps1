@@ -649,7 +649,11 @@ try {
     Install-Git
     Install-OCaml
     Install-Shellcheck
-    Install-PSW
+
+    if ($LaunchConfiguration -ne "SGX1FLC-NoDriver")
+    {
+        Install-PSW
+    }
 
     if ($DCAPClientType -eq "Azure")
     {
