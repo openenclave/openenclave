@@ -1,4 +1,4 @@
-# Setting up a Linux VM on Windows
+# Setting up a Linux Hyper-V VM on Windows with SGX Support
 
 _Note: Hyper-V support for SGX is not yet fully supported, but can be used as a "Preview" with the limitations
 mentioned below._
