@@ -1,4 +1,7 @@
-﻿Import-Module Hyper-V
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Import-Module Hyper-V
 
 ### -----------------------------------
 ### Constants

@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 @{
     GUID              = "{5c36f9d9-e64f-4dbb-ae38-6ad1669954c4}"
     Author            = "Microsoft Corporation"
