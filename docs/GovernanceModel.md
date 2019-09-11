@@ -17,9 +17,9 @@ In order to maintain a pleasant and welcoming environment, we want to reiterate
 that it is imperative that all community members adhere to our
 [Code of Conduct](Contributing.md#code-of-conduct).
 Anyone failing to follow the Code of Conduct will be removed from the community
-by the [Community Maintenance Committee](Maintainers.md). If you are made to
+by the [Maintainers Group](Maintainers.md). If you are made to
 feel uncomfortable, or have any concerns about behavior within the community, we
-encourage you to reach out to members of the Community Maintenance Committee.
+encourage you to reach out to members of the Maintainers Group.
 
 Design and Development Discussions
 ----------------------------------
@@ -44,17 +44,17 @@ Issues](Contributing.md#reporting-security-issues).
 Maintainers, Committers, and Contributors
 -----------------------------------------
 
-We define "maintainer" as members of the Open Enclave "Community Maintenance
-Committee", as listed in the [maintainers document](Maintainers.md). A
+We define "maintainer" as members of the Open Enclave "Maintainers
+Group", as listed in the [maintainers document](Maintainers.md). A
 "committer" is anyone with direct write access to the Open Enclave repository on
-GitHub, as granted by the Committee. All maintainers are committers, but not all
+GitHub, as granted by the Maintainers Group. All maintainers are committers, but not all
 committers are maintainers. Finally, "contributor" is anyone else making
 contributions to the project, including: creating or commenting on issues,
 opening or reviewing pull requests, or other useful contributions such as
 providing support in forums or chats.
 
-See the [maintainers document](Maintainers.md) for the Community Maintenance
-Committee, our process for adding new committers and maintainers, as well the
+See the [maintainers document](Maintainers.md) for the Maintainers
+Group, our process for adding new committers and maintainers, as well the
 areas of expertise for each of the committers.
 
 Accepting Contributions
@@ -69,7 +69,7 @@ Committers may revert changes if they are found to be breaking.
 We make most decisions through a consensus seeking process, rather than a formal
 voting process. For example, committers can merge contributions that were
 reviewed without objections. If there are objections that cannot be resolved, an
-issue can be escalated to the Community Maintenance Committee to make a
+issue can be escalated to the Maintaines Group to make a
 decision, which handles issues as discussed in the
 [maintainers document](Maintainers.md).
 
