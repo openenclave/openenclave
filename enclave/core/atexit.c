@@ -3,6 +3,7 @@
 
 #include "atexit.h"
 #include <openenclave/enclave.h>
+#include <openenclave/internal/cxa_atexit.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/thread.h>
 

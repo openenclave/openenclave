@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../enclave/core/atexit.h"
+#include <openenclave/internal/cxa_atexit.h>
 
 /*
  * Registers a function to be called by exit and by oe_call_atexit.

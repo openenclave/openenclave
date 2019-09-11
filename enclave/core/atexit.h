@@ -12,8 +12,6 @@ int oe_atexit(void (*function)(void));
 
 void oe_call_atexit_functions(void);
 
-int oe_cxa_atexit(void (*func)(void*), void* arg, void* dso_handle);
-
 OE_EXTERNC_END
 
 #endif /* _OE_ATEXIT_H */

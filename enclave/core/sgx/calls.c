@@ -392,7 +392,7 @@ static void _handle_ecall(
         }
         case OE_ECALL_DESTRUCTOR:
         {
-            /* Call functions installed by __cxa_atexit() and oe_atexit() */
+            /* Call functions installed by oe_cxa_atexit() and oe_atexit() */
             oe_call_atexit_functions();
 
             /* Call all finalization functions */
