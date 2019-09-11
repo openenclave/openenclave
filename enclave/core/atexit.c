@@ -56,17 +56,21 @@ static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 /*
 **==============================================================================
 **
-** __cxa_atexit()
+** oe_cxa_atexit()
 **
 **     Installs a function to be invoked upon exit (enclave termination).
 **
 **     The implementation injects an oe_atexit_entry_t structure onto a list
 **     in reverse order (at the front of the list).
 **
+**     This function is equivalent to __cxa_atexit but is named differently
+**     to avoid conflicts with C runtimes. The oelibc __cxa_atexit is merely
+**     a wrapper for this function.
+**
 **==============================================================================
 */
 
-int __cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
+int oe_cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
 {
     oe_atexit_entry_t* entry;
     OE_UNUSED(dso_handle);
@@ -105,7 +109,7 @@ int oe_atexit(void (*function)(void))
      * is pushed on the stack but then ignored by function(), which expects
      * no arguments.
      */
-    return __cxa_atexit((Function)function, NULL, NULL);
+    return oe_cxa_atexit((Function)function, NULL, NULL);
 }
 
 /*

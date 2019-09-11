@@ -80,6 +80,7 @@ add_library(oelibc STATIC
     regcomp.c
     regexec.c
     tre-mem.c
+    __cxa_atexit.c
     __printf_chk.c
     __vfprintf_chk.c
     ${MUSLSRC}/complex/cabs.c
