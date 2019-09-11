@@ -196,6 +196,9 @@ static oe_result_t _gen_report(
     }
 exit:
 
+    if (remote_report)
+        oe_free_report(remote_report);
+
     return result;
 }
 
