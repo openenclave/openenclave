@@ -33,6 +33,10 @@ release, start here for instructions to install and use the SDK package:
 - [Ubuntu 18.04 or 16.04 in simulation mode](docs/GettingStartedDocs/install_oe_sdk-Simulation.md)
 - Windows Release Package coming soon
 
+If you would like to run Ubuntu 16.04 or Ubuntu 18.04 in a Hyper-V VM on SGX
+capable hardware, see
+[Setting up a Linux Hyper-V VM on Windows with SGX Support](docs/GettingStartedDocs/HyperVLinuxVMSetup.md).
+
 If you would like to modify and build the Open Enclave SDK from sources, refer
 to the documents for [getting started](docs/GettingStartedDocs/Contributors/building_oe_sdk.md).
 
