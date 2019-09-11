@@ -68,6 +68,7 @@ try {
       build job: 'OpenEnclave-custom_label-test',
             parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                          string(name: 'BRANCH_SPECIFIER', value: env.BRANCH),
+                         string(name: 'DOCKER_TAG', value: env.BUILD_TAG),
                          string(name: 'UBUNTU_1604_CUSTOM_LABEL', value: "xenial-${env.BUILD_TAG}"),
                          string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: "bionic-${env.BUILD_TAG}"),
                          string(name: 'WINDOWS_2016_CUSTOM_LABEL', value: "windows-${env.BUILD_TAG}")]

@@ -32,7 +32,7 @@ def ACCContainerTest(String label, String version) {
                            ninja -v
                            ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
-                oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
+                oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
             }
         }
     }
@@ -76,7 +76,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=ON -Wdev
                            ninja -v
                            """
-                oe.ContainerRun("oetools-full-${version}", compiler, task, "--cap-add=SYS_PTRACE")
+                oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", compiler, task, "--cap-add=SYS_PTRACE")
                 stash includes: 'build/tests/**', name: "linux-${compiler}-${build_type}-${version}-${BUILD_NUMBER}"
             }
         }
