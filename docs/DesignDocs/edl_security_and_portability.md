@@ -14,10 +14,11 @@ EDL will work on TrustZone platforms. Currently the use of host shared memory
 is problematic for TrustZone, which utilizes a different shared memory model.
 SGX *implicitly* shares *all* host memory with the enclave, whereas, TrustZone
 *explicitly* shares *some* host memory with the enclave. Therefore we
-distinguish two models.
+identify three memory models.
 
 - **Implicit-all** -- implicitly shares all host memory (SGX)
 - **Explicit-some** -- explicitly shares some host memory (TrustZone)
+- **None** -- does not share any host memory (future TEEs)
 
 In TrustZone, developers may explicitly share designated memory regions. It
 is not possible to share all host memory (stack, data, heap, etc.) as it is
@@ -38,7 +39,7 @@ serialization and deserialization across the trust boundary so that:
 - OCALL function parameters fall entirely within untrusted memory.
 
 Most importantly, it should not be possible to *implicitly* pass untrusted
-memory to an ECALL function implementation. The stub routines must copy
+memory to an ECALL function implementation. The trusted stub routines must copy
 all untrusted memory to trusted memory buffers prior to dispatching the
 ECALL.
 
@@ -92,8 +93,8 @@ The design is straightforward; print error diagnostics when encountering:
 
 Also provide an option to turn off this checking for backwards compatibility.
 
-Alternates
-----------
+Alternatives
+------------
 
 We also considered alternative interface definition languages (IDL) such as
 Google protobufs and other RPC-based systems. Any of these would provide
@@ -102,6 +103,14 @@ could be offered later as an alternative.
 
 Further, programming languages that support reflection might make generation
 of edge routines much simpler by eliminating the need for an IDL specification.
+
+Questions
+---------
+
+- Should EDL warn or error out by default when **user_check** is encountered?
+
+- Should EDL support callee-allocated buffers? (as an alternative to the
+  double-call pattern used to obtain the buffer size on the first call).
 
 Authors
 -------
