@@ -97,7 +97,7 @@ in that file takes precedence.
 Note that we _no longer_ use `CamelCase` nor double underscores (`__`), but you
 may find remnants and so again should prefer the local style. This is especially
 the case for classes, which are still using `PascalCase`. For now, follow the
-existing style. The project maintainers prefer to fix style issues in bulk using
+existing style. The project Committers prefer to fix style issues in bulk using
 automation, so avoid submitting PRs intended to fix only a few instances of the
 inconsistent style.
 

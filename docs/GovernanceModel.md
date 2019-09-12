@@ -52,7 +52,7 @@ opening or reviewing pull requests, or other useful contributions such as
 providing support in forums or chats.
 
 See the [Community Governance Committee document](Maintainers.md) for more information
-on the Community Governance Committee, our process for adding new committers and maintainers, as well the
+on the Community Governance Committee, our process for adding new committers and Committee members, as well the
 areas of expertise for each of the committers.
 
 Accepting Contributions

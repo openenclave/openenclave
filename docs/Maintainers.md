@@ -4,7 +4,7 @@ Community Governance Committee
 This document describes the Open Enclave Community Governance Committee, which in some open source
 projects is also known as a Technical Steering Committee. By
 our liberal contribution policy outlined in our
-[governance model](GovernanceModel.md), maintainers are committers that are
+[governance model](GovernanceModel.md), Committee members are committers that are
 trusted to grant new committer rights, and grant new membership into the
 Committee.
 
@@ -46,8 +46,8 @@ community health. Otherwise technical decisions are left to the active
 committers (by virtue of the liberal contribution policy).
 
 The Community Governance Committee should meet regularly, for example, once a
-month. This meeting is a private meeting among just the maintainers to nominate
-new committers and maintainer members. Priority consideration should be given to
+month. This meeting is a private meeting among just the Committee members to nominate
+new committers and Committee members. Priority consideration should be given to
 those actively contributing to the project. The Committee uses the consensus
 seeking process outlined above when making decisions, including adding or
 removing any members. The Committee should also discuss the community's health

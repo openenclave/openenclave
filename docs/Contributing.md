@@ -39,7 +39,7 @@ You are encouraged to start a discussion with us through a GitHub issue before
 implementing any major changes. We want your contributions, but we also want to
 make sure the community is in agreement before you invest your time.
 
-You may be asked by maintainers to provide a design document before writing an
+You may be asked by Committers to provide a design document before writing an
 implementation. The simplest way to provide this is through a Pull Request to
 our repository with a Markdown style document (like this one) to the
 [docs/DesignDocs](DesignDocs) folder, and see its [readme](DesignDocs/README.md)
@@ -81,7 +81,7 @@ Please do:
 
 - **DO** submit all code changes via pull requests (PRs) rather than through a
   direct commit. PRs will be reviewed and potentially merged by the repo
-  maintainers after a peer review that includes at least one maintainer.
+  Committers after a peer review that includes at least one Committer.
 - **DO** give PRs short-but-descriptive names (e.g. "Improve code coverage for
   System.Console by 10%", not "Fix #1234").
 - **DO** add breaking changes, new features, deprecations, and bug
@@ -134,7 +134,7 @@ Merging Pull Requests
 Instead of merging pull requests with "the big green button" on GitHub, we use
 an automated system called [Bors](https://bors.tech/). The Bors bot is the
 _only_ approved mechanism of merging code to `master`. When a PR is ready to be
-merged, a maintainer will comment on it with `bors r+`.
+merged, a Committer will comment on it with `bors r+`.
 
 Bors will automatically:
 1. Apply the PR's commits to a `staging` branch based on `master`.
