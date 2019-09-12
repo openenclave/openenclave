@@ -13,20 +13,13 @@ but when that fails, the Committee calls for a vote where the super majority
 (two-thirds) wins. This is to prevent obstructionism by removing the possibility
 of a one person veto.
 
-Quorum for Community Maintenance Committee meetings requires at least fifty
-percent of all members of the Community Maintenance Committee to be present. The
+Quorum for Community Maintenance Committee meetings requires at least two-thirds
+all members of the Community Maintenance Committee to be present. The
 Community Maintenance Committee may continue to meet if quorum is not met but will
 be prevented from making any decisions at the meeting.
 
-Except for the cases below, decisions by vote at a meeting require a super majority
-vote of those in attendance, provided quorum is met:
-
-* Revisions to this document
-* Decisions regarding open source licence(s) for Open Enclave code or dependencies
-  from Open Enclave code.
-
-Decisions made by electronic vote without a meeting, and all decisions on the topics
-above, require a super majority vote of all members of the Community Maintenance Committee.
+All decisions by vote, whether during a meeting or otherwise, require a super majority
+vote of all members of the Community Maintenance Committee.
 
 
 Committee Members
