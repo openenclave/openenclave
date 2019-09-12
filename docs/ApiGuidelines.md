@@ -29,7 +29,7 @@ Public API requirements:
 * A public API must not be added to Open Enclave if the API would provide generic functionality
   (i.e., not Open Enclave specific functionality) that could be provided by an external library.
 * All new Public C API names must start with oe_.
-* All public headers must follow Open Enclave [DevelopmentGuide.md](coding conventions).
+* All public headers must follow Open Enclave [coding conventions](DevelopmentGuide.md).
 
 ### Experimental APIs
 
