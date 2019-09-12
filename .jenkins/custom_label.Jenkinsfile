@@ -39,8 +39,12 @@ def ACCContainerTest(String label, String version) {
 }
 
 def win2016CrossCompile(String build_type, String use_libsgx = 'OFF') {
+    def node_label = WINDOWS_2016_CUSTOM_LABEL
+    if (use_libsgx == "ON") {
+        node_label = WINDOWS_DCAP_CUSTOM_LABEL
+    }
     stage("Windows ${build_type} with SGX ${use_libsgx}") {
-        node(WINDOWS_2016_CUSTOM_LABEL) {
+        node(node_label) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -82,7 +86,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
         }
     }
     stage("Windows ${build_type}") {
-        node(WINDOWS_2016_CUSTOM_LABEL) {
+        node(WINDOWS_DCAP_CUSTOM_LABEL) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -108,13 +112,14 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       numToKeepStr: '180')),
             [$class: 'JobRestrictionProperty']])
 
-parallel "ACC1604 clang-7 RelWithDebInfo" :                     { ACCTest(UBUNTU_1604_CUSTOM_LABEL, 'clang-7', 'RelWithDebInfo') },
+parallel "Win2016 Release Cross Compile with DCAP libs" :       { win2016CrossCompile('Release', 'ON') },
+         "Win2016 Debug Cross Compile" :                        { win2016CrossCompile('Debug') },
+         "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
+         "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
+         "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
+         "ACC1604 clang-7 RelWithDebInfo" :                     { ACCTest(UBUNTU_1604_CUSTOM_LABEL, 'clang-7', 'RelWithDebInfo') },
          "ACC1604 gcc RelWithDebInfo" :                         { ACCTest(UBUNTU_1604_CUSTOM_LABEL, 'gcc', 'RelWithDebInfo') },
          "ACC1604 Container RelWithDebInfo" :                   { ACCContainerTest(UBUNTU_1604_CUSTOM_LABEL, '16.04') },
          "ACC1804 clang-7 RelWithDebInfo" :                     { ACCTest(UBUNTU_1804_CUSTOM_LABEL, 'clang-7', 'RelWithDebInfo') },
          "ACC1804 gcc RelWithDebInfo" :                         { ACCTest(UBUNTU_1804_CUSTOM_LABEL, 'gcc', 'RelWithDebInfo') },
-         "ACC1804 Container RelWithDebInfo" :                   { ACCContainerTest(UBUNTU_1804_CUSTOM_LABEL, '18.04') },
-         "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
-         "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
-         "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
-         "Win2016 Debug Cross Compile" :                        { win2016CrossCompile('Debug') }
+         "ACC1804 Container RelWithDebInfo" :                   { ACCContainerTest(UBUNTU_1804_CUSTOM_LABEL, '18.04') }

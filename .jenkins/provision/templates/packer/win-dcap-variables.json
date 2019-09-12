@@ -10,5 +10,5 @@
     "communicator": "winrm",
     "ansible_group": "windows-agents",
     "playbook_file": "/ansible/oe-windows-acc-setup.yml",
-    "dcap_testing_node": "false"
+    "dcap_testing_node": "true"
 }

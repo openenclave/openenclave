@@ -71,7 +71,7 @@
         "ANSIBLE_INVENTORY=/ansible/inventory/hosts",
         "ANSIBLE_REMOTE_PORT=5986"
       ],
-      "command": "ansible-playbook -e \"ansible_user=packer ansible_password={{.WinRMPassword}} ansible_become_pass={{.WinRMPassword}} ansible_connection=winrm ansible_winrm_server_cert_validation=ignore ansible_winrm_transport=ntlm\" {{ user `playbook_file` }}"
+      "command": "ansible-playbook -e \"dcap_testing_node={{ user `dcap_testing_node` }} ansible_user=packer ansible_password={{.WinRMPassword}} ansible_become_pass={{.WinRMPassword}} ansible_connection=winrm ansible_winrm_server_cert_validation=ignore ansible_winrm_transport=ntlm\" {{ user `playbook_file` }}"
     },
     {
       "type": "powershell",
