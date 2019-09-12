@@ -24,9 +24,9 @@ Public API requirements:
   where shared libraries are build, public APIs cannot have binary-breaking changes across 
   Open Enclave versions either. (Source- and binary-breaking changes can still be made to a new 
   API before it is released for the first time.)
-* A public API must not be added to Iotivity if there is already a non-deprecated API that can just 
+* A public API must not be added to Open Enclave if there is already a non-deprecated API that can just 
   as easily be used (i.e., with approximately the same number of lines of code).
-* A public API must not be added to Iotivity if the API would provide generic functionality
+* A public API must not be added to Open Enclave if the API would provide generic functionality
   (i.e., not Open Enclave specific functionality) that could be provided by an external library.
 * All new Public C API names must start with oe_.
 * All public headers must follow Open Enclave [DevelopmentGuide.md](coding conventions).
@@ -69,7 +69,7 @@ Internal API requirements:
 * Public APIs cannot have source-breaking changes (and, for platforms where shared libraries or built,
   cannot have binary-breaking changes) across releases, except as covered by deprecation as explained
   below. API additions can be made at any time.
-*  xperimental and internal APIs can have breaking changes across releases.
+* Experimental and internal APIs can have breaking changes across releases.
 
 APIs can be deprecated by marking them as @deprecated. The associated text should explain what
 an application should do instead. Public APIs must be @deprecated in a release before they can be
