@@ -1,21 +1,21 @@
-Maintainers Group
-=================
+Community Governance Committee
+==============================
 
-This document describes the Open Enclave Maintainers Group, which in some open source
+This document describes the Open Enclave Community Governance Committee, which in some open source
 projects is also known as a Technical Steering Committee. By
 our liberal contribution policy outlined in our
 [governance model](GovernanceModel.md), maintainers are committers that are
 trusted to grant new committer rights, and grant new membership into the
-Maintainers Group.
+Committee.
 
-When making decisions, the Maintainers Group uses a "consensus
+When making decisions, the Community Governance Committee uses a "consensus
 seeking" process. This means that most decisions should be reached by consensus,
-but when that fails, the Maintainers Group calls for a vote where the super majority
+but when that fails, the Committee calls for a vote where the super majority
 (two-thirds) wins. This is to prevent obstructionism by removing the possibility
 of a one person veto.
 
-Maintainers
------------
+Committee Members
+-----------------
 
 | Name                 | Company   | Email                         | GitHub Alias   |
 |----------------------|-----------|-------------------------------|----------------|
@@ -28,33 +28,33 @@ Maintainers
 | Mike Brasher         | Microsoft | mikbras@microsoft.com         | mikbras        |
 | Simon Leet           | Microsoft | simon.leet@microsoft.com      | CodeMonkeyLeet |
 
-Responsibilities
-----------------
+Committee Responsibilities
+--------------------------
 
-The primary responsibility of the Maintainers Group is to grant new committer rights
+The primary responsibility of the Committee is to grant new committer rights
 (that is, write access to the main Open Enclave SDK repository or related
-repositories), and to grant new membership into the Maintainers Group. Conversely, the
-Group must also remove committer rights and membership from those found to
+repositories), and to grant new membership into the Committee. Conversely, the
+Commitee must also remove committer rights and membership from those found to
 be violating the project's Code of Conduct or otherwise negatively affecting the
 project's community health.
 
-This Group is not intended to make every technical decision, as those should
+This Committee is not intended to make every technical decision, as those should
 generally be made by agreement among committers as PRs are reviewed and merged.
 Where disagreements take place and need further resolution, those can be brought
-up with the Group as part of its responsibility to maintain the project's
+up with the Committee as part of its responsibility to maintain the project's
 community health. Otherwise technical decisions are left to the active
 committers (by virtue of the liberal contribution policy).
 
-The Maintainers Group should meet regularly, for example, once a
+The Community Governance Committee should meet regularly, for example, once a
 month. This meeting is a private meeting among just the maintainers to nominate
 new committers and maintainer members. Priority consideration should be given to
-those actively contributing to the project. The Group uses the consensus
+those actively contributing to the project. The Committee uses the consensus
 seeking process outlined above when making decisions, including adding or
-removing any members. The Group should also discuss the community's health
+removing any members. The Committee should also discuss the community's health
 and work to resolve any negative issues.
 
 In order to maintain a healthy developer community, it is recommended that the
-Group also host a regular public community meeting. This meeting should be
+Committee also host a regular public community meeting. This meeting should be
 open all members of the community, and start with an open forum to hear
 questions or concerns from the community. Any remaining time in the meeting
 should be used to discuss and review open pull requests or issues (especially
@@ -64,12 +64,12 @@ Project Committers
 ==================
 
 The following people have been granted commit permissions (that is, write
-access) to the Open Enclave SDK by the Maintainers Group. The area
+access) to the Open Enclave SDK by the Community Governance Committee. The area
 column describes which technical areas each committer is most interested in, and
 therefore should usually be consulted for changes relating to that area.
 However, it is up to each committer to determine who should review which PR, and
 when to merge it. Remember that a PR must not be merged if a committer objects;
-instead, it should be brought up with the Maintainers Group.
+instead, it should be brought up with the Community Governance Committee.
 
 | Name                  | GitHub Alias        | Area                           |
 |-----------------------|---------------------|--------------------------------|
