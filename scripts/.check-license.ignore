@@ -6,6 +6,7 @@
 .*\.html$
 .*\.json$
 .*\.md$
+.*\.patch$
 .*\.pdf$
 .*\.pem$
 .*\.png$
