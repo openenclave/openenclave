@@ -201,8 +201,12 @@ int main( void )
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
 #if defined(MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED)
-#define USAGE_PSK                                                   \
-    "    psk=%%s              default: \"\" (in hex, without 0x)\n" \
+#define USAGE_PSK                                                       \
+    "    psk=%%s              default: \"\" (in hex, without 0x)\n"     \
+    "    psk_list=%%s         default: \"\"\n"                          \
+    "                          A list of (PSK identity, PSK value) pairs.\n" \
+    "                          The PSK values are in hex, without 0x.\n" \
+    "                          id1,psk1[,id2,psk2[,...]]\n"             \
     "    psk_identity=%%s     default: \"Client_identity\"\n"
 #else
 #define USAGE_PSK ""
@@ -225,8 +229,14 @@ int main( void )
 #endif /* MBEDTLS_SSL_CACHE_C */
 
 #if defined(SNI_OPTION)
+#if defined(MBEDTLS_X509_CRL_PARSE_C)
+#define SNI_CRL              ",crl"
+#else
+#define SNI_CRL              ""
+#endif
+
 #define USAGE_SNI                                                           \
-    "    sni=%%s              name1,cert1,key1,ca1,crl1,auth1[,...]\n"  \
+    "    sni=%%s              name1,cert1,key1,ca1"SNI_CRL",auth1[,...]\n"  \
     "                        default: disabled\n"
 #else
 #define USAGE_SNI ""
@@ -561,10 +571,10 @@ void sni_free( sni_entry *head )
 
         mbedtls_x509_crt_free( cur->ca );
         mbedtls_free( cur->ca );
-
+#if defined(MBEDTLS_X509_CRL_PARSE_C)
         mbedtls_x509_crl_free( cur->crl );
         mbedtls_free( cur->crl );
-
+#endif
         next = cur->next;
         mbedtls_free( cur );
         cur = next;
@@ -583,7 +593,10 @@ sni_entry *sni_parse( char *sni_string )
     sni_entry *cur = NULL, *new = NULL;
     char *p = sni_string;
     char *end = p;
-    char *crt_file, *key_file, *ca_file, *crl_file, *auth_str;
+    char *crt_file, *key_file, *ca_file, *auth_str;
+#if defined(MBEDTLS_X509_CRL_PARSE_C)
+    char *crl_file;
+#endif
 
     while( *end != '\0' )
         ++end;
@@ -601,7 +614,9 @@ sni_entry *sni_parse( char *sni_string )
         GET_ITEM( crt_file );
         GET_ITEM( key_file );
         GET_ITEM( ca_file );
+#if defined(MBEDTLS_X509_CRL_PARSE_C)
         GET_ITEM( crl_file );
+#endif
         GET_ITEM( auth_str );
 
         if( ( new->cert = mbedtls_calloc( 1, sizeof( mbedtls_x509_crt ) ) ) == NULL ||
@@ -626,6 +641,7 @@ sni_entry *sni_parse( char *sni_string )
                 goto error;
         }
 
+#if defined(MBEDTLS_X509_CRL_PARSE_C)
         if( strcmp( crl_file, "-" ) != 0 )
         {
             if( ( new->crl = mbedtls_calloc( 1, sizeof( mbedtls_x509_crl ) ) ) == NULL )
@@ -636,6 +652,7 @@ sni_entry *sni_parse( char *sni_string )
             if( mbedtls_x509_crl_parse_file( new->crl, crl_file ) != 0 )
                 goto error;
         }
+#endif
 
         if( strcmp( auth_str, "-" ) != 0 )
         {
@@ -1578,20 +1595,20 @@ int main( int argc, char *argv[] )
     mbedtls_printf( "  . Loading the CA root certificate ..." );
     fflush( stdout );
 
+    if( strcmp( opt.ca_path, "none" ) == 0 ||
+        strcmp( opt.ca_file, "none" ) == 0 )
+    {
+        ret = 0;
+    }
+    else
 #if defined(MBEDTLS_FS_IO)
     if( strlen( opt.ca_path ) )
-        if( strcmp( opt.ca_path, "none" ) == 0 )
-            ret = 0;
-        else
-            ret = mbedtls_x509_crt_parse_path( &cacert, opt.ca_path );
+        ret = mbedtls_x509_crt_parse_path( &cacert, opt.ca_path );
     else if( strlen( opt.ca_file ) )
-        if( strcmp( opt.ca_file, "none" ) == 0 )
-            ret = 0;
-        else
-            ret = mbedtls_x509_crt_parse_file( &cacert, opt.ca_file );
+        ret = mbedtls_x509_crt_parse_file( &cacert, opt.ca_file );
     else
 #endif
-#if defined(MBEDTLS_CERTS_C)
+#if defined(MBEDTLS_CERTS_C) && defined(MBEDTLS_PEM_PARSE_C)
         for( i = 0; mbedtls_test_cas[i] != NULL; i++ )
         {
             ret = mbedtls_x509_crt_parse( &cacert,
@@ -1603,9 +1620,13 @@ int main( int argc, char *argv[] )
 #else
     {
         ret = 1;
-        mbedtls_printf("MBEDTLS_CERTS_C not defined.");
+#if !defined(MBEDTLS_CERTS_C)
+        mbedtls_printf( "MBEDTLS_CERTS_C not defined." );
+#else
+        mbedtls_printf( "All test CRTs loaded via MBEDTLS_CERTS_C are PEM-encoded, but MBEDTLS_PEM_PARSE_C is disabled." );
     }
-#endif
+#endif /* MBEDTLS_CERTS_C */
+#endif /* MBEDTLS_CERTS_C && MBEDTLS_PEM_PARSE_C */
     if( ret < 0 )
     {
         mbedtls_printf( " failed\n  !  mbedtls_x509_crt_parse returned -0x%x\n\n", -ret );
