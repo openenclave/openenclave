@@ -4,7 +4,7 @@
 
 Intel® X86-64bit architecture with SGX1 and Flexible Launch Control (FLC) support. (e.g. Intel Coffee Lake CPU)
 
-Note: To check if your system has support for SGX1 with FLC, please look [here](../SGXSupportLevel.md)
+Note: To check if your system has support for SGX1 with FLC, please look [here](../SGXSupportLevel.md).
 
 A version of Windows OS with native support for SGX features:
 - For server: Windows Server 2016
@@ -13,15 +13,15 @@ A version of Windows OS with native support for SGX features:
 
 ## Install Git and Clone the Open Enclave SDK repo
 
-Download and install Git for Windows from [here](https://git-scm.com/download/win)
+- Download and install Git for Windows from [here](https://git-scm.com/download/win).
 
-Clone the Open Enclave SDK
+- Clone the Open Enclave SDK.
 
-```powershell
-git clone https://github.com/openenclave/openenclave.git
-```
+      ```powershell
+      git clone https://github.com/openenclave/openenclave.git
+      ```
 
-This creates a source tree under the directory called openenclave.
+      This creates a source tree under the directory called openenclave.
 
 ## Install project prerequisites
 
@@ -31,23 +31,23 @@ First, change directory into the openenclave repository:
 cd openenclave
 ```
 
-Run the following from powershell to deploy all the prerequisites for building Open Enclave (including Intel's DCAP primitives and Azure's DCAP library).
+Run the following from Powershell to deploy all the prerequisites for building Open Enclave
 
 ```scripts/install-windows-prereqs.ps1```
 
-To install the prerequisites along with the Azure Data Center Attestation Primitives (DCAP) Client, use the below command. The Azure DCAP Client is necessary to perform attestation on an Azure Confidential Computing VM.
+To install the prerequisites along with the Azure DCAP Client, use the below command. The Azure DCAP Client is necessary to perform attestation on an Azure Confidential Computing VM.
 
 ```powershell
 cd scripts
 .\install-windows-prereqs.ps1 -InstallPath YOUR_WORKSPACE_PATH_HERE -LaunchConfiguration SGX1FLC -DCAPClientType Azure
 ```
+
 If you would like to skip the installation of the Azure DCAP Client, use the command below.
 
 ```powershell
 cd scripts
 .\install-windows-prereqs.ps1 -InstallPath YOUR_WORKSPACE_PATH_HERE -LaunchConfiguration SGX1FLC -DCAPClientType None
 ```
-If there is another DCAP Client type that you would like to install, you are welcome to submit a pull request to add support for that DCAP Client.
 
 As an example, if you cloned the Open Enclave SDK repo into C:\openenclave and want to install the Azure DCAP Client, you would run the following command.
 
@@ -60,13 +60,12 @@ If you prefer to manually install prerequisites, please refer to this [document]
 
 ## Build
 
-Launch the [x64 Native Tools Command Prompt for VS 2017](
+Launch the [x64 Native Tools Command Prompt for VS(2017 or 2019)](
 https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
-Normally this is accessible under the `Visual Studio 2017` folder in the Start Menu.
 To build, first create a build directory ("build" in the example below) and change directory into it.
 Then run `cmake` to configure the build and generate the Makefiles, and then build by running `ninja`.
 
-To build debug enclaves
+To build debug enclaves:
 ```cmd
 cd C:\openenclave
 mkdir build\x64-Debug
@@ -75,7 +74,7 @@ cmake -G Ninja -DBUILD_ENCLAVES=1 -DUSE_LIBSGX=1 ..\..
 ninja
 ```
 
-Similarly, to build release enclaves
+Similarly, to build release enclaves:
 ```cmd
 cd C:\openenclave
 mkdir build\x64-Release
@@ -84,7 +83,7 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_ENCLAVES=1 ../..
 ninja
 ```
 
-## Run unittests
+## Run unit tests
 
 After building, run all unit test cases using `ctest` to confirm the SDK is built and working as expected.
 
@@ -113,7 +112,7 @@ You can start playing with the Open Enclave samples after following the instruct
 
 For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) document.
 
-## Installing the SDK on local machine
+## Installing the SDK on the local machine
 
 To install the SDK on the local machine use the following:
 

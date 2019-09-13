@@ -10,7 +10,7 @@ C:\Intel SGX PSW for Windows v2.4.100.51291\PSW_EXE_RS2_and_before\Intel(R)_SGX_
 ## [Azure DCAP client for Windows](https://github.com/Microsoft/Azure-DCAP-Client/tree/master/src/Windows) [optional]
 
 Note that this is optional since you can choose an alternate implementation of the DCAP client or create your own.
-The Azure DCAP client for Windows is necessary if you would like to perform enclave attestation on a Azure Confidential Computing VM. it is available from [nuget.org](https://www.nuget.org/packages/Azure.DCAP.Windows/) and can be installed directly via:
+The Azure DCAP client for Windows is necessary if you would like to perform enclave attestation on a Azure Confidential Computing VM. It is available from [nuget.org](https://www.nuget.org/packages/Azure.DCAP.Windows/) and can be installed directly via:
 
 ```cmd
 nuget.exe install Azure.DCAP.Windows -ExcludeVersion -Version 0.0.2 -OutputDirectory C:\openenclave\prereqs\nuget

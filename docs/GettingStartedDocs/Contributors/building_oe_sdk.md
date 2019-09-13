@@ -21,7 +21,7 @@ Please refer to the following [documentation](/docs/GettingStartedDocs/SGXSuppor
    - `SGX1+FLC`: In this mode, the Open Enclave SDK takes advantage of the Flexible Launch
                  Control mode for better managing architectural enclaves.
 
-   - `Simulation`: Open Enclave comes with a SGX software simulation mode that simulates a subset of
+   - `Simulation`: Open Enclave comes with an SGX software simulation mode that simulates a subset of
                   the SGX feature set. This simulator enables the Open Enclave SDK to run on
                   systems without actual SGX hardware support.
 
@@ -34,6 +34,7 @@ Please refer to the following [documentation](/docs/GettingStartedDocs/SGXSuppor
    | Simulation                  | Any level                           |
 
    On Linux, if your target system does not have any SGX hardware support, you may want to choose simulation.
+
    On Windows, Open Enclave SDK does not support simulation mode.
 
 #### 3. Build, install and run
@@ -41,12 +42,12 @@ Please refer to the following [documentation](/docs/GettingStartedDocs/SGXSuppor
    Choose an operating mode that is compatible with the SGX support level of your target system.
    The links below contain instructions on how to set up Open Enclave SDK environment for a given mode.
 
-On Linux
+On Linux:
   - [Setup Open Enclave SDK for SGX1+FLC](SGX1FLCGettingStarted.md)
   - [Setup Open Enclave SDK for SGX1](SGX1GettingStarted.md)
   - [Setup Open Enclave SDK for simulation mode](SimulatorGettingStarted.md)
 
-On Windows
+On Windows:
  - [Set up Open Enclave SDK for SGX1+FLC](WindowsSGX1FLCGettingStarted.md)
  - [Set up Open Enclave SDK for SGX1](WindowsSGX1GettingStarted.md)
  - Simulation mode is not supported on Windows

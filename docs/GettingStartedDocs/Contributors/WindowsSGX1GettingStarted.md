@@ -2,16 +2,18 @@
 
 ## Platform requirements
 
-Intel® X86-64bit architecture with SGX1
+Intel® X86-64bit architecture with SGX1.
+
+Note: To check if your system has support for SGX1, please look [here](../SGXSupportLevel.md).
 
 A version of Windows OS with native support for SGX features:
 - For server: Windows Server 2016
 - For client: Windows 10 64-bit version 1709 or newer
-- To check your Windows version, run winver on the command line.
+- To check your Windows version, run `winver` on the command line.
 
 ## Install Git and Clone the Open Enclave SDK repo
 
-Download and install Git for Windows from [here](https://git-scm.com/download/win)
+Download and install Git for Windows from [here](https://git-scm.com/download/win).
 
 Clone the Open Enclave SDK
 
@@ -29,14 +31,14 @@ First, change directory into the openenclave repository:
 cd openenclave
 ```
 
-To deploy all the prerequisities for building Open Enclave, you can run the following from powershell. Note that the Data Center Attestation Primitives Client is not used for attestation on systems which have support for SGX1 without support for Flexible Launch Control (FLC).
+To deploy all the prerequisities for building Open Enclave, you can run the following from Powershell. Note that the Data Center Attestation Primitives (DCAP) Client is not used for attestation on systems which have support for SGX1 without support for Flexible Launch Control (FLC).
 
 ```powershell
 cd scripts
 .\install-windows-prereqs.ps1 -InstallPath PATH_TO_OE_REPO -LaunchConfiguration SGX1 -DCAPClientType None
 ```
 
-As an example, if you cloned Open Enclave SDK repo into C:\openenclave, you would run the following:
+As an example, if you cloned Open Enclave SDK repo into `C:\openenclave`, you would run the following:
 
 ```powershell
 cd scripts
@@ -51,13 +53,13 @@ If you prefer to manually install prerequisites, please refer to this [document]
 https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 Normally this is accessible under the `Visual Studio 2017` folder in the Start Menu.
 
-2. At the x64 Native Tools command prompt, use cmake and ninja to build the debug version:
+2. At the x64 Native Tools command prompt, use CMake and ninja to build the debug version:
 
    ```cmd
    cd C:\openenclave
    mkdir build\x64-Debug
    cd build\x64-Debug
-   cmake -G Ninja -DBUILD_ENCLAVES=1 ..\.
+   cmake -G Ninja -DBUILD_ENCLAVES=1 ..\..
    ninja
    ```
 
@@ -71,7 +73,7 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
    ninja
    ```
 
-## Run unittests
+## Run unit tests
 
 After building, run all unit test cases using `ctest` to confirm the SDK is built and working as expected. In this example, we are testing the debug build.
 
@@ -100,7 +102,7 @@ You can start playing with the Open Enclave samples after following the instruct
 
 For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) document.
 
-## Installing the SDK on local machine
+## Installing the SDK on the local machine
 
 To install the SDK on the local machine use the following:
 
