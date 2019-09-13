@@ -97,6 +97,7 @@ elseif (WIN32)
 
   set(PLATFORM_SDK_ONLY_SRC
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
+    ../3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
     ../common/asn1.c
     ../common/cert.c
     crypto/bcrypt/cert.c

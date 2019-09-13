@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
          should enable it themselves after assessing its startup impact.
 - Removed support for the previously deprecated `OE_API_VERSION=1` APIs.
 - Update MUSL libc to version 1.1.21.
+- Update mbedTLS to version 2.16.2.
 
 [v0.5.0] - 2019-04-09
 ---------------------

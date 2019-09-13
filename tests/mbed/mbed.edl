@@ -37,6 +37,11 @@ enclave {
         int mbed_test_close(
             int fd);
 
+        int mbed_test_lseek(
+            int fd,
+            int offset,
+            int whence);
+
         void ocall_exit(
             int arg);
     };

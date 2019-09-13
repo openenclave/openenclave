@@ -146,6 +146,12 @@ static oe_result_t _syscall_hook(
             result = mbed_test_close(&rval, (int)arg1);
             break;
         }
+        case SYS_lseek:
+        {
+            int rval = 0;
+            result = mbed_test_lseek(&rval, (int)arg1, (off_t)arg2, (int)arg3);
+            break;
+        }
         case SYS_readv:
         default:
         {
