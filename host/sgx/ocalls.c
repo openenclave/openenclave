@@ -260,7 +260,7 @@ oe_result_t oe_get_revocation_info_ocall(
         &buffer_too_small));
 
     if (buffer_too_small)
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
 
     result = OE_OK;
 
@@ -308,6 +308,7 @@ oe_result_t oe_get_qe_identify_info_ocall(
         memcpy(issuer_chain, args.issuer_chain, args.issuer_chain_size);
 
     *issuer_chain_size_out = args.issuer_chain_size;
+    result = OE_OK;
 
 done:
 
