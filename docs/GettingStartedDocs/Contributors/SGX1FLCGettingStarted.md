@@ -59,12 +59,9 @@ or
 cmake -G "Ninja" ..
 ninja
 ```
-
-Open Enclave will support attestation workflows outside of Azure using DCAP in an upcoming release.
-
 Refer to the [Advanced Build Information](AdvancedBuildInfo.md) documentation for further information.
 
-## Run unittests
+## Run unit tests
 
 After building, run all unit test cases using `ctest` to confirm the SDK is built and working as expected.
 
@@ -96,9 +93,9 @@ Test project /home/youradminusername/openenclave/build
 100% tests passed, 0 tests failed out of 123
 
 Total Test time (real) =  83.61 sec
-```
+A clean pass of the above unit tests is an indication that your Open Enclave setup was successful.
 
-A clean pass of the above unitests run is an indication that your Open Enclave setup was successful. You can start playing with the Open Enclave samples after following the instructions in the "Install" section below to configure samples for building,
+You can start playing with the Open Enclave samples after following the instructions in the "Install" section below to configure samples for building,
 
 For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) document.
 
