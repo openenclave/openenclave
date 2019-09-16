@@ -1,8 +1,7 @@
 Community Governance Committee
 ==============================
 
-This document describes the Open Enclave Community Governance Committee, which in some open source
-projects is also known as a Technical Steering Committee. By
+This document describes the Open Enclave Community Governance Committee. By
 our liberal contribution policy outlined in our
 [governance model](GovernanceModel.md), Committee members are committers that are
 trusted to grant new committer rights, and grant new membership into the
