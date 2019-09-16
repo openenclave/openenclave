@@ -11,7 +11,17 @@ Coding Conventions
 * **DO** use `const` and `static` and visibility modifiers to scope exposure of
    variables and methods as much as possible.
 
+* **DO** use doxygen comments, with \[in,out\]
+  [direction annotation](http://www.doxygen.nl/manual/commands.html#cmdparam) in all public API
+  headers. This is also encouraged, but not strictly required, for internal API
+  headers as well.
+
 * **DON'T** use global variables where possible.
+
+* **DON'T** use abbreviations unless they are already well-known terms known by
+  users (e.g., "app", "info"), or are already required for use by developers (e.g,
+  "min", "max", "args").  Examples of bad use would be `num_widgets` instead of
+  `widget_count`, and `opt_widgets` instead of `option_widgets` or `optional_widgets`.
 
 Style Guide
 -----------
