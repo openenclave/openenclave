@@ -3,15 +3,28 @@
 
 .text
 .globl  oe_rdrand
+.type oe_rdrand, @function
+.globl  oe_rdseed
+.type oe_rdseed, @function
 
 oe_rdrand:
-    pushq   %rbp
-    movq    %rsp, %rbp
-
+.cfi_startproc
 _rdrand_retry:
     rdrand %rax
-    jnc _rdrand_retry
-
-    leave
+    jc _rdrand_epilogue
+    pause
+    jmp _rdrand_retry
+_rdrand_epilogue:
     ret
+.cfi_endproc
 
+oe_rdseed:
+.cfi_startproc
+_rdseed_retry:
+    rdseed %rax
+    jc _rdseed_epilogue
+    pause
+    jmp _rdseed_retry
+_rdseed_epilogue:
+    ret
+.cfi_endproc

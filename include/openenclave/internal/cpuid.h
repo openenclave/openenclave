@@ -16,7 +16,9 @@
 #define OE_CPUID_RDX 3
 #define OE_CPUID_REG_COUNT 4
 
-#define OE_CPUID_AESNI_FEATURE 0x02000000u
+#define OE_CPUID_AESNI_FEATURE 0x02000000u  /* Leaf 1, subleaf 0, ECX */
+#define OE_CPUID_RDRAND_FEATURE 0x40000000u /* Leaf 1, subleaf 0, ECX */
+#define OE_CPUID_RDSEED_FEATURE 0x00040000u /* Leaf 7, subleaf 0, EBX */
 
 /**
  * The list of cpuid leafs that are emulated.

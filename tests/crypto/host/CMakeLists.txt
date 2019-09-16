@@ -21,7 +21,7 @@ endif()
 
 if (OE_SGX)
   list(APPEND PLATFORM_SRC
-    ../rdrand_test.c)
+    ../cpu_entropy_test.c)
 endif ()
 
 add_executable(hostcrypto
