@@ -50,7 +50,9 @@ macro(build_external_gtest)
         -DCMAKE_CXX_FLAGS:STRING=${GTEST_FLAGS}
         -Dgtest_force_shared_crt:BOOL=ON
       )
-
+  set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES 
+    ${CMAKE_BINARY_DIR}/googletest
+  )
   ExternalProject_Get_Property(googletest install_dir)
   set(GTEST_INCLUDE_DIRS ${install_dir}/include)
   file(MAKE_DIRECTORY ${GTEST_INCLUDE_DIRS})
