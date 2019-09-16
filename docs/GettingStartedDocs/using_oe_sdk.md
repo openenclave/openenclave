@@ -43,6 +43,10 @@ Additional documentation is also available for:
 - [Building and signing enclaves](/docs/GettingStartedDocs/buildandsign.md)
 - [Debugging enclave memory](/docs/GettingStartedDocs/Debugging.md)
 
+## Using VTune in Open Enclave
+
+A description of how To use the [Intel VTune Amplifier](https://software.intel.com/en-us/vtune) for sampling and profiling in Open Enclave can be found in the documentation [Profiling with VTune](/docs/GettingStartedDocs/VTune.md).
+
 ## API references
 
 One of the security principles of writing enclave applications is to minimize the

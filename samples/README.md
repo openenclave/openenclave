@@ -147,3 +147,8 @@ The following samples demonstrate how to develop enclave applications using OE A
   - between two enclaves
   - between one non-enclave client and an enclave
 
+#### [Matrix](matrix/README.md)
+
+- Help understand how VTune profiling can be utilized in an OE enclave application
+- Demonstrate how to build, sign, and run an OE image with VTune
+
