@@ -34,7 +34,7 @@ Committee Responsibilities
 The primary responsibility of the Committee is to grant new committer rights
 (that is, write access to the main Open Enclave SDK repository or related
 repositories), and to grant new membership into the Committee. Conversely, the
-Commitee must also remove committer rights and membership from those found to
+Committee must also remove committer rights and membership from those found to
 be violating the project's Code of Conduct or otherwise negatively affecting the
 project's community health.
 

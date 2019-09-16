@@ -41,7 +41,7 @@ Remember that security issues should be reported through a separate channel, and
 will receive a response within 24 hours. See [Reporting Security
 Issues](Contributing.md#reporting-security-issues).
 
-Community Maintenance Commitee Members, Committers, and Contributors
+Community Governance Committee Members, Committers, and Contributors
 --------------------------------------------------------------------
 
 A "committer" is anyone with direct write access to the Open Enclave repository on
