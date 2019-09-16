@@ -1,0 +1,12 @@
+prefix=${pcfiledir}
+exec_prefix=${prefix}
+libdir=${exec_prefix}/../../../lib32
+includedir=${prefix}/../../
+
+Name: libittnotify
+Description: Provides API used to annotate a user program with additional information for correctness and performance tools.
+Version: 1.0
+Requires:
+Libs.private: -lpthread
+Cflags: -I${includedir}
+Libs: -L${libdir} -littnotify -ldl

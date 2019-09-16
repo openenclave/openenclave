@@ -12,6 +12,13 @@ add_subdirectory(libcxxrt)
 add_subdirectory(libunwind)
 add_subdirectory(musl)
 add_subdirectory(mbedtls)
+
+if (OE_SGX AND VTUNE)
+    if (UNIX)
+        add_subdirectory(vtune/linux)
+    endif ()
+endif ()
+
 if (OE_TRUSTZONE)
   # EL: (ARM) Exception Level
   # GP: GlobalPlatform

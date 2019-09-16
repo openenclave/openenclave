@@ -147,7 +147,8 @@ if (OE_SGX)
     sgx/sgxmeasure.c
     sgx/sgxquote.c
     sgx/sgxsign.c
-    sgx/sgxtypes.c)
+    sgx/sgxtypes.c
+    sgx/vtune.c)
 
   # OS specific as well.
   if (UNIX)
@@ -296,6 +297,14 @@ elseif (WIN32)
   target_link_libraries(oehostverify PRIVATE bcrypt Crypt32)
 
   # TODO: Handle TrustZone on Windows.
+endif ()
+
+# For enabling VTune profiling.
+if (OE_SGX AND VTUNE)
+    if (UNIX)
+        target_compile_definitions(oehost PRIVATE VTUNE)
+        target_link_libraries(oehost PRIVATE ittnotify)
+    endif ()
 endif ()
 
 # For including edge routines.

@@ -3,6 +3,10 @@
 
 #include "../strings.h"
 
+#ifdef VTUNE
+#include "vtune.h"
+#endif
+
 #if defined(__linux__)
 #include <errno.h>
 #include <sys/mman.h>
@@ -754,6 +758,15 @@ oe_result_t oe_create_enclave(
 
     /* Setup logging configuration */
     oe_log_enclave_init(enclave);
+
+#ifdef VTUNE
+#if defined(__linux__)
+    if (!enable_vtune_profiling(enclave))
+        oe_log(OE_LOG_LEVEL_VERBOSE, "Enable VTune profiling failed.\n");
+    else
+        oe_log(OE_LOG_LEVEL_VERBOSE, "VTune profiling enabled.\n");
+#endif
+#endif
 
     *enclave_out = enclave;
     result = OE_OK;
