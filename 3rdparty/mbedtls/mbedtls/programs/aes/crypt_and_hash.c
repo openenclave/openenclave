@@ -20,6 +20,11 @@
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
+/* Enable definition of fileno() even when compiling with -std=c99. Must be
+ * set before config.h, which pulls in glibc's features.h indirectly.
+ * Harmless on other platforms. */
+#define _POSIX_C_SOURCE 1
+
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
 #else
@@ -33,6 +38,7 @@
 #include <stdlib.h>
 #define mbedtls_fprintf         fprintf
 #define mbedtls_printf          printf
+#define mbedtls_exit            exit
 #define MBEDTLS_EXIT_SUCCESS    EXIT_SUCCESS
 #define MBEDTLS_EXIT_FAILURE    EXIT_FAILURE
 #endif /* MBEDTLS_PLATFORM_C */
@@ -41,6 +47,7 @@
  defined(MBEDTLS_FS_IO)
 #include "mbedtls/cipher.h"
 #include "mbedtls/md.h"
+#include "mbedtls/platform_util.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,10 +82,17 @@ int main( void )
 }
 #else
 
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
+#if defined(MBEDTLS_CHECK_PARAMS)
+#include "mbedtls/platform_util.h"
+void mbedtls_param_failed( const char *failure_condition,
+                           const char *file,
+                           int line )
+{
+    mbedtls_printf( "%s:%i: Input param failed - %s\n",
+                    file, line, failure_condition );
+    mbedtls_exit( MBEDTLS_EXIT_FAILURE );
 }
+#endif
 
 int main( int argc, char *argv[] )
 {
@@ -548,13 +562,13 @@ exit:
        the case when the user has missed or reordered some,
        in which case the key might not be in argv[6]. */
     for( i = 0; i < argc; i++ )
-        mbedtls_zeroize( argv[i], strlen( argv[i] ) );
+        mbedtls_platform_zeroize( argv[i], strlen( argv[i] ) );
 
-    mbedtls_zeroize( IV,     sizeof( IV ) );
-    mbedtls_zeroize( key,    sizeof( key ) );
-    mbedtls_zeroize( buffer, sizeof( buffer ) );
-    mbedtls_zeroize( output, sizeof( output ) );
-    mbedtls_zeroize( digest, sizeof( digest ) );
+    mbedtls_platform_zeroize( IV,     sizeof( IV ) );
+    mbedtls_platform_zeroize( key,    sizeof( key ) );
+    mbedtls_platform_zeroize( buffer, sizeof( buffer ) );
+    mbedtls_platform_zeroize( output, sizeof( output ) );
+    mbedtls_platform_zeroize( digest, sizeof( digest ) );
 
     mbedtls_cipher_free( &cipher_ctx );
     mbedtls_md_free( &md_ctx );

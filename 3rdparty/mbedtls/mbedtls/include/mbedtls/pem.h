@@ -57,7 +57,7 @@ extern "C" {
 /**
  * \brief       PEM context structure
  */
-typedef struct
+typedef struct mbedtls_pem_context
 {
     unsigned char *buf;     /*!< buffer for decoded data             */
     size_t buflen;          /*!< length of the buffer                */
