@@ -14,6 +14,7 @@
 OPENSSL ?= openssl
 FAKETIME ?= faketime
 MBEDTLS_CERT_WRITE ?= $(PWD)/../../programs/x509/cert_write
+MBEDTLS_CERT_REQ ?= $(PWD)/../../programs/x509/cert_req
 
 ## Build the generated test data. Note that since the final outputs
 ## are committed to the repository, this target should do nothing on a
@@ -701,6 +702,37 @@ ec_prv.pk8param.pem: ec_prv.pk8param.der
 	$(OPENSSL) pkey -in $< -inform DER -out $@
 all_final += ec_prv.pk8param.pem
 
+# server5*
+
+# The use of 'Server 1' in the DN is intentional here, as the DN is hardcoded in the x509_write test suite.'
+server5.req.ku.sha1: server5.key
+	$(MBEDTLS_CERT_REQ) output_file=$@ filename=$< key_usage=digital_signature,non_repudiation subject_name="C=NL,O=PolarSSL,CN=PolarSSL Server 1" md=SHA1
+all_final += server5.req.ku.sha1
+
+################################################################
+### Generate CSRs for X.509 write test suite
+################################################################
+
+server1.req.cert_type: server1.key
+	$(MBEDTLS_CERT_REQ) output_file=$@ filename=$< ns_cert_type=ssl_server subject_name="C=NL,O=PolarSSL,CN=PolarSSL Server 1" md=SHA1
+all_final += server1.req.cert_type
+
+server1.req.key_usage: server1.key
+	$(MBEDTLS_CERT_REQ) output_file=$@ filename=$< key_usage=digital_signature,non_repudiation,key_encipherment subject_name="C=NL,O=PolarSSL,CN=PolarSSL Server 1" md=SHA1
+all_final += server1.req.key_usage
+
+server1.req.ku-ct: server1.key
+	$(MBEDTLS_CERT_REQ) output_file=$@ filename=$< key_usage=digital_signature,non_repudiation,key_encipherment ns_cert_type=ssl_server subject_name="C=NL,O=PolarSSL,CN=PolarSSL Server 1" md=SHA1
+all_final += server1.req.ku-ct
+
+server1.req.key_usage_empty: server1.key
+	$(MBEDTLS_CERT_REQ) output_file=$@ filename=$< subject_name="C=NL,O=PolarSSL,CN=PolarSSL Server 1" md=SHA1 force_key_usage=1
+all_final += server1.req.key_usage_empty
+
+server1.req.cert_type_empty: server1.key
+	$(MBEDTLS_CERT_REQ) output_file=$@ filename=$< subject_name="C=NL,O=PolarSSL,CN=PolarSSL Server 1" md=SHA1 force_ns_cert_type=1
+all_final += server1.req.cert_type_empty
+
 ################################################################
 ### Generate certificates for CRT write check tests
 ################################################################
@@ -776,7 +808,33 @@ server1.v1.der.openssl: server1.v1.crt.openssl
 
 server1_all: server1.csr server1.crt server1.noauthid.crt server1.crt.openssl server1.v1.crt server1.v1.crt.openssl server1.key_usage.crt server1.key_usage_noauthid.crt server1.key_usage.crt.openssl server1.cert_type.crt server1.cert_type_noauthid.crt server1.cert_type.crt.openssl server1.der server1.der.openssl server1.v1.der server1.v1.der.openssl server1.key_usage.der server1.key_usage.der.openssl server1.cert_type.der server1.cert_type.der.openssl
 
+# MD2, MD4, MD5 test certificates
 
+cert_md_test_key = $(cli_crt_key_file_rsa)
+
+cert_md2.csr: $(cert_md_test_key)
+	$(MBEDTLS_CERT_REQ) output_file=$@ filename=$< subject_name="C=NL,O=PolarSSL,CN=PolarSSL Cert MD2" md=MD2
+all_intermediate += cert_md2.csr
+
+cert_md2.crt: cert_md2.csr
+	$(MBEDTLS_CERT_WRITE) request_file=$< serial=9 issuer_crt=$(test_ca_crt) issuer_key=$(test_ca_key_file_rsa) issuer_pwd=$(test_ca_pwd_rsa) not_before=20000101121212 not_after=20300101121212 md=MD2 version=3 output_file=$@
+all_final += cert_md2.crt
+
+cert_md4.csr: $(cert_md_test_key)
+	$(MBEDTLS_CERT_REQ) output_file=$@ filename=$< subject_name="C=NL,O=PolarSSL,CN=PolarSSL Cert MD4" md=MD4
+all_intermediate += cert_md4.csr
+
+cert_md4.crt: cert_md4.csr
+	$(MBEDTLS_CERT_WRITE) request_file=$< serial=5 issuer_crt=$(test_ca_crt) issuer_key=$(test_ca_key_file_rsa) issuer_pwd=$(test_ca_pwd_rsa) not_before=20000101121212 not_after=20300101121212 md=MD4 version=3 output_file=$@
+all_final += cert_md4.crt
+
+cert_md5.csr: $(cert_md_test_key)
+	$(MBEDTLS_CERT_REQ) output_file=$@ filename=$< subject_name="C=NL,O=PolarSSL,CN=PolarSSL Cert MD5" md=MD5
+all_intermediate += cert_md5.csr
+
+cert_md5.crt: cert_md5.csr
+	$(MBEDTLS_CERT_WRITE) request_file=$< serial=6 issuer_crt=$(test_ca_crt) issuer_key=$(test_ca_key_file_rsa) issuer_pwd=$(test_ca_pwd_rsa) not_before=20000101121212 not_after=20300101121212 md=MD5 version=3 output_file=$@
+all_final += cert_md5.crt
 
 ################################################################
 #### Meta targets
