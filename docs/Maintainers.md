@@ -1,13 +1,13 @@
-Community Maintenance Committee
-===============================
+Community Governance Committee
+==============================
 
-This document describes the Community Maintenance Committee of Open Enclave. By
+This document describes the Open Enclave Community Governance Committee. By
 our liberal contribution policy outlined in our
-[governance model](GovernanceModel.md), maintainers are committers that are
+[governance model](GovernanceModel.md), Committee members are committers that are
 trusted to grant new committer rights, and grant new membership into the
 Committee.
 
-When making decisions, the Community Maintenance Committee uses a "consensus
+When making decisions, the Community Governance Committee uses a "consensus
 seeking" process. This means that most decisions should be reached by consensus,
 but when that fails, the Committee calls for a vote where the super majority
 (two-thirds) wins. This is to prevent obstructionism by removing the possibility
@@ -32,7 +32,7 @@ Committee Responsibilities
 
 The primary responsibility of the Committee is to grant new committer rights
 (that is, write access to the main Open Enclave SDK repository or related
-repositories), and to grant new membership into the committee. Conversely, the
+repositories), and to grant new membership into the Committee. Conversely, the
 Committee must also remove committer rights and membership from those found to
 be violating the project's Code of Conduct or otherwise negatively affecting the
 project's community health.
@@ -44,9 +44,9 @@ up with the Committee as part of its responsibility to maintain the project's
 community health. Otherwise technical decisions are left to the active
 committers (by virtue of the liberal contribution policy).
 
-The Community Maintenance Committee should meet regularly, for example, once a
-month. This meeting is a private meeting among just the maintainers to nominate
-new committers and maintainer members. Priority consideration should be given to
+The Community Governance Committee should meet regularly, for example, once a
+month. This meeting is a private meeting among just the Committee members to nominate
+new committers and Committee members. Priority consideration should be given to
 those actively contributing to the project. The Committee uses the consensus
 seeking process outlined above when making decisions, including adding or
 removing any members. The Committee should also discuss the community's health
@@ -63,12 +63,12 @@ Project Committers
 ==================
 
 The following people have been granted commit permissions (that is, write
-access) to the Open Enclave SDK by the Community Maintenance Committee. The area
+access) to the Open Enclave SDK by the Community Governance Committee. The area
 column describes which technical areas each committer is most interested in, and
 therefore should usually be consulted for changes relating to that area.
 However, it is up to each committer to determine who should review which PR, and
 when to merge it. Remember that a PR must not be merged if a committer objects;
-instead, it should be brought up with the Community Maintenance Committee.
+instead, it should be brought up with the Community Governance Committee.
 
 | Name                  | GitHub Alias        | Area                           |
 |-----------------------|---------------------|--------------------------------|
