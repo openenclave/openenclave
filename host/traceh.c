@@ -22,10 +22,7 @@ static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
 static oe_mutex _log_lock = OE_H_MUTEX_INITIALIZER;
 static const char* _log_file_name = NULL;
 static const char* _custom_log_format = NULL;
-<<<<<<< HEAD
 static const char* _json_escape = NULL;
-=======
->>>>>>> change log format and add support for user defined log format
 static bool _log_creation_failed_before = false;
 oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
@@ -384,6 +381,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
 
             fflush(log_file);
             fclose(log_file);
+            free(message_dup);
         }
         // Release the log file lock.
         oe_mutex_unlock(&_log_lock);
