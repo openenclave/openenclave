@@ -219,38 +219,46 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                 return;
             }
 
-            char* message_dup = strdup(message);
-            char* reentrant_ptr = NULL;
-            char* log_msg = strtok_r(message_dup, "[", &reentrant_ptr);
-
-            for (size_t i = 0; i < strlen(log_msg); i++)
+            if (!_custom_log_format)
             {
-                if (log_msg[i] == '\n')
-                {
-                    log_msg[i] = '\0';
-                }
+                _write_message_to_stream(
+                    log_file, is_enclave, time, usecs, level, message);
             }
+            else
+            {
+                char* message_dup = strdup(message);
+                char* reentrant_ptr = NULL;
+                char* log_msg = strtok_r(message_dup, "[", &reentrant_ptr);
 
-            char* file_name = strtok_r(NULL, ":", &reentrant_ptr);
-            char* function = strtok_r(NULL, ":", &reentrant_ptr);
-            char* line_number = strtok_r(NULL, "]", &reentrant_ptr);
+                for (size_t i = 0; i < strlen(log_msg); i++)
+                {
+                    if (log_msg[i] == '\n')
+                    {
+                        log_msg[i] = '\0';
+                    }
+                }
 
-            _write_custom_format_message_to_stream(
-                log_file,
-                is_enclave,
-                time,
-                usecs,
-                level,
-                log_msg,
-                file_name,
-                function,
-                line_number,
-                (_custom_log_format ? _custom_log_format
-                                    : LOGGING_FORMAT_STRING));
+                char* file_name = strtok_r(NULL, ":", &reentrant_ptr);
+                char* function = strtok_r(NULL, ":", &reentrant_ptr);
+                char* line_number = strtok_r(NULL, "]", &reentrant_ptr);
+
+                _write_custom_format_message_to_stream(
+                    log_file,
+                    is_enclave,
+                    time,
+                    usecs,
+                    level,
+                    log_msg,
+                    file_name,
+                    function,
+                    line_number,
+                    _custom_log_format);
+
+                free(message_dup);
+            }
 
             fflush(log_file);
             fclose(log_file);
-            free(message_dup);
         }
         // Release the log file lock.
         oe_mutex_unlock(&_log_lock);
