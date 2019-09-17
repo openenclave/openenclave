@@ -170,7 +170,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
     struct tm* t = gmtime(&time_now.tv_sec);
 #else
     time_t lt = time(NULL);
-    struct tm* t = localtime(&lt);
+    struct tm* t = gmtime(&lt);
 #endif
 
     char time[20];
