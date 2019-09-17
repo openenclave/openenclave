@@ -3,7 +3,7 @@ Community Governance Committee
 
 This document describes the Open Enclave Community Governance Committee. By
 our liberal contribution policy outlined in our
-[governance model](GovernanceModel.md), Committee members are committers that are
+[governance model](Governance.md), Committee members are committers that are
 trusted to grant new committer rights, and grant new membership into the
 Committee.
 

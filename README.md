@@ -57,7 +57,7 @@ additional questions or comments.
 
 See the [Development Guide](docs/DevelopmentGuide.md) for details about
 contributing code to this project, such as coding style and development
-processes. Also see our [Governance Model](docs/GovernanceModel.md) for how we
+processes. Also see our [Governance Model](docs/Governance.md) for how we
 maintain the project.
 
 Licensing
