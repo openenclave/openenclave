@@ -70,15 +70,18 @@ void initialize_log_config()
         _log_level = _env2log_level();
         _log_file_name = getenv("OE_LOG_DEVICE");
         _custom_log_format = getenv("OE_LOG_FORMAT");
-        // check that custom log format string terminates with a line return
-        size_t len = strlen(_custom_log_format);
-        if (_custom_log_format[len - 1] != '\n')
+        if (_custom_log_format)
         {
-            fprintf(
-                stderr,
-                "%s\n",
-                "Custom log format does not end with a newline");
-            exit(1);
+            // check that custom log format string terminates with a line return
+            size_t len = strlen(_custom_log_format);
+            if (_custom_log_format[len - 1] != '\n')
+            {
+                fprintf(
+                    stderr,
+                    "%s\n",
+                    "Custom log format does not end with a newline");
+                exit(1);
+            }
         }
         _initialized = true;
     }
@@ -216,6 +219,13 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
     {
         _write_message_to_stream(
             stdout, is_enclave, time, usecs, level, message);
+
+        if (!_log_file_name)
+        {
+            // Release the log file lock.
+            oe_mutex_unlock(&_log_lock);
+            return;
+        }
 
         if (!_log_creation_failed_before)
         {
