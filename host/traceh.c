@@ -84,6 +84,17 @@ void initialize_log_config()
     }
 }
 
+static void _replace_newline(char* log_msg)
+{
+    for (size_t i = 0; i < strlen(log_msg); i++)
+    {
+        if (log_msg[i] == '\n')
+        {
+            log_msg[i] = '\0';
+        }
+    }
+}
+
 static void _write_message_to_stream(
     FILE* stream,
     bool is_enclave,
@@ -229,31 +240,36 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                 char* message_dup = strdup(message);
                 char* reentrant_ptr = NULL;
                 char* log_msg = strtok_r(message_dup, "[", &reentrant_ptr);
-
-                for (size_t i = 0; i < strlen(log_msg); i++)
-                {
-                    if (log_msg[i] == '\n')
-                    {
-                        log_msg[i] = '\0';
-                    }
-                }
-
                 char* file_name = strtok_r(NULL, ":", &reentrant_ptr);
                 char* function = strtok_r(NULL, ":", &reentrant_ptr);
                 char* line_number = strtok_r(NULL, "]", &reentrant_ptr);
 
-                _write_custom_format_message_to_stream(
-                    log_file,
-                    is_enclave,
-                    time,
-                    usecs,
-                    level,
-                    log_msg,
-                    file_name,
-                    function,
-                    line_number,
-                    _custom_log_format);
+                if (!log_msg || !file_name || !function || !line_number)
+                {
+                    _write_message_to_stream(
+                        log_file,
+                        is_enclave,
+                        time,
+                        usecs,
+                        level,
+                        "Failed to apply custom formatter to message\n");
+                }
+                else
+                {
+                    _replace_newline(log_msg);
 
+                    _write_custom_format_message_to_stream(
+                        log_file,
+                        is_enclave,
+                        time,
+                        usecs,
+                        level,
+                        log_msg,
+                        file_name,
+                        function,
+                        line_number,
+                        _custom_log_format);
+                }
                 free(message_dup);
             }
 
