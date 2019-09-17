@@ -238,11 +238,11 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
             else
             {
                 char* message_dup = strdup(message);
-                char* reentrant_ptr = NULL;
-                char* log_msg = strtok_r(message_dup, "[", &reentrant_ptr);
-                char* file_name = strtok_r(NULL, ":", &reentrant_ptr);
-                char* function = strtok_r(NULL, ":", &reentrant_ptr);
-                char* line_number = strtok_r(NULL, "]", &reentrant_ptr);
+                char* message_cursor = NULL;
+                char* log_msg = strtok_r(message_dup, "[", &message_cursor);
+                char* file_name = strtok_r(NULL, ":", &message_cursor);
+                char* function = strtok_r(NULL, ":", &message_cursor);
+                char* line_number = strtok_r(NULL, "]", &message_cursor);
 
                 if (!log_msg || !file_name || !function || !line_number)
                 {
