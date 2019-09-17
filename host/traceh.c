@@ -211,15 +211,20 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
             }
 
             char* message_dup = strdup(message);
-            char* log_msg = strtok(message_dup, "[");
-            size_t len = strlen(log_msg);
-            if (log_msg[len - 1] == '\n')
+            char* reentrant_ptr = NULL;
+            char* log_msg = strtok_r(message_dup, "[", &reentrant_ptr);
+
+            for (size_t i = 0; i < strlen(log_msg); i++)
             {
-                log_msg[len - 1] = 0;
+                if (log_msg[i] == '\n')
+                {
+                    log_msg[i] = '\0';
+                }
             }
-            char* file_name = strtok(NULL, ":");
-            char* function = strtok(NULL, ":");
-            char* line_number = strtok(NULL, "]");
+
+            char* file_name = strtok_r(NULL, ":", &reentrant_ptr);
+            char* function = strtok_r(NULL, ":", &reentrant_ptr);
+            char* line_number = strtok_r(NULL, "]", &reentrant_ptr);
 
             _write_custom_format_message_to_stream(
                 log_file,
@@ -236,6 +241,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
 
             fflush(log_file);
             fclose(log_file);
+            free(message_dup);
         }
         // Release the log file lock.
         oe_mutex_unlock(&_log_lock);
