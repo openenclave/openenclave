@@ -69,17 +69,17 @@ void initialize_log_config()
         // inititalize if not already
         _log_level = _env2log_level();
         _log_file_name = getenv("OE_LOG_DEVICE");
-        char* _oe_log_format = getenv("OE_LOG_FORMAT");
+        _custom_log_format = getenv("OE_LOG_FORMAT");
         // check that custom log format string terminates with a line return
-        if (_oe_log_format)
+        size_t len = strlen(_custom_log_format);
+        if (_custom_log_format[len - 1] != '\n')
         {
-            size_t len = strlen(_oe_log_format);
-            if (_oe_log_format[len - 1] != '\n')
-            {
-                strcat(_oe_log_format, "\n");
-            }
+            fprintf(
+                stderr,
+                "%s\n",
+                "Custom log format does not end with a newline");
+            exit(1);
         }
-        _custom_log_format = _oe_log_format;
         _initialized = true;
     }
 }
@@ -90,7 +90,7 @@ static void _replace_newline(char* log_msg)
     {
         if (log_msg[i] == '\n')
         {
-            log_msg[i] = '\0';
+            log_msg[i] = ' ';
         }
     }
 }
