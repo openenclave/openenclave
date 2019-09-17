@@ -48,5 +48,5 @@ CMakeLists.txt @andschwa @BRMcLaren @EmilAlexandruStoica
 # And governance documents.
 /docs/Contributing.md @openenclave/committee
 /docs/GovernanceModel.md @openenclave/committee
-/docs/Maintainers.md @openenclave/committee
+/docs/Committers.md @openenclave/committee
 /docs/Releasing.md @openenclave/committee

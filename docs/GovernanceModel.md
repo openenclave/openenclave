@@ -17,7 +17,7 @@ In order to maintain a pleasant and welcoming environment, we want to reiterate
 that it is imperative that all community members adhere to our
 [Code of Conduct](Contributing.md#code-of-conduct).
 Anyone failing to follow the Code of Conduct will be removed from the community
-by the [Community Governance Committee](Maintainers.md). If you are made to
+by the [Community Governance Committee](Committers.md). If you are made to
 feel uncomfortable, or have any concerns about behavior within the community, we
 encourage you to reach out to members of the Community Governance Committee.
 
@@ -51,7 +51,7 @@ contributions to the project, including: creating or commenting on issues,
 opening or reviewing pull requests, or other useful contributions such as
 providing support in forums or chats.
 
-See the [Community Governance Committee document](Maintainers.md) for more information
+See the [Community Governance Committee document](Committers.md) for more information
 on the Community Governance Committee, our process for adding new committers and Committee members, as well the
 areas of expertise for each of the committers.
 
@@ -69,9 +69,9 @@ voting process. For example, committers can merge contributions that were
 reviewed without objections. If there are objections that cannot be resolved, an
 issue can be escalated to the Community Governance Committee to make a
 decision, which handles issues as discussed in the
-[Community Governance Committee document](Maintainers.md).
+[Community Governance Committee document](Committers.md).
 
-See the [Community Governance Committee document](Maintainers.md) for the list of project
+See the [Community Governance Committee document](Committers.md) for the list of project
 committers, and how to become one.
 
 Community Approval of Releases
