@@ -69,7 +69,17 @@ void initialize_log_config()
         // inititalize if not already
         _log_level = _env2log_level();
         _log_file_name = getenv("OE_LOG_DEVICE");
-        _custom_log_format = getenv("OE_LOG_FORMAT");
+        char* _oe_log_format = getenv("OE_LOG_FORMAT");
+        // check that custom log format string terminates with a line return
+        if (_oe_log_format)
+        {
+            size_t len = strlen(_oe_log_format);
+            if (_oe_log_format[len - 1] != '\n')
+            {
+                strcat(_oe_log_format, "\n");
+            }
+        }
+        _custom_log_format = _oe_log_format;
         _initialized = true;
     }
 }
@@ -117,7 +127,6 @@ static void _write_custom_format_message_to_stream(
         file,
         function,
         number);
-    fprintf(stream, "\n");
 }
 
 oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
