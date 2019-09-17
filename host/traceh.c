@@ -381,7 +381,6 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
 
             fflush(log_file);
             fclose(log_file);
-            free(message_dup);
         }
         // Release the log file lock.
         oe_mutex_unlock(&_log_lock);
