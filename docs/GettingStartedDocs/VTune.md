@@ -6,15 +6,13 @@ Before you attempt to use the feature, you should ensure that:
 
 - You are on a linux system with SGX enabled and without using a VM.
 - You have `OE_SGX` instead of `OE_TRUSTZONE` set in cmake. The optee environment is currently not supported.
-- The enclave is built or signed to allow debugging, and the host app creates the enclave at runtime with the `OE_ENCLAVE_FLAG_DEBUG`. This is detailed in [Debugging enclave memory](Debugging.md).
+- The enclave is built or signed to allow debugging, and the host app creates the enclave with the `OE_ENCLAVE_FLAG_DEBUG`. This is detailed in [Debugging enclave memory](Debugging.md).
 
 ## Install and configure VTune Amplifier on your system
 
-Refer to the [official document](https://software.intel.com/en-us/vtune-amplifier-help) for how to install VTune on your system. You should also refer to the Sampling Drivers section to install drivers for enabling [hardware event-based sampling](https://software.intel.com/en-us/vtune-amplifier-help-hardware-event-based-sampling-collection).
-
-After VTune is installed, run `source <install-dir>/amplxe-vars.sh` to set up the environment.
-
-Set the environment variables `INTEL_LIBITTNOTIFY32=<VTune Installation Dir>/lib32/runtime/ittnotify_collector.so` and `INTEL_LIBITTNOTIFY64=<VTune Installation Dir>/lib64/runtime/ittnotify_collector.so` to set up the global ITT environment.
+1. Refer to the [official document](https://software.intel.com/en-us/vtune-amplifier-help) __Installing with the Intel® VTune™ Amplifier Installer Graphical User Interface__ section for how to install both the GUI and CLI version of VTune on your system, or __Installing Intel® VTune™ Amplifier with the Command Line Installer__ for installing the CLI version only. You should also refer to the __Sampling Drivers__ section to install drivers for enabling [hardware event-based sampling](https://software.intel.com/en-us/vtune-amplifier-help-hardware-event-based-sampling-collection).
+2. After VTune is installed, run `source <install-dir>/amplxe-vars.sh` to set up the environment.
+3. Set the environment variables `INTEL_LIBITTNOTIFY32=<VTune Installation Dir>/lib32/runtime/ittnotify_collector.so` and `INTEL_LIBITTNOTIFY64=<VTune Installation Dir>/lib64/runtime/ittnotify_collector.so` to set up the global ITT environment.
 
 **Caution:**
 
