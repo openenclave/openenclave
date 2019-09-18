@@ -82,15 +82,17 @@ Please do:
 - **DO** submit all code changes via pull requests (PRs) rather than through a
   direct commit. PRs will be reviewed and potentially merged by the repo
   Committers after a peer review that includes at least one Committer.
-- **DO** give PRs short-but-descriptive names (e.g. "Improve code coverage for
-  System.Console by 10%", not "Fix #1234").
+- **DO** give PRs short but descriptive names (e.g. "Improve code coverage for
+  edger8r", not "Fix #1234").
 - **DO** add breaking changes, new features, deprecations, and bug
-  fixes to the [unreleased section of the
-  changelog](../CHANGELOG.md#unreleased).
+  fixes to the [unreleased section of the changelog](../CHANGELOG.md#unreleased).
 - **DO** refer to any relevant issues and include [keywords](
   https://help.github.com/articles/closing-issues-via-commit-messages/) that
   automatically close issues when the PR is merged.
-- **DO** tag any users that should know about and/or review the change.
+- **DO** tag any users that should know about and/or review the change. While
+   [CODEOWNERS](https://help.github.com/en/articles/about-code-owners) should
+   automatically tag reviewers, if you know of specific people that should look
+   at a PR, add them too.
 - **DO** ensure each commit successfully builds on all platforms and passes all
   unit tests.
 - **DO** rebase and squash unnecessary commits before opening the PR, so that
@@ -103,8 +105,8 @@ Please do:
 Please do not:
 
 - **DON'T** make PRs for style changes. For example, do not send PRs that are
-  focused on changing usage of ```Int32``` to ```int```. The team would prefer
-  to address these holistically with tooling.
+  focused on changing usage of `SomeVar` to `some_var`. The team would prefer
+  to address these with automated tooling.
 - **DON'T** surprise us with big pull requests. Instead, file an issue and start
   a discussion so we can agree on a direction before you invest a large amount
   of time.
@@ -120,11 +122,12 @@ Please do not:
   discuss it.
 - **DON'T** submit changes to the public API without filing an issue and
   discussing with us first.
-- **DON'T** submit "work in progress" PRs.  A PR should only be submitted when
-  it is considered ready for review and subsequent merging by the contributor.
+- **DON'T** use GitHub [_Draft_ pull
+  requests](https://help.github.com/en/articles/about-pull-requests#draft-pull-requests)
+  to share work-in-progress. This will suppress CODEOWNER notifications
 - **DON'T** fix merge conflicts using a merge commit. Prefer `git rebase`.
 - **DON'T** mix independent, unrelated changes in one PR. Separate real
-  product/test code changes from larger code formatting/dead code removal
+  project/test code changes from larger code formatting/dead code removal
   changes. Separate unrelated fixes into separate PRs, especially if they are
   in different libraries.
 

@@ -58,7 +58,7 @@ areas of expertise for each of the committers.
 Accepting Contributions
 -----------------------
 
-Project committers will merge changes that improve the product significantly and
+Project committers will merge changes that improve the project significantly and
 broadly and that align with the
 [Open Enclave roadmap](https://github.com/openenclave/openenclave/projects).
 Contributions must also satisfy the other [published guidelines](Contributing.md).
