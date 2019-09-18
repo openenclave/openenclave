@@ -45,6 +45,7 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/result.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/switchless.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
@@ -401,6 +402,52 @@ done:
     return result;
 }
 
+/*
+** _config_enclave()
+**
+** Config the enclave with an array of configurations.
+*/
+#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
+
+static oe_result_t _configure_enclave(
+    oe_enclave_t* enclave,
+    const oe_enclave_config_t* configs,
+    uint32_t config_count)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    for (uint32_t i = 0; i < config_count; i++)
+    {
+        switch (configs[i].config_type)
+        {
+            // Configure the switchless ocalls, such as the number of workers.
+            case OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS:
+            {
+                size_t max_host_workers =
+                    configs[i].u.context_switchless_config->max_host_workers;
+                size_t max_enclave_workers =
+                    configs[i].u.context_switchless_config->max_enclave_workers;
+
+                // Switchless ecalls are not enabled yet. Make sure the max
+                // number of enclave workers is always 0.
+                if (max_enclave_workers != 0)
+                    OE_RAISE(OE_INVALID_PARAMETER);
+
+                OE_CHECK(
+                    oe_start_switchless_manager(enclave, max_host_workers));
+                break;
+            }
+            default:
+                OE_RAISE(OE_INVALID_PARAMETER);
+        }
+    }
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
+
 oe_result_t oe_sgx_validate_enclave_properties(
     const oe_sgx_enclave_properties_t* properties,
     const char** field_name)
@@ -644,10 +691,15 @@ oe_result_t oe_create_enclave(
     const char* enclave_path,
     oe_enclave_type_t enclave_type,
     uint32_t flags,
+#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
+    const oe_enclave_config_t* configs,
+    uint32_t config_count,
+#else
     const void* config,
     uint32_t config_size,
+#endif
     const oe_ocall_func_t* ocall_table,
-    uint32_t ocall_table_size,
+    uint32_t ocall_count,
     oe_enclave_t** enclave_out)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -663,7 +715,13 @@ oe_result_t oe_create_enclave(
     if (!enclave_path || !enclave_out ||
         ((enclave_type != OE_ENCLAVE_TYPE_SGX) &&
          (enclave_type != OE_ENCLAVE_TYPE_AUTO)) ||
-        (flags & OE_ENCLAVE_FLAG_RESERVED) || config || config_size > 0)
+#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
+        (config_count > 0 && configs == NULL) ||
+        (config_count == 0 && configs != NULL) ||
+#else
+        config || config_size > 0 ||
+#endif
+        (flags & OE_ENCLAVE_FLAG_RESERVED))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Allocate and zero-fill the enclave structure */
@@ -747,10 +805,15 @@ oe_result_t oe_create_enclave(
     /* Enclave initialization invokes global constructors which could make
      * ocalls. Therefore setup ocall table prior to initialization. */
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
-    enclave->num_ocalls = ocall_table_size;
+    enclave->num_ocalls = ocall_count;
 
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
+
+#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
+    /* Apply the list of configurations to the enclave */
+    OE_CHECK(_configure_enclave(enclave, configs, config_count));
+#endif
 
     /* Setup logging configuration */
     oe_log_enclave_init(enclave);
@@ -793,6 +856,9 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 
     /* Remove this enclave from the global list. */
     oe_remove_enclave_instance(enclave);
+
+    /* Shut down the switchless manager */
+    OE_CHECK(oe_stop_switchless_manager(enclave));
 
     /* Clear the magic number */
     enclave->magic = 0;

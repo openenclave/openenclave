@@ -10,6 +10,7 @@
 #include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/sgxcreate.h>
+#include <openenclave/internal/switchless.h>
 #include <stdbool.h>
 #include "../hostthread.h"
 #include "asmdefs.h"
@@ -56,7 +57,7 @@ typedef struct _thread_binding
     uint64_t tcs;
 
     /* The thread this slot is assigned to */
-    oe_thread thread;
+    oe_thread_t thread;
 
     /* Flags */
     uint64_t flags;
@@ -124,6 +125,9 @@ struct _oe_enclave
 
     /* Meta-data needed by debugrt  */
     oe_debug_enclave_t* debug_enclave;
+
+    /* Manager for switchless calls */
+    oe_switchless_call_manager_t* switchless_manager;
 };
 
 // Static asserts for consistency with

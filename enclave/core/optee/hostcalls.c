@@ -24,14 +24,14 @@ void oe_free_ocall_buffer(void* buffer)
 }
 
 // TODO
-void* oe_reserve_shm(size_t capacity)
+void* oe_allocate_arena(size_t capacity)
 {
     OE_UNUSED(capacity);
     return NULL;
 }
 
 // TODO
-void oe_unreserve_shm(void* buffer)
+void oe_deallocate_arena(void* buffer)
 {
     OE_UNUSED(buffer);
 }

@@ -26,6 +26,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/switchless.h>
 #include <openenclave/internal/utils.h>
 #include "../calls.h"
 #include "../hostthread.h"
@@ -245,16 +246,14 @@ done:
 /*
 **==============================================================================
 **
-** _handle_call_host_function()
+** oe_handle_call_host_function()
 **
 ** Handle calls from the enclave.
 **
 **==============================================================================
 */
 
-static oe_result_t _handle_call_host_function(
-    uint64_t arg,
-    oe_enclave_t* enclave)
+oe_result_t oe_handle_call_host_function(uint64_t arg, oe_enclave_t* enclave)
 {
     oe_call_host_function_args_t* args_ptr = NULL;
     oe_result_t result = OE_OK;
@@ -320,6 +319,7 @@ static oe_result_t _handle_call_host_function(
         &args_ptr->output_bytes_written);
 
     // The ocall succeeded.
+    OE_ATOMIC_MEMORY_BARRIER_RELEASE();
     args_ptr->result = OE_OK;
     result = OE_OK;
 done:
@@ -359,7 +359,8 @@ static const char* oe_ecall_str(oe_func_t ecall)
         "DESTRUCTOR",
         "INIT_ENCLAVE",
         "CALL_ENCLAVE_FUNCTION",
-        "VIRTUAL_EXCEPTION_HANDLER"
+        "VIRTUAL_EXCEPTION_HANDLER",
+        "INIT_CONTEXT_SWITCHLESS",
     };
     // clang-format on
 
@@ -408,7 +409,7 @@ static oe_result_t _handle_ocall(
     switch ((oe_func_t)func)
     {
         case OE_OCALL_CALL_HOST_FUNCTION:
-            _handle_call_host_function(arg_in, enclave);
+            OE_CHECK(oe_handle_call_host_function(arg_in, enclave));
             break;
 
         case OE_OCALL_MALLOC:
@@ -567,7 +568,7 @@ static void* _assign_tcs(oe_enclave_t* enclave)
 {
     void* tcs = NULL;
     size_t i;
-    oe_thread thread = oe_thread_self();
+    oe_thread_t thread = oe_thread_self();
 
     oe_mutex_lock(&enclave->lock);
     {

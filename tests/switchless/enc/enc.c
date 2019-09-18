@@ -6,56 +6,71 @@
 #include <openenclave/internal/print.h>
 #include "switchless_t.h"
 
-char* oe_host_strdup(const char* str)
-{
-    size_t n = oe_strlen(str);
+#define STRING_LEN 100
+#define STRING_HELLO "Hello World"
+#define HOST_PARAM_STRING "host string parameter"
+#define HOST_STACK_STRING "host string on stack"
 
-    char* dup = (char*)oe_host_calloc(1, n + 1);
-
-    if (dup)
-        memcpy(dup, str, n + 1);
-
-    return dup;
-}
-
-int enc_echo(char* in, char out[100])
+int enc_echo_switchless(char* in, char out[STRING_LEN], int repeats)
 {
     oe_result_t result;
 
-    if (oe_strcmp(in, "Hello World") != 0)
+    if (oe_strcmp(in, STRING_HELLO) != 0)
     {
         return -1;
     }
 
-    char* host_allocated_str = oe_host_strdup("oe_host_strdup2");
-    if (host_allocated_str == NULL)
-    {
-        return -1;
-    }
-
-    char stack_allocated_str[100] = "oe_host_strdup3";
+    char stack_allocated_str[STRING_LEN] = HOST_STACK_STRING;
     int return_val;
 
-    result = host_echo(
-        &return_val,
-        in,
-        out,
-        "oe_host_strdup1",
-        host_allocated_str,
-        stack_allocated_str);
-    if (result != OE_OK)
+    for (int i = 0; i < repeats; i++)
+    {
+        result = host_echo_switchless(
+            &return_val, in, out, HOST_PARAM_STRING, stack_allocated_str);
+        if (result != OE_OK)
+        {
+            return -1;
+        }
+
+        if (return_val != 0)
+        {
+            return -1;
+        }
+    }
+
+    oe_host_printf("Hello from switchless Echo function!\n");
+
+    return 0;
+}
+
+int enc_echo_regular(char* in, char out[STRING_LEN], int repeats)
+{
+    oe_result_t result;
+
+    if (oe_strcmp(in, STRING_HELLO) != 0)
     {
         return -1;
     }
 
-    if (return_val != 0)
+    char stack_allocated_str[STRING_LEN] = HOST_STACK_STRING;
+    int return_val;
+
+    for (int i = 0; i < repeats; i++)
     {
-        return -1;
+        result = host_echo_regular(
+            &return_val, in, out, HOST_PARAM_STRING, stack_allocated_str);
+        if (result != OE_OK)
+        {
+            return -1;
+        }
+
+        if (return_val != 0)
+        {
+            return -1;
+        }
     }
 
-    oe_host_printf("Hello from Echo function!\n");
-
-    oe_host_free(host_allocated_str);
+    oe_host_printf("Hello from regular Echo function!\n");
 
     return 0;
 }
@@ -66,4 +81,4 @@ OE_SET_ENCLAVE_SGX(
     true, /* AllowDebug */
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
-    16);  /* TCSCount */
+    2);   /* TCSCount */
