@@ -25,7 +25,7 @@
     name: '{{ lc_driver.reg_key }}'
   register: reg_key
   failed_when: reg_key.value != 1
-  when: dcap_testing_node is defined and dcap_testing_node == "true"
+  when: dcap_testing_node is defined and dcap_testing_node == 'true'
 
 - name: Azure DCAP Client | Download devcon.exe
   win_get_url:
@@ -41,7 +41,7 @@
   with_items:
     - 'root\SgxLCDevice'
     - 'root\SgxLCDevice_DCAP'
-  when: dcap_testing_node is defined and dcap_testing_node == "true"
+  when: dcap_testing_node is defined and dcap_testing_node == 'true'
 
 - name: Azure DCAP Client | Remove temp devcon.exe
   win_file:
