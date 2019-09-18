@@ -9,7 +9,7 @@ filing an issue.
 General contribution guidance is included in this document. Additional guidance
 is defined in the documents linked below:
 
-- [Governance Model](GovernanceModel.md) describes how we intend our
+- [Governance Model](Governance.md) describes how we intend our
   collaboration to happen.
 - [Development Guide](DevelopmentGuide.md) describes the coding style and other
   development practices applied to this project.
@@ -59,7 +59,7 @@ General Guidelines
 Please do:
 
 - **DO** open an issue for design discussion before making any major changes.
-- **DO** read our [Governance Model](GovernanceModel.md) to understand how our
+- **DO** read our [Governance Model](Governance.md) to understand how our
   community works.
 - **DO** follow our coding style described in the [Development Guide](
   DevelopmentGuide.md).
