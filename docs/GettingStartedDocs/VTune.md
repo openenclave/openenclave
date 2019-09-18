@@ -46,6 +46,8 @@ Open the VTune GUI and open the results generated to view the report.
 
 We provided a sample adapted from the matrix app in VTune samples to see the profiling results of an enclave application. See [Matrix sample](/samples/matrix/README.md) for details.
 
+## Others
+
 ### TODO
 
 - Enable profiling for optee
@@ -54,3 +56,9 @@ We provided a sample adapted from the matrix app in VTune samples to see the pro
 ### Known issues
 
 - The profiling cannot be done in a VM without access right to the hypervisor, since hardware event-based sampling collection requires vPMU feature to be enabled in the hypervisor. The error message: "Cannot enable event-based sampling collection: Architectural Performance Monitoring version is 0. Make sure the vPMU feature is enabled in your hypervisor".
+
+### References
+
+- The code in `linux-sgx` repo: the major piece of code is in [urts_com.h](https://github.com/intel/linux-sgx/blob/master/psw/urts/urts_com.h#L344)
+- Section __Performance Measurement using Intel® VTune(TM) Amplifier__ in [Intel® Software Guard Extensions (Intel® SGX) SDK
+for Linux* OS](https://download.01.org/intel-sgx/linux-2.6/docs/Intel_SGX_Developer_Reference_Linux_2.6_Open_Source.pdf) on how Intel uses VTune in an SGX application
