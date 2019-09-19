@@ -5,6 +5,8 @@
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
     [string]$GitHash = '5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793',
+    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1d.exe',
+    [string]$OpenSSLHash = '6AFA17D0768CF91B6F69F31FBC67CAB1AC2E3F40CCAAADB7A9D6C7FC37B38492',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
@@ -109,6 +111,10 @@ $PACKAGES = @{
         "url" = $AzureDCAPNupkgURL
         "hash" = $AzureDCAPNupkgHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Azure.DCAP.Windows.nupkg"
+    }
+    "openssl" = @{
+        "url" = $OpenSSLURL
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "Win64OpenSSL-1_1_1d.exe"
     }
 }
 
@@ -316,6 +322,29 @@ function Install-Git {
                  -InstallDirectory $installDir `
                  -ArgumentList @("/SILENT") `
                  -EnvironmentPath @("$installDir\cmd", "$installDir\bin", "$installDir\mingw64\bin")
+}
+
+function Install-OpenSSL {
+    $installDir = $installDir = Join-Path $env:ProgramFiles "OpenSSL-Win64"
+    Install-Tool -InstallerPath $PACKAGES["openssl"]["local_file"] `
+                 -InstallDirectory $installDir `
+                 -ArgumentList @("/silent", "/eula=accept") `
+                 -EnvironmentPath @($installDir)
+
+    $binDir = Join-Path $installDir "bin"
+    $systemPath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+    $currentPath = $env:PATH
+    if($binDir -notin $systemPath) {
+         $systemPath = "$binDir;$systemPath"
+    }
+    if($binDir -notin $currentPath) {
+         $currentPath = "$binDir;$currentPath"
+    }
+    $env:PATH = $currentPath
+    setx.exe /M PATH $systemPath
+    if($LASTEXITCODE) {
+        Throw "Failed to set the new system path"
+    }
 }
 
 function Install-7Zip {
@@ -585,16 +614,17 @@ try {
     Install-7Zip
     Install-Nuget
     Install-VisualStudio
+    Install-OpenSSL
     Install-LLVM
     Install-Git
     Install-OCaml
     Install-Shellcheck
     Install-PSW
-    
+
     if ($DCAPClientType -eq "Azure")
     {
         Write-Host "*** Installing Azure.DCAP.Windows ***"
-        Install-AzureDCAPWindows 
+        Install-AzureDCAPWindows
     }
     else
     {
