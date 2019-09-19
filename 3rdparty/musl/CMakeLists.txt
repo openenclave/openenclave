@@ -95,6 +95,11 @@ ExternalProject_Add(musl_includes
     ${MUSL_INCLUDES} ${MUSL_DIR}
   INSTALL_COMMAND "")
 
+set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
+    ${MUSL_INCLUDES}
+    ${MUSL_DIR}
+)
+
 add_library(oelibc_includes INTERFACE)
 
 add_dependencies(oelibc_includes musl_includes)
