@@ -8,7 +8,10 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+#ifdef __linux__
+  #include <unistd.h>
+#endif
+
 #include <iostream>
 #include <vector>
 #include "datasealing_u.h"
