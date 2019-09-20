@@ -36,7 +36,7 @@
 
 - name: Install the Intel DCAP packages
   apt:
-    name: "{{ intel_sgx_packages }}"
+    name: "{{ intel_dcap_packages }}"
     state: present
     update_cache: yes
     install_recommends: no
