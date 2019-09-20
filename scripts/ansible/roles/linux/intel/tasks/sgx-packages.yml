@@ -40,4 +40,4 @@
     state: present
     update_cache: yes
     install_recommends: no
-  when: flc_enabled
+  when: flc_enabled|bool
