@@ -29,7 +29,7 @@
 
 - name: Download Intel SGX DCAP Driver
   get_url:
-    url: "{{ intel_sgx_driver_url }}"
+    url: "{{ {{intel_sgx_w_flc_driver_url}} when {{flc_enable}} else {{intel_sgx1_driver_url}} }}"
     dest: /tmp/sgx_linux_x64_driver_dcap.bin
     mode: 0755
     timeout: 120

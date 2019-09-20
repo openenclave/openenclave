@@ -33,3 +33,11 @@
     state: present
     update_cache: yes
     install_recommends: no
+
+- name: Install the Intel DCAP packages
+  apt:
+    name: "{{ intel_sgx_packages }}"
+    state: present
+    update_cache: yes
+    install_recommends: no
+  when: flc_enabled
