@@ -15,40 +15,22 @@ git clone https://github.com/openenclave/openenclave.git
 
 This creates a source tree under the directory called openenclave.
 
-## Install project prerequisites
-
-Ansible is required to install the project prerequisites. If not already installed, you can install it by running: `scripts/ansible/install-ansible.sh`. To install all the OpenEnclave prerequisites you can execute the `environment-setup.yml` tasks from `linux/openenclave` Ansible role:
-
+## Install project requirements
+First, change directory into the openenclave repository:
 ```bash
-cd openenclave/scripts/ansible
-ansible localhost -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" --become --ask-become-pass
+cd openenclave
 ```
 
-## Install Intel SGX1 support software packages
-
-There are two Intel packages needed for SGX1:
-
-- Intel® SGX Driver (/dev/isgx)
-- Intel® SGX AESM Service (from the Intel® SGX SDK)
-
-Refer to the [Intel® SGX Driver](https://github.com/01org/linux-sgx-driver) and [Intel® SGX AESM Service](https://github.com/01org/linux-sgx) github repositories for detailed instructions on how to build and install these packages.
-
-As a convenience, Open Enclave provides a script for downloading, building and
-installing both the driver and the AESM service. To install these dependencies
-type the following commands from the root of the source distribution:
-
+Ansible is required to install the project requirements. If not already installed, you can install it by running:
 ```bash
-sudo make -C prereqs
-sudo make -C prereqs install
+sudo scripts/ansible/install-ansible.sh
 ```
 
-After this completes verify that the AESM service is running as follows:
+Run the following command from the root of the source tree:
 
 ```bash
-service aesmd status
+sudo ansible-playbook scripts/ansible/oe-contributors-setup-sgx1.yml
 ```
-
-Look for the string “active (running)”, usually highlighted in green.
 
 ## Build
 
