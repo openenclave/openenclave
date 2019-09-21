@@ -10,7 +10,7 @@ Param(
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
-    [string]$VSBuildToolsHash = '7D5B0220670BA1C174F0AE1FF2CE87D65A508E66C321431FBD4751F478037E12',
+    [string]$VSBuildToolsHash = '',
     [string]$OCamlURL = 'https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip',
     [string]$OCamlHash = '369F900F7CDA543ABF674520ED6004CC75008E10BEED0D34845E8A42866D0F3A',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
@@ -163,13 +163,16 @@ function Start-LocalPackagesDownload {
                            -Destination $PACKAGES[$pkg]["local_file"]
         $downloaded_hash = Get-FileHash $PACKAGES[$pkg]["local_file"]
         $expected_hash = $PACKAGES[$pkg]["hash"]
-        if ($downloaded_hash.Hash -ne $expected_hash)
+        if ($expected_hash -ne "")
         {
-            Throw "Error: Computed hash ($downloaded_hash) does not match expected hash ($expected_hash)"
-        }
-        else
-        {
-            Write-Output "Computed hash ($downloaded_hash) matches expected hash ($expected_hash)"
+            if ($downloaded_hash.Hash -ne $expected_hash)
+            {
+                Throw "Error: Computed hash ($downloaded_hash) does not match expected hash ($expected_hash)"
+            }
+            else
+            {
+                Write-Output "Computed hash ($downloaded_hash) matches expected hash ($expected_hash)"
+            }
         }
     }
     Write-Output "Finished downloading all the packages"
