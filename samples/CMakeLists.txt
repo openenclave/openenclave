@@ -9,7 +9,7 @@ if (USE_LIBSGX)
         GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
 endif ()
 
-install(DIRECTORY helloworld file-encryptor data-sealing
+install(DIRECTORY helloworld file-encryptor data-sealing switchless
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
 install(FILES README.md

@@ -147,3 +147,10 @@ The following samples demonstrate how to develop enclave applications using OE A
   - between two enclaves
   - between one non-enclave client and an enclave
 
+#### [Switchless Calls](switchless/README.md)
+
+- Explain the concept of switchless calls
+- Demonstrate how to enable switchless calls in an enclave application in steps:
+  - Mark a function as `transition_using_threads`
+  - Enable and configure switchless for an enclave
+  - Making a switchless call

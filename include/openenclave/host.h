@@ -66,12 +66,6 @@ typedef void (*oe_ocall_func_t)(
     size_t* output_bytes_written);
 
 /**
- * The following structures are used by context-switchless calls, which is
- * experimental, and subject to changes.
- */
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
-
-/**
  * Types of configurations passed into **oe_create_enclave**
  */
 typedef enum _oe_enclave_config_type
@@ -117,8 +111,6 @@ typedef struct _oe_enclave_config
     } u;
 } oe_enclave_config_t;
 
-#endif /* OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE */
-
 /**
  * Create an enclave from an enclave image file.
  *
@@ -157,13 +149,8 @@ oe_result_t oe_create_enclave(
     const char* path,
     oe_enclave_type_t type,
     uint32_t flags,
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
     const oe_enclave_config_t* configs,
     uint32_t config_count,
-#else
-    const void* config,
-    uint32_t config_size,
-#endif
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
     oe_enclave_t** enclave);

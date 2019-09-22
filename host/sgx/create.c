@@ -407,7 +407,6 @@ done:
 **
 ** Config the enclave with an array of configurations.
 */
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
 
 static oe_result_t _configure_enclave(
     oe_enclave_t* enclave,
@@ -446,7 +445,6 @@ static oe_result_t _configure_enclave(
 done:
     return result;
 }
-#endif
 
 oe_result_t oe_sgx_validate_enclave_properties(
     const oe_sgx_enclave_properties_t* properties,
@@ -691,13 +689,8 @@ oe_result_t oe_create_enclave(
     const char* enclave_path,
     oe_enclave_type_t enclave_type,
     uint32_t flags,
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
     const oe_enclave_config_t* configs,
     uint32_t config_count,
-#else
-    const void* config,
-    uint32_t config_size,
-#endif
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
     oe_enclave_t** enclave_out)
@@ -715,12 +708,8 @@ oe_result_t oe_create_enclave(
     if (!enclave_path || !enclave_out ||
         ((enclave_type != OE_ENCLAVE_TYPE_SGX) &&
          (enclave_type != OE_ENCLAVE_TYPE_AUTO)) ||
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
         (config_count > 0 && configs == NULL) ||
         (config_count == 0 && configs != NULL) ||
-#else
-        config || config_size > 0 ||
-#endif
         (flags & OE_ENCLAVE_FLAG_RESERVED))
         OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -810,10 +799,8 @@ oe_result_t oe_create_enclave(
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
 
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
     /* Apply the list of configurations to the enclave */
     OE_CHECK(_configure_enclave(enclave, configs, config_count));
-#endif
 
     /* Setup logging configuration */
     oe_log_enclave_init(enclave);
