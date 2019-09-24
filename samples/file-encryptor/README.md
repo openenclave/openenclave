@@ -17,7 +17,6 @@ It has the following properties:
   - mbedtls_entropy_*
   - mbedtls_ctr_drbg_*
   - mbedtls_sha256_*
-  - oe_is_outside_enclave
 - Also runs in OE simulation mode
 
 ## Host application
