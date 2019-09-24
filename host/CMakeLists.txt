@@ -294,7 +294,7 @@ if (UNIX)
 elseif (WIN32)
   target_include_directories(oehost PRIVATE
     ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
-  target_link_libraries(oehost PRIVATE bcrypt Crypt32)
+  target_link_libraries(oehost PRIVATE bcrypt Crypt32 Synchronization)
   target_include_directories(oehostverify PRIVATE
     ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   target_link_libraries(oehostverify PRIVATE bcrypt Crypt32)
@@ -351,6 +351,7 @@ target_compile_definitions(oehost
   # package.
   $<BUILD_INTERFACE:OE_API_VERSION=2>
   PRIVATE
+  OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
   OE_BUILD_UNTRUSTED
   OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
   OE_REPO_LAST_COMMIT="${GIT_COMMIT}")

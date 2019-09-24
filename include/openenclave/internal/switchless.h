@@ -12,9 +12,20 @@
 typedef struct _host_worker_thread_context
 {
     volatile oe_call_host_function_args_t* call_arg;
-    volatile bool is_stopping;
+    uint64_t is_stopping;
     oe_enclave_t* enclave;
+
+    // Used as futex or for WaitOnAddress
+    int32_t event;
+
+    // Number of times the worker spinned without seeing a message.
+    uint64_t spin_count;
+
+    // Statistics.
+    uint64_t total_spin_count;
 } oe_host_worker_context_t;
+
+OE_STATIC_ASSERT(sizeof(oe_host_worker_context_t) == 48);
 
 typedef struct _oe_switchless_call_manager
 {

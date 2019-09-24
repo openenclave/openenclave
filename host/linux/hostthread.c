@@ -3,8 +3,12 @@
 
 #include "../hostthread.h"
 #include <assert.h>
+#include <linux/futex.h>
 #include <openenclave/host.h>
 #include <pthread.h>
+#include <sys/syscall.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 /*
 **==============================================================================

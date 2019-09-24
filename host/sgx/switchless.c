@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
+#include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/switchless.h>
@@ -9,6 +10,68 @@
 #include "../hostthread.h"
 #include "../ocalls.h"
 #include "enclave.h"
+
+#if __linux__
+#include <linux/futex.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+
+static void _worker_wait(oe_host_worker_context_t* context)
+{
+    if (__sync_val_compare_and_swap(&context->event, 1, 0) == 0)
+    {
+        do
+        {
+            syscall(
+                __NR_futex,
+                &context->event,
+                FUTEX_WAIT_PRIVATE,
+                0,
+                NULL,
+                NULL,
+                0);
+            // If context-> is still 0, then this is a spurious-wake.
+            // Spurious-wakes are ignored by going back to FUTEX_WAIT.
+            // Since FUTEX_WAIT uses atomic instructions to load event->value,
+            // it is safe to use a non-atomic operation here.
+        } while (context->event == 0);
+    }
+}
+
+static void _worker_wake(oe_host_worker_context_t* context)
+{
+    // context->event is expected to be set to 1 by the enclave.
+    // This function is called only when needed.
+    __sync_val_compare_and_swap(&context->event, 0, 1);
+    syscall(__NR_futex, &context->event, FUTEX_WAKE_PRIVATE, 1, NULL, NULL, 0);
+}
+
+#else
+
+static void _worker_wait(oe_host_worker_context_t* context)
+{
+    // If the event value is 1, then set it to zero.
+    if (_InterlockedCompareExchange(&context->event, 0, 1) == 0)
+    {
+        // If the previous value was zero, then wait while value is zero.
+        uint32_t zero = 0;
+        WaitOnAddress(&context->event, &zero, sizeof(context->event), INFINITE);
+    }
+}
+
+static void _worker_wake(oe_host_worker_context_t* context)
+{
+    // Enclave sets context->value to 1.
+    // Wake up the waiting worker.
+    WakeByAddressSingle(&context->event);
+}
+
+#endif
+
+/**
+ * Number of iterations an ocall worker thread would spin before going to sleep
+ */
+#define OE_HOST_WORKER_SPIN_COUNT_THRESHOLD (4096U)
 
 /*
 ** The thread function that handles switchless ocalls
@@ -24,8 +87,22 @@ static void* _switchless_ocall_worker(void* arg)
         if ((local_call_arg = context->call_arg) != NULL)
         {
             context->call_arg = NULL;
+
             oe_handle_call_host_function(
                 (uint64_t)local_call_arg, context->enclave);
+
+            context->total_spin_count += context->spin_count;
+            context->spin_count = 0;
+        }
+        else
+        {
+            if (++context->spin_count >= OE_HOST_WORKER_SPIN_COUNT_THRESHOLD)
+            {
+                context->total_spin_count += context->spin_count;
+                context->spin_count = 0;
+
+                _worker_wait(context);
+            }
         }
     }
     return NULL;
@@ -37,6 +114,12 @@ static oe_result_t oe_stop_worker_threads(oe_switchless_call_manager_t* manager)
     for (size_t i = 0; i < manager->num_host_workers; i++)
     {
         manager->host_worker_contexts[i].is_stopping = true;
+        _worker_wake(&manager->host_worker_contexts[i]);
+
+        OE_TRACE_INFO(
+            "Switchless host worker thread %d spun for %lu times",
+            i,
+            manager->host_worker_contexts[i].total_spin_count);
     }
 
     for (size_t i = 0; i < manager->num_host_workers; i++)
@@ -94,6 +177,7 @@ oe_result_t oe_start_switchless_manager(
     // Start the worker threads, and assign each one a private context.
     for (size_t i = 0; i < num_host_workers; i++)
     {
+        OE_TRACE_INFO("Creating switchless host worker thread %d\n", (int)i);
         manager->host_worker_contexts[i].enclave = enclave;
         if (oe_thread_create(
                 &manager->host_worker_threads[i],
@@ -132,4 +216,10 @@ oe_result_t oe_stop_switchless_manager(oe_enclave_t* enclave)
     result = OE_OK;
 done:
     return result;
+}
+
+void oe_handle_wake_host_worker(uint64_t arg)
+{
+    oe_host_worker_context_t* context = (oe_host_worker_context_t*)arg;
+    _worker_wake(context);
 }

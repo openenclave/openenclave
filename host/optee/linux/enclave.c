@@ -220,6 +220,9 @@ static TEEC_Result _handle_generic_rpc(
                 *(uint64_t*)input_buffer, (uint64_t*)output_buffer);
             break;
 
+        case OE_OCALL_WAKE_HOST_WORKER:
+            return TEEC_ERROR_NOT_SUPPORTED;
+
         default:
         {
             /* No function found with the number */

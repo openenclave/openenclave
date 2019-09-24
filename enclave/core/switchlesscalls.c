@@ -71,6 +71,7 @@ oe_result_t oe_handle_init_switchless(uint64_t arg_in)
     // Copy the worker context array pointer and its size to avoid TOCTOU
     _host_worker_count = safe_manager.num_host_workers;
     _host_worker_contexts = safe_manager.host_worker_contexts;
+
     result = OE_OK;
 
 done:
@@ -105,6 +106,18 @@ oe_result_t oe_post_switchless_ocall(oe_call_host_function_args_t* args)
                     NULL,
                     args))
             {
+                // Set the worker's state to RUNNING.
+                if (__sync_val_compare_and_swap(
+                        &_host_worker_contexts[tries].event, 0, 1) == 0)
+                {
+                    // The worker was previously sleeping.
+                    // Wake it via an ocall.
+                    oe_ocall(
+                        OE_OCALL_WAKE_HOST_WORKER,
+                        (uint64_t)&_host_worker_contexts[tries],
+                        NULL);
+                }
+
                 return OE_OK;
             }
         }
