@@ -29,8 +29,8 @@ Param(
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Azure.DCAP.Windows/0.0.2',
     [string]$AzureDCAPNupkgHash = 'E319A6C2D136FE5EDB8799305F6151B71F4CE4E67D96CA74538D0AD5D2D793F1',
-    [string]$Python3URL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4.exe',
-    [string]$Python3Hash = '9A30AB5568BA37BFBCAE5CDEE19E9DC30765C42CF066F605221563FF8B20EE34',
+    [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
+    [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoDriver")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
@@ -120,9 +120,9 @@ $PACKAGES = @{
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Win64OpenSSL-1_1_1d.exe"
     }
     "python3" = @{
-        "url" = $Python3URL
-        "hash" = $Python3Hash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "python-3.4.7.exe"
+        "url" = $Python3ZipURL
+        "hash" = $Python3ZipHash
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "Python3.zip"
     }
 }
 
@@ -325,6 +325,21 @@ function Install-Nuget {
                     -InstallDirectory $tempInstallDir `
                     -EnvironmentPath @("$tempInstallDir")
     Copy-Item -Force "$tempInstallDir\build\native\Nuget.exe" $PACKAGES_DIRECTORY
+}
+
+function Install-Python3 {
+    $tempInstallDir = "$PACKAGES_DIRECTORY\python3"
+    if(Test-Path -Path $tempInstallDir) {
+        Remove-Item -Path $tempInstallDir -Force -Recurse
+    }
+    Install-ZipTool -ZipPath $PACKAGES["python3"]["local_file"] `
+                    -InstallDirectory $tempInstallDir `
+                    -EnvironmentPath @("$tempInstallDir")
+
+    $installDir = Join-Path $env:ProgramFiles "python-3.7.4"
+    New-Directory -Path $installDir -RemoveExisting
+    Move-Item -Path "$tempInstallDir\*" -Destination $installDir
+    Add-ToSystemPath -Path $installDir
 }
 
 function Install-Git {
@@ -634,6 +649,7 @@ try {
 
     Install-7Zip
     Install-Nuget
+    Install-Python3
     Install-VisualStudio
     Install-OpenSSL
     Install-LLVM
