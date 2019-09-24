@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <ctype.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
@@ -21,6 +22,7 @@ static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
 static oe_mutex _log_lock = OE_H_MUTEX_INITIALIZER;
 static const char* _log_file_name = NULL;
 static const char* _custom_log_format = NULL;
+static const char* _json_escape = NULL;
 static bool _log_creation_failed_before = false;
 oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
@@ -70,6 +72,7 @@ void initialize_log_config()
         _log_level = _env2log_level();
         _log_file_name = getenv("OE_LOG_DEVICE");
         _custom_log_format = getenv("OE_LOG_FORMAT");
+        _json_escape = getenv("OE_JSON_ESCAPE");
         if (_custom_log_format)
         {
             // check that custom log format string terminates with a line return
@@ -87,14 +90,87 @@ void initialize_log_config()
     }
 }
 
-static void _replace_newline(char* log_msg)
+static void _escape_characters(
+    char* log_msg,
+    char* log_msg_escaped,
+    size_t msg_size)
 {
-    for (size_t i = 0; i < strlen(log_msg); i++)
+    size_t idx = 0;
+
+    for (size_t i = 0; i < msg_size; i++)
     {
-        if (log_msg[i] == '\n')
+        int c = log_msg[i];
+        if (log_msg[i] == '\"')
         {
-            log_msg[i] = ' ';
+            // single quotes are OK for JSON
+            log_msg_escaped[idx] = (char)putchar('\'');
         }
+        else if (log_msg[i] == '\\')
+        {
+            log_msg_escaped[idx] = '\\';
+            idx++;
+            log_msg_escaped[idx] = '\\';
+        }
+        else if (!isprint(c))
+        {
+            log_msg_escaped[idx] = '\\';
+            idx++;
+            log_msg_escaped[idx] = '\\';
+            idx++;
+            switch (log_msg[i])
+            {
+                case '\a':
+                    log_msg_escaped[idx] = 'a';
+                    break;
+                case '\b':
+                    log_msg_escaped[idx] = 'b';
+                    break;
+                case '\e':
+                    log_msg_escaped[idx] = 'e';
+                    break;
+                case '\f':
+                    log_msg_escaped[idx] = 'f';
+                    break;
+                case '\n':
+                    log_msg_escaped[idx] = 'n';
+                    break;
+                case '\r':
+                    log_msg_escaped[idx] = 'r';
+                    break;
+                case '\t':
+                    log_msg_escaped[idx] = 't';
+                    break;
+                case '\v':
+                    log_msg_escaped[idx] = 'v';
+                    break;
+                case '\\':
+                    log_msg_escaped[idx] = '\\';
+                    break;
+                case '\'':
+                    log_msg_escaped[idx] = '\'';
+                    break;
+                case '\"':
+                    log_msg_escaped[idx] = '\"';
+                    break;
+                case '\?':
+                    log_msg_escaped[idx] = '?';
+                    break;
+                default:
+                    sprintf(&log_msg_escaped[idx], "u%04x", log_msg[i]);
+                    idx += 3;
+                    break;
+            }
+        }
+        else
+        {
+            log_msg_escaped[idx] = log_msg[i];
+        }
+        idx++;
+    }
+    if (idx < 2 * msg_size)
+    {
+        log_msg_escaped[idx] = '\0';
+        idx++;
     }
 }
 
@@ -266,20 +342,40 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                 }
                 else
                 {
-                    _replace_newline(log_msg);
+                    if (_json_escape)
+                    {
+                        size_t msg_size = strlen(log_msg);
+                        char log_msg_escaped[2 * msg_size];
+                        _escape_characters(log_msg, log_msg_escaped, msg_size);
 
-                    _write_custom_format_message_to_stream(
-                        log_file,
-                        is_enclave,
-                        time,
-                        usecs,
-                        level,
-                        log_msg,
-                        file_name,
-                        function,
-                        line_number,
-                        _custom_log_format);
+                        _write_custom_format_message_to_stream(
+                            log_file,
+                            is_enclave,
+                            time,
+                            usecs,
+                            level,
+                            log_msg_escaped,
+                            file_name,
+                            function,
+                            line_number,
+                            _custom_log_format);
+                    }
+                    else
+                    {
+                        _write_custom_format_message_to_stream(
+                            log_file,
+                            is_enclave,
+                            time,
+                            usecs,
+                            level,
+                            log_msg,
+                            file_name,
+                            function,
+                            line_number,
+                            _custom_log_format);
+                    }
                 }
+
                 free(message_dup);
             }
 
