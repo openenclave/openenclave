@@ -26,7 +26,7 @@ double get_relative_time_in_microseconds()
 #if __GNUC__
     struct timespec current_time;
     clock_gettime(CLOCK_REALTIME, &current_time);
-    return current_time.tv_sec * 1000000 +
+    return (double)current_time.tv_sec * 1000000 +
            (double)current_time.tv_nsec / 1000.0;
 #elif _MSC_VER
     double current_time;
