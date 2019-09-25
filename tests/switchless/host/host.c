@@ -26,7 +26,8 @@ double get_relative_time_in_microseconds()
 #if __GNUC__
     struct timespec current_time;
     clock_gettime(CLOCK_REALTIME, &current_time);
-    return current_time.tv_sec * 1000000 + current_time.tv_nsec / 1000.0;
+    return current_time.tv_sec * 1000000 +
+           (double)current_time.tv_nsec / 1000.0;
 #elif _MSC_VER
     double current_time;
     QueryPerformanceCounter(&current_time);
@@ -73,7 +74,7 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     // Enable switchless and configure host worker number
-    oe_enclave_config_context_switchless_t config = {2, 0};
+    oe_enclave_config_context_switchless_t config = {1, 0};
     oe_enclave_config_t configs[] = {{
         .config_type = OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS,
         .u.context_switchless_config = &config,
