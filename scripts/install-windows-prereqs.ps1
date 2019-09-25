@@ -29,6 +29,8 @@ Param(
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Azure.DCAP.Windows/0.0.2',
     [string]$AzureDCAPNupkgHash = 'E319A6C2D136FE5EDB8799305F6151B71F4CE4E67D96CA74538D0AD5D2D793F1',
+    [string]$Python3URL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4.exe',
+    [string]$Python3Hash = '9A30AB5568BA37BFBCAE5CDEE19E9DC30765C42CF066F605221563FF8B20EE34',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoDriver")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
@@ -114,7 +116,13 @@ $PACKAGES = @{
     }
     "openssl" = @{
         "url" = $OpenSSLURL
+        "hash" = $OpenSSLHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Win64OpenSSL-1_1_1d.exe"
+    }
+    "python3" = @{
+        "url" = $Python3URL
+        "hash" = $Python3Hash
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "python-3.4.7.exe"
     }
 }
 
@@ -608,6 +616,16 @@ function Install-AzureDCAPWindows {
     popd
 }
 
+function Install-Python3 {
+    Write-Log "Installing Python3"
+    $tmpDir = Join-Path $PACKAGES_DIRECTORY "Python3"
+    $envPath = Join-Path "$PACKAGES_DIRECTORY\..\.." "Programs\Python\Python37-32"
+    Install-Tool -InstallerPath $PACKAGES["python3"]["local_file"] `
+                 -InstallDirectory $tmpDir `
+                 -ArgumentList @("/quiet", "/passive") `
+                 -EnvironmentPath @($envPath)
+}
+
 try {
     Start-LocalPackagesDownload
 
@@ -620,6 +638,7 @@ try {
     Install-OCaml
     Install-Shellcheck
     Install-PSW
+    Install-Python3
 
     if ($DCAPClientType -eq "Azure")
     {

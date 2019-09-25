@@ -25,3 +25,8 @@ int mbed_test_close(int fd)
 {
     return close(fd);
 }
+
+int mbed_test_lseek(int fd, int offset, int whence)
+{
+    return lseek(fd, offset, whence);
+}
