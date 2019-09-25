@@ -52,6 +52,16 @@ int32_t oe_datetime_compare(
     const oe_datetime_t* date1,
     const oe_datetime_t* date2);
 
+/**
+ * Return the current system time in GMT time.
+ */
+oe_result_t oe_datetime_now(oe_datetime_t* value);
+
+/**
+ * Log the given datetime.
+ */
+void oe_datetime_log(const char* msg, const oe_datetime_t* date);
+
 OE_EXTERNC_END
 
 #endif /* _OE_INTERNAL_DATETIME_H */

@@ -93,6 +93,7 @@ elseif (WIN32)
     crypto/bcrypt/rsa.c
     crypto/bcrypt/sha.c
     crypto/bcrypt/pem.c
+    crypto/bcrypt/util.c
     windows/hostthread.c)
 
   set(PLATFORM_SDK_ONLY_SRC
@@ -119,6 +120,7 @@ endif()
 # SGX specific files.
 if (OE_SGX)
   list(APPEND PLATFORM_HOST_ONLY_SRC
+    ../common/sgx/collaterals.c
     ../common/sgx/qeidentity.c
     ../common/sgx/quote.c
     ../common/sgx/report.c

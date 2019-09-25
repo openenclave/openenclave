@@ -36,8 +36,8 @@ oe_result_t oe_verify_remote_report(
         OE_RAISE(OE_UNSUPPORTED);
 
     // Quote attestation can be done entirely on the host side.
-    OE_CHECK(oe_verify_quote_internal(
-        header->report, header->report_size, NULL, 0, NULL, 0, NULL, 0));
+    OE_CHECK(oe_verify_quote_internal_with_collaterals(
+        header->report, header->report_size, NULL, 0, NULL));
 
     // Optionally return parsed report.
     if (parsed_report != NULL)
