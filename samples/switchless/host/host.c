@@ -70,13 +70,14 @@ int main(int argc, const char* argv[])
     double start, end;
     struct timespec current_time;
     clock_gettime(CLOCK_REALTIME, &current_time);
-    start = current_time.tv_sec * 1000000 + current_time.tv_nsec / 1000.0;
+    start =
+        current_time.tv_sec * 1000000 + (double)current_time.tv_nsec / 1000.0;
 
     // Call into the enclave
     result = enclave_add_N_switchless(enclave, &m, n);
 
     clock_gettime(CLOCK_REALTIME, &current_time);
-    end = current_time.tv_sec * 1000000 + current_time.tv_nsec / 1000.0;
+    end = current_time.tv_sec * 1000000 + (double)current_time.tv_nsec / 1000.0;
 
     if (result != OE_OK)
     {
@@ -94,14 +95,15 @@ int main(int argc, const char* argv[])
         (int)(end - start) / 1000);
 
     clock_gettime(CLOCK_REALTIME, &current_time);
-    start = current_time.tv_sec * 1000000 + current_time.tv_nsec / 1000.0;
+    start =
+        current_time.tv_sec * 1000000 + (double)current_time.tv_nsec / 1000.0;
 
     // Call into the enclave
     m = oldm;
     result = enclave_add_N_regular(enclave, &m, n);
 
     clock_gettime(CLOCK_REALTIME, &current_time);
-    end = current_time.tv_sec * 1000000 + current_time.tv_nsec / 1000.0;
+    end = current_time.tv_sec * 1000000 + (double)current_time.tv_nsec / 1000.0;
 
     if (result != OE_OK)
     {
