@@ -6,14 +6,9 @@
 #include <stdlib.h>
 #include "switchless_u.h"
 
-void host_helloworld()
+void host_increment(int* n)
 {
-    fprintf(stdout, "Hello world from regular OCALL\n");
-}
-
-void host_helloworld_switchless()
-{
-    fprintf(stdout, "Hello world from switchless OCALL\n");
+    *n = *n + 1;
 }
 
 static bool check_simulate_opt(int* argc, const char* argv[])
@@ -35,7 +30,8 @@ int main(int argc, const char* argv[])
 {
     oe_enclave_t* enclave = NULL;
     oe_result_t result;
-    int ret = 1;
+    int ret = 1, m = 10000, n = 10000;
+    int oldm = m;
 
     if (argc != 2 && argc != 3)
     {
@@ -50,7 +46,7 @@ int main(int argc, const char* argv[])
     }
 
     // Enable switchless and configure host worker number
-    oe_enclave_config_context_switchless_t config = {2, 0};
+    oe_enclave_config_context_switchless_t config = {1, 0};
     oe_enclave_config_t configs[] = {{
         .config_type = OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS,
         .u.context_switchless_config = &config,
@@ -66,9 +62,11 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "oe_create_enclave(): result=%u", result);
 
     // Call into the enclave
-    result = enclave_helloworld(enclave);
+    result = enclave_add_N(enclave, &m, n);
     if (result != OE_OK)
-        fprintf(stderr, "enclave_helloworld(): result=%u", result);
+        fprintf(stderr, "enclave_add_N(): result=%u", result);
+
+    fprintf(stderr, "enclave_add_N(): %d + %d = %d\n", oldm, n, m);
 
     ret = result != OE_OK ? 1 : 0;
     oe_terminate_enclave(enclave);

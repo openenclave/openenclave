@@ -3,11 +3,10 @@
 
 enclave {
     trusted {
-        public void enclave_helloworld();
+        public void enclave_add_N([in, out] int* m, int n);
     };
 
     untrusted {
-        void host_helloworld();
-        void host_helloworld_switchless() transition_using_threads;
+        void host_increment([in, out] int* m) transition_using_threads;
     };
 };
