@@ -38,6 +38,7 @@ int ecall_dispatcher::initialize(
         encrypt ? "encrypting" : "decrypting");
 
     m_encrypt = encrypt;
+    memset((void*)m_encryption_key, 0, ENCRYPTION_KEY_SIZE_IN_BYTES);
 
     ret = process_encryption_header(encrypt, password, password_len, header);
     if (ret != 0)
