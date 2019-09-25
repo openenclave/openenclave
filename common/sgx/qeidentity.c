@@ -106,7 +106,8 @@ oe_result_t oe_validate_qe_identity(
 
     OE_TRACE_INFO("Calling %s\n", __FUNCTION__);
 
-    if (qe_id_args == NULL)
+    if ((qe_id_args == NULL) || (validity_from == NULL) ||
+        (validity_until == NULL))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Use QE Identity info to validate QE
@@ -136,22 +137,33 @@ oe_result_t oe_validate_qe_identity(
     // Get leaf certificate
     OE_CHECK_MSG(
         oe_cert_chain_get_leaf_cert(&pck_cert_chain, &leaf_cert),
-        "Failed to get leaf certificate.",
-        NULL);
-    oe_cert_get_validity_dates(&leaf_cert, &from, &until);
+        "Failed to get leaf certificate. %s",
+        oe_result_str(result));
+    OE_CHECK_MSG(
+        oe_cert_get_validity_dates(&leaf_cert, &from, &until),
+        "Failed to get validity dates from cert. %s",
+        oe_result_str(result));
 
-    oe_datetime_log_info("QE identity cert issue date: ", &from);
-    oe_datetime_log_info("QE identity cert next update: ", &until);
+    oe_datetime_log("QE identity cert issue date: ", &from);
+    oe_datetime_log("QE identity cert next update: ", &until);
 
     // Check that issue_date and next_update are after the earliest date that
     // the enclave accepts.
     if (oe_datetime_compare(
             &parsed_info.issue_date, &_sgx_minimim_crl_tcb_issue_date) < 0)
-        OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
+        OE_RAISE_MSG(
+            OE_INVALID_QE_IDENTITY_INFO,
+            "QE identity info issue date does not meet CRL/TCB minimum issue "
+            "date.",
+            NULL);
 
     if (oe_datetime_compare(
             &parsed_info.next_update, &_sgx_minimim_crl_tcb_issue_date) < 0)
-        OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
+        OE_RAISE_MSG(
+            OE_INVALID_QE_IDENTITY_INFO,
+            "QE identity info next update does not meet CRL/TCB minimum issue "
+            "date.",
+            NULL);
 
     // Assert that the qe report's MRSIGNER matches Intel's quoting enclave's
     // mrsigner.
@@ -229,8 +241,10 @@ oe_result_t oe_validate_qe_identity(
     if (oe_datetime_compare(&parsed_info.next_update, &until) < 0)
         until = parsed_info.next_update;
 
-    oe_datetime_log_info("QE identity overall issue date: ", &from);
-    oe_datetime_log_info("QE identity overall next update: ", &until);
+    oe_datetime_log("QE identity issue date: ", &parsed_info.issue_date);
+    oe_datetime_log("QE identity next update date: ", &parsed_info.next_update);
+    oe_datetime_log("QE identity overall issue date: ", &from);
+    oe_datetime_log("QE identity overall next update: ", &until);
     if (oe_datetime_compare(&from, &until) > 0)
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,

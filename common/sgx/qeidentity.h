@@ -14,7 +14,7 @@ OE_EXTERNC_BEGIN
 
 /**
  * This is needed to be backwards compatible
- * with the older quote provider.
+ * with providers that do not support QE identity.
  *
  * @param[in] qe_report_body The QE report body from the quote.
  */

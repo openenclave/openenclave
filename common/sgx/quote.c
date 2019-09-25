@@ -514,15 +514,16 @@ oe_result_t oe_verify_quote_internal_with_collaterals(
                     collaterals_body->creation_datetime,
                     sizeof(collaterals_body->creation_datetime),
                     &creation_time),
-                "Invalid creation time in collaterals.",
-                NULL);
+                "Invalid creation time in collaterals: %s",
+                collaterals_body->creation_datetime);
+
             validation_time = &creation_time;
         }
 
-        oe_datetime_log_info("Validation datetime: ", validation_time);
+        oe_datetime_log("Validation datetime: ", validation_time);
         if (oe_datetime_compare(validation_time, &validity_from) < 0)
         {
-            oe_datetime_log_info("Latests valid datetime: ", &validity_from);
+            oe_datetime_log("Latests valid datetime: ", &validity_from);
             OE_RAISE_MSG(
                 OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
                 "Time to validate quote is earlier than the "
@@ -531,8 +532,7 @@ oe_result_t oe_verify_quote_internal_with_collaterals(
         }
         if (oe_datetime_compare(validation_time, &validity_until) > 0)
         {
-            oe_datetime_log_info(
-                "Earliest expiration datetime: ", &validity_until);
+            oe_datetime_log("Earliest expiration datetime: ", &validity_until);
             OE_RAISE_MSG(
                 OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
                 "Time to validate quoteis later than the "
@@ -663,8 +663,8 @@ oe_result_t oe_get_quote_validity_with_collaterals_internal(
         oe_result_str(result));
     _update_validity(&latest_from, &earliest_until, &from, &until);
 
-    oe_datetime_log_info("Quote overall issue date: ", &latest_from);
-    oe_datetime_log_info("Quote overall next update: ", &earliest_until);
+    oe_datetime_log("Quote overall issue date: ", &latest_from);
+    oe_datetime_log("Quote overall next update: ", &earliest_until);
     if (oe_datetime_compare(&latest_from, &earliest_until) > 0)
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,

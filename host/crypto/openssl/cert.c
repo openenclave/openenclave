@@ -968,18 +968,14 @@ oe_result_t oe_cert_get_validity_dates(
     oe_result_t result = OE_UNEXPECTED;
     const cert_t* impl = (const cert_t*)cert;
 
-    if (not_before)
-        memset(not_before, 0, sizeof(oe_datetime_t));
-
-    if (not_after)
-        memset(not_after, 0, sizeof(oe_datetime_t));
-
     if (!_cert_is_valid(impl))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (not_before)
     {
         const ASN1_TIME* time;
+
+        memset(not_before, 0, sizeof(oe_datetime_t));
 
         if (!(time = X509_get_notBefore(impl->x509)))
             OE_RAISE(OE_CRYPTO_ERROR);
@@ -990,6 +986,8 @@ oe_result_t oe_cert_get_validity_dates(
     if (not_after)
     {
         const ASN1_TIME* time;
+
+        memset(not_after, 0, sizeof(oe_datetime_t));
 
         if (!(time = X509_get_notAfter(impl->x509)))
             OE_RAISE(OE_CRYPTO_ERROR);

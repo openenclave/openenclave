@@ -1190,18 +1190,14 @@ oe_result_t oe_cert_get_validity_dates(
     oe_result_t result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
 
-    if (not_before)
-        memset(not_before, 0, sizeof(oe_datetime_t));
-
-    if (not_after)
-        memset(not_after, 0, sizeof(oe_datetime_t));
-
     /* Reject invalid parameters */
     if (!_cert_is_valid(impl))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (not_before)
     {
+        memset(not_before, 0, sizeof(oe_datetime_t));
+
         not_before->year = (uint32_t)impl->cert->valid_from.year;
         not_before->month = (uint32_t)impl->cert->valid_from.mon;
         not_before->day = (uint32_t)impl->cert->valid_from.day;
@@ -1212,6 +1208,8 @@ oe_result_t oe_cert_get_validity_dates(
 
     if (not_after)
     {
+        memset(not_after, 0, sizeof(oe_datetime_t));
+
         not_after->year = (uint32_t)impl->cert->valid_to.year;
         not_after->month = (uint32_t)impl->cert->valid_to.mon;
         not_after->day = (uint32_t)impl->cert->valid_to.day;

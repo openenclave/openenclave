@@ -36,14 +36,6 @@
 #define REPORT_FILENAME "sgx_report.bin"
 #define REPORT_BAD_FILENAME "sgx_report_bad.bin"
 
-//
-// TODO: Report with collaterals tests.  Will to refactor the contentns
-// of the collaterals to be self-contained in order to support
-// serialization.
-//
-//#define COLLATERALS_FILENAME "sgx_report.bin.col"
-//#define COLLATERALS_BAD_FILENAME "sgx_report_bad.bin.col"
-
 #define SKIP_RETURN_CODE 2
 
 oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
@@ -341,17 +333,6 @@ int main()
 
     if (_validate_file(REPORT_BAD_FILENAME, true))
         _verify_report(REPORT_BAD_FILENAME, NULL, false);
-
-    //
-    // TODO: Report with collaterals tests.  Will to refactor the contentns
-    // of the collaterals to be self-contained in order to support
-    // serialization.
-    //
-    // if (_validate_file(REPORT_FILENAME, false))
-    //    _verify_report(REPORT_FILENAME, COLLATERALS_FILENAME, true);
-
-    // if (_validate_file(REPORT_BAD_FILENAME, true))
-    //     _verify_report(REPORT_FILENAME, COLLATERALS_BAD_FILENAME, false);
 
     return 0;
 }

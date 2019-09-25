@@ -249,13 +249,13 @@ done:
     return result;
 }
 
-void oe_datetime_log_info(const char* msg, const oe_datetime_t* date)
+void oe_datetime_log(const char* msg, const oe_datetime_t* date)
 {
-    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
     {
         char str[OE_DATETIME_STR_SIZE];
         size_t size = sizeof(str);
         oe_datetime_to_string(date, str, &size);
-        OE_TRACE_INFO("%s %s\n", msg, str);
+        OE_TRACE_VERBOSE("%s %s\n", msg, str);
     }
 }

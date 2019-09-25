@@ -58,9 +58,9 @@ int32_t oe_datetime_compare(
 oe_result_t oe_datetime_now(oe_datetime_t* value);
 
 /**
- * Log date at the INFO level.
+ * Log the given datetime.
  */
-void oe_datetime_log_info(const char* msg, const oe_datetime_t* date);
+void oe_datetime_log(const char* msg, const oe_datetime_t* date);
 
 OE_EXTERNC_END
 

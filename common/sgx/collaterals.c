@@ -107,18 +107,16 @@ oe_result_t oe_get_collaterals_internal(
             oe_result_str(result));
     }
 
+    *collaterals_buffer = buffer;
+    *collaterals_buffer_size = OE_COLLATERALS_SIZE;
     result = OE_OK;
+
 done:
     oe_cert_free(&leaf_cert);
     oe_cert_free(&intermediate_cert);
     oe_cert_chain_free(&pck_cert_chain);
 
-    if (result == OE_OK)
-    {
-        *collaterals_buffer = buffer;
-        *collaterals_buffer_size = OE_COLLATERALS_SIZE;
-    }
-    else if (buffer)
+    if ((result != OE_OK) && buffer)
     {
         oe_free_get_revocation_info_args(&(collaterals->revocation_info));
         oe_free_qe_identity_info_args(&(collaterals->qe_id_info));
@@ -133,7 +131,7 @@ done:
 }
 
 /**
- * Free up any resources allocated by oe_get_collateras()
+ * Free up any resources allocated by oe_get_collaterals()
  *
  * @param collaterals_buffer The buffer containing the collaterals.
  */

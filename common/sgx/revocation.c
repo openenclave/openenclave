@@ -112,24 +112,23 @@ static oe_result_t _get_revocation_validity(
         _get_tcb_info_validity(parsed_tcb_info, &latest_from, &earliest_until),
         "Failed to get TCB info validity datetime info. %s",
         oe_result_str(result));
-    oe_datetime_log_info("TCB info validity from date: ", &latest_from);
-    oe_datetime_log_info("TCB info validity until date: ", &earliest_until);
+    oe_datetime_log("TCB info validity from date: ", &latest_from);
+    oe_datetime_log("TCB info validity until date: ", &earliest_until);
 
     OE_CHECK_MSG(
         _get_crl_validity(crls, crls_count, &current_from, &current_until),
         "Failed to get CRL validity datetime info. %s",
         oe_result_str(result));
-    oe_datetime_log_info("CRL validity from date: ", &current_from);
-    oe_datetime_log_info("CRL validity until date: ", &current_until);
+    oe_datetime_log("CRL validity from date: ", &current_from);
+    oe_datetime_log("CRL validity until date: ", &current_until);
 
     // Currently we are ignoring TCB Info validity dates because
     // the data is expired.  See Icm 148493545
     latest_from = current_from;
     earliest_until = current_until;
 
-    oe_datetime_log_info(
-        "Revocation overall validity from date: ", &latest_from);
-    oe_datetime_log_info(
+    oe_datetime_log("Revocation overall validity from date: ", &latest_from);
+    oe_datetime_log(
         "Revocation overall validity until date: ", &earliest_until);
 
     *from = latest_from;
@@ -434,8 +433,8 @@ oe_result_t oe_validate_revocation_list(
 
     if (oe_datetime_compare(&latest_from, &_sgx_minimim_crl_tcb_issue_date) < 0)
     {
-        oe_datetime_log_info("Latest issue date : ", &latest_from);
-        oe_datetime_log_info(
+        oe_datetime_log("Latest issue date : ", &latest_from);
+        oe_datetime_log(
             " is earlier than minimum issue date: ",
             &_sgx_minimim_crl_tcb_issue_date);
         OE_RAISE_MSG(
@@ -447,8 +446,8 @@ oe_result_t oe_validate_revocation_list(
     if (oe_datetime_compare(&earliest_until, &_sgx_minimim_crl_tcb_issue_date) <
         0)
     {
-        oe_datetime_log_info("Next update date : ", &earliest_until);
-        oe_datetime_log_info(
+        oe_datetime_log("Next update date : ", &earliest_until);
+        oe_datetime_log(
             " is earlier than minimum issue date: ",
             &_sgx_minimim_crl_tcb_issue_date);
         OE_RAISE_MSG(
@@ -463,15 +462,15 @@ oe_result_t oe_validate_revocation_list(
         "Failed to get TCB certificate.",
         NULL);
     oe_cert_get_validity_dates(&tcb_cert, &from, &until);
-    oe_datetime_log_info("TCB cert issue date: ", &from);
-    oe_datetime_log_info("TCB cert next update: ", &until);
+    oe_datetime_log("TCB cert issue date: ", &from);
+    oe_datetime_log("TCB cert next update: ", &until);
 
     if (oe_datetime_compare(&from, &latest_from) > 0)
         latest_from = from;
     if (oe_datetime_compare(&until, &earliest_until) < 0)
         earliest_until = until;
-    oe_datetime_log_info("Revocation overall issue date: ", &latest_from);
-    oe_datetime_log_info("Revocation overall next update: ", &earliest_until);
+    oe_datetime_log("Revocation overall issue date: ", &latest_from);
+    oe_datetime_log("Revocation overall next update: ", &earliest_until);
 
     if (oe_datetime_compare(&latest_from, &earliest_until) > 0)
         OE_RAISE_MSG(
