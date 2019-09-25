@@ -30,7 +30,7 @@
 - name: Download Intel SGX DCAP Driver
   get_url:
     url: "{{intel_sgx_w_flc_driver_url}}"
-    dest: /tmp/sgx_linux_x64_driver_dcap.bin
+    dest: /tmp/sgx_linux_x64_driver.bin
     mode: 0755
     timeout: 120
   retries: 3
@@ -39,18 +39,18 @@
 - name: Download Intel SGX1 Driver
   get_url:
     url: "{{intel_sgx1_driver_url}}"
-    dest: /tmp/sgx_linux_x64_driver_dcap.bin
+    dest: /tmp/sgx_linux_x64_driver.bin
     mode: 0755
     timeout: 120
   retries: 3
   when: not flc_enabled|bool
 
 - name: Install the Intel SGX DCAP Driver
-  command: /tmp/sgx_linux_x64_driver_dcap.bin
+  command: /tmp/sgx_linux_x64_driver.bin
 
 - name: Remove the Intel SGX DCAP Driver installer
   file:
-    path: /tmp/sgx_linux_x64_driver_dcap.bin
+    path: /tmp/sgx_linux_x64_driver.bin
     state: absent
 
 - name: Ensure aesmd service running
