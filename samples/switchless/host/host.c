@@ -4,9 +4,15 @@
 #include <openenclave/host.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "switchless_u.h"
 
-void host_increment(int* n)
+void host_increment_switchless(int* n)
+{
+    *n = *n + 1;
+}
+
+void host_increment_regular(int* n)
 {
     *n = *n + 1;
 }
@@ -30,7 +36,7 @@ int main(int argc, const char* argv[])
 {
     oe_enclave_t* enclave = NULL;
     oe_result_t result;
-    int ret = 1, m = 10000, n = 10000;
+    int ret = 1, m = 1000000, n = 1000000;
     int oldm = m;
 
     if (argc != 2 && argc != 3)
@@ -61,13 +67,58 @@ int main(int argc, const char* argv[])
              &enclave)) != OE_OK)
         fprintf(stderr, "oe_create_enclave(): result=%u", result);
 
+    double start, end;
+    struct timespec current_time;
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    start = current_time.tv_sec * 1000000 + current_time.tv_nsec / 1000.0;
+
     // Call into the enclave
-    result = enclave_add_N(enclave, &m, n);
+    result = enclave_add_N_switchless(enclave, &m, n);
+
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    end = current_time.tv_sec * 1000000 + current_time.tv_nsec / 1000.0;
+
     if (result != OE_OK)
-        fprintf(stderr, "enclave_add_N(): result=%u", result);
+    {
+        fprintf(stderr, "enclave_add_N_switchless(): result=%u", result);
+        goto done;
+    }
 
-    fprintf(stderr, "enclave_add_N(): %d + %d = %d\n", oldm, n, m);
+    fprintf(
+        stderr,
+        "enclave_add_N_switchless(): %d + %d = %d. Time spent: "
+        "%d ms\n",
+        oldm,
+        n,
+        m,
+        (int)(end - start) / 1000);
 
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    start = current_time.tv_sec * 1000000 + current_time.tv_nsec / 1000.0;
+
+    // Call into the enclave
+    m = oldm;
+    result = enclave_add_N_regular(enclave, &m, n);
+
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    end = current_time.tv_sec * 1000000 + current_time.tv_nsec / 1000.0;
+
+    if (result != OE_OK)
+    {
+        fprintf(stderr, "enclave_add_N_regular(): result=%u", result);
+        goto done;
+    }
+
+    fprintf(
+        stderr,
+        "enclave_add_N_regular(): %d + %d = %d. Time spent: "
+        "%d ms\n",
+        oldm,
+        n,
+        m,
+        (int)(end - start) / 1000);
+
+done:
     ret = result != OE_OK ? 1 : 0;
     oe_terminate_enclave(enclave);
 

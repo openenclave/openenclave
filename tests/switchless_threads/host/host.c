@@ -16,6 +16,9 @@
 #endif
 #include "switchless_threads_u.h"
 
+// The enclave supports up to 8 concurrent threads in it. We have to reserve
+// one for the main host thread (calling into enc_echo_multiple). This leaves
+// us 7 host threads to call into enc_echo_single.
 #define NUM_HOST_THREADS 7
 #define STRING_LEN 100
 #define STRING_HELLO "Hello World"

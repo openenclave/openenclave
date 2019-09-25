@@ -4,15 +4,28 @@
 #include <stdio.h>
 #include "switchless_t.h"
 
-void enclave_add_N(int* m, int n)
+void enclave_add_N_switchless(int* m, int n)
+{
+    // Call back into the host switchlessly
+    for (int i = 0; i < n; i++)
+    {
+        oe_result_t result = host_increment_switchless(m);
+        if (result != OE_OK)
+        {
+            fprintf(stderr, "host_increment_switchless(): result=%u", result);
+        }
+    }
+}
+
+void enclave_add_N_regular(int* m, int n)
 {
     // Call back into the host
     for (int i = 0; i < n; i++)
     {
-        oe_result_t result = host_increment(m);
+        oe_result_t result = host_increment_regular(m);
         if (result != OE_OK)
         {
-            fprintf(stderr, "host_increment(): result=%u", result);
+            fprintf(stderr, "host_increment_regular(): result=%u", result);
         }
     }
 }

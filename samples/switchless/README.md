@@ -17,7 +17,8 @@ In an enclave application, the host makes **ECALL**s into functions exposed by t
 the enclaves may make **OCALL**s into functions exposed by the host that created them. In either case, the
 execution has to be transitioned from an untrusted environment to a trusted environment, or vice versa. Since the
 transition is costly due to heavy security checks, it might be more performance advantageous to make the calls
-**context-switchless**: the caller delegates the function call to a worker thread in the other environment, which does the real job of calling the function and post the result to the caller. Both the calling thread and the
+**context-switchless**: the caller delegates the function call to a worker thread in the other environment, which
+does the real job of calling the function and post the result to the caller. Both the calling thread and the
 worker thread never leave their respective execution contexts during the perceived function call.
 
 The calling thread and the worker thread need to exchange information twice during the call. When the switchless
@@ -32,32 +33,34 @@ good candidates for switchless calls are functions that are: 1) short, thus the 
 percentage of the overall execution time of the call; and 2) called frequently, so the savings in transition time
 add up.
 
-## How does OpenEnclave support switchless OCALLs
+## How does Open Enclave support switchless OCALLs
 
-OpenEnclave only supports synchronous switchless OCALLs currently. When the caller within an enclave makes a
-switchless OCALL, the trusted OpenEnclave runtime creates a `job` out of the function call. The `job` object
+Open Enclave only supports synchronous switchless OCALLs currently. When the caller within an enclave makes a
+switchless OCALL, the trusted Open Enclave runtime creates a `job` out of the function call. The `job` object
 includes information such as the function ID, the parameters marshaled into a buffer, and a buffer for holding the
 return value(s). The job is posted to a shared memory region which both the enclave and the host can access.
 
-A host worker thread checks and retrieves `job` from the shared memory region. It uses the untrusted OpenEnclave
+A host worker thread checks and retrieves `job` from the shared memory region. It uses the untrusted Open Enclave
 runtime to process the `job` by unmarshaling the parameters, then dispatching to the callee function, and finally
-relaying the result back to the trusted OpenEnclave runtime, which is further forwarded back to the caller.
+relaying the result back to the trusted Open Enclave runtime, which is further forwarded back to the caller.
 
-To support simultaneous switchless OCALLs made from enclaves, the host workers are multi-threaded. OpenEnclave
+If an enclave supports multiple simultaneous ECALLs, multiple simultaneous switchless OCALLs could be made from the
+enclave. We use multi-threaded host workers in that scenario. Open Enclave
 allows users to configure how many host worker threads are to be created for servicing switchless OCALLs. The
 following example illustrates how to do that. A word of caution is that too many host worker threads might increase
 competition of cores between threads and degrade the performance. Therefore, if a enclave has switchless calls
-enabled, OpenEnclave caps the number of host worker threads for it to the number of enclave threads specified.
+enabled, Open Enclave caps the number of host worker threads for it to the number of enclave threads specified.
 
-With the current implementation, we recommend users to avoid using more host worker threads than the minimum of:
+With the current implementation, we recommend that users avoid using more host worker threads than the minimum of:
 
 1. the number of simultaneously active enclave threads, and
 2. the number of cores that are potentially available to host worker threads.
 
 For example, on a 4-core machine, if the number of the simultaneously active enclave threads is 2, and there is no
-host threads other than the two threads making ECALLs and the switchless worker threads, both 1) and 2) would be 2. So we recommend setting the number of host worker threads to 2.
+host threads other than the two threads making ECALLs and the switchless worker threads, both 1) and 2) would be 2.
+So we recommend setting the number of host worker threads to 2.
 
-The exception to the above rule happens when 1) or 2) is zero or negative. For example, if the host starts two more
+The exception to the above rule happens when 2) is zero or negative. For example, if the host starts two more
 additional threads that are expected to be active along with the two enclave threads, the number of cores available
 to the worker threads is actually 0, and the minimum of 1) and 2) would be 0. In this case, we recommend setting
 the number of host worker threads to 1 nevertheless, to ensure switchless calls are serviced by at least one thread.
@@ -66,27 +69,42 @@ The above recommendation may change when we modify the behavior of worker thread
 
 ## About the EDL
 
-In this sample, we pretend the enclave doesn't know addition. It relies on a host function `host_increment` to
-increment a number by 1, and repeat calling it `N` times to add `N` to a given number. Since `host_increment` is
+In this sample, we pretend the enclave doesn't know addition. It relies on a host function to
+increment a number by 1, and repeats  calling it `N` times to add `N` to a given number. Since the host function is
 short and called frequently, it is appropriate to make it a switchless function.
 
-First we need to define the functions we want to call between the host and the enclave. To do this we create a `switchless.edl` file:
+We want to compare the performance of switchless calls vs. regular calls. To that end, we define two variants of
+the host function: `host_increment_regular` which is a regular OCALL, and `host_increment_switchless`,
+which is called switchlessly.
+
+Additionally, We define two enclave functions `enclave_add_N_regular` and `enclave_add_N_switchless`, which call host function
+`host_increment_regular` and `host_increment_switchless` respectively. Both enclave functions call its host function
+in a loop repeatedly. The number of iterations is determined by parameter `n`.
+
+The host functions and enclave functions are defined in an EDL file `switchless.edl` as below:
 
 ```edl
 enclave {
     trusted {
-        public void enclave_add_N([in, out] int* m, int n);
+        public void enclave_add_N_switchless([in, out] int* m, int n);
+        public void enclave_add_N_regular([in, out] int* m, int n);
     };
 
     untrusted {
-        void host_increment([in, out] int* m) transition_using_threads;
+        void host_increment_switchless([in, out] int* m) transition_using_threads;
+        void host_increment_regular([in, out] int* m);
     };
 };
 ```
 
-Function `host_increment`'s declaration ends with keyword `transition_using_threads`, indicating it should be called switchlessly at run time. However, this a best-effort directive. OpenEnclave runtime may still choose to fall back to a tradition OCALL if switchless call resources are unavailable, e.g., the enclave is not configured as switchless-capable, or the host worker threads are busy servicing other switchless OCALLs.
+Function `host_increment_switchless`'s declaration ends with keyword `transition_using_threads`, indicating it should be
+called switchlessly at run time. However, this a best-effort directive. Open Enclave runtime may still choose
+to fall back to a tradition OCALL if switchless call resources are unavailable, e.g., the enclave is not configured
+as switchless-capable, or the host worker threads are busy servicing other switchless OCALLs. In this example,
+`host_increment_switchless` is always called switchlessly because there is no simultaneous switchless OCALLs.
 
-To generate the functions with the marshaling code, the `oeedger8r` tool is called in both the host and enclave directories from their Makefiles. For example:
+To generate the functions with the marshaling code, the `oeedger8r` tool is called in both the host and enclave
+directories from their Makefiles. For example:
 
 ```bash
 cd host
@@ -99,16 +117,17 @@ oeedger8r ../switchless.edl --untrusted --experimental
 
 The host first defines a structure specifically for configuring switchless calls. In this case, we specify the
 first field `1` as the number of host worker threads for switchless OCALLs. In this example, 1) There is at most
-1 enclave thread all the time, and 2) The number of cores available to the host worker threads is  1 (assuming a
-2-core machine) or 3 (assuming a 4-core machine). In any case, The minimum of 1) and 2) is 1, which we choose to
-be the number of host worker threads. The 2nd field specifies the number of enclave threads for switchless ECALLs.
+1 enclave thread all the time, and 2) The number of cores available to the host worker threads is unknown, and
+so we use 1 as explained above. The 2nd field specifies the number of enclave threads for switchless ECALLs.
 Since switchless ECALL is not yet implemented, we require the 2nd field to be `0`.
 
 ```c
 oe_enclave_config_context_switchless_t config = {1, 0};
 ```
 
-The host then puts the structure address and the configuration type in an array of configurations for the enclave to be created. Even though we only have one configuration (for switchless) for the enclave, we'd like the flexibility of adding more than one configuration (with different types) for an enclave in the future.
+The host then puts the structure address and the configuration type in an array of configurations for the enclave
+to be created. Even though we only have one configuration (for switchless) for the enclave, we'd like the
+flexibility of adding more than one configuration (with different types) for an enclave in the future.
 
 ```c
 oe_enclave_config_t configs[] = {{
@@ -130,27 +149,31 @@ oe_create_switchless_enclave(
              &enclave);
 ```
 
-The host then makes an ECALL of `enclave_add_N` to transition into the enclave. After the ECALL returns, the
-host prints the returned value and terminates the enclave.
-
-As shown in the EDL file, the host exposes a host function `host_increment` which takes an integer `n`, and returns the result of `n+1`.
+The host then makes an ECALL of `enclave_add_N_regular` to transition into the enclave to compute the sum of
+two integers `m` and `n`. After that, the host makes an ECALL of `enclave_add_N_switchless` to perform the same
+computation except for using switchless OCALLs instead of regular OCALLs. We print out the time spent on both
+ECALLs to highlight the performance advantage of switchless calls in this case.
 
 ## About the enclave
 
-The enclave exposes only one function `enclave_add_N`. The function takes two parameter `m` and `n`. It calls
-the host function `host_increment` switchlessly in a loop of `n` iterations.
+The enclave exposes two functions `enclave_add_N_switchless` and `enclave_add_N_regular`, both taking
+two parameters `m` and `n`. The formal calls host function `host_increment_switchless`, while the latter
+calls `host_increment_regular`. Both host functions are called in a loop of `n` iterations.
 
 ## Build and run
 
 Note that there are two different build systems supported, one using GNU Make and
 `pkg-config`, the other using CMake.
 
-If the build and run succeed, the following output is expected:
+If the build and run succeed, output like the following is expected (the exact time spent on the enclave functions could vary):
 
 ```bash
 host/switchlesshost ./enclave/switchlessenc.signed
-enclave_add_N(): 10000 + 10000 = 20000
+enclave_add_N_switchless(): 1000000 + 1000000 = 2000000. Time spent: 923 ms
+enclave_add_N_regular(): 1000000 + 1000000 = 2000000. Time spent: 19167 ms
 ```
+
+We expect to see a speed up of the first ECALL over the 2nd one due to switchless calls.
 
 ### CMake
 
@@ -172,7 +195,7 @@ make run
 ```
 #### Note
 
-switchless sample can run under OpenEnclave simulation mode.
+switchless sample can run under Open Enclave simulation mode.
 
 To run the switchless sample in simulation mode from the command like, use the following:
 
