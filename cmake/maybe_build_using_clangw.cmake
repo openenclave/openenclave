@@ -45,30 +45,30 @@ function(maybe_build_using_clangw OE_TARGET)
 
     # Setup library tool variables
     set(CMAKE_C_CREATE_STATIC_LIBRARY 
-        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/llvm-arw\" \"qc <TARGET> <OBJECTS>\""
+        "\"${BASH}\" \"${OE_SCRIPTSDIR}/llvm-arw\" \"qc <TARGET> <OBJECTS>\""
         PARENT_SCOPE)
     set(CMAKE_CXX_CREATE_STATIC_LIBRARY 
-        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/llvm-arw\" \"qc <TARGET> <OBJECTS>\""
+        "\"${BASH}\" \"${OE_SCRIPTSDIR}/llvm-arw\" \"qc <TARGET> <OBJECTS>\""
         PARENT_SCOPE)
 
     # Setup linker variables.
     set(CMAKE_EXECUTABLE_SUFFIX "" PARENT_SCOPE)
     set(CMAKE_C_STANDARD_LIBRARIES "" PARENT_SCOPE)
     set(CMAKE_C_LINK_EXECUTABLE
-        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"link <OBJECTS> -o <TARGET>  <LINK_LIBRARIES>\""
+        "\"${BASH}\" \"${OE_SCRIPTSDIR}/clangw\" \"link <OBJECTS> -o <TARGET>  <LINK_LIBRARIES>\""
         PARENT_SCOPE)
     set(CMAKE_CXX_STANDARD_LIBRARIES "" PARENT_SCOPE)
     set(CMAKE_CXX_LINK_EXECUTABLE
-        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"link <OBJECTS> -o <TARGET>  <LINK_LIBRARIES>\""
+        "\"${BASH}\" \"${OE_SCRIPTSDIR}/clangw\" \"link <OBJECTS> -o <TARGET>  <LINK_LIBRARIES>\""
         PARENT_SCOPE)
 
     # Setup compiler variables.
     set(CMAKE_C_COMPILE_OBJECT
-        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"<DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>\""
+        "\"${BASH}\" \"${OE_SCRIPTSDIR}/clangw\" \"<DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>\""
         PARENT_SCOPE)
 
     set(CMAKE_CXX_COMPILE_OBJECT
-        "\"${BASH}\" \"${PROJECT_SOURCE_DIR}/scripts/clangw\" \"<DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>\""
+        "\"${BASH}\" \"${OE_SCRIPTSDIR}/clangw\" \"<DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>\""
         PARENT_SCOPE)
 
     # Loop through assembly files in the list of sources in the

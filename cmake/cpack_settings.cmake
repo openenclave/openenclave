@@ -26,17 +26,9 @@ set(CPACK_DEBIAN_OEHOSTVERIFY_FILE_NAME DEB-DEFAULT)
 set(CPACK_COMPONENT_OEHOSTVERIFY_DESCRIPTION "Open Enclave Report Verification Host Library")
 
 # CPack variables for Nuget packages
-set(CPACK_NUGET_PACKAGE_NAME "OpenEnclave.SDK")
+set(CPACK_NUGET_PACKAGE_NAME "open-enclave")
 set(CPACK_NUGET_PACKAGE_AUTHORS "Microsoft, Confidential Computing Consortium")
-set(CPACK_NUGET_PACKAGE_DESCRIPTION
-    "Open Enclave (OE) is an SDK for building Trusted Applications (TA) in C and C++. An enclave application partitions itself into two components:
- - An untrusted component (called the host)
- - A trusted component (called the enclave)
-
-The enclave executes in a protected memory region that provides confidentiality both data and code execution. These protections are provided by a Trusted Execution Environment (TEE), which is usually secured by hardware such as Intel Software Guard Extensions (SGX).
-
-This SDK aims to generalize the development of enclave applications across TEEs from different hardware vendors. While the current implementation is focused on Intel SGX, support for ARM TrustZone is already under development.
-As an open source project, this SDK also strives to provide a transparent solution that is agnostic to specific vendors, service providers and choice of operating systems.")
+set(CPACK_NUGET_PACKAGE_VERSION ${OE_VERSION})
 set(CPACK_NUGET_PACKAGE_LICENSEURL "https://github.com/openenclave/openenclave/blob/master/LICENSE")
 
 include(CPack)

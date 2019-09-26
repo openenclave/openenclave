@@ -28,6 +28,7 @@ set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
 project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM}
   HOMEPAGE_URL "https://github.com/openenclave/openenclave")
 set(PROJECT_VERSION ${OE_VERSION})
+set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -140,6 +141,9 @@ if (WIN32)
   if (NOT BASH)
     message(FATAL_ERROR "Git Bash not found!")
   endif ()
+  if (NOT NUGET_PACKAGE_PATH)
+    message(FATAL_ERROR "NUGET_PACKAGE_PATH not defined. Please define NUGET_PACKAGE_PATH as the path to the Intel and DCAP Client nuget packages.")
+  endif()
 else ()
   find_program(BASH bash)
   if (NOT BASH)
@@ -217,8 +221,19 @@ endif()
 if (UNIX)
   add_subdirectory(docs/refman)
   add_subdirectory(pkgconfig)
-  add_subdirectory(samples)
 endif()
+
+add_subdirectory(samples)
+
+if (WIN32)
+  install(FILES ./scripts/clangw ./scripts/llvm-arw
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
+  install(FILES ./scripts/install-windows-prereqs.ps1
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
+  install(FILES ./cmake/maybe_build_using_clangw.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+endif ()
+
 
 install(FILES LICENSE THIRD_PARTY_NOTICES
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/licenses)
