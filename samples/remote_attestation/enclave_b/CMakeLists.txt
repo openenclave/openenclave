@@ -1,12 +1,20 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+if(WIN32)
+  include(maybe_build_using_clangw)
+endif()
+
 # Generate header with public key of enclave A
 add_custom_command(OUTPUT enclave_a_pubkey.h
   DEPENDS public_key_a ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
   COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh enclave_a_pubkey.h ${CMAKE_BINARY_DIR}/enclave_a/public_a.pem)
 
 add_executable(enclave_b ecalls.cpp ${CMAKE_CURRENT_BINARY_DIR}/enclave_a_pubkey.h)
+
+if(WIN32)
+  maybe_build_using_clangw(enclave_b)
+endif()
 
 target_include_directories(enclave_b PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
