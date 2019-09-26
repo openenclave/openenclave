@@ -24,6 +24,10 @@ add_executable(tls_server_enc
 	       ../../common/utility.cpp
 	       ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
 
+if (WIN32)
+  maybe_build_using_clangw(tls_server_enc)
+endif ()
+
 target_compile_definitions(tls_server_enc PUBLIC OE_API_VERSION=2)
 
 target_include_directories(tls_server_enc PRIVATE
