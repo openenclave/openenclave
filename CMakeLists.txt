@@ -29,6 +29,10 @@ project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM}
   HOMEPAGE_URL "https://github.com/openenclave/openenclave")
 set(PROJECT_VERSION ${OE_VERSION})
 set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
+find_program(OE_BASH bash)
+if (NOT OE_BASH)
+  message(FATAL_ERROR "-- Unable to find bash")
+endif ()
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
