@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# TODO: Where is the best place to set this
-
 # Use the edger8r to generate C bindings from the EDL file.
 add_custom_command(OUTPUT helloworld_t.h helloworld_t.c helloworld_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/helloworld.edl
