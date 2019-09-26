@@ -226,10 +226,12 @@ int ecall_dispatcher::cipher_encryption_key(
     mbedtls_aes_init(&aescontext);
 
     // set aes key
-    if (encrypt){
+    if (encrypt)
+    {
         ret = mbedtls_aes_setkey_enc(&aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
     }
-    else {
+    else
+    {
         ret = mbedtls_aes_setkey_dec(&aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
     }
     if (ret != 0)
