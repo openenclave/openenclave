@@ -7,86 +7,18 @@
 #include "../common.h"
 #include "tcbinfo.h"
 
-// hardcoded property values used for validating quoting enclave when qe
-// identity info is not available
-// The mrsigner value of Intel's Production quoting enclave.
-static const uint8_t g_qe_mrsigner[32] = {
-    0x8c, 0x4f, 0x57, 0x75, 0xd7, 0x96, 0x50, 0x3e, 0x96, 0x13, 0x7f,
-    0x77, 0xc6, 0x8a, 0x82, 0x9a, 0x00, 0x56, 0xac, 0x8d, 0xed, 0x70,
-    0x14, 0x0b, 0x08, 0x1b, 0x09, 0x44, 0x90, 0xc5, 0x7b, 0xff};
-
-// The isvprodid value of Intel's Production quoting enclave.
-static const uint16_t g_qe_isvprodid = 1;
-
-// The isvsvn value of Intel's Production quoting enclave.
-static const uint32_t g_qeisvsvn = 2;
-
 extern oe_datetime_t _sgx_minimim_crl_tcb_issue_date;
 
-void dump_info(const char* title, const uint8_t* data, const uint8_t count)
+static void dump_info(
+    const char* title,
+    const uint8_t* data,
+    const uint8_t count)
 {
     OE_TRACE_INFO("%s\n", title);
     for (uint8_t i = 0; i < count; i++)
     {
         OE_TRACE_INFO("[%d] = %x\n", i, data[i]);
     }
-}
-
-oe_result_t oe_validate_qe_report_body(sgx_report_body_t* qe_report_body)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    if (qe_report_body == NULL)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    // No qe_identity info returned from the quote provider, this could be
-    // because either get_qe_identity_info API was not supported or
-    // unexpected error. In both cases, check against hardcoded quoting
-    // enclave properties instead Assert that the qe report's MRSIGNER
-    // matches Intel's quoting. We will remove these hardcoded values once
-    // the libdcap_quoteprov.so was updated to support qe identity feature.
-
-    // enclave's mrsigner.
-    if (!oe_constant_time_mem_equal(
-            qe_report_body->mrsigner, g_qe_mrsigner, sizeof(g_qe_mrsigner)))
-    {
-        dump_info("Expected mrsigner", g_qe_mrsigner, sizeof(g_qe_mrsigner));
-        dump_info(
-            "Actual mrsigner",
-            qe_report_body->mrsigner,
-            sizeof(qe_report_body->mrsigner));
-        OE_RAISE_MSG(
-            OE_QUOTE_ENCLAVE_IDENTITY_UNIQUEID_MISMATCH,
-            "mrsigner mismatch",
-            NULL);
-    }
-
-    if (qe_report_body->isvprodid != g_qe_isvprodid)
-        OE_RAISE_MSG(
-            QE_QUOTE_ENCLAVE_IDENTITY_PRODUCTID_MISMATCH,
-            "isvprodid mismatch. Expected 0x%04X, actual 0x%04X",
-            g_qe_isvprodid,
-            qe_report_body->isvprodid);
-
-    if (qe_report_body->isvsvn < g_qeisvsvn)
-        OE_RAISE_MSG(
-            OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
-            "isvsvn is out-of-date. Required SVN 0x%08X, actual SVN 0x%08X",
-            g_qeisvsvn,
-            qe_report_body->isvsvn);
-
-    // Ensure that the QE is not a debug supporting enclave.
-    if (qe_report_body->attributes.flags & SGX_FLAGS_DEBUG)
-        OE_RAISE_MSG(
-            OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
-            "QE has SGX_FLAGS_DEBUG set!!",
-            NULL);
-
-    result = OE_OK;
-
-done:
-
-    return result;
 }
 
 oe_result_t oe_validate_qe_identity(

@@ -22,8 +22,9 @@
  * Get collateral data which can be used with future function
  * oe_verify_report_with_collaterals().
  *
- * @param collaterals_buffer The buffer containing the collaterals to parse.
- * @param collaterals_buffer_size The size of the **collaterals_buffer**.
+ * @param[in] enclave The instance of the enclave that will be used.
+ * @param[in] collaterals_buffer The buffer containing the collaterals to parse.
+ * @param[in] collaterals_buffer_size The size of the **collaterals_buffer**.
  *
  * @retval OE_OK The collaterals were successfully retrieved.
  */
@@ -122,19 +123,21 @@ done:
  * Verify the integrity of the report and its signature,
  * with optional collateral data that is associated with the report.
  *
- * This function verifies that the report signature is valid. If the report is
- * local, it verifies that it is correctly signed by the enclave
- * platform. If the report is remote, it verifies that the signing authority is
- * rooted to a trusted authority such as the enclave platform manufacturer.
+ * This function verifies that the report signature is valid. This only applies
+ * to remote reports.  For remote reports it verifies that the signing authority
+ * is rooted to a trusted authority such as the enclave platform manufacturer.
  *
- * @param enclave The instance of the enclave that will be used to
- * verify a local report. For remote reports, this parameter can be NULL.
- * @param report The buffer containing the report to verify.
- * @param report_size The size of the **report** buffer.
- * @param collaterals The collateral data that is associated with the report.
- * @param collaterals_size The size of the **collaterals** buffer.
- * @param parsed_report Optional **oe_report_t** structure to populate with the
- * report properties in a standard format.
+ * @param[in] enclave The instance of the enclave that will be used.
+ * @param[in] report The buffer containing the report to verify.
+ * @param[in] report_size The size of the **report** buffer.
+ * @param[in] collaterals Optional The collateral data that is associated with
+ * the report.
+ * @param[in] collaterals_size The size of the **collaterals** buffer.
+ * @param[in] input_validation_time Optional datetime to use when validating
+ * collaterals. If not specified, it will used the creation_datetime of the
+ * collaterals (if any collaterals are provided).
+ * @param[out] parsed_report Optional **oe_report_t** structure to populate with
+ * the report properties in a standard format.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -218,13 +221,38 @@ done:
 /**
  * Free up any resources allocated by oe_get_collateras()
  *
- * @param collaterals_buffer The buffer containing the collaterals.
+ * @param[in] collaterals_buffer The buffer containing the collaterals.
  */
 static void oe_free_collaterals(uint8_t* collaterals_buffer)
 {
     oe_free_collaterals_internal(collaterals_buffer);
 }
 
+/*!
+ * Find the valid datetime range for the given **remote report** and
+ * collaterals. This function accounts for the following items:
+ *
+ * 1. From the quote:
+ *          a) Root CA.
+ *          b) Intermediate CA.
+ *          b) PCK CA.
+ * 2. From the revocation info:
+ *          a) Root CA CRL.
+ *          b) Intermediate CA CRL.
+ *          c) PCK CA CRL.
+ *          d) TCB info cert.
+ *          e) TCB info.
+ * 3. From QE identity info
+ *          a) QE identity cert.
+ *          b) QE identity.
+ *
+ * @param[in] report The buffer containing the report to verify.
+ * @param[in] report_size The size of the **report** buffer.
+ * @param[in] collaterals Collaterals related to the quote.
+ * @param[in] collatterals_size The size of the collaterals.
+ * @param[out] valid_from validity_from The date from which the quote is valid.
+ * @param[out] valid_until validity_until The date which the quote expires.
+ */
 static oe_result_t oe_get_quote_validity_with_collaterals(
     const uint8_t* report,
     const size_t report_size,

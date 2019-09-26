@@ -206,8 +206,7 @@ done:
 
 static oe_result_t oe_verify_quote_internal(
     const uint8_t* quote,
-    size_t quote_size,
-    bool no_collaterals)
+    size_t quote_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_quote_t* sgx_quote = NULL;
@@ -294,12 +293,6 @@ static oe_result_t oe_verify_quote_internal(
                 OE_QUOTE_VERIFICATION_ERROR,
                 "Failed to verify root public key.",
                 NULL);
-
-        if (no_collaterals)
-            OE_CHECK_MSG(
-                oe_enforce_revocation(&leaf_cert, &intermediate_cert),
-                "Failed when enforcing CRL",
-                NULL);
     }
 
     // Quote validations.
@@ -356,12 +349,6 @@ static oe_result_t oe_verify_quote_internal(
             "Report signature validation using attestation key + SHA256 ECDSA",
             NULL);
     }
-
-    if (no_collaterals)
-        OE_CHECK_MSG(
-            oe_validate_qe_report_body(&quote_auth_data->qe_report_body),
-            "Quoting enclave identity checking",
-            NULL);
 
     result = OE_OK;
 
@@ -451,45 +438,30 @@ oe_result_t oe_verify_quote_internal_with_collaterals(
     oe_datetime_t validity_until = {0};
     oe_datetime_t creation_time = {0};
 
-    bool no_collaterals = false;
-
     if (quote == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (collaterals == NULL)
     {
-        result = oe_get_collaterals_internal(
-            quote,
-            quote_size,
-            (uint8_t**)&local_collaterals,
-            &local_collaterals_size);
+        OE_CHECK_MSG(
+            oe_get_collaterals_internal(
+                quote,
+                quote_size,
+                (uint8_t**)&local_collaterals,
+                &local_collaterals_size),
+            "Failed to get collaterals. %s",
+            oe_result_str(result));
 
-        if (result == OE_QUOTE_PROVIDER_CALL_ERROR)
-        {
-            // No qe_identity info returned from the quote provider, this could
-            // be because either get_qe_identity_info API was not supported or
-            // unexpected error. In both cases, check against hardcoded quoting
-            // enclave properties instead Assert that the qe report's MRSIGNER
-            // matches Intel's quoting. We will remove these hardcoded values
-            // once the libdcap_quoteprov.so was updated to support qe identity
-            // feature.
-            no_collaterals = true;
-        }
-        else
-        {
-            OE_CHECK_MSG(
-                result, "Failed to get collaterals. %s", oe_result_str(result));
-            collaterals = local_collaterals;
-            collaterals_size = local_collaterals_size;
-        }
+        collaterals = local_collaterals;
+        collaterals_size = local_collaterals_size;
     }
 
     OE_CHECK_MSG(
-        oe_verify_quote_internal(quote, quote_size, no_collaterals),
+        oe_verify_quote_internal(quote, quote_size),
         "Failed to verify remote quote.",
         NULL);
 
-    if (!no_collaterals)
+    // Collateral verification
     {
         oe_collaterals_t* collaterals_body =
             (oe_collaterals_t*)(collaterals + OE_COLLATERALS_HEADER_SIZE);
