@@ -619,7 +619,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     in
     let with_errno = List.exists (fun uf -> uf.uf_propagate_errno) ufs in
     let guard_macro =
-      "EDGER8R_" ^ String.uppercase ec.enclave_name ^ "_ARGS_H"
+      "EDGER8R_" ^ String.uppercase_ascii ec.enclave_name ^ "_ARGS_H"
     in
     [ "#ifndef " ^ guard_macro
     ; "#define " ^ guard_macro
@@ -1271,7 +1271,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
           ufs
       else ["/* There were no ocalls. */"]
     in
-    let guard = "EDGER8R_" ^ String.uppercase ec.file_shortnm ^ "_T_H" in
+    let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_T_H" in
     [ "#ifndef " ^ guard
     ; "#define " ^ guard
     ; ""
@@ -1349,7 +1349,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         List.map (fun f -> oe_gen_prototype f.uf_fdecl ^ ";") ufs
       else ["/* There were no ocalls. */"]
     in
-    let guard = "EDGER8R_" ^ String.uppercase ec.file_shortnm ^ "_U_H" in
+    let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_U_H" in
     [ "#ifndef " ^ guard
     ; "#define " ^ guard
     ; ""
