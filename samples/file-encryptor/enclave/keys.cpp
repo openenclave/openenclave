@@ -229,15 +229,17 @@ int ecall_dispatcher::cipher_encryption_key(
     // set aes key
     if (encrypt)
     {
-        ret = mbedtls_aes_setkey_enc(&aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
+        ret = mbedtls_aes_setkey_enc(
+            &aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
     }
     else
     {
-        ret = mbedtls_aes_setkey_dec(&aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
+        ret = mbedtls_aes_setkey_dec(
+            &aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
     }
     if (ret != 0)
     {
-        TRACE_ENCLAVE("mbedtls_aes_setkey_enc failed with %d", ret);
+        TRACE_ENCLAVE("mbedtls_aes_setkey_enc/dec failed with %d", ret);
         goto exit;
     }
 
