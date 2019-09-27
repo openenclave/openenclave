@@ -1,0 +1,26 @@
+{
+  "name": "oeedger8r",
+  "version": "0.6.0",
+  "description": "The Open Enclave SDK's oeedger8r",
+  "license": "MIT",
+
+  "esy": {
+    "build": "dune build -p #{self.name}",
+    "release": {
+      "bin": "oeedger8r",
+      "includePackages": [
+        "root"
+      ]
+    }
+  },
+
+  "dependencies": {
+    "@opam/dune": "~1.2",
+    "ocaml": "~4.6.0"
+  },
+
+  "devDependencies": {
+    "@opam/merlin": "^3.0.3",
+    "ocaml": "~4.6.0"
+  }
+}
