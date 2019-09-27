@@ -6,9 +6,9 @@
 ##====================================================================================
 ##
 ## This script fires OE build and test for specified build-type, platform and
-## simulator/hardware mode.
+## simulation/hardware mode.
 ## Default run with no parameters builds with Debug build-type and for SGX1
-## platform and will test in Simulator mode.
+## platform and will test in simulation.
 ## Run this from the root of the source tree as sudo.
 ## Please note that this script does not install any packages needed for build/test.
 ## Please install all packages necessary for your test before invoking this script.
@@ -19,7 +19,7 @@ if [[ $1 == "-h" || $1 == "--help" ]]; then
    echo "Script to fire OE build and test with specified platform/build-type/test mode" 
    echo " Usage: "
    echo " ./scripts/test-build-config"
-   echo "        -d or --disable_sim to Disable Simulator Test Mode"
+   echo "        -d or --disable_sim to Disable Simulation Test Mode"
    echo "        -p SGX1FLC or -p=SGX1FLC to build for SGX1FLC platform"
    echo "        -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
    echo "        -h or --help to Display usage and exit"
@@ -28,14 +28,14 @@ if [[ $1 == "-h" || $1 == "--help" ]]; then
    echo "        --enable_full_libcxx_tests to Enable libcxx tests"
    echo "        --enable_full_libc_tests to Enable libc tests"
    echo " Default is to build for SGX1 platform, Debug Build type & test in"
-   echo " simulator mode"
+   echo " simulation"
    echo ""
    exit 0
 fi
 
 # Default values for the arguments
-# Disable Simulator test mode to run on SGX hardware
-# Default test mode is Simulator, disable Simulator test mode with -d or --disable_sim
+# Disable Simulation test mode to run on SGX hardware
+# Default test mode is simulation, disable simulation test mode with -d or --disable_sim
 DISABLE_SIM=0
 # Valid PLATFORM_MODE values are SGX1 or SGX1FLC
 PLATFORM_MODE="SGX1"
@@ -156,7 +156,7 @@ if ! make; then
     exit 1
 fi
 
-# Finally run the tests in Simulator mode or on Hardware
+# Finally run the tests in simulation or on Hardware
 if [[ ${DISABLE_SIM} -ne 1 ]]; then
     SIMULATION_MODE_TEXT="simulation"
     export OE_SIMULATION=1

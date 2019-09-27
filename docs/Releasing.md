@@ -97,7 +97,7 @@ release. These notes should be suitable for a blog post.
 Community Approval
 ------------------
 
-See the [Governance Model](GovernanceModel.md#community-approval-of-releases)
+See the [Governance Model](Governance.md#community-approval-of-releases)
 documentation for the necessary steps to approve the release with the community.
 
 GitHub Release and Git Tag Creation
@@ -146,5 +146,5 @@ notes, and any social media we currently use).
 Servicing
 ---------
 
-See the [Governance Model](GovernanceModel.md#servicing-of-releases)
+See the [Governance Model](Governance.md#servicing-of-releases)
 documentation for our intended servicing model.

@@ -161,6 +161,8 @@ int main(int argc, const char* argv[])
 
     test_remote_verify_report();
 
+    test_verify_report_with_collaterals();
+
     OE_TEST(test_iso8601_time(enclave) == OE_OK);
     OE_TEST(test_iso8601_time_negative(enclave) == OE_OK);
 
@@ -175,6 +177,8 @@ int main(int argc, const char* argv[])
     OE_TEST(enclave_test_local_verify_report(enclave) == OE_OK);
 
     OE_TEST(enclave_test_remote_verify_report(enclave) == OE_OK);
+
+    OE_TEST(enclave_test_verify_report_with_collaterals(enclave) == OE_OK);
 
     TestVerifyTCBInfo(enclave, "./data/tcbInfo.json");
     TestVerifyTCBInfo(enclave, "./data/tcbInfo_with_pceid.json");

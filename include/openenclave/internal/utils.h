@@ -6,6 +6,9 @@
 
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/defs.h>
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
 
 OE_EXTERNC_BEGIN
 
@@ -126,10 +129,17 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
  * understanding see "C++ and the Perils of Double-Checked Locking"
  * http://www.aristeia.com/Papers/DDJ_Jul_Aug_2004_revised.pdf.
  */
+#if defined(__linux__)
 #define OE_ATOMIC_MEMORY_BARRIER_ACQUIRE() \
     __atomic_thread_fence(__ATOMIC_ACQUIRE)
 #define OE_ATOMIC_MEMORY_BARRIER_RELEASE() \
     __atomic_thread_fence(__ATOMIC_RELEASE)
+#elif defined(_MSC_VER)
+#define OE_ATOMIC_MEMORY_BARRIER_ACQUIRE() _ReadBarrier()
+#define OE_ATOMIC_MEMORY_BARRIER_RELEASE() _WriteBarrier()
+#else
+#error "Unsupported platform"
+#endif
 
 #if __x86_64__ || _M_X64
 #define OE_CPU_RELAX() asm volatile("pause" ::: "memory")

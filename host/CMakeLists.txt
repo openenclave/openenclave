@@ -93,10 +93,12 @@ elseif (WIN32)
     crypto/bcrypt/rsa.c
     crypto/bcrypt/sha.c
     crypto/bcrypt/pem.c
+    crypto/bcrypt/util.c
     windows/hostthread.c)
 
   set(PLATFORM_SDK_ONLY_SRC
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
+    ../3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
     ../common/asn1.c
     ../common/cert.c
     crypto/bcrypt/cert.c
@@ -118,6 +120,7 @@ endif()
 # SGX specific files.
 if (OE_SGX)
   list(APPEND PLATFORM_HOST_ONLY_SRC
+    ../common/sgx/collaterals.c
     ../common/sgx/qeidentity.c
     ../common/sgx/quote.c
     ../common/sgx/report.c
@@ -147,7 +150,8 @@ if (OE_SGX)
     sgx/sgxmeasure.c
     sgx/sgxquote.c
     sgx/sgxsign.c
-    sgx/sgxtypes.c)
+    sgx/sgxtypes.c
+    sgx/switchless.c)
 
   # OS specific as well.
   if (UNIX)

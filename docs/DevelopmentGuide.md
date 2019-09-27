@@ -11,7 +11,17 @@ Coding Conventions
 * **DO** use `const` and `static` and visibility modifiers to scope exposure of
    variables and methods as much as possible.
 
+* **DO** use doxygen comments, with \[in,out\]
+  [direction annotation](http://www.doxygen.nl/manual/commands.html#cmdparam) in all public API
+  headers. This is also encouraged, but not strictly required, for internal API
+  headers as well.
+
 * **DON'T** use global variables where possible.
+
+* **DON'T** use abbreviations unless they are already well-known terms known by
+  users (e.g., "app", "info"), or are already required for use by developers (e.g,
+  "min", "max", "args").  Examples of bad use would be `num_widgets` instead of
+  `widget_count`, and `opt_widgets` instead of `option_widgets` or `optional_widgets`.
 
 Style Guide
 -----------
@@ -97,7 +107,7 @@ in that file takes precedence.
 Note that we _no longer_ use `CamelCase` nor double underscores (`__`), but you
 may find remnants and so again should prefer the local style. This is especially
 the case for classes, which are still using `PascalCase`. For now, follow the
-existing style. The project maintainers prefer to fix style issues in bulk using
+existing style. The project Committers prefer to fix style issues in bulk using
 automation, so avoid submitting PRs intended to fix only a few instances of the
 inconsistent style.
 

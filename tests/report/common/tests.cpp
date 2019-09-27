@@ -2,7 +2,280 @@
 // Licensed under the MIT License.
 
 #include "../common/tests.h"
+#include <openenclave/internal/crypto/cmac.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/report.h>
 #include <openenclave/internal/tests.h>
+
+#ifndef OE_BUILD_ENCLAVE
+#include "../../../host/sgx/sgxquoteprovider.h"
+#endif
+#include "../../../common/oe_host_stdlib.h"
+#include "../../../common/sgx/collaterals.h"
+#include "../../../common/sgx/qeidentity.h"
+#include "../../../common/sgx/quote.h"
+#include "../../../common/sgx/revocation.h"
+
+#include <time.h>
+
+/**
+ * Get collateral data which can be used with future function
+ * oe_verify_report_with_collaterals().
+ *
+ * @param collaterals_buffer The buffer containing the collaterals to parse.
+ * @param collaterals_buffer_size The size of the **collaterals_buffer**.
+ *
+ * @retval OE_OK The collaterals were successfully retrieved.
+ */
+oe_result_t oe_get_collaterals(
+#ifndef OE_BUILD_ENCLAVE
+    oe_enclave_t* enclave,
+#endif
+    uint8_t** collaterals_buffer,
+    size_t* collaterals_buffer_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    size_t report_size = OE_MAX_REPORT_SIZE;
+    uint8_t* remote_report = NULL;
+    oe_report_t* parsed_report = NULL;
+    oe_report_header_t* header = NULL;
+
+    OE_TRACE_INFO("Enter enclave call %s\n", __FUNCTION__);
+
+    if ((collaterals_buffer == NULL) || (collaterals_buffer_size == NULL))
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    *collaterals_buffer = NULL;
+    *collaterals_buffer_size = 0;
+
+#ifdef OE_BUILD_ENCLAVE
+    // Get a remote OE report.
+    // We need a report in order to fetch the uris of the certificates in the
+    // sgx quote.
+    OE_CHECK_MSG(
+        oe_get_report(
+            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+            NULL,
+            0,
+            NULL,
+            0,
+            (uint8_t**)&remote_report,
+            &report_size),
+        "Failed to get OE remote report. %s",
+        oe_result_str(result));
+    header = (oe_report_header_t*)remote_report;
+
+    OE_CHECK_MSG(
+        oe_verify_report(remote_report, report_size, parsed_report),
+        "Failed to verify OE remote report. %s",
+        oe_result_str(result));
+#else
+    OE_CHECK_MSG(
+        oe_initialize_quote_provider(),
+        "Failed to initialize quote provider. %s",
+        oe_result_str(result));
+
+    OE_CHECK_MSG(
+        oe_get_report(
+            enclave,
+            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+            NULL,
+            0,
+            (uint8_t**)&remote_report,
+            &report_size),
+        "Failed to get OE remote report. %s",
+        oe_result_str(result));
+    header = (oe_report_header_t*)remote_report;
+
+    OE_CHECK_MSG(
+        oe_verify_report(enclave, remote_report, report_size, parsed_report),
+        "Failed to verify OE remote report. %s",
+        oe_result_str(result));
+#endif
+
+    OE_CHECK_MSG(
+        oe_get_collaterals_internal(
+            header->report,
+            header->report_size,
+            collaterals_buffer,
+            collaterals_buffer_size),
+        "Failed to get collaterals. %s",
+        oe_result_str(result));
+
+    result = OE_OK;
+done:
+    if (remote_report)
+        oe_free_report(remote_report);
+
+    OE_TRACE_INFO(
+        "Exit enclave call %s: %d(%s)\n",
+        __FUNCTION__,
+        result,
+        oe_result_str(result));
+
+    return result;
+}
+
+/**
+ * Verify the integrity of the report and its signature,
+ * with optional collateral data that is associated with the report.
+ *
+ * This function verifies that the report signature is valid. If the report is
+ * local, it verifies that it is correctly signed by the enclave
+ * platform. If the report is remote, it verifies that the signing authority is
+ * rooted to a trusted authority such as the enclave platform manufacturer.
+ *
+ * @param enclave The instance of the enclave that will be used to
+ * verify a local report. For remote reports, this parameter can be NULL.
+ * @param report The buffer containing the report to verify.
+ * @param report_size The size of the **report** buffer.
+ * @param collaterals The collateral data that is associated with the report.
+ * @param collaterals_size The size of the **collaterals** buffer.
+ * @param parsed_report Optional **oe_report_t** structure to populate with the
+ * report properties in a standard format.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ *
+ */
+static oe_result_t oe_verify_report_with_collaterals(
+#ifndef OE_BUILD_ENCLAVE
+    oe_enclave_t* enclave,
+#endif
+    const uint8_t* report,
+    size_t report_size,
+    const uint8_t* collaterals,
+    size_t collaterals_size,
+    oe_datetime_t* input_validation_time,
+    oe_report_t* parsed_report)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_report_t oe_report = {0};
+    oe_report_header_t* header = (oe_report_header_t*)report;
+
+    if (report == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (report_size == 0 || report_size > OE_MAX_REPORT_SIZE)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Ensure that the report is parseable before using the header.
+    OE_CHECK(oe_parse_report(report, report_size, &oe_report));
+
+    if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    {
+#ifndef OE_BUILD_ENCLAVE
+        // Intialize the quote provider if we want to verify a remote quote.
+        // Note that we don't have the OE_USE_LIBSGX guard here since we don't
+        // need the sgx libraries to verify the quote. All we need is the quote
+        // provider.
+        OE_CHECK(oe_initialize_quote_provider());
+#endif
+
+        // Quote attestation can be done entirely on the host side.
+        OE_CHECK(oe_verify_quote_internal_with_collaterals(
+            header->report,
+            header->report_size,
+            collaterals,
+            collaterals_size,
+            input_validation_time));
+
+        // Optionally return parsed report.
+        if (parsed_report != NULL)
+            OE_CHECK(oe_parse_report(report, report_size, parsed_report));
+    }
+    else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
+    {
+        if (collaterals != NULL || collaterals_size > 0)
+        {
+            OE_RAISE_MSG(
+                OE_UNSUPPORTED,
+                "Local reports should not have collaterals.",
+                NULL);
+        }
+
+#ifndef OE_BUILD_ENCLAVE
+        if (enclave == NULL)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        OE_CHECK(oe_verify_report(enclave, report, report_size, parsed_report));
+#else
+        OE_CHECK(oe_verify_report(report, report_size, parsed_report));
+#endif
+    }
+    else
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+/**
+ * Free up any resources allocated by oe_get_collateras()
+ *
+ * @param collaterals_buffer The buffer containing the collaterals.
+ */
+static void oe_free_collaterals(uint8_t* collaterals_buffer)
+{
+    oe_free_collaterals_internal(collaterals_buffer);
+}
+
+static oe_result_t oe_get_quote_validity_with_collaterals(
+    const uint8_t* report,
+    const size_t report_size,
+    const uint8_t* collaterals,
+    size_t collaterals_size,
+    oe_datetime_t* valid_from,
+    oe_datetime_t* valid_until)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_report_t oe_report = {0};
+    oe_report_header_t* header = (oe_report_header_t*)report;
+
+    if (report == NULL || collaterals == NULL || valid_from == NULL ||
+        valid_until == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (report_size == 0 || report_size > OE_MAX_REPORT_SIZE ||
+        collaterals_size == 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Ensure that the report is parseable before using the header.
+    OE_CHECK(oe_parse_report(report, report_size, &oe_report));
+
+    if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    {
+#ifndef OE_BUILD_ENCLAVE
+        // Intialize the quote provider if we want to verify a remote quote.
+        // Note that we don't have the OE_USE_LIBSGX guard here since we don't
+        // need the sgx libraries to verify the quote. All we need is the quote
+        // provider.
+        OE_CHECK(oe_initialize_quote_provider());
+#endif
+
+        // Quote attestation can be done entirely on the host side.
+        OE_CHECK(oe_get_quote_validity_with_collaterals_internal(
+            header->report,
+            header->report_size,
+            collaterals,
+            collaterals_size,
+            valid_from,
+            valid_until));
+    }
+    else
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    result = OE_OK;
+done:
+    return result;
+}
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/corelibc/string.h>
@@ -10,7 +283,11 @@
 #define GetReport oe_get_report
 #define GetReport_v2 oe_get_report_v2
 
+#define GetCollaterals oe_get_collaterals
+
 #define VerifyReport oe_verify_report
+#define VerifyReportWithCollaterals oe_verify_report_with_collaterals
+#define GetQuoteValidityWithCollaterals oe_get_quote_validity_with_collaterals
 
 #else
 
@@ -23,6 +300,10 @@ oe_enclave_t* g_enclave = NULL;
     oe_get_report(g_enclave, flags, op, ops, rb, rbs)
 #define GetReport_v2(flags, rd, rds, op, ops, rb, rbs) \
     oe_get_report_v2(g_enclave, flags, op, ops, rb, rbs)
+
+// Get collateral macros.  Host side API has an additional enclave object.
+#define GetCollaterals(data, data_size) \
+    oe_get_collaterals(g_enclave, data, data_size)
 
 oe_result_t VerifyReport(
     const uint8_t* report,
@@ -41,6 +322,61 @@ oe_result_t VerifyReport(
 
     // Local attestation requires enclave.
     return oe_verify_report(g_enclave, report, report_size, parsed_report);
+}
+
+oe_result_t VerifyReportWithCollaterals(
+    const uint8_t* report,
+    size_t report_size,
+    const uint8_t* collaterals,
+    size_t collaterals_size,
+    oe_datetime_t* input_validation_time,
+    oe_report_t* parsed_report)
+{
+    oe_report_t tmp_report = {0};
+    OE_TEST(oe_parse_report(report, report_size, &tmp_report) == OE_OK);
+
+    if (tmp_report.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
+    {
+        return oe_verify_report_with_collaterals(
+            g_enclave,
+            report,
+            report_size,
+            collaterals,
+            collaterals_size,
+            input_validation_time,
+            parsed_report);
+    }
+    else
+    {
+        return OE_UNSUPPORTED;
+    }
+}
+
+oe_result_t GetQuoteValidityWithCollaterals(
+    const uint8_t* report,
+    size_t report_size,
+    const uint8_t* collaterals,
+    size_t collaterals_size,
+    oe_datetime_t* valid_from,
+    oe_datetime_t* valid_until)
+{
+    oe_report_t tmp_report = {0};
+    OE_TEST(oe_parse_report(report, report_size, &tmp_report) == OE_OK);
+
+    if (tmp_report.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
+    {
+        return oe_get_quote_validity_with_collaterals(
+            report,
+            report_size,
+            collaterals,
+            collaterals_size,
+            valid_from,
+            valid_until);
+    }
+    else
+    {
+        return OE_UNSUPPORTED;
+    }
 }
 
 #endif
@@ -886,4 +1222,132 @@ void test_remote_verify_report()
         oe_free_report(report_ptr);
 #endif
     }
+}
+
+void test_verify_report_with_collaterals()
+{
+    uint32_t flags = OE_REPORT_FLAGS_REMOTE_ATTESTATION;
+
+    size_t report_ptr_size;
+    uint8_t* report_buffer_ptr;
+
+    size_t collaterals_ptr_size = 0;
+    uint8_t* collaterals_buffer_ptr = NULL;
+
+    /* Test 1: Verify report with collaterals */
+    OE_TEST(
+        GetReport_v2(
+            flags, NULL, 0, NULL, 0, &report_buffer_ptr, &report_ptr_size) ==
+        OE_OK);
+
+    /* Verify report without collaterals */
+    OE_TEST(
+        VerifyReportWithCollaterals(
+            report_buffer_ptr, report_ptr_size, NULL, 0, NULL, NULL) == OE_OK);
+
+    if (GetCollaterals(&collaterals_buffer_ptr, &collaterals_ptr_size) == OE_OK)
+    {
+        OE_TEST(
+            VerifyReportWithCollaterals(
+                report_buffer_ptr,
+                report_ptr_size,
+                collaterals_buffer_ptr,
+                collaterals_ptr_size,
+                NULL, // Validate using current time
+                NULL) == OE_OK);
+
+        /* Test with time in the past */
+        time_t t;
+        struct tm* timeinfo;
+        time(&t);
+        timeinfo = gmtime(&t);
+
+        // convert tm to oe_datetime_t
+        oe_datetime_t past = {(uint32_t)timeinfo->tm_year + 1890,
+                              (uint32_t)timeinfo->tm_mon + 1,
+                              (uint32_t)timeinfo->tm_mday,
+                              (uint32_t)timeinfo->tm_hour,
+                              (uint32_t)timeinfo->tm_min,
+                              (uint32_t)timeinfo->tm_sec};
+        OE_TEST(
+            VerifyReportWithCollaterals(
+                report_buffer_ptr,
+                report_ptr_size,
+                collaterals_buffer_ptr,
+                collaterals_ptr_size,
+                &past,
+                NULL) == OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
+
+        /* Test with time in the future */
+        oe_datetime_t future = {(uint32_t)timeinfo->tm_year + 1910,
+                                (uint32_t)timeinfo->tm_mon + 1,
+                                (uint32_t)timeinfo->tm_mday,
+                                (uint32_t)timeinfo->tm_hour,
+                                (uint32_t)timeinfo->tm_min,
+                                (uint32_t)timeinfo->tm_sec};
+        OE_TEST(
+            VerifyReportWithCollaterals(
+                report_buffer_ptr,
+                report_ptr_size,
+                collaterals_buffer_ptr,
+                collaterals_ptr_size,
+                &future,
+                NULL) == OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
+
+        /* Get validity range and use it to validate edge cases.*/
+        oe_datetime_t valid_from = {0};
+        oe_datetime_t valid_until = {0};
+        OE_TEST(
+            GetQuoteValidityWithCollaterals(
+                report_buffer_ptr,
+                report_ptr_size,
+                collaterals_buffer_ptr,
+                collaterals_ptr_size,
+                &valid_from,
+                &valid_until) == OE_OK);
+        /* At latest valid from date */
+        OE_TEST(
+            VerifyReportWithCollaterals(
+                report_buffer_ptr,
+                report_ptr_size,
+                collaterals_buffer_ptr,
+                collaterals_ptr_size,
+                &valid_from,
+                NULL) == OE_OK);
+        /* At earliest expiration date */
+        OE_TEST(
+            VerifyReportWithCollaterals(
+                report_buffer_ptr,
+                report_ptr_size,
+                collaterals_buffer_ptr,
+                collaterals_ptr_size,
+                &valid_until,
+                NULL) == OE_OK);
+
+        valid_from.seconds -= 1;
+        OE_TEST(
+            VerifyReportWithCollaterals(
+                report_buffer_ptr,
+                report_ptr_size,
+                collaterals_buffer_ptr,
+                collaterals_ptr_size,
+                &valid_from,
+                NULL) == OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
+
+        valid_until.seconds += 1;
+        OE_TEST(
+            VerifyReportWithCollaterals(
+                report_buffer_ptr,
+                report_ptr_size,
+                collaterals_buffer_ptr,
+                collaterals_ptr_size,
+                &valid_until,
+                NULL) == OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
+    }
+
+    oe_free_collaterals(collaterals_buffer_ptr);
+    oe_free_report(report_buffer_ptr);
+
+    collaterals_buffer_ptr = NULL;
+    report_buffer_ptr = NULL;
 }

@@ -43,7 +43,7 @@ static oe_result_t _get_local_report(
     if (report_buffer == NULL || *report_buffer_size < sizeof(sgx_report_t))
     {
         *report_buffer_size = sizeof(sgx_report_t);
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     OE_CHECK(oe_get_sgx_report_ecall(
@@ -294,8 +294,8 @@ oe_result_t oe_verify_report(
         OE_CHECK(oe_initialize_quote_provider());
 
         // Quote attestation can be done entirely on the host side.
-        OE_CHECK(oe_verify_quote_internal(
-            header->report, header->report_size, NULL, 0, NULL, 0, NULL, 0));
+        OE_CHECK(oe_verify_quote_internal_with_collaterals(
+            header->report, header->report_size, NULL, 0, NULL));
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
@@ -308,7 +308,6 @@ oe_result_t oe_verify_report(
 
         OE_CHECK(retval);
     }
-
     else
     {
         OE_RAISE(OE_INVALID_PARAMETER);

@@ -3,17 +3,21 @@
 
 #include <limits.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/report.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "oecert_u.h"
 
+#include "../../../../common/sgx/collaterals.h"
+
 #ifdef OE_USE_LIBSGX
 
 #define INPUT_PARAM_OPTION_CERT "--cert"
 #define INPUT_PARAM_OPTION_REPORT "--report"
 #define INPUT_PARAM_OPTION_OUT_FILE "--out"
+#define INPUT_PARAM_OPTION_COLLATERALS "--collaterals"
 
 // Structure to store input parameters
 //
@@ -25,6 +29,7 @@ typedef struct _input_params
     const char* out_filename;
     bool gen_cert;
     bool gen_report;
+    bool gen_collaterals;
 } input_params_t;
 
 static input_params_t _params;
@@ -189,12 +194,64 @@ static oe_result_t _gen_report(
                 // TODO: Dump report.
             }
         }
+
+        // Check if collaterals need to be generated
+        if (_params.gen_collaterals)
+        {
+            char collateral_filename[1024 + 1];
+
+            if (strlen(report_filename) < (1024 - 4))
+            {
+                uint8_t* collaterals = NULL;
+                size_t collaterals_size = 0;
+                oe_report_header_t* header = (oe_report_header_t*)remote_report;
+
+                sprintf(collateral_filename, "%s.col", report_filename);
+                printf(
+                    "Generatting collateral file: %s\n", collateral_filename);
+
+                result = oe_get_collaterals_internal(
+                    header->report,
+                    header->report_size,
+                    &collaterals,
+                    &collaterals_size);
+                if (result != OE_OK)
+                {
+                    printf("ERROR: Failed to get collaterals\n");
+                    goto exit;
+                }
+
+                // TODO: Current collateral structure is not self contained.
+                // Needs to be updated to be serialisable.
+                //
+                FILE* col_fp = fopen(collateral_filename, "wb");
+                if (!col_fp)
+                {
+                    printf(
+                        "Failed to open collateral file %s\n",
+                        collateral_filename);
+                    result = OE_FAILURE;
+                    goto exit;
+                }
+                fwrite(collaterals, collaterals_size, 1, col_fp);
+                fclose(col_fp);
+                printf("collaterals_size = %zu\n", collaterals_size);
+            }
+            else
+            {
+                printf("ERROR: Report filename is too long.\n");
+                exit(1);
+            }
+        }
     }
     else
     {
         printf("Failed to create report. Error: %s\n", oe_result_str(result));
     }
 exit:
+
+    if (remote_report)
+        oe_free_report(remote_report);
 
     return result;
 }
@@ -208,6 +265,10 @@ static void _display_help(const char* cmd)
         INPUT_PARAM_OPTION_CERT);
     printf(
         "\t%s : generate binary enclave report.\n", INPUT_PARAM_OPTION_REPORT);
+    printf(
+        "\t%s : generate binary collaterals.  Valid only if %s is specified.\n",
+        INPUT_PARAM_OPTION_COLLATERALS,
+        INPUT_PARAM_OPTION_REPORT);
     printf("\t%s : output filename.\n", INPUT_PARAM_OPTION_OUT_FILE);
 
     // TODO: Add option to display certs
@@ -268,7 +329,6 @@ static int _parse_args(int argc, const char* argv[])
             if (argc >= i)
             {
                 _params.gen_report = true;
-
                 i += 1;
             }
             else
@@ -280,12 +340,16 @@ static int _parse_args(int argc, const char* argv[])
                 return 1;
             }
         }
+        else if (strcmp(INPUT_PARAM_OPTION_COLLATERALS, argv[i]) == 0)
+        {
+            _params.gen_collaterals = true;
+            i += 1;
+        }
         else if (strcmp(INPUT_PARAM_OPTION_OUT_FILE, argv[i]) == 0)
         {
             if (argc >= i + 1)
             {
                 _params.out_filename = argv[i + 1];
-
                 i += 2;
             }
             else

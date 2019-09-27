@@ -11,7 +11,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/stack_alloc.h>
 
-#include "shm.h"
+#include "arena.h"
 #include "tee_t.h"
 
 void* oe_host_malloc(size_t size)
@@ -160,14 +160,14 @@ int oe_host_fprintf(int device, const char* fmt, ...)
 // A stack-based allocation scheme is the most efficient in this case.
 void* oe_allocate_switchless_ocall_buffer(size_t size)
 {
-    return oe_shm_malloc(size);
+    return oe_arena_malloc(size);
 }
 
 // Function used by oeedger8r for freeing ocall buffers.
 void oe_free_switchless_ocall_buffer(void* buffer)
 {
     OE_UNUSED(buffer);
-    /* Do nothing. Buffer will be freed on ECALL RETURN */
+    oe_arena_free_all();
 }
 
 int oe_host_write(int device, const char* str, size_t len)

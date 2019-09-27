@@ -9,7 +9,7 @@ void TestCRL(void);
 void TestEC(void);
 void TestKDF(void);
 void TestRandom(void);
-void TestRdrand(void);
+void TestCpuEntropy(void);
 void TestRSA(void);
 void TestSHA(void);
 void TestHMAC(void);

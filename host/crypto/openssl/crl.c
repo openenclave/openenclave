@@ -14,6 +14,7 @@
 #include <time.h>
 
 #include "../magic.h"
+#include "asn1.h"
 #include "crl.h"
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
@@ -118,99 +119,6 @@ done:
     return result;
 }
 
-// Parse a string into a oe_datetime_t: example: "May 30 10:23:42 2018 GMT".
-// This format is specific to OpenSSL: produced by ASN1_TIME_print().
-static oe_result_t _string_to_date(const char* str, oe_datetime_t* date)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    char month[4];
-
-    memset(date, 0, sizeof(oe_datetime_t));
-
-    /* Convert the string to oe_datetime_t struct */
-    if (sscanf(
-            str,
-            "%3s %02u %02u:%02u:%02u %04u",
-            month,
-            &date->day,
-            &date->hours,
-            &date->minutes,
-            &date->seconds,
-            &date->year) != 6)
-    {
-        OE_RAISE(OE_FAILURE);
-    }
-
-    /* Convert the month string to integer */
-    {
-        static const char* _month[] = {"Jan",
-                                       "Feb",
-                                       "Mar",
-                                       "Apr",
-                                       "May",
-                                       "Jun",
-                                       "Jul",
-                                       "Aug",
-                                       "Sep",
-                                       "Oct",
-                                       "Nov",
-                                       "Dec"};
-
-        date->month = UINT_MAX;
-
-        for (uint32_t i = 0; i < OE_COUNTOF(_month); i++)
-        {
-            if (strncmp(month, _month[i], 3) == 0)
-            {
-                date->month = i + 1;
-                break;
-            }
-        }
-
-        if (date->month == UINT_MAX)
-            OE_RAISE(OE_FAILURE);
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-static oe_result_t _asn1_time_to_date(
-    const ASN1_TIME* time,
-    oe_datetime_t* date)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    struct tm;
-    BIO* bio = NULL;
-    BUF_MEM* mem;
-    const char null_terminator = '\0';
-
-    if (!(bio = BIO_new(BIO_s_mem())))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    if (!ASN1_TIME_print(bio, time))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    if (!BIO_get_mem_ptr(bio, &mem))
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    if (BIO_write(bio, &null_terminator, sizeof(null_terminator)) <= 0)
-        OE_RAISE(OE_CRYPTO_ERROR);
-
-    OE_CHECK(_string_to_date(mem->data, date));
-
-    result = OE_OK;
-
-done:
-
-    if (bio)
-        BIO_free(bio);
-
-    return result;
-}
-
 oe_result_t oe_crl_get_update_dates(
     const oe_crl_t* crl,
     oe_datetime_t* last,
@@ -235,7 +143,7 @@ oe_result_t oe_crl_get_update_dates(
         if (!(time = X509_CRL_get0_lastUpdate(impl->crl)))
             OE_RAISE(OE_CRYPTO_ERROR);
 
-        OE_CHECK(_asn1_time_to_date(time, last));
+        OE_CHECK(oe_asn1_time_to_date(time, last));
     }
 
     if (next)
@@ -245,7 +153,7 @@ oe_result_t oe_crl_get_update_dates(
         if (!(time = X509_CRL_get0_nextUpdate(impl->crl)))
             OE_RAISE(OE_CRYPTO_ERROR);
 
-        OE_CHECK(_asn1_time_to_date(time, next));
+        OE_CHECK(oe_asn1_time_to_date(time, next));
     }
 
     result = OE_OK;

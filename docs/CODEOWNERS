@@ -1,0 +1,52 @@
+# Each line is a file pattern followed by one or more owners.
+# Refer to https://help.github.com/en/articles/about-code-owners
+
+# Order is important; the last matching pattern takes the most
+# precedence. Try to keep at least two owners per pattern.
+
+# These owners will be the default owners for everything in the repo.
+# Unless a later match takes precedence, they will be requested for
+# review when someone opens a pull request.
+* @openenclave/committers
+
+/3rdparty/ @mikbras @CodeMonkeyLeet
+/cmake/ @andschwa @BRMcLaren
+/common/ @CodeMonkeyLeet @gupta-ak @mikbras
+/debugger/ @anakrish @jxyang
+/enclave/ @CodeMonkeyLeet @gupta-ak @mikbras
+/host/ @CodeMonkeyLeet @gupta-ak @mikbras
+# TODO: Break this folder out?
+/include/ @achamayou @dthaler @mikbras @CodeMonkeyLeet
+/libc/ @mikbras @CodeMonkeyLeet
+/scripts/ @achamayou @andschwa @johnkord
+/samples/ @andschwa @dthaler @soccerGB
+/syscall/ @mikbras @yakman2020
+# TODO: Break this folder out?
+/tests/ @EmilAlexandruStoica @mikbras
+/tools/ @anakrish @CodeMonkeyLeet
+/tools/oeedger8r/ @andschwa @anakrish @jxyang
+/pkgconfig/ @gupta-ak @mikbras
+/prereqs/ @johnkord @CodeMonkeyLeet
+
+# Matches all folders with these names, not just in root.
+optee/ @Britel @dthaler @HernanGatta
+sgx/ @CodeMonkeyLeet @gupta-ak @mikbras
+linux/ @mikbras @yakman2020
+windows/ @CodeMonkeyLeet @yakman2020
+crypto/ @CodeMonkeyLeet @gupta-ak
+
+# Match all CMake, anywhere.
+CMakeLists.txt @andschwa @BRMcLaren @EmilAlexandruStoica
+*.cmake @andschwa @BRMcLaren @EmilAlexandruStoica
+
+# Match all Markdown, anywhere.
+*.md @CodeMonkeyLeet @johnkord @andschwa @radhikaj
+
+# Except design reviews, which should be everyone.
+/docs/DesignDocs/ @openenclave/committers
+
+# And governance documents.
+/docs/Contributing.md @openenclave/committee
+/docs/Governance.md @openenclave/committee
+/docs/Committers.md @openenclave/committee
+/docs/Releasing.md @openenclave/committee

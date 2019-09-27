@@ -24,6 +24,7 @@ enclave {
         public void enclave_test_parse_report_negative();
         public void enclave_test_local_verify_report();
         public void enclave_test_remote_verify_report();
+        public void enclave_test_verify_report_with_collaterals();
     };
 
     untrusted {

@@ -420,7 +420,7 @@ class Configuration(object):
         # Insert the platform name into the available features as a lower case.
         self.config.available_features.add(target_platform)
 
-        # Simulator testing can take a really long time for some of these tests
+        # Simulation mode testing can take a really long time for some of these tests
         # so add a feature check so we can REQUIRES: long_tests in them
         self.long_tests = self.get_lit_bool('long_tests')
         if self.long_tests is None:

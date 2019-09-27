@@ -28,8 +28,8 @@ typedef struct _oe_sgx_quote_provider
 
 #define SGX_QL_GET_REVOCATION_INFO_NAME "sgx_ql_get_revocation_info"
 #define SGX_QL_FREE_REVOCATION_INFO_NAME "sgx_ql_free_revocation_info"
-#define SGX_QL_GET_QE_IDENTITY_INFO_NAME "sgx_ql_get_qe_identity_info"
-#define SGX_QL_FREE_QE_IDENTITY_INFO_NAME "sgx_ql_free_qe_identity_info"
+#define SGX_QL_GET_QE_IDENTITY_INFO_NAME "sgx_get_qe_identity_info"
+#define SGX_QL_FREE_QE_IDENTITY_INFO_NAME "sgx_free_qe_identity_info"
 #define SGX_QL_SET_LOGGING_FUNCTION_NAME "sgx_ql_set_logging_function"
 
 OE_EXTERNC_END

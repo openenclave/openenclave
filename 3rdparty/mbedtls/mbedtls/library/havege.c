@@ -36,13 +36,9 @@
 
 #include "mbedtls/havege.h"
 #include "mbedtls/timing.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
 
 /* ------------------------------------------------------------------------
  * On average, one iteration accesses two 8-word blocks in the havege WALK
@@ -58,7 +54,7 @@ static void mbedtls_zeroize( void *v, size_t n ) {
  * ------------------------------------------------------------------------
  */
 
-#define SWAP(X,Y) { int *T = X; X = Y; Y = T; }
+#define SWAP(X,Y) { int *T = (X); (X) = (Y); (Y) = T; }
 
 #define TST1_ENTER if( PTEST & 1 ) { PTEST ^= 3; PTEST >>= 1;
 #define TST2_ENTER if( PTEST & 1 ) { PTEST ^= 3; PTEST >>= 1;
@@ -208,7 +204,7 @@ void mbedtls_havege_free( mbedtls_havege_state *hs )
     if( hs == NULL )
         return;
 
-    mbedtls_zeroize( hs, sizeof( mbedtls_havege_state ) );
+    mbedtls_platform_zeroize( hs, sizeof( mbedtls_havege_state ) );
 }
 
 /*

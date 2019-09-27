@@ -4,22 +4,30 @@
 
 PUBLIC oe_rdrand
 oe_rdrand PROC
-;; Subroutine Prologue
-	push rbp     ;; Save the old base pointer value.
-	mov rbp, rsp ;; Set the new base pointer value.
-	sub rsp, 4   ;; Make room for one 4-byte local variable.
 
-;; Subroutine Body
 _rdrand_retry:
-	rdrand rax
-	jnc _rdrand_retry
+    rdrand rax
+    jc _rdrand_epilogue
+    pause
+    jmp _rdrand_retry
 
-;; Subroutine Epilogue
-	mov rsp, rbp ;; Deallocate local variables
-	pop rbp      ;; Restore the caller's base pointer value
-
-	ret
+_rdrand_epilogue:
+    ret
 
 oe_rdrand ENDP
+
+PUBLIC oe_rdseed
+oe_rdseed PROC
+
+_rdseed_retry:
+    rdseed rax
+    jc _rdseed_epilogue
+    pause
+    jmp _rdseed_retry
+
+_rdseed_epilogue:
+    ret
+
+oe_rdseed ENDP
 
 END

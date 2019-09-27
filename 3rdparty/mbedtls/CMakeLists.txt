@@ -103,6 +103,7 @@ add_library(mbedcrypto_static STATIC
   mbedtls/library/pkparse.c
   mbedtls/library/pkwrite.c
   mbedtls/library/platform.c
+  mbedtls/library/platform_util.c
   mbedtls/library/ripemd160.c
   mbedtls/library/rsa.c
   mbedtls/library/rsa_internal.c

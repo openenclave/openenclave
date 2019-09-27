@@ -399,10 +399,15 @@ oe_result_t oe_create_enclave(
     const char* enclave_path,
     oe_enclave_type_t enclave_type,
     uint32_t flags,
+#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
+    const oe_enclave_config_t* configs,
+    uint32_t config_count,
+#else
     const void* config,
     uint32_t config_size,
+#endif
     const oe_ocall_func_t* ocall_table,
-    uint32_t ocall_table_size,
+    uint32_t ocall_count,
     oe_enclave_t** enclave_out)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -425,10 +430,15 @@ oe_result_t oe_create_enclave(
     if (!enclave_path || !enclave_out ||
         ((enclave_type != OE_ENCLAVE_TYPE_OPTEE) &&
          (enclave_type != OE_ENCLAVE_TYPE_AUTO)) ||
+#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
+        (config_count > 0 && configs == NULL) ||
+        (config_count == 0 && configs != NULL) ||
+#else
+        config || config_size > 0 ||
+#endif
         (flags & OE_ENCLAVE_FLAG_RESERVED) ||
         (!(flags & OE_ENCLAVE_FLAG_SIMULATE) &&
-         (flags & OE_ENCLAVE_FLAG_DEBUG)) ||
-        config || config_size > 0)
+         (flags & OE_ENCLAVE_FLAG_DEBUG)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Convert the path into a TEE UUID. */
@@ -482,7 +492,7 @@ oe_result_t oe_create_enclave(
     enclave->path = strndup(
         enclave_path, 38); // 37 + 1 = length of a UUID + NULL terminator
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
-    enclave->num_ocalls = ocall_table_size;
+    enclave->num_ocalls = ocall_count;
 
     *enclave_out = enclave;
     result = OE_OK;

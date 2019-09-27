@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Transferred repository from [microsoft/openenclave](https://github.com/microsoft/openenclave) to [openenclave/openenclave](https://github.com/openenclave/openenclave).
 - Change debugging contract for oegdb. Enclaves and hosts built prior to this release cannot be debugged with this version of oegdb and vice versa.
 - Update LLVM libcxx to version 8.0.0.
+- Update mbedTLS to version 2.7.11.
 
 [v0.6.0] - 2019-06-29
 ---------------------
@@ -35,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
          should enable it themselves after assessing its startup impact.
 - Removed support for the previously deprecated `OE_API_VERSION=1` APIs.
 - Update MUSL libc to version 1.1.21.
+- Update mbedTLS to version 2.16.2.
 
 [v0.5.0] - 2019-04-09
 ---------------------

@@ -101,7 +101,7 @@ static void _write_message_to_stream(
     struct tm* t = localtime(&lt);
 #endif
 
-    oe_thread thread_id = oe_thread_self();
+    oe_thread_t thread_id = oe_thread_self();
 
     fprintf(
         stream,

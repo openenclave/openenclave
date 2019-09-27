@@ -100,6 +100,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_UNSUPPORTED_ENCLAVE_IMAGE";
         case OE_VERIFY_CRL_EXPIRED:
             return "OE_VERIFY_CRL_EXPIRED";
+        case OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD:
+            return "OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD";
         case OE_VERIFY_CRL_MISSING:
             return "OE_VERIFY_CRL_MISSING";
         case OE_VERIFY_REVOKED:
@@ -118,6 +120,12 @@ const char* oe_result_str(oe_result_t result)
             return "QE_QUOTE_ENCLAVE_IDENTITY_PRODUCTID_MISMATCH";
         case OE_VERIFY_FAILED_AES_CMAC_MISMATCH:
             return "OE_VERIFY_FAILED_AES_CMAC_MISMATCH";
+        case OE_CONTEXT_SWITCHLESS_OCALL_MISSED:
+            return "OE_CONTEXT_SWITCHLESS_OCALL_MISSED";
+        case OE_THREAD_CREATE_ERROR:
+            return "OE_THREAD_CREATE_ERROR";
+        case OE_THREAD_JOIN_ERROR:
+            return "OE_THREAD_JOIN_ERROR";
         case __OE_RESULT_MAX:
             break;
     }
@@ -171,6 +179,7 @@ bool oe_is_valid_result(uint32_t result)
         case OE_INVALID_QE_IDENTITY_INFO:
         case OE_UNSUPPORTED_ENCLAVE_IMAGE:
         case OE_VERIFY_CRL_EXPIRED:
+        case OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD:
         case OE_VERIFY_CRL_MISSING:
         case OE_VERIFY_REVOKED:
         case OE_CRYPTO_ERROR:
@@ -180,6 +189,9 @@ bool oe_is_valid_result(uint32_t result)
         case OE_QUOTE_ENCLAVE_IDENTITY_UNIQUEID_MISMATCH:
         case QE_QUOTE_ENCLAVE_IDENTITY_PRODUCTID_MISMATCH:
         case OE_VERIFY_FAILED_AES_CMAC_MISMATCH:
+        case OE_CONTEXT_SWITCHLESS_OCALL_MISSED:
+        case OE_THREAD_CREATE_ERROR:
+        case OE_THREAD_JOIN_ERROR:
         {
             return true;
         }

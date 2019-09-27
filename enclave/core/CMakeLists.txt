@@ -50,6 +50,7 @@ set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
+        ../../common/sgx/collaterals.c
         sgx/backtrace.c
         sgx/calls.c
         sgx/cpuid.c
@@ -136,12 +137,13 @@ add_library(oecore STATIC
     pthread.c
     result.c
     sbrk.c
-    shm.c
+    arena.c
     stdio.c
     strerror.c
     string.c
     strtok_r.c
     strtoul.c
+    switchlesscalls.c
     tee_t_wrapper.c
     time.c
     tracee.c

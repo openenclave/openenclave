@@ -1,4 +1,4 @@
-# Getting Started with Open Enclave in Simulator mode
+# Getting Started with Open Enclave in Simulation mode
 
 ## Platform requirement
 
@@ -98,7 +98,9 @@ Errors while running CTest
 
 Some of the tests are skipped (Not Run) by design because the current simulator is not fully featured yet.
 
-A clean pass of the above unitests run is an indication that your Open Enclave setup was successful. You can start playing with those Open Enclave samples after following the instructions in the "Install" section below to configure samples for building,
+A clean pass of the above unit tests is an indication that your Open Enclave setup was successful.
+
+You can start playing with those Open Enclave samples after following the instructions in the "Install" section below to configure samples for building,
 
 For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) document.
 

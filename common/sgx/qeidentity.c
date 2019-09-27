@@ -32,84 +32,98 @@ void dump_info(const char* title, const uint8_t* data, const uint8_t count)
     }
 }
 
-oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
+oe_result_t oe_validate_qe_report_body(sgx_report_body_t* qe_report_body)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (qe_report_body == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // No qe_identity info returned from the quote provider, this could be
+    // because either get_qe_identity_info API was not supported or
+    // unexpected error. In both cases, check against hardcoded quoting
+    // enclave properties instead Assert that the qe report's MRSIGNER
+    // matches Intel's quoting. We will remove these hardcoded values once
+    // the libdcap_quoteprov.so was updated to support qe identity feature.
+
+    // enclave's mrsigner.
+    if (!oe_constant_time_mem_equal(
+            qe_report_body->mrsigner, g_qe_mrsigner, sizeof(g_qe_mrsigner)))
+    {
+        dump_info("Expected mrsigner", g_qe_mrsigner, sizeof(g_qe_mrsigner));
+        dump_info(
+            "Actual mrsigner",
+            qe_report_body->mrsigner,
+            sizeof(qe_report_body->mrsigner));
+        OE_RAISE_MSG(
+            OE_QUOTE_ENCLAVE_IDENTITY_UNIQUEID_MISMATCH,
+            "mrsigner mismatch",
+            NULL);
+    }
+
+    if (qe_report_body->isvprodid != g_qe_isvprodid)
+        OE_RAISE_MSG(
+            QE_QUOTE_ENCLAVE_IDENTITY_PRODUCTID_MISMATCH,
+            "isvprodid mismatch. Expected 0x%04X, actual 0x%04X",
+            g_qe_isvprodid,
+            qe_report_body->isvprodid);
+
+    if (qe_report_body->isvsvn < g_qeisvsvn)
+        OE_RAISE_MSG(
+            OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
+            "isvsvn is out-of-date. Required SVN 0x%08X, actual SVN 0x%08X",
+            g_qeisvsvn,
+            qe_report_body->isvsvn);
+
+    // Ensure that the QE is not a debug supporting enclave.
+    if (qe_report_body->attributes.flags & SGX_FLAGS_DEBUG)
+        OE_RAISE_MSG(
+            OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
+            "QE has SGX_FLAGS_DEBUG set!!",
+            NULL);
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}
+
+oe_result_t oe_validate_qe_identity(
+    sgx_report_body_t* qe_report_body,
+    oe_get_qe_identity_info_args_t* qe_id_args,
+    oe_datetime_t* validity_from,
+    oe_datetime_t* validity_until)
 {
     oe_result_t result = OE_FAILURE;
-    oe_get_qe_identity_info_args_t qe_id_args = {0};
     const uint8_t* pem_pck_certificate = NULL;
     size_t pem_pck_certificate_size = 0;
     oe_cert_chain_t pck_cert_chain = {0};
+    oe_cert_t leaf_cert = {0};
     oe_parsed_qe_identity_info_t parsed_info = {0};
+    oe_datetime_t from = {0};
+    oe_datetime_t until = {0};
 
     OE_TRACE_INFO("Calling %s\n", __FUNCTION__);
 
-    // fetch qe identity information
-    result = oe_get_qe_identity_info(&qe_id_args);
-    if (result == OE_QUOTE_PROVIDER_CALL_ERROR)
-    {
-        // No qe_identity info returned from the quote provider, this could be
-        // because either get_qe_identity_info API was not supported or
-        // unexpected error. In both cases, check against hardcoded quoting
-        // enclave properties instead Assert that the qe report's MRSIGNER
-        // matches Intel's quoting. We will remove these hardcoded values once
-        // the libdcap_quoteprov.so was updated to support qe identity feature.
-
-        // enclave's mrsigner.
-        if (!oe_constant_time_mem_equal(
-                qe_report_body->mrsigner, g_qe_mrsigner, sizeof(g_qe_mrsigner)))
-        {
-            dump_info(
-                "Expected mrsigner", g_qe_mrsigner, sizeof(g_qe_mrsigner));
-            dump_info(
-                "Actual mrsigner",
-                qe_report_body->mrsigner,
-                sizeof(qe_report_body->mrsigner));
-            OE_RAISE_MSG(
-                OE_QUOTE_ENCLAVE_IDENTITY_UNIQUEID_MISMATCH,
-                "mrsigner mismatch",
-                NULL);
-        }
-
-        if (qe_report_body->isvprodid != g_qe_isvprodid)
-            OE_RAISE_MSG(
-                QE_QUOTE_ENCLAVE_IDENTITY_PRODUCTID_MISMATCH,
-                "isvprodid mismatch. Expected 0x%04X, actual 0x%04X",
-                g_qe_isvprodid,
-                qe_report_body->isvprodid);
-
-        if (qe_report_body->isvsvn < g_qeisvsvn)
-            OE_RAISE_MSG(
-                OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
-                "isvsvn is out-of-date. Required SVN 0x%08X, actual SVN 0x%08X",
-                g_qeisvsvn,
-                qe_report_body->isvsvn);
-
-        // Ensure that the QE is not a debug supporting enclave.
-        if (qe_report_body->attributes.flags & SGX_FLAGS_DEBUG)
-            OE_RAISE_MSG(
-                OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
-                "QE has SGX_FLAGS_DEBUG set!!",
-                NULL);
-
-        result = OE_OK;
-        goto done;
-    }
-    OE_CHECK(result);
+    if ((qe_id_args == NULL) || (validity_from == NULL) ||
+        (validity_until == NULL))
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     // Use QE Identity info to validate QE
     // Check against fetched qe identityinfo
-    OE_TRACE_INFO("qe_identity.issuer_chain:[%s]\n", qe_id_args.issuer_chain);
-    pem_pck_certificate = qe_id_args.issuer_chain;
-    pem_pck_certificate_size = qe_id_args.issuer_chain_size;
+    OE_TRACE_INFO("qe_identity.issuer_chain:[%s]\n", qe_id_args->issuer_chain);
+    pem_pck_certificate = qe_id_args->issuer_chain;
+    pem_pck_certificate_size = qe_id_args->issuer_chain_size;
 
     // validate the cert chain.
     OE_CHECK(oe_cert_chain_read_pem(
         &pck_cert_chain, pem_pck_certificate, pem_pck_certificate_size));
 
     // parse identity info json blob
-    OE_TRACE_INFO("*qe_identity.qe_id_info:[%s]\n", qe_id_args.qe_id_info);
+    OE_TRACE_INFO("*qe_identity.qe_id_info:[%s]\n", qe_id_args->qe_id_info);
     OE_CHECK(oe_parse_qe_identity_info_json(
-        qe_id_args.qe_id_info, qe_id_args.qe_id_info_size, &parsed_info));
+        qe_id_args->qe_id_info, qe_id_args->qe_id_info_size, &parsed_info));
 
     // verify qe identity signature
     OE_TRACE_INFO("Calling oe_verify_ecdsa256_signature\n");
@@ -120,15 +134,36 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
         &pck_cert_chain));
     OE_TRACE_INFO("oe_verify_ecdsa256_signature succeeded\n");
 
+    // Get leaf certificate
+    OE_CHECK_MSG(
+        oe_cert_chain_get_leaf_cert(&pck_cert_chain, &leaf_cert),
+        "Failed to get leaf certificate. %s",
+        oe_result_str(result));
+    OE_CHECK_MSG(
+        oe_cert_get_validity_dates(&leaf_cert, &from, &until),
+        "Failed to get validity dates from cert. %s",
+        oe_result_str(result));
+
+    oe_datetime_log("QE identity cert issue date: ", &from);
+    oe_datetime_log("QE identity cert next update: ", &until);
+
     // Check that issue_date and next_update are after the earliest date that
     // the enclave accepts.
     if (oe_datetime_compare(
-            &parsed_info.issue_date, &_sgx_minimim_crl_tcb_issue_date) != 1)
-        OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
+            &parsed_info.issue_date, &_sgx_minimim_crl_tcb_issue_date) < 0)
+        OE_RAISE_MSG(
+            OE_INVALID_QE_IDENTITY_INFO,
+            "QE identity info issue date does not meet CRL/TCB minimum issue "
+            "date.",
+            NULL);
 
     if (oe_datetime_compare(
-            &parsed_info.next_update, &_sgx_minimim_crl_tcb_issue_date) != 1)
-        OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
+            &parsed_info.next_update, &_sgx_minimim_crl_tcb_issue_date) < 0)
+        OE_RAISE_MSG(
+            OE_INVALID_QE_IDENTITY_INFO,
+            "QE identity info next update does not meet CRL/TCB minimum issue "
+            "date.",
+            NULL);
 
     // Assert that the qe report's MRSIGNER matches Intel's quoting enclave's
     // mrsigner.
@@ -195,11 +230,36 @@ oe_result_t oe_enforce_qe_identity(sgx_report_body_t* qe_report_body)
             parsed_info.attributes_xfrm_mask,
             parsed_info.attributes.xfrm);
 
-    oe_cleanup_qe_identity_info_args(&qe_id_args);
+    if (qe_report_body->attributes.flags & SGX_FLAGS_DEBUG)
+        OE_RAISE_MSG(
+            OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
+            "QE has SGX_FLAGS_DEBUG set!!",
+            NULL);
+
+    if (oe_datetime_compare(&parsed_info.issue_date, &from) > 0)
+        from = parsed_info.issue_date;
+    if (oe_datetime_compare(&parsed_info.next_update, &until) < 0)
+        until = parsed_info.next_update;
+
+    oe_datetime_log("QE identity issue date: ", &parsed_info.issue_date);
+    oe_datetime_log("QE identity next update date: ", &parsed_info.next_update);
+    oe_datetime_log("QE identity overall issue date: ", &from);
+    oe_datetime_log("QE identity overall next update: ", &until);
+    if (oe_datetime_compare(&from, &until) > 0)
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+            "Failed to find an overall QE identity validity period.",
+            NULL);
+
+    *validity_from = from;
+    *validity_until = until;
+
     result = OE_OK;
 
 done:
     if (pck_cert_chain.impl[0] != 0)
         oe_cert_chain_free(&pck_cert_chain);
+    oe_cert_free(&leaf_cert);
+
     return result;
 }

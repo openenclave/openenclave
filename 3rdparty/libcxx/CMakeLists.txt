@@ -11,6 +11,10 @@ ExternalProject_Add(libcxx_includes
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/__config ${LIBCXX_INCLUDES}/__config
   INSTALL_COMMAND "")
 
+set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
+    ${LIBCXX_INCLUDES}
+)
+
 add_library(libcxx OBJECT
   __dso_handle.cpp
   libcxx/src/algorithm.cpp

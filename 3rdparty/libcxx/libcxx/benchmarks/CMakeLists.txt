@@ -38,6 +38,9 @@ ExternalProject_Add(google-benchmark-libcxx
           -DBENCHMARK_USE_LIBCXX:BOOL=ON
           -DBENCHMARK_ENABLE_TESTING:BOOL=OFF)
 
+set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/benchmark-libcxx
+)
 #==============================================================================
 # Build Google Benchmark for the native stdlib
 #==============================================================================
@@ -61,6 +64,9 @@ if (LIBCXX_BENCHMARK_NATIVE_STDLIB)
           -DCMAKE_BUILD_TYPE:STRING=RELEASE
           -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
           -DBENCHMARK_ENABLE_TESTING:BOOL=OFF)
+  set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/benchmark-native
+  )
 endif()
 
 
