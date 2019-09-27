@@ -1,0 +1,7 @@
+; Copyright (c) Microsoft Corporation. All rights reserved.
+; Licensed under the MIT License.
+
+(executable
+  (name oeedger8r)
+  (public_name oeedger8r)
+  (libraries intel))
