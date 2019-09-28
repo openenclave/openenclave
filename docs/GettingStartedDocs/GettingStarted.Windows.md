@@ -28,6 +28,7 @@ Windows.
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
 - [OCaml for Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/)
 - [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
+- [Python 3](https://www.python.org/downloads/windows/)
 
 To deploy all the prerequisities for building Open Enclave, you can run the ```scripts/install-windows-prereqs.ps1```
 
@@ -115,6 +116,12 @@ Open up a command prompt and ensure that ocaml is available in the path:
 C:\> where ocaml
 C:\Program Files\ocpwin64\4.02.1+ocp1-msvc64-20160113\bin\ocaml.exe
 ```
+
+Python 3
+---------------------------------
+Install [Python 3 for Windows](https://www.python.org/downloads/windows/) and ensure that python.exe is available in your PATH.
+
+Python 3 is used as part of the mbedtls tests.
 
 Obtaining the source distribution
 ---------------------------------

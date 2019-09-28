@@ -13,6 +13,15 @@ but when that fails, the Committee calls for a vote where the super majority
 (two-thirds) wins. This is to prevent obstructionism by removing the possibility
 of a one person veto.
 
+Quorum for Community Governance Committee meetings requires at least two-thirds
+all members of the Community Governance Committee to be present. The
+Community Governance Committee may continue to meet if quorum is not met but will
+be prevented from making any decisions at the meeting.
+
+All decisions by vote, whether during a meeting or otherwise, require a super majority
+vote of all members of the Community Governance Committee.
+
+
 Committee Members
 -----------------
 

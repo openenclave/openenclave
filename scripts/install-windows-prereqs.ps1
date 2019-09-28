@@ -9,8 +9,9 @@ Param(
     [string]$OpenSSLHash = '6AFA17D0768CF91B6F69F31FBC67CAB1AC2E3F40CCAAADB7A9D6C7FC37B38492',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
+    # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
-    [string]$VSBuildToolsHash = '7D5B0220670BA1C174F0AE1FF2CE87D65A508E66C321431FBD4751F478037E12',
+    [string]$VSBuildToolsHash = '',
     [string]$OCamlURL = 'https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip',
     [string]$OCamlHash = '369F900F7CDA543ABF674520ED6004CC75008E10BEED0D34845E8A42866D0F3A',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
@@ -29,8 +30,8 @@ Param(
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Azure.DCAP.Windows/0.0.3',
     [string]$AzureDCAPNupkgHash = '79C698B61CADA32F56F26647B96BBB1C00B7409A6646597C7CC2908A57677256',
-    [string]$Python3URL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4.exe',
-    [string]$Python3Hash = '9A30AB5568BA37BFBCAE5CDEE19E9DC30765C42CF066F605221563FF8B20EE34',
+    [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
+    [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoDriver")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
@@ -120,9 +121,9 @@ $PACKAGES = @{
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Win64OpenSSL-1_1_1d.exe"
     }
     "python3" = @{
-        "url" = $Python3URL
-        "hash" = $Python3Hash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "python-3.4.7.exe"
+        "url" = $Python3ZipURL
+        "hash" = $Python3ZipHash
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "Python3.zip"
     }
 }
 
@@ -163,13 +164,16 @@ function Start-LocalPackagesDownload {
                            -Destination $PACKAGES[$pkg]["local_file"]
         $downloaded_hash = Get-FileHash $PACKAGES[$pkg]["local_file"]
         $expected_hash = $PACKAGES[$pkg]["hash"]
-        if ($downloaded_hash.Hash -ne $expected_hash)
+        if ($expected_hash -ne "")
         {
-            Throw "Error: Computed hash ($downloaded_hash) does not match expected hash ($expected_hash)"
-        }
-        else
-        {
-            Write-Output "Computed hash ($downloaded_hash) matches expected hash ($expected_hash)"
+            if ($downloaded_hash.Hash -ne $expected_hash)
+            {
+                Throw "Error: Computed hash ($downloaded_hash) does not match expected hash ($expected_hash)"
+            }
+            else
+            {
+                Write-Output "Computed hash ($downloaded_hash) matches expected hash ($expected_hash)"
+            }
         }
     }
     Write-Output "Finished downloading all the packages"
@@ -322,6 +326,21 @@ function Install-Nuget {
                     -InstallDirectory $tempInstallDir `
                     -EnvironmentPath @("$tempInstallDir")
     Copy-Item -Force "$tempInstallDir\build\native\Nuget.exe" $PACKAGES_DIRECTORY
+}
+
+function Install-Python3 {
+    $tempInstallDir = "$PACKAGES_DIRECTORY\python3"
+    if(Test-Path -Path $tempInstallDir) {
+        Remove-Item -Path $tempInstallDir -Force -Recurse
+    }
+    Install-ZipTool -ZipPath $PACKAGES["python3"]["local_file"] `
+                    -InstallDirectory $tempInstallDir `
+                    -EnvironmentPath @("$tempInstallDir")
+
+    $installDir = Join-Path $env:ProgramFiles "python-3.7.4"
+    New-Directory -Path $installDir -RemoveExisting
+    Move-Item -Path "$tempInstallDir\*" -Destination $installDir
+    Add-ToSystemPath -Path $installDir
 }
 
 function Install-Git {
@@ -616,21 +635,12 @@ function Install-AzureDCAPWindows {
     popd
 }
 
-function Install-Python3 {
-    Write-Log "Installing Python3"
-    $tmpDir = Join-Path $PACKAGES_DIRECTORY "Python3"
-    $envPath = Join-Path "$PACKAGES_DIRECTORY\..\.." "Programs\Python\Python37-32"
-    Install-Tool -InstallerPath $PACKAGES["python3"]["local_file"] `
-                 -InstallDirectory $tmpDir `
-                 -ArgumentList @("/quiet", "/passive") `
-                 -EnvironmentPath @($envPath)
-}
-
 try {
     Start-LocalPackagesDownload
 
     Install-7Zip
     Install-Nuget
+    Install-Python3
     Install-VisualStudio
     Install-OpenSSL
     Install-LLVM
@@ -638,7 +648,6 @@ try {
     Install-OCaml
     Install-Shellcheck
     Install-PSW
-    Install-Python3
 
     if ($DCAPClientType -eq "Azure")
     {
