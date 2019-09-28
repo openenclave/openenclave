@@ -634,16 +634,6 @@ function Install-AzureDCAPWindows {
     popd
 }
 
-function Install-Python3 {
-    Write-Log "Installing Python3"
-    $tmpDir = Join-Path $PACKAGES_DIRECTORY "Python3"
-    $envPath = Join-Path "$PACKAGES_DIRECTORY\..\.." "Programs\Python\Python37-32"
-    Install-Tool -InstallerPath $PACKAGES["python3"]["local_file"] `
-                 -InstallDirectory $tmpDir `
-                 -ArgumentList @("/quiet", "/passive") `
-                 -EnvironmentPath @($envPath)
-}
-
 try {
     Start-LocalPackagesDownload
 
@@ -657,7 +647,6 @@ try {
     Install-OCaml
     Install-Shellcheck
     Install-PSW
-    Install-Python3
 
     if ($DCAPClientType -eq "Azure")
     {
