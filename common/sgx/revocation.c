@@ -283,29 +283,6 @@ done:
     return result;
 }
 
-oe_result_t oe_enforce_revocation(
-    oe_cert_t* leaf_cert,
-    oe_cert_t* intermediate_cert)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_get_revocation_info_args_t revocation_args = {0};
-    oe_datetime_t validity_from = {0};
-    oe_datetime_t validity_until = {0};
-
-    OE_CHECK(oe_get_revocation_info_from_certs(
-        leaf_cert, intermediate_cert, &revocation_args));
-
-    OE_CHECK(oe_validate_revocation_list(
-        leaf_cert, &revocation_args, &validity_from, &validity_until));
-
-    result = OE_OK;
-
-done:
-    oe_free_get_revocation_info_args(&revocation_args);
-
-    return result;
-}
-
 oe_result_t oe_validate_revocation_list(
     oe_cert_t* pck_cert,
     oe_get_revocation_info_args_t* revocation_args,
