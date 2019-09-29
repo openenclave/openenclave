@@ -58,7 +58,7 @@ If it is not then we use the default format string to log in the file.
 
 In addition to the `OE_LOG_FORMAT` environmental variable, if the `OE_LOG_ESCAPE` environmental variable is set, then the log message will be processed accordingly in order to be compatible with the JSON standard.
 
-When logging to a separate file the normal logs are directed to stdout AND the log with the user specified format is directed to the file. This is useful if you want to keep the human readable logs, but also redirect a machine-readable format (e.g. JSON) to a file.
+When logging to a separate file the defaut logs are not sent to stdout and the custom logs are directed to the file. If the users wants to keep the default logs directed to stdout AND the custom logs sent to the file, they can set the `OE_LOG_ALL_STREAMS` environmental variable. This is useful if we want to keep the human readable logs, but also redirect a machine-readable format (e.g. JSON) to a file.
 
 OE logging format
 -----------------

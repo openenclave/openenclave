@@ -22,7 +22,8 @@ static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
 static oe_mutex _log_lock = OE_H_MUTEX_INITIALIZER;
 static const char* _log_file_name = NULL;
 static const char* _custom_log_format = NULL;
-static const char* _json_escape = NULL;
+static const char* _log_all_streams = NULL;
+static const char* _log_escape = NULL;
 static bool _log_creation_failed_before = false;
 oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
@@ -72,7 +73,8 @@ void initialize_log_config()
         _log_level = _env2log_level();
         _log_file_name = getenv("OE_LOG_DEVICE");
         _custom_log_format = getenv("OE_LOG_FORMAT");
-        _json_escape = getenv("OE_LOG_ESCAPE");
+        _log_all_streams = getenv("OE_LOG_ALL_STREAMS");
+        _log_escape = getenv("OE_LOG_ESCAPE");
         if (_custom_log_format)
         {
             // check that custom log format string terminates with a line return
@@ -293,8 +295,11 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
     // Take the log file lock.
     if (oe_mutex_lock(&_log_lock) == OE_OK)
     {
-        _write_message_to_stream(
-            stdout, is_enclave, time, usecs, level, message);
+        if (_log_all_streams || !_log_file_name)
+        {
+            _write_message_to_stream(
+                stdout, is_enclave, time, usecs, level, message);
+        }
 
         if (!_log_file_name)
         {
@@ -342,7 +347,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                 }
                 else
                 {
-                    if (_json_escape)
+                    if (_log_escape)
                     {
                         size_t msg_size = strlen(log_msg);
                         char log_msg_escaped[2 * msg_size];
