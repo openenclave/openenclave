@@ -93,7 +93,8 @@ void initialize_log_config()
 static void _escape_characters(
     char* log_msg,
     char* log_msg_escaped,
-    size_t msg_size)
+    size_t msg_size,
+    size_t max_msg_size)
 {
     size_t idx = 0;
 
@@ -156,8 +157,7 @@ static void _escape_characters(
                     log_msg_escaped[idx] = '?';
                     break;
                 default:
-                    sprintf(&log_msg_escaped[idx], "u%04x", log_msg[i]);
-                    idx += 3;
+                    log_msg_escaped[idx] = ' ';
                     break;
             }
         }
@@ -167,7 +167,7 @@ static void _escape_characters(
         }
         idx++;
     }
-    if (idx < 2 * msg_size)
+    if (idx < max_msg_size)
     {
         log_msg_escaped[idx] = '\0';
         idx++;
@@ -346,7 +346,8 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                     {
                         size_t msg_size = strlen(log_msg);
                         char log_msg_escaped[2 * msg_size];
-                        _escape_characters(log_msg, log_msg_escaped, msg_size);
+                        _escape_characters(
+                            log_msg, log_msg_escaped, msg_size, (2 * msg_size));
 
                         _write_custom_format_message_to_stream(
                             log_file,

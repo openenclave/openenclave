@@ -21,6 +21,7 @@ add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)
 add_subdirectory(str)
+add_subdirectory(logging)
 add_subdirectory(tools)
 
 if (OE_SGX)
