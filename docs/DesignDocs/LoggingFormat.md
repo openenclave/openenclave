@@ -43,7 +43,7 @@ User Experience
         }
         `
 
-- The user can set the `OE_JSON_ESCAPE` environmental variable and if it is set then the log message will be escaped in order to be compatible with the JSON standard.
+- The user can set the `OE_LOG_ESCAPE` environmental variable and if it is set then the log message will be escaped in order to be compatible with the JSON standard.
 
 Specification
 -------------
@@ -56,7 +56,7 @@ If `OE_LOG_FORMAT` is specified we call a method where we pass in the log line i
 
 If it is not then we use the default format string to log in the file.
 
-In addition to the `OE_LOG_FORMAT` environmental variable, if the `OE_JSON_ESCAPE` environmental variable is set, then the log message will be processed accordingly in order to be compatible with the JSON standard.
+In addition to the `OE_LOG_FORMAT` environmental variable, if the `OE_LOG_ESCAPE` environmental variable is set, then the log message will be processed accordingly in order to be compatible with the JSON standard.
 
 When logging to a separate file the normal logs are directed to stdout AND the log with the user specified format is directed to the file. This is useful if you want to keep the human readable logs, but also redirect a machine-readable format (e.g. JSON) to a file.
 

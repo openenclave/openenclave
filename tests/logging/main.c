@@ -60,6 +60,6 @@ int main(int argc, const char* argv[])
             "\",\"msg\":\"%s\",\"file\":\"%s\",\"func\":\"%s\",\"number\":\"%"
             "s\"}\n",
             true) == 0);
-    OE_TEST(setenv("OE_JSON_ESCAPE", "true", true) == 0);
+    OE_TEST(setenv("OE_LOG_ESCAPE", "true", true) == 0);
     return TestLoggingFormat(path);
 }

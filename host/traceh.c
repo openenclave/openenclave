@@ -72,7 +72,7 @@ void initialize_log_config()
         _log_level = _env2log_level();
         _log_file_name = getenv("OE_LOG_DEVICE");
         _custom_log_format = getenv("OE_LOG_FORMAT");
-        _json_escape = getenv("OE_JSON_ESCAPE");
+        _json_escape = getenv("OE_LOG_ESCAPE");
         if (_custom_log_format)
         {
             // check that custom log format string terminates with a line return
