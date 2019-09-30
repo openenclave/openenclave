@@ -5,6 +5,8 @@
 intel_sgx_packages:
   - "libsgx-enclave-common"
   - "libsgx-enclave-common-dev"
+
+intel_dcap_packages:
   - "libsgx-dcap-ql"
   - "libsgx-dcap-ql-dev"
 

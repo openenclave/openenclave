@@ -1,11 +1,1 @@
-prereqs
-=======
-
-This directory contains a makefile to build and install Open Enclave
-prerequisites, including:
-
-- Package dependencies
-
-- Intel(R) SGX driver
-
-- Intel(R) SGX AESM service
+This is a placeholder file specifically to keep this directory's existence around until we no longer expect NuGet packages to be installed to this directory.

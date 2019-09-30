@@ -7,12 +7,12 @@
     name: apt-transport-https
     state: present
 
-- name: Add Microsoft APT repository key
+- name: Add APT repository key
   apt_key:
     url: "{{ apt_key_url }}"
     state: present
 
-- name: Add Microsoft APT repository
+- name: Add APT repository
   apt_repository:
     repo: "{{ apt_repository }}"
     state: present
