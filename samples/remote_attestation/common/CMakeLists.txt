@@ -17,7 +17,6 @@ if(WIN32)
 endif()
 
 target_compile_definitions(common PUBLIC OE_API_VERSION=2)
-if(NOT WIN32)
 target_link_libraries(common PUBLIC
   # `liboecore`, a dependency of `liboeenclave`, requires the ecalls
   # function table. Because the libraries linking `libcommon` do not
@@ -26,12 +25,7 @@ target_link_libraries(common PUBLIC
   #
   # Alternatively we could use a CMake OBJECT library, but that
   # requires a newish version of CMake.
-  -Wl,--require-defined=__oe_ecalls_table
+  $<$<PLATFORM_ID:Linux>:-Wl,--require-defined=__oe_ecalls_table>
   openenclave::oeenclave
   openenclave::oelibcxx)
-else()
-target_link_libraries(common PUBLIC
-  openenclave::oeenclave
-  openenclave::oelibcxx)
-endif()
 target_include_directories(common PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})

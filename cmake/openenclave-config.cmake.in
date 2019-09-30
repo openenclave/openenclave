@@ -57,12 +57,8 @@ elseif (WIN32)
 endif ()
 
 if (NOT TARGET openenclave::sgx_enclave_common)
-  if (UNIX)
-    find_library(SGX_ENCLAVE_COMMON_LIB NAMES sgx_enclave_common)
-  elseif (WIN32)
-    find_library(SGX_ENCLAVE_COMMON_LIB NAMES sgx_enclave_common
-                 PATHS ${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/lib/native/x64-Release)
-  endif ()
+  find_library(SGX_ENCLAVE_COMMON_LIB NAMES sgx_enclave_common
+	       HINTS ${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/lib/native/x64-Release)
   if (NOT SGX_ENCLAVE_COMMON_LIB)
     message(FATAL_ERROR "-- Looking for sgx_enclave_common library - not found")
   else ()
@@ -77,12 +73,8 @@ if (NOT TARGET openenclave::sgx_enclave_common)
 endif ()
 
 if (NOT TARGET openenclave::sgx_dcap_ql)
-  if (UNIX)
-    find_library(SGX_DCAP_QL_LIB NAMES sgx_dcap_ql)
-  elseif (WIN32)
-    find_library(SGX_DCAP_QL_LIB NAMES sgx_dcap_ql
-	    PATHS ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
-  endif ()
+  find_library(SGX_DCAP_QL_LIB NAMES sgx_dcap_ql
+               HINTS ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
   if (NOT SGX_DCAP_QL_LIB)
     message(FATAL_ERROR "-- Looking for sgx_dcap_ql library - not found")
   else ()
