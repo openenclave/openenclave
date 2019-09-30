@@ -37,9 +37,9 @@
   register: clang_check_version
   failed_when: clang_check_version.stdout.find(clang_target_version) == -1
 
-- name: Ocaml version check
-  shell: "ocaml -version"
+- name: Esy version check
+  shell: "esy --version"
   args:
     executable: /bin/bash
-  register: ocaml_check_version
-  failed_when: ocaml_check_version.stdout.find(ocaml_version) == -1
+  register: esy_check_version
+  failed_when: esy_check_version.stdout.find(esy_target_version) == -1

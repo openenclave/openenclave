@@ -2,31 +2,10 @@
 # Licensed under the MIT License.
 
 ---
-opam_bin_url: "https://github.com/ocaml/opam/releases/download/2.0.4/opam-2.0.4-x86_64-linux"
-opam_root: "/usr/local/opam"
-ocaml_version: "4.05.0"
 cmake_target_version: "3.13.1"
 clang_target_version: "7.1.0"
-
-ocaml_packages:
-  ocaml_base_nox:
-    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml-base-nox_amd64.deb"
-    local_path: "/tmp/ocaml-base-nox_amd64.deb"
-  ocaml_base:
-    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml-base_amd64.deb"
-    local_path: "/tmp/ocaml-base_amd64.deb"
-  ocaml_compiler_libs:
-    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml-compiler-libs_amd64.deb"
-    local_path: "/tmp/ocaml-compiler-libs_amd64.deb"
-  ocaml_interp:
-    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml-interp_amd64.deb"
-    local_path: "/tmp/ocaml-interp_amd64.deb"
-  ocaml_nox:
-    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml-nox_amd64.deb"
-    local_path: "/tmp/ocaml-nox_amd64.deb"
-  ocaml:
-    url: "https://oejenkins.blob.core.windows.net/oejenkins/ocaml/ocaml_amd64.deb"
-    local_path: "/tmp/ocaml_amd64.deb"
+esy_target_version: "0.5.8"
+esy_prefix: "/usr/local/lib/esy"
 
 apt_packages:
   - "curl"
@@ -65,7 +44,6 @@ apt_arm_packages:
   - "sshpass"
 
 validation_directories:
-  - "/usr/local/opam"
   - "/usr/share/libtool"
 
 validation_files:
@@ -77,6 +55,7 @@ validation_binaries:
   - "/usr/local/bin/ccmake"
   - "/usr/local/bin/cpack"
   - "/usr/local/bin/ctest"
+  - "/usr/local/bin/esy"
   - "/usr/bin/dot"
   - "/usr/bin/gcc"
   - "/usr/bin/g++"
@@ -84,7 +63,6 @@ validation_binaries:
   - "/usr/bin/autoconf"
   - "/usr/bin/libtoolize"
   - "/usr/bin/doxygen"
-  - "/usr/bin/ocaml"
   - "/usr/bin/openssl"
   - "/usr/bin/pkg-config"
   - "/usr/bin/clang-7"
