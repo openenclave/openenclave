@@ -1,0 +1,1 @@
+This is a placeholder file specifically to keep this directory's existence around until we no longer expect NuGet packages to be installed to this directory.
