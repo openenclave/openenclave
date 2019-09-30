@@ -18,7 +18,7 @@ set_tests_properties(edger8r_allow_list_warning PROPERTIES
 # as the first instance is found.
 add_test(NAME edger8r_switchless_trusted_warning COMMAND edger8r ${EDGER8R_ARGS} switchless_trusted.edl)
 set_tests_properties(edger8r_switchless_trusted_warning PROPERTIES
-  PASS_REGULAR_EXPRESSION "error: Function 'foo': switchless ecalls are not yet supported by Open Enclave SDK.")
+  PASS_REGULAR_EXPRESSION "error: Function 'foo': trusted switchless ecalls are not yet supported by Open Enclave SDK.")
 
 # These need to be separate tests to ensure that each type, for both
 # trusted and untrusted functions, generate the appropriate warning,

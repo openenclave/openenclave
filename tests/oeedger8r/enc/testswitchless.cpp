@@ -16,13 +16,3 @@ void test_switchless_edl_ocalls()
 
     printf("=== test_switchless_edl_ocalls passed\n");
 }
-
-int ecall_sum(int a, int b)
-{
-    return a + b;
-}
-
-int switchless_ecall_sum(int a, int b)
-{
-    return a + b;
-}

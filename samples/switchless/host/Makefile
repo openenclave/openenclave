@@ -19,7 +19,7 @@ LDFLAGS=$(shell pkg-config oehost-$(COMPILER) --libs)
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	oeedger8r ../switchless.edl --untrusted --experimental
+	oeedger8r ../switchless.edl --untrusted
 	$(CC) -g -c $(CFLAGS) host.c
 	$(CC) -g -c $(CFLAGS) switchless_u.c
 	$(CC) -o switchlesshost switchless_u.o host.o $(LDFLAGS)

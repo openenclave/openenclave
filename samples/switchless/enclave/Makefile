@@ -24,7 +24,7 @@ all:
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	oeedger8r ../switchless.edl --trusted --experimental
+	oeedger8r ../switchless.edl --trusted
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 enc.c -o enc.o
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 switchless_t.c -o switchless_t.o
 	$(CC) -o switchlessenc switchless_t.o enc.o $(LDFLAGS)

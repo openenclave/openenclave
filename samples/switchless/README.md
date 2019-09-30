@@ -108,10 +108,8 @@ directories from their Makefiles. For example:
 
 ```bash
 cd host
-oeedger8r ../switchless.edl --untrusted --experimental
+oeedger8r ../switchless.edl --untrusted
 ```
-
-`oeedger8r` needs the command line flag `--experimental` to be able to recognize the keyword `transition_using_threads`.
 
 ## About the host
 
