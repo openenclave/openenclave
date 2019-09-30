@@ -1,10 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if(WIN32)
-  include(remote_attestation_dcap_target)
-endif()
-
 add_custom_command(OUTPUT remoteattestation_u.h remoteattestation_u.c remoteattestation_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/remoteattestation.edl
   COMMAND openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/remoteattestation.edl)

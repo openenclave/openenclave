@@ -1,10 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if(WIN32)
-  include(maybe_build_using_clangw)
-endif()
-
 # Use the edger8r to generate C bindings from the EDL file.
 add_custom_command(OUTPUT localattestation_t.h localattestation_t.c localattestation_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/localattestation.edl

@@ -24,14 +24,27 @@ else ()
   # These tests can only run with SGX-FLC, meaning they were built
   # against SGX.
   if (USE_LIBSGX)
-     list(APPEND SAMPLES_LIST local_attestation remote_attestation attested_tls)
+    list(APPEND SAMPLES_LIST local_attestation remote_attestation)
+	# The attested_tls test is not supported on Windows at this time.
+	if (NOT WIN32)
+	  list(APPEND SAMPLES_LIST attested_tls)
+	endif ()
   endif ()
 endif ()
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E env DESTDIR=${BUILD_DIR}/install ${CMAKE_COMMAND} --build ${BUILD_DIR} --target install)
+if (WIN32)
+  # On Windows, DESTDIR is not supported by cmake for the install function. Must use a relative path for -DCMAKE_INSTALL_PREFIX:PATH
+  execute_process(COMMAND ${CMAKE_COMMAND} --build ${BUILD_DIR} --target install)
+else ()
+  execute_process(COMMAND ${CMAKE_COMMAND} -E env DESTDIR=${BUILD_DIR}/install ${CMAKE_COMMAND} --build ${BUILD_DIR} --target install)
+endif ()
 
-# The prefix is appended to the value given to DESTDIR, e.g. build/install/opt/openenclave/...
-set(INSTALL_DIR ${BUILD_DIR}/install${PREFIX_DIR})
+if (WIN32)
+  set(INSTALL_DIR ${BUILD_DIR}/${PREFIX_DIR})
+else ()
+  # The prefix is appended to the value given to DESTDIR, e.g. build/install/opt/openenclave/...
+  set(INSTALL_DIR ${BUILD_DIR}/install/${PREFIX_DIR})
+endif ()
 
 # A variable to know if all samples ran successfully
 set(ALL_TEST_RESULT 0)
@@ -43,9 +56,15 @@ foreach (SAMPLE ${SAMPLES_LIST})
   execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${SAMPLE_BUILD_DIR})
 
   # Configure, build, and run the installed sample with CMake.
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} ${SAMPLE_SOURCE_DIR}
-    WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
+  if (WIN32)
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/openenclave/cmake -G Ninja -DNUGET_PACKAGE_PATH=${NUGET_PACKAGE_PATH} ${SAMPLE_SOURCE_DIR}
+      WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
+  else ()
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} ${SAMPLE_SOURCE_DIR}
+      WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
+  endif ()
 
   execute_process(
     COMMAND ${CMAKE_COMMAND} --build ${SOURCE_DIR}/${SAMPLE}
@@ -64,45 +83,50 @@ foreach (SAMPLE ${SAMPLES_LIST})
       message(STATUS "Samples test '${SAMPLE}' with CMake passed!")
     endif ()
 
-    # Build with pkg-config
-    message(STATUS "Samples test '${SAMPLE}' with pkg-config running...")
-    execute_process(
-      COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig/ make -C ${SAMPLE_SOURCE_DIR} clean build run
-      RESULT_VARIABLE TEST_RESULT)
-      if (TEST_RESULT)
-        message(WARNING "Samples test '${SAMPLE}' with pkg-config failed!")
-        set(ALL_TEST_RESULT 1)
-      else ()
-	message(STATUS "Samples test '${SAMPLE}' with pkg-config passed!")
-      endif ()
+    if (NOT WIN32)
+      # Build with pkg-config if not running on Windows.
+      message(STATUS "Samples test '${SAMPLE}' with pkg-config running...")
+      execute_process(
+        COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig/ make -C ${SAMPLE_SOURCE_DIR} clean build run
+        RESULT_VARIABLE TEST_RESULT)
+        if (TEST_RESULT)
+          message(WARNING "Samples test '${SAMPLE}' with pkg-config failed!")
+          set(ALL_TEST_RESULT 1)
+        else ()
+	  message(STATUS "Samples test '${SAMPLE}' with pkg-config passed!")
+        endif ()
+	endif ()
   endif ()
 
-  # The file-encryptor and helloworld are special cases which also
-  # work under simulation, so we test that additional scenario here.
-  if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
-    # Build with the CMake package
-    message(STATUS "Samples test '${SAMPLE}' in simulation with CMake running...")
-    execute_process(
-      COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate
-      RESULT_VARIABLE TEST_SIMULATE_RESULT)
-    if (TEST_SIMULATE_RESULT)
-      message(WARNING "Samples test '${SAMPLE}' in simulation with CMake failed!")
-      set(ALL_TEST_RESULT 1)
-    else ()
-      message(STATUS "Samples test '${SAMPLE}' in simulation with CMake passed!")
-    endif ()
+  # Simulation mode is not supported on Windows currently.
+  if (NOT WIN32)
+    # The file-encryptor and helloworld are special cases which also
+    # work under simulation, so we test that additional scenario here.
+    if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
+      # Build with the CMake package
+      message(STATUS "Samples test '${SAMPLE}' in simulation with CMake running...")
+      execute_process(
+        COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate
+        RESULT_VARIABLE TEST_SIMULATE_RESULT)
+      if (TEST_SIMULATE_RESULT)
+        message(WARNING "Samples test '${SAMPLE}' in simulation with CMake failed!")
+        set(ALL_TEST_RESULT 1)
+      else ()
+        message(STATUS "Samples test '${SAMPLE}' in simulation with CMake passed!")
+      endif ()
 
-    # Build with pkg-config
-    message(STATUS "Samples test '${SAMPLE}' in simulation with pkg-config running...")
-    message(WARNING "PKG_CONFIG_PATH=${INSTALL_DIR}")
-    execute_process(
-      COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig make -C ${SAMPLE_SOURCE_DIR} clean build simulate
-      RESULT_VARIABLE TEST_SIMULATE_RESULT)
-    if (TEST_SIMULATE_RESULT)
-      message(WARNING "Samples test '${SAMPLE}' in simulation with pkg-config failed!")
-      set(TEST_SIMULATE_RESULT 1)
-    else ()
-      message(STATUS "Samples test '${SAMPLE}' in simulation with pkg-config passed!")
+      # Build with pkg-config
+      message(STATUS "Samples test '${SAMPLE}' in simulation with pkg-config running...")
+      message(WARNING "PKG_CONFIG_PATH=${INSTALL_DIR}")
+      execute_process(
+        COMMAND ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH} PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig make -C ${SAMPLE_SOURCE_DIR} clean build simulate
+        RESULT_VARIABLE TEST_SIMULATE_RESULT)
+      if (TEST_SIMULATE_RESULT)
+        message(WARNING "Samples test '${SAMPLE}' in simulation with pkg-config failed!")
+        set(TEST_SIMULATE_RESULT 1)
+      else ()
+        message(STATUS "Samples test '${SAMPLE}' in simulation with pkg-config passed!")
+      endif ()
     endif ()
   endif ()
 
