@@ -228,7 +228,9 @@ if (UNIX)
   add_subdirectory(pkgconfig)
 endif()
 
-add_subdirectory(samples)
+if (BUILD_ENCLAVES)
+  add_subdirectory(samples)
+endif ()
 
 if (WIN32)
   install(FILES ./scripts/clangw ./scripts/llvm-arw
