@@ -24,7 +24,7 @@ int TestLoggingFormat(const char* path)
     OE_TRACE_ERROR("Hey");
     OE_TRACE_ERROR("Hello 'world'!");
     OE_TRACE_ERROR("Hello \"world\"! \n \\n \r \\r \t \\t \f \\f \? \\?");
-    OE_TRACE_ERROR("\\u005C \u0024");
+    OE_TRACE_ERROR("\\u005C \u0024 \u0040 @");
     OE_TRACE_ERROR("\\\\\\\\");
     FILE* log_file = fopen(path, "r");
     char* line = NULL;
