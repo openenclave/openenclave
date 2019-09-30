@@ -15,7 +15,7 @@
   },
 
   "dependencies": {
-    "@opam/dune": "~1.2",
+    "@opam/dune": "~1.11.3",
     "ocaml": "~4.6.0"
   },
 

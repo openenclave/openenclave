@@ -1,4 +1,18 @@
-(lang dune 1.2)
+(lang dune 1.11)
 
 ; Copyright (c) Microsoft Corporation. All rights reserved.
 ; Licensed under the MIT License.
+
+(name oeedger8r)
+(license MIT)
+(version 0.7.0)
+(authors "Open Enclave SDK")
+(maintainers "Open Enclave SDK")
+(source (github openenclave/openenclave))
+
+(package
+  (name oeedger8r)
+  (synopsis "An OCaml tool for processing Enclave Definition Language files")
+  (description "Generates edge routines from EDL files for the Open Enclave SDK")
+  (depends
+    (dune (>= 1.11))))

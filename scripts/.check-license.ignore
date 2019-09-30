@@ -64,8 +64,7 @@ tests/print/printhost\.stderr
 tests/print/printhost\.stdout
 tests/str/test1\.txt
 tools/oeedger8r/\.merlin
-tools/oeedger8r/oeedger8r.opam
-tools/oeedger8r/src/Oeedger8r\.ml
+tools/oeedger8r/src/main\.ml
 tools/oesign/getopt\.h
 tools/oesign/getopt_long\.c
 tests/host_verify/data/.*

@@ -2,6 +2,6 @@
 ; Licensed under the MIT License.
 
 (executable
-  (name oeedger8r)
+  (name main)
   (public_name oeedger8r)
   (libraries intel))
