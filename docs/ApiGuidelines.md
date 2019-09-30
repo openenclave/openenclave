@@ -15,7 +15,7 @@ Public APIs are the supported APIs that apps can use.
 Public API requirements: 
 
 * All public APIs must have at least one test case.
-* All public APIs must be in a header file that is published to a location under the build directory.
+* All public APIs must be in a header file that is published to a location under the SDK output directory.
 * All public APIs must be fully documented using doxygen markup in the public header files
 * All public APIs must be used in some sample code or snippet. Ideally, the sample
   should be one that is compiled as part of the build, and uses no experimental APIs. For rarely 
@@ -23,7 +23,7 @@ Public API requirements:
 * Public APIs cannot have source-breaking changes across Open Enclave versions. For platforms 
   where shared libraries are build, public APIs cannot have binary-breaking changes across 
   Open Enclave versions either. (Source- and binary-breaking changes can still be made to a new 
-  API before it is released for the first time.)
+  API before it is released for the first time.  See the Breaking Changes section below for further discussion.)
 * A public API must not be added to Open Enclave if there is already a non-deprecated API that can just 
   as easily be used (i.e., with approximately the same number of lines of code).
 * A public API must not be added to Open Enclave if the API would provide generic functionality
@@ -39,14 +39,15 @@ across releases.
 
 Experimental API requirements: 
 
-* Experimental APIs must be optional to compile in. That is, there must be some way to build
+* Experimental APIs should be optional to compile in. That is, there must be some way to build
   Open Enclave in a way that does not expose any experimental APIs, so that an application
   can easily verify that it uses only fully-supported public APIs, and so that the Open Enclave
   code size requirement can be minimized.
-* Experimental APIs must be in a header file that is published to the build directory. They
+* Experimental APIs must be in a header file that is published to the SDK output directory. They
   can be in their own header, or in a header file that is shared with public APIs but only
-  if surrounded by an appropriate ifdef.
+  if surrounded by an appropriate ifdef (e.g., "#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE").
 * Experimental APIs should be fully documented using doxygen markup in the header file
+* Experimental APIs must have at least one test case.
 * Experimental APIs should ideally be used in some sample code (separate from samples that
   use only public APIs) or snippet. Ideally, the sample should be one that is compiled as part
   of the build. For rarely used APIs, the sample might simply be a snippet in the doxygen
@@ -60,7 +61,7 @@ used by applications that use Open Enclave.
 
 Internal API requirements: 
 
-* Internal APIs must not appear in any header file that is published to the build directory
+* Internal APIs must not appear in any header file that is published to the SDK package output directory
 * Internal APIs should ideally be documented using doxygen markup in the private header files
 * Internal APIs must not be used in sample code
 
