@@ -33,8 +33,3 @@
   raw: "clang --version"
   register: clang_check_version
   failed_when: clang_check_version.stdout.find(clang_target_version) == -1
-
-- name: Ocaml version check
-  raw: "ocaml -version"
-  register: ocaml_check_version
-  failed_when: ocaml_check_version.stdout.find(ocaml_target_version) == -1

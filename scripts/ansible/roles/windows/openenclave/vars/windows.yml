@@ -5,11 +5,10 @@
 cmake_target_version: 3.12.18081601
 ninja_target_version: 1.8.2
 clang_target_version: 7.0.1
-ocaml_target_version: 4.02.1
 
 validation_directories:
   - "C:\\Program Files\\7-Zip"
-  - "C:\\Program Files\\OCaml\\bin"
+  - "C:\\Program Files\\nodejs"
   - "C:\\Program Files\\LLVM\\bin"
   - "C:\\Program Files\\Git\\bin"
   - "C:\\Program Files\\Git\\mingw64\\bin"
@@ -19,13 +18,13 @@ validation_directories:
 
 validation_files:
   - "C:\\Program Files\\LLVM\\lib\\libclang.lib"
-  - "C:\\Program Files\\OCaml\\lib\\arg.cmi"
+  - "C:\\Program Files\\nodejs\\npm.cmd"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\lib\\x64\\vcomp.lib"
 
 validation_binaries:
   - "C:\\Program Files\\LLVM\\bin\\clang.exe"
   - "C:\\Program Files\\LLVM\\bin\\llvm-ar.exe"
-  - "C:\\Program Files\\OCaml\\bin\\ocaml.exe"
+  - "C:\\Program Files\\nodejs\\node.exe"
   - "C:\\Program Files\\shellcheck\\shellcheck.exe"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin\\Hostx64\\x64\\cl.exe"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin\\Hostx64\\x64\\link.exe"
