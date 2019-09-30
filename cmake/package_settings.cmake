@@ -11,8 +11,13 @@
 #     $ cmake -DCMAKE_INSTALL_PREFIX=/opt/myplace ..
 #
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX
-    "/opt/openenclave" CACHE PATH "default install prefix" FORCE)
+  if (WIN32)
+    set(CMAKE_INSTALL_PREFIX
+      "./openenclave" CACHE PATH "default install prefix" FORCE)
+  else ()
+    set(CMAKE_INSTALL_PREFIX
+      "/opt/openenclave" CACHE PATH "default install prefix" FORCE)
+  endif ()
 endif()
 
 include(GNUInstallDirs)
