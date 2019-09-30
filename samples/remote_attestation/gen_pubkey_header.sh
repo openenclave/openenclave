@@ -18,7 +18,8 @@ EOF
 printf 'static const char OTHER_ENCLAVE_PUBLIC_KEY[] =' >> "$destfile"
 while IFS="" read -r p || [ -n "$p" ]
 do
-    p="$(echo $p | tr -d \"\\\r\")"
+    CR=$(printf "\r")
+    p=$(echo "$p" | tr -d "$CR")
     printf '\n    \"%s\\n\"' "$p" >> "$destfile"
 done < "$pubkey_file"
 printf ';\n' >> "$destfile"
