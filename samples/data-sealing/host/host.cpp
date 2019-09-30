@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #ifdef __linux__
-  #include <unistd.h>
+#include <unistd.h>
 #endif
 
 #include <iostream>

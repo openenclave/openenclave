@@ -108,7 +108,10 @@ int ecall_dispatcher::seal_data(
     // generate signature by signing the hash of the sealed data with the seal
     // key
     ret = sign_sealed_data(
-        m_sealed_data, seal_key, (unsigned int)seal_key_size, m_sealed_data->signature);
+        m_sealed_data,
+        seal_key,
+        (unsigned int)seal_key_size,
+        m_sealed_data->signature);
     if (ret != 0)
     {
         TRACE_ENCLAVE("sign_sealed_data %d\n", ret);
@@ -191,7 +194,8 @@ int ecall_dispatcher::unseal_data(
     // structure then comparing it with sealed_data.signature
 
     // regenerate signature
-    ret = sign_sealed_data(m_sealed_data, seal_key, (unsigned int)seal_key_size, signature);
+    ret = sign_sealed_data(
+        m_sealed_data, seal_key, (unsigned int)seal_key_size, signature);
     if (ret != 0)
     {
         ret = ERROR_SIGN_SEALED_DATA_FAIL;
