@@ -52,11 +52,10 @@ def win2016CrossCompile(String build_type, String use_libsgx = 'OFF') {
 
                   /* We need to copy nuget into the expected location
                   https://github.com/microsoft/openenclave/blob/a982b46cf440def8fb66e94f2622a4f81e2b350b/host/CMakeLists.txt#L188-L197 */
-                  powershell 'Copy-Item -Recurse C:\\openenclave\\prereqs\\nuget ${env:WORKSPACE}\\prereqs'
 
                   bat """
                       vcvars64.bat x64 && \
-                      cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DUSE_LIBSGX=${use_libsgx} -Wdev && \
+                      cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DUSE_LIBSGX=${use_libsgx} -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -Wdev && \
                       ninja.exe && \
                       ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS}
                       """
