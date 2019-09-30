@@ -76,7 +76,7 @@ typedef enum _oe_enclave_config_type
 /**
  * The configuration for context-switchless calls.
  */
-typedef struct _oe_enclave_config_context_switchless
+typedef struct _oe_enclave_setting_context_switchless
 {
     /**
      * The max number of worker threads for context-switchless ocalls.
@@ -89,7 +89,7 @@ typedef struct _oe_enclave_config_context_switchless
      * workers should be 0.
      */
     size_t max_enclave_workers;
-} oe_enclave_config_context_switchless_t;
+} oe_enclave_setting_context_switchless_t;
 
 /**
  * The uniform structure type containing a specific type of enclave
@@ -106,7 +106,8 @@ typedef struct _oe_enclave_config
      * context-switchless calls.
      */
     union {
-        const oe_enclave_config_context_switchless_t* context_switchless_config;
+        const oe_enclave_setting_context_switchless_t*
+            context_switchless_config;
         /* Add new configuration types here. */
     } u;
 } oe_enclave_config_t;

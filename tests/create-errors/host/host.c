@@ -14,7 +14,7 @@ static void _test_invalid_param(const char* path, uint32_t flags)
     oe_enclave_t* enclave = NULL;
 
     oe_enclave_config_t invalid_config = {0, {NULL}};
-    oe_enclave_config_context_switchless_t config = {2, 0};
+    oe_enclave_setting_context_switchless_t config = {2, 0};
     oe_enclave_config_t configs[] = {{
         .config_type = OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS,
         .u.context_switchless_config = &config,

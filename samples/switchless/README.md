@@ -120,7 +120,7 @@ so we use 1 as explained above. The 2nd field specifies the number of enclave th
 Since switchless ECALL is not yet implemented, we require the 2nd field to be `0`.
 
 ```c
-oe_enclave_config_context_switchless_t config = {1, 0};
+oe_enclave_setting_context_switchless_t config = {1, 0};
 ```
 
 The host then puts the structure address and the configuration type in an array of configurations for the enclave

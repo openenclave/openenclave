@@ -74,7 +74,7 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     // Enable switchless and configure host worker number
-    oe_enclave_config_context_switchless_t config = {1, 0};
+    oe_enclave_setting_context_switchless_t config = {1, 0};
     oe_enclave_config_t configs[] = {{
         .config_type = OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS,
         .u.context_switchless_config = &config,
