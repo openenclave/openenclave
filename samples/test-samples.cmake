@@ -7,7 +7,7 @@
 #     cmake -DUSE_LIBSGX=ON -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
 
 # These two samples can run in simulation, and therefore run in every configuration.
-set(SAMPLES_LIST helloworld file-encryptor switchless)
+set(SAMPLES_LIST helloworld file-encryptor)
 
 if ($ENV{OE_SIMULATION})
   message(WARNING "Running only sample simulation tests due to OE_SIMULATION=$ENV{OE_SIMULATION}!")
@@ -25,10 +25,13 @@ else ()
   # against SGX.
   if (USE_LIBSGX)
     list(APPEND SAMPLES_LIST local_attestation remote_attestation)
-	# The attested_tls test is not supported on Windows at this time.
-	if (UNIX)
-	  list(APPEND SAMPLES_LIST attested_tls)
-	endif ()
+    # The attested_tls test is not supported on Windows at this time.
+    if (UNIX)
+	    list(APPEND SAMPLES_LIST attested_tls)
+    endif ()
+  endif ()
+  if (UNIX)
+    list(APPEND SAMPLES_LIST switchless)
   endif ()
 endif ()
 
