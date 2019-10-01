@@ -55,6 +55,9 @@ def generateVariablesFile() {
          echo ansible_ssh_private_key_file: inventory/id-rsa-oe-test
          } > ${var_file} """
     }
+    if (DCAP_TESTING_NODE == "true") {
+      sh "echo dcap_testing_node: true >> ${var_file}"
+    }
 }
 
 def registerJenkinsSlave() {

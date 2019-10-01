@@ -453,7 +453,9 @@ function Install-Shellcheck {
     Install-ZipTool -ZipPath $PACKAGES["shellcheck"]["local_file"] `
                     -InstallDirectory $installDir `
                     -EnvironmentPath @("$installDir")
-    Add-ToSystemPath -Path "${env:ProgramFiles}\shellcheck"
+    $filePath = Join-Path $installDir "shellcheck*.exe"
+    $scexe = Get-ChildItem $filePath
+    Rename-Item $scexe "shellcheck.exe"
 }
 
 function Get-DevconBinary {
@@ -647,7 +649,11 @@ try {
     Install-Git
     Install-OCaml
     Install-Shellcheck
-    Install-PSW
+
+    if ($LaunchConfiguration -ne "SGX1FLC-NoDriver")
+    {
+        Install-PSW
+    }
 
     if ($DCAPClientType -eq "Azure")
     {
