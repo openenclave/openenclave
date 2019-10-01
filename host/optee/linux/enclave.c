@@ -425,7 +425,7 @@ oe_result_t oe_create_enclave(
     if (!enclave_path || !enclave_out ||
         ((enclave_type != OE_ENCLAVE_TYPE_OPTEE) &&
          (enclave_type != OE_ENCLAVE_TYPE_AUTO)) ||
-        (setting_count > 0 && configs == NULL) ||
+        (setting_count > 0 && settings == NULL) ||
         (setting_count == 0 && settings != NULL) ||
         (flags & OE_ENCLAVE_FLAG_RESERVED) ||
         (!(flags & OE_ENCLAVE_FLAG_SIMULATE) &&
