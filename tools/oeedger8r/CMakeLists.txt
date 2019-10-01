@@ -6,69 +6,39 @@
 # do not emit to the current working directory, they always emit to
 # the location of the input file.
 
-# Check prerequisites
-find_program(OCAMLLEX ocamllex)
-find_program(OCAMLYACC ocamlyacc)
-find_program(OCAMLOPT ocamlopt)
-if ((NOT OCAMLLEX) OR (NOT OCAMLYACC) OR (NOT OCAMLOPT))
-  message(FATAL_ERROR "Please check your OCAML installation and make sure you installed 'ocaml-native-compilers'")
+find_program(ESY esy)
+if (NOT ESY)
+  message(FATAL_ERROR "Please check your esy installation")
 endif ()
 
-# Generate Lexer.
+# TODO: Figure out how to produce artifacts in the build directory.
+message("oeedger8r is built in its source directory")
+set(BINARY ${CMAKE_CURRENT_SOURCE_DIR}/_release/bin/oeedger8r${CMAKE_EXECUTABLE_SUFFIX})
 add_custom_command(
-  OUTPUT Lexer.ml
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/intel/Lexer.mll ${CMAKE_CURRENT_BINARY_DIR}
-  COMMAND ocamllex Lexer.mll
-  DEPENDS intel/Lexer.mll)
-
-# Generate Parser.
-add_custom_command(
-  OUTPUT Parser.ml Parser.mli
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/intel/Parser.mly ${CMAKE_CURRENT_BINARY_DIR}
-  COMMAND ocamlyacc Parser.mly
-  DEPENDS intel/Parser.mly)
-
-# Compile
-set(BINARY oeedger8r${CMAKE_EXECUTABLE_SUFFIX})
-add_custom_command(
-    OUTPUT ${BINARY}
-    COMMAND ocamlopt -c -bin-annot -I . -o Ast.cmx          ${CMAKE_CURRENT_SOURCE_DIR}/intel/Ast.ml
-    COMMAND ocamlopt -c -bin-annot -I . -o Util.cmx         ${CMAKE_CURRENT_SOURCE_DIR}/intel/Util.ml
-    COMMAND ocamlopt -c -bin-annot -I . -o SimpleStack.cmx  ${CMAKE_CURRENT_SOURCE_DIR}/intel/SimpleStack.ml
-    COMMAND ocamlopt -c -bin-annot -I . -o Plugin.cmx       ${CMAKE_CURRENT_SOURCE_DIR}/intel/Plugin.ml
-    COMMAND ocamlopt -c -bin-annot -I . -o Preprocessor.cmx ${CMAKE_CURRENT_SOURCE_DIR}/intel/Preprocessor.ml
-    COMMAND ocamlopt -c -bin-annot -I . -o Parser.cmi       ${CMAKE_CURRENT_BINARY_DIR}/Parser.mli
-    COMMAND ocamlopt -c -bin-annot -I . -o Parser.cmx       ${CMAKE_CURRENT_BINARY_DIR}/Parser.ml
-    COMMAND ocamlopt -c -bin-annot -I . -o Lexer.cmx        ${CMAKE_CURRENT_BINARY_DIR}/Lexer.ml
-    COMMAND ocamlopt -c -bin-annot -I . -o CodeGen.cmx      ${CMAKE_CURRENT_SOURCE_DIR}/intel/CodeGen.ml
-    COMMAND ocamlopt -c -bin-annot -I . -o Emitter.cmx      ${CMAKE_CURRENT_SOURCE_DIR}/Emitter.ml
-    COMMAND ocamlopt -c -bin-annot -I . -o main.cmx         ${CMAKE_CURRENT_SOURCE_DIR}/main.ml
-    COMMAND ocamlopt str.cmxa unix.cmxa Ast.cmx Util.cmx SimpleStack.cmx Plugin.cmx
-                     Preprocessor.cmx Parser.cmx Lexer.cmx CodeGen.cmx Emitter.cmx main.cmx
-                     -o ${BINARY}
-
-    # Add dependency to generated Lexer and Parser, and all of the sources.
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Lexer.ml
-            ${CMAKE_CURRENT_BINARY_DIR}/Parser.ml
-            ${CMAKE_CURRENT_BINARY_DIR}/Parser.mli
-            Emitter.ml
-            main.ml
-            intel/Ast.ml
-            intel/CodeGen.ml
-            intel/Edger8r.ml
-            intel/Plugin.ml
-            intel/Preprocessor.ml
-            intel/SimpleStack.ml
-            intel/Util.ml)
+  OUTPUT ${BINARY}
+  COMMAND esy --project=${CMAKE_CURRENT_SOURCE_DIR}
+  # NOTE: This works around a bug: https://github.com/esy/esy/issues/979
+  COMMAND cmake -E env ESY__PROJECT=${CMAKE_CURRENT_SOURCE_DIR} esy npm-release
+  DEPENDS src/Emitter.ml
+          src/main.ml
+          intel/Ast.ml
+          intel/CodeGen.ml
+          intel/Edger8r.ml
+          intel/Lexer.mll
+          intel/Parser.mly
+          intel/Plugin.ml
+          intel/Preprocessor.ml
+          intel/SimpleStack.ml
+          intel/Util.ml)
 
 # The names here are important because the output file must be named
 # `oeedger8r`, and our targets must not clash with that.
 add_executable(edger8r IMPORTED GLOBAL)
-set_target_properties(edger8r PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${BINARY})
+set_target_properties(edger8r PROPERTIES IMPORTED_LOCATION ${BINARY})
 add_custom_target(oeedger8r_target DEPENDS ${BINARY})
 add_dependencies(edger8r oeedger8r_target)
 
 # Can't use `install(TARGETS)` on an imported executable, because it
 # causes CMake to crash. Instead, see `openenclave-config.cmake.in`
 # for the manual "export" of this target.
-install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${BINARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS ${BINARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
