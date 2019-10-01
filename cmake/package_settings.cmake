@@ -54,11 +54,6 @@ install(
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
   FILE openenclave-targets.cmake
   COMPONENT OEHOSTVERIFY)
-if (WIN32)
-  install(
-    FILES ${CMAKE_SOURCE_DIR}/cmake/maybe_build_using_clangw.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
-endif ()
 install(
   FILES ${PROJECT_SOURCE_DIR}/cmake/sdk_cmake_targets_readme.md
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake

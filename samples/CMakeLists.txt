@@ -2,18 +2,18 @@
 # Licensed under the MIT License.
 
 if (USE_LIBSGX)
-   install(DIRECTORY remote_attestation local_attestation attested_tls
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    PATTERN "gen_pubkey_header.sh"
-    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-        GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
+  install(DIRECTORY remote_attestation local_attestation attested_tls
+          DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+          PATTERN "gen_pubkey_header.sh"
+          PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+          GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
 endif ()
 
 install(DIRECTORY helloworld file-encryptor data-sealing switchless
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
 install(FILES README.md
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
 if (WIN32)
   add_test(NAME samples

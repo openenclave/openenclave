@@ -30,11 +30,6 @@ project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM}
 set(PROJECT_VERSION ${OE_VERSION})
 set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
 
-find_program(OE_BASH bash)
-if (NOT OE_BASH)
-  message(FATAL_ERROR "-- Unable to find bash")
-endif ()
-
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # Collect Git info
@@ -139,19 +134,19 @@ if (WIN32)
   # explicitly searching only for Git Bash. See #1302 for more.
   find_program(GIT git)
   get_filename_component(GIT_DIR ${GIT} DIRECTORY)
-  find_program(BASH bash
+  find_program(OE_BASH bash
     PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
     NO_DEFAULT_PATH) # Do not find WSL bash.
 
-  if (NOT BASH)
+  if (NOT OE_BASH)
     message(FATAL_ERROR "Git Bash not found!")
   endif ()
   if (NOT NUGET_PACKAGE_PATH)
     message(FATAL_ERROR "NUGET_PACKAGE_PATH not defined. Please define NUGET_PACKAGE_PATH as the path to the installed Intel and DCAP Client nuget packages.")
   endif()
 else ()
-  find_program(BASH bash)
-  if (NOT BASH)
+  find_program(OE_BASH bash)
+  if (NOT OE_BASH)
     message(FATAL_ERROR "Bash not found!")
   endif ()
 endif ()

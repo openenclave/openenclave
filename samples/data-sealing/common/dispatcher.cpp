@@ -86,6 +86,21 @@ int ecall_dispatcher::seal_data(
     }
     memcpy(iv, m_sealed_data->iv, IV_SIZE);
 
+    // We need to cast these variables down to unsigned int.
+    // Check if that will cut off any significant bits.
+    if (m_data_size > UINT32_MAX)
+    {
+        TRACE_ENCLAVE(
+            "m_data_size is too large to fit into an unsigned int", 1);
+        goto exit;
+    }
+    if (seal_key_size > UINT32_MAX)
+    {
+        TRACE_ENCLAVE(
+            "seal_key_size is too large to fit into an unsigned int", 1);
+        goto exit;
+    }
+
     // seal data: encrypt data with the seal key
     ret = cipher_data(
         ENCRYPT_OPERATION,
@@ -188,6 +203,21 @@ int ecall_dispatcher::unseal_data(
 
     // read initialization vector values
     memcpy(iv, m_sealed_data->iv, IV_SIZE);
+
+    // We need to cast these variables down to unsigned int.
+    // Check if that will cut off any significant bits.
+    if (m_sealed_data->encrypted_data_len > UINT32_MAX)
+    {
+        TRACE_ENCLAVE(
+            "seal_key_size is too large to fit into an unsigned int", 1);
+        goto exit;
+    }
+    if (seal_key_size > UINT32_MAX)
+    {
+        TRACE_ENCLAVE(
+            "seal_key_size is too large to fit into an unsigned int", 1);
+        goto exit;
+    }
 
     // validate signature by re-generating a signature from the input
     // sealed_data
@@ -295,6 +325,12 @@ oe_result_t ecall_dispatcher::get_seal_key_and_prep_sealed_data(
         padded_byte_count = CIPHER_BLOCK_SIZE;
     else
         padded_byte_count = CIPHER_BLOCK_SIZE - bytes_left;
+
+    if (padded_byte_count > UINT32_MAX)
+    {
+        TRACE_ENCLAVE("padded_byte_count is too large to fit into an int", 1);
+        goto exit;
+    }
 
     padded_data = (unsigned char*)malloc(m_data_size + padded_byte_count);
     if (padded_data == NULL)

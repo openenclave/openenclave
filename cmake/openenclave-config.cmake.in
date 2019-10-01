@@ -17,13 +17,29 @@ set(OE_SCRIPTSDIR "@PACKAGE_CMAKE_INSTALL_BINDIR@/scripts")
 if (WIN32)
   set(OE_SGX ON)
   set(USE_CLANGW ON)
+
+  # NOTE: On Windows we have found that we must use Git Bash, not the
+  # Bash from the Windows Subsystem for Linux. Hence this is
+  # explicitly searching only for Git Bash. See #1302 for more.
+  find_program(GIT git)
+  get_filename_component(GIT_DIR ${GIT} DIRECTORY)
+  find_program(OE_BASH bash
+    PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
+    NO_DEFAULT_PATH) # Do not find WSL bash.
+
   if (NOT OE_BASH)
-    find_program(OE_BASH bash.exe)
-    if (NOT OE_BASH)
-      message(FATAL_ERROR "-- Looking for bash.exe - not found")
-    endif ()
+    message(FATAL_ERROR "-- Git Bash not found!")
+  endif ()
+  if (NOT NUGET_PACKAGE_PATH)
+    message(FATAL_ERROR "NUGET_PACKAGE_PATH not defined. Please define NUGET_PACKAGE_PATH as the path to the installed Intel and DCAP Client nuget packages.")
+  endif()
+else ()
+  find_program(OE_BASH bash)
+  if (NOT OE_BASH)
+    message(FATAL_ERROR "-- Bash not found!")
   endif ()
 endif ()
+
 
 # Dependencies.
 include(CMakeFindDependencyMacro)
@@ -62,12 +78,14 @@ if (NOT TARGET openenclave::sgx_enclave_common)
   if (NOT SGX_ENCLAVE_COMMON_LIB)
     message(FATAL_ERROR "-- Looking for sgx_enclave_common library - not found")
   else ()
-    message("-- Looking for sgx_enclave_common library - found")
+    message(VERBOSE "-- Looking for sgx_enclave_common library - found")
     add_library(openenclave::sgx_enclave_common SHARED IMPORTED)
     if (UNIX)
       set_target_properties(openenclave::sgx_enclave_common PROPERTIES IMPORTED_LOCATION ${SGX_ENCLAVE_COMMON_LIB})
     elseif (WIN32)
-      set_target_properties(openenclave::sgx_enclave_common PROPERTIES IMPORTED_LOCATION $ENV{WINDIR}/System32 IMPORTED_IMPLIB ${SGX_ENCLAVE_COMMON_LIB})
+      set_target_properties(openenclave::sgx_enclave_common PROPERTIES
+                            IMPORTED_LOCATION $ENV{WINDIR}/System32
+                            IMPORTED_IMPLIB ${SGX_ENCLAVE_COMMON_LIB})
     endif ()
   endif ()
 endif ()
@@ -78,12 +96,14 @@ if (NOT TARGET openenclave::sgx_dcap_ql)
   if (NOT SGX_DCAP_QL_LIB)
     message(FATAL_ERROR "-- Looking for sgx_dcap_ql library - not found")
   else ()
-    message("-- Looking for sgx_dcap_ql library - found")
+    message(VERBOSE "-- Looking for sgx_dcap_ql library - found")
     add_library(openenclave::sgx_dcap_ql SHARED IMPORTED)
     if (UNIX)
       set_target_properties(openenclave::sgx_dcap_ql PROPERTIES IMPORTED_LOCATION ${SGX_DCAP_QL_LIB})
     elseif (WIN32)
-      set_target_properties(openenclave::sgx_dcap_ql PROPERTIES IMPORTED_LOCATION $ENV{WINDIR}/System32 IMPORTED_IMPLIB ${SGX_DCAP_QL_LIB})
+      set_target_properties(openenclave::sgx_dcap_ql PROPERTIES
+                            IMPORTED_LOCATION $ENV{WINDIR}/System32
+                            IMPORTED_IMPLIB ${SGX_DCAP_QL_LIB})
     endif ()
   endif ()
 endif ()
