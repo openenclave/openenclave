@@ -13,12 +13,10 @@ endif ()
 
 # TODO: Figure out how to produce artifacts in the build directory.
 message("oeedger8r is built in its source directory")
-set(BINARY ${CMAKE_CURRENT_SOURCE_DIR}/_release/bin/oeedger8r${CMAKE_EXECUTABLE_SUFFIX})
+set(BINARY ${CMAKE_CURRENT_SOURCE_DIR}/_build/install/default/bin/oeedger8r${CMAKE_EXECUTABLE_SUFFIX})
 add_custom_command(
   OUTPUT ${BINARY}
   COMMAND esy --project=${CMAKE_CURRENT_SOURCE_DIR}
-  # NOTE: This works around a bug: https://github.com/esy/esy/issues/979
-  COMMAND cmake -E env ESY__PROJECT=${CMAKE_CURRENT_SOURCE_DIR} esy npm-release
   DEPENDS src/Emitter.ml
           src/main.ml
           intel/Ast.ml
