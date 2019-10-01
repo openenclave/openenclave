@@ -399,7 +399,7 @@ oe_result_t oe_create_enclave(
     const char* enclave_path,
     oe_enclave_type_t enclave_type,
     uint32_t flags,
-    const oe_enclave_settings_t* settings,
+    const oe_enclave_setting_t* settings,
     uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
