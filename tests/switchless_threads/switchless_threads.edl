@@ -1,0 +1,29 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public int enc_echo_single(
+            [string, in] char* in,
+            [out] char out[100]);
+        public int enc_echo_multiple(
+            [string, in] char* in,
+            [out] char out[100],
+            int repeats);
+    };
+
+    untrusted {
+        int host_echo_switchless(
+            [string, in] char* in,
+            [out] char out[100],
+            [string, in] char* str1,
+            [in] char str2[100])
+            transition_using_threads;
+
+        int host_echo_regular(
+            [string, in] char* in,
+            [out] char out[100],
+            [string, in] char* str1,
+            [in] char str2[100]);
+    };
+};

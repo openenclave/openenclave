@@ -27,6 +27,8 @@ if (OE_SGX)
     add_subdirectory(aesm)
     add_subdirectory(debugger)
     add_subdirectory(host_verify)
+    add_subdirectory(switchless)
+    add_subdirectory(switchless_threads)
 endif()
 
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
@@ -96,5 +98,4 @@ if (OE_SGX AND UNIX)
 
    # Attestation supported only on Linux
    add_subdirectory(tls_e2e)
-   add_subdirectory(switchless)
 endif()

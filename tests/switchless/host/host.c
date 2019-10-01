@@ -5,16 +5,35 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#if _MSC_VER
+#include <Windows.h>
+#endif
 #include "../../../host/strings.h"
 #include "switchless_u.h"
 
-#define NUM_HOST_THREADS 16
 #define STRING_LEN 100
+
+#if _MSC_VER
+static double frequency;
+#endif
+
+double get_relative_time_in_microseconds()
+{
+#if __GNUC__
+    struct timespec current_time;
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    return (double)current_time.tv_sec * 1000000 +
+           (double)current_time.tv_nsec / 1000.0;
+#elif _MSC_VER
+    double current_time;
+    QueryPerformanceCounter(&current_time);
+    return current_time / frequency;
+#endif
+}
 
 int host_echo_switchless(char* in, char* out, char* str1, char str2[STRING_LEN])
 {
@@ -47,54 +66,55 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
+#if _MSC_VER
+    QueryPerformanceFrequency(&frequency);
+    frequency /= 1000000; // convert to microseconds
+#endif
+
     const uint32_t flags = oe_get_create_flags();
 
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
     // Enable switchless and configure host worker number
-    oe_enclave_config_context_switchless_t config = {2, 0};
-    oe_enclave_config_t configs[] = {{
-        .config_type = OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS,
-        .u.context_switchless_config = &config,
-    }};
+    oe_enclave_setting_context_switchless_t switchless_setting = {1, 0};
+    oe_enclave_setting_t settings[] = {
+        {.setting_type = OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS,
+         .u.context_switchless_setting = &switchless_setting}};
 
     if ((result = oe_create_switchless_enclave(
              argv[1],
              OE_ENCLAVE_TYPE_SGX,
              flags,
-             configs,
-             OE_COUNTOF(configs),
+             settings,
+             OE_COUNTOF(settings),
              &enclave)) != OE_OK)
-#else
-    if ((result = oe_create_switchless_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-#endif
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     char out[STRING_LEN];
     int return_val;
 
     double switchless_microseconds = 0;
-    struct timespec start, end;
+    double start, end;
 
     // Increase this number to have a meaningful performance measurement
     int repeats = 10;
 
-    clock_gettime(CLOCK_REALTIME, &start);
+    start = get_relative_time_in_microseconds();
+
     OE_TEST(
         enc_echo_switchless(
             enclave, &return_val, "Hello World", out, repeats) == OE_OK);
-    clock_gettime(CLOCK_REALTIME, &end);
-    switchless_microseconds += (double)(end.tv_sec - start.tv_sec) * 1000000.0 +
-                               (double)(end.tv_nsec - start.tv_nsec) / 1000.0;
+
+    end = get_relative_time_in_microseconds();
+    switchless_microseconds = end - start;
 
     double regular_microseconds = 0;
-    clock_gettime(CLOCK_REALTIME, &start);
+    start = get_relative_time_in_microseconds();
+
     OE_TEST(
         enc_echo_regular(enclave, &return_val, "Hello World", out, repeats) ==
         OE_OK);
-    clock_gettime(CLOCK_REALTIME, &end);
-    regular_microseconds += (double)(end.tv_sec - start.tv_sec) * 1000000.0 +
-                            (double)(end.tv_nsec - start.tv_nsec) / 1000.0;
+
+    end = get_relative_time_in_microseconds();
+    regular_microseconds = end - start;
 
     result = oe_terminate_enclave(enclave);
     OE_TEST(result == OE_OK);

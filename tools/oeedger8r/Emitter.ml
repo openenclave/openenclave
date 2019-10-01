@@ -472,9 +472,9 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         failwithf
           "Function '%s': 'private' specifier is not supported by oeedger8r"
           f.tf_fdecl.fname ;
-      if f.tf_is_switchless && not ep.experimental then
+      if f.tf_is_switchless then
         failwithf
-          "Function '%s': switchless ecalls are not yet supported \
+          "Function '%s': trusted switchless ecalls are not yet supported \
            by Open Enclave SDK."
           f.tf_fdecl.fname )
     tfs ;
@@ -493,12 +493,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
         printf
           "Warning: Function '%s': Reentrant ocalls are not supported by Open \
            Enclave. Allow list ignored.\n"
-          f.uf_fdecl.fname ;
-      if f.uf_is_switchless && not ep.experimental then
-        failwithf
-          "Function '%s': switchless ocalls are not yet supported \
-           by Open Enclave SDK."
-           f.uf_fdecl.fname )
+          f.uf_fdecl.fname)
     ufs ;
   (* Map warning functions over trusted and untrusted function
      declarations *)
@@ -1368,13 +1363,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    const char* path,"
     ; "    oe_enclave_type_t type,"
     ; "    uint32_t flags,"
-    ; "#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE"
-    ; "    const oe_enclave_config_t* configs,"
-    ; "    uint32_t config_count,"
-    ; "#else"
-    ; "    const void* config,"
-    ; "    uint32_t config_size,"
-    ; "#endif"
+    ; "    const oe_enclave_setting_t* settings,"
+    ; "    uint32_t setting_count,"
     ; "    oe_enclave_t** enclave);"
     ; ""
     ; "/**** ECALL prototypes. ****/"
@@ -1432,26 +1422,16 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     ; "    const char* path,"
     ; "    oe_enclave_type_t type,"
     ; "    uint32_t flags,"
-    ; "#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE"
-    ; "    const oe_enclave_config_t* configs,"
-    ; "    uint32_t config_count,"
-    ; "#else"
-    ; "    const void* config,"
-    ; "    uint32_t config_size,"
-    ; "#endif"
+    ; "    const oe_enclave_setting_t* settings,"
+    ; "    uint32_t setting_count,"
     ; "    oe_enclave_t** enclave)"
     ; "{"
     ; "    return oe_create_enclave("
     ; "               path,"
     ; "               type,"
     ; "               flags,"
-    ; "#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE"
-    ; "               configs,"
-    ; "               config_count,"
-    ; "#else"
-    ; "               config,"
-    ; "               config_size,"
-    ; "#endif"
+    ; "               settings,"
+    ; "               setting_count,"
     ; sprintf "               __%s_ocall_function_table," ec.enclave_name
     ; sprintf "               %d," (List.length ufs)
     ; "               enclave);"
