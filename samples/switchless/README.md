@@ -27,11 +27,12 @@ call is initiated, the caller needs to pass the `job` (encapsulating information
 thread needs to pass the result back to the caller. Both exchanges need to be synchronized.
 
 While switchless calls save transition time, they require at least one additional thread to service the calls.
-More threads typically means more competition of the CPU cores and more context switches, hurting the performance.
-Whether to make a particular function switchless has to weigh the associated costs and savings. In general, the
-good candidates for switchless calls are functions that are: 1) short, thus the transition takes relatively high
-percentage of the overall execution time of the call; and 2) called frequently, so the savings in transition time
-add up.
+Currently, the worker threads that service the calls busy-wait for messages and therefore consume a lot of CPU.
+Thus more worker threads typically means more competition for the CPU cores and more thread context switches,
+hurting the performance. In order to determine whether to make a particular function switchless, one has to weigh
+the associated costs and savings. In general, the good candidates for switchless calls are functions that are:
+1) short, thus the transition takes relatively high percentage of the overall execution time of the call; and
+2) called frequently, so the savings in transition time add up.
 
 ## How does Open Enclave support switchless OCALLs
 
@@ -56,7 +57,7 @@ With the current implementation, we recommend that users avoid using more host w
 1. the number of simultaneously active enclave threads, and
 2. the number of cores that are potentially available to host worker threads.
 
-For example, on a 4-core machine, if the number of the simultaneously active enclave threads is 2, and there is no
+For example, on a 4-core machine, if the number of the simultaneously active enclave threads is 2, and there are no
 host threads other than the two threads making ECALLs and the switchless worker threads, both 1) and 2) would be 2.
 So we recommend setting the number of host worker threads to 2.
 
@@ -101,7 +102,7 @@ Function `host_increment_switchless`'s declaration ends with keyword `transition
 called switchlessly at run time. However, this a best-effort directive. Open Enclave runtime may still choose
 to fall back to a tradition OCALL if switchless call resources are unavailable, e.g., the enclave is not configured
 as switchless-capable, or the host worker threads are busy servicing other switchless OCALLs. In this example,
-`host_increment_switchless` is always called switchlessly because there is no simultaneous switchless OCALLs.
+`host_increment_switchless` is always called switchlessly because there are no simultaneous switchless OCALLs.
 
 To generate the functions with the marshaling code, the `oeedger8r` tool is called in both the host and enclave
 directories from their Makefiles. For example:
