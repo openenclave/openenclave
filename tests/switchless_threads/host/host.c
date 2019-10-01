@@ -107,18 +107,17 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     // Enable switchless and configure host worker number
-    oe_enclave_setting_context_switchless_t config = {2, 0};
-    oe_enclave_config_t configs[] = {{
-        .config_type = OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS,
-        .u.context_switchless_config = &config,
-    }};
+    oe_enclave_setting_context_switchless_t switchless_setting = {2, 0};
+    oe_enclave_setting_t settings[] = {
+        {.setting_type = OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS,
+         .u.context_switchless_setting = &switchless_setting}};
 
     if ((result = oe_create_switchless_threads_enclave(
              argv[1],
              OE_ENCLAVE_TYPE_SGX,
              flags,
-             configs,
-             OE_COUNTOF(configs),
+             settings,
+             OE_COUNTOF(settings),
              &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 

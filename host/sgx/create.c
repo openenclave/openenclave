@@ -405,27 +405,28 @@ done:
 /*
 ** _config_enclave()
 **
-** Config the enclave with an array of configurations.
+** Config the enclave with an array of settings.
 */
 
 static oe_result_t _configure_enclave(
     oe_enclave_t* enclave,
-    const oe_enclave_config_t* configs,
-    uint32_t config_count)
+    const oe_enclave_setting_t* settings,
+    uint32_t setting_count)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    for (uint32_t i = 0; i < config_count; i++)
+    for (uint32_t i = 0; i < setting_count; i++)
     {
-        switch (configs[i].config_type)
+        switch (settings[i].setting_type)
         {
             // Configure the switchless ocalls, such as the number of workers.
-            case OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS:
+            case OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS:
             {
                 size_t max_host_workers =
-                    configs[i].u.context_switchless_config->max_host_workers;
+                    settings[i].u.context_switchless_setting->max_host_workers;
                 size_t max_enclave_workers =
-                    configs[i].u.context_switchless_config->max_enclave_workers;
+                    settings[i]
+                        .u.context_switchless_setting->max_enclave_workers;
 
                 // Switchless ecalls are not enabled yet. Make sure the max
                 // number of enclave workers is always 0.
@@ -689,8 +690,8 @@ oe_result_t oe_create_enclave(
     const char* enclave_path,
     oe_enclave_type_t enclave_type,
     uint32_t flags,
-    const oe_enclave_config_t* configs,
-    uint32_t config_count,
+    const oe_enclave_setting_t* settings,
+    uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
     oe_enclave_t** enclave_out)
@@ -708,8 +709,8 @@ oe_result_t oe_create_enclave(
     if (!enclave_path || !enclave_out ||
         ((enclave_type != OE_ENCLAVE_TYPE_SGX) &&
          (enclave_type != OE_ENCLAVE_TYPE_AUTO)) ||
-        (config_count > 0 && configs == NULL) ||
-        (config_count == 0 && configs != NULL) ||
+        (setting_count > 0 && settings == NULL) ||
+        (setting_count == 0 && settings != NULL) ||
         (flags & OE_ENCLAVE_FLAG_RESERVED))
         OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -799,8 +800,8 @@ oe_result_t oe_create_enclave(
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
 
-    /* Apply the list of configurations to the enclave */
-    OE_CHECK(_configure_enclave(enclave, configs, config_count));
+    /* Apply the list of settings to the enclave */
+    OE_CHECK(_configure_enclave(enclave, settings, setting_count));
 
     /* Setup logging configuration */
     oe_log_enclave_init(enclave);

@@ -13,11 +13,11 @@ static void _test_invalid_param(const char* path, uint32_t flags)
 {
     oe_enclave_t* enclave = NULL;
 
-    oe_enclave_config_t invalid_config = {0, {NULL}};
-    oe_enclave_setting_context_switchless_t config = {2, 0};
-    oe_enclave_config_t configs[] = {{
-        .config_type = OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS,
-        .u.context_switchless_config = &config,
+    oe_enclave_setting_t invalid_setting = {0, {NULL}};
+    oe_enclave_setting_context_switchless_t switchless_setting = {2, 0};
+    oe_enclave_setting_t settings[] = {{
+        .setting_type = OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS,
+        .u.context_switchless_setting = &switchless_setting,
     }};
 
     /* Null path. */
@@ -45,19 +45,19 @@ static void _test_invalid_param(const char* path, uint32_t flags)
 
     /* Invalid configuration with incorrect **config_count** */
     result = oe_create_create_errors_enclave(
-        path, OE_ENCLAVE_TYPE_SGX, flags, &invalid_config, 0, &enclave);
+        path, OE_ENCLAVE_TYPE_SGX, flags, &invalid_setting, 0, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* Invalid configuration with correct **config_count** */
     result = oe_create_create_errors_enclave(
-        path, OE_ENCLAVE_TYPE_SGX, flags, &invalid_config, 1, &enclave);
+        path, OE_ENCLAVE_TYPE_SGX, flags, &invalid_setting, 1, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* Valid configuration with incorrect **config_count** */
     result = oe_create_create_errors_enclave(
-        path, OE_ENCLAVE_TYPE_SGX, flags, configs, 0, &enclave);
+        path, OE_ENCLAVE_TYPE_SGX, flags, settings, 0, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 

@@ -52,18 +52,18 @@ int main(int argc, const char* argv[])
     }
 
     // Enable switchless and configure host worker number
-    oe_enclave_setting_context_switchless_t config = {1, 0};
-    oe_enclave_config_t configs[] = {{
-        .config_type = OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS,
-        .u.context_switchless_config = &config,
+    oe_enclave_setting_context_switchless_t switchless_setting = {1, 0};
+    oe_enclave_setting_t settings[] = {{
+        .setting_type = OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS,
+        .u.context_switchless_setting = &switchless_setting,
     }};
 
     if ((result = oe_create_switchless_enclave(
              argv[1],
              OE_ENCLAVE_TYPE_SGX,
              flags,
-             configs,
-             OE_COUNTOF(configs),
+             settings,
+             OE_COUNTOF(settings),
              &enclave)) != OE_OK)
         fprintf(stderr, "oe_create_enclave(): result=%u", result);
 

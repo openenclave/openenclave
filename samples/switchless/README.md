@@ -88,7 +88,7 @@ enclave {
     trusted {
         public void enclave_add_N_switchless([in, out] int* m, int n);
         public void enclave_add_N_regular([in, out] int* m, int n);
-    };
+    };t
 
     untrusted {
         void host_increment_switchless([in, out] int* m) transition_using_threads;
@@ -120,21 +120,21 @@ so we use 1 as explained above. The 2nd field specifies the number of enclave th
 Since switchless ECALL is not yet implemented, we require the 2nd field to be `0`.
 
 ```c
-oe_enclave_setting_context_switchless_t config = {1, 0};
+oe_enclave_setting_context_switchless_t switchless_setting = {1, 0};
 ```
 
-The host then puts the structure address and the configuration type in an array of configurations for the enclave
-to be created. Even though we only have one configuration (for switchless) for the enclave, we'd like the
-flexibility of adding more than one configuration (with different types) for an enclave in the future.
+The host then puts the structure address and the setting type in an array of settings for the enclave
+to be created. Even though we only have one setting (for switchless) for the enclave, we'd like the
+flexibility of adding more than one setting (with different types) for an enclave in the future.
 
 ```c
-oe_enclave_config_t configs[] = {{
-        .config_type = OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS,
-        .u.context_switchless_config = &config,
+oe_enclave_setting_t settings[] = {{
+        .setting_type = OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS,
+        .u.context_switchless_setting = &setting,
     }};
 ```
 
-To make the configurations created above effective, we need to pass the array `configs` into `oe_create_enclave`
+To make the settings created above effective, we need to pass the array `settingss` into `oe_create_enclave`
 in the following way:
 
 ```c
@@ -142,8 +142,8 @@ oe_create_switchless_enclave(
              argv[1],
              OE_ENCLAVE_TYPE_SGX,
              flags,
-             configs,
-             OE_COUNTOF(configs),
+             settings,
+             OE_COUNTOF(settings),
              &enclave);
 ```
 
