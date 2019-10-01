@@ -19,6 +19,8 @@
 #include "bits/report.h"
 #include "bits/result.h"
 
+#include "internal/datetime.h"
+
 OE_EXTERNC_BEGIN
 
 /**
@@ -32,6 +34,10 @@ OE_EXTERNC_BEGIN
  * @param report_size The size of the **report** buffer.
  * @param parsed_report Optional **oe_report_t** structure to populate
  * with the report properties in a standard format.
+ * @param collaterals Optional collaterals related to a remote quote.
+ * @param collatterals_size The size of the collaterals.
+ * @param input_validation_time Optional time to use for validation,
+ * defaults to the time the collaterals were created.
  *
  * @retval OE_OK The report was successfully verified.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -40,7 +46,10 @@ OE_EXTERNC_BEGIN
 oe_result_t oe_verify_remote_report(
     const uint8_t* report,
     size_t report_size,
-    oe_report_t* parsed_report);
+    oe_report_t* parsed_report,
+    const uint8_t* collaterals,
+    size_t collaterals_size,
+    oe_datetime_t* input_validation_time);
 
 /**
  * identity validation callback type

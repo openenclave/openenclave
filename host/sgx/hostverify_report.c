@@ -13,7 +13,10 @@
 oe_result_t oe_verify_remote_report(
     const uint8_t* report,
     size_t report_size,
-    oe_report_t* parsed_report)
+    oe_report_t* parsed_report,
+    const uint8_t* collaterals,
+    size_t collaterals_size,
+    oe_datetime_t* input_validation_time)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
@@ -37,7 +40,11 @@ oe_result_t oe_verify_remote_report(
 
     // Quote attestation can be done entirely on the host side.
     OE_CHECK(oe_verify_quote_internal_with_collaterals(
-        header->report, header->report_size, NULL, 0, NULL));
+        header->report,
+        header->report_size,
+        collaterals,
+        collaterals_size,
+        input_validation_time));
 
     // Optionally return parsed report.
     if (parsed_report != NULL)

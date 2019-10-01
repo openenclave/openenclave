@@ -238,7 +238,8 @@ static int _verify_report(
 
     if (collaterals_filename == NULL)
     {
-        result = oe_verify_remote_report(report_data, report_file_size, NULL);
+        result = oe_verify_remote_report(
+            report_data, report_file_size, NULL, NULL, 0, NULL);
         if (pass)
             OE_TEST(result == OE_OK);
         else
