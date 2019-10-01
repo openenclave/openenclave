@@ -11,7 +11,7 @@
 
 function(add_dcap_client_target TARGET_NAME)
 
-    if (NOT WIN32)
+    if (UNIX)
         message(WARNING "import_dcap_client is only intended for WIN32 build environments. Check if this invocation is needed.")
     endif ()
 

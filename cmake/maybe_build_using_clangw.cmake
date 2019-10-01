@@ -22,7 +22,7 @@
 # rewrite of the build system CMakeLists.)
 #
 function(maybe_build_using_clangw OE_TARGET)
-    if (NOT WIN32)
+    if (UNIX)
         # Noop on Linux.
         return()
     endif()

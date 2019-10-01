@@ -26,7 +26,7 @@ else ()
   if (USE_LIBSGX)
     list(APPEND SAMPLES_LIST local_attestation remote_attestation)
 	# The attested_tls test is not supported on Windows at this time.
-	if (NOT WIN32)
+	if (UNIX)
 	  list(APPEND SAMPLES_LIST attested_tls)
 	endif ()
   endif ()
@@ -83,7 +83,7 @@ foreach (SAMPLE ${SAMPLES_LIST})
       message(STATUS "Samples test '${SAMPLE}' with CMake passed!")
     endif ()
 
-    if (NOT WIN32)
+    if (UNIX)
       # Build with pkg-config if not running on Windows.
       message(STATUS "Samples test '${SAMPLE}' with pkg-config running...")
       execute_process(
@@ -99,7 +99,7 @@ foreach (SAMPLE ${SAMPLES_LIST})
   endif ()
 
   # Simulation mode is not supported on Windows currently.
-  if (NOT WIN32)
+  if (UNIX)
     # The file-encryptor and helloworld are special cases which also
     # work under simulation, so we test that additional scenario here.
     if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
