@@ -3,7 +3,7 @@
 
 add_custom_command(OUTPUT enclave_a_pubkey.h
   DEPENDS public_key_a ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
-  COMMAND ${BASH} ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh enclave_a_pubkey.h ${CMAKE_BINARY_DIR}/enclave_a/public_a.pem)
+  COMMAND ${OE_BASH} ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh enclave_a_pubkey.h ${CMAKE_BINARY_DIR}/enclave_a/public_a.pem)
 # Use the edger8r to generate C bindings from the EDL file.
 add_custom_command(OUTPUT remoteattestation_t.h remoteattestation_t.c remoteattestation_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/remoteattestation.edl
