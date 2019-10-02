@@ -12,11 +12,10 @@
 typedef struct _host_worker_thread_context
 {
     volatile oe_call_host_function_args_t* call_arg;
-    uint64_t is_stopping;
     oe_enclave_t* enclave;
+    bool is_stopping;
 
-    // Used as futex or for WaitOnAddress
-    int32_t event;
+    volatile int32_t event;
 
     // Number of times the worker spinned without seeing a message.
     uint64_t spin_count;
@@ -25,7 +24,17 @@ typedef struct _host_worker_thread_context
     uint64_t total_spin_count;
 } oe_host_worker_context_t;
 
-OE_STATIC_ASSERT(sizeof(oe_host_worker_context_t) == 48);
+/**
+ * oe_host_worker_context_t is used both by the host (windows/linux) and the
+ * enclave (ELF). Lockdown the layout.
+ */
+OE_STATIC_ASSERT(sizeof(oe_host_worker_context_t) == 40);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, call_arg) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, enclave) == 8);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, is_stopping) == 16);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, event) == 20);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, spin_count) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, total_spin_count) == 32);
 
 typedef struct _oe_switchless_call_manager
 {
@@ -39,5 +48,9 @@ oe_result_t oe_start_switchless_manager(
     size_t num_host_workers);
 
 oe_result_t oe_stop_switchless_manager(oe_enclave_t* enclave);
+
+void oe_host_worker_wait(oe_host_worker_context_t* context);
+
+void oe_host_worker_wake(oe_host_worker_context_t* context);
 
 #endif /* _OE_SWITCHLESS_H */

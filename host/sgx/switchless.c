@@ -11,63 +11,6 @@
 #include "../ocalls.h"
 #include "enclave.h"
 
-#if __linux__
-#include <linux/futex.h>
-#include <sys/syscall.h>
-#include <unistd.h>
-
-static void _worker_wait(oe_host_worker_context_t* context)
-{
-    if (__sync_val_compare_and_swap(&context->event, 1, 0) == 0)
-    {
-        do
-        {
-            syscall(
-                __NR_futex,
-                &context->event,
-                FUTEX_WAIT_PRIVATE,
-                0,
-                NULL,
-                NULL,
-                0);
-            // If context-> is still 0, then this is a spurious-wake.
-            // Spurious-wakes are ignored by going back to FUTEX_WAIT.
-            // Since FUTEX_WAIT uses atomic instructions to load event->value,
-            // it is safe to use a non-atomic operation here.
-        } while (context->event == 0);
-    }
-}
-
-static void _worker_wake(oe_host_worker_context_t* context)
-{
-    // context->event is expected to be set to 1 by the enclave.
-    // This function is called only when needed.
-    __sync_val_compare_and_swap(&context->event, 0, 1);
-    syscall(__NR_futex, &context->event, FUTEX_WAKE_PRIVATE, 1, NULL, NULL, 0);
-}
-
-#else
-
-static void _worker_wait(oe_host_worker_context_t* context)
-{
-    // If the event value is 1, then set it to zero.
-    if (_InterlockedCompareExchange(&context->event, 0, 1) == 0)
-    {
-        // If the previous value was zero, then wait while value is zero.
-        uint32_t zero = 0;
-        WaitOnAddress(&context->event, &zero, sizeof(context->event), INFINITE);
-    }
-}
-
-static void _worker_wake(oe_host_worker_context_t* context)
-{
-    // Enclave sets context->value to 1.
-    // Wake up the waiting worker.
-    WakeByAddressSingle(&context->event);
-}
-
-#endif
-
 /**
  * Number of iterations an ocall worker thread would spin before going to sleep
  */
@@ -91,17 +34,20 @@ static void* _switchless_ocall_worker(void* arg)
             oe_handle_call_host_function(
                 (uint64_t)local_call_arg, context->enclave);
 
+            // Reset spin count for next message.
             context->total_spin_count += context->spin_count;
             context->spin_count = 0;
         }
         else
         {
+            // If there is no message, increment spin count until threshold is
+            // reached.
             if (++context->spin_count >= OE_HOST_WORKER_SPIN_COUNT_THRESHOLD)
             {
+                // Reset spin count and go to sleep until event is fired.
                 context->total_spin_count += context->spin_count;
                 context->spin_count = 0;
-
-                _worker_wait(context);
+                oe_host_worker_wait(context);
             }
         }
     }
@@ -114,11 +60,11 @@ static oe_result_t oe_stop_worker_threads(oe_switchless_call_manager_t* manager)
     for (size_t i = 0; i < manager->num_host_workers; i++)
     {
         manager->host_worker_contexts[i].is_stopping = true;
-        _worker_wake(&manager->host_worker_contexts[i]);
+        oe_host_worker_wake(&manager->host_worker_contexts[i]);
 
         OE_TRACE_INFO(
             "Switchless host worker thread %d spun for %lu times",
-            i,
+            (int)i,
             manager->host_worker_contexts[i].total_spin_count);
     }
 
@@ -221,5 +167,5 @@ done:
 void oe_handle_wake_host_worker(uint64_t arg)
 {
     oe_host_worker_context_t* context = (oe_host_worker_context_t*)arg;
-    _worker_wake(context);
+    oe_host_worker_wake(context);
 }
