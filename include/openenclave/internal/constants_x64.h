@@ -71,4 +71,10 @@
 //  AMD64 ABI needs a 128 bytes red zone.
 #define ABI_REDZONE_BYTE_SIZE 0x80
 
+// MXCSR initialization value for Linux x86_64 ABI in enclave
+#define ABI_MXCSR_INIT 0x1F80
+
+// x87 FPU control word initialization value for Linux x86_64 ABI in enclave
+#define ABI_FPUCW_INIT 0x037F
+
 #endif /* _OE_INTERNAL_CONSTANTS_X64_H */
