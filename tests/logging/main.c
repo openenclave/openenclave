@@ -26,11 +26,17 @@ void test_line_format(const char* line)
     OE_TEST(strstr(line, "number") != NULL);
 }
 
-void test_escaped_msg(const char* msg, const char* expected)
+void test_escaped_msg(const char* msg, const char* expected, bool expect_ok)
 {
     size_t msg_size = strlen(msg);
     char msg_escaped[MAX_ESCAPED_BYTE_LEN * msg_size + 1];
-    _escape_characters(msg, msg_escaped, msg_size, (8 * msg_size + 1));
+    bool ok =
+        _escape_characters(msg, msg_escaped, msg_size, (8 * msg_size + 1));
+    if (!expect_ok)
+    {
+        OE_TEST(!ok);
+        return;
+    }
     OE_TEST(strcmp(msg_escaped, expected) == 0);
 }
 
@@ -72,32 +78,29 @@ int TestEscapedCharachters()
     {
         char msg[] = "Hey";
         char expected[] = "Hey";
-        test_escaped_msg(msg, expected);
+        test_escaped_msg(msg, expected, true);
     }
     {
         char msg[] = "\u2605";
-        char expected[] = "";
-        test_escaped_msg(msg, expected);
+        test_escaped_msg(msg, "", false);
     }
     {
         char msg[] = "\200";
-        char expected[] = "";
-        test_escaped_msg(msg, expected);
+        test_escaped_msg(msg, "", false);
     }
     {
         char msg[] = "\037";
         char expected[] = "\\\\u001f";
-        test_escaped_msg(msg, expected);
+        test_escaped_msg(msg, expected, true);
     }
     {
         char msg[] = "\u2605\u0024";
-        char expected[] = "";
-        test_escaped_msg(msg, expected);
+        test_escaped_msg(msg, "", false);
     }
     {
         char msg[] = "\\\\\\\\";
         char expected[] = "\\\\\\\\\\\\\\\\";
-        test_escaped_msg(msg, expected);
+        test_escaped_msg(msg, expected, true);
     }
     printf("=== passed TestEscapedCharachters()\n");
     return 0;

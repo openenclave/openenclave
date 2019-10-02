@@ -93,7 +93,7 @@ void initialize_log_config()
     }
 }
 
-static void _escape_characters(
+static bool _escape_characters(
     const char* log_msg,
     char* log_msg_escaped,
     size_t msg_size,
@@ -162,8 +162,7 @@ static void _escape_characters(
                     if ((unsigned int)log_msg[i] >= 128)
                     {
                         // extended ascii
-                        log_msg_escaped[0] = '\0';
-                        return;
+                        return false;
                     }
                     sprintf(
                         (char*)&log_msg_escaped[idx], "u%04hhx", log_msg[i]);
@@ -182,6 +181,7 @@ static void _escape_characters(
         log_msg_escaped[idx] = '\0';
         idx++;
     }
+    return true;
 }
 
 static void _write_message_to_stream(
@@ -360,9 +360,9 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                         size_t max_msg_size =
                             MAX_ESCAPED_BYTE_LEN * msg_size + 1;
                         char* log_msg_escaped = malloc(max_msg_size);
-                        _escape_characters(
+                        bool escaped_ok = _escape_characters(
                             log_msg, log_msg_escaped, msg_size, max_msg_size);
-                        if (log_msg_escaped[0] == '\0')
+                        if (escaped_ok)
                         {
                             _write_custom_format_message_to_stream(
                                 log_file,
@@ -370,7 +370,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                                 time,
                                 usecs,
                                 level,
-                                "failed to escape log message",
+                                log_msg_escaped,
                                 file_name,
                                 function,
                                 line_number,
@@ -384,7 +384,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                                 time,
                                 usecs,
                                 level,
-                                log_msg_escaped,
+                                "failed to escape log message",
                                 file_name,
                                 function,
                                 line_number,
