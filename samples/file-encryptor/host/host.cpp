@@ -7,9 +7,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#if defined(__linux__)
-#include <unistd.h>
-#endif
 #include <fstream>
 #include <iostream>
 #include <iterator>

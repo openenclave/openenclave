@@ -8,9 +8,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifdef __linux__
-#include <unistd.h>
-#endif
 
 #include <iostream>
 #include <vector>
