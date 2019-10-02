@@ -85,6 +85,7 @@ instead, it should be brought up with the Community Governance Committee.
 | Anand Krishnamoorthi  | anakrish            | Debugging, SGX, EDL, Dev Tools |
 | Andrew Schwartzmeyer  | andschwa            | EDL, CMake, Git, Dev Tools     |
 | Brett McLaren         | BRMcLaren           | Build, CMake, CI               |
+| Vikas Tikoo           | vtikoo              |                                |
 | Brian Telfer          | Britel              | TrustZone, Attestation         |
 | Simon Leet            | CodeMonkeyLeet      | SGX, APIs                      |
 | Dave Thaler           | dthaler             | TrustZone, APIs, Dev Tools     |
