@@ -25,6 +25,7 @@ static const char* _custom_log_format = NULL;
 static const char* _log_all_streams = NULL;
 static const char* _log_escape = NULL;
 static bool _log_creation_failed_before = false;
+static const size_t MAX_ESCAPED_BYTE_LEN = 6;
 oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
 
@@ -93,13 +94,12 @@ void initialize_log_config()
 }
 
 static void _escape_characters(
-    char* log_msg,
+    const char* log_msg,
     char* log_msg_escaped,
     size_t msg_size,
     size_t max_msg_size)
 {
     size_t idx = 0;
-
     for (size_t i = 0; i < msg_size; i++)
     {
         int c = log_msg[i];
@@ -159,7 +159,15 @@ static void _escape_characters(
                     log_msg_escaped[idx] = '?';
                     break;
                 default:
-                    log_msg_escaped[idx] = ' ';
+                    if ((unsigned int)log_msg[i] >= 128)
+                    {
+                        // extended ascii
+                        log_msg_escaped[0] = '\0';
+                        return;
+                    }
+                    sprintf(
+                        (char*)&log_msg_escaped[idx], "u%04hhx", log_msg[i]);
+                    idx += 5;
                     break;
             }
         }
@@ -328,9 +336,8 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
             }
             else
             {
-                char* message_dup = strdup(message);
                 char* message_cursor = NULL;
-                char* log_msg = strtok_r(message_dup, "[", &message_cursor);
+                char* log_msg = strtok_r((char*)message, "[", &message_cursor);
                 char* file_name = strtok_r(NULL, ":", &message_cursor);
                 char* function = strtok_r(NULL, ":", &message_cursor);
                 char* line_number = strtok_r(NULL, "]", &message_cursor);
@@ -350,21 +357,40 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                     if (_log_escape)
                     {
                         size_t msg_size = strlen(log_msg);
-                        char log_msg_escaped[2 * msg_size];
+                        size_t max_msg_size =
+                            MAX_ESCAPED_BYTE_LEN * msg_size + 1;
+                        char* log_msg_escaped = malloc(max_msg_size);
                         _escape_characters(
-                            log_msg, log_msg_escaped, msg_size, (2 * msg_size));
-
-                        _write_custom_format_message_to_stream(
-                            log_file,
-                            is_enclave,
-                            time,
-                            usecs,
-                            level,
-                            log_msg_escaped,
-                            file_name,
-                            function,
-                            line_number,
-                            _custom_log_format);
+                            log_msg, log_msg_escaped, msg_size, max_msg_size);
+                        if (log_msg_escaped[0] == '\0')
+                        {
+                            _write_custom_format_message_to_stream(
+                                log_file,
+                                is_enclave,
+                                time,
+                                usecs,
+                                level,
+                                "failed to escape log message",
+                                file_name,
+                                function,
+                                line_number,
+                                _custom_log_format);
+                        }
+                        else
+                        {
+                            _write_custom_format_message_to_stream(
+                                log_file,
+                                is_enclave,
+                                time,
+                                usecs,
+                                level,
+                                log_msg_escaped,
+                                file_name,
+                                function,
+                                line_number,
+                                _custom_log_format);
+                        }
+                        free(log_msg_escaped);
                     }
                     else
                     {
@@ -381,8 +407,6 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                             _custom_log_format);
                     }
                 }
-
-                free(message_dup);
             }
 
             fflush(log_file);

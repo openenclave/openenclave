@@ -25,7 +25,7 @@ User Experience
         - function log initiated from
         - file line number log initiated from
 
-        so for example a log foramt could be set like this:
+        so for example a log format could be set like this:
 
         `OE_LOG_FORMAT=$'{\"e_ts\":\"%s.%06ldZ\",\"level\":\"(%s)%s\",\"tid\":\"tid(0x%lx)\",\"msg\":\"%s\",\"file\":\"%s\",\"func\":\"%s\",\"number":\"%s\"}\n'`
 
@@ -48,15 +48,15 @@ User Experience
 Specification
 -------------
 
-Users can specify their own format when logging to a user specified file via the existing `OE_LOG_DEVICE` environmental variable.
+Users can specify their own format when logging to a user specified file via the existing `OE_LOG_DEVICE` environment variable.
 If the var is not specified then logging goes on as usual.
 
-If the var is specified then we look for an extra environmental variable `OE_LOG_FORMAT`.
+If the var is specified then we look for an extra environment variable `OE_LOG_FORMAT`.
 If `OE_LOG_FORMAT` is specified we call a method where we pass in the log line information and it is formatted by the `OE_LOG_FORMAT` string. If it is set it needs to end with a newlone.
 
 If it is not then we use the default format string to log in the file.
 
-In addition to the `OE_LOG_FORMAT` environmental variable, if the `OE_LOG_ESCAPE` environmental variable is set, then the log message will be processed accordingly in order to be compatible with the JSON standard.
+In addition to the `OE_LOG_FORMAT` environment variable, if the `OE_LOG_ESCAPE` environment variable is set, then the log message will be processed accordingly in order to be compatible with the JSON standard.
 
 When logging to a separate file the defaut logs are not sent to stdout and the custom logs are directed to the file. If the users wants to keep the default logs directed to stdout AND the custom logs sent to the file, they can set the `OE_LOG_ALL_STREAMS` environmental variable. This is useful if we want to keep the human readable logs, but also redirect a machine-readable format (e.g. JSON) to a file.
 
