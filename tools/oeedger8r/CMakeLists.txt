@@ -11,12 +11,14 @@ if (NOT ESY)
   message(FATAL_ERROR "Please check your esy installation")
 endif ()
 
-# TODO: Figure out how to produce artifacts in the build directory.
-message("oeedger8r is built in its source directory")
-set(BINARY ${CMAKE_CURRENT_SOURCE_DIR}/_build/install/default/bin/oeedger8r${CMAKE_EXECUTABLE_SUFFIX})
+set(BINARY ${CMAKE_CURRENT_BINARY_DIR}/_build/install/default/bin/oeedger8r${CMAKE_EXECUTABLE_SUFFIX})
 add_custom_command(
   OUTPUT ${BINARY}
-  COMMAND esy --project=${CMAKE_CURRENT_SOURCE_DIR}
+  # TODO: This copy command will fail if `esy` is used to build
+  # locally (e.g., for development) as the folder gets too big with
+  # the Node modules etc. We should be more explicit.
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND esy
   DEPENDS src/Emitter.ml
           src/main.ml
           intel/Ast.ml
