@@ -70,7 +70,7 @@ To build debug enclaves:
 cd C:\openenclave
 mkdir build\x64-Debug
 cd build\x64-Debug
-cmake -G Ninja -DBUILD_ENCLAVES=1 -DUSE_LIBSGX=1 -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_nuget_packages ..\..
+cmake -G Ninja -DBUILD_ENCLAVES=1 -DUSE_LIBSGX=1 -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_nuget_packages ../..
 ninja
 ```
 
