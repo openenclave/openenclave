@@ -175,7 +175,7 @@ static oe_result_t _syscall_hook(
         {
             /* Avoid OE_RAISE here to reduce error log volume since the
              * syscall handler allows falling back to defaults */
-            OE_TRACE_VERBOSE("Unsupported _syscall_hook number:%#x\n", number);
+            OE_TRACE_VERBOSE("Unsupported _syscall_hook number:%#lx\n", number);
             break;
         }
     }

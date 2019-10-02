@@ -26,7 +26,7 @@ static oe_result_t verify_report_user_data(
     OE_SHA256 sha256;
 
     OE_TRACE_VERBOSE(
-        "key_buff=[%s] \n oe_strlen(key_buff)=[%d]",
+        "key_buff=[%s] \n oe_strlen(key_buff)=[%zu]",
         key_buff,
         oe_strlen((const char*)key_buff));
 
@@ -47,8 +47,7 @@ static oe_result_t verify_report_user_data(
                 sha256.buf[i]);
         OE_RAISE_MSG(
             OE_VERIFY_FAILED,
-            "hash of peer certificate's public key does not match report data",
-            NULL);
+            "hash of peer certificate's public key does not match report data");
     }
     result = OE_OK;
 done:
@@ -94,7 +93,7 @@ oe_result_t oe_verify_attestation_certificate(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     result = oe_cert_read_der(&cert, cert_in_der, cert_in_der_len);
-    OE_CHECK_MSG(result, "cert_in_der_len=%d", cert_in_der_len);
+    OE_CHECK_MSG(result, "cert_in_der_len=%zu", cert_in_der_len);
 
     // validate the certificate signature
     result = oe_cert_verify(&cert, NULL, NULL, 0);
@@ -139,13 +138,13 @@ oe_result_t oe_verify_attestation_certificate(
         oe_cert_write_public_key_pem(&cert, pub_key_buf, &pub_key_buf_size);
     OE_CHECK(result);
     OE_TRACE_VERBOSE(
-        "oe_cert_write_public_key_pem pub_key_buf_size=%d", pub_key_buf_size);
+        "oe_cert_write_public_key_pem pub_key_buf_size=%zu", pub_key_buf_size);
 
     // verify report data against peer certificate
     result = verify_report_user_data(
         pub_key_buf, pub_key_buf_size, parsed_report.report_data);
     OE_CHECK(result);
-    OE_TRACE_VERBOSE("user data: hash(public key) validation passed", NULL);
+    OE_TRACE_VERBOSE("user data: hash(public key) validation passed");
 
     //---------------------------------------
     // call client to check enclave identity
@@ -158,10 +157,8 @@ oe_result_t oe_verify_attestation_certificate(
     }
     else
     {
-        OE_TRACE_WARNING(
-            "No enclave_identity_callback provided in "
-            "oe_verify_attestation_certificate call",
-            NULL);
+        OE_TRACE_WARNING("No enclave_identity_callback provided in "
+                         "oe_verify_attestation_certificate call");
     }
 
 done:

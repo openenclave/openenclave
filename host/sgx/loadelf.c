@@ -81,11 +81,11 @@ static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
 
     /* Fail if not Intel X86 64-bit */
     if (eh->e_machine != EM_X86_64)
-        OE_RAISE_MSG(OE_FAILURE, "elf image is not Intel X86 64-bit", NULL);
+        OE_RAISE_MSG(OE_FAILURE, "elf image is not Intel X86 64-bit");
 
     /* Fail if image is relocatable */
     if (eh->e_type == ET_REL)
-        OE_RAISE_MSG(OE_FAILURE, "elf image is relocatable", NULL);
+        OE_RAISE_MSG(OE_FAILURE, "elf image is relocatable");
 
     /* Save entry point address */
     image->entry_rva = eh->e_entry;

@@ -86,16 +86,14 @@ oe_result_t oe_validate_qe_identity(
         OE_RAISE_MSG(
             OE_INVALID_QE_IDENTITY_INFO,
             "QE identity info issue date does not meet CRL/TCB minimum issue "
-            "date.",
-            NULL);
+            "date.");
 
     if (oe_datetime_compare(
             &parsed_info.next_update, &_sgx_minimim_crl_tcb_issue_date) < 0)
         OE_RAISE_MSG(
             OE_INVALID_QE_IDENTITY_INFO,
             "QE identity info next update does not meet CRL/TCB minimum issue "
-            "date.",
-            NULL);
+            "date.");
 
     // Assert that the qe report's MRSIGNER matches Intel's quoting enclave's
     // mrsigner.
@@ -165,8 +163,7 @@ oe_result_t oe_validate_qe_identity(
     if (qe_report_body->attributes.flags & SGX_FLAGS_DEBUG)
         OE_RAISE_MSG(
             OE_QUOTE_ENCLAVE_IDENTITY_VERIFICATION_FAILED,
-            "QE has SGX_FLAGS_DEBUG set!!",
-            NULL);
+            "QE has SGX_FLAGS_DEBUG set!!");
 
     if (oe_datetime_compare(&parsed_info.issue_date, &from) > 0)
         from = parsed_info.issue_date;
@@ -180,8 +177,7 @@ oe_result_t oe_validate_qe_identity(
     if (oe_datetime_compare(&from, &until) > 0)
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-            "Failed to find an overall QE identity validity period.",
-            NULL);
+            "Failed to find an overall QE identity validity period.");
 
     *validity_from = from;
     *validity_until = until;

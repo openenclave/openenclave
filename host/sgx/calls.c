@@ -210,7 +210,7 @@ static oe_result_t _do_eenter(
     OE_TRACE_VERBOSE(
         "_do_eenter(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%llx)\n",
         tcs,
-        aep,
+        (void*)aep,
         code_in,
         func_in,
         OE_LLX(arg_in));
@@ -400,9 +400,9 @@ static oe_result_t _handle_ocall(
 
     oe_log(
         OE_LOG_LEVEL_VERBOSE,
-        "%s 0x%x %s: %s\n",
+        "%s 0x%llx %s: %s\n",
         enclave->path,
-        enclave->addr,
+        OE_LLX(enclave->addr),
         func == OE_OCALL_CALL_HOST_FUNCTION ? "EDL_OCALL" : "OE_OCALL",
         oe_ocall_str(func));
 
@@ -700,9 +700,9 @@ oe_result_t oe_ecall(
 
     oe_log(
         OE_LOG_LEVEL_VERBOSE,
-        "%s 0x%x %s: %s\n",
+        "%s 0x%llx %s: %s\n",
         enclave->path,
-        enclave->addr,
+        OE_LLX(enclave->addr),
         func == OE_ECALL_CALL_ENCLAVE_FUNCTION ? "EDL_ECALL" : "OE_ECALL",
         oe_ecall_str(func));
 

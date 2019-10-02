@@ -78,25 +78,23 @@ OE_EXTERNC_BEGIN
         goto done;                                        \
     } while (0)
 
-// Unlike gcc and clang, for pure C code, MSVC does not support ##__VA_ARGS__
-// extension for getting rid of the trailing comma when empty args for variadic
-// macros is detected. This will cause compilation error.
-// To make OE code work on MSVC, you need to add NULL as the last parameter if
-// variadic paramter is empty in OE_RAISE_MSG(RESULT, fmt, ...)
-// eg : OE_RAISE_MSG(OE_FAILURE, "your message", NULL);
-
-#define OE_RAISE_MSG(RESULT, fmt, ...)   \
-    do                                   \
-    {                                    \
-        result = (RESULT);               \
-        if (result != OE_OK)             \
-        {                                \
-            OE_TRACE_ERROR(              \
-                fmt " (oe_result_t=%s)", \
-                ##__VA_ARGS__,           \
-                oe_result_str(result));  \
-        }                                \
-        goto done;                       \
+#define OE_RAISE_MSG(RESULT, fmt, ...)  \
+    do                                  \
+    {                                   \
+        result = (RESULT);              \
+        if (result != OE_OK)            \
+        {                               \
+            OE_TRACE(                   \
+                OE_LOG_LEVEL_ERROR,     \
+                fmt " (oe_result_t=%s)" \
+                    "[%s %s:%d]\n",     \
+                ##__VA_ARGS__,          \
+                oe_result_str(result),  \
+                __FILE__,               \
+                __FUNCTION__,           \
+                __LINE__);              \
+        }                               \
+        goto done;                      \
     } while (0)
 
 #define OE_RAISE_NO_TRACE(RESULT) \

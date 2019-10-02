@@ -44,8 +44,7 @@ oe_result_t oe_initialize_quote_provider()
     if (!provider.handle)
         OE_RAISE_MSG(
             OE_QUOTE_PROVIDER_LOAD_ERROR,
-            "oe_initialize_quote_provider failed",
-            NULL);
+            "oe_initialize_quote_provider failed");
 done:
     return result;
 }
@@ -92,15 +91,14 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     if (revocation_info->tcb_info == NULL ||
         revocation_info->tcb_info_size == 0)
     {
-        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_info is NULL", NULL);
+        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_info is NULL");
     }
     host_buffer_size += revocation_info->tcb_info_size + 1;
 
     if (revocation_info->tcb_issuer_chain == NULL ||
         revocation_info->tcb_issuer_chain_size == 0)
     {
-        OE_RAISE_MSG(
-            OE_INVALID_REVOCATION_INFO, "tcb_issuer_chain is NULL", NULL);
+        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_issuer_chain is NULL");
     }
     host_buffer_size += revocation_info->tcb_issuer_chain_size + 1;
 
@@ -276,7 +274,7 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
     host_buffer_size += identity->qe_id_info_size + 1;
 
     if (identity->issuer_chain == NULL || identity->issuer_chain_size == 0)
-        OE_RAISE_MSG(OE_INVALID_QE_IDENTITY_INFO, "issuer_chain is NULL", NULL);
+        OE_RAISE_MSG(OE_INVALID_QE_IDENTITY_INFO, "issuer_chain is NULL");
 
     host_buffer_size += identity->issuer_chain_size + 1;
     p = (uint8_t*)calloc(1, host_buffer_size);

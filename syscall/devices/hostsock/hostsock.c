@@ -268,7 +268,7 @@ static oe_fd_t* _hostsock_accept(
         }
 
         if (retval == -1)
-            OE_RAISE_ERRNO_MSG(oe_errno, "retval=%d", retval);
+            OE_RAISE_ERRNO_MSG(oe_errno, "retval=%lld", OE_LLD(retval));
 
         new_sock->host_fd = retval;
     }
