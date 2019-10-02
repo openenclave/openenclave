@@ -308,11 +308,11 @@ target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 if (USE_LIBSGX)
   if (WIN32)
     set(LIBPATHS
-      ${CMAKE_SOURCE_DIR}/prereqs/nuget/EnclaveCommonAPI/lib/native/x64-Release
-      ${CMAKE_SOURCE_DIR}/prereqs/nuget/DCAP_Components/build/lib/native/Libraries)
+      ${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/lib/native/x64-Release
+      ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
     set(INCPATHS
-      "${CMAKE_SOURCE_DIR}/prereqs/nuget/EnclaveCommonAPI/Header Files"
-      "${CMAKE_SOURCE_DIR}/prereqs/nuget/DCAP_Components/build/Header Files")
+      "${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/Header Files"
+      "${NUGET_PACKAGE_PATH}/DCAP_Components/build/Header Files")
     set(WINSYSLOCATION
        $ENV{WINDIR}/System32)
   endif ()
@@ -338,8 +338,7 @@ if (USE_LIBSGX)
       IMPORTED_LOCATION ${WINSYSLOCATION}
       IMPORTED_IMPLIB ${LIBSGX_QE})
   endif ()
-
-  target_link_libraries(oehost PUBLIC sgx_enclave_common sgx_dcap_ql)
+  target_link_libraries(oehost PUBLIC $<BUILD_INTERFACE:sgx_dcap_ql> $<BUILD_INTERFACE:sgx_enclave_common>)
   target_compile_definitions(oehost PUBLIC OE_USE_LIBSGX)
 endif ()
 

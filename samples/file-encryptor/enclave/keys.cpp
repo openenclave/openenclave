@@ -201,6 +201,7 @@ int ecall_dispatcher::cipher_encryption_key(
     unsigned int output_data_size)
 {
     int ret = 0;
+    (void)output_data_size;
     mbedtls_aes_context aescontext;
     unsigned char iv[IV_SIZE] = {0xb2,
                                  0x4b,

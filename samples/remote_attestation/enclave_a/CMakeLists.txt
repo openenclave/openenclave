@@ -8,6 +8,10 @@ add_custom_command(OUTPUT enclave_b_pubkey.h
 
 add_executable(enclave_a ecalls.cpp ${CMAKE_CURRENT_BINARY_DIR}/enclave_b_pubkey.h)
 
+if(WIN32)
+  maybe_build_using_clangw(enclave_a)
+endif()
+
 target_include_directories(enclave_a PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(enclave_a common)

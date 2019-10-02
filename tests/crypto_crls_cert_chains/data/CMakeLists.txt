@@ -12,7 +12,7 @@ endif()
 
 add_custom_target(
     crypto_crls_cert_chains_test_data ALL
-    COMMAND ${BASH} -c "${CMAKE_CURRENT_SOURCE_DIR}/make-test-certs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${BUILD_OPT}"
+    COMMAND ${OE_BASH} -c "${CMAKE_CURRENT_SOURCE_DIR}/make-test-certs ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${BUILD_OPT}"
     # These are specifically the byproducts that will be directly consumed by crypto_crls_cert_chains tests
     BYPRODUCTS
     root.cert.pem

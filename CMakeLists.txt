@@ -25,8 +25,10 @@ endif ()
 set(CMAKE_C_COMPILER_NAMES clang-7 cc)
 set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
 
-project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM})
+project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM}
+  HOMEPAGE_URL "https://github.com/openenclave/openenclave")
 set(PROJECT_VERSION ${OE_VERSION})
+set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -132,16 +134,19 @@ if (WIN32)
   # explicitly searching only for Git Bash. See #1302 for more.
   find_program(GIT git)
   get_filename_component(GIT_DIR ${GIT} DIRECTORY)
-  find_program(BASH bash
+  find_program(OE_BASH bash
     PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
     NO_DEFAULT_PATH) # Do not find WSL bash.
 
-  if (NOT BASH)
+  if (NOT OE_BASH)
     message(FATAL_ERROR "Git Bash not found!")
   endif ()
+  if (NOT NUGET_PACKAGE_PATH)
+    message(FATAL_ERROR "NUGET_PACKAGE_PATH not defined. Please define NUGET_PACKAGE_PATH as the path to the installed Intel and DCAP Client nuget packages.")
+  endif()
 else ()
-  find_program(BASH bash)
-  if (NOT BASH)
+  find_program(OE_BASH bash)
+  if (NOT OE_BASH)
     message(FATAL_ERROR "Bash not found!")
   endif ()
 endif ()
@@ -216,8 +221,23 @@ endif()
 if (UNIX)
   add_subdirectory(docs/refman)
   add_subdirectory(pkgconfig)
-  add_subdirectory(samples)
 endif()
+
+if (BUILD_ENCLAVES)
+  add_subdirectory(samples)
+endif ()
+
+if (WIN32)
+  install(FILES ./scripts/clangw ./scripts/llvm-arw
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
+  install(FILES ./scripts/install-windows-prereqs.ps1
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
+  install(FILES ./cmake/maybe_build_using_clangw.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+  install(FILES ./cmake/add_dcap_client_target.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+endif ()
+
 
 install(FILES LICENSE THIRD_PARTY_NOTICES
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/licenses)

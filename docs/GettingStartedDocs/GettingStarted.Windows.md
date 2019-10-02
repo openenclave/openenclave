@@ -187,7 +187,7 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
    cd C:\openenclave
    mkdir build\x64-Debug
    cd build\x64-Debug
-   cmake -G Ninja -DBUILD_ENCLAVES=1 ../..
+   cmake -G Ninja -DBUILD_ENCLAVES=1 -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_and_dcap_nuget_packages ../..
    ninja
    ```
 
@@ -196,7 +196,7 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
    cd C:\openenclave
    mkdir build\x64-Release
    cd build\x64-Release
-   cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_ENCLAVES=1 ../..
+   cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_ENCLAVES=1 -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_and_dcap_nuget_packages ../..
    ninja
    ```
 
@@ -293,7 +293,7 @@ build. For example, for the x64-Debug configuration:
 cd C:\openenclave
 mkdir build\x64-Debug
 cd build\x64-Debug
-cmake -G Ninja -DBUILD_ENCLAVES=1 -DUSE_LIBSGX=1 ../..
+cmake -G Ninja -DBUILD_ENCLAVES=1 -DUSE_LIBSGX=1 -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_and_dcap_nuget_packages ../..
 ninja
 ```
 

@@ -17,8 +17,7 @@ else()
     OE_BUILDING_DEBUGRT_SHARED_LIBRARY)
   
   install(TARGETS oedebugrt EXPORT openenclave-targets
-    # TODO:Determine DLL install location on Windows
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_BINDIR})
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 target_include_directories(oedebugrt PRIVATE
