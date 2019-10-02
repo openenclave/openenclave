@@ -119,6 +119,23 @@ oe_enter:
     mov %rsp, %rbp
 
 .call_function:
+    // Set the MXCSR according to the Linux x86_64 ABI
+    mov $ABI_MXCSR_INIT, %r10
+    push %r10
+    ldmxcsr (%rsp)
+    pop %r10
+
+    // Set the FPU Control Word according to the Linux x86_64 ABI
+    mov $ABI_FPUCW_INIT, %r10
+    push %r10
+    fldcw (%rsp)
+    pop %r10
+
+    // Initialize the RFLAGS prior to calling enclave functions
+    // This only clears the DF and state flag bits since
+    // the system flags and reserved bits are not writable here
+    push $0
+    popfq
 
     // Get the host stack pointer.
     mov %gs:td_host_rsp, %r8
