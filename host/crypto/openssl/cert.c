@@ -279,26 +279,24 @@ static oe_result_t _verify_cert(
 
     /* Clone the certificate to clear any cached verification state */
     if (!(x509 = _clone_x509(cert)))
-        OE_RAISE_MSG(OE_FAILURE, "Failed to clone X509 cert", NULL);
+        OE_RAISE_MSG(OE_FAILURE, "Failed to clone X509 cert");
 
     /* Clone the chain to clear any cached verification state */
     if (chain_ && !(chain = _clone_chain(chain_)))
-        OE_RAISE_MSG(OE_FAILURE, "Failed to clone X509 cert chain", NULL);
+        OE_RAISE_MSG(OE_FAILURE, "Failed to clone X509 cert chain");
 
     /* Create a store for the verification */
     if (!(store = X509_STORE_new()))
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "Failed to allocate X509 store", NULL);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "Failed to allocate X509 store");
 
     /* Create a context for verification */
     if (!(ctx = X509_STORE_CTX_new()))
-        OE_RAISE_MSG(
-            OE_CRYPTO_ERROR, "Failed to create new X509 context", NULL);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "Failed to create new X509 context");
 
     /* Initialize the context that will be used to verify the certificate */
     if (!X509_STORE_CTX_init(ctx, store, NULL, NULL))
     {
-        OE_RAISE_MSG(
-            OE_CRYPTO_ERROR, "Failed to initialize X509 context", NULL);
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "Failed to initialize X509 context");
     }
 
     /* Create a store with CRLs if needed */
@@ -313,13 +311,13 @@ static oe_result_t _verify_cert(
             /* X509_STORE_add_crl manages its own addition refcount */
             if (!X509_STORE_add_crl(store, crl_impl->crl))
                 OE_RAISE_MSG(
-                    OE_CRYPTO_ERROR, "Failed to add CRL to X509 store", NULL);
+                    OE_CRYPTO_ERROR, "Failed to add CRL to X509 store");
         }
 
         /* Get the verify parameter (must not be null) */
         if (!(verify_param = X509_STORE_CTX_get0_param(ctx)))
             OE_RAISE_MSG(
-                OE_CRYPTO_ERROR, "Failed to get X509 verify parameter", NULL);
+                OE_CRYPTO_ERROR, "Failed to get X509 verify parameter");
 
         X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_CRL_CHECK);
         X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_CRL_CHECK_ALL);
@@ -694,13 +692,13 @@ oe_result_t oe_cert_verify(
     /* Check for invalid cert parameter */
     if (!_cert_is_valid(cert_impl))
     {
-        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid cert parameter", NULL);
+        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid cert parameter");
     }
 
     /* Check for invalid chain parameter */
     if (chain && !_cert_chain_is_valid(chain_impl))
     {
-        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid chain parameter", NULL);
+        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid chain parameter");
     }
 
     /* Initialize OpenSSL (if not already initialized) */

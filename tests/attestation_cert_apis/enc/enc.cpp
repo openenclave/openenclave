@@ -182,7 +182,7 @@ oe_result_t generate_key_pair(
         local_public_key = NULL;
         local_private_key = NULL;
 
-        OE_TRACE_INFO("public_key_size\n[%d]\n", *public_key_size);
+        OE_TRACE_INFO("public_key_size\n[%zu]\n", *public_key_size);
         OE_TRACE_INFO("public_key\n[%s]\n", *public_key);
         result = OE_OK;
 
@@ -258,7 +258,7 @@ oe_result_t get_tls_cert_signed_with_key(
         goto done;
     }
 
-    OE_TRACE_INFO("output_cert_size = 0x%x", output_cert_size);
+    OE_TRACE_INFO("output_cert_size = 0x%llx", OE_LLX(output_cert_size));
     // validate cert inside the enclave
     result = oe_verify_attestation_certificate(
         output_cert, output_cert_size, enclave_identity_verifier, NULL);
@@ -279,7 +279,7 @@ oe_result_t get_tls_cert_signed_with_key(
     *cert_size = output_cert_size;
     *cert = host_cert_buf;
     OE_TRACE_INFO("*cert = %p", *cert);
-    OE_TRACE_INFO("*cert_size = 0x%x", *cert_size);
+    OE_TRACE_INFO("*cert_size = 0x%llx", OE_LLX(*cert_size));
 
 done:
 

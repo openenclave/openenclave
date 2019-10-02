@@ -194,9 +194,7 @@ static oe_result_t oe_verify_report_with_collaterals(
         if (collaterals != NULL || collaterals_size > 0)
         {
             OE_RAISE_MSG(
-                OE_UNSUPPORTED,
-                "Local reports should not have collaterals.",
-                NULL);
+                OE_UNSUPPORTED, "Local reports should not have collaterals.");
         }
 
 #ifndef OE_BUILD_ENCLAVE

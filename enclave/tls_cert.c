@@ -70,7 +70,8 @@ static oe_result_t generate_x509_self_signed_certificate(
         result,
         "oe_gen_custom_x509_cert failed with %s",
         oe_result_str(result));
-    OE_TRACE_VERBOSE("certificate: bytes_written = 0x%x", bytes_written);
+    OE_TRACE_VERBOSE(
+        "certificate: bytes_written = 0x%llx", OE_LLX(bytes_written));
 
     *output_cert_size = (size_t)bytes_written;
     *output_cert = cert_buf;
@@ -122,7 +123,7 @@ oe_result_t oe_generate_attestation_certificate(
 
     // generate quote with hash(cert's subject key) and set it as report data
     OE_TRACE_VERBOSE(
-        "generate quote with hash from public_key_size=%d public_key key "
+        "generate quote with hash from public_key_size=%zu public_key key "
         "=\n[%s]\n",
         public_key_size,
         public_key);
@@ -134,7 +135,7 @@ oe_result_t oe_generate_attestation_certificate(
     OE_TRACE_VERBOSE("Report data with hash of public key:");
     for (size_t i = 0; i < OE_SHA256_SIZE; i++)
         OE_TRACE_VERBOSE(
-            "Report data with hash of public key[%d]=0x%x", i, sha256.buf[i]);
+            "Report data with hash of public key[%zu]=0x%x", i, sha256.buf[i]);
 
     result = oe_get_report(
         OE_REPORT_FLAGS_REMOTE_ATTESTATION,
@@ -162,7 +163,7 @@ oe_result_t oe_generate_attestation_certificate(
         "generate_x509_self_signed_certificate failed : %s",
         oe_result_str(result));
 
-    OE_TRACE_VERBOSE("self-signed certificate size = %d", *output_cert_size);
+    OE_TRACE_VERBOSE("self-signed certificate size = %zu", *output_cert_size);
     result = OE_OK;
 done:
     oe_free_report(remote_report_buf);

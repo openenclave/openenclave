@@ -623,8 +623,7 @@ oe_result_t oe_sgx_build_enclave(
                 OE_DEBUG_DOWNGRADE,
                 "Enclave image was signed without debug flag but is being "
                 "loaded with OE_ENCLAVE_FLAG_DEBUG set in oe_create_enclave "
-                "call\n",
-                NULL);
+                "call\n");
         }
     }
     // Set the XFRM field

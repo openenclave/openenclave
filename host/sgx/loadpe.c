@@ -340,9 +340,7 @@ oe_result_t oe_load_pe_enclave_image(
                 section_hdr->Misc.VirtualSize >
             next_section_start)
             OE_RAISE_MSG(
-                OE_FAILURE,
-                "VirtualAddress expands over to the next section",
-                NULL);
+                OE_FAILURE, "VirtualAddress expands over to the next section");
 
         if (strcmp((const char*)section_hdr->Name, ".text") == 0)
         {

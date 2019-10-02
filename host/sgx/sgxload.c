@@ -115,7 +115,7 @@ static uint64_t _detect_xfrm()
     if ((oe_get_xfrm() & SGX_XFRM_AVX) == SGX_XFRM_AVX)
         xfrm |= SGX_XFRM_AVX;
 
-    OE_TRACE_INFO("Value of XFRM to be set in enclave is %d\n", xfrm);
+    OE_TRACE_INFO("Value of XFRM to be set in enclave is %llu\n", OE_LLU(xfrm));
     return xfrm;
 }
 
@@ -329,9 +329,7 @@ static oe_result_t _get_sig_struct(
         /* Only debug-sign unsigned enclaves in debug mode, fail otherwise */
         if (!(properties->config.attributes & SGX_FLAGS_DEBUG))
             OE_RAISE_MSG(
-                OE_FAILURE,
-                "Failed enclave was not signed with debug flag",
-                NULL);
+                OE_FAILURE, "Failed enclave was not signed with debug flag");
 
         /* Perform debug-signing with well-known debug-signing key */
         OE_CHECK(oe_sgx_sign_enclave(
@@ -632,8 +630,7 @@ oe_result_t oe_sgx_load_enclave_data(
         if ((void*)addr < context->sim.addr ||
             (uint8_t*)addr >
                 (uint8_t*)context->sim.addr + context->sim.size - OE_PAGE_SIZE)
-            OE_RAISE_MSG(
-                OE_FAILURE, "Page is NOT within enclave boundaries", NULL);
+            OE_RAISE_MSG(OE_FAILURE, "Page is NOT within enclave boundaries");
 
         /* Copy page contents onto memory-mapped region */
         OE_CHECK(oe_memcpy_s(
@@ -651,16 +648,16 @@ oe_result_t oe_sgx_load_enclave_data(
             if (mprotect((void*)addr, OE_PAGE_SIZE, prot) != 0)
                 OE_RAISE_MSG(
                     OE_FAILURE,
-                    "mprotect failed (addr=%#x, prot=%#x)",
-                    addr,
+                    "mprotect failed (addr=%#llx, prot=%#x)",
+                    OE_LLX(addr),
                     prot);
 #elif defined(_WIN32)
             DWORD old;
             if (!VirtualProtect((LPVOID)addr, OE_PAGE_SIZE, prot, &old))
                 OE_RAISE_MSG(
                     OE_FAILURE,
-                    "VirtualProtect failed (addr=%#x, prot=%#x)",
-                    addr,
+                    "VirtualProtect failed (addr=%#llx, prot=%#x)",
+                    OE_LLX(addr),
                     prot);
 #endif
         }
@@ -680,8 +677,8 @@ oe_result_t oe_sgx_load_enclave_data(
                 &enclave_error) != OE_PAGE_SIZE)
             OE_RAISE_MSG(
                 OE_PLATFORM_ERROR,
-                "enclave_load_data failed (addr=%#x, prot=%#x, err=%#x)",
-                addr,
+                "enclave_load_data failed (addr=%#llx, prot=%#x, err=%#x)",
+                OE_LLX(addr),
                 protect,
                 enclave_error);
     }

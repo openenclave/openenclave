@@ -80,7 +80,7 @@ cleanup:
         }
     }
     if (ret)
-        OE_TRACE_ERROR("enclave=0x%x\n", enclave);
+        OE_TRACE_ERROR("enclave=%p\n", enclave);
 
     return ret;
 }
@@ -137,7 +137,7 @@ cleanup:
     }
 
     if (ret)
-        OE_TRACE_ERROR("enclave=0x%x\n", enclave);
+        OE_TRACE_ERROR("enclave=%p\n", enclave);
 
     return ret;
 }
@@ -196,7 +196,7 @@ cleanup:
     }
 
     if (!ret)
-        OE_TRACE_ERROR("tcs=0x%x\n", tcs);
+        OE_TRACE_ERROR("tcs=%p\n", tcs);
 
     return ret;
 }

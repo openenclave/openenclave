@@ -806,13 +806,13 @@ oe_result_t oe_cert_verify(
     /* Reject invalid certificate */
     if (!_cert_is_valid(cert_impl))
     {
-        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid cert parameter", NULL);
+        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid cert parameter");
     }
 
     /* Reject invalid certificate chain */
     if (chain && !_cert_chain_is_valid(chain_impl))
     {
-        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid chain parameter", NULL);
+        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid chain parameter");
     }
 
     // Build the list of CRLS if any. Copy them onto auxiliary memory
@@ -827,8 +827,7 @@ oe_result_t oe_cert_verify(
             mbedtls_x509_crl* p;
 
             if (!crl_is_valid(crl_impl))
-                OE_RAISE_MSG(
-                    OE_INVALID_PARAMETER, "Invalid crls parameter", NULL);
+                OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid crls parameter");
 
             if (!(p = malloc(sizeof(mbedtls_x509_crl))))
                 OE_RAISE(OE_OUT_OF_MEMORY);
@@ -873,9 +872,7 @@ oe_result_t oe_cert_verify(
                 if (!_crl_list_find_issuer_for_cert(crl_list, p))
                 {
                     OE_RAISE_MSG(
-                        OE_VERIFY_CRL_MISSING,
-                        "Unable to get certificate CRL",
-                        NULL);
+                        OE_VERIFY_CRL_MISSING, "Unable to get certificate CRL");
                 }
             }
         }
@@ -1160,14 +1157,15 @@ oe_result_t oe_gen_custom_x509_cert(
     *bytes_written = (size_t)mbedtls_x509write_crt_der(
         &x509cert, buff, cert_buf_size, mbedtls_ctr_drbg_random, ctr_drbg);
     if (*bytes_written <= 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "bytes_written = 0x%x ", *bytes_written);
+        OE_RAISE_MSG(
+            OE_CRYPTO_ERROR, "bytes_written = 0x%llx ", OE_LLX(*bytes_written));
 
     OE_CHECK(oe_memcpy_s(
         (void*)cert_buf,
         cert_buf_size,
         (const void*)(buff + cert_buf_size - *bytes_written),
         *bytes_written));
-    OE_TRACE_VERBOSE("bytes_written = 0x%x", *bytes_written);
+    OE_TRACE_VERBOSE("bytes_written = 0x%llx", OE_LLX(*bytes_written));
 
     result = OE_OK;
 done:

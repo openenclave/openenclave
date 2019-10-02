@@ -460,8 +460,7 @@ oe_result_t oe_validate_revocation_list(
     // Get TCB cert validity period.
     OE_CHECK_MSG(
         oe_cert_chain_get_leaf_cert(&tcb_issuer_chain, &tcb_cert),
-        "Failed to get TCB certificate.",
-        NULL);
+        "Failed to get TCB certificate.");
     oe_cert_get_validity_dates(&tcb_cert, &from, &until);
     oe_datetime_log("TCB cert issue date: ", &from);
     oe_datetime_log("TCB cert next update: ", &until);
@@ -476,8 +475,7 @@ oe_result_t oe_validate_revocation_list(
     if (oe_datetime_compare(&latest_from, &earliest_until) > 0)
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-            "Failed to find an overall revocation validity period.",
-            NULL);
+            "Failed to find an overall revocation validity period.");
 
     *validity_from = latest_from;
     *validity_until = earliest_until;

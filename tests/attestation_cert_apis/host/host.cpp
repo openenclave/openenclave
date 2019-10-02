@@ -108,7 +108,7 @@ void run_test(oe_enclave_t* enclave, int test_type)
 
     // validate cert
     OE_TRACE_INFO("Host: Verifying tls certificate\n");
-    OE_TRACE_INFO("Host: cert = %p cert_size = %d\n", cert, cert_size);
+    OE_TRACE_INFO("Host: cert = %p cert_size = %zu\n", cert, cert_size);
     result = oe_verify_attestation_certificate(
         cert, cert_size, enclave_identity_verifier, NULL);
     OE_TRACE_INFO(

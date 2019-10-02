@@ -63,14 +63,12 @@ static oe_result_t _validate_qe_cert_data(
     if (qe_cert_data->size == 0)
         OE_RAISE_MSG(
             OE_QUOTE_VERIFICATION_ERROR,
-            "Quoting enclave certificate data is empty.",
-            NULL);
+            "Quoting enclave certificate data is empty.");
 
     if (qe_cert_data->data == NULL)
         OE_RAISE_MSG(
             OE_MISSING_CERTIFICATE_CHAIN,
-            "No PCK certificate found in SGX quote.",
-            NULL);
+            "No PCK certificate found in SGX quote.");
 done:
     return result;
 }
@@ -91,9 +89,7 @@ static oe_result_t _parse_quote(
     if (quote_end < p)
         // Pointer wrapped around.
         OE_RAISE_MSG(
-            OE_REPORT_PARSE_ERROR,
-            "Parsing error.  Pointer wrapper around.",
-            NULL);
+            OE_REPORT_PARSE_ERROR, "Parsing error.  Pointer wrapper around.");
 
     *sgx_quote = NULL;
 
@@ -102,14 +98,11 @@ static oe_result_t _parse_quote(
     if (p > quote_end)
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
-            "Parse error after parsing SGX quote, before signature.",
-            NULL);
+            "Parse error after parsing SGX quote, before signature.");
 
     if (p + (*sgx_quote)->signature_len != quote_end)
         OE_RAISE_MSG(
-            OE_REPORT_PARSE_ERROR,
-            "Parse error after parsing SGX signature.",
-            NULL);
+            OE_REPORT_PARSE_ERROR, "Parse error after parsing SGX signature.");
 
     *quote_auth_data = (sgx_quote_auth_data_t*)(*sgx_quote)->signature;
     p += sizeof(sgx_quote_auth_data_t);
@@ -122,8 +115,7 @@ static oe_result_t _parse_quote(
     if (p > quote_end)
         OE_RAISE_MSG(
             OE_REPORT_PARSE_ERROR,
-            "Parse error after parsing QE authorization data.",
-            NULL);
+            "Parse error after parsing QE authorization data.");
 
     qe_cert_data->type = ReadUint16(p);
     p += 2;
@@ -134,20 +126,17 @@ static oe_result_t _parse_quote(
 
     if (p != quote_end)
         OE_RAISE_MSG(
-            OE_REPORT_PARSE_ERROR,
-            "Unexpected quote length while parsing.",
-            NULL);
+            OE_REPORT_PARSE_ERROR, "Unexpected quote length while parsing.");
 
     //
     // Validation
     //
     OE_CHECK_MSG(
-        _validate_sgx_quote(*sgx_quote), "SGX quote validation failed.", NULL);
+        _validate_sgx_quote(*sgx_quote), "SGX quote validation failed.");
 
     OE_CHECK_MSG(
         _validate_qe_cert_data(qe_cert_data),
-        "Failed to validate QE certificate data.",
-        NULL);
+        "Failed to validate QE certificate data.");
 
     result = OE_OK;
 done:
@@ -248,32 +237,26 @@ static oe_result_t oe_verify_quote_internal(
         OE_CHECK_MSG(
             oe_cert_chain_read_pem(
                 &pck_cert_chain, pem_pck_certificate, pem_pck_certificate_size),
-            "Failed to parse certificate chain.",
-            NULL);
+            "Failed to parse certificate chain.");
 
         // Fetch leaf and root certificates.
         OE_CHECK_MSG(
             oe_cert_chain_get_leaf_cert(&pck_cert_chain, &leaf_cert),
-            "Failed to get leaf certificate.",
-            NULL);
+            "Failed to get leaf certificate.");
         OE_CHECK_MSG(
             oe_cert_chain_get_root_cert(&pck_cert_chain, &root_cert),
-            "Failed to get root certificate.",
-            NULL);
+            "Failed to get root certificate.");
         OE_CHECK_MSG(
             oe_cert_chain_get_cert(&pck_cert_chain, 1, &intermediate_cert),
-            "Failed to get intermediate certificate.",
-            NULL);
+            "Failed to get intermediate certificate.");
 
         // Get public keys.
         OE_CHECK_MSG(
             oe_cert_get_ec_public_key(&leaf_cert, &leaf_public_key),
-            "Failed to get leaf cert public key.",
-            NULL);
+            "Failed to get leaf cert public key.");
         OE_CHECK_MSG(
             oe_cert_get_ec_public_key(&root_cert, &root_public_key),
-            "Failed to get root cert public key.",
-            NULL);
+            "Failed to get root cert public key.");
 
         // Ensure that the root certificate matches root of trust.
         OE_CHECK_MSG(
@@ -281,18 +264,15 @@ static oe_result_t oe_verify_quote_internal(
                 &expected_root_public_key,
                 (const uint8_t*)g_expected_root_certificate_key,
                 oe_strlen(g_expected_root_certificate_key) + 1),
-            "Failed to read expected root cert key.",
-            NULL);
+            "Failed to read expected root cert key.");
         OE_CHECK_MSG(
             oe_ec_public_key_equal(
                 &root_public_key, &expected_root_public_key, &key_equal),
-            "Failed to compare keys.",
-            NULL);
+            "Failed to compare keys.");
         if (!key_equal)
             OE_RAISE_MSG(
                 OE_QUOTE_VERIFICATION_ERROR,
-                "Failed to verify root public key.",
-                NULL);
+                "Failed to verify root public key.");
     }
 
     // Quote validations.
@@ -309,8 +289,7 @@ static oe_result_t oe_verify_quote_internal(
                 sizeof(quote_auth_data->qe_report_body),
                 &quote_auth_data->qe_report_body_signature),
             "QE report signature validation using PCK public key + SHA256 "
-            "ECDSA",
-            NULL);
+            "ECDSA");
 
         // Assert SHA256 (attestation_key + qe_auth_data.data) ==
         // qe_report_body.report_data[0..32]
@@ -330,8 +309,7 @@ static oe_result_t oe_verify_quote_internal(
                 sizeof(sha256)))
             OE_RAISE_MSG(
                 OE_QUOTE_VERIFICATION_ERROR,
-                "QE authentication data signature verification failed.",
-                NULL);
+                "QE authentication data signature verification failed.");
 
         // Verify SHA256 ECDSA (attestation_key, SGX_QUOTE_SIGNED_DATA,
         // signature)
@@ -346,8 +324,7 @@ static oe_result_t oe_verify_quote_internal(
                 sgx_quote,
                 SGX_QUOTE_SIGNED_DATA_SIZE,
                 &quote_auth_data->signature),
-            "Report signature validation using attestation key + SHA256 ECDSA",
-            NULL);
+            "Report signature validation using attestation key + SHA256 ECDSA");
     }
 
     result = OE_OK;
@@ -490,8 +467,7 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
 
     OE_CHECK_MSG(
         oe_verify_quote_internal(quote, quote_size),
-        "Failed to verify remote quote.",
-        NULL);
+        "Failed to verify remote quote.");
 
     OE_CHECK_MSG(
         oe_get_sgx_quote_validity(
@@ -583,6 +559,10 @@ oe_result_t oe_get_sgx_quote_validity(
         (valid_until == NULL))
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    if ((col_header->collaterals_size != OE_COLLATERALS_BODY_SIZE) ||
+        (collaterals_size != OE_COLLATERALS_SIZE))
+        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid collaterals size.");
+
     OE_TRACE_INFO("Call enter %s\n", __FUNCTION__);
 
     OE_CHECK_MSG(
@@ -612,16 +592,13 @@ oe_result_t oe_get_sgx_quote_validity(
     // Fetch certificates.
     OE_CHECK_MSG(
         oe_cert_chain_get_leaf_cert(&pck_cert_chain, &pck_cert),
-        "Failed to get leaf certificate.",
-        NULL);
+        "Failed to get leaf certificate.");
     OE_CHECK_MSG(
         oe_cert_chain_get_root_cert(&pck_cert_chain, &root_cert),
-        "Failed to get root certificate.",
-        NULL);
+        "Failed to get root certificate.");
     OE_CHECK_MSG(
         oe_cert_chain_get_cert(&pck_cert_chain, 1, &intermediate_cert),
-        "Failed to get intermediate certificate.",
-        NULL);
+        "Failed to get intermediate certificate.");
 
     // Process certs validity dates.
     OE_CHECK_MSG(
@@ -662,8 +639,7 @@ oe_result_t oe_get_sgx_quote_validity(
     if (oe_datetime_compare(&latest_from, &earliest_until) > 0)
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-            "Failed to find an overall validity period in quote.",
-            NULL);
+            "Failed to find an overall validity period in quote.");
 
     *valid_from = latest_from;
     *valid_until = earliest_until;
