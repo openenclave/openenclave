@@ -98,13 +98,56 @@ oe_result_t oe_post_switchless_ocall(oe_call_host_function_args_t* args)
     size_t tries = _host_worker_count;
     while (tries--)
     {
+        // Check if the worker's slot is free.
         if (_host_worker_contexts[tries].call_arg == NULL)
         {
+            // Try to atomically grab the slot by placing args in the slot.
+            // If the atomic operation was successful, then the worker thread
+            // will execute this switchless ocall. If the atomic operation
+            // failed, this means that the slot was grabbed by another
+            // switchless ocall and therefore, we must scan for another worker
+            // thread with a free slot.
             if (oe_atomic_compare_and_swap_ptr(
                     (void* volatile*)&_host_worker_contexts[tries].call_arg,
                     NULL,
                     args))
             {
+                // The worker thread has been marked to execute this switchless
+                // call. Determine if it needs to be woken up or not.
+                //
+                // If event is 0, it means that it has gone to sleep. Wake it by
+                // making an ocall (OE_OCALL_WAKE_HOST_WORKER).
+                // Note: it is important to use an atomic cas operation to set
+                // the value to 1 before making the ocall. Setting the value to
+                // 1 prevents the host worker from simulataneously going to
+                // sleep. If instead, just a compare operation is used to
+                // determine if the host thread is sleeping or not, the host
+                // thread could go to sleep after the enclave has determined
+                // that the host is not sleeping, causing a deadlock.
+                //
+                // If event is 1, that indicates a pending wake notification.
+                int32_t oldval = 0;
+                int32_t newval = 1;
+                // Weak operation could sporadically fail.
+                // We need a strong operation.
+                bool weak = false;
+                if (__atomic_compare_exchange_n(
+                        &_host_worker_contexts[tries].event,
+                        &oldval,
+                        newval,
+                        weak,
+                        __ATOMIC_ACQ_REL,
+                        __ATOMIC_ACQUIRE))
+                {
+                    // The pevious value of the event was 0 which means that the
+                    // worker was previously sleeping.
+                    // Wake it via an ocall.
+                    oe_ocall(
+                        OE_OCALL_WAKE_HOST_WORKER,
+                        (uint64_t)&_host_worker_contexts[tries],
+                        NULL);
+                }
+
                 return OE_OK;
             }
         }

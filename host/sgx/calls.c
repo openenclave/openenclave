@@ -339,6 +339,7 @@ static const char* oe_ocall_str(oe_func_t ocall)
         "FREE",
         "SLEEP",
         "GET_TIME",
+        "WAKE_HOST_WORKER",
     };
     // clang-format on
 
@@ -434,6 +435,10 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_GET_TIME:
             oe_handle_get_time(arg_in, arg_out);
+            break;
+
+        case OE_OCALL_WAKE_HOST_WORKER:
+            oe_handle_wake_host_worker(arg_in);
             break;
 
         default:

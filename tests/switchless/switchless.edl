@@ -4,27 +4,27 @@
 enclave {
     trusted {
         public int enc_echo_switchless(
-            [string, in] char* in,
+            [string, in] const char* in,
             [out] char out[100],
             int repeats);
         public int enc_echo_regular(
-            [string, in] char* in,
+            [string, in] const char* in,
             [out] char out[100],
             int repeats);
     };
 
     untrusted {
         int host_echo_switchless(
-            [string, in] char* in,
+            [string, in] const char* in,
             [out] char out[100],
-            [string, in] char* str1,
+            [string, in] const char* str1,
             [in] char str2[100])
             transition_using_threads;
 
         int host_echo_regular(
-            [string, in] char* in,
+            [string, in] const char* in,
             [out] char out[100],
-            [string, in] char* str1,
+            [string, in] const char* str1,
             [in] char str2[100]);
     };
 };
