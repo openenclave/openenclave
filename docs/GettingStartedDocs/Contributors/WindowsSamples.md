@@ -1,5 +1,5 @@
 # Installing SDK and using samples
-Assuming you install the SDK as below (also described in the [basic install section](InstallInfo.md#basic-install))
+Assuming you install the SDK as below (also described in the [basic install section](WindowsInstallInfo.md#basic-install-on-Windows))
 
 ```bash
 cmake -DCMAKE_INSTALL_PREFIX=~/openenclave ..

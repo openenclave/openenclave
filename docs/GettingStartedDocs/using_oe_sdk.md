@@ -6,7 +6,7 @@ once you have it installed.
 ## Open Enclave SDK Layout
 
 On Linux, by default, the Open Enclave SDK is installed to `/opt/openenclave`.
-On Windows, by default, the Open Enclave SDK is installed to `%NUGET_PACKAGE_PATH%`.
+On Windows, the Open Enclave SDK is installed to the location specified during installation.
 It contains the following subfolders:
 
 | Path                         | Description                     |
@@ -36,7 +36,13 @@ source /opt/openenclave/share/openenclave/openenclaverc
 ```
 
 ## Configure environment variables for Open Enclave SDK for Windows
-Radhikaj : TODO
+- Set `OpenEnclave_DIR` to the point to the cmake directory of the Open Enclave SDK installation
+
+As an example, if you installed the SDK to C:\openenclave, then you would set `OpenEnclave_DIR` as shown below.
+
+```cmd
+set OpenEnclave_DIR=C:\openenclave\lib\cmake
+```
 
 ## Samples
 
