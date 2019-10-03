@@ -271,7 +271,7 @@ done:
     return result;
 }
 
-oe_result_t oe_get_qe_identify_info_ocall(
+oe_result_t oe_get_qe_identity_info_ocall(
     void* qe_id_info,
     size_t qe_id_info_size,
     size_t* qe_id_info_size_out,
@@ -384,7 +384,7 @@ oe_result_t oe_get_revocation_info_ocall(
     return OE_UNSUPPORTED;
 }
 
-oe_result_t oe_get_qe_identify_info_ocall(
+oe_result_t oe_get_qe_identity_info_ocall(
     void* qe_id_info,
     size_t qe_id_info_size,
     size_t* qe_id_info_size_out,

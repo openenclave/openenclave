@@ -36,7 +36,7 @@ enclave
             size_t quote_size,
             [out] size_t* quote_size_out);
 
-        oe_result_t oe_get_qe_identify_info_ocall(
+        oe_result_t oe_get_qe_identity_info_ocall(
             [out, size=qe_id_info_size] void* qe_id_info,
             size_t qe_id_info_size,
             [out] size_t* qe_id_info_size_out,
