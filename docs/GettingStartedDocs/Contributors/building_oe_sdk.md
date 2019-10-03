@@ -54,6 +54,7 @@ On Windows:
 
 ## Samples
 
+### On Linux
 Assuming you install the SDK as below (also described in the [basic install section](InstallInfo.md#basic-install))
 
 ```bash
@@ -62,6 +63,17 @@ make install
 ```
 
 Open Enclave samples can be found in ~/openenclave/share/openenclave/samples
+
+See [Open Enclave samples](/samples/README.md) for details.
+
+### On Windows
+Assuming you install the SDK as below (also described in the [basic install section](WindowsInstallInfo.md#basic-install))
+
+```bash
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH= [NuGet_package_Path]   -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclaveSDK" -DUSE_LIBSGX=ON
+ninja install
+```
+Open Enclave samples can be found in c:\openenclaveSDK\share\openenclave\samples
 
 See [Open Enclave samples](/samples/README.md) for details.
 

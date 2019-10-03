@@ -5,7 +5,9 @@ once you have it installed.
 
 ## Open Enclave SDK Layout
 
-By default, the Open Enclave SDK is installed to `/opt/openenclave`. It contains the following subfolders:
+On Linux, by default, the Open Enclave SDK is installed to `/opt/openenclave`.
+On Windows, by default, the Open Enclave SDK is installed to `%NUGET_PACKAGE_PATH%`.
+It contains the following subfolders:
 
 | Path                         | Description                     |
 |------------------------------|---------------------------------|
@@ -17,12 +19,13 @@ By default, the Open Enclave SDK is installed to `/opt/openenclave`. It contains
 | lib/openenclave/host         | Library for linking into the host process of the enclave. |
 | lib/openenclave/debugger     | Libraries used by the gdb plug-in for debugging enclaves. |
 | share/openenclave/samples    | Sample code showing how to use the Open Enclave SDK. |
+
+On Linux, the Open Enclave SDK installation also contains the following folder:
 | share/pkgconfig              | Pkg-config files for header and library includes when building Open Enclave apps. |
 
-## Configure environment variables for Open Enclave SDK
-
+## Configure environment variables for Open Enclave SDK for Linux
 For ease of development, we recommend adding:
-- Open Enclave SDK `bin` folder to `PATH`, for use of our tools (such as `oegdb` and `oeedger8r`).
+- Open Enclave SDK `bin` folder to `PATH`, for use of our tools (such as `oegdb`, and `oeedger8r`).
 - Open Enclave SDK `install` folder to `CMAKE_PREFIX_PATH`, for use of the [CMake package](/cmake/sdk_cmake_targets_readme.md).
 - Open Enclave SDK `pkgconfig` folder to `PKG_CONFIG_PATH`, for use of `pkg-config`.
 
@@ -31,6 +34,9 @@ You can do this by sourcing the `openenclaverc` file that is distributed with th
 ```bash
 source /opt/openenclave/share/openenclave/openenclaverc
 ```
+
+## Configure environment variables for Open Enclave SDK for Windows
+Radhikaj : TODO
 
 ## Samples
 

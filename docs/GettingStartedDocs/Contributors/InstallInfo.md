@@ -1,5 +1,5 @@
-Basic Install
-=============
+Basic Install on Linux
+======================
 
 You can locally install the SDK from the compiled Open Enclave tree by specifying
 the install-prefix to the cmake call before calling "make install". The SDK does
