@@ -93,7 +93,7 @@ instead, it should be brought up with the Community Governance Committee.
 | Hernan Gatta          | HernanGatta         | TrustZone                      |
 | Sergio Wong           | jazzybluesea        | Attestation, SGX               |
 | Jiri Appl             | jiria               | Attestation, TrustZone         |
-| John Kordich          | johnkord            | Build, CI, Dev Tools           |
+| John Kordich          | johnkord            | Build, CI, Dev Tools, Release  |
 | Xuejun Yang           | jxyang              | SGX                            |
 | Mike Brasher          | mikbras             | SGX, APIs, EDL                 |
 | Marius Oprin          | oprinmarius         | Build, CMake, CI, Ansible      |
