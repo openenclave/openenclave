@@ -9,11 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if __GNUC__
-#include <pthread.h>
-#elif _MSC_VER
+#if _MSC_VER
 #include <windows.h>
 #endif
+#include "../../../host/hostthread.h"
 #include "switchless_threads_u.h"
 
 // For SGX, the enclave supports up to 8 concurrent threads in it. We have
@@ -24,33 +23,6 @@
 #define STRING_HELLO "Hello World"
 #define HOST_PARAM_STRING "host string parameter"
 #define HOST_STACK_STRING "host string on stack"
-
-static int thread_create(oe_thread_t* thread, void* (*func)(void*), void* arg)
-{
-#if __GNUC__
-    return pthread_create(thread, NULL, func, arg);
-#elif _MSC_VER
-    typedef DWORD (*start_routine_t)(void*);
-    start_routine_t start_routine = (start_routine_t)func;
-    *thread = (oe_thread_t)CreateThread(NULL, 0, start_routine, arg, 0, NULL);
-    return *thread == (oe_thread_t)NULL ? 1 : 0;
-#endif
-}
-
-static int thread_join(oe_thread_t thread)
-{
-#if __GNUC__
-    return pthread_join(thread, NULL);
-#elif _MSC_VER
-    HANDLE handle = (HANDLE)thread;
-    if (WaitForSingleObject(handle, INFINITE) == WAIT_OBJECT_0)
-    {
-        CloseHandle(handle);
-        return 0;
-    }
-    return 1;
-#endif
-}
 
 int host_echo_switchless(char* in, char* out, char* str1, char str2[STRING_LEN])
 {
@@ -128,7 +100,7 @@ int main(int argc, const char* argv[])
     for (int i = 0; i < NUM_HOST_THREADS; i++)
     {
         int ret = 0;
-        if ((ret = thread_create(&threads[i], thread_func, enclave)))
+        if ((ret = oe_thread_create(&threads[i], thread_func, enclave)))
         {
             oe_put_err("thread_create(host): ret=%u", ret);
         }
@@ -146,7 +118,7 @@ int main(int argc, const char* argv[])
     // Wait for the threads to complete.
     for (int i = 0; i < NUM_HOST_THREADS; i++)
     {
-        thread_join(threads[i]);
+        oe_thread_join(threads[i]);
     }
 
     result = oe_terminate_enclave(enclave);

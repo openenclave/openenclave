@@ -26,7 +26,7 @@ typedef struct _host_worker_thread_context
 
 /**
  * oe_host_worker_context_t is used both by the host (windows/linux) and the
- * enclave (ELF). Lockdown the layout.
+ * enclave (ELF). Lock down the layout.
  */
 OE_STATIC_ASSERT(sizeof(oe_host_worker_context_t) == 40);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_host_worker_context_t, call_arg) == 0);

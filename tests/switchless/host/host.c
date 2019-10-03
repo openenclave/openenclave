@@ -3,15 +3,13 @@
 
 #include <limits.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/atomic.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#if _MSC_VER
-#include <Windows.h>
-#endif
 #include "../../../host/hostthread.h"
 #include "../../../host/strings.h"
 #include "switchless_u.h"
@@ -21,50 +19,29 @@
 
 #define STRING_LEN 100
 
-#if _MSC_VER
-static double frequency;
-#endif
-
-static int thread_create(oe_thread_t* thread, void* (*func)(void*), void* arg)
-{
-#if __GNUC__
-    return pthread_create(thread, NULL, func, arg);
-#elif _MSC_VER
-    typedef DWORD (*start_routine_t)(void*);
-    start_routine_t start_routine = (start_routine_t)func;
-    *thread = (oe_thread_t)CreateThread(NULL, 0, start_routine, arg, 0, NULL);
-    return *thread == (oe_thread_t)NULL ? 1 : 0;
-#endif
-}
-
-static int thread_join(oe_thread_t thread)
-{
-#if __GNUC__
-    return pthread_join(thread, NULL);
-#elif _MSC_VER
-    HANDLE handle = (HANDLE)thread;
-    if (WaitForSingleObject(handle, INFINITE) == WAIT_OBJECT_0)
-    {
-        CloseHandle(handle);
-        return 0;
-    }
-    return 1;
-#endif
-}
+#if defined(__linux__)
 
 double get_relative_time_in_microseconds()
 {
-#if __GNUC__
     struct timespec current_time;
     clock_gettime(CLOCK_REALTIME, &current_time);
     return (double)current_time.tv_sec * 1000000 +
            (double)current_time.tv_nsec / 1000.0;
-#elif _MSC_VER
+}
+
+#elif defined(_WIN32)
+
+#include <Windows.h>
+
+static double frequency;
+double get_relative_time_in_microseconds()
+{
     double current_time;
     QueryPerformanceCounter(&current_time);
     return current_time / frequency;
-#endif
 }
+
+#endif
 
 int host_echo_switchless(
     const char* in,
@@ -137,7 +114,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    uint64_t num_host_threads = 2;
+    uint64_t num_host_threads = 1;
     uint64_t num_enclave_threads = 2;
 
     if (argc >= 3)
@@ -150,7 +127,7 @@ int main(int argc, const char* argv[])
         sscanf(argv[3], "%lu", &num_enclave_threads);
     }
 
-#if _MSC_VER
+#if defined(__WIN32)
     QueryPerformanceFrequency(&frequency);
     frequency /= 1000000; // convert to microseconds
 #endif
@@ -180,11 +157,12 @@ int main(int argc, const char* argv[])
     oe_thread_t tid[32] = {0};
     for (uint64_t i = 0; i < num_extra_enc_threads; ++i)
     {
-        thread_create(&tid[i], launch_enclave_thread, enclave);
-        if (tid[i])
+        int ret = 0;
+        if ((ret = oe_thread_create(&tid[i], launch_enclave_thread, enclave)))
         {
-            printf("Launched enclave producer thread %ld\n", i);
+            oe_put_err("thread_create(host): ret=%u", ret);
         }
+        printf("Launched enclave producer thread %ld\n", i);
     }
     printf("Using main enclave thread\n");
     double switchless_microseconds = make_repeated_switchless_ocalls(enclave);
@@ -204,7 +182,7 @@ int main(int argc, const char* argv[])
     for (uint64_t i = 0; i < num_extra_enc_threads; ++i)
     {
         if (tid[i])
-            thread_join(tid[i]);
+            oe_thread_join(tid[i]);
     }
 
     result = oe_terminate_enclave(enclave);
