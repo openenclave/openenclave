@@ -25,7 +25,9 @@ static const char* _custom_log_format = NULL;
 static const char* _log_all_streams = NULL;
 static const char* _log_escape = NULL;
 static bool _log_creation_failed_before = false;
-static const size_t MAX_ESCAPED_BYTE_LEN = 6;
+static const size_t MAX_ESCAPED_CHAR_LEN = 5; // e.g. u2605
+static const size_t MAX_ESCAPED_MSG_MULTIPLIER =
+    sizeof("\\\\") + MAX_ESCAPED_CHAR_LEN;
 oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
 
@@ -85,7 +87,7 @@ void initialize_log_config()
                 fprintf(
                     stderr,
                     "%s\n",
-                    "Custom log format does not end with a newline");
+                    "[ERROR] Custom log format does not end with a newline");
                 exit(1);
             }
         }
@@ -159,14 +161,14 @@ static bool _escape_characters(
                     log_msg_escaped[idx] = '?';
                     break;
                 default:
-                    if ((unsigned int)log_msg[i] >= 128)
+                    if ((uint8_t)log_msg[i] > 127 /* max ASCII value */)
                     {
-                        // extended ascii
                         return false;
                     }
                     sprintf(
                         (char*)&log_msg_escaped[idx], "u%04hhx", log_msg[i]);
-                    idx += 5;
+                    // idx is also incremented after switch case
+                    idx += MAX_ESCAPED_CHAR_LEN - 1;
                     break;
             }
         }
@@ -179,7 +181,6 @@ static bool _escape_characters(
     if (idx < max_msg_size)
     {
         log_msg_escaped[idx] = '\0';
-        idx++;
     }
     return true;
 }
@@ -358,38 +359,24 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                     {
                         size_t msg_size = strlen(log_msg);
                         size_t max_msg_size =
-                            MAX_ESCAPED_BYTE_LEN * msg_size + 1;
+                            MAX_ESCAPED_MSG_MULTIPLIER * msg_size + 1;
                         char* log_msg_escaped = malloc(max_msg_size);
                         bool escaped_ok = _escape_characters(
                             log_msg, log_msg_escaped, msg_size, max_msg_size);
-                        if (escaped_ok)
-                        {
-                            _write_custom_format_message_to_stream(
-                                log_file,
-                                is_enclave,
-                                time,
-                                usecs,
-                                level,
-                                log_msg_escaped,
-                                file_name,
-                                function,
-                                line_number,
-                                _custom_log_format);
-                        }
-                        else
-                        {
-                            _write_custom_format_message_to_stream(
-                                log_file,
-                                is_enclave,
-                                time,
-                                usecs,
-                                level,
-                                "failed to escape log message",
-                                file_name,
-                                function,
-                                line_number,
-                                _custom_log_format);
-                        }
+
+                        _write_custom_format_message_to_stream(
+                            log_file,
+                            is_enclave,
+                            time,
+                            usecs,
+                            level,
+                            (escaped_ok ? log_msg_escaped
+                                        : "failed to escape log message"),
+                            file_name,
+                            function,
+                            line_number,
+                            _custom_log_format);
+
                         free(log_msg_escaped);
                     }
                     else

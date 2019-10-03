@@ -29,9 +29,12 @@ void test_line_format(const char* line)
 void test_escaped_msg(const char* msg, const char* expected, bool expect_ok)
 {
     size_t msg_size = strlen(msg);
-    char msg_escaped[MAX_ESCAPED_BYTE_LEN * msg_size + 1];
-    bool ok =
-        _escape_characters(msg, msg_escaped, msg_size, (8 * msg_size + 1));
+    char msg_escaped[MAX_ESCAPED_MSG_MULTIPLIER * msg_size + 1];
+    bool ok = _escape_characters(
+        msg,
+        msg_escaped,
+        msg_size,
+        (MAX_ESCAPED_MSG_MULTIPLIER * msg_size + 1));
     if (!expect_ok)
     {
         OE_TEST(!ok);
@@ -73,7 +76,7 @@ int TestLoggingFormat(const char* path)
     return 0;
 }
 
-int TestEscapedCharachters()
+int TestEscapedCharacters()
 {
     {
         char msg[] = "Hey";
@@ -124,7 +127,7 @@ int main(int argc, const char* argv[])
             "s\"}\n",
             true) == 0);
     OE_TEST(setenv("OE_LOG_ESCAPE", "true", true) == 0);
-    TestEscapedCharachters();
+    TestEscapedCharacters();
     TestLoggingFormat(path);
     return 0;
 }
