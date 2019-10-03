@@ -23,7 +23,7 @@ Building samples involves writing files into the working directory. You can do t
 You can also copy the samples from the location they were installed to another directory.
 
 ```cmd
-xcopy  C:\openenclavesdk\share\openenclave\samples c:\mysample
+xcopy  C:\openenclave\share\openenclave\samples C:\mysample
 ```
 
 ## Install the prerequisites
@@ -82,7 +82,7 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
 
 2. Set OpenEnclave_DIR to the cmake directory in the Open Enclave SDK installation. 
 
-As an example, if the Open Enclave SDK is installed to `c:\openenclavesdk`, then you would set OpenEnclaveDIR as shown below
+As an example, if the Open Enclave SDK is installed to `C:\openenclavesdk`, then you would set OpenEnclaveDIR as shown below
 
 ```cmd
 set OpenEnclaveDIR=C:\openenclavesdk\lib\openenclave\cmake
