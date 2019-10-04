@@ -1,4 +1,4 @@
-# Using the Open Enclave SDK
+# Using the Open Enclave SDK on Linux
 
 This document provides a brief overview of how to start exploring the Open Enclave SDK
 once you have it installed.
