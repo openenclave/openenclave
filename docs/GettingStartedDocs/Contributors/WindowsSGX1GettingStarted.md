@@ -115,7 +115,7 @@ ninja install
 
 This installs the SDK in `C:\openenclave`.
 
-### Build and run samples
+## Build and run samples
 
 To build and run the samples, please look [here](/samples/README_Windows.md).
 
