@@ -325,7 +325,10 @@ function Install-Nuget {
     Install-ZipTool -ZipPath $PACKAGES["nuget"]["local_file"] `
                     -InstallDirectory $tempInstallDir `
                     -EnvironmentPath @("$tempInstallDir")
-    Copy-Item -Force "$tempInstallDir\build\native\Nuget.exe" $PACKAGES_DIRECTORY
+    $installDir = Join-Path $env:ProgramFiles "nuget-3.4.3"
+    New-Directory -Path $installDir -RemoveExisting
+    Move-Item -Path "$tempInstallDir\build\native\Nuget.exe" -Destination $installDir
+    Add-ToSystemPath -Path $installDir
 }
 
 function Install-Python3 {
@@ -590,16 +593,16 @@ function Install-DCAP-Dependencies {
     # Note: the ordering of nuget installs below is important to preserve here until the issue with the EnclaveCommonAPI nuget package gets fixed.
     if ($DCAPClientType -eq "Azure")
     {
-        & "$PACKAGES_DIRECTORY\nuget.exe" install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+        & nuget.exe install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
         if($LASTEXITCODE -ne 0) {
             Throw "Failed to install nuget EnclaveCommonAPI"
         }
     }
-    & "$PACKAGES_DIRECTORY\nuget.exe" install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+    & nuget.exe install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
         Throw "Failed to install nuget DCAP_Components"
     }
-    & "$PACKAGES_DIRECTORY\nuget.exe" install 'EnclaveCommonAPI' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+    & nuget.exe install 'EnclaveCommonAPI' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
         Throw "Failed to install nuget EnclaveCommonAPI"
     }
@@ -625,7 +628,7 @@ function Install-AzureDCAPWindows {
 
     Copy-Item $PACKAGES['azure_dcap_client_nupkg']['local_file'] -Destination $TEMP_NUGET_DIR -Force
 
-    & "$PACKAGES_DIRECTORY\nuget.exe" install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+    & nuget.exe install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
         Throw "Failed to install nuget Azure.DCAP.Windows"
     }
