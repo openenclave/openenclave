@@ -63,7 +63,6 @@ tests/ocall/debugging\.txt
 tests/print/printhost\.stderr
 tests/print/printhost\.stdout
 tests/str/test1\.txt
-tools/oeedger8r/\.merlin
 tools/oeedger8r/src/\.ocamlformat
 tools/oeedger8r/src/main\.ml
 tools/oesign/getopt\.h
