@@ -13,7 +13,7 @@ Note that this is optional since you can choose an alternate implementation of t
 The Azure DCAP client for Windows is necessary if you would like to perform enclave attestation on a Azure Confidential Computing VM. It is available from [nuget.org](https://www.nuget.org/packages/Azure.DCAP.Windows/) and can be installed directly via:
 
 ```cmd
-nuget.exe install Azure.DCAP.Windows -ExcludeVersion -Version 0.0.2 -OutputDirectory C:\path\to\where\you\would\like\to\l\intel_and_dcap_nuget_packages
+nuget.exe install Azure.DCAP.Windows -ExcludeVersion -Version 0.0.2 -OutputDirectory C:\path\to\where\you\would\like\to\install\intel_and_dcap_nuget_packages
 ```
 
 ##### [Intel Data Center Attestation Primitives (DCAP) Libraries v1.2](http://registrationcenter-download.intel.com/akdlm/irc_nas/15650/Intel%20SGX%20DCAP%20for%20Windows%20v1.2.100.49925.exe)

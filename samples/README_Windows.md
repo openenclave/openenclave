@@ -6,7 +6,11 @@ All the samples that come with the Open Enclave SDK installation share similar d
 
 ### How Sample source code directories were structured
 
-Open Enclave SDK helps developers build enclave applications. An enclave application is partitioned into an untrusted component (called a host) and a trusted component (called an enclave). An enclave is a secure container whose memory (text and data) is protected from access by outside entities, including the host, privileged users, and even the hardware. All functionality that needs to be run in a Trusted Execution Environment (TEE) should be compiled into the enclave binary. The enclave may run in an untrusted environment with the expectation that secrets will not be compromised. A host is a normal user mode application that loads an enclave into its address space before starting interacting with an enclave. 
+Open Enclave SDK helps developers build enclave applications. An enclave application is partitioned into an untrusted component (called a host) and a trusted component (called an enclave).
+
+An enclave is a secure container whose memory (text and data) is protected from access by outside entities, including the host, privileged users, and even the hardware. All functionality that needs to be run in a Trusted Execution Environment (TEE) should be compiled into the enclave binary. The enclave may run in an untrusted environment with the expectation that secrets will not be compromised. On Windows and Linux, enclaves are ELF binaries.
+
+A host is a normal user mode application that loads an enclave into its address space before starting interacting with an enclave.
 
 ![Sample components diagram](sampledirstructure.png)
 
@@ -34,10 +38,10 @@ Normally this is accessible under the `Visual Studio 2019 or 2017` folder in the
 
 2. Set OpenEnclave_DIR to the cmake directory in the Open Enclave SDK installation.
 
-As an example, if the Open Enclave SDK is installed to `C:\openenclave`, then you would set OpenEnclaveDIR as shown below
+As an example, if the Open Enclave SDK is installed to `C:\openenclave`, then you would set OpenEnclave_DIR as shown below
 
 ```cmd
-set OpenEnclaveDIR=C:\openenclave\lib\openenclave\cmake
+set OpenEnclave_DIR=C:\openenclave\lib\openenclave\cmake
 ```
 
 3. To build a sample using CMake, change directory to your target sample directory and execute the following commands:

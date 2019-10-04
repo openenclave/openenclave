@@ -1,7 +1,5 @@
 # Building the Open Enclave SDK
 
-This document contains the Linux build instructions. For the experimental Windows build instructions, see [here](/docs/GettingStartedDocs/GettingStarted.Windows.md).
-
 #### 1. Determine the SGX support level on your development/target system
 
 The Open Enclave SDK runs on Linux systems, whether those systems are inside virtual machines or directly on top of the bare metal machines.

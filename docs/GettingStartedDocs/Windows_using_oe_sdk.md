@@ -28,7 +28,7 @@ It contains the following subfolders:
 As an example, if you installed the SDK to C:\openenclave, then you would set `OpenEnclave_DIR` as shown below.
 
 ```cmd
-set OpenEnclave_DIR=C:\openenclave\lib\cmake
+set OpenEnclave_DIR=C:\openenclave\lib\openenclave\cmake
 ```
 
 ## Samples

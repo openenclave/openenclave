@@ -2,11 +2,11 @@ Basic Install on Windows
 ========================
 
 You can locally install the SDK from the compiled Open Enclave tree by specifying
-the install-prefix to the cmake call before calling "ninja install".
+the install-prefix to the cmake call before calling `ninja install`.
 From the build subfolder in your source tree:
 
 ```cmd
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave" -DUSE_LIBSGX=ON
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DUSE_LIBSGX=ON
 ninja install
 ```
 
