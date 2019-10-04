@@ -1,6 +1,6 @@
 # Building Open Enclave SDK Samples on Windows
 
-All the samples that come with the Open Enclave SDK installation share similar directory structure and build instructions. The section contains general information on how to setup/build/sign/run all samples. It's important that you read information on this page before jumping into any individual sample.
+All the samples that come with the Open Enclave SDK installation share a similar directory structure and build instructions. This document describes how to setup, build, sign and run these samples.
 
 ## Common Sample information
 
@@ -18,27 +18,25 @@ All the samples that come with the Open Enclave SDK installation are all structu
 
 | Files/dir        |  contents                                   |
 |:-----------------|---------------------------------------------|
-| enclave        | Files needed for building the sample enclave|
-| host           | Files needed for building the host          |
+| enclave        | Files needed for building the sample enclave  |
+| host           | Files needed for building the host            |
 
 ### Prepare samples
 
-Building samples involves writing files into the working directory. You can do this in the directory in which you have installed your samples.
-You can also copy the samples from the location they were installed to another directory.
+Building a sample will write intermediate and output files into the sample directory. If you would like to use a separate working directory for building samples, you can copy the samples to your working directory first. For example, if the SDK was installed to C:\openenclave:
 
 ```cmd
-xcopy  C:\openenclave\share\openenclave\samples C:\mysample
+xcopy C:\openenclave\share\openenclave\samples C:\mysample
 ```
 
 ### How to build and run samples
 
-1. [x64 Native Tools Command Prompt for VS(2017 or 2019)](
+1. [x64 Native Tools Command Prompt for VS2017 or 2019](
 https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
-Normally this is accessible under the `Visual Studio 2019 or 2017` folder in the Start Menu.
 
-2. Set OpenEnclave_DIR to the cmake directory in the Open Enclave SDK installation.
+2. Set `OpenEnclave_DIR` to the cmake directory in the Open Enclave SDK installation.
 
-As an example, if the Open Enclave SDK is installed to `C:\openenclave`, then you would set OpenEnclave_DIR as shown below
+As an example, if the Open Enclave SDK is installed to `C:\openenclave`, then you would set `OpenEnclave_DIR` as shown below
 
 ```cmd
 set OpenEnclave_DIR=C:\openenclave\lib\openenclave\cmake

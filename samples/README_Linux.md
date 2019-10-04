@@ -14,7 +14,7 @@ All the samples that come with the Open Enclave SDK installation are all structu
 
 | Files/dir        |  contents                                   |
 |:-----------------|---------------------------------------------|
-| Makefile         | Makefile for the whole samples              |
+| Makefile         | Makefile for building all samples           |
 | ./enclave        | Files needed for building the sample enclave|
 | ./host           | Files needed for building the host          |
 

@@ -2,7 +2,13 @@
 # Licensed under the MIT License.
 
 if (USE_LIBSGX)
-  install(DIRECTORY remote_attestation local_attestation attested_tls
+  install(DIRECTORY remote_attestation local_attestation
+          DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+          PATTERN "gen_pubkey_header.sh"
+          PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+          GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
+  if(NOT WIN32)
+    install(DIRECTORY attested_tls
           DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
           PATTERN "gen_pubkey_header.sh"
           PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
