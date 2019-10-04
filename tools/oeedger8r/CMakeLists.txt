@@ -22,8 +22,12 @@ add_custom_command(
   # the Node modules etc. We should be more explicit.
   COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
   COMMAND esy
-  DEPENDS src/Emitter.ml
+  DEPENDS package.json
+          dune-project
+          src/dune
+          src/Emitter.ml
           src/main.ml
+          intel/dune
           intel/Ast.ml
           intel/CodeGen.ml
           intel/Edger8r.ml
