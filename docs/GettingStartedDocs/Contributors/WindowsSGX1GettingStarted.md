@@ -55,23 +55,25 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
 
 2. At the x64 Native Tools command prompt, use CMake and ninja to build the debug version:
 
-   ```cmd
-   cd C:\openenclave
-   mkdir build\x64-Debug
-   cd build\x64-Debug
-   cmake -G Ninja -DBUILD_ENCLAVES=1 -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_nuget_packages ../..
-   ninja
-   ```
+```
+cd C:\openenclave
+mkdir build\x64-Debug
+cd build\x64-Debug
+cmake -G  Ninja -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_nuget_packages  -DCMAKE_INSTALL_PREFIX:PATH=C:/openenclave ../..
+ninja
+```
 
-   Similarly, build the release version with:
+Later, using the `ninja install` command will install the SDK in C:\openenclave. To choose a different location, change the value specified for CMAKE_INSTALL_PATH
 
-    ```cmd
-   cd C:\openenclave
-   mkdir build\x64-Release
-   cd build\x64-Release
-   cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_ENCLAVES=1 -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_nuget_packages ../..
-   ninja
-   ```
+Similarly, to build release enclaves:
+
+```cmd
+cd C:\openenclave
+mkdir build\x64-Release
+cd build\x64-Release
+cmake -G  Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_nuget_packages  -DCMAKE_INSTALL_PREFIX:PATH=C:/openenclave ../..
+ninja
+```
 
 ## Run unit tests
 
@@ -111,7 +113,7 @@ cd build\x64-Debug
 ninja install
 ```
 
-This installs the SDK in c:\opt\openenclave.
+This installs the SDK in `C:\openenclave`.
 
 ## Known Issues
 
