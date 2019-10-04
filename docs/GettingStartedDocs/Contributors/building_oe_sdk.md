@@ -70,7 +70,7 @@ See [Open Enclave samples](/samples/README_Linux.md) for details.
 Assuming you install the SDK as below (also described in the [basic install section](WindowsInstallInfo.md#basic-install-on-windows))
 
 ```bash
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH= [NuGet_package_Path]   -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave" -DUSE_LIBSGX=ON
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\path\to\intel_and_dcap_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave" -DUSE_LIBSGX=ON
 ninja install
 ```
 Open Enclave samples can be found in c:\openenclave\share\openenclave\samples

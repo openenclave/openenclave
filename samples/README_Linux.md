@@ -32,7 +32,7 @@ drwxr-xr-x 2 yourusername yourusername 4096 Aug 16 13:59 host
 
 Building samples involves writing files into the working directory, which is not allowed in `/opt` unless it's running in the context of superuser (`sudo`).
 
-To avoid this `sudo` requirement, you may want to first copy them to a user directory of your choice then build and run on those local copy.
+Before building any of the samples, please copy them out of the /opt/openenclave/share/openenclave/samples directory to a directory where your current user has write permissions. A normal user usually does not have permission to write files into a directory in /opt.
 
 For example, assuming Open Enclave SDK is installed to the default location `/opt/openenclave`:
 

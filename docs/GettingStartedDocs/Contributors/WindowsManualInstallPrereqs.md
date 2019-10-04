@@ -24,7 +24,7 @@ For systems with support for SGX1  - [Intel's PSW 2.2](WindowsManualSGX1Prereqs.
 For systems with support for SGX1 + FLC - [Intel's PSW 2.4, Intel's Data Center Attestation Primitives and related dependencies](WindowsManualSGX1FLCDCAPPrereqs.md)
 
 ## Microsoft Visual Studio Build Tools 2019
-Install [Visual Studio Build Tools 2019](https://aka.ms/vs/16/release/vs_buildtools.exe). Choose the " C++ build tools" workload. Visual Studio Build Tools 2019 has support for CMake Version 3.15 (CMake ver 3.12 or above is required for building Open Enclave SDK). For more information about CMake support, look [here](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/).
+Install [Visual Studio Build Tools 2019](https://aka.ms/vs/16/release/vs_buildtools.exe). Choose the "C++ build tools" workload. Visual Studio Build Tools 2019 has support for CMake Version 3.15 (CMake ver 3.12 or above is required for building Open Enclave SDK). For more information about CMake support, look [here](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/).
 
 ## Git for Windows 64-bit
 

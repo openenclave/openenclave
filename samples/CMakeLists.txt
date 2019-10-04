@@ -13,11 +13,11 @@ install(DIRECTORY helloworld file-encryptor data-sealing switchless
         DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
 if (WIN32)
-install(FILES README_Windows.md
+  install(FILES README_Windows.md
         DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
         RENAME README.md)
 else ()
-install(FILES README_Linux.md
+  install(FILES README_Linux.md
         DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
         RENAME README.md)
 endif ()
