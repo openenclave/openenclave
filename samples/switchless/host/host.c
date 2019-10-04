@@ -68,21 +68,16 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "oe_create_enclave(): result=%u", result);
 
     double start, end;
-#ifdef (_linux_)
     struct timespec current_time;
     clock_gettime(CLOCK_REALTIME, &current_time);
     start =
         current_time.tv_sec * 1000000 + (double)current_time.tv_nsec / 1000.0;
-#else
-
 
     // Call into the enclave
     result = enclave_add_N_switchless(enclave, &m, n);
 
-#ifdef (_linux_)
     clock_gettime(CLOCK_REALTIME, &current_time);
     end = current_time.tv_sec * 1000000 + (double)current_time.tv_nsec / 1000.0;
-#endif
 
     if (result != OE_OK)
     {
@@ -99,20 +94,16 @@ int main(int argc, const char* argv[])
         m,
         (int)(end - start) / 1000);
 
-#ifdef (_linux_)
     clock_gettime(CLOCK_REALTIME, &current_time);
     start =
         current_time.tv_sec * 1000000 + (double)current_time.tv_nsec / 1000.0;
-#endif
 
     // Call into the enclave
     m = oldm;
     result = enclave_add_N_regular(enclave, &m, n);
 
-#ifdef (_linux_)
     clock_gettime(CLOCK_REALTIME, &current_time);
     end = current_time.tv_sec * 1000000 + (double)current_time.tv_nsec / 1000.0;
-#endif
 
     if (result != OE_OK)
     {
