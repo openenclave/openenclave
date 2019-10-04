@@ -6,7 +6,7 @@ the install-prefix to the cmake call before calling "ninja install".
 From the build subfolder in your source tree:
 
 ```cmd
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH= [NuGet_package_Path]   -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave" -DUSE_LIBSGX=ON
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave" -DUSE_LIBSGX=ON
 ninja install
 ```
 
@@ -19,7 +19,7 @@ This is the global-packages folder which usually is  %userprofile%\.nuget\packag
 To create a redistributable NuGet package use the following command from your build subfolder:
 
 ```cmd
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=[Nuget_Package_Path]  -DCPACK_GENERATOR=NuGet  -DUSE_LIBSGX=ON
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages-DCPACK_GENERATOR=NuGet -DUSE_LIBSGX=ON
 ninja package
 ```
 
