@@ -12,6 +12,11 @@ target_include_directories(remote_attestation_host PRIVATE
 
 if(WIN32)
   add_dcap_client_target(remote_attestation_dcap_target)
+  add_dependencies(remote_attestation_host remote_attestation_dcap_target)
+  copy_oedebugrt_target(remote_attestation_oedebugrt_target)
+  add_dependencies(remote_attestation_host remote_attestation_oedebugrt_target)
+endif()
+
 endif()
 
 target_link_libraries(remote_attestation_host openenclave::oehostapp)
