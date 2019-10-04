@@ -8,8 +8,8 @@ add_custom_command(OUTPUT datasealing_u.h datasealing_u.c datasealing_args.h
 add_executable(data-sealing_host host.cpp ${CMAKE_CURRENT_BINARY_DIR}/datasealing_u.c)
 
 if(WIN32)
-  copy_oedebugrt_target(data-sealing_host-oedebugrt)
-  add_dependencies(data-sealing_host data-sealing_host-oedebugrt)
+  copy_oedebugrt_target(data-sealing_host_oedebugrt)
+  add_dependencies(data-sealing_host data-sealing_host_oedebugrt)
 endif()
 
 target_include_directories(data-sealing_host PRIVATE
