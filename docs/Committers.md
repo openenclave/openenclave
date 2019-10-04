@@ -83,7 +83,7 @@ instead, it should be brought up with the Community Governance Committee.
 |-----------------------|---------------------|--------------------------------|
 | Amaury Chamayou       | achamayou           | Build, CCF Integration         |
 | Anand Krishnamoorthi  | anakrish            | Debugging, SGX, EDL, Dev Tools |
-| Andrew Schwartzmeyer  | andschwa            | EDL, CMake, Git, Dev Tools     |
+| Andrew Schwartzmeyer  | andschwa            | EDL, CMake, Dev Tools, Website |
 | Brett McLaren         | BRMcLaren           | Build, CMake, CI               |
 | Brian Telfer          | Britel              | TrustZone, Attestation         |
 | Simon Leet            | CodeMonkeyLeet      | SGX, APIs                      |
@@ -98,7 +98,7 @@ instead, it should be brought up with the Community Governance Committee.
 | Mike Brasher          | mikbras             | SGX, APIs, EDL                 |
 | Marius Oprin          | oprinmarius         | Build, CMake, CI, Ansible      |
 | Paul Allen            | paulcallen          | TrustZone                      |
-| Radhika Jandhyala     | radhikaj            | SGX, APIs                      |
+| Radhika Jandhyala     | radhikaj            | SGX, APIs, Website             |
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
 | Bruce Campbell        | yakman2020          | Windows, SGX                   |

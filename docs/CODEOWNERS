@@ -12,6 +12,7 @@
 /3rdparty/ @mikbras @CodeMonkeyLeet
 /cmake/ @andschwa @BRMcLaren
 /common/ @CodeMonkeyLeet @gupta-ak @mikbras
+/docs/refman @andschwa @radhikaj
 /debugger/ @anakrish @jxyang
 /enclave/ @CodeMonkeyLeet @gupta-ak @mikbras
 /host/ @CodeMonkeyLeet @gupta-ak @mikbras
