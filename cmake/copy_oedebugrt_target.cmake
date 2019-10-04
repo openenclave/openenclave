@@ -15,13 +15,13 @@ function(copy_oedebugrt_target TARGET_NAME)
         message(WARNING "copy_oedebugrt_target is only intended for WIN32 build environments. Check if this invocation is needed.")
     endif ()
 
-    get_property(oedebugrtlocation TARGET openenclave::oedebugrt PROPERTY LOCATION)
+    get_property(OEDEBUGRTLOCATION TARGET openenclave::oedebugrt PROPERTY LOCATION)
     # Add copy actions for the dependencies
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.dll
-        DEPENDS ${oedebugrtlocation}
+        DEPENDS ${OEDEBUGRTLOCATION}
         COMMENT FOOBARBAZ
-        COMMAND ${CMAKE_COMMAND} -E copy ${oedebugrtlocation} ${CMAKE_CURRENT_BINARY_DIR})
+        COMMAND ${CMAKE_COMMAND} -E copy ${OEDEBUGRTLOCATION} ${CMAKE_CURRENT_BINARY_DIR})
 
 
     # Always create the requested target, which may have an empty dependency list
