@@ -52,4 +52,4 @@ If you wish to make use of the Open Enclave CMake package, please install CMake 
 
 ### 4. Verify the Open Enclave SDK install
 
-See [Using the Open Enclave SDK](using_oe_sdk.md) for verifying and using the installed SDK.
+See [Using the Open Enclave SDK](Linux_using_oe_sdk.md) for verifying and using the installed SDK.

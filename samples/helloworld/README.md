@@ -166,7 +166,7 @@ Each line will now be described in turn.
 #include <stdio.h>
 ```
 
-An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, the decision was made to make only a specific set of APIs available to an enclave library. A complete list of APIs available to an enclave library can be found [here](https://github.com/openenclave/openenclave/tree/master/docs/GettingStartedDocs/using_oe_sdk.md#api-references)
+An enclave library will be loaded into and run inside a host application which is a user-mode process. To keep the [trusted computing base](https://en.wikipedia.org/wiki/Trusted_computing_base) small, the decision was made to make only a specific set of APIs available to an enclave library. A complete list of APIs available to an enclave library can be found [here](https://github.com/openenclave/openenclave/tree/master/docs/GettingStartedDocs/APIs_and_Libs.md)
 
 The `stdio.h` header file is included in this sample because we are calling the CRT function `fprintf` to print a message on the screen. However this function has a dependency on the kernel to print a message on the screen so this code cannot execute within the enclave itself. Instead this function marshals the call through to the host to carry out the call on the enclaves behalf. Only a subset of the CRT is made available through this open enclave library.
 

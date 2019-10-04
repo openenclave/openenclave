@@ -53,7 +53,7 @@ On Windows:
 ## Samples
 
 ### On Linux
-Assuming you install the SDK as below (also described in the [basic install section](InstallInfo.md#basic-install-on-linux))
+Assuming you install the SDK as below (also described in the [basic install section](LinuxInstallInfo.md#basic-install-on-linux))
 
 ```bash
 cmake -DCMAKE_INSTALL_PREFIX=~/openenclave ..
@@ -65,6 +65,7 @@ Open Enclave samples can be found in ~/openenclave/share/openenclave/samples
 See [Open Enclave samples](/samples/README_Linux.md) for details.
 
 ### On Windows
+
 Assuming you install the SDK as below (also described in the [basic install section](WindowsInstallInfo.md#basic-install-on-windows))
 
 ```bash
@@ -77,5 +78,4 @@ See [Open Enclave samples](/samples/README_Windows.md) for details.
 
 ## Using the Open Enclave SDK
 
-Additional information such as the [API References](/docs/GettingStartedDocs/using_oe_sdk.md#api-references)
-can be found in the [documentation on using the Open Enclave SDK](/docs/GettingStartedDocs/using_oe_sdk.md).
+Additional information such as the API Reference and supported libs can be found [here](/docs/GettingStartedDocs/APIs_and_Libs.md).
