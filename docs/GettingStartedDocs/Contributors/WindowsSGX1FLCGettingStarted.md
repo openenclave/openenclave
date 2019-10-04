@@ -74,7 +74,7 @@ cmake -G  Ninja -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_and_dcap_nuget_packag
 ninja
 ```
 
-Later, using the `ninja install` command will install the SDK in C:\openenclave. To choose a different location, change the value specified for CMAKE_INSTALL_PATH
+Later, using the `ninja install` command will install the SDK in C:\openenclave. To choose a different location, change the value specified for CMAKE_INSTALL_PATH.
 
 Similarly, to build release enclaves:
 ```cmd
