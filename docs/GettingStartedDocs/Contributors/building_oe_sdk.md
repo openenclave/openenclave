@@ -64,7 +64,7 @@ make install
 
 Open Enclave samples can be found in ~/openenclave/share/openenclave/samples
 
-See [Open Enclave samples](/samples/README.md) for details.
+See [Open Enclave samples](/samples/README_Linux.md) for details.
 
 ### On Windows
 Assuming you install the SDK as below (also described in the [basic install section](WindowsInstallInfo.md#basic-install-on-windows))
@@ -75,7 +75,7 @@ ninja install
 ```
 Open Enclave samples can be found in c:\openenclave\share\openenclave\samples
 
-See [Open Enclave samples](/samples/README.md) for details.
+See [Open Enclave samples](/samples/README_Windows.md) for details.
 
 ## Using the Open Enclave SDK
 
