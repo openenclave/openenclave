@@ -6,4 +6,3 @@ _release
 *.byte
 *.native
 *.install
-esy.lock

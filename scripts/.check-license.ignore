@@ -33,6 +33,7 @@ tests/mbed/tests\..*$
 3rdparty/optee/patches/.*
 3rdparty/optee/optee_client/.*
 3rdparty/optee/optee_os/.*
+tools/oeedger8r/esy\.lock/.*
 tools/oeedger8r/intel/.*
 
 # Files
