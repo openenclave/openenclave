@@ -48,8 +48,8 @@ int TestLoggingFormat(const char* path)
     OE_TRACE_ERROR("Hey");
     OE_TRACE_ERROR("Hello 'world'!");
     OE_TRACE_ERROR("Hello \"world\"!");
-    OE_TRACE_ERROR(
-        "\a \\a \b \\b \e \\e \f \\f \n \\n \r \\r \t \\t \v \\v \? \\?");
+    OE_TRACE_ERROR("/ \\/ \' \a \\a \b \\b \e \\e \f \\f \n \\n \r \\r \t \\t "
+                   "\v \\v \? \\?");
     OE_TRACE_ERROR("\\u005C \u0024 \u0040 @");
     OE_TRACE_ERROR("\\\\\\\\");
     OE_TRACE_ERROR("\u2605");
@@ -126,7 +126,7 @@ int main(int argc, const char* argv[])
             "\",\"msg\":\"%s\",\"file\":\"%s\",\"func\":\"%s\",\"number\":\"%"
             "s\"}\n",
             true) == 0);
-    OE_TEST(setenv("OE_LOG_ESCAPE", "true", true) == 0);
+    OE_TEST(setenv("OE_LOG_JSON_ESCAPE", "true", true) == 0);
     TestEscapedCharacters();
     TestLoggingFormat(path);
     return 0;

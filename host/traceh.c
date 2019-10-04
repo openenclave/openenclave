@@ -77,7 +77,7 @@ void initialize_log_config()
         _log_file_name = getenv("OE_LOG_DEVICE");
         _custom_log_format = getenv("OE_LOG_FORMAT");
         _log_all_streams = getenv("OE_LOG_ALL_STREAMS");
-        _log_escape = getenv("OE_LOG_ESCAPE");
+        _log_escape = getenv("OE_LOG_JSON_ESCAPE");
         if (_custom_log_format)
         {
             // check that custom log format string terminates with a line return
@@ -108,7 +108,7 @@ static bool _escape_characters(
         if (log_msg[i] == '\"')
         {
             // single quotes are OK for JSON
-            log_msg_escaped[idx] = (char)putchar('\'');
+            log_msg_escaped[idx] = '\'';
         }
         else if (log_msg[i] == '\\')
         {
@@ -124,14 +124,8 @@ static bool _escape_characters(
             idx++;
             switch (log_msg[i])
             {
-                case '\a':
-                    log_msg_escaped[idx] = 'a';
-                    break;
                 case '\b':
                     log_msg_escaped[idx] = 'b';
-                    break;
-                case '\e':
-                    log_msg_escaped[idx] = 'e';
                     break;
                 case '\f':
                     log_msg_escaped[idx] = 'f';
@@ -144,21 +138,6 @@ static bool _escape_characters(
                     break;
                 case '\t':
                     log_msg_escaped[idx] = 't';
-                    break;
-                case '\v':
-                    log_msg_escaped[idx] = 'v';
-                    break;
-                case '\\':
-                    log_msg_escaped[idx] = '\\';
-                    break;
-                case '\'':
-                    log_msg_escaped[idx] = '\'';
-                    break;
-                case '\"':
-                    log_msg_escaped[idx] = '\"';
-                    break;
-                case '\?':
-                    log_msg_escaped[idx] = '?';
                     break;
                 default:
                     if ((uint8_t)log_msg[i] > 127 /* max ASCII value */)
