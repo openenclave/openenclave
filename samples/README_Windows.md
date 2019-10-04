@@ -82,10 +82,10 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
 
 2. Set OpenEnclave_DIR to the cmake directory in the Open Enclave SDK installation. 
 
-As an example, if the Open Enclave SDK is installed to `C:\openenclavesdk`, then you would set OpenEnclaveDIR as shown below
+As an example, if the Open Enclave SDK is installed to `C:\openenclave`, then you would set OpenEnclaveDIR as shown below
 
 ```cmd
-set OpenEnclaveDIR=C:\openenclavesdk\lib\openenclave\cmake
+set OpenEnclaveDIR=C:\openenclave\lib\openenclave\cmake
 ```
 
 3. To build a sample using CMake, change directory to your target sample directory and execute the following commands:
@@ -93,7 +93,7 @@ set OpenEnclaveDIR=C:\openenclavesdk\lib\openenclave\cmake
 ```cmd
 mkdir build
 cd build
-cmake .. -G Ninja -DNUGET_PACKAGE_PATH=c:\users\radhikaj\openenclave\prereqs\nuget
+cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_nuget_packages
 ninja
 ```
 
