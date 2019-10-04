@@ -28,11 +28,11 @@ xcopy  C:\openenclave\share\openenclave\samples C:\mysample
 
 ### How to build and run samples
 
-1. Launch the [x64 Native Tools Command Prompt for VS 2017](
+1. [x64 Native Tools Command Prompt for VS(2017 or 2019)](
 https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
-Normally this is accessible under the `Visual Studio 2017` folder in the Start Menu.
+Normally this is accessible under the `Visual Studio 2019 or 2017` folder in the Start Menu.
 
-2. Set OpenEnclave_DIR to the cmake directory in the Open Enclave SDK installation. 
+2. Set OpenEnclave_DIR to the cmake directory in the Open Enclave SDK installation.
 
 As an example, if the Open Enclave SDK is installed to `C:\openenclave`, then you would set OpenEnclaveDIR as shown below
 

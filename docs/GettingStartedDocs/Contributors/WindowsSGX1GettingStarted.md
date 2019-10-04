@@ -113,10 +113,12 @@ cd build\x64-Debug
 ninja install
 ```
 
-This installs the SDK in `C:\openenclave`.
+This installs the SDK in `C:\openenclave`.'
+
+### Build and run samples
+
+To build and run samples, please look [here](/samples/README_Windows.md).
 
 ## Known Issues
-
-Samples have not yet been ported to Windows.
 
 Not all tests currently run on Windows. See tests\MakeLists.txt for a list of supported tests.

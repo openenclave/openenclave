@@ -125,8 +125,10 @@ ninja install
 
 This installs the SDK in `C:\openenclave`.
 
-## Known Issues
+### Build and run samples
 
-Samples have not yet been ported to Windows.
+To build and run samples, please look [here](/samples/README_Windows.md)
+
+## Known Issues
 
 Not all tests currently run on Windows. See tests\MakeLists.txt for a list of supported tests.
