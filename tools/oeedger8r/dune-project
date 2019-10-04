@@ -10,6 +10,8 @@
 (maintainers "Open Enclave SDK")
 (source (github openenclave/openenclave))
 
+(using fmt 1.2) ; NOTE: Dune 2.0 will make this automatic.
+
 (package
   (name oeedger8r)
   (synopsis "An OCaml tool for processing Enclave Definition Language files")

@@ -22,6 +22,7 @@
 
   "devDependencies": {
     "@opam/merlin": "^3.0.3",
+    "@opam/ocamlformat": "~0.11.0",
     "ocaml": "~4.6.0"
   }
 }
