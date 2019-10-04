@@ -119,10 +119,10 @@ This design introduces the following functions on the host side:
 
     typedef enum _oe_memory_type
     {
-        /* !oe_is_trusted_memory() && !oe_is_shared_memory() */
+        /* !oe_is_within_enclave() && !oe_is_shared_memory() */
         OE_MEMORY_TYPE_UNKNOWN,
 
-        /* oe_is_trusted_memory() */
+        /* oe_is_within_enclave() */
         OE_MEMORY_TYPE_TRUSTED,
 
         /* oe_is_shared_memory() */
