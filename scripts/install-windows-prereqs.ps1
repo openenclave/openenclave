@@ -12,8 +12,8 @@ Param(
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
-    [string]$OCamlURL = 'https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip',
-    [string]$OCamlHash = '369F900F7CDA543ABF674520ED6004CC75008E10BEED0D34845E8A42866D0F3A',
+    [string]$NodeURL = 'https://nodejs.org/dist/v10.16.3/node-v10.16.3-x64.msi',
+    [string]$NodeHash = 'F68B75EEA46232ADB8FD38126C977DC244166D29E7C6CD2DF930B460C38590A9',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
     [string]$Clang7Hash = '672E4C420D6543A8A9F8EC5F1E5F283D88AC2155EF4C57232A399160A02BFF57',
     [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/15654/Intel%20SGX%20PSW%20for%20Windows%20v2.4.100.51291.exe',
@@ -70,10 +70,10 @@ $PACKAGES = @{
         "hash" = $VSBuildToolsHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "vs_buildtools.exe"
     }
-    "ocaml" = @{
-        "url" = $OCamlURL
-        "hash" = $OCamlHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "ocpwin64.zip"
+    "node" = @{
+        "url" = $NodeURL
+        "hash" = $NodeHash
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "node-x64.msi"
     }
     "clang7" = @{
         "url" = $Clang7URL
@@ -429,17 +429,18 @@ function Install-VisualStudio {
                                    "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\Common7\Tools")
 }
 
-function Install-OCaml {
-    $installDir = Join-Path $env:ProgramFiles "OCaml"
-    $tmpDir = Join-Path $PACKAGES_DIRECTORY "ocpwin64"
-    if(Test-Path -Path $tmpDir) {
-        Remove-Item -Recurse -Force -Path $tmpDir
-    }
-    Install-ZipTool -ZipPath $PACKAGES["ocaml"]["local_file"] `
-                    -InstallDirectory $tmpDir `
-                    -EnvironmentPath @("$installDir\bin")
-    New-Directory -Path $installDir -RemoveExisting
-    Move-Item -Path "$tmpDir\*\*" -Destination $installDir
+function Install-Node {
+    $installDir = Join-Path $env:ProgramFiles "nodejs"
+    Install-Tool -InstallerPath $PACKAGES["node"]["local_file"] `
+                 -InstallDirectory $installDir `
+                 -ArgumentList @("/quiet", "/passive") `
+                 -EnvironmentPath @($installDir)
+
+    Add-ToSystemPath -Path "${env:APPDATA}\npm"
+
+    Start-ExecuteWithRetry -ScriptBlock {
+        npm install -g esy@0.5.8
+    } -RetryMessage "Failed to install esy. Retrying"
 }
 
 function Install-LLVM {
@@ -650,7 +651,7 @@ try {
     Install-OpenSSL
     Install-LLVM
     Install-Git
-    Install-OCaml
+    Install-Node
     Install-Shellcheck
 
     if ($LaunchConfiguration -ne "SGX1FLC-NoDriver")
