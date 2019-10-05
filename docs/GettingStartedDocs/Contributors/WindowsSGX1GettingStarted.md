@@ -35,14 +35,14 @@ To deploy all the prerequisities for building Open Enclave, you can run the foll
 
 ```powershell
 cd scripts
-.\install-windows-prereqs.ps1 -InstallPath PATH_TO_OE_REPO -LaunchConfiguration SGX1 -DCAPClientType None
+.\install-windows-prereqs.ps1 -InstallPath C:\path\to\where\you\would\like\to\install\intel_and_dcap_nuget_packages -LaunchConfiguration SGX1 -DCAPClientType None
 ```
 
 As an example, if you cloned Open Enclave SDK repo into `C:\openenclave`, you would run the following:
 
 ```powershell
 cd scripts
-.\install-windows-prereqs.ps1 -InstallPath C:\openenclave -LaunchConfiguration SGX1 -DCAPClientType None
+.\install-windows-prereqs.ps1 -InstallPath C:\path\to\where\you\would\like\to\install\intel_and_dcap_nuget_packages -LaunchConfiguration SGX1 -DCAPClientType None
 ```
 
 If you prefer to manually install prerequisites, please refer to this [document](WindowsManualInstallPrereqs.md).
@@ -55,23 +55,25 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
 
 2. At the x64 Native Tools command prompt, use CMake and ninja to build the debug version:
 
-   ```cmd
-   cd C:\openenclave
-   mkdir build\x64-Debug
-   cd build\x64-Debug
-   cmake -G Ninja -DBUILD_ENCLAVES=1 -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_nuget_packages ../..
-   ninja
-   ```
+```
+cd C:\openenclave
+mkdir build\x64-Debug
+cd build\x64-Debug
+cmake -G Ninja -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave ..\..
+ninja
+```
 
-   Similarly, build the release version with:
+Later, using the `ninja install` command will install the SDK in C:\openenclave. To choose a different location, change the value specified for CMAKE_INSTALL_PATH.
 
-    ```cmd
-   cd C:\openenclave
-   mkdir build\x64-Release
-   cd build\x64-Release
-   cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_ENCLAVES=1 -DNUGET_PACKAGE_PATH=C:/your/path/to/intel_nuget_packages ../..
-   ninja
-   ```
+Similarly, to build release enclaves:
+
+```cmd
+cd C:\openenclave
+mkdir build\x64-Release
+cd build\x64-Release
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave ..\..
+ninja
+```
 
 ## Run unit tests
 
@@ -111,10 +113,12 @@ cd build\x64-Debug
 ninja install
 ```
 
-This installs the SDK in c:\opt\openenclave.
+This installs the SDK in `C:\openenclave`.
+
+## Build and run samples
+
+To build and run the samples, please look [here](/samples/README_Windows.md).
 
 ## Known Issues
-
-Samples have not yet been ported to Windows.
 
 Not all tests currently run on Windows. See tests\MakeLists.txt for a list of supported tests.

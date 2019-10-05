@@ -1,20 +1,8 @@
-# Open Enclave SDK Samples
+# Building Open Enclave SDK Samples on Linux
 
 All the samples that come with the Open Enclave SDK installation share similar directory structure and build instructions. The section contains general information on how to setup/build/sign/run all samples. It's important that you read information on this page before jumping into any individual sample.
 
 ## Common Sample information
-
-### Prepare samples
-
-Building samples involves writing files into the working directory, which is not allowed in `/opt` unless it's running in the context of superuser (`sudo`).
-
-To avoid this `sudo` requirement, you may want to first copy them to a user directory of your choice then build and run on those local copy.
-
-For example, assuming Open Enclave SDK is installed to the default location `/opt/openenclave`:
-
-```bash
-cp -r /opt/openenclave/share/openenclave/samples ~/mysamples
-```
 
 ### How Sample source code directories were structured
 
@@ -26,7 +14,7 @@ All the samples that come with the Open Enclave SDK installation are all structu
 
 | Files/dir        |  contents                                   |
 |:-----------------|---------------------------------------------|
-| Makefile         | Makefile for the whole samples              |
+| Makefile         | Makefile for building all samples           |
 | ./enclave        | Files needed for building the sample enclave|
 | ./host           | Files needed for building the host          |
 
@@ -40,6 +28,17 @@ drwxr-xr-x 2 yourusername yourusername 4096 Aug 16 13:59 host
 -rw-r--r-- 1 yourusername yourusername  245 Aug 16 13:57 Makefile
 ```
 
+### Prepare samples
+
+Building samples involves writing files into the working directory, which is not allowed in `/opt` unless it's running in the context of superuser (`sudo`).
+
+Before building any of the samples, please copy them out of the /opt/openenclave/share/openenclave/samples directory to a directory where your current user has write permissions. A normal user usually does not have permission to write files into a directory in /opt.
+
+For example, assuming Open Enclave SDK is installed to the default location `/opt/openenclave`:
+
+```bash
+cp -r /opt/openenclave/share/openenclave/samples ~/mysamples
+```
 ### How to build and run samples
 
 Each sample comes with two different build systems: one using GNU Make and pkg-config, the other using CMake. They help simplify the sample building process, which involves building and signing

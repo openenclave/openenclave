@@ -1,11 +1,13 @@
-# Using the Open Enclave SDK
+# Using the Open Enclave SDK on Linux
 
 This document provides a brief overview of how to start exploring the Open Enclave SDK
 once you have it installed.
 
 ## Open Enclave SDK Layout
 
-By default, the Open Enclave SDK is installed to `/opt/openenclave`. It contains the following subfolders:
+On Linux, by default, the Open Enclave SDK is installed to `/opt/openenclave`.
+
+It contains the following subfolders:
 
 | Path                         | Description                     |
 |------------------------------|---------------------------------|
@@ -17,10 +19,11 @@ By default, the Open Enclave SDK is installed to `/opt/openenclave`. It contains
 | lib/openenclave/host         | Library for linking into the host process of the enclave. |
 | lib/openenclave/debugger     | Libraries used by the gdb plug-in for debugging enclaves. |
 | share/openenclave/samples    | Sample code showing how to use the Open Enclave SDK. |
+
+On Linux, the Open Enclave SDK installation also contains the following folder:
 | share/pkgconfig              | Pkg-config files for header and library includes when building Open Enclave apps. |
 
-## Configure environment variables for Open Enclave SDK
-
+## Configure environment variables for Open Enclave SDK for Linux
 For ease of development, we recommend adding:
 - Open Enclave SDK `bin` folder to `PATH`, for use of our tools (such as `oegdb` and `oeedger8r`).
 - Open Enclave SDK `install` folder to `CMAKE_PREFIX_PATH`, for use of the [CMake package](/cmake/sdk_cmake_targets_readme.md).
@@ -37,32 +40,12 @@ source /opt/openenclave/share/openenclave/openenclaverc
 One way to determine if your machine is correctly configured to build and run
 Open Enclave apps is to execute the samples. A description of all the included samples,
 what each one illustrates, and how to build and run them  can be found in
-[share/openenclave/samples/README.md](/samples/README.md).
+[share/openenclave/samples/README.md](/samples/README_Linux.md).
 
 Additional documentation is also available for:
 - [Building and signing enclaves](/docs/GettingStartedDocs/buildandsign.md)
 - [Debugging enclave memory](/docs/GettingStartedDocs/Debugging.md)
 
-## API references
+## APIs and supported libraries
 
-One of the security principles of writing enclave applications is to minimize the
-Trusted Computing Base (TCB) of the enclave code. A consequence of this is that
-while the host application has full access to the range of libraries and API
-available to all normal mode applications, the enclave is restricted to a much
-more constrained set as described below:
-
-#### [Open Enclave API](https://openenclave.github.io/openenclave/api/index.html)
-
-The Doxygen documentation of the API exposed by Open Enclave SDK to both enclave and host.
-
-#### [Libc support](/docs/LibcSupport.md)
-
-The subset of libc functionality provided by oelibc for use inside an enclave.
-
-#### [Libcxx support](/docs/LibcxxSupport.md)
-
-The subset of libcxx functionality provided by oelibcxx for use inside an enclave.
-
-#### [mbedtls library](/docs/MbedtlsSupport.md)
-
-The subset of [mbedtls](https://tls.mbed.org/) functionality for use inside an enclave.
+Please look [here](/docs/GettingStartedDocs/APIs_and_Libs.md).

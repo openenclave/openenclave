@@ -101,4 +101,8 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 ## Install
 
-Follow the instructions in the [Install Info](InstallInfo.md) document to install the Open Enclave SDK built above.
+Follow the instructions in the [Install Info](LinuxInstallInfo.md) document to install the Open Enclave SDK built above.
+
+## Build and run samples
+
+To build and run the samples, please look [here](/samples/README_Linux.md).

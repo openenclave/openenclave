@@ -1,7 +1,5 @@
 # Building the Open Enclave SDK
 
-This document contains the Linux build instructions. For the experimental Windows build instructions, see [here](/docs/GettingStartedDocs/GettingStarted.Windows.md).
-
 #### 1. Determine the SGX support level on your development/target system
 
 The Open Enclave SDK runs on Linux systems, whether those systems are inside virtual machines or directly on top of the bare metal machines.
@@ -54,7 +52,8 @@ On Windows:
 
 ## Samples
 
-Assuming you install the SDK as below (also described in the [basic install section](InstallInfo.md#basic-install))
+### On Linux
+Assuming you install the SDK as below (also described in the [basic install section](LinuxInstallInfo.md#basic-install-on-linux))
 
 ```bash
 cmake -DCMAKE_INSTALL_PREFIX=~/openenclave ..
@@ -63,9 +62,20 @@ make install
 
 Open Enclave samples can be found in ~/openenclave/share/openenclave/samples
 
-See [Open Enclave samples](/samples/README.md) for details.
+See [Open Enclave samples](/samples/README_Linux.md) for details.
+
+### On Windows
+
+Assuming you install the SDK as below (also described in the [basic install section](WindowsInstallInfo.md#basic-install-on-windows))
+
+```bash
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\path\to\intel_and_dcap_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave" -DUSE_LIBSGX=ON
+ninja install
+```
+Open Enclave samples can be found in c:\openenclave\share\openenclave\samples
+
+See [Open Enclave samples](/samples/README_Windows.md) for details.
 
 ## Using the Open Enclave SDK
 
-Additional information such as the [API References](/docs/GettingStartedDocs/using_oe_sdk.md#api-references)
-can be found in the [documentation on using the Open Enclave SDK](/docs/GettingStartedDocs/using_oe_sdk.md).
+Additional information such as the API Reference and supported libs can be found [here](/docs/GettingStartedDocs/APIs_and_Libs.md).

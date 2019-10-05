@@ -1,5 +1,5 @@
-Basic Install
-=============
+Basic Install on Linux
+======================
 
 You can locally install the SDK from the compiled Open Enclave tree by specifying
 the install-prefix to the cmake call before calling "make install". The SDK does
@@ -16,7 +16,7 @@ cmake -G Ninja  -DCMAKE_INSTALL_PREFIX=~/openenclave-install ..
 ninja
 ```
 
-This would install the [resulting SDK layout](/docs/GettingStartedDocs/using_oe_sdk.md#open-enclave-sdk-layout)
+This would install the [resulting SDK layout](/docs/GettingStartedDocs/Linux_using_oe_sdk.md#open-enclave-sdk-layout)
 under `~/openenclave-install` instead of the default `/opt/openenclave`.
 
 Optional Advanced Install
