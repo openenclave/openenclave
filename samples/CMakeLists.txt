@@ -13,6 +13,7 @@ if (USE_LIBSGX)
           PATTERN "gen_pubkey_header.sh"
           PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
           GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
+  endif()
 endif ()
 
 install(DIRECTORY helloworld file-encryptor data-sealing switchless
