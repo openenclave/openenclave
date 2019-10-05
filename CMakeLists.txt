@@ -236,6 +236,8 @@ if (WIN32)
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
   install(FILES ./cmake/add_dcap_client_target.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+  install(FILES ./cmake/copy_oedebugrt_target.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
 endif ()
 
 
