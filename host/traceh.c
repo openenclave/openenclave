@@ -27,7 +27,7 @@ static const char* _log_escape = NULL;
 static bool _log_creation_failed_before = false;
 static const size_t MAX_ESCAPED_CHAR_LEN = 5; // e.g. u2605
 static const size_t MAX_ESCAPED_MSG_MULTIPLIER =
-    sizeof("\\\\") + MAX_ESCAPED_CHAR_LEN;
+    7; // MAX_ESCAPED_CHAR_LEN + sizeof("\\\\")
 oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
 
