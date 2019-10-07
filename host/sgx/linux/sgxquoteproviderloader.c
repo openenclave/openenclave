@@ -74,7 +74,7 @@ void oe_load_quote_provider()
         else
         {
             OE_TRACE_ERROR(
-                "sgxquoteprovider: libdcap_quoteprov.so not found \n");
+                "sgxquoteprovider: libdcap_quoteprov.so %s\n", dlerror());
         }
     }
 }
