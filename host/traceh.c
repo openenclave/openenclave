@@ -317,11 +317,17 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
             else
             {
                 char* message_cursor = NULL;
+#if defined(__linux__)
                 char* log_msg = strtok_r((char*)message, "[", &message_cursor);
                 char* file_name = strtok_r(NULL, ":", &message_cursor);
                 char* function = strtok_r(NULL, ":", &message_cursor);
                 char* line_number = strtok_r(NULL, "]", &message_cursor);
-
+#else
+                char* log_msg = strtok_s((char*)message, "[", &message_cursor);
+                char* file_name = strtok_s(NULL, ":", &message_cursor);
+                char* function = strtok_s(NULL, ":", &message_cursor);
+                char* line_number = strtok_s(NULL, "]", &message_cursor);
+#endif
                 if (!log_msg || !file_name || !function || !line_number)
                 {
                     _write_message_to_stream(
