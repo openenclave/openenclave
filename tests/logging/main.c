@@ -25,24 +25,20 @@ void test_line_format(const char* line)
     OE_TEST(strstr(line, "number") != NULL);
 }
 
-void test_escaped_msg(
-    const char* msg,
-    size_t msg_size,
-    const char* expected,
-    bool expect_ok)
+void test_escaped_msg(const char* msg, const char* expected, bool expect_ok)
 {
-    char msg_escaped[MAX_ESCAPED_MSG_MULTIPLIER * msg_size + 1];
-    bool ok = _escape_characters(
-        msg,
-        msg_escaped,
-        msg_size,
-        (MAX_ESCAPED_MSG_MULTIPLIER * msg_size + 1));
+    size_t msg_size = strlen(msg);
+    size_t max_msg_size = MAX_ESCAPED_MSG_MULTIPLIER * msg_size + 1;
+    char* msg_escaped = malloc(max_msg_size);
+    bool ok = _escape_characters(msg, msg_escaped, msg_size, max_msg_size);
     if (!expect_ok)
     {
+        free(msg_escaped);
         OE_TEST(!ok);
         return;
     }
     OE_TEST(strcmp(msg_escaped, expected) == 0);
+    free(msg_escaped);
 }
 
 int TestLoggingFormat(const char* path)
@@ -83,29 +79,29 @@ int TestEscapedCharacters()
     {
         char msg[] = "Hey";
         char expected[] = "Hey";
-        test_escaped_msg(msg, 3, expected, true);
+        test_escaped_msg(msg, expected, true);
     }
     {
         char msg[] = "\u2605";
-        test_escaped_msg(msg, 3, "", false);
+        test_escaped_msg(msg, "", false);
     }
     {
         char msg[] = "\200";
-        test_escaped_msg(msg, 2, "", false);
+        test_escaped_msg(msg, "", false);
     }
     {
         char msg[] = "\037";
         char expected[] = "\\\\u001f";
-        test_escaped_msg(msg, 1, expected, true);
+        test_escaped_msg(msg, expected, true);
     }
     {
         char msg[] = "\u2605\u0024";
-        test_escaped_msg(msg, 4, "", false);
+        test_escaped_msg(msg, "", false);
     }
     {
         char msg[] = "\\\\\\\\";
         char expected[] = "\\\\\\\\\\\\\\\\";
-        test_escaped_msg(msg, 4, expected, true);
+        test_escaped_msg(msg, expected, true);
     }
     printf("=== passed TestEscapedCharachters()\n");
     return 0;
