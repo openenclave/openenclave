@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <ctype.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
@@ -104,7 +103,7 @@ static bool _escape_characters(
     size_t idx = 0;
     for (size_t i = 0; i < msg_size; i++)
     {
-        int c = log_msg[i];
+        uint8_t c = (uint8_t)log_msg[i];
         if (log_msg[i] == '\"')
         {
             // single quotes are OK for JSON
@@ -116,7 +115,7 @@ static bool _escape_characters(
             idx++;
             log_msg_escaped[idx] = '\\';
         }
-        else if (!isprint(c))
+        else if (c <= 31 || c > 126 /* non printable ASCII values */)
         {
             log_msg_escaped[idx] = '\\';
             idx++;
@@ -140,7 +139,7 @@ static bool _escape_characters(
                     log_msg_escaped[idx] = 't';
                     break;
                 default:
-                    if ((uint8_t)log_msg[i] > 127 /* max ASCII value */)
+                    if (c > 126 /* max ASCII value that we can escape*/)
                     {
                         return false;
                     }
