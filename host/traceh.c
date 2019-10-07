@@ -16,6 +16,8 @@
 #include "hostthread.h"
 
 #define LOGGING_FORMAT_STRING "%s.%06ldZ [(%s)%s] tid(0x%lx) | %s"
+#define MAX_ESCAPED_CHAR_LEN 5       // e.g. u2605
+#define MAX_ESCAPED_MSG_MULTIPLIER 7 // MAX_ESCAPED_CHAR_LEN + sizeof("\\\\")
 
 static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
     {"NONE", "FATAL", "ERROR", "WARN", "INFO", "VERBOSE"};
@@ -25,9 +27,6 @@ static const char* _custom_log_format = NULL;
 static const char* _log_all_streams = NULL;
 static const char* _log_escape = NULL;
 static bool _log_creation_failed_before = false;
-static const size_t MAX_ESCAPED_CHAR_LEN = 5; // e.g. u2605
-static const size_t MAX_ESCAPED_MSG_MULTIPLIER =
-    7; // MAX_ESCAPED_CHAR_LEN + sizeof("\\\\")
 oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
 
