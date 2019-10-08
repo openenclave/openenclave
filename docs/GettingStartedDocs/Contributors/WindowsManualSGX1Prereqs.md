@@ -2,7 +2,7 @@
 
 ## Intel SGX Platform Software for Windows (PSW) v2.2
 
-The PSW should be installed automatically on Windows 10 version 1709 or newer, or on a Windows Server 2016 image for an Azure ConfidentialCompute VM. You can verify that is the case on the command line as follows:
+The PSW should be installed automatically on a Windows Server 2016 image for an Azure ConfidentialCompute VM. You can verify that is the case on the command line as follows:
 
 ```cmd
 sc query aesmservice
