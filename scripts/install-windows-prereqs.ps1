@@ -639,6 +639,10 @@ function Install-AzureDCAPWindows {
     & ".\InstallAzureDCAP.ps1" $targetPath
     popd
 }
+function Install-DockerEngine {
+    Install-Module DockerMsftProvider -Force
+    Install-Package Docker -ProviderName DockerMsftProvider -Force
+}
 
 try {
     Start-LocalPackagesDownload
@@ -674,6 +678,7 @@ try {
     }
 
     Install-VCRuntime
+    Install-DockerEngine
 
     Write-Output 'Please reboot your computer for the configuration to complete.'
 } catch {

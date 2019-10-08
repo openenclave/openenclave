@@ -1,0 +1,8 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# escape=`
+FROM mcr.microsoft.com/windows/servercore:ltsc2016
+
+COPY scripts/install-windows-prereqs.ps1 /
+RUN powershell -c "/install-windows-prereqs.ps1 -InstallPath C:\openenclave -LaunchConfiguration SGX1FLC-NoDriver -DCAPClientType Azure"

@@ -7,9 +7,33 @@ OETOOLS_REPO = "https://oejenkinscidockerregistry.azurecr.io"
 OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
 OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID = "oeciteamdockerhub"
 
-def buildDockerImages() {
-    node("nonSGX") {
-        timeout(GLOBAL_TIMEOUT_MINUTES) {
+def buildWindowsDockerImages() {
+    stage("Windows Docker Images") {
+        node('SGXFLC-Windows-DCAP') {
+            stage("Checkout") {
+                cleanWs()
+                checkout scm
+            }
+            oefullWin2016 = oe.dockerImage("oetools-full-ltsc2016:${DOCKER_TAG}", ".jenkins/Dockerfile.full.WindowsServer", "--build-arg windows_version=ltsc2016")
+            puboefullWin2016 = oe.dockerImage("oeciteam/oetools-full-ltsc2016:${DOCKER_TAG}", ".jenkins/Dockerfile.full.WindowsServer", "--build-arg windows_version=ltsc2016")
+            docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
+              oefullWin2016.push()
+              if(TAG_LATEST == "true") {
+                oefullWin2016.push('latest')
+              }
+            }
+            docker.withRegistry('', OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID) {
+                if(TAG_LATEST == "true") {
+                        puboefullWin2016.push('latest')
+                }
+            }
+        }
+    }
+}
+
+def buildLinuxDockerImages() {
+    stage("nonSGX") {
+        node("nonSGX") {
             stage("Checkout") {
                 cleanWs()
                 checkout scm
@@ -66,10 +90,10 @@ def buildDockerImages() {
                         puboeminimal1804.push('latest')
                         puboeDeploy.push('latest')
                     }
-                }
             }
         }
     }
 }
 
-buildDockerImages()
+parallel "Build Linux Docker Images" :    { buildLinuxDockerImages() },
+         "Build Windows Docker Images" :  { buildWindowsDockerImages() }
