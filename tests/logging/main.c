@@ -69,12 +69,7 @@ int TestEscapedCharacters()
     }
     {
         char msg[] = "\u2605\u0024";
-#if defined(__linux__)
         test_escaped_msg(msg, "", false);
-#else
-        char expected[] = "?$";
-        test_escaped_msg(msg, expected, true);
-#endif
     }
     {
         char msg[] = "\\\\\\\\";
