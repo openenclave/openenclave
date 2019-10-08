@@ -10,12 +10,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+[v0.7.0-rc1] - 2019-10-08
+-------------------------
+
+### Added
+
+- Support Intel DCAP attestation on Windows.
+- Support enclave debugging on Windows with WinDBG/CDB.
+    - The new oedebugrt.dll binary needs to be copied to the app folder to enable this.
+- Support `transition_using_threads` EDL attribute in oeedger8r.
+    - This only applies to untrusted functions (ocalls) in this release.
+    - Using this attribute allows the ocall to be invoked without incurring the
+      performance cost of an enclave context switch.
+
 ### Changed
 
-- Transferred repository from [microsoft/openenclave](https://github.com/microsoft/openenclave) to [openenclave/openenclave](https://github.com/openenclave/openenclave).
-- Change debugging contract for oegdb. Enclaves and hosts built prior to this release cannot be debugged with this version of oegdb and vice versa.
+- Transferred repository from [microsoft/openenclave](https://github.com/microsoft/openenclave)
+  to [openenclave/openenclave](https://github.com/openenclave/openenclave).
+- Change debugging contract for oegdb. Enclaves and hosts built prior to this
+  release cannot be debugged with this version of oegdb and vice versa.
+- Update Intel DCAP library dependencies to 1.2.
+- Update Intel PSW dependencies to 2.6 on Linux and 2.4 on Windows.
 - Update LLVM libcxx to version 8.0.0.
-- Update mbedTLS to version 2.7.11.
+- Update mbedTLS to version 2.16.2.
+
+### Deprecated
+
+- The mbedTLS libraries used in Open Enclave will no longer be compiled with the
+  following config.h options in the next (v0.8) release:
+    - `MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_KEY_EXCHANGE`: Considerable advances
+      have been made in breaking SHA1 since our original review and we would
+      like to be more prescriptive in recommending the use of SHA256.
+    - `MBEDTLS_KEY_EXCHANGE_RSA_ENABLED`: This option provides no perfect
+      forward secrecy and is generally becoming less popular as this is
+      recognized. The ECDHE variants are also more performant.
+
+### Security
+
+- Fix enclave heap memory disclosure (CVE-2019-1369).
 
 [v0.6.0] - 2019-06-29
 ---------------------
@@ -36,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
          should enable it themselves after assessing its startup impact.
 - Removed support for the previously deprecated `OE_API_VERSION=1` APIs.
 - Update MUSL libc to version 1.1.21.
-- Update mbedTLS to version 2.16.2.
+- Update mbedTLS to version 2.7.11.
 
 [v0.5.0] - 2019-04-09
 ---------------------
@@ -109,6 +141,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Check support for AVX in platform/OS before setting SECS.ATTRIBUTES.XFRM in enclave.
+
+### Security
+
 - Fix CVE-2019-0876
    - `_handle_sgx_get_report` will now write to the supplied argument if it lies in host memory.
    - Added check for missing null terminator in oeedger8r generated code.
