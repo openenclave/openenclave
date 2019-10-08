@@ -17,8 +17,8 @@ def packageUpload(String version, String build_type) {
                            make package
                            """
                 oe.Run("clang-7", task)
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/latest/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "v0.7.x/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "v0.7.x/latest/ubuntu/${version}/${build_type}/SGX1FLC/", containerName: 'oejenkins')
             }
         }
     }
@@ -35,8 +35,8 @@ def WindowsUpload() {
                            cmake.exe ${WORKSPACE} -G \"Visual Studio 15 2017 Win64\" && \
                            msbuild tools\\oeedger8r\\oeedger8r_target.vcxproj -p:Configuration=Release"""
                 }
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/tools/oeedger8r/oeedger8r.exe', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/windows/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/tools/oeedger8r/oeedger8r.exe', storageType: 'blobstorage', virtualPath: "master/latest/windows/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/tools/oeedger8r/oeedger8r.exe', storageType: 'blobstorage', virtualPath: "v0.7.x/${BUILD_NUMBER}/windows/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/tools/oeedger8r/oeedger8r.exe', storageType: 'blobstorage', virtualPath: "v0.7.x/latest/windows/", containerName: 'oejenkins')
             }
         }
     }
