@@ -8,7 +8,6 @@ Note: To check if your system has support for SGX1, please look [here](../SGXSup
 
 A version of Windows OS with native support for SGX features:
 - For server: Windows Server 2016
-- To check your Windows version, run `winver` on the command line.
 
 ## Install Git and Clone the Open Enclave SDK repo
 
