@@ -72,7 +72,7 @@ int TestEscapedCharacters()
 #if defined(__linux__)
         test_escaped_msg(msg, "", false);
 #else
-        char expected = "?$";
+        char expected[] = "?$";
         test_escaped_msg(msg, escaped, true);
 #endif
     }
