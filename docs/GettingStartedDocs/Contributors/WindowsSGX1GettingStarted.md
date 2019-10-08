@@ -8,7 +8,6 @@ Note: To check if your system has support for SGX1, please look [here](../SGXSup
 
 A version of Windows OS with native support for SGX features:
 - For server: Windows Server 2016
-- For client: Windows 10 64-bit version 1709 or newer
 - To check your Windows version, run `winver` on the command line.
 
 ## Install Git and Clone the Open Enclave SDK repo
@@ -35,14 +34,14 @@ To deploy all the prerequisities for building Open Enclave, you can run the foll
 
 ```powershell
 cd scripts
-.\install-windows-prereqs.ps1 -InstallPath C:\path\to\where\you\would\like\to\install\intel_and_dcap_nuget_packages -LaunchConfiguration SGX1 -DCAPClientType None
+.\install-windows-prereqs.ps1 -InstallPath C:\path\to\where\you\would\like\to\install\intel_nuget_packages -LaunchConfiguration SGX1 -DCAPClientType None
 ```
 
 As an example, if you cloned Open Enclave SDK repo into `C:\openenclave`, you would run the following:
 
 ```powershell
 cd scripts
-.\install-windows-prereqs.ps1 -InstallPath C:\path\to\where\you\would\like\to\install\intel_and_dcap_nuget_packages -LaunchConfiguration SGX1 -DCAPClientType None
+.\install-windows-prereqs.ps1 -InstallPath C:\path\to\where\you\would\like\to\install\intel_nuget_packages -LaunchConfiguration SGX1 -DCAPClientType None
 ```
 
 If you prefer to manually install prerequisites, please refer to this [document](WindowsManualInstallPrereqs.md).

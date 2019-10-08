@@ -7,8 +7,7 @@ Intel® X86-64bit architecture with SGX1 and Flexible Launch Control (FLC) suppo
 Note: To check if your system has support for SGX1 with FLC, please look [here](../SGXSupportLevel.md).
 
 A version of Windows OS with native support for SGX features:
-- For server: Windows Server 2016
-- For client: Windows 10 64-bit version 1709 or newer
+- Windows Server 2016
 - To check your Windows version, run `winver` on the command line.
 
 ## Install Git and Clone the Open Enclave SDK repo
@@ -125,7 +124,7 @@ ninja install
 
 This installs the SDK in `C:\openenclave`.
 
-### Build and run samples
+## Build and run samples
 
 To build and run the samples, please look [here](/samples/README_Windows.md).
 

@@ -1,6 +1,6 @@
 # Building Open Enclave SDK Samples on Linux
 
-All the samples that come with the Open Enclave SDK installation share similar directory structure and build instructions. The section contains general information on how to setup/build/sign/run all samples. It's important that you read information on this page before jumping into any individual sample.
+All the samples that come with the Open Enclave SDK installation share a similar directory structure and build instructions. This document describes how to setup, build, sign and run these samples.
 
 ## Common Sample information
 
