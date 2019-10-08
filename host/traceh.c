@@ -141,6 +141,7 @@ static bool _escape_characters(
                 default:
                     if (c > 126 /* max ASCII value that we can escape*/)
                     {
+                        log_msg_escaped[idx] = '\0';
                         return false;
                     }
                     sprintf(
