@@ -45,7 +45,7 @@ void initialize_log_config(void);
 #define OE_TRACE_FATAL(fmt, ...) \
     OE_TRACE(                    \
         OE_LOG_LEVEL_FATAL,      \
-        fmt "[%s %s:%d]\n",      \
+        fmt " [%s:%s:%d]\n",     \
         ##__VA_ARGS__,           \
         __FILE__,                \
         __FUNCTION__,            \
@@ -54,7 +54,7 @@ void initialize_log_config(void);
 #define OE_TRACE_ERROR(fmt, ...) \
     OE_TRACE(                    \
         OE_LOG_LEVEL_ERROR,      \
-        fmt "[%s %s:%d]\n",      \
+        fmt " [%s:%s:%d]\n",     \
         ##__VA_ARGS__,           \
         __FILE__,                \
         __FUNCTION__,            \
@@ -63,7 +63,7 @@ void initialize_log_config(void);
 #define OE_TRACE_WARNING(fmt, ...) \
     OE_TRACE(                      \
         OE_LOG_LEVEL_WARNING,      \
-        fmt "[%s %s:%d]\n",        \
+        fmt " [%s:%s:%d]\n",       \
         ##__VA_ARGS__,             \
         __FILE__,                  \
         __FUNCTION__,              \
@@ -72,7 +72,7 @@ void initialize_log_config(void);
 #define OE_TRACE_INFO(fmt, ...) \
     OE_TRACE(                   \
         OE_LOG_LEVEL_INFO,      \
-        fmt "[%s %s:%d]\n",     \
+        fmt " [%s:%s:%d]\n",    \
         ##__VA_ARGS__,          \
         __FILE__,               \
         __FUNCTION__,           \
@@ -81,7 +81,7 @@ void initialize_log_config(void);
 #define OE_TRACE_VERBOSE(fmt, ...) \
     OE_TRACE(                      \
         OE_LOG_LEVEL_VERBOSE,      \
-        fmt "[%s %s:%d]\n",        \
+        fmt " [%s:%s:%d]\n",       \
         ##__VA_ARGS__,             \
         __FILE__,                  \
         __FUNCTION__,              \
