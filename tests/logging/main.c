@@ -73,7 +73,7 @@ int TestEscapedCharacters()
         test_escaped_msg(msg, "", false);
 #else
         char expected[] = "?$";
-        test_escaped_msg(msg, escaped, true);
+        test_escaped_msg(msg, expected, true);
 #endif
     }
     {
