@@ -7,7 +7,7 @@
 #     cmake -DUSE_LIBSGX=ON -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
 
 # These two samples can run in simulation, and therefore run in every configuration.
-set(SAMPLES_LIST helloworld file-encryptor)
+set(SAMPLES_LIST helloworld file-encryptor switchless)
 
 if ($ENV{OE_SIMULATION})
   message(WARNING "Running only sample simulation tests due to OE_SIMULATION=$ENV{OE_SIMULATION}!")
@@ -29,9 +29,6 @@ else ()
     if (UNIX)
 	    list(APPEND SAMPLES_LIST attested_tls)
     endif ()
-  endif ()
-  if (UNIX)
-    list(APPEND SAMPLES_LIST switchless)
   endif ()
 endif ()
 
