@@ -302,9 +302,10 @@ oe_result_t oe_get_report_v2(
     uint8_t** report_buffer,
     size_t* report_buffer_size)
 {
-    oe_result_t result;
+    oe_result_t result = OE_UNEXPECTED;
     uint8_t* tmp_buffer = NULL;
     size_t tmp_buffer_size = 0;
+    size_t out_buffer_size = 0;
 
     if ((report_buffer == NULL) || (report_buffer_size == NULL))
     {
@@ -324,7 +325,8 @@ oe_result_t oe_get_report_v2(
         &tmp_buffer_size);
     if (result != OE_BUFFER_TOO_SMALL)
     {
-        return result;
+        result = (result == OE_OK) ? OE_UNEXPECTED : result;
+        OE_RAISE(result);
     }
 
     tmp_buffer = oe_calloc(1, tmp_buffer_size);
@@ -333,24 +335,30 @@ oe_result_t oe_get_report_v2(
         return OE_OUT_OF_MEMORY;
     }
 
-    result = _oe_get_report_internal(
+    out_buffer_size = tmp_buffer_size;
+    OE_CHECK(_oe_get_report_internal(
         flags,
         report_data,
         report_data_size,
         opt_params,
         opt_params_size,
         tmp_buffer,
-        &tmp_buffer_size);
-    if (result != OE_OK)
-    {
-        oe_free(tmp_buffer);
-        return result;
-    }
+        &out_buffer_size));
 
-    *report_buffer = tmp_buffer;
+    if (out_buffer_size != tmp_buffer_size)
+        OE_RAISE(OE_UNEXPECTED);
+
     *report_buffer_size = tmp_buffer_size;
+    *report_buffer = tmp_buffer;
+    tmp_buffer = NULL;
 
-    return OE_OK;
+    result = OE_OK;
+
+done:
+    if (tmp_buffer)
+        oe_free(tmp_buffer);
+
+    return result;
 }
 
 void oe_free_report(uint8_t* report_buffer)
