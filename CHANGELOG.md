@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]
 ------------
+### Added
+
+- Ability to debug ELF enclaves on Windows using
+    - [Visual Studio Code CDB Extension](https://aka.ms/CDBVSCode)
+    - [WinDbg Preview](https://aka.ms/WinDbgPreview)
 
 [v0.7.0-rc1] - 2019-10-08
 -------------------------
