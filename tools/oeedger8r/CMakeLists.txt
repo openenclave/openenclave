@@ -17,13 +17,18 @@ endif ()
 set(BINARY ${CMAKE_CURRENT_BINARY_DIR}/_build/default/src/main.exe)
 add_custom_command(
   OUTPUT ${BINARY}
-  # TODO: This copy command will fail if `esy` is used to build
-  # locally (e.g., for development) as the folder gets too big with
-  # the Node modules etc. We should be more explicit.
-  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+  # NOTE: We copy only the files we need to build in order to allow
+  # for developers to build in the source tree (as this is easier for
+  # testing changes and new packages and formatting etc.). We cannot
+  # just copy the entire folder as CMake crashes with the
+  # `node_modules`.
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/esy.lock ${CMAKE_CURRENT_BINARY_DIR}/esy.lock
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/intel ${CMAKE_CURRENT_BINARY_DIR}/intel
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src
+  COMMAND cmake -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/dune-project ${CMAKE_CURRENT_SOURCE_DIR}/package.json ${CMAKE_CURRENT_BINARY_DIR}
   COMMAND esy
-  DEPENDS package.json
-          dune-project
+  DEPENDS dune-project
+          package.json
           src/dune
           src/Emitter.ml
           src/main.ml
