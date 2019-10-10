@@ -4,7 +4,7 @@ oe = new jenkins.common.Openenclave()
 GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
 
-def packageUpload(String version, String build_type) {
+def LinuxPackaging(String version, String build_type) {
     stage("Ubuntu${version} SGX1FLC Package ${build_type}") {
         node("ACC-${version}") {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -25,8 +25,8 @@ def packageUpload(String version, String build_type) {
     }
 }
 
-def WindowsUpload() {
-    stage('Windows Release') {
+def WindowsPackaging(String build_type) {
+    stage('Windows SGX1FLC ${build_type}') {
         node('SGXFLC-Windows-DCAP') {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
@@ -34,24 +34,30 @@ def WindowsUpload() {
                 dir('build') {
                     bat """
                         vcvars64.bat x64 && \
-                        cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_ENCLAVES=ON -DUSE_LIBSGX=ON -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -DCPACK_GENERATOR=NuGet -Wdev && \
+                        cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DUSE_LIBSGX=ON -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -DCPACK_GENERATOR=NuGet -Wdev && \
                         ninja.exe && \
                         ctest.exe -V -C RELEASE --timeout ${CTEST_TIMEOUT_SECONDS} && \
                         cpack && \
                         cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
                         """
                 }
+<<<<<<< HEAD
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "v0.7.x/${BUILD_NUMBER}/windows/", containerName: 'oejenkins')
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "v0.7.x/latest/windows/", containerName: 'oejenkins')
+=======
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "master/latest/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
+>>>>>>> Refactor function names, add Debug Windows package build in CD.
             }
         }
     }
 }
 
-parallel "1604 SGX1FLC Package Debug" :          { packageUpload('1604', 'Debug') },
-         "1604 SGX1FLC Package Release" :        { packageUpload('1604', 'Release') },
-         "1604 SGX1FLC Package RelWithDebInfo" : { packageUpload('1604', 'RelWithDebInfo') },
-         "1804 SGX1FLC Package Debug" :          { packageUpload('1804', 'Debug') },
-         "1804 SGX1FLC Package Release" :        { packageUpload('1804', 'Release') },
-         "1804 SGX1FLC Package RelWithDebInfo" : { packageUpload('1804', 'RelWithDebInfo') },
-         "Windows Release" :                     { WindowsUpload() }
+parallel "1604 SGX1FLC Package Debug" :          { LinuxPackaging('1604', 'Debug') },
+         "1604 SGX1FLC Package Release" :        { LinuxPackaging('1604', 'Release') },
+         "1604 SGX1FLC Package RelWithDebInfo" : { LinuxPackaging('1604', 'RelWithDebInfo') },
+         "1804 SGX1FLC Package Debug" :          { LinuxPackaging('1804', 'Debug') },
+         "1804 SGX1FLC Package Release" :        { LinuxPackaging('1804', 'Release') },
+         "1804 SGX1FLC Package RelWithDebInfo" : { LinuxPackaging('1804', 'RelWithDebInfo') },
+         "Windows Debug" :                       { WindowsPackaging('DEBUG') },
+         "Windows Release" :                     { WindowsPackaging('RELEASE') }
