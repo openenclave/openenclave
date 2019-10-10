@@ -16,15 +16,15 @@ if ($ENV{OE_SIMULATION})
 else ()
   # All the other tests require that we are not running in simulation.
 
-  # This sample can run on SGX, both with and without FLC, meaning
+  # These samples can run on SGX, both with and without FLC, meaning
   # they can run even if they weren't built against SGX, because in
   # that cause they directly interface with the AESM service.
-  list(APPEND SAMPLES_LIST data-sealing)
+  list(APPEND SAMPLES_LIST data-sealing local_attestation)
 
   # These tests can only run with SGX-FLC, meaning they were built
   # against SGX.
   if (USE_LIBSGX)
-    list(APPEND SAMPLES_LIST local_attestation remote_attestation)
+    list(APPEND SAMPLES_LIST remote_attestation)
     # The attested_tls test is not supported on Windows at this time.
     if (UNIX)
 	    list(APPEND SAMPLES_LIST attested_tls)
