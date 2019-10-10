@@ -90,20 +90,24 @@ if (NOT TARGET openenclave::sgx_enclave_common)
   endif ()
 endif ()
 
-if (NOT TARGET openenclave::sgx_dcap_ql)
-  find_library(SGX_DCAP_QL_LIB NAMES sgx_dcap_ql
-               HINTS ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
-  if (NOT SGX_DCAP_QL_LIB)
-    message(FATAL_ERROR "-- Looking for sgx_dcap_ql library - not found")
-  else ()
-    message(VERBOSE "-- Looking for sgx_dcap_ql library - found")
-    add_library(openenclave::sgx_dcap_ql SHARED IMPORTED)
-    if (UNIX)
-      set_target_properties(openenclave::sgx_dcap_ql PROPERTIES IMPORTED_LOCATION ${SGX_DCAP_QL_LIB})
-    elseif (WIN32)
-      set_target_properties(openenclave::sgx_dcap_ql PROPERTIES
-                            IMPORTED_LOCATION $ENV{WINDIR}/System32
-                            IMPORTED_IMPLIB ${SGX_DCAP_QL_LIB})
+if (WITHOUT_DCAP_LINK)
+  message("-- Not linking oehost with sgx_dcap_ql")
+else ()
+  if (NOT TARGET openenclave::sgx_dcap_ql)
+    find_library(SGX_DCAP_QL_LIB NAMES sgx_dcap_ql
+                 HINTS ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
+    if (NOT SGX_DCAP_QL_LIB)
+      message(FATAL_ERROR "-- Looking for sgx_dcap_ql library - not found")
+    else ()
+      message(VERBOSE "-- Looking for sgx_dcap_ql library - found")
+      add_library(openenclave::sgx_dcap_ql SHARED IMPORTED)
+      if (UNIX)
+        set_target_properties(openenclave::sgx_dcap_ql PROPERTIES IMPORTED_LOCATION ${SGX_DCAP_QL_LIB})
+      elseif (WIN32)
+        set_target_properties(openenclave::sgx_dcap_ql PROPERTIES
+                              IMPORTED_LOCATION $ENV{WINDIR}/System32
+                              IMPORTED_IMPLIB ${SGX_DCAP_QL_LIB})
+      endif ()
     endif ()
   endif ()
 endif ()
@@ -128,7 +132,12 @@ if (WIN32)
   include("${CMAKE_CURRENT_LIST_DIR}/copy_oedebugrt_target.cmake")
   include("${CMAKE_CURRENT_LIST_DIR}/maybe_build_using_clangw.cmake")
 endif ()
-target_link_libraries(openenclave::oehost INTERFACE openenclave::sgx_enclave_common openenclave::sgx_dcap_ql)
+
+if (WITHOUT_DCAP_LINK)
+  target_link_libraries(openenclave::oehost INTERFACE openenclave::sgx_enclave_common)
+else ()
+  target_link_libraries(openenclave::oehost INTERFACE openenclave::sgx_enclave_common openenclave::sgx_dcap_ql)
+endif ()
 
 # Apply Spectre mitigations if available.
 set(OE_SPECTRE_MITIGATION_FLAGS "@SPECTRE_MITIGATION_FLAGS@")
