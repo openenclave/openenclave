@@ -176,6 +176,7 @@ if (OE_SGX)
       sgx/windows/aesm.c
       sgx/windows/enter.asm
       sgx/windows/entersim.asm
+      sgx/windows/host_context.asm
       sgx/windows/exception.c
       sgx/windows/switchless.c
       sgx/windows/xstate.c)

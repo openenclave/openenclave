@@ -4,6 +4,8 @@
 include ksamd64.inc
 
 extern __oe_dispatch_ocall:proc
+extern oe_save_host_context:proc
+extern oe_restore_host_context:proc
 
 ;;==============================================================================
 ;;
@@ -16,13 +18,14 @@ extern __oe_dispatch_ocall:proc
 ;;     [OUT] uint64_t* arg4,
 ;;     [OUT] oe_enclave_t* enclave);
 ;;
-;; Registers:
+;; Parameters passed on register and stack:
 ;;     RCX      - tcs: thread control structure (extended)
 ;;     RDX      - aep: asynchronous execution procedure
 ;;     R8       - arg1
 ;;     R9       - arg2
 ;;     [RBP+48] - arg3
 ;;     [RBP+56] - arg4
+;;     [RBP+64] - enclave
 ;;
 ;; These registers may be destroyed across function calls:
 ;;     RAX, RCX, RDX, R8, R9, R10, R11
@@ -33,7 +36,11 @@ extern __oe_dispatch_ocall:proc
 ;;==============================================================================
 
 ENCLU_EENTER    EQU 2
-PARAMS_SPACE    EQU 128
+
+ARG3_PARAM      EQU [rbp+48]
+ARG4_PARAM      EQU [rbp+56]
+ENCLAVE_PARAM   EQU [rbp+64]
+
 TCS             EQU [rbp-8]
 AEP             EQU [rbp-16]
 ARG1            EQU [rbp-24]
@@ -44,13 +51,21 @@ ENCLAVE         EQU [rbp-56]
 ARG1OUT         EQU [rbp-64]
 ARG2OUT         EQU [rbp-72]
 STACKPTR        EQU [rbp-80]
-MXCSR           EQU [rbp-88]
+HOST_CONTEXT    EQU [rbp-88]
+
+;; Reserve parameter space based on:
+;; + 88 bytes for 11*8-byte parameters TCS to HOST_CONTEXT
+;; HOST_CONTEXT points to the start of the context data consisting of:
+;; + 64 bytes for 8*8-byte callee-preserved registers
+;; + 512-byte OE_CONTEXT_FLOAT memory image used in fxsave/fxrstor
+;; + 8 bytes so that the stack remains 16-byte aligned.
+PARAMS_SPACE    EQU 672
 
 NESTED_ENTRY oe_enter, _TEXT$00
     END_PROLOGUE
 
     ;; Setup stack frame:
-    push rbp
+    push rbp ;; Stack is 16-byte aligned at this point
     mov rbp, rsp
 
     ;; Save parameters on stack for later reference:
@@ -58,38 +73,31 @@ NESTED_ENTRY oe_enter, _TEXT$00
     ;;     AEP  := [RBP-16] <- RDX
     ;;     ARG1 := [RBP-24] <- R8
     ;;     ARG2 := [RBP-32] <- R9
-    ;;     ARG3 := [RBP-40] <- [RBP+48]
-    ;;     ARG4 := [RBP-48] <- [RBP+56]
-    ;;     ENCLAVE := [RBP-56] <- [RBP+64]
-    ;;     MXCSR := [RBP-88]
+    ;;     ARG3 := [RBP-40] <- ARG3_PARAM := [RBP+48]
+    ;;     ARG4 := [RBP-48] <- ARG4_PARAM := [RBP+56]
+    ;;     ENCLAVE := [RBP-56] <- ENCLAVE_PARAM := [RBP+64]
+    ;;     HOST_CONTEXT := [RBP-88]
     sub rsp, PARAMS_SPACE
     mov TCS, rcx
     mov AEP, rdx
     mov ARG1, r8
     mov ARG2, r9
-    mov rax, [rbp+48]
+    mov rax, ARG3_PARAM
     mov ARG3, rax
-    mov rax, [rbp+56]
+    mov rax, ARG4_PARAM
     mov ARG4, rax
-    mov rax, [rbp+64]
+    mov rax, ENCLAVE_PARAM
     mov ENCLAVE, rax
 
-    ;;Save the current context
-
-    ;;Save the SSE status and control flags
-    stmxcsr MXCSR
-	
-    ;; Save registers:
-    push rbx
-    push rdi
-    push rsi
-    push r12
-    push r13
-    push r14
-    push r15
+    ;; Set the save location for the host context on the host stack
+    mov HOST_CONTEXT, rsp
 
 execute_eenter:
-	
+
+    ;; Save the current host context
+    mov rcx, HOST_CONTEXT
+    call oe_save_host_context
+
     ;; Save the stack pointer so enclave can use the stack.
     mov STACKPTR, rsp
 
@@ -103,10 +111,11 @@ execute_eenter:
 
     mov ARG1OUT, rdi
     mov ARG2OUT, rsi
-	
-    ;; Restore the saved MXCSR
-    ldmxcsr MXCSR
-	
+
+    ;; Restore the saved host context
+    mov rcx, HOST_CONTEXT
+    call oe_restore_host_context
+
 dispatch_ocall:
     ;; RAX = __oe_dispatch_ocall(
     ;;     RCX=arg1
@@ -115,7 +124,10 @@ dispatch_ocall:
     ;;     R9=arg2_out
     ;;     [RSP+32]=TCS,
     ;;     [RSP+40]=ENCLAVE);
-    sub rsp, 56
+    ;;
+    ;; Stack should already be 16-byte aligned, so only need
+    ;; shadow space (32 bytes) plus stack params size (16 bytes)
+    sub rsp, 48
     mov rcx, ARG1OUT
     mov rdx, ARG2OUT
     lea r8, qword ptr ARG1OUT
@@ -125,9 +137,9 @@ dispatch_ocall:
     mov rax, qword ptr ENCLAVE
     mov qword ptr [rsp+40], rax
     call __oe_dispatch_ocall ;; RAX contains return value
-    add rsp, 56
+    add rsp, 48
 
-    ;; Restore the stack pointer:
+    ;; Restore the stack pointer
     mov rsp, STACKPTR
 
     ;; If this was not an OCALL, then return from ECALL.
@@ -149,29 +161,19 @@ return_from_ecall:
     lfence
 
     ;; Set ARG3 (out)
-    mov rbx, ARG1OUT
-    mov rax, qword ptr [rbp+48]
-    mov qword ptr [rax], rbx
+    mov r10, ARG1OUT
+    mov rax, qword ptr ARG3_PARAM
+    mov qword ptr [rax], r10
 
     ;; Set ARG4 (out)
-    mov rbx, ARG2OUT
-    mov rax, qword ptr [rbp+56]
-    mov qword ptr [rax], rbx
+    mov r10, ARG2OUT
+    mov rax, qword ptr ARG4_PARAM
+    mov qword ptr [rax], r10
 
-    ;; Restore registers:
-    pop r15
-    pop r14
-    pop r13
-    pop r12
-    pop rsi
-    pop rdi
-    pop rbx
+    ;; Return parameters space and restore the stack pointer
+    mov rsp, rbp
 
-
-    ;; Return parameters space:
-    add rsp, PARAMS_SPACE
-
-    ;; Restore stack frame:
+    ;; Restore stack frame
     pop rbp
 
     BEGIN_EPILOGUE
