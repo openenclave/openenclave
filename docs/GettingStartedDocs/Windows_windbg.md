@@ -61,11 +61,8 @@ Open your enclave source code, put a breakpoint and continue executin till that 
 Explore various WinDbg commands and features.
 
 
-## Limitations
+## Known Issues
 
 These issues are being worked on and will be fixed in an upcoming update.
 
-- The debug cursor often jumps to the start of the file when stepping and then jumps to the correct location on the next step. 
-This is due to the way ELF encodes lack of location information.
-
-
+- The debug cursor often jumps to the start of the file while debugging within an enclave. Stepping again should take the cursor to the correct location.
