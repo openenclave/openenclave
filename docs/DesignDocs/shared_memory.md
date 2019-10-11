@@ -18,7 +18,7 @@ is shared).
 This problem is partly addressed by the PR entitled [Enforcing full
 serialization in EDL](https://github.com/openenclave/openenclave/pull/2176),
 which proposes extending **edger8r** to print warnings for EDL specifications
-with parameters cannot be fully serialized. These specifications produce
+with parameters that cannot be fully serialized. Such specifications produce
 applications that implicitly share untrusted memory with the enclave. Aside
 from introducing potential security flaws, these applications are not portable
 to TrustZone and any future platforms that employ a similar model. By forcing
@@ -176,7 +176,7 @@ parameter.
 Assumptions:
 
 - All shared memory is read-write (non-executable). No mechanism is provided
-  for allocating read-only memory ore executable memory.
+  for allocating read-only memory or executable memory.
 
 - Shared TrustZone memory is visible at the same address on both the host and
   the enclave (hence all shared memory is zero-copy).
