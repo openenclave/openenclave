@@ -171,9 +171,9 @@ static oe_result_t oe_verify_report_with_collaterals(
     {
 #ifndef OE_BUILD_ENCLAVE
         // Intialize the quote provider if we want to verify a remote quote.
-        // Note that we don't have the OE_USE_LIBSGX guard here since we don't
-        // need the sgx libraries to verify the quote. All we need is the quote
-        // provider.
+        // Note that we don't have the OE_LINK_SGX_DCAP_QL guard here since we
+        // don't need the sgx libraries to verify the quote. All we need is the
+        // quote provider.
         OE_CHECK(oe_initialize_quote_provider());
 #endif
 
@@ -280,9 +280,9 @@ static oe_result_t oe_get_quote_validity_with_collaterals(
     {
 #ifndef OE_BUILD_ENCLAVE
         // Intialize the quote provider if we want to verify a remote quote.
-        // Note that we don't have the OE_USE_LIBSGX guard here since we don't
-        // need the sgx libraries to verify the quote. All we need is the quote
-        // provider.
+        // Note that we don't have the OE_LINK_SGX_DCAP_QL guard here since we
+        // don't need the sgx libraries to verify the quote. All we need is the
+        // quote provider.
         OE_CHECK(oe_initialize_quote_provider());
 #endif
 

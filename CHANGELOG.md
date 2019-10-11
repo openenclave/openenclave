@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   release cannot be debugged with this version of oegdb and vice versa.
 - Update Intel DCAP library dependencies to 1.2.
 - Update Intel PSW dependencies to 2.6 on Linux and 2.4 on Windows.
+- SGX1 configurations always take build dependency on Intel SGX enclave common library.
 - Update LLVM libcxx to version 8.0.0.
 - Update mbedTLS to version 2.16.2.
 

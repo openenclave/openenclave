@@ -119,7 +119,7 @@ oe_result_t oe_get_quote_ocall(
     return result;
 }
 
-#if defined(OE_USE_LIBSGX)
+#if defined(OE_LINK_SGX_DCAP_QL)
 
 /* Copy the source array to an output buffer. */
 static oe_result_t _copy_output_buffer(
@@ -318,7 +318,7 @@ done:
     return result;
 }
 
-#else /* !defined(OE_USE_LIBSGX) */
+#else /* !defined(OE_LINK_SGX_DCAP_QL) */
 
 oe_result_t oe_get_revocation_info_ocall(
     uint8_t fmspc[6],
@@ -402,7 +402,7 @@ oe_result_t oe_get_qe_identity_info_ocall(
     return OE_UNSUPPORTED;
 }
 
-#endif /* !defined(OE_USE_LIBSGX) */
+#endif /* !defined(OE_LINK_SGX_DCAP_QL) */
 
 oe_result_t oe_get_qetarget_info_ocall(sgx_target_info_t* target_info)
 {

@@ -6,8 +6,8 @@ include(add_dcap_client_target)
 oeedl_file(../tests.edl host gen)
 add_executable(report_host host.cpp tcbinfo.cpp ../common/tests.cpp ${gen})
 
-if(USE_LIBSGX)
-    target_compile_definitions(report_host PRIVATE OE_USE_LIBSGX)
+if(HAS_QUOTE_PROVIDER)
+    target_compile_definitions(report_host PRIVATE OE_LINK_SGX_DCAP_QL)
 endif()
 
 add_custom_command(TARGET report_host

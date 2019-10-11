@@ -123,7 +123,7 @@ mkdir build && cd build || exit 1
 
 CMAKE="cmake .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 if [[ ${PLATFORM_MODE} == "SGX1FLC" ]]; then
-    CMAKE+=" -DUSE_LIBSGX=1"
+    CMAKE+=" -DHAS_QUOTE_PROVIDER=1"
 fi
 if [[ ${BUILD_PACKAGE} -eq 1 ]]; then
     CMAKE+=" -DCMAKE_INSTALL_PREFIX=${OE_INSTALL_DIR} -DCPACK_GENERATOR=DEB"
