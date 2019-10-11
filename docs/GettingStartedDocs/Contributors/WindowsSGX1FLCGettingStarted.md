@@ -69,7 +69,7 @@ To build debug enclaves:
 cd C:\openenclave
 mkdir build\x64-Debug
 cd build\x64-Debug
-cmake -G Ninja -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DUSE_LIBSGX=ON ..\..
+cmake -G Ninja -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=ON ..\..
 ninja
 ```
 
@@ -80,7 +80,7 @@ Similarly, to build release enclaves:
 cd C:\openenclave
 mkdir build\x64-Release
 cd build\x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DUSE_LIBSGX=ON ..\..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=ON ..\..
 ninja
 ```
 

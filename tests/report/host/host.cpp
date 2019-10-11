@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
-#include <openenclave/internal/aesm.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
@@ -28,7 +27,7 @@ extern int FileToBytes(const char* path, std::vector<uint8_t>* output);
 
 void generate_and_save_report(oe_enclave_t* enclave)
 {
-#ifdef OE_USE_LIBSGX
+#ifdef OE_LINK_SGX_DCAP_QL
     static uint8_t* report;
     size_t report_size;
     OE_TEST(
@@ -69,9 +68,10 @@ int load_and_verify_report()
 
 int main(int argc, const char* argv[])
 {
-    sgx_target_info_t target_info;
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
+
+    sgx_target_info_t target_info = {{0}};
 
 #ifdef _WIN32
     /* This is a workaround for running in Visual Studio 2017 Test Explorer
@@ -140,6 +140,13 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_tests_enclave(): result=%u", result);
     }
 
+    /*
+     * Host API tests.
+     */
+    g_enclave = enclave;
+
+#ifdef OE_LINK_SGX_DCAP_QL
+
     /* Initialize the target info */
     {
         if ((result = sgx_get_qetarget_info(&target_info)) != OE_OK)
@@ -148,12 +155,6 @@ int main(int argc, const char* argv[])
         }
     }
 
-    /*
-     * Host API tests.
-     */
-    g_enclave = enclave;
-
-#ifdef OE_USE_LIBSGX
     test_local_report(&target_info);
     test_remote_report();
     test_parse_report_negative();
@@ -198,7 +199,6 @@ int main(int argc, const char* argv[])
     test_minimum_issue_date(enclave, now);
 
     generate_and_save_report(enclave);
-
 #else
     test_local_report(&target_info);
     test_parse_report_negative();

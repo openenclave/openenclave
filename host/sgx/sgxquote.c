@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#if defined(OE_USE_LIBSGX)
+#if defined(OE_LINK_SGX_DCAP_QL)
 
 #include "sgxquote.h"
 #include <openenclave/internal/defs.h>

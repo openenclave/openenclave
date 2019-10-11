@@ -5,8 +5,8 @@
 oeedl_file(../tests.edl host gen)
 add_executable(qeidentity_host host.cpp qeidentifyinfo.cpp ${gen})
 
-if(USE_LIBSGX)
-    target_compile_definitions(qeidentity_host PRIVATE OE_USE_LIBSGX)
+if(HAS_QUOTE_PROVIDER)
+    target_compile_definitions(qeidentity_host PRIVATE OE_LINK_SGX_DCAP_QL)
 endif()
 
 add_custom_command(TARGET qeidentity_host

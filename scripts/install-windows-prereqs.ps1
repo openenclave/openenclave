@@ -37,18 +37,6 @@ Param(
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
 )
 
-if ($LaunchConfiguration -eq "SGX1")
-{
-    Write-Host "**** Installing PSW 2.2 ****"
-
-    $IntelPSWURL = "https://oejenkins.blob.core.windows.net/oejenkins/intel_sgx_win_2.2.100.47975_PV.zip"
-    $IntelPSWHash = 'EB479D1E029D51E48E534C284FCF5CCA3A937DA43052DCB2F4C71E5F354CA623'
-}
-else
-{
-    Write-Host "**** Installing PSW 2.4 ****"
-}
-
 $ErrorActionPreference = "Stop"
 
 $PACKAGES_DIRECTORY = Join-Path $env:TEMP "packages"
@@ -520,64 +508,68 @@ function Install-DCAP-Dependencies {
     Install-Tool -InstallerPath $PACKAGES["dcap"]["local_file"] `
                  -ArgumentList @('/auto', "$PACKAGES_DIRECTORY\Intel_SGX_DCAP")
 
-    $drivers = @{
-        'sgx_base_dev' = @{
-            'zip_path'    = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\LC_driver_WinServer2016\Signed_*.zip"
-            'location'    = 'root\SgxLCDevice'
-            'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
-        }
-        'sgx_dcap_dev' = @{
-            'zip_path'    = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\DCAP_INF\WinServer2016\Signed_*.zip"
-            'location'    = 'root\SgxLCDevice_DCAP'
-            'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
-        }
-    }
-    $devConBinaryPath = Get-DevconBinary
-    foreach($driver in $drivers.Keys) {
-        $zip = Get-Item $drivers[$driver]['zip_path']
-        if(!$zip) {
-            Throw "Cannot find the zile file with $driver"
-        }
-        if($zip.Count -gt 1) {
-            $zip
-            Throw "Multiple driver zip files found"
-        }
-        New-Item -ItemType Directory -Force -Path "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\$driver"
-        Expand-Archive -Path $zip -DestinationPath "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\$driver" -Force
-        $inf = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\$driver\drivers\*\$driver.inf"
-        if(!$inf) {
-            Throw "Cannot find $driver.inf file"
-        }
-        if($inf.Count -gt 1) {
-            $inf
-            Throw "Multiple $driver.inf files found"
-        }
-        # Check if the driver is already installed and delete it
-        $output = & $devConBinaryPath find "$($drivers[$driver]['location'])"
-        if($LASTEXITCODE) {
-            Throw "Failed searching for $driver driver"
-        }
-        $output | ForEach-Object {
-            if($_.Contains($drivers[$driver]['description'])) {
-                Write-Output "Removing driver $($drivers[$driver]['location'])"
-                Remove-DCAPDriver -Name $drivers[$driver]['location']
+    if (($LaunchConfiguration -eq "SGX1FLC") -or ($LaunchConfiguration -eq "SGX1FLC-NoDriver") -or ($DCAPClientType -eq "Azure"))
+    {
+        $drivers = @{
+            'sgx_base_dev' = @{
+                'zip_path'    = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\LC_driver_WinServer2016\Signed_*.zip"
+                'location'    = 'root\SgxLCDevice'
+                'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
+            }
+            'sgx_dcap_dev' = @{
+                'zip_path'    = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\DCAP_INF\WinServer2016\Signed_*.zip"
+                'location'    = 'root\SgxLCDevice_DCAP'
+                'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
             }
         }
-        if ($LaunchConfiguration -eq "SGX1FLC")
-        {
-            Write-Output "Installing driver $($drivers[$driver]['location'])"
-            $install = & $devConBinaryPath install "$($inf.FullName)" $drivers[$driver]['location']
+        $devConBinaryPath = Get-DevconBinary
+        foreach($driver in $drivers.Keys) {
+            $zip = Get-Item $drivers[$driver]['zip_path']
+            if(!$zip) {
+                Throw "Cannot find the zile file with $driver"
+            }
+            if($zip.Count -gt 1) {
+                $zip
+                Throw "Multiple driver zip files found"
+            }
+            New-Item -ItemType Directory -Force -Path "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\$driver"
+            Expand-Archive -Path $zip -DestinationPath "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\$driver" -Force
+            $inf = Get-Item "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\$driver\drivers\*\$driver.inf"
+            if(!$inf) {
+                Throw "Cannot find $driver.inf file"
+            }
+            if($inf.Count -gt 1) {
+                $inf
+                Throw "Multiple $driver.inf files found"
+            }
+            # Check if the driver is already installed and delete it
+            $output = & $devConBinaryPath find "$($drivers[$driver]['location'])"
             if($LASTEXITCODE) {
-                Throw "Failed to install $driver driver"
+                Throw "Failed searching for $driver driver"
             }
-            Write-Output $install
-        }
-        elseif ($LaunchConfiguration -eq "SGX1FLC-NoDriver")
-        {
-            Write-Output "Copying Intel_SGX_DCAP dll files into $($env:SystemRoot)\system32"
-            Copy-item -Path $PACKAGES_DIRECTORY\Intel_SGX_DCAP\$driver\drivers\*\*.dll $env:SystemRoot\system32\
+            $output | ForEach-Object {
+                if($_.Contains($drivers[$driver]['description'])) {
+                    Write-Output "Removing driver $($drivers[$driver]['location'])"
+                    Remove-DCAPDriver -Name $drivers[$driver]['location']
+                }
+            }
+            if ($LaunchConfiguration -eq "SGX1FLC")
+            {
+                Write-Output "Installing driver $($drivers[$driver]['location'])"
+                $install = & $devConBinaryPath install "$($inf.FullName)" $drivers[$driver]['location']
+                if($LASTEXITCODE) {
+                    Throw "Failed to install $driver driver"
+                }
+                Write-Output $install
+            }
+            elseif ($LaunchConfiguration -eq "SGX1FLC-NoDriver")
+            {
+                Write-Output "Copying Intel_SGX_DCAP dll files into $($env:SystemRoot)\system32"
+                Copy-item -Path $PACKAGES_DIRECTORY\Intel_SGX_DCAP\$driver\drivers\*\*.dll $env:SystemRoot\system32\
+            }
         }
     }
+
     $TEMP_NUGET_DIR = "$PACKAGES_DIRECTORY\Azure_DCAP_Client_nupkg"
     New-Directory -Path $OE_NUGET_DIR -RemoveExisting
     New-Directory -Path $TEMP_NUGET_DIR -RemoveExisting
@@ -598,9 +590,12 @@ function Install-DCAP-Dependencies {
             Throw "Failed to install nuget EnclaveCommonAPI"
         }
     }
-    & nuget.exe install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
-    if($LASTEXITCODE -ne 0) {
-        Throw "Failed to install nuget DCAP_Components"
+    if (($LaunchConfiguration -eq "SGX1FLC") -or ($LaunchConfiguration -eq "SGX1FLC-NoDriver") -or ($DCAPClientType -eq "Azure"))
+    {
+        & "$PACKAGES_DIRECTORY\nuget.exe" install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+        if($LASTEXITCODE -ne 0) {
+            Throw "Failed to install nuget DCAP_Components"
+        }
     }
     & nuget.exe install 'EnclaveCommonAPI' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
@@ -668,11 +663,7 @@ try {
         Write-Host "*** Not installing a DCAP Client ***"
     }
 
-    if ( ($LaunchConfiguration -eq "SGX1FLC") -or ($LaunchConfiguration -eq "SGX1FLC-NoDriver") -or ($DCAPClientType -eq "Azure") )
-    {
-        Install-DCAP-Dependencies
-    }
-
+    Install-DCAP-Dependencies
     Install-VCRuntime
 
     Write-Output 'Please reboot your computer for the configuration to complete.'

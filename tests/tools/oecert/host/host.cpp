@@ -12,7 +12,7 @@
 
 #include "../../../../common/sgx/collaterals.h"
 
-#ifdef OE_USE_LIBSGX
+#ifdef OE_LINK_SGX_DCAP_QL
 
 #define INPUT_PARAM_OPTION_CERT "--cert"
 #define INPUT_PARAM_OPTION_REPORT "--report"
@@ -463,13 +463,13 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     return result;
 }
 
-#endif // OE_USE_LIBSGX
+#endif // OE_LINK_SGX_DCAP_QL
 
 int main(int argc, const char* argv[])
 {
     int ret = 0;
 
-#ifdef OE_USE_LIBSGX
+#ifdef OE_LINK_SGX_DCAP_QL
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
@@ -506,7 +506,7 @@ int main(int argc, const char* argv[])
 exit:
 #else
 #pragma message \
-    "OE_USE_LIBSGX is not set to ON.  This tool requires SGX libraries."
+    "OE_LINK_SGX_DCAP_QL is not set to ON.  This tool requires DCAP libraries."
     OE_UNUSED(argc);
     OE_UNUSED(argv);
 #endif
