@@ -50,6 +50,10 @@ def simulationTest(String version, String platform_mode, String build_type) {
                 checkout scm
                 withEnv(["OE_SIMULATION=1"]) {
                     def task = """
+                               pushd ${WORKSPACE}/scripts/ansible
+                               sudo ./install-ansible.sh
+                               sudo ansible-playbook oe-linux-esy-setup.yml
+                               popd
                                cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DHAS_QUOTE_PROVIDER=${has_quote_provider} -Wdev
                                ninja -v
                                ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
@@ -68,6 +72,10 @@ def AArch64GNUTest(String version, String build_type) {
                 cleanWs()
                 checkout scm
                 def task = """
+                            pushd ${WORKSPACE}/scripts/ansible
+                            sudo ./install-ansible.sh
+                            sudo ansible-playbook oe-linux-esy-setup.yml
+                            popd
                             cmake ${WORKSPACE}                                                     \
                                 -G Ninja                                                           \
                                 -DCMAKE_BUILD_TYPE=${build_type}                                   \
@@ -90,6 +98,10 @@ def ACCContainerTest(String label, String version) {
                 cleanWs()
                 checkout scm
                 def task = """
+                           pushd ${WORKSPACE}/scripts/ansible
+                           sudo ./install-ansible.sh
+                           sudo ansible-playbook oe-linux-esy-setup.yml
+                           popd
                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -Wdev
                            ninja -v
                            ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
@@ -107,6 +119,10 @@ def ACCPackageTest(String label, String version) {
                 cleanWs()
                 checkout scm
                 def task = """
+                           pushd ${WORKSPACE}/scripts/ansible
+                           sudo ./install-ansible.sh
+                           sudo ansible-playbook oe-linux-esy-setup.yml
+                           popd
                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -Wdev -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' -DCPACK_GENERATOR=DEB
                            ninja -v
                            ninja -v package
@@ -139,6 +155,10 @@ def checkDevFlows(String version) {
                 cleanWs()
                 checkout scm
                 def task = """
+                           pushd ${WORKSPACE}/scripts/ansible
+                           sudo ./install-ansible.sh
+                           sudo ansible-playbook oe-linux-esy-setup.yml
+                           popd
                            cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
                            ninja -v
                            """
@@ -169,6 +189,10 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                 cleanWs()
                 checkout scm
                 def task = """
+                           pushd ${WORKSPACE}/scripts/ansible
+                           sudo ./install-ansible.sh
+                           sudo ansible-playbook oe-linux-esy-setup.yml
+                           popd
                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DHAS_QUOTE_PROVIDER=ON -Wdev
                            ninja -v
                            """
@@ -237,6 +261,10 @@ def ACCHostVerificationTest(String version, String build_type) {
 
                     println("Generating certificates and reports ...")
                     def task = """
+                            pushd ${WORKSPACE}/scripts/ansible
+                            sudo ./install-ansible.sh
+                            sudo ansible-playbook oe-linux-esy-setup.yml
+                            popd
                             cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=ON -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                             ninja -v
                             pushd tests/host_verify/host
@@ -283,6 +311,10 @@ def ACCHostVerificationTest(String version, String build_type) {
                     checkout scm
                     unstash "linux_host_verify-${build_type}-${BUILD_NUMBER}"
                     def task = """
+                            pushd ${WORKSPACE}/scripts/ansible
+                            sudo ./install-ansible.sh
+                            sudo ansible-playbook oe-linux-esy-setup.yml
+                            popd
                             cmake ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                             ninja -v
                             ctest -R host_verify --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
