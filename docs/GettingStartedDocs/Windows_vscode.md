@@ -106,13 +106,14 @@ Open enc.c and put a breakpoint and continue execution.
 ![Enclave Breakpoint](images/VSCodeEnclaveBreakpoint.png)
 
 
-## CDB Debugger Limitation
+## Known Issues
 
 The VS Code Debugger extension is currently released as an early preview.
 These issues are being worked on and will be fixed in an upcoming update.
 
-- It is recommended to clear all breakpoints and set them again every time the program is launched for debugging.
-- It is recommended to stop the debugging session by clicking on the stop button and starting a new debugging session each time.
-- The debug cursor often jumps to the start of the file when stepping and then jumps to the correct location on the next step. 
-This is due to the way ELF encodes lack of location information.
-
+- Breakpoints aren't yet completely persisted and restored correctly.
+Therefore it is recommended that you clear all breakpoints and set them again every time the program is launched for debugging.
+- Debugging session is not terminated when the program runs to completion.
+Therefore it is recommended that you stop and start a new debugging session each time.
+- The debug cursor often jumps to the start of the file while debugging within an enclave.
+Stepping again should take the cursor to the correct location.
