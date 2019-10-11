@@ -10,19 +10,21 @@ Motivation
 
 Ideally, applications developed with the Open Enclave API should run on all
 supported platforms. But unfortunately, the platforms themselves may have
-incompatible shared memory models. For example, SGX implicity shares all
+incompatible shared memory models. For example, SGX implicit shares all
 untrusted memory with the enclave, whereas TrustZone shares untrusted memory
-explicitly through programmatic measures.
+explicitly through programmatic measures (by default, no untrusted memory
+is shared).
 
 This problem is partly addressed by the PR entitled [Enforcing full
 serialization in EDL](https://github.com/openenclave/openenclave/pull/2176),
-which proposes **edger8r** options that reject EDL specifications that cannot
-be fully serialized. Such specifications produce applications that implicitly
-share untrusted memory with the enclave. Aside from introducing potential
-security flaws, these applications are not portable to TrustZone and any future
-platforms that employ a similar model. By forcing full serialization, the need
-for shared memory can be mostly eliminated. But sometimes applications need to
-pass untrusted shared memory to enclaves. A few of examples include:
+which proposes extending **edger8r** to print warnings for EDL specifications
+with parameters cannot be fully serialized. These specifications produce
+applications that implicitly share untrusted memory with the enclave. Aside
+from introducing potential security flaws, these applications are not portable
+to TrustZone and any future platforms that employ a similar model. By forcing
+full serialization, the need for shared memory can be mostly eliminated. But
+some applications need to pass untrusted shared memory to enclaves. Examples
+include:
 
 - Ring buffers
 - Context-switchless calls
@@ -30,7 +32,7 @@ pass untrusted shared memory to enclaves. A few of examples include:
 
 Whatever the reasons, a mechanism is needed for sharing untrusted memory with
 the enclave and that mechanism must be interoperable across secure hardware
-platforms. Further, the mechanism must be explicit and operations are needed
+platforms. Further, the mechanism must be explicit, so operations are needed
 for managing untrusted memory.
 
 User Experience
