@@ -160,7 +160,6 @@ if (OE_SGX)
 
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
-      sgx/linux/aesm.c
       sgx/linux/enter.S
       sgx/linux/entersim.S
       sgx/linux/exception.c
@@ -173,7 +172,6 @@ if (OE_SGX)
 
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/windows/aep.asm
-      sgx/windows/aesm.c
       sgx/windows/enter.asm
       sgx/windows/entersim.asm
       sgx/windows/host_context.asm
@@ -309,41 +307,55 @@ endif ()
 # For including edge routines.
 target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-if (USE_LIBSGX)
+if (OE_SGX)
+  # Always link with the EnclaveCommonAPI
   if (WIN32)
-    set(LIBPATHS
-      ${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/lib/native/x64-Release
-      ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
-    set(INCPATHS
-      "${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/Header Files"
-      "${NUGET_PACKAGE_PATH}/DCAP_Components/build/Header Files")
-    set(WINSYSLOCATION
-       $ENV{WINDIR}/System32)
+    set(LIBPATHS ${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/lib/native/x64-Release)
+    set(INCPATHS "${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/Header Files")
   endif ()
-
-  find_library(LIBSGX_COMMON NAMES sgx_enclave_common PATHS ${LIBPATHS})
-  find_library(LIBSGX_QE NAMES sgx_dcap_ql PATHS ${LIBPATHS})
-  if (NOT LIBSGX_COMMON OR NOT LIBSGX_QE)
-    message(FATAL_ERROR "No SGX libraries found, aborting! Set -DUSE_LIBSGX=OFF to ignore.")
+  if (NOT LIBPATHS)
+    set(LIBPATHS "/usr")
+  endif ()
+  find_library(LIBSGX_COMMON NAMES sgx_enclave_common HINTS ${LIBPATHS})
+  if (NOT LIBSGX_COMMON)
+    message(FATAL_ERROR "Intel SGX EnclaveCommonAPI library not found, aborting!")
   endif ()
   add_library(sgx_enclave_common SHARED IMPORTED)
-  add_library(sgx_dcap_ql SHARED IMPORTED)
-
-  if (UNIX)
+  if (WIN32)
+     set_target_properties(sgx_enclave_common PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${INCPATHS}"
+        IMPORTED_LOCATION $ENV{WINDIR}/System32
+        IMPORTED_IMPLIB ${LIBSGX_COMMON})
+  elseif (UNIX)
     set_target_properties(sgx_enclave_common PROPERTIES IMPORTED_LOCATION ${LIBSGX_COMMON})
-    set_target_properties(sgx_dcap_ql PROPERTIES IMPORTED_LOCATION ${LIBSGX_QE})
-  elseif (WIN32)
-    set_target_properties(sgx_enclave_common PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES "${INCPATHS}"
-      IMPORTED_LOCATION ${WINSYSLOCATION}
-      IMPORTED_IMPLIB ${LIBSGX_COMMON})
-    set_target_properties(sgx_dcap_ql PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES "${INCPATHS}"
-      IMPORTED_LOCATION ${WINSYSLOCATION}
-      IMPORTED_IMPLIB ${LIBSGX_QE})
   endif ()
-  target_link_libraries(oehost PUBLIC $<BUILD_INTERFACE:sgx_dcap_ql> $<BUILD_INTERFACE:sgx_enclave_common>)
-  target_compile_definitions(oehost PUBLIC OE_USE_LIBSGX)
+  target_link_libraries(oehost PUBLIC $<BUILD_INTERFACE:sgx_enclave_common>)
+
+  # Optionally link in DCAP library
+  if (HAS_QUOTE_PROVIDER)
+    if (WIN32)
+      list(APPEND LIBPATHS
+          ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
+      list(APPEND INCPATHS
+          "${NUGET_PACKAGE_PATH}/DCAP_Components/build/Header Files")
+    endif ()
+    find_library(LIBSGX_QE NAMES sgx_dcap_ql HINTS ${LIBPATHS})
+    if (NOT LIBSGX_QE)
+      message(FATAL_ERROR "No quote provider library found, aborting! Set -DHAS_QUOTE_PROVIDER=OFF to ignore.")
+    endif ()
+    add_library(sgx_dcap_ql SHARED IMPORTED)
+    if (WIN32)
+      set_target_properties(sgx_dcap_ql PROPERTIES
+          INTERFACE_INCLUDE_DIRECTORIES "${INCPATHS}"
+          IMPORTED_LOCATION $ENV{WINDIR}/System32
+          IMPORTED_IMPLIB ${LIBSGX_QE})
+    elseif (UNIX)
+      set_target_properties(sgx_dcap_ql PROPERTIES IMPORTED_LOCATION ${LIBSGX_QE})
+    endif ()
+    target_link_libraries(oehost PUBLIC $<BUILD_INTERFACE:sgx_dcap_ql>)
+    # turn on 'OE_LINK_SGX_DCAP_QL' for the preprocessor
+    target_compile_definitions(oehost PUBLIC OE_LINK_SGX_DCAP_QL)
+  endif ()
 endif ()
 
 # Compile definitions and options

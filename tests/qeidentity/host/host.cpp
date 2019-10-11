@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
-#include <openenclave/internal/aesm.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
@@ -46,7 +45,7 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
 
-#ifdef OE_USE_LIBSGX
+#ifdef OE_LINK_SGX_DCAP_QL
 
     run_qe_identity_test_cases(enclave);
 

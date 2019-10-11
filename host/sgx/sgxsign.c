@@ -3,7 +3,6 @@
 
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/host.h>
-#include <openenclave/internal/aesm.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/mem.h>

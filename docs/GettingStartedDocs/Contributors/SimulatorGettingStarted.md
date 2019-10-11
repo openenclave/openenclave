@@ -41,7 +41,7 @@ cd build/
 Then run `cmake` to configure the build and generate the make files and build:
 
 ```bash
-cmake -DUSE_LIBSGX=OFF ..
+cmake -DHAS_QUOTE_PROVIDER=OFF ..
 make
 ```
 
