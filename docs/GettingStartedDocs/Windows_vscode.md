@@ -6,7 +6,6 @@ This document provides a brief overview of how to build and debug Open Enclave a
 
 The latest version of Visual Studio Code can be installed from [https://code.visualstudio.com/](https://code.visualstudio.com/)
 
-
 ## Install VS Code Extensions
 
 Install the following VS Code extensions. Click on an image to navigate to the Visual Studio Code Marketplace page for the extension.
@@ -29,6 +28,14 @@ cd YourApplicationFolder
 code .
 ```
 
+In the example here, we are using the HelloWorld sample that is installed as part of the SDK.
+If the Open Enclave SDK is installed at `C:\openenclave`, then you would do the following:
+
+```cmd
+cd C:\openenclave\share\openenclave\samples\helloworld
+code .
+```
+
 ![Launch VS Code](images/VSCodeLaunch.png)
 
 ## Configure Your Workspace
@@ -40,6 +47,14 @@ Open Workspace Settings by pressing Ctrl+Shift+P and typing "Open Workspace Sett
 Search for the setting "CMake Configure Args" and add an item `-DNUGET_PACKAGE_PATH=path-to-openenclave-nuget-packages\prereqs\nuget`.
 Add another item `-DOpenEnclave_DIR=YourOpenEnclaveInstallFolder\lib\openenclave\cmake`
 
+For example, if you ran install-windows-prereqs.ps1 with -InstallPath C:\openenclave_prereqs, and you installed the OE SDK nuget package to C:\openenclave, under Cmake: Configure Settings > Edit in settings.json:
+
+{
+    "cmake.configureArgs": [
+        "-DNUGET_PACKAGE_PATH=C:\\openenclave_prereqs\\prereqs\\nuget",
+        "-DOpenEnclave_DIR=C:\\openenclave\\lib\\openenclave\\cmake"
+    ]
+}
 
 ![CMake Configure Args](images/VSCodeCMakeConfigureArgs.png)
 
@@ -65,16 +80,18 @@ Run your application by pressing Shift+F7 or typing "CMake Build a target" in th
 
 Intellisense should work out of the box for files within your workspace. However, Intellisense may not be aware of where to locate the Open Enclave SDK headers.
 Open settings.json (or create one) under the .vscode folder and add entries for "C_Cpp.default.includePath" and "C_Cpp.default.systemIncludePath".
+If you installed the Open Enclave SDK at `C:\openenclave`, under Cmake: Configure Settings > Edit in settings.json
 
 ```json
 {
     "cmake.configureArgs": [
-        "-DNUGET_PACKAGE_PATH=C:\\OpenEnclaveNugetPackages"
+        "-DNUGET_PACKAGE_PATH=C:\\openenclave_prereqs\\prereqs\\nuget",
+        "-DOpenEnclave_DIR=C:\\openenclave\\lib\\openenclave\\cmake"
     ],
-    "C_Cpp.default.includePath": ["your-openenclave-sdk-install-path\\include"],
+    "C_Cpp.default.includePath": ["C:\\openenclave\\include"],
     "C_Cpp.default.systemIncludePath": [
-        "your-openenclave-sdk-install-path\\include\\openenclave\\3rdparty\\libc",
-        "your-openenclave-sdk-install-path\\include\\openenclave\\3rdparty\\libcxx"
+        "C:\\openenclave\\include\\openenclave\\3rdparty\\libc",
+        "C:\\openenclave\\include\\openenclave\\3rdparty\\libcxx"
     ]
 }
 ```
@@ -89,6 +106,28 @@ Fill in program path, parameters and other values in the configuration.
 
 ![Edit CDB Debug Configuration](images/VSCodeEditDebugConfiguration.png)
 
+Here is an example of launch.json after editing it.
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "cdb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/host/helloworld_host.exe",
+            "sourcepath": "${workspaceRoot};C:/ignite/openenclave-sdk-src",
+            "workingdirectory": "${workspaceRoot}/build",
+            "debugthedebugger": false,
+            "initialbreak": false,
+            "initialcommands": ".sympath \"\"",
+            "args": "enclave/enclave.signed"
+        }
+    ]
+}
+
 Open host.c and add a breakpoint. Start debugging.
 
 ![Host Breakpoint](images/VSCodeHostBreakpoint.png)
@@ -97,7 +136,7 @@ Step over the line that creates the enclave. The Console pane should show that t
 
 ![Stop After Enclave Creation](images/VSCodeStopAfterEnclaveCreation.png)
 
-Note: CDB commands can be executed in the Console Prompt.
+Note: [CDB commands](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/) can be executed in the Console Prompt.
 
 ![Debug Console](images/VSCodeDebugConsole.png)
 

@@ -235,7 +235,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased]: https://github.com/openenclave/openenclave/compare/v0.5.0...HEAD
+[Unreleased](https://github.com/openenclave/openenclave/compare/v0.7.x...HEAD)
+[v0.7.0-rc1](https://github.com/openenclave/openenclave/compare/v0.6.0...v0.7.x)
+[v0.6.0](https://github.com/openenclave/openenclave/compare/v0.5.0...v0.6.0)
 [v0.5.0]: https://github.com/openenclave/openenclave/compare/v0.4.1...v0.5.0
 [v0.4.1]: https://github.com/openenclave/openenclave/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/openenclave/openenclave/compare/v0.1.0...v0.4.0
