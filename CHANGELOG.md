@@ -9,11 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]
 ------------
-### Added
-
-- Ability to debug ELF enclaves on Windows using
-    - [Visual Studio Code CDB Extension](https://aka.ms/CDBVSCode)
-    - [WinDbg Preview](https://aka.ms/WinDbgPreview)
 
 [v0.7.0-rc1] - 2019-10-08
 -------------------------
@@ -21,12 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support Intel DCAP attestation on Windows.
-- Support enclave debugging on Windows with WinDBG/CDB.
-    - The new oedebugrt.dll binary needs to be copied to the app folder to enable this.
 - Support `transition_using_threads` EDL attribute in oeedger8r.
     - This only applies to untrusted functions (ocalls) in this release.
     - Using this attribute allows the ocall to be invoked without incurring the
       performance cost of an enclave context switch.
+- Ability to debug ELF enclaves on Windows using Windbg/CDB
+    - [Visual Studio Code CDB Extension](https://aka.ms/CDBVSCode)
+    - [WinDbg Preview](https://aka.ms/WinDbgPreview)
+    - The new oedebugrt.dll binary needs to be copied to the app folder to enable this.
 
 ### Changed
 
@@ -235,8 +232,10 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased]: https://github.com/openenclave/openenclave/compare/v0.5.0...HEAD
-[v0.5.0]: https://github.com/openenclave/openenclave/compare/v0.4.1...v0.5.0
-[v0.4.1]: https://github.com/openenclave/openenclave/compare/v0.4.0...v0.4.1
-[v0.4.0]: https://github.com/openenclave/openenclave/compare/v0.1.0...v0.4.0
-[v0.1.0]: https://github.com/openenclave/openenclave/compare/beb546f...v0.1.0
+[Unreleased](https://github.com/openenclave/openenclave/compare/v0.7.x...HEAD)
+[v0.7.0-rc1](https://github.com/openenclave/openenclave/compare/v0.6.0...v0.7.x)
+[v0.6.0](https://github.com/openenclave/openenclave/compare/v0.5.0...v0.6.0)
+[v0.5.0](https://github.com/openenclave/openenclave/compare/v0.4.1...v0.5.0)
+[v0.4.1](https://github.com/openenclave/openenclave/compare/v0.4.0...v0.4.1)
+[v0.4.0](https://github.com/openenclave/openenclave/compare/v0.1.0...v0.4.0)
+[v0.1.0](https://github.com/openenclave/openenclave/compare/beb546f...v0.1.0)
