@@ -27,7 +27,6 @@ endif()
 
 add_library(oeenclave STATIC
     ../common/datetime.c
-    ../common/lockless_queue.c
     asym_keys.c
     link.c
     random.c
