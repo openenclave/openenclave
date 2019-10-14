@@ -1,0 +1,21 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave
+{
+    trusted
+    {
+        public void test_cpuid();
+    };
+
+    untrusted
+    {
+        void cpuid_ocall(
+            uint32_t leaf,
+            uint32_t subleaf,
+            [out, count=1] uint32_t* eax,
+            [out, count=1] uint32_t* ebx,
+            [out, count=1] uint32_t* ecx,
+            [out, count=1] uint32_t* edx);
+    };
+};

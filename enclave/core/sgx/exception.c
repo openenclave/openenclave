@@ -226,6 +226,8 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
     return -1;
 }
 
+void (*oe_continue_execution_hook)(oe_exception_record_t* oe_exception_record);
+
 /*
 **==============================================================================
 **
@@ -280,6 +282,10 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     // Jump to the point where oe_context refers to and continue.
     if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
     {
+        /* Call the user's continue-execution handler. */
+        if (oe_continue_execution_hook)
+            (*oe_continue_execution_hook)(&oe_exception_record);
+
         oe_continue_execution(oe_exception_record.context);
 
         // Code should never run to here.
