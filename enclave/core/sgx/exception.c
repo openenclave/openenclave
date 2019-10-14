@@ -226,6 +226,8 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
     return -1;
 }
 
+void (*oe_continue_execution_hook)(oe_context_t* oe_context);
+
 /*
 **==============================================================================
 **
@@ -278,6 +280,10 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
         // handling.
         td->host_rbp = td->host_previous_rbp;
         td->host_rsp = td->host_previous_rsp;
+
+        /* Call the user's continue-execution handler. */
+        if (oe_continue_execution_hook)
+            (*oe_continue_execution_hook)(oe_exception_record.context);
 
         oe_continue_execution(oe_exception_record.context);
 
