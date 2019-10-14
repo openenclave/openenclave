@@ -47,16 +47,18 @@ Open Workspace Settings by pressing Ctrl+Shift+P and typing "Open Workspace Sett
 Search for the setting "CMake Configure Args" and add an item `-DNUGET_PACKAGE_PATH=path-to-openenclave-nuget-packages\prereqs\nuget`.
 Add another item `-DOpenEnclave_DIR=YourOpenEnclaveInstallFolder\lib\openenclave\cmake`
 
-For example, if you ran install-windows-prereqs.ps1 with -InstallPath C:\openenclave_prereqs, and you installed the OE SDK nuget package to C:\openenclave, under Cmake: Configure Settings > Edit in settings.json:
+![CMake Configure Args](images/VSCodeCMakeConfigureArgs.png)
 
+For example, if you ran install-windows-prereqs.ps1 with -InstallPath C:\openenclave_prereqs, and you installed the OE SDK nuget package to C:\openenclave, Settings.json would be as below:
+
+```json
 {
     "cmake.configureArgs": [
         "-DNUGET_PACKAGE_PATH=C:\\openenclave_prereqs\\prereqs\\nuget",
         "-DOpenEnclave_DIR=C:\\openenclave\\lib\\openenclave\\cmake"
     ]
 }
-
-![CMake Configure Args](images/VSCodeCMakeConfigureArgs.png)
+```
 
 Configure your workspace by typing "cmake configure" in the command palette
 
