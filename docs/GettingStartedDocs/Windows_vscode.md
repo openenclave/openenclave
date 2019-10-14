@@ -81,8 +81,8 @@ Run your application by pressing Shift+F7 or typing "CMake Build a target" in th
 ## Configuring Intellisense
 
 Intellisense should work out of the box for files within your workspace. However, Intellisense may not be aware of where to locate the Open Enclave SDK headers.
-Open settings.json (or create one) under the .vscode folder and add entries for "C_Cpp.default.includePath" and "C_Cpp.default.systemIncludePath".
-If you installed the Open Enclave SDK at `C:\openenclave`, under Cmake: Configure Settings > Edit in settings.json
+Open settings.json under the .vscode folder and add entries for "C_Cpp.default.includePath" and "C_Cpp.default.systemIncludePath".
+If you installed the Open Enclave SDK at `C:\openenclave`, the Settings.kson would be as below:
 
 ```json
 {
@@ -109,6 +109,8 @@ Fill in program path, parameters and other values in the configuration.
 ![Edit CDB Debug Configuration](images/VSCodeEditDebugConfiguration.png)
 
 Here is an example of launch.json after editing it.
+
+```json
 {
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
@@ -129,6 +131,7 @@ Here is an example of launch.json after editing it.
         }
     ]
 }
+```
 
 Open host.c and add a breakpoint. Start debugging.
 
