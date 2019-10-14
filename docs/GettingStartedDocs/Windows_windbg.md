@@ -41,6 +41,9 @@ Build your application by running `ninja` and run your application by executing 
 
 # Debugging Your Open Enclave Application
 
+Note that to debug an Open Enclave application under windbg, `oedebugrt.dll`(found in `your-open-enclave-install-path\bin`) needs to be in the same folder as the host executable.
+In the samples, this is automatically achieved via a call to the `copy_oedebugrt_target` cmake module. Please see the Helloworld sample's [CMakeLists.txt](../../samples/helloworld/CMakeLists.txt) for an example of how to call `copy_oedebugrt_target`.
+
 Launch `DbgX.Shell` application. Click on `File-> Start debugging -> Launch executable(advanced)` and specify the program name arguments (path to the enclave) and working directory.
 
 ![Launch Executable](images/WinDbgLaunchExecutable.png)
