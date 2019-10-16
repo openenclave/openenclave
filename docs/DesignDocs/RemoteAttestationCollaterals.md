@@ -99,55 +99,22 @@ Currently, the existing endorsements used for Intel SGX quote verification are n
 User Experience
 ---------------
 
-There are 3 scenarios.
+There are 2 scenarios.
 
-### 1. Verifier does not specify the endorsements:
-In this scenario the verifier does not receive any endorsements from the attester (where the TEE resides).  The verifier also does not pass any endorsements to the verification function, instead the endorsements are fetched during verification by the OE SDK.
-
-##### Attester generates the evidence (inside an enclave/TEE)
-```C
-// Get OE report
-result = oe_get_report(
-    OE_REPORT_FLAGS_REMOTE_ATTESTATION,
-    NULL, // report_data
-    0,
-    NULL, // opt_params
-    0,
-    &report,
-    report_size);
-```
-
-##### Verifier verifies the evidence (in the untrusted host or inside an enclave/TEE)
-```C
-...
-
-// Verify report without endorsements
-result = oe_verify_remote_report_with_endorsements(
-            report,
-            report_size,
-            NULL, // endorsements
-            0,    // endorsements_size
-            NULL, // input_validation_time
-            parsed_report);
-...
-```
-
-### 2. Verifier is provided with endorsements:
+### 1. Verifier is provided with endorsements:
 In this scenario the attester/asserter provides the evidence and endorsements to the verifier.  The verifier is then free to use these to verify the TEE.
 
 ##### Attester generates the evidence and endorsements (inside an enclave/TEE)
 ```C
 ...
-result = oe_get_report(
-    OE_REPORT_FLAGS_REMOTE_ATTESTATION,
-    NULL, // report_data
+result = oe_get_evidence(
+    OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION,
+    NULL, // custom_claims
     0,
     NULL, // opt_params
     0,
-    &report,
-    report_size);
-
-result = oe_get_endorsements(
+    &evidence,
+    &evidence_size,
     &endorsements,
     &endorsements_size);
 ...
@@ -158,30 +125,34 @@ result = oe_get_endorsements(
 ...
 
 // Verify report with endorsements
-result = oe_verify_remote_report_with_endorsements(
-            report,
-            report_size,
+result = oe_verify_evidence(
+            evidence,
+            evidence_size,
             endorsements,
             endorsements_size,
-            NULL, // input_validation_time
-            NULL, // parsed_report);
+            NULL,  // opt_params
+            0,
+            &claims,
+            &claims_size);
 ...
 ```
 
-### 3. Verifier specifies endorsements:
+### 2. Verifier specifies endorsements:
 In this scenario the attester only provides the evidence to the verifier.  The verifier then fetches the endorsements from a second source different than the OE SDK, and uses the evidence and endorsements to verify the TEE.
 
 ##### Attester generates the evidence (inside an enclave/TEE)
 ```C
 ...
-result = oe_get_report(
-    OE_REPORT_FLAGS_REMOTE_ATTESTATION,
-    NULL, // report_data
+result = oe_get_evidence(
+    OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION,
+    NULL, // custom_claims
     0,
     NULL, // opt_params
     0,
-    &report,
-    report_size);
+    &evidence,
+    &evidence_size,
+    &endorsements,
+    &endorsements_size);
 ...
 ```
 
@@ -195,38 +166,49 @@ result = oe_get_report(
 //
 // Verifier builds **endorsements** structure
 //
+endorsements_external = ...
+endorsements_external_size = ...
 
-// Verify report with endorsements
-result = oe_verify_remote_report_with_endorsements(
+// Verify evidence with external endorsements
+result = oe_verify_evidence(
             report,
             report_size,
-            endorsements,
-            endorsements_size,
-            NULL, // input_validation_time
-            NULL, // parsed_report);
+            endorsements_external,
+            endorsements_external_size,
+            NULL,  // opt_params
+            0,
+            &claims,
+            &claims_size);
 ...
 ```
 
 Specification
 -------------
 
-### Endorsement structure
-Generic serializable structure that stores the endorsements in raw binary format.
+### <B>Public</B> type definitions
+Generic serializable public structure that stores the endorsements in raw binary format.
 
-`report.h`
+`attestation.h`
 ```C
+/**
+ * Flags passed to oe_get_evidence() function.
+ */
+#define OE_EVIDENCE_FLAGS_LOCAL_ATTESTATION  0x00000000
+#define OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION 0x00000001
+
 /*! \struct oe_endorsements_t
  *
  * \brief OE endorsements
  *
- * Raw generic serializable structure that contains the endorsements.
+ * Raw generic serializable structure that contains the endorsements. All
+ * data should be in little endian format.
  *
  */
 typedef struct _oe_endorsements_t
 {
     uint32_t version;
     uint32_t enclave_type;        ///< The type of enclave
-    uint64_t buffer_size;         ///< Size of the buffer
+    uint64_t buffer_size;         ///< Size of the buffer  (oe_enclave_type_t)
     uint32_t num_elements;
 
     ///< Data buffer is made of an offset array of type uint32_t, followed by
@@ -238,13 +220,14 @@ typedef struct _oe_endorsements_t
     ///<  |-----------------------|
     ///<  |  enclave_type         |
     ///<  |-----------------------|
-    ///<  |  num_elements         |
-    ///<  |-----------------------|
     ///<  |  buffer_size          |
     ///<  |-----------------------|
-    ///<  |                       |
-    ///<  | array of uint32_t     |
-    ///<  | of length num_elements|
+    ///<  |  num_elements         |
+    ///<  |-----------------------|
+    ///<  |  offsets              |
+    ///<  |  (array of uint32_t   |
+    ///<  |  with length of       |
+    ///<  |  num_elements)        |
     ///<  |-----------------------|
     ///<  |  Data                 |
     ///<  |_______________________|
@@ -252,134 +235,202 @@ typedef struct _oe_endorsements_t
     uint8_t buffer[];              ///< Buffer of offsets + data
 
 } oe_endorsements_t;
+
+
+///< Number of CRLs in the SGX endorsements
+#define OE_SGX_ENDORSEMENTS_CRL_COUNT     (2)
+
+/*! \enum oe_sgx_endorsements_fields
+ *
+ * Specifies the order of the SGX endorsements fields stored in
+ * the oe_endorsements_t strcuture
+ */
+typedef enum _oe_sgx_endorsements_fields
+{
+    OE_SGX_ENDORSEMENT_FIELD_TCB_INFO = 0,
+    OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN = 1,
+    OE_SGX_ENDORSEMENT_FIELD_CRL_START_INDEX = 2,
+    OE_SGX_ENDORSEMENT_FIELD_CRL_END_INDEX =
+        OE_SGX_ENDORSEMENT_FIELD_CRL_START_INDEX + OE_SGX_ENDORSEMENTS_CRL_COUNT - 1,
+
+    OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_START_INDEX =
+        OE_SGX_ENDORSEMENT_FIELD_CRL_END_INDEX + 1,
+
+    OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_END_INDEX =
+        OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_START_INDEX +
+        OE_SGX_ENDORSEMENTS_CRL_COUNT - 1,
+
+    OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO =
+        OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_END_INDEX + 1,
+
+    OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN,
+    OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME
+
+} oe_sgx_endorsements_fields;
 ```
 
-### New Endorsement functions
+### <B>Private</B> SGX endorsement definitions
 
-`endorsements.c`
+`common/sgx/evidence.h`
 ```C
-/*! \struct tee_endorsements
+/*! \struct oe_sgx_endorsements
  *
  * \brief SGX endorsements structure
  *
  * The generic oe_endorsements_t structure is parsed and converted into this
  * internal structure.  The order of the generic data elements should
  * coincide with the order of the fields in this structure.
+ *
+ * Data format: All data comes from the Data Center Attestation Primitives(DCAP)
+ * Client.
+ *
+ * For Azure DCAP Client
+ * (https://github.com/microsoft/Azure-DCAP-Client/blob/master/src/dcap_provider.h)
+ * see **sgx_ql_revocation_info_t** and sgx_qe_identity_info_t.
+ *
+ * For Intel DCAP Client
+ * (https://github.com/intel/SGXDataCenterAttestationPrimitives/blob/master/README.md)
+ * see TBD.
+ *
  */
-typedef struct _tee_endorsements_t
+typedef struct _oe_sgx_endorsements_t
 {
-    uint8_t* tcb_info;                      ///< TCB info
-    size_t tcb_info_size;                   ///< TCB Info size
-    uint8_t* tcb_issuer_chain;              ///< PEM format
-    size_t tcb_issuer_chain_size;           ///< Size of the tcb_issuer_chain
-    uint8_t* crl[3];                        ///< CRLs
-    size_t crl_size[3];                     ///< CRLs sizes
-    uint8_t* crl_issuer_chain[3];           ///< PEM format
-    size_t crl_issuer_chain_size[3];        ///< Size of each crl_issuer_chain
+    uint8_t* tcb_info;                      ///< TCB info, null-terminated JSON string
+    uint32_t tcb_info_size;                 ///< TCB Info size
+    uint8_t* tcb_issuer_chain;              ///< PEM format, null-terminated string
+    uint32_t tcb_issuer_chain_size;         ///< Size of the tcb_issuer_chain
 
-    uint8_t* qe_id_info;                    ///< QE Identity info
-    size_t qe_id_info_size;                 ///< QE Identity size
-    uint8_t* qe_id_issuer_chain;            ///< PEM format
-    size_t qe_id_issuer_chain_size;         ///< Size of qe_id_issuer_chain
+    ///< CRLs in DER format, null-terminated
+    ///<     crl[0] = CRL for the SGX PCK Certificate
+    ///<     crl[1] = CRL for the SGX PCK Processor CA
+    uint8_t* crl[OE_SGX_ENDORSEMENTS_CRL_COUNT];
 
-    uint8_t* creation_datetime;             ///< Time the endorsements were generated
-    size_t create_datetime_size;            ///< The size of creation_datetime.  Should be 24.
+    ///< CRLs sizes
+    uint32_t crl_size[OE_SGX_ENDORSEMENTS_CRL_COUNT];
 
-} tee_endorsements_t;
+    ///< PEM format, null-terminated string
+    uint8_t* crl_issuer_chain[OE_SGX_ENDORSEMENTS_CRL_COUNT];
 
+    ///< Size of each crl_issuer_chain
+    uint32_t crl_issuer_chain_size[OE_SGX_ENDORSEMENTS_CRL_COUNT];
+
+    uint8_t* qe_id_info;                    ///< QE Identity info, null-terminated JSON string
+    uint32_t qe_id_info_size;               ///< QE Identity size
+    uint8_t* qe_id_issuer_chain;            ///< PEM format, null-terminated string
+    uint32_t qe_id_issuer_chain_size;       ///< Size of qe_id_issuer_chain
+
+    uint8_t* creation_datetime;             ///< Time the endorsements were generated,
+                                            ///< null-terminated string
+    uint32_t create_datetime_size;          ///< The size of creation_datetime.
+
+} oe_sgx_endorsements_t;
+```
+
+### New <B>Public</B> Attestation functions
+
+These functions supersede the existing functions:
+1. `oe_get_evidence()` supersedes `oe_verify_report()`
+2. `oe_verify_evidence()` supersedes `oe_verify_report()`
+
+These functions will use plug-in attestation framework.  For more information please
+see the design document `CustomAttestation.md`.  In short, the actual implementation
+of these functions will depend on which plug-in is registered.  By default there will
+be a built-in SGX plug-in.
+
+For more information on the parameters `custom_claims`, `claims` or `opt_params`
+please see design document `CustomAttestation.md`.
+
+`common/sgx/attestation.c`
+```C
 /**
- * Returns the endorsements needed for verification of a remote OE report.
+ * Get evidence signed by the enclave platform along with the corresponding
+ * endorsements for use in attestation.
  *
- * This function is only available inside an enclave.
+ * This function returns the evidence and endorsements used in **local** or
+ * **remote** attestation.
  *
- * @param[in] enclave The instance of the enclave that will be used.
- * @param[in] endorsements_buffer The buffer containing the endorsements to parse.
- * @param[in] endorsements_buffer_size The size of the **endorsements_buffer**.
+ * This function can only be called from a TEE/enclave.
  *
- * @retval OE_OK The endorsements were successfully retrieved.
+ * @param[in] flags Specifying default value (0) generates evidence for local
+ * attestation. Specifying OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION generates
+ * evidence for remote attestation.
+ * @param[in] custom_claims A buffer to the optional custom claims.
+ * @param[in] custom_claims_size The size in bytes of custom_claims.
+ * @param[in] opt_params Optional additional parameters needed for the current
+ * enclave type.
+ *     For SGX:
+ *        This can be sgx_target_info_t for local attestation.
+ * @param[in] opt_params_size The size of the **opt_params** buffer.
+ * @param[out] evidence_buffer This points to the resulting evidence upon success.
+ * @param[out] evidence_buffer_size This is set to the size of the evidence buffer
+ * on success.
+ * @param[out] endorsements_buffer The buffer containing the endorsements to parse.
+ * @param[out] endorsements_buffer_size The size of the **endorsements_buffer**.
+ *
+ * @retval OE_OK The evidence and endorsements were successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ *
  */
-oe_result_t oe_get_endorsements(
+oe_result_t oe_get_evidence(
+    uint32_t flags,
+    const uint8_t* custom_claims,
+    size_t custom_claims_size,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** evidence_buffer,
+    size_t* evidence_buffer_size,
     uint8_t** endorsements_buffer,
     size_t* endorsements_buffer_size);
 
 /**
- * Free up any resources allocated by oe_get_endorsements()
+ * Free up any resources allocated by oe_get_evidence()
  *
+ * @param[in] evidence_buffer THe buffer containing the evidence.
  * @param[in] endorsements_buffer The buffer containing the endorsements.
  */
-void oe_free_endorsements(uint8_t* endorsements_buffer);
+void oe_free_evidence(
+    uint8_t* endorsements_buffer,
+    uint8_t* evidence_buffer);
 
 /**
- * Verify the integrity of the report and its signature,
- * with optional endorsements that are associated with the report. If
- * the endorsements are not specified, this function will fetch
- * the endorsements.  This only applies to remote reports.  For
- * local reports please use oe_verify_report().
- *
- * This function is similar to oe_verify_report() but it supports
- * endorsements.
+ * Verify the integrity of the evidence and its signature,
+ * with endorsements that are associated with the evidence.
+ * This function works for both local and remote attestation.
  *
  * This function is available in the enclave as well as in the host.
  *
- * @param[in] report The buffer containing the report to verify.
- * @param[in] report_size The size of the **report** buffer.
+ * @param[in] evidence_buffer The buffer containing the evidence to verify.
+ * @param[in] evidence_buffer_size The size of the **evidence** buffer.
  * @param[in] endorsements Optional The endorsement data that is associated with
- * the report (for remote reports only).
+ * the evidence.
  * @param[in] endorsements_size The size of the **endorsements** buffer.
- * @param[in] input_validation_time Optional datetime to use when validating
- * endorsements. If not specified, it will use the creation_datetime of the
+ * @param[in] input_validation_time Optional datetime to use when verifying
+ * evidence. If not specified, it will use the creation_datetime of the
  * endorsements (if any endorsements are provided).
- * @param[out] parsed_report Optional **oe_report_t** structure to populate with
- * the report properties in a standard format.
+ * @param[out] claims The list of claims.
+ * @param[out] claims_size The size of claims.
  *
- * @retval OE_OK The report was successfully created.
+ * @retval OE_OK The verification was successful.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
  *
  */
-oe_result_t oe_verify_report_with_endorsements(
-    const uint8_t* report,
-    size_t report_size,
+oe_result_t oe_verify_evidence(
+    const uint8_t* evidence_buffer,
+    size_t evidence_buffer_size,
     const uint8_t* endorsements,
     size_t endorsements_size,
     oe_datetime_t* input_validation_time,
-    oe_report_t* parsed_report);
+    uint8_t** claims,
+    size_t* claims_size);
 ```
 
-### Update existing functions
+### OE Host Verify Library
 
-In the host_verify library, this is the standalone library used for verifying remote reports outside
-the TEE/enclave. Update oe_verfiy_remote_report() to take endorsements as an input parameter.
+The OE Host Verify library is a standalone library used for verifying remote reports outside
+the TEE/enclave. The function `oe_verfiy_remote_report()` will be deprecated and should use the
+upcoming plug-in mode to do verification.
 
-`host/sgx/hostverify_report.c`
-```C
-/**
- * Verify the integrity of the report and its signature,
- * with optional endorsements that are associated with the report. If
- * the endorsements are not specified, this function will fetch
- * the endorsements.
- *
- * @param[in] report The buffer containing the report to verify.
- * @param[in] report_size The size of the **report** buffer.
- * @param[in] endorsements Optional The endorsement data that is associated with
- * the report (for remote reports only).
- * @param[in] endorsements_size The size of the **endorsements** buffer.
- * @param[in] input_validation_time Optional datetime to use when validating
- * endorsements. If not specified, it will use the creation_datetime of the
- * endorsements (if any endorsements are provided).
- * @param[out] parsed_report Optional **oe_report_t** structure to populate with
- * the report properties in a standard format.
- *
- * @retval OE_OK The report was successfully created.
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- *
- */
-oe_result_t oe_verify_remote_report(
-    const uint8_t* report,
-    size_t report_size,
-    const uint8_t* endorsements,
-    size_t endorsements_size,
-    oe_report_t* parsed_report);
-```
 
 Alternates
 ----------
@@ -392,9 +443,7 @@ user defined endorsements.  But we ended up deciding to have the user build the 
 structure instead, to avoid complexity.
 
 ### APIs:
-- To reduce complexity, `oe_get_endorsements()` is only available in the enclave.
-- To reduce complexity and break existing API users, `oe_verify_remote_report_with_endorsements()`
-only supports remote reports.  For local reports use `oe_verify_report()`
+- To reduce complexity, `oe_get_evidence()` is only available in the enclave.
 
 Authors
 -------
