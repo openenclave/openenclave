@@ -4,6 +4,7 @@
 .*\.der$
 .*\.docx$
 .*\.html$
+.*\.jpg$
 .*\.json$
 .*\.md$
 .*\.patch$
