@@ -1,5 +1,9 @@
 # Open Enclave Debugging
 
+For debugging enclaves on Windows using Visual Studio Code see [Windows_vscode.md](./Windows_vscode.md).
+
+For debugging enclaves on Windows using WinDbg Preview see [Windows_windbg.md](./Windows_windbg.md).
+
 While you can use GDB to debug the host of the enclave app like any other normal process,
 you won’t be able to debug into the enclave’s execution state or memory. To enable that,
 you will need to launch the debugger with the **oegdb** plug-in.
