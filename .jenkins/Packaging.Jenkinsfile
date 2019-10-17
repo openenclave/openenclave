@@ -34,7 +34,7 @@ def WindowsPackaging(String build_type) {
                 dir('build') {
                     bat """
                         vcvars64.bat x64 && \
-                        cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DUSE_LIBSGX=ON -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -DCPACK_GENERATOR=NuGet -Wdev && \
+                        cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=ON -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -DCPACK_GENERATOR=NuGet -Wdev && \
                         ninja.exe && \
                         ctest.exe -V -C RELEASE --timeout ${CTEST_TIMEOUT_SECONDS} && \
                         cpack && \
