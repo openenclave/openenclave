@@ -243,8 +243,8 @@ target_compile_definitions(oecore
     # package.
     $<BUILD_INTERFACE:OE_API_VERSION=2>)
 
-if(USE_LIBSGX)
-    target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
+if(HAS_QUOTE_PROVIDER)
+    target_compile_definitions(oecore PUBLIC OE_LINK_SGX_DCAP_QL)
 endif()
 
 if(USE_DEBUG_MALLOC)

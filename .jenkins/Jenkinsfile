@@ -28,7 +28,7 @@ def ACCGNUTest() {
                 cleanWs()
                 checkout scm
                 def task = """
-                           cmake ${WORKSPACE} -DUSE_LIBSGX=ON
+                           cmake ${WORKSPACE} -DHAS_QUOTE_PROVIDER=ON
                            make
                            ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
@@ -39,9 +39,9 @@ def ACCGNUTest() {
 }
 
 def simulationTest(String version, String platform_mode, String build_type) {
-    def use_libsgx = "OFF"
+    def has_quote_provider = "OFF"
     if (platform_mode == "SGX1FLC") {
-        use_libsgx = "ON"
+        has_quote_provider = "ON"
     }
     stage("Sim clang-7 Ubuntu${version} ${platform_mode} ${build_type}") {
         node("nonSGX") {
@@ -50,7 +50,7 @@ def simulationTest(String version, String platform_mode, String build_type) {
                 checkout scm
                 withEnv(["OE_SIMULATION=1"]) {
                     def task = """
-                               cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=${use_libsgx} -Wdev
+                               cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DHAS_QUOTE_PROVIDER=${has_quote_provider} -Wdev
                                ninja -v
                                ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                                """
@@ -73,7 +73,7 @@ def AArch64GNUTest(String version, String build_type) {
                                 -DCMAKE_BUILD_TYPE=${build_type}                                   \
                                 -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/cmake/arm-cross.cmake          \
                                 -DOE_TA_DEV_KIT_DIR=/devkits/vexpress-qemu_armv8a/export-ta_arm64  \
-                                -DUSE_LIBSGX=OFF                                                   \
+                                -DHAS_QUOTE_PROVIDER=OFF                                           \
                                 -Wdev
                             ninja -v
                             """
@@ -139,10 +139,10 @@ def checkDevFlows(String version) {
                 cleanWs()
                 checkout scm
                 def task = """
-                           cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=OFF -Wdev --warn-uninitialized -Werror=dev
+                           cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
                            ninja -v
                            """
-                oe.ContainerRun("oetools-minimal-${version}", "clang-7", task, "--cap-add=SYS_PTRACE")
+                oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE")
             }
         }
     }
@@ -169,7 +169,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                 cleanWs()
                 checkout scm
                 def task = """
-                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=ON -Wdev
+                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DHAS_QUOTE_PROVIDER=ON -Wdev
                            ninja -v
                            """
                 oe.ContainerRun("oetools-full-${version}", compiler, task, "--cap-add=SYS_PTRACE")
@@ -187,7 +187,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                 dir('build') {
                   bat """
                       vcvars64.bat x64 && \
-                      cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DUSE_LIBSGX=ON -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -Wdev && \
+                      cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=ON -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -Wdev && \
                       ninja -v && \
                       ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS}
                       """
@@ -197,12 +197,12 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
     }
 }
 
-def win2016CrossCompile(String build_type, String use_libsgx = 'OFF') {
+def win2016CrossCompile(String build_type, String has_quote_provider = 'OFF') {
     def node_label = 'SGXFLC-Windows'
-    if (use_libsgx == "ON") {
+    if (has_quote_provider == "ON") {
         node_label = 'SGXFLC-Windows-DCAP'
     }
-    stage("Windows ${build_type} with SGX ${use_libsgx}") {
+    stage("Windows ${build_type} with SGX ${has_quote_provider}") {
         node(node_label) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
@@ -214,7 +214,7 @@ def win2016CrossCompile(String build_type, String use_libsgx = 'OFF') {
 
                   bat """
                       vcvars64.bat x64 && \
-                      cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DUSE_LIBSGX=${use_libsgx} -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -Wdev && \
+                      cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=${has_quote_provider} -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -Wdev && \
                       ninja.exe && \
                       ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS}
                       """
@@ -237,7 +237,7 @@ def ACCHostVerificationTest(String version, String build_type) {
 
                     println("Generating certificates and reports ...")
                     def task = """
-                            cmake ${WORKSPACE} -G Ninja -DUSE_LIBSGX=ON -DCMAKE_BUILD_TYPE=${build_type} -Wdev
+                            cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=ON -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                             ninja -v
                             pushd tests/host_verify/host
                             openssl ecparam -name prime256v1 -genkey -noout -out keyec.pem
@@ -275,7 +275,7 @@ def ACCHostVerificationTest(String version, String build_type) {
             }
         }
 
-        /* Compile the tests with USE_LIBSGX=OFF and unstash the certs over for verification.  */
+        /* Compile the tests with HAS_QUOTE_PROVIDER=OFF and unstash the certs over for verification.  */
         stage("Linux nonSGX Verify Quote") {
             node("nonSGX") {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -283,7 +283,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                     checkout scm
                     unstash "linux_host_verify-${build_type}-${BUILD_NUMBER}"
                     def task = """
-                            cmake ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DUSE_LIBSGX=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev
+                            cmake ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                             ninja -v
                             ctest -R host_verify --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                             """
@@ -303,7 +303,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                     dir('build') {
                         bat """
                             vcvars64.bat x64 && \
-                            cmake.exe ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DUSE_LIBSGX=OFF -DCMAKE_BUILD_TYPE=${build_type} -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -Wdev && \
+                            cmake.exe ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=OFF -DCMAKE_BUILD_TYPE=${build_type} -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -Wdev && \
                             ninja -v && \
                             ctest.exe -V -C ${build_type} -R host_verify --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                             """

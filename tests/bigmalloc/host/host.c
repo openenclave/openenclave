@@ -30,7 +30,6 @@ int main(int argc, const char* argv[])
 {
     OE_UNUSED(argc);
     OE_UNUSED(argv);
-#if !defined(OE_USE_LIBSGX)
 
     oe_result_t result;
     const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
@@ -74,8 +73,6 @@ int main(int argc, const char* argv[])
     oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (%s)\n", argv[0]);
-
-#endif /* defined(OE_USE_LIBSGX) */
 
     return 0;
 }

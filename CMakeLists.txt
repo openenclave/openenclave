@@ -164,13 +164,8 @@ include(package_settings)
 # See `cmake/add_enclave.cmake` for enclave creation logic
 include(add_enclave)
 
-# User configurable options
-# DCAP library support on Windows is experimental and is disabled by default
-if (UNIX)
-  option(USE_LIBSGX "Build oehost using SGX library requiring FLC" ON)
-elseif (WIN32)
-  option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
-endif ()
+# User configurable options.
+option(HAS_QUOTE_PROVIDER "Take a build dependency on SGX DCAP, which requires FLC on target device to run." ON)
 
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators

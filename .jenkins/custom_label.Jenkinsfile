@@ -38,12 +38,12 @@ def ACCContainerTest(String label, String version) {
     }
 }
 
-def win2016CrossCompile(String build_type, String use_libsgx = 'OFF') {
+def win2016CrossCompile(String build_type, String has_quote_provider = 'OFF') {
     def node_label = WINDOWS_2016_CUSTOM_LABEL
-    if (use_libsgx == "ON") {
+    if (has_quote_provider == "ON") {
         node_label = WINDOWS_DCAP_CUSTOM_LABEL
     }
-    stage("Windows ${build_type} with SGX ${use_libsgx}") {
+    stage("Windows ${build_type} with SGX ${has_quote_provider}") {
         node(node_label) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
@@ -55,7 +55,7 @@ def win2016CrossCompile(String build_type, String use_libsgx = 'OFF') {
 
                   bat """
                       vcvars64.bat x64 && \
-                      cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DUSE_LIBSGX=${use_libsgx} -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -Wdev && \
+                      cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=${has_quote_provider} -DNUGET_PACKAGE_PATH=C:/openenclave/prereqs/nuget -Wdev && \
                       ninja.exe && \
                       ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS}
                       """
@@ -76,7 +76,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                 cleanWs()
                 checkout scm
                 def task = """
-                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DUSE_LIBSGX=ON -Wdev
+                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DHAS_QUOTE_PROVIDER=ON -Wdev
                            ninja -v
                            """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", compiler, task, "--cap-add=SYS_PTRACE")
@@ -95,7 +95,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                 dir('build') {
                   bat """
                       vcvars64.bat x64 && \
-                      cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DUSE_LIBSGX=ON -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -Wdev && \
+                      cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=ON -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -Wdev && \
                       ninja -v && \
                       ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS}
                       """

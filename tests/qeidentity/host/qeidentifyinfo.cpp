@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#ifdef OE_USE_LIBSGX
+#ifdef OE_LINK_SGX_DCAP_QL
 
 #include <openenclave/host.h>
-#include <openenclave/internal/aesm.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>

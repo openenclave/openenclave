@@ -123,7 +123,7 @@ void run_test(oe_enclave_t* enclave, int test_type)
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_USE_LIBSGX
+#ifdef OE_LINK_SGX_DCAP_QL
 
 #ifdef _WIN32
     /* This is a workaround for running in Visual Studio 2017 Test Explorer
@@ -189,11 +189,11 @@ int main(int argc, const char* argv[])
     OE_TRACE_INFO("=== passed all tests (tls)\n");
     return 0;
 #else
-    // this test should not run on any platforms where OE_USE_LIBSGX is not
+    // this test should not run on any platforms where HAS_QUOTE_PROVIDER is not
     // defined
     OE_UNUSED(argc);
     OE_UNUSED(argv);
-    OE_TRACE_INFO("=== tests skipped when built with OE_USE_LIBSGX=OFF\n");
+    OE_TRACE_INFO("=== tests skipped when built with HAS_QUOTE_PROVIDER=OFF\n");
     return SKIP_RETURN_CODE;
 #endif
 }

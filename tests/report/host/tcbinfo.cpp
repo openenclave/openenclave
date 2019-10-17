@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
-#include <openenclave/internal/aesm.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/hexdump.h>

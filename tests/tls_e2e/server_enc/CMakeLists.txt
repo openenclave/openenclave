@@ -6,8 +6,8 @@ include(oeedl_file)
 oeedl_file(../tls_e2e.edl enclave gen)
 
 add_enclave(TARGET tls_server_enc SOURCES server.cpp tls_e2e_t.c ../common/utility.cpp ${gen})
-if(USE_LIBSGX)
-    target_compile_definitions(tls_server_enc PRIVATE OE_USE_LIBSGX)
+if(HAS_QUOTE_PROVIDER)
+    target_compile_definitions(tls_server_enc PRIVATE OE_LINK_SGX_DCAP_QL)
 endif()
 
 set_source_files_properties(
