@@ -9,6 +9,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/report.h>
+#include "endorsements.h"
 
 OE_EXTERNC_BEGIN
 
@@ -22,8 +23,8 @@ OE_EXTERNC_BEGIN
  * @param[out] validity_until The date which the QE identity info expires.
  */
 oe_result_t oe_validate_qe_identity(
-    sgx_report_body_t* qe_report_body,
-    oe_get_qe_identity_info_args_t* qe_id_args,
+    const sgx_report_body_t* qe_report_body,
+    const oe_sgx_endorsements_t* sgx_endorsements,
     oe_datetime_t* validity_from,
     oe_datetime_t* validity_until);
 

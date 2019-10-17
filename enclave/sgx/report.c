@@ -66,7 +66,7 @@ oe_result_t oe_verify_report(
 
     if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
-        OE_CHECK(oe_verify_quote_internal_with_collaterals(
+        OE_CHECK(oe_verify_sgx_quote(
             header->report, header->report_size, NULL, 0, NULL));
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)

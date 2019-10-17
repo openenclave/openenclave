@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "qeidentity.h"
+#include <openenclave/bits/attestation.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"
@@ -22,8 +23,8 @@ static void dump_info(
 }
 
 oe_result_t oe_validate_qe_identity(
-    sgx_report_body_t* qe_report_body,
-    oe_get_qe_identity_info_args_t* qe_id_args,
+    const sgx_report_body_t* qe_report_body,
+    const oe_sgx_endorsements_t* sgx_endorsements,
     oe_datetime_t* validity_from,
     oe_datetime_t* validity_until)
 {
@@ -38,24 +39,36 @@ oe_result_t oe_validate_qe_identity(
 
     OE_TRACE_INFO("Calling %s\n", __FUNCTION__);
 
-    if ((qe_id_args == NULL) || (validity_from == NULL) ||
+    if ((sgx_endorsements == NULL) || (validity_from == NULL) ||
         (validity_until == NULL))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Use QE Identity info to validate QE
     // Check against fetched qe identityinfo
-    OE_TRACE_INFO("qe_identity.issuer_chain:[%s]\n", qe_id_args->issuer_chain);
-    pem_pck_certificate = qe_id_args->issuer_chain;
-    pem_pck_certificate_size = qe_id_args->issuer_chain_size;
+    OE_TRACE_INFO(
+        "qe_identity.issuer_chain:[%s]\n",
+        (const char*)sgx_endorsements
+            ->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN]
+            .data);
+    pem_pck_certificate =
+        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN]
+            .data;
+    pem_pck_certificate_size =
+        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN]
+            .size;
 
     // validate the cert chain.
     OE_CHECK(oe_cert_chain_read_pem(
         &pck_cert_chain, pem_pck_certificate, pem_pck_certificate_size));
 
     // parse identity info json blob
-    OE_TRACE_INFO("*qe_identity.qe_id_info:[%s]\n", qe_id_args->qe_id_info);
+    OE_TRACE_INFO(
+        "*qe_identity.qe_id_info:[%s]\n",
+        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].data);
     OE_CHECK(oe_parse_qe_identity_info_json(
-        qe_id_args->qe_id_info, qe_id_args->qe_id_info_size, &parsed_info));
+        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].data,
+        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].size,
+        &parsed_info));
 
     // verify qe identity signature
     OE_TRACE_INFO("Calling oe_verify_ecdsa256_signature\n");

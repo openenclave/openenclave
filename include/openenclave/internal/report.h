@@ -50,57 +50,6 @@ typedef struct _oe_get_qe_identity_info_args
 /*
 **==============================================================================
 **
-** oe_collaterals_header_t
-**
-**==============================================================================
-*/
-typedef struct _oe_collaterals_header
-{
-    /** Size of the collaterals */
-    uint32_t collaterals_size;
-
-    /** Collaterals data **/
-    uint8_t collaterals[];
-
-} oe_collaterals_header_t;
-
-OE_STATIC_ASSERT(sizeof(oe_collaterals_header_t) == 4);
-
-/*
-**==============================================================================
-**
-** oe_collaterals_t
-**
-** Structure with the collateral contents.  The collaterals are used during
-** the verification of the oe_report_t.
-**
-**==============================================================================
-*/
-typedef struct _oe_collaterals
-{
-    oe_get_qe_identity_info_args_t qe_id_info;
-    oe_get_revocation_info_args_t revocation_info;
-
-    /* Time the collaterals were generated */
-    char creation_datetime[24];
-
-    uint64_t app_collaterals_size;
-    uint8_t app_collaterals[];
-
-} oe_collaterals_t;
-
-OE_STATIC_ASSERT(
-    OE_OFFSETOF(oe_collaterals_header_t, collaterals) ==
-    sizeof(oe_collaterals_header_t));
-
-#define OE_COLLATERALS_HEADER_SIZE (sizeof(oe_collaterals_header_t))
-#define OE_COLLATERALS_BODY_SIZE (sizeof(oe_collaterals_t))
-#define OE_COLLATERALS_SIZE \
-    (OE_COLLATERALS_HEADER_SIZE + OE_COLLATERALS_BODY_SIZE)
-
-/*
-**==============================================================================
-**
 ** oe_report_type_t
 **
 **==============================================================================

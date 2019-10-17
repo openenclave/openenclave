@@ -116,20 +116,21 @@ static inline oe_result_t mock_verify_evidence(
             return OE_VERIFY_FAILED;
     }
 
-    *claims = (oe_claim_t*)malloc(OE_KNOWN_CLAIMS_COUNT * sizeof(oe_claim_t));
+    *claims =
+        (oe_claim_t*)malloc(OE_REQUIRED_CLAIMS_COUNT * sizeof(oe_claim_t));
     if (*claims == NULL)
         return OE_OUT_OF_MEMORY;
 
-    for (int i = 0; i < OE_KNOWN_CLAIMS_COUNT; i++)
+    for (int i = 0; i < OE_REQUIRED_CLAIMS_COUNT; i++)
     {
-        (*claims)[i].name = (char*)(OE_KNOWN_CLAIMS[i]);
-        if (strcmp(OE_KNOWN_CLAIMS[i], "plugin_uuid") == 0)
+        (*claims)[i].name = (char*)(OE_REQUIRED_CLAIMS[i]);
+        if (strcmp(OE_REQUIRED_CLAIMS[i], OE_CLAIM_PLUGIN_UUID) == 0)
         {
             (*claims)[i].value = (uint8_t*)&context->base.format_id;
             (*claims)[i].value_size = sizeof(uuid_t);
         }
     }
-    *claims_length = OE_KNOWN_CLAIMS_COUNT;
+    *claims_length = OE_REQUIRED_CLAIMS_COUNT;
 
     return OE_OK;
 }
@@ -153,21 +154,21 @@ static inline oe_result_t mock_verify_evidence_bad(
     OE_UNUSED(policies);
     OE_UNUSED(policies_size);
 
-    *claims =
-        (oe_claim_t*)malloc((OE_KNOWN_CLAIMS_COUNT - 1) * sizeof(oe_claim_t));
+    *claims = (oe_claim_t*)malloc(
+        (OE_REQUIRED_CLAIMS_COUNT - 1) * sizeof(oe_claim_t));
     if (*claims == NULL)
         return OE_OUT_OF_MEMORY;
 
-    for (int i = 0; i < OE_KNOWN_CLAIMS_COUNT - 1; i++)
+    for (int i = 0; i < OE_REQUIRED_CLAIMS_COUNT - 1; i++)
     {
-        (*claims)[i].name = (char*)(OE_KNOWN_CLAIMS[i]);
-        if (strcmp(OE_KNOWN_CLAIMS[i], "plugin_uuid") == 0)
+        (*claims)[i].name = (char*)(OE_REQUIRED_CLAIMS[i]);
+        if (strcmp(OE_REQUIRED_CLAIMS[i], OE_CLAIM_PLUGIN_UUID) == 0)
         {
             (*claims)[i].value = (uint8_t*)&context->base.format_id;
             (*claims)[i].value_size = sizeof(uuid_t);
         }
     }
-    *claims_length = OE_KNOWN_CLAIMS_COUNT - 1;
+    *claims_length = OE_REQUIRED_CLAIMS_COUNT - 1;
 
     return OE_OK;
 }

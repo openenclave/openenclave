@@ -120,7 +120,7 @@ endif()
 # SGX specific files.
 if (OE_SGX)
   list(APPEND PLATFORM_HOST_ONLY_SRC
-    ../common/sgx/collaterals.c
+    ../common/sgx/endorsements.c
     ../common/sgx/qeidentity.c
     ../common/sgx/quote.c
     ../common/sgx/report.c

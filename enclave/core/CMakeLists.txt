@@ -50,7 +50,7 @@ set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
-        ../../common/sgx/collaterals.c
+        ../../common/sgx/endorsements.c
         sgx/backtrace.c
         sgx/calls.c
         sgx/cpuid.c

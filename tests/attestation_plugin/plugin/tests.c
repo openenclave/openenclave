@@ -20,13 +20,13 @@
 
 static bool _check_claims(const oe_claim_t* claims, size_t claims_length)
 {
-    for (size_t i = 0; i < OE_KNOWN_CLAIMS_COUNT; i++)
+    for (size_t i = 0; i < OE_REQUIRED_CLAIMS_COUNT; i++)
     {
         bool found = false;
 
         for (size_t j = 0; j < claims_length && !found; j++)
         {
-            if (strcmp(OE_KNOWN_CLAIMS[i], claims[j].name) == 0)
+            if (strcmp(OE_REQUIRED_CLAIMS[i], claims[j].name) == 0)
             {
                 found = true;
             }

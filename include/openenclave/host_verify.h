@@ -40,6 +40,8 @@ OE_EXTERNC_BEGIN
 oe_result_t oe_verify_remote_report(
     const uint8_t* report,
     size_t report_size,
+    const uint8_t* endorsement,
+    size_t endorsement_size,
     oe_report_t* parsed_report);
 
 /**
