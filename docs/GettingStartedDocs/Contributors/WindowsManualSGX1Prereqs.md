@@ -7,7 +7,7 @@ version no lower than 1709. To check your Windows version, run `winver` on the
 command line.
 
 Windows Server 2016 image for an Azure Confidential Compute VM has a Windows version
-lower than 1709, therefore you need to install PSW v2.4 or above manually.
+lower than 1709, and therefore you need to install PSW v2.4 or above manually.
 You can download [PSW v2.4](http://registrationcenter-download.intel.com/akdlm/irc_nas/15654/Intel%20SGX%20PSW%20for%20Windows%20v2.4.100.51291.exe),
 extract the zipped files, and run the executable under folder **PSW_EXE_RS2_and_before**
 to install PSW 2.4.
@@ -39,11 +39,12 @@ It does not supporting quoting, and consequentially, attestation which is based 
 of quoting capability is a limitation of SGX1 machines which don't have FLC support.
 
 Firstly we download Intel SGX and DCAP library from [here](http://registrationcenter-download.intel.com/akdlm/irc_nas/15650/Intel%20SGX%20DCAP%20for%20Windows%20v1.2.100.49925.exe). Run the executable to unzip files to a specified location.
+The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.2.100.49925`:
 
-Make sure you have [nuget cli tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) installed,
-run the following command from a Windows prompt:
+Make sure you have [nuget cli tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) installed and in your path,
+run the following command from a command prompt:
 ```cmd
-nuget install EnclaveCommonAPI -Source C:\path\to\the\unzipped\sgx\and\dcap\files\nuget -OutputDirectory C:\path\to\where\you\would\like\to\install\intel_and_dcap_nuget_packages  -ExcludeVersion
+nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.2.100.49925\nuget" -OutputDirectory C:\path\to\where\you\would\like\to\install\intel_nuget_packages
 ```
 
-You can verify that the library is installed properly by checking whether `sgx_enclave_coomon.lib` exists in the folder `C:\path\to\where\you\would\like\to\install\intel_and_dcap_nuget_packages\nuget\EnclaveCommonAPI\lib\native\x64-Release`.
+You can verify that the library is installed properly by checking whether `sgx_enclave_common.lib` exists in the folder `C:\path\to\where\you\would\like\to\install\intel_nuget_packages\nuget\EnclaveCommonAPI\lib\native\x64-Release`.
