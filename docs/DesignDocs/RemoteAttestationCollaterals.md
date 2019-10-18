@@ -11,8 +11,9 @@ from a second source that the verifier can use for attestation verification.
 
 Terminology
 ----------
-From Remote Attestation Procedures Architecture
-(https://www.ietf.org/id/draft-birkholz-rats-architecture-02.txt).
+From Remote Attestation Procedures Architecture (RATS)
+(https://www.ietf.org/id/draft-birkholz-rats-architecture-02.txt).  This
+a draft that is Work in Progress and subject to change.
 
 - Evidence is provable Claims about a specific Computing Environment
       made by an Attester.
@@ -69,6 +70,11 @@ It produces Attestation Results that are formatted and protected (e.g.,
 signed).  It presents Attestation Results to a Relying Party using
 a conveyance mechanism or protocol.
 
+Claims are statements about a particular subject. They consist of
+name-value pairs containing the claim name, which is a string, and
+claim value, which is arbitrary data. Example of claims could be
+[name="version", value=1] or [name="enclave_id", value=1111].
+
 #### Asserter:
 An Attestation Function that generates reference Claims
 about both the Attesting Computing Environment and the Attested
@@ -91,18 +97,27 @@ definition of the assessment context is out-of-scope).
 Motivation
 ----------
 
-Currently, the existing endorsements used for Intel SGX quote verification are not exposed to the user.  This makes it difficult for the verifier to specify his/her own set of policies.  Adding these new APIs allows the verifier to specify a validation policy of his/her choosing.  Possible policies:
+Currently, the existing endorsements used for Intel SGX quote verification are not exposed to the user.
+This makes it difficult for the verifier to specify his/her own set of policies.
+Adding these new APIs allows the verifier to specify a validation policy of his/her choosing.
+Possible policies:
 1. The verifier has the option to specify its set of endorsements during verification.
-2. The verifier has the option to provide a datetime to use during verification.  This datetime specifies the date and time at which the verifier wants to do the verification.  If no datetime is provided, the datetime when the endorsements were created is used during verification.  The verifier can provide a datetime in the past, enabling auditing of the evidence and endorsements.
+2. The verifier has the option to provide a datetime to use during verification.
+This datetime specifies the date and time at which the verifier wants to do the verification.
+If no datetime is provided, the datetime when the endorsements were created is used during verification.
+The verifier can provide a datetime in the past, enabling auditing of the evidence and endorsements.
 
 
 User Experience
 ---------------
 
-There are 2 scenarios.
+There are 2 scenarios. Note that to get the endorsements,
+currently requires a Data Center Attestation Primitives(DCAP)
+client that runs outside the enclave.
 
 ### 1. Verifier is provided with endorsements:
-In this scenario the attester/asserter provides the evidence and endorsements to the verifier.  The verifier is then free to use these to verify the TEE.
+In this scenario the attester/asserter provides the evidence and endorsements to the verifier.
+The verifier is then free to use these to verify the TEE.
 
 ##### Attester generates the evidence and endorsements (inside an enclave/TEE)
 ```C
@@ -185,7 +200,7 @@ result = oe_verify_evidence(
 Specification
 -------------
 
-### <B>Public</B> type definitions
+### Public type definitions
 Generic serializable public structure that stores the endorsements in raw binary format.
 
 `attestation.h`
@@ -193,8 +208,14 @@ Generic serializable public structure that stores the endorsements in raw binary
 /**
  * Flags passed to oe_get_evidence() function.
  */
-#define OE_EVIDENCE_FLAGS_LOCAL_ATTESTATION  0x00000000
-#define OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION 0x00000001
+#define OE_EVIDENCE_FLAGS_LOCAL_ATTESTATION     0x00000000
+#define OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION    0x00000001
+
+/*! Limit the size of the endorsements */
+#define OE_ATTESTATION_ENDORSEMENT_MAX_SIZE     (20 * 1024)
+
+/*! Endorsement structure version */
+#define OE_ATTESTATION_ENDORSEMENT_VERSION      (1)
 
 /*! \struct oe_endorsements_t
  *
@@ -206,70 +227,65 @@ Generic serializable public structure that stores the endorsements in raw binary
  */
 typedef struct _oe_endorsements_t
 {
-    uint32_t version;
-    uint32_t enclave_type;        ///< The type of enclave
-    uint64_t buffer_size;         ///< Size of the buffer  (oe_enclave_type_t)
-    uint32_t num_elements;
+    uint32_t version;       ///< Version of this structure
+    uint32_t enclave_type;  ///< The type of enclave (oe_enclave_type_t)
+    uint32_t buffer_size;   ///< Size of the buffer
+    uint32_t num_elements;  ///< Number of elements stored in the data buffer
 
-    ///< Data buffer is made of an offset array of type uint32_t, followed by
-    ///< the actual data.
-    ///< This array has the size of **num_elements** and stores the offset
-    ///< into the data section.
-    ///<  _________________________
-    ///<  |  version              |
-    ///<  |-----------------------|
-    ///<  |  enclave_type         |
-    ///<  |-----------------------|
-    ///<  |  buffer_size          |
-    ///<  |-----------------------|
-    ///<  |  num_elements         |
-    ///<  |-----------------------|
-    ///<  |  offsets              |
-    ///<  |  (array of uint32_t   |
-    ///<  |  with length of       |
-    ///<  |  num_elements)        |
-    ///<  |-----------------------|
-    ///<  |  Data                 |
-    ///<  |_______________________|
-    ///<
+    /*! Data buffer is made of an offset array of type uint32_t, followed by
+     * the actual data.
+     * This array has the size of **num_elements** and stores the offset
+     * into the data section.
+     * _________________________
+     * |  version              |
+     * |-----------------------|
+     * |  enclave_type         |
+     * |-----------------------|
+     * |  buffer_size          |
+     * |-----------------------|
+     * |  num_elements         |
+     * |-----------------------|
+     * |  offsets              |
+     * |  (array of uint32_t   |
+     * |  with length of       |
+     * |  num_elements)        |
+     * |-----------------------|
+     * |  buffer (data)        |
+     * |_______________________|
+     */
     uint8_t buffer[];              ///< Buffer of offsets + data
 
 } oe_endorsements_t;
 
+/*! Version of the supported SGX endorsement structures */
+#define OE_SGX_ENDORSEMENTS_VERSION     (1)
 
-///< Number of CRLs in the SGX endorsements
-#define OE_SGX_ENDORSEMENTS_CRL_COUNT     (2)
+/*! Number of CRLs in the SGX endorsements */
+#define OE_SGX_ENDORSEMENTS_CRL_COUNT   (2)
 
 /*! \enum oe_sgx_endorsements_fields
  *
  * Specifies the order of the SGX endorsements fields stored in
- * the oe_endorsements_t strcuture
+ * the oe_endorsements_t structure
  */
 typedef enum _oe_sgx_endorsements_fields
 {
-    OE_SGX_ENDORSEMENT_FIELD_TCB_INFO = 0,
-    OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN = 1,
-    OE_SGX_ENDORSEMENT_FIELD_CRL_START_INDEX = 2,
-    OE_SGX_ENDORSEMENT_FIELD_CRL_END_INDEX =
-        OE_SGX_ENDORSEMENT_FIELD_CRL_START_INDEX + OE_SGX_ENDORSEMENTS_CRL_COUNT - 1,
-
-    OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_START_INDEX =
-        OE_SGX_ENDORSEMENT_FIELD_CRL_END_INDEX + 1,
-
-    OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_END_INDEX =
-        OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_START_INDEX +
-        OE_SGX_ENDORSEMENTS_CRL_COUNT - 1,
-
-    OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO =
-        OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_END_INDEX + 1,
-
+    OE_SGX_ENDORSEMENT_FIELD_VERSION,
+    OE_SGX_ENDORSEMENT_FIELD_TCB_INFO,
+    OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN,
+    OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT,
+    OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_PROC_CA,
+    OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT,
+    OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_PROC_CA,
+    OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO,
     OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN,
-    OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME
+    OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME,
+    OE_SGX_ENDORSEMENT_COUNT
 
-} oe_sgx_endorsements_fields;
+} oe_sgx_endorsements_fields;;
 ```
 
-### <B>Private</B> SGX endorsement definitions
+### Private SGX endorsement definitions
 
 `common/sgx/evidence.h`
 ```C
@@ -286,59 +302,68 @@ typedef enum _oe_sgx_endorsements_fields
  *
  * For Azure DCAP Client
  * (https://github.com/microsoft/Azure-DCAP-Client/blob/master/src/dcap_provider.h)
- * see **sgx_ql_revocation_info_t** and sgx_qe_identity_info_t.
+ * see **sgx_ql_revocation_info_t** and **sgx_qe_identity_info_t**.
  *
  * For Intel DCAP Client
  * (https://github.com/intel/SGXDataCenterAttestationPrimitives/blob/master/README.md)
- * see TBD.
+ * see **sgx_ql_qv_collateral_t**.
  *
  */
 typedef struct _oe_sgx_endorsements_t
 {
-    uint8_t* tcb_info;                      ///< TCB info, null-terminated JSON string
-    uint32_t tcb_info_size;                 ///< TCB Info size
-    uint8_t* tcb_issuer_chain;              ///< PEM format, null-terminated string
-    uint32_t tcb_issuer_chain_size;         ///< Size of the tcb_issuer_chain
-
-    ///< CRLs in DER format, null-terminated
-    ///<     crl[0] = CRL for the SGX PCK Certificate
-    ///<     crl[1] = CRL for the SGX PCK Processor CA
-    uint8_t* crl[OE_SGX_ENDORSEMENTS_CRL_COUNT];
-
-    ///< CRLs sizes
-    uint32_t crl_size[OE_SGX_ENDORSEMENTS_CRL_COUNT];
-
-    ///< PEM format, null-terminated string
-    uint8_t* crl_issuer_chain[OE_SGX_ENDORSEMENTS_CRL_COUNT];
-
-    ///< Size of each crl_issuer_chain
-    uint32_t crl_issuer_chain_size[OE_SGX_ENDORSEMENTS_CRL_COUNT];
-
-    uint8_t* qe_id_info;                    ///< QE Identity info, null-terminated JSON string
-    uint32_t qe_id_info_size;               ///< QE Identity size
-    uint8_t* qe_id_issuer_chain;            ///< PEM format, null-terminated string
-    uint32_t qe_id_issuer_chain_size;       ///< Size of qe_id_issuer_chain
-
-    uint8_t* creation_datetime;             ///< Time the endorsements were generated,
-                                            ///< null-terminated string
-    uint32_t create_datetime_size;          ///< The size of creation_datetime.
+    /*!
+     *  OE_SGX_ENDORSEMENT_FIELD_VERSION
+     *     Version of this SGX endorsement structure
+     *  OE_SGX_ENDORSEMENT_FIELD_TCB_INFO
+     *     TCB info, null-terminated JSON string
+     *     TCB Info size
+     *  OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN
+     *     PEM format, null-terminated string
+     *     Size of the tcb_issuer_chain
+     *
+     *  OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT to
+     *     OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_PROC_CA
+     *  CRLs in DER format, null-terminated
+     *      crl[0] = CRL for the SGX PCK Certificate
+     *      crl[1] = CRL for the SGX PCK Processor CA
+     *
+     *  OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT to
+     *     OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_PROC_CA
+     *  CRLs issuer chains in PEM format, null-terminated string
+     *      crl[0] = Issuer Chain for the SGX PCK Certificate
+     *      crl[1] = CRL for the SGX PCK Processor CA
+     *
+     *  OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO
+     *     QE Identity info, null-terminated JSON string
+     *     QE Identity size
+     *  OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN
+     *     PEM format, null-terminated string
+     *     Size of qe_id_issuer_chain
+     *
+     *  OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME
+     *     Time the endorsements were generated, null-terminated string
+     *     The size of creation_datetime.
+     */
+    oe_sgx_endorsement_item items[OE_SGX_ENDORSEMENT_COUNT];
 
 } oe_sgx_endorsements_t;
+
+
 ```
 
-### New <B>Public</B> Attestation functions
+### New Public Attestation functions
 
 These functions supersede the existing functions:
-1. `oe_get_evidence()` supersedes `oe_verify_report()`
+1. `oe_get_evidence()` supersedes `oe_get_report()`
 2. `oe_verify_evidence()` supersedes `oe_verify_report()`
 
-These functions will use plug-in attestation framework.  For more information please
-see the design document `CustomAttestation.md`.  In short, the actual implementation
+Users should start using these new functions.  `oe_get_report()` and `oe_verify_report()`
+are deprecated and will be removed in future releases.
+
+These functions will sit on top of the plug-in attestation framework.  For more information please
+see the [attestation plug-in design doc](CustomAttestation.md).  In short, the actual implementation
 of these functions will depend on which plug-in is registered.  By default there will
 be a built-in SGX plug-in.
-
-For more information on the parameters `custom_claims`, `claims` or `opt_params`
-please see design document `CustomAttestation.md`.
 
 `common/sgx/attestation.c`
 ```C
@@ -349,7 +374,11 @@ please see design document `CustomAttestation.md`.
  * This function returns the evidence and endorsements used in **local** or
  * **remote** attestation.
  *
- * This function can only be called from a TEE/enclave.
+ * For remote attesattion:
+ *  - This function can only be called from a TEE/enclave.
+ *
+ * For local attestation:
+ *  - This function can be called from the TEE/enclave or the untrusted host.
  *
  * @param[in] flags Specifying default value (0) generates evidence for local
  * attestation. Specifying OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION generates
@@ -425,25 +454,29 @@ oe_result_t oe_verify_evidence(
     size_t* claims_size);
 ```
 
+### Claims
+As part of the claims form `oe_verify_evidence()`, there will be a validity
+datetime range, `validity_from` and `validity_until` claims that applies to the evidence and endorsements.
+
+Current set of claims definitions:
+
+| Claim Name       | Claim Value Type   | Description                                                          |
+|:-----------------|:-------------------|:---------------------------------------------------------------------|
+| id_version       | uint32_t           | Claims version. Must be 0                                            |
+| security_version | uint32_t           | Security version of the enclave. (ISVN for SGX).                     |
+| attributes       | uint64_t           | Attributes flags for the evidence: <br/> `OE_REPORT_ATTRIBUTES_DEBUG`: The evidence is for a debug enclave.<br/> `OE_REPORT_ATTRIBUTES_REMOTE`: The evidence can be used for remote attestation.   |
+| unique_id        | uint8_t[32]        | The unique ID for the enclave (MRENCLAVE for SGX).                   |
+| signer_id        | uint8_t[32]        | The signer ID for the enclave (MRSIGNER for SGX).                    |
+| product_id       | uint8_t[32]        | The product ID for the enclave (ISVPRODID for SGX).                  |
+| validity_from    | oe_datetime_t      | Overall datetime from which the evidence and endorsements are valid. |
+| validity_until   | oe_datetime_t      | Overall datetime at which the evidence and endorsements expire.      |
+
+
 ### OE Host Verify Library
 
 The OE Host Verify library is a standalone library used for verifying remote reports outside
-the TEE/enclave. The function `oe_verfiy_remote_report()` will be deprecated and should use the
-upcoming plug-in mode to do verification.
-
-
-Alternates
-----------
-
-### Endorsement structure:
-- Multiple serializable structures were considered.  At the end the final design
-made sense given that it is generic and support serialization.  We considered
-supporting multiple flavors of the structure, a binary format and another for supporting
-user defined endorsements.  But we ended up deciding to have the user build the binary
-structure instead, to avoid complexity.
-
-### APIs:
-- To reduce complexity, `oe_get_evidence()` is only available in the enclave.
+the TEE/enclave. The function `oe_verfiy_remote_report()` will be updated to support
+endorsements.
 
 Authors
 -------
