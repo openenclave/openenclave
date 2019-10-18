@@ -8,6 +8,7 @@ Note: To check if your system has support for SGX1, please look [here](../SGXSup
 
 A version of Windows OS with native support for SGX features:
 - For server: Windows Server 2016
+- For client: Windows 10 64-bit version 1709 or newer
 
 ## Install Git and Clone the Open Enclave SDK repo
 
@@ -57,7 +58,7 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
 cd C:\openenclave
 mkdir build\x64-Debug
 cd build\x64-Debug
-cmake -G Ninja -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave ..\..
+cmake -G Ninja -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF ..\..
 ninja
 ```
 
@@ -69,7 +70,7 @@ Similarly, to build release enclaves:
 cd C:\openenclave
 mkdir build\x64-Release
 cd build\x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave ..\..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF ..\..
 ninja
 ```
 

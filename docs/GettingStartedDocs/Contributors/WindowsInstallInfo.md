@@ -5,8 +5,17 @@ You can locally install the SDK from the compiled Open Enclave tree by specifyin
 the install-prefix to the cmake call before calling `ninja install`.
 From the build subfolder in your source tree:
 
+For SGX1 + FLC targets:
+
 ```cmd
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=ON
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave
+ninja install
+```
+
+For SGX1 targets:
+
+```cmd
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF
 ninja install
 ```
 
@@ -18,7 +27,7 @@ Please note that NUGET_PACKAGE_PATH in the above command points to the directory
 To create a redistributable NuGet package use the following command from your build subfolder:
 
 ```cmd
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCPACK_GENERATOR=NuGet -DHAS_QUOTE_PROVIDER=ON
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCPACK_GENERATOR=NuGet
 ninja package
 ```
 
