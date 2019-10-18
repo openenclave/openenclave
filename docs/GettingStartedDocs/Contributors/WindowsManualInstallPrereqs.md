@@ -6,7 +6,8 @@
  Note: To check if your system has support for SGX1 with or without FLC, please look [here](../SGXSupportLevel.md).
  
 - A version of Windows OS with native support for SGX features:
-   - Windows Server 2016
+   - For server: Windows Server 2016
+   - For client: Windows 10 64-bit version 1709 or newer
    - To check your Windows version, run `winver` on the command line.
 
 ## Software prerequisites
@@ -18,7 +19,7 @@
 
 ## Prerequisites specific to SGX support on your system
 
-For systems with support for SGX1  - [Intel's PSW 2.2](WindowsManualSGX1Prereqs.md)
+For systems with support for SGX1  - [Intel's PSW 2.4, Intel Enclave Common API library](WindowsManualSGX1Prereqs.md)
 
 For systems with support for SGX1 + FLC - [Intel's PSW 2.4, Intel's Data Center Attestation Primitives and related dependencies](WindowsManualSGX1FLCDCAPPrereqs.md)
 
