@@ -2,20 +2,13 @@
 
 This document provides a brief overview of how to build and debug Open Enclave applications using VS Code on Linux.
 
-## Where to Run VS Code?
-
-There are two ways of running VS Code for development on Linux.
-1. Run VS Code directly on your Linux system, which will give you a native Linux display of VS Code.
-2. Run VS Code from any modern Windows system and use the `Remote SSH` extension in VS Code to connect to a Linux system you wish to develop on.
-  a. For more information on how to use the `Remote SSH` extension, please follow this blog post here: [https://code.visualstudio.com/blogs/2019/07/25/remote-ssh](https://code.visualstudio.com/blogs/2019/07/25/remote-ssh)
-
 ## Install VS Code
 
 The latest version of Visual Studio Code can be installed from [https://code.visualstudio.com/](https://code.visualstudio.com/)
 
 ## Install VS Code Extensions
 
-Install the following VS Code extensions. If you are using the Remote SSH, ensure they are installed remotely too by clicking  Click on an image to navigate to the Visual Studio Code Marketplace page for the extension.
+Install the following VS Code extensions. Click on an image to navigate to the Visual Studio Code Marketplace page for the extension.
 
 [![C/C++ Extension](images/VSCodeCppExtension.png)](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
 
@@ -23,12 +16,9 @@ Install the following VS Code extensions. If you are using the Remote SSH, ensur
 
 [![CMake Tools Extension](images/VSCodeCMakeToolsExtension.png)](https://marketplace.visualstudio.com/items?itemName=vector-of-bool.cmake-tools)
 
-
 ## Launch Visual Studio Code
 
-If you want to run VS Code directly on your Linux system, simply run `code MY_WORKSPACE`, replacing "MY_WORKSPACE" with the path to your development directory.
-
-If you want to run VS Code from Windows and connect to your Linux system with the `Remote SSH` extension, simply start VS Code on your Windows system, probably from the start menu. Then at the bottom left of the VS Code window, there should be a small icon that looks like a greater-then and less-than sign ![Remote SSH Icon](images/VSCodeLinuxRemoteSSHIcon.png). You should click that icon and then select in the menu bar `Remote-SSH: Connect to Host...`. You should then be able to connect using SSH to your Linux development system. You can then use VS Code from your Windows system mostly as if you were using it natively on Linux. Please refer to the blog linked above for more details!
+Launch VS Code either directly on your Linux system, or use the Remote SSH extension to connect your local VS Code instance to another system.
 
 ## Configure Your Workspace
 
@@ -52,17 +42,17 @@ cp -R /opt/openenclave/share/openenclave/samples/helloworld ~/my_helloworld
 }
 ```
 
-5. Use the shortcut `Ctrl-Shift-P` and select `CMake: Configure` and then select the kit which you want to configure with. You should probably select Clang-7*, but other options may work too.
+5. Use the shortcut `Ctrl-Shift-P` and select `CMake: Configure` and choose the kit from the drop down to use, for example, the Clang-7 kit.
 
 ![Successful CMake Configure](images/VSCodeLinuxSuccessfulCMakeConfigure.png)
 
-## Build And Run Your Open Enclave Application
+## Building and Running an Open Enclave Application
 
-Build the application by pressing Shift+F7 or typing "CMake Build a target" in the command palette, and selecting the "all META" target.
+Build the application by pressing F7 or typing "CMake Build a target" in the command palette, and selecting the "all META" target.
 
 ![Successful Build](images/VSCodeLinuxSuccessfulBuild.png)
 
-Run your application by pressing Shift+F7 or typing "CMake Build a target" in the command palette, and selecting the "run UTILITY" target.
+Run the application by pressing Shift+F7 or typing "CMake Build a target" in the command palette, and selecting the "run UTILITY" target.
 
 ![Run](images/VSCodeLinuxRunApplication.png)
 
@@ -81,13 +71,9 @@ Open settings.json under the .vscode folder and add entries for "C_Cpp.default.i
 }
 ```
 
-## Debug Your Open Enclave Application
+## Debugging an Open Enclave Application
 
-You will want to use the oegdb script provided in /opt/openenclave/bin/oegdb for the debugger, by setting the `miDebuggerPath` field to /opt/openenclave/bin/oegdb in launch.json.
-
-The rest of the fields for this configuration can be typical gdb debugging values.
-
-Here is an example of launch.json after editing it for the helloworld enclave.
+To configure VS Code for debugging an enclave app with GDB, go to the Debug tab in the side bar and select the settings cog to open this project's launch.json. Add the `miDebuggerPath` property to indicate where the `oegdb` script is installed. By default, this should be `/opt/openenclave/bin/oegdb`. The `program` and `args` properties should also be set to the location of the sample to debug, for example:
 
 ```json
 {
@@ -128,3 +114,5 @@ Step over the line that creates the enclave. The Console pane should show that t
 Open enc.c and put a breakpoint and continue execution.
 
 ![Enclave Breakpoint](images/VSCodeLinuxEnclaveBreakpoint.png)
+
+To use `oegdb` at the command line, one can select the "Debug Console" tab near the terminal pane. Then the standard gdb commands can be used, as long as they are prefixed with `-exec` first, like `-exec bt`. Please read documentation for `gdb` for further information on how to use `oegdb`: [https://sourceware.org/gdb/current/onlinedocs/gdb/](https://sourceware.org/gdb/current/onlinedocs/gdb/)

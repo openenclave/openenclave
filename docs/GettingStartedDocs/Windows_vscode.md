@@ -1,6 +1,6 @@
-# Building And Debugging Using Visual Studio Code
+# Building And Debugging Using Visual Studio Code on Windows
 
-This document provides a brief overview of how to build and debug Open Enclave applications using VS Code.
+This document provides a brief overview of how to build and debug Open Enclave applications using VS Code on Windows.
 
 ## Install VS Code
 
