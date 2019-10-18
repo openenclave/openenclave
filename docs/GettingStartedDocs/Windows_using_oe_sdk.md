@@ -40,7 +40,7 @@ what each one illustrates, and how to build and run them  can be found in
 
 Additional documentation is also available for:
 - [Building and signing enclaves](/docs/GettingStartedDocs/buildandsign.md)
-- [Debugging enclave memory](/docs/GettingStartedDocs/Debugging.md)
+- [Debugging enclave applications](/docs/GettingStartedDocs/Debugging.md)
 
 ## APIs and supported libraries
 
