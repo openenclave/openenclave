@@ -11,6 +11,12 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 file(STRINGS "VERSION" OE_VERSION_WITH_V)
 string(REGEX REPLACE "^v" "" OE_VERSION ${OE_VERSION_WITH_V})
 
+# Temporary fix to account for differences in expected version numbers
+# between Debian packages and NuGet packages.
+if (WIN32)
+  string(REGEX REPLACE "~" "-" OE_VERSION ${OE_VERSION})
+endif()
+
 # Select the assembler
 # TODO: See #755: This should probably be removed
 if (UNIX)
