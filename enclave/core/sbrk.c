@@ -5,6 +5,14 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/thread.h>
 
+#if defined(OE_HEAP_ALLOTTED_PAGE_COUNT)
+#define OE_HEAP_ALLOTTED_SIZE (OE_HEAP_ALLOTTED_PAGE_COUNT * OE_PAGE_SIZE)
+#define OE_HEAP_END_ADDRESS \
+    ((unsigned char*)__oe_get_heap_base() + OE_HEAP_ALLOTTED_SIZE)
+#else
+#define OE_HEAP_END_ADDRESS ((unsigned char*)__oe_get_heap_end())
+#endif /* defined (OE_HEAP_ALLOTTED_PAGE_COUNT) */
+
 void* oe_sbrk(ptrdiff_t increment)
 {
     static unsigned char* _heap_next;
@@ -18,7 +26,7 @@ void* oe_sbrk(ptrdiff_t increment)
         if (!_heap_next)
             _heap_next = (unsigned char*)__oe_get_heap_base();
 
-        remaining = (unsigned char*)__oe_get_heap_end() - _heap_next;
+        remaining = (unsigned char*)OE_HEAP_END_ADDRESS - _heap_next;
 
         if (increment <= remaining)
         {
