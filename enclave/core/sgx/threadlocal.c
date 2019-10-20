@@ -14,6 +14,17 @@
 #include <openenclave/internal/utils.h>
 #include "td.h"
 
+// Quick fix to allow SGX-LKL to partition the heap
+// TODO: Add an official mechanism for clients to reserve heap memory.
+#if defined(OE_HEAP_ALLOTTED_PAGE_COUNT)
+#define OE_HEAP_ALLOTTED_SIZE (OE_HEAP_ALLOTTED_PAGE_COUNT * OE_PAGE_SIZE)
+#define OE_HEAP_END_ADDRESS \
+    ((unsigned char*)__oe_get_heap_base() + OE_HEAP_ALLOTTED_SIZE)
+#else
+#define OE_HEAP_END_ADDRESS ((unsigned char*)__oe_get_heap_end())
+#endif /* defined (OE_HEAP_ALLOTTED_PAGE_COUNT) */
+
+
 /*
 **==============================================================================
 **
@@ -228,7 +239,7 @@ static uint64_t _get_aligned_size(uint64_t size, uint64_t align)
  */
 static void _call_oe_allocator_init(void)
 {
-    oe_allocator_init((void*)__oe_get_heap_base(), (void*)__oe_get_heap_end());
+    oe_allocator_init((void*)__oe_get_heap_base(), (void*)OE_HEAP_END_ADDRESS);
 }
 
 /*
