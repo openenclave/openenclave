@@ -34,7 +34,7 @@ endif ()
 
 if (WIN32)
   # On Windows, DESTDIR is not supported by cmake for the install function. Must use a relative path for -DCMAKE_INSTALL_PREFIX:PATH
-  set(INSTALL_DIR ${BUILD_DIR}/${PREFIX_DIR})
+  set(INSTALL_DIR ${PREFIX_DIR})
   execute_process(COMMAND ${CMAKE_COMMAND} --build ${BUILD_DIR} --target install)
 else ()
   # The prefix is appended to the value given to DESTDIR, e.g. build/install/opt/openenclave/...
