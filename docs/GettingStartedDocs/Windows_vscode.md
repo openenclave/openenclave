@@ -50,7 +50,7 @@ Open Workspace Settings by pressing Ctrl+Shift+P and typing "Open Workspace Sett
 
 ![Open Workspace Settings](images/VSCodeOpenWorkspaceSettings.png)
 
-Search for the setting "CMake Configure Args" and add an item `-DNUGET_PACKAGE_PATH=path-to-openenclave-nuget-packages\prereqs\nuget`.
+Search for the setting "CMake Configure Args" and add an item `-DNUGET_PACKAGE_PATH=path-to-openenclave-nuget-packages`.
 Add another item `-DOpenEnclave_DIR=YourOpenEnclaveInstallFolder\lib\openenclave\cmake`
 
 ![CMake Configure Args](images/VSCodeCMakeConfigureArgs.png)
@@ -61,7 +61,7 @@ For example, if you ran install-windows-prereqs.ps1 with -InstallPath C:\openenc
 {
     "cmake.cmakePath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
     "cmake.configureArgs": [
-        "-DNUGET_PACKAGE_PATH=C:\\openenclave_prereqs\\prereqs\\nuget",
+        "-DNUGET_PACKAGE_PATH=C:\\openenclave_prereqs",
         "-DOpenEnclave_DIR=C:\\openenclave\\lib\\openenclave\\cmake"
     ]
 }
@@ -95,7 +95,7 @@ If you installed the Open Enclave SDK at `C:\openenclave`, the Settings.json wou
 {
     "cmake.cmakePath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe",
     "cmake.configureArgs": [
-        "-DNUGET_PACKAGE_PATH=C:\\openenclave_prereqs\\prereqs\\nuget",
+        "-DNUGET_PACKAGE_PATH=C:\\openenclave_prereqs",
         "-DOpenEnclave_DIR=C:\\openenclave\\lib\\openenclave\\cmake"
     ],
     "C_Cpp.default.includePath": ["C:\\openenclave\\include"],

@@ -29,7 +29,7 @@ Change to the directory containing your Open Enclave Application. Make a build f
 cd YourApplicationFolder
 mkdir build
 cd build
-cmake -G Ninja -DOpenEnclave_DIR=your-open-enclave-install-path\lib\openenclave\cmake -DNUGET_PACKAGE_PATH=your-openenclave-nuget-packages-path\prereqs\nuget ..
+cmake -G Ninja -DOpenEnclave_DIR=your-open-enclave-install-path\lib\openenclave\cmake -DNUGET_PACKAGE_PATH=your-openenclave-nuget-packages-path ..
 ```
 
 ![Configure](images/WinDbgConfigure.png)
