@@ -1,0 +1,11 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+---
+- hosts: localhost
+  any_errors_fatal: true
+  become: yes
+  tasks:
+    - import_role:
+        name: linux/openenclave
+        tasks_from: environment-setup-cross-arm.yml
