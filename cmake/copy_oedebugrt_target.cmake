@@ -20,7 +20,6 @@ function(copy_oedebugrt_target TARGET_NAME)
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.dll
         DEPENDS ${OEDEBUGRTLOCATION}
-        COMMENT FOOBARBAZ
         COMMAND ${CMAKE_COMMAND} -E copy ${OEDEBUGRTLOCATION} ${CMAKE_CURRENT_BINARY_DIR})
 
 
