@@ -23,7 +23,7 @@ install Ubuntu on bare metal or in a virtual machine using your preferred
 hypervisor. Some commands launch GUIs, so a graphical environment is necessary.
 
 **Note:** To use this guide with the Windows Subsystem for Linux (WSL), read
-through [Debugging Enclaves on OP-TEE OS with QEMU ON WSL](ta_debugging_wsl.md)
+through [Debugging Enclaves on OP-TEE OS with QEMU on WSL](QEMUOnWSL.md)
 first.
 
 ## Required Packages
