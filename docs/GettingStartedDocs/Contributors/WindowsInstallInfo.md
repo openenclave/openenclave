@@ -5,7 +5,7 @@ You can locally install the SDK from the compiled Open Enclave tree by specifyin
 the install-prefix to the cmake call before calling `ninja install`.
 From the build subfolder in your source tree:
 
-For SGX1 + FLC targets:
+For SGX1 + FLC targets, assuming that the Intel and Azure DCAP NuGet packages are installed to `C:\oe_prereqs` and the Open Enclave SDK is installed to `C:\openenclave`:
 
 ```cmd
 cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave
