@@ -47,7 +47,7 @@ set OpenEnclave_DIR=C:\openenclave\lib\openenclave\cmake
 ```cmd
 mkdir build
 cd build
-cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_and_dcap_nuget_packages
+cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs
 ninja
 ```
 
