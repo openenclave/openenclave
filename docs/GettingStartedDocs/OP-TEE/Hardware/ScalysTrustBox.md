@@ -30,7 +30,7 @@ The Linux-based system that you will install to the TrustBox is configured to
 ease testing. Additionally, the secure firmware, such as OP-TEE OS, is currently
 meant for preview purposes only.
 
-**The resulting setup is not suitable for use in production and/or hostile
+> **The resulting setup is not suitable for use in production and/or hostile
 environments!**
 
 ### Prerequisites
