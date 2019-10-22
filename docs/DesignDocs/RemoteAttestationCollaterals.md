@@ -112,7 +112,7 @@ User Experience
 ---------------
 
 There are 2 scenarios. Note that to get the endorsements,
-currently requires a Data Center Attestation Primitives(DCAP)
+currently requires a Data Center Attestation Primitives (DCAP)
 client that runs outside the enclave.
 
 ### 1. Verifier is provided with endorsements:
@@ -282,7 +282,7 @@ typedef enum _oe_sgx_endorsements_fields
     OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME,
     OE_SGX_ENDORSEMENT_COUNT
 
-} oe_sgx_endorsements_fields;;
+} oe_sgx_endorsements_fields;
 ```
 
 ### Private SGX endorsement definitions
