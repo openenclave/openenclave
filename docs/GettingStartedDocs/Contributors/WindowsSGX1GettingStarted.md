@@ -30,18 +30,18 @@ First, change directory into the openenclave repository:
 cd openenclave
 ```
 
-To deploy all the prerequisities for building Open Enclave, you can run the following from Powershell. Note that the Data Center Attestation Primitives (DCAP) Client is not used for attestation on systems which have support for SGX1 without support for Flexible Launch Control (FLC).
+To deploy all the prerequisities for building Open Enclave, you can run the following from Powershell. Note that the Data Center Attestation Primitives (DCAP) Client is not used for attestation on systems which have support for SGX1 without support for Flexible Launch Control (FLC). The below example assumes you would like to install the packages to `C:\oe_prereqs`.
 
 ```powershell
 cd scripts
-.\install-windows-prereqs.ps1 -InstallPath C:\path\to\where\you\would\like\to\install\intel_nuget_packages -LaunchConfiguration SGX1 -DCAPClientType None
+.\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1 -DCAPClientType None
 ```
 
 As an example, if you cloned Open Enclave SDK repo into `C:\openenclave`, you would run the following:
 
 ```powershell
 cd scripts
-.\install-windows-prereqs.ps1 -InstallPath C:\path\to\where\you\would\like\to\install\intel_nuget_packages -LaunchConfiguration SGX1 -DCAPClientType None
+.\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1 -DCAPClientType None
 ```
 
 If you prefer to manually install prerequisites, please refer to this [document](WindowsManualInstallPrereqs.md).
@@ -58,7 +58,7 @@ Normally this is accessible under the `Visual Studio 2017` folder in the Start M
 cd C:\openenclave
 mkdir build\x64-Debug
 cd build\x64-Debug
-cmake -G Ninja -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF ..\..
+cmake -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF ..\..
 ninja
 ```
 
@@ -70,7 +70,7 @@ Similarly, to build release enclaves:
 cd C:\openenclave
 mkdir build\x64-Release
 cd build\x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:\your\path\to\intel_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF ..\..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF ..\..
 ninja
 ```
 

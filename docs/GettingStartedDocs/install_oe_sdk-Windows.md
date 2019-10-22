@@ -70,6 +70,6 @@ Download the required Windows NuGet Package from [here](https://github.com/opene
 
 Note: If it is an RC package, append `-pre` to the command above.
 
-## Verify the Open Enclave SDK install
+## Verify the Open Enclave SDK installation
 
 See [Using the Open Enclave SDK](Windows_using_oe_sdk.md) for verifying and using the installed SDK.
