@@ -45,11 +45,11 @@ to the documents for [getting started](docs/GettingStartedDocs/Contributors/buil
 
 ### OP-TEE OS (ARM TrustZone)
 
-The Open Enclave SDK provides preview support for the Open Portable TEE OS (OP-
-TEE). OP-TEE is an operating system for TEE's that implement a traditional
-kernel-mode and user-mode execution environment. It runs on A-profile ARM
-systems that support ARM TrustZone. As a result, the Open Enclave SDK can be
-leveraged to target these systems as well.
+The Open Enclave SDK provides preview support for the Open Portable TEE OS
+(OP-TEE OS). OP-TEE is an operating system for TEE's that implement a
+traditional kernel-mode and user-mode execution environment. It runs on
+A-profile ARM systems that support ARM TrustZone. As a result, the Open Enclave
+SDK can be leveraged to target these systems as well.
 
 For an overview of the SDK's support for OP-TEE OS as well as links to getting
 started guides, see
