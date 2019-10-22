@@ -55,7 +55,13 @@ OS:
 5. Out Calls (OCALLs)
 6. Terminating Enclaves
 
-**Note:** C++ exceptions are not yet fully supported.
+### Known Issues
+
+#### C++ exceptions are not fully supported
+
+Even though it is possible to write enclaves that use C++ exceptions and run
+them on OP-TEE OS, the stack unwinder may fail to find an exception handler on
+`throw`.
 
 ## Note on Forks
 
