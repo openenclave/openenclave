@@ -42,7 +42,8 @@ environments!**
   - Optional if the TrustBox you are using ships with one
 - 1 T8 Torx screwdriver
 - 1 Micro-USB Type B to USB Type A cable
-- Ethernet network
+- Wired network (Ethernet)
+  - Optional
 
 **Note:** The procedure below has not been validated on Ubuntu 16.04 LTS.
 
