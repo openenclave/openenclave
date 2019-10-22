@@ -65,6 +65,10 @@ Even though it is possible to write enclaves that use C++ exceptions and run
 them on OP-TEE OS, the stack unwinder may fail to find an exception handler on
 `throw`.
 
+#### OP-TEE test suite failure
+
+One of OP-TEE's test cases is known to fail on the TrustBox.
+
 ## Note on Forks
 
 While the SDK's support for Intel SGX is fairly self-contained, support for
