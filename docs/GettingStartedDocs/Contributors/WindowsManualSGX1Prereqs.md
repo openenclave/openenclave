@@ -42,9 +42,9 @@ Firstly we download Intel SGX and DCAP library from [here](http://registrationce
 The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.2.100.49925`:
 
 Make sure you have [nuget cli tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) installed and in your path,
-run the following command from a command prompt:
+run the following command from a command prompt (assuming you would like the package to be installed to `C:\oe_prereqs`):
 ```cmd
-nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.2.100.49925\nuget" -OutputDirectory C:\path\to\where\you\would\like\to\install\intel_nuget_packages
+nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.2.100.49925\nuget" -OutputDirectory C:\oe_prereqs
 ```
 
-You can verify that the library is installed properly by checking whether `sgx_enclave_common.lib` exists in the folder `C:\path\to\where\you\would\like\to\install\intel_nuget_packages\nuget\EnclaveCommonAPI\lib\native\x64-Release`.
+You can verify that the library is installed properly by checking whether `sgx_enclave_common.lib` exists in the folder `C:\oe_prereqs`.
