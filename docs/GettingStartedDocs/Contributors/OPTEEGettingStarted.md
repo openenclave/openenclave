@@ -41,8 +41,8 @@ recommended that you build the SDK from source for each target board so as to
 minimize the chance of a configuration mismatch, which, while minimal at the
 level of abstraction that the SDK operates at, may nevertheless occur.
 
-Assuming that you have a Dev Kit from an OP-TEE OS build, compiling the SDK is
-simple:
+Assuming that you have a Dev Kit from an OP-TEE OS build and its location is
+stored in the `DEV_KIT` variable, compiling the SDK is simple:
 
 ```bash
 mkdir build
@@ -52,7 +52,7 @@ cmake ../sdk \
     -G Ninja \
 	-DHAS_QUOTE_PROVIDER=OFF \
 	-DCMAKE_TOOLCHAIN_FILE=../sdk/cmake/arm-cross.cmake \
-	-DOE_TA_DEV_KIT_DIR=/path/to/dev/kit/export-ta_arm64 \
+	-DOE_TA_DEV_KIT_DIR=$DEV_KIT/export-ta_arm64 \
 	-DCMAKE_BUILD_TYPE=Debug
 ninja
 ```
