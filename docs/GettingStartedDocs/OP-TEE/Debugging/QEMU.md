@@ -55,10 +55,13 @@ otherwise specified.
 
 All work will be done in:
 
-```
-[ TERMS 1 & 2 & 3 ]
+```bash
+# [ TERMS 1 & 2 & 3 ]
 
+# Once
 mkdir openenclave_qemu
+
+# All terms
 cd openenclave_qemu
 ```
 
@@ -78,8 +81,8 @@ The `repo` utility can manipulate multiple Git repositories as though they were
 one. The following commands instruct `repo` to clone all the repositories that
 are required to build a QEMU-based debugging environment:
 
-```
-[ TERM 1 ]
+```bash
+# [ TERM 1 ]
 
 mkdir emulation
 cd emulation
@@ -98,8 +101,8 @@ To create and launch a debugging environment all you need is `make`. Depending
 on your machine, this may take upward of an hour the first time; subsequent runs
 only take a few seconds, plus compiling anything that you may have changed:
 
-```
-[ TERM 1 ]
+```bash
+# [ TERM 1 ]
 
 cd build
 
@@ -137,13 +140,14 @@ enclaves. Then, you must copy your enclaves into it.
 
 ### Building Hosts & Enclaves
 
-```
-[ TERM 2 ]
+```bash
+# [ TERM 2 ]
 
 git clone --recursive https://github.com/openenclave/openenclave.git sdk
 
 cd sdk
 
+# Set up the build environment (only once).
 sudo scripts/ansible/install-ansible.sh
 sudo ansible-playbook scripts/ansible/oe-contributors-setup-cross-arm.yml
 
@@ -152,12 +156,15 @@ cd ..
 mkdir build
 cd build
 
+# Configure the SDK
 cmake ../sdk \
     -G Ninja \
 	-DHAS_QUOTE_PROVIDER=OFF \
 	-DCMAKE_TOOLCHAIN_FILE=../sdk/cmake/arm-cross.cmake \
 	-DOE_TA_DEV_KIT_DIR=$PWD/../emulation/optee_os/out/arm/export-ta_arm64 \
 	-DCMAKE_BUILD_TYPE=Debug
+
+# Build the SDK
 ninja
 
 cd ..
@@ -176,7 +183,7 @@ By default, `make run` instructs QEMU to share your home directory read-only
 into the emulated guest. Once the guest boots and you have logged in via the
 Normal World XTerm window, type:
 
-```
+```bash
 mkdir /mnt/home
 mount -t 9p -o trans=virtio sh0 /mnt/home -oversion=9p2000.L
 
@@ -189,9 +196,7 @@ run`.
 For example, if you were trying to debug the SDK's test suite, you would do the
 following on the Normal World XTerm window:
 
-```
-export OE_SIMULATION=1
-
+```bash
 cp openenclave_qemu/build/tests/hexdump/enc/126830b9-eb9f-412a-89a7-bcc8a517c12e.ta /lib/optee_armtz
 openenclave_qemu/build/tests/hexdump/host/hexdump_host 126830b9-eb9f-412a-89a7-bcc8a517c12e
 ```
@@ -209,8 +214,8 @@ QEMU exposes a GDB server on `localhost:1234` with system-wide visibility into
 the emulated environment. After starting QEMU with `make run`, start the
 architecture-aware version of GDB.
 
-```
-[ TERM 2 ]
+```bash
+# [ TERM 2 ]
 
 gdb-multiarch
 
@@ -252,14 +257,15 @@ D/LD:  ldelf:150 ELF (126830b9-eb9f-412a-89a7-bcc8a517c12e) at 0x40010000
 ```
 
 The fifth line indicates where in secure virtual memory OP-TEE has loaded the
-TA. In this case it's `0x40010000`. This value should remain the same throughout
-repeated runs as well as across reboots of the emulator. Note this value.
+enclave. In this case it's `0x40010000`. This value should remain the same
+throughout repeated runs as well as across reboots of the emulator. Note this
+value.
 
 Due to how OP-TEE loads enclaves, you must manually line up the symbols in the
 ELF file produced for enclaves with how the code is laid out in memory:
 
-```
-[ TERM 3 ]
+```bash
+#[ TERM 3 ]
 
 cd $HOME/openenclave_qemu
 
@@ -332,8 +338,8 @@ name in the host application and in the enclave.
 
 **Note**: Resetting QEMU means that emulator state is cleared, hence you must
 repeat the steps of mounting your home directory inside the emulator and copying
-the TA to `/lib/optee_armtz`. Any breakpoints you set in GDB, however, persist
-across `system_reset`.
+the enclave to `/lib/optee_armtz`. Any breakpoints you set in GDB, however,
+persist across `system_reset`.
 
 ## Source-Level Debugging
 
@@ -387,7 +393,7 @@ system. However, to debug an ARM or AARCH64 target from an x86/64 host, CGDB
 must be told to use the same version of GDB used above. To start CGDB specifying
 a particular version of GDB, issue the following command from a terminal:
 
-```
+```bash
 cgdb -d gdb-multiarch
 ```
 
