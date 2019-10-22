@@ -13,8 +13,8 @@ learn how to set up and use GDB for source-level debugging of the sample
 enclaves that ship with this SDK.
 
 This guide is loosely based on [OP-TEE's own Build and Debug
-Guide](https://github.com/OP-TEE/build#op-tee-buildgit) with some modifications
-to render it more pertinent to this SDK.
+Guide](https://optee.readthedocs.io/en/latest/building/index.html) with some
+modifications to render it more pertinent to this SDK.
 
 ## Prerequisites
 
