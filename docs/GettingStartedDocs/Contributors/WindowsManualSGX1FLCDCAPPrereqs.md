@@ -47,7 +47,7 @@ The following summary will assume that the contents were extracted to `C:\Intel 
       ```
     - Note that `devcon.exe` is usually installed to `C:\Program Files (x86)\Windows Kits\10\tools\x64` which is not in the PATH environment variable by default.
 4. Install the DCAP nuget packages:
-    - The standalone `nuget.exe` [CLI tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) can be used to do this from the command prompt(assuming you would like to install the NuGet packages to `C:\oe_prereqs`):
+    - The standalone `nuget.exe` [CLI tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) can be used to do this from the command prompt:
       ```cmd
       nuget.exe install DCAP_Components -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.2.100.49925\nuget" -OutputDirectory c:\oe_prereqs
       nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.2.100.49925\nuget" -OutputDirectory c:\oe_prereqs
