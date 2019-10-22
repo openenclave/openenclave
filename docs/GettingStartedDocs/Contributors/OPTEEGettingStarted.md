@@ -31,12 +31,13 @@ sudo ansible-playbook scripts/ansible/oe-contributors-setup-cross-arm.yml
 
 Given that each ARM board is different, OP-TEE OS may be configured and built
 accordingly. This means that a build of OP-TEE OS for one board is most likely
-not compatible with a build of the exact same code for a different board. During
-OP-TEE OS' build process, a so-called "Dev Kit" is generated. This kit contains
-a number of headers, libraries and configuration files that describe the
-settings that were used to build OP-TEE OS for a given board. The Open Enclave
-SDK's build process consumes this Dev Kit to in turn configure and link the
-components that it leverages to support OP-TEE OS. As a result, it is highly
+not compatible with a build of the exact same code for a different board.
+
+During OP-TEE OS' build process, a so-called "Dev Kit" is generated. This kit
+contains a number of headers, libraries and configuration files that describe
+the settings that were used to build OP-TEE OS for a given board. The Open
+Enclave SDK's build process consumes this Dev Kit to in turn configure and link
+the components that it leverages to support OP-TEE OS. As a result, it is highly
 recommended that you build the SDK from source for each target board so as to
 minimize the chance of a configuration mismatch, which, while minimal at the
 level of abstraction that the SDK operates at, may nevertheless occur.

@@ -2,10 +2,12 @@
 
 Each Trusted Execution Environment (TEE) implementation provides a different
 model with respect to the interaction between hosts and enclaves, as well as
-regarding the runtime behavior of the two. The TEE implemented by ARM TrustZone
-splits the system into a secure and a non-secure mode, where each keep their
-user-mode/kernel-mode partition. Hence, an enclave that leverages ARM TrustZone
-executes in secure user-mode whereas its host executes in non-secure user-mode:
+regarding the runtime behavior of the two.
+
+The TEE implemented by ARM TrustZone splits the system into a secure and a
+non-secure mode, where each keep their user-mode/kernel-mode partition. Hence,
+an enclave that leverages ARM TrustZone executes in secure user-mode whereas its
+host executes in non-secure user-mode:
 
 ```
             |=============================================|
