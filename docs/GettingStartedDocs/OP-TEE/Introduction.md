@@ -24,7 +24,7 @@ executes in secure user-mode whereas its host executes in non-secure user-mode:
 ```
 
 While Linux operates in the usual way in non-secure kernel-mode, OP-TEE OS
-fulfills the role of kernel in secure mode.
+fulfills the role of the kernel in secure mode.
 
 OP-TEE OS provides a low-level communication mechanism to Linux based on the ARM
 Secure Monitor Call (`smc`) instruction. In turn, Linux incorporates an OP-TEE
