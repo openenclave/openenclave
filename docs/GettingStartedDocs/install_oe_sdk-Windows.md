@@ -1,4 +1,4 @@
-# Install the Open Enclave SDK (On Windows Server 2016)
+# Install the Open Enclave SDK NuGet Package
 
 ## Platform requirements
 
@@ -7,11 +7,13 @@ Note: To check if your system has support for SGX1 with or without FLC, please l
 
 - Windows Server 2016
 
-## Microsoft Visual Studio Build Tools 2019
+## Software Prerequisites
+
+### Microsoft Visual Studio Build Tools 2019
 
 Install [Visual Studio Build Tools 2019](https://aka.ms/vs/16/release/vs_buildtools.exe). Choose the "C++ build tools" workload. Visual Studio Build Tools 2019 has support for CMake Version 3.15 (CMake ver 3.12 or above is required for building Open Enclave SDK). For more information about CMake support, look [here](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/).
 
-## Git for Windows 64-bit
+### Git for Windows 64-bit
 
 Download [Git for Windows 64-bit](https://git-scm.com/download/win).
 
@@ -37,7 +39,7 @@ C:\>where openssl
 C:\Program Files\Git\mingw64\bin\openssl.exe
 ```
 
-## Clang
+### Clang
 
 Download [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe).
 Install Clang 7.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
@@ -54,7 +56,7 @@ C:\> where ld.lld
 C:\Program Files\LLVM\bin\ld.lld.exe
 ```
 
-## SGX1 with Flexible Launch Control (FLC) Prerequisites on Windows
+### SGX1 with Flexible Launch Control (FLC) Prerequisites
 
 Instructions to install Intel's PSW 2.4, Intel's Data Center Attestation Primitives and related dependencies can be found [here](Contributors/WindowsManualSGX1FLCDCAPPrereqs.md).
 
