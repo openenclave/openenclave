@@ -8,14 +8,14 @@ From the build subfolder in your source tree:
 For SGX1 + FLC targets:
 
 ```cmd
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave
 ninja install
 ```
 
 For SGX1 targets:
 
 ```cmd
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF
 ninja install
 ```
 
@@ -27,7 +27,7 @@ Please note that NUGET_PACKAGE_PATH in the above command points to the directory
 To create a redistributable NuGet package use the following command from your build subfolder:
 
 ```cmd
-cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=c:\your\path\to\intel_and_dcap_nuget_packages -DCPACK_GENERATOR=NuGet
+cmake .. -G  Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCPACK_GENERATOR=NuGet
 ninja package
 ```
 
