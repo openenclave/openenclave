@@ -39,7 +39,7 @@ Likewise, OP-TEE OS provides a number of system calls to secure user-mode. A
 library is in turn provided (`libutee`) that enclaves can use to call into these
 system services.
 
-The Open Enclave SDK for OP-TEE OS effectively implements the SDK's API's and
+The Open Enclave SDK for OP-TEE OS effectively implements the SDK's APIs and
 behaviors atop those exposed by OP-TEE OS both to non-secure user-mode as well
 as atop those exposed to secure user-mode.
 
@@ -65,9 +65,13 @@ Even though it is possible to write enclaves that use C++ exceptions and run
 them on OP-TEE OS, the stack unwinder may fail to find an exception handler on
 `throw`.
 
+[Tracking issue](https://github.com/openenclave/openenclave/issues/2274).
+
 #### OP-TEE test suite failure
 
 One of OP-TEE's test cases is known to fail on the TrustBox.
+
+[Tracking issue](https://github.com/openenclave/openenclave/issues/2275).
 
 ## Note on Forks
 
