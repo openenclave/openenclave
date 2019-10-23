@@ -52,9 +52,17 @@ environments!**
 The following command installs all the packages necessary on Ubuntu 18.04 LTS:
 
 ```bash
-sudo apt install -y git flex bison python-pip libssl-dev build-essential \
-    gcc-aarch64-linux-gnu g++-aarch64-linux-gnu minicom u-boot-tools     \
-    device-tree-compiler qemu-user-static udisks2
+sudo apt update && sudo apt install -y android-tools-adb                       \
+    android-tools-fastboot autoconf automake bc bison build-essential ccache   \
+    cgdb cscope curl device-tree-compiler expect flex                          \
+    ftp-upload gdb-multiarch gdisk iasl libattr1-dev libc6 libcap-dev          \
+    libfdt-dev libftdi-dev libglib2.0-dev libhidapi-dev libncurses5-dev        \
+    libpixman-1-dev libssl-dev libstdc++6 libtool libz1 make mtools netcat     \
+    python-crypto python-pyelftools python-serial python-wand                  \
+    python3-pyelftools repo unzip uuid-dev xdg-utils xterm xz-utils zlib1g-dev \
+    flex bison python-pip libssl-dev build-essential gcc-aarch64-linux-gnu     \
+    g++-aarch64-linux-gnu minicom u-boot-tools device-tree-compiler            \
+    qemu-user-static udisks2
 ```
 
 ## Serial Communication
