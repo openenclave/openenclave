@@ -9,7 +9,13 @@
 
 uint32_t oe_get_create_flags(void)
 {
+#if __aarch64__
+    /* OE_ENCLAVE_FLAG_DEBUG is not available on ARM TrustZone. */
+    uint32_t result = 0;
+#else
     uint32_t result = OE_ENCLAVE_FLAG_DEBUG;
+#endif
+
     char* env = NULL;
 
     if (!(env = oe_dupenv("OE_SIMULATION")))

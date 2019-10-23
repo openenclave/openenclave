@@ -17,13 +17,16 @@ which is usually secured by hardware, for example,
 [Intel Software Guard Extensions (SGX)](https://software.intel.com/en-us/sgx).
 
 This SDK aims to generalize the development of enclave applications across TEEs
-from different hardware vendors. While the current implementation is focused on
-Intel SGX, support for ARM TrustZone is already under development. As an open
-source project, this SDK also strives to provide a transparent solution that is
-agnostic to specific vendors, service providers and choice of operating systems.
+from different hardware vendors. The current implementation provides support for
+Intel SGX as well as preview support for OP-TEE OS on ARM TrustZone. As an
+open source project, this SDK also strives to provide a transparent solution
+that is agnostic to specific vendors, service providers and choice of operating
+systems.
 
 Getting Started
 ---------------
+
+### Intel SGX
 
 If you would like to start developing apps with the preview Open Enclave SDK
 release, start here for instructions to install and use the SDK package:
@@ -39,6 +42,18 @@ capable hardware, see
 
 If you would like to modify and build the Open Enclave SDK from sources, refer
 to the documents for [getting started](docs/GettingStartedDocs/Contributors/building_oe_sdk.md).
+
+### OP-TEE OS (ARM TrustZone)
+
+The Open Enclave SDK provides preview support for the Open Portable TEE OS
+(OP-TEE OS). OP-TEE is an operating system for TEE's that implement a
+traditional kernel-mode and user-mode execution environment. It runs on
+A-profile ARM systems that support ARM TrustZone. As a result, the Open Enclave
+SDK can be leveraged to target these systems as well.
+
+For an overview of the SDK's support for OP-TEE OS as well as links to getting
+started guides, see
+[Open Enclave SDK for OP-TEE OS](docs/GettingStartedDocs/OP-TEE/Introduction.md).
 
 Contributing
 ------------
