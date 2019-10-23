@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - [Visual Studio Code CDB Extension](https://aka.ms/CDBVSCode)
     - [WinDbg Preview](https://aka.ms/WinDbgPreview)
     - The new oedebugrt.dll binary needs to be copied to the app folder to enable this.
+- Preview support for 64-bit ARM TrustZone-capable boards with OP-TEE OS
+  - See the [documentation](docs/GettingStartedDocs/OP-TEE/Introduction.md)
+    for the list of supported platforms, features, and known issues.
 
 ### Changed
 
