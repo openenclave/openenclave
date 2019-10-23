@@ -43,6 +43,11 @@ The Open Enclave SDK for OP-TEE OS effectively implements the SDK's APIs and
 behaviors atop those exposed by OP-TEE OS both to non-secure user-mode as well
 as atop those exposed to secure user-mode.
 
+**Note:** OP-TEE OS refers to enclaves as "Trusted Applications" (TAs). This
+guide, as well as those linked at the bottom, use the term "enclave" to remain
+in line with the SDK's nomenclature. However, when working with OP-TEE OS, such
+as reading its debug output, you will come across "TA" frequently.
+
 ## Supported Features
 
 The SDK currently provides preview support for the following features on OP-TEE
