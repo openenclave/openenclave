@@ -104,9 +104,9 @@ When prompted if you would like to leave without reset, select `Yes`.
 
 ## Source Code
 
-All the code necessary to build the TrustBox' firmware and software, as well as
-the requisite build scripts may be obtained from Open Enclave's fork of NXP's
-Layerscape SDK (LSDK):
+All the code necessary to build the TrustBox's firmware and software, as well
+as the requisite build scripts may be obtained from Open Enclave's fork of
+NXP's Layerscape SDK (LSDK):
 
 ```bash
 git clone --recursive https://github.com/ms-iot/lsdk -b ms-iot-openenclave-3.6.0 --depth=1
@@ -234,7 +234,7 @@ Trying to boot from RAM
 
 If upon reset the board fails to boot, you can repeat the procedure to re-enter
 recovery U-Boot to flash the firmware again. Flashing the firmware does not
-overwrite copy of U-Boot, which is part of the recovery ROM.
+overwrite the copy of U-Boot, which is part of the recovery ROM.
 
 ## Root File System
 
@@ -312,7 +312,8 @@ Once `xtest` finishes, you should see the following output:
 TEE test application done!
 ```
 
-The single failed test is a known issue.
+The single failed test is a
+[known issue](https://github.com/openenclave/openenclave/issues/2275).
 
 ## Open Enclave SDK
 

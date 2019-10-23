@@ -73,7 +73,7 @@ Once XMing is installed, a folder of the same name is added to the Start Menu.
 Be sure to use the "XMing" shortcut, not "XLaunch". If you are prompted by the
 Windows Defender Firewall after launching XMing to allow it to communicate over
 the network, click "Cancel". This configures the firewall to deny all incoming
-connections to XMing, local connections are not affected.
+connections to XMing, but local connections are not affected.
 
 The only indication that XMing has successfully started is an icon in the
 notification area.
