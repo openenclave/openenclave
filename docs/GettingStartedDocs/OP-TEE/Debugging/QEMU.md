@@ -310,9 +310,11 @@ every time you want to debug. Just execute the `add-symbol-file` command in GDB.
 However, should your breakpoints stop being hit, do verify that these addresses
 have not changed, especially after a `git pull` and a rebuild.
 
-There is a known issue, either in GDB or QEMU, where once OP-TEE and Linux have
-fully booted up, it is not possible to place breakpoints inside enclaves. To
-work around this, switch to `TERM 1` where QEMU is running and type:
+There is a [known
+issue](https://github.com/openenclave/openenclave/issues/2276), either in GDB or
+QEMU, where once OP-TEE and Linux have fully booted up, it is not possible to
+place breakpoints inside enclaves. To work around this, switch to `TERM 1` where
+QEMU is running and type:
 
 ```
 system_reset
