@@ -67,6 +67,22 @@ else ()
   message(WARNING "Spectre 1 mitigations NOT supported")
 endif ()
 
+# Apply Control Flow Guard if available.
+set(CONTROL_FLOW_GUARD_FLAGS /guard:cf)
+set(CONTROL_FLOW_GUARD_SHARED_LINKER_FLAGS /guard:cf /DYNAMICBASE)
+check_c_compiler_flag("${CONTROL_FLOW_GUARD_FLAGS}" CONTROL_FLOW_GUARD_FLAGS_C_SUPPORTED)
+check_cxx_compiler_flag("${CONTROL_FLOW_GUARD_FLAGS}"  CONTROL_FLOW_GUARD_FLAGS_CXX_FLAGS_SUPPORTED)
+if (CONTROL_FLOW_GUARD_FLAGS_C_SUPPORTED AND CONTROL_FLOW_GUARD_FLAGS_CXX_FLAGS_SUPPORTED)
+  message(STATUS "Control Flow GUARD Supported")
+  # We set this variable to indicate the flags are supported. It is
+  # empty otherwise.
+  set(CONTROL_FLOW_GUARD_FLAGS ${CONTROL_FLOW_GUARD_FLAGS})
+  set(CMAKE_SHARED_LINKER_FLAGS ${CONTROL_FLOW_GUARD_SHARED_LINKER_FLAGS})
+  add_compile_options(${CONTROL_FLOW_GUARD_FLAGS})
+else ()
+  message(WARNING "Control Flow Guard NOT supported")
+endif ()
+
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   # Enables all the warnings about constructions that some users consider questionable,
   # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
