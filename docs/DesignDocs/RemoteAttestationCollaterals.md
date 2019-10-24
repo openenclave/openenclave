@@ -56,18 +56,18 @@ keys used to protect and authenticate Claims or Results.
 
 #### Attester:
 An Attestation Function that creates Evidence by
-collecting, formatting and protecting (e.g., signing) Claims.  It
+collecting, formatting and protecting (e.g., signing) Claims. It
 presents Evidence to a Verifier using a conveyance mechanism or
 protocol.
 
 #### Verifier:
 An Attestation Function that accepts Evidence from an Attester using
-a conveyance mechanism or protocol.  It also accepts Known-Good-Values
-and Endorsments from an Asserter using a conveyance mechanism or protocol.
+a conveyance mechanism or protocol. It also accepts Known-Good-Values
+and Endorsements from an Asserter using a conveyance mechanism or protocol.
 It verifies the protection mechanisms, parses and appraises Evidence
-according to good-known valid (or known-invalid) Claims and Endorsments.
+according to good-known valid (or known-invalid) Claims and Endorsements.
 It produces Attestation Results that are formatted and protected (e.g.,
-signed).  It presents Attestation Results to a Relying Party using
+signed). It presents Attestation Results to a Relying Party using
 a conveyance mechanism or protocol.
 
 Claims are statements about a particular subject. They consist of
@@ -78,11 +78,11 @@ claim value, which is arbitrary data. Example of claims could be
 #### Asserter:
 An Attestation Function that generates reference Claims
 about both the Attesting Computing Environment and the Attested
-Computing Environment.  The manufacturing and development
+Computing Environment. The manufacturing and development
 processes are presumed to be trustworthy processes.  In other
 words the Asserter is presumed, by a Verifier, to produce valid
-Claims.  The function collects, formats and protects (e.g. signs)
-valid Claims known as Endorsements and Known-Good-Values.  It
+Claims. The function collects, formats and protects (e.g. signs)
+valid Claims known as Endorsements and Known-Good-Values. It
 presents provable Claims to a Verifier using a conveyance
 mechanism or protocol.
 
@@ -90,7 +90,7 @@ mechanism or protocol.
 An Attestation Function that accepts Attestation
 Results from a Verifier using a conveyance mechanism or protocol.
 It assesses Attestation Results protections, parses and assesses
-Attestation Results according to an assessent context (Note:
+Attestation Results according to an assessment context (Note:
 definition of the assessment context is out-of-scope).
 
 
@@ -135,7 +135,7 @@ result = oe_get_evidence(
 ...
 ```
 
-##### Verifier verifies the evidence and endorsements (in the untrusted host or inside an enclave/TEE)
+##### Verifier verifies the evidence and endorsements (in an untrusted host or inside an enclave/TEE)
 ```C
 ...
 
@@ -256,7 +256,13 @@ typedef struct _oe_endorsements_t
     uint8_t buffer[];              ///< Buffer of offsets + data
 
 } oe_endorsements_t;
+```
 
+### Private SGX endorsement definitions
+
+`common/sgx/evidence.h`
+
+```C
 /*! Version of the supported SGX endorsement structures */
 #define OE_SGX_ENDORSEMENTS_VERSION     (1)
 
@@ -281,14 +287,8 @@ typedef enum _oe_sgx_endorsements_fields
     OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN,
     OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME,
     OE_SGX_ENDORSEMENT_COUNT
-
 } oe_sgx_endorsements_fields;
-```
 
-### Private SGX endorsement definitions
-
-`common/sgx/evidence.h`
-```C
 /*! \struct oe_sgx_endorsements
  *
  * \brief SGX endorsements structure
@@ -345,10 +345,7 @@ typedef struct _oe_sgx_endorsements_t
      *     The size of creation_datetime.
      */
     oe_sgx_endorsement_item items[OE_SGX_ENDORSEMENT_COUNT];
-
 } oe_sgx_endorsements_t;
-
-
 ```
 
 ### New Public Attestation functions
@@ -475,7 +472,7 @@ Current set of claims definitions:
 ### OE Host Verify Library
 
 The OE Host Verify library is a standalone library used for verifying remote reports outside
-the TEE/enclave. The function `oe_verfiy_remote_report()` will be updated to support
+the TEE/enclave. The function `oe_verify_remote_report()` will be updated to support
 endorsements.
 
 Authors
