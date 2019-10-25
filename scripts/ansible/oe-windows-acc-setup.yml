@@ -8,12 +8,10 @@
   tasks:
     - name: OE setup | Set installer URLs from the OE storage account
       set_fact:
-        intel_psw_2_2_url:   "https://oejenkins.blob.core.windows.net/oejenkins/intel_sgx_win_2.2.100.47975_PV.zip"
-        intel_psw_2_2_hash:  "EB479D1E029D51E48E534C284FCF5CCA3A937DA43052DCB2F4C71E5F354CA623"
-        intel_psw_2_4_url:   "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.4.100.51291.exe"
-        intel_psw_2_4_hash:  "79AE32E984B5511CE4BF7568403333F837FBCE7E8D5730271C5D68F55BBF251D"
-        intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20DCAP%20for%20Windows%20v1.2.100.49925.exe"
-        intel_dcap_hash:     "F31E4451CA32E19CA3DCB0AFC49AFE9F4963C47BF62AAF24A8AE436BDA14FD8B"
+        intel_psw_url:       "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.5.100.2.exe"
+        intel_psw_hash:      "744B52C2DEDA3EC2AAC495A4F671FE574C506C35523028584A74469911FB0707"
+        intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20DCAP%20for%20Windows%20v1.3.100.4.exe"
+        intel_dcap_hash:     "B74C12B68BBDB942A6FB74A14BBCEDE05E37B3388693CB3EEA2D7DB520E83572"
         git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.19.1-64-bit.exe"
         git_hash:            "5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793"
         seven_zip_url:       "https://oejenkins.blob.core.windows.net/oejenkins/7z1806-x64.msi"
@@ -38,8 +36,8 @@
         -InstallPath         "C:\openenclave"
         -LaunchConfiguration "{{ 'SGX1FLC' if dcap_testing_node is defined and dcap_testing_node == 'true' else 'SGX1' }}"
         -DCAPClientType      "{{ 'Azure' }}"
-        -IntelPSWURL         "{{ intel_psw_2_4_url if dcap_testing_node is defined and dcap_testing_node == 'true' else intel_psw_2_2_url }}"
-        -IntelPSWHash        "{{ intel_psw_2_4_hash if dcap_testing_node is defined and dcap_testing_node == 'true' else intel_psw_2_2_hash }}"
+        -IntelPSWURL         "{{ intel_psw_url }}"
+        -IntelPSWHash        "{{ intel_psw_hash }}"
         -IntelDCAPURL        "{{ intel_dcap_url }}"
         -IntelDCAPHash       "{{ intel_dcap_hash }}"
         -GitURL              "{{ git_url }}"
