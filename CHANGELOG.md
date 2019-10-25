@@ -34,8 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to [openenclave/openenclave](https://github.com/openenclave/openenclave).
 - Change debugging contract for oegdb. Enclaves and hosts built prior to this
   release cannot be debugged with this version of oegdb and vice versa.
-- Update Intel DCAP library dependencies to 1.2.
-- Update Intel PSW dependencies to 2.6 on Linux and 2.4 on Windows.
+- Update Intel DCAP library dependencies to 1.3.
+- Update Intel PSW dependencies to 2.7 on Linux and 2.5 on Windows.
 - SGX1 configurations always take build dependency on Intel SGX enclave common library.
 - Update LLVM libcxx to version 8.0.0.
 - Update mbedTLS to version 2.16.2.
