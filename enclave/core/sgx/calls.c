@@ -450,7 +450,7 @@ static void _handle_ecall(
 done:
 
     /* Free shared memory arena before we clear TLS */
-    if (td->depth == 1)
+    if (td->depth == 1 && !td->simulate)
     {
         oe_teardown_arena();
     }
