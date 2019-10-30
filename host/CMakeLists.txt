@@ -160,9 +160,10 @@ if (OE_SGX)
 
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
-      sgx/linux/enter.S
-      sgx/linux/entersim.S
+      sgx/linux/enter.c
+      sgx/linux/entersim.c
       sgx/linux/exception.c
+      sgx/linux/hoststackbridge.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
       sgx/linux/xstate.c)
@@ -244,6 +245,13 @@ if(WIN32)
 endif()
 
 if (OE_SGX AND UNIX)
+  # hoststackbridge must be compiled without optimizations so that
+  # it retains the stack-frame.
+  set_source_files_properties(
+    sgx/linux/hoststackbridge.c
+    PROPERTIES
+    COMPILE_FLAGS -O0)
+
   # Link oedebugrt static library.
   target_link_libraries(oehost PRIVATE oedebugrt)
 endif()

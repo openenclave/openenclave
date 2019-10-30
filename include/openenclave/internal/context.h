@@ -36,6 +36,17 @@ void oe_snap_current_context(oe_context_t* oe_context);
 void oe_restore_partial_context(oe_context_t* oe_context);
 void oe_continue_execution(oe_context_t* oe_context);
 
+typedef struct oe_enclu_context
+{
+    uint8_t fxstate[512];
+    uint64_t mxcsr;
+
+    void* tcs;
+    uint64_t aep;
+    uint64_t arg1;
+    uint64_t arg2;
+} oe_enclu_context_t;
+
 #endif // !__ASSEMBLER__
 
 #endif /* _OE_INTERNAL_CONTEXT_H */

@@ -62,13 +62,14 @@ int __oe_dispatch_ocall(
 #endif
 
 #ifndef __ASSEMBLER__
-int _oe_host_stack_bridge(
+int __oe_host_stack_bridge(
+    void* tcs,
+    uint64_t aep,
     uint64_t arg1,
     uint64_t arg2,
-    uint64_t* arg1_out,
-    uint64_t* arg2_out,
-    void* tcs,
-    void* rsp);
+    uint64_t* arg3,
+    uint64_t* arg4,
+    oe_enclave_t* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
