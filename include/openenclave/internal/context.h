@@ -36,6 +36,7 @@ void oe_snap_current_context(oe_context_t* oe_context);
 void oe_restore_partial_context(oe_context_t* oe_context);
 void oe_continue_execution(oe_context_t* oe_context);
 
+OE_ALIGNED(16)
 typedef struct oe_enclu_context
 {
     uint8_t fxstate[512];
