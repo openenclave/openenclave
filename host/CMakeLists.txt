@@ -247,10 +247,15 @@ endif()
 if (OE_SGX AND UNIX)
   # hoststackbridge must be compiled without optimizations so that
   # it retains the stack-frame.
+  # enter.c must be compiled without loop unrolling so that there is only one
+  # enclu instruction that calls into the enclave. We cannot currently
+  # handle multiple enclu instructions making calls into the enclave.
   set_source_files_properties(
+    sgx/linux/enter.c
+    sgx/linux/entersim.c
     sgx/linux/hoststackbridge.c
     PROPERTIES
-    COMPILE_FLAGS -O0)
+    COMPILE_FLAGS "-O0")
 
   # Link oedebugrt static library.
   target_link_libraries(oehost PRIVATE oedebugrt)
