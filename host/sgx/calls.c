@@ -152,7 +152,7 @@ static oe_result_t _enter_sim(
     if (arg4)
         *arg4 = 0;
 
-    oe_enter_sim(tcs, aep, arg1, arg2, arg3, arg4, enclave);
+    oe_enter(tcs, aep, arg1, arg2, arg3, arg4, enclave);
 
     /* Restore GS and GS registers. After this, host side library calls can be
      * safely called.

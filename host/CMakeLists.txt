@@ -161,8 +161,8 @@ if (OE_SGX)
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
       sgx/linux/enter.S
-      sgx/linux/entersim.S
       sgx/linux/exception.c
+      sgx/linux/hoststackbridge.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
       sgx/linux/xstate.c)
@@ -173,8 +173,6 @@ if (OE_SGX)
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/windows/aep.asm
       sgx/windows/enter.asm
-      sgx/windows/entersim.asm
-      sgx/windows/host_context.asm
       sgx/windows/exception.c
       sgx/windows/switchless.c
       sgx/windows/xstate.c)
@@ -184,7 +182,7 @@ if (OE_SGX)
 elseif(OE_TRUSTZONE)
   list(APPEND PLATFORM_SDK_ONLY_SRC
     optee/log.c)
-  
+
   if (UNIX)
     list(APPEND PLATFORM_SDK_ONLY_SRC
       optee/linux/enclave.c)
@@ -196,7 +194,7 @@ elseif(OE_TRUSTZONE)
 endif()
 
 if (OE_SGX AND WIN32)
-  # oedebugrt is accessed via a bridge on Win32 and need not be linked.    
+  # oedebugrt is accessed via a bridge on Win32 and need not be linked.
   list(APPEND PLATFORM_SDK_ONLY_SRC
     sgx/windows/debugrtbridge.c)
 endif()
@@ -244,6 +242,11 @@ if(WIN32)
 endif()
 
 if (OE_SGX AND UNIX)
+  set_source_files_properties(
+    sgx/linux/hoststackbridge.c
+    PROPERTIES
+    COMPILE_FLAGS -O0)
+
   # Link oedebugrt static library.
   target_link_libraries(oehost PRIVATE oedebugrt)
 endif()

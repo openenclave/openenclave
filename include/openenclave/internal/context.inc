@@ -110,6 +110,7 @@ oe_snap_current_context:
     movq    OE_CONTEXT_R13(%rdi), %r13
     movq    OE_CONTEXT_R14(%rdi), %r14
     movq    OE_CONTEXT_R15(%rdi), %r15
+
 .endm
 
 //==============================================================================

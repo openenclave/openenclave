@@ -145,6 +145,9 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x788);
 OE_STATIC_ASSERT(
     OE_OFFSETOF(oe_enclave_t, debug) + 1 ==
     OE_OFFSETOF(oe_enclave_t, simulate));
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(oe_enclave_t, simulate) == OE_ENCLAVE_OFFSET_SIMULATE);
+
 #endif
 
 /* Get the event for the given TCS */
