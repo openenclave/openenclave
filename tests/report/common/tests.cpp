@@ -1352,7 +1352,7 @@ void test_verify_report_with_collaterals()
                 &valid_until,
                 NULL) == OE_OK);
 
-        valid_from.seconds -= 1;
+        valid_from.year -= 1;
         OE_TEST(
             VerifyReportWithCollaterals(
                 report_buffer_ptr,
@@ -1362,7 +1362,7 @@ void test_verify_report_with_collaterals()
                 &valid_from,
                 NULL) == OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD);
 
-        valid_until.seconds += 1;
+        valid_until.year += 1;
         OE_TEST(
             VerifyReportWithCollaterals(
                 report_buffer_ptr,
