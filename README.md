@@ -40,9 +40,6 @@ If you would like to run Ubuntu 16.04 or Ubuntu 18.04 in a Hyper-V VM on SGX
 capable hardware, see
 [Setting up a Linux Hyper-V VM on Windows with SGX Support](docs/GettingStartedDocs/HyperVLinuxVMSetup.md).
 
-If you would like to modify and build the Open Enclave SDK from sources, refer
-to the documents for [getting started](docs/GettingStartedDocs/Contributors/building_oe_sdk.md).
-
 ### OP-TEE OS (ARM TrustZone)
 
 The Open Enclave SDK provides preview support for the Open Portable TEE OS
@@ -70,10 +67,11 @@ For more information see the
 or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any
 additional questions or comments.
 
-See the [Development Guide](docs/DevelopmentGuide.md) for details about
-contributing code to this project, such as coding style and development
-processes. Also see our [Governance Model](docs/Governance.md) for how we
-maintain the project.
+If you are interested in contributing directly to the codebase, please see the following
+documentation:
+- [Development Guide](docs/DevelopmentGuide.md)
+- [Governance Model](docs/Governance.md)
+- [Build SDK and run tests](docs/GettingStartedDocs/Contributors/building_oe_sdk.md)
 
 Licensing
 =========
