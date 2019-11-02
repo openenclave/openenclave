@@ -166,7 +166,7 @@ static oe_result_t _add_control_pages(
      *     page2 - state-save-area (SSA) slot (zero-filled)
      *     page3 - state-save-area (SSA) slot (zero-filled)
      *     page4 - guard page
-     *     page5 - segment space for fs or gs register (holds thread data).
+     *     page5 - thread local storage page.
      *     page6 - extra segment space for thread-specific data.
      */
 
@@ -205,9 +205,6 @@ static oe_result_t _add_control_pages(
         /* The entry point for the program (from ELF) */
         tcs->oentry = entry;
 
-        /* GS segment: points to page following SSA slots (page[3]) */
-        tcs->gsbase = *vaddr + (4 * OE_PAGE_SIZE);
-
         /* FS segment: Used for thread-local variables.
          * The reserved (unused) space in td_t is used for thread-local
          * variables.
@@ -215,6 +212,16 @@ static oe_result_t _add_control_pages(
          * segment.
          */
         tcs->fsbase = *vaddr + (5 * OE_PAGE_SIZE);
+
+        /* The existing Windows SGX enclave debugger finds the start of the
+         * thread data by assuming that it is located at the start of the GS
+         * segment. i.e. it adds the enclave base address and the offset to the
+         * GS segment stored in TCS.OGSBASGX.  OE SDK uses the FS segment for
+         * this purpose and has no separate use for the GS register, so we
+         * point it at the FS segment to preserve the Windows debugger
+         * behavior.
+         */
+        tcs->gsbase = tcs->fsbase;
 
         /* Set to maximum value */
         tcs->fslimit = 0xFFFFFFFF;

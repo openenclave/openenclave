@@ -14,6 +14,8 @@
 #define ECHO
 #endif
 
+#define SKIP_RETURN_CODE 2
+
 void test_stdcxx(oe_enclave_t* enclave)
 {
     int ret = -1;
@@ -43,7 +45,18 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
+    /*
+       Some expection test will fail in simulation mode, due to the failure of
+       isolation of exception in enclave then host process will be terminated.
+    */
     const uint32_t flags = oe_get_create_flags();
+    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0 &&
+        strstr(argv[1], "global_init_exception_enc") != 0)
+    {
+        printf("=== Skipped unsupported test in simulation mode "
+               "(global_init_exception_enc)\n");
+        return SKIP_RETURN_CODE;
+    }
 
     result = oe_create_stdcxx_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);

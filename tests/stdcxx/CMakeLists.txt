@@ -8,4 +8,9 @@ if (BUILD_ENCLAVES)
 endif()
 
 add_enclave_test(tests/stdcxx  stdcxx_host stdcxx_enc OE_OK)
+
+# Some expection test will fail in simulation mode, due to the failure of
+# isolation of exception in enclave then host process will be terminated.
+
 add_enclave_test(tests/global_init_exception stdcxx_host global_init_exception_enc OE_ENCLAVE_ABORTING)
+set_tests_properties(tests/global_init_exception PROPERTIES SKIP_RETURN_CODE 2)
