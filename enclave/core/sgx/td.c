@@ -8,6 +8,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/rdrand.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
@@ -261,6 +262,11 @@ void td_init(td_t* td)
 
         /* List of callsites is initially empty */
         td->callsites = NULL;
+
+        /* initilize the stack_guard at %%fs:0x28 with a random number */
+        unsigned char* fs = (unsigned char*)td + OE_PAGE_SIZE * 1;
+        uint64_t* stack_guard = (uint64_t*)(fs + 0x28);
+        *stack_guard = oe_rdrand();
 
 #if __linux__
         oe_thread_local_init(td);

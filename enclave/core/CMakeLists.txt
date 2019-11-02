@@ -208,7 +208,7 @@ if (OE_SGX)
     target_compile_options(oecore PUBLIC
         -fPIE
         -nostdinc
-        -fno-stack-protector
+        -fstack-protector-strong
         -fvisibility=hidden
         # Put each function or data in its own section.
         # This allows aggressively eliminating unused code.
