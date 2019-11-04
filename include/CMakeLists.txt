@@ -13,4 +13,5 @@ install(DIRECTORY openenclave/edger8r DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/op
 install(FILES openenclave/enclave.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(FILES openenclave/host.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(FILES openenclave/host_verify.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/ COMPONENT OEHOSTVERIFY)
+install(FILES openenclave/attestation_plugin.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(TARGETS oe_includes EXPORT openenclave-targets)

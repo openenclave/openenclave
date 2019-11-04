@@ -203,6 +203,7 @@ endif()
 
 # Common host verification files that work on any OS/architecture.
 list(APPEND PLATFORM_HOST_ONLY_SRC
+  ../common/attest_plugin.c
   ../common/datetime.c
   ../common/safecrt.c
   hexdump.c

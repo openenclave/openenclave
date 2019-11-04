@@ -26,6 +26,7 @@ elseif(OE_TRUSTZONE)
 endif()
 
 add_library(oeenclave STATIC
+    ../common/attest_plugin.c
     ../common/datetime.c
     asym_keys.c
     link.c
