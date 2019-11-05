@@ -13,7 +13,8 @@
 ## Software prerequisites
 - [Microsoft Visual Studio Build Tools 2019](https://aka.ms/vs/15/release/vs_buildtools.exe)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
-- [OCaml for Windows 64-bit](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/)
+- [Node.js 10.x](https://nodejs.org/en/download/)
+- [esy](https://esy.sh/)
 - [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
 - [Python 3](https://www.python.org/downloads/windows/)
 
@@ -66,19 +67,25 @@ C:\> where ld.lld
 C:\Program Files\LLVM\bin\ld.lld.exe
 ```
 
-## OCaml
+## OCaml via esy with Node.js
 
-Install [OCaml for Windows (64-bit)](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/).
-Please download and install the [mingw64 exe for OCaml](https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.exe).
+Install [Node.js 10.x](https://nodejs.org/en/download/) from the "Previous
+Releases" page. Ensure `npm` is in your `PATH` (should be done by the MSI
+installer).
 
-[Alternate OCaml Web-site](https://fdopen.github.io/opam-repository-mingw/installation/)
+Then install [esy](https://esy.sh/) via `npm`.
 
-OCaml is used to build the oeedger8r tool as part of the OE SDK.
-
-Open up a command prompt and ensure that ocaml is added to PATH.
 ```cmd
-C:\> where ocaml
-C:\Program Files\ocpwin64\4.02.1+ocp1-msvc64-20160113\bin\ocaml.exe
+npm install -g esy@0.5.8
+```
+
+OCaml (managed via `esy`) is used to build the oeedger8r tool as part of the OE SDK.
+
+Open up a command prompt and ensure that `esy` is added to the `PATH`.
+
+```cmd
+C:\Users\test> where esy
+C:\Users\test\AppData\Roaming\npm\esy
 ```
 
 ## Python 3

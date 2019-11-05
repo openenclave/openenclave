@@ -1,0 +1,16 @@
+(library
+ (name intel)
+ (synopsis "Upstream Intel edger8r")
+ (wrapped false) ; TODO: We need to transition this to true.
+ (libraries str unix))
+
+(ocamllex Lexer)
+
+(ocamlyacc Parser)
+
+; TODO: Upstream code has a lot of warnings still.
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

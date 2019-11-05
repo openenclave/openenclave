@@ -33,6 +33,7 @@ tests/mbed/tests\..*$
 3rdparty/optee/patches/.*
 3rdparty/optee/optee_client/.*
 3rdparty/optee/optee_os/.*
+tools/oeedger8r/esy\.lock/.*
 tools/oeedger8r/intel/.*
 
 # Files
@@ -63,8 +64,9 @@ tests/ocall/debugging\.txt
 tests/print/printhost\.stderr
 tests/print/printhost\.stdout
 tests/str/test1\.txt
-tools/oeedger8r/\.merlin
-tools/oeedger8r/main\.ml
+tools/oeedger8r/src/\.ocamlformat
+tools/oeedger8r/src/\.ocamlformat-ignore
+tools/oeedger8r/src/main\.ml
 tools/oesign/getopt\.h
 tools/oesign/getopt_long\.c
 tests/host_verify/data/.*

@@ -15,6 +15,16 @@ To build from source, please follow
 [Advanced Build Info](../../docs/GettingStartedDocs/Contributors/AdvancedBuildInfo.md).
 The `oeedger8r` is built by the CMake target `oeedger8r_target`.
 
+The `oeedger8r` tool is written in OCaml, and builds using
+[esy](https://esy.sh/). This is a tool that provides OCaml package management
+and reproducible build environments. Instead of installing the native OCaml
+tools, `esy` parses the `package.json` file to download and install the exact
+OCaml dependencies (including the OCaml compilers and tools, and the `dune`
+build system). Running just the command `esy` is equivalent to `esy install &&
+esy build` which installs the packages and kicks off the `dune` build, in the
+correct environment (this is similar to tools like `pyenv`), and in a
+cross-platform manner.
+
 For more information on using writing EDL files and using this tool, please see
 [Edger8r Getting Started](../../docs/GettingStartedDocs/Edger8rGettingStarted.md).
 
