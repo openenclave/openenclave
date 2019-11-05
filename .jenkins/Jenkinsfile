@@ -277,7 +277,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                             ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --report --out sgx_report.bin
                             popd
                             """
-                    oe.Run("clang-7", task)
+                    oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
 
                     def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                     def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
