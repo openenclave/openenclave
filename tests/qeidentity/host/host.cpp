@@ -14,7 +14,9 @@
 
 #define SKIP_RETURN_CODE 2
 
+extern void run_parse_advisoryids_json_test();
 extern void run_qe_identity_test_cases(oe_enclave_t* enclave);
+extern void run_qe_identity_v2_test_cases(oe_enclave_t* enclave);
 extern std::vector<uint8_t> FileToBytes(const char* path);
 
 int main(int argc, const char* argv[])
@@ -47,7 +49,9 @@ int main(int argc, const char* argv[])
 
 #ifdef OE_LINK_SGX_DCAP_QL
 
+    run_parse_advisoryids_json_test();
     run_qe_identity_test_cases(enclave);
+    run_qe_identity_v2_test_cases(enclave);
 
 #endif
 

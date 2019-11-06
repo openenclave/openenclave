@@ -297,7 +297,7 @@ oe_result_t oe_validate_revocation_list(
     oe_cert_chain_t crl_issuer_chain[3] = {{{0}}};
     oe_cert_t tcb_cert = {0};
     oe_parsed_tcb_info_t parsed_tcb_info = {0};
-    oe_tcb_level_t platform_tcb_level = {{0}};
+    oe_tcb_info_tcb_level_t platform_tcb_level = {{0}};
 
     uint32_t version = 0;
     oe_crl_t crls[2] = {{{0}}};
@@ -402,7 +402,7 @@ oe_result_t oe_validate_revocation_list(
             parsed_extension_info.comp_svn[i];
     }
     platform_tcb_level.pce_svn = parsed_extension_info.pce_svn;
-    platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
 
     OE_CHECK_MSG(
         oe_parse_tcb_info_json(

@@ -7,7 +7,8 @@ enclave {
         // qe identity info tests.
         public oe_result_t test_verify_qe_identity_info(
            [in, string] const char* info_json,
-           [user_check] oe_parsed_qe_identity_info_t* parsed_info);
+           [in] oe_qe_identity_info_tcb_level_t* platform_tcb_level,
+           [out] oe_parsed_qe_identity_info_t* parsed_info);
     };
     untrusted {
     };

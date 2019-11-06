@@ -23,6 +23,12 @@
 extern void TestVerifyTCBInfo(
     oe_enclave_t* enclave,
     const char* test_file_name);
+extern void TestVerifyTCBInfoV2(
+    oe_enclave_t* enclave,
+    const char* test_filename);
+extern void TestVerifyTCBInfoV2_AdvisoryIDs(
+    oe_enclave_t* enclave,
+    const char* test_filename);
 extern int FileToBytes(const char* path, std::vector<uint8_t>* output);
 
 void generate_and_save_report(oe_enclave_t* enclave)
@@ -183,6 +189,11 @@ int main(int argc, const char* argv[])
 
     TestVerifyTCBInfo(enclave, "./data/tcbInfo.json");
     TestVerifyTCBInfo(enclave, "./data/tcbInfo_with_pceid.json");
+
+    TestVerifyTCBInfoV2(enclave, "./data_v2/tcbInfo.json");
+    TestVerifyTCBInfoV2(enclave, "./data_v2/tcbInfo_with_pceid.json");
+    TestVerifyTCBInfoV2_AdvisoryIDs(
+        enclave, "./data_v2/tcbInfoAdvisoryIds.json");
 
     // Get current time and pass it to enclave.
     std::time_t t = std::time(0);

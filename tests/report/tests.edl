@@ -12,7 +12,7 @@ enclave {
         // tcb info tests.
         public oe_result_t test_verify_tcb_info(
             [in, string] const char* tcb_info,
-            [user_check] oe_tcb_level_t* platform_tcb_level,
+            [user_check] oe_tcb_info_tcb_level_t* platform_tcb_level,
             [out] oe_parsed_tcb_info_t* parsed_tcb_info
         );
 
