@@ -234,7 +234,7 @@ def win2016CrossCompile(String build_type, String has_quote_provider = 'OFF') {
                 dir("build/X64-${build_type}") {
 
                   /* We need to copy nuget into the expected location
-                  https://github.com/microsoft/openenclave/blob/a982b46cf440def8fb66e94f2622a4f81e2b350b/host/CMakeLists.txt#L188-L197 */
+                  https://github.com/openenclave/openenclave/blob/a982b46cf440def8fb66e94f2622a4f81e2b350b/host/CMakeLists.txt#L188-L197 */
 
                   bat """
                       vcvars64.bat x64 && \

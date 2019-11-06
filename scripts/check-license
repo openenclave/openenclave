@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 # This script accepts either a list of files relative to the current
@@ -11,7 +11,7 @@
 set -o errexit
 set -o pipefail
 
-license=("Copyright (c) Microsoft Corporation. All rights reserved." "Licensed under the MIT License.")
+license=("Copyright (c) Open Enclave SDK contributors." "Licensed under the MIT License.")
 
 root=$(git rev-parse --show-toplevel)
 

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef __OE_LIBUNWIND_STUBS_H
@@ -6,16 +6,16 @@
 
 #if !defined(__ASSEMBLER__)
 
-#include <pthread.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <fcntl.h>
-#include <stdio.h>
+#include <pthread.h>
 #include <signal.h>
-#include <sys/mman.h>
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 // Disable use of adaptive mutexes, which are defined by GCC headers but not
 // supported by MUSL pthreads. Note that libunwind is compiled with GCC headers
@@ -109,10 +109,9 @@ done:
     return result;
 }
 
-
 static __inline int __libunwind_munmap(void* addr, size_t length)
 {
-    extern void dlfree(void *ptr);
+    extern void dlfree(void* ptr);
 
     if (!addr)
         return -1;
@@ -129,8 +128,8 @@ static __inline int __libunwind_msync(void* addr, size_t length, int flags)
 }
 
 static __inline int __libunwind_mincore(
-    void* addr, 
-    size_t length, 
+    void* addr,
+    size_t length,
     unsigned char* vec)
 {
     if (!addr || !vec)
