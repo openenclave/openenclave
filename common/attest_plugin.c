@@ -323,13 +323,13 @@ oe_result_t oe_free_endorsements(uint8_t* evidence_buffer)
 
 static bool _check_claims(const oe_claim_t* claims, size_t claims_length)
 {
-    for (size_t i = 0; i < OE_KNOWN_CLAIMS_COUNT; i++)
+    for (size_t i = 0; i < OE_REQUIRED_CLAIMS_COUNT; i++)
     {
         bool found = false;
 
         for (size_t j = 0; j < claims_length && !found; j++)
         {
-            if (oe_strcmp(OE_KNOWN_CLAIMS[i], claims[j].name) == 0)
+            if (oe_strcmp(OE_REQUIRED_CLAIMS[i], claims[j].name) == 0)
             {
                 found = true;
             }
@@ -407,7 +407,7 @@ static oe_result_t _get_uuid(
 {
     for (size_t i = 0; i < claims_length; i++)
     {
-        if (oe_strcmp(claims[i].name, "plugin_uuid") == 0)
+        if (oe_strcmp(claims[i].name, OE_CLAIM_PLUGIN_UUID) == 0)
         {
             if (claims[i].value_size != sizeof(uuid_t))
                 return OE_CONSTRAINT_FAILED;

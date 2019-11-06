@@ -69,6 +69,7 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
         add_subdirectory(VectorException)
     endif()
 
+add_subdirectory(attestation_plugin)
 add_subdirectory(create-errors)
 add_subdirectory(crypto)
 add_subdirectory(hexdump)
