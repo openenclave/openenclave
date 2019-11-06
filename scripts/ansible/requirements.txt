@@ -1,4 +1,4 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-ansible==2.8.0
+ansible==2.8.2
 pywinrm==0.2.1
