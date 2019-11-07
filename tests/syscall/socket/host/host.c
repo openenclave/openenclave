@@ -16,6 +16,12 @@
 
 #define SERVER_PORT "12345"
 
+#if __linux__
+#define HOST_SOCKET_ERRNO errno
+#elif _WIN32
+#define HOST_SOCKET_ERRNO WSAGetLastError()
+#endif
+
 void* enclave_server_thread(void* arg)
 {
     oe_enclave_t* enclave = NULL;
@@ -47,7 +53,7 @@ void* host_server_thread(void* arg)
         setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (void*)&optVal, optLen);
     if (rtn > 0)
     {
-        printf("setsockopt failed errno = %d\n", errno);
+        printf("setsockopt failed errno = %d\n", HOST_SOCKET_ERRNO);
     }
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
@@ -87,7 +93,7 @@ char* host_client(in_port_t port)
     static char recvBuff[1024];
     struct sockaddr_in serv_addr = {0};
 
-    memset(recvBuff, '0', sizeof(recvBuff));
+    memset(recvBuff, '\0', sizeof(recvBuff));
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("\n Error : Could not create socket \n");
@@ -109,13 +115,18 @@ char* host_client(in_port_t port)
     {
         if (retries++ > max_retries)
         {
-            printf("\n Error : Connect Failed errno = %d\n", errno);
+            printf("\n Error : Connect Failed errno = %d\n", HOST_SOCKET_ERRNO);
             sock_close(sockfd);
             return NULL;
         }
-        else
+#if _WIN32        
+        else if(HOST_SOCKET_ERRNO == WSAEISCONN)
         {
-            printf("Connect Failed. errno = %d Retrying \n", errno);
+            break;
+        }
+#endif        
+        {
+            printf("Connect Failed. errno = %d Retrying \n", HOST_SOCKET_ERRNO);            
             sleep_msec(100);
         }
     }
@@ -130,9 +141,9 @@ char* host_client(in_port_t port)
         }
         else
         {
-            if (errno != EAGAIN)
+            if (HOST_SOCKET_ERRNO != EAGAIN)
             {
-                printf("Read error, errno = %d\n", errno);
+                printf("Read error, errno = %d\n", HOST_SOCKET_ERRNO);
                 sock_close(sockfd);
                 return NULL;
             }

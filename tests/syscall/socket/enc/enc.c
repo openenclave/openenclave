@@ -172,7 +172,6 @@ int ecall_run_server()
             printf("enc: accept failed errno = %d \n", oe_errno);
         }
     }
-
     oe_close(listenfd);
     printf("exit from server thread\n");
     return status;
