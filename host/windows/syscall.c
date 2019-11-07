@@ -11,7 +11,6 @@
 **
 **==============================================================================
 */
-
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include <direct.h>
@@ -19,8 +18,13 @@
 #include <stdint.h>
 #include <sys/stat.h>
 
+
 // clang-format off
+
+#include <winsock2.h>
 #include <windows.h>
+#include <Ws2def.h>
+#include <VersionHelpers.h>
 // clang-format on
 
 #include <openenclave/corelibc/errno.h>
@@ -213,11 +217,13 @@ int oe_syscall_close_ocall(oe_host_fd_t fd)
     return _close(fd);
 }
 
+static oe_host_fd_t _dup_socket(oe_host_fd_t);
+
 oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t oldfd)
 {
     oe_host_fd_t ret = -1;
 
-    // Only support duping std file descriptors for now.
+    // Only support duping std file descriptors and sockets for now.
     switch (oldfd)
     {
         case 0:
@@ -233,8 +239,11 @@ oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t oldfd)
             break;
 
         default:
+            // Try dup-ing it as a socket.
+            ret = _dup_socket(oldfd);
             break;
     }
+
 
     if (ret == -1)
         _set_errno(OE_EINVAL);
@@ -312,10 +321,56 @@ int oe_syscall_rmdir_ocall(const char* pathname)
 **==============================================================================
 */
 
+#define OE_SOCKET_FD_MAGIC 0x29b4a345c7564b57
+typedef struct win_socket_fd {
+    uint64_t magic;
+    SOCKET socket;
+} oe_socket_fd_t;
+
+static oe_socket_fd_t _invalid_socket = {
+    OE_SOCKET_FD_MAGIC,
+    INVALID_SOCKET
+};
+
+oe_host_fd_t _make_socket_fd(SOCKET sock)
+{
+    oe_host_fd_t fd = (oe_host_fd_t)&_invalid_socket;
+    if (sock != INVALID_SOCKET)
+    {
+        oe_socket_fd_t* socket_fd = (oe_socket_fd_t*) malloc(sizeof(oe_socket_fd_t));
+        socket_fd->magic = OE_SOCKET_FD_MAGIC;
+        socket_fd->socket = sock;
+        fd = (oe_host_fd_t) socket_fd;
+    }
+    return fd;
+}
+
+SOCKET _get_socket(oe_host_fd_t fd)
+{
+    oe_socket_fd_t* socket_fd = (oe_socket_fd_t*) fd;
+    if (socket_fd && socket_fd->magic == OE_SOCKET_FD_MAGIC)
+        return socket_fd->socket;
+    return INVALID_SOCKET;
+}
+
+static oe_host_fd_t _dup_socket(oe_host_fd_t oldfd)
+{
+    oe_socket_fd_t* old_socket_fd = (oe_socket_fd_t*) oldfd;
+    if (old_socket_fd && old_socket_fd->magic == OE_SOCKET_FD_MAGIC)
+    {
+        oe_socket_fd_t* new_socket_fd = (oe_socket_fd_t*) malloc(sizeof(oe_socket_fd_t));
+        *new_socket_fd = *old_socket_fd;
+        return (oe_host_fd_t)(uint64_t) new_socket_fd;
+    }
+    return -1;
+}
+
 oe_host_fd_t oe_syscall_socket_ocall(int domain, int type, int protocol)
 {
-    PANIC;
+    SOCKET sock = socket(domain, type, protocol);
+    return _make_socket_fd(sock);
 }
+
 
 int oe_syscall_socketpair_ocall(
     int domain,
@@ -331,7 +386,7 @@ int oe_syscall_connect_ocall(
     const struct oe_sockaddr* addr,
     oe_socklen_t addrlen)
 {
-    PANIC;
+   return connect(_get_socket(sockfd), (const struct sockaddr*) addr, (int) addrlen);
 }
 
 oe_host_fd_t oe_syscall_accept_ocall(
@@ -340,7 +395,11 @@ oe_host_fd_t oe_syscall_accept_ocall(
     oe_socklen_t addrlen_in,
     oe_socklen_t* addrlen_out)
 {
-    PANIC;
+    int addrlen = (int) addrlen_in;
+    SOCKET conn_socket =  accept(_get_socket(sockfd), (struct sockaddr*) addr, addrlen_out ? &addrlen : NULL);
+    if (addrlen_out)
+        *addrlen_out = addrlen;
+    return _make_socket_fd(conn_socket);
 }
 
 int oe_syscall_bind_ocall(
@@ -348,12 +407,12 @@ int oe_syscall_bind_ocall(
     const struct oe_sockaddr* addr,
     oe_socklen_t addrlen)
 {
-    PANIC;
+    return bind(_get_socket(sockfd), (const struct sockaddr*) addr, addrlen);
 }
 
 int oe_syscall_listen_ocall(oe_host_fd_t sockfd, int backlog)
 {
-    PANIC;
+    return listen(_get_socket(sockfd), backlog);
 }
 
 ssize_t oe_syscall_recvmsg_ocall(
@@ -392,7 +451,7 @@ ssize_t oe_syscall_recv_ocall(
     size_t len,
     int flags)
 {
-    PANIC;
+    return recv(_get_socket(sockfd), (char*)buf, (int)len, flags);
 }
 
 ssize_t oe_syscall_recvfrom_ocall(
@@ -413,7 +472,7 @@ ssize_t oe_syscall_send_ocall(
     size_t len,
     int flags)
 {
-    PANIC;
+    return send(_get_socket(sockfd), buf, len, flags);
 }
 
 ssize_t oe_syscall_sendto_ocall(
@@ -452,7 +511,14 @@ int oe_syscall_shutdown_ocall(oe_host_fd_t sockfd, int how)
 
 int oe_syscall_close_socket_ocall(oe_host_fd_t sockfd)
 {
-    PANIC;
+    SOCKET sock = _get_socket(sockfd);
+    int r = -1;
+    if (sock != INVALID_SOCKET)
+    {
+        r = closesocket(sock);
+        free((oe_socket_fd_t*)sockfd);
+    }
+    return r;
 }
 
 int oe_syscall_fcntl_ocall(
@@ -503,7 +569,7 @@ int oe_syscall_setsockopt_ocall(
     const void* optval,
     oe_socklen_t optlen)
 {
-    PANIC;
+    return setsockopt(_get_socket(sockfd), level, optname, optval, optlen);
 }
 
 int oe_syscall_getsockopt_ocall(
@@ -723,5 +789,24 @@ int oe_syscall_getgroups_ocall(size_t size, unsigned int* list)
 
 int oe_syscall_uname_ocall(struct oe_utsname* buf)
 {
-    PANIC;
+    // Based on https://docs.microsoft.com/en-us/windows/win32/sysinfo/getting-the-system-version
+    // OE SDK is supported only on WindowsServer and Win10
+    if (IsWindowsServer())
+    {
+        sprintf(buf->nodename, "(unknown)");
+        sprintf(buf->domainname, "(none)");
+        sprintf(buf->sysname, "WindowsServer");
+        sprintf(buf->version, "2016OrAbove");
+        return 0;
+    }
+    else if(IsWindows10OrGreater())
+    {
+        sprintf(buf->nodename, "(unknown)");
+        sprintf(buf->domainname, "(none)");
+        sprintf(buf->sysname, "Windows10OrGreater");
+        sprintf(buf->version, "10OrAbove");
+        return 0;
+    }
+
+    return -1;
 }
