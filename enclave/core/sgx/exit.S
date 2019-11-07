@@ -55,7 +55,7 @@ oe_asm_exit:
 
     // Check the depth of the ECALL stack (zero for clean exit)
     // exit-type-check.
-    mov %gs:td_depth, %r8
+    mov %fs:td_depth, %r8
     cmp $0, %r8
     je .clean_exit
 
@@ -89,7 +89,7 @@ oe_asm_exit:
     pop %rsi
     pop %rdi
 
-    mov %rsp, %gs:td_last_sp
+    mov %rsp, %fs:td_last_sp
 
     jmp .clear_enclave_registers
 
@@ -99,7 +99,7 @@ oe_asm_exit:
     lfence
 
     // Clear the td_t.last_sp field (force oe_enter to calculate stack pointer)
-    movq $0, %gs:td_last_sp
+    movq $0, %fs:td_last_sp
 
 .clear_enclave_registers:
 
@@ -108,15 +108,15 @@ oe_asm_exit:
 
 .restore_host_registers:
 
-    mov %gs:td_host_rcx, %rcx
-    mov %gs:td_host_rsp, %rsp
-    mov %gs:td_host_rbp, %rbp
+    mov %fs:td_host_rcx, %rcx
+    mov %fs:td_host_rsp, %rsp
+    mov %fs:td_host_rbp, %rbp
 
 .execute_eexit:
 
     // Check td_t.simulate flag
     // simulate-flag-check.
-    mov %gs:td_simulate, %rax
+    mov %fs:td_simulate, %rax
     cmp $0, %rax
     jz .execute_eexit_instruction
 

@@ -607,11 +607,11 @@ typedef struct _td
     uint64_t simulate;
 
     /* Reserved for thread-local variables. */
-    uint8_t thread_local_data[OE_THREAD_LOCAL_SPACE];
+    // uint8_t thread_local_data[OE_THREAD_LOCAL_SPACE];
 } td_t;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(td_t), 4096);
+OE_CHECK_SIZE(sizeof(td_t), 256);
 
 /* Get the thread data object for the current thread */
 td_t* oe_get_td(void);

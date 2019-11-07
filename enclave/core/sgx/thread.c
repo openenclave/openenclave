@@ -813,7 +813,7 @@ static void** _get_tsd_page(void)
     if (!td)
         return NULL;
 
-    return (void**)((unsigned char*)td + OE_PAGE_SIZE);
+    return (void**)((unsigned char*)td + OE_PAGE_SIZE * 0);
 }
 
 oe_result_t oe_thread_key_create(

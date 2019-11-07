@@ -18,7 +18,7 @@
 #include "linux/threadlocal.h"
 #endif
 
-#define TD_FROM_TCS (4 * OE_PAGE_SIZE)
+#define TD_FROM_TCS (5 * OE_PAGE_SIZE)
 
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, magic) == td_magic);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, depth) == td_depth);
@@ -37,7 +37,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(td_t, simulate) == td_simulate);
 #if defined(__linux__)
 OE_STATIC_ASSERT(td_callsites == 0xf0);
 OE_STATIC_ASSERT(OE_OFFSETOF(Callsite, ocall_context) == 0x40);
-OE_STATIC_ASSERT(TD_FROM_TCS == 0x4000);
+OE_STATIC_ASSERT(TD_FROM_TCS == 0x5000);
 OE_STATIC_ASSERT(sizeof(oe_ocall_context_t) == (2 * sizeof(uintptr_t)));
 #endif
 
@@ -159,7 +159,7 @@ td_t* td_from_tcs(void* tcs)
 
 void* td_to_tcs(const td_t* td)
 {
-    return (uint8_t*)td - (4 * OE_PAGE_SIZE);
+    return (uint8_t*)td - TD_FROM_TCS;
 }
 
 /*
@@ -180,7 +180,7 @@ td_t* oe_get_td()
 {
     td_t* td;
 
-    asm("mov %%gs:0, %0" : "=r"(td));
+    asm("mov %%fs:0, %0" : "=r"(td));
 
     return td;
 }
@@ -264,7 +264,7 @@ void td_init(td_t* td)
         td->callsites = NULL;
 
         /* initilize the stack_guard at %%fs:0x28 with a random number */
-        unsigned char* fs = (unsigned char*)td + OE_PAGE_SIZE * 1;
+        unsigned char* fs = (unsigned char*)td + OE_PAGE_SIZE * 0;
         uint64_t* stack_guard = (uint64_t*)(fs + 0x28);
         *stack_guard = oe_rdrand();
 
@@ -308,8 +308,14 @@ void td_clear(td_t* td)
     if (td->depth != 0 || td->callsites != NULL)
         oe_abort();
 
+    /* Save the stack guard before cleanup. */
+    uint64_t __stack_guard = td->base.__stack_guard;
+
     /* Clear base structure */
     memset(&td->base, 0, sizeof(td->base));
+
+    /* Restore the stack guard after cleanup. */
+    td->base.__stack_guard = __stack_guard;
 
     /* Clear the magic number */
     td->magic = 0;

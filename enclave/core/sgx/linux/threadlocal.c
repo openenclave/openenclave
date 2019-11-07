@@ -213,7 +213,7 @@ static __thread uint64_t _num_tls_atexit_functions;
 static uint8_t* _get_fs_from_td(td_t* td)
 {
     // TODO: Make this flexible
-    uint8_t* fs = (uint8_t*)td + 1 * OE_PAGE_SIZE;
+    uint8_t* fs = (uint8_t*)td + 0 * OE_PAGE_SIZE;
     return fs;
 }
 
