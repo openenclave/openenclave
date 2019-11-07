@@ -5,7 +5,13 @@
   "license": "MIT",
 
   "esy": {
-    "build": "dune build -p #{self.name}",
+    "build": [
+      "dune build -p #{self.name}"
+    ],
+    "buildDev": [
+      "dune build -p #{self.name} @fmt --auto-promote",
+      "dune build -p #{self.name}"
+    ],
     "buildsInSource": "_build",
     "release": {
       "bin": "oeedger8r",

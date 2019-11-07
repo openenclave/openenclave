@@ -26,7 +26,8 @@ add_custom_command(
   COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/intel ${CMAKE_CURRENT_BINARY_DIR}/intel
   COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src
   COMMAND cmake -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/dune-project ${CMAKE_CURRENT_SOURCE_DIR}/package.json ${CMAKE_CURRENT_BINARY_DIR}
-  COMMAND esy
+  COMMAND esy install
+  COMMAND esy build --release
   DEPENDS dune-project
           package.json
           src/dune
