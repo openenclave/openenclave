@@ -51,7 +51,7 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
   # Install Git pre-commit hook
   if (NOT WIN32)
     file(
-      COPY scripts/pre-commit
+      COPY scripts/pre-commit scripts/commit-msg
       DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks")
   endif ()
 endif ()
