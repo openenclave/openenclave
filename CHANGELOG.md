@@ -10,8 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
-[v0.7.0-rc1] - 2019-10-08
--------------------------
+### Changed
+
+- Open Enclave SDK is now officially an incubation project as part of the Linux
+  Foundation's Confidential Computing Consortium (CCC).
+    - All contributions are now accepted under the terms of the [Developer Certificate
+      of Origin](https://developercertificate.org). For details, see
+      [Contributing to Open Enclave](docs/Contributing.md).
+    - The copyright for all sources is now attributed to Open Enclave SDK contributors.
+
+[v0.7.0] - 2019-10-26
+---------------------
 
 ### Added
 
@@ -236,8 +245,8 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased](https://github.com/openenclave/openenclave/compare/v0.7.x...HEAD)
-[v0.7.0-rc1](https://github.com/openenclave/openenclave/compare/v0.6.0...v0.7.x)
+[Unreleased](https://github.com/openenclave/openenclave/compare/v0.7.0...HEAD)
+[v0.7.0](https://github.com/openenclave/openenclave/compare/v0.6.0...v0.7.0)
 [v0.6.0](https://github.com/openenclave/openenclave/compare/v0.5.0...v0.6.0)
 [v0.5.0](https://github.com/openenclave/openenclave/compare/v0.4.1...v0.5.0)
 [v0.4.1](https://github.com/openenclave/openenclave/compare/v0.4.0...v0.4.1)
