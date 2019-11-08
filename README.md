@@ -55,10 +55,9 @@ started guides, see
 Contributing
 ------------
 
-This project welcomes contributions and suggestions. Most contributions require
-you to agree to a Contributor License Agreement (CLA) declaring that you have
-the right to, and actually do, grant us the rights to use your contribution. For
-details, see [Contributing to Open Enclave](docs/Contributing.md).
+This project welcomes contributions and suggestions. All contributions to the Open Enclave SDK
+must adhere to the terms of the [Developer Certificate of Origin (DCO)](https://developercertificate.org/).
+For details, see [Contributing to Open Enclave](docs/Contributing.md).
 
 This project has adopted the
 [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
