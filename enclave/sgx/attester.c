@@ -3,6 +3,7 @@
 
 #include <openenclave/attestation/plugin.h>
 #include <openenclave/attestation/sgx/attester.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
@@ -60,7 +61,7 @@ static void _set_claims(
     oe_sgx_plugin_claims_header_t* header =
         (oe_sgx_plugin_claims_header_t*)claims;
     header->version = OE_SGX_PLUGIN_CLAIMS_VERSION;
-    header->num_claims = custom_claims_length;
+    header->num_claims = custom_claims ? custom_claims_length : 0;
     claims += sizeof(oe_sgx_plugin_claims_header_t);
 
     if (!custom_claims)
@@ -145,10 +146,6 @@ static oe_result_t _get_evidence(
         (endorsements_buffer && !endorsements_buffer_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    // Endorsements are only for SGX remote attestation.
-    if (endorsements_buffer && flags != OE_REPORT_TYPE_SGX_REMOTE)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     // Serialize the claims.
     OE_CHECK_MSG(
         _serialize_claims(
@@ -160,10 +157,10 @@ static oe_result_t _get_evidence(
     OE_CHECK_MSG(
         oe_get_report(
             flags,
-            opt_params,
-            opt_params_size,
             hash.buf,
             sizeof(hash.buf),
+            opt_params,
+            opt_params_size,
             &report,
             &report_size),
         "SGX Plugin: Failed to get OE report. %s",
@@ -179,7 +176,7 @@ static oe_result_t _get_evidence(
     memcpy(evidence + report_size, claims, claims_size);
 
     // Get the endorsements from the report if needed.
-    if (endorsements_buffer)
+    if (endorsements_buffer && flags == OE_REPORT_FLAGS_REMOTE_ATTESTATION)
     {
         oe_report_header_t* header = (oe_report_header_t*)report;
 

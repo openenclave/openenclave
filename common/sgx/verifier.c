@@ -68,7 +68,10 @@ static oe_result_t _get_input_time(
     oe_datetime_t** time)
 {
     if (!policies)
+    {
+        *time = NULL;
         return OE_OK;
+    }
 
     for (size_t i = 0; i < policies_size; i++)
     {
@@ -215,13 +218,14 @@ static oe_result_t _fill_with_known_claims(
         oe_sgx_endorsements_t sgx_endorsements;
         oe_datetime_t valid_from;
         oe_datetime_t valid_until;
+        oe_report_header_t* header = (oe_report_header_t*)report;
 
         // Get the endorsements if none were provided.
         if (endorsements == NULL)
         {
             OE_CHECK(oe_get_sgx_endorsements(
-                parsed_report.enclave_report,
-                parsed_report.enclave_report_size,
+                header->report,
+                header->report_size,
                 &endorsements_local,
                 &endorsements_local_size));
             endorsements = endorsements_local;
@@ -234,8 +238,8 @@ static oe_result_t _fill_with_known_claims(
             &sgx_endorsements));
 
         OE_CHECK(oe_get_sgx_quote_validity(
-            parsed_report.enclave_report,
-            parsed_report.enclave_report_size,
+            header->report,
+            header->report_size,
             &sgx_endorsements,
             &valid_from,
             &valid_until));
@@ -436,6 +440,8 @@ static oe_result_t _verify_evidence(
         endorsements_buffer_size,
         claims,
         claims_length));
+
+    result = OE_OK;
 
 done:
     return result;

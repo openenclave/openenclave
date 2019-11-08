@@ -12,10 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifndef OE_BUILD_ENCLAVE
-#include <pthread.h>
-#endif
-
 #include "common.h"
 
 /**

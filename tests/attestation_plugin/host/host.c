@@ -8,6 +8,22 @@
 #include "../plugin/tests.h"
 #include "plugin_u.h"
 
+void host_verify(
+    uint8_t* evidence,
+    size_t evidence_size,
+    uint8_t* endorsements,
+    size_t endorsements_size)
+{
+    printf("====== running host_verify.\n");
+    verify_sgx_evidence(
+        evidence,
+        evidence_size,
+        endorsements,
+        endorsements_size,
+        test_claims,
+        NUM_TEST_CLAIMS);
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -19,6 +35,8 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
+    register_verifier();
+
     // Run test on the enclave.
     const uint32_t flags = oe_get_create_flags();
 
@@ -26,12 +44,17 @@ int main(int argc, const char* argv[])
         argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
     OE_TEST(result == OE_OK);
 
-    run_test(enclave);
+    run_runtime_test(enclave);
+    register_sgx(enclave);
+    test_sgx(enclave);
+    unregister_sgx(enclave);
 
     OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
 
-    // Run test on the host.
-    test_run_all();
+    // Run runtime test on the host.
+    test_runtime();
+
+    unregister_verifier();
 
     return 0;
 }
