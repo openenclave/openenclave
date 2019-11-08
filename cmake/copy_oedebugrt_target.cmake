@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 ## This function adds a CMake target for oedebugrt.dll. This allows the caller to :add a dependency on oedebugrt.dll so

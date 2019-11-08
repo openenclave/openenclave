@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 add_custom_command(OUTPUT datasealing_u.h datasealing_u.c datasealing_args.h

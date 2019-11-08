@@ -60,7 +60,7 @@ for details.
 The following license header **must** be included at the top of every file:
 
 ```
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 ```
 
@@ -123,7 +123,7 @@ For other files (`*.asm`, `*.S`, etc.) our current best guidance is consistency:
 Excerpt from `enclave/key.c`:
 
 ```c
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "key.h"

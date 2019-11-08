@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_LIBC_DEPRECATIONS_H
@@ -13,7 +13,9 @@
 #include <bits/alltypes.h>
 
 #if defined(__cplusplus)
-#define OE_LIBC_EXTERN_C_BEGIN extern "C" {
+#define OE_LIBC_EXTERN_C_BEGIN \
+    extern "C"                 \
+    {
 #define OE_LIBC_EXTERN_C_END }
 #else
 #define OE_LIBC_EXTERN_C_BEGIN
@@ -44,10 +46,10 @@ OE_LIBC_EXTERN_C_BEGIN
 
 OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 int pthread_create(
-    pthread_t *thread, 
-    const pthread_attr_t *attr,
-    void *(*start_routine) (void *), 
-    void *arg);
+    pthread_t* thread,
+    const pthread_attr_t* attr,
+    void* (*start_routine)(void*),
+    void* arg);
 
 OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 int pthread_join(pthread_t thread, void** retval);
@@ -68,9 +70,9 @@ struct tm;
 
 OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 size_t strftime(
-    char* s, 
-    size_t maxparam, 
-    const char* format, 
+    char* s,
+    size_t maxparam,
+    const char* format,
     const struct tm* tm);
 
 OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
@@ -83,6 +85,7 @@ size_t strftime_l(
 
 OE_LIBC_EXTERN_C_END
 
-#endif /* !defined(OE_LIBC_SUPPRESS_DEPRECATIONS) && !defined(__ASSEMBLER__) */
+#endif /* !defined(OE_LIBC_SUPPRESS_DEPRECATIONS) && !defined(__ASSEMBLER__) \
+        */
 
 #endif /* _OE_LIBC_DEPRECATIONS_H */

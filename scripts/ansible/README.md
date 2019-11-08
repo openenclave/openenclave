@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 This directory contains the Ansible work used to automate all the required tasks for setting up new Open Enclave environments, and new Jenkins agents for the CI / CD system.

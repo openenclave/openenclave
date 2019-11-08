@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 destfile="$1"
 input_file="$2"
 
 cat > "$destfile" << EOF
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef SAMPLES_ATTESTED_TLS_SERVER_UNIQUE_ID_H
