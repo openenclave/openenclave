@@ -94,7 +94,8 @@ add_library(oelibutee INTERFACE)
 
 target_link_libraries(oelibutee INTERFACE
   oeutee
-  oelibutee_includes)
+  oelibutee_includes
+  --undefined=TEE_GenerateRandom)
 
 install(TARGETS oelibutee oelibutee_includes EXPORT openenclave-targets)
 
