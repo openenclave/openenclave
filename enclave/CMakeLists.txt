@@ -14,6 +14,8 @@ if (OE_SGX)
         ../common/sgx/sgxcertextensions.c
         ../common/sgx/tcbinfo.c
         ../common/sgx/tlsverifier.c
+        ../common/sgx/verifier.c
+        sgx/attester.c
         sgx/qeidinfo.c
         sgx/report.c
         sgx/revocationinfo.c

@@ -128,6 +128,7 @@ if (OE_SGX)
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c
+    ../common/sgx/verifier.c
     sgx/hostverify_report.c
     sgx/sgxquoteprovider.c)
 

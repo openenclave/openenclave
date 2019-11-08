@@ -4,7 +4,7 @@
 #ifndef _OE_MOCK_ATTESTER_H
 #define _OE_MOCK_ATTESTER_H
 
-#include <openenclave/attestation_plugin.h>
+#include <openenclave/attestation/plugin.h>
 #include <string.h>
 
 #define MOCK_EVIDENCE "123"

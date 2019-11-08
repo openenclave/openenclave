@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/attestation_plugin.h>
+#include <openenclave/attestation/plugin.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/print.h>

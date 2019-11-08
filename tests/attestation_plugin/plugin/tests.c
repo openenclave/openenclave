@@ -7,7 +7,7 @@
 #include <openenclave/host.h>
 #endif
 
-#include <openenclave/attestation_plugin.h>
+#include <openenclave/attestation/plugin.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/tests.h>

@@ -10,17 +10,6 @@
 
 OE_EXTERNC_BEGIN
 
-/* Date representation with 1 second precision */
-typedef struct _oe_datetime
-{
-    uint32_t year;    /* format: 1970, 2018, 2020 */
-    uint32_t month;   /* range: 1-12 */
-    uint32_t day;     /* range: 1-31 */
-    uint32_t hours;   /* range: 0-23 */
-    uint32_t minutes; /* range: 0-59 */
-    uint32_t seconds; /* range: 0-59 */
-} oe_datetime_t;
-
 // ISO 8601 format: YYYY-MM-DDThh:mm:ssZ
 #define OE_DATETIME_FORMAT ("YYYY-MM-DDThh:mm:ssZ")
 

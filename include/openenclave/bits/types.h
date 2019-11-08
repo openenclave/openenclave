@@ -224,4 +224,17 @@ typedef struct _oe_asymmetric_key_params
     size_t user_data_size;
 } oe_asymmetric_key_params_t;
 
+/**
+ * This struct defines a datetime up to 1 second precision.
+ */
+typedef struct _oe_datetime
+{
+    uint32_t year;    /* format: 1970, 2018, 2020 */
+    uint32_t month;   /* range: 1-12 */
+    uint32_t day;     /* range: 1-31 */
+    uint32_t hours;   /* range: 0-23 */
+    uint32_t minutes; /* range: 0-59 */
+    uint32_t seconds; /* range: 0-59 */
+} oe_datetime_t;
+
 #endif /* _OE_BITS_TYPES_H */
