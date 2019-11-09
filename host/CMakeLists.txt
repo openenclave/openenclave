@@ -117,6 +117,22 @@ else()
   message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
 endif()
 
+if (OE_SGX AND WIN32)
+  # Use clang to compile the oe_enter function that calls ENCLU.
+  # Windows debuggers (WinDbg and Visual Studio Debugger) require that the rbp
+  # is set up like a Linux x64 ABI style frame pointer by the oe_enter function.
+  # Since oe_enter function is setting up the frame-pointer, enter.c must be
+  # compiled with the -fomit-frame-pointer flag so that the compiler does not
+  # set up the frame pointer.
+  add_custom_command(
+     OUTPUT enter.obj
+     DEPENDS sgx/enter.c
+     COMMAND clang  -c -O2 -fomit-frame-pointer -m64
+             -I${PROJECT_SOURCE_DIR}/include
+             ${CMAKE_CURRENT_SOURCE_DIR}/sgx/enter.c
+             -o enter.obj)
+endif()
+
 # SGX specific files.
 if (OE_SGX)
   list(APPEND PLATFORM_HOST_ONLY_SRC
@@ -160,9 +176,9 @@ if (OE_SGX)
 
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
-      sgx/linux/enter.S
-      sgx/linux/entersim.S
+      sgx/enter.c
       sgx/linux/exception.c
+      sgx/linux/hoststackbridge.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
       sgx/linux/xstate.c)
@@ -172,9 +188,7 @@ if (OE_SGX)
 
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/windows/aep.asm
-      sgx/windows/enter.asm
-      sgx/windows/entersim.asm
-      sgx/windows/host_context.asm
+      ${CMAKE_CURRENT_BINARY_DIR}/enter.obj
       sgx/windows/exception.c
       sgx/windows/switchless.c
       sgx/windows/xstate.c)
@@ -184,7 +198,7 @@ if (OE_SGX)
 elseif(OE_TRUSTZONE)
   list(APPEND PLATFORM_SDK_ONLY_SRC
     optee/log.c)
-  
+
   if (UNIX)
     list(APPEND PLATFORM_SDK_ONLY_SRC
       optee/linux/enclave.c)
@@ -196,7 +210,7 @@ elseif(OE_TRUSTZONE)
 endif()
 
 if (OE_SGX AND WIN32)
-  # oedebugrt is accessed via a bridge on Win32 and need not be linked.    
+  # oedebugrt is accessed via a bridge on Win32 and need not be linked.
   list(APPEND PLATFORM_SDK_ONLY_SRC
     sgx/windows/debugrtbridge.c)
 endif()
@@ -246,6 +260,16 @@ endif()
 if (OE_SGX AND UNIX)
   # Link oedebugrt static library.
   target_link_libraries(oehost PRIVATE oedebugrt)
+
+  # hoststackbridge and enter.c must be forced to retain the frame-pointer
+  # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
+  # Both are compiled with -O2 flag to retain the same generated assembly
+  # code in both debug and release builds.
+  set_source_files_properties(oehost
+    sgx/enter.c
+    sgx/linux/hoststackbridge.c
+    PROPERTIES
+    COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
 endif()
 
 add_dependencies(oehost syscall_untrusted_edl)

@@ -47,18 +47,19 @@ static void load_oedebugrt(void)
             debugrtpath,
             NULL, /* reserved */
             /* Search only specified path. */
-            LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+            LOAD_WITH_ALTERED_SEARCH_PATH);
     }
 
 #endif
 
-    /* Search for oedebugrt.dll only in the application folder. */
+    /* Search for oedebugrt.dll first in the application folder and then the
+     * system32 folder.*/
     if (_oedebugrt.hmodule == NULL)
     {
         _oedebugrt.hmodule = LoadLibraryExA(
             "oedebugrt.dll",
             NULL, /* reserved */
-            LOAD_LIBRARY_SEARCH_APPLICATION_DIR);
+            LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
     }
 
     if (_oedebugrt.hmodule != NULL)
