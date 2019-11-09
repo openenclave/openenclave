@@ -52,7 +52,16 @@ static void load_oedebugrt(void)
 
 #endif
 
-    /* Search for oedebugrt.dll only in the application folder. */
+    /* Search for oedebugrt.dll first in the application folder. */
+    if (_oedebugrt.hmodule == NULL)
+    {
+        _oedebugrt.hmodule = LoadLibraryExA(
+            "oedebugrt.dll",
+            NULL, /* reserved */
+            LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+    }
+
+    /* Search for oedebugrt.dll next in the system folders. */
     if (_oedebugrt.hmodule == NULL)
     {
         _oedebugrt.hmodule = LoadLibraryExA(
