@@ -71,10 +71,17 @@ improved plugin model as it is a copy of Intel's code.
 
 ### Best Practices
 
-We use [ocamlformat](https://github.com/ocaml-ppx/ocamlformat) to format our
-code (such as `Emitter.ml`, but not Intel's code). It is the final say in
-formatting. This should be setup to run automatically in one's editor, as it has
-not yet been setup in CI.
+We use [ocamlformat v0.12](https://github.com/ocaml-ppx/ocamlformat) (bundled
+via `esy`) to format our code (such as `Emitter.ml`, but not Intel's code). It
+is the final say in formatting. The developer build (that is, just `esy build`,
+not `esy build --release`) is setup to automatically run `ocamlformat` before
+compiling, and if any changes are necessary it will update the files and then
+exit with an error. Run the build a second time to complete the build with the
+fixed files (and don't forget to commit them).
+
+> Note that because we copy the sources to the build directory for CMake, the
+> CMake build uses `esy build --release` which does not run the formatter, as it
+> would not make sense to do on copied files.
 
 We follow [OCamlverse Best Practices](https://ocamlverse.github.io/content/best_practices.html)
 (which includes using `ocamlformat`).
