@@ -206,14 +206,14 @@ static __thread uint64_t _num_tls_atexit_functions;
 
 /**
  * Get the address of the FS segment given a thread data object.
- * Currently FS is assumed to exist one page after the thread data.
+ * Currently thread data is moved to the first bytes of FS Page.
  * This needs to be made more flexible, taking into account the
  * actual size of the tls data.
  */
 static uint8_t* _get_fs_from_td(td_t* td)
 {
     // TODO: Make this flexible
-    uint8_t* fs = (uint8_t*)td + 0 * OE_PAGE_SIZE;
+    uint8_t* fs = (uint8_t*)td;
     return fs;
 }
 

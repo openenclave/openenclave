@@ -794,8 +794,8 @@ oe_result_t oe_rwlock_unlock(oe_rwlock_t* read_write_lock)
 */
 
 #define MAX_KEYS (OE_PAGE_SIZE / sizeof(void*))
-/* The first 512 bytes are reserved. */
-#define MIN_KEYS (0x200 / sizeof(void*))
+/* The first several bytes are reserved for thread data. */
+#define MIN_KEYS (sizeof(td_t) / sizeof(void*))
 
 typedef struct _key_slot
 {
@@ -813,7 +813,7 @@ static void** _get_tsd_page(void)
     if (!td)
         return NULL;
 
-    return (void**)((unsigned char*)td + OE_PAGE_SIZE * 0);
+    return (void**)td;
 }
 
 oe_result_t oe_thread_key_create(
