@@ -136,7 +136,37 @@ GCC's **-Werror** option.
 Specification
 -------------
 
-The generator should be modified to produce the warnings mentioned above.
+The generator should be modified to produce the warnings mentioned above, via
+these flags:
+
+- `-Wforeign-struct`
+- `-Wptr-in-local-struct`
+- `-Wptr-return-value`
+
+While adding these warnings, the existing warnings that are able to be ignored
+(not that they ought to be) should be made togglable with the following flags:
+
+- `-Wnon-portable-types`
+- `-Wsigned-size-or-count-types`
+- `-Wcalling-convention`
+- `-Wallow-list`
+
+Along with `-Wno-` versions of all of the above to disable them, `-Wall` to turn
+them all on and `-Werror` to treat them as errors (causing `oeedger8r` to exit
+with a non-zero exit code).
+
+The warnings should not be on by default. However, the Open Enclave build should
+be modified to use `-Wall -Werror` in all places.
+
+The existing "warnings" which are actually errors that cannot be ignored should
+be renamed as "errors" in the implementation as well as in their messages. This
+includes:
+
+- Simultaneous size and count parameters
+- The `--use_prefix` flag
+- `private` function specifier
+- Switchless ecalls
+- "dllimport"
 
 Alternatives
 ------------
@@ -148,4 +178,5 @@ the future.
 Authors
 -------
 
-Mike Brasher (mikbras)
+- Mike Brasher (mikbras)
+- Andrew Schwartzmeyer (andschwa)
