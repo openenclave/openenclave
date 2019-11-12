@@ -528,7 +528,7 @@ struct _oe_thread_data
     uint64_t __stack_base_addr;
     uint64_t __stack_limit_addr;
     uint64_t __first_ssa_gpr;
-    uint64_t __stack_guard; /* 0x28 for x64 */
+    uint64_t stack_guard; /* 0x28 for x64 */
     uint64_t __reserved_0;
     uint64_t __ssa_frame_size;
     uint64_t __last_error;

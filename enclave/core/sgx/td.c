@@ -254,6 +254,8 @@ void td_init(td_t* td)
         /* Set pointer to self */
         td->base.self_addr = (uint64_t)td;
 
+        /* initilize the stack_guard at %%fs:0x28 with a random number */
+        td->base.stack_guard = oe_rdrand();
         /* Set the magic number */
         td->magic = TD_MAGIC;
 
@@ -262,11 +264,6 @@ void td_init(td_t* td)
 
         /* List of callsites is initially empty */
         td->callsites = NULL;
-
-        /* initilize the stack_guard at %%fs:0x28 with a random number */
-        unsigned char* fs = (unsigned char*)td + OE_PAGE_SIZE * 0;
-        uint64_t* stack_guard = (uint64_t*)(fs + 0x28);
-        *stack_guard = oe_rdrand();
 
 #if __linux__
         oe_thread_local_init(td);
@@ -309,13 +306,13 @@ void td_clear(td_t* td)
         oe_abort();
 
     /* Save the stack guard before cleanup. */
-    uint64_t __stack_guard = td->base.__stack_guard;
+    uint64_t stack_guard = td->base.stack_guard;
 
     /* Clear base structure */
     memset(&td->base, 0, sizeof(td->base));
 
     /* Restore the stack guard after cleanup. */
-    td->base.__stack_guard = __stack_guard;
+    td->base.stack_guard = stack_guard;
 
     /* Clear the magic number */
     td->magic = 0;
