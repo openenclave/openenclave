@@ -11,7 +11,26 @@
           },
           {
             "name": "cluster-autoscaler",
-            "enabled": true
+            "enabled": true,
+            "pools": [
+              {
+                "name": "agentsbionic",
+                "config": {
+                  "min-nodes": "1",
+                  "max-nodes": "5"
+                }
+              },
+              {
+                "name": "agentsxenial",
+                "config": {
+                  "min-nodes": "1",
+                  "max-nodes": "5"
+                }
+              }
+            ],
+            "config": {
+              "scan-interval": "1m"
+            }
           }
         ]
       }
@@ -21,12 +40,12 @@
       "vmSize": "Standard_D2s_v3",
       "vnetSubnetId": "${VNET_SUBNET_ID}",
       "dnsPrefix": "${DNS_PREFIX}",
-      "firstConsecutiveStaticIP": "10.1.0.100"
+      "firstConsecutiveStaticIP": "10.1.1.100"
     },
     "agentPoolProfiles": [
       {
         "name": "agentsbionic",
-        "count": 2,
+        "count": 1,
         "availabilityProfile": "VirtualMachineScaleSets",
         "distro": "aks-ubuntu-18.04",
         "vmSize": "Standard_DC2s",
@@ -35,21 +54,12 @@
       },
       {
         "name": "agentsxenial",
-        "count": 2,
+        "count": 1,
         "availabilityProfile": "VirtualMachineScaleSets",
         "distro": "acc-16.04",
         "vmSize": "Standard_DC2s",
         "vnetSubnetId": "${VNET_SUBNET_ID}",
         "storageProfile": "ManagedDisks"
-      },
-      {
-        "name": "agentswin19",
-        "count": 2,
-        "vmSize": "Standard_DC4s",
-        "availabilityProfile": "VirtualMachineScaleSets",
-        "vnetSubnetId": "${VNET_SUBNET_ID}",
-        "storageProfile": "ManagedDisks",
-        "osType": "Windows"
       }
     ],
     "linuxProfile": {
@@ -61,17 +71,6 @@
           }
         ]
       }
-    },
-    "windowsProfile": {
-      "adminUsername": "azureuser",
-      "adminPassword": "${WINDOWS_ADMIN_PASSWORD}",
-      "windowsDockerVersion": "18.09.2",
-      "sshEnabled": true,
-      "windowsPublisher": "MicrosoftWindowsServer",
-      "windowsOffer": "WindowsServer",
-      "windowsSku": "Datacenter-Core-1903-with-Containers-smalldisk",
-      "imageVersion": "1903.0.20190603",
-      "enableAutomaticUpdates": false
     },
     "extensionProfiles": [
       {
