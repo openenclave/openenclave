@@ -19,14 +19,14 @@ Motivation
 ----------
 
 This change is required for customers who would like to use the v2 API web endpoints. Note that the Azure PCK
-Caching Service and the Azure DCAP Client will also need to be updated and it is outside of the this specification.
+Caching Service and the Azure DCAP Client will also need to be updated and it is outside of this specification.
 
 User Experience
 ---------------
 
 The user experience does not change, it should be seamless to the user.  The caller will be able to identify the version of the data by checking the existing `version` field.
 
-The quote verifier will specify whether to use the v1 or v2 Azure PCK Caching Service web API endpoints.  The
+The quote verifier will specify whether to use the v1 or v2 PCK Caching Service web API endpoints.  The
 quote verification logic will be able to determine the version of the API by checking the `version` field in endorsement data.
 
 Specification
@@ -67,7 +67,7 @@ get the TCB Info and get QE Identity are different.  The differences are highlig
 ##### tcbDate:
 	type: string
 	format: date-time
-	description: >- Representation of date and time when the TCB level was certified not to be vulnerable to any issues described in SAs that were published on or prior to this date. The time shall be in UTC and the encoding shall be compliant to ISO 8601 standard (YYYY-MM-DDThh:mm:ssZ).
+	description: >- Representation of date and time when the TCB level was certified not to be vulnerable to any issues described in Security Advisories (SAs) that were published on or prior to this date. The time shall be in UTC and the encoding shall be compliant to ISO 8601 standard (YYYY-MM-DDThh:mm:ssZ).
 
 ##### tcbStatus:
 	type: string
