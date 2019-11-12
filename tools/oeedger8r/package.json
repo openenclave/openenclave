@@ -23,12 +23,12 @@
 
   "dependencies": {
     "@opam/dune": "~1.11.3",
-    "ocaml": "~4.6.0"
+    "ocaml": "~4.8.0"
   },
 
   "devDependencies": {
     "@opam/merlin": "~3.3.2",
     "@opam/ocamlformat": "0.12",
-    "ocaml": "~4.6.0"
+    "ocaml": "~4.8.0"
   }
 }

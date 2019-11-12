@@ -74,12 +74,7 @@ let conv_array_to_ptr (pd : pdecl) : pdecl =
 (** ----- End code borrowed and tweaked from {!CodeGen.ml} ----- *)
 
 (* Helper to map and filter out None at the same time. *)
-let filter_map f l =
-  (* Would be [List.of_seq (Seq.filter_map f (List.to_seq l))] if we
-     had 4.07 everywhere. *)
-  List.map
-    (function Some x -> x | None -> invalid_arg "None")
-    (List.filter (function Some _ -> true | None -> false) (List.map f l))
+let filter_map f l = List.of_seq (Seq.filter_map f (List.to_seq l))
 
 (* Helper to flatten and map at the same time. *)
 let flatten_map f l = List.flatten (List.map f l)
@@ -528,10 +523,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     let structs =
       filter_map (function StructDef s -> Some s | _ -> None) ec.comp_defs
     in
-    (* TODO: [List.find_opt] is better, but requires 4.05. *)
-    if List.exists (fun s -> s.sname = name) structs then
-      Some (List.find (fun s -> s.sname = name) structs)
-    else None
+    List.find_opt (fun s -> s.sname = name) structs
   in
   (* We need to check [Ptr]s for [Foreign] or [Struct] types, then
      check those against the user's [Struct]s, and then check if any
