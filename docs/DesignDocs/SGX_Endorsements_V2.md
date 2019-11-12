@@ -87,26 +87,38 @@ For more information on the new fields please see [API Version 2](https://api.po
 ### Update current structs with new additional fields and create new type definitions.
 
 ```C
-typedef enum _oe_tcb_level_status
+#define OE_TCB_LEVEL_STATUS_UNKNOWN                 (0)
+#define OE_TCB_LEVEL_STATUS_REVOKED                 (1 << 0)
+#define OE_TCB_LEVEL_STATUS_OUT_OF_DATE             (1 << 1)
+#define OE_TCB_LEVEL_STATUS_CONFIGURATION_NEEDED    (1 << 2)
+#define OE_TCB_LEVEL_STATUS_UP_TO_DATE              (1 << 3)
+#define OE_TCB_LEVEL_STATUS_QE_IDENTITY_OUT_OF_DATE (1 << 4)
+
+/*! \struct oe_tcb_level_status_t
+ */
+typedef union _oe_tcb_level_status
 {
-    // Existing fields
-    OE_TCB_LEVEL_STATUS_UNKNOWN,
-    OE_TCB_LEVEL_STATUS_REVOKED,
-    OE_TCB_LEVEL_STATUS_OUT_OF_DATE,
-    OE_TCB_LEVEL_STATUS_CONFIGURATION_NEEDED,
-    OE_TCB_LEVEL_STATUS_UP_TO_DATE,
+    struct {
+        uint32_t revoked : 1;                       //! "Revoked"
+        uint32_t outofdate : 1;                     //! "OutOfDate"
+        uint32_t configuration_needed :1;           //! "ConfigurationNeeded"
+        uint32_t up_to_date : 1;                    //! "UpToDate"
 
-    // New field for new value "OutOfDateConfigurationNeeded"
-    OE_TCB_LEVEL_STATUS_OUTOFDATE_CONFIGURATION_NEEDED,
-
-    __OE_TCB_LEVEL_MAX = OE_ENUM_MAX,
-
+        /*! "OutOfDateConfigurationNeeded"
+        *
+        * This tcb status indicates that the QE Identity Info is out of date and
+        * the TCB Info requires configuration "ConfigurationNeeded"
+        */
+        uint32_t qe_identity_out_of_date : 1;
+    } fields;
+    uint32_t AsUINT32;
+                                                
 } oe_tcb_level_status_t;
 
 // Existing TCB Level struct for TCB Info.  Will rename this
 // struct to oe_tcb_tcb_level given that
 // QE identity info also has its TCB level data field.
-typedef struct _oe_tcb_level
+typedef struct _oe_tcb_tcb_level
 {
     // Existing fields
     uint8_t sgx_tcb_comp_svn[16];
@@ -115,9 +127,18 @@ typedef struct _oe_tcb_level
 
     // New fields
     oe_datetime_t tcb_date;
-    uint8_t* advisory_ids_json;     // ["INTEL-SA-00079", "INTEL-SA-00076"]
 
-} oe_tcb_level_t;
+    /*! Offset into the json QE Identity info where
+     * the advisoryIDs fields start.
+     *
+     * Example of this field: ["INTEL-SA-00079", "INTEL-SA-00076"]
+     */
+    size_t advisory_ids_offset;
+
+    //! Total size of all the advisoryIDs.
+    size_t advisory_ids_size;
+
+} oe_tcb_tcb_level_t;
 
 typedef struct _oe_parsed_tcb_info
 {
@@ -130,6 +151,7 @@ typedef struct _oe_parsed_tcb_info
     uint8_t signature[64];
     const uint8_t* tcb_info_start;
     size_t tcb_info_size;
+    oe_tcb_tcb_level_t tcb_level;
 
     // New fields
     uint32_t tcb_type;
@@ -151,10 +173,17 @@ typedef enum _oe_qe_identity_id
  */
 typedef struct _oe_qe_tcb_level
 {
-    uint32_t isvsvn;
+    uint32_t isvsvn[1];
     oe_tcb_level_status_t tcb_status;
     oe_datetime_t tcb_date;
-    uint8_t* advisory_ids_json;     // ["INTEL-SA-00079", "INTEL-SA-00076"]
+
+    /*! Offset into the json QE Identity info where
+     * the advisoryIDs fields start.
+     */
+    size_t advisory_ids_offset;
+
+    //! Total size of all the advisoryIDs.
+    size_t advisory_ids_size;
 
 } oe_qe_tcb_level_t;
 
@@ -179,7 +208,7 @@ typedef struct _oe_parsed_qe_identity_info
     // New fields
     oe_qe_identity_id id;
     uint32_t tcb_evaluation_data_number;
-
+    oe_qe_tcb_level_t tcb_level;
 
 } oe_parsed_qe_identity_info_t;
 ```
@@ -190,6 +219,9 @@ The quote verification logic for parsing the TCB Info and the QE Identity Info w
 
 1. Update `oe_parse_tcb_info_json()` and `oe_parse_qe_identity_info_json()` to parse the new v2 fields.
 2. Account for new TCB status "OutOfDateConfigurationNeeded" in v2 API.
+    - This new TCB status seems to indicate that:
+        1. The QE Identity info is out of date, and
+        2. The TCB Info requires configuration.
 3. TCB info validation updates:
     - version 1:
         - Bug fix.  Will create and address this in a separate issue:
