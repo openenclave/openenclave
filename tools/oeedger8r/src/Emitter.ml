@@ -74,12 +74,7 @@ let conv_array_to_ptr (pd : pdecl) : pdecl =
 (** ----- End code borrowed and tweaked from {!CodeGen.ml} ----- *)
 
 (* Helper to map and filter out None at the same time. *)
-let filter_map f l =
-  (* Would be [List.of_seq (Seq.filter_map f (List.to_seq l))] if we
-     had 4.07 everywhere. *)
-  List.map
-    (function Some x -> x | None -> invalid_arg "None")
-    (List.filter (function Some _ -> true | None -> false) (List.map f l))
+let filter_map f l = List.of_seq (Seq.filter_map f (List.to_seq l))
 
 (* Helper to flatten and map at the same time. *)
 let flatten_map f l = List.flatten (List.map f l)
