@@ -21,6 +21,8 @@ be prevented from making any decisions at the meeting.
 All decisions by vote, whether during a meeting or otherwise, require a super majority
 vote of all members of the Community Governance Committee.
 
+The running minutes for the Community Governance Community meetings are located
+at [aka.ms/openenclave/cgc](https://aka.ms/openenclave/cgc).
 
 Committee Members
 -----------------
