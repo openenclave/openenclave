@@ -81,7 +81,13 @@ add_library(oelibc STATIC
     regexec.c
     tre-mem.c
     __printf_chk.c
+    __fprintf_chk.c
+    __sprintf_chk.c
+    __snprintf_chk.c
+    __vprintf_chk.c
     __vfprintf_chk.c
+    __vsprintf_chk.c
+    __vsnprintf_chk.c
     ${MUSLSRC}/complex/cabs.c
     ${MUSLSRC}/complex/cabsf.c
     ${MUSLSRC}/complex/cabsl.c
@@ -734,7 +740,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/temp/mkostemps.c
     ${MUSLSRC}/temp/mkstemp.c
     ${MUSLSRC}/temp/mkstemps.c
-    ${MUSLSRC}/temp/mktemp.c 
+    ${MUSLSRC}/temp/mktemp.c
     ${MUSLSRC}/temp/__randname.c
     ${MUSLSRC}/thread/__lock.c
     ${MUSLSRC}/thread/__wait.c
