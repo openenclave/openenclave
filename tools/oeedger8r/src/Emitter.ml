@@ -528,10 +528,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
     let structs =
       filter_map (function StructDef s -> Some s | _ -> None) ec.comp_defs
     in
-    (* TODO: [List.find_opt] is better, but requires 4.05. *)
-    if List.exists (fun s -> s.sname = name) structs then
-      Some (List.find (fun s -> s.sname = name) structs)
-    else None
+    List.find_opt (fun s -> s.sname = name) structs
   in
   (* We need to check [Ptr]s for [Foreign] or [Struct] types, then
      check those against the user's [Struct]s, and then check if any
