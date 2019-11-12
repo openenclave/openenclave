@@ -13,6 +13,7 @@ enclave {
         public void test_realloc();
         public void test_memalign();
         public void test_posix_memalign();
+        public void test_malloc_usable_size();
 
         public void init_malloc_stress_test();
         public void malloc_stress_test(int threads);

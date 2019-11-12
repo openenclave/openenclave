@@ -51,6 +51,7 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #define MEMALIGN oe_debug_memalign
 #define POSIX_MEMALIGN oe_debug_posix_memalign
 #define FREE oe_debug_free
+#define MALLOC_USABLE_SIZE oe_debug_malloc_usable_size
 #else
 #define MALLOC dlmalloc
 #define CALLOC dlcalloc
@@ -58,6 +59,7 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #define MEMALIGN dlmemalign
 #define POSIX_MEMALIGN dlposix_memalign
 #define FREE dlfree
+#define MALLOC_USABLE_SIZE dlmalloc_usable_size
 #endif
 
 static oe_allocation_failure_callback_t _failure_callback;
@@ -151,6 +153,11 @@ void* oe_memalign(size_t alignment, size_t size)
     }
 
     return p;
+}
+
+size_t oe_malloc_usable_size(void* ptr)
+{
+    return MALLOC_USABLE_SIZE(ptr);
 }
 
 /*

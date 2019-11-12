@@ -5,6 +5,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/tests.h>
 
+#include <malloc.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -167,4 +168,32 @@ void test_posix_memalign(void)
 
     /* Should fail if alignment isn't possible. */
     OE_TEST(posix_memalign(&ptr, max, 64) != 0);
+}
+
+void test_malloc_usable_size(void)
+{
+    int* p1 = (int*)malloc(sizeof *p1);
+    OE_TEST(p1);
+    int* p2 = (int*)malloc(sizeof *p2);
+    OE_TEST(p2);
+
+    /* Ensure that p1 < p2 so that we can use p2 as upper bound. */
+    if (p1 > p2)
+    {
+        int* const tmp = p1;
+        p1 = p2;
+        p2 = tmp;
+    }
+    OE_TEST(p1 < p2);
+
+    const size_t s1 = malloc_usable_size(p1);
+    OE_TEST(sizeof *p1 <= s1 && s1 <= (size_t)(p2 - p1) * sizeof *p1);
+
+    OE_TEST(sizeof *p2 <= malloc_usable_size(p2));
+
+    const size_t end = s1 / sizeof *p1;
+    _set_buffer(p1, 0, end);
+    _check_buffer(p1, 0, end);
+    free(p1);
+    free(p2);
 }

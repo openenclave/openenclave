@@ -12,7 +12,7 @@ inttypes.h | Partial | **Unsupported functions:** imaxabs(), imaxdiv() |
 iso646.h | Yes | - |
 limits.h | Yes | - |
 locale.h | Partial | Only basic support for C/POSIX locale |
-malloc.h | Partial | **Unsupported functions:** malloc_usable_size() |
+malloc.h | Partial | - |
 math.h | Partial | **Unsupported functions:** acosh(), asinh(), fmal(), lgamma(), lgammaf(), sinh(), sinhl(), tgamma() |
 setjmp.h | Yes | - |
 signal.h | No | - |
