@@ -139,15 +139,15 @@ typedef struct _oe_report
 /**
  * The size of a UUID in bytes.
  */
-#define UUID_SIZE 16
+#define OE_UUID_SIZE 16
 
 /**
  * Struct containing the definition for an UUID.
  */
-typedef struct
+typedef struct _oe_uuid_t
 {
-    uint8_t b[UUID_SIZE];
-} uuid_t;
+    uint8_t b[OE_UUID_SIZE];
+} oe_uuid_t;
 
 /**
  * Claims struct used for claims parameters for the attestation plugins.
@@ -170,14 +170,7 @@ typedef struct _oe_claim
 #define OE_CLAIM_PRODUCT_ID "product_id"
 #define OE_CLAIM_PLUGIN_UUID "plugin_uuid"
 #define OE_REQUIRED_CLAIMS_COUNT 7
-static const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT] = {
-    OE_CLAIM_ID_VERSION,
-    OE_CLAIM_SECURITY_VERSION,
-    OE_CLAIM_ATTRIBUTES,
-    OE_CLAIM_UNIQUE_ID,
-    OE_CLAIM_SIGNER_ID,
-    OE_CLAIM_PRODUCT_ID,
-    OE_CLAIM_PLUGIN_UUID};
+extern const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT];
 
 /**
  * Additional optional claims that are known to OE that plugins can output.
@@ -185,9 +178,7 @@ static const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT] = {
 #define OE_CLAIM_VALIDITY_FROM "validity_from"
 #define OE_CLAIM_VALIDITY_UNTIL "validity_until"
 #define OE_OPTIONAL_CLAIMS_COUNT 2
-static const char* OE_OPTIONAL_CLAIMS[OE_OPTIONAL_CLAIMS_COUNT] = {
-    OE_CLAIM_VALIDITY_FROM,
-    OE_CLAIM_VALIDITY_UNTIL};
+extern const char* OE_OPTIONAL_CLAIMS[OE_OPTIONAL_CLAIMS_COUNT];
 
 /**
  * Supported policies for validation by the verifier attestation plugin.

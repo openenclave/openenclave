@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/attestation/plugin.h>
@@ -142,17 +142,18 @@ static oe_result_t _fill_with_known_claims(
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t parsed_report = {0};
     oe_identity_t* id = &parsed_report.identity;
-    uuid_t plugin_id = OE_SGX_PLUGIN_UUID;
+    oe_uuid_t plugin_id = {OE_SGX_PLUGIN_UUID};
     size_t claims_index = 0;
     uint8_t* endorsements_local = NULL;
     size_t endorsements_local_size = 0;
+    oe_report_header_t* header = (oe_report_header_t*)report;
 
     if (claims_length < OE_REQUIRED_CLAIMS_COUNT)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_CHECK(oe_parse_report(report, report_size, &parsed_report));
 
-    if (parsed_report.type == OE_REPORT_TYPE_SGX_REMOTE &&
+    if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE &&
         claims_length < OE_REQUIRED_CLAIMS_COUNT + OE_OPTIONAL_CLAIMS_COUNT)
         OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -213,12 +214,11 @@ static oe_result_t _fill_with_known_claims(
         sizeof(plugin_id)));
 
     // Add the claims from the endorsements.
-    if (parsed_report.type == OE_REPORT_TYPE_SGX_REMOTE)
+    if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
         oe_sgx_endorsements_t sgx_endorsements;
         oe_datetime_t valid_from;
         oe_datetime_t valid_until;
-        oe_report_header_t* header = (oe_report_header_t*)report;
 
         // Get the endorsements if none were provided.
         if (endorsements == NULL)
@@ -449,7 +449,7 @@ done:
 
 static oe_verifier_t _verifier = {.base =
                                       {
-                                          .format_id = OE_SGX_PLUGIN_UUID,
+                                          .format_id = {OE_SGX_PLUGIN_UUID},
                                           .on_register = &_on_register,
                                           .on_unregister = &_on_unregister,
                                       },

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifdef OE_BUILD_ENCLAVE
@@ -27,7 +27,7 @@ oe_verifier_t* sgx_verify = NULL;
 typedef struct _header
 {
     uint32_t version;
-    uuid_t format_id;
+    oe_uuid_t format_id;
     uint64_t data_size;
     uint8_t data[];
 } header_t;
@@ -106,7 +106,7 @@ static void _test_and_unregister_verifier()
 }
 
 static void _test_evidence_success(
-    const uuid_t* format_id,
+    const oe_uuid_t* format_id,
     bool use_endorsements)
 {
     printf("====== running _test_evidence_success\n");

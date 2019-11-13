@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_MOCK_ATTESTER_H
@@ -127,7 +127,7 @@ static inline oe_result_t mock_verify_evidence(
         if (strcmp(OE_REQUIRED_CLAIMS[i], OE_CLAIM_PLUGIN_UUID) == 0)
         {
             (*claims)[i].value = (uint8_t*)&context->base.format_id;
-            (*claims)[i].value_size = sizeof(uuid_t);
+            (*claims)[i].value_size = sizeof(oe_uuid_t);
         }
     }
     *claims_length = OE_REQUIRED_CLAIMS_COUNT;
@@ -165,7 +165,7 @@ static inline oe_result_t mock_verify_evidence_bad(
         if (strcmp(OE_REQUIRED_CLAIMS[i], OE_CLAIM_PLUGIN_UUID) == 0)
         {
             (*claims)[i].value = (uint8_t*)&context->base.format_id;
-            (*claims)[i].value_size = sizeof(uuid_t);
+            (*claims)[i].value_size = sizeof(oe_uuid_t);
         }
     }
     *claims_length = OE_REQUIRED_CLAIMS_COUNT - 1;
@@ -179,15 +179,15 @@ static inline oe_result_t mock_free_claims_list(
     size_t claims_length)
 {
     OE_UNUSED(context);
-    OE_UNUSED(claims);
     OE_UNUSED(claims_length);
+    free(claims);
     return OE_OK;
 }
 
 static oe_attester_t mock_attester1 = {
     .base =
         {
-            .format_id = OE_MOCK_ATTESTER_UUID1,
+            .format_id = {OE_MOCK_ATTESTER_UUID1},
             .on_register = &mock_attester_register,
             .on_unregister = &mock_attester_unregister,
         },
@@ -198,7 +198,7 @@ static oe_attester_t mock_attester1 = {
 static oe_verifier_t mock_verifier1 = {
     .base =
         {
-            .format_id = OE_MOCK_ATTESTER_UUID1,
+            .format_id = {OE_MOCK_ATTESTER_UUID1},
             .on_register = &mock_attester_register,
             .on_unregister = &mock_attester_unregister,
         },
@@ -209,7 +209,7 @@ static oe_verifier_t mock_verifier1 = {
 static oe_attester_t mock_attester2 = {
     .base =
         {
-            .format_id = OE_MOCK_ATTESTER_UUID2,
+            .format_id = {OE_MOCK_ATTESTER_UUID2},
             .on_register = &mock_attester_register,
             .on_unregister = &mock_attester_unregister,
         },
@@ -220,7 +220,7 @@ static oe_attester_t mock_attester2 = {
 static oe_verifier_t mock_verifier2 = {
     .base =
         {
-            .format_id = OE_MOCK_ATTESTER_UUID2,
+            .format_id = {OE_MOCK_ATTESTER_UUID2},
             .on_register = &mock_attester_register,
             .on_unregister = &mock_attester_unregister,
         },
@@ -230,7 +230,7 @@ static oe_verifier_t mock_verifier2 = {
 static oe_verifier_t bad_verifier = {
     .base =
         {
-            .format_id = OE_MOCK_ATTESTER_UUID1,
+            .format_id = {OE_MOCK_ATTESTER_UUID1},
             .on_register = &mock_attester_register,
             .on_unregister = &mock_attester_unregister,
         },

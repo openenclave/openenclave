@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 /**
@@ -32,7 +32,7 @@ struct _oe_attestation_role
     /**
      * The UUID for the attestation role.
      */
-    uuid_t format_id;
+    oe_uuid_t format_id;
 
     /**
      * The function that gets executed when the attestation role is registered.
@@ -321,7 +321,7 @@ oe_result_t oe_unregister_verifier(oe_verifier_t* plugin);
  * @retval Otherwise, returns the error code the plugin's function.
  */
 oe_result_t oe_get_evidence(
-    const uuid_t* evidence_format_uuid,
+    const oe_uuid_t* evidence_format_uuid,
     uint32_t flags,
     const oe_claim_t* custom_claims,
     size_t custom_claims_length,

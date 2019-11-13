@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/attestation/plugin.h>
@@ -231,7 +231,7 @@ static oe_result_t _free_endorsements(
 
 static oe_attester_t _attester = {.base =
                                       {
-                                          .format_id = OE_SGX_PLUGIN_UUID,
+                                          .format_id = {OE_SGX_PLUGIN_UUID},
                                           .on_register = &_on_register,
                                           .on_unregister = &_on_unregister,
                                       },

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/attestation/plugin.h>
@@ -14,6 +14,19 @@
 
 #include "common.h"
 
+const char* OE_REQUIRED_CLAIMS[OE_REQUIRED_CLAIMS_COUNT] = {
+    OE_CLAIM_ID_VERSION,
+    OE_CLAIM_SECURITY_VERSION,
+    OE_CLAIM_ATTRIBUTES,
+    OE_CLAIM_UNIQUE_ID,
+    OE_CLAIM_SIGNER_ID,
+    OE_CLAIM_PRODUCT_ID,
+    OE_CLAIM_PLUGIN_UUID};
+
+const char* OE_OPTIONAL_CLAIMS[OE_OPTIONAL_CLAIMS_COUNT] = {
+    OE_CLAIM_VALIDITY_FROM,
+    OE_CLAIM_VALIDITY_UNTIL};
+
 /**
  * Header that the OE runtime puts ontop of the attestation plugins.
  */
@@ -23,7 +36,7 @@ typedef struct _oe_attestation_header
     uint32_t version;
 
     /* UUID to identify format. */
-    uuid_t format_id;
+    oe_uuid_t format_id;
 
     /* Size of evidence/endorsements sent to the plugin. */
     uint64_t data_size;
@@ -51,7 +64,7 @@ struct plugin_list_node_t* verifiers = NULL;
 // will return NULL.
 static struct plugin_list_node_t* _find_plugin(
     struct plugin_list_node_t* head,
-    const uuid_t* target_format_id,
+    const oe_uuid_t* target_format_id,
     struct plugin_list_node_t** prev)
 {
     struct plugin_list_node_t* ret = NULL;
@@ -64,7 +77,8 @@ static struct plugin_list_node_t* _find_plugin(
     cur = head;
     while (cur)
     {
-        if (memcmp(&cur->plugin->format_id, target_format_id, sizeof(uuid_t)) ==
+        if (memcmp(
+                &cur->plugin->format_id, target_format_id, sizeof(oe_uuid_t)) ==
             0)
         {
             ret = cur;
@@ -185,7 +199,7 @@ oe_result_t oe_unregister_verifier(oe_verifier_t* plugin)
 }
 
 static oe_result_t _wrap_with_header(
-    const uuid_t* format_id,
+    const oe_uuid_t* format_id,
     const uint8_t* data,
     size_t data_size,
     uint8_t** total_data,
@@ -213,7 +227,7 @@ done:
 }
 
 oe_result_t oe_get_evidence(
-    const uuid_t* format_id,
+    const oe_uuid_t* format_id,
     uint32_t flags,
     const oe_claim_t* custom_claims,
     size_t custom_claims_length,
@@ -399,16 +413,16 @@ done:
 static oe_result_t _get_uuid(
     const oe_claim_t* claims,
     size_t claims_length,
-    uuid_t* uuid)
+    oe_uuid_t* uuid)
 {
     for (size_t i = 0; i < claims_length; i++)
     {
         if (oe_strcmp(claims[i].name, OE_CLAIM_PLUGIN_UUID) == 0)
         {
-            if (claims[i].value_size != sizeof(uuid_t))
+            if (claims[i].value_size != sizeof(oe_uuid_t))
                 return OE_CONSTRAINT_FAILED;
 
-            *uuid = *((uuid_t*)claims[i].value);
+            *uuid = *((oe_uuid_t*)claims[i].value);
             return OE_OK;
         }
     }
@@ -417,7 +431,7 @@ static oe_result_t _get_uuid(
 
 oe_result_t oe_free_claims_list(oe_claim_t* claims, size_t claims_length)
 {
-    uuid_t uuid;
+    oe_uuid_t uuid;
     oe_result_t result = OE_UNEXPECTED;
     struct plugin_list_node_t* plugin_node;
     oe_verifier_t* verifier;
