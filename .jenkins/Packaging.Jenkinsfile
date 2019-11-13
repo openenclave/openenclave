@@ -1,8 +1,12 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
 GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
+GLOBAL_ERROR = null
 
 def LinuxPackaging(String version, String build_type) {
     stage("Ubuntu${version} SGX1FLC Package ${build_type}") {
@@ -48,7 +52,10 @@ def WindowsPackaging(String build_type) {
     }
 }
 
-parallel "1604 SGX1FLC Package Debug" :          { LinuxPackaging('1604', 'Debug') },
+try{
+    oe.emailJobStatus('STARTED')
+
+    parallel "1604 SGX1FLC Package Debug" :          { LinuxPackaging('1604', 'Debug') },
          "1604 SGX1FLC Package Release" :        { LinuxPackaging('1604', 'Release') },
          "1604 SGX1FLC Package RelWithDebInfo" : { LinuxPackaging('1604', 'RelWithDebInfo') },
          "1804 SGX1FLC Package Debug" :          { LinuxPackaging('1804', 'Debug') },
@@ -56,3 +63,12 @@ parallel "1604 SGX1FLC Package Debug" :          { LinuxPackaging('1604', 'Debug
          "1804 SGX1FLC Package RelWithDebInfo" : { LinuxPackaging('1804', 'RelWithDebInfo') },
          "Windows Debug" :                       { WindowsPackaging('DEBUG') },
          "Windows Release" :                     { WindowsPackaging('RELEASE') }
+}catch(Exception e)
+{
+    println "Caught global pipeline exception :" + e
+    GLOBAL_ERROR = e
+    throw e   
+} finally {
+    currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"    
+    oe.emailJobStatus(currentBuild.result)
+}
