@@ -1,3 +1,6 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
@@ -354,7 +357,7 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
 
 try{
     oe.emailJobStatus('STARTED')
-    
+
     parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows('16.04') },
             "Check Developer Experience Ubuntu 18.04" :            { checkDevFlows('18.04') },
             "Check CI" :                                           { checkCI() },
@@ -399,4 +402,3 @@ try{
     currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"    
     oe.emailJobStatus(currentBuild.result)
 }
-
