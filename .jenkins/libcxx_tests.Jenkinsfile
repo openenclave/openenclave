@@ -133,7 +133,7 @@ try {
              "libcxx ACC1804 gcc Debug" :              { ACClibcxxTest(BIONIC_LABEL, 'gcc', 'Debug') },
              "libcxx ACC1804 gcc Release" :            { ACClibcxxTest(BIONIC_LABEL, 'gcc', 'Release') },
              "libcxx ACC1804 gcc RelWithDebInfo" :     { ACClibcxxTest(BIONIC_LABEL, 'gcc', 'RelWithDebinfo') }
-}catch(Exception e){
+} catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
     throw e   

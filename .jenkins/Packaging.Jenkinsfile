@@ -54,7 +54,6 @@ def WindowsPackaging(String build_type) {
 
 try{
     oe.emailJobStatus('STARTED')
-
     parallel "1604 SGX1FLC Package Debug" :          { LinuxPackaging('1604', 'Debug') },
          "1604 SGX1FLC Package Release" :        { LinuxPackaging('1604', 'Release') },
          "1604 SGX1FLC Package RelWithDebInfo" : { LinuxPackaging('1604', 'RelWithDebInfo') },
@@ -63,8 +62,7 @@ try{
          "1804 SGX1FLC Package RelWithDebInfo" : { LinuxPackaging('1804', 'RelWithDebInfo') },
          "Windows Debug" :                       { WindowsPackaging('DEBUG') },
          "Windows Release" :                     { WindowsPackaging('RELEASE') }
-}catch(Exception e)
-{
+} catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
     throw e   

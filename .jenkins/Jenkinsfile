@@ -357,7 +357,6 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
 
 try{
     oe.emailJobStatus('STARTED')
-
     parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows('16.04') },
             "Check Developer Experience Ubuntu 18.04" :            { checkDevFlows('18.04') },
             "Check CI" :                                           { checkCI() },
@@ -393,8 +392,7 @@ try{
             "Win2016 Release Cross Compile with DCAP libs" :       { win2016CrossCompile('Release', 'ON') },
             "Host verification Debug" :                            { ACCHostVerificationTest('18.04', 'Debug') },
             "Host verification Release" :                          { ACCHostVerificationTest('18.04', 'Release') }
-}catch(Exception e)
-{
+} catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
     throw e   
