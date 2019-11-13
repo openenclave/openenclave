@@ -205,9 +205,6 @@ static oe_result_t _add_control_pages(
         /* The entry point for the program (from ELF) */
         tcs->oentry = entry;
 
-        /* GS segment: points to page following SSA slots (page[3]) */
-        tcs->gsbase = *vaddr + (4 * OE_PAGE_SIZE);
-
         /* FS segment: Used for thread-local variables.
          * The reserved (unused) space in td_t is used for thread-local
          * variables.
@@ -215,6 +212,15 @@ static oe_result_t _add_control_pages(
          * segment.
          */
         tcs->fsbase = *vaddr + (5 * OE_PAGE_SIZE);
+
+        /* For debugger on Windows, the thread data is calculated
+         * through offset to the GS segment, where starts the thread data:
+         * ULONG64 threadDataAddr = enclaveBase + tcs.OGSBaSgx
+         * Since gs register is only referred for this purpose, to avoid an
+         * urgent Windows debugger update, we can just point gs register to the
+         * fs register.
+         */
+        tcs->gsbase = tcs->fsbase;
 
         /* Set to maximum value */
         tcs->fslimit = 0xFFFFFFFF;
