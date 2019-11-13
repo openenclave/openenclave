@@ -195,6 +195,15 @@ void deepcopy_null(CountStruct* s)
     OE_UNUSED(s);
 }
 
+void deepcopy_in(CountStruct* s)
+{
+    // Assert that it was copied in correctly.
+    deepcopy_count(s);
+    // Cause it to copy out incorrectly.
+    for (size_t i = 0; i < 3; ++i)
+        s->ptr[i] = i;
+}
+
 void deepcopy_out_count(CountStruct* s)
 {
     OE_TEST(s->count == 0);
