@@ -7,6 +7,7 @@
 #ifndef __ASSEMBLER__
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/context.h>
+#include <openenclave/internal/types.h>
 #include <stdint.h>
 #endif
 
@@ -68,7 +69,8 @@ int __oe_host_stack_bridge(
     uint64_t* arg1_out,
     uint64_t* arg2_out,
     void* tcs,
-    oe_enclave_t* enclave);
+    oe_enclave_t* enclave,
+    oe_ocall_context_t* eexit_frame);
 #endif
 
 #ifndef __ASSEMBLER__

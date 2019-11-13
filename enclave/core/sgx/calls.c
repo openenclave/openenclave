@@ -889,6 +889,9 @@ void oe_notify_nested_exit_start(
     Callsite* callsite = td->callsites;
     callsite->ocall_context = ocall_context;
 
+    if (td->host_eexit_frame)
+        *td->host_eexit_frame = *ocall_context;
+
     return;
 }
 

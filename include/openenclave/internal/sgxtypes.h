@@ -565,7 +565,7 @@ oe_thread_data_t* oe_get_thread_data(void);
 
 #define TD_MAGIC 0xc90afe906c5d19a3
 
-#define OE_THREAD_LOCAL_SPACE (3840)
+#define OE_THREAD_LOCAL_SPACE (3832)
 
 typedef struct _callsite Callsite;
 
@@ -605,6 +605,8 @@ typedef struct _td
 
     /* Simulation mode is active if non-zero */
     uint64_t simulate;
+
+    oe_ocall_context_t* host_eexit_frame;
 
     /* Reserved for thread-local variables. */
     uint8_t thread_local_data[OE_THREAD_LOCAL_SPACE];

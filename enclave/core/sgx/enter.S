@@ -39,6 +39,8 @@ oe_enter:
 .cfi_startproc
 
 .save_host_registers:
+    mov %r8, %gs:td_host_eexit_frame
+
     // Backup the current host rbp and rsp to previous.
     mov %gs:td_host_rbp, %r8
     mov %r8, %gs:td_host_previous_rbp
@@ -55,7 +57,7 @@ oe_enter:
     // exception-dispatching-request-check
     cmp $0, %rax
     jne .exception_entry
-    
+
     // Stop speculative execution at fallthrough of conditional
     // exception-dispatching-request-check.
     lfence
@@ -223,7 +225,7 @@ oe_enter:
     jmp .clear_enclave_registers
 
 .clean_exit:
-    // Stop speculative execution at target of conditional jump 
+    // Stop speculative execution at target of conditional jump
     // after exit-type-check.
     lfence
 

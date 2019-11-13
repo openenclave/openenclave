@@ -52,20 +52,21 @@
 
 // The following registers are inputs to ENCLU instruction. They are also
 // clobbered. Hence marked as +r.
-#define OE_ENCLU_REGISTERS "+r"(rax), "+r"(rbx), "+r"(rcx), "+r"(rdi), "+r"(rsi)
+#define OE_ENCLU_REGISTERS \
+    "+r"(rax), "+r"(rbx), "+r"(rcx), "+r"(rdi), "+r"(rsi), "+r"(r8)
 
 // The following registers are clobbered by ENCLU.
 // Only rbp and rsp are preserved.
 #define OE_ENCLU_CLOBBERED_REGISTERS \
-    "rdx", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
+    "rdx", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
 
 /**
  * oe_enter Executes the ENCLU instruction and transfers control to the enclave.
  *
  * The ENCLU instruction has the following contract:
- * EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2) contract
+ * EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2, R8=eexit-frame) contract
  * Input:
- *       RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2,
+ *       RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2, R8=eexit-frame
  *       RBP=Current host stack rbp,
  *       RSP=Current host stack sp.
  *       All other registers are NOT used/ignored.
@@ -91,6 +92,7 @@ void oe_enter(
     OE_ALIGNED(16)
     uint64_t fx_state[64];
 
+    oe_ocall_context_t eexit_frame;
     while (1)
     {
         // Define register bindings and initialize the registers.
@@ -102,6 +104,7 @@ void oe_enter(
         OE_DEFINE_REGISTER(rcx, aep);
         OE_DEFINE_REGISTER(rdi, arg1);
         OE_DEFINE_REGISTER(rsi, arg2);
+        OE_DEFINE_REGISTER(r8, &eexit_frame);
         OE_DEFINE_FRAME_POINTER(rbp, OE_FRAME_POINTER_VALUE);
 
         asm volatile("fxsave %[fx_state] \n\t" // Save floating point state.
@@ -121,7 +124,8 @@ void oe_enter(
         oe_code_t code = oe_get_code_from_call_arg1(arg1);
         if (code == OE_CODE_OCALL)
         {
-            OE_OCALL_BRIDGE(arg1, arg2, &arg1, &arg2, tcs, enclave);
+            OE_OCALL_BRIDGE(
+                arg1, arg2, &arg1, &arg2, tcs, enclave, &eexit_frame);
         }
         else
             break;
@@ -155,6 +159,7 @@ void oe_enter_sim(
     OE_ALIGNED(16)
     uint64_t fx_state[64];
 
+    oe_ocall_context_t eexit_frame;
     while (1)
     {
         // Define register bindings and initialize the registers.
@@ -164,6 +169,7 @@ void oe_enter_sim(
         OE_DEFINE_REGISTER(rcx, 0 /* filled in asm snippet */);
         OE_DEFINE_REGISTER(rdi, arg1);
         OE_DEFINE_REGISTER(rsi, arg2);
+        OE_DEFINE_REGISTER(r8, &eexit_frame);
         OE_DEFINE_FRAME_POINTER(rbp, OE_FRAME_POINTER_VALUE);
 
         asm volatile("fxsave %[fx_state] \n\t"    // Save floating point state
@@ -186,7 +192,8 @@ void oe_enter_sim(
         oe_code_t code = oe_get_code_from_call_arg1(arg1);
         if (code == OE_CODE_OCALL)
         {
-            OE_OCALL_BRIDGE(arg1, arg2, &arg1, &arg2, tcs, enclave);
+            OE_OCALL_BRIDGE(
+                arg1, arg2, &arg1, &arg2, tcs, enclave, &eexit_frame);
         }
         else
             break;

@@ -37,6 +37,7 @@
 #define td_oret_arg (td_oret_func + 8)
 #define td_callsites (td_oret_arg + 8)
 #define td_simulate (td_callsites + 8)
+#define td_host_eexit_frame (td_simulate + 8)
 
 #define oe_exit_enclave __morestack
 #ifndef __ASSEMBLER__

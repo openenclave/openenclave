@@ -115,19 +115,6 @@ end
 # Assert debugger contract on enclave side.
 b assert_debugger_binary_contract_enclave_side
 commands 6
-    python print("Serializing debugger contract on enclave side....")
-    python import gdb_sgx_plugin
-
-    python gdb.parse_and_eval("TD_OFFSET_FROM_TCS = " + str(gdb_sgx_plugin.TD_OFFSET_FROM_TCS))
-    python gdb.parse_and_eval("TD_CALLSITE_OFFSET = " + str(gdb_sgx_plugin.TD_CALLSITE_OFFSET))
-    python gdb.parse_and_eval("CALLSITE_OCALLCONTEXT_OFFSET = " + str(gdb_sgx_plugin.CALLSITE_OCALLCONTEXT_OFFSET))
-
-    python gdb.parse_and_eval("OCALLCONTEXT_LENGTH  = " + str(gdb_sgx_plugin.OCALLCONTEXT_LENGTH))
-    python gdb.parse_and_eval("OCALLCONTEXT_FORMAT[0] = '" + gdb_sgx_plugin.OCALLCONTEXT_FORMAT[0] + "'")
-    python gdb.parse_and_eval("OCALLCONTEXT_FORMAT[1] = '" + gdb_sgx_plugin.OCALLCONTEXT_FORMAT[1] + "'")
-    python gdb.parse_and_eval("OCALLCONTEXT_RBP = " + str(gdb_sgx_plugin.OCALLCONTEXT_RBP))
-    python gdb.parse_and_eval("OCALLCONTEXT_RET = " + str(gdb_sgx_plugin.OCALLCONTEXT_RET))
-
     python print("Debugger contract serialized on enclave side.")
     continue
 end

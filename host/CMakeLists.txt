@@ -177,8 +177,8 @@ if (OE_SGX)
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
       sgx/enter.c
+      sgx/hoststackbridge.c
       sgx/linux/exception.c
-      sgx/linux/hoststackbridge.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
       sgx/linux/xstate.c)
