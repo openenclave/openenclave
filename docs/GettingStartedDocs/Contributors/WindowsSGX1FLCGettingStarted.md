@@ -17,11 +17,11 @@ A version of Windows OS with native support for SGX features:
 
 - Clone the Open Enclave SDK.
 
-      ```powershell
-      git clone https://github.com/openenclave/openenclave.git
-      ```
+```powershell
+git clone https://github.com/openenclave/openenclave.git
+```
 
-      This creates a source tree under the directory called openenclave.
+This creates a source tree under the directory called openenclave.
 
 ## Install project prerequisites
 
