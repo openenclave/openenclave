@@ -3,6 +3,7 @@ oe = new jenkins.common.Openenclave()
 
 GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
+GLOBAL_ERROR = null
 
 def ACCTest(String label, String compiler, String build_type) {
     stage("${label} ${compiler} SGX1FLC ${build_type}") {
@@ -351,38 +352,51 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       numToKeepStr: '180')),
             [$class: 'JobRestrictionProperty']])
 
-parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows('16.04') },
-         "Check Developer Experience Ubuntu 18.04" :            { checkDevFlows('18.04') },
-         "Check CI" :                                           { checkCI() },
-         "ACC1604 clang-7 Debug" :                              { ACCTest('ACC-1604', 'clang-7', 'Debug') },
-         "ACC1604 clang-7 Release" :                            { ACCTest('ACC-1604', 'clang-7', 'Release') },
-         "ACC1604 gcc Debug" :                                  { ACCTest('ACC-1604', 'gcc', 'Debug') },
-         "ACC1604 gcc Release" :                                { ACCTest('ACC-1604', 'gcc', 'Release') },
-         "ACC1604 Container RelWithDebInfo" :                   { ACCContainerTest('ACC-1604', '16.04') },
-         "ACC1604 Package RelWithDebInfo" :                     { ACCPackageTest('ACC-1604', '16.04') },
-         "ACC1804 clang-7 Debug" :                              { ACCTest('ACC-1804', 'clang-7', 'Debug') },
-         "ACC1804 clang-7 Release" :                            { ACCTest('ACC-1804', 'clang-7', 'Release') },
-         "ACC1804 gcc Debug" :                                  { ACCTest('ACC-1804', 'gcc', 'Debug') },
-         "ACC1804 gcc Release" :                                { ACCTest('ACC-1804', 'gcc', 'Release') },
-         "ACC1804 Container RelWithDebInfo" :                   { ACCContainerTest('ACC-1804', '18.04') },
-         "ACC1804 Package RelWithDebInfo" :                     { ACCPackageTest('ACC-1804', '18.04') },
-         "ACC1804 GNU gcc SGX1FLC" :                            { ACCGNUTest() },
-         "AArch64 1604 GNU gcc Debug" :                         { AArch64GNUTest('16.04', 'Debug')},
-         "AArch64 1604 GNU gcc Release" :                       { AArch64GNUTest('16.04', 'Release')},
-         "AArch64 1804 GNU gcc Debug" :                         { AArch64GNUTest('18.04', 'Debug')},
-         "AArch64 1804 GNU gcc Release" :                       { AArch64GNUTest('18.04', 'Release')},
-         "Sim 1804 clang-7 SGX1 Debug" :                        { simulationTest('18.04', 'SGX1', 'Debug')},
-         "Sim 1804 clang-7 SGX1 Release" :                      { simulationTest('18.04', 'SGX1', 'Release')},
-         "Sim 1804 clang-7 SGX1-FLC Debug" :                    { simulationTest('18.04', 'SGX1FLC', 'Debug')},
-         "Sim 1804 clang-7 SGX1-FLC Release" :                  { simulationTest('18.04', 'SGX1FLC', 'Release')},
-         "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
-         "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('16.04', 'clang-7', 'Release') },
-         "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug') },
-         "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
-         "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
-         "Win2016 Debug Cross Compile" :                        { win2016CrossCompile('Debug') },
-         "Win2016 Release Cross Compile" :                      { win2016CrossCompile('Release') },
-         "Win2016 Debug Cross Compile with DCAP libs" :         { win2016CrossCompile('Debug', 'ON') },
-         "Win2016 Release Cross Compile with DCAP libs" :       { win2016CrossCompile('Release', 'ON') },
-         "Host verification Debug" :                            { ACCHostVerificationTest('18.04', 'Debug') },
-         "Host verification Release" :                          { ACCHostVerificationTest('18.04', 'Release') }
+try{
+    oe.emailJobStatus('STARTED')
+    
+    parallel "Check Developer Experience Ubuntu 16.04" :            { checkDevFlows('16.04') },
+            "Check Developer Experience Ubuntu 18.04" :            { checkDevFlows('18.04') },
+            "Check CI" :                                           { checkCI() },
+            "ACC1604 clang-7 Debug" :                              { ACCTest('ACC-1604', 'clang-7', 'Debug') },
+            "ACC1604 clang-7 Release" :                            { ACCTest('ACC-1604', 'clang-7', 'Release') },
+            "ACC1604 gcc Debug" :                                  { ACCTest('ACC-1604', 'gcc', 'Debug') },
+            "ACC1604 gcc Release" :                                { ACCTest('ACC-1604', 'gcc', 'Release') },
+            "ACC1604 Container RelWithDebInfo" :                   { ACCContainerTest('ACC-1604', '16.04') },
+            "ACC1604 Package RelWithDebInfo" :                     { ACCPackageTest('ACC-1604', '16.04') },
+            "ACC1804 clang-7 Debug" :                              { ACCTest('ACC-1804', 'clang-7', 'Debug') },
+            "ACC1804 clang-7 Release" :                            { ACCTest('ACC-1804', 'clang-7', 'Release') },
+            "ACC1804 gcc Debug" :                                  { ACCTest('ACC-1804', 'gcc', 'Debug') },
+            "ACC1804 gcc Release" :                                { ACCTest('ACC-1804', 'gcc', 'Release') },
+            "ACC1804 Container RelWithDebInfo" :                   { ACCContainerTest('ACC-1804', '18.04') },
+            "ACC1804 Package RelWithDebInfo" :                     { ACCPackageTest('ACC-1804', '18.04') },
+            "ACC1804 GNU gcc SGX1FLC" :                            { ACCGNUTest() },
+            "AArch64 1604 GNU gcc Debug" :                         { AArch64GNUTest('16.04', 'Debug')},
+            "AArch64 1604 GNU gcc Release" :                       { AArch64GNUTest('16.04', 'Release')},
+            "AArch64 1804 GNU gcc Debug" :                         { AArch64GNUTest('18.04', 'Debug')},
+            "AArch64 1804 GNU gcc Release" :                       { AArch64GNUTest('18.04', 'Release')},
+            "Sim 1804 clang-7 SGX1 Debug" :                        { simulationTest('18.04', 'SGX1', 'Debug')},
+            "Sim 1804 clang-7 SGX1 Release" :                      { simulationTest('18.04', 'SGX1', 'Release')},
+            "Sim 1804 clang-7 SGX1-FLC Debug" :                    { simulationTest('18.04', 'SGX1FLC', 'Debug')},
+            "Sim 1804 clang-7 SGX1-FLC Release" :                  { simulationTest('18.04', 'SGX1FLC', 'Release')},
+            "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
+            "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('16.04', 'clang-7', 'Release') },
+            "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build" :   { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug') },
+            "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
+            "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
+            "Win2016 Debug Cross Compile" :                        { win2016CrossCompile('Debug') },
+            "Win2016 Release Cross Compile" :                      { win2016CrossCompile('Release') },
+            "Win2016 Debug Cross Compile with DCAP libs" :         { win2016CrossCompile('Debug', 'ON') },
+            "Win2016 Release Cross Compile with DCAP libs" :       { win2016CrossCompile('Release', 'ON') },
+            "Host verification Debug" :                            { ACCHostVerificationTest('18.04', 'Debug') },
+            "Host verification Release" :                          { ACCHostVerificationTest('18.04', 'Release') }
+}catch(Exception e)
+{
+    println "Caught global pipeline exception :" + e
+    GLOBAL_ERROR = e
+    throw e   
+} finally {
+    currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"    
+    oe.emailJobStatus(currentBuild.result)
+}
+
