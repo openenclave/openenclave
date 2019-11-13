@@ -113,7 +113,6 @@ def cleanup(){
 
 try {
     oe.emailJobStatus('STARTED')
-
     for (int i = 1 ; i <= AGENT_NUM ; i++ ) {
         parallel "Deploy Ubuntu 16.04 #${i}" :  { ACCDeployVM("${XENIAL_LABEL}-${i}".toLowerCase(), "xenial" , "eastus", XENIAL_RG, "${VHD_URL_XENIAL}") },
                  "Deploy Ubuntu 18.04 #${i}" :  { ACCDeployVM("${BIONIC_LABEL}-${i}".toLowerCase(), "bionic", "westeurope", BIONIC_RG, "${VHD_URL_BIONIC}") }
