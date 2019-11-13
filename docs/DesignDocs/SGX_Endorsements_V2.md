@@ -18,8 +18,9 @@ the SGX attestation endorsements and how it is used during SGX quote verificatio
 Motivation
 ----------
 
-This change is required for customers who would like to use the v2 API web endpoints. Note that the Azure PCK
-Caching Service and the Azure DCAP Client will also need to be updated and it is outside of this specification.
+This change is required for customers who would like to use the v2 API web endpoints. Note that if SGX is
+being used in an Azure data center context, the Azure PCK Caching Service and the Azure DCAP Client will 
+also need to be updated and it is outside of this specification.
 
 User Experience
 ---------------
@@ -101,7 +102,7 @@ typedef union _oe_tcb_level_status
     struct {
         uint32_t revoked : 1;                       //! "Revoked"
         uint32_t outofdate : 1;                     //! "OutOfDate"
-        uint32_t configuration_needed :1;           //! "ConfigurationNeeded"
+        uint32_t configuration_needed : 1;          //! "ConfigurationNeeded"
         uint32_t up_to_date : 1;                    //! "UpToDate"
 
         /*! "OutOfDateConfigurationNeeded"
