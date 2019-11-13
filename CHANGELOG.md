@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       of Origin](https://developercertificate.org). For details, see
       [Contributing to Open Enclave](docs/Contributing.md).
     - The copyright for all sources is now attributed to Open Enclave SDK contributors.
+- Update Intel DCAP library dependencies to 1.3.1.
+- Update Intel PSW dependencies to 2.5.101.3 on Windows.
 
 [v0.7.0] - 2019-10-26
 ---------------------
