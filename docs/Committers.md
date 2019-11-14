@@ -46,7 +46,9 @@ The primary responsibility of the Committee is to grant new committer rights
 repositories), and to grant new membership into the Committee. Conversely, the
 Committee must also remove committer rights and membership from those found to
 be violating the project's Code of Conduct or otherwise negatively affecting the
-project's community health.
+project's community health. It is duty of each committee member to receive and
+address reported violations of the Code of Conduct while maintaining the
+confidentiality of the reporter.
 
 This Committee is not intended to make every technical decision, as those should
 generally be made by agreement among committers as PRs are reviewed and merged.
