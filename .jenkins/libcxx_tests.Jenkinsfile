@@ -1,3 +1,6 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
 import hudson.slaves.*
 import hudson.model.*
 
@@ -6,6 +9,7 @@ oe = new jenkins.common.Openenclave()
 
 GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
+GLOBAL_ERROR = null
 
 XENIAL_LABEL = "LIBCXX-${BUILD_NUMBER}-1604"
 BIONIC_LABEL = "LIBCXX-${BUILD_NUMBER}-1804"
@@ -108,6 +112,7 @@ def cleanup(){
 }
 
 try {
+    oe.emailJobStatus('STARTED')
     for (int i = 1 ; i <= AGENT_NUM ; i++ ) {
         parallel "Deploy Ubuntu 16.04 #${i}" :  { ACCDeployVM("${XENIAL_LABEL}-${i}".toLowerCase(), "xenial" , "eastus", XENIAL_RG, "${VHD_URL_XENIAL}") },
                  "Deploy Ubuntu 18.04 #${i}" :  { ACCDeployVM("${BIONIC_LABEL}-${i}".toLowerCase(), "bionic", "westeurope", BIONIC_RG, "${VHD_URL_BIONIC}") }
@@ -127,7 +132,13 @@ try {
              "libcxx ACC1804 gcc Debug" :              { ACClibcxxTest(BIONIC_LABEL, 'gcc', 'Debug') },
              "libcxx ACC1804 gcc Release" :            { ACClibcxxTest(BIONIC_LABEL, 'gcc', 'Release') },
              "libcxx ACC1804 gcc RelWithDebInfo" :     { ACClibcxxTest(BIONIC_LABEL, 'gcc', 'RelWithDebinfo') }
+} catch(Exception e) {
+    println "Caught global pipeline exception :" + e
+    GLOBAL_ERROR = e
+    throw e   
 } finally {
     cleanup()
     unregisterJenkinsSlaves()
+    currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"    
+    oe.emailJobStatus(currentBuild.result)
 }
