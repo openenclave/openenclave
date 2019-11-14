@@ -795,7 +795,7 @@ oe_result_t oe_rwlock_unlock(oe_rwlock_t* read_write_lock)
 
 #define MAX_KEYS (OE_PAGE_SIZE / sizeof(void*))
 /* The first several bytes are reserved for thread data. */
-#define MIN_KEYS (sizeof(td_t) / sizeof(void*))
+#define MIN_KEYS ((sizeof(td_t) - OE_THREAD_SPECIFIC_DATA_SIZE) / sizeof(void*))
 
 typedef struct _key_slot
 {

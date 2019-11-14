@@ -565,7 +565,9 @@ oe_thread_data_t* oe_get_thread_data(void);
 
 #define TD_MAGIC 0xc90afe906c5d19a3
 
-#define OE_THREAD_LOCAL_SPACE (3840)
+#define OE_THREAD_LOCAL_SPACE (OE_PAGE_SIZE)
+
+#define OE_THREAD_SPECIFIC_DATA_SIZE (3840)
 
 typedef struct _callsite Callsite;
 
@@ -607,11 +609,11 @@ typedef struct _td
     uint64_t simulate;
 
     /* Reserved for thread-local variables. */
-    // uint8_t thread_local_data[OE_THREAD_LOCAL_SPACE];
+    uint8_t thread_specific_data[OE_THREAD_SPECIFIC_DATA_SIZE];
 } td_t;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(td_t), 256);
+OE_CHECK_SIZE(sizeof(td_t), 4096);
 
 /* Get the thread data object for the current thread */
 td_t* oe_get_td(void);

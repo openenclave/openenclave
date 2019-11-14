@@ -204,6 +204,8 @@ static volatile bool _thread_locals_relocated = false;
 static __thread oe_tls_atexit_t* _tls_atexit_functions;
 static __thread uint64_t _num_tls_atexit_functions;
 
+// TODO: Make this flexible in case more than one page of thread local storage
+// need to allocate.
 /**
  * Get the address of the FS segment given a thread data object.
  * Currently thread data is moved to the first bytes of FS Page.
@@ -212,7 +214,6 @@ static __thread uint64_t _num_tls_atexit_functions;
  */
 static uint8_t* _get_fs_from_td(td_t* td)
 {
-    // TODO: Make this flexible
     uint8_t* fs = (uint8_t*)td;
     return fs;
 }
