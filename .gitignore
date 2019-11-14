@@ -4,6 +4,8 @@
 *.swp
 *.swo
 
+tags
+
 .vs/
 .vscode/
 graphviz/
