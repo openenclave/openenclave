@@ -10,7 +10,7 @@
 // so that the frame can be manipulated to stitch the ocall stack.
 // This is ensured by compiling this file with -fno-omit-frame-pointer.
 #ifdef _WIN32
-__attribute__((section(".oedebugrtocall")))
+__attribute__((section(".oedbgrt")))
 #endif
 OE_NEVER_INLINE int
 oe_host_stack_bridge(

@@ -131,6 +131,14 @@ if (OE_SGX AND WIN32)
              -I${PROJECT_SOURCE_DIR}/include
              ${CMAKE_CURRENT_SOURCE_DIR}/sgx/enter.c
              -o enter.obj)
+
+  add_custom_command(
+     OUTPUT hoststackbridge.obj
+     DEPENDS sgx/hoststackbridge.c
+     COMMAND clang  -c -O2 -g -fomit-frame-pointer -m64
+             -I${PROJECT_SOURCE_DIR}/include
+             ${CMAKE_CURRENT_SOURCE_DIR}/sgx/hoststackbridge.c
+             -o hoststackbridge.obj)             
 endif()
 
 # SGX specific files.
@@ -189,6 +197,7 @@ if (OE_SGX)
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/windows/aep.asm
       ${CMAKE_CURRENT_BINARY_DIR}/enter.obj
+      ${CMAKE_CURRENT_BINARY_DIR}/hoststackbridge.obj
       sgx/windows/exception.c
       sgx/windows/switchless.c
       sgx/windows/xstate.c)
@@ -274,9 +283,6 @@ add_dependencies(oehost syscall_untrusted_edl)
 add_dependencies(oehost tee_untrusted_edl)
 if(OE_SGX)
   add_dependencies(oehost sgx_untrusted_edl)
-  if (WIN32)
-#    add_dependencies(oehost sgx_oe_enter)
-  endif()
 endif()
 
 # TODO: Replace these with `find_package` and add as dependencies to
