@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/string.h>
@@ -61,12 +61,22 @@ bool was_destructor_called()
 
 void* ssp_test_sub()
 {
-    uint64_t a = 1;
-    asm("mov %0, -0x8(%%rbp)" : : "r"(a));
-    asm("mov %0, +0x38(%%rbp)" : : "r"(a));
-    fprintf(stdout, "Try to change stack smashing guard to %d.\n", a);
+    /* The test should change the canary in the current stack.
+     * But in Debug mode the canary is at $rbp-0x8, and in Release mode
+     * the canary is at $rsp+0x20. To avoid unseen cases, here the %%fs:0x28 is
+     * modified.
+     */
+    uint64_t canary;
+    asm("mov %%fs:0x28, %0" : "=r"(canary));
+    fprintf(
+        stdout,
+        "Try to change stack smashing guard from %d to %d.\n",
+        canary,
+        canary / 2);
+    canary /= 2;
+    asm("mov %0, %%fs:0x28" : : "r"(canary));
 
-    return (void*)a;
+    return 0;
 }
 
 void* ssp_test()
