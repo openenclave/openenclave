@@ -12,82 +12,89 @@ A version of Windows OS with native support for SGX features:
 
 ## Install Git and Clone the Open Enclave SDK repo
 
-Download and install Git for Windows from [here](https://git-scm.com/download/win).
-
-Clone the Open Enclave SDK
+- Download and install Git for Windows from [here](https://git-scm.com/download/win).
+- Clone the Open Enclave SDK to folder of your choice. In these instructions
+  we're assuming `openenclave`.
 
 ```powershell
 git clone https://github.com/openenclave/openenclave.git
 ```
 
-This creates a source tree under the directory called openenclave.
+This creates a source tree under the directory called `openenclave`.
 
 ## Install project prerequisites
 
-First, change directory into the openenclave repository:
+First, change directory into the Open Enclave repository (from wherever you
+cloned it):
 
 ```powershell
 cd openenclave
 ```
 
-To deploy all the prerequisities for building Open Enclave, you can run the following from Powershell. Note that the Data Center Attestation Primitives (DCAP) Client is not used for attestation on systems which have support for SGX1 without support for Flexible Launch Control (FLC). The below example assumes you would like to install the packages to `C:\oe_prereqs`.
+To deploy all the prerequisities for building Open Enclave, you can run the
+following from PowerShell. Note that the Data Center Attestation Primitives
+(DCAP) Client is not used for attestation on systems which have support for SGX1
+without support for Flexible Launch Control (FLC). The below example assumes you
+would like to install the packages to `C:/oe_prereqs`.
 
 ```powershell
-cd scripts
-.\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1 -DCAPClientType None
+./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1 -DCAPClientType None
 ```
 
-As an example, if you cloned Open Enclave SDK repo into `C:\openenclave`, you would run the following:
-
-```powershell
-cd scripts
-.\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1 -DCAPClientType None
-```
-
-If you prefer to manually install prerequisites, please refer to this [document](WindowsManualInstallPrereqs.md).
+If you prefer to manually install prerequisites, please refer to this
+[document](WindowsManualInstallPrereqs.md).
 
 ## Building on Windows using Developer Command Prompt
 
-1. Launch the [x64 Native Tools Command Prompt for VS 2017](
-https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
-Normally this is accessible under the `Visual Studio 2017` folder in the Start Menu.
+Launch the [x64 Native Tools Command Prompt for VS(2017 or 2019)](
+https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs),
+which is found in the `Visual Studio 2017` folder in the Start Menu.
 
-2. At the x64 Native Tools command prompt, use CMake and ninja to build the debug version:
+Run the command `powershell.exe` to open a PowerShell prompt within the native
+tools environment.
 
-```
-cd C:\openenclave
-mkdir build\x64-Debug
-cd build\x64-Debug
-cmake -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF ..\..
+From here, use CMake and Ninja to build Open Enclave.
+
+To build debug enclaves:
+
+```powershell
+cd openenclave
+mkdir build/x64-Debug
+cd build/x64-Debug
+cmake -G ninja -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=install ../..
 ninja
 ```
 
-Later, using the `ninja install` command will install the SDK in C:\openenclave. To choose a different location, change the value specified for CMAKE_INSTALL_PATH.
+Later, using the `ninja install` command will install the SDK in
+`C:/openenclave/build/x64-Debug/install`. To choose a different location, change
+the value specified for `CMAKE_INSTALL_PATH`, but note that the samples tests
+will break if an absolute path is specified.
 
-Similarly, to build release enclaves:
+Similarly, to build release enclaves, specify the flag
+`-DCMAKE_BUILD_TYPE=Release`:
 
-```cmd
-cd C:\openenclave
-mkdir build\x64-Release
-cd build\x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave -DHAS_QUOTE_PROVIDER=OFF ..\..
+```powershell
+cd openenclave
+mkdir build/x64-Release
+cd build/x64-Release
+cmake -G ninja -DCMAKE_BUILD_TYPE=Release -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=install ../..
 ninja
 ```
 
 ## Run unit tests
 
-After building, run all unit test cases using `ctest` to confirm the SDK is built and working as expected. In this example, we are testing the debug build.
+After building, run all unit test cases using `ctest` to confirm the SDK is built and working as expected.
 
-Run the following command from the build directory:
+Run the following command from the build directory to run tests, (in this example, we are testing the debug build):
 
-```cmd
+```powershell
 ctest
 ```
 
 You will see test logs similar to the following:
 
-```cmd
-  Test project C:/openenclave/build/x64-Debug
+```powershell
+  Test project C:/Users/test/openenclave/build/x64-Debug
         Start   1: tests/lockless_queue
   1/107 Test   #1: tests/lockless_queue ..................................   Passed    3.49 sec
         Start   2: tests/mem
@@ -105,14 +112,17 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 ## Installing the SDK on the local machine
 
-To install the SDK on the local machine use the following:
+To install the debug SDK on the local machine use the following:
 
-```cmd
-cd build\x64-Debug
+```powershell
+cd openenclave/build/x64-Debug
+cmake -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
 ninja install
 ```
 
-This installs the SDK in `C:\openenclave`.
+This installs the SDK in `C:/openenclave`, the path specified for
+`CMAKE_INSTALL_PREFIX`. This install path is assumed for the rest of the
+instructions.
 
 ## Build and run samples
 
@@ -120,4 +130,4 @@ To build and run the samples, please look [here](/samples/README_Windows.md).
 
 ## Known Issues
 
-Not all tests currently run on Windows. See tests\MakeLists.txt for a list of supported tests.
+Not all tests currently run on Windows. See `tests/CMakeLists.txt` for a list of supported tests.
