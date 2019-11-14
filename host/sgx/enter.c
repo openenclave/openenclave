@@ -30,11 +30,6 @@
 #define OE_FRAME_POINTER_VALUE ((uint64_t)&enclave - 0x40)
 #define OE_FRAME_POINTER , "r"(rbp)
 
-// The SDK currently does not use a bridge for stack sitching.
-// In the future, even the Windows OCall would use a bridge that stitches the
-// stack.
-#define OE_OCALL_BRIDGE __oe_dispatch_ocall
-
 #elif __linux__
 
 // The debugger requires a Linux x64 ABI frame pointer for stack walking.
@@ -43,10 +38,6 @@
 #define OE_DEFINE_FRAME_POINTER(r, v) OE_UNUSED(v)
 #define OE_FRAME_POINTER_VALUE 0
 #define OE_FRAME_POINTER
-
-// The SDK uses a bridge to stitch the ocall stack with the help
-// of the debugger.
-#define OE_OCALL_BRIDGE __oe_host_stack_bridge
 
 #endif
 
@@ -124,7 +115,7 @@ void oe_enter(
         oe_code_t code = oe_get_code_from_call_arg1(arg1);
         if (code == OE_CODE_OCALL)
         {
-            OE_OCALL_BRIDGE(
+            __oe_host_stack_bridge(
                 arg1, arg2, &arg1, &arg2, tcs, enclave, &eexit_frame);
         }
         else
@@ -192,7 +183,7 @@ void oe_enter_sim(
         oe_code_t code = oe_get_code_from_call_arg1(arg1);
         if (code == OE_CODE_OCALL)
         {
-            OE_OCALL_BRIDGE(
+            __oe_host_stack_bridge(
                 arg1, arg2, &arg1, &arg2, tcs, enclave, &eexit_frame);
         }
         else
