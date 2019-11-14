@@ -458,7 +458,7 @@ done:
 /*
 **==============================================================================
 **
-** __oe_dispatch_ocall()
+** oe_dispatch_ocall()
 **
 **     This function is called by oe_enter() (see enter.S). It checks to
 **     to see if EENTER returned in order to perform an OCALL. If so it
@@ -477,7 +477,7 @@ done:
 **==============================================================================
 */
 
-int __oe_dispatch_ocall(
+int oe_dispatch_ocall(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg1_out,

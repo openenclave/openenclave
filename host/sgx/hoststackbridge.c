@@ -13,7 +13,7 @@
 __attribute__((section(".oedebugrtocall")))
 #endif
 OE_NEVER_INLINE int
-__oe_host_stack_bridge(
+oe_host_stack_bridge(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg1_out,
@@ -36,7 +36,7 @@ __oe_host_stack_bridge(
     // oe_notify_ocall_start(current, tcs);
     *current = *eexit_frame;
 
-    int ret = __oe_dispatch_ocall(arg1, arg2, arg1_out, arg2_out, tcs, enclave);
+    int ret = oe_dispatch_ocall(arg1, arg2, arg1_out, arg2_out, tcs, enclave);
 
     // Restore the frame so that this function can return to the caller
     // correctly. Alternatively, we could use a setjmp/longjmp combination.

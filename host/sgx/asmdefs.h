@@ -24,6 +24,10 @@
 #define oe_enter __morestack
 #endif
 
+#if defined(_WIN32)
+#define oe_host_stack_bridge __oe_dispatch_ocall
+#endif
+
 #ifndef __ASSEMBLER__
 typedef struct _oe_enclave oe_enclave_t;
 #endif
@@ -53,7 +57,7 @@ void oe_enter_sim(
 #endif
 
 #ifndef __ASSEMBLER__
-int __oe_dispatch_ocall(
+int oe_dispatch_ocall(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg1_out,
@@ -63,7 +67,7 @@ int __oe_dispatch_ocall(
 #endif
 
 #ifndef __ASSEMBLER__
-int __oe_host_stack_bridge(
+int oe_host_stack_bridge(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg1_out,

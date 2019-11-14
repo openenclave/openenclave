@@ -115,7 +115,7 @@ void oe_enter(
         oe_code_t code = oe_get_code_from_call_arg1(arg1);
         if (code == OE_CODE_OCALL)
         {
-            __oe_host_stack_bridge(
+            oe_host_stack_bridge(
                 arg1, arg2, &arg1, &arg2, tcs, enclave, &eexit_frame);
         }
         else
@@ -183,7 +183,7 @@ void oe_enter_sim(
         oe_code_t code = oe_get_code_from_call_arg1(arg1);
         if (code == OE_CODE_OCALL)
         {
-            __oe_host_stack_bridge(
+            oe_host_stack_bridge(
                 arg1, arg2, &arg1, &arg2, tcs, enclave, &eexit_frame);
         }
         else
