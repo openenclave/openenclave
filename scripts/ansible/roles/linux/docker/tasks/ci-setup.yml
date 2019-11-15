@@ -16,7 +16,7 @@
 - name: Install Docker prerequisite packages
   apt:
     name: "{{ ci_apt_packages }}"
-    state: present
+    state: latest
     update_cache: yes
     install_recommends: no
 

@@ -14,7 +14,7 @@
   apt:
     name:
       - "dkms"
-    state: present
+    state: latest
     update_cache: yes
     install_recommends: no
 

@@ -5,7 +5,7 @@
 - name: Install apt-transport-https APT package
   apt:
     name: apt-transport-https
-    state: present
+    state: latest
 
 - name: Add APT repository key
   apt_key:

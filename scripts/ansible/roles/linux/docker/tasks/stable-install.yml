@@ -32,7 +32,7 @@
 - name: Docker | Install Docker-CE
   apt:
     name: "{{ apt_packages }}"
-    state: present
+    state: latest
     update_cache: yes
   retries: 10
   delay: 10

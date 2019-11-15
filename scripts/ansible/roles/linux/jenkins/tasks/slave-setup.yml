@@ -21,7 +21,7 @@
 - name: Jenkins | Install Java JRE needed by Jenkins
   apt:
     name: openjdk-8-jre
-    state: present
+    state: latest
     update_cache: yes
   retries: 10
   delay: 10
