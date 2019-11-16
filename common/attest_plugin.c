@@ -7,7 +7,6 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include <stdio.h>
 #include <string.h>

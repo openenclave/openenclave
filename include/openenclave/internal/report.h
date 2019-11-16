@@ -4,8 +4,13 @@
 #ifndef _OE_INCLUDE_REPORT_H_
 #define _OE_INCLUDE_REPORT_H_
 
+#include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/defs.h>
+
+#if __x86_64__ || _M_X64
 #include <openenclave/internal/sgxtypes.h>
+#endif
 
 /*
 **==============================================================================
