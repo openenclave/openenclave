@@ -36,6 +36,7 @@ static oe_result_t oe_create_sgx_endorsements(
     uint32_t offsets_size;
     uint32_t size;
     int i;
+    uint32_t remaining_size;
 
     OE_TRACE_INFO("Enter call %s\n", __FUNCTION__);
 
@@ -78,6 +79,8 @@ static oe_result_t oe_create_sgx_endorsements(
             OE_OUT_OF_MEMORY,
             "Out of memory while creating endorsements.",
             NULL);
+
+    remaining_size = size;
 
     // Record creation datetime.
     {
@@ -145,32 +148,37 @@ static oe_result_t oe_create_sgx_endorsements(
     buffer = (uint8_t*)&buffer32[OE_SGX_ENDORSEMENT_COUNT];
     *((uint32_t*)buffer) = OE_SGX_ENDORSEMENTS_VERSION;
     buffer += sizeof(uint32_t);
+    remaining_size =
+        size - (uint32_t)((uint8_t*)buffer - (uint8_t*)endorsements);
 
     // Copy TCB Info
     OE_CHECK(oe_memcpy_s(
         buffer,
-        size,
+        remaining_size,
         revocation_info->tcb_info,
         revocation_info->tcb_info_size));
     buffer += revocation_info->tcb_info_size;
+    remaining_size -= (uint32_t)revocation_info->tcb_info_size;
 
     // Copy TCB Issuer Chain
     OE_CHECK(oe_memcpy_s(
         buffer,
-        size,
+        remaining_size,
         revocation_info->tcb_issuer_chain,
         revocation_info->tcb_issuer_chain_size));
     buffer += revocation_info->tcb_issuer_chain_size;
+    remaining_size -= (uint32_t)revocation_info->tcb_issuer_chain_size;
 
     // Copy CRLs
     for (i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; i++)
     {
         OE_CHECK(oe_memcpy_s(
             buffer,
-            size,
+            remaining_size,
             revocation_info->crl[i],
             revocation_info->crl_size[i]));
         buffer += revocation_info->crl_size[i];
+        remaining_size -= (uint32_t)revocation_info->crl_size[i];
     }
 
     // Copy CRLs Issuer Chain
@@ -178,25 +186,34 @@ static oe_result_t oe_create_sgx_endorsements(
     {
         OE_CHECK(oe_memcpy_s(
             buffer,
-            size,
+            remaining_size,
             revocation_info->crl_issuer_chain[i],
             revocation_info->crl_issuer_chain_size[i]));
         buffer += revocation_info->crl_issuer_chain_size[i];
+        remaining_size -= (uint32_t)revocation_info->crl_issuer_chain_size[i];
     }
 
     // Copy QE ID Info
     OE_CHECK(oe_memcpy_s(
-        buffer, size, qe_id_info->qe_id_info, qe_id_info->qe_id_info_size));
+        buffer,
+        remaining_size,
+        qe_id_info->qe_id_info,
+        qe_id_info->qe_id_info_size));
     buffer += qe_id_info->qe_id_info_size;
+    remaining_size -= (uint32_t)qe_id_info->qe_id_info_size;
 
     // Copy QE ID Issue Chain
     OE_CHECK(oe_memcpy_s(
-        buffer, size, qe_id_info->issuer_chain, qe_id_info->issuer_chain_size));
+        buffer,
+        remaining_size,
+        qe_id_info->issuer_chain,
+        qe_id_info->issuer_chain_size));
     buffer += qe_id_info->issuer_chain_size;
+    remaining_size -= (uint32_t)qe_id_info->issuer_chain_size;
 
     // Copy creation datetime
-    OE_CHECK(
-        oe_memcpy_s(buffer, size, creation_datetime, CREATION_DATETIME_SIZE));
+    OE_CHECK(oe_memcpy_s(
+        buffer, remaining_size, creation_datetime, CREATION_DATETIME_SIZE));
     buffer += CREATION_DATETIME_SIZE;
 
     // Sanity check
