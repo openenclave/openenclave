@@ -22,11 +22,16 @@ oe_host_stack_bridge(
     oe_enclave_t* enclave,
     oe_ocall_context_t* eexit_frame)
 {
-    oe_ocall_context_t *current, backup;
+    oe_ocall_context_t backup;
 
     // Fetch pointer to current frame.
+#ifdef __linux__    
+    egister oe_ocall_context_t* current  = NULL;
     asm volatile("mov %%rbp, %0\n\t" : "=r"(current) : : "memory");
-
+#elif _WIN32    
+    register oe_ocall_context_t* current __asm__("rbp") = 
+        (oe_ocall_context_t*) ((uint64_t)&eexit_frame - 0x40);
+#endif
     // Back up current frame.
     backup = *current;
 
