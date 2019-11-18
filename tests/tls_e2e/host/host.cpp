@@ -69,17 +69,17 @@ int g_server_thread_exit_code = 0;
 int g_client_thread_exit_code = 0;
 bool g_server_condition = false;
 
-std::mutex server_mutex;
-std::condition_variable server_cond;
-std::thread server_thread;
+std::mutex g_server_mutex;
+std::condition_variable g_server_cond;
+std::thread g_server_thread;
 
 int server_is_ready()
 {
     OE_TRACE_INFO("TLS server_is_ready!\n");
-    server_mutex.lock();
+    g_server_mutex.lock();
     g_server_condition = true;
-    server_cond.notify_all();
-    server_mutex.unlock();
+    g_server_cond.notify_all();
+    g_server_mutex.unlock();
     return 1;
 }
 
@@ -124,7 +124,7 @@ done:
     return result;
 }
 
-void* run_server(void* arg)
+void run_server(void* arg)
 {
     oe_result_t result = OE_FAILURE;
     tls_thread_context_config_t* config = &(((tls_test_configs_t*)arg)->server);
@@ -159,7 +159,7 @@ done:
     return NULL;
 }
 
-void* run_client(void* arg)
+void run_client(void* arg)
 {
     oe_result_t result = OE_FAILURE;
     tls_thread_context_config_t* client_config =
@@ -190,7 +190,7 @@ void* run_client(void* arg)
 
     OE_TRACE_INFO("Waiting for the server thread to terminate...\n");
     // block client thread until the server thread is done
-    server_thread.join();
+    g_server_thread.join();
 
     // enforce server return value
     OE_TRACE_INFO("server returns retval = [%d]\n", g_server_thread_exit_code);
@@ -229,12 +229,16 @@ done:
 int run_test_with_config(tls_test_configs_t* test_configs)
 {
     // create server thread
-    server_thread = std::thread(run_server, (void*)test_configs);
+    g_server_thread = std::thread(run_server, (void*)test_configs);
 
     OE_TRACE_INFO("wait until TLS server is ready to accept client request\n");
-    std::unique_lock<std::mutex> l(server_mutex);
-    while (!g_server_condition)
-        server_cond.wait(l);
+
+    {
+        // Release lock on scope exit
+        std::unique_lock<std::mutex> l(g_server_mutex);
+        while (!g_server_condition)
+            g_server_cond.wait(l);
+    }
 
     fflush(stdout);
 
