@@ -587,12 +587,14 @@ typedef struct _td
     /* Depth of ECALL stack (zero indicates that it is unwound) */
     uint64_t depth;
 
-    /* Host registers saved here on entry and restored on exit */
+    /* Host registers saved here upon entry into an ecall
+     * in order to allow ocalls to exit to the correct host
+     * location. */
     uint64_t host_rcx; /* EENTER return address */
     uint64_t host_rsp;
     uint64_t host_rbp;
-    uint64_t host_previous_rsp;
-    uint64_t host_previous_rbp;
+    uint64_t status;
+    uint64_t reserved;
 
     /* Return arguments from OCALL */
     uint16_t oret_func;

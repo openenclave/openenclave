@@ -24,8 +24,8 @@ OE_STATIC_ASSERT(OE_OFFSETOF(td_t, depth) == td_depth);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_rcx) == td_host_rcx);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_rsp) == td_host_rsp);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_rbp) == td_host_rbp);
-OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_previous_rsp) == td_host_previous_rsp);
-OE_STATIC_ASSERT(OE_OFFSETOF(td_t, host_previous_rbp) == td_host_previous_rbp);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, status) == td_status);
+OE_STATIC_ASSERT(OE_OFFSETOF(td_t, reserved) == td_reserved);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, oret_func) == td_oret_func);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, oret_arg) == td_oret_arg);
 OE_STATIC_ASSERT(OE_OFFSETOF(td_t, callsites) == td_callsites);
@@ -304,6 +304,9 @@ void td_clear(td_t* td)
 
     /* Clear base structure */
     memset(&td->base, 0, sizeof(td->base));
+
+    /* Always allow oe_get_td function to succeed */
+    td->base.self_addr = (uint64_t)td;
 
     /* Clear the magic number */
     td->magic = 0;

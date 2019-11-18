@@ -23,13 +23,9 @@
 //
 //     This function performs the following tasks:
 //
-//         (1) Saves the host registers
-//         (2) Calculates the enclave stack base
-//         (3) Sets up the enclave stack frame
-//         (4) Calls __oe_handle_main()
-//
-//     Note: __oe_handle_main does not return. Instead it eventually
-//     calls oe_asm_exit (see exit.S)
+//         (1) Calculates the enclave stack base
+//         (2) Sets up the enclave stack frame
+//         (3) Calls call_function which in turn calls __oe_handle_main
 //
 //==============================================================================
 
@@ -38,39 +34,52 @@
 oe_enter:
 .cfi_startproc
 
-.save_host_registers:
-    // Backup the current host rbp and rsp to previous.
-    mov %gs:td_host_rbp, %r8
-    mov %r8, %gs:td_host_previous_rbp
-    mov %gs:td_host_rsp, %r8
-    mov %r8, %gs:td_host_previous_rsp
+    // Prepare arguments for call_function
+    mov %rax, %rdx
+    mov %rsp, %r8
+    mov %rbp, %r9
 
-    // Save host registers (restored on EEXIT)
-    mov %rcx, %gs:td_host_rcx // host return address here
-    mov %rsp, %gs:td_host_rsp
-    mov %rbp, %gs:td_host_rbp
+    mov %rdi, %rax
+    shr $48, %rax
+.code_ecall:
+    cmp $CODE_ECALL, %rax
+    jne .code_oret
+    mov %rdi, %rax
+    shr $32, %rax
+    cmp $FUNC_VIRTUAL_EXCEPTION_HANDLER, %ax
+    je .code_ecall_virtual_exception
+    mov $TD_STATUS_NONE, %rax
+    mov $TD_STATUS_IN_ECALL, %r10
+    jmp .validate_call
 
-.determine_entry_type:
-    // Check if this is exception dispatching request.
-    // exception-dispatching-request-check
-    cmp $0, %rax
-    jne .exception_entry
-    
-    // Stop speculative execution at fallthrough of conditional
-    // exception-dispatching-request-check.
+.code_ecall_virtual_exception:
+    mov $TD_STATUS_IN_ECALL, %rax
+    mov $TD_STATUS_HANDLING_EXCEPTION, %r10
+    jmp .validate_call
+
+.code_oret:
+    cmp $CODE_ORET, %rax
+    jne .invalid_call
+    mov $TD_STATUS_AWAITING_ORET, %rax
+    mov $TD_STATUS_IN_ECALL, %r10
+
+.validate_call:
     lfence
+    lock cmpxchg %r10, %gs:td_status
+    jnz .invalid_call
 
-    // Check whether this is a clean entry or a nested entry
-    // clean-entry-check.
-    mov %gs:td_depth, %r8
-    cmp $0, %r8
-    je .clean_entry
-    jmp .nested_entry
+    // Set rsp to below the stack guard page (tcs - OE_PAGE_SIZE).
+    // This is the starting value of rsp for an ECALL.
+    lea -OE_PAGE_SIZE(%rbx), %rsp
+    sub $ABI_REDZONE_BYTE_SIZE, %rsp
 
-.exception_entry:
-    // Stop speculative execution at target of conditional jump
-    // after exception-dispatching-request-check.
-    lfence
+	// If an OCALL has been made, td_last_sp would have been non-zero.
+    // If availble, td_last_sp must be used resume the stack where it was left off.
+    mov %gs:td_last_sp, %r10
+    cmp $0, %r10
+    cmovne %r10, %rsp
+
+    // If this is an exception handling-request, cssa/rax will be non-zero. Just as in case of an ocall return, the stack must resume at the location when control exited the enclave. However, for exception code path, td_last_sp is not set. Instead, the correct value of rsp must be fetched from the SSA.
 
     // Get the first ssa address from tcs.
     lea OE_SSA_FROM_TCS_BYTE_OFFSET(%rbx), %r10
@@ -82,43 +91,17 @@ oe_enter:
     // Get the address of current SSA.
     add %r10, %rax
 
-    // Get the saved rsp. We can't depend on the TLS value to get the enclave rsp in exception entry since the value may
-    // not be set correctly.
-    mov SGX_SSA_RSP_OFFSET(%r10), %rsp
+    cmp $0, %rdx
+    cmovne %rax, %rdx
+    cmovne SGX_SSA_RSP_OFFSET(%r10), %rsp
 
-    // align stack.
+    // Now rsp has been setup to handle ecall, ocall-return as well as exception
+    // Align stack and allocate ABI redzone
     and $-16, %rsp
-
-    // Start the new stack under the red zone.
     sub $ABI_REDZONE_BYTE_SIZE, %rsp
-    jmp .call_function
 
-.nested_entry:
-    // Stop speculative execution at fallthrough of conditional
-    // clean-entry-check.
-    lfence
-
-    // Restore stack pointer and enclave registers:
-    mov %gs:td_last_sp, %rsp
-
-    // align the stack
-    and $-16, %rsp
-
-    // Start the new stack under the red zone.
-    sub $ABI_REDZONE_BYTE_SIZE, %rsp
-    jmp .call_function
-
-.clean_entry:
-    // Stop speculative execution at target of conditional jump
-    // after clean-entry-check.
-    lfence
-
-    // Calculate stack base relative to TCS (subtract guard page size)
-    mov %rbx, %rsp
-    sub $PAGE_SIZE, %rsp
-    mov %rsp, %rbp
-
-.call_function:
+    // Now that rsp has been setup correctly, perform ABI required
+    // initialization.
     // Set the MXCSR according to the Linux x86_64 ABI
     mov $ABI_MXCSR_INIT, %r10
     push %r10
@@ -137,145 +120,33 @@ oe_enter:
     push $0
     popfq
 
-    // Get the host stack pointer.
-    mov %gs:td_host_rsp, %r8
-    mov %gs:td_host_rbp, %r9
+    // Make the call into call_function
+    // Note rbp still contains the host rbp and thus calling call_function would
+    // automatically stitch the ecall stack back to the host.
+    // 	void call_function(
+    // 	      uint64_t arg1,          /* rdi */
+    // 	      uint64_t arg2,          /* rsi */
+    //	      uint64_t cssa,          /* rdx */
+    //        uint64_t host_ret_addr, /* rcx */
+    //        uint64_t host_rsp,      /* r8 */
+    //        uint64_t host_rbp,      /* r9 */
+    //        void* tcs)              /* on stack */
+    push $0   // For 16-byte alignment upon entry to call_function
+    push %rbx // tcs
+    push %rcx  // Push the host return address and jump (equivalent to a call)
+    jmp call_function
 
-    // Construct the frame and align the stack.
-    pushq $0
-    pushq %r8
-    pushq %rcx
-    pushq %r9
-.cfi_def_cfa_offset     16
-.cfi_offset             rbp, -16
-    mov %rsp, %rbp
-.cfi_def_cfa_register   rbp
-
-#define OM_STACK_LENGTH             0X30
-#define OM_HOST_RSP                 (-1*8)(%rbp)
-#define OM_HOST_RBP                 (-2*8)(%rbp)
-#define OM_HOST_OUTPUT_ARG1         (-3*8)(%rbp)
-#define OM_HOST_OUTPUT_ARG2         (-4*8)(%rbp)
-#define OM_HOST_RETURN_ADDR         (-5*8)(%rbp)
-
-    // Allocate stack.
-    sub $OM_STACK_LENGTH, %rsp
-
-    // Save the host stack pointers to enclave stack.
-    mov %gs:td_host_rsp, %r8
-    mov %gs:td_host_rbp, %r9
-    mov %r8, OM_HOST_RSP
-    mov %r9, OM_HOST_RBP
-
-    // Save the host return address to enclave stack.
-    mov %gs:td_host_rcx, %r8
-    mov %r8, OM_HOST_RETURN_ADDR
-
-    // Call __oe_handle_main(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX, OUTPUTARG1=R8, OUTPUTARG2=R9)
-    mov %rax, %rdx
-    mov %rbx, %rcx
-    lea OM_HOST_OUTPUT_ARG1, %r8
-    lea OM_HOST_OUTPUT_ARG2, %r9
-    call __oe_handle_main
-
-    // Get the output parameters.
-    mov OM_HOST_OUTPUT_ARG1, %rdi
-    mov OM_HOST_OUTPUT_ARG2, %rsi
-
-.determine_exit_type:
-
-    // Check the depth of the ECALL stack (zero for clean exit)
-    // exit-type-check.
-    mov %gs:td_depth, %r8
-    cmp $0, %r8
-    je .clean_exit
-
-.nested_exit:
-    // Stop speculative execution at fallthrough of conditional
-    // exit-type-check.
-    lfence
-
-    // Construct the oe_ocall_context_t(rbp, return address).
-    mov (4*OE_WORD_SIZE)(%rsp), %r12
-    push %r12
-    push %rbp
-    mov %rsp, %r12
-
-    // Save the parameters of oe_asm_exit into stack.
-    push %rdi
-    push %rsi
-
-    // Notify a nested exit happens.
-    // oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
-    mov %r12, %rsi
-    call oe_notify_nested_exit_start
-
-    // Restore the parameters of oe_asm_exit from stack.
-    pop %rsi
-    pop %rdi
-
-    // Restore the stack to correct status: rbp/rsp should not change after function call.
-    pop %r12
-    pop %r12
-
-    mov %rsp, %gs:td_last_sp
-
-    jmp .clear_enclave_registers
-
-.clean_exit:
-    // Stop speculative execution at target of conditional jump 
-    // after exit-type-check.
-    lfence
-
-    // Clear the td_t.last_sp field (force oe_enter to calculate stack pointer)
-    movq $0, %gs:td_last_sp
-
-.clear_enclave_registers:
-
-    // Clear these so information will not be leaked to host
-    oe_cleanup_registers
-
-.restore_host_registers:
-
-    mov OM_HOST_RETURN_ADDR, %rcx
-    mov OM_HOST_RETURN_ADDR, %rbx
-    mov OM_HOST_RSP, %rsp
-    mov OM_HOST_RBP, %rbp
-
-.execute_eexit:
-
-    // Check td_t.simulate flag
-    // simulation-flag-check.
-    mov %gs:td_simulate, %rax
-    cmp $0, %rax
-    jz .execute_eexit_instruction
-
-.execute_eexit_sim:
-    // Stop speculative execution at fallthrough of conditional
-    // simulate-flag-check.
-    lfence
-
-    // Jump to return address:
+.invalid_call:
+    mov %rcx, %rbx
+    mov  $4, %rax
+    cmpq $0, %gs:td_simulate
+    jne .eexit_sim
+    enclu
+.eexit_sim:
     mov $1, %rax
     jmp *%rcx
-    ud2
-
-.execute_eexit_instruction:
-    // Stop speculative execution at target of conditional jump
-    // simulate-flag-check.
-    lfence
-
-    // EEXIT(RAX=EEXIT, RBX=RETADDR, RCX=AEP, RDI=ARG1, RSI=ARG2)
-    //mov %rcx, %rbx
-    mov $ENCLU_EEXIT, %rax
-    ENCLU
-    ud2
-
-.forever:
-    jmp .forever
 
 .cfi_endproc
-
 .size oe_enter, .-oe_enter
 
 //==============================================================================

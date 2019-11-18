@@ -315,7 +315,13 @@ done:
 
 static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
 {
-    oe_exit_enclave(oe_make_call_arg1(code, func, 0, OE_OK), arg);
+    td_t* td = oe_get_td();
+    oe_exit_enclave(
+        oe_make_call_arg1(code, func, 0, OE_OK),
+        arg,
+        td->host_rcx,
+        td->host_rsp,
+        td->host_rbp);
 }
 
 void oe_virtual_exception_dispatcher(

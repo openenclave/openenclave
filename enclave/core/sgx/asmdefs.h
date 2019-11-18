@@ -16,8 +16,6 @@
 #define STATIC_STACK_SIZE 8 * 100
 #define OE_WORD_SIZE 8
 
-#define CODE_ERET 0x200000000
-
 /* Use GS register if this flag is set */
 #ifdef __ASSEMBLER__
 #define OE_ARG_FLAG_GS 0x0001
@@ -31,12 +29,23 @@
 #define td_host_rcx (td_depth + 8)
 #define td_host_rsp (td_host_rcx + 8)
 #define td_host_rbp (td_host_rsp + 8)
-#define td_host_previous_rsp (td_host_rbp + 8)
-#define td_host_previous_rbp (td_host_previous_rsp + 8)
-#define td_oret_func (td_host_previous_rbp + 8)
+#define td_status (td_host_rbp + 8)
+#define td_reserved (td_status + 8)
+#define td_oret_func (td_reserved + 8)
 #define td_oret_arg (td_oret_func + 8)
 #define td_callsites (td_oret_arg + 8)
 #define td_simulate (td_callsites + 8)
+
+/* Various states of td_t */
+#define CODE_ECALL 1
+#define CODE_ORET 4
+
+#define FUNC_VIRTUAL_EXCEPTION_HANDLER 3
+
+#define TD_STATUS_NONE 0
+#define TD_STATUS_IN_ECALL 1
+#define TD_STATUS_HANDLING_EXCEPTION 2
+#define TD_STATUS_AWAITING_ORET 3
 
 #define oe_exit_enclave __morestack
 #ifndef __ASSEMBLER__
@@ -44,7 +53,12 @@
  * It should not be confused with oe_exit(), which maps to the standard-C
  * exit() function defined in <openenclave/corelibc/stdlib.h>.
  */
-void oe_exit_enclave(uint64_t arg1, uint64_t arg2);
+void oe_exit_enclave(
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t host_rip,
+    uint64_t host_rsp,
+    uint64_t host_rbp);
 #endif
 
 #ifndef __ASSEMBLER__
