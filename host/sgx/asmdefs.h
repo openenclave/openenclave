@@ -80,10 +80,12 @@ typedef struct _oe_host_ocall_frame
 #endif
 
 #ifndef __ASSEMBLER__
+OE_EXPORT
 void oe_notify_ocall_start(oe_host_ocall_frame_t* frame_pointer, void* tcs);
 #endif
 
 #ifndef __ASSEMBLER__
+OE_EXPORT
 void oe_notify_ocall_end(oe_host_ocall_frame_t* frame_pointer, void* tcs);
 #endif
 

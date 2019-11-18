@@ -27,7 +27,9 @@ set(ENCLAVE_CFLAGS_LIST
   -fPIE
   -ftls-model=local-exec
   -fvisibility=hidden
-  -fno-stack-protector)
+  -fno-stack-protector
+  -ffunction-sections
+  -fdata-sections)
 
 set(ENCLAVE_CFLAGS_CLANG_LIST ${ENCLAVE_CFLAGS_LIST} ${SPECTRE_MITIGATION_FLAGS})
 list(JOIN ENCLAVE_CFLAGS_CLANG_LIST " " ENCLAVE_CFLAGS_CLANG)
@@ -52,6 +54,7 @@ set(ENCLAVE_CLIBS_1
   -Wl,--build-id
   -Wl,-z,noexecstack
   -Wl,-z,now
+  -Wl,-gc-sections
   -L\${libdir}/openenclave/enclave
   -loeenclave
   -loecryptombed
