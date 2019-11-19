@@ -155,8 +155,6 @@ void run_server(void* arg)
 
     OE_TRACE_INFO("Leaving server thread...\n");
     fflush(stdout);
-done:
-    return NULL;
 }
 
 void run_client(void* arg)
@@ -222,8 +220,6 @@ void run_client(void* arg)
     }
 
     fflush(stdout);
-done:
-    return NULL;
 }
 
 int run_test_with_config(tls_test_configs_t* test_configs)
@@ -235,9 +231,8 @@ int run_test_with_config(tls_test_configs_t* test_configs)
 
     {
         // Release lock on scope exit
-        std::unique_lock<std::mutex> l(g_server_mutex);
-        while (!g_server_condition)
-            g_server_cond.wait(l);
+        std::unique_lock<std::mutex> server_lock(g_server_mutex);
+        g_server_cond.wait(server_lock, []{ return g_server_cond; });
     }
 
     fflush(stdout);
@@ -324,7 +319,6 @@ done:
 int main(int argc, const char* argv[])
 {
 #ifdef OE_LINK_SGX_DCAP_QL
-
     oe_result_t result = OE_FAILURE;
     uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
     int ret = 0;
