@@ -505,11 +505,11 @@ OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, u.entry), 72);
 **
 **     This structure defines information about an enclave thread. Each
 **     instance is associated with one thread control structure (TCS). This
-**     structure resides in the GS segment page (referenced by the GS segment
+**     structure resides in the FS segment page (referenced by the FS segment
 **     register). A thread obtains its thread data structure by calling
 **     oe_get_thread_data(), which fetches the address at offset zero in
-**     the GS segment register (%gs:0) which contains
-*oe_thread_data_t.self_addr.
+**     the FS segment register (%fs:0) which contains
+**     oe_thread_data_t.self_addr.
 **
 **==============================================================================
 */
@@ -528,7 +528,12 @@ struct _oe_thread_data
     uint64_t __stack_base_addr;
     uint64_t __stack_limit_addr;
     uint64_t __first_ssa_gpr;
-    uint64_t stack_guard; /* 0x28 for x64 */
+    /* Here the name and offset of stack_guard complies to the properties of
+       stack_guard defined in tcbhead_t(Struct for Thread Control Block). In
+       this way we can make use of the compiler's support of stack smashing
+       protector.
+     */
+    uint64_t stack_guard; /* The offset is 0x28 for x64 */
     uint64_t __reserved_0;
     uint64_t __ssa_frame_size;
     uint64_t __last_error;
@@ -608,7 +613,7 @@ typedef struct _td
     /* Simulation mode is active if non-zero */
     uint64_t simulate;
 
-    /* Reserved for thread-local variables. */
+    /* Reserved for thread specific data. */
     uint8_t thread_specific_data[OE_THREAD_SPECIFIC_DATA_SIZE];
 } td_t;
 OE_PACK_END

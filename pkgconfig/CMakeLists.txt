@@ -27,7 +27,6 @@ set(ENCLAVE_CFLAGS_LIST
   -fPIE
   -ftls-model=local-exec
   -fvisibility=hidden
-  -fno-stack-protector
   -ffunction-sections
   -fdata-sections)
 

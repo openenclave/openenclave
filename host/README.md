@@ -48,11 +48,20 @@ see [create.c](create.c)).
         +----------------------------------------+    |
         | Guard page                             |    |
         +----------------------------------------+    |
-        | Segment Page: (FS or GS)               |    |
-        |     (contains thread data structure)   |    |
+        | Thread local storage                   |    |
         +----------------------------------------+    |
-        | Thread specific data (TSD) Page        |    |
+        | Segment Page: (FS)                     |    |
+        | (contains thread data structure        |    |
+        | and Thread specific data (TSD))        |    |
         +----------------------------------------+ <--+
         | Padding Pages (must be a power of two) |
         +----------------------------------------+
+The thread data (td) object is always populated at the start of the
+FS segment, thus FS segment regiter points to td.
 
+The existing Windows SGX enclave debugger finds the start of the thread data
+by assuming that it is located at the start of the GS segment. i.e. it adds the
+enclave base address and the offset to the GS segment stored in TCS.OGSBASGX.
+OE SDK uses the FS segment for this purpose and has no separate use for the
+GS register, so we point it at the FS segment to preserve the Windows debugger
+behavior.
