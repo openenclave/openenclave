@@ -6,12 +6,16 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/tests.h>
-#include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "tls_e2e_u.h"
+
+#include <condition_variable>
+#include <exception>
+#include <mutex>
+#include <thread>
 
 #define SERVER_PORT "12345"
 #define SERVER_IP "127.0.0.1"
@@ -60,20 +64,22 @@ typedef enum test_config_type
 
 oe_enclave_t* g_server_enclave = NULL;
 oe_enclave_t* g_client_enclave = NULL;
+
 int g_server_thread_exit_code = 0;
 int g_client_thread_exit_code = 0;
-pthread_mutex_t server_mutex;
-pthread_cond_t server_cond;
 bool g_server_condition = false;
-pthread_t server_thread_id;
+
+std::mutex g_server_mutex;
+std::condition_variable g_server_cond;
+std::thread g_server_thread;
 
 int server_is_ready()
 {
     OE_TRACE_INFO("TLS server_is_ready!\n");
-    pthread_mutex_lock(&server_mutex);
+    g_server_mutex.lock();
     g_server_condition = true;
-    pthread_cond_signal(&server_cond);
-    pthread_mutex_unlock(&server_mutex);
+    g_server_cond.notify_all();
+    g_server_mutex.unlock();
     return 1;
 }
 
@@ -118,7 +124,7 @@ done:
     return result;
 }
 
-void* server_thread(void* arg)
+void run_server(void* arg)
 {
     oe_result_t result = OE_FAILURE;
     tls_thread_context_config_t* config = &(((tls_test_configs_t*)arg)->server);
@@ -148,20 +154,19 @@ void* server_thread(void* arg)
     }
 
     OE_TRACE_INFO("Leaving server thread...\n");
-    fflush(stdout);
-    pthread_exit((void*)&g_server_thread_exit_code);
+
+// Label needed for OE_CHECK* macros
 done:
-    return NULL;
+    fflush(stdout);
 }
 
-void* client_thread(void* arg)
+void run_client(void* arg)
 {
     oe_result_t result = OE_FAILURE;
     tls_thread_context_config_t* client_config =
         &(((tls_test_configs_t*)arg)->client);
     tls_thread_context_config_t* server_config =
         &(((tls_test_configs_t*)arg)->server);
-    void* retval = NULL;
 
     OE_TRACE_INFO("Client thread: call launch_tls_client()\n");
     result = launch_tls_client(
@@ -186,10 +191,10 @@ void* client_thread(void* arg)
 
     OE_TRACE_INFO("Waiting for the server thread to terminate...\n");
     // block client thread until the server thread is done
-    pthread_join(server_thread_id, (void**)&retval);
+    g_server_thread.join();
 
     // enforce server return value
-    OE_TRACE_INFO("server returns retval = [%d]\n", *(int*)retval);
+    OE_TRACE_INFO("server returns retval = [%d]\n", g_server_thread_exit_code);
 
     if (server_config->args.fail_cert_verify_callback ||
         server_config->args.fail_enclave_identity_verifier_callback ||
@@ -197,7 +202,7 @@ void* client_thread(void* arg)
     {
         // since this test ignores SIGPIPE, ther client thread will terminiate
         // with 0
-        OE_TEST(*(int*)(retval) == 0);
+        OE_TEST(g_server_thread_exit_code == 0);
     }
 
     // In the no-fault-injection test case, the client thread should return
@@ -216,52 +221,35 @@ void* client_thread(void* arg)
         // g_client_thread_exit_code could be any values in negative test cases
         g_client_thread_exit_code = 0;
     }
-    pthread_exit((void*)&g_client_thread_exit_code);
-    fflush(stdout);
+
+// Label needed for OE_CHECK* macros
 done:
-    return NULL;
+    fflush(stdout);
 }
 
 int run_test_with_config(tls_test_configs_t* test_configs)
 {
-    pthread_attr_t server_tattr;
-    pthread_attr_t client_tattr;
-    pthread_t client_thread_id;
-    int ret = 0;
-    void* retval = NULL;
-
     // create server thread
-    ret = pthread_attr_init(&server_tattr);
-    if (ret)
-        oe_put_err("pthread_attr_init(server): ret=%u", ret);
-
-    ret = pthread_create(
-        &server_thread_id, NULL, server_thread, (void*)test_configs);
-    if (ret)
-        oe_put_err("pthread_create(server): ret=%u", ret);
+    g_server_thread = std::thread(run_server, (void*)test_configs);
 
     OE_TRACE_INFO("wait until TLS server is ready to accept client request\n");
-    pthread_mutex_lock(&server_mutex);
-    while (!g_server_condition)
-        pthread_cond_wait(&server_cond, &server_mutex);
-    pthread_mutex_unlock(&server_mutex);
+
+    {
+        // Release lock on scope exit
+        std::unique_lock<std::mutex> server_lock(g_server_mutex);
+        g_server_cond.wait(server_lock, [] { return g_server_condition; });
+    }
 
     fflush(stdout);
 
     // create client thread
-    ret = pthread_attr_init(&client_tattr);
-    if (ret)
-        oe_put_err("pthread_attr_init(client): ret=%u", ret);
+    std::thread client_thread(run_client, (void*)test_configs);
+    client_thread.join();
+    OE_TRACE_INFO(
+        "Client thread terminated with ret =%d... \n",
+        g_client_thread_exit_code);
 
-    ret = pthread_create(
-        &client_thread_id, NULL, client_thread, (void*)test_configs);
-    if (ret)
-        oe_put_err("pthread_create(client): ret=%u", ret);
-
-    pthread_join(client_thread_id, &retval);
-    ret = *(int*)retval;
-    OE_TRACE_INFO("Client thread terminated with ret =%d... \n", ret);
-    return ret;
+    return g_client_thread_exit_code;
 }
 
 int run_scenarios_tests()
