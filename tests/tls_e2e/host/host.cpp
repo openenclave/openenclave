@@ -154,6 +154,9 @@ void run_server(void* arg)
     }
 
     OE_TRACE_INFO("Leaving server thread...\n");
+
+// Label needed for OE_CHECK* macros
+done:
     fflush(stdout);
 }
 
@@ -219,6 +222,8 @@ void run_client(void* arg)
         g_client_thread_exit_code = 0;
     }
 
+// Label needed for OE_CHECK* macros
+done:
     fflush(stdout);
 }
 
@@ -232,7 +237,7 @@ int run_test_with_config(tls_test_configs_t* test_configs)
     {
         // Release lock on scope exit
         std::unique_lock<std::mutex> server_lock(g_server_mutex);
-        g_server_cond.wait(server_lock, []{ return g_server_cond; });
+        g_server_cond.wait(server_lock, [] { return g_server_condition; });
     }
 
     fflush(stdout);
