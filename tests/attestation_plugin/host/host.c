@@ -10,6 +10,7 @@
 #include <Windows.h>
 #endif
 
+#include "../../../host/sgx/quote.h"
 #include "../plugin/tests.h"
 #include "plugin_u.h"
 
@@ -28,7 +29,8 @@ void host_verify(
         endorsements,
         endorsements_size,
         test_claims,
-        NUM_TEST_CLAIMS);
+        NUM_TEST_CLAIMS,
+        false);
 }
 
 int main(int argc, const char* argv[])
@@ -88,8 +90,10 @@ int main(int argc, const char* argv[])
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
         return SKIP_RETURN_CODE;
 
+    // Register the host verifier.
     register_verifier();
 
+    // Run all enclave tests.
     result = oe_create_plugin_enclave(
         argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
     OE_TEST(result == OE_OK);
@@ -98,12 +102,12 @@ int main(int argc, const char* argv[])
     register_sgx(enclave);
     test_sgx(enclave);
     unregister_sgx(enclave);
-
     OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
 
     // Run runtime test on the host.
     test_runtime();
 
+    // Unregister verifier.
     unregister_verifier();
     return 0;
 #else

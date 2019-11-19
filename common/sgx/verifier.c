@@ -77,7 +77,7 @@ static oe_result_t _get_input_time(
                 return OE_INVALID_PARAMETER;
 
             *time = (oe_datetime_t*)policies[i].policy;
-            break;
+            return OE_OK;
         }
     }
 
@@ -210,29 +210,32 @@ static oe_result_t _fill_with_known_claims(
         &plugin_id,
         sizeof(plugin_id)));
 
-    // Get quote validity periods to get validity from and until claims.
-    OE_CHECK(oe_get_sgx_quote_validity(
-        header->report,
-        header->report_size,
-        sgx_endorsements,
-        &valid_from,
-        &valid_until));
+    if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    {
+        // Get quote validity periods to get validity from and until claims.
+        OE_CHECK(oe_get_sgx_quote_validity(
+            header->report,
+            header->report_size,
+            sgx_endorsements,
+            &valid_from,
+            &valid_until));
 
-    // Validity from.
-    OE_CHECK(_add_claim(
-        &claims[claims_index++],
-        OE_CLAIM_VALIDITY_FROM,
-        sizeof(OE_CLAIM_VALIDITY_FROM),
-        &valid_from,
-        sizeof(valid_from)));
+        // Validity from.
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_VALIDITY_FROM,
+            sizeof(OE_CLAIM_VALIDITY_FROM),
+            &valid_from,
+            sizeof(valid_from)));
 
-    // Validity to.
-    OE_CHECK(_add_claim(
-        &claims[claims_index++],
-        OE_CLAIM_VALIDITY_UNTIL,
-        sizeof(OE_CLAIM_VALIDITY_UNTIL),
-        &valid_until,
-        sizeof(valid_until)));
+        // Validity to.
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_VALIDITY_UNTIL,
+            sizeof(OE_CLAIM_VALIDITY_UNTIL),
+            &valid_until,
+            sizeof(valid_until)));
+    }
 
     *claims_added = claims_index;
     result = OE_OK;

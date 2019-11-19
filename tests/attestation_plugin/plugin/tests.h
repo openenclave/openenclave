@@ -26,6 +26,7 @@ void verify_sgx_evidence(
     const uint8_t* endorsements,
     size_t endorsements_size,
     const oe_claim_t* custom_claims,
-    size_t custom_claims_size);
+    size_t custom_claims_size,
+    bool is_local);
 
 #endif // _OE_ATTESTATION_PLUGIN_TESTS

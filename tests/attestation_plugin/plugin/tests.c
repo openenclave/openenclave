@@ -464,7 +464,8 @@ void verify_sgx_evidence(
     const uint8_t* endorsements,
     size_t endorsements_size,
     const oe_claim_t* custom_claims,
-    size_t custom_claims_size)
+    size_t custom_claims_size,
+    bool is_local)
 {
     printf("====== running verify_sgx_evidence\n");
 
@@ -552,12 +553,12 @@ void verify_sgx_evidence(
 
     // Check date time.
     from = _find_claim(claims, claims_size, OE_CLAIM_VALIDITY_FROM);
-    OE_TEST(from != NULL);
+    OE_TEST(is_local || from != NULL);
 
     until = _find_claim(claims, claims_size, OE_CLAIM_VALIDITY_UNTIL);
-    OE_TEST(until != NULL);
+    OE_TEST(is_local || until != NULL);
 
-    if (endorsements)
+    if (!is_local && endorsements)
     {
         _test_time(
             header->data,

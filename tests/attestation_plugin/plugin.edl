@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 enclave {
+
     trusted {
         public void run_runtime_test();
         public void register_sgx();
