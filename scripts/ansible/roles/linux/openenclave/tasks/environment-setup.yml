@@ -26,7 +26,7 @@
 - name: Install all the Open Enclave prerequisites APT packages for development
   apt:
     name: "{{ apt_packages }}"
-    state: present
+    state: latest
     update_cache: yes
     install_recommends: no
 

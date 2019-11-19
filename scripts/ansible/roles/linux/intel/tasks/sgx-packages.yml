@@ -23,21 +23,21 @@
 - name: Install the Intel libsgx package dependencies
   apt:
     name: "{{ intel_sgx_package_dependencies }}"
-    state: present
+    state: latest
     update_cache: yes
     install_recommends: no
 
 - name: Install the Intel libsgx packages
   apt:
     name: "{{ intel_sgx_packages }}"
-    state: present
+    state: latest
     update_cache: yes
     install_recommends: no
 
 - name: Install the Intel DCAP packages
   apt:
     name: "{{ intel_dcap_packages }}"
-    state: present
+    state: latest
     update_cache: yes
     install_recommends: no
   when: flc_enabled|bool

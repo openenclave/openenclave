@@ -15,5 +15,5 @@
 - name: Install the official Open Enclave APT package
   apt:
     name: open-enclave
-    state: present
+    state: latest
     update_cache: yes

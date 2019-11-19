@@ -29,6 +29,6 @@
 - name: Install the additional Open Enclave prerequisites APT packages for ARM development
   apt:
     name: "{{ apt_arm_packages }}"
-    state: present
+    state: latest
     update_cache: yes
     install_recommends: no

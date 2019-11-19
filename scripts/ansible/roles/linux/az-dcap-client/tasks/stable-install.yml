@@ -12,5 +12,5 @@
 - name: Install the official Azure-DCAP-Client APT package
   apt:
     name: az-dcap-client
-    state: present
+    state: latest
     update_cache: yes
