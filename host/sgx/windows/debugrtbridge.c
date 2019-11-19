@@ -17,6 +17,8 @@ static struct
         oe_debug_enclave_t* enclave,
         struct _sgx_tcs* tcs);
     oe_result_t (*pop_thread_binding)(void);
+    oe_result_t (*notify_ocall_start)(oe_debug_ocall_info_t* ocall_info);
+    oe_result_t (*notify_ocall_end)(void);
 } _oedebugrt;
 
 static void get_debugrt_function(const char* name, FARPROC* out)
@@ -84,6 +86,12 @@ static void load_oedebugrt(void)
         get_debugrt_function(
             "oe_debug_pop_thread_binding",
             (FARPROC*)&_oedebugrt.pop_thread_binding);
+        get_debugrt_function(
+            "oe_debug_notify_ocall_start",
+            (FARPROC*)&_oedebugrt.notify_ocall_start);
+        get_debugrt_function(
+            "oe_debug_notify_ocall_end",
+            (FARPROC*)&_oedebugrt.notify_ocall_end);
 
         OE_TRACE_INFO(
             "oedebugrtbridge: Loaded oedebugrt.dll. Debugging is available.\n");
@@ -144,5 +152,26 @@ oe_result_t oe_debug_pop_thread_binding()
     if (_oedebugrt.pop_thread_binding)
         return _oedebugrt.pop_thread_binding();
 
+    return OE_OK;
+}
+
+oe_result_t
+oe_debug_notify_ocall_start(oe_debug_ocall_info_t* ocall_info)
+{
+    if (_oedebugrt.notify_ocall_start)
+        _oedebugrt.notify_ocall_start(ocall_info);
+
+    return OE_OK;
+}
+
+
+/**
+ * Notify debugrt that the ocall in the current thread has completed.
+ */
+OE_DEBUGRT_EXPORT oe_result_t oe_debug_notify_ocall_end()
+{
+    if (_oedebugrt.notify_ocall_end)
+        _oedebugrt.notify_ocall_end();
+    
     return OE_OK;
 }

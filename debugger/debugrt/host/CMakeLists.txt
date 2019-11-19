@@ -11,7 +11,8 @@ if (UNIX)
   install(TARGETS oedebugrt EXPORT openenclave-targets)
 else()
   add_library(oedebugrt SHARED
-    host.c)
+    host.c
+    ocall.c)
 
   target_compile_definitions(oedebugrt PRIVATE
     OE_BUILDING_DEBUGRT_SHARED_LIBRARY)

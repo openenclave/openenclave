@@ -135,7 +135,7 @@ if (OE_SGX AND WIN32)
   add_custom_command(
      OUTPUT hoststackbridge.obj
      DEPENDS sgx/hoststackbridge.c
-     COMMAND clang  -c -O2 -g -fomit-frame-pointer -m64
+     COMMAND clang-cl /O2 /MTd
              -I${PROJECT_SOURCE_DIR}/include
              ${CMAKE_CURRENT_SOURCE_DIR}/sgx/hoststackbridge.c
              -o hoststackbridge.obj)             
@@ -185,7 +185,7 @@ if (OE_SGX)
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
       sgx/enter.c
-      sgx/hoststackbridge.c
+      sgx/linux/hoststackbridge.c
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
@@ -197,7 +197,7 @@ if (OE_SGX)
     list(APPEND PLATFORM_SDK_ONLY_SRC
       sgx/windows/aep.asm
       ${CMAKE_CURRENT_BINARY_DIR}/enter.obj
-      ${CMAKE_CURRENT_BINARY_DIR}/hoststackbridge.obj
+      sgx/windows/hoststackbridge.c
       sgx/windows/exception.c
       sgx/windows/switchless.c
       sgx/windows/xstate.c)
@@ -269,14 +269,18 @@ endif()
 if (OE_SGX AND UNIX)
   # Link oedebugrt static library.
   target_link_libraries(oehost PRIVATE oedebugrt)
+endif()
 
-  # hoststackbridge and enter.c must be forced to retain the frame-pointer
-  # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
-  set_source_files_properties(oehost
-    sgx/enter.c
-    sgx/linux/hoststackbridge.c
-    PROPERTIES
-    COMPILE_FLAGS "-O2 -g -fno-omit-frame-pointer")
+if (OE_SGX)
+  if (UNIX)
+    # hoststackbridge and enter.c must be forced to retain the frame-pointer
+    # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
+    set_source_files_properties(oehost
+      sgx/enter.c
+      sgx/linux/hoststackbridge.c
+      PROPERTIES
+      COMPILE_FLAGS "-O2 -g -fno-omit-frame-pointer")
+  endif()
 endif()
 
 add_dependencies(oehost syscall_untrusted_edl)

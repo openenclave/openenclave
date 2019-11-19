@@ -96,6 +96,37 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, thread_id) == 24);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, enclave) == 32);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, tcs) == 40);
 
+#if defined (_WIN32)
+
+#define OE_DEBUG_OCALL_MAGIC 0x80dd47c36e7f4d3c
+
+typedef struct _debug_ocall_info_t {
+    /* Fields populated by oedebugrt */
+    uint64_t magic;
+    uint64_t version;
+    struct _debug_ocall_info_t* next;
+    uint64_t thread_id;
+
+    /* Fields populated by SDK */
+    oe_debug_enclave_t* enclave;
+    struct _sgx_tcs* tcs;
+    uint64_t enclave_rip;
+    uint64_t enclave_rbp;
+    uint64_t enclave_rsp;
+} oe_debug_ocall_info_t;
+
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_ocall_info_t, magic) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_ocall_info_t, version) == 8);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_ocall_info_t, next) == 16);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_ocall_info_t, thread_id) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_ocall_info_t, enclave) == 32);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_ocall_info_t, tcs) == 40);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_ocall_info_t, enclave_rip) == 48);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_ocall_info_t, enclave_rbp) == 56);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_ocall_info_t, enclave_rsp) == 64);
+
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////// Symbols Exported by the Runtime ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,6 +157,13 @@ OE_DEBUGRT_EXPORT extern oe_debug_enclave_t* oe_debug_enclaves_list;
 OE_DEBUGRT_EXPORT extern oe_debug_thread_binding_t*
     oe_debug_thread_bindings_list;
 
+#if defined (_WIN32)
+/**
+ * The TLS slot index for the thread-specific stack of ocalls (oe_debug_ocall_info_t).
+ */
+OE_DEBUGRT_EXPORT extern uint64_t oe_ocall_info_list_tls_index;
+
+#endif
 ////////////////////////////////////////////////////////////////////////////////
 /////////////// Events Raised for Windows Debuggers/////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -187,6 +225,23 @@ oe_debug_push_thread_binding(oe_debug_enclave_t* enclave, struct _sgx_tcs* tcs);
  * Pop the last binding for the current thread.
  */
 OE_DEBUGRT_EXPORT oe_result_t oe_debug_pop_thread_binding(void);
+
+
+#if defined (_WIN32)
+
+/**
+ * Notify debugrt prior to doing an ocall in the current thread.
+ */
+OE_DEBUGRT_EXPORT oe_result_t
+oe_debug_notify_ocall_start(oe_debug_ocall_info_t* ocall_info);
+
+
+/**
+ * Notify debugrt that the ocall in the current thread has completed.
+ */
+OE_DEBUGRT_EXPORT oe_result_t oe_debug_notify_ocall_end(void);
+
+#endif
 
 OE_EXTERNC_END
 
