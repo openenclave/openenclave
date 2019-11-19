@@ -8,7 +8,7 @@
 #include "../asmdefs.h"
 #include "../enclave.h"
 
-#pragma section(".oedbgrt")
+#pragma code_seg(".oedbgrt")
 
 OE_NEVER_INLINE int
 oe_host_stack_bridge(
