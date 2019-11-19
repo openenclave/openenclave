@@ -210,6 +210,9 @@ if (OE_SGX)
         -nostdinc
         -fno-stack-protector
         -fvisibility=hidden
+        # Put each function or data in its own section.
+        # This allows aggressively eliminating unused code.
+        -ffunction-sections -fdata-sections
         # "The default without -fpic is 'initial-exec'; with -fpic the
         # default is 'global-dynamic'."
         # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
@@ -258,7 +261,8 @@ if(OE_SGX)
         -nostdlib -nodefaultlibs -nostartfiles
         -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
         -Wl,-z,noexecstack
-        -Wl,-z,now)
+        -Wl,-z,now
+        -Wl,-gc-sections)
 elseif(OE_TRUSTZONE)
     target_link_libraries(oecore INTERFACE
         -nostdlib -nodefaultlibs -nostartfiles
