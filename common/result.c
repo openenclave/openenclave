@@ -126,6 +126,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_THREAD_CREATE_ERROR";
         case OE_THREAD_JOIN_ERROR:
             return "OE_THREAD_JOIN_ERROR";
+        case OE_ALREADY_EXISTS:
+            return "OE_ALREADY_EXISTS";
         case __OE_RESULT_MAX:
             break;
     }
@@ -192,6 +194,7 @@ bool oe_is_valid_result(uint32_t result)
         case OE_CONTEXT_SWITCHLESS_OCALL_MISSED:
         case OE_THREAD_CREATE_ERROR:
         case OE_THREAD_JOIN_ERROR:
+        case OE_ALREADY_EXISTS:
         {
             return true;
         }

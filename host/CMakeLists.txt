@@ -120,7 +120,7 @@ endif()
 # SGX specific files.
 if (OE_SGX)
   list(APPEND PLATFORM_HOST_ONLY_SRC
-    ../common/sgx/collaterals.c
+    ../common/sgx/endorsements.c
     ../common/sgx/qeidentity.c
     ../common/sgx/quote.c
     ../common/sgx/report.c
@@ -128,6 +128,7 @@ if (OE_SGX)
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c
+    ../common/sgx/verifier.c
     sgx/hostverify_report.c
     sgx/sgxquoteprovider.c)
 
@@ -203,6 +204,7 @@ endif()
 
 # Common host verification files that work on any OS/architecture.
 list(APPEND PLATFORM_HOST_ONLY_SRC
+  ../common/attest_plugin.c
   ../common/datetime.c
   ../common/safecrt.c
   hexdump.c

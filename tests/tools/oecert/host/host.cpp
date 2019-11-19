@@ -10,14 +10,13 @@
 #include <string.h>
 #include "oecert_u.h"
 
-#include "../../../../common/sgx/collaterals.h"
+#include "../../../../common/sgx/endorsements.h"
 
 #ifdef OE_LINK_SGX_DCAP_QL
 
 #define INPUT_PARAM_OPTION_CERT "--cert"
 #define INPUT_PARAM_OPTION_REPORT "--report"
 #define INPUT_PARAM_OPTION_OUT_FILE "--out"
-#define INPUT_PARAM_OPTION_COLLATERALS "--collaterals"
 
 // Structure to store input parameters
 //
@@ -29,7 +28,6 @@ typedef struct _input_params
     const char* out_filename;
     bool gen_cert;
     bool gen_report;
-    bool gen_collaterals;
 } input_params_t;
 
 static input_params_t _params;
@@ -195,53 +193,45 @@ static oe_result_t _gen_report(
             }
         }
 
-        // Check if collaterals need to be generated
-        if (_params.gen_collaterals)
+        char collateral_filename[1024 + 1];
+
+        if (strlen(report_filename) < (1024 - 4))
         {
-            char collateral_filename[1024 + 1];
+            uint8_t* collaterals = NULL;
+            size_t collaterals_size = 0;
+            oe_report_header_t* header = (oe_report_header_t*)remote_report;
 
-            if (strlen(report_filename) < (1024 - 4))
+            sprintf(collateral_filename, "%s.col", report_filename);
+            printf("Generatting collateral file: %s\n", collateral_filename);
+
+            result = oe_get_sgx_endorsements(
+                header->report,
+                header->report_size,
+                &collaterals,
+                &collaterals_size);
+            if (result != OE_OK)
             {
-                uint8_t* collaterals = NULL;
-                size_t collaterals_size = 0;
-                oe_report_header_t* header = (oe_report_header_t*)remote_report;
+                printf("Failed to create SGX endorsements.");
+                result = OE_FAILURE;
+                goto exit;
+            }
 
-                sprintf(collateral_filename, "%s.col", report_filename);
+            FILE* col_fp = fopen(collateral_filename, "wb");
+            if (!col_fp)
+            {
                 printf(
-                    "Generatting collateral file: %s\n", collateral_filename);
-
-                result = oe_get_collaterals_internal(
-                    header->report,
-                    header->report_size,
-                    &collaterals,
-                    &collaterals_size);
-                if (result != OE_OK)
-                {
-                    printf("ERROR: Failed to get collaterals\n");
-                    goto exit;
-                }
-
-                // TODO: Current collateral structure is not self contained.
-                // Needs to be updated to be serialisable.
-                //
-                FILE* col_fp = fopen(collateral_filename, "wb");
-                if (!col_fp)
-                {
-                    printf(
-                        "Failed to open collateral file %s\n",
-                        collateral_filename);
-                    result = OE_FAILURE;
-                    goto exit;
-                }
-                fwrite(collaterals, collaterals_size, 1, col_fp);
-                fclose(col_fp);
-                printf("collaterals_size = %zu\n", collaterals_size);
+                    "Failed to open collateral file %s\n", collateral_filename);
+                result = OE_FAILURE;
+                goto exit;
             }
-            else
-            {
-                printf("ERROR: Report filename is too long.\n");
-                exit(1);
-            }
+            fwrite(collaterals, collaterals_size, 1, col_fp);
+            fclose(col_fp);
+            printf("collaterals_size = %zu\n", collaterals_size);
+        }
+        else
+        {
+            printf("ERROR: Report filename is too long.\n");
+            exit(1);
         }
     }
     else
@@ -264,10 +254,7 @@ static void _display_help(const char* cmd)
         "\t%s PRIVKEY PUBKEY: generate der remote attestation certificate.\n",
         INPUT_PARAM_OPTION_CERT);
     printf(
-        "\t%s : generate binary enclave report.\n", INPUT_PARAM_OPTION_REPORT);
-    printf(
-        "\t%s : generate binary collaterals.  Valid only if %s is specified.\n",
-        INPUT_PARAM_OPTION_COLLATERALS,
+        "\t%s : generate binary enclave evidence and endorsements.\n",
         INPUT_PARAM_OPTION_REPORT);
     printf("\t%s : output filename.\n", INPUT_PARAM_OPTION_OUT_FILE);
 
@@ -339,11 +326,6 @@ static int _parse_args(int argc, const char* argv[])
                 _display_help(argv[0]);
                 return 1;
             }
-        }
-        else if (strcmp(INPUT_PARAM_OPTION_COLLATERALS, argv[i]) == 0)
-        {
-            _params.gen_collaterals = true;
-            i += 1;
         }
         else if (strcmp(INPUT_PARAM_OPTION_OUT_FILE, argv[i]) == 0)
         {

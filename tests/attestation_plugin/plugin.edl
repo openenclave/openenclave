@@ -1,0 +1,20 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+
+    trusted {
+        public void run_runtime_test();
+        public void register_sgx();
+        public void unregister_sgx();
+        public void test_sgx();
+    };
+
+    untrusted {
+        void host_verify(
+            [in, size=evidence_size] uint8_t* evidence,
+            size_t evidence_size,
+            [in, size=endorsements_size] uint8_t* endorsements,
+            size_t endorsements_size);
+    };
+};

@@ -11,7 +11,7 @@
 #include "../../../host/sgx/sgxquoteprovider.h"
 #endif
 #include "../../../common/oe_host_stdlib.h"
-#include "../../../common/sgx/collaterals.h"
+#include "../../../common/sgx/endorsements.h"
 #include "../../../common/sgx/qeidentity.h"
 #include "../../../common/sgx/quote.h"
 #include "../../../common/sgx/revocation.h"
@@ -97,7 +97,7 @@ oe_result_t oe_get_collaterals(
 #endif
 
     OE_CHECK_MSG(
-        oe_get_collaterals_internal(
+        oe_get_sgx_endorsements(
             header->report,
             header->report_size,
             collaterals_buffer,
@@ -178,7 +178,7 @@ static oe_result_t oe_verify_report_with_collaterals(
 #endif
 
         // Quote attestation can be done entirely on the host side.
-        OE_CHECK(oe_verify_quote_internal_with_collaterals(
+        OE_CHECK(oe_verify_sgx_quote(
             header->report,
             header->report_size,
             collaterals,
@@ -225,7 +225,7 @@ done:
  */
 static void oe_free_collaterals(uint8_t* collaterals_buffer)
 {
-    oe_free_collaterals_internal(collaterals_buffer);
+    oe_free_sgx_endorsements(collaterals_buffer);
 }
 
 /*!
@@ -248,29 +248,30 @@ static void oe_free_collaterals(uint8_t* collaterals_buffer)
  *
  * @param[in] report The buffer containing the report to verify.
  * @param[in] report_size The size of the **report** buffer.
- * @param[in] collaterals Collaterals related to the quote.
- * @param[in] collatterals_size The size of the collaterals.
+ * @param[in] endorsements Endorsements related to the quote.
+ * @param[in] endorsements_size The size of the endorsements.
  * @param[out] valid_from validity_from The date from which the quote is valid.
  * @param[out] valid_until validity_until The date which the quote expires.
  */
 static oe_result_t oe_get_quote_validity_with_collaterals(
     const uint8_t* report,
     const size_t report_size,
-    const uint8_t* collaterals,
-    size_t collaterals_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size,
     oe_datetime_t* valid_from,
     oe_datetime_t* valid_until)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
+    oe_sgx_endorsements_t sgx_endorsements;
 
-    if (report == NULL || collaterals == NULL || valid_from == NULL ||
+    if (report == NULL || endorsements == NULL || valid_from == NULL ||
         valid_until == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (report_size == 0 || report_size > OE_MAX_REPORT_SIZE ||
-        collaterals_size == 0)
+        endorsements_size == 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Ensure that the report is parseable before using the header.
@@ -286,12 +287,19 @@ static oe_result_t oe_get_quote_validity_with_collaterals(
         OE_CHECK(oe_initialize_quote_provider());
 #endif
 
+        OE_CHECK_MSG(
+            oe_parse_sgx_endorsements(
+                (oe_endorsements_t*)endorsements,
+                endorsements_size,
+                &sgx_endorsements),
+            "Failed to parse SGX endorsements.",
+            oe_result_str(result));
+
         // Quote attestation can be done entirely on the host side.
-        OE_CHECK(oe_get_quote_validity_with_collaterals_internal(
+        OE_CHECK(oe_get_sgx_quote_validity(
             header->report,
             header->report_size,
-            collaterals,
-            collaterals_size,
+            &sgx_endorsements,
             valid_from,
             valid_until));
     }

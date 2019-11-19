@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "revocation.h"
+#include <openenclave/bits/attestation.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
@@ -285,7 +286,7 @@ done:
 
 oe_result_t oe_validate_revocation_list(
     oe_cert_t* pck_cert,
-    oe_get_revocation_info_args_t* revocation_args,
+    const oe_sgx_endorsements_t* sgx_endorsements,
     oe_datetime_t* validity_from,
     oe_datetime_t* validity_until)
 {
@@ -298,6 +299,7 @@ oe_result_t oe_validate_revocation_list(
     oe_parsed_tcb_info_t parsed_tcb_info = {0};
     oe_tcb_level_t platform_tcb_level = {{0}};
 
+    uint32_t version = 0;
     oe_crl_t crls[2] = {{{0}}};
     const oe_crl_t* crl_ptrs[2] = {&crls[0], &crls[1]};
     oe_datetime_t from = {0};
@@ -305,49 +307,71 @@ oe_result_t oe_validate_revocation_list(
     oe_datetime_t latest_from = {0};
     oe_datetime_t earliest_until = {0};
 
-    if (pck_cert == NULL || revocation_args == NULL)
+    if (pck_cert == NULL || sgx_endorsements == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    version =
+        *(uint32_t*)sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_VERSION]
+             .data;
+    if (version != OE_SGX_ENDORSEMENTS_VERSION)
+        OE_RAISE_MSG(
+            OE_INVALID_PARAMETER,
+            "SGX endorsement version is %d, expected %d",
+            version,
+            OE_SGX_ENDORSEMENTS_VERSION);
+
     OE_STATIC_ASSERT(
-        OE_COUNTOF(crl_issuer_chain) ==
-        OE_COUNTOF(revocation_args->crl_issuer_chain));
+        OE_COUNTOF(crl_issuer_chain) >= OE_SGX_ENDORSEMENTS_CRL_COUNT);
 
     OE_CHECK_MSG(
         _parse_sgx_extensions(pck_cert, &parsed_extension_info),
         "Failed to parse SGX extensions from leaf cert. %s",
         oe_result_str(result));
 
-    // Apply revocation info.
     OE_CHECK_MSG(
         oe_cert_chain_read_pem(
             &tcb_issuer_chain,
-            revocation_args->tcb_issuer_chain,
-            revocation_args->tcb_issuer_chain_size),
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN]
+                .data,
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN]
+                .size),
         "Failed to read TCB chain certificate. %s",
         oe_result_str(result));
 
     // Read CRLs for each cert other than root. If any CRL is missing, the read
     // will error out.
-    for (uint32_t i = 0; i < revocation_args->num_crl_urls; ++i)
+    for (uint32_t i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; ++i)
     {
         OE_CHECK_MSG(
             oe_crl_read_der(
                 &crls[i],
-                revocation_args->crl[i],
-                revocation_args->crl_size[i]),
+                sgx_endorsements
+                    ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT + i]
+                    .data,
+                sgx_endorsements
+                    ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT + i]
+                    .size),
             "Failed to read CRL. %s",
             oe_result_str(result));
         OE_CHECK_MSG(
             oe_cert_chain_read_pem(
                 &crl_issuer_chain[i],
-                revocation_args->crl_issuer_chain[i],
-                revocation_args->crl_issuer_chain_size[i]),
+                sgx_endorsements
+                    ->items
+                        [OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT + i]
+                    .data,
+                sgx_endorsements
+                    ->items
+                        [OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT + i]
+                    .size),
             "Failed to read CRL cert chain. %s",
             oe_result_str(result));
         OE_TRACE_VERBOSE(
             "CRL certificate[%d]: \n[%s]\n",
             i,
-            revocation_args->crl_issuer_chain[i]);
+            (const char*)sgx_endorsements
+                ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT + i]
+                .data);
     }
 
     // Verify the leaf cert.
@@ -382,8 +406,8 @@ oe_result_t oe_validate_revocation_list(
 
     OE_CHECK_MSG(
         oe_parse_tcb_info_json(
-            revocation_args->tcb_info,
-            revocation_args->tcb_info_size,
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].data,
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].size,
             &platform_tcb_level,
             &parsed_tcb_info),
         "Failed to parse TCB info. %s",
@@ -460,11 +484,11 @@ oe_result_t oe_validate_revocation_list(
     result = OE_OK;
 
 done:
-    for (int32_t i = (int32_t)revocation_args->num_crl_urls - 1; i >= 0; --i)
+    for (int32_t i = (int32_t)OE_SGX_ENDORSEMENTS_CRL_COUNT - 1; i >= 0; --i)
     {
         oe_crl_free(&crls[i]);
     }
-    for (uint32_t i = 0; i < revocation_args->num_crl_urls; ++i)
+    for (uint32_t i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; ++i)
     {
         oe_cert_chain_free(&crl_issuer_chain[i]);
     }

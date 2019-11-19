@@ -8,25 +8,10 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/crypto/cert.h>
+#include <openenclave/internal/datetime.h>
+#include "endorsements.h"
 
 OE_EXTERNC_BEGIN
-
-/*!
- * Verify quote with optional collaterals.
- *
- * @param[in] quote Input quote.
- * @param[in] quote_size The size of the quote.
- * @param[in] collaterals Optional collaterals related to a remote quote.
- * @param[in] collatterals_size The size of the collaterals.
- * @param[in] input_validation_time Optional time to use for validation,
- * defaults to the time the collaterals were created.
- */
-oe_result_t oe_verify_quote_internal_with_collaterals(
-    const uint8_t* quote,
-    size_t quote_size,
-    const uint8_t* collaterals,
-    size_t collaterals_size,
-    oe_datetime_t* input_validation_time);
 
 /*!
  * Retrieves certifate chain from the quote.
@@ -50,8 +35,47 @@ oe_result_t oe_get_quote_cert_chain_internal(
     oe_cert_chain_t* pck_cert_chain);
 
 /*!
- * Find the valid datetime range for the given quote, collaterals.  This
- * function accounts for the following items:
+ * Verify SGX quote and endorsements.
+ *
+ * @param[in] quote Input quote.
+ * @param[in] quote_size The size of the quote.
+ * @param[in] endorsements Optional endorsements related to a remote quote.
+ * @param[in] endorsements_size The size of the endorsements.
+ * @param[in] input_validation_time Optional time to use for validation,
+ * defaults to the time the endorsements were created if null. Note that
+ * if the input time is after than the endorsement creation time, then the
+ * CRLs might have updated in the period between the input time and the
+ * endorsement creation time.
+ */
+oe_result_t oe_verify_sgx_quote(
+    const uint8_t* quote,
+    size_t quote_size,
+    const uint8_t* endorsements,
+    size_t endorsements_size,
+    oe_datetime_t* input_validation_time);
+
+/*!
+ * Verify SGX quote and endorsements.
+ *
+ * @param[in] quote Input quote.
+ * @param[in] quote_size The size of the quote.
+ * @param[in] endorsements The endorsements in the format of
+ * the `oe_sgx_endorsements_t` struct.
+ * @param[in] input_validation_time Optional time to use for validation,
+ * defaults to the time the endorsements were created if null. Note that
+ * if the input time is after than the endorsement creation time, then the
+ * CRLs might have updated in the period between the input time and the
+ * endorsement creation time.
+ */
+oe_result_t oe_verify_quote_with_sgx_endorsements(
+    const uint8_t* quote,
+    size_t quote_size,
+    const oe_sgx_endorsements_t* endorsements,
+    oe_datetime_t* input_validation_time);
+
+/*!
+ * Find the valid datetime range for the given quote and sgx endorsements.
+ * This function accounts for the following items:
  *
  * 1. From the quote:
  *          a) Root CA.
@@ -69,16 +93,14 @@ oe_result_t oe_get_quote_cert_chain_internal(
  *
  * @param[in] quote Input quote.
  * @param[in] quote_size The size of the quote.
- * @param[in] collaterals Collaterals related to the quote.
- * @param[in] collatterals_size The size of the collaterals.
+ * @param[in] sgx_endorsements SGX endorsements related to the quote.
  * @param[out] valid_from validity_from The date from which the quote is valid.
  * @param[out] valid_until validity_until The date which the quote expires.
  */
-oe_result_t oe_get_quote_validity_with_collaterals_internal(
+oe_result_t oe_get_sgx_quote_validity(
     const uint8_t* quote,
     const size_t quote_size,
-    const uint8_t* collaterals,
-    size_t collaterals_size,
+    const oe_sgx_endorsements_t* sgx_endorsements,
     oe_datetime_t* valid_from,
     oe_datetime_t* valid_until);
 

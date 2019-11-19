@@ -9,7 +9,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"
-#include "collaterals.h"
+#include "endorsements.h"
 #include "qeidentity.h"
 #include "revocation.h"
 
@@ -423,110 +423,139 @@ static void _update_validity(
     }
 }
 
-oe_result_t oe_verify_quote_internal_with_collaterals(
+oe_result_t oe_verify_sgx_quote(
     const uint8_t* quote,
     size_t quote_size,
-    const uint8_t* collaterals,
-    size_t collaterals_size,
-    oe_datetime_t* validation_time)
+    const uint8_t* endorsements,
+    size_t endorsements_size,
+    oe_datetime_t* input_validation_time)
 {
     oe_result_t result = OE_UNEXPECTED;
-
-    uint8_t* local_collaterals = NULL;
-    size_t local_collaterals_size = 0;
-    oe_datetime_t validity_from = {0};
-    oe_datetime_t validity_until = {0};
-    oe_datetime_t creation_time = {0};
+    uint8_t* local_endorsements = NULL;
+    size_t local_endorsements_size = 0;
+    oe_sgx_endorsements_t sgx_endorsements;
 
     if (quote == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (collaterals == NULL)
+    if (endorsements == NULL && input_validation_time != NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (endorsements == NULL)
     {
         OE_CHECK_MSG(
-            oe_get_collaterals_internal(
+            oe_get_sgx_endorsements(
                 quote,
                 quote_size,
-                (uint8_t**)&local_collaterals,
-                &local_collaterals_size),
-            "Failed to get collaterals. %s",
+                (uint8_t**)&local_endorsements,
+                &local_endorsements_size),
+            "Failed to get SGX endorsements. %s",
             oe_result_str(result));
 
-        collaterals = local_collaterals;
-        collaterals_size = local_collaterals_size;
+        endorsements = local_endorsements;
+        endorsements_size = local_endorsements_size;
     }
+
+    OE_CHECK_MSG(
+        oe_parse_sgx_endorsements(
+            (oe_endorsements_t*)endorsements,
+            endorsements_size,
+            &sgx_endorsements),
+        "Failed to parse SGX endorsements.",
+        oe_result_str(result));
+
+    // Endorsements verification
+    OE_CHECK(oe_verify_quote_with_sgx_endorsements(
+        quote, quote_size, &sgx_endorsements, input_validation_time));
+
+    result = OE_OK;
+
+done:
+    if (local_endorsements)
+        oe_free_sgx_endorsements(local_endorsements);
+
+    return result;
+}
+
+oe_result_t oe_verify_quote_with_sgx_endorsements(
+    const uint8_t* quote,
+    size_t quote_size,
+    const oe_sgx_endorsements_t* sgx_endorsements,
+    oe_datetime_t* input_validation_time)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_datetime_t validity_from = {0};
+    oe_datetime_t validity_until = {0};
+    oe_datetime_t validation_time = {0};
 
     OE_CHECK_MSG(
         oe_verify_quote_internal(quote, quote_size),
         "Failed to verify remote quote.",
         NULL);
 
-    // Collateral verification
+    OE_CHECK_MSG(
+        oe_get_sgx_quote_validity(
+            quote,
+            quote_size,
+            sgx_endorsements,
+            &validity_from,
+            &validity_until),
+        "Failed to validate quote. %s",
+        oe_result_str(result));
+
+    // Verify quote/endorsements for the given time.  Use endorsements
+    // creation time if one was not provided.
+    if (input_validation_time == NULL)
     {
-        oe_collaterals_t* collaterals_body =
-            (oe_collaterals_t*)(collaterals + OE_COLLATERALS_HEADER_SIZE);
-
         OE_CHECK_MSG(
-            oe_get_quote_validity_with_collaterals_internal(
-                quote,
-                quote_size,
-                collaterals,
-                collaterals_size,
-                &validity_from,
-                &validity_until),
-            "Failed to validate quote. %s",
-            oe_result_str(result));
+            oe_datetime_from_string(
+                (const char*)(sgx_endorsements
+                                  ->items
+                                      [OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME]
+                                  .data),
+                sgx_endorsements
+                    ->items[OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME]
+                    .size,
+                &validation_time),
+            "Invalid creation time in endorsements: %s",
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME]
+                .data);
+    }
+    else
+    {
+        validation_time = *input_validation_time;
+    }
 
-        // Verify quote/collaterals for the given time.  Use collateral creation
-        // time if one was not provided.
-        if (validation_time == NULL)
-        {
-            OE_CHECK_MSG(
-                oe_datetime_from_string(
-                    collaterals_body->creation_datetime,
-                    sizeof(collaterals_body->creation_datetime),
-                    &creation_time),
-                "Invalid creation time in collaterals: %s",
-                collaterals_body->creation_datetime);
-
-            validation_time = &creation_time;
-        }
-
-        oe_datetime_log("Validation datetime: ", validation_time);
-        if (oe_datetime_compare(validation_time, &validity_from) < 0)
-        {
-            oe_datetime_log("Latests valid datetime: ", &validity_from);
-            OE_RAISE_MSG(
-                OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-                "Time to validate quote is earlier than the "
-                "latest 'valid from' value.",
-                NULL);
-        }
-        if (oe_datetime_compare(validation_time, &validity_until) > 0)
-        {
-            oe_datetime_log("Earliest expiration datetime: ", &validity_until);
-            OE_RAISE_MSG(
-                OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-                "Time to validate quoteis later than the "
-                "earliest 'valid to' value.",
-                NULL);
-        }
+    oe_datetime_log("Validation datetime: ", &validation_time);
+    if (oe_datetime_compare(&validation_time, &validity_from) < 0)
+    {
+        oe_datetime_log("Latests valid datetime: ", &validity_from);
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+            "Time to validate quote is earlier than the "
+            "latest 'valid from' value.",
+            NULL);
+    }
+    if (oe_datetime_compare(&validation_time, &validity_until) > 0)
+    {
+        oe_datetime_log("Earliest expiration datetime: ", &validity_until);
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+            "Time to validate quoteis later than the "
+            "earliest 'valid to' value.",
+            NULL);
     }
 
     result = OE_OK;
 
 done:
-    if (local_collaterals)
-        oe_free_collaterals_internal(local_collaterals);
-
     return result;
 }
 
-oe_result_t oe_get_quote_validity_with_collaterals_internal(
+oe_result_t oe_get_sgx_quote_validity(
     const uint8_t* quote,
     const size_t quote_size,
-    const uint8_t* collaterals,
-    size_t collaterals_size,
+    const oe_sgx_endorsements_t* sgx_endorsements,
     oe_datetime_t* valid_from,
     oe_datetime_t* valid_until)
 {
@@ -541,10 +570,6 @@ oe_result_t oe_get_quote_validity_with_collaterals_internal(
     size_t pem_pck_certificate_size = 0;
     oe_cert_chain_t pck_cert_chain = {0};
 
-    oe_collaterals_header_t* col_header = (oe_collaterals_header_t*)collaterals;
-    oe_collaterals_t* col =
-        (oe_collaterals_t*)(collaterals + OE_COLLATERALS_HEADER_SIZE);
-
     oe_cert_t root_cert = {0};
     oe_cert_t intermediate_cert = {0};
     oe_cert_t pck_cert = {0};
@@ -554,13 +579,9 @@ oe_result_t oe_get_quote_validity_with_collaterals_internal(
     oe_datetime_t from;
     oe_datetime_t until;
 
-    if ((quote == NULL) || (collaterals == NULL) || (valid_from == NULL) ||
+    if ((quote == NULL) || (sgx_endorsements == NULL) || (valid_from == NULL) ||
         (valid_until == NULL))
         OE_RAISE(OE_INVALID_PARAMETER);
-
-    if ((col_header->collaterals_size != OE_COLLATERALS_BODY_SIZE) ||
-        (collaterals_size != OE_COLLATERALS_SIZE))
-        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid collaterals size.", NULL);
 
     OE_TRACE_INFO("Call enter %s\n", __FUNCTION__);
 
@@ -621,8 +642,8 @@ oe_result_t oe_get_quote_validity_with_collaterals_internal(
 
     // Fetch revocation info validity dates.
     OE_CHECK_MSG(
-        oe_validate_revocation_list(
-            &pck_cert, &col->revocation_info, &from, &until),
+        oe_validate_revocation_list(&pck_cert, sgx_endorsements, &from, &until),
+
         "Failed to validate revocation info. %s",
         oe_result_str(result));
     _update_validity(&latest_from, &earliest_until, &from, &until);
@@ -630,7 +651,8 @@ oe_result_t oe_get_quote_validity_with_collaterals_internal(
     // QE identity info validity dates.
     OE_CHECK_MSG(
         oe_validate_qe_identity(
-            &quote_auth_data->qe_report_body, &col->qe_id_info, &from, &until),
+            &quote_auth_data->qe_report_body, sgx_endorsements, &from, &until),
+
         "Failed quoting enclave identity checking. %s",
         oe_result_str(result));
     _update_validity(&latest_from, &earliest_until, &from, &until);

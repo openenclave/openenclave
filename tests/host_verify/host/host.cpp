@@ -114,70 +114,6 @@ static oe_result_t _verify_cert(const char* filename, bool pass)
     return oe_ret;
 }
 
-/**
- * Verify the integrity of the remote report and its signature,
- * with optional collateral data.
- *
- * This function verifies that the report signature is valid. It
- * verifies that the signing authority is rooted to a trusted authority
- * such as the enclave platform manufacturer.
- *
- * @param report The buffer containing the report to verify.
- * @param report_size The size of the **report** buffer.
- * @param collaterals The collateral data that is associated with the report.
- * @param collaterals_size The size of the **collaterals** buffer.
- * @param parsed_report Optional **oe_report_t** structure to populate
- * with the report properties in a standard format.
- *
- * @retval OE_OK The report was successfully verified.
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- *
- */
-static oe_result_t oe_verify_remote_report_with_collaterals(
-    const uint8_t* report,
-    size_t report_size,
-    const uint8_t* collaterals,
-    size_t collaterals_size,
-    oe_report_t* parsed_report)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_report_t oe_report = {0};
-    oe_report_header_t* header = (oe_report_header_t*)report;
-
-    if (report == NULL)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (report_size == 0 || report_size > OE_MAX_REPORT_SIZE)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    // The two host side attestation API's are oe_get_report and
-    // oe_verify_report. Initialize the quote provider in both these APIs.
-    OE_CHECK(oe_initialize_quote_provider());
-
-    // Ensure that the report is parseable before using the header.
-    OE_CHECK(oe_parse_report(report, report_size, &oe_report));
-
-    if (header->report_type != OE_REPORT_TYPE_SGX_REMOTE)
-        OE_RAISE(OE_UNSUPPORTED);
-
-    // Quote attestation can be done entirely on the host side.
-    OE_CHECK(oe_verify_quote_internal_with_collaterals(
-        header->report,
-        header->report_size,
-        collaterals,
-        collaterals_size,
-        NULL));
-
-    // Optionally return parsed report.
-    if (parsed_report != NULL)
-        OE_CHECK(oe_parse_report(report, report_size, parsed_report));
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
 static size_t _get_filesize(FILE* fp)
 {
     size_t size = 0;
@@ -219,26 +155,27 @@ static void _read_binary_file(
 
 static int _verify_report(
     const char* report_filename,
-    const char* collaterals_filename,
+    const char* endorsements_filename,
     bool pass)
 {
     int ret = -1;
     size_t report_file_size = 0;
-    size_t collaterals_file_size = 0;
+    size_t endorsements_file_size = 0;
     uint8_t* report_data = NULL;
-    uint8_t* collaterals_data = NULL;
+    uint8_t* endorsements_data = NULL;
     oe_result_t result = OE_FAILURE;
 
     OE_TRACE_INFO(
-        "\n\nVerifying report %s, collaterals: %s\n",
+        "\n\nVerifying report %s, endorsements: %s\n",
         report_filename,
-        collaterals_filename);
+        endorsements_filename);
 
     _read_binary_file(report_filename, &report_data, &report_file_size);
 
-    if (collaterals_filename == NULL)
+    if (endorsements_filename == NULL)
     {
-        result = oe_verify_remote_report(report_data, report_file_size, NULL);
+        result = oe_verify_remote_report(
+            report_data, report_file_size, NULL, 0, NULL);
         if (pass)
             OE_TEST(result == OE_OK);
         else
@@ -259,13 +196,13 @@ static int _verify_report(
     else
     {
         _read_binary_file(
-            collaterals_filename, &collaterals_data, &collaterals_file_size);
+            endorsements_filename, &endorsements_data, &endorsements_file_size);
 
-        result = oe_verify_remote_report_with_collaterals(
+        result = oe_verify_sgx_quote(
             report_data,
             report_file_size,
-            collaterals_data,
-            collaterals_file_size,
+            endorsements_data,
+            endorsements_file_size,
             NULL);
 
         if (pass)
@@ -280,7 +217,7 @@ static int _verify_report(
                 "Report %s and collateral %s verification failed as expected. "
                 "Failure %d(%s)\n",
                 report_filename,
-                collaterals_filename,
+                endorsements_filename,
                 result,
                 oe_result_str(result));
         }
@@ -291,8 +228,8 @@ static int _verify_report(
 
     if (report_data != NULL)
         free(report_data);
-    if (collaterals_data != NULL)
-        free(collaterals_data);
+    if (endorsements_data != NULL)
+        free(endorsements_data);
 
     return ret;
 }

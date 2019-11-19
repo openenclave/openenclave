@@ -35,6 +35,7 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
         # The following tests currently fail in Windows simulation mode
         if (NOT WIN32_SIMULATION)
             add_subdirectory(abortStatus)
+            add_subdirectory(attestation_plugin)
             add_subdirectory(cppException)
             add_subdirectory(ecall)
             add_subdirectory(file)

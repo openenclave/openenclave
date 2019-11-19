@@ -6,7 +6,7 @@ add_subdirectory(crypto)
 
 if (OE_SGX)
     set(PLATFORM_SRC
-        ../common/sgx/collaterals.c
+        ../common/sgx/endorsements.c
         ../common/sgx/qeidentity.c
         ../common/sgx/quote.c
         ../common/sgx/report.c
@@ -14,6 +14,8 @@ if (OE_SGX)
         ../common/sgx/sgxcertextensions.c
         ../common/sgx/tcbinfo.c
         ../common/sgx/tlsverifier.c
+        ../common/sgx/verifier.c
+        sgx/attester.c
         sgx/qeidinfo.c
         sgx/report.c
         sgx/revocationinfo.c
@@ -26,6 +28,7 @@ elseif(OE_TRUSTZONE)
 endif()
 
 add_library(oeenclave STATIC
+    ../common/attest_plugin.c
     ../common/datetime.c
     asym_keys.c
     link.c

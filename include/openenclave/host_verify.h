@@ -32,6 +32,10 @@ OE_EXTERNC_BEGIN
  * @param report_size The size of the **report** buffer.
  * @param parsed_report Optional **oe_report_t** structure to populate
  * with the report properties in a standard format.
+ * @param[out] endorsements An optional output pointer that will be assigned
+ * the address of the endorsements buffer.
+ * @param[out] endorsements_size A pointer that points to the size of
+ * the endorsements buffer in bytes.
  *
  * @retval OE_OK The report was successfully verified.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -40,6 +44,8 @@ OE_EXTERNC_BEGIN
 oe_result_t oe_verify_remote_report(
     const uint8_t* report,
     size_t report_size,
+    const uint8_t* endorsement,
+    size_t endorsement_size,
     oe_report_t* parsed_report);
 
 /**
