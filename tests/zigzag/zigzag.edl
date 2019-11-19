@@ -1,0 +1,14 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public void enc_zig(int enc_num);
+        public void enc_zag(int enc_num);
+    };
+
+    untrusted {
+        void host_zag();
+        void host_bye();
+    };
+};

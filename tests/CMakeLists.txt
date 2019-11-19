@@ -67,6 +67,7 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
         add_subdirectory(stdc)
         add_subdirectory(syscall)
         add_subdirectory(VectorException)
+        add_subdirectory(zigzag)
     endif()
 
 add_subdirectory(create-errors)
