@@ -119,6 +119,9 @@ done:
     return result;
 }
 
+// Timing note:
+// Roughly 0.002 seconds without endorsements.
+// Roughtly 0.5 seconds with endorsements.
 static oe_result_t _get_evidence(
     oe_attester_t* context,
     uint32_t flags,

@@ -431,12 +431,8 @@ oe_result_t oe_verify_sgx_quote(
     oe_datetime_t* input_validation_time)
 {
     oe_result_t result = OE_UNEXPECTED;
-
     uint8_t* local_endorsements = NULL;
     size_t local_endorsements_size = 0;
-    oe_datetime_t validity_from = {0};
-    oe_datetime_t validity_until = {0};
-    oe_datetime_t validation_time = {0};
     oe_sgx_endorsements_t sgx_endorsements;
 
     if (quote == NULL)
@@ -461,11 +457,6 @@ oe_result_t oe_verify_sgx_quote(
     }
 
     OE_CHECK_MSG(
-        oe_verify_quote_internal(quote, quote_size),
-        "Failed to verify remote quote.",
-        NULL);
-
-    OE_CHECK_MSG(
         oe_parse_sgx_endorsements(
             (oe_endorsements_t*)endorsements,
             endorsements_size,
@@ -474,60 +465,8 @@ oe_result_t oe_verify_sgx_quote(
         oe_result_str(result));
 
     // Endorsements verification
-    {
-        OE_CHECK_MSG(
-            oe_get_sgx_quote_validity(
-                quote,
-                quote_size,
-                &sgx_endorsements,
-                &validity_from,
-                &validity_until),
-            "Failed to validate quote. %s",
-            oe_result_str(result));
-
-        // Verify quote/endorsements for the given time.  Use endorsements
-        // creation time if one was not provided.
-        if (input_validation_time == NULL)
-        {
-            OE_CHECK_MSG(
-                oe_datetime_from_string(
-                    (const char*)sgx_endorsements
-                        .items[OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME]
-                        .data,
-                    sgx_endorsements
-                        .items[OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME]
-                        .size,
-                    &validation_time),
-                "Invalid creation time in endorsements: %s",
-                sgx_endorsements
-                    .items[OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME]
-                    .data);
-        }
-        else
-        {
-            validation_time = *input_validation_time;
-        }
-
-        oe_datetime_log("Validation datetime: ", &validation_time);
-        if (oe_datetime_compare(&validation_time, &validity_from) < 0)
-        {
-            oe_datetime_log("Latests valid datetime: ", &validity_from);
-            OE_RAISE_MSG(
-                OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-                "Time to validate quote is earlier than the "
-                "latest 'valid from' value.",
-                NULL);
-        }
-        if (oe_datetime_compare(&validation_time, &validity_until) > 0)
-        {
-            oe_datetime_log("Earliest expiration datetime: ", &validity_until);
-            OE_RAISE_MSG(
-                OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-                "Time to validate quoteis later than the "
-                "earliest 'valid to' value.",
-                NULL);
-        }
-    }
+    OE_CHECK(oe_verify_quote_with_sgx_endorsements(
+        quote, quote_size, &sgx_endorsements, input_validation_time));
 
     result = OE_OK;
 
@@ -535,6 +474,81 @@ done:
     if (local_endorsements)
         oe_free_sgx_endorsements(local_endorsements);
 
+    return result;
+}
+
+oe_result_t oe_verify_quote_with_sgx_endorsements(
+    const uint8_t* quote,
+    size_t quote_size,
+    const oe_sgx_endorsements_t* sgx_endorsements,
+    oe_datetime_t* input_validation_time)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_datetime_t validity_from = {0};
+    oe_datetime_t validity_until = {0};
+    oe_datetime_t validation_time = {0};
+
+    OE_CHECK_MSG(
+        oe_verify_quote_internal(quote, quote_size),
+        "Failed to verify remote quote.",
+        NULL);
+
+    OE_CHECK_MSG(
+        oe_get_sgx_quote_validity(
+            quote,
+            quote_size,
+            sgx_endorsements,
+            &validity_from,
+            &validity_until),
+        "Failed to validate quote. %s",
+        oe_result_str(result));
+
+    // Verify quote/endorsements for the given time.  Use endorsements
+    // creation time if one was not provided.
+    if (input_validation_time == NULL)
+    {
+        OE_CHECK_MSG(
+            oe_datetime_from_string(
+                (const char*)(sgx_endorsements
+                                  ->items
+                                      [OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME]
+                                  .data),
+                sgx_endorsements
+                    ->items[OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME]
+                    .size,
+                &validation_time),
+            "Invalid creation time in endorsements: %s",
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME]
+                .data);
+    }
+    else
+    {
+        validation_time = *input_validation_time;
+    }
+
+    oe_datetime_log("Validation datetime: ", &validation_time);
+    if (oe_datetime_compare(&validation_time, &validity_from) < 0)
+    {
+        oe_datetime_log("Latests valid datetime: ", &validity_from);
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+            "Time to validate quote is earlier than the "
+            "latest 'valid from' value.",
+            NULL);
+    }
+    if (oe_datetime_compare(&validation_time, &validity_until) > 0)
+    {
+        oe_datetime_log("Earliest expiration datetime: ", &validity_until);
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
+            "Time to validate quoteis later than the "
+            "earliest 'valid to' value.",
+            NULL);
+    }
+
+    result = OE_OK;
+
+done:
     return result;
 }
 

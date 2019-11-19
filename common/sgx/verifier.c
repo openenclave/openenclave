@@ -11,7 +11,7 @@
 #include "../common.h"
 #include "endorsements.h"
 #include "quote.h"
-#ifndef OE_BUILD_ENCLAVE
+#if defined(OE_LINK_SGX_DCAP_QL) && !defined(OE_BUILD_ENCLAVE)
 #include "../../host/sgx/sgxquoteprovider.h"
 #endif
 
@@ -24,13 +24,9 @@ static oe_result_t _on_register(
     OE_UNUSED(config_data);
     OE_UNUSED(config_data_size);
 
-#ifdef OE_BUILD_ENCLAVE
+#if defined(OE_BUILD_ENCLAVE) || !defined(OE_LINK_SGX_DCAP_QL)
     return OE_OK;
 #else
-    // Intialize the quote provider if we want to verify a remote quote.
-    // Note that we don't have the OE_LINK_SGX_DCAP_QL guard here since we
-    // don't need the sgx libraries to verify the quote. All we need is the
-    // quote provider.
     return oe_initialize_quote_provider();
 #endif
 }
@@ -85,6 +81,8 @@ static oe_result_t _get_input_time(
         }
     }
 
+    // Time not found, which is fine since it's an optional parameter.
+    *time = NULL;
     return OE_OK;
 }
 
@@ -118,14 +116,14 @@ static oe_result_t _add_claim(
         return OE_OUT_OF_MEMORY;
     memcpy(claim->name, name, name_size);
 
-    claim->value_size = value_size;
-    claim->value = (uint8_t*)oe_malloc(claim->value_size);
+    claim->value = (uint8_t*)oe_malloc(value_size);
     if (claim->value == NULL)
     {
         oe_free(claim->name);
         return OE_OUT_OF_MEMORY;
     }
-    memcpy(claim->value, value, claim->value_size);
+    memcpy(claim->value, value, value_size);
+    claim->value_size = value_size;
 
     return OE_OK;
 }
@@ -133,8 +131,7 @@ static oe_result_t _add_claim(
 static oe_result_t _fill_with_known_claims(
     const uint8_t* report,
     size_t report_size,
-    const uint8_t* endorsements,
-    size_t endorsements_size,
+    const oe_sgx_endorsements_t* sgx_endorsements,
     oe_claim_t* claims,
     size_t claims_length,
     size_t* claims_added)
@@ -144,9 +141,9 @@ static oe_result_t _fill_with_known_claims(
     oe_identity_t* id = &parsed_report.identity;
     oe_uuid_t plugin_id = {OE_SGX_PLUGIN_UUID};
     size_t claims_index = 0;
-    uint8_t* endorsements_local = NULL;
-    size_t endorsements_local_size = 0;
     oe_report_header_t* header = (oe_report_header_t*)report;
+    oe_datetime_t valid_from = {0};
+    oe_datetime_t valid_until = {0};
 
     if (claims_length < OE_REQUIRED_CLAIMS_COUNT)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -213,51 +210,29 @@ static oe_result_t _fill_with_known_claims(
         &plugin_id,
         sizeof(plugin_id)));
 
-    // Add the claims from the endorsements.
-    if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
-    {
-        oe_sgx_endorsements_t sgx_endorsements;
-        oe_datetime_t valid_from;
-        oe_datetime_t valid_until;
+    // Get quote validity periods to get validity from and until claims.
+    OE_CHECK(oe_get_sgx_quote_validity(
+        header->report,
+        header->report_size,
+        sgx_endorsements,
+        &valid_from,
+        &valid_until));
 
-        // Get the endorsements if none were provided.
-        if (endorsements == NULL)
-        {
-            OE_CHECK(oe_get_sgx_endorsements(
-                header->report,
-                header->report_size,
-                &endorsements_local,
-                &endorsements_local_size));
-            endorsements = endorsements_local;
-            endorsements_size = endorsements_local_size;
-        }
+    // Validity from.
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_VALIDITY_FROM,
+        sizeof(OE_CLAIM_VALIDITY_FROM),
+        &valid_from,
+        sizeof(valid_from)));
 
-        OE_CHECK(oe_parse_sgx_endorsements(
-            (oe_endorsements_t*)endorsements,
-            endorsements_size,
-            &sgx_endorsements));
-
-        OE_CHECK(oe_get_sgx_quote_validity(
-            header->report,
-            header->report_size,
-            &sgx_endorsements,
-            &valid_from,
-            &valid_until));
-
-        OE_CHECK(_add_claim(
-            &claims[claims_index++],
-            OE_CLAIM_VALIDITY_FROM,
-            sizeof(OE_CLAIM_VALIDITY_FROM),
-            &valid_from,
-            sizeof(valid_from)));
-
-        OE_CHECK(_add_claim(
-            &claims[claims_index++],
-            OE_CLAIM_VALIDITY_UNTIL,
-            sizeof(OE_CLAIM_VALIDITY_UNTIL),
-            &valid_until,
-            sizeof(valid_until)));
-    }
+    // Validity to.
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_VALIDITY_UNTIL,
+        sizeof(OE_CLAIM_VALIDITY_UNTIL),
+        &valid_until,
+        sizeof(valid_until)));
 
     *claims_added = claims_index;
     result = OE_OK;
@@ -268,7 +243,6 @@ done:
         for (size_t i = 0; i < claims_index; i++)
             _free_claim(&claims[i]);
     }
-    oe_free_sgx_endorsements(endorsements_local);
     return result;
 }
 
@@ -331,8 +305,7 @@ done:
 static oe_result_t _extract_claims(
     const uint8_t* evidence,
     size_t evidence_size,
-    const uint8_t* endorsements,
-    size_t endorsements_size,
+    const oe_sgx_endorsements_t* sgx_endorsements,
     oe_claim_t** claims_out,
     size_t* claims_length_out)
 {
@@ -371,8 +344,7 @@ static oe_result_t _extract_claims(
     OE_CHECK(_fill_with_known_claims(
         evidence,
         report_size,
-        endorsements,
-        endorsements_size,
+        sgx_endorsements,
         claims,
         claims_length,
         &claims_added));
@@ -409,6 +381,9 @@ static oe_result_t _verify_evidence(
     oe_result_t result = OE_UNEXPECTED;
     oe_report_header_t* header = (oe_report_header_t*)evidence_buffer;
     oe_datetime_t* time = NULL;
+    uint8_t* local_endorsements_buffer = NULL;
+    size_t local_endorsements_buffer_size = 0;
+    oe_sgx_endorsements_t sgx_endorsements;
     OE_UNUSED(context);
 
     if (!evidence_buffer || !claims || !claims_length ||
@@ -422,28 +397,49 @@ static oe_result_t _verify_evidence(
     // Verify the report. Send the report size to just the oe report,
     // not including the custom claims section.
     if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
+    {
         OE_CHECK(_verify_local_report(
             evidence_buffer, header->report_size + sizeof(oe_report_header_t)));
+    }
     else
-        OE_CHECK(oe_verify_sgx_quote(
-            header->report,
-            header->report_size,
-            endorsements_buffer,
+    {
+        // Get the endorsements if none were provided.
+        if (endorsements_buffer == NULL)
+        {
+            OE_CHECK(oe_get_sgx_endorsements(
+                header->report,
+                header->report_size,
+                &local_endorsements_buffer,
+                &local_endorsements_buffer_size));
+            endorsements_buffer = local_endorsements_buffer;
+            endorsements_buffer_size = local_endorsements_buffer_size;
+        }
+
+        // Parse into SGX endorsements.
+        OE_CHECK(oe_parse_sgx_endorsements(
+            (oe_endorsements_t*)endorsements_buffer,
             endorsements_buffer_size,
-            time));
+            &sgx_endorsements));
+
+        // Verify the quote now.
+        OE_CHECK(oe_verify_quote_with_sgx_endorsements(
+            header->report, header->report_size, &sgx_endorsements, time));
+    }
 
     // Last step is to return the required and custom claims.
     OE_CHECK(_extract_claims(
         evidence_buffer,
         evidence_buffer_size,
-        endorsements_buffer,
-        endorsements_buffer_size,
+        &sgx_endorsements,
         claims,
         claims_length));
 
     result = OE_OK;
 
 done:
+    if (local_endorsements_buffer)
+        oe_free_sgx_endorsements(local_endorsements_buffer);
+
     return result;
 }
 

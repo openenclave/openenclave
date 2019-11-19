@@ -1,6 +1,11 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+// This file provides a dummy implementation of an attester plugin and a
+// verifier plugin in order to test the OE plugin management runtime
+// implementation. It essentially tests that plugins are being registered
+// correctly and can get/verify evidence based of the right UUID.
+
 #ifndef _OE_MOCK_ATTESTER_H
 #define _OE_MOCK_ATTESTER_H
 

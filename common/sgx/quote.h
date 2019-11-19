@@ -42,13 +42,35 @@ oe_result_t oe_get_quote_cert_chain_internal(
  * @param[in] endorsements Optional endorsements related to a remote quote.
  * @param[in] endorsements_size The size of the endorsements.
  * @param[in] input_validation_time Optional time to use for validation,
- * defaults to the time the endorsements were created.
+ * defaults to the time the endorsements were created if null. Note that
+ * if the input time is after than the endorsement creation time, then the
+ * CRLs might have updated in the period between the input time and the
+ * endorsement creation time.
  */
 oe_result_t oe_verify_sgx_quote(
     const uint8_t* quote,
     size_t quote_size,
     const uint8_t* endorsements,
     size_t endorsements_size,
+    oe_datetime_t* input_validation_time);
+
+/*!
+ * Verify SGX quote and endorsements.
+ *
+ * @param[in] quote Input quote.
+ * @param[in] quote_size The size of the quote.
+ * @param[in] endorsements The endorsements in the format of
+ * the `oe_sgx_endorsements_t` struct.
+ * @param[in] input_validation_time Optional time to use for validation,
+ * defaults to the time the endorsements were created if null. Note that
+ * if the input time is after than the endorsement creation time, then the
+ * CRLs might have updated in the period between the input time and the
+ * endorsement creation time.
+ */
+oe_result_t oe_verify_quote_with_sgx_endorsements(
+    const uint8_t* quote,
+    size_t quote_size,
+    const oe_sgx_endorsements_t* endorsements,
     oe_datetime_t* input_validation_time);
 
 /*!

@@ -250,7 +250,8 @@ oe_result_t oe_get_evidence(
     size_t total_endorsements_size = 0;
 
     if (!format_id || !evidence_buffer || !evidence_buffer_size ||
-        (endorsements_buffer && !endorsements_buffer_size))
+        (endorsements_buffer && !endorsements_buffer_size) ||
+        (!endorsements_buffer && endorsements_buffer_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Find a plugin for attestation type and run its get_evidence.

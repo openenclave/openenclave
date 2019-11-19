@@ -34,8 +34,9 @@ typedef struct _oe_sgx_plugin_claims_entry
 {
     uint64_t name_size;
     uint64_t value_size;
-    uint8_t name[]; // name_size bytes follow.
-    // uint8_t value[]; value_size_bytes follow.
+    uint8_t name[];
+    // name_size bytes follow.
+    // value_size_bytes follow.
 } oe_sgx_plugin_claims_entry_t;
 
 #endif // _OE_INTENRAL_SGX_PLUGIN
