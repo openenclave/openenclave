@@ -3,7 +3,6 @@
 
 #include "asmdefs.h"
 #include <openenclave/internal/context.inc>
-#include "asmcommon.inc"
 
 //==============================================================================
 //
@@ -29,7 +28,7 @@
 //         (4) Calls __oe_handle_main()
 //
 //     Note: __oe_handle_main does not return. Instead it eventually
-//     calls oe_asm_exit (see exit.S)
+//     calls _oe_exit_enclave (see exit.c)
 //
 //==============================================================================
 
@@ -55,7 +54,7 @@ oe_enter:
     // exception-dispatching-request-check
     cmp $0, %rax
     jne .exception_entry
-    
+
     // Stop speculative execution at fallthrough of conditional
     // exception-dispatching-request-check.
     lfence
@@ -182,94 +181,17 @@ oe_enter:
     mov OM_HOST_OUTPUT_ARG1, %rdi
     mov OM_HOST_OUTPUT_ARG2, %rsi
 
-.determine_exit_type:
-
-    // Check the depth of the ECALL stack (zero for clean exit)
-    // exit-type-check.
-    mov %gs:td_depth, %r8
-    cmp $0, %r8
-    je .clean_exit
-
-.nested_exit:
-    // Stop speculative execution at fallthrough of conditional
-    // exit-type-check.
-    lfence
-
-    // Construct the oe_ocall_context_t(rbp, return address).
-    mov (4*OE_WORD_SIZE)(%rsp), %r12
-    push %r12
-    push %rbp
-    mov %rsp, %r12
-
-    // Save the parameters of oe_asm_exit into stack.
-    push %rdi
-    push %rsi
-
-    // Notify a nested exit happens.
-    // oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
-    mov %r12, %rsi
-    call oe_notify_nested_exit_start
-
-    // Restore the parameters of oe_asm_exit from stack.
-    pop %rsi
-    pop %rdi
-
-    // Restore the stack to correct status: rbp/rsp should not change after function call.
-    pop %r12
-    pop %r12
-
-    mov %rsp, %gs:td_last_sp
-
-    jmp .clear_enclave_registers
-
-.clean_exit:
-    // Stop speculative execution at target of conditional jump 
-    // after exit-type-check.
-    lfence
-
-    // Clear the td_t.last_sp field (force oe_enter to calculate stack pointer)
-    movq $0, %gs:td_last_sp
-
-.clear_enclave_registers:
-
-    // Clear these so information will not be leaked to host
-    oe_cleanup_registers
-
-.restore_host_registers:
-
-    mov OM_HOST_RETURN_ADDR, %rcx
-    mov OM_HOST_RETURN_ADDR, %rbx
-    mov OM_HOST_RSP, %rsp
-    mov OM_HOST_RBP, %rbp
-
-.execute_eexit:
-
-    // Check td_t.simulate flag
-    // simulation-flag-check.
-    mov %gs:td_simulate, %rax
-    cmp $0, %rax
-    jz .execute_eexit_instruction
-
-.execute_eexit_sim:
-    // Stop speculative execution at fallthrough of conditional
-    // simulate-flag-check.
-    lfence
-
-    // Jump to return address:
-    mov $1, %rax
-    jmp *%rcx
-    ud2
-
-.execute_eexit_instruction:
-    // Stop speculative execution at target of conditional jump
-    // simulate-flag-check.
-    lfence
-
-    // EEXIT(RAX=EEXIT, RBX=RETADDR, RCX=AEP, RDI=ARG1, RSI=ARG2)
-    //mov %rcx, %rbx
-    mov $ENCLU_EEXIT, %rax
-    ENCLU
-    ud2
+    // Exit the enclave by calling oe_exit_enclave
+    // void _oe_exit_enclave(uint64_t arg1,     /* RDI */
+    //                       uint64_t arg2,     /* RSI */
+    //                       uint64_t host_rip, /* RDX */
+    //                       uint64_t host_rsp, /* RCX */
+    //                       uint64_t host_rbp) /* R8 */
+    //
+    mov OM_HOST_RETURN_ADDR, %rdx
+    mov OM_HOST_RSP, %rcx
+    mov OM_HOST_RBP, %r8
+    call _oe_exit_enclave
 
 .forever:
     jmp .forever

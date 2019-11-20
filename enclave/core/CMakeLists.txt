@@ -71,7 +71,7 @@ if (OE_SGX)
         sgx/thread.c
         sgx/tracee.c
         sgx/enter.S
-        sgx/exit.S
+        sgx/exit.c
         sgx/getkey.S
         sgx/longjmp.S
         sgx/setjmp.S)
@@ -190,6 +190,12 @@ if (OE_SGX)
     set_source_files_properties(sgx/jump.c PROPERTIES COMPILE_FLAGS -O2)
 
     set_source_files_properties(sgx/keys.c PROPERTIES COMPILE_FLAGS -Wno-type-limits)
+
+    # exit.c must be compiled with -fno-omit-frame-pointer so that the ocall stack
+    # can be stitched back to the frame of the _oe_exit_enclave function.
+    # Use -O2 to always generate optimal code irrespective of the build type.
+    set_source_files_properties(sgx/exit.c PROPERTIES COMPILE_FLAGS
+      "-O2 -fno-omit-frame-pointer")
 
     # -m64 is an x86_64 specific flag
     target_compile_options(oecore PUBLIC -m64)

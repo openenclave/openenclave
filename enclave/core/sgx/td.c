@@ -305,6 +305,9 @@ void td_clear(td_t* td)
     /* Clear base structure */
     memset(&td->base, 0, sizeof(td->base));
 
+    /* Set pointer to self so that oe_get_td succeeds */
+    td->base.self_addr = (uint64_t)td;
+
     /* Clear the magic number */
     td->magic = 0;
 

@@ -90,6 +90,18 @@
 #endif
 
 /*
+ * Mark a function as no return so that the compiler can generate
+ * better code (register-preservation, epilog etc).
+ */
+#ifdef __GNUC__
+#define OE_NO_RETURN __attribute__((noreturn))
+#elif _MSC_VER
+#define OE_NO_RETURN __declspec(noreturn)
+#else
+#error "OE_NO_RETURN unimplemented"
+#endif
+
+/*
  * Export a constant symbol.
  * In C, the symbol is annotated with OE_EXPORT const.
  * In C++, const symbols by default have internal linkage.
