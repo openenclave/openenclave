@@ -67,6 +67,7 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
         add_subdirectory(sealKey)
         add_subdirectory(stdc)
         add_subdirectory(syscall)
+        add_subdirectory(tls_e2e)
         add_subdirectory(VectorException)
     endif()
 
@@ -95,7 +96,4 @@ if (OE_SGX AND UNIX)
    # ecall_ocall enclave size cannot be handled by Windows ninja CI
    add_subdirectory(ecall_ocall)
    add_subdirectory(libunwind)
-
-   # Attestation supported only on Linux
-   add_subdirectory(tls_e2e)
 endif()

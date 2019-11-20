@@ -220,6 +220,7 @@ endif()
 list(APPEND PLATFORM_HOST_ONLY_SRC
   ../common/attest_plugin.c
   ../common/datetime.c
+  ../common/oe_host_socket.c
   ../common/safecrt.c
   hexdump.c
   dupenv.c

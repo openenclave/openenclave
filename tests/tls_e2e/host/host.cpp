@@ -269,7 +269,9 @@ int run_scenarios_tests()
          {false, false, true},
          NEGATIVE_TEST}};
 
+#ifndef _WIN32
     signal(SIGPIPE, SIG_IGN);
+#endif
     test_configs.server.enclave = g_server_enclave;
     test_configs.client.enclave = g_client_enclave;
 

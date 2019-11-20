@@ -119,14 +119,14 @@ char* host_client(in_port_t port)
             sock_close(sockfd);
             return NULL;
         }
-#if _WIN32        
-        else if(HOST_SOCKET_ERRNO == WSAEISCONN)
+#if _WIN32
+        else if (HOST_SOCKET_ERRNO == WSAEISCONN)
         {
             break;
         }
-#endif        
+#endif
         {
-            printf("Connect Failed. errno = %d Retrying \n", HOST_SOCKET_ERRNO);            
+            printf("Connect Failed. errno = %d Retrying \n", HOST_SOCKET_ERRNO);
             sleep_msec(100);
         }
     }
