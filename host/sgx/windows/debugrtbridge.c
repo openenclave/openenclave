@@ -36,29 +36,14 @@ static void load_oedebugrt(void)
         return;
     }
 
-#ifndef NDEBUG
-    /**
-     *  In debug mode, give preference to OE_DEBUGRT_PATH.
-     *  This is mainly used for OE SDK development.
-     */
-    {
-        char* debugrtpath = getenv("OE_DEBUGRT_PATH");
-        _oedebugrt.hmodule = LoadLibraryExA(
-            debugrtpath,
-            NULL, /* reserved */
-            /* Search only specified path. */
-            LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-    }
-
-#endif
-
-    /* Search for oedebugrt.dll only in the application folder. */
+    /* Search for oedebugrt.dll first in the application folder and then the
+     * system32 folder.*/
     if (_oedebugrt.hmodule == NULL)
     {
         _oedebugrt.hmodule = LoadLibraryExA(
             "oedebugrt.dll",
             NULL, /* reserved */
-            LOAD_LIBRARY_SEARCH_APPLICATION_DIR);
+            LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
     }
 
     if (_oedebugrt.hmodule != NULL)
