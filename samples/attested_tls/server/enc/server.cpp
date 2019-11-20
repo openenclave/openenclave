@@ -3,7 +3,6 @@
 
 #include <mbedtls/certs.h>
 #include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/error.h>
 #include <mbedtls/net_sockets.h>
@@ -34,9 +33,6 @@ int cert_verify_callback(
     int depth,
     uint32_t* flags);
 
-// mbedtls debug levels
-// 0 No debug, 1 Error, 2 State change, 3 Informational, 4 Verbose
-#define DEBUG_LEVEL 1
 #define SERVER_IP "0.0.0.0"
 
 #define HTTP_RESPONSE                                    \
@@ -320,8 +316,6 @@ int setup_tls_server(char* server_port)
     mbedtls_pk_init(&pkey);
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
-
-    mbedtls_debug_set_threshold(DEBUG_LEVEL);
 
     printf(
         TLS_SERVER "Setup the listening TCP socket on SERVER_IP= [%s] "

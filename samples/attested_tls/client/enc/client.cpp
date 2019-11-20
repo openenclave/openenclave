@@ -4,7 +4,6 @@
 #include <errno.h>
 #include <mbedtls/certs.h>
 #include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/error.h>
 #include <mbedtls/net_sockets.h>
@@ -13,8 +12,6 @@
 #include <openenclave/enclave.h>
 #include <string.h>
 #include "../../common/utility.h"
-
-#define DEBUG_LEVEL 1
 
 extern "C"
 {
@@ -217,7 +214,6 @@ int launch_tls_client(char* server_name, char* server_port)
     }
 
     // Initialize mbedtls objects
-    mbedtls_debug_set_threshold(DEBUG_LEVEL);
     mbedtls_net_init(&server_fd);
     mbedtls_ssl_init(&ssl);
     mbedtls_ssl_config_init(&conf);
