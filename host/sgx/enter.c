@@ -75,9 +75,18 @@
  *       All other registers are NOT used/ignored.
  *  Output:
  *       RDI=ARG1OUT, RSI=ARG2OUT,
- *       RBP is not changed,
- *       RSP might be decreased because of host stack memory allocation.
+ *       RBP, RBP are preserved.
  *       All other Registers are clobbered.
+ *
+ * Callee-saved (non-volatile) registers:
+ * As per System V x64 ABI, the registers RBX, RBP, RSP, R12, R13, R14, and R15
+ * are preserved across function calls.
+ * As per x64 Windows ABI, the registers RBX, RBP, RDI, RSI, RSP, R12, R13, R14,
+ * R15, and XMM6-15 are preserved across function calls.
+ * The general purpose callee-saved registers are listed in
+ * OE_ENCLU_CLOBBERED_REGISTERS. Since we explicitly save and restore the
+ * floating-point state via fxsave/fxrstor, the xmm registers are not listed
+ * in the clobber list.
  */
 OE_NEVER_INLINE
 void oe_enter(
