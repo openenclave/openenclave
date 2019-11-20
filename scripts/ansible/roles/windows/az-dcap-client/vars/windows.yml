@@ -11,9 +11,9 @@ lc_driver:
   reg_value: 1
 
 validation_directories:
-  - "C:\\openenclave\\prereqs\\nuget\\DCAP_Components"
-  - "C:\\openenclave\\prereqs\\nuget\\EnclaveCommonAPI"
+  - "C:\\oe_prereqs\\DCAP_Components"
+  - "C:\\oe_prereqs\\EnclaveCommonAPI"
 
 validation_binaries:
-  - "C:\\openenclave\\prereqs\\nuget\\DCAP_Components\\build\\lib\\native\\Libraries\\sgx_dcap_ql.lib"
-  - "C:\\openenclave\\prereqs\\nuget\\EnclaveCommonAPI\\lib\\native\\x64-Release\\sgx_enclave_common.lib"
+  - "C:\\oe_prereqs\\DCAP_Components\\build\\lib\\native\\Libraries\\sgx_dcap_ql.lib"
+  - "C:\\oe_prereqs\\EnclaveCommonAPI\\lib\\native\\x64-Release\\sgx_enclave_common.lib"

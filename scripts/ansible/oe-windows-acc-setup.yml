@@ -33,7 +33,7 @@
 
     - name: OE setup | Run the install-windows-prereqs.ps1 script (this may take a while)
       script: ../install-windows-prereqs.ps1
-        -InstallPath         "C:\openenclave"
+        -InstallPath         "C:\oe_prereqs"
         -LaunchConfiguration "{{ 'SGX1FLC' if dcap_testing_node is defined and dcap_testing_node == 'true' else 'SGX1' }}"
         -DCAPClientType      "{{ 'Azure' }}"
         -IntelPSWURL         "{{ intel_psw_url }}"

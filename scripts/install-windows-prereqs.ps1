@@ -424,10 +424,10 @@ function Install-Node {
                  -ArgumentList @("/quiet", "/passive") `
                  -EnvironmentPath @($installDir)
 
-    Add-ToSystemPath -Path "${env:APPDATA}\npm"
+    Add-ToSystemPath -Path "${InstallPath}"
 
     Start-ExecuteWithRetry -ScriptBlock {
-        npm install -g esy@0.5.8
+        npm install --prefix "${InstallPath}" -g esy@0.5.8
     } -RetryMessage "Failed to install esy. Retrying"
 }
 
@@ -646,7 +646,6 @@ try {
     Install-OpenSSL
     Install-LLVM
     Install-Git
-    Install-Node
     Install-Shellcheck
 
     if ($LaunchConfiguration -ne "SGX1FLC-NoDriver")
@@ -665,6 +664,8 @@ try {
     }
 
     Install-DCAP-Dependencies
+    # Install-Node has to be executed after Install-DCAP-Dependencies because it removes existing $InstallPath directory
+    Install-Node
     Install-VCRuntime
 
     Write-Output 'Please reboot your computer for the configuration to complete.'

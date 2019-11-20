@@ -15,6 +15,7 @@ validation_directories:
   - "C:\\Program Files\\shellcheck"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Auxiliary\\Build"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools"
+  - "C:\\oe_prereqs\\node_modules\\esy"
 
 validation_files:
   - "C:\\Program Files\\LLVM\\lib\\libclang.lib"
@@ -28,3 +29,4 @@ validation_binaries:
   - "C:\\Program Files\\shellcheck\\shellcheck.exe"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin\\Hostx64\\x64\\cl.exe"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin\\Hostx64\\x64\\link.exe"
+  - "C:\\oe_prereqs\\esy"
