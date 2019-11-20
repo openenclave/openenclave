@@ -59,12 +59,8 @@ This project welcomes contributions and suggestions. All contributions to the Op
 must adhere to the terms of the [Developer Certificate of Origin (DCO)](https://developercertificate.org/).
 For details, see [Contributing to Open Enclave](docs/Contributing.md).
 
-This project has adopted the
-[Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the
-[Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
-or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any
-additional questions or comments.
+This project follows a [Code of Conduct](docs/CodeOfConduct.md) adapted from the
+[Contributor Covenant v1.4](https://www.contributor-covenant.org).
 
 If you are interested in contributing directly to the codebase, please see the following
 documentation:

@@ -1,28 +1,15 @@
-Open Enclave SDK
-Introduction
-Open Enclave (OE) is an SDK for building enclave applications in C and C++. An enclave application partitions itself into two components (1) An untrusted component (called the host) and (2) A trusted component (called the enclave). An enclave is a secure container whose memory is protected from entities outside the enclave. These protections allow enclaves to perform secure computations with assurances that secrets will not be compromised.
+This is dummy text file consisting of only English words and punctuation:
+-------------------------------------------------------------------------
 
-This SDK is a fully open-source and transparent project, which plans to generalize enclave application models across enclave implementations from different hardware vendors. It's a non-vendor specific solution that supports enclave applications both on Linux and Windows platforms.
+Our. Fifth have saying two they're firmament, herb. Shall, set for. Open
+firmament greater creeping gently winged thing likeness abundantly fourth
+hath subdue. That multiply night. I third whose there i. Give. Morning.
+Over forth light us.
 
-The current implementation of Open Enclave is built on Intel Software Guard Extensions (SGX), other enclave architectures (such as solutions from AMD or ARM) will be added in the future. This public preview focuses on the Linux platform.
+Herb. Replenish. Firmament lesser their of our lesser fowl were beginning
+divided may give cattle don't deep sea, cattle night second had appear He
+over. Were were blessed, place Multiply were given.
 
-Design Overview
-The Design Overview document provides a brief design overview of the Open Enclave SDK. It describes the parts of the SDK and how they work together to create, invoke, and terminate enclaves.
-
-Getting Started
-For OE application developers, user intends to build/develop an OE application. Start here
-
-For OE Developer/Builder of OE Source, users who not only want to experience OE applications but also want to dig into how OE was implemented, and potentially contribute to this open source effort, start here
-
-Contributing
-This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, see Contributing to Open Enclave.
-
-This project has adopted the Microsoft Open Source Code of Conduct. For more information see the Code of Conduct FAQ or contact opencode@microsoft.com with any additional questions or comments.
-
-See the Development Guide for details about developing code in this repo, such as coding style and development processes.
-
-Licensing
-Microsoft plans to release the Open Enclave SDK under the MIT license
-
-
-
+Were, two god you'll, to, had spirit together, won't likeness is first good
+greater called together dominion. Unto without subdue creeping void you
+dominion two man forth one moving abundantly multiply.
