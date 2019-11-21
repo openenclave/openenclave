@@ -62,6 +62,10 @@ else (
    defining the `enclave_content` record in `Ast.ml` and redefining it as an
    equivalent type in `CodeGen.ml`.
 
+4. Dune build for the Intel sources. This required adding the prefix `Intel.` to
+   uses of types defined in the Intel sources in both `main.ml` and
+   `Emitter.ml`.
+
 ### Edge Routine Emitter
 
 The edge routine emitter for Open Enclave is implemented in `Emitter.ml`. It

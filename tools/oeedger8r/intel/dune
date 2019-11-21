@@ -1,7 +1,6 @@
 (library
  (name intel)
  (synopsis "Upstream Intel edger8r")
- (wrapped false) ; TODO: We need to transition this to true.
  (libraries str unix))
 
 (ocamllex Lexer)
