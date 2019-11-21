@@ -217,7 +217,10 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
 
+#if !defined(NDEBUG)
     mbedtls_debug_set_threshold(DEBUG_LEVEL);
+#endif
+
     g_control_config = *config;
 
     OE_TRACE_INFO(

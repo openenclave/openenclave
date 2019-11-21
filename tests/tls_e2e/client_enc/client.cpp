@@ -195,7 +195,9 @@ int launch_tls_client(
         oe_module_loaded = true;
     }
 
+#if !defined(NDEBUG)
     mbedtls_debug_set_threshold(DEBUG_LEVEL);
+#endif
 
     // Initialize the RNG and the session data
     mbedtls_net_init(&server_fd);
