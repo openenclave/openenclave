@@ -5,10 +5,8 @@
     us to share the same Enclave Definition Language, but emit our
     SDK's bindings. *)
 
-open Ast
-open Plugin
+open Intel.Ast
 open Printf
-open Util
 
 (** ----- Begin code borrowed and tweaked from {!CodeGen.ml}. ----- *)
 let is_foreign_array (pt : parameter_type) =
@@ -129,7 +127,7 @@ let gen_c_deref level i = if i = "1" then "->" else sprintf "[_i_%i]." level
 let write_file (content : string list) (filename : string) (dir : string) =
   let os =
     if dir = "." then open_out filename
-    else open_out (dir ^ separator_str ^ filename)
+    else open_out (dir ^ Intel.Util.separator_str ^ filename)
   in
   fprintf os "%s"
     (String.concat "\n"
@@ -196,7 +194,7 @@ let get_param_size (ptype, decl, argstruct) =
 let oe_get_param_size (ptype, decl, argstruct) =
   match get_param_size (ptype, decl, argstruct) with
   | Some size -> size
-  | None -> failwithf "Error: No size for " ^ decl.identifier
+  | None -> Intel.Util.failwithf "Error: No size for " ^ decl.identifier
 
 (** For a parameter, get its count expression. *)
 let get_param_count (ptype, decl, argstruct) =
@@ -230,7 +228,7 @@ let get_param_count (ptype, decl, argstruct) =
 let oe_get_param_count (ptype, decl, argstruct) =
   match get_param_count (ptype, decl, argstruct) with
   | Some count -> count
-  | None -> failwithf "Error: No count for " ^ decl.identifier
+  | None -> Intel.Util.failwithf "Error: No count for " ^ decl.identifier
 
 (** Generate the prototype for a given function. *)
 let oe_gen_prototype (fd : func_decl) =
@@ -451,7 +449,7 @@ let warn_size_and_count_params (fd : func_decl) =
   let print_size_and_count_warning { ps_size; ps_count } =
     match (ps_size, ps_count) with
     | Some (AString p), Some (AString q) ->
-        failwithf
+        Intel.Util.failwithf
           "Function '%s': simultaneous 'size' and 'count' parameters '%s' and \
            '%s' are not supported by oeedger8r.\n"
           fd.fname p q
@@ -466,7 +464,7 @@ let warn_size_and_count_params (fd : func_decl) =
     fd.plist
 
 (** Generate the Enclave code. *)
-let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
+let gen_enclave_code (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   (* Short aliases for the trusted and untrusted function
      declarations. *)
   let tfs = ec.tfunc_decls in
@@ -475,15 +473,15 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
      validation has the side effects of printed warnings or failure
      with an error message. *)
   if ep.use_prefix then
-    failwithf "--use_prefix option is not supported by oeedger8r.";
+    Intel.Util.failwithf "--use_prefix option is not supported by oeedger8r.";
   List.iter
     (fun f ->
       if f.tf_is_priv then
-        failwithf
+        Intel.Util.failwithf
           "Function '%s': 'private' specifier is not supported by oeedger8r"
           f.tf_fdecl.fname;
       if f.tf_is_switchless then
-        failwithf
+        Intel.Util.failwithf
           "Function '%s': trusted switchless ecalls are not yet supported by \
            Open Enclave SDK."
           f.tf_fdecl.fname)
@@ -497,7 +495,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
            supported by oeedger8r.\n"
           f.uf_fdecl.fname cconv_str );
       if f.uf_fattr.fa_dllimport then
-        failwithf "Function '%s': dllimport is not supported by oeedger8r."
+        Intel.Util.failwithf
+          "Function '%s': dllimport is not supported by oeedger8r."
           f.uf_fdecl.fname;
       if f.uf_allow_list != [] then
         printf
@@ -1532,5 +1531,5 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
 (** Install the plugin. *)
 let _ =
   Printf.printf "Generating edge routines for the Open Enclave SDK.\n";
-  Plugin.instance.available <- true;
-  Plugin.instance.gen_edge_routines <- gen_enclave_code
+  Intel.Plugin.instance.available <- true;
+  Intel.Plugin.instance.gen_edge_routines <- gen_enclave_code
