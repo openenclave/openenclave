@@ -7,4 +7,4 @@ if (BUILD_ENCLAVES)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/ssp ssp_host ssp_enc)
+add_enclave_test(tests/stack_smashing_protector ssp_host ssp_enc)

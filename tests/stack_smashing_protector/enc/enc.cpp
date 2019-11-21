@@ -37,7 +37,7 @@ static void _init()
         oe_abort();
     }
 }
-int enc_set_tsd(void* value)
+int enc_set_thread_variable(void* value)
 {
     int rval = 0;
     /* Initialize this the first time */
@@ -49,7 +49,7 @@ int enc_set_tsd(void* value)
     return rval;
 }
 
-void* enc_get_tsd()
+void* enc_get_thread_specific_data()
 {
     return oe_thread_getspecific(g_key);
 }
@@ -68,11 +68,6 @@ void* ssp_test_sub()
      */
     uint64_t canary;
     asm("mov %%fs:0x28, %0" : "=r"(canary));
-    fprintf(
-        stdout,
-        "Try to change stack smashing guard from %d to %d.\n",
-        canary,
-        canary / 2);
     canary /= 2;
     asm("mov %0, %%fs:0x28" : : "r"(canary));
 

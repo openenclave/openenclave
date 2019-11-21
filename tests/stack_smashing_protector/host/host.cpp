@@ -28,10 +28,10 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_ocall_enclave(): result=%u", result);
     }
 
-    /* Call enc_set_tsd */
+    /* Call enc_set_thread_variable */
     {
         int ret_val = -1;
-        result = enc_set_tsd(enclave, &ret_val, strdup("TSD-DATA"));
+        result = enc_set_thread_variable(enclave, &ret_val, strdup("TSD-DATA"));
         OE_TEST(OE_OK == result);
         OE_TEST(0 == ret_val);
     }
@@ -44,10 +44,10 @@ int main(int argc, const char* argv[])
         OE_TEST(ret_destroyed);
     }
 
-    /* Call enc_get_tsd */
+    /* Call enc_get_thread_specific_data */
     {
         void* ret_value = NULL;
-        result = enc_get_tsd(enclave, &ret_value);
+        result = enc_get_thread_specific_data(enclave, &ret_value);
         OE_TEST(OE_OK == result);
         OE_TEST(NULL == ret_value);
     }
