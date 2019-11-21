@@ -79,6 +79,8 @@ let filter_map f l = List.of_seq (Seq.filter_map f (List.to_seq l))
 (* Helper to flatten and map at the same time. *)
 let flatten_map f l = List.flatten (List.map f l)
 
+let flatten_map2 f l m = List.flatten (List.map2 f l m)
+
 let is_in_ptr = function
   | PTVal _ -> false
   | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrIn
@@ -728,6 +730,8 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
                   (String.concat " && " (List.rev (arg :: args)));
               ];
               [
+                (* NOTE: The [WRITE_IN_OUT] macro is defined to be the
+                   [WRITE_IN] macro. *)
                 sprintf "    OE_WRITE_%s_PARAM(%s, %s, %s);"
                   (if is_in_ptr ptype then "IN" else "IN_OUT")
                   arg size tystr;
@@ -942,10 +946,7 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
             sprintf "if (pargs_in->%s)"
               (String.concat " && pargs_in->" (List.rev (arg :: args)));
           ];
-          [
-            sprintf "    OE_%s_POINTER(%s, %s, %s);" (setter ptype) arg size
-              tystr;
-          ];
+          [ sprintf "    OE_%s_POINTER(%s, %s, %s);" setter arg size tystr ];
           (let param_count = oe_get_param_count (ptype, decl, argstruct) in
            flatten_map
              (oe_gen_set_pointers (arg :: args) param_count setter)
@@ -955,14 +956,13 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   in
   let oe_gen_in_and_inout_setters (plist : pdecl list) =
     let params =
-      flatten_map
-        (oe_gen_set_pointers [] "1" (fun p ->
-             (* TODO: Right now we assume all nested pointers should
-                be [SET_IN_OUT], since nested pointers don't actually
-                satisfy either [is_in_ptr] or [is_inout_ptr]
-                predicates. *)
-             if is_in_ptr p then "SET_IN" else "SET_IN_OUT"))
-        (List.filter is_in_or_inout_ptr plist)
+      let ptrs = List.filter is_in_or_inout_ptr plist in
+      let setters =
+        List.map
+          (fun (p, _) -> if is_in_ptr p then "SET_IN" else "SET_IN_OUT")
+          ptrs
+      in
+      flatten_map2 (oe_gen_set_pointers [] "1") setters ptrs
     in
     "    "
     ^ String.concat "\n    "
@@ -974,14 +974,14 @@ let gen_enclave_code (ec : enclave_content) (ep : edger8r_params) =
   in
   let oe_gen_out_and_inout_setters (plist : pdecl list) =
     let params =
-      flatten_map
-        (oe_gen_set_pointers [] "1" (fun p ->
-             (* TODO: Right now we assume all nested pointers should
-                be [COPY_AND_SET_IN_OUT], since nested pointers don't
-                actually satisfy either [is_out_ptr] or [is_inout_ptr]
-                predicates. *)
-             if is_out_ptr p then "SET_OUT" else "COPY_AND_SET_IN_OUT"))
-        (List.filter is_out_or_inout_ptr plist)
+      let ptrs = List.filter is_out_or_inout_ptr plist in
+      let setters =
+        List.map
+          (fun (p, _) ->
+            if is_out_ptr p then "SET_OUT" else "COPY_AND_SET_IN_OUT")
+          ptrs
+      in
+      flatten_map2 (oe_gen_set_pointers [] "1") setters ptrs
     in
     "    "
     ^ String.concat "\n    "

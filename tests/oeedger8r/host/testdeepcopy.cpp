@@ -169,6 +169,13 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
     }
 
     {
+        auto s = init_struct<CountStruct>();
+        OE_TEST(deepcopy_in(enclave, &s) == OE_OK);
+        // Assert the struct was not changed (as if it were "out").
+        test_struct(s, 3);
+    }
+
+    {
         CountStruct s{};
         uint64_t p[3] = {0, 0, 0};
         s.ptr = p;
