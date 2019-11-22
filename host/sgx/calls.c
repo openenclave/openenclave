@@ -793,9 +793,9 @@ oe_result_t oe_switchless_call_enclave_function(
 }
 
 /*
-** These two functions are needed to notify the debugger. They should not be
-** optimized out even though they don't do anything in here.
-** OE_EXPORT is used to retain these function irrespective of linker
+** The following function is needed to notify the debugger. It should not be
+** optimized out even though it doesn't do anything in here.
+** OE_EXPORT is used to retain this function irrespective of linker
 ** optimizations.
 */
 
@@ -804,21 +804,12 @@ OE_NO_OPTIMIZE_BEGIN
 OE_EXPORT
 OE_NEVER_INLINE void oe_notify_ocall_start(
     oe_host_ocall_frame_t* frame_pointer,
-    void* tcs)
+    void* tcs,
+    uint64_t enclave_base)
 {
     OE_UNUSED(frame_pointer);
     OE_UNUSED(tcs);
-
-    return;
-}
-
-OE_EXPORT
-OE_NEVER_INLINE void oe_notify_ocall_end(
-    oe_host_ocall_frame_t* frame_pointer,
-    void* tcs)
-{
-    OE_UNUSED(frame_pointer);
-    OE_UNUSED(tcs);
+    OE_UNUSED(enclave_base);
 
     return;
 }

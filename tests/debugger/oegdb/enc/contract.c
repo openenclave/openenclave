@@ -14,7 +14,7 @@
 // If the gdb plugin's assumptions match the layout of the data structures,
 // then the assertions won't be triggered.
 // volatile is used to prevent compiler-optimizations.
-volatile uint64_t TD_OFFSET_FROM_TCS = (uint64_t)-1;
+volatile uint64_t TCS_GSBASE_OFFSET = (uint64_t)-1;
 volatile uint64_t TD_CALLSITE_OFFSET = (uint64_t)-1;
 volatile uint64_t CALLSITE_OCALLCONTEXT_OFFSET = (uint64_t)-1;
 volatile uint64_t OCALLCONTEXT_LENGTH = (uint64_t)-1;
@@ -24,7 +24,7 @@ volatile uint64_t OCALLCONTEXT_RET = (uint64_t)-1;
 
 void assert_debugger_binary_contract_enclave_side()
 {
-    OE_TEST(TD_OFFSET_FROM_TCS == 5 * OE_PAGE_SIZE);
+    OE_TEST(TCS_GSBASE_OFFSET == OE_OFFSETOF(sgx_tcs_t, gsbase));
     OE_TEST(TD_CALLSITE_OFFSET == OE_OFFSETOF(td_t, callsites));
     OE_TEST(
         CALLSITE_OCALLCONTEXT_OFFSET == OE_OFFSETOF(Callsite, ocall_context));

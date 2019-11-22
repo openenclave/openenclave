@@ -118,7 +118,7 @@ commands 6
     python print("Serializing debugger contract on enclave side....")
     python import gdb_sgx_plugin
 
-    python gdb.parse_and_eval("TD_OFFSET_FROM_TCS = " + str(gdb_sgx_plugin.TD_OFFSET_FROM_TCS))
+    python gdb.parse_and_eval("TCS_GSBASE_OFFSET = " + str(gdb_sgx_plugin.TCS_GSBASE_OFFSET))
     python gdb.parse_and_eval("TD_CALLSITE_OFFSET = " + str(gdb_sgx_plugin.TD_CALLSITE_OFFSET))
     python gdb.parse_and_eval("CALLSITE_OCALLCONTEXT_OFFSET = " + str(gdb_sgx_plugin.CALLSITE_OCALLCONTEXT_OFFSET))
 
