@@ -14,74 +14,90 @@ A version of Windows OS with native support for SGX features:
 ## Install Git and Clone the Open Enclave SDK repo
 
 - Download and install Git for Windows from [here](https://git-scm.com/download/win).
-
-- Clone the Open Enclave SDK.
+- Clone the Open Enclave SDK to folder of your choice. In these instructions
+  we're assuming `openenclave`.
 
 ```powershell
 git clone https://github.com/openenclave/openenclave.git
 ```
 
-This creates a source tree under the directory called openenclave.
+This creates a source tree under the directory called `openenclave`.
 
 ## Install project prerequisites
 
-First, change directory into the openenclave repository:
+First, change directory into the Open Enclave repository (from wherever you
+cloned it):
 
 ```powershell
 cd openenclave
 ```
 
-Run the following from Powershell to deploy all the prerequisites for building Open Enclave
-
-```scripts/install-windows-prereqs.ps1```
-
-To install the prerequisites along with the Azure DCAP Client, use the below command. The Azure DCAP Client is necessary to perform attestation on an Azure Confidential Computing VM. This command assumes that you would like the prerequisites to be installed to `C:\oe_prereqs`.
+Run the following from PowerShell to deploy all the prerequisites for building Open Enclave:
 
 ```powershell
-cd scripts
-.\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType Azure
+./scripts/install-windows-prereqs.ps1
 ```
 
-If you would like to skip the installation of the Azure DCAP Client, use the command below.
+To install the prerequisites along with the Azure DCAP Client, use the below
+command. The Azure DCAP Client is necessary to perform attestation on an Azure
+Confidential Computing VM. This command assumes that you would like the
+prerequisites to be installed to `C:/oe_prereqs`.
 
 ```powershell
-cd scripts
-.\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None
+./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType Azure
 ```
 
-As an example, if you cloned the Open Enclave SDK repo into C:\openenclave and want to install the Azure DCAP Client, you would run the following command.
+If you would like to skip the installation of the Azure DCAP Client, use the
+command below:
 
 ```powershell
-cd scripts
-.\install-windows-prereqs.ps1 -InstallPath C:\oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType Azure
+./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType None
 ```
 
-If you prefer to manually install prerequisites, please refer to this [document](WindowsManualInstallPrereqs.md).
+If you want to install the Azure DCAP Client, you would run the following
+command:
 
-## Build
+```powershell
+./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType Azure
+```
+
+If you prefer to manually install prerequisites, please refer to this
+[document](WindowsManualInstallPrereqs.md).
+
+## Building on Windows using Developer Command Prompt
 
 Launch the [x64 Native Tools Command Prompt for VS(2017 or 2019)](
-https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
-To build, first create a build directory ("build" in the example below) and change directory into it.
-Then run `cmake` to configure the build and generate the Makefiles, and then build by running `ninja`.
+https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs),
+which is found in the `Visual Studio 2017` folder in the Start Menu.
+
+Run the command `powershell.exe` to open a PowerShell prompt within the native
+tools environment.
+
+From here, use CMake and Ninja to build Open Enclave.
 
 To build debug enclaves:
-```cmd
-cd C:\openenclave
-mkdir build\x64-Debug
-cd build\x64-Debug
-cmake -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave ..\..
+
+```powershell
+cd openenclave
+mkdir build/x64-Debug
+cd build/x64-Debug
+cmake -G ninja -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=install ../..
 ninja
 ```
 
-Later, using the `ninja install` command will install the SDK in C:\openenclave. To choose a different location, change the value specified for CMAKE_INSTALL_PATH.
+Later, using the `ninja install` command will install the SDK in
+`C:/openenclave/build/x64-Debug/install`. To choose a different location, change
+the value specified for `CMAKE_INSTALL_PATH`, but note that the samples tests
+will break if an absolute path is specified.
 
-Similarly, to build release enclaves:
-```cmd
-cd C:\openenclave
-mkdir build\x64-Release
-cd build\x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DCMAKE_INSTALL_PREFIX:PATH=C:\openenclave ..\..
+Similarly, to build release enclaves, specify the flag
+`-DCMAKE_BUILD_TYPE=Release`:
+
+```powershell
+cd C:/openenclave
+mkdir build/x64-Release
+cd build/x64-Release
+cmake -G ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=install ../..
 ninja
 ```
 
@@ -89,16 +105,16 @@ ninja
 
 After building, run all unit test cases using `ctest` to confirm the SDK is built and working as expected.
 
-Run the following command from the build directory to run tests(In this example, we are testing the debug build):
+Run the following command from the build directory to run tests, (in this example, we are testing the debug build):
 
-```cmd
+```powershell
 ctest
 ```
 
 You will see test logs similar to the following:
 
-```cmd
-  Test project C:/openenclave/build/x64-Debug
+```powershell
+  Test project C:/Users/test/openenclave/build/x64-Debug
         Start   1: tests/lockless_queue
   1/107 Test   #1: tests/lockless_queue ..................................   Passed    3.49 sec
         Start   2: tests/mem
@@ -118,12 +134,15 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 To install the SDK on the local machine use the following:
 
-```cmd
-cd build\x64-Debug
+```powershell
+cd openenclave/build/x64-Debug
+cmake -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
 ninja install
 ```
 
-This installs the SDK in `C:\openenclave`.
+This installs the SDK in `C:/openenclave`, the path specified for
+`CMAKE_INSTALL_PREFIX`. This install path is assumed for the rest of the
+instructions.
 
 ## Build and run samples
 
@@ -131,4 +150,4 @@ To build and run the samples, please look [here](/samples/README_Windows.md).
 
 ## Known Issues
 
-Not all tests currently run on Windows. See tests\MakeLists.txt for a list of supported tests.
+Not all tests currently run on Windows. See `tests/CMakeLists.txt` for a list of supported tests.
