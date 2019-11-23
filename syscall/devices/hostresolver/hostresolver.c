@@ -102,7 +102,7 @@ static int _hostresolver_getaddrinfo(
                 &retval, node, service, hints, &handle) != OE_OK)
         {
             ret = OE_EAI_SYSTEM;
-            OE_RAISE_ERRNO(OE_EINVAL);
+            OE_RAISE_ERRNO(oe_errno);
         }
 
         if (!handle)
@@ -140,7 +140,7 @@ static int _hostresolver_getaddrinfo(
                 NULL) != OE_OK)
         {
             ret = OE_EAI_SYSTEM;
-            OE_RAISE_ERRNO(OE_EINVAL);
+            OE_RAISE_ERRNO(oe_errno);
         }
 
         /* If this is the final element in the enumeration. */
@@ -181,7 +181,7 @@ static int _hostresolver_getaddrinfo(
                 p->ai_canonname) != OE_OK)
         {
             ret = OE_EAI_SYSTEM;
-            OE_RAISE_ERRNO(OE_EINVAL);
+            OE_RAISE_ERRNO(oe_errno);
         }
 
         /* Append to the list. */

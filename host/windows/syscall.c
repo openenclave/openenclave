@@ -31,7 +31,126 @@
 #include <openenclave/internal/syscall/dirent.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include "../hostthread.h"
+#include "../../common/oe_host_socket.h"
 #include "syscall_u.h"
+
+/*
+**==============================================================================
+**
+** WINDOWS ERROR CONVERSION
+**
+**==============================================================================
+*/
+
+struct errno_tab_entry
+{
+    DWORD winerr;
+    int error_no;
+};
+
+static struct errno_tab_entry winsock2errno[] = {
+    {WSAEINTR, OE_EINTR},
+    {WSAEBADF, OE_EBADF},
+    {WSAEACCES, OE_EACCES},
+    {WSAEFAULT, OE_EFAULT},
+    {WSAEINVAL, OE_EINVAL},
+    {WSAEMFILE, OE_EMFILE},
+    {WSAEWOULDBLOCK, OE_EWOULDBLOCK},
+    {WSAEINPROGRESS, OE_EINPROGRESS},
+    {WSAEALREADY, OE_EALREADY},
+    {WSAENOTSOCK, OE_ENOTSOCK},
+    {WSAEDESTADDRREQ, OE_EDESTADDRREQ},
+    {WSAEMSGSIZE, OE_EMSGSIZE},
+    {WSAEPROTOTYPE, OE_EPROTOTYPE},
+    {WSAENOPROTOOPT, OE_ENOPROTOOPT},
+    {WSAEPROTONOSUPPORT, OE_EPROTONOSUPPORT},
+    {WSAESOCKTNOSUPPORT, OE_ESOCKTNOSUPPORT},
+    {WSAEOPNOTSUPP, OE_EOPNOTSUPP},
+    {WSAEPFNOSUPPORT, OE_EPFNOSUPPORT},
+    {WSAEAFNOSUPPORT, OE_EAFNOSUPPORT},
+    {WSAEADDRINUSE, OE_EADDRINUSE},
+    {WSAEADDRNOTAVAIL, OE_EADDRNOTAVAIL},
+    {WSAENETDOWN, OE_ENETDOWN},
+    {WSAENETUNREACH, OE_ENETUNREACH},
+    {WSAENETRESET, OE_ENETRESET},
+    {WSAECONNABORTED, OE_ECONNABORTED},
+    {WSAECONNRESET, OE_ECONNRESET},
+    {WSAENOBUFS, OE_ENOBUFS},
+    {WSAEISCONN, OE_EISCONN},
+    {WSAENOTCONN, OE_ENOTCONN},
+    {WSAESHUTDOWN, OE_ESHUTDOWN},
+    {WSAETOOMANYREFS, OE_ETOOMANYREFS},
+    {WSAETIMEDOUT, OE_ETIMEDOUT},
+    {WSAECONNREFUSED, OE_ECONNREFUSED},
+    {WSAELOOP, OE_ELOOP},
+    {WSAENAMETOOLONG, OE_ENAMETOOLONG},
+    {WSAEHOSTDOWN, OE_EHOSTDOWN},
+    {WSAEHOSTUNREACH, OE_EHOSTUNREACH},
+    {WSAENOTEMPTY, OE_ENOTEMPTY},
+    {WSAEUSERS, OE_EUSERS},
+    {WSAEDQUOT, OE_EDQUOT},
+    {WSAESTALE, OE_ESTALE},
+    {WSAEREMOTE, OE_EREMOTE},
+    {WSAEDISCON, 199},
+    {WSAEPROCLIM, 200},
+    {WSASYSNOTREADY, 201}, // Made up number but close to adjacent
+    {WSAVERNOTSUPPORTED, 202},
+    {WSANOTINITIALISED, 203},
+    {0, 0}};
+
+// From netdb.h
+#define EAI_BADFLAGS   -1
+#define EAI_NONAME     -2
+#define EAI_AGAIN      -3
+#define EAI_FAIL       -4
+#define EAI_FAMILY     -6
+#define EAI_SOCKTYPE   -7
+#define EAI_SERVICE    -8
+#define EAI_MEMORY     -10
+#define EAI_SYSTEM     -11
+#define EAI_OVERFLOW   -12
+
+static struct errno_tab_entry wsa2eai[] = {
+    {WSATRY_AGAIN, EAI_AGAIN},
+    {WSAEINVAL, EAI_BADFLAGS},
+    {WSAEAFNOSUPPORT, EAI_FAMILY},
+    {WSA_NOT_ENOUGH_MEMORY, EAI_MEMORY},
+    {WSAHOST_NOT_FOUND, EAI_NONAME},
+    {WSATYPE_NOT_FOUND, EAI_SERVICE},
+    {WSAESOCKTNOSUPPORT, EAI_SOCKTYPE},
+    {0, 0}};
+
+static int _winsockerr_to_errno(DWORD winsockerr)
+{
+    struct errno_tab_entry* pent = winsock2errno;
+    do
+    {
+        if (pent->winerr == winsockerr)
+        {
+            return pent->error_no;
+        }
+
+        pent++;
+    } while(pent->winerr != 0);
+
+    return OE_EINVAL;
+}
+
+static int _wsaerr_to_eai(DWORD winsockerr)
+{
+    struct errno_tab_entry* pent = wsa2eai;
+    do
+    {
+        if (pent->winerr == winsockerr)
+        {
+            return pent->error_no;
+        }
+
+        pent++;
+    } while(pent->winerr != 0);
+
+    return OE_EINVAL;
+}
 
 /*
 **==============================================================================
@@ -363,9 +482,41 @@ static oe_host_fd_t _dup_socket(oe_host_fd_t oldfd)
     return -1;
 }
 
+static int _wsa_startup()
+{
+    static bool wsa_init_done = FALSE;
+    WSADATA wsaData;
+    int ret = 0;
+
+    if(!wsa_init_done)
+    {
+        ret = WSAStartup(2, &wsaData);
+        if(ret != 0)
+            goto done;
+
+        wsa_init_done = TRUE;
+    }
+
+done:
+    return ret;
+}
+
 oe_host_fd_t oe_syscall_socket_ocall(int domain, int type, int protocol)
 {
-    SOCKET sock = socket(domain, type, protocol);
+    SOCKET sock = INVALID_SOCKET;
+
+    if (_wsa_startup() != 0)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    sock = socket(domain, type, protocol);
+    if (sock == INVALID_SOCKET) {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
+
+done:
     return _make_socket_fd(sock);
 }
 
@@ -383,8 +534,13 @@ int oe_syscall_connect_ocall(
     const struct oe_sockaddr* addr,
     oe_socklen_t addrlen)
 {
-    return connect(
+    int ret = connect(
         _get_socket(sockfd), (const struct sockaddr*)addr, (int)addrlen);
+    if (ret != 0) {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
+
+    return ret;
 }
 
 oe_host_fd_t oe_syscall_accept_ocall(
@@ -398,8 +554,16 @@ oe_host_fd_t oe_syscall_accept_ocall(
         _get_socket(sockfd),
         (struct sockaddr*)addr,
         addrlen_out ? &addrlen : NULL);
+    if (conn_socket == INVALID_SOCKET)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        goto done;
+    }
+
     if (addrlen_out)
         *addrlen_out = addrlen;
+
+done:
     return _make_socket_fd(conn_socket);
 }
 
@@ -408,12 +572,22 @@ int oe_syscall_bind_ocall(
     const struct oe_sockaddr* addr,
     oe_socklen_t addrlen)
 {
-    return bind(_get_socket(sockfd), (const struct sockaddr*)addr, addrlen);
+    int ret = bind(_get_socket(sockfd), (const struct sockaddr*)addr, addrlen);
+    if (ret != 0) {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
+
+    return ret;
 }
 
 int oe_syscall_listen_ocall(oe_host_fd_t sockfd, int backlog)
 {
-    return listen(_get_socket(sockfd), backlog);
+    int ret = listen(_get_socket(sockfd), backlog);
+    if (ret != 0) {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
+
+    return ret;
 }
 
 ssize_t oe_syscall_recvmsg_ocall(
@@ -452,7 +626,12 @@ ssize_t oe_syscall_recv_ocall(
     size_t len,
     int flags)
 {
-    return recv(_get_socket(sockfd), (char*)buf, (int)len, flags);
+    int ret = recv(_get_socket(sockfd), (char*)buf, (int)len, flags);
+    if (ret != 0) {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
+
+    return ret;
 }
 
 ssize_t oe_syscall_recvfrom_ocall(
@@ -473,7 +652,12 @@ ssize_t oe_syscall_send_ocall(
     size_t len,
     int flags)
 {
-    return send(_get_socket(sockfd), buf, len, flags);
+    int ret = send(_get_socket(sockfd), buf, len, flags);
+    if (ret != 0) {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
+
+    return ret;
 }
 
 ssize_t oe_syscall_sendto_ocall(
@@ -517,6 +701,10 @@ int oe_syscall_close_socket_ocall(oe_host_fd_t sockfd)
     if (sock != INVALID_SOCKET)
     {
         r = closesocket(sock);
+        if (r != 0) {
+            _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+        }
+
         free((oe_socket_fd_t*)sockfd);
     }
     return r;
@@ -570,7 +758,14 @@ int oe_syscall_setsockopt_ocall(
     const void* optval,
     oe_socklen_t optlen)
 {
-    return setsockopt(_get_socket(sockfd), level, optname, optval, optlen);
+
+    int ret = setsockopt(_get_socket(sockfd), level, optname, optval, optlen);
+    if (ret != 0) {
+        int err = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(err);
+    }
+
+    return ret;
 }
 
 int oe_syscall_getsockopt_ocall(
@@ -634,7 +829,54 @@ int oe_syscall_getaddrinfo_open_ocall(
     const struct oe_addrinfo* hints,
     uint64_t* handle_out)
 {
-    return _getaddrinfo_open_ocall(node, service, hints, handle_out);
+    int ret = EAI_FAIL;
+    getaddrinfo_handle_t* handle = NULL;
+
+    if (_wsa_startup() != 0)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    _set_errno(0);
+
+    if (handle_out)
+        *handle_out = 0;
+
+    if (!handle_out)
+    {
+        ret = EAI_SYSTEM;
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    if (!(handle = calloc(1, sizeof(getaddrinfo_handle_t))))
+    {
+        ret = EAI_MEMORY;
+        _set_errno(OE_ENOMEM);
+        goto done;
+    }
+
+    ret =
+        getaddrinfo(node, service, (const struct addrinfo*)hints, &handle->res);
+    if (ret == 0)
+    {
+        handle->magic = GETADDRINFO_HANDLE_MAGIC;
+        handle->next = handle->res;
+        *handle_out = (uint64_t)handle;
+        handle = NULL;
+    }
+    else
+    {
+        ret = _wsaerr_to_eai(ret);
+    }
+
+done:
+
+    if (handle)
+        free(handle);
+
+    return ret;
 }
 
 int oe_syscall_getaddrinfo_read_ocall(
@@ -650,23 +892,35 @@ int oe_syscall_getaddrinfo_read_ocall(
     size_t* ai_canonnamelen,
     char* ai_canonname)
 {
-    return _get_addr_info_read_ocall(
-        handle_,
-        ai_flags,
-        ai_family,
-        ai_socktype,
-        ai_protocol,
-        ai_addrlen_in,
-        ai_addrlen,
-        ai_addr,
-        ai_canonnamelen_in,
-        ai_canonnamelen,
-        ai_canonname);
+    int err_no = 0;
+    int ret = _getaddrinfo_read(handle_, ai_flags, ai_family, ai_socktype, ai_protocol,
+            ai_addrlen_in, ai_addrlen, ai_addr, ai_canonnamelen_in,
+            ai_canonnamelen, ai_canonname, &err_no);
+    _set_errno(err_no);
+
+    return ret;
 }
 
 int oe_syscall_getaddrinfo_close_ocall(uint64_t handle_)
 {
-    return _getaddrinfo_close_ocall(handle_);
+    int ret = -1;
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
+
+    _set_errno(0);
+
+    if (!handle)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    freeaddrinfo(handle->res);
+    free(handle);
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
 int oe_syscall_getnameinfo_ocall(

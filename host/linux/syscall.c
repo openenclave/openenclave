@@ -21,7 +21,6 @@
 #include <sys/uio.h>
 #include <sys/utsname.h>
 #include <unistd.h>
-#include "../common/oe_host_socket.h"
 #include "../host/strings.h"
 #include "syscall_u.h"
 
@@ -793,13 +792,69 @@ int oe_syscall_kill_ocall(int pid, int signum)
 **==============================================================================
 */
 
+#define GETADDRINFO_HANDLE_MAGIC 0xed11d13a
+
+typedef struct _getaddrinfo_handle
+{
+    uint32_t magic;
+    struct addrinfo* res;
+    struct addrinfo* next;
+} getaddrinfo_handle_t;
+
+static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
+{
+    getaddrinfo_handle_t* handle = (getaddrinfo_handle_t*)handle_;
+
+    if (!handle || handle->magic != GETADDRINFO_HANDLE_MAGIC || !handle->res)
+        return NULL;
+
+    return handle;
+}
+
 int oe_syscall_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
     const struct oe_addrinfo* hints,
     uint64_t* handle_out)
 {
-    return _getaddrinfo_open_ocall(node, service, hints, handle_out);
+    int ret = EAI_FAIL;
+    getaddrinfo_handle_t* handle = NULL;
+
+    errno = 0;
+
+    if (handle_out)
+        *handle_out = 0;
+
+    if (!handle_out)
+    {
+        ret = EAI_SYSTEM;
+        errno = EINVAL;
+        goto done;
+    }
+
+    if (!(handle = calloc(1, sizeof(getaddrinfo_handle_t))))
+    {
+        ret = EAI_MEMORY;
+        goto done;
+    }
+
+    ret =
+        getaddrinfo(node, service, (const struct addrinfo*)hints, &handle->res);
+
+    if (ret == 0)
+    {
+        handle->magic = GETADDRINFO_HANDLE_MAGIC;
+        handle->next = handle->res;
+        *handle_out = (uint64_t)handle;
+        handle = NULL;
+    }
+
+done:
+
+    if (handle)
+        free(handle);
+
+    return ret;
 }
 
 int oe_syscall_getaddrinfo_read_ocall(
@@ -815,23 +870,35 @@ int oe_syscall_getaddrinfo_read_ocall(
     size_t* ai_canonnamelen,
     char* ai_canonname)
 {
-    return _get_addr_info_read_ocall(
-        handle_,
-        ai_flags,
-        ai_family,
-        ai_socktype,
-        ai_protocol,
-        ai_addrlen_in,
-        ai_addrlen,
-        ai_addr,
-        ai_canonnamelen_in,
-        ai_canonnamelen,
-        ai_canonname);
+    int err_no = OE_EFAIL;
+    int ret = _getaddrinfo_read(handle_, ai_flags, ai_family, ai_socktype, ai_protocol,
+            ai_addrlen_in, ai_addrlen, ai_addr, ai_canonnamelen_in,
+            ai_canonnamelen, ai_canonname, &err_no);
+    errno = err_no;
+
+    return ret;
 }
 
 int oe_syscall_getaddrinfo_close_ocall(uint64_t handle_)
 {
-    return _getaddrinfo_close_ocall(handle_);
+    int ret = -1;
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
+
+    errno = 0;
+
+    if (!handle)
+    {
+        errno = EINVAL;
+        goto done;
+    }
+
+    freeaddrinfo(handle->res);
+    free(handle);
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
 int oe_syscall_getnameinfo_ocall(

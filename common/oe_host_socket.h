@@ -23,13 +23,17 @@ typedef struct _getaddrinfo_handle
     struct addrinfo* next;
 } getaddrinfo_handle_t;
 
-int _getaddrinfo_open_ocall(
-    const char* node,
-    const char* service,
-    const struct oe_addrinfo* hints,
-    uint64_t* handle_out);
+OE_INLINE getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
+{
+    getaddrinfo_handle_t* handle = (getaddrinfo_handle_t*)handle_;
 
-int _getaddrinfo_read_ocall(
+    if (!handle || handle->magic != GETADDRINFO_HANDLE_MAGIC || !handle->res)
+        return NULL;
+
+    return handle;
+}
+
+OE_INLINE int _getaddrinfo_read(
     uint64_t handle_,
     int* ai_flags,
     int* ai_family,
@@ -40,8 +44,82 @@ int _getaddrinfo_read_ocall(
     struct oe_sockaddr* ai_addr,
     size_t ai_canonnamelen_in,
     size_t* ai_canonnamelen,
-    char* ai_canonname);
+    char* ai_canonname,
+    int* err_no)
+{
+    int ret = -1;
+    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
 
-int _getaddrinfo_close_ocall(uint64_t handle_);
+    if (!err_no) {
+        goto done;
+    }
+
+    if (!handle || !ai_flags || !ai_family || !ai_socktype || !ai_protocol ||
+        !ai_addrlen || !ai_canonnamelen)
+    {
+        *err_no = OE_EINVAL;
+
+        goto done;
+    }
+
+    if (!ai_addr && ai_addrlen_in)
+    {
+        *err_no = OE_EINVAL;
+        goto done;
+    }
+
+    if (!ai_canonname && ai_canonnamelen_in)
+    {
+        *err_no = OE_EINVAL;
+        goto done;
+    }
+
+    if (handle->next)
+    {
+        struct addrinfo* p = handle->next;
+
+        *ai_flags = p->ai_flags;
+        *ai_family = p->ai_family;
+        *ai_socktype = p->ai_socktype;
+        *ai_protocol = p->ai_protocol;
+        *ai_addrlen = p->ai_addrlen;
+
+        if (p->ai_canonname)
+            *ai_canonnamelen = strlen(p->ai_canonname) + 1;
+        else
+            *ai_canonnamelen = 0;
+
+        if (*ai_addrlen > ai_addrlen_in)
+        {
+            *err_no = OE_ENAMETOOLONG;
+            goto done;
+        }
+
+        if (*ai_canonnamelen > ai_canonnamelen_in)
+        {
+            *err_no = OE_ENAMETOOLONG;
+            goto done;
+        }
+
+        memcpy(ai_addr, p->ai_addr, *ai_addrlen);
+
+        if (p->ai_canonname)
+            memcpy(ai_canonname, p->ai_canonname, *ai_canonnamelen);
+
+        handle->next = handle->next->ai_next;
+
+        ret = 0;
+        goto done;
+    }
+    else
+    {
+        /* Done */
+        ret = 1;
+        goto done;
+    }
+
+done:
+    return ret;
+}
 
 #endif // _OE_HOST_SOCKET_H
