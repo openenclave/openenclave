@@ -225,3 +225,26 @@ let oe_get_param_count (ptype, decl, argstruct) =
   match get_param_count (ptype, decl, argstruct) with
   | Some count -> count
   | None -> Intel.Util.failwithf "Error: No count for " ^ decl.identifier
+
+(** Generate the wrapper prototype for a given function. Optionally
+    add an [oe_enclave_t*] first parameter. *)
+let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
+  let plist_str =
+    let args =
+      [
+        (if is_ecall then [ "oe_enclave_t* enclave" ] else []);
+        ( match fd.rtype with
+        | Void -> []
+        | _ -> [ get_tystr fd.rtype ^ "* _retval" ] );
+        List.map gen_parm_str fd.plist;
+      ]
+      |> List.flatten
+    in
+    match args with
+    | [ arg ] -> arg
+    | _ -> "\n    " ^ String.concat ",\n    " args
+  in
+  sprintf "oe_result_t %s(%s)" fd.fname plist_str
+
+let get_function_id (ec : enclave_content) (f : func_decl) =
+  ec.enclave_name ^ "_fcn_id_" ^ f.fname
