@@ -90,22 +90,20 @@ OE_INLINE int _getaddrinfo_read(
         else
             *ai_canonnamelen = 0;
 
-        if (*ai_addrlen > ai_addrlen_in)
-        {
-            *err_no = OE_ENAMETOOLONG;
+        *err_no = memcpy_s(ai_addr, ai_addrlen_in, p->ai_addr, *ai_addrlen);
+        if (*err_no != 0)
             goto done;
-        }
-
-        if (*ai_canonnamelen > ai_canonnamelen_in)
-        {
-            *err_no = OE_ENAMETOOLONG;
-            goto done;
-        }
-
-        memcpy(ai_addr, p->ai_addr, *ai_addrlen);
 
         if (p->ai_canonname)
-            memcpy(ai_canonname, p->ai_canonname, *ai_canonnamelen);
+        {
+            *err_no = memcpy_s(
+                ai_canonname,
+                ai_canonnamelen_in,
+                p->ai_canonname,
+                *ai_canonnamelen);
+            if (*err_no != 0)
+                goto done;
+        }
 
         handle->next = handle->next->ai_next;
 

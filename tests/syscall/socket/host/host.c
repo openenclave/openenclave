@@ -16,10 +16,8 @@
 
 #define SERVER_PORT "12345"
 
-#if __linux__
-#define HOST_SOCKET_ERRNO errno
-#elif _WIN32
-#define HOST_SOCKET_ERRNO WSAGetLastError()
+#if _WIN32
+#define errno WSAGetLastError()
 #endif
 
 void* enclave_server_thread(void* arg)
@@ -53,7 +51,7 @@ void* host_server_thread(void* arg)
         setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (void*)&optVal, optLen);
     if (rtn > 0)
     {
-        printf("setsockopt failed errno = %d\n", HOST_SOCKET_ERRNO);
+        printf("setsockopt failed errno = %d\n", errno);
     }
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
@@ -115,18 +113,18 @@ char* host_client(in_port_t port)
     {
         if (retries++ > max_retries)
         {
-            printf("\n Error : Connect Failed errno = %d\n", HOST_SOCKET_ERRNO);
+            printf("\n Error : Connect Failed errno = %d\n", errno);
             sock_close(sockfd);
             return NULL;
         }
 #if _WIN32
-        else if (HOST_SOCKET_ERRNO == WSAEISCONN)
+        else if (errno == WSAEISCONN)
         {
             break;
         }
 #endif
         {
-            printf("Connect Failed. errno = %d Retrying \n", HOST_SOCKET_ERRNO);
+            printf("Connect Failed. errno = %d Retrying \n", errno);
             sleep_msec(100);
         }
     }
@@ -141,9 +139,9 @@ char* host_client(in_port_t port)
         }
         else
         {
-            if (HOST_SOCKET_ERRNO != EAGAIN)
+            if (errno != EAGAIN)
             {
-                printf("Read error, errno = %d\n", HOST_SOCKET_ERRNO);
+                printf("Read error, errno = %d\n", errno);
                 sock_close(sockfd);
                 return NULL;
             }
