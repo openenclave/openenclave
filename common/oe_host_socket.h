@@ -50,7 +50,8 @@ OE_INLINE int _getaddrinfo_read(
     int ret = -1;
     getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
 
-    if (!err_no) {
+    if (!err_no)
+    {
         goto done;
     }
 

@@ -42,13 +42,13 @@
 **==============================================================================
 */
 
-struct errno_tab_entry
+struct tab_entry
 {
-    DWORD winerr;
-    int error_no;
+    int key;
+    int val;
 };
 
-static struct errno_tab_entry winsock2errno[] = {
+static struct tab_entry winsock2errno[] = {
     {WSAEINTR, OE_EINTR},
     {WSAEBADF, OE_EBADF},
     {WSAEACCES, OE_EACCES},
@@ -98,58 +98,82 @@ static struct errno_tab_entry winsock2errno[] = {
     {WSANOTINITIALISED, 203},
     {0, 0}};
 
+/**
+ * Musl libc has redefined pretty much every define in socket.h so that
+ * constants passed as parameters are different if the enclave uses musl
+ * and the host uses a socket implementation that uses the original BSD
+ * defines (winsock, glibc, BSD libc). The following tables are 1-to-1 mappings
+ * from musl defines to bsd defines
+ */
+
+// Only SOL_SOCKET is different. All other socket level
+// defines are the same.
+static struct tab_entry musl2bsd_socket_level[] = {{1, SOL_SOCKET}, {0, 0}};
+
+static struct tab_entry musl2bsd_socket_option[] = {{1, SO_DEBUG},
+                                                    {2, SO_REUSEADDR},
+                                                    {3, SO_TYPE},
+                                                    {4, SO_ERROR},
+                                                    {5, SO_DONTROUTE},
+                                                    {6, SO_BROADCAST},
+                                                    {7, SO_SNDBUF},
+                                                    {8, SO_RCVBUF},
+                                                    {9, SO_KEEPALIVE},
+                                                    {10, SO_OOBINLINE},
+                                                    {13, SO_LINGER},
+                                                    {18, SO_RCVLOWAT},
+                                                    {19, SO_SNDLOWAT}};
+
 // From netdb.h
-#define EAI_BADFLAGS   -1
-#define EAI_NONAME     -2
-#define EAI_AGAIN      -3
-#define EAI_FAIL       -4
-#define EAI_FAMILY     -6
-#define EAI_SOCKTYPE   -7
-#define EAI_SERVICE    -8
-#define EAI_MEMORY     -10
-#define EAI_SYSTEM     -11
-#define EAI_OVERFLOW   -12
+#define EAI_BADFLAGS -1
+#define EAI_NONAME -2
+#define EAI_AGAIN -3
+#define EAI_FAIL -4
+#define EAI_FAMILY -6
+#define EAI_SOCKTYPE -7
+#define EAI_SERVICE -8
+#define EAI_MEMORY -10
+#define EAI_SYSTEM -11
+#define EAI_OVERFLOW -12
 
-static struct errno_tab_entry wsa2eai[] = {
-    {WSATRY_AGAIN, EAI_AGAIN},
-    {WSAEINVAL, EAI_BADFLAGS},
-    {WSAEAFNOSUPPORT, EAI_FAMILY},
-    {WSA_NOT_ENOUGH_MEMORY, EAI_MEMORY},
-    {WSAHOST_NOT_FOUND, EAI_NONAME},
-    {WSATYPE_NOT_FOUND, EAI_SERVICE},
-    {WSAESOCKTNOSUPPORT, EAI_SOCKTYPE},
-    {0, 0}};
+static struct tab_entry wsa2eai[] = {{WSATRY_AGAIN, EAI_AGAIN},
+                                     {WSAEINVAL, EAI_BADFLAGS},
+                                     {WSAEAFNOSUPPORT, EAI_FAMILY},
+                                     {WSA_NOT_ENOUGH_MEMORY, EAI_MEMORY},
+                                     {WSAHOST_NOT_FOUND, EAI_NONAME},
+                                     {WSATYPE_NOT_FOUND, EAI_SERVICE},
+                                     {WSAESOCKTNOSUPPORT, EAI_SOCKTYPE},
+                                     {0, 0}};
 
-static int _winsockerr_to_errno(DWORD winsockerr)
+static int _do_lookup(int key, int fallback, struct tab_entry* table)
 {
-    struct errno_tab_entry* pent = winsock2errno;
+    struct tab_entry* pent = table;
     do
     {
-        if (pent->winerr == winsockerr)
+        if (pent->key == key)
         {
-            return pent->error_no;
+            return pent->val;
         }
 
         pent++;
-    } while(pent->winerr != 0);
+    } while (pent->val != 0);
 
-    return OE_EINVAL;
+    return fallback;
+}
+
+static int _winsockerr_to_errno(DWORD winsockerr)
+{
+    return _do_lookup(winsockerr, OE_EINVAL, winsock2errno);
 }
 
 static int _wsaerr_to_eai(DWORD winsockerr)
 {
-    struct errno_tab_entry* pent = wsa2eai;
-    do
-    {
-        if (pent->winerr == winsockerr)
-        {
-            return pent->error_no;
-        }
+    return _do_lookup(winsockerr, OE_EINVAL, wsa2eai);
+}
 
-        pent++;
-    } while(pent->winerr != 0);
-
-    return OE_EINVAL;
+static int _musl_to_bsd(int musl_define, struct tab_entry* table)
+{
+    return _do_lookup(musl_define, OE_EINVAL, table);
 }
 
 /*
@@ -488,10 +512,10 @@ static int _wsa_startup()
     WSADATA wsaData;
     int ret = 0;
 
-    if(!wsa_init_done)
+    if (!wsa_init_done)
     {
         ret = WSAStartup(2, &wsaData);
-        if(ret != 0)
+        if (ret != 0)
             goto done;
 
         wsa_init_done = TRUE;
@@ -512,7 +536,8 @@ oe_host_fd_t oe_syscall_socket_ocall(int domain, int type, int protocol)
     }
 
     sock = socket(domain, type, protocol);
-    if (sock == INVALID_SOCKET) {
+    if (sock == INVALID_SOCKET)
+    {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
@@ -536,7 +561,8 @@ int oe_syscall_connect_ocall(
 {
     int ret = connect(
         _get_socket(sockfd), (const struct sockaddr*)addr, (int)addrlen);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
@@ -573,7 +599,8 @@ int oe_syscall_bind_ocall(
     oe_socklen_t addrlen)
 {
     int ret = bind(_get_socket(sockfd), (const struct sockaddr*)addr, addrlen);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
@@ -583,7 +610,8 @@ int oe_syscall_bind_ocall(
 int oe_syscall_listen_ocall(oe_host_fd_t sockfd, int backlog)
 {
     int ret = listen(_get_socket(sockfd), backlog);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
@@ -627,7 +655,8 @@ ssize_t oe_syscall_recv_ocall(
     int flags)
 {
     int ret = recv(_get_socket(sockfd), (char*)buf, (int)len, flags);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
@@ -653,7 +682,8 @@ ssize_t oe_syscall_send_ocall(
     int flags)
 {
     int ret = send(_get_socket(sockfd), buf, len, flags);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
     }
 
@@ -691,7 +721,13 @@ ssize_t oe_syscall_sendv_ocall(
 
 int oe_syscall_shutdown_ocall(oe_host_fd_t sockfd, int how)
 {
-    PANIC;
+    int ret = shutdown(_get_socket(sockfd), how);
+    if (ret != 0)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
+
+    return ret;
 }
 
 int oe_syscall_close_socket_ocall(oe_host_fd_t sockfd)
@@ -701,7 +737,8 @@ int oe_syscall_close_socket_ocall(oe_host_fd_t sockfd)
     if (sock != INVALID_SOCKET)
     {
         r = closesocket(sock);
-        if (r != 0) {
+        if (r != 0)
+        {
             _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         }
 
@@ -710,6 +747,8 @@ int oe_syscall_close_socket_ocall(oe_host_fd_t sockfd)
     return r;
 }
 
+#define F_GETFL 3
+
 int oe_syscall_fcntl_ocall(
     oe_host_fd_t fd,
     int cmd,
@@ -717,7 +756,28 @@ int oe_syscall_fcntl_ocall(
     uint64_t argsize,
     void* argout)
 {
-    PANIC;
+    SOCKET sock;
+
+    if ((sock = _get_socket(fd)) != INVALID_SOCKET)
+    {
+        switch (cmd)
+        {
+            case F_GETFL:
+                // TODO: There is no way to get file access modes on winsock
+                // sockets. Currently this only exists to because mbedtls uses
+                // this syscall to check if the socket is blocking. If we want
+                // this syscall to actually work properly for other cases, this
+                // should be revisited.
+                return 0;
+            default:
+                PANIC;
+        }
+    }
+    else
+    {
+        // File operations are not supported
+        PANIC;
+    }
 }
 
 #define TIOCGWINSZ 0x5413
@@ -758,9 +818,12 @@ int oe_syscall_setsockopt_ocall(
     const void* optval,
     oe_socklen_t optlen)
 {
+    level = _musl_to_bsd(level, musl2bsd_socket_level);
+    optname = _musl_to_bsd(optname, musl2bsd_socket_option);
 
     int ret = setsockopt(_get_socket(sockfd), level, optname, optval, optlen);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         int err = _winsockerr_to_errno(WSAGetLastError());
         _set_errno(err);
     }
@@ -776,7 +839,23 @@ int oe_syscall_getsockopt_ocall(
     oe_socklen_t optlen_in,
     oe_socklen_t* optlen_out)
 {
-    PANIC;
+    level = _musl_to_bsd(level, musl2bsd_socket_level);
+    optname = _musl_to_bsd(optname, musl2bsd_socket_option);
+
+    int ret =
+        getsockopt(_get_socket(sockfd), level, optname, optval, &optlen_in);
+    if (ret != 0)
+    {
+        int err = _winsockerr_to_errno(WSAGetLastError());
+        _set_errno(err);
+    }
+    else
+    {
+        if (optlen_out)
+            *optlen_out = optlen_in;
+    }
+
+    return ret;
 }
 
 int oe_syscall_getsockname_ocall(
@@ -893,9 +972,19 @@ int oe_syscall_getaddrinfo_read_ocall(
     char* ai_canonname)
 {
     int err_no = 0;
-    int ret = _getaddrinfo_read(handle_, ai_flags, ai_family, ai_socktype, ai_protocol,
-            ai_addrlen_in, ai_addrlen, ai_addr, ai_canonnamelen_in,
-            ai_canonnamelen, ai_canonname, &err_no);
+    int ret = _getaddrinfo_read(
+        handle_,
+        ai_flags,
+        ai_family,
+        ai_socktype,
+        ai_protocol,
+        ai_addrlen_in,
+        ai_addrlen,
+        ai_addr,
+        ai_canonnamelen_in,
+        ai_canonnamelen,
+        ai_canonname,
+        &err_no);
     _set_errno(err_no);
 
     return ret;

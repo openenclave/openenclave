@@ -871,9 +871,19 @@ int oe_syscall_getaddrinfo_read_ocall(
     char* ai_canonname)
 {
     int err_no = OE_EFAIL;
-    int ret = _getaddrinfo_read(handle_, ai_flags, ai_family, ai_socktype, ai_protocol,
-            ai_addrlen_in, ai_addrlen, ai_addr, ai_canonnamelen_in,
-            ai_canonnamelen, ai_canonname, &err_no);
+    int ret = _getaddrinfo_read(
+        handle_,
+        ai_flags,
+        ai_family,
+        ai_socktype,
+        ai_protocol,
+        ai_addrlen_in,
+        ai_addrlen,
+        ai_addr,
+        ai_canonnamelen_in,
+        ai_canonnamelen,
+        ai_canonname,
+        &err_no);
     errno = err_no;
 
     return ret;
