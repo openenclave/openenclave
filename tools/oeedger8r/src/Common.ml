@@ -33,7 +33,7 @@ let is_const_ptr (pt : parameter_type) =
       else match aty with Foreign _ -> false | _ -> true )
 
 (** Generate parameter [p] representation. *)
-let gen_parm_str (p : pdecl) =
+let get_parameter_str (p : pdecl) =
   let pt, (declr : declarator) = p in
   let aty = get_param_atype pt in
   let str = get_typed_declr_str aty declr in
@@ -228,7 +228,7 @@ let oe_get_param_count (ptype, decl, argstruct) =
 
 (** Generate the wrapper prototype for a given function. Optionally
     add an [oe_enclave_t*] first parameter. *)
-let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
+let get_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
   let plist_str =
     let args =
       [
@@ -236,7 +236,7 @@ let oe_gen_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
         ( match fd.rtype with
         | Void -> []
         | _ -> [ get_tystr fd.rtype ^ "* _retval" ] );
-        List.map gen_parm_str fd.plist;
+        List.map get_parameter_str fd.plist;
       ]
       |> List.flatten
     in

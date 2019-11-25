@@ -558,7 +558,7 @@ let oe_gen_enclave_ocall_wrapper (uf : untrusted_func) =
         "oe_free_ocall_buffer" )
   in
   [
-    oe_gen_wrapper_prototype fd false;
+    get_wrapper_prototype fd false;
     "{";
     "    oe_result_t _result = OE_FAILURE;";
     "";
@@ -688,7 +688,7 @@ let oe_gen_host_ecall_wrapper (tf : trusted_func) =
     else "oe_call_enclave_function"
   in
   [
-    oe_gen_wrapper_prototype fd true;
+    get_wrapper_prototype fd true;
     "{";
     "    oe_result_t _result = OE_FAILURE;";
     "";

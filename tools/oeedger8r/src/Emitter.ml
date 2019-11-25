@@ -159,7 +159,7 @@ let write_enclave_code (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   if ep.gen_trusted then (
     write_file (Headers.generate_args ec) args_h ep.trusted_dir;
     write_file
-      (Headers.generate_trusted ec ep)
+      (Headers.generate_trusted ec)
       (ec.file_shortnm ^ "_t.h") ep.trusted_dir;
     if not ep.header_only then
       write_file
@@ -168,7 +168,7 @@ let write_enclave_code (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   if ep.gen_untrusted then (
     write_file (Headers.generate_args ec) args_h ep.untrusted_dir;
     write_file
-      (Headers.generate_untrusted ec ep)
+      (Headers.generate_untrusted ec)
       (ec.file_shortnm ^ "_u.h") ep.untrusted_dir;
     if not ep.header_only then
       write_file

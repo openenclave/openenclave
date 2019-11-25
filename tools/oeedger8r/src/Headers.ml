@@ -6,9 +6,9 @@ open Common
 open Printf
 
 (** Generate the prototype for a given function. *)
-let oe_gen_prototype (fd : func_decl) =
+let get_function_prototype (fd : func_decl) =
   let plist_str =
-    let args = List.map gen_parm_str fd.plist in
+    let args = List.map get_parameter_str fd.plist in
     match args with
     | [] -> "void"
     | [ arg ] -> arg
@@ -17,8 +17,8 @@ let oe_gen_prototype (fd : func_decl) =
   sprintf "%s %s(%s)" (get_tystr fd.rtype) fd.fname plist_str
 
 (** Emit [struct], [union], or [enum]. *)
-let emit_composite_type =
-  let emit_struct (s : struct_def) =
+let get_composite_type =
+  let get_struct (s : struct_def) =
     [
       "typedef struct " ^ s.sname;
       "{";
@@ -34,7 +34,7 @@ let emit_composite_type =
       "";
     ]
   in
-  let emit_union (u : union_def) =
+  let get_union (u : union_def) =
     [
       "typedef union " ^ u.uname;
       "{";
@@ -48,7 +48,7 @@ let emit_composite_type =
       "";
     ]
   in
-  let emit_enum (e : enum_def) =
+  let get_enum (e : enum_def) =
     [
       "typedef enum " ^ e.enname;
       "{";
@@ -66,16 +66,54 @@ let emit_composite_type =
     ]
   in
   function
-  | StructDef s -> emit_struct s
-  | UnionDef u -> emit_union u
-  | EnumDef e -> emit_enum e
+  | StructDef s -> get_struct s
+  | UnionDef u -> get_union u
+  | EnumDef e -> get_enum e
+
+let get_marshal_struct (fd : func_decl) (errno : bool) =
+  let get_member_decl (ptype, decl) =
+    let aty = get_param_atype ptype in
+    let tystr = get_tystr aty in
+    let tystr =
+      if is_foreign_array ptype then
+        sprintf "/* foreign array of type %s */ void*" tystr
+      else tystr
+    in
+    let need_strlen =
+      is_str_or_wstr_ptr (ptype, decl) && is_in_or_inout_ptr (ptype, decl)
+    in
+    let id = decl.identifier in
+    [
+      [ tystr ^ " " ^ id ^ ";" ];
+      (if need_strlen then [ sprintf "size_t %s_len;" id ] else []);
+    ]
+    |> List.flatten
+  in
+  let struct_name = fd.fname ^ "_args_t" in
+  let retval_decl = { identifier = "_retval"; array_dims = [] } in
+  let members =
+    [
+      [ "oe_result_t _result;" ];
+      ( if fd.rtype = Void then []
+      else get_member_decl (PTVal fd.rtype, retval_decl) );
+      (if errno then [ "int _ocall_errno;" ] else []);
+      flatten_map get_member_decl (List.map conv_array_to_ptr fd.plist);
+    ]
+    |> List.flatten
+  in
+  [
+    "typedef struct _" ^ struct_name;
+    "{";
+    "    " ^ String.concat "\n    " members;
+    "} " ^ struct_name ^ ";";
+    "";
+  ]
 
 (* Generate [args.h] which contains [struct]s for ecalls and ocalls *)
 let generate_args (ec : enclave_content) =
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
-  (* Emit IDs in enum for trusted functions. *)
-  let emit_trusted_function_ids =
+  let trusted_function_ids =
     [
       "enum";
       "{";
@@ -87,8 +125,7 @@ let generate_args (ec : enclave_content) =
       "};";
     ]
   in
-  (* Emit IDs in enum for untrusted functions. *)
-  let emit_untrusted_function_ids =
+  let untrusted_function_ids =
     [
       "enum";
       "{";
@@ -100,68 +137,35 @@ let generate_args (ec : enclave_content) =
       "};";
     ]
   in
-  let oe_gen_marshal_struct (fd : func_decl) (errno : bool) =
-    let gen_member_decl (ptype, decl) =
-      let aty = get_param_atype ptype in
-      let tystr = get_tystr aty in
-      let tystr =
-        if is_foreign_array ptype then
-          sprintf "/* foreign array of type %s */ void*" tystr
-        else tystr
-      in
-      let need_strlen =
-        is_str_or_wstr_ptr (ptype, decl) && is_in_or_inout_ptr (ptype, decl)
-      in
-      let id = decl.identifier in
-      [
-        [ tystr ^ " " ^ id ^ ";" ];
-        (if need_strlen then [ sprintf "size_t %s_len;" id ] else []);
-      ]
-      |> List.flatten
-    in
-    let struct_name = fd.fname ^ "_args_t" in
-    let retval_decl = { identifier = "_retval"; array_dims = [] } in
-    let members =
-      [
-        [ "oe_result_t _result;" ];
-        ( if fd.rtype = Void then []
-        else gen_member_decl (PTVal fd.rtype, retval_decl) );
-        (if errno then [ "int _ocall_errno;" ] else []);
-        flatten_map gen_member_decl (List.map conv_array_to_ptr fd.plist);
-      ]
-      |> List.flatten
-    in
-    [
-      "typedef struct _" ^ struct_name;
-      "{";
-      "    " ^ String.concat "\n    " members;
-      "} " ^ struct_name ^ ";";
-      "";
-    ]
+  let guard_macro =
+    "EDGER8R_" ^ String.uppercase_ascii ec.enclave_name ^ "_ARGS_H"
   in
-  let oe_gen_user_includes (includes : string list) =
+  let include_errno =
+    let s = "#include <errno.h>" in
+    if List.exists (fun uf -> uf.uf_propagate_errno) ufs then s
+    else sprintf "/* %s - Errno propagation not enabled so not included. */" s
+  in
+  let user_includes =
+    let includes = ec.include_list in
     if includes <> [] then List.map (sprintf "#include \"%s\"") includes
     else [ "/* There were no user includes. */" ]
   in
-  let oe_gen_user_types (cts : composite_type list) =
-    if cts <> [] then flatten_map emit_composite_type cts
+  let user_types =
+    let cts = ec.comp_defs in
+    if cts <> [] then flatten_map get_composite_type cts
     else [ "/* There were no user defined types. */"; "" ]
   in
-  let oe_gen_ecall_marshal_structs =
+  let ecall_marshal_structs =
     if tfs <> [] then
-      flatten_map (fun tf -> oe_gen_marshal_struct tf.tf_fdecl false) tfs
+      flatten_map (fun tf -> get_marshal_struct tf.tf_fdecl false) tfs
     else [ "/* There were no ecalls. */"; "" ]
   in
-  let oe_gen_ocall_marshal_structs =
+  let ocall_marshal_structs =
     if ufs <> [] then
       flatten_map
-        (fun uf -> oe_gen_marshal_struct uf.uf_fdecl uf.uf_propagate_errno)
+        (fun uf -> get_marshal_struct uf.uf_fdecl uf.uf_propagate_errno)
         ufs
     else [ "/* There were no ocalls. */"; "" ]
-  in
-  let with_errno = List.exists (fun uf -> uf.uf_propagate_errno) ufs in
-  let guard_macro =
-    "EDGER8R_" ^ String.uppercase_ascii ec.enclave_name ^ "_ARGS_H"
   in
   [
     "#ifndef " ^ guard_macro;
@@ -170,49 +174,47 @@ let generate_args (ec : enclave_content) =
     "#include <stdint.h>";
     "#include <stdlib.h> /* for wchar_t */";
     "";
-    (let s = "#include <errno.h>" in
-     if with_errno then s
-     else sprintf "/* %s - Errno propagation not enabled so not included. */" s);
+    include_errno;
     "";
     "#include <openenclave/bits/result.h>";
     "";
     "/**** User includes. ****/";
-    String.concat "\n" (oe_gen_user_includes ec.include_list);
+    String.concat "\n" user_includes;
     "";
     "/**** User defined types in EDL. ****/";
-    String.concat "\n" (oe_gen_user_types ec.comp_defs);
+    String.concat "\n" user_types;
     "/**** ECALL marshalling structs. ****/";
-    String.concat "\n" oe_gen_ecall_marshal_structs;
+    String.concat "\n" ecall_marshal_structs;
     "/**** OCALL marshalling structs. ****/";
-    String.concat "\n" oe_gen_ocall_marshal_structs;
+    String.concat "\n" ocall_marshal_structs;
     "/**** Trusted function IDs ****/";
-    String.concat "\n" emit_trusted_function_ids;
+    String.concat "\n" trusted_function_ids;
     "";
     "/**** Untrusted function IDs. ****/";
-    String.concat "\n" emit_untrusted_function_ids;
+    String.concat "\n" untrusted_function_ids;
     "";
     "#endif // " ^ guard_macro;
     "";
   ]
 
 (* Includes are emitted in [args.h]. Imported functions have already
-     been brought into function lists. *)
-let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
-  let tfs = ec.tfunc_decls in
-  let ufs = ec.ufunc_decls in
-  let oe_gen_tfunc_prototypes =
+   been brought into function lists. *)
+let generate_trusted (ec : enclave_content) =
+  let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_T_H" in
+  let tfunc_prototypes =
+    let tfs = ec.tfunc_decls in
     if tfs <> [] then
-      List.map (fun f -> sprintf "%s;" (oe_gen_prototype f.tf_fdecl)) tfs
+      List.map (fun f -> sprintf "%s;" (get_function_prototype f.tf_fdecl)) tfs
     else [ "/* There were no ecalls. */" ]
   in
-  let oe_gen_ufunc_wrapper_prototypes =
+  let ufunc_wrapper_prototypes =
+    let ufs = ec.ufunc_decls in
     if ufs <> [] then
       List.map
-        (fun f -> sprintf "%s;" (oe_gen_wrapper_prototype f.uf_fdecl false))
+        (fun f -> sprintf "%s;" (get_wrapper_prototype f.uf_fdecl false))
         ufs
     else [ "/* There were no ocalls. */" ]
   in
-  let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_T_H" in
   [
     "#ifndef " ^ guard;
     "#define " ^ guard;
@@ -224,10 +226,10 @@ let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     "OE_EXTERNC_BEGIN";
     "";
     "/**** ECALL prototypes. ****/";
-    String.concat "\n\n" oe_gen_tfunc_prototypes;
+    String.concat "\n\n" tfunc_prototypes;
     "";
     "/**** OCALL prototypes. ****/";
-    String.concat "\n\n" oe_gen_ufunc_wrapper_prototypes;
+    String.concat "\n\n" ufunc_wrapper_prototypes;
     "";
     "OE_EXTERNC_END";
     "";
@@ -235,19 +237,20 @@ let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     "";
   ]
 
-let generate_untrusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
-  let tfs = ec.tfunc_decls in
-  let ufs = ec.ufunc_decls in
-  let oe_gen_tfunc_wrapper_prototypes =
+let generate_untrusted (ec : enclave_content) =
+  let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_U_H" in
+  let tfunc_wrapper_prototypes =
+    let tfs = ec.tfunc_decls in
     if tfs <> [] then
-      List.map (fun f -> oe_gen_wrapper_prototype f.tf_fdecl true ^ ";") tfs
+      List.map (fun f -> get_wrapper_prototype f.tf_fdecl true ^ ";") tfs
     else [ "/* There were no ecalls. */" ]
   in
-  let oe_gen_ufunc_prototypes =
-    if ufs <> [] then List.map (fun f -> oe_gen_prototype f.uf_fdecl ^ ";") ufs
+  let ufunc_prototypes =
+    let ufs = ec.ufunc_decls in
+    if ufs <> [] then
+      List.map (fun f -> get_function_prototype f.uf_fdecl ^ ";") ufs
     else [ "/* There were no ocalls. */" ]
   in
-  let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_U_H" in
   [
     "#ifndef " ^ guard;
     "#define " ^ guard;
@@ -267,10 +270,10 @@ let generate_untrusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     "    oe_enclave_t** enclave);";
     "";
     "/**** ECALL prototypes. ****/";
-    String.concat "\n\n" oe_gen_tfunc_wrapper_prototypes;
+    String.concat "\n\n" tfunc_wrapper_prototypes;
     "";
     "/**** OCALL prototypes. ****/";
-    String.concat "\n\n" oe_gen_ufunc_prototypes;
+    String.concat "\n\n" ufunc_prototypes;
     "";
     "OE_EXTERNC_END";
     "";
