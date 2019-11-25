@@ -102,7 +102,7 @@ let warn_size_and_count_params (fd : func_decl) =
     fd.plist
 
 (** Generate the Enclave code. *)
-let gen_enclave_code (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
+let write_enclave_code (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   (* Short aliases for the trusted and untrusted function
      declarations. *)
   let tfs = ec.tfunc_decls in
@@ -157,22 +157,27 @@ let gen_enclave_code (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   (* NOTE: The below code encapsulates all our file I/O. *)
   let args_h = ec.file_shortnm ^ "_args.h" in
   if ep.gen_trusted then (
-    write_file (Headers.oe_gen_args_header ec) args_h ep.trusted_dir;
-    write_file (Headers.gen_t_h ec ep) (ec.file_shortnm ^ "_t.h") ep.trusted_dir;
+    write_file (Headers.generate_args ec) args_h ep.trusted_dir;
+    write_file
+      (Headers.generate_trusted ec ep)
+      (ec.file_shortnm ^ "_t.h") ep.trusted_dir;
     if not ep.header_only then
-      write_file (Sources.gen_t_c ec ep) (ec.file_shortnm ^ "_t.c")
-        ep.trusted_dir );
+      write_file
+        (Sources.generate_trusted ec ep)
+        (ec.file_shortnm ^ "_t.c") ep.trusted_dir );
   if ep.gen_untrusted then (
-    write_file (Headers.oe_gen_args_header ec) args_h ep.untrusted_dir;
-    write_file (Headers.gen_u_h ec ep) (ec.file_shortnm ^ "_u.h")
-      ep.untrusted_dir;
+    write_file (Headers.generate_args ec) args_h ep.untrusted_dir;
+    write_file
+      (Headers.generate_untrusted ec ep)
+      (ec.file_shortnm ^ "_u.h") ep.untrusted_dir;
     if not ep.header_only then
-      write_file (Sources.gen_u_c ec ep) (ec.file_shortnm ^ "_u.c")
-        ep.untrusted_dir );
+      write_file
+        (Sources.generate_untrusted ec ep)
+        (ec.file_shortnm ^ "_u.c") ep.untrusted_dir );
   printf "Success.\n"
 
 (** Install the plugin. *)
 let _ =
   Printf.printf "Generating edge routines for the Open Enclave SDK.\n";
   Intel.Plugin.instance.available <- true;
-  Intel.Plugin.instance.gen_edge_routines <- gen_enclave_code
+  Intel.Plugin.instance.gen_edge_routines <- write_enclave_code

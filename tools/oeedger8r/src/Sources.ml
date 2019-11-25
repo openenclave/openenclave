@@ -620,7 +620,7 @@ let oe_gen_enclave_ocall_wrapper (uf : untrusted_func) =
     "";
   ]
 
-let gen_t_c (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
+let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   _ec := ec;
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
@@ -804,7 +804,7 @@ let oe_gen_ocall_function (uf : untrusted_func) =
     "";
   ]
 
-let gen_u_c (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
+let generate_untrusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   _ec := ec;
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in

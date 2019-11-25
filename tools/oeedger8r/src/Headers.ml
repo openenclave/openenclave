@@ -71,7 +71,7 @@ let emit_composite_type =
   | EnumDef e -> emit_enum e
 
 (* Generate [args.h] which contains [struct]s for ecalls and ocalls *)
-let oe_gen_args_header (ec : enclave_content) =
+let generate_args (ec : enclave_content) =
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
   (* Emit IDs in enum for trusted functions. *)
@@ -197,7 +197,7 @@ let oe_gen_args_header (ec : enclave_content) =
 
 (* Includes are emitted in [args.h]. Imported functions have already
      been brought into function lists. *)
-let gen_t_h (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
+let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
   let oe_gen_tfunc_prototypes =
@@ -235,7 +235,7 @@ let gen_t_h (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     "";
   ]
 
-let gen_u_h (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
+let generate_untrusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
   let oe_gen_tfunc_wrapper_prototypes =
