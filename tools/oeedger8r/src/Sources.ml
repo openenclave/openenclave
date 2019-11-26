@@ -60,8 +60,8 @@ let get_cast_to_mem_expr (ptype, decl) (parens : bool) =
 (** Recursively generates [if (a && a->b) OE_SET_PTR(a->b->c);]
     statements. *)
 let rec get_ptr_setter get_deepcopy args count setter (ptype, decl) =
-  let argstruct = oe_get_argstruct "pargs_in->" args count in
-  let size = oe_get_param_size (ptype, decl, argstruct) in
+  let argstruct = get_argstruct "pargs_in->" args count in
+  let size = get_param_size (ptype, decl, argstruct) in
   let arg =
     match args with
     | [] -> decl.identifier
@@ -76,7 +76,7 @@ let rec get_ptr_setter get_deepcopy args count setter (ptype, decl) =
             (String.concat " && pargs_in->" (List.rev (arg :: args)));
         ];
         [ sprintf "    OE_%s_POINTER(%s, %s, %s);" setter arg size tystr ];
-        (let param_count = oe_get_param_count (ptype, decl, argstruct) in
+        (let param_count = get_param_count (ptype, decl, argstruct) in
          flatten_map
            (get_ptr_setter get_deepcopy (arg :: args) param_count setter)
            (get_deepcopy (get_param_atype ptype)));
@@ -140,13 +140,13 @@ let rec get_ptr_count get_deepcopy args count (ptype, decl) =
      within a [gen_c_for] loop when producing the count. Therefore
      arrays of structs which use members for the count of another
      nested parameter are not yet supported. *)
-  let argstruct = oe_get_argstruct "" args count in
+  let argstruct = get_argstruct "" args count in
   let arg =
     match args with
     | [] -> id
     | hd :: _ -> hd ^ gen_c_deref (List.length args) count ^ id
   in
-  let param_count = oe_get_param_count (ptype, decl, argstruct) in
+  let param_count = get_param_count (ptype, decl, argstruct) in
   let members = get_deepcopy (get_param_atype ptype) in
   if is_marshalled_ptr ptype then
     (* The base case is a marshalled pointer. We count 1 for every one
@@ -231,7 +231,7 @@ let get_filled_marshal_struct get_deepcopy (fd : func_decl) =
   @
   let rec get_saved_ptrs args count (ptype, decl) =
     let id = decl.identifier in
-    let argstruct = oe_get_argstruct "_args." args count in
+    let argstruct = get_argstruct "_args." args count in
     let arg =
       match args with
       | [] -> id
@@ -245,7 +245,7 @@ let get_filled_marshal_struct get_deepcopy (fd : func_decl) =
           ( if args <> [] && is_marshalled_ptr ptype then
             [ "    _ptrs[_ptrs_index++] = (void*)" ^ arg ^ ";" ]
           else [] );
-          (let param_count = oe_get_param_count (ptype, decl, argstruct) in
+          (let param_count = get_param_count (ptype, decl, argstruct) in
            flatten_map
              (get_saved_ptrs (arg :: args) param_count)
              (get_deepcopy (get_param_atype ptype)));
@@ -258,8 +258,8 @@ let get_filled_marshal_struct get_deepcopy (fd : func_decl) =
 let get_input_buffer get_deepcopy (fd : func_decl) (alloc_func : string) =
   let get_buffer_size buffer predicate plist =
     let rec get_add_size_expr args count (ptype, decl) =
-      let argstruct = oe_get_argstruct "_args." args count in
-      let size = oe_get_param_size (ptype, decl, argstruct) in
+      let argstruct = get_argstruct "_args." args count in
+      let size = get_param_size (ptype, decl, argstruct) in
       let arg =
         match args with
         | [] -> decl.identifier
@@ -269,7 +269,7 @@ let get_input_buffer get_deepcopy (fd : func_decl) (alloc_func : string) =
         ( [
             [ sprintf "if (%s)" (String.concat " && " (List.rev (arg :: args))) ];
             [ sprintf "    OE_ADD_SIZE(%s, %s);" buffer size ];
-            (let param_count = oe_get_param_count (ptype, decl, argstruct) in
+            (let param_count = get_param_count (ptype, decl, argstruct) in
              flatten_map
                (get_add_size_expr (arg :: args) param_count)
                (get_deepcopy (get_param_atype ptype)));
@@ -292,8 +292,8 @@ let get_input_buffer get_deepcopy (fd : func_decl) (alloc_func : string) =
   in
   let get_serialized_buffer_inputs (plist : pdecl list) =
     let rec get_serializer args count (ptype, decl) =
-      let argstruct = oe_get_argstruct "_args." args count in
-      let size = oe_get_param_size (ptype, decl, argstruct) in
+      let argstruct = get_argstruct "_args." args count in
+      let size = get_param_size (ptype, decl, argstruct) in
       let arg =
         match args with
         | [] -> decl.identifier
@@ -314,7 +314,7 @@ let get_input_buffer get_deepcopy (fd : func_decl) (alloc_func : string) =
                 (if is_in_ptr ptype then "IN" else "IN_OUT")
                 arg size tystr;
             ];
-            (let param_count = oe_get_param_count (ptype, decl, argstruct) in
+            (let param_count = get_param_count (ptype, decl, argstruct) in
              flatten_map
                (get_serializer (arg :: args) param_count)
                (get_deepcopy (get_param_atype ptype)));
@@ -362,8 +362,8 @@ let get_input_buffer get_deepcopy (fd : func_decl) (alloc_func : string) =
 let get_output_buffer get_deepcopy (fd : func_decl) =
   let get_serialized_buffer_outputs (plist : pdecl list) =
     let rec get_serializer args count (ptype, decl) =
-      let argstruct = oe_get_argstruct "_args." args count in
-      let size = oe_get_param_size (ptype, decl, argstruct) in
+      let argstruct = get_argstruct "_args." args count in
+      let size = get_param_size (ptype, decl, argstruct) in
       let arg =
         match args with
         | [] -> decl.identifier
@@ -397,7 +397,7 @@ let get_output_buffer get_deepcopy (fd : func_decl) =
                    "    " ^ s;
                    "}";
                  ]);
-            (let param_count = oe_get_param_count (ptype, decl, argstruct) in
+            (let param_count = get_param_count (ptype, decl, argstruct) in
              flatten_map
                (get_serializer (arg :: args) param_count)
                (get_deepcopy (get_param_atype ptype)));

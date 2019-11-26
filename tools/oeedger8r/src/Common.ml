@@ -151,7 +151,7 @@ let get_type_expr ptype =
 (** For a list of args and current count, get the corresponding
    argstruct variable name. The prefix is usually, but not always,
    ["_args."].*)
-let oe_get_argstruct prefix args count =
+let get_argstruct prefix args count =
   match args with
   | [] -> prefix
   | hd :: _ -> prefix ^ hd ^ gen_c_deref (List.length args) count
@@ -162,7 +162,7 @@ let attr_value_to_string argstruct = function
   | Some (AString s) -> Some (argstruct ^ s)
 
 (** For a parameter, get its size expression. *)
-let get_param_size (ptype, decl, argstruct) =
+let _get_param_size (ptype, decl, argstruct) =
   let type_expr = get_type_expr ptype in
   let get_ptr_or_decl_size (p : ptr_size) =
     let size = attr_value_to_string argstruct p.ps_size
@@ -187,13 +187,13 @@ let get_param_size (ptype, decl, argstruct) =
   (* Values have no marshalling size. *)
   | _ -> None
 
-let oe_get_param_size (ptype, decl, argstruct) =
-  match get_param_size (ptype, decl, argstruct) with
+let get_param_size (ptype, decl, argstruct) =
+  match _get_param_size (ptype, decl, argstruct) with
   | Some size -> size
   | None -> Intel.Util.failwithf "Error: No size for " ^ decl.identifier
 
 (** For a parameter, get its count expression. *)
-let get_param_count (ptype, decl, argstruct) =
+let _get_param_count (ptype, decl, argstruct) =
   let type_expr = get_type_expr ptype in
   let get_ptr_or_decl_count (p : ptr_size) =
     let size = attr_value_to_string argstruct p.ps_size
@@ -221,8 +221,8 @@ let get_param_count (ptype, decl, argstruct) =
       else None
   | PTVal _ -> None
 
-let oe_get_param_count (ptype, decl, argstruct) =
-  match get_param_count (ptype, decl, argstruct) with
+let get_param_count (ptype, decl, argstruct) =
+  match _get_param_count (ptype, decl, argstruct) with
   | Some count -> count
   | None -> Intel.Util.failwithf "Error: No count for " ^ decl.identifier
 
