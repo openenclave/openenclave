@@ -5,6 +5,36 @@ open Intel.Ast
 open Common
 open Printf
 
+(** ----- Begin code borrowed and tweaked from {!CodeGen.ml}. ----- *)
+
+(** [conv_array_to_ptr] is used to convert Array form into Pointer form.
+    {[
+      int array[10][20] => [count = 200] int* array
+    ]}
+
+    This function is called when generating proxy/bridge code and the
+    marshalling structure. *)
+let conv_array_to_ptr (pd : pdecl) : pdecl =
+  let pt, declr = pd in
+  let get_count_attr ilist =
+    (* XXX: assume the size of each dimension will be > 0. *)
+    ANumber (List.fold_left (fun acc i -> acc * i) 1 ilist)
+  in
+  match pt with
+  | PTVal _ -> (pt, declr)
+  | PTPtr (aty, pa) ->
+      if is_array declr then
+        let tmp_declr = { declr with array_dims = [] } in
+        let tmp_aty = Ptr aty in
+        let tmp_cnt = get_count_attr declr.array_dims in
+        let tmp_pa =
+          { pa with pa_size = { empty_ptr_size with ps_count = Some tmp_cnt } }
+        in
+        (PTPtr (tmp_aty, tmp_pa), tmp_declr)
+      else (pt, declr)
+
+(** ----- End code borrowed and tweaked from {!CodeGen.ml} ----- *)
+
 (** Generate the prototype for a given function. *)
 let get_function_prototype (fd : func_decl) =
   let plist_str =

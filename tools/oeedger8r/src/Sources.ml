@@ -33,6 +33,92 @@ let get_deepcopy_function (enabled : bool) (cts : composite_type list)
     | None -> []
   else []
 
+(** For a list of args and current count, get the corresponding
+   argstruct variable name. The prefix is usually, but not always,
+   ["_args."].*)
+let get_argstruct prefix args count =
+  match args with
+  | [] -> prefix
+  | hd :: _ -> prefix ^ hd ^ gen_c_deref (List.length args) count
+
+let get_type_expr ptype =
+  (* Get the base type of the parameter. That is, yield its [atype],
+     unless it is a pointer, in which case decompose and yield the
+     [atype] the pointer points to. *)
+  let param_atype =
+    let a = get_param_atype ptype in
+    match a with Ptr p -> p | _ -> a
+  in
+  let tystr = get_tystr param_atype in
+  match ptype with
+  | PTPtr (_, ptr_attr) when ptr_attr.pa_isptr -> sprintf "*(%s)0" tystr
+  | _ -> tystr
+
+(** For a parameter, get its size expression. *)
+let _get_param_size (ptype, decl, argstruct) =
+  let type_expr = get_type_expr ptype in
+  let get_ptr_or_decl_size (p : ptr_size) =
+    let size = attr_value_to_string argstruct p.ps_size
+    and count = attr_value_to_string argstruct p.ps_count in
+    match (size, count) with
+    | Some s, None -> s
+    | None, Some c -> sprintf "(%s * sizeof(%s))" c type_expr
+    (* TODO: Check that this is an even multiple of the size of type. *)
+    | Some s, Some c -> sprintf "(%s * %s)" s c
+    | None, None ->
+        sprintf "sizeof(%s%s)" type_expr (get_array_dims decl.array_dims)
+  in
+  match ptype with
+  | PTPtr (_, ptr_attr) ->
+      if ptr_attr.pa_isstr then
+        Some (argstruct ^ decl.identifier ^ "_len * sizeof(char)")
+      else if ptr_attr.pa_iswstr then
+        Some (argstruct ^ decl.identifier ^ "_len * sizeof(wchar_t)")
+      else if ptr_attr.pa_chkptr then
+        Some (get_ptr_or_decl_size ptr_attr.pa_size)
+      else None
+  (* Values have no marshalling size. *)
+  | _ -> None
+
+let get_param_size (ptype, decl, argstruct) =
+  match _get_param_size (ptype, decl, argstruct) with
+  | Some size -> size
+  | None -> Intel.Util.failwithf "Error: No size for " ^ decl.identifier
+
+(** For a parameter, get its count expression. *)
+let _get_param_count (ptype, decl, argstruct) =
+  let type_expr = get_type_expr ptype in
+  let get_ptr_or_decl_count (p : ptr_size) =
+    let size = attr_value_to_string argstruct p.ps_size
+    and count = attr_value_to_string argstruct p.ps_count in
+    match (size, count) with
+    (* TODO: Check that these are even multiples of the size of type. *)
+    | Some s, None -> sprintf "(%s / sizeof(%s))" s type_expr
+    | None, Some c -> c
+    | Some s, Some c -> sprintf "((%s * %s) / sizeof(%s))" s c type_expr
+    | None, None ->
+        let dims = List.map string_of_int decl.array_dims in
+        String.concat " * " dims
+  in
+  match ptype with
+  | PTPtr (_, ptr_attr) ->
+      (* The count of a string is its length. *)
+      if ptr_attr.pa_isstr || ptr_attr.pa_iswstr then
+        (* TODO: Double-check that this length includes the
+           null-terminator. *)
+        Some (argstruct ^ decl.identifier ^ "_len")
+      else if ptr_attr.pa_chkptr then
+        Some (get_ptr_or_decl_count ptr_attr.pa_size)
+        (* TODO: Should be able to return [Some "1"] for plain
+           pointers and values. *)
+      else None
+  | PTVal _ -> None
+
+let get_param_count (ptype, decl, argstruct) =
+  match _get_param_count (ptype, decl, argstruct) with
+  | Some count -> count
+  | None -> Intel.Util.failwithf "Error: No count for " ^ decl.identifier
+
 (** Generate a cast expression for a pointer argument. Pointer
     arguments need to be cast to their root type, since the marshalling
     struct has the root pointer. For example:
