@@ -204,7 +204,7 @@ int enc_test(bool* caught, bool* dynamic_cast_works, size_t* n_constructions)
                 int* p = new int[64];
                 ptrs.push_back(p);
             }
-            catch (std::bad_alloc)
+            catch (std::bad_alloc&)
             {
                 bad_alloc_caught = true;
                 printf("std::bad_alloc caught\n");
