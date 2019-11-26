@@ -23,7 +23,7 @@
 /samples/ @andschwa @dthaler @soccerGB
 /syscall/ @mikbras @yakman2020
 # TODO: Break this folder out?
-/tests/ @EmilAlexandruStoica @mikbras
+/tests/ @radhikaj
 /tools/ @anakrish @CodeMonkeyLeet
 /tools/oeedger8r/ @andschwa @anakrish @jxyang
 /pkgconfig/ @gupta-ak @mikbras
@@ -37,8 +37,8 @@ windows/ @CodeMonkeyLeet @yakman2020
 crypto/ @CodeMonkeyLeet @gupta-ak
 
 # Match all CMake, anywhere.
-CMakeLists.txt @andschwa @BRMcLaren @EmilAlexandruStoica
-*.cmake @andschwa @BRMcLaren @EmilAlexandruStoica
+CMakeLists.txt @andschwa @BRMcLaren
+*.cmake @andschwa @BRMcLaren
 
 # Match all Markdown, anywhere.
 *.md @CodeMonkeyLeet @johnkord @andschwa @radhikaj
