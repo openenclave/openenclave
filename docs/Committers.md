@@ -36,6 +36,7 @@ Committee Members
 | Dave Thaler          | Microsoft | dthaler@microsoft.com         | dthaler        |
 | John Kordich         | Microsoft | jkordich@gmail.com            | johnkord       |
 | Mike Brasher         | Microsoft | mikbras@microsoft.com         | mikbras        |
+| Radhika Jandhyala    | Microsoft | radhikaj@microsoft.com        | radhikaj       |
 | Simon Leet           | Microsoft | simon.leet@microsoft.com      | CodeMonkeyLeet |
 
 Committee Responsibilities
