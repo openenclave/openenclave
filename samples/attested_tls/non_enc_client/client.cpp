@@ -1,13 +1,20 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#ifdef _WIN32
+#include <Ws2def.h>
+#include <winsock2.h>
+#define close closesocket
+#else
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <resolv.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#endif
+
+#include <string.h>
 
 #include <openenclave/host.h>
 #include <openssl/bio.h>

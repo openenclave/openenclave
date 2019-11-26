@@ -50,7 +50,7 @@ def gen_header(inpath, outpath):
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: gen_mrenclave_header.py <oesign_dump> <output_file>")
-        exit(1)
+        sys.exit(1)
 
     outpath = sys.argv[1]
     inpath = sys.argv[2]
