@@ -25,10 +25,7 @@ else ()
   # against SGX.
   if (HAS_QUOTE_PROVIDER)
     list(APPEND SAMPLES_LIST remote_attestation)
-    # The attested_tls test is not supported on Windows at this time.
-    if (UNIX)
-	    list(APPEND SAMPLES_LIST attested_tls)
-    endif ()
+    list(APPEND SAMPLES_LIST attested_tls)
   endif ()
 endif ()
 

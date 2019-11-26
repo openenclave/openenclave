@@ -116,7 +116,7 @@ int handle_communication_until_done(mbedtls_ssl_context* ssl)
     // Write client payload to the server
     printf(TLS_CLIENT "Write to server-->:");
     len = sprintf((char*)buf, CLIENT_PAYLOAD);
-    while ((ret = mbedtls_ssl_write(ssl, buf, len)) <= 0)
+    while ((ret = mbedtls_ssl_write(ssl, buf, (size_t)len)) <= 0)
     {
         if (ret != MBEDTLS_ERR_SSL_WANT_READ &&
             ret != MBEDTLS_ERR_SSL_WANT_WRITE)
@@ -135,7 +135,7 @@ int handle_communication_until_done(mbedtls_ssl_context* ssl)
     {
         len = sizeof(buf) - 1;
         memset(buf, 0, sizeof(buf));
-        ret = mbedtls_ssl_read(ssl, buf, len);
+        ret = mbedtls_ssl_read(ssl, buf, (size_t)len);
         if (ret == MBEDTLS_ERR_SSL_WANT_READ ||
             ret == MBEDTLS_ERR_SSL_WANT_WRITE)
             continue;
@@ -156,8 +156,8 @@ int handle_communication_until_done(mbedtls_ssl_context* ssl)
         }
         len = ret;
         printf(TLS_CLIENT "%d bytes received from server:\n\n", len);
-        if ((len != SERVER_PAYLOAD_SIZE) ||
-            (memcmp(SERVER_PAYLOAD, buf, len) != 0))
+        if (((size_t)len != SERVER_PAYLOAD_SIZE) ||
+            (memcmp(SERVER_PAYLOAD, buf, (size_t)len) != 0))
         {
             printf(
                 TLS_CLIENT
@@ -184,7 +184,6 @@ done:
 int launch_tls_client(char* server_name, char* server_port)
 {
     int ret = 1;
-    uint32_t flags;
     const char* pers = "ssl_client";
     oe_result_t result = OE_FAILURE;
     int exit_code = MBEDTLS_EXIT_FAILURE;

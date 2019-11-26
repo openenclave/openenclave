@@ -183,7 +183,7 @@ waiting_for_connection_request:
     {
         len = sizeof(buf) - 1;
         memset(buf, 0, sizeof(buf));
-        ret = mbedtls_ssl_read(ssl, buf, len);
+        ret = mbedtls_ssl_read(ssl, buf, (size_t)len);
 
         if (ret == MBEDTLS_ERR_SSL_WANT_READ ||
             ret == MBEDTLS_ERR_SSL_WANT_WRITE)
@@ -214,8 +214,8 @@ waiting_for_connection_request:
 
         // For testing purpose, valdiate received data's content and size
 #ifdef ADD_TEST_CHECKING
-        if ((len != CLIENT_PAYLOAD_SIZE) ||
-            (memcmp(CLIENT_PAYLOAD, buf, len) != 0))
+        if (((size_t)len != CLIENT_PAYLOAD_SIZE) ||
+            (memcmp(CLIENT_PAYLOAD, buf, (size_t)len) != 0))
         {
             printf(
                 TLS_SERVER
@@ -228,7 +228,7 @@ waiting_for_connection_request:
         printf(TLS_SERVER
                "Verified: the contents of client payload were expected\n\n");
 #endif
-        if (ret == CLIENT_PAYLOAD_SIZE)
+        if ((size_t)ret == CLIENT_PAYLOAD_SIZE)
             break;
     } while (1);
 
@@ -236,7 +236,7 @@ waiting_for_connection_request:
     printf(TLS_SERVER "-----> Write to client:\n");
     len = snprintf((char*)buf, sizeof(buf) - 1, SERVER_PAYLOAD);
 
-    while ((ret = mbedtls_ssl_write(ssl, buf, len)) <= 0)
+    while ((ret = mbedtls_ssl_write(ssl, buf, (size_t)len)) <= 0)
     {
         if (ret == MBEDTLS_ERR_NET_CONN_RESET)
         {

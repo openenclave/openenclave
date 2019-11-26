@@ -11,8 +11,7 @@ add_custom_command(OUTPUT tls_server_enc.signed tls_server_enc_mrenclave.h
   DEPENDS tls_server_enc enc.conf ${CMAKE_SOURCE_DIR}/server/enc/private.pem ${CMAKE_SOURCE_DIR}/scripts/gen_mrenclave_header.sh
   COMMAND openenclave::oesign sign -e $<TARGET_FILE:tls_server_enc> -c ${CMAKE_SOURCE_DIR}/server/enc/enc.conf -k ${CMAKE_SOURCE_DIR}/server/enc/private.pem
   COMMAND openenclave::oesign dump -e tls_server_enc.signed  > temp.dmp
-  COMMAND chmod u+x ${CMAKE_SOURCE_DIR}/scripts/gen_mrenclave_header.sh
-  COMMAND ${CMAKE_SOURCE_DIR}/scripts/gen_mrenclave_header.sh ${CMAKE_SOURCE_DIR}/common/tls_server_enc_mrenclave.h temp.dmp
+  COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/gen_mrenclave_header.py ${CMAKE_SOURCE_DIR}/common/tls_server_enc_mrenclave.h temp.dmp
   COMMAND ${CMAKE_COMMAND} -E remove temp.dmp)
 
 add_executable(tls_server_enc

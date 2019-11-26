@@ -90,6 +90,13 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Explain the concept of OE local attestation
 - Demonstrate an implementation of local attestation between two enclaves on the same VM
 
+#### [Attested TLS](attested_tls/README.md)
+
+- Explain what an Attested TLS channel is
+- Demonstrate an implementation for how to establish an Attested TLS channel
+  - between two enclaves
+  - between one non-enclave client and an enclave
+
 #### [Switchless Calls](switchless/README.md)
 
 - Explain the concept of switchless calls

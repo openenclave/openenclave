@@ -94,7 +94,6 @@ oe_result_t generate_certificate_and_pkey(
     mbedtls_pk_context* private_key)
 {
     oe_result_t result = OE_FAILURE;
-    uint8_t* host_cert_buf = NULL;
     uint8_t* output_cert = NULL;
     size_t output_cert_size = 0;
     uint8_t* private_key_buf = NULL;
@@ -245,7 +244,7 @@ bool verify_mrsigner(
     if (memcmp(signer, signer_id_buf, signer_id_buf_size) != 0)
     {
         printf("mrsigner is not equal!\n");
-        for (int i = 0; i < signer_id_buf_size; i++)
+        for (int i = 0; i < (int)signer_id_buf_size; i++)
         {
             printf(
                 "0x%x - 0x%x\n", (uint8_t)signer[i], (uint8_t)signer_id_buf[i]);
