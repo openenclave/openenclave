@@ -36,6 +36,7 @@ Committee Members
 | Dave Thaler          | Microsoft | dthaler@microsoft.com         | dthaler        |
 | John Kordich         | Microsoft | jkordich@gmail.com            | johnkord       |
 | Mike Brasher         | Microsoft | mikbras@microsoft.com         | mikbras        |
+| Radhika Jandhyala    | Microsoft | radhikaj@microsoft.com        | radhikaj       |
 | Simon Leet           | Microsoft | simon.leet@microsoft.com      | CodeMonkeyLeet |
 
 Committee Responsibilities
@@ -98,6 +99,7 @@ instead, it should be brought up with the Community Governance Committee.
 | Sergio Wong           | jazzybluesea        | Attestation, SGX               |
 | Jiri Appl             | jiria               | Attestation, TrustZone         |
 | John Kordich          | johnkord            | Build, CI, Dev Tools, Release  |
+| Jordan Hand           | jhand2              | Windows, Build, SGX            |
 | Xuejun Yang           | jxyang              | SGX                            |
 | Mike Brasher          | mikbras             | SGX, APIs, EDL                 |
 | Marius Oprin          | oprinmarius         | Build, CMake, CI, Ansible      |
