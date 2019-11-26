@@ -27,17 +27,17 @@ at [aka.ms/openenclave/cgc](https://aka.ms/openenclave/cgc).
 Committee Members
 -----------------
 
-| Name                 | Company   | Email                         | GitHub Alias   |
-|----------------------|-----------|-------------------------------|----------------|
-| Akash Gupta          | Microsoft | akagup@microsoft.com          | gupta-ak       |
-| Amaury Chamayou      | Microsoft | amaury.chamayou@microsoft.com | achamayou      |
-| Anand Krishnamoorthi | Microsoft | anakrish@microsoft.com        | anakrish       |
-| Andrew Schwartzmeyer | Microsoft | andschwa@microsoft.com        | andschwa       |
-| Dave Thaler          | Microsoft | dthaler@microsoft.com         | dthaler        |
-| John Kordich         | Microsoft | jkordich@gmail.com            | johnkord       |
-| Mike Brasher         | Microsoft | mikbras@microsoft.com         | mikbras        |
-| Radhika Jandhyala    | Microsoft | radhikaj@microsoft.com        | radhikaj       |
-| Simon Leet           | Microsoft | simon.leet@microsoft.com      | CodeMonkeyLeet |
+| Name                 | Company     | Email                         | GitHub Alias   |
+|----------------------|-------------|-------------------------------|----------------|
+| Akash Gupta          | Microsoft   | akagup@microsoft.com          | gupta-ak       |
+| Amaury Chamayou      | Microsoft   | amaury.chamayou@microsoft.com | achamayou      |
+| Anand Krishnamoorthi | Microsoft   | anakrish@microsoft.com        | anakrish       |
+| Andrew Schwartzmeyer | Microsoft   | andschwa@microsoft.com        | andschwa       |
+| Dave Thaler          | Microsoft   | dthaler@microsoft.com         | dthaler        |
+| John Kordich         | Independent | jkordich@gmail.com            | johnkord       |
+| Mike Brasher         | Microsoft   | mikbras@microsoft.com         | mikbras        |
+| Radhika Jandhyala    | Microsoft   | radhikaj@microsoft.com        | radhikaj       |
+| Simon Leet           | Microsoft   | simon.leet@microsoft.com      | CodeMonkeyLeet |
 
 Committee Responsibilities
 --------------------------
