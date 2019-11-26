@@ -99,6 +99,7 @@ instead, it should be brought up with the Community Governance Committee.
 | Sergio Wong           | jazzybluesea        | Attestation, SGX               |
 | Jiri Appl             | jiria               | Attestation, TrustZone         |
 | John Kordich          | johnkord            | Build, CI, Dev Tools, Release  |
+| Jordan Hand           | jhand2              | Windows, Build, SGX            |
 | Xuejun Yang           | jxyang              | SGX                            |
 | Mike Brasher          | mikbras             | SGX, APIs, EDL                 |
 | Marius Oprin          | oprinmarius         | Build, CMake, CI, Ansible      |
