@@ -5,54 +5,29 @@ open Intel.Ast
 open Common
 open Printf
 
-let _ec : Intel.Ast.enclave_content ref =
-  ref
-    {
-      file_shortnm = "";
-      enclave_name = "";
-      include_list = [];
-      import_exprs = [];
-      comp_defs = [];
-      tfunc_decls = [];
-      ufunc_decls = [];
-    }
-
-(* let _ep : Intel.Util.edger8r_params ref =
- *   ref
- *     {
- *       input_files = [];
- *       use_prefix = false;
- *       header_only = false;
- *       gen_untrusted = false;
- *       gen_trusted = false;
- *       untrusted_dir = "";
- *       trusted_dir = "";
- *       experimental = "";
- *     } *)
-
 (** Given [name], return the corresponding [StructDef], or [None]. *)
-let get_struct_by_name (name : string) =
-  (* [ec.comp_defs] is a list of all composite types, but we're only
+let get_struct_by_name (cts : composite_type list) (name : string) =
+  (* [cts] is a list of all composite types, but we're only
      interested in the structs, so we filter out the rest and unwrap
      them from [composite_type]. *)
-  let structs =
-    (* TODO: Pass [comp_defs] instead of needing [ec]. *)
-    filter_map (function StructDef s -> Some s | _ -> None) !_ec.comp_defs
-  in
+  let structs = filter_map (function StructDef s -> Some s | _ -> None) cts in
   List.find_opt (fun s -> s.sname = name) structs
 
 (** We need to check [Ptr]s for [Foreign] or [Struct] types, then
     check those against the user's [Struct]s, and then check if any
     members should be deep copied. What we return is the list of
     members of the [Struct] which should be deep-copied, otherwise we
-    return an empty list. *)
-let get_deepcopy_members (a : atype) =
+    return an empty list.
+
+    NOTE: This is a higher-order function that is mean to have its
+    first two arguments partially applied, and then used repeatedly. *)
+let get_deepcopy_function (enabled : bool) (cts : composite_type list)
+    (a : atype) =
   let should_deepcopy_a = function
-    | Ptr (Struct n) | Ptr (Foreign n) -> get_struct_by_name n
+    | Ptr (Struct n) | Ptr (Foreign n) -> get_struct_by_name cts n
     | _ -> None
   in
-  (* TODO: Only enable with [ep.experimental] *)
-  if true then
+  if enabled then
     match should_deepcopy_a a with
     | Some s -> List.filter (fun (p, _) -> is_marshalled_ptr p) s.smlist
     | None -> []
@@ -84,7 +59,7 @@ let get_cast_to_mem_expr (ptype, decl) (parens : bool) =
 
 (** Recursively generates [if (a && a->b) OE_SET_PTR(a->b->c);]
     statements. *)
-let rec get_ptr_setter args count setter (ptype, decl) =
+let rec get_ptr_setter get_deepcopy args count setter (ptype, decl) =
   let argstruct = oe_get_argstruct "pargs_in->" args count in
   let size = oe_get_param_size (ptype, decl, argstruct) in
   let arg =
@@ -103,13 +78,13 @@ let rec get_ptr_setter args count setter (ptype, decl) =
         [ sprintf "    OE_%s_POINTER(%s, %s, %s);" setter arg size tystr ];
         (let param_count = oe_get_param_count (ptype, decl, argstruct) in
          flatten_map
-           (get_ptr_setter (arg :: args) param_count setter)
-           (get_deepcopy_members (get_param_atype ptype)));
+           (get_ptr_setter get_deepcopy (arg :: args) param_count setter)
+           (get_deepcopy (get_param_atype ptype)));
       ]
     |> List.flatten )
 
 (** Generates pointer setters for in and in-out pointers. *)
-let get_in_ptr_setter (plist : pdecl list) =
+let get_in_ptr_setter get_deepcopy (plist : pdecl list) =
   let params =
     let ptrs = List.filter is_in_or_inout_ptr plist in
     let setters =
@@ -117,7 +92,7 @@ let get_in_ptr_setter (plist : pdecl list) =
         (fun (p, _) -> if is_in_ptr p then "SET_IN" else "SET_IN_OUT")
         ptrs
     in
-    flatten_map2 (get_ptr_setter [] "1") setters ptrs
+    flatten_map2 (get_ptr_setter get_deepcopy [] "1") setters ptrs
   in
   "    "
   ^ String.concat "\n    "
@@ -128,7 +103,7 @@ let get_in_ptr_setter (plist : pdecl list) =
       ]
 
 (** Generates pointer setters for out and in-out pointers. *)
-let get_out_ptr_setter (plist : pdecl list) =
+let get_out_ptr_setter get_deepcopy (plist : pdecl list) =
   let params =
     let ptrs = List.filter is_out_or_inout_ptr plist in
     let setters =
@@ -137,7 +112,7 @@ let get_out_ptr_setter (plist : pdecl list) =
           if is_out_ptr p then "SET_OUT" else "COPY_AND_SET_IN_OUT")
         ptrs
     in
-    flatten_map2 (get_ptr_setter [] "1") setters ptrs
+    flatten_map2 (get_ptr_setter get_deepcopy [] "1") setters ptrs
   in
   "    "
   ^ String.concat "\n    "
@@ -151,7 +126,7 @@ let get_out_ptr_setter (plist : pdecl list) =
 (** Generates an expression representing the total number of pointers
     we need to save and restore, used as the size for the pointer
     array. *)
-let rec get_ptr_count args count (ptype, decl) =
+let rec get_ptr_count get_deepcopy args count (ptype, decl) =
   let get_multiplication_expr count body =
     (* The first two conditionals check for the multiplicative identity
        and prevent unnecessary expressions from being generated.
@@ -172,7 +147,7 @@ let rec get_ptr_count args count (ptype, decl) =
     | hd :: _ -> hd ^ gen_c_deref (List.length args) count ^ id
   in
   let param_count = oe_get_param_count (ptype, decl, argstruct) in
-  let members = get_deepcopy_members (get_param_atype ptype) in
+  let members = get_deepcopy (get_param_atype ptype) in
   if is_marshalled_ptr ptype then
     (* The base case is a marshalled pointer. We count 1 for every one
        of these, except for the top-level pointers as they are the
@@ -187,13 +162,17 @@ let rec get_ptr_count args count (ptype, decl) =
        each nested structure. *)
     (if args <> [] then [ "1" ] else [])
     @ get_multiplication_expr param_count
-        (flatten_map (get_ptr_count (arg :: args) param_count) members)
+        (flatten_map
+           (get_ptr_count get_deepcopy (arg :: args) param_count)
+           members)
   else []
 
 (** Generates the array used to save the original pointers. *)
-let get_ptr_array (plist : pdecl list) =
+let get_ptr_array get_deepcopy (plist : pdecl list) =
   let count =
-    flatten_map (get_ptr_count [] "1") (List.filter is_out_or_inout_ptr plist)
+    flatten_map
+      (get_ptr_count get_deepcopy [] "1")
+      (List.filter is_out_or_inout_ptr plist)
   in
   if count <> [] then
     [
@@ -209,21 +188,25 @@ let get_ptr_array (plist : pdecl list) =
   else [ "/* No pointers to save for deep copy. */" ]
 
 (** Generates expression to reset the index into the pointer array. *)
-let get_ptr_index_reset (plist : pdecl list) =
+let get_ptr_index_reset get_deepcopy (plist : pdecl list) =
   let count =
-    flatten_map (get_ptr_count [] "1") (List.filter is_out_or_inout_ptr plist)
+    flatten_map
+      (get_ptr_count get_deepcopy [] "1")
+      (List.filter is_out_or_inout_ptr plist)
   in
   if count <> [] then "_ptrs_index = 0; /* For deep copy. */"
   else "/* No pointers to restore for deep copy. */"
 
-let get_ptr_free_expr (plist : pdecl list) =
+let get_ptr_free_expr get_deepcopy (plist : pdecl list) =
   let count =
-    flatten_map (get_ptr_count [] "1") (List.filter is_out_or_inout_ptr plist)
+    flatten_map
+      (get_ptr_count get_deepcopy [] "1")
+      (List.filter is_out_or_inout_ptr plist)
   in
   if count <> [] then [ "if (_ptrs)"; "    free(_ptrs);" ]
   else [ "/* No `_ptrs` to free for deep copy. */" ]
 
-let get_filled_marshal_struct (fd : func_decl) =
+let get_filled_marshal_struct get_deepcopy (fd : func_decl) =
   (* Generate assignment argument to corresponding field in args. This
      is necessary for all arguments, not just copy-as-value, because
      they are used directly by later marshalling code. *)
@@ -265,14 +248,14 @@ let get_filled_marshal_struct (fd : func_decl) =
           (let param_count = oe_get_param_count (ptype, decl, argstruct) in
            flatten_map
              (get_saved_ptrs (arg :: args) param_count)
-             (get_deepcopy_members (get_param_atype ptype)));
+             (get_deepcopy (get_param_atype ptype)));
         ]
       |> List.flatten )
   in
   flatten_map (get_saved_ptrs [] "1") (List.filter is_out_or_inout_ptr fd.plist)
 
 (* Prepare [input_buffer]. *)
-let get_input_buffer (fd : func_decl) (alloc_func : string) =
+let get_input_buffer get_deepcopy (fd : func_decl) (alloc_func : string) =
   let get_buffer_size buffer predicate plist =
     let rec get_add_size_expr args count (ptype, decl) =
       let argstruct = oe_get_argstruct "_args." args count in
@@ -289,7 +272,7 @@ let get_input_buffer (fd : func_decl) (alloc_func : string) =
             (let param_count = oe_get_param_count (ptype, decl, argstruct) in
              flatten_map
                (get_add_size_expr (arg :: args) param_count)
-               (get_deepcopy_members (get_param_atype ptype)));
+               (get_deepcopy (get_param_atype ptype)));
           ]
         |> List.flatten )
     in
@@ -334,7 +317,7 @@ let get_input_buffer (fd : func_decl) (alloc_func : string) =
             (let param_count = oe_get_param_count (ptype, decl, argstruct) in
              flatten_map
                (get_serializer (arg :: args) param_count)
-               (get_deepcopy_members (get_param_atype ptype)));
+               (get_deepcopy (get_param_atype ptype)));
           ]
         |> List.flatten )
     in
@@ -376,7 +359,7 @@ let get_input_buffer (fd : func_decl) (alloc_func : string) =
     "memcpy(_pargs_in, &_args, sizeof(*_pargs_in));";
   ]
 
-let get_output_buffer (fd : func_decl) =
+let get_output_buffer get_deepcopy (fd : func_decl) =
   let get_serialized_buffer_outputs (plist : pdecl list) =
     let rec get_serializer args count (ptype, decl) =
       let argstruct = oe_get_argstruct "_args." args count in
@@ -417,7 +400,7 @@ let get_output_buffer (fd : func_decl) =
             (let param_count = oe_get_param_count (ptype, decl, argstruct) in
              flatten_map
                (get_serializer (arg :: args) param_count)
-               (get_deepcopy_members (get_param_atype ptype)));
+               (get_deepcopy (get_param_atype ptype)));
           ]
         |> List.flatten )
     in
@@ -448,7 +431,7 @@ let get_output_buffer (fd : func_decl) =
     "/* Unmarshal return value and out, in-out parameters. */";
     ( if fd.rtype <> Void then "*_retval = _pargs_out->_retval;"
     else "/* No return value. */" );
-    get_ptr_index_reset fd.plist;
+    get_ptr_index_reset get_deepcopy fd.plist;
     get_serialized_buffer_outputs fd.plist;
   ]
 
@@ -486,7 +469,7 @@ let get_call_user_function (fd : func_decl) =
   ]
 
 (** Generate ecall function definition. *)
-let get_ecall_function (tf : trusted_func) =
+let get_ecall_function get_deepcopy (tf : trusted_func) =
   let fd = tf.tf_fdecl in
   [
     sprintf "void ecall_%s(" fd.fname;
@@ -521,11 +504,11 @@ let get_ecall_function (tf : trusted_func) =
     "        goto done;";
     "";
     (* Prepare in and in-out parameters *)
-    get_in_ptr_setter fd.plist;
+    get_in_ptr_setter get_deepcopy fd.plist;
     "";
     (* Prepare out and in-out parameters. The in-out parameter is
          copied to output buffer. *)
-    get_out_ptr_setter fd.plist;
+    get_out_ptr_setter get_deepcopy fd.plist;
     "";
     "    /* Check that in/in-out strings are null terminated. */"
     (* NOTE: We do not support deep copy for strings, so there is not
@@ -563,7 +546,7 @@ let get_ecall_function (tf : trusted_func) =
   ]
 
 (** Generate enclave OCALL wrapper function. *)
-let get_ocall_function_wrapper (uf : untrusted_func) =
+let get_ocall_function_wrapper get_deepcopy enclave_name (uf : untrusted_func) =
   let fd = uf.uf_fdecl in
   let allocate_buffer, call_function, free_buffer =
     if uf.uf_is_switchless then
@@ -588,7 +571,7 @@ let get_ocall_function_wrapper (uf : untrusted_func) =
     "    /* Marshalling struct. */";
     sprintf "    %s_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;"
       fd.fname;
-    "    " ^ String.concat "\n    " (get_ptr_array fd.plist);
+    "    " ^ String.concat "\n    " (get_ptr_array get_deepcopy fd.plist);
     "";
     "    /* Marshalling buffer and sizes. */";
     "    size_t _input_buffer_size = 0;";
@@ -603,16 +586,17 @@ let get_ocall_function_wrapper (uf : untrusted_func) =
     "";
     "    /* Fill marshalling struct. */";
     "    memset(&_args, 0, sizeof(_args));";
-    "    " ^ String.concat "\n    " (get_filled_marshal_struct fd);
+    "    " ^ String.concat "\n    " (get_filled_marshal_struct get_deepcopy fd);
     "";
-    "    " ^ String.concat "\n    " (get_input_buffer fd allocate_buffer);
+    "    "
+    ^ String.concat "\n    " (get_input_buffer get_deepcopy fd allocate_buffer);
     "";
     "    /* Call host function. */";
     "    if ((_result = " ^ call_function ^ "(";
     "             "
     ^ String.concat ",\n             "
         [
-          get_function_id !_ec fd;
+          get_function_id enclave_name fd;
           "_input_buffer";
           "_input_buffer_size";
           "_output_buffer";
@@ -621,7 +605,7 @@ let get_ocall_function_wrapper (uf : untrusted_func) =
         ];
     "        goto done;";
     "";
-    "    " ^ String.concat "\n    " (get_output_buffer fd);
+    "    " ^ String.concat "\n    " (get_output_buffer get_deepcopy fd);
     "";
     "    /* Retrieve propagated errno from OCALL. */";
     ( if uf.uf_propagate_errno then "    errno = _pargs_out->_ocall_errno;\n"
@@ -638,11 +622,11 @@ let get_ocall_function_wrapper (uf : untrusted_func) =
   ]
 
 let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
-  _ec := ec;
+  let get_deepcopy = get_deepcopy_function ep.experimental ec.comp_defs in
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
   let ecall_functions =
-    if tfs <> [] then flatten_map get_ecall_function tfs
+    if tfs <> [] then flatten_map (get_ecall_function get_deepcopy) tfs
     else [ "/* There were no ecalls. */" ]
   in
   let ecall_table =
@@ -662,7 +646,8 @@ let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     else [ "/* There were no ecalls. */" ]
   in
   let ocall_function_wrappers =
-    if ufs <> [] then flatten_map get_ocall_function_wrapper ufs
+    if ufs <> [] then
+      flatten_map (get_ocall_function_wrapper get_deepcopy ec.enclave_name) ufs
     else [ "/* There were no ocalls. */" ]
   in
   [
@@ -691,7 +676,7 @@ let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   ]
 
 (* Generate host ECALL wrapper function. *)
-let get_host_ecall_wrapper (tf : trusted_func) =
+let get_host_ecall_wrapper get_deepcopy enclave_name (tf : trusted_func) =
   let fd = tf.tf_fdecl in
   let ecall_function =
     if tf.tf_is_switchless then "oe_switchless_call_enclave_function"
@@ -718,13 +703,13 @@ let get_host_ecall_wrapper (tf : trusted_func) =
     "    size_t _output_bytes_written = 0;";
     "";
     "    /* Deep copy buffer. */";
-    "    " ^ String.concat "\n    " (get_ptr_array fd.plist);
+    "    " ^ String.concat "\n    " (get_ptr_array get_deepcopy fd.plist);
     "";
     "    /* Fill marshalling struct. */";
     "    memset(&_args, 0, sizeof(_args));";
-    "    " ^ String.concat "\n    " (get_filled_marshal_struct fd);
+    "    " ^ String.concat "\n    " (get_filled_marshal_struct get_deepcopy fd);
     "";
-    "    " ^ String.concat "\n    " (get_input_buffer fd "malloc");
+    "    " ^ String.concat "\n    " (get_input_buffer get_deepcopy fd "malloc");
     "";
     "    /* Call enclave function. */";
     "    if ((_result = " ^ ecall_function ^ "(";
@@ -732,7 +717,7 @@ let get_host_ecall_wrapper (tf : trusted_func) =
     ^ String.concat ",\n             "
         [
           "enclave";
-          get_function_id !_ec fd;
+          get_function_id enclave_name fd;
           "_input_buffer";
           "_input_buffer_size";
           "_output_buffer";
@@ -741,7 +726,7 @@ let get_host_ecall_wrapper (tf : trusted_func) =
         ];
     "        goto done;";
     "";
-    "    " ^ String.concat "\n    " (get_output_buffer fd);
+    "    " ^ String.concat "\n    " (get_output_buffer get_deepcopy fd);
     "";
     "    _result = OE_OK;";
     "";
@@ -749,7 +734,7 @@ let get_host_ecall_wrapper (tf : trusted_func) =
     "    if (_buffer)";
     "        free(_buffer);";
     "";
-    "    " ^ String.concat "\n    " (get_ptr_free_expr fd.plist);
+    "    " ^ String.concat "\n    " (get_ptr_free_expr get_deepcopy fd.plist);
     "";
     "    return _result;";
     "}";
@@ -757,7 +742,7 @@ let get_host_ecall_wrapper (tf : trusted_func) =
   ]
 
 (* Generate ocall function. *)
-let get_ocall_function (uf : untrusted_func) =
+let get_ocall_function get_deepcopy (uf : untrusted_func) =
   let fd = uf.uf_fdecl in
   [
     sprintf "void ocall_%s(" fd.fname;
@@ -790,11 +775,11 @@ let get_ocall_function (uf : untrusted_func) =
     "    }";
     "";
     (* Prepare in and in-out parameters *)
-    get_in_ptr_setter fd.plist;
+    get_in_ptr_setter get_deepcopy fd.plist;
     "";
     (* Prepare out and in-out parameters: the in-out parameter is
        copied to output buffer. *)
-    get_out_ptr_setter fd.plist;
+    get_out_ptr_setter get_deepcopy fd.plist;
     "";
     (* Call the host function *)
     "    " ^ String.concat "\n    " (get_call_user_function fd);
@@ -816,15 +801,16 @@ let get_ocall_function (uf : untrusted_func) =
   ]
 
 let generate_untrusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
-  _ec := ec;
+  let get_deepcopy = get_deepcopy_function ep.experimental ec.comp_defs in
   let host_ecall_wrappers =
     let tfs = ec.tfunc_decls in
-    if tfs <> [] then flatten_map get_host_ecall_wrapper tfs
+    if tfs <> [] then
+      flatten_map (get_host_ecall_wrapper get_deepcopy ec.enclave_name) tfs
     else [ "/* There were no ecalls. */" ]
   in
   let ocall_functions =
     let ufs = ec.ufunc_decls in
-    if ufs <> [] then flatten_map get_ocall_function ufs
+    if ufs <> [] then flatten_map (get_ocall_function get_deepcopy) ufs
     else [ "/* There were no ocalls. */" ]
   in
   let ocall_table =

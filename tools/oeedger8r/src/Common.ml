@@ -246,5 +246,5 @@ let get_wrapper_prototype (fd : func_decl) (is_ecall : bool) =
   in
   sprintf "oe_result_t %s(%s)" fd.fname plist_str
 
-let get_function_id (ec : enclave_content) (f : func_decl) =
-  ec.enclave_name ^ "_fcn_id_" ^ f.fname
+let get_function_id (enclave_name : string) (f : func_decl) =
+  enclave_name ^ "_fcn_id_" ^ f.fname

@@ -119,7 +119,10 @@ let generate_args (ec : enclave_content) =
       "{";
       String.concat "\n"
         (List.mapi
-           (fun i f -> sprintf "    %s = %d," (get_function_id ec f.tf_fdecl) i)
+           (fun i f ->
+             sprintf "    %s = %d,"
+               (get_function_id ec.enclave_name f.tf_fdecl)
+               i)
            tfs);
       "    " ^ ec.enclave_name ^ "_fcn_id_trusted_call_id_max = OE_ENUM_MAX";
       "};";
@@ -131,7 +134,10 @@ let generate_args (ec : enclave_content) =
       "{";
       String.concat "\n"
         (List.mapi
-           (fun i f -> sprintf "    %s = %d," (get_function_id ec f.uf_fdecl) i)
+           (fun i f ->
+             sprintf "    %s = %d,"
+               (get_function_id ec.enclave_name f.uf_fdecl)
+               i)
            ufs);
       "    " ^ ec.enclave_name ^ "_fcn_id_untrusted_call_max = OE_ENUM_MAX";
       "};";
