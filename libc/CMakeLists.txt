@@ -76,7 +76,6 @@ add_library(oelibc STATIC
     strerror.c
     syscalls.c
     sysconf.c
-    time.c
     regcomp.c
     regexec.c
     tre-mem.c
