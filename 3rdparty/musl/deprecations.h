@@ -57,32 +57,6 @@ int pthread_join(pthread_t thread, void** retval);
 OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
 int pthread_detach(pthread_t thread);
 
-/*
-**==============================================================================
-**
-** <time.h>
-**
-**==============================================================================
-*/
-
-// Need this since including <time.h> will create a circular dependency.
-struct tm;
-
-OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
-size_t strftime(
-    char* s,
-    size_t maxparam,
-    const char* format,
-    const struct tm* tm);
-
-OE_LIBC_DEPRECATED(OE_UNSUPPORTED_ENCLAVE_FUNCTION)
-size_t strftime_l(
-    char* s,
-    size_t maxparam,
-    const char* format,
-    const struct tm* tm,
-    locale_t loc);
-
 OE_LIBC_EXTERN_C_END
 
 #endif /* !defined(OE_LIBC_SUPPRESS_DEPRECATIONS) && !defined(__ASSEMBLER__) \
