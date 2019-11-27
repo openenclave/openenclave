@@ -1,7 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <dlfcn.h>
 #include <limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/report.h>
@@ -14,6 +13,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "oecertdump_u.h"
+
+#if defined(__linux__)
+#include <dlfcn.h>
+#endif
 
 #include "../../../../common/sgx/quote.h"
 #include "../../../../common/sgx/revocation.h"
@@ -111,6 +114,7 @@ void oecertdump_quote_provider_log(
 // Set Azure dcap calient log callback
 void _set_log_callback()
 {
+#if defined(__linux__)
     extern oe_sgx_quote_provider_t provider;
 
     sgx_ql_set_logging_function_t set_log_fcn =
@@ -120,6 +124,7 @@ void _set_log_callback()
     {
         set_log_fcn(oecertdump_quote_provider_log);
     }
+#endif
 }
 
 void output_certificate(const uint8_t* data, size_t data_len)
@@ -225,13 +230,26 @@ static oe_result_t _gen_report(oe_enclave_t* enclave)
     {
         log("========== Got report, size = %zu\n\n", report_size);
 
+        oe_report_header_t* header = (oe_report_header_t*)remote_report;
+        sgx_quote_t* quote = (sgx_quote_t*)header->report;
+        uint64_t quote_size = header->report_size;
+
+        log("CPU_SVN: '");
+        for (uint64_t n = 0; n < SGX_CPUSVN_SIZE; n++)
+        {
+            log("%02x", quote->report_body.cpusvn[n]);
+        }
+        log("'\nQEID: '");
+        for (uint64_t n = 0; n < 16; n++)
+        {
+            log("%02x", quote->user_data[n]);
+        }
+        log("'\n");
+
         // Print endorsements
         {
             uint8_t* endorsements_data = NULL;
             size_t endorsements_data_size = 0;
-            oe_report_header_t* header = (oe_report_header_t*)remote_report;
-            sgx_quote_t* quote = (sgx_quote_t*)header->report;
-            uint64_t quote_size = header->report_size;
 
             result = oe_get_sgx_endorsements(
                 (const uint8_t*)quote,
@@ -246,22 +264,13 @@ static oe_result_t _gen_report(oe_enclave_t* enclave)
 
             log("========== Got endorsements, size = %zu\n",
                 endorsements_data_size);
-            log("CPU_SVN: '");
-            for (uint64_t n = 0; n < SGX_CPUSVN_SIZE; n++)
-            {
-                log("%02x", quote->report_body.cpusvn[n]);
-            }
-            log("'\nQEID: '");
-            for (uint64_t n = 0; n < 16; n++)
-            {
-                log("%02x", quote->user_data[n]);
-            }
-            log("'\nRevocation TCB_INFO:\n");
             oe_sgx_endorsements_t endorsements;
             result = oe_parse_sgx_endorsements(
                 (oe_endorsements_t*)endorsements_data,
                 endorsements_data_size,
                 &endorsements);
+
+            log("Revocation TCB_INFO:\n");
             oe_sgx_endorsement_item tcb_info =
                 endorsements.items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO];
             log("%s\n\n", tcb_info.data);
