@@ -6,9 +6,6 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/tests.h>
-#include <openssl/bio.h>
-#include <openssl/pem.h>
-#include <openssl/x509.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +13,9 @@
 
 #if defined(__linux__)
 #include <dlfcn.h>
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include <openssl/x509.h>
 #endif
 
 #include "../../../../common/sgx/quote.h"
@@ -129,6 +129,7 @@ void _set_log_callback()
 
 void output_certificate(const uint8_t* data, size_t data_len)
 {
+#if defined(__linux__)
     if (log_file)
     {
         fprintf(log_file, "\n");
@@ -143,6 +144,9 @@ void output_certificate(const uint8_t* data, size_t data_len)
         BIO_free_all(input);
         fprintf(log_file, "\n");
     }
+#endif
+    (void)data;
+    (void)data_len;
 }
 
 void validate_certificate(uint8_t* cert, size_t cert_size)
