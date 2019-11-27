@@ -2,8 +2,7 @@
 // Licensed under the MIT License.
 
 #ifdef _WIN32
-#include <Ws2def.h>
-#include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 #include <arpa/inet.h>
 #include <netdb.h>

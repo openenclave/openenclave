@@ -21,6 +21,7 @@
 #include <sys/uio.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include "../../common/oe_host_socket.h"
 #include "../host/strings.h"
 #include "syscall_u.h"
 
@@ -792,25 +793,6 @@ int oe_syscall_kill_ocall(int pid, int signum)
 **==============================================================================
 */
 
-#define GETADDRINFO_HANDLE_MAGIC 0xed11d13a
-
-typedef struct _getaddrinfo_handle
-{
-    uint32_t magic;
-    struct addrinfo* res;
-    struct addrinfo* next;
-} getaddrinfo_handle_t;
-
-static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
-{
-    getaddrinfo_handle_t* handle = (getaddrinfo_handle_t*)handle_;
-
-    if (!handle || handle->magic != GETADDRINFO_HANDLE_MAGIC || !handle->res)
-        return NULL;
-
-    return handle;
-}
-
 int oe_syscall_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
@@ -870,7 +852,7 @@ int oe_syscall_getaddrinfo_read_ocall(
     size_t* ai_canonnamelen,
     char* ai_canonname)
 {
-    int err_no = OE_EFAIL;
+    int err_no = 0;
     int ret = _getaddrinfo_read(
         handle_,
         ai_flags,

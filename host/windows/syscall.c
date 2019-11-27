@@ -27,6 +27,7 @@
 // clang-format on
 
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/internal/atomic.h>
 #include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/internal/syscall/dirent.h>
 #include <openenclave/internal/syscall/unistd.h>
@@ -47,6 +48,133 @@ struct tab_entry
     int key;
     int val;
 };
+
+static struct tab_entry winerr2errno[] = {
+    {ERROR_ACCESS_DENIED, OE_EACCES},
+    {ERROR_ACTIVE_CONNECTIONS, OE_EAGAIN},
+    {ERROR_ALREADY_EXISTS, OE_EEXIST},
+    {ERROR_BAD_DEVICE, OE_ENODEV},
+    {ERROR_BAD_EXE_FORMAT, OE_ENOEXEC},
+    {ERROR_BAD_NETPATH, OE_ENOENT},
+    {ERROR_BAD_NET_NAME, OE_ENOENT},
+    {ERROR_BAD_NET_RESP, OE_ENOSYS},
+    {ERROR_BAD_PATHNAME, OE_ENOENT},
+    {ERROR_BAD_PIPE, OE_EINVAL},
+    {ERROR_BAD_UNIT, OE_ENODEV},
+    {ERROR_BAD_USERNAME, OE_EINVAL},
+    {ERROR_BEGINNING_OF_MEDIA, OE_EIO},
+    {ERROR_BROKEN_PIPE, OE_EPIPE},
+    {ERROR_BUSY, OE_EBUSY},
+    {ERROR_BUS_RESET, OE_EIO},
+    {ERROR_CALL_NOT_IMPLEMENTED, OE_ENOSYS},
+    {ERROR_CANCELLED, OE_EINTR},
+    {ERROR_CANNOT_MAKE, OE_EPERM},
+    {ERROR_CHILD_NOT_COMPLETE, OE_EBUSY},
+    {ERROR_COMMITMENT_LIMIT, OE_EAGAIN},
+    {ERROR_CONNECTION_REFUSED, OE_ECONNREFUSED},
+    {ERROR_CRC, OE_EIO},
+    {ERROR_DEVICE_DOOR_OPEN, OE_EIO},
+    {ERROR_DEVICE_IN_USE, OE_EAGAIN},
+    {ERROR_DEVICE_REQUIRES_CLEANING, OE_EIO},
+    {ERROR_DEV_NOT_EXIST, OE_ENOENT},
+    {ERROR_DIRECTORY, OE_ENOTDIR},
+    {ERROR_DIR_NOT_EMPTY, OE_ENOTEMPTY},
+    {ERROR_DISK_CORRUPT, OE_EIO},
+    {ERROR_DISK_FULL, OE_ENOSPC},
+    {ERROR_DS_GENERIC_ERROR, OE_EIO},
+    {ERROR_DUP_NAME, OE_ENOTUNIQ},
+    {ERROR_EAS_DIDNT_FIT, OE_ENOSPC},
+    {ERROR_EAS_NOT_SUPPORTED, OE_ENOTSUP},
+    {ERROR_EA_LIST_INCONSISTENT, OE_EINVAL},
+    {ERROR_EA_TABLE_FULL, OE_ENOSPC},
+    {ERROR_END_OF_MEDIA, OE_ENOSPC},
+    {ERROR_EOM_OVERFLOW, OE_EIO},
+    {ERROR_EXE_MACHINE_TYPE_MISMATCH, OE_ENOEXEC},
+    {ERROR_EXE_MARKED_INVALID, OE_ENOEXEC},
+    {ERROR_FILEMARK_DETECTED, OE_EIO},
+    {ERROR_FILENAME_EXCED_RANGE, OE_ENAMETOOLONG},
+    {ERROR_FILE_CORRUPT, OE_EEXIST},
+    {ERROR_FILE_EXISTS, OE_EEXIST},
+    {ERROR_FILE_INVALID, OE_ENXIO},
+    {ERROR_FILE_NOT_FOUND, OE_ENOENT},
+    {ERROR_HANDLE_DISK_FULL, OE_ENOSPC},
+    {ERROR_HANDLE_EOF, OE_ENODATA},
+    {ERROR_INVALID_ADDRESS, OE_EINVAL},
+    {ERROR_INVALID_AT_INTERRUPT_TIME, OE_EINTR},
+    {ERROR_INVALID_BLOCK_LENGTH, OE_EIO},
+    {ERROR_INVALID_DATA, OE_EINVAL},
+    {ERROR_INVALID_DRIVE, OE_ENODEV},
+    {ERROR_INVALID_EA_NAME, OE_EINVAL},
+    {ERROR_INVALID_EXE_SIGNATURE, OE_ENOEXEC},
+    {ERROR_INVALID_FUNCTION, OE_EBADRQC},
+    {ERROR_INVALID_HANDLE, OE_EBADF},
+    {ERROR_INVALID_NAME, OE_ENOENT},
+    {ERROR_INVALID_PARAMETER, OE_EINVAL},
+    {ERROR_INVALID_SIGNAL_NUMBER, OE_EINVAL},
+    {ERROR_IOPL_NOT_ENABLED, OE_ENOEXEC},
+    {ERROR_IO_DEVICE, OE_EIO},
+    {ERROR_IO_INCOMPLETE, OE_EAGAIN},
+    {ERROR_IO_PENDING, OE_EAGAIN},
+    {ERROR_LOCK_VIOLATION, OE_EBUSY},
+    {ERROR_MAX_THRDS_REACHED, OE_EAGAIN},
+    {ERROR_META_EXPANSION_TOO_LONG, OE_EINVAL},
+    {ERROR_MOD_NOT_FOUND, OE_ENOENT},
+    {ERROR_MORE_DATA, OE_EMSGSIZE},
+    {ERROR_NEGATIVE_SEEK, OE_EINVAL},
+    {ERROR_NETNAME_DELETED, OE_ENOENT},
+    {ERROR_NOACCESS, OE_EFAULT},
+    {ERROR_NONE_MAPPED, OE_EINVAL},
+    {ERROR_NONPAGED_SYSTEM_RESOURCES, OE_EAGAIN},
+    {ERROR_NOT_CONNECTED, OE_ENOLINK},
+    {ERROR_NOT_ENOUGH_MEMORY, OE_ENOMEM},
+    {ERROR_NOT_ENOUGH_QUOTA, OE_EIO},
+    {ERROR_NOT_OWNER, OE_EPERM},
+    {ERROR_NOT_READY, OE_ENOMEDIUM},
+    {ERROR_NOT_SAME_DEVICE, OE_EXDEV},
+    {ERROR_NOT_SUPPORTED, OE_ENOSYS},
+    {ERROR_NO_DATA, OE_EPIPE},
+    {ERROR_NO_DATA_DETECTED, OE_EIO},
+    {ERROR_NO_MEDIA_IN_DRIVE, OE_ENOMEDIUM},
+    {ERROR_NO_MORE_FILES, OE_ENFILE},
+    {ERROR_NO_MORE_ITEMS, OE_ENFILE},
+    {ERROR_NO_MORE_SEARCH_HANDLES, OE_ENFILE},
+    {ERROR_NO_PROC_SLOTS, OE_EAGAIN},
+    {ERROR_NO_SIGNAL_SENT, OE_EIO},
+    {ERROR_NO_SYSTEM_RESOURCES, OE_EFBIG},
+    {ERROR_NO_TOKEN, OE_EINVAL},
+    {ERROR_OPEN_FAILED, OE_EIO},
+    {ERROR_OPEN_FILES, OE_EAGAIN},
+    {ERROR_OUTOFMEMORY, OE_ENOMEM},
+    {ERROR_PAGED_SYSTEM_RESOURCES, OE_EAGAIN},
+    {ERROR_PAGEFILE_QUOTA, OE_EAGAIN},
+    {ERROR_PATH_NOT_FOUND, OE_ENOENT},
+    {ERROR_PIPE_BUSY, OE_EBUSY},
+    {ERROR_PIPE_CONNECTED, OE_EBUSY},
+    {ERROR_PIPE_LISTENING, OE_ECOMM},
+    {ERROR_PIPE_NOT_CONNECTED, OE_ECOMM},
+    {ERROR_POSSIBLE_DEADLOCK, OE_EDEADLOCK},
+    {ERROR_PRIVILEGE_NOT_HELD, OE_EPERM},
+    {ERROR_PROCESS_ABORTED, OE_EFAULT},
+    {ERROR_PROC_NOT_FOUND, OE_ESRCH},
+    {ERROR_REM_NOT_LIST, OE_ENONET},
+    {ERROR_SECTOR_NOT_FOUND, OE_EINVAL},
+    {ERROR_SEEK, OE_EINVAL},
+    {ERROR_SERVICE_REQUEST_TIMEOUT, OE_EBUSY},
+    {ERROR_SETMARK_DETECTED, OE_EIO},
+    {ERROR_SHARING_BUFFER_EXCEEDED, OE_ENOLCK},
+    {ERROR_SHARING_VIOLATION, OE_EBUSY},
+    {ERROR_SIGNAL_PENDING, OE_EBUSY},
+    {ERROR_SIGNAL_REFUSED, OE_EIO},
+    {ERROR_SXS_CANT_GEN_ACTCTX, OE_ELIBBAD},
+    {ERROR_THREAD_1_INACTIVE, OE_EINVAL},
+    {ERROR_TIMEOUT, OE_EBUSY},
+    {ERROR_TOO_MANY_LINKS, OE_EMLINK},
+    {ERROR_TOO_MANY_OPEN_FILES, OE_EMFILE},
+    {ERROR_UNEXP_NET_ERR, OE_EIO},
+    {ERROR_WAIT_NO_CHILDREN, OE_ECHILD},
+    {ERROR_WORKING_SET_QUOTA, OE_EAGAIN},
+    {ERROR_WRITE_PROTECT, OE_EROFS},
+    {0, 0}};
 
 static struct tab_entry winsock2errno[] = {
     {WSAEINTR, OE_EINTR},
@@ -147,6 +275,11 @@ static int _do_lookup(int key, int fallback, struct tab_entry* table)
     } while (pent->val != 0);
 
     return fallback;
+}
+
+static int _winerr_to_errno(int winerr)
+{
+    return _do_lookup(winerr, OE_EINVAL, winerr2errno);
 }
 
 static int _winsockerr_to_errno(DWORD winsockerr)
@@ -466,9 +599,12 @@ oe_host_fd_t _make_socket_fd(SOCKET sock)
     {
         oe_socket_fd_t* socket_fd =
             (oe_socket_fd_t*)malloc(sizeof(oe_socket_fd_t));
-        socket_fd->magic = OE_SOCKET_FD_MAGIC;
-        socket_fd->socket = sock;
-        fd = (oe_host_fd_t)socket_fd;
+        if (socket_fd)
+        {
+            socket_fd->magic = OE_SOCKET_FD_MAGIC;
+            socket_fd->socket = sock;
+            fd = (oe_host_fd_t)socket_fd;
+        }
     }
     return fd;
 }
@@ -486,18 +622,30 @@ static oe_host_fd_t _dup_socket(oe_host_fd_t oldfd)
     oe_socket_fd_t* old_socket_fd = (oe_socket_fd_t*)oldfd;
     if (old_socket_fd && old_socket_fd->magic == OE_SOCKET_FD_MAGIC)
     {
-        oe_socket_fd_t* new_socket_fd =
-            (oe_socket_fd_t*)malloc(sizeof(oe_socket_fd_t));
-        if (new_socket_fd)
+        // Duplicate socket
+        WSAPROTOCOL_INFO protocolInfo;
+        int ret = WSADuplicateSocket(
+            old_socket_fd->socket, GetCurrentProcessId(), &protocolInfo);
+        if (ret == SOCKET_ERROR)
         {
-            *new_socket_fd = *old_socket_fd;
-            return (oe_host_fd_t)(uint64_t)new_socket_fd;
+            _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         }
-        else
+
+        SOCKET sock = WSASocket(
+            protocolInfo.iAddressFamily,
+            protocolInfo.iSocketType,
+            protocolInfo.iProtocol,
+            &protocolInfo,
+            0,
+            0);
+        if (sock == INVALID_SOCKET)
         {
-            _set_errno(OE_ENOMEM);
+            _set_errno(_winsockerr_to_errno(WSAGetLastError()));
         }
+
+        return _make_socket_fd(sock);
     }
+
     return -1;
 }
 
@@ -507,13 +655,12 @@ static int _wsa_startup()
     WSADATA wsaData;
     int ret = 0;
 
-    if (!wsa_init_done)
+    if (oe_atomic_compare_and_swap(
+            &wsa_init_done, (int64_t) false, (int64_t) true))
     {
         ret = WSAStartup(2, &wsaData);
         if (ret != 0)
             goto done;
-
-        wsa_init_done = TRUE;
     }
 
 done:
@@ -1181,25 +1328,46 @@ int oe_syscall_getgroups_ocall(size_t size, unsigned int* list)
 
 int oe_syscall_uname_ocall(struct oe_utsname* buf)
 {
+    int ret = -1;
+
+    if (!buf)
+    {
+        _set_errno(OE_EINVAL);
+        goto done;
+    }
+
+    // Get domain name
+    DWORD size = sizeof(buf->domainname);
+    if (!GetComputerNameEx(ComputerNameDnsDomain, buf->domainname, &size))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        goto done;
+    }
+
+    // Get hostname
+    size = sizeof(buf->nodename);
+    if (!GetComputerNameEx(ComputerNameDnsHostname, buf->nodename, &size))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        goto done;
+    }
+
     // Based on
     // https://docs.microsoft.com/en-us/windows/win32/sysinfo/getting-the-system-version
     // OE SDK is supported only on WindowsServer and Win10
     if (IsWindowsServer())
     {
-        sprintf(buf->nodename, "(unknown)");
-        sprintf(buf->domainname, "(none)");
         sprintf(buf->sysname, "WindowsServer");
         sprintf(buf->version, "2016OrAbove");
-        return 0;
     }
     else if (IsWindows10OrGreater())
     {
-        sprintf(buf->nodename, "(unknown)");
-        sprintf(buf->domainname, "(none)");
         sprintf(buf->sysname, "Windows10OrGreater");
         sprintf(buf->version, "10OrAbove");
-        return 0;
     }
 
-    return -1;
+    ret = 0;
+
+done:
+    return ret;
 }

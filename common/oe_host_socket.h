@@ -5,8 +5,11 @@
 #define _OE_HOST_SOCKET_H
 
 #include <openenclave/corelibc/bits/types.h>
+#include <openenclave/corelibc/errno.h>
+#include <openenclave/internal/syscall/sys/socket.h>
 #include <openenclave/internal/syscall/types.h>
 #include <stdint.h>
+#include <string.h>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -14,14 +17,32 @@
 #include <sys/socket.h>
 #endif
 
+OE_EXTERNC_BEGIN
+
 #define GETADDRINFO_HANDLE_MAGIC 0xed11d13a
 
 typedef struct _getaddrinfo_handle
 {
-    uint32_t magic;
+    uint64_t magic;
     struct addrinfo* res;
     struct addrinfo* next;
 } getaddrinfo_handle_t;
+
+OE_INLINE getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_);
+
+int _getaddrinfo_read(
+    uint64_t handle_,
+    int* ai_flags,
+    int* ai_family,
+    int* ai_socktype,
+    int* ai_protocol,
+    oe_socklen_t ai_addrlen_in,
+    oe_socklen_t* ai_addrlen,
+    struct oe_sockaddr* ai_addr,
+    size_t ai_canonnamelen_in,
+    size_t* ai_canonnamelen,
+    char* ai_canonname,
+    int* err_no);
 
 OE_INLINE getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
 {
@@ -33,7 +54,7 @@ OE_INLINE getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
     return handle;
 }
 
-OE_INLINE int _getaddrinfo_read(
+int _getaddrinfo_read(
     uint64_t handle_,
     int* ai_flags,
     int* ai_family,
@@ -104,20 +125,12 @@ OE_INLINE int _getaddrinfo_read(
 
         if (ai_addr)
         {
-            *err_no = memcpy_s(ai_addr, ai_addrlen_in, p->ai_addr, *ai_addrlen);
-            if (*err_no != 0)
-                goto done;
+            memcpy(ai_addr, p->ai_addr, *ai_addrlen);
         }
 
         if (ai_canonname && p->ai_canonname)
         {
-            *err_no = memcpy_s(
-                ai_canonname,
-                ai_canonnamelen_in,
-                p->ai_canonname,
-                *ai_canonnamelen);
-            if (*err_no != 0)
-                goto done;
+            memcpy(ai_canonname, p->ai_canonname, *ai_canonnamelen);
         }
 
         handle->next = handle->next->ai_next;
@@ -135,5 +148,7 @@ OE_INLINE int _getaddrinfo_read(
 done:
     return ret;
 }
+
+OE_EXTERNC_END
 
 #endif // _OE_HOST_SOCKET_H

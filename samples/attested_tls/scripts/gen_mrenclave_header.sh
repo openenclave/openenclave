@@ -21,11 +21,15 @@ printf '\n{' >> "$destfile"
 while read -r line; do
   if [[ $line == mrenclave=* ]]; then
     read -r mrenclave < <(echo "$line" | cut -d'=' --fields=2)
+    if [[ "${mrenclave: -1}" = $'\r' ]]; then
+      mrenclave="${mrenclave:0: -1}"
+    fi
+
     for (( i=0; i<${#mrenclave}; i=i+2)); do
-      echo "0x${mrenclave:$i:2}" >> "$destfile"
+      echo -n "0x${mrenclave:$i:2}" >> "$destfile"
       index=$((${#mrenclave} - 2))
       if [ $i -lt $index ]; then
-        printf "," >> "$destfile"
+        printf ",\n" >> "$destfile"
       fi
     done
   fi
@@ -37,4 +41,3 @@ cat >> "$destfile" << EOF
 
 #endif /* SAMPLES_ATTESTED_TLS_SERVER_UNIQUE_ID_H */
 EOF
-
