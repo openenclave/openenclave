@@ -21,7 +21,7 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
 {
     oe_result_t result = OE_VERIFY_FAILED;
 
-    (void)arg;
+    OE_UNUSED(arg);
     OE_TRACE_INFO("enclave_identity_verifier is called with parsed report:\n");
 
     // Check the enclave's security version
@@ -98,19 +98,19 @@ oe_result_t generate_key_pair(
     else if (key_type == MBEDTLS_PK_RSA)
     {
         int res = -1;
-        mbedtls_ctr_drbg_context ctr_drbg_contex;
+        mbedtls_ctr_drbg_context ctr_drbg_context;
         mbedtls_entropy_context entropy_context;
         mbedtls_pk_context pk_context;
         size_t local_public_key_size = 512;
         size_t local_private_key_size = 2048;
 
-        mbedtls_ctr_drbg_init(&ctr_drbg_contex);
+        mbedtls_ctr_drbg_init(&ctr_drbg_context);
         mbedtls_entropy_init(&entropy_context);
         mbedtls_pk_init(&pk_context);
 
         // Initialize entropy.
         res = mbedtls_ctr_drbg_seed(
-            &ctr_drbg_contex, mbedtls_entropy_func, &entropy_context, NULL, 0);
+            &ctr_drbg_context, mbedtls_entropy_func, &entropy_context, NULL, 0);
         if (res != 0)
         {
             OE_TRACE_ERROR("mbedtls_ctr_drbg_seed failed.");
@@ -131,7 +131,7 @@ oe_result_t generate_key_pair(
         res = mbedtls_rsa_gen_key(
             mbedtls_pk_rsa(pk_context),
             mbedtls_ctr_drbg_random,
-            &ctr_drbg_contex,
+            &ctr_drbg_context,
             2048,
             65537);
         if (res != 0)
@@ -185,7 +185,7 @@ oe_result_t generate_key_pair(
 
     clean_rsa:
         mbedtls_pk_free(&pk_context);
-        mbedtls_ctr_drbg_free(&ctr_drbg_contex);
+        mbedtls_ctr_drbg_free(&ctr_drbg_context);
         mbedtls_entropy_free(&entropy_context);
     }
     else
@@ -299,15 +299,6 @@ oe_result_t get_tls_cert_signed_with_rsa_key(
     size_t* cert_size)
 {
     return get_tls_cert_signed_with_key(MBEDTLS_PK_RSA, cert, cert_size);
-}
-
-oe_result_t dump_revocation_info(
-    unsigned char** revocation_info_args,
-    size_t* revocation_info_args_size)
-{
-    (void)revocation_info_args;
-    (void)revocation_info_args_size;
-    return OE_OK;
 }
 
 OE_SET_ENCLAVE_SGX(

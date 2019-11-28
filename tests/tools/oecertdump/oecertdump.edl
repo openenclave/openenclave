@@ -3,10 +3,6 @@
 
 enclave {
     trusted {
-        public oe_result_t dump_revocation_info(
-            [out] unsigned char **revocation_info_args,
-            [out] size_t *revocation_info_args_size);
-
         public oe_result_t get_tls_cert_signed_with_ec_key(
             [out] unsigned char** data,
             [out] size_t* data_size);

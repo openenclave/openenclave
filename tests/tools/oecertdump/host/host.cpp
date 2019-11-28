@@ -18,10 +18,7 @@
 #include <openssl/x509.h>
 #endif
 
-#include "../../../../common/sgx/quote.h"
-#include "../../../../common/sgx/revocation.h"
-
-#include "../../../../host/sgx/sgxquoteprovider.h"
+#include "sgx_quote.h"
 
 #ifdef OE_LINK_SGX_DCAP_QL
 
@@ -38,37 +35,17 @@ typedef struct _input_params
 } input_params_t;
 
 static input_params_t _params;
-static FILE* log_file = NULL;
 
-void log(const char* fmt, ...)
-{
-    char message[4096];
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(message, sizeof(message), fmt, args);
-    va_end(args);
+FILE* log_file = NULL;
 
-    // ensure buf is always null-terminated
-    message[sizeof(message) - 1] = 0;
-
-    if (log_file)
-    {
-        fprintf(log_file, "%s", message);
-    }
-    else
-    {
-        printf("%s", message);
-    }
-}
-
-// This is the identity validation callback. An TLS connecting party (client or
+// This is the identity validation callback. A TLS connecting party (client or
 // server) can verify the passed in "identity" information to decide whether to
 // accept an connection request
 oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
 {
     oe_result_t result = OE_VERIFY_FAILED;
 
-    (void)arg;
+    OE_UNUSED(arg);
     log("enclave_identity_verifier is called with parsed report:\n");
 
     // Check the enclave's security version
@@ -101,32 +78,6 @@ done:
     return result;
 }
 
-// Azure dcap client log callback to this function.
-void oecertdump_quote_provider_log(
-    sgx_ql_log_level_t level,
-    const char* message)
-{
-    const char* level_string = level == 0 ? "ERROR" : "INFO";
-
-    log("[%s]: %s\n", level_string, message);
-}
-
-// Set Azure dcap calient log callback
-void _set_log_callback()
-{
-#if defined(__linux__)
-    extern oe_sgx_quote_provider_t provider;
-
-    sgx_ql_set_logging_function_t set_log_fcn =
-        (sgx_ql_set_logging_function_t)dlsym(
-            provider.handle, "sgx_ql_set_logging_function");
-    if (set_log_fcn != NULL)
-    {
-        set_log_fcn(oecertdump_quote_provider_log);
-    }
-#endif
-}
-
 void output_certificate(const uint8_t* data, size_t data_len)
 {
 #if defined(__linux__)
@@ -145,8 +96,8 @@ void output_certificate(const uint8_t* data, size_t data_len)
         fprintf(log_file, "\n");
     }
 #endif
-    (void)data;
-    (void)data_len;
+    OE_UNUSED(data);
+    OE_UNUSED(data_len);
 }
 
 void validate_certificate(uint8_t* cert, size_t cert_size)
@@ -212,102 +163,6 @@ exit:
     // deallcate resources
     if (cert)
         free(cert);
-
-    return result;
-}
-
-static oe_result_t _gen_report(oe_enclave_t* enclave)
-{
-    size_t report_size = OE_MAX_REPORT_SIZE;
-    uint8_t* remote_report = NULL;
-
-    log("========== Getting report\n");
-
-    oe_result_t result = oe_get_report(
-        enclave,
-        OE_REPORT_FLAGS_REMOTE_ATTESTATION,
-        NULL, // opt_params must be null
-        0,
-        (uint8_t**)&remote_report,
-        &report_size);
-    if (result == OE_OK)
-    {
-        log("========== Got report, size = %zu\n\n", report_size);
-
-        oe_report_header_t* header = (oe_report_header_t*)remote_report;
-        sgx_quote_t* quote = (sgx_quote_t*)header->report;
-        uint64_t quote_size = header->report_size;
-
-        log("CPU_SVN: '");
-        for (uint64_t n = 0; n < SGX_CPUSVN_SIZE; n++)
-        {
-            log("%02x", quote->report_body.cpusvn[n]);
-        }
-        log("'\nQEID: '");
-        for (uint64_t n = 0; n < 16; n++)
-        {
-            log("%02x", quote->user_data[n]);
-        }
-        log("'\n");
-
-        // Print endorsements
-        {
-            uint8_t* endorsements_data = NULL;
-            size_t endorsements_data_size = 0;
-
-            result = oe_get_sgx_endorsements(
-                (const uint8_t*)quote,
-                quote_size,
-                &endorsements_data,
-                &endorsements_data_size);
-            if (result != OE_OK)
-            {
-                log("ERROR: Failed to get endorsements\n");
-                goto exit;
-            }
-
-            log("========== Got endorsements, size = %zu\n",
-                endorsements_data_size);
-            oe_sgx_endorsements_t endorsements;
-            result = oe_parse_sgx_endorsements(
-                (oe_endorsements_t*)endorsements_data,
-                endorsements_data_size,
-                &endorsements);
-
-            log("Revocation TCB_INFO:\n");
-            oe_sgx_endorsement_item tcb_info =
-                endorsements.items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO];
-            log("%s\n\n", tcb_info.data);
-        }
-
-        // Verify report
-        {
-            log("========== Verifying report\n");
-
-            oe_report_t parsed_report;
-            result = oe_verify_report(
-                NULL, remote_report, report_size, &parsed_report);
-            if (result != OE_OK)
-            {
-                log("Failed to verify report. result=%u (%s)\n",
-                    result,
-                    oe_result_str(result));
-                goto exit;
-            }
-            else
-            {
-                log("========== Report verified\n\n");
-            }
-        }
-    }
-    else
-    {
-        log("Failed to create report. Error: %s\n", oe_result_str(result));
-    }
-
-exit:
-    if (remote_report)
-        oe_free_report(remote_report);
 
     return result;
 }
@@ -382,7 +237,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_FAILURE;
 
-    result = _gen_report(enclave);
+    result = gen_report(enclave);
     if (result != OE_OK)
         return result;
 
@@ -437,9 +292,7 @@ int main(int argc, const char* argv[])
         goto exit;
     }
 
-    // Initialize quote provider and set log callback
-    oe_initialize_quote_provider();
-    _set_log_callback();
+    set_log_callback();
 
     if ((result = _process_params(enclave)) != OE_OK)
     {
