@@ -2,7 +2,7 @@ oecertdump
 =====
 
 oecertdump is a utility that generates and validates reports and certificates.
-Generation and validation logs are saved to a log file specified by --out option.
+Generation and validation logs are saved to a log file specified by the --out option.
 Default log filename is "oecertdump_out.log".
 
 Usage: oecertdump ENCLAVE_PATH Options
