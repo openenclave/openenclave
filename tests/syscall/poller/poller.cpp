@@ -377,7 +377,11 @@ int epoll_poller::wait(std::vector<event_t>& events)
 
     events.clear();
 
-    int n = epoll_wait(_epfd, epoll_events, MAX_EPOLL_EVENTS, -1);
+    int n;
+    do
+    {
+        n = epoll_wait(_epfd, epoll_events, MAX_EPOLL_EVENTS, -1);
+    } while (n < 0 && errno == EINTR);
 
     if (n < 0)
         return -1;
