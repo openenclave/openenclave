@@ -500,6 +500,34 @@ done:
     return ret;
 }
 
+ssize_t oe_pread(int fd, void* buf, size_t count, oe_off_t offset)
+{
+    ssize_t ret = -1;
+    oe_fd_t* file;
+
+    if (!(file = oe_fdtable_get(fd, OE_FD_TYPE_FILE)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = file->ops.file.pread(file, buf, count, offset);
+
+done:
+    return ret;
+}
+
+ssize_t oe_pwrite(int fd, const void* buf, size_t count, oe_off_t offset)
+{
+    ssize_t ret = -1;
+    oe_fd_t* file;
+
+    if (!(file = oe_fdtable_get(fd, OE_FD_TYPE_FILE)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = file->ops.file.pwrite(file, buf, count, offset);
+
+done:
+    return ret;
+}
+
 ssize_t oe_readv(int fd, const struct oe_iovec* iov, int iovcnt)
 {
     ssize_t ret = -1;

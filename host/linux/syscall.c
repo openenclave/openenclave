@@ -153,6 +153,28 @@ oe_off_t oe_syscall_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
     return lseek((int)fd, offset, whence);
 }
 
+ssize_t oe_syscall_pread_ocall(
+    oe_host_fd_t fd,
+    void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    errno = 0;
+
+    return pread((int)fd, buf, count, offset);
+}
+
+ssize_t oe_syscall_pwrite_ocall(
+    oe_host_fd_t fd,
+    const void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    errno = 0;
+
+    return pwrite((int)fd, buf, count, offset);
+}
+
 int oe_syscall_close_ocall(oe_host_fd_t fd)
 {
     errno = 0;

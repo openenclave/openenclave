@@ -159,6 +159,84 @@ static void test_read_file(FILE_SYSTEM& fs, const char* tmp_dir)
 }
 
 template <class FILE_SYSTEM>
+static void test_pread_file(FILE_SYSTEM& fs, const char* tmp_dir)
+{
+    char path[OE_PAGE_SIZE];
+    typename FILE_SYSTEM::file_handle file;
+    char buf[OE_PAGE_SIZE];
+
+    printf("--- %s()\n", __FUNCTION__);
+
+    mkpath(path, tmp_dir, "alphabet");
+
+    /* Open the file for input. */
+    {
+        const int flags = OE_O_RDONLY;
+        file = fs.open(path, flags, 0);
+        OE_TEST(file);
+    }
+
+    /* pread the whole file. */
+    {
+        ssize_t n = fs.pread(file, buf, sizeof(buf), 0);
+        OE_TEST(n == sizeof(ALPHABET));
+        OE_TEST(memcmp(buf, ALPHABET, sizeof(ALPHABET)) == 0);
+    }
+
+    /* read "ab" */
+    {
+        OE_TEST(fs.read(file, buf, 2) == 2);
+        OE_TEST(memcmp(buf, "ab", 2) == 0);
+    }
+
+    /* pread "lmnop" */
+    {
+        OE_TEST(fs.pread(file, buf, 5, 11) == 5);
+        OE_TEST(memcmp(buf, "lmnop", 5) == 0);
+    }
+
+    /* read "cd" (pread should not have changed file offset) */
+    {
+        OE_TEST(fs.read(file, buf, 2) == 2);
+        OE_TEST(memcmp(buf, "cd", 2) == 0);
+    }
+
+    /* Close the file. */
+    OE_TEST(fs.close(file) == 0);
+}
+
+template <class FILE_SYSTEM>
+static void test_pwrite_file(FILE_SYSTEM& fs, const char* tmp_dir)
+{
+    char path[OE_PAGE_SIZE];
+    typename FILE_SYSTEM::file_handle file;
+    char buf[OE_PAGE_SIZE];
+
+    printf("--- %s()\n", __FUNCTION__);
+
+    mkpath(path, tmp_dir, "alphabet");
+
+    /* Open the file for input/output. */
+    {
+        const int flags = O_RDWR;
+        file = fs.open(path, flags, 0);
+        OE_TEST(file);
+    }
+
+    /* write "xx" at offset 3 */
+    OE_TEST(fs.pwrite(file, "xx", 2, 3) == 2);
+
+    /* read "abcxxfg" */
+    {
+        OE_TEST(fs.read(file, buf, 7) == 7);
+        OE_TEST(memcmp(buf, "abcxxfg", 7) == 0);
+    }
+
+    /* Close the file. */
+    OE_TEST(fs.close(file) == 0);
+}
+
+template <class FILE_SYSTEM>
 static void test_stat_file(FILE_SYSTEM& fs, const char* tmp_dir)
 {
     char path[OE_PAGE_SIZE];
@@ -343,6 +421,8 @@ void test_all(FILE_SYSTEM& fs, const char* tmp_dir)
     cleanup(fs, tmp_dir);
     test_create_file(fs, tmp_dir);
     test_read_file(fs, tmp_dir);
+    test_pread_file(fs, tmp_dir);
+    test_pwrite_file(fs, tmp_dir);
     test_stat_file(fs, tmp_dir);
     test_link_file(fs, tmp_dir);
     test_rename_file(fs, tmp_dir);

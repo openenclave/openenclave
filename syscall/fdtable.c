@@ -166,6 +166,8 @@ static void _assert_fd(oe_fd_t* desc)
         case OE_FD_TYPE_FILE:
         {
             oe_assert(desc->ops.file.lseek);
+            oe_assert(desc->ops.file.pread);
+            oe_assert(desc->ops.file.pwrite);
             oe_assert(desc->ops.file.getdents64);
             break;
         }

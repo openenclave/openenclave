@@ -59,6 +59,20 @@ enclave
             int whence)
             propagate_errno;
 
+        ssize_t oe_syscall_pread_ocall(
+            oe_host_fd_t fd,
+            [out, size=count] void* buf,
+            size_t count,
+            oe_off_t offset)
+            propagate_errno;
+
+        ssize_t oe_syscall_pwrite_ocall(
+            oe_host_fd_t fd,
+            [in, size=count] const void* buf,
+            size_t count,
+            oe_off_t offset)
+            propagate_errno;
+
         int oe_syscall_close_ocall(
             oe_host_fd_t fd)
             propagate_errno;

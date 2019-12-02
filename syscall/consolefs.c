@@ -325,6 +325,42 @@ done:
     return ret;
 }
 
+static ssize_t _consolefs_pread(
+    oe_fd_t* file_,
+    void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    ssize_t ret = -1;
+
+    OE_UNUSED(file_);
+    OE_UNUSED(buf);
+    OE_UNUSED(count);
+    OE_UNUSED(offset);
+    OE_RAISE_ERRNO(OE_ESPIPE);
+
+done:
+    return ret;
+}
+
+static ssize_t _consolefs_pwrite(
+    oe_fd_t* file_,
+    const void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    ssize_t ret = -1;
+
+    OE_UNUSED(file_);
+    OE_UNUSED(buf);
+    OE_UNUSED(count);
+    OE_UNUSED(offset);
+    OE_RAISE_ERRNO(OE_ESPIPE);
+
+done:
+    return ret;
+}
+
 static int _consolefs_close(oe_fd_t* file_)
 {
     int ret = -1;
@@ -376,6 +412,8 @@ static oe_file_ops_t _ops = {
     .fd.close = _consolefs_close,
     .fd.get_host_fd = _consolefs_gethostfd,
     .lseek = _consolefs_lseek,
+    .pread = _consolefs_pread,
+    .pwrite = _consolefs_pwrite,
     .getdents64 = _consolefs_getdents64,
 };
 
