@@ -11,3 +11,9 @@ where Options are:
     --out FILENAME        : specify output filename.
 
 Example: host/oecertdump enc/oecertdump_enc --out myoutput.log
+
+If the validation succeeds, oecertdump returns 0 and prints success message to stdout. For example,
+    "oecertdump succeeded. Log file oecertdump_out.log created."
+
+If the validation fails, oecertdump returns non zero and prints failure message to stdout. For example,
+    "Failed to process parameters."

@@ -14,3 +14,7 @@ target_include_directories(oecertdump PRIVATE
   -I/usr/include/openssl)
 
 target_link_libraries(oecertdump oehost)
+
+if(HAS_QUOTE_PROVIDER)
+    target_compile_definitions(oecertdump PRIVATE OE_LINK_SGX_DCAP_QL)
+endif()

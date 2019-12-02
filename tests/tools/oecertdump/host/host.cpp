@@ -124,7 +124,7 @@ static oe_result_t _gen_cert(oe_enclave_t* enclave)
         enclave, &ecall_result, &cert, &cert_size);
     if ((result != OE_OK) || (ecall_result != OE_OK))
     {
-        log("Failed to create certificate. Enclave: %s, Host: %s\n",
+        log("Failed to create EC certificate. Enclave: %s, Host: %s\n",
             oe_result_str(ecall_result),
             oe_result_str(result));
 
@@ -147,7 +147,7 @@ static oe_result_t _gen_cert(oe_enclave_t* enclave)
         enclave, &ecall_result, &cert, &cert_size);
     if ((result != OE_OK) || (ecall_result != OE_OK))
     {
-        log("Failed to create certificate. Enclave: %s, Host: %s\n",
+        log("Failed to create RSA certificate. Enclave: %s, Host: %s\n",
             oe_result_str(ecall_result),
             oe_result_str(result));
 
@@ -259,7 +259,7 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
-        printf("oecert not supported in simulation mode.\n");
+        printf("oecertdump not supported in simulation mode.\n");
         goto exit;
     }
 
@@ -296,12 +296,16 @@ int main(int argc, const char* argv[])
 
     if ((result = _process_params(enclave)) != OE_OK)
     {
-        log("Failed to process parameters. result=%u (%s)\n",
+        printf(
+            "Failed to process parameters. result=%u (%s)\n",
             result,
             oe_result_str(result));
         ret = 1;
         goto exit;
     }
+
+    printf(
+        "oecertdump succeeded. Log file %s created.\n", _params.out_filename);
 
 exit:
     if (enclave)
@@ -318,6 +322,7 @@ exit:
     "OE_LINK_SGX_DCAP_QL is not set to ON.  This tool requires DCAP libraries."
     OE_UNUSED(argc);
     OE_UNUSED(argv);
+    printf("oecertdump requires DCAP libraries.\n");
 #endif
     return ret;
 }
