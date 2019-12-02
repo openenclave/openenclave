@@ -343,7 +343,7 @@ static ssize_t _hostsock_recv(
 
     if (buf)
     {
-        if (oe_memset_s(buf, sizeof(count), 0, sizeof(count)) != OE_OK)
+        if (oe_memset_s(buf, count, 0, count) != OE_OK)
             OE_RAISE_ERRNO(OE_EINVAL);
     }
 
