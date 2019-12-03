@@ -182,6 +182,7 @@ For example.
  */
 ```
 
+<a name="disable-doxygen"></a>
 ### Disabling Doxygen documentation from blocks of code
 
 To disable Doxygen documentation from blocks of code with `#defines` or
