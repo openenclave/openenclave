@@ -152,7 +152,8 @@ int main(int argc, const char* argv[])
         epc_size =
             ((regs.ecx & 0x0fffff000) |
              ((uint64_t)(regs.edx & 0x0fffff) << 32));
-        printf("EPC size on the platform: %lu\n", epc_size);
+        printf(
+            "EPC size on the platform: %llu\n", (unsigned long long)epc_size);
     }
     return 0;
 }

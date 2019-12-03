@@ -8,7 +8,7 @@
 
 oe_sgx_quote_provider_t provider = {0};
 
-static void _unload_quote_provider()
+static void _unload_quote_provider(void)
 {
     OE_TRACE_INFO("_unload_quote_provider dcap_quoteprov.dll\n");
     if (provider.handle)

@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <inttypes.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/elf.h>
@@ -179,7 +180,7 @@ void dump_enclave_properties(const oe_sgx_enclave_properties_t* props)
     bool debug = props->config.attributes & OE_SGX_FLAGS_DEBUG;
     printf("debug=%u\n", debug);
 
-    printf("xfrm=%lx\n", props->config.xfrm);
+    printf("xfrm=%" PRIx64 "\n", props->config.xfrm);
 
     printf(
         "num_heap_pages=%llu\n",

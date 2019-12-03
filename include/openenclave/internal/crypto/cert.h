@@ -340,7 +340,7 @@ oe_result_t oe_cert_find_extension(
  */
 oe_result_t oe_get_crl_distribution_points(
     const oe_cert_t* cert,
-    const char*** urls,
+    char*** urls,
     size_t* num_urls,
     uint8_t* buffer,
     size_t* buffer_size);

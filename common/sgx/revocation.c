@@ -191,7 +191,7 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
     oe_result_t result = OE_FAILURE;
     size_t buffer_size = 512;
     uint8_t* buffer = oe_malloc(buffer_size);
-    const char** urls = NULL;
+    char** urls = NULL;
     uint64_t num_urls = 0;
     size_t url_length = 0;
 

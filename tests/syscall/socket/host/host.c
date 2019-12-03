@@ -9,6 +9,7 @@
 #include "../../platform/linux.h"
 #endif
 
+#include <inttypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/types.h>
@@ -134,7 +135,7 @@ char* host_client(in_port_t port)
         if ((n = sock_recv(sockfd, recvBuff, sizeof(recvBuff), 0)) > 0)
         {
             recvBuff[n] = '\0';
-            printf("host finished reading: %ld bytes...\n", n);
+            printf("host finished reading: %" PRIu64 " bytes...\n", n);
             break;
         }
         else

@@ -57,6 +57,9 @@ static BOOL CALLBACK OnceHelper(
     _Inout_opt_ PVOID Parameter,
     _Out_opt_ PVOID* Context)
 {
+    OE_UNUSED(InitOnce);
+    OE_UNUSED(Context);
+
     ((void (*)(void))Parameter)();
     return TRUE;
 }

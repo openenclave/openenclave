@@ -1,6 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
@@ -12,17 +14,21 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
+#include "dupenv.h"
+#include "fopen.h"
 #include "hostthread.h"
 
-#define LOGGING_FORMAT_STRING "%s.%06ldZ [(%s)%s] tid(0x%lx) | %s"
+#define LOGGING_FORMAT_STRING "%s.%06ldZ [(%s)%s] tid(0x%llx) | %s"
 
 static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
     {"NONE", "FATAL", "ERROR", "WARN", "INFO", "VERBOSE"};
 static oe_mutex _log_lock = OE_H_MUTEX_INITIALIZER;
-static const char* _log_file_name = NULL;
-static const char* _custom_log_format = NULL;
-static const char* _log_all_streams = NULL;
-static const char* _log_escape = NULL;
+static char _log_file_name[OE_PATH_MAX];
+static char _custom_log_format[OE_PATH_MAX];
+static bool _use_log_file = false;
+static bool _use_custom_log_format = false;
+static bool _log_all_streams = false;
+static bool _log_escape = false;
 static const size_t MAX_ESCAPED_CHAR_LEN = 5; // e.g. u2605
 static const size_t MAX_ESCAPED_MSG_MULTIPLIER =
     7; // MAX_ESCAPED_CHAR_LEN + sizeof("\\\\")
@@ -33,7 +39,7 @@ static bool _initialized = false;
 static oe_log_level_t _env2log_level(void)
 {
     oe_log_level_t level = OE_LOG_LEVEL_ERROR;
-    const char* level_str = getenv("OE_LOG_LEVEL");
+    char* level_str = oe_dupenv("OE_LOG_LEVEL");
 
     if (level_str == NULL)
     {
@@ -64,33 +70,84 @@ static oe_log_level_t _env2log_level(void)
         level = OE_LOG_LEVEL_NONE;
     }
 done:
+    if (level_str)
+        free(level_str);
+
     return level;
 }
 
 void initialize_log_config()
 {
+    oe_result_t ret;
+    char* env_log_file = NULL;
+    char* env_log_format = NULL;
+    char* env_log_all_streams = NULL;
+    char* env_log_escape = NULL;
+
     if (!_initialized)
     {
         // inititalize if not already
         _log_level = _env2log_level();
-        _log_file_name = getenv("OE_LOG_DEVICE");
-        _custom_log_format = getenv("OE_LOG_FORMAT");
-        _log_all_streams = getenv("OE_LOG_ALL_STREAMS");
-        _log_escape = getenv("OE_LOG_JSON_ESCAPE");
-        if (_custom_log_format)
+        env_log_file = oe_dupenv("OE_LOG_DEVICE");
+        env_log_format = oe_dupenv("OE_LOG_FORMAT");
+        env_log_all_streams = oe_dupenv("OE_LOG_ALL_STREAMS");
+        env_log_escape = oe_dupenv("OE_LOG_JSON_ESCAPE");
+
+        if (env_log_format)
         {
             // check that custom log format string terminates with a line return
-            size_t len = strlen(_custom_log_format);
-            if (_custom_log_format[len - 1] != '\n')
+            size_t len = strlen(env_log_format);
+            if (env_log_format[len - 1] != '\n')
             {
                 fprintf(
                     stderr,
                     "%s\n",
                     "[ERROR] Custom log format does not end with a newline");
-                exit(1);
+                goto done;
             }
         }
         _initialized = true;
+    }
+
+done:
+    ret = OE_OK;
+
+    if (env_log_file)
+    {
+        ret = oe_strncpy_s(
+            _log_file_name, OE_PATH_MAX, env_log_file, strlen(env_log_file));
+        _use_log_file = true;
+
+        free(env_log_file);
+    }
+
+    if (env_log_format)
+    {
+        ret = oe_strncpy_s(
+            _custom_log_format,
+            OE_PATH_MAX,
+            env_log_format,
+            strlen(env_log_format));
+        _use_custom_log_format = true;
+        free(env_log_format);
+    }
+
+    if (env_log_all_streams)
+    {
+        _log_all_streams = true;
+        free(env_log_all_streams);
+    }
+
+    if (env_log_escape)
+    {
+        _log_escape = true;
+        free(env_log_escape);
+    }
+
+    if (!_initialized || ret != OE_OK)
+    {
+        fprintf(stderr, "%s\n", "[ERROR] Could not initialize logging.");
+        exit(1);
     }
 }
 
@@ -179,7 +236,7 @@ static void _write_message_to_stream(
         usecs,
         (is_enclave ? "E" : "H"),
         _log_level_strings[level],
-        oe_thread_self(),
+        (long long unsigned int)oe_thread_self(),
         message);
 }
 
@@ -283,13 +340,13 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
     // Take the log file lock.
     if (oe_mutex_lock(&_log_lock) == OE_OK)
     {
-        if (_log_all_streams || !_log_file_name)
+        if (_log_all_streams || !_use_log_file)
         {
             _write_message_to_stream(
                 stdout, is_enclave, time, usecs, level, message);
         }
 
-        if (!_log_file_name)
+        if (!_use_log_file)
         {
             // Release the log file lock.
             oe_mutex_unlock(&_log_lock);
@@ -299,7 +356,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
         if (!_log_creation_failed_before)
         {
             FILE* log_file = NULL;
-            log_file = fopen(_log_file_name, "a");
+            oe_fopen(&log_file, _log_file_name, "a");
             if (log_file == NULL)
             {
                 fprintf(
@@ -309,7 +366,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                 return;
             }
 
-            if (!_custom_log_format)
+            if (!_use_custom_log_format)
             {
                 _write_message_to_stream(
                     log_file, is_enclave, time, usecs, level, message);

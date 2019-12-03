@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/defs.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
 #include <time.h>

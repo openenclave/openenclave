@@ -14,8 +14,14 @@
 #pragma intrinsic(_InterlockedCompareExchangePointer)
 __int64 _InterlockedIncrement64(__int64* lpAddend);
 __int64 _InterlockedDecrement64(__int64* lpAddend);
-__int64 _InterlockedCompareExchange64(__int64* Dest, __int64 val, __int64 old);
-void* _InterlockedCompareExchangePointer(void** Dest, void* newptr, void* old);
+__int64 _InterlockedCompareExchange64(
+    __int64 volatile* Dest,
+    __int64 val,
+    __int64 old);
+void* _InterlockedCompareExchangePointer(
+    void* volatile* Dest,
+    void* newptr,
+    void* old);
 #endif
 
 /* Atomically increment **x** and return its new value */

@@ -223,6 +223,7 @@ list(APPEND PLATFORM_HOST_ONLY_SRC
   ../common/safecrt.c
   hexdump.c
   dupenv.c
+  fopen.c
   tests.c
   result.c
   traceh.c)
