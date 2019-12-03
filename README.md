@@ -68,6 +68,10 @@ documentation:
 - [Governance Model](docs/Governance.md)
 - [Build SDK and run tests](docs/GettingStartedDocs/Contributors/building_oe_sdk.md)
 
+API Documentation
+-----------------
+The doxygen generated documentation for public APIs currently supported by the Open Enclave SDK can be found [here](https://openenclave.github.io/openenclave/api/index.html).
+
 Licensing
 =========
 
