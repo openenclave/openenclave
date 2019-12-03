@@ -141,7 +141,7 @@ int create_socket(char* server_name, char* server_port)
     int sockfd = -1;
     char* addr_ptr = NULL;
     int port = 0;
-    struct addrinfo hints, *dest_info;
+    struct addrinfo hints, *dest_info, *curr_di;
     int res;
 
 #ifdef _WIN32
@@ -166,17 +166,18 @@ int create_socket(char* server_name, char* server_port)
         goto done;
     }
 
-    while (dest_info)
+    curr_di = dest_info;
+    while (curr_di)
     {
-        if (dest_info->ai_family == AF_INET)
+        if (curr_di->ai_family == AF_INET)
         {
             break;
         }
 
-        dest_info = dest_info->ai_next;
+        curr_di = curr_di->ai_next;
     }
 
-    if (!dest_info)
+    if (!curr_di)
     {
         printf(
             TLS_CLIENT "Error: Cannot get address for hostname %s.\n",
@@ -193,7 +194,7 @@ int create_socket(char* server_name, char* server_port)
 
     if (connect(
             sockfd,
-            (struct sockaddr*)dest_info->ai_addr,
+            (struct sockaddr*)curr_di->ai_addr,
             sizeof(struct sockaddr)) == -1)
     {
         printf(
@@ -206,7 +207,11 @@ int create_socket(char* server_name, char* server_port)
         goto done;
     }
     printf(TLS_CLIENT "connected to %s:%s\n", server_name, server_port);
+
 done:
+    if (dest_info)
+        freeaddrinfo(dest_info);
+
     return sockfd;
 }
 
