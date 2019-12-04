@@ -69,6 +69,12 @@ let warn_foreign_structs (fd : func_decl) =
         (get_tystr t)
   | None -> ()
 
+let warn_ptr_return_value (fd : func_decl) =
+  match fd.rtype with
+  | Ptr _ ->
+      printf "Warning: Function '%s' has a pointer return value.\n" fd.fname
+  | _ -> ()
+
 let warn_signed_size_or_count_types (fd : func_decl) =
   let print_signedness_warning p =
     printf
@@ -180,7 +186,8 @@ let write_enclave_code (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
       warn_non_portable_types f;
       warn_signed_size_or_count_types f;
       warn_size_and_count_params f;
-      warn_foreign_structs f)
+      warn_foreign_structs f;
+      warn_ptr_return_value f)
     funcs;
   (* End EDL validation. *)
   (* NOTE: The below code encapsulates all our file I/O. *)
