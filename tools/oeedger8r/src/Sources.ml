@@ -33,6 +33,25 @@ let get_deepcopy_function (enabled : bool) (cts : composite_type list)
     | None -> []
   else []
 
+let gen_c_for level count body =
+  if count = "1" then body
+  else
+    let i = sprintf "_i_%i" level in
+    [
+      [ sprintf "for (size_t %s = 0; %s < %s; %s++)" i i count i ];
+      [ "{" ];
+      List.map (( ^ ) "    ") body;
+      [ "}" ];
+    ]
+    |> List.flatten
+
+let gen_c_deref level i = if i = "1" then "->" else sprintf "[_i_%i]." level
+
+let attr_value_to_string argstruct = function
+  | None -> None
+  | Some (ANumber n) -> Some (string_of_int n)
+  | Some (AString s) -> Some (argstruct ^ s)
+
 (** For a list of args and current count, get the corresponding
    argstruct variable name. The prefix is usually, but not always,
    ["_args."].*)
