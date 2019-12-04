@@ -50,7 +50,7 @@ export KUBECONFIG=_output/${DNS_PREFIX}/kubeconfig/kubeconfig.${REGION}.json
 kubectl get nodes
 kubectl apply -f "templates/aks-engine/admin-user.yml"
 
-az keyvault secret set --vault-name "oe-ci-test-kv" --name "${DNS_PREFIX}.${REGION}.json" --file ${KUBECONFIG} --description "${DNS_PREFIX}.${REGION}.cloudapp.azure.com Kubeconfig"
+az keyvault secret set --vault-name "oe-ci-test-kv" --name "kubeconfig-${DNS_PREFIX}-${REGION}" --file ${KUBECONFIG} --description "${DNS_PREFIX}.${REGION}.cloudapp.azure.com Kubeconfig"
 
 echo "KUBECONFIG file successfully uploaded to oe-ci-test-kv keyvault"
 exit 0

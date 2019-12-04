@@ -37,6 +37,7 @@ def nonSGXUbuntuTemplate(String version, Closure body) {
         image_name = 'oeciteam/oetools-full-18.04'
     } else if (version == "minimal") {
         image_name = 'oeciteam/oetools-minimal-18.04'
+        version = "bionic"
     } else {
         println("Supported Ubuntu versions are: xenial,bionic and minimal")
         currentBuild.result = 'FAILED'
@@ -96,7 +97,7 @@ def simulationTest(String version, String platform_mode, String build_type) {
 }
 
 
-def ACCPackageTest String version) {
+def ACCPackageTest(String version) {
     stage("ACC-${version} Container RelWithDebInfo") {
         node("${env.BUILD_TAG}-${version}") {
             container("oetools-${version}") {
@@ -124,6 +125,7 @@ def ACCPackageTest String version) {
                                done
                                """
                     oe.Run("clang-7", task)
+                }
             }
         }
     }
@@ -210,6 +212,6 @@ versions.each { version ->
     stepsForParallel["ACC-${version} Package RelWithDebInfo"] = { ubuntuTemplate(version) { ACCPackageTest(version) } }
     stepsForParallel["Check Developer Experience Ubuntu ${version}"] = { nonSGXUbuntuTemplate(version) { checkDevFlows(version) } }
 }
+stepsForParallel["Check CI"] = { nonSGXUbuntuTemplate('minimal') { checkCI() } }
 
-nonSGXUbuntuTemplate('minimal') { checkCI() }
 parallel stepsForParallel
