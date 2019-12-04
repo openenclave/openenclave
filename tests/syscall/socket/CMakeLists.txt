@@ -3,6 +3,8 @@
 
 add_subdirectory(host)
 
-add_subdirectory(enc)
+if (BUILD_ENCLAVES)
+    add_subdirectory(enc)
+endif()
 
 add_enclave_test(tests/sockets socket_host socket_enc)
