@@ -19,7 +19,7 @@ let get_struct_by_name (cts : composite_type list) (name : string) =
     members of the [Struct] which should be deep-copied, otherwise we
     return an empty list.
 
-    NOTE: This is a higher-order function that is mean to have its
+    NOTE: This is a higher-order function that is meant to have its
     first two arguments partially applied, and then used repeatedly. *)
 let get_deepcopy_function (enabled : bool) (cts : composite_type list)
     (a : atype) =

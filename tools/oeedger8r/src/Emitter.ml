@@ -27,12 +27,13 @@ let write_file (content : string list) (filename : string) (dir : string) =
        @ content ));
   close_out os
 
-let warn_non_portable_types (fd : func_decl) =
-  (* Check if any of the parameters or the return type has the given
+(* Check if any of the parameters or the return type has the given
      root type. *)
-  let uses_type (t : atype) =
-    t = fd.rtype || List.exists (fun (p, _) -> t = get_param_atype p) fd.plist
-  in
+let find_param (fd : func_decl) pred =
+  let l = List.map (fun (p, _) -> get_param_atype p) fd.plist @ [ fd.rtype ] in
+  List.find_opt pred l
+
+let warn_non_portable_types (fd : func_decl) =
   let print_portability_warning ty =
     printf
       "Warning: Function '%s': %s has different sizes on Windows and Linux. \
@@ -49,6 +50,7 @@ let warn_non_portable_types (fd : func_decl) =
   (* longs are represented as an Int type *)
   let long_t = Int { ia_signedness = Signed; ia_shortness = ILong } in
   let ulong_t = Int { ia_signedness = Unsigned; ia_shortness = ILong } in
+  let uses_type t = Option.is_some (find_param fd (fun p -> p = t)) in
   if uses_type WChar then print_portability_warning "wchar_t";
   if uses_type LDouble then print_portability_warning "long double";
   (* Handle long type *)
@@ -58,6 +60,14 @@ let warn_non_portable_types (fd : func_decl) =
   if uses_type (Long Unsigned) || uses_type ulong_t then
     print_portability_warning_with_recommendation "unsigned long"
       "uint64_t or uint32_t"
+
+let warn_foreign_structs (fd : func_decl) =
+  let t = find_param fd (function Foreign _ -> true | _ -> false) in
+  match t with
+  | Some t ->
+      printf "Warning: Function '%s' uses foreign struct '%s'.\n" fd.fname
+        (get_tystr t)
+  | None -> ()
 
 let warn_signed_size_or_count_types (fd : func_decl) =
   let print_signedness_warning p =
@@ -169,7 +179,8 @@ let write_enclave_code (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     (fun f ->
       warn_non_portable_types f;
       warn_signed_size_or_count_types f;
-      warn_size_and_count_params f)
+      warn_size_and_count_params f;
+      warn_foreign_structs f)
     funcs;
   (* End EDL validation. *)
   (* NOTE: The below code encapsulates all our file I/O. *)
