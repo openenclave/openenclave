@@ -26,13 +26,6 @@
                   "min-nodes": "1",
                   "max-nodes": "5"
                 }
-              },
-              {
-                "name": "agentswin19",
-                "config": {
-                  "min-nodes": "1",
-                  "max-nodes": "5"
-                }
               }
             ],
             "config": {
@@ -67,15 +60,6 @@
         "vmSize": "Standard_DC2s",
         "vnetSubnetId": "${VNET_SUBNET_ID}",
         "storageProfile": "ManagedDisks"
-      },
-      {
-        "name": "agentswin19",
-        "count": 1,
-        "vmSize": "Standard_DC4s",
-        "availabilityProfile": "VirtualMachineScaleSets",
-        "vnetSubnetId": "${VNET_SUBNET_ID}",
-        "storageProfile": "ManagedDisks",
-        "osType": "Windows"
       }
     ],
     "linuxProfile": {
@@ -87,12 +71,6 @@
           }
         ]
       }
-    },
-    "windowsProfile": {
-      "adminUsername": "azureuser",
-      "adminPassword": "${WINDOWS_ADMIN_PASSWORD}",
-      "sshEnabled": true,
-      "enableAutomaticUpdates": false
     },
     "extensionProfiles": [
       {
