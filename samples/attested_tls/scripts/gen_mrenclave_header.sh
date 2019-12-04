@@ -48,5 +48,5 @@ SECTION3="$(cat <<-EOF
 EOF
 )"
 
-echo -ne "$SECTION1$SECTION2$SECTION3" > $destfile
+echo -ne "$SECTION1$SECTION2$SECTION3" > "$destfile"
 
