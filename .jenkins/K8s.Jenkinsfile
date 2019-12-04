@@ -19,7 +19,12 @@ def ubuntuTemplate(String version, Closure body) {
                 containers: [
                   containerTemplate(name: "oetools-${version}",
                                     image: image_name,
+                                    alwaysPullImage: true,
                                     ttyEnabled: true,
+                                    resourceRequestCpu: '500m',
+                                    resourceLimitCpu: '1',
+                                    resourceRequestMemory: '2Gi',
+                                    resourceLimitMemory: '4Gi',
                                     privileged: true)
                 ],
                 volumes: [
@@ -48,7 +53,12 @@ def nonSGXUbuntuTemplate(String version, Closure body) {
                 containers: [
                   containerTemplate(name: "oetools-${version}",
                                     image: image_name,
-                                    ttyEnabled: true)
+                                    alwaysPullImage: true,
+                                    ttyEnabled: true,
+                                    resourceRequestCpu: '500m',
+                                    resourceLimitCpu: '1',
+                                    resourceRequestMemory: '2Gi',
+                                    resourceLimitMemory: '4Gi')
                 ]) {
                   body()
                 }
