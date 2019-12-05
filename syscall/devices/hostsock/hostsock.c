@@ -274,6 +274,14 @@ static oe_fd_t* _hostsock_accept(
             OE_RAISE_ERRNO_MSG(oe_errno, "retval=%d", retval);
 
         new_sock->host_fd = retval;
+
+        // copy peer addr to out buffer
+        if (addrlen)
+        {
+            oe_assert(addr);
+            if (oe_memcpy_s(addr, addrlen_in, &buf.addr, *addrlen) != OE_OK)
+                OE_RAISE_ERRNO(OE_EINVAL);
+        }
     }
 
     ret = &new_sock->base;
