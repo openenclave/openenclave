@@ -321,7 +321,7 @@ done:
     if (is)
         fclose(is);
 
-    if (rc != 0)
+    if (rc != 0 && elf)
     {
         free(elf->data);
         memset(elf, 0, sizeof(elf64_t));

@@ -554,6 +554,9 @@ oe_result_t oe_sgx_build_enclave(
     uint64_t vaddr = 0;
     oe_sgx_enclave_properties_t props;
 
+    if (!enclave)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     memset(&oeimage, 0, sizeof(oeimage));
 
     /* Clear and initialize enclave structure */
