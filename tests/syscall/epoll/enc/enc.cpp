@@ -28,7 +28,7 @@ extern "C" void set_up()
     _sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     OE_TEST(_sockfd >= 0);
     OE_TEST(
-        bind(_sockfd, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr) == 0);
+        bind(_sockfd, reinterpret_cast<sockaddr*>(&_addr), sizeof(_addr)) == 0);
 
     // create epoll instance
     _epfd = epoll_create(1);
@@ -58,7 +58,7 @@ extern "C" void wait_for_events()
         if (n == 1)
         {
             OE_TEST(event.data.fd == _sockfd);
-            OE_TEST(read(_sockfd, &run, sizeof run) == sizeof run);
+            OE_TEST(read(_sockfd, &run, sizeof(run)) == sizeof(run));
         }
         else
             OE_TEST(n == 0); // fd has been deleted
@@ -70,9 +70,9 @@ static void _send(uint8_t run)
     const int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     OE_TEST(sockfd >= 0);
     OE_TEST(
-        connect(sockfd, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr) ==
+        connect(sockfd, reinterpret_cast<sockaddr*>(&_addr), sizeof(_addr)) ==
         0);
-    OE_TEST(write(sockfd, &run, sizeof run) == sizeof run);
+    OE_TEST(write(sockfd, &run, sizeof(run)) == sizeof(run));
     OE_TEST(close(sockfd) == 0);
 }
 
