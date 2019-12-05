@@ -327,6 +327,17 @@ static void test_unlink_file(FILE_SYSTEM& fs, const char* tmp_dir)
 }
 
 template <class FILE_SYSTEM>
+static void test_invalid_path(FILE_SYSTEM& fs)
+{
+    const char* const path = "doesnotexist";
+    printf("--- %s()\n", __FUNCTION__);
+    OE_TEST(fs.open(path, O_RDONLY, 0) == FILE_SYSTEM::invalid_file_handle);
+    OE_TEST(fs.opendir(path) == FILE_SYSTEM::invalid_dir_handle);
+    OE_TEST(fs.rmdir(path) == -1);
+    OE_TEST(fs.truncate(path, 0) == -1);
+}
+
+template <class FILE_SYSTEM>
 void test_all(FILE_SYSTEM& fs, const char* tmp_dir)
 {
     cleanup(fs, tmp_dir);
@@ -338,6 +349,7 @@ void test_all(FILE_SYSTEM& fs, const char* tmp_dir)
     test_readdir(fs, tmp_dir);
     test_truncate_file(fs, tmp_dir);
     test_unlink_file(fs, tmp_dir);
+    test_invalid_path(fs);
     cleanup(fs, tmp_dir);
 }
 

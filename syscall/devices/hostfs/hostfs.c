@@ -871,13 +871,13 @@ static oe_fd_t* _hostfs_opendir(oe_device_t* device, const char* name)
     if (oe_syscall_opendir_ocall(&retval, host_name) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (retval != 0)
-    {
-        dir->base.type = OE_FD_TYPE_FILE;
-        dir->magic = DIR_MAGIC;
-        dir->base.ops.file = _get_file_ops();
-        dir->host_dir = retval;
-    }
+    if (!retval)
+        OE_RAISE_ERRNO(oe_errno);
+
+    dir->base.type = OE_FD_TYPE_FILE;
+    dir->magic = DIR_MAGIC;
+    dir->base.ops.file = _get_file_ops();
+    dir->host_dir = retval;
 
     ret = &dir->base;
     dir = NULL;

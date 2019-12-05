@@ -30,6 +30,9 @@ class oe_fd_file_system
     typedef struct oe_stat stat_type;
     typedef struct oe_dirent dirent_type;
 
+    static constexpr file_handle invalid_file_handle = -1;
+    static constexpr dir_handle invalid_dir_handle = nullptr;
+
     oe_fd_file_system(void)
     {
     }
@@ -158,6 +161,9 @@ class fd_file_system
     typedef struct oe_stat stat_type;
     typedef struct dirent dirent_type;
 
+    static constexpr file_handle invalid_file_handle = -1;
+    static constexpr dir_handle invalid_dir_handle = nullptr;
+
     fd_file_system(void)
     {
     }
@@ -285,6 +291,9 @@ class stream_file_system
     typedef DIR* dir_handle;
     typedef struct stat stat_type;
     typedef struct dirent dirent_type;
+
+    static constexpr file_handle invalid_file_handle = nullptr;
+    static constexpr dir_handle invalid_dir_handle = nullptr;
 
     stream_file_system(void)
     {
