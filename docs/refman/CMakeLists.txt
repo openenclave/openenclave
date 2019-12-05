@@ -17,6 +17,12 @@ if (ENABLE_REFMAN)
   # have to specify it because we have another directory to strip.
   set(DOXYGEN_STRIP_FROM_PATH "${PROJECT_SOURCE_DIR}/include/openenclave/;${PROJECT_SOURCE_DIR}/docs/refman")
 
+  # Allow @experimental to be used in headers to mark an API as experimental and add it to a list of
+  # experimental APIs.
+  set(DOXYGEN_ALIASES
+    "experimental = \\xrefitem experimental \\\"This feature is marked as experimental\\\" \\\"Experimental List\\\""
+    "experimental{1} = \\xrefitem experimental \\\"Experimental\\\" \\\"Experimental List\\\" \\1")
+
   # NOTE: These were set to their non-default values in the existing
   # configuration file, so that configuration has been copied here.
   # However, they may or may not be desired.

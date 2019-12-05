@@ -1,7 +1,8 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-if (OE_SGX)
-    add_subdirectory(oecert)
-    add_subdirectory(oecertdump)
+if (BUILD_ENCLAVES)
+   add_subdirectory(enc)
 endif()
+
+add_subdirectory(host)
