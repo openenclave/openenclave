@@ -146,10 +146,10 @@ int ecall_run_server()
         printf("enc: accepting\n");
 
         struct oe_sockaddr_in peer_addr = {0};
-        oe_socklen_t peer_addr_len = sizeof peer_addr;
+        oe_socklen_t peer_addr_len = sizeof(peer_addr);
         connfd = oe_accept(
             listenfd, (struct oe_sockaddr*)&peer_addr, &peer_addr_len);
-        OE_TEST(peer_addr_len == sizeof peer_addr);
+        OE_TEST(peer_addr_len == sizeof(peer_addr));
         OE_TEST(peer_addr.sin_family == OE_AF_INET);
         OE_TEST(oe_ntohs(peer_addr.sin_port) >= 1024);
         OE_TEST(oe_ntohl(peer_addr.sin_addr.s_addr) == OE_INADDR_LOOPBACK);

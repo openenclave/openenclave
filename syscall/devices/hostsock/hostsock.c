@@ -273,10 +273,10 @@ static oe_fd_t* _hostsock_accept(
         new_sock->host_fd = retval;
 
         // copy peer addr to out buffer
-        if (addrlen && *addrlen <= addrlen_in)
+        if (addrlen)
         {
             oe_assert(addr);
-            if (oe_memcpy_s(addr, addrlen_in, &buf, *addrlen) != OE_OK)
+            if (oe_memcpy_s(addr, addrlen_in, &buf.addr, *addrlen) != OE_OK)
                 OE_RAISE_ERRNO(OE_EINVAL);
         }
     }
