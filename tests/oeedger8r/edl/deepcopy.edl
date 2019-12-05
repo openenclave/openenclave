@@ -54,7 +54,7 @@ enclave {
 
   trusted {
     // Since `s` is passed by value, `s.ptr` is not deep copied.
-    public void deepcopy_value(ShallowStruct s, [user_check] uint64_t* ptr);
+    public void deepcopy_value(struct ShallowStruct s, [user_check] uint64_t* ptr);
 
     // Although `s` is passed by pointer, because `s.ptr` does not
     // have any attribute, it is still not deep copied.

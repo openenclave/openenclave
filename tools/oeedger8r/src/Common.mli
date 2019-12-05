@@ -13,6 +13,8 @@ val flatten_map : ('a -> 'b list) -> 'a list -> 'b list
 
 val flatten_map2 : ('a -> 'b -> 'c list) -> 'a list -> 'b list -> 'c list
 
+val is_ptr : Intel.Ast.parameter_type * 'a -> bool
+
 val is_in_ptr : Intel.Ast.parameter_type -> bool
 
 val is_out_ptr : Intel.Ast.parameter_type -> bool

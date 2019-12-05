@@ -61,6 +61,27 @@ let warn_non_portable_types (fd : func_decl) =
     print_portability_warning_with_recommendation "unsigned long"
       "uint64_t or uint32_t"
 
+let warn_shallow_ptrs (ec : enclave_content) =
+  (* Gather every known parameter. *)
+  let splist =
+    flatten_map (function StructDef s -> s.smlist | _ -> []) ec.comp_defs
+  in
+  let ptrs = List.filter is_ptr splist in
+  List.iter
+    (fun (p, d) ->
+      (* This won't work. Function params can have [out] without
+         [size] or [copy] which leads to [is_marshalled_ptr] being
+         true. Function params have to be tested differently. *)
+      if not (is_marshalled_ptr p) then
+        printf
+          (* TODO: Save [s.sname] above for to state which type has
+             the field. *)
+          "Warning: Field '%s' is a pointer in a user-defined type without a \
+           size specified.\n"
+          d.identifier
+      else ())
+    ptrs
+
 let warn_foreign_structs (fd : func_decl) =
   let t = find_param fd (function Foreign _ -> true | _ -> false) in
   match t with
@@ -189,6 +210,7 @@ let write_enclave_code (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
       warn_foreign_structs f;
       warn_ptr_return_value f)
     funcs;
+  warn_shallow_ptrs ec;
   (* End EDL validation. *)
   (* NOTE: The below code encapsulates all our file I/O. *)
   let args_h = ec.file_shortnm ^ "_args.h" in

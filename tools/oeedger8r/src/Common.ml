@@ -49,6 +49,8 @@ let flatten_map f l = List.flatten (List.map f l)
 
 let flatten_map2 f l m = List.flatten (List.map2 f l m)
 
+let is_ptr (p, _) = match p with PTPtr _ -> true | PTVal _ -> false
+
 let is_in_ptr = function
   | PTVal _ -> false
   | PTPtr (_, a) -> a.pa_chkptr && a.pa_direction = PtrIn
