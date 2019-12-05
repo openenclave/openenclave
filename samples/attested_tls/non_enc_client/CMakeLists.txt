@@ -8,6 +8,8 @@ add_executable(tls_non_enc_client
 	       verify_callback.cpp
 	       verify_signer_openssl.cpp)
 
+add_dependencies(tls_non_enc_client tls_server_sign_enc)
+
 target_include_directories(tls_non_enc_client PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}

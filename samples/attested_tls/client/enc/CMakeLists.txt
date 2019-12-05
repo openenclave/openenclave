@@ -18,7 +18,9 @@ add_executable(tls_client_enc
 	       cert_verifier.cpp
 	       identity_verifier.cpp
 	       ../../common/utility.cpp
-	       ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
+         ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
+
+add_dependencies(tls_client_enc tls_server_sign_enc)
 
 if (WIN32)
   maybe_build_using_clangw(tls_client_enc)
