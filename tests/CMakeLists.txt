@@ -48,6 +48,9 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
             add_subdirectory(thread_local)
             add_subdirectory(thread_local_no_tdata)
         endif()
+        if (BUILD_ENCLAVES)
+            add_subdirectory(tls_e2e)
+        endif()
         add_subdirectory(argv)
         add_subdirectory(attestation_cert_apis)
         add_subdirectory(backtrace)
@@ -95,7 +98,4 @@ if (OE_SGX AND UNIX)
    # ecall_ocall enclave size cannot be handled by Windows ninja CI
    add_subdirectory(ecall_ocall)
    add_subdirectory(libunwind)
-
-   # Attestation supported only on Linux
-   add_subdirectory(tls_e2e)
 endif()

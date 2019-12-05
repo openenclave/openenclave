@@ -261,8 +261,11 @@ static oe_fd_t* _hostsock_accept(
         oe_host_fd_t retval = -1;
 
         if (oe_syscall_accept_ocall(
-                &retval, sock->host_fd, &buf.addr, addrlen_in, addrlen) !=
-            OE_OK)
+                &retval,
+                sock->host_fd,
+                addr ? &buf.addr : NULL,
+                addrlen_in,
+                addrlen) != OE_OK)
         {
             OE_RAISE_ERRNO(oe_errno);
         }

@@ -16,6 +16,10 @@
 
 #define SERVER_PORT "12345"
 
+#if _WIN32
+#define errno WSAGetLastError()
+#endif
+
 void* enclave_server_thread(void* arg)
 {
     oe_enclave_t* enclave = NULL;
@@ -87,7 +91,7 @@ char* host_client(in_port_t port)
     static char recvBuff[1024];
     struct sockaddr_in serv_addr = {0};
 
-    memset(recvBuff, '0', sizeof(recvBuff));
+    memset(recvBuff, '\0', sizeof(recvBuff));
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("\n Error : Could not create socket \n");
@@ -113,7 +117,12 @@ char* host_client(in_port_t port)
             sock_close(sockfd);
             return NULL;
         }
-        else
+#if _WIN32
+        else if (errno == WSAEISCONN)
+        {
+            break;
+        }
+#endif
         {
             printf("Connect Failed. errno = %d Retrying \n", errno);
             sleep_msec(100);

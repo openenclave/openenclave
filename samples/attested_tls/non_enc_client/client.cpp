@@ -1,13 +1,19 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#define close closesocket
+#else
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <resolv.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#endif
+
+#include <string.h>
 
 #include <openenclave/host.h>
 #include <openssl/bio.h>
@@ -135,12 +141,47 @@ int create_socket(char* server_name, char* server_port)
     int sockfd = -1;
     char* addr_ptr = NULL;
     int port = 0;
-    struct hostent* host = NULL;
-    struct sockaddr_in dest_addr;
+    struct addrinfo hints, *dest_info, *curr_di;
+    int res;
 
-    if ((host = gethostbyname(server_name)) == NULL)
+#ifdef _WIN32
+    WSADATA wsaData;
+    if ((res = WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0)
     {
-        printf(TLS_CLIENT "Error: Cannot resolve hostname %s.\n", server_name);
+        printf(TLS_CLIENT "Error: WSAStartup failed: %d\n", res);
+        goto done;
+    }
+#endif
+
+    hints = {0};
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if ((res = getaddrinfo(server_name, server_port, &hints, &dest_info)) != 0)
+    {
+        printf(
+            TLS_CLIENT "Error: Cannot resolve hostname %s. %s\n",
+            server_name,
+            gai_strerror(res));
+        goto done;
+    }
+
+    curr_di = dest_info;
+    while (curr_di)
+    {
+        if (curr_di->ai_family == AF_INET)
+        {
+            break;
+        }
+
+        curr_di = curr_di->ai_next;
+    }
+
+    if (!curr_di)
+    {
+        printf(
+            TLS_CLIENT "Error: Cannot get address for hostname %s.\n",
+            server_name);
         goto done;
     }
 
@@ -151,17 +192,10 @@ int create_socket(char* server_name, char* server_port)
         goto done;
     }
 
-    port = atoi(server_port);
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(port);
-    dest_addr.sin_addr.s_addr = *(long*)(host->h_addr);
-
-    memset(&(dest_addr.sin_zero), '\0', 8);
-    addr_ptr = inet_ntoa(dest_addr.sin_addr);
-
     if (connect(
-            sockfd, (struct sockaddr*)&dest_addr, sizeof(struct sockaddr)) ==
-        -1)
+            sockfd,
+            (struct sockaddr*)curr_di->ai_addr,
+            sizeof(struct sockaddr)) == -1)
     {
         printf(
             TLS_CLIENT "failed to connect to %s:%s (errno=%d)\n",
@@ -173,7 +207,11 @@ int create_socket(char* server_name, char* server_port)
         goto done;
     }
     printf(TLS_CLIENT "connected to %s:%s\n", server_name, server_port);
+
 done:
+    if (dest_info)
+        freeaddrinfo(dest_info);
+
     return sockfd;
 }
 

@@ -21,6 +21,7 @@
 #include <sys/uio.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include "../../common/oe_host_socket.h"
 #include "../host/strings.h"
 #include "syscall_u.h"
 
@@ -792,25 +793,6 @@ int oe_syscall_kill_ocall(int pid, int signum)
 **==============================================================================
 */
 
-#define GETADDRINFO_HANDLE_MAGIC 0xed11d13a
-
-typedef struct _getaddrinfo_handle
-{
-    uint32_t magic;
-    struct addrinfo* res;
-    struct addrinfo* next;
-} getaddrinfo_handle_t;
-
-static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
-{
-    getaddrinfo_handle_t* handle = (getaddrinfo_handle_t*)handle_;
-
-    if (!handle || handle->magic != GETADDRINFO_HANDLE_MAGIC || !handle->res)
-        return NULL;
-
-    return handle;
-}
-
 int oe_syscall_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
@@ -870,75 +852,22 @@ int oe_syscall_getaddrinfo_read_ocall(
     size_t* ai_canonnamelen,
     char* ai_canonname)
 {
-    int ret = -1;
-    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
+    int err_no = 0;
+    int ret = _getaddrinfo_read(
+        handle_,
+        ai_flags,
+        ai_family,
+        ai_socktype,
+        ai_protocol,
+        ai_addrlen_in,
+        ai_addrlen,
+        ai_addr,
+        ai_canonnamelen_in,
+        ai_canonnamelen,
+        ai_canonname,
+        &err_no);
+    errno = err_no;
 
-    errno = 0;
-
-    if (!handle || !ai_flags || !ai_family || !ai_socktype || !ai_protocol ||
-        !ai_addrlen || !ai_canonnamelen)
-    {
-        errno = EINVAL;
-        goto done;
-    }
-
-    if (!ai_addr && ai_addrlen_in)
-    {
-        errno = EINVAL;
-        goto done;
-    }
-
-    if (!ai_canonname && ai_canonnamelen_in)
-    {
-        errno = EINVAL;
-        goto done;
-    }
-
-    if (handle->next)
-    {
-        struct addrinfo* p = handle->next;
-
-        *ai_flags = p->ai_flags;
-        *ai_family = p->ai_family;
-        *ai_socktype = p->ai_socktype;
-        *ai_protocol = p->ai_protocol;
-        *ai_addrlen = p->ai_addrlen;
-
-        if (p->ai_canonname)
-            *ai_canonnamelen = strlen(p->ai_canonname) + 1;
-        else
-            *ai_canonnamelen = 0;
-
-        if (*ai_addrlen > ai_addrlen_in)
-        {
-            errno = ENAMETOOLONG;
-            goto done;
-        }
-
-        if (*ai_canonnamelen > ai_canonnamelen_in)
-        {
-            errno = ENAMETOOLONG;
-            goto done;
-        }
-
-        memcpy(ai_addr, p->ai_addr, *ai_addrlen);
-
-        if (p->ai_canonname)
-            memcpy(ai_canonname, p->ai_canonname, *ai_canonnamelen);
-
-        handle->next = handle->next->ai_next;
-
-        ret = 0;
-        goto done;
-    }
-    else
-    {
-        /* Done */
-        ret = 1;
-        goto done;
-    }
-
-done:
     return ret;
 }
 
