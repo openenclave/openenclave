@@ -358,8 +358,10 @@ try{
             "Win2016 Release Cross Compile" :                      { win2016CrossCompile('Release') },
             "Win2016 Debug Cross Compile with DCAP libs" :         { win2016CrossCompile('Debug', 'ON') },
             "Win2016 Release Cross Compile with DCAP libs" :       { win2016CrossCompile('Release', 'ON') },
-            "Host verification Debug" :                            { ACCHostVerificationTest('18.04', 'Debug') },
-            "Host verification Release" :                          { ACCHostVerificationTest('18.04', 'Release') }
+            "Host verification 1604 Debug" :                       { ACCHostVerificationTest('16.04', 'Debug') },
+            "Host verification 1604 Release" :                     { ACCHostVerificationTest('16.04', 'Release') },
+            "Host verification 1804 Debug" :                       { ACCHostVerificationTest('18.04', 'Debug') },
+            "Host verification 1804 Release" :                     { ACCHostVerificationTest('18.04', 'Release') }
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
