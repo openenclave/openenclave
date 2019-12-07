@@ -120,6 +120,7 @@ static oe_result_t _add_claim(
     if (claim->value == NULL)
     {
         oe_free(claim->name);
+        claim->name = NULL;
         return OE_OUT_OF_MEMORY;
     }
     memcpy(claim->value, value, value_size);

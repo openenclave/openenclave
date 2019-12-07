@@ -308,27 +308,31 @@ int oe_cpio_close(oe_cpio_t* cpio)
     int ret = -1;
 
     if (!cpio || !cpio->stream)
-        GOTO(done);
+        return ret;
 
-    /* If file was open for write, then pad and write out the header. */
     if (cpio->write)
     {
         /* Write the trailer. */
         if (fwrite(&_trailer, 1, _trailer.size, cpio->stream) != _trailer.size)
+        {
             GOTO(done);
+        }
 
         /* Pad the trailer out to the block size boundary. */
         if (_write_padding(cpio->stream, CPIO_BLOCK_SIZE) != 0)
+        {
             GOTO(done);
+        }
     }
+
+    ret = 0;
+
+done:
 
     fclose(cpio->stream);
     memset(cpio, 0, sizeof(oe_cpio_t));
     free(cpio);
 
-    ret = 0;
-
-done:
     return ret;
 }
 

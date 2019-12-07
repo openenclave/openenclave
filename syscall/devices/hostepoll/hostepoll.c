@@ -757,10 +757,10 @@ static int _epoll_dup(oe_fd_t* epoll_, oe_fd_t** new_epoll_out)
 
     oe_errno = 0;
 
-    if (new_epoll_out)
-        *new_epoll_out = NULL;
-
     /* Check parameters. */
+    if (!new_epoll_out)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
     if (!epoll)
         OE_RAISE_ERRNO(OE_EINVAL);
 

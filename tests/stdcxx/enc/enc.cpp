@@ -133,6 +133,7 @@ int enc_test(bool* caught, bool* dynamic_cast_works, size_t* n_constructions)
 
         if (strcmp(p, "hello") != 0)
         {
+            delete[] p;
             return -1;
         }
 

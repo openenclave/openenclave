@@ -274,6 +274,7 @@ int test(char buf1[BUFSIZE], char buf2[BUFSIZE])
     /* Cause malloc() to fail */
     void* p = malloc(1024 * 1024 * 1024);
     OE_TEST(p == NULL);
+
     OE_TEST(_called_allocation_failure_callback);
 
     return rval;

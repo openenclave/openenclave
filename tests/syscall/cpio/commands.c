@@ -72,7 +72,7 @@ done:
 
     oe_strarr_release(&dirs);
 
-    if (ret != 0)
+    if (ret != 0 && paths != NULL)
     {
         oe_strarr_release(paths);
         memset(paths, 0, sizeof(oe_strarr_t));

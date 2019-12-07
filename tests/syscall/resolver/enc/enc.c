@@ -186,7 +186,7 @@ int ecall_getaddrinfo(struct addrinfo** res)
 
     OE_TEST(oe_getaddrinfo(host, serv, &hints, (struct oe_addrinfo**)&ai) == 0);
 
-    if (!(*res = (struct addrinfo*)_clone_addrinfo(ai)))
+    if (res && !(*res = (struct addrinfo*)_clone_addrinfo(ai)))
         OE_TEST("_clone_addrinfo() failed" == NULL);
 
     oe_freeaddrinfo(ai);

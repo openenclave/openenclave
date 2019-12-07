@@ -24,9 +24,8 @@ void Pong(const char* in, char* out)
         {
             got_pong = true;
         }
+        strcpy(out, in);
     }
-
-    strcpy(out, in);
 }
 
 static char buf[128];

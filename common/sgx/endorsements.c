@@ -80,8 +80,6 @@ static oe_result_t oe_create_sgx_endorsements(
             "Out of memory while creating endorsements.",
             NULL);
 
-    remaining_size = size;
-
     // Record creation datetime.
     {
         oe_datetime_t datetime_now = {0};

@@ -95,6 +95,9 @@ OE_INLINE void _referent_add_ref(Referent* referent)
 /* Decrease the reference count and release if count becomes zero */
 OE_INLINE void _referent_free(Referent* referent)
 {
+    if (!referent)
+        return;
+
     /* If this was the last reference, release the object */
     if (oe_atomic_decrement(&referent->refs) == 0)
     {
@@ -764,9 +767,7 @@ oe_result_t oe_cert_chain_read_pem(
     result = OE_OK;
 
 done:
-
     _referent_free(referent);
-
     return result;
 }
 
