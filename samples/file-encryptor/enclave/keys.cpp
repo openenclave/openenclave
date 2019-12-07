@@ -290,9 +290,17 @@ int ecall_dispatcher::prepare_encryption_header(
     {
         TRACE_ENCLAVE("password_key");
         for (unsigned int i = 0; i < ENCRYPTION_KEY_SIZE_IN_BYTES; i++)
+        {
+            if (password_key[i] > UINT32_MAX)
+            {
+                TRACE_ENCLAVE(
+                    "password key is too large to fit into an unsigned int", 1);
+                goto exit;
+            }
             TRACE_ENCLAVE(
                 "password_key[%d] =0x%02x", i, (unsigned int)(password_key[i]));
-        goto exit;
+            goto exit;
+        }
     }
 
     // produce a encryption key
