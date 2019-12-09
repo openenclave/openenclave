@@ -149,6 +149,21 @@ oe_result_t oe_start_switchless_manager(
     result = OE_OK;
 
 done:
+    if (result != OE_OK)
+    {
+        if (manager)
+        {
+            free(manager);
+            enclave->switchless_manager = NULL;
+        }
+
+        if (contexts)
+            free(contexts);
+
+        if (threads)
+            free(threads);
+    }
+
     return result;
 }
 

@@ -283,12 +283,14 @@ int oe_fdtable_reassign(int fd, oe_fd_t* new_desc, oe_fd_t** old_desc)
     int ret = -1;
     bool locked = false;
 
+    if (!new_desc || !old_desc)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
 #if !defined(NDEBUG)
     _assert_fd(new_desc);
 #endif
 
-    if (old_desc)
-        *old_desc = NULL;
+    *old_desc = NULL;
 
     oe_spin_lock(&_lock);
     locked = true;

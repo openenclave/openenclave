@@ -90,7 +90,7 @@ void td_push_callsite(td_t* td, Callsite* callsite)
 
 void td_pop_callsite(td_t* td)
 {
-    if (!td->callsites)
+    if (!td || !td->callsites)
         oe_abort();
 
     if (td->depth == 1)

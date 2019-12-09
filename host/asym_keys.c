@@ -132,7 +132,7 @@ done:
     if (arg.key_info)
     {
         oe_secure_zero_fill(arg.key_info, arg.key_info_size);
-        free(arg.key_buffer);
+        free(arg.key_info);
     }
 
     return result;

@@ -69,6 +69,8 @@ int oe_getaddrinfo(
 
     if (res_out)
         *res_out = NULL;
+    else
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     oe_spin_lock(&_lock);
     locked = true;

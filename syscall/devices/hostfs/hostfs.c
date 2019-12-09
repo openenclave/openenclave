@@ -433,8 +433,10 @@ static int _hostfs_dup(oe_fd_t* desc, oe_fd_t** new_file_out)
     file_t* file = _cast_file(desc);
     file_t* new_file = NULL;
 
-    if (new_file_out)
-        *new_file_out = NULL;
+    if (!new_file_out)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    *new_file_out = NULL;
 
     /* Check parameters. */
     if (!file)
