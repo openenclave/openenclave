@@ -235,6 +235,22 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
         /* The hook ignored the syscall so fall through */
     }
 
+    /* Handle syscall internally if possible. */
+    switch (n)
+    {
+        case SYS_nanosleep:
+            return _syscall_nanosleep(n, x1, x2);
+        case SYS_gettimeofday:
+            return _syscall_gettimeofday(n, x1, x2);
+        case SYS_clock_gettime:
+            return _syscall_clock_gettime(n, x1, x2);
+        case SYS_mmap:
+            return _syscall_mmap(n, x1, x2, x3, x4, x5, x6);
+        default:
+            /* Drop through and let the code below handle the syscall. */
+            break;
+    }
+
     /* Let liboesyscall handle select system calls. */
     {
         long ret;
@@ -247,31 +263,11 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
         {
             return ret;
         }
-
-        /* Drop through and let the code below handle the syscall. */
-        errno = 0;
     }
 
-    switch (n)
-    {
-        case SYS_nanosleep:
-            return _syscall_nanosleep(n, x1, x2);
-        case SYS_gettimeofday:
-            return _syscall_gettimeofday(n, x1, x2);
-        case SYS_clock_gettime:
-            return _syscall_clock_gettime(n, x1, x2);
-        case SYS_mmap:
-            return _syscall_mmap(n, x1, x2, x3, x4, x5, x6);
-        default:
-        {
-            /* All other MUSL-initiated syscalls are aborted. */
-            fprintf(stderr, "error: __syscall(): n=%lu\n", n);
-            abort();
-            return 0;
-        }
-    }
-
-    return 0;
+    /* All other MUSL-initiated syscalls are aborted. */
+    fprintf(stderr, "error: unhandled syscall: n=%lu\n", n);
+    abort();
 }
 
 /* Intercept __syscalls_cp() from MUSL */
