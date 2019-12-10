@@ -88,7 +88,10 @@ elseif (MSVC)
 
   # Explicitly set C/CXX flags rather than using the defaults. This uses the defaults
   # but removes /W3 from CMAKE_C(XX)_FLAGS. Using W3 and W1 together adds many warnings
-  # that W3 is being overwritten by W1
+  # that W3 is being overwritten by W1. W3 as a default flag is removed in cmake 3.15,
+  # so this behavior can be removed if/when cmake_minimum_required is raised to 3.15.
+  # ======= Default compiler flags for cmake version 3.12 can be found here: =======
+  # https://github.com/Kitware/CMake/blob/v3.12.0/Modules/Platform/Windows-MSVC.cmake
   set (CMAKE_C_FLAGS "/DWIN32 /D_WINDOWS")
   set (CMAKE_C_FLAGS_DEBUG "/MDd /Zi /Ob0 /Od /RTC1")
   set (CMAKE_C_FLAGS_RELEASE "/MD /O2 /Ob2 /DNDEBUG")
