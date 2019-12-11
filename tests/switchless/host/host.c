@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <inttypes.h>
 #include <limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/atomic.h>
@@ -36,9 +37,9 @@ double get_relative_time_in_microseconds()
 static double frequency;
 double get_relative_time_in_microseconds()
 {
-    double current_time;
+    LARGE_INTEGER current_time;
     QueryPerformanceCounter(&current_time);
-    return current_time / frequency;
+    return current_time.QuadPart / frequency;
 }
 
 #endif
@@ -119,12 +120,12 @@ int main(int argc, const char* argv[])
 
     if (argc >= 3)
     {
-        sscanf(argv[2], "%lu", &num_host_threads);
+        sscanf(argv[2], "%" SCNu64, &num_host_threads);
     }
 
     if (argc == 4)
     {
-        sscanf(argv[3], "%lu", &num_enclave_threads);
+        sscanf(argv[3], "%" SCNu64, &num_enclave_threads);
     }
 
 #if defined(__WIN32)
@@ -162,7 +163,7 @@ int main(int argc, const char* argv[])
         {
             oe_put_err("thread_create(host): ret=%u", ret);
         }
-        printf("Launched enclave producer thread %ld\n", i);
+        printf("Launched enclave producer thread %" PRIu64 "\n", i);
     }
     printf("Using main enclave thread\n");
     double switchless_microseconds = make_repeated_switchless_ocalls(enclave);

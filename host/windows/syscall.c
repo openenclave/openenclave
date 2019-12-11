@@ -332,6 +332,8 @@ oe_host_fd_t oe_syscall_open_ocall(
     int flags,
     oe_mode_t mode)
 {
+    OE_UNUSED(mode);
+
     oe_host_fd_t ret = -1;
 
     if (strcmp(pathname, "/dev/stdin") == 0)
@@ -380,12 +382,18 @@ done:
 
 ssize_t oe_syscall_read_ocall(oe_host_fd_t fd, void* buf, size_t count)
 {
-    return _read(fd, buf, count);
+    if ((count & UINT_MAX) != count)
+        _set_errno(OE_EINVAL);
+
+    return _read((int)fd, buf, (unsigned int)count);
 }
 
 ssize_t oe_syscall_write_ocall(oe_host_fd_t fd, const void* buf, size_t count)
 {
-    return _write(fd, buf, count);
+    if ((count & UINT_MAX) != count)
+        _set_errno(OE_EINVAL);
+
+    return _write((int)fd, buf, (unsigned int)count);
 }
 
 ssize_t oe_syscall_readv_ocall(
@@ -472,12 +480,16 @@ done:
 
 oe_off_t oe_syscall_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
 {
+    OE_UNUSED(fd);
+    OE_UNUSED(offset);
+    OE_UNUSED(whence);
+
     PANIC;
 }
 
 int oe_syscall_close_ocall(oe_host_fd_t fd)
 {
-    return _close(fd);
+    return _close((int)fd);
 }
 
 static oe_host_fd_t _dup_socket(oe_host_fd_t);
@@ -517,61 +529,92 @@ oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t oldfd)
 
 uint64_t oe_syscall_opendir_ocall(const char* pathname)
 {
+    OE_UNUSED(pathname);
+
     PANIC;
 }
 
 int oe_syscall_readdir_ocall(uint64_t dirp, struct oe_dirent* entry)
 {
+    OE_UNUSED(dirp);
+    OE_UNUSED(entry);
+
     PANIC;
 }
 
 void oe_syscall_rewinddir_ocall(uint64_t dirp)
 {
+    OE_UNUSED(dirp);
+
     PANIC;
 }
 
 int oe_syscall_closedir_ocall(uint64_t dirp)
 {
+    OE_UNUSED(dirp);
+
     PANIC;
 }
 
 int oe_syscall_stat_ocall(const char* pathname, struct oe_stat* buf)
 {
+    OE_UNUSED(pathname);
+    OE_UNUSED(buf);
+
     PANIC;
 }
 
 int oe_syscall_access_ocall(const char* pathname, int mode)
 {
+    OE_UNUSED(pathname);
+    OE_UNUSED(mode);
+
     PANIC;
 }
 
 int oe_syscall_link_ocall(const char* oldpath, const char* newpath)
 {
+    OE_UNUSED(oldpath);
+    OE_UNUSED(newpath);
+
     PANIC;
 }
 
 int oe_syscall_unlink_ocall(const char* pathname)
 {
+    OE_UNUSED(pathname);
+
     PANIC;
 }
 
 int oe_syscall_rename_ocall(const char* oldpath, const char* newpath)
 {
+    OE_UNUSED(oldpath);
+    OE_UNUSED(newpath);
+
     PANIC;
 }
 
 int oe_syscall_truncate_ocall(const char* pathname, oe_off_t length)
 {
+    OE_UNUSED(pathname);
+    OE_UNUSED(length);
+
     PANIC;
 }
 
 int oe_syscall_mkdir_ocall(const char* pathname, oe_mode_t mode)
 {
+    OE_UNUSED(pathname);
+    OE_UNUSED(mode);
+
     PANIC;
 }
 
 int oe_syscall_rmdir_ocall(const char* pathname)
 {
+    OE_UNUSED(pathname);
+
     PANIC;
 }
 
@@ -651,12 +694,12 @@ static oe_host_fd_t _dup_socket(oe_host_fd_t oldfd)
 
 static int _wsa_startup()
 {
-    static bool wsa_init_done = FALSE;
+    static int64_t wsa_init_done = FALSE;
     WSADATA wsaData;
     int ret = 0;
 
     if (oe_atomic_compare_and_swap(
-            &wsa_init_done, (int64_t) false, (int64_t) true))
+            (volatile int64_t*)&wsa_init_done, (int64_t)0, (int64_t)1))
     {
         ret = WSAStartup(2, &wsaData);
         if (ret != 0)
@@ -693,6 +736,11 @@ int oe_syscall_socketpair_ocall(
     int protocol,
     oe_host_fd_t sv_out[2])
 {
+    OE_UNUSED(domain);
+    OE_UNUSED(type);
+    OE_UNUSED(protocol);
+    OE_UNUSED(sv_out);
+
     PANIC;
 }
 
@@ -773,6 +821,18 @@ ssize_t oe_syscall_recvmsg_ocall(
     size_t* msg_controllen_out,
     int flags)
 {
+    OE_UNUSED(sockfd);
+    OE_UNUSED(msg_name);
+    OE_UNUSED(msg_namelen);
+    OE_UNUSED(msg_namelen_out);
+    OE_UNUSED(msg_iov_buf);
+    OE_UNUSED(msg_iovlen);
+    OE_UNUSED(msg_iov_buf_size);
+    OE_UNUSED(msg_control);
+    OE_UNUSED(msg_controllen);
+    OE_UNUSED(msg_controllen_out);
+    OE_UNUSED(flags);
+
     PANIC;
 }
 
@@ -787,6 +847,16 @@ ssize_t oe_syscall_sendmsg_ocall(
     size_t msg_controllen,
     int flags)
 {
+    OE_UNUSED(sockfd);
+    OE_UNUSED(msg_name);
+    OE_UNUSED(msg_namelen);
+    OE_UNUSED(msg_iov_buf);
+    OE_UNUSED(msg_iovlen);
+    OE_UNUSED(msg_iov_buf_size);
+    OE_UNUSED(msg_control);
+    OE_UNUSED(msg_controllen);
+    OE_UNUSED(flags);
+
     PANIC;
 }
 
@@ -826,7 +896,7 @@ ssize_t oe_syscall_recvfrom_ocall(
         (int)len,
         flags,
         (struct sockaddr*)src_addr,
-        addrlen_in);
+        (int*)&addrlen_in);
     if (ret == SOCKET_ERROR)
     {
         _set_errno(_winsockerr_to_errno(WSAGetLastError()));
@@ -890,6 +960,11 @@ ssize_t oe_syscall_recvv_ocall(
     int iovcnt,
     size_t iov_buf_size)
 {
+    OE_UNUSED(fd);
+    OE_UNUSED(iov_buf);
+    OE_UNUSED(iovcnt);
+    OE_UNUSED(iov_buf_size);
+
     PANIC;
 }
 
@@ -899,6 +974,11 @@ ssize_t oe_syscall_sendv_ocall(
     int iovcnt,
     size_t iov_buf_size)
 {
+    OE_UNUSED(fd);
+    OE_UNUSED(iov_buf);
+    OE_UNUSED(iovcnt);
+    OE_UNUSED(iov_buf_size);
+
     PANIC;
 }
 
@@ -973,6 +1053,11 @@ int oe_syscall_ioctl_ocall(
     uint64_t argsize,
     void* argout)
 {
+    OE_UNUSED(fd);
+    OE_UNUSED(arg);
+    OE_UNUSED(argsize);
+    OE_UNUSED(argout);
+
     errno = 0;
 
     // We don't support any ioctls right now as we will have to translate the
@@ -1047,6 +1132,11 @@ int oe_syscall_getsockname_ocall(
     oe_socklen_t addrlen_in,
     oe_socklen_t* addrlen_out)
 {
+    OE_UNUSED(sockfd);
+    OE_UNUSED(addr);
+    OE_UNUSED(addrlen_in);
+    OE_UNUSED(addrlen_out);
+
     PANIC;
 }
 
@@ -1056,11 +1146,18 @@ int oe_syscall_getpeername_ocall(
     oe_socklen_t addrlen_in,
     oe_socklen_t* addrlen_out)
 {
+    OE_UNUSED(sockfd);
+    OE_UNUSED(addr);
+    OE_UNUSED(addrlen_in);
+    OE_UNUSED(addrlen_out);
+
     PANIC;
 }
 
 int oe_syscall_shutdown_sockets_device_ocall(oe_host_fd_t sockfd)
 {
+    OE_UNUSED(sockfd);
+
     PANIC;
 }
 
@@ -1074,6 +1171,9 @@ int oe_syscall_shutdown_sockets_device_ocall(oe_host_fd_t sockfd)
 
 int oe_syscall_kill_ocall(int pid, int signum)
 {
+    OE_UNUSED(pid);
+    OE_UNUSED(signum);
+
     PANIC;
 }
 
@@ -1205,6 +1305,14 @@ int oe_syscall_getnameinfo_ocall(
     oe_socklen_t servlen,
     int flags)
 {
+    OE_UNUSED(sa);
+    OE_UNUSED(salen);
+    OE_UNUSED(host);
+    OE_UNUSED(hostlen);
+    OE_UNUSED(serv);
+    OE_UNUSED(servlen);
+    OE_UNUSED(flags);
+
     PANIC;
 }
 
@@ -1218,6 +1326,8 @@ int oe_syscall_getnameinfo_ocall(
 
 oe_host_fd_t oe_syscall_epoll_create1_ocall(int flags)
 {
+    OE_UNUSED(flags);
+
     PANIC;
 }
 
@@ -1227,6 +1337,11 @@ int oe_syscall_epoll_wait_ocall(
     unsigned int maxevents,
     int timeout)
 {
+    OE_UNUSED(epfd);
+    OE_UNUSED(events);
+    OE_UNUSED(maxevents);
+    OE_UNUSED(timeout);
+
     PANIC;
 }
 
@@ -1241,11 +1356,18 @@ int oe_syscall_epoll_ctl_ocall(
     int64_t fd,
     struct oe_epoll_event* event)
 {
+    OE_UNUSED(epfd);
+    OE_UNUSED(op);
+    OE_UNUSED(fd);
+    OE_UNUSED(event);
+
     PANIC;
 }
 
 int oe_syscall_epoll_close_ocall(oe_host_fd_t epfd)
 {
+    OE_UNUSED(epfd);
+
     PANIC;
 }
 
@@ -1262,6 +1384,10 @@ int oe_syscall_poll_ocall(
     oe_nfds_t nfds,
     int timeout)
 {
+    OE_UNUSED(host_fds);
+    OE_UNUSED(nfds);
+    OE_UNUSED(timeout);
+
     PANIC;
 }
 
@@ -1310,11 +1436,16 @@ unsigned int oe_syscall_getegid_ocall(void)
 
 int oe_syscall_getpgid_ocall(int pid)
 {
+    OE_UNUSED(pid);
+
     PANIC;
 }
 
 int oe_syscall_getgroups_ocall(size_t size, unsigned int* list)
 {
+    OE_UNUSED(size);
+    OE_UNUSED(list);
+
     PANIC;
 }
 

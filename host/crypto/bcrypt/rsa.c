@@ -429,7 +429,6 @@ oe_result_t oe_rsa_public_key_equal(
     bool* equal)
 {
     oe_result_t result = OE_UNEXPECTED;
-    NTSTATUS status = STATUS_UNSUCCESSFUL;
 
     /* key1 and key2 are both BCRYPT_RSAKEY_BLOB structures
      * which should be comparable as raw byte buffers.

@@ -12,6 +12,7 @@
 #endif
 
 #include <assert.h>
+#include <openenclave/bits/defs.h>
 #include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/safemath.h>
 #include <openenclave/internal/raise.h>
@@ -254,6 +255,7 @@ done:
     return result;
 
 #elif defined(_WIN32)
+    OE_UNUSED(fd);
 
     /* Allocate enclave memory for simulated mode only */
     void* result = NULL;
@@ -281,6 +283,8 @@ static oe_result_t _sgx_free_enclave_memory(
     size_t size,
     bool is_simulation)
 {
+    OE_UNUSED(size);
+
     if (!is_simulation)
     {
         uint32_t enclave_error = 0;

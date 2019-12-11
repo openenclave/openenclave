@@ -27,7 +27,6 @@ static oe_result_t _get_local_report(
     size_t* report_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint32_t retval;
 
     // opt_params, if specified, must be a sgx_target_info_t. When opt_params is
     // NULL, opt_params_size must be zero.
@@ -48,14 +47,12 @@ static oe_result_t _get_local_report(
 
     OE_CHECK(oe_get_sgx_report_ecall(
         enclave,
-        &retval,
+        &result,
         opt_params,
         opt_params_size,
         (sgx_report_t*)report_buffer));
 
     *report_buffer_size = sizeof(sgx_report_t);
-
-    result = (oe_result_t)retval;
 
 done:
 
@@ -302,13 +299,12 @@ oe_result_t oe_verify_report(
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
-        uint32_t retval;
+        oe_result_t retval;
 
         if (enclave == NULL)
             OE_RAISE(OE_INVALID_PARAMETER);
 
         OE_CHECK(oe_verify_report_ecall(enclave, &retval, report, report_size));
-
         OE_CHECK(retval);
     }
     else

@@ -9,6 +9,7 @@
 #include "../magic.h"
 #include "bcrypt.h"
 #include "crl.h"
+#include "util.h"
 
 typedef struct _crl
 {
@@ -81,8 +82,7 @@ oe_result_t oe_crl_read_der(
             "CertCreateCRLContext failed, err=%#x\n",
             GetLastError());
 
-    impl->magic = OE_CRL_MAGIC;
-    impl->crl = crl_context;
+    _crl_init(impl, crl_context);
     result = OE_OK;
 
 done:

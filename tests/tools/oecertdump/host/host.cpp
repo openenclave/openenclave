@@ -318,8 +318,8 @@ exit:
     }
 
 #else
-#pragma message \
-    "OE_LINK_SGX_DCAP_QL is not set to ON.  This tool requires DCAP libraries."
+#pragma message( \
+    "OE_LINK_SGX_DCAP_QL is not set to ON.  This tool requires DCAP libraries.")
     OE_UNUSED(argc);
     OE_UNUSED(argv);
     printf("oecertdump requires DCAP libraries.\n");

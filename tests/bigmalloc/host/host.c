@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <inttypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include "bigmalloc_u.h"
@@ -52,7 +53,8 @@ int main(int argc, const char* argv[])
         {
             fprintf(
                 stderr,
-                "%s: warning: insufficient memory to load enclave: %lu\n",
+                "%s: warning: insufficient memory to load enclave: %" PRIu64
+                "\n",
                 argv[0],
                 free_memory);
 

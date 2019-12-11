@@ -96,8 +96,8 @@ static oe_result_t _fixup_public_key_info_for_import(
          * offsets from the original */
         new_key_info = (PCERT_PUBLIC_KEY_INFO)new_key_info_buffer;
         new_key_info->Algorithm.pszObjId =
-            new_key_info_buffer +
-            (key_info->Algorithm.pszObjId - key_info_base);
+            (PSTR)new_key_info_buffer +
+            (key_info->Algorithm.pszObjId - (PSTR)key_info_base);
         new_key_info->Algorithm.Parameters.pbData =
             new_key_info_buffer +
             (key_info->Algorithm.Parameters.pbData - key_info_base);
@@ -157,6 +157,8 @@ static oe_result_t _bcrypt_import_ec_private_key(
     DWORD d_data_size,
     BCRYPT_KEY_HANDLE* private_key)
 {
+    OE_UNUSED(ec_key_magic);
+
     oe_result_t result = OE_UNEXPECTED;
     DWORD key_blob_size = 0;
     BYTE* key_blob = NULL;
@@ -544,6 +546,8 @@ oe_result_t oe_ec_private_key_sign(
     uint8_t* signature,
     size_t* signature_size)
 {
+    OE_UNUSED(hash_type);
+
     oe_result_t result = OE_UNEXPECTED;
     uint8_t* raw_signature = NULL;
     size_t raw_signature_size = 0;
@@ -638,6 +642,8 @@ oe_result_t oe_ec_public_key_verify(
     const uint8_t* signature,
     size_t signature_size)
 {
+    OE_UNUSED(hash_type);
+
     oe_result_t result = OE_UNEXPECTED;
     BYTE* x509_signature = NULL;
     DWORD x509_signature_size = 0;
@@ -1013,8 +1019,8 @@ oe_result_t oe_ecdsa_signature_write_der(
 
     /* Encode the ECDSA siganture */
     {
-        CERT_ECC_SIGNATURE ecc_sig = {
-            (DWORD)max_rs_size, r, (DWORD)max_rs_size, s};
+        CERT_ECC_SIGNATURE ecc_sig = {{(DWORD)max_rs_size, r},
+                                      {(DWORD)max_rs_size, s}};
         BOOL success = CryptEncodeObjectEx(
             X509_ASN_ENCODING,
             X509_ECC_SIGNATURE,

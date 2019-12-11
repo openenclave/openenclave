@@ -42,6 +42,16 @@ function call_clang {
         [ "$a" == "/FS" ]           && continue
         [ "$a" == "/showIncludes" ] && continue
         [ "$a" == "/JMC" ]          && continue
+        [ "$a" == "/W1" ]           && continue
+        [ "$a" == "/W2" ]           && continue
+        [ "$a" == "/W3" ]           && continue
+        [ "$a" == "/W4" ]           && continue
+        [ "$a" == "/WX" ]           && continue
+
+        # Ignore warnings for specific error codes
+        if [[ "$a" =~ /[wW][dD][0-9]* ]]; then
+            continue
+        fi
 
         # Map the following arguments
         [ "$a" == "/DNDEBUG" ]   && args+="-DNDEBUG "   && continue

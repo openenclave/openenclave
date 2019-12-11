@@ -276,7 +276,6 @@ void test_string_edl_ecalls(oe_enclave_t* enclave)
     }
     // Test wstrings without null terminators.
     {
-        OE_UNUSED(ecall_wstring_no_null_terminator_modified);
         // wchar_t is not a portable type. Hence the test is performed
         // only on Linux.
 #ifdef __linux__
@@ -384,7 +383,7 @@ void test_wstring_edl_ecalls(oe_enclave_t* enclave)
     if (!g_enabled[TYPE_WCHAR_T])
         return;
 
-    swprintf(str, 50, L"%S", str_value);
+    swprintf(str, 50, L"%lS", str_value);
 
     // wchar_t*
     OE_TEST(ecall_wstring_fun1(enclave, str) == OE_OK);
@@ -399,7 +398,7 @@ void test_wstring_edl_ecalls(oe_enclave_t* enclave)
     OE_TEST(wcscmp(str, L"Goodbye\n") == 0);
 
     // Restore value.
-    swprintf(str, 50, L"%S", str_value);
+    swprintf(str, 50, L"%lS", str_value);
 
     // wchar_t* user check.
     OE_TEST(ecall_wstring_fun5(enclave, str) == OE_OK);

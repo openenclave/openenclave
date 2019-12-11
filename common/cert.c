@@ -97,7 +97,7 @@ done:
 
 oe_result_t oe_get_crl_distribution_points(
     const oe_cert_t* cert,
-    const char*** urls,
+    char*** urls,
     size_t* num_urls,
     uint8_t* buffer,
     size_t* buffer_size)
@@ -163,7 +163,7 @@ oe_result_t oe_get_crl_distribution_points(
 
         /* Set the pointer to the urls[] array if enough space */
         if (buffer && urls_bytes <= *buffer_size)
-            *urls = (const char**)buffer;
+            *urls = (char**)buffer;
 
         /* Process all the CRL distribution points */
         {
@@ -187,7 +187,7 @@ oe_result_t oe_get_crl_distribution_points(
                 {
                     // The address could point beyond end of buffer, but that is
                     // fine since an OE_BUFFER_TOO_SMALL error is raised below.
-                    (*urls)[i] = (const char*)(buffer + offset);
+                    (*urls)[i] = ((char*)buffer + offset);
                 }
 
                 /* Append the URL */

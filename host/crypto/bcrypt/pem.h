@@ -18,6 +18,8 @@ typedef enum _oe_pem_header
     OE_PEM_HEADER_PRIVATE_KEY = 2,
     OE_PEM_HEADER_RSA_PRIVATE_KEY = 3,
     OE_PEM_HEADER_EC_PRIVATE_KEY = 4,
+    /* Caution: always add new PEM header values here */
+    OE_PEM_HEADER_MAX,
     __OE_PEM_HEADER_MAX = OE_ENUM_MAX,
 } oe_pem_header_t;
 

@@ -345,8 +345,7 @@ static const char* oe_ocall_str(oe_func_t ocall)
 
     OE_STATIC_ASSERT(OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX);
 
-    if (ocall >= OE_OCALL_BASE &&
-        ocall < (OE_OCALL_BASE + OE_COUNTOF(func_names)))
+    if (ocall >= OE_OCALL_BASE && ocall < OE_OCALL_MAX)
         return func_names[ocall - OE_OCALL_BASE];
     else
         return "UNKNOWN";
@@ -367,8 +366,7 @@ static const char* oe_ecall_str(oe_func_t ecall)
 
     OE_STATIC_ASSERT(OE_ECALL_BASE + OE_COUNTOF(func_names) == OE_ECALL_MAX);
 
-    if (ecall >= OE_ECALL_BASE &&
-        ecall < (OE_ECALL_BASE + OE_COUNTOF(func_names)))
+    if (ecall >= OE_ECALL_BASE && ecall < OE_ECALL_MAX)
         return func_names[ecall - OE_ECALL_BASE];
     else
         return "UNKNOWN";
