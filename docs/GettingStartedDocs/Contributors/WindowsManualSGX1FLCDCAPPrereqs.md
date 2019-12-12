@@ -25,7 +25,7 @@ for more details on how to install the contents of the package.
 The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.3.101.3`:
 
 1. Unzip the required drivers from the extracted subfolders:
-    - `LC_driver_WinServer2016\Signed_*.zip`
+    - `LC_driver\WinServer2016\Signed_*.zip`
     - `DCAP_INF\WinServer2016\Signed_*.zip`
 
    The following instructions will assume that these have been unzipped into the `LC_driver` and `DCAP_INF` folders respectively.
