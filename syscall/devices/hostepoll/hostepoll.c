@@ -480,8 +480,8 @@ static int _epoll_wait(
                 // fd has been deleted between the return of epoll_wait and the
                 // acquisition of the lock.
                 --retval;
-                memmove(
-                    event, event + 1, (size_t)(retval - i) * sizeof(*event));
+                *event = events[retval];
+                --i;
             }
         }
     }
