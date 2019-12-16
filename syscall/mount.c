@@ -137,7 +137,6 @@ int oe_mount(
     oe_device_t* device = NULL;
     oe_device_t* new_device = NULL;
     bool locked = false;
-    oe_syscall_path_t source_path;
     oe_syscall_path_t target_path;
     mount_point_t mount_point = {0};
 
@@ -152,14 +151,9 @@ int oe_mount(
         target = target_path.buf;
     }
 
-    /* Normalize the source path if any. */
-    if (source)
-    {
-        if (!oe_realpath(source, &source_path))
-            OE_RAISE_ERRNO(OE_EINVAL);
-
-        source = source_path.buf;
-    }
+    /* Note: Normialization of source path is left to the external device
+     * as it may not be a path internal to the enclave.
+     */
 
     /* Resolve the device for the given filesystemtype. */
     device = oe_device_table_find(filesystemtype, OE_DEVICE_TYPE_FILE_SYSTEM);

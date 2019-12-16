@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
+#include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
 #include <setjmp.h>
 #include <stdio.h>
@@ -15,6 +16,19 @@ void test_hostfs(const char* tmp_dir)
     if (oe_load_module_host_file_system() != OE_OK)
     {
         fprintf(stderr, "oe_load_module_host_file_system() failed\n");
+        exit(1);
+    }
+
+    /* Mount with a relative source should fail */
+    if (mount(".", "/", OE_HOST_FILE_SYSTEM, 0, NULL) == 0)
+    {
+        fprintf(stderr, "mount() with relative path should not succeed\n");
+        exit(1);
+    }
+    else if (oe_errno != OE_EINVAL)
+    {
+        fprintf(
+            stderr, "mount() with relative path should fail with OE_EINVAL\n");
         exit(1);
     }
 
