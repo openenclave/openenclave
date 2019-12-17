@@ -20,7 +20,7 @@ void test_sbrk(void)
     OE_TEST((start = (uint8_t*)oe_sbrk(0)));
     current = start;
 
-    /* Allocate i bytes at a time. */
+    /* Allocate several times. */
     for (ptrdiff_t i = 0; i < COUNT; i++)
     {
         uint8_t* p = (uint8_t*)oe_sbrk(i);
@@ -34,7 +34,7 @@ void test_sbrk(void)
     OE_TEST(end != NULL);
     OE_TEST(end == (uint8_t*)start + n);
 
-    /* Deallocate all allocated bytes. */
+    /* Deallocate several times. */
     for (ptrdiff_t i = 0; i < COUNT; i++)
     {
         uint8_t* p = (uint8_t*)oe_sbrk(-i);
@@ -46,6 +46,7 @@ void test_sbrk(void)
 
     /* The break value should be back where it started. */
     OE_TEST(oe_sbrk(0) == start);
+    OE_TEST(((uint8_t*)end - m) == start);
 }
 
 OE_SET_ENCLAVE_SGX(
