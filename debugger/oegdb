@@ -7,7 +7,9 @@
 # See https://mywiki.wooledge.org/BashFAQ/028 for complexities involved
 # in determining location of a bash script. ${BASH_SOURCE}, though not perfect,
 # is an acceptable solution for oegdb.
-OE_GDB_DIR=$(dirname "${BASH_SOURCE[0]}")
+# readlink provides additional benefit in getting the absolute path
+# to the script directory for systems where BASH_SOURCE is only relative.
+OE_GDB_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 
 # Get the path to the debugger libraries relative to the oegdb path.
 # Normalize the path by cd-ing and doing a pwd -P.
