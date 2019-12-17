@@ -1,0 +1,13 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public void set_up();
+        public void tear_down();
+        public void wait_for_events();
+        public void trigger_and_add_event();
+        public void trigger_and_delete_event();
+        public void cancel_wait();
+    };
+};
