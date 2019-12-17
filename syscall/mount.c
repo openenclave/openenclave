@@ -151,7 +151,7 @@ int oe_mount(
         target = target_path.buf;
     }
 
-    /* Note: Normialization of source path is left to the external device
+    /* Note: Normalization of source path is left to the external device
      * as it may not be a path internal to the enclave.
      */
 
