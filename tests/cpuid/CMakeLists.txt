@@ -8,3 +8,4 @@ if (BUILD_ENCLAVES)
 endif()
 
 add_enclave_test(tests/cpuid cpuid_host cpuid_enc)
+set_tests_properties(tests/cpuid PROPERTIES SKIP_RETURN_CODE 2)

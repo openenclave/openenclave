@@ -12,6 +12,8 @@
 #include "../../../host/strings.h"
 #include "cpuid_u.h"
 
+#define SKIP_RETURN_CODE 2
+
 void cpuid_ocall(
     uint32_t leaf,
     uint32_t subleaf,
@@ -40,7 +42,12 @@ int main(int argc, const char* argv[])
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
     oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
-    const uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
+    const uint32_t flags = oe_get_create_flags();
+
+    // In simulation mode cpuid instruction will just be successfully executed
+    // on the host and the exception handler will not be called.
+    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
+        return SKIP_RETURN_CODE;
 
     if (argc != 2)
     {
