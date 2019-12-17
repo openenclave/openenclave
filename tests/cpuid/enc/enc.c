@@ -35,10 +35,12 @@ static uint64_t _exception_handler(oe_exception_record_t* exception)
     return OE_EXCEPTION_CONTINUE_SEARCH;
 }
 
-extern void (*oe_continue_execution_hook)(oe_context_t* context);
+extern void (*oe_continue_execution_hook)(oe_exception_record_t* record);
 
-static void _continue_execution_hook(oe_context_t* context)
+static void _continue_execution_hook(oe_exception_record_t* record)
 {
+    oe_context_t* context = record->context;
+
     if (*((uint16_t*)context->rip) == OE_CPUID_OPCODE)
     {
         uint32_t rax;

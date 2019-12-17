@@ -362,6 +362,10 @@ void __cxa_thread_atexit(void (*destructor)(void*), void* object)
  */
 oe_result_t oe_thread_local_cleanup(td_t* td)
 {
+    /* OE thread local clean up not required in SW mode for SGXLKL */
+    if (td->simulate)
+        return OE_OK;
+
     /* Call tls atexit functions in reverse order*/
     if (_tls_atexit_functions)
     {
