@@ -61,7 +61,7 @@ To build debug enclaves:
 cd openenclave
 mkdir build/x64-Debug
 cd build/x64-Debug
-cmake -G ninja -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=install ../..
+cmake -G Ninja -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=install ../..
 ninja
 ```
 
@@ -77,7 +77,7 @@ Similarly, to build release enclaves, specify the flag
 cd openenclave
 mkdir build/x64-Release
 cd build/x64-Release
-cmake -G ninja -DCMAKE_BUILD_TYPE=Release -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=install ../..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=install ../..
 ninja
 ```
 
