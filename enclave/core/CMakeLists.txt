@@ -60,7 +60,6 @@ if (OE_SGX)
         sgx/hostcalls.c
         sgx/init.c
         sgx/sgx_t_wrapper.c
-        sgx/jump.c
         sgx/keys.c
         sgx/memory.c
         sgx/properties.c
@@ -186,9 +185,6 @@ set_source_files_properties(malloc.c
     PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
 
 if (OE_SGX)
-    # jump.s must be optimized for the correct call-frame.
-    set_source_files_properties(sgx/jump.c PROPERTIES COMPILE_FLAGS -O2)
-
     set_source_files_properties(sgx/keys.c PROPERTIES COMPILE_FLAGS -Wno-type-limits)
 
     # -m64 is an x86_64 specific flag
