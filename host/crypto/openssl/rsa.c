@@ -218,6 +218,21 @@ void oe_rsa_public_key_init(oe_rsa_public_key_t* public_key, EVP_PKEY* pkey)
         (oe_public_key_t*)public_key, pkey, OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
+oe_result_t oe_rsa_private_key_from_engine(
+    oe_rsa_private_key_t* private_key,
+    const char *engine_id,
+    const char *engine_load_path,
+    const char *key_id)
+{
+    return oe_private_key_from_engine(
+        engine_id,
+        engine_load_path,
+        key_id,
+        (oe_private_key_t*)private_key,
+        EVP_PKEY_RSA,
+        OE_RSA_PRIVATE_KEY_MAGIC);
+}
+
 oe_result_t oe_rsa_private_key_read_pem(
     oe_rsa_private_key_t* private_key,
     const uint8_t* pem_data,
@@ -343,6 +358,7 @@ oe_result_t oe_rsa_public_key_equal(
     return _public_key_equal(
         (oe_public_key_t*)public_key1, (oe_public_key_t*)public_key2, equal);
 }
+
 
 oe_result_t oe_rsa_get_public_key_from_private(
     const oe_rsa_private_key_t* private_key,
