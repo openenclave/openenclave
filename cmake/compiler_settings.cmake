@@ -76,6 +76,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
   add_compile_options(-Wall -Werror -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers)
   add_compile_options(-fno-strict-aliasing)
 
+  # Allow checks which always evaluate to true or false due to type limits.
+  # This is required as some macros operate on types of varying sizes.
+  add_compile_options(-Wno-type-limits)
+
   # Enables XSAVE intrinsics
   if (OE_SGX)
       add_compile_options(-mxsave)
@@ -104,12 +108,13 @@ elseif (MSVC)
   # doesn't recognize /wd flags
   # Turns off warnings for:
   # * Unicode character cannot be represented by current code page
-  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4566")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4566")
+  # * Flexible array members. These are standard in C99 so we will allow them.
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4566 /wd4200")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4566 /wd4200")
 
   # Add Flags we want to use for both C and CXX
   add_compile_options(/WX)
-  add_compile_options(/W1)
+  add_compile_options(/W2)
 
   # Ignore compiler warnings:
   # * unicode character not supported
