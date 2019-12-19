@@ -1,0 +1,9 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+
+    trusted {
+        public void test_name_conflict();
+    };
+};
