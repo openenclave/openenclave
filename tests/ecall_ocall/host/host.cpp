@@ -250,7 +250,7 @@ static void test_cross_enclave_calls()
         enc_cross_enclave_call(enclave_wrap::get(0), &total, 0, SEED, 0);
     OE_TEST(OE_OK == result);
 
-    printf("total=%u, expected_total=%lu\n", total, expected_total);
+    printf("total=%u, expected_total=%zu\n", total, expected_total);
     OE_TEST(total == expected_total);
 
     printf("=== test_cross_enclave_calls passed\n");
