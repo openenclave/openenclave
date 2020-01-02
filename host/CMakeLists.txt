@@ -342,9 +342,9 @@ add_library(oehostverify STATIC ${PLATFORM_HOST_ONLY_SRC})
 target_link_libraries(oehostverify PUBLIC oe_includes)
 target_link_libraries(oehost PUBLIC oe_includes)
 
-if (WIN32)
-  target_link_libraries(oehost PUBLIC ws2_32)
-endif ()
+if(WIN32)
+  target_link_libraries(oehost PUBLIC ws2_32 shlwapi)
+endif()
 
 if (OE_SGX AND UNIX)
   # Link oedebugrt static library.

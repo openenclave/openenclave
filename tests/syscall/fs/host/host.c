@@ -36,7 +36,11 @@ int main(int argc, const char* argv[])
     char* src_dir = (char*)argv[2];
     char* tmp_dir = (char*)argv[3];
 
+    // Windows does not support umask.
+    // Please set up the right permission to the parent directory.
+#if !defined(_WIN32)
     umask(0022);
+#endif
 
     rmdir(tmp_dir);
 

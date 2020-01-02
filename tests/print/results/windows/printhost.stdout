@@ -1,0 +1,9 @@
+=== TestPrint() 
+oe_host_printf(stdout)
+printf(stdout)
+fwrite(stdout)
+o
+fputs(stdout)
+oe_host_write(stdout)
+oe_host_write(stdout)
+=== passed all tests (host/print_host)

@@ -22,6 +22,10 @@ add_subdirectory(str)
 add_subdirectory(logging)
 add_subdirectory(tools)
 
+if (WIN32)
+    add_subdirectory(win_paths)
+endif()
+
 if (OE_SGX)
     add_subdirectory(debugger)
     add_subdirectory(host_verify)

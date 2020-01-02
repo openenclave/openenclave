@@ -43,6 +43,7 @@ devex/vsextension/ItemTemplates/.*
 devex/vsextension/ProjectTemplates/.*
 tools/oeedger8r/esy\.lock/.*
 tools/oeedger8r/intel/.*
+tests/print/results/.*
 
 # Files
 3rdparty/LICENSES
@@ -76,8 +77,6 @@ host/linux/pe\.h
 include/openenclave/internal/queue\.h
 samples/file-encryptor/testfile
 tests/ocall/debugging\.txt
-tests/print/printhost\.stderr
-tests/print/printhost\.stdout
 tests/str/test1\.txt
 tools/oeedger8r/src/\.ocamlformat
 tools/oeedger8r/src/\.ocamlformat-ignore
