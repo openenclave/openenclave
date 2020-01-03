@@ -637,7 +637,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         OE_TEST(
             oe_mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
         const int flags = OE_O_CREAT | OE_O_TRUNC | OE_O_WRONLY;
-        OE_TEST(oe_open(path, flags, MODE) == 0);
+        OE_TEST(oe_open(path, flags, MODE) != -1);
         OE_TEST(oe_umount("/") == 0);
 
         // Open file in tmp dir using a relative path
@@ -645,9 +645,15 @@ void test_fs(const char* src_dir, const char* tmp_dir)
             oe_mount(
                 tmp_dir, tmp_dir, OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) ==
             0);
-        OE_TEST(oe_chdir(tmp_dir));
-        OE_TEST(oe_open("./testfile", OE_O_RDONLY, MODE) == 0);
+        OE_TEST(oe_chdir(tmp_dir) == 0);
+        OE_TEST(oe_open("./testfile", OE_O_RDONLY, MODE) != -1);
         OE_TEST(oe_umount(tmp_dir) == 0);
+
+        // Change workdir back for other tests.
+        OE_TEST(
+            oe_mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
+        OE_TEST(oe_chdir("/") == 0);
+        OE_TEST(oe_umount("/") == 0);
     }
 
     /* Test writing to a read-only mounted file system. */

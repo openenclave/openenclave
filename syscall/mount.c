@@ -166,7 +166,12 @@ int oe_mount(
         struct oe_stat buf;
         int retval = -1;
 
-        if ((retval = oe_stat(target, &buf)) != 0)
+        /**
+         * oe_stat tries to do a mount resolution, but the directory is not yet
+         * mounted. As a result, we must call the filesystem's stat
+         * implementation directly.
+         */
+        if ((retval = device->ops.fs.stat(device, target, &buf)) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
         if (!OE_S_ISDIR(buf.st_mode))
