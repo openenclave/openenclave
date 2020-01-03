@@ -137,7 +137,6 @@ int oe_mount(
     oe_device_t* device = NULL;
     oe_device_t* new_device = NULL;
     bool locked = false;
-    oe_syscall_path_t source_path;
     oe_syscall_path_t target_path;
     mount_point_t mount_point = {0};
 
@@ -152,14 +151,9 @@ int oe_mount(
         target = target_path.buf;
     }
 
-    /* Normalize the source path if any. */
-    if (source)
-    {
-        if (!oe_realpath(source, &source_path))
-            OE_RAISE_ERRNO(OE_EINVAL);
-
-        source = source_path.buf;
-    }
+    /* Note: Normalization of source path is left to the external device
+     * as it may not be a path internal to the enclave.
+     */
 
     /* Resolve the device for the given filesystemtype. */
     device = oe_device_table_find(filesystemtype, OE_DEVICE_TYPE_FILE_SYSTEM);
@@ -172,7 +166,12 @@ int oe_mount(
         struct oe_stat buf;
         int retval = -1;
 
-        if ((retval = oe_stat(target, &buf)) != 0)
+        /**
+         * oe_stat tries to do a mount resolution, but the directory is not yet
+         * mounted. As a result, we must call the filesystem's stat
+         * implementation directly.
+         */
+        if ((retval = device->ops.fs.stat(device, target, &buf)) != 0)
             OE_RAISE_ERRNO(oe_errno);
 
         if (!OE_S_ISDIR(buf.st_mode))

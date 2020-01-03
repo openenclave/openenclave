@@ -221,6 +221,15 @@ static int _hostfs_mount(
     if ((flags & OE_MS_RDONLY))
         fs->mount.flags = flags;
 
+    /* ---------------------------------------------------------------------
+     * Only support absolute paths. Hostfs is treated as an external
+     * filesystem. As such, it does not make sense to resolve relative paths
+     * using the enclave's current working directory.
+     * ---------------------------------------------------------------------
+     */
+    if (source && source[0] != '/')
+        OE_RAISE_ERRNO(OE_EINVAL);
+
     /* Save the source parameter (will be needed to form host paths). */
     oe_strlcpy(fs->mount.source, source, sizeof(fs->mount.source));
 
