@@ -25,7 +25,7 @@ sudo ./scripts/ansible/install-ansible.sh
 To install all the Open Enclave prerequisites you can execute the `environment-setup.yml` tasks from `linux/openenclave` Ansible role:
 
 ```bash
-cd openenclave/scripts/ansible
+cd scripts/ansible
 ansible localhost -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" --become --ask-become-pass
 ```
 
