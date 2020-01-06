@@ -39,11 +39,14 @@ void* oe_arena_malloc(size_t size)
     // Create the anera if it hasn't been created.
     if (_arena.buffer == NULL)
     {
-        void* buffer = oe_allocate_arena(_capacity);
+        _arena.capacity = __atomic_load_n(&_capacity, __ATOMIC_SEQ_CST);
+        void* buffer = oe_allocate_arena(_arena.capacity);
         if (buffer == NULL)
+        {
+            _arena.capacity = 0;
             return NULL;
+        }
         _arena.buffer = (uint8_t*)buffer;
-        _arena.capacity = _capacity;
         _arena.used = 0;
     }
 
