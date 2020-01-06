@@ -14,7 +14,7 @@
 
 oe_result_t test_verify_tcb_info(
     const char* tcb_info,
-    oe_tcb_level_t* platform_tcb_level,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_tcb_info)
 {
 #ifdef OE_LINK_SGX_DCAP_QL

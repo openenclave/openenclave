@@ -34,6 +34,7 @@ oe_result_t oe_validate_qe_identity(
     oe_cert_chain_t pck_cert_chain = {0};
     oe_cert_t leaf_cert = {0};
     oe_parsed_qe_identity_info_t parsed_info = {0};
+    oe_qe_identity_info_tcb_level_t platform_tcb_level = {{0}};
     oe_datetime_t from = {0};
     oe_datetime_t until = {0};
 
@@ -68,6 +69,7 @@ oe_result_t oe_validate_qe_identity(
     OE_CHECK(oe_parse_qe_identity_info_json(
         sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].data,
         sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].size,
+        &platform_tcb_level,
         &parsed_info));
 
     // verify qe identity signature

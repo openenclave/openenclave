@@ -116,63 +116,65 @@ typedef union _oe_tcb_level_status
                                                 
 } oe_tcb_level_status_t;
 
-// Existing TCB Level struct for TCB Info.  Will rename this
-// struct to oe_tcb_tcb_level given that
-// QE identity info also has its TCB level data field.
-typedef struct _oe_tcb_tcb_level
+/*! \struct oe_tcb_info_tcb_level_t
+ *  \brief TCB level field in the SGX TCB Info.
+ *
+ *  Version 2 of the SGX endorsements/collaterals, the QE Identiy
+ *  Info structure also has a TCB level field (\ref See oe_qe_info_tcb_level_t).
+ */
+typedef struct _oe_tcb_info_tcb_level
 {
-    // Existing fields
     uint8_t sgx_tcb_comp_svn[16];
     uint16_t pce_svn;
-    oe_tcb_level_status_t tcb_status;
+    oe_tcb_level_status_t status;
 
-    // New fields
+    // V2 fields
     oe_datetime_t tcb_date;
 
     /*! Offset into the json QE Identity info where
      * the advisoryIDs fields start.
-     *
-     * Example of this field: ["INTEL-SA-00079", "INTEL-SA-00076"]
      */
     size_t advisory_ids_offset;
 
     //! Total size of all the advisoryIDs.
     size_t advisory_ids_size;
+} oe_tcb_info_tcb_level_t;
 
-} oe_tcb_tcb_level_t;
-
+/*! \struct oe_parsed_tcb_info_t
+ *  \brief TCB info excluding the TCB levels field.
+ */
 typedef struct _oe_parsed_tcb_info
 {
-    // Existing fields
     uint32_t version;
     oe_datetime_t issue_date;
     oe_datetime_t next_update;
     uint8_t fmspc[6];
     uint8_t pceid[2];
     uint8_t signature[64];
-    const uint8_t* tcb_info_start;
-    size_t tcb_info_size;
-    oe_tcb_tcb_level_t tcb_level;
 
-    // New fields
+    // V2 fields
     uint32_t tcb_type;
     uint32_t tcb_evaluation_data_number;
+    oe_tcb_info_tcb_level_t tcb_level;
+
+    const uint8_t* tcb_info_start;
+    size_t tcb_info_size;
 
 } oe_parsed_tcb_info_t;
 
-/*!
- * New enum for QE id field
+/*! \enum oe_qe_identity_id
+ *  \brief Quoting enclave identity id (V2 only)
  */
 typedef enum _oe_qe_identity_id
 {
-    OE_IDENTITY_ID_QE,
+    QE_IDENTITY_ID_QE,
     QE_IDENTITY_ID_QVE
-} oe_qe_identity_id;
+} oe_qe_identity_id_t;
 
-/*!
- * New TCB level for QE identity info.
+/*! \struct oe_qe_tcb_level
+ *  \brief Quoting enclave identity TCB level.  Applies to V2 only.
  */
-typedef struct _oe_qe_tcb_level
+typedef struct _oe_qe_identity_info_tcb_level
 {
     uint32_t isvsvn[1];
     oe_tcb_level_status_t tcb_status;
@@ -185,32 +187,33 @@ typedef struct _oe_qe_tcb_level
 
     //! Total size of all the advisoryIDs.
     size_t advisory_ids_size;
+} oe_qe_identity_info_tcb_level_t;
 
-} oe_qe_tcb_level_t;
-
+/*! \struct oe_parsed_qe_identity_info_t
+ *  \brief SGX Quoting Enclave Identity Info data structure.
+ */
 typedef struct _oe_parsed_qe_identity_info
 {
-    // Existing fields
     uint32_t version;
     oe_datetime_t issue_date;
     oe_datetime_t next_update;
-    uint32_t miscselect;         // The MISCSELECT that must be set
-    uint32_t miscselect_mask;    // Mask of MISCSELECT to enforce
-    sgx_attributes_t attributes; // flags and xfrm (XSAVE-Feature Request Mask)
-    uint64_t attributes_flags_mask;   // mask for attributes.flags
-    uint64_t attributes_xfrm_mask;    // mask for attributes.xfrm
-    uint8_t mrsigner[OE_SHA256_SIZE]; // MRSIGNER of the enclave
-    uint16_t isvprodid;               // ISV assigned Product ID
-    uint16_t isvsvn;                  // ISV assigned SVN
+    uint32_t miscselect;         //! The MISCSELECT that must be set
+    uint32_t miscselect_mask;    //! Mask of MISCSELECT to enforce
+    sgx_attributes_t attributes; //! flags and xfrm (XSAVE-Feature Request Mask)
+    uint64_t attributes_flags_mask;   //! mask for attributes.flags
+    uint64_t attributes_xfrm_mask;    //! mask for attributes.xfrm
+    uint8_t mrsigner[OE_SHA256_SIZE]; //! MRSIGNER of the enclave
+    uint16_t isvprodid;               //! ISV assigned Product ID
+    uint16_t isvsvn;                  //! ISV assigned SVN
     uint8_t signature[64];
+
+    // V2 fields
+    oe_qe_identity_id_t id;
+    uint32_t tcb_evaluation_data_number;
+    oe_qe_identity_info_tcb_level_t tcb_level;
+
     const uint8_t* info_start;
     size_t info_size;
-
-    // New fields
-    oe_qe_identity_id id;
-    uint32_t tcb_evaluation_data_number;
-    oe_qe_tcb_level_t tcb_level;
-
 } oe_parsed_qe_identity_info_t;
 ```
 
