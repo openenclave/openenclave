@@ -4006,10 +4006,8 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/default.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/move_assign.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/move_ctor.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_adopt_lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex_defer_lock.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/try_lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/try_lock_for.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/unlock.pass.cpp
@@ -4049,7 +4047,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/default.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/lock.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/lock_shared.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/default.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.timedmutex.requirements/thread.timedmutex.class/lock.pass.cpp

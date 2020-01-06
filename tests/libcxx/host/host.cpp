@@ -1,12 +1,13 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <inttypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <pthread.h>
 #include <cassert>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -16,7 +17,10 @@
 #include "threadArgs.h"
 
 // Host maintains a map of enclave key to host thread ID
-static std::map<uint64_t, pthread_t> _enclave_host_id_map;
+static std::map<uint64_t, std::thread::id> _enclave_host_id_map;
+// Host maintains a map of thread id to the thread object
+static std::map<std::thread::id, std::thread> _host_id_thread_map;
+
 static atomic_flag_lock _host_lock;
 
 void test(oe_enclave_t* enclave)
@@ -39,6 +43,11 @@ void test(oe_enclave_t* enclave)
 
 void host_exit(int arg)
 {
+    // Ensure all the threads terminate before the exit
+    for (auto& pair : _host_id_thread_map)
+    {
+        pair.second.join();
+    }
     exit(arg);
 }
 
@@ -53,22 +62,30 @@ void* host_enclave_thread(void* args)
     thread_args_t* thread_args = reinterpret_cast<thread_args_t*>(args);
     // need to cache the values for enc_key and enclave now before _host_lock
     // is unlocked after assigning the thread_id to the _enclave_host_id_map
-    // because args is a local variable in the calling method which may exit at
-    // any time after _host_lock is unlocked which may cause a segfault
+    // because args is a local variable in the calling method which may exit
+    // at any time after _host_lock is unlocked which may cause a segfault
     uint64_t enc_key = thread_args->enc_key;
     oe_enclave_t* enclave = thread_args->enclave;
-    pthread_t thread_id = pthread_self();
+    std::thread::id thread_id;
 
     {
+        // Using atomic_thread_host_id_map lock to ensure the mapping is updated
+        // before the thread_id lookup
         atomic_lock lock(_host_lock);
-        // Populate the enclave_host_id map with the host thread id
+
+        std::thread::id thread_id = std::this_thread::get_id();
+        OE_TEST(
+            _host_id_thread_map.find(thread_id) != _host_id_thread_map.end());
+
+        // Populate the enclave_host_id map with the thread_id
         _enclave_host_id_map[enc_key] = thread_id;
     }
 
     printf(
-        "host_enclave_thread(): enc_key=%lu has host thread_id of %#10lx\n",
+        "host_enclave_thread(): enc_key=%" PRIu64
+        " has host thread_id of %#10zx\n",
         enc_key,
-        thread_id);
+        std::hash<std::thread::id>()(thread_id));
 
     // Launch the thread
     oe_result_t result = enc_enclave_thread(enclave, enc_key);
@@ -80,33 +97,31 @@ void* host_enclave_thread(void* args)
 void host_create_thread(uint64_t enc_key, oe_enclave_t* enclave)
 {
     thread_args_t thread_args = {enclave, enc_key};
-    pthread_t thread_id = 0;
+    std::thread::id thread_id;
 
     {
         // Using atomic locks to protect the enclave_host_id_map
+        // and update the _host_id_thread_map upon the thread creation
         atomic_lock lock(_host_lock);
         _enclave_host_id_map.insert(std::make_pair(enc_key, thread_id));
-    }
 
-    // New Thread is created and executes host_enclave_thread
-    int ret =
-        pthread_create(&thread_id, NULL, host_enclave_thread, &thread_args);
-    if (ret != 0)
-    {
-        printf("host_create_thread(): pthread_create error %d\n", ret);
-        abort();
+        // New Thread is created and executes host_enclave_thread
+        std::thread t = std::thread(host_enclave_thread, &thread_args);
+
+        thread_id = t.get_id();
+        _host_id_thread_map[thread_id] = std::move(t);
     }
 
     // Main host thread waits for the enclave id to host id mapping to be
     // updated
-    pthread_t mapped_thread_id = 0;
-    while (0 == mapped_thread_id)
+    std::thread::id mapped_thread_id;
+    while (std::thread::id() == mapped_thread_id)
     {
         {
             atomic_lock lock(_host_lock);
             mapped_thread_id = _enclave_host_id_map[enc_key];
         }
-        if (0 == mapped_thread_id)
+        if (std::thread::id() == mapped_thread_id)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
@@ -123,40 +138,43 @@ void host_create_thread(uint64_t enc_key, oe_enclave_t* enclave)
 int host_join_thread(uint64_t enc_key)
 {
     int ret_val = 0;
-    pthread_t thread_id = 0;
+    std::thread::id thread_id;
 
     // Find the thread_id from the enclave_host_id_map using the enc_key
     {
         // Using atomic locks to protect the enclave_host_id_map
         atomic_lock lock(_host_lock);
-        std::map<uint64_t, pthread_t>::iterator it =
+        std::map<uint64_t, std::thread::id>::iterator it =
             _enclave_host_id_map.find(enc_key);
         if (it != _enclave_host_id_map.end())
         {
             thread_id = it->second;
             lock.unlock();
 
-            void* value_ptr = NULL;
-            ret_val = pthread_join(thread_id, &value_ptr);
+            auto& t = _host_id_thread_map[thread_id];
+            OE_TEST(t.joinable());
+            t.join();
 
-            // Update the shared memory only after pthread_join returns
-            if (0 == ret_val)
+            // Update the shared memory only after join
             {
-                // Delete the enclave_host_id mapping as thread_id may be reused
-                // in future
+                // Delete the enclave_host_id mapping as the thread_id may be
+                // reused in future
                 lock.lock();
                 _enclave_host_id_map.erase(enc_key);
+
                 printf(
-                    "host_join_thread() succeeded for enclave id=%lu, host "
-                    "id=%#10lx\n",
+                    "host_join_thread() succeeded for enclave id=%" PRIu64
+                    ", host "
+                    "id=%#10zx\n",
                     enc_key,
-                    thread_id);
+                    std::hash<std::thread::id>()(thread_id));
             }
         }
         else
         {
             printf(
-                "host_join_thread() failed to find enclave id=%lu in host "
+                "host_join_thread() failed to find enclave id=%" PRIu64
+                " in host "
                 "map\n",
                 enc_key);
             abort();
@@ -168,44 +186,44 @@ int host_join_thread(uint64_t enc_key)
 
 int host_detach_thread(uint64_t enc_key)
 {
-    int ret_val = 0;
-    printf("host_detach_thread():enclave key=%lu\n", enc_key);
+    printf("host_detach_thread():enclave key=%" PRIu64 "\n", enc_key);
 
     // Find the thread_id from the enclave_host_id_map using the enc_key
 
     // Using atomic locks to protect the enclave_host_id_map
     atomic_lock lock(_host_lock);
-    std::map<uint64_t, pthread_t>::iterator it =
+    std::map<uint64_t, std::thread::id>::iterator it =
         _enclave_host_id_map.find(enc_key);
     if (it != _enclave_host_id_map.end())
     {
-        pthread_t thread_id = it->second;
+        std::thread::id thread_id = it->second;
         lock.unlock();
 
-        ret_val = pthread_detach(thread_id);
-        if (0 == ret_val)
+        auto& t = _host_id_thread_map[thread_id];
+        t.detach();
+
         {
-            // Delete the _enclave_host_id mapping as thread_id may be reused
-            // in future
+            // Delete the _enclave_host_id mapping as the host thread_id may be
+            // reused in future
             lock.lock();
             _enclave_host_id_map.erase(enc_key);
         }
         printf(
-            "host_detach_thread() returned=%d for enclave id=%lu, host "
-            "thread id=%#10lx\n",
-            ret_val,
+            "host_detach_thread() enclave id=%" PRIu64 ", host "
+            "thread id=%#10zx\n",
             enc_key,
-            thread_id);
+            std::hash<std::thread::id>()(thread_id));
     }
     else
     {
         printf(
-            "host_detach_thread() failed to find enclave key=%lu in host "
+            "host_detach_thread() failed to find enclave key=%" PRIu64
+            " in host "
             "map\n",
             enc_key);
         abort();
     }
-    return ret_val;
+    return 0;
 }
 
 static int _get_opt(
