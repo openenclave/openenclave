@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgxtypes.h>
 #include "asmdefs.h"
 #include "enclave.h"
@@ -168,8 +169,18 @@ void oe_enter_sim(
     OE_ALIGNED(16)
     uint64_t fx_state[64];
 
+    // Backup host GS and FS registers.
+    void* host_gs = oe_get_gs_register_base();
+    void* host_fs = oe_get_fs_register_base();
+    sgx_tcs_t* sgx_tcs = (sgx_tcs_t*)tcs;
+
     while (1)
     {
+        // Set GS and FS registers to values set by the ENCLU instruction upon
+        // entry to the enclave.
+        oe_set_gs_register_base((void*)(enclave->addr + sgx_tcs->gsbase));
+        oe_set_fs_register_base((void*)(enclave->addr + sgx_tcs->fsbase));
+
         // Define register bindings and initialize the registers.
         // See oe_enter for ENCLU contract.
         OE_DEFINE_REGISTER(rax, 0 /* CSSA */);
@@ -194,6 +205,10 @@ void oe_enter_sim(
         // Update arg1 and arg2 with outputs returned by the enclave.
         arg1 = rdi;
         arg2 = rsi;
+
+        // Restore GS and FS registers upon returning from the enclave.
+        oe_set_gs_register_base(host_gs);
+        oe_set_fs_register_base(host_fs);
 
         // Make an OCALL if needed.
         oe_code_t code = oe_get_code_from_call_arg1(arg1);
