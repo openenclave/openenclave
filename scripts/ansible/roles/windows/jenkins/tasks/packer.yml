@@ -1,0 +1,31 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+
+- name: Include vars
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Make sure that Jenkins home exists
+  win_file:
+    path: "{{ jenkins_agent_root_dir }}"
+    state: directory
+
+- name: Oracle JDK8 - Download
+  win_get_url:
+    url: "{{ jdk8_url }}"
+    headers:
+      Cookie: "oraclelicense=accept-securebackup-cookie"
+    dest: "{{ tmp_dir }}\\jdk-windows-x64.exe"
+
+- name: Oracle JDK8 - Install
+  raw: "{{ tmp_dir }}\\jdk-windows-x64.exe /s REBOOT=Disable REMOVEOUTOFDATEJRES=1"
+
+
+- name: Configure Git in target image to enable merge/rebase actions - email
+  win_shell: |
+    git config --system user.email '{{ ci_team_email }}'
+
+- name: Configure Git in target image to enable merge/rebase actions - name
+  win_shell: |
+    git config --system user.name '{{ ci_team_name }}'
