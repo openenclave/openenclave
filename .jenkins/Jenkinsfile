@@ -58,7 +58,7 @@ def simulationTest(String version, String platform_mode, String build_type) {
                                ninja -v
                                ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                                """
-                    oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE")
+                    oe.ContainerRun("oetools-full-${version}:terraform", "clang-7", task, "--cap-add=SYS_PTRACE")
                 }
             }
         }
@@ -81,7 +81,7 @@ def AArch64GNUTest(String version, String build_type) {
                                 -Wdev
                             ninja -v
                             """
-                oe.ContainerRun("oetools-full-${version}", "cross", task, "--cap-add=SYS_PTRACE")
+                oe.ContainerRun("oetools-full-${version}:terraform", "cross", task, "--cap-add=SYS_PTRACE")
             }
         }
     }
@@ -98,7 +98,7 @@ def ACCContainerTest(String label, String version) {
                            ninja -v
                            ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
-                oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
+                oe.ContainerRun("oetools-full-${version}:terraform", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
             }
         }
     }
@@ -130,7 +130,7 @@ def ACCPackageTest(String label, String version) {
                                fi
                            done
                            """
-                oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
+                oe.ContainerRun("oetools-full-${version}:terraform", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
             }
         }
     }
@@ -146,7 +146,7 @@ def checkDevFlows(String version) {
                            cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
                            ninja -v
                            """
-                oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE")
+                oe.ContainerRun("oetools-full-${version}:terraform", "clang-7", task, "--cap-add=SYS_PTRACE")
             }
         }
     }
@@ -160,7 +160,7 @@ def checkCI() {
                 checkout scm
                 // At the moment, the check-ci script assumes that it's executed from the
                 // root source code directory.
-                oe.ContainerRun("oetools-minimal-18.04", "clang-7", "cd ${WORKSPACE} && ./scripts/check-ci", "--cap-add=SYS_PTRACE")
+                oe.ContainerRun("oetools-minimal-18.04:terraform", "clang-7", "cd ${WORKSPACE} && ./scripts/check-ci", "--cap-add=SYS_PTRACE")
             }
         }
     }
@@ -176,7 +176,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type) {
                            cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DHAS_QUOTE_PROVIDER=ON -Wdev
                            ninja -v
                            """
-                oe.ContainerRun("oetools-full-${version}", compiler, task, "--cap-add=SYS_PTRACE")
+                oe.ContainerRun("oetools-full-${version}:terraform", compiler, task, "--cap-add=SYS_PTRACE")
                 stash includes: 'build/tests/**', name: "linux-${compiler}-${build_type}-${version}-${BUILD_NUMBER}"
             }
         }
@@ -253,7 +253,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                             ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --report --out sgx_report.bin
                             popd
                             """
-                    oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
+                    oe.ContainerRun("oetools-full-${version}:terraform", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
 
                     def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                     def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
@@ -292,7 +292,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                             ctest -R host_verify --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                             """
                     // Note: Include the commands to build and run the quote verification test above
-                    oe.ContainerRun("oetools-full-${version}", "clang-7", task, "--cap-add=SYS_PTRACE")
+                    oe.ContainerRun("oetools-full-${version}:terraform", "clang-7", task, "--cap-add=SYS_PTRACE")
                 }
             }
         }
