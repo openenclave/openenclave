@@ -45,5 +45,7 @@ def buildVHD(String os_type, String version, String imageName) {
 
 parallel "Build Ubuntu 16.04" : { buildVHD("ubuntu", "16.04", OE_DEPLOY_IMAGE) },
          "Build Ubuntu 18.04" : { buildVHD("ubuntu", "18.04", OE_DEPLOY_IMAGE) },
+         "Build Ubuntu nonSGX" : { buildVHD("ubuntu", "nonSGX", OE_DEPLOY_IMAGE) },
          "Build Windows 2016" : { buildVHD("win", "2016", OE_DEPLOY_IMAGE) },
-         "Build Windows 2016 DCAP" : { buildVHD("win", "dcap", OE_DEPLOY_IMAGE) }
+         "Build Windows 2016 DCAP" : { buildVHD("win", "dcap", OE_DEPLOY_IMAGE) },
+         "Build Windows 2016 nonSGX" : { buildVHD("win", "nonSGX", OE_DEPLOY_IMAGE) }
