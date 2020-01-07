@@ -140,8 +140,7 @@ check_version()
         # Because clang-format is not invariant across versions, this
         # is an explicit equivalence check.
         if [[ ${v1[$i]} -ne ${v2[$i]} ]]; then
-            echo "format-code requires clang-format version $1, installed version is $2"
-            exit 1
+            echo "Warning: format-code prefers clang-format version $1, installed version is $2"
         fi
     done
 }
