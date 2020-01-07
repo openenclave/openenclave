@@ -40,3 +40,29 @@
     ```
 
     Running `scan-view /tmp/scan-build-2019-12-12-102130-18694-1` will open results in a web browser.
+
+## Interpreting warnings
+
+Ideally, all warnings would be legitimate and CI/CD could reject PRs which introduce scan-build errors.
+Unfortunately there are currently many scan-build errors in the OE codebase, and many of them are in
+external code.
+
+Specifically, errors reported from the 3rdparty directory should be ignored. Any other warnings are considered
+bugs and should be fixed.
+
+## Excluding directories
+
+Clang 8 adds the ability to exclude specific directories from static analysis.
+
+```{bash}
+$ scan-build-8 cmake .. -G Ninja -DHAS_QUOTE_PROVIDER=OFF
+$ scan-build-8 --exclude 3rdparty/ ninja
+```
+
+Additionally, scan-build can be run with a mismatched version of clang. For example,
+scan-build-8 can use clang-7 as a compiler:
+
+```
+$ scan-build-8 --use-analyzer=/usr/bin/clang-7 cmake .. -G Ninja -DHAS_QUOTE_PROVIDER=OFF
+$ scan-build-8 --use-analyzer=/usr/bin/clang-7 --exclude 3rdparty/ ninja
+```
