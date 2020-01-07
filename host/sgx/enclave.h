@@ -67,10 +67,6 @@ typedef struct _thread_binding
 
     /* Event signaling object for enclave threading implementation */
     EnclaveEvent event;
-
-    /* The host GS and FS values saved before making an ecall */
-    void* host_gs;
-    void* host_fs;
 } ThreadBinding;
 
 OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
@@ -129,23 +125,6 @@ struct _oe_enclave
     /* Manager for switchless calls */
     oe_switchless_call_manager_t* switchless_manager;
 };
-
-// Static asserts for consistency with
-// debugger/pythonExtension/gdb_sgx_plugin.py
-#if defined(__linux__)
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, magic) == 0);
-
-// Python plugin only needs the field number which is 2
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, addr) == 2 * sizeof(void*));
-
-// The fields up to binding correspond to 'ENCLAVE_HEADER'
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, bindings) == 0x28);
-
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x788);
-OE_STATIC_ASSERT(
-    OE_OFFSETOF(oe_enclave_t, debug) + 1 ==
-    OE_OFFSETOF(oe_enclave_t, simulate));
-#endif
 
 /* Get the event for the given TCS */
 EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);
