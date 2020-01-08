@@ -70,9 +70,16 @@ oe_result_t oe_random_internal(void* data, size_t size)
     }
 
     /* Generate random data (synchronize access to _drbg instance) */
-    rc = mbedtls_ctr_drbg_random(&_drbg, data, size);
-    if (rc != 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
+    for (size_t i = 0; i < size; i += MBEDTLS_CTR_DRBG_MAX_REQUEST)
+    {
+        size_t request_size = size - i;
+        if (request_size > MBEDTLS_CTR_DRBG_MAX_REQUEST)
+            request_size = MBEDTLS_CTR_DRBG_MAX_REQUEST;
+
+        rc = mbedtls_ctr_drbg_random(&_drbg, (uint8_t*)data + i, request_size);
+        if (rc != 0)
+            OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
+    }
 
     result = OE_OK;
 done:
