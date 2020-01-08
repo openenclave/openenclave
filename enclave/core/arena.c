@@ -26,7 +26,7 @@ bool oe_configure_arena_capacity(size_t cap)
     {
         return false;
     }
-    _capacity = cap;
+    __atomic_store_n(&_capacity, cap, __ATOMIC_SEQ_CST);
     return true;
 }
 
