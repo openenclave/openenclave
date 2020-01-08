@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/defs.h>
 
 /*
 **==============================================================================
@@ -21,7 +22,7 @@
 #undef ___OE_JMP_BUF
 #undef __OE_JMP_BUF
 
-int oe_setjmp(oe_jmp_buf* env);
+int oe_setjmp(oe_jmp_buf* env) OE_RETURNS_TWICE;
 
 void oe_longjmp(oe_jmp_buf* env, int val);
 

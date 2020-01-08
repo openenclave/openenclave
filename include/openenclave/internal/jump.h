@@ -26,7 +26,7 @@ typedef struct _oe_jmpbuf
     uint64_t r15;
 } oe_jmpbuf_t;
 
-int oe_setjmp(oe_jmpbuf_t* env);
+int oe_setjmp(oe_jmpbuf_t* env) OE_RETURNS_TWICE;
 
 void oe_longjmp(oe_jmpbuf_t* env, int val);
 

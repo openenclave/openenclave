@@ -25,14 +25,6 @@ oe_longjmp:
     mov $1, %rax # Return value (int)
 
 val_is_nonzero:
-    # Some versions of clang generate code that relies on the return address
-    # of this stack frame to be the address that was actually jumped to. Set
-    # the stored %rip value as the return address for the stack frame directly
-    # above the one we're returning to.
-    mov 16(%rdi),%rcx # Get stored %rip
-    mov (%rdi),%rdx # Get stored %rsp
-    mov %rcx,-0x8(%rdx)
-
     mov (%rdi),%rsp
     mov 8(%rdi),%rbp
     mov 24(%rdi),%rbx
