@@ -55,6 +55,9 @@ ExternalProject_Add(musl_includes
     COMMAND ${CMAKE_COMMAND} -E copy
       ${PATCHES_DIR}/pthread_${ARCH}.h
       ${MUSL_DIR}/arch/${ARCH}/pthread_arch.h
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${PATCHES_DIR}/setjmp.h
+      ${MUSL_DIR}/include/setjmp.h
   CONFIGURE_COMMAND
     ${CMAKE_COMMAND} -E chdir ${MUSL_DIR}
     ${OE_BASH} -x ./configure
