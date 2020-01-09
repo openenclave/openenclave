@@ -410,7 +410,7 @@ oe_result_t oe_validate_revocation_list(
             sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].size,
             &platform_tcb_level,
             &parsed_tcb_info),
-        "Failed to parse TCB info. %s",
+        "Failed to parse TCB info or Platform TCB is not up-to-date. %s",
         oe_result_str(result));
 
     OE_CHECK_MSG(
