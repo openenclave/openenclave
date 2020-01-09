@@ -1,0 +1,89 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "kubernetesConfig": {
+        "addons": [
+          {
+            "name": "tiller",
+            "enabled" : true
+          },
+          {
+            "name": "cluster-autoscaler",
+            "enabled": true,
+            "pools": [
+              {
+                "name": "agentsbionic",
+                "config": {
+                  "min-nodes": "1",
+                  "max-nodes": "5"
+                }
+              },
+              {
+                "name": "agentsxenial",
+                "config": {
+                  "min-nodes": "1",
+                  "max-nodes": "5"
+                }
+              }
+            ],
+            "config": {
+              "scan-interval": "1m"
+            }
+          }
+        ]
+      }
+    },
+    "masterProfile": {
+      "count": 1,
+      "vmSize": "Standard_D2s_v3",
+      "vnetSubnetId": "${VNET_SUBNET_ID}",
+      "dnsPrefix": "${DNS_PREFIX}",
+      "firstConsecutiveStaticIP": "${FIRST_CONSECUTIVE_IP}"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentsbionic",
+        "count": 2,
+        "availabilityProfile": "VirtualMachineScaleSets",
+        "distro": "aks-ubuntu-18.04",
+        "vmSize": "Standard_DC2s",
+        "vnetSubnetId": "${VNET_SUBNET_ID}",
+        "storageProfile": "ManagedDisks"
+      },
+      {
+        "name": "agentsxenial",
+        "count": 2,
+        "availabilityProfile": "VirtualMachineScaleSets",
+        "distro": "acc-16.04",
+        "vmSize": "Standard_DC2s",
+        "vnetSubnetId": "${VNET_SUBNET_ID}",
+        "storageProfile": "ManagedDisks"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": "${SSH_PUBLIC_KEY}"
+          }
+        ]
+      }
+    },
+    "extensionProfiles": [
+      {
+        "name": "prometheus-grafana-k8s",
+        "version": "v1"
+      }
+    ],
+    "servicePrincipalProfile": {
+      "clientId": "f04638d3-aa98-4981-8c0e-efdd2ae6a035",
+      "keyvaultSecretRef": {
+        "vaultID": "/subscriptions/c4fdda6e-bfbd-4b8e-9703-037b3a45bf37/resourceGroups/osct-test-infra/providers/Microsoft.KeyVault/vaults/ostc-test-kv",
+        "secretName": "sp-pwd-ostclab"
+      }
+    }
+  }
+}
