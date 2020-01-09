@@ -68,6 +68,7 @@ if (OE_SGX)
         sgx/sched_yield.c
         sgx/spinlock.c
         sgx/td.c
+        sgx/td_basic.c
         sgx/thread.c
         sgx/tracee.c
         sgx/enter.S
@@ -75,6 +76,11 @@ if (OE_SGX)
         sgx/getkey.S
         sgx/longjmp.S
         sgx/setjmp.S)
+
+    # Functions in td_basic.c will change the status of td and may trigger
+    # stack check fail, thus it is necessary to turn off stack check.
+    set_source_files_properties(sgx/td_basic.c PROPERTIES
+        COMPILE_FLAGS -fno-stack-protector)
 
     # OS specific sources for SGX.
     if (UNIX OR USE_CLANGW)
@@ -208,7 +214,7 @@ if (OE_SGX)
     target_compile_options(oecore PUBLIC
         -fPIE
         -nostdinc
-        -fno-stack-protector
+        -fstack-protector-strong
         -fvisibility=hidden
         # Put each function or data in its own section.
         # This allows aggressively eliminating unused code.

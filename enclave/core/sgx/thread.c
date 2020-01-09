@@ -793,7 +793,13 @@ oe_result_t oe_rwlock_unlock(oe_rwlock_t* read_write_lock)
 **==============================================================================
 */
 
-#define MAX_KEYS (OE_PAGE_SIZE / sizeof(void*))
+// We use the FS segment as both the start of the enclave thread data and the
+// user thread-specific data (TSD) space. To prevent TSD from overwriting the
+// enclave thread data, we reserve the first pthread_key indices up to
+// MIN_THREAD_KEY_INDEX so that they are not used by oe_thread_key_create.
+#define MIN_THREAD_KEY_INDEX \
+    ((sizeof(td_t) - OE_THREAD_SPECIFIC_DATA_SIZE) / sizeof(void*))
+#define MAX_THREAD_KEY_INDEX (OE_PAGE_SIZE / sizeof(void*))
 
 typedef struct _key_slot
 {
@@ -801,7 +807,7 @@ typedef struct _key_slot
     void (*destructor)(void* value);
 } KeySlot;
 
-static KeySlot _slots[MAX_KEYS];
+static KeySlot _slots[MAX_THREAD_KEY_INDEX];
 static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 
 static void** _get_tsd_page(void)
@@ -811,7 +817,7 @@ static void** _get_tsd_page(void)
     if (!td)
         return NULL;
 
-    return (void**)((unsigned char*)td + OE_PAGE_SIZE);
+    return (void**)td;
 }
 
 oe_result_t oe_thread_key_create(
@@ -827,7 +833,8 @@ oe_result_t oe_thread_key_create(
     {
         oe_spin_lock(&_lock);
 
-        for (unsigned int i = 1; i < MAX_KEYS; i++)
+        for (unsigned int i = MIN_THREAD_KEY_INDEX; i < MAX_THREAD_KEY_INDEX;
+             i++)
         {
             /* If this key is available */
             if (!_slots[i].used)
@@ -853,7 +860,7 @@ oe_result_t oe_thread_key_create(
 oe_result_t oe_thread_key_delete(oe_thread_key_t key)
 {
     /* If key parameter is invalid */
-    if (key == 0 || key >= MAX_KEYS)
+    if (key < MIN_THREAD_KEY_INDEX || key >= MAX_THREAD_KEY_INDEX)
         return OE_INVALID_PARAMETER;
 
     /* Mark this key as unused */
@@ -875,7 +882,7 @@ oe_result_t oe_thread_setspecific(oe_thread_key_t key, const void* value)
     void** tsd_page;
 
     /* If key parameter is invalid */
-    if (key == 0 || key >= MAX_KEYS)
+    if (key < MIN_THREAD_KEY_INDEX || key >= MAX_THREAD_KEY_INDEX)
         return OE_INVALID_PARAMETER;
 
     if (!(tsd_page = _get_tsd_page()))
@@ -890,7 +897,7 @@ void* oe_thread_getspecific(oe_thread_key_t key)
 {
     void** tsd_page;
 
-    if (key == 0 || key >= MAX_KEYS)
+    if (key < MIN_THREAD_KEY_INDEX || key >= MAX_THREAD_KEY_INDEX)
         return NULL;
 
     if (!(tsd_page = _get_tsd_page()))
@@ -909,7 +916,9 @@ void oe_thread_destruct_specific(void)
         oe_spin_lock(&_lock);
         {
             /* For each thread-specific-data key */
-            for (oe_thread_key_t key = 1; key < MAX_KEYS; key++)
+            for (oe_thread_key_t key = MIN_THREAD_KEY_INDEX;
+                 key < MAX_THREAD_KEY_INDEX;
+                 key++)
             {
                 /* If this key is in use: */
                 if (_slots[key].used)

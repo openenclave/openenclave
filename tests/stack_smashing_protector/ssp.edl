@@ -1,0 +1,14 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public bool was_destructor_called();
+
+        public int enc_set_thread_variable([user_check] void* value);
+
+        public void* enc_get_thread_specific_data();
+
+        public void* ssp_test();
+    };
+};

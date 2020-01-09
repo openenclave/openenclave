@@ -204,16 +204,15 @@ static volatile bool _thread_locals_relocated = false;
 static __thread oe_tls_atexit_t* _tls_atexit_functions;
 static __thread uint64_t _num_tls_atexit_functions;
 
-/**
- * Get the address of the FS segment given a thread data object.
- * Currently FS is assumed to exist one page after the thread data.
- * This needs to be made more flexible, taking into account the
- * actual size of the tls data.
- */
+// TODO: Make this flexible in case more than one page of thread local storage
+// need to allocate.
+
+/* The thread data (td) object is always populated at the start of the
+   FS segment, so this method just returns the address of the td.
+*/
 static uint8_t* _get_fs_from_td(td_t* td)
 {
-    // TODO: Make this flexible
-    uint8_t* fs = (uint8_t*)td + 1 * OE_PAGE_SIZE;
+    uint8_t* fs = (uint8_t*)td;
     return fs;
 }
 

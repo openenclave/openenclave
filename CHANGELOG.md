@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - The copyright for all sources is now attributed to Open Enclave SDK contributors.
 - Update Intel DCAP library dependencies to 1.3.1.
 - Update Intel PSW dependencies to 2.5.101.3 on Windows.
+- The stack guard for OE SDK on SGX is turned on. It is also turned on for enclaves.
 
 [v0.7.0] - 2019-10-26
 ---------------------

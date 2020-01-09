@@ -340,6 +340,19 @@ static void _handle_ecall(
     uint64_t* output_arg1,
     uint64_t* output_arg2)
 {
+    /* To keep status of td consistent before and after _handle_ecall, td_init
+     is moved into _handle_ecall. In this way _handle_ecall will not trigger
+     stack check fail by accident. Of couse not all function have the
+     opportunity to keep such consistency. Such basic functions are moved to a
+     separate source file and the stack protector is disabled by force
+     through fno-stack-protector option. */
+
+    /* Initialize thread data structure (if not already initialized) */
+    if (!td_initialized(td))
+    {
+        td_init(td);
+    }
+
     oe_result_t result = OE_OK;
 
     /* Insert ECALL context onto front of td_t.ecalls list */
@@ -698,25 +711,27 @@ oe_result_t oe_call_host_function(
 **     used by a thread entering the enclave). Each thread section has the
 **     following layout:
 **
-**         +--------------------------------+
-**         | Guard Page                     |
-**         +--------------------------------+
-**         | Stack pages                    |
-**         +--------------------------------+
-**         | Guard Page                     |
-**         +--------------------------------+
-**         | TCS Page                       |
-**         +--------------------------------+
-**         | SSA (State Save Area) 0        |
-**         +--------------------------------+
-**         | SSA (State Save Area) 1        |
-**         +--------------------------------+
-**         | Guard Page                     |
-**         +--------------------------------+
-**         | GS page (contains thread data) |
-**         +--------------------------------+
+**         +----------------------------+
+**         | Guard Page                 |
+**         +----------------------------+
+**         | Stack pages                |
+**         +----------------------------+
+**         | Guard Page                 |
+**         +----------------------------+
+**         | TCS Page                   |
+**         +----------------------------+
+**         | SSA (State Save Area) 0    |
+**         +----------------------------+
+**         | SSA (State Save Area) 1    |
+**         +----------------------------+
+**         | Guard Page                 |
+**         +----------------------------+
+**         | Thread local storage       |
+**         +----------------------------+
+**         | FS/GS Page (td_t + tsp)    |
+**         +----------------------------+
 **
-**     EENTER sets the GS segment register to refer to the GS page before
+**     EENTER sets the FS segment register to refer to the FS page before
 **     calling this function.
 **
 **     If the enclave should fault, SGX saves the registers in the SSA slot
@@ -814,10 +829,6 @@ void __oe_handle_main(
 
     /* Get pointer to the thread data structure */
     td_t* td = td_from_tcs(tcs);
-
-    /* Initialize thread data structure (if not already initialized) */
-    if (!td_initialized(td))
-        td_init(td);
 
     /* If this is a normal (non-exception) entry */
     if (cssa == 0)
