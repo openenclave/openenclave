@@ -24,3 +24,7 @@ prereqs/dcap/*.deb
 prereqs/nuget/*
 prereqs/packages/.packages
 prereqs/sgx-driver/*.bin
+
+_output/
+translations/
+aks-engine-template.json
