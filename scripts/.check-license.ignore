@@ -35,6 +35,8 @@ tests/mbed/tests\..*$
 3rdparty/optee/optee_os/.*
 tools/oeedger8r/esy\.lock/.*
 tools/oeedger8r/intel/.*
+.K8s/
+.terraform/
 
 # Files
 3rdparty/LICENSES
