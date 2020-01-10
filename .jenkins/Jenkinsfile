@@ -274,7 +274,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                         error("Failed to create SGX report file.")
                     }
 
-                    stash includes: 'build/tests/host_verify/host/*.der,build/tests/host_verify/host/*.bin', name: "linux_host_verify-${build_type}-${BUILD_NUMBER}"
+                    stash includes: 'build/tests/host_verify/host/*.der,build/tests/host_verify/host/*.bin', name: "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                 }
             }
         }
@@ -285,7 +285,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
                     cleanWs()
                     checkout scm
-                    unstash "linux_host_verify-${build_type}-${BUILD_NUMBER}"
+                    unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                     def task = """
                             cmake ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                             ninja -v
@@ -303,7 +303,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
                     cleanWs()
                     checkout scm
-                    unstash "linux_host_verify-${build_type}-${BUILD_NUMBER}"
+                    unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                     dir('build') {
                         bat """
                             vcvars64.bat x64 && \
