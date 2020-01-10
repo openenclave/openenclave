@@ -35,3 +35,4 @@
   user:
     name: jenkins
     groups: docker
+    append: yes
