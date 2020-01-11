@@ -140,7 +140,6 @@ add_library(oecore STATIC
     malloc.c
     once.c
     printf.c
-    pthread.c
     result.c
     sbrk.c
     arena.c
