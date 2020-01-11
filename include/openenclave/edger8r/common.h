@@ -99,7 +99,7 @@ done:
  * buffer. Make sure that the buffer has enough space.
  */
 #define OE_SET_OUT_POINTER(argname, argsize, argtype)                        \
-    if (pargs_in->argname)                                                   \
+    do                                                                       \
     {                                                                        \
         pargs_in->argname = (argtype)(output_buffer + output_buffer_offset); \
         OE_ADD_SIZE(output_buffer_offset, (size_t)(argsize));                \
@@ -108,7 +108,7 @@ done:
             _result = OE_BUFFER_TOO_SMALL;                                   \
             goto done;                                                       \
         }                                                                    \
-    }
+    } while (0)
 
 /**
  * Compute and set the pointer value for the given parameter within the output

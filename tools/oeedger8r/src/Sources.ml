@@ -178,7 +178,10 @@ let rec get_ptr_setter get_deepcopy args count setter (ptype, decl) =
         (* NOTE: This makes the embedded check in the `OE_` macro superfluous. *)
         [
           sprintf "if (pargs_in->%s)"
-            (String.concat " && pargs_in->" (List.rev (arg :: args)));
+            (if args = [] then arg
+            else ((String.concat " && pargs_in->" (List.rev(args))) ^
+              ((if setter = "SET_OUT" then " && !" else " && ") ^
+              "pargs_in->" ^ arg)))
         ];
         [ sprintf "    OE_%s_POINTER(%s, %s, %s);" setter arg size tystr ];
         (let param_count = get_param_count (ptype, decl, argstruct) in

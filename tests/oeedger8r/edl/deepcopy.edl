@@ -111,9 +111,16 @@ enclave {
     // Test that it is only copied in, not out.
     public void deepcopy_in([in, count=1] CountStruct* s);
 
+    // Deep copy of one `CountStruct` with an embedded array in and out
+    // should take place.
+    public void deepcopy_inout_count([in, out, count=1] CountStruct* s);
+
     // Deep copy of one `CountStruct` with an embedded array out
     // should take place.
-    public void deepcopy_out_count([in, out, count=1] CountStruct* s);
+    public void deepcopy_out_count([out, count=1] CountStruct* s);
+
+    // Test for recursive copying for out structure.
+    public void deepcopy_nested_out([out, count=1] NestedStruct* n);
 
     // Test a real-world scenario.
     public void deepcopy_iovec([in, out, count=n] IOVEC* iov, size_t n);
