@@ -5,6 +5,7 @@
 #include <openenclave/enclave.h>
 #endif
 
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/random.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
@@ -13,12 +14,13 @@
 #include "tests.h"
 
 #define SEQ_COUNT 64
+#define SEQ_LENGTH_MAX 2049
 
 static void _test_random(size_t seq_length)
 {
     printf("=== begin %s(%zu)\n", __FUNCTION__, seq_length);
 
-    uint8_t buf[SEQ_COUNT][seq_length];
+    uint8_t buf[SEQ_COUNT][SEQ_LENGTH_MAX];
     memset(buf, 0, sizeof(buf));
 
     for (size_t i = 0; i < SEQ_COUNT; i++)
@@ -57,4 +59,5 @@ void TestRandom(void)
     _test_random(2047);
     _test_random(2048);
     _test_random(2049);
+    OE_STATIC_ASSERT(SEQ_LENGTH_MAX == 2049);
 }
