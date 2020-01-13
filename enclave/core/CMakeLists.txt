@@ -212,6 +212,8 @@ if (OE_SGX)
         -nostdinc
         -fstack-protector-strong
         -fvisibility=hidden
+        # Preserve frame-pointer in Release mode to enable oe_backtrace.
+        -fno-omit-frame-pointer
         # Put each function or data in its own section.
         # This allows aggressively eliminating unused code.
         -ffunction-sections -fdata-sections

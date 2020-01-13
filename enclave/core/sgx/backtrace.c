@@ -8,6 +8,7 @@
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include "sgx_t.h"
@@ -26,7 +27,7 @@ const void* _check_address(const void* ptr)
     return ptr;
 }
 
-/* Safe implementation of oe_backtrace.
+/* Safe implementation of backtrace.
  *
  * The original implementation used the ___builtin_return_address intrinsic.
  * The intrinsic however is unsafe and can crash if any function in the
@@ -36,21 +37,10 @@ const void* _check_address(const void* ptr)
  * This new implementation below safely walks up the call-stack, ensuring that
  * each potential-frame is not null and lies within the enclave.
  */
-int oe_backtrace(void** buffer, int size)
+OE_NEVER_INLINE
+int oe_backtrace_impl(void** start_frame, void** buffer, int size)
 {
-    OE_UNUSED(buffer);
-    OE_UNUSED(size);
-#ifdef OE_USE_DEBUG_MALLOC
-    // Fetch the frame-pointer of the current function.
-    // The current function oe_backtrace is not expected to be inlined.
-    // The rbp register contains the frame-pointer upon entry to the function.
-    void** frame = NULL;
-    asm volatile("movq %%rbp, %0"
-                 : "=r"(frame)
-                 : /* no inputs */
-                 : /* no clobbers */
-    );
-
+    void** frame = start_frame;
     // Upon entry to a function, rsp + 0 contains the return address.
     // Generally, the first thing that a function does upong entry is
     //     push %rbp
@@ -83,17 +73,20 @@ int oe_backtrace(void** buffer, int size)
     }
 
     return n;
-#else
-    return 0;
-#endif
 }
 
-char** oe_backtrace_symbols(void* const* buffer, int size)
+int oe_backtrace(void** buffer, int size)
 {
-    /* Backtrace must use the internal allocator to bypass debug-malloc. */
-    extern void* dlmalloc(size_t size);
-    extern void dlfree(void* ptr);
-    extern void* dlrealloc(void* ptr, size_t size);
+    return oe_backtrace_impl(__builtin_frame_address(0), buffer, size);
+}
+
+char** oe_backtrace_symbols_impl(
+    void* const* buffer,
+    int size,
+    void* (*malloc_fcn)(size_t),
+    void* (*realloc_fcn)(void*, size_t),
+    void (*free_fcn)(void*))
+{
     char** ret = NULL;
     void* symbols_buffer = NULL;
     const size_t SYMBOLS_BUFFER_SIZE = 4096;
@@ -105,7 +98,7 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
     if (!buffer || size < 0)
         goto done;
 
-    if (!(symbols_buffer = dlmalloc(symbols_buffer_size)))
+    if (!(symbols_buffer = malloc_fcn(symbols_buffer_size)))
         goto done;
 
     /* First call might return OE_BUFFER_TOO_SMALL. */
@@ -125,8 +118,8 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
     if ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
     {
         symbols_buffer_size = symbols_buffer_size_out;
-
-        if (!(symbols_buffer = dlrealloc(symbols_buffer, symbols_buffer_size)))
+        if (!(symbols_buffer =
+                  realloc_fcn(symbols_buffer, symbols_buffer_size)))
             goto done;
 
         if (oe_backtrace_symbols_ocall(
@@ -158,8 +151,8 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
             symbols_buffer_size_out,
             &argv,
             (size_t)size,
-            dlmalloc,
-            dlfree) != OE_OK)
+            malloc_fcn,
+            free_fcn) != OE_OK)
     {
         goto done;
     }
@@ -170,12 +163,21 @@ char** oe_backtrace_symbols(void* const* buffer, int size)
 done:
 
     if (symbols_buffer)
-        dlfree(symbols_buffer);
+        free_fcn(symbols_buffer);
 
     if (argv)
-        dlfree(argv);
+        free_fcn(argv);
 
     return ret;
+}
+
+char** oe_backtrace_symbols(void* const* buffer, int size)
+{
+    /* Backtrace must use the internal allocator to bypass debug-malloc. */
+    extern void* dlmalloc(size_t size);
+    extern void* dlrealloc(void* ptr, size_t size);
+    extern void dlfree(void* ptr);
+    return oe_backtrace_symbols_impl(buffer, size, dlmalloc, dlrealloc, dlfree);
 }
 
 void oe_backtrace_symbols_free(char** ptr)

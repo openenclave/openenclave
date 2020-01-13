@@ -56,6 +56,7 @@ endif()
 
 add_library(oelibc STATIC
     atexit.c
+    backtrace.c
     dladdr.c
     errno.c
     epoll.c
