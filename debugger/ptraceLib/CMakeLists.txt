@@ -2,8 +2,8 @@
 # Licensed under the MIT License.
 
 find_library(DL_LIB NAMES dl)
-add_library(dl SHARED IMPORTED)
-set_target_properties(dl PROPERTIES IMPORTED_LOCATION ${DL_LIB})
+add_library(openenclave::dl SHARED IMPORTED)
+set_target_properties(openenclave::dl PROPERTIES IMPORTED_LOCATION ${DL_LIB})
 
 find_package(Threads REQUIRED)
 
@@ -12,7 +12,7 @@ add_library(oe_ptrace SHARED
   inferior_status.c
   enclave_context.c)
 
-target_link_libraries(oe_ptrace oe_includes dl Threads::Threads)
+target_link_libraries(oe_ptrace oe_includes openenclave::dl Threads::Threads)
 
 target_compile_options(oe_ptrace PRIVATE 
   -Wall -Werror -Wno-attributes -Wmissing-prototypes -m64)

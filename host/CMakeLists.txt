@@ -284,25 +284,25 @@ endif()
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
 if (UNIX)
-  if (NOT TARGET crypto)
+  if (NOT TARGET openenclave::crypto)
     find_library(CRYPTO_LIB NAMES crypto)
     if (NOT CRYPTO_LIB)
       message(FATAL_ERROR "-- Looking for crypto library - not found")
     else ()
       message("-- Looking for crypto library - found")
-      add_library(crypto SHARED IMPORTED)
-      set_target_properties(crypto PROPERTIES IMPORTED_LOCATION ${CRYPTO_LIB})
+      add_library(openenclave::crypto SHARED IMPORTED)
+      set_target_properties(openenclave::crypto PROPERTIES IMPORTED_LOCATION ${CRYPTO_LIB})
     endif ()
   endif ()
 
-  if (NOT TARGET dlib)
+  if (NOT TARGET openenclave::dl)
     find_library(DL_LIB NAMES dl)
     if (NOT DL_LIB)
       message(FATAL_ERROR "-- Looking for dl library - not found")
     else ()
       message("-- Looking for dl library - found")
-      add_library(dl SHARED IMPORTED)
-      set_target_properties(dl PROPERTIES IMPORTED_LOCATION ${DL_LIB})
+      add_library(openenclave::dl SHARED IMPORTED)
+      set_target_properties(openenclave::dl PROPERTIES IMPORTED_LOCATION ${DL_LIB})
     endif ()
   endif ()
 endif ()
@@ -310,8 +310,14 @@ endif ()
 find_package(Threads REQUIRED)
 
 if (UNIX)
-  target_link_libraries(oehost PRIVATE crypto dl Threads::Threads)
-  target_link_libraries(oehostverify PRIVATE crypto dl Threads::Threads)
+  target_link_libraries(oehost PRIVATE
+      openenclave::crypto
+      openenclave::dl
+      Threads::Threads)
+  target_link_libraries(oehostverify PRIVATE
+      openenclave::crypto
+      openenclave::dl
+      Threads::Threads)
 
   if (OE_TRUSTZONE)
     target_include_directories(oehost PRIVATE
