@@ -51,6 +51,12 @@
 #define OE_INLINE static __inline__
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define OE_RETURNS_TWICE __attribute__((returns_twice))
+#else
+#define OE_RETURNS_TWICE
+#endif
+
 #ifdef _MSC_VER
 #define OE_NO_OPTIMIZE_BEGIN __pragma(optimize("", off))
 #define OE_NO_OPTIMIZE_END __pragma(optimize("", on))
