@@ -44,11 +44,8 @@ def nonSGXUbuntuTemplate(String version, Closure body) {
        image_name = 'oeciteam/oetools-full-16.04'
    } else if (version == "bionic") {
        image_name = 'oeciteam/oetools-full-18.04'
-   } else if (version == "minimal") {
-       image_name = 'oeciteam/oetools-minimal-18.04'
-       version = "bionic"
    } else {
-       println("Supported Ubuntu versions are: xenial,bionic and minimal")
+       println("Supported Ubuntu versions are: xenial and bionic")
        currentBuild.result = 'FAILED'
        return
    }
@@ -220,17 +217,30 @@ def checkDevFlows(String version) {
 
 def checkCI() {
     stage('Check CI') {
-        node("${env.BUILD_TAG}-minimal") {
-            container("oetools-minimal") {
-                timeout(GLOBAL_TIMEOUT_MINUTES) {
-                    cleanWs()
-                    checkout scm
-                    // At the moment, the check-ci script assumes that it's executed from the
-                    // root source code directory.
-                    oe.Run("clang-7", "cd ${WORKSPACE} && ./scripts/check-ci")
-                }
-            }
-        }
+        podTemplate(label: "${env.BUILD_TAG}-minimal",
+                    nodeSelector: "agentpool=agentsbionic",
+                    containers: [
+                      containerTemplate(name: "oetools-minimal",
+                                        image: 'oeciteam/oetools-minimal-18.04',
+                                        alwaysPullImage: true,
+                                        ttyEnabled: true,
+                                        resourceRequestCpu: '500m',
+                                        resourceLimitCpu: '1',
+                                        resourceRequestMemory: '2Gi',
+                                        resourceLimitMemory: '4Gi')
+                    ]) {
+                        node("${env.BUILD_TAG}-minimal") {
+                            container("oetools-minimal") {
+                                timeout(GLOBAL_TIMEOUT_MINUTES) {
+                                    cleanWs()
+                                    checkout scm
+                                    // At the moment, the check-ci script assumes that it's executed from the
+                                    // root source code directory.
+                                    oe.Run("clang-7", "cd ${WORKSPACE} && ./scripts/check-ci")
+                                }
+                            }
+                        }
+                    }
     }
 }
 
@@ -422,7 +432,7 @@ versions.each { version ->
     }
     stepsForParallel["ACC-${version} Package RelWithDebInfo"] = { ubuntuTemplate(version) { ACCPackageTest(version) } }
 }
-stepsForParallel["Check CI"] = { nonSGXUbuntuTemplate('minimal') { checkCI() } }
+stepsForParallel["Check CI"] = { checkCI() }
 build_types.each { build_type ->
     stepsForParallel["Win2016 ${build_type} Cross Compile"] = { win2016CrossCompile(build_type) }
     stepsForParallel["Win2016 ${build_type} Cross Compile with DCAP libs"] = { win2016CrossCompile(build_type, 'ON') }
