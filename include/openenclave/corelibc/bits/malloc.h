@@ -40,4 +40,10 @@ int posix_memalign(void** memptr, size_t alignment, size_t size)
     return oe_posix_memalign(memptr, alignment, size);
 }
 
+OE_INLINE
+size_t malloc_usable_size(void* ptr)
+{
+    return oe_malloc_usable_size(ptr);
+}
+
 #endif /* _OE_BITS_MALLOC_H */

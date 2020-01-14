@@ -430,6 +430,13 @@ int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
     return 0;
 }
 
+size_t oe_debug_malloc_usable_size(void* ptr)
+{
+    if (!ptr)
+        return 0;
+    return _get_header(ptr)->size;
+}
+
 void oe_debug_malloc_dump(void)
 {
     _dump(true);

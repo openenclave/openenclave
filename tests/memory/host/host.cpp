@@ -22,6 +22,7 @@ static void _malloc_basic_test(oe_enclave_t* enclave)
     OE_TEST(test_realloc(enclave) == OE_OK);
     OE_TEST(test_memalign(enclave) == OE_OK);
     OE_TEST(test_posix_memalign(enclave) == OE_OK);
+    OE_TEST(test_malloc_usable_size(enclave) == OE_OK);
 }
 
 static void _malloc_stress_test_single_thread(
