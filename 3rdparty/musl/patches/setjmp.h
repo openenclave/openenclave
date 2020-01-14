@@ -1,3 +1,6 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
 #ifndef	_SETJMP_H
 #define	_SETJMP_H
 
