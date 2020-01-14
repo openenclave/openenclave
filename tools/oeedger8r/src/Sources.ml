@@ -81,7 +81,9 @@ let _get_param_size (ptype, decl, argstruct) =
     and count = attr_value_to_string argstruct p.ps_count in
     match (size, count) with
     | Some s, None -> s
-    | None, Some c -> sprintf "(%s * sizeof(%s))" c type_expr
+    (* TODO: Check that c actually fits in size_t. Also check for overflow,
+     * similar to oe_add_size *)
+    | None, Some c -> sprintf "((size_t)%s * sizeof(%s))" c type_expr
     (* TODO: Check that this is an even multiple of the size of type. *)
     | Some s, Some c -> sprintf "(%s * %s)" s c
     | None, None ->
