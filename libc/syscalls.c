@@ -107,20 +107,20 @@ static long _syscall_nanosleep(long n, long x1, long x2)
 
     OE_UNUSED(n);
 
+    if (req)
+    {
+        /* Convert timespec to milliseconds */
+        milliseconds += req->tv_sec * 1000UL;
+        milliseconds += req->tv_nsec / 1000000UL;
+
+        /* Perform OCALL */
+        ret = oe_sleep_msec(milliseconds);
+    }
+
+    /* Clear remaining time. Do this after reading from req because it may be
+     * that req == rem. */
     if (rem)
         memset(rem, 0, sizeof(*rem));
-
-    if (!req)
-        goto done;
-
-    /* Convert timespec to milliseconds */
-    milliseconds += req->tv_sec * 1000UL;
-    milliseconds += req->tv_nsec / 1000000UL;
-
-    /* Perform OCALL */
-    ret = oe_sleep_msec(milliseconds);
-
-done:
 
     return ret;
 }

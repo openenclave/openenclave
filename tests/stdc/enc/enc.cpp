@@ -174,6 +174,7 @@ static void _test_time_functions(void)
     const uint64_t SEC_TO_USEC = 1000000UL;
     const uint64_t JAN_1_2018 = 1514786400UL * SEC_TO_USEC;
     const uint64_t JAN_1_2050 = 2524629600UL * SEC_TO_USEC;
+    const uint64_t SLEEP_SECS = 3;
     uint64_t now;
 
     /* Test time(): this test will fail if run after Jan 1, 2050 */
@@ -209,8 +210,6 @@ static void _test_time_functions(void)
 
     /* Test nanosleep() */
     {
-        const uint64_t SLEEP_SECS = 3;
-
         uint64_t before = oe_get_time();
 
         /* Sleep for SLEEP_SECS seconds */
@@ -219,6 +218,33 @@ static void _test_time_functions(void)
             timespec rem;
             OE_TEST(nanosleep(&req, &rem) == 0);
         }
+
+        uint64_t after = oe_get_time();
+
+        OE_TEST(after > before);
+    }
+
+    /* Test nanosleep() with req==rem */
+    {
+        uint64_t before = oe_get_time();
+
+        /* Sleep for SLEEP_SECS seconds */
+        {
+            timespec ts = {SLEEP_SECS, 0};
+            OE_TEST(nanosleep(&ts, &ts) == 0);
+        }
+
+        uint64_t after = oe_get_time();
+
+        OE_TEST(after > before);
+    }
+
+    /* Test sleep() */
+    {
+        uint64_t before = oe_get_time();
+
+        /* Sleep for SLEEP_SECS seconds */
+        OE_TEST(sleep(SLEEP_SECS) == 0);
 
         uint64_t after = oe_get_time();
 
