@@ -1,18 +1,12 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-import hudson.slaves.*
-import hudson.model.*
-
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
 GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
 GLOBAL_ERROR = null
-
-// Number of agents to spawn for each Ubuntu Version
-AGENT_NUM = 3
 
 def ACClibcxxTest(String label, String compiler, String build_type) {
     stage("${label} SGX1FLC ${compiler} ${build_type}") {
