@@ -71,4 +71,12 @@
 /* OE_FIELD_SIZE */
 #define OE_FIELD_SIZE(TYPE, FIELD) (sizeof(((TYPE*)0)->FIELD))
 
+/* OE_MODULE_INIT */
+#ifdef __GNUC__
+#define OE_MODULE_INIT __attribute__((used, constructor))
+#define OE_MODULE_INIT_PRIORITY(__p) __attribute__((used, constructor(__p)))
+#else
+#error OE_MODULE_INIT not implemented
+#endif
+
 #endif /* _OE_INTERNAL_DEFS_H */

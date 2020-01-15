@@ -2,7 +2,8 @@
 # Licensed under the MIT License.
 
 # Build the C library, using local sources and sources from musl.
-set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
+set(MUSLROOT ${PROJECT_SOURCE_DIR}/3rdparty/musl)
+set(MUSLSRC ${MUSLROOT}/musl/src)
 
 if (OE_SGX)
     add_library(oelibasm OBJECT
@@ -64,6 +65,7 @@ add_library(oelibc STATIC
     getaddrinfo.c
     getnameinfo.c
     kill.c
+    libc.c
     libunwind_stubs.c
     link.c
     locale.c
@@ -195,7 +197,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/fenv/__flt_rounds.c
     ${MUSLSRC}/internal/floatscan.c
     ${MUSLSRC}/internal/intscan.c
-    ${MUSLSRC}/internal/libc.c
     ${MUSLSRC}/internal/shgetc.c
     ${MUSLSRC}/legacy/getpagesize.c
     ${MUSLSRC}/locale/bind_textdomain_codeset.c
