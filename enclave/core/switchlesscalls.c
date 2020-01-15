@@ -14,6 +14,11 @@ static size_t _host_worker_count = 0;
 // The array of host worker contexts. Initialized by host through ECALL
 static oe_host_worker_context_t* _host_worker_contexts = NULL;
 
+// Flag to denote if switchless calls have already been initialized.
+static bool _is_switchless_initialized = false;
+
+static bool _switchless_init_in_progress = false;
+
 /*
 **==============================================================================
 **
@@ -25,7 +30,12 @@ static oe_host_worker_context_t* _host_worker_contexts = NULL;
 */
 bool oe_is_switchless_initialized()
 {
-    return _host_worker_count != 0;
+    bool is_initialized;
+
+    is_initialized =
+        __atomic_load_n(&_is_switchless_initialized, __ATOMIC_SEQ_CST);
+
+    return is_initialized;
 }
 
 /*
@@ -46,6 +56,19 @@ oe_result_t oe_handle_init_switchless(uint64_t arg_in)
 
     if (arg_in == 0)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!oe_atomic_compare_and_swap(
+            (volatile int64_t*)&_switchless_init_in_progress,
+            (int64_t) false,
+            (int64_t) true))
+    {
+        OE_RAISE(OE_BUSY);
+    }
+
+    if (oe_is_switchless_initialized())
+    {
+        OE_RAISE(OE_ALREADY_INITIALIZED);
+    }
 
     manager = (oe_switchless_call_manager_t*)arg_in;
     safe_manager = *manager;
@@ -71,9 +94,14 @@ oe_result_t oe_handle_init_switchless(uint64_t arg_in)
     // Copy the worker context array pointer and its size to avoid TOCTOU
     _host_worker_count = safe_manager.num_host_workers;
     _host_worker_contexts = safe_manager.host_worker_contexts;
+
+    __atomic_store_n(&_is_switchless_initialized, true, __ATOMIC_SEQ_CST);
+
     result = OE_OK;
 
 done:
+    __atomic_store_n(&_switchless_init_in_progress, false, __ATOMIC_SEQ_CST);
+
     return result;
 }
 
