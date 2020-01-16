@@ -6,11 +6,17 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
+#if defined(_WIN32)
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
 #include "libunwind_u.h"
 
 void Test(oe_enclave_t* enclave, uint32_t pid)

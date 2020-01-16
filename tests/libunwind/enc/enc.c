@@ -53,6 +53,8 @@ int t_printf(const char* s, ...)
 
 int t_setrlim(int r, int64_t lim)
 {
+    OE_UNUSED(r);
+    OE_UNUSED(lim);
     return 0;
 }
 

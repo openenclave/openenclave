@@ -10,5 +10,5 @@ endif()
 
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "3rdparty/libunwind/libunwind/tests/")
-	add_test(tests/libunwind/${name} ./host/libunwind_host ./enc/libunwindtest-${name}_enc)
+    add_enclave_test(tests/libunwind/${name} libunwind_host libunwindtest-${name}_enc)
 endforeach(testcase)
