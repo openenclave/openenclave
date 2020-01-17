@@ -127,6 +127,8 @@ extern "C" bool test(size_t num_syms, const char** syms)
     OE_TEST(_syms != NULL);
 
     _print_backtrace(b.buffer, (size_t)b.size, num_syms, syms);
+    free(_syms);
+
     return true;
 }
 
@@ -144,6 +146,8 @@ extern "C" bool test_unwind(size_t num_syms, const char** syms)
         OE_TEST(_syms != NULL);
 
         _print_backtrace(b.buffer, (size_t)b.size, num_syms, syms);
+
+        free(_syms);
         return true;
     }
     return false;
