@@ -1,5 +1,105 @@
 mbed TLS ChangeLog (Sorted per branch, date)
 
+= mbed TLS 2.16.x branch released xxxx-xx-xx
+
+Security
+   * Fix side channel vulnerability in ECDSA. Our bignum implementation is not
+     constant time/constant trace, so side channel attacks can retrieve the
+     blinded value, factor it (as it is smaller than RSA keys and not guaranteed
+     to have only large prime factors), and then, by brute force, recover the
+     key. Reported by Alejandro Cabrera Aldaya and Billy Brumley.
+   * Zeroize local variables in mbedtls_internal_aes_encrypt() and
+     mbedtls_internal_aes_decrypt() before exiting the function. The value of
+     these variables can be used to recover the last round key. To follow best
+     practice and to limit the impact of buffer overread vulnerabilities (like
+     Heartbleed) we need to zeroize them before exiting the function.
+     Issue reported by Tuba Yavuz, Farhaan Fowze, Ken (Yihang) Bai,
+     Grant Hernandez, and Kevin Butler (University of Florida) and
+     Dave Tian (Purdue University).
+   * Fix side channel vulnerability in ECDSA key generation. Obtaining precise
+     timings on the comparison in the key generation enabled the attacker to
+     learn leading bits of the ephemeral key used during ECDSA signatures and to
+     recover the private key. Reported by Jeremy Dubeuf.
+   * Catch failure of AES functions in mbedtls_ctr_drbg_random(). Uncaught
+     failures could happen with alternative implementations of AES. Bug
+     reported and fix proposed by Johan Uppman Bruce and Christoffer Lauri,
+     Sectra.
+
+Bugfix
+   * Remove redundant line for getting the bitlen of a bignum, since the variable
+     holding the returned value is overwritten a line after.
+     Found by irwir in #2377.
+   * Support mbedtls_hmac_drbg_set_entropy_len() and
+     mbedtls_ctr_drbg_set_entropy_len() before the DRBG is seeded. Before,
+     the initial seeding always reset the entropy length to the compile-time
+     default.
+
+Changes
+   * Add unit tests for AES-GCM when called through mbedtls_cipher_auth_xxx()
+     from the cipher abstraction layer. Fixes #2198.
+   * Clarify how the interface of the CTR_DRBG and HMAC modules relates to
+     NIST SP 800-90A. In particular CTR_DRBG requires an explicit nonce
+     to achieve a 256-bit strength if MBEDTLS_ENTROPY_FORCE_SHA256 is set.
+
+= mbed TLS 2.16.3 branch released 2019-09-06
+
+Security
+   * Fix a missing error detection in ECJPAKE. This could have caused a
+     predictable shared secret if a hardware accelerator failed and the other
+     side of the key exchange had a similar bug.
+   * The deterministic ECDSA calculation reused the scheme's HMAC-DRBG to
+     implement blinding. Because of this for the same key and message the same
+     blinding value was generated. This reduced the effectiveness of the
+     countermeasure and leaked information about the private key through side
+     channels. Reported by Jack Lloyd.
+   * When writing a private EC key, use a constant size for the private
+     value, as specified in RFC 5915. Previously, the value was written
+     as an ASN.1 INTEGER, which caused the size of the key to leak
+     about 1 bit of information on average and could cause the value to be
+     1 byte too large for the output buffer.
+
+API Changes
+   * The new function mbedtls_ecdsa_sign_det_ext() is similar to
+     mbedtls_ecdsa_sign_det() but allows passing an external RNG for the
+     purpose of blinding.
+
+Bugfix
+   * Fix to allow building test suites with any warning that detects unused
+     functions. Fixes #1628.
+   * Fix typo in net_would_block(). Fixes #528 reported by github-monoculture.
+   * Remove redundant include file in timing.c. Fixes #2640 reported by irwir.
+   * Fix Visual Studio Release x64 build configuration by inheriting
+     PlatformToolset from the project configuration. Fixes #1430 reported by
+     irwir.
+   * Enable Suite B with subset of ECP curves. Make sure the code compiles even
+     if some curves are not defined. Fixes #1591 reported by dbedev.
+   * Fix misuse of signed arithmetic in the HAVEGE module. #2598
+   * Update test certificates that were about to expire. Reported by
+     Bernhard M. Wiedemann in #2357.
+   * Fix the build on ARMv5TE in ARM mode to not use assembly instructions
+     that are only available in Thumb mode. Fix contributed by Aurelien Jarno
+     in #2169.
+   * Fix undefined memset(NULL) call in test_suite_nist_kw.
+   * Make NV seed test support MBEDTLS_ENTROPY_FORCE_SHA256.
+   * Fix propagation of restart contexts in restartable EC operations.
+     This could previously lead to segmentation faults in builds using an
+     address-sanitizer and enabling but not using MBEDTLS_ECP_RESTARTABLE.
+   * Fix memory leak in in mpi_miller_rabin(). Contributed by
+     Jens Wiklander <jens.wiklander@linaro.org> in #2363
+   * Improve code clarity in x509_crt module, removing false-positive
+     uninitialized variable warnings on some recent toolchains (GCC8, etc).
+     Discovered and fixed by Andy Gross (Linaro), #2392.
+   * Zero length buffer check for undefined behavior in
+     mbedtls_platform_zeroize(). Fixes ARMmbed/mbed-crypto#49.
+   * Fix bug in endianness conversion in bignum module. This lead to
+     functionally incorrect code on bigendian systems which don't have
+     __BYTE_ORDER__ defined. Reported by Brendan Shanks. Fixes #2622.
+
+Changes
+   * Make it easier to define MBEDTLS_PARAM_FAILED as assert (which config.h
+     suggests). #2671
+   * Make `make clean` clean all programs always. Fixes #1862.
+
 = mbed TLS 2.16.2 branch released 2019-06-11
 
 Security
@@ -420,7 +520,7 @@ Security
      1.2, that allowed a local attacker, able to execute code on the local
      machine as well as manipulate network packets, to partially recover the
      plaintext of messages under some conditions by using a cache attack
-     targetting an internal MD/SHA buffer. With TLS or if
+     targeting an internal MD/SHA buffer. With TLS or if
      mbedtls_ssl_conf_dtls_badmac_limit() was used, the attack only worked if
      the same secret (for example a HTTP Cookie) has been repeatedly sent over
      connections manipulated by the attacker. Connections using GCM or CCM
@@ -1306,7 +1406,7 @@ Bugfix
    * Fix potential build failures related to the 'apidoc' target, introduced
      in the previous patch release. Found by Robert Scheck. #390 #391
    * Fix issue in Makefile that prevented building using armar. #386
-   * Fix memory leak that occured only when ECJPAKE was enabled and ECDHE and
+   * Fix memory leak that occurred only when ECJPAKE was enabled and ECDHE and
      ECDSA was disabled in config.h . The leak didn't occur by default.
    * Fix an issue that caused valid certificates to be rejected whenever an
      expired or not yet valid certificate was parsed before a valid certificate
@@ -1548,7 +1648,7 @@ API Changes
      You now need to link to all of them if you use TLS for example.
    * All public identifiers moved to the mbedtls_* or MBEDTLS_* namespace.
      Some names have been further changed to make them more consistent.
-     Migration helpers scripts/rename.pl and include/mbedlts/compat-1.3.h are
+     Migration helpers scripts/rename.pl and include/mbedtls/compat-1.3.h are
      provided. Full list of renamings in scripts/data_files/rename-1.3-2.0.txt
    * Renamings of fields inside structures, not covered by the previous list:
      mbedtls_cipher_info_t.key_length -> key_bitlen
@@ -1603,7 +1703,7 @@ API Changes
    * net_accept() gained new arguments for the size of the client_ip buffer.
    * In the threading layer, mbedtls_mutex_init() and mbedtls_mutex_free() now
      return void.
-   * ecdsa_write_signature() gained an addtional md_alg argument and
+   * ecdsa_write_signature() gained an additional md_alg argument and
      ecdsa_write_signature_det() was deprecated.
    * pk_sign() no longer accepts md_alg == POLARSSL_MD_NONE with ECDSA.
    * Last argument of x509_crt_check_key_usage() and
@@ -3138,7 +3238,7 @@ XySSL ChangeLog
       not swapped on PadLock; also fixed compilation on older versions
       of gcc (bug reported by David Barrett)
     * Correctly handle the case in padlock_xcryptcbc() when input or
-      ouput data is non-aligned by falling back to the software
+      output data is non-aligned by falling back to the software
       implementation, as VIA Nehemiah cannot handle non-aligned buffers
     * Fixed a memory leak in x509parse_crt() which was reported by Greg
       Robson-Garth; some x509write.c fixes by Pascal Vizeli, thanks to
