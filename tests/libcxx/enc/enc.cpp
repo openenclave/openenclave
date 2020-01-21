@@ -61,7 +61,7 @@ static uint64_t _next_enc_thread_id = 0;
 static uint64_t _enc_key = 0; // Monotonically increasing enclave key
 
 // Map of enc_key to thread_id returned by pthread_self()
-static std::map<uint64_t, pthread_t> _key_to_thread_id_map;
+static std::map<uint64_t, std::atomic<pthread_t>> _key_to_thread_id_map;
 
 static atomic_flag_lock _enc_lock;
 
@@ -83,6 +83,7 @@ static int _pthread_create_hook(
 {
     *enc_thread = 0;
     uint64_t enc_key;
+    const std::atomic<pthread_t>* enc_value;
     {
         atomic_lock lock(_enc_lock);
         _thread_functions.push_back(
@@ -90,7 +91,7 @@ static int _pthread_create_hook(
         enc_key = _enc_key = ++_next_enc_thread_id;
         printf("_pthread_create_hook(): enc_key is %lu\n", enc_key);
         // Populate the enclave key to thread id map in advance
-        _key_to_thread_id_map.insert(std::make_pair(enc_key, *enc_thread));
+        enc_value = &_key_to_thread_id_map[enc_key];
 
         if (_next_enc_thread_id > (MAX_ENC_KEYS - 1))
         {
@@ -112,17 +113,11 @@ static int _pthread_create_hook(
     }
 
     // Block until the enclave pthread_id becomes available in the map
-    while (*enc_thread == 0)
+    while (*enc_value == 0)
     {
-        {
-            atomic_lock lock(_enc_lock);
-            *enc_thread = _key_to_thread_id_map[enc_key];
-        }
-        if (*enc_thread == 0)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+    *enc_thread = *enc_value;
 
     printf(
         "_pthread_create_hook(): pthread_create success for enc_key=%lu; "
@@ -139,7 +134,7 @@ static int _pthread_join_hook(pthread_t enc_thread, void**)
     uint64_t join_enc_key;
     {
         atomic_lock lock(_enc_lock);
-        std::map<uint64_t, pthread_t>::iterator it = std::find_if(
+        const auto it = std::find_if(
             _key_to_thread_id_map.begin(),
             _key_to_thread_id_map.end(),
             [&enc_thread](const std::pair<uint64_t, pthread_t>& p) {
@@ -193,7 +188,7 @@ static int _pthread_detach_hook(pthread_t enc_thread)
     uint64_t det_enc_key;
     {
         atomic_lock lock(_enc_lock);
-        std::map<uint64_t, pthread_t>::iterator it = std::find_if(
+        const auto it = std::find_if(
             _key_to_thread_id_map.begin(),
             _key_to_thread_id_map.end(),
             [&enc_thread](const std::pair<uint64_t, pthread_t>& p) {
