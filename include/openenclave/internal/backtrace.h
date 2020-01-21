@@ -14,17 +14,17 @@ OE_EXTERNC_BEGIN
 #define OE_BACKTRACE_MAX 32
 
 /**
- * This function is intended to be called by GNU **backtrace** and
- * **oe_backtrace** functions.
+ * This function is intended to be called by GNU **backtrace** (oelibc) and
+ * **oe_backtrace** (oecore) functions.
  */
 int oe_backtrace_impl(void** start_frame, void** buffer, int size);
 
 /**
- * This function implements GNU **backtrace_symbols** and
- * **oe_backtrace** functions. The debug_malloc feature gathers backtraces when
- * memory is allocated. debug-malloc itself must not be used to allocate symbol
- * buffer in this case. This internal function debug-malloc to use the lower
- * level dlmalloc functions for creating backtrace symbols.
+ * This function implements GNU **backtrace_symbols** (oelibc) and
+ * **oe_backtrace** (oecore) functions. The debug_malloc feature gathers
+ * backtraces when memory is allocated. debug-malloc itself must not be used to
+ * allocate symbol buffer in this case. This internal function debug-malloc to
+ * use the lower level dlmalloc functions for creating backtrace symbols.
  */
 char** oe_backtrace_symbols_impl(
     void* const* buffer,

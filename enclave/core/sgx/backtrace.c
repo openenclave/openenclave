@@ -75,6 +75,15 @@ int oe_backtrace_impl(void** start_frame, void** buffer, int size)
     return n;
 }
 
+/**
+ * oe_backtrace itself must not appear in the backtrace. It ought to behave as
+ * if it was inlined. To keep the implementation private, the function is
+ * defined here (which rules out the ability to use compiler's inline keywords)
+ * and its frame address is passed to oe_backtrace_impl. oe_backtrace_impl walks
+ * the callstack starting at caller of the given frame. This ensures that
+ * oe_backtrace is omitted from the backtrace. This scheme also works whether
+ * the compiler emits a call or jmp instruction to call oe_backtrace_impl.
+ */
 int oe_backtrace(void** buffer, int size)
 {
     return oe_backtrace_impl(__builtin_frame_address(0), buffer, size);
