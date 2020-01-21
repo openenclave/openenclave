@@ -1524,10 +1524,13 @@ int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
     milliseconds += req->tv_sec * 1000UL;
     milliseconds += req->tv_nsec / 1000000UL;
 
-    for (uint64_t i = 0; i < div; i++)
+    while (milliseconds > UINT_MAX)
+    {
         Sleep(UINT_MAX);
+        milliseconds -= UINT_MAX;
+    }
 
-    Sleep((DWORD)mod);
+    Sleep((DWORD)milliseconds);
 
     // Windows sleep will always sleep is not interruptable by hardware
     // exception handling. Just wait the whole time and zero rem.
