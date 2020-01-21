@@ -174,7 +174,7 @@ static void _test_time_functions(void)
     const uint64_t SEC_TO_USEC = 1000000UL;
     const uint64_t JAN_1_2018 = 1514786400UL * SEC_TO_USEC;
     const uint64_t JAN_1_2050 = 2524629600UL * SEC_TO_USEC;
-    const uint64_t SLEEP_SECS = 3;
+    const uint64_t SLEEP_SECS = 1;
     uint64_t now;
 
     /* Test time(): this test will fail if run after Jan 1, 2050 */
