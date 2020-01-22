@@ -1,0 +1,14 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public void enclave_helloworld();
+    };
+
+    untrusted {
+        void host_helloworld();
+    };
+};
+
+

@@ -783,12 +783,15 @@ int sign_parser(int argc, const char* argv[])
                 keyfile = optarg;
                 break;
             case 'n':
+printf("engine = %s\n", optarg);
                 engine_id = optarg;
                 break;
             case 'p':
+printf("path = %s\n", optarg);
                 engine_load_path = optarg;
                 break;
             case 'i':
+printf("keyid = %s\n", optarg);
                 key_id = optarg;
                 break;
             case ':':
