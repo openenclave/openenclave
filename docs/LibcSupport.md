@@ -6,6 +6,7 @@ assert.h | Yes | - |
 complex.h | Partial | **Unsupported functions:** cacos(), cacosh(), cacoshl(), cacosl(), casin(), casinh(), casinhl(), casinl(), csqrt(), csqrtl(), cpow(), cpowf(), cpowl() |
 ctype.h | Partial | Only basic support for C/POSIX locale. |
 errno.h | Yes | - |
+execinfo.h | Partial | **Supported functions:** backtrace(), backtrace_symbols(). <br> Enclaves must be compiled with `-fno-omit-frame-pointer` for accurate backtraces. |
 fenv.h | Yes | - |
 float.h | Yes | - |
 inttypes.h | Partial | **Unsupported functions:** imaxabs(), imaxdiv() |

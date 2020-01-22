@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+### Added
+
+- Support for backtracing in debug and release builds.
+    - Implementations for GNU functions `backtrace` and `backtrace_symbols` (defined in execinfo.h)
+    - Enclaves are built using `-fno-omit-frame-pointer` for accurate backtraces.
+
 ### Changed
 
 - Open Enclave SDK is now officially an incubation project as part of the Linux
