@@ -204,16 +204,35 @@ void deepcopy_in(CountStruct* s)
         s->ptr[i] = i;
 }
 
-void deepcopy_out_count(CountStruct* s)
+void deepcopy_inout_count(CountStruct* s)
 {
-    OE_TEST(s->count == 0);
-    OE_TEST(s->size == 0);
+    OE_TEST(s->count == 5);
+    OE_TEST(s->size == 6);
     for (size_t i = 0; i < 3; ++i)
-        OE_TEST(s->ptr[i] == 0);
+        OE_TEST(s->ptr[i] == 7);
     s->count = 7;
     s->size = 64;
     for (size_t i = 0; i < 3; ++i)
         s->ptr[i] = data[i];
+}
+
+void deepcopy_out_count(CountStruct* s)
+{
+    s->count = 7;
+    s->size = 64;
+    for (size_t i = 0; i < 3; ++i)
+        s->ptr[i] = data[i];
+}
+
+void deepcopy_nested_out(NestedStruct* n)
+{
+    OE_TEST(oe_is_within_enclave(n, sizeof(NestedStruct)));
+    OE_TEST(oe_is_within_enclave(n->array_of_int, 4 * sizeof(int)));
+    for (int i = 0; i < 4; ++i)
+        n->array_of_int[i] = i;
+    OE_TEST(oe_is_within_enclave(n->array_of_struct, 3 * sizeof(CountStruct)));
+    for (size_t i = 0; i < 3; ++i)
+        deepcopy_out_count(&(n->array_of_struct[i]));
 }
 
 void deepcopy_iovec(IOVEC* iov, size_t n)

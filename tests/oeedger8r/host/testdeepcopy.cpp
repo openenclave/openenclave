@@ -177,12 +177,48 @@ void test_deepcopy_edl_ecalls(oe_enclave_t* enclave)
 
     {
         CountStruct s{};
+        uint64_t p[3] = {7, 7, 7};
+        s.count = 5;
+        s.size = 6;
+        s.ptr = p;
+        OE_TEST(deepcopy_inout_count(enclave, &s) == OE_OK);
+        OE_TEST(s.count == 7);
+        OE_TEST(s.size == 64);
+        test_struct(s, 3);
+    }
+
+    {
+        CountStruct s{};
         uint64_t p[3] = {0, 0, 0};
         s.ptr = p;
         OE_TEST(deepcopy_out_count(enclave, &s) == OE_OK);
         OE_TEST(s.count == 7);
         OE_TEST(s.size == 64);
         test_struct(s, 3);
+    }
+
+    {
+        auto s = init_struct<CountStruct>();
+        int ints[]{0, 1, 2, 3};
+        ShallowStruct shallow{1, 8, nullptr};
+        CountStruct counts[]{s, s, s};
+        NestedStruct n{13, ints, &shallow, counts};
+        OE_TEST(deepcopy_nested_out(enclave, &n) == OE_OK);
+
+        for (size_t i = 0; i < 4; ++i)
+            OE_TEST(n.array_of_int[i] == static_cast<int>(i));
+
+        // Out-only deepcopy does not support shallow pointer passing.
+        OE_TEST(n.shallow_struct != &shallow);
+        OE_TEST(n.array_of_struct == counts);
+
+        for (size_t i = 0; i < 3; ++i)
+            for (size_t j = 0; j < 8; ++j)
+            {
+                OE_TEST(n.array_of_struct[i].count == 7);
+                OE_TEST(n.array_of_struct[i].size == 64);
+                OE_TEST(n.array_of_struct[i].ptr[j] == data[j]);
+            }
     }
 
     {
