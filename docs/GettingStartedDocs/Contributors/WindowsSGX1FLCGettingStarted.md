@@ -14,10 +14,11 @@ A version of Windows OS with native support for SGX features:
 ## Install Git and Clone the Open Enclave SDK repo
 
 - Download and install Git for Windows from [here](https://git-scm.com/download/win).
-- Clone the Open Enclave SDK to folder of your choice. In these instructions
-  we're assuming `openenclave`.
+- Clone the Open Enclave SDK to a folder of your choice. In these instructions
+  we're assuming `C:/Users/test`.
 
 ```powershell
+cd C:/Users/test/
 git clone https://github.com/openenclave/openenclave.git
 ```
 
@@ -29,7 +30,7 @@ First, change directory into the Open Enclave repository (from wherever you
 cloned it):
 
 ```powershell
-cd openenclave
+cd C:/Users/test/openenclave
 ```
 
 Run the following from PowerShell to deploy all the prerequisites for building Open Enclave:
@@ -64,7 +65,7 @@ command:
 If you prefer to manually install prerequisites, please refer to this
 [document](WindowsManualInstallPrereqs.md).
 
-## Building on Windows using Developer Command Prompt
+## Building/installation on Windows using Developer Command Prompt
 
 Launch the [x64 Native Tools Command Prompt for VS(2017 or 2019)](
 https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs),
@@ -73,33 +74,32 @@ which is found in the `Visual Studio 2017` folder in the Start Menu.
 Run the command `powershell.exe` to open a PowerShell prompt within the native
 tools environment.
 
-From here, use CMake and Ninja to build Open Enclave.
+From here, use CMake and Ninja to build/install Open Enclave.
 
 To build debug enclaves:
 
 ```powershell
-cd openenclave
+cd C:/Users/test/openenclave
 mkdir build/x64-Debug
 cd build/x64-Debug
-cmake -G Ninja -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=install ../..
+cmake -G Ninja -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
 ninja
 ```
-
-Later, using the `ninja install` command will install the SDK in
-`C:/openenclave/build/x64-Debug/install`. To choose a different location, change
-the value specified for `CMAKE_INSTALL_PATH`, but note that the samples tests
-will break if an absolute path is specified.
 
 Similarly, to build release enclaves, specify the flag
 `-DCMAKE_BUILD_TYPE=Release`:
 
 ```powershell
-cd C:/openenclave
+cd C:/Users/test/openenclave
 mkdir build/x64-Release
 cd build/x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=install ../..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
 ninja
 ```
+
+Now, using the `ninja install` command will install the SDK in
+`C:/openenclave`. To choose a different location, change
+the value specified for `CMAKE_INSTALL_PREFIX`.
 
 ## Run unit tests
 
@@ -126,27 +126,11 @@ You will see test logs similar to the following:
 
 A clean pass of the above unit tests run is an indication that your Open Enclave setup was successful. 
 
-You can start playing with the Open Enclave samples after following the instructions in the "Install" section below to configure samples for building,
-
 For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) document.
-
-## Installing the SDK on the local machine
-
-To install the SDK on the local machine use the following:
-
-```powershell
-cd openenclave/build/x64-Debug
-cmake -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
-ninja install
-```
-
-This installs the SDK in `C:/openenclave`, the path specified for
-`CMAKE_INSTALL_PREFIX`. This install path is assumed for the rest of the
-instructions.
 
 ## Build and run samples
 
-To build and run the samples, please look [here](/samples/README_Windows.md).
+To build and run the samples independently of SDK building/installation, please look [here](/samples/README_Windows.md).
 
 ## Known Issues
 
