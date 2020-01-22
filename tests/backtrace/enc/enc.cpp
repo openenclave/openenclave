@@ -1,9 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <execinfo.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
 #include <string.h>
@@ -19,7 +19,7 @@ struct Backtrace
 
 extern "C" OE_NEVER_INLINE void GetBacktrace(Backtrace* b)
 {
-    b->size = oe_backtrace(b->buffer, OE_COUNTOF(b->buffer));
+    b->size = backtrace(b->buffer, OE_COUNTOF(b->buffer));
 
     /* Check for truncation */
     OE_TEST(b->size < (int)OE_COUNTOF(b->buffer));
@@ -32,7 +32,7 @@ extern "C" OE_NEVER_INLINE void func4(size_t num_syms, const char** syms)
     OE_UNUSED(num_syms);
     OE_UNUSED(syms);
 
-    b.size = oe_backtrace(b.buffer, OE_COUNTOF(b.buffer));
+    b.size = backtrace(b.buffer, OE_COUNTOF(b.buffer));
 
     /* Check for truncation */
     OE_TEST(b.size < (int)OE_COUNTOF(b.buffer));
@@ -55,32 +55,61 @@ extern "C" OE_NEVER_INLINE void func1(size_t num_syms, const char** syms)
     func2(num_syms, syms);
 }
 
-/* Backtrace does not work in non-debug builds */
-#ifdef OE_USE_DEBUG_MALLOC
 static void _print_backtrace(
     void* const* buffer,
     size_t size,
     size_t num_expected_symbols,
     const char* expected_symbols[])
 {
-    char** symbols = oe_backtrace_symbols(buffer, static_cast<int>(size));
+    char** symbols = backtrace_symbols(buffer, static_cast<int>(size));
     OE_TEST(symbols != NULL);
 
     oe_host_printf("=== backtrace:\n");
 
-    for (size_t i = 0; i < size; i++)
-        oe_host_printf("%s(): (%p)\n", symbols[i], buffer[i]);
+    OE_TEST(size <= num_expected_symbols);
+    {
+        // Optimizations may cause certain frames to be omitted (due to inlining
+        // or tail-call etc). We need to assert that the backtrace is an ordered
+        // subset of expected backtrace.
+        size_t num_skipped = 0;
+        size_t idx = 0;
 
-    OE_TEST(size == num_expected_symbols);
+        // Iterate through the expected symbols
+        for (size_t i = 0; i < num_expected_symbols; i++)
+        {
+            if (strcmp(expected_symbols[i], symbols[idx]) == 0)
+            {
+                // Expected and actual symbols match.
+                // Move past the current frame.
+                oe_host_printf("%s(): (%p)\n", symbols[idx], buffer[idx]);
+                ++idx;
+            }
+            else
+            {
+                // Mismatch. Mark this expected frame as skipped.
+                // But do not move past the current frame.
+                oe_host_printf(
+                    "Skipped expected frame %s\n", expected_symbols[i]);
+                ++num_skipped;
+            }
+        }
 
-    for (size_t i = 0; i < size; i++)
-        OE_TEST(strcmp(expected_symbols[i], symbols[i]) == 0);
+        oe_host_printf("\nSkipped %d frames\n", (int)num_skipped);
+
+        // All the gathered frames must be consumed.
+        OE_TEST(idx == size);
+
+#ifndef NDEBUG
+        // In debug mode, expected and actual backtraces must exactly match.
+        // In release mode, some frames may be skipped.
+        OE_TEST(num_skipped == 0);
+#endif
+    }
 
     oe_host_printf("\n");
 
-    oe_backtrace_symbols_free(symbols);
+    free(symbols);
 }
-#endif
 
 extern "C" bool test(size_t num_syms, const char** syms)
 {
@@ -92,15 +121,13 @@ extern "C" bool test(size_t num_syms, const char** syms)
     OE_UNUSED(num_syms);
     OE_UNUSED(syms);
 
-/* Backtrace does not work in non-debug builds */
-#ifdef OE_USE_DEBUG_MALLOC
     OE_TEST(b.size > 0);
 
-    char** _syms = oe_backtrace_symbols(b.buffer, b.size);
+    char** _syms = backtrace_symbols(b.buffer, b.size);
     OE_TEST(_syms != NULL);
 
     _print_backtrace(b.buffer, (size_t)b.size, num_syms, syms);
-#endif
+    free(_syms);
 
     return true;
 }
@@ -115,13 +142,12 @@ extern "C" bool test_unwind(size_t num_syms, const char** syms)
     }
     catch (Backtrace& b)
     {
-/* backtrace does not work in non-debug builds */
-#ifdef OE_USE_DEBUG_MALLOC
-        char** _syms = oe_backtrace_symbols(b.buffer, b.size);
+        char** _syms = backtrace_symbols(b.buffer, b.size);
         OE_TEST(_syms != NULL);
 
         _print_backtrace(b.buffer, (size_t)b.size, num_syms, syms);
-#endif
+
+        free(_syms);
         return true;
     }
     return false;

@@ -28,6 +28,7 @@ set(ENCLAVE_CFLAGS_LIST
   -ftls-model=local-exec
   -fvisibility=hidden
   -fstack-protector-strong
+  -fno-omit-frame-pointer
   -ffunction-sections
   -fdata-sections)
 
