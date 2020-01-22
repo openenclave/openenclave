@@ -1,12 +1,12 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/safemath.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../common/sgx/revocation.h"

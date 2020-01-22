@@ -1,7 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
@@ -9,6 +8,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/thread.h>
 #include "debugmalloc.h"
 

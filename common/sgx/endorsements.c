@@ -3,9 +3,9 @@
 
 #include "endorsements.h"
 #include <openenclave/bits/attestation.h>
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include "../common.h"
 
 #include "qeidentity.h"

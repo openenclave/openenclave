@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"

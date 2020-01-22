@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 #ifdef OE_LINK_SGX_DCAP_QL
 
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
 

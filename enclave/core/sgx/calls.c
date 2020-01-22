@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 
 #include "../calls.h"
-#include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/safemath.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
@@ -16,6 +14,8 @@
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>

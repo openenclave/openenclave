@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 
 #include "threadlocal.h"
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 #include "../td.h"
 

@@ -1,7 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/argv.h>
@@ -10,6 +9,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include "sgx_t.h"
 #include "tee_t.h"
 

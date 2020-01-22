@@ -5,13 +5,13 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/random.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/tests.h>
 #include <stdarg.h>
 #include <stdio.h>

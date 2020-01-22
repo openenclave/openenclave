@@ -3,10 +3,10 @@
 
 #include "pem.h"
 #include <assert.h>
-#include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/utils.h>
 #include "bcrypt.h"
 

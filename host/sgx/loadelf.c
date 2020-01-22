@@ -4,14 +4,14 @@
 #include <assert.h>
 #include <errno.h>
 #include <openenclave/bits/defs.h>
-#include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>

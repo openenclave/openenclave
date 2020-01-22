@@ -3,12 +3,12 @@
 
 #include <assert.h>
 #include <openenclave/bits/defs.h>
-#include <openenclave/internal/safemath.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>

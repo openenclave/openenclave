@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/result.h>
-#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/error.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/tests.h>
 
 bool _check_8_bit_unsigned(oe_result_t result, int num, uint8_t num_u8)

@@ -2,13 +2,13 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/result.h>
-#include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/safemath.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/crypto/hmac.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/kdf.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/utils.h>
 
 #include "common.h"

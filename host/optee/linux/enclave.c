@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/internal/safemath.h>
 #include <openenclave/edger8r/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safemath.h>
 
 #include "../../calls.h"
 #include "../../ocalls.h"

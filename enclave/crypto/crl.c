@@ -3,10 +3,10 @@
 
 #include "crl.h"
 #include <mbedtls/platform.h>
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/crypto/crl.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
 

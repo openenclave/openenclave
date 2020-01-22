@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <limits.h>
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/crypto/crl.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/asn1.h>
 #include <openssl/x509.h>
