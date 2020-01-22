@@ -28,6 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for use by enclave authors. They are now moved to internal folder and not part of
   published headers.
 
+### Security
+- Update mbedTLS to version 2.16.4. Refer to [2.16.3](
+https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.3-and-2.7.12-released) and
+[2.16.4](https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.4-and-2.7.13-released)
+release notes for the set of issues addressed.
 
 [v0.7.0] - 2019-10-26
 ---------------------

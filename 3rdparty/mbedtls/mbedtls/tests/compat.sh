@@ -15,13 +15,17 @@
 
 set -u
 
+# Limit the size of each log to 10 GiB, in case of failures with this script
+# where it may output seemingly unlimited length error logs.
+ulimit -f 20971520
+
 # initialise counters
 TESTS=0
 FAILED=0
 SKIPPED=0
 SRVMEM=0
 
-# default commands, can be overriden by the environment
+# default commands, can be overridden by the environment
 : ${M_SRV:=../programs/ssl/ssl_server2}
 : ${M_CLI:=../programs/ssl/ssl_client2}
 : ${OPENSSL_CMD:=openssl} # OPENSSL would conflict with the build system
@@ -212,14 +216,13 @@ filter_ciphersuites()
         G_CIPHERS=$( filter "$G_CIPHERS" )
     fi
 
-    # OpenSSL 1.0.1h doesn't support DTLS 1.2
-    if [ `minor_ver "$MODE"` -ge 3 ] && is_dtls "$MODE"; then
+    # OpenSSL <1.0.2 doesn't support DTLS 1.2. Check what OpenSSL
+    # supports from the s_server help. (The s_client help isn't
+    # accurate as of 1.0.2g: it supports DTLS 1.2 but doesn't list it.
+    # But the s_server help seems to be accurate.)
+    if ! $OPENSSL_CMD s_server -help 2>&1 | grep -q "^ *-$MODE "; then
+        M_CIPHERS=""
         O_CIPHERS=""
-        case "$PEER" in
-            [Oo]pen*)
-                M_CIPHERS=""
-                ;;
-        esac
     fi
 
     # For GnuTLS client -> mbed TLS server,
