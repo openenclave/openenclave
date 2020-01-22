@@ -63,6 +63,7 @@ oe_result_t oe_private_key_from_engine(
     if (!engine_id || !engine_load_path || !key_id || !impl)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+printf("p1\n");
     /* if the engine is pre-installed we will get a null */
     ENGINE *e = NULL;
     if (!(e = ENGINE_by_id(engine_id)))
@@ -70,27 +71,34 @@ oe_result_t oe_private_key_from_engine(
         /* if we got a null we can still load dynaimc. */
         ENGINE_load_dynamic();
         ENGINE *dyne = ENGINE_by_id("dynamic");
+printf("p1.1\n");
         if (!ENGINE_ctrl_cmd_string(dyne, "ID", engine_id, 0))
             OE_RAISE(OE_INVALID_PARAMETER);
         
+printf("p1.2\n");
         if (!ENGINE_ctrl_cmd_string(dyne, "SO_PATH", engine_load_path, 0))
             OE_RAISE(OE_INVALID_PARAMETER);
 
+printf("p1.3\n");
         if (!ENGINE_ctrl_cmd_string(dyne, "LIST_ADD", "1", 0))
             OE_RAISE(OE_INVALID_PARAMETER);
+printf("p1.4\n");
         if (!ENGINE_ctrl_cmd_string(dyne, "LOAD", NULL, 0))
             OE_RAISE(OE_INVALID_PARAMETER);
-
+printf("p1.5\n");
         if (!(e = ENGINE_by_id(engine_id)))
             OE_RAISE(OE_INVALID_PARAMETER);
     }
 
+printf("p2\n");
     if (!ENGINE_init(e))
         OE_RAISE(OE_INVALID_PARAMETER);
 
+printf("p3\n");
     if (!(pkey = ENGINE_load_private_key(e, key_id, NULL, NULL)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
+printf("p4\n");
     /* Verify that it is the right key type */
     if (EVP_PKEY_id(pkey) != key_type)
         OE_RAISE(OE_INVALID_PARAMETER);

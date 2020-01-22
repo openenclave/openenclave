@@ -608,7 +608,7 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     if (!mrenclave || !sigstruct || !engine_id || !key_id )
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Load the RSA private key from PEM */
+    /* Load the RSA private key from the specified engine */
     OE_CHECK(oe_rsa_private_key_from_engine(&rsa, engine_id, engine_load_path, key_id));
     rsa_initalized = true;
 
