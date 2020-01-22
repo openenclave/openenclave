@@ -274,6 +274,14 @@ int query_config( const char *config )
     }
 #endif /* MBEDTLS_CHECK_PARAMS */
 
+#if defined(MBEDTLS_CHECK_PARAMS_ASSERT)
+    if( strcmp( "MBEDTLS_CHECK_PARAMS_ASSERT", config ) == 0 )
+    {
+        MACRO_EXPANSION_TO_STR( MBEDTLS_CHECK_PARAMS_ASSERT );
+        return( 0 );
+    }
+#endif /* MBEDTLS_CHECK_PARAMS_ASSERT */
+
 #if defined(MBEDTLS_TIMING_ALT)
     if( strcmp( "MBEDTLS_TIMING_ALT", config ) == 0 )
     {
@@ -825,6 +833,14 @@ int query_config( const char *config )
         return( 0 );
     }
 #endif /* MBEDTLS_CIPHER_PADDING_ZEROS */
+
+#if defined(MBEDTLS_CTR_DRBG_USE_128_BIT_KEY)
+    if( strcmp( "MBEDTLS_CTR_DRBG_USE_128_BIT_KEY", config ) == 0 )
+    {
+        MACRO_EXPANSION_TO_STR( MBEDTLS_CTR_DRBG_USE_128_BIT_KEY );
+        return( 0 );
+    }
+#endif /* MBEDTLS_CTR_DRBG_USE_128_BIT_KEY */
 
 #if defined(MBEDTLS_ENABLE_WEAK_CIPHERSUITES)
     if( strcmp( "MBEDTLS_ENABLE_WEAK_CIPHERSUITES", config ) == 0 )
@@ -2105,14 +2121,6 @@ int query_config( const char *config )
         return( 0 );
     }
 #endif /* MBEDTLS_CTR_DRBG_MAX_SEED_INPUT */
-
-#if defined(MBEDTLS_CTR_DRBG_USE_128_BIT_KEY)
-    if( strcmp( "MBEDTLS_CTR_DRBG_USE_128_BIT_KEY", config ) == 0 )
-    {
-        MACRO_EXPANSION_TO_STR( MBEDTLS_CTR_DRBG_USE_128_BIT_KEY );
-        return( 0 );
-    }
-#endif /* MBEDTLS_CTR_DRBG_USE_128_BIT_KEY */
 
 #if defined(MBEDTLS_HMAC_DRBG_RESEED_INTERVAL)
     if( strcmp( "MBEDTLS_HMAC_DRBG_RESEED_INTERVAL", config ) == 0 )

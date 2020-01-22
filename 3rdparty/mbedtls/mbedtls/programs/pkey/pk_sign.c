@@ -60,16 +60,15 @@ int main( void )
 #include <stdio.h>
 #include <string.h>
 
-#if defined(MBEDTLS_CHECK_PARAMS)
-#include "mbedtls/platform_util.h"
-void mbedtls_param_failed( const char *failure_condition,
-                           const char *file,
-                           int line )
-{
-    mbedtls_printf( "%s:%i: Input param failed - %s\n",
-                    file, line, failure_condition );
-    mbedtls_exit( MBEDTLS_EXIT_FAILURE );
-}
+
+/*
+ * For the currently used signature algorithms the buffer to store any signature
+ * must be at least of size MAX(MBEDTLS_ECDSA_MAX_LEN, MBEDTLS_MPI_MAX_SIZE)
+ */
+#if MBEDTLS_ECDSA_MAX_LEN > MBEDTLS_MPI_MAX_SIZE
+#define SIGNATURE_MAX_SIZE MBEDTLS_ECDSA_MAX_LEN
+#else
+#define SIGNATURE_MAX_SIZE MBEDTLS_MPI_MAX_SIZE
 #endif
 
 int main( int argc, char *argv[] )
@@ -81,7 +80,7 @@ int main( int argc, char *argv[] )
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
     unsigned char hash[32];
-    unsigned char buf[MBEDTLS_MPI_MAX_SIZE];
+    unsigned char buf[SIGNATURE_MAX_SIZE];
     char filename[512];
     const char *pers = "mbedtls_pk_sign";
     size_t olen = 0;

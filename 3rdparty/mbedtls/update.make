@@ -4,7 +4,7 @@
 # Licensed under the MIT License.
 
 # mbedTLS library definitions
-VERSION=2.16.2
+VERSION=2.16.4
 BASE=mbedtls-$(VERSION)
 PKG=$(BASE)-apache.tgz
 
