@@ -194,28 +194,22 @@ below.
 Fix #42
 ```
 
-Also do your best to factor commits appropriately, not too large with unrelated
+Please do:
+
+- **DO** Ensure git is properly configured with the proper username and email.
+See Git's chapter on [Getting
+Started](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup)
+for more details. We _will not_ accept commits with incorrect authorship.
+- **DO** describe what has changed and why.
+- **DO** factor commits appropriately, not too large with unrelated
 things in the same commit, and not too small with the same small change applied
 _n_ times in _n_ different commits.
 
-Ensure the correct name and email are set for the commit. For example, before
-committing, ensure that Git is configured with your user name and email:
+Please do not:
 
-```
-$ git config --global user.name "John Doe"
-$ git config --global user.email johndoe@example.com
-```
-
-See Git's chapter on [Getting
-Started](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup)
-for more details.
-
-We _will not_ accept commits with incorrect authorship. If you have existing
-commits with incorrect author information, you can fix them as follows:
-
-1. `git rebase --interactive` your working branch.
-1. Choose to `edit` the commits with incorrect authorship.
-   1. For each edit, use `git commit --amend --reset-author`.
+- **DON'T** do anything in a commit that is not mentioned in the commit message.
+- **DON'T** write a commit message which depends on the message of another commit.
+Each commit message should provide sufficient context on its own.
 
 Developer Certificate of Origin
 ------------------------------
