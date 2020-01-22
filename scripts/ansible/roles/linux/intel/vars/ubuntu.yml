@@ -5,6 +5,10 @@
 intel_sgx_packages:
   - "libsgx-enclave-common"
   - "libsgx-enclave-common-dev"
+  - "libsgx-urts"
+  - "libsgx-ae-qve"
+  - "libsgx-ae-pce"
+  - "libsgx-ae-qe3"
 
 intel_dcap_packages:
   - "libsgx-dcap-ql"

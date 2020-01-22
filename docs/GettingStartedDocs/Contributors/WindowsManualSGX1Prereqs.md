@@ -8,15 +8,15 @@ command line.
 
 Windows Server 2016 image for an Azure Confidential Compute VM has a Windows version
 lower than 1709, and therefore you need to install PSW v2.4 or above manually.
-You can download [PSW v2.5](http://registrationcenter-download.intel.com/akdlm/irc_nas/16115/Intel%20SGX%20PSW%20for%20Windows%20v2.5.101.3.exe),
+You can download [PSW v2.6](http://registrationcenter-download.intel.com/akdlm/irc_nas/16115/Intel%20SGX%20PSW%20for%20Windows%20v2.6.100.2.exe),
 extract the zipped files, and run the executable under folder **PSW_EXE_RS2_and_before**
-to install PSW 2.5.
+to install PSW 2.6.
 
 You can verify that the correct version of Intel SGX PSW is installed by using
 Windows Explorer to open `C:\Windows\System32`. You should be able to find
 file `sgx_urts.dll` if PSW is installed. Right click on `sgx_urts.dll`,
 choose `Properties` and then find `Product version` on the `Details` tab.
-The version should be "2.5.xxx.xxx" or above.
+The version should be "2.6.xxx.xxx" or above.
 
 To verify that Intel SGX PSW is running, use the following command:
 
@@ -38,14 +38,14 @@ The Intel Enclave Common API library is necessary for creating, initializing, an
 It does not supporting quoting, and consequentially, attestation which is based on quoting. The lack
 of quoting capability is a limitation of SGX1 machines which don't have FLC support.
 
-Firstly we download the Intel SGX DCAP self-extracting executable from [here](http://registrationcenter-download.intel.com/akdlm/irc_nas/16114/Intel%20SGX%20DCAP%20for%20Windows%20v1.3.101.3.exe). Run the executable to unzip files to a specified location.
-The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.3.101.3`:
+Firstly we download the Intel SGX DCAP self-extracting executable from [here](http://registrationcenter-download.intel.com/akdlm/irc_nas/16014/Intel%20SGX%20DCAP%20for%20Windows%20v1.4.100.4.exe). Run the executable to unzip files to a specified location.
+The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.4.100.4`:
 
 Make sure you have [nuget cli tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) installed and in your path,
 run the following command from a command prompt (assuming you would like the package to be installed to `C:\oe_prereqs`):
 ```cmd
 
-nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.3.101.3\nuget" -OutputDirectory C:\path\to\where\you\would\like\to\install\intel_nuget_packages
+nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.4.100.4\nuget" -OutputDirectory C:\path\to\where\you\would\like\to\install\intel_nuget_packages
 
 ```
 
