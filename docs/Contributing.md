@@ -82,6 +82,10 @@ Please do:
 - **DO** submit all code changes via pull requests (PRs) rather than through a
   direct commit. PRs will be reviewed and potentially merged by the repo
   Committers after a peer review that includes at least one Committer.
+- **DO** create a forked openenclave repository to do work for your PR. Do not
+  create a branch in the `openenclave/openenclave` repository for your change.
+  Please see the github documentation for [more information on using forks](
+  https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks).
 - **DO** give PRs short but descriptive names (e.g. "Improve code coverage for
   edger8r", not "Fix #1234").
 - **DO** add breaking changes, new features, deprecations, and bug
