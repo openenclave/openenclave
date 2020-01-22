@@ -3,8 +3,8 @@
 
 #include <assert.h>
 #include <ctype.h>
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>

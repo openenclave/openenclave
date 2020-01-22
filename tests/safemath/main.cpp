@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/result.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
 

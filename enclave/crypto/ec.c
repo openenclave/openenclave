@@ -5,7 +5,7 @@
 #include <mbedtls/asn1.h>
 #include <mbedtls/asn1write.h>
 #include <mbedtls/ecp.h>
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>

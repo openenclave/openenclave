@@ -12,7 +12,7 @@
 #include <openenclave/internal/syscall/sys/socket.h>
 #include <openenclave/internal/syscall/netdb.h>
 #include <openenclave/internal/syscall/resolver.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/print.h>

@@ -15,8 +15,8 @@
 #include <Windows.h>
 #endif
 
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/argv.h>
 #include <openenclave/internal/calls.h>

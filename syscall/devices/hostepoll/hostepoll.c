@@ -5,7 +5,7 @@
 
 #include <openenclave/enclave.h>
 
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/calls.h>

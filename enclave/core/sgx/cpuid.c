@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "cpuid.h"
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cpuid.h>

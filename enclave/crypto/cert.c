@@ -9,7 +9,7 @@
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
 
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/cert.h>

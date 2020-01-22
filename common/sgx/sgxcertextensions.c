@@ -1,6 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/crypto/ec.h>
 #include <openenclave/internal/hexdump.h>

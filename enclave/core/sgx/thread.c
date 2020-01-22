@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "thread.h"
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>

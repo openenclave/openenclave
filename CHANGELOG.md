@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update Intel PSW dependencies to 2.6.100.2 on Windows.
 - The stack guard for OE SDK on SGX is turned on. It is also turned on for enclaves.
 
+### Deprecated
+
+- `bits/safecrt.h` and `bits/safemath.h` are not published anymore. They were not intended
+  for use by enclave authors. They are now moved to internal folder and not part of
+  published headers.
+
+
 [v0.7.0] - 2019-10-26
 ---------------------
 

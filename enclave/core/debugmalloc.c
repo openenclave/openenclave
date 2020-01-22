@@ -3,7 +3,7 @@
 
 #define USE_DL_PREFIX
 #include "debugmalloc.h"
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>

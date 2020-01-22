@@ -4,7 +4,7 @@
 #include "quote.h"
 #include <assert.h>
 #include <limits.h>
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>

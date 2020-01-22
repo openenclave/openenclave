@@ -4,7 +4,7 @@
 #include "../exception.h"
 #include <assert.h>
 #include <dlfcn.h>
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/registers.h>

@@ -3,8 +3,8 @@
 
 #include <assert.h>
 #include <openenclave/bits/result.h>
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>

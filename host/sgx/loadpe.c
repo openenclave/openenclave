@@ -3,7 +3,7 @@
 
 #include <assert.h>
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/load.h>

@@ -1,7 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safemath.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/setjmp.h>
 #include <openenclave/corelibc/stdarg.h>

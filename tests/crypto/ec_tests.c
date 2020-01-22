@@ -5,7 +5,7 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>

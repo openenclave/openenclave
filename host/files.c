@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/files.h>
 #include <openenclave/internal/raise.h>

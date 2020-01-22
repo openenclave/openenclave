@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "threadlocal.h"
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/elf.h>

@@ -6,7 +6,7 @@
 #include <mbedtls/asn1.h>
 #include <mbedtls/oid.h>
 
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/crypto/asn1.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>

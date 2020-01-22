@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
 #include <openenclave/internal/utils.h>

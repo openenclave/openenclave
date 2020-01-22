@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include "../calls.h"
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>

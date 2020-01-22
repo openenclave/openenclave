@@ -13,8 +13,8 @@
 
 #include <assert.h>
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxsign.h>

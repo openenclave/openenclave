@@ -13,7 +13,7 @@
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/internal/syscall/device.h>
 #include <openenclave/internal/syscall/raise.h>
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 
 #define MAX_MOUNT_TABLE_SIZE 64
 

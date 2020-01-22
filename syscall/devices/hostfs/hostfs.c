@@ -33,7 +33,7 @@
 #include <openenclave/internal/syscall/iov.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 
 #include "syscall_t.h"
 

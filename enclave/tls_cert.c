@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/crypto/sha.h>
