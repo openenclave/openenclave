@@ -14,6 +14,9 @@
 #endif
 
 int oedump(const char*);
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+int oedump_eeid(const char* enclave);
+#endif
 int oesign(
     const char* enclave,
     const char* conffile,
@@ -147,14 +150,93 @@ int dump_parser(int argc, const char* argv[])
         oe_err("--enclave-image option is missing");
         ret = 1;
     }
+
     if (!ret)
+    {
         /* dump oeinfo and signature information */
         ret = oedump(enclave);
+    }
 
 done:
 
     return ret;
 }
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+static const char _usage_dump_eeid[] =
+    "Usage: %s dump-eeid -e ENCLAVE_IMAGE\n"
+    "\n"
+    "Options:\n"
+    "  -e, --enclave-image      path of an enclave image file.\n"
+    "\n"
+    "Description:\n"
+    "  This option dumps the .oeinfo data segment and the embedded signature "
+    "information for the specified enclave and the extended enclave "
+    "initialization data (EEID).\n"
+    "\n";
+
+int dump_eeid_parser(int argc, const char* argv[])
+{
+    int ret = 0;
+    const char* enclave = NULL;
+
+    const struct option long_options[] = {
+        {"help", no_argument, NULL, 'h'},
+        {"enclave-image", required_argument, NULL, 'e'},
+        {NULL, 0, NULL, 0},
+    };
+    const char short_options[] = "he:";
+
+    int c;
+    do
+    {
+        c = getopt_long(
+            argc, (char* const*)argv, short_options, long_options, NULL);
+        if (c == -1)
+        {
+            // all the command-line options are parsed
+            break;
+        }
+
+        switch (c)
+        {
+            case 'h':
+                fprintf(stderr, _usage_dump_eeid, argv[0]);
+                goto done;
+            case 'e':
+                enclave = optarg;
+                break;
+            case ':':
+                // Missing option argument
+                ret = 1;
+                goto done;
+            case '?':
+            default:
+                // Invalid option
+                ret = 1;
+                goto done;
+        }
+    } while (1);
+
+    if (enclave == NULL)
+    {
+        oe_err("--enclave-image option is missing");
+        ret = 1;
+    }
+
+    if (!ret)
+    {
+        /* dump oeinfo and signature information */
+        ret = oedump(enclave);
+        /* dump EEID-related information */
+        ret = oedump_eeid(enclave);
+    }
+
+done:
+
+    return ret;
+}
+#endif
 
 int sign_parser(int argc, const char* argv[])
 {
@@ -286,6 +368,10 @@ int arg_handler(int argc, const char* argv[])
     int ret = 1;
     if ((strcmp(argv[1], "dump") == 0))
         ret = dump_parser(argc, argv);
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    else if ((strcmp(argv[1], "dump-eeid") == 0))
+        ret = dump_eeid_parser(argc, argv);
+#endif
     else if ((strcmp(argv[1], "sign") == 0))
         ret = sign_parser(argc, argv);
     else

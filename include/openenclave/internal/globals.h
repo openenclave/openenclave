@@ -32,6 +32,11 @@ uint64_t oe_get_base_heap_page(void);
 uint64_t oe_get_num_heap_pages(void);
 uint64_t oe_get_num_pages(void);
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+/* Extended enclave initialization data */
+const void* __oe_get_eeid(void);
+#endif
+
 OE_EXTERNC_END
 
 #endif /* _OE_GLOBALS_H */

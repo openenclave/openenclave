@@ -249,11 +249,17 @@ if (OE_SGX)
     ../common/sgx/report_helper.c
     ../common/sgx/collateral.c
     ../common/sgx/sgxcertextensions.c
+    ../common/sgx/sgxmeasure.c
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c
     ../common/sgx/verifier.c
     sgx/hostverify_report.c
     sgx/sgxquoteprovider.c)
+
+  if (WITH_EEID)
+    list(APPEND PLATFORM_HOST_ONLY_SRC ../common/sgx/eeid_verifier.c
+         ../common/sgx/eeid.c)
+  endif ()
 
   list(
     APPEND
@@ -271,7 +277,6 @@ if (OE_SGX)
     sgx/registers.c
     sgx/report.c
     sgx/sgxload.c
-    sgx/sgxmeasure.c
     sgx/sgxquote.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
@@ -531,6 +536,10 @@ endif ()
 
 if (COMPILE_SYSTEM_EDL)
   target_compile_definitions(oehost PRIVATE OE_USE_BUILTIN_EDL)
+endif ()
+
+if (WITH_EEID)
+  target_compile_definitions(oehost PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()
 
 if (UNIX)

@@ -39,15 +39,20 @@ if (OE_SGX)
   list(
     APPEND
     PLATFORM_HOST_MR_SRC
+    signkey.c
+    ../common/sgx/sgxmeasure.c
     sgx/create.c
     sgx/elf.c
     sgx/load.c
     sgx/loadelf.c
     sgx/sgxload.c
-    sgx/sgxmeasure.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
     ../common/sgx/report_helper.c)
+
+  if (WITH_EEID)
+    list(APPEND PLATFORM_HOST_MR_SRC ../common/sgx/eeid.c)
+  endif ()
 
   # OS specific as well.
   if (UNIX)
@@ -156,6 +161,10 @@ target_compile_definitions(
 
 if (USE_DEBUG_MALLOC)
   target_compile_definitions(oehostmr PRIVATE OE_USE_DEBUG_MALLOC)
+endif ()
+
+if (WITH_EEID)
+  target_compile_definitions(oehostmr PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()
 
 if (UNIX)

@@ -37,6 +37,26 @@ typedef void* oe_sgx_plugin_opt_params;
  */
 oe_attester_t* oe_sgx_plugin_attester(void);
 
+/**
+ * Helper function that serializes a list of claims.
+ *
+ * @experimental
+ *
+ * @param [in] custom_claims Claims to serialize.
+ * @param [in] size_t custom_claims_length Length of **custom_claims**.
+ * @param [out] uint8_t** claims_out Output claims.
+ * @param [out] size_t* claims_size_out Length of **claims_out**.
+ *
+ * @retval OE_OK on success.
+ */
+struct _OE_SHA256;
+oe_result_t oe_sgx_serialize_claims(
+    const oe_claim_t* custom_claims,
+    size_t custom_claims_length,
+    uint8_t** claims_out,
+    size_t* claims_size_out,
+    struct _OE_SHA256* hash_out);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ATTESTATION_SGX_ATTESTER_H */

@@ -22,10 +22,10 @@
 #include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include "../common/sgx/sgxmeasure.h"
 #include "../memalign.h"
 #include "../signkey.h"
 #include "enclave.h"
-#include "sgxmeasure.h"
 #include "xstate.h"
 
 #if !defined(OEHOSTMR)
