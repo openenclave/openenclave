@@ -1,10 +1,10 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/trace.h>
 #include <stdarg.h>
 #include <stdio.h>

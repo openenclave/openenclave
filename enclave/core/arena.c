@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include "arena.h"
-#include <openenclave/bits/safemath.h>
 #include <openenclave/edger8r/common.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>

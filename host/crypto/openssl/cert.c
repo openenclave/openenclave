@@ -3,11 +3,11 @@
 
 #include <ctype.h>
 #include <openenclave/bits/result.h>
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>

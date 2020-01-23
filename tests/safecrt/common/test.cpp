@@ -6,8 +6,8 @@
 #endif
 
 #include <openenclave/bits/result.h>
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/error.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>

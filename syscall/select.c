@@ -1,13 +1,13 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/assert.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/corelibc/time.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/syscall/poll.h>
 #include <openenclave/internal/syscall/raise.h>
 #include <openenclave/internal/syscall/sys/select.h>

@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 
 #include "tracee.h"
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/corelibc/stdio.h>
@@ -12,6 +10,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>

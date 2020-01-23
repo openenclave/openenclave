@@ -2,13 +2,13 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/module.h>
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/syscall/fd.h>
 #include <openenclave/internal/syscall/fdtable.h>
 #include <openenclave/internal/syscall/raise.h>

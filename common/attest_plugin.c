@@ -3,10 +3,10 @@
 
 #include <openenclave/attestation/plugin.h>
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/utils.h>
 #include <stdio.h>
 #include <string.h>

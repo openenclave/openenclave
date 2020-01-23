@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update Intel PSW dependencies to 2.6.100.2 on Windows.
 - The stack guard for OE SDK on SGX is turned on. It is also turned on for enclaves.
 
+### Deprecated
+
+- `bits/safecrt.h` and `bits/safemath.h` are not published anymore. They were not intended
+  for use by enclave authors. They are now moved to internal folder and not part of
+  published headers.
+
 ### Security
 - Update mbedTLS to version 2.16.4. Refer to [2.16.3](
 https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.3-and-2.7.12-released) and

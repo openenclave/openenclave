@@ -3,8 +3,6 @@
 
 #include "revocation.h"
 #include <openenclave/bits/attestation.h>
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/crypto/crl.h>
@@ -14,6 +12,8 @@
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>

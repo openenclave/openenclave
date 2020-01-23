@@ -15,14 +15,14 @@
 #include <Windows.h>
 #endif
 
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/argv.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>

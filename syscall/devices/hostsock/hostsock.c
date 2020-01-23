@@ -19,7 +19,7 @@
 #include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include "syscall_t.h"
 
 #define DEVICE_MAGIC 0x536f636b

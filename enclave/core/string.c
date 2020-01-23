@@ -1,11 +1,11 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/ctype.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/safecrt.h>
 
 size_t oe_strlen(const char* s)
 {

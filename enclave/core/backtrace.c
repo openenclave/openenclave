@@ -1,7 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
@@ -9,6 +8,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 
 oe_result_t oe_print_backtrace(void)
 {

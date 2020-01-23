@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 #include "../common/asn1.h"
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/asn1.h>
 #include <openssl/pem.h>
