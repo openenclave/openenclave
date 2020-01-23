@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "../calls.h"
+#include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
@@ -22,7 +23,9 @@
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
+#include "../../../common/sgx/sgxmeasure.h"
 #include "../../sgx/report.h"
 #include "../arena.h"
 #include "../atexit.h"
@@ -131,6 +134,51 @@ extern bool oe_disable_debug_malloc_check;
 **==============================================================================
 */
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+extern const volatile oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
+extern volatile oe_sgx_enclave_properties_t oe_enclave_properties_sgx_mutable;
+extern volatile int _have_eeid;
+
+static oe_result_t _eeid_expand()
+{
+    oe_result_t r = OE_OK;
+    uint64_t* heap_start = (uint64_t*)__oe_get_heap_base();
+
+    if (*heap_start == 0xEE1DEE1DEE1DEE1D)
+    {
+        oe_eeid_t* eeid = (oe_eeid_t*)(heap_start + 1);
+        oe_enclave_properties_sgx_mutable.header.size_settings =
+            eeid->size_settings;
+
+        // Recompute enclave size
+        size_t heap_size = (eeid->size_settings.num_heap_pages) * OE_PAGE_SIZE;
+        size_t stack_size =
+            (eeid->size_settings.num_stack_pages * OE_PAGE_SIZE) +
+            2 * OE_PAGE_SIZE;
+        size_t control_size = 6 * OE_PAGE_SIZE;
+        size_t enclave_end =
+            oe_enclave_properties_sgx_mutable.image_info.enclave_size +
+            heap_size +
+            (eeid->size_settings.num_tcs * (stack_size + control_size));
+
+        oe_enclave_properties_sgx_mutable.image_info.enclave_size =
+            oe_round_u64_to_pow2(enclave_end);
+
+        // Move EEID to just after the heap pages where it is safe for later use
+        _have_eeid = true;
+        size_t num_eeid_bytes = sizeof(oe_eeid_t) + eeid->data_size;
+        memmove((void*)__oe_get_eeid(), eeid, num_eeid_bytes);
+
+        // Wipe the corresponding heap pages
+        memset(heap_start, 0, sizeof(uint64_t) + num_eeid_bytes);
+    }
+    else
+        _have_eeid = false;
+
+    return r;
+}
+#endif
+
 /*
 **==============================================================================
 **
@@ -158,6 +206,10 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         if (_once == false)
         {
             oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+            OE_CHECK(_eeid_expand());
+#endif
 
 #ifdef OE_USE_BUILTIN_EDL
             /* Install the common TEE ECALL function table. */

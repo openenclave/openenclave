@@ -347,7 +347,11 @@ int oesign(
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
     OE_CHECK_ERR(
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+        oe_sgx_build_enclave(&context, enclave, &props, NULL, &enc),
+#else
         oe_sgx_build_enclave(&context, enclave, &props, &enc),
+#endif
         "oe_sgx_build_enclave(): result=%s (%#x)",
         oe_result_str(result),
         result);
@@ -411,3 +415,79 @@ done:
 
     return ret;
 }
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+int oedump_eeid(const char* enclave)
+{
+    int ret = 1;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_enclave_t enc;
+    oe_sgx_enclave_properties_t props;
+    oe_sgx_load_context_t context;
+
+    /* Load the enclave properties from the enclave.
+     * Note that oesign expects that the enclave must already have the .oeinfo
+     * section allocated, and cannot currently inject it into the ELF.
+     * The load stack (oe_load_enclave_image) requires that the oeinfo_rva be
+     * found or fails the load.
+     */
+    OE_CHECK_ERR(
+        oe_read_oeinfo_sgx(enclave, &props),
+        "Failed to load enclave: %s: result=%s (%#x)",
+        enclave,
+        oe_result_str(result),
+        result);
+
+    /* Check whether enclave properties are valid */
+    {
+        const char* field_name;
+        OE_CHECK_ERR(
+            oe_sgx_validate_enclave_properties(&props, &field_name),
+            "Invalid enclave property value: %s",
+            field_name);
+    }
+
+    /* Initialize the context parameters for measurement only */
+    OE_CHECK_ERR(
+        oe_sgx_initialize_load_context(
+            &context, OE_SGX_LOAD_TYPE_MEASURE, props.config.attributes),
+        "oe_sgx_initialize_load_context() failed");
+
+    if (props.header.size_settings.num_heap_pages != 0 ||
+        props.header.size_settings.num_stack_pages != 0 ||
+        props.header.size_settings.num_tcs != 1)
+    {
+        printf("Memory settings are != 0; image is not suitable for EEID.\n");
+        return 1;
+    }
+
+    /* Build an enclave to obtain the MRENCLAVE measurement */
+    oe_eeid_t eeid;
+    OE_CHECK_ERR(
+        oe_sgx_build_enclave(&context, enclave, &props, &eeid, &enc),
+        "oe_sgx_build_enclave(): result=%s (%#x)",
+        oe_result_str(result),
+        result);
+
+    printf("=== Extended Information for EEID: \n");
+    printf("H=");
+    for (size_t i = 0; i < 8; i++)
+        printf("%08x", eeid.hash_state.H[i]);
+    printf("\nN=");
+    for (size_t i = 0; i < 2; i++)
+        printf("%08x", eeid.hash_state.N[i]);
+    printf("\nsigstruct=");
+    for (size_t i = 0; i < sizeof(props.sigstruct); i++)
+        printf("%02x", props.sigstruct[i]);
+    printf("\nvaddr=%lu", eeid.vaddr);
+    printf("\n");
+
+    ret = 0;
+
+done:
+
+    oe_sgx_cleanup_load_context(&context);
+
+    return ret;
+}
+#endif

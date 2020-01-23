@@ -7,6 +7,7 @@
 /* Note: The variables below are initialized during enclave loading */
 
 extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
+volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx_mutable;
 
 #if defined(__linux__)
 /**
@@ -127,6 +128,7 @@ extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 static volatile uint64_t _enclave_rva;
 static volatile uint64_t _reloc_rva;
 static volatile uint64_t _reloc_size;
+volatile int _have_eeid;
 
 #endif
 
@@ -148,14 +150,14 @@ const void* __oe_get_enclave_base()
      * IP-relative by the C-compiler on x86_64, and hence does not have a
      * relocation entry. Thus it works both pre- and post-relocation.
      */
-    return (uint8_t*)&oe_enclave_properties_sgx -
-           oe_enclave_properties_sgx.image_info.oeinfo_rva;
+    return (uint8_t*)&oe_enclave_properties_sgx_mutable -
+           oe_enclave_properties_sgx_mutable.image_info.oeinfo_rva;
 #endif
 }
 
 size_t __oe_get_enclave_size()
 {
-    return oe_enclave_properties_sgx.image_info.enclave_size;
+    return oe_enclave_properties_sgx_mutable.image_info.enclave_size;
 }
 
 const void* __oe_get_enclave_elf_header(void)
@@ -178,7 +180,7 @@ const void* __oe_get_reloc_base()
 #if defined(__linux__)
     return base + _reloc_rva;
 #else
-    return base + oe_enclave_properties_sgx.IMAGE_INFO.reloc_rva;
+    return base + oe_enclave_properties_sgx_mutable.IMAGE_INFO.reloc_rva;
 #endif
 }
 
@@ -192,8 +194,23 @@ size_t __oe_get_reloc_size()
 #if defined(__linux__)
     return _reloc_size;
 #else
-    return oe_enclave_properties_sgx.image_info.reloc_size;
+    return oe_enclave_properties_sgx_mutable.image_info.reloc_size;
 #endif
+}
+
+/*
+**==============================================================================
+**
+** Extended enclave initialization data boundaries:
+**
+**==============================================================================
+*/
+
+const void* __oe_get_eeid()
+{
+    return _have_eeid
+               ? (unsigned char*)__oe_get_heap_base() + __oe_get_heap_size()
+               : NULL;
 }
 
 /*
@@ -208,12 +225,13 @@ const void* __oe_get_heap_base()
 {
     const unsigned char* base = __oe_get_enclave_base();
 
-    return base + oe_enclave_properties_sgx.image_info.heap_rva;
+    return base + oe_enclave_properties_sgx_mutable.image_info.heap_rva;
 }
 
 size_t __oe_get_heap_size()
 {
-    return oe_enclave_properties_sgx.header.size_settings.num_heap_pages *
+    return oe_enclave_properties_sgx_mutable.header.size_settings
+               .num_heap_pages *
            OE_PAGE_SIZE;
 }
 

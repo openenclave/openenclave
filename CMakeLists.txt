@@ -229,6 +229,9 @@ option(
 
 option(BUILD_TESTS "Build OE tests" ON)
 
+# For EEID see https://github.com/openenclave/openenclave/pull/2647
+option(WITH_EEID "[EXPERIMENTAL] Include support for Extended Enclave Initialization Data." OFF)
+
 find_program(VALGRIND "valgrind")
 if (VALGRIND)
   set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")

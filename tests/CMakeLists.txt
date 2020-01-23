@@ -61,6 +61,7 @@ if (UNIX
     add_subdirectory(ecall)
     add_subdirectory(ecall_ocall)
     add_subdirectory(echo)
+    add_subdirectory(eeid_plugin)
     add_subdirectory(enclaveparam)
     add_subdirectory(file)
     add_subdirectory(getenclave)

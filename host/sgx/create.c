@@ -34,6 +34,7 @@ static char* get_fullpath(const char* path)
 
 #include <assert.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
@@ -46,11 +47,13 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgxcreate.h>
+#include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
 #include "../memalign.h"
+#include "../signkey.h"
 #include "cpuid.h"
 #include "enclave.h"
 #include "exception.h"
@@ -460,6 +463,13 @@ static oe_result_t _configure_enclave(
                     enclave, max_host_workers, max_enclave_workers));
                 break;
             }
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+            case OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA:
+            {
+                // Nothing
+                break;
+            }
+#endif
             default:
                 OE_RAISE(OE_INVALID_PARAMETER);
         }
@@ -562,11 +572,119 @@ done:
     return result;
 }
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+static oe_result_t _eeid_resign(
+    oe_sgx_load_context_t* context,
+    oe_sgx_enclave_properties_t* properties,
+    oe_eeid_t* eeid)
+{
+    oe_result_t result = OE_OK;
+
+    if (eeid && eeid->data_size > 0)
+    {
+        sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)properties->sigstruct;
+
+        OE_SHA256 ext_mrenclave;
+        oe_sha256_final(&context->hash_context, &ext_mrenclave);
+
+        OE_CHECK(oe_sgx_sign_enclave(
+            &ext_mrenclave,
+            properties->config.attributes,
+            properties->config.product_id,
+            properties->config.security_version,
+            OE_DEBUG_SIGN_KEY, /* Use different key? */
+            OE_DEBUG_SIGN_KEY_SIZE,
+            sigstruct));
+    }
+
+done:
+    return result;
+}
+
+static oe_result_t _add_eeid_pages(
+    oe_sgx_load_context_t* context,
+    oe_sgx_enclave_properties_t* props,
+    oe_eeid_t* eeid,
+    uint64_t enclave_addr,
+    uint64_t* vaddr,
+    uint64_t entry_point)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (eeid)
+    {
+        if (props->header.size_settings.num_heap_pages != 0 ||
+            props->header.size_settings.num_stack_pages != 0 ||
+            props->header.size_settings.num_tcs != 1)
+            OE_RAISE(OE_INVALID_PARAMETER); // For now.
+
+        oe_sha256_context_t* hctx = &context->hash_context;
+        oe_sha256_save(hctx, eeid->hash_state.H, eeid->hash_state.N);
+        eeid->vaddr = *vaddr;
+        eeid->entry_point = entry_point;
+        eeid->signature_size = sizeof(sgx_sigstruct_t); // SGX only for now
+
+        size_t num_bytes = 8 + sizeof(oe_eeid_t) + eeid->data_size;
+        size_t num_pages =
+            num_bytes / OE_PAGE_SIZE + ((num_bytes % OE_PAGE_SIZE) ? 1 : 0);
+
+        sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)&props->sigstruct;
+        memcpy(eeid->signature, (uint8_t*)sigstruct, sizeof(sgx_sigstruct_t));
+
+        oe_page_t* pages =
+            oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t) * num_pages);
+        *((uint64_t*)pages->data) =
+            0xEE1DEE1DEE1DEE1D; // A non-eeid enclave would segfault (no heap)
+                                // or see a 0.
+        memcpy(
+            pages->data + sizeof(uint64_t),
+            eeid,
+            sizeof(oe_eeid_t) + eeid->data_size);
+
+        for (size_t i = 0; i < num_pages; i++)
+        {
+            uint64_t addr = enclave_addr + *vaddr;
+            uint64_t src = (uint64_t)(pages + i * OE_PAGE_SIZE);
+            uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
+
+            OE_CHECK(oe_sgx_load_enclave_data(
+                context, enclave_addr, addr, src, flags, false));
+            *vaddr += OE_PAGE_SIZE;
+        }
+
+        free(pages);
+
+        // To support non-zero heap/stack images we would have to save the old
+        // sizes here.
+
+        props->header.size_settings.num_heap_pages =
+            eeid->size_settings.num_heap_pages;
+        props->header.size_settings.num_stack_pages =
+            eeid->size_settings.num_stack_pages;
+        props->header.size_settings.num_tcs = eeid->size_settings.num_tcs;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+oe_result_t oe_sgx_build_enclave(
+    oe_sgx_load_context_t* context,
+    const char* path,
+    const oe_sgx_enclave_properties_t* properties,
+    oe_eeid_t* eeid,
+    oe_enclave_t* enclave)
+#else
 oe_result_t oe_sgx_build_enclave(
     oe_sgx_load_context_t* context,
     const char* path,
     const oe_sgx_enclave_properties_t* properties,
     oe_enclave_t* enclave)
+#endif
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t enclave_end = 0;
@@ -668,9 +786,20 @@ oe_result_t oe_sgx_build_enclave(
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    /* Add optional EEID pages */
+    OE_CHECK(_add_eeid_pages(
+        context, &props, eeid, enclave_addr, &vaddr, oeimage.entry_rva));
+#endif
+
     /* Add data pages */
     OE_CHECK(
         _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    /* Resign */
+    OE_CHECK(_eeid_resign(context, &props, eeid));
+#endif
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(oe_sgx_initialize_enclave(
@@ -780,8 +909,20 @@ oe_result_t oe_create_enclave(
     OE_CHECK(oe_sgx_initialize_load_context(
         &context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Build the enclave */
+    oe_eeid_t* eeid = NULL;
+    for (size_t i = 0; i < setting_count; i++)
+        if (settings[i].setting_type == OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA)
+        {
+            eeid = settings[i].u.eeid;
+            break;
+        }
+
+    OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, eeid, enclave));
+#else
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));
+#endif
 
     /* Push the new created enclave to the global list. */
     if (oe_push_enclave_instance(enclave) != 0)

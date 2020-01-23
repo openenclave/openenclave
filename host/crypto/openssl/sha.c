@@ -70,3 +70,48 @@ oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
 done:
     return result;
 }
+
+oe_result_t oe_sha256_save(
+    const oe_sha256_context_t* context,
+    uint32_t* H,
+    uint32_t* N)
+{
+    oe_result_t result = OE_INVALID_PARAMETER;
+
+    if (!context || !H || !N)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+
+    for (size_t i = 0; i < 8; i++)
+        H[i] = impl->ctx.h[i];
+
+    N[0] = impl->ctx.Nl;
+    N[1] = impl->ctx.Nh;
+
+done:
+    return result;
+}
+
+oe_result_t oe_sha256_restore(
+    oe_sha256_context_t* context,
+    const uint32_t* H,
+    const uint32_t* N)
+{
+    oe_result_t result = OE_INVALID_PARAMETER;
+
+    if (!context || !H || !N)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+    oe_sha256_init(context);
+
+    for (size_t i = 0; i < 8; i++)
+        impl->ctx.h[i] = H[i];
+
+    impl->ctx.Nl = N[0];
+    impl->ctx.Nh = N[1];
+
+done:
+    return result;
+}

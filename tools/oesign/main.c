@@ -14,6 +14,7 @@
 #endif
 
 int oedump(const char*);
+int oedump_eeid(const char* enclave);
 int oesign(
     const char* enclave,
     const char* conffile,
@@ -103,13 +104,19 @@ int dump_parser(int argc, const char* argv[])
 {
     int ret = 0;
     const char* enclave = NULL;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    int with_eeid = 0;
+#endif
 
     const struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"enclave-image", required_argument, NULL, 'e'},
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+        {"eeid", no_argument, NULL, 'x'},
+#endif
         {NULL, 0, NULL, 0},
     };
-    const char short_options[] = "he:";
+    const char short_options[] = "he:x";
 
     int c;
     do
@@ -130,6 +137,11 @@ int dump_parser(int argc, const char* argv[])
             case 'e':
                 enclave = optarg;
                 break;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+            case 'x':
+                with_eeid = 1;
+                break;
+#endif
             case ':':
                 // Missing option argument
                 ret = 1;
@@ -147,9 +159,17 @@ int dump_parser(int argc, const char* argv[])
         oe_err("--enclave-image option is missing");
         ret = 1;
     }
+
     if (!ret)
+    {
         /* dump oeinfo and signature information */
-        ret = oedump(enclave);
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+        if (with_eeid)
+            ret = oedump_eeid(enclave);
+        else
+#endif
+            ret = oedump(enclave);
+    }
 
 done:
 

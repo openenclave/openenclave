@@ -34,3 +34,7 @@ install(
   TARGETS oesign
   EXPORT openenclave-targets
   DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if (WITH_EEID)
+  target_compile_definitions(oesign PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif()
