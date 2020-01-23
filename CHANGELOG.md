@@ -7,14 +7,21 @@ breaking changes should be noted here. It should be more concise than `git log`.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-[Unreleased]
+[Unreleased][Unreleased_log]
 ------------
+
+[v0.8.0][v0.8.0_log] - 2020-01-22
+---------------------
 
 ### Added
 
 - Support for backtracing in debug and release builds.
     - Implementations for GNU functions `backtrace` and `backtrace_symbols` (defined in execinfo.h)
     - Enclaves are built using `-fno-omit-frame-pointer` for accurate backtraces.
+- Support for custom attestation data formats via new plugin model. Please refer to the [design documentation](docs/DesignDocs/CustomAttestation.md).
+- Support for host side sockets on Windows.
+- Support to build OE enclave libraries with stack protector enabled.
+    - Enable `-fstack-protector-strong` by default for enclave application build configurations in cmake and pkgconfig.
 
 ### Changed
 
@@ -26,7 +33,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - The copyright for all sources is now attributed to Open Enclave SDK contributors.
 - Update Intel DCAP library dependencies to 1.4.1.
 - Update Intel PSW dependencies to 2.6.100.2 on Windows.
-- The stack guard for OE SDK on SGX is turned on. It is also turned on for enclaves.
+- Enable `/W2 /WX` on Windows builds by default to treat W2 warnings as errors.
+- Removed code related to deprecation of strftime.
+- Enclave libs and enclaves are built using `-gc-sections`.
+- Replace OCPWin and OCaml with esy. The CMake-driven OCaml build is replaced with esy and dune. To install esy as a prerequisite:
+      - On Linux, `sudo ansible-playbook oe-linux-esy-setup.yml`
+      - On Windows, `npm install -g esy@0.5.8`
+- Update Ansible dependency from 2.8.0 to 2.8.2 in /scripts/ansible.
+- safecrt.h and safemath.h are not installed as part of the SDK as they are meant for internal consumption.
+
+### Fixed
+
+- `oe_random()` now correctly returns a fully filled byte buffer for requests of > 1024 bytes.
+- Add `openenclave` namespace to dl and crypto libraries to prevent symbol collisions. Fixes #2082.
 
 ### Deprecated
 
@@ -35,12 +54,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   published headers.
 
 ### Security
+
 - Update mbedTLS to version 2.16.4. Refer to [2.16.3](
 https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.3-and-2.7.12-released) and
 [2.16.4](https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.4-and-2.7.13-released)
 release notes for the set of issues addressed.
 
-[v0.7.0] - 2019-10-26
+[v0.7.0][v0.7.0_log] - 2019-10-26
 ---------------------
 
 ### Added
@@ -85,7 +105,7 @@ release notes for the set of issues addressed.
 
 - Fix enclave heap memory disclosure (CVE-2019-1369).
 
-[v0.6.0] - 2019-06-29
+[v0.6.0][v0.6.0_log] - 2019-06-29
 ---------------------
 
 ### Changed
@@ -106,7 +126,7 @@ release notes for the set of issues addressed.
 - Update MUSL libc to version 1.1.21.
 - Update mbedTLS to version 2.7.11.
 
-[v0.5.0] - 2019-04-09
+[v0.5.0][v0.5.0_log] - 2019-04-09
 ---------------------
 
 ### Added
@@ -184,7 +204,7 @@ release notes for the set of issues addressed.
    - `_handle_sgx_get_report` will now write to the supplied argument if it lies in host memory.
    - Added check for missing null terminator in oeedger8r generated code.
 
-[v0.4.1] - 2018-12-21 (DEPRECATED)
+[v0.4.1][v0.4.1_log] - 2018-12-21 (DEPRECATED)
 ----------------------------------
 
 v0.4.1 contains a small fix to work with Intel's new ISV version bump.
@@ -195,7 +215,7 @@ v0.4.1 contains a small fix to work with Intel's new ISV version bump.
   and at the same time also allow a newer QE SVN (greater than 1) during the
   oe_verify_report process.
 
-[v0.4.0] - 2018-10-08 (DEPRECATED)
+[v0.4.0][v0.4.0_log] - 2018-10-08 (DEPRECATED)
 ----------------------------------
 
 v0.4.0 is the first public preview release, with numerous breaking changes from v0.1.0
@@ -261,15 +281,24 @@ as listed below.
 - Fix integer overflows and add arithmetic boundary checks in Open Enclave runtime.
 - Fix cert chain validation during Open Enclave quote verification.
 
-[v0.1.0] - 2018-06-15 (YANKED)
+[v0.1.0][v0.1.0_log] - 2018-06-15 (YANKED)
 ------------------------------
 
 Initial private preview release, no longer supported.
 
-[Unreleased](https://github.com/openenclave/openenclave/compare/v0.7.0...HEAD)
-[v0.7.0](https://github.com/openenclave/openenclave/compare/v0.6.0...v0.7.0)
-[v0.6.0](https://github.com/openenclave/openenclave/compare/v0.5.0...v0.6.0)
-[v0.5.0](https://github.com/openenclave/openenclave/compare/v0.4.1...v0.5.0)
-[v0.4.1](https://github.com/openenclave/openenclave/compare/v0.4.0...v0.4.1)
-[v0.4.0](https://github.com/openenclave/openenclave/compare/v0.1.0...v0.4.0)
-[v0.1.0](https://github.com/openenclave/openenclave/compare/beb546f...v0.1.0)
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.8.0...HEAD
+
+[v0.8.0_log]:https://github.com/openenclave/openenclave/compare/v0.7.0...v0.8.0
+
+[v0.7.0_log]:https://github.com/openenclave/openenclave/compare/v0.6.0...v0.7.0
+
+[v0.6.0_log]:https://github.com/openenclave/openenclave/compare/v0.5.0...v0.6.0
+
+[v0.5.0_log]:https://github.com/openenclave/openenclave/compare/v0.4.1...v0.5.0
+
+[v0.4.1_log]:https://github.com/openenclave/openenclave/compare/v0.4.0...v0.4.1
+
+[v0.4.0_log]:https://github.com/openenclave/openenclave/compare/v0.1.0...v0.4.0
+
+[v0.1.0_log]:https://github.com/openenclave/openenclave/compare/beb546f...v0.1.0
+
