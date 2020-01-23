@@ -33,7 +33,7 @@ Param(
     [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
     [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
     [Parameter(mandatory=$true)][string]$InstallPath,
-    [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoDriver")][string]$LaunchConfiguration,
+    [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoDriver", "SGX1-NoDriver")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
 )
 
@@ -648,7 +648,7 @@ try {
     Install-Git
     Install-Shellcheck
 
-    if ($LaunchConfiguration -ne "SGX1FLC-NoDriver")
+    if (($LaunchConfiguration -ne "SGX1FLC-NoDriver") -and ($LaunchConfiguration -ne "SGX1-NoDriver"))
     {
         Install-PSW
     }

@@ -41,6 +41,13 @@ would like to install the packages to `C:/oe_prereqs`.
 ./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1 -DCAPClientType None
 ```
 
+On Windows 10, the Intel PSW is delivered via Windows Update. Running the
+executable installer will fail on Windows 10 machines. To skip PSW installation:
+
+```powershell
+./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1-NoDriver -DCAPClientType None
+```
+
 If you prefer to manually install prerequisites, please refer to this
 [document](WindowsManualInstallPrereqs.md).
 
