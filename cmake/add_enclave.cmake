@@ -54,6 +54,16 @@ macro(add_enclave)
     "${multiValueArgs}"
     ${ARGN})
 
+  if (NOT SIGNING_ENGINE)
+     set( SIGNING_ENGINE "")
+  endif()
+  if (NOT ENGINE_LOAD_PATH)
+     set( ENGINE_LOAD_PATH "")
+  endif()
+  if (NOT ENGINE_KEY_ID)
+     set( ENGINE_KEY_ID "")
+  endif()
+
   if(OE_SGX)
     add_enclave_sgx(
       CXX ${ENCLAVE_CXX}
@@ -76,7 +86,6 @@ endmacro()
 
 function(add_enclave_sgx)
   set(options CXX)
-  set(oneValueArgs TARGET CONFIG KEY)
   set(oneValueArgs TARGET CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID)
   set(multiValueArgs SOURCES)
   cmake_parse_arguments(ENCLAVE
