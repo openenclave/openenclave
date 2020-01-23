@@ -53,6 +53,14 @@ oe_result_t oe_public_key_read_pem(
     int key_type,
     uint64_t magic);
 
+oe_result_t oe_private_key_from_engine(
+    const char *engine_id,
+    const char *engine_load_path,
+    const char *key_id,
+    oe_private_key_t* key,
+    int key_type,
+    uint64_t magic);
+
 oe_result_t oe_private_key_write_pem(
     const oe_private_key_t* private_key,
     uint8_t* data,
@@ -87,5 +95,15 @@ oe_result_t oe_public_key_verify(
     const uint8_t* signature,
     size_t signature_size,
     uint64_t magic);
+
+oe_result_t oe_sign_by_engine(
+    const char *engine_id,    // string name of the engine, ie "esrp"
+    const char *key_id,       // string id of the desired signing key, ie "KEYCODE=CP-23072"
+    const char *engine_load_path, // Location of the
+    oe_hash_type_t hash_type,
+    const void* hash_data,
+    size_t hash_size,
+    uint8_t* signature,
+    size_t* signature_size);
 
 #endif /* _HOST_KEY_H */
