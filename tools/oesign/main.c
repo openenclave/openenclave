@@ -628,8 +628,8 @@ int oesign(
     }
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
-    if ((result = oe_sgx_build_enclave(&context, enclave, &props, &enc)) !=
-        OE_OK)
+    if ((result = oe_sgx_build_enclave(
+             &context, enclave, &props, NULL, 0, &enc)) != OE_OK)
     {
         Err("oe_sgx_build_enclave(): result=%s (%u)",
             oe_result_str(result),

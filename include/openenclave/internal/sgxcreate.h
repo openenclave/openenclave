@@ -75,6 +75,8 @@ oe_result_t oe_sgx_build_enclave(
     oe_sgx_load_context_t* context,
     const char* path,
     const oe_sgx_enclave_properties_t* properties,
+    uint8_t* user_data,
+    uint32_t user_data_size,
     oe_enclave_t* enclave);
 
 /**
