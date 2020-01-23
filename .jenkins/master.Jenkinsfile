@@ -12,7 +12,7 @@ def getStartingIndex(String label, String prefix) {
 
 // Generate a list of Agent Names for each Agent Label
 def generateAgentNames(String label, String prefix, Integer count) {
-    def first = getStartingIndex(label, prefix)
+    def first = getStartingIndex(label, prefix.toLowerCase())
     def nodeNames = []
     for (int i=0; i<count; ++i) {
         nodeNames.add(prefix + (i + first).toString())

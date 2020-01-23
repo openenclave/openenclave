@@ -10,13 +10,6 @@
   include_vars:
     file: "{{ ansible_distribution_release | lower }}.yml"
 
-- name: Check for existing required directories
-  stat:
-    path: "{{ item }}"
-  with_items: "{{ packages_validation_directories }}"
-  register: directory
-  failed_when: directory.stat.isdir == False
-
 - name: Check for existing required files
   stat:
     path: "{{ item }}"
