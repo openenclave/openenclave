@@ -17,8 +17,7 @@ intel_dcap_packages:
 driver_validation_directories:
   - "/opt/intel/sgxdriver"
 
-packages_validation_directories:
-  - "/opt/intel/libsgx-enclave-common"
-
 packages_validation_files:
+  - "/usr/lib/x86_64-linux-gnu/libsgx_enclave_common.so"
   - "/usr/lib/x86_64-linux-gnu/libsgx_dcap_ql.so"
+  - "/usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so"
