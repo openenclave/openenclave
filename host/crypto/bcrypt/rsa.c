@@ -175,6 +175,19 @@ void oe_rsa_public_key_init(
         (oe_bcrypt_key_t*)public_key, key_handle, OE_RSA_PUBLIC_KEY_MAGIC);
 }
 
+
+oe_result_t oe_rsa_private_key_from_engine(
+    oe_rsa_private_key_t* private_key,
+    const char *engine_id,
+    const char *engine_load_path,
+    const char *key_id)
+{
+    /*
+     * bcrypt does not support engines, so nothing to do. 
+     */
+    return OE_UNEXPECTED;
+}
+
 oe_result_t oe_rsa_private_key_read_pem(
     oe_rsa_private_key_t* private_key,
     const uint8_t* pem_data,
