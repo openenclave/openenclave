@@ -1,53 +1,99 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
 #!/usr/bin/env python3
 #  Run tests of oesign.
-#  We need this wrapper to return the correct return value from the tests, since 
+#  We need this wrapper to return the correct return value from the tests, since
 #  several invocations of oesign are supposed to fail by design.
 import sys
 import subprocess
 import argparse
 
-def oesign_works(oesign_binary:str, enclave:str, config_file:str, engine_id: str, keyid:str, loadpath: str  ) -> int: 
-    cmd = oesign_binary+' sign -e '+enclave+' -c '+config_file+' -n '+engine_id+' -p '+loadpath+' -i '+keyid
+TEST_FAILED = 1
+TEST_PASSED = 0
 
-    return subprocess.run(cmd, shell=True)
+def oesign_works(oesign_binary:str, enclave:str, config_file:str, engine_id: str, keyid:str, load_path: str  ) -> int:
+    test_rslt = TEST_PASSED
+    cmd = oesign_binary+' sign -e '+enclave+' -c '+config_file+' -n '+engine_id+' -p '+load_path+' -i '+keyid
 
-def oesign_detects_failed_engine_path(oe_sign_binary:str, enclave:str, config_file:str, engine_id: str, keyid:str, loadpath: str  ) -> int: 
+    retval = subprocess.call(cmd, shell=True)
+    if retval != 0:
+        # only print if failed
+        test_rslt  = TEST_FAILED
+        print("cmd: %s\nretval:%x\n" % (cmd, retval))
+
+    return retval;
+
+def oesign_detects_failed_engine_path(oesign_binary:str, enclave:str, config_file:str, engine_id: str, keyid:str, load_path: str  ) -> int:
+    test_rslt = TEST_PASSED
     # ignore loadpath
-    loadpath = '/tmp/not_there'
-    cmd = oesign_binary+' sign -e '+enclave+' -c '+config_file+' -n '+engine_id+' -p '+loadpath+' -i '+keyid
+    load_path = '/tmp/not_there'
+    cmd = oesign_binary+' sign -e '+enclave+' -c '+config_file+' -n '+engine_id+' -p '+load_path+' -i '+keyid
 
-    retval = subprocess.run(cmd, shell=True)
+    retval = subprocess.call(cmd, shell=True)
     # should return a failed retval
-    return retval != 0
+    if retval == 0:
+        # print if failed
+        test_rslt  = TEST_FAILED
+        print("cmd: %s\nretval:%x\n" % (cmd, retval))
 
-def oesign_detects_failed_engine_id(oe_sign_binary:str, enclave:str, config_file:str, engine_id: str, keyid:str, loadpath: str  ) -> int: 
+    return test_rslt
+
+def oesign_detects_failed_engine_id(oesign_binary:str, enclave:str, config_file:str, engine_id: str, keyid:str, load_path: str  ) -> int:
+    test_rslt = TEST_PASSED
     # ignore engine_id
     engine_id = 'bogus_engine'
     cmd = oesign_binary+' sign -e '+enclave+' -c '+config_file+' -n '+engine_id+' -p '+load_path+' -i '+keyid
 
-    retval = subprocess.run(cmd, shell=True)
+    retval = subprocess.call(cmd, shell=True)
     # should return a failed retval
-    return retval != 0
+    if retval == 0:
+        # print if failed
+        test_rslt  = TEST_FAILED
+        print("cmd: %s\nretval:%x\n" % (cmd, retval))
 
-def oesign_detects_failed_key_id(oe_sign_binary:str, enclave:str, config_file:str, engine_id: str, keyid:str, loadpath: str  ) -> int: 
+    return test_rslt
+
+def oesign_detects_failed_key_id(oesign_binary:str, enclave:str, config_file:str, engine_id: str, keyid:str, load_path: str  ) -> int:
+    test_rslt = TEST_PASSED
     # ignore keyid
     keyid = 'bogus key'
     cmd = oesign_binary+' sign -e '+enclave+' -c '+config_file+' -n '+engine_id+' -p '+load_path+' -i '+keyid
 
-    retval = subprocess.run(cmd, shell=True)
+    retval = subprocess.call(cmd, shell=True)
     # should return a failed retval
-    return retval != 0
+    if retval == 0:
+        # print if failed
+        test_rslt  = TEST_FAILED
+        print("cmd: %s\nretval:%x\n" % (cmd, retval))
+
+    return test_rslt
+
+def oesign_detects_failed_sign_wrong(oesign_binary:str, enclave:str, config_file:str, engine_id: str, keyid:str, load_path: str  ) -> int:
+    test_rslt = TEST_PASSED
+    # The keyid will use a slightly bogus key provided by the environment. It should fail.
+    cmd = oesign_binary+' sign -e '+enclave+' -c '+config_file+' -n '+engine_id+' -p '+load_path+' -i '+keyid
+
+    retval = subprocess.call(cmd, shell=True)
+    # should return a failed retval
+    if retval == 0:
+        # print if failed
+        test_rslt  = TEST_FAILED
+        print("cmd: %s\nretval:%x\n" % (cmd, retval))
+
+    return test_rslt
 
 if __name__ == "__main__":
 
     test_case = { 'works': oesign_works,
                   'failed-engine-path': oesign_detects_failed_engine_path,
                   'failed-engine-id': oesign_detects_failed_engine_id,
-                  'failed-keyid': oesign_detects_failed_key_id }
+                  'sign-wrong': oesign_detects_failed_sign_wrong,
+                  'failed-key-id': oesign_detects_failed_key_id }
 
     arg_parser = argparse.ArgumentParser(description='test cases for oesign engine support' )
     arg_parser.add_argument("command", default=None, type=str, nargs='?', help="oe-sign test", \
-                            choices=['failed-keyid', 'failed-engine-id', 'failed-engine-path', 'works']  )
+                            choices=list(test_case.keys()) )
     arg_parser.add_argument("--oesign-binary", default=None, type=str, help="oe-sign binary" )
     arg_parser.add_argument("--enclave-binary", default=None, type=str, help="enclave binary to be signed" )
     arg_parser.add_argument("--config-file", default=None, type=str, help="signing config" )
@@ -71,5 +117,5 @@ if __name__ == "__main__":
 
     retval = test_case[args.command](args.oesign_binary, args.enclave_binary, args.config_file, args.engine_id, args.key_id, args.engine_load_path)
     sys.exit ( retval )
-    
+
 
