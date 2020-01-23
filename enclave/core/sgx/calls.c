@@ -125,6 +125,30 @@ extern bool oe_disable_debug_malloc_check;
 **==============================================================================
 */
 
+static oe_result_t _oe_check_user_data()
+{
+    oe_result_t result = OE_OK;
+
+    const uint8_t* user_data = __oe_get_user_data_base();
+    uint64_t user_data_size = __oe_get_user_data_size();
+
+    const uint8_t* old_signature = user_data + user_data_size;
+    const uint8_t* hash_ud_sig = old_signature + OE_KEY_SIZE;
+
+    oe_sha256_context_t hctx;
+    OE_SHA256 h;
+    oe_sha256_init(&hctx);
+    oe_sha256_update(&hctx, user_data, user_data_size);
+    oe_sha256_update(&hctx, old_signature, OE_KEY_SIZE);
+    oe_sha256_final(&hctx, &h);
+
+    if (memcmp(hash_ud_sig, h.buf, OE_SHA256_SIZE) != 0)
+        OE_RAISE(OE_VERIFY_FAILED);
+
+done:
+    return result;
+}
+
 /*
 **==============================================================================
 **
@@ -170,6 +194,9 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
             oe_call_init_functions();
+
+            /* Check that the user data has not been tampered with */
+            OE_CHECK(_oe_check_user_data());
 
             /* DCLP Release barrier. */
             OE_ATOMIC_MEMORY_BARRIER_RELEASE();

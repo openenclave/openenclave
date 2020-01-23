@@ -127,6 +127,8 @@ extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 static volatile uint64_t _enclave_rva;
 static volatile uint64_t _reloc_rva;
 static volatile uint64_t _reloc_size;
+static volatile uint64_t _user_data_rva;
+static volatile uint64_t _user_data_size;
 
 #endif
 
@@ -194,6 +196,32 @@ size_t __oe_get_reloc_size()
 #else
     return oe_enclave_properties_sgx.image_info.reloc_size;
 #endif
+}
+
+const void* __oe_get_user_data_base()
+{
+    const unsigned char* base = __oe_get_enclave_base();
+
+#if defined(__linux__)
+    return base + _user_data_rva;
+#else
+#error "unsupported"
+#endif
+}
+
+uint64_t __oe_get_user_data_size()
+{
+#if defined(__linux__)
+    return _user_data_size;
+#else
+#error "unsupported"
+#endif
+}
+
+const void* __oe_get_user_data_end()
+{
+    return (const uint8_t*)__oe_get_user_data_base() +
+           __oe_get_user_data_size();
 }
 
 /*

@@ -44,12 +44,14 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/result.h>
 #include <openenclave/internal/sgxcreate.h>
+#include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
 #include "../memalign.h"
+#include "../signkey.h"
 #include "cpuid.h"
 #include "enclave.h"
 #include "exception.h"
@@ -545,10 +547,145 @@ done:
     return result;
 }
 
+static oe_result_t _add_extra_data_pages(
+    oe_sgx_load_context_t* context,
+    uint64_t enclave_addr,
+    const oe_page_t* pages,
+    const size_t num_pages,
+    uint64_t* vaddr)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!context || !vaddr)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Add any data pages as regular-read-only pages. */
+    if (pages && num_pages)
+    {
+        uint64_t size = num_pages * OE_PAGE_SIZE;
+        assert((size & (OE_PAGE_SIZE - 1)) == 0);
+
+        for (size_t i = 0; i < num_pages; i++)
+        {
+            uint64_t addr = enclave_addr + *vaddr;
+            uint64_t src = (uint64_t)&pages[i];
+            uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
+            bool extend = true;
+
+            OE_CHECK(oe_sgx_load_enclave_data(
+                context, enclave_addr, addr, src, flags, extend));
+            (*vaddr) += sizeof(oe_page_t);
+        }
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static uint64_t user_data_pages_size(uint64_t user_data_size)
+{
+    return oe_round_up_to_page_size(
+        user_data_size + OE_KEY_SIZE + OE_SHA256_SIZE);
+}
+
+static oe_result_t _patch_user_data_symbols(
+    oe_enclave_image_t* oeimage,
+    uint64_t enclave_end,
+    const void* user_data,
+    const size_t user_data_size)
+{
+    if (user_data && user_data_size)
+    {
+        elf64_sym_t sym_rva = {0}, sym_sz = {0};
+        if (elf64_find_symbol_by_name(
+                &oeimage->u.elf.elf, "_user_data_rva", &sym_rva) == 0 &&
+            elf64_find_symbol_by_name(
+                &oeimage->u.elf.elf, "_user_data_size", &sym_sz) == 0)
+        {
+            uint64_t sz = user_data_pages_size(user_data_size);
+            uint64_t *sym_rva_addr = NULL, *sym_sz_addr = NULL;
+            sym_rva_addr = (uint64_t*)(oeimage->image_base + sym_rva.st_value);
+            *sym_rva_addr = enclave_end - sz;
+            sym_sz_addr = (uint64_t*)(oeimage->image_base + sym_sz.st_value);
+            *sym_sz_addr = user_data_size;
+        }
+    }
+
+    return OE_OK;
+}
+
+static oe_result_t _add_user_data_pages(
+    oe_sgx_load_context_t* context,
+    oe_enclave_t* enclave,
+    uint64_t enclave_end,
+    oe_sgx_enclave_properties_t* properties,
+    uint64_t* vaddr,
+    uint8_t* user_data,
+    uint32_t user_data_size)
+{
+    oe_result_t result = OE_OK;
+
+    if (user_data_size > 0 && user_data != NULL)
+    {
+        sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)properties->sigstruct;
+        // cwinter: verify sigstruct->signature here?
+
+        uint64_t sz = user_data_pages_size(user_data_size);
+        assert(*vaddr == enclave_end - sz);
+
+        oe_sha256_context_t hctx;
+        OE_SHA256 hash_ud_sig;
+        oe_sha256_init(&hctx);
+        oe_sha256_update(&hctx, user_data, user_data_size);
+        oe_sha256_update(&hctx, sigstruct->signature, OE_KEY_SIZE);
+        oe_sha256_final(&hctx, &hash_ud_sig);
+
+        uint8_t data[sz];
+        memset(data, 0, sz);
+        memcpy(data, user_data, user_data_size); /* not necessary? */
+        memcpy(
+            data + user_data_size,
+            sigstruct->signature,
+            OE_KEY_SIZE); /* not necessary? */
+        memcpy(
+            data + user_data_size + OE_KEY_SIZE,
+            hash_ud_sig.buf,
+            OE_SHA256_SIZE);
+
+        OE_CHECK(_add_extra_data_pages(
+            context,
+            enclave->addr,
+            (const oe_page_t*)data,
+            sz / OE_PAGE_SIZE,
+            vaddr));
+
+        OE_SHA256 ext_mrenclave;
+        oe_sha256_final(&context->hash_context, &ext_mrenclave);
+
+        OE_CHECK(oe_sgx_sign_enclave(
+            &ext_mrenclave,
+            properties->config.attributes,
+            properties->config.product_id,
+            properties->config.security_version,
+            OE_DEBUG_SIGN_KEY, /* Use different key? */
+            OE_DEBUG_SIGN_KEY_SIZE,
+            sigstruct));
+
+        assert(*vaddr == enclave_end);
+    }
+
+done:
+    return result;
+}
+
 oe_result_t oe_sgx_build_enclave(
     oe_sgx_load_context_t* context,
     const char* path,
     const oe_sgx_enclave_properties_t* properties,
+    uint8_t* user_data,
+    uint32_t user_data_size,
     oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -633,6 +770,9 @@ oe_result_t oe_sgx_build_enclave(
     /* Calculate the size of image */
     OE_CHECK(oeimage.calculate_size(&oeimage, &image_size));
 
+    /* Add (optional) user data pages size */
+    image_size += user_data_pages_size(user_data_size);
+
     /* Calculate the size of this enclave in memory */
     OE_CHECK(_calculate_enclave_size(
         image_size, &props, &enclave_end, &enclave_size));
@@ -648,12 +788,26 @@ oe_result_t oe_sgx_build_enclave(
     /* Patch image */
     OE_CHECK(oeimage.patch(&oeimage, enclave_end));
 
+    /* Patch user data */
+    OE_CHECK(_patch_user_data_symbols(
+        &oeimage, enclave_end, user_data, user_data_size));
+
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
     /* Add data pages */
     OE_CHECK(
         _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
+
+    /* Add user data for extended attestation */
+    OE_CHECK(_add_user_data_pages(
+        context,
+        enclave,
+        enclave_end,
+        &props,
+        &vaddr,
+        user_data,
+        user_data_size));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(oe_sgx_initialize_enclave(
@@ -704,6 +858,31 @@ oe_result_t oe_create_enclave(
     uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
+    oe_enclave_t** enclave_out)
+{
+    return oe_create_enclave_wud(
+        enclave_path,
+        enclave_type,
+        flags,
+        settings,
+        setting_count,
+        ocall_table,
+        ocall_count,
+        NULL,
+        0,
+        enclave_out);
+}
+
+oe_result_t oe_create_enclave_wud(
+    const char* enclave_path,
+    oe_enclave_type_t enclave_type,
+    uint32_t flags,
+    const oe_enclave_setting_t* settings,
+    uint32_t setting_count,
+    const oe_ocall_func_t* ocall_table,
+    uint32_t ocall_count,
+    uint8_t* user_data,
+    uint32_t user_data_size,
     oe_enclave_t** enclave_out)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -760,7 +939,8 @@ oe_result_t oe_create_enclave(
         &context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
     /* Build the enclave */
-    OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));
+    OE_CHECK(oe_sgx_build_enclave(
+        &context, enclave_path, NULL, user_data, user_data_size, enclave));
 
     /* Push the new created enclave to the global list. */
     if (oe_push_enclave_instance(enclave) != 0)
