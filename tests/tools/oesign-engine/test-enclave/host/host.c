@@ -16,7 +16,8 @@ bool check_simulate_opt(int* argc, const char* argv[])
         if (strcmp(argv[i], "--simulate") == 0)
         {
             fprintf(stdout, "Running in simulation mode\n");
-            memmove(&argv[i], &argv[i + 1], (unsigned)(*argc - i) * sizeof(char*));
+            memmove(
+                &argv[i], &argv[i + 1], (unsigned)(*argc - i) * sizeof(char*));
             (*argc)--;
             return true;
         }
