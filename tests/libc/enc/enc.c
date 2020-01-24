@@ -111,7 +111,7 @@ int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 
     /* Allocate an environment for invoking the test. */
     {
-        if (!(environ = (char**)calloc(1, sizeof(char**))))
+        if (!(environ = (char**)calloc(1, sizeof(char*))))
             goto done;
 
         memset(environ, 0, sizeof(char**));

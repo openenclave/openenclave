@@ -82,7 +82,9 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         if (in.tcb_info_size < out.tcb_info_size)
         {
             if (!(in.tcb_info = realloc(in.tcb_info, out.tcb_info_size)))
+            {
                 OE_RAISE(OE_OUT_OF_MEMORY);
+            }
 
             in.tcb_info_size = out.tcb_info_size;
         }
@@ -105,7 +107,9 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
             if (in.crl_size[i] < out.crl_size[i])
             {
                 if (!(in.crl[i] = realloc(in.crl[i], out.crl_size[i])))
+                {
                     OE_RAISE(OE_OUT_OF_MEMORY);
+                }
 
                 in.crl_size[i] = out.crl_size[i];
             }
@@ -136,17 +140,11 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
 
 done:
 
-    /* Free out buffer. */
+    /* Free buffers. */
     if (result != OE_OK)
     {
-        free(out.tcb_info);
-        free(out.tcb_issuer_chain);
-
-        for (size_t i = 0; i < OE_COUNTOF(out.crl); i++)
-            free(out.crl[i]);
-
-        for (size_t i = 0; i < OE_COUNTOF(out.crl_issuer_chain); i++)
-            free(out.crl_issuer_chain[i]);
+        oe_free_get_revocation_info_args(&in);
+        oe_free_get_revocation_info_args(&out);
     }
 
     return result;

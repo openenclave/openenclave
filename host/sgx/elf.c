@@ -1556,7 +1556,7 @@ int elf64_add_section(
 {
     int rc = -1;
     size_t shstrndx;
-    mem_t mem;
+    mem_t mem = MEM_NULL_INIT;
     elf64_shdr_t sh;
 
     /* Reject invalid parameters */
@@ -1710,6 +1710,7 @@ int elf64_add_section(
     rc = 0;
 
 done:
+    mem_free(&mem);
     return rc;
 }
 

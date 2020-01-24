@@ -210,6 +210,9 @@ oe_result_t oe_get_remote_report(
 
     sgx_quote = (sgx_quote_t*)report_buffer;
 
+    if (sgx_quote == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     // Ensure that report is within acceptable size.
     if (*report_buffer_size > OE_MAX_REPORT_SIZE)
         OE_RAISE(OE_UNEXPECTED);
