@@ -47,12 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `oe_random()` now correctly returns a fully filled byte buffer for requests of > 1024 bytes.
 - Add `openenclave` namespace to dl and crypto libraries to prevent symbol collisions. Fixes #2082.
 
-### Deprecated
-
-- `bits/safecrt.h` and `bits/safemath.h` are not published anymore. They were not intended
-  for use by enclave authors. They are now moved to internal folder and not part of
-  published headers.
-
 ### Security
 
 - Update mbedTLS to version 2.16.4. Refer to [2.16.3](
