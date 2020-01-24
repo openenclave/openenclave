@@ -7,20 +7,20 @@
 
 oe_enclave_t* create_enclave(
     const char* enclave_path,
-    uint8_t* user_data,
-    uint32_t user_data_size)
+    uint8_t* eeid,
+    uint32_t eeid_size)
 {
     oe_enclave_t* enclave = NULL;
 
     printf("Host: Enclave library %s\n", enclave_path);
-    oe_result_t result = oe_create_remoteattestation_enclave_wud(
+    oe_result_t result = oe_create_remoteattestation_enclave_eeid(
         enclave_path,
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
         0,
-        user_data,
-        user_data_size,
+        eeid,
+        eeid_size,
         &enclave);
 
     if (result != OE_OK)
@@ -55,13 +55,13 @@ int main(int argc, const char* argv[])
     uint8_t* remote_report = NULL;
     size_t remote_report_size = 0;
 
-    uint32_t user_data_size = 512;
-    uint8_t user_data_a[user_data_size], user_data_b[user_data_size];
+    uint32_t eeid_size = 512;
+    uint8_t eeid_a[eeid_size], eeid_b[eeid_size];
 
-    for (size_t i = 0; i < user_data_size; i++)
+    for (size_t i = 0; i < eeid_size; i++)
     {
-        user_data_a[i] = i;
-        user_data_b[i] = user_data_size - i - 1;
+        eeid_a[i] = i;
+        eeid_b[i] = eeid_size - i - 1;
     }
 
     /* Check argument count */
@@ -72,12 +72,12 @@ int main(int argc, const char* argv[])
     }
 
     printf("Host: Creating two enclaves\n");
-    enclave_a = create_enclave(argv[1], user_data_a, user_data_size);
+    enclave_a = create_enclave(argv[1], eeid_a, eeid_size);
     if (enclave_a == NULL)
     {
         goto exit;
     }
-    enclave_b = create_enclave(argv[2], user_data_b, user_data_size);
+    enclave_b = create_enclave(argv[2], eeid_b, eeid_size);
     if (enclave_b == NULL)
     {
         goto exit;
