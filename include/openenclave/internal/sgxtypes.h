@@ -1161,6 +1161,22 @@ typedef struct _sgx_key
 #define OE_SEALKEY_DEFAULT_MISCMASK (~SGX_MISC_NON_SECURITY_BITS)
 #define OE_SEALKEY_DEFAULT_XFRMMASK (0X0ULL)
 
+/*
+**==============================================================================
+**
+** oe_eeid_t
+**
+**==============================================================================
+*/
+typedef struct oe_eeid_t_
+{
+    uint8_t mrenclave[OE_SHA256_SIZE]; /* normal/non-extended mrenclave */
+    uint8_t signature[OE_KEY_SIZE];    /* signature over normal mrenclave */
+    uint8_t hash[OE_SHA256_SIZE];      /* sha256(eeid, signature) */
+    uint64_t data_size;                /* size of initialization data */
+    uint8_t data[];                    /* actual initialization data */
+} oe_eeid_t;
+
 OE_EXTERNC_END
 
 #endif /* _OE_SGXTYPES_H */
