@@ -35,4 +35,9 @@ This will result in a NuGet package being created in the build folder.
 
 ## Create the host-only report verification package
 
-This is work in progress and is coming soon.
+The host-only report verification package allows non-enclave applications to
+validate remote reports from enclaves.
+
+```cmd
+cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
+```
