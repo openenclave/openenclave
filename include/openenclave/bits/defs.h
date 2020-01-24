@@ -13,6 +13,13 @@
 #define OE_API_VERSION 2
 #endif
 
+/* OE_NO_RETURN */
+#if defined(__GNUC__)
+#define OE_NO_RETURN __attribute__((__noreturn__))
+#else
+#define OE_NO_RETURN
+#endif
+
 /* OE_PRINTF_FORMAT */
 #if defined(__GNUC__) && (__GNUC__ >= 4)
 #define OE_PRINTF_FORMAT(N, M) __attribute__((format(printf, N, M)))

@@ -312,6 +312,8 @@ done:
 **
 **==============================================================================
 */
+static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
+    OE_NO_RETURN;
 
 static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
 {
@@ -917,5 +919,4 @@ void oe_abort(void)
 
     // Return to the latest ECALL.
     _handle_exit(OE_CODE_ERET, 0, __oe_enclave_status);
-    return;
 }

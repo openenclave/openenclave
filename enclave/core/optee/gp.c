@@ -384,6 +384,13 @@ void oe_abort(void)
 {
     /* No return */
     TEE_Panic(TEE_ERROR_GENERIC);
+
+    /**
+     * TEE_Panic() does not return, but it is not properly annotated.
+     * Ensure the compiler does not return from this function.
+     */
+    while (1)
+        ;
 }
 
 TEE_Result TA_CreateEntryPoint(void)

@@ -6,12 +6,6 @@
 
 #include <openenclave/bits/defs.h>
 
-#ifdef __GNUC__
-#define OE_NO_RETURN __attribute__((__noreturn__))
-#else
-#define OE_NO_RETURN
-#endif
-
 #if __STDC_VERSION__ >= 199901L
 #define OE_RESTRICT restrict
 #elif !defined(__GNUC__) || defined(__cplusplus)

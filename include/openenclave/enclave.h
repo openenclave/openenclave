@@ -205,7 +205,7 @@ char* oe_host_strndup(const char* str, size_t n);
  * Mark the enclave as aborting. This blocks future enclave entry calls. The
  * enclave continues to execute until all threads exit the enclave.
  */
-void oe_abort(void);
+void oe_abort(void) OE_NO_RETURN;
 
 /**
  * @cond IGNORE
