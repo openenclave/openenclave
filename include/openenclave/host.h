@@ -157,7 +157,8 @@ oe_result_t oe_create_enclave(
     oe_enclave_t** enclave);
 
 /**
- * Create an enclave from an enclave image file with optional user data.
+ * Create an enclave from an enclave image file with extended enclave
+ * initialization data.
  *
  * This function creates an enclave from an enclave image file. On successful
  * return, the enclave is fully initialized and ready to use.
@@ -185,16 +186,16 @@ oe_result_t oe_create_enclave(
  *
  * @param ocall_count The number of functions in the **ocall_table**.
  *
- * @param user_data Optional user data for attestation.
+ * @param eeid Optional user data for attestation.
  *
- * @param user_data_size Size of the user data.
+ * @param eeid_size Size of the user data.
  *
  * @param enclave This points to the enclave instance upon success.
  *
  * @returns Returns OE_OK on success.
  *
  */
-oe_result_t oe_create_enclave_wud(
+oe_result_t oe_create_enclave_eeid(
     const char* path,
     oe_enclave_type_t type,
     uint32_t flags,
@@ -202,8 +203,8 @@ oe_result_t oe_create_enclave_wud(
     uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
-    uint8_t* user_data,
-    uint32_t user_data_size,
+    uint8_t* eeid,
+    uint32_t eeid_size,
     oe_enclave_t** enclave);
 
 /**

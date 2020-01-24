@@ -584,75 +584,71 @@ done:
     return result;
 }
 
-static uint64_t user_data_pages_size(uint64_t user_data_size)
+static uint64_t eeid_pages_size(uint64_t eeid_size)
 {
-    return oe_round_up_to_page_size(
-        user_data_size + OE_KEY_SIZE + OE_SHA256_SIZE);
+    return oe_round_up_to_page_size(eeid_size + OE_KEY_SIZE + OE_SHA256_SIZE);
 }
 
-static oe_result_t _patch_user_data_symbols(
+static oe_result_t _patch_eeid_symbols(
     oe_enclave_image_t* oeimage,
     uint64_t enclave_end,
-    const void* user_data,
-    const size_t user_data_size)
+    const void* eeid,
+    const size_t eeid_size)
 {
-    if (user_data && user_data_size)
+    if (eeid && eeid_size)
     {
         elf64_sym_t sym_rva = {0}, sym_sz = {0};
         if (elf64_find_symbol_by_name(
-                &oeimage->u.elf.elf, "_user_data_rva", &sym_rva) == 0 &&
+                &oeimage->u.elf.elf, "_eeid_rva", &sym_rva) == 0 &&
             elf64_find_symbol_by_name(
-                &oeimage->u.elf.elf, "_user_data_size", &sym_sz) == 0)
+                &oeimage->u.elf.elf, "_eeid_size", &sym_sz) == 0)
         {
-            uint64_t sz = user_data_pages_size(user_data_size);
+            uint64_t sz = eeid_pages_size(eeid_size);
             uint64_t *sym_rva_addr = NULL, *sym_sz_addr = NULL;
             sym_rva_addr = (uint64_t*)(oeimage->image_base + sym_rva.st_value);
             *sym_rva_addr = enclave_end - sz;
             sym_sz_addr = (uint64_t*)(oeimage->image_base + sym_sz.st_value);
-            *sym_sz_addr = user_data_size;
+            *sym_sz_addr = eeid_size;
         }
     }
 
     return OE_OK;
 }
 
-static oe_result_t _add_user_data_pages(
+static oe_result_t _add_eeid_pages(
     oe_sgx_load_context_t* context,
     oe_enclave_t* enclave,
     uint64_t enclave_end,
     oe_sgx_enclave_properties_t* properties,
     uint64_t* vaddr,
-    uint8_t* user_data,
-    uint32_t user_data_size)
+    uint8_t* eeid,
+    uint32_t eeid_size)
 {
     oe_result_t result = OE_OK;
 
-    if (user_data_size > 0 && user_data != NULL)
+    if (eeid_size > 0 && eeid != NULL)
     {
         sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)properties->sigstruct;
         // cwinter: verify sigstruct->signature here?
 
-        uint64_t sz = user_data_pages_size(user_data_size);
+        uint64_t sz = eeid_pages_size(eeid_size);
         assert(*vaddr == enclave_end - sz);
 
         oe_sha256_context_t hctx;
         OE_SHA256 hash_ud_sig;
         oe_sha256_init(&hctx);
-        oe_sha256_update(&hctx, user_data, user_data_size);
+        oe_sha256_update(&hctx, eeid, eeid_size);
         oe_sha256_update(&hctx, sigstruct->signature, OE_KEY_SIZE);
         oe_sha256_final(&hctx, &hash_ud_sig);
 
         uint8_t data[sz];
         memset(data, 0, sz);
-        memcpy(data, user_data, user_data_size); /* not necessary? */
+        memcpy(data, eeid, eeid_size); /* not necessary? */
         memcpy(
-            data + user_data_size,
+            data + eeid_size,
             sigstruct->signature,
             OE_KEY_SIZE); /* not necessary? */
-        memcpy(
-            data + user_data_size + OE_KEY_SIZE,
-            hash_ud_sig.buf,
-            OE_SHA256_SIZE);
+        memcpy(data + eeid_size + OE_KEY_SIZE, hash_ud_sig.buf, OE_SHA256_SIZE);
 
         OE_CHECK(_add_extra_data_pages(
             context,
@@ -684,8 +680,8 @@ oe_result_t oe_sgx_build_enclave(
     oe_sgx_load_context_t* context,
     const char* path,
     const oe_sgx_enclave_properties_t* properties,
-    uint8_t* user_data,
-    uint32_t user_data_size,
+    uint8_t* eeid,
+    uint32_t eeid_size,
     oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -771,7 +767,7 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(oeimage.calculate_size(&oeimage, &image_size));
 
     /* Add (optional) user data pages size */
-    image_size += user_data_pages_size(user_data_size);
+    image_size += eeid_pages_size(eeid_size);
 
     /* Calculate the size of this enclave in memory */
     OE_CHECK(_calculate_enclave_size(
@@ -789,8 +785,7 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(oeimage.patch(&oeimage, enclave_end));
 
     /* Patch user data */
-    OE_CHECK(_patch_user_data_symbols(
-        &oeimage, enclave_end, user_data, user_data_size));
+    OE_CHECK(_patch_eeid_symbols(&oeimage, enclave_end, eeid, eeid_size));
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
@@ -800,14 +795,8 @@ oe_result_t oe_sgx_build_enclave(
         _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
 
     /* Add user data for extended attestation */
-    OE_CHECK(_add_user_data_pages(
-        context,
-        enclave,
-        enclave_end,
-        &props,
-        &vaddr,
-        user_data,
-        user_data_size));
+    OE_CHECK(_add_eeid_pages(
+        context, enclave, enclave_end, &props, &vaddr, eeid, eeid_size));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(oe_sgx_initialize_enclave(
@@ -860,7 +849,7 @@ oe_result_t oe_create_enclave(
     uint32_t ocall_count,
     oe_enclave_t** enclave_out)
 {
-    return oe_create_enclave_wud(
+    return oe_create_enclave_eeid(
         enclave_path,
         enclave_type,
         flags,
@@ -873,7 +862,7 @@ oe_result_t oe_create_enclave(
         enclave_out);
 }
 
-oe_result_t oe_create_enclave_wud(
+oe_result_t oe_create_enclave_eeid(
     const char* enclave_path,
     oe_enclave_type_t enclave_type,
     uint32_t flags,
@@ -881,8 +870,8 @@ oe_result_t oe_create_enclave_wud(
     uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
-    uint8_t* user_data,
-    uint32_t user_data_size,
+    uint8_t* eeid,
+    uint32_t eeid_size,
     oe_enclave_t** enclave_out)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -940,7 +929,7 @@ oe_result_t oe_create_enclave_wud(
 
     /* Build the enclave */
     OE_CHECK(oe_sgx_build_enclave(
-        &context, enclave_path, NULL, user_data, user_data_size, enclave));
+        &context, enclave_path, NULL, eeid, eeid_size, enclave));
 
     /* Push the new created enclave to the global list. */
     if (oe_push_enclave_instance(enclave) != 0)

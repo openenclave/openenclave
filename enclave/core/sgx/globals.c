@@ -127,8 +127,8 @@ extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 static volatile uint64_t _enclave_rva;
 static volatile uint64_t _reloc_rva;
 static volatile uint64_t _reloc_size;
-static volatile uint64_t _user_data_rva;
-static volatile uint64_t _user_data_size;
+static volatile uint64_t _eeid_rva;
+static volatile uint64_t _eeid_size;
 
 #endif
 
@@ -198,30 +198,37 @@ size_t __oe_get_reloc_size()
 #endif
 }
 
-const void* __oe_get_user_data_base()
+/*
+**==============================================================================
+**
+** Extended enclave initialization data boundaries:
+**
+**==============================================================================
+*/
+
+const void* __oe_get_eeid_base()
 {
     const unsigned char* base = __oe_get_enclave_base();
 
 #if defined(__linux__)
-    return base + _user_data_rva;
+    return base + _eeid_rva;
 #else
 #error "unsupported"
 #endif
 }
 
-uint64_t __oe_get_user_data_size()
+uint64_t __oe_get_eeid_size()
 {
 #if defined(__linux__)
-    return _user_data_size;
+    return _eeid_size;
 #else
 #error "unsupported"
 #endif
 }
 
-const void* __oe_get_user_data_end()
+const void* __oe_get_eeid_end()
 {
-    return (const uint8_t*)__oe_get_user_data_base() +
-           __oe_get_user_data_size();
+    return (const uint8_t*)__oe_get_eeid_base() + __oe_get_eeid_size();
 }
 
 /*

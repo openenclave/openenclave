@@ -305,14 +305,14 @@ let generate_untrusted (ec : enclave_content) =
     "    uint32_t setting_count,";
     "    oe_enclave_t** enclave);";
     "";
-    sprintf "oe_result_t oe_create_%s_enclave_wud(" ec.enclave_name;
+    sprintf "oe_result_t oe_create_%s_enclave_eeid(" ec.enclave_name;
     "    const char* path,";
     "    oe_enclave_type_t type,";
     "    uint32_t flags,";
     "    const oe_enclave_setting_t* settings,";
     "    uint32_t setting_count,";
-    "    uint8_t *user_data,";
-    "    uint32_t user_data_size,";
+    "    uint8_t *eeid,";
+    "    uint32_t eeid_size,";
     "    oe_enclave_t** enclave);";
     "";
     "/**** ECALL prototypes. ****/";
