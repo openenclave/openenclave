@@ -138,12 +138,11 @@ done:
     return ret;
 }
 
-unsigned int oe_sleep(unsigned int seconds)
+int oe_nanosleep(struct oe_timespec* req, struct oe_timespec* rem)
 {
-    const uint64_t ONE_SECOND = 1000;
-    const uint64_t msec = seconds * ONE_SECOND;
-
-    return (oe_sleep_msec(msec) == 0) ? 0 : seconds;
+    int ret = 0;
+    oe_syscall_nanosleep_ocall(&ret, req, rem);
+    return ret;
 }
 
 oe_pid_t oe_getpid(void)
