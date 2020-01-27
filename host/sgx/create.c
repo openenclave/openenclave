@@ -593,27 +593,24 @@ static uint64_t eeid_pages_size(uint64_t id_size)
 static oe_result_t _patch_eeid_symbols(
     oe_enclave_image_t* oeimage,
     uint64_t enclave_end,
-    const void* id,
     const size_t id_size)
 {
-    if (id && id_size)
+    elf64_sym_t sym_rva = {0}, sym_sz = {0};
+
+    const elf64_t* eimg = &oeimage->u.elf.elf;
+    if (elf64_find_symbol_by_name(eimg, "_eeid_rva", &sym_rva) == 0)
     {
-        elf64_sym_t sym_rva = {0}, sym_sz = {0};
-        if (elf64_find_symbol_by_name(
-                &oeimage->u.elf.elf, "_eeid_rva", &sym_rva) == 0)
-        {
-            uint64_t pgsz = eeid_pages_size(id_size);
-            uint64_t* sym_rva_addr = NULL;
-            sym_rva_addr = (uint64_t*)(oeimage->image_base + sym_rva.st_value);
-            *sym_rva_addr = enclave_end - pgsz;
-        }
-        if (elf64_find_symbol_by_name(
-                &oeimage->u.elf.elf, "_eeid_size", &sym_sz) == 0)
-        {
-            uint64_t* sym_sz_addr = NULL;
-            sym_sz_addr = (uint64_t*)(oeimage->image_base + sym_sz.st_value);
-            *sym_sz_addr = sizeof(oe_eeid_t) + id_size * sizeof(uint8_t);
-        }
+        uint64_t pgsz = eeid_pages_size(id_size);
+        uint64_t* sym_rva_addr = NULL;
+        sym_rva_addr = (uint64_t*)(oeimage->image_base + sym_rva.st_value);
+        *sym_rva_addr = id_size == 0 ? 0 : enclave_end - pgsz;
+    }
+    if (elf64_find_symbol_by_name(eimg, "_eeid_size", &sym_sz) == 0)
+    {
+        uint64_t* sym_sz_addr = NULL;
+        sym_sz_addr = (uint64_t*)(oeimage->image_base + sym_sz.st_value);
+        *sym_sz_addr =
+            id_size == 0 ? 0 : sizeof(oe_eeid_t) + id_size * sizeof(uint8_t);
     }
 
     return OE_OK;
@@ -641,23 +638,15 @@ static oe_result_t _add_eeid_pages(
         OE_SHA256 eeid_hash;
         oe_sha256_init(&hctx);
         oe_sha256_update(&hctx, id, id_size);
-        oe_sha256_update(
-            &hctx, sigstruct->enclavehash, sizeof(sigstruct->enclavehash));
-        oe_sha256_update(
-            &hctx, sigstruct->signature, sizeof(sigstruct->signature));
+        oe_sha256_update(&hctx, sigstruct->enclavehash, OE_SHA256_SIZE);
+        oe_sha256_update(&hctx, sigstruct->signature, OE_KEY_SIZE);
         oe_sha256_final(&hctx, &eeid_hash);
 
         oe_eeid_t* eeid = (oe_eeid_t*)calloc(1, sz);
         memcpy(eeid->data, id, id_size);
         eeid->data_size = id_size;
-        memcpy(
-            eeid->mrenclave,
-            sigstruct->enclavehash,
-            sizeof(sigstruct->enclavehash));
-        memcpy(
-            eeid->signature,
-            sigstruct->signature,
-            sizeof(sigstruct->signature));
+        memcpy(eeid->mrenclave, sigstruct->enclavehash, OE_SHA256_SIZE);
+        memcpy(eeid->signature, sigstruct->signature, OE_KEY_SIZE);
         memcpy(eeid->hash, eeid_hash.buf, sizeof(eeid_hash));
 
         OE_CHECK(_add_extra_data_pages(
@@ -797,7 +786,7 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(oeimage.patch(&oeimage, enclave_end));
 
     /* Patch user data */
-    OE_CHECK(_patch_eeid_symbols(&oeimage, enclave_end, eeid, eeid_size));
+    OE_CHECK(_patch_eeid_symbols(&oeimage, enclave_end, eeid_size));
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));

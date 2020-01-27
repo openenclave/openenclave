@@ -131,16 +131,19 @@ static oe_result_t _oe_check_eeid()
 
     const oe_eeid_t* eeid = (const oe_eeid_t*)__oe_get_eeid_base();
 
-    oe_sha256_context_t hctx;
-    OE_SHA256 h;
-    oe_sha256_init(&hctx);
-    oe_sha256_update(&hctx, eeid->data, eeid->data_size);
-    oe_sha256_update(&hctx, eeid->mrenclave, sizeof(eeid->mrenclave));
-    oe_sha256_update(&hctx, eeid->signature, sizeof(eeid->signature));
-    oe_sha256_final(&hctx, &h);
+    if (eeid != __oe_get_enclave_base())
+    {
+        oe_sha256_context_t hctx;
+        OE_SHA256 h;
+        oe_sha256_init(&hctx);
+        oe_sha256_update(&hctx, eeid->data, eeid->data_size);
+        oe_sha256_update(&hctx, eeid->mrenclave, sizeof(eeid->mrenclave));
+        oe_sha256_update(&hctx, eeid->signature, sizeof(eeid->signature));
+        oe_sha256_final(&hctx, &h);
 
-    if (memcmp(eeid->hash, h.buf, OE_SHA256_SIZE) != 0)
-        OE_RAISE(OE_VERIFY_FAILED);
+        if (memcmp(eeid->hash, h.buf, OE_SHA256_SIZE) != 0)
+            OE_RAISE(OE_VERIFY_FAILED);
+    }
 
 done:
     return result;
