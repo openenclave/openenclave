@@ -44,6 +44,11 @@ sudo apt -y install clang-7 libssl-dev gdb libsgx-enclave-common libsgx-enclave-
 > package which is necessary for performing remote attestation in Azure. A general
 > implementation for using Intel DCAP outside the Azure environment is coming soon.
 
+If you wish to use clang-8 or clang-9, also install them
+```bash
+sudo apt -y install clang-8 clang-9
+```
+
 If you wish to use the Ninja build system rather than make, also install
 ```bash
 sudo apt -y install ninja-build

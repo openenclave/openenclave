@@ -666,7 +666,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/string/memmem.c
     ${MUSLSRC}/string/mempcpy.c
     ${MUSLSRC}/string/memrchr.c
-    #${MUSLSRC}/string/memset.c
     ${MUSLSRC}/string/rindex.c
     ${MUSLSRC}/string/stpcpy.c
     ${MUSLSRC}/string/stpncpy.c

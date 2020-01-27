@@ -79,7 +79,7 @@ if (OE_SGX)
     # Functions in td_basic.c will change the status of td and may trigger
     # stack check fail, thus it is necessary to turn off stack check.
     # Functions in calls (e.g __oe_handle_main, _handle_ecalls) are called
-    # before stack protector is setup up for the enclave thread. Therefore
+    # before stack protector is set up for the enclave thread. Therefore
     # stack check must also be turned off for calls.c.
     # Also refer to MUSL files included below.
     set_source_files_properties(

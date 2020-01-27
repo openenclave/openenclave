@@ -41,9 +41,11 @@ C:\Program Files\Git\mingw64\bin\openssl.exe
 
 ### Clang
 
-Download [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe).
+Download [Clang/LLVM 7 for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe).
 Install Clang 7.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
 to PATH. Open Enclave SDK uses clang to build the enclave binaries.
+
+OE SDK supports versions of Clang/LLVM 7 or above. They can be downloaded from [LLVM Download Page](http://releases.llvm.org/download.html)
 
 Open up a command prompt and ensure that clang is added to PATH.
 
