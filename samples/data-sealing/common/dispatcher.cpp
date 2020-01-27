@@ -179,10 +179,17 @@ int ecall_dispatcher::unseal_data(
     size_t seal_key_size = 0;
     uint8_t* key_info = NULL;
     size_t key_info_size = 0;
-    (void)sealed_data_size;
 
     unsigned char* data_buf = NULL;
     int ret = 0;
+
+    // ensure that sealed_data_size is IV_SIZE
+    if (sealed_data_size != IV_SIZE)
+    {
+        TRACE_ENCLAVE("sealed_data_size is not equal to IV_SIZE");
+        ret = ERROR_SEALED_DATA_FAIL;
+        goto exit;
+    }
 
     key_info = sealed_data->encrypted_data + sealed_data->encrypted_data_len;
     key_info_size = sealed_data->key_info_size;
@@ -202,7 +209,7 @@ int ecall_dispatcher::unseal_data(
     }
 
     // read initialization vector values
-    memcpy(iv, m_sealed_data->iv, IV_SIZE);
+    memcpy(iv, m_sealed_data->iv, sealed_data_size);
 
     // We need to cast these variables down to unsigned int.
     // Check if that will cut off any significant bits.
@@ -244,7 +251,7 @@ int ecall_dispatcher::unseal_data(
 
     // Unseal data: decrypt data with the seal key
     // re-initialization vector values
-    memcpy(iv, m_sealed_data->iv, IV_SIZE);
+    memcpy(iv, m_sealed_data->iv, sealed_data_size);
 
     data_buf =
         (unsigned char*)oe_host_malloc(m_sealed_data->encrypted_data_len);
