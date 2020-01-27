@@ -78,7 +78,14 @@ if (OE_SGX)
 
     # Functions in td_basic.c will change the status of td and may trigger
     # stack check fail, thus it is necessary to turn off stack check.
-    set_source_files_properties(sgx/td_basic.c PROPERTIES
+    # Functions in calls (e.g __oe_handle_main, _handle_ecalls) are called
+    # before stack protector is setup up for the enclave thread. Therefore
+    # stack check must also be turned off for calls.c.
+    # Also refer to MUSL files included below.
+    set_source_files_properties(
+        sgx/td_basic.c
+        sgx/calls.c
+	PROPERTIES
         COMPILE_FLAGS -fno-stack-protector)
 
     # OS specific sources for SGX.
@@ -154,13 +161,27 @@ add_library(oecore STATIC
     tracee.c
     ${PLATFORM_SRC})
 
+
+# The compiler can generate calls to memset and memcpy before stack checking has
+# been set up for an enclave thread. Therefore these functions must not be
+# compiled with stack protection.
+# When compiling memset and memcpy, prevent the compiler from generating using
+# builtin functions (__builtin_memcpy, __builtin_memset) to implement these
+# functions. Builtin functions call their ISO C equivalents and therefore using
+# builtins may generate recursive calls (memset -> __builtin__memset -> memset).
+# Also suppress type conversion warnings introduced by 3rdparty code.
+set_source_files_properties(
+  ${MUSL_SRC_DIR}/string/memcpy.c
+  ${MUSL_SRC_DIR}/string/memset.c
+  PROPERTIES
+  COMPILE_FLAGS
+  "-fno-stack-protector -Wno-conversion -fno-builtin-memcpy -fno-builtin-memset")
+
 # Suppress type conversion warnings introduced by 3rdparty code
 set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c ROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(${MUSL_SRC_DIR}/string/memmove.c PROPERTIES
     COMPILE_FLAGS -Wno-sign-conversion)
-set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(__secs_to_tm.c PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
 

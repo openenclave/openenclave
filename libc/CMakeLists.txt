@@ -663,13 +663,10 @@ add_library(oelibc STATIC
     ${MUSLSRC}/string/index.c
     ${MUSLSRC}/string/memccpy.c
     ${MUSLSRC}/string/memchr.c
-    ${MUSLSRC}/string/memcmp.c
-    ${MUSLSRC}/string/memcpy.c
     ${MUSLSRC}/string/memmem.c
-    ${MUSLSRC}/string/memmove.c
     ${MUSLSRC}/string/mempcpy.c
     ${MUSLSRC}/string/memrchr.c
-    ${MUSLSRC}/string/memset.c
+    #${MUSLSRC}/string/memset.c
     ${MUSLSRC}/string/rindex.c
     ${MUSLSRC}/string/stpcpy.c
     ${MUSLSRC}/string/stpncpy.c
@@ -786,10 +783,10 @@ maybe_build_using_clangw(oelibc)
 # NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
 
-target_compile_options(oelibc PRIVATE
-    -fno-builtin-memcpy
-    -fno-builtin-memset
-    -ffreestanding)
+# A freestanding environment is one in which no standard library exists and
+# program start up may not necessarily be at main. C library itself must be
+# built in a freestanding environment.
+target_compile_options(oelibc PRIVATE -ffreestanding)
 
 if (OE_SGX)
     target_compile_options(oelibc PRIVATE -mrdrnd)

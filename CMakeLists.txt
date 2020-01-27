@@ -22,8 +22,9 @@ endif ()
 # Set compiler search order to prefer Clang
 # This has to be done before `project`
 # http://cmake.3232098.n2.nabble.com/Prefer-clang-over-gcc-td7597742.html
-set(CMAKE_C_COMPILER_NAMES clang-7 cc)
-set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
+# Look for latest supported versions before defaulting to system clang.
+set(CMAKE_C_COMPILER_NAMES clang-9 clang-8 clang-7 clang cc)
+set(CMAKE_CXX_COMPILER_NAMES clang++-9 clang++-8 clang++-7 clang++ c++)
 
 project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM}
   HOMEPAGE_URL "https://github.com/openenclave/openenclave")
