@@ -15,3 +15,7 @@ set_tests_properties(tests/report PROPERTIES SKIP_RETURN_CODE 2)
 add_enclave_test(tests/report_attestation_without_enclave report_host report_enc
     --attest-generated-report)
 set_tests_properties(tests/report_attestation_without_enclave PROPERTIES SKIP_RETURN_CODE 2)
+
+# Run all tests with EEID
+add_enclave_test(tests/report-eeid report_host report_enc --eeid)
+set_tests_properties(tests/report PROPERTIES SKIP_RETURN_CODE 2)

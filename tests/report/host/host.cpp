@@ -76,6 +76,7 @@ int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
+    std::vector<uint8_t> eeid;
 
     sgx_target_info_t target_info = {{0}};
 
@@ -131,19 +132,42 @@ int main(int argc, const char* argv[])
     {
         return load_and_verify_report();
     }
+    else if (argc == 3 && strcmp(argv[2], "--eeid") == 0)
+    {
+        eeid.resize(512);
+        for (size_t i = 0; i < 512; i++)
+            eeid[i] = (uint8_t)i;
+    }
 
     /* Check arguments */
-    if (argc != 2)
+    if (argc != 2 && argc != 3)
     {
         fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
         exit(1);
     }
 
     /* Create the enclave */
-    if ((result = oe_create_tests_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+    if (!eeid.empty())
     {
-        oe_put_err("oe_create_tests_enclave(): result=%u", result);
+        if ((result = oe_create_tests_enclave_eeid(
+                 argv[1],
+                 OE_ENCLAVE_TYPE_SGX,
+                 flags,
+                 NULL,
+                 0,
+                 eeid.data(),
+                 (uint32_t)eeid.size(),
+                 &enclave)) != OE_OK)
+            oe_put_err("oe_create_tests_enclave_eeid(): result=%u", result);
+    }
+    else
+    {
+        if ((result = oe_create_tests_enclave(
+                 argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+            OE_OK)
+        {
+            oe_put_err("oe_create_tests_enclave(): result=%u", result);
+        }
     }
 
     /*
