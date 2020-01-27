@@ -23,8 +23,13 @@ endif ()
 # This has to be done before `project`
 # http://cmake.3232098.n2.nabble.com/Prefer-clang-over-gcc-td7597742.html
 # Look for latest supported versions before defaulting to system clang.
-set(CMAKE_C_COMPILER_NAMES clang-9 clang-8 clang-7 clang cc)
-set(CMAKE_CXX_COMPILER_NAMES clang++-9 clang++-8 clang++-7 clang++ c++)
+if (UNIX)
+  set(CMAKE_C_COMPILER_NAMES clang-9 clang-8 clang-7 clang cc)
+  set(CMAKE_CXX_COMPILER_NAMES clang++-9 clang++-8 clang++-7 clang++ c++)
+elseif(WIN32)
+  # For host side we use MSVC. For building enclaves, we use wrapper scripts
+  # that invoke installed version of clang.
+endif()
 
 project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM}
   HOMEPAGE_URL "https://github.com/openenclave/openenclave")
