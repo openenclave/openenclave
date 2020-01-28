@@ -77,14 +77,14 @@ class oe_debug_enclave_t:
         return self.magic == self.MAGIC_VALUE
 
 
-# This constant definition must align with the OE enclave layout.
-TD_OFFSET_FROM_TCS =  0X5000
+# This constant definition must align with sgx_tcs_t
+TCS_GSBASE_OFFSET =  56
 
 # This constant definition must align with TD structure in internal\sgxtypes.h.
-TD_CALLSITE_OFFSET = 0XF0
+TD_CALLSITE_OFFSET = 240
 
 # This constant definition must align with Callsite structure in enclave\td.h.
-CALLSITE_OCALLCONTEXT_OFFSET = 0X40
+CALLSITE_OCALLCONTEXT_OFFSET = 64
 
 # These constant definitions must align with OCallContext structure in enclave\td.h.
 OCALLCONTEXT_LENGTH = 2 * 8
@@ -216,7 +216,7 @@ def enable_oeenclave_debug(oe_enclave_addr):
     # Check if the enclave is loaded in simulation mode.
     if enclave.simulate != 0:
         print ("oegdb: Enclave %s loaded in simulation mode" % enclave.path)
-        
+
     # Load symbols for the enclave
     if load_enclave_symbol(enclave.path, enclave.base_address) != 1:
         return False
@@ -268,8 +268,11 @@ class OCallStartBreakpoint(gdb.Breakpoint):
         # Get untrusted stack frame pointer and corresponding TCS.
         frame_pointer = int(gdb.parse_and_eval("$rdi"))
         tcs_addr = int(gdb.parse_and_eval("$rsi"))
+        enclave_base_addr = int(gdb.parse_and_eval("$rdx"))
+        gs_base = read_int_from_memory(tcs_addr + TCS_GSBASE_OFFSET, POINTER_SIZE)
+
         # Get callsite of the TCS.
-        td_addr = tcs_addr + TD_OFFSET_FROM_TCS
+        td_addr = enclave_base_addr + gs_base
         callsite_pointer_addr = td_addr + TD_CALLSITE_OFFSET
         callsite_addr_blob = read_from_memory(callsite_pointer_addr, POINTER_SIZE)
         callsite_addr_tuple = struct.unpack_from('Q', callsite_addr_blob, 0)

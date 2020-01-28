@@ -5,6 +5,7 @@
 #include <openenclave/internal/context.h>
 #include <openenclave/internal/sgxtypes.h>
 #include "../asmdefs.h"
+#include "../enclave.h"
 
 // The following function must not be inlined and must have a frame-pointer
 // so that the frame can be manipulated to stitch the ocall stack.
@@ -29,12 +30,12 @@ int __oe_host_stack_bridge(
     // Notify the debugger to overwrite the return address of
     // the current frame with the exit frame of the enclave.
     // This will stitch the ocall stack.
-    oe_notify_ocall_start(current, tcs);
+    oe_notify_ocall_start(current, tcs, enclave->addr);
 
     int ret = __oe_dispatch_ocall(arg1, arg2, arg1_out, arg2_out, tcs, enclave);
 
     // Restore the frame so that this function can return to the caller
-    // correctly. Alternatively, we could use a setjmp/longjmp combination.
+    // correctly.
     *current = backup;
 
     return ret;
