@@ -20,6 +20,7 @@
 #define ERROR_SIGN_SEALED_DATA_FAIL 4
 #define ERROR_CIPHER_ERROR 5
 #define ERROR_UNSEALED_DATA_FAIL 6
+#define ERROR_SEALED_DATA_FAIL 7
 
 typedef struct _sealed_data_t
 {
