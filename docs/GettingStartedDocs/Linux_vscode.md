@@ -115,7 +115,7 @@ Open enc.c and put a breakpoint and continue execution.
 
 ![Enclave Breakpoint](images/VSCodeLinuxEnclaveBreakpoint.png)
 
-To step through open enclave code you may need to change the source file mapping to point to the OE SDK source. Add the following to the project launch json under configurations:
+To step through open enclave code you may need to change the source file mapping to point to the OE SDK source. Add the following to the project launch json under configurations and update with the correct path to the openenclave source:
 
 ```json
 "sourceFileMap": {
