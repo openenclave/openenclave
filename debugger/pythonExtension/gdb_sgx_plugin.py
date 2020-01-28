@@ -78,13 +78,13 @@ class oe_debug_enclave_t:
 
 
 # This constant definition must align with sgx_tcs_t
-TCS_GSBASE_OFFSET =  0X38
+TCS_GSBASE_OFFSET =  56
 
 # This constant definition must align with TD structure in internal\sgxtypes.h.
-TD_CALLSITE_OFFSET = 0XF0
+TD_CALLSITE_OFFSET = 240
 
 # This constant definition must align with Callsite structure in enclave\td.h.
-CALLSITE_OCALLCONTEXT_OFFSET = 0X40
+CALLSITE_OCALLCONTEXT_OFFSET = 64
 
 # These constant definitions must align with OCallContext structure in enclave\td.h.
 OCALLCONTEXT_LENGTH = 2 * 8
