@@ -115,4 +115,12 @@ Open enc.c and put a breakpoint and continue execution.
 
 ![Enclave Breakpoint](images/VSCodeLinuxEnclaveBreakpoint.png)
 
+To step through open enclave code you may need to change the source file mapping to point to the OE SDK source. Add the following to the project launch json under configurations:
+
+```json
+"sourceFileMap": {
+   "/home/jenkins/work_dir/workspace/OpenEnclave-v0.7.x_packages": "/home/username/path2code/openenclave/",
+},
+```
+
 To use `oegdb` at the command line, one can select the "Debug Console" tab near the terminal pane. Then the standard gdb commands can be used, as long as they are prefixed with `-exec` first, like `-exec bt`. Please read documentation for `gdb` for further information on how to use `oegdb`: [https://sourceware.org/gdb/current/onlinedocs/gdb/](https://sourceware.org/gdb/current/onlinedocs/gdb/)
