@@ -838,42 +838,6 @@ oe_result_t oe_verify_evidence(
  * @retval Otherwise, returns the error code the plugin's function.
  */
 oe_result_t oe_free_claims_list(oe_claim_t* claims, size_t claims_length);
-
-/**
- * oe_get_registered_attester_format_ids
- *
- * Get the unique identifiers of all registered attesters.
- *
- * @param[out] format_ids The list of the UUIDs of the registered attesters.
- * @param[out] format_ids_length The length of the UUIDs list.
- * @retval OE_OK on success.
- */
-oe_result_t oe_get_registered_attester_format_ids(
-    oe_uuid_t** format_ids,
-    size_t* format_ids_length);
-
-/**
- * oe_get_registered_verifier_format_ids
- *
- * Get the unique identifiers of all registered verifiers.
- *
- * @param[out] format_ids The list of the UUIDs of the registered verifiers.
- * @param[out] format_ids_length The length of the UUIDs list.
- * @retval OE_OK on success.
- */
-oe_result_t oe_get_registered_verifier_format_ids(
-    oe_uuid_t** format_ids,
-    size_t* format_ids_length);
-
-/**
- * oe_free_format_ids
- *
- * Frees the attester/verifier format ids.
- *
- * @param[in] format_ids The list of the attester/verifier UUIDs.
- * @retval OE_OK on success.
- */
-oe_result_t oe_free_format_ids(oe_uuid_t* format_ids);
 ```
 
 The outputs returned by `oe_get_evidence` will begin with the header
@@ -1058,24 +1022,9 @@ size_t params_size = sizeof(params);
 oe_claim_t claims = { ... };
 size_t claims_size = ...;
 
-/* Receive the evidence format ids that the verifier supports */
-recv(VERIFIER_SOCKET_FD, evidence_format_ids, evidence_format_id_length, 0);
-
-/* Get registered attester format ids and find a common format */
-oe_get_registered_attester_format_ids(*format_ids, &format_ids_length);
-for (size_t m = 0; m < format_ids_length; m++)
-{
-    for (size_t n = 0; n < evidence_format_id_length; n++)
-    if (format_ids[m] == evidence_format_ids[n])
-    {
-        common_format_id = format_ids[m];
-        break;
-    }
-}
-
 /* Get evidence. */
 oe_get_evidence(
-    common_format_id,
+    MY_PLUGIN_UUID,
     OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION,
     claims,
     claims_size,
@@ -1091,7 +1040,6 @@ send(VERIFIER_SOCKET_FD, evidence, evidence_size, 0);
 send(VERIFIER_SOCKET_FD, endorsements, endorsements_size, 0);
 
 /* Free data and unregister plugin. */
-oe_free_format_id(format_ids);
 oe_free_evidence(evidence);
 oe_free_endorsements(endorsements);
 oe_unregister_attester(my_plugin_attester());
@@ -1108,10 +1056,6 @@ The verifier, which can either be the enclave or the host, can verify the eviden
 struct my_plugin_verifier_config_data_t config = { ... };
 size_t config_size = sizeof(config);
 oe_register_verifier(my_plugin_verifier(), &config, config_size);
-
-/* Tell enclave the format ids the verifier supports */
-oe_get_registered_verifier_format_ids(*format_ids, &format_ids_length);
-send(ENCLAVE_SOCKET_FD, *format_ids, format_ids_length, 0);
 
 /* Receive evidence and endorsement buffer from enclave. */
 recv(ENCLAVE_SOCKET_FD, evidence, evidence_size, 0);
@@ -1137,7 +1081,6 @@ oe_verify_evidence(
     &claims_size);
 
 /* Free data and unregister plugin. */
-oe_free_format_id(format_ids);
 oe_free_claims_list(claims, claims_size);
 oe_unregister_verifier(my_plugin_verifier());
 ```
