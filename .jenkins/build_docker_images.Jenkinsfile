@@ -24,10 +24,6 @@ def buildDockerImages() {
                 oefull1804 = oe.dockerImage("oetools-full-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${DEVKITS_URI}")
                 puboefull1804 = oe.dockerImage("oeciteam/oetools-full-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${DEVKITS_URI}")
             }
-            stage("Build Ubuntu 16.04 Minimal Docker image") {
-                oeminimal1604 = oe.dockerImage("oetools-minimal-16.04:${DOCKER_TAG}", ".jenkins/Dockerfile.minimal", "${buildArgs} --build-arg ubuntu_version=16.04")
-                puboeminimal1604 = oe.dockerImage("oeciteam/oetools-minimal-16.04:${DOCKER_TAG}", ".jenkins/Dockerfile.minimal", "${buildArgs} --build-arg ubuntu_version=16.04")
-            }
             stage("Build Ubuntu 18.04 Minimal Docker image") {
                 oeminimal1804 = oe.dockerImage("oetools-minimal-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.minimal", "${buildArgs} --build-arg ubuntu_version=18.04")
                 puboeminimal1804 = oe.dockerImage("oeciteam/oetools-minimal-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.minimal", "${buildArgs} --build-arg ubuntu_version=18.04")
@@ -40,13 +36,11 @@ def buildDockerImages() {
                 docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
                     oefull1604.push()
                     oefull1804.push()
-                    oeminimal1604.push()
                     oeminimal1804.push()
                     oeDeploy.push()
                     if(TAG_LATEST == "true") {
                         oefull1604.push('latest')
                         oefull1804.push('latest')
-                        oeminimal1604.push('latest')
                         oeminimal1804.push('latest')
                         oeDeploy.push('latest')
                     }
@@ -57,12 +51,10 @@ def buildDockerImages() {
                     if(TAG_LATEST == "true") {
                         puboefull1604.push()
                         puboefull1804.push()
-                        puboeminimal1604.push()
                         puboeminimal1804.push()
                         puboeDeploy.push()
                         puboefull1604.push('latest')
                         puboefull1804.push('latest')
-                        puboeminimal1604.push('latest')
                         puboeminimal1804.push('latest')
                         puboeDeploy.push('latest')
                     }

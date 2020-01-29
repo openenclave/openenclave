@@ -1,0 +1,38 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}.yml"
+
+- name: Jenkins | Install Java JRE needed by Jenkins
+  apt:
+    name: openjdk-8-jre
+    state: latest
+    update_cache: yes
+  retries: 10
+  delay: 10
+  register: result
+  until: result is success
+
+- name: Jenkins | Create the Jenkins group
+  group:
+    name: jenkins
+    state: present
+
+- name: Jenkins | Add the Jenkins user
+  user:
+    name: jenkins
+    group: jenkins
+    state: present
+
+- import_role:
+    name: linux/docker
+    tasks_from: stable-install.yml
+
+- name: Docker | Add the Jenkins system user to the Docker group
+  user:
+    name: jenkins
+    groups: docker
+    append: yes

@@ -68,10 +68,20 @@
       "environment_vars": [
         "ANSIBLE_ROLES_PATH=/ansible/roles",
         "ANSIBLE_CONFIG=/ansible/ansible.cfg",
-        "ANSIBLE_INVENTORY=/ansible/inventory/hosts",
+        "ANSIBLE_INVENTORY=/ansible/inventory",
         "ANSIBLE_REMOTE_PORT=5986"
       ],
       "command": "ansible-playbook -e \"dcap_testing_node={{ user `dcap_testing_node` }} ansible_user=packer ansible_password={{.WinRMPassword}} ansible_become_pass={{.WinRMPassword}} ansible_connection=winrm ansible_winrm_server_cert_validation=ignore ansible_winrm_transport=ntlm\" {{ user `playbook_file` }}"
+    },
+    {
+      "type": "shell-local",
+      "environment_vars": [
+        "ANSIBLE_ROLES_PATH=/ansible/roles",
+        "ANSIBLE_CONFIG=/ansible/ansible.cfg",
+        "ANSIBLE_INVENTORY=/ansible/inventory",
+        "ANSIBLE_REMOTE_PORT=5986"
+      ],
+      "command": "ansible-playbook -e \"dcap_testing_node={{ user `dcap_testing_node` }} ansible_user=packer ansible_password={{.WinRMPassword}} ansible_become_pass={{.WinRMPassword}} ansible_connection=winrm ansible_winrm_server_cert_validation=ignore ansible_winrm_transport=ntlm\" /ansible/jenkins-packer.yml"
     },
     {
       "type": "powershell",
