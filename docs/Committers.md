@@ -94,7 +94,7 @@ instead, it should be brought up with the Community Governance Committee.
 | Simon Leet            | CodeMonkeyLeet      | SGX, APIs                      |
 | Dave Thaler           | dthaler             | TrustZone, APIs, Dev Tools     |
 | Emil Alexandru Stoica | EmilAlexandruStoica | Build, CMake, CI, Ansible      |
-| Akash Gupta           | gupta-ak            | SGX, TrustZone, APIs           |
+| Akash Gupta           | gupta-ak            | SGX, Attestation, APIs         |
 | Hernan Gatta          | HernanGatta         | TrustZone                      |
 | Sergio Wong           | jazzybluesea        | Attestation, SGX               |
 | Jiri Appl             | jiria               | Attestation, TrustZone         |
