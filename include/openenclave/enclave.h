@@ -50,12 +50,12 @@ OE_EXTERNC_BEGIN
  * the registered handler will be called when an exception happens inside the
  * enclave.
  *
- * @param is_first_handler The parameter indicates that the input handler should
- * be the first exception handler to be called. If it is false, the input
+ * @param[in] is_first_handler The parameter indicates that the input handler
+ * should be the first exception handler to be called. If it is false, the input
  * handler will be appended to the end of exception handler chain, otherwise
  * it will be added as the first handler in the exception handler chain.
- * @param vectored_handler The input vectored exception handler to register. It
- * must be a function defined in the enclave. The same handler can only be
+ * @param[in] vectored_handler The input vectored exception handler to register.
+ * It must be a function defined in the enclave. The same handler can only be
  * registered once; a 2nd registration will fail. If the function succeeds, the
  * handler may be removed later by passing it to
  * oe_remove_vectored_exception_handler().
@@ -71,7 +71,7 @@ oe_result_t oe_add_vectored_exception_handler(
 /**
  * Remove an existing vectored exception handler.
  *
- * @param vectored_handler The pointer to a registered exception handler
+ * @param[in] vectored_handler The pointer to a registered exception handler
  * returned from a successful oe_add_vectored_exception_handler() call.
  *
  * @returns OE_OK success
@@ -88,8 +88,8 @@ oe_result_t oe_remove_vectored_exception_handler(
  * strictly within the enclave's memory. If so, return true. If any
  * portion of the buffer lies outside the enclave's memory, return false.
  *
- * @param ptr The pointer pointer to buffer.
- * @param size The size of buffer
+ * @param[in] ptr The pointer pointer to buffer.
+ * @param[in] size The size of buffer
  *
  * @retval true The buffer is strictly within the enclave.
  * @retval false At least some part of the buffer is outside the enclave, or
@@ -106,8 +106,8 @@ bool oe_is_within_enclave(const void* ptr, size_t size);
  * strictly outside the enclave's memory. If so, return true. If any
  * portion of the buffer lies within the enclave's memory, return false.
  *
- * @param ptr The pointer to buffer.
- * @param size The size of buffer.
+ * @param[in] ptr The pointer to buffer.
+ * @param[in] size The size of buffer.
  *
  * @retval true The buffer is strictly outside the enclave.
  * @retval false At least some part of the buffer is inside the enclave, or
@@ -125,7 +125,7 @@ bool oe_is_outside_enclave(const void* ptr, size_t size);
  * the host, which calls malloc(). To free the memory, it must be passed to
  * oe_host_free().
  *
- * @param size The number of bytes to be allocated.
+ * @param[in] size The number of bytes to be allocated.
  *
  * @returns The allocated memory or NULL if unable to allocate the memory.
  *
@@ -141,11 +141,11 @@ void* oe_host_malloc(size_t size);
  * performs an OCALL to the host, which calls realloc(). To free the memory,
  * it must be passed to oe_host_free().
  *
- * @param ptr The memory block to change the size of. If NULL, this method
+ * @param[in] ptr The memory block to change the size of. If NULL, this method
  * allocates **size** bytes as if oe_host_malloc was invoked. If not NULL,
  * it should be a pointer returned by a previous call to oe_host_calloc,
  * oe_host_malloc or oe_host_realloc.
- * @param size The number of bytes to be allocated. If 0, this method
+ * @param[in] size The number of bytes to be allocated. If 0, this method
  * deallocates the memory at **ptr**. If the new size is larger, the value
  * of the memory in the new allocated range is indeterminate.
  *
@@ -165,8 +165,8 @@ void* oe_host_realloc(void* ptr, size_t size);
  * implementation performs an OCALL to the host, which calls calloc().
  * To free the memory, it must be passed to oe_host_free().
  *
- * @param nmemb The number of elements to be allocated and zero-filled.
- * @param size The size of each element.
+ * @param[in] nmemb The number of elements to be allocated and zero-filled.
+ * @param[in] size The size of each element.
  *
  * @returns The allocated memory or NULL if unable to allocate the memory.
  *
@@ -179,7 +179,7 @@ void* oe_host_calloc(size_t nmemb, size_t size);
  * This function releases memory allocated with oe_host_malloc() or
  * oe_host_calloc() by performing an OCALL where the host calls free().
  *
- * @param ptr Pointer to memory to be released or null.
+ * @param[in] ptr Pointer to memory to be released or null.
  *
  */
 void oe_host_free(void* ptr);
@@ -191,11 +191,12 @@ void oe_host_free(void* ptr);
  * *n* bytes from the **str** parameter to that memory, and returns a pointer
  * to the newly allocated memory.
  *
- * @param str The string to be copied.
- * @param n The number of characters to be copied.
+ * @param[in] str The string to be copied.
+ * @param[in] n The number of characters to be copied.
  *
  * @returns A pointer to the newly allocated string or NULL if unable to
  * allocate the storage.
+ *
  */
 char* oe_host_strndup(const char* str, size_t n);
 
@@ -226,10 +227,10 @@ void oe_abort(void);
  * The __oe_assert_fail() function performs a host call to print a message
  * and then calls oe_abort().
  *
- * @param expr The argument of the oe_assert() macro.
- * @param file The name of the file where oe_assert() was invoked.
- * @param line The line number where oe_assert() was invoked.
- * @param func The name of the function that invoked oe_assert().
+ * @param[in] expr The argument of the oe_assert() macro.
+ * @param[in] file The name of the file where oe_assert() was invoked.
+ * @param[in] line The line number where oe_assert() was invoked.
+ * @param[in] func The name of the function that invoked oe_assert().
  *
  */
 void __oe_assert_fail(
@@ -346,9 +347,9 @@ void oe_free_target_info(void* target_info);
 /**
  * Parse an enclave report into a standard format for reading.
  *
- * @param report The buffer containing the report to parse.
- * @param report_size The size of the **report** buffer.
- * @param parsed_report The **oe_report_t** structure to populate with the
+ * @param[in] report The buffer containing the report to parse.
+ * @param[in] report_size The size of the **report** buffer.
+ * @param[out] parsed_report The **oe_report_t** structure to populate with the
  * report
  * properties in a standard format. The *parsed_report* holds pointers to fields
  * within the supplied *report* and must not be used beyond the lifetime of the
@@ -371,10 +372,10 @@ oe_result_t oe_parse_report(
  * platform. If the report is remote, it verifies that the signing authority is
  * rooted to a trusted authority such as the enclave platform manufacturer.
  *
- * @param report The buffer containing the report to verify.
- * @param report_size The size of the **report** buffer.
- * @param parsed_report Optional **oe_report_t** structure to populate with the
- * report properties in a standard format.
+ * @param[in] report The buffer containing the report to verify.
+ * @param[in] report_size The size of the **report** buffer.
+ * @param[out] parsed_report Optional **oe_report_t** structure to populate with
+ * the report properties in a standard format.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -431,16 +432,16 @@ oe_result_t oe_get_seal_key_by_policy_v2(
  * Returns a public key that is associated with the identity of the enclave
  * and the specified policy.
  *
- * @param seal_policy The policy for the identity properties used to derive
+ * @param[in] seal_policy The policy for the identity properties used to derive
  * the key.
- * @param key_params The parameters for the asymmetric key derivation.
- * @param key_buffer A pointer to the buffer that on success contains the
+ * @param[in] key_params The parameters for the asymmetric key derivation.
+ * @param[out] key_buffer A pointer to the buffer that on success contains the
  * requested public key.
- * @param key_buffer_size On success, this contains size of key_buffer.
- * @param key_info Optional pointer to a buffer for the enclave-specific key
- * information which can be used to retrieve the same key later on a newer
+ * @param[out] key_buffer_size On success, this contains size of key_buffer.
+ * @param[out] key_info Optional pointer to a buffer for the enclave-specific
+ * key information which can be used to retrieve the same key later on a newer
  * security version.
- * @param key_info_size On success, this contains the size of key_info.
+ * @param[out] key_info_size On success, this contains the size of key_info.
  *
  * @retval OE_OK The key was successfully requested.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -458,12 +459,12 @@ oe_result_t oe_get_public_key_by_policy(
 /**
  * Returns a public key that is associated with the identity of the enclave.
  *
- * @param key_params The parameters for the asymmetric key derivation.
- * @param key_info The enclave-specific key information to derive the key.
- * @param key_info_size The size of the key_info buffer.
- * @param key_buffer A pointer to the buffer that on success contains the
+ * @param[in] key_params The parameters for the asymmetric key derivation.
+ * @param[in] key_info The enclave-specific key information to derive the key.
+ * @param[in] key_info_size The size of the key_info buffer.
+ * @param[out] key_buffer A pointer to the buffer that on success contains the
  * requested public key.
- * @param key_buffer_size On success, this contains size of key_buffer.
+ * @param[out] key_buffer_size On success, this contains size of key_buffer.
  *
  * @retval OE_OK The key was successfully requested.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -482,16 +483,16 @@ oe_result_t oe_get_public_key(
  * Returns a private key that is associated with the identity of the enclave
  * and the specified policy.
  *
- * @param seal_policy The policy for the identity properties used to derive
+ * @param[in] seal_policy The policy for the identity properties used to derive
  * the asymmetric key.
- * @param key_params The parameters for the asymmetric key derivation.
- * @param key_buffer A pointer to the buffer that on success contains the
+ * @param[in] key_params The parameters for the asymmetric key derivation.
+ * @param[out] key_buffer A pointer to the buffer that on success contains the
  * requested private key.
- * @param key_buffer_size On success, this contains size of key_buffer.
- * @param key_info Optional pointer to a buffer for the enclave-specific key
- * information which can be used to retrieve the same key later on a newer
+ * @param[out] key_buffer_size On success, this contains size of key_buffer.
+ * @param[out] key_info Optional pointer to a buffer for the enclave-specific
+ * key information which can be used to retrieve the same key later on a newer
  * security version.
- * @param key_info_size On success, this contains the size of key_info.
+ * @param[out] key_info_size On success, this contains the size of key_info.
  *
  * @retval OE_OK The key was successfully requested.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -509,12 +510,12 @@ oe_result_t oe_get_private_key_by_policy(
 /**
  * Returns a private key that is associated with the identity of the enclave.
  *
- * @param key_params The parameters for the asymmetric key derivation.
- * @param key_info The enclave-specific key information to derive the key.
- * @param key_info_size The size of the key_info buffer.
- * @param key_buffer A pointer to the buffer that on success contains the
+ * @param[in] key_params The parameters for the asymmetric key derivation.
+ * @param[in] key_info The enclave-specific key information to derive the key.
+ * @param[in] key_info_size The size of the key_info buffer.
+ * @param[out] key_buffer A pointer to the buffer that on success contains the
  * requested private key.
- * @param key_buffer_size On success, this contains size of key_buffer.
+ * @param[out] key_buffer_size On success, this contains size of key_buffer.
  *
  * @retval OE_OK The key was successfully requested.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -533,10 +534,10 @@ oe_result_t oe_get_private_key(
  * Frees the given key and/or key info. Before freeing, this function will
  * zero out the key buffers to avoid leaking any confidential data..
  *
- * @param key_buffer If not NULL, the key buffer to free.
- * @param key_buffer_size The size of key_buffer.
- * @param key_info If not NULL, the key info to free.
- * @param key_info_size The size of key_info.
+ * @param[in] key_buffer If not NULL, the key buffer to free.
+ * @param[in] key_buffer_size The size of key_buffer.
+ * @param[in] key_info If not NULL, the key info to free.
+ * @param[in] key_info_size The size of key_info.
  */
 void oe_free_key(
     uint8_t* key_buffer,
@@ -548,12 +549,12 @@ void oe_free_key(
  * Get a symmetric encryption key from the enclave platform using existing key
  * information.
  *
- * @param key_info The enclave-specific key information to derive the seal key
- * with.
- * @param key_info_size The size of the **key_info** buffer.
- * @param key_buffer Upon success, this points to the resulting seal key, which
- * should be freed with oe_free_key().
- * @param key_buffer_size Upon success, this contains the size of the
+ * @param[in] key_info The enclave-specific key information to derive the seal
+ * key with.
+ * @param[in] key_info_size The size of the **key_info** buffer.
+ * @param[out] key_buffer Upon success, this points to the resulting seal key,
+ * which should be freed with oe_free_key().
+ * @param[out] key_buffer_size Upon success, this contains the size of the
  * **key_buffer** buffer, which should be freed with oe_free_key().
  *
  * @retval OE_OK The seal key was successfully requested.
@@ -572,8 +573,8 @@ oe_result_t oe_get_seal_key_v2(
 /**
  * Frees a key and/or key info.
  *
- * @param key_buffer If non-NULL, the key buffer to free.
- * @param key_info If non-NULL, the key info buffer to free.
+ * @param[in] key_buffer If non-NULL, the key buffer to free.
+ * @param[in] key_info If non-NULL, the key info buffer to free.
  */
 void oe_free_seal_key(uint8_t* key_buffer, uint8_t* key_info);
 
@@ -596,8 +597,8 @@ oe_enclave_t* oe_get_enclave(void);
  *
  * This function generates a sequence of random bytes.
  *
- * @param data the buffer that will be filled with random bytes
- * @param size the size of the buffer
+ * @param[out] data the buffer that will be filled with random bytes
+ * @param[in] size the size of the buffer
  *
  * @return OE_OK on success
  */

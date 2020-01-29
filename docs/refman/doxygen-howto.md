@@ -139,7 +139,7 @@ To bold text, use double asterisks as follows.
 
 ```
 /**
- * This is my *bold* example.
+ * This is my **bold** example.
  *
  */
 ```
