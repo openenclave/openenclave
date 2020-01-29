@@ -4,12 +4,16 @@
 ---
 - name: Include distribution vars
   include_vars:
-    file: "{{ ansible_distribution | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}/main.yml"
+
+- name: Include distribution release specific vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
 
 - name: Check for existing required binaries
   stat:
     path: "{{ item }}"
-  with_items: "{{ validation_binaries }}"
+  with_items: "{{ validation_binaries | union(validation_distribution_binaries) }}"
   register: binary
   failed_when: binary.stat.executable == False
 
@@ -23,7 +27,7 @@
 - name: Check for existing required files
   stat:
     path: "{{ item }}"
-  with_items: "{{ validation_files }}"
+  with_items: "{{ validation_distribution_files }}"
   register: file
   failed_when: file.stat.exists == False
 
@@ -33,9 +37,14 @@
   failed_when: cmake_check_version.stdout.find(cmake_target_version) == -1
 
 - name: Clang version check
-  command: "clang-7 --version"
+  command: "{{ clang_binary_name }} --version"
   register: clang_check_version
   failed_when: clang_check_version.stdout.find(clang_target_version) == -1
+
+- name: GCC version check
+  command: "gcc --version"
+  register: gcc_check_version
+  failed_when: gcc_check_version.stdout.find(gcc_target_version) == -1
 
 - name: Esy version check
   shell: "esy --version"

@@ -1,0 +1,8 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+intel_sgx_directory: "/opt/intel"
+
+driver_validation_directories:
+  - "{{ intel_sgx_directory }}/sgxdriver"

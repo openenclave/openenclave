@@ -1,0 +1,10 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+docker_packages:
+  - "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm"
+  - "docker-ce"
+
+docker_target_version: "18.06"
+dockerd_target_version: "18.06"

@@ -85,7 +85,7 @@
 - name: Create esy symbolic links
   file:
     src: "{{ esy_prefix }}/lib/default/bin/esy.exe"
-    dest: "/usr/local/bin/esy"
+    dest: "{{ esy_bin_prefix }}/esy"
     force: yes
     state: link
 

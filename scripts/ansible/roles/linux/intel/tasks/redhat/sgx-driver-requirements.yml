@@ -1,0 +1,13 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- name: Fail if the FLC flag is set
+  fail:
+    msg: "SGX FLC is not yet supported on Red Hat distributions"
+  when: flc_enabled | bool
+
+- name: Install the Intel libsgx package dependencies
+  yum:
+    name: "{{ intel_sgx_package_dependencies }}"
+    state: latest

@@ -1,0 +1,53 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}/main.yml"
+
+- name: Install requirements from YUM
+  yum:
+    name: "{{ yum_packages }}"
+    state: latest
+
+- name: Checkout Azure-DCAP-Client git repository
+  git:
+    repo: "{{ git_repo_url }}"
+    dest: "{{ git_local_dir }}"
+    update: yes
+    force: yes
+
+- name: Get latest git tag
+  shell: git describe --tags `git rev-list --tags --max-count=1`
+  register: latest_tag
+  args:
+    chdir: "{{ git_local_dir }}"
+
+- name: Checkout to latest git tag
+  git:
+    repo: "{{ git_repo_url }}"
+    dest: "{{ git_local_dir }}"
+    version: "{{ latest_tag.stdout }}"
+    clone: no
+    update: yes
+
+- name: Pull prerequisites and setup Makefile
+  shell: ./configure
+  register: latest_tag
+  args:
+    chdir: "{{ git_local_dir }}/src/Linux"
+
+- name: Run default Makefile target
+  make:
+    chdir: "{{ git_local_dir }}/src/Linux"
+
+- name: Run install Makefile target
+  make:
+    target: install
+    chdir: "{{ git_local_dir }}/src/Linux"
+
+- name: Cleanup installation
+  file:
+    path: "{{ git_local_dir }}"
+    state: absent

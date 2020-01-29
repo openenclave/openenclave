@@ -1,0 +1,49 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- name: Fail if the FLC flag is set
+  fail:
+    msg: "SGX FLC is not yet supported on Red Hat distributions"
+  when: flc_enabled | bool
+
+- name: Install the Intel libsgx package dependencies
+  yum:
+    name: "{{ intel_sgx_package_dependencies }}"
+    state: latest
+
+- name: Create Intel SGX directory
+  file:
+    path: "{{ intel_sgx_directory }}"
+    state: directory
+
+- name: Download Intel SGX local rpm repo tgz
+  get_url:
+    url: "{{ intel_sgx_rpm_repo_tgz_url }}"
+    dest: "/tmp/sgx_rpm_local_repo.tgz"
+    timeout: 120
+  retries: 3
+
+- name: Unarchive Intel SGX local rpm repo tgz
+  unarchive:
+    src: "/tmp/sgx_rpm_local_repo.tgz"
+    dest: "{{ intel_sgx_directory }}"
+    remote_src: yes
+
+- name: Enable local Intel SGX repo
+  yum_repository:
+    name: intel-sgx-local-repo
+    description: Intel SGX local RPM repository
+    baseurl: "file://{{ intel_sgx_directory }}/sgx_rpm_local_repo"
+    enabled: yes
+    gpgcheck: no
+
+- name: Install Intel SGX packages
+  yum:
+    name: "{{ intel_sgx_packages }}"
+    state: latest
+
+- name: Cleanup installation
+  file:
+    path: "/tmp/sgx_rpm_local_repo.tgz"
+    state: absent

@@ -4,37 +4,7 @@
 ---
 - name: Include distribution vars
   include_vars:
-    file: "{{ ansible_distribution | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}/main.yml"
 
-- name: Include distribution release specific vars
-  include_vars:
-    file: "{{ ansible_distribution_release | lower }}.yml"
-
-- name: Docker | Add the APT repository key
-  apt_key:
-    url: "https://download.docker.com/linux/ubuntu/gpg"
-    state: present
-  retries: 10
-  delay: 10
-  register: result
-  until: result is success
-
-- name: Docker | Add the APT repository
-  apt_repository:
-    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
-    state: present
-    update_cache: yes
-  retries: 10
-  delay: 10
-  register: result
-  until: result is success
-
-- name: Docker | Install Docker-CE
-  apt:
-    name: "{{ apt_packages }}"
-    state: latest
-    update_cache: yes
-  retries: 10
-  delay: 10
-  register: result
-  until: result is success
+- name: Setup Docker
+  include_tasks: "{{ ansible_distribution | lower }}/stable-install.yml"
