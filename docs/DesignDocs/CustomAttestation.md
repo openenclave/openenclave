@@ -78,74 +78,159 @@ be functions for registering and unregistering plugins called
 `oe_register_[attester|verifier]` and `oe_unregister_[attester|verifier]`. The user
 can link in their desired plugin and call the register plugin function.
 The attestation data can be retrieved from `oe_get_evidence` with the desired UUID.
-The generated data will have the UUID in its header. The user can `oe_verify_evidence`
-to verify the data and the Open Enclave runtime can use this UUID to determine what plugin
-verification routine to run.
+The generated data will have the UUID in its header. The user can call `oe_verify_evidence` to verify the data and the Open Enclave runtime can use this
+UUID to determine what plugin verification routine to run.
 
 If the plugin is registered on the enclave side, it will only work for the enclave side.
 Likewise, if the plugin is registered for the host side, it will only work for the
 host side. If the user wants to use the plugin for both sides, then they must register
 it once inside the enclave and once inside the host.
 
-### Attester Plugin API (Enclave only)
+### Common Attestation Plugin Struct Definitions
 
-Each plugin must implement the functions below:
+The following structs and enums are used by the attester and verifier plugins
+and are defined below for reference:
 
 ```C
 /**
- * Claims struct used for claims parameters for the plugin.
+ * The size of a UUID in bytes.
  */
-struct oe_claim_t
+#define OE_UUID_SIZE 16
+
+/**
+ * Struct containing the definition for an UUID.
+ */
+typedef struct _oe_uuid_t
+{
+    uint8_t b[OE_UUID_SIZE];
+} oe_uuid_t;
+
+/**
+ * Claims struct used for claims parameters for the attestation plugins.
+ */
+typedef struct _oe_claim
 {
     char* name;
     uint8_t* value;
     size_t value_size;
-};
+} oe_claim_t;
 
 /**
- * Struct that defines the structure of each plugin. Each plugin must
- * define a UUID for its format and implement the functions in this
- * struct. Ideally, each plugin should provide a helper function to
- * create this struct on the behalf of the plugin users.
+ * Supported policies for validation by the verifier attestation plugin.
+ * Only time is supported for now.
  */
-struct oe_attester_plugin_t
+typedef enum _oe_policy_type
 {
     /**
-     * The UUID for the plugin.
+     * Enforces that time fields in the endorsements will be checked in
+     * with the given time rather than the endorsement creation time.
+     *
+     * The policy will be in the form of `oe_datetime_t`.
      */
-    uuid_t format_id;
+    OE_POLICY_ENDORSEMENTS_TIME = 1
+} oe_policy_type_t;
+
+/**
+ * Generic struct for defining policy for the attestation plugins.
+ */
+typedef struct _oe_policy
+{
+    oe_policy_type_t type;
+    void* policy;
+    size_t policy_size;
+} oe_policy_t;
+```
+
+### Base Attestation Role Plugin API
+
+Each attestation plugin will have a base structure defined by the following
+struct. The struct contains the plugin UUID and functions for registering
+and unregistering the plugin. Each specific attestation role (e.g. attester)
+will extend the struct and define the necessary functions for that role (e.g.
+`get_evidence` for attester).
+
+```C
+/**
+ * Struct that defines the base structure of each attestation role plugin.
+ * Each attestation role will have an UUID to indicate what evidence format
+ * is supported and have functions for registering/unregistering the plugin.
+ * Each attestation role will also define the require function for their
+ * specific role (i.e. `get_evidence` for the attester and `verify_evidence`
+ * for the verifier).
+ */
+typedef struct _oe_attestation_role oe_attestation_role_t;
+struct _oe_attestation_role
+{
+    /**
+     * The UUID for the attestation role.
+     */
+    oe_uuid_t format_id;
 
     /**
-     * The function that gets executed when a plugin is registered.
+     * The function that gets executed when the attestation role is registered.
      *
-     * @param[in] plugin_context A pointer to the attester plugin struct.
+     * @param[in] context A pointer to the attestation role struct.
      * @param[in] config_data An optional pointer to the configuration data.
      * @param[in] config_data_size The size in bytes of config_data.
      * @retval OE_OK on success.
+     * @retval An appropriate error code on failure.
      */
     oe_result_t (*on_register)(
-        oe_attester_plugin_t* plugin_context,
+        oe_attestation_role_t* context,
         const void* config_data,
         size_t config_data_size);
 
     /**
-     * The function that gets executed when a plugin is unregistered.
+     * The function that gets executed when the attestation role is
+     * unregistered.
      *
-     * @param[in] plugin_context A pointer to the attester plugin struct.
+     * @param[in] context A pointer to the attestation role struct.
      * @retval OE_OK on success.
+     * @retval An appropriate error code on failure.
      */
-    oe_result_t (*on_unregister)(
-        oe_attester_plugin_t* plugin_context);
+    oe_result_t (*on_unregister)(oe_attestation_role_t* context);
+};
+```
+
+Here is the rationale for each element in the plugin struct:
+- `format_id`
+  - Each plugin needs a unique identifier to distinguish itself.
+- `on_register` and `on_unregister`
+  - A plugin might require some setup or teardown when it is registered or
+    unregistered, so these functions are required. Furthermore, a plugin
+    might require configuration, which is why there is a `config_data`
+    parameter. The configuration data can be plugin specific, so no format is
+    specified in this proposal.
+
+### Attester Plugin API (Enclave only)
+
+Each attester plugin must implement the functions below:
+
+```C
+/**
+ * The attester attestation role. The attester is responsible for generating the
+ * attestation evidence and must implement the functions below.
+ */
+typedef struct _oe_attester oe_attester_t;
+struct _oe_attester
+{
+    /**
+     * The base attestation role containing the common functions for each role.
+     */
+    oe_attestation_role_t base;
 
     /**
      * Generates the attestation evidence, which is defined as the data
      * produced by the enclave. The caller may pass in custom claims, which
      * must be attached to the evidence and then cryptographically signed.
      *
-     * @param[in] plugin_context A pointer to the attester plugin struct.
-     * @param[in] flags Specifying default value (0) generates evidence for local
-     * attestation. Specifying OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION generates
-     * evidence for remote attestation.
+     * Note that many callers of `get_evidence` will send the results over
+     * the network, so the output must be in a serialized form.
+     *
+     * @param[in] context A pointer to the attester plugin struct.
+     * @param[in] flags Specifying default value (0) generates evidence for
+     * local attestation. Specifying OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION
+     * generates evidence for remote attestation.
      * @param[in] custom_claims The optional custom claims list.
      * @param[in] custom_claims_length The number of custom claims.
      * @param[in] opt_params The optional plugin-specific input parameters.
@@ -154,14 +239,15 @@ struct oe_attester_plugin_t
      * address of the evidence buffer.
      * @param[out] evidence_buffer_size A pointer that points to the size of the
      * evidence buffer in bytes.
-     * @param[out] endorsements_buffer An output pointer that will be assigned the
-     * address of the endorsements buffer.
-     * @param[out] endorsements_buffer_size A pointer that points to the size of the
-     * endorsements buffer in bytes.
+     * @param[out] endorsements_buffer An output pointer that will be assigned
+     * the address of the endorsements buffer.
+     * @param[out] endorsements_buffer_size A pointer that points to the size of
+     * the endorsements buffer in bytes.
      * @retval OE_OK on success.
+     * @retval An appropriate error code on failure.
      */
     oe_result_t (*get_evidence)(
-        oe_attester_plugin_t* plugin_context,
+        oe_attester_t* context,
         uint32_t flags,
         const oe_claim_t* custom_claims,
         size_t custom_claims_length,
@@ -175,28 +261,32 @@ struct oe_attester_plugin_t
     /**
      * Frees the generated attestation evidence and endorsements.
      *
-     * @param[in] plugin_context A pointer to the attester plugin struct.
+     * @param[in] context A pointer to the attester plugin struct.
      * @param[in] evidence_buffer A pointer to the evidence buffer.
+     * @retval OE_OK on success.
+     * @retval An appropriate error code on failure.
+     */
+    oe_result_t (
+        *free_evidence)(oe_attester_t* context, uint8_t* evidence_buffer);
+
+    /**
+     * Frees the generated attestation endorsements.
+     *
+     * @param[in] context A pointer to the attester plugin struct.
      * @param[in] endorsements_buffer A pointer to the endorsements buffer.
      * @retval OE_OK on success.
+     * @retval An appropriate error code on failure.
      */
-    oe_result_t (*free_evidence)(
-        oe_attester_plugin_t* plugin_context,
-        uint8_t* evidence_buffer,
+    oe_result_t (*free_endorsements)(
+        oe_attester_t* context,
         uint8_t* endorsements_buffer);
 };
 ```
 
 Here is the rationale for each element in the plugin struct:
-- `format_id`
-  - Each plugin needs a unique identifier to distinguish itself.
-- `on_register` and `on_unregister`
-  - A plugin might require some setup or teardown when it is registered or
-    unregistered, so these functions are required. Furthermore, a plugin
-    might require configuration, which is why there is a `config_data`
-    parameter. The configuration data can be plugin specific, so no format is
-    specified in this proposal.
-- `get_evidence` and  `free_evidence`
+- `base`
+  - The base attestation role struct is required for each role.
+- `get_evidence`, `free_evidence`, and  `free_endorsements`
   - Producing evidence and endorsements is necessary for attestation.
   - `flags` field to determine local vs. remote attestation.
   - There is a `custom_claims` parameter because many attestation protocols
@@ -206,7 +296,8 @@ Here is the rationale for each element in the plugin struct:
   - There is an `opt_params` field because some plugins might require plugin
     specific input. For example, the SGX local attestation needs the
     other enclave's target info struct.
-  - There is an `endorsements` parameter to return the endorsements that are
+  - There is an `evidence_buffer` parameter to return the evidence.
+  - There is an `endorsements_buffer` parameter to return the endorsements that are
     coupled with the evidence to ensure that the evidence and endorsements are
     in sync.
 
@@ -215,91 +306,66 @@ Here is the rationale for each element in the plugin struct:
 The plugin API is very similar to the attester plugin. The only difference
 is that it implements a `verify_evidence` function instead of `get_evidence`.
 
-
 ```C
 /**
- * Claims struct used for claims parameters for the plugin.
+ * The verifier attestion role. The verifier is reponsible for verifying the
+ * attestation evidence and must implement the functions below.
  */
-struct oe_claim_t
-{
-    char* name;
-    uint8_t* value;
-    size_t value_size;
-};
-
-/**
- * Supported policies for validation. Only time is supported for now.
- */
-enum oe_policy_type_t
+typedef struct _oe_verifier oe_verifier_t;
+struct _oe_verifier
 {
     /**
-     * Enforces that time fields in the endorsements will be checked in
-     * with the given time rather than the endorsement creation time.
-     *
-     * The policy will be in the form of `oe_datetime_t`.
-     */  
-    OE_POLICY_ENDORSEMENTS_TIME = 1
-};
-
-struct oe_policy_t
-{
-    oe_policy_type_t type;
-    void* policy;
-    size_t policy_size;
-};
-
-/**
- * Struct that defines the structure of each plugin. Each plugin must
- * define a UUID for its format and implement the functions in this
- * struct. Ideally, each plugin should provide a helper function to
- * create this struct on the behalf of the plugin users.
- */
-struct oe_verifier_plugin_t
-{
-    /**
-     * The UUID for the plugin.
+     * The base attestation role containing the common functions for each role.
      */
-    uuid_t format_id;
-
-    /**
-     * The function that gets executed when a plugin is registered.
-     *
-     * @param[in] plugin_context A pointer to the verifier plugin struct.
-     * @param[in] config_data An optional pointer to the configuration data.
-     * @param[in] config_data_size The size in bytes of config_data.
-     * @retval OE_OK on success.
-     */
-    oe_result_t (*on_register)(
-        oe_verifier_plugin_t* plugin_context,
-        const void* config_data,
-        size_t config_data_size);
-
-    /**
-     * The function that gets executed when a plugin is unregistered.
-     *
-     * @param[in] plugin_context A pointer to the verifier plugin struct.
-     * @retval OE_OK on success.
-     */
-    oe_result_t (*on_unregister)(
-        oe_verifier_plugin_t* plugin_context);
+    oe_attestation_role_t base;
 
     /**
      * Verifies the attestation evidence and returns the claims contained in
      * the evidence.
      *
-     * @param[in] plugin_context A pointer to the verifier plugin struct.
+     * Each plugin must return the following required claims:
+     *  - id_version (uint32_t)
+     *      - Version number. Must be 1.
+     *  - security_version (uint32_t)
+     *      - Security version of the enclave. (ISVN for SGX).
+     * - attributes (uint64_t)
+     *      - Attributes flags for the evidence:
+     *          - OE_REPORT_ATTRIBUTES_DEBUG: The evidence is for a debug
+     * enclave.
+     *          - OE_REPORT_ATTRIBUTES_REMOTE: The evidence can be used for
+     * remote attestation.
+     * - unique_id (uint8_t[32])
+     *      - The unique ID for the enclave (MRENCLAVE for SGX).
+     * - signer_id (uint8_t[32])
+     *      - The signer ID for the enclave (MRSIGNER for SGX).
+     * - product_id (uint8_t[32])
+     *      - The product ID for the enclave (ISVPRODID for SGX).
+     * - validity_from (oe_datetime_t)
+     *      - Overall datetime from which the evidence and endorsements are
+     *        valid.
+     * - validity_until (oe_datetime_t)
+     *      - Overall datetime at which the evidence and endorsements expire.
+     * - plugin_uuid (uint8_t[16])
+     *      - The UUID of the plugin used to verify the evidence.
+     *
+     * The plugin is responsible for handling endianness and ensuring that the
+     * data from the raw evidence converted properly for each platform.
+     *
+     * @param[in] context A pointer to the verifier plugin struct.
      * @param[in] evidence_buffer The evidence buffer.
      * @param[in] evidence_buffer_size The size of evidence_buffer in bytes.
      * @param[in] endorsements_buffer The endorsements buffer.
-     * @param[in] endorsements_buffer_size The size of endorsements_buffer in bytes.
+     * @param[in] endorsements_buffer_size The size of endorsements_buffer in
+     * bytes.
      * @param[in] policies A list of policies to use.
      * @param[in] policies_size The size of the policy list.
      * @param[out] claims The list of returned claims.
      * @param[out] claims_length The number of claims.
      * @retval OE_OK on success.
+     * @retval An appropriate error code on failure.
      */
     oe_result_t (*verify_evidence)(
-        oe_verifier_plugin_t* plugin_context,
+        oe_verifier_t* context,
         const uint8_t* evidence_buffer,
         size_t evidence_buffer_size,
         const uint8_t* endorsements_buffer,
@@ -316,6 +382,7 @@ struct oe_verifier_plugin_t
      * @param[out] claims The list of returned claims.
      * @param[out] claims_length The number of claims.
      * @retval OE_OK on success.
+     * @retval An appropriate error code on failure.
      */
     oe_result_t (*free_claims_list)(
         oe_verifier_t* context,
@@ -327,12 +394,17 @@ struct oe_verifier_plugin_t
 Here is the rationale for the parameters in the `verify_evidence` function:
 - `verify_evidence`
   - Verifying evidence and endorsements is essential for attestation.
+  - `evidence_buffer` and `endorsements_buffer` are inputs to the verification
+    function.
   - Evidence can be verified according to some policy, which is why there
     is a `policies` parameter.
   - The `claims` field contains key-value pairs that can be verified by the
     caller. This will have the similar contents as the `oe_identity_t` field
     in the `oe_report_t` struct returned by `oe_verify_report` and any custom
     claims that were passed to the `get_evidence` function.
+- `free_claims_list`
+  - Since the claims list is returned by the plugin, the plugin must also provide
+    a function for freeing the claims list.
 
 ###  Known Open Enclave Claims
 
@@ -359,44 +431,13 @@ directly to the plugin APIs. For the `on_register` and `on_unregister`  APIs,
 they can simply be no-ops. `oe_get_report` can be mapped to the `get_evidence` API and
 `oe_verify_report` can be mapped to the `verify_evidence` API.
 
-### SGX Plug-In Definitions
+### SGX Plug-In Implementation
 
-`sgx_plugin_common.h`
-
-```C
-
-/* Define the uuid. */
-#define SGX_PLUGIN_UUID                 \
-{                                       \
- 0x2f, 0x50, 0xdc, 0xb4,                \
- 0x79, 0x9c,                            \
- 0x45, 0x07,                            \
- 0xa1, 0xe9,                            \
- 0x86, 0x2c, 0x62, 0x9b, 0x76, 0x2a}    \
-}
-```
-
-`sgx_plugin_attester.h`
-
-```C
-#include <sgx_plugin_common.h>
-
-oe_attester_t* sgx_attester();
-```
-
-`sgx_plugin_verifier.h`
-
-```C
-#include <sgx_plugin_common.h>
-
-oe_verifier_t* sgx_verifier();
-```
+The following provides a rough outline of how the SGX plugin will be implemented.
 
 `sgx_plugin_attester.c`
 
 ```C
-#include "sgx_plugin_attester.h"
-
 static
 oe_result_t
 sgx_attestation_plugin_on_register(
@@ -461,30 +502,38 @@ static
 oe_result_t 
 sgx_attestation_plugin_free_evidence(
     oe_attester_t* plugin_context,
-    uint8_t* evidence_buffer,
+    uint8_t* evidence_buffer)
+{
+    OE_UNUSED(plugin_context);
+    free(evidence_buffer);
+    return OE_OK;
+}
+
+static
+oe_result_t
+sgx_attestation_plugin_free_endorsements(
+    oe_attester_t* plugin_context,
     uint8_t* endorsements_buffer)
 {
     OE_UNUSED(plugin_context);
-
-    oe_free_report(evidence_buffer);
-    oe_free_endorsements(endorsements_buffer);
+    free(endorsements_buffer);
     return OE_OK;
 }
 
 /* Setting up the plugin structs. */
 oe_attester_t sgx_attester_plugin = {
-
- /* Plugin UUID. */
- .format_id = SGX_PLUGIN_UUID,
-
- .on_register = sgx_attestation_plugin_on_register,
- .on_unregister = sgx_attestation_plugin_on_unregister,
- .get_evidence = sgx_attestation_plugin_get_evidence,
- .free_evidence = sgx_attestation_plugin_free_evidence,
+  .base = {
+    .format_id = OE_SGX_PLUGIN_UUID,
+    .on_register = sgx_attestation_plugin_on_register,
+    .on_unregister = sgx_attestation_plugin_on_unregister,
+  },
+  .get_evidence = sgx_attestation_plugin_get_evidence,
+  .free_evidence = sgx_attestation_plugin_free_evidence,
+  .free_endorsements = sgx_attestation_plugin_free_endorsements
 };
 
 /* Implement helper initialization function. */
-oe_attester_t* sgx_attester() {
+oe_attester_t* oe_sgx_plugin_attester() {
     return &sgx_attester_plugin;
 }
 ```
@@ -492,8 +541,6 @@ oe_attester_t* sgx_attester() {
 `sgx_verifier_plugin.c`
 
 ```C
-#include "sgx_plugin_verifier.h"
-
 static
 oe_result_t
 sgx_attestation_plugin_on_register(
@@ -568,19 +615,52 @@ sgx_attestation_plugin_free_claims_list(
 }
 
 oe_verifier_t sgx_verifier_plugin = {
-
- /* Plugin UUID. */
- .format_id = SGX_PLUGIN_UUID,
-
- .on_register = sgx_attestation_plugin_on_register,
- .on_unregister = sgx_attestation_plugin_on_unregister,
+  .base = {
+    .format_id = OE_SGX_PLUGIN_UUID,
+    .on_register = sgx_attestation_plugin_on_register,
+    .on_unregister = sgx_attestation_plugin_on_unregister,
+  },
  .verify_evidence = sgx_attestation_plugin_verify_evidence,
  .free_claims_list = sgx_attestation_plugin_free_claims_list
 };
 
-oe_verifier_t* sgx_verifier() {
+oe_verifier_t* oe_sgx_plugin_verifier() {
     return &sgx_verifier_plugin;
 }
+```
+
+These two headers will be exposed publicly, so the end user can easily create the SGX plugins.
+
+`include/openenclave/attestation/sgx/attester.h`
+
+```C
+/**
+ *  The `opt_params` field for `oe_get_evidence` identical to the `opt_params`
+ *  field `oe_get_report`. In other words, it is the output of
+ * `oe_get_target_info` for local attestation and is ignored for remote
+ *  attestation.
+ */
+typedef void* oe_sgx_plugin_opt_params;
+
+/**
+ * Helper function that returns the SGX attester that can then be sent to
+ * `oe_register_attester`.
+ *
+ * @retval A pointer to the SGX attester. This function never fails.
+ */
+oe_attester_t* oe_sgx_plugin_attester(void);
+```
+
+`include/openenclave/attestation/sgx/verifier.h`
+
+```C
+/**
+ * Helper function that returns the SGX verifier that can then be sent to
+ * `oe_register_verifier`.
+ *
+ * @retval A pointer to the SGX verifier. This function never fails.
+ */
+oe_verifier_t* oe_sgx_plugin_verifier(void);
 ```
 
 ### New Open Enclave APIs
@@ -698,14 +778,26 @@ oe_result_t oe_get_evidence(
 /**
  * oe_free_evidence
  *
- * Frees the attestation evidence and endorsements. This function is only
- * available in the enclave.
+ * Frees the attestation evidence. This function is only available in the
+ * enclave.
  *
  * @param[in] evidence_buffer A pointer to the evidence buffer.
- * @param[in] endorsements_buffer A pointer to the endorsements buffer.
- * @retval OE_OK on success.
+ * @retval OE_OK The function succeeded.
+ * @retval Otherwise, returns the error code the plugin's function.
  */
-oe_result_t oe_free_evidence(uint8_t* evidence_buffer, uint8_t* endorsements_buffer);
+oe_result_t oe_free_evidence(uint8_t* evidence_buffer);
+
+/**
+ * oe_free_endorsements
+ *
+ * Frees the generated attestation endorsements. This function is only available
+ * in the enclave.
+ *
+ * @param[in] endorsements_buffer A pointer to the endorsements buffer.
+ * @retval OE_OK The function succeeded.
+ * @retval Otherwise, returns the error code the plugin's function.
+ */
+oe_result_t oe_free_endorsements(uint8_t* endorsements_buffer);
 
 /**
  * oe_verify_evidence
@@ -734,40 +826,18 @@ oe_result_t oe_verify_evidence(
     size_t* claims_length);
 
 /**
- * oe_get_registered_attester_format_ids
+ * oe_free_claims_list
  *
- * Get the unique identifiers of all registered attesters.
+ * Frees a claims list.
  *
- * @param[out] format_ids The list of the UUIDs of the registered attesters.
- * @param[out] format_ids_length The length of the UUIDs list.
- * @retval OE_OK on success.
+ * @param[in] claims The list of claims.
+ * @param[in] claims_length The length of the claims list.
+ * @retval OE_OK The function succeeded.
+ * @retval OE_NOT_FOUND The plugin that generated the claims does not exist or
+ * has not been registered, so the claims can't be freed.
+ * @retval Otherwise, returns the error code the plugin's function.
  */
-oe_result_t oe_get_registered_attester_format_ids(
-    oe_uuid_t** format_ids,
-    size_t* format_ids_length);
-
-/**
- * oe_get_registered_verifier_format_ids
- *
- * Get the unique identifiers of all registered verifiers.
- *
- * @param[out] format_ids The list of the UUIDs of the registered verifiers.
- * @param[out] format_ids_length The length of the UUIDs list.
- * @retval OE_OK on success.
- */
-oe_result_t oe_get_registered_verifier_format_ids(
-    oe_uuid_t** format_ids,
-    size_t* format_ids_length);
-
-/**
- * oe_free_format_ids
- *
- * Frees the attester/verifier format ids.
- *
- * @param[in] format_ids The list of the attester/verifier UUIDs.
- * @retval OE_OK on success.
- */
-oe_result_t oe_free_format_ids(oe_uuid_t* format_ids);
+oe_result_t oe_free_claims_list(oe_claim_t* claims, size_t claims_length);
 ```
 
 The outputs returned by `oe_get_evidence` will begin with the header
@@ -879,17 +949,18 @@ static oe_result_t my_plugin_on_register(
 static oe_result_t my_plugin_on_unregister(...) { ... }
 static oe_result_t my_plugin_get_evidence(...) { ... }
 static oe_result_t my_plugin_free_evidence(...) { ... }
+static oe_result_t my_plugin_free_endorsements(...) { ... }
 
 /* Setting up the plugin struct. */
 oe_attester_t my_plugin = {
- /* Plugin UUID. */
- .format_id = MY_PLUGIN_UUID,
-
-  /* Plugin functions. */
- .on_register = my_plugin_on_register,
- .on_unregister = my_plugin_on_unregister,
+  .base = {
+    .format_id = MY_PLUGIN_UUID,
+    .on_register = my_plugin_on_register,
+    .on_unregister = my_plugin_on_unregister,
+  },
  .get_evidence = my_plugin_get_evidence,
  .free_evidence = my_plugin_free_evidence,
+ .free_endorsements = my_plugin_free_endorsements
 };
 
 /* Implement helper initialization function. */
@@ -911,12 +982,11 @@ static oe_result_t my_plugin_free_claims_list(...) { ... }
 
 /* Setting up the plugin struct. */
 oe_verifier_t my_plugin = {
- /* Plugin UUID. */
- .format_id = MY_PLUGIN_UUID,
-
-  /* Plugin functions. */
- .on_register = my_plugin_on_register,
- .on_unregister = my_plugin_on_unregister,
+  .base = {
+    .format_id = MY_PLUGIN_UUID,
+    .on_register = my_plugin_on_register,
+    .on_unregister = my_plugin_on_unregister,
+   },
  .verify_evidence = my_plugin_verify_evidence,
  .free_claims_list = my_plugin_free_claims_list
 };
@@ -952,24 +1022,9 @@ size_t params_size = sizeof(params);
 oe_claim_t claims = { ... };
 size_t claims_size = ...;
 
-/* Receive the evidence format ids that the verifier supports */
-recv(VERIFIER_SOCKET_FD, evidence_format_ids, evidence_format_id_length, 0);
-
-/* Get registered attester format ids and find a common format */
-oe_get_registered_attester_format_ids(*format_ids, &format_ids_length);
-for (size_t m = 0; m < format_ids_length; m++)
-{
-    for (size_t n = 0; n < evidence_format_id_length; n++)
-    if (format_ids[m] == evidence_format_ids[n])
-    {
-        common_format_id = format_ids[m];
-        break;
-    }
-}
-
 /* Get evidence. */
 oe_get_evidence(
-    common_format_id,
+    MY_PLUGIN_UUID,
     OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION,
     claims,
     claims_size,
@@ -985,8 +1040,8 @@ send(VERIFIER_SOCKET_FD, evidence, evidence_size, 0);
 send(VERIFIER_SOCKET_FD, endorsements, endorsements_size, 0);
 
 /* Free data and unregister plugin. */
-oe_free_format_id(format_ids);
-oe_free_evidence(evidence, endorsements);
+oe_free_evidence(evidence);
+oe_free_endorsements(endorsements);
 oe_unregister_attester(my_plugin_attester());
 ```
 
@@ -1001,10 +1056,6 @@ The verifier, which can either be the enclave or the host, can verify the eviden
 struct my_plugin_verifier_config_data_t config = { ... };
 size_t config_size = sizeof(config);
 oe_register_verifier(my_plugin_verifier(), &config, config_size);
-
-/* Tell enclave the format ids the verifier supports */
-oe_get_registered_verifier_format_ids(*format_ids, &format_ids_length);
-send(ENCLAVE_SOCKET_FD, *format_ids, format_ids_length, 0);
 
 /* Receive evidence and endorsement buffer from enclave. */
 recv(ENCLAVE_SOCKET_FD, evidence, evidence_size, 0);
@@ -1030,7 +1081,6 @@ oe_verify_evidence(
     &claims_size);
 
 /* Free data and unregister plugin. */
-oe_free_format_id(format_ids);
 oe_free_claims_list(claims, claims_size);
 oe_unregister_verifier(my_plugin_verifier());
 ```
