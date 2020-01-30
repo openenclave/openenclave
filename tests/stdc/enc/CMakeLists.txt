@@ -1,11 +1,15 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set (EDL_FILE ../stdc.edl)
 
-oeedl_file(../stdc.edl enclave gen)
+add_custom_command(
+    OUTPUT stdc_t.h stdc_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 # TODO: Does this need CXX?
-add_enclave(TARGET stdc_enc UUID 9a30506a-87f6-4214-a007-f15b11c98f8b SOURCES enc.cpp ${gen})
+add_enclave(TARGET stdc_enc UUID 9a30506a-87f6-4214-a007-f15b11c98f8b SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/stdc_t.c)
 
 target_compile_options(stdc_enc PRIVATE
     -fno-builtin-strcpy

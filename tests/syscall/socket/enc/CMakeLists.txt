@@ -1,12 +1,15 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-oeedl_file(../socket_test.edl 
-    enclave socket_test_t
-    --edl-search-dir ../../../include
-)
+set (EDL_FILE ../socket_test.edl)
 
-add_enclave(TARGET socket_enc SOURCES enc.c ${socket_test_t})
+add_custom_command(
+    OUTPUT socket_test_t.h socket_test_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR}
+                    --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../../../include)
+
+add_enclave(TARGET socket_enc SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/socket_test_t.c)
 
 target_include_directories(socket_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

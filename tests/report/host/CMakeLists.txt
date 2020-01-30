@@ -3,8 +3,14 @@
 
 include(add_dcap_client_target)
 
-oeedl_file(../tests.edl host gen)
-add_executable(report_host host.cpp tcbinfo.cpp ../common/tests.cpp ${gen})
+set (EDL_FILE ../tests.edl)
+
+add_custom_command(
+    OUTPUT tests_u.h tests_u.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --untrusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable(report_host host.cpp tcbinfo.cpp ../common/tests.cpp tests_u.c)
 
 if(HAS_QUOTE_PROVIDER)
     target_compile_definitions(report_host PRIVATE OE_LINK_SGX_DCAP_QL)

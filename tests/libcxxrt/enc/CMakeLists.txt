@@ -1,11 +1,15 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set (EDL_FILE ../libcxxrt.edl)
 
-oeedl_file(../libcxxrt.edl enclave gen)
+add_custom_command(
+    OUTPUT libcxxrt_t.h libcxxrt_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 # helper lib to contain file needed by some tests
-add_library(libcxxrttest-support ${gen})
+add_library(libcxxrttest-support libcxxrt_t.c)
 target_compile_options(libcxxrttest-support PUBLIC -Wno-error)
 target_link_libraries(libcxxrttest-support PRIVATE oeenclave oelibc)
 target_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=test)

@@ -1,9 +1,14 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-oeedl_file(../pingpong.edl host gen)
+set (EDL_FILE ../pingpong.edl)
 
-add_library(pingpong-shared-lib SHARED host.cpp ${gen})
+add_custom_command(
+    OUTPUT pingpong_u.h pingpong_u.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --untrusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(pingpong-shared-lib SHARED host.cpp pingpong_u.c)
 
 target_include_directories(pingpong-shared-lib PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(pingpong-shared-lib oehostapp)

@@ -1,16 +1,20 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set (EDL_FILE ../debug_mode.edl)
 
-oeedl_file(../debug_mode.edl enclave gen)
+add_custom_command(
+    OUTPUT debug_mode_t.h debug_mode_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(TARGET no_debug_enc_unsigned UUID f10dc769-9849-4141-9dd5-12b7f78a56fd SOURCES enc.c props.c ${gen})
+add_enclave(TARGET no_debug_enc_unsigned UUID f10dc769-9849-4141-9dd5-12b7f78a56fd SOURCES enc.c props.c ${CMAKE_CURRENT_BINARY_DIR}/debug_mode_t.c)
 
-add_enclave(TARGET no_debug_enc UUID e90548a8-3146-4d09-86e3-ea2bc56b6543 CONFIG sign.conf SOURCES enc.c props.c ${gen})
+add_enclave(TARGET no_debug_enc UUID e90548a8-3146-4d09-86e3-ea2bc56b6543 CONFIG sign.conf SOURCES enc.c props.c ${CMAKE_CURRENT_BINARY_DIR}/debug_mode_t.c)
 
-add_enclave(TARGET debug_enc UUID 9c99c483-93de-41ef-9d8b-abb290a00f41 CONFIG sign-debug.conf SOURCES enc.c props-debug.c ${gen})
+add_enclave(TARGET debug_enc UUID 9c99c483-93de-41ef-9d8b-abb290a00f41 CONFIG sign-debug.conf SOURCES enc.c props-debug.c ${CMAKE_CURRENT_BINARY_DIR}/debug_mode_t.c)
 
-add_enclave(TARGET debug_enc_unsigned UUID 6e214c32-51ff-4bf4-ab81-e164bc67c154 SOURCES enc.c props-debug.c ${gen})
+add_enclave(TARGET debug_enc_unsigned UUID 6e214c32-51ff-4bf4-ab81-e164bc67c154 SOURCES enc.c props-debug.c ${CMAKE_CURRENT_BINARY_DIR}/debug_mode_t.c)
 
 
 target_include_directories(no_debug_enc PRIVATE

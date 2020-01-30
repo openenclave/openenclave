@@ -2,9 +2,14 @@
 # Licensed under the MIT License.
 
 
-oeedl_file(../abortStatus.edl enclave gen)
+set (EDL_FILE ../abortStatus.edl)
 
-add_enclave(TARGET abortStatus_enc UUID c55a7e2a-b857-4518-98df-4d294d0ab14d CXX SOURCES enc.cpp ${gen})
+add_custom_command(
+    OUTPUT abortStatus_t.h abortStatus_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_enclave(TARGET abortStatus_enc UUID c55a7e2a-b857-4518-98df-4d294d0ab14d CXX SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/abortStatus_t.c)
 
 target_compile_features(abortStatus_enc PRIVATE cxx_generalized_initializers)
 
