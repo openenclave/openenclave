@@ -128,7 +128,7 @@ typedef struct _oe_sgx_enclave_properties
         },                                                                \
         .image_info =                                                     \
         {                                                                 \
-            0                                                             \
+            0, 0, 0, 0, 0, 0                                              \
         },                                                                \
         .sigstruct =                                                      \
         {                                                                 \
