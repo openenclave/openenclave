@@ -51,6 +51,7 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+// #include <openenclave/internal/hexdump.h>
 #include <string.h>
 #include "../memalign.h"
 #include "../signkey.h"
@@ -638,7 +639,7 @@ static oe_result_t _add_eeid_pages(
     oe_sgx_load_context_t* context,
     oe_enclave_t* enclave,
     uint64_t enclave_end,
-    oe_sgx_enclave_properties_t* properties,
+    const oe_sgx_enclave_properties_t* properties,
     uint64_t* vaddr,
     uint8_t* id,
     uint32_t id_size)
@@ -649,23 +650,20 @@ static oe_result_t _add_eeid_pages(
     {
         sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)properties->sigstruct;
 
+        // char str[OE_SHA256_SIZE * 2 + 1];
+        // oe_hex_string(str, OE_SHA256_SIZE * 2 + 1, sigstruct->enclavehash,
+        // OE_SHA256_SIZE); OE_TRACE_INFO("*** OLD: %s\n", str);
+
         uint64_t sz = eeid_pages_size(id_size);
         assert(*vaddr == enclave_end - sz);
 
-        oe_sha256_context_t hctx;
-        OE_SHA256 eeid_hash;
-        oe_sha256_init(&hctx);
-        oe_sha256_update(&hctx, id, id_size);
-        oe_sha256_update(&hctx, sigstruct->enclavehash, OE_SHA256_SIZE);
-        oe_sha256_update(&hctx, sigstruct->signature, OE_KEY_SIZE);
-        oe_sha256_final(&hctx, &eeid_hash);
-
         oe_eeid_t* eeid = (oe_eeid_t*)calloc(1, sz);
-        memcpy(eeid->data, id, id_size);
+        eeid->sigstruct = *sigstruct;
         eeid->data_size = id_size;
-        memcpy(eeid->mrenclave, sigstruct->enclavehash, OE_SHA256_SIZE);
-        memcpy(eeid->signature, sigstruct->signature, OE_KEY_SIZE);
-        memcpy(eeid->hash, eeid_hash.buf, sizeof(eeid_hash));
+        memcpy(eeid->data, id, id_size);
+
+        oe_sha256_save(
+            &context->hash_context, eeid->hash_state_H, eeid->hash_state_N);
 
         OE_CHECK(_add_extra_data_pages(
             context,
@@ -687,6 +685,9 @@ static oe_result_t _add_eeid_pages(
             OE_DEBUG_SIGN_KEY, /* Use different key? */
             OE_DEBUG_SIGN_KEY_SIZE,
             sigstruct));
+
+        // oe_hex_string(str, OE_SHA256_SIZE * 2 + 1, sigstruct->enclavehash,
+        // OE_SHA256_SIZE); OE_TRACE_INFO("*** NEW: %s\n", str);
 
         assert(*vaddr == enclave_end);
     }

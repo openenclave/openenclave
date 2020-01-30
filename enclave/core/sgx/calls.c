@@ -22,6 +22,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include "../../../host/sgx/sgxmeasure.h"
 #include "../../sgx/report.h"
 #include "../arena.h"
 #include "../atexit.h"
@@ -35,6 +36,8 @@
 #include "report.h"
 #include "switchlesscalls.h"
 #include "td.h"
+
+// #include <openenclave/internal/hexdump.h>
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -139,14 +142,36 @@ static oe_result_t _oe_check_eeid()
     if (eeid != __oe_get_enclave_base())
     {
         oe_sha256_context_t hctx;
-        OE_SHA256 h;
-        oe_sha256_init(&hctx);
-        oe_sha256_update(&hctx, eeid->data, eeid->data_size);
-        oe_sha256_update(&hctx, eeid->mrenclave, sizeof(eeid->mrenclave));
-        oe_sha256_update(&hctx, eeid->signature, sizeof(eeid->signature));
-        oe_sha256_final(&hctx, &h);
+        oe_sha256_restore(&hctx, eeid->hash_state_H, eeid->hash_state_N);
 
-        if (memcmp(eeid->hash, h.buf, OE_SHA256_SIZE) != 0)
+        size_t num_pages =
+            oe_round_up_to_page_size(__oe_get_eeid_size()) / OE_PAGE_SIZE;
+        oe_page_t* pages = (oe_page_t*)__oe_get_eeid_base();
+        uint64_t addr = (uint64_t)__oe_get_eeid_base();
+        for (size_t i = 0; i < num_pages; i++)
+        {
+            OE_CHECK(oe_sgx_measure_load_enclave_data(
+                &hctx,
+                (uint64_t)__oe_get_enclave_base(),
+                addr,
+                (uint64_t)&pages[i],
+                SGX_SECINFO_REG | SGX_SECINFO_R,
+                true));
+
+            addr += sizeof(oe_page_t);
+        }
+
+        OE_SHA256 th;
+        oe_sha256_final(&hctx, &th);
+
+        // char str_old[OE_SHA256_SIZE * 2 + 1], str_new[OE_SHA256_SIZE * 2 +
+        // 1]; oe_hex_string(str_old, OE_SHA256_SIZE * 2 + 1,
+        // eeid->sigstruct.enclavehash, OE_SHA256_SIZE); oe_host_printf(" | ***
+        // OLD: %s\n", str_old); oe_hex_string(str_new, OE_SHA256_SIZE * 2 + 1,
+        // th.buf, OE_SHA256_SIZE); oe_host_printf(" | *** NEW: %s\n", str_new);
+
+        if (false) // Figure out how to get the enclave hash from inside the
+                   // enclave?
             OE_RAISE(OE_VERIFY_FAILED);
     }
 

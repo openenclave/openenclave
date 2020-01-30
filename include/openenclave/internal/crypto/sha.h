@@ -66,6 +66,16 @@ oe_result_t oe_sha256_update(
  */
 oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256);
 
+oe_result_t oe_sha256_save(
+    const oe_sha256_context_t* context,
+    uint32_t* H,
+    uint32_t* N);
+
+oe_result_t oe_sha256_restore(
+    oe_sha256_context_t* context,
+    const uint32_t* H,
+    const uint32_t* N);
+
 OE_EXTERNC_END
 
 #endif /* _OE_SHA_H */
