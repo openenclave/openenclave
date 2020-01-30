@@ -19,7 +19,7 @@ def buildVHD(String os_type, String version, String imageName) {
                     withEnv(["REGION=eastus", "DEST_VHD_NAME=${VHD_NAME_PREFIX}-${os_type}-${version}.vhd", "CONTAINER_NAME=disks"]) {
                         dir("${WORKSPACE}/.jenkins/provision") {
                             oe.azureEnvironment("""
-                                                packer build -var-file=templates/packer/${os_type}-${version}-variables.json templates/packer/packer-${os_type}.json 2>&1 | tee packer.log
+                                                packer build -var-file=templates/packer/azure_vhd/${os_type}-${version}-variables.json templates/packer/azure_vhd/packer-${os_type}.json 2>&1 | tee packer.log
                                                 export SOURCE_URI=\$(cat packer.log | grep OSDiskUri: | awk '{print \$2}')
                                                 az storage blob copy start --source-uri \$SOURCE_URI --destination-blob \$DEST_VHD_NAME --destination-container \$CONTAINER_NAME --account-key \$EASTUS_STORAGE_ACCOUNT_KEY --account-name \$EASTUS_STORAGE_ACCOUNT_NAME
                                                 az storage blob copy start --source-uri \$SOURCE_URI --destination-blob \$DEST_VHD_NAME --destination-container \$CONTAINER_NAME --account-key \$WESTEUROPE_STORAGE_ACCOUNT_KEY --account-name \$WESTEUROPE_STORAGE_ACCOUNT_NAME
