@@ -1,0 +1,11 @@
+{
+    "managed_image_name_suffix": "win2016-SGX-DCAP",
+    "os_type": "Windows",
+    "image_publisher": "MicrosoftWindowsServer",
+    "image_offer": "confidential-compute-preview",
+    "image_sku": "acc-windows-server-2016-datacenter",
+    "vm_size": "Standard_DC2s",
+    "ansible_group": "windows-agents",
+    "playbook_file_name": "oe-windows-acc-setup.yml",
+    "dcap_testing_node": "true"
+}

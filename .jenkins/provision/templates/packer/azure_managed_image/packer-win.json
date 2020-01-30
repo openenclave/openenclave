@@ -1,0 +1,84 @@
+{
+  "variables": {
+    "resource_group": "{{ env `RESOURCE_GROUP` }}",
+    "subscription_id": "{{ env `SUBSCRIPTION_ID` }}",
+    "client_id": "{{ env `SERVICE_PRINCIPAL_ID` }}",
+    "client_secret": "{{ env `SERVICE_PRINCIPAL_PASSWORD` }}",
+    "tenant_id": "{{ env `TENANT_ID` }}",
+    "location": "{{ env `REGION` }}",
+    "ansible_dir": "{{ env `WORKSPACE` }}/scripts/ansible",
+    "managed_image_name_id": "{{ env `MANAGED_IMAGE_NAME_ID` }}"
+  },
+  "builders": [{
+    "type": "azure-arm",
+
+    "client_id": "{{ user `client_id` }}",
+    "client_secret": "{{ user `client_secret` }}",
+    "tenant_id": "{{ user `tennant_id` }}",
+    "subscription_id": "{{ user `subscription_id` }}",
+
+    "managed_image_name": "{{ user `managed_image_name_id` }}-{{ user `managed_image_name_suffix` }}",
+    "managed_image_resource_group_name": "{{ user `resource_group` }}",
+
+    "os_type": "{{ user `os_type` }}",
+    "image_publisher": "{{ user `image_publisher` }}",
+    "image_offer": "{{ user `image_offer` }}",
+    "image_sku": "{{ user `image_sku` }}",
+
+    "location": "{{ user `location` }}",
+    "vm_size": "{{ user `vm_size` }}",
+
+    "communicator": "winrm",
+    "winrm_use_ssl": true,
+    "winrm_insecure": true,
+    "winrm_timeout": "5m",
+    "winrm_username": "packer"
+  }],
+  "provisioners": [
+    {
+      "type": "powershell",
+      "inline": [
+        "(Invoke-WebRequest -Headers @{\"Metadata\"=\"true\"} -UseBasicParsing \"http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2017-08-01&format=text\").Content | Out-File -Append -Encoding utf8 C:/Windows/Temp/ip-address"
+      ]
+    },
+    {
+      "type": "file",
+      "direction": "download",
+      "source": "C:/Windows/Temp/ip-address",
+      "destination": "/tmp/win-ip-address"
+    },
+    {
+      "type": "shell-local",
+      "inline": [
+        "IP=`grep -Eo '([0-9]+\\.){3}[0-9]+' /tmp/win-ip-address`",
+
+        "echo \"[{{ user `ansible_group` }}]\" > {{ user `ansible_dir` }}/inventory/hosts",
+        "echo \"${IP}\" >> {{ user `ansible_dir` }}/inventory/hosts",
+
+        "echo \"ansible_user: packer\" > {{ user `ansible_dir` }}/inventory/host_vars/${IP}",
+        "echo \"ansible_password: {{ .WinRMPassword }}\" >> {{ user `ansible_dir` }}/inventory/host_vars/${IP}",
+        "echo \"ansible_winrm_transport: ntlm\" >> {{ user `ansible_dir` }}/inventory/host_vars/${IP}",
+        "echo \"dcap_testing_node: {{ user `dcap_testing_node` }}\" >> {{ user `ansible_dir` }}/inventory/host_vars/${IP}"
+      ]
+    },
+    {
+      "type": "shell-local",
+      "command": "cd {{ user `ansible_dir` }} && ansible-playbook {{ user `playbook_file_name` }}"
+    },
+    {
+      "type": "shell-local",
+      "command": "cd {{ user `ansible_dir` }} && ansible-playbook jenkins-packer.yml"
+    },
+    {
+      "type": "powershell",
+      "inline": [
+        "while ((Get-Service RdAgent).Status -ne 'Running') { Start-Sleep -s 5 }",
+        "while ((Get-Service WindowsAzureTelemetryService).Status -ne 'Running') { Start-Sleep -s 5 }",
+        "while ((Get-Service WindowsAzureGuestAgent).Status -ne 'Running') { Start-Sleep -s 5 }",
+
+        "& $env:SystemRoot\\System32\\Sysprep\\Sysprep.exe /oobe /generalize /quiet /shutdown",
+        "while ($true) { $imageState = Get-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Setup\\State | Select ImageState; if($imageState.ImageState -ne 'IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE') { Write-Output $imageState.ImageState; Start-Sleep -s 10  } else { break } }"
+      ]
+    }
+  ]
+}
