@@ -2,6 +2,10 @@
 // Licensed under the MIT License.
 
 enclave {
+    enum num_tcs_t {
+        NUM_TCS = 32
+    };
+
     trusted {
         public int enc_echo_switchless(
             [string, in] const char* in,
