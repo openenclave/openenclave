@@ -92,12 +92,21 @@ double make_repeated_switchless_ocalls(oe_enclave_t* enclave)
         "%d switchless calls took %d msecs.\n",
         NUM_OCALLS,
         (int)(switchless_microseconds / 1000.0));
+
     return switchless_microseconds;
 }
 
-void* launch_enclave_thread(void* e)
+typedef struct
 {
-    make_repeated_switchless_ocalls((oe_enclave_t*)e);
+    oe_thread_t tid;
+    oe_enclave_t* enclave;
+    double elapsed;
+} thread_info_t;
+
+void* launch_enclave_thread(void* a)
+{
+    thread_info_t* info = (thread_info_t*)a;
+    info->elapsed = make_repeated_switchless_ocalls(info->enclave);
     return NULL;
 }
 
@@ -151,26 +160,47 @@ int main(int argc, const char* argv[])
              &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
-    char out[STRING_LEN];
-    int return_val;
-
+    // Measure switchless ocall performance.
     uint64_t num_extra_enc_threads = num_enclave_threads - 1;
-    oe_thread_t tid[32] = {0};
+    thread_info_t tinfo[32];
     for (uint64_t i = 0; i < num_extra_enc_threads; ++i)
     {
         int ret = 0;
-        if ((ret = oe_thread_create(&tid[i], launch_enclave_thread, enclave)))
+        tinfo[i].enclave = enclave;
+        if ((ret = oe_thread_create(
+                 &tinfo[i].tid, launch_enclave_thread, &tinfo[i])))
         {
             oe_put_err("thread_create(host): ret=%u", ret);
         }
         printf("Launched enclave producer thread %" PRIu64 "\n", i);
     }
-    printf("Using main enclave thread\n");
-    double switchless_microseconds = make_repeated_switchless_ocalls(enclave);
+    // Launch switchless calls in main thread as well.
+    double elapsed = make_repeated_switchless_ocalls(enclave);
 
-    printf("Making regular ocalls\n");
+    // Wait for launched threads to finish.
+    for (uint64_t i = 0; i < num_extra_enc_threads; ++i)
+    {
+        if (tinfo[i].tid)
+            oe_thread_join(tinfo[i].tid);
+    }
+
+    // Record min and max elapsed times.
+    double switchless_min = elapsed;
+    double switchless_max = elapsed;
+    for (uint64_t i = 0; i < num_extra_enc_threads; ++i)
+    {
+        if (tinfo[i].elapsed < switchless_min)
+            switchless_min = tinfo[i].elapsed;
+        if (tinfo[i].elapsed > switchless_max)
+            switchless_max = tinfo[i].elapsed;
+    }
+
+    // Measure regular ocall performance.
+    printf("Using main enclave thread to make regular ocalls\n");
     double regular_microseconds = 0;
     double start, end;
+    char out[STRING_LEN];
+    int return_val;
     start = get_relative_time_in_microseconds();
 
     OE_TEST(
@@ -180,22 +210,31 @@ int main(int argc, const char* argv[])
     end = get_relative_time_in_microseconds();
     regular_microseconds = end - start;
 
-    for (uint64_t i = 0; i < num_extra_enc_threads; ++i)
-    {
-        if (tid[i])
-            oe_thread_join(tid[i]);
-    }
-
     result = oe_terminate_enclave(enclave);
     OE_TEST(result == OE_OK);
 
+    // Print performance measurements.
     printf(
-        "Time spent in repeating OCALL %d times: switchless %d vs "
-        "regular %d ms, speed up: %.2f\n",
+        "Time spent in %d regular OCALLs : %d milliseconds\n",
         NUM_OCALLS,
-        (int)switchless_microseconds / 1000,
-        (int)regular_microseconds / 1000,
-        (double)regular_microseconds / switchless_microseconds);
+        (int)regular_microseconds / 1000);
+    printf(
+        "Time spent in %d switchless OCALLs (fastest thread) : %d "
+        "milliseconds\n",
+        NUM_OCALLS,
+        (int)switchless_min / 1000);
+    printf(
+        "Time spent in %d switchless OCALLs (slowest thread) : %d "
+        "milliseconds\n",
+        NUM_OCALLS,
+        (int)switchless_max / 1000);
+    printf(
+        "Fastest switchless thread speedup factor : %.2f\n",
+        (double)regular_microseconds / switchless_min);
+    printf(
+        "Slowest switchless thread speedup factor : %.2f\n",
+        (double)regular_microseconds / switchless_max);
+
     printf("=== passed all tests (switchless)\n");
 
     return 0;
