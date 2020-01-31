@@ -1,7 +1,5 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-// This is a template used by CMake.
-
 #define main @test_name@
 #include "@PROJECT_SOURCE_DIR@/@test_file@"
