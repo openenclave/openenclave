@@ -35,6 +35,11 @@ target_include_directories(libcxxtest-support PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
         )
 
+# Log the build information.
+set(BUILD_INFO_FILE "${CMAKE_CURRENT_BINARY_DIR}/build_info.cmake")
+file(WRITE "${BUILD_INFO_FILE}" "set(LINUX_CXX_COMPILER_ID \"${CMAKE_CXX_COMPILER_ID}\")\n")
+file(APPEND "${BUILD_INFO_FILE}" "set(LINUX_CXX_COMPILER_VERSION \"${CMAKE_CXX_COMPILER_VERSION}\")\n")
+
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
     add_enclave(TARGET libcxxtest-${NAME}_enc UUID 486dcdcc-f0c6-4bdd-91e0-c7566794f899 CXX SOURCES
@@ -92,9 +97,9 @@ foreach(testcase ${alltests})
             OR "${name}" MATCHES "sequences_array_at.pass" 
             OR "${name}" MATCHES "libcxx_containers_unord_next_pow2.pass" 
             OR "${name}" MATCHES "std_utilities_template.bitset_bitset.members_count.pass")
-            if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-                continue()
-            endif()
+        if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+            continue()
+        endif()
     endif()
 
 # the following test fails when built with clang, see #830 -- Skipping this test in clang
