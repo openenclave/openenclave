@@ -5,10 +5,7 @@
 #include <stdio.h>
 #include "remoteattestation_u.h"
 
-oe_enclave_t* create_enclave(
-    const char* enclave_path,
-    uint8_t* eeid,
-    uint32_t eeid_size)
+oe_enclave_t* create_enclave(const char* enclave_path, struct oe_eeid_t_* eeid)
 {
     oe_enclave_t* enclave = NULL;
 
@@ -20,7 +17,6 @@ oe_enclave_t* create_enclave(
         NULL,
         0,
         eeid,
-        eeid_size,
         &enclave);
 
     if (result != OE_OK)
@@ -56,12 +52,15 @@ int main(int argc, const char* argv[])
     size_t remote_report_size = 0;
 
     uint32_t eeid_size = 512;
-    uint8_t eeid_a[eeid_size], eeid_b[eeid_size];
+    uint64_t sz = sizeof(oe_eeid_t) + eeid_size;
+    oe_eeid_t* eeid_a = (oe_eeid_t*)calloc(1, sz);
+    oe_eeid_t* eeid_b = (oe_eeid_t*)calloc(1, sz);
+    eeid_a->data_size = eeid_b->data_size = eeid_size;
 
     for (size_t i = 0; i < eeid_size; i++)
     {
-        eeid_a[i] = i;
-        eeid_b[i] = eeid_size - i - 1;
+        eeid_a->data[i] = i;
+        eeid_b->data[i] = eeid_size - i - 1;
     }
 
     /* Check argument count */
@@ -72,12 +71,12 @@ int main(int argc, const char* argv[])
     }
 
     printf("Host: Creating two enclaves\n");
-    enclave_a = create_enclave(argv[1], eeid_a, eeid_size);
+    enclave_a = create_enclave(argv[1], eeid_a);
     if (enclave_a == NULL)
     {
         goto exit;
     }
-    enclave_b = create_enclave(argv[2], eeid_b, eeid_size);
+    enclave_b = create_enclave(argv[2], eeid_b);
     if (enclave_b == NULL)
     {
         goto exit;

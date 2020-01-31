@@ -122,14 +122,14 @@ void enclave_test_parse_report_negative()
     test_parse_report_negative();
 }
 
-void enclave_test_local_verify_report()
+void enclave_test_local_verify_report(oe_eeid_t* eeid)
 {
-    test_local_verify_report();
+    test_local_verify_report(eeid);
 }
 
-void enclave_test_remote_verify_report()
+void enclave_test_remote_verify_report(oe_eeid_t* eeid)
 {
-    test_remote_verify_report();
+    test_remote_verify_report(eeid);
 }
 
 void enclave_test_verify_report_with_collaterals()

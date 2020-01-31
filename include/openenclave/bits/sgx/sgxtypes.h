@@ -1035,22 +1035,6 @@ typedef struct _sgx_key
 #define OE_SEALKEY_DEFAULT_MISCMASK (~SGX_MISC_NON_SECURITY_BITS)
 #define OE_SEALKEY_DEFAULT_XFRMMASK (0X0ULL)
 
-/*
-**==============================================================================
-**
-** oe_eeid_t
-**
-**==============================================================================
-*/
-typedef struct oe_eeid_t_
-{
-    uint32_t hash_state_H[8];
-    uint32_t hash_state_N[2];
-    sgx_sigstruct_t sigstruct; /* complete sigstruct before eeid */
-    uint64_t data_size;        /* size of initialization data */
-    uint8_t data[];            /* actual initialization data */
-} oe_eeid_t;
-
 OE_EXTERNC_END
 
 #endif /* _OE_SGXTYPES_H */

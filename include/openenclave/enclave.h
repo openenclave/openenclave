@@ -387,6 +387,13 @@ oe_result_t oe_verify_report(
     size_t report_size,
     oe_report_t* parsed_report);
 
+struct oe_eeid_t_;
+oe_result_t oe_verify_report_eeid(
+    const uint8_t* report,
+    size_t report_size,
+    oe_report_t* parsed_report,
+    struct oe_eeid_t_* eeid);
+
 #if (OE_API_VERSION < 2)
 #error "Only OE_API_VERSION of 2 is supported"
 #else

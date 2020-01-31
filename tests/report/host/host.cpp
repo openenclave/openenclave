@@ -14,6 +14,8 @@
 #include "../common/tests.h"
 #include "tests_u.h"
 
+#include "../host/signkey.h"
+
 #ifdef _WIN32
 #include <Shlobj.h>
 #include <Windows.h>
@@ -31,6 +33,8 @@ extern void TestVerifyTCBInfoV2_AdvisoryIDs(
     oe_enclave_t* enclave,
     const char* test_filename);
 extern int FileToBytes(const char* path, std::vector<uint8_t>* output);
+
+oe_eeid_t* eeid = NULL;
 
 void generate_and_save_report(oe_enclave_t* enclave)
 {
@@ -81,7 +85,6 @@ int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
-    std::vector<uint8_t> eeid;
 
     sgx_target_info_t target_info = {{0}};
 
@@ -139,9 +142,11 @@ int main(int argc, const char* argv[])
     }
     else if (argc == 3 && strcmp(argv[2], "--eeid") == 0)
     {
-        eeid.resize(512);
-        for (size_t i = 0; i < 512; i++)
-            eeid[i] = (uint8_t)i;
+        uint64_t sz = oe_round_up_to_page_size(sizeof(oe_eeid_t) + 512);
+        eeid = (oe_eeid_t*)calloc(1, sz);
+        eeid->data_size = 512;
+        for (size_t i = 0; i < eeid->data_size; i++)
+            eeid->data[i] = (uint8_t)i;
     }
 
     /* Check arguments */
@@ -152,7 +157,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Create the enclave */
-    if (!eeid.empty())
+    if (eeid)
     {
         if ((result = oe_create_tests_enclave_eeid(
                  argv[1],
@@ -160,8 +165,7 @@ int main(int argc, const char* argv[])
                  flags,
                  NULL,
                  0,
-                 eeid.data(),
-                 (uint32_t)eeid.size(),
+                 eeid,
                  &enclave)) != OE_OK)
             oe_put_err("oe_create_tests_enclave_eeid(): result=%u", result);
     }
@@ -193,9 +197,9 @@ int main(int argc, const char* argv[])
     test_local_report(&target_info);
     test_remote_report();
     test_parse_report_negative();
-    test_local_verify_report();
+    test_local_verify_report(eeid);
 
-    test_remote_verify_report();
+    test_remote_verify_report(eeid);
 
     test_verify_report_with_collaterals();
 
@@ -210,9 +214,9 @@ int main(int argc, const char* argv[])
 
     OE_TEST(enclave_test_parse_report_negative(enclave) == OE_OK);
 
-    OE_TEST(enclave_test_local_verify_report(enclave) == OE_OK);
+    OE_TEST(enclave_test_local_verify_report(enclave, eeid) == OE_OK);
 
-    OE_TEST(enclave_test_remote_verify_report(enclave) == OE_OK);
+    OE_TEST(enclave_test_remote_verify_report(enclave, eeid) == OE_OK);
 
     OE_TEST(enclave_test_verify_report_with_collaterals(enclave) == OE_OK);
 

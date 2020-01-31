@@ -974,8 +974,7 @@ let generate_untrusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     "    uint32_t flags,";
     "    const oe_enclave_setting_t* settings,";
     "    uint32_t setting_count,";
-    "    uint8_t *eeid,";
-    "    uint32_t eeid_size,";
+    "    struct oe_eeid_t_ *eeid,";
     "    oe_enclave_t** enclave)";
     "{";
     "    return oe_create_enclave_eeid(";
@@ -987,7 +986,6 @@ let generate_untrusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     sprintf "               __%s_ocall_function_table," ec.enclave_name;
     sprintf "               %d," (List.length ec.ufunc_decls);
     "               eeid,";
-    "               eeid_size,";
     "               enclave);";
     "}";
     "";

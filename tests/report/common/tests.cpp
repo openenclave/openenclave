@@ -321,7 +321,7 @@ done:
 
 #define GetCollaterals oe_get_collaterals
 
-#define VerifyReport oe_verify_report
+#define VerifyReport oe_verify_report_eeid
 #define VerifyReportWithCollaterals oe_verify_report_with_collaterals
 #define GetQuoteValidityWithCollaterals oe_get_quote_validity_with_collaterals
 
@@ -344,7 +344,8 @@ oe_enclave_t* g_enclave = NULL;
 oe_result_t VerifyReport(
     const uint8_t* report,
     size_t report_size,
-    oe_report_t* parsed_report)
+    oe_report_t* parsed_report,
+    oe_eeid_t* eeid = NULL)
 {
     oe_report_t tmp_report = {0};
     OE_TEST(oe_parse_report(report, report_size, &tmp_report) == OE_OK);
@@ -353,11 +354,13 @@ oe_result_t VerifyReport(
     {
         // Check that remote attestation can be done entirely on the host side.
         // No enclave is passed to oe_verify_report.
-        return oe_verify_report(NULL, report, report_size, parsed_report);
+        return oe_verify_report_eeid(
+            NULL, report, report_size, parsed_report, eeid);
     }
 
     // Local attestation requires enclave.
-    return oe_verify_report(g_enclave, report, report_size, parsed_report);
+    return oe_verify_report_eeid(
+        g_enclave, report, report_size, parsed_report, eeid);
 }
 
 oe_result_t VerifyReportWithCollaterals(
@@ -1133,7 +1136,7 @@ static void GetSGXTargetInfo(sgx_target_info_t* sgx_target_info)
     oe_free_report(report_buffer);
 }
 
-void test_local_verify_report()
+void test_local_verify_report(oe_eeid_t* eeid)
 {
     uint8_t target_info[sizeof(sgx_target_info_t)];
     size_t target_info_size = sizeof(target_info);
@@ -1160,7 +1163,7 @@ void test_local_verify_report()
             target_info_size,
             &report_ptr,
             &report_size) == OE_OK);
-    OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_OK);
+    OE_TEST(VerifyReport(report_ptr, report_size, NULL, eeid) == OE_OK);
     oe_free_report(report_ptr);
 
 // 2. Report with full custom report data.
@@ -1174,7 +1177,7 @@ void test_local_verify_report()
             target_info_size,
             &report_ptr,
             &report_size) == OE_OK);
-    OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_OK);
+    OE_TEST(VerifyReport(report_ptr, report_size, NULL, eeid) == OE_OK);
     oe_free_report(report_ptr);
 
     // 3. Report with partial custom report data.
@@ -1187,7 +1190,7 @@ void test_local_verify_report()
             target_info_size,
             &report_ptr,
             &report_size) == OE_OK);
-    OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_OK);
+    OE_TEST(VerifyReport(report_ptr, report_size, NULL, eeid) == OE_OK);
     oe_free_report(report_ptr);
 #endif
 
@@ -1207,12 +1210,12 @@ void test_local_verify_report()
             &report_ptr,
             &report_size) == OE_OK);
     OE_TEST(
-        VerifyReport(report_ptr, report_size, NULL) ==
+        VerifyReport(report_ptr, report_size, NULL, eeid) ==
         OE_VERIFY_FAILED_AES_CMAC_MISMATCH);
     oe_free_report(report_ptr);
 }
 
-void test_remote_verify_report()
+void test_remote_verify_report(oe_eeid_t* eeid)
 {
     uint8_t* report_ptr;
     size_t report_size;
@@ -1240,7 +1243,7 @@ void test_remote_verify_report()
         OE_TEST(
             GetReport_v2(flags, NULL, 0, NULL, 0, &report_ptr, &report_size) ==
             OE_OK);
-        OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_OK);
+        OE_TEST(VerifyReport(report_ptr, report_size, NULL, eeid) == OE_OK);
         oe_free_report(report_ptr);
 
 #if OE_BUILD_ENCLAVE
@@ -1254,7 +1257,7 @@ void test_remote_verify_report()
                 0,
                 &report_ptr,
                 &report_size) == OE_OK);
-        OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_OK);
+        OE_TEST(VerifyReport(report_ptr, report_size, NULL, eeid) == OE_OK);
         oe_free_report(report_ptr);
 #endif
     }

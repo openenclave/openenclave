@@ -93,8 +93,8 @@ oe_result_t oe_sha256_save(
     for (size_t i = 0; i < 8; i++)
         H[i] = impl->ctx.state[i];
 
-    N[0] = impl->ctx.total[0] << 3;
-    N[1] = (impl->ctx.total[1] << 3) + (impl->ctx.total[0] >> 29);
+    N[0] = impl->ctx.total[0] * 8;
+    N[1] = (impl->ctx.total[1] * 8) + (impl->ctx.total[0] >> 29);
 
 done:
     return result;

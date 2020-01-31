@@ -207,13 +207,12 @@ oe_result_t oe_create_enclave(
  *
  * @param eeid Optional user data for attestation.
  *
- * @param eeid_size Size of the user data.
- *
  * @param enclave This points to the enclave instance upon success.
  *
  * @returns Returns OE_OK on success.
  *
  */
+struct oe_eeid_t_;
 oe_result_t oe_create_enclave_eeid(
     const char* path,
     oe_enclave_type_t type,
@@ -222,8 +221,7 @@ oe_result_t oe_create_enclave_eeid(
     uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
-    uint8_t* eeid,
-    uint32_t eeid_size,
+    struct oe_eeid_t_* eeid,
     oe_enclave_t** enclave);
 
 /**
@@ -364,6 +362,14 @@ oe_result_t oe_verify_report(
     const uint8_t* report,
     size_t report_size,
     oe_report_t* parsed_report);
+
+struct oe_eeid_t_;
+oe_result_t oe_verify_report_eeid(
+    oe_enclave_t* enclave,
+    const uint8_t* report,
+    size_t report_size,
+    oe_report_t* parsed_report,
+    struct oe_eeid_t_* eeid);
 
 /**
  * Returns a public key that is associated with the identity of the enclave

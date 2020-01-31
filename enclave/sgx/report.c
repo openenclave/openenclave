@@ -14,6 +14,7 @@
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
 #include "../common/sgx/quote.h"
+#include "../common/sgx/verify_eeid.h"
 #include "platform_t.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
@@ -49,6 +50,15 @@ oe_result_t oe_verify_report(
     const uint8_t* report,
     size_t report_size,
     oe_report_t* parsed_report)
+{
+    return oe_verify_report_eeid(report, report_size, parsed_report, NULL);
+}
+
+oe_result_t oe_verify_report_eeid(
+    const uint8_t* report,
+    size_t report_size,
+    oe_report_t* parsed_report,
+    oe_eeid_t* eeid)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
@@ -97,6 +107,9 @@ oe_result_t oe_verify_report(
     // Optionally return parsed report.
     if (parsed_report != NULL)
         *parsed_report = oe_report;
+
+    if (eeid)
+        verify_eeid(report, report_size, parsed_report, eeid);
 
     result = OE_OK;
 

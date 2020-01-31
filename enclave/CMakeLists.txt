@@ -15,6 +15,7 @@ if (OE_SGX)
         ../common/sgx/tcbinfo.c
         ../common/sgx/tlsverifier.c
         ../common/sgx/verifier.c
+        ../common/sgx/verify_eeid.c
         sgx/attester.c
         sgx/report.c
         sgx/collateralinfo.c
