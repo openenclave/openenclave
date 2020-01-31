@@ -50,6 +50,10 @@ done:
     return result;
 }
 
+// oe_result_t
+// oe_get_quote_verification_collateral(oe_get_revocation_info_args_t* args)
+// implementation goes here.
+
 oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
 {
     oe_result_t result = OE_FAILURE;

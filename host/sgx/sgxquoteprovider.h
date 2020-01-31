@@ -24,6 +24,8 @@ typedef struct _oe_sgx_quote_provider
     sgx_ql_free_revocation_info_t free_revocation_info;
     sgx_get_qe_identity_info_t get_qe_identity_info;
     sgx_free_qe_identity_info_t free_qe_identity_info;
+    sgx_get_quote_verification_collateral_t get_quote_verification_collateral;
+    sgx_free_quote_verification_collateral_t free_quote_verification_collateral;
 } oe_sgx_quote_provider_t;
 
 #define SGX_QL_GET_REVOCATION_INFO_NAME "sgx_ql_get_revocation_info"
@@ -31,6 +33,10 @@ typedef struct _oe_sgx_quote_provider
 #define SGX_QL_GET_QE_IDENTITY_INFO_NAME "sgx_get_qe_identity_info"
 #define SGX_QL_FREE_QE_IDENTITY_INFO_NAME "sgx_free_qe_identity_info"
 #define SGX_QL_SET_LOGGING_FUNCTION_NAME "sgx_ql_set_logging_function"
+#define SGX_QL_GET_QUOTE_VERIFICATION_COLLATERAL_NAME \
+    "sgx_ql_get_quote_verification_collateral"
+#define SGX_QL_FREE_QUOTE_VERIFICATION_COLLATERAL_NAME \
+    "sgx_ql_free_quote_verification_collateral"
 
 OE_EXTERNC_END
 

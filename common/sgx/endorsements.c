@@ -355,6 +355,13 @@ oe_result_t oe_get_sgx_endorsements(
     *endorsements_buffer = NULL;
     *endorsements_buffer_size = 0;
 
+    // Get quote verification collateral
+    // OE_CHECK_MSG(
+    //     (
+    //         &leaf_cert, &intermediate_cert, &revocation_info),
+    //     "Failed to get certificate revocation information. %s",
+    //     oe_result_str(result));
+
     //
     // Get the uri from the quote certificates, and then get the
     // CRL (oe_get_revocation_info_from_certs)

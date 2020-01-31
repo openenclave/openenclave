@@ -89,6 +89,16 @@ typedef void (*sgx_free_qe_identity_info_t)(
     sgx_qe_identity_info_t* p_qe_identity_info);
 
 /*****************************************************************************
+ * Data types and interfaces for getting all quote verification collateral.
+ ****************************************************************************/
+
+typedef sgx_plat_error_t (*sgx_get_quote_verification_collateral_t)(
+    sgx_qe_identity_info_t** pp_qe_identity_info);
+
+typedef void (*sgx_free_quote_verification_collateral_t)(
+    sgx_qe_identity_info_t* p_qe_identity_info);
+
+/*****************************************************************************
  * Data types and interfaces for configuration the platform quote provider
  * library.
  ****************************************************************************/
