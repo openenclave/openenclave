@@ -29,10 +29,16 @@ static void* _switchless_ocall_worker(void* arg)
         volatile oe_call_host_function_args_t* local_call_arg = NULL;
         if ((local_call_arg = context->call_arg) != NULL)
         {
-            context->call_arg = NULL;
-
+            // Handle the switchless call, but do not clear the slot yet. Since
+            // the slot is not empty, any new incoming switchless call request
+            // will be scheduled in another available work thread and get
+            // handled immediately.
             oe_handle_call_host_function(
                 (uint64_t)local_call_arg, context->enclave);
+
+            // After handling the switchless call, mark this worker thread
+            // as free by clearing the slot.
+            context->call_arg = NULL;
 
             // Reset spin count for next message.
             context->total_spin_count += context->spin_count;
