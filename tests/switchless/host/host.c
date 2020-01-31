@@ -135,6 +135,14 @@ int main(int argc, const char* argv[])
     if (argc == 4)
     {
         sscanf(argv[3], "%" SCNu64, &num_enclave_threads);
+        if (num_enclave_threads > NUM_TCS)
+        {
+            fprintf(
+                stderr,
+                "Number of enclave threads must be less than %d\n",
+                (int)NUM_TCS);
+            return 1;
+        }
     }
 
 #if defined(__WIN32)
@@ -162,7 +170,7 @@ int main(int argc, const char* argv[])
 
     // Measure switchless ocall performance.
     uint64_t num_extra_enc_threads = num_enclave_threads - 1;
-    thread_info_t tinfo[32];
+    thread_info_t tinfo[NUM_TCS];
     for (uint64_t i = 0; i < num_extra_enc_threads; ++i)
     {
         int ret = 0;
