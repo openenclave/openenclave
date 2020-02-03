@@ -284,9 +284,9 @@ int enc_test(char test_name[STRLEN])
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,     /* ProductID */
-    1,     /* SecurityVersion */
-    true,  /* AllowDebug */
-    12288, /* HeapPageCount */
-    1024,  /* StackPageCount */
-    8);    /* TCSCount */
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    true, /* AllowDebug */
+    512,  /* HeapPageCount */
+    512,  /* StackPageCount */
+    8);   /* TCSCount */
