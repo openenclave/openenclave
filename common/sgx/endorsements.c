@@ -76,9 +76,7 @@ static oe_result_t oe_create_sgx_endorsements(
     endorsements = (oe_endorsements_t*)oe_calloc(1, size);
     if (endorsements == NULL)
         OE_RAISE_MSG(
-            OE_OUT_OF_MEMORY,
-            "Out of memory while creating endorsements.",
-            NULL);
+            OE_OUT_OF_MEMORY, "Out of memory while creating endorsements.");
 
     // Record creation datetime.
     {
@@ -137,7 +135,7 @@ static oe_result_t oe_create_sgx_endorsements(
             (endorsements->buffer_size - offsets_size));
 
     OE_TRACE_INFO(
-        "SGX endorsements. Header size: %d, offsets size: %d, data size: %d",
+        "SGX endorsements. Header size: %zu, offsets size: %d, data size: %d",
         sizeof(oe_endorsements_t),
         offsets_size,
         offset);
@@ -219,9 +217,9 @@ static oe_result_t oe_create_sgx_endorsements(
         OE_RAISE_MSG(
             OE_FAILURE,
             "Encountered size mismatch when creating SGX endorsements. "
-            "end of data section: 0x%x bytes, expected: 0x%x",
-            buffer,
-            (endorsements->buffer + endorsements->buffer_size));
+            "end of data section: 0x%lx bytes, expected: 0x%lx",
+            (uint64_t)buffer,
+            (uint64_t)(endorsements->buffer + endorsements->buffer_size));
 
     *endorsements_buffer = endorsements;
     *endorsements_buffer_size = size;
@@ -266,8 +264,7 @@ oe_result_t oe_parse_sgx_endorsements(
         OE_RAISE_MSG(
             OE_INVALID_PARAMETER,
             "Failed to parse SGX endorsement. Invalid version or enclave "
-            "type.",
-            NULL);
+            "type.");
 
     if (endorsements->num_elements != OE_SGX_ENDORSEMENT_COUNT)
         OE_RAISE_MSG(
@@ -281,7 +278,7 @@ oe_result_t oe_parse_sgx_endorsements(
         endorsements->buffer_size > endorsements_size ||
         endorsements->buffer_size <= offsets_size)
         OE_RAISE_MSG(
-            OE_INVALID_PARAMETER, "Endorsement buffer size is invalid.", NULL);
+            OE_INVALID_PARAMETER, "Endorsement buffer size is invalid.");
 
     data_size = endorsements->buffer_size - offsets_size;
     offsets = (uint32_t*)endorsements->buffer;
@@ -306,8 +303,7 @@ oe_result_t oe_parse_sgx_endorsements(
         if (offsets[i] >= endorsements->buffer_size)
             OE_RAISE_MSG(
                 OE_INVALID_PARAMETER,
-                "Offset value when creating SGX endorsement is incorrect.",
-                NULL);
+                "Offset value when creating SGX endorsement is incorrect.");
 
         if (i < OE_SGX_ENDORSEMENT_COUNT - 1)
             item_size = offsets[i + 1] - offsets[i];
@@ -405,7 +401,7 @@ oe_result_t oe_get_sgx_endorsements(
             &qe_id_info,
             (oe_endorsements_t**)endorsements_buffer,
             endorsements_buffer_size),
-        "Failed to create SGX endorsements.",
+        "Failed to create SGX endorsements: %s",
         oe_result_str(result));
 
     result = OE_OK;

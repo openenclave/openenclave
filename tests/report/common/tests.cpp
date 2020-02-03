@@ -290,7 +290,7 @@ static oe_result_t oe_get_quote_validity_with_collaterals(
                 (oe_endorsements_t*)endorsements,
                 endorsements_size,
                 &sgx_endorsements),
-            "Failed to parse SGX endorsements.",
+            "Failed to parse SGX endorsements: %s",
             oe_result_str(result));
 
         // Quote attestation can be done entirely on the host side.

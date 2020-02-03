@@ -697,14 +697,14 @@ oe_result_t oe_parse_tcb_info_json(
             OE_RAISE_MSG(
                 OE_TCB_LEVEL_INVALID,
                 "Platform TCB (%d) is not up-to-date",
-                platform_tcb_level->status);
+                platform_tcb_level->status.AsUINT32);
         }
 
         // Display any advisory IDs as warnings
         if (platform_tcb_level->advisory_ids_size > 0)
         {
             OE_TRACE_WARNING(
-                "Found %d AdvisoryIDs for this tcb level.",
+                "Found %zu AdvisoryIDs for this tcb level.",
                 platform_tcb_level->advisory_ids_size);
         }
 
@@ -1034,8 +1034,7 @@ static oe_result_t _read_qe_identity_info_v2(
     if (platform_tcb_level == NULL)
         OE_RAISE_MSG(
             OE_INVALID_PARAMETER,
-            "QE identity info v2 requires platform tcb level.",
-            NULL);
+            "QE identity info v2 requires platform tcb level.");
 
     // Initialize status.
     platform_tcb_level->tcb_status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
@@ -1243,7 +1242,7 @@ oe_result_t oe_parse_qe_identity_info_json(
         if (parsed_info->tcb_level.advisory_ids_size > 0)
         {
             OE_TRACE_WARNING(
-                "Found %d AdvisoryIDs for this tcb level.",
+                "Found %zu AdvisoryIDs for this tcb level.",
                 parsed_info->tcb_level.advisory_ids_size);
         }
         result = OE_OK;

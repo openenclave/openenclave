@@ -438,7 +438,7 @@ oe_result_t oe_verify_sgx_quote(
             (oe_endorsements_t*)endorsements,
             endorsements_size,
             &sgx_endorsements),
-        "Failed to parse SGX endorsements.",
+        "Failed to parse SGX endorsements: %s",
         oe_result_str(result));
 
     // Endorsements verification
@@ -509,8 +509,7 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
             "Time to validate quote is earlier than the "
-            "latest 'valid from' value.",
-            NULL);
+            "latest 'valid from' value.");
     }
     if (oe_datetime_compare(&validation_time, &validity_until) > 0)
     {
@@ -518,8 +517,7 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
             "Time to validate quoteis later than the "
-            "earliest 'valid to' value.",
-            NULL);
+            "earliest 'valid to' value.");
     }
 
     result = OE_OK;
@@ -558,10 +556,6 @@ oe_result_t oe_get_sgx_quote_validity(
     if ((quote == NULL) || (sgx_endorsements == NULL) || (valid_from == NULL) ||
         (valid_until == NULL))
         OE_RAISE(OE_INVALID_PARAMETER);
-
-    if ((col_header->collaterals_size != OE_COLLATERALS_BODY_SIZE) ||
-        (collaterals_size != OE_COLLATERALS_SIZE))
-        OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid collaterals size.");
 
     OE_TRACE_INFO("Call enter %s\n", __FUNCTION__);
 
