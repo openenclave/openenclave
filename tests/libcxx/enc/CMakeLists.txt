@@ -3,14 +3,19 @@
 
 # create a binary for each testcase listed in ../tests.supported
 
-oeedl_file(../libcxx.edl enclave gen)
+set (EDL_FILE ../libcxx.edl)
+
+add_custom_command(
+    OUTPUT libcxx_t.h libcxx_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 # helper lib to contain file needed by some tests
 add_library(libcxxtest-support
     enc.cpp
     fuzzing.cpp
     memory_resource.cpp
-    ${gen}
+    libcxx_t.c
     )
 
 target_compile_options(libcxxtest-support PRIVATE
@@ -43,7 +48,7 @@ file(APPEND "${BUILD_INFO_FILE}" "set(LINUX_CXX_COMPILER_VERSION \"${CMAKE_CXX_C
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
     add_enclave(TARGET libcxxtest-${NAME}_enc UUID 486dcdcc-f0c6-4bdd-91e0-c7566794f899 CXX SOURCES
-        main.cpp ${gen})
+        main.cpp libcxx_t.c)
 
     target_include_directories(libcxxtest-${NAME}_enc PRIVATE
         ..

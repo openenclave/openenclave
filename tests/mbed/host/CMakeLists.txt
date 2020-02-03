@@ -1,10 +1,14 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set (EDL_FILE ../mbed.edl)
 
-oeedl_file(../mbed.edl host gen)
+add_custom_command(
+    OUTPUT mbed_u.h mbed_u.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --untrusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(libmbedtest_host host.c ocalls.c ${gen})
+add_executable(libmbedtest_host host.c ocalls.c mbed_u.c)
 
 target_compile_definitions(libmbedtest_host PRIVATE PROJECT_DIR="${CMAKE_CURRENT_BINARY_DIR}/")
 if (NOT WIN32)

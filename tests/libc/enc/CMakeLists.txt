@@ -17,7 +17,12 @@ endforeach()
 
 configure_file(tests.c.in tests.c)
 
-oeedl_file(../libc.edl enclave gen)
+set (EDL_FILE ../libc.edl)
+
+add_custom_command(
+    OUTPUT libc_t.h libc_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(test_extras
     ../../../3rdparty/musl/libc-test/src/common/vmfill.c
@@ -38,7 +43,7 @@ add_enclave(TARGET libc_enc UUID d7fe296a-24e9-46d1-aa78-9c7395082a41
     ${test_dependencies}
     ${test_extras}
     ${LIBC_TESTS}
-    ${gen})
+    libc_t.c)
 
 target_compile_options(libc_enc PRIVATE
     -Wno-error

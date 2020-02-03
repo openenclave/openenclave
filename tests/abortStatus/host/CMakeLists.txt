@@ -2,9 +2,14 @@
 # Licensed under the MIT License.
 
 
-oeedl_file(../abortStatus.edl host gen)
+set (EDL_FILE ../abortStatus.edl)
 
-add_executable(abortStatus_host host.cpp ${gen})
+add_custom_command(
+    OUTPUT abortStatus_u.h abortStatus_u.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --untrusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable(abortStatus_host host.cpp abortStatus_u.c)
 
 if(USE_DEBUG_MALLOC)
     target_compile_definitions(abortStatus_host PRIVATE OE_USE_DEBUG_MALLOC)

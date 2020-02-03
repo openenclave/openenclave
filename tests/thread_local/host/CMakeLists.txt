@@ -1,10 +1,14 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set (EDL_FILE ../thread_local.edl)
 
-oeedl_file(../thread_local.edl host gen)
+add_custom_command(
+    OUTPUT thread_local_u.h thread_local_u.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --untrusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(thread_local_host host.cpp ${gen})
+add_executable(thread_local_host host.cpp thread_local_u.c)
 
 target_include_directories(thread_local_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_options(thread_local_host PRIVATE

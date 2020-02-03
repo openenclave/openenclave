@@ -1,10 +1,15 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set (EDL_FILE ../tests.edl)
 
-oeedl_file(../tests.edl enclave gen)
+add_custom_command(
+    OUTPUT tests_t.h tests_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+
 # TODO: Does this need CXX?
-add_enclave(TARGET qeidentity_enc UUID a656f3b1-d319-4692-bcd6-a2f50d9fb1e5 SOURCES enc.cpp ${gen})
+add_enclave(TARGET qeidentity_enc UUID a656f3b1-d319-4692-bcd6-a2f50d9fb1e5 SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/tests_t.c)
 
 if(HAS_QUOTE_PROVIDER)
     target_compile_definitions(qeidentity_enc PRIVATE HAS_QUOTE_PROVIDER)

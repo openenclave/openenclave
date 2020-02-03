@@ -1,11 +1,14 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-include(oeedl_file)
+set (EDL_FILE ../tls_e2e.edl)
 
-oeedl_file(../tls_e2e.edl enclave gen)
+add_custom_command(
+    OUTPUT tls_e2e_t.h tls_e2e_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(TARGET tls_client_enc SOURCES client.cpp tls_e2e_t.c ../common/utility.cpp ${gen})
+add_enclave(TARGET tls_client_enc SOURCES client.cpp ${CMAKE_CURRENT_BINARY_DIR}/tls_e2e_t.c ../common/utility.cpp tls_e2e_t.c)
 
 if(HAS_QUOTE_PROVIDER)
     target_compile_definitions(tls_client_enc PRIVATE OE_LINK_SGX_DCAP_QL)

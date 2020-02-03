@@ -4,7 +4,12 @@
 # >> In one of the test "ssl" we are using a variable called new which is a function in C++
 #    causes improper behaviour at compile time leads us to use C instead of C++
 
-oeedl_file(../mbed.edl enclave gen)
+set (EDL_FILE ../mbed.edl)
+
+add_custom_command(
+    OUTPUT mbed_t.h mbed_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 # This function creates an enclave for a specific mbedTLS test.
 function(add_mbed_test_enclave NAME)
@@ -44,7 +49,7 @@ function(add_mbed_test_enclave NAME)
     SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c
     enc.c
-    ${gen})
+    mbed_t.c)
 
   target_compile_options(mbedtest_suite_${NAME} PRIVATE -Wno-error)
   target_compile_definitions(mbedtest_suite_${NAME} PRIVATE -D__TEST__="${NAME}")
@@ -87,7 +92,7 @@ function(add_mbed_selftest_enclave)
     SOURCES
     selftest_wrapper.c
     enc.c
-    ${gen})
+    mbed_t.c)
 
   target_compile_options(mbedtest_selftest PRIVATE -Wno-conversion -Wno-pointer-arith)
   target_compile_definitions(mbedtest_selftest PRIVATE -D__TEST__="selftest")

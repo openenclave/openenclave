@@ -9,9 +9,13 @@ endif()
 
 set(EDL_SEARCH_DIR "../../../../syscall/devices/sgxfs")
 
-oeedl_file(${EDL_FILE} enclave gen --edl-search-dir ${EDL_SEARCH_DIR})
+add_custom_command(
+    OUTPUT fs_t.h fs_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR}
+                    --search-path ${EDL_SEARCH_DIR})
 
-add_enclave(TARGET fs_enc SOURCES enc.cpp ${gen})
+add_enclave(TARGET fs_enc SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/fs_t.c)
 
 target_include_directories(fs_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

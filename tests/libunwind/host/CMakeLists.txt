@@ -2,9 +2,14 @@
 # Licensed under the MIT License.
 
 
-oeedl_file(../libunwind.edl host gen)
+set (EDL_FILE ../libunwind.edl)
 
-add_executable(libunwind_host host.cpp ${gen})
+add_custom_command(
+    OUTPUT libunwind_u.h libunwind_u.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --untrusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable(libunwind_host host.cpp libunwind_u.c)
 
 target_include_directories(libunwind_host PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
