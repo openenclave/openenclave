@@ -13,8 +13,8 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    128,  /* StackPageCount */
+    8,    /* HeapPageCount */
+    8,    /* StackPageCount */
     1);   /* TCSCount */
 
 #define TA_UUID                                            \
