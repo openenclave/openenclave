@@ -32,7 +32,6 @@ add_library(oeenclave STATIC
     ../common/datetime.c
     asym_keys.c
     link.c
-    random.c
     tls_cert.c
     ${PLATFORM_SRC})
 

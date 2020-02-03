@@ -20,9 +20,9 @@
 #include <openenclave/internal/utils.h>
 #include <string.h>
 #include "crl.h"
+#include "ctr_drbg.h"
 #include "ec.h"
 #include "pem.h"
-#include "random_internal.h"
 #include "rsa.h"
 
 /*

@@ -1,11 +1,10 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include "random_internal.h"
+#include "ctr_drbg.h"
 #include <mbedtls/entropy.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/random.h>
 #include <openenclave/internal/thread.h>
 
 /*
@@ -48,41 +47,4 @@ mbedtls_ctr_drbg_context* oe_mbedtls_get_drbg()
 {
     oe_once(&_seed_once, _seed_entropy_source_once);
     return (_seed_result == OE_OK) ? &_drbg : NULL;
-}
-
-/*
-**==============================================================================
-**
-** Public functions
-**
-**==============================================================================
-*/
-
-oe_result_t oe_random_internal(void* data, size_t size)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    int rc;
-
-    /* Seed the entropy source on the first call */
-    {
-        oe_once(&_seed_once, _seed_entropy_source_once);
-        OE_CHECK(_seed_result);
-    }
-
-    /* Generate random data (synchronize access to _drbg instance) */
-    for (size_t i = 0; i < size; i += MBEDTLS_CTR_DRBG_MAX_REQUEST)
-    {
-        size_t request_size = size - i;
-        if (request_size > MBEDTLS_CTR_DRBG_MAX_REQUEST)
-            request_size = MBEDTLS_CTR_DRBG_MAX_REQUEST;
-
-        rc = mbedtls_ctr_drbg_random(&_drbg, (uint8_t*)data + i, request_size);
-        if (rc != 0)
-            OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
-    }
-
-    result = OE_OK;
-done:
-
-    return result;
 }

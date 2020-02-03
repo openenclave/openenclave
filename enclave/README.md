@@ -10,7 +10,4 @@ the enclave extras, which depend on mbedtls and oelibc. The main parts include:
 
 - RSA key management ([rsa.c](rsa.c))
 
-- Entropy ([random.c](random.c))
-
 - SHA hash management ([sha.c](sha.c))
-

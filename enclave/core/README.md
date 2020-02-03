@@ -32,3 +32,4 @@ the enclave intrinsics. The main parts include:
 
 - Enclave sbrk() implementation ([sbrk.c](sbrk.c))
 
+- Entropy ([random.c](random.c)

@@ -63,6 +63,7 @@ if (OE_SGX)
         sgx/keys.c
         sgx/memory.c
         sgx/properties.c
+        sgx/random_internal.c
         sgx/report.c
         sgx/sched_yield.c
         sgx/spinlock.c
@@ -104,6 +105,7 @@ elseif (OE_TRUSTZONE)
         optee/gp.c
         optee/keys.c
         optee/printf.c
+        optee/random_internal.c
         optee/sched_yield.c
         optee/spinlock.c
         optee/stubs.c
@@ -125,6 +127,7 @@ add_library(oecore STATIC
     ${MUSL_SRC_DIR}/string/memset.c
     __secs_to_tm.c
     __stack_chk_fail.c
+    arena.c
     assert.c
     atexit.c
     backtrace.c
@@ -140,9 +143,9 @@ add_library(oecore STATIC
     once.c
     printf.c
     pthread.c
+    random.c
     result.c
     sbrk.c
-    arena.c
     stdio.c
     strerror.c
     string.c
