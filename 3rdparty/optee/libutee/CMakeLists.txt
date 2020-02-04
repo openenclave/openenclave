@@ -6,7 +6,8 @@ add_library(oeuteeasm
 set_property(TARGET oeuteeasm PROPERTY C_STANDARD 99)
 target_compile_options(oeuteeasm PRIVATE
   ${OE_TZ_TA_S_FLAGS}
-  -include ${OE_TZ_TA_DEV_KIT_CONF})
+  $<BUILD_INTERFACE:-include ${OE_TZ_TA_DEV_KIT_CONF}>
+  $<INSTALL_INTERFACE:-include openenclave/3rdparty/optee/conf.h>)
 target_include_directories(oeuteeasm PRIVATE
   ${OE_TZ_LIBUTEE_INC}
   ${OE_TZ_LIBUTILS_EXT_INC})
@@ -32,7 +33,8 @@ add_library(oeutee
   ${OE_TZ_LIBUTILS_EXT_SRC}/consttime_memcmp.c)
 set_property(TARGET oeutee PROPERTY C_STANDARD 99)
 target_compile_options(oeutee PUBLIC
-  -include ${OE_TZ_TA_DEV_KIT_CONF})
+  $<BUILD_INTERFACE:-include ${OE_TZ_TA_DEV_KIT_CONF}>
+  $<INSTALL_INTERFACE:-include openenclave/3rdparty/optee/conf.h>)
 target_include_directories(oeutee PRIVATE
   ${OE_TZ_LIBUTEE_SRC}
   ${OE_TZ_LIBUTEE_INC}
@@ -88,7 +90,7 @@ add_dependencies(oelibutee_includes oelibutee_includes_copy)
 target_include_directories(oelibutee_includes
   INTERFACE
   $<BUILD_INTERFACE:${OEUTEE_DIR}>
-  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/optee/liboeutee>)
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/optee/liboeutee>)
 
 add_library(oelibutee INTERFACE)
 
@@ -100,7 +102,10 @@ target_link_libraries(oelibutee INTERFACE
 install(TARGETS oelibutee oelibutee_includes EXPORT openenclave-targets)
 
 install(DIRECTORY ${OEUTEE_DIR}
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/optee/liboeutee)
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/optee)
+
+install(FILES ${OE_TZ_TA_DEV_KIT_CONF}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/optee)
 
 install(TARGETS oeutee oeuteeasm EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
