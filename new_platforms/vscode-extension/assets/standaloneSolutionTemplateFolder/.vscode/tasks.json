@@ -2,35 +2,31 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Configure for QEMU (ARMv7-A)",
+            "label": "Configure for Intel SGX (x64)",
             "type": "process",
             "command": "cmake",
             "options": {
-                "cwd": "[[build-folder]]/vexpress-qemu_virt"
+                "cwd": "[[build-folder]]/sgx"
             },
             "args": [
-                "-DOE_TEE=TZ",
-                "-DTA_DEV_KIT_DIR=[[devkit-folder]]/devkits/vexpress-qemu_virt/export-ta_arm32",
-                "-DOE_TA_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-",
-                "-DOE_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-",
-                "-DCMAKE_TOOLCHAIN_FILE=[[sdk-folder]]/new_platforms/cmake/linux-arm-v6.cmake",
+                "-G Ninja",
+                "-DOE_TEE=SGX",
                 "-DCMAKE_BUILD_TYPE=Debug",
                 "[[solution-folder]]"
             ],
             "problemMatcher": []
         },
         {
-            "label": "Build for QEMU (ARMv7-A)",
+            "label": "Build for Intel SGX (x64)",
             "type": "process",
-            "command": "make",
+            "command": "ninja",
             "options": {
-                "cwd": "[[build-folder]]/vexpress-qemu_virt"
+                "cwd": "[[build-folder]]/sgx"
             },
-            "args": [
-                "-j"
-            ],
             "problemMatcher": [],
-            "dependsOn": [ "Configure for QEMU (ARMv7-A)" ]
+            "dependsOn": [
+                "Configure for Intel SGX (x64)"
+            ]
         },
         {
             "label": "Configure for QEMU (AArch64/ARMv8-A)",
@@ -40,11 +36,10 @@
                 "cwd": "[[build-folder]]/vexpress-qemu_armv8a"
             },
             "args": [
-                "-DOE_TEE=TZ",
-                "-DTA_DEV_KIT_DIR=[[devkit-folder]]/devkits/vexpress-qemu_armv8a/export-ta_arm64",
-                "-DOE_TA_TOOLCHAIN_PREFIX=aarch64-linux-gnu-",
-                "-DOE_TOOLCHAIN_PREFIX=aarch64-linux-gnu-",
-                "-DCMAKE_TOOLCHAIN_FILE=[[sdk-folder]]/new_platforms/cmake/linux-aarch64-v6.cmake",
+                "-G Ninja",
+                "-DOE_TEE=OP-TEE",
+                "-DOE_OPTEE_PLATFORM=QEMU-ARMv8",
+                "-DCMAKE_TOOLCHAIN_FILE=[[solution-folder]]/cmake/arm-cross.cmake",
                 "-DCMAKE_BUILD_TYPE=Debug",
                 "[[solution-folder]]"
             ],
@@ -53,76 +48,20 @@
         {
             "label": "Build for QEMU (AArch64/ARMv8-A)",
             "type": "process",
-            "command": "make",
+            "command": "ninja",
             "options": {
                 "cwd": "[[build-folder]]/vexpress-qemu_armv8a"
             },
-            "args": [
-                "-j"
-            ],
             "problemMatcher": [],
-            "dependsOn": [ "Configure for QEMU (AArch64/ARMv8-A)" ]
-        },
-        {
-            "label": "QEMU (ARMv7-A)",
-            "type": "process",
-            "options": {
-                "cwd": "[[devkit-folder]]/emu/arm/"
-            },
-            "command": "./qemu-system-arm",
-            "isBackground": true,
-            "args": [
-                "-nographic",
-                "-serial",
-                "mon:stdio",
-                "-serial",
-                "pty",
-                "-smp",
-                "1",
-                "-machine",
-                "virt",
-                "-machine",
-                "secure=on",
-                "-m",
-                "1057",
-                "-bios",
-                "bl1.bin",
-                "-gdb",
-                "tcp::3232",
-                "-S",
-                "-semihosting-config",
-                "enable,target=native",
-                "-d",
-                "unimp",
-                "-virtfs",
-                "local,id=sh0,path=[[build-folder]]/vexpress-qemu_virt/out,security_model=passthrough,readonly,mount_tag=sh0",
-                "-cpu",
-                "cortex-a15"
-            ],
-            "dependsOn": [ "Build for QEMU (ARMv7-A)" ],
-            "problemMatcher": [
-                {
-                    "pattern": [
-                        {
-                            "regexp": ".",
-                            "file": 1,
-                            "location": 2,
-                            "message": 3
-                        }
-                    ],
-                    "background": {
-                        "activeOnStart": true,
-                        "beginsPattern": ".",
-                        "endsPattern": "."
-                    }
-                }
+            "dependsOn": [
+                "Configure for QEMU (AArch64/ARMv8-A)"
             ]
         },
         {
             "label": "QEMU (AArch64/ARMv8-A)",
             "type": "process",
             "options": {
-                "cwd": "[[devkit-folder]]/emu/aarch64/"
+                "cwd": "[[devkit-folder]]/emu/vexpress-qemu_armv8a"
             },
             "command": "./qemu-system-aarch64",
             "isBackground": true,
@@ -161,7 +100,9 @@
                 "-cpu",
                 "cortex-a57"
             ],
-            "dependsOn": [ "Build for QEMU (AArch64/ARMv8-A)" ],
+            "dependsOn": [
+                "Build for QEMU (AArch64/ARMv8-A)"
+            ],
             "problemMatcher": [
                 {
                     "pattern": [
@@ -188,11 +129,10 @@
                 "cwd": "[[build-folder]]/ls-ls1012grapeboard"
             },
             "args": [
-                "-DOE_TEE=TZ",
-                "-DTA_DEV_KIT_DIR=[[devkit-folder]]/devkits/ls-ls1012grapeboard/export-ta_arm64",
-                "-DOE_TA_TOOLCHAIN_PREFIX=aarch64-linux-gnu-",
-                "-DOE_TOOLCHAIN_PREFIX=aarch64-linux-gnu-",
-                "-DCMAKE_TOOLCHAIN_FILE=[[sdk-folder]]/new_platforms/cmake/linux-aarch64-v6.cmake",
+                "-G Ninja",
+                "-DOE_TEE=OP-TEE",
+                "-DOE_OPTEE_PLATFORM=Grapeboard",
+                "-DCMAKE_TOOLCHAIN_FILE=[[solution-folder]]/cmake/arm-cross.cmake",
                 "-DCMAKE_BUILD_TYPE=Debug",
                 "[[solution-folder]]"
             ],
@@ -201,15 +141,14 @@
         {
             "label": "Build for Grapeboard (LS1012)",
             "type": "process",
-            "command": "make",
+            "command": "ninja",
             "options": {
                 "cwd": "[[build-folder]]/ls-ls1012grapeboard"
             },
-            "args": [
-                "-j"
-            ],
             "problemMatcher": [],
-            "dependsOn": [ "Configure for Grapeboard (LS1012)" ]
+            "dependsOn": [
+                "Configure for Grapeboard (LS1012)"
+            ]
         }
     ]
 }

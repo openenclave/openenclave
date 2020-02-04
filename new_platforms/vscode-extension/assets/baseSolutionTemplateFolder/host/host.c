@@ -21,26 +21,14 @@ int ocall_log(char *msg)
 }
 
 static oe_enclave_t* enclave = NULL;
-int open_enclave()
+int open_enclave(int argc, const char* argv[])
 {
     oe_result_t result = OE_OK;
-    uint32_t enclave_flags = 0;
+    uint32_t flags = 0;
 
     // Create the enclave
-#ifdef _DEBUG
-    enclave_flags |= OE_ENCLAVE_FLAG_DEBUG;
-#endif
     result = oe_create_[[project-name]]_enclave(
-#ifdef OE_USE_SGX
-        "[[project-name]].signed.dll",
-#elif OE_USE_OPTEE || OE_SIMULATE_OPTEE
-        "[[generated-uuid]]",
-#endif
-        OE_ENCLAVE_TYPE_UNDEFINED,
-        enclave_flags,
-        NULL,
-        0,
-        &enclave);
+        argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(

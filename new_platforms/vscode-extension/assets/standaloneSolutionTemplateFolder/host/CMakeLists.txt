@@ -1,14 +1,19 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(oeedl_file)
-include(add_host)
+add_custom_command(
+  OUTPUT
+    [[project-name]]_u.h
+    [[project-name]]_u.c
+    [[project-name]]_args.h
+  DEPENDS ${CMAKE_SOURCE_DIR}/[[project-name]].edl
+  COMMAND openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/[[project-name]].edl)
 
-set(TARGET [[project-name]])
+add_executable([[project-name]]
+  host.c
+  main.c
+  ${CMAKE_CURRENT_BINARY_DIR}/[[project-name]]_u.c)
 
-oeedl_file(../[[project-name]].edl host GEN C_GEN H_GEN ${OE_PATH}/include)
+target_include_directories([[project-name]] PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-add_host(
-    TARGET ${TARGET}
-    SOURCES main.c host.c ${GEN})
- 
+target_link_libraries([[project-name]] openenclave::oehostapp)

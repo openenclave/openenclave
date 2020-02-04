@@ -11,12 +11,6 @@ export class Constants {
     public static ExtensionId = "ms-iot.msiot-vscode-openenclave";
 
     //
-    // Github repo and branch for SDK
-    //
-    public static openEnclaveRepo = "https://github.com/microsoft/openenclave.git";
-    public static openEnclaveBranch = "#master";
-    public static openEnclaveSdkVersion = "1.1.0";
-    //
     // Azure storage info for DevKit
     //
     public static DevKitBlobAccount = "";

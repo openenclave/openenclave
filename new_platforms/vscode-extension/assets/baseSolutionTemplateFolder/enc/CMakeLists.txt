@@ -1,15 +1,19 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(oeedl_file)
-include(add_enclave)
+include(../cmake/add-enclave.cmake)
 
-oeedl_file(../[[project-name]].edl enclave GEN C_GEN H_GEN ${OE_PATH}/include)
+add_custom_command(
+  OUTPUT
+    [[project-name]]_t.h
+    [[project-name]]_t.c
+    [[project-name]]_args.h
+  DEPENDS ${CMAKE_SOURCE_DIR}/[[project-name]].edl
+  COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/[[project-name]].edl)
 
 add_enclave(
-    TARGET [[project-name]]_enclave
-    UUID [[generated-uuid]]
-    SOURCES
-        enc.c
-        ${GEN}
-    C_GEN ${C_GEN})
+  TARGET [[project-name]]_enclave
+  UUID [[generated-uuid]]
+  SOURCES
+    enc.c
+    ${CMAKE_CURRENT_BINARY_DIR}/[[project-name]]_t.c)

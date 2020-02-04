@@ -17,7 +17,7 @@
 #include "iothub.h"
 #include "time.h"
 
-int open_enclave();
+int open_enclave(int argc, const char* argv[]);
 int close_enclave();
 int call_enclave(char *input_msg, char *enclave_msg, unsigned int enclave_msg_size);
 
@@ -221,10 +221,10 @@ void iothub_module()
     DeInitializeConnection(iotHubModuleClientHandle);
 }
 
-int main(void)
+int main(int argc, const char* argv[])
 {
     oe_result_t result = OE_OK;
-    result = open_enclave();
+    result = open_enclave(argc, argv);
     if (result != OE_OK)
     {
         return result;
