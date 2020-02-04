@@ -109,7 +109,7 @@ oe_result_t oe_verify_report_eeid(
         *parsed_report = oe_report;
 
     if (eeid)
-        verify_eeid(report, report_size, parsed_report, eeid);
+        verify_eeid(&oe_report, eeid);
 
     result = OE_OK;
 

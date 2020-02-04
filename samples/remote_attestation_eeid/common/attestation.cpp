@@ -78,7 +78,8 @@ bool Attestation::attest_remote_report(
     const uint8_t* remote_report,
     size_t remote_report_size,
     const uint8_t* data,
-    size_t data_size)
+    size_t data_size,
+    oe_eeid_t* eeid)
 {
     bool ret = false;
     uint8_t sha256[32];
@@ -95,8 +96,8 @@ bool Attestation::attest_remote_report(
 
     // 1)  Validate the report's trustworthiness
     // Verify the remote report to ensure its authenticity.
-    result =
-        oe_verify_report(remote_report, remote_report_size, &parsed_report);
+    result = oe_verify_report_eeid(
+        remote_report, remote_report_size, &parsed_report, eeid);
     if (result != OE_OK)
     {
         TRACE_ENCLAVE("oe_verify_report failed (%s).\n", oe_result_str(result));

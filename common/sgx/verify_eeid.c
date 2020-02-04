@@ -5,83 +5,80 @@
 #include <string.h>
 
 #include <openenclave/bits/report.h>
+#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/defs.h>
-#include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 
 #include "../../host/sgx/sgxmeasure.h"
+#include "../common/sgx/quote.h"
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
+#include "../../enclave/crypto/key.h"
+#include "../../enclave/crypto/rsa.h"
 #else
 #include <openenclave/host.h>
+#include "../../host/crypto/openssl/key.h"
+#include "../../host/crypto/openssl/rsa.h"
+#include "../../host/sgx/sgxquoteprovider.h"
 #endif
 
 #include "verify_eeid.h"
 
-oe_result_t verify_eeid(
-    const uint8_t* report,
-    size_t report_size,
-    oe_report_t* parsed_report,
-    const oe_eeid_t* eeid)
+oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (!eeid)
+    if (!eeid || !report)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Recompute extended mrenclave
     oe_sha256_context_t hctx;
     oe_sha256_restore(&hctx, eeid->hash_state_H, eeid->hash_state_N);
 
-    size_t eeid_sz =
-        oe_round_up_to_page_size(sizeof(oe_eeid_t) + eeid->data_size);
-    size_t num_pages = eeid_sz / OE_PAGE_SIZE;
+    size_t eeid_sz = sizeof(oe_eeid_t) + eeid->data_size;
+    size_t num_pages = oe_round_up_to_page_size(eeid_sz) / OE_PAGE_SIZE;
     oe_page_t* pages = (oe_page_t*)eeid;
     uint64_t enclave_base = 0x0ab0c0d0e0f;
     uint64_t addr = enclave_base + eeid->data_vaddr;
 
     for (size_t i = 0; i < num_pages; i++)
     {
+        uint8_t* page = (uint8_t*)&pages[i];
+
+        if (i == num_pages - 1 && eeid_sz % OE_PAGE_SIZE != 0)
+        {
+            uint8_t* npage = calloc(1, OE_PAGE_SIZE);
+            memcpy(npage, page, eeid_sz % OE_PAGE_SIZE);
+            page = npage;
+        }
+
         OE_CHECK(oe_sgx_measure_load_enclave_data(
             &hctx,
             (uint64_t)enclave_base,
             addr,
-            (uint64_t)&pages[i],
+            (uint64_t)page,
             SGX_SECINFO_REG | SGX_SECINFO_R,
             true));
 
-        addr += sizeof(oe_page_t);
+        if (i == num_pages - 1 && eeid_sz % OE_PAGE_SIZE != 0)
+            free(page);
+
+        addr += OE_PAGE_SIZE;
     }
 
     OE_SHA256 cpt_mrenclave;
     oe_sha256_final(&hctx, &cpt_mrenclave);
 
     // Extract reported mrenclave
-    oe_report_t* treport = parsed_report;
     OE_SHA256 reported_mrenclave;
     uint8_t reported_mrsigner[OE_SIGNER_ID_SIZE];
 
-    if (parsed_report == NULL)
-    {
-        treport = calloc(1, sizeof(oe_report_t));
-        OE_CHECK(oe_parse_report(report, report_size, treport));
-    }
-
-    memcpy(reported_mrenclave.buf, treport->identity.unique_id, OE_SHA256_SIZE);
-    memcpy(reported_mrsigner, treport->identity.signer_id, OE_SIGNER_ID_SIZE);
-
-    if (parsed_report == NULL)
-        free(treport);
-
-    // char str[OE_SHA256_SIZE * 2 + 1];
-    // oe_hex_string(str, OE_SHA256_SIZE * 2 + 1, cpt_mrenclave.buf,
-    // OE_SHA256_SIZE); OE_TRACE_INFO("*** CPT: %s\n", str); oe_hex_string(str,
-    // OE_SHA256_SIZE * 2 + 1, reported_mrenclave.buf, OE_SHA256_SIZE);
-    // OE_TRACE_INFO("*** REP: %s\n", str);
+    memcpy(reported_mrenclave.buf, report->identity.unique_id, OE_SHA256_SIZE);
+    memcpy(reported_mrsigner, report->identity.signer_id, OE_SIGNER_ID_SIZE);
 
     // Check recomputed mrenclave against reported mrenclave
     if (memcmp(cpt_mrenclave.buf, reported_mrenclave.buf, OE_SHA256_SIZE) != 0)
@@ -96,18 +93,139 @@ oe_result_t verify_eeid(
         OE_RAISE(OE_VERIFY_FAILED);
 
     // Check old signature (new signature has been checked above)
-    const sgx_sigstruct_t* ss = (const sgx_sigstruct_t*)&eeid->sigstruct;
+    const sgx_sigstruct_t* sigstruct = (const sgx_sigstruct_t*)&eeid->sigstruct;
+
+    uint16_t ppid = (uint16_t)(report->identity.product_id[1] << 8) +
+                    (uint16_t)report->identity.product_id[0];
+
+    if (sigstruct->isvprodid != ppid ||
+        sigstruct->isvsvn != report->identity.security_version)
+        // TODO: check attributes?
+        OE_RAISE(OE_VERIFY_FAILED);
 
     uint8_t zero[OE_KEY_SIZE];
     memset(zero, 0, OE_KEY_SIZE);
 
-    if (memcmp(ss->signature, zero, OE_KEY_SIZE) == 0) // Unsigned image is ok?
+    if (sigstruct->type == (1ul << 31) &&
+        memcmp(sigstruct->signature, zero, OE_KEY_SIZE) ==
+            0) // Unsigned debug image is ok?
         return OE_OK;
     else
     {
-        // TODO: Need to find mrsigner of old image somehow in order to check
-        // the signature.
+        // OE_SHA256 mrsigner;
+        // oe_sha256_init(&hctx);
+        // oe_sha256_update(&hctx, sigstruct->modulus, OE_KEY_SIZE);
+        // oe_sha256_final(&hctx, &mrsigner);
+
+        unsigned char buf[sizeof(sgx_sigstruct_t)];
+        size_t n = 0;
+
+        OE_CHECK(oe_memcpy_s(
+            buf,
+            sizeof(buf),
+            sgx_sigstruct_header(sigstruct),
+            sgx_sigstruct_header_size()));
+        n += sgx_sigstruct_header_size();
+        OE_CHECK(oe_memcpy_s(
+            &buf[n],
+            sizeof(buf) - n,
+            sgx_sigstruct_body(sigstruct),
+            sgx_sigstruct_body_size()));
+        n += sgx_sigstruct_body_size();
+
+        OE_SHA256 msg_hsh;
+        oe_sha256_context_t context;
+
+        oe_sha256_init(&context);
+        oe_sha256_update(&context, buf, n);
+        oe_sha256_final(&context, &msg_hsh);
+
+        uint8_t reversed_modulus[OE_KEY_SIZE];
+        for (size_t i = 0; i < OE_KEY_SIZE; i++)
+            reversed_modulus[i] = sigstruct->modulus[OE_KEY_SIZE - 1 - i];
+
+        uint8_t reversed_exponent[OE_KEY_SIZE];
+        for (size_t i = 0; i < OE_EXPONENT_SIZE; i++)
+            reversed_exponent[i] =
+                sigstruct->exponent[OE_EXPONENT_SIZE - 1 - i];
+
+        uint8_t reversed_signature[OE_KEY_SIZE];
+        for (size_t i = 0; i < OE_KEY_SIZE; i++)
+            reversed_signature[i] = sigstruct->signature[OE_KEY_SIZE - 1 - i];
+
+        oe_rsa_public_key_t pk;
+#ifdef OE_BUILD_ENCLAVE
+        mbedtls_pk_context pkctx;
+        mbedtls_pk_init(&pkctx);
+        const mbedtls_pk_info_t* info =
+            mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
+        mbedtls_pk_setup(&pkctx, info);
+
+        mbedtls_rsa_context* rsa_ctx = mbedtls_pk_rsa(pkctx);
+        mbedtls_rsa_init(rsa_ctx, 0, 0);
+        mbedtls_rsa_import_raw(
+            rsa_ctx,
+            reversed_modulus,
+            OE_KEY_SIZE, // N
+            NULL,
+            0,
+            NULL,
+            0,
+            NULL,
+            0, // P Q D
+            reversed_exponent,
+            OE_EXPONENT_SIZE);
+        int r_key = mbedtls_rsa_check_pubkey(rsa_ctx);
+        if (r_key != 0)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        oe_rsa_public_key_init(&pk, &pkctx);
+#else
+        // TODO: load mod/exp into openssl context
         OE_RAISE(OE_VERIFY_FAILED);
+#endif
+
+        OE_CHECK(oe_rsa_public_key_verify(
+            &pk,
+            OE_HASH_TYPE_SHA256,
+            msg_hsh.buf,
+            sizeof(msg_hsh.buf),
+            reversed_signature,
+            OE_KEY_SIZE));
+
+        oe_rsa_public_key_free(&pk);
+
+#ifdef OE_BUILD_ENCLAVE
+        mbedtls_pk_free(&pkctx);
+#endif
+
+        // // Alternative: make up a fake non-extended report?
+        // oe_report_t irep;
+        // irep.size = 0;
+        // irep.type = OE_ENCLAVE_TYPE_SGX;
+        // irep.report_data_size = 0;
+        // irep.enclave_report_size = 0;
+        // irep.report_data = NULL;
+        // irep.enclave_report = NULL;
+
+        // irep.identity.id_version = report->identity.id_version;
+        // irep.identity.security_version = report->identity.security_version;
+        // irep.identity.attributes = report->identity.attributes;
+        // memcpy(irep.identity.unique_id, sigstruct->enclavehash,
+        // OE_UNIQUE_ID_SIZE); memcpy(irep.identity.signer_id, mrsigner.buf,
+        // OE_SIGNER_ID_SIZE); memcpy(irep.identity.product_id,
+        // report->identity.product_id, OE_PRODUCT_ID_SIZE);
+
+        // if (irep.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE) {
+        //     #ifndef OE_BUILD_ENCLAVE
+        //     OE_CHECK(oe_initialize_quote_provider());
+        //     #endif
+        //     // OE_CHECK(oe_verify_sgx_quote(header->report,
+        //     header->report_size, NULL, 0, NULL));
+        //     // OE_CHECK(oe_verify_quote_with_sgx_endorsements(quote,
+        //     quote_size, NULL, NULL));
+        // } else
+        //     OE_RAISE(OE_INVALID_PARAMETER);
     }
 
 done:

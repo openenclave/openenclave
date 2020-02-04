@@ -38,7 +38,8 @@ class ecall_dispatcher
         uint8_t* pem_key,
         size_t key_size,
         uint8_t* remote_report,
-        size_t remote_report_size);
+        size_t remote_report_size,
+        oe_eeid_t* eeid);
 
   private:
     bool initialize(const char* name);

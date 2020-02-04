@@ -51,7 +51,6 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-// #include <openenclave/internal/hexdump.h>
 #include <string.h>
 #include "../memalign.h"
 #include "../signkey.h"
@@ -658,19 +657,24 @@ static oe_result_t _add_eeid_pages(
         oe_sha256_save(hctx, eeid->hash_state_H, eeid->hash_state_N);
         eeid->data_vaddr = *vaddr;
 
-        // char str[OE_SHA256_SIZE * 2 + 1];
-        // oe_hex_string(str, OE_SHA256_SIZE * 2 + 1, sigstruct->enclavehash,
-        // OE_SHA256_SIZE); OE_TRACE_INFO("*** OLD: %s\n", str);
+        uint64_t ee_sz = sizeof(oe_eeid_t) + eeid->data_size;
+        uint64_t epg_sz = eeid_pages_size(eeid);
+        uint64_t num_pages = epg_sz / OE_PAGE_SIZE;
+        assert(*vaddr == enclave_end - epg_sz);
 
-        uint64_t sz = eeid_pages_size(eeid);
-        assert(*vaddr == enclave_end - sz);
+        oe_page_t* pages = (oe_page_t*)eeid;
+        if (ee_sz < epg_sz)
+        {
+            oe_page_t* tmp = (oe_page_t*)calloc(1, epg_sz);
+            memcpy(tmp, eeid, ee_sz);
+            pages = tmp;
+        }
 
         OE_CHECK(_add_extra_data_pages(
-            context,
-            enclave->addr,
-            (const oe_page_t*)eeid,
-            sz / OE_PAGE_SIZE,
-            vaddr));
+            context, enclave->addr, pages, num_pages, vaddr));
+
+        if (ee_sz < epg_sz)
+            free(pages);
 
         OE_SHA256 ext_mrenclave;
         oe_sha256_final(hctx, &ext_mrenclave);
@@ -683,9 +687,6 @@ static oe_result_t _add_eeid_pages(
             OE_DEBUG_SIGN_KEY, /* Use different key? */
             OE_DEBUG_SIGN_KEY_SIZE,
             sigstruct));
-
-        // oe_hex_string(str, OE_SHA256_SIZE * 2 + 1, sigstruct->enclavehash,
-        // OE_SHA256_SIZE); OE_TRACE_INFO("*** NEW: %s\n", str);
 
         assert(*vaddr == enclave_end);
     }

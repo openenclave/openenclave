@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "remoteattestation_u.h"
 
-oe_enclave_t* create_enclave(const char* enclave_path, struct oe_eeid_t_* eeid)
+oe_enclave_t* create_enclave(const char* enclave_path, oe_eeid_t* eeid)
 {
     oe_enclave_t* enclave = NULL;
 
@@ -52,9 +52,9 @@ int main(int argc, const char* argv[])
     size_t remote_report_size = 0;
 
     uint32_t eeid_size = 512;
-    uint64_t sz = sizeof(oe_eeid_t) + eeid_size;
-    oe_eeid_t* eeid_a = (oe_eeid_t*)calloc(1, sz);
-    oe_eeid_t* eeid_b = (oe_eeid_t*)calloc(1, sz);
+    uint64_t eeid_byte_size = sizeof(oe_eeid_t) + eeid_size;
+    oe_eeid_t* eeid_a = (oe_eeid_t*)calloc(1, eeid_byte_size);
+    oe_eeid_t* eeid_b = (oe_eeid_t*)calloc(1, eeid_byte_size);
     eeid_a->data_size = eeid_b->data_size = eeid_size;
 
     for (size_t i = 0; i < eeid_size; i++)
@@ -110,7 +110,9 @@ int main(int argc, const char* argv[])
         pem_key,
         pem_key_size,
         remote_report,
-        remote_report_size);
+        remote_report_size,
+        eeid_a,
+        eeid_byte_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
@@ -154,7 +156,9 @@ int main(int argc, const char* argv[])
         pem_key,
         pem_key_size,
         remote_report,
-        remote_report_size);
+        remote_report_size,
+        eeid_b,
+        eeid_byte_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(

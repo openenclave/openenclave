@@ -38,7 +38,8 @@ class Attestation
         const uint8_t* remote_report,
         size_t remote_report_size,
         const uint8_t* data,
-        size_t data_size);
+        size_t data_size,
+        oe_eeid_t* eeid);
 };
 
 #endif // OE_SAMPLES_ATTESTATION_ENC_ATTESTATION_H

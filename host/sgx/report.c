@@ -330,7 +330,16 @@ oe_result_t oe_verify_report_eeid(
         OE_CHECK(oe_parse_report(report, report_size, parsed_report));
 
     if (eeid)
-        verify_eeid(report, report_size, parsed_report, eeid);
+    {
+        if (!parsed_report)
+        {
+            oe_report_t treport;
+            OE_CHECK(oe_parse_report(report, report_size, &treport));
+            verify_eeid(&treport, eeid);
+        }
+        else
+            verify_eeid(parsed_report, eeid);
+    }
 
     result = OE_OK;
 done:

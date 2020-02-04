@@ -7,10 +7,6 @@
 #include <openenclave/bits/report.h>
 #include <openenclave/bits/types.h>
 
-oe_result_t verify_eeid(
-    const uint8_t* report,
-    size_t report_size,
-    oe_report_t* parsed_report,
-    const oe_eeid_t* eeid);
+oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid);
 
 #endif /* _OE_VERIFY_EEID_H */

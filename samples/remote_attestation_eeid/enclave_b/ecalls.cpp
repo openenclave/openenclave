@@ -50,8 +50,11 @@ int verify_report_and_set_pubkey(
     uint8_t* pem_key,
     size_t key_size,
     uint8_t* remote_report,
-    size_t remote_report_size)
+    size_t remote_report_size,
+    oe_eeid_t* eeid,
+    size_t eeid_byte_size)
 {
+    (void)eeid_byte_size;
     return dispatcher.verify_report_and_set_pubkey(
-        pem_key, key_size, remote_report, remote_report_size);
+        pem_key, key_size, remote_report, remote_report_size, eeid);
 }

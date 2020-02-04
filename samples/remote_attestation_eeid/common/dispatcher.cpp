@@ -175,7 +175,8 @@ int ecall_dispatcher::verify_report_and_set_pubkey(
     uint8_t* pem_key,
     size_t key_size,
     uint8_t* remote_report,
-    size_t remote_report_size)
+    size_t remote_report_size,
+    oe_eeid_t* eeid)
 {
     int ret = 1;
 
@@ -187,7 +188,7 @@ int ecall_dispatcher::verify_report_and_set_pubkey(
 
     // Attest the remote report and accompanying key.
     if (m_attestation->attest_remote_report(
-            remote_report, remote_report_size, pem_key, key_size))
+            remote_report, remote_report_size, pem_key, key_size, eeid))
     {
         memcpy(m_crypto->get_the_other_enclave_public_key(), pem_key, key_size);
     }
