@@ -9,6 +9,36 @@
 // sdk tool oe_edger8r against the [[project-name]].edl file.
 #include "[[project-name]]_u.h"
 
+bool check_simulate_opt(int* argc, const char* argv[])
+{
+    for (int i = 0; i < *argc; i++)
+    {
+        if (strcmp(argv[i], "--simulate") == 0)
+        {
+            fprintf(stdout, "Running in simulation mode\n");
+            memmove(&argv[i], &argv[i + 1], (*argc - i) * sizeof(char*));
+            (*argc)--;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool check_debug_opt(int* argc, const char* argv[])
+{
+    for (int i = 0; i < *argc; i++)
+    {
+        if (strcmp(argv[i], "--debug") == 0)
+        {
+            fprintf(stdout, "Running in debug mode\n");
+            memmove(&argv[i], &argv[i + 1], (*argc - i) * sizeof(char*));
+            (*argc)--;
+            return true;
+        }
+    }
+    return false;
+}
+
 // This is the function that the enclave will call back into to
 // print a message.
 int ocall_log(char *msg)
@@ -25,6 +55,15 @@ int open_enclave(int argc, const char* argv[])
 {
     oe_result_t result = OE_OK;
     uint32_t flags = 0;
+
+    if (check_debug_opt(&argc, argv))
+    {
+        flags |= OE_ENCLAVE_FLAG_DEBUG;
+    }
+    if (check_simulate_opt(&argc, argv))
+    {
+        flags |= OE_ENCLAVE_FLAG_SIMULATE;
+    }
 
     // Create the enclave
     result = oe_create_[[project-name]]_enclave(
