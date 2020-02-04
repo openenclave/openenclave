@@ -9,7 +9,6 @@
                 "cwd": "[[build-folder]]/sgx"
             },
             "args": [
-                "-G Ninja",
                 "-DOE_TEE=SGX",
                 "-DCMAKE_BUILD_TYPE=Debug",
                 "[[solution-folder]]"
@@ -19,7 +18,7 @@
         {
             "label": "Build for Intel SGX (x64)",
             "type": "process",
-            "command": "ninja",
+            "command": "make",
             "options": {
                 "cwd": "[[build-folder]]/sgx"
             },
@@ -36,7 +35,6 @@
                 "cwd": "[[build-folder]]/vexpress-qemu_armv8a"
             },
             "args": [
-                "-G Ninja",
                 "-DOE_TEE=OP-TEE",
                 "-DOE_OPTEE_PLATFORM=QEMU-ARMv8",
                 "-DCMAKE_TOOLCHAIN_FILE=[[solution-folder]]/cmake/arm-cross.cmake",
@@ -48,7 +46,7 @@
         {
             "label": "Build for QEMU (AArch64/ARMv8-A)",
             "type": "process",
-            "command": "ninja",
+            "command": "make",
             "options": {
                 "cwd": "[[build-folder]]/vexpress-qemu_armv8a"
             },
@@ -129,7 +127,6 @@
                 "cwd": "[[build-folder]]/ls-ls1012grapeboard"
             },
             "args": [
-                "-G Ninja",
                 "-DOE_TEE=OP-TEE",
                 "-DOE_OPTEE_PLATFORM=Grapeboard",
                 "-DCMAKE_TOOLCHAIN_FILE=[[solution-folder]]/cmake/arm-cross.cmake",
@@ -141,7 +138,7 @@
         {
             "label": "Build for Grapeboard (LS1012)",
             "type": "process",
-            "command": "ninja",
+            "command": "make",
             "options": {
                 "cwd": "[[build-folder]]/ls-ls1012grapeboard"
             },
