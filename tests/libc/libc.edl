@@ -3,6 +3,7 @@
 
 enclave {
     trusted {
-        public int test();
+        public int run_all_tests();
+        public int run_test([in, string] const char* test_name);
     };
 };

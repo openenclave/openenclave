@@ -1,0 +1,32 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+// This is a template used by CMake.
+#include <limits.h>
+
+@forward_declarations@
+
+typedef int (*libc_test_function_t)(int argc, const char** argv);
+
+typedef struct
+{
+    char test_name[PATH_MAX];
+    libc_test_function_t test_function;
+} libc_test_entry_t;
+
+libc_test_entry_t libc_tests[] = {
+    @test_table@
+};
+
+libc_test_function_t get_test_case(const char* test_name)
+{
+    for (int i = 0; i < sizeof(libc_tests) / sizeof(libc_test_entry_t); i++)
+    {
+        if (strncmp(libc_tests[i].test_name, test_name, PATH_MAX) == 0)
+        {
+            return libc_tests[i].test_function;
+        }
+    }
+
+    return NULL;
+}

@@ -32,10 +32,16 @@ void my_setmxcsr(uint32_t csr)
 
 #endif
 
-void Test(oe_enclave_t* enclave)
+void Test(oe_enclave_t* enclave, const char* test_name)
 {
+    oe_result_t result;
     int rval = 1;
-    oe_result_t result = test(enclave, &rval);
+
+    if (test_name)
+        result = run_test(enclave, &rval, test_name);
+    else
+        result = run_all_tests(enclave, &rval);
+
     OE_TEST(result == OE_OK);
 
     if (rval == 0)
@@ -44,7 +50,7 @@ void Test(oe_enclave_t* enclave)
     }
     else
     {
-        printf("*** failed\n");
+        fprintf(stderr, "*** failed\n");
         abort();
     }
 }
@@ -61,9 +67,9 @@ int main(int argc, const char* argv[])
     oe_result_t result;
     const uint32_t flags = oe_get_create_flags();
 
-    if (argc != 2)
+    if (argc != 2 && argc != 3)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
+        fprintf(stderr, "Usage: %s ENCLAVE [test_name]\n", argv[0]);
         exit(1);
     }
 
@@ -85,7 +91,10 @@ int main(int argc, const char* argv[])
     OE_TEST(csr == 0x1f80);
 #endif
 
-    Test(enclave);
+    if (argc > 2)
+        Test(enclave, argv[2]);
+    else
+        Test(enclave, NULL);
 
 #if defined(XMM_OK)
     csr = my_getmxcsr();

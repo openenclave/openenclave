@@ -10,12 +10,12 @@ foreach(test_file ${LIBC_TESTS})
   string(MAKE_C_IDENTIFIER ${test_file} test_name)
   list(APPEND test_dependencies ${CMAKE_CURRENT_BINARY_DIR}/${test_file})
   configure_file(include.c.in ${test_file})
-  string(APPEND run_test "\
-    extern int ${test_name}(int argc, const char* argv[]);\n\
-    ret += run_test(\"${test_name}\", ${test_name});\n")
+
+  string(APPEND forward_declarations "extern int ${test_name}(int argc, const char* argv[]);\n")
+  string(APPEND test_table "{ \"${test_name}\", ${test_name} },\n")
 endforeach()
 
-configure_file(tests.c.in tests.c)
+configure_file(libc_tests.h.in libc_tests.h)
 
 set (EDL_FILE ../libc.edl)
 
@@ -25,21 +25,20 @@ add_custom_command(
     COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(test_extras
-    ../../../3rdparty/musl/libc-test/src/common/vmfill.c
-    ../../../3rdparty/musl/libc-test/src/common/mtest.c
-    ../../../3rdparty/musl/libc-test/src/common/rand.c)
+    ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common/vmfill.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common/mtest.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common/rand.c)
 
 if(NOT OE_TRUSTZONE)
     # This file requires TLS relocations, which cannot be applied by OP-TEE's
     # ELF loader.
     list(APPEND test_extras
-        ../../../3rdparty/musl/libc-test/src/functional/tls_align_dso.c)
+        ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/functional/tls_align_dso.c)
 endif()
 
 add_enclave(TARGET libc_enc UUID d7fe296a-24e9-46d1-aa78-9c7395082a41
     SOURCES
     enc.c
-    ${CMAKE_CURRENT_BINARY_DIR}/tests.c
     ${test_dependencies}
     ${test_extras}
     ${LIBC_TESTS}
@@ -74,8 +73,8 @@ endif()
 target_include_directories(
     libc_enc PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
-    .
-    ../../../3rdparty/musl/libc-test/src/common)
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common)
 
 # The following variables remain uninitialized on Linux and throw warnings
 # Calling the function maybe_build_using_clangw(libc_enc) skips setting
