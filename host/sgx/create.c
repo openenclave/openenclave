@@ -753,6 +753,39 @@ oe_result_t oe_sgx_build_enclave(
         memcpy(&props, oeimage.image_base + oeimage.oeinfo_rva, sizeof(props));
     }
 
+    if (eeid &&
+        (props.header.size_settings.num_heap_pages !=
+             eeid->size_settings.num_heap_pages ||
+         props.header.size_settings.num_stack_pages !=
+             eeid->size_settings.num_stack_pages ||
+         props.header.size_settings.num_tcs != eeid->size_settings.num_tcs))
+    {
+        if (props.header.size_settings.num_heap_pages != 0 ||
+            props.header.size_settings.num_stack_pages != 0 ||
+            props.header.size_settings.num_tcs != 0)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        props.header.size_settings.num_heap_pages =
+            eeid->size_settings.num_heap_pages;
+        props.header.size_settings.num_stack_pages =
+            eeid->size_settings.num_stack_pages;
+        props.header.size_settings.num_tcs = eeid->size_settings.num_tcs;
+
+        // patch
+        elf64_sym_t sym_props = {0};
+        const elf64_t* eimg = &oeimage.u.elf.elf;
+        if (elf64_find_symbol_by_name(
+                eimg, "oe_enclave_properties_sgx", &sym_props) == 0)
+        {
+            uint64_t* sym_props_addr = NULL;
+            sym_props_addr =
+                (uint64_t*)(oeimage.image_base + sym_props.st_value);
+            oe_sgx_enclave_properties_t* p =
+                (oe_sgx_enclave_properties_t*)sym_props_addr;
+            p->header.size_settings = props.header.size_settings;
+        }
+    }
+
     /* Validate the enclave prop_override structure */
     OE_CHECK(oe_sgx_validate_enclave_properties(&props, NULL));
 
@@ -802,7 +835,7 @@ oe_result_t oe_sgx_build_enclave(
     /* Patch image */
     OE_CHECK(oeimage.patch(&oeimage, enclave_end));
 
-    /* Patch user data */
+    /* Patch EEID symbols */
     OE_CHECK(_patch_eeid_symbols(&oeimage, enclave_end, eeid));
 
     /* Add image to enclave */
@@ -812,7 +845,7 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(
         _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
 
-    /* Add user data for extended attestation */
+    /* Add EEID */
     OE_CHECK(
         _add_eeid_pages(context, enclave, enclave_end, &props, &vaddr, eeid));
 

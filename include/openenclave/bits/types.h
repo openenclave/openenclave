@@ -180,21 +180,4 @@ typedef struct _oe_datetime
     uint32_t seconds; /* range: 0-59 */
 } oe_datetime_t;
 
-/*
-**==============================================================================
-**
-** oe_eeid_t
-**
-**==============================================================================
-*/
-typedef struct oe_eeid_t_
-{
-    uint32_t hash_state_H[8];
-    uint32_t hash_state_N[2];
-    uint8_t sigstruct[1808]; /* complete sigstruct before eeid */
-    uint64_t data_size;      /* size of initialization data */
-    uint64_t data_vaddr;     /* location of initialization data */
-    uint8_t data[];          /* actual initialization data */
-} oe_eeid_t;
-
 #endif /* _OE_BITS_TYPES_H */
