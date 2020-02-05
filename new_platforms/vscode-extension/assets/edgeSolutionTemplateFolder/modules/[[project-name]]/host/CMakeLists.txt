@@ -14,27 +14,32 @@ compileAsC99()
 
 set(AZUREIOT_INC_FOLDER "/usr/include/azureiot" "/usr/include/azureiot/inc")
 include_directories(${AZUREIOT_INC_FOLDER})
-set(c_files host.c main.c)
 
-include(oeedl_file)
-include(add_host)
+add_custom_command(
+  OUTPUT
+    [[project-name]]_u.h
+    [[project-name]]_u.c
+    [[project-name]]_args.h
+  DEPENDS ${CMAKE_SOURCE_DIR}/[[project-name]].edl
+  COMMAND openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/[[project-name]].edl)
 
-set(TARGET [[project-name]])
+add_executable([[project-name]]
+    host.c
+    main.c
+    ${CMAKE_CURRENT_BINARY_DIR}/[[project-name]]_u.c)
 
-oeedl_file(../[[project-name]].edl host GEN C_GEN H_GEN ${OE_PATH}/include)
+target_include_directories([[project-name]] PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-add_host(
-    TARGET ${TARGET}
-    SOURCES main.c host.c ${GEN})
+target_link_libraries([[project-name]] openenclave::oehostapp)
 
-set(AZUREIOT_LIB_FOLDER "/usr/lib/arm-linux-gnueabihf")
+set(AZUREIOT_LIB_FOLDER "/usr/lib/aarch64-linux-gnu")
 find_library(CURL_LIBRARY curl HINTS ${AZUREIOT_LIB_FOLDER})
 find_library(M_LIBRARY m HINTS ${AZUREIOT_LIB_FOLDER})
 find_library(SSL_LIBRARY ssl HINTS ${AZUREIOT_LIB_FOLDER})
 find_library(CRYPTO_LIBRARY crypto HINTS ${AZUREIOT_LIB_FOLDER})
 find_library(UUID_LIBRARY uuid HINTS ${AZUREIOT_LIB_FOLDER})
 find_library(DL_LIBRARY dl HINTS ${AZUREIOT_LIB_FOLDER})
-target_link_libraries(${TARGET}
+target_link_libraries([[project-name]]
     iothub_client_mqtt_transport
     iothub_client
     parson

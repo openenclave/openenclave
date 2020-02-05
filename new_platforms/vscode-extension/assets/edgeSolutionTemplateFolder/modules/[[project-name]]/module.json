@@ -6,7 +6,6 @@
     "tag": {
       "version": "0.0.1",
       "platforms": {
-        "arm32v7-qemu": "./Dockerfile.arm32v7-qemu",
         "aarch64-qemu": "./Dockerfile.aarch64-qemu",
         "ls1012": "./Dockerfile.ls1012"
       }

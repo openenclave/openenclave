@@ -72,7 +72,7 @@
                 "HostConfig": {
                   "Privileged": true,
                   "Binds": [
-                    "/lib/optee_armtz:/optee_armtz"
+                    "/lib/optee_armtz:/lib/optee_armtz"
                   ],
                   "Devices": [
                     {
@@ -86,7 +86,7 @@
                   {
                     "Type": "bind",
                     "Source": "/lib/optee_armtz",
-                    "Destination": "/optee_armtz",
+                    "Destination": "/lib/optee_armtz",
                     "Mode": "",
                     "RW": true
                   }

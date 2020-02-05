@@ -4,7 +4,6 @@
         "alias": null
       },
       "azure-iot-edge.platforms": {
-        "arm32v7-qemu": [],
         "aarch64-qemu": [],
         "ls1012": [],
     }
