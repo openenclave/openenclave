@@ -12,8 +12,8 @@
             "gdbpath": "/usr/bin/gdb-multiarch",
             "autorun": [
                 "symbol-file ./out/bin/[[project-name]]",
-                "add-symbol-file ./enc/[[generated-uuid]].elf 0x40008020",
-                "b TA_InvokeCommandEntryPoint"
+                "add-symbol-file ./out/bin/[[generated-uuid]].elf 0x40017020",
+                "b ecall_handle_message"
             ]
         },
         {
