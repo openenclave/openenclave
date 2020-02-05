@@ -339,6 +339,11 @@ typedef enum _oe_result
      */
     OE_ALREADY_EXISTS,
 
+    /**
+     * The desired resource has already been initialized.
+     */
+    OE_ALREADY_INITIALIZED,
+
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
 /**< typedef enum _oe_result oe_result_t*/
