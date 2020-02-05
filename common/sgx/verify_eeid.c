@@ -106,9 +106,9 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
     uint8_t zero[OE_KEY_SIZE];
     memset(zero, 0, OE_KEY_SIZE);
 
-    if ( // sigstruct->type == (1ul << 31) &&
+    if (sigstruct->type == (1ul << 31) &&
         memcmp(sigstruct->signature, zero, OE_KEY_SIZE) ==
-        0) // Unsigned debug image is ok?
+            0) // Unsigned debug image is ok?
         return OE_OK;
     else
     {
