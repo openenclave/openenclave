@@ -90,6 +90,7 @@
 		"vscode-extension-telemetry": "0.0.18"
 	},
 	"extensionDependencies": [
+		"ms-vscode.cpptools",
 		"ms-vscode.azure-account",
 		"vsciot-vscode.azure-iot-edge",
 		"webfreak.debug"
