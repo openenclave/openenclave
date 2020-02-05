@@ -403,12 +403,12 @@ export class OpenEnclaveManager {
             const tar = require("tar");
             return devKitStream
                     .on("error", (err: Error) => {
-                        this.progressAndOutput(`${progressPrefix} failed 1(${err.message})`, progress, outputChannel);
+                        this.progressAndOutput(`${progressPrefix} failed`, progress, outputChannel);
                         reject(err);
                     })
                     .pipe(zlib.createGunzip())
                     .on("error", (err: Error) => {
-                        this.progressAndOutput(`${progressPrefix} failed 2(${err.message})`, progress, outputChannel);
+                        this.progressAndOutput(`${progressPrefix} failed`, progress, outputChannel);
                         reject(err);
                     })
                     .pipe(tar.extract({ cwd: localFilePath, strip: 0 }))
@@ -417,7 +417,7 @@ export class OpenEnclaveManager {
                         resolve();
                     })
                     .on("error", (err: Error) => {
-                        this.progressAndOutput(`${progressPrefix} failed 3(${err.message})`, progress, outputChannel);
+                        this.progressAndOutput(`${progressPrefix} failed`, progress, outputChannel);
                         reject(err);
                     });
         });
