@@ -21,9 +21,9 @@
 #include "../../enclave/crypto/rsa.h"
 #else
 #include <openenclave/host.h>
+#include <openssl/rsa.h>
 #include "../../host/crypto/openssl/key.h"
 #include "../../host/crypto/openssl/rsa.h"
-#include "../../host/sgx/sgxquoteprovider.h"
 #endif
 
 #include "verify_eeid.h"
@@ -106,9 +106,9 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
     uint8_t zero[OE_KEY_SIZE];
     memset(zero, 0, OE_KEY_SIZE);
 
-    if (sigstruct->type == (1ul << 31) &&
+    if ( // sigstruct->type == (1ul << 31) &&
         memcmp(sigstruct->signature, zero, OE_KEY_SIZE) ==
-            0) // Unsigned debug image is ok?
+        0) // Unsigned debug image is ok?
         return OE_OK;
     else
     {
@@ -175,15 +175,18 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
             0, // P Q D
             reversed_exponent,
             OE_EXPONENT_SIZE);
-        int r_key = mbedtls_rsa_check_pubkey(rsa_ctx);
-        if (r_key != 0)
+        if (mbedtls_rsa_check_pubkey(rsa_ctx) != 0)
             OE_RAISE(OE_INVALID_PARAMETER);
-
-        oe_rsa_public_key_init(&pk, &pkctx);
+        mbedtls_pk_context* ikey = &pkctx;
 #else
-        // TODO: load mod/exp into openssl context
-        OE_RAISE(OE_VERIFY_FAILED);
+        BIGNUM* rm = BN_bin2bn(reversed_modulus, OE_KEY_SIZE, 0);
+        BIGNUM* re = BN_bin2bn(reversed_exponent, OE_EXPONENT_SIZE, 0);
+        RSA* rsa = RSA_new();
+        RSA_set0_key(rsa, rm, re, NULL);
+        EVP_PKEY* ikey = EVP_PKEY_new();
+        EVP_PKEY_assign_RSA(ikey, rsa);
 #endif
+        oe_rsa_public_key_init(&pk, ikey);
 
         OE_CHECK(oe_rsa_public_key_verify(
             &pk,
@@ -196,7 +199,9 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
         oe_rsa_public_key_free(&pk);
 
 #ifdef OE_BUILD_ENCLAVE
-        mbedtls_pk_free(&pkctx);
+        mbedtls_pk_free(ikey);
+#else
+        EVP_PKEY_free(ikey);
 #endif
 
         // // Alternative: make up a fake non-extended report?
