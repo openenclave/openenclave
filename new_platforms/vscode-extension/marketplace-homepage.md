@@ -200,64 +200,117 @@ system you run the extension on.
 * Install the
   [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
   extension.
+
 * Install the
   [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug)
   extension.
+ 
 * Install [CMake 3.12 or higher](https://cmake.org/download/)
-* Install the required build components.  On Ubuntu 18.04, run:
+  * On Ubuntu 18.04, you may run:
   ```bash
-  sudo dpkg --add-architecture arm64
+  # Remove CMake if already installed.
+  sudo apt remove cmake --purge
+
+  # Download the CMake tarball for Linux.
+  wget https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz
+
+  # Extract it.
+  sudo tar xf cmake-3.13.1-Linux-x86_64.tar.gz -C /usr/local
+
+  # Install CMake and its tools to the right directories.
+  sudo ln -s /usr/local/cmake-3.13.1-Linux-x86_64/bin/ccmake /usr/local/bin/ccmake
+  sudo ln -s /usr/local/cmake-3.13.1-Linux-x86_64/bin/cmake /usr/local/bin/cmake
+  sudo ln -s /usr/local/cmake-3.13.1-Linux-x86_64/bin/cpack /usr/local/bin/cpack
+  sudo ln -s /usr/local/cmake-3.13.1-Linux-x86_64/bin/ctest /usr/local/bin/ctest
+  ```
+
+* Install the required build components. On Ubuntu 18.04:
+  ```bash
+  # Flag all current directories as AMD64-only.
   sudo sed -i 's/^deb h/deb [arch=amd64,i386] h/g' /etc/apt/sources.list
 
+  # Enable the ARM64 architecture.
+  sudo dpkg --add-architecture arm64
+
+  # Add the Intel SGX repository and key.
+  echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
+  wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
+
+  # Add the LLVM repository and key.
+  echo "deb [arch=amd64] http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-bionic-7.list
+  wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+
+  # Add the Microsoft repository and key.
+  echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main" | sudo tee /etc/apt/sources.list.d/msprod.list
+  wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+
+  # Add the Ubuntu ARM64 ports repository.
   echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic main restricted universe multiverse' | sudo tee -a /etc/apt/sources.list
   echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic-updates main restricted universe multiverse' | sudo tee -a /etc/apt/sources.list
   echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse' | sudo tee -a /etc/apt/sources.list
 
+  # Update the repositories.
   sudo apt update
-  sudo apt install -y build-essential gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gdb-multiarch python python-crypto libssl-dev:arm64 libc6-dev:arm64
+
+  # Install all prerequisites.
+  sudo apt install -y apt-transport-https az-dcap-client binfmt-support      \
+    build-essential clang-7 docker.io g++-aarch64-linux-gnu                  \
+    gcc-aarch64-linux-gnu gdb gdb-multiarch libc6 libc6-dev:arm64 libfdt1    \
+    libglib2.0-0 libpcre3 libpixman-1-0 libprotobuf10 libsgx-dcap-ql         \
+    libsgx-dcap-ql-dev libsgx-enclave-common libsgx-enclave-common-dev       \
+    libssl-dev libssl-dev:arm64 libstdc++6 open-enclave python python-crypto \
+    python-pip qemu-user-static zlib1g
   ```
-* Ensure that all QEMU dependencies are installed.  On Ubuntu 18.04, run:
+
+* If you have Intel SGX-capable hardware, install the Intel SGX DCAP driver. On
+  Ubuntu 18.04, run:
   ```bash
-  sudo apt install -y libpixman-1-0 zlib1g libc6 libfdt1 libglib2.0-0 libpcre3 libstdc++6
+  sudo apt update
+  sudo apt -y install dkms
+  wget https://download.01.org/intel-sgx/sgx-dcap/1.4/linux/distro/ubuntuServer18.04/sgx_linux_x64_driver_1.21.bin -O sgx_linux_x64_driver.bin
+  chmod +x sgx_linux_x64_driver.bin
+  sudo ./sgx_linux_x64_driver.bin
   ```
+  Note: A new version of the driver may have been released since this
+        documentation was written. Check on
+        [Intel's Open Source site](https://01.org/intel-software-guard-extensions/downloads)
+        if a more recent SGX DCAP driver exists.
+
 * Ensure that the requirements are met for the
-  [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge):
-  * [Install Docker](https://docs.docker.com/install/):
-    * For Azure IoT Edge projects, enable cross-building:
+  [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge).
 
-      * On Ubuntu 19.04 and 18.10 by:
-        ```bash
-        sudo apt-get install -y qemu qemu-system-misc qemu-user-static qemu-user binfmt-support
-        ```
+* For Azure IoT Edge projects, enable cross-building:
 
-      * On Ubuntu 18.04 and 16.04 by:
-        ```bash
-        sudo apt-get install -y qemu qemu qemu-system-misc qemu-user-static qemu-user binfmt-support
-        sudo mkdir -p /lib/binfmt.d
-        sudo sh -c 'echo :qemu-arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-arm-static:F > /lib/binfmt.d/qemu-arm-static.conf'
-        sudo sh -c 'echo :qemu-aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-aarch64-static:F > /lib/binfmt.d/qemu-aarch64-static.conf'
-        sudo systemctl restart systemd-binfmt.service
-        ```
+  * On Ubuntu 19.04 and 18.10, this should already be enabled by having
+    installed the prerequisites listed previously.
 
-      * To validate that your system is configured for cross-building, you can
-        try testing the docker containers that will be needed in the build:
-        ```bash
-        docker run arm32v7/ubuntu:xenial
-        docker run aarch64/ubuntu:xenial
-        docker run amd64/ubuntu:xenial
-        ```
+  * On Ubuntu 18.04 and 16.04 by:
+    ```bash
+    sudo mkdir -p /lib/binfmt.d
+    sudo sh -c 'echo :qemu-arm:M::\\x7fELF\\x01\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\x28\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-arm-static:F > /lib/binfmt.d/qemu-arm-static.conf'
+    sudo sh -c 'echo :qemu-aarch64:M::\\x7fELF\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7\\x00:\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\xfe\\xff\\xff\\xff:/usr/bin/qemu-aarch64-static:F > /lib/binfmt.d/qemu-aarch64-static.conf'
+    sudo systemctl restart systemd-binfmt.service
+    ```
 
-      * On Linux, if you are seeing permission issues related to connecting to
-        the Docker daemon, add your Linux user to the docker group. This will
-        allow your user to connect and issue commands to the Docker daemon:
-        ```bash
-        sudo usermod -a -G docker $USER
-        ```
+  * To validate that your system is configured for cross-building, you can
+    try testing the docker containers that will be needed in the build:
+    ```bash
+    docker run arm32v7/ubuntu:xenial
+    docker run aarch64/ubuntu:xenial
+    docker run amd64/ubuntu:xenial
+    ```
 
   * Install the [iotedgehubdev](https://pypi.org/project/iotedgehubdev/) tool:
     ```bash
     pip install --upgrade iotedgehubdev
     ```
+
+* If you are seeing permission issues related to connecting to the Docker
+  daemon, add your Linux user to the docker group. This will allow your user
+  to connect and issue commands to the Docker daemon:
+  ```bash
+  sudo usermod -a -G docker $USER
+  ```
 
 ### Windows
 
@@ -296,6 +349,10 @@ don't wish to send usage data to Microsoft, you can set the
 `telemetry.enableTelemetry` setting to `false`.  Learn more in the [Visual
 Studio Code
 FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
+
+## Known Issues
+
+1. Debugging the host application under QEMU does not work.
 
 ## Release Notes
 
