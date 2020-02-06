@@ -4,8 +4,8 @@ A
 [Visual Studio Code](https://code.visualstudio.com/)
 [extension](https://marketplace.visualstudio.com/VSCode)
 supporting
-[Open Enclave](https://openenclave.io/sdk/)
-, including development, debugging, emulators, and deployment!
+[Open Enclave](https://openenclave.io/sdk/),
+including development, debugging, emulators, and deployment!
 
 For more information on the technology,
 [see here](https://github.com/openenclave/openenclave)
