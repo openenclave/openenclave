@@ -13,9 +13,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mount.h>
 #include <time.h>
 #include "libc_t.h"
 #include "mtest.h"
+
+#include "libc_tests.h"
 
 #pragma STDC FENV_ACCESS ON
 
@@ -28,7 +31,6 @@
 typedef unsigned int fpu_control_t __attribute__((__mode__(__HI__)));
 /* Macros for accessing the hardware control word.  */
 #define _FPU_GETCW(cw) __asm__ __volatile__("fnstcw %0" : "=m"(*&cw))
-#define _FPU_SETCW(cw) __asm__ __volatile__("fldcw %0" : : "m"(*&cw))
 #endif
 
 int t_status = 0;
@@ -58,11 +60,6 @@ uint32_t my_getmxcsr()
     asm volatile("stmxcsr %0" : "=m"(csr));
     return csr;
 }
-
-void my_setmxcsr(uint32_t csr)
-{
-    asm volatile("ldmxcsr %0" : : "m"(csr));
-}
 #endif
 
 int t_printf(const char* s, ...)
@@ -84,14 +81,14 @@ int t_setrlim(int r, int64_t lim)
     return 0;
 }
 
-int run_test(const char* name, int (*main)(int argc, const char* argv[]))
+int run_test_helper(const char* test_name, libc_test_function_t test_function)
 {
     extern char** __environ;
     char** environ = NULL;
     int ret = 1;
 
     /* Print running message. */
-    printf("=== running: %s\n", name);
+    printf("=== running: %s\n", test_name);
 
 #if defined(XMM_OK)
     /* Verify that the FPU control word and SSE control/status flags are set
@@ -104,32 +101,26 @@ int run_test(const char* name, int (*main)(int argc, const char* argv[]))
 #endif
 
     /* Disable Open Enclave debug malloc checks. */
-    {
-        extern bool oe_disable_debug_malloc_check;
-        oe_disable_debug_malloc_check = true;
-    }
+    extern bool oe_disable_debug_malloc_check;
+    oe_disable_debug_malloc_check = true;
 
     /* Allocate an environment for invoking the test. */
-    {
-        if (!(environ = (char**)calloc(1, sizeof(char*))))
-            goto done;
+    if (!(environ = (char**)calloc(1, sizeof(char*))))
+        goto done;
 
-        memset(environ, 0, sizeof(char**));
-        __environ = environ;
-    }
+    memset(environ, 0, sizeof(char**));
+    __environ = environ;
 
     /* Run the test */
+    const char* argv[] = {"test", NULL};
+
+    if (test_function(1, argv) != 0)
     {
-        const char* argv[] = {"test", NULL};
+        /* Prevent cascading of false negatives. */
+        t_status = 0;
 
-        if (main(1, argv) != 0)
-        {
-            /* Prevent cascading of false negatives. */
-            t_status = 0;
-
-            fprintf(stderr, "*** failed: %s\n", name);
-            goto done;
-        }
+        fprintf(stderr, "*** failed: %s\n", test_name);
+        goto done;
     }
 
     ret = 0;
@@ -142,12 +133,34 @@ done:
     return ret;
 }
 
-extern int run_tests(void);
-
-int test()
+int run_test(const char* test_name)
 {
     device_init();
-    return run_tests();
+    libc_test_function_t test = get_test_case(test_name);
+
+    if (test)
+    {
+        return run_test_helper(test_name, test);
+    }
+
+    printf("*** failed: test %s is not a valid test", test_name);
+    return 1;
+}
+
+int run_all_tests()
+{
+    int ret;
+
+    device_init();
+
+    ret = 0;
+    for (int i = 0; i < sizeof(libc_tests) / sizeof(libc_test_entry_t); i++)
+    {
+        libc_test_entry_t test = libc_tests[i];
+        ret += run_test_helper(test.test_name, test.test_function);
+    }
+
+    return ret;
 }
 
 OE_SET_ENCLAVE_SGX(
