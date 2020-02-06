@@ -753,12 +753,7 @@ oe_result_t oe_sgx_build_enclave(
         memcpy(&props, oeimage.image_base + oeimage.oeinfo_rva, sizeof(props));
     }
 
-    if (eeid &&
-        (props.header.size_settings.num_heap_pages !=
-             eeid->size_settings.num_heap_pages ||
-         props.header.size_settings.num_stack_pages !=
-             eeid->size_settings.num_stack_pages ||
-         props.header.size_settings.num_tcs != eeid->size_settings.num_tcs))
+    if (eeid)
     {
         if (props.header.size_settings.num_heap_pages != 0 ||
             props.header.size_settings.num_stack_pages != 0 ||

@@ -168,6 +168,7 @@ let generate_args (ec : enclave_content) =
     "#define " ^ guard_macro;
     "";
     "#include <openenclave/bits/result.h>";
+    "#include <openenclave/bits/properties.h>";
     "";
     "/**** User includes. ****/";
     String.concat "\n" user_includes;

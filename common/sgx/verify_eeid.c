@@ -28,6 +28,14 @@
 
 #include "verify_eeid.h"
 
+static bool is_zero(const uint8_t* buf, size_t sz)
+{
+    while (sz != 0)
+        if (buf[--sz] != 0)
+            return false;
+    return true;
+}
+
 oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -98,18 +106,16 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
     uint16_t ppid = (uint16_t)(report->identity.product_id[1] << 8) +
                     (uint16_t)report->identity.product_id[0];
 
-    if (sigstruct->isvprodid != ppid ||
+    bool sigstruct_debug = sigstruct->attributes.flags & SGX_FLAGS_DEBUG;
+    bool reported_debug =
+        report->identity.attributes & OE_REPORT_ATTRIBUTES_DEBUG;
+
+    if (sigstruct_debug != reported_debug || sigstruct->isvprodid != ppid ||
         sigstruct->isvsvn != report->identity.security_version)
-        // TODO: check attributes?
         OE_RAISE(OE_VERIFY_FAILED);
 
-    uint8_t zero[OE_KEY_SIZE];
-    memset(zero, 0, OE_KEY_SIZE);
-
-    if (sigstruct->type == (1ul << 31) &&
-        memcmp(sigstruct->signature, zero, OE_KEY_SIZE) ==
-            0) // Unsigned debug image is ok?
-        return OE_OK;
+    if (sigstruct_debug && is_zero(sigstruct->signature, OE_KEY_SIZE))
+        return OE_OK; // Unsigned debug image is ok?
     else
     {
         // OE_SHA256 mrsigner;
@@ -203,34 +209,6 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
 #else
         EVP_PKEY_free(ikey);
 #endif
-
-        // // Alternative: make up a fake non-extended report?
-        // oe_report_t irep;
-        // irep.size = 0;
-        // irep.type = OE_ENCLAVE_TYPE_SGX;
-        // irep.report_data_size = 0;
-        // irep.enclave_report_size = 0;
-        // irep.report_data = NULL;
-        // irep.enclave_report = NULL;
-
-        // irep.identity.id_version = report->identity.id_version;
-        // irep.identity.security_version = report->identity.security_version;
-        // irep.identity.attributes = report->identity.attributes;
-        // memcpy(irep.identity.unique_id, sigstruct->enclavehash,
-        // OE_UNIQUE_ID_SIZE); memcpy(irep.identity.signer_id, mrsigner.buf,
-        // OE_SIGNER_ID_SIZE); memcpy(irep.identity.product_id,
-        // report->identity.product_id, OE_PRODUCT_ID_SIZE);
-
-        // if (irep.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE) {
-        //     #ifndef OE_BUILD_ENCLAVE
-        //     OE_CHECK(oe_initialize_quote_provider());
-        //     #endif
-        //     // OE_CHECK(oe_verify_sgx_quote(header->report,
-        //     header->report_size, NULL, 0, NULL));
-        //     // OE_CHECK(oe_verify_quote_with_sgx_endorsements(quote,
-        //     quote_size, NULL, NULL));
-        // } else
-        //     OE_RAISE(OE_INVALID_PARAMETER);
     }
 
 done:
