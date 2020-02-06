@@ -6,8 +6,7 @@ add_library(oeuteeasm
 set_property(TARGET oeuteeasm PROPERTY C_STANDARD 99)
 target_compile_options(oeuteeasm PRIVATE
   ${OE_TZ_TA_S_FLAGS}
-  $<BUILD_INTERFACE:-include ${OE_TZ_TA_DEV_KIT_CONF}>
-  $<INSTALL_INTERFACE:-include openenclave/3rdparty/optee/conf.h>)
+  -include ${OE_TZ_TA_DEV_KIT_CONF})
 target_include_directories(oeuteeasm PRIVATE
   ${OE_TZ_LIBUTEE_INC}
   ${OE_TZ_LIBUTILS_EXT_INC})
