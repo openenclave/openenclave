@@ -106,7 +106,7 @@ environment.
 1. If debugging using QEMU:
    1. Open the **Terminal** view
    1. Log into QEMU using `root` (no password is required)
-   1. Start the host process by entering `/mnt/host/bin/<solution-name>`
+   1. Start the host process by entering `/mnt/host/bin/<solution-name> <TA UUID>`
    1. The debugger has been configured to break at `ecall_handle_message`.
 
 ## Azure IoT Edge projects
