@@ -51,6 +51,13 @@ if(OE_OPTEE)
     ${OE_PACKAGE_PREFIX}/${OE_PACKAGE_OPTEE_PLATFORM}/lib/openenclave/cmake)
 endif()
 
+string(TOUPPER ${CMAKE_BUILD_TYPE} OE_BUILD_TYPE)
+if("${OE_BUILD_TYPE}" STREQUAL "DEBUG")
+  set(OE_DEBUG ON)
+else()
+  set(OE_DEBUG OFF)
+endif()
+
 find_package(OpenEnclave CONFIG REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "cmake")

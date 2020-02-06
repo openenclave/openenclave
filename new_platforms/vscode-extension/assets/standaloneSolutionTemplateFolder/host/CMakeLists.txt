@@ -17,3 +17,10 @@ add_executable([[project-name]]
 target_include_directories([[project-name]] PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries([[project-name]] openenclave::oehostapp)
+
+if(OE_DEBUG)
+  # Disable PIC and PIE on debug builds to avoid having to manually line up
+  # symbols with GDB.
+  message(WARNING "Disabling PIC and PIE on the host.")
+  target_link_libraries([[project-name]] -fno-pie -fno-pic)
+endif()
