@@ -21,14 +21,6 @@ export class RequirementsChecker {
         const promises: Array<Promise<any>> = [];
         const warnings: string[] = [];
         if (os.platform() === "linux") {
-            promises.push(this.validateTool("arm-linux-gnueabihf-gcc", ["--version"])
-                .catch(async (error) => {
-                    warnings.push("Unable to locate GCC (arm-linux-gnueabihf-gcc).");
-                }));
-            promises.push(this.validateTool("arm-linux-gnueabihf-g++", ["--version"])
-                .catch(async (error) => {
-                    warnings.push("Unable to locate G++ (arm-linux-gnueabihf-g++).");
-                }));
             promises.push(this.validateTool("aarch64-linux-gnu-gcc", ["--version"])
                 .catch(async (error) => {
                     warnings.push("Unable to locate GCC (aarch64-linux-gnu-gcc).");
