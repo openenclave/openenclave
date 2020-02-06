@@ -31,7 +31,7 @@ release, start here for instructions to install and use the SDK package:
 - [Ubuntu 18.04 with SGX hardware](docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md)
 - [Ubuntu 16.04 with SGX hardware](docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md)
 - [Ubuntu 18.04 or 16.04 in simulation mode](docs/GettingStartedDocs/install_oe_sdk-Simulation.md)
-- Windows Release Package coming soon
+- [Windows Server 2016 with SGX hardware](docs/GettingStartedDocs/install_oe_sdk-Windows.md)
 
 If you would like to run Ubuntu 16.04 or Ubuntu 18.04 in a Hyper-V VM on SGX
 capable hardware, see
