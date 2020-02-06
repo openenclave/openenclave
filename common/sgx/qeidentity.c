@@ -62,11 +62,15 @@ oe_result_t oe_validate_qe_identity(
     OE_CHECK(oe_cert_chain_read_pem(
         &pck_cert_chain, pem_pck_certificate, pem_pck_certificate_size));
 
+    // Configure the platform isvsvn from the QE report.
+    // The platform isvsvn is needed for matching tcb level
+    // during qe identity info json parsing.
+    platform_tcb_level.isvsvn[0] = qe_report_body->isvsvn;
+
     // parse identity info json blob
     OE_TRACE_INFO(
         "*qe_identity.qe_id_info:[%s]\n",
         sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].data);
-    platform_tcb_level.isvsvn[0] = qe_report_body->isvsvn;
     OE_CHECK(oe_parse_qe_identity_info_json(
         sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].data,
         sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].size,
