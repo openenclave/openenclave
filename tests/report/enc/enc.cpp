@@ -137,6 +137,15 @@ void enclave_test_verify_report_with_collaterals()
     test_verify_report_with_collaterals();
 }
 
+#ifdef EEID_ENABLED
+OE_SET_ENCLAVE_SGX(
+    0,    /* ProductID */
+    0,    /* SecurityVersion */
+    true, /* AllowDebug */
+    0,    /* HeapPageCount */
+    0,    /* StackPageCount */
+    0);   /* TCSCount */
+#else
 OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */
@@ -144,3 +153,4 @@ OE_SET_ENCLAVE_SGX(
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */
+#endif

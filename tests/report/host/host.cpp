@@ -144,6 +144,9 @@ int main(int argc, const char* argv[])
     {
         uint64_t sz = oe_round_up_to_page_size(sizeof(oe_eeid_t) + 512);
         eeid = (oe_eeid_t*)calloc(1, sz);
+        eeid->size_settings.num_heap_pages = 1024;
+        eeid->size_settings.num_stack_pages = 1024;
+        eeid->size_settings.num_tcs = 2;
         eeid->data_size = 512;
         for (size_t i = 0; i < eeid->data_size; i++)
             eeid->data[i] = (uint8_t)i;
