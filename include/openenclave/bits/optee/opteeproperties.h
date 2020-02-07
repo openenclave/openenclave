@@ -12,7 +12,6 @@
 #define _OE_BITS_OPTEE_OPTEEPROPERTIES_H
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/corelibc/bits/defs.h>
 
 OE_EXTERNC_BEGIN
 

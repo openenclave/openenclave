@@ -99,6 +99,6 @@ if (OE_TRUSTZONE)
     install(TARGETS teec EXPORT openenclave-targets)
 
     install(FILES ${BINARY_DIR}/libteec/libteec.a
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/optee/libteec/libteec.a)
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/optee/libteec)
   endif ()
 endif ()
