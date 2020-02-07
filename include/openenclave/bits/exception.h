@@ -134,6 +134,20 @@ typedef struct _oe_context
 } oe_context_t;
 /**< typedef struct _oe_context oe_context_t*/
 
+// Forward declaration of _oe_exception_record_t for use by
+// oe_vectored_exception_handler_t
+struct _oe_exception_record;
+
+/**
+ * oe_vectored_exception_handler_t - Function pointer for a vectored exception
+ * handler in an enclave.
+ * @param exception_context The record of exception information to be handled by
+ * the function which includes any flags, the failure code, faulting address and
+ * calling context for the exception.
+ */
+typedef uint64_t (*oe_vectored_exception_handler_t)(
+    struct _oe_exception_record* exception_context);
+
 /**
  * Exception context structure with the exception code, flags, address and
  * calling context of the exception.
@@ -147,18 +161,13 @@ typedef struct _oe_exception_record
     uint64_t address; /**< Exception address */
 
     oe_context_t* context; /**< Exception context */
+
+    /*! Optional callback that will be called prior to continuing execution
+     *  but after the pre-exception register state has been restored.
+     *  This is intended to be set in the initial vectored exception handler. */
+    oe_vectored_exception_handler_t continuation_callback;
 } oe_exception_record_t;
 /**< typedef struct _oe_exception_record oe_exception_record_t*/
-
-/**
- * oe_vectored_exception_handler_t - Function pointer for a vectored exception
- * handler in an enclave.
- * @param exception_context The record of exception information to be handled by
- * the function which includes any flags, the failure code, faulting address and
- * calling context for the exception.
- */
-typedef uint64_t (*oe_vectored_exception_handler_t)(
-    oe_exception_record_t* exception_context);
 
 OE_EXTERNC_END
 

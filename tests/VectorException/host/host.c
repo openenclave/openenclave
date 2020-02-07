@@ -111,6 +111,18 @@ void test_sigill_handling(oe_enclave_t* enclave)
     }
 }
 
+static bool _exception_handled = false;
+void test_continuation_callback(oe_enclave_t* enclave)
+{
+    enc_test_continuation_callback(enclave);
+    OE_TEST(_exception_handled);
+}
+
+void host_set_exception_handled()
+{
+    _exception_handled = true;
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -143,6 +155,7 @@ int main(int argc, const char* argv[])
 
     test_vector_exception(enclave);
     test_sigill_handling(enclave);
+    test_continuation_callback(enclave);
 
     oe_terminate_enclave(enclave);
 

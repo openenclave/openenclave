@@ -279,6 +279,9 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
         td->host_rbp = td->host_previous_rbp;
         td->host_rsp = td->host_previous_rsp;
 
+        if (oe_exception_record.continuation_callback)
+            oe_exception_record.continuation_callback(&oe_exception_record);
+
         oe_continue_execution(oe_exception_record.context);
 
         // Code should never run to here.
