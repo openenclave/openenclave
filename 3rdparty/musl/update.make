@@ -21,7 +21,8 @@ update-musl:
 
 update-libc-test:
 	rm -rf libc-test
-	git clone git://nsz.repo.hu:45100/repo/libc-test
+	git clone git://repo.or.cz/libc-test
+	git -C libc-test checkout a51df71b050f3f9dfdc0a7d90978b57277b582ec
 	rm -rf libc-test/.git
 	rm libc-test/.gitignore
 

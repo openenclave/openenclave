@@ -17,7 +17,7 @@ int main(void)
 	int yi;
 	double y;
 	float d;
-	int e, i, err = 0;
+	int e, i, bad, err = 0;
 	struct f_fi *p;
 
 	for (i = 0; i < sizeof t/sizeof *t; i++) {
@@ -37,10 +37,14 @@ int main(void)
 			err++;
 		}
 		d = ulperrf(y, p->y, p->dy);
-		if (!checkulp(d, p->r) || (!isnan(p->x) && p->x!=-inf && !(p->e&DIVBYZERO) && yi != p->i)) {
+		bad = !isnan(p->x) && p->x!=-inf && !(p->e&DIVBYZERO) && yi != p->i;
+		if (bad || !checkulp(d, p->r)) {
+			if (!bad && fabsf(d) < 2.0f)
+				printf("X ");
+			else
+				err++;
 			printf("%s:%d: %s lgammaf_r(%a) want %a,%lld got %a,%d ulperr %.3f = %a + %a\n",
 				p->file, p->line, rstr(p->r), p->x, p->y, p->i, y, yi, d, d-p->dy, p->dy);
-			err++;
 		}
 	}
 	return !!err;

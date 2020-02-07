@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 #include <pthread.h>
 #include "test.h"
 
@@ -8,6 +9,7 @@ static __thread char d4096 __attribute__ ((aligned(4096))) = 33;
 static __thread char z1 = 0;
 static __thread char z64 __attribute__ ((aligned(64))) = 0;
 static __thread char z4096 __attribute__ ((aligned(4096))) = 0;
+static __thread const char *s1 = "s1";
 
 static int tnum;
 
@@ -39,6 +41,8 @@ static void *check(void *arg)
 
 	CHECK(ptrmod(&z64, 64) == 0, " address is %p, want 64 byte alignment", &z64);
 	CHECK(ptrmod(&z4096, 4096) == 0, " address is %p, want 4096 byte alignment", &z4096);
+
+	CHECK(!strcmp(s1, "s1"), " want s1 got %s", s1);
 	return 0;
 }
 

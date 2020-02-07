@@ -34,11 +34,12 @@ int main(void)
 		}
 		d = ulperr(y, p->y, p->dy);
 		if (!checkulp(d, p->r)) {
-			// only report at most one <2ulp error
-			if (fabsf(d) < 2 && err) continue;
+			if (fabsf(d) < 2.0f)
+				printf("X ");
+			else
+				err++;
 			printf("%s:%d: %s asinh(%a) want %a got %a ulperr %.3f = %a + %a\n",
 				p->file, p->line, rstr(p->r), p->x, p->y, y, d, d-p->dy, p->dy);
-			err++;
 		}
 	}
 	return !!err;

@@ -62,11 +62,11 @@ static void inc()
 	EQ(semid_ds.sem_perm.gid, getegid(), "got %d, want %d");
 	EQ(semid_ds.sem_perm.mode & 0x1ff, 0666, "got %o, want %o");
 	EQ(semid_ds.sem_nsems, 1, "got %d, want %d");
-	EQ((long)semid_ds.sem_otime, 0, "got %ld, want %d");
+	EQ((long long)semid_ds.sem_otime, 0, "got %lld, want %d");
 	if (semid_ds.sem_ctime < t)
-		t_error("semid_ds.sem_ctime >= t failed: got %ld, want >= %ld\n", (long)semid_ds.sem_ctime, (long)t);
+		t_error("semid_ds.sem_ctime >= t failed: got %lld, want >= %lld\n", (long long)semid_ds.sem_ctime, (long long)t);
 	if (semid_ds.sem_ctime > t+5)
-		t_error("semid_ds.sem_ctime <= t+5 failed: got %ld, want <= %ld\n", (long)semid_ds.sem_ctime, (long)t+5);
+		t_error("semid_ds.sem_ctime <= t+5 failed: got %lld, want <= %lld\n", (long long)semid_ds.sem_ctime, (long long)t+5);
 
 	/* test sem_op > 0 */
 	sops.sem_num = 0;

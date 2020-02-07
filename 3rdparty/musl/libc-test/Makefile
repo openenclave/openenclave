@@ -117,14 +117,14 @@ api/main.OBJS:=$(api.OBJS)
 $(api.OBJS):$(B)/common/options.h
 $(api.OBJS):CFLAGS+=-pedantic-errors -Werror -Wno-unused -D_XOPEN_SOURCE=700
 
-all:$(B)/REPORT
-run:$(B)/REPORT
+all run: $(B)/REPORT
+	grep FAIL $< || echo PASS
 clean:
 	rm -f $(OBJS) $(BINS) $(LIBS) $(B)/common/libtest.a $(B)/common/runtest.exe $(B)/common/options.h $(B)/*/*.err
 cleanall: clean
 	rm -f $(B)/REPORT $(B)/*/REPORT
 $(B)/REPORT:
-	cat $^ |tee $@
+	cat $^ >$@
 
 $(B)/%.o:: src/%.c
 	$(CC) $(CFLAGS) $($*.CFLAGS) -c -o $@ $< 2>$@.err || echo BUILDERROR $@; cat $@.err
