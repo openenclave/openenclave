@@ -4,6 +4,7 @@
 #ifndef OE_SAMPLES_ATTESTATION_ENC_ATTESTATION_H
 #define OE_SAMPLES_ATTESTATION_ENC_ATTESTATION_H
 
+#include <openenclave/bits/eeid.h>
 #include <openenclave/enclave.h>
 #include "crypto.h"
 

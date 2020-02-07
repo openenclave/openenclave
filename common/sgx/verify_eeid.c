@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -42,6 +43,13 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
 
     if (!eeid || !report)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_WARNING)
+    {
+        char buf[2 * (sizeof(oe_eeid_t) + eeid->data_size) + 8];
+        OE_CHECK(oe_serialize_eeid(eeid, buf, sizeof(buf)));
+        printf("EEID:\n%s", buf);
+    }
 
     // Recompute extended mrenclave
     oe_sha256_context_t hctx;
@@ -100,7 +108,6 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
     if (memcmp(debug_public_key, reported_mrsigner, OE_SIGNER_ID_SIZE) != 0)
         OE_RAISE(OE_VERIFY_FAILED);
 
-    // Check old signature (new signature has been checked above)
     const sgx_sigstruct_t* sigstruct = (const sgx_sigstruct_t*)&eeid->sigstruct;
 
     uint16_t ppid = (uint16_t)(report->identity.product_id[1] << 8) +
@@ -114,6 +121,7 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
         sigstruct->isvsvn != report->identity.security_version)
         OE_RAISE(OE_VERIFY_FAILED);
 
+    // Check old signature (new signature has been checked above)
     if (sigstruct_debug && is_zero(sigstruct->signature, OE_KEY_SIZE))
         return OE_OK; // Unsigned debug image is ok?
     else

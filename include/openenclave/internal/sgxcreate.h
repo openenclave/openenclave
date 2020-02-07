@@ -4,6 +4,7 @@
 #ifndef _OE_SGXCREATE_H
 #define _OE_SGXCREATE_H
 
+#include <openenclave/bits/eeid.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include "crypto/sha.h"

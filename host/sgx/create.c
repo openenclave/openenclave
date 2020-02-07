@@ -844,6 +844,13 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(
         _add_eeid_pages(context, enclave, enclave_end, &props, &vaddr, eeid));
 
+    if (eeid && oe_get_current_logging_level() >= OE_LOG_LEVEL_WARNING)
+    {
+        char buf[2 * (sizeof(oe_eeid_t) + eeid->data_size) + 8];
+        OE_CHECK(oe_serialize_eeid(eeid, buf, sizeof(buf)));
+        printf("EEID:\n%s", buf);
+    }
+
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(oe_sgx_initialize_enclave(
         context, enclave_addr, &props, &enclave->hash));
