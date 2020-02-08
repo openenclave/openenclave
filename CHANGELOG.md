@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 ------------
 
+[v0.8.1][v0.8.1_log] - 2020-02-07
+---------------------
+
+### Fixed 
+- Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523. 
+
 [v0.8.0][v0.8.0_log] - 2020-01-22
 ---------------------
 
@@ -286,7 +292,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.8.0...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.8.1...HEAD
+
+[v0.8.1_log]:https://github.com/openenclave/openenclave/compare/v0.8.0...v0.8.1
 
 [v0.8.0_log]:https://github.com/openenclave/openenclave/compare/v0.7.0...v0.8.0
 
