@@ -52,7 +52,7 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     result = oe_create_SampleApp_enclave(
-        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+        argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(stderr, "Could not create enclave, result=%d\n", result);

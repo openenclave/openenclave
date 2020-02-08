@@ -208,8 +208,8 @@ OE_SET_ENCLAVE_SGX(
 
 OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
-    2 * 1024 * 1024,
-    24 * 1024,
+    1024 * 4096,
+    1024 * 4096,
     TA_FLAG_EXEC_DDR,
     "1.0.0",
     "Crypto test")
