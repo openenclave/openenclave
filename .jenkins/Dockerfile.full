@@ -13,13 +13,14 @@
 #
 # Once installed, build a docker image from .jenkins folder and
 # it will use this Dockerfile by default:
-#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=<ubuntu_version> --build-arg devkits_uri=<devkits_uri> -t oetools-full-<ubuntu_version>:<version> -f .jenkins/Dockerfile.full .
+#     openenclave$ sudo docker build --no-cache=true --build-arg ubuntu_version=<ubuntu_version> --build-arg devkits_uri=<devkits_uri> --build-arg armtz_emulator_uri=<armtz_emulator_uri> -t oetools-full-<ubuntu_version>:<version> -f .jenkins/Dockerfile.full .
 #
 # For example, for version 1.x with Ubuntu 18.04 :
 #     openenclave$ sudo docker build \
 #         --no-cache=true \
 #         --build-arg ubuntu_version=18.04 \
 #         --build-arg devkits_uri=https://tcpsbuild.blob.core.windows.net/tcsp-build/OE-CI-devkits-dd4c992d.tar.gz \
+#         --build-arg armtz_emulator_uri=https://tcpsbuild.blob.core.windows.net/tcsp-build/OE-CI-emulator-armtz-aarch64.tar.gz \
 #         -t oetools-full-18.04:1.x \
 #         -f .jenkins/Dockerfile.full \
 #         .
@@ -58,6 +59,7 @@ ARG GID=1000
 COPY ./ /oe
 
 ARG devkits_uri
+ARG armtz_emulator_uri
 RUN cd /oe/scripts/ansible && \
     ./install-ansible.sh && \
     ansible localhost --playbook-dir=/oe/scripts/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv && \
@@ -71,4 +73,5 @@ RUN cd /oe/scripts/ansible && \
     useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME} && \
     curl ${devkits_uri} | tar xvz --no-same-permissions --no-same-owner && \
     echo ${devkits_uri##*/} > /devkits/TARBALL && \
+    curl ${armtz_emulator_uri} | tar xvz --no-same-permissions --no-same-owner && \
     echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
