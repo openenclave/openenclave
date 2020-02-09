@@ -103,6 +103,44 @@ def AArch64GNUTest(String version, String build_type) {
                                 -DHAS_QUOTE_PROVIDER=OFF                                           \
                                 -Wdev
                             ninja -v
+
+                            mkdir ${HOME}/.ssh
+
+                            cd /armtz_emulator
+                            nohup ./qemu-system-aarch64 \
+                                    -nographic \
+                                    -serial file:ree.log -serial file:tee.log \
+                                    -smp 1 \
+                                    -machine virt,secure=on -cpu cortex-a57 \
+                                    -d unimp -semihosting-config enable,target=native \
+                                    -m 1057 \
+                                    -bios bl1.bin \
+                                    -initrd rootfs.cpio.gz \
+                                    -kernel Image \
+                                    -no-acpi \
+                                    -append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
+                                    -virtfs local,id=sh0,path=${WORKSPACE},security_model=passthrough,readonly,mount_tag=sh0 \
+                                    -netdev user,id=vmnic,hostfwd=tcp::5555-:22 \
+                                    -device virtio-net-device,netdev=vmnic &
+                            disown
+
+                            while ! nc -z 127.0.0.1 5555; do sleep 1; done
+
+                            ssh-keyscan -T 300 -p 5555 localhost >> ${HOME}/.ssh/known_hosts
+
+                            CMD="su -c\""
+                            CMD="${CMD} mkdir /mnt/oe &&"
+                            CMD="${CMD} mount -t 9p -o trans=virtio sh0 /mnt/oe -oversion=9p2000.L &&"
+                            CMD="${CMD} cd /mnt/oe &&"
+                            CMD="${CMD} mkdir -p ${WORKSPACE} &&"
+                            CMD="${CMD} cd ${WORKSPACE} &&"
+                            CMD="${CMD} cp -r /mnt/oe/* . &&"
+                            CMD="${CMD} cd build &&"
+                            CMD="${CMD} find tests -name *.ta -type f | xargs -I {} cp {} /lib/optee_armtz &&"
+                            CMD="${CMD} chmod 0644 /lib/optee_armtz/* &&"
+                            CMD="${CMD} ctest --output-on-failure\""
+
+                            sshpass -p runner ssh runner@localhost -p 5555 "${CMD}"
                             """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "cross", task, "--cap-add=SYS_PTRACE")
             }
