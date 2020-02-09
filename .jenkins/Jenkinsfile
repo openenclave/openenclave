@@ -138,6 +138,17 @@ def AArch64GNUTest(String version, String build_type) {
                             CMD="${CMD} ctest --output-on-failure\""
 
                             sshpass -p runner ssh runner@localhost -p 5555 "${CMD}"
+                            EXIT_CODE=$?
+
+                            echo "Linux Logs"
+                            echo "========================================"
+                            cat ree.log
+
+                            echo "OP-TEE Logs"
+                            echo "========================================"
+                            cat tee.log
+
+                            exit $EXIT_CODE
                             """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "cross", task, "--cap-add=SYS_PTRACE")
             }
