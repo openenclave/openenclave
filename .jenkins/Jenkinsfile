@@ -129,12 +129,9 @@ def AArch64GNUTest(String version, String build_type) {
                             ssh-keyscan -T 300 -p 5555 localhost >> ${HOME}/.ssh/known_hosts
 
                             CMD="su -c\""
-                            CMD="${CMD} mkdir /mnt/oe &&"
-                            CMD="${CMD} mount -t 9p -o trans=virtio sh0 /mnt/oe -oversion=9p2000.L &&"
-                            CMD="${CMD} cd /mnt/oe &&"
                             CMD="${CMD} mkdir -p ${WORKSPACE} &&"
+                            CMD="${CMD} mount -t 9p -o trans=virtio sh0 ${WORKSPACE} -oversion=9p2000.L &&"
                             CMD="${CMD} cd ${WORKSPACE} &&"
-                            CMD="${CMD} cp -r /mnt/oe/* . &&"
                             CMD="${CMD} cd build &&"
                             CMD="${CMD} find tests -name *.ta -type f | xargs -I {} cp {} /lib/optee_armtz &&"
                             CMD="${CMD} chmod 0644 /lib/optee_armtz/* &&"
