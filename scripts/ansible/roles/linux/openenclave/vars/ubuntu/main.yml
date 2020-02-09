@@ -45,6 +45,7 @@ apt_arm_packages:
   - "libc6-dev:arm64"
   - "libssl-dev:arm64"
   - "libfdt1"
+  - "netcat"
   - "openssh-client"
   - "sshpass"
 
