@@ -119,7 +119,7 @@ def AArch64GNUTest(String version, String build_type) {
                                     -kernel Image \
                                     -no-acpi \
                                     -append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
-                                    -virtfs local,id=sh0,path=${WORKSPACE},security_model=passthrough,readonly,mount_tag=sh0 \
+                                    -virtfs local,id=sh0,path=${WORKSPACE},security_model=passthrough,mount_tag=sh0 \
                                     -netdev user,id=vmnic,hostfwd=tcp::5555-:22 \
                                     -device virtio-net-device,netdev=vmnic &
                             disown
