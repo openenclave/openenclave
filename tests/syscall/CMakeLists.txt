@@ -4,6 +4,7 @@
 add_subdirectory(socket)
 
 if(UNIX)
+add_subdirectory(atexit)
 add_subdirectory(cpio)
 add_subdirectory(datagram)
 add_subdirectory(dup)

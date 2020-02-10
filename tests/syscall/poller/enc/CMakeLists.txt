@@ -13,4 +13,7 @@ add_executable(poller_enc
 
 maybe_build_using_clangw(poller_enc)
 
+if (CODE_COVERAGE_TEST)
+    target_link_libraries(poller_enc gcda oehostfs)
+endif()
 target_link_libraries(poller_enc oelibcxx oeenclave oehostepoll oehostsock)

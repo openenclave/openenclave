@@ -12,4 +12,7 @@ add_executable(epoll_enc enc.cpp epoll_t.c)
 
 maybe_build_using_clangw(epoll_enc)
 
+if (CODE_COVERAGE_TEST)
+    target_link_libraries(epoll_enc gcda oehostfs)
+endif()
 target_link_libraries(epoll_enc oelibcxx oeenclave oehostepoll oehostsock)

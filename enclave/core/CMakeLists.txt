@@ -242,6 +242,21 @@ endif()
 
 target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
+if (CODE_COVERAGE_TEST)
+    # Code coverage
+    target_compile_options(oecore PUBLIC -fprofile-arcs -ftest-coverage)
+    set_source_files_properties(once.c PROPERTIES
+        COMPILE_FLAGS -fno-profile-arcs)
+    set_source_files_properties(sgx/calls.c PROPERTIES
+        COMPILE_FLAGS -fno-profile-arcs)
+    set_source_files_properties(sgx/init.c PROPERTIES
+        COMPILE_FLAGS -fno-profile-arcs)
+    set_source_files_properties(src/memory.c PROPERTIES
+        COMPILE_FLAGS -fno-profile-arcs)
+    set_source_files_properties(src/linux/reloc.c PROPERTIES
+        COMPILE_FLAGS -fno-profile-arcs)
+endif()
+
 target_compile_definitions(oecore
     PUBLIC
     OE_BUILD_ENCLAVE

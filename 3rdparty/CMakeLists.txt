@@ -9,6 +9,7 @@ set(LIBCXX_INCLUDES ${OE_INCDIR}/openenclave/libcxx)
 
 add_subdirectory(libcxx)
 add_subdirectory(libcxxrt)
+add_subdirectory(libgcda)
 add_subdirectory(libunwind)
 add_subdirectory(musl)
 add_subdirectory(mbedtls)

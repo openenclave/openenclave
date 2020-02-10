@@ -18,4 +18,7 @@ add_executable(sendmsg_enc enc.c ../client.c ../server.c ${CMAKE_CURRENT_BINARY_
 
 maybe_build_using_clangw(sendmsg_enc)
 
+if (CODE_COVERAGE_TEST)
+    target_link_libraries(sendmsg_enc gcda oehostfs)
+endif()
 target_link_libraries(sendmsg_enc oelibc oeenclave oehostsock)
