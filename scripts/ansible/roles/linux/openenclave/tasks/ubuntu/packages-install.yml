@@ -1,0 +1,24 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- include_role:
+    name: linux/common
+    tasks_from: apt-repo.yml
+  vars:
+    apt_key_url: "https://packages.microsoft.com/keys/microsoft.asc"
+    apt_repository: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
+
+- include_role:
+    name: linux/common
+    tasks_from: apt-repo.yml
+  vars:
+    apt_key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+    apt_repository: "deb http://apt.llvm.org/{{ ansible_distribution_release }} llvm-toolchain-{{ ansible_distribution_release }}-7 main"
+
+- name: Install all the Open Enclave prerequisites APT packages for development
+  apt:
+    name: "{{ apt_packages }}"
+    state: latest
+    update_cache: yes
+    install_recommends: no

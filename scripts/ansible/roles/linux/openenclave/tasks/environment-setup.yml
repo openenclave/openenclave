@@ -5,30 +5,12 @@
 - name: Gather Ansible facts
   setup:
 
-- include_role:
-    name: linux/common
-    tasks_from: apt-repo.yml
-  vars:
-    apt_key_url: "https://packages.microsoft.com/keys/microsoft.asc"
-    apt_repository: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
-
-- include_role:
-    name: linux/common
-    tasks_from: apt-repo.yml
-  vars:
-    apt_key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-    apt_repository: "deb http://apt.llvm.org/{{ ansible_distribution_release }} llvm-toolchain-{{ ansible_distribution_release }}-7 main"
-
 - name: Include distribution vars
   include_vars:
-    file: "{{ ansible_distribution | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}/main.yml"
 
-- name: Install all the Open Enclave prerequisites APT packages for development
-  apt:
-    name: "{{ apt_packages }}"
-    state: latest
-    update_cache: yes
-    install_recommends: no
+- name: Install distribution packages
+  include_tasks: "{{ ansible_distribution | lower }}/packages-install.yml"
 
 - name: Install esy
   include_tasks: esy-setup.yml
@@ -36,13 +18,13 @@
 - name: Install CMake 3.13.1
   unarchive:
     src: https://cmake.org/files/v3.13/cmake-3.13.1-Linux-x86_64.tar.gz
-    dest: /usr/local/
+    dest: "{{ cmake_prefix }}"
     remote_src: yes
 
 - name: Create CMake symbolic links
   file:
-    src: "/usr/local/cmake-3.13.1-Linux-x86_64/bin/{{ item }}"
-    dest: "/usr/local/bin/{{ item }}"
+    src: "{{ cmake_prefix }}/cmake-3.13.1-Linux-x86_64/bin/{{ item }}"
+    dest: "{{ cmake_prefix }}/bin/{{ item }}"
     force: yes
     state: link
   with_items:

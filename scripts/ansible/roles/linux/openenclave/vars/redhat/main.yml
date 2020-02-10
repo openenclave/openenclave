@@ -1,0 +1,44 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+cmake_target_version: "3.13.1"
+clang_target_version: "8.0.1"
+esy_target_version: "0.5.8"
+shellcheck_target_version: "0.4.7"
+cmake_prefix: "/usr"
+esy_prefix: "/usr/lib/esy"
+esy_bin_prefix: "/usr/bin"
+
+shellcheck_sha256sum: "deeea92a4d3a9c5b16ba15210d9c1ab84a2e12e29bf856427700afd896bbdc93"
+
+clang_binary_name: "clang-8"
+
+yum_packages:
+  - "curl"
+  - "make"
+  - "ninja-build"
+  - "openssl-devel"
+  - "openssl"
+  - "pkg-config"
+  - "autoconf"
+  - "doxygen"
+  - "graphviz"
+  - "expat-devel"
+  - "libtool"
+  - "subversion"
+  - "libcurl-devel"
+  - "libX11-devel"
+  - "ncurses-devel"
+  - "clang"
+  - "gcc"
+  - "gdb"
+  - "git"
+  - "perl-Digest-SHA"
+
+validation_distribution_binaries:
+  - "/usr/bin/shellcheck"
+  - "/usr/bin/clang"
+
+validation_distribution_files:
+  - "/usr/lib64/libssl.so"

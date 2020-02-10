@@ -1,0 +1,15 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+yum_packages:
+  - "openssl-devel"
+  - "libcurl-devel"
+  - "pkg-config"
+
+git_repo_url: "https://github.com/Microsoft/Azure-DCAP-Client.git"
+git_local_dir: "/tmp/Azure-DCAP-Client"
+
+validation_distribution_files:
+  - "/usr/local/include/dcap_provider.h"
+  - "/usr/local/lib/libdcap_quoteprov.so"

@@ -4,11 +4,7 @@
 ---
 - name: Include distribution vars
   include_vars:
-    file: "{{ ansible_distribution | lower }}.yml"
-
-- name: Include distribution release specific vars
-  include_vars:
-    file: "{{ ansible_distribution_release | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Check for existing required binaries
   stat:

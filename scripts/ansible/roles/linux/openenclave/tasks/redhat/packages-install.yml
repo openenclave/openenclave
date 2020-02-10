@@ -1,0 +1,46 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- name: Install all the Open Enclave prerequisites YUM packages for development
+  yum:
+    name: "{{ yum_packages }}"
+    state: latest
+
+- name: Download ShellCheck tar.xz archive
+  get_url:
+    url: "https://storage.googleapis.com/shellcheck/shellcheck-v{{ shellcheck_target_version }}.linux.x86_64.tar.xz"
+    dest: /tmp/shellcheck.tar.xz
+    checksum: "sha256:{{ shellcheck_sha256sum }}"
+    timeout: 10
+  retries: 5
+
+- name: Unpack ShellCheck tar.xz archive
+  unarchive:
+    src: /tmp/shellcheck.tar.xz
+    dest: /tmp
+    list_files: yes
+    remote_src: yes
+
+- name: Create /usr/bin/python symlink
+  file:
+    src: "/usr/libexec/platform-python"
+    dest: "/usr/bin/python"
+    force: yes
+    state: link
+
+- name: Install ShellCheck binary to /usr/bin/shellcheck
+  copy:
+    src: "/tmp/shellcheck-v{{ shellcheck_target_version }}/shellcheck"
+    dest: /usr/bin/shellcheck
+    mode: 0755
+    owner: root
+    remote_src: yes
+
+- name: Cleanup ShellCheck installation
+  file:
+    path: "/tmp/{{ item }}"
+    state: absent
+  with_items:
+    - "shellcheck.tar.xz"
+    - "shellcheck-v{{ shellcheck_target_version }}"

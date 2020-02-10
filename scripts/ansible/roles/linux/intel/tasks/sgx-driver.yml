@@ -2,21 +2,19 @@
 # Licensed under the MIT License.
 
 ---
+- name: Gather Ansible facts
+  setup:
+
 - name: Include distribution vars
   include_vars:
-    file: "{{ ansible_distribution | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Include distribution release specific vars
   include_vars:
-    file: "{{ ansible_distribution_release | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
 
-- name: Install the dkms package
-  apt:
-    name:
-      - "dkms"
-    state: latest
-    update_cache: yes
-    install_recommends: no
+- name: Install the SGX driver requirements
+  include_tasks: "{{ ansible_distribution | lower }}/sgx-driver-requirements.yml"
 
 - name: Populate service facts
   service_facts:
@@ -45,10 +43,10 @@
   retries: 3
   when: not flc_enabled|bool
 
-- name: Install the Intel SGX DCAP Driver
+- name: Install the Intel SGX Driver
   command: /tmp/sgx_linux_x64_driver.bin
 
-- name: Remove the Intel SGX DCAP Driver installer
+- name: Remove the Intel SGX driver installer
   file:
     path: /tmp/sgx_linux_x64_driver.bin
     state: absent

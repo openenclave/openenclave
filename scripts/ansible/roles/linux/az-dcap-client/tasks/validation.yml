@@ -4,11 +4,11 @@
 ---
 - name: Include distribution vars
   include_vars:
-    file: "{{ ansible_distribution | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Check for existing required files
   stat:
     path: "{{ item }}"
-  with_items: "{{ validation_files }}"
+  with_items: "{{ validation_distribution_files }}"
   register: file
   failed_when: file.stat.exists == False

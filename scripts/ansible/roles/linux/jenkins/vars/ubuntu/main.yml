@@ -1,0 +1,6 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+java_packages:
+  - "openjdk-8-jre"

@@ -4,13 +4,12 @@
 ---
 - name: Include distribution vars
   include_vars:
-    file: "{{ ansible_distribution | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Jenkins | Install Java JRE needed by Jenkins
-  apt:
-    name: openjdk-8-jre
+  package:
+    name: "{{ java_packages }}"
     state: latest
-    update_cache: yes
   retries: 10
   delay: 10
   register: result

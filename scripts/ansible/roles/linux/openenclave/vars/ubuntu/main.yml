@@ -5,7 +5,12 @@
 cmake_target_version: "3.13.1"
 clang_target_version: "7.1.0"
 esy_target_version: "0.5.8"
+shellcheck_target_version: "0.4.6"
+cmake_prefix: "/usr/local"
 esy_prefix: "/usr/local/lib/esy"
+esy_bin_prefix: "/usr/local/bin"
+
+clang_binary_name: "clang-7"
 
 apt_packages:
   - "curl"
@@ -43,29 +48,9 @@ apt_arm_packages:
   - "openssh-client"
   - "sshpass"
 
-validation_directories:
-  - "/usr/share/libtool"
-
-validation_files:
-  - "/usr/lib/x86_64-linux-gnu/libssl.so"
-
-validation_binaries:
-  - "/usr/bin/make"
-  - "/usr/local/bin/cmake"
-  - "/usr/local/bin/ccmake"
-  - "/usr/local/bin/cpack"
-  - "/usr/local/bin/ctest"
-  - "/usr/local/bin/esy"
-  - "/usr/bin/dot"
-  - "/usr/bin/gcc"
-  - "/usr/bin/g++"
-  - "/usr/bin/gdb"
-  - "/usr/bin/autoconf"
-  - "/usr/bin/libtoolize"
-  - "/usr/bin/doxygen"
-  - "/usr/bin/openssl"
-  - "/usr/bin/pkg-config"
-  - "/usr/bin/clang-7"
+validation_distribution_binaries:
   - "/usr/bin/shellcheck"
-  - "/usr/bin/git"
-  - "/usr/bin/svn"
+  - "/usr/bin/clang-7"
+
+validation_distribution_files:
+  - "/usr/lib/x86_64-linux-gnu/libssl.so"
