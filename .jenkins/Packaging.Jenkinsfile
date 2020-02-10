@@ -42,7 +42,21 @@ def WindowsPackaging(String build_type) {
                         ninja.exe && \
                         ctest.exe -V -C RELEASE --timeout ${CTEST_TIMEOUT_SECONDS} && \
                         cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY && \
-                        cpack.exe
+                        cpack.exe && \
+                        rmdir /s/q C:\oe && \
+                        nuget.exe install open-enclave -Source %cd% -OutputDirectory C:\oe -ExcludeVersion && \
+                        set OpenEnclave_DIR=C:\oe\open-enclave\openenclave\lib\openenclave\cmake && \
+                        cd C:\oe\open-enclave\openenclave\share\openenclave\samples && \
+                        setlocal enabledelayedexpansion && \
+                        for /d %i in (*) do (
+                            cd "%i"
+                            mkdir build
+                            cd build
+                            cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs || exit /b %errorlevel%
+                            ninja || exit /b %errorlevel%
+                            ninja run || exit /b %errorlevel%
+                            cd ../..
+                        )
                         """
                 }
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "v0.8.x/${BUILD_NUMBER}/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
