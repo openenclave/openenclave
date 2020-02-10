@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed 
 - Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523. 
 
+### Changed
+- `oe_random()` now depends on the hardware-based source of RNG instead of cryptography libraries.
+
 [v0.8.0][v0.8.0_log] - 2020-01-22
 ---------------------
 

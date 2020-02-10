@@ -5,7 +5,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/rdrand.h>
 
-// The RDRAND generats 8-byte random value.
+// The RDRAND generates 8-byte random value.
 #define RDRAND_BYTES 8
 
 oe_result_t oe_random_internal(void* data, size_t size)
