@@ -73,7 +73,8 @@ release notes for the set of issues addressed.
 - Ability to debug ELF enclaves on Windows using Windbg/CDB
     - [Visual Studio Code CDB Extension](https://aka.ms/CDBVSCode)
     - [WinDbg Preview](https://aka.ms/WinDbgPreview)
-    - The new oedebugrt.dll binary needs to be copied to the app folder to enable this.
+    - The new oedebugrt.dll and accompanying oedebugrt.pdb need to be copied to the
+      app folder to enable this.
 - Preview support for 64-bit ARM TrustZone-capable boards with OP-TEE OS
   - See the [documentation](docs/GettingStartedDocs/OP-TEE/Introduction.md)
     for the list of supported platforms, features, and known issues.
