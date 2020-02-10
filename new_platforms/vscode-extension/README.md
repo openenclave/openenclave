@@ -38,6 +38,11 @@ If you are reading this document on GitHub, install the
 [Microsoft Open Enclave extension](https://marketplace.visualstudio.com/items?itemName=ms-iot.msiot-vscode-openenclave)
 from the Visual Studio Code marketplace.
 
+To deploy hosts and enclaves to a Scalys Grapeboard regardless of the type of
+project (Standalone or Azure IoT Edge) that you choose, follow the
+[Getting Started with Open Enclave for the Scalys TrustBox](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/OP-TEE/Hardware/ScalysTrustBox.md)
+guide to set up your board.
+
 ## Create a new Open Enclave solution
 
 You can use the `Microsoft Open Enclave: New Open Enclave Solution` command
