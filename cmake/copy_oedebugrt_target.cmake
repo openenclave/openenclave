@@ -18,12 +18,19 @@ function(copy_oedebugrt_target TARGET_NAME)
     get_property(OEDEBUGRTLOCATION TARGET openenclave::oedebugrt PROPERTY LOCATION)
     # Add copy actions for the dependencies
     add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.dll ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.pdb
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.dll
         DEPENDS ${OEDEBUGRTLOCATION}
         COMMAND ${CMAKE_COMMAND} -E copy ${OEDEBUGRTLOCATION} ${CMAKE_CURRENT_BINARY_DIR})
 
+    get_filename_component(OEDEBUGRTFOLDER "${OEDEBUGRTLOCATION}" DIRECTORY)
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.pdb
+        DEPENDS ${OEDEBUGRTFOLDER}/oedebugrt.pdb
+        COMMAND ${CMAKE_COMMAND} -E copy ${OEDEBUGRTFOLDER}/oedebugrt.pdb ${CMAKE_CURRENT_BINARY_DIR})
 
     # Always create the requested target, which may have an empty dependency list
-    add_custom_target(${TARGET_NAME} DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.dll)
+    add_custom_target(${TARGET_NAME} DEPENDS 
+      ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.dll
+      ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.pdb)
 
 endfunction( copy_oedebugrt_target )
