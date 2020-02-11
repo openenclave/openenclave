@@ -354,7 +354,7 @@ typedef enum _oe_result
  * This function retrieves a string description for the given **result**
  * parameter.
  *
- * @param result Retrieve string description for this result code.
+ * @param[in] result Retrieve string description for this result code.
  *
  * @returns Returns a pointer to a static string description.
  *
