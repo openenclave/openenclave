@@ -5,15 +5,15 @@
 The new Intel SGX instruction extension was introduced with 7th Generation Intel® Core™
 processor platforms and Intel® Xeon® processor E3 v5 for data center servers in 2015.
 
+First, determine which processor you have by using one of the following command to find the CPU information on your system:
+    - On Linux: `cat /proc/cpuinfo | grep 'model name'`
+    - On Windows: `msinfo32` (check the "Processor" value in the UI)
+
 For a system to be considered to be SGX enabled, it must meet all the following three conditions:
 
 - `SGX capable`: The CPU in the system must support the Intel SGX extension.
 
-    A list of Intel processors with the SGX extension support could be found [here](https://ark.intel.com/Search/FeatureFilter?productType=processors&SoftwareGuardExtensions=true).
-
-    Your CPU must be one of the processors in above list or its variants.You can use the following command to find the CPU information on your system:
-    - On Linux: `cat /proc/cpuinfo`
-    - On Windows: `msinfo32` (check the "Processor" value in the UI)
+    You can follow [Intel's instructions](https://www.intel.com/content/www/us/en/support/articles/000028173/processors.html) to look up your specific processor and determine if it supports SGX.
 
 - The system BIOS must support Intel SGX control.
 
