@@ -70,7 +70,7 @@
  * Thread specific OCALL buffers. Large enough for most ocalls.
  * Note: Currently, quotes are about 10KB.
  */
-static uint8_t __thread _thread_ocall_buffer[16 * 1024];
+static __thread uint8_t _thread_ocall_buffer[16 * 1024];
 
 /**
  * oe_enter Executes the ENCLU instruction and transfers control to the enclave.
