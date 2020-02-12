@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/ecall_context.h>
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/sgxtypes.h>
 #include "asmdefs.h"
@@ -57,20 +58,27 @@
 
 // The following registers are inputs to ENCLU instruction. They are also
 // clobbered. Hence marked as +r.
-#define OE_ENCLU_REGISTERS "+r"(rax), "+r"(rbx), "+r"(rcx), "+r"(rdi), "+r"(rsi)
+#define OE_ENCLU_REGISTERS \
+    "+r"(rax), "+r"(rbx), "+r"(rcx), "+r"(rdi), "+r"(rsi), "+r"(rdx)
 
 // The following registers are clobbered by ENCLU.
 // Only rbp and rsp are preserved.
 #define OE_ENCLU_CLOBBERED_REGISTERS \
-    "rdx", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
+    "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
+
+/**
+ * Thread specific OCALL buffers. Large enough for most ocalls.
+ * Note: Currently, quotes are about 10KB.
+ */
+static uint8_t __thread _thread_ocall_buffer[16 * 1024];
 
 /**
  * oe_enter Executes the ENCLU instruction and transfers control to the enclave.
  *
  * The ENCLU instruction has the following contract:
- * EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2) contract
+ * EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2, RDX=ECALL_CONTEXT) contract
  * Input:
- *       RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2,
+ *       RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2, EDX=ECALL_CONTEXT
  *       RBP=Current host stack rbp,
  *       RSP=Current host stack sp.
  *       All other registers are NOT used/ignored.
@@ -104,6 +112,9 @@ void oe_enter(
     // The space for saving the floating-point state must be 16 byte aligned.
     OE_ALIGNED(16)
     uint64_t fx_state[64];
+    oe_ecall_context_t ecall_context;
+    ecall_context.ocall_buffer = _thread_ocall_buffer;
+    ecall_context.ocall_buffer_size = sizeof(_thread_ocall_buffer);
 
     while (1)
     {
@@ -114,6 +125,7 @@ void oe_enter(
         OE_DEFINE_REGISTER(rax, ENCLU_EENTER);
         OE_DEFINE_REGISTER(rbx, tcs);
         OE_DEFINE_REGISTER(rcx, aep);
+        OE_DEFINE_REGISTER(rdx, &ecall_context);
         OE_DEFINE_REGISTER(rdi, arg1);
         OE_DEFINE_REGISTER(rsi, arg2);
         OE_DEFINE_FRAME_POINTER(rbp, OE_FRAME_POINTER_VALUE);
@@ -173,6 +185,9 @@ void oe_enter_sim(
     void* host_gs = oe_get_gs_register_base();
     void* host_fs = oe_get_fs_register_base();
     sgx_tcs_t* sgx_tcs = (sgx_tcs_t*)tcs;
+    oe_ecall_context_t ecall_context;
+    ecall_context.ocall_buffer = _thread_ocall_buffer;
+    ecall_context.ocall_buffer_size = sizeof(_thread_ocall_buffer);
 
     while (1)
     {
@@ -186,15 +201,16 @@ void oe_enter_sim(
         OE_DEFINE_REGISTER(rax, 0 /* CSSA */);
         OE_DEFINE_REGISTER(rbx, tcs);
         OE_DEFINE_REGISTER(rcx, 0 /* filled in asm snippet */);
+        OE_DEFINE_REGISTER(rdx, &ecall_context);
         OE_DEFINE_REGISTER(rdi, arg1);
         OE_DEFINE_REGISTER(rsi, arg2);
         OE_DEFINE_FRAME_POINTER(rbp, OE_FRAME_POINTER_VALUE);
 
-        asm volatile("fxsave %[fx_state] \n\t"    // Save floating point state
-                     "pushfq \n\t"                // Save flags
-                     "lea 1f(%%rip), %%rcx \n\t"  // Load return address in rcx
-                     "mov 72(%%rbx), %% rdx \n\t" // Load enclave entry point
-                     "jmp *%%rdx  \n\t"           // Jump to enclave entry point
+        asm volatile("fxsave %[fx_state] \n\t"   // Save floating point state
+                     "pushfq \n\t"               // Save flags
+                     "lea 1f(%%rip), %%rcx \n\t" // Load return address in rcx
+                     "mov 72(%%rbx), %% r8 \n\t" // Load enclave entry point
+                     "jmp *%%r8  \n\t"           // Jump to enclave entry point
                      "1: \n\t"
                      "popfq \n\t"               // Restore flags
                      "fxrstor %[fx_state] \n\t" // Restore floating point state

@@ -8,6 +8,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/ecall_context.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
@@ -589,14 +590,13 @@ oe_result_t oe_call_host_function_by_table_id(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the arguments */
-    args = switchless ? oe_arena_calloc(1, sizeof(*args))
-                      : oe_host_calloc(1, sizeof(*args));
+    args = oe_ecall_context_get_ocall_args();
 
     if (args == NULL)
     {
         /* Fail if the enclave is crashing. */
         OE_CHECK(__oe_enclave_status);
-        OE_RAISE(OE_OUT_OF_MEMORY);
+        OE_RAISE(OE_UNEXPECTED);
     }
 
     args->table_id = table_id;
@@ -644,10 +644,6 @@ oe_result_t oe_call_host_function_by_table_id(
     result = OE_OK;
 
 done:
-    if (!switchless)
-    {
-        oe_host_free(args);
-    }
 
     return result;
 }

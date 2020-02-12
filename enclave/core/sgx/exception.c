@@ -278,6 +278,7 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
         // handling.
         td->host_rbp = td->host_previous_rbp;
         td->host_rsp = td->host_previous_rsp;
+        td->host_ecall_context = td->host_previous_ecall_context;
 
         oe_continue_execution(oe_exception_record.context);
 
@@ -290,6 +291,7 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     // Let the oe_abort to run on the stack where the exception happens.
     td->host_rbp = td->host_previous_rbp;
     td->host_rsp = td->host_previous_rsp;
+    td->host_ecall_context = td->host_previous_ecall_context;
     oe_exception_record.context->rip = (uint64_t)oe_abort;
     oe_continue_execution(oe_exception_record.context);
 
@@ -363,6 +365,7 @@ void oe_virtual_exception_dispatcher(
         // Restore the RBP & RSP as required by return from EENTER
         td->host_rbp = td->host_previous_rbp;
         td->host_rsp = td->host_previous_rsp;
+        td->host_ecall_context = td->host_previous_ecall_context;
 
         // Advance RIP to the next instruction for continuation
         ssa_gpr->rip += 2;

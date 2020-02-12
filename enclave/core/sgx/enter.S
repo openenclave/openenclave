@@ -20,6 +20,7 @@
 //     Registers from host caller of EENTER:
 //         RDI - ARG1
 //         RSI - ARG2
+//         RDX - HOST ECALL CONTEXT
 //
 //     This function performs the following tasks:
 //
@@ -39,23 +40,26 @@ oe_enter:
 .cfi_startproc
 
 .save_host_registers:
-    // Backup the current host rbp and rsp to previous.
+    // Backup the current host rbp, rsp and context to previous.
     mov %fs:td_host_rbp, %r8
     mov %r8, %fs:td_host_previous_rbp
     mov %fs:td_host_rsp, %r8
     mov %r8, %fs:td_host_previous_rsp
+    mov %fs:td_host_ecall_context, %r8
+    mov %r8, %fs:td_host_previous_ecall_context
 
     // Save host registers (restored on EEXIT)
     mov %rcx, %fs:td_host_rcx // host return address here
     mov %rsp, %fs:td_host_rsp
     mov %rbp, %fs:td_host_rbp
+    mov %rdx, %fs:td_host_ecall_context
 
 .determine_entry_type:
     // Check if this is exception dispatching request.
     // exception-dispatching-request-check
     cmp $0, %rax
     jne .exception_entry
-    
+
     // Stop speculative execution at fallthrough of conditional
     // exception-dispatching-request-check.
     lfence
@@ -223,7 +227,7 @@ oe_enter:
     jmp .clear_enclave_registers
 
 .clean_exit:
-    // Stop speculative execution at target of conditional jump 
+    // Stop speculative execution at target of conditional jump
     // after exit-type-check.
     lfence
 

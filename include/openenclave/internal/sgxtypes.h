@@ -572,7 +572,7 @@ oe_thread_data_t* oe_get_thread_data(void);
 
 #define OE_THREAD_LOCAL_SPACE (OE_PAGE_SIZE)
 
-#define OE_THREAD_SPECIFIC_DATA_SIZE (3840)
+#define OE_THREAD_SPECIFIC_DATA_SIZE (3824)
 
 typedef struct _callsite Callsite;
 
@@ -612,6 +612,10 @@ typedef struct _td
 
     /* Simulation mode is active if non-zero */
     uint64_t simulate;
+
+    /* Host ecall context pointers */
+    struct _oe_ecall_context* host_ecall_context;
+    struct _oe_ecall_context* host_previous_ecall_context;
 
     /* Reserved for thread specific data. */
     uint8_t thread_specific_data[OE_THREAD_SPECIFIC_DATA_SIZE];
