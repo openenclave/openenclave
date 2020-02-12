@@ -4,8 +4,13 @@
 enclave {
     include "openenclave/internal/cpuid.h"
 
+    untrusted {
+        void host_set_was_ocall_called();
+    };
+
     trusted {
         public int enc_test_vector_exception();
+        public int enc_test_ocall_in_handler();
         public void enc_test_cpuid_in_global_constructors();
         public int enc_test_sigill_handling(
             [out] uint32_t cpuid_table[8][4]);
