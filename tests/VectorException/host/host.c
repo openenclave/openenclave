@@ -163,6 +163,7 @@ int main(int argc, const char* argv[])
 
     test_vector_exception(enclave);
     test_sigill_handling(enclave);
+    test_ocall_in_handler(enclave);
 
     oe_terminate_enclave(enclave);
 

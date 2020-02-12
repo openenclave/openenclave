@@ -304,8 +304,8 @@ uint64_t test_divide_by_zero_handler_with_ocall(
 
 int enc_test_ocall_in_handler()
 {
-    oe_result_t result =
-        oe_add_vectored_exception_handler(false, test_divide_by_zero_handler);
+    oe_result_t result = oe_add_vectored_exception_handler(
+        false, test_divide_by_zero_handler_with_ocall);
     if (result != OE_OK)
     {
         return -1;
@@ -323,7 +323,8 @@ int enc_test_ocall_in_handler()
     oe_host_printf("enc_test_ocall_in_handler: hardware exception is handled "
                    "correctly!\n");
 
-    if (vector_exception_cleanup() != 0)
+    if (oe_remove_vectored_exception_handler(
+            test_divide_by_zero_handler_with_ocall) != OE_OK)
     {
         return -1;
     }
