@@ -95,9 +95,6 @@ typedef enum _oe_func
 
 OE_STATIC_ASSERT(sizeof(oe_func_t) == sizeof(unsigned int));
 
-#define OE_EXCEPTION_CONTINUE_SEARCH 0x0
-#define OE_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
-
 /*
 **==============================================================================
 **

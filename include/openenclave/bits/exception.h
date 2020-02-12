@@ -16,6 +16,14 @@
 
 OE_EXTERNC_BEGIN
 
+/** Return value used by an enclave vectored exception handler to indicate
+ *  to the dispatcher that it should continue searching for the next handler. */
+#define OE_EXCEPTION_CONTINUE_SEARCH 0x0
+
+/** Return value used by an enclave vectored exception handler to indicate
+ *  to the dispatcher that it should stop searching and continue execution. */
+#define OE_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
+
 /**
  * Divider exception code, used by vectored exception handler.
  */
