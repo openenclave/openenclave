@@ -48,11 +48,13 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/functional/wcstol.c
     3rdparty/musl/libc-test/src/math/acos.c
     3rdparty/musl/libc-test/src/math/acosf.c
+    3rdparty/musl/libc-test/src/math/acosh.c
     3rdparty/musl/libc-test/src/math/acoshf.c
     3rdparty/musl/libc-test/src/math/acoshl.c
     3rdparty/musl/libc-test/src/math/acosl.c
     3rdparty/musl/libc-test/src/math/asin.c
     3rdparty/musl/libc-test/src/math/asinf.c
+    3rdparty/musl/libc-test/src/math/asinh.c
     3rdparty/musl/libc-test/src/math/asinhf.c
     3rdparty/musl/libc-test/src/math/asinhl.c
     3rdparty/musl/libc-test/src/math/asinl.c
@@ -121,12 +123,18 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/hypotf.c
     3rdparty/musl/libc-test/src/math/hypotl.c
     3rdparty/musl/libc-test/src/math/isless.c
+    3rdparty/musl/libc-test/src/math/j0.c
     3rdparty/musl/libc-test/src/math/j0f.c
     3rdparty/musl/libc-test/src/math/j1.c
     3rdparty/musl/libc-test/src/math/j1f.c
+    3rdparty/musl/libc-test/src/math/jn.c
     3rdparty/musl/libc-test/src/math/ldexp.c
     3rdparty/musl/libc-test/src/math/ldexpf.c
     3rdparty/musl/libc-test/src/math/ldexpl.c
+    3rdparty/musl/libc-test/src/math/lgamma.c
+    3rdparty/musl/libc-test/src/math/lgamma_r.c
+    3rdparty/musl/libc-test/src/math/lgammaf.c
+    3rdparty/musl/libc-test/src/math/lgammaf_r.c
     3rdparty/musl/libc-test/src/math/lgammal.c
     3rdparty/musl/libc-test/src/math/lgammal_r.c
     3rdparty/musl/libc-test/src/math/llrint.c
@@ -191,7 +199,9 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/sincosf.c
     3rdparty/musl/libc-test/src/math/sincosl.c
     3rdparty/musl/libc-test/src/math/sinf.c
+    3rdparty/musl/libc-test/src/math/sinh.c
     3rdparty/musl/libc-test/src/math/sinhf.c
+    3rdparty/musl/libc-test/src/math/sinhl.c
     3rdparty/musl/libc-test/src/math/sinl.c
     3rdparty/musl/libc-test/src/math/sqrt.c
     3rdparty/musl/libc-test/src/math/sqrtf.c
@@ -314,18 +324,8 @@ if (FALSE)
         3rdparty/musl/libc-test/src/functional/tls_init_dlopen.c
         3rdparty/musl/libc-test/src/functional/tls_local_exec.c
         3rdparty/musl/libc-test/src/functional/vfork.c  # uses fork, execv
-        3rdparty/musl/libc-test/src/math/acosh.c
-        3rdparty/musl/libc-test/src/math/asinh.c
         3rdparty/musl/libc-test/src/math/fmal.c
-        3rdparty/musl/libc-test/src/math/j0.c
-        3rdparty/musl/libc-test/src/math/jn.c
         3rdparty/musl/libc-test/src/math/jnf.c
-        3rdparty/musl/libc-test/src/math/lgamma.c
-        3rdparty/musl/libc-test/src/math/lgammaf.c
-        3rdparty/musl/libc-test/src/math/lgammaf_r.c
-        3rdparty/musl/libc-test/src/math/lgamma_r.c
-        3rdparty/musl/libc-test/src/math/sinh.c
-        3rdparty/musl/libc-test/src/math/sinhl.c
         3rdparty/musl/libc-test/src/math/tgamma.c
         3rdparty/musl/libc-test/src/math/y0.c
         3rdparty/musl/libc-test/src/math/y0f.c
