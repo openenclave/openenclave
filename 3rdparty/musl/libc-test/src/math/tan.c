@@ -36,9 +36,12 @@ int main(void)
 		}
 		d = ulperr(y, p->y, p->dy);
 		if (!checkulp(d, p->r)) {
+			if (p->r != RN)
+				printf("X ");
+			else
+				err++;
 			printf("%s:%d: %s tan(%a) want %a got %a ulperr %.3f = %a + %a\n",
 				p->file, p->line, rstr(p->r), p->x, p->y, y, d, d-p->dy, p->dy);
-			err++;
 		}
 	}
 	return !!err;

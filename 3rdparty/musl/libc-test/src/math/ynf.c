@@ -14,7 +14,7 @@ int main(void)
 	#pragma STDC FENV_ACCESS ON
 	double y;
 	float d;
-	int e, i, err = 0;
+	int e, i, bad, err = 0;
 	struct fi_f *p;
 
 	for (i = 0; i < sizeof t/sizeof *t; i++) {
@@ -34,10 +34,14 @@ int main(void)
 			err++;
 		}
 		d = ulperrf(y, p->y, p->dy);
-		if ((!(p->x < 0) && !checkulp(d, p->r)) || (p->x < 0 && !isnan(y) && y != -inf)) {
+		bad = p->x < 0 && !isnan(y) && y != -inf;
+		if (bad || (!(p->x < 0) && !checkulp(d, p->r))) {
+			if (!bad && fabsf(d) < 2.5f)
+				printf("X ");
+			else
+				err++;
 			printf("%s:%d: %s ynf(%lld, %a) want %a got %a, ulperr %.3f = %a + %a\n",
 				p->file, p->line, rstr(p->r), p->i, p->x, p->y, y, d, d-p->dy, p->dy);
-			err++;
 		}
 	}
 	return !!err;

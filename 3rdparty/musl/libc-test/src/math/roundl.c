@@ -32,7 +32,7 @@ int main(void)
 		y = roundl(p->x);
 		e = fetestexcept(INEXACT|INVALID|DIVBYZERO|UNDERFLOW|OVERFLOW);
 
-		if (!checkexceptall(e, p->e, p->r)) {
+		if (!checkexceptall(e, p->e, p->r) && (e|INEXACT) != p->e) {
 			printf("%s:%d: bad fp exception: %s roundl(%La)=%La, want %s",
 				p->file, p->line, rstr(p->r), p->x, p->y, estr(p->e));
 			printf(" got %s\n", estr(e));

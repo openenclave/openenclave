@@ -27,7 +27,7 @@ int main(void)
 		y = floor(p->x);
 		e = fetestexcept(INEXACT|INVALID|DIVBYZERO|UNDERFLOW|OVERFLOW);
 
-		if (!checkexceptall(e, p->e, p->r)) {
+		if (!checkexceptall(e, p->e, p->r) && (e|INEXACT) != p->e) {
 			printf("%s:%d: bad fp exception: %s floor(%a)=%a, want %s",
 				p->file, p->line, rstr(p->r), p->x, p->y, estr(p->e));
 			printf(" got %s\n", estr(e));
