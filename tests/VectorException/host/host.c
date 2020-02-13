@@ -12,6 +12,12 @@
 
 #define SKIP_RETURN_CODE 2
 
+static bool _was_ocall_called = false;
+void host_set_was_ocall_called()
+{
+    _was_ocall_called = true;
+}
+
 void test_vector_exception(oe_enclave_t* enclave)
 {
     int ret = -1;
@@ -28,6 +34,20 @@ void test_vector_exception(oe_enclave_t* enclave)
     }
 
     OE_TEST(ret == 0);
+}
+
+void test_ocall_in_handler(oe_enclave_t* enclave)
+{
+    int ret = -1;
+    oe_result_t result = enc_test_ocall_in_handler(enclave, &ret);
+
+    if (result != OE_OK)
+    {
+        oe_put_err("enc_test_ocall_in_handler() failed: result=%u", result);
+    }
+
+    OE_TEST(ret == 0);
+    OE_TEST(_was_ocall_called == true);
 }
 
 void test_sigill_handling(oe_enclave_t* enclave)

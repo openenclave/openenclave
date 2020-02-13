@@ -285,6 +285,52 @@ int enc_test_vector_exception()
     return 0;
 }
 
+uint64_t test_divide_by_zero_handler_with_ocall(
+    oe_exception_record_t* exception_record)
+{
+    if (exception_record->code != OE_EXCEPTION_DIVIDE_BY_ZERO)
+    {
+        return OE_EXCEPTION_CONTINUE_SEARCH;
+    }
+
+    host_set_was_ocall_called();
+
+    // Skip the idiv instruction - 2 is tied to the size of the idiv instruction
+    // and can change with a different compiler/build. Minimizing this with the
+    // use of the inline assembly for integer division
+    exception_record->context->rip += 2;
+    return OE_EXCEPTION_CONTINUE_EXECUTION;
+}
+
+int enc_test_ocall_in_handler()
+{
+    oe_result_t result =
+        oe_add_vectored_exception_handler(false, test_divide_by_zero_handler);
+    if (result != OE_OK)
+    {
+        return -1;
+    }
+
+    oe_host_printf(
+        "enc_test_ocall_in_handler: will generate a hardware exception inside "
+        "enclave!\n");
+
+    if (divide_by_zero_exception_function() != 0)
+    {
+        return -1;
+    }
+
+    oe_host_printf("enc_test_ocall_in_handler: hardware exception is handled "
+                   "correctly!\n");
+
+    if (vector_exception_cleanup() != 0)
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
