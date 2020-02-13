@@ -23,6 +23,11 @@ if (ENABLE_REFMAN)
     "experimental = \\xrefitem experimental \\\"This feature is marked as experimental\\\" \\\"Experimental List\\\""
     "experimental{1} = \\xrefitem experimental \\\"Experimental\\\" \\\"Experimental List\\\" \\1")
 
+  # Allow @advanced to be used in headers to mark an API as advanced and add it to a list of
+  # advanced APIs.
+  set(DOXYGEN_ALIASES
+    "advanced = \\xrefitem advanced \\\"This feature is marked as advanced and is not intended for use by apps\\\" \\\"Advanced List\\\"")
+
   # NOTE: These were set to their non-default values in the existing
   # configuration file, so that configuration has been copied here.
   # However, they may or may not be desired.
