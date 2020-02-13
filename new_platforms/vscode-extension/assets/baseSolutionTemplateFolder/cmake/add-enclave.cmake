@@ -1,3 +1,6 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
 macro(add_enclave)
   set(options CXX)
   set(oneValueArgs TARGET UUID CONFIG KEY)
