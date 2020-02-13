@@ -76,13 +76,13 @@ static __thread uint8_t _thread_ocall_buffer[16 * 1024];
  * oe_enter Executes the ENCLU instruction and transfers control to the enclave.
  *
  * The ENCLU instruction has the following contract:
- * EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2, RDX=ECALL_CONTEXT) contract
+ * EENTER(RBX=TCS, RCX=AEP, RDX=ECALL_CONTEXT, RDI=ARG1, RSI=ARG2) contract
  * Input:
- *       RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2, EDX=ECALL_CONTEXT
+ *       RBX=TCS, RCX=AEP, RDX=ECALL_CONTEXT, RDI=ARG1, RSI=ARG2
  *       RBP=Current host stack rbp,
  *       RSP=Current host stack sp.
  *       All other registers are NOT used/ignored.
- *  Output:
+ * Output:
  *       RDI=ARG1OUT, RSI=ARG2OUT,
  *       RBP, RBP are preserved.
  *       All other Registers are clobbered.

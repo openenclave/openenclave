@@ -40,7 +40,7 @@ oe_enter:
 .cfi_startproc
 
 .save_host_registers:
-    // Backup the current host rbp, rsp and context to previous.
+    // Backup the current host rbp, rsp, and context to previous.
     mov %fs:td_host_rbp, %r8
     mov %r8, %fs:td_host_previous_rbp
     mov %fs:td_host_rsp, %r8

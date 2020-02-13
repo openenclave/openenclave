@@ -12,11 +12,6 @@ OE_EXTERNC_BEGIN
 
 typedef struct _oe_ecall_context
 {
-    // For debug enclaves, registers values for ocall stack stitching.
-    uint64_t eexit_rbp;
-    uint64_t eexit_rsp;
-    uint64_t eexit_rip;
-
     // Storage for making ocall
     oe_call_host_function_args_t ocall_args;
     uint64_t ocall_buffer_size;
