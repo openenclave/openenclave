@@ -8,11 +8,11 @@ add_library(oecryptombed STATIC
     asn1.c
     cert.c
     crl.c
+    ctr_drbg.c
     ec.c
     cmac.c
     hmac.c
     key.c
-    random_internal.c
     rsa.c
     sha.c)
 
