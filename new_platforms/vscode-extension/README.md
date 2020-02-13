@@ -100,7 +100,7 @@ environment.
       in the enclave may only be added before the emulator (QEMU) starts or when
       the debugger is already broken inside the enclave.
 1. Choose the architecture you are interested in debugging by navigating to the
-   Visual Studio `Debug` view (**CTRL-Shift-D**) and selecting either
+   Visual Studio Code `Debug` view (**CTRL-Shift-D**) and selecting either
    `(gdb) Launch Intel SGX (Hardware)`,
    `(gdb) Launch Intel SGX (Simulation)`, or
    `(gdb) Launch QEMU (AArch64/ARMv8-A)`
