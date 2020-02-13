@@ -93,6 +93,7 @@
 		"ms-vscode.cpptools",
 		"ms-vscode.azure-account",
 		"vsciot-vscode.azure-iot-edge",
-		"webfreak.debug"
+		"webfreak.debug",
+		"microsoftdebuggingplatform.vscode-cdb"
 	]
 }
