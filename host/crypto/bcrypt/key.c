@@ -12,6 +12,24 @@
 #include "key.h"
 #include "pem.h"
 
+/* can't use an engine with bcrypt */
+oe_result_t oe_private_key_from_engine(
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id,
+    oe_private_key_t* key,
+    int key_type,
+    uint64_t magic)
+{
+    OE_UNUSED(engine_id);
+    OE_UNUSED(engine_load_path);
+    OE_UNUSED(key_id);
+    OE_UNUSED(key);
+    OE_UNUSED(key_type);
+    OE_UNUSED(magic);
+    return OE_UNSUPPORTED;
+}
+
 /* Caller is responsible for calling BCryptDestroyKey on key_handle */
 oe_result_t oe_bcrypt_decode_x509_public_key(
     const BYTE* der_data,

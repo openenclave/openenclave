@@ -53,6 +53,14 @@ oe_result_t oe_public_key_read_pem(
     int key_type,
     uint64_t magic);
 
+oe_result_t oe_private_key_from_engine(
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id,
+    oe_private_key_t* key,
+    int key_type,
+    uint64_t magic);
+
 oe_result_t oe_private_key_write_pem(
     const oe_private_key_t* private_key,
     uint8_t* data,

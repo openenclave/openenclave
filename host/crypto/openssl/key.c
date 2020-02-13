@@ -6,6 +6,7 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/bio.h>
+#include <openssl/engine.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <string.h>
@@ -39,6 +40,95 @@ void oe_private_key_init(
     oe_private_key_t* impl = (oe_private_key_t*)private_key;
     impl->magic = magic;
     impl->pkey = pkey;
+}
+
+oe_result_t oe_private_key_from_engine(
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id,
+    oe_private_key_t* key,
+    int key_type,
+    uint64_t magic)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_private_key_t* impl = key;
+    BIO* bio = NULL;
+    EVP_PKEY* pkey = NULL;
+    ENGINE* e = NULL;
+
+    /* Initialize the key output parameter */
+    if (impl)
+        oe_secure_zero_fill(impl, sizeof(oe_private_key_t));
+
+    /* Check parameters */
+    if (!engine_id || !engine_load_path || !key_id || !impl)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (engine_load_path)
+    {
+        /* If we were handed a load path, we are expecting a dynamic load */
+        ENGINE_load_dynamic();
+        ENGINE* dyne = ENGINE_by_id("dynamic");
+        if (!ENGINE_ctrl_cmd_string(dyne, "ID", engine_id, 0))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        if (!ENGINE_ctrl_cmd_string(dyne, "SO_PATH", engine_load_path, 0))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        if (!ENGINE_ctrl_cmd_string(dyne, "LIST_ADD", "1", 0))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        if (!ENGINE_ctrl_cmd_string(dyne, "LOAD", NULL, 0))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        if (!(e = ENGINE_by_id(engine_id)))
+            OE_RAISE(OE_INVALID_PARAMETER);
+    }
+    else if (!(e = ENGINE_by_id(engine_id)))
+    {
+        /* If no load path, we expect built in. But if we are here, its dynamic
+         */
+        ENGINE_load_dynamic();
+        ENGINE* dyne = ENGINE_by_id("dynamic");
+        if (!ENGINE_ctrl_cmd_string(dyne, "ID", engine_id, 0))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        if (!ENGINE_ctrl_cmd_string(dyne, "LIST_ADD", "1", 0))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        if (!ENGINE_ctrl_cmd_string(dyne, "LOAD", NULL, 0))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        if (!(e = ENGINE_by_id(engine_id)))
+            OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    if (!ENGINE_init(e))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!(pkey = ENGINE_load_private_key(e, key_id, NULL, NULL)))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Verify that it is the right key type */
+    if (EVP_PKEY_id(pkey) != key_type)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Initialize the key */
+    impl->magic = magic;
+    impl->pkey = pkey;
+    pkey = NULL;
+
+    result = OE_OK;
+
+done:
+
+    if (pkey)
+        EVP_PKEY_free(pkey);
+
+    if (bio)
+        BIO_free(bio);
+
+    return result;
 }
 
 oe_result_t oe_private_key_read_pem(

@@ -585,6 +585,44 @@ done:
     return result;
 }
 
+oe_result_t oe_sgx_sign_enclave_from_engine(
+    const OE_SHA256* mrenclave,
+    uint64_t attributes,
+    uint16_t product_id,
+    uint16_t security_version,
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id,
+    sgx_sigstruct_t* sigstruct)
+{
+    oe_rsa_private_key_t rsa;
+    bool rsa_initalized = false;
+    oe_result_t result = OE_UNEXPECTED;
+
+    /* Check parameters */
+    if (!mrenclave || !sigstruct || !engine_id || !key_id)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    memset(sigstruct, 0, sizeof(sgx_sigstruct_t));
+
+    /* Load the RSA private key from the specified engine */
+    OE_CHECK(oe_rsa_private_key_from_engine(
+        &rsa, engine_id, engine_load_path, key_id));
+    rsa_initalized = true;
+
+    /* Initialize the sigstruct */
+    OE_CHECK(_init_sigstruct(
+        mrenclave, attributes, product_id, security_version, &rsa, sigstruct));
+
+    result = OE_OK;
+
+done:
+    if (rsa_initalized)
+        oe_rsa_private_key_free(&rsa);
+
+    return result;
+}
+
 oe_result_t oe_sgx_sign_enclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,

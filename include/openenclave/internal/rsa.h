@@ -118,6 +118,27 @@ oe_result_t oe_rsa_public_key_write_pem(
     size_t* pem_size);
 
 /**
+ * Reads a public RSA key from openssl engine using key id
+ *
+ * The caller is responsible for releasing the key by passing it to
+ * oe_rsa_public_key_free().
+ *
+ * @param public_key initialized key handle upon return
+ * @param engine_id        zero-terminated string designating the openssl engine
+ * @param engine_load_path zero-terminated string designating the openssl engine
+ * file system location
+ * @param key_id           zero-terminated string designating the key to the
+ * openssl engine.
+ *
+ * @return OE_OK upon success
+ */
+oe_result_t oe_rsa_private_key_from_engine(
+    oe_rsa_private_key_t* private_key,
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id);
+
+/**
  * Releases an RSA private key
  *
  * This function releases the given RSA private key.

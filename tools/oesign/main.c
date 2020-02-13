@@ -14,9 +14,21 @@
 #include <sys/stat.h>
 #include "../host/sgx/enclave.h"
 
+#if defined(WIN32)
+#define HAS_ENGINE_SUPPORT 0
+#else
+#define HAS_ENGINE_SUPPORT 1
+#endif
+
 static const char* arg0;
 int oedump(const char*);
-int oesign(const char*, const char*, const char*);
+int oesign(
+    const char* enclave,
+    const char* conffile,
+    const char* keyfile,
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id);
 
 OE_PRINTF_FORMAT(1, 2)
 void Err(const char* format, ...)
@@ -468,11 +480,21 @@ static const char _usage_gen[] =
 static const char _usage_sign[] =
     "Usage: %s sign {--enclave-image | -e} ENCLAVE_IMAGE "
     "{--config-file | -c} CONFIG_FILE {--key-file | -k} KEY_FILE\n"
+#if HAS_ENGINE_SUPPORT
+    "{{--engine| -n} ENGINE_NAME {--load-path | -p } ENGINE_LOAD_PATH "
+    "{--key-id | -i } KEY_ID }\n"
+#endif
     "\n"
     "Where:\n"
     "    ENCLAVE_IMAGE -- path of an enclave image file\n"
     "    CONFIG_FILE -- configuration file containing enclave properties\n"
     "    KEY_FILE -- private key file used to digitally sign the image\n"
+#if HAS_ENGINE_SUPPORT
+    "    ENGINE_NAME -- text name of the engine to use, for example 'pkcs-11'\n"
+    "    ENGINE_LOADPATH -- absolute path to the shared object which "
+    "implements the engine\n"
+    "    KEY_ID -- text string specifying the desired key from the engine\n"
+#endif
     "\n"
     "Description:\n"
     "    This utility (1) injects runtime properties into an enclave image "
@@ -499,12 +521,20 @@ static const char _usage_sign[] =
     "        Debug=1\n"
     "        NumHeapPages=1024\n"
     "\n"
-    "    The key is read from KEY_FILE and contains a private RSA key in PEM\n"
+    "    If specified, the key read from KEY_FILE and contains a private RSA "
+    "key in PEM\n"
     "    format. The keyfile must contain the following header.\n"
     "\n"
     "        -----BEGIN RSA PRIVATE KEY-----\n"
     "\n"
     "    The resulting image is written to ENCLAVE_IMAGE.signed\n"
+    "\n"
+#if HAS_ENGINE_SUPPORT
+    " Keys may also be received from an openssl engine specified by the "
+    "string ENGINE_NAME\n"
+    " If they are received from an engine, KEY_ID must be specified rather "
+    "than KEY_FILE. \n"
+#endif
     "\n";
 
 static const char _usage_dump[] =
@@ -517,7 +547,13 @@ static const char _usage_dump[] =
     "    This option dumps the oeinfo and signature information of an "
     "enclave\n";
 
-int oesign(const char* enclave, const char* conffile, const char* keyfile)
+int oesign(
+    const char* enclave,
+    const char* conffile,
+    const char* keyfile,
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id)
 {
     int ret = 1;
     oe_result_t result;
@@ -589,27 +625,49 @@ int oesign(const char* enclave, const char* conffile, const char* keyfile)
         goto done;
     }
 
-    /* Load private key into memory */
-    if (_load_pem_file(keyfile, &pem_data, &pem_size) != 0)
+    if (engine_id)
     {
-        Err("Failed to load file: %s", keyfile);
-        goto done;
+        /* Initialize the sigstruct object */
+        if ((result = oe_sgx_sign_enclave_from_engine(
+                 &enc.hash,
+                 props.config.attributes,
+                 props.config.product_id,
+                 props.config.security_version,
+                 engine_id,
+                 engine_load_path,
+                 key_id,
+                 (sgx_sigstruct_t*)props.sigstruct)) != OE_OK)
+        {
+            Err("oe_sgx_sign_enclave_from_engine() failed: result=%s (%u)",
+                oe_result_str(result),
+                result);
+            goto done;
+        }
     }
-
-    /* Initialize the SigStruct object */
-    if ((result = oe_sgx_sign_enclave(
-             &enc.hash,
-             props.config.attributes,
-             props.config.product_id,
-             props.config.security_version,
-             pem_data,
-             pem_size,
-             (sgx_sigstruct_t*)props.sigstruct)) != OE_OK)
+    else
     {
-        Err("oe_sgx_sign_enclave() failed: result=%s (%u)",
-            oe_result_str(result),
-            result);
-        goto done;
+        /* Load private key into memory */
+        if (_load_pem_file(keyfile, &pem_data, &pem_size) != 0)
+        {
+            Err("Failed to load file: %s", keyfile);
+            goto done;
+        }
+
+        /* Initialize the SigStruct object */
+        if ((result = oe_sgx_sign_enclave(
+                 &enc.hash,
+                 props.config.attributes,
+                 props.config.product_id,
+                 props.config.security_version,
+                 pem_data,
+                 pem_size,
+                 (sgx_sigstruct_t*)props.sigstruct)) != OE_OK)
+        {
+            Err("oe_sgx_sign_enclave() failed: result=%s (%u)",
+                oe_result_str(result),
+                result);
+            goto done;
+        }
     }
 
     /* Create signature section and write out new file */
@@ -696,17 +754,35 @@ int sign_parser(int argc, const char* argv[])
     const char* enclave = NULL;
     const char* conffile = NULL;
     const char* keyfile = NULL;
+#if HAS_ENGINE_SUPPORT
+    const char* engine_id = NULL;
+    const char* engine_load_path = NULL;
+    const char* key_id = NULL;
+#endif
 
     const struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"enclave-image", required_argument, NULL, 'e'},
         {"config-file", required_argument, NULL, 'c'},
         {"key-file", required_argument, NULL, 'k'},
+#if HAS_ENGINE_SUPPORT
+        {"engine", required_argument, NULL, 'n'},
+        {"load-path", required_argument, NULL, 'p'},
+        {"key-id", required_argument, NULL, 'i'},
+#endif
         {NULL, 0, NULL, 0},
     };
-    const char short_options[] = "he:c:k:";
+    const char short_options[] = "he:c:k:n:p:i:";
 
     int c;
+
+    if (argc <= 2)
+    {
+        fprintf(stderr, _usage_sign, argv[0]);
+        ret = 1;
+        goto done;
+    }
+
     do
     {
         c = getopt_long(
@@ -731,6 +807,17 @@ int sign_parser(int argc, const char* argv[])
             case 'k':
                 keyfile = optarg;
                 break;
+#if HAS_ENGINE_SUPPORT
+            case 'n':
+                engine_id = optarg;
+                break;
+            case 'p':
+                engine_load_path = optarg;
+                break;
+            case 'i':
+                key_id = optarg;
+                break;
+#endif
             case ':':
                 // Missing option argument
                 ret = 1;
@@ -743,23 +830,49 @@ int sign_parser(int argc, const char* argv[])
         }
     } while (1);
 
-    if (enclave == NULL)
-    {
-        Err("Enclave image flag is missing");
-        ret = 1;
-    }
     if (conffile == NULL)
     {
         Err("Config file flag is missing");
         ret = 1;
     }
-    if (keyfile == NULL)
+
+#if HAS_ENGINE_SUPPORT
+    if (keyfile)
     {
-        Err("Key file flag is missing");
-        ret = 1;
+        if (engine_id || engine_load_path || key_id)
+        {
+            Err("if keyfile is specified, engine flags are not allowed");
+            ret = 1;
+            goto done;
+        }
+    }
+    else
+    {
+        if (!engine_id || !key_id)
+        {
+            Err("If keyfile is not specified, you must specify at least both "
+                "engineid and keyid");
+            ret = 1;
+            goto done;
+        }
     }
     if (!ret)
-        ret = oesign(enclave, conffile, keyfile);
+    {
+        ret = oesign(
+            enclave, conffile, keyfile, engine_id, engine_load_path, key_id);
+    }
+#else
+    if (keyfile == NULL)
+    {
+        Err("Required key file flag is missing");
+        ret = 1;
+        goto done;
+    }
+    if (!ret)
+    {
+        ret = oesign(enclave, conffile, keyfile, NULL, NULL, NULL);
+    }
+#endif
 
 done:
 
@@ -786,7 +899,7 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
     int ret = 1;
 
-    if (argc <= 2)
+    if (argc < 2)
     {
         fprintf(stderr, _usage_gen, argv[0], argv[0]);
         exit(1);
