@@ -4,13 +4,13 @@
 #include <openenclave/host.h>
 #include <stdio.h>
 
-int open_enclave(int argc, const char* argv[]);
-int close_enclave();
+int create_enclave(int argc, const char* argv[]);
+int terminate_enclave();
 int call_enclave(char *input_msg, char *enclave_msg, unsigned int enclave_msg_size);
 
 int main(int argc, const char* argv[])
 {
-    int result = open_enclave(argc, argv);
+    int result = create_enclave(argc, argv);
     if (result != 0)
     {
         return result;
@@ -22,6 +22,6 @@ int main(int argc, const char* argv[])
         return result;
     }
 
-    result = close_enclave();
+    result = terminate_enclave();
     return result;
 }

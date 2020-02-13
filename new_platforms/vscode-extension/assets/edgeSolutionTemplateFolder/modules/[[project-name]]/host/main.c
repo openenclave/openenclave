@@ -17,8 +17,8 @@
 #include "iothub.h"
 #include "time.h"
 
-int open_enclave(int argc, const char* argv[]);
-int close_enclave();
+int create_enclave(int argc, const char* argv[]);
+int terminate_enclave();
 int call_enclave(char *input_msg, char *enclave_msg, unsigned int enclave_msg_size);
 
 typedef struct MESSAGE_INSTANCE_TAG
@@ -224,12 +224,12 @@ void iothub_module()
 int main(int argc, const char* argv[])
 {
     oe_result_t result = OE_OK;
-    result = open_enclave(argc, argv);
+    result = create_enclave(argc, argv);
     if (result != OE_OK)
     {
         return result;
     }
     iothub_module();
-    result = close_enclave();
+    result = terminate_enclave();
     return result;
 }

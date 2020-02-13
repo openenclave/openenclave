@@ -51,7 +51,7 @@ int ocall_log(char *msg)
 }
 
 static oe_enclave_t* enclave = NULL;
-int open_enclave(int argc, const char* argv[])
+int create_enclave(int argc, const char* argv[])
 {
     oe_result_t result = OE_OK;
     uint32_t flags = 0;
@@ -107,7 +107,7 @@ int call_enclave(char *input_msg, char *enclave_msg, unsigned int enclave_msg_co
 }
 
 
-int close_enclave()
+int terminate_enclave()
 {
     // Clean up the enclave if we created one
     if (enclave) {
