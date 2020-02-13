@@ -656,8 +656,13 @@ add_library(oelibc STATIC
     ${MUSLSRC}/stdlib/atol.c
     ${MUSLSRC}/stdlib/atoll.c
     ${MUSLSRC}/stdlib/bsearch.c
+    ${MUSLSRC}/stdlib/div.c
+    ${MUSLSRC}/stdlib/imaxabs.c
+    ${MUSLSRC}/stdlib/imaxdiv.c
     ${MUSLSRC}/stdlib/labs.c
+    ${MUSLSRC}/stdlib/ldiv.c
     ${MUSLSRC}/stdlib/llabs.c
+    ${MUSLSRC}/stdlib/lldiv.c
     ${MUSLSRC}/stdlib/qsort.c
     ${MUSLSRC}/stdlib/strtod.c
     ${MUSLSRC}/stdlib/strtol.c
