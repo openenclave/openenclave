@@ -572,7 +572,15 @@ oe_thread_data_t* oe_get_thread_data(void);
 
 #define OE_THREAD_LOCAL_SPACE (OE_PAGE_SIZE)
 
-#define OE_THREAD_SPECIFIC_DATA_SIZE (3840)
+/**
+ * thread_specific_data is the last field in td_t. It takes up any remainaing
+ * space after the declarations of the previous fields.
+ * Its size is equal to
+ *     sizeof(td_t) - OE_OFFSETOF(td_t, thread_specific_data)
+ * Due to the inability to use OE_OFFSETOF on a struct while defining its
+ * members, this value is computed and hard-coded.
+ */
+#define OE_THREAD_SPECIFIC_DATA_SIZE (3824)
 
 typedef struct _callsite Callsite;
 
@@ -613,12 +621,19 @@ typedef struct _td
     /* Simulation mode is active if non-zero */
     uint64_t simulate;
 
+    /* Host ecall context pointers */
+    struct _oe_ecall_context* host_ecall_context;
+    struct _oe_ecall_context* host_previous_ecall_context;
+
     /* Reserved for thread specific data. */
     uint8_t thread_specific_data[OE_THREAD_SPECIFIC_DATA_SIZE];
 } td_t;
 OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(td_t), 4096);
+OE_STATIC_ASSERT(
+    OE_THREAD_SPECIFIC_DATA_SIZE ==
+    sizeof(td_t) - OE_OFFSETOF(td_t, thread_specific_data));
 
 /* Get the thread data object for the current thread */
 td_t* oe_get_td(void);
