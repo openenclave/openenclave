@@ -14,7 +14,7 @@ iso646.h | Yes | - |
 limits.h | Yes | - |
 locale.h | Partial | Only basic support for C/POSIX locale |
 malloc.h | Partial | - |
-math.h | Partial | **Unsupported functions:** acosh(), asinh(), fmal(), lgamma(), lgammaf(), sinh(), sinhl(), tgamma() |
+math.h | Partial | **Unsupported functions:** fmal(), tgamma() |
 setjmp.h | Yes | - |
 signal.h | No | - |
 stdalign.h | No | - |
@@ -27,7 +27,7 @@ stdio.h | Partial | All I/O functions implicitly call out to untrusted host. <br
 stdlib.h | Partial | **Unsupported functions:** div(), ldiv(), lldiv() |
 stdnoreturn.h | No | - |
 string.h | Partial | Only basic support for C/POSIX locale. |
-tgmath.h | Partial | **Unsupported functions:** acosh(), asinh(), fmal(), lgamma(), lgamma_r(), scalbn(), scalbnf(), scalbnl(), sinh(), sinhl(), tgamma() |
+tgmath.h | Partial | **Unsupported functions:** fmal(), scalbn(), scalbnf(), scalbnl(), tgamma() |
 pthread.h | Partial | Synchronization primitives are not secure across calls to host. Threads are still scheduled by the untrusted host process and an enclave cannot rely on threads making forward progress. <br> **Supported functions:** <br> _- General:_ pthread_self(), pthread_equal(), pthread_once() <br> _- Spinlock:_ pthread_spin_init(), pthread_spin_lock(), pthread_spin_unlock(), pthread_spin_destroy() <br> _- Mutex:_ pthread_mutexattr_init(), pthread_mutexattr_settype(), pthread_mutexattr_destroy(), pthread_mutex_init(), pthread_mutex_lock(), pthread_mutex_trylock(), pthread_mutex_unlock(), pthread_mutex_destroy() <br> _- RW Lock:_ pthread_rwlock_init(), pthread_rwlock_rdlock(), pthread_rwlock_wrlock(), pthread_rwlock_unlock(), pthread_rwlock_destroy() <br> _- Cond:_ pthread_cond_init(), pthread_cond_wait(), pthread_cond_timedwait(), pthread_cond_signal(), pthread_cond_broadcast(), pthread_cond_destroy() <br> _- Thread local storage:_ pthread_key_create(), pthread_key_delete(), pthread_setspecific(), pthread_getspecific() |
 threads.h | No | - |
 time.h | Partial | All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. <br> **Supported functions:** time(), gettimeofday(), clock_gettime(), nanosleep(). _Please note that clock_gettime() only supports CLOCK_REALTIME_ |
