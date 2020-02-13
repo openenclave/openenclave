@@ -267,8 +267,18 @@ system you run the extension on.
     python-pip qemu-user-static zlib1g
   ```
 
-* If you have Intel SGX-capable hardware, install the Intel SGX DCAP driver. On
-  Ubuntu 18.04, run:
+* If you have Intel SGX-capable hardware, install the Intel SGX DCAP driver:
+
+  On Ubuntu 16.04, run:
+  ```bash
+  sudo apt update
+  sudo apt -y install dkms
+  wget https://download.01.org/intel-sgx/sgx-dcap/1.4/linux/distro/ubuntuServer16.04/sgx_linux_x64_driver_1.21.bin -O sgx_linux_x64_driver.bin
+  chmod +x sgx_linux_x64_driver.bin
+  sudo ./sgx_linux_x64_driver.bin
+  ```
+
+  On Ubuntu 18.04, run:
   ```bash
   sudo apt update
   sudo apt -y install dkms
@@ -276,6 +286,7 @@ system you run the extension on.
   chmod +x sgx_linux_x64_driver.bin
   sudo ./sgx_linux_x64_driver.bin
   ```
+
   Note: A new version of the driver may have been released since this
         documentation was written. Check on
         [Intel's Open Source site](https://01.org/intel-software-guard-extensions/downloads)
