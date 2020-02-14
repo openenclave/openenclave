@@ -32,6 +32,8 @@ Param(
     [string]$AzureDCAPNupkgHash = '79C698B61CADA32F56F26647B96BBB1C00B7409A6646597C7CC2908A57677256',
     [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
     [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
+    [string]$NSISURL = 'https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe',
+    [string]$NSISHash = '1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoDriver")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
@@ -112,6 +114,11 @@ $PACKAGES = @{
         "url" = $Python3ZipURL
         "hash" = $Python3ZipHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Python3.zip"
+    }
+    "nsis" = @{
+        "url" = $NSISURL
+        "hash" = $NSISHash
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "nsis-3.05-setup.exe"
     }
 }
 
@@ -636,6 +643,16 @@ function Install-AzureDCAPWindows {
     popd
 }
 
+function Install-NSIS {
+    $installDir = Join-Path $env:ProgramFiles "nsis"
+
+    $installerArguments = @(
+        '-q', '--a', 'install', '--eula=accept', '--no-progress')
+    Install-Tool -InstallerPath $PACKAGES["nsis"]["local_file"] `
+                 -InstallDirectory $installDir `
+                 -ArgumentList "/S"
+}
+
 try {
     Start-LocalPackagesDownload
 
@@ -647,6 +664,7 @@ try {
     Install-LLVM
     Install-Git
     Install-Shellcheck
+    Install-NSIS
 
     if ($LaunchConfiguration -ne "SGX1FLC-NoDriver")
     {

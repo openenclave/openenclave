@@ -30,6 +30,8 @@
         devcon_package_hash: "A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A"
         az_dcap_client_url:  "https://oejenkins.blob.core.windows.net/oejenkins/azure.dcap.windows.0.0.2.nupkg"
         az_dcap_client_hash: "E319A6C2D136FE5EDB8799305F6151B71F4CE4E67D96CA74538D0AD5D2D793F1"
+        nsis_url:            "https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe"
+        nsis_hash:           "1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB"
 
     - name: OE setup | Run the install-windows-prereqs.ps1 script (this may take a while)
       script: ../install-windows-prereqs.ps1
@@ -58,6 +60,8 @@
         -DevconHash          "{{ devcon_package_hash }}"
         -AzureDCAPNupkgURL   "{{ az_dcap_client_url }}"
         -AzureDCAPNupkgHash  "{{ az_dcap_client_hash }}"
+        -NSISURL             "{{ nsis_url }}"
+        -NSISHash            "{{ nsis_hash }}"
 
     - name: OE setup | Reboot the node
       win_reboot:
