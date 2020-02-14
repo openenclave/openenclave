@@ -605,8 +605,8 @@ oe_result_t oe_sgx_load_enclave_data(
     if (context->state != OE_SGX_LOAD_STATE_ENCLAVE_CREATED)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* ADDR must be page aligned */
-    if (addr % OE_PAGE_SIZE)
+    /* addr and src must both be page aligned */
+    if (addr % OE_PAGE_SIZE || src % OE_PAGE_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
 
 #if defined(OE_TRACE_MEASURE)

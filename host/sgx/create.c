@@ -87,9 +87,13 @@ static oe_result_t _add_filled_pages(
     uint32_t filler,
     bool extend)
 {
-    oe_page_t page;
     oe_result_t result = OE_UNEXPECTED;
+    oe_page_t* page = NULL;
     size_t i;
+
+    page = oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
+    if (!page)
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Reject invalid parameters */
     if (!context || !enclave_addr || !vaddr)
@@ -99,19 +103,19 @@ static oe_result_t _add_filled_pages(
     if (filler)
     {
         size_t n = OE_PAGE_SIZE / sizeof(uint32_t);
-        uint32_t* p = (uint32_t*)&page;
+        uint32_t* p = (uint32_t*)page;
 
         while (n--)
             *p++ = filler;
     }
     else
-        memset(&page, 0, sizeof(page));
+        memset(page, 0, sizeof(*page));
 
     /* Add the pages */
     for (i = 0; i < npages; i++)
     {
         uint64_t addr = enclave_addr + *vaddr;
-        uint64_t src = (uint64_t)&page;
+        uint64_t src = (uint64_t)page;
         uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
 
         OE_CHECK(oe_sgx_load_enclave_data(
@@ -122,6 +126,9 @@ static oe_result_t _add_filled_pages(
     result = OE_OK;
 
 done:
+    if (page)
+        oe_memalign_free(page);
+
     return result;
 }
 
@@ -156,6 +163,7 @@ static oe_result_t _add_control_pages(
     oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_page_t* page = NULL;
 
     if (!context || !enclave_addr || !enclave_size || !entry || !vaddr ||
         !enclave)
@@ -181,14 +189,16 @@ static oe_result_t _add_control_pages(
 
     /* Add the TCS page */
     {
-        oe_page_t page;
         sgx_tcs_t* tcs;
+        page = oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
+        if (!page)
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         /* Zero-fill the TCS page */
-        memset(&page, 0, sizeof(page));
+        memset(page, 0, sizeof(*page));
 
         /* Set TCS to pointer to page */
-        tcs = (sgx_tcs_t*)&page;
+        tcs = (sgx_tcs_t*)page;
 
         /* No flags for now */
         tcs->flags = 0;
@@ -232,7 +242,7 @@ static oe_result_t _add_control_pages(
         /* Ask ISGX driver perform EADD on this page */
         {
             uint64_t addr = enclave_addr + *vaddr;
-            uint64_t src = (uint64_t)&page;
+            uint64_t src = (uint64_t)page;
             uint64_t flags = SGX_SECINFO_TCS;
             bool extend = true;
 
@@ -259,6 +269,9 @@ static oe_result_t _add_control_pages(
     result = OE_OK;
 
 done:
+    if (page)
+        oe_memalign_free(page);
+
     return result;
 }
 
