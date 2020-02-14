@@ -56,7 +56,7 @@ static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 /*
 **==============================================================================
 **
-** __cxa_atexit()
+** oe_cxa_atexit()
 **
 **     Installs a function to be invoked upon exit (enclave termination).
 **
@@ -66,7 +66,7 @@ static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 **==============================================================================
 */
 
-int __cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
+int oe_cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
 {
     oe_atexit_entry_t* entry;
     OE_UNUSED(dso_handle);
@@ -105,7 +105,7 @@ int oe_atexit(void (*function)(void))
      * is pushed on the stack but then ignored by function(), which expects
      * no arguments.
      */
-    return __cxa_atexit((Function)function, NULL, NULL);
+    return oe_cxa_atexit((Function)function, NULL, NULL);
 }
 
 /*

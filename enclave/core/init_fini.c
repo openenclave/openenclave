@@ -45,11 +45,11 @@
 **     being constructed, the compiler generates a function that:
 **
 **         (1) Invokes the constructor
-**         (2) Invokes __cxa_atexit() passing it the destructor
+**         (2) Invokes oe_cxa_atexit() passing it the destructor
 **
 **     Note that the FINI_ARRAY (used by oe_call_fini_functions) does not
 **     contain any finalization functions for calling destructors. Instead
-**     the __cxa_atexit() implementation must save the destructor functions
+**     the oe_cxa_atexit() implementation must save the destructor functions
 **     and invoke them on enclave termination.
 **
 **==============================================================================
@@ -99,7 +99,7 @@ void oe_call_init_functions(void)
 **         (1) C functions tagged with __attribute__(destructor)
 **
 **     Note that global C++ destructors are not referenced by the FINI_ARRAY.
-**     Destructors are passed to __cxa_atexit() by invoking functions in the
+**     Destructors are passed to oe_cxa_atexit() by invoking functions in the
 **     INIT_ARRAY (see oe_call_init_functions() for more information).
 **
 **     oe_call_fini_functions() invokes all functions in this array from finish

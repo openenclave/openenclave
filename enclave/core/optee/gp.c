@@ -501,7 +501,7 @@ void TA_CloseSessionEntryPoint(void* sess_ctx)
 
 void TA_DestroyEntryPoint(void)
 {
-    /* Call functions installed by __cxa_atexit() and oe_atexit() */
+    /* Call functions installed by oe_cxa_atexit() and oe_atexit() */
     oe_call_atexit_functions();
 
     /* Call all finalization functions */
