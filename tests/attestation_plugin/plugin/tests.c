@@ -105,6 +105,203 @@ static void _test_and_unregister_verifier()
     OE_TEST(oe_unregister_verifier(&mock_verifier2) == OE_NOT_FOUND);
 }
 
+static bool _find_format_id(
+    const oe_uuid_t* target_format_id,
+    const oe_uuid_t* format_ids,
+    size_t format_ids_length)
+{
+    for (size_t n = 0; n < format_ids_length; n++)
+    {
+        if (memcmp(
+                (void*)&format_ids[n], target_format_id, sizeof(oe_uuid_t)) ==
+            0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void _test_attester_format_id_query()
+{
+    printf("====== running _test_attester_format_id_query\n");
+    const oe_uuid_t mock_attester_uuid1 = {0x01,
+                                           0x2f,
+                                           0x70,
+                                           0x55,
+                                           0x4d,
+                                           0xa2,
+                                           0x4e,
+                                           0xb4,
+                                           0xb7,
+                                           0x68,
+                                           0x44,
+                                           0x95,
+                                           0x25,
+                                           0x44,
+                                           0x02,
+                                           0x0a};
+    const oe_uuid_t mock_attester_uuid2 = {0x02,
+                                           0x2f,
+                                           0x70,
+                                           0x55,
+                                           0x4d,
+                                           0xa2,
+                                           0x4e,
+                                           0xb4,
+                                           0xb7,
+                                           0x68,
+                                           0x44,
+                                           0x95,
+                                           0x25,
+                                           0x44,
+                                           0x02,
+                                           0x0a};
+
+    oe_attester_t mock_attester1 = {.base = {.format_id = mock_attester_uuid1}};
+    oe_attester_t mock_attester2 = {.base = {.format_id = mock_attester_uuid2}};
+
+    oe_uuid_t* format_ids = NULL;
+    size_t format_ids_length0 = 99;
+    size_t format_ids_length1 = 99;
+    size_t format_ids_length2 = 99;
+
+    // Both registered attesters should be found.
+    OE_TEST(
+        oe_get_registered_attester_format_ids(NULL, &format_ids_length0) ==
+        OE_OK);
+    OE_TEST(oe_register_attester(&mock_attester1, NULL, 0) == OE_OK);
+    OE_TEST(oe_register_attester(&mock_attester2, NULL, 0) == OE_OK);
+    OE_TEST(
+        oe_get_registered_attester_format_ids(
+            &format_ids, &format_ids_length1) == OE_OK);
+    OE_TEST(format_ids_length1 == (format_ids_length0 + 2));
+    OE_TEST(
+        _find_format_id(&mock_attester_uuid1, format_ids, format_ids_length1));
+    OE_TEST(
+        _find_format_id(&mock_attester_uuid2, format_ids, format_ids_length1));
+    OE_TEST(oe_free_format_ids(format_ids) == OE_OK);
+
+    // Dup attester should not be added to the list.
+    OE_TEST(
+        oe_register_attester(&mock_attester1, NULL, 0) == OE_ALREADY_EXISTS);
+    OE_TEST(
+        oe_get_registered_attester_format_ids(NULL, &format_ids_length2) ==
+        OE_OK);
+    OE_TEST(format_ids_length2 == format_ids_length1);
+
+    // Unregistered attester should be removed.
+    OE_TEST(oe_unregister_attester(&mock_attester1) == OE_OK);
+    OE_TEST(
+        oe_get_registered_attester_format_ids(
+            &format_ids, &format_ids_length1) == OE_OK);
+    OE_TEST(format_ids_length1 == format_ids_length0 + 1);
+    OE_TEST(
+        !_find_format_id(&mock_attester_uuid1, format_ids, format_ids_length1));
+    OE_TEST(
+        _find_format_id(&mock_attester_uuid2, format_ids, format_ids_length1));
+
+    OE_TEST(oe_unregister_attester(&mock_attester2) == OE_OK);
+    OE_TEST(
+        oe_get_registered_attester_format_ids(
+            &format_ids, &format_ids_length1) == OE_OK);
+    OE_TEST(format_ids_length1 == format_ids_length0);
+    OE_TEST(
+        !_find_format_id(&mock_attester_uuid2, format_ids, format_ids_length1));
+
+    OE_TEST(oe_free_format_ids(format_ids) == OE_OK);
+}
+
+static void _test_verifier_format_id_query()
+{
+    printf("====== running _test_verifier_format_id_query\n");
+    const oe_uuid_t mock_verifier_uuid1 = {0x11,
+                                           0x2f,
+                                           0x70,
+                                           0x55,
+                                           0x4d,
+                                           0xa2,
+                                           0x4e,
+                                           0xb4,
+                                           0xb7,
+                                           0x68,
+                                           0x44,
+                                           0x95,
+                                           0x25,
+                                           0x44,
+                                           0x02,
+                                           0x0a};
+    const oe_uuid_t mock_verifier_uuid2 = {0x12,
+                                           0x2f,
+                                           0x70,
+                                           0x55,
+                                           0x4d,
+                                           0xa2,
+                                           0x4e,
+                                           0xb4,
+                                           0xb7,
+                                           0x68,
+                                           0x44,
+                                           0x95,
+                                           0x25,
+                                           0x44,
+                                           0x02,
+                                           0x0a};
+
+    oe_verifier_t mock_verifier1 = {.base = {.format_id = mock_verifier_uuid1}};
+    oe_verifier_t mock_verifier2 = {.base = {.format_id = mock_verifier_uuid2}};
+
+    oe_uuid_t* format_ids = NULL;
+    size_t format_ids_length0 = 99;
+    size_t format_ids_length1 = 99;
+    size_t format_ids_length2 = 99;
+
+    // Both registered verifiers should be found.
+    OE_TEST(
+        oe_get_registered_verifier_format_ids(NULL, &format_ids_length0) ==
+        OE_OK);
+    OE_TEST(oe_register_verifier(&mock_verifier1, NULL, 0) == OE_OK);
+    OE_TEST(oe_register_verifier(&mock_verifier2, NULL, 0) == OE_OK);
+    OE_TEST(
+        oe_get_registered_verifier_format_ids(
+            &format_ids, &format_ids_length1) == OE_OK);
+    OE_TEST(format_ids_length1 == (format_ids_length0 + 2));
+    OE_TEST(
+        _find_format_id(&mock_verifier_uuid1, format_ids, format_ids_length1));
+    OE_TEST(
+        _find_format_id(&mock_verifier_uuid2, format_ids, format_ids_length1));
+    OE_TEST(oe_free_format_ids(format_ids) == OE_OK);
+
+    // Dup verifier should not be added to the list.
+    OE_TEST(
+        oe_register_verifier(&mock_verifier1, NULL, 0) == OE_ALREADY_EXISTS);
+    OE_TEST(
+        oe_get_registered_verifier_format_ids(NULL, &format_ids_length2) ==
+        OE_OK);
+    OE_TEST(format_ids_length2 == format_ids_length1);
+
+    // Unregistered verifier should be removed.
+    OE_TEST(oe_unregister_verifier(&mock_verifier1) == OE_OK);
+    OE_TEST(
+        oe_get_registered_verifier_format_ids(
+            &format_ids, &format_ids_length1) == OE_OK);
+    OE_TEST(format_ids_length1 == format_ids_length0 + 1);
+    OE_TEST(
+        !_find_format_id(&mock_verifier_uuid1, format_ids, format_ids_length1));
+    OE_TEST(
+        _find_format_id(&mock_verifier_uuid2, format_ids, format_ids_length1));
+
+    OE_TEST(oe_unregister_verifier(&mock_verifier2) == OE_OK);
+    OE_TEST(
+        oe_get_registered_verifier_format_ids(
+            &format_ids, &format_ids_length1) == OE_OK);
+    OE_TEST(format_ids_length1 == format_ids_length0);
+    OE_TEST(
+        !_find_format_id(&mock_verifier_uuid2, format_ids, format_ids_length1));
+
+    OE_TEST(oe_free_format_ids(format_ids) == OE_OK);
+}
+
 static void _test_evidence_success(
     const oe_uuid_t* format_id,
     bool use_endorsements)
@@ -295,6 +492,10 @@ static void _test_verify_evidence_fail()
 void test_runtime()
 {
     printf("====== running test_runtime\n");
+
+    // Test format id query functions.
+    _test_attester_format_id_query();
+    _test_verifier_format_id_query();
 
     // Test register functions.
     _test_and_register_attester();

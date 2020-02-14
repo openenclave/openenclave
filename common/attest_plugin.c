@@ -115,7 +115,8 @@ static oe_result_t _register_plugin(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     // Run the register function for the plugin.
-    OE_CHECK(plugin->on_register(plugin, config_data, config_data_size));
+    if (plugin->on_register)
+        OE_CHECK(plugin->on_register(plugin, config_data, config_data_size));
 
     // Add to the plugin list.
     plugin_node->plugin = plugin;
@@ -154,7 +155,8 @@ static oe_result_t _unregister_plugin(
         *list = cur->next;
 
     // Run the unregister hook for the plugin.
-    OE_CHECK(cur->plugin->on_unregister(cur->plugin));
+    if (cur->plugin->on_unregister)
+        OE_CHECK(cur->plugin->on_unregister(cur->plugin));
 
     result = OE_OK;
 
@@ -452,4 +454,80 @@ oe_result_t oe_free_claims_list(oe_claim_t* claims, size_t claims_length)
 
 done:
     return result;
+}
+
+static oe_result_t _get_plugin_format_ids(
+    struct plugin_list_node_t** list,
+    oe_uuid_t** format_ids,
+    size_t* format_ids_length)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    size_t node_count = 0;
+    size_t node_index = 0;
+    oe_uuid_t* tmp_format_ids = NULL;
+    struct plugin_list_node_t* cur = NULL;
+
+    if (!list || !format_ids_length)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    *format_ids_length = 0;
+    if (format_ids)
+        *format_ids = NULL;
+
+    cur = *list;
+    while (cur)
+    {
+        cur = cur->next;
+        node_count++;
+    }
+
+    if (node_count > 0 && format_ids)
+    {
+        tmp_format_ids = (oe_uuid_t*)oe_malloc(sizeof(oe_uuid_t) * node_count);
+        if (tmp_format_ids == NULL)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        node_index = 0;
+        cur = *list;
+        while (cur && node_index < node_count)
+        {
+            memcpy(
+                tmp_format_ids + node_index,
+                &cur->plugin->format_id,
+                sizeof(oe_uuid_t));
+            cur = cur->next;
+            node_index++;
+        }
+
+        *format_ids = tmp_format_ids;
+    }
+
+    *format_ids_length = node_count;
+
+    tmp_format_ids = NULL;
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_get_registered_attester_format_ids(
+    oe_uuid_t** format_ids,
+    size_t* format_ids_length)
+{
+    return _get_plugin_format_ids(&attesters, format_ids, format_ids_length);
+}
+
+oe_result_t oe_get_registered_verifier_format_ids(
+    oe_uuid_t** format_ids,
+    size_t* format_ids_length)
+{
+    return _get_plugin_format_ids(&verifiers, format_ids, format_ids_length);
+}
+
+oe_result_t oe_free_format_ids(oe_uuid_t* format_ids)
+{
+    oe_free(format_ids);
+    return OE_OK;
 }
