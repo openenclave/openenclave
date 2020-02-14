@@ -644,13 +644,12 @@ function Install-AzureDCAPWindows {
 }
 
 function Install-NSIS {
-    $installDir = Join-Path $env:ProgramFiles "nsis"
+    $installDir = Join-Path ${env:ProgramFiles(x86)} "NSIS"
 
-    $installerArguments = @(
-        '-q', '--a', 'install', '--eula=accept', '--no-progress')
     Install-Tool -InstallerPath $PACKAGES["nsis"]["local_file"] `
                  -InstallDirectory $installDir `
-                 -ArgumentList "/S"
+                 -ArgumentList @("/S") `
+                 -EnvironmentPath @($installDir, "${installDir}\Bin")
 }
 
 try {
