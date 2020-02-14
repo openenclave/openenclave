@@ -125,39 +125,8 @@ static bool _find_format_id(
 static void _test_attester_format_id_query()
 {
     printf("====== running _test_attester_format_id_query\n");
-    const oe_uuid_t mock_attester_uuid1 = {0x01,
-                                           0x2f,
-                                           0x70,
-                                           0x55,
-                                           0x4d,
-                                           0xa2,
-                                           0x4e,
-                                           0xb4,
-                                           0xb7,
-                                           0x68,
-                                           0x44,
-                                           0x95,
-                                           0x25,
-                                           0x44,
-                                           0x02,
-                                           0x0a};
-    const oe_uuid_t mock_attester_uuid2 = {0x02,
-                                           0x2f,
-                                           0x70,
-                                           0x55,
-                                           0x4d,
-                                           0xa2,
-                                           0x4e,
-                                           0xb4,
-                                           0xb7,
-                                           0x68,
-                                           0x44,
-                                           0x95,
-                                           0x25,
-                                           0x44,
-                                           0x02,
-                                           0x0a};
-
+    const oe_uuid_t mock_attester_uuid1 = {OE_MOCK_ATTESTER_UUID1};
+    const oe_uuid_t mock_attester_uuid2 = {OE_MOCK_ATTESTER_UUID2};
     oe_attester_t mock_attester1 = {.base = {.format_id = mock_attester_uuid1}};
     oe_attester_t mock_attester2 = {.base = {.format_id = mock_attester_uuid2}};
 
@@ -215,39 +184,8 @@ static void _test_attester_format_id_query()
 static void _test_verifier_format_id_query()
 {
     printf("====== running _test_verifier_format_id_query\n");
-    const oe_uuid_t mock_verifier_uuid1 = {0x11,
-                                           0x2f,
-                                           0x70,
-                                           0x55,
-                                           0x4d,
-                                           0xa2,
-                                           0x4e,
-                                           0xb4,
-                                           0xb7,
-                                           0x68,
-                                           0x44,
-                                           0x95,
-                                           0x25,
-                                           0x44,
-                                           0x02,
-                                           0x0a};
-    const oe_uuid_t mock_verifier_uuid2 = {0x12,
-                                           0x2f,
-                                           0x70,
-                                           0x55,
-                                           0x4d,
-                                           0xa2,
-                                           0x4e,
-                                           0xb4,
-                                           0xb7,
-                                           0x68,
-                                           0x44,
-                                           0x95,
-                                           0x25,
-                                           0x44,
-                                           0x02,
-                                           0x0a};
-
+    const oe_uuid_t mock_verifier_uuid1 = {OE_MOCK_ATTESTER_UUID1};
+    const oe_uuid_t mock_verifier_uuid2 = {OE_MOCK_ATTESTER_UUID2};
     oe_verifier_t mock_verifier1 = {.base = {.format_id = mock_verifier_uuid1}};
     oe_verifier_t mock_verifier2 = {.base = {.format_id = mock_verifier_uuid2}};
 
@@ -302,6 +240,56 @@ static void _test_verifier_format_id_query()
     OE_TEST(oe_free_format_ids(format_ids) == OE_OK);
 }
 
+static void _test_select_attestation_evidence_format()
+{
+    printf("====== running _test_select_attestation_evidence_format\n");
+    const oe_uuid_t mock_attester_uuid1 = {OE_MOCK_ATTESTER_UUID1};
+    const oe_uuid_t mock_attester_uuid2 = {OE_MOCK_ATTESTER_UUID2};
+    const oe_uuid_t mock_attester_uuid3 = {OE_MOCK_ATTESTER_UUID3};
+    const oe_uuid_t mock_ordered_attester_uuids[] = {
+        mock_attester_uuid3, mock_attester_uuid2, mock_attester_uuid1};
+
+    oe_attester_t mock_attester1 = {.base = {.format_id = mock_attester_uuid1}};
+    oe_attester_t mock_attester2 = {.base = {.format_id = mock_attester_uuid2}};
+
+    oe_uuid_t* selected_format_id = NULL;
+
+    // None of the attesters are registered. Selection should fail.
+    OE_TEST(
+        oe_select_attestation_evidence_format(
+            mock_ordered_attester_uuids,
+            OE_COUNTOF(mock_ordered_attester_uuids),
+            &selected_format_id) == OE_NOT_FOUND);
+
+    // Attester1 is registered. Should select attester1.
+    OE_TEST(oe_register_attester(&mock_attester1, NULL, 0) == OE_OK);
+    OE_TEST(
+        oe_select_attestation_evidence_format(
+            mock_ordered_attester_uuids,
+            OE_COUNTOF(mock_ordered_attester_uuids),
+            &selected_format_id) == OE_OK);
+    OE_TEST(
+        memcmp(selected_format_id, &mock_attester_uuid1, sizeof(oe_uuid_t)) ==
+        0);
+    OE_TEST(oe_free_format_ids(selected_format_id) == OE_OK);
+
+    // Both attesters are registered. Should select attester2 from the ordered
+    // list.
+    OE_TEST(oe_register_attester(&mock_attester2, NULL, 0) == OE_OK);
+    OE_TEST(
+        oe_select_attestation_evidence_format(
+            mock_ordered_attester_uuids,
+            OE_COUNTOF(mock_ordered_attester_uuids),
+            &selected_format_id) == OE_OK);
+    OE_TEST(
+        memcmp(selected_format_id, &mock_attester_uuid2, sizeof(oe_uuid_t)) ==
+        0);
+    OE_TEST(oe_free_format_ids(selected_format_id) == OE_OK);
+
+    OE_TEST(oe_unregister_attester(&mock_attester2) == OE_OK);
+    OE_TEST(oe_unregister_attester(&mock_attester1) == OE_OK);
+}
+
 static void _test_evidence_success(
     const oe_uuid_t* format_id,
     bool use_endorsements)
@@ -316,9 +304,9 @@ static void _test_evidence_success(
     size_t claims_length = 0;
 
     OE_TEST(
-        oe_get_evidence(
+        oe_get_evidence_v2(
             format_id,
-            0,
+            // 0,
             NULL,
             0,
             NULL,
@@ -357,9 +345,8 @@ static void _test_get_evidence_fail()
     OE_TEST(oe_unregister_attester(&mock_attester1) == OE_OK);
 
     OE_TEST(
-        oe_get_evidence(
+        oe_get_evidence_v2(
             &mock_attester1.base.format_id,
-            0,
             NULL,
             0,
             NULL,
@@ -384,9 +371,8 @@ static void _test_verify_evidence_fail()
     size_t claims_length;
 
     OE_TEST(
-        oe_get_evidence(
+        oe_get_evidence_v2(
             &mock_attester1.base.format_id,
-            0,
             NULL,
             0,
             NULL,
@@ -442,9 +428,8 @@ static void _test_verify_evidence_fail()
     size_t claims2_length;
 
     OE_TEST(
-        oe_get_evidence(
+        oe_get_evidence_v2(
             &mock_attester2.base.format_id,
-            0,
             NULL,
             0,
             NULL,
@@ -496,6 +481,9 @@ void test_runtime()
     // Test format id query functions.
     _test_attester_format_id_query();
     _test_verifier_format_id_query();
+
+    // Test attestation evidence selection functions.
+    _test_select_attestation_evidence_format();
 
     // Test register functions.
     _test_and_register_attester();

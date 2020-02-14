@@ -80,9 +80,6 @@ struct _oe_attester
      * the network, so the output must be in a serialized form.
      *
      * @param[in] context A pointer to the attester plugin struct.
-     * @param[in] flags Specifying default value (0) generates evidence for
-     * local attestation. Specifying OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION
-     * generates evidence for remote attestation.
      * @param[in] custom_claims The optional custom claims list.
      * @param[in] custom_claims_length The number of custom claims.
      * @param[in] opt_params The optional plugin-specific input parameters.
@@ -100,7 +97,6 @@ struct _oe_attester
      */
     oe_result_t (*get_evidence)(
         oe_attester_t* context,
-        uint32_t flags,
         const oe_claim_t* custom_claims,
         size_t custom_claims_length,
         const void* opt_params,
@@ -294,15 +290,12 @@ oe_result_t oe_unregister_attester(oe_attester_t* plugin);
 oe_result_t oe_unregister_verifier(oe_verifier_t* plugin);
 
 /**
- * oe_get_evidence
+ * oe_get_evidence_v2
  *
  * Generates the attestation evidence for the given UUID attestation format.
  * This function is only available in the enclave.
  *
  * @param[in] evidence_format_uuid The UUID of the plugin.
- * @param[in] flags Specifying default value (0) generates evidence for local
- * attestation. Specifying OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION generates
- * evidence for remote attestation.
  * @param[in] custom_claims The optional custom claims list.
  * @param[in] custom_claims_length The number of custom claims.
  * @param[in] opt_params The optional plugin-specific input parameters.
@@ -320,9 +313,8 @@ oe_result_t oe_unregister_verifier(oe_verifier_t* plugin);
  * @retval OE_NOT_FOUND The plugin does not exist or has not been registered.
  * @retval Otherwise, returns the error code the plugin's function.
  */
-oe_result_t oe_get_evidence(
+oe_result_t oe_get_evidence_v2(
     const oe_uuid_t* evidence_format_uuid,
-    uint32_t flags,
     const oe_claim_t* custom_claims,
     size_t custom_claims_length,
     const void* opt_params,
@@ -412,6 +404,20 @@ oe_result_t oe_verify_evidence(
     size_t* claims_length);
 
 /**
+ * oe_free_claims_list
+ *
+ * Frees a claims list.
+ *
+ * @param[in] claims The list of claims.
+ * @param[in] claims_length The length of the claims list.
+ * @retval OE_OK The function succeeded.
+ * @retval OE_NOT_FOUND The plugin that generated the claims does not exist or
+ * has not been registered, so the claims can't be freed.
+ * @retval Otherwise, returns the error code the plugin's function.
+ */
+oe_result_t oe_free_claims_list(oe_claim_t* claims, size_t claims_length);
+
+/**
  * oe_get_registered_attester_format_ids
  *
  * Get the unique identifiers of all registered attesters.
@@ -442,26 +448,29 @@ oe_result_t oe_get_registered_verifier_format_ids(
 /**
  * oe_free_format_ids
  *
- * Frees the attester/verifier format ids.
+ * Frees the evidence format ids.
  *
- * @param[in] format_ids The list of the attester/verifier UUIDs.
+ * @param[in] format_ids The list of the evidence UUIDs.
  * @retval OE_OK on success.
  */
 oe_result_t oe_free_format_ids(oe_uuid_t* format_ids);
 
 /**
- * oe_free_claims_list
+ * oe_select_attester_evidence_format
  *
- * Frees a claims list.
+ * Select an evidence format that can be generated from the list.
  *
- * @param[in] claims The list of claims.
- * @param[in] claims_length The length of the claims list.
- * @retval OE_OK The function succeeded.
- * @retval OE_NOT_FOUND The plugin that generated the claims does not exist or
- * has not been registered, so the claims can't be freed.
+ * @param[in] format_ids The list of the evidence UUIDs.
+ * @param[in] format_ids_length The length of the UUIDs list.
+ * @param[out] selected_format_id The selected format id from the evidence UUID
+ * list.
+ * @retval OE_OK on success.
  * @retval Otherwise, returns the error code the plugin's function.
  */
-oe_result_t oe_free_claims_list(oe_claim_t* claims, size_t claims_length);
+oe_result_t oe_select_attestation_evidence_format(
+    const oe_uuid_t* format_ids,
+    size_t format_ids_length,
+    oe_uuid_t** selected_format_id);
 
 OE_EXTERNC_END
 

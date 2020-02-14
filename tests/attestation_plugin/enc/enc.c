@@ -15,7 +15,8 @@
 #include "../plugin/tests.h"
 #include "plugin_t.h"
 
-oe_attester_t* sgx_attest = NULL;
+oe_attester_t* sgx_local_attest = NULL;
+oe_attester_t* sgx_remote_attest = NULL;
 
 void run_runtime_test()
 {
@@ -26,8 +27,10 @@ void register_sgx()
 {
     printf("====== running register_sgx\n");
 
-    sgx_attest = oe_sgx_plugin_attester();
-    OE_TEST(oe_register_attester(sgx_attest, NULL, 0) == OE_OK);
+    sgx_local_attest = oe_sgx_plugin_local_attester();
+    sgx_remote_attest = oe_sgx_plugin_remote_attester();
+    OE_TEST(oe_register_attester(sgx_local_attest, NULL, 0) == OE_OK);
+    OE_TEST(oe_register_attester(sgx_remote_attest, NULL, 0) == OE_OK);
     register_verifier();
 }
 
@@ -35,8 +38,10 @@ void unregister_sgx()
 {
     printf("====== running unregister_sgx\n");
 
-    OE_TEST(oe_unregister_attester(sgx_attest) == OE_OK);
-    sgx_attest = NULL;
+    OE_TEST(oe_unregister_attester(sgx_local_attest) == OE_OK);
+    OE_TEST(oe_unregister_attester(sgx_remote_attest) == OE_OK);
+    sgx_local_attest = NULL;
+    sgx_remote_attest = NULL;
     unregister_verifier();
 }
 
@@ -51,9 +56,8 @@ static void _test_sgx_remote()
     // Get a remote attestation report.
     printf("====== running _test_sgx_remote #1: Just evidence\n");
     OE_TEST(
-        oe_get_evidence(
-            &sgx_attest->base.format_id,
-            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+        oe_get_evidence_v2(
+            &sgx_remote_attest->base.format_id,
             NULL,
             0,
             NULL,
@@ -70,9 +74,8 @@ static void _test_sgx_remote()
     // Get a remote report with endorsements.
     printf("====== running _test_sgx_remote #2: + Endorsements\n");
     OE_TEST(
-        oe_get_evidence(
-            &sgx_attest->base.format_id,
-            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+        oe_get_evidence_v2(
+            &sgx_remote_attest->base.format_id,
             NULL,
             0,
             NULL,
@@ -97,9 +100,8 @@ static void _test_sgx_remote()
     // Get a remote report with both.
     printf("====== running _test_sgx_remote #3: + Claims\n");
     OE_TEST(
-        oe_get_evidence(
-            &sgx_attest->base.format_id,
-            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+        oe_get_evidence_v2(
+            &sgx_remote_attest->base.format_id,
             test_claims,
             NUM_TEST_CLAIMS,
             NULL,
@@ -148,9 +150,8 @@ static void _test_sgx_local()
     // Only evidence.
     printf("====== running _test_sgx_local #1: Just evidence\n");
     OE_TEST(
-        oe_get_evidence(
-            &sgx_attest->base.format_id,
-            0,
+        oe_get_evidence_v2(
+            &sgx_local_attest->base.format_id,
             NULL,
             0,
             target,
@@ -167,9 +168,8 @@ static void _test_sgx_local()
     // Evidence + claims.
     printf("====== running _test_sgx_local #2: + Claims\n");
     OE_TEST(
-        oe_get_evidence(
-            &sgx_attest->base.format_id,
-            0,
+        oe_get_evidence_v2(
+            &sgx_local_attest->base.format_id,
             test_claims,
             NUM_TEST_CLAIMS,
             target,

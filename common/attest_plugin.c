@@ -227,9 +227,8 @@ done:
     return result;
 }
 
-oe_result_t oe_get_evidence(
+oe_result_t oe_get_evidence_v2(
     const oe_uuid_t* format_id,
-    uint32_t flags,
     const oe_claim_t* custom_claims,
     size_t custom_claims_length,
     const void* opt_params,
@@ -265,7 +264,6 @@ oe_result_t oe_get_evidence(
     plugin = (oe_attester_t*)plugin_node->plugin;
     OE_CHECK(plugin->get_evidence(
         plugin,
-        flags,
         custom_claims,
         custom_claims_length,
         opt_params,
@@ -320,6 +318,51 @@ done:
         oe_free(total_endorsements_buf);
     return result;
 }
+
+// oe_result_t oe_get_evidence(
+//     const oe_uuid_t* format_id,
+//     uint32_t flags,
+//     const oe_claim_t* custom_claims,
+//     size_t custom_claims_length,
+//     const void* opt_params,
+//     size_t opt_params_size,
+//     uint8_t** evidence_buffer,
+//     size_t* evidence_buffer_size,
+//     uint8_t** endorsements_buffer,
+//     size_t* endorsements_buffer_size)
+// {
+//     // ### TODO
+//     if (*format_id == OE_SGX_PLUGIN_UUID)
+//     {
+//         if (flags == OE_REPORT_FLAGS_REMOTE_ATTESTATION)
+//         {
+//             return oe_get_evidence_v2(
+//                 OE_SGX_ECDSA_P256_ATTESTATION_UUID,
+//                 custom_claims,
+//                 custom_claims_length,
+//                 opt_params,
+//                 opt_params_size,
+//                 evidence_buffer,
+//                 evidence_buffer_size,
+//                 endorsements_buffer,
+//                 endorsements_buffer_size);
+//         }
+//         else if (flags == OE_REPORT_FLAGS_LOCAL_ATTESTATION)
+//         {
+//             return oe_get_evidence_v2(
+//                 OE_SGX_LOCAL_ATTESTATION_UUID,
+//                 custom_claims,
+//                 custom_claims_length,
+//                 opt_params,
+//                 opt_params_size,
+//                 evidence_buffer,
+//                 evidence_buffer_size,
+//                 endorsements_buffer,
+//                 endorsements_buffer_size);
+//         }
+//     }
+//     return OE_INVALID_PARAMETER;
+// }
 
 oe_result_t oe_free_evidence(uint8_t* evidence_buffer)
 {
@@ -530,4 +573,40 @@ oe_result_t oe_free_format_ids(oe_uuid_t* format_ids)
 {
     oe_free(format_ids);
     return OE_OK;
+}
+
+oe_result_t oe_select_attestation_evidence_format(
+    const oe_uuid_t* format_ids,
+    size_t format_ids_length,
+    oe_uuid_t** selected_format_id)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    struct plugin_list_node_t* plugin_node = NULL;
+    oe_uuid_t* tmp_format_id = NULL;
+
+    if (!format_ids || !selected_format_id)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    *selected_format_id = NULL;
+
+    for (size_t n = 0; n < format_ids_length && plugin_node == NULL; n++)
+    {
+        plugin_node = _find_plugin(attesters, &format_ids[n], NULL);
+    }
+
+    if (!plugin_node)
+        OE_RAISE(OE_NOT_FOUND);
+
+    tmp_format_id = (oe_uuid_t*)oe_malloc(sizeof(oe_uuid_t));
+    if (tmp_format_id == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    memcpy(tmp_format_id, &plugin_node->plugin->format_id, sizeof(oe_uuid_t));
+    *selected_format_id = tmp_format_id;
+    tmp_format_id = NULL;
+
+    result = OE_OK;
+
+done:
+    return result;
 }

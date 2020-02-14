@@ -122,7 +122,7 @@ done:
 // Timing note:
 // Roughly 0.002 seconds without endorsements.
 // Roughtly 0.5 seconds with endorsements.
-static oe_result_t _get_evidence(
+static oe_result_t _get_evidence_internal(
     oe_attester_t* context,
     uint32_t flags,
     const oe_claim_t* custom_claims,
@@ -214,6 +214,54 @@ done:
     return result;
 }
 
+static oe_result_t _get_local_evidence(
+    oe_attester_t* context,
+    const oe_claim_t* custom_claims,
+    size_t custom_claims_length,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** evidence_buffer,
+    size_t* evidence_buffer_size,
+    uint8_t** endorsements_buffer,
+    size_t* endorsements_buffer_size)
+{
+    return _get_evidence_internal(
+        context,
+        OE_EVIDENCE_FLAGS_LOCAL_ATTESTATION,
+        custom_claims,
+        custom_claims_length,
+        opt_params,
+        opt_params_size,
+        evidence_buffer,
+        evidence_buffer_size,
+        endorsements_buffer,
+        endorsements_buffer_size);
+}
+
+static oe_result_t _get_remote_evidence(
+    oe_attester_t* context,
+    const oe_claim_t* custom_claims,
+    size_t custom_claims_length,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** evidence_buffer,
+    size_t* evidence_buffer_size,
+    uint8_t** endorsements_buffer,
+    size_t* endorsements_buffer_size)
+{
+    return _get_evidence_internal(
+        context,
+        OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION,
+        custom_claims,
+        custom_claims_length,
+        opt_params,
+        opt_params_size,
+        evidence_buffer,
+        evidence_buffer_size,
+        endorsements_buffer,
+        endorsements_buffer_size);
+}
+
 static oe_result_t _free_evidence(
     oe_attester_t* context,
     uint8_t* evidence_buffer)
@@ -232,17 +280,34 @@ static oe_result_t _free_endorsements(
     return OE_OK;
 }
 
-static oe_attester_t _attester = {.base =
-                                      {
-                                          .format_id = {OE_SGX_PLUGIN_UUID},
-                                          .on_register = &_on_register,
-                                          .on_unregister = &_on_unregister,
-                                      },
-                                  .get_evidence = &_get_evidence,
-                                  .free_evidence = &_free_evidence,
-                                  .free_endorsements = &_free_endorsements};
+static oe_attester_t _local_attester = {
+    .base =
+        {
+            .format_id = {OE_SGX_LOCAL_ATTESTATION_UUID},
+            .on_register = &_on_register,
+            .on_unregister = &_on_unregister,
+        },
+    .get_evidence = &_get_local_evidence,
+    .free_evidence = &_free_evidence,
+    .free_endorsements = &_free_endorsements};
 
-oe_attester_t* oe_sgx_plugin_attester()
+static oe_attester_t _remote_attester = {
+    .base =
+        {
+            .format_id = {OE_SGX_ECDSA_P256_ATTESTATION_UUID},
+            .on_register = &_on_register,
+            .on_unregister = &_on_unregister,
+        },
+    .get_evidence = &_get_remote_evidence,
+    .free_evidence = &_free_evidence,
+    .free_endorsements = &_free_endorsements};
+
+oe_attester_t* oe_sgx_plugin_local_attester()
 {
-    return &_attester;
+    return &_local_attester;
+}
+
+oe_attester_t* oe_sgx_plugin_remote_attester()
+{
+    return &_remote_attester;
 }

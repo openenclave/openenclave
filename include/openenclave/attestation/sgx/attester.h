@@ -27,13 +27,27 @@ OE_EXTERNC_BEGIN
  */
 typedef void* oe_sgx_plugin_opt_params;
 
+#if (OE_API_VERSION < 2)
+#error "Only OE_API_VERSION of 2 is supported"
+#else
+#define oe_sgx_plugin_attester oe_sgx_plugin_remote_attester
+#endif
+
 /**
- * Helper function that returns the SGX attester that can then be sent to
+ * Helper function that returns the SGX local attester that can then be sent to
  * `oe_register_attester`.
  *
  * @retval A pointer to the SGX attester. This function never fails.
  */
-oe_attester_t* oe_sgx_plugin_attester(void);
+oe_attester_t* oe_sgx_plugin_local_attester(void);
+
+/**
+ * Helper function that returns the SGX remote attester that can then be sent to
+ * `oe_register_attester`.
+ *
+ * @retval A pointer to the SGX attester. This function never fails.
+ */
+oe_attester_t* oe_sgx_plugin_remote_attester(void);
 
 OE_EXTERNC_END
 

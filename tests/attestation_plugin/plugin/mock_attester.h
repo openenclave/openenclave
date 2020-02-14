@@ -27,6 +27,12 @@
             0xc7, 0xc6, 0x52, 0x68, 0xf1                                  \
     }
 
+#define OE_MOCK_ATTESTER_UUID3                                            \
+    {                                                                     \
+        0x01, 0x2f, 0x70, 0x55, 0x4d, 0xa2, 0x4e, 0xb4, 0xb7, 0x68, 0x44, \
+            0x95, 0x25, 0x44, 0x02, 0x0a                                  \
+    }
+
 static inline oe_result_t mock_attester_register(
     oe_attestation_role_t* context,
     const void* config_data,
@@ -47,7 +53,6 @@ static inline oe_result_t mock_attester_unregister(
 
 static inline oe_result_t mock_get_evidence(
     oe_attester_t* context,
-    uint32_t flags,
     const oe_claim_t* custom_claims,
     size_t custom_claims_length,
     const void* opt_params,
@@ -58,7 +63,6 @@ static inline oe_result_t mock_get_evidence(
     size_t* endorsements_buffer_size)
 {
     OE_UNUSED(context);
-    OE_UNUSED(flags);
     OE_UNUSED(custom_claims);
     OE_UNUSED(custom_claims_length);
     OE_UNUSED(opt_params);
