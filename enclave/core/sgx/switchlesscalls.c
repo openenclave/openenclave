@@ -1,12 +1,13 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include "switchlesscalls.h"
+#include "../switchlesscalls.h"
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+#include "tee_t.h"
 
 // The number of host thread workers. Initialized by host through ECALL
 static size_t _host_worker_count = 0;
@@ -47,15 +48,12 @@ bool oe_is_switchless_initialized()
 **
 **==============================================================================
 */
-oe_result_t oe_handle_init_switchless(uint64_t arg_in)
+oe_result_t oe_handle_init_switchless(
+    void* host_worker_contexts,
+    size_t num_host_workers)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_switchless_call_manager_t* manager = NULL;
-    oe_switchless_call_manager_t safe_manager;
-    size_t contexts_size, threads_size;
-
-    if (arg_in == 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
+    size_t contexts_size;
 
     if (!oe_atomic_compare_and_swap(
             (volatile int64_t*)&_switchless_init_in_progress,
@@ -70,30 +68,20 @@ oe_result_t oe_handle_init_switchless(uint64_t arg_in)
         OE_RAISE(OE_ALREADY_INITIALIZED);
     }
 
-    manager = (oe_switchless_call_manager_t*)arg_in;
-    safe_manager = *manager;
+    contexts_size = sizeof(oe_host_worker_context_t) * num_host_workers;
 
-    contexts_size =
-        sizeof(oe_host_worker_context_t) * safe_manager.num_host_workers;
-    threads_size = sizeof(oe_thread_t) * safe_manager.num_host_workers;
-
-    // Ensure the switchless manager and its arrays are outside of enclave
-    if (!oe_is_outside_enclave(manager, sizeof(oe_switchless_call_manager_t)) ||
-        !oe_is_outside_enclave(
-            safe_manager.host_worker_contexts, contexts_size) ||
-        !oe_is_outside_enclave(
-            safe_manager.host_worker_threads, threads_size) ||
-        safe_manager.num_host_workers == 0)
+    // Ensure the members of the switchless manager are outside of enclave.
+    if (!oe_is_outside_enclave(host_worker_contexts, contexts_size) ||
+        num_host_workers == 0)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
-    /* lfence after checks. */
+    // lfence after checks.
     oe_lfence();
 
-    // Copy the worker context array pointer and its size to avoid TOCTOU
-    _host_worker_count = safe_manager.num_host_workers;
-    _host_worker_contexts = safe_manager.host_worker_contexts;
+    _host_worker_count = num_host_workers;
+    _host_worker_contexts = (oe_host_worker_context_t*)host_worker_contexts;
 
     __atomic_store_n(&_is_switchless_initialized, true, __ATOMIC_SEQ_CST);
 

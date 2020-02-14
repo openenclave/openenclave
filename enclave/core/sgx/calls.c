@@ -433,11 +433,6 @@ static void _handle_ecall(
             arg_out = _handle_init_enclave(arg_in);
             break;
         }
-        case OE_ECALL_INIT_CONTEXT_SWITCHLESS:
-        {
-            arg_out = oe_handle_init_switchless(arg_in);
-            break;
-        }
         default:
         {
             /* No function found with the number */

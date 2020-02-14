@@ -66,6 +66,7 @@ if (OE_SGX)
         sgx/report.c
         sgx/sched_yield.c
         sgx/spinlock.c
+        sgx/switchlesscalls.c
         sgx/td.c
         sgx/td_basic.c
         sgx/thread.c
@@ -107,6 +108,7 @@ elseif (OE_TRUSTZONE)
         optee/sched_yield.c
         optee/spinlock.c
         optee/stubs.c
+        optee/switchlesscalls.c
         optee/thread.c
         optee/tracee.c)
 endif()
@@ -148,7 +150,6 @@ add_library(oecore STATIC
     string.c
     strtok_r.c
     strtoul.c
-    switchlesscalls.c
     tee_t_wrapper.c
     time.c
     tracee.c

@@ -43,6 +43,10 @@ enclave
             [out, size=key_info_size] void* key_info,
             size_t key_info_size,
             [out] size_t* key_info_size_out);
+
+        public oe_result_t oe_handle_init_switchless(
+            [user_check] void* host_worker_contexts,
+            size_t num_host_workers);
     };
 
     untrusted

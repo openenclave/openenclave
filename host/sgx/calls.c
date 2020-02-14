@@ -338,7 +338,6 @@ static const char* oe_ecall_str(oe_func_t ecall)
         "INIT_ENCLAVE",
         "CALL_ENCLAVE_FUNCTION",
         "VIRTUAL_EXCEPTION_HANDLER",
-        "INIT_CONTEXT_SWITCHLESS",
     };
     // clang-format on
 
