@@ -100,8 +100,12 @@ oe_result_t oe_start_switchless_manager(
     // because the maximum parallelism is dictated by the latter for
     // synchronous ocalls. We may need to revisit this for asynchronous
     // calls later.
-    if (num_host_workers > enclave->num_bindings)
-        num_host_workers = (uint32_t)enclave->num_bindings;
+    oe_mutex_lock(&enclave->lock);
+    {
+        if (num_host_workers > enclave->num_bindings)
+            num_host_workers = (uint32_t)enclave->num_bindings;
+    }
+    oe_mutex_unlock(&enclave->lock);
 
     // Allocate memory for the manager and its arrays
     manager = calloc(1, sizeof(oe_switchless_call_manager_t));
