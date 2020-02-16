@@ -210,8 +210,7 @@ system you run the extension on.
   [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug)
   extension.
  
-* Install [CMake 3.12 or higher](https://cmake.org/download/)
-  * On Ubuntu 18.04, you may run:
+* Install [CMake 3.12 or higher](https://cmake.org/download/). On Ubuntu 18.04:
   ```bash
   # Remove CMake if already installed.
   sudo apt remove cmake --purge
