@@ -100,7 +100,7 @@ environment.
       in the enclave may only be added before the emulator (QEMU) starts or when
       the debugger is already broken inside the enclave.
 1. Choose the architecture you are interested in debugging by navigating to the
-   Visual Studio `Debug` view (**CTRL-Shift-D**) and selecting either
+   Visual Studio Code `Debug` view (**CTRL-Shift-D**) and selecting either
    `(gdb) Launch Intel SGX (Hardware)`,
    `(gdb) Launch Intel SGX (Simulation)`, or
    `(gdb) Launch QEMU (AArch64/ARMv8-A)`
@@ -210,8 +210,7 @@ system you run the extension on.
   [Native Debug extension](https://marketplace.visualstudio.com/items?itemName=webfreak.debug)
   extension.
  
-* Install [CMake 3.12 or higher](https://cmake.org/download/)
-  * On Ubuntu 18.04, you may run:
+* Install [CMake 3.12 or higher](https://cmake.org/download/). On Ubuntu 18.04:
   ```bash
   # Remove CMake if already installed.
   sudo apt remove cmake --purge
@@ -267,8 +266,18 @@ system you run the extension on.
     python-pip qemu-user-static zlib1g
   ```
 
-* If you have Intel SGX-capable hardware, install the Intel SGX DCAP driver. On
-  Ubuntu 18.04, run:
+* If you have Intel SGX-capable hardware, install the Intel SGX DCAP driver:
+
+  On Ubuntu 16.04, run:
+  ```bash
+  sudo apt update
+  sudo apt -y install dkms
+  wget https://download.01.org/intel-sgx/sgx-dcap/1.4/linux/distro/ubuntuServer16.04/sgx_linux_x64_driver_1.21.bin -O sgx_linux_x64_driver.bin
+  chmod +x sgx_linux_x64_driver.bin
+  sudo ./sgx_linux_x64_driver.bin
+  ```
+
+  On Ubuntu 18.04, run:
   ```bash
   sudo apt update
   sudo apt -y install dkms
@@ -276,6 +285,7 @@ system you run the extension on.
   chmod +x sgx_linux_x64_driver.bin
   sudo ./sgx_linux_x64_driver.bin
   ```
+
   Note: A new version of the driver may have been released since this
         documentation was written. Check on
         [Intel's Open Source site](https://01.org/intel-software-guard-extensions/downloads)
