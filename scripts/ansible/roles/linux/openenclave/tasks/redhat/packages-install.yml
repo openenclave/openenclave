@@ -22,12 +22,15 @@
     list_files: yes
     remote_src: yes
 
-- name: Create /usr/bin/python symlink
+- name: Create Python 3 symlinks
   file:
     src: "/usr/libexec/platform-python"
-    dest: "/usr/bin/python"
+    dest: "/usr/bin/{{ item }}"
     force: yes
     state: link
+  with_items:
+    - "python"
+    - "python3"
 
 - name: Install ShellCheck binary to /usr/bin/shellcheck
   copy:
