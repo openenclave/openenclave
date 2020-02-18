@@ -1,0 +1,113 @@
+{
+  "$schema-template": "1.0.0",
+  "modulesContent": {
+    "$edgeAgent": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "runtime": {
+          "type": "docker",
+          "settings": {
+            "minDockerVersion": "v1.25",
+            "loggingOptions": "",
+            "registryCredentials": {}
+          }
+        },
+        "systemModules": {
+          "edgeAgent": {
+            "type": "docker",
+            "settings": {
+              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.4-linux-arm32v7",
+              "createOptions": {}
+            }
+          },
+          "edgeHub": {
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.4-linux-arm32v7",
+              "createOptions": {
+                "HostConfig": {
+                  "PortBindings": {
+                    "5671/tcp": [
+                      {
+                        "HostPort": "5671"
+                      }
+                    ],
+                    "8883/tcp": [
+                      {
+                        "HostPort": "8883"
+                      }
+                    ],
+                    "443/tcp": [
+                      {
+                        "HostPort": "443"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "modules": {
+          "tempSensor": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0.4-linux-arm32v7",
+              "createOptions": {}
+            }
+          },
+          "[[project-name]]": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.[[project-name]]}",
+              "createOptions": {
+                "HostConfig": {
+                  "Privileged": true,
+                  "Binds": [
+                    "/lib/optee_armtz:/lib/optee_armtz"
+                  ],
+                  "Devices": [
+                    {
+                      "PathOnHost": "/dev/tee0",
+                      "PathInContainer": "/dev/tee0",
+                      "CgroupPermissions": "rwm"
+                    }
+                  ]
+                },
+                "Mounts": [
+                  {
+                    "Type": "bind",
+                    "Source": "/lib/optee_armtz",
+                    "Destination": "/lib/optee_armtz",
+                    "Mode": "",
+                    "RW": true
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "$edgeHub": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "routes": {
+          "[[project-name]]ToIoTHub": "FROM /messages/modules/[[project-name]]/outputs/* INTO $upstream",
+          "sensorTo[[project-name]]": "FROM /messages/modules/tempSensor/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/[[project-name]]/inputs/input1\")"
+        },
+        "storeAndForwardConfiguration": {
+          "timeToLiveSecs": 7200
+        }
+      }
+    }
+  }
+}
