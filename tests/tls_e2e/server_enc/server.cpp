@@ -181,6 +181,7 @@ int launch_tls_client(
 int setup_tls_server(struct tls_control_args* config, char* server_port)
 {
     int ret = 0;
+    int server_ready_ret = 1;
     int len = 0;
     uint32_t uret = 1;
     oe_result_t result = OE_FAILURE;
@@ -274,7 +275,7 @@ waiting_for_connection_request:
     mbedtls_ssl_session_reset(&ssl);
 
     OE_TRACE_INFO("Waiting for a remote connection request...\n");
-    server_is_ready(&ret);
+    server_is_ready(&server_ready_ret);
     if ((ret = mbedtls_net_accept(&listen_fd, &client_fd, NULL, 0, NULL)) != 0)
     {
         char errbuf[512];
@@ -411,6 +412,12 @@ done:
         char error_buf[100];
         mbedtls_strerror(ret, error_buf, 100);
         OE_TRACE_ERROR("Last error was: %d - %s\n\n", ret, error_buf);
+
+        // Mark server as done initializing if server_is_ready was never called
+        // to avoid deadlock
+        int init_failed_ret;
+        if (server_ready_ret != 0)
+            server_initialization_failed(&init_failed_ret);
     }
 
     // free resource
