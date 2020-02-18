@@ -477,8 +477,6 @@ int __oe_dispatch_ocall(
 
         if (enclave->simulate)
         {
-            oe_mutex_lock(&enclave->lock);
-
             /**
              * GetThreadBinding may not work since it uses pthread APIs.
              * pthread depends on FS register being set correctly, which
@@ -493,8 +491,6 @@ int __oe_dispatch_ocall(
                     break;
                 }
             }
-
-            oe_mutex_unlock(&enclave->lock);
         }
         else
         {
