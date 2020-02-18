@@ -285,19 +285,21 @@ int enc_test_vector_exception()
     return 0;
 }
 
-uint64_t test_divide_by_zero_handler_with_ocall(
-    oe_exception_record_t* exception_record)
+void call_invalid_instruction()
 {
-    if (exception_record->code != OE_EXCEPTION_DIVIDE_BY_ZERO)
+    asm volatile("ud2;");
+}
+
+uint64_t test_sigill_handler_with_ocall(oe_exception_record_t* exception_record)
+{
+    if (exception_record->code != OE_EXCEPTION_ILLEGAL_INSTRUCTION)
     {
         return OE_EXCEPTION_CONTINUE_SEARCH;
     }
 
     host_set_was_ocall_called();
 
-    // Skip the idiv instruction - 2 is tied to the size of the idiv instruction
-    // and can change with a different compiler/build. Minimizing this with the
-    // use of the inline assembly for integer division
+    // Skip the ud2 instruction
     exception_record->context->rip += 2;
     return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
@@ -305,7 +307,7 @@ uint64_t test_divide_by_zero_handler_with_ocall(
 int enc_test_ocall_in_handler()
 {
     oe_result_t result = oe_add_vectored_exception_handler(
-        false, test_divide_by_zero_handler_with_ocall);
+        false, test_sigill_handler_with_ocall);
     if (result != OE_OK)
     {
         return -1;
@@ -315,16 +317,13 @@ int enc_test_ocall_in_handler()
         "enc_test_ocall_in_handler: will generate a hardware exception inside "
         "enclave!\n");
 
-    if (divide_by_zero_exception_function() != 0)
-    {
-        return -1;
-    }
+    call_invalid_instruction();
 
     oe_host_printf("enc_test_ocall_in_handler: hardware exception is handled "
                    "correctly!\n");
 
-    if (oe_remove_vectored_exception_handler(
-            test_divide_by_zero_handler_with_ocall) != OE_OK)
+    if (oe_remove_vectored_exception_handler(test_sigill_handler_with_ocall) !=
+        OE_OK)
     {
         return -1;
     }
