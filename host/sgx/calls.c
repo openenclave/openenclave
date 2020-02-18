@@ -472,31 +472,8 @@ int __oe_dispatch_ocall(
         // Handling an OCALL can make ecalls to other enclaves, which
         // may result in overriding the thread-binding. Therefore,
         // upon return from the OCALL, the binding must be restored.
-        ThreadBinding* binding = NULL;
+        ThreadBinding* binding = GetThreadBinding();
         uint64_t arg_out = 0;
-
-        if (enclave->simulate)
-        {
-            /**
-             * GetThreadBinding may not work since it uses pthread APIs.
-             * pthread depends on FS register being set correctly, which
-             * is what we are trying to do. So loop through the bindings
-             * to figure out the correct one for the given tcs.
-             */
-            for (size_t i = 0; i < OE_COUNTOF(enclave->bindings); ++i)
-            {
-                if (enclave->bindings[i].tcs == (uint64_t)tcs)
-                {
-                    binding = &enclave->bindings[i];
-                    break;
-                }
-            }
-        }
-        else
-        {
-            // FS, GS registers are restored by the EEXIT instruction.
-            binding = GetThreadBinding();
-        }
 
         oe_result_t result = _handle_ocall(enclave, tcs, func, arg, &arg_out);
         *arg1_out = oe_make_call_arg1(OE_CODE_ORET, func, 0, result);
