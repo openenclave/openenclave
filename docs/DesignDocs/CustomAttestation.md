@@ -781,10 +781,10 @@ oe_result_t oe_unregister_verifier(
 /**
  * oe_get_evidence
  *
- * Generates the attestation evidence for the given UUID attestation format.
+ * Generates the attestation evidence for the given attestation format id.
  * This function is only available in the enclave.
  *
- * @param[in] evidence_format_uuid The UUID of the plugin.
+ * @param[in] evidence_format_id The evidence format id of the plugin.
  * @param[in] flags Specifying default value (0) generates evidence for local
  * attestation. Specifying OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION generates
  * evidence for remote attestation.
@@ -804,7 +804,7 @@ oe_result_t oe_unregister_verifier(
  * @retval OE_NOT_FOUND The plugin does not exist.
  */
 oe_result_t oe_get_evidence(
-    const uuid_t* evidence_format_uuid,
+    const uuid_t* evidence_format_id,
     uint32_t flags,
     const oe_claim_t* custom_claims,
     size_t custom_claims_length,

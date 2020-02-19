@@ -16,15 +16,14 @@
             0x25, 0xd2, 0xfb, 0xcd, 0x8c                                  \
     }
 
+#define OE_SGX_ECDSA_P256_ATTESTATION_UUID OE_SGX_PLUGIN_UUID
+
 // {CAC1FBA9-FB7F-401D-9577-D72B0DA00813}
 #define OE_SGX_LOCAL_ATTESTATION_UUID                                     \
     {                                                                     \
         0xca, 0xc1, 0xfb, 0xa9, 0xfb, 0x7f, 0x40, 0x1d, 0x95, 0x77, 0xd7, \
             0x2b, 0x0d, 0xa0, 0x08, 0x13                                  \
     }
-
-// {6AC3B2D3-89A8-4AEA-86BA-F7F01E43F905}
-#define OE_SGX_ECDSA_P256_ATTESTATION_UUID OE_SGX_PLUGIN_UUID
 
 #define OE_SGX_PLUGIN_CLAIMS_VERSION 1
 

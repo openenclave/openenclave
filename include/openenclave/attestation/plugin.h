@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * @file attestation_plugin.h
+ * @file plugin.h
  *
  * This file defines the programming interface for developing an
  * attestation plugin for supporting alternative evidence formats.
@@ -30,7 +30,7 @@ typedef struct _oe_attestation_role oe_attestation_role_t;
 struct _oe_attestation_role
 {
     /**
-     * The UUID for the attestation role.
+     * The format id for the attestation role.
      */
     oe_uuid_t format_id;
 
@@ -169,7 +169,7 @@ struct _oe_verifier
      * - validity_until (oe_datetime_t)
      *      - Overall datetime at which the evidence and endorsements expire.
      * - plugin_uuid (uint8_t[16])
-     *      - The UUID of the plugin used to verify the evidence.
+     *      - The format id of the plugin used to verify the evidence.
      *
      * The plugin is responsible for handling endianness and ensuring that the
      * data from the raw evidence converted properly for each platform.
@@ -217,8 +217,8 @@ struct _oe_verifier
  * oe_register_attester
  *
  * Registers a new attester plugin and optionally configures it with plugin
- * specific configuration data. The function will fail if the plugin UUID has
- * already been registered.
+ * specific configuration data. The function will fail if the plugin evidence
+ * format id has already been registered.
  *
  * This is available in the enclave only.
  *
@@ -230,7 +230,8 @@ struct _oe_verifier
  * @retval OE_OK The function succeeded.
  * @retval OE_INVALID_PARAMTER Atleast one of the parameters is invalid.
  * @retval OE_OUT_OF_MEMORY Out of memory.
- * @retval OE_ALREADY_EXISTS A plugin with the same UUID is already registered.
+ * @retval OE_ALREADY_EXISTS A plugin with the same format id is already
+ * registered.
  * @retval Otherwise, returns the error code the plugin's function.
  */
 oe_result_t oe_register_attester(
@@ -242,8 +243,8 @@ oe_result_t oe_register_attester(
  * oe_register_verifier
  *
  * Registers a new verifier plugin and optionally configures it with plugin
- * specific configuration data. The function will fail if the plugin UUID has
- * already been registered.
+ * specific configuration data. The function will fail if the plugin evidence
+ * format id has already been registered.
  *
  * This is available in the enclave and host.
  *
@@ -255,7 +256,8 @@ oe_result_t oe_register_attester(
  * @retval OE_OK The function succeeded.
  * @retval OE_INVALID_PARAMTER Atleast one of the parameters is invalid.
  * @retval OE_OUT_OF_MEMORY Out of memory.
- * @retval OE_ALREADY_EXISTS A plugin with the same UUID is already registered.
+ * @retval OE_ALREADY_EXISTS A plugin with the same format id is already
+ * registered.
  * @retval Otherwise, returns the error code the plugin's function.
  */
 oe_result_t oe_register_verifier(
@@ -303,7 +305,7 @@ oe_result_t oe_unregister_verifier(oe_verifier_t* plugin);
  * Generates the attestation evidence for the given UUID attestation format.
  * This function is only available in the enclave.
  *
- * @param[in] evidence_format_uuid The UUID of the plugin.
+ * @param[in] evidence_format_id The evidence format id of the plugin.
  * @param[in] custom_claims The optional custom claims list.
  * @param[in] custom_claims_length The number of custom claims.
  * @param[in] opt_params The optional plugin-specific input parameters.
@@ -322,7 +324,7 @@ oe_result_t oe_unregister_verifier(oe_verifier_t* plugin);
  * @retval Otherwise, returns the error code the plugin's function.
  */
 oe_result_t oe_get_evidence_v3(
-    const oe_uuid_t* evidence_format_uuid,
+    const oe_uuid_t* evidence_format_id,
     const oe_claim_t* custom_claims,
     size_t custom_claims_length,
     const void* opt_params,
@@ -384,7 +386,7 @@ oe_result_t oe_free_endorsements(uint8_t* endorsements_buffer);
  * - validity_until (oe_datetime_t, optional)
  *      - Overall datetime at which the evidence and endorsements expire.
  * - plugin_uuid (uint8_t[16])
- *      - The UUID of the plugin used to verify the evidence.
+ *      - The format id of the plugin used to verify the evidence.
  *
  * @param[in] evidence_buffer The evidence buffer.
  * @param[in] evidence_buffer_size The size of evidence_buffer in bytes.
