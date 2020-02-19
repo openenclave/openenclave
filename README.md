@@ -1,7 +1,11 @@
 Open Enclave SDK
 ================
 
-[![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/21855) [![Build Status](https://oe-jenkins.eastus.cloudapp.azure.com/buildStatus/icon?job=OpenEnclave-nightly_packages)](https://oe-jenkins.eastus.cloudapp.azure.com/job/OpenEnclave-nightly_packages/) [![Join the chat at https://gitter.im/openenclave/community](https://badges.gitter.im/openenclave/community.svg)](https://gitter.im/openenclave/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/21855)
+[![Packages Build Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/buildStatus/icon?job=OpenEnclave-nightly-packages&subject=packages%20build)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave-nightly-packages/)
+[![Packages Testing Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/buildStatus/icon?job=OpenEnclave-nightly-packages-testing&subject=packages%20testing)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave-nightly-packages-testing/)
+[![Nightly Testing Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/buildStatus/icon?job=OpenEnclave-nightly-testing&subject=nightly%20testing)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave-nightly-testing/)
+[![Join the chat at https://gitter.im/openenclave/community](https://badges.gitter.im/openenclave/community.svg)](https://gitter.im/openenclave/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Introduction
 ------------
