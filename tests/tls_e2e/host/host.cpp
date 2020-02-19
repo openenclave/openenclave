@@ -67,7 +67,8 @@ oe_enclave_t* g_client_enclave = NULL;
 
 int g_server_thread_exit_code = 0;
 int g_client_thread_exit_code = 0;
-bool g_server_condition = false;
+bool g_server_initialization_done = false;
+bool g_server_initialization_success = false;
 
 std::mutex g_server_mutex;
 std::condition_variable g_server_cond;
@@ -77,10 +78,22 @@ int server_is_ready()
 {
     OE_TRACE_INFO("TLS server_is_ready!\n");
     g_server_mutex.lock();
-    g_server_condition = true;
+    g_server_initialization_done = true;
+    g_server_initialization_success = true;
     g_server_cond.notify_all();
     g_server_mutex.unlock();
-    return 1;
+    return 0;
+}
+
+int server_initialization_failed()
+{
+    OE_TRACE_ERROR("TLS server initialization failed!\n");
+    g_server_mutex.lock();
+    g_server_initialization_done = true;
+    g_server_initialization_success = false;
+    g_server_cond.notify_all();
+    g_server_mutex.unlock();
+    return 0;
 }
 
 oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
@@ -130,7 +143,7 @@ void run_server(void* arg)
     tls_thread_context_config_t* config = &(((tls_test_configs_t*)arg)->server);
 
     OE_TRACE_INFO("Server thread starting\n");
-    g_server_condition = false;
+    g_server_initialization_done = false;
 
     result = setup_tls_server(
         config->enclave,
@@ -237,7 +250,15 @@ int run_test_with_config(tls_test_configs_t* test_configs)
     {
         // Release lock on scope exit
         std::unique_lock<std::mutex> server_lock(g_server_mutex);
-        g_server_cond.wait(server_lock, [] { return g_server_condition; });
+        g_server_cond.wait(
+            server_lock, [] { return g_server_initialization_done; });
+        if (!g_server_initialization_success)
+        {
+            OE_TRACE_ERROR(
+                "Server initialization failed. Server exit code is %d\n",
+                g_server_thread_exit_code);
+            return g_server_thread_exit_code;
+        }
     }
 
     fflush(stdout);
@@ -285,7 +306,7 @@ int run_scenarios_tests()
         {
             g_server_thread_exit_code = 0;
             g_client_thread_exit_code = 0;
-            g_server_condition = false;
+            g_server_initialization_done = false;
 
             if (i == server_target)
             {

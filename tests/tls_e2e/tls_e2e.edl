@@ -15,5 +15,6 @@ enclave {
     };
     untrusted {
         int server_is_ready();
+        int server_initialization_failed();
     };
 };
