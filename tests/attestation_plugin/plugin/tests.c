@@ -303,8 +303,22 @@ static void _test_evidence_success(
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
 
+#if (OE_API_VERSION < 3)
     OE_TEST(
-        oe_get_evidence_v3(
+        oe_get_evidence(
+            format_id,
+            0,
+            NULL,
+            0,
+            NULL,
+            0,
+            &evidence,
+            &evidence_size,
+            use_endorsements ? &endorsements : NULL,
+            use_endorsements ? &endorsements_size : NULL) == OE_OK);
+#else
+    OE_TEST(
+        oe_get_evidence(
             format_id,
             NULL,
             0,
@@ -314,6 +328,7 @@ static void _test_evidence_success(
             &evidence_size,
             use_endorsements ? &endorsements : NULL,
             use_endorsements ? &endorsements_size : NULL) == OE_OK);
+#endif
 
     OE_TEST(
         oe_verify_evidence(
@@ -343,8 +358,22 @@ static void _test_get_evidence_fail()
     // Test get_evidence when plugin is unregistered.
     OE_TEST(oe_unregister_attester(&mock_attester1) == OE_OK);
 
+#if (OE_API_VERSION < 3)
     OE_TEST(
-        oe_get_evidence_v3(
+        oe_get_evidence(
+            &mock_attester1.base.format_id,
+            0,
+            NULL,
+            0,
+            NULL,
+            0,
+            &evidence,
+            &evidence_size,
+            NULL,
+            NULL) == OE_NOT_FOUND);
+#else
+    OE_TEST(
+        oe_get_evidence(
             &mock_attester1.base.format_id,
             NULL,
             0,
@@ -354,6 +383,7 @@ static void _test_get_evidence_fail()
             &evidence_size,
             NULL,
             NULL) == OE_NOT_FOUND);
+#endif
 
     OE_TEST(oe_register_attester(&mock_attester1, NULL, 0) == OE_OK);
 }
@@ -369,8 +399,22 @@ static void _test_verify_evidence_fail()
     oe_claim_t* claims;
     size_t claims_length;
 
+#if (OE_API_VERSION < 3)
     OE_TEST(
-        oe_get_evidence_v3(
+        oe_get_evidence(
+            &mock_attester1.base.format_id,
+            0,
+            NULL,
+            0,
+            NULL,
+            0,
+            &evidence,
+            &evidence_size,
+            &endorsements,
+            &endorsements_size) == OE_OK);
+#else
+    OE_TEST(
+        oe_get_evidence(
             &mock_attester1.base.format_id,
             NULL,
             0,
@@ -380,6 +424,7 @@ static void _test_verify_evidence_fail()
             &evidence_size,
             &endorsements,
             &endorsements_size) == OE_OK);
+#endif
 
     // Test verify_evidence with wrong sizes
     OE_TEST(
@@ -426,8 +471,22 @@ static void _test_verify_evidence_fail()
     oe_claim_t* claims2;
     size_t claims2_length;
 
+#if (OE_API_VERSION < 3)
     OE_TEST(
-        oe_get_evidence_v3(
+        oe_get_evidence(
+            &mock_attester2.base.format_id,
+            0,
+            NULL,
+            0,
+            NULL,
+            0,
+            &evidence2,
+            &evidence2_size,
+            &endorsements2,
+            &endorsements2_size) == OE_OK);
+#else
+    OE_TEST(
+        oe_get_evidence(
             &mock_attester2.base.format_id,
             NULL,
             0,
@@ -437,6 +496,7 @@ static void _test_verify_evidence_fail()
             &evidence2_size,
             &endorsements2,
             &endorsements2_size) == OE_OK);
+#endif
 
     OE_TEST(
         oe_verify_evidence(
@@ -506,7 +566,11 @@ void test_runtime()
 
 void register_verifier()
 {
+#if (OE_API_VERSION < 3)
+    sgx_verify = oe_sgx_plugin_verifier();
+#else
     sgx_verify = oe_sgx_plugin_ecdsa_p256_verifier();
+#endif
     OE_TEST(oe_register_verifier(sgx_verify, NULL, 0) == OE_OK);
 }
 

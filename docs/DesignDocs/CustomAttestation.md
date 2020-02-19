@@ -882,10 +882,10 @@ oe_result_t oe_free_claims_list(oe_claim_t* claims, size_t claims_length);
 /**
  * oe_get_registered_attester_format_ids
  *
- * Get the unique identifiers of all registered attesters.
+ * Get the evidence format identifiers of all registered attesters.
  *
- * @param[out] format_ids The list of the format ids of the registered attesters.
- * @param[out] format_ids_length The length of the format ids list.
+ * @param[out] format_ids The list of the evidence format ids of the registered attesters.
+ * @param[out] format_ids_length The length of the evidence format ids list.
  * @retval OE_OK on success.
  * @retval Otherwise, returns the error code the plugin's function.
  */
@@ -896,10 +896,10 @@ oe_result_t oe_get_registered_attester_format_ids(
 /**
  * oe_get_registered_verifier_format_ids
  *
- * Get the unique identifiers of all registered verifiers.
+ * Get the evidence format identifiers of all registered verifiers.
  *
- * @param[out] format_ids The list of the format ids of the registered verifiers.
- * @param[out] format_ids_length The length of the format ids list.
+ * @param[out] format_ids The list of the evidence format ids of the registered verifiers.
+ * @param[out] format_ids_length The length of the evidence format ids list.
  * @retval OE_OK on success.
  * @retval Otherwise, returns the error code the plugin's function.
  */
@@ -924,9 +924,9 @@ oe_result_t oe_free_format_ids(oe_uuid_t* format_ids);
  * can generate.
  *
  * @param[in] format_ids The list of the evidence format ids.
- * @param[in] format_ids_length The length of the format ids list.
- * @param[out] selected_format_id The selected format id from the evidence UUID
- * list.
+ * @param[in] format_ids_length The length of the evidence format ids list.
+ * @param[out] selected_format_id The selected evidence format id from the evidence
+ * format ids list.
  * @retval OE_OK on success.
  * @retval Otherwise, returns the error code the plugin's function.
  */

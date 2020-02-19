@@ -16,7 +16,7 @@
 #include "plugin_t.h"
 
 oe_attester_t* sgx_local_attest = NULL;
-oe_attester_t* sgx_ecdsa_p256_attest = NULL;
+oe_attester_t* sgx_remote_attest = NULL;
 
 void run_runtime_test()
 {
@@ -28,9 +28,13 @@ void register_sgx()
     printf("====== running register_sgx\n");
 
     sgx_local_attest = oe_sgx_plugin_local_attester();
-    sgx_ecdsa_p256_attest = oe_sgx_plugin_ecdsa_p256_attester();
+#if (OE_API_VERSION < 3)
+    sgx_remote_attest = oe_sgx_plugin_attester();
+#else
+    sgx_remote_attest = oe_sgx_plugin_ecdsa_p256_attester();
+#endif
     OE_TEST(oe_register_attester(sgx_local_attest, NULL, 0) == OE_OK);
-    OE_TEST(oe_register_attester(sgx_ecdsa_p256_attest, NULL, 0) == OE_OK);
+    OE_TEST(oe_register_attester(sgx_remote_attest, NULL, 0) == OE_OK);
     register_verifier();
 }
 
@@ -39,9 +43,9 @@ void unregister_sgx()
     printf("====== running unregister_sgx\n");
 
     OE_TEST(oe_unregister_attester(sgx_local_attest) == OE_OK);
-    OE_TEST(oe_unregister_attester(sgx_ecdsa_p256_attest) == OE_OK);
+    OE_TEST(oe_unregister_attester(sgx_remote_attest) == OE_OK);
     sgx_local_attest = NULL;
-    sgx_ecdsa_p256_attest = NULL;
+    sgx_remote_attest = NULL;
     unregister_verifier();
 }
 
@@ -55,9 +59,11 @@ static void _test_sgx_remote()
 
     // Get a remote attestation report.
     printf("====== running _test_sgx_remote #1: Just evidence\n");
+#if (OE_API_VERSION < 3)
     OE_TEST(
-        oe_get_evidence_v3(
-            &sgx_ecdsa_p256_attest->base.format_id,
+        oe_get_evidence(
+            &sgx_remote_attest->base.format_id,
+            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
             NULL,
             0,
             NULL,
@@ -66,6 +72,19 @@ static void _test_sgx_remote()
             &evidence_size,
             NULL,
             0) == OE_OK);
+#else
+    OE_TEST(
+        oe_get_evidence(
+            &sgx_remote_attest->base.format_id,
+            NULL,
+            0,
+            NULL,
+            0,
+            &evidence,
+            &evidence_size,
+            NULL,
+            0) == OE_OK);
+#endif
 
     verify_sgx_evidence(evidence, evidence_size, NULL, 0, NULL, 0, false);
 
@@ -73,9 +92,11 @@ static void _test_sgx_remote()
 
     // Get a remote report with endorsements.
     printf("====== running _test_sgx_remote #2: + Endorsements\n");
+#if (OE_API_VERSION < 3)
     OE_TEST(
-        oe_get_evidence_v3(
-            &sgx_ecdsa_p256_attest->base.format_id,
+        oe_get_evidence(
+            &sgx_remote_attest->base.format_id,
+            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
             NULL,
             0,
             NULL,
@@ -84,6 +105,19 @@ static void _test_sgx_remote()
             &evidence_size,
             &endorsements,
             &endorsements_size) == OE_OK);
+#else
+    OE_TEST(
+        oe_get_evidence(
+            &sgx_remote_attest->base.format_id,
+            NULL,
+            0,
+            NULL,
+            0,
+            &evidence,
+            &evidence_size,
+            &endorsements,
+            &endorsements_size) == OE_OK);
+#endif
 
     verify_sgx_evidence(
         evidence,
@@ -99,9 +133,11 @@ static void _test_sgx_remote()
 
     // Get a remote report with both.
     printf("====== running _test_sgx_remote #3: + Claims\n");
+#if (OE_API_VERSION < 3)
     OE_TEST(
-        oe_get_evidence_v3(
-            &sgx_ecdsa_p256_attest->base.format_id,
+        oe_get_evidence(
+            &sgx_remote_attest->base.format_id,
+            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
             test_claims,
             NUM_TEST_CLAIMS,
             NULL,
@@ -110,6 +146,19 @@ static void _test_sgx_remote()
             &evidence_size,
             &endorsements,
             &endorsements_size) == OE_OK);
+#else
+    OE_TEST(
+        oe_get_evidence(
+            &sgx_remote_attest->base.format_id,
+            test_claims,
+            NUM_TEST_CLAIMS,
+            NULL,
+            0,
+            &evidence,
+            &evidence_size,
+            &endorsements,
+            &endorsements_size) == OE_OK);
+#endif
 
     verify_sgx_evidence(
         evidence,
@@ -149,9 +198,11 @@ static void _test_sgx_local()
 
     // Only evidence.
     printf("====== running _test_sgx_local #1: Just evidence\n");
+#if (OE_API_VERSION < 3)
     OE_TEST(
-        oe_get_evidence_v3(
+        oe_get_evidence(
             &sgx_local_attest->base.format_id,
+            0,
             NULL,
             0,
             target,
@@ -160,6 +211,19 @@ static void _test_sgx_local()
             &evidence_size,
             NULL,
             0) == OE_OK);
+#else
+    OE_TEST(
+        oe_get_evidence(
+            &sgx_remote_attest->base.format_id,
+            NULL,
+            0,
+            target,
+            target_size,
+            &evidence,
+            &evidence_size,
+            NULL,
+            0) == OE_OK);
+#endif
 
     verify_sgx_evidence(evidence, evidence_size, NULL, 0, NULL, 0, true);
 
@@ -167,9 +231,11 @@ static void _test_sgx_local()
 
     // Evidence + claims.
     printf("====== running _test_sgx_local #2: + Claims\n");
+#if (OE_API_VERSION < 3)
     OE_TEST(
-        oe_get_evidence_v3(
+        oe_get_evidence(
             &sgx_local_attest->base.format_id,
+            0,
             test_claims,
             NUM_TEST_CLAIMS,
             target,
@@ -178,6 +244,19 @@ static void _test_sgx_local()
             &evidence_size,
             NULL,
             0) == OE_OK);
+#else
+    OE_TEST(
+        oe_get_evidence(
+            &sgx_remote_attest->base.format_id,
+            test_claims,
+            NUM_TEST_CLAIMS,
+            target,
+            target_size,
+            &evidence,
+            &evidence_size,
+            NULL,
+            0) == OE_OK);
+#endif
 
     verify_sgx_evidence(
         evidence, evidence_size, NULL, 0, test_claims, NUM_TEST_CLAIMS, true);

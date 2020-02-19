@@ -219,8 +219,8 @@ static oe_attester_t mock_attester2 = {
     .base =
         {
             .format_id = {OE_MOCK_ATTESTER_UUID2},
-            .on_register = &mock_attester_register,
-            .on_unregister = &mock_attester_unregister,
+            .on_register = NULL,
+            .on_unregister = NULL,
         },
     .get_evidence = &mock_get_evidence,
     .free_evidence = &mock_free_evidence,
@@ -230,8 +230,8 @@ static oe_verifier_t mock_verifier2 = {
     .base =
         {
             .format_id = {OE_MOCK_ATTESTER_UUID2},
-            .on_register = &mock_attester_register,
-            .on_unregister = &mock_attester_unregister,
+            .on_register = NULL,
+            .on_unregister = NULL,
         },
     .verify_evidence = &mock_verify_evidence,
     .free_claims_list = &mock_free_claims_list};
