@@ -64,31 +64,6 @@ oe_asm_exit:
     // exit-type-check.
     lfence 
 
-    // Save host registers and stack pointer (will be restored on reentry)
-    push %r12
-    push %r13
-    push %r14
-    push %r15
-
-    // Construct the oe_ocall_context_t(rbp, return address).
-    mov (4*OE_WORD_SIZE)(%rsp), %r12
-    push %r12
-    push %rbp
-    mov	%rsp, %r12
-
-    // Save the parameters of oe_asm_exit into stack.
-    push %rdi
-    push %rsi
-
-    // Notify a nested exit happens.
-    // oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
-    mov %r12, %rsi
-    call oe_notify_nested_exit_start
-
-    // Restore the parameters of oe_asm_exit from stack.
-    pop %rsi
-    pop %rdi
-
     mov %rsp, %fs:td_last_sp
 
     jmp .clear_enclave_registers
@@ -145,34 +120,3 @@ oe_asm_exit:
     jmp .forever
 
 .cfi_endproc
-
-.size oe_asm_exit, .-oe_asm_exit
-
-//==============================================================================
-//
-// This function is wrapper of oe_asm_exit. It is needed to stitch the host
-// stack and enclave stack together.
-//
-// N.B: Don't change the function name, otherwise debugger can't work. GDB 
-// depends on this hardcode function name when does stack walking for split
-// stack.
-//==============================================================================
-
-.globl __morestack
-.type __morestack, @function
-
-__morestack:
-.cfi_startproc
-    push %rbp
-.cfi_def_cfa_offset     16
-.cfi_offset             rbp, -16
-    mov %rsp, %rbp
-.cfi_def_cfa_register   rbp
-
-    call oe_asm_exit
-
-    leave
-    ret
-.cfi_endproc
-
-.size __morestack, .-__morestack

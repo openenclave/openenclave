@@ -47,6 +47,20 @@ int square(int x)
     return x * x;
 }
 
+static void enclave_function(void)
+{
+    volatile uint64_t enc_magic = 0;
+    OE_TEST(host_function() == OE_OK);
+    // The following assertion will fail if the debugger was not able to walk
+    // the ocall stack back to the enclave and set the value of enc_magic.
+    OE_TEST(enc_magic == MAGIC_VALUE);
+}
+
+void enc_test_stack_stitching(void)
+{
+    enclave_function();
+}
+
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
