@@ -227,7 +227,7 @@ done:
     return result;
 }
 
-oe_result_t oe_get_evidence_v2(
+oe_result_t oe_get_evidence_v3(
     const oe_uuid_t* format_id,
     const oe_claim_t* custom_claims,
     size_t custom_claims_length,
@@ -318,51 +318,6 @@ done:
         oe_free(total_endorsements_buf);
     return result;
 }
-
-// oe_result_t oe_get_evidence(
-//     const oe_uuid_t* format_id,
-//     uint32_t flags,
-//     const oe_claim_t* custom_claims,
-//     size_t custom_claims_length,
-//     const void* opt_params,
-//     size_t opt_params_size,
-//     uint8_t** evidence_buffer,
-//     size_t* evidence_buffer_size,
-//     uint8_t** endorsements_buffer,
-//     size_t* endorsements_buffer_size)
-// {
-//     // ### TODO
-//     if (*format_id == OE_SGX_PLUGIN_UUID)
-//     {
-//         if (flags == OE_REPORT_FLAGS_REMOTE_ATTESTATION)
-//         {
-//             return oe_get_evidence_v2(
-//                 OE_SGX_ECDSA_P256_ATTESTATION_UUID,
-//                 custom_claims,
-//                 custom_claims_length,
-//                 opt_params,
-//                 opt_params_size,
-//                 evidence_buffer,
-//                 evidence_buffer_size,
-//                 endorsements_buffer,
-//                 endorsements_buffer_size);
-//         }
-//         else if (flags == OE_REPORT_FLAGS_LOCAL_ATTESTATION)
-//         {
-//             return oe_get_evidence_v2(
-//                 OE_SGX_LOCAL_ATTESTATION_UUID,
-//                 custom_claims,
-//                 custom_claims_length,
-//                 opt_params,
-//                 opt_params_size,
-//                 evidence_buffer,
-//                 evidence_buffer_size,
-//                 endorsements_buffer,
-//                 endorsements_buffer_size);
-//         }
-//     }
-//     return OE_INVALID_PARAMETER;
-// }
 
 oe_result_t oe_free_evidence(uint8_t* evidence_buffer)
 {
@@ -575,7 +530,7 @@ oe_result_t oe_free_format_ids(oe_uuid_t* format_ids)
     return OE_OK;
 }
 
-oe_result_t oe_select_attestation_evidence_format(
+oe_result_t oe_select_attester_evidence_format(
     const oe_uuid_t* format_ids,
     size_t format_ids_length,
     oe_uuid_t** selected_format_id)

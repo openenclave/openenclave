@@ -13,15 +13,27 @@
 
 #include <openenclave/attestation/plugin.h>
 
+#if (OE_API_VERSION < 3)
+#define oe_sgx_plugin_verifier oe_sgx_plugin_ecdsa_p256_verifier
+#endif
+
 OE_EXTERNC_BEGIN
 
 /**
- * Helper function that returns the SGX verifier that can then be sent to
- * `oe_register_verifier`.
+ * Helper function that returns the SGX local verifier that can then be
+ * sent to `oe_register_verifier`.
  *
  * @retval A pointer to the SGX verifier. This function never fails.
  */
-oe_verifier_t* oe_sgx_plugin_verifier(void);
+oe_verifier_t* oe_sgx_plugin_local_verifier(void);
+
+/**
+ * Helper function that returns the SGX ECDSA P256 verifier that can then
+ * be sent to `oe_register_verifier`.
+ *
+ * @retval A pointer to the SGX verifier. This function never fails.
+ */
+oe_verifier_t* oe_sgx_plugin_ecdsa_p256_verifier(void);
 
 OE_EXTERNC_END
 

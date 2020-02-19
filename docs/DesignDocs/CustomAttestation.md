@@ -646,9 +646,29 @@ typedef void* oe_sgx_plugin_opt_params;
  * Helper function that returns the SGX attester that can then be sent to
  * `oe_register_attester`.
  *
+ * @deprecated Instead, use oe_sgx_plugin_local_attester()
+ * for local attestation attester or
+ * oe_sgx_plugin_ecdsa_p256_attester() for remote attestation attester.
+ *
  * @retval A pointer to the SGX attester. This function never fails.
  */
 oe_attester_t* oe_sgx_plugin_attester(void);
+
+/**
+ * Helper function that returns the SGX local attester that can then be sent to
+ * `oe_register_attester`.
+ *
+ * @retval A pointer to the SGX attester. This function never fails.
+ */
+oe_attester_t* oe_sgx_plugin_local_attester(void);
+
+/**
+ * Helper function that returns the SGX ECDSA P256 attester that can then be sent to
+ * `oe_register_attester`.
+ *
+ * @retval A pointer to the SGX attester. This function never fails.
+ */
+oe_attester_t* oe_sgx_plugin_ecdsa_p256_attester(void);
 ```
 
 `include/openenclave/attestation/sgx/verifier.h`
@@ -658,9 +678,29 @@ oe_attester_t* oe_sgx_plugin_attester(void);
  * Helper function that returns the SGX verifier that can then be sent to
  * `oe_register_verifier`.
  *
+ * @deprecated Instead, use oe_sgx_plugin_local_verifier()
+ * for local attestation verifier or
+ * oe_sgx_plugin_ecdsa_p256_verifier() for remote attestation verifier.
+ *
  * @retval A pointer to the SGX verifier. This function never fails.
  */
 oe_verifier_t* oe_sgx_plugin_verifier(void);
+
+/**
+ * Helper function that returns the SGX local verifier that can then be
+ * sent to `oe_register_verifier`.
+ *
+ * @retval A pointer to the SGX verifier. This function never fails.
+ */
+oe_verifier_t* oe_sgx_plugin_local_verifier(void);
+
+/**
+ * Helper function that returns the SGX ECDSA P256 verifier that can then
+ * be sent to `oe_register_verifier`.
+ *
+ * @retval A pointer to the SGX verifier. This function never fails.
+ */
+oe_verifier_t* oe_sgx_plugin_ecdsa_p256_verifier(void);
 ```
 
 ### New Open Enclave APIs
@@ -826,44 +866,6 @@ oe_result_t oe_verify_evidence(
     size_t* claims_length);
 
 /**
- * oe_get_registered_attester_format_ids
- *
- * Get the unique identifiers of all registered attesters.
- *
- * @param[out] format_ids The list of the UUIDs of the registered attesters.
- * @param[out] format_ids_length The length of the UUIDs list.
- * @retval OE_OK on success.
- * @retval Otherwise, returns the error code the plugin's function.
- */
-oe_result_t oe_get_registered_attester_format_ids(
-    oe_uuid_t** format_ids,
-    size_t* format_ids_length);
-
-/**
- * oe_get_registered_verifier_format_ids
- *
- * Get the unique identifiers of all registered verifiers.
- *
- * @param[out] format_ids The list of the UUIDs of the registered verifiers.
- * @param[out] format_ids_length The length of the UUIDs list.
- * @retval OE_OK on success.
- * @retval Otherwise, returns the error code the plugin's function.
- */
-oe_result_t oe_get_registered_verifier_format_ids(
-    oe_uuid_t** format_ids,
-    size_t* format_ids_length);
-
-/**
- * oe_free_format_ids
- *
- * Frees the attester/verifier format ids.
- *
- * @param[in] format_ids The list of the attester/verifier UUIDs.
- * @retval OE_OK on success.
- */
-oe_result_t oe_free_format_ids(oe_uuid_t* format_ids);
-
-/**
  * oe_free_claims_list
  *
  * Frees a claims list.
@@ -876,6 +878,62 @@ oe_result_t oe_free_format_ids(oe_uuid_t* format_ids);
  * @retval Otherwise, returns the error code the plugin's function.
  */
 oe_result_t oe_free_claims_list(oe_claim_t* claims, size_t claims_length);
+
+/**
+ * oe_get_registered_attester_format_ids
+ *
+ * Get the unique identifiers of all registered attesters.
+ *
+ * @param[out] format_ids The list of the format ids of the registered attesters.
+ * @param[out] format_ids_length The length of the format ids list.
+ * @retval OE_OK on success.
+ * @retval Otherwise, returns the error code the plugin's function.
+ */
+oe_result_t oe_get_registered_attester_format_ids(
+    oe_uuid_t** format_ids,
+    size_t* format_ids_length);
+
+/**
+ * oe_get_registered_verifier_format_ids
+ *
+ * Get the unique identifiers of all registered verifiers.
+ *
+ * @param[out] format_ids The list of the format ids of the registered verifiers.
+ * @param[out] format_ids_length The length of the format ids list.
+ * @retval OE_OK on success.
+ * @retval Otherwise, returns the error code the plugin's function.
+ */
+oe_result_t oe_get_registered_verifier_format_ids(
+    oe_uuid_t** format_ids,
+    size_t* format_ids_length);
+
+/**
+ * oe_free_format_ids
+ *
+ * Frees the evidence format ids.
+ *
+ * @param[in] format_ids The list of the evidence format ids.
+ * @retval OE_OK on success.
+ */
+oe_result_t oe_free_format_ids(oe_uuid_t* format_ids);
+
+/**
+ * oe_select_attester_evidence_format
+ *
+ * From the list, select an evidence format that the registered attester
+ * can generate.
+ *
+ * @param[in] format_ids The list of the evidence format ids.
+ * @param[in] format_ids_length The length of the format ids list.
+ * @param[out] selected_format_id The selected format id from the evidence UUID
+ * list.
+ * @retval OE_OK on success.
+ * @retval Otherwise, returns the error code the plugin's function.
+ */
+oe_result_t oe_select_attester_evidence_format(
+    const oe_uuid_t* format_ids,
+    size_t format_ids_length,
+    oe_uuid_t** selected_format_id);
 ```
 
 The outputs returned by `oe_get_evidence` will begin with the header

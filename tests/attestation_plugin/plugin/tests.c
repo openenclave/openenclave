@@ -256,7 +256,7 @@ static void _test_select_attestation_evidence_format()
 
     // None of the attesters are registered. Selection should fail.
     OE_TEST(
-        oe_select_attestation_evidence_format(
+        oe_select_attester_evidence_format(
             mock_ordered_attester_uuids,
             OE_COUNTOF(mock_ordered_attester_uuids),
             &selected_format_id) == OE_NOT_FOUND);
@@ -264,7 +264,7 @@ static void _test_select_attestation_evidence_format()
     // Attester1 is registered. Should select attester1.
     OE_TEST(oe_register_attester(&mock_attester1, NULL, 0) == OE_OK);
     OE_TEST(
-        oe_select_attestation_evidence_format(
+        oe_select_attester_evidence_format(
             mock_ordered_attester_uuids,
             OE_COUNTOF(mock_ordered_attester_uuids),
             &selected_format_id) == OE_OK);
@@ -277,7 +277,7 @@ static void _test_select_attestation_evidence_format()
     // list.
     OE_TEST(oe_register_attester(&mock_attester2, NULL, 0) == OE_OK);
     OE_TEST(
-        oe_select_attestation_evidence_format(
+        oe_select_attester_evidence_format(
             mock_ordered_attester_uuids,
             OE_COUNTOF(mock_ordered_attester_uuids),
             &selected_format_id) == OE_OK);
@@ -304,9 +304,8 @@ static void _test_evidence_success(
     size_t claims_length = 0;
 
     OE_TEST(
-        oe_get_evidence_v2(
+        oe_get_evidence_v3(
             format_id,
-            // 0,
             NULL,
             0,
             NULL,
@@ -345,7 +344,7 @@ static void _test_get_evidence_fail()
     OE_TEST(oe_unregister_attester(&mock_attester1) == OE_OK);
 
     OE_TEST(
-        oe_get_evidence_v2(
+        oe_get_evidence_v3(
             &mock_attester1.base.format_id,
             NULL,
             0,
@@ -371,7 +370,7 @@ static void _test_verify_evidence_fail()
     size_t claims_length;
 
     OE_TEST(
-        oe_get_evidence_v2(
+        oe_get_evidence_v3(
             &mock_attester1.base.format_id,
             NULL,
             0,
@@ -428,7 +427,7 @@ static void _test_verify_evidence_fail()
     size_t claims2_length;
 
     OE_TEST(
-        oe_get_evidence_v2(
+        oe_get_evidence_v3(
             &mock_attester2.base.format_id,
             NULL,
             0,
@@ -507,7 +506,7 @@ void test_runtime()
 
 void register_verifier()
 {
-    sgx_verify = oe_sgx_plugin_verifier();
+    sgx_verify = oe_sgx_plugin_ecdsa_p256_verifier();
     OE_TEST(oe_register_verifier(sgx_verify, NULL, 0) == OE_OK);
 }
 

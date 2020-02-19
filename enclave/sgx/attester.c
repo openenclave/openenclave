@@ -283,7 +283,7 @@ static oe_result_t _free_endorsements(
 static oe_attester_t _local_attester = {
     .base =
         {
-            .format_id = {OE_SGX_LOCAL_ATTESTATION_UUID},
+            .format_id = OE_SGX_LOCAL_ATTESTATION_UUID,
             .on_register = &_on_register,
             .on_unregister = &_on_unregister,
         },
@@ -291,10 +291,10 @@ static oe_attester_t _local_attester = {
     .free_evidence = &_free_evidence,
     .free_endorsements = &_free_endorsements};
 
-static oe_attester_t _remote_attester = {
+static oe_attester_t _ecdsa_p256_attester = {
     .base =
         {
-            .format_id = {OE_SGX_ECDSA_P256_ATTESTATION_UUID},
+            .format_id = OE_SGX_ECDSA_P256_ATTESTATION_UUID,
             .on_register = &_on_register,
             .on_unregister = &_on_unregister,
         },
@@ -307,7 +307,7 @@ oe_attester_t* oe_sgx_plugin_local_attester()
     return &_local_attester;
 }
 
-oe_attester_t* oe_sgx_plugin_remote_attester()
+oe_attester_t* oe_sgx_plugin_ecdsa_p256_attester()
 {
-    return &_remote_attester;
+    return &_ecdsa_p256_attester;
 }

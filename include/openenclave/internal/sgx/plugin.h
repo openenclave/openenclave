@@ -23,6 +23,7 @@
             0x2b, 0x0d, 0xa0, 0x08, 0x13                                  \
     }
 
+// {6AC3B2D3-89A8-4AEA-86BA-F7F01E43F905}
 #define OE_SGX_ECDSA_P256_ATTESTATION_UUID OE_SGX_PLUGIN_UUID
 
 #define OE_SGX_PLUGIN_CLAIMS_VERSION 1

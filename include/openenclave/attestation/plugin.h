@@ -289,8 +289,57 @@ oe_result_t oe_unregister_attester(oe_attester_t* plugin);
  */
 oe_result_t oe_unregister_verifier(oe_verifier_t* plugin);
 
+#if (OE_API_VERSION < 3)
+#define oe_get_evidence oe_get_evidence_v2
+#define oe_get_evidence_v2(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) \
+    oe_get_evidence_v2(p1, p3, p4, p5, p6, p7, p8, p9, p10)
+#else
+#define oe_get_evidence oe_get_evidence_v3
+#endif
+
+#if 0
 /**
  * oe_get_evidence_v2
+ *
+ * Generates the attestation evidence for the given UUID attestation format.
+ * This function is only available in the enclave.
+ *
+ * @param[in] evidence_format_uuid The UUID of the plugin.
+ * @param[in] flags Specifying default value (0) generates evidence for local
+ * attestation. Specifying OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION generates
+ * evidence for remote attestation.
+ * @param[in] custom_claims The optional custom claims list.
+ * @param[in] custom_claims_length The number of custom claims.
+ * @param[in] opt_params The optional plugin-specific input parameters.
+ * @param[in] opt_params_size The size of opt_params in bytes.
+ * @param[out] evidence_buffer An output pointer that will be assigned the
+ * address of the evidence buffer.
+ * @param[out] evidence_buffer_size A pointer that points to the size of the
+ * evidence buffer in bytes.
+ * @param[out] endorsements_buffer An output pointer that will be assigned the
+ * address of the endorsements buffer.
+ * @param[out] endorsements_buffer_size A pointer that points to the size of the
+ * endorsements buffer in bytes.
+ * @retval OE_OK The function succeeded.
+ * @retval OE_INVALID_PARAMTER Atleast one of the parameters is invalid.
+ * @retval OE_NOT_FOUND The plugin does not exist or has not been registered.
+ * @retval Otherwise, returns the error code the plugin's function.
+ */
+oe_result_t oe_get_evidence_v2(
+    const oe_uuid_t* evidence_format_uuid,
+    uint32_t flags,
+    const oe_claim_t* custom_claims,
+    size_t custom_claims_length,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** evidence_buffer,
+    size_t* evidence_buffer_size,
+    uint8_t** endorsements_buffer,
+    size_t* endorsements_buffer_size);
+#endif
+
+/**
+ * oe_get_evidence_v3
  *
  * Generates the attestation evidence for the given UUID attestation format.
  * This function is only available in the enclave.
@@ -313,7 +362,7 @@ oe_result_t oe_unregister_verifier(oe_verifier_t* plugin);
  * @retval OE_NOT_FOUND The plugin does not exist or has not been registered.
  * @retval Otherwise, returns the error code the plugin's function.
  */
-oe_result_t oe_get_evidence_v2(
+oe_result_t oe_get_evidence_v3(
     const oe_uuid_t* evidence_format_uuid,
     const oe_claim_t* custom_claims,
     size_t custom_claims_length,
@@ -389,7 +438,7 @@ oe_result_t oe_free_endorsements(uint8_t* endorsements_buffer);
  * @retval OE_OK The function succeeded.
  * @retval OE_INVALID_PARAMTER Atleast one of the parameters is invalid.
  * @retval OE_NOT_FOUND The plugin does not exist or has not been registered.
- * @retval OE_CONSTRAINT_FAILED The UUIDs of the evidence and endorsements
+ * @retval OE_CONSTRAINT_FAILED The format ids of the evidence and endorsements
  * differ.
  * @retval Otherwise, returns the error code the plugin's function.
  */
@@ -422,8 +471,9 @@ oe_result_t oe_free_claims_list(oe_claim_t* claims, size_t claims_length);
  *
  * Get the unique identifiers of all registered attesters.
  *
- * @param[out] format_ids The list of the UUIDs of the registered attesters.
- * @param[out] format_ids_length The length of the UUIDs list.
+ * @param[out] format_ids The list of the format ids of the registered
+ * attesters.
+ * @param[out] format_ids_length The length of the format ids list.
  * @retval OE_OK on success.
  * @retval Otherwise, returns the error code the plugin's function.
  */
@@ -436,8 +486,9 @@ oe_result_t oe_get_registered_attester_format_ids(
  *
  * Get the unique identifiers of all registered verifiers.
  *
- * @param[out] format_ids The list of the UUIDs of the registered verifiers.
- * @param[out] format_ids_length The length of the UUIDs list.
+ * @param[out] format_ids The list of the format ids of the registered
+ * verifiers.
+ * @param[out] format_ids_length The length of the format ids list.
  * @retval OE_OK on success.
  * @retval Otherwise, returns the error code the plugin's function.
  */
@@ -450,7 +501,7 @@ oe_result_t oe_get_registered_verifier_format_ids(
  *
  * Frees the evidence format ids.
  *
- * @param[in] format_ids The list of the evidence UUIDs.
+ * @param[in] format_ids The list of the evidence format ids.
  * @retval OE_OK on success.
  */
 oe_result_t oe_free_format_ids(oe_uuid_t* format_ids);
@@ -458,16 +509,17 @@ oe_result_t oe_free_format_ids(oe_uuid_t* format_ids);
 /**
  * oe_select_attester_evidence_format
  *
- * Select an evidence format that can be generated from the list.
+ * From the list, select an evidence format that the registered attester
+ * can generate.
  *
- * @param[in] format_ids The list of the evidence UUIDs.
- * @param[in] format_ids_length The length of the UUIDs list.
- * @param[out] selected_format_id The selected format id from the evidence UUID
- * list.
+ * @param[in] format_ids The list of the evidence format ids.
+ * @param[in] format_ids_length The length of the format ids list.
+ * @param[out] selected_format_id The selected format id from the evidence
+ * format ids list.
  * @retval OE_OK on success.
  * @retval Otherwise, returns the error code the plugin's function.
  */
-oe_result_t oe_select_attestation_evidence_format(
+oe_result_t oe_select_attester_evidence_format(
     const oe_uuid_t* format_ids,
     size_t format_ids_length,
     oe_uuid_t** selected_format_id);

@@ -447,16 +447,32 @@ done:
     return result;
 }
 
-static oe_verifier_t _verifier = {.base =
-                                      {
-                                          .format_id = {OE_SGX_PLUGIN_UUID},
-                                          .on_register = &_on_register,
-                                          .on_unregister = &_on_unregister,
-                                      },
-                                  .verify_evidence = &_verify_evidence,
-                                  .free_claims_list = &_free_claims_list};
+static oe_verifier_t _local_verifier = {
+    .base =
+        {
+            .format_id = {OE_SGX_LOCAL_ATTESTATION_UUID},
+            .on_register = &_on_register,
+            .on_unregister = &_on_unregister,
+        },
+    .verify_evidence = &_verify_evidence,
+    .free_claims_list = &_free_claims_list};
 
-oe_verifier_t* oe_sgx_plugin_verifier()
+static oe_verifier_t _ecdsa_p256_verifier = {
+    .base =
+        {
+            .format_id = {OE_SGX_ECDSA_P256_ATTESTATION_UUID},
+            .on_register = &_on_register,
+            .on_unregister = &_on_unregister,
+        },
+    .verify_evidence = &_verify_evidence,
+    .free_claims_list = &_free_claims_list};
+
+oe_verifier_t* oe_sgx_plugin_local_verifier()
 {
-    return &_verifier;
+    return &_local_verifier;
+}
+
+oe_verifier_t* oe_sgx_plugin_ecdsa_p256_verifier()
+{
+    return &_ecdsa_p256_verifier;
 }

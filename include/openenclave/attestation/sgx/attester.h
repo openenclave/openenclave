@@ -17,6 +17,10 @@
 
 #include <openenclave/attestation/plugin.h>
 
+#if (OE_API_VERSION < 3)
+#define oe_sgx_plugin_attester oe_sgx_plugin_ecdsa_p256_attester
+#endif
+
 OE_EXTERNC_BEGIN
 
 /**
@@ -27,12 +31,6 @@ OE_EXTERNC_BEGIN
  */
 typedef void* oe_sgx_plugin_opt_params;
 
-#if (OE_API_VERSION < 2)
-#error "Only OE_API_VERSION of 2 is supported"
-#else
-#define oe_sgx_plugin_attester oe_sgx_plugin_remote_attester
-#endif
-
 /**
  * Helper function that returns the SGX local attester that can then be sent to
  * `oe_register_attester`.
@@ -42,12 +40,12 @@ typedef void* oe_sgx_plugin_opt_params;
 oe_attester_t* oe_sgx_plugin_local_attester(void);
 
 /**
- * Helper function that returns the SGX remote attester that can then be sent to
- * `oe_register_attester`.
+ * Helper function that returns the SGX ECDSA P256 attester that can then be
+ * sent to `oe_register_attester`.
  *
  * @retval A pointer to the SGX attester. This function never fails.
  */
-oe_attester_t* oe_sgx_plugin_remote_attester(void);
+oe_attester_t* oe_sgx_plugin_ecdsa_p256_attester(void);
 
 OE_EXTERNC_END
 
