@@ -35,6 +35,7 @@ Committee Members
 | Andrew Schwartzmeyer | Microsoft   | andschwa@microsoft.com        | andschwa       |
 | Dave Thaler          | Microsoft   | dthaler@microsoft.com         | dthaler        |
 | John Kordich         | Independent | jkordich@gmail.com            | johnkord       |
+| Jordan Hand          | Microsoft   | jorhand@microsoft.com         | jhand2         |
 | Mike Brasher         | Microsoft   | mikbras@microsoft.com         | mikbras        |
 | Radhika Jandhyala    | Microsoft   | radhikaj@microsoft.com        | radhikaj       |
 | Simon Leet           | Microsoft   | simon.leet@microsoft.com      | CodeMonkeyLeet |
