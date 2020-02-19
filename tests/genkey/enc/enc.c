@@ -108,6 +108,8 @@ oe_result_t generate_certificate_and_pkey(
     if (ret != 0)
         OE_RAISE_MSG(OE_VERIFY_FAILED, " failed with ret = %d\n", ret);
 
+    printf("public_key_buf{%s}\n", public_key_buf);
+    printf("private_key_buf{%s}\n", private_key_buf);
     // create mbedtls_pk_context from private key data
     ret = mbedtls_pk_parse_key(
         private_key,
@@ -134,7 +136,9 @@ int genkey_ecall(void)
     mbedtls_x509_crt_init(&client_cert);
     mbedtls_pk_init(&private_key);
 
-    generate_certificate_and_pkey(&client_cert, &private_key);
+    oe_result_t r = generate_certificate_and_pkey(&client_cert, &private_key);
+
+    printf("generate_certificate_and_pkey(): %u\n", r);
 
     mbedtls_x509_crt_free(&client_cert);
     mbedtls_pk_free(&private_key);
