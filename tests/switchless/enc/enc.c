@@ -76,9 +76,9 @@ int enc_echo_regular(const char* in, char out[STRING_LEN], int repeats)
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    64,   /* HeapPageCount */
-    64,   /* StackPageCount */
-    16);  /* TCSCount */
+    1,        /* ProductID */
+    1,        /* SecurityVersion */
+    true,     /* AllowDebug */
+    64,       /* HeapPageCount */
+    64,       /* StackPageCount */
+    NUM_TCS); /* TCSCount */
