@@ -317,6 +317,25 @@ def ACCHostVerificationTest(String version, String build_type) {
         }
  }
 
+def RHEL8Test(String compiler, String build_type, List test_env = []) {
+    stage("ACC-RHEL-8 ${compiler} ${build_type}, test_env: ${test_env}") {
+        node("ACC-RHEL-8") {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                def task = """
+                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DHAS_QUOTE_PROVIDER=OFF -Wdev
+                           ninja -v
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                           """
+                withEnv(test_env) {
+                    oe.Run(compiler, task)
+                }
+            }
+        }
+    }
+}
+
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       artifactNumToKeepStr: '180',
                                       daysToKeepStr: '90',
@@ -361,7 +380,15 @@ try{
             "Host verification 1604 Debug" :                       { ACCHostVerificationTest('16.04', 'Debug') },
             "Host verification 1604 Release" :                     { ACCHostVerificationTest('16.04', 'Release') },
             "Host verification 1804 Debug" :                       { ACCHostVerificationTest('18.04', 'Debug') },
-            "Host verification 1804 Release" :                     { ACCHostVerificationTest('18.04', 'Release') }
+            "Host verification 1804 Release" :                     { ACCHostVerificationTest('18.04', 'Release') },
+            // "RHEL-8 simulation clang-8 SGX1 Release":              { RHEL8Test('clang', 'Release', ["OE_SIMULATION=1"]) }, // Enable when https://github.com/openenclave/openenclave/issues/2556 is fixed.
+            "RHEL-8 simulation clang-8 SGX1 Debug":                { RHEL8Test('clang', 'Debug',   ["OE_SIMULATION=1"]) },
+            // "RHEL-8 simulation gcc-8 Release":                     { RHEL8Test('gcc',   'Release', ["OE_SIMULATION=1"]) }, // Enable when https://github.com/openenclave/openenclave/issues/2558 is fixed.
+            "RHEL-8 simulation gcc-8 SGX1 Debug":                  { RHEL8Test('gcc',   'Debug',   ["OE_SIMULATION=1"]) },
+            // "RHEL-8 ACC clang-8 Release" :                         { RHEL8Test('clang', 'Release') },                      // Enable when https://github.com/openenclave/openenclave/issues/2556 is fixed.
+            // "RHEL-8 ACC clang-8 Debug" :                           { RHEL8Test('clang', 'Debug') },                        // Enable when https://github.com/openenclave/openenclave/issues/2557 is fixed.
+            // "RHEL-8 ACC gcc-8 Release" :                           { RHEL8Test('gcc',   'Release') },                      // Enable when https://github.com/openenclave/openenclave/issues/2558 is fixed.
+            "RHEL-8 ACC gcc-8 Debug" :                             { RHEL8Test('gcc',   'Debug') }
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
