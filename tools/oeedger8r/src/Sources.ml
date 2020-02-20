@@ -763,6 +763,8 @@ let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
   [
     sprintf "#include \"%s_t.h\"" ec.file_shortnm;
     "";
+    "#define OE_NEED_STDC_NAMES";
+    "";
     "#include <openenclave/edger8r/enclave.h>";
     "";
     "#include <stdlib.h>";

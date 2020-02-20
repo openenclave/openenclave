@@ -3,7 +3,6 @@
 
 #include <openenclave/host.h>
 
-#include <openenclave/edger8r/host.h>
 #include <openenclave/internal/calls.h>
 #include "hostthread.h"
 

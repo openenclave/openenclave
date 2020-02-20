@@ -66,24 +66,24 @@ done:
     return result;
 }
 
-#define OE_ADD_SIZE(total, size)                                 \
-    do                                                           \
-    {                                                            \
-        if (sizeof(total) > sizeof(size_t) && total > SIZE_MAX)  \
-        {                                                        \
-            _result = OE_INVALID_PARAMETER;                      \
-            goto done;                                           \
-        }                                                        \
-        if (sizeof(size) > sizeof(size_t) && size > SIZE_MAX)    \
-        {                                                        \
-            _result = OE_INVALID_PARAMETER;                      \
-            goto done;                                           \
-        }                                                        \
-        if (oe_add_size((size_t*)&total, (size_t)size) != OE_OK) \
-        {                                                        \
-            _result = OE_INTEGER_OVERFLOW;                       \
-            goto done;                                           \
-        }                                                        \
+#define OE_ADD_SIZE(total, size)                                   \
+    do                                                             \
+    {                                                              \
+        if (sizeof(total) > sizeof(size_t) && total > OE_SIZE_MAX) \
+        {                                                          \
+            _result = OE_INVALID_PARAMETER;                        \
+            goto done;                                             \
+        }                                                          \
+        if (sizeof(size) > sizeof(size_t) && size > OE_SIZE_MAX)   \
+        {                                                          \
+            _result = OE_INVALID_PARAMETER;                        \
+            goto done;                                             \
+        }                                                          \
+        if (oe_add_size((size_t*)&total, (size_t)size) != OE_OK)   \
+        {                                                          \
+            _result = OE_INTEGER_OVERFLOW;                         \
+            goto done;                                             \
+        }                                                          \
     } while (0)
 
 /**
