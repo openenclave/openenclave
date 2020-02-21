@@ -9,7 +9,7 @@ enclave {
     trusted {
         public int enc_add(int a, int b);
         public void enc_assert_debugger_binary_contract();
-	public void enc_test_stack_stitching();
+        public void enc_test_stack_stitching();
     };
 
     untrusted {

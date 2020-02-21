@@ -7,7 +7,7 @@
 #ifndef __ASSEMBLER__
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/context.h>
-#include <openenclave/internal/ecall_context.h>
+#include <openenclave/internal/sgx/ecall_context.h>
 #include <stdint.h>
 #endif
 

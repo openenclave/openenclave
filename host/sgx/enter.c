@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/ecall_context.h>
 #include <openenclave/internal/registers.h>
+#include <openenclave/internal/sgx/ecall_context.h>
 #include <openenclave/internal/sgxtypes.h>
 #include "asmdefs.h"
 #include "enclave.h"
