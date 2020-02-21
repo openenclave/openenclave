@@ -256,6 +256,15 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     oe_exception_record.address = td->base.exception_address;
     oe_exception_record.context = oe_context;
 
+    // Refer to oe_enter in host/sgx/enter.c. The contract we defined for EENTER
+    // is the RBP should not change after return from EENTER.
+    // When the exception is handled, restores the host RBP, RSP to the
+    // value when regular ECALL happens before first pass exception
+    // handling.
+    td->host_rbp = td->host_previous_rbp;
+    td->host_rsp = td->host_previous_rsp;
+    td->host_ecall_context = td->host_previous_ecall_context;
+
     // Traverse the existing exception handlers, stop when
     // OE_EXCEPTION_CONTINUE_EXECUTION is found.
     uint64_t handler_ret = OE_EXCEPTION_CONTINUE_SEARCH;
@@ -271,15 +280,6 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     // Jump to the point where oe_context refers to and continue.
     if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
     {
-        // Refer to oe_enter in host/enter.S. The contract we defined for EENTER
-        // is the RBP should not change after return from EENTER.
-        // When the exception is handled, restores the host RBP, RSP to the
-        // value when regular ECALL happens before first pass exception
-        // handling.
-        td->host_rbp = td->host_previous_rbp;
-        td->host_rsp = td->host_previous_rsp;
-        td->host_ecall_context = td->host_previous_ecall_context;
-
         oe_continue_execution(oe_exception_record.context);
 
         // Code should never run to here.
@@ -289,9 +289,6 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
 
     // Exception can't be handled by trusted handlers, abort the enclave.
     // Let the oe_abort to run on the stack where the exception happens.
-    td->host_rbp = td->host_previous_rbp;
-    td->host_rsp = td->host_previous_rsp;
-    td->host_ecall_context = td->host_previous_ecall_context;
     oe_exception_record.context->rip = (uint64_t)oe_abort;
     oe_continue_execution(oe_exception_record.context);
 

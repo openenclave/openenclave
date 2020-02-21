@@ -9,6 +9,7 @@
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/tests.h>
 #include <openenclave/internal/trace.h>
 #include "VectorException_t.h"
 
@@ -26,18 +27,18 @@ int divide_by_zero_exception_function(void)
     d = 0.32;
 
     // Using inline assembly for idiv to prevent it being optimized out
-    // completely
-    asm volatile("idiv %3"
+    // completely. Specify edi as the used register to ensure that 32-bit
+    // division is done. 64-bit division generates a 3 byte instruction rather
+    // than 2 bytes.
+    register int edi __asm__("edi") = 0;
+    asm volatile("idiv %1"
                  : "=a"(ret)
-                 : "a"(0), "d"(0), "r"(0) // Divisor of 0 is hard-coded
-                 : "%2",
+                 : "r"(edi) // Divisor of 0 is hard-coded
+                 : "%1",
                    "cc"); // cc indicates that flags will be clobbered by ASM
 
     // Check if the float registers are recovered correctly after the exception
     // is handled.
-    // Please note that this register integrity testing is prone to be skipped
-    // with a different compiler/build. This will require that this entire
-    // function be written in assembly.
     if (f < 0.309 || f > 0.321 || d < 0.319 || d > 0.321)
     {
         return -1;
@@ -285,27 +286,35 @@ int enc_test_vector_exception()
     return 0;
 }
 
-uint64_t test_divide_by_zero_handler_with_ocall(
-    oe_exception_record_t* exception_record)
+void call_invalid_instruction()
 {
-    if (exception_record->code != OE_EXCEPTION_DIVIDE_BY_ZERO)
+    asm volatile("ud2;");
+}
+
+uint64_t test_sigill_handler_with_ocall(oe_exception_record_t* exception_record)
+{
+    if (exception_record->code != OE_EXCEPTION_ILLEGAL_INSTRUCTION)
     {
         return OE_EXCEPTION_CONTINUE_SEARCH;
     }
 
     host_set_was_ocall_called();
 
-    // Skip the idiv instruction - 2 is tied to the size of the idiv instruction
-    // and can change with a different compiler/build. Minimizing this with the
-    // use of the inline assembly for integer division
+    // Skip the ud2 instruction
     exception_record->context->rip += 2;
     return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
 
 int enc_test_ocall_in_handler()
 {
-    oe_result_t result =
-        oe_add_vectored_exception_handler(false, test_divide_by_zero_handler);
+    long long rbx;
+    long long rbp;
+    long long rsp;
+    long long r12;
+    long long r13;
+    long long r14;
+    oe_result_t result = oe_add_vectored_exception_handler(
+        false, test_sigill_handler_with_ocall);
     if (result != OE_OK)
     {
         return -1;
@@ -315,15 +324,53 @@ int enc_test_ocall_in_handler()
         "enc_test_ocall_in_handler: will generate a hardware exception inside "
         "enclave!\n");
 
-    if (divide_by_zero_exception_function() != 0)
-    {
-        return -1;
-    }
+    // Save callee-saved registers
+    asm volatile(
+        "mov %%rbx, %0;"
+        "mov %%rbp, %1;"
+        "mov %%rsp, %2;"
+        "mov %%r12, %3;"
+        "mov %%r13, %4;"
+        "mov %%r14, %5;"
+        : "=r"(rbx), "=r"(rbp), "=r"(rsp), "=r"(r12), "=r"(r13), "=r"(r14));
+
+    call_invalid_instruction();
+
+    // Ensure callee-saved registers are properly restored
+    long long after_rbx;
+    long long after_rbp;
+    long long after_rsp;
+    long long after_r12;
+    long long after_r13;
+    long long after_r14;
+
+    // Memory is used rather than registers for storing these values to ensure
+    // the below asm doesn't clobber a register before it is saved.
+    asm volatile("mov %%rbx, %0;"
+                 "mov %%rbp, %1;"
+                 "mov %%rsp, %2;"
+                 "mov %%r12, %3;"
+                 "mov %%r13, %4;"
+                 "mov %%r14, %5;"
+                 : "=m"(after_rbx),
+                   "=m"(after_rbp),
+                   "=m"(after_rsp),
+                   "=m"(after_r12),
+                   "=m"(after_r13),
+                   "=m"(after_r14));
+
+    OE_TEST(rbx == after_rbx);
+    OE_TEST(rbp == after_rbp);
+    OE_TEST(rsp == after_rsp);
+    OE_TEST(r12 == after_r12);
+    OE_TEST(r13 == after_r13);
+    OE_TEST(r14 == after_r14);
 
     oe_host_printf("enc_test_ocall_in_handler: hardware exception is handled "
                    "correctly!\n");
 
-    if (vector_exception_cleanup() != 0)
+    if (oe_remove_vectored_exception_handler(test_sigill_handler_with_ocall) !=
+        OE_OK)
     {
         return -1;
     }
