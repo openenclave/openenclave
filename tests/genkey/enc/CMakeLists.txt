@@ -16,4 +16,4 @@ add_enclave(TARGET genkey_enc
 
 target_include_directories(genkey_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(genkey_enc oelibc)
+target_link_libraries(genkey_enc oeenclave oelibc oesyscall oehostfs oecore)

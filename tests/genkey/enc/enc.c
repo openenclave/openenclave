@@ -1,149 +1,278 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <mbedtls/certs.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/error.h>
-#include <mbedtls/net_sockets.h>
-#include <mbedtls/pk.h>
-#include <mbedtls/platform.h>
-#include <mbedtls/rsa.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/ssl_cache.h>
 #include <mbedtls/x509.h>
-
+#include <mbedtls/x509_crt.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/raise.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <sys/mount.h>
 #include "genkey_t.h"
 
-oe_result_t generate_key_pair(
-    uint8_t** public_key,
-    size_t* public_key_size,
-    uint8_t** private_key,
-    size_t* private_key_size)
+static oe_result_t _generate_key_pair(
+    uint8_t** public_key_out,
+    size_t* public_key_size_out,
+    uint8_t** private_key_out,
+    size_t* private_key_size_out)
 {
     oe_result_t result = OE_FAILURE;
+    oe_result_t ret;
     oe_asymmetric_key_params_t params;
-    char user_data[] = "test user data!";
+    char user_data[] = "__USER_DATA__";
     size_t user_data_size = sizeof(user_data) - 1;
+    uint8_t* public_key = NULL;
+    size_t public_key_size = 0;
+    uint8_t* private_key = NULL;
+    size_t private_key_size = 0;
 
-    // Call oe_get_public_key_by_policy() to generate key pair derived from an
-    // enclave's seal key. If an enclave does not want to have this key pair
-    // tied to enclave instance, it can generate its own key pair using any
-    // chosen crypto API
+    *public_key_out = NULL;
+    *public_key_size_out = 0;
+    *private_key_out = NULL;
+    *private_key_size_out = 0;
 
-    params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1; // MBEDTLS_ECP_DP_SECP256R1
+    params.type = OE_ASYMMETRIC_KEY_EC_SECP256P1;
     params.format = OE_ASYMMETRIC_KEY_PEM;
     params.user_data = user_data;
     params.user_data_size = user_data_size;
-    result = oe_get_public_key_by_policy(
-        OE_SEAL_POLICY_UNIQUE,
-        &params,
-        public_key,
-        public_key_size,
-        NULL,
-        NULL);
-    OE_CHECK_MSG(
-        result,
-        "oe_get_public_key_by_policy(OE_SEAL_POLICY_UNIQUE) = %s",
-        oe_result_str(result));
 
-    result = oe_get_private_key_by_policy(
-        OE_SEAL_POLICY_UNIQUE,
-        &params,
-        private_key,
-        private_key_size,
-        NULL,
-        NULL);
-    OE_CHECK_MSG(
-        result,
-        "oe_get_private_key_by_policy(OE_SEAL_POLICY_UNIQUE) = %s",
-        oe_result_str(result));
+    if ((ret = oe_get_public_key_by_policy(
+             OE_SEAL_POLICY_UNIQUE,
+             &params,
+             &public_key,
+             &public_key_size,
+             NULL,
+             NULL)) != OE_OK)
+    {
+        result = ret;
+        goto done;
+    }
+
+    if ((ret = oe_get_private_key_by_policy(
+             OE_SEAL_POLICY_UNIQUE,
+             &params,
+             &private_key,
+             &private_key_size,
+             NULL,
+             NULL)) != OE_OK)
+    {
+        result = ret;
+        goto done;
+    }
+
+    *private_key_out = private_key;
+    *private_key_size_out = private_key_size;
+    private_key = NULL;
+
+    *public_key_out = public_key;
+    *public_key_size_out = public_key_size;
+    public_key = NULL;
+
+    result = OE_OK;
 
 done:
+
+    if (private_key)
+        oe_free_key(private_key, private_key_size, NULL, 0);
+
+    if (public_key)
+        oe_free_key(public_key, public_key_size, NULL, 0);
+
     return result;
 }
 
-oe_result_t generate_certificate_and_pkey(
-    mbedtls_x509_crt* cert,
-    mbedtls_pk_context* private_key)
+static oe_result_t _generate_cert_and_private_key(
+    const char* common_name,
+    uint8_t** cert_out,
+    size_t* cert_size_out,
+    uint8_t** private_key_out,
+    size_t* private_key_size_out)
 {
     oe_result_t result = OE_FAILURE;
-    uint8_t* output_cert = NULL;
-    size_t output_cert_size = 0;
-    uint8_t* private_key_buf = NULL;
-    size_t private_key_buf_size = 0;
-    uint8_t* public_key_buf = NULL;
-    size_t public_key_buf_size = 0;
-    int ret = 0;
+    oe_result_t ret;
+    uint8_t* cert = NULL;
+    size_t cert_size;
+    uint8_t* private_key = NULL;
+    size_t private_key_size;
+    uint8_t* public_key = NULL;
+    size_t public_key_size;
 
-    result = generate_key_pair(
-        &public_key_buf,
-        &public_key_buf_size,
-        &private_key_buf,
-        &private_key_buf_size);
-    OE_CHECK_MSG(result, " failed with %s\n", oe_result_str(result));
+    *cert_out = NULL;
+    *cert_size_out = 0;
+    *private_key_out = NULL;
+    *private_key_size_out = 0;
 
-#if 0
-    OE_TRACE_INFO("private_key_buf_size:[%ld]\n", private_key_buf_size);
-#endif
+    if ((ret = _generate_key_pair(
+             &public_key, &public_key_size, &private_key, &private_key_size)) !=
+        OE_OK)
+    {
+        result = ret;
+        goto done;
+    }
 
-    OE_TRACE_INFO("public_key_buf_size:[%ld]\n", public_key_buf_size);
-    OE_TRACE_INFO("public key used:\n[%s]", public_key_buf);
+    if ((ret = oe_generate_attestation_certificate(
+             (unsigned char*)common_name,
+             private_key,
+             private_key_size,
+             public_key,
+             public_key_size,
+             &cert,
+             &cert_size)) != OE_OK)
+    {
+        result = ret;
+        goto done;
+    }
 
-    result = oe_generate_attestation_certificate(
-        (const unsigned char*)"CN=Open Enclave SDK,O=OESDK TLS,C=US",
-        private_key_buf,
-        private_key_buf_size,
-        public_key_buf,
-        public_key_buf_size,
-        &output_cert,
-        &output_cert_size);
-    OE_CHECK_MSG(result, " failed with %s\n", oe_result_str(result));
+    *private_key_out = private_key;
+    *private_key_size_out = private_key_size;
+    private_key = NULL;
 
-    // create mbedtls_x509_crt from output_cert
-    ret = mbedtls_x509_crt_parse_der(cert, output_cert, output_cert_size);
-    if (ret != 0)
-        OE_RAISE_MSG(OE_VERIFY_FAILED, " failed with ret = %d\n", ret);
+    *cert_out = cert;
+    *cert_size_out = cert_size;
+    cert = NULL;
 
-    printf("public_key_buf{%s}\n", public_key_buf);
-    printf("private_key_buf{%s}\n", private_key_buf);
-    // create mbedtls_pk_context from private key data
-    ret = mbedtls_pk_parse_key(
-        private_key,
-        (const unsigned char*)private_key_buf,
-        private_key_buf_size,
-        NULL,
-        0);
-    if (ret != 0)
-        OE_RAISE_MSG(OE_VERIFY_FAILED, " failed with ret = %d\n", ret);
+    result = OE_OK;
 
 done:
-    oe_free_key(private_key_buf, private_key_buf_size, NULL, 0);
-    oe_free_key(public_key_buf, public_key_buf_size, NULL, 0);
-    oe_free_attestation_certificate(output_cert);
+
+    if (private_key)
+        oe_free_key(private_key, private_key_size, NULL, 0);
+
+    if (public_key)
+        oe_free_key(public_key, public_key_size, NULL, 0);
+
+    if (cert)
+        oe_free_attestation_certificate(cert);
 
     return result;
+}
+
+static bool _initialized;
+static pthread_once_t _once = PTHREAD_ONCE_INIT;
+
+static void _init(void)
+{
+    if (oe_load_module_host_file_system() != OE_OK)
+        return;
+
+    _initialized = true;
 }
 
 int genkey_ecall(void)
 {
-    mbedtls_x509_crt client_cert;
-    mbedtls_pk_context private_key;
+    int ret = -1;
+    uint8_t* cert = NULL;
+    size_t cert_size;
+    uint8_t* private_key = NULL;
+    size_t private_key_size;
+    FILE* stream = NULL;
+    const char cert_path[] = "/tmp/oe_attested_cert.der";
+    const char private_key_path[] = "/tmp/oe_private_key.pem";
+    bool mounted = false;
+    mbedtls_x509_crt crt;
 
-    mbedtls_x509_crt_init(&client_cert);
-    mbedtls_pk_init(&private_key);
+    mbedtls_x509_crt_init(&crt);
 
-    oe_result_t r = generate_certificate_and_pkey(&client_cert, &private_key);
+    if (pthread_once(&_once, _init) != 0 || !_initialized)
+    {
+        fprintf(stderr, "initialization failed\n");
+        goto done;
+    }
 
-    printf("generate_certificate_and_pkey(): %u\n", r);
+    /* Mount the host file system */
+    {
+        if (mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL) != 0)
+        {
+            fprintf(stderr, "failed to mount the host file system\n");
+            goto done;
+        }
 
-    mbedtls_x509_crt_free(&client_cert);
-    mbedtls_pk_free(&private_key);
+        mounted = true;
+    }
 
-    return 0;
+    /* Generate the attested certificate and private key */
+    if (_generate_cert_and_private_key(
+            "CN=Open Enclave SDK,O=OESDK TLS,C=US",
+            &cert,
+            &cert_size,
+            &private_key,
+            &private_key_size) != OE_OK)
+    {
+        fprintf(stderr, "failed to generate certificate and private key\n");
+        goto done;
+    }
+
+    /* Verify that the certificate can be parsed as DER. */
+    if (mbedtls_x509_crt_parse_der(&crt, cert, cert_size) != 0)
+    {
+        fprintf(stderr, "failed to parse the DER certificate\n");
+        goto done;
+    }
+
+    /* Write the certificate file */
+    {
+        if (!(stream = fopen(cert_path, "w")))
+        {
+            fprintf(stderr, "failed to open: %s\n", cert_path);
+            goto done;
+        }
+
+        if (fwrite(cert, 1, cert_size, stream) != cert_size)
+        {
+            fprintf(stderr, "failed to write: %s\n", cert_path);
+            goto done;
+        }
+
+        fclose(stream);
+        stream = NULL;
+
+        printf("Created %s\n", cert_path);
+    }
+
+    /* Write the private key file */
+    {
+        if (!(stream = fopen(private_key_path, "w")))
+        {
+            fprintf(stderr, "failed to open: %s\n", private_key_path);
+            goto done;
+        }
+
+        size_t n = private_key_size;
+
+        /* Don't write the null terminator */
+        if (n && private_key[n - 1] == '\0')
+            n--;
+
+        if (fwrite(private_key, 1, n, stream) != n)
+        {
+            fprintf(stderr, "failed to write: %s\n", private_key_path);
+            goto done;
+        }
+
+        fclose(stream);
+        stream = NULL;
+
+        printf("Created %s\n", private_key_path);
+    }
+
+    ret = 0;
+
+done:
+
+    mbedtls_x509_crt_free(&crt);
+
+    if (private_key)
+        oe_free_key(private_key, private_key_size, NULL, 0);
+
+    if (cert)
+        oe_free_attestation_certificate(cert);
+
+    if (stream)
+        fclose(stream);
+
+    if (mounted)
+        umount("/");
+
+    return ret;
 }
 
 OE_SET_ENCLAVE_SGX(

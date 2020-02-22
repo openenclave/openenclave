@@ -14,6 +14,9 @@ int main(int argc, const char* argv[])
     const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
     const uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
 
+    /* Disable logging. */
+    setenv("OE_LOG_LEVEL", "NONE", 1);
+
     if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
@@ -28,6 +31,7 @@ int main(int argc, const char* argv[])
     }
 
     result = genkey_ecall(enclave, &retval);
+
     if (result != OE_OK || retval != 0)
     {
         fprintf(stderr, "%s: failed to generate certificate\n", argv[0]);
