@@ -4,7 +4,7 @@
 #include <openenclave/host.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "genkey_u.h"
+#include "oegencert_u.h"
 
 int main(int argc, const char* argv[])
 {
@@ -23,14 +23,15 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    result = oe_create_genkey_enclave(argv[1], type, flags, NULL, 0, &enclave);
+    result =
+        oe_create_oegencert_enclave(argv[1], type, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(stderr, "%s: failed create enclave: %s\n", argv[0], argv[1]);
         exit(1);
     }
 
-    result = genkey_ecall(enclave, &retval);
+    result = oegencert_ecall(enclave, &retval);
 
     if (result != OE_OK || retval != 0)
     {

@@ -7,7 +7,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/mount.h>
-#include "genkey_t.h"
+#include "oegencert_t.h"
 
 static oe_result_t _generate_key_pair(
     uint8_t** public_key_out,
@@ -157,7 +157,7 @@ static void _init(void)
     _initialized = true;
 }
 
-int genkey_ecall(void)
+int oegencert_ecall(void)
 {
     int ret = -1;
     uint8_t* cert = NULL;

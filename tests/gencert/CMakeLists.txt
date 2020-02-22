@@ -4,4 +4,4 @@
 add_subdirectory(host)
 add_subdirectory(enc)
 
-add_enclave_test(tests/genkey genkey_host genkey_enc)
+add_enclave_test(tests/oegencert oegencert_host oegencert_enc)
