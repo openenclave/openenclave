@@ -1,0 +1,10 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave
+{
+    trusted
+    {
+        public int oegencert_ecall();
+    };
+};
