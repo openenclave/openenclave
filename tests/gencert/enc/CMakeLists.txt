@@ -12,7 +12,7 @@ add_custom_command(
 
 add_enclave(TARGET oegencert_enc
     UUID ef28dc39-208e-4b41-804b-408247d7faba
-    SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/oegencert_t.c)
+    SOURCES enc.c oegencert.c ${CMAKE_CURRENT_BINARY_DIR}/oegencert_t.c)
 
 target_include_directories(oegencert_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
