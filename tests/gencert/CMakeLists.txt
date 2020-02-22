@@ -16,7 +16,7 @@ add_custom_command(
         --untrusted ${EDL_FILE}
         --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(oegencert host.c oegencert_u.c)
+add_executable(oegencert main.c oegencert_u.c)
 
 target_include_directories(oegencert PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -39,7 +39,7 @@ add_custom_command(
 
 add_enclave(TARGET oegencert_enclave
     UUID ef28dc39-208e-4b41-804b-408247d7faba
-    SOURCES enc.c oegencert.c ${CMAKE_CURRENT_BINARY_DIR}/oegencert_t.c)
+    SOURCES enclave.c oegencert.c ${CMAKE_CURRENT_BINARY_DIR}/oegencert_t.c)
 
 target_include_directories(oegencert_enclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
