@@ -168,9 +168,6 @@ int oegencert_ecall(void)
     const char cert_path[] = "/tmp/oe_attested_cert.der";
     const char private_key_path[] = "/tmp/oe_private_key.pem";
     bool mounted = false;
-    mbedtls_x509_crt crt;
-
-    mbedtls_x509_crt_init(&crt);
 
     if (pthread_once(&_once, _init) != 0 || !_initialized)
     {
@@ -201,11 +198,35 @@ int oegencert_ecall(void)
         goto done;
     }
 
-    /* Verify that the certificate can be parsed as DER. */
-    if (mbedtls_x509_crt_parse_der(&crt, cert, cert_size) != 0)
+    /* Verify that the certificate can be parsed as DER */
     {
-        fprintf(stderr, "failed to parse the DER certificate\n");
-        goto done;
+        mbedtls_x509_crt crt;
+        mbedtls_x509_crt_init(&crt);
+
+        if (mbedtls_x509_crt_parse_der(&crt, cert, cert_size) != 0)
+        {
+            mbedtls_x509_crt_free(&crt);
+            fprintf(stderr, "failed to parse the DER certificate\n");
+            goto done;
+        }
+
+        mbedtls_x509_crt_free(&crt);
+    }
+
+    /* Verify that the private key can be parsed as PEM */
+    {
+        mbedtls_pk_context pk;
+        mbedtls_pk_init(&pk);
+
+        if (mbedtls_pk_parse_key(&pk, private_key, private_key_size, NULL, 0) !=
+            0)
+        {
+            mbedtls_pk_free(&pk);
+            fprintf(stderr, "failed to parse the PEM private key\n");
+            goto done;
+        }
+
+        mbedtls_pk_free(&pk);
     }
 
     /* Write the certificate file */
@@ -257,8 +278,6 @@ int oegencert_ecall(void)
     ret = 0;
 
 done:
-
-    mbedtls_x509_crt_free(&crt);
 
     if (private_key)
         oe_free_key(private_key, private_key_size, NULL, 0);
