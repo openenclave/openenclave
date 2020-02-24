@@ -452,12 +452,13 @@ add_library(oehostapp INTERFACE)
 target_link_libraries(oehostapp INTERFACE oehost)
 
 if (UNIX)
+  target_link_libraries(oehost INTERFACE
+      -Wl,-z,noexecstack)
   target_link_libraries(oehostapp INTERFACE
-      -rdynamic
-      -Wl,-z,noexecstack)
+      -rdynamic)
   target_link_libraries(oehostverify INTERFACE
-      -rdynamic
-      -Wl,-z,noexecstack)
+      -Wl,-z,noexecstack
+      -rdynamic)
 endif ()
 
 # Install targets
