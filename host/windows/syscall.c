@@ -1532,8 +1532,8 @@ int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
 
     Sleep((DWORD)milliseconds);
 
-    // Windows sleep will always sleep is not interruptable by hardware
-    // exception handling. Just wait the whole time and zero rem.
+    // Windows sleep is not interruptable by hardware exception handling. Just
+    // wait the whole time and zero rem.
     if (rem)
         memset(rem, 0, sizeof(*rem));
 
