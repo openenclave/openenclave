@@ -198,6 +198,29 @@ static int _verify_report(
         _read_binary_file(
             endorsements_filename, &endorsements_data, &endorsements_file_size);
 
+        result = oe_verify_remote_report(
+            report_data,
+            report_file_size,
+            endorsements_data,
+            endorsements_file_size,
+            NULL);
+        if (pass)
+            OE_TEST(result == OE_OK);
+        else
+        {
+            // Note: The failure result code is different between linux vs
+            // windows.
+            //
+            OE_TEST(result != OE_OK);
+            OE_TRACE_INFO(
+                "Report %s verification failed as expected. The generated "
+                "endorsement file is %s. Failure %d(%s)\n",
+                report_filename,
+                endorsements_filename,
+                result,
+                oe_result_str(result));
+        }
+
         result = oe_verify_sgx_quote(
             report_data,
             report_file_size,
