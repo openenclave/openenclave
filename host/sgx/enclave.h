@@ -67,6 +67,10 @@ typedef struct _thread_binding
 
     /* Event signaling object for enclave threading implementation */
     EnclaveEvent event;
+
+    /* This field allows the simulation mode exception handler to read enclave
+     * properties of the current thread binding*/
+    struct _oe_enclave* enclave;
 } ThreadBinding;
 
 OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);

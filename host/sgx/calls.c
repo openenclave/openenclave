@@ -545,6 +545,7 @@ static void* _assign_tcs(oe_enclave_t* enclave)
                     binding->flags |= _OE_THREAD_BUSY;
                     binding->thread = thread;
                     binding->count = 1;
+                    binding->enclave = enclave;
                     tcs = (void*)binding->tcs;
 
                     /* Set into TSD so asynchronous exceptions can get it */
