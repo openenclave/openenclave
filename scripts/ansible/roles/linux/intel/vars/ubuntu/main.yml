@@ -2,6 +2,10 @@
 # Licensed under the MIT License.
 
 ---
+intel_sgx_launch_package:
+  - "libsgx-launch"
+  - "libsgx-aesm-launch-plugin"
+
 intel_sgx_packages:
   - "libsgx-enclave-common"
   - "libsgx-enclave-common-dev"
@@ -9,6 +13,7 @@ intel_sgx_packages:
   - "libsgx-ae-qve"
   - "libsgx-ae-pce"
   - "libsgx-ae-qe3"
+
 
 intel_dcap_packages:
   - "libsgx-dcap-ql"
