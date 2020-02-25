@@ -30,14 +30,16 @@ sudo scripts/ansible/install-ansible.sh
 If you are running in an Azure Confidential Compute (ACC) VM and would like to use the attestation features, you should also run the following command from the root of the source tree:
 
 ```bash
-sudo ansible-playbook scripts/ansible/oe-contributors-acc-setup.yml
+ansible-playbook scripts/ansible/oe-contributors-acc-setup.yml
 ```
 
 If you are not running in an ACC VM, you should instead run:
 
 ```bash
-sudo ansible-playbook scripts/ansible/oe-contributors-setup.yml
+ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
+
+NOTE: The Ansible playbook commands from above will try and execute tasks with `sudo` rights. Make sure that the user running the playbooks has `sudo` rights, and if it uses a `sudo` password add the following extra parameter `--ask-become-pass`.
 
 ## Build
 
