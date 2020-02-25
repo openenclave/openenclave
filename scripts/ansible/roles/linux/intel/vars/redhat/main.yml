@@ -6,6 +6,7 @@ intel_sgx_packages:
   - "sgx-aesm-service"
   - "libsgx-enclave-common"
   - "libsgx-enclave-common-devel"
+  - "libsgx-launch"
   - "libsgx-urts"
   - "libsgx-ae-pce"
   - "libsgx-ae-qe3"

@@ -30,3 +30,11 @@
     update_cache: yes
     install_recommends: no
   when: flc_enabled|bool
+
+- name: Install the Intel enclave launch package
+  apt:
+    name: "{{ intel_sgx_launch_package }}"
+    state: latest
+    update_cache: yes
+    install_recommends: no
+  when: not flc_enabled|bool
