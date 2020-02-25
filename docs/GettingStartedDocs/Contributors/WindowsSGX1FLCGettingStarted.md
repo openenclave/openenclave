@@ -39,6 +39,13 @@ Run the following from PowerShell to deploy all the prerequisites for building O
 ./scripts/install-windows-prereqs.ps1
 ```
 
+On Windows 10, the Intel PSW is delivered via Windows Update. Running the
+executable installer will fail on Windows 10 machines. To skip PSW installation:
+
+```powershell
+./scripts/install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoDriver
+```
+
 To install the prerequisites along with the Azure DCAP Client, use the below
 command. The Azure DCAP Client is necessary to perform attestation on an Azure
 Confidential Computing VM. This command assumes that you would like the
