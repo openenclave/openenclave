@@ -1,88 +1,26 @@
 #define _GNU_SOURCE
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 #include <sys/stat.h>
-#include <string.h>
 
-#include <mbedtls/pk.h>
-#include <mbedtls/rsa.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ctr_drbg.h>
 #include <mbedtls/certs.h>
-#include <mbedtls/x509.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/net_sockets.h>
-#include <mbedtls/error.h>
+#include <mbedtls/ctr_drbg.h>
 #include <mbedtls/debug.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/error.h>
+#include <mbedtls/net_sockets.h>
+#include <mbedtls/pk.h>
 #include <mbedtls/platform.h>
+#include <mbedtls/rsa.h>
+#include <mbedtls/ssl.h>
 #include <mbedtls/ssl_cache.h>
+#include <mbedtls/x509.h>
 
 #include "tls_client.h"
 
 #define DEBUG_LEVEL 1
-
-const char CERT_PATH[] = "/tmp/oe_attested_cert.der";
-const char PRIVATE_KEY_PATH[] = "/tmp/oe_private_key.pem";
-
-static void _clear_error(tls_error_t* error)
-{
-    if (error)
-    {
-        error->code = 0;
-        error->message[0] = '\0';
-        error->detail[0] = '\0';
-    }
-}
-
-static void _set_mbedtls_error(tls_error_t* error, int code, const char* detail)
-{
-    _clear_error(error);
-
-    if (error && code)
-    {
-        error->code = code;
-
-        if (detail)
-        {
-            memcpy(error->detail, detail, sizeof(error->detail));
-            error->detail[sizeof(error->detail)-1] = '\0';
-        }
-
-        mbedtls_strerror(code, error->message, sizeof(error->message));
-    }
-}
-
-static void _set_error(
-    tls_error_t* error,
-    const char* message,
-    const char* detail)
-{
-    _clear_error(error);
-
-    if (error)
-    {
-        error->code = -1;
-
-        if (message)
-        {
-            memcpy(error->message, message, sizeof(error->message));
-            error->message[sizeof(error->message)-1] = '\0';
-        }
-
-        if (detail)
-        {
-            memcpy(error->detail, detail, sizeof(error->detail));
-            error->detail[sizeof(error->detail)-1] = '\0';
-        }
-    }
-}
-
-void tls_dump_error(const tls_error_t* error)
-{
-    printf("error: %d: %s: %s\n", error->code, error->message, error->detail);
-}
 
 static int _cert_verify_callback(
     void* data,
@@ -94,6 +32,10 @@ static int _cert_verify_callback(
     (void)crt;
     (void)depth;
     (void)flags;
+
+    /* ATTN: empty verify for now */
+
+    *flags = 0;
 
     return 0;
 }
@@ -126,7 +68,7 @@ static int _load_file(const char* path, uint8_t** data_out, size_t* size_out)
     }
 
     /* Allocate memory to hold contents of file */
-    if (!(data = malloc(size)))
+    if (!(data = calloc(1, size + 1)))
         goto done;
 
     /* Open the file */
@@ -165,7 +107,7 @@ static void _mbedtls_dbg(
     (void)level;
     (void)ctx;
 
-    printf("_mbedtls_dbg: %s:%04d: %s", file, line, str);
+    printf("_mbedtls_dbg.client: %s:%04d: %s", file, line, str);
 }
 
 static int _load_cert_and_private_key(
@@ -180,34 +122,34 @@ static int _load_cert_and_private_key(
     uint8_t* private_key_data = NULL;
     size_t private_key_size;
 
-    _clear_error(error);
+    tls_clear_error(error);
 
     /* Load the attested certificate */
     if (_load_file(CERT_PATH, &cert_data, &cert_size) != 0)
     {
-        _set_error(error, "failed to load file", CERT_PATH);
+        tls_set_error(error, "failed to load file", CERT_PATH);
         goto done;
     }
 
     /* Parse the certificate */
     if ((retval = mbedtls_x509_crt_parse_der(crt, cert_data, cert_size)) != 0)
     {
-        _set_mbedtls_error(error, retval, "mbedtls_x509_crt_parse_der");
+        tls_set_mbedtls_error(error, retval, "mbedtls_x509_crt_parse_der");
         goto done;
     }
 
     /* Load the attested certificate */
     if (_load_file(PRIVATE_KEY_PATH, &private_key_data, &private_key_size) != 0)
     {
-        _set_error(error, "failed to load file", PRIVATE_KEY_PATH);
+        tls_set_error(error, "failed to load file", PRIVATE_KEY_PATH);
         goto done;
     }
 
     /* Parse the private key */
     if ((retval = mbedtls_pk_parse_key(
-        pk, private_key_data, private_key_size, NULL, 0)) != 0)
+             pk, private_key_data, private_key_size + 1, NULL, 0)) != 0)
     {
-        _set_mbedtls_error(error, retval, "mbedtls_pk_parse_key");
+        tls_set_mbedtls_error(error, retval, "mbedtls_pk_parse_key");
         goto done;
     }
 
@@ -224,7 +166,7 @@ done:
     return ret;
 }
 
-int _configure_client_ssl(
+static int _configure_client_ssl(
     mbedtls_ssl_context* ssl,
     mbedtls_ssl_config* conf,
     mbedtls_ctr_drbg_context* ctr_drbg,
@@ -235,7 +177,7 @@ int _configure_client_ssl(
     int ret = -1;
     int retval;
 
-    _clear_error(error);
+    tls_clear_error(error);
 
     if (_load_cert_and_private_key(crt, pk, error) != 0)
     {
@@ -243,12 +185,12 @@ int _configure_client_ssl(
     }
 
     if ((retval = mbedtls_ssl_config_defaults(
-         conf,
-         MBEDTLS_SSL_IS_CLIENT,
-         MBEDTLS_SSL_TRANSPORT_STREAM,
-         MBEDTLS_SSL_PRESET_DEFAULT)) != 0)
+             conf,
+             MBEDTLS_SSL_IS_CLIENT,
+             MBEDTLS_SSL_TRANSPORT_STREAM,
+             MBEDTLS_SSL_PRESET_DEFAULT)) != 0)
     {
-        _set_mbedtls_error(error, retval, "mbedtls_ssl_config_defaults");
+        tls_set_mbedtls_error(error, retval, "mbedtls_ssl_config_defaults");
         goto done;
     }
 
@@ -260,13 +202,13 @@ int _configure_client_ssl(
     /* Set own certificate chain and private key */
     if ((retval = mbedtls_ssl_conf_own_cert(conf, crt, pk)) != 0)
     {
-        _set_mbedtls_error(error, retval, "mbedtls_ssl_conf_own_cert");
+        tls_set_mbedtls_error(error, retval, "mbedtls_ssl_conf_own_cert");
         goto done;
     }
 
     if ((retval = mbedtls_ssl_setup(ssl, conf)) != 0)
     {
-        _set_mbedtls_error(error, retval, "mbedtls_ssl_setup");
+        tls_set_mbedtls_error(error, retval, "mbedtls_ssl_setup");
         goto done;
     }
 
@@ -277,8 +219,8 @@ done:
 }
 
 int tls_client_connect(
-    char* server_name,
-    char* server_port,
+    const char* server_name,
+    const char* server_port,
     tls_client_t** client_out,
     tls_error_t* error)
 {
@@ -298,26 +240,26 @@ int tls_client_connect(
     mbedtls_x509_crt_init(&crt);
     mbedtls_pk_init(&pk);
 
-    _clear_error(error);
+    tls_clear_error(error);
 
     if (client_out)
         *client_out = NULL;
 
     if (!client_out)
     {
-        _set_error(error, "invalid client parameter", NULL);
+        tls_set_error(error, "invalid client parameter", NULL);
         goto done;
     }
 
     if (!server_name)
     {
-        _set_error(error, "invalid server_name parameter", NULL);
+        tls_set_error(error, "invalid server_name parameter", NULL);
         goto done;
     }
 
     if (!server_port)
     {
-        _set_error(error, "invalid server_port parameter", NULL);
+        tls_set_error(error, "invalid server_port parameter", NULL);
         goto done;
     }
 
@@ -325,7 +267,7 @@ int tls_client_connect(
     {
         if (!(client = calloc(1, sizeof(tls_client_t))))
         {
-            _set_error(error, "calloc() failed", "out of memory");
+            tls_set_error(error, "calloc() failed", "out of memory");
             goto done;
         }
 
@@ -344,27 +286,27 @@ int tls_client_connect(
              (const unsigned char*)pers,
              strlen(pers))) != 0)
     {
-        _set_mbedtls_error(error, retval, "mbedtls_entropy_func()");
+        tls_set_mbedtls_error(error, retval, "mbedtls_entropy_func()");
         goto done;
     }
 
     if ((retval = mbedtls_net_connect(
-             &client->net,
-             server_name, server_port, MBEDTLS_NET_PROTO_TCP)) != 0)
+             &client->net, server_name, server_port, MBEDTLS_NET_PROTO_TCP)) !=
+        0)
     {
-        _set_mbedtls_error(error, retval, "mbedtls_net_connect()");
+        tls_set_mbedtls_error(error, retval, "mbedtls_net_connect()");
         goto done;
     }
 
     if (_configure_client_ssl(
-        &client->ssl, &conf, &ctr_drbg, &crt, &pk, error) != 0)
+            &client->ssl, &conf, &ctr_drbg, &crt, &pk, error) != 0)
     {
         goto done;
     }
 
     if ((retval = mbedtls_ssl_set_hostname(&client->ssl, server_name)) != 0)
     {
-        _set_mbedtls_error(error, retval, "mbedtls_ssl_set_hostname");
+        tls_set_mbedtls_error(error, retval, "mbedtls_ssl_set_hostname");
         goto done;
     }
 
@@ -376,7 +318,7 @@ int tls_client_connect(
         if (retval != MBEDTLS_ERR_SSL_WANT_READ &&
             retval != MBEDTLS_ERR_SSL_WANT_WRITE)
         {
-            _set_mbedtls_error(error, retval, "mbedtls_ssl_handshake");
+            tls_set_mbedtls_error(error, retval, "mbedtls_ssl_handshake");
             goto done;
         }
     }
@@ -384,11 +326,10 @@ int tls_client_connect(
     if (mbedtls_ssl_get_verify_result(&client->ssl) != 0)
     {
         mbedtls_ssl_close_notify(&client->ssl);
-        _set_mbedtls_error(error, 1, "mbedtls_ssl_get_verify_result");
+        tls_set_error(
+            error, "handshake failed", "mbedtls_ssl_get_verify_result");
         goto done;
     }
-
-    mbedtls_ssl_close_notify(&client->ssl);
 
     *client_out = client;
     client = NULL;
@@ -424,23 +365,23 @@ int tls_client_write(
     int ret = -1;
     int retval;
 
-    _clear_error(error);
+    tls_clear_error(error);
 
     if (!client)
     {
-        _set_error(error, "invalid client parameter", NULL);
+        tls_set_error(error, "invalid client parameter", NULL);
         goto done;
     }
 
     if (!data)
     {
-        _set_error(error, "invalid data parameter", NULL);
+        tls_set_error(error, "invalid data parameter", NULL);
         goto done;
     }
 
     if (!size)
     {
-        _set_error(error, "invalid size parameter", NULL);
+        tls_set_error(error, "invalid size parameter", NULL);
         goto done;
     }
 
@@ -448,8 +389,8 @@ int tls_client_write(
     {
         retval = mbedtls_ssl_write(&client->ssl, data, size);
 
-        if (retval != MBEDTLS_ERR_SSL_WANT_READ &&
-            retval != MBEDTLS_ERR_SSL_WANT_WRITE)
+        if (retval == MBEDTLS_ERR_SSL_WANT_READ ||
+            retval == MBEDTLS_ERR_SSL_WANT_WRITE)
         {
             continue;
         }
@@ -463,8 +404,8 @@ int tls_client_write(
 
         if (retval < 0)
         {
-            _set_mbedtls_error(error, retval, "mbedtls_ssl_write");
-            break;
+            tls_set_mbedtls_error(error, retval, "mbedtls_ssl_write");
+            goto done;
         }
 
         ret = retval;
@@ -485,23 +426,21 @@ int tls_client_read(
     int ret = -1;
     int retval;
 
-    ret = 0;
-
     if (!client)
     {
-        _set_error(error, "invalid client parameter", NULL);
+        tls_set_error(error, "invalid client parameter", NULL);
         goto done;
     }
 
     if (!data)
     {
-        _set_error(error, "invalid data parameter", NULL);
+        tls_set_error(error, "invalid data parameter", NULL);
         goto done;
     }
 
     if (!size)
     {
-        _set_error(error, "invalid size parameter", NULL);
+        tls_set_error(error, "invalid size parameter", NULL);
         goto done;
     }
 
@@ -524,8 +463,8 @@ int tls_client_read(
 
         if (retval < 0)
         {
-            _set_mbedtls_error(error, retval, "mbedtls_ssl_read");
-            break;
+            tls_set_mbedtls_error(error, retval, "mbedtls_ssl_read");
+            goto done;
         }
 
         /* Save number of bytes read */
@@ -536,4 +475,13 @@ int tls_client_read(
 done:
 
     return ret;
+}
+
+int tls_client_close(tls_client_t* client)
+{
+    (void)client;
+#if 0
+    mbedtls_ssl_close_notify(&client->ssl);
+#endif
+    return -1;
 }

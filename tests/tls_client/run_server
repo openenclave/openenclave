@@ -1,0 +1,2 @@
+#!/bin/bash
+/home/mike/openenclave/build/tests/tls_client/tls_server

@@ -1,13 +1,13 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include "gencert.h"
 #include <mbedtls/x509.h>
 #include <mbedtls/x509_crt.h>
 #include <openenclave/enclave.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/mount.h>
-#include "oegencert_t.h"
 
 static oe_result_t _generate_key_pair(
     uint8_t** public_key_out,
@@ -80,7 +80,7 @@ done:
     return result;
 }
 
-static oe_result_t _generate_cert_and_private_key(
+oe_result_t oe_generate_cert_and_private_key(
     const char* common_name,
     uint8_t** cert_out,
     size_t* cert_size_out,
@@ -144,123 +144,4 @@ done:
         oe_free_attestation_certificate(cert);
 
     return result;
-}
-
-int oegencert(void)
-{
-    int ret = -1;
-    uint8_t* cert = NULL;
-    size_t cert_size;
-    uint8_t* private_key = NULL;
-    size_t private_key_size;
-    FILE* stream = NULL;
-    const char cert_path[] = "/tmp/oe_attested_cert.der";
-    const char private_key_path[] = "/tmp/oe_private_key.pem";
-
-    /* Generate the attested certificate and private key */
-    if (_generate_cert_and_private_key(
-            "CN=Open Enclave SDK,O=OESDK TLS,C=US",
-            &cert,
-            &cert_size,
-            &private_key,
-            &private_key_size) != OE_OK)
-    {
-        fprintf(stderr, "failed to generate certificate and private key\n");
-        goto done;
-    }
-
-    /* Verify that the certificate can be parsed as DER */
-    {
-        mbedtls_x509_crt crt;
-        mbedtls_x509_crt_init(&crt);
-
-        if (mbedtls_x509_crt_parse_der(&crt, cert, cert_size) != 0)
-        {
-            mbedtls_x509_crt_free(&crt);
-            fprintf(stderr, "failed to parse the DER certificate\n");
-            goto done;
-        }
-
-        mbedtls_x509_crt_free(&crt);
-    }
-
-    /* Verify that the private key can be parsed as PEM */
-    {
-        mbedtls_pk_context pk;
-        mbedtls_pk_init(&pk);
-
-        printf("KEY{%s}\n", private_key);
-        printf("KEY.SIZE{%zu}\n", private_key_size);
-
-        if (mbedtls_pk_parse_key(&pk, private_key, private_key_size, NULL, 0) !=
-            0)
-        {
-            mbedtls_pk_free(&pk);
-            fprintf(stderr, "failed to parse the PEM private key\n");
-            goto done;
-        }
-
-        mbedtls_pk_free(&pk);
-    }
-
-    /* Write the certificate file */
-    {
-        if (!(stream = fopen(cert_path, "w")))
-        {
-            fprintf(stderr, "failed to open: %s\n", cert_path);
-            goto done;
-        }
-
-        if (fwrite(cert, 1, cert_size, stream) != cert_size)
-        {
-            fprintf(stderr, "failed to write: %s\n", cert_path);
-            goto done;
-        }
-
-        fclose(stream);
-        stream = NULL;
-
-        printf("Created %s\n", cert_path);
-    }
-
-    /* Write the private key file */
-    {
-        if (!(stream = fopen(private_key_path, "w")))
-        {
-            fprintf(stderr, "failed to open: %s\n", private_key_path);
-            goto done;
-        }
-
-        size_t n = private_key_size;
-
-        /* Don't write the null terminator */
-        if (n && private_key[n - 1] == '\0')
-            n--;
-
-        if (fwrite(private_key, 1, n, stream) != n)
-        {
-            fprintf(stderr, "failed to write: %s\n", private_key_path);
-            goto done;
-        }
-
-        fclose(stream);
-        stream = NULL;
-
-        printf("Created %s\n", private_key_path);
-    }
-
-    ret = 0;
-
-done:
-
-    if (private_key)
-        oe_free_key(private_key, private_key_size, NULL, 0);
-
-    if (cert)
-        oe_free_attestation_certificate(cert);
-
-    if (stream)
-        fclose(stream);
-
-    return ret;
 }
