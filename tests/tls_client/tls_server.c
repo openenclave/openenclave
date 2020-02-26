@@ -452,7 +452,7 @@ int tls_server_create(
     }
 
     *server_out = server;
-    server = 0;
+    server = NULL;
 
     ret = 0;
 
