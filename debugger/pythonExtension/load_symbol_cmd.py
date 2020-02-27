@@ -71,7 +71,7 @@ def GetLoadSymbolCommand(EnclaveFile, Base):
                         # If it is the .text section, put it in a special place in the array
                         # because the 'add-symbol-file' command treats it differently.
                         #print "%#08x" % (int(list[SegOffset+3], 16))
-                        if(list[SegOffset+1].find(".text") != -1):
+                        if(list[SegOffset+1] == ".text"):
                             Out[99][0] = "-s";
                             Out[99][1] = list[SegOffset+1];
                             Out[99][2] = str(int(list[SegOffset+3], 16) + int(Base, 10));
