@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license.
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
 
 //
 // Note: This example test is leveraging the Mocha test framework.
