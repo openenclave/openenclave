@@ -5,7 +5,6 @@
 import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
-import { AzureAccount, AzureSession } from "../typings/azure-account.api";
 import { UserCancelledError } from "./userCancelledError";
 
 export class Utility {

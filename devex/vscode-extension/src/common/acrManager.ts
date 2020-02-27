@@ -6,7 +6,6 @@ import { ContainerRegistryManagementClient } from "azure-arm-containerregistry";
 import { Registry, RegistryListCredentialsResult } from "azure-arm-containerregistry/lib/models";
 import { Registries } from "azure-arm-containerregistry/lib/operations";
 import * as vscode from "vscode";
-import { Constants } from "../common/constants";
 import { Utility } from "../common/utility";
 import { AzureAccount } from "../typings/azure-account.api";
 import { AcrRegistryQuickPickItem } from "./models/acrRegistryQuickPickItem";

@@ -3,7 +3,7 @@
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { ChildProcess, execSync, ExecSyncOptions, spawn, SpawnOptions } from "child_process";
+import { ChildProcess, spawn } from "child_process";
 import * as os from "os";
 import * as vscode from "vscode";
 import { Configuration } from "./configuration";
@@ -22,19 +22,19 @@ export class RequirementsChecker {
         const warnings: string[] = [];
         if (os.platform() === "linux") {
             promises.push(this.validateTool("aarch64-linux-gnu-gcc", ["--version"])
-                .catch(async (error) => {
+                .catch(async () => {
                     warnings.push("Unable to locate GCC (aarch64-linux-gnu-gcc).");
                 }));
             promises.push(this.validateTool("aarch64-linux-gnu-g++", ["--version"])
-                .catch(async (error) => {
+                .catch(async () => {
                     warnings.push("Unable to locate G++ (aarch64-linux-gnu-g++).");
                 }));
             promises.push(this.validateTool("gdb-multiarch", ["--version"])
-                .catch(async (error) => {
+                .catch(async () => {
                     warnings.push("Unable to locate GDB (gdb-multiarch).");
                 }));
             promises.push(this.validateTool("python", ["--version"])
-                .catch(async (error) => {
+                .catch(async () => {
                     warnings.push("Unable to locate PYTHON.");
                 }));
             promises.push(this.validateTool("cmake", ["--version"])
@@ -51,7 +51,7 @@ export class RequirementsChecker {
                         }
                     }
                 })
-                .catch(async (error) => {
+                .catch(async () => {
                     warnings.push("Unable to locate CMAKE 3.12 or higher.");
                 }));
         } else if (os.platform() === "win32") {
@@ -61,7 +61,7 @@ export class RequirementsChecker {
                         warnings.push(`Enable long paths for GIT.`);
                     }
                 })
-                .catch(async (error) => {
+                .catch(async () => {
                     warnings.push(`Enable long paths for GIT.`);
                 }));
         }
@@ -70,7 +70,7 @@ export class RequirementsChecker {
                 results.forEach((result) => warnings.push(result));
             }));
         promises.push(this.validateTool("git", ["--version"])
-            .catch(async (error) => {
+            .catch(async () => {
                 warnings.push("Unable to locate GIT.");
             }));
         await Promise.all(promises)
@@ -102,7 +102,7 @@ export class RequirementsChecker {
         // Check for docker installation
         await Promise.all([
             this.validateTool("docker", ["--version"])
-                .catch(async (error) => {
+                .catch(async () => {
                     warnings.push("Unable to locate DOCKER.");
                 })
         ]);
@@ -111,15 +111,15 @@ export class RequirementsChecker {
         if (warnings.length === 0 && os.platform() === "linux") {
             const promises: Array<Promise<any>> = [];
             promises.push(this.validateTool("docker", ["run amd64/ubuntu:xenial"])
-                .catch(async (error) => {
+                .catch(async () => {
                     warnings.push("Unable to run amd64 container, enable docker cross-building.");
                 }));
             promises.push(this.validateTool("docker", ["run arm32v7/ubuntu:xenial"])
-                .catch(async (error) => {
+                .catch(async () => {
                     warnings.push("Unable to run arm32v7 container, enable docker cross-building.");
                 }));
             promises.push(this.validateTool("docker", ["run aarch64/ubuntu:xenial"])
-                .catch(async (error) => {
+                .catch(async () => {
                     warnings.push("Unable to run aarch64 container, enable docker cross-building.");
                 }));
             await Promise.all(promises);
@@ -147,7 +147,7 @@ export class RequirementsChecker {
             p.on("error", (err: Error) => {
                 reject(new Error(`${err.toString()}. Detail: ${stderr}`));
             });
-            p.on("exit", (code: number, signal: string) => {
+            p.on("exit", (code: number) => {
                 if (code !== 0) {
                     reject (new Error((`Command failed with exit code ${code}. Detail: ${stderr}`)));
                 } else {
