@@ -34,7 +34,7 @@ and operating system and trusted execution environments:
 Ensure that the [requirements](#Requirements) are met.
 
 If you are reading this document on GitHub, install the
-[Microsoft Open Enclave extension](https://marketplace.visualstudio.com/items?itemName=ms-iot.msiot-vscode-openenclave)
+[Open Enclave extension](https://marketplace.visualstudio.com/items?itemName=ms-iot.msiot-vscode-openenclave)
 from the Visual Studio Code marketplace.
 
 To deploy hosts and enclaves to a Scalys Grapeboard regardless of the type of
@@ -44,9 +44,9 @@ guide to set up your board.
 
 ## Create a new Open Enclave solution
 
-You can use the `Microsoft Open Enclave: New Open Enclave Solution` command
-(commands can be found using **F1** or **CTRL-Shift-P**) to create a new Open
-Enclave solution.
+You can use the `Open Enclave: New Open Enclave Solution` command (commands can
+be found using **F1** or **CTRL-Shift-P**) to create a new Open Enclave
+solution.
 
 You will be prompted to:
 
@@ -157,9 +157,8 @@ To set up an actual device to receive a deployment, you can follow
 
 ## Check your system for Open Enclave requirements
 
-You can use the `Microsoft Open Enclave: Check System Requirements` command
-(commands can be found using **F1** or **CTRL-Shift-P**) to validate your
-system.
+You can use the `Open Enclave: Check System Requirements` command (commands can
+be found using **F1** or **CTRL-Shift-P**) to validate your system.
 
 The command will query whether the
 [required tools and the required versions](#Requirements)
