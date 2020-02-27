@@ -12,23 +12,28 @@ typedef struct _tlscli
 {
     mbedtls_ssl_context ssl;
     mbedtls_net_context net;
+    mbedtls_ssl_config conf;
+    mbedtls_x509_crt crt;
+    mbedtls_pk_context pk;
 } tlscli_t;
+
+int tlscli_startup(tls_error_t* error);
 
 int tlscli_connect(
     bool debug,
-    const char* server_name,
-    const char* server_port,
+    const char* host,
+    const char* port,
     const char* crt_path,
     const char* pk_path,
-    tlscli_t** client_out,
+    tlscli_t** cli_out,
     tls_error_t* error);
 
-int tlscli_disconnect(tlscli_t* client);
+int tlscli_disconnect(tlscli_t* cli, tls_error_t* error);
 
-int tlscli_read(tlscli_t* client, void* data, size_t size, tls_error_t* error);
+int tlscli_read(tlscli_t* cli, void* data, size_t size, tls_error_t* error);
 
 int tlscli_write(
-    tlscli_t* client,
+    tlscli_t* cli,
     const void* data,
     size_t size,
     tls_error_t* error);

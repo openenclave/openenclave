@@ -52,7 +52,7 @@ static void _mbedtls_dbg(
     (void)level;
     (void)ctx;
 
-    printf("_mbedtls_dbg.client: %s:%04d: %s", file, line, str);
+    printf("_mbedtls_dbg.cli: %s:%04d: %s", file, line, str);
 }
 
 static int _load_cert_and_private_key(
@@ -143,92 +143,135 @@ done:
     return ret;
 }
 
-#if 0
-int tlscli_initialize(bool debug)
-{
-    mbedtls_entropy_init(&entropy);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
-}
-#endif
+static bool _started;
+static const char* _pers = "ssl_client";
+static mbedtls_entropy_context _entropy;
+static mbedtls_ctr_drbg_context _ctr_drbg;
 
-int tlscli_connect(
-    bool debug,
-    const char* server_name,
-    const char* server_port,
-    const char* crt_path,
-    const char* pk_path,
-    tlscli_t** client_out,
-    tls_error_t* error)
+int tlscli_startup(tls_error_t* error)
 {
     int ret = -1;
     int r;
-    tlscli_t* client = NULL;
-    const char* pers = "ssl_client";
-    mbedtls_entropy_context entropy;
-    mbedtls_ctr_drbg_context ctr_drbg;
-    mbedtls_ssl_config conf;
-    mbedtls_x509_crt crt;
-    mbedtls_pk_context pk;
-
-    mbedtls_entropy_init(&entropy);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
-    mbedtls_ssl_config_init(&conf);
-    mbedtls_x509_crt_init(&crt);
-    mbedtls_pk_init(&pk);
 
     tls_clear_error(error);
 
-    if (client_out)
-        *client_out = NULL;
-
-    if (!client_out)
+    if (_started)
     {
-        tls_set_error(error, "invalid client parameter", NULL);
+        tls_set_error(error, __FUNCTION__, "already started");
         goto done;
     }
 
-    if (!server_name)
-    {
-        tls_set_error(error, "invalid server_name parameter", NULL);
-        goto done;
-    }
-
-    if (!server_port)
-    {
-        tls_set_error(error, "invalid server_port parameter", NULL);
-        goto done;
-    }
-
-    /* Initialize the client structure */
-    {
-        if (!(client = calloc(1, sizeof(tlscli_t))))
-        {
-            tls_set_error(error, "calloc() failed", "out of memory");
-            goto done;
-        }
-
-        mbedtls_net_init(&client->net);
-        mbedtls_ssl_init(&client->ssl);
-    }
+    mbedtls_entropy_init(&_entropy);
+    mbedtls_ctr_drbg_init(&_ctr_drbg);
 
 #if !defined(NDEBUG)
     mbedtls_debug_set_threshold(DEBUG_LEVEL);
 #endif
 
     if ((r = mbedtls_ctr_drbg_seed(
-             &ctr_drbg,
+             &_ctr_drbg,
              mbedtls_entropy_func,
-             &entropy,
-             (const unsigned char*)pers,
-             strlen(pers))) != 0)
+             &_entropy,
+             (const unsigned char*)_pers,
+             strlen(_pers))) != 0)
     {
         tls_set_mbedtls_error(error, r, "mbedtls_entropy_func()");
         goto done;
     }
 
+    _started = true;
+    ret = 0;
+
+done:
+
+    if (ret != 0)
+    {
+        mbedtls_entropy_init(&_entropy);
+        mbedtls_ctr_drbg_init(&_ctr_drbg);
+    }
+
+    return ret;
+}
+
+int tlscli_shutdown(tls_error_t* error)
+{
+    int ret = -1;
+
+    tls_clear_error(error);
+
+    if (!_started)
+    {
+        tls_set_error(error, __FUNCTION__, "not started");
+        goto done;
+    }
+
+    mbedtls_entropy_free(&_entropy);
+    mbedtls_ctr_drbg_free(&_ctr_drbg);
+
+done:
+
+    return ret;
+}
+
+int tlscli_connect(
+    bool debug,
+    const char* host,
+    const char* port,
+    const char* crt_path,
+    const char* pk_path,
+    tlscli_t** cli_out,
+    tls_error_t* error)
+{
+    int ret = -1;
+    int r;
+    tlscli_t* cli = NULL;
+
+    tls_clear_error(error);
+
+    if (cli_out)
+        *cli_out = NULL;
+
+    if (!_started)
+    {
+        tls_set_error(error, "not started: please call tlscli_startup()", NULL);
+        goto done;
+    }
+
+    if (!cli_out)
+    {
+        tls_set_error(error, "invalid cli parameter", NULL);
+        goto done;
+    }
+
+    if (!host)
+    {
+        tls_set_error(error, "invalid host parameter", NULL);
+        goto done;
+    }
+
+    if (!port)
+    {
+        tls_set_error(error, "invalid port parameter", NULL);
+        goto done;
+    }
+
+    /* Initialize the cli structure */
+    {
+        if (!(cli = calloc(1, sizeof(tlscli_t))))
+        {
+            tls_set_error(error, "calloc() failed", "out of memory");
+            goto done;
+        }
+
+        mbedtls_net_init(&cli->net);
+        mbedtls_ssl_init(&cli->ssl);
+        mbedtls_ssl_config_init(&cli->conf);
+        mbedtls_x509_crt_init(&cli->crt);
+        mbedtls_pk_init(&cli->pk);
+    }
+
     if ((r = mbedtls_net_connect(
-             &client->net, server_name, server_port, MBEDTLS_NET_PROTO_TCP)) !=
-        0)
+             &cli->net, host, port, MBEDTLS_NET_PROTO_TCP)) != 0)
     {
         tls_set_mbedtls_error(error, r, "mbedtls_net_connect()");
         goto done;
@@ -236,28 +279,28 @@ int tlscli_connect(
 
     if (_configure_client_ssl(
             debug,
-            &client->ssl,
-            &conf,
-            &ctr_drbg,
+            &cli->ssl,
+            &cli->conf,
+            &_ctr_drbg,
             crt_path,
             pk_path,
-            &crt,
-            &pk,
+            &cli->crt,
+            &cli->pk,
             error) != 0)
     {
         goto done;
     }
 
-    if ((r = mbedtls_ssl_set_hostname(&client->ssl, server_name)) != 0)
+    if ((r = mbedtls_ssl_set_hostname(&cli->ssl, host)) != 0)
     {
         tls_set_mbedtls_error(error, r, "mbedtls_ssl_set_hostname");
         goto done;
     }
 
     mbedtls_ssl_set_bio(
-        &client->ssl, &client->net, mbedtls_net_send, mbedtls_net_recv, NULL);
+        &cli->ssl, &cli->net, mbedtls_net_send, mbedtls_net_recv, NULL);
 
-    while ((r = mbedtls_ssl_handshake(&client->ssl)) != 0)
+    while ((r = mbedtls_ssl_handshake(&cli->ssl)) != 0)
     {
         if (r != MBEDTLS_ERR_SSL_WANT_READ && r != MBEDTLS_ERR_SSL_WANT_WRITE)
         {
@@ -266,43 +309,36 @@ int tlscli_connect(
         }
     }
 
-    if (mbedtls_ssl_get_verify_result(&client->ssl) != 0)
+    if (mbedtls_ssl_get_verify_result(&cli->ssl) != 0)
     {
-        mbedtls_ssl_close_notify(&client->ssl);
+        mbedtls_ssl_close_notify(&cli->ssl);
         tls_set_error(
             error, "handshake failed", "mbedtls_ssl_get_verify_result");
         goto done;
     }
 
-    *client_out = client;
-    client = NULL;
+    *cli_out = cli;
+    cli = NULL;
 
     ret = 0;
 
 done:
 
-#if 0
-    mbedtls_x509_crt_free(&crt);
-    mbedtls_pk_free(&pk);
-
-    if (client)
+    if (cli)
     {
-        mbedtls_net_free(&client->net);
-        mbedtls_ssl_free(&client->ssl);
-        free(client);
+        mbedtls_ssl_free(&cli->ssl);
+        mbedtls_net_free(&cli->net);
+        mbedtls_ssl_config_free(&cli->conf);
+        mbedtls_x509_crt_free(&cli->crt);
+        mbedtls_pk_free(&cli->pk);
+        free(cli);
     }
-
-    mbedtls_ssl_config_free(&conf);
-
-    mbedtls_ctr_drbg_free(&ctr_drbg);
-    mbedtls_entropy_free(&entropy);
-#endif
 
     return ret;
 }
 
 int tlscli_write(
-    tlscli_t* client,
+    tlscli_t* cli,
     const void* data,
     size_t size,
     tls_error_t* error)
@@ -312,9 +348,9 @@ int tlscli_write(
 
     tls_clear_error(error);
 
-    if (!client)
+    if (!cli)
     {
-        tls_set_error(error, "invalid client parameter", NULL);
+        tls_set_error(error, "invalid cli parameter", NULL);
         goto done;
     }
 
@@ -332,21 +368,18 @@ int tlscli_write(
 
     for (;;)
     {
-        r = mbedtls_ssl_write(&client->ssl, data, size);
+        r = mbedtls_ssl_write(&cli->ssl, data, size);
 
         if (r == MBEDTLS_ERR_SSL_WANT_READ || r == MBEDTLS_ERR_SSL_WANT_WRITE)
         {
             continue;
         }
 
-#if 0
-        if (r == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY || r == 0)
+        if (r == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY)
         {
-            /* end of file */
-            ret = 0;
+            tls_set_mbedtls_error(error, r, "mbedtls_ssl_write");
             break;
         }
-#endif
 
         if (r <= 0)
         {
@@ -363,14 +396,14 @@ done:
     return ret;
 }
 
-int tlscli_read(tlscli_t* client, void* data, size_t size, tls_error_t* error)
+int tlscli_read(tlscli_t* cli, void* data, size_t size, tls_error_t* error)
 {
     int ret = -1;
     int r;
 
-    if (!client)
+    if (!cli)
     {
-        tls_set_error(error, "invalid client parameter", NULL);
+        tls_set_error(error, "invalid cli parameter", NULL);
         goto done;
     }
 
@@ -388,10 +421,8 @@ int tlscli_read(tlscli_t* client, void* data, size_t size, tls_error_t* error)
 
     for (;;)
     {
-        printf("BEFORE.READ: data=%p size=%zu\n", data, size);
         memset(data, 0, size);
-        r = mbedtls_ssl_read(&client->ssl, data, size);
-        printf("AFTER.READ: r=%d\n", r);
+        r = mbedtls_ssl_read(&cli->ssl, data, size);
 
         if (r == MBEDTLS_ERR_SSL_WANT_READ || r == MBEDTLS_ERR_SSL_WANT_WRITE)
         {
@@ -421,14 +452,23 @@ done:
     return ret;
 }
 
-int tlscli_disconnect(tlscli_t* client)
+int tlscli_disconnect(tlscli_t* cli, tls_error_t* error)
 {
     int ret = -1;
 
-    if (!client)
+    if (!cli)
+    {
+        tls_set_error(error, "invalid cli parameter", NULL);
         goto done;
+    }
 
-    mbedtls_ssl_close_notify(&client->ssl);
+    mbedtls_ssl_close_notify(&cli->ssl);
+
+    mbedtls_ssl_free(&cli->ssl);
+    mbedtls_net_free(&cli->net);
+    mbedtls_ssl_config_free(&cli->conf);
+    mbedtls_x509_crt_free(&cli->crt);
+    mbedtls_pk_free(&cli->pk);
 
 done:
     return ret;
