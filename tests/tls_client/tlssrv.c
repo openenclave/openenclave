@@ -578,19 +578,22 @@ done:
     return ret;
 }
 
-int tlssrv_listen(tlssrv_t* srv, tlssrv_err_t* err)
+int tlssrv_accept(tlssrv_t* srv, mbedtls_net_context* conn, tlssrv_err_t* err)
 {
     int ret = -1;
     int r;
-    mbedtls_net_context net;
-    unsigned char buf[1024];
-    size_t bytes_read = 0;
 
     _clear_err(err);
 
     if (!srv)
     {
         _put_err(err, "invalid srv parameter", NULL);
+        goto done;
+    }
+
+    if (!conn)
+    {
+        _put_err(err, "invalid conn parameter", NULL);
         goto done;
     }
 
@@ -601,7 +604,7 @@ int tlssrv_listen(tlssrv_t* srv, tlssrv_err_t* err)
         goto done;
     }
 
-    if ((r = mbedtls_net_accept(&srv->net, &net, NULL, 0, NULL)) != 0)
+    if ((r = mbedtls_net_accept(&srv->net, conn, NULL, 0, NULL)) != 0)
     {
         _put_mbedtls_err(err, r, "mbedtls_net_accept");
         ret = r;
@@ -609,7 +612,7 @@ int tlssrv_listen(tlssrv_t* srv, tlssrv_err_t* err)
     }
 
     mbedtls_ssl_set_bio(
-        &srv->ssl, &net, mbedtls_net_send, mbedtls_net_recv, NULL);
+        &srv->ssl, conn, mbedtls_net_send, mbedtls_net_recv, NULL);
 
     for (;;)
     {
@@ -635,45 +638,6 @@ int tlssrv_listen(tlssrv_t* srv, tlssrv_err_t* err)
         _put_err(err, "verify failed");
         mbedtls_ssl_close_notify(&srv->ssl);
         goto done;
-    }
-
-    for (;;)
-    {
-        if ((r = tlssrv_read(srv, buf, sizeof(buf), err)) <= 0)
-        {
-            ret = r;
-            goto done;
-        }
-
-        bytes_read = (size_t)r;
-
-        if ((r = tlssrv_write(srv, buf, bytes_read, err)) <= 0)
-        {
-            ret = r;
-            goto done;
-        }
-
-        printf("buf{%s}\n", buf);
-
-        printf("bytes_written=%d\n", r);
-    }
-
-    for (;;)
-    {
-        r = mbedtls_ssl_close_notify(&srv->ssl);
-
-        if (r == MBEDTLS_ERR_SSL_WANT_READ || r == MBEDTLS_ERR_SSL_WANT_WRITE)
-        {
-            goto done;
-        }
-
-        if (r != 0)
-        {
-            ret = r;
-            goto done;
-        }
-
-        break;
     }
 
     ret = 0;
@@ -789,7 +753,7 @@ done:
     return ret;
 }
 
-void tlssrv_put_err(tlssrv_err_t* err)
+void tlssrv_put_err(const tlssrv_err_t* err)
 {
     if (err)
         fprintf(stderr, "error: %s\n", err->buf);

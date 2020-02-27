@@ -483,7 +483,7 @@ done:
     return ret;
 }
 
-void tlscli_put_err(tlscli_err_t* err)
+void tlscli_put_err(const tlscli_err_t* err)
 {
     if (err)
         fprintf(stderr, "error: %s\n", err->buf);

@@ -13,7 +13,7 @@ typedef struct _tlscli_err
     char buf[1024];
 } tlscli_err_t;
 
-void tlscli_put_err(tlscli_err_t* err);
+void tlscli_put_err(const tlscli_err_t* err);
 
 typedef struct _tlscli
 {

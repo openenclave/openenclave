@@ -4,6 +4,12 @@
 #include <unistd.h>
 #include "tlscli.h"
 
+static void _err(const tlscli_err_t* err)
+{
+    tlscli_put_err(err);
+    exit(1);
+}
+
 int main()
 {
     int r;
@@ -13,16 +19,12 @@ int main()
     const char PK_PATH[] = "/tmp/oe_private_key.pem";
 
     if ((r = tlscli_startup(&err)) != 0)
-    {
-        tlscli_put_err(&err);
-        exit(1);
-    }
+        _err(&err);
 
     if ((r = tlscli_connect(
              true, "127.0.0.1", "12345", CRT_PATH, PK_PATH, &cli, &err)) != 0)
     {
-        tlscli_put_err(&err);
-        exit(1);
+        _err(&err);
     }
 
     const char message[] = "abcdefghijklmnopqrstuvwxyz";
@@ -30,18 +32,12 @@ int main()
     for (size_t i = 0; i < 10; i++)
     {
         if ((r = tlscli_write(cli, message, sizeof(message), &err)) < 0)
-        {
-            tlscli_put_err(&err);
-            exit(1);
-        }
+            _err(&err);
 
         char buf[1024];
 
         if ((r = tlscli_read(cli, buf, sizeof(buf), &err)) < 0)
-        {
-            tlscli_put_err(&err);
-            exit(1);
-        }
+            _err(&err);
 
         printf("buf{%s}\n", buf);
     }

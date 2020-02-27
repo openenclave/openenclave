@@ -13,7 +13,7 @@ typedef struct _tlssrv_err
     char buf[1024];
 } tlssrv_err_t;
 
-void tlssrv_put_err(tlssrv_err_t* err);
+void tlssrv_put_err(const tlssrv_err_t* err);
 
 typedef struct _tlssrv
 {
@@ -37,7 +37,7 @@ int tlssrv_create(
 
 int tlssrv_destroy(tlssrv_t* srv, tlssrv_err_t* err);
 
-int tlssrv_listen(tlssrv_t* srv, tlssrv_err_t* err);
+int tlssrv_accept(tlssrv_t* srv, mbedtls_net_context* conn, tlssrv_err_t* err);
 
 int tlssrv_read(tlssrv_t* srv, void* data, size_t size, tlssrv_err_t* err);
 
