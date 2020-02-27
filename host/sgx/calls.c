@@ -316,8 +316,7 @@ static const char* oe_ocall_str(oe_func_t ocall)
         "MALLOC",
         "FREE",
         "SLEEP",
-        "GET_TIME",
-        "WAKE_HOST_WORKER",
+        "GET_TIME"
     };
     // clang-format on
 
@@ -337,8 +336,7 @@ static const char* oe_ecall_str(oe_func_t ecall)
         "DESTRUCTOR",
         "INIT_ENCLAVE",
         "CALL_ENCLAVE_FUNCTION",
-        "VIRTUAL_EXCEPTION_HANDLER",
-        "INIT_CONTEXT_SWITCHLESS",
+        "VIRTUAL_EXCEPTION_HANDLER"
     };
     // clang-format on
 
@@ -411,10 +409,6 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_GET_TIME:
             oe_handle_get_time(arg_in, arg_out);
-            break;
-
-        case OE_OCALL_WAKE_HOST_WORKER:
-            oe_handle_wake_host_worker(arg_in);
             break;
 
         default:

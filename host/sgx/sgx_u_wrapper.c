@@ -31,14 +31,8 @@ static oe_result_t _call_sgx_enclave_function(
         output_bytes_written);
 }
 
-/* Ignore missing edge-routine prototypes. */
-#if defined(__GNUC__)
-#pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#endif
-
 /* Include the generated source. */
 #include "sgx_u.c"
-#include "sgx_u.h"
 
 /* Registers the sgx OCALL function table. */
 oe_result_t oe_register_sgx_ocall_function_table(void)

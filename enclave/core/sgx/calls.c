@@ -24,12 +24,12 @@
 #include "../../sgx/report.h"
 #include "../arena.h"
 #include "../atexit.h"
-#include "../switchlesscalls.h"
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
 #include "report.h"
 #include "sgx_t.h"
+#include "switchlesscalls.h"
 #include "td.h"
 #include "tee_t.h"
 
@@ -153,6 +153,9 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         if (_once == false)
         {
             oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
+
+            /* Install the switchless ECALL function table. */
+            OE_CHECK(oe_register_switchless_ecall_function_table());
 
             /* Install the common TEE ECALL function table. */
             OE_CHECK(oe_register_tee_ecall_function_table());
@@ -434,11 +437,6 @@ static void _handle_ecall(
             arg_out = _handle_init_enclave(arg_in);
             break;
         }
-        case OE_ECALL_INIT_CONTEXT_SWITCHLESS:
-        {
-            arg_out = oe_handle_init_switchless(arg_in);
-            break;
-        }
         default:
         {
             /* No function found with the number */
@@ -589,8 +587,14 @@ oe_result_t oe_call_host_function_by_table_id(
     if (!input_buffer || input_buffer_size == 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Initialize the arguments */
-    args = oe_ecall_context_get_ocall_args();
+    /*
+     * oe_post_switchless_ocall (below) can make a regular ocall to wake up the
+     * host worker thread, and will end up using the ecall context's args.
+     * Therefore, for switchless calls, allocate args in the arena so that it is
+     * is not overwritten by oe_post_switchless_ocall.
+     */
+    args =
+        (oe_call_host_function_args_t*)(switchless ? oe_arena_malloc(sizeof(*args)) : oe_ecall_context_get_ocall_args());
 
     if (args == NULL)
     {

@@ -22,6 +22,24 @@ add_custom_target(tee_untrusted_edl
 
 ##==============================================================================
 ##
+## These rules generate the edge routines for the internal ECALLs/OCALLs used
+## by switchless calls.
+##
+##==============================================================================
+if (OE_SGX)
+    set(SWITCHLESS_EDL_FILE ${EDL_DIR}/sgx/switchless.edl)
+
+    add_custom_command(
+        OUTPUT switchless_u.h switchless_u.c switchless_args.h
+        DEPENDS ${SWITCHLESS_EDL_FILE} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SWITCHLESS_EDL_FILE})
+
+    add_custom_target(switchless_untrusted_edl
+        DEPENDS switchless_u.h switchless_u.c switchless_args.h)
+endif()
+
+##==============================================================================
+##
 ## These rules generate the edge routines for the internal SGX-specific
 ## ECALLs/OCALLs used by liboehost/liboecore.
 ##
@@ -155,7 +173,6 @@ if (OE_SGX)
     sgx/enclave.c
     sgx/enclavemanager.c
     sgx/exception.c
-    sgx/sgx_u_wrapper.c
     sgx/load.c
     sgx/loadelf.c
     sgx/loadpe.c
@@ -163,12 +180,15 @@ if (OE_SGX)
     sgx/quote.c
     sgx/registers.c
     sgx/report.c
+    sgx/sgx_u_wrapper.c
     sgx/sgxload.c
     sgx/sgxmeasure.c
     sgx/sgxquote.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
-    sgx/switchless.c)
+    sgx/switchless.c
+    sgx/switchless_u_wrapper.c)
+
 
   # OS specific as well.
   if (UNIX)
@@ -289,7 +309,7 @@ endif()
 add_dependencies(oehost syscall_untrusted_edl)
 add_dependencies(oehost tee_untrusted_edl)
 if(OE_SGX)
-  add_dependencies(oehost sgx_untrusted_edl)
+  add_dependencies(oehost sgx_untrusted_edl switchless_untrusted_edl)
 endif()
 
 # TODO: Replace these with `find_package` and add as dependencies to
