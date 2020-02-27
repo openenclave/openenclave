@@ -3,29 +3,29 @@
 A
 [Visual Studio Code](https://code.visualstudio.com/)
 [extension](https://marketplace.visualstudio.com/VSCode)
-supporting
-[Open Enclave](https://openenclave.io/sdk/),
+supporting the
+[Open Enclave SDK](https://openenclave.io/sdk/),
 including development, debugging, emulators, and deployment!
 
-For more information on the technology,
-[see here](https://github.com/openenclave/openenclave).
+For more information on the technology, see the
+[SDK's documentation](https://github.com/openenclave/openenclave).
 
 Currently, this extension supports the following combinations of project types,
 and operating system and trusted execution environments:
 
 1. Linux Development Machine:
    1. Standalone Project Targets:
-      1. Linux Host w/. Intel SGX Enclave
-      1. Linux Host w/. OP-TEE on ARM TrustZone Enclave
+      1. Linux Host with Intel SGX Enclave
+      1. Linux Host with OP-TEE on ARM TrustZone Enclave
          1. [Scalys Grapeboard](https://www.grapeboard.com/)
          1. Emulated QEMU ARMv8
    1. Azure IoT Edge Project Targets:
-      1. Linux Host w/. OP-TEE on ARM TrustZone Enclave
+      1. Linux Host with OP-TEE on ARM TrustZone Enclave
          1. [Scalys Grapeboard](https://www.grapeboard.com/)
          1. Emulated QEMU ARMv8
 1. Windows Development Machine
    1. Azure IoT Edge Project Targets:
-      1. Linux Host w/. OP-TEE on ARM TrustZone Enclave
+      1. Linux Host with OP-TEE on ARM TrustZone Enclave
          1. [Scalys Grapeboard](https://www.grapeboard.com/)
          1. Emulated QEMU ARMv8
 
@@ -265,7 +265,29 @@ system you run the extension on.
     python-pip qemu-user-static zlib1g
   ```
 
-* If you have Intel SGX-capable hardware, install the Intel SGX DCAP driver:
+* [Determine the level of SGX support of your hardware](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/Contributors/building_oe_sdk.md#1-determine-the-sgx-support-level-on-your-developmenttarget-system).
+
+* If you have Intel SGX-capable hardware without Flexible Launch Control (FLC),
+  install the Legacy SGX driver:
+
+  On Ubuntu 16.04, run:
+  ```bash
+  sudo apt update
+  wget https://download.01.org/intel-sgx/sgx-linux/2.8/distro/ubuntu16.04-server/sgx_linux_x64_driver_2.6.0_51c4821.bin
+  chmod +x sgx_linux_x64_driver_2.6.0_51c4821.bin
+  sudo ./sgx_linux_x64_driver_2.6.0_51c4821.bin
+  ```
+
+  On Ubuntu 18.04, run:
+  ```bash
+  sudo apt update
+  wget https://download.01.org/intel-sgx/sgx-linux/2.8/distro/ubuntu18.04-server/sgx_linux_x64_driver_2.6.0_51c4821.bin
+  chmod +x sgx_linux_x64_driver_2.6.0_51c4821.bin
+  sudo ./sgx_linux_x64_driver_2.6.0_51c4821.bin
+  ```
+
+* If you have Intel SGX-capable hardware with FLC support, install the Intel SGX
+  DCAP driver:
 
   On Ubuntu 16.04, run:
   ```bash
@@ -285,10 +307,12 @@ system you run the extension on.
   sudo ./sgx_linux_x64_driver.bin
   ```
 
-  Note: A new version of the driver may have been released since this
-        documentation was written. Check on
-        [Intel's Open Source site](https://01.org/intel-software-guard-extensions/downloads)
-        if a more recent SGX DCAP driver exists.
+  **Note:** A new version of either driver may have been released since this
+            documentation was written. Check on
+            [Intel's Open Source site](https://01.org/intel-software-guard-extensions/downloads)
+            if a more recent SGX Legacy or DCAP driver exists. The former is
+            referred to as "Intel SGX Linux X.Y Release" while the latter, as
+            "Intel SGX DCAP Linux A.B Release".
 
 * Ensure that the requirements are met for the
   [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge).
@@ -333,9 +357,11 @@ system you run the extension on.
 * Ensure sure that Git long paths are enabled:
   `git config --global core.longpaths true`
 
-* Ensure Docker is configured to use Linux containers.  See Docker help
-  regarding **Switch between Windows and Linux containers**
-  [here](https://docs.docker.com/docker-for-windows/).
+* Ensure Docker is configured to use Linux containers.  See Docker's help
+  on how to **Switch between Windows and Linux containers** on the
+  [Get started with Docker for Windows](https://docs.docker.com/docker-for-windows/)
+  page.
+  
 
 ## Build and run extension from source code
 
@@ -350,7 +376,7 @@ To run the extension from this repository, following these instructions:
    `git clone --recursive https://github.com/openenclave/openenclave --branch feature.new_platforms`.
 1. Navigate to `new_platforms\vscode-extension` in the cloned folder.
 1. Run npm to install the dependencies: `npm install` (see the
-   [requirements](#Requirements) section for npm installation link).
+   [requirements section](#Requirements) for npm installation link).
 1. Start VSCode: `code .`.
 1. Start the extension using `F5`.
 
