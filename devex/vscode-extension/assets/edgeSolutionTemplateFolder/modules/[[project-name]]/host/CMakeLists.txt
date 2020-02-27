@@ -31,6 +31,8 @@ add_executable([[project-name]]
     main.c
     ${CMAKE_CURRENT_BINARY_DIR}/[[project-name]]_u.c)
 
+target_compile_definitions([[project-name]] PRIVATE USE_EDGE_MODULES)
+
 target_include_directories([[project-name]] PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries([[project-name]] openenclave::oehostapp)
