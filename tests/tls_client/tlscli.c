@@ -25,124 +25,6 @@
 
 #define DEBUG_LEVEL 1
 
-static int _cert_verify_callback(
-    void* data,
-    mbedtls_x509_crt* crt,
-    int depth,
-    uint32_t* flags)
-{
-    (void)data;
-    (void)crt;
-    (void)depth;
-    (void)flags;
-
-    *flags = 0;
-
-    return 0;
-}
-
-/* The mbedtls debug tracing function */
-static void _mbedtls_dbg(
-    void* ctx,
-    int level,
-    const char* file,
-    int line,
-    const char* str)
-{
-    (void)level;
-    (void)ctx;
-
-    printf("_mbedtls_dbg.cli: %s:%04d: %s", file, line, str);
-}
-
-static int _load_cert_and_private_key(
-    const char* crt_path,
-    const char* pk_path,
-    mbedtls_x509_crt* crt,
-    mbedtls_pk_context* pk,
-    tls_error_t* error)
-{
-    int ret = -1;
-    int r;
-
-    tls_clear_error(error);
-
-    if ((r = mbedtls_x509_crt_parse_file(crt, crt_path) != 0))
-    {
-        tls_set_mbedtls_error(error, r, crt_path);
-        goto done;
-    }
-
-    if ((r = mbedtls_pk_parse_keyfile(pk, pk_path, "")) != 0)
-    {
-        tls_set_mbedtls_error(error, r, pk_path);
-        goto done;
-    }
-
-    ret = 0;
-
-done:
-
-    return ret;
-}
-
-static int _configure_client_ssl(
-    bool debug,
-    mbedtls_ssl_context* ssl,
-    mbedtls_ssl_config* conf,
-    mbedtls_ctr_drbg_context* ctr_drbg,
-    const char* crt_path,
-    const char* pk_path,
-    mbedtls_x509_crt* crt,
-    mbedtls_pk_context* pk,
-    tls_error_t* error)
-{
-    int ret = -1;
-    int r;
-
-    tls_clear_error(error);
-
-    if (_load_cert_and_private_key(crt_path, pk_path, crt, pk, error) != 0)
-    {
-        goto done;
-    }
-
-    if ((r = mbedtls_ssl_config_defaults(
-             conf,
-             MBEDTLS_SSL_IS_CLIENT,
-             MBEDTLS_SSL_TRANSPORT_STREAM,
-             MBEDTLS_SSL_PRESET_DEFAULT)) != 0)
-    {
-        tls_set_mbedtls_error(error, r, "mbedtls_ssl_config_defaults");
-        goto done;
-    }
-
-    mbedtls_ssl_conf_rng(conf, mbedtls_ctr_drbg_random, ctr_drbg);
-
-    if (debug)
-        mbedtls_ssl_conf_dbg(conf, _mbedtls_dbg, stdout);
-
-    mbedtls_ssl_conf_authmode(conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
-    mbedtls_ssl_conf_verify(conf, _cert_verify_callback, NULL);
-
-    if ((r = mbedtls_ssl_conf_own_cert(conf, crt, pk)) != 0)
-    {
-        tls_set_mbedtls_error(error, r, "mbedtls_ssl_conf_own_cert");
-        goto done;
-    }
-
-    if ((r = mbedtls_ssl_setup(ssl, conf)) != 0)
-    {
-        tls_set_mbedtls_error(error, r, "mbedtls_ssl_setup");
-        goto done;
-    }
-
-    ret = 0;
-
-done:
-    return ret;
-}
-
 static bool _started;
 static const char* _pers = "ssl_client";
 static mbedtls_entropy_context _entropy;
@@ -213,6 +95,96 @@ done:
     return ret;
 }
 
+static int _cert_verify_callback(
+    void* data,
+    mbedtls_x509_crt* crt,
+    int depth,
+    uint32_t* flags)
+{
+    (void)data;
+    (void)crt;
+    (void)depth;
+    (void)flags;
+
+    *flags = 0;
+
+    return 0;
+}
+
+/* The mbedtls debug tracing function */
+static void _mbedtls_dbg(
+    void* ctx,
+    int level,
+    const char* file,
+    int line,
+    const char* str)
+{
+    (void)level;
+    (void)ctx;
+
+    printf("_mbedtls_dbg.cli: %s:%u: %s", file, line, str);
+}
+
+static int _configure_cli(
+    tlscli_t* cli,
+    bool debug,
+    const char* crt_path,
+    const char* pk_path,
+    tls_error_t* error)
+{
+    int ret = -1;
+    int r;
+
+    tls_clear_error(error);
+
+    if ((r = mbedtls_x509_crt_parse_file(&cli->crt, crt_path) != 0))
+    {
+        tls_set_mbedtls_error(error, r, crt_path);
+        goto done;
+    }
+
+    if ((r = mbedtls_pk_parse_keyfile(&cli->pk, pk_path, "")) != 0)
+    {
+        tls_set_mbedtls_error(error, r, pk_path);
+        goto done;
+    }
+
+    if ((r = mbedtls_ssl_config_defaults(
+             &cli->conf,
+             MBEDTLS_SSL_IS_CLIENT,
+             MBEDTLS_SSL_TRANSPORT_STREAM,
+             MBEDTLS_SSL_PRESET_DEFAULT)) != 0)
+    {
+        tls_set_mbedtls_error(error, r, "mbedtls_ssl_config_defaults");
+        goto done;
+    }
+
+    mbedtls_ssl_conf_rng(&cli->conf, mbedtls_ctr_drbg_random, &_ctr_drbg);
+
+    if (debug)
+        mbedtls_ssl_conf_dbg(&cli->conf, _mbedtls_dbg, stdout);
+
+    mbedtls_ssl_conf_authmode(&cli->conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
+    mbedtls_ssl_conf_verify(&cli->conf, _cert_verify_callback, NULL);
+
+    if ((r = mbedtls_ssl_conf_own_cert(&cli->conf, &cli->crt, &cli->pk)) != 0)
+    {
+        tls_set_mbedtls_error(error, r, "mbedtls_ssl_conf_own_cert");
+        goto done;
+    }
+
+    if ((r = mbedtls_ssl_setup(&cli->ssl, &cli->conf)) != 0)
+    {
+        tls_set_mbedtls_error(error, r, "mbedtls_ssl_setup");
+        goto done;
+    }
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
 int tlscli_connect(
     bool debug,
     const char* host,
@@ -277,16 +249,7 @@ int tlscli_connect(
         goto done;
     }
 
-    if (_configure_client_ssl(
-            debug,
-            &cli->ssl,
-            &cli->conf,
-            &_ctr_drbg,
-            crt_path,
-            pk_path,
-            &cli->crt,
-            &cli->pk,
-            error) != 0)
+    if (_configure_cli(cli, debug, crt_path, pk_path, error) != 0)
     {
         goto done;
     }
