@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - `oe_random()` now depends on the hardware-based source of RNG instead of cryptography libraries.
+- OCall stack-stitching implemented as per Debugging Contract. OE SDK performs stack stitching
+  instead of the debugger. Enclaves built using a prior release cannot be debugged with this version
+  of oegdb and vice versa.
 
 [v0.8.0][v0.8.0_log] - 2020-01-22
 ---------------------

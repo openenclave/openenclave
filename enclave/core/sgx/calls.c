@@ -24,7 +24,6 @@
 #include "../../sgx/report.h"
 #include "../arena.h"
 #include "../atexit.h"
-#include "../switchlesscalls.h"
 #include "../tracee.h"
 #include "asmdefs.h"
 #include "cpuid.h"
@@ -531,20 +530,21 @@ oe_result_t oe_get_enclave_status()
 ** oe_enter function. The host dispatches the ocall via the following sequence:
 **
 **     oe_enter
-**       -> __oe_host_stack_bridge   (Stitches the ocall stack; disappears)
+**       -> __oe_host_stack_bridge   (Stitches the ocall stack)
 **         -> __oe_dispatch_ocall
 **           -> invoke ocall function
 **
 ** Now that the enclave exit frame is available to the host,
-**__oe_host_stack_bridge temporarily modifies its caller info with the enclave's
-** exit information so that the stitched stack looks like this:
+** __oe_host_stack_bridge temporarily modifies its caller info with the
+** enclave's exit information so that the stitched stack looks like this:
 **
 **     enclave-function                                    |
 **       -> oe_ocall                                       |
 **         -> oe_exit_enclave (aliased as __morestack)     | in enclave
 **   --------------------------------------------------------------------------
-**           -> __oe_dispatch_ocall                        | in host
-**             -> invoke ocall function                    |
+**           -> __oe_host_stack_bridge                     | in host
+**             -> __oe_dispatch_ocall                      |
+**               -> invoke ocall function                  |
 **
 ** This stitching of the stack is temporary, and __oe_host_stack_bridge reverts
 ** it prior to returning to its caller.

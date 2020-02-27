@@ -80,6 +80,6 @@ void host_function(void)
 {
     volatile uint64_t magic_value = MAGIC_VALUE;
     volatile uint64_t host_function_magic = 0;
-    // Debugger is expected to clear the magic variable.
+    // Debugger is expected to set the magic variable.
     OE_TEST(host_function_magic == magic_value);
 }
