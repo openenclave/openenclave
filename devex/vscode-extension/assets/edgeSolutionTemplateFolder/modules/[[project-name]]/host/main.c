@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
 
 #include <stdio.h>
 #include <stdlib.h>
