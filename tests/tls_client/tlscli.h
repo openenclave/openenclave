@@ -26,6 +26,8 @@ typedef struct _tlscli
 
 int tlscli_startup(tlscli_err_t* err);
 
+int tlscli_shutdown(tlscli_err_t* err);
+
 int tlscli_connect(
     bool debug,
     const char* host,
@@ -35,7 +37,7 @@ int tlscli_connect(
     tlscli_t** cli_out,
     tlscli_err_t* err);
 
-int tlscli_disconnect(tlscli_t* cli, tlscli_err_t* err);
+int tlscli_destroy(tlscli_t* cli, tlscli_err_t* err);
 
 int tlscli_read(tlscli_t* cli, void* data, size_t size, tlscli_err_t* err);
 

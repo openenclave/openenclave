@@ -5,25 +5,41 @@
 
 int main()
 {
-    int retval;
+    int r;
     tlssrv_t* server = NULL;
-    tls_error_t error;
+    tlssrv_err_t err;
     const char* ip = "127.0.0.1";
     const char* port = "12345";
 
-    if ((retval = tlssrv_create(ip, port, &server, &error)) != 0)
+    if ((r = tlssrv_startup(&err)) != 0)
     {
-        tls_dump_error(&error);
+        tlssrv_put_err(&err);
         exit(1);
     }
 
-    if ((retval = tlssrv_listen(server, &error)) != 0)
+    if ((r = tlssrv_create(ip, port, &server, &err)) != 0)
     {
-        tls_dump_error(&error);
+        tlssrv_put_err(&err);
         exit(1);
     }
 
-    printf("SUCCESS!\n");
+    if ((r = tlssrv_listen(server, &err)) != 0)
+    {
+        tlssrv_put_err(&err);
+        exit(1);
+    }
+
+    if ((r = tlssrv_destroy(server, &err)) != 0)
+    {
+        tlssrv_put_err(&err);
+        exit(1);
+    }
+
+    if ((r = tlssrv_shutdown(&err)) != 0)
+    {
+        tlssrv_put_err(&err);
+        exit(1);
+    }
 
     return 0;
 }

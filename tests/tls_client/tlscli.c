@@ -353,6 +353,58 @@ done:
     return ret;
 }
 
+int tlscli_read(tlscli_t* cli, void* data, size_t size, tlscli_err_t* err)
+{
+    int ret = -1;
+    int r;
+
+    _clear_err(err);
+
+    if (!cli)
+    {
+        _put_err(err, "invalid cli parameter");
+        goto done;
+    }
+
+    if (!data)
+    {
+        _put_err(err, "invalid data parameter");
+        goto done;
+    }
+
+    if (!size)
+    {
+        _put_err(err, "invalid size parameter");
+        goto done;
+    }
+
+    for (;;)
+    {
+        memset(data, 0, size);
+        r = mbedtls_ssl_read(&cli->ssl, data, size);
+
+        if (r == MBEDTLS_ERR_SSL_WANT_READ || r == MBEDTLS_ERR_SSL_WANT_WRITE)
+        {
+            continue;
+        }
+
+        if (r <= 0)
+        {
+            _put_mbedtls_err(err, r, "mbedtls_ssl_read");
+            ret = r;
+            goto done;
+        }
+
+        /* Save number of bytes read */
+        ret = r;
+        break;
+    }
+
+done:
+
+    return ret;
+}
+
 int tlscli_write(
     tlscli_t* cli,
     const void* data,
@@ -391,13 +443,6 @@ int tlscli_write(
             continue;
         }
 
-        if (r == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY)
-        {
-            _put_mbedtls_err(err, r, "mbedtls_ssl_write");
-            ret = r;
-            goto done;
-        }
-
         if (r <= 0)
         {
             _put_mbedtls_err(err, r, "mbedtls_ssl_write");
@@ -414,65 +459,7 @@ done:
     return ret;
 }
 
-int tlscli_read(tlscli_t* cli, void* data, size_t size, tlscli_err_t* err)
-{
-    int ret = -1;
-    int r;
-
-    _clear_err(err);
-
-    if (!cli)
-    {
-        _put_err(err, "invalid cli parameter");
-        goto done;
-    }
-
-    if (!data)
-    {
-        _put_err(err, "invalid data parameter");
-        goto done;
-    }
-
-    if (!size)
-    {
-        _put_err(err, "invalid size parameter");
-        goto done;
-    }
-
-    for (;;)
-    {
-        memset(data, 0, size);
-        r = mbedtls_ssl_read(&cli->ssl, data, size);
-
-        if (r == MBEDTLS_ERR_SSL_WANT_READ || r == MBEDTLS_ERR_SSL_WANT_WRITE)
-        {
-            continue;
-        }
-
-        if (r == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY)
-        {
-            ret = r;
-            goto done;
-        }
-
-        if (r <= 0)
-        {
-            _put_mbedtls_err(err, r, "mbedtls_ssl_read");
-            ret = r;
-            goto done;
-        }
-
-        /* Save number of bytes read */
-        ret = r;
-        break;
-    }
-
-done:
-
-    return ret;
-}
-
-int tlscli_disconnect(tlscli_t* cli, tlscli_err_t* err)
+int tlscli_destroy(tlscli_t* cli, tlscli_err_t* err)
 {
     int ret = -1;
 

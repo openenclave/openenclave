@@ -6,19 +6,19 @@
 
 int main()
 {
-    int retval;
+    int r;
     tlscli_t* cli = NULL;
     tlscli_err_t err;
     const char CRT_PATH[] = "/tmp/oe_attested_cert.der";
     const char PK_PATH[] = "/tmp/oe_private_key.pem";
 
-    if ((retval = tlscli_startup(&err)) != 0)
+    if ((r = tlscli_startup(&err)) != 0)
     {
         tlscli_put_err(&err);
         exit(1);
     }
 
-    if ((retval = tlscli_connect(
+    if ((r = tlscli_connect(
              true, "127.0.0.1", "12345", CRT_PATH, PK_PATH, &cli, &err)) != 0)
     {
         tlscli_put_err(&err);
@@ -29,31 +29,26 @@ int main()
 
     for (size_t i = 0; i < 10; i++)
     {
-        printf("CLIENT.WRITE\n");
-
-        retval = tlscli_write(cli, message, sizeof(message), &err);
-        if (retval < 0)
+        if ((r = tlscli_write(cli, message, sizeof(message), &err)) < 0)
         {
             tlscli_put_err(&err);
             exit(1);
         }
-
-        printf("cli.wrote=%d\n", retval);
 
         char buf[1024];
 
-        printf("CLIENT.READ\n");
-
-        retval = tlscli_read(cli, buf, sizeof(buf), &err);
-        if (retval < 0)
+        if ((r = tlscli_read(cli, buf, sizeof(buf), &err)) < 0)
         {
             tlscli_put_err(&err);
             exit(1);
         }
+
+        printf("buf{%s}\n", buf);
     }
 
-    tlscli_disconnect(cli, &err);
+    tlscli_destroy(cli, &err);
 
-    printf("CLIENT.DONE\n");
+    tlscli_shutdown(&err);
+
     return 0;
 }

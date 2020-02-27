@@ -2,8 +2,9 @@
 // Licensed under the MIT License.
 
 #define _GNU_SOURCE
-//#define INSIDE_ENCLAVE
+//#define BUILD_ENCLAVE
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -27,13 +28,11 @@
 #include "gencert.h"
 #include "tlssrv.h"
 
-#if defined(INSIDE_ENCLAVE)
+#if defined(BUILD_ENCLAVE)
 #include <openenclave/enclave.h>
 #endif
 
 #define DEBUG_LEVEL 1
-
-#if !defined(INSIDE_ENCLAVE)
 
 #define TEST_SRV_CRT_EC_DER                                                   \
     {                                                                         \
@@ -96,165 +95,139 @@
     "6i/SNF1dFr2KiMJrdw1VzYoqDvoByLTt/w==\r\n"                             \
     "-----END EC PRIVATE KEY-----\r\n"
 
-static const char _test_srv_key_ec_pem[] = TEST_SRV_KEY_EC_PEM;
+static bool _started;
+static const char* _pers = "ssl_server";
+static mbedtls_entropy_context _entropy;
+static mbedtls_ctr_drbg_context _ctr_drbg;
 
-static const unsigned char _test_srv_crt_ec_der[] = TEST_SRV_CRT_EC_DER;
-
-static const size_t _test_srv_crt_ec_der_len = sizeof(_test_srv_crt_ec_der);
-
-static const size_t _test_srv_key_ec_pem_len = sizeof(_test_srv_key_ec_pem);
-
-#endif /* !defined(INSIDE_ENCLAVE) */
-
-#if !defined(INSIDE_ENCLAVE)
-#if 0
-static int _load_file(const char* path, uint8_t** data_out, size_t* size_out)
+static void _clear_err(tlssrv_err_t* err)
 {
-    int result = -1;
-    FILE* is = NULL;
-    uint8_t* data = NULL;
-    size_t size;
-
-    if (data_out)
-        *data_out = NULL;
-
-    if (size_out)
-        *size_out = 0;
-
-    /* Check parameters */
-    if (!path || !data_out || !size_out)
-        goto done;
-
-    /* Get size of this file */
-    {
-        struct stat st;
-
-        if (stat(path, &st) != 0)
-            goto done;
-
-        size = (size_t)st.st_size;
-    }
-
-    /* Allocate memory to hold contents of file */
-    if (!(data = calloc(1, size + 1)))
-        goto done;
-
-    /* Open the file */
-    if (!(is = fopen(path, "rb")))
-        goto done;
-
-    /* Read file into memory */
-    if (fread(data, 1, size, is) != size)
-        goto done;
-
-    *data_out = data;
-    data = NULL;
-    *size_out = size;
-
-    result = 0;
-
-done:
-
-    if (data)
-        free(data);
-
-    if (is)
-        fclose(is);
-
-    return result;
+    if (err)
+        err->buf[0] = '\0';
 }
-#endif
-#endif /* !defined(INSIDE_ENCLAVE) */
 
-#if !defined(INSIDE_ENCLAVE)
-static int _get_cert_and_private_key(
-    mbedtls_x509_crt* crt,
-    mbedtls_pk_context* pk,
-    tls_error_t* error)
+__attribute__((format(printf, 2, 3))) static void _put_err(
+    tlssrv_err_t* err,
+    const char* fmt,
+    ...)
+{
+    if (err)
+    {
+        va_list ap;
+        va_start(ap, fmt);
+        vsnprintf(err->buf, sizeof(err->buf), fmt, ap);
+        va_end(ap);
+    }
+}
+
+__attribute__((format(printf, 3, 4))) static void _put_mbedtls_err(
+    tlssrv_err_t* err,
+    int code,
+    const char* fmt,
+    ...)
+{
+    _clear_err(err);
+
+    if (err && code)
+    {
+        char buf1[1024];
+        mbedtls_strerror(code, buf1, sizeof(buf1));
+
+        char buf2[1024];
+        va_list ap;
+        va_start(ap, fmt);
+        vsnprintf(buf2, sizeof(buf2), fmt, ap);
+        va_end(ap);
+
+        snprintf(err->buf, sizeof(err->buf), "%s: %s", buf1, buf2);
+    }
+}
+
+int tlssrv_startup(tlssrv_err_t* err)
 {
     int ret = -1;
-    int retval;
-    uint8_t* cert_data = NULL;
-    size_t cert_size;
-    uint8_t* private_key_data = NULL;
-    size_t private_key_size;
+    int r;
 
-    tls_clear_error(error);
+    _clear_err(err);
 
-#if 0
-    /* Load the attested certificate */
-    if (_load_file(CERT_PATH, &cert_data, &cert_size) != 0)
+    if (_started)
     {
-        tls_set_error(error, "failed to load file", CERT_PATH);
+        _put_err(err, "already initialized");
         goto done;
     }
+
+    mbedtls_entropy_init(&_entropy);
+    mbedtls_ctr_drbg_init(&_ctr_drbg);
+
+#if !defined(NDEBUG)
+    mbedtls_debug_set_threshold(DEBUG_LEVEL);
 #endif
 
-    cert_data = (uint8_t*)_test_srv_crt_ec_der;
-    cert_size = _test_srv_crt_ec_der_len;
-
-    /* Parse the certificate */
-    if ((retval = mbedtls_x509_crt_parse_der(crt, cert_data, cert_size)) != 0)
+    if ((r = mbedtls_ctr_drbg_seed(
+             &_ctr_drbg,
+             mbedtls_entropy_func,
+             &_entropy,
+             (const unsigned char*)_pers,
+             strlen(_pers))) != 0)
     {
-        tls_set_mbedtls_error(error, retval, "mbedtls_x509_crt_parse_der");
+        _put_mbedtls_err(err, r, "mbedtls_entropy_func()");
+        ret = r;
         goto done;
     }
 
-    private_key_data = (uint8_t*)_test_srv_key_ec_pem;
-    private_key_size = _test_srv_key_ec_pem_len;
-
-#if 0
-    /* Load the attested certificate */
-    if (_load_file(PRIVATE_KEY_PATH, &private_key_data, &private_key_size) != 0)
-    {
-        tls_set_error(error, "failed to load file", PRIVATE_KEY_PATH);
-        goto done;
-    }
-#endif
-
-    /* Parse the private key */
-    if ((retval = mbedtls_pk_parse_key(
-             pk, private_key_data, private_key_size, NULL, 0)) != 0)
-    {
-        tls_set_mbedtls_error(error, retval, "mbedtls_pk_parse_key");
-        goto done;
-    }
-
+    _started = true;
     ret = 0;
 
 done:
 
-#if 0
-    if (cert_data)
-        free(cert_data);
-
-    if (private_key_data)
-        free(private_key_data);
-#endif
+    if (ret != 0)
+    {
+        mbedtls_entropy_init(&_entropy);
+        mbedtls_ctr_drbg_init(&_ctr_drbg);
+    }
 
     return ret;
 }
-#endif /* !defined(INSIDE_ENCLAVE) */
 
-#if defined(INSIDE_ENCLAVE)
+int tlssrv_shutdown(tlssrv_err_t* err)
+{
+    int ret = -1;
+
+    _clear_err(err);
+
+    if (!_started)
+    {
+        _put_err(err, "not started");
+        goto done;
+    }
+
+    mbedtls_entropy_free(&_entropy);
+    mbedtls_ctr_drbg_free(&_ctr_drbg);
+
+done:
+
+    return ret;
+}
+
 static int _get_cert_and_private_key(
     mbedtls_x509_crt* crt,
     mbedtls_pk_context* pk,
-    tls_error_t* error)
+    tlssrv_err_t* err)
+#if defined(BUILD_ENCLAVE)
 {
     int ret = -1;
-    oe_result_t retval;
+    oe_result_t r;
     uint8_t* cert_data = NULL;
     size_t cert_size;
     uint8_t* private_key_data = NULL;
     size_t private_key_size;
 
-    tls_clear_error(error);
+    _clear_err(err);
 
     if (!crt || !pk)
         goto done;
 
-    if ((retval = oe_generate_cert_and_private_key(
+    if ((r = oe_generate_cert_and_private_key(
              "CN=Open Enclave SDK,O=OESDK TLS,C=US",
              &cert_data,
              &cert_size,
@@ -282,7 +255,39 @@ static int _get_cert_and_private_key(
 done:
     return ret;
 }
-#endif /* defined(INSIDE_ENCLAVE) */
+#else  /* !defined(BUILD_ENCLAVE) */
+{
+    int ret = -1;
+    int r;
+    static const char pk_pem[] = TEST_SRV_KEY_EC_PEM;
+    static const unsigned char _crt_der[] = TEST_SRV_CRT_EC_DER;
+    static const size_t _crt_der_len = sizeof(_crt_der);
+    static const size_t pk_pem_len = sizeof(pk_pem);
+
+    _clear_err(err);
+
+    if ((r = mbedtls_x509_crt_parse_der(crt, _crt_der, _crt_der_len)) != 0)
+    {
+        _put_mbedtls_err(err, r, "mbedtls_x509_crt_parse_der");
+        ret = r;
+        goto done;
+    }
+
+    if ((r = mbedtls_pk_parse_key(
+             pk, (const uint8_t*)pk_pem, pk_pem_len, NULL, 0)) != 0)
+    {
+        _put_mbedtls_err(err, r, "mbedtls_pk_parse_key");
+        ret = r;
+        goto done;
+    }
+
+    ret = 0;
+
+done:
+
+    return ret;
+}
+#endif /* defined(BUILD_ENCLAVE) */
 
 /* The mbedtls debug tracing function */
 static void _mbedtls_dbg(
@@ -298,7 +303,7 @@ static void _mbedtls_dbg(
     printf("_mbedtls_dbg.server: %s:%04d: %s", file, line, str);
 }
 
-#if defined(INSIDE_ENCLAVE)
+#if defined(BUILD_ENCLAVE)
 static oe_result_t _enclave_identity_verifier(
     oe_identity_t* identity,
     void* arg)
@@ -349,7 +354,7 @@ static oe_result_t _enclave_identity_verifier(
 
     return ret;
 }
-#endif /* defined(INSIDE_ENCLAVE) */
+#endif /* defined(BUILD_ENCLAVE) */
 
 static int _cert_verify_callback(
     void* data,
@@ -358,7 +363,7 @@ static int _cert_verify_callback(
     uint32_t* flags)
 {
     int ret = MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
-    oe_result_t retval;
+    oe_result_t r;
     unsigned char* cert_buf = NULL;
     size_t cert_size = 0;
 
@@ -373,14 +378,14 @@ static int _cert_verify_callback(
     if (cert_size <= 0)
         goto done;
 
-#if defined(INSIDE_ENCLAVE)
-    if ((retval = oe_verify_attestation_certificate(
+#if defined(BUILD_ENCLAVE)
+    if ((r = oe_verify_attestation_certificate(
              cert_buf, cert_size, _enclave_identity_verifier, NULL)) != OE_OK)
     {
         goto done;
     }
 #else
-    (void)retval;
+    (void)r;
 #endif
 
     ret = 0;
@@ -390,57 +395,53 @@ done:
     return ret;
 }
 
-static int _configure_server_ssl(
-    mbedtls_ssl_context* ssl,
-    mbedtls_ssl_config* conf,
-    mbedtls_ssl_cache_context* cache,
-    mbedtls_ctr_drbg_context* ctr_drbg,
-    mbedtls_x509_crt* crt,
-    mbedtls_pk_context* pk,
-    tls_error_t* error)
+static int _configure_srv(tlssrv_t* srv, tlssrv_err_t* err)
 {
     int ret = -1;
-    int retval;
+    int r;
 
-    tls_clear_error(error);
+    _clear_err(err);
 
-    if ((retval = _get_cert_and_private_key(crt, pk, error)) != 0)
+    if ((r = _get_cert_and_private_key(&srv->crt, &srv->pk, err)) != 0)
     {
         goto done;
     }
 
-    if ((retval = mbedtls_ssl_config_defaults(
-             conf,
+    if ((r = mbedtls_ssl_config_defaults(
+             &srv->conf,
              MBEDTLS_SSL_IS_SERVER,
              MBEDTLS_SSL_TRANSPORT_STREAM,
              MBEDTLS_SSL_PRESET_DEFAULT)) != 0)
     {
-        tls_set_mbedtls_error(error, retval, "mbedtls_ssl_config_defaults");
+        _put_mbedtls_err(err, r, "mbedtls_ssl_config_defaults");
+        ret = r;
         goto done;
     }
 
-    mbedtls_ssl_conf_rng(conf, mbedtls_ctr_drbg_random, ctr_drbg);
+    mbedtls_ssl_conf_rng(&srv->conf, mbedtls_ctr_drbg_random, &_ctr_drbg);
 
-    mbedtls_ssl_conf_dbg(conf, _mbedtls_dbg, stdout);
+    mbedtls_ssl_conf_dbg(&srv->conf, _mbedtls_dbg, stdout);
 
     mbedtls_ssl_conf_session_cache(
-        conf, cache, mbedtls_ssl_cache_get, mbedtls_ssl_cache_set);
+        &srv->conf, &srv->cache, mbedtls_ssl_cache_get, mbedtls_ssl_cache_set);
 
-    mbedtls_ssl_conf_authmode(conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
+    mbedtls_ssl_conf_authmode(&srv->conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
 
-    mbedtls_ssl_conf_verify(conf, _cert_verify_callback, NULL);
+    mbedtls_ssl_conf_verify(&srv->conf, _cert_verify_callback, NULL);
 
-    mbedtls_ssl_conf_ca_chain(conf, crt->next, NULL);
+    mbedtls_ssl_conf_ca_chain(&srv->conf, srv->crt.next, NULL);
 
-    if ((retval = mbedtls_ssl_conf_own_cert(conf, crt, pk)) != 0)
+    if ((r = mbedtls_ssl_conf_own_cert(&srv->conf, &srv->crt, &srv->pk)) != 0)
     {
-        tls_set_mbedtls_error(error, retval, "mbedtls_ssl_conf_own_cert");
+        _put_mbedtls_err(err, r, "mbedtls_ssl_conf_own_cert");
+        ret = r;
         goto done;
     }
 
-    if ((retval = mbedtls_ssl_setup(ssl, conf)) != 0)
+    if ((r = mbedtls_ssl_setup(&srv->ssl, &srv->conf)) != 0)
     {
-        tls_set_mbedtls_error(error, retval, "mbedtls_ssl_setup");
+        _put_mbedtls_err(err, r, "mbedtls_ssl_setup");
+        ret = r;
         goto done;
     }
 
@@ -453,260 +454,222 @@ done:
 int tlssrv_create(
     const char* server_name,
     const char* server_port,
-    tlssrv_t** server_out,
-    tls_error_t* error)
+    tlssrv_t** srv_out,
+    tlssrv_err_t* err)
 {
     int ret = -1;
-    int retval;
-    tlssrv_t* server = NULL;
+    int r;
+    tlssrv_t* srv = NULL;
     const char* pers = "tlssrv";
-    mbedtls_entropy_context entropy;
-    mbedtls_ctr_drbg_context ctr_drbg;
-    mbedtls_ssl_config conf;
-    mbedtls_x509_crt server_cert;
-    mbedtls_pk_context pkey;
-    mbedtls_ssl_cache_context cache;
 
-    mbedtls_ssl_config_init(&conf);
-    mbedtls_ssl_cache_init(&cache);
-    mbedtls_x509_crt_init(&server_cert);
-    mbedtls_pk_init(&pkey);
-    mbedtls_entropy_init(&entropy);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
-
-    tls_clear_error(error);
+    _clear_err(err);
 
 #if !defined(NDEBUG)
     mbedtls_debug_set_threshold(DEBUG_LEVEL);
 #endif
 
-    if (!server_out)
+    if (!srv_out)
     {
-        tls_set_error(error, "invalid server_out parameter", NULL);
+        _put_err(err, "invalid srv_out parameter", NULL);
         goto done;
     }
 
     if (!server_name)
     {
-        tls_set_error(error, "invalid server_name parameter", NULL);
+        _put_err(err, "invalid server_name parameter", NULL);
         goto done;
     }
 
     if (!server_port)
     {
-        tls_set_error(error, "invalid server_port parameter", NULL);
+        _put_err(err, "invalid server_port parameter", NULL);
+        goto done;
+    }
+
+    if (!_started)
+    {
+        _put_err(err, "not started: please call tlssrv_startup");
         goto done;
     }
 
     /* Initialize the server structure */
     {
-        if (!(server = calloc(1, sizeof(tlssrv_t))))
+        if (!(srv = calloc(1, sizeof(tlssrv_t))))
         {
-            tls_set_error(error, "calloc() failed", "out of memory");
+            _put_err(err, "calloc(): out of memory");
             goto done;
         }
 
-        mbedtls_net_init(&server->net);
-        mbedtls_ssl_init(&server->ssl);
+        mbedtls_net_init(&srv->net);
+        mbedtls_ssl_init(&srv->ssl);
+        mbedtls_ssl_config_init(&srv->conf);
+        mbedtls_ssl_cache_init(&srv->cache);
+        mbedtls_x509_crt_init(&srv->crt);
+        mbedtls_pk_init(&srv->pk);
     }
 
-    if ((retval = mbedtls_net_bind(
-             &server->net, server_name, server_port, MBEDTLS_NET_PROTO_TCP)) !=
-        0)
+    if ((r = mbedtls_net_bind(
+             &srv->net, server_name, server_port, MBEDTLS_NET_PROTO_TCP)) != 0)
     {
-        tls_set_mbedtls_error(error, retval, "mbedtls_net_bind");
+        _put_mbedtls_err(err, r, "mbedtls_net_bind");
+        ret = r;
         goto done;
     }
 
-    if ((retval = mbedtls_ctr_drbg_seed(
-             &ctr_drbg,
+    if ((r = mbedtls_ctr_drbg_seed(
+             &_ctr_drbg,
              mbedtls_entropy_func,
-             &entropy,
+             &_entropy,
              (const unsigned char*)pers,
              strlen(pers))) != 0)
     {
-        tls_set_mbedtls_error(error, retval, "mbedtls_ctr_drbg_seed");
+        _put_mbedtls_err(err, r, "mbedtls_ctr_drbg_seed");
+        ret = r;
         goto done;
     }
 
-    if ((retval = _configure_server_ssl(
-             &server->ssl,
-             &conf,
-             &cache,
-             &ctr_drbg,
-             &server_cert,
-             &pkey,
-             error)) != 0)
+    if ((r = _configure_srv(srv, err)) != 0)
     {
         goto done;
     }
 
-    *server_out = server;
-    server = NULL;
+    *srv_out = srv;
+    srv = NULL;
 
     ret = 0;
 
 done:
 
-    if (server)
+    if (srv)
     {
-        mbedtls_net_free(&server->net);
-        mbedtls_ssl_free(&server->ssl);
-        free(server);
+        mbedtls_net_free(&srv->net);
+        mbedtls_ssl_free(&srv->ssl);
+        mbedtls_ssl_config_free(&srv->conf);
+        mbedtls_x509_crt_free(&srv->crt);
+        mbedtls_pk_free(&srv->pk);
+        mbedtls_ssl_cache_free(&srv->cache);
+        free(srv);
     }
 
     return ret;
 }
 
-int tlssrv_listen(tlssrv_t* server, tls_error_t* error)
+int tlssrv_destroy(tlssrv_t* srv, tlssrv_err_t* err)
 {
     int ret = -1;
-    int retval;
+
+    _clear_err(err);
+
+    if (!srv)
+    {
+        _put_err(err, "invalid srv parameter");
+        goto done;
+    }
+
+    mbedtls_ssl_close_notify(&srv->ssl);
+
+    mbedtls_ssl_free(&srv->ssl);
+    mbedtls_net_free(&srv->net);
+    mbedtls_ssl_config_free(&srv->conf);
+    mbedtls_x509_crt_free(&srv->crt);
+    mbedtls_pk_free(&srv->pk);
+
+done:
+    return ret;
+}
+
+int tlssrv_listen(tlssrv_t* srv, tlssrv_err_t* err)
+{
+    int ret = -1;
+    int r;
     mbedtls_net_context net;
     unsigned char buf[1024];
     size_t bytes_read = 0;
 
-    tls_clear_error(error);
+    _clear_err(err);
 
-    if (!server)
+    if (!srv)
     {
-        tls_set_error(error, "invalid server parameter", NULL);
+        _put_err(err, "invalid srv parameter", NULL);
         goto done;
     }
 
-    if ((retval = mbedtls_ssl_session_reset(&server->ssl)) != 0)
+    if ((r = mbedtls_ssl_session_reset(&srv->ssl)) != 0)
     {
-        tls_set_mbedtls_error(error, retval, "mbedtls_ssl_session_reset");
+        _put_mbedtls_err(err, r, "mbedtls_ssl_session_reset");
+        ret = r;
         goto done;
     }
 
-    if ((retval = mbedtls_net_accept(&server->net, &net, NULL, 0, NULL)) != 0)
+    if ((r = mbedtls_net_accept(&srv->net, &net, NULL, 0, NULL)) != 0)
     {
-        tls_set_mbedtls_error(error, retval, "mbedtls_net_accept");
+        _put_mbedtls_err(err, r, "mbedtls_net_accept");
+        ret = r;
         goto done;
     }
 
     mbedtls_ssl_set_bio(
-        &server->ssl, &net, mbedtls_net_send, mbedtls_net_recv, NULL);
+        &srv->ssl, &net, mbedtls_net_send, mbedtls_net_recv, NULL);
 
     for (;;)
     {
-        retval = mbedtls_ssl_handshake(&server->ssl);
+        r = mbedtls_ssl_handshake(&srv->ssl);
 
-        if (retval == MBEDTLS_ERR_SSL_WANT_READ ||
-            retval == MBEDTLS_ERR_SSL_WANT_WRITE)
+        if (r == MBEDTLS_ERR_SSL_WANT_READ || r == MBEDTLS_ERR_SSL_WANT_WRITE)
         {
             continue;
         }
 
-        if (retval != 0)
+        if (r != 0)
         {
-            tls_set_mbedtls_error(error, retval, "mbedtls_ssl_handshake");
+            _put_mbedtls_err(err, r, "mbedtls_ssl_handshake");
+            ret = r;
             goto done;
         }
 
         break;
     }
 
-    if (mbedtls_ssl_get_verify_result(&server->ssl) != 0)
+    if (mbedtls_ssl_get_verify_result(&srv->ssl) != 0)
     {
-        tls_set_error(error, "verify failed", "mbedtls_ssl_get_verify_result");
-        mbedtls_ssl_close_notify(&server->ssl);
+        _put_err(err, "verify failed");
+        mbedtls_ssl_close_notify(&srv->ssl);
         goto done;
     }
 
     for (;;)
     {
-        for (;;)
+        if ((r = tlssrv_read(srv, buf, sizeof(buf), err)) <= 0)
         {
-            retval = mbedtls_ssl_read(&server->ssl, buf, sizeof(buf));
+            ret = r;
+            goto done;
+        }
 
-            if (retval == MBEDTLS_ERR_SSL_WANT_READ ||
-                retval == MBEDTLS_ERR_SSL_WANT_WRITE)
-            {
-                continue;
-            }
+        bytes_read = (size_t)r;
 
-            if (retval <= 0)
-            {
-                switch (retval)
-                {
-                    case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
-                    {
-                        printf("connection was closed gracefully\n");
-                        tls_set_mbedtls_error(error, retval, "closed");
-                        goto done;
-                    }
-
-                    case MBEDTLS_ERR_NET_CONN_RESET:
-                    {
-                        printf("connection was reset by peer\n");
-                        tls_set_mbedtls_error(error, retval, "reset");
-                        goto done;
-                    }
-
-                    default:
-                    {
-                        tls_set_mbedtls_error(error, retval, "read failed");
-                        goto done;
-                    }
-                }
-
-                break;
-            }
-
-            bytes_read = (size_t)retval;
-            break;
-
-            printf("server.read.retval=%d\n", retval);
+        if ((r = tlssrv_write(srv, buf, bytes_read, err)) <= 0)
+        {
+            ret = r;
+            goto done;
         }
 
         printf("buf{%s}\n", buf);
 
-        for (;;)
-        {
-            printf("BEFORE.WRITE: buf=%p bytes_read=%zu\n", buf, bytes_read);
-            retval = mbedtls_ssl_write(&server->ssl, buf, bytes_read);
-            printf("AFTER.WRITE: retval=%d\n", retval);
-
-            if (retval == MBEDTLS_ERR_SSL_WANT_READ ||
-                retval == MBEDTLS_ERR_SSL_WANT_WRITE)
-            {
-                continue;
-            }
-
-            if (retval == MBEDTLS_ERR_NET_CONN_RESET)
-            {
-                printf("peer closed the connection\n");
-                tls_set_mbedtls_error(error, retval, "peer closed");
-                goto done;
-            }
-
-            if (retval < 0)
-            {
-                tls_set_mbedtls_error(error, retval, "error");
-                goto done;
-            }
-
-            printf("write: %d\n", retval);
-            break;
-        }
-        printf("bytes_written=%d\n", retval);
+        printf("bytes_written=%d\n", r);
     }
 
     for (;;)
     {
-        retval = mbedtls_ssl_close_notify(&server->ssl);
+        r = mbedtls_ssl_close_notify(&srv->ssl);
 
-        if (retval == MBEDTLS_ERR_SSL_WANT_READ ||
-            retval == MBEDTLS_ERR_SSL_WANT_WRITE)
+        if (r == MBEDTLS_ERR_SSL_WANT_READ || r == MBEDTLS_ERR_SSL_WANT_WRITE)
         {
             goto done;
         }
 
-        if (retval != 0)
+        if (r != 0)
         {
-            tls_set_mbedtls_error(error, retval, "close notify");
+            ret = r;
             goto done;
         }
 
@@ -714,48 +677,120 @@ int tlssrv_listen(tlssrv_t* server, tls_error_t* error)
     }
 
     ret = 0;
-#if 0
-    len = ret;
-    OE_TRACE_INFO(" %d bytes written\n", len);
-    OE_TRACE_INFO("Closing the connection...\n");
-    while ((ret = mbedtls_ssl_close_notify(&ssl)) < 0)
-    {
-        if (ret != MBEDTLS_ERR_SSL_WANT_READ &&
-            ret != MBEDTLS_ERR_SSL_WANT_WRITE)
-        {
-            OE_TRACE_ERROR(
-                "failed! mbedtls_ssl_close_notify returned %d\n\n", ret);
-            goto waiting_for_connection_request;
-        }
-    }
-
-    ret = 0;
-    // uncomment the following lien if you want this tls server run in loop
-    // goto waiting_for_connection_request;
-done:
-    if (ret != 0)
-    {
-        char error_buf[100];
-        mbedtls_strerror(ret, error_buf, 100);
-        OE_TRACE_ERROR("Last error was: %d - %s\n\n", ret, error_buf);
-    }
-
-    // free resource
-    mbedtls_net_free(&client_fd);
-    mbedtls_net_free(&listen_fd);
-    mbedtls_x509_crt_free(&server_cert);
-    mbedtls_pk_free(&pkey);
-    mbedtls_ssl_free(&ssl);
-    mbedtls_ssl_config_free(&conf);
-    mbedtls_ssl_cache_free(&cache);
-    mbedtls_ctr_drbg_free(&ctr_drbg);
-    mbedtls_entropy_free(&entropy);
-    // fflush(stdout);
-
-    return (ret);
-#endif
 
 done:
 
     return ret;
+}
+
+int tlssrv_read(tlssrv_t* srv, void* data, size_t size, tlssrv_err_t* err)
+{
+    int ret = -1;
+    int r;
+
+    _clear_err(err);
+
+    if (!srv)
+    {
+        _put_err(err, "invalid srv parameter");
+        goto done;
+    }
+
+    if (!data)
+    {
+        _put_err(err, "invalid data parameter");
+        goto done;
+    }
+
+    if (!size)
+    {
+        _put_err(err, "invalid size parameter");
+        goto done;
+    }
+
+    for (;;)
+    {
+        memset(data, 0, size);
+        r = mbedtls_ssl_read(&srv->ssl, data, size);
+
+        if (r == MBEDTLS_ERR_SSL_WANT_READ || r == MBEDTLS_ERR_SSL_WANT_WRITE)
+        {
+            continue;
+        }
+
+        if (r <= 0)
+        {
+            _put_mbedtls_err(err, r, "mbedtls_ssl_read");
+            ret = r;
+            goto done;
+        }
+
+        /* Save number of bytes read */
+        ret = r;
+        break;
+    }
+
+done:
+
+    return ret;
+}
+
+int tlssrv_write(
+    tlssrv_t* srv,
+    const void* data,
+    size_t size,
+    tlssrv_err_t* err)
+{
+    int ret = -1;
+    int r;
+
+    _clear_err(err);
+
+    if (!srv)
+    {
+        _put_err(err, "invalid srv parameter");
+        goto done;
+    }
+
+    if (!data)
+    {
+        _put_err(err, "invalid data parameter");
+        goto done;
+    }
+
+    if (!size)
+    {
+        _put_err(err, "invalid size parameter");
+        goto done;
+    }
+
+    for (;;)
+    {
+        r = mbedtls_ssl_write(&srv->ssl, data, size);
+
+        if (r == MBEDTLS_ERR_SSL_WANT_READ || r == MBEDTLS_ERR_SSL_WANT_WRITE)
+        {
+            continue;
+        }
+
+        if (r <= 0)
+        {
+            _put_mbedtls_err(err, r, "mbedtls_ssl_write");
+            ret = r;
+            goto done;
+        }
+
+        ret = r;
+        break;
+    }
+
+done:
+
+    return ret;
+}
+
+void tlssrv_put_err(tlssrv_err_t* err)
+{
+    if (err)
+        fprintf(stderr, "error: %s\n", err->buf);
 }

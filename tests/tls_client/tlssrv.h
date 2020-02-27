@@ -6,30 +6,45 @@
 
 #include <mbedtls/net_sockets.h>
 #include <mbedtls/ssl.h>
-#include "common.h"
+#include <mbedtls/ssl_cache.h>
+
+typedef struct _tlssrv_err
+{
+    char buf[1024];
+} tlssrv_err_t;
+
+void tlssrv_put_err(tlssrv_err_t* err);
 
 typedef struct _tlssrv
 {
     mbedtls_ssl_context ssl;
     mbedtls_net_context net;
+    mbedtls_ssl_config conf;
+    mbedtls_x509_crt crt;
+    mbedtls_pk_context pk;
+    mbedtls_ssl_cache_context cache;
 } tlssrv_t;
 
+int tlssrv_startup(tlssrv_err_t* err);
+
+int tlssrv_shutdown(tlssrv_err_t* err);
+
 int tlssrv_create(
-    const char* server_name,
-    const char* server_port,
-    tlssrv_t** client_out,
-    tls_error_t* error);
+    const char* host,
+    const char* port,
+    tlssrv_t** srv_out,
+    tlssrv_err_t* err);
 
-int tlssrv_listen(tlssrv_t* server, tls_error_t* error);
+int tlssrv_destroy(tlssrv_t* srv, tlssrv_err_t* err);
 
-int tlssrv_read(tlssrv_t* client, void* data, size_t size, tls_error_t* error);
+int tlssrv_listen(tlssrv_t* srv, tlssrv_err_t* err);
+
+int tlssrv_read(tlssrv_t* srv, void* data, size_t size, tlssrv_err_t* err);
 
 int tlssrv_write(
-    tlssrv_t* client,
+    tlssrv_t* srv,
     const void* data,
     size_t size,
-    tls_error_t* error);
-
-void tls_dump_error(const tls_error_t* error);
+    tlssrv_err_t* err);
 
 #endif /* _TLSSRV_H */
