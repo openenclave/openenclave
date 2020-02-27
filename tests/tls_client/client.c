@@ -8,20 +8,20 @@ int main()
 {
     int retval;
     tlscli_t* cli = NULL;
-    tls_error_t error;
+    tlscli_err_t err;
     const char CRT_PATH[] = "/tmp/oe_attested_cert.der";
     const char PK_PATH[] = "/tmp/oe_private_key.pem";
 
-    if ((retval = tlscli_startup(&error)) != 0)
+    if ((retval = tlscli_startup(&err)) != 0)
     {
-        tls_dump_error(&error);
+        tlscli_put_err(&err);
         exit(1);
     }
 
     if ((retval = tlscli_connect(
-             true, "127.0.0.1", "12345", CRT_PATH, PK_PATH, &cli, &error)) != 0)
+             true, "127.0.0.1", "12345", CRT_PATH, PK_PATH, &cli, &err)) != 0)
     {
-        tls_dump_error(&error);
+        tlscli_put_err(&err);
         exit(1);
     }
 
@@ -31,10 +31,10 @@ int main()
     {
         printf("CLIENT.WRITE\n");
 
-        retval = tlscli_write(cli, message, sizeof(message), &error);
+        retval = tlscli_write(cli, message, sizeof(message), &err);
         if (retval < 0)
         {
-            tls_dump_error(&error);
+            tlscli_put_err(&err);
             exit(1);
         }
 
@@ -44,15 +44,15 @@ int main()
 
         printf("CLIENT.READ\n");
 
-        retval = tlscli_read(cli, buf, sizeof(buf), &error);
+        retval = tlscli_read(cli, buf, sizeof(buf), &err);
         if (retval < 0)
         {
-            tls_dump_error(&error);
+            tlscli_put_err(&err);
             exit(1);
         }
     }
 
-    tlscli_disconnect(cli, &error);
+    tlscli_disconnect(cli, &err);
 
     printf("CLIENT.DONE\n");
     return 0;

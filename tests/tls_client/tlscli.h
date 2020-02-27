@@ -6,7 +6,14 @@
 
 #include <mbedtls/net_sockets.h>
 #include <mbedtls/ssl.h>
-#include "common.h"
+#include <stdbool.h>
+
+typedef struct _tlscli_err
+{
+    char buf[1024];
+} tlscli_err_t;
+
+void tlscli_put_err(tlscli_err_t* err);
 
 typedef struct _tlscli
 {
@@ -17,7 +24,7 @@ typedef struct _tlscli
     mbedtls_pk_context pk;
 } tlscli_t;
 
-int tlscli_startup(tls_error_t* error);
+int tlscli_startup(tlscli_err_t* err);
 
 int tlscli_connect(
     bool debug,
@@ -26,16 +33,16 @@ int tlscli_connect(
     const char* crt_path,
     const char* pk_path,
     tlscli_t** cli_out,
-    tls_error_t* error);
+    tlscli_err_t* err);
 
-int tlscli_disconnect(tlscli_t* cli, tls_error_t* error);
+int tlscli_disconnect(tlscli_t* cli, tlscli_err_t* err);
 
-int tlscli_read(tlscli_t* cli, void* data, size_t size, tls_error_t* error);
+int tlscli_read(tlscli_t* cli, void* data, size_t size, tlscli_err_t* err);
 
 int tlscli_write(
     tlscli_t* cli,
     const void* data,
     size_t size,
-    tls_error_t* error);
+    tlscli_err_t* err);
 
 #endif /* _TLSCLI_H */

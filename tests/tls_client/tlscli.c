@@ -3,6 +3,7 @@
 
 #define _GNU_SOURCE
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -30,16 +31,59 @@ static const char* _pers = "ssl_client";
 static mbedtls_entropy_context _entropy;
 static mbedtls_ctr_drbg_context _ctr_drbg;
 
-int tlscli_startup(tls_error_t* error)
+static void _clear_err(tlscli_err_t* err)
+{
+    if (err)
+        err->buf[0] = '\0';
+}
+
+__attribute__((format(printf, 2, 3))) static void _put_err(
+    tlscli_err_t* err,
+    const char* fmt,
+    ...)
+{
+    if (err)
+    {
+        va_list ap;
+        va_start(ap, fmt);
+        vsnprintf(err->buf, sizeof(err->buf), fmt, ap);
+        va_end(ap);
+    }
+}
+
+__attribute__((format(printf, 3, 4))) void _put_mbedtls_err(
+    tlscli_err_t* err,
+    int code,
+    const char* fmt,
+    ...)
+{
+    _clear_err(err);
+
+    if (err && code)
+    {
+        char buf1[1024];
+        mbedtls_strerror(code, buf1, sizeof(buf1));
+
+        char buf2[1024];
+        va_list ap;
+        va_start(ap, fmt);
+        vsnprintf(buf2, sizeof(buf2), fmt, ap);
+        va_end(ap);
+
+        snprintf(err->buf, sizeof(err->buf), "%s: %s", buf1, buf2);
+    }
+}
+
+int tlscli_startup(tlscli_err_t* err)
 {
     int ret = -1;
     int r;
 
-    tls_clear_error(error);
+    _clear_err(err);
 
     if (_started)
     {
-        tls_set_error(error, __FUNCTION__, "already started");
+        _put_err(err, "already initialized");
         goto done;
     }
 
@@ -57,7 +101,8 @@ int tlscli_startup(tls_error_t* error)
              (const unsigned char*)_pers,
              strlen(_pers))) != 0)
     {
-        tls_set_mbedtls_error(error, r, "mbedtls_entropy_func()");
+        _put_mbedtls_err(err, r, "mbedtls_entropy_func()");
+        ret = r;
         goto done;
     }
 
@@ -75,15 +120,15 @@ done:
     return ret;
 }
 
-int tlscli_shutdown(tls_error_t* error)
+int tlscli_shutdown(tlscli_err_t* err)
 {
     int ret = -1;
 
-    tls_clear_error(error);
+    _clear_err(err);
 
     if (!_started)
     {
-        tls_set_error(error, __FUNCTION__, "not started");
+        _put_err(err, "not started");
         goto done;
     }
 
@@ -130,22 +175,24 @@ static int _configure_cli(
     bool debug,
     const char* crt_path,
     const char* pk_path,
-    tls_error_t* error)
+    tlscli_err_t* err)
 {
     int ret = -1;
     int r;
 
-    tls_clear_error(error);
+    _clear_err(err);
 
     if ((r = mbedtls_x509_crt_parse_file(&cli->crt, crt_path) != 0))
     {
-        tls_set_mbedtls_error(error, r, crt_path);
+        _put_mbedtls_err(err, r, "%s", crt_path);
+        ret = r;
         goto done;
     }
 
     if ((r = mbedtls_pk_parse_keyfile(&cli->pk, pk_path, "")) != 0)
     {
-        tls_set_mbedtls_error(error, r, pk_path);
+        _put_mbedtls_err(err, r, "%s", pk_path);
+        ret = r;
         goto done;
     }
 
@@ -155,7 +202,8 @@ static int _configure_cli(
              MBEDTLS_SSL_TRANSPORT_STREAM,
              MBEDTLS_SSL_PRESET_DEFAULT)) != 0)
     {
-        tls_set_mbedtls_error(error, r, "mbedtls_ssl_config_defaults");
+        _put_mbedtls_err(err, r, "mbedtls_ssl_config_defaults");
+        ret = r;
         goto done;
     }
 
@@ -169,13 +217,15 @@ static int _configure_cli(
 
     if ((r = mbedtls_ssl_conf_own_cert(&cli->conf, &cli->crt, &cli->pk)) != 0)
     {
-        tls_set_mbedtls_error(error, r, "mbedtls_ssl_conf_own_cert");
+        _put_mbedtls_err(err, r, "mbedtls_ssl_conf_own_cert");
+        ret = r;
         goto done;
     }
 
     if ((r = mbedtls_ssl_setup(&cli->ssl, &cli->conf)) != 0)
     {
-        tls_set_mbedtls_error(error, r, "mbedtls_ssl_setup");
+        _put_mbedtls_err(err, r, "mbedtls_ssl_setup");
+        ret = r;
         goto done;
     }
 
@@ -192,38 +242,38 @@ int tlscli_connect(
     const char* crt_path,
     const char* pk_path,
     tlscli_t** cli_out,
-    tls_error_t* error)
+    tlscli_err_t* err)
 {
     int ret = -1;
     int r;
     tlscli_t* cli = NULL;
 
-    tls_clear_error(error);
+    _clear_err(err);
 
     if (cli_out)
         *cli_out = NULL;
 
     if (!_started)
     {
-        tls_set_error(error, "not started: please call tlscli_startup()", NULL);
+        _put_err(err, "not started: please call tlscli_startup()");
         goto done;
     }
 
     if (!cli_out)
     {
-        tls_set_error(error, "invalid cli parameter", NULL);
+        _put_err(err, "invalid cli parameter");
         goto done;
     }
 
     if (!host)
     {
-        tls_set_error(error, "invalid host parameter", NULL);
+        _put_err(err, "invalid host parameter");
         goto done;
     }
 
     if (!port)
     {
-        tls_set_error(error, "invalid port parameter", NULL);
+        _put_err(err, "invalid port parameter");
         goto done;
     }
 
@@ -231,7 +281,7 @@ int tlscli_connect(
     {
         if (!(cli = calloc(1, sizeof(tlscli_t))))
         {
-            tls_set_error(error, "calloc() failed", "out of memory");
+            _put_err(err, "calloc() failed: out of memory");
             goto done;
         }
 
@@ -245,18 +295,21 @@ int tlscli_connect(
     if ((r = mbedtls_net_connect(
              &cli->net, host, port, MBEDTLS_NET_PROTO_TCP)) != 0)
     {
-        tls_set_mbedtls_error(error, r, "mbedtls_net_connect()");
+        _put_mbedtls_err(err, r, "mbedtls_net_connect()");
+        ret = r;
         goto done;
     }
 
-    if (_configure_cli(cli, debug, crt_path, pk_path, error) != 0)
+    if ((r = _configure_cli(cli, debug, crt_path, pk_path, err)) != 0)
     {
+        ret = r;
         goto done;
     }
 
     if ((r = mbedtls_ssl_set_hostname(&cli->ssl, host)) != 0)
     {
-        tls_set_mbedtls_error(error, r, "mbedtls_ssl_set_hostname");
+        _put_mbedtls_err(err, r, "mbedtls_ssl_set_hostname");
+        ret = r;
         goto done;
     }
 
@@ -267,7 +320,8 @@ int tlscli_connect(
     {
         if (r != MBEDTLS_ERR_SSL_WANT_READ && r != MBEDTLS_ERR_SSL_WANT_WRITE)
         {
-            tls_set_mbedtls_error(error, r, "mbedtls_ssl_handshake");
+            _put_mbedtls_err(err, r, "mbedtls_ssl_handshake");
+            ret = r;
             goto done;
         }
     }
@@ -275,8 +329,7 @@ int tlscli_connect(
     if (mbedtls_ssl_get_verify_result(&cli->ssl) != 0)
     {
         mbedtls_ssl_close_notify(&cli->ssl);
-        tls_set_error(
-            error, "handshake failed", "mbedtls_ssl_get_verify_result");
+        _put_err(err, "handshake failed");
         goto done;
     }
 
@@ -304,28 +357,28 @@ int tlscli_write(
     tlscli_t* cli,
     const void* data,
     size_t size,
-    tls_error_t* error)
+    tlscli_err_t* err)
 {
     int ret = -1;
     int r;
 
-    tls_clear_error(error);
+    _clear_err(err);
 
     if (!cli)
     {
-        tls_set_error(error, "invalid cli parameter", NULL);
+        _put_err(err, "invalid cli parameter");
         goto done;
     }
 
     if (!data)
     {
-        tls_set_error(error, "invalid data parameter", NULL);
+        _put_err(err, "invalid data parameter");
         goto done;
     }
 
     if (!size)
     {
-        tls_set_error(error, "invalid size parameter", NULL);
+        _put_err(err, "invalid size parameter");
         goto done;
     }
 
@@ -340,13 +393,15 @@ int tlscli_write(
 
         if (r == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY)
         {
-            tls_set_mbedtls_error(error, r, "mbedtls_ssl_write");
-            break;
+            _put_mbedtls_err(err, r, "mbedtls_ssl_write");
+            ret = r;
+            goto done;
         }
 
         if (r <= 0)
         {
-            tls_set_mbedtls_error(error, r, "mbedtls_ssl_write");
+            _put_mbedtls_err(err, r, "mbedtls_ssl_write");
+            ret = r;
             goto done;
         }
 
@@ -359,26 +414,28 @@ done:
     return ret;
 }
 
-int tlscli_read(tlscli_t* cli, void* data, size_t size, tls_error_t* error)
+int tlscli_read(tlscli_t* cli, void* data, size_t size, tlscli_err_t* err)
 {
     int ret = -1;
     int r;
 
+    _clear_err(err);
+
     if (!cli)
     {
-        tls_set_error(error, "invalid cli parameter", NULL);
+        _put_err(err, "invalid cli parameter");
         goto done;
     }
 
     if (!data)
     {
-        tls_set_error(error, "invalid data parameter", NULL);
+        _put_err(err, "invalid data parameter");
         goto done;
     }
 
     if (!size)
     {
-        tls_set_error(error, "invalid size parameter", NULL);
+        _put_err(err, "invalid size parameter");
         goto done;
     }
 
@@ -392,16 +449,16 @@ int tlscli_read(tlscli_t* cli, void* data, size_t size, tls_error_t* error)
             continue;
         }
 
-        if (r == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY || r == 0)
+        if (r == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY)
         {
-            /* end of file */
-            ret = 0;
-            break;
+            ret = r;
+            goto done;
         }
 
-        if (r < 0)
+        if (r <= 0)
         {
-            tls_set_mbedtls_error(error, r, "mbedtls_ssl_read");
+            _put_mbedtls_err(err, r, "mbedtls_ssl_read");
+            ret = r;
             goto done;
         }
 
@@ -415,13 +472,15 @@ done:
     return ret;
 }
 
-int tlscli_disconnect(tlscli_t* cli, tls_error_t* error)
+int tlscli_disconnect(tlscli_t* cli, tlscli_err_t* err)
 {
     int ret = -1;
 
+    _clear_err(err);
+
     if (!cli)
     {
-        tls_set_error(error, "invalid cli parameter", NULL);
+        _put_err(err, "invalid cli parameter");
         goto done;
     }
 
@@ -435,4 +494,10 @@ int tlscli_disconnect(tlscli_t* cli, tls_error_t* error)
 
 done:
     return ret;
+}
+
+void tlscli_put_err(tlscli_err_t* err)
+{
+    if (err)
+        fprintf(stderr, "error: %s\n", err->buf);
 }
