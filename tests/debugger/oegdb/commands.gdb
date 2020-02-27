@@ -134,9 +134,14 @@ commands 7
     # Set the magic variable in host_function.
     set host_function_magic=$magic_value
 
+    # We expect at most 50 frames while walking the stack. Additionally a finite
+    # iteration limit guarantees that the test will terminate quickly even if
+    # the debugger is not able to walk the stack correctly.
+    set $MAX_FRAMES=50
+
     # Walk the stack until the enclave function.
     # This asserts ocall stack stitching.
-    set $i = 50
+    set $i = $MAX_FRAMES
     while $i > 0
           up 1
           set $i=$i-1
@@ -150,7 +155,7 @@ commands 7
     # Continue walking the stack until main is reached.
     # This asserts ecall stack stitching.
     python print("\n\n\nWalking ecall stack...\n\n")
-    set $i = 50
+    set $i = $MAX_FRAMES
     while $i > 0
           up 1
           set $i=$i-1

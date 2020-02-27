@@ -508,52 +508,63 @@ oe_result_t oe_get_enclave_status()
 /*
 **==============================================================================
 **
-** _debug_write_exit_frame()
+** _exit_enclave()
 **
-** If a debug enclave, write the exit frame information to host's
+** Exit the enclave.
+** Additionally, if a debug enclave, write the exit frame information to host's
 ** ecall_context so that the host can stitch the ocall stack.
 **
 ** This function is intended to be called by oe_asm_exit (see below).
 ** When called, the call stack would look like this:
 **
-**     enclave-function -> oe_ocall -> oe_asm_exit -> _debug_write_exit_frame
-**                                    __morestack
+**     enclave-function
+**       -> oe_ocall
+**         -> oe_exit_enclave (aliased as __morestack)
+**           -> _exit_enclave
 **
-** The _debug_write_exit_frame reads its caller (oe_asm_exit/__morestack)
-** infomation (return address, rbp) and passes it along to the host in the
-** ecall_context.
+** For debug enclaves, _exit_enclave reads its caller (oe_exit_enclave/
+** __morestack) information (return address, rbp) and passes it along to the
+** host in the ecall_context.
 **
-** ocall invokes eexit instruction which resumes execution in host at the
+** Then it proceeds to exit the enclave by invoking oe_asm_exit.
+** oe_asm_exit invokes eexit instruction which resumes execution in host at the
 ** oe_enter function. The host dispatches the ocall via the following sequence:
 **
-**     oe_enter -> __oe_host_stack_bridge -> __oe_dispatch_ocall
-**                                                    -> invoke ocall function
+**     oe_enter
+**       -> __oe_host_stack_bridge   (Stitches the ocall stack; disappears)
+**         -> __oe_dispatch_ocall
+**           -> invoke ocall function
 **
-** Now that the enclave exit is available to the host, __oe_host_stack_bridge
-** temporarily modifies its caller info with the enclave's exit information so
-** that the stitched stack looks like this:
+** Now that the enclave exit frame is available to the host,
+**__oe_host_stack_bridge temporarily modifies its caller info with the enclave's
+** exit information so that the stitched stack looks like this:
 **
-**      in enclave         |   in host
-** oe_ocall -> oe_asm_exit -> __oe_host_stack_bride -> __oe_dispatch_ocall ...
-**             __morestack
-**
+**     enclave-function                                    |
+**       -> oe_ocall                                       |
+**         -> oe_exit_enclave (aliased as __morestack)     | in enclave
+**   --------------------------------------------------------------------------
+**           -> __oe_dispatch_ocall                        | in host
+**             -> invoke ocall function                    |
 **
 ** This stitching of the stack is temporary, and __oe_host_stack_bridge reverts
 ** it prior to returning to its caller.
 **
-** Since the stitched (split) stack is preceded by __morestack function, gdb
+** Since the stitched (split) stack is preceded by the __morestack function, gdb
 ** natively walks the stack correctly.
 **
 **==============================================================================
 */
 OE_NEVER_INLINE
-static void _debug_write_exit_frame(void)
+OE_NO_RETURN
+static void _exit_enclave(uint64_t arg1, uint64_t arg2)
 {
     static bool _initialized = false;
     static bool _stitch_ocall_stack = false;
 
     // Since determining whether an enclave supports debugging is a stateless
-    // idempotent operation, there is no need to lock.
+    // idempotent operation, there is no need to lock. The result is cached
+    // for performance since is_enclave_debug_allowed uses local report to
+    // securely determine if an enclave supports debugging or not.
     if (!_initialized)
     {
         _stitch_ocall_stack = is_enclave_debug_allowed();
@@ -578,25 +589,32 @@ static void _debug_write_exit_frame(void)
             host_ecall_context->debug_eexit_rip = frame[1];
         }
     }
+    oe_asm_exit(arg1, arg2);
 }
 
 /*
 **==============================================================================
 **
 ** This function is wrapper of oe_asm_exit. It is needed to stitch the host
-** stack and enclave stack together.
+** stack and enclave stack together. It calls oe_asm_exit via an intermediary
+** (_exit_enclave) that records the exit frame for ocall stack stitching.
 **
 ** N.B: Don't change the function name, otherwise debugger can't work. GDB
-** depends on this hardcode function name when does stack walking for split
-** stack. oe_exit_enclave has been #defined to __morestack.
+** depends on this hardcoded function name when does stack walking for split
+** stack. oe_exit_enclave has been #defined as __morestack.
 **==============================================================================
 */
 
 OE_NEVER_INLINE
 void oe_exit_enclave(uint64_t arg1, uint64_t arg2)
 {
-    _debug_write_exit_frame();
-    oe_asm_exit(arg1, arg2);
+    _exit_enclave(arg1, arg2);
+
+    // This code is never reached. It exists to prevent tail call optimization
+    // of the call to _exit_enclave. Tail-call optimization would effectively
+    // inline _exit_enclave, and its caller would be come the caller of
+    // oe_exit_enclave instead of oe_exit_enclave.
+    oe_abort();
 }
 
 /*

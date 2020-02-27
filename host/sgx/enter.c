@@ -66,9 +66,11 @@ int __oe_host_stack_bridge(
     oe_enclave_t* enclave,
     oe_ecall_context_t* ecall_context)
 {
-    oe_host_ocall_frame_t *current, backup;
-
-    if (enclave->debug)
+    // Use volatile attribute so that the compiler does not optimize away the
+    // restoration of the stack frame.
+    volatile oe_host_ocall_frame_t *current = NULL, backup;
+    bool debug = enclave->debug;
+    if (debug)
     {
         // Fetch pointer to current frame.
         current = (oe_host_ocall_frame_t*)__builtin_frame_address(0);
@@ -83,10 +85,11 @@ int __oe_host_stack_bridge(
 
     int ret = __oe_dispatch_ocall(arg1, arg2, arg1_out, arg2_out, tcs, enclave);
 
-    if (enclave->debug)
+    if (debug)
     {
         // Restore the frame so that this function can return to the caller
-        // correctly.
+        // correctly. Without the volatile qualifier, the compiler could
+        // optimize this away.
         *current = backup;
     }
 
