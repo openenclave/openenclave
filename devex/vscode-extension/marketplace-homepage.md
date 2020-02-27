@@ -394,6 +394,12 @@ FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry
 
 1. Debugging the host application under QEMU does not work.
 
+2. If while configuring a Standalone project, VS Code emits the error "The
+   terminal shell path "cmake" is a directory", try changing `"type": "process"`
+   into `"type": "shell"` in the corresponding tasks under `.vscode/tasks.json`
+   in the generated project. Whether this happens appears to depend on how CMake
+   was installed on the system.
+
 ## Release Notes
 
 ### 2.0.0
