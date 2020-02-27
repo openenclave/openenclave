@@ -38,7 +38,11 @@ int oegencreds_ecall(
     *private_key_size_out = 0;
 
     if (oe_generated_attested_credentials(
-            &cert, &cert_size, &private_key, &private_key_size) != 0)
+            "CN=Open Enclave SDK,O=OESDK TLS,C=US",
+            &cert,
+            &cert_size,
+            &private_key,
+            &private_key_size) != 0)
     {
         fprintf(stderr, "oegencreds() failed\n");
         goto done;

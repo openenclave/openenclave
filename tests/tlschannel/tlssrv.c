@@ -24,7 +24,7 @@
 #include <mbedtls/ssl_cache.h>
 #include <mbedtls/x509.h>
 
-#include "gencert.h"
+#include "gencreds/oegencreds.h"
 #include "tlssrv.h"
 
 #if defined(BUILD_ENCLAVE)
@@ -362,7 +362,6 @@ static int _cert_verify_callback(
     uint32_t* flags)
 {
     int ret = MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
-    oe_result_t r;
     unsigned char* cert_buf = NULL;
     size_t cert_size = 0;
 
@@ -378,13 +377,12 @@ static int _cert_verify_callback(
         goto done;
 
 #if defined(BUILD_ENCLAVE)
+    oe_result_t r;
     if ((r = oe_verify_attestation_certificate(
              cert_buf, cert_size, _enclave_identity_verifier, NULL)) != OE_OK)
     {
         goto done;
     }
-#else
-    (void)r;
 #endif
 
     ret = 0;

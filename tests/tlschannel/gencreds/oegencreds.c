@@ -147,6 +147,7 @@ done:
 }
 
 int oe_generated_attested_credentials(
+    const char* common_name,
     uint8_t** cert_out,
     size_t* cert_size_out,
     uint8_t** private_key_out,
@@ -179,11 +180,8 @@ int oe_generated_attested_credentials(
 
     /* Generate the attested certificate and private key */
     if (_generate_cert_and_private_key(
-            "CN=Open Enclave SDK,O=OESDK TLS,C=US",
-            &cert,
-            &cert_size,
-            &private_key,
-            &private_key_size) != OE_OK)
+            common_name, &cert, &cert_size, &private_key, &private_key_size) !=
+        OE_OK)
     {
         fprintf(stderr, "failed to generate certificate and private key\n");
         goto done;
