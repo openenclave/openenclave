@@ -104,7 +104,7 @@ def AArch64GNUTest(String version, String build_type) {
                                 -Wdev
                             ninja -v
 
-                            mkdir ${HOME}/.ssh
+                            mkdir \${HOME}/.ssh
 
                             cd /armtz_emulator
                             nohup ./qemu-system-aarch64 \
@@ -126,19 +126,19 @@ def AArch64GNUTest(String version, String build_type) {
 
                             while ! nc -z 127.0.0.1 5555; do sleep 1; done
 
-                            ssh-keyscan -T 300 -p 5555 localhost >> ${HOME}/.ssh/known_hosts
+                            ssh-keyscan -T 300 -p 5555 localhost >> \${HOME}/.ssh/known_hosts
 
                             CMD="su -c\""
-                            CMD="${CMD} mkdir -p ${WORKSPACE} &&"
-                            CMD="${CMD} mount -t 9p -o trans=virtio sh0 ${WORKSPACE} -oversion=9p2000.L &&"
-                            CMD="${CMD} cd ${WORKSPACE} &&"
-                            CMD="${CMD} cd build &&"
-                            CMD="${CMD} find tests -name *.ta -type f | xargs -I {} cp {} /lib/optee_armtz &&"
-                            CMD="${CMD} chmod 0644 /lib/optee_armtz/* &&"
-                            CMD="${CMD} ctest --output-on-failure\""
+                            CMD="\${CMD} mkdir -p ${WORKSPACE} &&"
+                            CMD="\${CMD} mount -t 9p -o trans=virtio sh0 ${WORKSPACE} -oversion=9p2000.L &&"
+                            CMD="\${CMD} cd ${WORKSPACE} &&"
+                            CMD="\${CMD} cd build &&"
+                            CMD="\${CMD} find tests -name *.ta -type f | xargs -I {} cp {} /lib/optee_armtz &&"
+                            CMD="\${CMD} chmod 0644 /lib/optee_armtz/* &&"
+                            CMD="\${CMD} ctest --output-on-failure\""
 
-                            sshpass -p runner ssh runner@localhost -p 5555 "${CMD}"
-                            EXIT_CODE=$?
+                            sshpass -p runner ssh runner@localhost -p 5555 "\${CMD}"
+                            EXIT_CODE=\$?
 
                             echo "Linux Logs"
                             echo "========================================"
@@ -148,7 +148,7 @@ def AArch64GNUTest(String version, String build_type) {
                             echo "========================================"
                             cat tee.log
 
-                            exit $EXIT_CODE
+                            exit \$EXIT_CODE
                             """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "cross", task, "--cap-add=SYS_PTRACE")
             }
