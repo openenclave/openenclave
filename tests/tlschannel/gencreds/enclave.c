@@ -5,8 +5,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
-#include "oegencreds.h"
-#include "oegencreds_t.h"
+#include "gencreds.h"
+#include "gencreds_t.h"
 
 void* _clone(const void* p, size_t n)
 {
@@ -20,7 +20,7 @@ void* _clone(const void* p, size_t n)
     return clone;
 }
 
-int oegencreds_ecall(
+int gencreds_ecall(
     uint8_t** cert_out,
     size_t* cert_size_out,
     uint8_t** private_key_out,
@@ -44,7 +44,7 @@ int oegencreds_ecall(
             &private_key,
             &private_key_size) != 0)
     {
-        fprintf(stderr, "oegencreds() failed\n");
+        fprintf(stderr, "gencreds() failed\n");
         goto done;
     }
 

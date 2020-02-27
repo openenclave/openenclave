@@ -5,5 +5,10 @@
 root=/home/mike/openenclave/build/tests/tlschannel
 cert=${root}/gencreds/cert.der
 private_key=${root}/gencreds/private_key.pem
+savedir="$(pwd)"
+
+cd "${root}/gencreds" || exit 1
+./oegencreds
+cd "${savedir}" || exit 1
 
 ${root}/tlscli ${cert} ${private_key}

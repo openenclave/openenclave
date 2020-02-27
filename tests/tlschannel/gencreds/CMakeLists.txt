@@ -7,16 +7,16 @@
 ##
 ##==============================================================================
 
-set (EDL_FILE oegencreds.edl)
+set (EDL_FILE gencreds.edl)
 
 add_custom_command(
-    OUTPUT oegencreds_u.h oegencreds_u.c
+    OUTPUT gencreds_u.h gencreds_u.c
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r
         --untrusted ${EDL_FILE}
         --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(oegencreds main.c oegencreds_u.c)
+add_executable(oegencreds main.c gencreds_u.c)
 
 target_include_directories(oegencreds PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -28,22 +28,22 @@ target_link_libraries(oegencreds oehostapp)
 ##
 ##==============================================================================
 
-set (EDL_FILE oegencreds.edl)
+set (EDL_FILE gencreds.edl)
 
 add_custom_command(
-    OUTPUT oegencreds_t.h oegencreds_t.c
+    OUTPUT gencreds_t.h gencreds_t.c
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r
         --trusted ${EDL_FILE}
         --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(TARGET oegencreds_enclave
+add_enclave(TARGET gencreds_enclave
     UUID ef28dc39-208e-4b41-804b-408247d7faba
-    SOURCES enclave.c oegencreds.c ${CMAKE_CURRENT_BINARY_DIR}/oegencreds_t.c)
+    SOURCES enclave.c gencreds.c ${CMAKE_CURRENT_BINARY_DIR}/gencreds_t.c)
 
-target_include_directories(oegencreds_enclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(gencreds_enclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(oegencreds_enclave oeenclave oelibc oesyscall oecore)
+target_link_libraries(gencreds_enclave oeenclave oelibc oesyscall oecore)
 
 ##==============================================================================
 ##

@@ -6,7 +6,7 @@
 #include <openenclave/host.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "oegencreds_u.h"
+#include "gencreds_u.h"
 
 static int _write_file(
     const char* path,
@@ -72,12 +72,12 @@ int main(int argc, const char* argv[])
             exit(1);
         }
 
-        snprintf(path, sizeof(path), "%s/oegencreds_enclave", root);
+        snprintf(path, sizeof(path), "%s/gencreds_enclave", root);
 
         free(clone);
     }
 
-    r = oe_create_oegencreds_enclave(path, type, flags, NULL, 0, &enclave);
+    r = oe_create_gencreds_enclave(path, type, flags, NULL, 0, &enclave);
     if (r != OE_OK)
     {
         fprintf(stderr, "%s: failed create enclave: %s\n", argv[0], argv[1]);
@@ -91,7 +91,7 @@ int main(int argc, const char* argv[])
         uint8_t* private_key = NULL;
         size_t private_key_size;
 
-        r = oegencreds_ecall(
+        r = gencreds_ecall(
             enclave,
             &retval,
             &cert,

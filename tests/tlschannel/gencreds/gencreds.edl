@@ -5,7 +5,7 @@ enclave
 {
     trusted
     {
-        public int oegencreds_ecall(
+        public int gencreds_ecall(
             [user_check] uint8_t** cert_out,
             [out, count=1] size_t* cert_size_out,
             [user_check] uint8_t** private_key_out,
