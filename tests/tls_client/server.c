@@ -1,20 +1,23 @@
-#include "tls_server.h"
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+#include "tlssrv.h"
 
 int main()
 {
     int retval;
-    tls_server_t* server = NULL;
+    tlssrv_t* server = NULL;
     tls_error_t error;
     const char* ip = "127.0.0.1";
     const char* port = "12345";
 
-    if ((retval = tls_server_create(ip, port, &server, &error)) != 0)
+    if ((retval = tlssrv_create(ip, port, &server, &error)) != 0)
     {
         tls_dump_error(&error);
         exit(1);
     }
 
-    if ((retval = tls_server_listen(server, &error)) != 0)
+    if ((retval = tlssrv_listen(server, &error)) != 0)
     {
         tls_dump_error(&error);
         exit(1);

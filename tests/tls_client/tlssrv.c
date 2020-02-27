@@ -25,7 +25,7 @@
 
 #include "common.h"
 #include "gencert.h"
-#include "tls_server.h"
+#include "tlssrv.h"
 
 #if defined(INSIDE_ENCLAVE)
 #include <openenclave/enclave.h>
@@ -450,16 +450,16 @@ done:
     return ret;
 }
 
-int tls_server_create(
+int tlssrv_create(
     const char* server_name,
     const char* server_port,
-    tls_server_t** server_out,
+    tlssrv_t** server_out,
     tls_error_t* error)
 {
     int ret = -1;
     int retval;
-    tls_server_t* server = NULL;
-    const char* pers = "tls_server";
+    tlssrv_t* server = NULL;
+    const char* pers = "tlssrv";
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_ssl_config conf;
@@ -500,7 +500,7 @@ int tls_server_create(
 
     /* Initialize the server structure */
     {
-        if (!(server = calloc(1, sizeof(tls_server_t))))
+        if (!(server = calloc(1, sizeof(tlssrv_t))))
         {
             tls_set_error(error, "calloc() failed", "out of memory");
             goto done;
@@ -558,7 +558,7 @@ done:
     return ret;
 }
 
-int tls_server_listen(tls_server_t* server, tls_error_t* error)
+int tlssrv_listen(tlssrv_t* server, tls_error_t* error)
 {
     int ret = -1;
     int retval;
@@ -617,81 +617,82 @@ int tls_server_listen(tls_server_t* server, tls_error_t* error)
 
     for (;;)
     {
-        retval = mbedtls_ssl_read(&server->ssl, buf, sizeof(buf));
-
-        if (retval == MBEDTLS_ERR_SSL_WANT_READ ||
-            retval == MBEDTLS_ERR_SSL_WANT_WRITE)
+        for (;;)
         {
-            continue;
-        }
+            retval = mbedtls_ssl_read(&server->ssl, buf, sizeof(buf));
 
-        if (retval <= 0)
-        {
-            switch (retval)
+            if (retval == MBEDTLS_ERR_SSL_WANT_READ ||
+                retval == MBEDTLS_ERR_SSL_WANT_WRITE)
             {
-                case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
-                {
-                    printf("connection was closed gracefully\n");
-                    tls_set_mbedtls_error(error, retval, "closed");
-                    goto done;
-                }
-
-                case MBEDTLS_ERR_NET_CONN_RESET:
-                {
-                    printf("connection was reset by peer\n");
-                    tls_set_mbedtls_error(error, retval, "reset");
-                    goto done;
-                }
-
-                default:
-                {
-                    tls_set_mbedtls_error(error, retval, "read failed");
-                    goto done;
-                }
+                continue;
             }
 
+            if (retval <= 0)
+            {
+                switch (retval)
+                {
+                    case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
+                    {
+                        printf("connection was closed gracefully\n");
+                        tls_set_mbedtls_error(error, retval, "closed");
+                        goto done;
+                    }
+
+                    case MBEDTLS_ERR_NET_CONN_RESET:
+                    {
+                        printf("connection was reset by peer\n");
+                        tls_set_mbedtls_error(error, retval, "reset");
+                        goto done;
+                    }
+
+                    default:
+                    {
+                        tls_set_mbedtls_error(error, retval, "read failed");
+                        goto done;
+                    }
+                }
+
+                break;
+            }
+
+            bytes_read = (size_t)retval;
+            break;
+
+            printf("server.read.retval=%d\n", retval);
+        }
+
+        printf("buf{%s}\n", buf);
+
+        for (;;)
+        {
+            printf("BEFORE.WRITE: buf=%p bytes_read=%zu\n", buf, bytes_read);
+            retval = mbedtls_ssl_write(&server->ssl, buf, bytes_read);
+            printf("AFTER.WRITE: retval=%d\n", retval);
+
+            if (retval == MBEDTLS_ERR_SSL_WANT_READ ||
+                retval == MBEDTLS_ERR_SSL_WANT_WRITE)
+            {
+                continue;
+            }
+
+            if (retval == MBEDTLS_ERR_NET_CONN_RESET)
+            {
+                printf("peer closed the connection\n");
+                tls_set_mbedtls_error(error, retval, "peer closed");
+                goto done;
+            }
+
+            if (retval < 0)
+            {
+                tls_set_mbedtls_error(error, retval, "error");
+                goto done;
+            }
+
+            printf("write: %d\n", retval);
             break;
         }
-
-        bytes_read = (size_t)retval;
-        break;
-
-        printf("server.read.retval=%d\n", retval);
+        printf("bytes_written=%d\n", retval);
     }
-
-    printf("buf{%s}\n", buf);
-
-    for (;;)
-    {
-        printf("BEFORE.WRITE: buf=%p bytes_read=%zu\n", buf, bytes_read);
-        retval = mbedtls_ssl_write(&server->ssl, buf, bytes_read);
-        printf("AFTER.WRITE: retval=%d\n", retval);
-
-        if (retval == MBEDTLS_ERR_SSL_WANT_READ ||
-            retval == MBEDTLS_ERR_SSL_WANT_WRITE)
-        {
-            continue;
-        }
-
-        if (retval == MBEDTLS_ERR_NET_CONN_RESET)
-        {
-            printf("peer closed the connection\n");
-            tls_set_mbedtls_error(error, retval, "peer closed");
-            goto done;
-        }
-
-        if (retval < 0)
-        {
-            tls_set_mbedtls_error(error, retval, "error");
-            goto done;
-        }
-
-        printf("write: %d\n", retval);
-        break;
-    }
-
-    printf("bytes_written=%d\n", retval);
-    sleep(10);
 
     for (;;)
     {

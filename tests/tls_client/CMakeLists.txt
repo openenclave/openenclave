@@ -3,31 +3,31 @@
 
 ##==============================================================================
 ##
-## tls_client
+## tlscli
 ##
 ##==============================================================================
 
-add_executable(tls_client tls_client.c common.c client.c)
+add_executable(tlscli tlscli.c common.c client.c)
 
-add_test(NAME tls_client COMMAND tls_client)
+add_test(NAME tlscli COMMAND tlscli)
 
 target_link_libraries(
-    tls_client
+    tlscli
      -L/usr/lib/x86_64-linux-gnu -lmbedtls -lmbedx509 -lmbedcrypto)
 
 ##==============================================================================
 ##
-## tls_server
+## tlssrv
 ##
 ##==============================================================================
 
-add_executable(tls_server tls_server.c server.c common.c)
+add_executable(tlssrv tlssrv.c server.c common.c)
 
-target_include_directories(tls_server PRIVATE
+target_include_directories(tlssrv PRIVATE
     ${CMAKE_SOURCE_DIR}/include)
 
 target_link_libraries(
-    tls_server
+    tlssrv
     -L/usr/lib/x86_64-linux-gnu -lmbedtls -lmbedx509 -lmbedcrypto)
 
-add_test(NAME tls_server COMMAND tls_server)
+add_test(NAME tlssrv COMMAND tlssrv)
