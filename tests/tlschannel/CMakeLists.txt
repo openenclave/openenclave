@@ -3,17 +3,22 @@
 
 ##==============================================================================
 ##
+## gencert
+##
+##==============================================================================
+
+add_subdirectory(gencreds)
+
+##==============================================================================
+##
 ## tlscli
 ##
 ##==============================================================================
 
-add_executable(tlscli tlscli.c common.c client.c)
+add_executable(tlscli tlscli.c client.c)
 
-add_test(NAME tlscli COMMAND tlscli)
-
-target_link_libraries(
-    tlscli
-     -L/usr/lib/x86_64-linux-gnu -lmbedtls -lmbedx509 -lmbedcrypto)
+target_link_libraries(tlscli
+    -L/usr/lib/x86_64-linux-gnu -lmbedtls -lmbedx509 -lmbedcrypto)
 
 ##==============================================================================
 ##
@@ -21,13 +26,10 @@ target_link_libraries(
 ##
 ##==============================================================================
 
-add_executable(tlssrv tlssrv.c server.c common.c)
+add_executable(tlssrv tlssrv.c server.c)
 
 target_include_directories(tlssrv PRIVATE
     ${CMAKE_SOURCE_DIR}/include)
 
-target_link_libraries(
-    tlssrv
+target_link_libraries(tlssrv
     -L/usr/lib/x86_64-linux-gnu -lmbedtls -lmbedx509 -lmbedcrypto)
-
-add_test(NAME tlssrv COMMAND tlssrv)

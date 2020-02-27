@@ -1,7 +1,11 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
 #ifndef _GENCERT_H
 #define _GENCERT_H
 
 #include <openenclave/enclave.h>
+#include <stdint.h>
 
 oe_result_t oe_generate_cert_and_private_key(
     const char* common_name,

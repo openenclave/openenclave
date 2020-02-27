@@ -7,20 +7,20 @@
 ##
 ##==============================================================================
 
-set (EDL_FILE oegencert.edl)
+set (EDL_FILE oegencreds.edl)
 
 add_custom_command(
-    OUTPUT oegencert_u.h oegencert_u.c
+    OUTPUT oegencreds_u.h oegencreds_u.c
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r
         --untrusted ${EDL_FILE}
         --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(oegencert main.c oegencert_u.c)
+add_executable(oegencreds main.c oegencreds_u.c)
 
-target_include_directories(oegencert PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(oegencreds PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(oegencert oehostapp)
+target_link_libraries(oegencreds oehostapp)
 
 ##==============================================================================
 ##
@@ -28,23 +28,22 @@ target_link_libraries(oegencert oehostapp)
 ##
 ##==============================================================================
 
-set (EDL_FILE oegencert.edl)
+set (EDL_FILE oegencreds.edl)
 
 add_custom_command(
-    OUTPUT oegencert_t.h oegencert_t.c
+    OUTPUT oegencreds_t.h oegencreds_t.c
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r
         --trusted ${EDL_FILE}
         --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(TARGET oegencert_enclave
+add_enclave(TARGET oegencreds_enclave
     UUID ef28dc39-208e-4b41-804b-408247d7faba
-    SOURCES enclave.c oegencert.c ${CMAKE_CURRENT_BINARY_DIR}/oegencert_t.c)
+    SOURCES enclave.c oegencreds.c ${CMAKE_CURRENT_BINARY_DIR}/oegencreds_t.c)
 
-target_include_directories(oegencert_enclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(oegencreds_enclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(oegencert_enclave
-    oeenclave oelibc oesyscall oehostfs oecore)
+target_link_libraries(oegencreds_enclave oeenclave oelibc oesyscall oecore)
 
 ##==============================================================================
 ##
@@ -52,4 +51,4 @@ target_link_libraries(oegencert_enclave
 ##
 ##==============================================================================
 
-add_test(NAME oegencert COMMAND oegencert)
+add_test(NAME oegencreds COMMAND oegencreds)

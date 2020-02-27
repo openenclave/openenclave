@@ -10,19 +10,23 @@ static void _err(const tlscli_err_t* err)
     exit(1);
 }
 
-int main()
+int main(int argc, const char* argv[])
 {
     int r;
     tlscli_t* cli = NULL;
     tlscli_err_t err;
-    const char CRT_PATH[] = "/tmp/oe_attested_cert.der";
-    const char PK_PATH[] = "/tmp/oe_private_key.pem";
+
+    if (argc != 3)
+    {
+        fprintf(stderr, "Usage: %s cert-der private-key-pem\n", argv[0]);
+        exit(1);
+    }
 
     if ((r = tlscli_startup(&err)) != 0)
         _err(&err);
 
     if ((r = tlscli_connect(
-             true, "127.0.0.1", "12345", CRT_PATH, PK_PATH, &cli, &err)) != 0)
+             true, "127.0.0.1", "12345", argv[1], argv[2], &cli, &err)) != 0)
     {
         _err(&err);
     }

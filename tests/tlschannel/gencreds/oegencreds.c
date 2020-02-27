@@ -1,13 +1,13 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include "oegencreds.h"
 #include <mbedtls/x509.h>
 #include <mbedtls/x509_crt.h>
 #include <openenclave/enclave.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/mount.h>
-#include "oegencert_t.h"
 
 static oe_result_t _generate_key_pair(
     uint8_t** public_key_out,
@@ -72,10 +72,10 @@ static oe_result_t _generate_key_pair(
 done:
 
     if (private_key)
-        oe_free_key(private_key, private_key_size, NULL, 0);
+        free(private_key);
 
     if (public_key)
-        oe_free_key(public_key, public_key_size, NULL, 0);
+        free(public_key);
 
     return result;
 }
@@ -146,7 +146,11 @@ done:
     return result;
 }
 
-int oegencert(void)
+int oe_generated_attested_credentials(
+    uint8_t** cert_out,
+    size_t* cert_size_out,
+    uint8_t** private_key_out,
+    size_t* private_key_size_out)
 {
     int ret = -1;
     uint8_t* cert = NULL;
@@ -154,8 +158,24 @@ int oegencert(void)
     uint8_t* private_key = NULL;
     size_t private_key_size;
     FILE* stream = NULL;
-    const char cert_path[] = "/tmp/oe_attested_cert.der";
-    const char private_key_path[] = "/tmp/oe_private_key.pem";
+
+    if (cert_out)
+        *cert_out = NULL;
+
+    if (cert_size_out)
+        *cert_size_out = 0;
+
+    if (private_key_out)
+        *private_key_out = NULL;
+
+    if (private_key_size_out)
+        *private_key_size_out = 0;
+
+    if (!cert_out || !cert_size_out || !private_key_out ||
+        !private_key_size_out)
+    {
+        goto done;
+    }
 
     /* Generate the attested certificate and private key */
     if (_generate_cert_and_private_key(
@@ -189,9 +209,6 @@ int oegencert(void)
         mbedtls_pk_context pk;
         mbedtls_pk_init(&pk);
 
-        printf("KEY{%s}\n", private_key);
-        printf("KEY.SIZE{%zu}\n", private_key_size);
-
         if (mbedtls_pk_parse_key(&pk, private_key, private_key_size, NULL, 0) !=
             0)
         {
@@ -203,51 +220,19 @@ int oegencert(void)
         mbedtls_pk_free(&pk);
     }
 
-    /* Write the certificate file */
-    {
-        if (!(stream = fopen(cert_path, "w")))
-        {
-            fprintf(stderr, "failed to open: %s\n", cert_path);
-            goto done;
-        }
-
-        if (fwrite(cert, 1, cert_size, stream) != cert_size)
-        {
-            fprintf(stderr, "failed to write: %s\n", cert_path);
-            goto done;
-        }
-
-        fclose(stream);
-        stream = NULL;
-
-        printf("Created %s\n", cert_path);
-    }
-
-    /* Write the private key file */
-    {
-        if (!(stream = fopen(private_key_path, "w")))
-        {
-            fprintf(stderr, "failed to open: %s\n", private_key_path);
-            goto done;
-        }
-
-        size_t n = private_key_size;
-
-        if (fwrite(private_key, 1, n, stream) != n)
-        {
-            fprintf(stderr, "failed to write: %s\n", private_key_path);
-            goto done;
-        }
-
-        fclose(stream);
-        stream = NULL;
-
-        printf("Created %s\n", private_key_path);
-    }
+    *cert_out = cert;
+    cert = NULL;
+    *cert_size_out = cert_size;
+    *private_key_out = private_key;
+    private_key = NULL;
+    *private_key_size_out = private_key_size;
 
     ret = 0;
 
 done:
+
+    if (cert)
+        oe_free_key(cert, cert_size, NULL, 0);
 
     if (private_key)
         oe_free_key(private_key, private_key_size, NULL, 0);

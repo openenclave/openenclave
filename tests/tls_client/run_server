@@ -1,5 +1,0 @@
-#!/bin/bash
-# Copyright (c) Open Enclave SDK contributors.
-# Licensed under the MIT License.
-
-/home/mike/openenclave/build/tests/tls_client/tlssrv

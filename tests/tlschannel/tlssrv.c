@@ -24,7 +24,6 @@
 #include <mbedtls/ssl_cache.h>
 #include <mbedtls/x509.h>
 
-#include "common.h"
 #include "gencert.h"
 #include "tlssrv.h"
 

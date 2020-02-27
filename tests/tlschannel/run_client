@@ -1,0 +1,9 @@
+#!/bin/bash
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+root=/home/mike/openenclave/build/tests/tlschannel
+cert=${root}/gencreds/cert.der
+private_key=${root}/gencreds/private_key.pem
+
+${root}/tlscli ${cert} ${private_key}
