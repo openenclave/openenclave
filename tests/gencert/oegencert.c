@@ -233,10 +233,6 @@ int oegencert(void)
 
         size_t n = private_key_size;
 
-        /* Don't write the null terminator */
-        if (n && private_key[n - 1] == '\0')
-            n--;
-
         if (fwrite(private_key, 1, n, stream) != n)
         {
             fprintf(stderr, "failed to write: %s\n", private_key_path);

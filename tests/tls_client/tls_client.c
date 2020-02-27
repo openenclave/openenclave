@@ -198,8 +198,13 @@ static int _load_cert_and_private_key(
         goto done;
     }
 
+#if 0
     cert_data = (uint8_t*)_test_cli_crt_ec_der;
     cert_size = _test_cli_crt_ec_der_len;
+#else
+    (void)_test_cli_crt_ec_der;
+    (void)_test_cli_crt_ec_der_len;
+#endif
 
     /* Parse the certificate */
     if ((retval = mbedtls_x509_crt_parse_der(crt, cert_data, cert_size)) != 0)
@@ -215,8 +220,13 @@ static int _load_cert_and_private_key(
         goto done;
     }
 
+#if 0
     private_key_data = (uint8_t*)_test_cli_key_ec_pem;
     private_key_size = _test_cli_key_ec_pem_len;
+#else
+    (void)_test_cli_key_ec_pem;
+    (void)_test_cli_key_ec_pem_len;
+#endif
 
     /* Parse the private key */
     if ((retval = mbedtls_pk_parse_key(
@@ -230,7 +240,7 @@ static int _load_cert_and_private_key(
 
 done:
 
-#if 0
+#if 1
     if (cert_data)
         free(cert_data);
 
