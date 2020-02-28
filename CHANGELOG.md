@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 ------------
+### Fixed
+- Fix #2607 so that libmbedcrypto now includes mbedtls_hkdf().
 
 [v0.8.1][v0.8.1_log] - 2020-02-07
 ---------------------
