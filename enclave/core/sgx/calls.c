@@ -165,12 +165,6 @@ static oe_result_t _oe_check_eeid()
         OE_SHA256 ext_mrenclave;
         oe_sha256_final(&hctx, &ext_mrenclave);
 
-        // char str_old[OE_SHA256_SIZE * 2 + 1], str_new[OE_SHA256_SIZE * 2 +
-        // 1]; oe_hex_string(str_old, OE_SHA256_SIZE * 2 + 1,
-        // eeid->sigstruct.enclavehash, OE_SHA256_SIZE); oe_host_printf(" | ***
-        // OLD: %s\n", str_old); oe_hex_string(str_new, OE_SHA256_SIZE * 2 + 1,
-        // th.buf, OE_SHA256_SIZE); oe_host_printf(" | *** NEW: %s\n", str_new);
-
         sgx_report_t sgx_report;
         OE_CHECK(sgx_create_report(NULL, 0, NULL, 0, &sgx_report));
 

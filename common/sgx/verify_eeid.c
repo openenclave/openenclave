@@ -126,11 +126,6 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
         return OE_OK; // Unsigned debug image is ok?
     else
     {
-        // OE_SHA256 mrsigner;
-        // oe_sha256_init(&hctx);
-        // oe_sha256_update(&hctx, sigstruct->modulus, OE_KEY_SIZE);
-        // oe_sha256_final(&hctx, &mrsigner);
-
         unsigned char buf[sizeof(sgx_sigstruct_t)];
         size_t n = 0;
 
