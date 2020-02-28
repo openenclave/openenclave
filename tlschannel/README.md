@@ -24,3 +24,15 @@ To build and run this sample type:
 ```
 make run
 ```
+
+The following files provide a client and server interface.
+
+```
+tlscli.h
+tlssrv.h
+```
+
+These interfaces simplify the creation of client-server applications, where
+the client is an ordinary Linux application and the server is an enclave
+application. See cli/cli.c and srv/srv.c for samples that use these
+interfaces.

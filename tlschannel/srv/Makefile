@@ -25,11 +25,11 @@ host:
 
 enclave:
 	oeedger8r --trusted tlssrv.edl
-	$(CC) -c $(ENCLAVE_CFLAGS) enclave.c
+	$(CC) -c $(ENCLAVE_CFLAGS) srv.c
 	$(CC) -c $(ENCLAVE_CFLAGS) tlssrv.c
 	$(CC) -c $(ENCLAVE_CFLAGS) tlssrv_t.c
 	$(CC) -c $(ENCLAVE_CFLAGS) ../common/gencreds.c
-	$(CC) -o tlssrv_enclave $(ENCLAVE_CFLAGS) enclave.o tlssrv.o tlssrv_t.o gencreds.o -lmbedtls $(ENCLAVE_LIBS)
+	$(CC) -o tlssrv_enclave $(ENCLAVE_CFLAGS) srv.o tlssrv.o tlssrv_t.o gencreds.o -lmbedtls $(ENCLAVE_LIBS)
 
 CLEAN += *.o
 CLEAN += tlssrv tlssrv_enclave
