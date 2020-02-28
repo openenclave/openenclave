@@ -15,3 +15,11 @@ all:
 
 clean:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NL) )
+	rm -f cert.der private_key.pem
+
+run: all
+	( ./gencreds/gencreds cert.der private_key.pem )
+	( ./srv/tlssrv & )
+	sleep 2
+	( ./cli/tlscli cert.der private_key.pem )
+	killall tlssrv
