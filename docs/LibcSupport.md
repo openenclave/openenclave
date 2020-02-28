@@ -9,7 +9,7 @@ errno.h | Yes | - |
 execinfo.h | Partial | **Supported functions:** backtrace(), backtrace_symbols(). <br> Enclaves must be compiled with `-fno-omit-frame-pointer` for accurate backtraces. |
 fenv.h | Yes | - |
 float.h | Yes | - |
-inttypes.h | Partial | **Unsupported functions:** imaxabs(), imaxdiv() |
+inttypes.h | Yes | - |
 iso646.h | Yes | - |
 limits.h | Yes | - |
 locale.h | Partial | Only basic support for C/POSIX locale |
@@ -24,7 +24,7 @@ stdbool.h | Yes | - |
 stddef.h | Yes | - |
 stdint.h | Yes | - |
 stdio.h | Partial | All I/O functions implicitly call out to untrusted host. <br> **Supported functions:** snprintf(), sscanf(),  _vfscanf()*_, vsnprintf(), vsscanf(), sprintf(), vsprintf(), puts(), putchar(), vprintf(), printf(), _fprintf()*_, _getc()*_, _ungetc()*_, _fwrite()*_, _fflush()*_, _fputs()*_, _fputc()*_ <br> _* Only has support for the streams stderr and stdout, and does not set ferror_ |
-stdlib.h | Partial | **Unsupported functions:** div(), ldiv(), lldiv() |
+stdlib.h | Yes | - |
 stdnoreturn.h | No | - |
 string.h | Partial | Only basic support for C/POSIX locale. |
 tgmath.h | Partial | **Unsupported functions:** fmal(), scalbn(), scalbnf(), scalbnl(), tgamma() |
