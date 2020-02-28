@@ -6,6 +6,6 @@
     "image_sku": "acc-windows-server-2016-datacenter",
     "vm_size": "Standard_DC2s",
     "ansible_group": "windows-agents",
-    "playbook_file_name": "oe-windows-acc-setup-no-driver.yml",
+    "playbook_file_name": "oe-windows-nonSGX-setup.yml",
     "dcap_testing_node": "false"
 }
