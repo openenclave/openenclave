@@ -14,7 +14,7 @@ def buildManagedImage(String os_type, String version) {
                 checkout scm
                 def managed_image_name_id
                 if (params.IMAGE_ID) {
-                    managed_image_name_id = param.IMAGE_ID
+                    managed_image_name_id = params.IMAGE_ID
                 } else {
                     managed_image_name_id = sh(script: "git rev-parse --short HEAD", returnStdout: true).tokenize().last()
                 }
