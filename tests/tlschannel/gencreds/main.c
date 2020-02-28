@@ -49,9 +49,9 @@ int main(int argc, const char* argv[])
     /* Disable logging. */
     setenv("OE_LOG_LEVEL", "NONE", 1);
 
-    if (argc != 1)
+    if (argc != 3)
     {
-        fprintf(stderr, "Usage: %s\n", argv[0]);
+        fprintf(stderr, "Usage: %s CERT PRIVATE_KEY\n", argv[0]);
         return 1;
     }
 
@@ -105,10 +105,11 @@ int main(int argc, const char* argv[])
             exit(1);
         }
 
+        /* Write the certificate file */
         {
-            char path[] = "cert.der";
+            const char* path = argv[1];
 
-            if (_write_file(path, cert, cert_size, false) != 0)
+            if (_write_file(argv[1], cert, cert_size, false) != 0)
             {
                 fprintf(stderr, "%s: failed to write %s\n", argv[0], path);
                 exit(1);
@@ -117,8 +118,9 @@ int main(int argc, const char* argv[])
             printf("created %s\n", path);
         }
 
+        /* Write the private key file */
         {
-            char path[] = "private_key.pem";
+            const char* path = argv[2];
 
             if (_write_file(path, private_key, private_key_size, false) != 0)
             {

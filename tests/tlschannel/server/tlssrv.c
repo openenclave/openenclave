@@ -24,7 +24,7 @@
 #include <mbedtls/ssl_cache.h>
 #include <mbedtls/x509.h>
 
-#include "gencreds/gencreds.h"
+#include "../common/gencreds.h"
 #include "tlssrv.h"
 
 #if defined(BUILD_ENCLAVE)

@@ -39,7 +39,10 @@ add_custom_command(
 
 add_enclave(TARGET gencreds_enclave
     UUID ef28dc39-208e-4b41-804b-408247d7faba
-    SOURCES enclave.c gencreds.c ${CMAKE_CURRENT_BINARY_DIR}/gencreds_t.c)
+    SOURCES
+        enclave.c
+        ../common/gencreds.c
+        ${CMAKE_CURRENT_BINARY_DIR}/gencreds_t.c)
 
 target_include_directories(gencreds_enclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -51,4 +54,7 @@ target_link_libraries(gencreds_enclave oeenclave oelibc oesyscall oecore)
 ##
 ##==============================================================================
 
-add_test(NAME oegencreds COMMAND oegencreds)
+set(CERT "${CMAKE_CURRENT_BINARY_DIR}/cert.der")
+set(PRIVATE_KEY "${CMAKE_CURRENT_BINARY_DIR}/private_key.pem")
+
+add_test(NAME oegencreds COMMAND oegencreds ${CERT} ${PRIVATE_KEY})

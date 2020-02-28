@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
-#include "gencreds.h"
+#include "../common/gencreds.h"
 #include "gencreds_t.h"
 
 void* _clone(const void* p, size_t n)
@@ -37,7 +37,7 @@ int gencreds_ecall(
     *private_key_out = NULL;
     *private_key_size_out = 0;
 
-    if (oe_generated_attested_credentials(
+    if (oe_generate_attested_credentials(
             "CN=Open Enclave SDK,O=OESDK TLS,C=US",
             &cert,
             &cert_size,

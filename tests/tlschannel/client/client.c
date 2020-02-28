@@ -22,6 +22,18 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
+    if (access(argv[1], R_OK) != 0)
+    {
+        fprintf(stdout, "%s: cannot open %s\n", argv[0], argv[1]);
+        exit(1);
+    }
+
+    if (access(argv[2], R_OK) != 0)
+    {
+        fprintf(stdout, "%s: cannot open %s\n", argv[0], argv[2]);
+        exit(1);
+    }
+
     if ((r = tlscli_startup(&err)) != 0)
         _err(&err);
 

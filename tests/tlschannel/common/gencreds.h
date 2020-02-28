@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-int oe_generated_attested_credentials(
+int oe_generate_attested_credentials(
     const char* common_name,
     uint8_t** cert_out,
     size_t* cert_size_out,
