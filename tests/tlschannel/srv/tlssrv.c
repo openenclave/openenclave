@@ -467,19 +467,19 @@ int tlssrv_create(
 
     if (!srv_out)
     {
-        _put_err(err, "invalid srv_out parameter", NULL);
+        _put_err(err, "invalid srv_out parameter");
         goto done;
     }
 
     if (!server_name)
     {
-        _put_err(err, "invalid server_name parameter", NULL);
+        _put_err(err, "invalid server_name parameter");
         goto done;
     }
 
     if (!server_port)
     {
-        _put_err(err, "invalid server_port parameter", NULL);
+        _put_err(err, "invalid server_port parameter");
         goto done;
     }
 
@@ -584,13 +584,13 @@ int tlssrv_accept(tlssrv_t* srv, mbedtls_net_context* conn, tlssrv_err_t* err)
 
     if (!srv)
     {
-        _put_err(err, "invalid srv parameter", NULL);
+        _put_err(err, "invalid srv parameter");
         goto done;
     }
 
     if (!conn)
     {
-        _put_err(err, "invalid conn parameter", NULL);
+        _put_err(err, "invalid conn parameter");
         goto done;
     }
 
