@@ -1,0 +1,14 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave
+{
+    trusted
+    {
+        public int gencreds_ecall(
+            [user_check] uint8_t** cert_out,
+            [out, count=1] size_t* cert_size_out,
+            [user_check] uint8_t** private_key_out,
+            [out, count=1] size_t* private_key_size_out);
+    };
+};
