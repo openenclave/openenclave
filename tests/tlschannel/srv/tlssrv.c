@@ -210,7 +210,7 @@ static oe_result_t _enclave_identity_verifier(
 {
     tlssrv_t* srv = (tlssrv_t*)arg;
 
-    if (!srv || !srv->verify_identity)
+    if (!identity || !srv || !srv->verify_identity)
         return OE_VERIFY_FAILED;
 
     return srv->verify_identity(
@@ -220,7 +220,8 @@ static oe_result_t _enclave_identity_verifier(
         identity->signer_id,
         OE_SIGNER_ID_SIZE,
         identity->product_id,
-        OE_PRODUCT_ID_SIZE);
+        OE_PRODUCT_ID_SIZE,
+        identity->security_version);
 }
 
 static int _cert_verify_callback(

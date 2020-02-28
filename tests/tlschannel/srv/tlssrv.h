@@ -8,9 +8,10 @@
 #include <mbedtls/ssl.h>
 #include <mbedtls/ssl_cache.h>
 
-#define TSLSRV_MRENCLAVE_SIZE 32
-#define TSLSRV_MRSIGNER_SIZE 32
-#define TSLSRV_PRODUCT_ID_SIZE 16
+typedef struct _tlssrv_err
+{
+    char buf[1024];
+} tlssrv_err_t;
 
 typedef oe_result_t (*verify_identity_function_t)(
     void* arg,
@@ -18,15 +19,9 @@ typedef oe_result_t (*verify_identity_function_t)(
     size_t mrenclave_size,
     const uint8_t* mrsigner,
     size_t mrsigner_size,
-    const uint8_t* product_id,
-    size_t product_id_size);
-
-typedef struct _tlssrv_err
-{
-    char buf[1024];
-} tlssrv_err_t;
-
-void tlssrv_put_err(const tlssrv_err_t* err);
+    const uint8_t* isvprodid,
+    size_t isvprodid_size,
+    uint64_t isvsvn);
 
 typedef struct _tlssrv
 {
@@ -39,6 +34,8 @@ typedef struct _tlssrv
     verify_identity_function_t verify_identity;
     void* verify_identity_arg;
 } tlssrv_t;
+
+void tlssrv_put_err(const tlssrv_err_t* err);
 
 int tlssrv_startup(tlssrv_err_t* err);
 

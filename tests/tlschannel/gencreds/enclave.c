@@ -77,8 +77,8 @@ done:
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
+    2,    /* ProductID */
+    3,    /* SecurityVersion */
     true, /* AllowDebug */
     1024, /* HeapPageCount */
     1024, /* StackPageCount */
