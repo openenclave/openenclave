@@ -42,6 +42,7 @@ add_enclave(TARGET tlssrv_enclave
     SOURCES
         enclave.c
         tlssrv.c
+        ../common/gencreds.c
         ${CMAKE_CURRENT_BINARY_DIR}/tlssrv_t.c)
 
 target_include_directories(tlssrv_enclave PRIVATE
