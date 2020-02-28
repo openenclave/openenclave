@@ -19,8 +19,8 @@ enclave
     trusted
     {
         public oe_result_t oe_init_context_switchless_ecall(
-	    [user_check] struct _host_worker_context* host_worker_contexts,
-	    uint64_t num_host_workers);
+            [user_check] struct _host_worker_context* host_worker_contexts,
+            uint64_t num_host_workers);
 
     };
 
@@ -28,6 +28,6 @@ enclave
     {
         // Wake up a host switchless ocall worker thread.
         void oe_wake_switchless_worker_ocall(
-	    [user_check] struct _host_worker_context* context);
+            [user_check] struct _host_worker_context* context);
     };
 };
