@@ -23,7 +23,6 @@ RUN echo "deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu/ xenial main re
     echo "deb [arch=amd64,i386] http://security.ubuntu.com/ubuntu/ xenial-security universe" >> /etc/apt/sources.list && \
     echo "deb [arch=amd64,i386] http://security.ubuntu.com/ubuntu/ xenial-security multiverse" >> /etc/apt/sources.list && \
     echo "deb [arch=arm64] http://ppa.launchpad.net/aziotsdklinux/ppa-azureiot/ubuntu xenial main" >> /etc/apt/sources.list && \
-    echo "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu xenial main" >> /etc/apt/sources.list && \
     echo "deb [arch=amd64] http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list && \
     echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main" >> /etc/apt/sources.list
 
@@ -35,9 +34,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AF1A6BA067E3641215D
     apt-get update && \
     apt-get install -y azure-iot-sdk-c-dev:arm64 libcurl3:arm64 \
         libcurl3-dev:arm64 libssl1.0.0:arm64 libssl-dev:arm64 clang-7 \
-        libssl-dev gdb libsgx-enclave-common libsgx-enclave-common-dev \
-        libprotobuf9v5 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client \
-        open-enclave && \
+        libssl-dev gdb libprotobuf9v5 && \
     rm -rf /var/lib/apt/lists/*
 
 RUN wget -nv https://cmake.org/files/v3.14/cmake-3.14.2-Linux-x86_64.sh && \
