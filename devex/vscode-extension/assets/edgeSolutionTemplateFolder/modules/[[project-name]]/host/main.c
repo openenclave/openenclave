@@ -128,6 +128,10 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT SendEnclaveResponse(IOTHUB_MODULE_CLIENT
                 }
                 else
                 {
+                    // The message instance's message handle and messageInstance
+                    // itself are destroyed and freed, respectively, in
+                    // SendConfirmationCallback once the message is sent, or if
+                    // it fails to send.
                     result = IOTHUBMESSAGE_ACCEPTED;
                 }
             }
