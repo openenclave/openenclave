@@ -55,7 +55,6 @@ oe_result_t oe_init_context_switchless_ecall(
 {
     oe_result_t result = OE_UNEXPECTED;
     uint64_t contexts_size = 0;
-    uint64_t threads_size = 0;
 
     if (!oe_atomic_compare_and_swap(
             (volatile int64_t*)&_switchless_init_in_progress,
@@ -71,7 +70,6 @@ oe_result_t oe_init_context_switchless_ecall(
     }
 
     contexts_size = sizeof(oe_host_worker_context_t) * num_host_workers;
-    threads_size = sizeof(oe_thread_t) * num_host_workers;
 
     // Ensure the contexts are outside of enclave
     if (!oe_is_outside_enclave(host_worker_contexts, contexts_size) ||
