@@ -16,7 +16,7 @@
 /* Override oe_call_enclave_function() calls with _call_enclave_function(). */
 #define oe_call_enclave_function _call_enclave_function
 
-// Obscure the generated creation function by renaming it.
+/* Obscure the generated creation function by renaming it. */
 #define oe_create_syscall_enclave __unused_oe_create_syscall_enclave
 
 /* The ocall edge routines will use this function to route ecalls. */
@@ -40,6 +40,8 @@ static oe_result_t _call_enclave_function(
         output_bytes_written);
 }
 
+/* Include the oeedger8r generated C file. The macros defined above customize
+ * the generated code for internal use. */
 #include "syscall_u.c"
 
 static oe_once_type _once = OE_H_ONCE_INITIALIZER;

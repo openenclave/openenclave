@@ -38,6 +38,8 @@ static oe_result_t _call_host_function(
         false /* non-switchless */);
 }
 
+/* Include the oeedger8r generated C file. The macros defined above customize
+ * the generated code for internal use. */
 #include "sgx_t.c"
 
 /* Registers the sgx ECALL function table. */
