@@ -1,12 +1,13 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include "../exception.h"
+#include "exception.h"
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <stdio.h>
 #include <windows.h>
 #include "../enclave.h"
+#include "../exception.h"
 
 /**
  * The only thing that causes issues with simulation mode on Windows is the FS
@@ -24,7 +25,7 @@ static LONG WINAPI _handle_simulation_mode_exception(
     struct _EXCEPTION_POINTERS* exception_pointers)
 {
     PCONTEXT context = exception_pointers->ContextRecord;
-    ThreadBinding* binding = GetThreadBinding();
+    oe_thread_binding_t* binding = oe_get_thread_binding();
 
     // Check if the thread is bound to a simulation mode enclave.
     if (binding != NULL)
@@ -85,6 +86,16 @@ _host_exception_handler(struct _EXCEPTION_POINTERS* exception_pointers)
 void oe_initialize_host_exception()
 {
     AddVectoredExceptionHandler(SET_AS_FIRST_HANDLER, _host_exception_handler);
+}
+
+static void _register_simulation_mode_handler(void)
+{
     AddVectoredExceptionHandler(
         SET_AS_FIRST_HANDLER, _handle_simulation_mode_exception);
+}
+
+void oe_prepend_simulation_mode_exception_handler()
+{
+    static oe_once_type _once;
+    oe_once(&_once, _register_simulation_mode_handler);
 }

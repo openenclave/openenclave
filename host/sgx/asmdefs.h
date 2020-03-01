@@ -14,8 +14,6 @@
 #define ENCLU_EENTER 2
 #define ENCLU_ERESUME 3
 #endif
-
-#define ThreadBinding_tcs 0
 #define OE_WORDSIZE 8
 #define OE_OCALL_CODE 3
 

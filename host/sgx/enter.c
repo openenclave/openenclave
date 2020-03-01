@@ -198,8 +198,8 @@ void oe_enter_sim(
         // This leads to access violations since features like stack-protector
         // and thread-local storage use the FS register; but its value has been
         // restored by Windows. To let the enclave chug along in simulation
-        // mode, we add signal handler that resets the FS register to the
-        // desired value.
+        // mode, we prepend a vectored exception handler that resets the FS
+        // register to the desired value. See host/sgx/create.c.
         oe_set_fs_register_base((void*)(enclave->addr + sgx_tcs->fsbase));
 
         // Define register bindings and initialize the registers.
