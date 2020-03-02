@@ -67,9 +67,11 @@ typedef struct _thread_binding
 
     /* Event signaling object for enclave threading implementation */
     EnclaveEvent event;
-} ThreadBinding;
 
-OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
+    /* This field allows the simulation mode exception handler to read enclave
+     * properties of the current thread binding */
+    struct _oe_enclave* enclave;
+} oe_thread_binding_t;
 
 /* Whether this binding is busy */
 #define _OE_THREAD_BUSY 0X1UL
@@ -78,7 +80,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
 #define _OE_THREAD_HANDLING_EXCEPTION 0X2UL
 
 /* Get thread data from thread-specific data (TSD) */
-ThreadBinding* GetThreadBinding(void);
+oe_thread_binding_t* oe_get_thread_binding(void);
 
 /**
  *  This structure must be kept in sync with the defines in
@@ -102,7 +104,7 @@ struct _oe_enclave
     uint64_t size;
 
     /* Array of thread bindings */
-    ThreadBinding bindings[OE_SGX_MAX_TCS];
+    oe_thread_binding_t bindings[OE_SGX_MAX_TCS];
     size_t num_bindings;
     oe_mutex lock;
 

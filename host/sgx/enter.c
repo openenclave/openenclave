@@ -212,8 +212,7 @@ void oe_enter_sim(
     OE_ALIGNED(16)
     uint64_t fx_state[64];
 
-    // Backup host GS and FS registers.
-    void* host_gs = oe_get_gs_register_base();
+    // Backup host FS register. Enclave does not use the GS register.
     void* host_fs = oe_get_fs_register_base();
     sgx_tcs_t* sgx_tcs = (sgx_tcs_t*)tcs;
     oe_ecall_context_t ecall_context = {{0}};
@@ -222,9 +221,16 @@ void oe_enter_sim(
 
     while (1)
     {
-        // Set GS and FS registers to values set by the ENCLU instruction upon
+        // Set FS registers to values set by the ENCLU instruction upon
         // entry to the enclave.
-        oe_set_gs_register_base((void*)(enclave->addr + sgx_tcs->gsbase));
+        // In Linux, the new value of FS persists until it is explicitly
+        // restored below. Windows however restores FS to the original value
+        // unexpectedly (say when the thread is suspended/resumed).
+        // This leads to access violations since features like stack-protector
+        // and thread-local storage use the FS register; but its value has been
+        // restored by Windows. To let the enclave chug along in simulation
+        // mode, we prepend a vectored exception handler that resets the FS
+        // register to the desired value. See host/sgx/create.c.
         oe_set_fs_register_base((void*)(enclave->addr + sgx_tcs->fsbase));
 
         // Define register bindings and initialize the registers.
@@ -253,8 +259,7 @@ void oe_enter_sim(
         arg1 = rdi;
         arg2 = rsi;
 
-        // Restore GS and FS registers upon returning from the enclave.
-        oe_set_gs_register_base(host_gs);
+        // Restore FS register upon returning from the enclave.
         oe_set_fs_register_base(host_fs);
 
         // Make an OCALL if needed.

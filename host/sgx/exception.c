@@ -28,7 +28,7 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
     {
         // Check if the enclave exception happens inside the first pass
         // exception handler.
-        ThreadBinding* thread_data = GetThreadBinding();
+        oe_thread_binding_t* thread_data = oe_get_thread_binding();
         if (thread_data->flags & _OE_THREAD_HANDLING_EXCEPTION)
         {
             abort();

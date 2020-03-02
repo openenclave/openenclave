@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.8.1][v0.8.1_log] - 2020-02-07
 ---------------------
 
+### Added
+- Support for Simulation Mode on Windows.
+
 ### Fixed 
 - Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523. 
 

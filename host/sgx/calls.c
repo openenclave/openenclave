@@ -40,58 +40,41 @@
 **
 ** _set_thread_binding()
 **
-**     Store the thread data in the GS segment register. Note that the GS
-**     register is unused on X86-64 on Linux, unlike the FS register that is
-**     used by the pthread implementation.
-**
-**     The OE_AEP() function (aep.S) uses the GS segment register to retrieve
-**     the ThreadBinding.tcs field.
+**     Store the enclave/tcs binding for the current thread in thread specific
+**     storage.
 **
 **==============================================================================
 */
 
-#define USE_TLS_FOR_THREADING_BINDING
-
-#if defined(USE_TLS_FOR_THREADING_BINDING)
 static oe_once_type _thread_binding_once;
 static oe_thread_key _thread_binding_key;
-#endif
 
-#if defined(USE_TLS_FOR_THREADING_BINDING)
 static void _create_thread_binding_key(void)
 {
     oe_thread_key_create(&_thread_binding_key);
 }
-#endif
 
-static void _set_thread_binding(ThreadBinding* binding)
+static void _set_thread_binding(oe_thread_binding_t* binding)
 {
-#if defined(USE_TLS_FOR_THREADING_BINDING)
     oe_once(&_thread_binding_once, _create_thread_binding_key);
     oe_thread_setspecific(_thread_binding_key, binding);
-#else
-    return oe_set_gs_register_base(binding);
-#endif
 }
 
 /*
 **==============================================================================
 **
-** GetThreadBinding()
+** oe_get_thread_binding()
 **
-**     Retrieve the a pointer to the ThreadBinding from the GS segment register.
+**     Retrieve the a pointer to the oe_get_thread_binding from thread specific
+**     storage.
 **
 **==============================================================================
 */
 
-ThreadBinding* GetThreadBinding()
+oe_thread_binding_t* oe_get_thread_binding()
 {
-#if defined(USE_TLS_FOR_THREADING_BINDING)
     oe_once(&_thread_binding_once, _create_thread_binding_key);
-    return (ThreadBinding*)oe_thread_getspecific(_thread_binding_key);
-#else
-    return (ThreadBinding*)oe_get_gs_register_base();
-#endif
+    return (oe_thread_binding_t*)oe_thread_getspecific(_thread_binding_key);
 }
 
 /*
@@ -461,7 +444,7 @@ int __oe_dispatch_ocall(
         // Handling an OCALL can make ecalls to other enclaves, which
         // may result in overriding the thread-binding. Therefore,
         // upon return from the OCALL, the binding must be restored.
-        ThreadBinding* binding = GetThreadBinding();
+        oe_thread_binding_t* binding = oe_get_thread_binding();
         uint64_t arg_out = 0;
 
         oe_result_t result = _handle_ocall(enclave, tcs, func, arg, &arg_out);
@@ -507,7 +490,7 @@ static void* _assign_tcs(oe_enclave_t* enclave)
         /* First attempt to find a busy td_t owned by this thread */
         for (i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadBinding* binding = &enclave->bindings[i];
+            oe_thread_binding_t* binding = &enclave->bindings[i];
 
             if ((binding->flags & _OE_THREAD_BUSY) && binding->thread == thread)
             {
@@ -527,18 +510,19 @@ static void* _assign_tcs(oe_enclave_t* enclave)
         {
             for (i = 0; i < enclave->num_bindings; i++)
             {
-                ThreadBinding* binding = &enclave->bindings[i];
+                oe_thread_binding_t* binding = &enclave->bindings[i];
 
                 if (!(binding->flags & _OE_THREAD_BUSY))
                 {
                     binding->flags |= _OE_THREAD_BUSY;
                     binding->thread = thread;
                     binding->count = 1;
+
                     tcs = (void*)binding->tcs;
 
                     /* Set into TSD so asynchronous exceptions can get it */
                     _set_thread_binding(binding);
-                    assert(GetThreadBinding() == binding);
+                    assert(oe_get_thread_binding() == binding);
 
                     /* Notify the debugger runtime */
                     if (enclave->debug && enclave->debug_enclave != NULL)
@@ -573,7 +557,7 @@ static void _release_tcs(oe_enclave_t* enclave, void* tcs)
     {
         for (i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadBinding* binding = &enclave->bindings[i];
+            oe_thread_binding_t* binding = &enclave->bindings[i];
 
             if ((binding->flags & _OE_THREAD_BUSY) &&
                 (void*)binding->tcs == tcs)
@@ -590,7 +574,7 @@ static void _release_tcs(oe_enclave_t* enclave, void* tcs)
                     binding->thread = 0;
                     memset(&binding->event, 0, sizeof(binding->event));
                     _set_thread_binding(NULL);
-                    assert(GetThreadBinding() == NULL);
+                    assert(oe_get_thread_binding() == NULL);
                 }
                 break;
             }
