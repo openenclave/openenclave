@@ -21,27 +21,6 @@ static uint64_t _time()
            ((uint64_t)ts.tv_nsec / _MSEC_TO_NSEC);
 }
 
-static void _sleep(uint64_t milliseconds)
-{
-    struct timespec ts;
-    const struct timespec* req = &ts;
-    struct timespec rem = {0, 0};
-
-    ts.tv_sec = (time_t)(milliseconds / _SEC_TO_MSEC);
-    ts.tv_nsec = (long)((milliseconds % _SEC_TO_MSEC) * _MSEC_TO_NSEC);
-
-    while (nanosleep(req, &rem) != 0 && errno == EINTR)
-    {
-        req = &rem;
-    }
-}
-
-void oe_handle_sleep(uint64_t arg_in)
-{
-    const uint64_t milliseconds = arg_in;
-    _sleep(milliseconds);
-}
-
 void oe_handle_get_time(uint64_t arg_in, uint64_t* arg_out)
 {
     OE_UNUSED(arg_in);

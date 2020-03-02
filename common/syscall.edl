@@ -21,6 +21,7 @@
 
 enclave {
 
+    include "openenclave/corelibc/time.h"
     include "openenclave/internal/syscall/netdb.h"
     include "openenclave/internal/syscall/sys/epoll.h"
     include "openenclave/internal/syscall/sys/poll.h"
@@ -407,5 +408,9 @@ enclave {
             [out, count=size] unsigned int* list)
             propagate_errno;
 
+        int oe_syscall_nanosleep_ocall(
+            [in] struct oe_timespec* req,
+            [in, out] struct oe_timespec* rem)
+            propagate_errno;
     };
 };

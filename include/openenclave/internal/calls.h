@@ -83,7 +83,6 @@ typedef enum _oe_func
     OE_OCALL_THREAD_WAIT,
     OE_OCALL_MALLOC,
     OE_OCALL_FREE,
-    OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
     /* Caution: always add new OCALL function numbers here */
     OE_OCALL_MAX, /* This value is never used */

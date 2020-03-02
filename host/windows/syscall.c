@@ -1502,3 +1502,41 @@ int oe_syscall_uname_ocall(struct oe_utsname* buf)
 done:
     return ret;
 }
+
+/*
+**==============================================================================
+**
+** nanosleep():
+**
+**==============================================================================
+*/
+
+int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
+{
+    uint64_t milliseconds = 0;
+
+    if (!req)
+    {
+        _set_errno(OE_EINVAL);
+        return -1;
+    }
+
+    milliseconds += req->tv_sec * 1000UL;
+    milliseconds += req->tv_nsec / 1000000UL;
+
+    while (milliseconds > UINT_MAX)
+    {
+        Sleep(UINT_MAX);
+        milliseconds -= UINT_MAX;
+    }
+
+    Sleep((DWORD)milliseconds);
+
+    // Windows sleep is not interruptable by hardware exception handling. Just
+    // wait the whole time and zero rem.
+    if (rem)
+        memset(rem, 0, sizeof(*rem));
+
+    _set_errno(0);
+    return 0;
+}

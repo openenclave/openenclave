@@ -6,20 +6,6 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/time.h>
 
-int oe_sleep_msec(uint64_t milliseconds)
-{
-    int ret = -1;
-
-    if (oe_ocall(OE_OCALL_SLEEP, milliseconds, NULL) != OE_OK)
-        goto done;
-
-    ret = 0;
-
-done:
-
-    return ret;
-}
-
 uint64_t oe_get_time(void)
 {
     uint64_t ret = (uint64_t)-1;
