@@ -476,12 +476,6 @@ TEE_Result TA_InvokeCommandEntryPoint(
             result = TEE_ERROR_BAD_STATE;
             break;
         }
-        case OE_ECALL_INIT_CONTEXT_SWITCHLESS:
-        {
-            /* TODO: initialize switchless calls */
-            result = TEE_ERROR_NOT_IMPLEMENTED;
-            break;
-        }
         default:
         {
             /* No function found with the number */

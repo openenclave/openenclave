@@ -22,6 +22,24 @@ add_custom_target(tee_trusted_edl
 
 ##==============================================================================
 ##
+## These rules generate the edge routines for the internal ECALLs/OCALLs used
+## by switchless calls.
+##
+##==============================================================================
+if (OE_SGX)
+    set(SWITCHLESS_EDL_FILE ${EDL_DIR}/sgx/switchless.edl)
+
+    add_custom_command(
+        OUTPUT switchless_t.h switchless_t.c switchless_args.h
+        DEPENDS ${SWITCHLESS_EDL_FILE} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --trusted ${SWITCHLESS_EDL_FILE})
+
+    add_custom_target(switchless_trusted_edl
+        DEPENDS switchless_t.h switchless_t.c switchless_args.h)
+endif()
+
+##==============================================================================
+##
 ## These rules generate the edge routines for the internal SGX-specific
 ## ECALLs/OCALLs used by liboehost/liboecore.
 ##
@@ -54,28 +72,30 @@ if (OE_SGX)
         sgx/backtrace.c
         sgx/calls.c
         sgx/cpuid.c
+        sgx/enter.S
         sgx/entropy.c
         sgx/exception.c
+        sgx/exit.S
+        sgx/getkey.S
         sgx/globals.c
         sgx/hostcalls.c
         sgx/init.c
-        sgx/sgx_t_wrapper.c
         sgx/keys.c
+        sgx/longjmp.S
         sgx/memory.c
         sgx/properties.c
         sgx/random_internal.c
         sgx/report.c
         sgx/sched_yield.c
+        sgx/setjmp.S
+        sgx/sgx_t_wrapper.c
         sgx/spinlock.c
+        sgx/switchless_t_wrapper.c
+        sgx/switchlesscalls.c
         sgx/td.c
         sgx/td_basic.c
         sgx/thread.c
-        sgx/tracee.c
-        sgx/enter.S
-        sgx/exit.S
-        sgx/getkey.S
-        sgx/longjmp.S
-        sgx/setjmp.S)
+        sgx/tracee.c)
 
     # Functions in td_basic.c will change the status of td and may trigger
     # stack check fail, thus it is necessary to turn off stack check.
@@ -151,7 +171,6 @@ add_library(oecore STATIC
     string.c
     strtok_r.c
     strtoul.c
-    switchlesscalls.c
     tee_t_wrapper.c
     time.c
     tracee.c
@@ -171,7 +190,7 @@ maybe_build_using_clangw(oecore)
 
 add_dependencies(oecore tee_trusted_edl)
 if(OE_SGX)
-    add_dependencies(oecore sgx_trusted_edl)
+    add_dependencies(oecore sgx_trusted_edl switchless_trusted_edl)
 endif()
 target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

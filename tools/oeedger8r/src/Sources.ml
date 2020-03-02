@@ -582,7 +582,7 @@ let get_call_user_function (fd : func_decl) =
 let get_ecall_function get_deepcopy (tf : trusted_func) =
   let fd = tf.tf_fdecl in
   [
-    sprintf "void ecall_%s(" fd.fname;
+    sprintf "static void ecall_%s(" fd.fname;
     "    uint8_t* input_buffer,";
     "    size_t input_buffer_size,";
     "    uint8_t* output_buffer,";
@@ -855,7 +855,7 @@ let get_host_ecall_wrapper get_deepcopy enclave_name (tf : trusted_func) =
 let get_ocall_function get_deepcopy (uf : untrusted_func) =
   let fd = uf.uf_fdecl in
   [
-    sprintf "void ocall_%s(" fd.fname;
+    sprintf "static void ocall_%s(" fd.fname;
     "    uint8_t* input_buffer,";
     "    size_t input_buffer_size,";
     "    uint8_t* output_buffer,";

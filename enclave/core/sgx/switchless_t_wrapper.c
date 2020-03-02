@@ -12,8 +12,8 @@
 #include <openenclave/internal/thread.h>
 
 /* Rename the global ecalls table. */
-#define __oe_ecalls_table __oe_tee_ecalls_table
-#define __oe_ecalls_table_size __oe_tee_ecalls_table_size
+#define __oe_ecalls_table __oe_switchless_ecalls_table
+#define __oe_ecalls_table_size __oe_switchless_ecalls_table_size
 
 /* Override oe_call_host_function() calls with _call_host_function(). */
 #define oe_call_host_function _call_host_function
@@ -28,7 +28,7 @@ static oe_result_t _call_host_function(
     size_t* output_bytes_written)
 {
     return oe_call_host_function_by_table_id(
-        OE_TEE_OCALL_FUNCTION_TABLE_ID,
+        OE_SWITCHLESS_OCALL_FUNCTION_TABLE_ID,
         function_id,
         input_buffer,
         input_buffer_size,
@@ -40,14 +40,14 @@ static oe_result_t _call_host_function(
 
 /* Include the oeedger8r generated C file. The macros defined above customize
  * the generated code for internal use. */
-#include "tee_t.c"
+#include "switchless_t.c"
 
-/* Registers the tee ECALL function table. */
-oe_result_t oe_register_tee_ecall_function_table(void)
+/* Registers the switchless ECALL function table. */
+oe_result_t oe_register_switchless_ecall_function_table(void)
 {
-    const uint64_t table_id = OE_TEE_ECALL_FUNCTION_TABLE_ID;
-    const oe_ecall_func_t* ecalls = __oe_tee_ecalls_table;
-    const size_t num_ecalls = __oe_tee_ecalls_table_size;
+    const uint64_t table_id = OE_SWITCHLESS_ECALL_FUNCTION_TABLE_ID;
+    const oe_ecall_func_t* ecalls = __oe_switchless_ecalls_table;
+    const size_t num_ecalls = __oe_switchless_ecalls_table_size;
 
     return oe_register_ecall_function_table(table_id, ecalls, num_ecalls);
 }

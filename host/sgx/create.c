@@ -74,6 +74,7 @@ static void _initialize_exception_handling(void)
 static void _initialize_enclave_host()
 {
     oe_once(&_enclave_init_once, _initialize_exception_handling);
+    oe_register_switchless_ocall_function_table();
     oe_register_tee_ocall_function_table();
     oe_register_sgx_ocall_function_table();
     oe_register_syscall_ocall_function_table();

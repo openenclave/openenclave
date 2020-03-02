@@ -7,6 +7,7 @@
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+#include "switchless_t.h"
 
 // The number of host thread workers. Initialized by host through ECALL
 static size_t _host_worker_count = 0;
@@ -41,21 +42,19 @@ bool oe_is_switchless_initialized()
 /*
 **==============================================================================
 **
-** oe_handle_init_switchless()
+** oe_init_context_switchless_ecall()
 **
-** Handle the OE_ECALL_INIT_CONTEXT_SWITCHLESS from host.
+** Initialize switchless calls infrastructure. This function call be called only
+** once.
 **
 **==============================================================================
 */
-oe_result_t oe_handle_init_switchless(uint64_t arg_in)
+oe_result_t oe_init_context_switchless_ecall(
+    oe_host_worker_context_t* host_worker_contexts,
+    uint64_t num_host_workers)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_switchless_call_manager_t* manager = NULL;
-    oe_switchless_call_manager_t safe_manager;
-    size_t contexts_size, threads_size;
-
-    if (arg_in == 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
+    uint64_t contexts_size = 0;
 
     if (!oe_atomic_compare_and_swap(
             (volatile int64_t*)&_switchless_init_in_progress,
@@ -70,20 +69,11 @@ oe_result_t oe_handle_init_switchless(uint64_t arg_in)
         OE_RAISE(OE_ALREADY_INITIALIZED);
     }
 
-    manager = (oe_switchless_call_manager_t*)arg_in;
-    safe_manager = *manager;
+    contexts_size = sizeof(oe_host_worker_context_t) * num_host_workers;
 
-    contexts_size =
-        sizeof(oe_host_worker_context_t) * safe_manager.num_host_workers;
-    threads_size = sizeof(oe_thread_t) * safe_manager.num_host_workers;
-
-    // Ensure the switchless manager and its arrays are outside of enclave
-    if (!oe_is_outside_enclave(manager, sizeof(oe_switchless_call_manager_t)) ||
-        !oe_is_outside_enclave(
-            safe_manager.host_worker_contexts, contexts_size) ||
-        !oe_is_outside_enclave(
-            safe_manager.host_worker_threads, threads_size) ||
-        safe_manager.num_host_workers == 0)
+    // Ensure the contexts are outside of enclave
+    if (!oe_is_outside_enclave(host_worker_contexts, contexts_size) ||
+        num_host_workers == 0)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
     }
@@ -91,9 +81,9 @@ oe_result_t oe_handle_init_switchless(uint64_t arg_in)
     /* lfence after checks. */
     oe_lfence();
 
-    // Copy the worker context array pointer and its size to avoid TOCTOU
-    _host_worker_count = safe_manager.num_host_workers;
-    _host_worker_contexts = safe_manager.host_worker_contexts;
+    // Stash host worker information in enclave memory.
+    _host_worker_count = num_host_workers;
+    _host_worker_contexts = host_worker_contexts;
 
     __atomic_store_n(&_is_switchless_initialized, true, __ATOMIC_SEQ_CST);
 
@@ -144,7 +134,7 @@ oe_result_t oe_post_switchless_ocall(oe_call_host_function_args_t* args)
                 // call. Determine if it needs to be woken up or not.
                 //
                 // If event is 0, it means that it has gone to sleep. Wake it by
-                // making an ocall (OE_OCALL_WAKE_HOST_WORKER).
+                // making an ocall (oe_wake_switchless_worker_ocall).
                 // Note: it is important to use an atomic cas operation to set
                 // the value to 1 before making the ocall. Setting the value to
                 // 1 prevents the host worker from simulataneously going to
@@ -170,10 +160,8 @@ oe_result_t oe_post_switchless_ocall(oe_call_host_function_args_t* args)
                     // The pevious value of the event was 0 which means that the
                     // worker was previously sleeping.
                     // Wake it via an ocall.
-                    oe_ocall(
-                        OE_OCALL_WAKE_HOST_WORKER,
-                        (uint64_t)&_host_worker_contexts[tries],
-                        NULL);
+                    oe_wake_switchless_worker_ocall(
+                        &_host_worker_contexts[tries]);
                 }
 
                 return OE_OK;
