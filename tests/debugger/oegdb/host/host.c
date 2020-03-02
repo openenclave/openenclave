@@ -53,6 +53,15 @@ int main(int argc, const char* argv[])
     assert_debugger_binary_contract_host_side();
     OE_TEST(enc_assert_debugger_binary_contract(enclave1) == OE_OK);
 
+    // The following magic variable is expected to be set by the debugger
+    // after performing a successful walk of the stitched stack.
+    volatile uint64_t main_magic = 0;
+    OE_TEST(enc_test_stack_stitching(enclave1) == OE_OK);
+    // This assertion will fail if the debugger was not able to successfully
+    // walk the stack starting at the ocall, back through the ecall and then
+    // back to main.
+    OE_TEST(main_magic == MAGIC_VALUE);
+
     result = oe_terminate_enclave(enclave1);
     OE_TEST(result == OE_OK);
 
@@ -61,4 +70,16 @@ int main(int argc, const char* argv[])
         simulation_mode ? "-simulation-mode" : "");
 
     return 0;
+}
+
+// Do not change the line number of this function. Debugger puts a breakpoint on
+// line 84, walks the ocall and ecall stacks and sets the values for the magic
+// variables. The assertions would fail if the debugger is not able to walk
+// the stack correctly.
+void host_function(void)
+{
+    volatile uint64_t magic_value = MAGIC_VALUE;
+    volatile uint64_t host_function_magic = 0;
+    // Debugger is expected to set the magic variable.
+    OE_TEST(host_function_magic == magic_value);
 }

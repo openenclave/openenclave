@@ -7,6 +7,7 @@
 #ifndef __ASSEMBLER__
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/context.h>
+#include <openenclave/internal/sgx/ecall_context.h>
 #include <stdint.h>
 #endif
 
@@ -68,7 +69,8 @@ int __oe_host_stack_bridge(
     uint64_t* arg1_out,
     uint64_t* arg2_out,
     void* tcs,
-    oe_enclave_t* enclave);
+    oe_enclave_t* enclave,
+    oe_ecall_context_t* ecall_context);
 #endif
 
 #ifndef __ASSEMBLER__
@@ -77,14 +79,6 @@ typedef struct _oe_host_ocall_frame
     uint64_t previous_rbp;
     uint64_t return_address;
 } oe_host_ocall_frame_t;
-#endif
-
-#ifndef __ASSEMBLER__
-OE_EXPORT
-void oe_notify_ocall_start(
-    oe_host_ocall_frame_t* frame_pointer,
-    void* tcs,
-    uint64_t enclave_base);
 #endif
 
 #ifndef __ASSEMBLER__

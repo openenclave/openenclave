@@ -199,7 +199,6 @@ if (OE_SGX)
       sgx/linux/aep.S
       sgx/enter.c
       sgx/linux/exception.c
-      sgx/linux/hoststackbridge.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
       sgx/linux/xstate.c)
@@ -295,13 +294,12 @@ if (OE_SGX AND UNIX)
   # Link oedebugrt static library.
   target_link_libraries(oehost PRIVATE oedebugrt)
 
-  # hoststackbridge and enter.c must be forced to retain the frame-pointer
+  # enter.c must be forced to retain the frame-pointer
   # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
-  # Both are compiled with -O2 flag to retain the same generated assembly
+  # It is compiled with -O2 flag to retain the same generated assembly
   # code in both debug and release builds.
   set_source_files_properties(oehost
     sgx/enter.c
-    sgx/linux/hoststackbridge.c
     PROPERTIES
     COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
 endif()

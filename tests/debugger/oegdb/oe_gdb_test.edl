@@ -2,11 +2,17 @@
 // Licensed under the MIT License.
 
 enclave {
+    enum magic_t {
+        MAGIC_VALUE=112233445566
+    };
+
     trusted {
         public int enc_add(int a, int b);
         public void enc_assert_debugger_binary_contract();
+        public void enc_test_stack_stitching();
     };
 
     untrusted {
+        void host_function(void);
     };
 };

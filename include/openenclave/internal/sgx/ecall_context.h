@@ -16,6 +16,11 @@ typedef struct _oe_ecall_context
     oe_call_host_function_args_t ocall_args;
     uint64_t ocall_buffer_size;
     uint8_t* ocall_buffer;
+
+    // Exit frame information for ocall stack stitching.
+    uint64_t debug_eexit_rip;
+    uint64_t debug_eexit_rbp;
+    uint64_t debug_eexit_rsp;
 } oe_ecall_context_t;
 
 /**

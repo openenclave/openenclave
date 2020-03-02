@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/ecall_context.h>
 #include <openenclave/internal/registers.h>
+#include <openenclave/internal/sgx/ecall_context.h>
 #include <openenclave/internal/sgxtypes.h>
 #include "asmdefs.h"
 #include "enclave.h"
@@ -32,15 +32,6 @@
 #define OE_FRAME_POINTER_VALUE ((uint64_t)&enclave - 0x40)
 #define OE_FRAME_POINTER , "r"(rbp)
 
-// The SDK currently does not use a bridge for ocall stack-stitching on Windows.
-// Unlike oegdb, the Windows debuggers (WinDbg, VS Debugger) rely on the
-// function name being __oe_dispatch_ocall to detect host-enclave transition
-// during stack-walking and don't require that the stack be actually stitched
-// by the ocall-bridge. In the future, the Windows Debuggers would also require
-// that the SDK stitches the ocall stack, simplifying the debugger
-// implementations.
-#define OE_OCALL_BRIDGE __oe_dispatch_ocall
-
 #elif __linux__
 
 // The debugger requires a Linux x64 ABI frame pointer for stack walking.
@@ -49,10 +40,6 @@
 #define OE_DEFINE_FRAME_POINTER(r, v) OE_UNUSED(v)
 #define OE_FRAME_POINTER_VALUE 0
 #define OE_FRAME_POINTER
-
-// The SDK uses a bridge to stitch the ocall stack with the help
-// of the debugger.
-#define OE_OCALL_BRIDGE __oe_host_stack_bridge
 
 #endif
 
@@ -65,6 +52,49 @@
 // Only rbp and rsp are preserved.
 #define OE_ENCLU_CLOBBERED_REGISTERS \
     "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
+
+// The following function must not be inlined and must have a frame-pointer
+// so that the frame can be manipulated to stitch the ocall stack.
+// This is ensured by compiling this file with -fno-omit-frame-pointer.
+OE_NEVER_INLINE
+int __oe_host_stack_bridge(
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t* arg1_out,
+    uint64_t* arg2_out,
+    void* tcs,
+    oe_enclave_t* enclave,
+    oe_ecall_context_t* ecall_context)
+{
+    // Use volatile attribute so that the compiler does not optimize away the
+    // restoration of the stack frame.
+    volatile oe_host_ocall_frame_t *current = NULL, backup;
+    bool debug = enclave->debug;
+    if (debug)
+    {
+        // Fetch pointer to current frame.
+        current = (oe_host_ocall_frame_t*)__builtin_frame_address(0);
+
+        // Back up current frame.
+        backup = *current;
+
+        // Stitch the ocall stack
+        current->return_address = ecall_context->debug_eexit_rip;
+        current->previous_rbp = ecall_context->debug_eexit_rbp;
+    }
+
+    int ret = __oe_dispatch_ocall(arg1, arg2, arg1_out, arg2_out, tcs, enclave);
+
+    if (debug)
+    {
+        // Restore the frame so that this function can return to the caller
+        // correctly. Without the volatile qualifier, the compiler could
+        // optimize this away.
+        *current = backup;
+    }
+
+    return ret;
+}
 
 /**
  * Thread specific OCALL buffers. Large enough for most ocalls.
@@ -112,7 +142,7 @@ void oe_enter(
     // The space for saving the floating-point state must be 16 byte aligned.
     OE_ALIGNED(16)
     uint64_t fx_state[64];
-    oe_ecall_context_t ecall_context;
+    oe_ecall_context_t ecall_context = {{0}};
     ecall_context.ocall_buffer = _thread_ocall_buffer;
     ecall_context.ocall_buffer_size = sizeof(_thread_ocall_buffer);
 
@@ -147,7 +177,8 @@ void oe_enter(
         oe_code_t code = oe_get_code_from_call_arg1(arg1);
         if (code == OE_CODE_OCALL)
         {
-            OE_OCALL_BRIDGE(arg1, arg2, &arg1, &arg2, tcs, enclave);
+            __oe_host_stack_bridge(
+                arg1, arg2, &arg1, &arg2, tcs, enclave, &ecall_context);
         }
         else
             break;
@@ -185,7 +216,7 @@ void oe_enter_sim(
     void* host_gs = oe_get_gs_register_base();
     void* host_fs = oe_get_fs_register_base();
     sgx_tcs_t* sgx_tcs = (sgx_tcs_t*)tcs;
-    oe_ecall_context_t ecall_context;
+    oe_ecall_context_t ecall_context = {{0}};
     ecall_context.ocall_buffer = _thread_ocall_buffer;
     ecall_context.ocall_buffer_size = sizeof(_thread_ocall_buffer);
 
@@ -230,7 +261,8 @@ void oe_enter_sim(
         oe_code_t code = oe_get_code_from_call_arg1(arg1);
         if (code == OE_CODE_OCALL)
         {
-            OE_OCALL_BRIDGE(arg1, arg2, &arg1, &arg2, tcs, enclave);
+            __oe_host_stack_bridge(
+                arg1, arg2, &arg1, &arg2, tcs, enclave, &ecall_context);
         }
         else
             break;

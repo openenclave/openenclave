@@ -22,18 +22,18 @@ commands 2
     # Test ability to introspect parameters
     printf "** a = %d, b = %d\n", a, b
 
-    # Test values 
+    # Test values
     if a != 5
         printf "** Error: a != 5\n"
         quit 1
     end
 
-    # Test values 
+    # Test values
     if b != 6
         printf "** Error: b != 6\n"
         quit 1
     end
-    continue 
+    continue
 end
 
 # Breakpoint in function body.
@@ -119,18 +119,57 @@ commands 6
     python import gdb_sgx_plugin
 
     python gdb.parse_and_eval("TCS_GSBASE_OFFSET = " + str(gdb_sgx_plugin.TCS_GSBASE_OFFSET))
-    python gdb.parse_and_eval("TD_CALLSITE_OFFSET = " + str(gdb_sgx_plugin.TD_CALLSITE_OFFSET))
-    python gdb.parse_and_eval("CALLSITE_OCALLCONTEXT_OFFSET = " + str(gdb_sgx_plugin.CALLSITE_OCALLCONTEXT_OFFSET))
-
-    python gdb.parse_and_eval("OCALLCONTEXT_LENGTH  = " + str(gdb_sgx_plugin.OCALLCONTEXT_LENGTH))
-    python gdb.parse_and_eval("OCALLCONTEXT_FORMAT[0] = '" + gdb_sgx_plugin.OCALLCONTEXT_FORMAT[0] + "'")
-    python gdb.parse_and_eval("OCALLCONTEXT_FORMAT[1] = '" + gdb_sgx_plugin.OCALLCONTEXT_FORMAT[1] + "'")
-    python gdb.parse_and_eval("OCALLCONTEXT_RBP = " + str(gdb_sgx_plugin.OCALLCONTEXT_RBP))
-    python gdb.parse_and_eval("OCALLCONTEXT_RET = " + str(gdb_sgx_plugin.OCALLCONTEXT_RET))
 
     python print("Debugger contract serialized on enclave side.")
     continue
 end
+
+# Assert that stack has been stitched correctly
+b host.c:84
+commands 7
+    python print("\n\n\nWalking ocall stack....\n\n")
+    # Read magic variable
+    set $magic_value=magic_value
+
+    # Set the magic variable in host_function.
+    set host_function_magic=$magic_value
+
+    # We expect at most 50 frames while walking the stack. Additionally a finite
+    # iteration limit guarantees that the test will terminate quickly even if
+    # the debugger is not able to walk the stack correctly.
+    set $MAX_FRAMES=50
+
+    # Walk the stack until the enclave function.
+    # This asserts ocall stack stitching.
+    set $i = $MAX_FRAMES
+    while $i > 0
+          up 1
+          set $i=$i-1
+          # Set the value of magic variable in enclave function.
+          python if gdb.selected_frame().name() == "enclave_function": \
+                        gdb.execute("set enc_magic=$magic_value"); \
+                        gdb.execute("set $i=0")
+
+    end
+
+    # Continue walking the stack until main is reached.
+    # This asserts ecall stack stitching.
+    python print("\n\n\nWalking ecall stack...\n\n")
+    set $i = $MAX_FRAMES
+    while $i > 0
+          up 1
+          set $i=$i-1
+          # Set the value of magic variable in enclave function.
+          python if gdb.selected_frame().name() == "main": \
+                        gdb.execute("set main_magic=$magic_value"); \
+                        gdb.execute("set $i=0")
+
+    end
+
+    python print("\n\nStack stitching successfully validated\n\n")
+    continue
+end
+
 
 # Run the program
 run
