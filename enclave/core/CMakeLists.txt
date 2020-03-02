@@ -188,9 +188,9 @@ set_source_files_properties(__secs_to_tm.c PROPERTIES
 
 maybe_build_using_clangw(oecore)
 
-add_dependencies(oecore tee_trusted_edl switchless_trusted_edl)
+add_dependencies(oecore tee_trusted_edl)
 if(OE_SGX)
-    add_dependencies(oecore sgx_trusted_edl)
+    add_dependencies(oecore sgx_trusted_edl switchless_trusted_edl)
 endif()
 target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

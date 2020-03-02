@@ -134,7 +134,7 @@ oe_result_t oe_post_switchless_ocall(oe_call_host_function_args_t* args)
                 // call. Determine if it needs to be woken up or not.
                 //
                 // If event is 0, it means that it has gone to sleep. Wake it by
-                // making an ocall (OE_OCALL_WAKE_HOST_WORKER).
+                // making an ocall (oe_wake_switchless_worker_ocall).
                 // Note: it is important to use an atomic cas operation to set
                 // the value to 1 before making the ocall. Setting the value to
                 // 1 prevents the host worker from simulataneously going to
