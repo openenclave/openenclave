@@ -135,11 +135,6 @@ let write_enclave_code (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
       if f.tf_is_priv then
         Intel.Util.failwithf
           "Function '%s': 'private' specifier is not supported by oeedger8r"
-          f.tf_fdecl.fname;
-      if f.tf_is_switchless then
-        Intel.Util.failwithf
-          "Function '%s': trusted switchless ecalls are not yet supported by \
-           Open Enclave SDK."
           f.tf_fdecl.fname)
     tfs;
   List.iter

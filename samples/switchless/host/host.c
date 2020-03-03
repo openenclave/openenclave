@@ -82,8 +82,40 @@ int main(int argc, const char* argv[])
         flags |= OE_ENCLAVE_FLAG_SIMULATE;
     }
 
-    // Enable switchless and configure host worker number
-    oe_enclave_setting_context_switchless_t switchless_setting = {1, 0};
+    // To demonstrate the benefit of using switchless ocalls, we will
+    // first make 1000000 switchless ocalls from the main thread and measure
+    // the time taken. Then we will make the same number of regular ocalls
+    // and measure the time taken. Using the two measurements, we can arrive at
+    // the speedup factor that switchless ocalls provide over normal ocalls.
+    //
+    // Similarly, to demonstrate the benefit of using switchless ecalls, we will
+    // first make 1000000 switchless ecalls from the main thread and measure the
+    // time taken. Then we will make the same number of regular ecalls and
+    // measure the time taken. Using the two measurements, we can arrive at the
+    // speedup factor that switchless ecalls provide over normall ecalls.
+    //
+    // The sample is written in such a manner that at a given time there are
+    // effectively only two actively running threads
+    //    - a caller thread that is continuously making switchless calls.
+    //    - a worker thread that is continuously servicing the switchless calls.
+    // On a machine with at least two cores, having just two threads allows each
+    // thread to run potentially uninterrupted on a dedicated core. An
+    // application where the worker and caller threads can run uninterrupted on
+    // dedicated cores will likely see maximum speed up from switchless calls.
+    // On a machine with more than two cores, the number of worker and caller
+    // threads can be increased while retaining the benefits of switchless
+    // calls.
+    //
+    // Below, we enable switchless calling, and configure 1 host worker thread
+    // for servicing switchless ocalls, and 1 enclave worker thread for
+    // servicing switchless ecalls. Note: When we are making switchless ocalls,
+    // the ecall worker thread will be sleeping. When we are making switchless
+    // ecalls, the ocall worker thread will be sleeping. Thus, including the
+    // main thread, there will be two active threads at a given time, utilizing
+    // the cores uninterrupted.
+    oe_enclave_setting_context_switchless_t switchless_setting = {
+        1,  // number of host worker threads
+        1}; // number of enclave worker threads.
     oe_enclave_setting_t settings[] = {{
         .setting_type = OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS,
         .u.context_switchless_setting = &switchless_setting,
@@ -113,8 +145,9 @@ int main(int argc, const char* argv[])
 
     fprintf(
         stderr,
-        "enclave_add_N_switchless(): %d + %d = %d. Time spent: "
+        "%d host_increment_switchless() calls: %d + %d = %d. Time spent: "
         "%d ms\n",
+        n,
         oldm,
         n,
         m,
@@ -136,8 +169,54 @@ int main(int argc, const char* argv[])
 
     fprintf(
         stderr,
-        "enclave_add_N_regular(): %d + %d = %d. Time spent: "
+        "%d host_increment_regular() calls: %d + %d = %d. Time spent: "
         "%d ms\n",
+        n,
+        oldm,
+        n,
+        m,
+        (int)(end - start) / 1000);
+
+    // Execute n ecalls switchlessly
+    start = get_relative_time_in_microseconds();
+    m = oldm;
+    for (int i = 0; i < n; i++)
+    {
+        oe_result_t result = enclave_decrement_switchless(enclave, &m);
+        if (result != OE_OK)
+        {
+            fprintf(
+                stderr, "enclave_decrement_switchless(): result=%u", result);
+        }
+    }
+    end = get_relative_time_in_microseconds();
+    fprintf(
+        stderr,
+        "%d enclave_decrement_switchless() calls: %d - %d = %d. Time spent: "
+        "%d ms\n",
+        n,
+        oldm,
+        n,
+        m,
+        (int)(end - start) / 1000);
+
+    // Execute n regular ecalls
+    start = get_relative_time_in_microseconds();
+    m = oldm;
+    for (int i = 0; i < n; i++)
+    {
+        oe_result_t result = enclave_decrement_regular(enclave, &m);
+        if (result != OE_OK)
+        {
+            fprintf(stderr, "enclave_decrement_regular(): result=%u", result);
+        }
+    }
+    end = get_relative_time_in_microseconds();
+    fprintf(
+        stderr,
+        "%d enclave_decrement_regular() calls: %d - %d = %d. Time spent: "
+        "%d ms\n",
+        n,
         oldm,
         n,
         m,

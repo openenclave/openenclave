@@ -7,17 +7,36 @@ enclave {
     };
 
     trusted {
+        // Test switchless ocalls
+        public int enc_test_echo_switchless(
+            [string, in] const char* in,
+            [out] char out[100],
+            int repeats);
+
+        // Test regular ocalls (for baseline)
+        public int enc_test_echo_regular(
+            [string, in] const char* in,
+            [out] char out[100],
+            int repeats);
+
+        // Switchless ecall
         public int enc_echo_switchless(
             [string, in] const char* in,
             [out] char out[100],
-            int repeats);
+            [string, in] const char* str1,
+            [in] char str2[100])
+            transition_using_threads;
+
+        // Regular ecall
         public int enc_echo_regular(
             [string, in] const char* in,
             [out] char out[100],
-            int repeats);
+            [string, in] const char* str1,
+            [in] char str2[100]);
     };
 
     untrusted {
+        // Switchless ocall
         int host_echo_switchless(
             [string, in] const char* in,
             [out] char out[100],
@@ -25,6 +44,7 @@ enclave {
             [in] char str2[100])
             transition_using_threads;
 
+        // Regular ocall
         int host_echo_regular(
             [string, in] const char* in,
             [out] char out[100],
