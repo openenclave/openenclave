@@ -586,7 +586,7 @@ function Install-DCAP-Dependencies {
     # Note: the ordering of nuget installs below is important to preserve here until the issue with the EnclaveCommonAPI nuget package gets fixed.
     if ($DCAPClientType -eq "Azure")
     {
-        & nuget.exe install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+        & nuget.exe install 'Azure.DCAP.Windows' -Source "$PACKAGES_DIRECTORY" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
         if($LASTEXITCODE -ne 0) {
             Throw "Failed to install nuget EnclaveCommonAPI"
         }
@@ -622,9 +622,7 @@ function Install-AzureDCAPWindows {
     Write-Log "Installing Azure.DCAP.Windows"
     Write-Host "Installing Azure.DCAP.Windows"
 
-    Copy-Item $PACKAGES['azure_dcap_client_nupkg']['local_file'] -Destination $TEMP_NUGET_DIR -Force
-
-    & nuget.exe install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+    & nuget.exe install 'Azure.DCAP.Windows' -Source "$PACKAGES_DIRECTORY" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
     if($LASTEXITCODE -ne 0) {
         Throw "Failed to install nuget Azure.DCAP.Windows"
     }
