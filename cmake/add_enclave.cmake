@@ -54,25 +54,15 @@ macro(add_enclave)
     "${multiValueArgs}"
     ${ARGN})
 
-  if (NOT SIGNING_ENGINE)
-     set( SIGNING_ENGINE "")
-  endif()
-  if (NOT ENGINE_LOAD_PATH)
-     set( ENGINE_LOAD_PATH "")
-  endif()
-  if (NOT ENGINE_KEY_ID)
-     set( ENGINE_KEY_ID "")
-  endif()
-
   if(OE_SGX)
     add_enclave_sgx(
       CXX ${ENCLAVE_CXX}
       TARGET ${ENCLAVE_TARGET}
       CONFIG ${ENCLAVE_CONFIG}
       KEY ${ENCLAVE_KEY}
-      SIGNING_ENGINE ${SIGNING_ENGINE}
-      ENGINE_LOAD_PATH ${ENGINE_LOAD_PATH}
-      ENGINE_KEY_ID ${ENGINE_KEY_ID}
+      SIGNING_ENGINE ${ENCLAVE_SIGNING_ENGINE}
+      ENGINE_LOAD_PATH ${ENCLAVE_ENGINE_LOAD_PATH}
+      ENGINE_KEY_ID ${ENCLAVE_ENGINE_KEY_ID}
       SOURCES ${ENCLAVE_SOURCES})
   elseif(OE_TRUSTZONE)
     add_enclave_optee(
@@ -133,7 +123,7 @@ function(add_enclave_sgx)
    endif ()
 
   # Generate the signing key.
-  if(NOT ENCLAVE_KEY AND NOT SIGNING_ENGINE)
+  if(NOT ENCLAVE_KEY AND NOT ENCLAVE_SIGNING_ENGINE)
      add_custom_command(OUTPUT ${ENCLAVE_TARGET}-private.pem
        COMMAND openssl genrsa -out ${ENCLAVE_TARGET}-private.pem -3 3072)
      set(ENCLAVE_KEY  ${CMAKE_CURRENT_BINARY_DIR}/${ENCLAVE_TARGET}-private.pem)
@@ -145,9 +135,9 @@ function(add_enclave_sgx)
 
   # Sign the enclave using `oesign`.
   if(ENCLAVE_CONFIG)
-      if(SIGNING_ENGINE)
+      if(ENCLAVE_SIGNING_ENGINE)
           add_custom_command(OUTPUT ${SIGNED_LOCATION}
-          COMMAND oesign sign -e $<TARGET_FILE:${ENCLAVE_TARGET}> -c ${ENCLAVE_CONFIG} -n ${SIGNING_ENGINE} -p ${ENGINE_LOAD_PATH} -i ${ENGINE_KEY_ID}
+          COMMAND oesign sign -e $<TARGET_FILE:${ENCLAVE_TARGET}> -c ${ENCLAVE_CONFIG} -n ${ENCLAVE_SIGNING_ENGINE} -p ${ENCLAVE_ENGINE_LOAD_PATH} -i ${ENCLAVE_ENGINE_KEY_ID}
           DEPENDS oesign ${ENCLAVE_TARGET} ${ENCLAVE_CONFIG}
           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
       else ()
