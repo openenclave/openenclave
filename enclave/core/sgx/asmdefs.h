@@ -15,6 +15,7 @@
 #define PAGE_SIZE 4096
 #define STATIC_STACK_SIZE 8 * 100
 #define OE_WORD_SIZE 8
+#define TD_FROM_TCS (5 * PAGE_SIZE)
 
 #define CODE_ERET 0x200000000
 
