@@ -28,8 +28,8 @@
         nuget_hash:          "2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F"
         devcon_package_url:  "https://oejenkins.blob.core.windows.net/oejenkins/devcon_package.cab"
         devcon_package_hash: "A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A"
-        az_dcap_client_url:  "https://oejenkins.blob.core.windows.net/oejenkins/azure.dcap.windows.0.0.2.nupkg"
-        az_dcap_client_hash: "E319A6C2D136FE5EDB8799305F6151B71F4CE4E67D96CA74538D0AD5D2D793F1"
+        az_dcap_client_url:  "https://oejenkins.blob.core.windows.net/oejenkins/azure.dcap.windows.0.0.3.nupkg"
+        az_dcap_client_hash: "79C698B61CADA32F56F26647B96BBB1C00B7409A6646597C7CC2908A57677256"
 
     - name: OE setup | Run the install-windows-prereqs.ps1 script (this may take a while)
       script: ../install-windows-prereqs.ps1
