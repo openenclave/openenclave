@@ -595,8 +595,13 @@ function Install-DCAP-Dependencies {
     {
         & nuget.exe install 'Azure.DCAP.Windows' -Source "$PACKAGES_DIRECTORY" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
         if($LASTEXITCODE -ne 0) {
-            Throw "Failed to install nuget EnclaveCommonAPI"
+            Throw "Failed to install nuget Azure.DCAP.Windows"
         }
+        $targetPath = [System.Environment]::SystemDirectory
+        Write-Host "Installing Azure.DCAP.Windows library to $targetPath"
+        pushd "$OE_NUGET_DIR\Azure.DCAP.Windows\script"
+        & ".\InstallAzureDCAP.ps1" $targetPath
+        popd
     }
     if (($LaunchConfiguration -eq "SGX1FLC") -or ($LaunchConfiguration -eq "SGX1FLC-NoDriver") -or ($DCAPClientType -eq "Azure"))
     {
@@ -625,22 +630,6 @@ function Install-VCRuntime {
     }
 }
 
-function Install-AzureDCAPWindows {
-    Write-Log "Installing Azure.DCAP.Windows"
-    Write-Host "Installing Azure.DCAP.Windows"
-
-    & nuget.exe install 'Azure.DCAP.Windows' -Source "$PACKAGES_DIRECTORY" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
-    if($LASTEXITCODE -ne 0) {
-        Throw "Failed to install nuget Azure.DCAP.Windows"
-    }
-
-    $targetPath = [System.Environment]::SystemDirectory
-    Write-Host "Installing Azure.DCAP.Windows library to $targetPath"
-    pushd "$OE_NUGET_DIR\Azure.DCAP.Windows\script"
-    & ".\InstallAzureDCAP.ps1" $targetPath
-    popd
-}
-
 function Install-NSIS {
     $installDir = Join-Path ${env:ProgramFiles(x86)} "NSIS"
 
@@ -666,16 +655,6 @@ try {
     if (($LaunchConfiguration -ne "SGX1FLC-NoDriver") -and ($LaunchConfiguration -ne "SGX1-NoDriver"))
     {
         Install-PSW
-    }
-
-    if ($DCAPClientType -eq "Azure")
-    {
-        Write-Host "*** Installing Azure.DCAP.Windows ***"
-        Install-AzureDCAPWindows
-    }
-    else
-    {
-        Write-Host "*** Not installing a DCAP Client ***"
     }
 
     Install-DCAP-Dependencies
