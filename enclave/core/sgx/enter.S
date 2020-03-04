@@ -233,7 +233,6 @@ oe_enter:
     // Clear these so information will not be leaked to host
     // Retain %r11 which is used to reference the td structure. It will be
     // cleared immediately before EEXIT.
-    push %r11
     mov %r11, OM_ENC_TD
     oe_cleanup_registers
     mov OM_ENC_TD, %r11
