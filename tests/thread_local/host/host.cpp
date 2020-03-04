@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <limits.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
@@ -75,7 +76,7 @@ int main(int argc, const char* argv[])
 // for the exported scenario as well. Therefore we don't perform the
 // assertion.
 #endif
-        free(relocs);
+        oe_memalign_free(relocs);
     }
 
     const uint32_t flags = oe_get_create_flags();
