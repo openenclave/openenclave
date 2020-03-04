@@ -7,15 +7,15 @@
 
 #include <openenclave/host.h>
 
-#include <iothub_module_client_ll.h>
-#include <iothub_client_options.h>
-#include <iothub_message.h>
-#include <azure_c_shared_utility/threadapi.h>
 #include <azure_c_shared_utility/crt_abstractions.h>
 #include <azure_c_shared_utility/platform.h>
 #include <azure_c_shared_utility/shared_util_options.h>
-#include <iothubtransportmqtt.h>
+#include <azure_c_shared_utility/threadapi.h>
 #include <iothub.h>
+#include <iothub_client_options.h>
+#include <iothub_message.h>
+#include <iothub_module_client_ll.h>
+#include <iothubtransportmqtt.h>
 
 #include "host.h"
 
@@ -35,14 +35,17 @@ typedef struct MESSAGE_INSTANCE_TAG
 
 // SendConfirmationCallback is invoked when the message that was forwarded on
 // from 'InputQueue1Callback' pipeline function is confirmed.
-static void SendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result,
+static void SendConfirmationCallback(
+    IOTHUB_CLIENT_CONFIRMATION_RESULT result,
     void* userContextCallback)
 {
     // The context corresponds to which message# we were at when we sent.
     MESSAGE_INSTANCE* messageInstance = (MESSAGE_INSTANCE*)userContextCallback;
 
-    printf("Confirmation[%zu] received for message with result = %d.\n",
-        messageInstance->messageTrackingId, result);
+    printf(
+        "Confirmation[%zu] received for message with result = %d.\n",
+        messageInstance->messageTrackingId,
+        result);
 
     IoTHubMessage_Destroy(messageInstance->messageHandle);
     free(messageInstance);
@@ -54,33 +57,42 @@ static void SendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result,
 // always frees the message so we need to pass down a new copy.
 static MESSAGE_INSTANCE* CreateMessageInstance(char* messageBody)
 {
-    MESSAGE_INSTANCE* messageInstance = (MESSAGE_INSTANCE*)malloc(sizeof(MESSAGE_INSTANCE));
+    MESSAGE_INSTANCE* messageInstance =
+        (MESSAGE_INSTANCE*)malloc(sizeof(MESSAGE_INSTANCE));
     if (NULL == messageInstance)
     {
-        fprintf(stderr, "Failed to allocate 'MESSAGE_INSTANCE' for pipelined message.\n");
+        fprintf(
+            stderr,
+            "Failed to allocate 'MESSAGE_INSTANCE' for pipelined message.\n");
     }
     else
     {
         memset(messageInstance, 0, sizeof(*messageInstance));
 
-        if ((messageInstance->messageHandle = IoTHubMessage_CreateFromString(messageBody)) == NULL)
+        if ((messageInstance->messageHandle =
+                 IoTHubMessage_CreateFromString(messageBody)) == NULL)
         {
             free(messageInstance);
             messageInstance = NULL;
         }
         else
         {
-            IoTHubMessage_SetContentTypeSystemProperty(messageInstance->messageHandle, "application%2fjson");
-            IoTHubMessage_SetContentEncodingSystemProperty(messageInstance->messageHandle, "utf-8");
+            IoTHubMessage_SetContentTypeSystemProperty(
+                messageInstance->messageHandle, "application%2fjson");
+            IoTHubMessage_SetContentEncodingSystemProperty(
+                messageInstance->messageHandle, "utf-8");
 
-            messageInstance->messageTrackingId = g_messagesReceivedByInput1Queue;
+            messageInstance->messageTrackingId =
+                g_messagesReceivedByInput1Queue;
         }
     }
 
     return messageInstance;
 }
 
-static IOTHUBMESSAGE_DISPOSITION_RESULT SendEnclaveResponse(IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleClientHandle, char* messageBodyStr)
+static IOTHUBMESSAGE_DISPOSITION_RESULT SendEnclaveResponse(
+    IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleClientHandle,
+    char* messageBodyStr)
 {
     IOTHUBMESSAGE_DISPOSITION_RESULT result;
     IOTHUB_CLIENT_RESULT clientResult;
@@ -93,7 +105,8 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT SendEnclaveResponse(IOTHUB_MODULE_CLIENT
     }
     else
     {
-        int enclaveResult = call_enclave(messageBodyStr, enclaveMessage, ENCLAVE_MESSAGE_SIZE);
+        int enclaveResult =
+            call_enclave(messageBodyStr, enclaveMessage, ENCLAVE_MESSAGE_SIZE);
         if (enclaveResult != 0)
         {
             result = IOTHUBMESSAGE_ABANDONED;
@@ -103,26 +116,35 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT SendEnclaveResponse(IOTHUB_MODULE_CLIENT
             // This message should be sent to next stop in the pipeline, namely
             // "output1".  What happens at "outpu1" is determined by the
             // configuration of the Edge routing table setup.
-            MESSAGE_INSTANCE *messageInstance = CreateMessageInstance(enclaveMessage);
+            MESSAGE_INSTANCE* messageInstance =
+                CreateMessageInstance(enclaveMessage);
             if (NULL == messageInstance)
             {
                 result = IOTHUBMESSAGE_ABANDONED;
             }
             else
             {
-                printf("Sending message (%zu) to the next stage in pipeline.\n",
+                printf(
+                    "Sending message (%zu) to the next stage in pipeline.\n",
                     g_messagesReceivedByInput1Queue);
 
                 clientResult = IoTHubModuleClient_LL_SendEventToOutputAsync(
-                    iotHubModuleClientHandle, messageInstance->messageHandle,
-                    "output1", SendConfirmationCallback, (void *)messageInstance);
+                    iotHubModuleClientHandle,
+                    messageInstance->messageHandle,
+                    "output1",
+                    SendConfirmationCallback,
+                    (void*)messageInstance);
                 if (clientResult != IOTHUB_CLIENT_OK)
                 {
                     IoTHubMessage_Destroy(messageInstance->messageHandle);
                     free(messageInstance);
 
-                    fprintf(stderr, "IoTHubModuleClient_LL_SendEventToOutputAsync failed on sending msg#=%zu, err=%d.\n",
-                        g_messagesReceivedByInput1Queue, clientResult);
+                    fprintf(
+                        stderr,
+                        "IoTHubModuleClient_LL_SendEventToOutputAsync failed "
+                        "on sending msg#=%zu, err=%d.\n",
+                        g_messagesReceivedByInput1Queue,
+                        clientResult);
 
                     result = IOTHUBMESSAGE_ABANDONED;
                 }
@@ -143,15 +165,19 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT SendEnclaveResponse(IOTHUB_MODULE_CLIENT
     return result;
 }
 
-static IOTHUBMESSAGE_DISPOSITION_RESULT InputQueue1Callback(IOTHUB_MESSAGE_HANDLE message, void* userContextCallback)
+static IOTHUBMESSAGE_DISPOSITION_RESULT InputQueue1Callback(
+    IOTHUB_MESSAGE_HANDLE message,
+    void* userContextCallback)
 {
     IOTHUBMESSAGE_DISPOSITION_RESULT result;
-    IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleClientHandle = (IOTHUB_MODULE_CLIENT_LL_HANDLE)userContextCallback;
+    IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleClientHandle =
+        (IOTHUB_MODULE_CLIENT_LL_HANDLE)userContextCallback;
 
     const unsigned char* messageBody;
     size_t contentSize;
 
-    if (IoTHubMessage_GetByteArray(message, &messageBody, &contentSize) != IOTHUB_MESSAGE_OK)
+    if (IoTHubMessage_GetByteArray(message, &messageBody, &contentSize) !=
+        IOTHUB_MESSAGE_OK)
     {
         messageBody = "<null>";
     }
@@ -167,8 +193,10 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT InputQueue1Callback(IOTHUB_MESSAGE_HANDL
         memcpy(messageBodyStr, messageBody, contentSize);
         messageBodyStr[contentSize] = '\0';
 
-        printf("Received Message [%zu]\n Data: [%s].\n",
-                g_messagesReceivedByInput1Queue, messageBodyStr);
+        printf(
+            "Received Message [%zu]\n Data: [%s].\n",
+            g_messagesReceivedByInput1Queue,
+            messageBodyStr);
 
         result = SendEnclaveResponse(iotHubModuleClientHandle, messageBodyStr);
 
@@ -188,19 +216,25 @@ static IOTHUB_MODULE_CLIENT_LL_HANDLE InitializeConnection()
         fprintf(stderr, "Failed to initialize the platform.\n");
         iotHubModuleClientHandle = NULL;
     }
-    else if ((iotHubModuleClientHandle = IoTHubModuleClient_LL_CreateFromEnvironment(MQTT_Protocol)) == NULL)
+    else if (
+        (iotHubModuleClientHandle = IoTHubModuleClient_LL_CreateFromEnvironment(
+             MQTT_Protocol)) == NULL)
     {
-        fprintf(stderr, "Failed to create IoT Hub module client from environment.\n");
+        fprintf(
+            stderr,
+            "Failed to create IoT Hub module client from environment.\n");
     }
     else
     {
-        IoTHubModuleClient_LL_SetOption(iotHubModuleClientHandle, OPTION_LOG_TRACE, &g_traceOn);
+        IoTHubModuleClient_LL_SetOption(
+            iotHubModuleClientHandle, OPTION_LOG_TRACE, &g_traceOn);
     }
 
     return iotHubModuleClientHandle;
 }
 
-static void DeInitializeConnection(IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleClientHandle)
+static void DeInitializeConnection(
+    IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleClientHandle)
 {
     if (iotHubModuleClientHandle != NULL)
     {
@@ -209,12 +243,16 @@ static void DeInitializeConnection(IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleCl
     IoTHub_Deinit();
 }
 
-static int SetupCallbacksForModule(IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleClientHandle)
+static int SetupCallbacksForModule(
+    IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleClientHandle)
 {
     int ret;
 
-    if (IoTHubModuleClient_LL_SetInputMessageCallback(iotHubModuleClientHandle, "input1",
-        InputQueue1Callback, (void*)iotHubModuleClientHandle) != IOTHUB_CLIENT_OK)
+    if (IoTHubModuleClient_LL_SetInputMessageCallback(
+            iotHubModuleClientHandle,
+            "input1",
+            InputQueue1Callback,
+            (void*)iotHubModuleClientHandle) != IOTHUB_CLIENT_OK)
     {
         fprintf(stderr, "Failed to set input message callback.\n");
         ret = -1;
@@ -227,7 +265,8 @@ static int SetupCallbacksForModule(IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleCl
     return ret;
 }
 
-static void SendEnclaveMessage(IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleClientHandle)
+static void SendEnclaveMessage(
+    IOTHUB_MODULE_CLIENT_LL_HANDLE iotHubModuleClientHandle)
 {
     static int iterationCount = 0;
 

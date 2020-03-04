@@ -47,7 +47,7 @@ bool check_debug_opt(int* argc, const char* argv[])
 }
 
 // This is the function that the enclave will call back into to print a message.
-int ocall_log(char *msg)
+int ocall_log(char* msg)
 {
     if (fprintf(stdout, "Enclave called into host to print: %s\n", msg) < 0)
     {
@@ -89,14 +89,17 @@ int create_enclave(int argc, const char* argv[])
     return 0;
 }
 
-int call_enclave(char *input_msg, char *enclave_msg, unsigned int enclave_msg_count)
+int call_enclave(
+    char* input_msg,
+    char* enclave_msg,
+    unsigned int enclave_msg_count)
 {
     oe_result_t result = OE_OK;
     int hostResult;
 
     // Call into the enclave.
-    result = ecall_handle_message(g_enclave, &hostResult, input_msg, enclave_msg,
-        enclave_msg_count);
+    result = ecall_handle_message(
+        g_enclave, &hostResult, input_msg, enclave_msg, enclave_msg_count);
     if (result != OE_OK)
     {
         fprintf(

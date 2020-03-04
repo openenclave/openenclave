@@ -11,9 +11,16 @@
 // This is the function that the host calls. It wraps
 // a message from the host before calling back out to
 // the host to print a message from there.
-int ecall_handle_message(char *input_msg, char *enclave_msg, unsigned int enclave_msg_size)
+int ecall_handle_message(
+    char* input_msg,
+    char* enclave_msg,
+    unsigned int enclave_msg_size)
 {
-    if (snprintf(enclave_msg, enclave_msg_size, "{ \"enclave\": %s, \"signature\": \"<TODO>\" }", input_msg) < 0)
+    if (snprintf(
+            enclave_msg,
+            enclave_msg_size,
+            "{ \"enclave\": %s, \"signature\": \"<TODO>\" }",
+            input_msg) < 0)
     {
         fprintf(stderr, "message handling failed\n");
         return 1;

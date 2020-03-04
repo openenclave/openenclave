@@ -1,9 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "host.h"
 
@@ -26,8 +26,8 @@ int main(int argc, const char* argv[])
         return ENOMEM;
     }
 
-    result = call_enclave("\"Process In Enclave\"", enclaveMessage,
-        ENCLAVE_MESSAGE_SIZE);
+    result = call_enclave(
+        "\"Process In Enclave\"", enclaveMessage, ENCLAVE_MESSAGE_SIZE);
     if (result != 0)
     {
         fprintf(stderr, "Failed to call enclave with result = %i.\n", result);
@@ -39,8 +39,8 @@ int main(int argc, const char* argv[])
     result = terminate_enclave();
     if (result != 0)
     {
-        fprintf(stderr, "Failed to terminate enclave with result = %i.\n",
-            result);
+        fprintf(
+            stderr, "Failed to terminate enclave with result = %i.\n", result);
     }
 
     return result;
