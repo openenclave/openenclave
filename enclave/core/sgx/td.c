@@ -153,7 +153,7 @@ void* td_to_tcs(const td_t* td)
 ** oe_get_td()
 **
 **     Returns a pointer to the thread data structure for the current thread.
-**     This structure resides in the GS segment. Offset zero of this segment
+**     This structure resides in the FS segment. Offset zero of this segment
 **     contains the oe_thread_data_t.self_addr field (a back pointer to the
 **     structure itself). This field is zero until the structure is initialized
 **     by __oe_handle_main (which happens immediately an EENTER).
@@ -166,6 +166,12 @@ td_t* oe_get_td()
     td_t* td;
 
     asm("mov %%fs:0, %0" : "=r"(td));
+
+    // The OE loader ensures that FS and GS point to the same place. To make
+    // accesses to td more robust to changes to FS or GS from an application,
+    // check GS if FS does not point to a valid td_t structure.
+    if (!td || td->magic != TD_MAGIC)
+        asm("mov %%gs:0, %0" : "=r"(td));
 
     return td;
 }
