@@ -232,6 +232,7 @@ void oe_enter_sim(
 
     // Backup host FS register. Enclave does not use the GS register.
     void* host_fs = oe_get_fs_register_base();
+    void* host_gs = oe_get_gs_register_base();
     sgx_tcs_t* sgx_tcs = (sgx_tcs_t*)tcs;
     oe_ecall_context_t ecall_context = {{0}};
     _setup_ecall_context(&ecall_context);
@@ -249,6 +250,7 @@ void oe_enter_sim(
         // mode, we prepend a vectored exception handler that resets the FS
         // register to the desired value. See host/sgx/create.c.
         oe_set_fs_register_base((void*)(enclave->addr + sgx_tcs->fsbase));
+        oe_set_gs_register_base((void*)(enclave->addr + sgx_tcs->gsbase));
 
         // Define register bindings and initialize the registers.
         // See oe_enter for ENCLU contract.
@@ -278,6 +280,7 @@ void oe_enter_sim(
 
         // Restore FS register upon returning from the enclave.
         oe_set_fs_register_base(host_fs);
+        oe_set_gs_register_base(host_gs);
 
         // Make an OCALL if needed.
         oe_code_t code = oe_get_code_from_call_arg1(arg1);
