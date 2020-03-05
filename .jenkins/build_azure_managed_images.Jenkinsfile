@@ -21,8 +21,7 @@ def buildManagedImage(String os_type, String version) {
                 withCredentials([usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
                                                   usernameVariable: "DOCKER_USER_NAME",
                                                   passwordVariable: "DOCKER_USER_PASSWORD")]) {
-                    withEnv(["REGION=westeurope",
-                             "DOCKER_REGISTRY=${OETOOLS_REPO}",
+                    withEnv(["DOCKER_REGISTRY=${OETOOLS_REPO}",
                              "MANAGED_IMAGE_NAME_ID=${managed_image_name_id}"]) {
                         def cmd = ("packer build -force " +
                                     "-var-file=${WORKSPACE}/.jenkins/provision/templates/packer/azure_managed_image/${os_type}-${version}-variables.json " +
