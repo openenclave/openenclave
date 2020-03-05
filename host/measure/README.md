@@ -1,0 +1,2 @@
+To reuse source code, a macro `OEHOSTMR` is used that some sentences refering to libsgx_enclave_common are stripped off. Thus this library has no dependency on libsgx_enclave_common(also libsgx_dcap_ql).
+The `liboehostmr` library reuses the source code from `liboehost` by using the preprocessor definition `OEHOSTMR`. When specified, `OEHOSTMR` removes any code references to libsgx_enclave_common or libsgx_dcap_ql so that `liboehostmr` has no dependencies on those libraries.

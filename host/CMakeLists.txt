@@ -36,7 +36,7 @@ if (OE_SGX)
 
     add_custom_target(switchless_untrusted_edl
         DEPENDS switchless_u.h switchless_u.c switchless_args.h)
-endif()
+endif ()
 
 ##==============================================================================
 ##
@@ -45,7 +45,7 @@ endif()
 ##
 ##==============================================================================
 
-if(OE_SGX)
+if (OE_SGX)
     set(SGX_EDL_FILE ${EDL_DIR}/sgx/sgx.edl)
 
     add_custom_command(
@@ -55,7 +55,7 @@ if(OE_SGX)
 
     add_custom_target(sgx_untrusted_edl
         DEPENDS sgx_u.h sgx_u.c sgx_args.h)
-endif()
+endif ()
 
 ##==============================================================================
 ##
@@ -131,9 +131,9 @@ elseif (WIN32)
     windows/hostthread.c
     windows/syscall.c
     windows/time.c)
-else()
-  message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
-endif()
+else ()
+  message(FATAL_ERROR "Unknown OS. The only supported OSes are Linux and Windows")
+endif ()
 
 if (OE_SGX AND WIN32)
   # Use clang to compile the oe_enter function that calls ENCLU.
@@ -149,7 +149,7 @@ if (OE_SGX AND WIN32)
              -I${PROJECT_SOURCE_DIR}/include
              ${CMAKE_CURRENT_SOURCE_DIR}/sgx/enter.c
              -o enter.obj)
-endif()
+endif ()
 
 # SGX specific files.
 if (OE_SGX)
@@ -202,7 +202,7 @@ if (OE_SGX)
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
       sgx/linux/xstate.c)
-  else()
+  else ()
     list(APPEND PLATFORM_HOST_ONLY_SRC
       sgx/windows/sgxquoteproviderloader.c)
 
@@ -212,22 +212,22 @@ if (OE_SGX)
       sgx/windows/exception.c
       sgx/windows/switchless.c
       sgx/windows/xstate.c)
-  endif()
+  endif ()
 
   set(PLATFORM_FLAGS "-m64")
-elseif(OE_TRUSTZONE)
+elseif (OE_TRUSTZONE)
   list(APPEND PLATFORM_SDK_ONLY_SRC
     optee/log.c)
 
   if (UNIX)
     list(APPEND PLATFORM_SDK_ONLY_SRC
       optee/linux/enclave.c)
-  else()
+  else ()
     message(FATAL_ERROR "OP-TEE is not yet supported on platforms other than Linux.")
-  endif()
+  endif ()
 
   set(PLATFORM_FLAGS "")
-endif()
+endif ()
 
 if (OE_SGX AND WIN32)
   # oedebugrt is accessed via a bridge on Win32 and need not be linked.
@@ -244,7 +244,7 @@ if (OE_SGX AND WIN32)
   set_source_files_properties(
     sgx/calls.c
     PROPERTIES COMPILE_FLAGS "/Z7")
-endif()
+endif ()
 
 # Common host verification files that work on any OS/architecture.
 list(APPEND PLATFORM_HOST_ONLY_SRC
@@ -286,9 +286,9 @@ add_library(oehostverify STATIC ${PLATFORM_HOST_ONLY_SRC})
 target_link_libraries(oehostverify PUBLIC oe_includes)
 target_link_libraries(oehost PUBLIC oe_includes)
 
-if(WIN32)
+if (WIN32)
   target_link_libraries(oehost PUBLIC ws2_32)
-endif()
+endif ()
 
 if (OE_SGX AND UNIX)
   # Link oedebugrt static library.
@@ -302,13 +302,13 @@ if (OE_SGX AND UNIX)
     sgx/enter.c
     PROPERTIES
     COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
-endif()
+endif ()
 
 add_dependencies(oehost syscall_untrusted_edl)
 add_dependencies(oehost tee_untrusted_edl)
-if(OE_SGX)
+if (OE_SGX)
   add_dependencies(oehost sgx_untrusted_edl switchless_untrusted_edl)
-endif()
+endif ()
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
@@ -488,3 +488,5 @@ install(TARGETS oehostapp EXPORT openenclave-targets)
 install(TARGETS oehostverify EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
   COMPONENT OEHOSTVERIFY)
+
+include(measure/CMakeLists.txt)
