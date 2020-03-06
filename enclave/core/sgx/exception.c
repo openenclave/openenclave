@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/constants_x64.h>
@@ -226,6 +227,47 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
     return -1;
 }
 
+#define OE_UD2_CODE 0x0B0F
+#define OE_INT3_CODE 0xCC
+
+/*
+**==============================================================================
+**
+** _emulate_fetch_core_fs_gs()
+**
+** If FS and GS have been tampered with, an "ud2" is raised preceeded by
+** a magic code pattern. Handle such an exception and return FS in RAX and
+** GS in RBX.
+**
+**==============================================================================
+*/
+int _emulate_fetch_core_fs_gs(td_t* td, sgx_ssa_gpr_t* ssa_gpr)
+{
+    // Check if the exception is an int 3.
+    if (*((uint16_t*)ssa_gpr->rip) == OE_UD2_CODE)
+    {
+        // Check it this is an exception raised by the SDK to recover
+        // FS/GS values.
+        const char* magic = "oe_fetch_core_fs_gs_magic";
+        const uint64_t magic_len =
+            oe_strlen(magic) + 1; // include NULL character
+        uint8_t* p = (uint8_t*)ssa_gpr->rip - magic_len;
+        if (memcmp(p, magic, magic_len) == 0)
+        {
+            // FS can GS can be recovered from tcs using a constant formula.
+            // We have td_t (which is just tcs + constant offset) which is what
+            // FS and GS are set to.
+            ssa_gpr->rip += 2;
+            ssa_gpr->rax = (uint64_t)td;
+            ssa_gpr->rbx = (uint64_t)td;
+
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
 /*
 **==============================================================================
 **
@@ -366,6 +408,13 @@ void oe_virtual_exception_dispatcher(
 
         // Advance RIP to the next instruction for continuation
         ssa_gpr->rip += 2;
+    }
+    else if (_emulate_fetch_core_fs_gs(td, ssa_gpr) == 0)
+    {
+        // Restore the RBP & RSP as required by return from EENTER
+        td->host_rbp = td->host_previous_rbp;
+        td->host_rsp = td->host_previous_rsp;
+        td->host_ecall_context = td->host_previous_ecall_context;
     }
     else
     {

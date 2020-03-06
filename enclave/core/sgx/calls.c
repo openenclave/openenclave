@@ -971,6 +971,11 @@ void __oe_handle_main(
         if ((code == OE_CODE_ECALL) &&
             (func == OE_ECALL_VIRTUAL_EXCEPTION_HANDLER))
         {
+            // THIS change exists only for the specific test case which corrupts
+            // the td_t data structure itself instead of changing FS.
+            td->base.self_addr = (uint64_t)td;
+            //// END TEST CODE
+
             _handle_ecall(td, func, arg_in, output_arg1, output_arg2);
             return;
         }

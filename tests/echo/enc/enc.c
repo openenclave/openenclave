@@ -4,6 +4,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/tests.h>
 #include "echo_t.h"
 
 char* oe_host_strdup(const char* str)
@@ -35,6 +36,29 @@ int enc_echo(char* in, char out[100])
 
     char stack_allocated_str[100] = "oe_host_strdup3";
     int return_val;
+
+    {
+        uint64_t oe_get_td(void);
+
+        uint64_t td_before = oe_get_td();
+
+        // Tamper with FS[0]
+        uint8_t new_td[256];
+
+        // asm volatile("movq %0, %%fs:0" : :"r"(new_td));
+        asm volatile("wrfsbase %0" : : "r"(new_td));
+
+        // Test if OE SDK is able to recover FS and use it internally
+        // to obtain td
+        uint64_t td_after = oe_get_td();
+
+        OE_TEST(td_before == td_after);
+
+        // Be a good citizen and restore FS[0]
+        //*(uint64_t*)td_before = td_before;
+        // td_before = td_after;
+        asm volatile("wrfsbase %0" : : "r"(td_before));
+    }
 
     result = host_echo(
         &return_val,

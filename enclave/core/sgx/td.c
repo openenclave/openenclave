@@ -150,6 +150,39 @@ void* td_to_tcs(const td_t* td)
 /*
 **==============================================================================
 **
+** oe_debug_sanitize_fs_gs()
+**
+**
+**==============================================================================
+*/
+
+void oe_fetch_core_fs_gs(uint64_t* fs, uint64_t* gs)
+{
+    // First check if current FS and GS are valid.
+    // They are valid if they point to a valid td_t.
+    td_t *fs_value, *gs_value;
+    asm("mov %%fs:0, %0" : "=r"(fs_value));
+    asm("mov %%gs:0, %0" : "=r"(gs_value));
+
+    if (!td_initialized(fs_value) || !td_initialized(gs_value))
+    {
+        // Raise a vectored exception.
+        // oe_core will register an int 3 handler that checks
+        // if the ud2 is preceeded by the special sequence of bytes
+        // to determine if it was a request for fetching GS and FS
+        asm volatile("jmp 1f \n\t"
+                     ".string \"oe_fetch_core_fs_gs_magic\" \n\t"
+                     "1: ud2 \n\t"
+                     : "=a"(fs_value), "=b"(fs_value));
+    }
+
+    *fs = (uint64_t)fs_value;
+    *gs = (uint64_t)gs_value;
+}
+
+/*
+**==============================================================================
+**
 ** oe_get_td()
 **
 **     Returns a pointer to the thread data structure for the current thread.
@@ -166,6 +199,14 @@ td_t* oe_get_td()
     td_t* td;
 
     asm("mov %%fs:0, %0" : "=r"(td));
+    if (!td_initialized(td))
+    {
+        // FS has been tampered with.
+        uint64_t fs = 0;
+        uint64_t gs = 0;
+        oe_fetch_core_fs_gs(&fs, &gs);
+        td = (td_t*)fs;
+    }
 
     return td;
 }
