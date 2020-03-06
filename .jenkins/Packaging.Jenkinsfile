@@ -33,18 +33,7 @@ def WindowsPackaging(String build_type) {
     stage('Windows SGX1FLC ${build_type}') {
         node('SGXFLC-Windows-DCAP') {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
-                cleanWs()
-                checkout scm
-                dir('build') {
-                    bat """
-                        vcvars64.bat x64 && \
-                        cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=ON -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCPACK_GENERATOR=NuGet -Wdev && \
-                        ninja.exe && \
-                        ctest.exe -V -C RELEASE --timeout ${CTEST_TIMEOUT_SECONDS} && \
-                        cpack.exe -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY && \
-                        cpack.exe
-                        """
-                }
+                oe.WinCompilePackageTest("build", build_type, "ON", CTEST_TIMEOUT_SECONDS)
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "master/latest/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
             }

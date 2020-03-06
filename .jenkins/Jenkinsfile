@@ -209,20 +209,7 @@ def win2016CrossCompile(String build_type, String has_quote_provider = 'OFF') {
     stage("Windows ${build_type} with SGX ${has_quote_provider}") {
         node(node_label) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
-                cleanWs()
-                checkout scm
-                dir("build/X64-${build_type}") {
-
-                  /* We need to copy nuget into the expected location
-                  https://github.com/openenclave/openenclave/blob/a982b46cf440def8fb66e94f2622a4f81e2b350b/host/CMakeLists.txt#L188-L197 */
-
-                  bat """
-                      vcvars64.bat x64 && \
-                      cmake.exe ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=${has_quote_provider} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev && \
-                      ninja.exe && \
-                      ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS}
-                      """
-                }
+                oe.WinCompilePackageTest("build/X64-${build_type}", build_type, has_quote_provider, CTEST_TIMEOUT_SECONDS)
             }
         }
     }
