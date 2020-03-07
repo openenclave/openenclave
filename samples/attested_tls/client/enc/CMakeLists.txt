@@ -13,7 +13,6 @@ add_custom_command(OUTPUT tls_client_enc.signed
 
 add_executable(tls_client_enc
 	       ecalls.cpp
-	       crypto.cpp
 	       client.cpp
 	       cert_verifier.cpp
 	       identity_verifier.cpp

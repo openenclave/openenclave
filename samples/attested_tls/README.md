@@ -33,11 +33,11 @@ Note: Both of them can run on the same machine or separate machines.
 ### Server application
   - Host part (tls_server_host)
     - Instantiate an enclave before transitioning the control into the enclave via an ecall.
-  - Encalve (tls_server_enclave.signed)
-    - Calls oe_generate_attestation_certificate to genreate an certificate
+  - Enclave (tls_server_enclave.signed)
+    - Calls oe_generate_attestation_certificate to generate an certificate
     - Use Mbedtls API to configure an TLS server after configuring above certificate as the server's certificate
     - Launch a TLS server and wait for client connection request
-    - Read client payalod and reply with server payload
+    - Read client payload and reply with server payload
   - How to launch a server instance
 ```
 ../server/host/tls_server_host ../server/enc/tls_server_enc.signed -port:12341
@@ -45,11 +45,11 @@ Note: Both of them can run on the same machine or separate machines.
 ### Enclave Client application
   - Host part (tls_client_host)
     - Instantiate an enclave before transitioning the control into the enclave via an ecall.
-  - Encalve (tls_client_enclave.signed)
-    - Calls oe_generate_attestation_certificate to genreate an certificate
-    - Use Mbedtls API to configure an TLS server after configuring above certificate as the server's certificate
-    - Launch a TLS server and wait for client connection request
-    - Read client payalod and reply with server payload
+  - Enclave (tls_client_enclave.signed)
+    - Calls oe_generate_attestation_certificate to generate an certificate
+    - Use Mbedtls API to configure an TLS client after configuring above certificate as the client's certificate
+    - Launch a TLS client and connect to the server
+    - Send client payload and wait for server's payload
   - How to launch a client instance
 ```
 ../client/host/tls_client_host ../client/enc/tls_client_enclave.signed -server:localhost -port:12341
@@ -73,7 +73,7 @@ Note that there are two different build systems supported, one using GNU Make an
 
 You can go build from the sample's root directory or go to tls_between_enclaves or tls_between_non_enclave_enclave subdirectory to build each sub-sample
 
-Note: This sample uses an OE SDK customized version of mbedtls library for TLS channel connection. It has MBEDTLS_NET_C component enabled, which has a dependecy on the newly added [socket support](../../docs/UsingTheIOSubsystem.md#socketh) in 0.6.0 OE SDK release (for more details see [Using the Open Enclave I/O subsystem](../../docs/UsingTheIOSubsystem.md#opting-in) for details). So in order to build successfully, you would need to link with liboehostsock and libhostresolver libraries to satisfy the dependency.
+Note: This sample uses an OE SDK customized version of mbedtls library for TLS channel connection. It has MBEDTLS_NET_C component enabled, which has a dependency on the newly added [socket support](../../docs/UsingTheIOSubsystem.md#socketh) in 0.6.0 OE SDK release (for more details see [Using the Open Enclave I/O subsystem](../../docs/UsingTheIOSubsystem.md#opting-in) for details). So in order to build successfully, you would need to link with liboehostsock and libhostresolver libraries to satisfy the dependency.
 
 ### GNU Make
 
