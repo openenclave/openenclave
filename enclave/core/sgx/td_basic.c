@@ -100,7 +100,10 @@ void td_init(td_t* td)
         oe_rdrand is a warpper of rdrand. rdrand is a hardware-implemented
         Pseudo Random Generator, and it is repeatedly seeeded by a high entropy
         source. */
-        td->base.stack_guard = oe_rdrand();
+        // TODO: Find a way to use a random stack guard. The problem is that
+        // in SGX-LKL, a thread can be resumed on a different ethread than it
+        // was initially run on.
+        td->base.stack_guard = 0x0;
 
         /* Set the magic number */
         td->magic = TD_MAGIC;
