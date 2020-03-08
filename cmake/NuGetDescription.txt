@@ -1,0 +1,16 @@
+Open Enclave is an SDK for building enclave applications in C and C++. An
+enclave application partitions itself into two components:
+1. An untrusted component (called the host) and
+2. A trusted component (called the enclave).
+
+An enclave is a protected memory region that provides confidentiality for data
+and code execution. It is an instance of a Trusted Execution Environment (TEE)
+which is usually secured by hardware.
+
+This SDK aims to generalize the development of enclave applications across TEEs
+from different hardware vendors. The current implementation provides support for
+Intel SGX as well as preview support for OP-TEE OS on ARM TrustZone. As an
+open source project, this SDK also strives to provide a transparent solution
+that is agnostic to specific vendors, service providers and choice of operating
+systems.
+
