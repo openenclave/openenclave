@@ -168,7 +168,7 @@ void oe_free(void* p)
 
 oe_result_t oe_memset_s(void* dst, size_t dst_size, int value, size_t num_bytes)
 {
-    assert(dst && dst_size < num_bytes);
+    num_bytes = dst_size < num_bytes ? dst_size : num_bytes;
     memset(dst, value, num_bytes);
     return OE_OK;
 }
@@ -179,7 +179,7 @@ oe_result_t oe_memcpy_s(
     const void* src,
     size_t num_bytes)
 {
-    assert(dst && src && dst_size < num_bytes);
+    num_bytes = dst_size < num_bytes ? dst_size : num_bytes;
     memcpy(dst, src, num_bytes);
     return OE_OK;
 }
@@ -312,4 +312,53 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void))
     _spin_unlock(&_lock);
 
     return OE_OK;
+}
+
+oe_result_t oe_get_revocation_info_ocall(
+    uint8_t fmspc[6],
+    size_t num_crl_urls,
+    const char* crl_urls0,
+    const char* crl_urls1,
+    const char* crl_urls2,
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_issuer_chain,
+    size_t tcb_issuer_chain_size,
+    size_t* tcb_issuer_chain_size_out,
+    void* crl0,
+    size_t crl0_size,
+    size_t* crl0_size_out,
+    void* crl1,
+    size_t crl1_size,
+    size_t* crl1_size_out,
+    void* crl2,
+    size_t crl2_size,
+    size_t* crl2_size_out,
+    void* crl_issuer_chain0,
+    size_t crl_issuer_chain0_size,
+    size_t* crl_issuer_chain0_size_out,
+    void* crl_issuer_chain1,
+    size_t crl_issuer_chain1_size,
+    size_t* crl_issuer_chain1_size_out,
+    void* crl_issuer_chain2,
+    size_t crl_issuer_chain2_size,
+    size_t* crl_issuer_chain2_size_out)
+{
+    fprintf(stderr, "*** %s()\n", __FUNCTION__);
+    abort();
+    return OE_FAILURE;
+}
+
+oe_result_t oe_get_qe_identity_info_ocall(
+    void* qe_id_info,
+    size_t qe_id_info_size,
+    size_t* qe_id_info_size_out,
+    void* issuer_chain,
+    size_t issuer_chain_size,
+    size_t* issuer_chain_size_out)
+{
+    fprintf(stderr, "*** %s()\n", __FUNCTION__);
+    abort();
+    return OE_FAILURE;
 }
