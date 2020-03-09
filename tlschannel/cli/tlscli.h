@@ -15,6 +15,16 @@ typedef struct _tlscli_err
 
 void tlscli_put_err(const tlscli_err_t* err);
 
+typedef int (*verify_identity_function_t)(
+    void* arg,
+    const uint8_t* mrenclave,
+    size_t mrenclave_size,
+    const uint8_t* mrsigner,
+    size_t mrsigner_size,
+    const uint8_t* isvprodid,
+    size_t isvprodid_size,
+    uint64_t isvsvn);
+
 typedef struct _tlscli
 {
     mbedtls_ssl_context ssl;
@@ -22,6 +32,8 @@ typedef struct _tlscli
     mbedtls_ssl_config conf;
     mbedtls_x509_crt crt;
     mbedtls_pk_context pk;
+    verify_identity_function_t verify_identity;
+    void* verify_identity_arg;
 } tlscli_t;
 
 int tlscli_startup(tlscli_err_t* err);
@@ -32,6 +44,8 @@ int tlscli_connect(
     bool debug,
     const char* host,
     const char* port,
+    verify_identity_function_t verify_identity,
+    void* verify_identity_arg,
     const char* crt_path,
     const char* pk_path,
     tlscli_t** cli_out,

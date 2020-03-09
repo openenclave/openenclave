@@ -3,6 +3,8 @@
 
 #define _GNU_SOURCE
 
+#include <openenclave/enclave.h>
+
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -10,11 +12,13 @@
 #include <sys/stat.h>
 
 #include <mbedtls/certs.h>
+#include <mbedtls/cmac.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/debug.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/error.h>
 #include <mbedtls/net_sockets.h>
+#include <mbedtls/oid.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/rsa.h>
@@ -140,20 +144,59 @@ done:
     return ret;
 }
 
+static oe_result_t _enclave_identity_verifier(
+    oe_identity_t* identity,
+    void* arg)
+{
+    tlscli_t* cli = (tlscli_t*)arg;
+
+    if (!identity || !cli || !cli->verify_identity)
+        return OE_VERIFY_FAILED;
+
+    return cli->verify_identity(
+        cli->verify_identity_arg,
+        identity->unique_id,
+        OE_UNIQUE_ID_SIZE,
+        identity->signer_id,
+        OE_SIGNER_ID_SIZE,
+        identity->product_id,
+        OE_PRODUCT_ID_SIZE,
+        identity->security_version);
+}
+
 static int _cert_verify_callback(
     void* data,
     mbedtls_x509_crt* crt,
     int depth,
     uint32_t* flags)
 {
-    (void)data;
-    (void)crt;
-    (void)depth;
-    (void)flags;
+    int ret = MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
+    unsigned char* cert_buf = NULL;
+    size_t cert_size = 0;
 
+    (void)data;
+    (void)depth;
+
+    *flags = (uint32_t)MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
+
+    cert_buf = crt->raw.p;
+    cert_size = crt->raw.len;
+
+    if (cert_size <= 0)
+        goto done;
+
+    oe_result_t r;
+    if ((r = oe_verify_attestation_certificate(
+             cert_buf, cert_size, _enclave_identity_verifier, data)) != OE_OK)
+    {
+        goto done;
+    }
+
+    ret = 0;
     *flags = 0;
 
-    return 0;
+done:
+    return ret;
 }
 
 /* The mbedtls debug tracing function */
@@ -239,6 +282,8 @@ int tlscli_connect(
     bool debug,
     const char* host,
     const char* port,
+    verify_identity_function_t verify_identity,
+    void* verify_identity_arg,
     const char* crt_path,
     const char* pk_path,
     tlscli_t** cli_out,
@@ -284,6 +329,9 @@ int tlscli_connect(
             _put_err(err, "calloc() failed: out of memory");
             goto done;
         }
+
+        cli->verify_identity = verify_identity;
+        cli->verify_identity_arg = verify_identity_arg;
 
         mbedtls_net_init(&cli->net);
         mbedtls_ssl_init(&cli->ssl);
