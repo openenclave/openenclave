@@ -226,26 +226,7 @@ Only the signed version of the enclave `helloworldenc.signed` is loadable on Lin
 Here is a listing of key components in the helloworld/enclave/Makefile. Also see the [complete listing](enclave/Makefile).
 
 ```make
-# Detect C and C++ compiler options
-# if not gcc, default to clang-7
-
-COMPILER=$(notdir $(CC))
-ifeq ($(COMPILER), gcc)
-        USE_GCC = true
-endif
-
-ifeq ($(USE_GCC),)
-        CC = clang-7
-        COMPILER=clang
-endif
-
-ifeq ($(LVI_MITIGATION), ControlFlow)
-        ifeq ($(LVI_MITIGATION_BINDIR),)
-            $(error LVI_MITIGATION_BINDIR is not set)
-        endif
-        CC := $(LVI_MITIGATION_BINDIR)/$(CC)
-        COMPILER := $(COMPILER)-lvi-cfg
-endif
+include ../../config.mk
 
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
@@ -258,15 +239,15 @@ all:
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../helloworld.edl --trusted
-	$(CC) -c $(CFLAGS) enc.c -o enc.o
-	$(CC) -c $(CFLAGS) helloworld_t.c -o helloworld_t.o
+	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 enc.c -o enc.o
+	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 helloworld_t.c -o helloworld_t.o
 	$(CC) -o helloworldenc helloworld_t.o enc.o $(LDFLAGS)
 
 sign:
-	oesign -e helloworldenc -c helloworld.conf -k private.pem
+	oesign sign -e helloworldenc -c helloworld.conf -k private.pem
 
 clean:
-	rm -f enc.o helloworldenc helloworldenc.signed private.pem ...
+	rm -f enc.o helloworldenc helloworldenc.signed private.pem public.pem helloworld_t.o helloworld_t.h helloworld_t.c helloworld_args.h
 
 keys:
 	openssl genrsa -out private.pem -3 3072

@@ -28,6 +28,8 @@ if (WIN32)
         DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
         RENAME README.md)
 else ()
+  install(FILES config.mk
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
   install(FILES README_Linux.md
         DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
         RENAME README.md)
