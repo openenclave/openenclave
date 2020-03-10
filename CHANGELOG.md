@@ -7,8 +7,16 @@ breaking changes should be noted here. It should be more concise than `git log`.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-[Unreleased][Unreleased_log]
-------------
+[v0.8.2][v0.8.2_log] - 2020-03-10
+---------------------
+
+### Added
+- OpenSSL engine support to oesign to allow signing keys via engines.
+- NuGet package validation using CI/CD.
+
+### Changed
+- Optimized switchless ocall scheduling.
+- oedebugrt.pdb is part of the SDK package and needs to be copied to the host application folder along with oedebugrt.dll to enable debugging on Windows.
 
 [v0.8.1][v0.8.1_log] - 2020-02-07
 ---------------------
@@ -287,7 +295,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.8.1...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.8.2...HEAD
+
+[v0.8.2_log]:https://github.com/openenclave/openenclave/compare/v0.8.1...v0.8.2
 
 [v0.8.1_log]:https://github.com/openenclave/openenclave/compare/v0.8.0...v0.8.1
 
