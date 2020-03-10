@@ -8,6 +8,6 @@ oeedl_file(../socket_test.edl
 
 add_enclave(TARGET socket_enc SOURCES enc.c ${socket_test_t})
 
-target_include_directories(socket_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(socket_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(socket_enc oelibc oehostsock)
+enclave_link_libraries(socket_enc oelibc oehostsock)

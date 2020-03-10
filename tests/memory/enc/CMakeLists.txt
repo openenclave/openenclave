@@ -12,6 +12,5 @@ add_enclave(TARGET memory_enc UUID 719ff522-610b-43bd-9991-c4d52a91a7e1
   stress.c
   ${gen})
 
-
-target_include_directories(memory_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(memory_enc oelibc)
+enclave_include_directories(memory_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_link_libraries(memory_enc oelibc)

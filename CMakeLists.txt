@@ -25,12 +25,25 @@ endif ()
 set(CMAKE_C_COMPILER_NAMES clang-7 cc)
 set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Will be overwritten during the cmake initialization.
+set(LVI_MITIGATION "None" CACHE STRING "Build with LVI mitigation.")
+set(LVI_MITIGATION_BINDIR "None" CACHE STRING "Path to the LVI mitigation bindir.")
+# On Unix, configuring cmake to adopt the customized compilation toolchain for LVI mitigation.
+# Note that this has be done before `project`.
+if (UNIX AND LVI_MITIGATION MATCHES ControlFlow)
+  if (${LVI_MITIGATION_BINDIR} MATCHES None)
+    message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
+  endif()
+  include(configure_lvi_mitigation_build)
+  configure_lvi_mitigation_build(${LVI_MITIGATION_BINDIR})
+endif()
+
 project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM}
   HOMEPAGE_URL "https://github.com/openenclave/openenclave")
 set(PROJECT_VERSION ${OE_VERSION})
 set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
-
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # Collect Git info
 if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
@@ -151,6 +164,9 @@ else ()
   endif ()
 endif ()
 
+# See `cmake/enclave_cmake_wrappers.cmake` for wrapper functions.
+include(enclave_cmake_wrappers)
+
 # This is always included.
 # maybe_build_using_clangw will be a noop if USE_CLANGW is false.
 include(maybe_build_using_clangw)
@@ -235,6 +251,34 @@ if (WIN32)
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
 endif ()
 
+# Install necessary files for LVI mitigation.
+if (LVI_MITIGATION MATCHES ControlFlow)
+  if (UNIX)
+    install(FILES ./scripts/lvi-mitigation/install_lvi_mitigation_bindir
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+    install(FILES ./scripts/lvi-mitigation/clang-7-lvi
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+    install(FILES ./scripts/lvi-mitigation/clang++-7-lvi
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+    install(FILES ./scripts/lvi-mitigation/g++-lvi
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+    install(FILES ./scripts/lvi-mitigation/gcc-lvi
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+    install(FILES ./cmake/configure_lvi_mitigation_build.cmake
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+  else ()
+    # For Windows.
+    install(FILES ./scripts/lvi-mitigation/lvi-mitigation.py
+      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+  endif()
+  install(FILES ./cmake/apply_lvi_mitigation.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+endif()
 
 install(FILES LICENSE THIRD_PARTY_NOTICES
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/licenses)

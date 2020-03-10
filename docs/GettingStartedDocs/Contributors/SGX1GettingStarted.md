@@ -32,6 +32,11 @@ Run the following command from the root of the source tree:
 sudo ansible-playbook scripts/ansible/oe-contributors-setup-sgx1.yml
 ```
 
+To support LVI mitigation, the command creates
+`/usr/local/lvi-mitigation/bin` that includes the dependencies.
+
+NOTE: The Ansible playbook command from above will try and execute tasks with `sudo` rights. Make sure that the user running the playbook has `sudo` rights, and if it uses a `sudo` password add the following extra parameter `--ask-become-pass`.
+
 ## Build
 
 To build first create a build directory ("build/" in the example below) and change into it.
@@ -48,7 +53,17 @@ cmake -DHAS_QUOTE_PROVIDER=OFF ..
 make
 ```
 
-Refer to the [Advanced Build Information](AdvancedBuildInfo.md) documentation for further information.
+To build with LVI mitigation, run
+
+```bash
+cmake -DHAS_QUOTE_PROVIDER=OFF .. \
+-DLVI_MITIGATION=ControlFlow \
+-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin
+make
+```
+
+Refer to [Advanced Build Information](AdvancedBuildInfo.md) and
+[LVI Mitigation](AdvancedBuildInfo.md#lvi-mitigation) documentation for further information.
 
 ## Run unit tests
 

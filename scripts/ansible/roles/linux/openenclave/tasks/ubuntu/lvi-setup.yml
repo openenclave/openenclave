@@ -1,0 +1,106 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+#
+
+---
+- set_fact:
+    local_lvi_directory: '/usr/local/lvi-mitigation'
+    scripts_lvi_directory: 'scripts/lvi-mitigation'
+
+- name: Obtain the current git repository
+  shell: "git rev-parse --show-toplevel"
+  changed_when: false
+  register: git_repository
+
+- name: Detect currently installed glibc version
+  shell: "ldd --version | awk '/ldd/{print $NF}'"
+  changed_when: false
+  register: glibc_version
+
+- name: Detect currently installed clang
+  shell: "which clang-7"
+  changed_when: false
+  register: clang
+  ignore_errors: yes
+
+- name: Detect currently installed clang++-7
+  shell: "which clang++-7"
+  changed_when: false
+  register: clangcpp
+  ignore_errors: yes
+
+- name: Detect currently installed gcc
+  shell: "which gcc"
+  changed_when: false
+  register: gcc
+
+- name: Detect currently installed gcpp
+  shell: "which g++"
+  changed_when: false
+  register: gcpp
+
+- name: Creates directories
+  file:
+    path: '{{ local_lvi_directory }}/bin'
+    state: directory
+
+- name: Download as/ld tarball
+  get_url:
+    url: 'https://download.01.org/intel-sgx/sgx-linux/2.9/as.ld.objdump.gold.r1.tar.gz'
+    dest: '{{ git_repository.stdout }}/{{ scripts_lvi_directory }}/'
+
+- name: Extract as and ld binaries
+  unarchive:
+    src: '{{ git_repository.stdout }}/{{ scripts_lvi_directory }}/as.ld.objdump.gold.r1.tar.gz'
+    dest: '{{ local_lvi_directory }}/'
+
+- name: Copy out LVI binaries
+  copy:
+    src: '{{ item.path }}'
+    dest: '{{ local_lvi_directory }}/'
+    mode: 'u=rx,g=rx,o=rx'
+  with_items:
+    - { path: '{{ git_repository.stdout }}/{{ scripts_lvi_directory }}/clang-7-lvi'}
+    - { path: '{{ git_repository.stdout }}/{{ scripts_lvi_directory }}/clang++-7-lvi'}
+    - { path: '{{ git_repository.stdout }}/{{ scripts_lvi_directory }}/gcc-lvi'}
+    - { path: '{{ git_repository.stdout }}/{{ scripts_lvi_directory }}/g++-lvi'}
+
+- name: Create symbolic link to as
+  file:
+    src: '{{ local_lvi_directory }}/external/toolset/as'
+    dest: '{{ local_lvi_directory }}/bin/as'
+    state: link
+    force: yes
+
+- name: Create symbolic link to ld
+  file:
+    src: '{{ local_lvi_directory }}/external/toolset/ld'
+    dest: '{{ local_lvi_directory }}/bin/ld'
+    state: link
+    force: yes
+  when: glibc_version.stdout >= '2.27'
+
+- name: Create symbolic links to clang
+  file:
+    src: '{{ item.path }}'
+    dest: '{{ local_lvi_directory }}/bin/{{ item.dest }}'
+    state: link
+    force: yes
+  with_items:
+    - { path: '{{ local_lvi_directory }}/clang-7-lvi', dest: 'clang-7' }
+    - { path: '{{ local_lvi_directory }}/clang++-7-lvi', dest: 'clang++-7' }
+    - { path: '{{ clang.stdout }}', dest: 'clang-7_symlink' }
+    - { path: '{{ clangcpp.stdout }}', dest: 'clang++-7_symlink'}
+  when: clang.stdout != "" and clangcpp.stdout != ""
+
+- name: Create symbolic links to gcc
+  file:
+    src: '{{ item.path }}'
+    dest: '{{ local_lvi_directory }}/bin/{{ item.dest }}'
+    state: link
+    force: yes
+  with_items:
+    - { path: '{{ gcc.stdout }}', dest: 'gcc_symlink', when: gcc.stdout != "" }
+    - { path: '{{ gcpp.stdout }}', dest: 'g++_symlink', when: gcpp.stdout != "" }
+    - { path: '{{ local_lvi_directory }}/gcc-lvi', dest: 'gcc' }
+    - { path: '{{ local_lvi_directory }}/g++-lvi', dest: 'g++' }

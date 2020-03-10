@@ -27,7 +27,7 @@ elseif(OE_TRUSTZONE)
     message("TODO: ADD ARM files.")
 endif()
 
-add_library(oeenclave STATIC
+add_enclave_library(oeenclave STATIC
     ../common/attest_plugin.c
     ../common/datetime.c
     asym_keys.c
@@ -39,7 +39,7 @@ add_library(oeenclave STATIC
 maybe_build_using_clangw(oeenclave)
 
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
-  target_compile_options(oeenclave PRIVATE -Wjump-misses-init)
+  enclave_compile_options(oeenclave PRIVATE -Wjump-misses-init)
 
   if(OE_TRUSTZONE)
     target_compile_options(oeenclave PUBLIC ${OE_TZ_TA_C_FLAGS})
@@ -48,14 +48,13 @@ endif()
 
 # Add location of the oeedger8r-generated trusted headers for internal
 # functions implemented via EDL files.
-target_include_directories(oeenclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/core)
+enclave_include_directories(oeenclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/core)
 
-target_link_libraries(oeenclave PUBLIC oecryptombed)
+enclave_link_libraries(oeenclave PUBLIC oecryptombed)
 if(OE_TRUSTZONE)
-    target_link_libraries(oeenclave PUBLIC oelibutee)
+    enclave_link_libraries(oeenclave PUBLIC oelibutee)
 endif()
 
-set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
-
-install(TARGETS oeenclave EXPORT openenclave-targets
+set_enclave_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
+install_enclaves(TARGETS oeenclave EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

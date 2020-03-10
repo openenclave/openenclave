@@ -84,48 +84,9 @@ macro(add_enclave)
   endif()
 endmacro()
 
-function(add_enclave_sgx)
-  set(options CXX)
+function(sign_enclave_sgx)
   set(oneValueArgs TARGET CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID)
-  set(multiValueArgs SOURCES)
-  cmake_parse_arguments(ENCLAVE
-    "${options}"
-    "${oneValueArgs}"
-    "${multiValueArgs}"
-    ${ARGN})
-
-  add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
-  target_link_libraries(${ENCLAVE_TARGET} oeenclave)
-  if (ENCLAVE_CXX)
-    target_link_libraries(${ENCLAVE_TARGET} oelibcxx)
-  endif ()
-
-  # Cross-compile if needed.
-  if (USE_CLANGW)
-    maybe_build_using_clangw(${ENCLAVE_TARGET})
-
-    # maybe_build_using_clangw populates variables in its parent scope (ie current scope)
-    # Propagate these variables back up to the caller.
-
-    # Propagate library names variables
-    set(CMAKE_STATIC_LIBRARY_PREFIX "${CMAKE_STATIC_LIBRARY_PREFIX}" PARENT_SCOPE)
-    set(CMAKE_STATIC_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}" PARENT_SCOPE)
-
-    # Propagate library tool variables
-    set(CMAKE_C_CREATE_STATIC_LIBRARY "${CMAKE_C_CREATE_STATIC_LIBRARY}" PARENT_SCOPE)
-    set(CMAKE_CXX_CREATE_STATIC_LIBRARY "${CMAKE_CXX_CREATE_STATIC_LIBRARY}" PARENT_SCOPE)
-
-    # Propagate linker variables
-    set(CMAKE_EXECUTABLE_SUFFIX "${CMAKE_EXECUTABLE_SUFFIX}" PARENT_SCOPE)
-    set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES}" PARENT_SCOPE)
-    set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_LINK_EXECUTABLE}" PARENT_SCOPE)
-    set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES}" PARENT_SCOPE)
-    set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}" PARENT_SCOPE)
-
-    # Propagate cpmpiler variables
-    set(CMAKE_C_COMPILE_OBJECT "${CMAKE_C_COMPILE_OBJECT}" PARENT_SCOPE)
-    set(CMAKE_CXX_COMPILE_OBJECT "${CMAKE_CXX_COMPILE_OBJECT}" PARENT_SCOPE)
-  endif()
+  cmake_parse_arguments(ENCLAVE "" "${oneValueArgs}" "" ${ARGN})
 
    if (NOT ENCLAVE_CONFIG)
       # Since the config is not specified, the enclave wont be signed.
@@ -166,6 +127,55 @@ function(add_enclave_sgx)
 
   # Add a custom target with `ALL` semantics so these targets are always built.
   add_custom_target(${ENCLAVE_TARGET}_signed_target ALL DEPENDS ${SIGNED_LOCATION})
+endfunction()
+
+function(add_enclave_sgx)
+  set(options CXX)
+  set(oneValueArgs TARGET CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID)
+  set(multiValueArgs SOURCES)
+  cmake_parse_arguments(ENCLAVE
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN})
+
+  add_enclave_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
+  enclave_link_libraries(${ENCLAVE_TARGET} oeenclave)
+  if (ENCLAVE_CXX)
+    enclave_link_libraries(${ENCLAVE_TARGET} oelibcxx)
+  endif ()
+
+  # Cross-compile if needed.
+  if (USE_CLANGW)
+    maybe_build_using_clangw(${ENCLAVE_TARGET})
+
+    # maybe_build_using_clangw populates variables in its parent scope (ie current scope)
+    # Propagate these variables back up to the caller.
+
+    # Propagate library names variables
+    set(CMAKE_STATIC_LIBRARY_PREFIX "${CMAKE_STATIC_LIBRARY_PREFIX}" PARENT_SCOPE)
+    set(CMAKE_STATIC_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}" PARENT_SCOPE)
+
+    # Propagate library tool variables
+    set(CMAKE_C_CREATE_STATIC_LIBRARY "${CMAKE_C_CREATE_STATIC_LIBRARY}" PARENT_SCOPE)
+    set(CMAKE_CXX_CREATE_STATIC_LIBRARY "${CMAKE_CXX_CREATE_STATIC_LIBRARY}" PARENT_SCOPE)
+
+    # Propagate linker variables
+    set(CMAKE_EXECUTABLE_SUFFIX "${CMAKE_EXECUTABLE_SUFFIX}" PARENT_SCOPE)
+    set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES}" PARENT_SCOPE)
+    set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_LINK_EXECUTABLE}" PARENT_SCOPE)
+    set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES}" PARENT_SCOPE)
+    set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}" PARENT_SCOPE)
+
+    # Propagate cpmpiler variables
+    set(CMAKE_C_COMPILE_OBJECT "${CMAKE_C_COMPILE_OBJECT}" PARENT_SCOPE)
+    set(CMAKE_CXX_COMPILE_OBJECT "${CMAKE_CXX_COMPILE_OBJECT}" PARENT_SCOPE)
+  endif()
+
+  sign_enclave_sgx(TARGET ${ENCLAVE_TARGET} CONFIG ${ENCLAVE_CONFIG} KEY ${ENCLAVE_KEY} SIGNING_ENGINE ${ENCLAVE_SIGNING_ENGINE} ENGINE_LOAD_PATH ${ENCLAVE_ENGINE_LOAD_PATH} ENGINE_KEY_ID ${ENCLAVE_ENGINE_KEY_ID})
+  if (LVI_MITIGATION MATCHES ControlFlow)
+    sign_enclave_sgx(TARGET ${ENCLAVE_TARGET}-lvi-cfg CONFIG ${ENCLAVE_CONFIG} KEY ${ENCLAVE_KEY} SIGNING_ENGINE ${ENCLAVE_SIGNING_ENGINE} ENGINE_LOAD_PATH ${ENCLAVE_ENGINE_LOAD_PATH} ENGINE_KEY_ID ${ENCLAVE_ENGINE_KEY_ID})
+  endif()
 endfunction()
 
 macro(add_enclave_optee)

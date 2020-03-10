@@ -8,4 +8,4 @@ if (BUILD_ENCLAVES)
 endif()
 
 add_enclave_test(tests/VectorException VectorException_host VectorException_enc)
-set_tests_properties(tests/VectorException PROPERTIES SKIP_RETURN_CODE 2)
+set_enclave_tests_properties(tests/VectorException PROPERTIES SKIP_RETURN_CODE 2)

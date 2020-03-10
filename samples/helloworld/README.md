@@ -5,6 +5,7 @@
 - Minimum code needed for an Open Enclave app
 - Help understand the basic components an OE(Open Enclave) application
 - Demonstrate how to build, sign, and run an OE image
+- Demonstrate how to optionally apply LVI mitigation to enclave code
 - Also runs in OE simulation mode
 
 Prerequisite: you may want to read [Common Sample Information](../README.md#common-sample-information) before going further
@@ -238,6 +239,14 @@ ifeq ($(USE_GCC),)
         COMPILER=clang
 endif
 
+ifeq ($(LVI_MITIGATION), ControlFlow)
+        ifeq ($(LVI_MITIGATION_BINDIR),)
+            $(error LVI_MITIGATION_BINDIR is not set)
+        endif
+        CC := $(LVI_MITIGATION_BINDIR)/$(CC)
+        COMPILER := $(COMPILER)-lvi-cfg
+endif
+
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
 
@@ -281,7 +290,16 @@ The Makefile's `build` target is for compiling enclave source code and linking i
 - oesyscall
 - oecore
 
-`helloworldenc is the resulting enclave executable (unsigned)
+When compiling with LVI mitigation, it links against the LVI-mitigated versions of those libraries instead:
+
+- oeenclave-lvi-cfg
+- mbedx509-lvi-cfg
+- mbedcrypto-lvi-cfg
+- oelibc-lvi-cfg
+- oesyscall-lvi-cfg
+- oecore-lvi-cfg
+
+`helloworldenc` is the resulting enclave executable (unsigned).
 
 ##### Sign
 
@@ -496,10 +514,13 @@ The following files are generated during the build.
 
 ## Build and run
 
-Note that there are two different build systems supported, one using GNU Make and
-`pkg-config`, the other using CMake.
+Open Enclave SDK supports building the sample on both Linux and Windows.
+Linux supports two types of build systems, GNU Make with `pkg-config` and CMake,
+while Windows supports only CMake.
 
-### CMake
+### Linux
+
+#### CMake
 
 This uses the CMake package provided by the Open Enclave SDK.
 
@@ -510,13 +531,71 @@ cmake ..
 make run
 ```
 
-### GNU Make
+#### GNU Make
 
 ```bash
 cd helloworld
 make build
 make run
 ```
+
+### Windows
+
+#### CMake
+
+```bash
+mkdir build && cd build
+cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs
+ninja
+ninja run
+```
+
+## Build and run with LVI mitigation
+
+Starting from version `0.8.2`, the Open Enclave SDK supports mitigation against the LVI vulnerability.
+With this support, you can build the sample with LVI mitigation, which ensures:
+- All the enclave code is compiled with the mitigation.
+- All the enclave code is linked against the mitigated version of Open Enclave libraries.
+
+### Linux
+
+#### Prerequisites
+
+Use the `install_lvi_mitigation_bindir` script in the installation package to install the
+dependencies the LVI mitigation.
+
+The following exapmle shows how to use the script (assume the package resides in `/opt/openenclave`).
+
+```bash
+~/openenclave/share/openenclave/samples$ /opt/openenclave/bin/scripts/lvi-mitigation/install_lvi_mitigation_bindir
+Do you want to install in current directory? [yes/no]: yes
+...
+Installed: /home/yourname/openenclave/share/openenclave/samples/lvi_mitigation_bin
+```
+
+The directory `/home/yourname/openenclave/share/openenclave/samples/lvi_mitigation_bin` should contain all
+the dependencies.
+
+#### GNU Make
+
+```bash
+make LVI_MITIGATION=ControlFlow \
+LVI_MITIGATION_BINDIR=/home/yourname/openenclave/share/openenclave/samples/lvi_mitigation_bin \
+build
+make run
+```
+
+### Windows
+
+#### CMake
+
+```bash
+mkdir build && cd build
+cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DLVI_MITIGATION=ControlFlow
+ninja
+ninja run
+```
+
 #### Note
 
 helloworld sample can run under OE simulation mode.

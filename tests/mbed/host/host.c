@@ -13,6 +13,16 @@
 
 #include "mbed_u.h"
 
+void remove_postfix(char* str, char* postfix)
+{
+    char* match;
+    match = strstr(str, postfix);
+    if (match != NULL)
+    {
+        memset(match, '\0', sizeof(postfix));
+    }
+}
+
 char* find_data_file(char* str, size_t size)
 {
     char* tail = ".datax";
@@ -30,6 +40,9 @@ char* find_data_file(char* str, size_t size)
         printf("!!File is not in format !!!!\n");
         return token;
     }
+    /* Remove lvi-mitigation-specific postfix to ensure the test correctly
+     * finds the data file. */
+    remove_postfix(token, "-lvi-cfg");
 
     strncat(str, tail, strlen(tail));
     printf("######## data_file: %s ###### \n", token);

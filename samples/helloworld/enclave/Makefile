@@ -14,6 +14,14 @@ ifeq ($(USE_GCC),)
         COMPILER=clang
 endif
 
+ifeq ($(LVI_MITIGATION), ControlFlow)
+        ifeq ($(LVI_MITIGATION_BINDIR),)
+            $(error LVI_MITIGATION_BINDIR is not set)
+        endif
+        CC := $(LVI_MITIGATION_BINDIR)/$(CC)
+        COMPILER := $(COMPILER)-lvi-cfg
+endif
+
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
 

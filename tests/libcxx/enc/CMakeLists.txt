@@ -6,14 +6,14 @@
 oeedl_file(../libcxx.edl enclave gen)
 
 # helper lib to contain file needed by some tests
-add_library(libcxxtest-support
+add_enclave_library(libcxxtest-support
     enc.cpp
     fuzzing.cpp
     memory_resource.cpp
     ${gen}
     )
 
-target_compile_options(libcxxtest-support PRIVATE
+enclave_compile_options(libcxxtest-support PRIVATE
     -Wno-error=attributes
     -Wno-error=strict-overflow
     -Wno-error=unused-local-typedefs
@@ -22,16 +22,16 @@ target_compile_options(libcxxtest-support PRIVATE
     )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-    target_compile_options(libcxxtest-support PRIVATE
+    enclave_compile_options(libcxxtest-support PRIVATE
         -Wno-error=maybe-uninitialized
         -Wno-error=unused-but-set-variable
         )
 endif ()
 
-target_link_libraries(libcxxtest-support PRIVATE oelibcxx oeenclave)
-target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
+enclave_link_libraries(libcxxtest-support PRIVATE oelibcxx oeenclave)
+enclave_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 
-target_include_directories(libcxxtest-support PRIVATE
+enclave_include_directories(libcxxtest-support PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
         )
 
@@ -40,7 +40,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
     add_enclave(TARGET libcxxtest-${NAME}_enc UUID 486dcdcc-f0c6-4bdd-91e0-c7566794f899 CXX SOURCES
         main.cpp ${gen})
 
-    target_include_directories(libcxxtest-${NAME}_enc PRIVATE
+    enclave_include_directories(libcxxtest-${NAME}_enc PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test/support
@@ -48,7 +48,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/src/filesystem
         )
 
-      target_compile_options(libcxxtest-${NAME}_enc PRIVATE
+      enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE
 
         # These are third-party tests, so we don't care about their warnings.
         -Wno-error
@@ -63,11 +63,37 @@ function(add_libcxx_test_enc NAME CXXFILE)
     # -fsized-deallocation is passed explicity. (Note, gcc 4.7/4.8/4.9 do not support this either.)
     # NOTE: This only matters when `ENABLE_FULL_LIBCXX_TESTS=ON`.
     if (NAME MATCHES "sized_delete")
-        target_compile_options(libcxxtest-${NAME}_enc PRIVATE -fsized-deallocation)
+        enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE -fsized-deallocation)
     endif()
 
-    target_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
-    target_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support)
+    enclave_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
+    enclave_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support)
+
+    if (WIN32)
+        maybe_build_using_clangw(libcxxtest-${NAME}_enc)
+
+        # maybe_build_using_clangw populates variables in its parent scope (ie current scope)
+        # Propagate these variables back up to the caller.
+
+        # Propagate library names variables
+        set(CMAKE_STATIC_LIBRARY_PREFIX "${CMAKE_STATIC_LIBRARY_PREFIX}" PARENT_SCOPE)
+        set(CMAKE_STATIC_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}" PARENT_SCOPE)
+
+        # Propagate library tool variables
+        set(CMAKE_C_CREATE_STATIC_LIBRARY "${CMAKE_C_CREATE_STATIC_LIBRARY}" PARENT_SCOPE)
+        set(CMAKE_CXX_CREATE_STATIC_LIBRARY "${CMAKE_CXX_CREATE_STATIC_LIBRARY}" PARENT_SCOPE)
+
+        # Propagate linker variables
+        set(CMAKE_EXECUTABLE_SUFFIX "${CMAKE_EXECUTABLE_SUFFIX}" PARENT_SCOPE)
+        set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES}" PARENT_SCOPE)
+        set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_LINK_EXECUTABLE}" PARENT_SCOPE)
+        set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES}" PARENT_SCOPE)
+        set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}" PARENT_SCOPE)
+
+        # Propagate cpmpiler variables
+        set(CMAKE_C_COMPILE_OBJECT "${CMAKE_C_COMPILE_OBJECT}" PARENT_SCOPE)
+        set(CMAKE_CXX_COMPILE_OBJECT "${CMAKE_CXX_COMPILE_OBJECT}" PARENT_SCOPE)
+    endif()
 endfunction(add_libcxx_test_enc)
 
 # iterate over the supported tests and create a binary for each.

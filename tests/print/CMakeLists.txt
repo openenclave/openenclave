@@ -16,5 +16,4 @@ if (BUILD_ENCLAVES)
 else()
 
 	add_enclave_test(tests/print print_host print_enc)
-
 endif()

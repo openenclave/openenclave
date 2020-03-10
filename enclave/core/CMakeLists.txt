@@ -115,7 +115,7 @@ if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
     list(APPEND PLATFORM_SRC init_fini.c)
 endif ()
 
-add_library(oecore STATIC
+add_enclave_library(oecore STATIC
     ../../common/safecrt.c
     ../../common/argv.c
     ${MUSL_SRC_DIR}/prng/rand.c
@@ -166,23 +166,23 @@ set_source_files_properties(__secs_to_tm.c PROPERTIES
 
 maybe_build_using_clangw(oecore)
 
-add_dependencies(oecore tee_trusted_edl)
+add_enclave_dependencies(oecore tee_trusted_edl)
 if(OE_SGX)
-    add_dependencies(oecore sgx_trusted_edl)
+    add_enclave_dependencies(oecore sgx_trusted_edl)
 endif()
-target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(oecore PUBLIC oe_includes)
+enclave_link_libraries(oecore PUBLIC oe_includes)
 if (OE_TRUSTZONE)
-    target_link_libraries(oecore PUBLIC oelibutee_includes)
+    enclave_link_libraries(oecore PUBLIC oelibutee_includes)
 endif ()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
-    target_compile_options(oecore PRIVATE -Wjump-misses-init)
+    enclave_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif()
 
 # This directory contains enclave core libc headers:
-target_include_directories(oecore PRIVATE
+enclave_include_directories(oecore PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
 # Unfortunately dlmalloc uses GNU extension that allows arithmetic
@@ -194,11 +194,11 @@ if (OE_SGX)
     set_source_files_properties(sgx/keys.c PROPERTIES COMPILE_FLAGS -Wno-type-limits)
 
     # -m64 is an x86_64 specific flag
-    target_compile_options(oecore PUBLIC -m64)
+    enclave_compile_options(oecore PUBLIC -m64)
 endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
-    target_compile_options(oecore PRIVATE -Wjump-misses-init)
+    enclave_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif ()
 
 # NOTE: All code inside an enclave must be compile with "position
@@ -207,7 +207,7 @@ endif ()
 # or POSITION_INDEPENDENT_CODE, which would use the incorrect flag as
 # enclaves actually are executables.
 if (OE_SGX)
-    target_compile_options(oecore PUBLIC
+    enclave_compile_options(oecore PUBLIC
         -fPIE
         -nostdinc
         -fstack-protector-strong
@@ -235,14 +235,14 @@ if (OE_SGX)
         # user. There are valid reasons for an end user to use built-ins.
         $<BUILD_INTERFACE:-fno-builtin-malloc -fno-builtin-calloc -fno-builtin>)
 elseif (OE_TRUSTZONE)
-    target_compile_options(oecore PUBLIC
+    enclave_compile_options(oecore PUBLIC
         -fvisibility=hidden
         ${OE_TZ_TA_C_FLAGS})
 endif()
 
-target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
+enclave_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
-target_compile_definitions(oecore
+enclave_compile_definitions(oecore
     PUBLIC
     OE_BUILD_ENCLAVE
     # NOTE: This definition is public to the rest of our project's
@@ -251,24 +251,24 @@ target_compile_definitions(oecore
     $<BUILD_INTERFACE:OE_API_VERSION=2>)
 
 if(HAS_QUOTE_PROVIDER)
-    target_compile_definitions(oecore PUBLIC OE_LINK_SGX_DCAP_QL)
+    enclave_compile_definitions(oecore PUBLIC OE_LINK_SGX_DCAP_QL)
 endif()
 
 if(USE_DEBUG_MALLOC)
-    target_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
+    enclave_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
     message("USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
 endif()
 
 # Interface link flags for enclaves.
 if(OE_SGX)
-    target_link_libraries(oecore INTERFACE
+    enclave_link_libraries(oecore INTERFACE
         -nostdlib -nodefaultlibs -nostartfiles
         -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
         -Wl,-z,noexecstack
         -Wl,-z,now
         -Wl,-gc-sections)
 elseif(OE_TRUSTZONE)
-    target_link_libraries(oecore INTERFACE
+    enclave_link_libraries(oecore INTERFACE
         -nostdlib -nodefaultlibs -nostartfiles
         --no-undefined
         -pie
@@ -277,5 +277,5 @@ elseif(OE_TRUSTZONE)
         --as-needed)
 endif()
 
-set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
-install (TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+set_enclave_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
+install_enclaves(TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
