@@ -13,4 +13,3 @@ Intel SGX as well as preview support for OP-TEE OS on ARM TrustZone. As an
 open source project, this SDK also strives to provide a transparent solution
 that is agnostic to specific vendors, service providers and choice of operating
 systems.
-

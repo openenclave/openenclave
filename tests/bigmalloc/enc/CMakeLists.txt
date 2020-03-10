@@ -12,5 +12,5 @@ add_custom_command(
 # to test if a big enclave can be signed.
 add_enclave(TARGET bigmalloc_enc UUID e4a54387-25fe-4b8f-b1ba-579eb525144f CONFIG sign.conf SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/bigmalloc_t.c)
 
-target_include_directories(bigmalloc_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(bigmalloc_enc oelibc)
+enclave_include_directories(bigmalloc_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_link_libraries(bigmalloc_enc oelibc)

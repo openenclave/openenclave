@@ -10,6 +10,6 @@ add_custom_command(
 
 add_enclave(TARGET hexdump_enc UUID 126830b9-eb9f-412a-89a7-bcc8a517c12e SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/hexdump_t.c)
 
-target_include_directories(hexdump_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(hexdump_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(hexdump_enc oelibc)
+enclave_link_libraries(hexdump_enc oelibc)

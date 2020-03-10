@@ -11,4 +11,4 @@ add_custom_command(
 
 add_enclave(TARGET datagram_enc SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/test_datagram_t.c)
 
-target_link_libraries(datagram_enc oelibc oehostsock oeenclave)
+enclave_link_libraries(datagram_enc oelibc oehostsock oeenclave)

@@ -59,7 +59,7 @@ endif()
 # Sources for the three mbedtls libraries. We name the mbedcrypto library
 # as "mbedcrypto_static" because the exported target for all 3 mbedtls
 # libraries in OE is called "mbedcrypto."
-add_library(mbedcrypto_static STATIC
+add_enclave_library(mbedcrypto_static STATIC
   mbedtls/library/aes.c
   mbedtls/library/aesni.c
   mbedtls/library/arc4.c
@@ -126,7 +126,7 @@ add_library(mbedcrypto_static STATIC
   # circular library dependecies.
   mbedtls_hardware_poll.c)
 
-add_library(mbedx509 STATIC
+add_enclave_library(mbedx509 STATIC
   mbedtls/library/certs.c
   mbedtls/library/pkcs11.c
   mbedtls/library/x509.c
@@ -137,7 +137,7 @@ add_library(mbedx509 STATIC
   mbedtls/library/x509write_crt.c
   mbedtls/library/x509write_csr.c)
 
-add_library(mbedtls STATIC
+add_enclave_library(mbedtls STATIC
   mbedtls/library/debug.c
   mbedtls/library/net_sockets.c
   mbedtls/library/ssl_cache.c
@@ -155,39 +155,42 @@ maybe_build_using_clangw(mbedtls)
 
 # Change the mbedcrypto_static target to the real mbedcrypto library name.
 set_target_properties(mbedcrypto_static PROPERTIES OUTPUT_NAME "mbedcrypto")
+if (LVI_MITIGATION MATCHES ControlFlow)
+  set_target_properties(mbedcrypto_static-lvi-cfg PROPERTIES OUTPUT_NAME "mbedcrypto-lvi-cfg")
+endif()
 
 # Add the custom config file in the build interface only.
 # In the install interface, we will just replace the default
 # config file.
-target_compile_definitions(mbedcrypto_static
+enclave_compile_definitions(mbedcrypto_static
   PUBLIC $<BUILD_INTERFACE:MBEDTLS_CONFIG_FILE=<config.h$<ANGLE-R>>)
 
-target_compile_options(mbedcrypto_static PRIVATE ${MBEDTLS_COMPILE_OPTS})
-target_compile_options(mbedx509 PRIVATE ${MBEDTLS_COMPILE_OPTS})
-target_compile_options(mbedtls PRIVATE ${MBEDTLS_COMPILE_OPTS})
+enclave_compile_options(mbedcrypto_static PRIVATE ${MBEDTLS_COMPILE_OPTS})
+enclave_compile_options(mbedx509 PRIVATE ${MBEDTLS_COMPILE_OPTS})
+enclave_compile_options(mbedtls PRIVATE ${MBEDTLS_COMPILE_OPTS})
 
 # We include ${CMAKE_CURRENT_BINARY_DIR} because the generated config.h
 # from the configure_file is located there.
-target_include_directories(mbedcrypto_static
+enclave_include_directories(mbedcrypto_static
   PUBLIC   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include>
            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
 
 # Link all the libraries.
-target_link_libraries(mbedcrypto_static PUBLIC oelibc oe_includes)
-target_link_libraries(mbedx509 PUBLIC mbedcrypto_static)
-target_link_libraries(mbedtls PUBLIC mbedx509)
+enclave_link_libraries(mbedcrypto_static PUBLIC oelibc oe_includes)
+enclave_link_libraries(mbedx509 PUBLIC mbedcrypto_static)
+enclave_link_libraries(mbedtls PUBLIC mbedx509)
 
 # Install the include files and the static libraries.
-install(TARGETS mbedcrypto_static mbedx509 mbedtls
-    EXPORT openenclave-targets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install_enclaves(TARGETS mbedcrypto_static mbedx509 mbedtls
+  EXPORT openenclave-targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include/mbedtls
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/config.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/mbedtls/)
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/mbedtls/)
 
 # Create mbedcrypto export target.
-add_library(mbedcrypto INTERFACE)
-target_link_libraries(mbedcrypto INTERFACE mbedtls)
-install(TARGETS mbedcrypto EXPORT openenclave-targets)
+add_enclave_library(mbedcrypto INTERFACE)
+enclave_link_libraries(mbedcrypto INTERFACE mbedtls)
+install_enclaves(TARGETS mbedcrypto EXPORT openenclave-targets)

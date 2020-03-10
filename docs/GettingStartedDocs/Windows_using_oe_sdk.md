@@ -23,12 +23,12 @@ It contains the following subfolders:
 
 ## Configure environment variables for Open Enclave SDK for Windows
 
-- Set `OpenEnclave_DIR` to the point to the cmake directory of the Open Enclave SDK installation
+- Set `CMAKE_PREFIX_PATH` to the point to the cmake directory of the Open Enclave SDK installation
 
-As an example, if you installed the SDK to C:\openenclave, then you would set `OpenEnclave_DIR` as shown below.
+As an example, if you installed the SDK to C:\openenclave, then you would set `CMAKE_PREFIX_PATH` as shown below.
 
 ```cmd
-set OpenEnclave_DIR=C:\openenclave\lib\openenclave\cmake
+set CMAKE_PREFIX_PATH=C:\openenclave\lib\openenclave\cmake
 ```
 
 ## Samples
