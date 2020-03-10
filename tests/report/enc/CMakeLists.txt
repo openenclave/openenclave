@@ -19,7 +19,7 @@ enclave_link_libraries(report_enc oelibc)
 
 
 add_enclave(TARGET report_enc_eeid UUID 20b1a091-50da-4e57-b58c-0a8489cb64a7
-  SOURCES enc.cpp datetime.cpp ../common/tests.cpp ${gen})
+  SOURCES enc.cpp datetime.cpp ../common/tests.cpp tests_t.c ${gen})
 
 target_compile_definitions(report_enc_eeid PUBLIC EEID_ENABLED)
 

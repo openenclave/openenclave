@@ -6,10 +6,10 @@
 #include <string.h>
 
 #include <openenclave/bits/report.h>
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 

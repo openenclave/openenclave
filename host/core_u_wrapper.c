@@ -13,6 +13,9 @@
 /* Obscure the generated creation function by renaming it. */
 #define oe_create_tee_enclave __unused_oe_create_core_enclave
 
+/* Obscure the generated creation functions by renaming it. */
+#define oe_create_switchless_enclave __unused_oe_create_switchless_enclave
+
 /* The ocall edge routines will use this function to route ecalls. */
 static oe_result_t _call_core_enclave_function(
     oe_enclave_t* enclave,
