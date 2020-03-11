@@ -195,6 +195,14 @@ endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
 
+# NOTE: Building OpenEnclave using snmalloc for memory allocation is an experimental option.
+# Longer term, there will be a pluggable allocator mechanism to allow users to choose from a
+# selection of allocators.
+option(USE_SNMALLOC "[EXPERIMENTAL] Build using snmalloc. If this is not set, dlmalloc is used." OFF)
+if (NOT USE_SNMALLOC)
+  set(USE_DLMALLOC true)
+endif ()
+
 find_program(VALGRIND "valgrind")
 if (VALGRIND)
   set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")

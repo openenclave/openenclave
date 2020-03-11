@@ -66,6 +66,18 @@ endif()
 set(PLATFORM_SRC "")
 set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
+if (USE_SNMALLOC)
+    add_enclave_library(oeallocator OBJECT
+        sgx/snmalloc/snmalloc_wrapper.cpp
+    )
+    enclave_link_libraries(oeallocator PUBLIC oe_includes)
+    set_source_files_properties(sgx/snmalloc/snmalloc_wrapper.cpp PROPERTIES COMPILE_FLAGS -std=c++17\ -mcx16\ -fno-exceptions)
+    enclave_compile_options(oeallocator PUBLIC
+        -fPIC
+        -fvisibility=hidden)
+    install_enclaves(TARGETS oeallocator EXPORT openenclave-targets)
+endif ()
+
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
         ../../common/sgx/endorsements.c
@@ -137,6 +149,14 @@ if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
     list(APPEND PLATFORM_SRC init_fini.c)
 endif ()
 
+if (USE_DLMALLOC)
+    list(APPEND PLATFORM_SRC malloc.c)
+    # Unfortunately dlmalloc uses GNU extension that allows arithmetic
+    # null pointers.
+    set_source_files_properties(malloc.c
+        PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
+endif()
+
 add_enclave_library(oecore STATIC
     ../../common/safecrt.c
     ../../common/argv.c
@@ -159,7 +179,6 @@ add_enclave_library(oecore STATIC
     hexdump.c
     hostcalls.c
     intstr.c
-    malloc.c
     once.c
     printf.c
     pthread.c
@@ -199,6 +218,11 @@ if (OE_TRUSTZONE)
     enclave_link_libraries(oecore PUBLIC oelibutee_includes)
 endif ()
 
+enclave_link_libraries(oecore PUBLIC oe_includes)
+if (USE_SNMALLOC)
+    enclave_link_libraries(oecore PUBLIC oeallocator)
+endif()
+
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
     enclave_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif()
@@ -206,11 +230,6 @@ endif()
 # This directory contains enclave core libc headers:
 enclave_include_directories(oecore PRIVATE
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
-
-# Unfortunately dlmalloc uses GNU extension that allows arithmetic
-# null pointers.
-set_source_files_properties(malloc.c
-    PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
 
 if (OE_SGX)
     set_source_files_properties(sgx/keys.c PROPERTIES COMPILE_FLAGS -Wno-type-limits)
