@@ -8,4 +8,4 @@ if (BUILD_ENCLAVES)
 endif()
 
 add_enclave_test(tests/bigmalloc bigmalloc_host bigmalloc_enc_signed)
-set_tests_properties(tests/bigmalloc PROPERTIES SKIP_RETURN_CODE 2)
+set_enclave_tests_properties(tests/bigmalloc PROPERTIES SKIP_RETURN_CODE 2)

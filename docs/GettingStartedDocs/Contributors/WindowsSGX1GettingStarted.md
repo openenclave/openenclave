@@ -88,6 +88,16 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKA
 ninja
 ```
 
+To build enclaves with LVI mitigation, specify the flag `-DLVI_MITIGATION=ControlFlow`:
+```powershell
+cd C:/Users/test/openenclave
+mkdir build/x64-LVI
+cd build/x64-LVI
+cmake -G Ninja -DLVI_MITIGATION=ControlFlow -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
+ninja
+```
+Refer to the [LVI Mitigation](AdvancedBuildInfo.md#lvi-mitigation) documentation for further information.
+
 ## Run unit tests
 
 After building, run all unit test cases using `ctest` to confirm the SDK is built and working as expected.

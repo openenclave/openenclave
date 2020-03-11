@@ -5,7 +5,7 @@
 set(MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
-    add_library(oelibasm OBJECT
+    add_enclave_library(oelibasm OBJECT
         sgx/abort.S
         sgx/exp2l.S
 
@@ -22,14 +22,13 @@ if (OE_SGX)
         ${MUSLSRC}/setjmp/x86_64/longjmp.s
         ${MUSLSRC}/setjmp/x86_64/setjmp.s)
 elseif(OE_TRUSTZONE)
-    add_library(oelibasm OBJECT
+    add_enclave_library(oelibasm OBJECT
         ${MUSLSRC}/math/aarch64/sqrt.c
         ${MUSLSRC}/math/aarch64/sqrtf.c
         ${MUSLSRC}/fenv/aarch64/fenv.s
         ${MUSLSRC}/setjmp/aarch64/longjmp.s
         ${MUSLSRC}/setjmp/aarch64/setjmp.s)
 endif()
-
 
 maybe_build_using_clangw(oelibasm)
 
@@ -38,7 +37,7 @@ maybe_build_using_clangw(oelibasm)
 # So we move the assembly code into a fake library, turn off the
 # error, and then inject the objects into the actual library.
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR USE_CLANGW)
-    target_compile_options(oelibasm PRIVATE -Wno-error=unused-command-line-argument)
+    enclave_compile_options(oelibasm PRIVATE -Wno-error=unused-command-line-argument)
 endif ()
 
 set (PLATFORM_SRC "")
@@ -54,7 +53,7 @@ else()
         optee/trace.c)
 endif()
 
-add_library(oelibc STATIC
+add_enclave_library(oelibc STATIC
     atexit.c
     backtrace.c
     dladdr.c
@@ -797,24 +796,24 @@ maybe_build_using_clangw(oelibc)
 # NOTE: This is the minimum required for musl sources.
 set_property(TARGET oelibc PROPERTY C_STANDARD 99)
 
-target_compile_options(oelibc PRIVATE
+enclave_compile_options(oelibc PRIVATE
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding)
 
 if (OE_SGX)
-    target_compile_options(oelibc PRIVATE -mrdrnd)
+    enclave_compile_options(oelibc PRIVATE -mrdrnd)
 endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
-  target_compile_options(oelibc PRIVATE
+  enclave_compile_options(oelibc PRIVATE
     -fexcess-precision=standard
     -frounding-math)
 endif ()
 
 # Ignore warnings from musl sources. First, shared warnings:
 if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
-  target_compile_options(oelibc PRIVATE
+  enclave_compile_options(oelibc PRIVATE
     -Wno-missing-braces
     -Wno-parentheses
     -Wno-unknown-pragmas
@@ -825,7 +824,7 @@ endif ()
 
 # Second: compiler-specific warnings:
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
-  target_compile_options(oelibc PRIVATE
+  enclave_compile_options(oelibc PRIVATE
     -Wno-jump-misses-init
     -Wno-maybe-uninitialized
     -Wno-unknown-pragmas
@@ -834,7 +833,7 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
     -Wno-unused-value
     -Wno-unused-variable)
 elseif (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
-  target_compile_options(oelibc PRIVATE
+  enclave_compile_options(oelibc PRIVATE
     -Wno-dangling-else
     -Wno-ignored-attributes
     -Wno-logical-op-parentheses
@@ -843,32 +842,32 @@ elseif (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
     -Wno-unneeded-internal-declaration)
 endif ()
 
-target_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
+enclave_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
 
 if (USE_DEBUG_MALLOC)
-  target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+  enclave_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
 # This project (and its dependents) require the enclave headers and
 # library, and the musl headers.
-target_link_libraries(oelibc
+enclave_link_libraries(oelibc
   PUBLIC oesyscall oecore oelibc_includes
   PRIVATE oelibasm)
 
-target_include_directories(oelibc PRIVATE
+enclave_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/include
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
 
 if (OE_SGX)
-target_include_directories(oelibc PRIVATE
+enclave_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
 else()
-target_include_directories(oelibc PRIVATE
+enclave_include_directories(oelibc PRIVATE
   ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/aarch64)
 endif()
 
-set_property(TARGET oelibc PROPERTY
+set_enclave_property(TARGET oelibc PROPERTY
   ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
-install(TARGETS oelibc oelibasm EXPORT openenclave-targets
+install_enclaves(TARGETS oelibc oelibasm EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

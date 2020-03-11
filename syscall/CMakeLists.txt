@@ -25,7 +25,7 @@ add_custom_target(syscall_trusted_edl
 ##
 ##==============================================================================
 
-add_library(oesyscall STATIC
+add_enclave_library(oesyscall STATIC
     syscall_t_wrapper.c
     consolefs.c
     device.c
@@ -50,20 +50,20 @@ add_library(oesyscall STATIC
 
 maybe_build_using_clangw(oesyscall)
 
-add_dependencies(oesyscall syscall_trusted_edl)
+add_enclave_dependencies(oesyscall syscall_trusted_edl)
 
-target_include_directories(oesyscall PRIVATE
+enclave_include_directories(oesyscall PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
-target_link_libraries(oesyscall oecore)
+enclave_link_libraries(oesyscall oecore)
 
 set_source_files_properties(
     ${CMAKE_CURRENT_BINARY_DIR}/syscall_t.c
     PROPERTIES COMPILE_FLAGS -DOE_NEED_STDC_NAMES)
 
-install(TARGETS oesyscall EXPORT openenclave-targets ARCHIVE
+install_enclaves(TARGETS oesyscall EXPORT openenclave-targets ARCHIVE
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
 add_subdirectory(devices)

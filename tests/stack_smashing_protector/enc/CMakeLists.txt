@@ -11,6 +11,6 @@ add_enclave(TARGET ssp_enc SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/ssp_t.c)
 set_source_files_properties(enc.cpp PROPERTIES COMPILE_FLAGS -fstack-protector-all)
 
 # Need for the generated file ssp_t.h
-target_include_directories(ssp_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(ssp_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(ssp_enc oelibcxx)
+enclave_link_libraries(ssp_enc oelibcxx)

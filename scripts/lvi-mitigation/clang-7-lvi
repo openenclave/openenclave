@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+# shellcheck disable=SC2068 disable=SC2006 disable=SC2179
+
+function call_clang {
+    lvi_mitigation=0
+    args=()
+    for a; do
+        # Check the existence of LVI-mitigation-specific options.
+        [ "$a" == "-link-lvi-mitigation" ] && lvi_mitigation=1 && continue
+
+        if [[ "$a" == "-Wa,-mlfence-before-indirect-branch=register" ]] ||
+           [[ "$a" == "-Wa,-mlfence-before-ret=not" ]]; then
+	        lvi_mitigation=1
+	    fi
+        args+="$a "
+    done
+
+    if [ $lvi_mitigation == 0 ]; then
+        /usr/bin/clang-7 $@
+    else
+        # Ensures that the clang invokes customized
+        # `as` and `ld` instead of default one.
+        lvi_bin_path=$(dirname "$0")
+        clang_sym="$lvi_bin_path"/clang-7_symlink
+        export PATH=/bin:/usr/local:"$lvi_bin_path"
+        "$clang_sym" ${args[@]}
+    fi
+}
+
+# shellcheck disable=SC2068
+call_clang $@

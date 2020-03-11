@@ -10,7 +10,7 @@ add_custom_command(
 
 add_enclave(TARGET create_errors_enc UUID 1083bbac-751e-4d26-ada6-c254bbfbe653 SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/create_errors_t.c)
 
-target_include_directories(create_errors_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+enclave_include_directories(create_errors_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                            ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(create_errors_enc oelibc)
+enclave_link_libraries(create_errors_enc oelibc)

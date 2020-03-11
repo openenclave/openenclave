@@ -32,12 +32,22 @@ function(maybe_build_using_clangw OE_TARGET)
     endif()
 
     # Add compile options from compiler_settings.cmake
-    target_compile_options(${OE_TARGET} PRIVATE
-        -Wall -Werror -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers
-        -fno-strict-aliasing
-        -mxsave
-        -fno-builtin-malloc -fno-builtin-calloc -fno-builtin
-        -mllvm -x86-speculative-load-hardening)
+    if (COMMAND enclave_compile_options)
+        # Currently `enclave_compile_options` is only for internal OE build.
+        enclave_compile_options(${OE_TARGET} PRIVATE
+            -Wall -Werror -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers
+            -fno-strict-aliasing
+            -mxsave
+            -fno-builtin-malloc -fno-builtin-calloc -fno-builtin
+            -mllvm -x86-speculative-load-hardening)
+    else()
+        target_compile_options(${OE_TARGET} PRIVATE
+            -Wall -Werror -Wpointer-arith -Wconversion -Wextra -Wno-missing-field-initializers
+            -fno-strict-aliasing
+            -mxsave
+            -fno-builtin-malloc -fno-builtin-calloc -fno-builtin
+            -mllvm -x86-speculative-load-hardening)
+    endif()
 
     # Setup library names variables
     set(CMAKE_STATIC_LIBRARY_PREFIX "lib" PARENT_SCOPE)

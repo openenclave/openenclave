@@ -6,4 +6,4 @@ if (BUILD_ENCLAVES)
 endif()
 
 add_subdirectory(host)
-add_enclave_test(tests/crypto/enclave cryptohost cryptoenc)
+add_enclave_test(tests/crypto/enclave cryptohost crypto_enc)

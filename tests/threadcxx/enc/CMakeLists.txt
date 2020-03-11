@@ -11,5 +11,5 @@ add_custom_command(
 add_enclave(TARGET threadcxx_enc UUID 209fac8d-dea1-4ed6-8160-5d6f3fdac61d CXX
             SOURCES enc.cpp cond_tests.cpp threadcxx_t.c)
 
-target_include_directories(threadcxx_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+enclave_include_directories(threadcxx_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})

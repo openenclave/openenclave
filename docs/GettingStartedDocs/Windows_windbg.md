@@ -22,14 +22,14 @@ Open an instance of x64 Native Tools Command Prompt
 
 ![x64 Native Tools Command Prompt](images/WinDbgNativeToolsPrompt.png)
 
-Change to the directory containing your Open Enclave Application. Make a build folder and configure your application as shown below by defining the `OpenEnclave_DIR` and `NUGET_PACKAGE_PATH` configuration arguments.
+Change to the directory containing your Open Enclave Application. Make a build folder and configure your application as shown below by defining the `CMAKE_PREFIX_PATH` and `NUGET_PACKAGE_PATH` configuration arguments.
 
 
 ```cmd
 cd YourApplicationFolder
 mkdir build
 cd build
-cmake -G Ninja -DOpenEnclave_DIR=your-open-enclave-install-path\lib\openenclave\cmake -DNUGET_PACKAGE_PATH=your-openenclave-nuget-packages-path ..
+cmake -G Ninja -DCMAKE_PREFIX_PATH=your-open-enclave-install-path\lib\openenclave\cmake -DNUGET_PACKAGE_PATH=your-openenclave-nuget-packages-path ..
 ```
 
 ![Configure](images/WinDbgConfigure.png)
