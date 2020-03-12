@@ -576,6 +576,16 @@ Installed: /home/yourname/openenclave/share/openenclave/samples/lvi_mitigation_b
 The directory `/home/yourname/openenclave/share/openenclave/samples/lvi_mitigation_bin` should contain all
 the dependencies.
 
+#### CMake
+
+```bash
+mkdir build
+cd build
+cmake -DLVI_MITIGATION=ControlFlow -DLVI_MITIGATION_BINDIR=/home/yourname/openenclave/share/openenclave/samples/lvi_mitigation_bin ..
+make
+make run
+```
+
 #### GNU Make
 
 ```bash
