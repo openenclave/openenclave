@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix #2607 so that libmbedcrypto now includes mbedtls_hkdf().
 
+### Security
+- Update mbedTLS to version 2.16.5. Refer to [2.16.5](
+https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.5-and-2.7.14-released)
+release notes for the set of issues addressed.
+
 [v0.8.2][v0.8.2_log] - 2020-03-10
 ---------------------
 
