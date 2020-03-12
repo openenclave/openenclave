@@ -19,10 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - OpenSSL engine support to oesign to allow signing keys via engines.
 - NuGet package validation using CI/CD.
+- Released packages include Load Value Injection(LVI) mitigated libraries, required build configuration and instructions.
 
 ### Changed
 - Optimized switchless ocall scheduling.
 - oedebugrt.pdb is part of the SDK package and needs to be copied to the host application folder along with oedebugrt.dll to enable debugging on Windows.
+
+### Security
+- OpenEnclave SDK includes LVI mitigated libs and an LVI mitigation build configuration for the vulnerability disclosed in CVE-2020-0551.
+   - Applications built on top the SDK can optionally link against the mitigated libs using the LVI mitigation build configuration.
+   - See [LVI Mititgation Documentation](docs/GettingStartedDocs/Contributors/AdvancedBuildInfo.md#lvi-mitigation) for more information.
 
 [v0.8.1][v0.8.1_log] - 2020-02-07
 ---------------------
