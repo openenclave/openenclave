@@ -1,9 +1,9 @@
-# Using the Non-DCAP Driver in an ACC VM
+# Using the Intel Legacy Launch (Non-DCAP) SGX Driver in an Azure Linux ACC VM
 
-ACC VMs come pre equipeed with the azure DCAP stack preinstalled. This can interfere with non-azure dcap clients, 
-so in this case we must disable the dcap driver.
+ACC VMs come pre equipped with the Azure DCAP (Data Center Attestation Primitives) stack preinstalled. This can interfere with non-Azure DCAP clients, 
+so in this case we must disable the DCAP driver.
 
-To do so, first lets get the non-dcap driver (if we haven't already).
+To do so, first let's get the non-dcap driver (if we haven't already).
 ```
 curl https://download.01.org/intel-sgx/sgx-linux/2.9/distro/ubuntu16.04-server/sgx_linux_x64_driver_2.6.0_95eaa6f.bin --output sgx_linux_x64_driver_2.6.0_95eaa6f.bin
 ```
@@ -11,10 +11,10 @@ And remove the dcap driver, or else the non-dcap driver, named 'isgx' will not s
 ```
 sudo modprobe -r intel_sgx
 ```
-This will temporarily remove the dcap driver, named "intel_sgx" from the kernel. 
+This will temporarily remove the DCAP driver, named "intel_sgx" from the kernel. 
 We will need more steps later to make this permanent.
 
-Now we can install the intel non-dcap driver.
+Now we can install the intel non-DCAP driver.
 ```
 sudo chmod a+x sgx_linux_x64_driver_2.6.0_95eaa6f.bin
 sudo ./sgx_linux_x64_driver_2.6.0_95eaa6f.bin
