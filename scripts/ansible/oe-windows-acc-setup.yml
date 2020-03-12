@@ -8,10 +8,10 @@
   tasks:
     - name: OE setup | Set installer URLs from the OE storage account
       set_fact:
-        intel_psw_url:       "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.6.100.2.exe"
-        intel_psw_hash:      "00A2A5B9A065858DD4114660C2E4106711E2B18A66D632A26E0ABCBA222CBF96"
-        intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20DCAP%20for%20Windows%20v1.4.100.4.exe"
-        intel_dcap_hash:     "7DAA87B9E687012183BB2E1D984CB1F877D45CCB07700155F9C44FB9B58EAAAF"
+        intel_psw_url:       "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.7.100.2.exe"
+        intel_psw_hash:      "FA57D8D3E7E7B954F6267D91A174E7D477D2010199DBAAC635F54A98A2A8070D"
+        intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20DCAP%20for%20Windows%20v1.5.100.2.exe"
+        intel_dcap_hash:     "67CC2E4BA54EEF3342DE53D2F63018A44F5B6B2EECA8BE107F80A40BDD923335"
         git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.19.1-64-bit.exe"
         git_hash:            "5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793"
         seven_zip_url:       "https://oejenkins.blob.core.windows.net/oejenkins/7z1806-x64.msi"
