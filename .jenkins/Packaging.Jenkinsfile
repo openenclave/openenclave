@@ -36,7 +36,6 @@ def WindowsPackaging(String build_type) {
                 oe.WinCompilePackageTest("build", build_type, "ON", CTEST_TIMEOUT_SECONDS)
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "master/latest/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
->>>>>>> 6b9345bfa... Add NuGet package check during CI/CD (Windows).
             }
         }
     }
