@@ -1,4 +1,4 @@
-#Using the Non-DCAP Driver in an ACC VM
+# Using the Non-DCAP Driver in an ACC VM
 
 ACC VMs come pre equipeed with the azure DCAP stack preinstalled. This can interfere with non-azure dcap clients, 
 so in this case we must disable the dcap driver.
