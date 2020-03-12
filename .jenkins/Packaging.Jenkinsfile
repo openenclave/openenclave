@@ -34,8 +34,8 @@ def WindowsPackaging(String build_type) {
         node('SGXFLC-Windows-DCAP') {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 oe.WinCompilePackageTest("build", build_type, "ON", CTEST_TIMEOUT_SECONDS)
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "master/latest/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "v0.8.x/${BUILD_NUMBER}/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "v0.8.x/latest/windows/${build_type}/SGX1FLC/", containerName: 'oejenkins')
             }
         }
     }
