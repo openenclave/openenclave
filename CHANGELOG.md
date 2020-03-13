@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix #2607 so that libmbedcrypto now includes mbedtls_hkdf().
 
+### Removed
+- Removed oe-gdb script which has been deprecated since v0.6. Use oegdb instead.
+
 [v0.8.2][v0.8.2_log] - 2020-03-10
 ---------------------
 
