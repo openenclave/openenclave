@@ -1,25 +1,11 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+include ../../config.mk
+
 .PHONY: all build clean run
 
 all: build
-
-
-# Detect C and C++ compiler options
-# if not gcc and g++, default to clang-7
-C_COMPILER=$(notdir $(CC))
-ifeq ($(C_COMPILER), gcc)
-        CXX_COMPILER=$(notdir $(CXX))
-        USE_GCC = true
-endif
-
-ifeq ($(USE_GCC),)
-        CC = clang-7
-        CXX = clang++-7
-        C_COMPILER=clang
-        CXX_COMPILER=clang++
-endif
 
 CFLAGS=$(shell pkg-config oehost-$(C_COMPILER) --cflags)
 CXXFLAGS=$(shell pkg-config oehost-$(CXX_COMPILER) --cflags)
