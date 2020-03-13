@@ -21,6 +21,9 @@ enclave {
 
         public void enc_set_factor(
             uint32_t factor);
+
+        // Make an ocall and pass the given number.
+        public void enc_make_ocall(int n);
         };
 
     untrusted {
@@ -31,5 +34,9 @@ enclave {
             uint32_t enclave_id,
             uint32_t value,
             uint32_t total);
+
+        // If *n > 1, call make_ocall(*n-1) on the next enclave.
+        // Assert that *n does not change.
+        void host_ocall_pointer([in]int *n);
     };
 };

@@ -97,10 +97,29 @@ int __oe_host_stack_bridge(
 }
 
 /**
- * Thread specific OCALL buffers. Large enough for most ocalls.
+ * Size of ocall buffers passed in ecall_contexts. Large enough for most ocalls.
+ * If an ocall requires more than this size, then the enclave will make an
+ * ocall to allocate the buffer instead of using the ecall_context's buffer.
  * Note: Currently, quotes are about 10KB.
  */
-static __thread uint8_t _thread_ocall_buffer[16 * 1024];
+#define OE_DEFAULT_OCALL_BUFFER_SIZE (16 * 1024)
+
+/**
+ * Setup the ecall_context.
+ */
+OE_INLINE void _setup_ecall_context(oe_ecall_context_t* ecall_context)
+{
+    oe_thread_binding_t* binding = oe_get_thread_binding();
+    if (binding->ocall_buffer == NULL)
+    {
+        // Lazily allocate buffer for making ocalls. Bound to the tcs.
+        // Will be cleaned up by enclave during termination.
+        binding->ocall_buffer = malloc(OE_DEFAULT_OCALL_BUFFER_SIZE);
+        binding->ocall_buffer_size = OE_DEFAULT_OCALL_BUFFER_SIZE;
+    }
+    ecall_context->ocall_buffer = binding->ocall_buffer;
+    ecall_context->ocall_buffer_size = binding->ocall_buffer_size;
+}
 
 /**
  * oe_enter Executes the ENCLU instruction and transfers control to the enclave.
@@ -143,8 +162,7 @@ void oe_enter(
     OE_ALIGNED(16)
     uint64_t fx_state[64];
     oe_ecall_context_t ecall_context = {{0}};
-    ecall_context.ocall_buffer = _thread_ocall_buffer;
-    ecall_context.ocall_buffer_size = sizeof(_thread_ocall_buffer);
+    _setup_ecall_context(&ecall_context);
 
     while (1)
     {
@@ -216,8 +234,7 @@ void oe_enter_sim(
     void* host_fs = oe_get_fs_register_base();
     sgx_tcs_t* sgx_tcs = (sgx_tcs_t*)tcs;
     oe_ecall_context_t ecall_context = {{0}};
-    ecall_context.ocall_buffer = _thread_ocall_buffer;
-    ecall_context.ocall_buffer_size = sizeof(_thread_ocall_buffer);
+    _setup_ecall_context(&ecall_context);
 
     while (1)
     {
