@@ -327,6 +327,9 @@ static void _determine_platform_tcb_info_tcb_level(
     if (platform_tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
         return;
 
+    bool comp_svn_out_of_date = false;
+    bool pce_svn_out_of_date = false;
+
     // Compare all of the platform's comp svn values with the corresponding
     // values in the current tcb level.
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level->sgx_tcb_comp_svn);
@@ -334,14 +337,23 @@ static void _determine_platform_tcb_info_tcb_level(
     {
         if (platform_tcb_level->sgx_tcb_comp_svn[i] <
             tcb_level->sgx_tcb_comp_svn[i])
-            return;
+            comp_svn_out_of_date = true;
     }
     if (platform_tcb_level->pce_svn < tcb_level->pce_svn)
+        pce_svn_out_of_date = true;
+
+    if (tcb_level->status.fields.up_to_date == 1)
+    {
+        platform_tcb_level->comp_svn_out_of_date = comp_svn_out_of_date;
+        platform_tcb_level->pce_svn_out_of_date = pce_svn_out_of_date;
+    }
+
+    if (comp_svn_out_of_date || pce_svn_out_of_date)
         return;
 
-    // If all the values of the tcb level are less than corresponding values of
-    // the platform, then the platform's status is the status of the current tcb
-    // level.
+    // If all the values of the tcb level are less than corresponding
+    // values of the platform, then the platform's status is the status
+    // of the current tcb level.
     platform_tcb_level->status.AsUINT32 = tcb_level->status.AsUINT32;
 }
 
@@ -694,10 +706,36 @@ oe_result_t oe_parse_tcb_info_json(
                     i,
                     platform_tcb_level->sgx_tcb_comp_svn[i]);
             OE_TRACE_VERBOSE("pce_svn = 0x%x", platform_tcb_level->pce_svn);
-            OE_RAISE_MSG(
-                OE_TCB_LEVEL_INVALID,
-                "Platform TCB (%d) is not up-to-date",
-                platform_tcb_level->status);
+
+            if (platform_tcb_level->comp_svn_out_of_date &&
+                platform_tcb_level->pce_svn_out_of_date)
+            {
+                OE_RAISE_MSG(
+                    OE_TCB_LEVEL_INVALID,
+                    "Platform TCB (%d) Comp SVN and PCE SVN are not up-to-date",
+                    platform_tcb_level->status);
+            }
+            else if (platform_tcb_level->comp_svn_out_of_date)
+            {
+                OE_RAISE_MSG(
+                    OE_TCB_LEVEL_INVALID,
+                    "Platform TCB (%d) Comp SVN is not up-to-date",
+                    platform_tcb_level->status);
+            }
+            else if (platform_tcb_level->pce_svn_out_of_date)
+            {
+                OE_RAISE_MSG(
+                    OE_TCB_LEVEL_INVALID,
+                    "Platform TCB (%d) PCE SVN is not up-to-date",
+                    platform_tcb_level->status);
+            }
+            else
+            {
+                OE_RAISE_MSG(
+                    OE_TCB_LEVEL_INVALID,
+                    "Platform TCB (%d) is not up-to-date",
+                    platform_tcb_level->status);
+            }
         }
 
         // Display any advisory IDs as warnings

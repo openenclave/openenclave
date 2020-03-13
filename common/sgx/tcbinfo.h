@@ -48,6 +48,9 @@ typedef struct _oe_tcb_info_tcb_level
     uint16_t pce_svn;
     oe_tcb_level_status_t status;
 
+    bool comp_svn_out_of_date;
+    bool pce_svn_out_of_date;
+
     // V2 fields
     oe_datetime_t tcb_date;
 
@@ -100,7 +103,7 @@ typedef struct _oe_parsed_tcb_info
  *       level.
  *    4. If no tcb level was chosen, then the status of the platform is unknown.
  *
- * If the plaform's tcb level status was determined to be not uptodate,
+ * If the platform's tcb level status was determined to be not uptodate,
  * then OE_TCB_LEVEL_INVALID is returned.
  *
  * @param[in] tcb_info_json The json string to parse.
