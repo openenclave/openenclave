@@ -1,0 +1,19 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+    - hosts: localhost
+      any_errors_fatal: true
+      become: yes
+      tasks:
+        - import_role:
+            name: linux/openenclave
+            tasks_from: environment-setup.yml
+
+        - import_role:
+            name: linux/intel
+            tasks_from: sgx-driver.yml
+
+        - import_role:
+            name: linux/az-dcap-client
+            tasks_from: stable-install.yml
