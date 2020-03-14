@@ -18,7 +18,15 @@ static oe_host_worker_context_t* _host_worker_contexts = NULL;
 // Flag to denote if switchless calls have already been initialized.
 static bool _is_switchless_initialized = false;
 
-static bool _switchless_init_in_progress = false;
+/* Flag to denote if switchless init function is already in progress
+ * _switchless_init_in_progress is defined as int64_t and not bool because
+ * we use oe_atomic_compare_and_swap() to manipulate its value. It only takes
+ * int64_t* unlike the type-generic built-in atomics
+ * __atomic_load_n()/__atomic_save_n(), so if _switchless_init_in_progress is
+ * not defined as int64_t, we would need to type-pun through an incompatible
+ * type which results in undefined behavior per the C spec.
+ * */
+static int64_t _switchless_init_in_progress = 0;
 
 /*
 **==============================================================================
@@ -57,9 +65,7 @@ oe_result_t oe_init_context_switchless_ecall(
     uint64_t contexts_size = 0;
 
     if (!oe_atomic_compare_and_swap(
-            (volatile int64_t*)&_switchless_init_in_progress,
-            (int64_t) false,
-            (int64_t) true))
+            &_switchless_init_in_progress, (int64_t) false, (int64_t) true))
     {
         OE_RAISE(OE_BUSY);
     }
