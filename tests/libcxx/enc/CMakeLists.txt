@@ -26,6 +26,10 @@ enclave_compile_options(libcxxtest-support PRIVATE
     -Wno-sign-conversion
     )
 
+if (ENABLE_FULL_LIBCXX_TESTS)
+    enclave_compile_definitions(libcxxtest-support PRIVATE FULL_LIBCXX_TESTS)
+endif ()
+
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
     enclave_compile_options(libcxxtest-support PRIVATE
         -Wno-error=maybe-uninitialized
