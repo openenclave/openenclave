@@ -28,3 +28,6 @@ cli: creds
 
 creds:
 	( ./gencreds/gencreds cert.der private_key.pem )
+
+vg: creds
+	( valgrind --tool=memcheck ./cli/tlscli cert.der private_key.pem )

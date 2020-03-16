@@ -3,8 +3,6 @@
 
 #define _GNU_SOURCE
 
-#include <openenclave/enclave.h>
-
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -144,25 +142,11 @@ done:
     return ret;
 }
 
-static oe_result_t _enclave_identity_verifier(
-    oe_identity_t* identity,
-    void* arg)
-{
-    tlscli_t* cli = (tlscli_t*)arg;
-
-    if (!identity || !cli || !cli->verify_identity)
-        return OE_VERIFY_FAILED;
-
-    return cli->verify_identity(
-        cli->verify_identity_arg,
-        identity->unique_id,
-        OE_UNIQUE_ID_SIZE,
-        identity->signer_id,
-        OE_SIGNER_ID_SIZE,
-        identity->product_id,
-        OE_PRODUCT_ID_SIZE,
-        identity->security_version);
-}
+static int _extract_report_extension(
+    const uint8_t* cert_data,
+    size_t cert_size,
+    uint8_t** report_data_out,
+    size_t* report_size_out);
 
 static int _cert_verify_callback(
     void* data,
@@ -171,35 +155,44 @@ static int _cert_verify_callback(
     uint32_t* flags)
 {
     int ret = MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
-
-    (void)data;
-    (void)crt;
-    (void)depth;
-    (void)flags;
-    (void)_enclave_identity_verifier;
-#if 0
-    unsigned char* cert_buf = NULL;
-    size_t cert_size = 0;
-
-
+    const uint8_t* cert_data;
+    size_t cert_size;
+    uint8_t* report_data = NULL;
+    size_t report_size;
     *flags = (uint32_t)MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
 
-    cert_buf = crt->raw.p;
+    cert_data = crt->raw.p;
     cert_size = crt->raw.len;
 
     if (cert_size <= 0)
         goto done;
 
-    oe_result_t r;
-    if ((r = oe_verify_attestation_certificate(
-             cert_buf, cert_size, _enclave_identity_verifier, data)) != OE_OK)
+    if (_extract_report_extension(
+            cert_data, cert_size, &report_data, &report_size) != 0)
     {
+        printf("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\n");
         goto done;
     }
-#endif
+
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+    /*
+    ** ATTN: pass the report to the attestation Service here to retrieve the
+    ** the following fields.
+    **     MRENCLAVE
+    **     MRSIGNINER
+    **     ISVPRODID
+    **     ISVSVN
+    ** Then pass those fields to the tlscli_t.verify_identity callback.
+    */
 
     ret = 0;
     *flags = 0;
+
+done:
+
+    if (report_data)
+        free(report_data);
 
     return ret;
 }
@@ -540,4 +533,262 @@ void tlscli_put_err(const tlscli_err_t* err)
 {
     if (err)
         fprintf(stderr, "error: %s\n", err->buf);
+}
+
+/*
+**==============================================================================
+**
+** _extract_report_extension()
+**
+**     This function extracts the report extension from a X509 certificate.
+**
+**==============================================================================
+*/
+
+#define OID_STRING_SIZE 128
+
+typedef enum _find_extension_result
+{
+    OKAY,
+    NOT_FOUND,
+    BUFFER_TOO_SMALL,
+} find_extension_result_t;
+
+typedef struct _find_extension_args
+{
+    find_extension_result_t result;
+    const char* oid;
+    uint8_t* data;
+    size_t* size;
+} find_extension_args_t;
+
+/* Returns true when done */
+typedef bool (*parse_extensions_callback_t)(
+    const char* oid,
+    const uint8_t* data,
+    size_t size,
+    void* args);
+
+static int _parse_extensions(
+    const mbedtls_x509_crt* crt,
+    parse_extensions_callback_t callback,
+    void* args)
+{
+    int ret = -1;
+    uint8_t* p = crt->v3_ext.p;
+    uint8_t* end = p + crt->v3_ext.len;
+    size_t len;
+    int rc;
+    size_t index = 0;
+
+    if (!p)
+    {
+        ret = 0;
+        goto done;
+    }
+
+    /* Parse tag that introduces the extensions */
+    {
+        int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+
+        /* Get the tag and length of the entire packet */
+        rc = mbedtls_asn1_get_tag(&p, end, &len, tag);
+        if (rc != 0)
+            goto done;
+    }
+
+    /* Parse each extension of the form: [OID | CRITICAL | OCTETS] */
+    while (end - p > 1)
+    {
+        char oidstr[OID_STRING_SIZE];
+        int is_critical = 0;
+        const uint8_t* octets;
+        size_t octets_size;
+
+        /* Parse the OID */
+        {
+            mbedtls_x509_buf oid;
+
+            /* Parse the OID tag */
+            {
+                int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+
+                rc = mbedtls_asn1_get_tag(&p, end, &len, tag);
+                if (rc != 0)
+                    goto done;
+
+                oid.tag = p[0];
+            }
+
+            /* Parse the OID length */
+            {
+                rc = mbedtls_asn1_get_tag(&p, end, &len, MBEDTLS_ASN1_OID);
+                if (rc != 0)
+                    goto done;
+
+                oid.len = len;
+                oid.p = p;
+                p += oid.len;
+            }
+
+            /* Convert OID to a string */
+            rc = mbedtls_oid_get_numeric_string(oidstr, sizeof(oidstr), &oid);
+            if (rc < 0)
+                goto done;
+        }
+
+        /* Parse the critical flag */
+        {
+            rc = (mbedtls_asn1_get_bool(&p, end, &is_critical));
+            if (rc != 0 && rc != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG)
+            {
+                goto done;
+            }
+        }
+
+        /* Parse the octet string */
+        {
+            const int tag = MBEDTLS_ASN1_OCTET_STRING;
+            rc = mbedtls_asn1_get_tag(&p, end, &len, tag);
+            if (rc != 0)
+            {
+                goto done;
+            }
+
+            octets = p;
+            octets_size = len;
+            p += len;
+        }
+
+        /* Invoke the caller's callback (returns true when done) */
+        if (callback(oidstr, octets, octets_size, args) == true)
+        {
+            ret = 0;
+            goto done;
+        }
+
+        /* Increment the index */
+        index++;
+    }
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
+static bool _find_extension_callback(
+    const char* oid,
+    const uint8_t* data,
+    size_t size,
+    void* args_)
+{
+    find_extension_args_t* args = (find_extension_args_t*)args_;
+
+    if (strcmp(oid, args->oid) == 0)
+    {
+        /* If buffer is too small */
+        if (size > *args->size)
+        {
+            *args->size = size;
+            args->result = BUFFER_TOO_SMALL;
+            return true;
+        }
+
+        if (args->data)
+            memcpy(args->data, data, size);
+
+        *args->size = size;
+        args->result = OKAY;
+        return true;
+    }
+
+    /* Keep parsing */
+    return false;
+}
+
+static find_extension_result_t _find_extension(
+    const mbedtls_x509_crt* cert,
+    const char* oid,
+    uint8_t* data,
+    size_t* size)
+{
+    find_extension_result_t result = NOT_FOUND;
+
+    /* Find the extension with the given OID using a callback */
+    {
+        find_extension_args_t args;
+        args.result = NOT_FOUND;
+        args.oid = oid;
+        args.data = data;
+        args.size = size;
+
+        if (_parse_extensions(cert, _find_extension_callback, &args) != 0)
+        {
+            goto done;
+        }
+
+        result = args.result;
+        goto done;
+    }
+
+done:
+
+    return result;
+}
+
+static int _extract_report_extension(
+    const uint8_t* cert_data,
+    size_t cert_size,
+    uint8_t** report_data_out,
+    size_t* report_size_out)
+{
+    int ret = -1;
+    mbedtls_x509_crt cert;
+    uint8_t* report_data = NULL;
+    size_t report_size = 0;
+    static const char OID[] = "1.2.840.113556.10.1.1";
+
+    mbedtls_x509_crt_init(&cert);
+
+    if (report_data_out)
+        *report_data_out = NULL;
+
+    if (report_size_out)
+        *report_size_out = 0;
+
+    if (!cert_data || !cert_size)
+        goto done;
+
+    /* Initialize the certificate form the DER-encoded buffer */
+    if (mbedtls_x509_crt_parse_der(&cert, cert_data, cert_size) != 0)
+        goto done;
+
+    /* Determine the size of the report extension */
+    if (_find_extension(&cert, OID, NULL, &report_size) != BUFFER_TOO_SMALL)
+        goto done;
+
+    /* Allocate the report buffer */
+    if (!(report_data = (uint8_t*)malloc(report_size)))
+        goto done;
+
+    /* Get the extension */
+    if (_find_extension(&cert, OID, report_data, &report_size) != OKAY)
+        goto done;
+
+    if (report_data_out)
+        *report_data_out = report_data;
+
+    report_data = NULL;
+
+    ret = 0;
+
+done:
+
+    mbedtls_x509_crt_free(&cert);
+
+    if (report_data)
+        free(report_data);
+
+    return ret;
 }

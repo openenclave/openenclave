@@ -9,7 +9,7 @@ ifeq ($(shell ls $(MBEDTLS_LIBDIR)/libmbedtls.a 2> /dev/null),)
 $(error "mbedtls not found under $(MBEDTLS_LIBDIR): please install mbedtls-dev")
 endif
 
-CFLAGS=-Wall -Werror -O2
+CFLAGS=-Wall -Werror -g
 
 INCLUDES += -I/opt/openenclave/include
 
@@ -19,7 +19,7 @@ LIBS += -lmbedx509
 LIBS += -lmbedcrypto
 
 all:
-	gcc $(CFLAGS) $(INCLUDES) -o tlscli cli.c tlscli.c $(LIBS) stubs.c
+	gcc $(CFLAGS) $(INCLUDES) -o tlscli cli.c tlscli.c $(LIBS)
 
 clean:
 	rm -f tlscli
