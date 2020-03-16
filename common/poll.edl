@@ -1,0 +1,29 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** poll.edl:
+**
+**     This file declares OCALLs needed by the enclave to implement the POSIX
+**     poll API.
+**
+**==============================================================================
+*/
+
+enclave {
+
+    include "openenclave/internal/syscall/sys/poll.h"
+    include "openenclave/internal/syscall/poll.h"
+    include "openenclave/internal/syscall/types.h"
+
+    untrusted
+    {
+        int oe_syscall_poll_ocall(
+            [in, out, count=nfds] struct oe_host_pollfd* host_fds,
+            oe_nfds_t nfds,
+            int timeout)
+            propagate_errno;
+    };
+};
