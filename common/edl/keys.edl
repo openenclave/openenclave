@@ -1,0 +1,39 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** keys.edl:
+**
+**     This file declares internal ECALLs used by liboehost/liboecore
+**     for retrieving public keys from the enclave.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    from "asym_keys.edl" import *;
+
+    trusted
+    {
+        public oe_result_t oe_get_public_key_ecall(
+            [in] const oe_asymmetric_key_params_t* key_params,
+            [in, size=key_info_size] const void* key_info,
+            size_t key_info_size,
+            [out, size=key_buffer_size] void* key_buffer,
+            size_t key_buffer_size,
+            [out] size_t* key_buffer_size_out);
+
+        public oe_result_t oe_get_public_key_by_policy_ecall(
+            uint32_t seal_policy,
+            [in] const oe_asymmetric_key_params_t* key_params,
+            [out, size=key_buffer_size] void* key_buffer,
+            size_t key_buffer_size,
+            [out] size_t* key_buffer_size_out,
+            [out, size=key_info_size] void* key_info,
+            size_t key_info_size,
+            [out] size_t* key_info_size_out);
+    };
+};

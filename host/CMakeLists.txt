@@ -6,38 +6,58 @@ if (OE_SGX)
     set(SGX_EDL_DIR ${CMAKE_SOURCE_DIR}/common/sgx/edl)
 endif()
 
-set(OE_EDL_INCLUDES ${OE_INCDIR}/openenclave/bits)
-
 ##==============================================================================
 ##
 ## These rules generate the edge routines for the internal TEE-agnostic
 ## ECALLs/OCALLs used by liboehost/liboecore.
-##
-## The generated _args.h is published in ${OE_EDL_INCLUDES}.
 ##
 ##==============================================================================
 
 set(TEE_EDL_FILE ${EDL_DIR}/tee.edl)
 
 add_custom_command(
-    OUTPUT tee_u.h tee_u.c tee_args.h ${OE_EDL_INCLUDES}/asym_keys.h
+    OUTPUT tee_u.h tee_u.c tee_args.h
     DEPENDS ${TEE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${TEE_EDL_FILE}
-
-    ## Publish the edger8r-generated header (*_args.h) that defines data structures.
-    ## Note that doing this on the host side to ensure publishing the header with
-    ## the case of `BUILD_ENCLAVES=OFF`.
-    COMMAND ${CMAKE_COMMAND} -E copy tee_args.h ${OE_EDL_INCLUDES}/asym_keys.h)
-
+    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${TEE_EDL_FILE})
 
 add_custom_target(tee_untrusted_edl
-    DEPENDS tee_u.h tee_u.c tee_args.h ${OE_EDL_INCLUDES}/asym_keys.h)
+    DEPENDS tee_u.h tee_u.c tee_args.h)
 
-# Add dependencies to `oe_includes` so that the published header will be ready before
-# other files consume it.
-add_dependencies(oe_includes tee_untrusted_edl)
+##==============================================================================
+##
+## Publish the edger8r-generated header (*_args.h) that defines data structures
+## which are part of the public API surface.
+## Note that doing this on the host side to ensure publishing the header with 
+## the case of `BUILD_ENCLAVES=OFF`.
+##
+##==============================================================================
 
-install(DIRECTORY ${OE_EDL_INCLUDES}
+set(OE_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/bits)
+list(APPEND EDL_PUBLIC_STRUCTURES "${EDL_DIR}/asym_keys.edl")
+
+foreach (struct_file ${EDL_PUBLIC_STRUCTURES})
+  get_filename_component(name ${struct_file} NAME_WE)
+
+  add_custom_command(
+      OUTPUT ${name}_args.h
+      DEPENDS ${struct_file} edger8r
+      COMMAND edger8r --header-only --search-path ${EDL_DIR}
+                      --untrusted ${struct_file})
+
+  add_custom_command(
+      OUTPUT ${OE_EDL_INCLUDE_DIR}/${name}.h
+      COMMAND ${CMAKE_COMMAND} -E copy ${name}_args.h ${OE_EDL_INCLUDE_DIR}/${name}.h
+      DEPENDS ${name}_args.h)
+
+  add_custom_target(gen_edl_headers_${name}
+      DEPENDS ${OE_EDL_INCLUDE_DIR}/${name}.h)
+
+  # Add dependencies to `oe_includes` so that the published header will be ready before
+  # other files consume it.
+  add_dependencies(oe_includes gen_edl_headers_${name})
+endforeach ()
+
+install(DIRECTORY ${OE_EDL_INCLUDE_DIR}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
 
 ##==============================================================================
