@@ -171,11 +171,16 @@ static int _cert_verify_callback(
     uint32_t* flags)
 {
     int ret = MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
+
+    (void)data;
+    (void)crt;
+    (void)depth;
+    (void)flags;
+    (void)_enclave_identity_verifier;
+#if 0
     unsigned char* cert_buf = NULL;
     size_t cert_size = 0;
 
-    (void)data;
-    (void)depth;
 
     *flags = (uint32_t)MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
 
@@ -191,11 +196,11 @@ static int _cert_verify_callback(
     {
         goto done;
     }
+#endif
 
     ret = 0;
     *flags = 0;
 
-done:
     return ret;
 }
 

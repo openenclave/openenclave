@@ -221,6 +221,7 @@ void oe_hex_dump(const void* data, size_t size)
 
 typedef struct _oe_entropy_kind oe_entropy_kind_t;
 
+#if 0
 oe_result_t oe_get_entropy(void* output, size_t len, oe_entropy_kind_t* kind)
 {
     unsigned char* p = (unsigned char*)output;
@@ -245,6 +246,7 @@ oe_result_t oe_get_entropy(void* output, size_t len, oe_entropy_kind_t* kind)
 
     return OE_OK;
 }
+#endif
 
 typedef volatile uint32_t spinlock_t;
 
