@@ -7,6 +7,13 @@
 - Red Hat Enterprise Linux 8 64-bits
 - SGX1 capable system. Most likely this will be an Intel SkyLake or Intel KabyLake system
 
+## Prepare the machine for sgx 
+
+Ensure that the aesm service and lanuch enclave are properly installed.
+```bash
+sudo apt install sgx-aesm-service libsgx-launch libsgx-ae-le
+```
+
 ## Clone Open Enclave SDK repo from GitHub
 
 Use the following command to download the source code (make sure `git` is installed before doing this):
