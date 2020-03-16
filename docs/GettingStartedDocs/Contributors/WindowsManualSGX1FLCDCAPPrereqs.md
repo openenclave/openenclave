@@ -18,7 +18,7 @@ nuget.exe install Azure.DCAP.Windows -ExcludeVersion -Version 0.0.3 -OutputDirec
 ```
 This example assumes you would like to install the package to `C:\oe_prereqs`.
 
-##### [Intel Data Center Attestation Primitives (DCAP) Libraries v1.5](http://registrationcenter-download.intel.com/akdlm/irc_nas/16014/Intel%20SGX%20DCAP%20for%20Windows%20v1.5.100.2.exe)
+##### [Intel Data Center Attestation Primitives (DCAP) Libraries v1.5](http://registrationcenter-download.intel.com/akdlm/irc_nas/16474/Intel%20SGX%20DCAP%20for%20Windows%20v1.5.100.2.exe)
 After unpacking the self-extracting ZIP executable, you can refer to the *Intel SGX DCAP Windows SW Installation Guide.pdf*
 for more details on how to install the contents of the package.
 
