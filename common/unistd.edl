@@ -1,0 +1,43 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** unistd.edl:
+**
+**     This file declares OCALLs needed by the enclave to implement functions in
+**     POSIX unistd.h.
+**
+**==============================================================================
+*/
+
+enclave
+{
+
+    untrusted
+    {
+        int oe_syscall_getpid_ocall();
+
+        int oe_syscall_getppid_ocall();
+
+        int oe_syscall_getpgrp_ocall();
+
+        unsigned int oe_syscall_getuid_ocall();
+
+        unsigned int oe_syscall_geteuid_ocall();
+
+        unsigned int oe_syscall_getgid_ocall();
+
+        unsigned int oe_syscall_getegid_ocall();
+
+        int oe_syscall_getpgid_ocall(
+            int pid)
+            propagate_errno;
+
+        int oe_syscall_getgroups_ocall(
+            size_t size,
+            [out, count=size] unsigned int* list)
+            propagate_errno;
+    };
+};
