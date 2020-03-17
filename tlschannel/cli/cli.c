@@ -40,6 +40,7 @@ static int _verify_identity(
     size_t isvprodid_size,
     uint64_t isvsvn)
 {
+#if 0
     const uint64_t ISVSVN = 3;
     const uint8_t ISVPRODID[ISVPRODID_SIZE] = {2};
     // clang-format off
@@ -51,6 +52,7 @@ static int _verify_identity(
         0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0x0a
     };
     // clang-format on
+#endif
 
     (void)arg;
 
@@ -79,13 +81,14 @@ static int _verify_identity(
     }
 
     printf("\n");
-    printf("=== _verify_identity()\n");
+    printf("=== client: _verify_identity()\n");
     _dump("MRENCLAVE", mrenclave, mrenclave_size);
     _dump("MRSIGNER", mrsigner, mrsigner_size);
     _dump("ISVPRODID", isvprodid, isvprodid_size);
     printf("ISVSVN: %lu\n", isvsvn);
     printf("\n");
 
+#if 0
     if (memcmp(isvprodid, ISVPRODID, ISVPRODID_SIZE) != 0)
     {
         fprintf(stderr, "_verify_identity() failed: line %d\n", __LINE__);
@@ -103,6 +106,7 @@ static int _verify_identity(
         fprintf(stderr, "_verify_identity() failed: line %d\n", __LINE__);
         return -1;
     }
+#endif
 
     return 0;
 }

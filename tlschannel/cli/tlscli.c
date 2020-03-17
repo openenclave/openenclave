@@ -28,6 +28,39 @@
 
 #define DEBUG_LEVEL 1
 
+#define UNIQUE_ID_SIZE 32
+#define SIGNER_ID_SIZE 32
+#define PRODUCT_ID_SIZE 16
+
+typedef struct _identity
+{
+    uint32_t id_version;
+    uint32_t security_version;
+    uint64_t attributes;
+    uint8_t unique_id[UNIQUE_ID_SIZE];
+    uint8_t signer_id[SIGNER_ID_SIZE];
+    uint8_t product_id[PRODUCT_ID_SIZE];
+} identity_t;
+
+typedef enum _enclave_type
+{
+    ENCLAVE_TYPE_AUTO = 1,
+    ENCLAVE_TYPE_SGX = 2,
+    ENCLAVE_TYPE_OPTEE = 3,
+    __ENCLAVE_TYPE_MAX = 0xffffffff,
+} enclave_type_t;
+
+typedef struct _report
+{
+    size_t size;
+    enclave_type_t type;
+    size_t report_data_size;
+    size_t enclave_report_size;
+    uint8_t* report_data;
+    uint8_t* enclave_report;
+    identity_t identity;
+} report_t;
+
 static bool _started;
 static const char* _pers = "ssl_client";
 static mbedtls_entropy_context _entropy;
@@ -142,11 +175,10 @@ done:
     return ret;
 }
 
-static int _extract_report_extension(
+static int _get_report_from_cert_data(
     const uint8_t* cert_data,
     size_t cert_size,
-    uint8_t** report_data_out,
-    size_t* report_size_out);
+    report_t* report);
 
 static int _cert_verify_callback(
     void* data,
@@ -155,10 +187,12 @@ static int _cert_verify_callback(
     uint32_t* flags)
 {
     int ret = MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
+    tlscli_t* cli = (tlscli_t*)data;
     const uint8_t* cert_data;
     size_t cert_size;
-    uint8_t* report_data = NULL;
-    size_t report_size;
+    report_t report;
+    const identity_t* identity;
+
     *flags = (uint32_t)MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
 
     cert_data = crt->raw.p;
@@ -167,32 +201,36 @@ static int _cert_verify_callback(
     if (cert_size <= 0)
         goto done;
 
-    if (_extract_report_extension(
-            cert_data, cert_size, &report_data, &report_size) != 0)
+    if (!cli)
+        goto done;
+
+    if (_get_report_from_cert_data(cert_data, cert_size, &report) != 0)
     {
-        printf("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\n");
         goto done;
     }
 
-    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    identity = &report.identity;
 
-    /*
-    ** ATTN: pass the report to the attestation Service here to retrieve the
-    ** the following fields.
-    **     MRENCLAVE
-    **     MRSIGNINER
-    **     ISVPRODID
-    **     ISVSVN
-    ** Then pass those fields to the tlscli_t.verify_identity callback.
-    */
+    if (cli->verify_identity)
+    {
+        if (cli->verify_identity(
+                cli->verify_identity_arg,
+                identity->unique_id,
+                sizeof(identity->unique_id),
+                identity->signer_id,
+                sizeof(identity->signer_id),
+                identity->product_id,
+                sizeof(identity->product_id),
+                identity->security_version) != 0)
+        {
+            goto done;
+        }
+    }
 
     ret = 0;
     *flags = 0;
 
 done:
-
-    if (report_data)
-        free(report_data);
 
     return ret;
 }
@@ -254,7 +292,7 @@ static int _configure_cli(
         mbedtls_ssl_conf_dbg(&cli->conf, _mbedtls_dbg, stdout);
 
     mbedtls_ssl_conf_authmode(&cli->conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
-    mbedtls_ssl_conf_verify(&cli->conf, _cert_verify_callback, NULL);
+    mbedtls_ssl_conf_verify(&cli->conf, _cert_verify_callback, cli);
 
     if ((r = mbedtls_ssl_conf_own_cert(&cli->conf, &cli->crt, &cli->pk)) != 0)
     {
@@ -779,6 +817,9 @@ static int _extract_report_extension(
     if (report_data_out)
         *report_data_out = report_data;
 
+    if (report_size_out)
+        *report_size_out = report_size;
+
     report_data = NULL;
 
     ret = 0;
@@ -786,6 +827,275 @@ static int _extract_report_extension(
 done:
 
     mbedtls_x509_crt_free(&cert);
+
+    if (report_data)
+        free(report_data);
+
+    return ret;
+}
+
+typedef struct _sgx_attributes
+{
+    uint64_t flags;
+    uint64_t xfrm;
+} sgx_attributes_t;
+
+#define SGX_CPUSVN_SIZE 16
+
+#define SHA256_SIZE 32
+
+typedef struct _sgx_report_data
+{
+    unsigned char field[64];
+} sgx_report_data_t;
+
+typedef struct _sgx_report_body
+{
+    /* (0) CPU security version */
+    uint8_t cpusvn[SGX_CPUSVN_SIZE];
+
+    /* (16) Selector for which fields are defined in SSA.MISC */
+    uint32_t miscselect;
+
+    /* (20) Reserved */
+    uint8_t reserved1[28];
+
+    /* (48) Enclave attributes */
+    sgx_attributes_t attributes;
+
+    /* (64) Enclave measurement */
+    uint8_t mrenclave[SHA256_SIZE];
+
+    /* (96) */
+    uint8_t reserved2[32];
+
+    /* (128) The value of the enclave's SIGNER measurement */
+    uint8_t mrsigner[SHA256_SIZE];
+
+    /* (160) */
+    uint8_t reserved3[96];
+
+    /* (256) Enclave product ID */
+    uint16_t isvprodid;
+
+    /* (258) Enclave security version */
+    uint16_t isvsvn;
+
+    /* (260) Reserved */
+    uint8_t reserved4[60];
+
+    /* (320) User report data */
+    sgx_report_data_t report_data;
+} sgx_report_body_t;
+
+#define SGX_KEYID_SIZE 32
+#define SGX_MAC_SIZE 16
+
+typedef struct _sgx_report
+{
+    /* (0) */
+    sgx_report_body_t body;
+
+    /* (384) Id of key (?) */
+    uint8_t keyid[SGX_KEYID_SIZE];
+
+    /* (416) Message authentication code over fields of this structure */
+    uint8_t mac[SGX_MAC_SIZE];
+} sgx_report_t;
+
+#define PACK_BEGIN _Pragma("pack(push, 1)")
+#define PACK_END _Pragma("pack(pop)")
+
+PACK_BEGIN
+typedef struct _sgx_quote
+{
+    /* (0) */
+    uint16_t version;
+
+    /* (2) */
+    uint16_t sign_type;
+
+    /* (4) */
+    uint8_t reserved[4];
+
+    /* (8) */
+    uint16_t qe_svn;
+
+    /* (10) */
+    uint16_t pce_svn;
+
+    /* (12) */
+    uint8_t uuid[16];
+
+    /* (28) */
+    uint8_t user_data[20];
+
+    /* (48) */
+    sgx_report_body_t report_body;
+
+    /* (432) */
+    uint32_t signature_len;
+
+    /* (436) signature array (varying length) */
+    uint8_t signature[];
+} sgx_quote_t;
+PACK_END
+
+typedef enum _report_type
+{
+    REPORT_TYPE_SGX_LOCAL = 1,
+    REPORT_TYPE_SGX_REMOTE = 2,
+    __REPORT_TYPE_MAX = 0xffffffff,
+} report_type_t;
+
+typedef struct _report_header
+{
+    uint32_t version;
+    report_type_t report_type;
+    uint64_t report_size;
+    uint8_t report[];
+} report_header_t;
+
+#define REPORT_HEADER_VERSION 1
+
+static void _secure_zero_fill(volatile void* ptr, size_t size)
+{
+    volatile uint8_t* p = (volatile uint8_t*)ptr;
+    while (size--)
+    {
+        *p++ = 0;
+    }
+}
+
+#define REPORT_ATTRIBUTES_DEBUG 0x0000000000000001ULL
+#define REPORT_ATTRIBUTES_REMOTE 0x0000000000000002ULL
+
+#define SGX_FLAGS_DEBUG 0x0000000000000002ULL
+
+static int _parse_sgx_report_body(
+    const sgx_report_body_t* body,
+    bool remote,
+    report_t* report)
+{
+    int ret = -1;
+
+    _secure_zero_fill(report, sizeof(report_t));
+
+    report->size = sizeof(report_t);
+    report->type = ENCLAVE_TYPE_SGX;
+
+    /*
+     * Parse identity.
+     */
+    report->identity.id_version = 0x0;
+    report->identity.security_version = body->isvsvn;
+
+    if (body->attributes.flags & SGX_FLAGS_DEBUG)
+        report->identity.attributes |= REPORT_ATTRIBUTES_DEBUG;
+
+    if (remote)
+        report->identity.attributes |= REPORT_ATTRIBUTES_REMOTE;
+
+    if (sizeof(report->identity.unique_id) < sizeof(body->mrenclave))
+        goto done;
+
+    memcpy(
+        report->identity.unique_id, body->mrenclave, sizeof(body->mrenclave));
+
+    if (sizeof(report->identity.signer_id) < sizeof(body->mrsigner))
+        goto done;
+
+    memcpy(report->identity.signer_id, body->mrsigner, sizeof(body->mrsigner));
+
+    report->identity.product_id[0] = (uint8_t)body->isvprodid & 0xFF;
+    report->identity.product_id[1] = (uint8_t)((body->isvprodid >> 8) & 0xFF);
+
+    report->report_data = (uint8_t*)&body->report_data;
+    report->report_data_size = sizeof(sgx_report_data_t);
+    report->enclave_report = (uint8_t*)body;
+    report->enclave_report_size = sizeof(sgx_report_body_t);
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
+int _parse_report(
+    const uint8_t* report_data,
+    size_t report_size,
+    report_t* report)
+{
+    const sgx_report_t* sgx_report = NULL;
+    const sgx_quote_t* sgx_quote = NULL;
+    report_header_t* header = (report_header_t*)report_data;
+    int ret = -1;
+
+    if (report_data == NULL || report == NULL)
+        goto done;
+
+    printf("%zu %zu\n", report_size, sizeof(report_header_t));
+    if (report_size < sizeof(report_header_t))
+        goto done;
+
+    if (header->version != REPORT_HEADER_VERSION)
+        goto done;
+
+    if (header->report_size + sizeof(report_header_t) != report_size)
+        goto done;
+
+    if (header->report_type == REPORT_TYPE_SGX_LOCAL)
+    {
+        sgx_report = (const sgx_report_t*)header->report;
+
+        if (_parse_sgx_report_body(&sgx_report->body, false, report) != 0)
+            goto done;
+
+        ret = 0;
+    }
+    else if (header->report_type == REPORT_TYPE_SGX_REMOTE)
+    {
+        sgx_quote = (const sgx_quote_t*)header->report;
+
+        if (_parse_sgx_report_body(&sgx_quote->report_body, true, report) != 0)
+            goto done;
+
+        ret = 0;
+    }
+    else
+    {
+        goto done;
+    }
+
+done:
+
+    return ret;
+}
+
+static int _get_report_from_cert_data(
+    const uint8_t* cert_data,
+    size_t cert_size,
+    report_t* report)
+{
+    int ret = -1;
+    uint8_t* report_data = NULL;
+    size_t report_size;
+
+    if (!cert_data || !cert_size || !report)
+        goto done;
+
+    if (_extract_report_extension(
+            cert_data, cert_size, &report_data, &report_size) != 0)
+    {
+        goto done;
+    }
+
+    if (_parse_report(report_data, report_size, report) != 0)
+        goto done;
+
+    ret = 0;
+
+done:
 
     if (report_data)
         free(report_data);
