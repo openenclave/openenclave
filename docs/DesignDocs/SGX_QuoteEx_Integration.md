@@ -1,18 +1,18 @@
-# Attestation: OE SDK Integration with Intel® SGX SDK quote-ex Library for Evidence Generation in New Formats
+# Attestation: OE SDK Integration with Intel® SGX SDK quote-ex Library for Generation of Evidence in New Formats
 
-This design document proposes an extension of the OE SDK implementation for integration with Intel® SGX SDK quote-ex library, for support of generation of evidence in new SGX formats such as Enhanced Privacy ID (EPID).
+This design document proposes an extension of the OE SDK implementation for integration with the Intel® SGX SDK quote-ex library, for support of generation of evidence in new SGX formats such as Enhanced Privacy ID (EPID).
 
 # Motivation
 
-Existing implementation of OE SDK SGX attestation, based on Intel® SGX SDK Data Center Attestation Primitives (DCAP) quote generation library (simply called the DCAP library), only supports generation of evidence in a single SGX ECDSA-p256 evidence format.
+The existing implementation of OE SDK SGX attestation, based on the Intel® SGX SDK Data Center Attestation Primitives (DCAP) quote generation library (simply called the DCAP library), only supports generation of evidence in a single SGX ECDSA-p256 format.
 
-On some SGX platforms, other evidence formats - including those based on Enhanced Privacy ID (EPID), are supported and preferred by some application solutions. Generation of evidence in these formats is supported by the Intel® SGX SDK with a library package, libsgx-quote-ex (or simply called quote-ex).
+On some SGX platforms, other evidence formats, including those based on the Enhanced Privacy ID (EPID) algorithm, are supported and preferred by some application solutions. Generation of evidence in these formats is supported by the Intel® SGX SDK with a library package libsgx-quote-ex (or simply called quote-ex).
 
 # User Experience
 
-The proposed extension only changes the internal implementation of the OE SDK attestation software stack. It does not impact the OE SDK API as described in [PR #2621](https://github.com/openenclave/openenclave/pull/2621). With the integration of the quote-ex library, an attester application enclave's call to OE SDK API `oe_sgx_get_attesters()` returns the list of all SGX evidence attester plugins available to the calling enclave instance.
+The proposed extension only changes the internal implementation of the OE SDK attestation software stack. It does not impact the OE SDK API as described in [PR #2621](https://github.com/openenclave/openenclave/pull/2621). With the integration of the quote-ex library, an attester application enclave's call to OE SDK API `oe_sgx_get_attesters()` returns the list of all the SGX evidence attester plugins available to the calling enclave instance.
 
-Integration of the quote-ex library depends on the installation of the Intel® SGX SDK quote-ex library package and its dependencies, and proper configuration of the components and their access to dependent backend services. Details for the installation and configuration are outside the scope of this document.
+Integration of the quote-ex library depends on the installation of the Intel® SGX SDK quote-ex library package and its dependencies, as well as proper configuration of the components and their access to dependent backend services. Details for the quote-ex library installation and configuration are outside the scope of this document.
 
 # Specification
 
@@ -21,20 +21,20 @@ Integration of the quote-ex library depends on the installation of the Intel® S
 ### Evidence Format Enumeration and Plugin Registration
 
 Existing OE SDK implementation based on the DCAP library only supports generation of evidence in a single SGX ECDSA-p256 format, so there is no need for enumeration of supported evidence formats. As implemented in code file `enclave/sgx/attester.c`, a single attester plugin is created for the SGX ECDSA-p256 evidence format.
-- Note: in the current OE SDK implementation, the UUID for the ECDSA-p256 evidence format is still called `OE_SGX_PLUGIN_UUID`. which is the same as `OE_SGX_ECDSA_P256_PLUGIN_UUID`.
+- Note: in the current OE SDK implementation, the UUID for the ECDSA-p256 evidence format is still called `OE_SGX_PLUGIN_UUID`, which is the same as `OE_SGX_ECDSA_P256_PLUGIN_UUID`.
 
 ### Implementation of OE SDK API `oe_get_evidence()`
 
-The implementation of OE SDK API `oe_get_evidence()`, in code file `common/attest_plugin.c`, searches for a plugin that supports the requested evidence format, and invokes the `get_evidence()` entry point of the selected plugin.
+The implementation of OE SDK API `oe_get_evidence()`, in code file `common/attest_plugin.c`, searches for an attester plugin that supports the requested evidence format, and invokes the `get_evidence()` entry point of the selected plugin.
 
-The SGX ECDSA-p256 plugin is implemented in code file `enclave/sgx/attester.c` and other relevant enclave-side and host-side code files, called enclave-side and host-side plugin libraries in this document. The enclave-side plugin library interacts with the host-side plugin library via OCALLs defined in interface definition file `common/sgx/sgx.edl`. For SGX ECDSA-p256 evidence generation, there are 2 OCALLs:
+The SGX ECDSA-p256 attester plugin is implemented in code file `enclave/sgx/attester.c` and other relevant enclave-side and host-side code files, called enclave-side and host-side plugin libraries in this document. The enclave-side plugin library interacts with the host-side plugin library via OCALLs defined in interface definition file `common/sgx/sgx.edl`. For SGX ECDSA-p256 evidence generation, there are 2 OCALLs:
 
 - `oe_get_qetarget_info_ocall(sgx_target_info_t* target_info)`
     - Return the SGX Quoting Enclave (QE) target information.
 - `oe_get_quote_ocall(const sgx_report_t* sgx_report, void* quote, size_t quote_size, size_t* quote_size_out)`
     - Generate an ECDSA-p256 quote and return in the caller-supplied buffer, or return the needed buffer size if the supplied buffer is missing or not large enough.
 
-Since only a single evidence format is supported and this format does not require any optional parameter, these OCALLs don't pass either the evidence format ID or optional parameter.
+Since only a single evidence format is supported and this format does not require any optional parameter, these OCALLs pass neither the evidence format ID nor optional parameter.
 
 The host-side plugin library implements the OCALLs, as in code file `host/sgx/ocalls.c` and other relevant code files. As defined in the main `cmake` configuration file `CMakeLists.txt` in the OE SDK top directory, the DCAP library is linked to the OE SDK host-side plugin library. The DCAP library provides following 3 API functions in support of the above two OCALLs, as defined in its [header file](https://github.com/intel/SGXDataCenterAttestationPrimitives/blob/master/QuoteGeneration/quote_wrapper/ql/inc/sgx_dcap_ql_wrapper.h).
 
@@ -43,9 +43,9 @@ The host-side plugin library implements the OCALLs, as in code file `host/sgx/oc
 - `sgx_qe_get_quote_size(uint32_t *p_quote_size)`
     - Return the size of the buffer needed to hold the SGX ECDSA quote to be generated.
 - `sgx_qe_get_quote(const sgx_report_t *p_app_report, uint32_t quote_size, uint8_t *p_quote)`
-    - Generate an SGX ECDSA quote from the input application enclave SGX report, and return it in the caller-supplied buffer.
+    - Generate an SGX ECDSA quote for the input application enclave SGX report, and return it in the caller-supplied buffer.
 
-### Project Compile and Linking
+### Project Compilation and Linking
 
 As defined in `cmake` configuration file `host/CMakeLists.txt`, for OE SDK built on an SGX platform, the host-side plugin library code is linked with the DCAP static library.
 
@@ -53,7 +53,7 @@ As defined in `cmake` configuration file `host/CMakeLists.txt`, for OE SDK built
 
 ### quote-ex Library API
 
-For generation of SGX evidence in ECDSA and EPID formats, the SGX quote-ex library has the relevant API functions defined in its [header file](https://github.com/intel/linux-sgx/blob/master/common/inc/sgx_uae_quote_ex.h):
+For generation of SGX evidence in ECDSA and EPID formats, the SGX quote-ex library has the following relevant API functions defined in its [header file](https://github.com/intel/linux-sgx/blob/master/common/inc/sgx_uae_quote_ex.h):
 
 - `sgx_get_supported_att_key_ids(sgx_att_key_id_ext_t *p_att_key_id_list, uint32_t *p_att_key_id_list_size)`
     - Return the list of supported attestation key IDs (which can be mapped to OE SDK evidence formats) on the current platform.
@@ -63,23 +63,23 @@ For generation of SGX evidence in ECDSA and EPID formats, the SGX quote-ex libra
 - `sgx_get_quote_size_ex(const sgx_att_key_id_t *p_att_key_id, uint32_t* p_quote_size)`
     - Return the size of the buffer needed to hold the quote to be generated for the given attestation key ID.
 - `sgx_get_quote_ex(const sgx_report_t *p_app_report, const sgx_att_key_id_t *p_att_key_id,sgx_qe_report_info_t *p_qe_report_info, uint8_t *p_quote, uint32_t quote_size)`
-    - Generate a quote for the given attestation key ID, and return it in the call-supplied buffer.
+    - Generate a quote for the given attestation key ID and application SGX report, and return it in the call-supplied buffer.
 
 As compared to the DCAP library API, the quote-ex library API allows enumeration of supported evidence formats (called attestation key IDs in the API). Otherwise the quote-ex API is similar to the DCAP API, except that every function takes an input attestation key ID in its parameter list.
 
-### Host-side Plugin Library Dynamic Load of quote-ex or DCAP library
+### Host-side Plugin Library Dynamic Load of the quote-ex or DCAP library
 
 Between the DCAP and quote-ex libraries:
-- The DCAP library only supports generation of SGX SGX quote in ECDSA-p256 format. With DCAP, the quote generation can be done either in-process, or out-of-process by working with a background service running on the same platform.
-- The quote-ex library supports generation of SGX quote in multiple formats (including ECDSA and EPID). With quote=ex, quote generation is always done out-of-process by working with dependent service on the local platform.
+- The DCAP library only supports generation of SGX quote in ECDSA-p256 format. With DCAP, the quote generation can be done either in-process, or out-of-process by working with a background service running on the same platform.
+- The quote-ex library supports generation of SGX quote in multiple formats (including ECDSA and EPID). With quote-ex, quote generation is always done out-of-process by working with a background service on the local platform.
 
-An SGX platform can have either one of the quote-ex or DCAP library, or both libraries installed. When both libraries are installed, the quote-ex library takes precedence, as it supports more evidence formats.
+An SGX platform can have either the quote-ex library or the DCAP library, or both of them installed. When both libraries are installed, the quote-ex library takes precedence, as it supports more evidence formats.
 
 The OE SDK host-side plugin library is changed to dynamically detect the presence of the two libraries, load one of them, and record the entry points of the loaded library for invocation in the flows described below.
 
 ### Support of SGX Evidence Formats Enumeration
 
-the SGX plugin code file `enclave/sgx/attester.c` implements the OE SDK API `oe_sgx_get_attesters()`. The implementation enumerates all supported SGX evidence formats, creates a list of attester plugins for them, and returns the created list to the caller.
+The SGX plugin code file `enclave/sgx/attester.c` implements the OE SDK API `oe_sgx_get_attesters()`. The implementation enumerates all supported SGX evidence formats, creates a list of attester plugins for them, and returns the created list to the caller.
 
 For SGX evidence formats enumeration, a new OCALL is added to interface definition file `common/sgx/sgx.edl` and implemented in the host-side SGX plugin library:
 
@@ -89,7 +89,7 @@ For SGX evidence formats enumeration, a new OCALL is added to interface definiti
 
 In the implementation of this OCALL by the host-side SGX plugin library:
 
-- If the DCAP library is loaded, a list with a single evidence format ID for ECDSA-p256 is return.
+- If the DCAP library is loaded, a list with a single evidence format ID for ECDSA-p256 is returned.
 - Otherwise if the quote-ex library is loaded, its API `sgx_get_supported_att_key_ids()` is invoked, and the returned list of attestation key IDs is converted to a list of OE SDK evidence format IDs.
 
 ### Updated Implementation of OE SDK API oe_get_evidence()
@@ -99,8 +99,8 @@ The OCALLs for SGX evidence generation are extended to include the requested evi
 - `oe_get_qetarget_info_ocall(const oe_uuid_t* format_id, const void* opt_params, size_t opt_params_size, sgx_target_info_t* target_info)`
     - Return the SGX Quoting Enclave (QE) target information for the given evidence format ID and its optional parameters.
 - `oe_get_quote_ocall(const oe_uuid_t* format_id, const void* opt_params, size_t opt_params_size, const sgx_report_t* sgx_report, void* quote, size_t quote_size, size_t* quote_size_out)`
-    - Generate a quote for the given evidence format ID and its optional parameters, and returns it in the caller-supplied buffer.
-    - But if the supplied buffer is missing or not large enough, it only returns the needed buffer size.
+    - Generate a quote for the given evidence format ID and its optional parameters, and return it in the caller-supplied buffer.
+    - But if the supplied buffer is missing or not large enough, only the needed buffer size is returned.
 
 In the host-side SGX plugin library implementation:
 
