@@ -71,6 +71,10 @@ typedef struct _thread_binding
     /* This field allows the simulation mode exception handler to read enclave
      * properties of the current thread binding */
     struct _oe_enclave* enclave;
+
+    /* Buffer used for ocall parameters */
+    void* ocall_buffer;
+    uint64_t ocall_buffer_size;
 } oe_thread_binding_t;
 
 /* Whether this binding is busy */

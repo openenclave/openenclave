@@ -894,6 +894,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
         {
             oe_thread_binding_t* binding = &enclave->bindings[i];
             CloseHandle(binding->event.handle);
+            free(binding->ocall_buffer);
         }
 
 #endif
