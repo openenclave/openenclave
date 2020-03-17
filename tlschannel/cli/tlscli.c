@@ -42,25 +42,6 @@ typedef struct _identity
     uint8_t product_id[PRODUCT_ID_SIZE];
 } identity_t;
 
-typedef enum _enclave_type
-{
-    ENCLAVE_TYPE_AUTO = 1,
-    ENCLAVE_TYPE_SGX = 2,
-    ENCLAVE_TYPE_OPTEE = 3,
-    __ENCLAVE_TYPE_MAX = 0xffffffff,
-} enclave_type_t;
-
-typedef struct _report
-{
-    size_t size;
-    enclave_type_t type;
-    size_t report_data_size;
-    size_t enclave_report_size;
-    uint8_t* report_data;
-    uint8_t* enclave_report;
-    identity_t identity;
-} report_t;
-
 static bool _started;
 static const char* _pers = "ssl_client";
 static mbedtls_entropy_context _entropy;
@@ -175,10 +156,10 @@ done:
     return ret;
 }
 
-static int _get_report_from_cert_data(
+static int _verify_attested_cert(
     const uint8_t* cert_data,
     size_t cert_size,
-    report_t* report);
+    identity_t* identity);
 
 static int _cert_verify_callback(
     void* data,
@@ -190,8 +171,7 @@ static int _cert_verify_callback(
     tlscli_t* cli = (tlscli_t*)data;
     const uint8_t* cert_data;
     size_t cert_size;
-    report_t report;
-    const identity_t* identity;
+    identity_t identity;
 
     *flags = (uint32_t)MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
 
@@ -204,24 +184,22 @@ static int _cert_verify_callback(
     if (!cli)
         goto done;
 
-    if (_get_report_from_cert_data(cert_data, cert_size, &report) != 0)
+    if (_verify_attested_cert(cert_data, cert_size, &identity) != 0)
     {
         goto done;
     }
-
-    identity = &report.identity;
 
     if (cli->verify_identity)
     {
         if (cli->verify_identity(
                 cli->verify_identity_arg,
-                identity->unique_id,
-                sizeof(identity->unique_id),
-                identity->signer_id,
-                sizeof(identity->signer_id),
-                identity->product_id,
-                sizeof(identity->product_id),
-                identity->security_version) != 0)
+                identity.unique_id,
+                sizeof(identity.unique_id),
+                identity.signer_id,
+                sizeof(identity.signer_id),
+                identity.product_id,
+                sizeof(identity.product_id),
+                identity.security_version) != 0)
         {
             goto done;
         }
@@ -576,9 +554,9 @@ void tlscli_put_err(const tlscli_err_t* err)
 /*
 **==============================================================================
 **
-** _extract_report_extension()
+** _verify_attested_cert()
 **
-**     This function extracts the report extension from a X509 certificate.
+**     The remaining function verify an attested certificate.
 **
 **==============================================================================
 */
@@ -956,6 +934,25 @@ typedef struct _report_header
     uint8_t report[];
 } report_header_t;
 
+typedef enum _enclave_type
+{
+    ENCLAVE_TYPE_AUTO = 1,
+    ENCLAVE_TYPE_SGX = 2,
+    ENCLAVE_TYPE_OPTEE = 3,
+    __ENCLAVE_TYPE_MAX = 0xffffffff,
+} enclave_type_t;
+
+typedef struct _report
+{
+    size_t size;
+    enclave_type_t type;
+    size_t report_data_size;
+    size_t enclave_report_size;
+    uint8_t* report_data;
+    uint8_t* enclave_report;
+    identity_t identity;
+} report_t;
+
 #define REPORT_HEADER_VERSION 1
 
 static void _secure_zero_fill(volatile void* ptr, size_t size)
@@ -1072,16 +1069,17 @@ done:
     return ret;
 }
 
-static int _get_report_from_cert_data(
+static int _verify_attested_cert(
     const uint8_t* cert_data,
     size_t cert_size,
-    report_t* report)
+    identity_t* identity)
 {
     int ret = -1;
     uint8_t* report_data = NULL;
     size_t report_size;
+    report_t report;
 
-    if (!cert_data || !cert_size || !report)
+    if (!cert_data || !cert_size || !identity)
         goto done;
 
     if (_extract_report_extension(
@@ -1090,8 +1088,16 @@ static int _get_report_from_cert_data(
         goto done;
     }
 
-    if (_parse_report(report_data, report_size, report) != 0)
+    /****************************************************************/
+    /*                                                              */
+    /* ATTN: verify the SGX quote here using the approriate service */
+    /*                                                              */
+    /****************************************************************/
+
+    if (_parse_report(report_data, report_size, &report) != 0)
         goto done;
+
+    *identity = report.identity;
 
     ret = 0;
 
