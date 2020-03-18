@@ -9,6 +9,6 @@
     "vm_size": "Standard_DC2s",
     "communicator": "winrm",
     "ansible_group": "windows-agents",
-    "playbook_file": "/ansible/oe-windows-acc-setup.yml",
-    "dcap_testing_node": "true"
+    "playbook_file": "/ansible/oe-windows-nonSGX-setup.yml",
+    "launch_configuration": "SGX1FLC-NoDriver"
 }

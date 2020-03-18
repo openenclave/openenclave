@@ -19,36 +19,37 @@
   register: file
   failed_when: file.stat.isreg == False
 
-- name: Azure DCAP Client | Check for the LC driver registry key
-  win_reg_stat:
-    path: '{{ lc_driver.reg_path }}'
-    name: '{{ lc_driver.reg_key }}'
-  register: reg_key
-  failed_when: reg_key.value != 1
-  when: dcap_testing_node is defined and dcap_testing_node == 'true'
+- block:
+    - name: Azure DCAP Client | Check for the LC driver registry key
+      win_reg_stat:
+        path: '{{ lc_driver.reg_path }}'
+        name: '{{ lc_driver.reg_key }}'
+      register: reg_key
+      failed_when: reg_key.value != 1
 
-- name: Azure DCAP Client | Download devcon.exe
-  win_get_url:
-    url: "{{ devcon_bin_url }}"
-    dest: "{{ tmp_dir }}\\devcon.exe"
-    timeout: 60
-  retries: 3
+    - name: Azure DCAP Client | Download devcon.exe
+      win_get_url:
+        url: "{{ devcon_bin_url }}"
+        dest: "{{ tmp_dir }}\\devcon.exe"
+        timeout: 60
+      retries: 3
 
-- name: Azure DCAP Client | Check if Sgx* drivers are installed
-  win_shell: "{{ tmp_dir }}\\devcon.exe find '{{ item }}'"
-  register: result
-  failed_when: result.stdout.find('1 matching device(s) found.') == -1
-  with_items:
-    - 'root\SgxLCDevice'
-    - 'root\SgxLCDevice_DCAP'
-  when: dcap_testing_node is defined and dcap_testing_node == 'true'
+    - name: Azure DCAP Client | Check if Sgx* drivers are installed
+      win_shell: "{{ tmp_dir }}\\devcon.exe find '{{ item }}'"
+      register: result
+      failed_when: result.stdout.find('1 matching device(s) found.') == -1
+      with_items:
+        - 'root\SgxLCDevice'
+        - 'root\SgxLCDevice_DCAP'
 
-- name: Azure DCAP Client | Remove temp devcon.exe
-  win_file:
-    state: absent
-    path: "{{ tmp_dir }}\\devcon.exe"
+    - name: Azure DCAP Client | Remove temp devcon.exe
+      win_file:
+        state: absent
+        path: "{{ tmp_dir }}\\devcon.exe"
 
-- name: Azure DCAP Client | Check if Intel SGX is installed
-  win_shell: '(Get-CimInstance -ClassName Win32_Product -Filter "Name=''Intel® Software Guard Extensions Platform Software''") -eq $null'
-  register: result
-  failed_when: result.stdout == "True\r\n"
+    - name: Azure DCAP Client | Check if Intel SGX is installed
+      win_shell: '(Get-CimInstance -ClassName Win32_Product -Filter "Name=''Intel® Software Guard Extensions Platform Software''") -eq $null'
+      register: result
+      failed_when: result.stdout == "True\r\n"
+
+  when: launch_configuration is defined and launch_configuration == 'SGX1FLC'

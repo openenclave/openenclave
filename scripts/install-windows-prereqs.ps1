@@ -662,6 +662,17 @@ try {
     Install-Node
     Install-VCRuntime
 
+
+    # The Open Enclave source directory tree might have file paths exceeding
+    # the default limit of 260 characters (especially the 3rd party libraries
+    # file paths). Unless the git directory location is short (for example
+    # `C:\` or `D:\`), there is a high chance that file paths will exceed 260
+    # characters, leading to `Filename too long` file system erros. The fix
+    # for this is to disable the file path limit via the proper registry key.
+    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
+                     -Name LongPathsEnabled `
+                     -Value 1
+
     Write-Output 'Please reboot your computer for the configuration to complete.'
 } catch {
     Write-Output $_.ToString()
