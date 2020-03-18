@@ -60,7 +60,7 @@ int unseal_data_and_verify_result(
     unsigned char* target_data,
     size_t target_data_size)
 {
-    oe_result_t result = OE_OK;
+    oe_result_t result = OE_FAILURE;
     int ret = 0;
     unsigned char* data = NULL;
     size_t data_size = 0;
@@ -80,8 +80,8 @@ int unseal_data_and_verify_result(
     cout << "Host: Unsealed result:" << endl;
     printf("data=%s\n", data);
 
-    printf("data_size=%ld\n", data_size);
-    printf("target_data_size=%ld\n", target_data_size);
+    printf("data_size=%zd\n", data_size);
+    printf("target_data_size=%zd\n", target_data_size);
 
     if (strncmp(
             (const char*)data, (const char*)target_data, target_data_size) != 0)
@@ -95,6 +95,9 @@ int unseal_data_and_verify_result(
 exit:
     if (data)
         free(data);
+
+    if (ret != 0)
+        result = OE_FAILURE;
 
     cout << "Host: exit unseal_data_and_verify_result with "
          << oe_result_str(result) << endl;
@@ -229,6 +232,10 @@ exit:
     // Free host memory allocated by the enclave.
     if (sealed_data != NULL)
         free(sealed_data);
+
+    if (ret != 0)
+        result = OE_FAILURE;
+
     return result;
 }
 
