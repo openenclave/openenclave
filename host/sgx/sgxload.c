@@ -2,8 +2,9 @@
 // Licensed under the MIT License.
 
 #include "sgxload.h"
+#if !defined(OEHOSTMR)
 #include <sgx_enclave_common.h>
-
+#endif // OEHOSTMR
 #if defined(__linux__)
 #include <sys/mman.h>
 #include <unistd.h>
@@ -27,6 +28,7 @@
 #include "sgxmeasure.h"
 #include "xstate.h"
 
+#if !defined(OEHOSTMR)
 static int _make_memory_protect_param(uint64_t inflags, bool simulate)
 {
     int outflags = 0;
@@ -106,6 +108,7 @@ static int _make_memory_protect_param(uint64_t inflags, bool simulate)
 
     return outflags;
 }
+#endif // OEHOSTMR
 
 /* Detect the XSave Feature Request Mask (XFRM) to set in the enclave */
 static uint64_t _detect_xfrm()
@@ -150,6 +153,7 @@ static sgx_secs_t* _new_secs(
     return secs;
 }
 
+#if !defined(OEHOSTMR)
 /*
 ** Allocate memory for an enclave so that it has the following layout:
 **
@@ -359,6 +363,7 @@ done:
 
     return result;
 }
+#endif // OEHOSTMR
 
 oe_result_t oe_sgx_initialize_load_context(
     oe_sgx_load_context_t* context,
@@ -418,12 +423,18 @@ oe_result_t oe_sgx_create_enclave(
      * mode or on Linux Kabylake machines. */
     if (context->type == OE_SGX_LOAD_TYPE_CREATE)
     {
+#if !defined(OEHOSTMR)
         if (oe_sgx_is_simulation_load_context(context))
         {
             /* Allocation memory-mapped region */
             if (!(base = _allocate_enclave_memory(enclave_size, context->dev)))
                 OE_RAISE(OE_OUT_OF_MEMORY);
         }
+#else
+        // Wrong code path
+        result = OE_UNSUPPORTED;
+        goto done;
+#endif // OEHOSTMR
     }
 
     /* Create SECS structure */
@@ -438,6 +449,7 @@ oe_result_t oe_sgx_create_enclave(
         /* Use this phony base address when signing enclaves */
         base = (void*)0x0000ffff00000000;
     }
+#if !defined(OEHOSTMR)
     else if (oe_sgx_is_simulation_load_context(context))
     {
         /* Simulate enclave creation */
@@ -464,13 +476,13 @@ oe_result_t oe_sgx_create_enclave(
 
         secs->base = (uint64_t)base;
     }
-
+#endif // OEHOSTMR
     *enclave_addr = base ? (uint64_t)base : secs->base;
     context->state = OE_SGX_LOAD_STATE_ENCLAVE_CREATED;
     result = OE_OK;
 
 done:
-
+#if !defined(OEHOSTMR)
     //  free enclave  memory
     if (result != OE_OK && context != NULL &&
         context->type == OE_SGX_LOAD_TYPE_CREATE && base != NULL)
@@ -478,6 +490,7 @@ done:
         _sgx_free_enclave_memory(
             base, enclave_size, oe_sgx_is_simulation_load_context(context));
     }
+#endif // OEHOSTMR
 
     if (secs)
         oe_memalign_free(secs);
@@ -625,6 +638,7 @@ oe_result_t oe_sgx_load_enclave_data(
         result = OE_OK;
         goto done;
     }
+#if !defined(OEHOSTMR)
     else if (oe_sgx_is_simulation_load_context(context))
     {
         /* Simulate enclave add page */
@@ -685,6 +699,7 @@ oe_result_t oe_sgx_load_enclave_data(
                 protect,
                 enclave_error);
     }
+#endif // OEHOSTMR
 
     result = OE_OK;
 
@@ -712,7 +727,7 @@ oe_result_t oe_sgx_initialize_enclave(
     /* Measure this operation */
     OE_CHECK(
         oe_sgx_measure_initialize_enclave(&context->hash_context, mrenclave));
-
+#if !defined(OEHOSTMR)
     /* EINIT has no further action in measurement/simulation mode */
     if (context->type == OE_SGX_LOAD_TYPE_CREATE &&
         !oe_sgx_is_simulation_load_context(context))
@@ -732,7 +747,7 @@ oe_result_t oe_sgx_initialize_enclave(
                 "enclave_initialize failed (err=%#x)",
                 enclave_error);
     }
-
+#endif // OEHOSTMR
     context->state = OE_SGX_LOAD_STATE_ENCLAVE_INITIALIZED;
     result = OE_OK;
 
@@ -740,6 +755,7 @@ done:
     return result;
 }
 
+#if !defined(OEHOSTMR)
 oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -754,3 +770,4 @@ oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave)
 done:
     return result;
 }
+#endif // OEHOSTMR

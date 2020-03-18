@@ -57,6 +57,7 @@ static char* get_fullpath(const char* path)
 #include "sgx_u.h"
 #include "sgxload.h"
 
+#if !defined(OEHOSTMR)
 static oe_once_type _enclave_init_once;
 
 static void _initialize_exception_handling(void)
@@ -80,6 +81,7 @@ static void _initialize_enclave_host()
     oe_register_sgx_ocall_function_table();
     oe_register_syscall_ocall_function_table();
 }
+#endif // OEHOSTMR
 
 static oe_result_t _add_filled_pages(
     oe_sgx_load_context_t* context,
@@ -358,6 +360,7 @@ done:
     return result;
 }
 
+#if !defined(OEHOSTMR)
 oe_result_t oe_get_cpuid_table_ocall(
     void* cpuid_table_buffer,
     size_t cpuid_table_buffer_size)
@@ -469,6 +472,7 @@ static oe_result_t _configure_enclave(
 done:
     return result;
 }
+#endif // OEHOSTMR
 
 oe_result_t oe_sgx_validate_enclave_properties(
     const oe_sgx_enclave_properties_t* properties,
@@ -697,6 +701,7 @@ done:
     return result;
 }
 
+#if !defined(OEHOSTMR)
 /*
 ** This method encapsulates all steps of the enclave creation process:
 **     - Loads an enclave image file
@@ -916,3 +921,4 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 done:
     return result;
 }
+#endif // OEHOSTMR
