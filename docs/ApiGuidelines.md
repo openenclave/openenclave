@@ -14,16 +14,25 @@ Public APIs are the supported APIs that apps can use.
 
 Public API requirements: 
 
-* All public APIs must have at least one test case.
+* All public APIs must have at least one test case. This means that, for any
+  pull request to be merged that adds a public API, it must also add at least
+  one test case for it.
 * All public APIs must be in a header file that is published to a location under the SDK output directory.
 * All public APIs must be fully documented using doxygen markup in the public header files
 * All public APIs must be used in some sample code or snippet. Ideally, the sample
   should be one that is compiled as part of the build, and uses no experimental APIs. For rarely 
   used public APIs, the sample might simply be a snippet in the doxygen comments.
-* Public APIs cannot have source-breaking changes across Open Enclave versions. For platforms 
-  where shared libraries are built, public APIs cannot have binary-breaking changes across 
-  Open Enclave versions either. (Source- and binary-breaking changes can still be made to a new 
-  API before it is released for the first time.  See the Breaking Changes section below for further discussion.)
+  This means that, for any pull request to be merged that adds a public API,
+  it must also add at least one sample or snippet showing how it is used.
+* Public APIs must follow [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html)
+  rules.  This includes both source-breaking changes (meaning changes that
+  would cause a build break when trying to compile an app with a newer
+  version of the Open Enclave SDK), but also binary-breaking changes
+  for platforms where shared libraries are built (meaning changes
+  that would cause runtime errors if a shared library were replaced
+  with a newer version). Source- and binary-breaking changes can still
+  be made to a new 
+  API before it is released for the first time.  See the Breaking Changes section below for further discussion.
 * A public API must not be added to Open Enclave if there is already a non-deprecated API that can just 
   as easily be used (i.e., with approximately the same number of lines of code).
 * A public API must not be added to Open Enclave if the API would provide generic functionality
@@ -46,8 +55,10 @@ Experimental API requirements:
 * Experimental APIs must be in a header file that is published to the SDK output directory. They
   can be in their own header, or in a header file that is shared with public APIs but only
   if surrounded by an appropriate ifdef (e.g., "#ifdef OE\_CONTEXT\_SWITCHLESS\_EXPERIMENTAL\_FEATURE").
-* Experimental APIs should be fully documented using doxygen markup in the header file
-* Experimental APIs must have at least one test case.
+* Experimental APIs should be fully documented using doxygen markup in the header file, and include the @experimental markup.
+* Experimental APIs must have at least one test case. This means that, for any
+  pull request to be merged that adds an experimental API, it must also add at
+  least one test case for it.
 * Experimental APIs should ideally be used in some sample code (separate from samples that
   use only public APIs) or snippet. Ideally, the sample should be one that is compiled as part
   of the build. For rarely used APIs, the sample might simply be a snippet in the doxygen
@@ -71,7 +82,24 @@ Internal API requirements:
   cannot have binary-breaking changes) across releases, except as covered by deprecation as explained
   below. API additions can be made at any time.
 * Experimental and internal APIs can have breaking changes across releases.
+* Any breaking change to, or deprecation of, a released API must have a design
+  reviewed and approved before the change is made, where the design minimally
+  must state why a change is needed.
 
 APIs can be deprecated by marking them as @deprecated. The associated text should explain what
 an application should do instead. Public APIs must be @deprecated in a release before they can be
 removed.
+
+Until the Open Enclave SDK reaches version 1.0, any breaking change to a public
+API can only be made when changing the MINOR version number.  Once the
+Open Enclave SDK reaches version 1.0, any breaking change to a public API
+can only be made when incrementing the MAJOR version number, as explained in
+[Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html).
+
+Any breaking change to an experimental API can only be made when changing
+the MINOR version number, regardless of whether the Open Enclave has reached
+1.0 or not.
+
+The only exception to the above is if an API has just been added and hasn't
+been in any release yet, then it can have breaking changes up until it is
+first released.
