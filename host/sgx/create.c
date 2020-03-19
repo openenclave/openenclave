@@ -585,14 +585,20 @@ static oe_result_t _add_extra_data_pages(
 
         for (size_t i = 0; i < num_pages; i++)
         {
+            oe_page_t* aligned_page =
+                oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
+            memcpy(aligned_page, &pages[i], OE_PAGE_SIZE);
+
             uint64_t addr = enclave_addr + *vaddr;
-            uint64_t src = (uint64_t)&pages[i];
+            uint64_t src = (uint64_t)aligned_page;
             uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
             bool extend = true;
 
             OE_CHECK(oe_sgx_load_enclave_data(
                 context, enclave_addr, addr, src, flags, extend));
             (*vaddr) += sizeof(oe_page_t);
+
+            oe_memalign_free(aligned_page);
         }
     }
 
