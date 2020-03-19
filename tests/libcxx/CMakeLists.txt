@@ -59,11 +59,11 @@ foreach(testcase ${alltests})
         endif()
     endif()
 
-# the following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 7.5
+# the following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 8.0
     if ("${name}" MATCHES "std_utilities_function.objects_comparisons_constexpr_init.pass")
         if(ENCLAVE_CXX_COMPILER_ID MATCHES GNU
             AND ENCLAVE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7
-            AND ENCLAVE_CXX_COMPILER_VERSION VERSION_LESS 7.5)
+            AND ENCLAVE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
             continue()
         endif()
     endif()
