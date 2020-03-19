@@ -1,14 +1,17 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/common/edl)
+if (OE_SGX)
+    set(SGX_EDL_DIR ${CMAKE_SOURCE_DIR}/common/sgx/edl)
+endif()
+
 ##==============================================================================
 ##
 ## These rules generate the edge routines for the internal TEE-agnostic
 ## ECALLs/OCALLs used by liboehost/liboecore.
 ##
 ##==============================================================================
-
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
 
 set(TEE_EDL_FILE ${EDL_DIR}/tee.edl)
 
@@ -22,12 +25,32 @@ add_custom_target(tee_untrusted_edl
 
 ##==============================================================================
 ##
+## Publish the edger8r-generated header (*_args.h) that defines data structures.
+## Note that doing this on the host side to ensure publishing the header with 
+## the case of `BUILD_ENCLAVES=OFF`.
+##
+##==============================================================================
+
+set(OE_EDL_INCLUDES ${OE_INCDIR}/openenclave/bits)
+# Add dependencies to `oe_includes` so that the published header will be ready before
+# other files consume it.
+add_dependencies(oe_includes tee_untrusted_edl)
+
+add_custom_command(
+    TARGET tee_untrusted_edl
+    COMMAND ${CMAKE_COMMAND} -E copy tee_args.h ${OE_EDL_INCLUDES}/asym_keys.h)
+
+install(DIRECTORY ${OE_EDL_INCLUDES}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
+
+##==============================================================================
+##
 ## These rules generate the edge routines for the internal ECALLs/OCALLs used
 ## by switchless calls.
 ##
 ##==============================================================================
 if (OE_SGX)
-    set(SWITCHLESS_EDL_FILE ${EDL_DIR}/sgx/switchless.edl)
+    set(SWITCHLESS_EDL_FILE ${SGX_EDL_DIR}/switchless.edl)
 
     add_custom_command(
         OUTPUT switchless_u.h switchless_u.c switchless_args.h
@@ -46,7 +69,7 @@ endif ()
 ##==============================================================================
 
 if (OE_SGX)
-    set(SGX_EDL_FILE ${EDL_DIR}/sgx/sgx.edl)
+    set(SGX_EDL_FILE ${SGX_EDL_DIR}/sgx.edl)
 
     add_custom_command(
         OUTPUT sgx_u.h sgx_u.c sgx_args.h
@@ -147,6 +170,7 @@ if (OE_SGX AND WIN32)
      DEPENDS sgx/enter.c
      COMMAND clang  -c -O2 -fomit-frame-pointer -m64
              -I${PROJECT_SOURCE_DIR}/include
+             -I${OE_INCDIR}
              ${CMAKE_CURRENT_SOURCE_DIR}/sgx/enter.c
              -o enter.obj)
 endif ()

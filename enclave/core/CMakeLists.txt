@@ -1,14 +1,17 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/common/edl)
+if (OE_SGX)
+    set(SGX_EDL_DIR ${CMAKE_SOURCE_DIR}/common/sgx/edl)
+endif()
+
 ##==============================================================================
 ##
 ## These rules generate the edge routines for the internal TEE-agnostic
 ## ECALLs/OCALLs used by liboehost/liboecore.
 ##
 ##==============================================================================
-
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
 
 set(TEE_EDL_FILE ${EDL_DIR}/tee.edl)
 
@@ -27,7 +30,7 @@ add_custom_target(tee_trusted_edl
 ##
 ##==============================================================================
 if (OE_SGX)
-    set(SWITCHLESS_EDL_FILE ${EDL_DIR}/sgx/switchless.edl)
+    set(SWITCHLESS_EDL_FILE ${SGX_EDL_DIR}/switchless.edl)
 
     add_custom_command(
         OUTPUT switchless_t.h switchless_t.c switchless_args.h
@@ -46,7 +49,7 @@ endif()
 ##==============================================================================
 
 if(OE_SGX)
-    set(SGX_EDL_FILE ${EDL_DIR}/sgx/sgx.edl)
+    set(SGX_EDL_FILE ${SGX_EDL_DIR}/sgx.edl)
 
     add_custom_command(
         OUTPUT sgx_t.h sgx_t.c sgx_args.h
