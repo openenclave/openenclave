@@ -101,6 +101,25 @@ static oe_result_t _verify_local_report(
 #endif
 }
 
+static oe_result_t _verify_claims_hash(
+    sgx_quote_t* quote,
+    const uint8_t* claims,
+    size_t claims_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    OE_SHA256* hash = (OE_SHA256*)quote->report_body.report_data.field;
+    OE_SHA256 claims_hash;
+    oe_sha256_context_t hash_ctx = {0};
+
+    OE_CHECK(oe_sha256_init(&hash_ctx));
+    OE_CHECK(oe_sha256_update(&hash_ctx, claims, claims_size));
+    OE_CHECK(oe_sha256_final(&hash_ctx, &claims_hash));
+
+    result = memcmp(hash, &claims_hash, OE_SHA256_SIZE) ? OE_FAILURE : OE_OK;
+done:
+    return result;
+}
+
 static oe_result_t _add_claim(
     oe_claim_t* claim,
     void* name,
@@ -325,6 +344,13 @@ static oe_result_t _extract_claims(
     // Check if the buffer is the proper size.
     if (evidence_size - report_size < sizeof(*claims_header))
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    // verify the integrity of the serialized claims with hash stored in
+    // report_data.
+    OE_CHECK(_verify_claims_hash(
+        (sgx_quote_t*)header->report,
+        evidence + report_size,
+        evidence_size - report_size));
 
     claims_header = (oe_sgx_plugin_claims_header_t*)(evidence + report_size);
 
