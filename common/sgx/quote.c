@@ -642,8 +642,8 @@ oe_result_t oe_get_sgx_quote_validity(
 
     // Fetch revocation info validity dates.
     OE_CHECK_MSG(
-        oe_validate_revocation_list(&pck_cert, sgx_endorsements, &from, &until),
-
+        oe_validate_revocation_list(
+            sgx_quote, &pck_cert, sgx_endorsements, &from, &until),
         "Failed to validate revocation info. %s",
         oe_result_str(result));
     _update_validity(&latest_from, &earliest_until, &from, &until);

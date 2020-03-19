@@ -284,7 +284,88 @@ done:
     return result;
 }
 
+static char _convert_value_to_ascii(uint8_t value)
+{
+    if (value <= 0x09)
+    {
+        return (char)(value + '0');
+    }
+    else if (value <= 0x0F)
+    {
+        return (char)(value - 10 + 'a');
+    }
+
+    return '*';
+}
+
+static oe_result_t _log_array(
+    oe_log_level_t level,
+    char* array_name,
+    uint8_t* array,
+    size_t array_size)
+{
+    oe_result_t result = OE_FAILURE;
+    char* buffer = NULL;
+    char* pos = NULL;
+
+    if (array_name == NULL || array == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    buffer = (char*)oe_malloc(array_size * 2);
+    if (buffer == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    pos = buffer;
+    for (uint32_t i = 0; i < array_size; i++)
+    {
+        *pos++ = _convert_value_to_ascii((uint8_t)(*array >> 4));
+        *pos++ = _convert_value_to_ascii((uint8_t)(*array & 0xf));
+        array++;
+    }
+
+    result = oe_log(level, "%s: %s\n", array_name, buffer);
+
+done:
+    if (buffer != NULL)
+        oe_free(buffer);
+
+    buffer = NULL;
+
+    return result;
+}
+
+static void _trace_tcb_level_variables(
+    oe_log_level_t level,
+    const sgx_quote_t* sgx_quote,
+    const oe_parsed_tcb_info_t* parsed_tcb_info)
+{
+    uint8_t* qeid = (uint8_t*)sgx_quote->user_data;
+    size_t qeid_size = 16;
+    if (qeid_size > sizeof(sgx_quote->user_data))
+        qeid_size = sizeof(sgx_quote->user_data);
+
+    OE_TRACE(level, "TCB Info version: %d\n", parsed_tcb_info->version);
+    _log_array(
+        level,
+        "FMSPC",
+        (uint8_t*)parsed_tcb_info->fmspc,
+        sizeof(parsed_tcb_info->fmspc));
+    _log_array(level, "QE_ID", qeid, qeid_size);
+    _log_array(
+        level,
+        "CPU_SVN",
+        (uint8_t*)sgx_quote->report_body.cpusvn,
+        sizeof(sgx_quote->report_body.cpusvn));
+    OE_TRACE(level, "PCE_SVN: %02x\n", sgx_quote->pce_svn);
+    _log_array(
+        level,
+        "PCE_ID",
+        (uint8_t*)parsed_tcb_info->pceid,
+        sizeof(parsed_tcb_info->pceid));
+}
+
 oe_result_t oe_validate_revocation_list(
+    const sgx_quote_t* sgx_quote,
     oe_cert_t* pck_cert,
     const oe_sgx_endorsements_t* sgx_endorsements,
     oe_datetime_t* validity_from,
@@ -404,12 +485,18 @@ oe_result_t oe_validate_revocation_list(
     platform_tcb_level.pce_svn = parsed_extension_info.pce_svn;
     platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
 
+    result = oe_parse_tcb_info_json(
+        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].data,
+        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].size,
+        &platform_tcb_level,
+        &parsed_tcb_info);
+    if (result == OE_TCB_LEVEL_INVALID)
+    {
+        _trace_tcb_level_variables(
+            OE_LOG_LEVEL_ERROR, sgx_quote, &parsed_tcb_info);
+    }
     OE_CHECK_MSG(
-        oe_parse_tcb_info_json(
-            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].data,
-            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].size,
-            &platform_tcb_level,
-            &parsed_tcb_info),
+        result,
         "Failed to parse TCB info or Platform TCB is not up-to-date. %s",
         oe_result_str(result));
 

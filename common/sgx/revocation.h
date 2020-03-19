@@ -22,12 +22,15 @@ OE_EXTERNC_BEGIN
  * Are valid and returns the validity dates for the given
  * revocation info.
  *
+ * @param[in] sgx_quote The SGX quote.
  * @param[in] pck_cert The PCK certificate.
  * @param[in] sgx_endorsements The SGX endorsements.
+ * @param[in] quote_tcb_level The TCB level of the quote.
  * @param[out] validity_from The date from which the revocation info is valid.
  * @param[out] validity_until The date which the revocation info expires.
  */
 oe_result_t oe_validate_revocation_list(
+    const sgx_quote_t* sgx_quote,
     oe_cert_t* pck_cert,
     const oe_sgx_endorsements_t* sgx_endorsements,
     oe_datetime_t* validity_from,
