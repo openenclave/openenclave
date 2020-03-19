@@ -78,6 +78,10 @@ One of OP-TEE's test cases is known to fail on the TrustBox.
 
 [Tracking issue](https://github.com/openenclave/openenclave/issues/2275).
 
+### 32-bit targets are not supported
+
+[Tracking issue](https://github.com/openenclave/openenclave/issues/2493).
+
 ## Note on Forks
 
 While the SDK's support for Intel SGX is fairly self-contained, support for
