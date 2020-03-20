@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 ------------
 
+### Changed
+- Moved `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`, and
+  `oe_asymmetric_key_params_t` to `bits/asym_keys.h` from `bits/types.h`.
+
 ### Fixed
 - Fix #2607 so that libmbedcrypto now includes mbedtls_hkdf().
 

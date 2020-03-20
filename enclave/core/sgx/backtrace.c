@@ -11,6 +11,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
+#include "../oe_nodebug_alloc.h"
 #include "sgx_t.h"
 #include "tee_t.h"
 
@@ -183,16 +184,12 @@ done:
 char** oe_backtrace_symbols(void* const* buffer, int size)
 {
     /* Backtrace must use the internal allocator to bypass debug-malloc. */
-    extern void* dlmalloc(size_t size);
-    extern void* dlrealloc(void* ptr, size_t size);
-    extern void dlfree(void* ptr);
-    return oe_backtrace_symbols_impl(buffer, size, dlmalloc, dlrealloc, dlfree);
+    return oe_backtrace_symbols_impl(
+        buffer, size, oe_nodebug_malloc, oe_nodebug_realloc, oe_nodebug_free);
 }
 
 void oe_backtrace_symbols_free(char** ptr)
 {
     /* Backtrace must use the internal allocator to bypass debug-malloc. */
-    extern void dlfree(void* ptr);
-
-    dlfree(ptr);
+    oe_nodebug_free(ptr);
 }

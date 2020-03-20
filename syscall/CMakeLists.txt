@@ -8,7 +8,7 @@
 ##
 ##==============================================================================
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/common/edl)
 set(EDL_FILE ${EDL_DIR}/syscall.edl)
 
 add_custom_command(

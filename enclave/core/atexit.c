@@ -5,6 +5,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/thread.h>
+#include "oe_nodebug_alloc.h"
 
 /*
 **==============================================================================
@@ -34,7 +35,8 @@ static oe_spinlock_t _spin = OE_SPINLOCK_INITIALIZER;
 **
 ** _new_atexit_entry()
 **
-**     Allocate an oe_atexit_entry_t structure from the heap using sbrk().
+**     Allocate an oe_atexit_entry_t structure from the heap,
+**     using oe_nodebug_malloc().
 **
 **==============================================================================
 */
@@ -43,8 +45,8 @@ static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 {
     oe_atexit_entry_t* entry;
 
-    if ((entry = (oe_atexit_entry_t*)oe_sbrk(sizeof(oe_atexit_entry_t))) ==
-        (void*)-1)
+    if ((entry = (oe_atexit_entry_t*)oe_nodebug_malloc(
+             sizeof(oe_atexit_entry_t))) == (void*)-1)
         return NULL;
 
     entry->func = func;

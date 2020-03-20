@@ -14,6 +14,7 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 
+#include <openenclave/bits/asym_keys.h>
 #include "bits/defs.h"
 #include "bits/exception.h"
 #include "bits/fs.h"

@@ -11,6 +11,8 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/thread.h>
 #include "debugmalloc.h"
+#include "oe_alloc_thread.h"
+#include "oe_nodebug_alloc.h"
 
 /* The use of dlmalloc/malloc.c below requires stdc names from these headers */
 #define OE_NEED_STDC_NAMES
@@ -61,6 +63,23 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #define FREE dlfree
 #define MALLOC_USABLE_SIZE dlmalloc_usable_size
 #endif
+
+void* oe_nodebug_malloc(size_t s)
+{
+    return dlmalloc(s);
+}
+void oe_nodebug_free(void* ptr)
+{
+    return dlfree(ptr);
+}
+void* oe_nodebug_realloc(void* ptr, size_t s)
+{
+    return dlrealloc(ptr, s);
+}
+void* oe_nodebug_memalign(size_t alignment, size_t size)
+{
+    return dlmemalign(alignment, size);
+}
 
 static oe_allocation_failure_callback_t _failure_callback;
 
@@ -247,4 +266,12 @@ oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
 done:
     oe_mutex_unlock(&_mutex);
     return result;
+}
+
+void oe_alloc_thread_startup()
+{
+}
+
+void oe_alloc_thread_teardown()
+{
 }
