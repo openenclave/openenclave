@@ -44,6 +44,17 @@ static void *child_thread_destory(void * lpParam)
     return NULL;
 }
 
+static void *child_thread_destory_fail(void * lpParam)
+{
+    MULTI_THREAD_FLAG = false;
+    oe_enclave_t* enclave = NULL;
+    enclave = (oe_enclave_t *)lpParam;
+    oe_result_t result = oe_terminate_enclave(enclave);
+    OE_TEST(result == OE_OUT_OF_THREADS);
+    MULTI_THREAD_FLAG = true;
+    return NULL;
+}
+
 static void *child_thread_stay(void * lpParam)
 {
     MULTI_THREAD_FLAG = false;
@@ -51,7 +62,7 @@ static void *child_thread_stay(void * lpParam)
     enclave = (oe_enclave_t *)lpParam;
     int res;
     oe_result_t result = stay_in_ocall(enclave, &res);
-    OE_TEST(result == OE_OUT_OF_THREADS);
+    OE_TEST(result == OE_OK);
     MULTI_THREAD_FLAG = true;
     return NULL;
 }
@@ -87,7 +98,7 @@ int main(int argc, const char* argv[])
          case 2:
              pthread_t thread_id_sec;
              OE_TEST(0 == pthread_create(&thread_id,NULL,child_thread_stay, enclave));        
-             OE_TEST(0 == pthread_create(&thread_id_sec,NULL,child_thread_destory, enclave));
+             OE_TEST(0 == pthread_create(&thread_id_sec,NULL,child_thread_destory_fail, enclave));
              OE_TEST(0 == pthread_join(thread_id,NULL));
              OE_TEST(0 == pthread_join(thread_id_sec,NULL));
              OE_TEST(true == MULTI_THREAD_FLAG);
