@@ -81,6 +81,9 @@ oe_result_t gen_report(oe_enclave_t* enclave)
 {
     size_t report_size = OE_MAX_REPORT_SIZE;
     uint8_t* remote_report = NULL;
+    oe_report_header_t* header = NULL;
+    sgx_quote_t* quote = NULL;
+    uint64_t quote_size = 0;
 
     log("========== Getting report\n");
 
@@ -95,9 +98,9 @@ oe_result_t gen_report(oe_enclave_t* enclave)
     {
         log("========== Got report, size = %zu\n\n", report_size);
 
-        oe_report_header_t* header = (oe_report_header_t*)remote_report;
-        sgx_quote_t* quote = (sgx_quote_t*)header->report;
-        uint64_t quote_size = header->report_size;
+        header = (oe_report_header_t*)remote_report;
+        quote = (sgx_quote_t*)header->report;
+        quote_size = header->report_size;
 
         log("CPU_SVN: '");
         for (uint64_t n = 0; n < SGX_CPUSVN_SIZE; n++)
@@ -152,9 +155,24 @@ oe_result_t gen_report(oe_enclave_t* enclave)
                 NULL, remote_report, report_size, &parsed_report);
             if (result != OE_OK)
             {
-                log("Failed to verify report. result=%u (%s)\n",
+                printf(
+                    "Failed to verify report. result=%u (%s)\n",
                     result,
                     oe_result_str(result));
+
+                // Print TCB Info to console if verification failed
+                printf("\nQEID: ");
+                for (uint64_t n = 0; n < 16; n++)
+                {
+                    printf("%02x", quote->user_data[n]);
+                }
+                printf("\nCPU_SVN: ");
+                for (uint64_t n = 0; n < SGX_CPUSVN_SIZE; n++)
+                {
+                    printf("%02x", quote->report_body.cpusvn[n]);
+                }
+                printf("\nPCE_SVN: %02x\n\n", quote->pce_svn);
+
                 goto exit;
             }
             else
