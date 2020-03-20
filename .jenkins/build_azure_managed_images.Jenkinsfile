@@ -13,6 +13,10 @@ AZURE_IMAGES_MAP = [
     "win2016": [
         "image": "MicrosoftWindowsServer:confidential-compute-preview:acc-windows-server-2016-datacenter:latest",
         "generation": "V1"
+    ],
+    "win2019": [
+        "image": "MicrosoftWindowsServer:WindowsServer:2019-datacenter-with-containers-g2:latest",
+        "generation": "V2"
     ]
 ]
 
@@ -204,4 +208,6 @@ parallel "Build Ubuntu 16.04"              : { buildLinuxManagedImage("ubuntu", 
          "Build RHEL 8"                    : { buildLinuxManagedImage("rhel", "8") },
          "Build Windows 2016 SGX1"         : { buildWindowsManagedImage("win2016", "ws2016-SGX", "SGX1") },
          "Build Windows 2016 SGX1FLC DCAP" : { buildWindowsManagedImage("win2016", "ws2016-SGX-DCAP", "SGX1FLC") },
-         "Build Windows 2016 nonSGX"       : { buildWindowsManagedImage("win2016", "ws2016-nonSGX", "SGX1FLC-NoDriver") }
+         "Build Windows 2016 nonSGX"       : { buildWindowsManagedImage("win2016", "ws2016-nonSGX", "SGX1FLC-NoDriver") },
+         "Build Windows 2019 SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1-NoDriver") },
+         "Build Windows 2019 SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC-NoDriver") }
