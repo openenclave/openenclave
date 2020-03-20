@@ -3,6 +3,8 @@
 This document provides a brief overview of how to start exploring the Open Enclave SDK
 once you have it installed.
 
+**Note**: The SDK currently does not support 32-bit applications.
+
 ## Open Enclave SDK Layout
 
 On Linux, by default, the Open Enclave SDK is installed to `/opt/openenclave`.

@@ -8,6 +8,10 @@
 #error "Unsupported platform"
 #endif
 
+#if !defined(_WIN64) && !defined(__x86_64__) && !defined(__aarch64__)
+#error "32-bit targets are currently not supported"
+#endif
+
 /* OE_API_VERSION */
 #ifndef OE_API_VERSION
 #define OE_API_VERSION 2
