@@ -1,0 +1,13 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public void EnclaveGetMagic([user_check]void *pdata);
+        public int stay_in_ocall();
+    };
+
+    untrusted {
+        void ocall_stay(void);
+    };
+};
