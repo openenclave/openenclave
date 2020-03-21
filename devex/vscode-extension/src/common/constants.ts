@@ -43,7 +43,7 @@ export class Constants {
     //
     // UI Strings
     //
-    public static openEnclaveDisplayName = "Microsoft Open Enclave";
+    public static openEnclaveDisplayName = "Open Enclave";
     public static solutionName = "Solution Name";
     public static solutionNamePrompt = "Provide a Solution Name";
     public static edgeSolutionNameDefault = "EdgeOpenEnclave";

@@ -1,7 +1,7 @@
 {
 	"name": "msiot-vscode-openenclave",
-	"displayName": "Microsoft Open Enclave",
-	"description": "Develop, deploy, and debug your Microsoft Open Enclave",
+	"displayName": "Open Enclave",
+	"description": "Develop, deploy, and debug your enclaves",
 	"version": "2.0.0",
 	"publisher": "ms-iot",
 	"aiKey": "specifyt-here-alap-pins-ightskeyhere",
@@ -39,17 +39,17 @@
 			{
 				"command": "msiot-vscode-openenclave.newSolution",
 				"title": "New Open Enclave Solution",
-				"category": "Microsoft Open Enclave"
+				"category": "Open Enclave"
 			},
 			{
 				"command": "msiot-vscode-openenclave.checkSystemRequirements",
 				"title": "Check System Requirements",
-				"category": "Microsoft Open Enclave"
+				"category": "Open Enclave"
 			}
 		],
 		"configuration": {
 			"type": "object",
-			"title": "Microsoft Open Enclave configuration",
+			"title": "Open Enclave configuration",
 			"properties": {
 				"msiot-vscode-openenclave.systemRequirementsPassed": {
 					"type": "string",
