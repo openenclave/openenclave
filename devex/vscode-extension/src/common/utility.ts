@@ -36,7 +36,10 @@ export class Utility {
 
         const srcFileContent: string = await fse.readFile(srcFilePath, "utf8");
 
-        const userFilePath = path.join(Utility.replaceAll(targetPath, mapObj), Utility.replaceAll(fileName, mapObj));
+        const userFilePath = path.join(
+            Utility.replaceAll(targetPath, mapObj),
+            Utility.replaceAll(fileName, mapObj))
+        .replace(".in", "");
         const userFileContent: string = Utility.replaceAll(srcFileContent, mapObj);
         await fse.writeFile(userFilePath, userFileContent, { encoding: "utf8" });
     }
