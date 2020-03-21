@@ -348,6 +348,7 @@ system you run the extension on.
   ```bash
   sudo usermod -a -G docker $USER
   ```
+  Log out and log back in.
 
 ### Windows
 
