@@ -4,6 +4,7 @@
 #include "sgx_quote.h"
 
 #include <openenclave/host.h>
+#include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/tests.h>
@@ -155,23 +156,18 @@ oe_result_t gen_report(oe_enclave_t* enclave)
                 NULL, remote_report, report_size, &parsed_report);
             if (result != OE_OK)
             {
-                printf(
-                    "Failed to verify report. result=%u (%s)\n",
+                log("Failed to verify report. result=%u (%s)\n",
                     result,
                     oe_result_str(result));
 
                 // Print TCB Info to console if verification failed
-                printf("\nQEID: ");
-                for (uint64_t n = 0; n < 16; n++)
-                {
-                    printf("%02x", quote->user_data[n]);
-                }
-                printf("\nCPU_SVN: ");
-                for (uint64_t n = 0; n < SGX_CPUSVN_SIZE; n++)
-                {
-                    printf("%02x", quote->report_body.cpusvn[n]);
-                }
-                printf("\nPCE_SVN: %02x\n\n", quote->pce_svn);
+                printf(
+                    "oe_verify_report failure (%s)\n", oe_result_str(result));
+                printf("QEID: ");
+                oe_hex_dump(quote->user_data, 16);
+                printf("CPU_SVN: ");
+                oe_hex_dump(quote->report_body.cpusvn, SGX_CPUSVN_SIZE);
+                printf("PCE_SVN: %02x\n", quote->pce_svn);
 
                 goto exit;
             }
