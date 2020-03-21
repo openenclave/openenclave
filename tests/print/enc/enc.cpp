@@ -75,4 +75,4 @@ OE_SET_ENCLAVE_OPTEE(
     1024 * 4096,
     TA_FLAG_EXEC_DDR,
     "1.0.0",
-    "Print test")
+    "Print test");

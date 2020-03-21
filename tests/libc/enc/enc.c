@@ -185,4 +185,4 @@ OE_SET_ENCLAVE_OPTEE(
     256 * 4096,
     TA_FLAG_EXEC_DDR,
     "1.0.0",
-    "libc test")
+    "libc test");

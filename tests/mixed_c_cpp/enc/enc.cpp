@@ -32,4 +32,4 @@ OE_SET_ENCLAVE_OPTEE(
     12 * 1024,
     TA_FLAG_EXEC_DDR,
     "1.0.0",
-    "Mixed C/C++ test")
+    "Mixed C/C++ test");
