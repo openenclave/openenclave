@@ -33,9 +33,13 @@ __attribute__((constructor)) void global_constructor()
 #endif
 
 OE_SET_ENCLAVE_SGX(
-    0,    /* ProductID */
-    0,    /* SecurityVersion */
+    0, /* ProductID */
+    0, /* SecurityVersion */
+#ifdef DEBUG
     true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    64,   /* StackPageCount */
-    4);   /* TCSCount */
+#else
+    false, /* ForbidDebug */
+#endif
+    128, /* HeapPageCount */
+    64,  /* StackPageCount */
+    4);  /* TCSCount */

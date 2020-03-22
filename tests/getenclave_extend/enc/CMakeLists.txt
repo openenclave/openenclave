@@ -10,5 +10,11 @@ add_custom_command(
 
 add_enclave(TARGET getenclaveext_enc UUID 73c0418e-4d0f-49ef-905f-008f144eb297 SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/getenclave_t.c)
 
+enclave_compile_options(getenclaveext_enc PRIVATE -DDEBUG)
 enclave_include_directories(getenclaveext_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 enclave_link_libraries(getenclaveext_enc oelibc)
+
+add_enclave(TARGET getenclaveext_enc_nondebug UUID 73c0418e-4d0f-49ef-905f-008f144eb297 SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/getenclave_t.c)
+
+enclave_include_directories(getenclaveext_enc_nondebug PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_link_libraries(getenclaveext_enc_nondebug oelibc)
