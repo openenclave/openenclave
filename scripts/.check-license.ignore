@@ -49,8 +49,8 @@ tools/oeedger8r/intel/.*
 cmake/NuGetDescription.txt
 devex/vscode-extension/.vscodeignore
 devex/vscode-extension/assets/devkit/devdata.tar.gz
-devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/[[project-name]]/Dockerfile.aarch64-qemu
-devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/[[project-name]]/Dockerfile.ls1012
+devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/\[\[project-name\]\]/Dockerfile.aarch64-qemu
+devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/\[\[project-name\]\]/Dockerfile.ls1012
 devex/vscode-extension/src/typings/azure-account.api.d.ts
 docs/CODEOWNERS
 LICENSE
