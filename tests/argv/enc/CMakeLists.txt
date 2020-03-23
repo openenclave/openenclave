@@ -12,6 +12,6 @@ add_custom_command(
 add_enclave(TARGET argv_enc
     UUID c7d594f3-2d7a-4056-8d38-e0531926c676 SOURCES enc.c argv_t.c)
 
-target_include_directories(argv_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(argv_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(argv_enc oelibc)
+enclave_link_libraries(argv_enc oelibc)

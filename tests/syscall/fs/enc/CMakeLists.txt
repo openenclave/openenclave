@@ -17,14 +17,14 @@ add_custom_command(
 
 add_enclave(TARGET fs_enc SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/fs_t.c)
 
-target_include_directories(fs_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(fs_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (TEST_SGXFS)
-    target_compile_definitions(fs_enc PRIVATE TEST_SGXFS=1)
+    enclave_compile_definitions(fs_enc PRIVATE TEST_SGXFS=1)
     set(OESGXFSENCLAVE oesgxfsenclave)
 else()
     set(OESGXFSENCLAVE "")
 endif()
 
-target_link_libraries(fs_enc
+enclave_link_libraries(fs_enc
     ${OESGXFSENCLAVE} oelibcxx oecpio oeenclave oehostfs)

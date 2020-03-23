@@ -1,18 +1,7 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# Detect C and C++ compiler options
-# if not gcc, default to clang-7
-
-COMPILER=$(notdir $(CC))
-ifeq ($(COMPILER), gcc)
-        USE_GCC = true
-endif
-
-ifeq ($(USE_GCC),)
-        CC = clang-7
-        COMPILER=clang
-endif
+include ../../config.mk
 
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)

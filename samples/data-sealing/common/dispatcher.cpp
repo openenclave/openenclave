@@ -90,14 +90,12 @@ int ecall_dispatcher::seal_data(
     // Check if that will cut off any significant bits.
     if (m_data_size > UINT32_MAX)
     {
-        TRACE_ENCLAVE(
-            "m_data_size is too large to fit into an unsigned int", 1);
+        TRACE_ENCLAVE("m_data_size is too large to fit into an unsigned int");
         goto exit;
     }
     if (seal_key_size > UINT32_MAX)
     {
-        TRACE_ENCLAVE(
-            "seal_key_size is too large to fit into an unsigned int", 1);
+        TRACE_ENCLAVE("seal_key_size is too large to fit into an unsigned int");
         goto exit;
     }
 
@@ -183,14 +181,6 @@ int ecall_dispatcher::unseal_data(
     unsigned char* data_buf = NULL;
     int ret = 0;
 
-    // ensure that sealed_data_size is IV_SIZE
-    if (sealed_data_size != IV_SIZE)
-    {
-        TRACE_ENCLAVE("sealed_data_size is not equal to IV_SIZE");
-        ret = ERROR_SEALED_DATA_FAIL;
-        goto exit;
-    }
-
     key_info = sealed_data->encrypted_data + sealed_data->encrypted_data_len;
     key_info_size = sealed_data->key_info_size;
 
@@ -198,6 +188,16 @@ int ecall_dispatcher::unseal_data(
     *data_size = 0;
     *data = NULL;
 
+    if (sealed_data_size != sealed_data->total_size)
+    {
+        TRACE_ENCLAVE(
+            "Seal data does not match the seal data size. Expected %zd, got: "
+            "%zd",
+            sealed_data->total_size,
+            sealed_data_size);
+        ret = ERROR_INVALID_PARAMETER;
+        goto exit;
+    }
     // retrieve the seal key
     result = get_seal_key_by_keyinfo(
         key_info, key_info_size, &seal_key, &seal_key_size);
@@ -208,21 +208,16 @@ int ecall_dispatcher::unseal_data(
         goto exit;
     }
 
-    // read initialization vector values
-    memcpy(iv, m_sealed_data->iv, sealed_data_size);
-
     // We need to cast these variables down to unsigned int.
     // Check if that will cut off any significant bits.
     if (m_sealed_data->encrypted_data_len > UINT32_MAX)
     {
-        TRACE_ENCLAVE(
-            "seal_key_size is too large to fit into an unsigned int", 1);
+        TRACE_ENCLAVE("seal_key_size is too large to fit into an unsigned int");
         goto exit;
     }
     if (seal_key_size > UINT32_MAX)
     {
-        TRACE_ENCLAVE(
-            "seal_key_size is too large to fit into an unsigned int", 1);
+        TRACE_ENCLAVE("seal_key_size is too large to fit into an unsigned int");
         goto exit;
     }
 
@@ -251,7 +246,7 @@ int ecall_dispatcher::unseal_data(
 
     // Unseal data: decrypt data with the seal key
     // re-initialization vector values
-    memcpy(iv, m_sealed_data->iv, sealed_data_size);
+    memcpy(iv, m_sealed_data->iv, sizeof(iv));
 
     data_buf =
         (unsigned char*)oe_host_malloc(m_sealed_data->encrypted_data_len);
@@ -335,7 +330,7 @@ oe_result_t ecall_dispatcher::get_seal_key_and_prep_sealed_data(
 
     if (padded_byte_count > UINT32_MAX)
     {
-        TRACE_ENCLAVE("padded_byte_count is too large to fit into an int", 1);
+        TRACE_ENCLAVE("padded_byte_count is too large to fit into an int");
         goto exit;
     }
 

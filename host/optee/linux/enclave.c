@@ -211,17 +211,10 @@ static TEEC_Result _handle_generic_rpc(
         case OE_OCALL_THREAD_WAKE:
             return TEEC_ERROR_NOT_SUPPORTED;
 
-        case OE_OCALL_SLEEP:
-            oe_handle_sleep(*(uint64_t*)input_buffer);
-            break;
-
         case OE_OCALL_GET_TIME:
             oe_handle_get_time(
                 *(uint64_t*)input_buffer, (uint64_t*)output_buffer);
             break;
-
-        case OE_OCALL_WAKE_HOST_WORKER:
-            return TEEC_ERROR_NOT_SUPPORTED;
 
         default:
         {

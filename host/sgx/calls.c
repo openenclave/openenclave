@@ -40,58 +40,41 @@
 **
 ** _set_thread_binding()
 **
-**     Store the thread data in the GS segment register. Note that the GS
-**     register is unused on X86-64 on Linux, unlike the FS register that is
-**     used by the pthread implementation.
-**
-**     The OE_AEP() function (aep.S) uses the GS segment register to retrieve
-**     the ThreadBinding.tcs field.
+**     Store the enclave/tcs binding for the current thread in thread specific
+**     storage.
 **
 **==============================================================================
 */
 
-#define USE_TLS_FOR_THREADING_BINDING
-
-#if defined(USE_TLS_FOR_THREADING_BINDING)
 static oe_once_type _thread_binding_once;
 static oe_thread_key _thread_binding_key;
-#endif
 
-#if defined(USE_TLS_FOR_THREADING_BINDING)
 static void _create_thread_binding_key(void)
 {
     oe_thread_key_create(&_thread_binding_key);
 }
-#endif
 
-static void _set_thread_binding(ThreadBinding* binding)
+static void _set_thread_binding(oe_thread_binding_t* binding)
 {
-#if defined(USE_TLS_FOR_THREADING_BINDING)
     oe_once(&_thread_binding_once, _create_thread_binding_key);
     oe_thread_setspecific(_thread_binding_key, binding);
-#else
-    return oe_set_gs_register_base(binding);
-#endif
 }
 
 /*
 **==============================================================================
 **
-** GetThreadBinding()
+** oe_get_thread_binding()
 **
-**     Retrieve the a pointer to the ThreadBinding from the GS segment register.
+**     Retrieve the a pointer to the oe_get_thread_binding from thread specific
+**     storage.
 **
 **==============================================================================
 */
 
-ThreadBinding* GetThreadBinding()
+oe_thread_binding_t* oe_get_thread_binding()
 {
-#if defined(USE_TLS_FOR_THREADING_BINDING)
     oe_once(&_thread_binding_once, _create_thread_binding_key);
-    return (ThreadBinding*)oe_thread_getspecific(_thread_binding_key);
-#else
-    return (ThreadBinding*)oe_get_gs_register_base();
-#endif
+    return (oe_thread_binding_t*)oe_thread_getspecific(_thread_binding_key);
 }
 
 /*
@@ -315,9 +298,7 @@ static const char* oe_ocall_str(oe_func_t ocall)
         "THREAD_WAIT",
         "MALLOC",
         "FREE",
-        "SLEEP",
-        "GET_TIME",
-        "WAKE_HOST_WORKER",
+        "GET_TIME"
     };
     // clang-format on
 
@@ -337,8 +318,7 @@ static const char* oe_ecall_str(oe_func_t ecall)
         "DESTRUCTOR",
         "INIT_ENCLAVE",
         "CALL_ENCLAVE_FUNCTION",
-        "VIRTUAL_EXCEPTION_HANDLER",
-        "INIT_CONTEXT_SWITCHLESS",
+        "VIRTUAL_EXCEPTION_HANDLER"
     };
     // clang-format on
 
@@ -405,16 +385,8 @@ static oe_result_t _handle_ocall(
             HandleThreadWake(enclave, arg_in);
             break;
 
-        case OE_OCALL_SLEEP:
-            oe_handle_sleep(arg_in);
-            break;
-
         case OE_OCALL_GET_TIME:
             oe_handle_get_time(arg_in, arg_out);
-            break;
-
-        case OE_OCALL_WAKE_HOST_WORKER:
-            oe_handle_wake_host_worker(arg_in);
             break;
 
         default:
@@ -472,7 +444,7 @@ int __oe_dispatch_ocall(
         // Handling an OCALL can make ecalls to other enclaves, which
         // may result in overriding the thread-binding. Therefore,
         // upon return from the OCALL, the binding must be restored.
-        ThreadBinding* binding = GetThreadBinding();
+        oe_thread_binding_t* binding = oe_get_thread_binding();
         uint64_t arg_out = 0;
 
         oe_result_t result = _handle_ocall(enclave, tcs, func, arg, &arg_out);
@@ -518,7 +490,7 @@ static void* _assign_tcs(oe_enclave_t* enclave)
         /* First attempt to find a busy td_t owned by this thread */
         for (i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadBinding* binding = &enclave->bindings[i];
+            oe_thread_binding_t* binding = &enclave->bindings[i];
 
             if ((binding->flags & _OE_THREAD_BUSY) && binding->thread == thread)
             {
@@ -538,18 +510,19 @@ static void* _assign_tcs(oe_enclave_t* enclave)
         {
             for (i = 0; i < enclave->num_bindings; i++)
             {
-                ThreadBinding* binding = &enclave->bindings[i];
+                oe_thread_binding_t* binding = &enclave->bindings[i];
 
                 if (!(binding->flags & _OE_THREAD_BUSY))
                 {
                     binding->flags |= _OE_THREAD_BUSY;
                     binding->thread = thread;
                     binding->count = 1;
+
                     tcs = (void*)binding->tcs;
 
                     /* Set into TSD so asynchronous exceptions can get it */
                     _set_thread_binding(binding);
-                    assert(GetThreadBinding() == binding);
+                    assert(oe_get_thread_binding() == binding);
 
                     /* Notify the debugger runtime */
                     if (enclave->debug && enclave->debug_enclave != NULL)
@@ -584,7 +557,7 @@ static void _release_tcs(oe_enclave_t* enclave, void* tcs)
     {
         for (i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadBinding* binding = &enclave->bindings[i];
+            oe_thread_binding_t* binding = &enclave->bindings[i];
 
             if ((binding->flags & _OE_THREAD_BUSY) &&
                 (void*)binding->tcs == tcs)
@@ -601,7 +574,7 @@ static void _release_tcs(oe_enclave_t* enclave, void* tcs)
                     binding->thread = 0;
                     memset(&binding->event, 0, sizeof(binding->event));
                     _set_thread_binding(NULL);
-                    assert(GetThreadBinding() == NULL);
+                    assert(oe_get_thread_binding() == NULL);
                 }
                 break;
             }
@@ -768,27 +741,3 @@ oe_result_t oe_switchless_call_enclave_function(
         output_buffer_size,
         output_bytes_written);
 }
-
-/*
-** The following function is needed to notify the debugger. It should not be
-** optimized out even though it doesn't do anything in here.
-** OE_EXPORT is used to retain this function irrespective of linker
-** optimizations.
-*/
-
-OE_NO_OPTIMIZE_BEGIN
-
-OE_EXPORT
-OE_NEVER_INLINE void oe_notify_ocall_start(
-    oe_host_ocall_frame_t* frame_pointer,
-    void* tcs,
-    uint64_t enclave_base)
-{
-    OE_UNUSED(frame_pointer);
-    OE_UNUSED(tcs);
-    OE_UNUSED(enclave_base);
-
-    return;
-}
-
-OE_NO_OPTIMIZE_END

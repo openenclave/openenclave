@@ -54,25 +54,15 @@ macro(add_enclave)
     "${multiValueArgs}"
     ${ARGN})
 
-  if (NOT SIGNING_ENGINE)
-     set( SIGNING_ENGINE "")
-  endif()
-  if (NOT ENGINE_LOAD_PATH)
-     set( ENGINE_LOAD_PATH "")
-  endif()
-  if (NOT ENGINE_KEY_ID)
-     set( ENGINE_KEY_ID "")
-  endif()
-
   if(OE_SGX)
     add_enclave_sgx(
       CXX ${ENCLAVE_CXX}
       TARGET ${ENCLAVE_TARGET}
       CONFIG ${ENCLAVE_CONFIG}
       KEY ${ENCLAVE_KEY}
-      SIGNING_ENGINE ${SIGNING_ENGINE}
-      ENGINE_LOAD_PATH ${ENGINE_LOAD_PATH}
-      ENGINE_KEY_ID ${ENGINE_KEY_ID}
+      SIGNING_ENGINE ${ENCLAVE_SIGNING_ENGINE}
+      ENGINE_LOAD_PATH ${ENCLAVE_ENGINE_LOAD_PATH}
+      ENGINE_KEY_ID ${ENCLAVE_ENGINE_KEY_ID}
       SOURCES ${ENCLAVE_SOURCES})
   elseif(OE_TRUSTZONE)
     add_enclave_optee(
@@ -84,6 +74,51 @@ macro(add_enclave)
   endif()
 endmacro()
 
+function(sign_enclave_sgx)
+  set(oneValueArgs TARGET CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID)
+  cmake_parse_arguments(ENCLAVE "" "${oneValueArgs}" "" ${ARGN})
+
+   if (NOT ENCLAVE_CONFIG)
+      # Since the config is not specified, the enclave wont be signed.
+      return()
+   endif ()
+
+  # Generate the signing key.
+  if(NOT ENCLAVE_KEY AND NOT ENCLAVE_SIGNING_ENGINE)
+     add_custom_command(OUTPUT ${ENCLAVE_TARGET}-private.pem
+       COMMAND openssl genrsa -out ${ENCLAVE_TARGET}-private.pem -3 3072)
+     set(ENCLAVE_KEY  ${CMAKE_CURRENT_BINARY_DIR}/${ENCLAVE_TARGET}-private.pem)
+  endif()
+
+  # TODO: Get this name intelligently (somehow use $<TARGET_FILE> with
+  # `.signed` injected).
+  set(SIGNED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${ENCLAVE_TARGET}.signed)
+
+  # Sign the enclave using `oesign`.
+  if(ENCLAVE_CONFIG)
+      if(ENCLAVE_SIGNING_ENGINE)
+          add_custom_command(OUTPUT ${SIGNED_LOCATION}
+          COMMAND oesign sign -e $<TARGET_FILE:${ENCLAVE_TARGET}> -c ${ENCLAVE_CONFIG} -n ${ENCLAVE_SIGNING_ENGINE} -p ${ENCLAVE_ENGINE_LOAD_PATH} -i ${ENCLAVE_ENGINE_KEY_ID}
+          DEPENDS oesign ${ENCLAVE_TARGET} ${ENCLAVE_CONFIG}
+          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+      else ()
+          add_custom_command(OUTPUT ${SIGNED_LOCATION}
+          COMMAND oesign sign -e $<TARGET_FILE:${ENCLAVE_TARGET}> -c ${ENCLAVE_CONFIG} -k ${ENCLAVE_KEY}
+          DEPENDS oesign ${ENCLAVE_TARGET} ${ENCLAVE_CONFIG} ${ENCLAVE_KEY}
+          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+      endif()
+  endif()
+
+  # Import the generated signed enclave so we can reference it with
+  # `$<TARGET_FILE>` later.
+  add_library(${ENCLAVE_TARGET}_signed SHARED IMPORTED GLOBAL)
+  set_target_properties(${ENCLAVE_TARGET}_signed PROPERTIES
+    IMPORTED_LOCATION ${SIGNED_LOCATION})
+
+  # Add a custom target with `ALL` semantics so these targets are always built.
+  add_custom_target(${ENCLAVE_TARGET}_signed_target ALL DEPENDS ${SIGNED_LOCATION})
+endfunction()
+
 function(add_enclave_sgx)
   set(options CXX)
   set(oneValueArgs TARGET CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID)
@@ -94,10 +129,10 @@ function(add_enclave_sgx)
     "${multiValueArgs}"
     ${ARGN})
 
-  add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
-  target_link_libraries(${ENCLAVE_TARGET} oeenclave)
+  add_enclave_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
+  enclave_link_libraries(${ENCLAVE_TARGET} oeenclave)
   if (ENCLAVE_CXX)
-    target_link_libraries(${ENCLAVE_TARGET} oelibcxx)
+    enclave_link_libraries(${ENCLAVE_TARGET} oelibcxx)
   endif ()
 
   # Cross-compile if needed.
@@ -127,45 +162,10 @@ function(add_enclave_sgx)
     set(CMAKE_CXX_COMPILE_OBJECT "${CMAKE_CXX_COMPILE_OBJECT}" PARENT_SCOPE)
   endif()
 
-   if (NOT ENCLAVE_CONFIG)
-      # Since the config is not specified, the enclave wont be signed.
-      return()
-   endif ()
-
-  # Generate the signing key.
-  if(NOT ENCLAVE_KEY AND NOT SIGNING_ENGINE)
-     add_custom_command(OUTPUT ${ENCLAVE_TARGET}-private.pem
-       COMMAND openssl genrsa -out ${ENCLAVE_TARGET}-private.pem -3 3072)
-     set(ENCLAVE_KEY  ${CMAKE_CURRENT_BINARY_DIR}/${ENCLAVE_TARGET}-private.pem)
+  sign_enclave_sgx(TARGET ${ENCLAVE_TARGET} CONFIG ${ENCLAVE_CONFIG} KEY ${ENCLAVE_KEY} SIGNING_ENGINE ${ENCLAVE_SIGNING_ENGINE} ENGINE_LOAD_PATH ${ENCLAVE_ENGINE_LOAD_PATH} ENGINE_KEY_ID ${ENCLAVE_ENGINE_KEY_ID})
+  if (LVI_MITIGATION MATCHES ControlFlow)
+    sign_enclave_sgx(TARGET ${ENCLAVE_TARGET}-lvi-cfg CONFIG ${ENCLAVE_CONFIG} KEY ${ENCLAVE_KEY} SIGNING_ENGINE ${ENCLAVE_SIGNING_ENGINE} ENGINE_LOAD_PATH ${ENCLAVE_ENGINE_LOAD_PATH} ENGINE_KEY_ID ${ENCLAVE_ENGINE_KEY_ID})
   endif()
-
-  # TODO: Get this name intelligently (somehow use $<TARGET_FILE> with
-  # `.signed` injected).
-  set(SIGNED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${ENCLAVE_TARGET}.signed)
-
-  # Sign the enclave using `oesign`.
-  if(ENCLAVE_CONFIG)
-      if(SIGNING_ENGINE)
-          add_custom_command(OUTPUT ${SIGNED_LOCATION}
-          COMMAND oesign sign -e $<TARGET_FILE:${ENCLAVE_TARGET}> -c ${ENCLAVE_CONFIG} -n ${SIGNING_ENGINE} -p ${ENGINE_LOAD_PATH} -i ${ENGINE_KEY_ID}
-          DEPENDS oesign ${ENCLAVE_TARGET} ${ENCLAVE_CONFIG}
-          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-      else ()
-          add_custom_command(OUTPUT ${SIGNED_LOCATION}
-          COMMAND oesign sign -e $<TARGET_FILE:${ENCLAVE_TARGET}> -c ${ENCLAVE_CONFIG} -k ${ENCLAVE_KEY}
-          DEPENDS oesign ${ENCLAVE_TARGET} ${ENCLAVE_CONFIG} ${ENCLAVE_KEY}
-          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-      endif()
-  endif()
-
-  # Import the generated signed enclave so we can reference it with
-  # `$<TARGET_FILE>` later.
-  add_library(${ENCLAVE_TARGET}_signed SHARED IMPORTED GLOBAL)
-  set_target_properties(${ENCLAVE_TARGET}_signed PROPERTIES
-    IMPORTED_LOCATION ${SIGNED_LOCATION})
-
-  # Add a custom target with `ALL` semantics so these targets are always built.
-  add_custom_target(${ENCLAVE_TARGET}_signed_target ALL DEPENDS ${SIGNED_LOCATION})
 endfunction()
 
 macro(add_enclave_optee)

@@ -36,7 +36,7 @@ configure_file(
 
 file(COPY libunwind/include/tdep-${ARCH}/ DESTINATION tdep)
 
-add_library(libunwind OBJECT
+add_enclave_library(libunwind OBJECT
   # Total 67 items
   libunwind/src/dwarf/global.c
   libunwind/src/dwarf/Lexpr.c
@@ -112,11 +112,11 @@ maybe_build_using_clangw(libunwind)
 set_source_files_properties(Gstep.c PROPERTIES COMPILE_FLAGS "-Werror")
 set_source_files_properties(setcontext.S PROPERTIES COMPILE_FLAGS "-Werror")
 
-target_compile_options(libunwind PRIVATE
+enclave_compile_options(libunwind PRIVATE
   -Wno-error
   -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h)
 
-target_compile_definitions(libunwind PRIVATE
+enclave_compile_definitions(libunwind PRIVATE
   HAVE_ELF_H
   HAVE_ENDIAN_H
   HAVE_LINK_H
@@ -127,9 +127,9 @@ target_compile_definitions(libunwind PRIVATE
   PACKAGE_STRING=\"libunwind-1.3\"
   PACKAGE_BUGREPORT=\"unwind.org\")
 
-target_link_libraries(libunwind PUBLIC oelibc)
+enclave_link_libraries(libunwind PUBLIC oelibc)
 
-target_include_directories(libunwind PRIVATE
+enclave_include_directories(libunwind PRIVATE
   ${PROJECT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/libunwind/include
@@ -138,4 +138,4 @@ target_include_directories(libunwind PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/tdep
   ${CMAKE_CURRENT_BINARY_DIR})
 
-install(TARGETS libunwind EXPORT openenclave-targets)
+install_enclaves(TARGETS libunwind EXPORT openenclave-targets)

@@ -15,4 +15,4 @@ set(ENC_FILE2 "tls_client_enc")
 add_enclave_test(tests/tls_e2e
 	tls_e2e_host tls_server_enc $<TARGET_FILE:tls_client_enc>)
 
-set_tests_properties(tests/tls_e2e PROPERTIES SKIP_RETURN_CODE 2)
+set_enclave_tests_properties(tests/tls_e2e PROPERTIES SKIP_RETURN_CODE 2)

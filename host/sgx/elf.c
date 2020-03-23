@@ -14,6 +14,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "../fopen.h"
+#include "../memalign.h"
 #include "../strings.h"
 
 #define GOTO(LABEL)                                            \
@@ -1923,7 +1924,7 @@ oe_result_t elf64_load_relocations(
     {
         *size_out = oe_round_up_to_page_size(size);
 
-        if (!(*data_out = malloc(*size_out)))
+        if (!(*data_out = oe_memalign(OE_PAGE_SIZE, *size_out)))
         {
             *size_out = 0;
             goto done;

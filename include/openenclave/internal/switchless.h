@@ -9,7 +9,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/thread.h>
 
-typedef struct _host_worker_thread_context
+typedef struct _host_worker_context
 {
     volatile oe_call_host_function_args_t* call_arg;
     oe_enclave_t* enclave;

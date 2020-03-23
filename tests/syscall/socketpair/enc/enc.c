@@ -82,7 +82,7 @@ int run_enclave_client(char* recv_buff, ssize_t* recv_buff_len)
         {
             printf("Read error, retry\n");
             numtries++;
-            oe_sleep_msec(3000);
+            sleep(3);
         }
     } while (numtries < 10);
 
@@ -119,7 +119,7 @@ int run_enclave_server()
         {
             printf("write test data n = %ld errno = %d\n", n, oe_errno);
         }
-        oe_sleep_msec(1000);
+        sleep(1);
     } while (!done);
 
     // Shutdown the writing

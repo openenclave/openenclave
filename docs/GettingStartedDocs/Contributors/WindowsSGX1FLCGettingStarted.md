@@ -104,6 +104,16 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DC
 ninja
 ```
 
+To build enclaves with LVI mitigation, specify the flag `-DLVI_MITIGATION=ControlFlow`:
+```powershell
+cd C:/Users/test/openenclave
+mkdir build/x64-LVI
+cd build/x64-LVI
+cmake -G Ninja -DLVI_MITIGATION=ControlFlow -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
+ninja
+```
+Refer to the [LVI Mitigation](AdvancedBuildInfo.md#lvi-mitigation) documentation for further information.
+
 Now, using the `ninja install` command will install the SDK in
 `C:/openenclave`. To choose a different location, change
 the value specified for `CMAKE_INSTALL_PREFIX`.

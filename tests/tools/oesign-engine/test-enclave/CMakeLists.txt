@@ -95,7 +95,6 @@ add_test(NAME tests/oesign-engine-sign-wrong
 add_test(NAME tests/oesign-engine-sign
          COMMAND oesign sign -e $<TARGET_FILE:enclave> -c ${CMAKE_CURRENT_SOURCE_DIR}/enclave/test-enclave.conf -n oesign-test-engine -p ${CMAKE_CURRENT_BINARY_DIR}/../test-engine/liboesign-test-engine.so -i ${CMAKE_CURRENT_BINARY_DIR}/private.pem )
 
-if (NOT SIMULATION)
 add_test(NAME tests/oesign-engine-sign-runnable
-         COMMAND host/helloworld_host enclave/enclave.signed  )
-endif()
+         COMMAND host/helloworld_host enclave/enclave.signed)
+set_tests_properties(tests/oesign-engine-sign-runnable PROPERTIES SKIP_RETURN_CODE 2)

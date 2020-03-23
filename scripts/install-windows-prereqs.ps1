@@ -5,8 +5,8 @@
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
     [string]$GitHash = '5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793',
-    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1d.exe',
-    [string]$OpenSSLHash = '6AFA17D0768CF91B6F69F31FBC67CAB1AC2E3F40CCAAADB7A9D6C7FC37B38492',
+    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1e.exe',
+    [string]$OpenSSLHash = '757a3b38370362df05756e45249f96c3193a387f04a650a7001b365f4eb11f10',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
@@ -16,16 +16,16 @@ Param(
     [string]$NodeHash = 'F68B75EEA46232ADB8FD38126C977DC244166D29E7C6CD2DF930B460C38590A9',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
     [string]$Clang7Hash = '672E4C420D6543A8A9F8EC5F1E5F283D88AC2155EF4C57232A399160A02BFF57',
-    [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16115/Intel%20SGX%20PSW%20for%20Windows%20v2.6.100.2.exe',
-    [string]$IntelPSWHash = '00A2A5B9A065858DD4114660C2E4106711E2B18A66D632A26E0ABCBA222CBF96',
+    [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16464/Intel%20SGX%20PSW%20for%20Windows%20v2.7.100.2.exe',
+    [string]$IntelPSWHash = 'FA57D8D3E7E7B954F6267D91A174E7D477D2010199DBAAC635F54A98A2A8070D',
     [string]$ShellCheckURL = 'https://shellcheck.storage.googleapis.com/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
     [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16014/Intel%20SGX%20DCAP%20for%20Windows%20v1.4.100.4.exe',
-    [string]$IntelDCAPHash = '7DAA87B9E687012183BB2E1D984CB1F877D45CCB07700155F9C44FB9B58EAAAF',
+    [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16474/Intel%20SGX%20DCAP%20for%20Windows%20v1.5.100.2.exe',
+    [string]$IntelDCAPHash = '67CC2E4BA54EEF3342DE53D2F63018A44F5B6B2EECA8BE107F80A40BDD923335',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Azure.DCAP.Windows/0.0.3',
@@ -593,10 +593,15 @@ function Install-DCAP-Dependencies {
     # Note: the ordering of nuget installs below is important to preserve here until the issue with the EnclaveCommonAPI nuget package gets fixed.
     if ($DCAPClientType -eq "Azure")
     {
-        & nuget.exe install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+        & nuget.exe install 'Azure.DCAP.Windows' -Source "$PACKAGES_DIRECTORY" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
         if($LASTEXITCODE -ne 0) {
-            Throw "Failed to install nuget EnclaveCommonAPI"
+            Throw "Failed to install nuget Azure.DCAP.Windows"
         }
+        $targetPath = [System.Environment]::SystemDirectory
+        Write-Host "Installing Azure.DCAP.Windows library to $targetPath"
+        pushd "$OE_NUGET_DIR\Azure.DCAP.Windows\script"
+        & ".\InstallAzureDCAP.ps1" $targetPath
+        popd
     }
     if (($LaunchConfiguration -eq "SGX1FLC") -or ($LaunchConfiguration -eq "SGX1FLC-NoDriver") -or ($DCAPClientType -eq "Azure"))
     {
@@ -623,24 +628,6 @@ function Install-VCRuntime {
     if($p.ExitCode -ne 0) {
         Throw ("Failed to install VC 2012 runtime. Exit code: {0}" -f $p.ExitCode)
     }
-}
-
-function Install-AzureDCAPWindows {
-    Write-Log "Installing Azure.DCAP.Windows"
-    Write-Host "Installing Azure.DCAP.Windows"
-
-    Copy-Item $PACKAGES['azure_dcap_client_nupkg']['local_file'] -Destination $TEMP_NUGET_DIR -Force
-
-    & nuget.exe install 'Azure.DCAP.Windows' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
-    if($LASTEXITCODE -ne 0) {
-        Throw "Failed to install nuget Azure.DCAP.Windows"
-    }
-
-    $targetPath = [System.Environment]::SystemDirectory
-    Write-Host "Installing Azure.DCAP.Windows library to $targetPath"
-    pushd "$OE_NUGET_DIR\Azure.DCAP.Windows\script"
-    & ".\InstallAzureDCAP.ps1" $targetPath
-    popd
 }
 
 function Install-NSIS {
@@ -670,20 +657,21 @@ try {
         Install-PSW
     }
 
-    if ($DCAPClientType -eq "Azure")
-    {
-        Write-Host "*** Installing Azure.DCAP.Windows ***"
-        Install-AzureDCAPWindows
-    }
-    else
-    {
-        Write-Host "*** Not installing a DCAP Client ***"
-    }
-
     Install-DCAP-Dependencies
     # Install-Node has to be executed after Install-DCAP-Dependencies because it removes existing $InstallPath directory
     Install-Node
     Install-VCRuntime
+
+
+    # The Open Enclave source directory tree might have file paths exceeding
+    # the default limit of 260 characters (especially the 3rd party libraries
+    # file paths). Unless the git directory location is short (for example
+    # `C:\` or `D:\`), there is a high chance that file paths will exceed 260
+    # characters, leading to `Filename too long` file system erros. The fix
+    # for this is to disable the file path limit via the proper registry key.
+    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
+                     -Name LongPathsEnabled `
+                     -Value 1
 
     Write-Output 'Please reboot your computer for the configuration to complete.'
 } catch {

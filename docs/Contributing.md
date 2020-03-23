@@ -13,6 +13,8 @@ is defined in the documents linked below:
   collaboration to happen.
 - [Development Guide](DevelopmentGuide.md) describes the coding style and other
   development practices applied to this project.
+- [API Guidelines](ApiGuidelines.md) describes the guidelines around public APIs
+  for this project.
 
 Reporting Security Issues
 -------------------------
@@ -125,7 +127,7 @@ Please do not:
   believe there's a problem with them, file an issue and we'll be happy to
   discuss it.
 - **DON'T** submit changes to the public API without filing an issue and
-  discussing with us first.
+  discussing with us first, and following the [API Guidelines](ApiGuidelines.md).
 - **DON'T** use GitHub [_Draft_ pull
   requests](https://help.github.com/en/articles/about-pull-requests#draft-pull-requests)
   to share work-in-progress. This will suppress CODEOWNER notifications

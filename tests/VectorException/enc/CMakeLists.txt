@@ -12,6 +12,6 @@ add_custom_command(
 add_enclave(TARGET VectorException_enc UUID aa2379e1-ec26-4499-a396-18e9ce2228a4 SOURCES
     enc.c sigill_handling.c init.cpp VectorException_t.c)
 
-target_include_directories(VectorException_enc PRIVATE
+enclave_include_directories(VectorException_enc PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(VectorException_enc oelibc)
+enclave_link_libraries(VectorException_enc oelibc)

@@ -17,7 +17,6 @@ add_custom_command(OUTPUT tls_server_enc.signed tls_server_enc_mrenclave.h
 
 add_executable(tls_server_enc
 	       ecalls.cpp
-	       crypto.cpp
 	       server.cpp
 	       cert_verifier.cpp
 	       identity_verifier.cpp

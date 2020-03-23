@@ -1,4 +1,9 @@
 selftest
+aes.cbc
+aes.ecb
+aes.ofb
+aes.rest
+aes.xts
 asn1write
 base64
 ccm
@@ -6,6 +11,7 @@ cipher.aes
 cipher.ccm
 cipher.des
 cipher.gcm
+cipher.misc
 cipher.padding
 cmac
 ctr_drbg
@@ -22,6 +28,8 @@ gcm.aes256_en
 gcm.aes128_de
 gcm.aes192_de
 gcm.aes256_de
+gcm.misc
+hkdf
 hmac_drbg.misc
 hmac_drbg.no_reseed
 hmac_drbg.nopr

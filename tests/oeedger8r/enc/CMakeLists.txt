@@ -61,13 +61,13 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang OR 
         testpointer.cpp
         teststring.cpp
         PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter"
-    )      
+    )
 endif()
 
-target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+enclave_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
 if (NOT WIN32)
   # Re-enable strict aliasing. TODO: Remove this when #1717 is resolved.
-  target_compile_options(edl_enc PUBLIC -fstrict-aliasing -Werror=strict-aliasing)
+  enclave_compile_options(edl_enc PUBLIC -fstrict-aliasing -Werror=strict-aliasing)
 endif ()
 
 # This is a separate enclave specifically shared with the same host.
@@ -79,4 +79,4 @@ add_custom_command(
     COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_enclave(TARGET edl_other_enc UUID 6d92103c-1a1c-48b7-a469-f455acef249e CXX SOURCES testother.cpp ${CMAKE_CURRENT_BINARY_DIR}/other_t.c)
-target_include_directories(edl_other_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+enclave_include_directories(edl_other_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)

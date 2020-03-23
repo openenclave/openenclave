@@ -7,8 +7,11 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 
-// Override oe_call_enclave_function() with _call_tee_enclave_function().
+/* Override oe_call_enclave_function() with _call_tee_enclave_function(). */
 #define oe_call_enclave_function _call_tee_enclave_function
+
+/* Obscure the generated creation function by renaming it. */
+#define oe_create_tee_enclave __unused_oe_create_tee_enclave
 
 /* The ocall edge routines will use this function to route ecalls. */
 static oe_result_t _call_tee_enclave_function(
@@ -31,14 +34,9 @@ static oe_result_t _call_tee_enclave_function(
         output_bytes_written);
 }
 
-/* Ignore missing edge-routine prototypes. */
-#if defined(__GNUC__)
-#pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#endif
-
-/* Include the generated source. */
+/* Include the oeedger8r generated C file. The macros defined above customize
+ * the generated code for internal use. */
 #include "tee_u.c"
-#include "tee_u.h"
 
 /* Registers the tee OCALL function table. */
 oe_result_t oe_register_tee_ocall_function_table(void)

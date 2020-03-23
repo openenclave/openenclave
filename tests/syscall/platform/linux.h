@@ -82,17 +82,12 @@ OE_INLINE int get_error(void)
 
 OE_INLINE void sleep_msec(uint32_t msec)
 {
-#if defined(OE_BUILD_ENCLAVE)
-    extern int oe_sleep_msec(uint64_t milliseconds);
-    oe_sleep_msec(msec);
-#else
     struct timespec ts;
 
     ts.tv_sec = (uint64_t)msec / 1000;
     ts.tv_nsec = ((int64_t)msec % 1000) * 1000000;
 
     nanosleep(&ts, NULL);
-#endif
 }
 
 typedef struct _thread

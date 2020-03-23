@@ -7,7 +7,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 
-// Override oe_call_enclave_function() with _call_sgx_enclave_function().
+/* Override oe_call_enclave_function() with _call_sgx_enclave_function(). */
 #define oe_call_enclave_function _call_sgx_enclave_function
 
 /* The ocall edge routines will use this function to route ecalls. */
@@ -31,14 +31,9 @@ static oe_result_t _call_sgx_enclave_function(
         output_bytes_written);
 }
 
-/* Ignore missing edge-routine prototypes. */
-#if defined(__GNUC__)
-#pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#endif
-
-/* Include the generated source. */
+/* Include the oeedger8r generated C file. The macros defined above customize
+ * the generated code for internal use. */
 #include "sgx_u.c"
-#include "sgx_u.h"
 
 /* Registers the sgx OCALL function table. */
 oe_result_t oe_register_sgx_ocall_function_table(void)

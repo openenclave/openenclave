@@ -11,19 +11,6 @@ OE_EXTERNC_BEGIN
 /*
 **==============================================================================
 **
-** oe_sleep_msec()
-**
-**     Sleep for milliseconds. Return 0 on success and -1 if thread
-**     interrupted.
-**
-**==============================================================================
-*/
-
-int oe_sleep_msec(uint64_t milliseconds);
-
-/*
-**==============================================================================
-**
 ** oe_get_time()
 **
 **     Return milliseconds elapsed since the Epoch or (uint64_t)-1 on error.

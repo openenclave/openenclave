@@ -45,6 +45,8 @@ tools/oeedger8r/intel/.*
 3rdparty/musl/endian\.h\.suffix
 3rdparty/optee/optee_client
 3rdparty/optee/optee_os
+3rdparty/snmalloc
+cmake/NuGetDescription.txt
 docs/CODEOWNERS
 LICENSE
 THIRD_PARTY_NOTICES
@@ -70,3 +72,6 @@ tools/oeedger8r/src/main\.ml
 tools/oesign/getopt\.h
 tools/oesign/getopt_long\.c
 tests/host_verify/data/.*
+
+# The following files use the BSD license.
+scripts/lvi-mitigation/lvi-mitigation.py

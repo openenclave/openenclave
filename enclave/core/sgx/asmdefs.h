@@ -47,6 +47,9 @@
  * exit() function defined in <openenclave/corelibc/stdlib.h>.
  */
 void oe_exit_enclave(uint64_t arg1, uint64_t arg2) OE_NO_RETURN;
+
+/* This is the actual implementation of eexit */
+void oe_asm_exit(uint64_t arg1, uint64_t arg2) OE_NO_RETURN;
 #endif
 
 #ifndef __ASSEMBLER__
@@ -59,12 +62,6 @@ void __oe_handle_main(
     uint64_t* output_arg2);
 
 void oe_exception_dispatcher(void* context);
-#endif
-
-#ifndef __ASSEMBLER__
-void oe_notify_nested_exit_start(
-    uint64_t arg1,
-    oe_ocall_context_t* ocall_context);
 #endif
 
 #endif /* _ASMDEFS_H */

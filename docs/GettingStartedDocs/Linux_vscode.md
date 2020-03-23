@@ -32,12 +32,12 @@ cp -R /opt/openenclave/share/openenclave/samples/helloworld ~/my_helloworld
 
 3. In VS Code, select `File->Open Folder...` and specify the location that you copied the helloworld sample to. In this case, that would be `~/my_helloworld`
 
-4. Create a typical VSCode project Settings.json file in this path for your project: .vscode/Settings.json. Make sure the `-DOpenEnclave_Dir` option is set to /opt/openenclave/lib/openenclave/cmake under the "cmake.configureArgs" field, like below:
+4. Create a typical VSCode project Settings.json file in this path for your project: .vscode/Settings.json. Make sure the `-DCMAKE_PREFIX_PATH` option is set to /opt/openenclave/lib/openenclave/cmake under the "cmake.configureArgs" field, like below:
 
 ```json
 {
     "cmake.configureArgs": [
-        "-DOpenEnclave_DIR=/opt/openenclave/lib/openenclave/cmake"
+        "-DCMAKE_PREFIX_PATH=/opt/openenclave/lib/openenclave/cmake"
     ]
 }
 ```

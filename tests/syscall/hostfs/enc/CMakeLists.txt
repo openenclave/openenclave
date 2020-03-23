@@ -11,4 +11,4 @@ add_custom_command(
 
 add_enclave(TARGET hostfs_enc SOURCES enc.c main.c ${CMAKE_CURRENT_BINARY_DIR}/test_hostfs_t.c)
 
-target_link_libraries(hostfs_enc oelibc oehostfs oeenclave)
+enclave_link_libraries(hostfs_enc oelibc oehostfs oeenclave)

@@ -35,3 +35,20 @@
     name: jenkins
     groups: docker
     append: yes
+
+- name: Jenkins | Pre-pull CI/CD Docker images
+  shell: |
+    set -o errexit
+    docker login {{ docker_registry }} -u {{ docker_user_name }} -p {{ docker_user_password }}
+    docker pull {{ docker_registry }}/oetools-full-16.04:{{ docker_tag }}
+    docker pull {{ docker_registry }}/oetools-full-18.04:{{ docker_tag }}
+    docker pull {{ docker_registry }}/oetools-minimal-18.04:{{ docker_tag }}
+    docker pull {{ docker_registry }}/oetools-deploy:{{ docker_tag }}
+  retries: 10
+  delay: 10
+  register: result
+  until: result is success
+  when: (docker_registry is defined and
+         docker_user_name is defined and
+         docker_user_password is defined and
+         docker_tag is defined)

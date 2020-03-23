@@ -142,7 +142,6 @@ int ecall_run_server()
 
     while (1)
     {
-        oe_sleep_msec(1);
         printf("enc: accepting\n");
 
         struct oe_sockaddr_in peer_addr = {0};
@@ -171,7 +170,6 @@ int ecall_run_server()
                 {
                     printf("write test data n = %ld errno = %d\n", n, oe_errno);
                 }
-                oe_sleep_msec(3);
             } while (1);
 
             break;

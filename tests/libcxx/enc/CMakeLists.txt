@@ -11,14 +11,14 @@ add_custom_command(
     COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 # helper lib to contain file needed by some tests
-add_library(libcxxtest-support
+add_enclave_library(libcxxtest-support
     enc.cpp
     fuzzing.cpp
     memory_resource.cpp
     libcxx_t.c
     )
 
-target_compile_options(libcxxtest-support PRIVATE
+enclave_compile_options(libcxxtest-support PRIVATE
     -Wno-error=attributes
     -Wno-error=strict-overflow
     -Wno-error=unused-local-typedefs
@@ -26,17 +26,21 @@ target_compile_options(libcxxtest-support PRIVATE
     -Wno-sign-conversion
     )
 
+if (ENABLE_FULL_LIBCXX_TESTS)
+    enclave_compile_definitions(libcxxtest-support PRIVATE FULL_LIBCXX_TESTS)
+endif ()
+
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-    target_compile_options(libcxxtest-support PRIVATE
+    enclave_compile_options(libcxxtest-support PRIVATE
         -Wno-error=maybe-uninitialized
         -Wno-error=unused-but-set-variable
         )
 endif ()
 
-target_link_libraries(libcxxtest-support PRIVATE oelibcxx oeenclave)
-target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
+enclave_link_libraries(libcxxtest-support PRIVATE oelibcxx oeenclave)
+enclave_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 
-target_include_directories(libcxxtest-support PRIVATE
+enclave_include_directories(libcxxtest-support PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
         )
 
@@ -50,7 +54,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
     add_enclave(TARGET libcxxtest-${NAME}_enc UUID 486dcdcc-f0c6-4bdd-91e0-c7566794f899 CXX SOURCES
         main.cpp libcxx_t.c)
 
-    target_include_directories(libcxxtest-${NAME}_enc PRIVATE
+    enclave_include_directories(libcxxtest-${NAME}_enc PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test/support
@@ -58,7 +62,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/src/filesystem
         )
 
-      target_compile_options(libcxxtest-${NAME}_enc PRIVATE
+      enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE
 
         # These are third-party tests, so we don't care about their warnings.
         -Wno-error
@@ -73,11 +77,11 @@ function(add_libcxx_test_enc NAME CXXFILE)
     # -fsized-deallocation is passed explicity. (Note, gcc 4.7/4.8/4.9 do not support this either.)
     # NOTE: This only matters when `ENABLE_FULL_LIBCXX_TESTS=ON`.
     if (NAME MATCHES "sized_delete")
-        target_compile_options(libcxxtest-${NAME}_enc PRIVATE -fsized-deallocation)
+        enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE -fsized-deallocation)
     endif()
 
-    target_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
-    target_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support)
+    enclave_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
+    enclave_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support)
 
     if (WIN32)
         maybe_build_using_clangw(libcxxtest-${NAME}_enc)
@@ -140,11 +144,11 @@ foreach(testcase ${alltests})
         endif()
     endif()
 
-# the following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 7.5
+# the following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 8.0
     if ("${name}" MATCHES "std_utilities_function.objects_comparisons_constexpr_init.pass")
         if(CMAKE_CXX_COMPILER_ID MATCHES GNU
                AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7
-               AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.5)
+               AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
             continue()
         endif()
     endif()

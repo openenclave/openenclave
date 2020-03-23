@@ -75,7 +75,6 @@ typedef enum _oe_func
     OE_ECALL_INIT_ENCLAVE,
     OE_ECALL_CALL_ENCLAVE_FUNCTION,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
-    OE_ECALL_INIT_CONTEXT_SWITCHLESS,
     /* Caution: always add new ECALL function numbers here */
     OE_ECALL_MAX,
 
@@ -84,9 +83,7 @@ typedef enum _oe_func
     OE_OCALL_THREAD_WAIT,
     OE_OCALL_MALLOC,
     OE_OCALL_FREE,
-    OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
-    OE_OCALL_WAKE_HOST_WORKER,
     /* Caution: always add new OCALL function numbers here */
     OE_OCALL_MAX, /* This value is never used */
 
@@ -409,6 +406,9 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out);
 #define OE_SYSCALL_OCALL_FUNCTION_TABLE_ID 2
 #define OE_SYSCALL_ECALL_FUNCTION_TABLE_ID 2
 
+#define OE_SWITCHLESS_OCALL_FUNCTION_TABLE_ID 3
+#define OE_SWITCHLESS_ECALL_FUNCTION_TABLE_ID 3
+
 /* Register the OCALL table needed by the common TEE interface (host side). */
 oe_result_t oe_register_tee_ocall_function_table(void);
 
@@ -428,6 +428,14 @@ void oe_register_syscall_ocall_function_table(void);
 
 /* Register the ECALL table needed by the SYSCALL interface (enclave side). */
 void oe_register_syscall_ecall_function_table(void);
+
+/* Register the OCALL table needed by the switchless calling infrastructure
+ * (host side). */
+oe_result_t oe_register_switchless_ocall_function_table(void);
+
+/* Register the OCALL table needed by the switchless calling infrastructure
+ * (enclave side). */
+oe_result_t oe_register_switchless_ecall_function_table(void);
 
 OE_EXTERNC_END
 

@@ -256,6 +256,38 @@ static void test_cross_enclave_calls()
     printf("=== test_cross_enclave_calls passed\n");
 }
 
+// n is a pointer so that it will lie in the current ecall_context's ocall
+// buffer. If all enclaves in the same thread use the same ocall buffer, then
+// the value of n will get overwritten. If the ocall-buffers are not shared
+// by the enclaves even though they are being used in the same thread,
+// the value of n as seen by each ocall will be preserved.
+void host_ocall_pointer(int* n)
+{
+    int starting_value = *n;
+    printf("input buffer = 0x%p\n", n);
+
+    if (*n > 0)
+    {
+        // Trigger an ocall in the next enclave. If the next enclave's
+        // ocall uses the same ocall buffer, the value of n will be
+        // overwritten.
+        OE_TEST(
+            enc_make_ocall(enclave_wrap::get((uint64_t)*n - 1), *n - 1) ==
+            OE_OK);
+    }
+
+    // Assert that the value has been preserved.
+    OE_TEST(*n == starting_value);
+    printf("enclave %d ocall preserved value\n", *n);
+}
+
+static void test_ocall_buffers()
+{
+    // Start zig-zag ocalls with the 5th enclave.
+    OE_TEST(enc_make_ocall(enclave_wrap::get(4), 4) == OE_OK);
+    printf("=== test_ocall_buffers passed\n");
+}
+
 int main(int argc, const char* argv[])
 {
     if (argc != 2)
@@ -295,6 +327,7 @@ int main(int argc, const char* argv[])
     enclave_wrap enc4(argv[1], flags);
     enclave_wrap enc5(argv[1], flags);
     test_cross_enclave_calls();
+    test_ocall_buffers();
 
     return 0;
 }

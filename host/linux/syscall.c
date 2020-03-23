@@ -1378,3 +1378,18 @@ int oe_syscall_uname_ocall(struct oe_utsname* buf)
 done:
     return ret;
 }
+
+/*
+**==============================================================================
+**
+** sleep():
+**
+**==============================================================================
+*/
+
+int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
+{
+    errno = 0;
+
+    return nanosleep((struct timespec*)req, (struct timespec*)rem);
+}

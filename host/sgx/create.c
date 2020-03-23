@@ -11,6 +11,7 @@
 
 #elif defined(_WIN32)
 #include <windows.h>
+#include "windows/exception.h"
 
 static char* get_fullpath(const char* path)
 {
@@ -56,6 +57,7 @@ static char* get_fullpath(const char* path)
 #include "sgx_u.h"
 #include "sgxload.h"
 
+#if !defined(OEHOSTMR)
 static oe_once_type _enclave_init_once;
 
 static void _initialize_exception_handling(void)
@@ -74,10 +76,12 @@ static void _initialize_exception_handling(void)
 static void _initialize_enclave_host()
 {
     oe_once(&_enclave_init_once, _initialize_exception_handling);
+    oe_register_switchless_ocall_function_table();
     oe_register_tee_ocall_function_table();
     oe_register_sgx_ocall_function_table();
     oe_register_syscall_ocall_function_table();
 }
+#endif // OEHOSTMR
 
 static oe_result_t _add_filled_pages(
     oe_sgx_load_context_t* context,
@@ -87,9 +91,13 @@ static oe_result_t _add_filled_pages(
     uint32_t filler,
     bool extend)
 {
-    oe_page_t page;
     oe_result_t result = OE_UNEXPECTED;
+    oe_page_t* page = NULL;
     size_t i;
+
+    page = oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
+    if (!page)
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Reject invalid parameters */
     if (!context || !enclave_addr || !vaddr)
@@ -99,19 +107,19 @@ static oe_result_t _add_filled_pages(
     if (filler)
     {
         size_t n = OE_PAGE_SIZE / sizeof(uint32_t);
-        uint32_t* p = (uint32_t*)&page;
+        uint32_t* p = (uint32_t*)page;
 
         while (n--)
             *p++ = filler;
     }
     else
-        memset(&page, 0, sizeof(page));
+        memset(page, 0, sizeof(*page));
 
     /* Add the pages */
     for (i = 0; i < npages; i++)
     {
         uint64_t addr = enclave_addr + *vaddr;
-        uint64_t src = (uint64_t)&page;
+        uint64_t src = (uint64_t)page;
         uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
 
         OE_CHECK(oe_sgx_load_enclave_data(
@@ -122,6 +130,9 @@ static oe_result_t _add_filled_pages(
     result = OE_OK;
 
 done:
+    if (page)
+        oe_memalign_free(page);
+
     return result;
 }
 
@@ -156,6 +167,7 @@ static oe_result_t _add_control_pages(
     oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_page_t* page = NULL;
 
     if (!context || !enclave_addr || !enclave_size || !entry || !vaddr ||
         !enclave)
@@ -176,19 +188,22 @@ static oe_result_t _add_control_pages(
             OE_RAISE_MSG(
                 OE_FAILURE, "OE_SGX_MAX_TCS (%d) hit\n", OE_SGX_MAX_TCS);
 
+        enclave->bindings[enclave->num_bindings].enclave = enclave;
         enclave->bindings[enclave->num_bindings++].tcs = enclave_addr + *vaddr;
     }
 
     /* Add the TCS page */
     {
-        oe_page_t page;
         sgx_tcs_t* tcs;
+        page = oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
+        if (!page)
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         /* Zero-fill the TCS page */
-        memset(&page, 0, sizeof(page));
+        memset(page, 0, sizeof(*page));
 
         /* Set TCS to pointer to page */
-        tcs = (sgx_tcs_t*)&page;
+        tcs = (sgx_tcs_t*)page;
 
         /* No flags for now */
         tcs->flags = 0;
@@ -232,7 +247,7 @@ static oe_result_t _add_control_pages(
         /* Ask ISGX driver perform EADD on this page */
         {
             uint64_t addr = enclave_addr + *vaddr;
-            uint64_t src = (uint64_t)&page;
+            uint64_t src = (uint64_t)page;
             uint64_t flags = SGX_SECINFO_TCS;
             bool extend = true;
 
@@ -259,6 +274,9 @@ static oe_result_t _add_control_pages(
     result = OE_OK;
 
 done:
+    if (page)
+        oe_memalign_free(page);
+
     return result;
 }
 
@@ -342,6 +360,7 @@ done:
     return result;
 }
 
+#if !defined(OEHOSTMR)
 oe_result_t oe_get_cpuid_table_ocall(
     void* cpuid_table_buffer,
     size_t cpuid_table_buffer_size)
@@ -453,6 +472,7 @@ static oe_result_t _configure_enclave(
 done:
     return result;
 }
+#endif // OEHOSTMR
 
 oe_result_t oe_sgx_validate_enclave_properties(
     const oe_sgx_enclave_properties_t* properties,
@@ -681,6 +701,7 @@ done:
     return result;
 }
 
+#if !defined(OEHOSTMR)
 /*
 ** This method encapsulates all steps of the enclave creation process:
 **     - Loads an enclave image file
@@ -712,6 +733,13 @@ oe_result_t oe_create_enclave(
 
     _initialize_enclave_host();
 
+#if _WIN32
+    if (flags & OE_ENCLAVE_FLAG_SIMULATE)
+    {
+        oe_prepend_simulation_mode_exception_handler();
+    }
+#endif
+
     if (enclave_out)
         *enclave_out = NULL;
 
@@ -729,9 +757,6 @@ oe_result_t oe_create_enclave(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
 #if defined(_WIN32)
-    /* Disable simulation mode on windows */
-    if (flags & OE_ENCLAVE_FLAG_SIMULATE)
-        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Create Windows events for each TCS binding. Enclaves use
      * this event when calling into the host to handle waits/wakes
@@ -740,7 +765,7 @@ oe_result_t oe_create_enclave(
      */
     for (size_t i = 0; i < enclave->num_bindings; i++)
     {
-        ThreadBinding* binding = &enclave->bindings[i];
+        oe_thread_binding_t* binding = &enclave->bindings[i];
 
         if (!(binding->event.handle = CreateEvent(
                   0,     /* No security attributes */
@@ -872,8 +897,9 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
         /* Release Windows events created during enclave creation */
         for (size_t i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadBinding* binding = &enclave->bindings[i];
+            oe_thread_binding_t* binding = &enclave->bindings[i];
             CloseHandle(binding->event.handle);
+            free(binding->ocall_buffer);
         }
 
 #endif
@@ -895,3 +921,4 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 done:
     return result;
 }
+#endif // OEHOSTMR

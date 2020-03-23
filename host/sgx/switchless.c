@@ -10,6 +10,7 @@
 #include "../hostthread.h"
 #include "../ocalls.h"
 #include "enclave.h"
+#include "switchless_u.h"
 
 /**
  * Number of iterations an ocall worker thread would spin before going to sleep
@@ -91,7 +92,7 @@ oe_result_t oe_start_switchless_manager(
     size_t num_host_workers)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint64_t result_out = 0;
+    oe_result_t result_out = 0;
     oe_switchless_call_manager_t* manager = NULL;
     oe_host_worker_context_t* contexts = NULL;
     oe_thread_t* threads = NULL;
@@ -145,12 +146,12 @@ oe_result_t oe_start_switchless_manager(
     enclave->switchless_manager = manager;
 
     // Inform the enclave about the switchless manager through an ECALL
-    OE_CHECK(oe_ecall(
+    OE_CHECK(oe_init_context_switchless_ecall(
         enclave,
-        OE_ECALL_INIT_CONTEXT_SWITCHLESS,
-        (uint64_t)manager,
-        &result_out));
-    OE_CHECK((oe_result_t)result_out);
+        &result_out,
+        manager->host_worker_contexts,
+        manager->num_host_workers));
+    OE_CHECK(result_out);
 
     result = OE_OK;
 
@@ -185,8 +186,7 @@ done:
     return result;
 }
 
-void oe_handle_wake_host_worker(uint64_t arg)
+void oe_wake_switchless_worker_ocall(oe_host_worker_context_t* context)
 {
-    oe_host_worker_context_t* context = (oe_host_worker_context_t*)arg;
     oe_host_worker_wake(context);
 }

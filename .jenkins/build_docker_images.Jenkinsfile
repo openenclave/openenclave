@@ -8,7 +8,7 @@ OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
 OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID = "oeciteamdockerhub"
 
 def buildDockerImages() {
-    node("nonSGX") {
+    node(params.AGENTS_LABEL) {
         timeout(GLOBAL_TIMEOUT_MINUTES) {
             stage("Checkout") {
                 cleanWs()
@@ -34,29 +34,29 @@ def buildDockerImages() {
             }
             stage("Push to OE Docker Registry") {
                 docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
-                    oefull1604.push()
-                    oefull1804.push()
-                    oeminimal1804.push()
-                    oeDeploy.push()
+                    oe.exec_with_retry { oefull1604.push() }
+                    oe.exec_with_retry { oefull1804.push() }
+                    oe.exec_with_retry { oeminimal1804.push() }
+                    oe.exec_with_retry { oeDeploy.push() }
                     if(TAG_LATEST == "true") {
-                        oefull1604.push('latest')
-                        oefull1804.push('latest')
-                        oeminimal1804.push('latest')
-                        oeDeploy.push('latest')
+                        oe.exec_with_retry { oefull1604.push('latest') }
+                        oe.exec_with_retry { oefull1804.push('latest') }
+                        oe.exec_with_retry { oeminimal1804.push('latest') }
+                        oe.exec_with_retry { oeDeploy.push('latest') }
                     }
                 }
             }
             stage("Push to OE Docker Hub Registry") {
                 docker.withRegistry('', OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID) {
                     if(TAG_LATEST == "true") {
-                        puboefull1604.push()
-                        puboefull1804.push()
-                        puboeminimal1804.push()
-                        puboeDeploy.push()
-                        puboefull1604.push('latest')
-                        puboefull1804.push('latest')
-                        puboeminimal1804.push('latest')
-                        puboeDeploy.push('latest')
+                        oe.exec_with_retry { puboefull1604.push() }
+                        oe.exec_with_retry { puboefull1804.push() }
+                        oe.exec_with_retry { puboeminimal1804.push() }
+                        oe.exec_with_retry { puboeDeploy.push() }
+                        oe.exec_with_retry { puboefull1604.push('latest') }
+                        oe.exec_with_retry { puboefull1804.push('latest') }
+                        oe.exec_with_retry { puboeminimal1804.push('latest') }
+                        oe.exec_with_retry { puboeDeploy.push('latest') }
                     }
                 }
             }

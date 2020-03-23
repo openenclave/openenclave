@@ -11,6 +11,6 @@ add_custom_command(
 
 add_enclave(TARGET socket_enc SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/socket_test_t.c)
 
-target_include_directories(socket_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(socket_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(socket_enc oelibc oehostsock)
+enclave_link_libraries(socket_enc oelibc oehostsock)

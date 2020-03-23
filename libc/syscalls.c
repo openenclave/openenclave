@@ -98,33 +98,6 @@ done:
     return ret;
 }
 
-static long _syscall_nanosleep(long n, long x1, long x2)
-{
-    const struct timespec* req = (struct timespec*)x1;
-    struct timespec* rem = (struct timespec*)x2;
-    size_t ret = -1;
-    uint64_t milliseconds = 0;
-
-    OE_UNUSED(n);
-
-    if (rem)
-        memset(rem, 0, sizeof(*rem));
-
-    if (!req)
-        goto done;
-
-    /* Convert timespec to milliseconds */
-    milliseconds += req->tv_sec * 1000UL;
-    milliseconds += req->tv_nsec / 1000000UL;
-
-    /* Perform OCALL */
-    ret = oe_sleep_msec(milliseconds);
-
-done:
-
-    return ret;
-}
-
 static void _stat_to_oe_stat(struct stat* stat, struct oe_stat* oe_stat)
 {
     oe_stat->st_dev = stat->st_dev;
@@ -238,8 +211,6 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     /* Handle syscall internally if possible. */
     switch (n)
     {
-        case SYS_nanosleep:
-            return _syscall_nanosleep(n, x1, x2);
         case SYS_gettimeofday:
             return _syscall_gettimeofday(n, x1, x2);
         case SYS_clock_gettime:

@@ -1,6 +1,6 @@
 # Building Open Enclave SDK Samples on Linux
 
-All the samples that come with the Open Enclave SDK installation share a similar directory structure and build instructions. This document describes how to setup, build, sign and run these samples.
+All the samples that come with the Open Enclave SDK installation share a similar directory structure and build instructions. This document describes how to setup, build, sign, and run these samples.
 
 ## Common Sample information
 
@@ -106,6 +106,10 @@ For example:
 ##### Note:
 For details on how to configure build and sign options, refer to [Enclave Building and Signing](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/buildandsign.md).
 
+#### Build and Run samples with LVI mitigation
+
+Refer to [here](helloworld#build-and-run-with-lvi-mitigation) for more details.
+
 ## Samples
 
 The following samples demonstrate how to develop enclave applications using OE APIs. It's recommended to go through the following samples in the order listed.
@@ -115,6 +119,7 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Minimum code needed for an OE app
 - Help understand the basic components an OE application
 - Demonstrate how to build, sign, and run an OE image
+- Demonstrate how to optionally apply LVI mitigation to enclave code
 
 #### [File-Encryptor](file-encryptor/README.md)
 

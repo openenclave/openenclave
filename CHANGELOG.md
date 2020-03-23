@@ -10,14 +10,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 ------------
 
+### Changed
+- Moved `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`, and
+  `oe_asymmetric_key_params_t` to `bits/asym_keys.h` from `bits/types.h`.
+
+### Fixed
+- Fix #2607 so that libmbedcrypto now includes mbedtls_hkdf().
+
+### Removed
+- Removed oe-gdb script which has been deprecated since v0.6. Use oegdb instead.
+
+### Security
+- Update mbedTLS to version 2.16.5. Refer to [2.16.5](
+https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.5-and-2.7.14-released)
+release notes for the set of issues addressed.
+
+
+[v0.8.2][v0.8.2_log] - 2020-03-10
+---------------------
+
+### Added
+- OpenSSL engine support to oesign to allow signing keys via engines.
+- NuGet package validation using CI/CD.
+- Released packages include Load Value Injection(LVI) mitigated libraries, required build configuration and instructions.
+
+### Changed
+- Optimized switchless ocall scheduling.
+- oedebugrt.pdb is part of the SDK package and needs to be copied to the host application folder along with oedebugrt.dll to enable debugging on Windows.
+
+### Security
+- OpenEnclave SDK includes LVI mitigated libs and an LVI mitigation build configuration for the vulnerability disclosed in CVE-2020-0551.
+   - Applications built on top the SDK can optionally link against the mitigated libs using the LVI mitigation build configuration.
+   - See [LVI Mititgation Documentation](docs/GettingStartedDocs/Contributors/AdvancedBuildInfo.md#lvi-mitigation) for more information.
+
 [v0.8.1][v0.8.1_log] - 2020-02-07
 ---------------------
+
+### Added
+- Support for Simulation Mode on Windows.
 
 ### Fixed 
 - Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523. 
 
 ### Changed
 - `oe_random()` now depends on the hardware-based source of RNG instead of cryptography libraries.
+- OCall stack-stitching implemented as per Debugging Contract. OE SDK performs stack stitching
+  instead of the debugger. Enclaves built using a prior release cannot be debugged with this version
+  of oegdb and vice versa.
 
 [v0.8.0][v0.8.0_log] - 2020-01-22
 ---------------------
@@ -296,7 +335,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.8.1...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.8.2...HEAD
+
+[v0.8.2_log]:https://github.com/openenclave/openenclave/compare/v0.8.1...v0.8.2
 
 [v0.8.1_log]:https://github.com/openenclave/openenclave/compare/v0.8.0...v0.8.1
 

@@ -11,15 +11,16 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <map>
 #include <thread>
+#include <unordered_map>
 #include "libcxx_u.h"
 #include "threadArgs.h"
 
 // Host maintains a map of enclave key to host thread ID
-static std::map<uint64_t, std::thread::id> _enclave_host_id_map;
+static std::unordered_map<uint64_t, std::atomic<std::thread::id>>
+    _enclave_host_id_map;
 // Host maintains a map of thread id to the thread object
-static std::map<std::thread::id, std::thread> _host_id_thread_map;
+static std::unordered_map<std::thread::id, std::thread> _host_id_thread_map;
 
 static atomic_flag_lock _host_lock;
 
@@ -98,12 +99,13 @@ void host_create_thread(uint64_t enc_key, oe_enclave_t* enclave)
 {
     thread_args_t thread_args = {enclave, enc_key};
     std::thread::id thread_id;
+    const std::atomic<std::thread::id>* mapped_thread_id;
 
     {
         // Using atomic locks to protect the enclave_host_id_map
         // and update the _host_id_thread_map upon the thread creation
         atomic_lock lock(_host_lock);
-        _enclave_host_id_map.insert(std::make_pair(enc_key, thread_id));
+        mapped_thread_id = &_enclave_host_id_map[enc_key];
 
         // New Thread is created and executes host_enclave_thread
         std::thread t = std::thread(host_enclave_thread, &thread_args);
@@ -114,21 +116,13 @@ void host_create_thread(uint64_t enc_key, oe_enclave_t* enclave)
 
     // Main host thread waits for the enclave id to host id mapping to be
     // updated
-    std::thread::id mapped_thread_id;
-    while (std::thread::id() == mapped_thread_id)
+    while (*mapped_thread_id == std::thread::id())
     {
-        {
-            atomic_lock lock(_host_lock);
-            mapped_thread_id = _enclave_host_id_map[enc_key];
-        }
-        if (std::thread::id() == mapped_thread_id)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     // Sanity check
-    if (thread_id != mapped_thread_id)
+    if (thread_id != *mapped_thread_id)
     {
         printf("Host thread id incorrect in the enclave_host_id_map\n");
         abort();
@@ -144,8 +138,7 @@ int host_join_thread(uint64_t enc_key)
     {
         // Using atomic locks to protect the enclave_host_id_map
         atomic_lock lock(_host_lock);
-        std::map<uint64_t, std::thread::id>::iterator it =
-            _enclave_host_id_map.find(enc_key);
+        const auto it = _enclave_host_id_map.find(enc_key);
         if (it != _enclave_host_id_map.end())
         {
             thread_id = it->second;
@@ -192,8 +185,7 @@ int host_detach_thread(uint64_t enc_key)
 
     // Using atomic locks to protect the enclave_host_id_map
     atomic_lock lock(_host_lock);
-    std::map<uint64_t, std::thread::id>::iterator it =
-        _enclave_host_id_map.find(enc_key);
+    const auto it = _enclave_host_id_map.find(enc_key);
     if (it != _enclave_host_id_map.end())
     {
         std::thread::id thread_id = it->second;
