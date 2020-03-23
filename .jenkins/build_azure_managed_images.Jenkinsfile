@@ -53,7 +53,10 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                 } else {
                     managed_image_name_id = sh(script: "git rev-parse --short HEAD", returnStdout: true).tokenize().last()
                 }
-                def rg_name = "build-${managed_image_name_id}-${img_name_suffix}-${BUILD_NUMBER}"
+                def vm_rg_name = "build-${managed_image_name_id}-${img_name_suffix}-${BUILD_NUMBER}"
+                def jenkins_rg_name = params.JENKINS_RESOURCE_GROUP
+                def jenkins_vnet_name = params.JENKINS_VNET_NAME
+                def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
                 def azure_image_id = AZURE_IMAGES_MAP[os_series]
                 withCredentials([usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
                                                   usernameVariable: "JENKINS_USER_NAME",
@@ -83,47 +86,43 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
 
                         ${az_login_script}
 
+                        SUBNET_ID=`az network vnet subnet show \
+                            --resource-group ${jenkins_rg_name} \
+                            --name ${jenkins_subnet_name} \
+                            --vnet-name ${jenkins_vnet_name} --query id -o tsv`
+
                         VM_ID=`az vm create \
-                            --resource-group ${rg_name} \
+                            --resource-group ${vm_rg_name} \
                             --location ${REGION} \
                             --name ${img_name_suffix} \
                             --size Standard_DC4s \
                             --os-disk-size-gb 128 \
+                            --subnet \$SUBNET_ID \
                             --admin-username ${JENKINS_USER_NAME} \
                             --admin-password ${JENKINS_USER_PASSWORD} \
                             --image ${azure_image_id} | jq -r '.id'`
 
                         VM_DETAILS=`az vm show --ids \$VM_ID --show-details`
 
-                        NIC_ID=`echo \$VM_DETAILS | jq -r '.networkProfile.networkInterfaces[0].id'`
-                        NSG_ID=`az network nic show --ids \$NIC_ID | jq -r '.networkSecurityGroup.id'`
-                        NSG_NAME=`az network nsg show --ids \$NSG_ID | jq -r '.name'`
-                        az network nsg rule create \
-                            --resource-group ${rg_name} \
-                            --nsg-name \$NSG_NAME \
-                            --name WinRM --priority 500 \
-                            --access Allow --direction Inbound --protocol Tcp \
-                            --source-address-prefixes Internet \
-                            --destination-port-ranges 5986
                         az vm run-command invoke \
-                            --resource-group ${rg_name} \
+                            --resource-group ${vm_rg_name} \
                             --name ${img_name_suffix} \
                             --command-id EnableRemotePS
 
-                        PUBLIC_IP=`echo \$VM_DETAILS | jq -r '.publicIps'`
+                        PRIVATE_IP=`echo \$VM_DETAILS | jq -r '.privateIps'`
                         echo "[windows-agents]" > $WORKSPACE/scripts/ansible/inventory/hosts
-                        echo "\$PUBLIC_IP" >> $WORKSPACE/scripts/ansible/inventory/hosts
-                        echo "ansible_user: ${JENKINS_USER_NAME}" > $WORKSPACE/scripts/ansible/inventory/host_vars/\$PUBLIC_IP
-                        echo "ansible_password: ${JENKINS_USER_PASSWORD}" >> $WORKSPACE/scripts/ansible/inventory/host_vars/\$PUBLIC_IP
-                        echo "ansible_winrm_transport: ntlm" >> $WORKSPACE/scripts/ansible/inventory/host_vars/\$PUBLIC_IP
-                        echo "launch_configuration: ${launch_configuration}" >> $WORKSPACE/scripts/ansible/inventory/host_vars/\$PUBLIC_IP
+                        echo "\$PRIVATE_IP" >> $WORKSPACE/scripts/ansible/inventory/hosts
+                        echo "ansible_user: ${JENKINS_USER_NAME}" > $WORKSPACE/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                        echo "ansible_password: ${JENKINS_USER_PASSWORD}" >> $WORKSPACE/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                        echo "ansible_winrm_transport: ntlm" >> $WORKSPACE/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
+                        echo "launch_configuration: ${launch_configuration}" >> $WORKSPACE/scripts/ansible/inventory/host_vars/\$PRIVATE_IP
 
                         cd $WORKSPACE/scripts/ansible
                         retrycmd_if_failure 5 10 2h ansible-playbook oe-windows-acc-setup.yml
                         retrycmd_if_failure 5 10 30m ansible-playbook jenkins-packer.yml
 
                         az vm run-command invoke \
-                            --resource-group ${rg_name} \
+                            --resource-group ${vm_rg_name} \
                             --name ${img_name_suffix} \
                             --command-id RunPowerShellScript \
                             --scripts @$WORKSPACE/.jenkins/provision/run-sysprep.ps1
@@ -131,7 +130,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                         az vm deallocate --ids \$VM_ID
                         az vm generalize --ids \$VM_ID
                         MANAGED_IMG_ID=`az image create \
-                            --resource-group ${rg_name} \
+                            --resource-group ${vm_rg_name} \
                             --name ${managed_image_name_id}-${img_name_suffix} \
                             --source ${img_name_suffix} | jq -r '.id'`
 
@@ -147,11 +146,11 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                     """
                     def az_rg_create_script = """
                         ${az_login_script}
-                        az group create --name ${rg_name} --location ${REGION}
+                        az group create --name ${vm_rg_name} --location ${REGION}
                     """
                     def az_rg_cleanup_script = """
                         ${az_login_script}
-                        az group delete --name ${rg_name} --yes
+                        az group delete --name ${vm_rg_name} --yes
                     """
                     oe.exec_with_retry(10, 300) {
                         try {
