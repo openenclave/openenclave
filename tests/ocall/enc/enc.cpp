@@ -100,6 +100,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* AllowDebug */
-    1024, /* HeapPageCount */
+    4096, /* HeapPageCount */
     128,  /* StackPageCount */
     16);  /* TCSCount */

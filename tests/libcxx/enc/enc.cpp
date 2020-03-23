@@ -285,7 +285,7 @@ OE_SET_ENCLAVE_SGX(
 #ifdef FULL_LIBCXX_TESTS /* Full tests require large heap memory. */
     12288,               /* HeapPageCount */
 #else
-    512, /* HeapPageCount */
+    4096, /* HeapPageCount */
 #endif
     512, /* StackPageCount */
     8);  /* TCSCount */

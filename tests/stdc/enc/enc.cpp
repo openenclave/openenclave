@@ -272,7 +272,7 @@ int test(char buf1[BUFSIZE], char buf2[BUFSIZE])
     OE_TEST(TestSetjmp() == 999);
 
     /* Cause malloc() to fail */
-    void* p = malloc(1024 * 1024 * 1024);
+    void* p = malloc(4096 * OE_PAGE_SIZE + 1);
     OE_TEST(p == NULL);
 
     OE_TEST(_called_allocation_failure_callback);
@@ -284,6 +284,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* AllowDebug */
-    1024, /* HeapPageCount */
+    4096, /* HeapPageCount */
     1024, /* StackPageCount */
     2);   /* TCSCount */

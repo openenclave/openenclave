@@ -19,6 +19,7 @@ enclave_compile_options(stdcxx_enc PRIVATE
     -fno-builtin-memset
     -fno-builtin-fprintf
     -fno-builtin-printf
+    -Og -ggdb
     )
 
 enclave_include_directories(stdcxx_enc PRIVATE

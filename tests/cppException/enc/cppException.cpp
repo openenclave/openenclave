@@ -820,7 +820,8 @@ bool ExceptionInUnwind()
 
 static bool g_bar04_status = false;
 
-void bar04() try
+void bar04()
+try
 {
     throw 'X';
 }
@@ -864,7 +865,8 @@ class BarClass10
 class BarClass11 : public BarClass10
 {
   public:
-    BarClass11(int i) try
+    BarClass11(int i)
+    try
     {
         if (i < 0)
         {
