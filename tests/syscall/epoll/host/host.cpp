@@ -25,6 +25,8 @@ int main(int argc, const char* argv[])
     r = oe_create_epoll_enclave(argv[1], type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
 
+    // Test concurrent use of epoll
+
     set_up(enclave);
 
     thread wait_thread(
@@ -40,6 +42,10 @@ int main(int argc, const char* argv[])
     cancel_wait(enclave);
     wait_thread.join();
     tear_down(enclave);
+
+    // Test closing file descriptors without deleting them from the epoll
+    // instance
+    OE_TEST(test_close_without_delete(enclave) == OE_OK);
 
     r = oe_terminate_enclave(enclave);
     OE_TEST(r == OE_OK);

@@ -809,6 +809,29 @@ done:
     return ret;
 }
 
+static void _epoll_on_close(oe_fd_t* epoll_, int fd)
+{
+    epoll_t* const epoll = _cast_epoll(epoll_);
+    oe_assert(epoll);
+
+    oe_assert(fd >= 0);
+
+    oe_mutex_lock(&epoll->lock);
+
+    /* Delete the mapping if it exists. */
+    for (size_t i = 0; i < epoll->map_size; i++)
+    {
+        if (epoll->map[i].fd == fd)
+        {
+            /* Swap with last element of array. */
+            epoll->map[i] = epoll->map[--epoll->map_size];
+            break;
+        }
+    }
+
+    oe_mutex_unlock(&epoll->lock);
+}
+
 static oe_epoll_ops_t _epoll_ops = {
     .fd.read = _epoll_read,
     .fd.write = _epoll_write,
@@ -821,6 +844,7 @@ static oe_epoll_ops_t _epoll_ops = {
     .fd.get_host_fd = _epoll_get_host_fd,
     .epoll_ctl = _epoll_ctl,
     .epoll_wait = _epoll_wait,
+    .on_close = _epoll_on_close,
 };
 
 static oe_epoll_ops_t _get_epoll_ops(void)

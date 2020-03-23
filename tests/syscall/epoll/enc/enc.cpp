@@ -114,6 +114,36 @@ extern "C" void cancel_wait()
     _send(action_t::stop);
 }
 
+extern "C" void test_close_without_delete()
+{
+    const int epfd = epoll_create(1);
+    OE_TEST(epfd >= 0);
+
+    epoll_event event{};
+    event.events = EPOLLIN | EPOLLOUT;
+
+    // add first fd and close it
+    event.data.u32 = 1;
+    const int fd1 = socket(AF_INET, SOCK_STREAM, 0);
+    OE_TEST(fd1 >= 0);
+    OE_TEST(epoll_ctl(epfd, EPOLL_CTL_ADD, fd1, &event) == 0);
+    OE_TEST(close(fd1) == 0);
+
+    // add second fd
+    event.data.u32 = 2;
+    const int fd2 = socket(AF_INET, SOCK_STREAM, 0);
+    OE_TEST(fd2 == fd1); // expect reuse
+    OE_TEST(epoll_ctl(epfd, EPOLL_CTL_ADD, fd2, &event) == 0);
+
+    // expect epoll_wait to return the event of the second fd
+    event.data.u32 = 0;
+    OE_TEST(epoll_wait(epfd, &event, 1, 0) == 1);
+    OE_TEST(event.data.u32 == 2);
+
+    OE_TEST(close(epfd) == 0);
+    OE_TEST(close(fd2) == 0);
+}
+
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */

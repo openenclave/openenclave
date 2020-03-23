@@ -256,6 +256,17 @@ done:
     return ret;
 }
 
+static void _close_epoll_callback(oe_fd_t* desc, void* arg)
+{
+    oe_assert(desc);
+    oe_assert(desc->type == OE_FD_TYPE_EPOLL);
+
+    const int fd = (int)arg;
+    oe_assert(fd >= 0);
+
+    desc->ops.epoll.on_close(desc, fd);
+}
+
 int oe_close(int fd)
 {
     int ret = -1;
@@ -265,7 +276,13 @@ int oe_close(int fd)
         OE_RAISE_ERRNO(oe_errno);
 
     if ((ret = desc->ops.fd.close(desc)) == 0)
+    {
+        // Notify epoll instances that this fd has been closed.
+        oe_fdtable_foreach(
+            OE_FD_TYPE_EPOLL, (void*)(intptr_t)fd, _close_epoll_callback);
+
         oe_fdtable_release(fd);
+    }
 
 done:
     return ret;
