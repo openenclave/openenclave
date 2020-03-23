@@ -6,39 +6,36 @@ if (OE_SGX)
     set(SGX_EDL_DIR ${CMAKE_SOURCE_DIR}/common/sgx/edl)
 endif()
 
+set(OE_EDL_INCLUDES ${OE_INCDIR}/openenclave/bits)
+
 ##==============================================================================
 ##
 ## These rules generate the edge routines for the internal TEE-agnostic
 ## ECALLs/OCALLs used by liboehost/liboecore.
+##
+## The generated _args.h is published in ${OE_EDL_INCLUDES}.
 ##
 ##==============================================================================
 
 set(TEE_EDL_FILE ${EDL_DIR}/tee.edl)
 
 add_custom_command(
-    OUTPUT tee_u.h tee_u.c tee_args.h
+    OUTPUT tee_u.h tee_u.c tee_args.h ${OE_EDL_INCLUDES}/asym_keys.h
     DEPENDS ${TEE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${TEE_EDL_FILE})
+    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${TEE_EDL_FILE}
+
+    ## Publish the edger8r-generated header (*_args.h) that defines data structures.
+    ## Note that doing this on the host side to ensure publishing the header with
+    ## the case of `BUILD_ENCLAVES=OFF`.
+    COMMAND ${CMAKE_COMMAND} -E copy tee_args.h ${OE_EDL_INCLUDES}/asym_keys.h)
+
 
 add_custom_target(tee_untrusted_edl
-    DEPENDS tee_u.h tee_u.c tee_args.h)
+    DEPENDS tee_u.h tee_u.c tee_args.h ${OE_EDL_INCLUDES}/asym_keys.h)
 
-##==============================================================================
-##
-## Publish the edger8r-generated header (*_args.h) that defines data structures.
-## Note that doing this on the host side to ensure publishing the header with 
-## the case of `BUILD_ENCLAVES=OFF`.
-##
-##==============================================================================
-
-set(OE_EDL_INCLUDES ${OE_INCDIR}/openenclave/bits)
 # Add dependencies to `oe_includes` so that the published header will be ready before
 # other files consume it.
 add_dependencies(oe_includes tee_untrusted_edl)
-
-add_custom_command(
-    TARGET tee_untrusted_edl
-    COMMAND ${CMAKE_COMMAND} -E copy tee_args.h ${OE_EDL_INCLUDES}/asym_keys.h)
 
 install(DIRECTORY ${OE_EDL_INCLUDES}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
