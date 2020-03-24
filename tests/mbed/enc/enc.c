@@ -149,7 +149,7 @@ static oe_result_t _syscall_hook(
         case SYS_lseek:
         {
             int rval = 0;
-            result = mbed_test_lseek(&rval, (int)arg1, (off_t)arg2, (int)arg3);
+            result = mbed_test_lseek(&rval, (int)arg1, (int)arg2, (int)arg3);
             break;
         }
         case SYS_readv:

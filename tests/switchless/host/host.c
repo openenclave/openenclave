@@ -53,7 +53,7 @@ int host_echo_switchless(
     OE_TEST(strcmp(str1, "host string parameter") == 0);
     OE_TEST(strcmp(str2, "host string on stack") == 0);
 
-    strcpy(out, in);
+    strcpy_s(out, STRING_LEN, in);
 
     return 0;
 }
@@ -67,7 +67,7 @@ int host_echo_regular(
     OE_TEST(strcmp(str1, "host string parameter") == 0);
     OE_TEST(strcmp(str2, "host string on stack") == 0);
 
-    strcpy(out, in);
+    strcpy_s(out, STRING_LEN, in);
 
     return 0;
 }
@@ -129,12 +129,12 @@ int main(int argc, const char* argv[])
 
     if (argc >= 3)
     {
-        sscanf(argv[2], "%" SCNu64, &num_host_threads);
+        sscanf_s(argv[2], "%" SCNu64, &num_host_threads);
     }
 
     if (argc == 4)
     {
-        sscanf(argv[3], "%" SCNu64, &num_enclave_threads);
+        sscanf_s(argv[3], "%" SCNu64, &num_enclave_threads);
         if (num_enclave_threads > NUM_TCS)
         {
             fprintf(

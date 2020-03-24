@@ -42,7 +42,8 @@ int enc_echo(char* in, char out[100])
         out,
         "oe_host_strdup1",
         host_allocated_str,
-        stack_allocated_str);
+        stack_allocated_str,
+        sizeof(stack_allocated_str));
     if (result != OE_OK)
     {
         return -1;

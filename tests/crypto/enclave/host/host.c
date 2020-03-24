@@ -38,7 +38,10 @@ int f_open(char* path, int flags, int mode)
      * also processed as binary (as they would be equivalently on Linux).
      */
     flags |= _O_BINARY;
+#pragma warning(push)
+#pragma warning(disable : 4996)
     return _open(path, flags, mode);
+#pragma warning(pop)
 #else
     return open(path, flags, mode);
 #endif
@@ -56,7 +59,7 @@ int f_openat(int dirfd, char* path, int flags, int mode)
 int f_read(int fd, char* ptr, size_t len)
 {
 #if defined(_WIN32)
-    return (int)_read(fd, ptr, len);
+    return (int)_read(fd, ptr, (int)len);
 #else
     return (int)read(fd, ptr, len);
 #endif

@@ -13,6 +13,10 @@ OE_EXTERNC_BEGIN
 // ISO 8601 format: YYYY-MM-DDThh:mm:ssZ
 #define OE_DATETIME_FORMAT ("YYYY-MM-DDThh:mm:ssZ")
 
+#ifdef _WIN32
+#define gmtime_r(now, timeinfo) gmtime_s(timeinfo, now)
+#endif
+
 /**
  * Check whether the given issue date is a valid date time.
  */

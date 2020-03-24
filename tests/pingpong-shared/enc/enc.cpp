@@ -4,9 +4,9 @@
 #include <openenclave/enclave.h>
 #include "pingpong_t.h"
 
-void Ping(const char* in, char* out)
+void Ping(const char* in, char* out, int out_length)
 {
-    Pong(in, out);
+    Pong(in, out, out_length);
 }
 
 OE_SET_ENCLAVE_SGX(

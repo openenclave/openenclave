@@ -5,10 +5,21 @@
 #include <openenclave/corelibc/string.h>
 #include "readfile.h"
 
+FILE* read_file(const char* filename, const char* mode)
+{
+    FILE* file;
+#ifdef _MSC_VER
+    fopen_s(&file, filename, mode);
+#else
+    file = fopen(filename, mode);
+#endif
+    return file;
+}
+
 oe_result_t read_cert(char* filename, char* cert)
 {
     size_t len_cert;
-    FILE* cfp = fopen(filename, "rb");
+    FILE* cfp = read_file(filename, "rb");
     if (cfp != NULL)
     {
         len_cert = fread(cert, sizeof(char), max_cert_size, cfp);
@@ -30,8 +41,8 @@ oe_result_t read_chain(
 {
     size_t len_cert1 = 0, len_cert2 = 0;
     char chain_temp[max_cert_size];
-    FILE* cfp1 = fopen(filename1, "rb");
-    FILE* cfp2 = fopen(filename2, "rb");
+    FILE* cfp1 = read_file(filename1, "rb");
+    FILE* cfp2 = read_file(filename2, "rb");
 
     if (cfp1 != NULL && cfp2 != NULL)
     {
@@ -61,9 +72,9 @@ oe_result_t read_chains(
     size_t len_cert1 = 0, len_cert2 = 0, len_cert3 = 0;
     char chain_temp1[max_cert_size];
     char chain_temp2[max_cert_size];
-    FILE* cfp1 = fopen(filename1, "rb");
-    FILE* cfp2 = fopen(filename2, "rb");
-    FILE* cfp3 = fopen(filename3, "rb");
+    FILE* cfp1 = read_file(filename1, "rb");
+    FILE* cfp2 = read_file(filename2, "rb");
+    FILE* cfp3 = read_file(filename3, "rb");
 
     if (cfp1 != NULL && cfp2 != NULL && cfp3 != NULL)
     {
@@ -89,7 +100,7 @@ oe_result_t read_chains(
 oe_result_t read_crl(char* filename, uint8_t* crl, size_t* crl_size)
 {
     size_t len_crl = 0;
-    FILE* cfp = fopen(filename, "rb");
+    FILE* cfp = read_file(filename, "rb");
 
     if (cfp != NULL)
     {
@@ -109,7 +120,7 @@ oe_result_t read_dates(char* filename, oe_datetime_t* time)
 {
     size_t len_date = 0;
     char buffer[max_date_size];
-    FILE* dfp = fopen(filename, "rb");
+    FILE* dfp = read_file(filename, "rb");
 
     if (dfp != NULL)
     {
@@ -121,7 +132,7 @@ oe_result_t read_dates(char* filename, oe_datetime_t* time)
     }
     buffer[len_date] = '\0';
 
-    sscanf(
+    sscanf_s(
         buffer,
         "%u :%u :%u :%u :%u :%u",
         &(time->year),
@@ -199,7 +210,7 @@ oe_result_t read_mod(char* filename, uint8_t* mod, size_t* mod_size)
     char buffer[(max_mod_size * 2) + 1];
     char* bufp = buffer;
 
-    FILE* mfp = fopen(filename, "rb");
+    FILE* mfp = read_file(filename, "rb");
     if (mfp != NULL)
     {
         numchars = fread(buffer, sizeof(char), max_mod_size * 2, mfp);
@@ -246,7 +257,7 @@ oe_result_t read_mixed_chain(
 oe_result_t read_sign(char* filename, uint8_t* sign, size_t* sign_size)
 {
     size_t len_sign;
-    FILE* sfp = fopen(filename, "rb");
+    FILE* sfp = read_file(filename, "rb");
     if (sfp != NULL)
     {
         len_sign = fread(sign, sizeof(char), max_sign_size, sfp);
@@ -280,7 +291,7 @@ oe_result_t read_pem_key(
     }
 
     /* Open file in binary mode. */
-    if (!(stream = fopen(filename, "rb")))
+    if (!(stream = read_file(filename, "rb")))
     {
         result = OE_FAILURE;
         goto done;
@@ -322,7 +333,7 @@ oe_result_t read_coordinates(
     size_t* y_size)
 {
     size_t len_x, len_y;
-    FILE* cfp = fopen(filename, "rb");
+    FILE* cfp = read_file(filename, "rb");
     if (cfp != NULL)
     {
         len_x = fread(x, sizeof(char), max_coordinates_size, cfp);

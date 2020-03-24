@@ -106,7 +106,7 @@ int main(int argc, const char* argv[])
     {
         oe_put_err("oe_create_libunwind_enclave(): result=%u", result);
     }
-    uint32_t pid = (uint32_t)getpid();
+    uint32_t pid = (uint32_t)_getpid();
 
     // Invoke "Test()" in the enclave.
     Test(enclave, pid);
