@@ -780,6 +780,8 @@ add_enclave_library(oelibc STATIC
     ${MUSLSRC}/unistd/gethostname.c
     ${MUSLSRC}/unistd/link.c
     ${MUSLSRC}/unistd/lseek.c
+    ${MUSLSRC}/unistd/pread.c
+    ${MUSLSRC}/unistd/pwrite.c
     ${MUSLSRC}/unistd/read.c
     ${MUSLSRC}/unistd/readv.c
     ${MUSLSRC}/unistd/rmdir.c

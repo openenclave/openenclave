@@ -112,6 +112,26 @@ static long _syscall(
             ret = oe_lseek(fd, off, whence);
             goto done;
         }
+        case OE_SYS_pread64:
+        {
+            const int fd = (int)arg1;
+            void* const buf = (void*)arg2;
+            const size_t count = (size_t)arg3;
+            const oe_off_t offset = (oe_off_t)arg4;
+
+            ret = oe_pread(fd, buf, count, offset);
+            goto done;
+        }
+        case OE_SYS_pwrite64:
+        {
+            const int fd = (int)arg1;
+            const void* const buf = (void*)arg2;
+            const size_t count = (size_t)arg3;
+            const oe_off_t offset = (oe_off_t)arg4;
+
+            ret = oe_pwrite(fd, buf, count, offset);
+            goto done;
+        }
         case OE_SYS_readv:
         {
             int fd = (int)arg1;

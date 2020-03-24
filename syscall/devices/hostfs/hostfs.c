@@ -700,6 +700,46 @@ done:
     return ret;
 }
 
+static ssize_t _hostfs_pread(
+    oe_fd_t* desc,
+    void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    ssize_t ret = -1;
+    file_t* file = _cast_file(desc);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_pread_ocall(&ret, file->host_fd, buf, count, offset) !=
+        OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return ret;
+}
+
+static ssize_t _hostfs_pwrite(
+    oe_fd_t* desc,
+    const void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    ssize_t ret = -1;
+    file_t* file = _cast_file(desc);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_pwrite_ocall(&ret, file->host_fd, buf, count, offset) !=
+        OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return ret;
+}
+
 static int _hostfs_close_file(oe_fd_t* desc)
 {
     int ret = -1;
@@ -1211,6 +1251,8 @@ static oe_file_ops_t _file_ops =
     .fd.close = _hostfs_close,
     .fd.get_host_fd = _hostfs_get_host_fd,
     .lseek = _hostfs_lseek,
+    .pread = _hostfs_pread,
+    .pwrite = _hostfs_pwrite,
     .getdents64 = _hostfs_getdents64,
 };
 // clang-format on
