@@ -49,6 +49,9 @@ set(BUILD_INFO_FILE "${CMAKE_CURRENT_BINARY_DIR}/build_info.cmake")
 file(WRITE "${BUILD_INFO_FILE}" "set(LINUX_CXX_COMPILER_ID \"${CMAKE_CXX_COMPILER_ID}\")\n")
 file(APPEND "${BUILD_INFO_FILE}" "set(LINUX_CXX_COMPILER_VERSION \"${CMAKE_CXX_COMPILER_VERSION}\")\n")
 
+# The list of tests requires `std=c++17`.
+file(STRINGS "../tests.supported.cxx17" cxx17tests)
+
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
     add_enclave(TARGET libcxxtest-${NAME}_enc UUID 486dcdcc-f0c6-4bdd-91e0-c7566794f899 CXX SOURCES
@@ -62,8 +65,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/src/filesystem
         )
 
-      enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE
-
+    enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE
         # These are third-party tests, so we don't care about their warnings.
         -Wno-error
         -Wno-unused-function
@@ -82,6 +84,10 @@ function(add_libcxx_test_enc NAME CXXFILE)
 
     enclave_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
     enclave_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support)
+
+    if (CXXFILE IN_LIST cxx17tests)
+        set_enclave_property(TARGET libcxxtest-${NAME}_enc PROPERTY CXX_STANDARD 17)
+    endif()
 
     if (WIN32)
         maybe_build_using_clangw(libcxxtest-${NAME}_enc)
@@ -110,16 +116,17 @@ function(add_libcxx_test_enc NAME CXXFILE)
     endif()
 endfunction(add_libcxx_test_enc)
 
-# iterate over the supported tests and create a binary for each.
+# Iterate over the supported tests and create a binary for each.
 if (ENABLE_FULL_LIBCXX_TESTS)
     file(STRINGS "../tests.supported" alltests)
 else()
     file(STRINGS "../tests.supported.default" alltests)
 endif()
+
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "../../3rdparty/libcxx/libcxx/test/")
 
-# the allocations are entirely optimized out by Clang in these tests and are excluded from Clang release builds
+    # The allocations are entirely optimized out by Clang in these tests and are excluded from Clang release builds
     if ("${name}" MATCHES "cons_default_throws_bad_alloc.pass" OR "${name}" MATCHES "allocator_allocator.members_construct.pass")
         string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
         if (CMAKE_CXX_COMPILER_ID MATCHES Clang AND BUILD_TYPE_UPPER MATCHES REL)
@@ -127,24 +134,21 @@ foreach(testcase ${alltests})
         endif()
     endif()
 
-# few functions invoked in these tests are not supported in gnu and excluded from GCC builds
-    if ("${name}" MATCHES "convert_file_time.sh" 
-            OR "${name}" MATCHES "sequences_array_at.pass" 
-            OR "${name}" MATCHES "libcxx_containers_unord_next_pow2.pass" 
-            OR "${name}" MATCHES "std_utilities_template.bitset_bitset.members_count.pass")
+    # Few functions invoked in these tests are not supported in gnu and excluded from GCC builds
+    if ("${name}" IN_LIST GCC_UNSUPPORTED_LIST)
         if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
             continue()
         endif()
     endif()
 
-# the following test fails when built with clang, see #830 -- Skipping this test in clang
+    # The following test fails when built with clang, see #830 -- Skipping this test in clang
     if ("${name}" MATCHES "array_sized_delete_array_calls_unsized_delete_array.pass")
         if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
             continue()
         endif()
     endif()
 
-# the following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 8.0
+    # The following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 8.0
     if ("${name}" MATCHES "std_utilities_function.objects_comparisons_constexpr_init.pass")
         if(CMAKE_CXX_COMPILER_ID MATCHES GNU
                AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7
@@ -153,7 +157,7 @@ foreach(testcase ${alltests})
         endif()
     endif()
 
-# the following test fails on GCC 7 or newer, see #1559 -- Skip this test on GCC 7.0 and above in non debug builds
+    # The following test fails on GCC 7 or newer, see #1559 -- Skip this test on GCC 7.0 and above in non debug builds
     if ("${name}" MATCHES "std_containers_associative_map_map.access_at.pass")
         string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
         if (CMAKE_CXX_COMPILER_ID MATCHES GNU AND BUILD_TYPE_UPPER MATCHES REL)
