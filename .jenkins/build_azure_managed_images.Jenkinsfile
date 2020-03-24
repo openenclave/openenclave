@@ -1,3 +1,6 @@
+import java.time.*
+import java.time.format.DateTimeFormatter
+
 @Library("OpenEnclaveCommon") _
 oe = new jenkins.common.Openenclave()
 
@@ -7,9 +10,27 @@ JENKINS_USER_CREDS_ID = "oeadmin-credentials"
 OETOOLS_REPO = "oejenkinscidockerregistry.azurecr.io"
 OETOOLS_REPO_CREDENTIALS_ID = "oejenkinscidockerregistry"
 AZURE_IMAGES_MAP = [
-    "win2016": "MicrosoftWindowsServer:confidential-compute-preview:acc-windows-server-2016-datacenter:latest",
+    "win2016": [
+        "image": "MicrosoftWindowsServer:confidential-compute-preview:acc-windows-server-2016-datacenter:latest",
+        "generation": "V1"
+    ]
 ]
 
+
+def get_image_version() {
+    def now = LocalDateTime.now()
+    return (now.format(DateTimeFormatter.ofPattern("yyyy")) + "." + \
+            now.format(DateTimeFormatter.ofPattern("MM")) + "." + \
+            now.format(DateTimeFormatter.ofPattern("dd")))
+}
+
+def get_image_id() {
+    if (params.IMAGE_ID) {
+        return params.IMAGE_ID
+    }
+    def last_commit_id = sh(script: "git rev-parse --short HEAD", returnStdout: true).tokenize().last()
+    return (get_image_version() + "-" + last_commit_id)
+}
 
 def buildLinuxManagedImage(String os_type, String version) {
     node(params.AGENTS_LABEL) {
@@ -17,17 +38,27 @@ def buildLinuxManagedImage(String os_type, String version) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                def managed_image_name_id
-                if (params.IMAGE_ID) {
-                    managed_image_name_id = params.IMAGE_ID
-                } else {
-                    managed_image_name_id = sh(script: "git rev-parse --short HEAD", returnStdout: true).tokenize().last()
-                }
+                def managed_image_name_id = get_image_id()
+                def gallery_image_version = get_image_version()
+                def az_cleanup_existing_image_version_script = """
+                    az login --service-principal -u \$SERVICE_PRINCIPAL_ID -p \$SERVICE_PRINCIPAL_PASSWORD --tenant \$TENANT_ID
+                    az account set -s \$SUBSCRIPTION_ID
+
+                    # If the target image version doesn't exist, the below
+                    # command will not fail because it is idempotent.
+                    az sig image-version delete \
+                        --resource-group ${RESOURCE_GROUP} \
+                        --gallery-name ${GALLERY_NAME} \
+                        --gallery-image-definition ${os_type}-${version} \
+                        --gallery-image-version ${gallery_image_version}
+                """
+                oe.azureEnvironment(az_cleanup_existing_image_version_script, params.OE_DEPLOY_IMAGE)
                 withCredentials([usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
                                                   usernameVariable: "DOCKER_USER_NAME",
                                                   passwordVariable: "DOCKER_USER_PASSWORD")]) {
                     withEnv(["DOCKER_REGISTRY=${OETOOLS_REPO}",
-                             "MANAGED_IMAGE_NAME_ID=${managed_image_name_id}"]) {
+                             "MANAGED_IMAGE_NAME_ID=${managed_image_name_id}",
+                             "GALLERY_IMAGE_VERSION=${gallery_image_version}"]) {
                         def cmd = ("packer build -force " +
                                     "-var-file=${WORKSPACE}/.jenkins/provision/templates/packer/azure_managed_image/${os_type}-${version}-variables.json " +
                                     "${WORKSPACE}/.jenkins/provision/templates/packer/azure_managed_image/packer-${os_type}.json")
@@ -47,17 +78,13 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                def managed_image_name_id
-                if (params.IMAGE_ID) {
-                    managed_image_name_id = params.IMAGE_ID
-                } else {
-                    managed_image_name_id = sh(script: "git rev-parse --short HEAD", returnStdout: true).tokenize().last()
-                }
+                def managed_image_name_id = get_image_id()
+                def gallery_image_version = get_image_version()
                 def vm_rg_name = "build-${managed_image_name_id}-${img_name_suffix}-${BUILD_NUMBER}"
                 def jenkins_rg_name = params.JENKINS_RESOURCE_GROUP
                 def jenkins_vnet_name = params.JENKINS_VNET_NAME
                 def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
-                def azure_image_id = AZURE_IMAGES_MAP[os_series]
+                def azure_image_id = AZURE_IMAGES_MAP[os_series]["image"]
                 withCredentials([usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
                                                   usernameVariable: "JENKINS_USER_NAME",
                                                   passwordVariable: "JENKINS_USER_PASSWORD")]) {
@@ -66,23 +93,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                         az account set -s \$SUBSCRIPTION_ID
                     """
                     def az_build_managed_img_script = """
-                        function retrycmd_if_failure() {
-                            set +o errexit
-                            retries=\$1; wait_sleep=\$2; timeout=\$3; shift && shift && shift
-                            for i in \$(seq 1 \$retries); do
-                                timeout \$timeout \${@}
-                                [ \$? -eq 0 ] && break || \
-                                if [ \$i -eq \$retries ]; then
-                                    echo "Error: Failed to execute '\$@' after \$i attempts"
-                                    set -o errexit
-                                    return 1
-                                else
-                                    sleep \$wait_sleep
-                                fi
-                            done
-                            echo "Executed '\$@' \$i times"
-                            set -o errexit
-                        }
+                        source ${WORKSPACE}/.jenkins/provision/utils.sh
 
                         ${az_login_script}
 
@@ -132,17 +143,39 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                         MANAGED_IMG_ID=`az image create \
                             --resource-group ${vm_rg_name} \
                             --name ${managed_image_name_id}-${img_name_suffix} \
+                            --hyper-v-generation ${AZURE_IMAGES_MAP[os_series]["generation"]} \
                             --source ${img_name_suffix} | jq -r '.id'`
 
                         # If the target image doesn't exist, the below command
                         # will not fail because it is idempotent.
-                        retrycmd_if_failure 10 300 30m az image delete \
+                        retrycmd_if_failure 30 300 30m az image delete \
                             --resource-group ${RESOURCE_GROUP} \
                             --name ${managed_image_name_id}-${img_name_suffix}
 
-                        retrycmd_if_failure 10 300 30m az resource move \
+                        retrycmd_if_failure 30 300 30m az resource move \
                             --ids \$MANAGED_IMG_ID \
                             --destination-group ${RESOURCE_GROUP}
+
+                        MANAGED_IMG_ID=`az image show \
+                            --resource-group ${RESOURCE_GROUP} \
+                            --name ${managed_image_name_id}-${img_name_suffix} | jq -r '.id'`
+
+                        # If the target image version doesn't exist, the below
+                        # command will not fail because it is idempotent.
+                        az sig image-version delete \
+                            --resource-group ${RESOURCE_GROUP} \
+                            --gallery-name ${GALLERY_NAME} \
+                            --gallery-image-definition ${img_name_suffix} \
+                            --gallery-image-version ${gallery_image_version}
+
+                        az sig image-version create \
+                            --resource-group ${RESOURCE_GROUP} \
+                            --gallery-name ${GALLERY_NAME} \
+                            --gallery-image-definition ${img_name_suffix} \
+                            --gallery-image-version ${gallery_image_version} \
+                            --managed-image \$MANAGED_IMG_ID \
+                            --target-regions "WestEurope" \
+                            --replica-count 1
                     """
                     def az_rg_create_script = """
                         ${az_login_script}

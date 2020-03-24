@@ -1,6 +1,7 @@
 {
     "managed_image_name_suffix": "rhel-8-SGX",
     "os_type": "Linux",
+    "gallery_image_name": "rhel-8",
     "image_publisher": "RedHat",
     "image_offer": "RHEL",
     "image_sku": "8-gen2",
