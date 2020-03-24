@@ -84,6 +84,7 @@ endif()
 # Windows test Broken Post #632 issue
 if ( UNIX )
     if (OE_SGX)
+        add_subdirectory(child_process)
         add_subdirectory(cmake_name_conflict)
         add_subdirectory(libcxxrt)
         add_subdirectory(memory)
