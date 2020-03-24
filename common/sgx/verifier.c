@@ -107,15 +107,17 @@ static oe_result_t _verify_claims_hash(
     size_t claims_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    OE_SHA256* hash = (OE_SHA256*)quote->report_body.report_data.field;
-    OE_SHA256 claims_hash;
+    OE_SHA256 hash;
     oe_sha256_context_t hash_ctx = {0};
 
     OE_CHECK(oe_sha256_init(&hash_ctx));
     OE_CHECK(oe_sha256_update(&hash_ctx, claims, claims_size));
-    OE_CHECK(oe_sha256_final(&hash_ctx, &claims_hash));
+    OE_CHECK(oe_sha256_final(&hash_ctx, &hash));
 
-    result = memcmp(hash, &claims_hash, OE_SHA256_SIZE) ? OE_FAILURE : OE_OK;
+    if (memcmp(&hash, &quote->report_body.report_data, OE_SHA256_SIZE))
+        result = OE_FAILURE;
+    else
+        result = OE_OK;
 done:
     return result;
 }
@@ -347,10 +349,13 @@ static oe_result_t _extract_claims(
 
     // verify the integrity of the serialized claims with hash stored in
     // report_data.
-    OE_CHECK(_verify_claims_hash(
-        (sgx_quote_t*)header->report,
-        evidence + report_size,
-        evidence_size - report_size));
+    if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    {
+        OE_CHECK(_verify_claims_hash(
+            (sgx_quote_t*)header->report,
+            evidence + report_size,
+            evidence_size - report_size));
+    }
 
     claims_header = (oe_sgx_plugin_claims_header_t*)(evidence + report_size);
 
