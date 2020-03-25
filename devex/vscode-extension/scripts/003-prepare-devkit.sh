@@ -82,30 +82,32 @@ if hash ccache 2>/dev/null; then
 fi
 
 # Build OP-TEE for QEMU ARMv8
-pushd $OPTEE_QEMU_ARMV8_OUT_PATH
-ARCH=arm make -j$(nproc) -C $OPTEE_PATH            \
+pushd "$OPTEE_QEMU_ARMV8_OUT_PATH" || exit
+# shellcheck disable=SC2086
+ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
     PLATFORM=vexpress-qemu_armv8a                  \
-    O=$PWD                                         \
+    O="$PWD"                                       \
     $OPTEE_FLAGS                                   \
     CROSS_COMPILE="$CROSS_COMPILE"                 \
     CROSS_COMPILE_core="$CROSS_COMPILE"            \
     CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
     CROSS_COMPILE_ta_arm32="$TA_CROSS_COMPILE_32"  \
-    CFG_ARM64_core=y || exit 1
-popd
+    CFG_ARM64_core=y || exit
+popd || exit
 
 # Build OP-TEE for the Scalys Grapeboard
-pushd $OPTEE_GRAPEBOARD_OUT_PATH
-ARCH=arm make -j$(nproc) -C $OPTEE_PATH            \
+pushd "$OPTEE_GRAPEBOARD_OUT_PATH" || exit
+# shellcheck disable=SC2086
+ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
     PLATFORM=ls-ls1012grapeboard                   \
-    O=$PWD                                         \
+    O="$PWD"                                       \
     $OPTEE_FLAGS                                   \
     CROSS_COMPILE="$CROSS_COMPILE"                 \
     CROSS_COMPILE_core="$CROSS_COMPILE"            \
     CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
     CROSS_COMPILE_ta_arm32="$TA_CROSS_COMPILE_32"  \
-    CFG_ARM64_core=y || exit 1
-popd
+    CFG_ARM64_core=y || exit
+popd || exit
 
 # Clear OP-TEE build variables
 unset CROSS_COMPILE
@@ -113,82 +115,82 @@ unset TA_CROSS_COMPILE
 unset TA_CROSS_COMPILE_32
 
 # Build the SDK for Intel SGX
-pushd $OE_SDK_SGX_OUT_PATH
-cmake -G Ninja $OE_SDK_PATH                         \
+pushd "$OE_SDK_SGX_OUT_PATH" || exit
+cmake -G Ninja "$OE_SDK_PATH"                       \
     -DCMAKE_BUILD_TYPE=Debug                        \
     -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'  \
-    -DCPACK_GENERATOR=DEB || exit 1
-ninja package || exit 1
+    -DCPACK_GENERATOR=DEB || exit
+ninja package || exit
 
 mkdir expand
-pushd expand
-7z x ../*.deb || exit 1
-tar xf data.tar || exit 1
-popd
+pushd expand || exit
+7z x ../*.deb || exit
+tar xf data.tar || exit
+popd || exit
 
-popd  # SDK Build Done
+popd || exit  # SDK Build Done
 
 # Build the SDK for OP-TEE on QEMU ARMv8
-pushd $OE_SDK_QEMU_ARMV8_OUT_PATH
+pushd "$OE_SDK_QEMU_ARMV8_OUT_PATH" || exit
 DEV_KIT=$OPTEE_QEMU_ARMV8_OUT_PATH
-cmake -G Ninja $OE_SDK_PATH                                    \
-    -DCMAKE_BUILD_TYPE=Debug                                   \
-    -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'             \
-    -DCPACK_GENERATOR=DEB                                      \
-    -DHAS_QUOTE_PROVIDER=OFF                                   \
-    -DCMAKE_TOOLCHAIN_FILE=$OE_SDK_PATH/cmake/arm-cross.cmake  \
-    -DOE_TA_DEV_KIT_DIR=$DEV_KIT/export-ta_arm64 || exit 1
-ninja package || exit 1
+cmake -G Ninja "$OE_SDK_PATH"                                    \
+    -DCMAKE_BUILD_TYPE=Debug                                     \
+    -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'               \
+    -DCPACK_GENERATOR=DEB                                        \
+    -DHAS_QUOTE_PROVIDER=OFF                                     \
+    -DCMAKE_TOOLCHAIN_FILE="$OE_SDK_PATH"/cmake/arm-cross.cmake  \
+    -DOE_TA_DEV_KIT_DIR="$DEV_KIT"/export-ta_arm64 || exit
+ninja package || exit
 
 mkdir expand
-pushd expand
-7z x ../*.deb || exit 1
-tar xf data.tar || exit 1
-popd
+pushd expand || exit
+7z x ../*.deb || exit
+tar xf data.tar || exit
+popd || exit
 
-popd  # SDK Build Done
+popd || exit # SDK Build Done
 
 # Build the SDK for OP-TEE on the Scalys Grapeboard
-pushd $OE_SDK_GRAPEBOARD_OUT_PATH
+pushd "$OE_SDK_GRAPEBOARD_OUT_PATH" || exit
 DEV_KIT=$OPTEE_GRAPEBOARD_OUT_PATH
-cmake -G Ninja $OE_SDK_PATH                                    \
-    -DCMAKE_BUILD_TYPE=Debug                                   \
-    -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'             \
-    -DCPACK_GENERATOR=DEB                                      \
-    -DHAS_QUOTE_PROVIDER=OFF                                   \
-    -DCMAKE_TOOLCHAIN_FILE=$OE_SDK_PATH/cmake/arm-cross.cmake  \
-    -DOE_TA_DEV_KIT_DIR=$DEV_KIT/export-ta_arm64 || exit 1
-ninja package || exit 1
+cmake -G Ninja "$OE_SDK_PATH"                                    \
+    -DCMAKE_BUILD_TYPE=Debug                                     \
+    -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'               \
+    -DCPACK_GENERATOR=DEB                                        \
+    -DHAS_QUOTE_PROVIDER=OFF                                     \
+    -DCMAKE_TOOLCHAIN_FILE="$OE_SDK_PATH"/cmake/arm-cross.cmake  \
+    -DOE_TA_DEV_KIT_DIR="$DEV_KIT"/export-ta_arm64 || exit 1
+ninja package || exit
 
 mkdir expand
-pushd expand
-7z x ../*.deb || exit 1
-tar xf data.tar || exit 1
-popd
+pushd expand || exit
+7z x ../*.deb || exit
+tar xf data.tar || exit
+popd || exit
 
-popd  # SDK Build Done
+popd || exit # SDK Build Done
 
 unset DEV_KIT
 
 # Collect output into the extension's payload
-cp $OPTEE_QEMU_ARMV8_OUT_PATH/export-ta_arm64/keys/default_ta.pem payload/sdk/optee/
-cp $OPTEE_QEMU_ARMV8_OUT_PATH/export-ta_arm64/src/ta.ld.S         payload/sdk/optee/
-cp $OPTEE_QEMU_ARMV8_OUT_PATH/export-ta_arm64/scripts/sign.py     payload/sdk/optee/
+cp "$OPTEE_QEMU_ARMV8_OUT_PATH"/export-ta_arm64/keys/default_ta.pem payload/sdk/optee/
+cp "$OPTEE_QEMU_ARMV8_OUT_PATH"/export-ta_arm64/src/ta.ld.S         payload/sdk/optee/
+cp "$OPTEE_QEMU_ARMV8_OUT_PATH"/export-ta_arm64/scripts/sign.py     payload/sdk/optee/
 
-cp -r $OE_SDK_QEMU_ARMV8_OUT_PATH/expand/opt/openenclave/* $PAYLOAD_QEMU_ARMV8_PATH/
-cp -r $OE_SDK_GRAPEBOARD_OUT_PATH/expand/opt/openenclave/* $PAYLOAD_GRAPEBOARD_PATH/
+cp -r "$OE_SDK_QEMU_ARMV8_OUT_PATH"/expand/opt/openenclave/* "$PAYLOAD_QEMU_ARMV8_PATH"/
+cp -r "$OE_SDK_GRAPEBOARD_OUT_PATH"/expand/opt/openenclave/* "$PAYLOAD_GRAPEBOARD_PATH"/
 
 # Replace the ARMv8 version of oeedger8r with the x64 one for cross-compilation
-mv $PAYLOAD_QEMU_ARMV8_PATH/bin/oeedger8r $PAYLOAD_QEMU_ARMV8_PATH/bin/oeedger8r.aarch64
-mv $PAYLOAD_GRAPEBOARD_PATH/bin/oeedger8r $PAYLOAD_GRAPEBOARD_PATH/bin/oeedger8r.aarch64
+mv "$PAYLOAD_QEMU_ARMV8_PATH"/bin/oeedger8r "$PAYLOAD_QEMU_ARMV8_PATH"/bin/oeedger8r.aarch64
+mv "$PAYLOAD_GRAPEBOARD_PATH"/bin/oeedger8r "$PAYLOAD_GRAPEBOARD_PATH"/bin/oeedger8r.aarch64
 
-cp $OE_SDK_SGX_OUT_PATH/expand/opt/openenclave/bin/oeedger8r $PAYLOAD_QEMU_ARMV8_PATH/bin/oeedger8r
-cp $OE_SDK_SGX_OUT_PATH/expand/opt/openenclave/bin/oeedger8r $PAYLOAD_GRAPEBOARD_PATH/bin/oeedger8r
+cp "$OE_SDK_SGX_OUT_PATH"/expand/opt/openenclave/bin/oeedger8r "$PAYLOAD_QEMU_ARMV8_PATH"/bin/oeedger8r
+cp "$OE_SDK_SGX_OUT_PATH"/expand/opt/openenclave/bin/oeedger8r "$PAYLOAD_GRAPEBOARD_PATH"/bin/oeedger8r
 
 # Copy the emulator
-cp -r $EMU_PATH payload/emu
+cp -r "$EMU_PATH" payload/emu
 
 # Zip everything up
-pushd payload
+pushd payload || exit
 tar cvzf ../devdata.tar.gz emu/ sdk/
-popd
+popd || exit
