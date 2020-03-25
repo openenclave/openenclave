@@ -348,7 +348,7 @@ typedef enum _oe_result
      * The hash of claims section in the quote does not match the hash value
      * held in the report_data field. This occurs when claims are tampered.
      */
-    QE_QUOTE_HASH_MISMATCH,
+    OE_QUOTE_HASH_MISMATCH,
 
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;

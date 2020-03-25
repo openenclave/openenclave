@@ -130,8 +130,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_ALREADY_EXISTS";
         case OE_ALREADY_INITIALIZED:
             return "OE_ALREADY_INITIALIZED";
-        case QE_QUOTE_HASH_MISMATCH:
-            return "QE_QUOTE_HASH_MISMATCH";
+        case OE_QUOTE_HASH_MISMATCH:
+            return "OE_QUOTE_HASH_MISMATCH";
         case __OE_RESULT_MAX:
             break;
     }
@@ -200,7 +200,7 @@ bool oe_is_valid_result(uint32_t result)
         case OE_THREAD_JOIN_ERROR:
         case OE_ALREADY_EXISTS:
         case OE_ALREADY_INITIALIZED:
-        case QE_QUOTE_HASH_MISMATCH:
+        case OE_QUOTE_HASH_MISMATCH:
         {
             return true;
         }
