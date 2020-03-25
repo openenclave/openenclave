@@ -607,7 +607,7 @@ void verify_sgx_evidence(
                 NULL,
                 0,
                 &claims,
-                &claims_size) == OE_FAILURE);
+                &claims_size) == QE_QUOTE_HASH_MISMATCH);
 
         header->data[header->data_size - 1] ^= 1;
     }

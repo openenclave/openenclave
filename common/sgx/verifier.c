@@ -114,10 +114,10 @@ static oe_result_t _verify_claims_hash(
     OE_CHECK(oe_sha256_update(&hash_ctx, claims, claims_size));
     OE_CHECK(oe_sha256_final(&hash_ctx, &hash));
 
-    if (memcmp(&hash, &quote->report_body.report_data, OE_SHA256_SIZE))
-        result = OE_FAILURE;
-    else
+    if (memcmp(&hash, &quote->report_body.report_data, OE_SHA256_SIZE) == 0)
         result = OE_OK;
+    else
+        result = QE_QUOTE_HASH_MISMATCH;
 done:
     return result;
 }
