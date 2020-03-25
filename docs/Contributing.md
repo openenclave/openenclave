@@ -169,7 +169,7 @@ available commands. The highlights:
 | bors ping | Check if Bors is up. If it is, it will comment with _pong_.
 | bors retry | Run the previous command a second time.
 
-Also see our [Bors dashboard](https://oe-bors.westus2.cloudapp.azure.com/).
+Also see our [Bors dashboard](https://app.bors.tech/repositories/21855/).
 
 Commit Messages
 ---------------
