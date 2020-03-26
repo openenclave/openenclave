@@ -101,6 +101,41 @@ static oe_result_t _verify_local_report(
 #endif
 }
 
+static oe_result_t _verify_claims_hash(
+    const uint8_t* report,
+    oe_report_type_t report_type,
+    const uint8_t* claims,
+    size_t claims_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    int hash_cmp = 0;
+    OE_SHA256 hash;
+    oe_sha256_context_t hash_ctx = {0};
+
+    OE_CHECK(oe_sha256_init(&hash_ctx));
+    OE_CHECK(oe_sha256_update(&hash_ctx, claims, claims_size));
+    OE_CHECK(oe_sha256_final(&hash_ctx, &hash));
+
+    if (report_type == OE_REPORT_TYPE_SGX_REMOTE)
+    {
+        hash_cmp = memcmp(
+            &((sgx_quote_t*)report)->report_body.report_data,
+            &hash,
+            OE_SHA256_SIZE);
+    }
+    else if (report_type == OE_REPORT_TYPE_SGX_LOCAL)
+    {
+        hash_cmp = memcmp(
+            &((sgx_report_t*)report)->body.report_data, &hash, OE_SHA256_SIZE);
+    }
+    else
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    result = (hash_cmp == 0) ? OE_OK : OE_QUOTE_HASH_MISMATCH;
+done:
+    return result;
+}
+
 static oe_result_t _add_claim(
     oe_claim_t* claim,
     void* name,
@@ -325,6 +360,14 @@ static oe_result_t _extract_claims(
     // Check if the buffer is the proper size.
     if (evidence_size - report_size < sizeof(*claims_header))
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    // verify the integrity of the serialized claims with hash stored in
+    // report_data.
+    OE_CHECK(_verify_claims_hash(
+        header->report,
+        header->report_type,
+        evidence + report_size,
+        evidence_size - report_size));
 
     claims_header = (oe_sgx_plugin_claims_header_t*)(evidence + report_size);
 

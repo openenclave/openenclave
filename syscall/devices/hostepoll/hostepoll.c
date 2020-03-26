@@ -362,7 +362,7 @@ static int _epoll_ctl_del(epoll_t* epoll, int fd)
     {
         bool found = false;
 
-        for (size_t i = 0; epoll->map_size; i++)
+        for (size_t i = 0; i < epoll->map_size; i++)
         {
             if (epoll->map[i].fd == fd)
             {

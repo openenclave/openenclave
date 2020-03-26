@@ -1,0 +1,14 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        /* define ECALLs here. */
+        public int ecall_handle_message([in, string] char *input_msg, [out, count=enclave_msg_size] char *enclave_ms, unsigned int enclave_msg_size);
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+        int ocall_log([in, string] char *msg);
+    };
+};

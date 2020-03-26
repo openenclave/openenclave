@@ -589,6 +589,22 @@ void verify_sgx_evidence(
                                      custom_claims[i].value_size) == 0);
         }
     }
-
     OE_TEST(oe_free_claims_list(claims, claims_size) == OE_OK);
+
+    // Test sgx_remote_evidence with tampered claims in evidence
+    printf("====== running verify_sgx_evidence failed with hampered claims\n");
+    header->data[header->data_size - 1] ^= 1;
+
+    OE_TEST(
+        oe_verify_evidence(
+            evidence,
+            evidence_size,
+            endorsements,
+            endorsements_size,
+            NULL,
+            0,
+            &claims,
+            &claims_size) == OE_QUOTE_HASH_MISMATCH);
+
+    header->data[header->data_size - 1] ^= 1;
 }
