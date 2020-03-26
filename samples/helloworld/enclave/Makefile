@@ -7,7 +7,10 @@ ifeq ($(LVI_MITIGATION), ControlFlow)
 	ifeq ($(LVI_MITIGATION_BINDIR),)
 		$(error LVI_MITIGATION_BINDIR is not set)
 	endif
-	CC := $(LVI_MITIGATION_BINDIR)/$(CC)
+	# Only run once.
+	ifeq (,$(findstring $(LVI_MITIGATION_BINDIR),$(CC)))
+		CC := $(LVI_MITIGATION_BINDIR)/$(CC)
+	endif
 	COMPILER := $(COMPILER)-lvi-cfg
 endif
 

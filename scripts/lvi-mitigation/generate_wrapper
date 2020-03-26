@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+# shellcheck disable=SC2155 disable=SC1090
+
+set -e
+
+for opt in "$@"
+do
+  case $opt in
+    --name=*)
+      name="${opt#*=}"
+      ;;
+    --path=*)
+      path="${opt#*=}"
+      ;;
+  esac
+done
+
+if [[ -z ${path+x} ]]; then
+  wrapper="$name"
+else
+  wrapper="$path"/"$name"
+fi
+
+cat << EOF > "$wrapper"
+#!/usr/bin/env bash
+
+wrapper=\$(readlink -f "\$0")
+export lvi_bin_path=\$(dirname "\$wrapper")
+# Import the \`call_compiler\` function.
+. "\$lvi_bin_path"/invoke_compiler
+
+# Specify the compiler.
+export compiler=$name
+
+call_compiler \$@
+EOF
+
+chmod +x "$wrapper"

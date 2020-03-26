@@ -133,10 +133,8 @@ The following list includes necessary files for Open Enclave SDK to support LVI 
 | Filename                          | Description                                           |
 |-----------------------------------|-------------------------------------------------------|
 | scripts/lvi-mitigation/install_lvi_mitigation_bindir | Script for installing necessary compilation tools (Linux). |
-| scripts/lvi-mitigation/clang-7-lvi                   | Wrapper script of clang-7, needed by installation (Linux). |
-| scripts/lvi-mitigation/clang++-7-lvi                 | Wrapper script of clang++-7, needed by installation (Linux). |
-| scripts/lvi-mitigation/gcc-lvi                       | Wrapper script of gcc, needed by installation (Linux). |
-| scripts/lvi-mitigation/g++-lvi                       | Wrapper script of g++, needed by installation (Linux). |
+| scripts/lvi-mitigation/generate_wrapper              | Script for generating compiler wrappers, needed by installation (Linux). |
+| scripts/lvi-mitigation/invoke_compiler               | Script for invoking compilers, needed by generated wrappers (Linux). |
 | scripts/lvi-mitigation/lvi-mitigation.py             | Python script for supporting mitigation (Windows). |
 
 ### Dependency Installation
@@ -161,16 +159,17 @@ If the script ran successfully, the `lvi_mitigation_bin` should contain a list o
 ```bash
 ~/openenclave/lvi_mitigation_bin$ ls -l
 total 16
-lrwxrwxrwx 1 yourname yourname 2121936 Mar  10 10:00 as
-lrwxrwxrwx 1 yourname yourname     986 Mar  10 10:00 clang++-7
+-rwxrwxr-x 1 yourname yourname 2121936 Mar  10 10:00 as
+-rwxrwxr-x 1 yourname yourname     233 Mar  10 10:00 clang++-7
 lrwxrwxrwx 1 yourname yourname      18 Mar  10 10:00 clang++-7_symlink -> /usr/bin/clang++-7
-lrwxrwxrwx 1 yourname yourname     970 Mar  10 10:00 clang-7
+-rwxrwxr-x 1 yourname yourname     231 Mar  10 10:00 clang-7
 lrwxrwxrwx 1 yourname yourname      16 Mar  10 10:00 clang-7_symlink -> /usr/bin/clang-7
-lrwxrwxrwx 1 yourname yourname     956 Mar  10 10:00 g++
+-rwxrwxr-x 1 yourname yourname     227 Mar  10 10:00 g++
 lrwxrwxrwx 1 yourname yourname      12 Mar  10 10:00 g++_symlink -> /usr/bin/g++
-lrwxrwxrwx 1 yourname yourname     952 Mar  10 10:00 gcc
+-rwxrwxr-x 1 yourname yourname     227 Mar  10 10:00 gcc
 lrwxrwxrwx 1 yourname yourname      12 Mar  10 10:00 gcc_symlink -> /usr/bin/gcc
-lrwxrwxrwx 1 yourname yourname 2722256 Mar  10 10:00 ld
+-rwxrwxr-x 1 yourname yourname    1093 Mar  10 10:00 invoke_compiler
+-rwxrwxr-x 1 yourname yourname 2722256 Mar  10 10:00 ld
 ```
 
 `as` and `ld` are the customized GNU assembler and linker obtained from Intel, which support the
