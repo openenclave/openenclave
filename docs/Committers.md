@@ -24,6 +24,9 @@ vote of all members of the Community Governance Committee.
 The running minutes for the Community Governance Community meetings are located
 at [aka.ms/openenclave/cgc](https://aka.ms/openenclave/cgc).
 
+The Committee can be reached by sending email to
+oesdkcgc@lists.confidentialcomputing.io.
+
 Committee Members
 -----------------
 

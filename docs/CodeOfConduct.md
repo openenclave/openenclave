@@ -55,8 +55,10 @@ a project may be further defined and clarified by project maintainers.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported by contacting any member of the [Community Governance Committee](
-Committers.md#Committee_Members). All complaints will be reviewed and investigated
+reported by contacting the [Community Governance Committee](Committers.md)
+at oesdkcgc@lists.confidentialcomputing.io, or by contacting any individual
+[member of the Community Governance Committee](Committers.md#Committee_Members).
+All complaints will be reviewed and investigated
 and will result in a response that is deemed necessary and appropriate to the
 circumstances. The project team is obligated to maintain confidentiality with
 regard to the reporter of an incident.
