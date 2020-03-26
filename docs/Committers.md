@@ -33,7 +33,7 @@ Committee Members
 | Akash Gupta          | Microsoft   | akagup@microsoft.com          | gupta-ak       |
 | Amaury Chamayou      | Microsoft   | amaury.chamayou@microsoft.com | achamayou      |
 | Anand Krishnamoorthi | Microsoft   | anakrish@microsoft.com        | anakrish       |
-| Andrew Schwartzmeyer | Microsoft   | andschwa@microsoft.com        | andschwa       |
+| Andrew Schwartzmeyer | Microsoft   | andrew@schwartzmeyer.com      | andschwa       |
 | Dave Thaler          | Microsoft   | dthaler@microsoft.com         | dthaler        |
 | John Kordich         | Independent | jkordich@gmail.com            | johnkord       |
 | Jordan Hand          | Microsoft   | jorhand@microsoft.com         | jhand2         |
