@@ -261,7 +261,7 @@ static void _close_epoll_callback(oe_fd_t* desc, void* arg)
     oe_assert(desc);
     oe_assert(desc->type == OE_FD_TYPE_EPOLL);
 
-    const int fd = (int)arg;
+    const int fd = (int)(intptr_t)arg;
     oe_assert(fd >= 0);
 
     desc->ops.epoll.on_close(desc, fd);
