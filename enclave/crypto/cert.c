@@ -9,6 +9,7 @@
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
 
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/cert.h>
@@ -17,6 +18,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
 #include "crl.h"
@@ -738,8 +740,24 @@ oe_result_t oe_cert_chain_read_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
+    // Note: the above comment is incorrect. There is no trailing zero,
+    // but mbedtls_x509_crt_parse() requires a trailing zero
+    OE_TRACE_INFO(
+        "strlen()=%d vs pem_size=%d",
+        strnlen((const char*)pem_data, pem_size),
+        pem_size);
+
+    uint8_t* tmp_pem_data = (uint8_t*)pem_data;
+    size_t tmp_pem_size = pem_size;
+    if (strnlen((const char*)pem_data, pem_size) == pem_size)
+    {
+        tmp_pem_size = pem_size + 1;
+        if (!(tmp_pem_data = oe_calloc(1, tmp_pem_size)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        oe_memcpy_s(tmp_pem_data, tmp_pem_size, pem_data, pem_size);
+        tmp_pem_data[pem_size] = '\0';
+    }
 
     /* Create the referent */
     if (!(referent = _referent_new()))
@@ -747,7 +765,11 @@ oe_result_t oe_cert_chain_read_pem(
 
     /* Read the PEM buffer into DER format */
     rc = mbedtls_x509_crt_parse(
-        referent->crt, (const uint8_t*)pem_data, pem_size);
+        referent->crt, (const uint8_t*)tmp_pem_data, tmp_pem_size);
+
+    if (tmp_pem_data != pem_data)
+        oe_free(tmp_pem_data);
+
     if (rc != 0)
         OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls_x509_crt_parse rc = 0x%x\n", rc);
 

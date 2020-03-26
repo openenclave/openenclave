@@ -8,6 +8,7 @@
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
@@ -636,14 +637,32 @@ oe_result_t oe_cert_chain_read_pem(
 
     /* Must have pem_size-1 non-zero characters followed by zero-terminator */
     if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
+        OE_TRACE_INFO(
+            "strlen()=%d vs pem_size=%d",
+            strnlen((const char*)pem_data, pem_size),
+            pem_size);
+
+    uint8_t* tmp_pem_data = (uint8_t*)pem_data;
+    size_t tmp_pem_size = pem_size;
+    if (strnlen((const char*)pem_data, pem_size) == pem_size)
+    {
+        tmp_pem_size = pem_size + 1;
+        if (!(tmp_pem_data = (uint8_t*)malloc(tmp_pem_size)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        oe_memcpy_s(tmp_pem_data, tmp_pem_size, pem_data, pem_size);
+        tmp_pem_data[pem_size] = '\0';
+    }
 
     /* Initialize OpenSSL (if not already initialized) */
     oe_initialize_openssl();
 
     /* Read the certificate chain into memory */
-    if (!(sk = _read_cert_chain((const char*)pem_data)))
+    if (!(sk = _read_cert_chain((const char*)tmp_pem_data)))
         OE_RAISE(OE_FAILURE);
+
+    if (tmp_pem_data != pem_data)
+        free(tmp_pem_data);
 
     /* Reorder certs in the chain to preferred order */
     _sort_certs_by_issue_date(sk);
