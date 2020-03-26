@@ -8,7 +8,7 @@ add_custom_command(
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --untrusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(thread_host host.cpp rwlocks_test_host.cpp thread_u.c)
+add_executable(thread_host host.cpp rwlocks_test_host.cpp errno_test_host.cpp thread_u.c)
 
 target_include_directories(thread_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
