@@ -153,6 +153,8 @@ typedef struct _oe_epoll_ops
         struct oe_epoll_event* events,
         int maxevents,
         int timeout);
+
+    void (*on_close)(oe_fd_t* epoll, int fd);
 } oe_epoll_ops_t;
 
 struct _oe_fd
