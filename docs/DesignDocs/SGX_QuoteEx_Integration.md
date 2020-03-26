@@ -10,7 +10,7 @@ On some SGX platforms, other evidence formats, including those based on the Enha
 
 # User Experience
 
-The proposed extension only changes the internal implementation of the OE SDK attestation software stack. It does not impact the OE SDK API as described in [PR #2621](https://github.com/openenclave/openenclave/pull/2621). With the integration of the quote-ex library, an attester application enclave's call to OE SDK API `oe_sgx_get_attesters()` returns the list of all the SGX evidence attester plugins available to the calling enclave instance.
+The proposed extension only changes the internal implementation of the OE SDK attestation software stack. It does not impact the [OE SDK attestation API](https://github.com/openenclave/openenclave/blob/master/docs/DesignDocs/CustomAttestation_V3.md). With the integration of the quote-ex library, an attester application enclave's call to OE SDK API `oe_get_attester_plugins()` returns the list of all the SGX evidence attester plugins available to the calling enclave instance.
 
 Integration of the quote-ex library depends on the installation of the Intel® SGX SDK quote-ex library package and its dependencies, as well as proper configuration of the components and their access to dependent backend services. Details for the quote-ex library installation and configuration are outside the scope of this document.
 
@@ -67,15 +67,21 @@ For generation of SGX evidence in ECDSA and EPID formats, the SGX quote-ex libra
 
 As compared to the DCAP library API, the quote-ex library API allows enumeration of supported evidence formats (called attestation key IDs in the API). Otherwise the quote-ex API is similar to the DCAP API, except that every function takes an input attestation key ID in its parameter list.
 
-### Host-side Plugin Library Dynamic Load of the quote-ex or DCAP library
+### Host-side Plugin Library Dynamic Load of the quote-ex or DCAP Library
 
 Between the DCAP and quote-ex libraries:
 - The DCAP library only supports generation of SGX quote in ECDSA-p256 format. With DCAP, the quote generation can be done either in-process, or out-of-process by working with a background service running on the same platform.
-- The quote-ex library supports generation of SGX quote in multiple formats (including ECDSA and EPID). With quote-ex, quote generation is always done out-of-process by working with a background service on the local platform.
+- The quote-ex library supports generation of SGX quote in multiple formats (including ECDSA-p256 and EPID variations). With quote-ex, quote generation is always done out-of-process by working with a background service (called AESM) on the local platform.
 
 An SGX platform can have either the quote-ex library or the DCAP library, or both of them installed. When both libraries are installed, the quote-ex library takes precedence, as it supports more evidence formats.
 
 The OE SDK host-side plugin library is changed to dynamically detect the presence of the two libraries, load one of them, and record the entry points of the loaded library for invocation in the flows described below.
+
+#### Alternative: Only Use the quote-ex Library
+
+Run-time dynamic detection and loading of multiple shared libraries complicates implementation. It also increases risk of version mismatch between OE SDK and the dependent libraries that is not detected at build time via library headers.
+
+As described previously, the quote-ex library supports a superset of formats as compared to the DCAP library, though it always depends on a background service for quote generation. If on SGX platforms the OE SDK always installs with the AESM background service (as a hard dependency), then an alternative implementation is to use the libsgx-quote-ex library only (instead of the DCAP library). With this implementation, the libsgx-quote-ex library is linked to the OE SDK at build time.
 
 ### Support of SGX Evidence Formats Enumeration
 
