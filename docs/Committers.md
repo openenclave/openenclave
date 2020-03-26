@@ -29,10 +29,11 @@ Committee Members
 
 | Name                 | Company     | Email                         | GitHub Alias   |
 |----------------------|-------------|-------------------------------|----------------|
+| Aeva van der Veen    | Microsoft   | aeva@dont.io                  | AevaOnline     |
 | Akash Gupta          | Microsoft   | akagup@microsoft.com          | gupta-ak       |
 | Amaury Chamayou      | Microsoft   | amaury.chamayou@microsoft.com | achamayou      |
 | Anand Krishnamoorthi | Microsoft   | anakrish@microsoft.com        | anakrish       |
-| Andrew Schwartzmeyer | Microsoft   | andschwa@microsoft.com        | andschwa       |
+| Andrew Schwartzmeyer | Microsoft   | andrew@schwartzmeyer.com      | andschwa       |
 | Dave Thaler          | Microsoft   | dthaler@microsoft.com         | dthaler        |
 | John Kordich         | Independent | jkordich@gmail.com            | johnkord       |
 | Jordan Hand          | Microsoft   | jorhand@microsoft.com         | jhand2         |

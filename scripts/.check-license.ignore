@@ -1,16 +1,22 @@
 # This file uses regular expressions, not shell globs!
 
 # File extensions
+.*\.config$
 .*\.der$
 .*\.docx$
 .*\.html$
+.*\.ico$
 .*\.jpg$
 .*\.json$
 .*\.md$
+.*\.nupkg$
 .*\.patch$
 .*\.pdf$
 .*\.pem$
 .*\.png$
+.*\.resx$
+.*\.sln$
+.*\.snk$
 .*\.svg$
 .*\.toml$
 .*Jenkinsfile$
@@ -33,6 +39,8 @@ tests/mbed/tests\..*$
 3rdparty/optee/patches/.*
 3rdparty/optee/optee_client/.*
 3rdparty/optee/optee_os/.*
+devex/vsextension/ItemTemplates/.*
+devex/vsextension/ProjectTemplates/.*
 tools/oeedger8r/esy\.lock/.*
 tools/oeedger8r/intel/.*
 

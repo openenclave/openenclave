@@ -1,0 +1,16 @@
+<!-- Copyright (c) Open Enclave SDK contributors.
+     Licensed under the MIT License.
+  -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)edl.xml" />
+    <AvailableItemName Include="EdlItem">
+      <Targets>_OEGenerateTrustedCode</Targets>
+    </AvailableItemName>
+  </ItemGroup>   
+
+  <Target Name="_OEGenerateTrustedCode" BeforeTargets="ClCompile" Inputs="%(EdlItem.Identity)" Outputs="%(EdlItem.Identity)_t.h;%(EdlItem.Identity)_t.c;%(EdlItem.Identity)_args.h">
+    <Message Text="Creating trusted proxy/bridge routines: %(EdlItem.Identity)" />
+    <Exec Command='"$(OEEdger8rPath)" --trusted "%(EdlItem.Identity)" --search-path "$(OEIncludePath)"'/>
+  </Target>  
+</Project>

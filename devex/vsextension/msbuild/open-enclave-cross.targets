@@ -1,0 +1,415 @@
+<!-- Copyright (c) Open Enclave SDK contributors.
+     Licensed under the MIT License.
+  -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!--
+        =======================================================================
+        Exports Section
+        =======================================================================
+
+        This section creates variables that point to content inside the NuGet
+        package that may be consumed by Visual Studio projects independently of
+        this file.
+    -->
+
+    <!-- Expose oeedger8r.exe -->
+    <PropertyGroup>
+        <OEBinPath>$(MSBuildThisFileDirectory)..\..\tools\win\flc\</OEBinPath>
+        <OEEdger8rPath>$(OEBinPath)oeedger8r.exe</OEEdger8rPath>
+        <OELibPath>$(MSBuildThisFileDirectory)..\..\lib\native\</OELibPath>
+        <OESignPath>$(OEBinPath)oesign.exe</OESignPath>
+        <OEDebugRTPath>$(OEBinPath)oedebugrt.dll</OEDebugRTPath>
+        <SgxDcapQlPath>$(OEBinPath)sgx_dcap_ql.dll</SgxDcapQlPath>
+    </PropertyGroup>
+
+    <!--
+        =======================================================================
+        Shorthands Section
+        =======================================================================
+
+        This section creates variables that express whether a build is:
+        1. Debug or Release
+        2. x86 or x64 or ARM
+        3. SGX or TrustZone
+        4. Simulation
+    -->
+
+    <!-- Debug/Release Shorthands -->
+    <Choose>
+        <When Condition="'$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Simulation' Or '$(Configuration)' == 'SGX-Debug' Or '$(Configuration)' == 'TZ-OPTEE-Debug' Or '$(Configuration)' == 'OPTEE-Simulation-Debug'">
+            <PropertyGroup>
+                <OEIsDebug>True</OEIsDebug>
+                <OEIsRelease>False</OEIsRelease>
+
+                <OELibSuffix>Debug</OELibSuffix>
+                <OEConfigurationPathSegment>debug</OEConfigurationPathSegment>
+            </PropertyGroup>
+        </When>
+        <When Condition="'$(Configuration)' == 'Prerelease' Or '$(Configuration)' == 'Release' Or '$(Configuration)' == 'SGX-Release' Or '$(Configuration)' == 'TZ-OPTEE-Release'">
+            <PropertyGroup>
+                <OEIsDebug>False</OEIsDebug>
+                <OEIsRelease>True</OEIsRelease>
+
+                <OELibSuffix>Release</OELibSuffix>
+                <OEConfigurationPathSegment>release</OEConfigurationPathSegment>
+            </PropertyGroup>
+        </When>
+    </Choose>
+
+    <!-- Architecture Shorthands -->
+    <Choose>
+        <When Condition="'$(Platform)' == 'Win32' Or '$(Platform)' == 'x86'">
+            <PropertyGroup>
+                <OEIsX86>True</OEIsX86>
+                <OEIsX64>False</OEIsX64>
+                <OEIsARM>False</OEIsARM>
+            </PropertyGroup>
+        </When>
+        <When Condition="'$(Platform)' == 'x64'">
+            <PropertyGroup>
+                <OEIsX86>False</OEIsX86>
+                <OEIsX64>True</OEIsX64>
+                <OEIsARM>False</OEIsARM>
+            </PropertyGroup>
+        </When>
+        <When Condition="'$(Platform)' == 'ARM'">
+            <PropertyGroup>
+                <OEIsX86>False</OEIsX86>
+                <OEIsX64>False</OEIsX64>
+                <OEIsARM>True</OEIsARM>
+            </PropertyGroup>
+        </When>
+    </Choose>
+
+    <!-- TEE Shorthands -->
+    <Choose>
+        <When Condition="('$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Prerelease' Or '$(Configuration)' == 'Release' Or '$(Configuration)' == 'SGX-Debug') And ($(OEIsX86) == True Or $(OEIsX64) == True)">
+            <PropertyGroup>
+                <OEIsSgx>True</OEIsSgx>
+                <OEIsTz>False</OEIsTz>
+                <OEIsSim>False</OEIsSim>
+                <OEPlatformPathSegment>sgx\flc</OEPlatformPathSegment>
+            </PropertyGroup>
+        </When>
+        <When Condition="('$(Configuration)' == 'Simulation') And ($(OEIsX86) == True Or $(OEIsX64) == True)">
+            <PropertyGroup>
+                <OEIsSgx>True</OEIsSgx>
+                <OEIsTz>False</OEIsTz>
+                <OEIsSim>True</OEIsSim>
+                <OEPlatformPathSegment>sgx\flc</OEPlatformPathSegment>
+            </PropertyGroup>
+        </When>
+        <When Condition="('$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release' Or '$(Configuration)' == 'TZ-OPTEE-Debug') And ($(OEIsARM) == True)">
+            <PropertyGroup>
+                <OEIsSgx>False</OEIsSgx>
+                <OEIsTz>True</OEIsTz>
+                <OEIsSim>False</OEIsSim>
+                <OEPlatformPathSegment>optee\v3.6.0\ls-ls1012grapeboard</OEPlatformPathSegment>
+            </PropertyGroup>
+        </When>
+        <When Condition="('$(Configuration)' == 'OPTEE-Simulation-Debug') And ($(OEIsX86) == True)">
+            <PropertyGroup>
+                <OEIsSgx>False</OEIsSgx>
+                <OEIsTz>True</OEIsTz>
+                <OEIsSim>True</OEIsSim>
+                <OEPlatformPathSegment>optee\v3.6.0\vexpress-qemu_armv8a</OEPlatformPathSegment>
+            </PropertyGroup>
+        </When>
+    </Choose>
+    <Choose>
+        <When Condition="'$(ApplicationType)' == 'Linux'">
+            <PropertyGroup>
+                <OEIsWindows>False</OEIsWindows>
+                <OEIsLinux>True</OEIsLinux>
+                <OEOSPathSegment>linux\xenial</OEOSPathSegment>
+                <OECompilerPathSegment>clang-7</OECompilerPathSegment>
+            </PropertyGroup>
+        </When>
+        <Otherwise>
+            <PropertyGroup>
+                <OEIsWindows>True</OEIsWindows>
+                <OEIsLinux>False</OEIsLinux>
+                <OEOSPathSegment>win</OEOSPathSegment>
+                <OECompilerPathSegment>msvc-14.16.27023</OECompilerPathSegment>
+            </PropertyGroup>
+        </Otherwise>
+    </Choose>
+    <Choose>
+        <When Condition="$(OEIsSgx) == True">
+            <PropertyGroup>
+                <OEIncludePath>$(MSBuildThisFileDirectory)$(OEOSPathSegment)\$(OEPlatformPathSegment)\$(OEConfigurationPathSegment)\include</OEIncludePath>
+                <OEHostLibPath>$(OELibPath)$(OEOSPathSegment)\$(OEPlatformPathSegment)\$(OEConfigurationPathSegment)\host\$(OECompilerPathSegment)</OEHostLibPath>
+                <OEEnclaveLibPath>$(OELibPath)$(OEOSPathSegment)\$(OEPlatformPathSegment)\$(OEConfigurationPathSegment)\enclave\clang-7</OEEnclaveLibPath>
+            </PropertyGroup>
+        </When>
+    </Choose>
+
+    <!--
+        ==================================================================================
+        Code Generation Section
+        ==================================================================================
+
+        This section creates targets that do code generation.
+    -->
+
+    <Import Project="edl-t.targets" Condition="'$(OEType)' == 'Enclave'" />
+    <Import Project="edl-u.targets" Condition="'$(OEType)' != 'Enclave'" />
+
+    <!--
+        ==================================================================================
+        Build Validation Section
+        ==================================================================================
+
+        This section creates targets that validate that a build is correct.
+    -->
+
+    <Target Name="_OECheckForInvalidBuild"
+            BeforeTargets="$(BuildDependsOn);Build;$(RebuildDependsOn);Rebuild;$(CleanDependsOn);Clean">
+        <Error Condition="$(OEIsTz) == True And $(OEIsSim) == True And ($(OEIsx64) == True Or $(OEIsARM) == True)"
+               Text="OP-TEE Simulation builds are only allowed for x86." />
+        <Error Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsRelease) == True"
+               Text="OP-TEE Simulation builds are only allowed in a Debug configuration." />
+    </Target>
+
+    <!--
+        ==================================================================================
+        Libraries Section
+        ==================================================================================
+
+        This section creates variables hold paths to libraries included in
+        this NuGet package as well as to external libraries that enclaves
+        and hosts may depend on.
+    -->
+
+    <!-- Relative paths to the Open EncSDK Libraries within the NuGet Package -->
+    <PropertyGroup>
+        <OESgxHwX86>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\hw\x86\$(OELibSuffix)</OESgxHwX86>
+        <OESgxHwX64>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\hw\x64\$(OELibSuffix)</OESgxHwX64>
+
+        <OESgxSimX86>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\sim\x86\$(OELibSuffix)</OESgxSimX86>
+        <OESgxSimX64>$(MSBuildThisFileDirectory)..\..\lib\native\v141\sgx\sim\x64\$(OELibSuffix)</OESgxSimX64>
+
+        <OETzHwArm>$(MSBuildThisFileDirectory)..\..\lib\native\v141\tz\hw\arm\$(OELibSuffix)</OETzHwArm>
+
+        <OEOpteeSimX86>$(MSBuildThisFileDirectory)..\..\lib\native\v141\tz\sim\x86\Debug</OEOpteeSimX86>
+    </PropertyGroup>
+
+    <!-- List of SGX libraries for Enclaves and Hosts -->
+    <PropertyGroup>
+        <OESgxLibsT>sgx_tstdc.lib;sgx_tprotected_fs.lib;sgx_tcxx.lib;sgx_tstdc.lib;sgx_tcrypto.lib</OESgxLibsT>
+        <OESgxHwLibsT>$(OESgxLibsT);sgx_trts.lib;sgx_tservice.lib</OESgxHwLibsT>
+        <OESgxSimLibsT>$(OESgxLibsT);sgx_trts_sim.lib;sgx_tservice_sim.lib</OESgxSimLibsT>
+
+        <OEIntelSgxLibsU>sgx_uprotected_fs.lib</OEIntelSgxLibsU>
+        <OEIntelSgxHwLibsU>$(OEIntelSgxLibsU);sgx_urts.lib;sgx_uae_service.lib</OEIntelSgxHwLibsU>
+        <OEIntelSgxSimLibsU>$(OEIntelSgxLibsU);sgx_urts_sim.lib;sgx_uae_service_sim.lib</OEIntelSgxSimLibsU>
+    </PropertyGroup>
+    
+    <!--
+        =======================================================================
+        Compilation and Linking Section
+        =======================================================================
+
+        This section configures compiler and linker options, except for include
+        paths, library paths, and libraries.
+    -->
+
+    <!-- Configure SGX Enclave Compilation and Linking, except x86-OPTEE-Simulation-Debug -->
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And !($(OEIsTz) == True And $(OEIsSim) == True)">
+        <ClCompile>
+            <IgnoreStandardIncludePath>True</IgnoreStandardIncludePath>
+            <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+        </ClCompile>
+        <Link>
+            <IgnoreAllDefaultLibraries>True</IgnoreAllDefaultLibraries>
+            <SubSystem>NotSet</SubSystem>
+            <NoEntryPoint>True</NoEntryPoint>
+        </Link>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsDebug) == True And !($(OEIsTz) == True And $(OEIsSim) == True)">
+        <ClCompile>
+            <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsRelease) == True And !($(OEIsTz) == True And $(OEIsSim) == True)">
+        <ClCompile>
+            <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!--
+        =======================================================================
+        Includes Section
+        =======================================================================
+
+        This section configures compiler include paths.
+    -->
+
+    <!-- Additional Include Directories for Enclaves and Hosts -->
+    <ItemDefinitionGroup Condition="$(OEIsLinux) == False">
+        <ClCompile>
+            <AdditionalIncludeDirectories>$(OEIncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="$(OEIsLinux) == True">
+        <ClCompile>
+            <AdditionalIncludeDirectories>$(OEIncludePath);/opt/openenclave/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!-- Additional Include Directories for Enclaves only -->
+
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
+        <ClCompile Condition="$(OEIsLinux) == True">
+            <!-- Compile as C++ as a workaround for not being able to have separate include paths for C vs C++ -->
+            <CompileAs>CompileAsCpp</CompileAs>
+            <AdditionalIncludeDirectories>/opt/openenclave/include;/opt/openenclave/include/openenclave/3rdparty/libcxx;/opt/openenclave/include/openenclave/3rdparty/libc;/opt/openenclave/include/openenclave/3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <AdditionalOptions>-nostdinc -m64 -fPIE -ftls-model=local-exec -mllvm -x86-speculative-load-hardening %(AdditionalOptions)</AdditionalOptions>
+            <PositionIndependentCode>false</PositionIndependentCode>
+        </ClCompile>
+        <ClCompile Condition="$(OEIsLinux) == False">
+            <AdditionalCPPIncludeDirectories>$(OEIncludePath)\openenclave\3rdparty\libcxx;$(OEIncludePath)\openenclave\3rdparty\libc;$(OEIncludePath)\openenclave\3rdparty;%(AdditionalIncludeDirectories)</AdditionalCPPIncludeDirectories>
+            <AdditionalCIncludeDirectories>$(OEIncludePath)\openenclave\3rdparty\libc;$(OEIncludePath)\openenclave\3rdparty;%(AdditionalIncludeDirectories)</AdditionalCIncludeDirectories>
+
+            <AdditionalOptions>-Wpointer-arith -Wextra -Wno-conversion -fpermissive -Wno-missing-field-initializers -fno-strict-aliasing -mxsave -fno-builtin-malloc -fno-builtin-calloc -fno-builtin -mllvm -x86-speculative-load-hardening -m64 -fPIE -nostdinc -fstack-protector-strong -fvisibility=hidden -fno-omit-frame-pointer -ffunction-sections -fdata-sections -ftls-model=local-exec %(AdditionalOptions)</AdditionalOptions>
+            <PositionIndependentCode>false</PositionIndependentCode>
+        </ClCompile>
+        <ClCompile Condition="$(OEIsDebug) == True">
+            <AdditionalOptions>-g %(AdditionalOptions)</AdditionalOptions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!--
+        =======================================================================
+        Preprocessor Definitions Section
+        =======================================================================
+
+        This section configures preprocessor definitions.
+    -->
+
+    <!-- Preprocessor Definitions for Enclaves Only -->
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
+        <ClCompile>
+            <!-- SGX Hardware and Simulation -->
+            <PreprocessorDefinitions Condition="$(OEIsSgx) == True And $(OEIsDebug) == True">OE_NO_SAL;OE_API_VERSION=2;OE_BUILD_ENCLAVE;OE_LINK_SGX_DCAP_QL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(OEIsSgx) == True And $(OEIsDebug) == False">OE_NO_SAL;OE_API_VERSION=2;OE_BUILD_ENCLAVE;OE_LINK_SGX_DCAP_QL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
+            <!-- OP-TEE Simulation -->
+            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsDebug) == True">OE_SIMULATE_OPTEE;OE_API_VERSION=2;OE_BUILD_ENCLAVE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsDebug) == False">OE_SIMULATE_OPTEE;OE_API_VERSION=2;OE_BUILD_ENCLAVE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!-- Preprocessor Definitions for Hosts Only -->
+    <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave'">
+        <ClCompile>
+            <PreprocessorDefinitions Condition="$(OEIsLinux) == True And $(OEIsDebug) == True">_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!--
+        =======================================================================
+        Libraries Section
+        =======================================================================
+
+        This section configures additional library paths and libraries.
+    -->
+
+    <!-- Additional Library Directories for Enclaves only -->
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsLinux) == True">
+        <Link>
+            <!-- Use AdditionalOptions instead of AdditionalLibraryDirectories to avoid -Wl, prefix -->
+            <AdditionalOptions>-L/opt/openenclave/lib/openenclave/enclave %(AdditionalOptions)</AdditionalOptions>
+        </Link>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And $(OEIsLinux) == False">
+        <Link>
+            <!-- Use AdditionalOptions instead of AdditionalLibraryDirectories to avoid -Wl, prefix -->
+            <AdditionalOptions>-L $(OEEnclaveLibPath) %(AdditionalOptions)</AdditionalOptions>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <!-- Additional Library Directories for Hosts only -->
+    <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave'">
+        <Link>
+            <AdditionalLibraryDirectories>/opt/openenclave/lib/native/linux/sgx/host;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <!-- Additional Dependencies for Enclaves -->
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
+        <Link>
+            <!-- All, except OP-TEE Simulation -->
+            <IgnoreAllDefaultLibraries Condition="!($(OEIsTz) == True And $(OEIsSim) == True)">True</IgnoreAllDefaultLibraries>
+
+            <AdditionalOptions Condition="$(OEIsSgx) == True And $(OEIsLinux) == True">-nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,--build-id %(AdditionalOptions)</AdditionalOptions>
+            <LibraryDependencies>oeenclave;mbedx509;mbedcrypto;oelibcxx;oelibc;oecore;%(LibraryDependencies)</LibraryDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <!-- Additional Dependencies for Hosts -->
+    <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave' And $(OEIsLinux) == False And $(OEIsSgx) == True">
+        <Link>
+            <AdditionalDependencies>oehost.lib;ws2_32.lib;bcrypt.lib;crypt32.lib;synchronization.lib;sgx_enclave_common.lib;sgx_dcap_ql.lib;%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalLibraryDirectories>$(OEHostLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+        </Link>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave' And $(OEIsLinux) == False And $(OEIsSgx) == False">
+        <Link>
+            <AdditionalDependencies>oehost.lib;ws2_32.lib;bcrypt.lib;crypt32.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
+            <AdditionalLibraryDirectories>$(OEHostLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <!-- Additional Dependencies for Hosts -->
+    <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave' And $(OEIsLinux) == True">
+        <Link>
+            <LibraryDependencies>oehost;%(LibraryDependencies)</LibraryDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <!--
+        =======================================================================
+        Build Events Section
+        =======================================================================
+
+        This section configures build events.
+    -->
+
+    <!-- Post-Build Events for Hosts -->
+    <ItemDefinitionGroup Condition="'$(OEType)' != 'Enclave' And $(OEIsLinux) == False">
+        <!-- *-SGX-* -->
+        <PostBuildEvent Condition="$(OEIsSgx) == True">
+            <Command>copy "$(OEDebugRTPath)" "$(OutDir)" &amp;&amp; copy "$(SgxDcapQlPath)" "$(OutDir)"</Command>
+        </PostBuildEvent>
+    </ItemDefinitionGroup>
+
+    <!-- Post-Build Events for Enclaves -->
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And '$(ConfigurationType)' == 'DynamicLibrary' And $(OEIsLinux) == False">
+        <!-- *-SGX-* -->
+        <PostBuildEvent Condition="$(OEIsSgx) == True And $(OEIsDebug) == True">
+            <Command>"$(OESignPath)" sign -k "$(ProjectDir)$(TargetName)_private.pem" -e "$(OutDir)$(TargetName).elf" -c "$(ProjectDir)$(TargetName).Debug.conf"</Command>
+            <Message>Sign the enclave for Intel SGX.</Message>
+        </PostBuildEvent>
+        <PostBuildEvent Condition="$(OEIsSgx) == True And $(OEIsDebug) == False">
+            <Command>"$(OESignPath)" sign -k "$(ProjectDir)$(TargetName)_private.pem" -e "$(OutDir)$(TargetName).elf" -c "$(ProjectDir)$(TargetName).Release.conf"</Command>
+            <Message>Sign the enclave for Intel SGX.</Message>
+        </PostBuildEvent>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave' And '$(ConfigurationType)' == 'DynamicLibrary' And $(OEIsLinux) == True">
+        <RemotePreLinkEvent>
+            <Command>bash ./makekey.sh</Command>
+            <Message>Getting signing key</Message>
+        </RemotePreLinkEvent>
+        <RemotePostBuildEvent Condition="$(OEIsDebug) == True">
+            <Command>/opt/openenclave/bin/oesign sign -e $(RemoteOutDir)$(TargetName) -c $(ProjectName).Debug.conf -k private.pem</Command>
+            <Message>Signing the enclave</Message>
+        </RemotePostBuildEvent>
+        <RemotePostBuildEvent Condition="$(OEIsDebug) == False">
+            <Command>/opt/openenclave/bin/oesign sign -e $(RemoteOutDir)$(TargetName) -c $(ProjectName).Release.conf -k private.pem</Command>
+            <Message>Signing the enclave</Message>
+        </RemotePostBuildEvent>
+    </ItemDefinitionGroup>
+
+</Project>
