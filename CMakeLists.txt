@@ -263,16 +263,10 @@ if (LVI_MITIGATION MATCHES ControlFlow)
     install(FILES ./scripts/lvi-mitigation/install_lvi_mitigation_bindir
       PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
       DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
-    install(FILES ./scripts/lvi-mitigation/clang-7-lvi
+    install(FILES ./scripts/lvi-mitigation/generate_wrapper
       PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
       DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
-    install(FILES ./scripts/lvi-mitigation/clang++-7-lvi
-      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
-      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
-    install(FILES ./scripts/lvi-mitigation/g++-lvi
-      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
-      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
-    install(FILES ./scripts/lvi-mitigation/gcc-lvi
+    install(FILES ./scripts/lvi-mitigation/invoke_compiler
       PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
       DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
     install(FILES ./cmake/configure_lvi_mitigation_build.cmake
