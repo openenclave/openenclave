@@ -30,6 +30,7 @@
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/internal/syscall/dirent.h>
+#include <openenclave/internal/syscall/netdb.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include "../hostthread.h"
 #include "../../common/oe_host_socket.h"
@@ -574,7 +575,7 @@ int oe_syscall_closedir_ocall(uint64_t dirp)
     PANIC;
 }
 
-int oe_syscall_stat_ocall(const char* pathname, struct oe_stat* buf)
+int oe_syscall_stat_ocall(const char* pathname, struct oe_stat_t* buf)
 {
     OE_UNUSED(pathname);
     OE_UNUSED(buf);

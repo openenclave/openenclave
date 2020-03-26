@@ -79,7 +79,7 @@ typedef struct _oe_fs_device_ops
         int flags,
         oe_mode_t mode);
 
-    int (*stat)(oe_device_t* fs, const char* pathname, struct oe_stat* buf);
+    int (*stat)(oe_device_t* fs, const char* pathname, struct oe_stat_t* buf);
 
     int (*access)(oe_device_t* fs, const char* pathname, int mode);
 

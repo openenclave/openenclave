@@ -163,7 +163,7 @@ int oe_mount(
     /* Be sure the full_target directory exists (if not root). */
     if (oe_strcmp(target, "/") != 0)
     {
-        struct oe_stat buf;
+        struct oe_stat_t buf;
         int retval = -1;
 
         /**

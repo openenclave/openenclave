@@ -211,7 +211,7 @@ static long _syscall(
         case OE_SYS_stat:
         {
             const char* pathname = (const char*)arg1;
-            struct oe_stat* buf = (struct oe_stat*)arg2;
+            struct oe_stat_t* buf = (struct oe_stat_t*)arg2;
             ret = oe_stat(pathname, buf);
             goto done;
         }
@@ -220,7 +220,7 @@ static long _syscall(
         {
             int dirfd = (int)arg1;
             const char* pathname = (const char*)arg2;
-            struct oe_stat* buf = (struct oe_stat*)arg3;
+            struct oe_stat_t* buf = (struct oe_stat_t*)arg3;
             int flags = (int)arg4;
 
             if (dirfd != OE_AT_FDCWD)

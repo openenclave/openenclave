@@ -1001,7 +1001,7 @@ done:
 static int _hostfs_stat(
     oe_device_t* device,
     const char* pathname,
-    struct oe_stat* buf)
+    struct oe_stat_t* buf)
 {
     int ret = -1;
     device_t* fs = _cast_device(device);

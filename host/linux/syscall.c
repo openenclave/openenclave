@@ -271,7 +271,7 @@ int oe_syscall_closedir_ocall(uint64_t dirp)
     return closedir((DIR*)dirp);
 }
 
-int oe_syscall_stat_ocall(const char* pathname, struct oe_stat* buf)
+int oe_syscall_stat_ocall(const char* pathname, struct oe_stat_t* buf)
 {
     int ret = -1;
     struct stat st;

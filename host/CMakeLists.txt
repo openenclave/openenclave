@@ -25,38 +25,50 @@ add_custom_target(tee_untrusted_edl
 
 ##==============================================================================
 ##
-## Publish the edger8r-generated header (*_args.h) that defines data structures
-## which are part of the public API surface.
+## Generate header (*_args.h) that defines data structures from EDL files.
 ## Note that doing this on the host side to ensure publishing the header with 
 ## the case of `BUILD_ENCLAVES=OFF`.
 ##
 ##==============================================================================
 
 set(OE_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/bits)
-list(APPEND EDL_PUBLIC_STRUCTURES "${EDL_DIR}/asym_keys.edl")
+set(OE_PRIV_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/internal/bits)
 
-foreach (struct_file ${EDL_PUBLIC_STRUCTURES})
-  get_filename_component(name ${struct_file} NAME_WE)
+list(APPEND EDL_PUBLIC_STRUCTURES "${EDL_DIR}/asym_keys.edl")
+list(APPEND EDL_PRIVATE_STRUCTURES
+  "${EDL_DIR}/fcntl.edl"
+  "${EDL_DIR}/socket.edl")
+
+function(edl_to_header EDL_FILE OUT_DIR)
+  get_filename_component(name ${EDL_FILE} NAME_WE)
 
   add_custom_command(
       OUTPUT ${name}_args.h
-      DEPENDS ${struct_file} edger8r
-      COMMAND edger8r --header-only --search-path ${EDL_DIR}
-                      --untrusted ${struct_file})
+      DEPENDS ${EDL_FILE} edger8r
+      COMMAND edger8r --header-only --untrusted ${EDL_FILE})
 
   add_custom_command(
-      OUTPUT ${OE_EDL_INCLUDE_DIR}/${name}.h
-      COMMAND ${CMAKE_COMMAND} -E copy ${name}_args.h ${OE_EDL_INCLUDE_DIR}/${name}.h
+      OUTPUT ${OUT_DIR}/${name}.h
+      COMMAND ${CMAKE_COMMAND} -E copy ${name}_args.h ${OUT_DIR}/${name}.h
       DEPENDS ${name}_args.h)
 
   add_custom_target(gen_edl_headers_${name}
-      DEPENDS ${OE_EDL_INCLUDE_DIR}/${name}.h)
+      DEPENDS ${OUT_DIR}/${name}.h)
 
   # Add dependencies to `oe_includes` so that the published header will be ready before
   # other files consume it.
   add_dependencies(oe_includes gen_edl_headers_${name})
+endfunction()
+
+foreach (struct_file ${EDL_PUBLIC_STRUCTURES})
+  edl_to_header(${struct_file} ${OE_EDL_INCLUDE_DIR})
 endforeach ()
 
+foreach (struct_file ${EDL_PRIVATE_STRUCTURES})
+  edl_to_header(${struct_file} ${OE_PRIV_EDL_INCLUDE_DIR})
+endforeach ()
+
+# Only install the public EDL headers
 install(DIRECTORY ${OE_EDL_INCLUDE_DIR}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
 
