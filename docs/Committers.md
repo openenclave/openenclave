@@ -29,6 +29,7 @@ Committee Members
 
 | Name                 | Company     | Email                         | GitHub Alias   |
 |----------------------|-------------|-------------------------------|----------------|
+| Aeva van der Veen    | Microsoft   | aeva@dont.io                  | AevaOnline     |
 | Akash Gupta          | Microsoft   | akagup@microsoft.com          | gupta-ak       |
 | Amaury Chamayou      | Microsoft   | amaury.chamayou@microsoft.com | achamayou      |
 | Anand Krishnamoorthi | Microsoft   | anakrish@microsoft.com        | anakrish       |
