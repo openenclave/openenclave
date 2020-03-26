@@ -94,13 +94,8 @@ void oe_thread_wake_wait_ocall(
     if (!waiter_tcs || !self_tcs)
         return;
 
-#if defined(__linux__)
     HandleThreadWake(enclave, waiter_tcs);
     HandleThreadWait(enclave, self_tcs);
-#elif defined(_WIN32)
-    HandleThreadWake(enclave, waiter_tcs);
-    HandleThreadWait(enclave, self_tcs);
-#endif
 }
 
 oe_result_t oe_get_quote_ocall(
