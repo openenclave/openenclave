@@ -3,7 +3,7 @@ pr_status = [ "DCO" ]
 required_approvals = 2
 block_labels = [ "do not merge" ]
 delete_merged_branches = true
-timeout_sec = 7200 # two hours
+timeout_sec = 14400 # four hours
 
 [committer]
 name = "oe-bors[bot]"
