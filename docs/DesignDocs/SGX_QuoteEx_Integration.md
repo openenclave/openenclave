@@ -1,4 +1,5 @@
-# Attestation: OE SDK Integration with Intel® SGX SDK quote-ex Library for Generation of Evidence in New Formats
+Attestation: OE SDK Integration with Intel® SGX SDK quote-ex Library for Generation of Evidence in New Formats
+====
 
 This design document proposes an extension of the OE SDK implementation for integration with the Intel® SGX SDK quote-ex library, for support of generation of evidence in new SGX formats such as Enhanced Privacy ID (EPID).
 
