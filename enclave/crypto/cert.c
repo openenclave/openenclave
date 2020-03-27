@@ -730,6 +730,8 @@ oe_result_t oe_cert_chain_read_pem(
     CertChain* impl = (CertChain*)chain;
     Referent* referent = NULL;
     int rc = 0;
+    uint8_t* tmp_pem_data = (uint8_t*)pem_data;
+    size_t tmp_pem_size = pem_size;
 
     /* Clear the implementation (making it invalid) */
     if (impl)
@@ -739,20 +741,13 @@ oe_result_t oe_cert_chain_read_pem(
     if (!pem_data || !pem_size || !chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    // Note: the above comment is incorrect. There is no trailing zero,
-    // but mbedtls_x509_crt_parse() requires a trailing zero
-    OE_TRACE_INFO(
-        "strlen()=%d vs pem_size=%d",
-        strnlen((const char*)pem_data, pem_size),
-        pem_size);
-
-    uint8_t* tmp_pem_data = (uint8_t*)pem_data;
-    size_t tmp_pem_size = pem_size;
+    // mbedtls_x509_crt_parse() requires a trailing zero in its input buffer.
+    // If the input pem_data buffer does not have a trailing zero,
+    // we allocate a tmp buffer to add it.
     if (strnlen((const char*)pem_data, pem_size) == pem_size)
     {
         tmp_pem_size = pem_size + 1;
-        if (!(tmp_pem_data = oe_calloc(1, tmp_pem_size)))
+        if (!(tmp_pem_data = (uint8_t*)oe_malloc(tmp_pem_size)))
             OE_RAISE(OE_OUT_OF_MEMORY);
 
         oe_memcpy_s(tmp_pem_data, tmp_pem_size, pem_data, pem_size);
@@ -766,9 +761,6 @@ oe_result_t oe_cert_chain_read_pem(
     /* Read the PEM buffer into DER format */
     rc = mbedtls_x509_crt_parse(
         referent->crt, (const uint8_t*)tmp_pem_data, tmp_pem_size);
-
-    if (tmp_pem_data != pem_data)
-        oe_free(tmp_pem_data);
 
     if (rc != 0)
         OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls_x509_crt_parse rc = 0x%x\n", rc);
@@ -789,6 +781,10 @@ oe_result_t oe_cert_chain_read_pem(
     result = OE_OK;
 
 done:
+
+    if (tmp_pem_data && (tmp_pem_data != pem_data))
+        oe_free(tmp_pem_data);
+
     _referent_free(referent);
     return result;
 }
