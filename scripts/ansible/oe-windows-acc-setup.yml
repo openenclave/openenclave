@@ -77,7 +77,7 @@
           - UpdateRollups
         reboot: yes
         reboot_timeout: 3600
-      ignore_errors: true
+      when: ansible_distribution != 'Microsoft Windows Server 2016 Datacenter'
 
     - name: OE setup | Reboot the node
       win_reboot:
