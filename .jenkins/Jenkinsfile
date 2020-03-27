@@ -60,6 +60,8 @@ try {
                               string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["ubuntu-nonsgx"]),
                               string(name: 'WINDOWS_2016_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2016"]),
                               string(name: 'WINDOWS_2016_DCAP_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2016-dcap"]),
+                              string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2019"]),
+                              string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2019-dcap"]),
                               booleanParam(name: 'FULL_TEST_SUITE',value: env.FULL_TEST_SUITE)]
        }
     )
