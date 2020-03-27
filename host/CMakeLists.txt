@@ -216,7 +216,6 @@ if (OE_SGX)
     sgx/exception.c
     sgx/load.c
     sgx/loadelf.c
-    sgx/loadpe.c
     sgx/ocalls.c
     sgx/quote.c
     sgx/registers.c

@@ -63,7 +63,6 @@ typedef enum _oe_image_type
 {
     OE_IMAGE_TYPE_NONE,
     OE_IMAGE_TYPE_ELF,
-    OE_IMAGE_TYPE_PE,
 } oe_image_type;
 
 struct _oe_enclave_image
