@@ -45,7 +45,6 @@ if (OE_SGX)
     sgx/elf.c
     sgx/load.c
     sgx/loadelf.c
-    sgx/loadpe.c
     sgx/sgxload.c
     sgx/sgxmeasure.c
     sgx/sgxsign.c
