@@ -93,12 +93,13 @@ OE_EXTERNC_BEGIN
 // variadic paramter is empty in OE_RAISE_MSG(RESULT, fmt, ...)
 // eg : OE_RAISE_MSG(OE_FAILURE, "your message", NULL);
 
-/* Note: on Linux, the above example fails, as the NULL pointer is fed as the
- * value for oe_result_t in log, showing invalid (null) output.
+/* But with gcc or clang that support the ##__VA_ARGS__ extension, the above
+ * approach fails, as the NULL pointer is fed as the value for oe_result_t
+ * position in log line, resulting in (null) output.
  *
- * A solution is to define OS specfic versions of OE_RAISE_MSG() that
- * handle cases with and without NULL, to work properly on all OSes while
- * avoiding the need to modify existing code.
+ * A solution is to define two versions of OE_RAISE_MSG() that
+ * handle calls with and without NULL, to work properly on both compiler
+ * types while avoiding the need to modify existing code.
  */
 
 #if defined(_MSC_VER)
@@ -126,7 +127,7 @@ OE_EXTERNC_BEGIN
     } while (0)
 
 #else
-// For Linux etc.: remove NULL if present
+// For non-MSVC: remove NULL if present
 #define OE_RAISE_MSG(RESULT, fmt, ...)                               \
     do                                                               \
     {                                                                \
