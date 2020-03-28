@@ -605,12 +605,11 @@ let get_ecall_function get_deepcopy (tf : trusted_func) =
     "";
     (* Buffer validation *)
     "    /* Make sure input and output buffers lie within the enclave. */";
-    "    if (!input_buffer || !oe_is_within_enclave(input_buffer, \
-     input_buffer_size))";
+    "    /* oe_is_within_enclave explicitly checks if buffers are null or not. */";
+    "    if (!oe_is_within_enclave(input_buffer, input_buffer_size))";
     "        goto done;";
     "";
-    "    if (!output_buffer || !oe_is_within_enclave(output_buffer, \
-     output_buffer_size))";
+    "    if (!oe_is_within_enclave(output_buffer, output_buffer_size))";
     "        goto done;";
     "";
     (* Prepare in and in-out parameters *)
@@ -649,7 +648,8 @@ let get_ecall_function get_deepcopy (tf : trusted_func) =
     "    *output_bytes_written = output_buffer_offset;";
     "";
     "done:";
-    "    if (pargs_out && output_buffer_size >= sizeof(*pargs_out))";
+    "    if (output_buffer_size >= sizeof(*pargs_out) &&";
+    "        oe_is_within_enclave(pargs_out, output_buffer_size))";
     "        pargs_out->_result = _result;";
     "}";
     "";
