@@ -434,11 +434,11 @@ try{
             "Sim 1804 clang-7 SGX1-FLC Release" :                      { simulationTest('18.04', 'SGX1FLC', 'Release')},
             // "RHEL-8 simulation clang-8 SGX1 Release":             { RHEL8Test('clang', 'Release', ["OE_SIMULATION=1"]) }, // Enable when https://github.com/openenclave/openenclave/issues/2556 is fixed.
             "RHEL-8 simulation clang-8 SGX1 Debug":                    { RHEL8Test('clang', 'Debug',   ["OE_SIMULATION=1"]) },
-            // "RHEL-8 simulation gcc-8 Release":                    { RHEL8Test('gcc',   'Release', ["OE_SIMULATION=1"]) }, // Enable when https://github.com/openenclave/openenclave/issues/2558 is fixed.
+            "RHEL-8 simulation gcc-8 Release":                         { RHEL8Test('gcc',   'Release', ["OE_SIMULATION=1"]) },
             "RHEL-8 simulation gcc-8 SGX1 Debug":                      { RHEL8Test('gcc',   'Debug',   ["OE_SIMULATION=1"]) },
             // "RHEL-8 ACC clang-8 Release" :                        { RHEL8Test('clang', 'Release') },                      // Enable when https://github.com/openenclave/openenclave/issues/2556 is fixed.
-            // "RHEL-8 ACC clang-8 Debug" :                          { RHEL8Test('clang', 'Debug') },                        // Enable when https://github.com/openenclave/openenclave/issues/2557 is fixed.
-            // "RHEL-8 ACC gcc-8 Release" :                          { RHEL8Test('gcc',   'Release') },                      // Enable when https://github.com/openenclave/openenclave/issues/2558 is fixed.
+            "RHEL-8 ACC clang-8 Debug" :                               { RHEL8Test('clang', 'Debug') },
+            "RHEL-8 ACC gcc-8 Release" :                               { RHEL8Test('gcc',   'Release') },
             "RHEL-8 ACC gcc-8 Debug" :                                 { RHEL8Test('gcc',   'Debug') }
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
