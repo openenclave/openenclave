@@ -5,14 +5,16 @@ enclave {
     trusted {
         public void Ping(
             [in, string] const char* in,
-            [in, out, string] char* out);
+            [in, out, string] char* out,
+            int out_length);
 
     };
 
     untrusted {
         void Pong(
             [in, string] const char* in,
-            [in, out, string] char* out);
+            [in, out, string] char* out,
+            int out_length);
 
         void Log(
             [string, in] const char* str,

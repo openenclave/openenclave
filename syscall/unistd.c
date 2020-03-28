@@ -100,7 +100,7 @@ int oe_chdir(const char* path)
 {
     int ret = -1;
     oe_syscall_path_t real_path;
-    struct oe_stat st;
+    struct oe_stat_t st;
     bool locked = false;
 
     /* Resolve to an absolute canonical path. */

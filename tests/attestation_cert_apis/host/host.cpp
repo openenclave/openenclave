@@ -20,6 +20,8 @@
 #define TEST_RSA_KEY 1
 #define SKIP_RETURN_CODE 2
 
+#define FILENAME_LENGTH 80
+
 // This is the identity validation callback. An TLS connecting party (client or
 // server) can verify the passed in "identity" information to decide whether to
 // accept an connection reqest
@@ -92,16 +94,21 @@ void run_test(oe_enclave_t* enclave, int test_type)
 
     {
         // for testing purpose, output the whole cer in DER format
-        char filename[80];
+        char filename[FILENAME_LENGTH];
         FILE* file = NULL;
 
-        sprintf(
+        sprintf_s(
             filename,
+            sizeof(filename),
             "./cert_%s.der",
             test_type == TEST_RSA_KEY ? "rsa" : "ec");
         OE_TRACE_INFO(
             "Host: Log quote embedded certificate to file: [%s]\n", filename);
+#ifdef _WIN32
+        fopen_s(&file, filename, "wb");
+#else
         file = fopen(filename, "wb");
+#endif
         fwrite(cert, 1, cert_size, file);
         fclose(file);
     }

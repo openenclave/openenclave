@@ -4,6 +4,7 @@
 #include "exception.h"
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/registers.h>
 #include <stdio.h>
 #include <windows.h>
 #include "../enclave.h"
@@ -44,7 +45,7 @@ static LONG WINAPI _handle_simulation_mode_exception(
                 if (context->SegFs != enclave_fsbase)
                 {
                     // Update the FS register and continue execution.
-                    oe_set_fs_register_base(enclave_fsbase);
+                    oe_set_fs_register_base((void*)enclave_fsbase);
                     return OE_EXCEPTION_CONTINUE_EXECUTION;
                 }
             }

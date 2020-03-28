@@ -104,7 +104,7 @@ int _getaddrinfo_read(
         *ai_family = p->ai_family;
         *ai_socktype = p->ai_socktype;
         *ai_protocol = p->ai_protocol;
-        *ai_addrlen = p->ai_addrlen;
+        *ai_addrlen = (oe_socklen_t)p->ai_addrlen;
 
         if (p->ai_canonname)
             *ai_canonnamelen = strlen(p->ai_canonname) + 1;

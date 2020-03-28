@@ -27,7 +27,7 @@ class oe_fd_file_system
   public:
     typedef int file_handle;
     typedef OE_DIR* dir_handle;
-    typedef struct oe_stat stat_type;
+    typedef struct oe_stat_t stat_type;
     typedef struct oe_dirent dirent_type;
 
     static constexpr file_handle invalid_file_handle = -1;
@@ -121,7 +121,7 @@ class oe_fd_file_system
         return oe_rmdir(pathname);
     }
 
-    int stat(const char* pathname, struct oe_stat* buf)
+    int stat(const char* pathname, struct oe_stat_t* buf)
     {
         return oe_stat(pathname, buf);
     }
@@ -172,7 +172,7 @@ class fd_file_system
   public:
     typedef int file_handle;
     typedef DIR* dir_handle;
-    typedef struct oe_stat stat_type;
+    typedef struct oe_stat_t stat_type;
     typedef struct dirent dirent_type;
 
     static constexpr file_handle invalid_file_handle = -1;
@@ -266,7 +266,7 @@ class fd_file_system
         return ::rmdir(pathname);
     }
 
-    int stat(const char* pathname, struct oe_stat* buf)
+    int stat(const char* pathname, struct oe_stat_t* buf)
     {
         return ::stat(pathname, (struct stat*)buf);
     }

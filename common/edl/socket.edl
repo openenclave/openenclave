@@ -19,9 +19,28 @@
 enclave
 {
 
-    include "openenclave/internal/syscall/netdb.h"
-    include "openenclave/internal/syscall/sys/socket.h"
-    include "openenclave/internal/syscall/types.h"
+
+    // Headers needed for integral types
+    include "openenclave/corelibc/bits/types.h"
+    include "openenclave/bits/edl/syscall_types.h"
+
+    struct oe_sockaddr
+    {
+        oe_sa_family_t sa_family;
+        char sa_data[14];
+    };
+
+    struct oe_addrinfo
+    {
+        int ai_flags;
+        int ai_family;
+        int ai_socktype;
+        int ai_protocol;
+        oe_socklen_t ai_addrlen;
+        [size=ai_addrlen] struct oe_sockaddr* ai_addr;
+        char* ai_canonname;
+        struct oe_addrinfo* ai_next;
+    };
 
     untrusted
     {

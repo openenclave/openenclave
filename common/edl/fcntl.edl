@@ -15,9 +15,40 @@
 enclave
 {
 
-    include "openenclave/internal/syscall/dirent.h"
-    include "openenclave/internal/syscall/sys/stat.h"
-    include "openenclave/internal/syscall/types.h"
+    include "openenclave/bits/edl/syscall_types.h"
+
+    struct oe_dirent
+    {
+        uint64_t d_ino;
+        oe_off_t d_off;
+        uint16_t d_reclen;
+        uint8_t d_type;
+        char d_name[256]; // OE_NAME_MAX + 1 == 256. TODO: Math in EDL?
+    };
+
+    struct __st
+    {
+        time_t tv_sec;
+        suseconds_t tv_nsec;
+    };
+
+    struct oe_stat_t
+    {
+        oe_dev_t st_dev;
+        oe_ino_t st_ino;
+        oe_nlink_t st_nlink;
+        oe_mode_t st_mode;
+        oe_uid_t st_uid;
+        oe_gid_t st_gid;
+        uint32_t __st_pad0;
+        oe_dev_t st_rdev;
+        oe_off_t st_size;
+        oe_blksize_t st_blksize;
+        oe_blkcnt_t st_blocks;
+        struct __st st_atim;
+        struct __st st_mtim;
+        struct __st st_ctim;
+    };
 
     untrusted
     {
@@ -100,7 +131,7 @@ enclave
 
         int oe_syscall_stat_ocall(
             [in, string] const char* pathname,
-            [out, count=1] struct oe_stat* buf)
+            [out, count=1] struct oe_stat_t* buf)
             propagate_errno;
 
         int oe_syscall_access_ocall(

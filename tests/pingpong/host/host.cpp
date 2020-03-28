@@ -14,17 +14,15 @@ void Log(const char* str, uint64_t x)
     printf("LOG: %s: %llu\n", str, OE_LLU(x));
 }
 
-void Pong(const char* in, char* out)
+void Pong(const char* in, char* out, int out_length)
 {
-    // printf("Pong: %s %s\n", in, out);
-
     if (in && out)
     {
         if (strcmp(in, "String1") == 0 && strcmp(out, "String2") == 0)
         {
             got_pong = true;
         }
-        strcpy(out, in);
+        strcpy_s(out, out_length, in);
     }
 }
 
@@ -51,8 +49,8 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    strcpy(buf, "String2");
-    result = Ping(enclave, "String1", buf);
+    strcpy_s(buf, sizeof(buf), "String2");
+    result = Ping(enclave, "String1", buf, sizeof(buf));
     if (result != OE_OK)
     {
         fprintf(stderr, "%s: Ping Failed\n", argv[0]);

@@ -22,6 +22,10 @@
 #define max_date_elements 6
 #define max_coordinates_size 32
 
+#ifndef _MSC_VER
+#define sscanf_s sscanf
+#endif
+
 oe_result_t read_cert(char* filename, char* cert);
 
 oe_result_t read_chain(
@@ -40,6 +44,8 @@ oe_result_t read_chains(
 oe_result_t read_crl(char* filename, uint8_t* crl, size_t* crl_size);
 
 oe_result_t read_dates(char* filename, oe_datetime_t* time);
+
+FILE* read_file(const char* filename, const char* mode);
 
 oe_result_t read_mod(char* filename, uint8_t* mod, size_t* mod_size);
 

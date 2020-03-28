@@ -114,7 +114,7 @@ elseif (MSVC)
 
   # Add Flags we want to use for both C and CXX
   add_compile_options(/WX)
-  add_compile_options(/W2)
+  add_compile_options(/W3)
 
   # Ignore compiler warnings:
   # * unicode character not supported
