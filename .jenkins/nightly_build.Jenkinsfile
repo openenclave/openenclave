@@ -396,7 +396,7 @@ try{
             "Win2016 Sim Debug Cross Compile" :                        { win2016CrossCompile('Debug', 'OFF', 'None', '1') },
             "Win2016 Sim Release Cross Compile" :                      { win2016CrossCompile('Release','OFF', 'None', '1') },
             "Win2016 Sim Debug Cross Compile LVI " :                   { win2016CrossCompile('Debug', 'OFF', 'ControlFlow', 'ON', '1') },
-            "Win2016 Sim Release Cross Compile LVI " :                 { win2016CrossCompile('Release', 'OFF', 'ControlFlow', 'ON', 1') },
+            "Win2016 Sim Release Cross Compile LVI " :                 { win2016CrossCompile('Release', 'OFF', 'ControlFlow', 'ON', '1') },
             "Win2016 Debug Cross Compile with DCAP libs" :             { win2016CrossCompile('Debug', 'ON') },
             "Win2016 Release Cross Compile with DCAP libs" :           { win2016CrossCompile('Release', 'ON') },
             "Win2016 Debug Cross Compile DCAP LVI" :                   { win2016CrossCompile('Debug', 'ON', 'ControlFlow', 'ON') },
