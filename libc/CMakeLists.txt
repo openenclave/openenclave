@@ -844,6 +844,13 @@ elseif (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
     -Wno-unneeded-internal-declaration)
 endif ()
 
+# Disable optimizations for twalk.c to avoid Clang compiler bug
+if (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
+  set_source_files_properties(${MUSLSRC}/search/twalk.c 
+    PROPERTIES
+    COMPILE_FLAGS -O0)
+endif ()
+
 enclave_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
 
 if (USE_DEBUG_MALLOC)
