@@ -71,6 +71,10 @@ typedef struct _oe_enclave_properties_header
 #endif
 
 /**
+ * @cond DEV
+ */
+
+/**
  * This function sets the minimum value of issue dates of CRL and TCB info
  * accepted by the enclave. CRL and TCB info issued before this date
  * are rejected for attestation.
@@ -86,6 +90,9 @@ oe_result_t __oe_sgx_set_minimum_crl_tcb_issue_date(
     uint32_t minutes,
     uint32_t seconds);
 
+/**
+ * @endcond
+ */
 OE_EXTERNC_END
 
 #endif /* _OE_BITS_PROPERTIES_H */
