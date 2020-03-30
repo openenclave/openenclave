@@ -4,11 +4,15 @@
 include(${PROJECT_SOURCE_DIR}/cmake/get_testcase_name.cmake)
 
 option(ENABLE_FULL_LIBCXX_TESTS "Build all libcxx tests and include in test list" OFF)
-
-if(ENABLE_FULL_LIBCXX_TESTS)
+if (ENABLE_FULL_LIBCXX_TESTS)
     message("ENABLE_FULL_LIBCXX_TESTS set - building all libcxx tests")
 else()
     message("ENABLE_FULL_LIBCXX_TESTS not set - building some libcxx tests")
+endif()
+
+option(LVI_MITIGATION_SKIP_TESTS "Skip all tests with LVI mitigation" OFF)
+if (LVI_MITIGATION MATCHES ControlFlow AND LVI_MITIGATION_SKIP_TESTS)
+    message("LVI_MITIGATION_SKIP_TESTS set - skip all tests with LVI mitigation")
 endif()
 
 add_subdirectory(mem)

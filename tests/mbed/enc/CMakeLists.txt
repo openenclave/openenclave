@@ -46,6 +46,9 @@ function(add_mbed_test_enclave NAME)
     ${MBEDTLS_TESTS_DIR}/suites/test_suite_${data_name}.data)
 
   add_enclave(TARGET mbedtest_suite_${NAME} UUID 0e405a1d-dd06-49a4-9d46-3f02440cbf0a
+    # Building the enclave by default when enabling LVI mitigation to
+    # test linking against LVI-mitigated libraries.
+    ADD_LVI_MITIGATION ON
     SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c
     enc.c
