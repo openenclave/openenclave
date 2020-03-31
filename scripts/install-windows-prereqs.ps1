@@ -28,8 +28,8 @@ Param(
     [string]$IntelDCAPHash = '67CC2E4BA54EEF3342DE53D2F63018A44F5B6B2EECA8BE107F80A40BDD923335',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
-    [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Azure.DCAP.Windows/0.0.3',
-    [string]$AzureDCAPNupkgHash = '79C698B61CADA32F56F26647B96BBB1C00B7409A6646597C7CC2908A57677256',
+    [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.3.0',
+    [string]$AzureDCAPNupkgHash = '0CEE9E204EA30519B8808D271459512BC4CEA875E0007AFB422451D2CD7375DB',
     [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
     [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
     [string]$NSISURL = 'https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe',
@@ -103,7 +103,7 @@ $PACKAGES = @{
     "azure_dcap_client_nupkg" = @{
         "url" = $AzureDCAPNupkgURL
         "hash" = $AzureDCAPNupkgHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "Azure.DCAP.Windows.nupkg"
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "Microsoft.Azure.DCAP.nupkg"
     }
     "openssl" = @{
         "url" = $OpenSSLURL
@@ -593,13 +593,13 @@ function Install-DCAP-Dependencies {
     # Note: the ordering of nuget installs below is important to preserve here until the issue with the EnclaveCommonAPI nuget package gets fixed.
     if ($DCAPClientType -eq "Azure")
     {
-        & nuget.exe install 'Azure.DCAP.Windows' -Source "$PACKAGES_DIRECTORY" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
+        & nuget.exe install 'Microsoft.Azure.DCAP' -Source "$PACKAGES_DIRECTORY" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
         if($LASTEXITCODE -ne 0) {
-            Throw "Failed to install nuget Azure.DCAP.Windows"
+            Throw "Failed to install nuget Microsoft.Azure.DCAP"
         }
         $targetPath = [System.Environment]::SystemDirectory
-        Write-Host "Installing Azure.DCAP.Windows library to $targetPath"
-        pushd "$OE_NUGET_DIR\Azure.DCAP.Windows\script"
+        Write-Host "Installing Microsoft.Azure.DCAP library to $targetPath"
+        pushd "$OE_NUGET_DIR\Microsoft.Azure.DCAP\tools"
         & ".\InstallAzureDCAP.ps1" $targetPath
         popd
     }

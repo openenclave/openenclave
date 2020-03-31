@@ -19,7 +19,7 @@ function(add_dcap_client_target TARGET_NAME)
     set(DEPENDENCIES "")
 
     # Define the DCAP provider path
-    set(AZURE_DCAP_QUOTEPROV ${NUGET_PACKAGE_PATH}/Azure.DCAP.Windows/dll/dcap_quoteprov.dll)
+    set(AZURE_DCAP_QUOTEPROV ${NUGET_PACKAGE_PATH}/Microsoft.Azure.DCAP/build/native/dcap_quoteprov.dll)
 
     # No-op if the DCAP provider is not found
     if (NOT EXISTS ${AZURE_DCAP_QUOTEPROV})
