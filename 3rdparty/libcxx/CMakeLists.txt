@@ -20,6 +20,7 @@ add_enclave_library(libcxx OBJECT
   libcxx/src/algorithm.cpp
   libcxx/src/any.cpp
   libcxx/src/bind.cpp
+  libcxx/src/charconv.cpp
   libcxx/src/chrono.cpp
   libcxx/src/condition_variable.cpp
   libcxx/src/debug.cpp

@@ -11,8 +11,11 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/futures/futures.async/async_race.38682.pass.cpp
 # The following test fails under clang-7 debug due to a memory leak.
 ../../3rdparty/libcxx/libcxx/test/libcxx/diagnostics/nodiscard_extensions.pass.cpp
-# The following three tests fails on ACC Windows VM.
+# The following tests fail on ACC Windows VM.
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/mutex.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.locking/lock.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/lock_shared.pass.cpp
+# The following C++17 tests fail.
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/new_align_val_t_nothrow_replace.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.single/new_align_val_t_nothrow_replace.pass.cpp
