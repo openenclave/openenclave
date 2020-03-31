@@ -27,6 +27,7 @@
 #include <openenclave/internal/syscall/sys/mount.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/internal/syscall/sys/ioctl.h>
 #include <openenclave/internal/syscall/raise.h>

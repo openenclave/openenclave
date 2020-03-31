@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 enclave {
+    include "wchar.h"
+
     trusted {
         // string attribute must be used only with in or in-out attributes.
         public void ecall_string_fun1([string, in] char* s);

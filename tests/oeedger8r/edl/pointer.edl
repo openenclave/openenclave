@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 enclave {
+    include "wchar.h"
+
     trusted {
 
         public char* ecall_pointer_char(

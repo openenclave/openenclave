@@ -154,6 +154,9 @@ endif ()
 
 if (USE_DLMALLOC)
     list(APPEND PLATFORM_SRC malloc.c)
+
+    list (APPEND NEEDS_STDC_NAMES malloc.c)
+
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic
     # null pointers.
     set_source_files_properties(malloc.c
@@ -198,15 +201,37 @@ add_enclave_library(oecore STATIC
     tracee.c
     ${PLATFORM_SRC})
 
-# Suppress type conversion warnings introduced by 3rdparty code
-set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c ROPERTIES
+# Some files in oecore come directly from the musl source. For these files,
+# corelibc functions with stdc names are required.
+# Additionally, suppress type conversion warnings introduced by 3rdparty code
+set (CORELIBC_INCLUDES ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+
+list (APPEND NEEDS_STDC_NAMES
+    ${MUSL_SRC_DIR}/prng/rand.c
+    ${MUSL_SRC_DIR}/string/memmove.c
+    ${MUSL_SRC_DIR}/string/memset.c
+    ${MUSL_SRC_DIR}/string/memcmp.c
+    ${MUSL_SRC_DIR}/string/memcpy.c
+    sgx/sgx_t_wrapper.c
+    sgx/switchless_t_wrapper.c
+    __secs_to_tm.c
+    debugmalloc.c
+    strtok_r.c
+    tee_t_wrapper.c)
+
+list (APPEND W_NO_CONVERSION
+    ${MUSL_SRC_DIR}/prng/rand.c
+    ${MUSL_SRC_DIR}/string/memmove.c
+    ${MUSL_SRC_DIR}/string/memset.c
+    __secs_to_tm.c)
+
+set_source_files_properties(${W_NO_CONVERSION} PROPERTIES
     COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(${MUSL_SRC_DIR}/string/memmove.c PROPERTIES
-    COMPILE_FLAGS -Wno-sign-conversion)
-set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(__secs_to_tm.c PROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
+
+set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND_STRING PROPERTY
+    COMPILE_FLAGS " -I${CORELIBC_INCLUDES}")
+set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND PROPERTY
+    COMPILE_DEFINITIONS OE_NEED_STDC_NAMES)
 
 maybe_build_using_clangw(oecore)
 
@@ -229,10 +254,6 @@ endif()
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
     enclave_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif()
-
-# This directory contains enclave core libc headers:
-enclave_include_directories(oecore PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
 if (OE_SGX)
     set_source_files_properties(sgx/keys.c PROPERTIES COMPILE_FLAGS -Wno-type-limits)

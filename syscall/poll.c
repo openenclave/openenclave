@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 
 #include <openenclave/internal/syscall/fdtable.h>

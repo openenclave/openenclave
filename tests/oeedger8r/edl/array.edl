@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 enclave  {
+    include "wchar.h"
+
     trusted {        
         // Test in, in-out, out, user_check attributes.
         // Also check ability to pass NULL.
