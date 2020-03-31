@@ -34,6 +34,15 @@ typedef long intptr_t;
 typedef long time_t;
 typedef long suseconds_t;
 
+#ifndef __cplusplus
+#if __WCHAR_MAX__ > 0x10000
+// honor -fshort-wchar
+typedef int wchar_t;
+#else
+typedef short wchar_t;
+#endif
+#endif
+
 #elif defined(_MSC_VER)
 typedef long long ssize_t;
 typedef unsigned long long size_t;
@@ -50,6 +59,11 @@ typedef long long ptrdiff_t;
 typedef long long intptr_t;
 typedef long long time_t;
 typedef long long suseconds_t;
+
+#ifndef __cplusplus
+typedef short wchar_t;
+#endif
+
 #else
 #error "unknown compiler - please adapt basic types"
 #endif
