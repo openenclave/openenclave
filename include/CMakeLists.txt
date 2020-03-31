@@ -17,3 +17,13 @@ install(FILES openenclave/attestation/plugin.h DESTINATION ${CMAKE_INSTALL_INCLU
 install(FILES openenclave/attestation/sgx/attester.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(FILES openenclave/attestation/sgx/verifier.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/ COMPONENT OEHOSTVERIFY)
 install(TARGETS oe_includes EXPORT openenclave-targets)
+
+# Install parts of oelibc needed by edger8r-generated code
+list(APPEND CORELIBC_DEPS
+    openenclave/corelibc/errno.h
+    openenclave/corelibc/limits.h
+    openenclave/corelibc/stdlib.h
+    openenclave/corelibc/string.h
+    openenclave/corelibc/wchar.h)
+install(FILES ${CORELIBC_DEPS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/corelibc)
+install(FILES openenclave/corelibc/bits/defs.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/corelibc/bits)
