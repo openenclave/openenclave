@@ -33,6 +33,7 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
 
         add_subdirectory(abortStatus)
         add_subdirectory(argv)
+        add_subdirectory(atexit)
         add_subdirectory(attestation_cert_apis)
         add_subdirectory(attestation_plugin)
         add_subdirectory(backtrace)
