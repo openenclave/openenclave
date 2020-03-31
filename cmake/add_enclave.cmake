@@ -46,7 +46,7 @@
 # TODO: (3) Validate arguments into this function
 macro(add_enclave)
   set(options CXX)
-  set(oneValueArgs TARGET UUID CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID)
+  set(oneValueArgs TARGET UUID CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID ADD_LVI_MITIGATION)
   set(multiValueArgs SOURCES)
   cmake_parse_arguments(ENCLAVE
     "${options}"
@@ -63,6 +63,7 @@ macro(add_enclave)
       SIGNING_ENGINE ${ENCLAVE_SIGNING_ENGINE}
       ENGINE_LOAD_PATH ${ENCLAVE_ENGINE_LOAD_PATH}
       ENGINE_KEY_ID ${ENCLAVE_ENGINE_KEY_ID}
+      ADD_LVI_MITIGATION ${ENCLAVE_ADD_LVI_MITIGATION}
       SOURCES ${ENCLAVE_SOURCES})
   elseif(OE_TRUSTZONE)
     add_enclave_optee(
@@ -121,7 +122,7 @@ endfunction()
 
 function(add_enclave_sgx)
   set(options CXX)
-  set(oneValueArgs TARGET CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID)
+  set(oneValueArgs TARGET CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID ADD_LVI_MITIGATION)
   set(multiValueArgs SOURCES)
   cmake_parse_arguments(ENCLAVE
     "${options}"
@@ -129,7 +130,25 @@ function(add_enclave_sgx)
     "${multiValueArgs}"
     ${ARGN})
 
-  add_enclave_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
+  add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
+  # Add an enclave with LVI mitigation if LVI_MITIGATION is globally configured.
+  #
+  # If the LVI_MITIGATION_SKIP_TESTS global variable is set, then it takes
+  # precedence and suppress the addition of LVI mitigated binaries (which are
+  # primarily test binaries in the OE SDK). This variable also skips adding ctests
+  # for the LVI mitigated binaries in add_enclave_test.cmake.
+  #
+  # The ADD_LVI_MITIGATION argument to add_enclave() can override LVI_MITIGATION_SKIP_TESTS
+  # on a per enclave basis. This parameter has no effect if either LVI_MITIGATION or
+  # LVI_MITIGATION_SKIP_TESTS is not specified.
+  # It only re-enables the additional LVI-mitigated build of the specified enclave.
+  # It does not enable the additional ctest against the LVI-mitigated version of
+  # the enclave.
+  if ((LVI_MITIGATION MATCHES ControlFlow) AND
+      (ENCLAVE_ADD_LVI_MITIGATION OR NOT LVI_MITIGATION_SKIP_TESTS))
+    add_lvi_enclave_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
+  endif ()
+
   enclave_link_libraries(${ENCLAVE_TARGET} oeenclave)
   if (ENCLAVE_CXX)
     enclave_link_libraries(${ENCLAVE_TARGET} oelibcxx)
@@ -163,7 +182,7 @@ function(add_enclave_sgx)
   endif()
 
   sign_enclave_sgx(TARGET ${ENCLAVE_TARGET} CONFIG ${ENCLAVE_CONFIG} KEY ${ENCLAVE_KEY} SIGNING_ENGINE ${ENCLAVE_SIGNING_ENGINE} ENGINE_LOAD_PATH ${ENCLAVE_ENGINE_LOAD_PATH} ENGINE_KEY_ID ${ENCLAVE_ENGINE_KEY_ID})
-  if (LVI_MITIGATION MATCHES ControlFlow)
+  if (TARGET ${ENCLAVE_TARGET}-lvi-cfg)
     sign_enclave_sgx(TARGET ${ENCLAVE_TARGET}-lvi-cfg CONFIG ${ENCLAVE_CONFIG} KEY ${ENCLAVE_KEY} SIGNING_ENGINE ${ENCLAVE_SIGNING_ENGINE} ENGINE_LOAD_PATH ${ENCLAVE_ENGINE_LOAD_PATH} ENGINE_KEY_ID ${ENCLAVE_ENGINE_KEY_ID})
   endif()
 endfunction()

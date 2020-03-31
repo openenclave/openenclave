@@ -51,7 +51,11 @@ file(APPEND "${BUILD_INFO_FILE}" "set(LINUX_CXX_COMPILER_VERSION \"${CMAKE_CXX_C
 
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
-    add_enclave(TARGET libcxxtest-${NAME}_enc UUID 486dcdcc-f0c6-4bdd-91e0-c7566794f899 CXX SOURCES
+    add_enclave(TARGET libcxxtest-${NAME}_enc UUID 486dcdcc-f0c6-4bdd-91e0-c7566794f899 CXX
+        # Building the enclave by default when enabling LVI mitigation to
+        # test linking against LVI-mitigated libraries.
+        ADD_LVI_MITIGATION ON
+        SOURCES
         main.cpp libcxx_t.c)
 
     enclave_include_directories(libcxxtest-${NAME}_enc PRIVATE

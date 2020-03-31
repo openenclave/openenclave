@@ -20,7 +20,7 @@ AGENTS_LABELS = [
 ]
 
 
-def ACCTest(String label, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_tests = 'OFF') {
+def ACCTest(String label, String compiler, String build_type, String lvi_mitigation = 'None') {
     stage("${label} ${compiler} SGX1FLC ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node("${label}") {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -32,7 +32,6 @@ def ACCTest(String label, String compiler, String build_type, String lvi_mitigat
                                -DCMAKE_BUILD_TYPE=${build_type}                       \
                                -DLVI_MITIGATION=${lvi_mitigation}                     \
                                -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin  \
-                               -DENABLE_LVI_MITIGATION_TESTS=${lvi_mitigation_tests}  \
                                -Wdev
                            ninja -v
                            ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
@@ -60,7 +59,7 @@ def ACCGNUTest() {
     }
 }
 
-def simulationTest(String version, String platform_mode, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_tests = 'OFF') {
+def simulationTest(String version, String platform_mode, String build_type, String lvi_mitigation = 'None') {
     def has_quote_provider = "OFF"
     if (platform_mode == "SGX1FLC") {
         has_quote_provider = "ON"
@@ -78,7 +77,6 @@ def simulationTest(String version, String platform_mode, String build_type, Stri
                                     -DHAS_QUOTE_PROVIDER=${has_quote_provider}             \
                                     -DLVI_MITIGATION=${lvi_mitigation}                     \
                                     -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin  \
-                                    -DENABLE_LVI_MITIGATION_TESTS=${lvi_mitigation_tests}  \
                                     -Wdev
                                ninja -v
                                ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
@@ -112,7 +110,7 @@ def AArch64GNUTest(String version, String build_type) {
     }
 }
 
-def ACCContainerTest(String label, String version, String lvi_mitigation = 'None', String lvi_mitigation_tests = 'OFF') {
+def ACCContainerTest(String label, String version, String lvi_mitigation = 'None') {
     stage("${label} Container RelWithDebInfo LVI_MITIGATION=${lvi_mitigation}") {
         node("${label}") {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -124,7 +122,6 @@ def ACCContainerTest(String label, String version, String lvi_mitigation = 'None
                                -DCMAKE_BUILD_TYPE=RelWithDebInfo                      \
                                -DLVI_MITIGATION=${lvi_mitigation}                     \
                                -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin  \
-                               -DENABLE_LVI_MITIGATION_TESTS=${lvi_mitigation_tests}  \
                                -Wdev
                            ninja -v
                            ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
@@ -135,7 +132,7 @@ def ACCContainerTest(String label, String version, String lvi_mitigation = 'None
     }
 }
 
-def ACCPackageTest(String label, String version, String lvi_mitigation = 'None', String lvi_mitigation_tests = 'OFF') {
+def ACCPackageTest(String label, String version, String lvi_mitigation = 'None') {
     stage("${label} Container RelWithDebInfo LVI_MITIGATION=${lvi_mitigation}") {
         node("${label}") {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -149,7 +146,6 @@ def ACCPackageTest(String label, String version, String lvi_mitigation = 'None',
                              -DCPACK_GENERATOR=DEB                                  \
                              -DLVI_MITIGATION=${lvi_mitigation}                     \
                              -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin  \
-                             -DENABLE_LVI_MITIGATION_TESTS=${lvi_mitigation_tests}  \
                              -Wdev
                            ninja -v
                            ninja -v package
@@ -205,7 +201,7 @@ def checkCI() {
     }
 }
 
-def win2016LinuxElfBuild(String version, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_tests = 'OFF') {
+def win2016LinuxElfBuild(String version, String compiler, String build_type, String lvi_mitigation = 'None') {
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node(AGENTS_LABELS["ubuntu-nonsgx"]) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -218,7 +214,6 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type, Str
                                -DHAS_QUOTE_PROVIDER=ON                                \
                                -DLVI_MITIGATION=${lvi_mitigation}                     \
                                -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin  \
-                               -DENABLE_LVI_MITIGATION_TESTS=${lvi_mitigation_tests}  \
                                -Wdev
                            ninja -v
                            """
@@ -237,7 +232,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type, Str
                 dir('build') {
                   bat """
                       vcvars64.bat x64 && \
-                      cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=ON -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DLVI_MITIGATION=${lvi_mitigation} -DENABLE_LVI_MITIGATION_TESTS=${lvi_mitigation_tests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev && \
+                      cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=ON -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DLVI_MITIGATION=${lvi_mitigation} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev && \
                       ninja -v && \
                       ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS}
                       """
@@ -247,7 +242,7 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type, Str
     }
 }
 
-def win2016CrossCompile(String build_type, String has_quote_provider = 'OFF', String lvi_mitigation = 'None', String lvi_mitigation_tests = 'OFF', String OE_SIMULATION = "0") {
+def win2016CrossCompile(String build_type, String has_quote_provider = 'OFF', String lvi_mitigation = 'None', String OE_SIMULATION = "0") {
     def node_label = AGENTS_LABELS["acc-win2016"]
     if (has_quote_provider == "ON") {
         node_label = AGENTS_LABELS["acc-win2016-dcap"]
@@ -256,7 +251,7 @@ def win2016CrossCompile(String build_type, String has_quote_provider = 'OFF', St
         node(node_label) {
             withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
-                    oe.WinCompilePackageTest("build/X64-${build_type}", build_type, has_quote_provider, CTEST_TIMEOUT_SECONDS, lvi_mitigation)
+                    oe.WinCompilePackageTest("build/X64-${build_type}", build_type, has_quote_provider, CTEST_TIMEOUT_SECONDS, lvi_mitigation, "OFF")
                 }
             }
         }
@@ -385,49 +380,49 @@ try{
             "Host verification 1804 Release" :                         { ACCHostVerificationTest('18.04', 'Release') },
             "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :       { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
             "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build" :     { win2016LinuxElfBuild('16.04', 'clang-7', 'Release') },
-            "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build LVI" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug', 'ControlFlow', 'ON') },
-            "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build LVI" : { win2016LinuxElfBuild('16.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
+            "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build LVI" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug', 'ControlFlow') },
+            "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build LVI" : { win2016LinuxElfBuild('16.04', 'clang-7', 'Release', 'ControlFlow') },
             "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug') },
             "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" :     { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
-            "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build LVI" :   { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug', 'ControlFlow', 'ON') },
-            "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
+            "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build LVI" :   { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug', 'ControlFlow') },
+            "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release', 'ControlFlow') },
             "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :           { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
-            "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build LVI" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug', 'ControlFlow', 'ON') },
+            "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build LVI" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug', 'ControlFlow') },
             "Win2016 Sim Debug Cross Compile" :                        { win2016CrossCompile('Debug', 'OFF', 'None', '1') },
             "Win2016 Sim Release Cross Compile" :                      { win2016CrossCompile('Release','OFF', 'None', '1') },
-            "Win2016 Sim Debug Cross Compile LVI " :                   { win2016CrossCompile('Debug', 'OFF', 'ControlFlow', 'ON', '1') },
-            "Win2016 Sim Release Cross Compile LVI " :                 { win2016CrossCompile('Release', 'OFF', 'ControlFlow', 'ON', '1') },
+            "Win2016 Sim Debug Cross Compile LVI " :                   { win2016CrossCompile('Debug', 'OFF', 'ControlFlow', '1') },
+            "Win2016 Sim Release Cross Compile LVI " :                 { win2016CrossCompile('Release', 'OFF', 'ControlFlow', '1') },
             "Win2016 Debug Cross Compile with DCAP libs" :             { win2016CrossCompile('Debug', 'ON') },
             "Win2016 Release Cross Compile with DCAP libs" :           { win2016CrossCompile('Release', 'ON') },
-            "Win2016 Debug Cross Compile DCAP LVI" :                   { win2016CrossCompile('Debug', 'ON', 'ControlFlow', 'ON') },
-            "Win2016 Release Cross Compile DCAP LVI" :                 { win2016CrossCompile('Release', 'ON', 'ControlFlow', 'ON') },
+            "Win2016 Debug Cross Compile DCAP LVI" :                   { win2016CrossCompile('Debug', 'ON', 'ControlFlow') },
+            "Win2016 Release Cross Compile DCAP LVI" :                 { win2016CrossCompile('Release', 'ON', 'ControlFlow') },
             "Check Developer Experience Ubuntu 16.04" :                { checkDevFlows('16.04') },
             "Check Developer Experience Ubuntu 18.04" :                { checkDevFlows('18.04') },
             "Check CI" :                                               { checkCI() },
             "ACC1604 clang-7 Debug" :                                  { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-7', 'Debug') },
             "ACC1604 clang-7 Release" :                                { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-7', 'Release') },
-            "ACC1604 clang-7 Debug LVI" :                              { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-7', 'Debug', 'ControlFlow', 'ON') },
-            "ACC1604 clang-7 Release LVI" :                            { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-7', 'Release', 'ControlFlow', 'ON') },
+            "ACC1604 clang-7 Debug LVI" :                              { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-7', 'Debug', 'ControlFlow') },
+            "ACC1604 clang-7 Release LVI" :                            { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-7', 'Release', 'ControlFlow') },
             "ACC1604 gcc Debug" :                                      { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'gcc', 'Debug') },
             "ACC1604 gcc Release" :                                    { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'gcc', 'Release') },
-            "ACC1604 gcc Debug LVI" :                                  { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'gcc', 'Debug', 'ControlFlow', 'ON') },
-            "ACC1604 gcc Release LVI" :                                { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'gcc', 'Release', 'ControlFlow', 'ON') },
+            "ACC1604 gcc Debug LVI" :                                  { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'gcc', 'Debug', 'ControlFlow') },
+            "ACC1604 gcc Release LVI" :                                { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'gcc', 'Release', 'ControlFlow') },
             "ACC1604 Container RelWithDebInfo" :                       { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04') },
-            "ACC1604 Container RelWithDebInfo LVI" :                   { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', 'ControlFlow', 'ON') },
+            "ACC1604 Container RelWithDebInfo LVI" :                   { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', 'ControlFlow') },
             "ACC1604 Package RelWithDebInfo" :                         { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04') },
-            "ACC1604 Package RelWithDebInfo LVI" :                     { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', 'ControlFlow', 'ON') },
+            "ACC1604 Package RelWithDebInfo LVI" :                     { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', 'ControlFlow') },
             "ACC1804 clang-7 Debug" :                                  { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Debug') },
             "ACC1804 clang-7 Release" :                                { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Release') },
-            "ACC1804 clang-7 Debug LVI" :                              { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Debug', 'ControlFlow', 'ON') },
-            "ACC1804 clang-7 Release LVI" :                            { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Release', 'ControlFlow', 'ON') },
+            "ACC1804 clang-7 Debug LVI" :                              { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Debug', 'ControlFlow') },
+            "ACC1804 clang-7 Release LVI" :                            { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Release', 'ControlFlow') },
             "ACC1804 gcc Debug" :                                      { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc', 'Debug') },
             "ACC1804 gcc Release" :                                    { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc', 'Release') },
-            "ACC1804 gcc Debug LVI" :                                  { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc', 'Debug', 'ControlFlow', 'ON') },
-            "ACC1804 gcc Release LVI" :                                { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc', 'Release', 'ControlFlow', 'ON') },
+            "ACC1804 gcc Debug LVI" :                                  { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc', 'Debug', 'ControlFlow') },
+            "ACC1804 gcc Release LVI" :                                { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc', 'Release', 'ControlFlow') },
             "ACC1804 Container RelWithDebInfo" :                       { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04') },
-            "ACC1804 Container RelWithDebInfo LVI" :                   { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', 'ControlFlow', 'ON') },
+            "ACC1804 Container RelWithDebInfo LVI" :                   { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', 'ControlFlow') },
             "ACC1804 Package RelWithDebInfo" :                         { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04') },
-            "ACC1804 Package RelWithDebInfo LVI" :                     { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', 'ControlFlow', 'ON') },
+            "ACC1804 Package RelWithDebInfo LVI" :                     { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', 'ControlFlow') },
             "ACC1804 GNU gcc SGX1FLC" :                                { ACCGNUTest() },
             "AArch64 1604 GNU gcc Debug" :                             { AArch64GNUTest('16.04', 'Debug')},
             "AArch64 1604 GNU gcc Release" :                           { AArch64GNUTest('16.04', 'Release')},

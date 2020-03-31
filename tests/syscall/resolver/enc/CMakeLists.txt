@@ -15,6 +15,5 @@ add_enclave(
 )
 
 enclave_include_directories(resolver_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-maybe_build_using_clangw(resolver_enc)
 
 enclave_link_libraries(resolver_enc oelibc oehostresolver)

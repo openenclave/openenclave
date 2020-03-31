@@ -71,7 +71,7 @@ function(add_enclave_test TEST_NAME HOST_FILE ENC_FILE)
 
         add_test(NAME ${TEST_NAME} COMMAND $<TARGET_FILE:${HOST_FILE}> ${CMAKE_CURRENT_BINARY_DIR}/${TEST_ENCSUBPATH}/${TEST_ENCFILE} ${ARGN})
 
-        if (LVI_MITIGATION MATCHES ControlFlow)
+        if (LVI_MITIGATION MATCHES ControlFlow AND NOT LVI_MITIGATION_SKIP_TESTS)
             set(TEST_NAME_LVI "${TEST_NAME}-lvi-cfg")
             set(TEST_ENCFILE_LVI ${TEST_ENCFILE})
             if (TEST_ENCFILE_LVI MATCHES ".*\.signed")
@@ -84,7 +84,7 @@ function(add_enclave_test TEST_NAME HOST_FILE ENC_FILE)
 
     elseif (UNIX OR USE_CLANGW)
         add_test(NAME ${TEST_NAME} COMMAND $<TARGET_FILE:${HOST_FILE}> $<TARGET_FILE:${ENC_FILE}> ${ARGN})
-        if (LVI_MITIGATION MATCHES ControlFlow)
+        if (LVI_MITIGATION MATCHES ControlFlow AND NOT LVI_MITIGATION_SKIP_TESTS)
             set(TEST_NAME_LVI "${TEST_NAME}-lvi-cfg")
             set(ENC_FILE_LVI ${ENC_FILE}-lvi-cfg)
             if (ENC_FILE MATCHES ".*_signed$")
