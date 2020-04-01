@@ -173,9 +173,6 @@ let generate_args (ec : enclave_content) =
     "#ifndef " ^ guard_macro;
     "#define " ^ guard_macro;
     "";
-    "#include <stdint.h>";
-    "#include <stdlib.h> /* for wchar_t */";
-    "";
     include_errno;
     "";
     "#include <openenclave/bits/result.h>";

@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "atexit_t.h"
 

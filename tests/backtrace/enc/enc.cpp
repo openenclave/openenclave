@@ -6,6 +6,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
+#include <stdlib.h>
 #include <string.h>
 #include "backtrace_t.h"
 
