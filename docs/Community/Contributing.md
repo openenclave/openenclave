@@ -13,7 +13,7 @@ is defined in the documents linked below:
   collaboration to happen.
 - [Development Guide](DevelopmentGuide.md) describes the coding style and other
   development practices applied to this project.
-- [API Guidelines](ApiGuidelines.md) describes the guidelines around public APIs
+- [API Guidelines](../ApiGuidelines.md) describes the guidelines around public APIs
   for this project.
 
 Reporting Security Issues
@@ -31,8 +31,9 @@ Opening Issues
 --------------
 
 We welcome all questions and suggestions. Everyone is encouraged to open issues
-on GitHub to ask or discuss anything related to the Open Enclave SDK. However,
-security issues and bugs are an exception (see above)!
+on [GitHub](https://github.com/openenclave/openenclave/issues) to ask or discuss
+anything related to the Open Enclave SDK. However, security issues and bugs are
+an exception (see above)!
 
 Design Discussion
 -----------------
@@ -41,11 +42,20 @@ You are encouraged to start a discussion with us through a GitHub issue before
 implementing any major changes. We want your contributions, but we also want to
 make sure the community is in agreement before you invest your time.
 
-You may be asked by Committers to provide a design document before writing an
-implementation. The simplest way to provide this is through a Pull Request to
-our repository with a Markdown style document (like this one) to the
-[docs/DesignDocs](DesignDocs) folder, and see its [readme](DesignDocs/README.md)
-for a template.
+For particularly large architectural changes, a
+[Design Document](../DesignDocs/README.md) may be requested. If you're unsure
+whether one will be needed, we suggest reaching out to a member of
+[SIG-Architecture](sig-architecture/README.md) to get their opinion before you get too
+far with the implementation.
+
+Weekly Issue Triage
+-------------------
+
+Once a week, a [Triage meeting](triage/README.md) is held to review
+newly-open issues and ensure they are classified correctly. Generally speaking,
+if you've filed an issue or opened a PR and have not had any response within a
+week, you are invited to politely poke the project maintainers; we try to get to
+everything by the next Triage meeting, but it doesn't always happen.
 
 Help Wanted
 ------------
@@ -127,7 +137,7 @@ Please do not:
   believe there's a problem with them, file an issue and we'll be happy to
   discuss it.
 - **DON'T** submit changes to the public API without filing an issue and
-  discussing with us first, and following the [API Guidelines](ApiGuidelines.md).
+  discussing with us first, and following the [API Guidelines](../ApiGuidelines.md).
 - **DON'T** use GitHub [_Draft_ pull
   requests](https://help.github.com/en/articles/about-pull-requests#draft-pull-requests)
   to share work-in-progress. This will suppress CODEOWNER notifications
@@ -147,8 +157,8 @@ merged, a Committer will comment on it with `bors r+`.
 
 Bors will automatically:
 1. Apply the PR's commits to a `staging` branch based on `master`.
-1. Trigger Jenkins to build and test the `staging` branch.
-1. Push the commits and a merge commit to `master` only if everything passes.
+2. Trigger Jenkins to build and test the `staging` branch.
+3. Push the commits and a merge commit to `master` only if everything passes.
 
 We require the use of Bors because it prevents a race condition that can result
 from manual merges: two conflicting PRs may both pass tests independently while
@@ -231,6 +241,7 @@ Each commit message should provide sufficient context on its own.
 
 Developer Certificate of Origin
 ------------------------------
+
 All contributions to the Open Enclave SDK must adhere to the terms of the
 [Developer Certificate of Origin (DCO)](https://developercertificate.org/):
 
