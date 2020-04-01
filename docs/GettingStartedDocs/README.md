@@ -6,6 +6,7 @@ Introduction
 
 Open Enclave (OE) is an SDK for building enclave applications in C and C++. An
 enclave application partitions itself into two components:
+
 1. An untrusted component (called the host) and
 2. A trusted component (called the enclave).
 
@@ -57,7 +58,6 @@ For an overview of the SDK's support for OP-TEE OS as well as links to getting
 started guides, see
 [Open Enclave SDK for OP-TEE OS](docs/GettingStartedDocs/OP-TEE/Introduction.md).
 
-
 API Documentation
 -----------------
 
@@ -67,12 +67,11 @@ supported by the master branch is
 Documentation for previous releases of the SDK can be found on the
 [Open Enclave SDK website](https://openenclave.io/sdk).
 
-
 Community
 ---------
 
 The Open Enclave community is a safe and welcoming environment. We follow a
-[Code of Conduct](docs/CodeOfConduct.md) adapted from the
+[Code of Conduct](../CODE_OF_CONDUCT.md) adapted from the
 [Contributor Covenant v1.4](https://www.contributor-covenant.org).
 
 Want to get involved? Head on over to the [Community](../Community/README) pages!

@@ -337,5 +337,5 @@ an issue to discuss the idea.
 Code of Conduct
 ---------------
 
-This project follows a [Code of Conduct](CodeOfConduct.md) adapted from the
+This project follows a [Code of Conduct](../CODE_OF_CONDUCT.md) adapted from the
 [Contributor Covenant v1.4](https://www.contributor-covenant.org).

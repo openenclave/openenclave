@@ -1,7 +1,7 @@
 # Open Enclave SDK Code of Conduct
 
-The Open Enclave SDK community adhere to a
-[code of conduct](conduct/CodeOfConduct.md) and project leaders commit to
+The Open Enclave SDK community adheres to a
+[code of conduct](../CODE_OF_CONDUCT.md) and project leaders commit to
 following a set of [reponse guidelines](conduct/IncidentResponseGuidelines.md)
 for any reports.
 

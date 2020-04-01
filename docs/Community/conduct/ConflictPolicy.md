@@ -3,7 +3,7 @@ Conflict Resolution
 
 We do not believe that all conflict is bad; healthy debate and disagreement often
 yield positive results. However, it is never okay to be disrespectful or to engage
-in behavior that violates the project’s [Code of Conduct](CodeOfConduct.md).
+in behavior that violates the project’s [Code of Conduct](../../CODE_OF_CONDUCT.md).
 
 If you see someone violating the code of conduct, you are encouraged to address
 the behavior directly with those involved. Many issues can be resolved quickly and

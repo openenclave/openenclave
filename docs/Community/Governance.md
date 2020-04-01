@@ -23,7 +23,7 @@ Code of Conduct
 ---------------
 
 The Open Enclave SDK community abides by the
-[OE SDK Code of Conduct](conduct/CodeOfConduct.md). Here is an
+[OE SDK Code of Conduct](../CODE_OF_CONDUCT.md). Here is an
 excerpt:
 
 *In the interest of fostering an open and welcoming environment, we as

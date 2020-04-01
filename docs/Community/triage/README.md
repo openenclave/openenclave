@@ -7,13 +7,15 @@ https://en.wikipedia.org/wiki/Triage
     based on the severity of their condition or likelihood of recovery with and
     without treatment.
 
+Within the Open Enclave SDK project, we use the term "triage" to refer to one
+stage in the
+[process of bug management](https://en.wikipedia.org/wiki/Software_bug#Bug_management),
+namely the classification of incoming issues and PRs.
+
 How We Do It
 ------------
 
-As implemented within the Open Enclave SDK project, triage is the process of
-classifying incoming issues and PRs, ensuring the appropriate tags are assigned,
-the right SIGs notice the work item, and the work can be aligned to the project
-release cycle. A weekly triage meeting provides regular touch-point for
+Held once a week, a regular triage meeting provides a touch-point for
 development cycle alignment and ensures that no new-contributor issue goes
 untouched for too long.
 
