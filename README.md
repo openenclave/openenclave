@@ -56,7 +56,7 @@ Binary packages can be [downloaded from GitHub](https://github.com/openenclave/o
 Contributing to OE SDK
 ---------------
 
-You'll find compresenive documentation in the
+You'll find comprehensive documentation in the
 [Contributor's Getting Started Guide](docs/GettingStartedDocs).
 
 The [community documentation](docs/Community/) hosts lots of information on
