@@ -30,7 +30,8 @@ typedef struct oe_eeid_t_
     oe_enclave_size_settings_t size_settings; /* new size settings */
     uint64_t data_size;                       /* size of initialization data */
     uint64_t data_vaddr; /* location of initialization data */
-    uint8_t data[];      /* actual initialization data */
+    uint64_t entry;
+    uint8_t data[]; /* actual initialization data */
 } oe_eeid_t;
 
 oe_result_t oe_serialize_eeid(
@@ -42,6 +43,12 @@ oe_result_t oe_deserialize_eeid(
     const char* buf,
     size_t buf_size,
     oe_eeid_t* eeid);
+
+struct _OE_SHA256;
+
+oe_result_t oe_replay_eeid_pages(
+    const oe_eeid_t* eeid,
+    struct _OE_SHA256* cpt_mrenclave);
 
 OE_EXTERNC_END
 

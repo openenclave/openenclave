@@ -142,28 +142,8 @@ static oe_result_t _oe_check_eeid()
 
     if (eeid != enclave_base)
     {
-        oe_sha256_context_t hctx;
-        oe_sha256_restore(&hctx, eeid->hash_state_H, eeid->hash_state_N);
-
-        size_t eeid_sz = __oe_get_eeid_size();
-        size_t num_pages = oe_round_up_to_page_size(eeid_sz) / OE_PAGE_SIZE;
-        oe_page_t* pages = (oe_page_t*)eeid;
-        uint64_t addr = (uint64_t)eeid;
-        for (size_t i = 0; i < num_pages; i++)
-        {
-            OE_CHECK(oe_sgx_measure_load_enclave_data(
-                &hctx,
-                (uint64_t)enclave_base,
-                addr,
-                (uint64_t)&pages[i],
-                SGX_SECINFO_REG | SGX_SECINFO_R,
-                true));
-
-            addr += sizeof(oe_page_t);
-        }
-
         OE_SHA256 ext_mrenclave;
-        oe_sha256_final(&hctx, &ext_mrenclave);
+        oe_replay_eeid_pages(eeid, &ext_mrenclave);
 
         sgx_report_t sgx_report;
         OE_CHECK(sgx_create_report(NULL, 0, NULL, 0, &sgx_report));
@@ -171,7 +151,9 @@ static oe_result_t _oe_check_eeid()
         if (memcmp(
                 ext_mrenclave.buf, sgx_report.body.mrenclave, OE_SHA256_SIZE) !=
             0)
+        {
             OE_RAISE(OE_VERIFY_FAILED);
+        }
     }
 
 done:

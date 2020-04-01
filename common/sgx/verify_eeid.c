@@ -51,43 +51,9 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
         printf("EEID:\n%s", buf);
     }
 
-    // Recompute extended mrenclave
-    oe_sha256_context_t hctx;
-    oe_sha256_restore(&hctx, eeid->hash_state_H, eeid->hash_state_N);
-
-    size_t eeid_sz = sizeof(oe_eeid_t) + eeid->data_size;
-    size_t num_pages = oe_round_up_to_page_size(eeid_sz) / OE_PAGE_SIZE;
-    oe_page_t* pages = (oe_page_t*)eeid;
-    uint64_t enclave_base = 0x0ab0c0d0e0f;
-    uint64_t addr = enclave_base + eeid->data_vaddr;
-
-    for (size_t i = 0; i < num_pages; i++)
-    {
-        uint8_t* page = (uint8_t*)&pages[i];
-
-        if (i == num_pages - 1 && eeid_sz % OE_PAGE_SIZE != 0)
-        {
-            uint8_t* npage = calloc(1, OE_PAGE_SIZE);
-            memcpy(npage, page, eeid_sz % OE_PAGE_SIZE);
-            page = npage;
-        }
-
-        OE_CHECK(oe_sgx_measure_load_enclave_data(
-            &hctx,
-            (uint64_t)enclave_base,
-            addr,
-            (uint64_t)page,
-            SGX_SECINFO_REG | SGX_SECINFO_R,
-            true));
-
-        if (i == num_pages - 1 && eeid_sz % OE_PAGE_SIZE != 0)
-            free(page);
-
-        addr += OE_PAGE_SIZE;
-    }
-
+    // Computed mrenclave
     OE_SHA256 cpt_mrenclave;
-    oe_sha256_final(&hctx, &cpt_mrenclave);
+    oe_replay_eeid_pages(eeid, &cpt_mrenclave);
 
     // Extract reported mrenclave
     OE_SHA256 reported_mrenclave;

@@ -657,11 +657,8 @@ static oe_result_t _add_eeid_pages(
 
     if (eeid && eeid->data_size > 0)
     {
-        oe_sha256_context_t* hctx = &context->hash_context;
         sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)properties->sigstruct;
         memcpy(eeid->sigstruct, (uint8_t*)sigstruct, sizeof(sgx_sigstruct_t));
-        oe_sha256_save(hctx, eeid->hash_state_H, eeid->hash_state_N);
-        eeid->data_vaddr = *vaddr;
 
         uint64_t ee_sz = sizeof(oe_eeid_t) + eeid->data_size;
         uint64_t epg_sz = eeid_pages_size(eeid);
@@ -683,7 +680,7 @@ static oe_result_t _add_eeid_pages(
             free(pages);
 
         OE_SHA256 ext_mrenclave;
-        oe_sha256_final(hctx, &ext_mrenclave);
+        oe_sha256_final(&context->hash_context, &ext_mrenclave);
 
         OE_CHECK(oe_sgx_sign_enclave(
             &ext_mrenclave,
@@ -841,6 +838,14 @@ oe_result_t oe_sgx_build_enclave(
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
+
+    if (eeid)
+    {
+        oe_sha256_context_t* hctx = &context->hash_context;
+        oe_sha256_save(hctx, eeid->hash_state_H, eeid->hash_state_N);
+        eeid->data_vaddr = vaddr;
+        eeid->entry = oeimage.entry_rva;
+    }
 
     /* Add data pages */
     OE_CHECK(

@@ -2,11 +2,19 @@
 // Licensed under the MIT License.
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <openenclave/bits/eeid.h>
+#include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/types.h>
+#include <openenclave/internal/utils.h>
+
+#include "../../host/sgx/sgxmeasure.h"
 
 static oe_result_t serialize_elem(
     char** p,
@@ -110,6 +118,108 @@ oe_result_t oe_deserialize_eeid(
     OE_CHECK(deserialize_elem(
         p, &r, (uint8_t*)&eeid->data_vaddr, sizeof(eeid->data_vaddr)));
     OE_CHECK(deserialize_elem(p, &r, (uint8_t*)eeid->data, eeid->data_size));
+
+done:
+    return OE_OK;
+}
+
+oe_result_t oe_replay_eeid_pages(
+    const oe_eeid_t* eeid,
+    struct _OE_SHA256* cpt_mrenclave)
+{
+    oe_result_t result;
+    oe_sha256_context_t hctx;
+    oe_sha256_restore(&hctx, eeid->hash_state_H, eeid->hash_state_N);
+    uint64_t base = 0x0ab0c0d0e0f;
+
+    oe_page_t blank_pg, stack_pg, tcs_pg;
+    memset(&blank_pg, 0, sizeof(blank_pg));
+    memset(&stack_pg, 0xcc, sizeof(stack_pg));
+
+#define ADD_PAGE(PG, T)                                      \
+    {                                                        \
+        OE_CHECK(oe_sgx_measure_load_enclave_data(           \
+            &hctx,                                           \
+            base,                                            \
+            base + vaddr,                                    \
+            (uint64_t)&PG,                                   \
+            SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W, \
+            T));                                             \
+        vaddr += OE_PAGE_SIZE;                               \
+    }
+
+    uint64_t vaddr = eeid->data_vaddr;
+    for (size_t i = 0; i < eeid->size_settings.num_heap_pages; i++)
+        ADD_PAGE(blank_pg, false);
+
+    for (size_t i = 0; i < eeid->size_settings.num_tcs; i++)
+    {
+        vaddr += OE_PAGE_SIZE; /* guard page */
+
+        for (size_t i = 0; i < eeid->size_settings.num_stack_pages; i++)
+            ADD_PAGE(stack_pg, true);
+
+        vaddr += OE_PAGE_SIZE; /* guard page */
+
+        sgx_tcs_t* tcs;
+        memset(&tcs_pg, 0, sizeof(tcs_pg));
+        tcs = (sgx_tcs_t*)&tcs_pg;
+        tcs->flags = 0;
+        tcs->ossa = vaddr + OE_PAGE_SIZE;
+        tcs->cssa = 0;
+        tcs->nssa = 2;
+        tcs->oentry = eeid->entry;
+        tcs->fsbase = vaddr + (5 * OE_PAGE_SIZE);
+        tcs->gsbase = tcs->fsbase;
+        tcs->fslimit = 0xFFFFFFFF;
+        tcs->gslimit = 0xFFFFFFFF;
+
+        OE_CHECK(oe_sgx_measure_load_enclave_data(
+            &hctx,
+            base,
+            base + vaddr,
+            (uint64_t)&tcs_pg,
+            SGX_SECINFO_TCS,
+            true));
+
+        vaddr += OE_PAGE_SIZE;
+
+        for (size_t i = 0; i < 2; i++)
+            ADD_PAGE(blank_pg, true);
+        vaddr += OE_PAGE_SIZE; // guard
+        for (size_t i = 0; i < 2; i++)
+            ADD_PAGE(blank_pg, true);
+    }
+
+    size_t eeid_sz = sizeof(oe_eeid_t) + eeid->data_size;
+    size_t num_pages = oe_round_up_to_page_size(eeid_sz) / OE_PAGE_SIZE;
+    oe_page_t* pages = (oe_page_t*)eeid;
+    for (size_t i = 0; i < num_pages; i++)
+    {
+        uint8_t* page = (uint8_t*)&pages[i];
+
+        if (i == num_pages - 1 && eeid_sz % OE_PAGE_SIZE != 0)
+        {
+            uint8_t* npage = calloc(1, OE_PAGE_SIZE);
+            memcpy(npage, page, eeid_sz % OE_PAGE_SIZE);
+            page = npage;
+        }
+
+        OE_CHECK(oe_sgx_measure_load_enclave_data(
+            &hctx,
+            base,
+            base + vaddr,
+            (uint64_t)page,
+            SGX_SECINFO_REG | SGX_SECINFO_R,
+            true));
+
+        if (i == num_pages - 1 && eeid_sz % OE_PAGE_SIZE != 0)
+            free(page);
+
+        vaddr += OE_PAGE_SIZE;
+    }
+
+    oe_sha256_final(&hctx, cpt_mrenclave);
 
 done:
     return OE_OK;
