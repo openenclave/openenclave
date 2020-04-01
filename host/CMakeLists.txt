@@ -34,10 +34,14 @@ add_custom_target(tee_untrusted_edl
 set(OE_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/bits)
 set(OE_PRIV_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/internal/bits)
 
-list(APPEND EDL_PUBLIC_STRUCTURES "${EDL_DIR}/asym_keys.edl")
+list(APPEND EDL_PUBLIC_STRUCTURES
+  "${EDL_DIR}/asym_keys.edl"
+  "${EDL_DIR}/time.edl")
 list(APPEND EDL_PRIVATE_STRUCTURES
   "${EDL_DIR}/fcntl.edl"
-  "${EDL_DIR}/socket.edl")
+  "${EDL_DIR}/poll.edl"
+  "${EDL_DIR}/socket.edl"
+  "${EDL_DIR}/utsname.edl")
 
 function(edl_to_header EDL_FILE OUT_DIR)
   get_filename_component(name ${EDL_FILE} NAME_WE)
