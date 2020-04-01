@@ -27,6 +27,7 @@
 #include "../tracee.h"
 #include "asmdefs.h"
 #include "cpuid.h"
+#include "handle_ecall.h"
 #include "init.h"
 #include "report.h"
 #include "sgx_t.h"
@@ -191,7 +192,7 @@ done:
 /**
  * This is the preferred way to call enclave functions.
  */
-static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
+oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
 {
     oe_call_enclave_function_args_t args, *args_ptr;
     oe_result_t result = OE_OK;
@@ -407,7 +408,7 @@ static void _handle_ecall(
     {
         case OE_ECALL_CALL_ENCLAVE_FUNCTION:
         {
-            arg_out = _handle_call_enclave_function(arg_in);
+            arg_out = oe_handle_call_enclave_function(arg_in);
             break;
         }
         case OE_ECALL_DESTRUCTOR:

@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 ------------
 
+### Added
+- Support for Simulation Mode on Windows.
+- Support `transition_using_threads` EDL attribute for ecalls in oeedger8r.
+  OE SDK now supports both switchless OCALLs and ECALLs.
+
 ### Changed
 - Moved `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`, and
   `oe_asymmetric_key_params_t` to `bits/asym_keys.h` from `bits/types.h`.
@@ -45,9 +50,6 @@ release notes for the set of issues addressed.
 
 [v0.8.1][v0.8.1_log] - 2020-02-07
 ---------------------
-
-### Added
-- Support for Simulation Mode on Windows.
 
 ### Fixed 
 - Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523. 
