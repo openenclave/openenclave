@@ -81,24 +81,34 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
 
 try{
     oe.emailJobStatus('STARTED')
-    parallel "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :       { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
-             "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build" :     { win2016LinuxElfBuild('16.04', 'clang-7', 'Release') },
-             "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build LVI" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug', 'ControlFlow', 'ON') },
-             "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build LVI" : { win2016LinuxElfBuild('16.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
-             "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug') },
-             "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" :     { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
-             "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build LVI" :   { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug', 'ControlFlow', 'ON') },
-             "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
-             "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :           { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
-             "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build LVI" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug', 'ControlFlow', 'ON') },
-             "Win2016 Sim Debug Cross Compile" :                        { win2016CrossCompile('Debug', 'OFF', 'None', '1') },
-             "Win2016 Sim Release Cross Compile" :                      { win2016CrossCompile('Release','OFF', 'None', '1') },
-             "Win2016 Sim Debug Cross Compile LVI " :                   { win2016CrossCompile('Debug', 'OFF', 'ControlFlow', 'ON', '1') },
-             "Win2016 Sim Release Cross Compile LVI " :                 { win2016CrossCompile('Release', 'OFF', 'ControlFlow', 'ON', '1') },
-             "Win2016 Debug Cross Compile with DCAP libs" :             { win2016CrossCompile('Debug', 'ON') },
-             "Win2016 Release Cross Compile with DCAP libs" :           { win2016CrossCompile('Release', 'ON') },
-             "Win2016 Debug Cross Compile DCAP LVI" :                   { win2016CrossCompile('Debug', 'ON', 'ControlFlow', 'ON') },
-             "Win2016 Release Cross Compile DCAP LVI" :                 { win2016CrossCompile('Release', 'ON', 'ControlFlow', 'ON') }
+    if(FULL_TEST_SUITE == "true") {
+      stage("Full Test Suite") {
+        parallel "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :       { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
+                 "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build" :     { win2016LinuxElfBuild('16.04', 'clang-7', 'Release') },
+                 "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build LVI" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug', 'ControlFlow', 'ON') },
+                 "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build LVI" : { win2016LinuxElfBuild('16.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
+                 "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug') },
+                 "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" :     { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
+                 "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build LVI" :   { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug', 'ControlFlow', 'ON') },
+                 "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
+                 "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :           { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
+                 "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build LVI" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug', 'ControlFlow', 'ON') },
+                 "Win2016 Sim Debug Cross Compile" :                        { win2016CrossCompile('Debug', 'OFF', 'None', '1') },
+                 "Win2016 Sim Release Cross Compile" :                      { win2016CrossCompile('Release','OFF', 'None', '1') },
+                 "Win2016 Sim Debug Cross Compile LVI " :                   { win2016CrossCompile('Debug', 'OFF', 'ControlFlow', 'ON', '1') },
+                 "Win2016 Sim Release Cross Compile LVI " :                 { win2016CrossCompile('Release', 'OFF', 'ControlFlow', 'ON', '1') },
+                 "Win2016 Debug Cross Compile with DCAP libs" :             { win2016CrossCompile('Debug', 'ON') },
+                 "Win2016 Release Cross Compile with DCAP libs" :           { win2016CrossCompile('Release', 'ON') },
+                 "Win2016 Debug Cross Compile DCAP LVI" :                   { win2016CrossCompile('Debug', 'ON', 'ControlFlow', 'ON') },
+                 "Win2016 Release Cross Compile DCAP LVI" :                 { win2016CrossCompile('Release', 'ON', 'ControlFlow', 'ON') }
+      }
+    } else {
+      stage("PR Testing") {
+        parallel "Win2016 Sim Release Cross Compile LVI " :                 { win2016CrossCompile('Release', 'OFF', 'ControlFlow', 'ON', '1') },
+                 "Win2016 Debug Cross Compile DCAP LVI" :                   { win2016CrossCompile('Debug', 'ON', 'ControlFlow', 'ON') },
+                 "Win2016 Release Cross Compile DCAP LVI" :                 { win2016CrossCompile('Release', 'ON', 'ControlFlow', 'ON') }  
+      }
+    }
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
