@@ -46,7 +46,7 @@ Community Governance Structure
 The Open Enclave SDK community uses a
 [concensus-seeking](https://en.wikipedia.org/wiki/Consensus-seeking_decision-making)
 approach to governance at all levels. To support a growing project, we have
-adopted a loose heirarchy wherein domain-specific decisions are handled within
+adopted a loose hierarchy wherein domain-specific decisions are handled within
 each domain, or Special Interest Group (**SIG**), cross-domain work is enabled
 through Working Groups (**WG**), and a Community Governance Committee (**CGC**)
 meets to review the overall structure, ensuring the health of the project.
