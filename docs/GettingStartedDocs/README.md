@@ -84,6 +84,7 @@ Contributing
 
 If you are interested in contributing changes to Open Enclave, here are some
 good places to start:
+
 - [General Development Guide](docs/DevelopmentGuide.md)
 - [How To Build OE SDK and run tests](docs/GettingStartedDocs/Contributors/building_oe_sdk.md)
 

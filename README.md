@@ -25,8 +25,8 @@ Introduction
 ------------
 
 The Open Enclave SDK is a hardware-agnostic open source library for developing
-applications that run inside Hardware Trusted Execution Environments, also known
-as Enclaves.
+applications that utilize Hardware-based Trusted Execution Environments, also
+known as Enclaves.
 
 Open Enclave (OE) is an SDK for building enclave applications in C and C++. An
 enclave application partitions itself into two components:

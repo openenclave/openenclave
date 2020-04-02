@@ -41,10 +41,8 @@ users.
 Community Governance Structure
 ------------------------------
 
-*Note(Aeva) section added*
-
 The Open Enclave SDK community uses a
-[concensus-seeking](https://en.wikipedia.org/wiki/Consensus-seeking_decision-making)
+[consensus-seeking](https://en.wikipedia.org/wiki/Consensus-seeking_decision-making)
 approach to governance at all levels. To support a growing project, we have
 adopted a loose hierarchy wherein domain-specific decisions are handled within
 each domain, or Special Interest Group (**SIG**), cross-domain work is enabled
@@ -69,17 +67,17 @@ the community, wherein it is desirable, the issue can be raised to the CGC.
 Technical Discussions
 ---------------------
 
-*Note(Aeva) section added*
-
 Technical discussions generally happen in one of these places:
 
-* [on the GitHub project](https://github.com/openenclave/openenclave), either in an Issue or a Pull Request
-* in public SIG or WG meetings, which are typically held on Zoom (public calendar TBD)(TODO)
-* on our mailing list or chat server (details TBD) (TODO)
+* [on the GitHub project](https://github.com/openenclave/openenclave), either in
+  an Issue or a Pull Request
+* in the public meetings of Committees, Special Interest Groups, or Working Groups, which can be found via the [community calendar](https://lists.confidentialcomputing.io/calendar).
+* on the community mailing list or chat server, which is detailed in the [Comminucations](Communication.md) document
 
 While we strive for openness and transparency, it is natural that some
-discussions will also happen in person (eg, in the hallway track) or other
-private channels. The outcome of such discussions should be considered
+discussions will also happen in private channels, or in impromptu face-to-face
+conversations (for those who work in the same building, or bump into each other
+at a conference). The outcome of such discussions should be considered
 non-binding until the information is shared through an open medium and relevant
 stake-holders have opportunity to contribute to the discussion.
 
@@ -93,11 +91,9 @@ decision, that item should be updated and reference given to the conversation.
 Issue/PR Review Process
 -----------------------
 
-*Note(Aeva) section updated*
-
 The community strives to triage and respond to all incoming issues within one
 week. If you haven't heard anything by then, or an issue or PR is not getting
-any response within a resonable time after it is triaged, please feel free to
+any response within a reasonable time after it is triaged, please feel free to
 remind us with a ping on the thread.
 
 Security issues should be reported through a separate channel, and
@@ -106,8 +102,6 @@ Issues](Contributing.md#reporting-security-issues).
 
 Committers and Contributors
 ---------------------------
-
-*Note(Aeva) section removed*
 
 At present, we maintain a list of [Project Committers](Committers.md) along with
 descriptions of their knowledge areas.
@@ -118,20 +112,26 @@ commit-rights management.
 Accepting Contributions
 -----------------------
 
-*Note(Aeva) section updated*
-
 SIGs will generally accept changes that improve the project and that align with the
 [Open Enclave roadmap](https://github.com/openenclave/openenclave/projects).
 
 All contributions are expected to be reviewed by at least one SIG lead other
 than the contributor, and have no significant objections from other SIG leads
-within the same SIG. Objections from leads of other SIGs should be respected,
-and consensus sought (but not required); overruling the objection of another SIG
-lead should only be done after careful consideration.
+within the same SIG.
+
+If a change requires the approval of multiple SIGs (e.g., because it affects
+code in both SIG domains), then approval from both SIGs is required.
+
+If a change only requires one approval from one SIG, and leads of another SIG
+object to it, a discussion should be invited and given reasonable time to move
+towards a consensus; overruling the objection of another SIG lead should only be
+done after careful consideration. Even when we disagree, leaders aspire to
+uphold our [core principles](#core-principles).
 
 All contributions must also satisfy the
-[contribution guidelines](Contributing.md), such as having a DCO and being
-signed-off by the developer, having appropriate license headers in code files,
-passing tests, and so on.
+[contribution guidelines](Contributing.md), such as having a
+[Developer Certificate of Origin (DCO)](https://developercertificate.org/) and
+being signed-off by the developer, having appropriate license headers in code
+files, passing tests, and so on.
 
 SIG leads may revert changes if they are found to be breaking, or if deemed necessary.
