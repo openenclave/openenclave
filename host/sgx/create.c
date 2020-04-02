@@ -843,8 +843,8 @@ oe_result_t oe_sgx_build_enclave(
     {
         oe_sha256_context_t* hctx = &context->hash_context;
         oe_sha256_save(hctx, eeid->hash_state_H, eeid->hash_state_N);
-        eeid->data_vaddr = vaddr;
-        eeid->entry = oeimage.entry_rva;
+        eeid->vaddr = vaddr;
+        eeid->entry_point = oeimage.entry_rva;
     }
 
     /* Add data pages */

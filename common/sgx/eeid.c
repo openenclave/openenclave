@@ -17,13 +17,20 @@
 #include "../../host/sgx/sgxmeasure.h"
 
 static oe_result_t serialize_elem(
+    const char* name,
     char** p,
     size_t* r,
     const uint8_t* e,
     size_t e_sz)
 {
-    if (*r < 2 * e_sz + 1)
+    size_t name_sz = strlen(name);
+
+    if (*r < 2 * e_sz + 1 + name_sz + 2)
         return OE_BUFFER_TOO_SMALL;
+
+    snprintf(*p, *r, "%s: ", name);
+    *p += name_sz + 2;
+    *r -= name_sz + 2;
 
     oe_hex_string(*p, *r, e, e_sz);
     *p += 2 * e_sz;
@@ -40,6 +47,15 @@ static oe_result_t deserialize_elem(
     uint8_t* e,
     size_t e_sz)
 {
+    // Skip name
+    while (**p != ' ')
+    {
+        *p += 1;
+        *r -= 1;
+    }
+    *p += 1;
+    *r -= 1;
+
     if (*r < 2 * e_sz + 2)
         return OE_OUT_OF_BOUNDS;
 
@@ -65,28 +81,45 @@ static oe_result_t deserialize_elem(
 oe_result_t oe_serialize_eeid(const oe_eeid_t* eeid, char* buf, size_t buf_size)
 {
     oe_result_t result;
-    size_t eeid_sz = sizeof(oe_eeid_t) + eeid->data_size;
-    size_t str_sz = 2 * eeid_sz + 1;
 
-    if (str_sz >= buf_size)
-        return OE_BUFFER_TOO_SMALL;
+    if (!eeid || !buf || !buf_size)
+        return OE_INVALID_PARAMETER;
 
     char** p = &buf;
     size_t r = buf_size;
 
     OE_CHECK(serialize_elem(
-        p, &r, (uint8_t*)eeid->hash_state_H, sizeof(eeid->hash_state_H)));
+        "H", p, &r, (uint8_t*)eeid->hash_state_H, sizeof(eeid->hash_state_H)));
     OE_CHECK(serialize_elem(
-        p, &r, (uint8_t*)eeid->hash_state_N, sizeof(eeid->hash_state_N)));
+        "N", p, &r, (uint8_t*)eeid->hash_state_N, sizeof(eeid->hash_state_N)));
     OE_CHECK(serialize_elem(
-        p, &r, (uint8_t*)eeid->sigstruct, sizeof(eeid->sigstruct)));
+        "SIGSTRUCT",
+        p,
+        &r,
+        (uint8_t*)eeid->sigstruct,
+        sizeof(eeid->sigstruct)));
     OE_CHECK(serialize_elem(
-        p, &r, (uint8_t*)&eeid->size_settings, sizeof(eeid->size_settings)));
+        "SETTINGS",
+        p,
+        &r,
+        (uint8_t*)&eeid->size_settings,
+        sizeof(eeid->size_settings)));
     OE_CHECK(serialize_elem(
-        p, &r, (uint8_t*)&eeid->data_size, sizeof(eeid->data_size)));
+        "DATASIZE",
+        p,
+        &r,
+        (uint8_t*)&eeid->data_size,
+        sizeof(eeid->data_size)));
     OE_CHECK(serialize_elem(
-        p, &r, (uint8_t*)&eeid->data_vaddr, sizeof(eeid->data_vaddr)));
-    OE_CHECK(serialize_elem(p, &r, (uint8_t*)eeid->data, eeid->data_size));
+        "VADDR", p, &r, (uint8_t*)&eeid->vaddr, sizeof(eeid->vaddr)));
+    OE_CHECK(serialize_elem(
+        "ENTRY",
+        p,
+        &r,
+        (uint8_t*)&eeid->entry_point,
+        sizeof(eeid->entry_point)));
+    OE_CHECK(
+        serialize_elem("DATA", p, &r, (uint8_t*)eeid->data, eeid->data_size));
 
     **p = '\0';
 
@@ -100,6 +133,10 @@ oe_result_t oe_deserialize_eeid(
     oe_eeid_t* eeid)
 {
     oe_result_t result;
+
+    if (!buf || !buf_size || !eeid)
+        return OE_INVALID_PARAMETER;
+
     const char** p = &buf;
     size_t r = buf_size;
 
@@ -115,8 +152,10 @@ oe_result_t oe_deserialize_eeid(
         p, &r, (uint8_t*)&eeid->size_settings, sizeof(eeid->size_settings)));
     OE_CHECK(deserialize_elem(
         p, &r, (uint8_t*)&eeid->data_size, sizeof(eeid->data_size)));
+    OE_CHECK(
+        deserialize_elem(p, &r, (uint8_t*)&eeid->vaddr, sizeof(eeid->vaddr)));
     OE_CHECK(deserialize_elem(
-        p, &r, (uint8_t*)&eeid->data_vaddr, sizeof(eeid->data_vaddr)));
+        p, &r, (uint8_t*)&eeid->entry_point, sizeof(eeid->entry_point)));
     OE_CHECK(deserialize_elem(p, &r, (uint8_t*)eeid->data, eeid->data_size));
 
 done:
@@ -148,7 +187,7 @@ oe_result_t oe_replay_eeid_pages(
         vaddr += OE_PAGE_SIZE;                               \
     }
 
-    uint64_t vaddr = eeid->data_vaddr;
+    uint64_t vaddr = eeid->vaddr;
     for (size_t i = 0; i < eeid->size_settings.num_heap_pages; i++)
         ADD_PAGE(blank_pg, false);
 
@@ -168,7 +207,7 @@ oe_result_t oe_replay_eeid_pages(
         tcs->ossa = vaddr + OE_PAGE_SIZE;
         tcs->cssa = 0;
         tcs->nssa = 2;
-        tcs->oentry = eeid->entry;
+        tcs->oentry = eeid->entry_point;
         tcs->fsbase = vaddr + (5 * OE_PAGE_SIZE);
         tcs->gsbase = tcs->fsbase;
         tcs->fslimit = 0xFFFFFFFF;
