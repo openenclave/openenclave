@@ -1,17 +1,14 @@
 Project Committers
 ==================
 
-Current Status
---------------
+List of Committers
+------------------
 
 The following people have been granted commit permissions (that is, write
 access) to the Open Enclave SDK by the Community Governance Committee. The area
 column describes which technical areas each committer is most interested in, and
 therefore should usually be consulted for changes relating to that area.
 
-However, it is up to each committer to determine who should review which PR, and
-when to merge it. Remember that a PR must not be merged if a committer objects;
-instead, it should be brought up with the Community Governance Committee.
 
 | Name                  | GitHub Alias        | Area                           |
 |-----------------------|---------------------|--------------------------------|
@@ -37,6 +34,12 @@ instead, it should be brought up with the Community Governance Committee.
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
 | Bruce Campbell        | yakman2020          | Windows, SGX                   |
+
+Current Expectations
+--------------------
+
+However, it is up to each committer to determine who should review which PR, and
+when to merge it. It is up to each committer to decide [when to accept a contribution](Governance.md#Accepting-Contributions)]
 
 Current Challenges
 ------------------
