@@ -8,7 +8,6 @@ add_custom_command(
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-# TODO: Does this need CXX?
 add_enclave(TARGET stdc_enc UUID 9a30506a-87f6-4214-a007-f15b11c98f8b SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/stdc_t.c)
 
 enclave_compile_options(stdc_enc PRIVATE

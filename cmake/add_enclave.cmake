@@ -9,6 +9,7 @@
 #  add_enclave(<TARGET target>
 #              [<UUID uuid>]
 #              [CXX]
+#              [ADD_LVI_MITIGATION ON/OFF]
 #              <SOURCES sources>
 #              [<CONFIG config>]
 #              [<KEY key>])
@@ -121,11 +122,10 @@ function(sign_enclave_sgx)
 endfunction()
 
 function(add_enclave_sgx)
-  set(options CXX)
-  set(oneValueArgs TARGET CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID ADD_LVI_MITIGATION)
+  set(oneValueArgs TARGET CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID CXX ADD_LVI_MITIGATION)
   set(multiValueArgs SOURCES)
   cmake_parse_arguments(ENCLAVE
-    "${options}"
+    ""
     "${oneValueArgs}"
     "${multiValueArgs}"
     ${ARGN})
@@ -188,11 +188,10 @@ function(add_enclave_sgx)
 endfunction()
 
 macro(add_enclave_optee)
-   set(options CXX)
-   set(oneValueArgs TARGET UUID KEY)
+   set(oneValueArgs TARGET UUID KEY CXX)
    set(multiValueArgs SOURCES)
    cmake_parse_arguments(ENCLAVE
-     "${options}"
+     ""
      "${oneValueArgs}"
      "${multiValueArgs}"
      ${ARGN})

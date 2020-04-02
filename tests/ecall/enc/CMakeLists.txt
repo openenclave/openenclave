@@ -1,8 +1,6 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# TODO: Does this need CXX?
-
 set (EDL_FILE ../ecall.edl)
 
 add_custom_command(
