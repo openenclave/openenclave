@@ -49,9 +49,6 @@ set(BUILD_INFO_FILE "${CMAKE_CURRENT_BINARY_DIR}/build_info.cmake")
 file(WRITE "${BUILD_INFO_FILE}" "set(LINUX_CXX_COMPILER_ID \"${CMAKE_CXX_COMPILER_ID}\")\n")
 file(APPEND "${BUILD_INFO_FILE}" "set(LINUX_CXX_COMPILER_VERSION \"${CMAKE_CXX_COMPILER_VERSION}\")\n")
 
-# The list of tests requires `std=c++17`.
-file(STRINGS "../tests.supported.cxx17" cxx17tests)
-
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
     add_enclave(TARGET libcxxtest-${NAME}_enc UUID 486dcdcc-f0c6-4bdd-91e0-c7566794f899 CXX
@@ -89,7 +86,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
     enclave_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
     enclave_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support)
 
-    if (CXXFILE IN_LIST cxx17tests)
+    if (CXXFILE IN_LIST CXX_17_TEST_LIST)
         set_enclave_property(TARGET libcxxtest-${NAME}_enc PROPERTY CXX_STANDARD 17)
     endif()
 
@@ -165,6 +162,13 @@ foreach(testcase ${alltests})
     if ("${name}" MATCHES "std_containers_associative_map_map.access_at.pass")
         string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
         if (CMAKE_CXX_COMPILER_ID MATCHES GNU AND BUILD_TYPE_UPPER MATCHES REL)
+            continue()
+        endif()
+    endif()
+
+    # Skip the following tests on GCC version less than 7 because a bug is not fixed or C++17 features are not supported.
+    if ("${name}" IN_LIST GCC_LESS_7_UNSUPPORTED_LIST OR "${testcase}" IN_LIST CXX_17_TEST_LIST)
+        if (CMAKE_CXX_COMPILER_ID MATCHES GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
             continue()
         endif()
     endif()
