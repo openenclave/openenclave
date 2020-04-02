@@ -14,8 +14,10 @@ AGENTS_LABELS = [
     "acc-ubuntu-18.04": env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
     "ubuntu-nonsgx":    env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX",
     "acc-rhel-8":       env.RHEL_8_CUSTOM_LABEL ?: "ACC-RHEL-8",
-    "acc-win2016":      env.WINDOWS_2016_CUSTOM_LABEL ?: "SGXFLC-Windows",
-    "acc-win2016-dcap": env.WINDOWS_2016_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-DCAP",
+    "acc-win2016":      env.WINDOWS_2016_CUSTOM_LABEL ?: "SGX-Windows-2016",
+    "acc-win2016-dcap": env.WINDOWS_2016_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2016-DCAP",
+    "acc-win2019":      env.WINDOWS_2019_CUSTOM_LABEL ?: "SGX-Windows-2019",
+    "acc-win2019-dcap": env.WINDOWS_2019_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2019-DCAP",
     "windows-nonsgx":   env.WINDOWS_NONSGX_CUSTOM_LABEL ?: "nonSGX-Windows"
 ]
 
@@ -201,7 +203,7 @@ def checkCI() {
     }
 }
 
-def win2016LinuxElfBuild(String version, String compiler, String build_type, String lvi_mitigation = 'None') {
+def windowsLinuxElfBuild(String label, String version, String compiler, String build_type, String lvi_mitigation = 'None') {
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node(AGENTS_LABELS["ubuntu-nonsgx"]) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -222,8 +224,8 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type, Str
             }
         }
     }
-    stage("Windows ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
-        node(AGENTS_LABELS["acc-win2016-dcap"]) {
+    stage("Windows ${label} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
+        node(AGENTS_LABELS[label]) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
@@ -242,12 +244,12 @@ def win2016LinuxElfBuild(String version, String compiler, String build_type, Str
     }
 }
 
-def win2016CrossCompile(String build_type, String has_quote_provider = 'OFF', String lvi_mitigation = 'None', String OE_SIMULATION = "0") {
-    def node_label = AGENTS_LABELS["acc-win2016"]
+def windowsCrossCompile(String label, String build_type, String has_quote_provider = 'OFF', String lvi_mitigation = 'None', String OE_SIMULATION = "0") {
+    def node_label = AGENTS_LABELS[label]
     if (has_quote_provider == "ON") {
-        node_label = AGENTS_LABELS["acc-win2016-dcap"]
+        node_label = AGENTS_LABELS["${label}-dcap"]
     }
-    stage("Windows ${build_type} with SGX ${has_quote_provider} LVI_MITIGATION=${lvi_mitigation}") {
+    stage("Windows ${label} ${build_type} with SGX ${has_quote_provider} LVI_MITIGATION=${lvi_mitigation}") {
         node(node_label) {
             withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -378,24 +380,42 @@ try{
             "Host verification 1604 Release" :                         { ACCHostVerificationTest('16.04', 'Release') },
             "Host verification 1804 Debug" :                           { ACCHostVerificationTest('18.04', 'Debug') },
             "Host verification 1804 Release" :                         { ACCHostVerificationTest('18.04', 'Release') },
-            "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :       { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug') },
-            "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build" :     { win2016LinuxElfBuild('16.04', 'clang-7', 'Release') },
-            "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build LVI" :   { win2016LinuxElfBuild('16.04', 'clang-7', 'Debug', 'ControlFlow') },
-            "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build LVI" : { win2016LinuxElfBuild('16.04', 'clang-7', 'Release', 'ControlFlow') },
-            "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build" :       { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug') },
-            "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" :     { win2016LinuxElfBuild('18.04', 'clang-7', 'Release') },
-            "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build LVI" :   { win2016LinuxElfBuild('18.04', 'clang-7', 'Debug', 'ControlFlow') },
-            "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { win2016LinuxElfBuild('18.04', 'clang-7', 'Release', 'ControlFlow') },
-            "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :           { win2016LinuxElfBuild('18.04', 'gcc', 'Debug') },
-            "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build LVI" :       { win2016LinuxElfBuild('18.04', 'gcc', 'Debug', 'ControlFlow') },
-            "Win2016 Sim Debug Cross Compile" :                        { win2016CrossCompile('Debug', 'OFF', 'None', '1') },
-            "Win2016 Sim Release Cross Compile" :                      { win2016CrossCompile('Release','OFF', 'None', '1') },
-            "Win2016 Sim Debug Cross Compile LVI " :                   { win2016CrossCompile('Debug', 'OFF', 'ControlFlow', '1') },
-            "Win2016 Sim Release Cross Compile LVI " :                 { win2016CrossCompile('Release', 'OFF', 'ControlFlow', '1') },
-            "Win2016 Debug Cross Compile with DCAP libs" :             { win2016CrossCompile('Debug', 'ON') },
-            "Win2016 Release Cross Compile with DCAP libs" :           { win2016CrossCompile('Release', 'ON') },
-            "Win2016 Debug Cross Compile DCAP LVI" :                   { win2016CrossCompile('Debug', 'ON', 'ControlFlow') },
-            "Win2016 Release Cross Compile DCAP LVI" :                 { win2016CrossCompile('Release', 'ON', 'ControlFlow') },
+            "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build" :       { windowsLinuxElfBuild("acc-win2016-dcap", '16.04', 'clang-7', 'Debug') },
+            "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build" :     { windowsLinuxElfBuild("acc-win2016-dcap", '16.04', 'clang-7', 'Release') },
+            "Win2016 Ubuntu1604 clang-7 Debug Linux-Elf-build LVI" :   { windowsLinuxElfBuild("acc-win2016-dcap", '16.04', 'clang-7', 'Debug', 'ControlFlow') },
+            "Win2016 Ubuntu1604 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild("acc-win2016-dcap", '16.04', 'clang-7', 'Release', 'ControlFlow') },
+            "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build" :       { windowsLinuxElfBuild("acc-win2016-dcap", '18.04', 'clang-7', 'Debug') },
+            "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build" :     { windowsLinuxElfBuild("acc-win2016-dcap", '18.04', 'clang-7', 'Release') },
+            "Win2016 Ubuntu1804 clang-7 Debug Linux-Elf-build LVI" :   { windowsLinuxElfBuild("acc-win2016-dcap", '18.04', 'clang-7', 'Debug', 'ControlFlow') },
+            "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild("acc-win2016-dcap", '18.04', 'clang-7', 'Release', 'ControlFlow') },
+            "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build" :           { windowsLinuxElfBuild("acc-win2016-dcap", '18.04', 'gcc', 'Debug') },
+            "Win2016 Ubuntu1804 gcc Debug Linux-Elf-build LVI" :       { windowsLinuxElfBuild("acc-win2016-dcap", '18.04', 'gcc', 'Debug', 'ControlFlow') },
+            "Win2016 Sim Debug Cross Compile" :                        { windowsCrossCompile('acc-win2016', 'Debug', 'OFF', 'None', '1') },
+            "Win2016 Sim Release Cross Compile" :                      { windowsCrossCompile('acc-win2016', 'Release','OFF', 'None', '1') },
+            "Win2016 Sim Debug Cross Compile LVI " :                   { windowsCrossCompile('acc-win2016', 'Debug', 'OFF', 'ControlFlow', '1') },
+            "Win2016 Sim Release Cross Compile LVI " :                 { windowsCrossCompile('acc-win2016', 'Release', 'OFF', 'ControlFlow', '1') },
+            "Win2016 Debug Cross Compile with DCAP libs" :             { windowsCrossCompile('acc-win2016', 'Debug', 'ON') },
+            "Win2016 Release Cross Compile with DCAP libs" :           { windowsCrossCompile('acc-win2016', 'Release', 'ON') },
+            "Win2016 Debug Cross Compile DCAP LVI" :                   { windowsCrossCompile('acc-win2016', 'Debug', 'ON', 'ControlFlow') },
+            "Win2016 Release Cross Compile DCAP LVI" :                 { windowsCrossCompile('acc-win2016', 'Release', 'ON', 'ControlFlow') },
+            "Win2019 Ubuntu1604 clang-7 Debug Linux-Elf-build" :       { windowsLinuxElfBuild("acc-win2019-dcap", '16.04', 'clang-7', 'Debug') },
+            "Win2019 Ubuntu1604 clang-7 Release Linux-Elf-build" :     { windowsLinuxElfBuild("acc-win2019-dcap", '16.04', 'clang-7', 'Release') },
+            "Win2019 Ubuntu1604 clang-7 Debug Linux-Elf-build LVI" :   { windowsLinuxElfBuild("acc-win2019-dcap", '16.04', 'clang-7', 'Debug', 'ControlFlow') },
+            "Win2019 Ubuntu1604 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild("acc-win2019-dcap", '16.04', 'clang-7', 'Release', 'ControlFlow') },
+            "Win2019 Ubuntu1804 clang-7 Debug Linux-Elf-build" :       { windowsLinuxElfBuild("acc-win2019-dcap", '18.04', 'clang-7', 'Debug') },
+            "Win2019 Ubuntu1804 clang-7 Release Linux-Elf-build" :     { windowsLinuxElfBuild("acc-win2019-dcap", '18.04', 'clang-7', 'Release') },
+            "Win2019 Ubuntu1804 clang-7 Debug Linux-Elf-build LVI" :   { windowsLinuxElfBuild("acc-win2019-dcap", '18.04', 'clang-7', 'Debug', 'ControlFlow') },
+            "Win2019 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild("acc-win2019-dcap", '18.04', 'clang-7', 'Release', 'ControlFlow') },
+            "Win2019 Ubuntu1804 gcc Debug Linux-Elf-build" :           { windowsLinuxElfBuild("acc-win2019-dcap", '18.04', 'gcc', 'Debug') },
+            "Win2019 Ubuntu1804 gcc Debug Linux-Elf-build LVI" :       { windowsLinuxElfBuild("acc-win2019-dcap", '18.04', 'gcc', 'Debug', 'ControlFlow') },
+            "Win2019 Sim Debug Cross Compile" :                        { windowsCrossCompile('acc-win2019', 'Debug', 'OFF', 'None', '1') },
+            "Win2019 Sim Release Cross Compile" :                      { windowsCrossCompile('acc-win2019', 'Release','OFF', 'None', '1') },
+            "Win2019 Sim Debug Cross Compile LVI " :                   { windowsCrossCompile('acc-win2019', 'Debug', 'OFF', 'ControlFlow', '1') },
+            "Win2019 Sim Release Cross Compile LVI " :                 { windowsCrossCompile('acc-win2019', 'Release', 'OFF', 'ControlFlow', '1') },
+            "Win2019 Debug Cross Compile with DCAP libs" :             { windowsCrossCompile('acc-win2019', 'Debug', 'ON') },
+            "Win2019 Release Cross Compile with DCAP libs" :           { windowsCrossCompile('acc-win2019', 'Release', 'ON') },
+            "Win2019 Debug Cross Compile DCAP LVI" :                   { windowsCrossCompile('acc-win2019', 'Debug', 'ON', 'ControlFlow') },
+            "Win2019 Release Cross Compile DCAP LVI" :                 { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow') },
             "Check Developer Experience Ubuntu 16.04" :                { checkDevFlows('16.04') },
             "Check Developer Experience Ubuntu 18.04" :                { checkDevFlows('18.04') },
             "Check CI" :                                               { checkCI() },
