@@ -287,7 +287,7 @@ let get_ptr_array get_deepcopy (plist : pdecl list) =
   if count <> [] then
     [
       "size_t _ptrs_index = 0;";
-      sprintf "void** _ptrs = malloc(sizeof(void*) * (%s));"
+      sprintf "void** _ptrs = oe_malloc(sizeof(void*) * (%s));"
         (String.concat " + " count);
       "if (_ptrs == NULL)";
       "{";
@@ -330,9 +330,9 @@ let get_filled_marshal_struct get_deepcopy (fd : func_decl) =
       ];
       (* for string parameter fill the len field *)
       ( if is_str_ptr ptype then
-        [ sprintf "_args.%s_len = (%s) ? (strlen(%s) + 1) : 0;" arg arg arg ]
+        [ sprintf "_args.%s_len = (%s) ? (oe_strlen(%s) + 1) : 0;" arg arg arg ]
       else if is_wstr_ptr ptype then
-        [ sprintf "_args.%s_len = (%s) ? (wcslen(%s) + 1) : 0;" arg arg arg ]
+        [ sprintf "_args.%s_len = (%s) ? (oe_wcslen(%s) + 1) : 0;" arg arg arg ]
       else [] );
     ]
     |> List.flatten
@@ -718,7 +718,7 @@ let get_ocall_function_wrapper get_deepcopy enclave_name (uf : untrusted_func) =
     "    " ^ String.concat "\n    " (get_output_buffer get_deepcopy fd);
     "";
     "    /* Retrieve propagated errno from OCALL. */";
-    ( if uf.uf_propagate_errno then "    errno = _pargs_out->_ocall_errno;\n"
+    ( if uf.uf_propagate_errno then "    oe_errno = _pargs_out->_ocall_errno;\n"
     else sprintf "    /* Errno propagation not enabled. */" );
     "";
     "    _result = OE_OK;";
@@ -764,10 +764,6 @@ let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     sprintf "#include \"%s_t.h\"" ec.file_shortnm;
     "";
     "#include <openenclave/edger8r/enclave.h>";
-    "";
-    "#include <stdlib.h>";
-    "#include <string.h>";
-    "#include <wchar.h>";
     "";
     "OE_EXTERNC_BEGIN";
     "";
@@ -819,7 +815,7 @@ let get_host_ecall_wrapper get_deepcopy enclave_name (tf : trusted_func) =
     "    memset(&_args, 0, sizeof(_args));";
     "    " ^ String.concat "\n    " (get_filled_marshal_struct get_deepcopy fd);
     "";
-    "    " ^ String.concat "\n    " (get_input_buffer get_deepcopy fd "malloc");
+    "    " ^ String.concat "\n    " (get_input_buffer get_deepcopy fd "oe_malloc");
     "";
     "    /* Call enclave function. */";
     "    if ((_result = " ^ ecall_function ^ "(";
@@ -940,10 +936,6 @@ let generate_untrusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     sprintf "#include \"%s_u.h\"" ec.file_shortnm;
     "";
     "#include <openenclave/edger8r/host.h>";
-    "";
-    "#include <stdlib.h>";
-    "#include <string.h>";
-    "#include <wchar.h>";
     "";
     "OE_EXTERNC_BEGIN";
     "";

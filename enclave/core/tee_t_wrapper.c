@@ -1,8 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#define OE_NEED_STDC_NAMES
-
 #include <openenclave/enclave.h>
 
 #include <openenclave/corelibc/stdio.h>

@@ -34,6 +34,10 @@ typedef long intptr_t;
 typedef long time_t;
 typedef long suseconds_t;
 
+#ifndef __cplusplus
+typedef __WCHAR_TYPE__ wchar_t;
+#endif
+
 #elif defined(_MSC_VER)
 typedef long long ssize_t;
 typedef unsigned long long size_t;

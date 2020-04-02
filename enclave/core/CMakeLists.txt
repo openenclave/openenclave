@@ -196,6 +196,7 @@ add_enclave_library(oecore STATIC
     tee_t_wrapper.c
     time.c
     tracee.c
+    wchar.c
     ${PLATFORM_SRC})
 
 # Suppress type conversion warnings introduced by 3rdparty code

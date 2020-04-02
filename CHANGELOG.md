@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for Simulation Mode on Windows.
 - Support `transition_using_threads` EDL attribute for ecalls in oeedger8r.
   OE SDK now supports both switchless OCALLs and ECALLs.
+- Published corelibc headers required by oeedger8r-generated code.
+  Disclaimer: these headers do not make any guarantees about stability. They
+  are intended to be used by generated code and are not part of the OE public
+  API surface.
 
 ### Changed
 - Moved `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`, and
