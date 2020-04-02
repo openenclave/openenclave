@@ -18,6 +18,7 @@
 #error "unsupported platform"
 #endif
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/debugrt/host.h>
@@ -25,7 +26,6 @@
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/utils.h>
 #include "../calls.h"

@@ -9,7 +9,7 @@
 #include <openenclave/internal/defs.h>
 
 #if __x86_64__ || _M_X64
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #endif
 
 /*

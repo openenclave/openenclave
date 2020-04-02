@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "td.h"
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
@@ -9,7 +10,6 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/rdrand.h>
 #include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
 #include "thread.h"

@@ -1,0 +1,84 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** sgx/attestation.edl:
+**
+**     Internal ECALLs/OCALLs to be used by liboehost/liboecore for SGX-specific
+**     attestation.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    include "openenclave/bits/types.h"
+
+    // Most types in sgxtypes.h are packed to ensure the memory layout is
+    // the same as data retrieved from the CPU. Since EDL does not support
+    // packed structures, these types cannot be defined in EDL. They do not
+    // need the benefit of deep copy because they are all laid out in
+    // contiguous memory.
+    include "openenclave/bits/sgx/sgxtypes.h"
+
+    trusted
+    {
+        public oe_result_t oe_get_sgx_report_ecall(
+            [in, size=opt_params_size] const void* opt_params,
+            size_t opt_params_size,
+            [out] sgx_report_t* report);
+    };
+
+    untrusted
+    {
+        oe_result_t oe_get_qetarget_info_ocall(
+            [out] sgx_target_info_t* target_info);
+
+        oe_result_t oe_get_quote_ocall(
+            [in] const sgx_report_t* sgx_report,
+            [out, size=quote_size] void* quote,
+            size_t quote_size,
+            [out] size_t* quote_size_out);
+
+        oe_result_t oe_get_qe_identity_info_ocall(
+            [out, size=qe_id_info_size] void* qe_id_info,
+            size_t qe_id_info_size,
+            [out] size_t* qe_id_info_size_out,
+            [out, size=issuer_chain_size] void* issuer_chain,
+            size_t issuer_chain_size,
+            [out] size_t* issuer_chain_size_out);
+
+        oe_result_t oe_get_revocation_info_ocall(
+            [in] uint8_t fmspc[6],
+            size_t num_crl_urls,
+            [in, string] const char* crl_urls0,
+            [in, string] const char* crl_urls1,
+            [in, string] const char* crl_urls2,
+            [out, size=tcb_info_size] void* tcb_info,
+            size_t tcb_info_size,
+            [out] size_t* tcb_info_size_out,
+            [out, size=tcb_issuer_chain_size] void* tcb_issuer_chain,
+            size_t tcb_issuer_chain_size,
+            [out] size_t* tcb_issuer_chain_size_out,
+            [out, size=crl0_size] void* crl0,
+            size_t crl0_size,
+            [out] size_t* crl0_size_out,
+            [out, size=crl1_size] void* crl1,
+            size_t crl1_size,
+            [out] size_t* crl1_size_out,
+            [out, size=crl2_size] void* crl2,
+            size_t crl2_size,
+            [out] size_t* crl2_size_out,
+            [out, size=crl_issuer_chain0_size] void* crl_issuer_chain0,
+            size_t crl_issuer_chain0_size,
+            [out] size_t* crl_issuer_chain0_size_out,
+            [out, size=crl_issuer_chain1_size] void* crl_issuer_chain1,
+            size_t crl_issuer_chain1_size,
+            [out] size_t* crl_issuer_chain1_size_out,
+            [out, size=crl_issuer_chain2_size] void* crl_issuer_chain2,
+            size_t crl_issuer_chain2_size,
+            [out] size_t* crl_issuer_chain2_size_out);
+    };
+};

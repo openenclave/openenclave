@@ -5,9 +5,9 @@
 #define _OE_SGXCREATE_H
 
 #include <openenclave/bits/result.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include "crypto/sha.h"
 #include "load.h"
-#include "sgxtypes.h"
 
 OE_EXTERNC_BEGIN
 

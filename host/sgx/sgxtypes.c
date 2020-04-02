@@ -1,8 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
 #include <stdio.h>
 
