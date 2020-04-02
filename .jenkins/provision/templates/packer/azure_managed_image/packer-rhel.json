@@ -6,6 +6,9 @@
     "client_secret": "{{ env `SERVICE_PRINCIPAL_PASSWORD` }}",
     "tenant_id": "{{ env `TENANT_ID` }}",
     "location": "{{ env `REGION` }}",
+    "jenkins_resource_group": "{{ env `JENKINS_RESOURCE_GROUP` }}",
+    "jenkins_vnet_name": "{{ env `JENKINS_VNET_NAME` }}",
+    "jenkins_subnet_name": "{{ env `JENKINS_SUBNET_NAME` }}",
     "ansible_dir": "{{ env `WORKSPACE` }}/scripts/ansible",
     "gallery_name": "{{ env `GALLERY_NAME` }}",
     "gallery_image_version": "{{ env `GALLERY_IMAGE_VERSION` }}",
@@ -32,6 +35,10 @@
 
     "managed_image_name": "{{ user `managed_image_name_id` }}-{{ user `managed_image_name_suffix` }}",
     "managed_image_resource_group_name": "{{ user `resource_group` }}",
+
+    "virtual_network_resource_group_name": "{{ user `jenkins_resource_group` }}",
+    "virtual_network_name": "{{ user `jenkins_vnet_name` }}",
+    "virtual_network_subnet_name": "{{ user `jenkins_subnet_name` }}",
 
     "os_type": "{{ user `os_type` }}",
     "image_publisher": "{{ user `image_publisher` }}",
