@@ -12,6 +12,13 @@
 #include "../common/sgx/revocation.h"
 #include "sgx_t.h"
 
+/*
+* Using this default size to prevent the warnings and ocalls resulting 
+* due to underallocation of revocation info buffer. The buffer was found to
+* consume about 4402 Bytes of memory in some cases. Rounding it to 5000.
+*/
+#define DEFAULT_ARGS_SIZE 5000
+
 /**
  * Call into host to fetch revocation information.
  */
@@ -24,6 +31,12 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
 
     if (!args)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    /*Allocate a default revocation-info-arg size*/
+    if(sizeof(out) < DEFAULT_ARGS_SIZE)
+    {
+        out = *((oe_get_revocation_info_args_t *)oe_malloc(DEFAULT_ARGS_SIZE));
+    }
 
     /* Verify the crl_urls. */
     if (args->num_crl_urls != 2 || !args->crl_urls[0] || !args->crl_urls[1])
