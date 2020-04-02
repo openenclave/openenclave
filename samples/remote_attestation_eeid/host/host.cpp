@@ -65,7 +65,7 @@ int main(int argc, const char* argv[])
         eeid_a->size_settings.num_heap_pages =
             eeid_b->size_settings.num_heap_pages = 37;
         eeid_a->size_settings.num_stack_pages =
-            eeid_b->size_settings.num_stack_pages = 6;
+            eeid_b->size_settings.num_stack_pages = 10;
         eeid_a->size_settings.num_tcs = eeid_b->size_settings.num_tcs = 1;
     }
 

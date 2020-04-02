@@ -90,28 +90,9 @@ oe_result_t __oe_sgx_set_minimum_crl_tcb_issue_date(
     uint32_t minutes,
     uint32_t seconds);
 
-/*
-**==============================================================================
-**
-** oe_eeid_t
-**
-**==============================================================================
-*/
-typedef struct oe_eeid_t_
-{
-    uint32_t hash_state_H[8];
-    uint32_t hash_state_N[2];
-    uint8_t sigstruct[1808]; /* complete sigstruct before eeid */
-    oe_enclave_size_settings_t size_settings; /* new size settings */
-    uint64_t data_size;                       /* size of initialization data */
-    uint64_t data_vaddr; /* location of initialization data */
-    uint8_t data[];      /* actual initialization data */
-} oe_eeid_t;
-
 /**
  * @endcond
  */
-
 OE_EXTERNC_END
 
 #endif /* _OE_BITS_PROPERTIES_H */

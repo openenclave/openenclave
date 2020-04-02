@@ -37,7 +37,7 @@ endif()
 ##==============================================================================
 ##
 ## Generate header (*_args.h) that defines data structures from EDL files.
-## Note that doing this on the host side to ensure publishing the header with 
+## Note that doing this on the host side to ensure publishing the header with
 ## the case of `BUILD_ENCLAVES=OFF`.
 ##
 ##==============================================================================

@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 enclave {
+    include "openenclave/bits/eeid.h"
+
     trusted {
 
         // Return the public key of this enclave along with the enclave's remote report.

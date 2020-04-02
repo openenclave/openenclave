@@ -168,7 +168,6 @@ let generate_args (ec : enclave_content) =
     "#define " ^ guard_macro;
     "";
     "#include <openenclave/bits/result.h>";
-    "#include <openenclave/bits/properties.h>";
     "";
     "/**** User includes. ****/";
     String.concat "\n" user_includes;
@@ -227,41 +226,6 @@ let generate_trusted (ec : enclave_content) =
         ufs
     else [ "/* There were no ocalls. */"; "" ]
   in
-  [
-    "#ifndef " ^ guard_macro;
-    "#define " ^ guard_macro;
-    "";
-    "#include <stdint.h>";
-    "#include <stdlib.h> /* for wchar_t */";
-    "";
-    include_errno;
-    "";
-    "#include <openenclave/bits/result.h>";
-    "#include <openenclave/bits/eeid.h>";
-    "";
-    "/**** User includes. ****/";
-    String.concat "\n" user_includes;
-    "";
-    "/**** User defined types in EDL. ****/";
-    String.concat "\n" user_types;
-    "/**** ECALL marshalling structs. ****/";
-    String.concat "\n" ecall_marshal_structs;
-    "/**** OCALL marshalling structs. ****/";
-    String.concat "\n" ocall_marshal_structs;
-    "/**** Trusted function IDs ****/";
-    String.concat "\n" trusted_function_ids;
-    "";
-    "/**** Untrusted function IDs. ****/";
-    String.concat "\n" untrusted_function_ids;
-    "";
-    "#endif // " ^ guard_macro;
-    "";
-  ]
-
-(* Includes are emitted in [args.h]. Imported functions have already
-   been brought into function lists. *)
-let generate_trusted (ec : enclave_content) =
-  let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_T_H" in
   let tfunc_prototypes =
     if tfs <> [] then
       List.map (fun f -> sprintf "%s;" (get_function_prototype f.tf_fdecl)) tfs
@@ -385,7 +349,6 @@ let generate_untrusted (ec : enclave_content) =
     "";
     "/**** ECALL marshalling structs. ****/";
     String.concat "\n" ecall_marshal_structs;
-    sprintf "oe_result_t oe_create_%s_enclave_wud(" ec.enclave_name;
     "struct oe_eeid_t_;";
     sprintf "oe_result_t oe_create_%s_enclave_eeid(" ec.enclave_name;
     "    const char* path,";

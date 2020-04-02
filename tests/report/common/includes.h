@@ -6,5 +6,6 @@
 
 #include "../../../common/sgx/tcbinfo.h"
 #include "../../../host/sgx/quote.h"
+#include "../../../include/openenclave/bits/eeid.h"
 
 #endif

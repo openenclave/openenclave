@@ -22,6 +22,7 @@
 
 static const char* arg0;
 int oedump(const char*);
+int oedump_eeid(const char* enclave);
 int oesign(
     const char* enclave,
     const char* conffile,
@@ -703,17 +704,104 @@ done:
     return ret;
 }
 
+int oedump_eeid(const char* enclave)
+{
+    int ret = 1;
+    oe_result_t result;
+    oe_enclave_t enc;
+    oe_sgx_enclave_properties_t props;
+    oe_sgx_load_context_t context;
+
+    if ((ret = oedump(enclave)) != 0)
+        return ret;
+
+    /* Load the enclave properties from the enclave */
+    {
+        result = _sgx_load_enclave_properties(enclave, &props);
+
+        if (result != OE_OK && result != OE_NOT_FOUND)
+        {
+            Err("failed to load enclave: %s: result=%s (%u)",
+                enclave,
+                oe_result_str(result),
+                result);
+            goto done;
+        }
+    }
+
+    /* Check whether enclave properties are valid */
+    {
+        const char* field_name;
+
+        if (oe_sgx_validate_enclave_properties(&props, &field_name) != OE_OK)
+        {
+            Err("invalid enclave property value: %s", field_name);
+            goto done;
+        }
+    }
+
+    /* Initialize the context parameters for measurement only */
+    if (oe_sgx_initialize_load_context(
+            &context, OE_SGX_LOAD_TYPE_MEASURE, props.config.attributes) !=
+        OE_OK)
+    {
+        Err("oe_sgx_initialize_load_context() failed");
+        goto done;
+    }
+
+    if (props.header.size_settings.num_heap_pages != 0 ||
+        props.header.size_settings.num_stack_pages != 0 ||
+        props.header.size_settings.num_tcs != 0)
+    {
+        printf("Memory settings are != 0; image is not suitable for EEID.\n");
+        return 1;
+    }
+
+    /* Build an enclave to obtain the MRENCLAVE measurement */
+    oe_eeid_t eeid;
+    if ((result = oe_sgx_build_enclave(
+             &context, enclave, &props, &eeid, &enc)) != OE_OK)
+    {
+        Err("oe_sgx_build_enclave(): result=%s (%u)",
+            oe_result_str(result),
+            result);
+        goto done;
+    }
+
+    printf("=== Extended Information for EEID: \n");
+    printf("H=");
+    for (size_t i = 0; i < 8; i++)
+        printf("%08x", eeid.hash_state_H[i]);
+    printf("\nN=");
+    for (size_t i = 0; i < 2; i++)
+        printf("%08x", eeid.hash_state_N[i]);
+    printf("\nsigstruct=");
+    for (size_t i = 0; i < sizeof(props.sigstruct); i++)
+        printf("%02x", props.sigstruct[i]);
+    printf("\nvaddr=%lu", eeid.vaddr);
+    printf("\n");
+
+    ret = 0;
+
+done:
+
+    oe_sgx_cleanup_load_context(&context);
+
+    return ret;
+}
+
 int dump_parser(int argc, const char* argv[])
 {
-    int ret = 0;
+    int ret = 0, with_eeid = 0;
     const char* enclave = NULL;
 
     const struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"enclave-image", required_argument, NULL, 'e'},
+        {"eeid", no_argument, NULL, 'x'},
         {NULL, 0, NULL, 0},
     };
-    const char short_options[] = "he:";
+    const char short_options[] = "he:x";
 
     int c;
     do
@@ -734,6 +822,9 @@ int dump_parser(int argc, const char* argv[])
             case 'e':
                 enclave = optarg;
                 break;
+            case 'x':
+                with_eeid = 1;
+                break;
             case ':':
                 // Missing option argument
                 ret = 1;
@@ -751,9 +842,15 @@ int dump_parser(int argc, const char* argv[])
         Err("Enclave image flag is missing");
         ret = 1;
     }
+
     if (!ret)
+    {
         /* dump oeinfo and signature information */
-        ret = oedump(enclave);
+        if (!with_eeid)
+            ret = oedump(enclave);
+        else
+            ret = oedump_eeid(enclave);
+    }
 
 done:
 

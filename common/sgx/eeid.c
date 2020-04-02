@@ -25,12 +25,12 @@ static oe_result_t serialize_elem(
 {
     size_t name_sz = strlen(name);
 
-    if (*r < 2 * e_sz + 1 + name_sz + 2)
+    if (*r < 2 * e_sz + 1 + name_sz + 1)
         return OE_BUFFER_TOO_SMALL;
 
-    snprintf(*p, *r, "%s: ", name);
-    *p += name_sz + 2;
-    *r -= name_sz + 2;
+    snprintf(*p, *r, "%s=", name);
+    *p += name_sz + 1;
+    *r -= name_sz + 1;
 
     oe_hex_string(*p, *r, e, e_sz);
     *p += 2 * e_sz;
@@ -93,33 +93,33 @@ oe_result_t oe_serialize_eeid(const oe_eeid_t* eeid, char* buf, size_t buf_size)
     OE_CHECK(serialize_elem(
         "N", p, &r, (uint8_t*)eeid->hash_state_N, sizeof(eeid->hash_state_N)));
     OE_CHECK(serialize_elem(
-        "SIGSTRUCT",
+        "sigstruct",
         p,
         &r,
         (uint8_t*)eeid->sigstruct,
         sizeof(eeid->sigstruct)));
     OE_CHECK(serialize_elem(
-        "SETTINGS",
+        "settings",
         p,
         &r,
         (uint8_t*)&eeid->size_settings,
         sizeof(eeid->size_settings)));
     OE_CHECK(serialize_elem(
-        "DATASIZE",
+        "data_size",
         p,
         &r,
         (uint8_t*)&eeid->data_size,
         sizeof(eeid->data_size)));
     OE_CHECK(serialize_elem(
-        "VADDR", p, &r, (uint8_t*)&eeid->vaddr, sizeof(eeid->vaddr)));
+        "vaddr", p, &r, (uint8_t*)&eeid->vaddr, sizeof(eeid->vaddr)));
     OE_CHECK(serialize_elem(
-        "ENTRY",
+        "entry_point",
         p,
         &r,
         (uint8_t*)&eeid->entry_point,
         sizeof(eeid->entry_point)));
     OE_CHECK(
-        serialize_elem("DATA", p, &r, (uint8_t*)eeid->data, eeid->data_size));
+        serialize_elem("data", p, &r, (uint8_t*)eeid->data, eeid->data_size));
 
     **p = '\0';
 

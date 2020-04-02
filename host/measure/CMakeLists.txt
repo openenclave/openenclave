@@ -41,6 +41,8 @@ endif ()
 
 if (OE_SGX)
   list(APPEND PLATFORM_HOST_MR_SRC
+    ../common/sgx/eeid.c
+    signkey.c
     sgx/create.c
     sgx/elf.c
     sgx/load.c

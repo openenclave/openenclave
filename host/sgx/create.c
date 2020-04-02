@@ -34,6 +34,7 @@ static char* get_fullpath(const char* path)
 
 #include <assert.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
@@ -769,7 +770,7 @@ oe_result_t oe_sgx_build_enclave(
             eeid->size_settings.num_stack_pages;
         props.header.size_settings.num_tcs = eeid->size_settings.num_tcs;
 
-        // patch
+        /* Patch size properties */
         elf64_sym_t sym_props = {0};
         const elf64_t* eimg = &oeimage.u.elf.elf;
         if (elf64_find_symbol_by_name(
@@ -854,13 +855,6 @@ oe_result_t oe_sgx_build_enclave(
     /* Add EEID */
     OE_CHECK(
         _add_eeid_pages(context, enclave, enclave_end, &props, &vaddr, eeid));
-
-    if (eeid && oe_get_current_logging_level() >= OE_LOG_LEVEL_WARNING)
-    {
-        char buf[2 * (sizeof(oe_eeid_t) + eeid->data_size) + 8];
-        OE_CHECK(oe_serialize_eeid(eeid, buf, sizeof(buf)));
-        printf("EEID:\n%s", buf);
-    }
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(oe_sgx_initialize_enclave(
