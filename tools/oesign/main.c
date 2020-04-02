@@ -661,7 +661,7 @@ int oesign(
         /* Load private key into memory */
         if (_load_pem_file(keyfile, &pem_data, &pem_size) != 0)
         {
-            Err("Failed to load file: %s", keyfile);
+            Err("Failed to load file: %s", keyfile ? keyfile : "NULL");
             goto done;
         }
 
