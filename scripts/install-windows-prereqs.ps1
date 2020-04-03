@@ -563,19 +563,19 @@ function Install-DCAP-Dependencies {
                 $inf
                 Throw "Multiple $driver.inf files found"
             }
-            # Check if the driver is already installed and delete it
-            $output = & $devConBinaryPath find "$($drivers[${OS_VERSION}][$driver]['location'])"
-            if($LASTEXITCODE) {
-                Throw "Failed searching for $driver driver"
-            }
-            $output | ForEach-Object {
-                if($_.Contains($drivers[${OS_VERSION}][$driver]['description'])) {
-                    Write-Output "Removing driver $($drivers[${OS_VERSION}][$driver]['location'])"
-                    Remove-DCAPDriver -Name $drivers[${OS_VERSION}][$driver]['location']
-                }
-            }
             if ($LaunchConfiguration -eq "SGX1FLC")
             {
+                # Check if the driver is already installed and delete it
+                $output = & $devConBinaryPath find "$($drivers[${OS_VERSION}][$driver]['location'])"
+                if($LASTEXITCODE) {
+                    Throw "Failed searching for $driver driver"
+                }
+                $output | ForEach-Object {
+                    if($_.Contains($drivers[${OS_VERSION}][$driver]['description'])) {
+                        Write-Output "Removing driver $($drivers[${OS_VERSION}][$driver]['location'])"
+                        Remove-DCAPDriver -Name $drivers[${OS_VERSION}][$driver]['location']
+                    }
+                }
                 Write-Output "Installing driver $($drivers[${OS_VERSION}][$driver]['location'])"
                 $install = & $devConBinaryPath install "$($inf.FullName)" $drivers[${OS_VERSION}][$driver]['location']
                 if($LASTEXITCODE) {
