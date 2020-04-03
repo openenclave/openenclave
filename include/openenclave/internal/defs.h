@@ -18,22 +18,6 @@
 #define OE_ZERO_SIZED_ARRAY /* empty */
 #endif
 
-/*
- * Define packed types, such as:
- *     OE_PACK_BEGIN
- *     struct foo {int a,b};
- *     OE_PACK_END
- */
-#if defined(__GNUC__)
-#define OE_PACK_BEGIN _Pragma("pack(push, 1)")
-#define OE_PACK_END _Pragma("pack(pop)")
-#elif _MSC_VER
-#define OE_PACK_BEGIN __pragma(pack(push, 1))
-#define OE_PACK_END __pragma(pack(pop))
-#else
-#error "OE_PACK_BEGIN and OE_PACK_END not implemented"
-#endif
-
 /* OE_CHECK_SIZE */
 #define OE_CHECK_SIZE(N, M)          \
     typedef unsigned char OE_CONCAT( \
