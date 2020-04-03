@@ -5,6 +5,7 @@
 #define _OE_TIME_H
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/time.h>
 #include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
@@ -20,12 +21,6 @@ struct oe_tm
     int tm_wday;
     int tm_yday;
     int tm_isdst;
-};
-
-struct oe_timespec
-{
-    time_t tv_sec;
-    long tv_nsec;
 };
 
 time_t oe_time(time_t* tloc);

@@ -14,9 +14,14 @@
 
 enclave {
 
-    include "openenclave/internal/syscall/sys/poll.h"
-    include "openenclave/internal/syscall/poll.h"
-    include "openenclave/internal/syscall/types.h"
+    include "openenclave/bits/edl/syscall_types.h"
+
+    struct oe_pollfd
+    {
+        int fd;            /* File descriptor to poll.  */
+        short int events;  /* Types of events poller cares about.  */
+        short int revents; /* Types of events that actually occurred.  */
+    };
 
     untrusted
     {

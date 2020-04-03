@@ -14,7 +14,7 @@
 
 enclave
 {
-    include "openenclave/internal/syscall/types.h"
+    include "openenclave/bits/edl/syscall_types.h"
 
     untrusted
     {

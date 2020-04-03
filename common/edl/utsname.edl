@@ -14,8 +14,17 @@
 
 enclave
 {
-    include "openenclave/internal/syscall/sys/utsname.h"
-    include "openenclave/internal/syscall/types.h"
+
+    // __OE_UTSNAME_FIELD_SIZE == 65
+    struct oe_utsname
+    {
+        char sysname[65];
+        char nodename[65];
+        char release[65];
+        char version[65];
+        char machine[65];
+        char domainname[65];
+    };
 
     untrusted
     {

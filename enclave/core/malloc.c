@@ -1,8 +1,16 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+/* The use of dlmalloc/malloc.c below requires stdc names from these headers.
+ * Ensure that all corelibc headers are included with std names before
+ * including other headers. */
+#define OE_NEED_STDC_NAMES
+#include <openenclave/corelibc/errno.h> // For errno & error defs
+#include <openenclave/corelibc/sched.h> // For sched_yield
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
+#undef OE_NEED_STDC_NAMES
+
 #include <openenclave/enclave.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
@@ -13,12 +21,6 @@
 #include "debugmalloc.h"
 #include "oe_alloc_thread.h"
 #include "oe_nodebug_alloc.h"
-
-/* The use of dlmalloc/malloc.c below requires stdc names from these headers */
-#define OE_NEED_STDC_NAMES
-#include <openenclave/corelibc/bits/stdfile.h> // For stderr & FILE
-#include <openenclave/corelibc/errno.h>        // For errno & error defs
-#include <openenclave/corelibc/sched.h>        // For sched_yield
 
 #define HAVE_MMAP 0
 #define LACKS_UNISTD_H

@@ -11,4 +11,6 @@
 
 typedef int64_t oe_host_fd_t;
 
+typedef uint64_t oe_nfds_t;
+
 #endif

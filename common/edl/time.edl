@@ -14,8 +14,14 @@
 
 enclave
 {
-    include "openenclave/corelibc/time.h"
-    include "openenclave/internal/syscall/types.h"
+    // Needed for integral type time_t
+    include "openenclave/bits/types.h"
+
+    struct oe_timespec
+    {
+        time_t tv_sec;
+        long tv_nsec;
+    };
 
     untrusted
     {
