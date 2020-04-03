@@ -8,6 +8,9 @@ else()
     file(STRINGS "tests.supported.default" alltests)
 endif()
 
+# The list of tests requires `std=c++17`.
+file(STRINGS "tests.supported.cxx17" CXX_17_TEST_LIST)
+
 # List of unsupported tests with GCC.
 set(GCC_UNSUPPORTED_LIST
     "libcxx_containers_unord_next_pow2.pass"
@@ -42,6 +45,18 @@ set(GCC_UNSUPPORTED_LIST
     "std_utilities_optional_optional.object_optional.object.ctor_deduct.pass"
     "std_utilities_tuple_tuple.tuple_tuple.cnstr_implicit_deduction_guides.pass"
     "std_utilities_utility_pairs_pairs.pair_implicit_deduction_guides.pass"
+)
+
+# List the unsupported on GCC version less than 7.
+# Refer to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77446 for the issue.
+set(GCC_LESS_7_UNSUPPORTED_LIST
+    "std_strings_string.view_string.view.find_find_char_size.pass"
+    "std_strings_string.view_string.view.find_find_first_not_of_pointer_size.pass"
+    "std_strings_string.view_string.view.find_find_first_not_of_pointer_size_size.pass"
+    "std_strings_string.view_string.view.find_find_first_of_char_size.pass"
+    "std_strings_string.view_string.view.find_find_last_not_of_pointer_size.pass"
+    "std_strings_string.view_string.view.find_find_last_of_pointer_size.pass"
+    "std_strings_string.view_string.view.find_find_last_of_pointer_size_size.pass"
 )
 
 add_subdirectory(host)
@@ -105,6 +120,13 @@ foreach(testcase ${alltests})
     if ("${name}" MATCHES "std_containers_associative_map_map.access_at.pass")
         string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
         if (ENCLAVE_CXX_COMPILER_ID MATCHES GNU AND BUILD_TYPE_UPPER MATCHES REL)
+            continue()
+        endif()
+    endif()
+
+    # Skip the following tests on GCC version less than 7 because a bug is not fixed or C++17 features are not supported.
+    if ("${name}" IN_LIST GCC_LESS_7_UNSUPPORTED_LIST OR "${testcase}" IN_LIST CXX_17_TEST_LIST)
+        if (ENCLAVE_CXX_COMPILER_ID MATCHES GNU AND ENCLAVE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
             continue()
         endif()
     endif()
