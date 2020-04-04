@@ -28,20 +28,6 @@ oe_result_t oe_validate_qe_identity(
     oe_datetime_t* validity_from,
     oe_datetime_t* validity_until);
 
-/**
- * Fetch qe identity info using the specified args structure.
- *
- * @param[out] args The QE identity info structure.
- */
-oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args);
-
-/**
- *  Cleanup the args structure.
- *
- * @param[int] args The QE identity info structure.
- */
-void oe_free_qe_identity_info_args(oe_get_qe_identity_info_args_t* args);
-
 OE_EXTERNC_END
 
 #endif // _OE_COMMON_QE_IDENTITY_H

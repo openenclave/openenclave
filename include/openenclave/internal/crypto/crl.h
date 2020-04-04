@@ -36,6 +36,23 @@ oe_result_t oe_crl_read_der(
     size_t der_size);
 
 /**
+ * Read a certificate revocation list (CRL) from PEM format.
+ *
+ * The caller is responsible for releasing the certificate by passing it to
+ * oe_crl_free().
+ *
+ * @param crl initialized certificate handle upon return
+ * @param der_data zero-terminated PEM data.
+ * @param der_size size of the PEM data
+ *
+ * @return OE_OK load was successful
+ */
+oe_result_t oe_crl_read_pem(
+    oe_crl_t* crl,
+    const uint8_t* pem_data,
+    size_t pem_size);
+
+/**
  * Releases a certificate revocation list (CRL)
  *
  * @param crl handle of the CRL being released

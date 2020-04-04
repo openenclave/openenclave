@@ -215,7 +215,7 @@ if (OE_SGX)
     ../common/sgx/qeidentity.c
     ../common/sgx/quote.c
     ../common/sgx/report.c
-    ../common/sgx/revocation.c
+    ../common/sgx/collateral.c
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c

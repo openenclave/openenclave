@@ -9,9 +9,9 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"
+#include "collateral.h"
 #include "endorsements.h"
 #include "qeidentity.h"
-#include "revocation.h"
 
 #include <time.h>
 

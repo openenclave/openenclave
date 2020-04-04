@@ -11,10 +11,10 @@
 #include "../../../host/sgx/sgxquoteprovider.h"
 #endif
 #include "../../../common/oe_host_stdlib.h"
+#include "../../../common/sgx/collateral.h"
 #include "../../../common/sgx/endorsements.h"
 #include "../../../common/sgx/qeidentity.h"
 #include "../../../common/sgx/quote.h"
-#include "../../../common/sgx/revocation.h"
 
 #include <time.h>
 

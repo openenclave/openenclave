@@ -10,15 +10,14 @@ if (OE_SGX)
         ../common/sgx/qeidentity.c
         ../common/sgx/quote.c
         ../common/sgx/report.c
-        ../common/sgx/revocation.c
+        ../common/sgx/collateral.c
         ../common/sgx/sgxcertextensions.c
         ../common/sgx/tcbinfo.c
         ../common/sgx/tlsverifier.c
         ../common/sgx/verifier.c
         sgx/attester.c
-        sgx/qeidinfo.c
         sgx/report.c
-        sgx/revocationinfo.c
+        sgx/collateralinfo.c
         sgx/start.S)
 elseif(OE_TRUSTZONE)
     set(PLATFORM_SRC

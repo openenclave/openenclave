@@ -8,9 +8,8 @@
 #include <openenclave/internal/safecrt.h>
 #include "../common.h"
 
-#include "qeidentity.h"
+#include "collateral.h"
 #include "quote.h"
-#include "revocation.h"
 
 #define CREATION_DATETIME_SIZE 21
 
@@ -22,48 +21,52 @@
  * @param[out] endorsements OE endorsement structure.
  */
 static oe_result_t oe_create_sgx_endorsements(
-    const oe_get_revocation_info_args_t* revocation_info,
-    const oe_get_qe_identity_info_args_t* qe_id_info,
+    const oe_get_sgx_quote_verification_collateral_args_t*
+        quote_verification_collateral,
     oe_endorsements_t** endorsements_buffer,
     size_t* endorsements_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_endorsements_t* endorsements = NULL;
+    uint8_t* root_ca_crl_issuer_chain =
+        oe_malloc(quote_verification_collateral->pck_crl_issuer_chain_size);
     char creation_datetime[CREATION_DATETIME_SIZE];
     uint32_t* buffer32 = NULL;
     uint8_t* buffer = NULL;
     uint32_t offset;
     uint32_t offsets_size;
     uint32_t size;
-    int i;
+    uint32_t root_ca_crl_issuer_chain_size;
     uint32_t remaining_size;
 
     OE_TRACE_INFO("Enter call %s\n", __FUNCTION__);
 
-    if (revocation_info == NULL || qe_id_info == NULL)
+    if (quote_verification_collateral == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (revocation_info->num_crl_urls != OE_SGX_ENDORSEMENTS_CRL_COUNT)
-        OE_RAISE_MSG(
-            OE_INVALID_PARAMETER,
-            "Expected %d num CRLs, but got %d",
-            OE_SGX_ENDORSEMENTS_CRL_COUNT,
-            revocation_info->num_crl_urls);
 
     offsets_size = (uint32_t)sizeof(uint32_t) * OE_SGX_ENDORSEMENT_COUNT;
     size = (uint32_t)sizeof(oe_endorsements_t) + // Header
            offsets_size +                        // Array of offsets
            (uint32_t)(                           // Data
                sizeof(uint32_t) +                // Version
-               revocation_info->tcb_info_size +
-               revocation_info->tcb_issuer_chain_size +
-               qe_id_info->qe_id_info_size + qe_id_info->issuer_chain_size);
+               quote_verification_collateral->tcb_info_size +
+               quote_verification_collateral->tcb_info_issuer_chain_size +
+               quote_verification_collateral->qe_identity_size +
+               quote_verification_collateral->qe_identity_issuer_chain_size);
 
-    for (i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; i++)
-    {
-        size += (uint32_t)revocation_info->crl_size[i];
-        size += (uint32_t)revocation_info->crl_issuer_chain_size[i];
-    }
+    size += (uint32_t)quote_verification_collateral->pck_crl_size;
+    size += (uint32_t)quote_verification_collateral->root_ca_crl_size;
+    size += (uint32_t)quote_verification_collateral->pck_crl_issuer_chain_size;
+
+    root_ca_crl_issuer_chain_size =
+        (uint32_t)quote_verification_collateral->pck_crl_issuer_chain_size;
+    size += root_ca_crl_issuer_chain_size;
+
+    OE_CHECK(oe_memcpy_s(
+        root_ca_crl_issuer_chain,
+        root_ca_crl_issuer_chain_size,
+        quote_verification_collateral->pck_crl_issuer_chain,
+        quote_verification_collateral->pck_crl_issuer_chain_size));
 
     size += CREATION_DATETIME_SIZE;
     if (size > OE_ATTESTATION_ENDORSEMENT_MAX_SIZE)
@@ -106,24 +109,29 @@ static oe_result_t oe_create_sgx_endorsements(
     buffer32[OE_SGX_ENDORSEMENT_FIELD_VERSION] = offset;
     offset += (uint32_t)sizeof(uint32_t);
     buffer32[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO] = offset;
-    offset += (uint32_t)revocation_info->tcb_info_size;
+    offset += (uint32_t)quote_verification_collateral->tcb_info_size;
     buffer32[OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN] = offset;
-    offset += (uint32_t)revocation_info->tcb_issuer_chain_size;
-    for (i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; i++)
-    {
-        buffer32[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT + i] = offset;
-        offset += (uint32_t)revocation_info->crl_size[i];
-    }
-    for (i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; i++)
-    {
-        buffer32[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT + i] =
-            offset;
-        offset += (uint32_t)revocation_info->crl_issuer_chain_size[i];
-    }
+    offset +=
+        (uint32_t)quote_verification_collateral->tcb_info_issuer_chain_size;
+
+    buffer32[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT] = offset;
+    offset += (uint32_t)quote_verification_collateral->pck_crl_size;
+
+    buffer32[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_PROC_CA] = offset;
+    offset += (uint32_t)quote_verification_collateral->root_ca_crl_size;
+
+    buffer32[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT] = offset;
+    offset +=
+        (uint32_t)quote_verification_collateral->pck_crl_issuer_chain_size;
+
+    buffer32[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_PROC_CA] = offset;
+    offset += root_ca_crl_issuer_chain_size;
+
     buffer32[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO] = offset;
-    offset += (uint32_t)qe_id_info->qe_id_info_size;
+    offset += (uint32_t)quote_verification_collateral->qe_identity_size;
     buffer32[OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN] = offset;
-    offset += (uint32_t)qe_id_info->issuer_chain_size;
+    offset +=
+        (uint32_t)quote_verification_collateral->qe_identity_issuer_chain_size;
     buffer32[OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME] = offset;
     offset += CREATION_DATETIME_SIZE;
 
@@ -153,61 +161,74 @@ static oe_result_t oe_create_sgx_endorsements(
     OE_CHECK(oe_memcpy_s(
         buffer,
         remaining_size,
-        revocation_info->tcb_info,
-        revocation_info->tcb_info_size));
-    buffer += revocation_info->tcb_info_size;
-    remaining_size -= (uint32_t)revocation_info->tcb_info_size;
+        quote_verification_collateral->tcb_info,
+        quote_verification_collateral->tcb_info_size));
+    buffer += quote_verification_collateral->tcb_info_size;
+    remaining_size -= (uint32_t)quote_verification_collateral->tcb_info_size;
 
     // Copy TCB Issuer Chain
     OE_CHECK(oe_memcpy_s(
         buffer,
         remaining_size,
-        revocation_info->tcb_issuer_chain,
-        revocation_info->tcb_issuer_chain_size));
-    buffer += revocation_info->tcb_issuer_chain_size;
-    remaining_size -= (uint32_t)revocation_info->tcb_issuer_chain_size;
+        quote_verification_collateral->tcb_info_issuer_chain,
+        quote_verification_collateral->tcb_info_issuer_chain_size));
+    buffer += quote_verification_collateral->tcb_info_issuer_chain_size;
+    remaining_size -=
+        (uint32_t)quote_verification_collateral->tcb_info_issuer_chain_size;
 
     // Copy CRLs
-    for (i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; i++)
-    {
-        OE_CHECK(oe_memcpy_s(
-            buffer,
-            remaining_size,
-            revocation_info->crl[i],
-            revocation_info->crl_size[i]));
-        buffer += revocation_info->crl_size[i];
-        remaining_size -= (uint32_t)revocation_info->crl_size[i];
-    }
+    OE_CHECK(oe_memcpy_s(
+        buffer,
+        remaining_size,
+        quote_verification_collateral->pck_crl,
+        quote_verification_collateral->pck_crl_size));
+    buffer += quote_verification_collateral->pck_crl_size;
+    remaining_size -= (uint32_t)quote_verification_collateral->pck_crl_size;
+
+    OE_CHECK(oe_memcpy_s(
+        buffer,
+        remaining_size,
+        quote_verification_collateral->root_ca_crl,
+        quote_verification_collateral->root_ca_crl_size));
+    buffer += quote_verification_collateral->root_ca_crl_size;
+    remaining_size -= (uint32_t)quote_verification_collateral->root_ca_crl_size;
 
     // Copy CRLs Issuer Chain
-    for (i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; i++)
-    {
-        OE_CHECK(oe_memcpy_s(
-            buffer,
-            remaining_size,
-            revocation_info->crl_issuer_chain[i],
-            revocation_info->crl_issuer_chain_size[i]));
-        buffer += revocation_info->crl_issuer_chain_size[i];
-        remaining_size -= (uint32_t)revocation_info->crl_issuer_chain_size[i];
-    }
+    OE_CHECK(oe_memcpy_s(
+        buffer,
+        remaining_size,
+        quote_verification_collateral->pck_crl_issuer_chain,
+        quote_verification_collateral->pck_crl_issuer_chain_size));
+    buffer += quote_verification_collateral->pck_crl_issuer_chain_size;
+    remaining_size -=
+        (uint32_t)quote_verification_collateral->pck_crl_issuer_chain_size;
+
+    OE_CHECK(oe_memcpy_s(
+        buffer,
+        remaining_size,
+        root_ca_crl_issuer_chain,
+        root_ca_crl_issuer_chain_size));
+    buffer += root_ca_crl_issuer_chain_size;
+    remaining_size -= (uint32_t)root_ca_crl_issuer_chain_size;
 
     // Copy QE ID Info
     OE_CHECK(oe_memcpy_s(
         buffer,
         remaining_size,
-        qe_id_info->qe_id_info,
-        qe_id_info->qe_id_info_size));
-    buffer += qe_id_info->qe_id_info_size;
-    remaining_size -= (uint32_t)qe_id_info->qe_id_info_size;
+        quote_verification_collateral->qe_identity,
+        quote_verification_collateral->qe_identity_size));
+    buffer += quote_verification_collateral->qe_identity_size;
+    remaining_size -= (uint32_t)quote_verification_collateral->qe_identity_size;
 
     // Copy QE ID Issue Chain
     OE_CHECK(oe_memcpy_s(
         buffer,
         remaining_size,
-        qe_id_info->issuer_chain,
-        qe_id_info->issuer_chain_size));
-    buffer += qe_id_info->issuer_chain_size;
-    remaining_size -= (uint32_t)qe_id_info->issuer_chain_size;
+        quote_verification_collateral->qe_identity_issuer_chain,
+        quote_verification_collateral->qe_identity_issuer_chain_size));
+    buffer += quote_verification_collateral->qe_identity_issuer_chain_size;
+    remaining_size -=
+        (uint32_t)quote_verification_collateral->qe_identity_issuer_chain_size;
 
     // Copy creation datetime
     OE_CHECK(oe_memcpy_s(
@@ -231,6 +252,11 @@ static oe_result_t oe_create_sgx_endorsements(
 done:
     if ((result != OE_OK) && endorsements)
         oe_free(endorsements);
+
+    if (root_ca_crl_issuer_chain)
+    {
+        oe_free(root_ca_crl_issuer_chain);
+    }
 
     OE_TRACE_INFO(
         "Exit call %s: %d(%s)\n", __FUNCTION__, result, oe_result_str(result));
@@ -334,8 +360,8 @@ oe_result_t oe_get_sgx_endorsements(
     size_t* endorsements_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_qe_identity_info_args_t qe_id_info = {0};
-    oe_get_revocation_info_args_t revocation_info = {0};
+    oe_get_sgx_quote_verification_collateral_args_t
+        quote_verification_collateral = {0};
 
     const uint8_t* pem_pck_certificate = NULL;
     size_t pem_pck_certificate_size = 0;
@@ -352,11 +378,6 @@ oe_result_t oe_get_sgx_endorsements(
 
     *endorsements_buffer = NULL;
     *endorsements_buffer_size = 0;
-
-    //
-    // Get the uri from the quote certificates, and then get the
-    // CRL (oe_get_revocation_info_from_certs)
-    //
 
     // Get PCK cert chain from the quote.
     OE_CHECK_MSG(
@@ -379,30 +400,17 @@ oe_result_t oe_get_sgx_endorsements(
         "Failed to get intermediate certificate. %s",
         oe_result_str(result));
 
-    //
-    // Get revocation information
-    //
+    // Get quote verification collateral
     OE_CHECK_MSG(
-        oe_get_revocation_info_from_certs(
-            &leaf_cert, &intermediate_cert, &revocation_info),
-        "Failed to get certificate revocation information. %s",
+        oe_get_sgx_quote_verification_collateral_from_certs(
+            &leaf_cert, &quote_verification_collateral),
+        "Failed to get certificate quote verification collateral information. "
+        "%s",
         oe_result_str(result));
 
-    //
-    // Get QE identify info
-    //
-    OE_CHECK_MSG(
-        oe_get_qe_identity_info(&qe_id_info),
-        "Failed to get quote enclave identity information. %s",
-        oe_result_str(result));
-
-    //
-    // Create endorsement structure
-    //
     OE_CHECK_MSG(
         oe_create_sgx_endorsements(
-            &revocation_info,
-            &qe_id_info,
+            &quote_verification_collateral,
             (oe_endorsements_t**)endorsements_buffer,
             endorsements_buffer_size),
         "Failed to create SGX endorsements.",
@@ -414,8 +422,8 @@ done:
     oe_cert_free(&leaf_cert);
     oe_cert_free(&intermediate_cert);
     oe_cert_chain_free(&pck_cert_chain);
-    oe_free_get_revocation_info_args(&revocation_info);
-    oe_free_qe_identity_info_args(&qe_id_info);
+    oe_free_sgx_quote_verification_collateral_args(
+        &quote_verification_collateral);
 
     OE_TRACE_INFO(
         "Exit call %s: %d(%s)\n", __FUNCTION__, result, oe_result_str(result));

@@ -20,8 +20,8 @@
 #include <openssl/x509.h>
 #endif
 
+#include "../../../../common/sgx/collateral.h"
 #include "../../../../common/sgx/quote.h"
-#include "../../../../common/sgx/revocation.h"
 #include "../../../../host/sgx/sgxquoteprovider.h"
 
 #ifdef OE_LINK_SGX_DCAP_QL
