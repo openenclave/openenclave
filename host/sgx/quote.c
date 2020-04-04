@@ -4,10 +4,10 @@
 #include "quote.h"
 #include <assert.h>
 #include <limits.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 
 #if defined(OE_LINK_SGX_DCAP_QL)

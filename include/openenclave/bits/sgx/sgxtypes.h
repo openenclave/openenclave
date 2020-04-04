@@ -7,17 +7,17 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/properties.h>
 #include <openenclave/bits/result.h>
+#include <openenclave/bits/sgx/epid.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/defs.h>
-#include <openenclave/internal/types.h>
-#include "crypto/sha.h"
-#include "epid.h"
-#include "jump.h"
 
 OE_EXTERNC_BEGIN
 
 #define OE_KEY_SIZE 384
 #define OE_EXPONENT_SIZE 4
+
+#ifndef OE_SHA256_SIZE
+#define OE_SHA256_SIZE 32
+#endif
 
 #define SGX_FLAGS_INITTED 0x0000000000000001ULL
 #define SGX_FLAGS_DEBUG 0x0000000000000002ULL

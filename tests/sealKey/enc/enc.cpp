@@ -2,13 +2,13 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/sgxkeys.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
 #include <stdlib.h>
 #include <string.h>

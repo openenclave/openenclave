@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "report.h"
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
@@ -11,7 +12,6 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "sgx_t.h"
 

@@ -1,12 +1,12 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 #include "quote.h"
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/crypto/ec.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"
 #include "endorsements.h"

@@ -36,7 +36,7 @@
 #include "cxxabi.h"
 
 // For accessing oe_thread_data_t
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 
 #pragma weak pthread_key_create
 #pragma weak pthread_setspecific

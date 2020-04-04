@@ -54,7 +54,7 @@ if(OE_SGX)
     add_custom_command(
         OUTPUT sgx_t.h sgx_t.c sgx_args.h
         DEPENDS ${SGX_EDL_FILE} edger8r
-        COMMAND edger8r --search-path ${EDL_DIR} --trusted ${SGX_EDL_FILE})
+        COMMAND edger8r --search-path ${SGX_EDL_DIR} --trusted ${SGX_EDL_FILE})
 
     add_custom_target(sgx_trusted_edl
         DEPENDS sgx_t.h sgx_t.c sgx_args.h)

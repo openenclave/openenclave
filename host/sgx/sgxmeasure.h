@@ -4,8 +4,8 @@
 #ifndef _OE_SGXMEASURE_H
 #define _OE_SGXMEASURE_H
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/crypto/sha.h>
-#include <openenclave/internal/sgxtypes.h>
 
 OE_EXTERNC_BEGIN
 

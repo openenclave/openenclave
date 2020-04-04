@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 
 #include "thread.h"
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include "sgx_t.h"
 #include "td.h"

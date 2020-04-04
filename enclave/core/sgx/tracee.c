@@ -1,9 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/report.h>
-#include <openenclave/internal/sgxtypes.h>
 
 #include "../tracee.h"
 #include "report.h"

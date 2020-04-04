@@ -4,9 +4,9 @@
 #ifndef _OE_SGXLOAD_H
 #define _OE_SGXLOAD_H
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/sgxcreate.h>
-#include <openenclave/internal/sgxtypes.h>
 
 OE_EXTERNC_BEGIN
 

@@ -3,10 +3,10 @@
 
 #include <openenclave/attestation/sgx/attester.h>
 #include <openenclave/attestation/sgx/verifier.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgx/plugin.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>

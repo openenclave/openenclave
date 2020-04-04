@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 
 #include "init.h"
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include "asmdefs.h"
 #include "td.h"

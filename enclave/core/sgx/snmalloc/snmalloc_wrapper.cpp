@@ -1,7 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include "../../oe_alloc_thread.h"
 #include "../../oe_nodebug_alloc.h"
 
