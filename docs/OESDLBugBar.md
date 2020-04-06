@@ -1,86 +1,51 @@
 # Open Enclave SDL Bug Bar
 
-The information listed in this “bug bar” is intended to help Open Enclave SDK developers to triage bugs and determine the bug severity in terms of security. 
+The information listed in this “bug bar” is intended to help Open Enclave SDK developers to triage bugs and determine the bug severity in terms of security for all types of Trusted Execution Environment (TEE) supported by Open Enclave. It is highly recommended to fix all known bugs with critical, important, or moderate severity prior to release. This bug bar should also be used during the triage meeting to evaluate bugs for any security implication and tag accordingly.
 
-This bug bar and the ratings are derived based on [Microsoft SDL Bug bar](https://aka.ms/sdlbugbar) to apply for the enclaves, specifically to the enclaves created using Intel SGX technology. It is highly recommended to fix all known bugs with critical, important, or moderate severity prior to release. 
+The bug bar describes different severities for the bugs affecting TEE. TEEs are specifically designed to provide: Confidentiality, Integrity, Authenticity and, to a more limited extent, Authorization. There is a security boundary between TEE and rest of the system, which needs to be defended against any bugs that lead to compromising the TEE purpose. Anything within TEE should never be accessible or modified from outside.
 
-The bug bar describes different severities for the bugs affecting enclaves. Enclaves are the privileged execution environment which is a security domain. There is a security boundary between enclave and rest of the system, this is a stronger security boundary that should be defended. It is important to understand the enclave security boundary, it should be apt to consider this as a confidentiality & integrity boundary. Anything that is inside enclave should never be accessible or modified from outside of the enclave. 
-
-Enclave security boundary is quite interesting, everything that is outside this boundary is adversarial which can fully control the existence of the enclave but can’t access or modify the data over inside the enclave crossing the enclave security boundary. Things that are outside the enclave security boundary are the current application, other enclaves, OS kernel, VMM/Hypervisor & SMM. Except the CPU everything is untrusted for enclaves. 
-
-
-## Enclave – Vulnerability Type Pivot 
+## Open Enclave – Severity Type Pivot
 -------------------------------------
 
-* ### Spoofing
-	**Critical**
-    * A malicious enclave spoofs the identity of a victim enclave
-  	
-    -------------
+* ### **Critical**
+  Information Disclosure
+  * Any cases where an attacker can bypass the TEE security boundary to read arbitrary information belonging to a TEE that was not intended or designed to be exposed
+      * Example:
+        * Unintentional read access to memory contents of an enclave from outside (application, OS kernel, Hypervisor or other enclave)
 
-* ### Tampering	
-    **Critical**
-    * Any modification of enclave code or data by untrusted entity
-     
-        Note: This vulnerability can also lead to memory corruption in which case we should triage this as Elevation of Privilege bug. The distinction to make here is that the vulnerability is allowing an attacker to modify enclave code or data without getting noticed 
+  Tampering
+  * Any modification of TEE code or data by untrusted entity outside of the TEE
+    * Example:
+      * Modifying the enclave image in plain text in such a way that measurements doesn't get changed
 
-            Examples:
-            •	Tampering the enclave image in plain text and keep the measurements same
-    
-    -------------
+  Elevation of Privilege  
+  * Any cases where an attacker can bypass the TEE security boundary and execute arbitrary code within the TEE context
+    * Examples:
+      * Any exploitable memory-safety issue inside an enclave that are induced from outside of enclave
+      * Attacker able to invoke any executable code directly other than enclave entry points
+      * Executing non-enclave code in the context of an enclave thread
+       
+-------------
 
-* ### Repudiation
-    * N/A
+* ### **Important**
+  Information Disclosure
+  * Disclosing a random TEE memory contents to outside of the TEE. In this case attacker doesn't control what data is being leaked
+    * Examples:
+      * OCALLS passing uninitialized memory from enclave to outside
+      * Unintended writes of plaintext enclave memory to shared memory
+------------
 
-            Repudiation threats are associated with users who deny performing an action without other parties having any way to prove otherwise. This is not applicable in the context of enclave as it is against the confidential security property of enclave to track against user actions within enclave context.
-            
-    -------------
+* ### **Moderate**
+  Elevation Of Privilege
+  * Any access to untrusted memory by TEE in an unsafe manner
+    * Example:
+      * Any untrusted memory that is accessed multiple times (multiple fetch) without copying it to enclave memory
+------------
 
-* ### Information Disclosure
-    **Critical**
-    * Any cases where the attacker can bypass the enclave security boundary to read arbitrary information belonging to an enclave that was not intended or designed to be exposed
-
-            Examples:
-            •	Unintentional read access to memory contents in enclave space from outside (application, OS kernel, Hypervisor)
-
-    **Important**
-	* Disclosing enclave memory contents outside the enclave security boundary. In this case attacker doesn't control what data is being leaked
-
-            Examples:
-            •	OCALLS passing uninitialized memory from enclave to outside	
-    -----------
-
-* ### Denial of Service
-	* N/A
-
-            Enclave threat model doesn’t protect against DoS. Since the enclave execution is under the adversarial control, which is the host OS, the threat model assumes the host OS to be untrusted, so DoS attacks are unprotected.
-
-    -----------
-
-* ### Elevation of Privilege	
-    **Critical**
-    * Any cases where an attacker can bypass the security boundary and execute arbitrary code within an enclave context
-
-            Examples:
-            •	Attacker able to invoke any executable code other than enclave entry points
-
-    * All exploitable write AVs (Access Violations), integer overflows and other crashes
-
-            Examples:
-            •	Any memory corruption bug within enclave that can be triggered from an attacker outside of the enclave	
-        
-    **Important**
-	* Access to untrusted memory in an unsafe manner
-
-            Examples:
-            •	Any untrusted memory that is accessed multiple times (multiple fetch) without copying it to enclave memory
-
-    * Executing non-enclave code in the context of an enclave thread
-    
-    * Invoking enclave interface without proper initialization 
-
-            Examples:
-            •	Attacker able to invoke enclave functions on a different enclave thread while the initialization is happening on a thread that is handling exception
-            •	Any cases where an attacker can spoof the return from OCALL 	
-        
-    ------------
+* ### **Low**
+  Information Disclosure
+  * Any exposure to TEE data, that are considered as non-secrets, to outside of TEE
+    * Examples:
+      * Reads of enclave copy of data from shared memory
+      * Unintended writes of zeroed enclave memory to shared memory
+------------
