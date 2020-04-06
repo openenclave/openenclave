@@ -42,43 +42,28 @@ enclave
             size_t quote_size,
             [out] size_t* quote_size_out);
 
-        oe_result_t oe_get_qe_identity_info_ocall(
-            [out, size=qe_id_info_size] void* qe_id_info,
-            size_t qe_id_info_size,
-            [out] size_t* qe_id_info_size_out,
-            [out, size=issuer_chain_size] void* issuer_chain,
-            size_t issuer_chain_size,
-            [out] size_t* issuer_chain_size_out);
-
-        oe_result_t oe_get_revocation_info_ocall(
+        oe_result_t oe_get_quote_verification_collateral_ocall(
             [in] uint8_t fmspc[6],
-            size_t num_crl_urls,
-            [in, string] const char* crl_urls0,
-            [in, string] const char* crl_urls1,
-            [in, string] const char* crl_urls2,
             [out, size=tcb_info_size] void* tcb_info,
             size_t tcb_info_size,
             [out] size_t* tcb_info_size_out,
-            [out, size=tcb_issuer_chain_size] void* tcb_issuer_chain,
-            size_t tcb_issuer_chain_size,
-            [out] size_t* tcb_issuer_chain_size_out,
-            [out, size=crl0_size] void* crl0,
-            size_t crl0_size,
-            [out] size_t* crl0_size_out,
-            [out, size=crl1_size] void* crl1,
-            size_t crl1_size,
-            [out] size_t* crl1_size_out,
-            [out, size=crl2_size] void* crl2,
-            size_t crl2_size,
-            [out] size_t* crl2_size_out,
-            [out, size=crl_issuer_chain0_size] void* crl_issuer_chain0,
-            size_t crl_issuer_chain0_size,
-            [out] size_t* crl_issuer_chain0_size_out,
-            [out, size=crl_issuer_chain1_size] void* crl_issuer_chain1,
-            size_t crl_issuer_chain1_size,
-            [out] size_t* crl_issuer_chain1_size_out,
-            [out, size=crl_issuer_chain2_size] void* crl_issuer_chain2,
-            size_t crl_issuer_chain2_size,
-            [out] size_t* crl_issuer_chain2_size_out);
+            [out, size=tcb_info_issuer_chain_size] void* tcb_info_issuer_chain,
+            size_t tcb_info_issuer_chain_size,
+            [out] size_t* tcb_info_issuer_chain_size_out,
+            [out, size=pck_crl_size] void* pck_crl,
+            size_t pck_crl_size,
+            [out] size_t* pck_crl_size_out,
+            [out, size=root_ca_crl_size] void* root_ca_crl,
+            size_t root_ca_crl_size,
+            [out] size_t* root_ca_crl_size_out,
+            [out, size=pck_crl_issuer_chain_size] void* pck_crl_issuer_chain,
+            size_t pck_crl_issuer_chain_size,
+            [out] size_t* pck_crl_issuer_chain_size_out,
+            [out, size=qe_identity_size] void* qe_identity,
+            size_t qe_identity_size,
+            [out] size_t* qe_identity_size_out,
+            [out, size=qe_identity_issuer_chain_size] void* qe_identity_issuer_chain,
+            size_t qe_identity_issuer_chain_size,
+            [out] size_t* qe_identity_issuer_chain_size_out);
     };
 };

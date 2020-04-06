@@ -1,7 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include "revocation.h"
+#include "collateral.h"
 #include <openenclave/bits/attestation.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/crypto/cert.h>
@@ -183,77 +183,16 @@ typedef struct _url
 } url_t;
 
 /**
- * Get CRL distribution points from given cert.
+ * Call into host to fetch collateral given the PCK certificate.
  */
-
-static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
-{
-    oe_result_t result = OE_FAILURE;
-    size_t buffer_size = 512;
-    uint8_t* buffer = oe_malloc(buffer_size);
-    char** urls = NULL;
-    uint64_t num_urls = 0;
-    size_t url_length = 0;
-
-    if (buffer == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    result = oe_get_crl_distribution_points(
-        cert, &urls, &num_urls, buffer, &buffer_size);
-
-    if (result == OE_BUFFER_TOO_SMALL)
-    {
-        oe_free(buffer);
-        buffer = oe_malloc(buffer_size);
-        if (buffer == NULL)
-            OE_RAISE(OE_OUT_OF_MEMORY);
-
-        result = oe_get_crl_distribution_points(
-            cert, &urls, &num_urls, buffer, &buffer_size);
-    }
-
-    if (result == OE_OK)
-    {
-        // At most 1 distribution point is expected.
-        if (num_urls != 1)
-            OE_RAISE(OE_FAILURE);
-
-        // Sanity check. No URL should be this large.
-        url_length = oe_strlen(urls[0]);
-        if (url_length > OE_INT16_MAX)
-            OE_RAISE(OE_OUT_OF_BOUNDS);
-
-        // Add +1 to include null character.
-        url_length++;
-
-        *url = (char*)oe_malloc(url_length);
-        if (*url == NULL)
-            OE_RAISE(OE_OUT_OF_MEMORY);
-
-        OE_CHECK(oe_memcpy_s(*url, url_length, urls[0], url_length));
-        result = OE_OK;
-    }
-
-done:
-    oe_free(buffer);
-    return result;
-}
-
-/**
- * Call into host to fetch revocation information given the CA and PCK
- * certificates.
- */
-oe_result_t oe_get_revocation_info_from_certs(
+oe_result_t oe_get_sgx_quote_verification_collateral_from_certs(
     oe_cert_t* leaf_cert,
-    oe_cert_t* intermediate_cert,
-    oe_get_revocation_info_args_t* args)
+    oe_get_sgx_quote_verification_collateral_args_t* args)
 {
     oe_result_t result = OE_FAILURE;
     ParsedExtensionInfo parsed_extension_info = {{0}};
-    char* intermediate_crl_url = NULL;
-    char* leaf_crl_url = NULL;
 
-    if (intermediate_cert == NULL || leaf_cert == NULL)
+    if (leaf_cert == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Gather fmspc.
@@ -264,22 +203,10 @@ oe_result_t oe_get_revocation_info_from_certs(
         parsed_extension_info.fmspc,
         sizeof(parsed_extension_info.fmspc)));
 
-    // Gather CRL distribution point URLs from certs.
-    OE_CHECK(
-        _get_crl_distribution_point(intermediate_cert, &intermediate_crl_url));
-    OE_CHECK(_get_crl_distribution_point(leaf_cert, &leaf_crl_url));
-
-    args->crl_urls[0] = leaf_crl_url;
-    args->crl_urls[1] = intermediate_crl_url;
-    args->num_crl_urls = 2;
-
-    OE_CHECK(oe_get_revocation_info(args));
+    OE_CHECK(oe_get_sgx_quote_verification_collateral(args));
 
     result = OE_OK;
 done:
-
-    oe_free(leaf_crl_url);
-    oe_free(intermediate_crl_url);
 
     return result;
 }
@@ -343,7 +270,7 @@ oe_result_t oe_validate_revocation_list(
     for (uint32_t i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; ++i)
     {
         OE_CHECK_MSG(
-            oe_crl_read_der(
+            oe_crl_read_pem(
                 &crls[i],
                 sgx_endorsements
                     ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT + i]

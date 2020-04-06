@@ -260,6 +260,11 @@ typedef enum _oe_result
     OE_INVALID_QE_IDENTITY_INFO,
 
     /**
+     * The quote verification collateral is invalid.
+     */
+    OE_INVALID_ENDORSEMENT,
+
+    /**
      * The enclave image contains unsupported constructs.
      */
     OE_UNSUPPORTED_ENCLAVE_IMAGE,

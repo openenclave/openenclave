@@ -143,52 +143,39 @@ done:
     return result;
 }
 
-oe_result_t oe_get_revocation_info_ocall(
+oe_result_t oe_get_quote_verification_collateral_ocall(
     uint8_t fmspc[6],
-    size_t num_crl_urls,
-    const char* crl_urls0,
-    const char* crl_urls1,
-    const char* crl_urls2,
     void* tcb_info,
     size_t tcb_info_size,
     size_t* tcb_info_size_out,
-    void* tcb_issuer_chain,
-    size_t tcb_issuer_chain_size,
-    size_t* tcb_issuer_chain_size_out,
-    void* crl0,
-    size_t crl0_size,
-    size_t* crl0_size_out,
-    void* crl1,
-    size_t crl1_size,
-    size_t* crl1_size_out,
-    void* crl2,
-    size_t crl2_size,
-    size_t* crl2_size_out,
-    void* crl_issuer_chain0,
-    size_t crl_issuer_chain0_size,
-    size_t* crl_issuer_chain0_size_out,
-    void* crl_issuer_chain1,
-    size_t crl_issuer_chain1_size,
-    size_t* crl_issuer_chain1_size_out,
-    void* crl_issuer_chain2,
-    size_t crl_issuer_chain2_size,
-    size_t* crl_issuer_chain2_size_out)
+    void* tcb_info_issuer_chain,
+    size_t tcb_info_issuer_chain_size,
+    size_t* tcb_info_issuer_chain_size_out,
+    void* pck_crl,
+    size_t pck_crl_size,
+    size_t* pck_crl_size_out,
+    void* root_ca_crl,
+    size_t root_ca_crl_size,
+    size_t* root_ca_crl_size_out,
+    void* pck_crl_issuer_chain,
+    size_t pck_crl_issuer_chain_size,
+    size_t* pck_crl_issuer_chain_size_out,
+    void* qe_identity,
+    size_t qe_identity_size,
+    size_t* qe_identity_size_out,
+    void* qe_identity_issuer_chain,
+    size_t qe_identity_issuer_chain_size,
+    size_t* qe_identity_issuer_chain_size_out)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_revocation_info_args_t args = {0};
+    oe_get_sgx_quote_verification_collateral_args_t args = {0};
     bool buffer_too_small = false;
 
     /* fmspc */
     memcpy(args.fmspc, fmspc, sizeof(args.fmspc));
 
-    /* crl_urls */
-    args.num_crl_urls = (uint32_t)num_crl_urls;
-    args.crl_urls[0] = crl_urls0;
-    args.crl_urls[1] = crl_urls1;
-    args.crl_urls[2] = crl_urls2;
-
     /* Populate the output fields. */
-    OE_CHECK(oe_get_revocation_info(&args));
+    OE_CHECK(oe_get_sgx_quote_verification_collateral(&args));
 
     OE_CHECK(_copy_output_buffer(
         tcb_info,
@@ -199,59 +186,51 @@ oe_result_t oe_get_revocation_info_ocall(
         &buffer_too_small));
 
     OE_CHECK(_copy_output_buffer(
-        tcb_issuer_chain,
-        tcb_issuer_chain_size,
-        tcb_issuer_chain_size_out,
-        args.tcb_issuer_chain,
-        args.tcb_issuer_chain_size,
+        tcb_info_issuer_chain,
+        tcb_info_issuer_chain_size,
+        tcb_info_issuer_chain_size_out,
+        args.tcb_info_issuer_chain,
+        args.tcb_info_issuer_chain_size,
         &buffer_too_small));
 
     OE_CHECK(_copy_output_buffer(
-        crl0,
-        crl0_size,
-        crl0_size_out,
-        args.crl[0],
-        args.crl_size[0],
+        pck_crl,
+        pck_crl_size,
+        pck_crl_size_out,
+        args.pck_crl,
+        args.pck_crl_size,
         &buffer_too_small));
 
     OE_CHECK(_copy_output_buffer(
-        crl1,
-        crl1_size,
-        crl1_size_out,
-        args.crl[1],
-        args.crl_size[1],
+        root_ca_crl,
+        root_ca_crl_size,
+        root_ca_crl_size_out,
+        args.root_ca_crl,
+        args.root_ca_crl_size,
         &buffer_too_small));
 
     OE_CHECK(_copy_output_buffer(
-        crl2,
-        crl2_size,
-        crl2_size_out,
-        args.crl[2],
-        args.crl_size[2],
+        pck_crl_issuer_chain,
+        pck_crl_issuer_chain_size,
+        pck_crl_issuer_chain_size_out,
+        args.pck_crl_issuer_chain,
+        args.pck_crl_issuer_chain_size,
         &buffer_too_small));
 
     OE_CHECK(_copy_output_buffer(
-        crl_issuer_chain0,
-        crl_issuer_chain0_size,
-        crl_issuer_chain0_size_out,
-        args.crl_issuer_chain[0],
-        args.crl_issuer_chain_size[0],
+        qe_identity,
+        qe_identity_size,
+        qe_identity_size_out,
+        args.qe_identity,
+        args.qe_identity_size,
         &buffer_too_small));
 
     OE_CHECK(_copy_output_buffer(
-        crl_issuer_chain1,
-        crl_issuer_chain1_size,
-        crl_issuer_chain1_size_out,
-        args.crl_issuer_chain[1],
-        args.crl_issuer_chain_size[1],
-        &buffer_too_small));
-
-    OE_CHECK(_copy_output_buffer(
-        crl_issuer_chain2,
-        crl_issuer_chain2_size,
-        crl_issuer_chain2_size_out,
-        args.crl_issuer_chain[2],
-        args.crl_issuer_chain_size[2],
+        qe_identity_issuer_chain,
+        qe_identity_issuer_chain_size,
+        qe_identity_issuer_chain_size_out,
+        args.qe_identity_issuer_chain,
+        args.qe_identity_issuer_chain_size,
         &buffer_too_small));
 
     if (buffer_too_small)
@@ -261,138 +240,59 @@ oe_result_t oe_get_revocation_info_ocall(
 
 done:
 
-    free(args.buffer);
-
-    return result;
-}
-
-oe_result_t oe_get_qe_identity_info_ocall(
-    void* qe_id_info,
-    size_t qe_id_info_size,
-    size_t* qe_id_info_size_out,
-    void* issuer_chain,
-    size_t issuer_chain_size,
-    size_t* issuer_chain_size_out)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_get_qe_identity_info_args_t args = {0};
-
-    if (!qe_id_info_size_out || !issuer_chain_size_out)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    OE_CHECK(oe_get_qe_identity_info(&args));
-
-    if (args.qe_id_info_size > qe_id_info_size)
-    {
-        *qe_id_info_size_out = args.qe_id_info_size;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
-    }
-
-    if (args.issuer_chain_size > issuer_chain_size)
-    {
-        *issuer_chain_size_out = args.issuer_chain_size;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
-    }
-
-    if (qe_id_info)
-        memcpy(qe_id_info, args.qe_id_info, args.qe_id_info_size);
-
-    *qe_id_info_size_out = args.qe_id_info_size;
-
-    if (issuer_chain)
-        memcpy(issuer_chain, args.issuer_chain, args.issuer_chain_size);
-
-    *issuer_chain_size_out = args.issuer_chain_size;
-    result = OE_OK;
-
-done:
-
-    if (args.host_out_buffer)
-        free(args.host_out_buffer);
+    free(args.host_out_buffer);
 
     return result;
 }
 
 #else /* !defined(OE_LINK_SGX_DCAP_QL) */
 
-oe_result_t oe_get_revocation_info_ocall(
+oe_result_t oe_get_quote_verification_collateral_ocall(
     uint8_t fmspc[6],
-    size_t num_crl_urls,
-    const char* crl_urls0,
-    const char* crl_urls1,
-    const char* crl_urls2,
     void* tcb_info,
     size_t tcb_info_size,
     size_t* tcb_info_size_out,
-    void* tcb_issuer_chain,
-    size_t tcb_issuer_chain_size,
-    size_t* tcb_issuer_chain_size_out,
-    void* crl0,
-    size_t crl0_size,
-    size_t* crl0_size_out,
-    void* crl1,
-    size_t crl1_size,
-    size_t* crl1_size_out,
-    void* crl2,
-    size_t crl2_size,
-    size_t* crl2_size_out,
-    void* crl_issuer_chain0,
-    size_t crl_issuer_chain0_size,
-    size_t* crl_issuer_chain0_size_out,
-    void* crl_issuer_chain1,
-    size_t crl_issuer_chain1_size,
-    size_t* crl_issuer_chain1_size_out,
-    void* crl_issuer_chain2,
-    size_t crl_issuer_chain2_size,
-    size_t* crl_issuer_chain2_size_out)
+    void* tcb_info_issuer_chain,
+    size_t tcb_info_issuer_chain_size,
+    size_t* tcb_info_issuer_chain_size_out,
+    void* pck_crl,
+    size_t pck_crl_size,
+    size_t* pck_crl_size_out,
+    void* root_ca_crl,
+    size_t root_ca_crl_size,
+    size_t* root_ca_crl_size_out,
+    void* pck_crl_issuer_chain,
+    size_t pck_crl_issuer_chain_size,
+    size_t* pck_crl_issuer_chain_size_out,
+    void* qe_identity,
+    size_t qe_identity_size,
+    size_t* qe_identity_size_out,
+    void* qe_identity_issuer_chain,
+    size_t qe_identity_issuer_chain_size,
+    size_t* qe_identity_issuer_chain_size_out)
 {
     OE_UNUSED(fmspc);
-    OE_UNUSED(num_crl_urls);
-    OE_UNUSED(crl_urls0);
-    OE_UNUSED(crl_urls1);
-    OE_UNUSED(crl_urls2);
     OE_UNUSED(tcb_info);
     OE_UNUSED(tcb_info_size);
     OE_UNUSED(tcb_info_size_out);
-    OE_UNUSED(tcb_issuer_chain);
-    OE_UNUSED(tcb_issuer_chain_size);
-    OE_UNUSED(tcb_issuer_chain_size_out);
-    OE_UNUSED(crl0);
-    OE_UNUSED(crl0_size);
-    OE_UNUSED(crl0_size_out);
-    OE_UNUSED(crl1);
-    OE_UNUSED(crl1_size);
-    OE_UNUSED(crl1_size_out);
-    OE_UNUSED(crl2);
-    OE_UNUSED(crl2_size);
-    OE_UNUSED(crl2_size_out);
-    OE_UNUSED(crl_issuer_chain0);
-    OE_UNUSED(crl_issuer_chain0_size);
-    OE_UNUSED(crl_issuer_chain0_size_out);
-    OE_UNUSED(crl_issuer_chain1);
-    OE_UNUSED(crl_issuer_chain1_size);
-    OE_UNUSED(crl_issuer_chain1_size_out);
-    OE_UNUSED(crl_issuer_chain2);
-    OE_UNUSED(crl_issuer_chain2_size);
-    OE_UNUSED(crl_issuer_chain2_size_out);
-
-    return OE_UNSUPPORTED;
-}
-
-oe_result_t oe_get_qe_identity_info_ocall(
-    void* qe_id_info,
-    size_t qe_id_info_size,
-    size_t* qe_id_info_size_out,
-    void* issuer_chain,
-    size_t issuer_chain_size,
-    size_t* issuer_chain_size_out)
-{
-    OE_UNUSED(qe_id_info);
-    OE_UNUSED(qe_id_info_size);
-    OE_UNUSED(qe_id_info_size_out);
-    OE_UNUSED(issuer_chain);
-    OE_UNUSED(issuer_chain_size);
-    OE_UNUSED(issuer_chain_size_out);
+    OE_UNUSED(tcb_info_issuer_chain);
+    OE_UNUSED(tcb_info_issuer_chain_size);
+    OE_UNUSED(tcb_info_issuer_chain_size_out);
+    OE_UNUSED(pck_crl);
+    OE_UNUSED(pck_crl_size);
+    OE_UNUSED(pck_crl_size_out);
+    OE_UNUSED(root_ca_crl);
+    OE_UNUSED(root_ca_crl_size);
+    OE_UNUSED(root_ca_crl_size_out);
+    OE_UNUSED(pck_crl_issuer_chain);
+    OE_UNUSED(pck_crl_issuer_chain_size);
+    OE_UNUSED(pck_crl_issuer_chain_size_out);
+    OE_UNUSED(qe_identity);
+    OE_UNUSED(qe_identity_size);
+    OE_UNUSED(qe_identity_size_out);
+    OE_UNUSED(qe_identity_issuer_chain);
+    OE_UNUSED(qe_identity_issuer_chain_size);
+    OE_UNUSED(qe_identity_issuer_chain_size_out);
 
     return OE_UNSUPPORTED;
 }
