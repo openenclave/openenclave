@@ -220,7 +220,7 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
                            ninja -v
                            """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", compiler, task, "--cap-add=SYS_PTRACE")
-                stash includes: 'build/tests/**', name: "linux-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${version}-${BUILD_NUMBER}"
+                stash includes: 'build/tests/**', name: "linux-${label}-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${version}-${BUILD_NUMBER}"
             }
         }
     }
@@ -229,7 +229,7 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
-                unstash "linux-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${version}-${BUILD_NUMBER}"
+                unstash "linux-${label}-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${version}-${BUILD_NUMBER}"
                 bat 'move build linuxbin'
                 dir('build') {
                   bat """
