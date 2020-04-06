@@ -4,6 +4,7 @@
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/sgx/td.h>
 
 #include "../tracee.h"
 #include "report.h"

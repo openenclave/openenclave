@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/constants_x64.h>
+#include <openenclave/internal/sgx/td.h>
 #include <pthread.h>
 #include <sys/user.h>
 
