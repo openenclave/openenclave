@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/jump.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/types.h>
 #include "asmdefs.h"
 
