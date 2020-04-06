@@ -14,7 +14,15 @@
 
 enclave {
 
+    include "openenclave/bits/types.h"
     include "openenclave/bits/edl/syscall_types.h"
+
+    struct oe_host_pollfd
+    {
+        oe_host_fd_t fd;
+        short int events;
+        short int revents;
+    };
 
     struct oe_pollfd
     {
