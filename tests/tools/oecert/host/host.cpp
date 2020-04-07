@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "oecert_u.h"
 
 #include "../../../../common/sgx/endorsements.h"
@@ -17,6 +18,14 @@
 #define INPUT_PARAM_OPTION_CERT "--cert"
 #define INPUT_PARAM_OPTION_REPORT "--report"
 #define INPUT_PARAM_OPTION_OUT_FILE "--out"
+
+double get_relative_time_in_microseconds()
+{
+    struct timespec current_time;
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    return (double)current_time.tv_sec * 1000000 +
+           (double)current_time.tv_nsec / 1000.0;
+}
 
 // Structure to store input parameters
 //
@@ -216,6 +225,8 @@ static oe_result_t _gen_report(
                 report_filename);
             printf("Generatting collateral file: %s\n", collateral_filename);
 
+            double start = get_relative_time_in_microseconds();
+            printf("%f", start);
             result = oe_get_sgx_endorsements(
                 header->report,
                 header->report_size,

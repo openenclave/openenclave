@@ -6,12 +6,23 @@
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
+//#include <openenclave/internal/time.h>
+//#include <openenclave/corelibc/time.h>
+//#include <time.h>
 #include "../common.h"
 
 #include "collateral.h"
 #include "quote.h"
 
 #define CREATION_DATETIME_SIZE 21
+
+// double get_relative_time_in_microseconds()
+// {
+//     struct timespec current_time;
+//     clock_gettime(CLOCK_REALTIME, &current_time);
+//     return (double)current_time.tv_sec * 1000000 +
+//            (double)current_time.tv_nsec / 1000.0;
+// }
 
 /**
  * Create oe_endorsements_t from the given SGX endorsements.
@@ -26,6 +37,27 @@ static oe_result_t oe_create_sgx_endorsements(
     oe_endorsements_t** endorsements_buffer,
     size_t* endorsements_buffer_size)
 {
+
+    double start = get_relative_time_in_microseconds();
+    OE_TRACE_INFO("oe_create_sgx_endorsements get_relative_time_in_microseconds %f\n", start);
+
+    //log("get_relative_time_in_microseconds: %f\n", start);
+    //  clock_t start = 0;
+    //  start = clock();
+    //  OE_TRACE_INFO("before time %ld\n", start);
+
+    //uint64_t before = oe_get_time();
+    //OE_TRACE_INFO("before time %u\n", before);
+
+    //time_t tloc;
+    // oe_time(&tloc);
+
+    // clock_t a = oe_clock();
+    // printf("%lu", a);
+
+    // struct timespec current_time;
+    // clock_gettime(CLOCK_REALTIME, &current_time);
+
     oe_result_t result = OE_UNEXPECTED;
     oe_endorsements_t* endorsements = NULL;
     uint8_t* root_ca_crl_issuer_chain =
@@ -38,6 +70,17 @@ static oe_result_t oe_create_sgx_endorsements(
     uint32_t size;
     uint32_t root_ca_crl_issuer_chain_size;
     uint32_t remaining_size;
+
+    // oe_datetime_t datetime_now22 = {0};
+    // size_t datetime_size = CREATION_DATETIME_SIZE;
+
+    // OE_CHECK(oe_datetime_now(&datetime_now22));
+
+    // OE_CHECK_MSG(
+    //     oe_datetime_to_string(
+    //         &datetime_now22, creation_datetime, &datetime_size),
+    //         "Failed to update endorsement creation time. %s",
+    //         oe_result_str(result));
 
     OE_TRACE_INFO("Enter call %s\n", __FUNCTION__);
 
@@ -260,6 +303,11 @@ done:
 
     OE_TRACE_INFO(
         "Exit call %s: %d(%s)\n", __FUNCTION__, result, oe_result_str(result));
+
+    double end = get_relative_time_in_microseconds();
+    OE_TRACE_INFO("oe_create_sgx_endorsements get_relative_time_in_microseconds: %f\n", end);
+
+    OE_TRACE_INFO("time took: %f\n", (end - start));
 
     return result;
 }

@@ -45,6 +45,8 @@ int32_t oe_datetime_compare(
     const oe_datetime_t* date1,
     const oe_datetime_t* date2);
 
+double get_relative_time_in_microseconds(void);
+
 /**
  * Return the current system time in GMT time.
  */

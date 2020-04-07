@@ -26,6 +26,14 @@
 
 #ifdef OE_LINK_SGX_DCAP_QL
 
+// double get_relative_time_in_microseconds()
+// {
+//     struct timespec current_time;
+//     clock_gettime(CLOCK_REALTIME, &current_time);
+//     return (double)current_time.tv_sec * 1000000 +
+//            (double)current_time.tv_nsec / 1000.0;
+// }
+
 extern FILE* log_file;
 
 void log(const char* fmt, ...)
@@ -120,6 +128,9 @@ oe_result_t gen_report(oe_enclave_t* enclave)
             uint8_t* endorsements_data = NULL;
             size_t endorsements_data_size = 0;
 
+            double start = get_relative_time_in_microseconds();
+            log("oe_get_sgx_endorsementsggg get_relative_time_in_microseconds: %f\n", start);
+
             result = oe_get_sgx_endorsements(
                 (const uint8_t*)quote,
                 quote_size,
@@ -130,6 +141,11 @@ oe_result_t gen_report(oe_enclave_t* enclave)
                 log("ERROR: Failed to get endorsements\n");
                 goto exit;
             }
+
+            double end = get_relative_time_in_microseconds();
+            log("oe_get_sgx_endorsementsggg get_relative_time_in_microseconds: %f\n", end);
+
+            log("oe_get_sgx_endorsementsggg time took: %f\n", end - start);
 
             log("========== Got endorsements, size = %zu\n",
                 endorsements_data_size);

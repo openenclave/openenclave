@@ -9,4 +9,3 @@ add_executable(oecert host.cpp ${CMAKE_CURRENT_BINARY_DIR}/oecert_u.c)
 
 target_include_directories(oecert PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(oecert oehost)
-

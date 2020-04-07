@@ -78,6 +78,9 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         goto done;
     }
 
+    // double start = get_relative_time_in_microseconds();
+    // OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralaaa get_relative_time_in_microseconds %f\n", start);
+
     // fetch collateral information
     r = provider.get_sgx_quote_verification_collateral(
         fmspc, fmspc_size, (char*)CRL_CA_PROCESSOR, &collateral);
@@ -85,6 +88,11 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     {
         OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
     }
+
+    // double end = get_relative_time_in_microseconds();
+    // OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralaaa get_relative_time_in_microseconds: %f\n", end);
+
+    // OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralaaa time took: %f\n", (end - start));
 
     if (collateral->version != SGX_QL_QVE_COLLATERAL_VERSION)
     {

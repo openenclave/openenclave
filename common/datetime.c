@@ -3,8 +3,10 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/internal/datetime.h>
+#include <openenclave/internal/time.h>
 #include <openenclave/internal/raise.h>
 #include <time.h>
+#include <stdio.h>
 
 #define UNIX_EPOCH_YEAR (1970)
 #define OE_DATETIME_STR_SIZE (21)
@@ -225,6 +227,14 @@ int32_t oe_datetime_compare(
     return 0;
 }
 
+double get_relative_time_in_microseconds()
+{
+    struct timespec current_time;
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    return (double)current_time.tv_sec * 1000000 +
+           (double)current_time.tv_nsec / 1000.0;
+}
+
 oe_result_t oe_datetime_now(oe_datetime_t* value)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -249,6 +259,25 @@ done:
 
     return result;
 }
+
+// oe_result_t oe_clock(void)
+// {
+//     oe_result_t result = OE_UNEXPECTED;
+
+//     clock_t a = clock();
+//     printf("%lu", a);
+
+//     // value->year = (uint32_t)timeinfo.tm_year + 1900;
+//     // value->month = (uint32_t)timeinfo.tm_mon + 1;
+//     // value->day = (uint32_t)timeinfo.tm_mday;
+//     // value->hours = (uint32_t)timeinfo.tm_hour;
+//     // value->minutes = (uint32_t)timeinfo.tm_min;
+//     // value->seconds = (uint32_t)timeinfo.tm_sec;
+
+//     result = OE_OK;
+
+//     return result;
+// }
 
 void oe_datetime_log(const char* msg, const oe_datetime_t* date)
 {
