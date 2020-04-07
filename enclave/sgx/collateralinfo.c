@@ -19,8 +19,14 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     oe_get_sgx_quote_verification_collateral_args_t* args)
 {
     double start = get_relative_time_in_microseconds();
-    OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralocall get_relative_time_in_microseconds %f\n", start);
-    oe_printf("oe_get_sgx_quote_verification_collateralocall get_relative_time_in_microseconds %f\n", start);
+    OE_TRACE_INFO(
+        "oe_get_sgx_quote_verification_collateralocall "
+        "get_relative_time_in_microseconds %f\n",
+        start);
+    oe_printf(
+        "oe_get_sgx_quote_verification_collateralocall "
+        "get_relative_time_in_microseconds %f\n",
+        start);
 
     oe_result_t result = OE_FAILURE;
     oe_get_sgx_quote_verification_collateral_args_t in = {0};
@@ -171,9 +177,14 @@ done:
     }
 
     double end = get_relative_time_in_microseconds();
-    OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralocall get_relative_time_in_microseconds: %f\n", end);
+    OE_TRACE_INFO(
+        "oe_get_sgx_quote_verification_collateralocall "
+        "get_relative_time_in_microseconds: %f\n",
+        end);
 
-    OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralocall time took: %f\n", (end - start));
+    OE_TRACE_INFO(
+        "oe_get_sgx_quote_verification_collateralocall time took: %f\n",
+        (end - start));
 
     return result;
 }

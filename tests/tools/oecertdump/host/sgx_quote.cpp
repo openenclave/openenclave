@@ -129,7 +129,9 @@ oe_result_t gen_report(oe_enclave_t* enclave)
             size_t endorsements_data_size = 0;
 
             double start = get_relative_time_in_microseconds();
-            log("oe_get_sgx_endorsementsggg get_relative_time_in_microseconds: %f\n", start);
+            log("oe_get_sgx_endorsementsggg get_relative_time_in_microseconds: "
+                "%f\n",
+                start);
 
             result = oe_get_sgx_endorsements(
                 (const uint8_t*)quote,
@@ -143,7 +145,9 @@ oe_result_t gen_report(oe_enclave_t* enclave)
             }
 
             double end = get_relative_time_in_microseconds();
-            log("oe_get_sgx_endorsementsggg get_relative_time_in_microseconds: %f\n", end);
+            log("oe_get_sgx_endorsementsggg get_relative_time_in_microseconds: "
+                "%f\n",
+                end);
 
             log("oe_get_sgx_endorsementsggg time took: %f\n", end - start);
 

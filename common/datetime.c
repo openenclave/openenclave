@@ -3,10 +3,10 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/internal/datetime.h>
-#include <openenclave/internal/time.h>
 #include <openenclave/internal/raise.h>
-#include <time.h>
+#include <openenclave/internal/time.h>
 #include <stdio.h>
+#include <time.h>
 
 #define UNIX_EPOCH_YEAR (1970)
 #define OE_DATETIME_STR_SIZE (21)

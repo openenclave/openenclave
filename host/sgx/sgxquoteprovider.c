@@ -79,7 +79,8 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     }
 
     // double start = get_relative_time_in_microseconds();
-    // OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralaaa get_relative_time_in_microseconds %f\n", start);
+    // OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralaaa
+    // get_relative_time_in_microseconds %f\n", start);
 
     // fetch collateral information
     r = provider.get_sgx_quote_verification_collateral(
@@ -90,9 +91,11 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     }
 
     // double end = get_relative_time_in_microseconds();
-    // OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralaaa get_relative_time_in_microseconds: %f\n", end);
+    // OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralaaa
+    // get_relative_time_in_microseconds: %f\n", end);
 
-    // OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralaaa time took: %f\n", (end - start));
+    // OE_TRACE_INFO("oe_get_sgx_quote_verification_collateralaaa time took:
+    // %f\n", (end - start));
 
     if (collateral->version != SGX_QL_QVE_COLLATERAL_VERSION)
     {

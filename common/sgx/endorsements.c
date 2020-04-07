@@ -37,19 +37,20 @@ static oe_result_t oe_create_sgx_endorsements(
     oe_endorsements_t** endorsements_buffer,
     size_t* endorsements_buffer_size)
 {
-
     double start = get_relative_time_in_microseconds();
-    OE_TRACE_INFO("oe_create_sgx_endorsements get_relative_time_in_microseconds %f\n", start);
+    OE_TRACE_INFO(
+        "oe_create_sgx_endorsements get_relative_time_in_microseconds %f\n",
+        start);
 
-    //log("get_relative_time_in_microseconds: %f\n", start);
+    // log("get_relative_time_in_microseconds: %f\n", start);
     //  clock_t start = 0;
     //  start = clock();
     //  OE_TRACE_INFO("before time %ld\n", start);
 
-    //uint64_t before = oe_get_time();
-    //OE_TRACE_INFO("before time %u\n", before);
+    // uint64_t before = oe_get_time();
+    // OE_TRACE_INFO("before time %u\n", before);
 
-    //time_t tloc;
+    // time_t tloc;
     // oe_time(&tloc);
 
     // clock_t a = oe_clock();
@@ -305,7 +306,9 @@ done:
         "Exit call %s: %d(%s)\n", __FUNCTION__, result, oe_result_str(result));
 
     double end = get_relative_time_in_microseconds();
-    OE_TRACE_INFO("oe_create_sgx_endorsements get_relative_time_in_microseconds: %f\n", end);
+    OE_TRACE_INFO(
+        "oe_create_sgx_endorsements get_relative_time_in_microseconds: %f\n",
+        end);
 
     OE_TRACE_INFO("time took: %f\n", (end - start));
 
