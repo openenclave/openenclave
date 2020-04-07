@@ -86,7 +86,7 @@ void HandleThreadWake(oe_enclave_t* enclave, uint64_t arg_in)
 #endif
 }
 
-void oe_thread_wake_wait_ocall(
+void oe_sgx_thread_wake_wait_ocall(
     oe_enclave_t* enclave,
     uint64_t waiter_tcs,
     uint64_t self_tcs)
@@ -387,7 +387,7 @@ done:
     return ret;
 }
 
-oe_result_t oe_backtrace_symbols_ocall(
+oe_result_t oe_sgx_backtrace_symbols_ocall(
     oe_enclave_t* oe_enclave,
     const uint64_t* buffer,
     size_t size,

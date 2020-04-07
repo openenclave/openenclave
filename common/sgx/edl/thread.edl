@@ -8,9 +8,6 @@
 **
 **     Internal OCALLs to be used by liboehost/liboecore for thread operations.
 **
-**     Note that this functionality is not inherently specific to SGX, it is
-**     just only implemented for SGX as of this writing.
-**
 **==============================================================================
 */
 
@@ -22,7 +19,7 @@ enclave
 
     untrusted
     {
-        void oe_thread_wake_wait_ocall(
+        void oe_sgx_thread_wake_wait_ocall(
             [user_check] oe_enclave_t* oe_enclave,
             uint64_t waiter_tcs,
             uint64_t self_tcs);

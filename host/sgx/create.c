@@ -361,7 +361,7 @@ done:
 }
 
 #if !defined(OEHOSTMR)
-oe_result_t oe_get_cpuid_table_ocall(
+oe_result_t oe_sgx_get_cpuid_table_ocall(
     void* cpuid_table_buffer,
     size_t cpuid_table_buffer_size)
 {

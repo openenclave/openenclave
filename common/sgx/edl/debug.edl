@@ -9,9 +9,6 @@
 **     Internal ECALLs/OCALLs to be used by liboehost/liboecore for operations
 **     related to debugging.
 **
-**     Note that this functionality is not inherently specific to SGX, it is
-**     just only implemented for SGX as of this writing.
-**
 **==============================================================================
 */
 
@@ -25,7 +22,7 @@ enclave
     {
         // Translate the addresses in buffer[] into symbol names.
         // (similar to Linux backtrace_symbols().
-        oe_result_t oe_backtrace_symbols_ocall(
+        oe_result_t oe_sgx_backtrace_symbols_ocall(
             [user_check] oe_enclave_t* oe_enclave,
             [in, count=size] const uint64_t* buffer,
             size_t size,
