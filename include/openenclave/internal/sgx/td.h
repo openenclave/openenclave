@@ -83,10 +83,9 @@ oe_thread_data_t* oe_get_thread_data(void);
 #define OE_THREAD_LOCAL_SPACE (OE_PAGE_SIZE)
 
 /**
- * thread_specific_data is the last field in td_t. It takes up any remainaing
- * space after the declarations of the previous fields.
- * Its size is equal to
- *     sizeof(td_t) - OE_OFFSETOF(td_t, thread_specific_data)
+ * thread_specific_data is the last field in oe_sgx_td_t. It takes up any
+ * remainaing space after the declarations of the previous fields. Its size is
+ * equal to sizeof(oe_sgx_td_t) - OE_OFFSETOF(oe_sgx_td_t, thread_specific_data)
  * Due to the inability to use OE_OFFSETOF on a struct while defining its
  * members, this value is computed and hard-coded.
  */
@@ -137,16 +136,16 @@ typedef struct _td
 
     /* Reserved for thread specific data. */
     uint8_t thread_specific_data[OE_THREAD_SPECIFIC_DATA_SIZE];
-} td_t;
+} oe_sgx_td_t;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(td_t), 4096);
+OE_CHECK_SIZE(sizeof(oe_sgx_td_t), 4096);
 OE_STATIC_ASSERT(
     OE_THREAD_SPECIFIC_DATA_SIZE ==
-    sizeof(td_t) - OE_OFFSETOF(td_t, thread_specific_data));
+    sizeof(oe_sgx_td_t) - OE_OFFSETOF(oe_sgx_td_t, thread_specific_data));
 
 /* Get the thread data object for the current thread */
-td_t* oe_get_td(void);
+oe_sgx_td_t* oe_sgx_get_td(void);
 
 OE_EXTERNC_END
 

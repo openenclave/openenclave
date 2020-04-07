@@ -208,7 +208,7 @@ oe_enter:
     // after exit-type-check.
     lfence
 
-    // Clear the td_t.last_sp field (force oe_enter to calculate stack pointer)
+    // Clear the oe_sgx_td_t.last_sp field (force oe_enter to calculate stack pointer)
     movq $0, %fs:td_last_sp
 
 .clear_enclave_registers:
@@ -225,7 +225,7 @@ oe_enter:
 
 .execute_eexit:
 
-    // Check td_t.simulate flag
+    // Check oe_sgx_td_t.simulate flag
     // simulation-flag-check.
     mov %fs:td_simulate, %rax
     cmp $0, %rax
