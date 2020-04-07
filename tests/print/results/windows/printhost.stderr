@@ -1,0 +1,5 @@
+fwrite(stderr)
+e
+fputs(stderr)
+oe_host_write(stderr)
+oe_host_write(stderr)

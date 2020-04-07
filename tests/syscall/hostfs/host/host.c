@@ -28,7 +28,8 @@ int main(int argc, const char* argv[])
     OE_TEST(r == OE_OK);
 
 #if defined(_WIN32)
-    tmp_dir = oe_win_path_to_posix(tmp_dir);
+    char* win_path = oe_win_path_to_posix(tmp_dir);
+    tmp_dir = win_path;
 #endif
     r = test_hostfs(enclave, tmp_dir);
     OE_TEST(r == OE_OK);
@@ -38,7 +39,7 @@ int main(int argc, const char* argv[])
 
     printf("=== passed all tests (test_hostfs)\n");
 #if defined(_WIN32)
-    free(tmp_dir);
+    free(win_path);
 #endif
 
     return 0;

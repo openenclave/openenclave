@@ -27,7 +27,8 @@ int main(int argc, const char* argv[])
         enclave_path, type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
 #if defined(_WIN32)
-    tmp_dir = oe_win_path_to_posix(tmp_dir);
+    char* win_path = oe_win_path_to_posix(tmp_dir);
+    tmp_dir = win_path;
 #endif
     r = test_dup(enclave, tmp_dir);
     OE_TEST(r == OE_OK);
@@ -37,7 +38,7 @@ int main(int argc, const char* argv[])
 
     printf("=== passed all tests (test_dup)\n");
 #if defined(_WIN32)
-    free(tmp_dir);
+    free(win_path);
 #endif
 
     return 0;

@@ -65,6 +65,10 @@ OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_mtim.tv_nsec) == 96);
 OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_ctim.tv_sec) == 104);
 OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_ctim.tv_nsec) == 112);
 
+#define OE_R_OR 04
+#define OE_W_OR 02
+#define OE_X_OR 01
+
 #ifndef st_atime
 #define st_atime st_atim.tv_sec
 #endif
