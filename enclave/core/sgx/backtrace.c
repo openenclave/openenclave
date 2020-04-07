@@ -112,7 +112,7 @@ char** oe_backtrace_symbols_impl(
         goto done;
 
     /* First call might return OE_BUFFER_TOO_SMALL. */
-    if (oe_backtrace_symbols_ocall(
+    if (oe_sgx_backtrace_symbols_ocall(
             &retval,
             oe_get_enclave(),
             (const uint64_t*)buffer,
@@ -132,7 +132,7 @@ char** oe_backtrace_symbols_impl(
                   realloc_fcn(symbols_buffer, symbols_buffer_size)))
             goto done;
 
-        if (oe_backtrace_symbols_ocall(
+        if (oe_sgx_backtrace_symbols_ocall(
                 &retval,
                 oe_get_enclave(),
                 (const uint64_t*)buffer,

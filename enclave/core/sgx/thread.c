@@ -46,7 +46,7 @@ static int _thread_wake_wait(oe_thread_data_t* waiter, oe_thread_data_t* self)
     uint64_t waiter_tcs = (uint64_t)td_to_tcs((td_t*)waiter);
     uint64_t self_tcs = (uint64_t)td_to_tcs((td_t*)self);
 
-    if (oe_thread_wake_wait_ocall(oe_get_enclave(), waiter_tcs, self_tcs) !=
+    if (oe_sgx_thread_wake_wait_ocall(oe_get_enclave(), waiter_tcs, self_tcs) !=
         OE_OK)
         goto done;
 
