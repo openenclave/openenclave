@@ -23,7 +23,7 @@
 #define OE_ARG_FLAG_GS 0x0001
 #endif
 
-/* Offsets into td_t structure */
+/* Offsets into oe_sgx_td_t structure */
 #define td_self_addr 0
 #define td_last_sp 8
 #define td_magic 168
