@@ -75,7 +75,8 @@
           "pcesvn": 4
         },
         "tcbDate":"2018-01-04T01:02:03Z",
-        "tcbStatus": "ConfigurationNeeded"
+        "tcbStatus": "ConfigurationNeeded",
+        "advisoryIDs":["INTEL-SA-00079", "INTEL-SA-00076"]
       },
       {
         "tcb": {

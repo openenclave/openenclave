@@ -502,6 +502,7 @@ static oe_result_t _read_tcb_info(
     uint64_t value = 0;
     const uint8_t* date_str = NULL;
     size_t date_size = 0;
+    uint64_t square_bracket_count;
 
     parsed_info->tcb_info_start = *itr;
     OE_CHECK(_read('{', itr, end));
@@ -590,8 +591,18 @@ static oe_result_t _read_tcb_info(
                 OE_TCB_LEVEL_STATUS_UNKNOWN)
             {
                 // Found matching TCB level, go to the end of the array.
-                while (*itr < end && **itr != ']')
+                // Need a counter for '[', ']' to avoid early itr stop due to
+                // potential '[', ']' inside array;
+                square_bracket_count = 0;
+                while (*itr < end &&
+                       (**itr != ']' || square_bracket_count != 0))
+                {
+                    if (**itr == '[')
+                        square_bracket_count++;
+                    else if (**itr == ']')
+                        square_bracket_count--;
                     (*itr)++;
+                }
             }
 
             // Read end of array or comma separator.
