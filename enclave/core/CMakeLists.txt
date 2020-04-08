@@ -71,8 +71,11 @@ set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (USE_SNMALLOC)
     add_enclave_library(oeallocator OBJECT
-        sgx/snmalloc/snmalloc_wrapper.cpp
-    )
+        sgx/snmalloc/snmalloc_wrapper.cpp)
+
+    list (APPEND W_NO_CONVERSION
+        sgx/snmalloc/snmalloc_wrapper.cpp)
+
     enclave_link_libraries(oeallocator PUBLIC oe_includes)
     set_source_files_properties(sgx/snmalloc/snmalloc_wrapper.cpp PROPERTIES COMPILE_FLAGS -std=c++17\ -mcx16\ -fno-exceptions)
     enclave_compile_options(oeallocator PUBLIC
@@ -154,6 +157,9 @@ endif ()
 
 if (USE_DLMALLOC)
     list(APPEND PLATFORM_SRC malloc.c)
+
+    list(APPEND NEEDS_STDC_NAMES malloc.c)
+
     # Unfortunately dlmalloc uses GNU extension that allows arithmetic
     # null pointers.
     set_source_files_properties(malloc.c
@@ -199,15 +205,34 @@ add_enclave_library(oecore STATIC
     wchar.c
     ${PLATFORM_SRC})
 
-# Suppress type conversion warnings introduced by 3rdparty code
-set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c ROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(${MUSL_SRC_DIR}/string/memmove.c PROPERTIES
-    COMPILE_FLAGS -Wno-sign-conversion)
-set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(__secs_to_tm.c PROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
+# Some files in oecore come directly from the musl source. For these files,
+# corelibc functions with stdc names are required.
+# Additionally, suppress type conversion warnings introduced by 3rdparty code
+set (CORELIBC_INCLUDES ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+
+list (APPEND NEEDS_STDC_NAMES
+    ${MUSL_SRC_DIR}/prng/rand.c
+    ${MUSL_SRC_DIR}/string/memmove.c
+    ${MUSL_SRC_DIR}/string/memset.c
+    ${MUSL_SRC_DIR}/string/memcmp.c
+    ${MUSL_SRC_DIR}/string/memcpy.c
+    __secs_to_tm.c
+    debugmalloc.c
+    strtok_r.c)
+
+list (APPEND W_NO_CONVERSION
+    ${MUSL_SRC_DIR}/prng/rand.c
+    ${MUSL_SRC_DIR}/string/memmove.c
+    ${MUSL_SRC_DIR}/string/memset.c
+    __secs_to_tm.c)
+
+set_property(SOURCE ${W_NO_CONVERSION} APPEND_STRING PROPERTY
+    COMPILE_FLAGS " -Wno-conversion")
+
+set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND_STRING PROPERTY
+    COMPILE_FLAGS " -I${CORELIBC_INCLUDES}")
+set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND PROPERTY
+    COMPILE_DEFINITIONS OE_NEED_STDC_NAMES)
 
 maybe_build_using_clangw(oecore)
 
@@ -220,6 +245,12 @@ enclave_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 enclave_link_libraries(oecore PUBLIC oe_includes)
 if (OE_TRUSTZONE)
     enclave_link_libraries(oecore PUBLIC oelibutee_includes)
+
+    # OP-TEE header 3rdparty/optee/libutee/liboeutee/user_ta_header.h
+    # includes stdint.h. As a result all OP-TEE needs the corelibc headers
+    # in its include path.
+    enclave_include_directories(oecore PRIVATE
+        ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 endif ()
 
 enclave_link_libraries(oecore PUBLIC oe_includes)
@@ -230,10 +261,6 @@ endif()
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
     enclave_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif()
-
-# This directory contains enclave core libc headers:
-enclave_include_directories(oecore PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
 if (OE_SGX)
     set_source_files_properties(sgx/keys.c PROPERTIES COMPILE_FLAGS -Wno-type-limits)

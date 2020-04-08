@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 
 #include "arena.h"
+#include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/common.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
-#include <string.h>
 
 // The per-thread shared memory arena
 static __thread shared_memory_arena_t _arena = {0};

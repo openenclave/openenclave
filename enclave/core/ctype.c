@@ -1,7 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <ctype.h>
+#include <openenclave/corelibc/ctype.h>
 
 static const unsigned short _ctype_b[384] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,

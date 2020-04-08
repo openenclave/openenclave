@@ -23,6 +23,7 @@
 #include <openenclave/edger8r/common.h>
 #include <openenclave/host.h> // for oe_ocall_func_t
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>

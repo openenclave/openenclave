@@ -153,12 +153,6 @@ let generate_args (ec : enclave_content) =
   let guard_macro =
     "EDGER8R_" ^ String.uppercase_ascii ec.enclave_name ^ "_ARGS_H"
   in
-  let include_errno =
-    let ufs = ec.ufunc_decls in
-    let s = "#include <errno.h>" in
-    if List.exists (fun uf -> uf.uf_propagate_errno) ufs then s
-    else sprintf "/* %s - Errno propagation not enabled so not included. */" s
-  in
   let user_includes =
     let includes = ec.include_list in
     if includes <> [] then List.map (sprintf "#include \"%s\"") includes
@@ -172,8 +166,6 @@ let generate_args (ec : enclave_content) =
   [
     "#ifndef " ^ guard_macro;
     "#define " ^ guard_macro;
-    "";
-    include_errno;
     "";
     "#include <openenclave/bits/result.h>";
     "";

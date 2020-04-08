@@ -5,7 +5,7 @@
 #define _OE_NODEBUG_ALLOC_H
 
 #include <openenclave/bits/defs.h>
-#include <stddef.h>
+#include <openenclave/corelibc/stddef.h>
 
 OE_EXTERNC_BEGIN
 
