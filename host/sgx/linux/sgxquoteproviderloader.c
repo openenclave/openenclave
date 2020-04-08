@@ -41,8 +41,8 @@ void oe_load_quote_provider()
             }
             else
             {
-                OE_TRACE_ERROR("sgxquoteprovider: sgx_ql_set_logging_function "
-                               "not found\n");
+                OE_TRACE_INFO("sgxquoteprovider: sgx_ql_set_logging_function "
+                              "not found\n");
             }
 
             provider.get_sgx_quote_verification_collateral = dlsym(
