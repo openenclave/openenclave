@@ -5,8 +5,6 @@ add_enclave_library(oehostsock STATIC hostsock.c)
 
 maybe_build_using_clangw(oehostsock)
 
-add_enclave_dependencies(oehostsock syscall_trusted_edl)
-
 enclave_include_directories(oehostsock PRIVATE
     ${CMAKE_BINARY_DIR}/syscall
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)

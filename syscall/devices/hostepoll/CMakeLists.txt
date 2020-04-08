@@ -5,8 +5,6 @@ add_enclave_library(oehostepoll STATIC hostepoll.c)
 
 maybe_build_using_clangw(oehostepoll)
 
-add_enclave_dependencies(oehostepoll syscall_trusted_edl)
-
 enclave_include_directories(oehostepoll PRIVATE
     ${CMAKE_BINARY_DIR}/syscall
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)

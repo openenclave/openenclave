@@ -18,4 +18,5 @@ enclave
     from "cpu.edl" import *;
     from "debug.edl" import *;
     from "thread.edl" import *;
+    from "switchless.edl" import *;
 };

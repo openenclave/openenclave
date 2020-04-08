@@ -5,8 +5,6 @@ add_enclave_library(oehostresolver STATIC hostresolver.c)
 
 maybe_build_using_clangw(oehostresolver)
 
-add_enclave_dependencies(oehostresolver syscall_trusted_edl)
-
 enclave_include_directories(oehostresolver PRIVATE
     ${CMAKE_BINARY_DIR}/syscall
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)

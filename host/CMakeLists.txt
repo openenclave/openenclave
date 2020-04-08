@@ -13,15 +13,26 @@ endif()
 ##
 ##==============================================================================
 
-set(OECORE_EDL_FILE ${EDL_DIR}/core.edl)
+set(CORE_EDL_FILE ${EDL_DIR}/core.edl)
+if (COMPILE_SYSTEM_EDL)
+  add_custom_command(
+      OUTPUT core_u.h core_u.c core_args.h
+      DEPENDS ${CORE_EDL_FILE} edger8r
+      COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${CORE_EDL_FILE})
 
-add_custom_command(
-    OUTPUT core_u.h core_u.c core_args.h
-    DEPENDS ${OECORE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${OECORE_EDL_FILE})
+  add_custom_target(core_untrusted_edl DEPENDS core_u.h core_u.c core_args.h)
 
-add_custom_target(core_untrusted_edl
-    DEPENDS core_u.h core_u.c core_args.h)
+  list(APPEND PLATFORM_SDK_ONLY_SRC core_u_wrapper.c)
+else ()
+  # Only generate headers
+  add_custom_command(
+      OUTPUT core_u.h core_args.h
+      DEPENDS ${CORE_EDL_FILE} edger8r
+      COMMAND edger8r --header-only --search-path ${EDL_DIR}
+                      --untrusted ${CORE_EDL_FILE})
+
+  add_custom_target(core_untrusted_edl DEPENDS core_u.h core_args.h)
+endif()
 
 ##==============================================================================
 ##
@@ -78,31 +89,13 @@ install(DIRECTORY ${OE_EDL_INCLUDE_DIR}
 
 ##==============================================================================
 ##
-## These rules generate the edge routines for the internal ECALLs/OCALLs used
-## by switchless calls.
-##
-##==============================================================================
-if (OE_SGX)
-    set(SWITCHLESS_EDL_FILE ${SGX_EDL_DIR}/switchless.edl)
-
-    add_custom_command(
-        OUTPUT switchless_u.h switchless_u.c switchless_args.h
-        DEPENDS ${SWITCHLESS_EDL_FILE} edger8r
-        COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SWITCHLESS_EDL_FILE})
-
-    add_custom_target(switchless_untrusted_edl
-        DEPENDS switchless_u.h switchless_u.c switchless_args.h)
-endif ()
-
-##==============================================================================
-##
 ## These rules generate the edge routines for the internal SGX-specific
 ## ECALLs/OCALLs used by liboehost/liboecore.
 ##
 ##==============================================================================
 
 set(SGX_EDL_FILE ${SGX_EDL_DIR}/platform.edl)
-if (OE_SGX)
+if (OE_SGX AND COMPILE_SYSTEM_EDL)
   add_custom_command(
       OUTPUT platform_u.h platform_u.c platform_args.h
       DEPENDS ${SGX_EDL_FILE} edger8r
@@ -110,6 +103,17 @@ if (OE_SGX)
 
   add_custom_target(platform_untrusted_edl
       DEPENDS platform_u.h platform_u.c platform_args.h)
+
+  list(APPEND PLATFORM_SDK_ONLY_SRC sgx/platform_u_wrapper.c)
+elseif (OE_SGX)
+  add_custom_command(
+      OUTPUT platform_u.h platform_args.h
+      DEPENDS ${SGX_EDL_FILE} edger8r
+      COMMAND edger8r --header-only --search-path ${SGX_EDL_DIR}
+                      --untrusted ${SGX_EDL_FILE})
+
+  add_custom_target(platform_untrusted_edl
+      DEPENDS platform_u.h platform_args.h)
 endif ()
 
 ##==============================================================================
@@ -120,14 +124,35 @@ endif ()
 ##==============================================================================
 
 set(SYSCALL_EDL ${EDL_DIR}/syscall.edl)
+if (COMPILE_SYSTEM_EDL)
+  add_custom_command(
+      OUTPUT syscall_u.h syscall_u.c syscall_args.h
+      DEPENDS ${SYSCALL_EDL} edger8r
+      COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SYSCALL_EDL})
 
-add_custom_command(
-    OUTPUT syscall_u.h syscall_u.c syscall_args.h
-    DEPENDS ${SYSCALL_EDL} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SYSCALL_EDL})
+  add_custom_target(syscall_untrusted_edl
+      DEPENDS syscall_u.h syscall_u.c syscall_args.h)
 
-add_custom_target(syscall_untrusted_edl
-    DEPENDS syscall_u.h syscall_u.c syscall_args.h)
+  list(APPEND PLATFORM_SDK_ONLY_SRC syscall_u_wrapper.c)
+else ()
+  add_custom_command(
+      OUTPUT syscall_u.h syscall_args.h
+      DEPENDS ${SYSCALL_EDL} edger8r
+      COMMAND edger8r --header-only --search-path ${EDL_DIR}
+                      --untrusted ${SYSCALL_EDL})
+
+  add_custom_target(syscall_untrusted_edl
+      DEPENDS syscall_u.h syscall_args.h)
+endif ()
+
+##==============================================================================
+##
+## Install all system EDL files to be included by user EDL
+##
+##==============================================================================
+
+install(DIRECTORY ../edl/ DESTINATION
+  ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/edl/)
 
 ##==============================================================================
 ##
@@ -137,7 +162,7 @@ add_custom_target(syscall_untrusted_edl
 
 # OS specific but arch agnostic files.
 if (UNIX)
-  set(PLATFORM_HOST_ONLY_SRC
+  list(APPEND PLATFORM_HOST_ONLY_SRC
     ../common/cert.c
     crypto/openssl/asn1.c
     crypto/openssl/cert.c
@@ -149,7 +174,7 @@ if (UNIX)
     crypto/openssl/sha.c
     linux/hostthread.c)
 
-  set(PLATFORM_SDK_ONLY_SRC
+  list(APPEND PLATFORM_SDK_ONLY_SRC
     ../common/asn1.c
     crypto/openssl/hmac.c
     crypto/openssl/random.c
@@ -157,7 +182,7 @@ if (UNIX)
     linux/time.c
     linux/windows.c)
 elseif (WIN32)
-  set(PLATFORM_HOST_ONLY_SRC
+  list(APPEND PLATFORM_HOST_ONLY_SRC
     ../common/cert.c
     crypto/bcrypt/cert.c
     crypto/bcrypt/crl.c
@@ -169,7 +194,7 @@ elseif (WIN32)
     crypto/bcrypt/util.c
     windows/hostthread.c)
 
-  set(PLATFORM_SDK_ONLY_SRC
+  list(APPEND PLATFORM_SDK_ONLY_SRC
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     ../3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
     ../common/asn1.c
@@ -232,7 +257,6 @@ if (OE_SGX)
     sgx/load.c
     sgx/loadelf.c
     sgx/ocalls.c
-    sgx/platform_u_wrapper.c
     sgx/quote.c
     sgx/registers.c
     sgx/report.c
@@ -241,8 +265,7 @@ if (OE_SGX)
     sgx/sgxquote.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
-    sgx/switchless.c
-    sgx/switchless_u_wrapper.c)
+    sgx/switchless.c)
 
 
   # OS specific as well.
@@ -324,10 +347,8 @@ list(APPEND PLATFORM_SDK_ONLY_SRC
   files.c
   fopen.c
   memalign.c
-  syscall_u_wrapper.c
   signkey.c
   strings.c
-  core_u_wrapper.c
   traceh_enclave.c)
 
 # Combine the following common code along with the platform specific code and
@@ -362,7 +383,7 @@ endif ()
 add_dependencies(oehost syscall_untrusted_edl)
 add_dependencies(oehost core_untrusted_edl)
 if (OE_SGX)
-  add_dependencies(oehost platform_untrusted_edl switchless_untrusted_edl)
+  add_dependencies(oehost platform_untrusted_edl)
 endif ()
 
 # TODO: Replace these with `find_package` and add as dependencies to
@@ -489,6 +510,10 @@ target_compile_definitions(oehost
 
 if (USE_DEBUG_MALLOC)
   target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
+endif ()
+
+if (COMPILE_SYSTEM_EDL)
+  target_compile_definitions(oehost PRIVATE OE_USE_BUILTIN_EDL)
 endif ()
 
 if (UNIX)

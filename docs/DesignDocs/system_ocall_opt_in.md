@@ -138,3 +138,67 @@ in one of the following EDL files
 * `edl/sgx/sgx_attestation.edl`
 * `edl/sgx/switchless.edl`
 * `edl/sgx/thread.edl`
+
+## How to port your application
+
+Starting in v0.10 the OE SDK libraries will no longer be compiled with system
+EDL stubs built-in. This means that any OCalls/ECalls that the SDK uses will
+need to be imported by the EDL file for each enclave application.
+
+To build the SDK in the way it will be built for v0.10, you can pass
+`-DCOMPILE_SYSTEM_EDL=OFF`.
+
+### Currently required EDL by all applications
+
+**logging.edl**
+
+Logging can not currently be disabled so all enclaves will need the logging
+calls.
+
+**sgx/platform.edl**
+
+There are currently 4 features which use OCalls on SGX which cannot be
+disabled at link time: switchless calls, cpuid emulation, backtrace,
+and SGX attestation. Until these features can be disabled, it is
+recommended that you simply import all calls from sgx/platform.edl.
+
+**syscall.edl**
+
+`syscall.edl` is only required if you link liboesyscall into your application.
+Currently syscalls cannot be chosen individually, so if an enclave depends on
+one syscall, all of the syscall OCalls will need to be imported.
+
+### Changing guidance
+
+As the OE SDK becomes more modular, it is possible that the set of required
+EDL files may shrink. If/when this happens, the umberella EDL files (such as
+`sgx/platform.edl` and `syscall.edl`) will be retained to avoid breaking
+existing applications.
+
+### Example SGX EDL file
+
+```
+enclave {
+    from "syscall.edl" import *;
+    from "logging.edl" import *;
+    from "sgx/platform.edl" import *;
+
+    trusted {
+        public int my_ecall();
+    }
+}
+```
+
+### Example OP-TEE EDL file
+
+```
+enclave {
+    from "syscall.edl" import *;
+    from "logging.edl" import *;
+    from "optee/platform.edl" import *;
+
+    trusted {
+        public int my_ecall();
+    }
+}
+```

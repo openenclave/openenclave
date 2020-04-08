@@ -1,0 +1,18 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave
+{
+    from "logging.edl" import *;
+
+    // Because all syscalls are called from a single syscall dispatcher
+    // function, --gc-sections does not clean up any unused syscalls. If
+    // liboesyscall is linked, all syscall ocalls must be imported.
+    from "syscall.edl" import *;
+    from "platform.edl" import *;
+
+    trusted
+    {
+        public void enc_nanosleep();
+    };
+};

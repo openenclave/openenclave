@@ -11,7 +11,7 @@
 #include "../hostthread.h"
 #include "../ocalls.h"
 #include "enclave.h"
-#include "switchless_u.h"
+#include "platform_u.h"
 
 /**
  * Number of iterations an ocall worker thread would spin before going to sleep

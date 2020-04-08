@@ -201,6 +201,8 @@ if (NOT USE_SNMALLOC)
   set(USE_DLMALLOC true)
 endif ()
 
+option(COMPILE_SYSTEM_EDL "Build system ecalls and ocalls into OE libraries. If not set, they must be included by application EDL to use." ON)
+
 find_program(VALGRIND "valgrind")
 if (VALGRIND)
   set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
@@ -218,7 +220,18 @@ include(add_enclave_test)
 # Recurse through subdirectories
 add_subdirectory(include)
 add_subdirectory(host)
-add_subdirectory(tests)
+
+# Tests are not ported to include system edl files in order to use system
+# ocalls and ecalls.
+if (COMPILE_SYSTEM_EDL)
+  add_subdirectory(tests)
+  if (BUILD_ENCLAVES)
+    add_subdirectory(samples)
+  endif ()
+else ()
+  add_subdirectory(tests/exclude_system_edl)
+endif()
+
 add_subdirectory(tools)
 
 if (BUILD_ENCLAVES)
@@ -237,10 +250,6 @@ if (UNIX)
   add_subdirectory(docs/refman)
   add_subdirectory(pkgconfig)
 endif()
-
-if (BUILD_ENCLAVES)
-  add_subdirectory(samples)
-endif ()
 
 if (WIN32)
   install(FILES ./scripts/clangw ./scripts/llvm-arw
