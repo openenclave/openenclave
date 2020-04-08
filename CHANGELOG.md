@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
+### Added
+- oegdb command `oegdb-ignore-sigill <instruction>` to add the given instruction to
+  list of instructions to ignore SIGLL for and automatically continue execution.
+  `oegdb-ignore-sigill cpuid` is automatically executed at debugger startup.
 
 [0.9.0][v0.9.0_log]
 ------------

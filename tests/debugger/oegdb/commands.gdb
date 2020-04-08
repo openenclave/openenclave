@@ -1,8 +1,14 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+# Pring gdb version
+python import os; os.system("gdb -v")
+
 # Enable pending breakpoints
 set breakpoint pending on
+
+# Add rdtsc to sigill ignore list
+oegdb-ignore-sigill rdtsc
 
 # Set a breakpoint in main (host)
 b main

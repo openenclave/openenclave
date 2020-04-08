@@ -7,6 +7,7 @@ import struct
 import os.path
 from ctypes import create_string_buffer
 import load_symbol_cmd
+import signal_handler
 
 POINTER_SIZE = 8
 
@@ -309,6 +310,7 @@ def oe_debugger_init():
     oe_debugger_cleanup()
     EnclaveCreationBreakpoint()
     EnclaveTerminationBreakpoint()
+    signal_handler.register()
     return
 
 def oe_debugger_cleanup():
@@ -320,6 +322,7 @@ def oe_debugger_cleanup():
         gdb.execute("remove-symbol-file -a %s" % (oe_enclave_addr), False, True)
     g_loaded_oe_enclave_addrs.clear()
     g_enclave_list_parsed = False
+    signal_handler.unregister()
     return
 
 def exit_handler(event):
