@@ -350,26 +350,11 @@ function Install-Git {
 }
 
 function Install-OpenSSL {
-    $installDir = $installDir = Join-Path $env:ProgramFiles "OpenSSL-Win64"
+    $installDir = Join-Path $env:ProgramFiles "OpenSSL-Win64"
     Install-Tool -InstallerPath $PACKAGES["openssl"]["local_file"] `
                  -InstallDirectory $installDir `
                  -ArgumentList @("/silent", "/eula=accept") `
-                 -EnvironmentPath @($installDir)
-
-    $binDir = Join-Path $installDir "bin"
-    $systemPath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
-    $currentPath = $env:PATH
-    if($binDir -notin $systemPath) {
-         $systemPath = "$binDir;$systemPath"
-    }
-    if($binDir -notin $currentPath) {
-         $currentPath = "$binDir;$currentPath"
-    }
-    $env:PATH = $currentPath
-    setx.exe /M PATH $systemPath
-    if($LASTEXITCODE) {
-        Throw "Failed to set the new system path"
-    }
+                 -EnvironmentPath @("$installDir\bin")
 }
 
 function Install-7Zip {
