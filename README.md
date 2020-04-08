@@ -84,3 +84,12 @@ Licensing
 
 This project is released under the
 [MIT License](https://github.com/openenclave/openenclave/blob/master/LICENSE).
+
+Send Feedback
+=============
+
+Send general questions, announcements, and discussion to the
+[oesdk@lists.confidentialcomputing.io Mailing List](https://lists.confidentialcomputing.io/g/oesdk).
+
+To report a problem or suggest a new feature, file a
+[GitHub issue](https://github.com/openenclave/openenclave/issues).
