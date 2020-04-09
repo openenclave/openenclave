@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fix #2607 so that libmbedcrypto now includes mbedtls_hkdf().
+- `CXX` is always `TRUE` in `add_enclave_sgx()` and `add_enclave_optee()`. Fixes #2786.
 
 ### Removed
 - Removed oe-gdb script which has been deprecated since v0.6. Use oegdb instead.

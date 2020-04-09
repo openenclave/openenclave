@@ -8,7 +8,6 @@ add_custom_command(
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-# TODO: Does this need CXX?
 add_enclave(TARGET qeidentity_enc UUID a656f3b1-d319-4692-bcd6-a2f50d9fb1e5 SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/tests_t.c)
 
 if(HAS_QUOTE_PROVIDER)
