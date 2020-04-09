@@ -502,7 +502,7 @@ static oe_result_t _read_tcb_info(
     uint64_t value = 0;
     const uint8_t* date_str = NULL;
     size_t date_size = 0;
-    uint64_t square_bracket_count;
+    uint64_t square_bracket_count = 0;
 
     parsed_info->tcb_info_start = *itr;
     OE_CHECK(_read('{', itr, end));
