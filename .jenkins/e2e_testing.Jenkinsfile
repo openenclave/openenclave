@@ -17,7 +17,7 @@ IMAGE_VERSION = NOW.format(DateTimeFormatter.ofPattern("yyyy")) + "." + \
 DOCKER_TAG = "e2e-${IMAGE_VERSION}-${BUILD_NUMBER}"
 
 
-node("images-build-e2e") {
+node(env.IMAGES_BUILD_LABEL) {
     stage("Determine the Azure managed images id") {
         timeout(GLOBAL_TIMEOUT_MINUTES) {
             cleanWs()
@@ -37,7 +37,7 @@ stage("Build Docker Images") {
           parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                       string(name: 'AGENTS_LABEL', value: "images-build-e2e"),
+                       string(name: 'AGENTS_LABEL', value: env.IMAGES_BUILD_LABEL),
                        booleanParam(name: 'TAG_LATEST',value: false)]
 }
 
@@ -50,7 +50,7 @@ stage("Build Jenkins Agents images") {
                        string(name: 'GALLERY_NAME', value: env.E2E_IMAGES_GALLERY_NAME),
                        string(name: 'IMAGE_ID', value: IMAGE_ID),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                       string(name: 'AGENTS_LABEL', value: "images-build-e2e")]
+                       string(name: 'AGENTS_LABEL', value: env.IMAGES_BUILD_LABEL)]
 }
 
 stage("Run tests on new Agents") {
@@ -58,15 +58,15 @@ stage("Run tests on new Agents") {
           parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                       string(name: 'UBUNTU_1604_CUSTOM_LABEL', value: "xenial-e2e"),
-                       string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: "bionic-e2e"),
-                       string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: "nonSGX-e2e"),
-                       string(name: 'RHEL_8_CUSTOM_LABEL', value: "rhel-8-e2e"),
-                       string(name: 'WINDOWS_2016_CUSTOM_LABEL', value: "windows-2016-e2e"),
-                       string(name: 'WINDOWS_2016_DCAP_CUSTOM_LABEL', value: "windows-2016-dcap-e2e"),
-                       string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: "windows-2019-e2e"),
-                       string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: "windows-2019-dcap-e2e"),
-                       string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: "nonSGX-Windows-e2e")]
+                       string(name: 'UBUNTU_1604_CUSTOM_LABEL', value: env.UBUNTU_1604_LABEL),
+                       string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: env.UBUNTU_1804_LABEL),
+                       string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: env.UBUNTU_NONSGX_LABEL),
+                       string(name: 'RHEL_8_CUSTOM_LABEL', value: env.RHEL_8_LABEL),
+                       string(name: 'WINDOWS_2016_CUSTOM_LABEL', value: env.WINDOWS_2016_LABEL),
+                       string(name: 'WINDOWS_2016_DCAP_CUSTOM_LABEL', value: env.WINDOWS_2016_DCAP_LABEL),
+                       string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: env.WINDOWS_2019_LABEL),
+                       string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: env.WINDOWS_2019_DCAP_LABEL),
+                       string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: env.WINDOWS_NONSGX_LABEL)]
 }
 
 if(env.PRODUCTION_IMAGES_GALLERY_NAME) {
