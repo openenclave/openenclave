@@ -50,6 +50,8 @@ oe_result_t oe_verify_report(
     size_t report_size,
     oe_report_t* parsed_report)
 {
+    double start = get_relative_time_in_microseconds();
+
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
     sgx_key_t sgx_key = {{0}};
@@ -103,6 +105,10 @@ oe_result_t oe_verify_report(
 done:
     // Cleanup secret.
     oe_secure_zero_fill(&sgx_key, sizeof(sgx_key));
+
+    double end = get_relative_time_in_microseconds();
+
+    OE_TRACE_INFO("oe_verify_reportocall time took: %f\n", (end - start));
 
     return result;
 }
