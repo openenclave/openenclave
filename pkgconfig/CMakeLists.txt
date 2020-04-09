@@ -154,9 +154,9 @@ set(HOST_CXXFLAGS_GCC ${HOST_CFLAGS_GCC})
 ##==============================================================================
 
 if(HAS_QUOTE_PROVIDER)
-    set(SGX_LIBS "-lsgx_enclave_common -lsgx_dcap_ql -lsgx_urts")
+    set(SGX_LIBS "-lsgx_enclave_common -lsgx_dcap_ql")
 else()
-    set(SGX_LIBS "-lsgx_enclave_common -lsgx_urts")
+    set(SGX_LIBS "-lsgx_enclave_common")
 endif()
 
 set(HOSTVERIFY_CLIBS "-rdynamic -Wl,-z,noexecstack -L\${libdir}/openenclave/host -loehostverify -ldl -lpthread")
