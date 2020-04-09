@@ -586,6 +586,9 @@ function Install-DCAP-Dependencies {
         Write-Host "Installing Microsoft.Azure.DCAP library to $targetPath"
         pushd "$OE_NUGET_DIR\Microsoft.Azure.DCAP\tools"
         & ".\InstallAzureDCAP.ps1" $targetPath
+        if($LASTEXITCODE) {
+            Throw "Failed to install Azure DCAP Client"
+        }
         popd
     }
     if (($LaunchConfiguration -eq "SGX1FLC") -or ($LaunchConfiguration -eq "SGX1FLC-NoDriver") -or ($DCAPClientType -eq "Azure"))
