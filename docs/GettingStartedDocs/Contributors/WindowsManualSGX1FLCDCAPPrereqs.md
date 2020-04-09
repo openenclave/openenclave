@@ -1,6 +1,6 @@
 # SGX1 with Flexible Launch Control (FLC) Prerequisites on Windows
 
-## [Intel Platform Software for Windows (PSW) v2.7](http://registrationcenter-download.intel.com/akdlm/irc_nas/16464/Intel%20SGX%20PSW%20for%20Windows%20v2.7.100.2.exe)
+## [Intel Platform Software for Windows (PSW) v2.7](http://registrationcenter-download.intel.com/akdlm/irc_nas/16607/Intel%20SGX%20PSW%20for%20Windows%20v2.7.101.2.exe)
 
 After unpacking the self-extracting ZIP executable, install the *PSW_EXE_RS2_and_before* version:
 ```cmd
@@ -18,11 +18,11 @@ nuget.exe install Microsoft.Azure.DCAP -ExcludeVersion -Version 1.3.0 -OutputDir
 ```
 This example assumes you would like to install the package to `C:\oe_prereqs`.
 
-##### [Intel Data Center Attestation Primitives (DCAP) Libraries v1.5](http://registrationcenter-download.intel.com/akdlm/irc_nas/16474/Intel%20SGX%20DCAP%20for%20Windows%20v1.5.100.2.exe)
+##### [Intel Data Center Attestation Primitives (DCAP) Libraries v1.6](http://registrationcenter-download.intel.com/akdlm/irc_nas/16605/Intel%20SGX%20DCAP%20for%20Windows%20v1.6.100.2.exe)
 After unpacking the self-extracting ZIP executable, you can refer to the *Intel SGX DCAP Windows SW Installation Guide.pdf*
 for more details on how to install the contents of the package.
 
-The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.5.100.2`:
+The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.6.100.2`:
 
 1. Unzip the required drivers from the extracted subfolders:
     - `LC_driver\WinServer2016\Signed_*.zip`
@@ -49,7 +49,7 @@ The following summary will assume that the contents were extracted to `C:\Intel 
 4. Install the DCAP nuget packages:
     - The standalone `nuget.exe` [CLI tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) can be used to do this from the command prompt:
       ```cmd
-      nuget.exe install DCAP_Components -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.5.100.2\nuget" -OutputDirectory c:\oe_prereqs
-      nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.5.100.2\nuget" -OutputDirectory c:\oe_prereqs
+      nuget.exe install DCAP_Components -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.6.100.2\nuget" -OutputDirectory c:\oe_prereqs
+      nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.6.100.2\nuget" -OutputDirectory c:\oe_prereqs
       ```
     - *Note:* EnclaveCommonAPI should be installed as the *very last* nuget package as a temporary workaround for a dependency issue. Please see issue #2170, for more details.

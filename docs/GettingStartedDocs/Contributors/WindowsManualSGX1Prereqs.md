@@ -38,14 +38,14 @@ The Intel Enclave Common API library is necessary for creating, initializing, an
 It does not supporting quoting, and consequentially, attestation which is based on quoting. The lack
 of quoting capability is a limitation of SGX1 machines which don't have FLC support.
 
-Firstly we download the Intel SGX DCAP self-extracting executable from [here](http://registrationcenter-download.intel.com/akdlm/irc_nas/16474/Intel%20SGX%20DCAP%20for%20Windows%20v1.5.100.2.exe). Run the executable to unzip files to a specified location.
-The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.5.100.2`:
+Firstly we download the Intel SGX DCAP self-extracting executable from [here](http://registrationcenter-download.intel.com/akdlm/irc_nas/16605/Intel%20SGX%20DCAP%20for%20Windows%20v1.6.100.2.exe). Run the executable to unzip files to a specified location.
+The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.6.100.2`:
 
 Make sure you have [nuget cli tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) installed and in your path,
 run the following command from a command prompt (assuming you would like the package to be installed to `C:\oe_prereqs`):
 ```cmd
 
-nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.5.100.2\nuget" -OutputDirectory C:\path\to\where\you\would\like\to\install\intel_nuget_packages
+nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.6.100.2\nuget" -OutputDirectory C:\path\to\where\you\would\like\to\install\intel_nuget_packages
 
 ```
 
