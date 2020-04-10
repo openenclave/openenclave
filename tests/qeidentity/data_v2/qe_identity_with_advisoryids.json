@@ -22,7 +22,8 @@
         {
           "tcb":{"isvsvn":1},
           "tcbDate":"2018-08-15T00:00:00Z",
-          "tcbStatus":"OutOfDate"
+          "tcbStatus":"OutOfDate",
+          "advisoryIDs":["INTEL-SA-00079", "INTEL-SA-00076"]
         }
       ]
     },

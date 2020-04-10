@@ -345,6 +345,22 @@ static void _determine_platform_tcb_info_tcb_level(
     platform_tcb_level->status.AsUINT32 = tcb_level->status.AsUINT32;
 }
 
+// Found matching TCB level, move itr to the end of the array.
+static void _move_to_end_of_tcb_levels(const uint8_t** itr, const uint8_t* end)
+{
+    // Need a counter for '[', ']' to avoid early itr stop due to
+    // potential '[', ']' inside array;
+    uint64_t square_bracket_count = 0;
+    while (*itr < end && (**itr != ']' || square_bracket_count != 0))
+    {
+        if (**itr == '[')
+            square_bracket_count++;
+        else if (**itr == ']')
+            square_bracket_count--;
+        (*itr)++;
+    }
+}
+
 /**
  * Type: tcbLevel in TCB Info (V1)
  * Schema:
@@ -502,7 +518,6 @@ static oe_result_t _read_tcb_info(
     uint64_t value = 0;
     const uint8_t* date_str = NULL;
     size_t date_size = 0;
-    uint64_t square_bracket_count = 0;
 
     parsed_info->tcb_info_start = *itr;
     OE_CHECK(_read('{', itr, end));
@@ -591,18 +606,7 @@ static oe_result_t _read_tcb_info(
                 OE_TCB_LEVEL_STATUS_UNKNOWN)
             {
                 // Found matching TCB level, go to the end of the array.
-                // Need a counter for '[', ']' to avoid early itr stop due to
-                // potential '[', ']' inside array;
-                square_bracket_count = 0;
-                while (*itr < end &&
-                       (**itr != ']' || square_bracket_count != 0))
-                {
-                    if (**itr == '[')
-                        square_bracket_count++;
-                    else if (**itr == ']')
-                        square_bracket_count--;
-                    (*itr)++;
-                }
+                _move_to_end_of_tcb_levels(itr, end);
             }
 
             // Read end of array or comma separator.
@@ -1149,8 +1153,7 @@ static oe_result_t _read_qe_identity_info_v2(
             OE_TCB_LEVEL_STATUS_UNKNOWN)
         {
             // Found matching TCB level, go to the end of the array.
-            while (*itr < end && **itr != ']')
-                (*itr)++;
+            _move_to_end_of_tcb_levels(itr, end);
         }
 
         // Read end of array or comma separator.
