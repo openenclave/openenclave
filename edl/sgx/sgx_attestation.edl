@@ -4,7 +4,7 @@
 /*
 **==============================================================================
 **
-** sgx/attestation.edl:
+** sgx/sgx_attestation.edl:
 **
 **     Internal ECALLs/OCALLs to be used by liboehost/liboecore for SGX-specific
 **     attestation.

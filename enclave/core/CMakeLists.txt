@@ -1,9 +1,9 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common/edl)
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/edl)
 if (OE_SGX)
-    set(SGX_EDL_DIR ${CMAKE_SOURCE_DIR}/common/sgx/edl)
+    set(SGX_EDL_DIR ${EDL_DIR}/sgx)
 endif()
 
 ##==============================================================================
@@ -13,15 +13,15 @@ endif()
 ##
 ##==============================================================================
 
-set(TEE_EDL_FILE ${EDL_DIR}/tee.edl)
+set(OECORE_EDL_FILE ${EDL_DIR}/core.edl)
 
 add_custom_command(
-    OUTPUT tee_t.h tee_t.c tee_args.h
-    DEPENDS ${TEE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --trusted ${TEE_EDL_FILE})
+    OUTPUT core_t.h core_t.c core_args.h
+    DEPENDS ${OECORE_EDL_FILE} edger8r
+    COMMAND edger8r --search-path ${EDL_DIR} --trusted ${OECORE_EDL_FILE})
 
-add_custom_target(tee_trusted_edl
-    DEPENDS tee_t.h tee_t.c tee_args.h)
+add_custom_target(core_trusted_edl
+    DEPENDS core_t.h core_t.c core_args.h)
 
 ##==============================================================================
 ##
@@ -49,15 +49,14 @@ endif()
 ##==============================================================================
 
 if(OE_SGX)
-    set(SGX_EDL_FILE ${SGX_EDL_DIR}/sgx.edl)
+    set(SGX_EDL_FILE ${SGX_EDL_DIR}/platform.edl)
 
     add_custom_command(
-        OUTPUT sgx_t.h sgx_t.c sgx_args.h
+        OUTPUT platform_t.h platform_t.c platform_args.c
         DEPENDS ${SGX_EDL_FILE} edger8r
         COMMAND edger8r --search-path ${SGX_EDL_DIR} --trusted ${SGX_EDL_FILE})
 
-    add_custom_target(sgx_trusted_edl
-        DEPENDS sgx_t.h sgx_t.c sgx_args.h)
+    add_custom_target(platform_trusted_edl DEPENDS platform_t.h platform_t.c platform_args.c)
 endif()
 
 ##==============================================================================
@@ -106,7 +105,7 @@ if (OE_SGX)
         sgx/report.c
         sgx/sched_yield.c
         sgx/setjmp.S
-        sgx/sgx_t_wrapper.c
+        sgx/platform_t_wrapper.c
         sgx/spinlock.c
         sgx/switchless_t_wrapper.c
         sgx/switchlesscalls.c
@@ -199,7 +198,7 @@ add_enclave_library(oecore STATIC
     string.c
     strtok_r.c
     strtoul.c
-    tee_t_wrapper.c
+    core_t_wrapper.c
     time.c
     tracee.c
     wchar.c
@@ -236,9 +235,9 @@ set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND PROPERTY
 
 maybe_build_using_clangw(oecore)
 
-add_enclave_dependencies(oecore tee_trusted_edl)
+add_enclave_dependencies(oecore core_trusted_edl)
 if(OE_SGX)
-    add_enclave_dependencies(oecore sgx_trusted_edl switchless_trusted_edl)
+    add_enclave_dependencies(oecore platform_trusted_edl switchless_trusted_edl)
 endif()
 enclave_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

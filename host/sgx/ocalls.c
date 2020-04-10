@@ -29,8 +29,8 @@
 #include "../ocalls.h"
 #include "enclave.h"
 #include "ocalls.h"
+#include "platform_u.h"
 #include "quote.h"
-#include "sgx_u.h"
 #include "sgxquoteprovider.h"
 
 void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg_in)

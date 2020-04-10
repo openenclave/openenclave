@@ -26,14 +26,14 @@
 #include "../atexit.h"
 #include "../tracee.h"
 #include "asmdefs.h"
+#include "core_t.h"
 #include "cpuid.h"
 #include "handle_ecall.h"
 #include "init.h"
+#include "platform_t.h"
 #include "report.h"
-#include "sgx_t.h"
 #include "switchlesscalls.h"
 #include "td.h"
-#include "tee_t.h"
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -160,10 +160,10 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             OE_CHECK(oe_register_switchless_ecall_function_table());
 
             /* Install the common TEE ECALL function table. */
-            OE_CHECK(oe_register_tee_ecall_function_table());
+            OE_CHECK(oe_register_core_ecall_function_table());
 
             /* Install the SGX ECALL function table. */
-            OE_CHECK(oe_register_sgx_ecall_function_table());
+            OE_CHECK(oe_register_platform_ecall_function_table());
 
             if (!oe_is_outside_enclave(enclave, 1))
                 OE_RAISE(OE_INVALID_PARAMETER);

@@ -15,7 +15,7 @@
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include "tee_t.h"
+#include "core_t.h"
 
 static oe_log_level_t _active_log_level = OE_LOG_LEVEL_ERROR;
 static char _enclave_filename[OE_MAX_FILENAME_LEN];
