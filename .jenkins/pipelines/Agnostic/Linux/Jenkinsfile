@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-@Library("OpenEnclaveCommon") _
-oe = new jenkins.common.Openenclave()
+OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
+oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
 GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
@@ -12,6 +12,7 @@ DOCKER_TAG = env.DOCKER_TAG ?: "latest"
 AGENTS_LABELS = [
     "ubuntu-nonsgx":    env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX"
 ]
+
 
 def simulationTest(String version, String platform_mode, String build_type, String lvi_mitigation = 'None') {
     def has_quote_provider = "OFF"

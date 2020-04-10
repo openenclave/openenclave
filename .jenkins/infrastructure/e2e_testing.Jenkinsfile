@@ -1,8 +1,11 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
 import java.time.*
 import java.time.format.DateTimeFormatter
 
-@Library("OpenEnclaveCommon") _
-oe = new jenkins.common.Openenclave()
+OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
+oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
 GLOBAL_TIMEOUT_MINUTES = 240
 
@@ -38,6 +41,7 @@ stage("Build Docker Images") {
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                        string(name: 'AGENTS_LABEL', value: env.IMAGES_BUILD_LABEL),
+                       string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                        booleanParam(name: 'TAG_LATEST',value: false)]
 }
 
@@ -46,6 +50,7 @@ stage("Build Jenkins Agents images") {
           parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'OE_DEPLOY_IMAGE', value: "oetools-deploy:${DOCKER_TAG}"),
+                       string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                        string(name: 'RESOURCE_GROUP', value: env.RESOURCE_GROUP),
                        string(name: 'GALLERY_NAME', value: env.E2E_IMAGES_GALLERY_NAME),
                        string(name: 'REPLICATION_REGIONS', value: env.REPLICATION_REGIONS),
@@ -59,6 +64,7 @@ stage("Run tests on new Agents") {
           parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
+                       string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                        string(name: 'UBUNTU_1604_CUSTOM_LABEL', value: env.UBUNTU_1604_LABEL),
                        string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: env.UBUNTU_1804_LABEL),
                        string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: env.UBUNTU_NONSGX_LABEL),
@@ -76,6 +82,7 @@ if(env.PRODUCTION_IMAGES_GALLERY_NAME) {
             parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY),
                          string(name: 'BRANCH_NAME', value: env.BRANCH),
                          string(name: 'RESOURCE_GROUP', value: env.RESOURCE_GROUP),
+                         string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                          string(name: 'PRODUCTION_IMAGES_GALLERY_NAME', value: env.PRODUCTION_IMAGES_GALLERY_NAME),
                          string(name: 'REPLICATION_REGIONS', value: env.REPLICATION_REGIONS),
                          string(name: 'IMAGE_ID', value: IMAGE_ID),

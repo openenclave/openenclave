@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-@Library("OpenEnclaveCommon") _
-oe = new jenkins.common.Openenclave()
+OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
+oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
 GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
@@ -38,6 +38,7 @@ try {
                              string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
                              string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                              string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["ubuntu-nonsgx"]),
+                             string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                              booleanParam(name: 'FULL_TEST_SUITE',value: env.FULL_TEST_SUITE)]
        },
        "Azure Linux" : {
@@ -50,6 +51,7 @@ try {
                               string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["ubuntu-nonsgx"]),
                               string(name: 'RHEL_8_CUSTOM_LABEL', value: AGENTS_LABELS["acc-rhel-8"]),
                               string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["windows-nonsgx"]),
+                              string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                               booleanParam(name: 'FULL_TEST_SUITE',value: env.FULL_TEST_SUITE)]
        },
        "Azure Windows" : {
@@ -62,6 +64,7 @@ try {
                               string(name: 'WINDOWS_2016_DCAP_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2016-dcap"]),
                               string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2019"]),
                               string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2019-dcap"]),
+                              string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                               booleanParam(name: 'FULL_TEST_SUITE',value: env.FULL_TEST_SUITE)]
        }
     )
