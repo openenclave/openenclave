@@ -8,6 +8,7 @@
 #define OE_NEED_STD_NAMES
 // clang-format off
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 // clang-format on
 static void sleep(int secs)
@@ -21,18 +22,18 @@ typedef HANDLE pthread_t;
 #include <unistd.h>
 #endif
 #include <stdio.h>
-#include "../utils.h"
 #include "resolver_test_u.h"
+#include "../utils.h"
 
 #define SERVER_PORT "12345"
 
-static void _free_addrinfo(struct addrinfo* res)
+static void _free_addrinfo(struct oe_addrinfo* res)
 {
-    struct addrinfo* p;
+    struct oe_addrinfo* p;
 
     for (p = res; p;)
     {
-        struct addrinfo* next = p->ai_next;
+        struct oe_addrinfo* next = p->ai_next;
 
         free(p->ai_addr);
         free(p->ai_canonname);
@@ -51,7 +52,7 @@ int main(int argc, const char* argv[])
 
     char host[256];
 
-    struct addrinfo* addrinfo = NULL;
+    struct oe_addrinfo* addrinfo = NULL;
     if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
@@ -77,25 +78,35 @@ int main(int argc, const char* argv[])
     }
     else
     {
-        struct addrinfo* thisinfo = addrinfo;
+        struct oe_addrinfo* thisinfo = addrinfo;
         bool found = false;
 
         while (thisinfo)
         {
-            uint8_t* addr =
-                (uint8_t*)&((struct sockaddr_in*)thisinfo->ai_addr)->sin_addr;
-
-            if (addr[0] == 0x7f && addr[1] == 0 && addr[2] == 0 && addr[3] == 1)
+            char node[NI_MAXHOST];
+            char port[NI_MAXSERV];
+            int err = getnameinfo(
+                (const struct sockaddr*)thisinfo->ai_addr,
+                (socklen_t)thisinfo->ai_addrlen,
+                node,
+                sizeof(node),
+                port,
+                sizeof(port),
+                NI_NUMERICHOST | NI_NUMERICSERV);
+            if (err == 0)
             {
-                found = true;
                 printf(
-                    "host received: addrinfo->ai_addr: %02x %02x %02x %02x\n",
-                    addr[0],
-                    addr[1],
-                    addr[2],
-                    addr[3]);
-                break;
+                    "host received: addrinfo->ai_addr: %s port %s\n",
+                    node,
+                    port);
+
+                if ((strcmp(node, "127.0.0.1") == 0) ||
+                    (strcmp(node, "::1") == 0))
+                {
+                    found = true;
+                }
             }
+
             thisinfo = thisinfo->ai_next;
         }
 
