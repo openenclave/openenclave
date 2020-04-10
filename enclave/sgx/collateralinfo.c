@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../common/sgx/collateral.h"
-#include "sgx_t.h"
+#include "platform_t.h"
 
 /**
  * Call into host to fetch collateral information.

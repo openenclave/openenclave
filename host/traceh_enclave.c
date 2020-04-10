@@ -16,7 +16,7 @@
 #error "Open Enclave is not supported on this architecture."
 #endif
 
-#include "tee_u.h"
+#include "core_u.h"
 
 /*
  * This file is separated from traceh.c since the host verification library

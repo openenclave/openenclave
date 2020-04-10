@@ -1,9 +1,9 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common/edl)
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/edl)
 if (OE_SGX)
-    set(SGX_EDL_DIR ${CMAKE_SOURCE_DIR}/common/sgx/edl)
+    set(SGX_EDL_DIR ${CMAKE_SOURCE_DIR}/edl/sgx)
 endif()
 
 ##==============================================================================
@@ -13,15 +13,15 @@ endif()
 ##
 ##==============================================================================
 
-set(TEE_EDL_FILE ${EDL_DIR}/tee.edl)
+set(OECORE_EDL_FILE ${EDL_DIR}/core.edl)
 
 add_custom_command(
-    OUTPUT tee_u.h tee_u.c tee_args.h
-    DEPENDS ${TEE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${TEE_EDL_FILE})
+    OUTPUT core_u.h core_u.c core_args.h
+    DEPENDS ${OECORE_EDL_FILE} edger8r
+    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${OECORE_EDL_FILE})
 
-add_custom_target(tee_untrusted_edl
-    DEPENDS tee_u.h tee_u.c tee_args.h)
+add_custom_target(core_untrusted_edl
+    DEPENDS core_u.h core_u.c core_args.h)
 
 ##==============================================================================
 ##
@@ -101,16 +101,15 @@ endif ()
 ##
 ##==============================================================================
 
+set(SGX_EDL_FILE ${SGX_EDL_DIR}/platform.edl)
 if (OE_SGX)
-    set(SGX_EDL_FILE ${SGX_EDL_DIR}/sgx.edl)
+  add_custom_command(
+      OUTPUT platform_u.h platform_u.c platform_args.c
+      DEPENDS ${SGX_EDL_FILE} edger8r
+      COMMAND edger8r --search-path ${SGX_EDL_DIR} --untrusted ${SGX_EDL_FILE})
 
-    add_custom_command(
-        OUTPUT sgx_u.h sgx_u.c sgx_args.h
-        DEPENDS ${SGX_EDL_FILE} edger8r
-        COMMAND edger8r --search-path ${SGX_EDL_DIR} --untrusted ${SGX_EDL_FILE})
-
-    add_custom_target(sgx_untrusted_edl
-        DEPENDS sgx_u.h sgx_u.c sgx_args.h)
+  add_custom_target(platform_untrusted_edl
+      DEPENDS platform_u.h platform_u.c platform_args.c)
 endif ()
 
 ##==============================================================================
@@ -233,10 +232,10 @@ if (OE_SGX)
     sgx/load.c
     sgx/loadelf.c
     sgx/ocalls.c
+    sgx/platform_u_wrapper.c
     sgx/quote.c
     sgx/registers.c
     sgx/report.c
-    sgx/sgx_u_wrapper.c
     sgx/sgxload.c
     sgx/sgxmeasure.c
     sgx/sgxquote.c
@@ -328,7 +327,7 @@ list(APPEND PLATFORM_SDK_ONLY_SRC
   syscall_u_wrapper.c
   signkey.c
   strings.c
-  tee_u_wrapper.c
+  core_u_wrapper.c
   traceh_enclave.c)
 
 # Combine the following common code along with the platform specific code and
@@ -361,9 +360,9 @@ if (OE_SGX AND UNIX)
 endif ()
 
 add_dependencies(oehost syscall_untrusted_edl)
-add_dependencies(oehost tee_untrusted_edl)
+add_dependencies(oehost core_untrusted_edl)
 if (OE_SGX)
-  add_dependencies(oehost sgx_untrusted_edl switchless_untrusted_edl)
+  add_dependencies(oehost platform_untrusted_edl switchless_untrusted_edl)
 endif ()
 
 # TODO: Replace these with `find_package` and add as dependencies to

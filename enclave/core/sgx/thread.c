@@ -9,7 +9,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/thread.h>
-#include "sgx_t.h"
+#include "platform_t.h"
 #include "td.h"
 
 /*

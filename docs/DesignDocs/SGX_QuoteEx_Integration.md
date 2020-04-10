@@ -65,7 +65,7 @@ The SGX ECDSA-p256 attester plugin is implemented in code file
 `enclave/sgx/attester.c` and other relevant enclave-side and host-side code files,
 called enclave-side and host-side plugin libraries in this document.
 he enclave-side plugin library interacts with the host-side plugin library
-via OCALLs defined in interface definition file `common/sgx/sgx.edl`.
+via OCALLs defined in interface definition file `edl/sgx/platform.edl`.
 For SGX ECDSA-p256 evidence generation, there are 2 OCALLs:
 
 - `oe_get_qetarget_info_ocall(sgx_target_info_t* target_info)`
@@ -206,7 +206,7 @@ creates a list of attester plugins for them, and returns the created list
 to the caller.
 
 For SGX evidence formats enumeration, a new OCALL is added to interface
-definition file `common/sgx/sgx.edl` and implemented in the host-side
+definition file `edl/sgx/platform.edl` and implemented in the host-side
 SGX plugin library:
 
 - `oe_get_supported_attester_format_ids_ocall(void* format_ids, size_t format_ids_size, size_t* format_ids_size_out)`
