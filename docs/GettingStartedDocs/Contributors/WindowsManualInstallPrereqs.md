@@ -6,7 +6,7 @@
  Note: To check if your system has support for SGX1 with or without FLC, please look [here](../SGXSupportLevel.md).
  
 - A version of Windows OS with native support for SGX features:
-   - For server: Windows Server 2016
+   - For server: Windows Server 2016 or 2019
    - For client: Windows 10 64-bit version 1709 or newer
    - To check your Windows version, run `winver` on the command line.
 

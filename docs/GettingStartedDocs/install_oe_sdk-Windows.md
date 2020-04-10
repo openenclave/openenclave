@@ -5,7 +5,7 @@
 - A system with support for SGX1 with Flexible Launch Control (FLC).
 Note: To check if your system has support for SGX1 with or without FLC, please look [here](./SGXSupportLevel.md).
 
-- Windows Server 2016
+- Windows Server 2016 or 2019
 
 ## Software Prerequisites
 
@@ -58,7 +58,7 @@ C:\Program Files\LLVM\bin\ld.lld.exe
 
 ### SGX1 with Flexible Launch Control (FLC) Prerequisites
 
-Instructions to install Intel's PSW 2.4, Intel's Data Center Attestation Primitives and related dependencies can be found [here](Contributors/WindowsManualSGX1FLCDCAPPrereqs.md).
+Instructions to install Intel's PSW 2.7, Intel's Data Center Attestation Primitives and related dependencies can be found [here](Contributors/WindowsManualSGX1FLCDCAPPrereqs.md).
 
 ## Download and install the Open Enclave SDK NuGet Package
 
