@@ -370,17 +370,17 @@ inline char* _nul_to_dev_null(PCWSTR path)
 
 inline void _canonicalize_path_separators(
     char* path,
-    uint32_t path_length,
+    size_t path_length,
     char separator)
 {
-    for (uint32_t i = 0; i < path_length; i++)
+    for (size_t i = 0; i < path_length; i++)
     {
         if (path[i] == '\\' || path[i] == '/')
             path[i] = separator;
     }
 }
 
-inline void _windows_to_oe_syscall_volume_root(char* path, uint32_t path_length)
+inline void _windows_to_oe_syscall_volume_root(char* path, size_t path_length)
 {
     /* convert "C:" to "/c" */
     if (path && path_length >= 2 && isalpha(path[0]) && path[1] == ':')
@@ -470,6 +470,39 @@ done:
     return err;
 }
 
+/**
+ * _strcpy_to_utf8.
+ *
+ * This function copies a native (UTF-16LE on Windows) string into a UTF-8
+ * buffer. If the buffer is not large enough, the value returned will be larger
+ * than ai_canonname_buf_len.
+ *
+ * @param[out] ai_canonname_buf The buffer to fill in with a UTF-8 string,
+ *                              or NULL to just get the size needed.
+ * @param[in] ai_canonname_buf_len The size in bytes of the buffer to fill in
+ * @param[in] ai_canonname The native string to copy from
+ *
+ * @return The size in bytes needed for the output buffer, or 0 on failure
+ */
+size_t _strcpy_to_utf8(
+    char* ai_canonname_buf,
+    size_t ai_canonname_buf_len,
+    void* ai_canonname)
+{
+    PWSTR canonname = (PWSTR)ai_canonname;
+    int buflen =
+        (ai_canonname_buf_len <= INT_MAX) ? (int)ai_canonname_buf_len : INT_MAX;
+
+    size_t buf_needed =
+        WideCharToMultiByte(CP_UTF8, 0, canonname, -1, NULL, 0, NULL, NULL);
+    if (buf_needed <= buflen)
+    {
+        WideCharToMultiByte(
+            CP_UTF8, 0, canonname, -1, ai_canonname_buf, buflen, NULL, NULL);
+    }
+    return buf_needed;
+}
+
 /* Converts a Windows path to a POSIX style used in enclaves by OE syscalls:
  *
  * <drive_letter>:\<item>\<item> -> /<drive_letter>/<item>/<item>
@@ -489,7 +522,7 @@ char* oe_win_path_to_posix(PCWSTR wpath)
 {
     PWSTR wenclave_path = NULL;
     char* enclave_path = NULL;
-    uint32_t enclave_path_length = 0;
+    size_t enclave_path_length = 0;
     errno_t err = 0;
 
     if (!wpath || wcsnlen_s(wpath, MAX_PATH) == 0 ||
@@ -511,8 +544,7 @@ char* oe_win_path_to_posix(PCWSTR wpath)
     }
 
     // Convert UTF-16LE to UTF-8.
-    enclave_path_length =
-        WideCharToMultiByte(CP_UTF8, 0, wenclave_path, -1, NULL, 0, NULL, NULL);
+    enclave_path_length = _strcpy_to_utf8(NULL, 0, wenclave_path);
     if (enclave_path_length == 0)
     {
         DWORD winerror = GetLastError();
@@ -526,15 +558,7 @@ char* oe_win_path_to_posix(PCWSTR wpath)
         err = OE_ENOMEM;
         goto done;
     }
-    WideCharToMultiByte(
-        CP_UTF8,
-        0,
-        wenclave_path,
-        -1,
-        enclave_path,
-        enclave_path_length,
-        NULL,
-        NULL);
+    _strcpy_to_utf8(enclave_path, enclave_path_length, wenclave_path);
 
     _canonicalize_path_separators(enclave_path, enclave_path_length, '/');
 
@@ -1567,18 +1591,11 @@ int oe_syscall_readdir_ocall(uint64_t dirp, struct oe_dirent* entry)
     memset(entry->d_name, 0, OE_NAME_MAX + 1);
 
     /* Convert from UTF-16LE to UTF-8. */
-    if (WideCharToMultiByte(
-            CP_UTF8,
-            0,
-            pdir->FindFileData.cFileName,
-            -1,
-            entry->d_name,
-            OE_NAME_MAX + 1,
-            NULL,
-            NULL) == 0)
+    if (_strcpy_to_utf8(
+            entry->d_name, OE_NAME_MAX + 1, pdir->FindFileData.cFileName) == 0)
     {
         DWORD winerr = GetLastError();
-        OE_TRACE_ERROR("WideCharToMultiByte failed with %#x\n", winerr);
+        OE_TRACE_ERROR("_strcpy_to_utf8 failed with %#x\n", winerr);
         _set_errno(_winerr_to_errno(winerr));
         goto done;
     }
@@ -2609,8 +2626,44 @@ int oe_syscall_getaddrinfo_open_ocall(
         goto done;
     }
 
-    ret =
-        getaddrinfo(node, service, (const struct addrinfo*)hints, &handle->res);
+    // Convert the node name (if any) from UTF-8 to UTF-16LE.
+    PWSTR wnode = NULL;
+    WCHAR wnode_buf[NI_MAXHOST];
+    if (node != NULL)
+    {
+        if (MultiByteToWideChar(CP_UTF8, 0, node, -1, wnode_buf, NI_MAXHOST) ==
+            0)
+        {
+            ret = OE_EAI_FAIL;
+            goto done;
+        }
+        wnode = wnode_buf;
+    }
+
+    // Convert the service name (if any) from UTF-8 to UTF-16LE.
+    PWSTR wservice = NULL;
+    WCHAR wserv_buf[NI_MAXSERV];
+    if (service != NULL)
+    {
+        if (MultiByteToWideChar(
+                CP_UTF8, 0, service, -1, wserv_buf, NI_MAXSERV) == 0)
+        {
+            ret = OE_EAI_FAIL;
+            goto done;
+        }
+        wservice = wserv_buf;
+    }
+
+    // The addrinfo structure is the same between ADDRINFOA and ADDRINFOW
+    // except for the types of pointers.  However, in the hints, the pointer
+    // fields must always be NULL anyway, so we don't need any conversion
+    // other than a simple cast.
+    ADDRINFOW* whints = (ADDRINFOW*)hints;
+
+    // Get the list of ADDRINFOW structs. Again a simple cast will do
+    // since we will deal with the type of pointer when reading the values
+    // out of the struct.
+    ret = GetAddrInfoW(wnode, wservice, whints, (ADDRINFOW**)&handle->res);
     if (ret == 0)
     {
         handle->magic = GETADDRINFO_HANDLE_MAGIC;
@@ -2694,15 +2747,31 @@ int oe_syscall_getnameinfo_ocall(
     oe_socklen_t servlen,
     int flags)
 {
-    OE_UNUSED(sa);
-    OE_UNUSED(salen);
-    OE_UNUSED(host);
-    OE_UNUSED(hostlen);
-    OE_UNUSED(serv);
-    OE_UNUSED(servlen);
-    OE_UNUSED(flags);
+    WCHAR whost[NI_MAXHOST];
+    WCHAR wserv[NI_MAXSERV];
+    errno = 0;
 
-    PANIC;
+    // Get the name in UTF-16LE format. We cannot use getnameinfo since it uses
+    // ANSI code pages and the current code page may not be able to represent
+    // the name.
+    int ret = GetNameInfoW(
+        (const struct sockaddr*)sa,
+        salen,
+        whost,
+        _countof(whost),
+        wserv,
+        _countof(wserv),
+        flags);
+    if (ret != 0)
+        return _wsaerr_to_eai(ret);
+
+    // Convert UTF-16LE to UTF-8.
+    if (_strcpy_to_utf8(host, hostlen, whost) == 0)
+    {
+        return EAI_FAIL;
+    }
+
+    return 0;
 }
 
 /*
