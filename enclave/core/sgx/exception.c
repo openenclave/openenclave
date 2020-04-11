@@ -199,6 +199,61 @@ static struct
     {19, OE_EXCEPTION_SIMD_FLOAT_POINT},
 };
 
+static int _emulate_wrfsbase(sgx_ssa_gpr_t* ssa_gpr)
+{
+    // Emulate wrfsbase
+    const uint32_t OE_WRFSBASE_PREFIX_1 = 0xae0f48f3;
+    if (*((uint32_t*)ssa_gpr->rip) == OE_WRFSBASE_PREFIX_1)
+    {
+        uint64_t regs[] = {
+            ssa_gpr->rax, // d0
+            ssa_gpr->rcx, // d1
+            ssa_gpr->rdx, // d2
+            ssa_gpr->rbx, // d3
+            ssa_gpr->rsp, // d4
+            ssa_gpr->rbp, // d5
+            ssa_gpr->rsi, // d6
+            ssa_gpr->rdi, // d7
+        };
+
+        uint8_t last_byte = ((uint8_t*)ssa_gpr->rip)[4];
+        uint8_t idx = (uint8_t)(last_byte - 0xd0);
+        if (idx >= sizeof(regs) / sizeof(regs[0]))
+            return -1;
+
+        ssa_gpr->fs_base = regs[idx];
+        ssa_gpr->rip += 5;
+        return 0;
+    }
+
+    // Emulate wrfsbase
+    const uint32_t OE_WRFSBASE_PREFIX_2 = 0xae0f49f3;
+    if (*((uint32_t*)ssa_gpr->rip) == OE_WRFSBASE_PREFIX_2)
+    {
+        uint64_t regs[] = {
+            ssa_gpr->r8,  // d0
+            ssa_gpr->r9,  // d1
+            ssa_gpr->r10, // d2
+            ssa_gpr->r11, // d3
+            ssa_gpr->r12, // d4
+            ssa_gpr->r13, // d5
+            ssa_gpr->r14, // d6
+            ssa_gpr->r15, // d7
+        };
+
+        uint8_t last_byte = ((uint8_t*)ssa_gpr->rip)[4];
+        uint8_t idx = (uint8_t)(last_byte - 0xd0);
+        if (idx >= sizeof(regs) / sizeof(regs[0]))
+            return -1;
+
+        ssa_gpr->fs_base = regs[idx];
+        ssa_gpr->rip += 5;
+        return 0;
+    }
+
+    return -1;
+}
+
 /*
 **==============================================================================
 **
@@ -214,9 +269,15 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
     // Emulate CPUID
     if (*((uint16_t*)ssa_gpr->rip) == OE_CPUID_OPCODE)
     {
-        return oe_emulate_cpuid(
+        int ret = oe_emulate_cpuid(
             &ssa_gpr->rax, &ssa_gpr->rbx, &ssa_gpr->rcx, &ssa_gpr->rdx);
+        if (ret == 0)
+            ssa_gpr->rip += 2;
+        return ret;
     }
+
+    if (_emulate_wrfsbase(ssa_gpr) == 0)
+        return 0;
 
     return -1;
 }
@@ -374,9 +435,6 @@ void oe_virtual_exception_dispatcher(
         td->host_rbp = td->host_previous_rbp;
         td->host_rsp = td->host_previous_rsp;
         td->host_ecall_context = td->host_previous_ecall_context;
-
-        // Advance RIP to the next instruction for continuation
-        ssa_gpr->rip += 2;
     }
     else
     {
