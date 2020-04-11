@@ -2766,7 +2766,11 @@ int oe_syscall_getnameinfo_ocall(
         return _wsaerr_to_eai(ret);
 
     // Convert UTF-16LE to UTF-8.
-    if (_strcpy_to_utf8(host, hostlen, whost) == 0)
+    if ((hostlen > 0) && (_strcpy_to_utf8(host, hostlen, whost) == 0))
+    {
+        return EAI_FAIL;
+    }
+    if ((servlen > 0) && (_strcpy_to_utf8(serv, servlen, wserv) == 0))
     {
         return EAI_FAIL;
     }
