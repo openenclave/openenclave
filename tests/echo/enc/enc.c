@@ -58,6 +58,22 @@ int enc_echo(char* in, char out[100])
 
     oe_host_free(host_allocated_str);
 
+    static uint64_t temp_td[256];
+    temp_td[0] = (uint64_t)temp_td;
+    void* old_fs;
+    void* new_fs;
+    asm volatile("mov %%fs:0, %0" : "=r"(old_fs));
+
+    asm volatile("wrfsbase %0 " : : "a"(temp_td));
+    asm volatile("mov %%fs:0, %0" : "=r"(new_fs));
+    asm volatile("wrfsbase %0 " : : "a"(old_fs));
+
+    oe_host_printf("oe fs : %p\n", old_fs);
+    oe_host_printf("expected temp fs : %p\n", temp_td);
+    oe_host_printf("actual temp fs : %p\n", new_fs);
+    if (new_fs != temp_td)
+        oe_abort();
+
     return 0;
 }
 
