@@ -222,15 +222,15 @@ static int _emulate_wrfsbase(sgx_ssa_gpr_t* ssa_gpr)
         };
 
         uint8_t last_byte = ((uint8_t*)ssa_gpr->rip)[4];
-        uint8_t idx = last_byte - 0xd0;
+        uint8_t idx = (uint8_t)(last_byte - 0xd0);
         if (idx >= sizeof(regs) / sizeof(regs[0]))
             return -1;
 
         ssa_gpr->fs_base = regs[idx];
         ssa_gpr->rip += 5;
         return 0;
-    }  
-    
+    }
+
     // Emulate wrfsbase
     const uint32_t OE_WRFSBASE_PREFIX_2 = 0xae0f49f3;
     if (*((uint32_t*)ssa_gpr->rip) == OE_WRFSBASE_PREFIX_2)
@@ -247,7 +247,7 @@ static int _emulate_wrfsbase(sgx_ssa_gpr_t* ssa_gpr)
         };
 
         uint8_t last_byte = ((uint8_t*)ssa_gpr->rip)[4];
-        uint8_t idx = last_byte - 0xd0;
+        uint8_t idx = (uint8_t)(last_byte - 0xd0);
         if (idx >= sizeof(regs) / sizeof(regs[0]))
             return -1;
 
@@ -255,7 +255,7 @@ static int _emulate_wrfsbase(sgx_ssa_gpr_t* ssa_gpr)
         ssa_gpr->rip += 5;
         return 0;
     }
-    
+
     return -1;
 }
 
@@ -280,7 +280,7 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
             ssa_gpr->rip += 2;
         return ret;
     }
-    
+
     if (_emulate_wrfsbase(ssa_gpr) == 0)
         return 0;
 
