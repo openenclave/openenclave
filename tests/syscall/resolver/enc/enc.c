@@ -36,7 +36,7 @@ int ecall_getnameinfo(char* buffer, size_t bufflen)
 
     struct oe_sockaddr_in addr = {
         .sin_family = OE_AF_INET,
-        .sin_port = 22,
+        .sin_port = oe_htons(23), // telnet
         .sin_addr.s_addr = oe_htonl(OE_INADDR_LOOPBACK)};
 
     printf("s_addr=%x\n", addr.sin_addr.s_addr);
