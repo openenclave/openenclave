@@ -12,7 +12,8 @@
     "ansible_dir": "{{ env `WORKSPACE` }}/scripts/ansible",
     "gallery_name": "{{ env `GALLERY_NAME` }}",
     "gallery_image_version": "{{ env `GALLERY_IMAGE_VERSION` }}",
-    "managed_image_name_id": "{{ env `MANAGED_IMAGE_NAME_ID` }}"
+    "managed_image_name_id": "{{ env `MANAGED_IMAGE_NAME_ID` }}",
+    "replication_regions": "{{ env `REPLICATION_REGIONS` }}"
   },
   "builders": [{
     "type": "azure-arm",
@@ -27,9 +28,7 @@
       "gallery_name": "{{ user `gallery_name` }}",
       "image_name": "{{ user `gallery_image_name` }}",
       "image_version": "{{ user `gallery_image_version` }}",
-      "replication_regions": [
-        "westeurope"
-      ]
+      "replication_regions": "{{ user `replication_regions` }}"
     },
     "shared_image_gallery_timeout": "180m",
 

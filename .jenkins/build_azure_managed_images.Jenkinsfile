@@ -171,7 +171,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             --gallery-image-definition ${img_name_suffix} \
                             --gallery-image-version ${gallery_image_version} \
                             --managed-image \$MANAGED_IMG_ID \
-                            --target-regions "WestEurope" \
+                            --target-regions ${env.REPLICATION_REGIONS.split(',').join(' ')} \
                             --replica-count 1
                     """
                     def az_rg_create_script = """

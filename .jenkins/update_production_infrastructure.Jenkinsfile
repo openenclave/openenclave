@@ -75,7 +75,7 @@ def update_production_azure_gallery_images(String image_name) {
                         --gallery-image-definition ${image_name} \
                         --gallery-image-version ${env.IMAGE_VERSION} \
                         --managed-image \$MANAGED_IMG_ID \
-                        --target-regions "WestEurope" \
+                        --target-regions ${env.REPLICATION_REGIONS.split(',').join(' ')} \
                         --replica-count 1
                 """
                 oe.azureEnvironment(az_update_image_script, "oetools-deploy:${env.DOCKER_TAG}")
