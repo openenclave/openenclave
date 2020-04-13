@@ -3,7 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
-#include "tee_t.h"
+#include "core_t.h"
 
 //
 // start.S (the compilation unit containing the entry point) contains a

@@ -45,7 +45,7 @@ enclave
 }
 ```
 
-2. Import all OCalls from `tee.edl`
+2. Import all OCalls from `core.edl`
 
 ```
 // sample.edl
@@ -66,8 +66,8 @@ enclave
 ```
 
 In example (1), linking would fail if the enclave made a call to `oe_realloc_ocall()`
-(also part of tee.edl) unless the developer modified the import line to
-`from "openenclave/edl/tee.edl" import oe_log_ocall, oe_realloc_ocall;`. In this scenario,
+(also part of core.edl) unless the developer modified the import line to
+`from "openenclave/edl/core.edl" import oe_log_ocall, oe_realloc_ocall;`. In this scenario,
 example (2) will work without modification.
 
 ## EDL local structures
@@ -122,18 +122,19 @@ The following 4 OCalls can be implemented in EDL, they just aren't today. Issue
 All system OCalls (other than the previously mentioned exceptions) are found
 in one of the following EDL files
 
-* `common/logging.edl`
-* `common/memory.edl`
-* `common/epoll.edl`
-* `common/fcntl.edl`
-* `common/ioctl.edl`
-* `common/poll.edl`
-* `common/signal.edl`
-* `common/socket.edl`
-* `common/time.edl`
-* `common/unistd.edl`
-* `common/utsname.edl`
-* `common/syscall.edl`
-* `common/syscall.edl`
-* `common/sgx/sgx.edl`
-* `common/sgx/switchless.edl`
+* `edl/logging.edl`
+* `edl/memory.edl`
+* `edl/epoll.edl`
+* `edl/fcntl.edl`
+* `edl/ioctl.edl`
+* `edl/poll.edl`
+* `edl/signal.edl`
+* `edl/socket.edl`
+* `edl/time.edl`
+* `edl/unistd.edl`
+* `edl/utsname.edl`
+* `edl/sgx/cpu.edl`
+* `edl/sgx/debug.edl`
+* `edl/sgx/sgx_attestation.edl`
+* `edl/sgx/switchless.edl`
+* `edl/sgx/thread.edl`

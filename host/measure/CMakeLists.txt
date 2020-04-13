@@ -99,9 +99,9 @@ if (WIN32)
   target_link_libraries(oehostmr PUBLIC crypt32)
 endif ()
 
-add_dependencies(oehostmr syscall_untrusted_edl tee_untrusted_edl)
+add_dependencies(oehostmr syscall_untrusted_edl core_untrusted_edl)
 if (OE_SGX)
-  add_dependencies(oehostmr sgx_untrusted_edl switchless_untrusted_edl)
+  add_dependencies(oehostmr platform_untrusted_edl switchless_untrusted_edl)
 endif ()
 
 # TODO: Replace these with `find_package` and add as dependencies to

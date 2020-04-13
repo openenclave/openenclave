@@ -4,7 +4,7 @@
 /*
 **==============================================================================
 **
-** tee.edl:
+** core.edl:
 **
 **     This file declares internal ECALLs/OCALLs used by liboehost/liboecore
 **     for usage with any TEE technology.

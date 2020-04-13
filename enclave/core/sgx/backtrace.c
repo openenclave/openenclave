@@ -12,8 +12,8 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include "../oe_nodebug_alloc.h"
-#include "sgx_t.h"
-#include "tee_t.h"
+#include "core_t.h"
+#include "platform_t.h"
 
 #if defined(__INTEL_COMPILER)
 #error "optimized __builtin_return_address() not supported by Intel compiler"
