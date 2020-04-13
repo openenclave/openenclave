@@ -37,6 +37,8 @@ struct _oe_attestation_role
     /**
      * The function that gets executed when the attestation role is registered.
      *
+     * @experimental
+     *
      * @param[in] context A pointer to the attestation role struct.
      * @param[in] config_data An optional pointer to the configuration data.
      * @param[in] config_data_size The size in bytes of config_data.
@@ -51,6 +53,8 @@ struct _oe_attestation_role
     /**
      * The function that gets executed when the attestation role is
      * unregistered.
+     *
+     * @experimental
      *
      * @param[in] context A pointer to the attestation role struct.
      * @retval OE_OK on success.
@@ -78,6 +82,8 @@ struct _oe_attester
      *
      * Note that many callers of `get_evidence` will send the results over
      * the network, so the output must be in a serialized form.
+     *
+     * @experimental
      *
      * @param[in] context A pointer to the attester plugin struct.
      * @param[in] flags Specifying default value (0) generates evidence for
@@ -113,6 +119,8 @@ struct _oe_attester
     /**
      * Frees the generated attestation evidence and endorsements.
      *
+     * @experimental
+     *
      * @param[in] context A pointer to the attester plugin struct.
      * @param[in] evidence_buffer A pointer to the evidence buffer.
      * @retval OE_OK on success.
@@ -123,6 +131,8 @@ struct _oe_attester
 
     /**
      * Frees the generated attestation endorsements.
+     *
+     * @experimental
      *
      * @param[in] context A pointer to the attester plugin struct.
      * @param[in] endorsements_buffer A pointer to the endorsements buffer.
@@ -178,6 +188,8 @@ struct _oe_verifier
      * The plugin is responsible for handling endianness and ensuring that the
      * data from the raw evidence converted properly for each platform.
      *
+     * @experimental
+     *
      * @param[in] context A pointer to the verifier plugin struct.
      * @param[in] evidence_buffer The evidence buffer.
      * @param[in] evidence_buffer_size The size of evidence_buffer in bytes.
@@ -205,6 +217,8 @@ struct _oe_verifier
     /**
      * Frees the generated claims.
      *
+     * @experimental
+     *
      * @param[in] context A pointer to the verifier plugin struct.
      * @param[out] claims The list of returned claims.
      * @param[out] claims_length The number of claims.
@@ -225,6 +239,8 @@ struct _oe_verifier
  * already been registered.
  *
  * This is available in the enclave only.
+ *
+ * @experimental
  *
  * @param[in] plugin A pointer to the attestation plugin struct. Note that this
  * will not copy the contents of the pointer, so the pointer must be kept valid
@@ -251,6 +267,8 @@ oe_result_t oe_register_attester(
  *
  * This is available in the enclave and host.
  *
+ * @experimental
+ *
  * @param[in] plugin A pointer to the attestation plugin struct. Note that this
  * will not copy the contents of the pointer, so the pointer must be kept valid
  * until the plugin is unregistered.
@@ -272,6 +290,8 @@ oe_result_t oe_register_verifier(
  *
  * Unregisters an attester plugin. This is available in the enclave only.
  *
+ * @experimental
+ *
  * @param[in] plugin A pointer to the attestation plugin struct.
  * @retval OE_OK The function succeeded.
  * @retval OE_INVALID_PARAMTER Atleast one of the parameters is invalid.
@@ -284,6 +304,8 @@ oe_result_t oe_unregister_attester(oe_attester_t* plugin);
  * oe_unregister_verifier
  *
  * Unregisters an verifier plugin. This is available in the enclave and host.
+ *
+ * @experimental
  *
  * @param[in] plugin A pointer to the attestation plugin struct.
  * @retval OE_OK The function succeeded.
@@ -298,6 +320,8 @@ oe_result_t oe_unregister_verifier(oe_verifier_t* plugin);
  *
  * Generates the attestation evidence for the given UUID attestation format.
  * This function is only available in the enclave.
+ *
+ * @experimental
  *
  * @param[in] evidence_format_uuid The UUID of the plugin.
  * @param[in] flags Specifying default value (0) generates evidence for local
@@ -338,6 +362,8 @@ oe_result_t oe_get_evidence(
  * Frees the attestation evidence. This function is only available in the
  * enclave.
  *
+ * @experimental
+ *
  * @param[in] evidence_buffer A pointer to the evidence buffer.
  * @retval OE_OK The function succeeded.
  * @retval Otherwise, returns the error code the plugin's function.
@@ -349,6 +375,8 @@ oe_result_t oe_free_evidence(uint8_t* evidence_buffer);
  *
  * Frees the generated attestation endorsements. This function is only available
  * in the enclave.
+ *
+ * @experimental
  *
  * @param[in] endorsements_buffer A pointer to the endorsements buffer.
  * @retval OE_OK The function succeeded.
@@ -386,6 +414,8 @@ oe_result_t oe_free_endorsements(uint8_t* endorsements_buffer);
  * - plugin_uuid (uint8_t[16])
  *      - The UUID of the plugin used to verify the evidence.
  *
+ * @experimental
+ *
  * @param[in] evidence_buffer The evidence buffer.
  * @param[in] evidence_buffer_size The size of evidence_buffer in bytes.
  * @param[in] endorsements_buffer The optional endorsements buffer.
@@ -415,6 +445,8 @@ oe_result_t oe_verify_evidence(
  * oe_free_claims_list
  *
  * Frees a claims list.
+ *
+ * @experimental
  *
  * @param[in] claims The list of claims.
  * @param[in] claims_length The length of the claims list.
