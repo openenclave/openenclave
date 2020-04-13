@@ -861,6 +861,21 @@ done:
     return ret;
 }
 
+size_t _strcpy_to_utf8(
+    char* ai_canonname_buf,
+    size_t ai_canonname_buf_len,
+    void* ai_canonname)
+{
+    const char* canonname = (const char*)ai_canonname;
+
+    size_t buf_needed = strlen(canonname) + 1;
+    if (buf_needed <= ai_canonname_buf_len)
+    {
+        memcpy(ai_canonname_buf, canonname, buf_needed);
+    }
+    return buf_needed;
+}
+
 int oe_syscall_getaddrinfo_read_ocall(
     uint64_t handle_,
     int* ai_flags,
