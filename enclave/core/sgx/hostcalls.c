@@ -4,6 +4,7 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/sgx/ecall_context.h>
+#include <openenclave/internal/sgx/td.h>
 #include "td.h"
 
 /**
@@ -11,7 +12,7 @@
  */
 static oe_ecall_context_t* _get_ecall_context()
 {
-    td_t* td = oe_get_td();
+    oe_sgx_td_t* td = oe_sgx_get_td();
     oe_ecall_context_t* ecall_context = td->host_ecall_context;
     return oe_is_outside_enclave(ecall_context, sizeof(*ecall_context))
                ? ecall_context

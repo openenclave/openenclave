@@ -26,6 +26,7 @@
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/utils.h>
 #include "../calls.h"
@@ -98,7 +99,7 @@ static oe_result_t _enter_sim(
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_tcs_t* tcs = (sgx_tcs_t*)tcs_;
-    td_t* td = NULL;
+    oe_sgx_td_t* td = NULL;
 
     /* Reject null parameters */
     if (!enclave || !enclave->addr || !tcs || !tcs->oentry || !tcs->gsbase)
@@ -109,8 +110,8 @@ static oe_result_t _enter_sim(
     if (!tcs->u.entry)
         OE_RAISE(OE_NOT_FOUND);
 
-    /* Set td_t.simulate flag */
-    td = (td_t*)(enclave->addr + tcs->gsbase);
+    /* Set oe_sgx_td_t.simulate flag */
+    td = (oe_sgx_td_t*)(enclave->addr + tcs->gsbase);
     td->simulate = true;
 
     /* Call into enclave */
@@ -487,7 +488,7 @@ static void* _assign_tcs(oe_enclave_t* enclave)
 
     oe_mutex_lock(&enclave->lock);
     {
-        /* First attempt to find a busy td_t owned by this thread */
+        /* First attempt to find a busy oe_sgx_td_t owned by this thread */
         for (i = 0; i < enclave->num_bindings; i++)
         {
             oe_thread_binding_t* binding = &enclave->bindings[i];
@@ -610,7 +611,7 @@ oe_result_t oe_ecall(
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Assign a td_t for this operation */
+    /* Assign a oe_sgx_td_t for this operation */
     if (!(tcs = _assign_tcs(enclave)))
         OE_RAISE(OE_OUT_OF_THREADS);
 
