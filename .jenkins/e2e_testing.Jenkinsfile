@@ -48,6 +48,7 @@ stage("Build Jenkins Agents images") {
                        string(name: 'OE_DEPLOY_IMAGE', value: "oetools-deploy:${DOCKER_TAG}"),
                        string(name: 'RESOURCE_GROUP', value: env.RESOURCE_GROUP),
                        string(name: 'GALLERY_NAME', value: env.E2E_IMAGES_GALLERY_NAME),
+                       string(name: 'REPLICATION_REGIONS', value: env.REPLICATION_REGIONS),
                        string(name: 'IMAGE_ID', value: IMAGE_ID),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                        string(name: 'AGENTS_LABEL', value: env.IMAGES_BUILD_LABEL)]
@@ -76,6 +77,7 @@ if(env.PRODUCTION_IMAGES_GALLERY_NAME) {
                          string(name: 'BRANCH_NAME', value: env.BRANCH),
                          string(name: 'RESOURCE_GROUP', value: env.RESOURCE_GROUP),
                          string(name: 'PRODUCTION_IMAGES_GALLERY_NAME', value: env.PRODUCTION_IMAGES_GALLERY_NAME),
+                         string(name: 'REPLICATION_REGIONS', value: env.REPLICATION_REGIONS),
                          string(name: 'IMAGE_ID', value: IMAGE_ID),
                          string(name: 'IMAGE_VERSION', value: IMAGE_VERSION),
                          string(name: 'DOCKER_TAG', value: DOCKER_TAG),
