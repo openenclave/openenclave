@@ -10,6 +10,8 @@ A version of Windows OS with native support for SGX features:
 - For server: Windows Server 2016
 - For client: Windows 10 64-bit version 1709 or newer
 
+*Note:* The following instructions assume running `powershell` as adminstrator.
+
 ## Install Git and Clone the Open Enclave SDK repo
 
 - Download and install Git for Windows from [here](https://git-scm.com/download/win).
@@ -31,6 +33,18 @@ cloned it):
 cd openenclave
 ```
 
+Also, make sure the execution policy is set to `RemoteSigned` with the following command.
+
+```powershell
+Get-ExecutionPolicy
+```
+
+If not, set the policy with the following command and confirm the change by typing `Y`.
+
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
+
 To deploy all the prerequisities for building Open Enclave, you can run the
 following from PowerShell. Note that the Data Center Attestation Primitives
 (DCAP) Client is not used for attestation on systems which have support for SGX1
@@ -46,6 +60,12 @@ executable installer will fail on Windows 10 machines. To skip PSW installation:
 
 ```powershell
 ./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1-NoDriver -DCAPClientType None
+```
+
+Once the installation is done, please ignore the following message(s) and continue on to the next step.
+
+```powershell
+Please reboot your computer for the configuration to complete.
 ```
 
 If you prefer to manually install prerequisites, please refer to this
