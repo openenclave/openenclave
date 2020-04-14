@@ -78,6 +78,15 @@ int ecall_run_client(char* recv_buff, ssize_t* recv_buff_len)
         }
     }
 
+    /* Verify that getpeername() returns the same address we connected to. */
+    struct oe_sockaddr_in peer_addr = {0};
+    oe_socklen_t peer_addr_len = sizeof(peer_addr);
+    OE_TEST(
+        oe_getpeername(
+            sockfd, (struct oe_sockaddr*)&peer_addr, &peer_addr_len) == 0);
+    OE_TEST(peer_addr_len == sizeof(serv_addr));
+    OE_TEST(memcmp(&serv_addr, &peer_addr, peer_addr_len) == 0);
+
     int sockdup = oe_dup(sockfd);
 
     printf("reading...\n");
@@ -95,6 +104,9 @@ int ecall_run_client(char* recv_buff, ssize_t* recv_buff_len)
         oe_host_printf("fail close\n");
         return OE_FAILURE;
     }
+
+    /* Make sure shutdown call also works. */
+    OE_TEST(oe_shutdown(sockfd, OE_SHUT_RDWR) == 0);
 
     oe_host_printf("success close\n");
     oe_close(sockfd);
@@ -140,6 +152,15 @@ int ecall_run_server()
         printf("listen error errno = %d\n", oe_errno);
     }
 
+    /* Verify that getsockname() returns the same address we bound to. */
+    struct oe_sockaddr_in local_addr = {0};
+    oe_socklen_t local_addr_len = sizeof(local_addr);
+    OE_TEST(
+        oe_getsockname(
+            listenfd, (struct oe_sockaddr*)&local_addr, &local_addr_len) == 0);
+    OE_TEST(local_addr_len == sizeof(serv_addr));
+    OE_TEST(memcmp(&serv_addr, &local_addr, local_addr_len) == 0);
+
     while (1)
     {
         printf("enc: accepting\n");
@@ -159,6 +180,19 @@ int ecall_run_server()
             do
             {
                 oe_host_printf("enclave: accepted\n");
+
+                /* Verify that getpeername() returns the same address accept
+                 * returned. */
+                struct oe_sockaddr_in remote_addr = {0};
+                oe_socklen_t remote_addr_len = sizeof(remote_addr);
+                OE_TEST(
+                    oe_getpeername(
+                        connfd,
+                        (struct oe_sockaddr*)&remote_addr,
+                        &remote_addr_len) == 0);
+                OE_TEST(remote_addr_len == peer_addr_len);
+                OE_TEST(memcmp(&remote_addr, &peer_addr, peer_addr_len) == 0);
+
                 ssize_t n = oe_write(connfd, TESTDATA, strlen(TESTDATA));
                 if (n > 0)
                 {

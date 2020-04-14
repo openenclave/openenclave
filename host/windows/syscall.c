@@ -2538,12 +2538,23 @@ int oe_syscall_getsockname_ocall(
     oe_socklen_t addrlen_in,
     oe_socklen_t* addrlen_out)
 {
-    OE_UNUSED(sockfd);
-    OE_UNUSED(addr);
-    OE_UNUSED(addrlen_in);
-    OE_UNUSED(addrlen_out);
+    int ret;
 
-    PANIC;
+    errno = 0;
+
+    ret = getsockname(_get_socket(sockfd), (struct sockaddr*)addr, &addrlen_in);
+
+    if (ret != 0)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
+    else
+    {
+        if (addrlen_out)
+            *addrlen_out = addrlen_in;
+    }
+
+    return ret;
 }
 
 int oe_syscall_getpeername_ocall(
@@ -2552,12 +2563,23 @@ int oe_syscall_getpeername_ocall(
     oe_socklen_t addrlen_in,
     oe_socklen_t* addrlen_out)
 {
-    OE_UNUSED(sockfd);
-    OE_UNUSED(addr);
-    OE_UNUSED(addrlen_in);
-    OE_UNUSED(addrlen_out);
+    int ret;
 
-    PANIC;
+    errno = 0;
+
+    ret = getpeername(_get_socket(sockfd), (struct sockaddr*)addr, &addrlen_in);
+
+    if (ret != 0)
+    {
+        _set_errno(_winsockerr_to_errno(WSAGetLastError()));
+    }
+    else
+    {
+        if (addrlen_out)
+            *addrlen_out = addrlen_in;
+    }
+
+    return ret;
 }
 
 int oe_syscall_shutdown_sockets_device_ocall(oe_host_fd_t sockfd)
