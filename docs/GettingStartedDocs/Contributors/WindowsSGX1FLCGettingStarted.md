@@ -11,6 +11,8 @@ A version of Windows OS with native support for SGX features:
 - For client: Windows 10 64-bit version 1709 or newer
 - To check your Windows version, run `winver` on the command line.
 
+*Note:* The following instructions assume running `powershell` as adminstrator.
+
 ## Install Git and Clone the Open Enclave SDK repo
 
 - Download and install Git for Windows from [here](https://git-scm.com/download/win).
@@ -33,7 +35,19 @@ cloned it):
 cd C:/Users/test/openenclave
 ```
 
-Run the following from PowerShell to deploy all the prerequisites for building Open Enclave:
+Also, make sure the execution policy is set to `RemoteSigned` with the following command.
+
+```powershell
+Get-ExecutionPolicy
+```
+
+If not, set the policy with the following command and confirm the change by typing `Y`.
+
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
+
+Run the following command to deploy all the prerequisites for building Open Enclave:
 
 ```powershell
 ./scripts/install-windows-prereqs.ps1
@@ -67,6 +81,12 @@ command:
 
 ```powershell
 ./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType Azure
+```
+
+Once the installation is done, please ignore the following message(s) and continue on to the next step.
+
+```powershell
+Please reboot your computer for the configuration to complete.
 ```
 
 If you prefer to manually install prerequisites, please refer to this
