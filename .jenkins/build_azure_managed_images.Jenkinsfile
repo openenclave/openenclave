@@ -144,25 +144,18 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
 
                         az vm deallocate --ids \$VM_ID
                         az vm generalize --ids \$VM_ID
-                        MANAGED_IMG_ID=`az image create \
-                            --resource-group ${vm_rg_name} \
-                            --name ${managed_image_name_id}-${img_name_suffix} \
-                            --hyper-v-generation ${AZURE_IMAGES_MAP[os_series]["generation"]} \
-                            --source ${img_name_suffix} | jq -r '.id'`
 
                         # If the target image doesn't exist, the below command
                         # will not fail because it is idempotent.
-                        retrycmd_if_failure 30 300 30m az image delete \
+                        az image delete \
                             --resource-group ${RESOURCE_GROUP} \
                             --name ${managed_image_name_id}-${img_name_suffix}
 
-                        retrycmd_if_failure 30 300 30m az resource move \
-                            --ids \$MANAGED_IMG_ID \
-                            --destination-group ${RESOURCE_GROUP}
-
-                        MANAGED_IMG_ID=`az image show \
+                        MANAGED_IMG_ID=`az image create \
                             --resource-group ${RESOURCE_GROUP} \
-                            --name ${managed_image_name_id}-${img_name_suffix} | jq -r '.id'`
+                            --name ${managed_image_name_id}-${img_name_suffix} \
+                            --hyper-v-generation ${AZURE_IMAGES_MAP[os_series]["generation"]} \
+                            --source \$VM_ID | jq -r '.id'`
 
                         # If the target image version doesn't exist, the below
                         # command will not fail because it is idempotent.
@@ -178,7 +171,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             --gallery-image-definition ${img_name_suffix} \
                             --gallery-image-version ${gallery_image_version} \
                             --managed-image \$MANAGED_IMG_ID \
-                            --target-regions "WestEurope" \
+                            --target-regions ${env.REPLICATION_REGIONS.split(',').join(' ')} \
                             --replica-count 1
                     """
                     def az_rg_create_script = """
