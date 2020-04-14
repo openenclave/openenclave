@@ -184,6 +184,7 @@ add_enclave_library(oecore STATIC
     ctype.c
     debugmalloc.c
     errno.c
+    gai_strerror.c
     gmtime.c
     hexdump.c
     hostcalls.c

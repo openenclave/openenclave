@@ -4,8 +4,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/time.h>
 
+#include <openenclave/corelibc/netdb.h>
 #include <openenclave/internal/syscall/arpa/inet.h>
-#include <openenclave/internal/syscall/netdb.h>
 #include <openenclave/internal/syscall/netinet/in.h>
 #include <openenclave/internal/tests.h>
 
@@ -190,6 +190,18 @@ int ecall_getaddrinfo(struct oe_addrinfo** res)
         OE_TEST("_clone_addrinfo() failed" == NULL);
 
     oe_freeaddrinfo(ai);
+
+    return 0;
+}
+
+int ecall_gai_strerror()
+{
+    const char* message = oe_gai_strerror(OE_EAI_FAMILY);
+
+    OE_TEST(message != NULL);
+    OE_TEST(message[0] != '\0');
+
+    printf("EAI_FAMILY message is: %s\n", message);
 
     return 0;
 }

@@ -117,12 +117,16 @@ int main(int argc, const char* argv[])
 
     OE_TEST(
         ecall_getnameinfo(client_enclave, &ret, host, sizeof(host)) == OE_OK);
+    OE_TEST(ret == OE_OK);
 
     {
         OE_TEST(strlen(host) > 0); // Can't be sure what the host result will
                                    // be. Windows returns the node name
         printf("host received: host = %s\n", host);
     }
+
+    OE_TEST(ecall_gai_strerror(client_enclave, &ret) == OE_OK);
+    OE_TEST(ret == OE_OK);
 
     OE_TEST(oe_terminate_enclave(client_enclave) == OE_OK);
 

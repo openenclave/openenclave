@@ -28,5 +28,7 @@ enclave {
         public int ecall_getnameinfo(
             [in, out, count=bufflen] char* buffer,
             size_t bufflen);
+
+        public int ecall_gai_strerror();
     };
 };
