@@ -14,14 +14,19 @@ if (HAS_QUOTE_PROVIDER)
         GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
 endif ()
 
-install(DIRECTORY local_attestation
-          DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-          PATTERN "gen_pubkey_header.sh"
-          PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-          GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
+if (BUILD_ENCLAVES)
+  install(DIRECTORY local_attestation
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+            PATTERN "gen_pubkey_header.sh"
+            PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+            GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
 
-install(DIRECTORY helloworld file-encryptor data-sealing switchless
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+  install(DIRECTORY helloworld file-encryptor data-sealing switchless
+          DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+endif ()
+
+install(DIRECTORY host_verify
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
 if (WIN32)
   install(FILES README_Windows.md
