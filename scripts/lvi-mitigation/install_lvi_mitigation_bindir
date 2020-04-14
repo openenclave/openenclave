@@ -18,29 +18,37 @@ if [[ "$install_path" == "" ]]; then
 fi
 
 bin_path="$install_path"/"$bin_name"
+bin_path="${bin_path/#\~/$HOME}"
 
 mkdir -p "$bin_path"
 
-clang=$(which clang-7)
-clangcpp=$(which clang++-7)
-if [ "$clang" ] && [ "$clangcpp" ]; then
-  ln -sf "$clang" "$bin_path"/clang-7_symlink
-  ln -sf "$clangcpp" "$bin_path"/clang++-7_symlink
-  rm -f "$bin_path"/clang-7
-  cp "$script_path"/clang-7-lvi "$bin_path"/clang-7
-  rm -f "$bin_path"/clang++-7
-  cp "$script_path"/clang++-7-lvi "$bin_path"/clang++-7
-fi
+cp "$script_path"/invoke_compiler "$bin_path"/invoke_compiler
 
-gcc=$(which gcc)
-gcpp=$(which g++)
-if [ "$gcc" ] && [ "$gcpp" ]; then
-  ln -sf "$gcc" "$bin_path"/gcc_symlink
-  ln -sf "$gcpp" "$bin_path"/g++_symlink
+clang_versions=("" "-7" "-8" "-9")
+for version in "${clang_versions[@]}"; do
+  clang="clang$version"
+  clangcpp="clang++$version"
+  clang_path=$(which "$clang")
+  clangcpp_path=$(which "$clangcpp")
+  if [ "$clang_path" ] && [ "$clangcpp_path" ]; then
+    ln -sf "$clang_path" "$bin_path"/"$clang"_symlink
+    ln -sf "$clangcpp_path" "$bin_path"/"$clangcpp"_symlink
+    rm -f "$bin_path"/"$clang"
+    "$script_path"/generate_wrapper --name="$clang" --path="$bin_path"
+    rm -f "$bin_path"/"$clangcpp"
+    "$script_path"/generate_wrapper --name="$clangcpp" --path="$bin_path"
+  fi
+done
+
+gcc_path=$(which gcc)
+gcpp_path=$(which g++)
+if [ "$gcc_path" ] && [ "$gcpp_path" ]; then
+  ln -sf "$gcc_path" "$bin_path"/gcc_symlink
+  ln -sf "$gcpp_path" "$bin_path"/g++_symlink
   rm -f "$bin_path"/gcc
-  cp "$script_path"/gcc-lvi "$bin_path"/gcc
+  "$script_path"/generate_wrapper --name=gcc --path="$bin_path"
   rm -f "$bin_path"/g++
-  cp "$script_path"/g++-lvi "$bin_path"/g++
+  "$script_path"/generate_wrapper --name=g++ --path="$bin_path"
 fi
 
 # Obtain `as` and `ld` from Intel site.

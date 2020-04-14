@@ -59,8 +59,10 @@ stage("Run tests on new Agents") {
                        string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: "bionic-e2e"),
                        string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: "nonSGX-e2e"),
                        string(name: 'RHEL_8_CUSTOM_LABEL', value: "rhel-8-e2e"),
-                       string(name: 'WINDOWS_2016_CUSTOM_LABEL', value: "windows-e2e"),
-                       string(name: 'WINDOWS_2016_DCAP_CUSTOM_LABEL', value: "windows-dcap-e2e"),
+                       string(name: 'WINDOWS_2016_CUSTOM_LABEL', value: "windows-2016-e2e"),
+                       string(name: 'WINDOWS_2016_DCAP_CUSTOM_LABEL', value: "windows-2016-dcap-e2e"),
+                       string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: "windows-2019-e2e"),
+                       string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: "windows-2019-dcap-e2e"),
                        string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: "nonSGX-Windows-e2e")]
 }
 
@@ -105,7 +107,9 @@ if(params.UPDATE_PRODUCTION_INFRA) {
                     "rhel-8":          "${IMAGE_ID}-rhel-8-SGX",
                     "ws2016-nonSGX":   "${IMAGE_ID}-ws2016-nonSGX",
                     "ws2016-SGX":      "${IMAGE_ID}-ws2016-SGX",
-                    "ws2016-SGX-DCAP": "${IMAGE_ID}-ws2016-SGX-DCAP"
+                    "ws2016-SGX-DCAP": "${IMAGE_ID}-ws2016-SGX-DCAP",
+                    "ws2019-SGX":      "${IMAGE_ID}-ws2019-SGX",
+                    "ws2019-SGX-DCAP": "${IMAGE_ID}-ws2019-SGX-DCAP"
                 ]
                 for (image_name in azure_images_map.keySet()) {
                     oe.azureEnvironment("""

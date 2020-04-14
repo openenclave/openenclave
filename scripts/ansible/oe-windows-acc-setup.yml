@@ -63,6 +63,22 @@
         -NSISURL             "{{ nsis_url }}"
         -NSISHash            "{{ nsis_hash }}"
 
+     # One way to ensure the system is reliable just after a reboot, is to set WinRM to a delayed startup
+    - name: Ensure WinRM starts when the system has settled and is ready to work reliably
+      win_service:
+        name: WinRM
+        start_mode: delayed
+
+    - name: Install all security, critical, and rollup updates without a scheduled task
+      win_updates:
+        category_names:
+          - SecurityUpdates
+          - CriticalUpdates
+          - UpdateRollups
+        reboot: yes
+        reboot_timeout: 3600
+      when: ansible_distribution != 'Microsoft Windows Server 2016 Datacenter'
+
     - name: OE setup | Reboot the node
       win_reboot:
 
