@@ -33,7 +33,7 @@ genkey: public.pem
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../remoteattestation.edl --trusted --trusted-dir ../common
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I. -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/remoteattestation_t.c
 	$(CXX) -o enclave_a attestation.o crypto.o ecalls.o dispatcher.o remoteattestation_t.o $(LDFLAGS)
 
