@@ -233,6 +233,7 @@ cd switchless
 make build
 make run
 ```
+
 #### Note
 
 switchless sample can run under Open Enclave simulation mode.

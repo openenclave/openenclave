@@ -3,6 +3,11 @@
 For debugging enclaves on Windows using Visual Studio Code see [Windows_vscode.md](./Windows_vscode.md).
 
 For debugging enclaves on Windows using WinDbg Preview see [Windows_windbg.md](./Windows_windbg.md).
+For debugging enclaves on Linux using Visual Studio Code see [Linux_vscode.md](./Linux_vscode.md).
+For debugging enclaves on Windows using Visual Studio see [VisualStudioWindows.md](./VisualStudioWindows.md).
+For debugging enclaves on Linux using Visual Studio see [VisualStudioLinux.md](./VisualStudioLinux.md).
+
+## Using oegdb on Linux
 
 While you can use GDB to debug the host of the enclave app like any other normal process,
 you won’t be able to debug into the enclave’s execution state or memory. To enable that,

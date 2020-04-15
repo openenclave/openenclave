@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ------------
 
 ### Added
+- Complete support for inttypes.h and stdlib.h in oelibc. See docs/LibcSupport.md for more details.
 - Support for Simulation Mode on Windows. Simulation mode only runs on systems with SGX enabled.
 - Support `transition_using_threads` EDL attribute for ecalls in oeedger8r.
   OE SDK now supports both switchless OCALLs and ECALLs.
@@ -21,7 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   **Disclaimer:** these headers do not make any guarantees about stability. They
   are intended to be used by generated code and are not part of the OE public
   API surface.
-- Experimental support for Windows Server 2019.
+- Support for Windows Server 2019.
+- Experimental support for RHEL8.
 - Preview versions of VSCode and Visual Studio Extensions for OE are now part of the github repo.
 - Experimental support for enclave file system APIs on Windows host.
 - oelibcxx now supports up to `std=c++17`. Please see docs/LibcxxSupport.md for more details.
@@ -29,11 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   OCalls and ECalls into OE libraries as before. If it is set to off, each enclave
   application must import the ECalls/OCalls it needs into its own EDL file from
   `{OE_INSTALL_PATH}/include/openenclave/edl`.
+- Experimental support for snmalloc. To use snmalloc, build the SDK from source using -DUSE_SNMALLOC=ON.
 
 ### Changed
 - Moved `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`, and
   `oe_asymmetric_key_params_t` to `bits/asym_keys.h` from `bits/types.h`.
-- Update OE SDK on Windows to depend on OpenSSL version 1.1.1f.
 - Windows host libraries in the Open Enclave NuGet package have been compiled with /WX /W3 enabled.
 - Attestation plugin APIs in include/openenclave/attestation/plugin.h are marked experimental.
 

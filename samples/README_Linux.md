@@ -128,7 +128,7 @@ The following samples demonstrate how to develop enclave applications using OE A
 
 #### [Data-Sealing](data-sealing/README.md)
 
-- Introduce OE sealing and unsealing features 
+- Introduce OE sealing and unsealing features
 - Demonstrate how to use OE sealing APIs
 - Explore two supported seal polices
   - OE_SEAL_POLICY_UNIQUE

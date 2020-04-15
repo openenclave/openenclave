@@ -2,7 +2,9 @@
 
 ## Platform requirement
 
-- Ubuntu 16.04-LTS 64-bits
+- Ubuntu 16.04-LTS 64-bits or Ubuntu 18.04-LTS 64-bits
+- A machine with an Intel processor
+- For RHEL8 support, please see [ExperimentalSupportRHEL8.md](ExperimentalSupportRHEL8.md).
 
 ## Clone Open Enclave SDK repo from GitHub
 
@@ -18,6 +20,7 @@ This creates a source tree under the directory called openenclave.
 ## Install project prerequisites
 
 Ansible is required to install the project prerequisites. You can install it by running:
+
 ```bash
 sudo ./scripts/ansible/install-ansible.sh
 ```
@@ -25,8 +28,7 @@ sudo ./scripts/ansible/install-ansible.sh
 To install all the Open Enclave prerequisites you can execute the `environment-setup.yml` tasks from `linux/openenclave` Ansible role:
 
 ```bash
-cd scripts/ansible
-ansible localhost -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" --become --ask-become-pass
+ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
 
 ## Build
