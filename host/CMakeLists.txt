@@ -104,12 +104,12 @@ endif ()
 set(SGX_EDL_FILE ${SGX_EDL_DIR}/platform.edl)
 if (OE_SGX)
   add_custom_command(
-      OUTPUT platform_u.h platform_u.c platform_args.c
+      OUTPUT platform_u.h platform_u.c platform_args.h
       DEPENDS ${SGX_EDL_FILE} edger8r
       COMMAND edger8r --search-path ${SGX_EDL_DIR} --untrusted ${SGX_EDL_FILE})
 
   add_custom_target(platform_untrusted_edl
-      DEPENDS platform_u.h platform_u.c platform_args.c)
+      DEPENDS platform_u.h platform_u.c platform_args.h)
 endif ()
 
 ##==============================================================================
