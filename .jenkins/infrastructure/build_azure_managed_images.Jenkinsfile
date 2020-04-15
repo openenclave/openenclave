@@ -1,8 +1,11 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
 import java.time.*
 import java.time.format.DateTimeFormatter
 
-@Library("OpenEnclaveCommon") _
-oe = new jenkins.common.Openenclave()
+OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
+oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
 GLOBAL_TIMEOUT_MINUTES = 240
 
@@ -64,8 +67,8 @@ def buildLinuxManagedImage(String os_type, String version) {
                              "MANAGED_IMAGE_NAME_ID=${managed_image_name_id}",
                              "GALLERY_IMAGE_VERSION=${gallery_image_version}"]) {
                         def cmd = ("packer build -force " +
-                                    "-var-file=${WORKSPACE}/.jenkins/provision/templates/packer/azure_managed_image/${os_type}-${version}-variables.json " +
-                                    "${WORKSPACE}/.jenkins/provision/templates/packer/azure_managed_image/packer-${os_type}.json")
+                                    "-var-file=${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/${os_type}-${version}-variables.json " +
+                                    "${WORKSPACE}/.jenkins/infrastructure/provision/templates/packer/azure_managed_image/packer-${os_type}.json")
                         oe.exec_with_retry(10, 300) {
                             oe.azureEnvironment(cmd, params.OE_DEPLOY_IMAGE)
                         }
@@ -97,7 +100,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                         az account set -s \$SUBSCRIPTION_ID
                     """
                     def az_build_managed_img_script = """
-                        source ${WORKSPACE}/.jenkins/provision/utils.sh
+                        source ${WORKSPACE}/.jenkins/infrastructure/provision/utils.sh
 
                         ${az_login_script}
 
@@ -140,7 +143,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                             --resource-group ${vm_rg_name} \
                             --name ${img_name_suffix} \
                             --command-id RunPowerShellScript \
-                            --scripts @$WORKSPACE/.jenkins/provision/run-sysprep.ps1
+                            --scripts @$WORKSPACE/.jenkins/infrastructure/provision/run-sysprep.ps1
 
                         az vm deallocate --ids \$VM_ID
                         az vm generalize --ids \$VM_ID

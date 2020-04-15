@@ -1,5 +1,8 @@
-@Library("OpenEnclaveCommon") _
-oe = new jenkins.common.Openenclave()
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
+oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
 GLOBAL_TIMEOUT_MINUTES = 240
 
@@ -17,20 +20,20 @@ def buildDockerImages() {
             String buildArgs = oe.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
                                                   "GID=\$(id -g)", "GNAME=\$(id -gn)")
             stage("Build Ubuntu 16.04 Full Docker Image") {
-                oefull1604 = oe.dockerImage("oetools-full-16.04:${DOCKER_TAG}", ".jenkins/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=16.04 --build-arg devkits_uri=${DEVKITS_URI}")
-                puboefull1604 = oe.dockerImage("oeciteam/oetools-full-16.04:${DOCKER_TAG}", ".jenkins/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=16.04 --build-arg devkits_uri=${DEVKITS_URI}")
+                oefull1604 = oe.dockerImage("oetools-full-16.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=16.04 --build-arg devkits_uri=${DEVKITS_URI}")
+                puboefull1604 = oe.dockerImage("oeciteam/oetools-full-16.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=16.04 --build-arg devkits_uri=${DEVKITS_URI}")
             }
             stage("Build Ubuntu 18.04 Full Docker Image") {
-                oefull1804 = oe.dockerImage("oetools-full-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${DEVKITS_URI}")
-                puboefull1804 = oe.dockerImage("oeciteam/oetools-full-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${DEVKITS_URI}")
+                oefull1804 = oe.dockerImage("oetools-full-18.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${DEVKITS_URI}")
+                puboefull1804 = oe.dockerImage("oeciteam/oetools-full-18.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${DEVKITS_URI}")
             }
             stage("Build Ubuntu 18.04 Minimal Docker image") {
-                oeminimal1804 = oe.dockerImage("oetools-minimal-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.minimal", "${buildArgs} --build-arg ubuntu_version=18.04")
-                puboeminimal1804 = oe.dockerImage("oeciteam/oetools-minimal-18.04:${DOCKER_TAG}", ".jenkins/Dockerfile.minimal", "${buildArgs} --build-arg ubuntu_version=18.04")
+                oeminimal1804 = oe.dockerImage("oetools-minimal-18.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/Dockerfile.minimal", "${buildArgs} --build-arg ubuntu_version=18.04")
+                puboeminimal1804 = oe.dockerImage("oeciteam/oetools-minimal-18.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/Dockerfile.minimal", "${buildArgs} --build-arg ubuntu_version=18.04")
             }
             stage("Build Ubuntu Deploy Docker image") {
-                oeDeploy = oe.dockerImage("oetools-deploy:${DOCKER_TAG}", ".jenkins/Dockerfile.deploy", buildArgs)
-                puboeDeploy = oe.dockerImage("oeciteam/oetools-deploy:${DOCKER_TAG}", ".jenkins/Dockerfile.deploy", buildArgs)
+                oeDeploy = oe.dockerImage("oetools-deploy:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/Dockerfile.deploy", buildArgs)
+                puboeDeploy = oe.dockerImage("oeciteam/oetools-deploy:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/Dockerfile.deploy", buildArgs)
             }
             stage("Push to OE Docker Registry") {
                 docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
