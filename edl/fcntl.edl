@@ -15,6 +15,7 @@
 enclave
 {
 
+    include "openenclave/corelibc/bits/types.h"
     include "openenclave/bits/edl/syscall_types.h"
 
     struct oe_dirent

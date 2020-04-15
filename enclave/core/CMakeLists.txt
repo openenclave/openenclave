@@ -13,32 +13,24 @@ endif()
 ##
 ##==============================================================================
 
-set(OECORE_EDL_FILE ${EDL_DIR}/core.edl)
-
-add_custom_command(
-    OUTPUT core_t.h core_t.c core_args.h
-    DEPENDS ${OECORE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --trusted ${OECORE_EDL_FILE})
-
-add_custom_target(core_trusted_edl
-    DEPENDS core_t.h core_t.c core_args.h)
-
-##==============================================================================
-##
-## These rules generate the edge routines for the internal ECALLs/OCALLs used
-## by switchless calls.
-##
-##==============================================================================
-if (OE_SGX)
-    set(SWITCHLESS_EDL_FILE ${SGX_EDL_DIR}/switchless.edl)
-
+set(CORE_EDL_FILE ${EDL_DIR}/core.edl)
+if (COMPILE_SYSTEM_EDL)
     add_custom_command(
-        OUTPUT switchless_t.h switchless_t.c switchless_args.h
-        DEPENDS ${SWITCHLESS_EDL_FILE} edger8r
-        COMMAND edger8r --search-path ${EDL_DIR} --trusted ${SWITCHLESS_EDL_FILE})
+        OUTPUT core_t.h core_t.c core_args.h
+        DEPENDS ${CORE_EDL_FILE} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --trusted ${CORE_EDL_FILE})
 
-    add_custom_target(switchless_trusted_edl
-        DEPENDS switchless_t.h switchless_t.c switchless_args.h)
+    add_custom_target(core_trusted_edl DEPENDS core_t.h core_t.c core_args.h)
+
+    list(APPEND PLATFORM_SRC core_t_wrapper.c)
+else ()
+    add_custom_command(
+        OUTPUT core_t.h core_args.h
+        DEPENDS ${CORE_EDL_FILE} edger8r
+        COMMAND edger8r --header-only --search-path ${EDL_DIR}
+                        --trusted ${CORE_EDL_FILE})
+
+    add_custom_target(core_trusted_edl DEPENDS core_t.h core_args.h)
 endif()
 
 ##==============================================================================
@@ -48,15 +40,27 @@ endif()
 ##
 ##==============================================================================
 
-if(OE_SGX)
-    set(SGX_EDL_FILE ${SGX_EDL_DIR}/platform.edl)
-
+set(SGX_EDL_FILE ${SGX_EDL_DIR}/platform.edl)
+if(OE_SGX AND COMPILE_SYSTEM_EDL)
     add_custom_command(
         OUTPUT platform_t.h platform_t.c platform_args.h
         DEPENDS ${SGX_EDL_FILE} edger8r
         COMMAND edger8r --search-path ${SGX_EDL_DIR} --trusted ${SGX_EDL_FILE})
 
-    add_custom_target(platform_trusted_edl DEPENDS platform_t.h platform_t.c platform_args.h)
+    add_custom_target(platform_trusted_edl DEPENDS
+        platform_t.h platform_t.c platform_args.h)
+
+    list (APPEND PLATFORM_SRC sgx/platform_t_wrapper.c)
+elseif (OE_SGX)
+    # Only generate headers
+    add_custom_command(
+        OUTPUT platform_t.h platform_args.h
+        DEPENDS ${SGX_EDL_FILE} edger8r
+        COMMAND edger8r --header-only --search-path ${SGX_EDL_DIR}
+                        --trusted ${SGX_EDL_FILE})
+
+    add_custom_target(platform_trusted_edl DEPENDS
+        platform_t.h platform_args.h)
 endif()
 
 ##==============================================================================
@@ -65,7 +69,6 @@ endif()
 ##
 ##==============================================================================
 
-set(PLATFORM_SRC "")
 set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (USE_SNMALLOC)
@@ -105,9 +108,7 @@ if (OE_SGX)
         sgx/report.c
         sgx/sched_yield.c
         sgx/setjmp.S
-        sgx/platform_t_wrapper.c
         sgx/spinlock.c
-        sgx/switchless_t_wrapper.c
         sgx/switchlesscalls.c
         sgx/td.c
         sgx/td_basic.c
@@ -198,7 +199,6 @@ add_enclave_library(oecore STATIC
     string.c
     strtok_r.c
     strtoul.c
-    core_t_wrapper.c
     time.c
     tracee.c
     wchar.c
@@ -237,8 +237,9 @@ maybe_build_using_clangw(oecore)
 
 add_enclave_dependencies(oecore core_trusted_edl)
 if(OE_SGX)
-    add_enclave_dependencies(oecore platform_trusted_edl switchless_trusted_edl)
+    add_enclave_dependencies(oecore platform_trusted_edl)
 endif()
+
 enclave_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 enclave_link_libraries(oecore PUBLIC oe_includes)
@@ -329,6 +330,10 @@ if(USE_DEBUG_MALLOC)
     enclave_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
     message("USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
 endif()
+
+if (COMPILE_SYSTEM_EDL)
+    enclave_compile_definitions(oecore PRIVATE OE_USE_BUILTIN_EDL)
+endif ()
 
 # Interface link flags for enclaves.
 if(OE_SGX)

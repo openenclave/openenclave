@@ -18,13 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support `transition_using_threads` EDL attribute for ecalls in oeedger8r.
   OE SDK now supports both switchless OCALLs and ECALLs.
 - Published corelibc headers required by oeedger8r-generated code.
-  Disclaimer: these headers do not make any guarantees about stability. They
+  **Disclaimer:** these headers do not make any guarantees about stability. They
   are intended to be used by generated code and are not part of the OE public
   API surface.
 - Support for Windows Server 2019.
 - Preview versions of VSCode and Visual Studio Extensions for OE are now part of the github repo.
 - Experimental support for enclave file system APIs on Windows host.
 - oelibcxx now supports up to `std=c++17`. Please see docs/LibcxxSupport.md for more details.
+- `COMPILE_SYSTEM_EDL` build flag. This is on by default and will compile system
+  OCalls and ECalls into OE libraries as before. If it is set to off, each enclave
+  application must import the ECalls/OCalls it needs into its own EDL file from
+  `{OE_INSTALL_PATH}/include/openenclave/edl`.
 
 ### Changed
 - Moved `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`, and
@@ -43,13 +47,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Removed oe-gdb script which has been deprecated since v0.6. Use oegdb instead.
 
-### Deprecated
-- oehostapp is being deprecated from cmake targets. Use oehost instead. See #2595.
-
 ### Security
 - Update mbedTLS to version 2.16.5. Refer to [2.16.5](
 https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.5-and-2.7.14-released)
 release notes for the set of issues addressed.
+
+### Deprecated
+- oehostapp is being deprecated from cmake targets. Use oehost instead. See #2595.
+- In the next release (v0.10), system EDL will no longer be compiled into OE
+  libraries by default (COMPILE_SYSTEM_EDL will be OFF by default). See the
+  [system EDL opt-in document]
+  (docs/DesignDocs/system_ocall_opt_in.md#how-to-port-your-application) for
+  more details on how to rebuild the SDK to match this behavior and for
+  guidance on porting your application to the new model.
 
 
 [v0.8.2][v0.8.2_log] - 2020-03-10

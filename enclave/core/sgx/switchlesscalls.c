@@ -8,7 +8,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include "handle_ecall.h"
-#include "switchless_t.h"
+#include "platform_t.h"
 
 // The number of host thread workers. Initialized by host through ECALL
 static size_t _host_worker_count = 0;
