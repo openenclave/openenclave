@@ -7,7 +7,7 @@
 #     cmake -DHAS_QUOTE_PROVIDER=ON -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
 
 # These three samples can run in simulation, and therefore run in every configuration.
-set(SAMPLES_LIST helloworld file-encryptor switchless)
+set(SAMPLES_LIST helloworld)
 
 if ($ENV{OE_SIMULATION})
   message(WARNING "Running only sample simulation tests due to OE_SIMULATION=$ENV{OE_SIMULATION}!")
@@ -19,12 +19,9 @@ else ()
   # This sample can run on SGX, both with and without FLC, meaning
   # they can run even if they weren't built against SGX, because in
   # that cause they directly interface with the AESM service.
-  list(APPEND SAMPLES_LIST data-sealing local_attestation)
-
   # These tests can only run with SGX-FLC, meaning they were built
   # against SGX.
   if (HAS_QUOTE_PROVIDER)
-    list(APPEND SAMPLES_LIST remote_attestation)
     list(APPEND SAMPLES_LIST attested_tls)
   endif ()
 endif ()
