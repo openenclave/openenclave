@@ -17,6 +17,7 @@
 - [esy](https://esy.sh/)
 - [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
 - [Python 3](https://www.python.org/downloads/windows/)
+- [ShellCheck](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip)
 
 ## Prerequisites specific to SGX support on your system
 
@@ -93,3 +94,10 @@ C:\Users\test\AppData\Roaming\npm\esy
 Install [Python 3 for Windows](https://www.python.org/downloads/windows/) and ensure that python.exe is available in your PATH.
 
 Python 3 is used as part of the mbedtls tests.
+
+## ShellCheck
+
+[ShellCheck](https://www.shellcheck.net/) is used to check the format of shell scripts. Install it as follows.
+
+Download the [ShellCheck zip](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip).
+Inside it there is a shellcheck-v0.7.0.exe which must be copied to a directory in your PATH and renamed to shellcheck.exe.

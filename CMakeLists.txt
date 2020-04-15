@@ -62,11 +62,9 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   # Install Git pre-commit hook
-  if (NOT WIN32)
-    file(
-      COPY scripts/pre-commit scripts/commit-msg
-      DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks")
-  endif ()
+  file(
+    COPY scripts/pre-commit scripts/commit-msg
+    DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks")
 endif ()
 
 # Generates `compile_commands.json` used by some developers. Only
