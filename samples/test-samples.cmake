@@ -25,7 +25,9 @@ else ()
   # against SGX.
   if (HAS_QUOTE_PROVIDER)
     list(APPEND SAMPLES_LIST remote_attestation)
-    list(APPEND SAMPLES_LIST attested_tls)
+    if (UNIX)
+      list(APPEND SAMPLES_LIST attested_tls)
+    endif()
   endif ()
 endif ()
 
