@@ -6,6 +6,15 @@ Open Enclave SDK
 [![Packages Testing Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/buildStatus/icon?job=OpenEnclave-nightly-packages-testing&subject=packages%20testing)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave-nightly-packages-testing/)
 [![Nightly Testing Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/buildStatus/icon?job=Nightly&subject=nightly%20testing)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/Nightly/)
 [![Nightly Libcxx Testing Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/buildStatus/icon?job=OpenEnclave-libcxx-tests&subject=nightly%20libcxx%20testing)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave-libcxx-tests/)
+
+TESSSSSSSSSSSSSSSSSSSSST
+
+[![Agnostic-Linux Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/badge/icon)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/)
+
+[![Build Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Azure-Linux-Badge/badge/icon)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Azure-Linux-Badge/)
+
+[![Azure Windows Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/buildStatus/icon?job=pipelines%2FAzure-Windows-Badge)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Azure-Windows-Badge/)
+
 [![Join the chat at https://gitter.im/openenclave/community](https://badges.gitter.im/openenclave/community.svg)](https://gitter.im/openenclave/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Introduction
