@@ -8,6 +8,8 @@ GLOBAL_TIMEOUT_MINUTES = 240
 CTEST_TIMEOUT_SECONDS = 480
 GLOBAL_ERROR = null
 
+REPOSITORY_NAME = env.REPOSITORY_NAME ?: "openenclave/openenclave"
+BRANCH_NAME = env.BRANCH_NAME ?: "master"
 DOCKER_TAG = env.DOCKER_TAG ?: "latest"
 FULL_TEST_SUITE = env.FULL_TEST_SUITE ?: false
 
@@ -34,17 +36,17 @@ try {
     parallel (
       "Agnostic Linux" : {
           build job: '/pipelines/Agnostic-Linux',
-                parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY_NAME),
-                             string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
+                parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
+                             string(name: 'BRANCH_NAME', value: BRANCH_NAME),
                              string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                              string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["ubuntu-nonsgx"]),
                              string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                             booleanParam(name: 'FULL_TEST_SUITE',value: env.FULL_TEST_SUITE)]
+                             booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
        },
        "Azure Linux" : {
            build job: '/pipelines/Azure-Linux',
-                 parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY_NAME),
-                              string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
+                 parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
+                              string(name: 'BRANCH_NAME', value: BRANCH_NAME),
                               string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                               string(name: 'UBUNTU_1604_CUSTOM_LABEL', value: AGENTS_LABELS["acc-ubuntu-16.04"]),
                               string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: AGENTS_LABELS["acc-ubuntu-18.04"]),
@@ -52,12 +54,12 @@ try {
                               string(name: 'RHEL_8_CUSTOM_LABEL', value: AGENTS_LABELS["acc-rhel-8"]),
                               string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["windows-nonsgx"]),
                               string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                              booleanParam(name: 'FULL_TEST_SUITE',value: env.FULL_TEST_SUITE)]
+                              booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
        },
        "Azure Windows" : {
            build job: '/pipelines/Azure-Windows',
-                 parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY_NAME),
-                              string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
+                 parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
+                              string(name: 'BRANCH_NAME', value: BRANCH_NAME),
                               string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                               string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["ubuntu-nonsgx"]),
                               string(name: 'WINDOWS_2016_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2016"]),
@@ -65,7 +67,7 @@ try {
                               string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2019"]),
                               string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2019-dcap"]),
                               string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                              booleanParam(name: 'FULL_TEST_SUITE',value: env.FULL_TEST_SUITE)]
+                              booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
        }
     )
 } catch(Exception e) {

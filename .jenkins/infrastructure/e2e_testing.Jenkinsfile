@@ -73,7 +73,8 @@ stage("Run tests on new Agents") {
                        string(name: 'WINDOWS_2016_DCAP_CUSTOM_LABEL', value: env.WINDOWS_2016_DCAP_LABEL),
                        string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: env.WINDOWS_2019_LABEL),
                        string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: env.WINDOWS_2019_DCAP_LABEL),
-                       string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: env.WINDOWS_NONSGX_LABEL)]
+                       string(name: 'WINDOWS_NONSGX_CUSTOM_LABEL', value: env.WINDOWS_NONSGX_LABEL),
+                       booleanParam(name: 'FULL_TEST_SUITE', value: true)]
 }
 
 if(env.PRODUCTION_IMAGES_GALLERY_NAME) {

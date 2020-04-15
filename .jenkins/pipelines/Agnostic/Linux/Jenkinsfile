@@ -14,7 +14,7 @@ AGENTS_LABELS = [
 ]
 
 
-def simulationTest(String version, String platform_mode, String build_type, String lvi_mitigation = 'None') {
+def simulationTest(String version, String platform_mode, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF') {
     def has_quote_provider = "OFF"
     if (platform_mode == "SGX1FLC") {
         has_quote_provider = "ON"
@@ -26,12 +26,13 @@ def simulationTest(String version, String platform_mode, String build_type, Stri
                 checkout scm
                 withEnv(["OE_SIMULATION=1"]) {
                     def task = """
-                               cmake ${WORKSPACE}                                          \
-                                    -G Ninja                                               \
-                                    -DCMAKE_BUILD_TYPE=${build_type}                       \
-                                    -DHAS_QUOTE_PROVIDER=${has_quote_provider}             \
-                                    -DLVI_MITIGATION=${lvi_mitigation}                     \
-                                    -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin  \
+                               cmake ${WORKSPACE}                                            \
+                                    -G Ninja                                                 \
+                                    -DCMAKE_BUILD_TYPE=${build_type}                         \
+                                    -DHAS_QUOTE_PROVIDER=${has_quote_provider}               \
+                                    -DLVI_MITIGATION=${lvi_mitigation}                       \
+                                    -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
+                                    -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} \
                                     -Wdev
                                ninja -v
                                ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
@@ -126,9 +127,9 @@ try{
                  "AArch64 1604 GNU gcc Release" :                           { AArch64GNUTest('16.04', 'Release')},
                  "AArch64 1804 GNU gcc Debug" :                             { AArch64GNUTest('18.04', 'Debug')},
                  "AArch64 1804 GNU gcc Release" :                           { AArch64GNUTest('18.04', 'Release')},
-                 "Sim 1804 clang-7 SGX1 Release" :                          { simulationTest('18.04', 'SGX1', 'Release')},
-                 "Sim 1804 clang-7 SGX1-FLC Debug" :                        { simulationTest('18.04', 'SGX1FLC', 'Debug')},
-                 "Sim 1804 clang-7 SGX1-FLC Release" :                      { simulationTest('18.04', 'SGX1FLC', 'Release')}
+                 "Sim 1804 clang-7 SGX1 Release" :                          { simulationTest('18.04', 'SGX1', 'Release', 'ON')},
+                 "Sim 1804 clang-7 SGX1-FLC Debug" :                        { simulationTest('18.04', 'SGX1FLC', 'Debug', 'ON')},
+                 "Sim 1804 clang-7 SGX1-FLC Release" :                      { simulationTest('18.04', 'SGX1FLC', 'Release', 'ON')}
       }
     }
 } catch(Exception e) {
