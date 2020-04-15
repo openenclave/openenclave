@@ -8,6 +8,7 @@
 
 void TestMem(mem_t* m)
 {
+    fail to build on purpose;
     OE_TEST(mem_cpy(m, "hijk", 4) == 0);
     OE_TEST(mem_size(m) == 4);
     OE_TEST(mem_cap(m) >= 4);
