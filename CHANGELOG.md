@@ -8,27 +8,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 [Unreleased][Unreleased_log]
+--------------
+
+[0.9.0][v0.9.0_log]
 ------------
 
 ### Added
-- Support for Simulation Mode on Windows.
+- Support for Simulation Mode on Windows. Simulation mode only runs on systems with SGX enabled.
 - Support `transition_using_threads` EDL attribute for ecalls in oeedger8r.
   OE SDK now supports both switchless OCALLs and ECALLs.
 - Published corelibc headers required by oeedger8r-generated code.
   Disclaimer: these headers do not make any guarantees about stability. They
   are intended to be used by generated code and are not part of the OE public
   API surface.
+- Support for Windows Server 2019.
+- Preview versions of VSCode and Visual Studio Extensions for OE are now part of the github repo.
+- Experimental support for enclave file system APIs on Windows host.
+- oelibcxx now supports up to `std=c++17`. Please see docs/LibcxxSupport.md for more details.
 
 ### Changed
 - Moved `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`, and
   `oe_asymmetric_key_params_t` to `bits/asym_keys.h` from `bits/types.h`.
+- Update OE SDK on Windows to depend on OpenSSL version 1.1.1f.
+- Windows host libraries in the Open Enclave NuGet package have been compiled with /WX /W3 enabled.
+- Attestation plugin APIs in include/openenclave/attestation/plugin.h are marked experimental.
 
 ### Fixed
+- Fix #2828 which removes an explicit host side dependency on libsgx-urts on Linux.
 - Fix #2607 so that libmbedcrypto now includes mbedtls_hkdf().
-- `CXX` is always `TRUE` in `add_enclave_sgx()` and `add_enclave_optee()`. Fixes #2786.
+- Fix #2786 so that `CXX` is always `TRUE` in `add_enclave_sgx()` and `add_enclave_optee()`.
+- Fix #2544 and #2264. This removes oesign's dependency on libsgx_enclave_common and libsgx_dcap_ql.
+- Fix #2661 which caused inconsistent code generation in oeedger8r.
 
 ### Removed
 - Removed oe-gdb script which has been deprecated since v0.6. Use oegdb instead.
+
+### Deprecated
+- oehostapp is being deprecated from cmake targets. Use oehost instead. See #2595.
 
 ### Security
 - Update mbedTLS to version 2.16.5. Refer to [2.16.5](
@@ -342,7 +358,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.8.2...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.9.0...HEAD
+
+[v0.9.0_log]:https://github.com/openenclave/openenclave/compare/v0.8.2...v0.9.0
 
 [v0.8.2_log]:https://github.com/openenclave/openenclave/compare/v0.8.1...v0.8.2
 
@@ -361,4 +379,3 @@ Initial private preview release, no longer supported.
 [v0.4.0_log]:https://github.com/openenclave/openenclave/compare/v0.1.0...v0.4.0
 
 [v0.1.0_log]:https://github.com/openenclave/openenclave/compare/beb546f...v0.1.0
-
