@@ -30,6 +30,7 @@ tests/mbed/tests\..*$
 
 # Directories
 3rdparty/dlmalloc/dlmalloc/.*
+3rdparty/intel/.*
 3rdparty/libcxx/libcxx/.*
 3rdparty/libcxxrt/libcxxrt/.*
 3rdparty/libunwind/libunwind/.*
