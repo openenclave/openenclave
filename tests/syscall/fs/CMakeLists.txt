@@ -9,18 +9,10 @@ endif()
 
 set(TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/tmp")
 
-add_test(tests/fs1 cmake -E remove_directory "${TMP_DIR}")
-
-add_enclave_test(tests/fs2
+add_enclave_test(tests/fs
     fs_host
     fs_enc
     "${PROJECT_SOURCE_DIR}"
     "${TMP_DIR}")
 
-set_enclave_tests_properties(tests/fs2 PROPERTIES SKIP_RETURN_CODE 2)
-
-# Ensuring removing the tmp directory before the second test run.
-if (LVI_MITIGATION MATCHES ControlFlow AND NOT LVI_MITIGATION_SKIP_TESTS)
-    add_test(tests/fs1-lvi-cfg cmake -E remove_directory "${TMP_DIR}")
-    set_tests_properties(tests/fs2-lvi-cfg PROPERTIES DEPENDS tests/fs1-lvi-cfg)
-endif()
+set_enclave_tests_properties(tests/fs PROPERTIES SKIP_RETURN_CODE 2)
