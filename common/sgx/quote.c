@@ -529,7 +529,7 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
     oe_datetime_log("Validation datetime: ", &validation_time);
     if (oe_datetime_compare(&validation_time, &validity_from) < 0)
     {
-        oe_datetime_log("Latests valid datetime: ", &validity_from);
+        oe_datetime_log("Latest valid datetime: ", &validity_from);
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
             "Time to validate quote is earlier than the "
@@ -541,7 +541,7 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
         oe_datetime_log("Earliest expiration datetime: ", &validity_until);
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-            "Time to validate quoteis later than the "
+            "Time to validate quote is later than the "
             "earliest 'valid to' value.",
             NULL);
     }

@@ -539,19 +539,19 @@ oe_result_t oe_sgx_validate_enclave_properties(
         if (field_name)
             *field_name = "config.product_id";
         OE_TRACE_ERROR(
-            "oe_sgx_is_valid_product_id failed: num_tcs = %x\n",
+            "oe_sgx_is_valid_product_id failed: product_id = %x\n",
             properties->config.product_id);
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_security_version(properties->config.product_id))
+    if (!oe_sgx_is_valid_security_version(properties->config.security_version))
     {
         if (field_name)
             *field_name = "config.security_version";
         OE_TRACE_ERROR(
             "oe_sgx_is_valid_security_version failed: security_version = %x\n",
-            properties->config.product_id);
+            properties->config.security_version);
         result = OE_FAILURE;
         goto done;
     }
