@@ -90,7 +90,7 @@ endif ()
 if (OE_SGX)
     list(APPEND PLATFORM_SRC
         ../../common/sgx/endorsements.c
-        ../../host/sgx/sgxmeasure.c
+        ../../common/sgx/sgxmeasure.c
         sgx/backtrace.c
         sgx/calls.c
         sgx/cpuid.c

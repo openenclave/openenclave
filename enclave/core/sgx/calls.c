@@ -24,7 +24,7 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
-#include "../../../host/sgx/sgxmeasure.h"
+#include "../../../common/sgx/sgxmeasure.h"
 #include "../../sgx/report.h"
 #include "../arena.h"
 #include "../atexit.h"

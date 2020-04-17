@@ -3,7 +3,11 @@
 
 #include "sgxmeasure.h"
 #include <openenclave/bits/sgx/sgxtypes.h>
+#ifdef OE_BUILD_ENCLAVE
+#include <openenclave/enclave.h>
+#else
 #include <openenclave/host.h>
+#endif
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
 

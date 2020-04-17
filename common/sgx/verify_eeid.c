@@ -13,8 +13,8 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 
-#include "../../host/sgx/sgxmeasure.h"
-#include "../common/sgx/quote.h"
+#include "quote.h"
+#include "sgxmeasure.h"
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>

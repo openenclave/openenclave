@@ -263,7 +263,7 @@ if (OE_SGX)
     sgx/registers.c
     sgx/report.c
     sgx/sgxload.c
-    sgx/sgxmeasure.c
+    ../common/sgx/sgxmeasure.c
     sgx/sgxquote.c
     sgx/sgxsign.c
     sgx/sgxtypes.c

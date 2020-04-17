@@ -14,7 +14,7 @@
 #include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
 
-#include "../../host/sgx/sgxmeasure.h"
+#include "sgxmeasure.h"
 
 static oe_result_t serialize_elem(
     const char* name,
