@@ -771,10 +771,10 @@ int oedump_eeid(const char* enclave)
     printf("=== Extended Information for EEID: \n");
     printf("H=");
     for (size_t i = 0; i < 8; i++)
-        printf("%08x", eeid.hash_state_H[i]);
+        printf("%08x", eeid.hash_state.H[i]);
     printf("\nN=");
     for (size_t i = 0; i < 2; i++)
-        printf("%08x", eeid.hash_state_N[i]);
+        printf("%08x", eeid.hash_state.N[i]);
     printf("\nsigstruct=");
     for (size_t i = 0; i < sizeof(props.sigstruct); i++)
         printf("%02x", props.sigstruct[i]);

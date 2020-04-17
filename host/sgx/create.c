@@ -464,6 +464,11 @@ static oe_result_t _configure_enclave(
                     enclave, max_host_workers, max_enclave_workers));
                 break;
             }
+            case OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA:
+            {
+                // Nothing
+                break;
+            }
             default:
                 OE_RAISE(OE_INVALID_PARAMETER);
         }
@@ -659,7 +664,11 @@ static oe_result_t _add_eeid_pages(
     if (eeid && eeid->data_size > 0)
     {
         sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)properties->sigstruct;
-        memcpy(eeid->sigstruct, (uint8_t*)sigstruct, sizeof(sgx_sigstruct_t));
+        eeid->signature_size = sizeof(sgx_sigstruct_t);
+        eeid->signature = malloc(eeid->signature_size);
+        if (!eeid->signature)
+            return OE_OUT_OF_MEMORY;
+        memcpy(eeid->signature, (uint8_t*)sigstruct, sizeof(sgx_sigstruct_t));
 
         uint64_t ee_sz = sizeof(oe_eeid_t) + eeid->data_size;
         uint64_t epg_sz = eeid_pages_size(eeid);
@@ -843,7 +852,7 @@ oe_result_t oe_sgx_build_enclave(
     if (eeid)
     {
         oe_sha256_context_t* hctx = &context->hash_context;
-        oe_sha256_save(hctx, eeid->hash_state_H, eeid->hash_state_N);
+        oe_sha256_save(hctx, eeid->hash_state.H, eeid->hash_state.N);
         eeid->vaddr = vaddr;
         eeid->entry_point = oeimage.entry_rva;
     }
@@ -908,29 +917,6 @@ oe_result_t oe_create_enclave(
     uint32_t ocall_count,
     oe_enclave_t** enclave_out)
 {
-    return oe_create_enclave_eeid(
-        enclave_path,
-        enclave_type,
-        flags,
-        settings,
-        setting_count,
-        ocall_table,
-        ocall_count,
-        NULL,
-        enclave_out);
-}
-
-oe_result_t oe_create_enclave_eeid(
-    const char* enclave_path,
-    oe_enclave_type_t enclave_type,
-    uint32_t flags,
-    const oe_enclave_setting_t* settings,
-    uint32_t setting_count,
-    const oe_ocall_func_t* ocall_table,
-    uint32_t ocall_count,
-    oe_eeid_t* eeid,
-    oe_enclave_t** enclave_out)
-{
     oe_result_t result = OE_UNEXPECTED;
     oe_enclave_t* enclave = NULL;
     oe_sgx_load_context_t context;
@@ -988,6 +974,14 @@ oe_result_t oe_create_enclave_eeid(
         &context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
     /* Build the enclave */
+    oe_eeid_t* eeid = NULL;
+    for (size_t i = 0; i < setting_count; i++)
+        if (settings[i].setting_type == OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA)
+        {
+            eeid = settings[i].u.eeid;
+            break;
+        }
+
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, eeid, enclave));
 
     /* Push the new created enclave to the global list. */

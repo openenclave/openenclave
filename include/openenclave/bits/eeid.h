@@ -24,14 +24,23 @@ OE_EXTERNC_BEGIN
 */
 typedef struct oe_eeid_t_
 {
-    uint32_t hash_state_H[8]; /* Hash state before addition of data pages */
-    uint32_t hash_state_N[2];
-    uint8_t sigstruct[1808]; /* Complete sigstruct before EEID */
-    oe_enclave_size_settings_t size_settings; /* New size settings */
-    uint64_t vaddr;                           /* Location of data pages */
-    uint64_t entry_point;                     /* Enclave entry point */
-    uint64_t data_size;                       /* Size of EEID */
-    uint8_t data[];                           /* Actual data */
+    struct
+    {
+        uint32_t H[8];
+        uint32_t N[2];
+    } hash_state; /* internal state of the hash computation at the end of
+                           the enclave base image */
+    uint64_t signature_size; /* size of signature */
+    uint8_t* signature; /* base-image signature and associated data (for SGX,
+                           the complete sigstruct of the base image) */
+    oe_enclave_size_settings_t
+        size_settings; /* heap, stack and thread configuration for this instance
+                        */
+    uint64_t vaddr; /* location of the added data pages in enclave memory; EEID
+                       follows immediately thereafter */
+    uint64_t entry_point; /* entry point of the image */
+    uint64_t data_size;   /* size of application EEID */
+    uint8_t data[];       /* actual application EEID */
 } oe_eeid_t;
 
 oe_result_t oe_serialize_eeid(

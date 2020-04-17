@@ -89,15 +89,17 @@ oe_result_t oe_serialize_eeid(const oe_eeid_t* eeid, char* buf, size_t buf_size)
     size_t r = buf_size;
 
     OE_CHECK(serialize_elem(
-        "H", p, &r, (uint8_t*)eeid->hash_state_H, sizeof(eeid->hash_state_H)));
+        "H", p, &r, (uint8_t*)eeid->hash_state.H, sizeof(eeid->hash_state.H)));
     OE_CHECK(serialize_elem(
-        "N", p, &r, (uint8_t*)eeid->hash_state_N, sizeof(eeid->hash_state_N)));
+        "N", p, &r, (uint8_t*)eeid->hash_state.N, sizeof(eeid->hash_state.N)));
     OE_CHECK(serialize_elem(
-        "sigstruct",
+        "signature_size",
         p,
         &r,
-        (uint8_t*)eeid->sigstruct,
-        sizeof(eeid->sigstruct)));
+        (uint8_t*)&eeid->signature_size,
+        sizeof(eeid->signature_size)));
+    OE_CHECK(serialize_elem(
+        "signature", p, &r, eeid->signature, eeid->signature_size));
     OE_CHECK(serialize_elem(
         "settings",
         p,
@@ -143,11 +145,12 @@ oe_result_t oe_deserialize_eeid(
     memset(eeid, 0, sizeof(oe_eeid_t));
 
     OE_CHECK(deserialize_elem(
-        p, &r, (uint8_t*)eeid->hash_state_H, sizeof(eeid->hash_state_H)));
+        p, &r, (uint8_t*)eeid->hash_state.H, sizeof(eeid->hash_state.H)));
     OE_CHECK(deserialize_elem(
-        p, &r, (uint8_t*)eeid->hash_state_N, sizeof(eeid->hash_state_N)));
+        p, &r, (uint8_t*)eeid->hash_state.N, sizeof(eeid->hash_state.N)));
     OE_CHECK(deserialize_elem(
-        p, &r, (uint8_t*)eeid->sigstruct, sizeof(eeid->sigstruct)));
+        p, &r, (uint8_t*)&eeid->signature_size, sizeof(eeid->signature_size)));
+    OE_CHECK(deserialize_elem(p, &r, eeid->signature, eeid->signature_size));
     OE_CHECK(deserialize_elem(
         p, &r, (uint8_t*)&eeid->size_settings, sizeof(eeid->size_settings)));
     OE_CHECK(deserialize_elem(
@@ -168,7 +171,7 @@ oe_result_t oe_replay_eeid_pages(
 {
     oe_result_t result;
     oe_sha256_context_t hctx;
-    oe_sha256_restore(&hctx, eeid->hash_state_H, eeid->hash_state_N);
+    oe_sha256_restore(&hctx, eeid->hash_state.H, eeid->hash_state.N);
     uint64_t base = 0x0ab0c0d0e0f;
 
     oe_page_t blank_pg, stack_pg, tcs_pg;

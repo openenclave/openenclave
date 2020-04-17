@@ -968,27 +968,6 @@ let generate_untrusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
     "               enclave);";
     "}";
     "";
-    sprintf "oe_result_t oe_create_%s_enclave_eeid(" ec.enclave_name;
-    "    const char* path,";
-    "    oe_enclave_type_t type,";
-    "    uint32_t flags,";
-    "    const oe_enclave_setting_t* settings,";
-    "    uint32_t setting_count,";
-    "    struct oe_eeid_t_ *eeid,";
-    "    oe_enclave_t** enclave)";
-    "{";
-    "    return oe_create_enclave_eeid(";
-    "               path,";
-    "               type,";
-    "               flags,";
-    "               settings,";
-    "               setting_count,";
-    sprintf "               __%s_ocall_function_table," ec.enclave_name;
-    sprintf "               %d," (List.length ec.ufunc_decls);
-    "               eeid,";
-    "               enclave);";
-    "}";
-    "";
     "OE_EXTERNC_END";
     "";
   ]

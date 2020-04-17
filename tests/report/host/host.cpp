@@ -34,8 +34,6 @@ extern void TestVerifyTCBInfoV2_AdvisoryIDs(
     const char* test_filename);
 extern int FileToBytes(const char* path, std::vector<uint8_t>* output);
 
-oe_eeid_t* eeid = NULL;
-
 void generate_and_save_report(oe_enclave_t* enclave)
 {
 #ifdef OE_LINK_SGX_DCAP_QL
@@ -85,6 +83,7 @@ int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
+    oe_eeid_t* eeid = NULL;
 
     sgx_target_info_t target_info = {{0}};
 
@@ -142,12 +141,13 @@ int main(int argc, const char* argv[])
     }
     else if (argc == 3 && strcmp(argv[2], "--eeid") == 0)
     {
-        uint64_t sz = oe_round_up_to_page_size(sizeof(oe_eeid_t) + 512);
+        const size_t data_sz = 512;
+        uint64_t sz = oe_round_up_to_page_size(sizeof(oe_eeid_t) + data_sz);
         eeid = (oe_eeid_t*)calloc(1, sz);
         eeid->size_settings.num_heap_pages = 1024;
         eeid->size_settings.num_stack_pages = 1024;
         eeid->size_settings.num_tcs = 2;
-        eeid->data_size = 512;
+        eeid->data_size = data_sz;
         for (size_t i = 0; i < eeid->data_size; i++)
             eeid->data[i] = (uint8_t)i;
     }
@@ -162,14 +162,12 @@ int main(int argc, const char* argv[])
     /* Create the enclave */
     if (eeid)
     {
-        if ((result = oe_create_tests_enclave_eeid(
-                 argv[1],
-                 OE_ENCLAVE_TYPE_SGX,
-                 flags,
-                 NULL,
-                 0,
-                 eeid,
-                 &enclave)) != OE_OK)
+        oe_enclave_setting_t setting;
+        setting.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
+        setting.u.eeid = eeid;
+        if ((result = oe_create_tests_enclave(
+                 argv[1], OE_ENCLAVE_TYPE_SGX, flags, &setting, 1, &enclave)) !=
+            OE_OK)
             oe_put_err("oe_create_tests_enclave_eeid(): result=%u", result);
     }
     else

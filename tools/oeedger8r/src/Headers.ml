@@ -349,15 +349,6 @@ let generate_untrusted (ec : enclave_content) =
     "";
     "/**** ECALL marshalling structs. ****/";
     String.concat "\n" ecall_marshal_structs;
-    "struct oe_eeid_t_;";
-    sprintf "oe_result_t oe_create_%s_enclave_eeid(" ec.enclave_name;
-    "    const char* path,";
-    "    oe_enclave_type_t type,";
-    "    uint32_t flags,";
-    "    const oe_enclave_setting_t* settings,";
-    "    uint32_t setting_count,";
-    "    struct oe_eeid_t_ *eeid,";
-    "    oe_enclave_t** enclave);";
     "";
     "/**** ECALL prototypes. ****/";
     String.concat "\n\n" tfunc_wrapper_prototypes;

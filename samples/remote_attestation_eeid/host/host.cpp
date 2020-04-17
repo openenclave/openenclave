@@ -10,13 +10,17 @@ oe_enclave_t* create_enclave(const char* enclave_path, oe_eeid_t* eeid)
     oe_enclave_t* enclave = NULL;
 
     printf("Host: Enclave library %s\n", enclave_path);
-    oe_result_t result = oe_create_remoteattestation_enclave_eeid(
+
+    oe_enclave_setting_t setting;
+    setting.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
+    setting.u.eeid = eeid;
+
+    oe_result_t result = oe_create_remoteattestation_enclave(
         enclave_path,
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
-        NULL,
-        0,
-        eeid,
+        &setting,
+        1,
         &enclave);
 
     if (result != OE_OK)
@@ -51,16 +55,16 @@ int main(int argc, const char* argv[])
     uint8_t* remote_report = NULL;
     size_t remote_report_size = 0;
 
-    uint32_t eeid_size = 512;
-    uint64_t eeid_byte_size = sizeof(oe_eeid_t) + eeid_size;
+    size_t data_size = 512;
+    size_t eeid_byte_size = sizeof(oe_eeid_t) + data_size;
     oe_eeid_t* eeid_a = (oe_eeid_t*)calloc(1, eeid_byte_size);
     oe_eeid_t* eeid_b = (oe_eeid_t*)calloc(1, eeid_byte_size);
-    eeid_a->data_size = eeid_b->data_size = eeid_size;
+    eeid_a->data_size = eeid_b->data_size = data_size;
 
-    for (size_t i = 0; i < eeid_size; i++)
+    for (size_t i = 0; i < data_size; i++)
     {
         eeid_a->data[i] = i;
-        eeid_b->data[i] = eeid_size - i - 1;
+        eeid_b->data[i] = data_size - i - 1;
 
         eeid_a->size_settings.num_heap_pages =
             eeid_b->size_settings.num_heap_pages = 37;
@@ -195,6 +199,12 @@ exit:
 
     if (encrypted_msg != NULL)
         free(encrypted_msg);
+
+    if (eeid_a != NULL)
+        free(eeid_a);
+
+    if (eeid_b != NULL)
+        free(eeid_b);
 
     printf("Host: Terminating enclaves\n");
     if (enclave_a)

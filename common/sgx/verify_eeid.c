@@ -74,7 +74,10 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
     if (memcmp(debug_public_key, reported_mrsigner, OE_SIGNER_ID_SIZE) != 0)
         OE_RAISE(OE_VERIFY_FAILED);
 
-    const sgx_sigstruct_t* sigstruct = (const sgx_sigstruct_t*)&eeid->sigstruct;
+    if (eeid->signature_size != 1808) // We only support SGX sigstructs for now.
+        OE_RAISE(OE_VERIFY_FAILED);
+
+    const sgx_sigstruct_t* sigstruct = (const sgx_sigstruct_t*)&eeid->signature;
 
     uint16_t ppid = (uint16_t)(report->identity.product_id[1] << 8) +
                     (uint16_t)report->identity.product_id[0];
