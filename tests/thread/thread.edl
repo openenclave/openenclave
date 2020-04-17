@@ -40,6 +40,15 @@ enclave {
             [out] size_t* max_readers,
             [out] size_t* max_writers,
             [out] bool* readers_and_writers);
+
+        public void* enc_malloc(
+            size_t size,
+            [out] int *err);
+
+        public int64_t enc_strtol(
+            [in, string] const char *nptr,
+            int base,
+            [out] int *err);
     };
 
     untrusted {
