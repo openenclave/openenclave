@@ -48,7 +48,6 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxsign.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>

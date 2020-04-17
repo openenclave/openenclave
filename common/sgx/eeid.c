@@ -6,11 +6,11 @@
 #include <string.h>
 
 #include <openenclave/bits/eeid.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
 
