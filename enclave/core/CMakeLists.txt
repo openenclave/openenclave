@@ -70,7 +70,7 @@ endif()
 ##==============================================================================
 
 set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
-
+set(CXX_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/include)
 if (USE_SNMALLOC)
     add_enclave_library(oeallocator OBJECT
         sgx/snmalloc/snmalloc_wrapper.cpp)
@@ -79,7 +79,8 @@ if (USE_SNMALLOC)
         sgx/snmalloc/snmalloc_wrapper.cpp)
 
     enclave_link_libraries(oeallocator PUBLIC oe_includes)
-    set_source_files_properties(sgx/snmalloc/snmalloc_wrapper.cpp PROPERTIES COMPILE_FLAGS -std=c++17\ -mcx16\ -fno-exceptions)
+    set_source_files_properties(sgx/snmalloc/snmalloc_wrapper.cpp PROPERTIES COMPILE_FLAGS
+      -ftls-model=local-exec\ -nostdinc++\ -I${CXX_INCLUDE_DIR}\ -std=c++17\ -mcx16\ -fno-exceptions)
     enclave_compile_options(oeallocator PUBLIC
         -fPIC
         -fvisibility=hidden)
