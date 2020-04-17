@@ -51,6 +51,10 @@ do
     -w | --whatif)
         whatif=1
         ;;
+    -s | --staged)
+        # Only format files which are staged to be committed
+        userFiles="$(git diff --cached --name-only --diff-filter=ACMR)"
+        ;;
 
     --exclude-dirs=*)
         userExcludeDirs="${opt#*=}"
