@@ -48,8 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed oe-gdb script which has been deprecated since v0.6. Use oegdb instead.
 
 ### Security
-- Update mbedTLS to version 2.16.5. Refer to [2.16.5](
+- Update mbedTLS to version 2.16.6. Refer to the [2.16.5](
 https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.5-and-2.7.14-released)
+and [2.16.6](https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.6-and-2.7.15-released)
 release notes for the set of issues addressed.
 
 ### Deprecated
