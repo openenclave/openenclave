@@ -27,10 +27,9 @@ Hardware Drivers
 
 Open Enclave provides a consistent abstraction across different hardware Enclave
 platforms. If you're just getting started, you can compile and test your apps
-without an enclave (**TODO: add link to docs for this**), or you can use one of
+without an enclave, or you can use one of
 the hardware types below.
 
-**TODO**: start separating documentation by hardware type
 
 ### Intel SGX
 
@@ -90,4 +89,4 @@ good places to start:
 
 Contributors must sign a
 [Developer Certificate of Origin (DCO)](https://developercertificate.org/). For
-details , see [Contributing to Open Enclave](docs/Contributing.md).
+details, see [Contributing to Open Enclave](docs/Contributing.md).

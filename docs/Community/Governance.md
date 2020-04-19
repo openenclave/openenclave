@@ -34,7 +34,7 @@ expression, level of experience, education, socio-economic status, nationality,
 personal appearance, race, religion, or sexual identity and orientation.*
 
 As a member of the OE SDK project, you represent the project and your fellow
-contributors. We value our community trememdously and want to build and maintain
+contributors. We value our community tremendously and want to build and maintain
 a friendly, inclusive, collaborative environment for all our contributors and
 users.
 
@@ -72,14 +72,14 @@ Technical discussions generally happen in one of these places:
 * [on the GitHub project](https://github.com/openenclave/openenclave), either in
   an Issue or a Pull Request
 * in the public meetings of Committees, Special Interest Groups, or Working Groups, which can be found via the [community calendar](https://lists.confidentialcomputing.io/calendar).
-* on the community mailing list or chat server, which is detailed in the [Comminucations](Communication.md) document
+* on the community mailing list or chat server, which is detailed in the [Communications](Communication.md) document
 
 While we strive for openness and transparency, it is natural that some
 discussions will also happen in private channels, or in impromptu face-to-face
 conversations (for those who work in the same building, or bump into each other
 at a conference). The outcome of such discussions should be considered
 non-binding until the information is shared through an open medium and relevant
-stake-holders have opportunity to contribute to the discussion.
+stake-holders have the opportunity to contribute to the discussion.
 
 All SIG and WG leaders are responsible for creating and publishing minutes from
 the meetings they hold, ensuring that the meetings are open and inclusive, and
@@ -106,7 +106,7 @@ Committers and Contributors
 At present, we maintain a list of [Project Committers](Committers.md) along with
 descriptions of their knowledge areas.
 
-This will be updated and replaced with a more scaleable approach to
+This will be updated and replaced with a more scalable approach to
 commit-rights management.
 
 Accepting Contributions

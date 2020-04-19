@@ -39,7 +39,7 @@ Current Expectations
 --------------------
 
 However, it is up to each committer to determine who should review which PR, and
-when to merge it. It is up to each committer to decide [when to accept a contribution](Governance.md#Accepting-Contributions)]
+when to merge it. It is up to each committer to decide [when to accept a contribution](Governance.md#Accepting-Contributions).
 
 Current Challenges
 ------------------
@@ -50,7 +50,7 @@ programatically enforced, and not represented through any of the development
 tools (ie, GitHub itself).
 
 As more developers join the community and bring domain-specific knowledge, there
-is no way to delegate domian ownership, authority or autonomy over changes to
+is no way to delegate domain ownership, authority or autonomy over changes to
 code. And as the community itself grows, the current communication channels do
 not support rapid iteratation, or facilitate remote and open collaboration.
 
@@ -61,5 +61,5 @@ Specific challenges:
 * commit rights are not granular (every Committer in the list above has commit
   rights on the entire code base, rather than their "Area")
 * integration of third-party test systems (downstream CI/CD) is difficult and not documented
-* permission to initiate a test run is limited to committers and requires
-  out-of-tree action change
+* permission to initiate a test run is limited to committers and requires an
+  out-of-tree action to change

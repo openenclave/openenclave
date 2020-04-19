@@ -12,7 +12,7 @@ We acknowledge that sometimes minor disagreements may occur, and have written
 down our general views on how conflict between community members
 [should be handled](ConflictPolicy.md).
 
-Incidents may be reported to the
+Incidents should be reported to the
 [Community Governance Committee](../governance/README.md), and will be handled
 in accordance with our
 [Incident Response Guidelines](IncidentResponseGuidelines.md).

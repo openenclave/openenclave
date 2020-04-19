@@ -7,7 +7,7 @@ Mailing Lists
 The community currently relies on two mailing lists:
 
 1. "oesdk at lists dot confidentialcomputing dot io" -- this is the primary mailing list for discussions and announcements.
-2. "oesdkcgc at lists dot confidentialcomputing dot io" -- this is a closed list for  [Community Governance Committee](governance/README.md) discussions.
+2. "oesdkcgc at lists dot confidentialcomputing dot io" -- this is a closed list for [Community Governance Committee](governance/README.md) discussions.
 
 Chat Systems
 ------------

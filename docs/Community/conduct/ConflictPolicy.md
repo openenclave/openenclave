@@ -3,7 +3,7 @@ Conflict Resolution
 
 We do not believe that all conflict is bad; healthy debate and disagreement often
 yield positive results. However, it is never okay to be disrespectful or to engage
-in behavior that violates the project’s [Code of Conduct](../../CODE_OF_CONDUCT.md).
+in behavior that violates the project's [Code of Conduct](../../CODE_OF_CONDUCT.md).
 
 If you see someone violating the code of conduct, you are encouraged to address
 the behavior directly with those involved. Many issues can be resolved quickly and
@@ -16,7 +16,7 @@ Reports can be made to any member of the [Community Governance Committee](
 ../governance/README.md). It is the duty of the committee members to receive
 and address reports while maintaining the confidentiality of the reporter.
 
-We will investigate every complaint, but you may not receive a direct response. We
+We will investigate every incident, but you may not receive a direct response. We
 will use our discretion in determining when and how to follow up on reported
 incidents, which may range from not taking action to permanent expulsion from the
 project and project-sponsored spaces. We will notify the accused of the report and

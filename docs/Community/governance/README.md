@@ -5,7 +5,7 @@ The [charter](charter.md) defines the scope and processes by which the CGC opera
 
 Meetings: public CGC meetings are held on Wednesdays (bi-weekly) (*link TBD*)
 
-Minutes: aka.ms/openenclave/cgc
+Minutes: https://aka.ms/openenclave/cgc
 
 How to raise a topic to the CGC
 -------------
