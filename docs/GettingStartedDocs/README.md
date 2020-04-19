@@ -36,14 +36,14 @@ the hardware types below.
 If you would like to start developing apps with the preview Open Enclave SDK
 release, start here for instructions to install and use the SDK package:
 
-- [Ubuntu 18.04 with SGX hardware](docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md)
-- [Ubuntu 16.04 with SGX hardware](docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md)
-- [Ubuntu 18.04 or 16.04 in simulation mode](docs/GettingStartedDocs/install_oe_sdk-Simulation.md)
-- [Windows Server 2016 with SGX hardware](docs/GettingStartedDocs/install_oe_sdk-Windows.md)
+- [Ubuntu 18.04 with SGX hardware](install_oe_sdk-Ubuntu_18.04.md)
+- [Ubuntu 16.04 with SGX hardware](install_oe_sdk-Ubuntu_16.04.md)
+- [Ubuntu 18.04 or 16.04 in simulation mode](install_oe_sdk-Simulation.md)
+- [Windows Server 2016 with SGX hardware](install_oe_sdk-Windows.md)
 
 If you would like to run Ubuntu 16.04 or Ubuntu 18.04 in a Hyper-V VM on SGX
 capable hardware, see
-[Setting up a Linux Hyper-V VM on Windows with SGX Support](docs/GettingStartedDocs/HyperVLinuxVMSetup.md).
+[Setting up a Linux Hyper-V VM on Windows with SGX Support](HyperVLinuxVMSetup.md).
 
 ### OP-TEE OS (ARM TrustZone)
 
@@ -55,7 +55,7 @@ SDK can be leveraged to target these systems as well.
 
 For an overview of the SDK's support for OP-TEE OS as well as links to getting
 started guides, see
-[Open Enclave SDK for OP-TEE OS](docs/GettingStartedDocs/OP-TEE/Introduction.md).
+[Open Enclave SDK for OP-TEE OS](OP-TEE/Introduction.md).
 
 API Documentation
 -----------------
@@ -76,7 +76,7 @@ The Open Enclave community is a safe and welcoming environment. We follow a
 Want to get involved? Head on over to the [Community](../Community/README) pages!
 
 If you're interested in how this project is run, head on over to the
-[Overview of the Project Governance Model](docs/Governance.md).
+[Overview of the Project Governance Model](../Community/Governance.md).
 
 Contributing
 ------------
@@ -84,9 +84,9 @@ Contributing
 If you are interested in contributing changes to Open Enclave, here are some
 good places to start:
 
-- [General Development Guide](docs/DevelopmentGuide.md)
-- [How To Build OE SDK and run tests](docs/GettingStartedDocs/Contributors/building_oe_sdk.md)
+- [General Development Guide](../Community/DevelopmentGuide.md)
+- [How To Build OE SDK and run tests](Contributors/building_oe_sdk.md)
 
 Contributors must sign a
 [Developer Certificate of Origin (DCO)](https://developercertificate.org/). For
-details, see [Contributing to Open Enclave](docs/Contributing.md).
+details, see [Contributing to Open Enclave](../Community/Contributing.md).
