@@ -203,6 +203,8 @@ endif ()
 
 option(COMPILE_SYSTEM_EDL "Build system ecalls and ocalls into OE libraries. If not set, they must be included by application EDL to use." ON)
 
+option(BUILD_TESTS "Build OE tests" ON)
+
 find_program(VALGRIND "valgrind")
 if (VALGRIND)
   set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
@@ -224,12 +226,18 @@ add_subdirectory(host)
 # Tests are not ported to include system edl files in order to use system
 # ocalls and ecalls.
 if (COMPILE_SYSTEM_EDL)
-  add_subdirectory(tests)
+
+  if (BUILD_TESTS)
+    add_subdirectory(tests)
+  endif()
+
   if (BUILD_ENCLAVES)
     add_subdirectory(samples)
   endif ()
 else ()
-  add_subdirectory(tests/exclude_system_edl)
+  if (BUILD_TESTS)
+    add_subdirectory(tests/exclude_system_edl)
+  endif()
 endif()
 
 add_subdirectory(tools)
