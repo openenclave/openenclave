@@ -12,7 +12,7 @@ Minutes: https://aka.ms/openenclave/cgc
 How to raise a topic to the CGC
 -------------
 
-TODO
+Questions may be brought to the attention of any of the Committee members.
 
 Members
 -------

@@ -25,18 +25,17 @@ at [aka.ms/openenclave/cgc](https://aka.ms/openenclave/cgc).
 Committee Responsibilities
 --------------------------
 
-The primary responsibilities of the Committee are:
-- to grant new committer rights
-(that is, write access to the main Open Enclave SDK repository or related
-repositories)
-- to grant new membership into the Committee
+The primary responsibilities of this Committee are:
+
+- to establish and ensure the health of SIGs and WGs in support of the overall project health
+- to maintain membership of the Committee itself, adding or removing as defined in this charter
 - to define the governance structures of the Open Enclave SDK project as a whole
-- to resolve issues between SIGs or WGs, when necessary
+- to assist in the resolution of disagreements between community organizations when necessary
 - to support the community through handling any code of conduct incidents and reports
 
-This Committee is not intended to make every technical decision, as those should
-generally be made by agreement among committers as PRs are reviewed and merged,
-and within the respective SIGs and WGs.
+This Committee is not intended to make technical decisions, as those should
+generally be made by agreement among contributors PRs are reviewed and merged,
+and within the respective SIG and WG organizational structures.
 
 Where disagreements take place and need further resolution, those can be brought
 up with the Committee as part of its responsibility to maintain the project's
@@ -68,3 +67,14 @@ open all members of the community, and start with an open forum to hear
 questions or concerns from the community. Any remaining time in the meeting
 should be used to discuss and review open pull requests or issues (especially
 including design documents).
+
+Committee Membership
+--------------------
+
+Process to join or leave committee TBD
+
+Chair appointment process TBD
+
+Committee member appointment period TBD
+
+Optimal committee size TBD
