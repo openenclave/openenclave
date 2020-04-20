@@ -1,6 +1,9 @@
 Open Enclave SDK Community Governance Guidelines
 ==========================
 
+**Note**
+This document reflects the proposed state of governance *after* migration to SIGs and WGs is completed.
+
 Like all documentation, this is a living document, a work in progress, representing
 approximately how the community operates and the principles which infuse our
 culture today.
@@ -9,15 +12,13 @@ It should be edited and revised from time to time.
 
 Core Principles
 ---------------
-*NOTE(Aeva): Suggestion of principles only, but what ever they are, they should be articulated here*
 
 The Open Enclave SDK community adheres to the principles of the Four Opens:
 
-* **Open Source**: All project code and dependencies are open source; see contribution guidelines below.
+* **Open Community**: We are welcoming and respectful of everyone.
 * **Open Design**: Project planning and design discussions happen in transparent, collaborative, and accessible ways.
 * **Open Development**: All ideas and contributions are welcome and accepted based on merit and alignment with project goals.
-* **Open Community**: We are welcoming and respectful of everyone.
-
+* **Open Source**: All project code and dependencies are open source; see contribution guidelines below.
 
 Code of Conduct
 ---------------
@@ -49,17 +50,27 @@ each domain, or Special Interest Group (**SIG**), cross-domain work is enabled
 through Working Groups (**WG**), and a Community Governance Committee (**CGC**)
 meets to review the overall structure, ensuring the health of the project.
 
-Each group (SIGs, WGs, and CGC) maintain documentation in this repository.
-Creating a new SIG or WG requires the approval of the CGC. SIGs are generally
-responsible for code, whereas a WG is not.
+_NOTE: In lieu of a "technical steering committee", the Architecture SIG should
+be considered as the best forum for technical debates that affect the whole
+project_
 
-SIG leaders are responsible for the code within their domain, and should be
-considered authoritative for that subsection of the project's code base insofar
-as code reviews and architectural discussions. When a change affects code owned
-by multiple SIGs, it should be coordinated with the respective SIG leads.
-Cross-SIG efforts can be coordinated by establishing a Working Group (WG), which
-is given a charter and which reports progress back to the relevant SIG leaders
-or the CGC.
+Each group (SIGs, WGs, and CGC) shall maintain documentation in this repository.
+Creating a new SIG or WG requires the approval of the CGC, and is formally
+created by the merging of a "charter" document. A SIG is generally responsible
+for the delivery of a technical artefact (code, release binaries, operation of
+infrastructure, etc), whereas a WG is generally not responsible for these types
+of artefacts.
+
+A SIG Chair is responsible for the health of that SIG, and should be considered
+authoritative for that subsection of the project's code base insofar as code or
+other technical deliverables are a responsibility of that SIG. Additionally,
+each SIG is responsible for establishing its own governance process (defining
+the process for SIG Chair selection, for example).
+
+When a change affects code owned by multiple SIGs, it should be coordinated with
+the respective SIGs. If long-term collaboration is anticipated, cross-SIG
+efforts can be coordinated by establishing a Working Group (WG), which is given
+a charter and which reports progress back to the relevant SIGs and/or the CGC.
 
 If there is conflict, either within or between SIGs, or between any members of
 the community, wherein it is desirable, the issue can be raised to the CGC.
@@ -81,12 +92,17 @@ at a conference). The outcome of such discussions should be considered
 non-binding until the information is shared through an open medium and relevant
 stake-holders have the opportunity to contribute to the discussion.
 
-All SIG and WG leaders are responsible for creating and publishing minutes from
-the meetings they hold, ensuring that the meetings are open and inclusive, and
+All SIG and WG leaders are responsible for their groups' creation of minutes from
+any meetings which they may hold, ensuring that the meetings are open and inclusive, and
 that decisions they make are fair and transparent.
 
 If a private discussion pertains to an open issue or PR, and results in a
 decision, that item should be updated and reference given to the conversation.
+
+Project-wide technical discussions are currently handled in
+[SIG-Architecture](sig-architecture/README.md) meetings. This SIG is comprised
+of the Leads of all other SIGs and functions analogously to a "technical
+steering committee" in other projects.
 
 Issue/PR Review Process
 -----------------------
@@ -107,7 +123,15 @@ At present, we maintain a list of [Project Committers](Committers.md) along with
 descriptions of their knowledge areas.
 
 This will be updated and replaced with a more scalable approach to
-commit-rights management.
+commit-rights management that integrates with SIG/WG governance.
+
+**Proposal** The following roles would be sufficient for SIGs and WGs to self-govern.
+
+- **Chair**: the primary point of contact for a SIG or WG, responsible for the processes within the SIG; a tie-breaker in votes within the SIG, if needed
+- **Approver**: members of the SIG who are empowered to approve code changes
+- **Reviewer**: members of the SIG whose knowledge is respected by Committers, and whom are frequently asked to provide code reviews for patches
+- **Member**: a voting member of a working group (role does not apply to SIGs)
+- **Emeritus**: a previously-active member of a SIG or WG, who has no current rights but whose contributions the community wishes to honor, and who may receive a fast-track back to privileges should they become active in this group again
 
 Accepting Contributions
 -----------------------
@@ -115,23 +139,23 @@ Accepting Contributions
 SIGs will generally accept changes that improve the project and that align with the
 [Open Enclave roadmap](https://github.com/openenclave/openenclave/projects).
 
-All contributions are expected to be reviewed by at least one SIG lead other
-than the contributor, and have no significant objections from other SIG leads
-within the same SIG.
+All contributions are expected to be reviewed by at least one *Reviewer* or
+*Approver* other than the contributor, and have no significant objections from
+other *Reviewers* or *Approvers*, within the same SIG. Each SIG may,
+optionally, establish its own review criteria, as outlined in that SIG's
+charter.
 
 If a change requires the approval of multiple SIGs (e.g., because it affects
 code in both SIG domains), then approval from both SIGs is required.
 
-If a change only requires one approval from one SIG, and leads of another SIG
-object to it, a discussion should be invited and given reasonable time to move
-towards a consensus; overruling the objection of another SIG lead should only be
-done after careful consideration. Even when we disagree, leaders aspire to
-uphold our [core principles](#core-principles).
+If a change only requires one approval from one SIG, and another SIG objects to
+it, a discussion should be invited and given reasonable time to move towards a
+consensus; overruling the objection of another SIG should only be done after
+careful consideration. *Even when we disagree, our community leaders aspire to
+uphold our [core principles](#core-principles).*
 
 All contributions must also satisfy the
 [contribution guidelines](Contributing.md), such as having a
 [Developer Certificate of Origin (DCO)](https://developercertificate.org/) and
 being signed-off by the developer, having appropriate license headers in code
 files, passing tests, and so on.
-
-SIG leads may revert changes if they are found to be breaking, or if deemed necessary.

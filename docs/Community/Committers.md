@@ -1,6 +1,11 @@
 Project Committers
 ==================
 
+**NOTE**
+This document will be superceded by the creation of SIGs and WGs.
+
+It is kept for now as the discussion and definition of the [new governance process](Governance.md) is ongoing.
+
 List of Committers
 ------------------
 

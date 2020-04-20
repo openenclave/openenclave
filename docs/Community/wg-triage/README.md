@@ -1,4 +1,4 @@
-Triage
+Triage Working Group
 ======
 
 https://en.wikipedia.org/wiki/Triage
@@ -24,8 +24,11 @@ untouched for too long.
 
 Meetings
 --------
-Triage meetings are open to everyone. If you have recently filed an issue or a PR, you may want to attend the next triage meeting and help with classification.
-**Regular Triage meeting**: Weekly on Mondays at 11:00 PT (Pacific Time) *meeting link TBD* [(convert to your local timezone)](https://www.thetimezoneconverter.com/?t=11:00&tz=PT%20%28Pacific%20Time%29)
+Triage meetings are open to everyone. If you have recently filed an issue or a
+PR, you may want to attend the next triage meeting and help with classification.
+**Regular Triage meeting**: Weekly on Mondays at 11:00 PT (Pacific Time)
+*meeting link TBD*
+[(convert to your local timezone)](https://www.thetimezoneconverter.com/?t=11:00&tz=PT%20%28Pacific%20Time%29)
 
 Meeting Chair
 -------------

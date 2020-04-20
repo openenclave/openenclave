@@ -3,7 +3,9 @@ Open Enclave Community Governance Committee
 
 The [charter](charter.md) defines the scope and processes by which the CGC operates.
 
-Meetings: public CGC meetings are held on Wednesdays (bi-weekly) (*link TBD*)
+Public Meetings: TBD
+
+Closed Meetings: As Needed
 
 Minutes: https://aka.ms/openenclave/cgc
 
@@ -30,8 +32,8 @@ Members
 | Simon Leet           | Microsoft   | simon.leet@microsoft.com      | CodeMonkeyLeet |
 
 
-**TODO**
----------
+TODO
+----
 
 - document (historical) bootstrap process
 - clarify/update charter

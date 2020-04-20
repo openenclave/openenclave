@@ -25,21 +25,34 @@ at [aka.ms/openenclave/cgc](https://aka.ms/openenclave/cgc).
 Committee Responsibilities
 --------------------------
 
-The primary responsibility of the Committee is to grant new committer rights
+The primary responsibilities of the Committee are:
+- to grant new committer rights
 (that is, write access to the main Open Enclave SDK repository or related
-repositories), and to grant new membership into the Committee. Conversely, the
-Committee must also remove committer rights and membership from those found to
-be violating the project's Code of Conduct or otherwise negatively affecting the
-project's community health. It is duty of each committee member to receive and
-address reported violations of the Code of Conduct while maintaining the
-confidentiality of the reporter.
+repositories)
+- to grant new membership into the Committee
+- to define the governance structures of the Open Enclave SDK project as a whole
+- to resolve issues between SIGs or WGs, when necessary
+- to support the community through handling any code of conduct incidents and reports
 
 This Committee is not intended to make every technical decision, as those should
-generally be made by agreement among committers as PRs are reviewed and merged.
+generally be made by agreement among committers as PRs are reviewed and merged,
+and within the respective SIGs and WGs.
+
 Where disagreements take place and need further resolution, those can be brought
 up with the Committee as part of its responsibility to maintain the project's
-community health. Otherwise technical decisions are left to the active
-committers (by virtue of the liberal contribution policy).
+community health.
+
+Regarding Codes of Conduct
+--------------------------
+
+In addition to granting rights, the Committee must also remove committer rights
+and membership from those found to be violating the project's Code of Conduct or
+otherwise negatively affecting the project's community health. It is duty of
+each committee member to receive and address reported violations of the Code of
+Conduct while maintaining the confidentiality of the reporter.
+
+Meetings and Committee Obligations
+----------------------------------
 
 The Community Governance Committee should meet regularly, for example, once a
 month. This meeting is a private meeting among just the Committee members to nominate

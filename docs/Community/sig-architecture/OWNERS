@@ -1,5 +1,17 @@
-reviewers:
+chair:
+  - TBD
 
+# reviews should be solicited from all SIG Chairs
+# NOTE(Aeva) missing domains: API, CCF, Windows
+reviewers:
+  - sig-attestation-chair
+  - sig-testing-chair
+  - sig-tools-chair
+  - sig-release-chair
+  - sig-sgx-chair
+  - sig-optee-chair
+
+# final approval of architecture documents handled by chair only
 approvers:
 
 labels:
