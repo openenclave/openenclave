@@ -4,10 +4,12 @@
 set(EDL_FILE ../create_rapid.edl)
 
 add_custom_command(
-  OUTPUT create_rapid_t.h create_rapid_t.c
-  DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --trusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+    OUTPUT create_rapid_t.h create_rapid_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE}
+               --search-path ${PROJECT_SOURCE_DIR}/edl
+               --search-path ${PLATFORM_EDL_DIR}
+               --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_enclave(
   TARGET

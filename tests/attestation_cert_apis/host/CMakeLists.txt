@@ -6,10 +6,12 @@ include(add_dcap_client_target)
 set(EDL_FILE ../tls.edl)
 
 add_custom_command(
-  OUTPUT tls_u.h tls_u.c
-  DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --untrusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+    OUTPUT tls_u.h tls_u.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --untrusted ${EDL_FILE}
+                    --search-path ${PROJECT_SOURCE_DIR}/edl
+                    --search-path ${PLATFORM_EDL_DIR}
+                    --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(tls_host host.cpp tls_u.c)
 

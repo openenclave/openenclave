@@ -6,10 +6,12 @@
 set(EDL_FILE ../libcxx.edl)
 
 add_custom_command(
-  OUTPUT libcxx_t.h libcxx_t.c
-  DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --trusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+    OUTPUT libcxx_t.h libcxx_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE}
+               --search-path ${PROJECT_SOURCE_DIR}/edl
+               --search-path ${PLATFORM_EDL_DIR}
+               --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 # helper lib to contain file needed by some tests
 add_enclave_library(libcxxtest-support enc.cpp fuzzing.cpp memory_resource.cpp

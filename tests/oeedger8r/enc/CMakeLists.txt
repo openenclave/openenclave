@@ -3,24 +3,26 @@
 
 add_custom_command(
   OUTPUT all_t.h all_t.c all_args.h
-  DEPENDS edger8r
-          ../edl/aliasing.edl
-          ../edl/all.edl
-          ../edl/array.edl
-          ../edl/basic.edl
-          ../edl/deepcopy.edl
-          ../edl/enum.edl
-          ../edl/errno.edl
-          ../edl/foreign.edl
-          ../edl/other.edl
-          ../edl/pointer.edl
-          ../edl/string.edl
-          ../edl/struct.edl
-          ../edl/switchless.edl
-  COMMAND
-    edger8r --experimental --trusted --search-path
-    ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path
-    ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
+  DEPENDS
+  edger8r
+  ../edl/aliasing.edl
+  ../edl/all.edl
+  ../edl/array.edl
+  ../edl/basic.edl
+  ../edl/deepcopy.edl
+  ../edl/enum.edl
+  ../edl/errno.edl
+  ../edl/foreign.edl
+  ../edl/other.edl
+  ../edl/pointer.edl
+  ../edl/string.edl
+  ../edl/struct.edl
+  ../edl/switchless.edl
+  COMMAND edger8r --experimental --trusted
+                  --search-path ${PROJECT_SOURCE_DIR}/edl
+                  --search-path ${PLATFORM_EDL_DIR}
+                  --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl
+                  --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
 
 add_custom_command(
   OUTPUT bar_t.h bar_args.h
@@ -79,10 +81,11 @@ endif ()
 set(EDL_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../edl/other.edl)
 
 add_custom_command(
-  OUTPUT other_t.h other_t.c
-  DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --trusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+    OUTPUT other_t.h other_t.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --trusted ${EDL_FILE}
+              --search-path ${PROJECT_SOURCE_DIR}/edl
+              --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_enclave(
   TARGET

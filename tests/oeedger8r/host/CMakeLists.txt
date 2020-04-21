@@ -3,24 +3,25 @@
 
 add_custom_command(
   OUTPUT all_u.h all_u.c all_args.h
-  DEPENDS edger8r
-          ../edl/aliasing.edl
-          ../edl/all.edl
-          ../edl/array.edl
-          ../edl/basic.edl
-          ../edl/deepcopy.edl
-          ../edl/enum.edl
-          ../edl/errno.edl
-          ../edl/foreign.edl
-          ../edl/other.edl
-          ../edl/pointer.edl
-          ../edl/string.edl
-          ../edl/struct.edl
-          ../edl/switchless.edl
-  COMMAND
-    edger8r --experimental --untrusted --search-path
-    ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path
-    ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
+  DEPENDS
+  edger8r
+  ../edl/aliasing.edl
+  ../edl/all.edl
+  ../edl/array.edl
+  ../edl/basic.edl
+  ../edl/deepcopy.edl
+  ../edl/enum.edl
+  ../edl/errno.edl
+  ../edl/foreign.edl
+  ../edl/other.edl
+  ../edl/pointer.edl
+  ../edl/string.edl
+  ../edl/struct.edl
+  ../edl/switchless.edl
+  COMMAND edger8r --experimental --untrusted
+                  --search-path ${PROJECT_SOURCE_DIR}/edl
+                  --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl
+                  --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
 
 add_custom_command(
   OUTPUT bar_u.h bar_args.h
@@ -31,8 +32,9 @@ add_custom_command(
 add_custom_command(
   OUTPUT other_u.h other_u.c other_args.h
   DEPENDS ../edl/other.edl
-  COMMAND edger8r --untrusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl
-          other.edl)
+  COMMAND edger8r --untrusted
+                  --search-path ${PROJECT_SOURCE_DIR}/edl
+                  --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl other.edl)
 
 # Dummy target used for generating from EDL on demand.
 add_custom_target(

@@ -3,6 +3,10 @@
 
 enclave
 {
+    from "logging.edl" import *;
+    from "syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted
     {
         public void test_argv_ecall();

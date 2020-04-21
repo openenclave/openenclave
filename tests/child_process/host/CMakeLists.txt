@@ -4,10 +4,12 @@
 set(EDL_FILE ../child_process.edl)
 
 add_custom_command(
-  OUTPUT child_process_u.h child_process_u.c
-  DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --untrusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+    OUTPUT child_process_u.h child_process_u.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --untrusted ${EDL_FILE}
+               --search-path ${PROJECT_SOURCE_DIR}/edl
+               --search-path ${PLATFORM_EDL_DIR}
+               --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(child_process_host host.cpp child_process_u.c)
 

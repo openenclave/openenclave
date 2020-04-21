@@ -4,10 +4,12 @@
 set(EDL_FILE ../file.edl)
 
 add_custom_command(
-  OUTPUT file_u.h file_u.c
-  DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --untrusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+    OUTPUT file_u.h file_u.c
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --untrusted ${EDL_FILE}
+               --search-path ${PROJECT_SOURCE_DIR}/edl
+               --search-path ${PLATFORM_EDL_DIR}
+               --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(file_host host.cpp file_u.c)
 

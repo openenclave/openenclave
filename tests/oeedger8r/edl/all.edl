@@ -2,6 +2,15 @@
 // Licensed under the MIT License.
 
 enclave  {
+    // Import system edl
+    from "logging.edl" import *;
+    from "syscall.edl" import *;
+    from "sgx/sgx_attestation.edl" import *;
+    from "sgx/cpu.edl" import *;
+    from "sgx/debug.edl" import *;
+    from "sgx/thread.edl" import *;
+    from "sgx/switchless.edl" import *;
+
     // import all edl files into one EDL file.
     from "aliasing.edl" import *;
     from "array.edl"    import *;

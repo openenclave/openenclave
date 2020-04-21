@@ -2,6 +2,11 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "logging.edl" import *;
+    from "syscall.edl" import *;
+    from "memory.edl" import *;
+    from "platform.edl" import *;
+
     enum definitions {
         TEST_HOSTREALLOC_INIT_VALUE = 88
     };

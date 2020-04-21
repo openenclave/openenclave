@@ -2,6 +2,11 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "logging.edl" import *;
+    from "syscall.edl" import *;
+    from "attestation.edl" import *;
+    from "platform.edl" import *;
+
     include "includes.h"
 
     trusted {
