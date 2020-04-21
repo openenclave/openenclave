@@ -16,8 +16,6 @@ typedef struct _oe_crl
     uint64_t impl[4];
 } oe_crl_t;
 
-typedef struct _oe_crl oe_crl_t;
-
 /**
  * Read a certificate revocation list (CRL) from DER format.
  *
