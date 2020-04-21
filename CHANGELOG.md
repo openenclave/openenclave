@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   **Disclaimer:** these headers do not make any guarantees about stability. They
   are intended to be used by generated code and are not part of the OE public
   API surface.
-- Support for Windows Server 2019.
+- Experimental support for Windows Server 2019.
 - Preview versions of VSCode and Visual Studio Extensions for OE are now part of the github repo.
 - Experimental support for enclave file system APIs on Windows host.
 - oelibcxx now supports up to `std=c++17`. Please see docs/LibcxxSupport.md for more details.
