@@ -176,11 +176,18 @@ function Start-LocalPackagesDownload {
 
 function Get-WindowsRelease {
     $releases = @{
+        18363 = "Win10"
+        18362 = "Win10"
         17763 = "WinServer2019"
         14393 = "WinServer2016"
     }
     $osBuild = [System.Environment]::OSVersion.Version.Build
+    $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
     $releaseName = $releases[$osBuild]
+    # ProductType: 1 - Work Station, 3 - Server
+    if (($osBuild -eq 17763) -and ($osInfo.ProductType -eq 1)) {
+        $releaseName = "Win10"
+    }
     if (!$releaseName) {
         Throw "Cannot find the Windows release name"
     }
@@ -542,6 +549,18 @@ function Install-DCAP-Dependencies {
                     'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
                 }
             }
+            'Win10' = @{
+                'sgx_base' = @{
+                    'zip_path'    = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\LC_driver_${OS_VERSION}\Signed_*.zip"
+                    'location'    = 'root\SgxLCDevice'
+                    'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
+                }
+                'sgx_dcap' = @{
+                    'zip_path'    = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\DCAP_INF\${OS_VERSION}\Signed_*.zip"
+                    'location'    = 'root\SgxLCDevice_DCAP'
+                    'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
+                }
+            }
         }
         $devConBinaryPath = Get-DevconBinary
         foreach($driver in $drivers[${OS_VERSION}].Keys) {
@@ -563,7 +582,7 @@ function Install-DCAP-Dependencies {
                 $inf
                 Throw "Multiple $driver.inf files found"
             }
-            if ($LaunchConfiguration -eq "SGX1FLC")
+            if($LaunchConfiguration -eq "SGX1FLC")
             {
                 # Check if the driver is already installed and delete it
                 $output = & $devConBinaryPath find "$($drivers[${OS_VERSION}][$driver]['location'])"
