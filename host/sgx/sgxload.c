@@ -134,7 +134,8 @@ static sgx_secs_t* _new_secs(
         return NULL;
 
     memset(secs, 0, sizeof(sgx_secs_t));
-    secs->size = size;
+    secs->size = 68719476736; /* Max acceptable */
+    (void)(size);
     secs->base = base;
 
     secs->flags = SGX_FLAGS_MODE64BIT;

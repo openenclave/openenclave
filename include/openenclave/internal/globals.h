@@ -33,9 +33,7 @@ uint64_t oe_get_num_heap_pages(void);
 uint64_t oe_get_num_pages(void);
 
 /* Extended enclave initialization data */
-const void* __oe_get_eeid_base(void);
-const void* __oe_get_eeid_end(void);
-uint64_t __oe_get_eeid_size(void);
+const void* __oe_get_eeid(void);
 
 OE_EXTERNC_END
 

@@ -167,13 +167,14 @@ done:
 
 oe_result_t oe_replay_eeid_pages(
     const oe_eeid_t* eeid,
-    struct _OE_SHA256* cpt_mrenclave)
+    struct _OE_SHA256* cpt_mrenclave,
+    bool with_eeid_pages)
 {
     oe_result_t result;
     oe_sha256_context_t hctx;
     oe_sha256_restore(&hctx, eeid->hash_state.H, eeid->hash_state.N);
-    uint64_t base = 0x0ab0c0d0e0f;
 
+    uint64_t base = 0x0ab0c0d0e0f;
     oe_page_t blank_pg, stack_pg, tcs_pg;
     memset(&blank_pg, 0, sizeof(blank_pg));
     memset(&stack_pg, 0xcc, sizeof(stack_pg));
@@ -191,6 +192,21 @@ oe_result_t oe_replay_eeid_pages(
     }
 
     uint64_t vaddr = eeid->vaddr;
+
+    if (with_eeid_pages)
+    {
+        oe_page_t fst_page;
+        *((uint64_t*)fst_page.data) =
+            0xEE1DEE1DEE1DEE1D; // A non-eeid enclave would segfault (no heap)
+                                // or see a 0.
+        size_t num_bytes = sizeof(oe_eeid_t) + eeid->data_size;
+        size_t num_pages =
+            num_bytes / OE_PAGE_SIZE + (num_bytes % OE_PAGE_SIZE) ? 1 : 0;
+        memcpy(fst_page.data + sizeof(uint64_t), eeid, num_bytes);
+        for (size_t i = 0; i < num_pages; i++)
+            ADD_PAGE(fst_page + i * OE_PAGE_SIZE, false);
+    }
+
     for (size_t i = 0; i < eeid->size_settings.num_heap_pages; i++)
         ADD_PAGE(blank_pg, false);
 
@@ -231,34 +247,6 @@ oe_result_t oe_replay_eeid_pages(
         vaddr += OE_PAGE_SIZE; // guard
         for (size_t i = 0; i < 2; i++)
             ADD_PAGE(blank_pg, true);
-    }
-
-    size_t eeid_sz = sizeof(oe_eeid_t) + eeid->data_size;
-    size_t num_pages = oe_round_up_to_page_size(eeid_sz) / OE_PAGE_SIZE;
-    oe_page_t* pages = (oe_page_t*)eeid;
-    for (size_t i = 0; i < num_pages; i++)
-    {
-        uint8_t* page = (uint8_t*)&pages[i];
-
-        if (i == num_pages - 1 && eeid_sz % OE_PAGE_SIZE != 0)
-        {
-            uint8_t* npage = calloc(1, OE_PAGE_SIZE);
-            memcpy(npage, page, eeid_sz % OE_PAGE_SIZE);
-            page = npage;
-        }
-
-        OE_CHECK(oe_sgx_measure_load_enclave_data(
-            &hctx,
-            base,
-            base + vaddr,
-            (uint64_t)page,
-            SGX_SECINFO_REG | SGX_SECINFO_R,
-            true));
-
-        if (i == num_pages - 1 && eeid_sz % OE_PAGE_SIZE != 0)
-            free(page);
-
-        vaddr += OE_PAGE_SIZE;
     }
 
     oe_sha256_final(&hctx, cpt_mrenclave);

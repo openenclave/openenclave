@@ -31,8 +31,8 @@ typedef struct oe_eeid_t_
     } hash_state; /* internal state of the hash computation at the end of
                            the enclave base image */
     uint64_t signature_size; /* size of signature */
-    uint8_t* signature; /* base-image signature and associated data (for SGX,
-                           the complete sigstruct of the base image) */
+    uint8_t signature[1808]; /* base-image signature and associated data (for
+                           SGX, the complete sigstruct of the base image) */
     oe_enclave_size_settings_t
         size_settings; /* heap, stack and thread configuration for this instance
                         */
@@ -57,7 +57,8 @@ struct _OE_SHA256;
 
 oe_result_t oe_replay_eeid_pages(
     const oe_eeid_t* eeid,
-    struct _OE_SHA256* cpt_mrenclave);
+    struct _OE_SHA256* cpt_mrenclave,
+    bool with_eeid_page);
 
 OE_EXTERNC_END
 

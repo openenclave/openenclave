@@ -136,28 +136,67 @@ extern bool oe_disable_debug_malloc_check;
 static oe_result_t _oe_check_eeid()
 {
     oe_result_t result = OE_OK;
+    const oe_eeid_t* eeid = (const oe_eeid_t*)__oe_get_eeid();
 
-    const oe_eeid_t* eeid = (const oe_eeid_t*)__oe_get_eeid_base();
-    const void* enclave_base = __oe_get_enclave_base();
-
-    if (eeid != enclave_base)
+    if (eeid)
     {
-        OE_SHA256 ext_mrenclave;
-        oe_replay_eeid_pages(eeid, &ext_mrenclave);
+        // Check that our eeid is unchanged and that our mrenclave
+        // matches the reported one. Not sure this is strictly necessary.
+        OE_SHA256 cpt_mrenclave;
+        oe_replay_eeid_pages(eeid, &cpt_mrenclave, true);
 
         sgx_report_t sgx_report;
         OE_CHECK(sgx_create_report(NULL, 0, NULL, 0, &sgx_report));
-
-        if (memcmp(
-                ext_mrenclave.buf, sgx_report.body.mrenclave, OE_SHA256_SIZE) !=
-            0)
-        {
+        uint8_t* rpt_mrenclave = sgx_report.body.mrenclave;
+        if (memcmp(cpt_mrenclave.buf, rpt_mrenclave, OE_SHA256_SIZE) != 0)
             OE_RAISE(OE_VERIFY_FAILED);
-        }
     }
 
 done:
     return result;
+}
+
+extern const volatile oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
+extern volatile oe_sgx_enclave_properties_t oe_enclave_properties_sgx_mutable;
+extern volatile int _have_eeid;
+
+static oe_result_t _eeid_expand()
+{
+    oe_result_t r = OE_OK;
+    uint64_t* heap_start = (uint64_t*)__oe_get_heap_base();
+
+    if (*heap_start == 0xEE1DEE1DEE1DEE1D)
+    {
+        oe_eeid_t* eeid = (oe_eeid_t*)(heap_start + 1);
+        oe_enclave_properties_sgx_mutable.header.size_settings =
+            eeid->size_settings;
+
+        // Recompute enclave size
+        size_t heap_size = (eeid->size_settings.num_heap_pages) * OE_PAGE_SIZE;
+        size_t stack_size =
+            (eeid->size_settings.num_stack_pages * OE_PAGE_SIZE) +
+            2 * OE_PAGE_SIZE;
+        size_t control_size = 6 * OE_PAGE_SIZE;
+        size_t enclave_end =
+            oe_enclave_properties_sgx_mutable.image_info.enclave_size +
+            heap_size +
+            (eeid->size_settings.num_tcs * (stack_size + control_size));
+
+        oe_enclave_properties_sgx_mutable.image_info.enclave_size =
+            oe_round_u64_to_pow2(enclave_end);
+
+        // Move EEID to just after the heap pages where it is safe for later use
+        _have_eeid = true;
+        size_t num_eeid_bytes = sizeof(oe_eeid_t) + eeid->data_size;
+        memmove((void*)__oe_get_eeid(), eeid, num_eeid_bytes);
+
+        // Wipe the corresponding heap pages
+        memset(heap_start, 0, sizeof(uint64_t) + num_eeid_bytes);
+    }
+    else
+        _have_eeid = false;
+
+    return r;
 }
 
 /*
@@ -187,6 +226,8 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         if (_once == false)
         {
             oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
+
+            OE_CHECK(_eeid_expand());
 
 #ifdef OE_USE_BUILTIN_EDL
             /* Install the common TEE ECALL function table. */

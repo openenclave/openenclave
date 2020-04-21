@@ -751,7 +751,7 @@ int oedump_eeid(const char* enclave)
 
     if (props.header.size_settings.num_heap_pages != 0 ||
         props.header.size_settings.num_stack_pages != 0 ||
-        props.header.size_settings.num_tcs != 0)
+        props.header.size_settings.num_tcs != 1)
     {
         printf("Memory settings are != 0; image is not suitable for EEID.\n");
         return 1;

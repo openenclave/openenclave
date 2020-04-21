@@ -49,8 +49,12 @@ static void _initialize_enclave_image()
 
 static oe_once_t _enclave_initialize_once;
 
+extern const volatile oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
+extern volatile oe_sgx_enclave_properties_t oe_enclave_properties_sgx_mutable;
+
 static void _initialize_enclave_imp(void)
 {
+    oe_enclave_properties_sgx_mutable = oe_enclave_properties_sgx;
     _initialize_enclave_image();
 }
 

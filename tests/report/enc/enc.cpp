@@ -144,7 +144,7 @@ OE_SET_ENCLAVE_SGX(
     true, /* AllowDebug */
     0,    /* HeapPageCount */
     0,    /* StackPageCount */
-    0);   /* TCSCount */
+    1);   /* TCSCount */
 #else
 OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
