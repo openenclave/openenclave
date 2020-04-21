@@ -1,12 +1,12 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(EDL_FILE "../fs.edl")
-
 if(UNIX)
     set(HOSTSRC "host_linux.c")
+    set(EDL_FILE "../linux/fs.edl")
 else()
     set(HOSTSRC "host_win32.c")
+    set(EDL_FILE "../windows/fs.edl")
 endif()
 
 add_custom_command(
@@ -26,9 +26,4 @@ else()
 endif()
 
 target_link_libraries(fs_host ${OESGXFSHOST} oehostapp)
-
-if(UNIX)
-    set_source_files_properties(${HOSTSRC}
-        PROPERTIES
-        COMPILE_FLAGS " -Wno-unused-parameter")
-endif()
+target_link_libraries(fs_host rmdir)
