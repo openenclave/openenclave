@@ -113,3 +113,4 @@ instead, it should be brought up with the Community Governance Committee.
 | Shruti Ratnam         | shruti25ratnam      | Attestation                    |
 | Cheng-mean Liu        | soccerGB            | Attestation, SGX               |
 | Bruce Campbell        | yakman2020          | Windows, SGX                   |
+| Yen Lee               | yentsanglee         | Attestation                    |
