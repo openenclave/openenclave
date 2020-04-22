@@ -1,0 +1,11 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+
+    trusted {
+        public void run_tests();
+    };
+
+    untrusted {};
+};

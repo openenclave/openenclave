@@ -44,6 +44,32 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
     if (!eeid || !report)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    result = verify_eeid_nr(
+        report->identity.unique_id,
+        report->identity.signer_id,
+        (uint16_t)((uint16_t)report->identity.product_id[1] << 8) |
+            ((uint16_t)report->identity.product_id[0]),
+        report->identity.security_version,
+        report->identity.attributes,
+        eeid);
+
+done:
+    return result;
+}
+
+oe_result_t verify_eeid_nr(
+    const uint8_t* r_mrenclave,
+    const uint8_t* r_mrsigner,
+    uint16_t r_product_id,
+    uint32_t r_security_version,
+    uint64_t r_attributes,
+    const oe_eeid_t* eeid)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!eeid)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     if (eeid->signature_size != 1808) // We only support SGX sigstructs for now.
         OE_RAISE(OE_VERIFY_FAILED);
 
@@ -62,8 +88,8 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
     OE_SHA256 reported_mrenclave;
     uint8_t reported_mrsigner[OE_SIGNER_ID_SIZE];
 
-    memcpy(reported_mrenclave.buf, report->identity.unique_id, OE_SHA256_SIZE);
-    memcpy(reported_mrsigner, report->identity.signer_id, OE_SIGNER_ID_SIZE);
+    memcpy(reported_mrenclave.buf, r_mrenclave, OE_SHA256_SIZE);
+    memcpy(reported_mrsigner, r_mrsigner, OE_SIGNER_ID_SIZE);
 
     // Check recomputed mrenclave against reported mrenclave
     if (memcmp(cpt_mrenclave.buf, reported_mrenclave.buf, OE_SHA256_SIZE) != 0)
@@ -80,6 +106,7 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
     const sgx_sigstruct_t* sigstruct = (const sgx_sigstruct_t*)&eeid->signature;
 
     // Compute and check base image hash
+    const uint8_t* base_mrenclave = sigstruct->enclavehash;
     OE_SHA256 cpt_base_mrenclave;
     oe_eeid_t tmp_eeid = *eeid;
     // If we saved non-zero heap/stack sizes for the base image, we could add
@@ -89,21 +116,16 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
     tmp_eeid.size_settings.num_tcs = 1;
     oe_replay_eeid_pages(&tmp_eeid, &cpt_base_mrenclave, false);
 
-    if (memcmp(
-            cpt_base_mrenclave.buf, sigstruct->enclavehash, OE_SHA256_SIZE) !=
-        0)
+    if (memcmp(cpt_base_mrenclave.buf, base_mrenclave, OE_SHA256_SIZE) != 0)
         OE_RAISE(OE_VERIFY_FAILED);
 
     // Check other image properties have not changed
-    uint16_t ppid = (uint16_t)(report->identity.product_id[1] << 8) +
-                    (uint16_t)report->identity.product_id[0];
-
     bool sigstruct_debug = sigstruct->attributes.flags & SGX_FLAGS_DEBUG;
-    bool reported_debug =
-        report->identity.attributes & OE_REPORT_ATTRIBUTES_DEBUG;
+    bool reported_debug = r_attributes & OE_REPORT_ATTRIBUTES_DEBUG;
 
-    if (sigstruct_debug != reported_debug || sigstruct->isvprodid != ppid ||
-        sigstruct->isvsvn != report->identity.security_version)
+    if (sigstruct_debug != reported_debug ||
+        sigstruct->isvprodid != r_product_id ||
+        sigstruct->isvsvn != r_security_version)
         OE_RAISE(OE_VERIFY_FAILED);
 
     // Check old signature (new signature has been checked above)
@@ -198,6 +220,8 @@ oe_result_t verify_eeid(oe_report_t* report, const oe_eeid_t* eeid)
         EVP_PKEY_free(ikey);
 #endif
     }
+
+    result = OE_OK;
 
 done:
 
