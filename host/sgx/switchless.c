@@ -70,6 +70,12 @@ static void* _switchless_ocall_worker(void* arg)
     return NULL;
 }
 
+void oe_sgx_sleep_switchless_worker_ocall(oe_enclave_worker_context_t* context)
+{
+    // Wait for messages.
+    oe_enclave_worker_wait(context);
+}
+
 /*
 ** The thread function that handles switchless ecalls
 **
@@ -78,20 +84,13 @@ static void* _switchless_ecall_worker(void* arg)
 {
     oe_enclave_worker_context_t* context = (oe_enclave_worker_context_t*)arg;
 
-    // Loop until stop has been requested.
-    while (!context->is_stopping)
+    // Enter enclave to process ecall messages.
+    if (oe_sgx_switchless_enclave_worker_thread_ecall(
+            context->enclave, context) != OE_OK)
     {
-        // Wait for event to start executing.
-        oe_enclave_worker_wait(context);
-
-        // Enter enclave to process ecall messages.
-        if (oe_sgx_switchless_enclave_worker_thread_ecall(
-                context->enclave, context) != OE_OK)
-        {
-            OE_TRACE_ERROR("Switchless enclave worker thread failed\n");
-            break;
-        }
+        OE_TRACE_ERROR("Switchless enclave worker thread failed\n");
     }
+
     return NULL;
 }
 
