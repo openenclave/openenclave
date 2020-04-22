@@ -32,6 +32,7 @@ if (OE_SGX)
     add_subdirectory(switchless)
     add_subdirectory(switchless_threads)
     add_subdirectory(switchless_one_tcs)
+    add_subdirectory(switchless_nestedcalls)
 endif()
 
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
