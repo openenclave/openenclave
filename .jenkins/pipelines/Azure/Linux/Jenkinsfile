@@ -5,7 +5,7 @@ OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
 oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
 GLOBAL_TIMEOUT_MINUTES = 240
-CTEST_TIMEOUT_SECONDS = 480
+CTEST_TIMEOUT_SECONDS = 4800
 GLOBAL_ERROR = null
 
 DOCKER_TAG = env.DOCKER_TAG ?: "latest"
