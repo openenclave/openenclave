@@ -1,17 +1,43 @@
 # SGX1 Prerequisites on Windows
 
-## Intel SGX Platform Software for Windows (PSW) v2.4 or above
+## [Intel Platform Software for Windows (PSW) v2.7](http://registrationcenter-download.intel.com/akdlm/irc_nas/16607/Intel%20SGX%20PSW%20for%20Windows%20v2.7.101.2.exe)
 
 The PSW only needs to be manually installed if you are running on Windows Server
-2016 or a version of Windows client lower than 1709. It should be installed automatically 
-with Windows Update on newer versions of Windows client and Windows Server 2019. 
+2016 or a version of Windows client lower than 1709. It should be installed automatically
+with Windows Update on newer versions of Windows client and Windows Server 2019.
 You can check your version of Windows by running `winver` on the command line.
 
-Ensure that you have the latest drivers on Windows 10 and Windows Server 2019 by checking for updates and installing all updates.
+To install the PSW on Windows Server 2016 and Windows client < 1709, unpack the self-extracting
+ZIP executable, and run the installer under `PSW_EXE_RS2_and_before`:
 
-You can download [PSW v2.7](http://registrationcenter-download.intel.com/akdlm/irc_nas/16607/Intel%20SGX%20PSW%20for%20Windows%20v2.7.101.2.exe),
-extract the zipped files, and run the executable under folder **PSW_EXE_RS2_and_before**
-to install PSW 2.7.
+```cmd
+"C:\Intel SGX PSW for Windows v2.7.101.2\PSW_EXE_RS2_and_before\Intel(R)_SGX_Windows_x64_PSW_2.7.101.2.exe"
+```
+
+On Windows 10 and Windows Server 2019, you should ensure that you have the latest drivers
+by checking for updates and installing all necessary updates.
+
+If you would like to manually update the PSW on Windows Server 2019 or Windows
+clients > 1709 without relying on Windows Update, you can do
+so as follows:
+
+1. From the extracted PSW package, unzip the `PSW_INF_RS3_and_above\component\Signed_*.zip` file.
+
+   The following instructions will assume that it was unzipped to the `PSW_INF` folder.
+
+2. Install the PSW components:
+    - `devcon.exe` from the [Windows Driver Kit for Windows 10](
+       https://go.microsoft.com/fwlink/?linkid=2026156) can be used to update
+       the drivers from an elevated command prompt:
+
+    - Note that `devcon.exe` is usually installed to `C:\Program Files (x86)\Windows Kits\10\tools\x64`
+      which is not in the PATH environment variable by default.
+
+    - The hash values in the path may be different from the example command, please update as needed.
+
+    ```cmd
+    devcon.exe update PSW_INF\drivers\48e7c1e9-6de8-46ee-8ff9-46aa7b7ee5b9\sgx_psw.inf "SWC\VEN_INT&DEV_0E0C"
+    ```
 
 You can verify that the correct version of Intel SGX PSW is installed by using
 Windows Explorer to open `C:\Windows\System32`. You should be able to find
@@ -33,19 +59,19 @@ using the following command from Powershell.
 Start-Service "AESMService"
 ```
 
-## Intel Enclave Common API library
+## [Intel Data Center Attestation Primitives (DCAP) Libraries v1.6](http://registrationcenter-download.intel.com/akdlm/irc_nas/16620/Intel%20SGX%20DCAP%20for%20Windows%20v1.6.100.2.exe)
 
-The Intel Enclave Common API library is necessary for creating, initializing, and deleting enclaves.
-It does not supporting quoting, and consequentially, attestation which is based on quoting. The lack
-of quoting capability is a limitation of SGX1 machines which don't have FLC support.
+While SGX1 machines without FLC support do not support DCAP quoting and attestation, the DCAP libraries package
+contains the **Intel Enclave Common API library** as well. This library is necessary for creating, initializing, and deleting enclaves.
 
-Firstly we download the Intel SGX DCAP self-extracting executable from [here](http://registrationcenter-download.intel.com/akdlm/irc_nas/16620/Intel%20SGX%20DCAP%20for%20Windows%20v1.6.100.2.exe). Run the executable to unzip files to a specified location.
-The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.6.100.2`:
+After unpacking the self-extracting ZIP executable, you will need to install the nuget package for the Enclave
+Common API library if you want to build OE SDK on the target device. To do so, make sure you have the [nuget CLI tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) installed and its location in your `PATH`.
 
-Make sure you have [nuget cli tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) installed and in your path,
-run the following command from a command prompt (assuming you would like the package to be installed to `C:\oe_prereqs`):
+The following example will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.6.100.2`
+and that `C:\oe_prereqs` is where you would like the prerequisites to be installed:
+
 ```cmd
-nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.6.100.2\nuget" -OutputDirectory C:\oe_prereqs
+nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.6.100.2\nuget" -OutputDirectory c:\oe_prereqs
 ```
 
 You can verify that the library is installed properly by checking whether `sgx_enclave_common.lib` exists in the folder `C:\oe_prereqs`.
