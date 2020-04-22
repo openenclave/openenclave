@@ -2,8 +2,8 @@
 # Licensed under the MIT License.
 
 $usage=$false;
-$verbose=$true; #$false
 $quiet=$false;
+$verbose=$false;
 $whatif=$false;
 [System.Collections.ArrayList]$userExcludeDirs=@();
 [System.Collections.ArrayList]$userIncludeExts=@();
@@ -39,7 +39,11 @@ function log_whatif()
 
 ##==============================================================================
 ##
-## Process command-line options:
+## Process command-line options
+##
+## Note that in Powershell syntax, fallthrough does not work as such,
+## instead one must compare against multiple values.  For a discussion, see
+## https://stackoverflow.com/questions/3493731/whats-the-powershell-syntax-for-multiple-values-in-a-switch-statement
 ##
 ##==============================================================================
 
@@ -47,30 +51,34 @@ foreach ($opt in $args)
 {
   switch -regex ($opt) {
 
-    "-h" {}
-    "--help" {
-            $usage=$true; break;
+    { @("-h", "--help") -contains $_ }
+        {
+            $usage=$true;
+            break;
         }
 
-    "-v" {
-             # FALLTHROUGH
-         }
-   "--verbose" {
-           $verbose=$true; break;
+    { @("-q", "--quiet") -contains $_ }
+        {
+            $quiet=$true;
+            break;
         }
 
-    "-q" {
-             # FALLTHROUGH
-        }
-    "--quiet" {
-            $quiet=$true; break;
+    { @("-s", "--staged") -contains $_ }
+        {
+            $userFiles=(git diff --cached --name-only --diff-filter=ACMR);
+            break;
         }
 
-    "-w" {
-            #FALLTHROUGH
-         }
-    "--whatif" {
-            $whatif=$true; break;
+    { @("-v", "--verbose") -contains $_ }
+        {
+            $verbose=$true;
+            break;
+        }
+
+    { @("-w", "--whatif") -contains $_ }
+        {
+            $whatif=$true;
+            break;
         }
 
     "--exclude-dirs=*" {
@@ -79,18 +87,18 @@ foreach ($opt in $args)
         }
 
     "--include-exts=*" {
-           $userIncludeExts=($opt -split "=")[1];
-           break;
+            $userIncludeExts=($opt -split "=")[1];
+            break;
         }
 
     "--files=*" {
-            $userFiless=($opt -split "=")[1];
-           break;
+            $userFiles=($opt -split "=")[1];
+            break;
         }
     default {
-           Write-Error "$PSCommandPath unknown option:  $opt"
-           exit 1
-           break;
+            Write-Error "$PSCommandPath unknown option:  $opt"
+            exit 1
+            break;
         }
     }
 }
@@ -108,12 +116,13 @@ OVERVIEW:
 
 Formats all C/C++ source files based on the .clang-format rules
 
-    $ format-code [-h] [-v] [-w] [--exclude-dirs="..."] [--include-exts="..."] [--files="..."]
+    $ format-code [-h] [-q] [-s] [-v] [-w] [--exclude-dirs="..."] [--include-exts="..."] [--files="..."]
 
 OPTIONS:
     -h, --help              Print this help message.
+    -q, --quiet             Display only clang-format output and errors.
+    -s, --staged            Only format files which are staged to be committed.
     -v, --verbose           Display verbose output.
-    -v, --quiet             Display only clang-format output and errors.
     -w, --whatif            Run the script without actually modifying the files
                             and display the diff of expected changes, if any.
     --exclude-dirs          Subdirectories to exclude. If unspecified, then
@@ -204,7 +213,6 @@ function get_find_args()
 function get_file_list()
 {
     if ( !($userFiles) ) {
-        $findargs = get_find_args;
         $file_list = Invoke-Expression($findargs)
         if ( $file_list.count -eq 0 ) {
            Write-Host "No files were found to format!"
@@ -212,19 +220,15 @@ function get_file_list()
         }
     }
     else {
-       log_verbose "Using user files: $userfiles"
-       $user_file_list = @()
-       foreach ( $uf in $userfiles )
-       {
-           $user_file_list+= get-ChildItem -Path '.' -Name $uf
-       }
-       $file_list=@()
-       foreach ( $file in $user_file_list ) {
-
+        log_verbose "Using user files: $userfiles"
+        $file_list=@()
+        foreach ( $file_name in $userfiles ) {
+            $user_file_name = get-ChildItem -Path '.' -Name $file_name
+            $file = New-Object System.IO.FileInfo($user_file_name)
             foreach ( $ext in $includeExts ) {
                 if ( $file.Extension -match "$ext" ) {
-                    file_list+=$file
-                    log_verbose "Checking user file: $file"
+                    $file_list += $file_name
+                    log_verbose "Checking user file: $file_name"
                     break;
                 }
             }
@@ -267,7 +271,7 @@ function check_clang-format()
 
         if ( $cf_ver[$i] -lt $req_ver[$i])
         {
-            Write_host "Required version of clang format is $reqired_cfver. Current version is $cfver"
+            Write-Host "Required version of clang-format is $required_cfver. Current version is $cfver"
             return $false
         }
         # Equal just keeps going
@@ -288,6 +292,7 @@ if (!(check_clang-format)) # getting the filelist takes a few seconds. If we can
     exit -1
 }
 
+$findargs = get_find_args;
 $filelist = get_file_list;
 $filecount=0
 $changecount=0
