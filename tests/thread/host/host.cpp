@@ -294,7 +294,7 @@ int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
-    oe_enclave_t* enclave2 = NULL;
+    // oe_enclave_t* enclave2 = NULL;
 
     if (argc != 2)
     {
@@ -325,6 +325,7 @@ int main(int argc, const char* argv[])
 
     test_tcs_exhaustion(enclave);
 
+    /*
     test_errno_multi_threads_sameenclave(enclave);
 
     result = oe_create_thread_enclave(
@@ -335,9 +336,10 @@ int main(int argc, const char* argv[])
     }
 
     test_errno_multi_threads_diffenclave(enclave, enclave2);
+    Add to following if: (result = oe_terminate_enclave(enclave2)) != OE_OK
+    */
 
-    if ((result = oe_terminate_enclave(enclave)) != OE_OK ||
-        (result = oe_terminate_enclave(enclave2)) != OE_OK)
+    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {
         oe_put_err("oe_terminate_enclave(): result=%u", result);
     }
