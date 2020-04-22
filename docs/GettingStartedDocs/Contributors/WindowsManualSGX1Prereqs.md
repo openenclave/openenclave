@@ -7,6 +7,8 @@ The PSW only needs to be manually installed if you are running on Windows Server
 with Windows Update on newer versions of Windows client and Windows Server 2019. 
 You can check your version of Windows by running `winver` on the command line.
 
+Ensure that you have the latest drivers on Windows 10 and Windows Server 2019 by checking for updates and installing all updates.
+
 You can download [PSW v2.7](http://registrationcenter-download.intel.com/akdlm/irc_nas/16607/Intel%20SGX%20PSW%20for%20Windows%20v2.7.101.2.exe),
 extract the zipped files, and run the executable under folder **PSW_EXE_RS2_and_before**
 to install PSW 2.7.

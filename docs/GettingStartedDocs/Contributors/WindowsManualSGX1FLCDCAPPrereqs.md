@@ -4,8 +4,9 @@
 
 The PSW only needs to be manually installed if you are running on Windows Server
 2016 or a version of Windows client lower than 1709. It should be installed automatically 
-with Windows Update on newer versions of Windows client and Windows Server 2019. 
+with Windows Update on newer versions of Windows client and Windows Server 2019.
 You can check your version of Windows by running `winver` on the command line.
+Ensure that you have the latest drivers on Windows 10 and Windows Server 2019 by checking for updates and installing all updates.
 
 After unpacking the self-extracting ZIP executable, install the *PSW_EXE_RS2_and_before* version:
 ```cmd
