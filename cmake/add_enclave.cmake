@@ -9,7 +9,7 @@
 #  add_enclave(<TARGET target>
 #              [<UUID uuid>]
 #              [CXX]
-#              [ADD_LVI_MITIGATION ON/OFF]
+#              [ADD_LVI_MITIGATION]
 #              <SOURCES sources>
 #              [<CONFIG config>]
 #              [<KEY key>])
@@ -46,8 +46,8 @@
 # default custom target.
 # TODO: (3) Validate arguments into this function
 macro(add_enclave)
-  set(options CXX)
-  set(oneValueArgs TARGET UUID CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID ADD_LVI_MITIGATION)
+  set(options CXX ADD_LVI_MITIGATION)
+  set(oneValueArgs TARGET UUID CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH ENGINE_KEY_ID)
   set(multiValueArgs SOURCES)
   cmake_parse_arguments(ENCLAVE
     "${options}"
