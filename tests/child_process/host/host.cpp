@@ -15,6 +15,7 @@
 
 #define ECALL_IN_CHILD_PROCESS 0
 #define DESTROY_IN_CHILD_PROCESS 1
+#define CREATE_IN_CHILD_PROCESS 2
 
 bool multi_process_flag = true;
 
@@ -92,6 +93,34 @@ int main(int argc, const char* argv[])
                 result = get_magic_ecall(enclave, &magic);
                 OE_TEST(result == OE_OK);
                 OE_TEST(magic == 0x1234);
+                oe_terminate_enclave(enclave);
+                wait(NULL);
+            }
+            else
+            {
+                fprintf(stderr, "failed to create child process.\n");
+                exit(1);
+            }
+            break;
+        case CREATE_IN_CHILD_PROCESS:
+            if (pid == 0) // child process
+            {
+                fprintf(stdout, "child pid = %d\n", getpid());
+                oe_enclave_t* enclave_in_child_process = NULL;
+                result = oe_create_child_process_enclave(
+                    argv[1],
+                    OE_ENCLAVE_TYPE_SGX,
+                    flags,
+                    NULL,
+                    0,
+                    &enclave_in_child_process);
+                OE_TEST(result == OE_OK);
+                oe_terminate_enclave(enclave_in_child_process);
+                _exit(EXIT_SUCCESS);
+            }
+            else if (pid > 0) // parent process
+            {
+                fprintf(stdout, "parent pid = %d\n", getpid());
                 oe_terminate_enclave(enclave);
                 wait(NULL);
             }
