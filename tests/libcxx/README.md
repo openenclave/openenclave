@@ -13,6 +13,18 @@ The unit tests are partitioned into three files:
 * tests.broken -- unit tests that are broken
 * tests.unsupported -- unit tests that are not supported
 
+The tests are currently ran with the following configurations.
+
+| Compiler    | Environment          | Test set |
+|-------------|----------------------|----------|
+| gcc 5.4.0   | Ubuntu 16.04         | Full     |
+| gcc 7.5.0   | Ubuntu 18.04         | Full     |
+| gcc 8.3.1   | Red Hat 8            | Default  |
+| clang 7.1.0 | Ubuntu 16.04 & 18.04 | Full     |
+| clang 8.0.1 | Red Hat 8            | Default  |
+
+*Note*: For compatibility, some test cases are disabled on certain versions of compilers via [CMakeLists.txt](CMakeLists.txt).
+
 To run all the tests, type the following command:
 
 ```
