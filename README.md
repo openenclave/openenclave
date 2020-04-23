@@ -19,6 +19,7 @@ Azure
 [![Nightly Libcxx Testing Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/buildStatus/icon?job=OpenEnclave-libcxx-tests&subject=Azure%20libcxx%20testing)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave-libcxx-tests/)
 [![Build Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Azure-Linux-Badge/badge/icon?subject=Azure-Linux)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Azure-Linux-Badge/)
 [![Packages Build Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/buildStatus/icon?job=OpenEnclave-nightly-packages&subject=Azure%20Package%20build)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave-nightly-packages/)
+[![Build Status](https://oe-jenkins-tf.westeurope.cloudapp.azure.com/job/CI-CD_Infrastructure/job/OpenEnclave-Rebuild-Infrastructure/badge/icon?subject=ContinuousIntegration%20build)](https://oe-jenkins-tf.westeurope.cloudapp.azure.com/job/CI-CD_Infrastructure/job/OpenEnclave-Rebuild-Infrastructure/)
 [![Packages Testing Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/buildStatus/icon?job=OpenEnclave-nightly-packages-testing&subject=Azure%20Package%20Testing)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/OpenEnclave-nightly-packages-testing/)
 
 
