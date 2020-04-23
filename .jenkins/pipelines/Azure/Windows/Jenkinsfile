@@ -17,19 +17,20 @@ AGENTS_LABELS = [
     "acc-win2019-dcap": env.WINDOWS_2019_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2019-DCAP"
 ]
 
-def windowsLinuxElfBuild(String label, String version, String compiler, String build_type, String lvi_mitigation = 'None') {
+def windowsLinuxElfBuild(String label, String version, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF') {
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node(AGENTS_LABELS["ubuntu-nonsgx"]) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
                 def task = """
-                           cmake ${WORKSPACE}                                         \
-                               -G Ninja                                               \
-                               -DCMAKE_BUILD_TYPE=${build_type}                       \
-                               -DHAS_QUOTE_PROVIDER=ON                                \
-                               -DLVI_MITIGATION=${lvi_mitigation}                     \
-                               -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin  \
+                           cmake ${WORKSPACE}                                           \
+                               -G Ninja                                                 \
+                               -DCMAKE_BUILD_TYPE=${build_type}                         \
+                               -DHAS_QUOTE_PROVIDER=ON                                  \
+                               -DLVI_MITIGATION=${lvi_mitigation}                       \
+                               -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
+                               -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} \
                                -Wdev
                            ninja -v
                            """
@@ -48,7 +49,7 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
                 dir('build') {
                   bat """
                       vcvars64.bat x64 && \
-                      cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=ON -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DLVI_MITIGATION=${lvi_mitigation} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev && \
+                      cmake.exe ${WORKSPACE} -G Ninja -DADD_WINDOWS_ENCLAVE_TESTS=ON -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=ON -DCMAKE_BUILD_TYPE=${build_type} -DLINUX_BIN_DIR=${WORKSPACE}\\linuxbin\\tests -DLVI_MITIGATION=${lvi_mitigation} -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev && \
                       ninja -v && \
                       ctest.exe -V -C ${build_type} --timeout ${CTEST_TIMEOUT_SECONDS}
                       """
@@ -123,11 +124,11 @@ try{
       }
     } else {
       stage("PR Testing") {
-        parallel "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild('acc-win2016-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow') },
+        parallel "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild('acc-win2016-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
                  "Win2016 Sim Release Cross Compile LVI " :                 { windowsCrossCompile('acc-win2016', 'Release', 'OFF', 'ControlFlow', '1', 'ON') },
                  "Win2016 Debug Cross Compile DCAP LVI" :                   { windowsCrossCompile('acc-win2016', 'Debug', 'ON', 'ControlFlow', '0', 'ON') },
                  "Win2016 Release Cross Compile DCAP LVI" :                 { windowsCrossCompile('acc-win2016', 'Release', 'ON', 'ControlFlow', '0', 'ON') },
-                 "Win2019 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow') },
+                 "Win2019 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
                  "Win2019 Sim Release Cross Compile LVI " :                 { windowsCrossCompile('acc-win2019', 'Release', 'OFF', 'ControlFlow', '1', 'ON') },
                  "Win2019 Debug Cross Compile DCAP LVI" :                   { windowsCrossCompile('acc-win2019', 'Debug', 'ON', 'ControlFlow', '0', 'ON') },
                  "Win2019 Release Cross Compile DCAP LVI" :                 { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow', '0', 'ON') }
