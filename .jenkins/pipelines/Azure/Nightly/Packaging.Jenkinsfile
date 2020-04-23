@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+BRANCH_NAME = env.BRANCH_NAME ?: "master"
 OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
 oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
@@ -27,20 +28,20 @@ def LinuxPackaging(String version, String build_type, String lvi_mitigation = 'N
                            cpack
                            """
                 oe.Run("clang-7", task)
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "master/latest/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
             }
         }
     }
 }
 
-def WindowsPackaging(String build_type, String lvi_mitigation = 'None') {
+def WindowsPackaging(String version, String build_type, String lvi_mitigation = 'None') {
     stage("Windows SGX1FLC ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
-        node('SGXFLC-Windows-DCAP') {
+        node("SGXFLC-Windows-${version}-DCAP") {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 oe.WinCompilePackageTest("build", build_type, "ON", CTEST_TIMEOUT_SECONDS, lvi_mitigation)
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "master/${BUILD_NUMBER}/windows/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
-                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "master/latest/windows/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/windows/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
+                azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.nupkg', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/latest/windows/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
             }
         }
     }
@@ -60,10 +61,14 @@ try{
          "1804 SGX1FLC Package Release LVI" :        { LinuxPackaging('1804', 'Release', 'ControlFlow') },
          "1804 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('1804', 'RelWithDebInfo') },
          "1804 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('1804', 'RelWithDebInfo', 'ControlFlow') },
-         "Windows Debug" :                           { WindowsPackaging('DEBUG') },
-         "Windows Debug LVI" :                       { WindowsPackaging('DEBUG', 'ControlFlow') },
-         "Windows Release" :                         { WindowsPackaging('RELEASE') },
-         "Windows Release LVI" :                     { WindowsPackaging('RELEASE', 'ControlFlow') }
+         "Windows 2016 Debug" :                      { WindowsPackaging('2016','Debug') },
+         "Windows 2016 Debug LVI" :                  { WindowsPackaging('2016','Debug', 'ControlFlow') },
+         "Windows 2016 Release" :                    { WindowsPackaging('2016','Release') },
+         "Windows 2016 Release LVI" :                { WindowsPackaging('2016','Release', 'ControlFlow') },
+         "Windows 2019 Debug" :                      { WindowsPackaging('2019','Debug') },
+         "Windows 2019 Debug LVI" :                  { WindowsPackaging('2019','Debug', 'ControlFlow') },
+         "Windows 2019 Release" :                    { WindowsPackaging('2019','Release') },
+         "Windows 2019 Release LVI" :                { WindowsPackaging('2019','Release', 'ControlFlow') }
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
