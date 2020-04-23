@@ -122,14 +122,24 @@ void enclave_test_parse_report_negative()
     test_parse_report_negative();
 }
 
-void enclave_test_local_verify_report(oe_eeid_t* eeid)
+void enclave_test_local_verify_report(void* eeid)
 {
-    test_local_verify_report(eeid);
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    test_local_verify_report((oe_eeid_t*)eeid);
+#else
+    (void)(eeid);
+    test_local_verify_report();
+#endif
 }
 
-void enclave_test_remote_verify_report(oe_eeid_t* eeid)
+void enclave_test_remote_verify_report(void* eeid)
 {
-    test_remote_verify_report(eeid);
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    test_remote_verify_report((oe_eeid_t*)eeid);
+#else
+    (void)(eeid);
+    test_remote_verify_report();
+#endif
 }
 
 void enclave_test_verify_report_with_collaterals()

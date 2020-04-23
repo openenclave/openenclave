@@ -15,6 +15,7 @@
 
 OE_EXTERNC_BEGIN
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 /*
 **==============================================================================
 **
@@ -59,6 +60,8 @@ oe_result_t oe_replay_eeid_pages(
     const oe_eeid_t* eeid,
     struct _OE_SHA256* cpt_mrenclave,
     bool with_eeid_page);
+
+#endif /* OE_WITH_EXPERIMENTAL_EEID */
 
 OE_EXTERNC_END
 

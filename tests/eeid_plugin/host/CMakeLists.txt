@@ -15,5 +15,6 @@ add_executable(eeid_plugin_host host.c
     ../plugin/test_helpers.c
     eeid_plugin_u.c)
 
+target_compile_definitions(eeid_plugin_host PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 target_include_directories(eeid_plugin_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(eeid_plugin_host oehostapp)

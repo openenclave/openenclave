@@ -16,6 +16,10 @@ if(HAS_QUOTE_PROVIDER)
     target_compile_definitions(report_host PRIVATE OE_LINK_SGX_DCAP_QL)
 endif()
 
+if (WITH_EEID)
+    target_compile_definitions(report_host PUBLIC EEID_ENABLED OE_WITH_EXPERIMENTAL_EEID)
+endif()
+
 add_custom_command(TARGET report_host
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data ${CMAKE_CURRENT_BINARY_DIR}/../data
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data_v2 ${CMAKE_CURRENT_BINARY_DIR}/../data_v2

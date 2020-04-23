@@ -6,7 +6,6 @@ add_subdirectory(crypto)
 
 if (OE_SGX)
     set(PLATFORM_SRC
-        ../common/sgx/eeid.c
         ../common/sgx/endorsements.c
         ../common/sgx/qeidentity.c
         ../common/sgx/quote.c
@@ -16,11 +15,15 @@ if (OE_SGX)
         ../common/sgx/tcbinfo.c
         ../common/sgx/tlsverifier.c
         ../common/sgx/verifier.c
-        ../common/sgx/verify_eeid.c
         sgx/attester.c
         sgx/report.c
         sgx/collateralinfo.c
         sgx/start.S)
+    if (WITH_EEID)
+      list(APPEND PLATFORM_SRC
+        ../common/sgx/eeid.c
+        ../common/sgx/verify_eeid.c)
+    endif()
 elseif(OE_TRUSTZONE)
     set(PLATFORM_SRC
         optee/report.c
@@ -58,3 +61,7 @@ endif()
 set_enclave_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install_enclaves(TARGETS oeenclave EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+if (WITH_EEID)
+  target_compile_definitions(oeenclave PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif()

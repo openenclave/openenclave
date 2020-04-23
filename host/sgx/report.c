@@ -15,7 +15,9 @@
 #include "platform_u.h"
 #include "quote.h"
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 #include "../common/sgx/verify_eeid.h"
+#endif
 
 #include "sgxquoteprovider.h"
 
@@ -274,17 +276,6 @@ oe_result_t oe_verify_report(
     size_t report_size,
     oe_report_t* parsed_report)
 {
-    return oe_verify_report_eeid(
-        enclave, report, report_size, parsed_report, NULL);
-}
-
-oe_result_t oe_verify_report_eeid(
-    oe_enclave_t* enclave,
-    const uint8_t* report,
-    size_t report_size,
-    oe_report_t* parsed_report,
-    oe_eeid_t* eeid)
-{
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
     oe_report_header_t* header = (oe_report_header_t*)report;
@@ -329,19 +320,35 @@ oe_result_t oe_verify_report_eeid(
     if (parsed_report != NULL)
         OE_CHECK(oe_parse_report(report, report_size, parsed_report));
 
-    if (eeid)
-    {
-        if (!parsed_report)
-        {
-            oe_report_t treport;
-            OE_CHECK(oe_parse_report(report, report_size, &treport));
-            verify_eeid(&treport, eeid);
-        }
-        else
-            verify_eeid(parsed_report, eeid);
-    }
-
     result = OE_OK;
 done:
     return result;
 }
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+oe_result_t oe_verify_report_eeid(
+    oe_enclave_t* enclave,
+    const uint8_t* report,
+    size_t report_size,
+    oe_report_t* parsed_report,
+    oe_eeid_t* eeid)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    OE_CHECK(oe_verify_report(enclave, report, report_size, parsed_report));
+
+    if (!parsed_report)
+    {
+        oe_report_t treport;
+        OE_CHECK(oe_parse_report(report, report_size, &treport));
+        OE_CHECK(verify_eeid(&treport, eeid));
+    }
+    else
+        OE_CHECK(verify_eeid(parsed_report, eeid));
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif

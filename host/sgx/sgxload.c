@@ -134,8 +134,12 @@ static sgx_secs_t* _new_secs(
         return NULL;
 
     memset(secs, 0, sizeof(sgx_secs_t));
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     secs->size = 68719476736; /* Max acceptable */
     (void)(size);
+#else
+    secs->size = size;
+#endif
     secs->base = base;
 
     secs->flags = SGX_FLAGS_MODE64BIT;

@@ -83,7 +83,9 @@ int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     oe_eeid_t* eeid = NULL;
+#endif
 
     sgx_target_info_t target_info = {{0}};
 
@@ -139,6 +141,7 @@ int main(int argc, const char* argv[])
     {
         return load_and_verify_report();
     }
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     else if (argc == 3 && strcmp(argv[2], "--eeid") == 0)
     {
         const size_t data_sz = 512;
@@ -151,6 +154,7 @@ int main(int argc, const char* argv[])
         for (size_t i = 0; i < eeid->data_size; i++)
             eeid->data[i] = (uint8_t)i;
     }
+#endif
 
     /* Check arguments */
     if (argc != 2 && argc != 3)
@@ -159,6 +163,7 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Create the enclave */
     if (eeid)
     {
@@ -171,6 +176,7 @@ int main(int argc, const char* argv[])
             oe_put_err("oe_create_tests_enclave_eeid(): result=%u", result);
     }
     else
+#else
     {
         if ((result = oe_create_tests_enclave(
                  argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
@@ -179,11 +185,11 @@ int main(int argc, const char* argv[])
             oe_put_err("oe_create_tests_enclave(): result=%u", result);
         }
     }
-
-    /*
-     * Host API tests.
-     */
-    g_enclave = enclave;
+#endif
+        /*
+         * Host API tests.
+         */
+        g_enclave = enclave;
 
 #ifdef OE_LINK_SGX_DCAP_QL
 
@@ -198,9 +204,14 @@ int main(int argc, const char* argv[])
     test_local_report(&target_info);
     test_remote_report();
     test_parse_report_negative();
-    test_local_verify_report(eeid);
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    test_local_verify_report(eeid);
     test_remote_verify_report(eeid);
+#else
+    test_local_verify_report();
+    test_remote_verify_report();
+#endif
 
     test_verify_report_with_collaterals();
 
@@ -215,9 +226,13 @@ int main(int argc, const char* argv[])
 
     OE_TEST(enclave_test_parse_report_negative(enclave) == OE_OK);
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_TEST(enclave_test_local_verify_report(enclave, eeid) == OE_OK);
-
     OE_TEST(enclave_test_remote_verify_report(enclave, eeid) == OE_OK);
+#else
+    OE_TEST(enclave_test_local_verify_report(enclave, NULL) == OE_OK);
+    OE_TEST(enclave_test_remote_verify_report(enclave, NULL) == OE_OK);
+#endif
 
     OE_TEST(enclave_test_verify_report_with_collaterals(enclave) == OE_OK);
 

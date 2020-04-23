@@ -387,12 +387,18 @@ oe_result_t oe_verify_report(
     size_t report_size,
     oe_report_t* parsed_report);
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+/**
+ * Verify the integrity of the report and its signature with EEID.
+ * See **oe_verify_report**.
+ */
 struct oe_eeid_t_;
 oe_result_t oe_verify_report_eeid(
     const uint8_t* report,
     size_t report_size,
     oe_report_t* parsed_report,
     struct oe_eeid_t_* eeid);
+#endif
 
 #if (OE_API_VERSION < 2)
 #error "Only OE_API_VERSION of 2 is supported"

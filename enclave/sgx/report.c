@@ -14,7 +14,9 @@
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
 #include "../common/sgx/quote.h"
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 #include "../common/sgx/verify_eeid.h"
+#endif
 #include "platform_t.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
@@ -50,15 +52,6 @@ oe_result_t oe_verify_report(
     const uint8_t* report,
     size_t report_size,
     oe_report_t* parsed_report)
-{
-    return oe_verify_report_eeid(report, report_size, parsed_report, NULL);
-}
-
-oe_result_t oe_verify_report_eeid(
-    const uint8_t* report,
-    size_t report_size,
-    oe_report_t* parsed_report,
-    oe_eeid_t* eeid)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
@@ -108,9 +101,6 @@ oe_result_t oe_verify_report_eeid(
     if (parsed_report != NULL)
         *parsed_report = oe_report;
 
-    if (eeid)
-        verify_eeid(&oe_report, eeid);
-
     result = OE_OK;
 
 done:
@@ -119,6 +109,30 @@ done:
 
     return result;
 }
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+oe_result_t oe_verify_report_eeid(
+    const uint8_t* report,
+    size_t report_size,
+    oe_report_t* parsed_report,
+    oe_eeid_t* eeid)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_report_t preport;
+
+    OE_CHECK(oe_verify_report(report, report_size, &preport));
+
+    if (eeid)
+        OE_CHECK(verify_eeid(&preport, eeid));
+
+    if (parsed_report)
+        *parsed_report = preport;
+
+    result = OE_OK;
+done:
+    return result;
+}
+#endif
 
 oe_result_t oe_verify_report_ecall(const void* report, size_t report_size)
 {

@@ -463,11 +463,13 @@ static oe_result_t _configure_enclave(
                     enclave, max_host_workers, max_enclave_workers));
                 break;
             }
+#ifdef OE_WITH_EXPERIMENTAL_EEID
             case OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA:
             {
                 // Nothing
                 break;
             }
+#endif
             default:
                 OE_RAISE(OE_INVALID_PARAMETER);
         }
@@ -570,6 +572,7 @@ done:
     return result;
 }
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 static oe_result_t _eeid_resign(
     oe_sgx_load_context_t* context,
     oe_sgx_enclave_properties_t* properties,
@@ -666,13 +669,22 @@ static oe_result_t _add_eeid_pages(
 done:
     return result;
 }
+#endif
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 oe_result_t oe_sgx_build_enclave(
     oe_sgx_load_context_t* context,
     const char* path,
     const oe_sgx_enclave_properties_t* properties,
     oe_eeid_t* eeid,
     oe_enclave_t* enclave)
+#else
+oe_result_t oe_sgx_build_enclave(
+    oe_sgx_load_context_t* context,
+    const char* path,
+    const oe_sgx_enclave_properties_t* properties,
+    oe_enclave_t* enclave)
+#endif
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t enclave_end = 0;
@@ -774,16 +786,20 @@ oe_result_t oe_sgx_build_enclave(
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Add optional EEID pages */
     OE_CHECK(_add_eeid_pages(
         context, &props, eeid, enclave_addr, &vaddr, oeimage.entry_rva));
+#endif
 
     /* Add data pages */
     OE_CHECK(
         _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Resign */
     OE_CHECK(_eeid_resign(context, &props, eeid));
+#endif
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(oe_sgx_initialize_enclave(
@@ -893,6 +909,7 @@ oe_result_t oe_create_enclave(
     OE_CHECK(oe_sgx_initialize_load_context(
         &context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Build the enclave */
     oe_eeid_t* eeid = NULL;
     for (size_t i = 0; i < setting_count; i++)
@@ -903,6 +920,9 @@ oe_result_t oe_create_enclave(
         }
 
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, eeid, enclave));
+#else
+    OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));
+#endif
 
     /* Push the new created enclave to the global list. */
     if (oe_push_enclave_instance(enclave) != 0)

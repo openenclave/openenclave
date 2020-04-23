@@ -9,6 +9,7 @@ add_executable(remote_attestation_host host.cpp ${CMAKE_CURRENT_BINARY_DIR}/remo
 target_include_directories(remote_attestation_host PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/../ # For common/shared.h
   ${CMAKE_CURRENT_BINARY_DIR})
+target_compile_definitions(remote_attestation_host PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 
 if(WIN32)
   add_dcap_client_target(remote_attestation_dcap_target)

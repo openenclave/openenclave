@@ -12,6 +12,7 @@ if(WIN32)
   maybe_build_using_clangw(enclave_b)
 endif()
 
+target_compile_definitions(enclave_b PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 target_include_directories(enclave_b PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(enclave_b common)

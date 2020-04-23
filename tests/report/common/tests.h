@@ -4,7 +4,10 @@
 #ifndef _TESTS_H_
 #define _TESTS_H_
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 #include <openenclave/bits/eeid.h>
+#endif
+
 #include <openenclave/internal/report.h>
 
 #ifdef OE_BUILD_ENCLAVE
@@ -24,8 +27,13 @@ extern oe_enclave_t* g_enclave;
 void test_local_report(sgx_target_info_t* target_info);
 void test_remote_report();
 void test_parse_report_negative();
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 void test_local_verify_report(oe_eeid_t* eeid);
 void test_remote_verify_report(oe_eeid_t* eeid);
+#else
+void test_local_verify_report();
+void test_remote_verify_report();
+#endif
 void test_verify_report_with_collaterals();
 
 #endif

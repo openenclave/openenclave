@@ -235,7 +235,6 @@ endif ()
 # SGX specific files.
 if (OE_SGX)
   list(APPEND PLATFORM_HOST_ONLY_SRC
-    ../common/sgx/eeid.c
     ../common/sgx/endorsements.c
     ../common/sgx/qeidentity.c
     ../common/sgx/quote.c
@@ -245,9 +244,14 @@ if (OE_SGX)
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c
     ../common/sgx/verifier.c
-    ../common/sgx/verify_eeid.c
     sgx/hostverify_report.c
     sgx/sgxquoteprovider.c)
+
+    if (WITH_EEID)
+      list(APPEND PLATFORM_HOST_ONLY_SRC
+        ../common/sgx/eeid.c
+        ../common/sgx/verify_eeid.c)
+    endif()
 
   list(APPEND PLATFORM_SDK_ONLY_SRC
     sgx/calls.c
@@ -517,6 +521,10 @@ endif ()
 if (COMPILE_SYSTEM_EDL)
   target_compile_definitions(oehost PRIVATE OE_USE_BUILTIN_EDL)
 endif ()
+
+if (WITH_EEID)
+    target_compile_definitions(oehost PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif()
 
 if (UNIX)
   target_compile_options(oehost

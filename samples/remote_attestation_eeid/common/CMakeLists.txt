@@ -16,6 +16,7 @@ if(WIN32)
   maybe_build_using_clangw(common)
 endif()
 
+target_compile_definitions(common PUBLIC OE_WITH_EXPERIMENTAL_EEID)
 target_compile_definitions(common PUBLIC OE_API_VERSION=2)
 target_link_libraries(common PUBLIC
   # `liboecore`, a dependency of `liboeenclave`, requires the ecalls

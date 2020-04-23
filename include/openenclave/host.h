@@ -91,7 +91,9 @@ typedef void (*oe_ocall_func_t)(
 typedef enum _oe_enclave_setting_type
 {
     OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS = 0xdc73a628,
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA = 0xabcdef01,
+#endif
 } oe_enclave_setting_type_t;
 
 /**
@@ -129,7 +131,9 @@ typedef struct _oe_enclave_setting
     union {
         const oe_enclave_setting_context_switchless_t*
             context_switchless_setting;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
         oe_eeid_t* eeid;
+#endif
         /* Add new setting types here. */
     } u;
 } oe_enclave_setting_t;

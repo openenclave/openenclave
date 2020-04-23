@@ -133,6 +133,7 @@ extern bool oe_disable_debug_malloc_check;
 **==============================================================================
 */
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 static oe_result_t _oe_check_eeid()
 {
     oe_result_t result = OE_OK;
@@ -198,6 +199,7 @@ static oe_result_t _eeid_expand()
 
     return r;
 }
+#endif
 
 /*
 **==============================================================================
@@ -227,7 +229,9 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         {
             oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
             OE_CHECK(_eeid_expand());
+#endif
 
 #ifdef OE_USE_BUILTIN_EDL
             /* Install the common TEE ECALL function table. */
@@ -249,8 +253,10 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
              * instructions like CPUID. */
             oe_call_init_functions();
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
             /* Check that the EEI data has not been tampered with */
             OE_CHECK(_oe_check_eeid());
+#endif
 
             /* DCLP Release barrier. */
             OE_ATOMIC_MEMORY_BARRIER_RELEASE();

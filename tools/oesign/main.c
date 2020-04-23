@@ -630,7 +630,11 @@ int oesign(
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
     if ((result = oe_sgx_build_enclave(
+#ifdef OE_WITH_EXPERIMENTAL_EEID
              &context, enclave, &props, NULL, &enc)) != OE_OK)
+#else
+             &context, enclave, &props, &enc)) != OE_OK)
+#endif
     {
         Err("oe_sgx_build_enclave(): result=%s (%u)",
             oe_result_str(result),
@@ -704,6 +708,7 @@ done:
     return ret;
 }
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 int oedump_eeid(const char* enclave)
 {
     int ret = 1;
@@ -789,16 +794,22 @@ done:
 
     return ret;
 }
+#endif
 
 int dump_parser(int argc, const char* argv[])
 {
-    int ret = 0, with_eeid = 0;
+    int ret = 0;
     const char* enclave = NULL;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    int with_eeid = 0;
+#endif
 
     const struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"enclave-image", required_argument, NULL, 'e'},
+#ifdef OE_WITH_EXPERIMENTAL_EEID
         {"eeid", no_argument, NULL, 'x'},
+#endif
         {NULL, 0, NULL, 0},
     };
     const char short_options[] = "he:x";
@@ -822,9 +833,11 @@ int dump_parser(int argc, const char* argv[])
             case 'e':
                 enclave = optarg;
                 break;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
             case 'x':
                 with_eeid = 1;
                 break;
+#endif
             case ':':
                 // Missing option argument
                 ret = 1;
@@ -846,10 +859,12 @@ int dump_parser(int argc, const char* argv[])
     if (!ret)
     {
         /* dump oeinfo and signature information */
-        if (!with_eeid)
-            ret = oedump(enclave);
-        else
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+        if (with_eeid)
             ret = oedump_eeid(enclave);
+        else
+#endif
+            ret = oedump(enclave);
     }
 
 done:

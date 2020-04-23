@@ -72,12 +72,20 @@ oe_result_t oe_sgx_initialize_load_context(
 
 void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context);
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 oe_result_t oe_sgx_build_enclave(
     oe_sgx_load_context_t* context,
     const char* path,
     const oe_sgx_enclave_properties_t* properties,
     oe_eeid_t* eeid,
     oe_enclave_t* enclave);
+#else
+oe_result_t oe_sgx_build_enclave(
+    oe_sgx_load_context_t* context,
+    const char* path,
+    const oe_sgx_enclave_properties_t* properties,
+    oe_enclave_t* enclave);
+#endif
 
 /**
  * Validate certain fields of an SGX enclave properties structure.
