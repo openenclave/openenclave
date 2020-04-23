@@ -81,6 +81,7 @@ if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
         add_subdirectory(stack_smashing_protector)
     endif()
 
+add_subdirectory(c99_compliant)
 add_subdirectory(create-errors)
 add_subdirectory(crypto)
 add_subdirectory(hexdump)

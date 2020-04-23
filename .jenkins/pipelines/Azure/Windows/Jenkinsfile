@@ -126,11 +126,11 @@ try{
         parallel "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild('acc-win2016-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow') },
                  "Win2016 Sim Release Cross Compile LVI " :                 { windowsCrossCompile('acc-win2016', 'Release', 'OFF', 'ControlFlow', '1', 'ON') },
                  "Win2016 Debug Cross Compile DCAP LVI" :                   { windowsCrossCompile('acc-win2016', 'Debug', 'ON', 'ControlFlow', '0', 'ON') },
-                 "Win2016 Release Cross Compile DCAP LVI" :                 { windowsCrossCompile('acc-win2016', 'Release', 'ON', 'ControlFlow', '0', 'ON') }
-                 //"Win2019 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow') },
-                 //"Win2019 Sim Release Cross Compile LVI " :                 { windowsCrossCompile('acc-win2019', 'Release', 'OFF', 'ControlFlow', '1', 'ON') },
-                 //"Win2019 Debug Cross Compile DCAP LVI" :                   { windowsCrossCompile('acc-win2019', 'Debug', 'ON', 'ControlFlow', '0', 'ON') },
-                 //"Win2019 Release Cross Compile DCAP LVI" :                 { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow', '0', 'ON') }
+                 "Win2016 Release Cross Compile DCAP LVI" :                 { windowsCrossCompile('acc-win2016', 'Release', 'ON', 'ControlFlow', '0', 'ON') },
+                 "Win2019 Ubuntu1804 clang-7 Release Linux-Elf-build LVI" : { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow') },
+                 "Win2019 Sim Release Cross Compile LVI " :                 { windowsCrossCompile('acc-win2019', 'Release', 'OFF', 'ControlFlow', '1', 'ON') },
+                 "Win2019 Debug Cross Compile DCAP LVI" :                   { windowsCrossCompile('acc-win2019', 'Debug', 'ON', 'ControlFlow', '0', 'ON') },
+                 "Win2019 Release Cross Compile DCAP LVI" :                 { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow', '0', 'ON') }
       }
     }
 } catch(Exception e) {
