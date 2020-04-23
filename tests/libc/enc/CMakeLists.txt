@@ -38,7 +38,7 @@ endif()
 add_enclave(TARGET libc_enc UUID d7fe296a-24e9-46d1-aa78-9c7395082a41
     # Building the enclave by default when enabling LVI mitigation to
     # test linking against LVI-mitigated libraries.
-    ADD_LVI_MITIGATION ON
+    ADD_LVI_MITIGATION
     SOURCES
     enc.c
     ${test_dependencies}

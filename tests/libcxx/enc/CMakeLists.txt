@@ -54,7 +54,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
     add_enclave(TARGET libcxxtest-${NAME}_enc UUID 486dcdcc-f0c6-4bdd-91e0-c7566794f899 CXX
         # Building the enclave by default when enabling LVI mitigation to
         # test linking against LVI-mitigated libraries.
-        ADD_LVI_MITIGATION ON
+        ADD_LVI_MITIGATION
         SOURCES
         main.cpp libcxx_t.c)
 
