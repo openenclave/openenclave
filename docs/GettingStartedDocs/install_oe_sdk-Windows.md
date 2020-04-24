@@ -58,7 +58,7 @@ C:\Program Files\LLVM\bin\ld.lld.exe
 
 ### SGX1 with Flexible Launch Control (FLC) Prerequisites
 
-Instructions to install Intel's PSW 2.7, Intel's Data Center Attestation Primitives and related dependencies can be found [here](Contributors/WindowsManualSGX1FLCDCAPPrereqs.md).
+Instructions to install Intel's PSW, Intel's Data Center Attestation Primitives and related dependencies can be found [here](Contributors/WindowsManualSGX1FLCDCAPPrereqs.md).
 
 ## Download and install the Open Enclave SDK NuGet Package
 
