@@ -25,8 +25,7 @@ enclave {
         public void enc_lock_and_unlock_mutexes(
             [in, string] const char* mutex_ids);
 
-        public void enc_test_tcs_exhaustion(
-            size_t tcs_req_count);
+        public void enc_test_tcs_exhaustion();
 
         public size_t enc_tcs_used_thread_count();
 
@@ -55,6 +54,6 @@ enclave {
         void host_usleep(
             size_t microseconds);
 
-        size_t host_tcs_out_thread_count();
+        void host_wait();
     };
 };

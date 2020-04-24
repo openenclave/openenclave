@@ -275,25 +275,13 @@ void enc_lock_and_unlock_mutexes(const char* mutex_ids)
 // test_tcs_exhaustion
 static std::atomic<size_t> g_tcs_used_thread_count(0);
 
-// this ecall increments a counter (tcs_used_thread_count) and waits for the
-// total thread count to reach the test count (tcs_req_count)
-void enc_test_tcs_exhaustion(const size_t tcs_req_count)
+// this ecall increments a counter (tcs_used_thread_count)
+void enc_test_tcs_exhaustion()
 {
     ++g_tcs_used_thread_count;
 
-    // the local tcs_out_thread_count is a local copy of a value maintained on
-    // the host
-    size_t tcs_out_thread_count = 0;
-    // host_tcs_out_thread_count retrieves the value from the host
-    OE_TEST(host_tcs_out_thread_count(&tcs_out_thread_count) == OE_OK);
-
-    // wait until the thread counts total has reached the total requested
-    // thread count
-    while (g_tcs_used_thread_count + tcs_out_thread_count < tcs_req_count)
-    {
-        // retrieve tcs_out_thread_count from the host
-        OE_TEST(host_tcs_out_thread_count(&tcs_out_thread_count) == OE_OK);
-    }
+    // Wait in the host until desired tcs exhaustion has been reached.
+    OE_TEST(host_wait() == OE_OK);
 }
 
 size_t enc_tcs_used_thread_count()
