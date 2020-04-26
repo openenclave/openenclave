@@ -753,29 +753,6 @@ oe_result_t oe_create_enclave(
     if (!(enclave = (oe_enclave_t*)calloc(1, sizeof(oe_enclave_t))))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-#if defined(_WIN32)
-    /* Create Windows events for each TCS binding. Enclaves use
-     * this event when calling into the host to handle waits/wakes
-     * as part of the enclave mutex and condition variable
-     * implementation.
-     */
-    for (size_t i = 0; i < enclave->num_bindings; i++)
-    {
-        oe_thread_binding_t* binding = &enclave->bindings[i];
-
-        if (!(binding->event.handle = CreateEvent(
-                  0,     /* No security attributes */
-                  FALSE, /* Event is reset automatically */
-                  FALSE, /* Event is not put in a signaled state
-                            upon creation */
-                  0)))   /* No name */
-        {
-            OE_RAISE_MSG(OE_FAILURE, "CreateEvent failed", NULL);
-        }
-    }
-
-#endif
-
     /* Initialize the context parameter and any driver handles */
     OE_CHECK(oe_sgx_initialize_load_context(
         &context, OE_SGX_LOAD_TYPE_CREATE, flags));
@@ -887,18 +864,6 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
         /* Unmap the enclave memory region.
          * Track failures reported by the platform, but do not exit early */
         result = oe_sgx_delete_enclave(enclave);
-
-#if defined(_WIN32)
-
-        /* Release Windows events created during enclave creation */
-        for (size_t i = 0; i < enclave->num_bindings; i++)
-        {
-            oe_thread_binding_t* binding = &enclave->bindings[i];
-            CloseHandle(binding->event.handle);
-            free(binding->ocall_buffer);
-        }
-
-#endif
 
         /* Free the path name of the enclave image file */
         free(enclave->path);
