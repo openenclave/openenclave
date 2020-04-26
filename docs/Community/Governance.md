@@ -57,7 +57,7 @@ project_
 Each group (SIGs, WGs, and CGC) shall maintain documentation in this repository.
 Creating a new SIG or WG requires the approval of the CGC, and is formally
 created by the merging of a "charter" document. A SIG is generally responsible
-for the delivery of a technical artefact (code, release binaries, operation of
+for the delivery of a technical artifact (code, release binaries, operation of
 infrastructure, etc), whereas a WG is generally not responsible for these types
 of artefacts.
 
@@ -129,7 +129,7 @@ commit-rights management that integrates with SIG/WG governance.
 
 - **Chair**: the primary point of contact for a SIG or WG, responsible for the processes within the SIG; a tie-breaker in votes within the SIG, if needed
 - **Approver**: members of the SIG who are empowered to approve code changes
-- **Reviewer**: members of the SIG whose knowledge is respected by Committers, and whom are frequently asked to provide code reviews for patches
+- **Reviewer**: members of the SIG whose knowledge is respected by Approvers, and whom are frequently asked to provide code reviews for patches
 - **Member**: a voting member of a working group (role does not apply to SIGs)
 - **Emeritus**: a previously-active member of a SIG or WG, who has no current rights but whose contributions the community wishes to honor, and who may receive a fast-track back to privileges should they become active in this group again
 

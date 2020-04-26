@@ -55,7 +55,7 @@ The SIG Chair is APPOINTED/ELECTED for TIME PERIOD.
 - Responsibilities
   - *should* maintain the health of the project or subproject by writing and/or approving changes
   - *should* show sustained contribution to the project or subproject
-  - *should* participate in decision making processes (eg,  meetings)
+  - *should* participate in decision making processes (e.g. meetings)
 - Number: 2 - 3 *or as needed*
 
 ### Reviewer

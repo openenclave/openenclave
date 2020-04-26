@@ -2,7 +2,7 @@ Project Committers
 ==================
 
 **NOTE**
-This document will be superceded by the creation of SIGs and WGs.
+This document will be superseded by the creation of SIGs and WGs.
 
 It is kept for now as the discussion and definition of the [new governance process](Governance.md) is ongoing.
 
@@ -57,7 +57,7 @@ tools (ie, GitHub itself).
 As more developers join the community and bring domain-specific knowledge, there
 is no way to delegate domain ownership, authority or autonomy over changes to
 code. And as the community itself grows, the current communication channels do
-not support rapid iteratation, or facilitate remote and open collaboration.
+not support rapid iteration, or facilitate remote and open collaboration.
 
 Specific challenges:
 
