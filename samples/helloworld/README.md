@@ -8,7 +8,11 @@
 - Demonstrate how to optionally apply LVI mitigation to enclave code
 - Also runs in OE simulation mode
 
-Prerequisite: you may want to read [Common Sample Information](../README.md#common-sample-information) before going further
+## Prerequisites
+
+- Use an OE SDK-supported machine or development environment (like Intel SGX).
+- Install the OE SDK package and dependencies for your environment. Install the OE SDK package and dependencies for your environment. See the [Getting Started documentation](/../../../openenclave#getting-started) to find OS-specific installation instructions.
+- Read the common sample information page to learn how to prepare the sample on [Linux](../README_Linux.md#building-open-enclave-sdk-samples-on-linux) and [Windows](../README_Windows.md#building-open-enclave-sdk-samples-on-windows).
 
 ## About the helloworld sample
 
@@ -596,3 +600,7 @@ To run the helloworld sample in simulation mode from the command like, use the f
 ```bash
 ./host/helloworldhost ./enclave/helloworldenc.signed --simulate
 ```
+
+## Next steps
+
+In this tutorial, you built and ran the helloword sample. Next, try out more OE SDK samples on [Linux](https://github.com/JBCook/openenclave/blob/master/samples/README_Linux.md#samples) and [Windows](https://github.com/JBCook/openenclave/blob/master/samples/README_Windows.md#samples).
