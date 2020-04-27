@@ -24,6 +24,10 @@ Azure
 Introduction
 ------------
 
+The Open Enclave SDK is a hardware-agnostic open source library for developing
+applications that utilize Hardware-based Trusted Execution Environments, also
+known as Enclaves.
+
 Open Enclave (OE) is an SDK for building enclave applications in C and C++. An
 enclave application partitions itself into two components:
 1. An untrusted component (called the host) and
@@ -41,59 +45,34 @@ open source project, this SDK also strives to provide a transparent solution
 that is agnostic to specific vendors, service providers and choice of operating
 systems.
 
-Getting Started
+
+Getting Started Using OE SDK
 ---------------
 
-### Intel SGX
+See the API documentation on [openenclave.io](https://openenclave.io/sdk/)
 
-If you would like to start developing apps with the preview Open Enclave SDK
-release, start here for instructions to install and use the SDK package:
+Binary packages can be [downloaded from GitHub](https://github.com/openenclave/openenclave/releases)
 
-- [Ubuntu 18.04 with SGX hardware](docs/GettingStartedDocs/install_oe_sdk-Ubuntu_18.04.md)
-- [Ubuntu 16.04 with SGX hardware](docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md)
-- [Ubuntu 18.04 or 16.04 in simulation mode](docs/GettingStartedDocs/install_oe_sdk-Simulation.md)
-- [Windows with SGX hardware](docs/GettingStartedDocs/install_oe_sdk-Windows.md)
+Contributing to OE SDK
+---------------
 
-If you would like to run Ubuntu 16.04 or Ubuntu 18.04 in a Hyper-V VM on SGX
-capable hardware, see
-[Setting up a Linux Hyper-V VM on Windows with SGX Support](docs/GettingStartedDocs/HyperVLinuxVMSetup.md).
+You'll find comprehensive documentation in the
+[Contributor's Getting Started Guide](docs/GettingStartedDocs).
 
-### OP-TEE OS (ARM TrustZone)
+The [community documentation](docs/Community/) hosts lots of information on
+where to go to get engaged with the community, whether you want to contribute
+code, add test cases, help improve our documentation, or something else. If
+you're looking for information on how to join meetings or who to contact about
+what, you will find it there.
 
-The Open Enclave SDK provides preview support for the Open Portable TEE OS
-(OP-TEE OS). OP-TEE is an operating system for TEE's that implement a
-traditional kernel-mode and user-mode execution environment. It runs on
-A-profile ARM systems that support ARM TrustZone. As a result, the Open Enclave
-SDK can be leveraged to target these systems as well.
+You don't necessarily need a hardware enclave to develop OE SDK; some tests and
+code paths can be executed in *simulation mode* for the purposes of testing on
+non-TEE-enabled hardware.
 
-For an overview of the SDK's support for OP-TEE OS as well as links to getting
-started guides, see
-[Open Enclave SDK for OP-TEE OS](docs/GettingStartedDocs/OP-TEE/Introduction.md).
-
-Contributing
-------------
-
-This project welcomes contributions and suggestions. All contributions to the Open Enclave SDK
-must adhere to the terms of the [Developer Certificate of Origin (DCO)](https://developercertificate.org/).
-For details, see [Contributing to Open Enclave](docs/Contributing.md).
-
-This project follows a [Code of Conduct](docs/CodeOfConduct.md) adapted from the
-[Contributor Covenant v1.4](https://www.contributor-covenant.org).
-
-If you are interested in contributing directly to the codebase, please see the following
-documentation:
-- [Development Guide](docs/DevelopmentGuide.md)
-- [Governance Model](docs/Governance.md)
-- [Build SDK and run tests](docs/GettingStartedDocs/Contributors/building_oe_sdk.md)
-
-API Documentation
------------------
-
-The Doxygen generated documentation corresponding to the APIs currently supported by the master branch is [here](https://openenclave.github.io/openenclave/api/index.html).
-API Documentation for older releases of the SDK can be found on the Open Enclave SDK [website](https://openenclave.io/sdk).
+----
 
 Licensing
-=========
+---------
 
 This project is released under the
 [MIT License](https://github.com/openenclave/openenclave/blob/master/LICENSE).

@@ -44,6 +44,7 @@ devex/vsextension/ProjectTemplates/.*
 tools/oeedger8r/esy\.lock/.*
 tools/oeedger8r/intel/.*
 tests/print/results/.*
+docs/*
 
 # Files
 3rdparty/LICENSES

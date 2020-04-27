@@ -60,7 +60,7 @@ for details.
 
 ### License Header
 
-The following license header **must** be included at the top of every file:
+The following license header **must** be included at the top of every code file:
 
 ```
 // Copyright (c) Open Enclave SDK contributors.
