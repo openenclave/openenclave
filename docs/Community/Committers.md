@@ -33,6 +33,7 @@ therefore should usually be consulted for changes relating to that area.
 | Jordan Hand           | jhand2              | Windows, Build, SGX            |
 | Xuejun Yang           | jxyang              | SGX                            |
 | Mike Brasher          | mikbras             | SGX, APIs, EDL                 |
+| Ming-Wei Shih         | mingweishih         | SGX, Dev tools, EDL            |
 | Marius Oprin          | oprinmarius         | Build, CMake, CI, Ansible      |
 | Paul Allen            | paulcallen          | TrustZone                      |
 | Radhika Jandhyala     | radhikaj            | SGX, APIs, Website             |
