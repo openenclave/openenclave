@@ -32,5 +32,9 @@ enclave
         // Wake up a host switchless ocall worker thread.
         void oe_sgx_wake_switchless_worker_ocall(
             [user_check] struct _host_worker_context* context);
+
+        // Call into the host to sleep.
+        void oe_sgx_sleep_switchless_worker_ocall(
+            [user_check] struct _enclave_worker_context* context);
     };
 };

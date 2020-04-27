@@ -248,7 +248,9 @@ void oe_sgx_switchless_enclave_worker_thread_ecall(
                 // Reset spin count and return to host to sleep.
                 context->total_spin_count += context->spin_count;
                 context->spin_count = 0;
-                break;
+
+                // Make an ocall to sleep until messages arrive.
+                oe_sgx_sleep_switchless_worker_ocall(context);
             }
 
             // In Release builds, the following pause has been observed to be
