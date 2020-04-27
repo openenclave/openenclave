@@ -1,12 +1,10 @@
 chair:
   - TBD
 
-reviewers:
-
 approvers:
   - BRMcLaren
   - EmilAlexandruStoica
   - johnkord
   - oprinmarius
 
-labels:
+reviewers:

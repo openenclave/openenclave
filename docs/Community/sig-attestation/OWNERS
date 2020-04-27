@@ -1,7 +1,5 @@
 chair:
-  - soccerGB
-
-reviewers:
+  - TBD
 
 approvers:
   - shruti25ratnam
@@ -9,5 +7,8 @@ approvers:
   - jazzybluesea
   - gupta-ak
   - Britel
+  - soccerGB
+  - yentsanglee
+  - shnwc
 
-labels:
+reviewers:

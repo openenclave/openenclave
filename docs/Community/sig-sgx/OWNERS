@@ -1,8 +1,6 @@
 chair:
   - TBD
 
-reviewers:
-
 approvers:
   - anakrish
   - CodeMonkeyLeet
@@ -14,4 +12,4 @@ approvers:
   - soccerGB
   - yakman2020
 
-labels:
+reviewers:

@@ -1,11 +1,10 @@
 chair:
-  - dthaler
-
-reviewers:
+  - TBD
 
 approvers:
   - Britel
   - HernanGatta
   - paulcallen
+  - dthaler
 
-labels:
+reviewers:

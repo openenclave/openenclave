@@ -39,6 +39,9 @@ contributors. We value our community tremendously and want to build and maintain
 a friendly, inclusive, collaborative environment for all our contributors and
 users.
 
+If there is conflict, either within or between SIGs, or between any members of
+the community, wherein it is desirable, the issue can be raised to the [CGC](governance/README.md).
+
 Community Governance Structure
 ------------------------------
 
@@ -50,30 +53,34 @@ each domain, or Special Interest Group (**SIG**), cross-domain work is enabled
 through Working Groups (**WG**), and a Community Governance Committee (**CGC**)
 meets to review the overall structure, ensuring the health of the project.
 
-_NOTE: In lieu of a "technical steering committee", the Architecture SIG should
-be considered as the best forum for technical debates that affect the whole
-project_
-
 Each group (SIGs, WGs, and CGC) shall maintain documentation in this repository.
 Creating a new SIG or WG requires the approval of the CGC, and is formally
 created by the merging of a "charter" document. A SIG is generally responsible
 for the delivery of a technical artifact (code, release binaries, operation of
 infrastructure, etc), whereas a WG is generally not responsible for these types
-of artefacts.
+of artifacts.
 
 A SIG Chair is responsible for the health of that SIG, and should be considered
 authoritative for that subsection of the project's code base insofar as code or
-other technical deliverables are a responsibility of that SIG. Additionally,
-each SIG is responsible for establishing its own governance process (defining
-the process for SIG Chair selection, for example).
+other technical deliverables are a responsibility of that SIG. It is the SIG
+Chair's responsibility to ensure there are sufficient Approvers and Reviewers to
+support the development velocity and SIG health, and ensure a succession plan is
+in place should the chair intend to step down. Each SIG is responsible for
+establishing its own governance process (defining the process for SIG Chair
+selection, for example).
 
 When a change affects code owned by multiple SIGs, it should be coordinated with
 the respective SIGs. If long-term collaboration is anticipated, cross-SIG
 efforts can be coordinated by establishing a Working Group (WG), which is given
 a charter and which reports progress back to the relevant SIGs and/or the CGC.
 
-If there is conflict, either within or between SIGs, or between any members of
-the community, wherein it is desirable, the issue can be raised to the CGC.
+An example of this is the [Architecture SIG](sig-architecture), which is a
+special kind of Working Group in that it exists across SIGs but owns delivery of
+architecture documents and plans, and is therefore designated as a SIG.
+
+New SIGs can be created by copying the
+[SIG charter template](governance/sig-charter-template.md) and making a proposal
+to the CGC. Templates for WGs and Committees may be added in the future.
 
 Technical Discussions
 ---------------------
@@ -122,16 +129,23 @@ Committers and Contributors
 At present, we maintain a list of [Project Committers](Committers.md) along with
 descriptions of their knowledge areas.
 
-This will be updated and replaced with a more scalable approach to
-commit-rights management that integrates with SIG/WG governance.
+This will be updated and replaced with a more scalable approach to commit-rights
+management that integrates with SIG/WG governance. In the interrim, all current
+Committers should be considered to be Approvers using the new terminology.
 
-**Proposal** The following roles would be sufficient for SIGs and WGs to self-govern.
+**Proposal** The following roles would be sufficient for SIGs, WGs, and
+Committees to self-govern.
 
-- **Chair**: the primary point of contact for a SIG or WG, responsible for the processes within the SIG; a tie-breaker in votes within the SIG, if needed
+- **Chair**: the primary point of contact for a SIG or WG, responsible for the
+  processes within the SIG; a tie-breaker in votes within the SIG, if needed
 - **Approver**: members of the SIG who are empowered to approve code changes
-- **Reviewer**: members of the SIG whose knowledge is respected by Approvers, and whom are frequently asked to provide code reviews for patches
+- **Reviewer**: members of the SIG whose knowledge is respected by Approvers,
+  and whom are frequently asked to provide code reviews for patches
 - **Member**: a voting member of a working group (role does not apply to SIGs)
-- **Emeritus**: a previously-active member of a SIG or WG, who has no current rights but whose contributions the community wishes to honor, and who may receive a fast-track back to privileges should they become active in this group again
+- **Emeritus**: a previously-active member of a SIG or WG, who has no current
+  rights but whose contributions the community wishes to honor, and who may
+  receive a fast-track back to privileges should they become active in this
+  group again
 
 Accepting Contributions
 -----------------------

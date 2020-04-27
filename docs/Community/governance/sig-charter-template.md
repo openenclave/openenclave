@@ -30,13 +30,17 @@ List some things that might seem like they fall in-scope for this SIG, but don't
 
 ## Process & Management
 
-THIS SIG meets at least THIS OFTEN.
+THIS SIG meets at least THIS OFTEN
+(should be at least once a quarter, but could be never if that's justifiable)
 
 Meetings are held at PLACE, with AGENDA/MINUTES available or not. Meetings are OPEN/CLOSED.
+(closed meetings should be justified)
 
 Membership in the SIG may be gained by PROCESS.
+(clearly articulate if process doesn't follow the project norms)
 
 The SIG Chair is APPOINTED/ELECTED for TIME PERIOD.
+(clearly articulate if the process doesn't follow project norms)
 
 ## Roles & Structure
 
