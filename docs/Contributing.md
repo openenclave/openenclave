@@ -169,7 +169,19 @@ available commands. The highlights:
 | bors ping | Check if Bors is up. If it is, it will comment with _pong_.
 | bors retry | Run the previous command a second time.
 
+Anyone who has created at least one PR in the Open Enclave repo may
+request `bors try` permissions. Please email
+oesdkcgc@lists.confidentialcomputing.io to request access.
+
 Also see our [Bors dashboard](https://app.bors.tech/repositories/21855/).
+
+After a bors run, there is a known issue where Jenkins builds don't have links
+to the build logs for each pipeline. Please see #2878 for a workaround for
+this issue.
+
+Note: If reviewers on a PR make suggestions which you accept using the "Commit
+Suggestion" button on Github, you would need to pull those changes and sign them
+off as required by [DCO](#developer-certificate-of-origin).
 
 Commit Messages
 ---------------
