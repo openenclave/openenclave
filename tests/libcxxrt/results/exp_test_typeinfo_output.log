@@ -1,0 +1,12 @@
+Test passed: 87: Setting field
+Test passed: 90: Casting Sub1 to superclass
+Test passed: 92: Casting Sub2 -> Sub1
+Test passed: 95: Casting Root (Virt1) -> Virt1
+Test passed: 98: Accessing virt2 via vtable method
+Test passed: 99: Casting diamond to virt2
+Test passed: 100: casting diamond to diamond
+Test passed: 105: Casting Diamond2 to Diamond2
+Test passed: 106: Casting Diamond2 to Virt2a
+Test passed: 107: Downcasting root-pointer to diamond
+Test passed: 108: Downcasting root to diamond
+Test passed: 110: Casting Root to Sub1 (0 expected)

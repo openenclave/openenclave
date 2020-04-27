@@ -10,7 +10,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#if defined(__linux__)
 #include <unistd.h>
+#endif
 
 static int succeeded;
 static int failed;
