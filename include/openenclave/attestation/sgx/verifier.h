@@ -19,6 +19,8 @@ OE_EXTERNC_BEGIN
  * Helper function that returns the SGX verifier that can then be sent to
  * `oe_register_verifier`.
  *
+ * @experimental
+ *
  * @retval A pointer to the SGX verifier. This function never fails.
  */
 oe_verifier_t* oe_sgx_plugin_verifier(void);
