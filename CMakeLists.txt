@@ -207,6 +207,11 @@ if (NOT USE_SNMALLOC)
   set(USE_DLMALLOC true)
 endif ()
 
+# Support building oeedger8r without esy. Some systems have problems with esy.
+# Ocaml has good Linux support and on most platforms, it is easy to obtain ocaml
+# via the package manager. Note: This is how oeedger8r was built originally.
+option(USE_PLATFORM_OCAML "[EXPERIMENTAL] Build oeedger8r using platform's ocaml. If this is not set, esy is required." OFF)
+
 option(COMPILE_SYSTEM_EDL "Build system ecalls and ocalls into OE libraries. If not set, they must be included by application EDL to use." ON)
 
 option(BUILD_TESTS "Build OE tests" ON)
