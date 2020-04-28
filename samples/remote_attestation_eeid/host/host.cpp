@@ -67,7 +67,7 @@ int main(int argc, const char* argv[])
         eeid_b->data[i] = data_size - i - 1;
 
         eeid_a->size_settings.num_heap_pages =
-            eeid_b->size_settings.num_heap_pages = 37;
+            eeid_b->size_settings.num_heap_pages = 38;
         eeid_a->size_settings.num_stack_pages =
             eeid_b->size_settings.num_stack_pages = 13;
         eeid_a->size_settings.num_tcs = eeid_b->size_settings.num_tcs = 1;
