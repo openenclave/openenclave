@@ -6,6 +6,8 @@ Open Enclave uses a a version of the [LLVM libc++](https://libcxx.llvm.org/) lib
     - Others, such as thread creation, are simply not supported in the the enclave runtime.
 - Equivalent standard C library functions that are not supported, as documented in [LibcSupport.md](LibcSupport.md)
 
+For more details on the libcxx testing in Open Enclave, refer to this [document](/tests/libcxx/README.md).
+
 ## Concepts Library
 Header | Supported | Comments |
 :---:|:---:|:---|
