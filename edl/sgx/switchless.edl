@@ -16,14 +16,47 @@ enclave
 {
     include "openenclave/bits/types.h"
 
+    struct oe_host_worker_context_t
+    {
+        void* call_arg;
+        oe_enclave_t* enc;
+        bool is_stopping;
+
+        int32_t event;
+
+        // Number of times the worker spun without seeing a message.
+        uint64_t spin_count;
+
+        // Statistics.
+        uint64_t total_spin_count;
+    };
+
+    struct oe_enclave_worker_context_t
+    {
+        void* call_arg;
+        oe_enclave_t* enc;
+        bool is_stopping;
+
+        int32_t event;
+
+        // Number of times the worker spun without seeing a message.
+        uint64_t spin_count;
+
+        // The limit at which to stop spinning and return to host to sleep.
+        uint64_t spin_count_threshold;
+
+        // Statistics.
+        uint64_t total_spin_count;
+    };
+
     trusted
     {
         public oe_result_t oe_sgx_init_context_switchless_ecall(
-            [user_check] struct _host_worker_context* host_worker_contexts,
+            [user_check] oe_host_worker_context_t* host_worker_contexts,
             uint64_t num_host_workers);
 
         public void oe_sgx_switchless_enclave_worker_thread_ecall(
-            [user_check] struct _enclave_worker_context* context);
+            [user_check] oe_enclave_worker_context_t* context);
 
     };
 
@@ -31,10 +64,10 @@ enclave
     {
         // Wake up a host switchless ocall worker thread.
         void oe_sgx_wake_switchless_worker_ocall(
-            [user_check] struct _host_worker_context* context);
+            [user_check] oe_host_worker_context_t* context);
 
         // Call into the host to sleep.
         void oe_sgx_sleep_switchless_worker_ocall(
-            [user_check] struct _enclave_worker_context* context);
+            [user_check] oe_enclave_worker_context_t* context);
     };
 };

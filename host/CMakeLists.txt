@@ -44,11 +44,13 @@ endif ()
 
 set(OE_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/bits)
 set(OE_PRIV_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/internal/bits)
+set(OE_PRIV_SGX_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/internal/bits/sgx)
 
 list(APPEND EDL_PUBLIC_STRUCTURES "${EDL_DIR}/asym_keys.edl"
      "${EDL_DIR}/time.edl")
 list(APPEND EDL_PRIVATE_STRUCTURES "${EDL_DIR}/fcntl.edl" "${EDL_DIR}/poll.edl"
      "${EDL_DIR}/socket.edl" "${EDL_DIR}/utsname.edl")
+list(APPEND EDL_PRIVATE_SGX_STRUCTURES "${EDL_DIR}/sgx/switchless.edl")
 
 function (edl_to_header EDL_FILE OUT_DIR)
   get_filename_component(name ${EDL_FILE} NAME_WE)
@@ -76,6 +78,10 @@ endforeach ()
 
 foreach (struct_file ${EDL_PRIVATE_STRUCTURES})
   edl_to_header(${struct_file} ${OE_PRIV_EDL_INCLUDE_DIR})
+endforeach ()
+
+foreach (struct_file ${EDL_PRIVATE_SGX_STRUCTURES})
+  edl_to_header(${struct_file} ${OE_PRIV_SGX_EDL_INCLUDE_DIR})
 endforeach ()
 
 # Only install the public EDL headers
