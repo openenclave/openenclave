@@ -183,6 +183,36 @@ Inputs:
   supports one format, but some plugins might accept either JWT or CWT for
   instance, and supplying this avoids having to implement format detection
   heuristics by trying to parse the buffer.
+
+Outputs:
+
+* Claim set HANDLE
+
+Return status codes:
+
+* Success indicates that the Evidence was recognized as trusted
+  and a Claim set handle was generated as requested
+* Invalid-handle indicates that the appraisal policy handle is not valid
+* Untrusted-Results indicates that the Evidence did not pass appraisal,
+  but a Claim set handle was still generated
+* Failed-to-get-endorsements indicates that the call failed because
+  necessary endorsements could not be obtained
+* Specified-format-not-supported indicates that the specified
+  Evidence format is not supported
+* Parse-error indicates that the Evidence buffer provided could not be
+  correctly parsed
+* Other failure indicates that the call failed for any other reason
+
+This is the main attestation functionality of the Verifier.
+A pure Verifier would pass the output handle to GetAttestationResults
+in order to generated signed AttestationResults.  A combined
+Verifier/Relying Party could simply use it with GetClaimValue (see below).
+
+## GetAttestationResults call
+
+Inputs:
+
+* Claim set HANDLE
 * Requested Attestation Results format (e.g., CWT, JWT, X.509, etc.).
   Defaults to letting the plugin choose one.
 
@@ -194,20 +224,10 @@ Outputs:
 Return status codes:
 
 * Success indicates that Attestation Results were generated as requested
-* Invalid-handle indicates that the appraisal policy handle is not valid
-* Untrusted-Results indicates that the Evidence did not pass appraisal,
-  but that signed Attestation Results were generated saying so
-* Failed-to-get-endorsements indicates that the call failed because
-  necessary endorsements could not be obtained
-* Specified-format-not-supported indicates that the specified
-  Evidence format is not supported
+* Invalid-handle indicates that the claim set handle is not valid
 * Requested-format-not-supported indicates that the requested
   Attestation Results format could not be used
-* Parse-error indicates that the Evidence buffer provided could not be
-  correctly parsed
 * Other failure indicates that the call failed for any other reason
-
-This is the main attestation functionality of the Verifier.
 
 # Relying Party APIs
 
