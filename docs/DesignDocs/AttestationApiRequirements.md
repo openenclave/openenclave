@@ -42,6 +42,12 @@ Depending on the plugin registration design, the app developer,
 the enclave signer, and/or the party configuring an application will choose
 one or more plugins to support and ensure they are available.
 
+NOTE: The RATS Architecture referenced below is maintained in the
+[RATS github repository](https://github.com/ietf-rats-wg/architecture)
+which may have a later version that the draft linked below.  When
+in doubt, go to the github repo which has links to the Internet Draft,
+latest Editors' Copy, and diffs between them.
+
 As noted in the
 [RATS Architecture](https://tools.ietf.org/wg/rats/draft-ietf-rats-architecture/),
 an implementation acts in one or more of the three roles: Attester,
