@@ -183,7 +183,7 @@
 #endif
 
 /*
- * Inteded for use by other bits headers, not to be used by applications
+ * Intended for use by other bits headers, not a part of the public API surface.
  */
 
 /* OE_ZERO_SIZED_ARRAY */
@@ -245,15 +245,5 @@
 #define OE_CHECK_FIELD(T1, T2, F)                               \
     OE_STATIC_ASSERT(OE_OFFSETOF(T1, F) == OE_OFFSETOF(T2, F)); \
     OE_STATIC_ASSERT(sizeof(((T1*)0)->F) == sizeof(((T2*)0)->F));
-
-// Statically defined functions which are aliased should be marked as unused
-// to prevent compiler warnings in GCC and Clang
-#if __GNUC__
-#define OE_UNUSED_FUNC __attribute__((unused))
-#elif _MSC_VER
-#define EDGER8R_UNUSED
-#else
-#error OE_UNUSED_FUNC not implemented
-#endif
 
 #endif /* _OE_BITS_DEFS_H */
