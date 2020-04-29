@@ -6,11 +6,7 @@
 # do not emit to the current working directory, they always emit to
 # the location of the input file.
 
-find_program(ESY esy)
-if (NOT ESY AND NOT USE_PLATFORM_OCAML)
-  message(FATAL_ERROR "Please check your esy installation.\n")
-
-elseif (NOT ESY) # USE_PLATFORM_OCAML
+if (USE_PLATFORM_OCAML)
   # Use ocaml compilers if available.
   # Use ocaml compilers if available
   find_program(OCAMLLEX ocamllex)
@@ -77,6 +73,11 @@ elseif (NOT ESY) # USE_PLATFORM_OCAML
 
   #add_custom_target(oeedger8r DEPENDS ${BINARY})
 else()
+  find_program(ESY esy)
+  if (NOT ESY)
+    message(FATAL_ERROR "Please check your esy installation.\n")
+  endif()
+
   # An artifact of using `esy` is that the generated binary is always
   # `main.exe` regardless of platform. We rename it for installation in
   # the package.

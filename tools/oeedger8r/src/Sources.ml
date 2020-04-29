@@ -10,8 +10,11 @@ let get_struct_by_name (cts : composite_type list) (name : string) =
   (* [cts] is a list of all composite types, but we're only
      interested in the structs, so we filter out the rest and unwrap
      them from [composite_type]. *)
-  let structs = filter_map (function StructDef s -> Some s | _ -> None) cts in
-  List.find_opt (fun s -> s.sname = name) structs
+  match
+    List.filter (function StructDef s -> s.sname = name | _ -> false) cts
+  with
+  | StructDef s :: tl -> Some s
+  | _ -> None
 
 (** We need to check [Ptr]s for [Foreign] or [Struct] types, then
     check those against the user's [Struct]s, and then check if any
@@ -180,10 +183,11 @@ let rec get_ptr_setter get_deepcopy args count setter (ptype, decl) =
         (* NOTE: This makes the embedded check in the `OE_` macro superfluous. *)
         [
           sprintf "if (pargs_in->%s)"
-            (if args = [] then arg
-            else ((String.concat " && pargs_in->" (List.rev(args))) ^
-              ((if setter = "SET_OUT" then " && !" else " && ") ^
-              "pargs_in->" ^ arg)))
+            ( if args = [] then arg
+            else
+              String.concat " && pargs_in->" (List.rev args)
+              ^ (if setter = "SET_OUT" then " && !" else " && ")
+              ^ "pargs_in->" ^ arg );
         ];
         [ sprintf "    OE_%s_POINTER(%s, %s, %s);" setter arg size tystr ];
         (let param_count = get_param_count (ptype, decl, argstruct) in
@@ -605,7 +609,8 @@ let get_ecall_function get_deepcopy (tf : trusted_func) =
     "";
     (* Buffer validation *)
     "    /* Make sure input and output buffers lie within the enclave. */";
-    "    /* oe_is_within_enclave explicitly checks if buffers are null or not. */";
+    "    /* oe_is_within_enclave explicitly checks if buffers are null or not. \
+     */";
     "    if (!oe_is_within_enclave(input_buffer, input_buffer_size))";
     "        goto done;";
     "";
@@ -815,7 +820,8 @@ let get_host_ecall_wrapper get_deepcopy enclave_name (tf : trusted_func) =
     "    memset(&_args, 0, sizeof(_args));";
     "    " ^ String.concat "\n    " (get_filled_marshal_struct get_deepcopy fd);
     "";
-    "    " ^ String.concat "\n    " (get_input_buffer get_deepcopy fd "oe_malloc");
+    "    "
+    ^ String.concat "\n    " (get_input_buffer get_deepcopy fd "oe_malloc");
     "";
     "    /* Call enclave function. */";
     "    if ((_result = " ^ ecall_function ^ "(";

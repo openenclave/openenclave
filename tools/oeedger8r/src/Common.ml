@@ -41,16 +41,6 @@ let get_parameter_str (p : pdecl) =
 
 (** ----- End code borrowed and tweaked from {!CodeGen.ml} ----- *)
 
-(* Helper to map and filter out None at the same time. *)
-let filter_map f l =
-  let rec apply = function
-    | hd::tl -> (match f hd with
-                | Some v -> v ::(apply tl)
-                | None -> apply tl)
-    | [] -> []
- in apply l
-
-
 (* Helper to flatten and map at the same time. *)
 let flatten_map f l = List.flatten (List.map f l)
 
