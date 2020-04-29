@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+### Changed
+- Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
+
 [0.9.0][v0.9.0_log]
 ------------
 
