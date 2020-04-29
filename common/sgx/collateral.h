@@ -66,6 +66,16 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
 void oe_free_sgx_quote_verification_collateral_args(
     oe_get_sgx_quote_verification_collateral_args_t* args);
 
+/**
+ * Pre-allocate memory for the resources that get passed into the 
+ * oe_get_quote_verification_collateral_ocall. To avoid extra passes needed
+ * to take care of OE_BUFFER_TOO_SMALL failures.
+ *
+ * @param[in] args The quote verification collateral.
+ */
+void oe_prealloc_quote_verification_collateral_args(
+    oe_get_sgx_quote_verification_collateral_args_t* buf);
+
 OE_EXTERNC_END
 
 #endif // _OE_COMMON_REVOCATION_H
