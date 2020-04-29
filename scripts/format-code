@@ -52,6 +52,10 @@ do
         whatif=1
         ;;
 
+    -s | --staged)
+        userFiles="$(git diff --cached --name-only --diff-filter=ACMR)"
+        ;;
+
     --exclude-dirs=*)
         userExcludeDirs="${opt#*=}"
         ;;
@@ -83,12 +87,13 @@ OVERVIEW:
 
 Formats all C/C++ source files based on the .clang-format rules
 
-    $ format-code [-h] [-v] [-w] [--exclude-dirs="..."] [--include-exts="..."] [--files="..."]
+    $ format-code [-h] [-q] [-s] [-v] [-w] [--exclude-dirs="..."] [--include-exts="..."] [--files="..."]
 
 OPTIONS:
     -h, --help              Print this help message.
+    -q, --quiet             Display only clang-format output and errors.
+    -s, --staged            Only format files which are staged to be committed.
     -v, --verbose           Display verbose output.
-    -v, --quiet             Display only clang-format output and errors.
     -w, --whatif            Run the script without actually modifying the files
                             and display the diff of expected changes, if any.
     --exclude-dirs          Subdirectories to exclude. If unspecified, then
@@ -189,10 +194,10 @@ get_find_args()
     local defaultIncludeExts='h c cpp'
 
     if [[ -z ${userExcludeDirs} ]]; then
-        local excludeDirs=( ${defaultExcludeDirs} )
+        read -r -a excludeDirs <<< "${defaultExcludeDirs}"
     else
         log_verbose "Using user directory exclusions: ${userExcludeDirs}"
-        local excludeDirs=( ${userExcludeDirs} )
+        read -r -a excludeDirs <<< "${userExcludeDirs}"
     fi
 
     for exc in "${excludeDirs[@]}"
@@ -202,10 +207,10 @@ get_find_args()
 
     if [[ -z ${userIncludeExts} ]]; then
         # not local as this is used in get_file_list() too
-        includeExts=( ${defaultIncludeExts} )
+        read -r -a includeExts <<< "${defaultIncludeExts}"
     else
         log_verbose "Using user extension inclusions: ${userIncludeExts}"
-        includeExts=( ${userIncludeExts} )
+        read -r -a includeExts <<< "${userIncludeExts}"
     fi
 
     findargs="${findargs} \("
@@ -249,7 +254,7 @@ get_file_list()
         fi
     else
         log_verbose "Using user files: ${userFiles}"
-        local user_file_list=( ${userFiles} )
+        mapfile -t user_file_list <<< "${userFiles}"
         file_list=()
         for file in "${user_file_list[@]}"; do
             for ext in "${includeExts[@]}"; do
@@ -295,4 +300,4 @@ done
 log_whatif "${filecount} files processed, ${changecount} changed."
 
 # If files are being edited, this count is zero so we exit with success.
-exit $changecount
+exit "$changecount"

@@ -1,8 +1,15 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+/* The use of dlmalloc/malloc.c below requires stdc names from these headers.
+ * OE_NEED_STDC_NAMES is set by enclave/core/CMakeLists.txt for this file
+ * to make the following corelibc headers include corresponding stdc names
+ * for types and functions. */
+#include <openenclave/corelibc/errno.h> // For errno & error defs
+#include <openenclave/corelibc/sched.h> // For sched_yield
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/string.h>
+
 #include <openenclave/enclave.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
@@ -11,12 +18,8 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/thread.h>
 #include "debugmalloc.h"
-
-/* The use of dlmalloc/malloc.c below requires stdc names from these headers */
-#define OE_NEED_STDC_NAMES
-#include <openenclave/corelibc/bits/stdfile.h> // For stderr & FILE
-#include <openenclave/corelibc/errno.h>        // For errno & error defs
-#include <openenclave/corelibc/sched.h>        // For sched_yield
+#include "oe_alloc_thread.h"
+#include "oe_nodebug_alloc.h"
 
 #define HAVE_MMAP 0
 #define LACKS_UNISTD_H
@@ -61,6 +64,23 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #define FREE dlfree
 #define MALLOC_USABLE_SIZE dlmalloc_usable_size
 #endif
+
+void* oe_nodebug_malloc(size_t s)
+{
+    return dlmalloc(s);
+}
+void oe_nodebug_free(void* ptr)
+{
+    return dlfree(ptr);
+}
+void* oe_nodebug_realloc(void* ptr, size_t s)
+{
+    return dlrealloc(ptr, s);
+}
+void* oe_nodebug_memalign(size_t alignment, size_t size)
+{
+    return dlmemalign(alignment, size);
+}
 
 static oe_allocation_failure_callback_t _failure_callback;
 
@@ -247,4 +267,12 @@ oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
 done:
     oe_mutex_unlock(&_mutex);
     return result;
+}
+
+void oe_alloc_thread_startup()
+{
+}
+
+void oe_alloc_thread_teardown()
+{
 }

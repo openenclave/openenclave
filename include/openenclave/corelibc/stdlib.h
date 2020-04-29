@@ -1,11 +1,16 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+/* DISCLAIMER:
+ * This header is published with no guarantees of stability and is not part
+ * of the Open Enclave public API surface. It is only intended to be used
+ * internally by the OE runtime. */
+
 #ifndef _OE_STDLIB_H
 #define _OE_STDLIB_H
 
+#include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/bits/defs.h>
 #include <openenclave/corelibc/limits.h>
 
 OE_EXTERNC_BEGIN

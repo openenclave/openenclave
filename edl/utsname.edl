@@ -1,0 +1,35 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** utsname.edl:
+**
+**     This file declares OCALLs needed by the enclave to implement functions in
+**     POSIX utsname.h.
+**
+**==============================================================================
+*/
+
+enclave
+{
+
+    // __OE_UTSNAME_FIELD_SIZE == 65
+    struct oe_utsname
+    {
+        char sysname[65];
+        char nodename[65];
+        char release[65];
+        char version[65];
+        char machine[65];
+        char domainname[65];
+    };
+
+    untrusted
+    {
+        int oe_syscall_uname_ocall(
+            [out, count=1] struct oe_utsname* buf)
+            propagate_errno;
+    };
+};

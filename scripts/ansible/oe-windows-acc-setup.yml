@@ -8,10 +8,10 @@
   tasks:
     - name: OE setup | Set installer URLs from the OE storage account
       set_fact:
-        intel_psw_url:       "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.6.100.2.exe"
-        intel_psw_hash:      "00A2A5B9A065858DD4114660C2E4106711E2B18A66D632A26E0ABCBA222CBF96"
-        intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20DCAP%20for%20Windows%20v1.4.100.4.exe"
-        intel_dcap_hash:     "7DAA87B9E687012183BB2E1D984CB1F877D45CCB07700155F9C44FB9B58EAAAF"
+        intel_psw_url:       "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.7.101.2.exe"
+        intel_psw_hash:      "AF669A4593411E9AABCE18838C91003866DDDEDAC5BEEC61DE160025008B0A19"
+        intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20DCAP%20for%20Windows%20v1.6.100.2.exe"
+        intel_dcap_hash:     "39DB3E183E79400A4A1C635E67A927C8E5C75A19E5A2A7FC537E1B24D8FDF42E"
         git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.19.1-64-bit.exe"
         git_hash:            "5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793"
         seven_zip_url:       "https://oejenkins.blob.core.windows.net/oejenkins/7z1806-x64.msi"
@@ -28,16 +28,16 @@
         nuget_hash:          "2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F"
         devcon_package_url:  "https://oejenkins.blob.core.windows.net/oejenkins/devcon_package.cab"
         devcon_package_hash: "A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A"
-        az_dcap_client_url:  "https://oejenkins.blob.core.windows.net/oejenkins/azure.dcap.windows.0.0.2.nupkg"
-        az_dcap_client_hash: "E319A6C2D136FE5EDB8799305F6151B71F4CE4E67D96CA74538D0AD5D2D793F1"
+        az_dcap_client_url:  "https://oejenkins.blob.core.windows.net/oejenkins/microsoft.azure.dcap.1.3.0.nupkg"
+        az_dcap_client_hash: "0CEE9E204EA30519B8808D271459512BC4CEA875E0007AFB422451D2CD7375DB"
         nsis_url:            "https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe"
         nsis_hash:           "1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB"
 
     - name: OE setup | Run the install-windows-prereqs.ps1 script (this may take a while)
       script: ../install-windows-prereqs.ps1
         -InstallPath         "C:\oe_prereqs"
-        -LaunchConfiguration "{{ 'SGX1FLC' if dcap_testing_node is defined and dcap_testing_node == 'true' else 'SGX1' }}"
-        -DCAPClientType      "{{ 'Azure' }}"
+        -LaunchConfiguration "{{ launch_configuration }}"
+        -DCAPClientType      "Azure"
         -IntelPSWURL         "{{ intel_psw_url }}"
         -IntelPSWHash        "{{ intel_psw_hash }}"
         -IntelDCAPURL        "{{ intel_dcap_url }}"
@@ -63,9 +63,24 @@
         -NSISURL             "{{ nsis_url }}"
         -NSISHash            "{{ nsis_hash }}"
 
+     # One way to ensure the system is reliable just after a reboot, is to set WinRM to a delayed startup
+    - name: Ensure WinRM starts when the system has settled and is ready to work reliably
+      win_service:
+        name: WinRM
+        start_mode: delayed
+
+    - name: Install all security, critical, and rollup updates without a scheduled task
+      win_updates:
+        category_names:
+          - SecurityUpdates
+          - CriticalUpdates
+          - UpdateRollups
+        reboot: yes
+        reboot_timeout: 3600
+      when: ansible_distribution != 'Microsoft Windows Server 2016 Datacenter'
+
     - name: OE setup | Reboot the node
       win_reboot:
-      when: ansible_user != "packer"
 
     - import_role:
         name: windows/openenclave

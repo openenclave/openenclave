@@ -1,8 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#define OE_NEED_STDC_NAMES
-
 #include <openenclave/enclave.h>
 
 #include <openenclave/corelibc/stdio.h>
@@ -38,6 +36,8 @@ static oe_result_t _call_host_function(
         false /* non-switchless */);
 }
 
+/* Include the oeedger8r generated C file. The macros defined above customize
+ * the generated code for internal use. */
 #include "syscall_t.c"
 
 static oe_once_t _once = OE_ONCE_INITIALIZER;

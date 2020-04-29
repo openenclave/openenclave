@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 enclave {
-    include "openenclave/internal/sgxtypes.h"
+    include "openenclave/internal/sgx/td.h"
     
     enum test_enum {
         NEW_MAGIC = 1967246473

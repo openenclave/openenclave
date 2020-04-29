@@ -1,7 +1,6 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-
 # Include the libc tests wrappers:
 include(../tests.cmake)
 
@@ -37,6 +36,9 @@ if(NOT OE_TRUSTZONE)
 endif()
 
 add_enclave(TARGET libc_enc UUID d7fe296a-24e9-46d1-aa78-9c7395082a41
+    # Building the enclave by default when enabling LVI mitigation to
+    # test linking against LVI-mitigated libraries.
+    ADD_LVI_MITIGATION
     SOURCES
     enc.c
     ${test_dependencies}
@@ -44,7 +46,7 @@ add_enclave(TARGET libc_enc UUID d7fe296a-24e9-46d1-aa78-9c7395082a41
     ${LIBC_TESTS}
     libc_t.c)
 
-target_compile_options(libc_enc PRIVATE
+enclave_compile_options(libc_enc PRIVATE
     -Wno-error
     -Wno-unknown-pragmas
     -Wno-unused-function
@@ -61,16 +63,16 @@ target_compile_options(libc_enc PRIVATE
     -Wno-overflow)
 
 if(OE_SGX)
-    target_compile_options(libc_enc PRIVATE
+    enclave_compile_options(libc_enc PRIVATE
         -Wno-macro-redefined
         -Wno-literal-range
         -Wno-writable-strings)
 elseif(OE_TRUSTZONE)
-    target_compile_options(libc_enc PRIVATE
+    enclave_compile_options(libc_enc PRIVATE
         -Wno-bool-compare)
 endif()
 
-target_include_directories(
+enclave_include_directories(
     libc_enc PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -108,4 +110,4 @@ set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}" PARENT_SCOPE)
 set(CMAKE_C_COMPILE_OBJECT "${CMAKE_C_COMPILE_OBJECT}" PARENT_SCOPE)
 set(CMAKE_CXX_COMPILE_OBJECT "${CMAKE_CXX_COMPILE_OBJECT}" PARENT_SCOPE)
 
-target_link_libraries(libc_enc oelibc oesyscall oehostresolver oehostfs oehostsock )
+enclave_link_libraries(libc_enc oelibc oesyscall oehostresolver oehostfs oehostsock )

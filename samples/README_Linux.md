@@ -1,6 +1,6 @@
 # Building Open Enclave SDK Samples on Linux
 
-All the samples that come with the Open Enclave SDK installation share a similar directory structure and build instructions. This document describes how to setup, build, sign and run these samples.
+All the samples that come with the Open Enclave SDK installation share a similar directory structure and build instructions. This document describes how to setup, build, sign, and run these samples.
 
 ## Common Sample information
 
@@ -106,6 +106,10 @@ For example:
 ##### Note:
 For details on how to configure build and sign options, refer to [Enclave Building and Signing](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/buildandsign.md).
 
+#### Build and Run samples with LVI mitigation
+
+Refer to [here](helloworld#build-and-run-with-lvi-mitigation) for more details.
+
 ## Samples
 
 The following samples demonstrate how to develop enclave applications using OE APIs. It's recommended to go through the following samples in the order listed.
@@ -115,15 +119,16 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Minimum code needed for an OE app
 - Help understand the basic components an OE application
 - Demonstrate how to build, sign, and run an OE image
+- Demonstrate how to optionally apply LVI mitigation to enclave code
 
 #### [File-Encryptor](file-encryptor/README.md)
 
-- Shows how to encrypt and decrypt data inside an enclave
-- Uses AES mbedTLS API to perform encryption and decryption
+- Show how to encrypt and decrypt data inside an enclave
+- Use AES mbedTLS API to perform encryption and decryption
 
 #### [Data-Sealing](data-sealing/README.md)
 
-- Introduce OE sealing and unsealing features 
+- Introduce OE sealing and unsealing features
 - Demonstrate how to use OE sealing APIs
 - Explore two supported seal polices
   - OE_SEAL_POLICY_UNIQUE
@@ -154,3 +159,8 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Demonstrate how to configure an enclave to enable switchless calls originated within it
 - Recommend the number of host worker threads required for switchless calls in practice
 - Demonstrate how to enable switchless calls in an enclave application
+
+#### [Host-side Enclave Verification](host_verify/README.md)
+
+- Explain the concept of host-side enclave verification
+- Demonstrate attestation of a remote SGX enclave from outside an enclave

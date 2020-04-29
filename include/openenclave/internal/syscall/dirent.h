@@ -7,6 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/corelibc/bits/types.h>
 #include <openenclave/corelibc/limits.h>
+#include <openenclave/internal/bits/fcntl.h>
 
 OE_EXTERNC_BEGIN
 
@@ -22,10 +23,6 @@ OE_EXTERNC_BEGIN
 #define OE_DT_WHT 14
 
 typedef struct _OE_DIR OE_DIR;
-
-#define __OE_DIRENT oe_dirent
-#include <openenclave/internal/syscall/bits/dirent.h>
-#undef __OE_DIRENT
 
 OE_DIR* oe_opendir(const char* pathname);
 

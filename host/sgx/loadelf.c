@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/load.h>
@@ -12,8 +13,8 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/sgxcreate.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
@@ -37,7 +38,7 @@ static oe_result_t _free_elf_image(oe_enclave_image_t* image)
 
     if (image->u.elf.segments)
     {
-        free(image->u.elf.segments);
+        oe_memalign_free(image->u.elf.segments);
     }
 
     memset(image, 0, sizeof(*image));
@@ -235,8 +236,12 @@ static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
     }
 
     /* allocate segments */
-    image->u.elf.segments = (oe_elf_segment_t*)calloc(
-        image->u.elf.num_segments, sizeof(oe_elf_segment_t));
+    image->u.elf.segments = (oe_elf_segment_t*)oe_memalign(
+        OE_PAGE_SIZE, image->u.elf.num_segments * sizeof(oe_elf_segment_t));
+    memset(
+        image->u.elf.segments,
+        0,
+        image->u.elf.num_segments * sizeof(oe_elf_segment_t));
     if (!image->u.elf.segments)
     {
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -360,7 +365,7 @@ static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
         sizeof(oe_elf_segment_t),
         _compare_segments);
 
-    /* validate segments are valid */
+    /* check that segments are valid */
     for (i = 0; i < image->u.elf.num_segments - 1; i++)
     {
         const oe_elf_segment_t* seg = &image->u.elf.segments[i];
@@ -415,7 +420,7 @@ static oe_result_t _unload(oe_enclave_image_t* image)
 {
     if (image->u.elf.reloc_data)
     {
-        free(image->u.elf.reloc_data);
+        oe_memalign_free(image->u.elf.reloc_data);
     }
 
     return _free_elf_image(image);

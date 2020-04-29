@@ -8,6 +8,6 @@ add_custom_command(OUTPUT oecertdump_t.h oecertdump_t.c oecertdump_args.h
 add_enclave(TARGET oecertdump_enc SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/oecertdump_t.c)
 
 # Need for the generated file oecertdump_t.h
-target_include_directories(oecertdump_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(oecertdump_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(oecertdump_enc oeenclave oelibc)
+enclave_link_libraries(oecertdump_enc oeenclave oelibc)

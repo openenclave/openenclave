@@ -12,4 +12,4 @@ add_custom_command(
 
 add_enclave(TARGET dup_enc SOURCES enc.c main.c ${CMAKE_CURRENT_BINARY_DIR}/test_dup_t.c)
 
-target_link_libraries(dup_enc oelibc oehostfs oeenclave)
+enclave_link_libraries(dup_enc oelibc oehostfs oeenclave)

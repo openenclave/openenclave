@@ -9,14 +9,10 @@ endif()
 
 set(TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/tmp")
 
-add_test(tests/fs1 cmake -E remove_directory "${TMP_DIR}")
-
-add_enclave_test(tests/fs2
+add_enclave_test(tests/fs
     fs_host
     fs_enc
     "${PROJECT_SOURCE_DIR}"
     "${TMP_DIR}")
 
-maybe_build_using_clangw(fs_enc)
-
-set_tests_properties(tests/fs2 PROPERTIES SKIP_RETURN_CODE 2)
+set_enclave_tests_properties(tests/fs PROPERTIES SKIP_RETURN_CODE 2)

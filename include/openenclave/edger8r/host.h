@@ -23,6 +23,11 @@
 #include <openenclave/edger8r/common.h>
 #include <openenclave/host.h> // for oe_ocall_func_t
 
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wchar.h>
+
 OE_EXTERNC_BEGIN
 
 /**
@@ -77,6 +82,29 @@ oe_result_t oe_switchless_call_enclave_function(
     void* output_buffer,
     size_t output_buffer_size,
     size_t* output_bytes_written);
+
+/*
+ * In some instances oeedger8r generates the same code for both the host and
+ * enclave side. Since enclave applications are not required to link stdc,
+ * the edger8r uses oe-specific implementations. For the host side, simply
+ * implement these functions as wrappers for the stdc functions since oehost
+ * has a hard dependancy on stdc.
+ */
+
+OE_INLINE void* oe_malloc(size_t size)
+{
+    return malloc(size);
+}
+
+OE_INLINE size_t oe_strlen(const char* s)
+{
+    return strlen(s);
+}
+
+OE_INLINE size_t oe_wcslen(const wchar_t* s)
+{
+    return wcslen(s);
+}
 
 OE_EXTERNC_END
 

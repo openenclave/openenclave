@@ -30,10 +30,12 @@ void enclave_add_N_regular(int* m, int n)
     }
 }
 
-OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+void enclave_decrement_switchless(int* n)
+{
+    *n = *n - 1;
+}
+
+void enclave_decrement_regular(int* n)
+{
+    *n = *n - 1;
+}

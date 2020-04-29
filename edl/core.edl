@@ -1,0 +1,27 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** core.edl:
+**
+**     This file declares internal ECALLs/OCALLs used by liboehost/liboecore
+**     for usage with any TEE technology.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    /* The end goal is to publish all EDL files as part of the SDK. At that time
+     * enclave developers will simply import the edl files/functions they
+     * need and this file will no longer be required. These files are imported
+     * as a convenience to allow refactoring of system EDL files without the need
+     * to add a new build definition for each file.
+     */
+    from "attestation.edl" import *;
+    from "keys.edl" import *;
+    from "logging.edl" import *;
+    from "memory.edl" import *;
+};

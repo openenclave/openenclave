@@ -1,7 +1,7 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-add_library(oelibcxx STATIC)
+add_enclave_library(oelibcxx STATIC)
 
 maybe_build_using_clangw(oelibcxx)
 
@@ -12,11 +12,11 @@ maybe_build_using_clangw(oelibcxx)
 # in all the public compile options, compile definitions, and include
 # directories of these targets and their dependencies (such as
 # `oelibc`). Hence this file has more comments than code.
-target_link_libraries(oelibcxx
+enclave_link_libraries(oelibcxx
   PUBLIC libcxx libcxxrt libunwind)
 
-set_property(TARGET oelibcxx
+set_enclave_property(TARGET oelibcxx
   PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/enclave)
 
-install(TARGETS oelibcxx EXPORT openenclave-targets
+install_enclaves(TARGETS oelibcxx EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

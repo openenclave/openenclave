@@ -6,6 +6,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
+#include <stdlib.h>
 #include <string.h>
 #include "backtrace_t.h"
 
@@ -77,7 +78,15 @@ static void _print_backtrace(
         // Iterate through the expected symbols
         for (size_t i = 0; i < num_expected_symbols; i++)
         {
-            if (strcmp(expected_symbols[i], symbols[idx]) == 0)
+            // GCC sometimes adds .constprop, .clone and other suffixes to
+            // functions. Given func4, GCC could generate func4.constprop.0
+            // that does a bit of the work done by func4, leaving the rest
+            // for func4 to do. To handle the presence of such functions in
+            // the backtrace, ignore suffixes in this comparision.
+            if (strncmp(
+                    expected_symbols[i],
+                    symbols[idx],
+                    strlen(expected_symbols[i])) == 0)
             {
                 // Expected and actual symbols match.
                 // Move past the current frame.
@@ -144,7 +153,6 @@ extern "C" bool test_unwind(size_t num_syms, const char** syms)
     {
         char** _syms = backtrace_symbols(b.buffer, b.size);
         OE_TEST(_syms != NULL);
-
         _print_backtrace(b.buffer, (size_t)b.size, num_syms, syms);
 
         free(_syms);

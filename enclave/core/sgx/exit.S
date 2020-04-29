@@ -30,15 +30,15 @@
 //
 //      (2) If this is a nested exit, then save the enclave registers
 //          on the enclave stack and save the stack pointer in the
-//          thread data structure (td_t.last_sp)
+//          thread data structure (oe_sgx_td_t.last_sp)
 //
-//      (3) If this a clean exit, then store zero in td_t.last_sp, forcing
+//      (3) If this a clean exit, then store zero in oe_sgx_td_t.last_sp, forcing
 //          oe_enter() to recompute it on next entry.
 //
 //      (4) Clear enclave registers to avoid leaking data to the host.
 //
 //      (5) Restore the host registers from the thread data structure
-//          (td_t).
+//          (oe_sgx_td_t).
 //
 //      (6) Execute the SGX EEXIT instruction, exiting the enclave and
 //          returning control to the host.
@@ -64,31 +64,6 @@ oe_asm_exit:
     // exit-type-check.
     lfence 
 
-    // Save host registers and stack pointer (will be restored on reentry)
-    push %r12
-    push %r13
-    push %r14
-    push %r15
-
-    // Construct the oe_ocall_context_t(rbp, return address).
-    mov (4*OE_WORD_SIZE)(%rsp), %r12
-    push %r12
-    push %rbp
-    mov	%rsp, %r12
-
-    // Save the parameters of oe_asm_exit into stack.
-    push %rdi
-    push %rsi
-
-    // Notify a nested exit happens.
-    // oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
-    mov %r12, %rsi
-    call oe_notify_nested_exit_start
-
-    // Restore the parameters of oe_asm_exit from stack.
-    pop %rsi
-    pop %rdi
-
     mov %rsp, %fs:td_last_sp
 
     jmp .clear_enclave_registers
@@ -98,7 +73,7 @@ oe_asm_exit:
     // after exit-type-check.
     lfence
 
-    // Clear the td_t.last_sp field (force oe_enter to calculate stack pointer)
+    // Clear the oe_sgx_td_t.last_sp field (force oe_enter to calculate stack pointer)
     movq $0, %fs:td_last_sp
 
 .clear_enclave_registers:
@@ -114,7 +89,7 @@ oe_asm_exit:
 
 .execute_eexit:
 
-    // Check td_t.simulate flag
+    // Check oe_sgx_td_t.simulate flag
     // simulate-flag-check.
     mov %fs:td_simulate, %rax
     cmp $0, %rax
@@ -145,34 +120,3 @@ oe_asm_exit:
     jmp .forever
 
 .cfi_endproc
-
-.size oe_asm_exit, .-oe_asm_exit
-
-//==============================================================================
-//
-// This function is wrapper of oe_asm_exit. It is needed to stitch the host
-// stack and enclave stack together.
-//
-// N.B: Don't change the function name, otherwise debugger can't work. GDB 
-// depends on this hardcode function name when does stack walking for split
-// stack.
-//==============================================================================
-
-.globl __morestack
-.type __morestack, @function
-
-__morestack:
-.cfi_startproc
-    push %rbp
-.cfi_def_cfa_offset     16
-.cfi_offset             rbp, -16
-    mov %rsp, %rbp
-.cfi_def_cfa_register   rbp
-
-    call oe_asm_exit
-
-    leave
-    ret
-.cfi_endproc
-
-.size __morestack, .-__morestack

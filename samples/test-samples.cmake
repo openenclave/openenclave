@@ -6,8 +6,7 @@
 #
 #     cmake -DHAS_QUOTE_PROVIDER=ON -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
 
-# These three samples can run in simulation, and therefore run in every configuration.
-set(SAMPLES_LIST helloworld file-encryptor switchless)
+set(SAMPLES_LIST helloworld file-encryptor switchless host_verify)
 
 if ($ENV{OE_SIMULATION})
   message(WARNING "Running only sample simulation tests due to OE_SIMULATION=$ENV{OE_SIMULATION}!")
@@ -94,7 +93,7 @@ foreach (SAMPLE ${SAMPLES_LIST})
         else ()
 	  message(STATUS "Samples test '${SAMPLE}' with pkg-config passed!")
         endif ()
-	endif ()
+    endif ()
   endif ()
 
   # Simulation mode is not supported on Windows currently.

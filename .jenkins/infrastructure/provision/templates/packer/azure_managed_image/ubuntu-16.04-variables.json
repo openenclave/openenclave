@@ -1,0 +1,11 @@
+{
+    "managed_image_name_suffix": "ubuntu-16.04-SGX",
+    "os_type": "Linux",
+    "gallery_image_name": "ubuntu-16.04",
+    "image_publisher": "Canonical",
+    "image_offer": "UbuntuServer",
+    "image_sku": "16_04-lts-gen2",
+    "vm_size": "Standard_DC2s",
+    "ansible_group": "linux-agents",
+    "playbook_file_name": "oe-linux-acc-setup.yml"
+}

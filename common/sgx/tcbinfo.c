@@ -240,6 +240,20 @@ static oe_tcb_level_status_t _parse_tcb_status(
         status.fields.qe_identity_out_of_date = 1;
         status.fields.configuration_needed = 1;
     }
+    // Due to sgx LVI update, UpToDate tcb would be marked as SWHardeningNeeded,
+    // as sgx cannot tell if enclave writer has implemented SW mitigations for
+    // LVI. Set status SWHardeningNeeded as up_to_date for now to make sure
+    // services for those tcbs are not affected.
+    else if (_json_str_equal(str, length, "SWHardeningNeeded"))
+    {
+        status.fields.up_to_date = 1;
+        status.fields.sw_hardening_needed = 1;
+    }
+    else if (_json_str_equal(str, length, "ConfigurationAndSWHardeningNeeded"))
+    {
+        status.fields.configuration_needed = 1;
+        status.fields.sw_hardening_needed = 1;
+    }
 
     return status;
 }
@@ -345,6 +359,22 @@ static void _determine_platform_tcb_info_tcb_level(
     platform_tcb_level->status.AsUINT32 = tcb_level->status.AsUINT32;
 }
 
+// Found matching TCB level, move itr to the end of the array.
+static void _move_to_end_of_tcb_levels(const uint8_t** itr, const uint8_t* end)
+{
+    // Need a counter for '[', ']' to avoid early itr stop due to
+    // potential '[', ']' inside array;
+    uint64_t square_bracket_count = 0;
+    while (*itr < end && (**itr != ']' || square_bracket_count != 0))
+    {
+        if (**itr == '[')
+            square_bracket_count++;
+        else if (**itr == ']')
+            square_bracket_count--;
+        (*itr)++;
+    }
+}
+
 /**
  * Type: tcbLevel in TCB Info (V1)
  * Schema:
@@ -397,9 +427,11 @@ done:
  * but with different set of values). "tcbDate" : oe_datetime_t when TCB level
  * was certified not to be vulnerable. ISO 8601 standard(YYYY-MM-DDThh:mm:ssZ).
  *    "tcbStatus" : one of "UpToDate" or "OutOfDate" or "Revoked" or
- *                  "ConfigurationNeeded" or "OutOfDateConfigurationNeeded"
- *    "advisoryIDs" : array of strings describing vulnerabilities that this TCB
- * level is vulnerable to.  Example: ["INTEL-SA-00079", "INTEL-SA-00076"]
+ *                  "ConfigurationNeeded" or "OutOfDateConfigurationNeeded" or
+ *                  "SWHardeningNeeded" or "ConfigurationAndSWHardeningNeeded"
+ *    "advisoryIDs" :
+ * array of strings describing vulnerabilities that this TCB level is vulnerable
+ * to.  Example: ["INTEL-SA-00079", "INTEL-SA-00076"]
  * }
  */
 static oe_result_t _read_tcb_info_tcb_level_v2(
@@ -590,8 +622,7 @@ static oe_result_t _read_tcb_info(
                 OE_TCB_LEVEL_STATUS_UNKNOWN)
             {
                 // Found matching TCB level, go to the end of the array.
-                while (*itr < end && **itr != ']')
-                    (*itr)++;
+                _move_to_end_of_tcb_levels(itr, end);
             }
 
             // Read end of array or comma separator.
@@ -925,10 +956,12 @@ static void _determine_platform_qe_tcb_level(
  *    "tcb" : object of type tcb (Note: TCB Info has the same object, but with
  *            different set of values).
  *    "tcbDate" : oe_datetime_t when TCB level was certified not to be
- * vulnerable. ISO 8601 standard(YYYY-MM-DDThh:mm:ssZ). "tcbStatus" : one of
- * "UpToDate" or "OutOfDate" or "Revoked" or "ConfigurationNeeded" or
- * "OutOfDateConfigurationNeeded" "advisoryIDs" : array of strings describing
- * vulnerabilities that this TCB level is vulnerable to.  Example:
+ * vulnerable. ISO 8601 standard(YYYY-MM-DDThh:mm:ssZ).
+ *    "tcbStatus" : one of "UpToDate" or "OutOfDate" or "Revoked" or
+ * "ConfigurationNeeded" or "OutOfDateConfigurationNeeded" or
+ * "SWHardeningNeeded" or "ConfigurationAndSWHardeningNeeded"
+ *    "advisoryIDs" : array of strings describing vulnerabilities that this TCB
+ * level is vulnerable to.  Example:
  * ["INTEL-SA-00079", "INTEL-SA-00076"]
  * }
  */
@@ -1138,8 +1171,7 @@ static oe_result_t _read_qe_identity_info_v2(
             OE_TCB_LEVEL_STATUS_UNKNOWN)
         {
             // Found matching TCB level, go to the end of the array.
-            while (*itr < end && **itr != ']')
-                (*itr)++;
+            _move_to_end_of_tcb_levels(itr, end);
         }
 
         // Read end of array or comma separator.

@@ -5,6 +5,9 @@ enclave {
     trusted {
         public void enclave_add_N_switchless([in, out] int* m, int n);
         public void enclave_add_N_regular([in, out] int* m, int n);
+
+        public void enclave_decrement_switchless([in, out] int* m) transition_using_threads;
+        public void enclave_decrement_regular([in, out] int* m);
     };
 
     untrusted {

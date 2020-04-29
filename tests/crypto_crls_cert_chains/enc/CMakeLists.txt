@@ -10,4 +10,4 @@ add_custom_command(
 
 add_enclave(TARGET crypto-extra_enc UUID 69840c14-42f8-4637-9d58-57bccb5a0532 CXX SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/crypto_crls_cert_chains_t.c)
 
-target_include_directories(crypto-extra_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(crypto-extra_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

@@ -70,6 +70,16 @@ else ()
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  # Enforce -O0 in debug mode.
+  string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UPPER)
+  if (CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
+    # For gcc the -g option alredy includes -O0.
+    # Here we just apply -O0 for Clang.
+    if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
+      set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+      set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+    endif()
+  endif()
   # Enables all the warnings about constructions that some users consider questionable,
   # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
   # to fix warnings as they arise, so they don't accumulate "to be fixed later".
@@ -114,7 +124,7 @@ elseif (MSVC)
 
   # Add Flags we want to use for both C and CXX
   add_compile_options(/WX)
-  add_compile_options(/W2)
+  add_compile_options(/W3)
 
   # Ignore compiler warnings:
   # * unicode character not supported

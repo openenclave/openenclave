@@ -13,6 +13,19 @@
 
 #include "mbed_u.h"
 
+#define PATH_LENGTH 1024
+#define TEMP_LENGTH 500
+
+void remove_postfix(char* str, char* postfix)
+{
+    char* match;
+    match = strstr(str, postfix);
+    if (match != NULL)
+    {
+        memset(match, '\0', sizeof(postfix));
+    }
+}
+
 char* find_data_file(char* str, size_t size)
 {
     char* tail = ".datax";
@@ -30,21 +43,24 @@ char* find_data_file(char* str, size_t size)
         printf("!!File is not in format !!!!\n");
         return token;
     }
+    /* Remove lvi-mitigation-specific postfix to ensure the test correctly
+     * finds the data file. */
+    remove_postfix(token, "-lvi-cfg");
 
-    strncat(str, tail, strlen(tail));
+    strncat_s(str, size, tail, strlen(tail));
     printf("######## data_file: %s ###### \n", token);
     return token;
 }
 
-void datafileloc(char* data_file_name, char* path)
+void datafileloc(char* data_file_name, char* path, int length)
 {
     char* tail = "../enc/";
 #ifdef PROJECT_DIR
-    strcpy(path, PROJECT_DIR);
+    strcpy_s(path, length, PROJECT_DIR);
 #else
     char* separator;
 
-    if (getcwd(path, 1024) != NULL)
+    if (getcwd(path, length) != NULL)
         fprintf(stdout, "Current working dir: %s\n", path);
     else
         perror("getcwd() error");
@@ -57,8 +73,8 @@ void datafileloc(char* data_file_name, char* path)
 
     *separator = '\0'; /* separating string */
 #endif
-    strcat(path, tail);
-    strcat(path, data_file_name);
+    strcat_s(path, length, tail);
+    strcat_s(path, length, data_file_name);
 
 #if defined(_WIN32)
     /* On Windows, replace forward slashes with backslashes in the path */
@@ -74,14 +90,14 @@ void datafileloc(char* data_file_name, char* path)
 
 void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
 {
-    char path[1024];
+    char path[PATH_LENGTH];
     int return_value = 1;
     char* in_testname = NULL;
     char out_testname[STRLEN];
     struct mbed_args args = {0};
     if (!selftest)
     {
-        datafileloc(data_file_name, path);
+        datafileloc(data_file_name, path, PATH_LENGTH);
         in_testname = path;
     }
 
@@ -114,7 +130,7 @@ void ocall_exit(int arg)
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
-    char temp[500];
+    char temp[TEMP_LENGTH];
     oe_enclave_t* enclave = NULL;
     int selftest = 0;
     uint32_t flags = oe_get_create_flags();
@@ -129,7 +145,7 @@ int main(int argc, const char* argv[])
 
     printf("=== %s: %s\n", argv[0], argv[1]);
 
-    strcpy(temp, argv[1]);
+    strcpy_s(temp, TEMP_LENGTH, argv[1]);
 
     if (strstr(argv[1], "selftest"))
     {

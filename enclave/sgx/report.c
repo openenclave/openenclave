@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "report.h"
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
@@ -10,11 +11,10 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/sgxkeys.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
 #include "../common/sgx/quote.h"
-#include "sgx_t.h"
+#include "platform_t.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 

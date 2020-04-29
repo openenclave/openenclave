@@ -168,9 +168,10 @@ static int _get_enclave_ssa_frame_size(
     oe_thread_data_t oe_thread_data;
     size_t read_byte_length = 0;
 
-    // td_t is in OE_TD_FROM_TCS_BYTE_OFFSET from tcs.
+    // oe_sgx_td_t is in OE_TD_FROM_TCS_BYTE_OFFSET from tcs.
     // It is defined by enclave layout in td.c.
-    td_t* td = (td_t*)(((unsigned char*)tcs_addr) + OE_TD_FROM_TCS_BYTE_OFFSET);
+    oe_sgx_td_t* td =
+        (oe_sgx_td_t*)(((unsigned char*)tcs_addr) + OE_TD_FROM_TCS_BYTE_OFFSET);
     ret = oe_read_process_memory(
         pid,
         (void*)td,

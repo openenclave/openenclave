@@ -89,7 +89,11 @@ static oe_result_t _update_and_write_signed_exe(
             goto done;
         }
 
+#ifdef _WIN32
+        if (fopen_s(&os, p, "wb") != 0)
+#else
         if (!(os = fopen(p, "wb")))
+#endif
         {
             Err("failed to open: %s", p);
             goto done;
@@ -189,7 +193,11 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
     str_t rhs = STR_NULL_INIT;
     size_t line = 1;
 
+#ifdef _WIN32
+    if (fopen_s(&is, path, "rb") != 0)
+#else
     if (!(is = fopen(path, "rb")))
+#endif
         goto done;
 
     if (str_dynamic(&str, NULL, 0) != 0)
@@ -347,8 +355,12 @@ static int _load_pem_file(const char* path, void** data, size_t* size)
     if (!(*data = (uint8_t*)malloc(*size + 1)))
         goto done;
 
-    /* Open the file */
+        /* Open the file */
+#ifdef _WIN32
+    if (fopen_s(&is, path, "rb") != 0)
+#else
     if (!(is = fopen(path, "rb")))
+#endif
         goto done;
 
     /* Read file into memory */
@@ -649,7 +661,7 @@ int oesign(
         /* Load private key into memory */
         if (_load_pem_file(keyfile, &pem_data, &pem_size) != 0)
         {
-            Err("Failed to load file: %s", keyfile);
+            Err("Failed to load file: %s", keyfile ? keyfile : "NULL");
             goto done;
         }
 

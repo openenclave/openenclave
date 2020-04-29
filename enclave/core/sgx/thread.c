@@ -2,14 +2,14 @@
 // Licensed under the MIT License.
 
 #include "thread.h"
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
-#include "sgx_t.h"
+#include "platform_t.h"
 #include "td.h"
 
 /*
@@ -22,7 +22,7 @@
 
 static int _thread_wait(oe_thread_data_t* self)
 {
-    const void* tcs = td_to_tcs((td_t*)self);
+    const void* tcs = td_to_tcs((oe_sgx_td_t*)self);
 
     if (oe_ocall(OE_OCALL_THREAD_WAIT, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
@@ -32,7 +32,7 @@ static int _thread_wait(oe_thread_data_t* self)
 
 static int _thread_wake(oe_thread_data_t* self)
 {
-    const void* tcs = td_to_tcs((td_t*)self);
+    const void* tcs = td_to_tcs((oe_sgx_td_t*)self);
 
     if (oe_ocall(OE_OCALL_THREAD_WAKE, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
@@ -43,10 +43,10 @@ static int _thread_wake(oe_thread_data_t* self)
 static int _thread_wake_wait(oe_thread_data_t* waiter, oe_thread_data_t* self)
 {
     int ret = -1;
-    uint64_t waiter_tcs = (uint64_t)td_to_tcs((td_t*)waiter);
-    uint64_t self_tcs = (uint64_t)td_to_tcs((td_t*)self);
+    uint64_t waiter_tcs = (uint64_t)td_to_tcs((oe_sgx_td_t*)waiter);
+    uint64_t self_tcs = (uint64_t)td_to_tcs((oe_sgx_td_t*)self);
 
-    if (oe_thread_wake_wait_ocall(oe_get_enclave(), waiter_tcs, self_tcs) !=
+    if (oe_sgx_thread_wake_wait_ocall(oe_get_enclave(), waiter_tcs, self_tcs) !=
         OE_OK)
         goto done;
 
@@ -798,7 +798,7 @@ oe_result_t oe_rwlock_unlock(oe_rwlock_t* read_write_lock)
 // enclave thread data, we reserve the first pthread_key indices up to
 // MIN_THREAD_KEY_INDEX so that they are not used by oe_thread_key_create.
 #define MIN_THREAD_KEY_INDEX \
-    ((sizeof(td_t) - OE_THREAD_SPECIFIC_DATA_SIZE) / sizeof(void*))
+    ((sizeof(oe_sgx_td_t) - OE_THREAD_SPECIFIC_DATA_SIZE) / sizeof(void*))
 #define MAX_THREAD_KEY_INDEX (OE_PAGE_SIZE / sizeof(void*))
 
 typedef struct _key_slot

@@ -11,6 +11,12 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 file(STRINGS "VERSION" OE_VERSION_WITH_V)
 string(REGEX REPLACE "^v" "" OE_VERSION ${OE_VERSION_WITH_V})
 
+# Temporary fix to account for differences in expected version numbers
+# between Debian packages and NuGet packages.
+if (WIN32)
+  string(REGEX REPLACE "~" "-" OE_VERSION ${OE_VERSION})
+endif()
+
 # Select the assembler
 # TODO: See #755: This should probably be removed
 if (UNIX)
@@ -25,12 +31,25 @@ endif ()
 set(CMAKE_C_COMPILER_NAMES clang-7 cc)
 set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Will be overwritten during the cmake initialization.
+set(LVI_MITIGATION "None" CACHE STRING "Build with LVI mitigation.")
+set(LVI_MITIGATION_BINDIR "None" CACHE STRING "Path to the LVI mitigation bindir.")
+# On Unix, configuring cmake to adopt the customized compilation toolchain for LVI mitigation.
+# Note that this has be done before `project`.
+if (UNIX AND LVI_MITIGATION MATCHES ControlFlow)
+  if (${LVI_MITIGATION_BINDIR} MATCHES None)
+    message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
+  endif()
+  include(configure_lvi_mitigation_build)
+  configure_lvi_mitigation_build(${LVI_MITIGATION_BINDIR})
+endif()
+
 project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM}
   HOMEPAGE_URL "https://github.com/openenclave/openenclave")
 set(PROJECT_VERSION ${OE_VERSION})
 set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
-
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # Collect Git info
 if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
@@ -49,11 +68,9 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   # Install Git pre-commit hook
-  if (NOT WIN32)
-    file(
-      COPY scripts/pre-commit scripts/commit-msg
-      DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks")
-  endif ()
+  file(
+    COPY scripts/pre-commit scripts/commit-msg
+    DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks")
 endif ()
 
 # Generates `compile_commands.json` used by some developers. Only
@@ -151,6 +168,9 @@ else ()
   endif ()
 endif ()
 
+# See `cmake/enclave_cmake_wrappers.cmake` for wrapper functions.
+include(enclave_cmake_wrappers)
+
 # This is always included.
 # maybe_build_using_clangw will be a noop if USE_CLANGW is false.
 include(maybe_build_using_clangw)
@@ -178,8 +198,18 @@ else ()
 endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
-# Warning: turning on simulation mode on Windows may cause test failures and random crashes
-option(WIN32_SIMULATION "Windows Simulation Mode" OFF)
+
+# NOTE: Building OpenEnclave using snmalloc for memory allocation is an experimental option.
+# Longer term, there will be a pluggable allocator mechanism to allow users to choose from a
+# selection of allocators.
+option(USE_SNMALLOC "[EXPERIMENTAL] Build using snmalloc. If this is not set, dlmalloc is used." OFF)
+if (NOT USE_SNMALLOC)
+  set(USE_DLMALLOC true)
+endif ()
+
+option(COMPILE_SYSTEM_EDL "Build system ecalls and ocalls into OE libraries. If not set, they must be included by application EDL to use." ON)
+
+option(BUILD_TESTS "Build OE tests" ON)
 
 find_program(VALGRIND "valgrind")
 if (VALGRIND)
@@ -196,9 +226,26 @@ enable_testing()
 include(add_enclave_test)
 
 # Recurse through subdirectories
-add_subdirectory(host)
 add_subdirectory(include)
-add_subdirectory(tests)
+add_subdirectory(host)
+
+# Tests are not ported to include system edl files in order to use system
+# ocalls and ecalls.
+if (COMPILE_SYSTEM_EDL)
+
+  if (BUILD_TESTS)
+    add_subdirectory(tests)
+  endif()
+
+  if (BUILD_ENCLAVES)
+    add_subdirectory(samples)
+  endif ()
+else ()
+  if (BUILD_TESTS)
+    add_subdirectory(tests/exclude_system_edl)
+  endif()
+endif()
+
 add_subdirectory(tools)
 
 if (BUILD_ENCLAVES)
@@ -218,10 +265,6 @@ if (UNIX)
   add_subdirectory(pkgconfig)
 endif()
 
-if (BUILD_ENCLAVES)
-  add_subdirectory(samples)
-endif ()
-
 if (WIN32)
   install(FILES ./scripts/clangw ./scripts/llvm-arw
     DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
@@ -235,6 +278,28 @@ if (WIN32)
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
 endif ()
 
+# Install necessary files for LVI mitigation.
+if (LVI_MITIGATION MATCHES ControlFlow)
+  if (UNIX)
+    install(FILES ./scripts/lvi-mitigation/install_lvi_mitigation_bindir
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+    install(FILES ./scripts/lvi-mitigation/generate_wrapper
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+    install(FILES ./scripts/lvi-mitigation/invoke_compiler
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+    install(FILES ./cmake/configure_lvi_mitigation_build.cmake
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+  else ()
+    # For Windows.
+    install(FILES ./scripts/lvi-mitigation/lvi-mitigation.py
+      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+  endif()
+  install(FILES ./cmake/apply_lvi_mitigation.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+endif()
 
 install(FILES LICENSE THIRD_PARTY_NOTICES
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/licenses)

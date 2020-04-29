@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/constants_x64.h>
@@ -10,7 +11,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include "asmdefs.h"
@@ -167,7 +168,9 @@ typedef struct _ssa_info
 **
 **==============================================================================
 */
-static int _get_enclave_thread_first_ssa_info(td_t* td, SSA_Info* ssa_info)
+static int _get_enclave_thread_first_ssa_info(
+    oe_sgx_td_t* td,
+    SSA_Info* ssa_info)
 {
     sgx_tcs_t* tcs = (sgx_tcs_t*)td_to_tcs(td);
     uint64_t ssa_frame_size = td->base.__ssa_frame_size;
@@ -242,7 +245,7 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 */
 void oe_real_exception_dispatcher(oe_context_t* oe_context)
 {
-    td_t* td = oe_get_td();
+    oe_sgx_td_t* td = oe_sgx_get_td();
 
     // Change the rip of oe_context to the real exception address.
     oe_context->rip = td->base.exception_address;
@@ -298,7 +301,7 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
 /*
 **==============================================================================
 **
-** oe_virtual_exception_dispatcher(td_t* td, uint64_t arg_in, uint64_t*
+** oe_virtual_exception_dispatcher(oe_sgx_td_t* td, uint64_t arg_in, uint64_t*
 *arg_out)
 **
 **  The virtual (first pass) exception dispatcher. It checks whether or not
@@ -308,7 +311,7 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
 **==============================================================================
 */
 void oe_virtual_exception_dispatcher(
-    td_t* td,
+    oe_sgx_td_t* td,
     uint64_t arg_in,
     uint64_t* arg_out)
 {

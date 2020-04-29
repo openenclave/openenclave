@@ -50,6 +50,8 @@ let get_function_prototype (fd : func_decl) =
 let get_composite_type =
   let get_struct (s : struct_def) =
     [
+      "#ifndef EDGER8R_STRUCT_" ^ String.uppercase_ascii s.sname;
+      "#define EDGER8R_STRUCT_" ^ String.uppercase_ascii s.sname;
       "typedef struct " ^ s.sname;
       "{";
       String.concat "\n"
@@ -61,11 +63,14 @@ let get_composite_type =
                (get_array_dims decl.array_dims))
            s.smlist);
       "} " ^ s.sname ^ ";";
+      "#endif";
       "";
     ]
   in
   let get_union (u : union_def) =
     [
+      "#ifndef EDGER8R_UNION_" ^ String.uppercase_ascii u.uname;
+      "#define EDGER8R_UNION_" ^ String.uppercase_ascii u.uname;
       "typedef union " ^ u.uname;
       "{";
       String.concat "\n"
@@ -75,11 +80,14 @@ let get_composite_type =
                (get_array_dims decl.array_dims))
            u.umlist);
       "} " ^ u.uname ^ ";";
+      "#endif";
       "";
     ]
   in
   let get_enum (e : enum_def) =
     [
+      "#ifndef EDGER8R_ENUM_" ^ String.uppercase_ascii e.enname;
+      "#define EDGER8R_ENUM_" ^ String.uppercase_ascii e.enname;
       "typedef enum " ^ e.enname;
       "{";
       String.concat ",\n"
@@ -92,6 +100,7 @@ let get_composite_type =
                | EnumValNone -> "" ))
            e.enbody);
       "} " ^ e.enname ^ ";";
+      "#endif";
       "";
     ]
   in
@@ -141,6 +150,38 @@ let get_marshal_struct (fd : func_decl) (errno : bool) =
 
 (* Generate [args.h] which contains [struct]s for ecalls and ocalls *)
 let generate_args (ec : enclave_content) =
+  let guard_macro =
+    "EDGER8R_" ^ String.uppercase_ascii ec.enclave_name ^ "_ARGS_H"
+  in
+  let user_includes =
+    let includes = ec.include_list in
+    if includes <> [] then List.map (sprintf "#include \"%s\"") includes
+    else [ "/* There were no user includes. */" ]
+  in
+  let user_types =
+    let cts = ec.comp_defs in
+    if cts <> [] then flatten_map get_composite_type cts
+    else [ "/* There were no user defined types. */"; "" ]
+  in
+  [
+    "#ifndef " ^ guard_macro;
+    "#define " ^ guard_macro;
+    "";
+    "#include <openenclave/bits/result.h>";
+    "";
+    "/**** User includes. ****/";
+    String.concat "\n" user_includes;
+    "";
+    "/**** User defined types in EDL. ****/";
+    String.concat "\n" user_types;
+    "#endif // " ^ guard_macro;
+    "";
+  ]
+
+(* Includes are emitted in [args.h]. Imported functions have already
+   been brought into function lists. *)
+let generate_trusted (ec : enclave_content) =
+  let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_T_H" in
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
   let trusted_function_ids =
@@ -173,24 +214,6 @@ let generate_args (ec : enclave_content) =
       "};";
     ]
   in
-  let guard_macro =
-    "EDGER8R_" ^ String.uppercase_ascii ec.enclave_name ^ "_ARGS_H"
-  in
-  let include_errno =
-    let s = "#include <errno.h>" in
-    if List.exists (fun uf -> uf.uf_propagate_errno) ufs then s
-    else sprintf "/* %s - Errno propagation not enabled so not included. */" s
-  in
-  let user_includes =
-    let includes = ec.include_list in
-    if includes <> [] then List.map (sprintf "#include \"%s\"") includes
-    else [ "/* There were no user includes. */" ]
-  in
-  let user_types =
-    let cts = ec.comp_defs in
-    if cts <> [] then flatten_map get_composite_type cts
-    else [ "/* There were no user defined types. */"; "" ]
-  in
   let ecall_marshal_structs =
     if tfs <> [] then
       flatten_map (fun tf -> get_marshal_struct tf.tf_fdecl false) tfs
@@ -203,48 +226,12 @@ let generate_args (ec : enclave_content) =
         ufs
     else [ "/* There were no ocalls. */"; "" ]
   in
-  [
-    "#ifndef " ^ guard_macro;
-    "#define " ^ guard_macro;
-    "";
-    "#include <stdint.h>";
-    "#include <stdlib.h> /* for wchar_t */";
-    "";
-    include_errno;
-    "";
-    "#include <openenclave/bits/result.h>";
-    "";
-    "/**** User includes. ****/";
-    String.concat "\n" user_includes;
-    "";
-    "/**** User defined types in EDL. ****/";
-    String.concat "\n" user_types;
-    "/**** ECALL marshalling structs. ****/";
-    String.concat "\n" ecall_marshal_structs;
-    "/**** OCALL marshalling structs. ****/";
-    String.concat "\n" ocall_marshal_structs;
-    "/**** Trusted function IDs ****/";
-    String.concat "\n" trusted_function_ids;
-    "";
-    "/**** Untrusted function IDs. ****/";
-    String.concat "\n" untrusted_function_ids;
-    "";
-    "#endif // " ^ guard_macro;
-    "";
-  ]
-
-(* Includes are emitted in [args.h]. Imported functions have already
-   been brought into function lists. *)
-let generate_trusted (ec : enclave_content) =
-  let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_T_H" in
   let tfunc_prototypes =
-    let tfs = ec.tfunc_decls in
     if tfs <> [] then
       List.map (fun f -> sprintf "%s;" (get_function_prototype f.tf_fdecl)) tfs
     else [ "/* There were no ecalls. */" ]
   in
   let ufunc_wrapper_prototypes =
-    let ufs = ec.ufunc_decls in
     if ufs <> [] then
       List.map
         (fun f -> sprintf "%s;" (get_wrapper_prototype f.uf_fdecl false))
@@ -261,9 +248,19 @@ let generate_trusted (ec : enclave_content) =
     "";
     "OE_EXTERNC_BEGIN";
     "";
+    "/**** Trusted function IDs ****/";
+    String.concat "\n" trusted_function_ids;
+    "";
+    "/**** ECALL marshalling structs. ****/";
+    String.concat "\n" ecall_marshal_structs;
     "/**** ECALL prototypes. ****/";
     String.concat "\n\n" tfunc_prototypes;
     "";
+    "/**** Untrusted function IDs. ****/";
+    String.concat "\n" untrusted_function_ids;
+    "";
+    "/**** OCALL marshalling structs. ****/";
+    String.concat "\n" ocall_marshal_structs;
     "/**** OCALL prototypes. ****/";
     String.concat "\n\n" ufunc_wrapper_prototypes;
     "";
@@ -275,14 +272,56 @@ let generate_trusted (ec : enclave_content) =
 
 let generate_untrusted (ec : enclave_content) =
   let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_U_H" in
+  let tfs = ec.tfunc_decls in
+  let ufs = ec.ufunc_decls in
+  let trusted_function_ids =
+    [
+      "enum";
+      "{";
+      String.concat "\n"
+        (List.mapi
+           (fun i f ->
+             sprintf "    %s = %d,"
+               (get_function_id ec.enclave_name f.tf_fdecl)
+               i)
+           tfs);
+      "    " ^ ec.enclave_name ^ "_fcn_id_trusted_call_id_max = OE_ENUM_MAX";
+      "};";
+    ]
+  in
+  let untrusted_function_ids =
+    [
+      "enum";
+      "{";
+      String.concat "\n"
+        (List.mapi
+           (fun i f ->
+             sprintf "    %s = %d,"
+               (get_function_id ec.enclave_name f.uf_fdecl)
+               i)
+           ufs);
+      "    " ^ ec.enclave_name ^ "_fcn_id_untrusted_call_max = OE_ENUM_MAX";
+      "};";
+    ]
+  in
+  let ecall_marshal_structs =
+    if tfs <> [] then
+      flatten_map (fun tf -> get_marshal_struct tf.tf_fdecl false) tfs
+    else [ "/* There were no ecalls. */"; "" ]
+  in
+  let ocall_marshal_structs =
+    if ufs <> [] then
+      flatten_map
+        (fun uf -> get_marshal_struct uf.uf_fdecl uf.uf_propagate_errno)
+        ufs
+    else [ "/* There were no ocalls. */"; "" ]
+  in
   let tfunc_wrapper_prototypes =
-    let tfs = ec.tfunc_decls in
     if tfs <> [] then
       List.map (fun f -> get_wrapper_prototype f.tf_fdecl true ^ ";") tfs
     else [ "/* There were no ecalls. */" ]
   in
   let ufunc_prototypes =
-    let ufs = ec.ufunc_decls in
     if ufs <> [] then
       List.map (fun f -> get_function_prototype f.uf_fdecl ^ ";") ufs
     else [ "/* There were no ocalls. */" ]
@@ -305,9 +344,19 @@ let generate_untrusted (ec : enclave_content) =
     "    uint32_t setting_count,";
     "    oe_enclave_t** enclave);";
     "";
+    "/**** Trusted function IDs ****/";
+    String.concat "\n" trusted_function_ids;
+    "";
+    "/**** ECALL marshalling structs. ****/";
+    String.concat "\n" ecall_marshal_structs;
     "/**** ECALL prototypes. ****/";
     String.concat "\n\n" tfunc_wrapper_prototypes;
     "";
+    "/**** Untrusted function IDs. ****/";
+    String.concat "\n" untrusted_function_ids;
+    "";
+    "/**** OCALL marshalling structs. ****/";
+    String.concat "\n" ocall_marshal_structs;
     "/**** OCALL prototypes. ****/";
     String.concat "\n\n" ufunc_prototypes;
     "";

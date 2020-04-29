@@ -36,7 +36,7 @@ int ecall_getnameinfo(char* buffer, size_t bufflen)
 
     struct oe_sockaddr_in addr = {
         .sin_family = OE_AF_INET,
-        .sin_port = 22,
+        .sin_port = oe_htons(23), // telnet
         .sin_addr.s_addr = oe_htonl(OE_INADDR_LOOPBACK)};
 
     printf("s_addr=%x\n", addr.sin_addr.s_addr);
@@ -170,7 +170,7 @@ done:
     return ret;
 }
 
-int ecall_getaddrinfo(struct addrinfo** res)
+int ecall_getaddrinfo(struct oe_addrinfo** res)
 {
     struct oe_addrinfo* ai = NULL;
     const char host[] = {"localhost"};
@@ -186,7 +186,7 @@ int ecall_getaddrinfo(struct addrinfo** res)
 
     OE_TEST(oe_getaddrinfo(host, serv, &hints, (struct oe_addrinfo**)&ai) == 0);
 
-    if (res && !(*res = (struct addrinfo*)_clone_addrinfo(ai)))
+    if (res && !(*res = (struct oe_addrinfo*)_clone_addrinfo(ai)))
         OE_TEST("_clone_addrinfo() failed" == NULL);
 
     oe_freeaddrinfo(ai);

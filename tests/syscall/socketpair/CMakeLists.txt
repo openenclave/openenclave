@@ -2,6 +2,9 @@
 # Licensed under the MIT License.
 
 add_subdirectory(host)
-add_subdirectory(enc)
+
+if (BUILD_ENCLAVES)
+    add_subdirectory(enc)
+endif()
 
 add_enclave_test(tests/socketpair socketpair_host socketpair_enc)

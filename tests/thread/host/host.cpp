@@ -7,6 +7,7 @@
 #include <atomic>
 #include <cassert>
 #include <chrono>
+#include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -210,18 +211,26 @@ void test_thread_locking_patterns(oe_enclave_t* enclave)
 }
 
 void test_readers_writer_lock(oe_enclave_t* enclave);
+void test_errno_multi_threads_sameenclave(oe_enclave_t* enclave);
+void test_errno_multi_threads_diffenclave(
+    oe_enclave_t* enclave1,
+    oe_enclave_t* enclave2);
 
 // test_tcs_exhaustion
 static std::atomic<size_t> g_tcs_out_thread_count(0);
+static std::mutex g_tcs_mutex;
+static std::condition_variable g_tcs_cv;
 
 // this is the test_tcs worker thread
-void* tcs_thread(oe_enclave_t* enclave, size_t tcs_req_count)
+void* tcs_thread(oe_enclave_t* enclave, size_t expected_out_of_threads)
 {
-    oe_result_t result = enc_test_tcs_exhaustion(enclave, tcs_req_count);
+    oe_result_t result = enc_test_tcs_exhaustion(enclave);
     if (result == OE_OUT_OF_THREADS)
     {
-        // increment g_tcs_out_thread_count when thread exhaustion is reached
-        ++g_tcs_out_thread_count;
+        // Increment tcs count. Resume threads if expected tcs exhaustion
+        // failures have been reached.
+        if (++g_tcs_out_thread_count == expected_out_of_threads)
+            g_tcs_cv.notify_all();
     }
     else
     {
@@ -237,20 +246,20 @@ void* tcs_thread(oe_enclave_t* enclave, size_t tcs_req_count)
 //   - successful ecalls increment a counter (tcs_used_thread_count) and wait
 //     for the total thread count to reach the test count (tcs_req_count)
 //   - unsuccessful ecalls increment a counter (tcs_out_thread_count)
-// tcs_used_thread_count is maintained in the enclave
-// tcs_out_thread_count is maintained in the host
 void test_tcs_exhaustion(oe_enclave_t* enclave)
 {
     std::vector<std::thread> threads;
     // Set the test_tcs_count to a value greater than the enclave TCSCount
     const size_t test_tcs_req_count = enclave->num_bindings * 2;
+    const size_t expected_out_of_threads = enclave->num_bindings;
     printf(
         "test_tcs_exhaustion - Number of TCS bindings in enclave=%zu\n",
         enclave->num_bindings);
 
     for (size_t i = 0; i < test_tcs_req_count; i++)
     {
-        threads.push_back(std::thread(tcs_thread, enclave, test_tcs_req_count));
+        threads.push_back(
+            std::thread(tcs_thread, enclave, expected_out_of_threads));
     }
 
     for (size_t i = 0; i < test_tcs_req_count; i++)
@@ -258,38 +267,34 @@ void test_tcs_exhaustion(oe_enclave_t* enclave)
         threads[i].join();
     }
 
-    // the local tcs_used_thread_count is a local copy of a value maintained on
-    // the enclave
     size_t tcs_used_thread_count = 0;
-    // enc_tcs_used_thread_count retrieves the value from the enclave
     OE_TEST(
         enc_tcs_used_thread_count(enclave, &tcs_used_thread_count) == OE_OK);
 
     printf(
         "test_tcs_exhaustion: tcs_count=%zu; num_threads=%zu; "
-        "num_out_threads=%zu\n",
-        test_tcs_req_count,
+        "num_out_of_tcs=%zu\n",
         tcs_used_thread_count,
+        test_tcs_req_count,
         g_tcs_out_thread_count.load());
 
-    // Crux of the test is to get OE_OUT_OF_THREADS i.e. to exhaust the TCSes
-    OE_TEST(g_tcs_out_thread_count > 0);
-    // Verifying that everything adds up fine
-    OE_TEST(
-        tcs_used_thread_count + g_tcs_out_thread_count == test_tcs_req_count);
-    // Sanity test that we are not reusing the bindings
+    // Assert that expected thread exhaustion failures have been reached.
+    OE_TEST(g_tcs_out_thread_count == expected_out_of_threads);
     OE_TEST(tcs_used_thread_count <= enclave->num_bindings);
 }
 
-size_t host_tcs_out_thread_count()
+void host_wait()
 {
-    return g_tcs_out_thread_count;
+    // Wait until explicitly notified.
+    std::unique_lock<std::mutex> lock(g_tcs_mutex);
+    g_tcs_cv.wait(lock);
 }
 
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
+    // oe_enclave_t* enclave2 = NULL;
 
     if (argc != 2)
     {
@@ -319,6 +324,20 @@ int main(int argc, const char* argv[])
     test_readers_writer_lock(enclave);
 
     test_tcs_exhaustion(enclave);
+
+    /*
+    test_errno_multi_threads_sameenclave(enclave);
+
+    result = oe_create_thread_enclave(
+        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave2);
+    if (result != OE_OK)
+    {
+        oe_put_err("oe_create_thread_enclave(): result=%u", result);
+    }
+
+    test_errno_multi_threads_diffenclave(enclave, enclave2);
+    Add to following if: (result = oe_terminate_enclave(enclave2)) != OE_OK
+    */
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {

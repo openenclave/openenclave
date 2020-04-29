@@ -34,12 +34,12 @@ xcopy C:\openenclave\share\openenclave\samples C:\mysample
 1. [x64 Native Tools Command Prompt for VS2017 or 2019](
 https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 
-2. Set `OpenEnclave_DIR` to the cmake directory in the Open Enclave SDK installation.
+2. Set `CMAKE_PREFIX_PATH` to the cmake directory in the Open Enclave SDK installation.
 
-As an example, if the Open Enclave SDK is installed to `C:\openenclave`, then you would set `OpenEnclave_DIR` as shown below
+As an example, if the Open Enclave SDK is installed to `C:\openenclave`, then you would set `CMAKE_PREFIX_PATH` as shown below
 
 ```cmd
-set OpenEnclave_DIR=C:\openenclave\lib\openenclave\cmake
+set CMAKE_PREFIX_PATH=C:\openenclave\lib\openenclave\cmake
 ```
 
 3. To build a sample using CMake, change directory to your target sample directory and execute the following commands:
@@ -57,6 +57,10 @@ ninja
 ninja run
 ```
 
+#### Build and Run samples with LVI mitigation
+
+Refer to [here](helloworld#build-and-run-with-lvi-mitigation) for more details.
+
 ## Samples
 
 The following samples demonstrate how to develop enclave applications using OE APIs. It's recommended to go through the following samples in the order listed.
@@ -66,11 +70,12 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Minimum code needed for an OE app
 - Help understand the basic components an OE application
 - Demonstrate how to build, sign, and run an OE image
+- Demonstrate how to optionally apply LVI mitigation to enclave code
 
 #### [File-Encryptor](file-encryptor/README.md)
 
-- Shows how to encrypt and decrypt data inside an enclave
-- Uses AES mbedTLS API to perform encryption and decryption
+- Show how to encrypt and decrypt data inside an enclave
+- Use AES mbedTLS API to perform encryption and decryption
 
 #### [Data-Sealing](data-sealing/README.md)
 
@@ -105,3 +110,8 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Demonstrate how to configure an enclave to enable switchless calls originated within it
 - Recommend the number of host worker threads required for switchless calls in practice
 - Demonstrate how to enable switchless calls in an enclave application
+
+#### [Host-side Enclave Verification](host_verify/README.md)
+
+- Explain the concept of host-side enclave verification
+- Demonstrate attestation of a remote SGX enclave from outside an enclave

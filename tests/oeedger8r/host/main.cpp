@@ -39,8 +39,14 @@ int main(int argc, const char* argv[])
     const uint32_t flags = oe_get_create_flags();
 
     std::string other("edl_other_enc");
+    std::string other_lvi_cfg("edl_other_enc-lvi-cfg");
     // If we loaded `edl_other_enc` instead of `edl_enc`...
-    if (std::equal(other.rbegin(), other.rend(), std::string(argv[1]).rbegin()))
+    if (std::equal(
+            other.rbegin(), other.rend(), std::string(argv[1]).rbegin()) ||
+        std::equal(
+            other_lvi_cfg.rbegin(),
+            other_lvi_cfg.rend(),
+            std::string(argv[1]).rbegin()))
     {
         result = oe_create_other_enclave(
             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);

@@ -1,0 +1,24 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+ARG ubuntu_version=18.04
+
+FROM ubuntu:${ubuntu_version}
+
+ARG UNAME=jenkins
+ARG GNAME=jenkins
+ARG UID=1000
+ARG GID=1000
+
+COPY ./ /oe
+
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y lsb-release wget ca-certificates git && \
+    cd /oe/scripts/ansible && \
+    ./install-ansible.sh && \
+    ansible localhost --playbook-dir=/oe/scripts/ansible -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" -vvv && \
+    ./remove-ansible.sh && \
+    cd / && \
+    rm -rf /oe && \
+    groupadd --gid ${GID} ${GNAME} && \
+    useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}

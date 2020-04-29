@@ -1,8 +1,6 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# TODO: Does this need CXX?
-
 set (EDL_FILE ../SampleAppCRT.edl)
 
 add_custom_command(
@@ -12,8 +10,8 @@ add_custom_command(
 
 add_enclave(TARGET SampleAppCRT UUID 31c4ecec-b94a-432a-ab76-4df401b6ee59 SOURCES SampleAppCRT.cpp ${CMAKE_CURRENT_BINARY_DIR}/SampleAppCRT_t.c)
 
-target_include_directories(SampleAppCRT PRIVATE
+enclave_include_directories(SampleAppCRT PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(SampleAppCRT oelibc)
+enclave_link_libraries(SampleAppCRT oelibc)

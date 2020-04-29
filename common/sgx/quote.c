@@ -1,17 +1,17 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 #include "quote.h"
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/crypto/ec.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"
+#include "collateral.h"
 #include "endorsements.h"
 #include "qeidentity.h"
-#include "revocation.h"
 
 #include <time.h>
 
@@ -529,7 +529,7 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
     oe_datetime_log("Validation datetime: ", &validation_time);
     if (oe_datetime_compare(&validation_time, &validity_from) < 0)
     {
-        oe_datetime_log("Latests valid datetime: ", &validity_from);
+        oe_datetime_log("Latest valid datetime: ", &validity_from);
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
             "Time to validate quote is earlier than the "
@@ -541,7 +541,7 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
         oe_datetime_log("Earliest expiration datetime: ", &validity_until);
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-            "Time to validate quoteis later than the "
+            "Time to validate quote is later than the "
             "earliest 'valid to' value.",
             NULL);
     }

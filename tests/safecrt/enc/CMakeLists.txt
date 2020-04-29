@@ -8,7 +8,7 @@ add_custom_command(
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(TARGET safecrt_enc UUID 91dc6667-7a33-4bbc-ab3e-ab4fca5215b7 CXX
+add_enclave(TARGET safecrt_enc UUID 91dc6667-7a33-4bbc-ab3e-ab4fca5215b7
   SOURCES ../common/test.cpp enc.cpp safecrt_t.c)
 
-target_include_directories(safecrt_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(safecrt_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

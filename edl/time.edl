@@ -1,0 +1,33 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** time.edl:
+**
+**     This file declares OCALLs needed by the enclave to implement functions in
+**     POSIX time.h.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    // Needed for integral type time_t
+    include "openenclave/bits/types.h"
+
+    struct oe_timespec
+    {
+        time_t tv_sec;
+        long tv_nsec;
+    };
+
+    untrusted
+    {
+        int oe_syscall_nanosleep_ocall(
+            [in] struct oe_timespec* req,
+            [in, out] struct oe_timespec* rem)
+            propagate_errno;
+    };
+};

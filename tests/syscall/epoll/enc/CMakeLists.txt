@@ -8,8 +8,6 @@ add_custom_command(
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --trusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(epoll_enc enc.cpp epoll_t.c)
+add_enclave(TARGET epoll_enc CXX SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/epoll_t.c)
 
-maybe_build_using_clangw(epoll_enc)
-
-target_link_libraries(epoll_enc oelibcxx oeenclave oehostepoll oehostsock)
+enclave_link_libraries(epoll_enc oelibcxx oeenclave oehostepoll oehostsock)

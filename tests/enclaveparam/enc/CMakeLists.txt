@@ -10,5 +10,5 @@ add_custom_command(
 
 add_enclave(TARGET enclaveparam_enc UUID c0c6e0fe-7c40-485a-beaf-4145293cd69a SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/enclaveparam_t.c)
 
-target_include_directories(enclaveparam_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(enclaveparam_enc oelibc)
+enclave_include_directories(enclaveparam_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_link_libraries(enclaveparam_enc oelibc)

@@ -19,7 +19,7 @@ EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs)
 
         for (i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadBinding* binding = &enclave->bindings[i];
+            oe_thread_binding_t* binding = &enclave->bindings[i];
 
             if (binding->tcs == tcs)
             {

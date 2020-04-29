@@ -3,7 +3,8 @@
 
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/ecall_context.h>
+#include <openenclave/internal/sgx/ecall_context.h>
+#include <openenclave/internal/sgx/td.h>
 #include "td.h"
 
 /**
@@ -11,7 +12,7 @@
  */
 static oe_ecall_context_t* _get_ecall_context()
 {
-    td_t* td = oe_get_td();
+    oe_sgx_td_t* td = oe_sgx_get_td();
     oe_ecall_context_t* ecall_context = td->host_ecall_context;
     return oe_is_outside_enclave(ecall_context, sizeof(*ecall_context))
                ? ecall_context
@@ -46,10 +47,6 @@ void* oe_ecall_context_get_ocall_buffer(uint64_t size)
     return NULL;
 }
 
-// Thread local variable to keep track of whether ecall context's buffer
-// was used for making the current ocall.
-static __thread bool _thread_ecall_context_buffer_used;
-
 // Function used by oeedger8r for allocating ocall buffers.
 void* oe_allocate_ocall_buffer(size_t size)
 {
@@ -58,22 +55,30 @@ void* oe_allocate_ocall_buffer(size_t size)
     void* buffer = oe_ecall_context_get_ocall_buffer(size);
     if (buffer)
     {
-        _thread_ecall_context_buffer_used = true;
         return buffer;
     }
 
     // Perform host allocation by making an ocall.
-    _thread_ecall_context_buffer_used = false;
     return oe_host_malloc(size);
 }
 
 // Function used by oeedger8r for freeing ocall buffers.
 void oe_free_ocall_buffer(void* buffer)
 {
+    oe_ecall_context_t* ecall_context = _get_ecall_context();
+
     // ecall context's buffer is managed by the host and does not have to be
     // freed.
-    if (_thread_ecall_context_buffer_used)
+    if (buffer == ecall_context->ocall_buffer)
         return;
+
+    // Even though ecall_context is memory controlled by the host, there
+    // is nothing the host can exploit to disclose information or modify
+    // behavior of the enclave to do something insecure. Even still, this
+    // analysis depends on the implementation of oe_host_free. For additional
+    // safety, ensure host cannot bypass the above check via speculative
+    // execution.
+    oe_lfence();
 
     oe_host_free(buffer);
 }

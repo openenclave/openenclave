@@ -3,12 +3,12 @@
 
 #include <inttypes.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/sgxcreate.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include <stdarg.h>
 #include <stdio.h>

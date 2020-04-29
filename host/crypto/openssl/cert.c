@@ -8,6 +8,7 @@
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
@@ -16,6 +17,7 @@
 #include <openssl/x509_vfy.h>
 #include <openssl/x509v3.h>
 #include <string.h>
+#include "../../../common/oe_host_stdlib.h"
 #include "../magic.h"
 #include "asn1.h"
 #include "crl.h"
@@ -625,6 +627,8 @@ oe_result_t oe_cert_chain_read_pem(
     oe_result_t result = OE_UNEXPECTED;
     cert_chain_t* impl = (cert_chain_t*)chain;
     STACK_OF(X509)* sk = NULL;
+    uint8_t* tmp_pem_data = (uint8_t*)pem_data;
+    size_t tmp_pem_size = pem_size;
 
     /* Zero-initialize the implementation */
     if (impl)
@@ -634,15 +638,24 @@ oe_result_t oe_cert_chain_read_pem(
     if (!pem_data || !pem_size || !chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
+    // _read_cert_chain() requires a trailing zero in its input buffer.
+    // If the input pem_data buffer does not have a trailing zero,
+    // we allocate a tmp buffer to add it.
+    if (strnlen((const char*)pem_data, pem_size) == pem_size)
+    {
+        tmp_pem_size = pem_size + 1;
+        if (!(tmp_pem_data = (uint8_t*)oe_malloc(tmp_pem_size)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        oe_memcpy_s(tmp_pem_data, tmp_pem_size, pem_data, pem_size);
+        tmp_pem_data[pem_size] = '\0';
+    }
 
     /* Initialize OpenSSL (if not already initialized) */
     oe_initialize_openssl();
 
     /* Read the certificate chain into memory */
-    if (!(sk = _read_cert_chain((const char*)pem_data)))
+    if (!(sk = _read_cert_chain((const char*)tmp_pem_data)))
         OE_RAISE(OE_FAILURE);
 
     /* Reorder certs in the chain to preferred order */
@@ -656,6 +669,9 @@ oe_result_t oe_cert_chain_read_pem(
     result = OE_OK;
 
 done:
+
+    if (tmp_pem_data && (tmp_pem_data != pem_data))
+        oe_free(tmp_pem_data);
 
     return result;
 }

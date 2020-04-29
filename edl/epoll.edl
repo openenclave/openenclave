@@ -1,0 +1,47 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** epoll.edl:
+**
+**     This file declares OCALLs needed by the enclave to implement the Linux
+**     epoll interface.
+**
+**==============================================================================
+*/
+
+enclave
+{
+
+    include "openenclave/bits/edl/syscall_types.h"
+
+    untrusted
+    {
+        oe_host_fd_t oe_syscall_epoll_create1_ocall(
+            int flags)
+            propagate_errno;
+
+        int oe_syscall_epoll_wait_ocall(
+            int64_t epfd,
+            [out, count=maxevents] struct oe_epoll_event *events,
+            unsigned int maxevents,
+            int timeout)
+            propagate_errno;
+
+        int oe_syscall_epoll_wake_ocall()
+            propagate_errno;
+
+        int oe_syscall_epoll_ctl_ocall(
+            int64_t epfd,
+            int op,
+            int64_t fd,
+            [in, count=1] struct oe_epoll_event* event)
+            propagate_errno;
+
+        int oe_syscall_epoll_close_ocall(
+            oe_host_fd_t epfd)
+            propagate_errno;
+    };
+};

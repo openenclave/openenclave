@@ -1,0 +1,16 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public void atexit_1_call_ecall(void);
+        public void atexit_32_call_ecall(void);
+        public void atexit_with_ecall_ecall(void);
+        public void get_magic_ecall([user_check]void *pdata);
+    };
+
+    untrusted {
+        void global_variable_increase_ocall();
+        void with_an_ecall_ocall();
+    };
+};

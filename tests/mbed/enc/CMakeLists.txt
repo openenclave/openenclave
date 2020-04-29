@@ -46,19 +46,22 @@ function(add_mbed_test_enclave NAME)
     ${MBEDTLS_TESTS_DIR}/suites/test_suite_${data_name}.data)
 
   add_enclave(TARGET mbedtest_suite_${NAME} UUID 0e405a1d-dd06-49a4-9d46-3f02440cbf0a
+    # Building the enclave by default when enabling LVI mitigation to
+    # test linking against LVI-mitigated libraries.
+    ADD_LVI_MITIGATION
     SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c
     enc.c
     mbed_t.c)
 
-  target_compile_options(mbedtest_suite_${NAME} PRIVATE -Wno-error)
-  target_compile_definitions(mbedtest_suite_${NAME} PRIVATE -D__TEST__="${NAME}")
-  target_include_directories(mbedtest_suite_${NAME} PRIVATE
+  enclave_compile_options(mbedtest_suite_${NAME} PRIVATE -Wno-error)
+  enclave_compile_definitions(mbedtest_suite_${NAME} PRIVATE -D__TEST__="${NAME}")
+  enclave_include_directories(mbedtest_suite_${NAME} PRIVATE
     ..
     ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
-  target_link_libraries(mbedtest_suite_${NAME} oelibc)
+  enclave_link_libraries(mbedtest_suite_${NAME} oelibc)
 
   maybe_build_using_clangw(mbedtest_suite_${NAME})
 
@@ -94,14 +97,14 @@ function(add_mbed_selftest_enclave)
     enc.c
     mbed_t.c)
 
-  target_compile_options(mbedtest_selftest PRIVATE -Wno-conversion -Wno-pointer-arith)
-  target_compile_definitions(mbedtest_selftest PRIVATE -D__TEST__="selftest")
-  target_include_directories(mbedtest_selftest PRIVATE
+  enclave_compile_options(mbedtest_selftest PRIVATE -Wno-conversion -Wno-pointer-arith)
+  enclave_compile_definitions(mbedtest_selftest PRIVATE -D__TEST__="selftest")
+  enclave_include_directories(mbedtest_selftest PRIVATE
     ..
     ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
-  target_link_libraries(mbedtest_selftest oelibc)
+  enclave_link_libraries(mbedtest_selftest oelibc)
 
   # The following variables remain uninitialized on Linux and throw warnings
   # Calling the function maybe_build_using_clangw(mbedtest_selftest) skips setting

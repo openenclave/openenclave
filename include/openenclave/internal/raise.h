@@ -65,6 +65,14 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/trace.h>
 
+#ifdef OE_BUILD_ENCLAVE
+#include <openenclave/corelibc/string.h>
+#define _strcmp oe_strcmp
+#else
+#include <string.h>
+#define _strcmp strcmp
+#endif
+
 OE_EXTERNC_BEGIN
 
 #define OE_RAISE(RESULT, ...)                             \
@@ -85,19 +93,64 @@ OE_EXTERNC_BEGIN
 // variadic paramter is empty in OE_RAISE_MSG(RESULT, fmt, ...)
 // eg : OE_RAISE_MSG(OE_FAILURE, "your message", NULL);
 
-#define OE_RAISE_MSG(RESULT, fmt, ...)   \
-    do                                   \
-    {                                    \
-        result = (RESULT);               \
-        if (result != OE_OK)             \
-        {                                \
-            OE_TRACE_ERROR(              \
-                fmt " (oe_result_t=%s)", \
-                ##__VA_ARGS__,           \
-                oe_result_str(result));  \
-        }                                \
-        goto done;                       \
+/* But with gcc or clang that support the ##__VA_ARGS__ extension, the above
+ * approach fails, as the NULL pointer is fed as the value for oe_result_t
+ * position in log line, resulting in (null) output.
+ *
+ * A solution is to define two versions of OE_RAISE_MSG() that
+ * handle calls with and without NULL, to work properly on both compiler
+ * types while avoiding the need to modify existing code.
+ */
+
+#if defined(_MSC_VER)
+// For MSVC: add NULL if missing
+#define OE_RAISE_MSG(RESULT, fmt, ...)                                     \
+    do                                                                     \
+    {                                                                      \
+        result = (RESULT);                                                 \
+        if (result != OE_OK)                                               \
+        {                                                                  \
+            if (!_strcmp(#__VA_ARGS__, ""))                                \
+            {                                                              \
+                OE_TRACE_ERROR(                                            \
+                    fmt " (oe_result_t=%s)", NULL, oe_result_str(result)); \
+            }                                                              \
+            else                                                           \
+            {                                                              \
+                OE_TRACE_ERROR(                                            \
+                    fmt " (oe_result_t=%s)",                               \
+                    ##__VA_ARGS__,                                         \
+                    oe_result_str(result));                                \
+            }                                                              \
+        }                                                                  \
+        goto done;                                                         \
     } while (0)
+
+#else
+// For non-MSVC: remove NULL if present
+#define OE_RAISE_MSG(RESULT, fmt, ...)                               \
+    do                                                               \
+    {                                                                \
+        result = (RESULT);                                           \
+        if (result != OE_OK)                                         \
+        {                                                            \
+            if (!_strcmp(#__VA_ARGS__, "NULL"))                      \
+            {                                                        \
+                OE_TRACE_ERROR(                                      \
+                    fmt " (oe_result_t=%s)", oe_result_str(result)); \
+            }                                                        \
+            else                                                     \
+            {                                                        \
+                OE_TRACE_ERROR(                                      \
+                    fmt " (oe_result_t=%s)",                         \
+                    ##__VA_ARGS__,                                   \
+                    oe_result_str(result));                          \
+            }                                                        \
+        }                                                            \
+        goto done;                                                   \
+    } while (0)
+
+#endif
 
 #define OE_RAISE_NO_TRACE(RESULT) \
     do                            \

@@ -9,6 +9,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
+#include "../../oe_alloc_thread.h"
 #include "../td.h"
 
 /*
@@ -210,7 +211,7 @@ static __thread uint64_t _num_tls_atexit_functions;
 /* The thread data (td) object is always populated at the start of the
    FS segment, so this method just returns the address of the td.
 */
-static uint8_t* _get_fs_from_td(td_t* td)
+static uint8_t* _get_fs_from_td(oe_sgx_td_t* td)
 {
     uint8_t* fs = (uint8_t*)td;
     return fs;
@@ -228,7 +229,7 @@ static uint64_t _get_aligned_size(uint64_t size, uint64_t align)
  * Return pointer to start of tls data.
  *    tls-data-start = %FS - (aligned .tdata size + aligned .tbss size)
  */
-static uint8_t* _get_thread_local_data_start(td_t* td)
+static uint8_t* _get_thread_local_data_start(oe_sgx_td_t* td)
 {
     // Check if this enclave has thread-local data.
     if (!_tdata_size && !_tbss_size)
@@ -271,7 +272,7 @@ static uint8_t* _get_thread_local_data_start(td_t* td)
  * Initialize the thread-local section for a given thread.
  * This must be called immediately after td itself is initialized.
  */
-oe_result_t oe_thread_local_init(td_t* td)
+oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
 {
     oe_result_t result = OE_FAILURE;
     uint8_t* tls_start = _get_thread_local_data_start(td);
@@ -330,6 +331,9 @@ oe_result_t oe_thread_local_init(td_t* td)
 
             _thread_locals_relocated = true;
         }
+
+        // Must occur after thread local storage initialization
+        oe_alloc_thread_startup();
     }
 
     result = OE_OK;
@@ -359,7 +363,7 @@ void __cxa_thread_atexit(void (*destructor)(void*), void* object)
  * Cleanup the thread-local section for a given thread.
  * This must be called *before* the td itself is cleaned up.
  */
-oe_result_t oe_thread_local_cleanup(td_t* td)
+oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
 {
     /* Call tls atexit functions in reverse order*/
     if (_tls_atexit_functions)
@@ -381,6 +385,7 @@ oe_result_t oe_thread_local_cleanup(td_t* td)
     uint8_t* tls_start = _get_thread_local_data_start(td);
     if (tls_start)
     {
+        oe_alloc_thread_teardown();
         oe_memset_s(tls_start, (uint64_t)(fs - tls_start), 0, 0);
     }
 

@@ -10,5 +10,5 @@ add_custom_command(
 
 add_enclave(TARGET switchless_threads_enc UUID 6e818629-0ce7-46cd-822a-6c7e081fc68b SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/switchless_threads_t.c)
 
-target_include_directories(switchless_threads_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(switchless_threads_enc oelibc)
+enclave_include_directories(switchless_threads_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_link_libraries(switchless_threads_enc oelibc)

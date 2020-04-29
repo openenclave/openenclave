@@ -4,6 +4,7 @@
 #include "sgx_quote.h"
 
 #include <openenclave/host.h>
+#include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/tests.h>
@@ -19,8 +20,8 @@
 #include <openssl/x509.h>
 #endif
 
+#include "../../../../common/sgx/collateral.h"
 #include "../../../../common/sgx/quote.h"
-#include "../../../../common/sgx/revocation.h"
 #include "../../../../host/sgx/sgxquoteprovider.h"
 
 #ifdef OE_LINK_SGX_DCAP_QL
@@ -81,6 +82,9 @@ oe_result_t gen_report(oe_enclave_t* enclave)
 {
     size_t report_size = OE_MAX_REPORT_SIZE;
     uint8_t* remote_report = NULL;
+    oe_report_header_t* header = NULL;
+    sgx_quote_t* quote = NULL;
+    uint64_t quote_size = 0;
 
     log("========== Getting report\n");
 
@@ -95,9 +99,9 @@ oe_result_t gen_report(oe_enclave_t* enclave)
     {
         log("========== Got report, size = %zu\n\n", report_size);
 
-        oe_report_header_t* header = (oe_report_header_t*)remote_report;
-        sgx_quote_t* quote = (sgx_quote_t*)header->report;
-        uint64_t quote_size = header->report_size;
+        header = (oe_report_header_t*)remote_report;
+        quote = (sgx_quote_t*)header->report;
+        quote_size = header->report_size;
 
         log("CPU_SVN: '");
         for (uint64_t n = 0; n < SGX_CPUSVN_SIZE; n++)
@@ -155,6 +159,16 @@ oe_result_t gen_report(oe_enclave_t* enclave)
                 log("Failed to verify report. result=%u (%s)\n",
                     result,
                     oe_result_str(result));
+
+                // Print TCB Info to console if verification failed
+                printf(
+                    "oe_verify_report failure (%s)\n", oe_result_str(result));
+                printf("QEID: ");
+                oe_hex_dump(quote->user_data, 16);
+                printf("CPU_SVN: ");
+                oe_hex_dump(quote->report_body.cpusvn, SGX_CPUSVN_SIZE);
+                printf("PCE_SVN: %02x\n", quote->pce_svn);
+
                 goto exit;
             }
             else

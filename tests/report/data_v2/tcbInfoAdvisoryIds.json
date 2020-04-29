@@ -25,7 +25,7 @@
           "sgxtcbcomp14svn": 1,
           "sgxtcbcomp15svn": 1,
           "sgxtcbcomp16svn": 1,
-          "pcesvn":6
+          "pcesvn":8
         },
         "tcbDate":"2018-01-04T01:02:03Z",
         "tcbStatus":"UpToDate",
@@ -75,7 +75,8 @@
           "pcesvn": 4
         },
         "tcbDate":"2018-01-04T01:02:03Z",
-        "tcbStatus": "ConfigurationNeeded"
+        "tcbStatus": "ConfigurationNeeded",
+        "advisoryIDs":["INTEL-SA-00079", "INTEL-SA-00076"]
       },
       {
         "tcb": {

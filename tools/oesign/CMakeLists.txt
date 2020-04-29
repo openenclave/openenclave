@@ -17,7 +17,9 @@ if (NOT HAVE_GETOPT_LONG)
   target_include_directories(oesign PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
-target_link_libraries(oesign oehost)
+# Link oesign against liboehostmr, which has no dependency on
+# lib_sgx_enclave_common and libsgx_dcap_ql.
+target_link_libraries(oesign oehostmr)
 
 # assemble into proper collector dir
 set_property(TARGET oesign PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})

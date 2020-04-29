@@ -8,25 +8,36 @@
 ##
 ##==============================================================================
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/edl)
 set(EDL_FILE ${EDL_DIR}/syscall.edl)
+if (COMPILE_SYSTEM_EDL)
+    add_custom_command(
+        OUTPUT syscall_t.h syscall_t.c syscall_args.h
+        DEPENDS ${EDL_FILE} edger8r
+        COMMAND edger8r --search-path ${EDL_DIR} --trusted ${EDL_FILE})
 
-add_custom_command(
-    OUTPUT syscall_t.h syscall_t.c syscall_args.h
-    DEPENDS ${EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --trusted ${EDL_FILE})
+    add_custom_target(syscall_trusted_edl
+        DEPENDS syscall_t.h syscall_t.c syscall_args.h)
 
-add_custom_target(syscall_trusted_edl
-    DEPENDS syscall_t.h syscall_t.c syscall_args.h)
+    list(APPEND SOURCES syscall_t_wrapper.c)
+else ()
+    # Generate headers only
+    add_custom_command(
+        OUTPUT syscall_t.h syscall_args.h
+        DEPENDS ${EDL_FILE} edger8r
+        COMMAND edger8r --header-only --search-path ${EDL_DIR}
+                        --trusted ${EDL_FILE})
+
+    add_custom_target(syscall_trusted_edl
+        DEPENDS syscall_t.h syscall_args.h)
+endif ()
 
 ##==============================================================================
 ##
 ## These rules build the oesyscall target.
 ##
 ##==============================================================================
-
-add_library(oesyscall STATIC
-    syscall_t_wrapper.c
+list(APPEND SOURCES
     consolefs.c
     device.c
     dirent.c
@@ -48,22 +59,29 @@ add_library(oesyscall STATIC
     unistd.c
     utsname.c)
 
+add_enclave_library(oesyscall STATIC ${SOURCES})
+
 maybe_build_using_clangw(oesyscall)
 
-add_dependencies(oesyscall syscall_trusted_edl)
+add_enclave_dependencies(oesyscall syscall_trusted_edl)
 
-target_include_directories(oesyscall PRIVATE
+enclave_include_directories(oesyscall PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
-target_link_libraries(oesyscall oecore)
+enclave_link_libraries(oesyscall oecore)
+enclave_compile_options(oesyscall PRIVATE -ffunction-sections)
+
+if (COMPILE_SYSTEM_EDL)
+    enclave_compile_definitions(oesyscall PRIVATE OE_USE_BUILTIN_EDL)
+endif ()
 
 set_source_files_properties(
     ${CMAKE_CURRENT_BINARY_DIR}/syscall_t.c
     PROPERTIES COMPILE_FLAGS -DOE_NEED_STDC_NAMES)
 
-install(TARGETS oesyscall EXPORT openenclave-targets ARCHIVE
+install_enclaves(TARGETS oesyscall EXPORT openenclave-targets ARCHIVE
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
 add_subdirectory(devices)

@@ -1,0 +1,74 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** asym_keys.edl:
+**
+**     This file declares asymmetric key sructures used by attestation.edl
+**     as well as the public API surface.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    /**
+     * This enumeration defines the type of a asymmetric key.
+     * This definition is shared by the enclave and the host.
+     */
+    enum oe_asymmetric_key_type_t {
+        /**
+         * A secp256r1/NIST P-256 elliptic curve key.
+         */
+        OE_ASYMMETRIC_KEY_EC_SECP256P1 = 1,
+
+        /**
+         * Unused.
+         */
+        _OE_ASYMMETRIC_KEY_TYPE_MAX = OE_ENUM_MAX
+    };
+
+    /**
+     * This enumeration defines the format of the asymmetric key.
+     * This definition is shared by the enclave and the host.
+     */
+    enum oe_asymmetric_key_format_t {
+        /**
+         * The PEM format.
+         */
+        OE_ASYMMETRIC_KEY_PEM = 1,
+
+        /**
+         * Unused.
+         */
+        _OE_ASYMMETRIC_KEY_FORMAT_MAX = OE_ENUM_MAX
+    };
+
+    /**
+     * This struct contains the parameters for asymmetric key derivation.
+     * This definition is shared by the enclave and the host.
+     */
+    struct oe_asymmetric_key_params_t {
+        /**
+         *  The type of asymmetric key.
+         */
+        oe_asymmetric_key_type_t type;
+
+        /**
+         * The exported format of the key.
+         */
+        oe_asymmetric_key_format_t format;
+
+        /**
+         * Optional user data to add to the key derivation.
+         */
+        [size=user_data_size] void* user_data;
+
+        /**
+         * The size of user_data.
+         */
+        size_t user_data_size;
+    };
+};

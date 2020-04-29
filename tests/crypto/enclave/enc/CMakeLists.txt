@@ -29,8 +29,8 @@ if (OE_SGX)
         ../../cpu_entropy_test.c)
 endif ()
 
-add_enclave(TARGET cryptoenc UUID f0be7db0-ce7c-4dc4-b8c8-b161f4216225
+add_enclave(TARGET crypto_enc UUID f0be7db0-ce7c-4dc4-b8c8-b161f4216225
     SOURCES ${SRCS} crypto_t.c)
 
-target_include_directories(cryptoenc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(cryptoenc oelibc)
+enclave_include_directories(crypto_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_link_libraries(crypto_enc oelibc)

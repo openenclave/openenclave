@@ -1,8 +1,6 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# TODO: Does this need CXX?
-
 set (EDL_FILE ../SampleApp.edl)
 
 add_custom_command(
@@ -12,8 +10,8 @@ add_custom_command(
 
 add_enclave(TARGET SampleApp UUID 25419627-14f6-4625-9329-cf5f10a57fea SOURCES SampleApp.cpp ${CMAKE_CURRENT_BINARY_DIR}/SampleApp_t.c)
 
-target_include_directories(SampleApp PRIVATE
+enclave_include_directories(SampleApp PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(SampleApp oelibc)
+enclave_link_libraries(SampleApp oelibc)

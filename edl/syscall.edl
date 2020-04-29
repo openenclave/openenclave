@@ -1,0 +1,37 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** syscall.edl:
+**
+**     This file declares OCALLs and ECALLs needed by the enclave to implement
+**     various system operations, such as file and socket I/O. Implementations
+**     are provided for both Linux and Windows here:
+**
+**         ../host/linux/syscall.c
+**         ../host/windows/syscall.c
+**
+**     The file declares host-side support for the SYSCALL feature. Within the
+**     enclave, this subset functions as a portable abstration layer.
+**
+**==============================================================================
+*/
+
+enclave {
+
+    from "epoll.edl" import *;
+    from "fcntl.edl" import *;
+    from "ioctl.edl" import *;
+    from "poll.edl" import *;
+    from "signal.edl" import *;
+    from "socket.edl" import *;
+    from "time.edl" import *;
+    from "unistd.edl" import *;
+    from "utsname.edl" import *;
+
+    trusted {
+        public void oe_syscall_stub_ecall();
+    };
+};

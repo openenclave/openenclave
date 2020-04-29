@@ -140,6 +140,11 @@ void enc_set_factor(uint32_t factor)
     g_factor = factor;
 }
 
+void enc_make_ocall(int n)
+{
+    host_ocall_pointer(&n);
+}
+
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */

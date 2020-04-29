@@ -1,0 +1,151 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Configure for Intel SGX (x64)",
+            "type": "process",
+            "command": "cmake",
+            "options": {
+                "cwd": "[[build-folder]]/sgx"
+            },
+            "args": [
+                "-DOE_TEE=SGX",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "[[solution-folder]]"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Build for Intel SGX (x64)",
+            "type": "process",
+            "command": "make",
+            "options": {
+                "cwd": "[[build-folder]]/sgx"
+            },
+            "problemMatcher": [],
+            "dependsOn": [
+                "Configure for Intel SGX (x64)"
+            ]
+        },
+        {
+            "label": "Configure for QEMU (AArch64/ARMv8-A)",
+            "type": "process",
+            "command": "cmake",
+            "options": {
+                "cwd": "[[build-folder]]/vexpress-qemu_armv8a"
+            },
+            "args": [
+                "-DOE_TEE=OP-TEE",
+                "-DOE_OPTEE_PLATFORM=QEMU-ARMv8",
+                "-DCMAKE_TOOLCHAIN_FILE=[[solution-folder]]/cmake/arm-cross.cmake",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "[[solution-folder]]"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Build for QEMU (AArch64/ARMv8-A)",
+            "type": "process",
+            "command": "make",
+            "options": {
+                "cwd": "[[build-folder]]/vexpress-qemu_armv8a"
+            },
+            "problemMatcher": [],
+            "dependsOn": [
+                "Configure for QEMU (AArch64/ARMv8-A)"
+            ]
+        },
+        {
+            "label": "QEMU (AArch64/ARMv8-A)",
+            "type": "process",
+            "options": {
+                "cwd": "[[devkit-folder]]/emu/vexpress-qemu_armv8a"
+            },
+            "command": "./qemu-system-aarch64",
+            "isBackground": true,
+            "args": [
+                "-nographic",
+                "-serial",
+                "mon:stdio",
+                "-serial",
+                "pty",
+                "-smp",
+                "1",
+                "-machine",
+                "virt",
+                "-machine",
+                "secure=on",
+                "-m",
+                "1057",
+                "-bios",
+                "bl1.bin",
+                "-gdb",
+                "tcp::6464",
+                "-S",
+                "-semihosting-config",
+                "enable,target=native",
+                "-d",
+                "unimp",
+                "-initrd",
+                "rootfs.cpio.gz",
+                "-kernel",
+                "Image",
+                "-no-acpi",
+                "-append",
+                "'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2'",
+                "-virtfs",
+                "local,id=sh0,path=[[build-folder]]/vexpress-qemu_armv8a/out,security_model=passthrough,readonly,mount_tag=sh0",
+                "-cpu",
+                "cortex-a57"
+            ],
+            "dependsOn": [
+                "Build for QEMU (AArch64/ARMv8-A)"
+            ],
+            "problemMatcher": [
+                {
+                    "pattern": [
+                        {
+                            "regexp": ".",
+                            "file": 1,
+                            "location": 2,
+                            "message": 3
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": ".",
+                        "endsPattern": "."
+                    }
+                }
+            ]
+        },
+        {
+            "label": "Configure for Grapeboard (LS1012)",
+            "type": "process",
+            "command": "cmake",
+            "options": {
+                "cwd": "[[build-folder]]/ls-ls1012grapeboard"
+            },
+            "args": [
+                "-DOE_TEE=OP-TEE",
+                "-DOE_OPTEE_PLATFORM=Grapeboard",
+                "-DCMAKE_TOOLCHAIN_FILE=[[solution-folder]]/cmake/arm-cross.cmake",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "[[solution-folder]]"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Build for Grapeboard (LS1012)",
+            "type": "process",
+            "command": "make",
+            "options": {
+                "cwd": "[[build-folder]]/ls-ls1012grapeboard"
+            },
+            "problemMatcher": [],
+            "dependsOn": [
+                "Configure for Grapeboard (LS1012)"
+            ]
+        }
+    ]
+}

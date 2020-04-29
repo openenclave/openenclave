@@ -3,6 +3,8 @@
 This document provides a brief overview of how to start exploring the Open Enclave SDK
 once you have it installed.
 
+**Note**: The SDK currently does not support 32-bit applications.
+
 ## Open Enclave SDK Layout
 
 On Windows, if you installed the SDK using the NuGet package, it is by default installed to `%userprofile%\.nuget\packages`.
@@ -23,12 +25,12 @@ It contains the following subfolders:
 
 ## Configure environment variables for Open Enclave SDK for Windows
 
-- Set `OpenEnclave_DIR` to the point to the cmake directory of the Open Enclave SDK installation
+- Set `CMAKE_PREFIX_PATH` to the point to the cmake directory of the Open Enclave SDK installation
 
-As an example, if you installed the SDK to C:\openenclave, then you would set `OpenEnclave_DIR` as shown below.
+As an example, if you installed the SDK to C:\openenclave, then you would set `CMAKE_PREFIX_PATH` as shown below.
 
 ```cmd
-set OpenEnclave_DIR=C:\openenclave\lib\openenclave\cmake
+set CMAKE_PREFIX_PATH=C:\openenclave\lib\openenclave\cmake
 ```
 
 ## Samples

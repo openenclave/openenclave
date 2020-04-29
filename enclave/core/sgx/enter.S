@@ -199,29 +199,6 @@ oe_enter:
     // exit-type-check.
     lfence
 
-    // Construct the oe_ocall_context_t(rbp, return address).
-    mov (4*OE_WORD_SIZE)(%rsp), %r12
-    push %r12
-    push %rbp
-    mov %rsp, %r12
-
-    // Save the parameters of oe_asm_exit into stack.
-    push %rdi
-    push %rsi
-
-    // Notify a nested exit happens.
-    // oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
-    mov %r12, %rsi
-    call oe_notify_nested_exit_start
-
-    // Restore the parameters of oe_asm_exit from stack.
-    pop %rsi
-    pop %rdi
-
-    // Restore the stack to correct status: rbp/rsp should not change after function call.
-    pop %r12
-    pop %r12
-
     mov %rsp, %fs:td_last_sp
 
     jmp .clear_enclave_registers
@@ -231,7 +208,7 @@ oe_enter:
     // after exit-type-check.
     lfence
 
-    // Clear the td_t.last_sp field (force oe_enter to calculate stack pointer)
+    // Clear the oe_sgx_td_t.last_sp field (force oe_enter to calculate stack pointer)
     movq $0, %fs:td_last_sp
 
 .clear_enclave_registers:
@@ -248,7 +225,7 @@ oe_enter:
 
 .execute_eexit:
 
-    // Check td_t.simulate flag
+    // Check oe_sgx_td_t.simulate flag
     // simulation-flag-check.
     mov %fs:td_simulate, %rax
     cmp $0, %rax

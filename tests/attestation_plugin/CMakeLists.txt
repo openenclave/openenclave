@@ -8,4 +8,4 @@ if (BUILD_ENCLAVES)
 endif()
 
 add_enclave_test(tests/attestation_plugin plugin_host plugin_enc)
-set_tests_properties(tests/attestation_plugin PROPERTIES SKIP_RETURN_CODE 2)
+set_enclave_tests_properties(tests/attestation_plugin PROPERTIES SKIP_RETURN_CODE 2)

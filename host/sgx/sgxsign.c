@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
@@ -9,7 +10,6 @@
 #include <openenclave/internal/rsa.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/sgxsign.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/str.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>

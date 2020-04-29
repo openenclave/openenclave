@@ -39,7 +39,7 @@ scripts=$(git rev-parse --show-toplevel)/scripts
 
 # shellcheck disable=SC2154
 if ! "$scripts/format-code" --quiet --whatif --files="${files[*]}"; then
-    exit_ "Commit failed: please run './scripts/format-code' to fix the formatting"
+    exit_ "Commit failed: please run './scripts/format-code --staged' to fix the formatting"
 fi
 
 if ! "$scripts/check-license" "${files[@]}"; then

@@ -260,6 +260,11 @@ typedef enum _oe_result
     OE_INVALID_QE_IDENTITY_INFO,
 
     /**
+     * The quote verification collateral is invalid.
+     */
+    OE_INVALID_ENDORSEMENT,
+
+    /**
      * The enclave image contains unsupported constructs.
      */
     OE_UNSUPPORTED_ENCLAVE_IMAGE,
@@ -343,6 +348,12 @@ typedef enum _oe_result
      * The desired resource has already been initialized.
      */
     OE_ALREADY_INITIALIZED,
+
+    /**
+     * The hash of claims section in the quote does not match the hash value
+     * held in the report_data field. This occurs when claims are tampered.
+     */
+    OE_QUOTE_HASH_MISMATCH,
 
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;

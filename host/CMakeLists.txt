@@ -1,6 +1,11 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/edl)
+if (OE_SGX)
+    set(SGX_EDL_DIR ${CMAKE_SOURCE_DIR}/edl/sgx)
+endif()
+
 ##==============================================================================
 ##
 ## These rules generate the edge routines for the internal TEE-agnostic
@@ -8,17 +13,79 @@
 ##
 ##==============================================================================
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+set(CORE_EDL_FILE ${EDL_DIR}/core.edl)
+if (COMPILE_SYSTEM_EDL)
+  add_custom_command(
+      OUTPUT core_u.h core_u.c core_args.h
+      DEPENDS ${CORE_EDL_FILE} edger8r
+      COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${CORE_EDL_FILE})
 
-set(TEE_EDL_FILE ${EDL_DIR}/tee.edl)
+  add_custom_target(core_untrusted_edl DEPENDS core_u.h core_u.c core_args.h)
 
-add_custom_command(
-    OUTPUT tee_u.h tee_u.c tee_args.h
-    DEPENDS ${TEE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${TEE_EDL_FILE})
+  list(APPEND PLATFORM_SDK_ONLY_SRC core_u_wrapper.c)
+else ()
+  # Only generate headers
+  add_custom_command(
+      OUTPUT core_u.h core_args.h
+      DEPENDS ${CORE_EDL_FILE} edger8r
+      COMMAND edger8r --header-only --search-path ${EDL_DIR}
+                      --untrusted ${CORE_EDL_FILE})
 
-add_custom_target(tee_untrusted_edl
-    DEPENDS tee_u.h tee_u.c tee_args.h)
+  add_custom_target(core_untrusted_edl DEPENDS core_u.h core_args.h)
+endif()
+
+##==============================================================================
+##
+## Generate header (*_args.h) that defines data structures from EDL files.
+## Note that doing this on the host side to ensure publishing the header with 
+## the case of `BUILD_ENCLAVES=OFF`.
+##
+##==============================================================================
+
+set(OE_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/bits)
+set(OE_PRIV_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/internal/bits)
+
+list(APPEND EDL_PUBLIC_STRUCTURES
+  "${EDL_DIR}/asym_keys.edl"
+  "${EDL_DIR}/time.edl")
+list(APPEND EDL_PRIVATE_STRUCTURES
+  "${EDL_DIR}/fcntl.edl"
+  "${EDL_DIR}/poll.edl"
+  "${EDL_DIR}/socket.edl"
+  "${EDL_DIR}/utsname.edl")
+
+function(edl_to_header EDL_FILE OUT_DIR)
+  get_filename_component(name ${EDL_FILE} NAME_WE)
+
+  add_custom_command(
+      OUTPUT ${name}_args.h
+      DEPENDS ${EDL_FILE} edger8r
+      COMMAND edger8r --header-only --untrusted ${EDL_FILE})
+
+  add_custom_command(
+      OUTPUT ${OUT_DIR}/${name}.h
+      COMMAND ${CMAKE_COMMAND} -E copy ${name}_args.h ${OUT_DIR}/${name}.h
+      DEPENDS ${name}_args.h)
+
+  add_custom_target(gen_edl_headers_${name}
+      DEPENDS ${OUT_DIR}/${name}.h)
+
+  # Add dependencies to `oe_includes` so that the published header will be ready before
+  # other files consume it.
+  add_dependencies(oe_includes gen_edl_headers_${name})
+endfunction()
+
+foreach (struct_file ${EDL_PUBLIC_STRUCTURES})
+  edl_to_header(${struct_file} ${OE_EDL_INCLUDE_DIR})
+endforeach ()
+
+foreach (struct_file ${EDL_PRIVATE_STRUCTURES})
+  edl_to_header(${struct_file} ${OE_PRIV_EDL_INCLUDE_DIR})
+endforeach ()
+
+# Only install the public EDL headers
+install(DIRECTORY ${OE_EDL_INCLUDE_DIR}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
 
 ##==============================================================================
 ##
@@ -27,17 +94,27 @@ add_custom_target(tee_untrusted_edl
 ##
 ##==============================================================================
 
-if(OE_SGX)
-    set(SGX_EDL_FILE ${EDL_DIR}/sgx/sgx.edl)
+set(SGX_EDL_FILE ${SGX_EDL_DIR}/platform.edl)
+if (OE_SGX AND COMPILE_SYSTEM_EDL)
+  add_custom_command(
+      OUTPUT platform_u.h platform_u.c platform_args.h
+      DEPENDS ${SGX_EDL_FILE} edger8r
+      COMMAND edger8r --search-path ${SGX_EDL_DIR} --untrusted ${SGX_EDL_FILE})
 
-    add_custom_command(
-        OUTPUT sgx_u.h sgx_u.c sgx_args.h
-        DEPENDS ${SGX_EDL_FILE} edger8r
-        COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SGX_EDL_FILE})
+  add_custom_target(platform_untrusted_edl
+      DEPENDS platform_u.h platform_u.c platform_args.h)
 
-    add_custom_target(sgx_untrusted_edl
-        DEPENDS sgx_u.h sgx_u.c sgx_args.h)
-endif()
+  list(APPEND PLATFORM_SDK_ONLY_SRC sgx/platform_u_wrapper.c)
+elseif (OE_SGX)
+  add_custom_command(
+      OUTPUT platform_u.h platform_args.h
+      DEPENDS ${SGX_EDL_FILE} edger8r
+      COMMAND edger8r --header-only --search-path ${SGX_EDL_DIR}
+                      --untrusted ${SGX_EDL_FILE})
+
+  add_custom_target(platform_untrusted_edl
+      DEPENDS platform_u.h platform_args.h)
+endif ()
 
 ##==============================================================================
 ##
@@ -47,14 +124,35 @@ endif()
 ##==============================================================================
 
 set(SYSCALL_EDL ${EDL_DIR}/syscall.edl)
+if (COMPILE_SYSTEM_EDL)
+  add_custom_command(
+      OUTPUT syscall_u.h syscall_u.c syscall_args.h
+      DEPENDS ${SYSCALL_EDL} edger8r
+      COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SYSCALL_EDL})
 
-add_custom_command(
-    OUTPUT syscall_u.h syscall_u.c syscall_args.h
-    DEPENDS ${SYSCALL_EDL} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SYSCALL_EDL})
+  add_custom_target(syscall_untrusted_edl
+      DEPENDS syscall_u.h syscall_u.c syscall_args.h)
 
-add_custom_target(syscall_untrusted_edl
-    DEPENDS syscall_u.h syscall_u.c syscall_args.h)
+  list(APPEND PLATFORM_SDK_ONLY_SRC syscall_u_wrapper.c)
+else ()
+  add_custom_command(
+      OUTPUT syscall_u.h syscall_args.h
+      DEPENDS ${SYSCALL_EDL} edger8r
+      COMMAND edger8r --header-only --search-path ${EDL_DIR}
+                      --untrusted ${SYSCALL_EDL})
+
+  add_custom_target(syscall_untrusted_edl
+      DEPENDS syscall_u.h syscall_args.h)
+endif ()
+
+##==============================================================================
+##
+## Install all system EDL files to be included by user EDL
+##
+##==============================================================================
+
+install(DIRECTORY ../edl/ DESTINATION
+  ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/edl/)
 
 ##==============================================================================
 ##
@@ -64,7 +162,7 @@ add_custom_target(syscall_untrusted_edl
 
 # OS specific but arch agnostic files.
 if (UNIX)
-  set(PLATFORM_HOST_ONLY_SRC
+  list(APPEND PLATFORM_HOST_ONLY_SRC
     ../common/cert.c
     crypto/openssl/asn1.c
     crypto/openssl/cert.c
@@ -76,7 +174,7 @@ if (UNIX)
     crypto/openssl/sha.c
     linux/hostthread.c)
 
-  set(PLATFORM_SDK_ONLY_SRC
+  list(APPEND PLATFORM_SDK_ONLY_SRC
     ../common/asn1.c
     crypto/openssl/hmac.c
     crypto/openssl/random.c
@@ -84,7 +182,7 @@ if (UNIX)
     linux/time.c
     linux/windows.c)
 elseif (WIN32)
-  set(PLATFORM_HOST_ONLY_SRC
+  list(APPEND PLATFORM_HOST_ONLY_SRC
     ../common/cert.c
     crypto/bcrypt/cert.c
     crypto/bcrypt/crl.c
@@ -96,7 +194,7 @@ elseif (WIN32)
     crypto/bcrypt/util.c
     windows/hostthread.c)
 
-  set(PLATFORM_SDK_ONLY_SRC
+  list(APPEND PLATFORM_SDK_ONLY_SRC
     ../3rdparty/mbedtls/mbedtls/library/bignum.c
     ../3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
     ../common/asn1.c
@@ -113,9 +211,9 @@ elseif (WIN32)
     windows/hostthread.c
     windows/syscall.c
     windows/time.c)
-else()
-  message(FATAL_ERROR "Unknown OS. Only supported OSes are Linux and Windows")
-endif()
+else ()
+  message(FATAL_ERROR "Unknown OS. The only supported OSes are Linux and Windows")
+endif ()
 
 if (OE_SGX AND WIN32)
   # Use clang to compile the oe_enter function that calls ENCLU.
@@ -129,9 +227,10 @@ if (OE_SGX AND WIN32)
      DEPENDS sgx/enter.c
      COMMAND clang  -c -O2 -fomit-frame-pointer -m64
              -I${PROJECT_SOURCE_DIR}/include
+             -I${OE_INCDIR}
              ${CMAKE_CURRENT_SOURCE_DIR}/sgx/enter.c
              -o enter.obj)
-endif()
+endif ()
 
 # SGX specific files.
 if (OE_SGX)
@@ -140,7 +239,7 @@ if (OE_SGX)
     ../common/sgx/qeidentity.c
     ../common/sgx/quote.c
     ../common/sgx/report.c
-    ../common/sgx/revocation.c
+    ../common/sgx/collateral.c
     ../common/sgx/sgxcertextensions.c
     ../common/sgx/tcbinfo.c
     ../common/sgx/tlsverifier.c
@@ -155,10 +254,8 @@ if (OE_SGX)
     sgx/enclave.c
     sgx/enclavemanager.c
     sgx/exception.c
-    sgx/sgx_u_wrapper.c
     sgx/load.c
     sgx/loadelf.c
-    sgx/loadpe.c
     sgx/ocalls.c
     sgx/quote.c
     sgx/registers.c
@@ -170,6 +267,7 @@ if (OE_SGX)
     sgx/sgxtypes.c
     sgx/switchless.c)
 
+
   # OS specific as well.
   if (UNIX)
     list(APPEND PLATFORM_HOST_ONLY_SRC
@@ -179,11 +277,10 @@ if (OE_SGX)
       sgx/linux/aep.S
       sgx/enter.c
       sgx/linux/exception.c
-      sgx/linux/hoststackbridge.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
       sgx/linux/xstate.c)
-  else()
+  else ()
     list(APPEND PLATFORM_HOST_ONLY_SRC
       sgx/windows/sgxquoteproviderloader.c)
 
@@ -193,22 +290,22 @@ if (OE_SGX)
       sgx/windows/exception.c
       sgx/windows/switchless.c
       sgx/windows/xstate.c)
-  endif()
+  endif ()
 
   set(PLATFORM_FLAGS "-m64")
-elseif(OE_TRUSTZONE)
+elseif (OE_TRUSTZONE)
   list(APPEND PLATFORM_SDK_ONLY_SRC
     optee/log.c)
 
   if (UNIX)
     list(APPEND PLATFORM_SDK_ONLY_SRC
       optee/linux/enclave.c)
-  else()
+  else ()
     message(FATAL_ERROR "OP-TEE is not yet supported on platforms other than Linux.")
-  endif()
+  endif ()
 
   set(PLATFORM_FLAGS "")
-endif()
+endif ()
 
 if (OE_SGX AND WIN32)
   # oedebugrt is accessed via a bridge on Win32 and need not be linked.
@@ -225,7 +322,7 @@ if (OE_SGX AND WIN32)
   set_source_files_properties(
     sgx/calls.c
     PROPERTIES COMPILE_FLAGS "/Z7")
-endif()
+endif ()
 
 # Common host verification files that work on any OS/architecture.
 list(APPEND PLATFORM_HOST_ONLY_SRC
@@ -250,10 +347,8 @@ list(APPEND PLATFORM_SDK_ONLY_SRC
   files.c
   fopen.c
   memalign.c
-  syscall_u_wrapper.c
   signkey.c
   strings.c
-  tee_u_wrapper.c
   traceh_enclave.c)
 
 # Combine the following common code along with the platform specific code and
@@ -268,29 +363,28 @@ target_link_libraries(oehostverify PUBLIC oe_includes)
 target_link_libraries(oehost PUBLIC oe_includes)
 
 if(WIN32)
-  target_link_libraries(oehost PUBLIC ws2_32)
+  target_link_libraries(oehost PUBLIC ws2_32 shlwapi)
 endif()
 
 if (OE_SGX AND UNIX)
   # Link oedebugrt static library.
   target_link_libraries(oehost PRIVATE oedebugrt)
 
-  # hoststackbridge and enter.c must be forced to retain the frame-pointer
+  # enter.c must be forced to retain the frame-pointer
   # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
-  # Both are compiled with -O2 flag to retain the same generated assembly
+  # It is compiled with -O2 flag to retain the same generated assembly
   # code in both debug and release builds.
   set_source_files_properties(oehost
     sgx/enter.c
-    sgx/linux/hoststackbridge.c
     PROPERTIES
     COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
-endif()
+endif ()
 
 add_dependencies(oehost syscall_untrusted_edl)
-add_dependencies(oehost tee_untrusted_edl)
-if(OE_SGX)
-  add_dependencies(oehost sgx_untrusted_edl)
-endif()
+add_dependencies(oehost core_untrusted_edl)
+if (OE_SGX)
+  add_dependencies(oehost platform_untrusted_edl)
+endif ()
 
 # TODO: Replace these with `find_package` and add as dependencies to
 # the CMake package.
@@ -418,6 +512,10 @@ if (USE_DEBUG_MALLOC)
   target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
+if (COMPILE_SYSTEM_EDL)
+  target_compile_definitions(oehost PRIVATE OE_USE_BUILTIN_EDL)
+endif ()
+
 if (UNIX)
   target_compile_options(oehost
      PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
@@ -470,3 +568,5 @@ install(TARGETS oehostapp EXPORT openenclave-targets)
 install(TARGETS oehostverify EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
   COMPONENT OEHOSTVERIFY)
+
+include(measure/CMakeLists.txt)

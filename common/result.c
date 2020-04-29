@@ -96,6 +96,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_INVALID_UTC_DATE_TIME";
         case OE_INVALID_QE_IDENTITY_INFO:
             return "OE_INVALID_QE_IDENTITY_INFO";
+        case OE_INVALID_ENDORSEMENT:
+            return "OE_INVALID_ENDORSEMENT";
         case OE_UNSUPPORTED_ENCLAVE_IMAGE:
             return "OE_UNSUPPORTED_ENCLAVE_IMAGE";
         case OE_VERIFY_CRL_EXPIRED:
@@ -130,6 +132,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_ALREADY_EXISTS";
         case OE_ALREADY_INITIALIZED:
             return "OE_ALREADY_INITIALIZED";
+        case OE_QUOTE_HASH_MISMATCH:
+            return "OE_QUOTE_HASH_MISMATCH";
         case __OE_RESULT_MAX:
             break;
     }
@@ -181,6 +185,7 @@ bool oe_is_valid_result(uint32_t result)
         case OE_INVALID_REVOCATION_INFO:
         case OE_INVALID_UTC_DATE_TIME:
         case OE_INVALID_QE_IDENTITY_INFO:
+        case OE_INVALID_ENDORSEMENT:
         case OE_UNSUPPORTED_ENCLAVE_IMAGE:
         case OE_VERIFY_CRL_EXPIRED:
         case OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD:
@@ -198,6 +203,7 @@ bool oe_is_valid_result(uint32_t result)
         case OE_THREAD_JOIN_ERROR:
         case OE_ALREADY_EXISTS:
         case OE_ALREADY_INITIALIZED:
+        case OE_QUOTE_HASH_MISMATCH:
         {
             return true;
         }

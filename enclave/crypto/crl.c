@@ -82,6 +82,54 @@ done:
     return result;
 }
 
+oe_result_t oe_crl_read_pem(
+    oe_crl_t* crl,
+    const uint8_t* pem_data,
+    size_t pem_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    crl_t* impl = (crl_t*)crl;
+    mbedtls_x509_crl* x509_crl = NULL;
+    int rc = 0;
+
+    /* Clear the implementation */
+    if (impl)
+        memset(impl, 0, sizeof(crl_t));
+
+    /* Check for invalid parameters */
+    if (!pem_data || !pem_size || !crl)
+        OE_RAISE(OE_UNEXPECTED);
+
+    /* Allocate memory for the CRL */
+    if (!(x509_crl = mbedtls_calloc(1, sizeof(mbedtls_x509_crl))))
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    /* Initialize the CRL structure */
+    mbedtls_x509_crl_init(x509_crl);
+
+    /* Parse the DER data to populate the mbedtls_x509_crl struct */
+    rc = mbedtls_x509_crl_parse(x509_crl, pem_data, pem_size);
+    if (rc != 0)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "rc = 0x%x\n", rc);
+
+    /* Initialize the implementation */
+    _crl_init(impl, x509_crl);
+    x509_crl = NULL;
+
+    result = OE_OK;
+
+done:
+
+    if (x509_crl)
+    {
+        mbedtls_x509_crl_free(x509_crl);
+        memset(x509_crl, 0, sizeof(mbedtls_x509_crl));
+        mbedtls_free(x509_crl);
+    }
+
+    return result;
+}
+
 oe_result_t oe_crl_free(oe_crl_t* crl)
 {
     oe_result_t result = OE_UNEXPECTED;

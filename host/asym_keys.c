@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "tee_u.h"
+#include "core_u.h"
 
 /* This is the maximum default key buffer size. If the enclave produces
  * a key bigger than this, consider expanding this size so that the host

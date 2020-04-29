@@ -15,11 +15,12 @@ set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
     ${LIBCXX_INCLUDES}
 )
 
-add_library(libcxx OBJECT
+add_enclave_library(libcxx OBJECT
   __dso_handle.cpp
   libcxx/src/algorithm.cpp
   libcxx/src/any.cpp
   libcxx/src/bind.cpp
+  libcxx/src/charconv.cpp
   libcxx/src/chrono.cpp
   libcxx/src/condition_variable.cpp
   libcxx/src/debug.cpp
@@ -50,28 +51,28 @@ add_library(libcxx OBJECT
 
 maybe_build_using_clangw(libcxx)
 
-add_dependencies(libcxx libcxx_includes)
+add_enclave_dependencies(libcxx libcxx_includes)
 
-target_compile_options(libcxx PRIVATE -Wno-error)
+enclave_compile_options(libcxx PRIVATE -Wno-error)
 
-target_compile_definitions(libcxx
+enclave_compile_definitions(libcxx
   PRIVATE
   -DLIBCXXRT
   -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
   -D_LIBCPP_BUILDING_LIBRARY
   -DOE_LIBC_SUPPRESS_DEPRECATIONS)
 
-target_link_libraries(libcxx PUBLIC oelibc)
+enclave_link_libraries(libcxx PUBLIC oelibc)
 
 # NOTE: The `PUBLIC` headers for `libcxx` are actually added to
 # `oelibc_includes`, this is necessary to get the ordering correct.
 # See `../musl/CMakeLists.txt` for more details.
-target_include_directories(libcxx
+enclave_include_directories(libcxx
   PRIVATE
   libcxx/src
   ../libcxxrt/libcxxrt/src)
 
-install(TARGETS libcxx EXPORT openenclave-targets)
+install_enclaves(TARGETS libcxx EXPORT openenclave-targets)
 
 install(DIRECTORY ${LIBCXX_INCLUDES}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty)

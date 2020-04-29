@@ -1,17 +1,17 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# Detect C and C++ compiler options
-# if not gcc, default to clang-7
+include ../../config.mk
 
-COMPILER=$(notdir $(CC))
-ifeq ($(COMPILER), gcc)
-        USE_GCC = true
-endif
-
-ifeq ($(USE_GCC),)
-        CC = clang-7
-        COMPILER=clang
+ifeq ($(LVI_MITIGATION), ControlFlow)
+	ifeq ($(LVI_MITIGATION_BINDIR),)
+		$(error LVI_MITIGATION_BINDIR is not set)
+	endif
+	# Only run once.
+	ifeq (,$(findstring $(LVI_MITIGATION_BINDIR),$(CC)))
+		CC := $(LVI_MITIGATION_BINDIR)/$(CC)
+	endif
+	COMPILER := $(COMPILER)-lvi-cfg
 endif
 
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)

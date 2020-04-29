@@ -10,5 +10,5 @@ add_custom_command(
 
 add_enclave(TARGET tls_enc UUID 6cc330ff-c8cf-49d4-92ef-e1674794f820 SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/tls_t.c)
 
-target_include_directories(tls_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(tls_enc oeenclave oelibc)
+enclave_include_directories(tls_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_link_libraries(tls_enc oeenclave oelibc)

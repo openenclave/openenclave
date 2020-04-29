@@ -14,6 +14,7 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 
+#include <openenclave/bits/asym_keys.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -27,6 +28,24 @@
 #include "host_verify.h"
 
 OE_EXTERNC_BEGIN
+
+#ifndef _WIN32
+#define _getpid getpid
+#define sscanf_s sscanf
+#define sprintf_s(buffer, size, format, argument) \
+    sprintf(buffer, format, argument)
+#define strcat_s(destination, destination_size, source) \
+    strcat(destination, source)
+#define strcpy_s(destination, destination_size, source) \
+    ;                                                   \
+    {                                                   \
+        (void)(destination_size);                       \
+        strcpy(destination, source);                    \
+    }
+#define _strdup strdup
+#define strncat_s(destination, destination_size, source, source_size) \
+    strncat(destination, source, source_size)
+#endif
 
 /**
  *  Flag passed into oe_create_enclave to run the enclave in debug mode.

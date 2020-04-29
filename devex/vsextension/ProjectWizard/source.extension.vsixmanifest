@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Open Enclave SDK contributors.
+     Licensed under the MIT License.
+  -->
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+    <Metadata>
+        <Identity Id="OpenEnclaveVisualStudioExtension-1" Version="0.7.29" Language="en-US" Publisher="Microsoft" />
+        <DisplayName>Open Enclave - Preview</DisplayName>
+        <Description xml:space="preserve">Support for developing and debugging Trusted Execution Environment enclaves that can run on both SGX and TrustZone, and using them from your own applications.</Description>
+        <MoreInfo>https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/visualstudio_dev.md</MoreInfo>
+        <License>LICENSE.txt</License>
+    </Metadata>
+    <Installation AllUsers="true">
+        <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[16.0, 17.0)" />
+    </Installation>
+    <Dependencies>
+    </Dependencies>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="File" Path="ProjectTemplates" d:TargetPath="ProjectTemplates\Built\OEEnclaveWindowsProject.zip" />
+        <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="File" Path="ProjectTemplates" d:TargetPath="ProjectTemplates\Built\OEEnclaveLinuxProject.zip" />
+        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" AssemblyName="|%CurrentProject%;AssemblyName|" />
+        <Asset Type="open-enclave-cross.0.8.1-c3b6262c-3.nupkg" d:Source="File" Path="Packages\open-enclave-cross.0.8.1-c3b6262c-3.nupkg" d:VsixSubPath="Packages" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+        <Asset Type="Microsoft.VisualStudio.ItemTemplate" d:Source="File" Path="ItemTemplates" d:TargetPath="ItemTemplates\Built\OEHostItem.zip" />
+    </Assets>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,17.0)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
+    <Reference Id="NuPackToolsVsix.Microsoft.67e54e40-0ae3-42c5-a949-fddf5739e7a5" MinVersion="1.7.30402.9028">
+        <Name>NuGet Package Manager</Name>
+        <MoreInfoUrl>http://docs.microsoft.com/nuget/</MoreInfoUrl>
+    </Reference>
+</PackageManifest>

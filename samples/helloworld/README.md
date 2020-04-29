@@ -5,9 +5,14 @@
 - Minimum code needed for an Open Enclave app
 - Help understand the basic components an OE(Open Enclave) application
 - Demonstrate how to build, sign, and run an OE image
+- Demonstrate how to optionally apply LVI mitigation to enclave code
 - Also runs in OE simulation mode
 
-Prerequisite: you may want to read [Common Sample Information](../README.md#common-sample-information) before going further
+## Prerequisites
+
+- Use an OE SDK-supported machine or development environment (like Intel SGX).
+- Install the OE SDK package and dependencies for your environment. Install the OE SDK package and dependencies for your environment. See the [Getting Started documentation](/../../../openenclave#getting-started) to find OS-specific installation instructions.
+- Read the common sample information page to learn how to prepare the sample on [Linux](../README_Linux.md#building-open-enclave-sdk-samples-on-linux) and [Windows](../README_Windows.md#building-open-enclave-sdk-samples-on-windows).
 
 ## About the helloworld sample
 
@@ -225,18 +230,7 @@ Only the signed version of the enclave `helloworldenc.signed` is loadable on Lin
 Here is a listing of key components in the helloworld/enclave/Makefile. Also see the [complete listing](enclave/Makefile).
 
 ```make
-# Detect C and C++ compiler options
-# if not gcc, default to clang-7
-
-COMPILER=$(notdir $(CC))
-ifeq ($(COMPILER), gcc)
-        USE_GCC = true
-endif
-
-ifeq ($(USE_GCC),)
-        CC = clang-7
-        COMPILER=clang
-endif
+include ../../config.mk
 
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
@@ -249,15 +243,15 @@ all:
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../helloworld.edl --trusted
-	$(CC) -c $(CFLAGS) enc.c -o enc.o
-	$(CC) -c $(CFLAGS) helloworld_t.c -o helloworld_t.o
+	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 enc.c -o enc.o
+	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 helloworld_t.c -o helloworld_t.o
 	$(CC) -o helloworldenc helloworld_t.o enc.o $(LDFLAGS)
 
 sign:
-	oesign -e helloworldenc -c helloworld.conf -k private.pem
+	oesign sign -e helloworldenc -c helloworld.conf -k private.pem
 
 clean:
-	rm -f enc.o helloworldenc helloworldenc.signed private.pem ...
+	rm -f enc.o helloworldenc helloworldenc.signed private.pem public.pem helloworld_t.o helloworld_t.h helloworld_t.c helloworld_args.h
 
 keys:
 	openssl genrsa -out private.pem -3 3072
@@ -281,7 +275,16 @@ The Makefile's `build` target is for compiling enclave source code and linking i
 - oesyscall
 - oecore
 
-`helloworldenc is the resulting enclave executable (unsigned)
+When compiling with LVI mitigation, it links against the LVI-mitigated versions of those libraries instead:
+
+- oeenclave-lvi-cfg
+- mbedx509-lvi-cfg
+- mbedcrypto-lvi-cfg
+- oelibc-lvi-cfg
+- oesyscall-lvi-cfg
+- oecore-lvi-cfg
+
+`helloworldenc` is the resulting enclave executable (unsigned).
 
 ##### Sign
 
@@ -496,10 +499,13 @@ The following files are generated during the build.
 
 ## Build and run
 
-Note that there are two different build systems supported, one using GNU Make and
-`pkg-config`, the other using CMake.
+Open Enclave SDK supports building the sample on both Linux and Windows.
+Linux supports two types of build systems, GNU Make with `pkg-config` and CMake,
+while Windows supports only CMake.
 
-### CMake
+### Linux
+
+#### CMake
 
 This uses the CMake package provided by the Open Enclave SDK.
 
@@ -510,13 +516,81 @@ cmake ..
 make run
 ```
 
-### GNU Make
+#### GNU Make
 
 ```bash
 cd helloworld
 make build
 make run
 ```
+
+### Windows
+
+#### CMake
+
+```bash
+mkdir build && cd build
+cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs
+ninja
+ninja run
+```
+
+## Build and run with LVI mitigation
+
+Starting from version `0.8.2`, the Open Enclave SDK supports mitigation against the LVI vulnerability.
+With this support, you can build the sample with LVI mitigation, which ensures:
+- All the enclave code is compiled with the mitigation.
+- All the enclave code is linked against the mitigated version of Open Enclave libraries.
+
+### Linux
+
+#### Prerequisites
+
+Use the `install_lvi_mitigation_bindir` script in the installation package to install the
+dependencies the LVI mitigation.
+
+The following exapmle shows how to use the script (assume the package resides in `/opt/openenclave`).
+
+```bash
+~/openenclave/share/openenclave/samples$ /opt/openenclave/bin/scripts/lvi-mitigation/install_lvi_mitigation_bindir
+Do you want to install in current directory? [yes/no]: yes
+...
+Installed: /home/yourname/openenclave/share/openenclave/samples/lvi_mitigation_bin
+```
+
+The directory `/home/yourname/openenclave/share/openenclave/samples/lvi_mitigation_bin` should contain all
+the dependencies.
+
+#### CMake
+
+```bash
+mkdir build
+cd build
+cmake -DLVI_MITIGATION=ControlFlow -DLVI_MITIGATION_BINDIR=/home/yourname/openenclave/share/openenclave/samples/lvi_mitigation_bin ..
+make
+make run
+```
+
+#### GNU Make
+
+```bash
+make LVI_MITIGATION=ControlFlow \
+LVI_MITIGATION_BINDIR=/home/yourname/openenclave/share/openenclave/samples/lvi_mitigation_bin \
+build
+make run
+```
+
+### Windows
+
+#### CMake
+
+```bash
+mkdir build && cd build
+cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs -DLVI_MITIGATION=ControlFlow
+ninja
+ninja run
+```
+
 #### Note
 
 helloworld sample can run under OE simulation mode.
@@ -526,3 +600,7 @@ To run the helloworld sample in simulation mode from the command like, use the f
 ```bash
 ./host/helloworldhost ./enclave/helloworldenc.signed --simulate
 ```
+
+## Next steps
+
+In this tutorial, you built and ran the helloword sample. Next, try out more OE SDK samples on [Linux](https://github.com/JBCook/openenclave/blob/master/samples/README_Linux.md#samples) and [Windows](https://github.com/JBCook/openenclave/blob/master/samples/README_Windows.md#samples).

@@ -4,8 +4,8 @@
 #ifndef _OE_ENCLAVE_CORE_REPORT_H
 #define _OE_ENCLAVE_CORE_REPORT_H
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/sgxtypes.h>
 
 oe_result_t _handle_get_sgx_report(uint64_t arg_in);
 

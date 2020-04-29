@@ -5,7 +5,7 @@
 # those found in the original sources, but instead this builds an
 # OBJECT library in our CMake graph.
 
-add_library(libcxxrt OBJECT
+add_enclave_library(libcxxrt OBJECT
   libcxxrt/src/dynamic_cast.cc
   libcxxrt/src/exception.cc
   libcxxrt/src/guard.cc
@@ -17,10 +17,10 @@ add_library(libcxxrt OBJECT
 
 maybe_build_using_clangw(libcxxrt)
 
-target_compile_options(libcxxrt PRIVATE -Wno-error)
+enclave_compile_options(libcxxrt PRIVATE -Wno-error)
 
-target_compile_definitions(libcxxrt PRIVATE -D_GNU_SOURCE)
+enclave_compile_definitions(libcxxrt PRIVATE -D_GNU_SOURCE)
 
-target_link_libraries(libcxxrt PUBLIC oelibc)
+enclave_link_libraries(libcxxrt PUBLIC oelibc)
 
-install(TARGETS libcxxrt EXPORT openenclave-targets)
+install_enclaves(TARGETS libcxxrt EXPORT openenclave-targets)

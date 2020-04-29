@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/types.h>
 
-typedef int64_t oe_intptr_t;
 typedef uint32_t oe_mode_t;
 typedef int64_t oe_off_t;
 typedef uint64_t oe_ino_t;
@@ -17,8 +16,6 @@ typedef int oe_pid_t;
 typedef uint64_t oe_nlink_t;
 typedef int64_t oe_blksize_t;
 typedef int64_t oe_blkcnt_t;
-typedef int64_t oe_time_t;
-typedef int64_t oe_suseconds_t;
 typedef uint32_t oe_socklen_t;
 typedef uint16_t oe_sa_family_t;
 typedef uint16_t oe_in_port_t;
@@ -28,7 +25,6 @@ struct oe_dirent;
 
 #if defined(OE_NEED_STDC_NAMES)
 
-typedef oe_intptr_t intptr_t;
 typedef oe_mode_t mode_t;
 typedef oe_off_t off_t;
 typedef oe_ino_t ino_t;
@@ -39,8 +35,6 @@ typedef oe_pid_t pid_t;
 typedef oe_nlink_t nlink_t;
 typedef oe_blksize_t blksize_t;
 typedef oe_blkcnt_t blkcnt_t;
-typedef oe_time_t time_t;
-typedef oe_suseconds_t suseconds_t;
 typedef oe_socklen_t socklen_t;
 typedef oe_sa_family_t sa_family_t;
 typedef oe_in_port_t in_port_t;

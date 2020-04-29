@@ -34,6 +34,10 @@ typedef long intptr_t;
 typedef long time_t;
 typedef long suseconds_t;
 
+#ifndef __cplusplus
+typedef __WCHAR_TYPE__ wchar_t;
+#endif
+
 #elif defined(_MSC_VER)
 typedef long long ssize_t;
 typedef unsigned long long size_t;
@@ -162,67 +166,6 @@ typedef enum _oe_seal_policy
      */
     _OE_SEAL_POLICY_MAX = OE_ENUM_MAX,
 } oe_seal_policy_t;
-
-/**
- * This enumeration defines the type of a asymmetric key.
- * This definition is shared by the enclave and the host.
- */
-typedef enum _oe_asymmetric_key_type
-{
-    /**
-     * A secp256r1/NIST P-256 elliptic curve key.
-     */
-    OE_ASYMMETRIC_KEY_EC_SECP256P1 = 1,
-
-    /**
-     * Unused.
-     */
-    _OE_ASYMMETRIC_KEY_TYPE_MAX = OE_ENUM_MAX,
-} oe_asymmetric_key_type_t;
-
-/**
- * This enumeration defines the format of the asymmetric key.
- * This definition is shared by the enclave and the host.
- */
-typedef enum _oe_asymmetric_key_format
-{
-    /**
-     * The PEM format.
-     */
-    OE_ASYMMETRIC_KEY_PEM = 1,
-
-    /**
-     * Unused.
-     */
-    _OE_ASYMMETRIC_KEY_FORMAT_MAX = OE_ENUM_MAX,
-} oe_asymmetric_key_format_t;
-
-/**
- * This struct contains the parameters for asymmetric key derivation.
- * This definition is shared by the enclave and the host.
- */
-typedef struct _oe_asymmetric_key_params
-{
-    /**
-     *  The type of asymmetric key.
-     */
-    oe_asymmetric_key_type_t type;
-
-    /**
-     * The exported format of the key.
-     */
-    oe_asymmetric_key_format_t format;
-
-    /**
-     * Optional user data to add to the key derivation.
-     */
-    void* user_data;
-
-    /**
-     * The size of user_data.
-     */
-    size_t user_data_size;
-} oe_asymmetric_key_params_t;
 
 /**
  * This struct defines a datetime up to 1 second precision.

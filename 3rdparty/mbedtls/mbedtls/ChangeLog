@@ -1,6 +1,46 @@
 mbed TLS ChangeLog (Sorted per branch, date)
 
-= mbed TLS 2.16.x branch released xxxx-xx-xx
+= mbed TLS 2.16.6 branch released 2020-04-14
+
+Security
+   * Fix side channel in ECC code that allowed an adversary with access to
+     precise enough timing and memory access information (typically an
+     untrusted operating system attacking a secure enclave) to fully recover
+     an ECDSA private key. Found and reported by Alejandro Cabrera Aldaya,
+     Billy Brumley and Cesar Pereida Garcia. CVE-2020-10932
+   * Fix a potentially remotely exploitable buffer overread in a
+     DTLS client when parsing the Hello Verify Request message.
+
+Bugfix
+   * Fix compilation failure when both MBEDTLS_SSL_PROTO_DTLS and
+     MBEDTLS_SSL_HW_RECORD_ACCEL are enabled.
+   * Fix a function name in a debug message. Contributed by Ercan Ozturk in
+     #3013.
+
+= mbed TLS 2.16.5 branch released 2020-02-20
+
+Security
+   * Fix potential memory overread when performing an ECDSA signature
+     operation. The overread only happens with cryptographically low
+     probability (of the order of 2^-n where n is the bitsize of the curve)
+     unless the RNG is broken, and could result in information disclosure or
+     denial of service (application crash or extra resource consumption).
+     Found by Auke Zeilstra and Peter Schwabe, using static analysis.
+   * To avoid a side channel vulnerability when parsing an RSA private key,
+     read all the CRT parameters from the DER structure rather than
+     reconstructing them. Found by Alejandro Cabrera Aldaya and Billy Bob
+     Brumley. Reported and fix contributed by Jack Lloyd.
+     ARMmbed/mbed-crypto#352
+
+Bugfix
+   * Fix an unchecked call to mbedtls_md() in the x509write module.
+   * Fix a bug in mbedtls_pk_parse_key() that would cause it to accept some
+     RSA keys that would later be rejected by functions expecting private
+     keys. Found by Catena cyber using oss-fuzz (issue 20467).
+   * Fix a bug in mbedtls_pk_parse_key() that would cause it to accept some
+     RSA keys with invalid values by silently fixing those values.
+
+= mbed TLS 2.16.4 branch released 2020-01-15
 
 Security
    * Fix side channel vulnerability in ECDSA. Our bignum implementation is not
