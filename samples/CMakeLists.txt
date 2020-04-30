@@ -26,7 +26,8 @@ if (BUILD_ENCLAVES)
 endif ()
 
 install(DIRECTORY host_verify
-	DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+        COMPONENT OEHOSTVERIFY)
 
 if (WIN32)
   install(FILES README_Windows.md
