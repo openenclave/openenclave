@@ -40,6 +40,8 @@ If you are not running in an ACC VM, you should instead run:
 ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
 
+To learn more about setting up Open Enclave SGX on Linux in a Non-Azure Confidential Computing machine, read the document [Configure OE SDK SGX on Linux in non-ACC Machines](/docs/GettingStartedDocs/Contributors//NonAccMachineSGXLinuxGettingStarted.md).
+
 To support LVI mitigation, the command creates
 `/usr/local/lvi-mitigation/bin` that includes the dependencies.
 
