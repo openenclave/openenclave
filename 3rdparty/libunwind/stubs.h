@@ -90,8 +90,9 @@ static __inline void* __libunwind_mmap(
     int fd,
     off_t offset)
 {
-    void* oe_nodebug_memalign(size_t alignment, size_t size);
+    extern int oe_allocator_posix_memalign(void**, size_t, size_t);
     void* result = MAP_FAILED;
+    int r = 0;
 
     if (addr || fd != -1 || offset)
         goto done;
@@ -102,7 +103,9 @@ static __inline void* __libunwind_mmap(
     if (flags != (MAP_PRIVATE | MAP_ANONYMOUS))
         goto done;
 
-    result = oe_nodebug_memalign(4096, length);
+    r = oe_allocator_posix_memalign(&result, 4096, length);
+    if (r != 0)
+        result = MAP_FAILED;
 
 done:
 
@@ -111,13 +114,12 @@ done:
 
 static __inline int __libunwind_munmap(void* addr, size_t length)
 {
-    extern void oe_nodebug_free(void* ptr);
-
+    extern void oe_allocator_free(void*);
     if (!addr)
         return -1;
 
     if (length)
-        oe_nodebug_free(addr);
+        oe_allocator_free(addr);
 
     return 0;
 }
