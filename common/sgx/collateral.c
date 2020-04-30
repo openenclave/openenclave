@@ -340,6 +340,28 @@ oe_result_t oe_validate_revocation_list(
         "Failed to parse TCB info or Platform TCB is not up-to-date. %s",
         oe_result_str(result));
 
+    if (memcmp(
+            parsed_extension_info.fmspc,
+            parsed_tcb_info.fmspc,
+            sizeof(parsed_extension_info.fmspc)) != 0)
+    {
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "Failed to verify fmspc in TCB. %s",
+            oe_result_str(result));
+    }
+
+    if (memcmp(
+            parsed_extension_info.pce_id,
+            parsed_tcb_info.pceid,
+            sizeof(parsed_extension_info.pce_id)) != 0)
+    {
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "Failed to verify pceid in TCB. %s",
+            oe_result_str(result));
+    }
+
     OE_CHECK_MSG(
         oe_verify_ecdsa256_signature(
             parsed_tcb_info.tcb_info_start,
