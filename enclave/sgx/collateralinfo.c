@@ -32,6 +32,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     for (;;)
     {
         memcpy(&out, &in, sizeof(out));
+        oe_prealloc_quote_verification_collateral_args(&out);
 
         if (oe_get_quote_verification_collateral_ocall(
                 &retval,
@@ -167,6 +168,123 @@ done:
     }
 
     return result;
+}
+
+void oe_prealloc_quote_verification_collateral_args(
+oe_get_sgx_quote_verification_collateral_args_t* buf)
+{
+    /*These numbers are just estimates of buffer sizes*/
+    size_t prealloc_tcb_info_size = 5000;
+    size_t prealloc_tcb_info_issuer_chain_size = 3000;
+    size_t prealloc_pck_crl_size = 600;
+    size_t prealloc_root_ca_crl_size = 600;
+    size_t prealloc_pck_crl_issuer_chain_size = 3000;
+    size_t prealloc_qe_identity_issuer_chain_size = 3000;
+    size_t prealloc_qe_identity_size = 700;
+    if(!buf->tcb_info_size)
+    {
+        buf->tcb_info = (uint8_t *)malloc(prealloc_tcb_info_size);
+        if(buf->tcb_info != NULL)
+        {
+            buf->tcb_info_size = prealloc_tcb_info_size;
+            memset(buf->tcb_info,0, buf->tcb_info_size);   
+        }
+        else
+        {
+            goto cleanup;
+        }        
+    }
+
+    if(!buf->tcb_info_issuer_chain_size)
+    {
+        buf->tcb_info_issuer_chain = (uint8_t *)malloc(prealloc_tcb_info_size);
+        if(buf->tcb_info != NULL)
+        {
+            buf->tcb_info_issuer_chain_size = prealloc_tcb_info_issuer_chain_size;
+            memset(buf->tcb_info_issuer_chain,0, buf->tcb_info_issuer_chain_size);    
+        }
+        else
+        {
+            goto cleanup;
+        }
+    }
+
+    if(!buf->pck_crl_size)
+    {
+        buf->pck_crl = (uint8_t *)malloc(prealloc_pck_crl_size);
+        if(buf->pck_crl != NULL)
+        {
+            buf->pck_crl_size = prealloc_pck_crl_size;
+            memset(buf->pck_crl,0, buf->pck_crl_size);
+        }
+        else
+        {
+            goto cleanup;
+        }
+    }
+
+    if(!buf->root_ca_crl_size)
+    {
+        buf->root_ca_crl = (uint8_t *)malloc(prealloc_root_ca_crl_size);
+        if(buf->root_ca_crl != NULL)
+        {
+            buf->root_ca_crl_size = prealloc_root_ca_crl_size;
+            memset(buf->root_ca_crl,0, buf->root_ca_crl_size);
+        }
+        else
+        {
+            goto cleanup;
+        }
+    }
+
+    if(!buf->pck_crl_issuer_chain_size)
+    {
+        buf->pck_crl_issuer_chain = (uint8_t *)malloc(prealloc_pck_crl_issuer_chain_size);
+        if(buf->pck_crl_issuer_chain != NULL)
+        {
+            buf->pck_crl_issuer_chain_size = 
+            prealloc_pck_crl_issuer_chain_size;
+            memset(buf->pck_crl_issuer_chain,0, buf->pck_crl_issuer_chain_size
+            );
+        }
+        else
+        {
+            goto cleanup;
+        }
+    }
+
+    if(!buf->qe_identity_size)
+    {   
+        buf->qe_identity = (uint8_t *)malloc(prealloc_qe_identity_size);
+        if(buf->qe_identity != NULL)
+        {
+            buf->qe_identity_size = prealloc_qe_identity_size;
+            memset(buf->qe_identity,0, buf->qe_identity_size);
+        }
+        else
+        {
+            goto cleanup;
+        }
+    }   
+
+    if(!buf->qe_identity_issuer_chain_size)
+    {
+        buf->qe_identity_issuer_chain = (uint8_t *)malloc(prealloc_qe_identity_issuer_chain_size);
+        if(buf->qe_identity_issuer_chain != NULL)
+        {
+            buf->qe_identity_issuer_chain_size = prealloc_qe_identity_issuer_chain_size;
+            memset(buf->qe_identity_issuer_chain,0, buf->qe_identity_issuer_chain_size);
+        }
+        else
+        {
+            goto cleanup;
+        }
+    }
+    return;
+cleanup:
+            oe_free_sgx_quote_verification_collateral_args(buf);
+            return;
+    
 }
 
 void oe_free_sgx_quote_verification_collateral_args(
