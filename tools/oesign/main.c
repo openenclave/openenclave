@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include "../host/sgx/enclave.h"
+#include "oe_err.h"
 
 #if defined(WIN32)
 #define HAS_ENGINE_SUPPORT 0
@@ -20,7 +21,6 @@
 #define HAS_ENGINE_SUPPORT 1
 #endif
 
-static const char* arg0;
 int oedump(const char*);
 int oesign(
     const char* enclave,
@@ -29,19 +29,6 @@ int oesign(
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id);
-
-OE_PRINTF_FORMAT(1, 2)
-void Err(const char* format, ...)
-{
-    fprintf(stderr, "%s ERROR: ", arg0);
-
-    va_list ap;
-    va_start(ap, format);
-    vfprintf(stderr, format, ap);
-    va_end(ap);
-
-    fprintf(stderr, "\n");
-}
 
 // Append .signed to the name of the executable to be signed.
 static char* _make_signed_lib_name(const char* path)
@@ -58,26 +45,22 @@ static oe_result_t _update_and_write_signed_exe(
     const char* path,
     const oe_sgx_enclave_properties_t* properties)
 {
-    oe_result_t rc = OE_FAILURE;
+    oe_result_t result = OE_FAILURE;
     oe_enclave_image_t oeimage;
     FILE* os = NULL;
 
     /* Open ELF file */
-    if (oe_load_enclave_image(path, &oeimage) != OE_OK)
-    {
-        Err("cannot load ELF file: %s", path);
-        goto done;
-    }
+    OE_CHECK_ERR(
+        oe_load_enclave_image(path, &oeimage),
+        "Cannot load ELF file: %s",
+        path);
 
     // Update or create a new .oeinfo section.
-    if (oe_sgx_update_enclave_properties(
-            &oeimage, OE_INFO_SECTION_NAME, properties) != OE_OK)
-    {
-        {
-            Err("section doesn't exist: %s", OE_INFO_SECTION_NAME);
-            goto done;
-        }
-    }
+    OE_CHECK_ERR(
+        oe_sgx_update_enclave_properties(
+            &oeimage, OE_INFO_SECTION_NAME, properties),
+        "Cannot create or update section: %s",
+        OE_INFO_SECTION_NAME);
 
     /* Write new signed executable */
     {
@@ -85,7 +68,7 @@ static oe_result_t _update_and_write_signed_exe(
 
         if (!p)
         {
-            Err("bad executable name: %s", path);
+            oe_err("Bad executable name: %s", path);
             goto done;
         }
 
@@ -95,14 +78,14 @@ static oe_result_t _update_and_write_signed_exe(
         if (!(os = fopen(p, "wb")))
 #endif
         {
-            Err("failed to open: %s", p);
+            oe_err("Failed to open: %s", p);
             goto done;
         }
 
         if (fwrite(oeimage.u.elf.elf.data, 1, oeimage.u.elf.elf.size, os) !=
             oeimage.u.elf.elf.size)
         {
-            Err("failed to write: %s", p);
+            oe_err("Failed to write: %s", p);
             goto done;
         }
 
@@ -114,7 +97,7 @@ static oe_result_t _update_and_write_signed_exe(
         free(p);
     }
 
-    rc = OE_OK;
+    result = OE_OK;
 
 done:
 
@@ -123,7 +106,7 @@ done:
 
     oeimage.unload(&oeimage);
 
-    return rc;
+    return result;
 }
 
 // Options loaded from .conf file. Uninitialized fields contain the maximum
@@ -152,31 +135,31 @@ static int _check_for_missing_options(const ConfigFileOptions* options)
 
     if (options->num_heap_pages == OE_UINT64_MAX)
     {
-        Err("%s: missing option: NumHeapPages", arg0);
+        oe_err("Missing option: NumHeapPages");
         ret = -1;
     }
 
     if (options->num_stack_pages == OE_UINT64_MAX)
     {
-        Err("%s: missing option: NumStackPages", arg0);
+        oe_err("Missing option: NumStackPages");
         ret = -1;
     }
 
     if (options->num_tcs == OE_UINT64_MAX)
     {
-        Err("%s: missing option: NumTCS", arg0);
+        oe_err("Missing option: NumTCS");
         ret = -1;
     }
 
     if (options->product_id == OE_UINT16_MAX)
     {
-        Err("%s: missing option: ProductID", arg0);
+        oe_err("Missing option: ProductID");
         ret = -1;
     }
 
     if (options->security_version == OE_UINT16_MAX)
     {
-        Err("%s: missing option: SecurityVersion", arg0);
+        oe_err("Missing option: SecurityVersion");
         ret = -1;
     }
 
@@ -223,7 +206,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         if (str_split(&str, " \t=", &lhs, &rhs) != 0 || str_len(&lhs) == 0 ||
             str_len(&rhs) == 0)
         {
-            Err("%s(%zu): syntax error", path, line);
+            oe_err("%s(%zu): syntax error", path, line);
             goto done;
         }
 
@@ -235,7 +218,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
             // Debug must be 0 or 1
             if (str_u64(&rhs, &value) != 0 || (value > 1))
             {
-                Err("%s(%zu): bad value for 'Debug'", path, line);
+                oe_err("%s(%zu): bad value for 'Debug'", path, line);
                 goto done;
             }
 
@@ -247,7 +230,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
 
             if (str_u64(&rhs, &n) != 0 || !oe_sgx_is_valid_num_heap_pages(n))
             {
-                Err("%s(%zu): bad value for 'NumHeapPages'", path, line);
+                oe_err("%s(%zu): bad value for 'NumHeapPages'", path, line);
                 goto done;
             }
 
@@ -259,7 +242,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
 
             if (str_u64(&rhs, &n) != 0 || !oe_sgx_is_valid_num_stack_pages(n))
             {
-                Err("%s(%zu): bad value for 'NumStackPages'", path, line);
+                oe_err("%s(%zu): bad value for 'NumStackPages'", path, line);
                 goto done;
             }
 
@@ -271,7 +254,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
 
             if (str_u64(&rhs, &n) != 0 || !oe_sgx_is_valid_num_tcs(n))
             {
-                Err("%s(%zu): bad value for 'NumTCS'", path, line);
+                oe_err("%s(%zu): bad value for 'NumTCS'", path, line);
                 goto done;
             }
 
@@ -283,7 +266,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
 
             if (str_u16(&rhs, &n) != 0 || !oe_sgx_is_valid_product_id(n))
             {
-                Err("%s(%zu): bad value for 'ProductID'", path, line);
+                oe_err("%s(%zu): bad value for 'ProductID'", path, line);
                 goto done;
             }
 
@@ -295,7 +278,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
 
             if (str_u16(&rhs, &n) != 0 || !oe_sgx_is_valid_security_version(n))
             {
-                Err("%s(%zu): bad value for 'SecurityVersion'", path, line);
+                oe_err("%s(%zu): bad value for 'SecurityVersion'", path, line);
                 goto done;
             }
 
@@ -303,7 +286,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         }
         else
         {
-            Err("%s(%zu): unknown setting: %s", path, line, str_ptr(&rhs));
+            oe_err("%s(%zu): unknown setting: %s", path, line, str_ptr(&rhs));
             goto done;
         }
     }
@@ -568,7 +551,7 @@ int oesign(
     const char* key_id)
 {
     int ret = 1;
-    oe_result_t result;
+    oe_result_t result = OE_UNEXPECTED;
     oe_enclave_t enc;
     void* pem_data = NULL;
     size_t pem_size;
@@ -579,7 +562,7 @@ int oesign(
     /* Load the configuration file */
     if (_load_config_file(conffile, &options) != 0)
     {
-        Err("failed to load configuration file: %s", conffile);
+        oe_err("Failed to load configuration file: %s", conffile);
         goto done;
     }
 
@@ -589,7 +572,8 @@ int oesign(
 
         if (result != OE_OK && result != OE_NOT_FOUND)
         {
-            Err("failed to load enclave: %s: result=%s (%u)",
+            oe_err(
+                "Failed to load enclave: %s: result=%s (%u)",
                 enclave,
                 oe_result_str(result),
                 result);
@@ -610,86 +594,72 @@ int oesign(
     /* Check whether enclave properties are valid */
     {
         const char* field_name;
-
-        if (oe_sgx_validate_enclave_properties(&props, &field_name) != OE_OK)
-        {
-            Err("invalid enclave property value: %s", field_name);
-            goto done;
-        }
+        OE_CHECK_ERR(
+            oe_sgx_validate_enclave_properties(&props, &field_name),
+            "Invalid enclave property value: %s",
+            field_name);
     }
 
     /* Initialize the context parameters for measurement only */
-    if (oe_sgx_initialize_load_context(
-            &context, OE_SGX_LOAD_TYPE_MEASURE, props.config.attributes) !=
-        OE_OK)
-    {
-        Err("oe_sgx_initialize_load_context() failed");
-        goto done;
-    }
+    OE_CHECK_ERR(
+        oe_sgx_initialize_load_context(
+            &context, OE_SGX_LOAD_TYPE_MEASURE, props.config.attributes),
+        "oe_sgx_initialize_load_context() failed");
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
-    if ((result = oe_sgx_build_enclave(&context, enclave, &props, &enc)) !=
-        OE_OK)
-    {
-        Err("oe_sgx_build_enclave(): result=%s (%u)",
-            oe_result_str(result),
-            result);
-        goto done;
-    }
+    OE_CHECK_ERR(
+        oe_sgx_build_enclave(&context, enclave, &props, &enc),
+        "oe_sgx_build_enclave(): result=%s (%u)",
+        oe_result_str(result),
+        result);
 
     if (engine_id)
     {
         /* Initialize the sigstruct object */
-        if ((result = oe_sgx_sign_enclave_from_engine(
-                 &enc.hash,
-                 props.config.attributes,
-                 props.config.product_id,
-                 props.config.security_version,
-                 engine_id,
-                 engine_load_path,
-                 key_id,
-                 (sgx_sigstruct_t*)props.sigstruct)) != OE_OK)
-        {
-            Err("oe_sgx_sign_enclave_from_engine() failed: result=%s (%u)",
-                oe_result_str(result),
-                result);
-            goto done;
-        }
+        OE_CHECK_ERR(
+            oe_sgx_sign_enclave_from_engine(
+                &enc.hash,
+                props.config.attributes,
+                props.config.product_id,
+                props.config.security_version,
+                engine_id,
+                engine_load_path,
+                key_id,
+                (sgx_sigstruct_t*)props.sigstruct),
+            "oe_sgx_sign_enclave_from_engine() failed: result=%s (%#x)",
+            oe_result_str(result),
+            result);
     }
     else
     {
         /* Load private key into memory */
         if (_load_pem_file(keyfile, &pem_data, &pem_size) != 0)
         {
-            Err("Failed to load file: %s", keyfile ? keyfile : "NULL");
+            oe_err("Failed to load file: %s", keyfile ? keyfile : "NULL");
             goto done;
         }
 
         /* Initialize the SigStruct object */
-        if ((result = oe_sgx_sign_enclave(
-                 &enc.hash,
-                 props.config.attributes,
-                 props.config.product_id,
-                 props.config.security_version,
-                 pem_data,
-                 pem_size,
-                 (sgx_sigstruct_t*)props.sigstruct)) != OE_OK)
-        {
-            Err("oe_sgx_sign_enclave() failed: result=%s (%u)",
-                oe_result_str(result),
-                result);
-            goto done;
-        }
+        OE_CHECK_ERR(
+            oe_sgx_sign_enclave(
+                &enc.hash,
+                props.config.attributes,
+                props.config.product_id,
+                props.config.security_version,
+                pem_data,
+                pem_size,
+                (sgx_sigstruct_t*)props.sigstruct),
+            "oe_sgx_sign_enclave() failed: result=%s (%#x)",
+            oe_result_str(result),
+            result);
     }
 
     /* Create signature section and write out new file */
-    if ((result = _update_and_write_signed_exe(enclave, &props)) != OE_OK)
-    {
-        Err("_update_and_write_signed_exe(): result=%s (%u)",
-            oe_result_str(result),
-            result);
-        goto done;
-    }
+    OE_CHECK_ERR(
+        _update_and_write_signed_exe(enclave, &props),
+        "_update_and_write_signed_exe(): result=%s (%#x)",
+        oe_result_str(result),
+        result);
 
     ret = 0;
 
@@ -748,7 +718,7 @@ int dump_parser(int argc, const char* argv[])
 
     if (enclave == NULL)
     {
-        Err("Enclave image flag is missing");
+        oe_err("--enclave-image option is missing");
         ret = 1;
     }
     if (!ret)
@@ -844,7 +814,7 @@ int sign_parser(int argc, const char* argv[])
 
     if (conffile == NULL)
     {
-        Err("Config file flag is missing");
+        oe_err("--config-file option is missing");
         ret = 1;
     }
 
@@ -853,7 +823,7 @@ int sign_parser(int argc, const char* argv[])
     {
         if (engine_id || engine_load_path || key_id)
         {
-            Err("if keyfile is specified, engine flags are not allowed");
+            oe_err("--key-file cannot be used with engine options");
             ret = 1;
             goto done;
         }
@@ -862,8 +832,8 @@ int sign_parser(int argc, const char* argv[])
     {
         if (!engine_id || !key_id)
         {
-            Err("If keyfile is not specified, you must specify at least both "
-                "engineid and keyid");
+            oe_err("Either --key-file or --key-id and its --engine must be "
+                   "specified");
             ret = 1;
             goto done;
         }
@@ -876,7 +846,7 @@ int sign_parser(int argc, const char* argv[])
 #else
     if (keyfile == NULL)
     {
-        Err("Required key file flag is missing");
+        oe_err("--key-file option is missing");
         ret = 1;
         goto done;
     }
@@ -908,7 +878,7 @@ int arg_handler(int argc, const char* argv[])
 
 int main(int argc, const char* argv[])
 {
-    arg0 = argv[0];
+    oe_set_err_program_name(argv[0]);
     int ret = 1;
 
     if (argc < 2)

@@ -13,8 +13,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-
-size_t errors = 0;
+#include "oe_err.h"
 
 static bool verbose_opt = false;
 
@@ -29,8 +28,6 @@ static oe_result_t _find_enclave_properties(
     oe_result_t result = OE_UNEXPECTED;
     uint8_t* ptr = section_data;
     size_t bytes_remaining = section_size;
-
-    *enclave_properties = NULL;
 
     /* While there are more enclave property structures */
     while (bytes_remaining >= struct_size)
@@ -125,18 +122,6 @@ done:
     return result;
 }
 
-OE_PRINTF_FORMAT(1, 2)
-void err(const char* fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    fprintf(stderr, "*** Error: ");
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
-    va_end(ap);
-    errors++;
-}
-
 void dump_entry_point(elf64_t* elf)
 {
     elf64_sym_t sym;
@@ -145,19 +130,19 @@ void dump_entry_point(elf64_t* elf)
     if (elf64_find_dynamic_symbol_by_address(
             elf, elf64_get_header(elf)->e_entry, STT_FUNC, &sym) != 0)
     {
-        err("cannot find entry point symbol");
+        oe_err("Cannot find entry point symbol");
         return;
     }
 
     if (!(name = elf64_get_string_from_dynstr(elf, sym.st_name)))
     {
-        err("cannot resolve entry point name");
+        oe_err("Cannot resolve entry point name");
         return;
     }
 
     if (strcmp(name, "_start") != 0)
     {
-        err("invalid entry point name: %s", name);
+        oe_err("Invalid entry point name: %s", name);
         return;
     }
 
@@ -215,14 +200,15 @@ int oedump(const char* enc_bin)
     /* Load the ELF-64 object */
     if (elf64_load(enc_bin, &elf) != 0)
     {
-        fprintf(stderr, "failed to load %s\n", enc_bin);
+        oe_err("Failed to load %s as ELF64", enc_bin);
         goto done;
     }
 
     /* Load the SGX enclave properties */
     if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, &props) != OE_OK)
     {
-        err("failed to load SGX enclave properties from %s section",
+        oe_err(
+            "Failed to load SGX enclave properties from %s section",
             OE_INFO_SECTION_NAME);
     }
 
@@ -234,12 +220,7 @@ int oedump(const char* enc_bin)
     /* Dump the signature section */
     dump_enclave_properties(&props);
 
-    if (errors)
-    {
-        fprintf(stderr, "*** Found %zu errors\n", errors);
-        goto done;
-    }
-
+    oe_print_err_count();
     ret = 0;
 
 done:

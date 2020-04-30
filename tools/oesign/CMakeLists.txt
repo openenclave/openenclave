@@ -3,7 +3,10 @@
 
 include(CheckSymbolExists)
 
-list(APPEND SOURCES main.c oedump.c)
+list(APPEND SOURCES
+  main.c
+  oe_err.c
+  oedump.c)
 
 CHECK_SYMBOL_EXISTS(getopt_long getopt.h HAVE_GETOPT_LONG)
 
