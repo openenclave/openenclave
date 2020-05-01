@@ -14,113 +14,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "oe_err.h"
+#include "oeinfo.h"
 
 static bool verbose_opt = false;
-
-/* Find enclave property struct within an .oeinfo section */
-static oe_result_t _find_enclave_properties(
-    uint8_t* section_data,
-    size_t section_size,
-    oe_enclave_type_t enclave_type,
-    size_t struct_size,
-    oe_sgx_enclave_properties_t** enclave_properties)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    uint8_t* ptr = section_data;
-    size_t bytes_remaining = section_size;
-
-    /* While there are more enclave property structures */
-    while (bytes_remaining >= struct_size)
-    {
-        oe_sgx_enclave_properties_t* p = (oe_sgx_enclave_properties_t*)ptr;
-
-        if (p->header.enclave_type == enclave_type)
-        {
-            if (p->header.size != struct_size)
-            {
-                result = OE_FAILURE;
-                goto done;
-            }
-
-            /* Found it! */
-            *enclave_properties = p;
-            break;
-        }
-
-        /* If size of structure extends beyond end of section */
-        if (p->header.size > bytes_remaining)
-            break;
-
-        ptr += p->header.size;
-        bytes_remaining -= p->header.size;
-    }
-
-    if (*enclave_properties == NULL)
-    {
-        result = OE_NOT_FOUND;
-        goto done;
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-oe_result_t oe_sgx_load_properties(
-    const elf64_t* elf,
-    const char* section_name,
-    oe_sgx_enclave_properties_t* properties)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    uint8_t* section_data;
-    size_t section_size;
-
-    if (properties)
-        memset(properties, 0, sizeof(*properties));
-
-    /* Check for null parameter */
-    if (!elf || !section_name || !properties)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
-
-    /* Get pointer to and size of the given section */
-    if (elf64_find_section(elf, section_name, &section_data, &section_size) !=
-        0)
-    {
-        result = OE_NOT_FOUND;
-        goto done;
-    }
-
-    /* Find SGX enclave property struct */
-    {
-        oe_sgx_enclave_properties_t* enclave_properties;
-
-        if ((result = _find_enclave_properties(
-                 section_data,
-                 section_size,
-                 OE_ENCLAVE_TYPE_SGX,
-                 sizeof(oe_sgx_enclave_properties_t),
-                 &enclave_properties)) != OE_OK)
-        {
-            result = OE_NOT_FOUND;
-            goto done;
-        }
-
-        OE_CHECK(oe_memcpy_s(
-            properties,
-            sizeof(*properties),
-            enclave_properties,
-            sizeof(*enclave_properties)));
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
 
 void dump_entry_point(elf64_t* elf)
 {
@@ -205,7 +101,7 @@ int oedump(const char* enc_bin)
     }
 
     /* Load the SGX enclave properties */
-    if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, &props) != OE_OK)
+    if (oe_read_oeinfo_sgx(enc_bin, &props) != OE_OK)
     {
         oe_err(
             "Failed to load SGX enclave properties from %s section",

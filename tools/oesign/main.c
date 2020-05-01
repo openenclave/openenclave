@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include "../host/sgx/enclave.h"
 #include "oe_err.h"
+#include "oeinfo.h"
 
 #if defined(WIN32)
 #define HAS_ENGINE_SUPPORT 0
@@ -29,85 +30,6 @@ int oesign(
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id);
-
-// Append .signed to the name of the executable to be signed.
-static char* _make_signed_lib_name(const char* path)
-{
-    mem_t buf = MEM_DYNAMIC_INIT;
-
-    mem_append(&buf, path, (size_t)strlen(path));
-    mem_append(&buf, ".signed", 8);
-
-    return (char*)mem_steal(&buf);
-}
-
-static oe_result_t _update_and_write_signed_exe(
-    const char* path,
-    const oe_sgx_enclave_properties_t* properties)
-{
-    oe_result_t result = OE_FAILURE;
-    oe_enclave_image_t oeimage;
-    FILE* os = NULL;
-
-    /* Open ELF file */
-    OE_CHECK_ERR(
-        oe_load_enclave_image(path, &oeimage),
-        "Cannot load ELF file: %s",
-        path);
-
-    // Update or create a new .oeinfo section.
-    OE_CHECK_ERR(
-        oe_sgx_update_enclave_properties(
-            &oeimage, OE_INFO_SECTION_NAME, properties),
-        "Cannot create or update section: %s",
-        OE_INFO_SECTION_NAME);
-
-    /* Write new signed executable */
-    {
-        char* p = _make_signed_lib_name(path);
-
-        if (!p)
-        {
-            oe_err("Bad executable name: %s", path);
-            goto done;
-        }
-
-#ifdef _WIN32
-        if (fopen_s(&os, p, "wb") != 0)
-#else
-        if (!(os = fopen(p, "wb")))
-#endif
-        {
-            oe_err("Failed to open: %s", p);
-            goto done;
-        }
-
-        if (fwrite(oeimage.u.elf.elf.data, 1, oeimage.u.elf.elf.size, os) !=
-            oeimage.u.elf.elf.size)
-        {
-            oe_err("Failed to write: %s", p);
-            goto done;
-        }
-
-        fclose(os);
-        os = NULL;
-
-        printf("Created %s\n", p);
-
-        free(p);
-    }
-
-    result = OE_OK;
-
-done:
-
-    if (os)
-        fclose(os);
-
-    oeimage.unload(&oeimage);
-
-    return result;
-}
 
 // Options loaded from .conf file. Uninitialized fields contain the maximum
 // integer value for the corresponding type.
@@ -379,41 +301,6 @@ done:
     return rc;
 }
 
-// Load the SGX enclave properties from an enclave's .oeinfo section.
-static oe_result_t _sgx_load_enclave_properties(
-    const char* path,
-    oe_sgx_enclave_properties_t* properties)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_enclave_image_t oeimage;
-
-    /* clear ELF magic */
-    oeimage.u.elf.elf.magic = 0;
-
-    if (properties)
-        memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
-
-    /* Check parameters */
-    if (!path || !properties)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Load the ELF image */
-    OE_CHECK(oe_load_enclave_image(path, &oeimage));
-
-    /* Load the SGX enclave properties */
-    OE_CHECK(oe_sgx_load_enclave_properties(
-        &oeimage, OE_INFO_SECTION_NAME, properties));
-
-    result = OE_OK;
-
-done:
-
-    if (oeimage.u.elf.elf.magic == ELF_MAGIC)
-        oeimage.unload(&oeimage);
-
-    return result;
-}
-
 /* Merge configuration file options into enclave properties */
 void _merge_config_file_options(
     oe_sgx_enclave_properties_t* properties,
@@ -568,7 +455,7 @@ int oesign(
 
     /* Load the enclave properties from the enclave */
     {
-        result = _sgx_load_enclave_properties(enclave, &props);
+        result = oe_read_oeinfo_sgx(enclave, &props);
 
         if (result != OE_OK && result != OE_NOT_FOUND)
         {
@@ -656,8 +543,8 @@ int oesign(
 
     /* Create signature section and write out new file */
     OE_CHECK_ERR(
-        _update_and_write_signed_exe(enclave, &props),
-        "_update_and_write_signed_exe(): result=%s (%#x)",
+        oe_write_oeinfo_sgx(enclave, &props),
+        "oe_write_oeinfo_sgx(): result=%s (%#x)",
         oe_result_str(result),
         result);
 
