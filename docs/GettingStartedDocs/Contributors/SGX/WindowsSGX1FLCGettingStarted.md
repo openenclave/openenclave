@@ -162,7 +162,7 @@ You will see test logs similar to the following:
 100% tests passed, 0 tests failed out of 107
 ```
 
-A clean pass of the above unit tests run is an indication that your Open Enclave setup was successful. 
+A clean pass of the above unit tests run is an indication that your Open Enclave setup was successful.
 
 For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) document.
 

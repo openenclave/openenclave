@@ -36,14 +36,14 @@ the hardware types below.
 If you would like to start developing apps with the preview Open Enclave SDK
 release, start here for instructions to install and use the SDK package:
 
-- [Ubuntu 18.04 with SGX hardware](install_oe_sdk-Ubuntu_18.04.md)
-- [Ubuntu 16.04 with SGX hardware](install_oe_sdk-Ubuntu_16.04.md)
-- [Ubuntu 18.04 or 16.04 in simulation mode](install_oe_sdk-Simulation.md)
-- [Windows Server 2016 with SGX hardware](install_oe_sdk-Windows.md)
+- [Ubuntu 18.04 with SGX hardware](SGX/install_oe_sdk-Ubuntu_18.04.md)
+- [Ubuntu 16.04 with SGX hardware](SGX/install_oe_sdk-Ubuntu_16.04.md)
+- [Ubuntu 18.04 or 16.04 in simulation mode](SGX/install_oe_sdk-Simulation.md)
+- [Windows Server 2016 with SGX hardware](SGX/install_oe_sdk-Windows.md)
 
 If you would like to run Ubuntu 16.04 or Ubuntu 18.04 in a Hyper-V VM on SGX
 capable hardware, see
-[Setting up a Linux Hyper-V VM on Windows with SGX Support](HyperVLinuxVMSetup.md).
+[Setting up a Linux Hyper-V VM on Windows with SGX Support](SGX/HyperVLinuxVMSetup.md).
 
 ### OP-TEE OS (ARM TrustZone)
 
@@ -85,7 +85,7 @@ If you are interested in contributing changes to Open Enclave, here are some
 good places to start:
 
 - [General Development Guide](../Community/DevelopmentGuide.md)
-- [How To Build OE SDK and run tests](Contributors/building_oe_sdk.md)
+- [How To Build OE SDK and run tests](Contributors/SGX/building_oe_sdk.md)
 
 Contributors must sign a
 [Developer Certificate of Origin (DCO)](https://developercertificate.org/). For

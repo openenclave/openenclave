@@ -24,7 +24,6 @@ wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add 
 ```
 
 ### 2. Install the Intel SGX DCAP Driver
-<<<<<<< HEAD
 Some versions of Ubuntu come with the SGX driver already installed. You can check
 by running with the following:
 

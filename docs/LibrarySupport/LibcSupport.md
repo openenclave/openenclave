@@ -34,4 +34,3 @@ time.h | Partial | All time functions implicitly call out to untrusted host for 
 uchar.h | Yes | - |
 wchar.h | Partial | Only basic support for C/POSIX locale. <br> **Unsupported functions:** <br> - All I/O (e.g. swprintf()) <br> - All multi-byte & wide string conversions (e.g. mbrtowc()) |
 wctype.h | Yes | - |
-
