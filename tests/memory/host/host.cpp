@@ -79,10 +79,15 @@ static void _malloc_boundary_test(oe_enclave_t* enclave, uint32_t flags)
     for (int i = 0; i < BUFSIZE; i++)
         heapbuf[i] = 2;
 
-    buffer host_stack = {.buf = stackbuf, .size = sizeof(stackbuf)};
-    buffer host_heap = {.buf = heapbuf, .size = BUFSIZE};
+    buffer host_stack;
+    buffer host_heap;
     buffer enclave_memory;
     buffer enclave_host_memory;
+
+    host_stack.buf = stackbuf;
+    host_stack.size = sizeof(stackbuf);
+    host_heap.buf = heapbuf;
+    host_heap.size = BUFSIZE;
 
     OE_TEST(
         test_between_enclave_boundaries(

@@ -1,4 +1,3 @@
-
 This directory tests enclave memory management with the following tests:
   - Checking that basic uses of malloc and free work.
   - Checking that malloc returns pointers within the enclave boundary.

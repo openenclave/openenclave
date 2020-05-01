@@ -37,6 +37,9 @@ endif()
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS OR USE_CLANGW)
     if (OE_SGX)
         if (BUILD_ENCLAVES)
+            # Disable the memory test for the scenario of building the enclave in Linux and running
+            # it on Windows because of the mismatch on the enclave heap size configuration.
+            add_subdirectory(memory)
             add_subdirectory(tls_e2e)
         endif()
 
@@ -94,12 +97,10 @@ add_subdirectory(pingpong)
 add_subdirectory(pingpong-shared)
 endif()
 
-# Windows test Broken Post #632 issue
 if ( UNIX )
     if (OE_SGX)
         add_subdirectory(child_process)
         add_subdirectory(cmake_name_conflict)
-        add_subdirectory(memory)
     endif()
 add_subdirectory(libc)
 endif()

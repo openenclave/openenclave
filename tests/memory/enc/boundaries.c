@@ -9,6 +9,7 @@
 
 #define BUFSIZE 1024
 #define ITERS 1024
+#define OE_USED_HEAP 20584 /* Amount of heap consumed by OE. */
 
 void test_host_boundaries(buffer buf)
 {
@@ -17,16 +18,27 @@ void test_host_boundaries(buffer buf)
 
 void test_enclave_boundaries()
 {
-    void* array[ITERS];
+    void* array[ITERS] = {NULL};
+    /* Calculate the upper bound of the heap. */
+    size_t bound = __oe_get_heap_size() - OE_USED_HEAP;
+    size_t allocated = 0;
+
     for (int i = 0; i < ITERS; i++)
     {
+        if (allocated >= bound)
+            break;
+
         array[i] = malloc(BUFSIZE);
         OE_TEST(array[i] != NULL);
         OE_TEST(oe_is_within_enclave(array[i], BUFSIZE));
+        allocated += BUFSIZE;
     }
 
     for (int i = 0; i < ITERS; i++)
-        free(array[i]);
+    {
+        if (array[i])
+            free(array[i]);
+    }
 }
 
 void test_between_enclave_boundaries(
