@@ -1,7 +1,11 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(EDL_FILE "../fs.edl")
+if(UNIX)
+    set(EDL_FILE "../linux/fs.edl")
+else()
+    set(EDL_FILE "../windows/fs.edl")
+endif()
 
 set(EDL_SEARCH_DIR "../../../../syscall/devices/sgxfs")
 
