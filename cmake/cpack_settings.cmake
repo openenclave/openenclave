@@ -31,4 +31,9 @@ set(CPACK_NUGET_PACKAGE_AUTHORS "Open Enclave SDK Contributors")
 set(CPACK_NUGET_PACKAGE_VERSION ${OE_VERSION})
 set(CPACK_NUGET_PACKAGE_LICENSEURL "https://github.com/openenclave/openenclave/blob/master/LICENSE")
 
+# CPack variables for Nuget packages for the host-side verification library
+file(READ "${PROJECT_SOURCE_DIR}/cmake/HostVerifyNuGetDescription.txt" CPACK_NUGET_OEHOSTVERIFY_PACKAGE_DESCRIPTION_FILE)
+set(CPACK_NUGET_OEHOSTVERIFY_PACKAGE_DESCRIPTION ${CPACK_NUGET_OEHOSTVERIFY_PACKAGE_DESCRIPTION_FILE})
+set(CPACK_NUGET_OEHOSTVERIFY_PACKAGE_DESCRIPTION_SUMMARY "Open Enclave Report Verification Host Library")
+
 include(CPack)
