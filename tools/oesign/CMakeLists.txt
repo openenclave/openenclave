@@ -7,7 +7,8 @@ list(APPEND SOURCES
   main.c
   oe_err.c
   oedump.c
-  oeinfo.c)
+  oeinfo.c
+  oesign.c)
 
 CHECK_SYMBOL_EXISTS(getopt_long getopt.h HAVE_GETOPT_LONG)
 

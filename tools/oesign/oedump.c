@@ -1,16 +1,10 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <inttypes.h>
-#include <openenclave/bits/defs.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/raise.h>
-#include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/sgxcreate.h>
-#include <openenclave/internal/utils.h>
-#include <stdarg.h>
+#include <openenclave/internal/types.h>
 #include <stdio.h>
 #include <string.h>
 #include "oe_err.h"
@@ -44,7 +38,7 @@ void dump_entry_point(elf64_t* elf)
 
     printf("=== Entry point: \n");
     printf("name=%s\n", name);
-    printf("address=%016llx\n", OE_LLX(sym.st_value));
+    printf("address=%#016llx\n", OE_LLX(sym.st_value));
     printf("\n");
 }
 
@@ -61,7 +55,7 @@ void dump_enclave_properties(const oe_sgx_enclave_properties_t* props)
     bool debug = props->config.attributes & OE_SGX_FLAGS_DEBUG;
     printf("debug=%u\n", debug);
 
-    printf("xfrm=%" PRIx64 "\n", props->config.xfrm);
+    printf("xfrm=%#016llx\n", OE_LLX(props->config.xfrm));
 
     printf(
         "num_heap_pages=%llu\n",
