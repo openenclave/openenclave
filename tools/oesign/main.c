@@ -241,12 +241,6 @@ int sign_parser(int argc, const char* argv[])
         }
     } while (1);
 
-    if (conffile == NULL)
-    {
-        oe_err("--config-file option is missing");
-        ret = 1;
-    }
-
 #if HAS_ENGINE_SUPPORT
     if (keyfile)
     {

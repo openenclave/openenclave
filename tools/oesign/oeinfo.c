@@ -65,11 +65,11 @@ oe_result_t oe_write_oeinfo_sgx(
         "Cannot load ELF file: %s",
         path);
 
-    // Update or create a new .oeinfo section.
+    /* Write the .oeinfo section. */
     OE_CHECK_ERR(
         oe_sgx_update_enclave_properties(
             &oeimage, OE_INFO_SECTION_NAME, properties),
-        "Cannot create or update section: %s",
+        "Cannot write section: %s",
         OE_INFO_SECTION_NAME);
 
     /* Write new signed executable */
