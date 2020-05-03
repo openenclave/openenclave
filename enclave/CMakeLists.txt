@@ -29,6 +29,7 @@ add_enclave_library(
   STATIC
   ../common/attest_plugin.c
   ../common/datetime.c
+  ../common/sha.c
   asym_keys.c
   link.c
   tls_cert.c

@@ -337,6 +337,7 @@ list(
   ../common/attest_plugin.c
   ../common/datetime.c
   ../common/safecrt.c
+  ../common/sha.c
   hexdump.c
   dupenv.c
   fopen.c
