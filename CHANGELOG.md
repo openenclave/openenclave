@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+### Added
+- Added `oe_sgx_get_signer_id_from_public_key()` function which helps a verifier of SGX
+  reports extract the expected MRSIGNER value from the signer's public key PEM certificate.
+
 ### Changed
 - Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
 
@@ -88,8 +92,8 @@ release notes for the set of issues addressed.
 [v0.8.1][v0.8.1_log] - 2020-02-07
 ---------------------
 
-### Fixed 
-- Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523. 
+### Fixed
+- Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523.
 
 ### Changed
 - `oe_random()` now depends on the hardware-based source of RNG instead of cryptography libraries.

@@ -46,7 +46,8 @@ if (OE_SGX)
     sgx/sgxload.c
     sgx/sgxmeasure.c
     sgx/sgxsign.c
-    sgx/sgxtypes.c)
+    sgx/sgxtypes.c
+    ../common/sgx/report_helper.c)
 
   # OS specific as well.
   if (UNIX)

@@ -33,6 +33,10 @@ install(
   FILES openenclave/attestation/sgx/verifier.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/
   COMPONENT OEHOSTVERIFY)
+install(
+  FILES openenclave/attestation/sgx/report.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/sgx/
+  COMPONENT OEHOSTVERIFY)
 install(TARGETS oe_includes EXPORT openenclave-targets)
 
 # Install parts of oelibc needed by edger8r-generated code

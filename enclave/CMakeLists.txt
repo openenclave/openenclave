@@ -10,6 +10,7 @@ if (OE_SGX)
       ../common/sgx/qeidentity.c
       ../common/sgx/quote.c
       ../common/sgx/report.c
+      ../common/sgx/report_helper.c
       ../common/sgx/collateral.c
       ../common/sgx/sgxcertextensions.c
       ../common/sgx/tcbinfo.c

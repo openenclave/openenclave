@@ -217,6 +217,17 @@ OE_INLINE uint64_t oe_round_down_to_page_size(uint64_t x)
     return x & ~((uint64_t)OE_PAGE_SIZE - 1);
 }
 
+OE_INLINE void oe_mem_reverse_inplace(void* mem, size_t n)
+{
+    uint8_t* const p = (uint8_t*)mem;
+    for (size_t i = 0; i < n / 2; ++i)
+    {
+        uint8_t x = p[i];
+        p[i] = p[n - 1 - i];
+        p[n - 1 - i] = x;
+    }
+}
+
 OE_EXTERNC_END
 
 #endif /* _OE_UTILS_H */
