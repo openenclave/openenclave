@@ -7,7 +7,7 @@ add_custom_command(
     OUTPUT switchless_test_u.h switchless_test_u.c switchless_test_args.h
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --untrusted ${EDL_FILE}
-               --search-path ${PROJECT_SOURCE_DIR}/edl
+               --search-path ${PROJECT_SOURCE_DIR}/include
                --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(switchless_host host.c switchless_test_u.c)

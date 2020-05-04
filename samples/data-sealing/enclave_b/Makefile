@@ -16,7 +16,7 @@ all:
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../datasealing.edl --trusted  --trusted-dir ../common \
-		--search-path $(INCDIR)/openenclave/edl \
+		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -DOE_API_VERSION=2 -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/datasealing_t.c

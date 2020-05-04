@@ -7,7 +7,7 @@ add_custom_command(
     OUTPUT switchless_test_t.h switchless_test_t.c
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --trusted ${EDL_FILE}
-               --search-path ${PROJECT_SOURCE_DIR}/edl
+               --search-path ${PROJECT_SOURCE_DIR}/include
                --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_enclave(TARGET switchless_enc UUID d497e154-9e8e-4029-a53d-c0a36533fb95 SOURCES enc.c ${CMAKE_CURRENT_BINARY_DIR}/switchless_test_t.c)

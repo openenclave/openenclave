@@ -34,7 +34,7 @@ genkey: public.pem
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../localattestation.edl --trusted --trusted-dir ../common \
-		--search-path $(INCDIR)/openenclave/edl \
+		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I. -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/localattestation_t.c

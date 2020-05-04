@@ -17,9 +17,9 @@ add_custom_command(
   ../edl/pointer.edl
   ../edl/string.edl
   ../edl/struct.edl
-  ../edl/switchless.edl
+  ../edl/switchless_test.edl
   COMMAND edger8r --experimental --trusted
-                  --search-path ${PROJECT_SOURCE_DIR}/edl
+                  --search-path ${PROJECT_SOURCE_DIR}/include
                   --search-path ${PLATFORM_EDL_DIR}
                   --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl
                   --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
@@ -84,7 +84,7 @@ add_custom_command(
     OUTPUT other_t.h other_t.c
     DEPENDS ${EDL_FILE} edger8r
     COMMAND edger8r --trusted ${EDL_FILE}
-              --search-path ${PROJECT_SOURCE_DIR}/edl
+              --search-path ${PROJECT_SOURCE_DIR}/include
               --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_enclave(

@@ -3,13 +3,13 @@
 
 enclave {
   // Import system edl
-  from "logging.edl" import *;
-  from "syscall.edl" import *;
-  from "sgx/sgx_attestation.edl" import *;
-  from "sgx/cpu.edl" import *;
-  from "sgx/debug.edl" import *;
-  from "sgx/thread.edl" import *;
-  from "sgx/switchless.edl" import *;
+  from "openenclave/edl/logging.edl" import *;
+  from "openenclave/edl/syscall.edl" import *;
+  from "openenclave/edl/sgx/sgx_attestation.edl" import *;
+  from "openenclave/edl/sgx/cpu.edl" import *;
+  from "openenclave/edl/sgx/debug.edl" import *;
+  from "openenclave/edl/sgx/thread.edl" import *;
+  from "openenclave/edl/sgx/switchless.edl" import *;
 
   // This enclave is explicitly separate from the `all` enclave, but
   // shares the same host. This tests the ability of a single host to

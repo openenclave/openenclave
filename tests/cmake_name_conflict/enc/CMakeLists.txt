@@ -9,7 +9,7 @@ add_custom_command(
     edger8r
     ../name_conflict.edl
     COMMAND edger8r --trusted name_conflict.edl
-        --search-path ${PROJECT_SOURCE_DIR}/edl
+        --search-path ${PROJECT_SOURCE_DIR}/include
         --search-path ${PLATFORM_EDL_DIR}
         --search-path ${CMAKE_CURRENT_SOURCE_DIR}/..)
 

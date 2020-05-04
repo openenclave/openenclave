@@ -14,7 +14,7 @@
 
 enclave
 {
-    from "asym_keys.edl" import *;
+    from "openenclave/edl/asym_keys.edl" import *;
 
     trusted
     {

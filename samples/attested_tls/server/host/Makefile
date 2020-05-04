@@ -13,7 +13,7 @@ all: build
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../tls_server.edl --untrusted \
-		--search-path $(INCDIR)/openenclave/edl \
+		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CC) -c $(CFLAGS) $(CINCLUDES) tls_server_u.c
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp

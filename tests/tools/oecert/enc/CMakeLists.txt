@@ -5,7 +5,7 @@ add_custom_command(
   OUTPUT oecert_t.h oecert_t.c oecert_args.h
   DEPENDS ../oecert.edl edger8r
   COMMAND edger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../oecert.edl
-                  --search-path ${PROJECT_SOURCE_DIR}/edl
+                  --search-path ${PROJECT_SOURCE_DIR}/include
                   --search-path ${PLATFORM_EDL_DIR})
 
 add_enclave(TARGET oecert_enc SOURCES enc.cpp

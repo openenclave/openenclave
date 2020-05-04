@@ -7,7 +7,7 @@ add_custom_command(
   OUTPUT oecertdump_u.h oecertdump_u.c oecertdump_args.h
   DEPENDS ../oecertdump.edl edger8r
   COMMAND edger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../oecertdump.edl
-                  --search-path ${PROJECT_SOURCE_DIR}/edl
+                  --search-path ${PROJECT_SOURCE_DIR}/include
                   --search-path ${PLATFORM_EDL_DIR})
 
 add_executable(oecertdump host.cpp sgx_quote.cpp

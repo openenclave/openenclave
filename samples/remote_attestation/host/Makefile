@@ -13,7 +13,7 @@ all: build
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../remoteattestation.edl --untrusted \
-		--search-path $(INCDIR)/openenclave/edl \
+		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) remoteattestation_u.c
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) host.cpp

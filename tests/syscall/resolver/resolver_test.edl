@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 enclave {
-    from "logging.edl" import *;
-    from "syscall.edl" import *;
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
     from "platform.edl" import *;
 
     trusted

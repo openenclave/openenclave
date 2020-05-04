@@ -16,7 +16,7 @@ all:
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../fileencryptor.edl --trusted \
-		--search-path $(INCDIR)/openenclave/edl \
+		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) -DOE_API_VERSION=2 -std=c++11 ecalls.cpp encryptor.cpp keys.cpp
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 fileencryptor_t.c -o fileencryptor_t.o

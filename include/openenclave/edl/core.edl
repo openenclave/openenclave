@@ -20,8 +20,8 @@ enclave
      * as a convenience to allow refactoring of system EDL files without the need
      * to add a new build definition for each file.
      */
-    from "attestation.edl" import *;
-    from "keys.edl" import *;
-    from "logging.edl" import *;
-    from "memory.edl" import *;
+    from "openenclave/edl/attestation.edl" import *;
+    from "openenclave/edl/keys.edl" import *;
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/memory.edl" import *;
 };

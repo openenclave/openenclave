@@ -17,9 +17,9 @@ add_custom_command(
   ../edl/pointer.edl
   ../edl/string.edl
   ../edl/struct.edl
-  ../edl/switchless.edl
+  ../edl/switchless_test.edl
   COMMAND edger8r --experimental --untrusted
-                  --search-path ${PROJECT_SOURCE_DIR}/edl
+                  --search-path ${PROJECT_SOURCE_DIR}/include
                   --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl
                   --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
 
@@ -33,7 +33,7 @@ add_custom_command(
   OUTPUT other_u.h other_u.c other_args.h
   DEPENDS ../edl/other.edl
   COMMAND edger8r --untrusted
-                  --search-path ${PROJECT_SOURCE_DIR}/edl
+                  --search-path ${PROJECT_SOURCE_DIR}/include
                   --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl other.edl)
 
 # Dummy target used for generating from EDL on demand.

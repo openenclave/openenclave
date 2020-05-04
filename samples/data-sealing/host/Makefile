@@ -13,7 +13,7 @@ all: build
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../datasealing.edl --untrusted \
-		--search-path $(INCDIR)/openenclave/edl \
+		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. host.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. datasealing_u.c

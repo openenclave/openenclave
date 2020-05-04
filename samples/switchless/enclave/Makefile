@@ -15,7 +15,7 @@ all:
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../switchless_sample.edl --trusted \
-		--search-path $(INCDIR)/openenclave/edl \
+		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 enc.c -o enc.o
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 switchless_sample_t.c -o switchless_sample_t.o

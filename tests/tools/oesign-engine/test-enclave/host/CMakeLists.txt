@@ -4,7 +4,7 @@ add_custom_command(
   OUTPUT helloworld_u.h helloworld_u.c helloworld_args.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../helloworld.edl
   COMMAND edger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../helloworld.edl
-                  --search-path ${PROJECT_SOURCE_DIR}/edl
+                  --search-path ${PROJECT_SOURCE_DIR}/include
                   --search-path ${PLATFORM_EDL_DIR})
 
 add_executable(helloworld_host host.c

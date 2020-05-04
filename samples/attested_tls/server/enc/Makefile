@@ -18,7 +18,7 @@ build:
 	@ echo "Compilers used: $(CC), $(CXX)"
 	oeedger8r ../tls_server.edl --trusted \
 		--trusted-dir . \
-		--search-path $(INCDIR)/openenclave/edl \
+		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp server.cpp identity_verifier.cpp cert_verifier.cpp ../../common/utility.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) tls_server_t.c
