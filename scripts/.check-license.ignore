@@ -58,6 +58,7 @@ docs/*
 3rdparty/optee/optee_os
 3rdparty/snmalloc
 cmake/NuGetDescription.txt
+cmake/HostVerifyNuGetDescription.txt
 devex/vscode-extension/.vscodeignore
 devex/vscode-extension/assets/devkit/devdata.tar.gz
 devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/\[\[project-name\]\]/Dockerfile.aarch64-qemu
