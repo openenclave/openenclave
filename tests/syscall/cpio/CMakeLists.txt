@@ -2,10 +2,9 @@
 # Licensed under the MIT License.
 
 if (BUILD_ENCLAVES)
-    add_enclave_library(oecpio STATIC commands.c cpio.c strarr.c)
+  add_enclave_library(oecpio STATIC commands.c cpio.c strarr.c)
 
-    enclave_link_libraries(oecpio PRIVATE oelibc oecore)
+  enclave_link_libraries(oecpio PRIVATE oelibc oecore)
 
-    maybe_build_using_clangw(oecpio)
-endif()
-
+  maybe_build_using_clangw(oecpio)
+endif ()

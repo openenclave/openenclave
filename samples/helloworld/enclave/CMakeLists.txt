@@ -2,7 +2,8 @@
 # Licensed under the MIT License.
 
 # Use the edger8r to generate C bindings from the EDL file.
-add_custom_command(OUTPUT helloworld_t.h helloworld_t.c helloworld_args.h
+add_custom_command(
+  OUTPUT helloworld_t.h helloworld_t.c helloworld_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/helloworld.edl
   COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/helloworld.edl)
 
@@ -21,7 +22,8 @@ if (LVI_MITIGATION MATCHES ControlFlow)
   # Helper to enable compiler options for LVI mitigation.
   apply_lvi_mitigation(enclave)
   # Link against LVI-mitigated libraries.
-  target_link_libraries(enclave openenclave::oeenclave-lvi-cfg openenclave::oelibc-lvi-cfg)
-else()
+  target_link_libraries(enclave openenclave::oeenclave-lvi-cfg
+                        openenclave::oelibc-lvi-cfg)
+else ()
   target_link_libraries(enclave openenclave::oeenclave openenclave::oelibc)
-endif()
+endif ()

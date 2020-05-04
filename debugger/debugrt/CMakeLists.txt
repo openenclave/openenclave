@@ -3,4 +3,4 @@
 
 if (OE_SGX)
   add_subdirectory(host)
-endif()
+endif ()
