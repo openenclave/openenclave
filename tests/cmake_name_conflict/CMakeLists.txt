@@ -4,7 +4,7 @@
 add_subdirectory(host)
 
 if (BUILD_ENCLAVES)
-	add_subdirectory(enc)
-endif()
+  add_subdirectory(enc)
+endif ()
 
 add_enclave_test(tests/cmake_name_conflict name_conflict_host name_conflict_enc)

@@ -15,7 +15,7 @@ string(REGEX REPLACE "^v" "" OE_VERSION ${OE_VERSION_WITH_V})
 # between Debian packages and NuGet packages.
 if (WIN32)
   string(REGEX REPLACE "~" "-" OE_VERSION ${OE_VERSION})
-endif()
+endif ()
 
 # Select the assembler
 # TODO: See #755: This should probably be removed
@@ -34,19 +34,25 @@ set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Will be overwritten during the cmake initialization.
-set(LVI_MITIGATION "None" CACHE STRING "Build with LVI mitigation.")
-set(LVI_MITIGATION_BINDIR "None" CACHE STRING "Path to the LVI mitigation bindir.")
+set(LVI_MITIGATION
+    "None"
+    CACHE STRING "Build with LVI mitigation.")
+set(LVI_MITIGATION_BINDIR
+    "None"
+    CACHE STRING "Path to the LVI mitigation bindir.")
 # On Unix, configuring cmake to adopt the customized compilation toolchain for LVI mitigation.
 # Note that this has be done before `project`.
 if (UNIX AND LVI_MITIGATION MATCHES ControlFlow)
   if (${LVI_MITIGATION_BINDIR} MATCHES None)
     message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
-  endif()
+  endif ()
   include(configure_lvi_mitigation_build)
   configure_lvi_mitigation_build(${LVI_MITIGATION_BINDIR})
-endif()
+endif ()
 
-project("Open Enclave SDK" LANGUAGES C CXX ${OE_ASM}
+project(
+  "Open Enclave SDK"
+  LANGUAGES C CXX ${OE_ASM}
   HOMEPAGE_URL "https://github.com/openenclave/openenclave")
 set(PROJECT_VERSION ${OE_VERSION})
 set(OE_SCRIPTSDIR "${PROJECT_SOURCE_DIR}/scripts")
@@ -57,20 +63,17 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
     COMMAND git rev-parse HEAD
     OUTPUT_VARIABLE GIT_COMMIT
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    ERROR_QUIET
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   execute_process(
     COMMAND git symbolic-ref HEAD
     OUTPUT_VARIABLE GIT_BRANCH
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    ERROR_QUIET
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} ERROR_QUIET
+                      OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   # Install Git pre-commit hook
-  file(
-    COPY scripts/pre-commit scripts/commit-msg
-    DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks")
+  file(COPY scripts/pre-commit scripts/commit-msg
+       DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks")
 endif ()
 
 # Generates `compile_commands.json` used by some developers. Only
@@ -83,12 +86,12 @@ string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
 list(APPEND uppercase_build_type "" "DEBUG" "RELEASE" "RELWITHDEBINFO")
 if (NOT uppercase_CMAKE_BUILD_TYPE IN_LIST uppercase_build_type)
   message(FATAL_ERROR "UNKNOWN CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
-endif()
+endif ()
 
 # Get Jenkins build number
 if (DEFINED ENV{BUILD_NUMBER})
   set(BUILD_NUMBER $ENV{BUILD_NUMBER})
-else()
+else ()
   set(BUILD_NUMBER "0")
 endif ()
 
@@ -97,19 +100,21 @@ endif ()
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
   # TODO: Right now assume it's Intel+SGX for x86_64 processors
   set(OE_SGX 1)
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
+elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|ARM.*|aarch64.*|AARCH64.*")
   set(OE_TRUSTZONE 1)
-else()
-  message(FATAL_ERROR "Unknown processor. Only Intel SGX and ARM TrustZone are supported")
-endif()
+else ()
+  message(
+    FATAL_ERROR
+      "Unknown processor. Only Intel SGX and ARM TrustZone are supported")
+endif ()
 
 if (OE_SGX)
   if (WIN32)
     # Building enclaves on windows is on by default but can be disabled for enclaves pre-compiled under linux
     option(BUILD_ENCLAVES "Build ELF enclaves" ON)
-  else()
+  else ()
     set(BUILD_ENCLAVES ON)
-  endif()
+  endif ()
 
   if (BUILD_ENCLAVES AND WIN32)
     # Search for prerequisites
@@ -122,8 +127,7 @@ if (OE_SGX)
     execute_process(
       COMMAND cmd.exe /c " clang -dM -E -x c nul | findstr __clang_major__ "
       RESULT_VARIABLE HAD_ERROR
-      OUTPUT_VARIABLE CONFIG_OUTPUT
-    )
+      OUTPUT_VARIABLE CONFIG_OUTPUT)
     if (HAD_ERROR)
       message(FATAL_ERROR "Could not parse clang major version")
     endif ()
@@ -137,13 +141,13 @@ if (OE_SGX)
     endif ()
 
     set(USE_CLANGW ON)
-  endif()
-else() # NOT OE_SGX
+  endif ()
+else () # NOT OE_SGX
   # On non-sgx enclaves are built by default on Unix
   if (UNIX)
     set(BUILD_ENCLAVES ON)
-  endif()
-endif()
+  endif ()
+endif ()
 
 if (WIN32)
   # NOTE: On Windows we have found that we must use Git Bash, not the
@@ -151,16 +155,19 @@ if (WIN32)
   # explicitly searching only for Git Bash. See #1302 for more.
   find_program(GIT git)
   get_filename_component(GIT_DIR ${GIT} DIRECTORY)
-  find_program(OE_BASH bash
-    PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
-    NO_DEFAULT_PATH) # Do not find WSL bash.
+  find_program(
+    OE_BASH bash PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
+                       NO_DEFAULT_PATH) # Do not find WSL bash.
 
   if (NOT OE_BASH)
     message(FATAL_ERROR "Git Bash not found!")
   endif ()
   if (NOT NUGET_PACKAGE_PATH)
-    message(FATAL_ERROR "NUGET_PACKAGE_PATH not defined. Please define NUGET_PACKAGE_PATH as the path to the installed Intel and DCAP Client nuget packages.")
-  endif()
+    message(
+      FATAL_ERROR
+        "NUGET_PACKAGE_PATH not defined. Please define NUGET_PACKAGE_PATH as the path to the installed Intel and DCAP Client nuget packages."
+    )
+  endif ()
 else ()
   find_program(OE_BASH bash)
   if (NOT OE_BASH)
@@ -185,16 +192,21 @@ include(package_settings)
 include(add_enclave)
 
 # User configurable options.
-option(HAS_QUOTE_PROVIDER "Take a build dependency on SGX DCAP, which requires FLC on target device to run." ON)
+option(
+  HAS_QUOTE_PROVIDER
+  "Take a build dependency on SGX DCAP, which requires FLC on target device to run."
+  ON)
 
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG" AND NOT WIN32)
   # In non-win32 debug build, debug_malloc is on by default
-  option(USE_DEBUG_MALLOC "Build oeenclave with memory leak detection capability." ON)
+  option(USE_DEBUG_MALLOC
+         "Build oeenclave with memory leak detection capability." ON)
 else ()
   # In win32 or non-debug builds, debug_malloc is off by default
-  option(USE_DEBUG_MALLOC "Build oeenclave with memory leak detection capability." OFF)
+  option(USE_DEBUG_MALLOC
+         "Build oeenclave with memory leak detection capability." OFF)
 endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
@@ -202,12 +214,18 @@ option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
 # NOTE: Building OpenEnclave using snmalloc for memory allocation is an experimental option.
 # Longer term, there will be a pluggable allocator mechanism to allow users to choose from a
 # selection of allocators.
-option(USE_SNMALLOC "[EXPERIMENTAL] Build using snmalloc. If this is not set, dlmalloc is used." OFF)
+option(
+  USE_SNMALLOC
+  "[EXPERIMENTAL] Build using snmalloc. If this is not set, dlmalloc is used."
+  OFF)
 if (NOT USE_SNMALLOC)
   set(USE_DLMALLOC true)
 endif ()
 
-option(COMPILE_SYSTEM_EDL "Build system ecalls and ocalls into OE libraries. If not set, they must be included by application EDL to use." ON)
+option(
+  COMPILE_SYSTEM_EDL
+  "Build system ecalls and ocalls into OE libraries. If not set, they must be included by application EDL to use."
+  ON)
 
 option(BUILD_TESTS "Build OE tests" ON)
 
@@ -235,7 +253,7 @@ if (COMPILE_SYSTEM_EDL)
 
   if (BUILD_TESTS)
     add_subdirectory(tests)
-  endif()
+  endif ()
 
   if (BUILD_ENCLAVES)
     add_subdirectory(samples)
@@ -243,8 +261,8 @@ if (COMPILE_SYSTEM_EDL)
 else ()
   if (BUILD_TESTS)
     add_subdirectory(tests/exclude_system_edl)
-  endif()
-endif()
+  endif ()
+endif ()
 
 add_subdirectory(tools)
 
@@ -254,55 +272,61 @@ if (BUILD_ENCLAVES)
   add_subdirectory(libc)
   add_subdirectory(libcxx)
   add_subdirectory(syscall)
-endif()
+endif ()
 
 if (OE_SGX)
   add_subdirectory(debugger)
-endif()
+endif ()
 
 if (UNIX)
   add_subdirectory(docs/refman)
   add_subdirectory(pkgconfig)
-endif()
+endif ()
 
 if (WIN32)
   install(FILES ./scripts/clangw ./scripts/llvm-arw
-    DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
+          DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
   install(FILES ./scripts/install-windows-prereqs.ps1
-    DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
+          DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
   install(FILES ./cmake/maybe_build_using_clangw.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
   install(FILES ./cmake/add_dcap_client_target.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
   install(FILES ./cmake/copy_oedebugrt_target.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
 endif ()
 
 # Install necessary files for LVI mitigation.
 if (LVI_MITIGATION MATCHES ControlFlow)
   if (UNIX)
-    install(FILES ./scripts/lvi-mitigation/install_lvi_mitigation_bindir
-      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+    install(
+      FILES ./scripts/lvi-mitigation/install_lvi_mitigation_bindir
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ
+                  WORLD_EXECUTE WORLD_READ
       DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
-    install(FILES ./scripts/lvi-mitigation/generate_wrapper
-      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+    install(
+      FILES ./scripts/lvi-mitigation/generate_wrapper
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ
+                  WORLD_EXECUTE WORLD_READ
       DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
-    install(FILES ./scripts/lvi-mitigation/invoke_compiler
-      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+    install(
+      FILES ./scripts/lvi-mitigation/invoke_compiler
+      PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ
+                  WORLD_EXECUTE WORLD_READ
       DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
     install(FILES ./cmake/configure_lvi_mitigation_build.cmake
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
   else ()
     # For Windows.
     install(FILES ./scripts/lvi-mitigation/lvi-mitigation.py
-      DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
-  endif()
+            DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/lvi-mitigation)
+  endif ()
   install(FILES ./cmake/apply_lvi_mitigation.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
-endif()
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+endif ()
 
 install(FILES LICENSE THIRD_PARTY_NOTICES
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/licenses)
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/licenses)
 
 # Configure all the CPACK settings. This must be last because
 # CPack must be aware of all the component information in order

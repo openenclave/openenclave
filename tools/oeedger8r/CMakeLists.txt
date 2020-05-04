@@ -22,10 +22,14 @@ add_custom_command(
   # testing changes and new packages and formatting etc.). We cannot
   # just copy the entire folder as CMake crashes with the
   # `node_modules`.
-  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/esy.lock ${CMAKE_CURRENT_BINARY_DIR}/esy.lock
-  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/intel ${CMAKE_CURRENT_BINARY_DIR}/intel
-  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src
-  COMMAND cmake -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/dune-project ${CMAKE_CURRENT_SOURCE_DIR}/package.json ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/esy.lock
+          ${CMAKE_CURRENT_BINARY_DIR}/esy.lock
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/intel
+          ${CMAKE_CURRENT_BINARY_DIR}/intel
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src
+          ${CMAKE_CURRENT_BINARY_DIR}/src
+  COMMAND cmake -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/dune-project
+          ${CMAKE_CURRENT_SOURCE_DIR}/package.json ${CMAKE_CURRENT_BINARY_DIR}
   COMMAND esy install
   COMMAND esy build --release
   DEPENDS dune-project
@@ -54,6 +58,7 @@ add_dependencies(edger8r oeedger8r_target)
 # Can't use `install(TARGETS)` on an imported executable, because it
 # causes CMake to crash. Instead, see `openenclave-config.cmake.in`
 # for the manual "export" of this target.
-install(PROGRAMS ${BINARY}
+install(
+  PROGRAMS ${BINARY}
   RENAME oeedger8r${CMAKE_EXECUTABLE_SUFFIX}
   DESTINATION ${CMAKE_INSTALL_BINDIR})

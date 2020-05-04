@@ -359,6 +359,10 @@ function Install-Python3 {
     New-Directory -Path $installDir -RemoveExisting
     Move-Item -Path "$tempInstallDir\*" -Destination $installDir
     Add-ToSystemPath -Path $installDir
+
+    Start-ExecuteWithRetry -ScriptBlock {
+        pip install cmake_format
+    } -RetryMessage "Failed to install cmake_format. Retrying"
 }
 
 function Install-Git {

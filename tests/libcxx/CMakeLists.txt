@@ -3,10 +3,10 @@
 
 # Read tests.supported, sanitize the cpp-file, and create the test-case.
 if (ENABLE_FULL_LIBCXX_TESTS)
-    file(STRINGS "tests.supported" alltests)
-else()
-    file(STRINGS "tests.supported.default" alltests)
-endif()
+  file(STRINGS "tests.supported" alltests)
+else ()
+  file(STRINGS "tests.supported.default" alltests)
+endif ()
 
 # The list of tests requires `std=c++17`.
 file(STRINGS "tests.supported.cxx17" CXX_17_TEST_LIST)
@@ -44,8 +44,7 @@ set(GCC_UNSUPPORTED_LIST
     "std_strings_basic.string_string.cons_string_view_size_size_deduction.pass"
     "std_utilities_optional_optional.object_optional.object.ctor_deduct.pass"
     "std_utilities_tuple_tuple.tuple_tuple.cnstr_implicit_deduction_guides.pass"
-    "std_utilities_utility_pairs_pairs.pair_implicit_deduction_guides.pass"
-)
+    "std_utilities_utility_pairs_pairs.pair_implicit_deduction_guides.pass")
 
 # List the unsupported on GCC version less than 7.
 # Refer to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77446 for the issue.
@@ -62,74 +61,80 @@ set(GCC_LESS_7_UNSUPPORTED_LIST
 add_subdirectory(host)
 
 if (BUILD_ENCLAVES)
-    add_subdirectory(enc)
+  add_subdirectory(enc)
 elseif (LINUX_BIN_DIR)
-    # Find the build information from pre-compiled tests. If found, `LINUX_CXX_COMPILER_ID`
-    # and `LINUX_CXX_COMPILER_VERSION` will hold the corresponding information.
-    list(APPEND CMAKE_MODULE_PATH "${LINUX_BIN_DIR}/libcxx/enc")
-    include(build_info OPTIONAL)
-endif()
+  # Find the build information from pre-compiled tests. If found, `LINUX_CXX_COMPILER_ID`
+  # and `LINUX_CXX_COMPILER_VERSION` will hold the corresponding information.
+  list(APPEND CMAKE_MODULE_PATH "${LINUX_BIN_DIR}/libcxx/enc")
+  include(build_info OPTIONAL)
+endif ()
 
 if (ADD_WINDOWS_ENCLAVE_TESTS)
-    if (NOT LINUX_CXX_COMPILER_ID OR NOT LINUX_CXX_COMPILER_VERSION)
-        message(FATAL_ERROR "Could not find the compiler information of linux tests!")
-    endif()
-    # Load target LINUX_CXX_COMPILER_ID and LINUX_CXX_COMPILER_VERSION values.
-    set(ENCLAVE_CXX_COMPILER_ID ${LINUX_CXX_COMPILER_ID})
-    set(ENCLAVE_CXX_COMPILER_VERSION ${LINUX_CXX_COMPILER_VERSION})
+  if (NOT LINUX_CXX_COMPILER_ID OR NOT LINUX_CXX_COMPILER_VERSION)
+    message(
+      FATAL_ERROR "Could not find the compiler information of linux tests!")
+  endif ()
+  # Load target LINUX_CXX_COMPILER_ID and LINUX_CXX_COMPILER_VERSION values.
+  set(ENCLAVE_CXX_COMPILER_ID ${LINUX_CXX_COMPILER_ID})
+  set(ENCLAVE_CXX_COMPILER_VERSION ${LINUX_CXX_COMPILER_VERSION})
 else ()
-    set(ENCLAVE_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
-    set(ENCLAVE_CXX_COMPILER_VERSION ${CMAKE_CXX_COMPILER_VERSION})
-endif()
+  set(ENCLAVE_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
+  set(ENCLAVE_CXX_COMPILER_VERSION ${CMAKE_CXX_COMPILER_VERSION})
+endif ()
 
-foreach(testcase ${alltests})
-    get_testcase_name(${testcase} name "../../3rdparty/libcxx/libcxx/test/")
+foreach (testcase ${alltests})
+  get_testcase_name(${testcase} name "../../3rdparty/libcxx/libcxx/test/")
 
-    # The allocations are entirely optimized out by Clang in these tests and are excluded from Clang release builds -- Skip running these tests
-    if ("${name}" MATCHES "cons_default_throws_bad_alloc.pass" OR "${name}" MATCHES "allocator_allocator.members_construct.pass")
-        string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
-        if (ENCLAVE_CXX_COMPILER_ID MATCHES Clang AND BUILD_TYPE_UPPER MATCHES REL)
-            continue()
-        endif()
-    endif()
+  # The allocations are entirely optimized out by Clang in these tests and are excluded from Clang release builds -- Skip running these tests
+  if ("${name}" MATCHES "cons_default_throws_bad_alloc.pass"
+      OR "${name}" MATCHES "allocator_allocator.members_construct.pass")
+    string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
+    if (ENCLAVE_CXX_COMPILER_ID MATCHES Clang AND BUILD_TYPE_UPPER MATCHES REL)
+      continue()
+    endif ()
+  endif ()
 
-    # Few functions invoked in these tests are not supported in gnu -- Skip running these tests
-    if ("${name}" IN_LIST GCC_UNSUPPORTED_LIST)
-        if (ENCLAVE_CXX_COMPILER_ID MATCHES GNU)
-            continue()
-        endif()
-    endif()
+  # Few functions invoked in these tests are not supported in gnu -- Skip running these tests
+  if ("${name}" IN_LIST GCC_UNSUPPORTED_LIST)
+    if (ENCLAVE_CXX_COMPILER_ID MATCHES GNU)
+      continue()
+    endif ()
+  endif ()
 
-    # The following test fails when built with clang, see #830 -- Skipping this test in clang
-    if ("${name}" MATCHES "array_sized_delete_array_calls_unsized_delete_array.pass")
-        if (ENCLAVE_CXX_COMPILER_ID MATCHES Clang)
-            continue()
-        endif()
-    endif()
+  # The following test fails when built with clang, see #830 -- Skipping this test in clang
+  if ("${name}" MATCHES
+      "array_sized_delete_array_calls_unsized_delete_array.pass")
+    if (ENCLAVE_CXX_COMPILER_ID MATCHES Clang)
+      continue()
+    endif ()
+  endif ()
 
-    # The following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 8.0
-    if ("${name}" MATCHES "std_utilities_function.objects_comparisons_constexpr_init.pass")
-        if(ENCLAVE_CXX_COMPILER_ID MATCHES GNU
-            AND ENCLAVE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7
-            AND ENCLAVE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
-            continue()
-        endif()
-    endif()
+  # The following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 8.0
+  if ("${name}" MATCHES
+      "std_utilities_function.objects_comparisons_constexpr_init.pass")
+    if (ENCLAVE_CXX_COMPILER_ID MATCHES GNU
+        AND ENCLAVE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7
+        AND ENCLAVE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
+      continue()
+    endif ()
+  endif ()
 
-    # The following test fails on GCC 7 or newer, see #1559 -- Skip this test on GCC 7.0 and above in non debug builds
-    if ("${name}" MATCHES "std_containers_associative_map_map.access_at.pass")
-        string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
-        if (ENCLAVE_CXX_COMPILER_ID MATCHES GNU AND BUILD_TYPE_UPPER MATCHES REL)
-            continue()
-        endif()
-    endif()
+  # The following test fails on GCC 7 or newer, see #1559 -- Skip this test on GCC 7.0 and above in non debug builds
+  if ("${name}" MATCHES "std_containers_associative_map_map.access_at.pass")
+    string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
+    if (ENCLAVE_CXX_COMPILER_ID MATCHES GNU AND BUILD_TYPE_UPPER MATCHES REL)
+      continue()
+    endif ()
+  endif ()
 
-    # Skip the following tests on GCC version less than 7 because a bug is not fixed or C++17 features are not supported.
-    if ("${name}" IN_LIST GCC_LESS_7_UNSUPPORTED_LIST OR "${testcase}" IN_LIST CXX_17_TEST_LIST)
-        if (ENCLAVE_CXX_COMPILER_ID MATCHES GNU AND ENCLAVE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
-            continue()
-        endif()
-    endif()
+  # Skip the following tests on GCC version less than 7 because a bug is not fixed or C++17 features are not supported.
+  if ("${name}" IN_LIST GCC_LESS_7_UNSUPPORTED_LIST OR "${testcase}" IN_LIST
+                                                       CXX_17_TEST_LIST)
+    if (ENCLAVE_CXX_COMPILER_ID MATCHES GNU AND ENCLAVE_CXX_COMPILER_VERSION
+                                                VERSION_LESS 7.0)
+      continue()
+    endif ()
+  endif ()
 
-    add_enclave_test(tests/libcxxtest-${name} libcxx_host libcxxtest-${name}_enc)
-endforeach(testcase)
+  add_enclave_test(tests/libcxxtest-${name} libcxx_host libcxxtest-${name}_enc)
+endforeach (testcase)

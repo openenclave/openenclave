@@ -2,9 +2,10 @@
 # Licensed under the MIT License.
 
 # Use the edger8r to generate C bindings from the EDL file.
-add_custom_command(OUTPUT helloworld_t.h helloworld_t.c helloworld_args.h
+add_custom_command(
+  OUTPUT helloworld_t.h helloworld_t.c helloworld_args.h
   DEPENDS ../helloworld.edl edger8r
-  COMMAND edger8r --trusted  ${CMAKE_CURRENT_SOURCE_DIR}/../helloworld.edl)
+  COMMAND edger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../helloworld.edl)
 
 add_executable(enclave enc.c ${CMAKE_CURRENT_BINARY_DIR}/helloworld_t.c)
 
