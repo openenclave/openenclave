@@ -595,6 +595,14 @@ static oe_result_t _read_tcb_info(
         OE_TRACE_VERBOSE("V2: Reading tcbType");
         OE_CHECK(_read_property_name_and_colon("tcbType", itr, end));
         OE_CHECK(_read_integer(itr, end, &value));
+
+        // HW representation of CPUSVN for a given FMSPC is not architecturally
+        // defined to provide designers more flexibility. SW needs "tcbType" to
+        // determine how to decompose the CPUSVN. Each FMSPC has its own
+        // tcbType. For now, there is only one tcbType(0) has been defined.
+        if (value != 0)
+            OE_RAISE_MSG(
+                OE_JSON_INFO_PARSE_ERROR, "Unsupported tcbType(%d).", value);
         parsed_info->tcb_type = (uint32_t)value;
         OE_CHECK(_read(',', itr, end));
 
