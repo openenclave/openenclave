@@ -87,8 +87,9 @@ C:\Users\test\AppData\Roaming\npm\esy
 ## Python 3
 
 Install [Python 3 for Windows](https://www.python.org/downloads/windows/) and ensure that python.exe is available in your PATH.
+Make sure the checkbox for PIP is checked when installing.
 
-Python 3 is used as part of the mbedtls tests.
+Python 3 is used as part of the mbedtls tests and for cmake-format.
 
 ## ShellCheck
 
