@@ -31,44 +31,6 @@ typedef struct _config_file_options
         .product_id = OE_UINT16_MAX, .security_version = OE_UINT16_MAX, \
     }
 
-/* Check whether the .conf file is missing required options */
-static int _check_for_missing_options(const ConfigFileOptions* options)
-{
-    int ret = 0;
-
-    if (options->num_heap_pages == OE_UINT64_MAX)
-    {
-        oe_err("Missing option: NumHeapPages");
-        ret = -1;
-    }
-
-    if (options->num_stack_pages == OE_UINT64_MAX)
-    {
-        oe_err("Missing option: NumStackPages");
-        ret = -1;
-    }
-
-    if (options->num_tcs == OE_UINT64_MAX)
-    {
-        oe_err("Missing option: NumTCS");
-        ret = -1;
-    }
-
-    if (options->product_id == OE_UINT16_MAX)
-    {
-        oe_err("Missing option: ProductID");
-        ret = -1;
-    }
-
-    if (options->security_version == OE_UINT16_MAX)
-    {
-        oe_err("Missing option: SecurityVersion");
-        ret = -1;
-    }
-
-    return ret;
-}
-
 static int _load_config_file(const char* path, ConfigFileOptions* options)
 {
     int rc = -1;
@@ -352,27 +314,18 @@ int oesign(
         goto done;
     }
 
-    /* Load the enclave properties from the enclave */
-    {
-        result = oe_read_oeinfo_sgx(enclave, &props);
-
-        if (result != OE_OK && result != OE_NOT_FOUND)
-        {
-            oe_err(
-                "Failed to load enclave: %s: result=%s (%u)",
-                enclave,
-                oe_result_str(result),
-                result);
-            goto done;
-        }
-
-        /* If enclave properties not found, then options must be complete */
-        if (result == OE_NOT_FOUND)
-        {
-            if (_check_for_missing_options(&options) != 0)
-                goto done;
-        }
-    }
+    /* Load the enclave properties from the enclave.
+     * Note that oesign expects that the enclave must already have the .oeinfo
+     * section allocated, and cannot currently inject it into the ELF.
+     * The load stack (oe_load_enclave_image) requires that the oeinfo_rva be
+     * found or fails the load.
+     */
+    OE_CHECK_ERR(
+        oe_read_oeinfo_sgx(enclave, &props),
+        "Failed to load enclave: %s: result=%s (%#x)",
+        enclave,
+        oe_result_str(result),
+        result);
 
     /* Merge the loaded configuration file with existing enclave properties */
     _merge_config_file_options(&props, &options);
