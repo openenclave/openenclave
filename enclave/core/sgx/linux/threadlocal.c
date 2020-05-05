@@ -4,12 +4,12 @@
 #include "threadlocal.h"
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
-#include "../../oe_alloc_thread.h"
 #include "../td.h"
 
 /*
@@ -333,7 +333,7 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
         }
 
         // Must occur after thread local storage initialization
-        oe_alloc_thread_startup();
+        oe_allocator_thread_init();
     }
 
     result = OE_OK;
@@ -385,7 +385,7 @@ oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
     uint8_t* tls_start = _get_thread_local_data_start(td);
     if (tls_start)
     {
-        oe_alloc_thread_teardown();
+        oe_allocator_thread_cleanup();
         oe_memset_s(tls_start, (uint64_t)(fs - tls_start), 0, 0);
     }
 

@@ -69,22 +69,6 @@ endif ()
 ##==============================================================================
 
 set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
-set(CXX_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/include)
-if (USE_SNMALLOC)
-  add_enclave_library(oeallocator OBJECT sgx/snmalloc/snmalloc_wrapper.cpp)
-
-  list(APPEND W_NO_CONVERSION sgx/snmalloc/snmalloc_wrapper.cpp)
-
-  enclave_link_libraries(oeallocator PUBLIC oe_includes)
-  set_source_files_properties(
-    sgx/snmalloc/snmalloc_wrapper.cpp
-    PROPERTIES
-      COMPILE_FLAGS
-      -ftls-model=local-exec\ -nostdinc++\ -I${CXX_INCLUDE_DIR}\ -std=c++17\ -mcx16\ -fno-exceptions
-  )
-  enclave_compile_options(oeallocator PUBLIC -fPIC -fvisibility=hidden)
-  install_enclaves(TARGETS oeallocator EXPORT openenclave-targets)
-endif ()
 
 if (OE_SGX)
   list(
@@ -155,17 +139,11 @@ if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
   list(APPEND PLATFORM_SRC init_fini.c)
 endif ()
 
-if (USE_DLMALLOC)
-  list(APPEND PLATFORM_SRC malloc.c)
-
-  list(APPEND NEEDS_STDC_NAMES malloc.c)
-
-  # Unfortunately dlmalloc uses GNU extension that allows arithmetic
-  # null pointers.
-  set_source_files_properties(
-    malloc.c PROPERTIES COMPILE_FLAGS
-                        "-Wno-conversion -Wno-null-pointer-arithmetic")
-endif ()
+if (USE_SNMALLOC)
+  set(DEFAULT_ALLOCATOR oesnmalloc)
+else()
+  set(DEFAULT_ALLOCATOR oedlmalloc)
+endif()
 
 add_enclave_library(
   oecore
@@ -191,12 +169,12 @@ add_enclave_library(
   hexdump.c
   hostcalls.c
   intstr.c
+  malloc.c
   once.c
   printf.c
   pthread.c
   random.c
   result.c
-  sbrk.c
   stdio.c
   strerror.c
   string.c
@@ -205,6 +183,7 @@ add_enclave_library(
   time.c
   tracee.c
   wchar.c
+  $<TARGET_OBJECTS:${DEFAULT_ALLOCATOR}>
   ${PLATFORM_SRC})
 
 # Some files in oecore come directly from the musl source. For these files,
@@ -259,9 +238,6 @@ if (OE_TRUSTZONE)
 endif ()
 
 enclave_link_libraries(oecore PUBLIC oe_includes)
-if (USE_SNMALLOC)
-  enclave_link_libraries(oecore PUBLIC oeallocator)
-endif ()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   enclave_compile_options(oecore PRIVATE -Wjump-misses-init)

@@ -12,6 +12,13 @@ add_subdirectory(libcxxrt)
 add_subdirectory(libunwind)
 add_subdirectory(musl)
 add_subdirectory(mbedtls)
+
+if (USE_SNMALLOC)
+  add_subdirectory(snmalloc)
+else()
+  add_subdirectory(dlmalloc)
+endif()
+
 if (OE_TRUSTZONE)
   # EL: (ARM) Exception Level
   # GP: GlobalPlatform
