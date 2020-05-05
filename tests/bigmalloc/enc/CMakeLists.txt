@@ -4,12 +4,11 @@
 set(EDL_FILE ../bigmalloc.edl)
 
 add_custom_command(
-    OUTPUT bigmalloc_t.h bigmalloc_t.c
-    DEPENDS ${EDL_FILE} edger8r
-    COMMAND edger8r --trusted ${EDL_FILE}
-               --search-path ${PROJECT_SOURCE_DIR}/include
-               --search-path ${PLATFORM_EDL_DIR}
-               --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+  OUTPUT bigmalloc_t.h bigmalloc_t.c
+  DEPENDS ${EDL_FILE} edger8r
+  COMMAND
+    edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Unlike other tests, this test explicitly requires a signed enclave
 # to test if a big enclave can be signed.

@@ -55,6 +55,8 @@ if (ENABLE_REFMAN)
     bits/exception.h
     bits/module.h
     ../../docs/refman/MainPage.md
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/include/openenclave/
-    COMMENT "Generating refman HTML documentation")
+    WORKING_DIRECTORY
+    ${PROJECT_SOURCE_DIR}/include/openenclave/
+    COMMENT
+    "Generating refman HTML documentation")
 endif ()

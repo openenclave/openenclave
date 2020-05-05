@@ -5,9 +5,10 @@
 add_custom_command(
   OUTPUT tls_server_t.h tls_server_t.c tls_server_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/server/tls_server.edl
-  COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/server/tls_server.edl
-                                 --search-path ${OE_INCLUDEDIR}
-                                 --search-path ${OE_INCLUDEDIR}/openenclave/edl/sgx)
+  COMMAND
+    openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/server/tls_server.edl
+    --search-path ${OE_INCLUDEDIR} --search-path
+    ${OE_INCLUDEDIR}/openenclave/edl/sgx)
 
 # Sign enclave and generate a header file for server's MRENCLAVE
 add_custom_command(
@@ -24,13 +25,10 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E sleep 1
   COMMAND ${CMAKE_COMMAND} -E remove temp.dmp)
 
-add_executable(tls_server_enc
-   ecalls.cpp
-   server.cpp
-   cert_verifier.cpp
-   identity_verifier.cpp
-   ../../common/utility.cpp
-   ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
+add_executable(
+  tls_server_enc
+  ecalls.cpp server.cpp cert_verifier.cpp identity_verifier.cpp
+  ../../common/utility.cpp ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
 
 if (WIN32)
   maybe_build_using_clangw(tls_server_enc)
@@ -43,11 +41,9 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
           ${CMAKE_BINARY_DIR}/server/enc)
 
-target_link_libraries(tls_server_enc
-  openenclave::oeenclave
-  openenclave::oelibcxx
-  openenclave::oehostsock
-  openenclave::oehostresolver)
+target_link_libraries(
+  tls_server_enc openenclave::oeenclave openenclave::oelibcxx
+  openenclave::oehostsock openenclave::oehostresolver)
 
 add_custom_target(tls_server_sign_enc ALL DEPENDS tls_server_enc.signed
                                                   tls_server_enc_mrenclave.h)

@@ -4,12 +4,11 @@
 set(EDL_FILE ../sendmsg.edl)
 
 add_custom_command(
-    OUTPUT sendmsg_u.h sendmsg_u.c
-    DEPENDS ${EDL_FILE} edger8r
-    COMMAND edger8r --untrusted ${EDL_FILE}
-               --search-path ${PROJECT_SOURCE_DIR}/include
-               --search-path ${PLATFORM_EDL_DIR}
-               --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+  OUTPUT sendmsg_u.h sendmsg_u.c
+  DEPENDS ${EDL_FILE} edger8r
+  COMMAND
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(sendmsg_host host.c ../client.c ../server.c sendmsg_u.c)
 

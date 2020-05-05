@@ -5,7 +5,7 @@ set(OE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 set(EDL_DIR ${CMAKE_SOURCE_DIR}/include/openenclave/edl)
 if (OE_SGX)
   set(SGX_EDL_DIR ${EDL_DIR}/sgx)
-endif()
+endif ()
 
 ##==============================================================================
 ##
@@ -17,9 +17,10 @@ endif()
 set(CORE_EDL_FILE ${EDL_DIR}/core.edl)
 if (COMPILE_SYSTEM_EDL)
   add_custom_command(
-      OUTPUT core_u.h core_u.c core_args.h
-      DEPENDS ${CORE_EDL_FILE} edger8r
-      COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --untrusted ${CORE_EDL_FILE})
+    OUTPUT core_u.h core_u.c core_args.h
+    DEPENDS ${CORE_EDL_FILE} edger8r
+    COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --untrusted
+            ${CORE_EDL_FILE})
 
   add_custom_target(core_untrusted_edl DEPENDS core_u.h core_u.c core_args.h)
 
@@ -27,10 +28,10 @@ if (COMPILE_SYSTEM_EDL)
 else ()
   # Only generate headers
   add_custom_command(
-      OUTPUT core_u.h core_args.h
-      DEPENDS ${CORE_EDL_FILE} edger8r
-      COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR}
-                      --untrusted ${CORE_EDL_FILE})
+    OUTPUT core_u.h core_args.h
+    DEPENDS ${CORE_EDL_FILE} edger8r
+    COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --untrusted
+            ${CORE_EDL_FILE})
 
   add_custom_target(core_untrusted_edl DEPENDS core_u.h core_args.h)
 endif ()
@@ -127,9 +128,9 @@ endif ()
 set(SYSCALL_EDL ${EDL_DIR}/syscall.edl)
 if (COMPILE_SYSTEM_EDL)
   add_custom_command(
-      OUTPUT syscall_u.h syscall_u.c syscall_args.h
-      DEPENDS ${SYSCALL_EDL} edger8r
-      COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --untrusted ${SYSCALL_EDL})
+    OUTPUT syscall_u.h syscall_u.c syscall_args.h
+    DEPENDS ${SYSCALL_EDL} edger8r
+    COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --untrusted ${SYSCALL_EDL})
 
   add_custom_target(syscall_untrusted_edl DEPENDS syscall_u.h syscall_u.c
                                                   syscall_args.h)
@@ -137,10 +138,10 @@ if (COMPILE_SYSTEM_EDL)
   list(APPEND PLATFORM_SDK_ONLY_SRC syscall_u_wrapper.c)
 else ()
   add_custom_command(
-      OUTPUT syscall_u.h syscall_args.h
-      DEPENDS ${SYSCALL_EDL} edger8r
-      COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR}
-                      --untrusted ${SYSCALL_EDL})
+    OUTPUT syscall_u.h syscall_args.h
+    DEPENDS ${SYSCALL_EDL} edger8r
+    COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --untrusted
+            ${SYSCALL_EDL})
 
   add_custom_target(syscall_untrusted_edl DEPENDS syscall_u.h syscall_args.h)
 endif ()

@@ -17,9 +17,9 @@ if (LVI_MITIGATION MATCHES ControlFlow AND LVI_MITIGATION_SKIP_TESTS)
 endif ()
 
 if (OE_SGX)
-    set (PLATFORM_EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl/sgx)
+  set(PLATFORM_EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl/sgx)
 elseif (OE_TRUSTZONE)
-    set (PLATFORM_EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl/optee)
+  set(PLATFORM_EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl/optee)
 endif ()
 
 add_subdirectory(mem)

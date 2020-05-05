@@ -6,12 +6,11 @@ include(add_dcap_client_target)
 set(EDL_FILE ../plugin.edl)
 
 add_custom_command(
-    OUTPUT plugin_u.h plugin_u.c
-    DEPENDS ${EDL_FILE} edger8r
-    COMMAND edger8r --untrusted ${EDL_FILE}
-               --search-path ${PROJECT_SOURCE_DIR}/include
-               --search-path ${PLATFORM_EDL_DIR}
-               --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+  OUTPUT plugin_u.h plugin_u.c
+  DEPENDS ${EDL_FILE} edger8r
+  COMMAND
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(plugin_host host.c ../plugin/tests.c plugin_u.c)
 

@@ -4,12 +4,11 @@
 set(EDL_FILE ../create_errors.edl)
 
 add_custom_command(
-    OUTPUT create_errors_t.h create_errors_t.c
-    DEPENDS ${EDL_FILE} edger8r
-    COMMAND edger8r --trusted ${EDL_FILE}
-               --search-path ${PROJECT_SOURCE_DIR}/include
-               --search-path ${PLATFORM_EDL_DIR}
-               --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+  OUTPUT create_errors_t.h create_errors_t.c
+  DEPENDS ${EDL_FILE} edger8r
+  COMMAND
+    edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_enclave(
   TARGET
