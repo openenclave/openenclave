@@ -10,8 +10,6 @@
 // sdk tool oeedger8r against the helloworld.edl file.
 #include "helloworld_u.h"
 
-#define SKIP_RETURN_CODE 2
-
 bool check_simulate_opt(int* argc, const char* argv[])
 {
     for (int i = 0; i < *argc; i++)
@@ -45,10 +43,6 @@ int main(int argc, const char* argv[])
     if (check_simulate_opt(&argc, argv))
     {
         flags |= OE_ENCLAVE_FLAG_SIMULATE;
-    }
-    else if (flags & OE_ENCLAVE_FLAG_SIMULATE)
-    {
-        return SKIP_RETURN_CODE;
     }
 
     if (argc != 2)
