@@ -77,8 +77,8 @@ It is an open question whether it is the responsibility of the app,
 the OE SDK, or plugins to actually apply an appraisal policy (e.g., to do
 the actual verify operation).  The appraisal policy might be hard-coded,
 or be encapsulated inside endorsements, or be configured separately
-through other APIs, or any combination of those.  This draft will suggest
-APIs that would be needed in all three designs: appraisal in the app,
+through other APIs, or any combination of those.  This draft will cover
+APIs that might be needed in any of these designs: appraisal in the app,
 appraisal in the SDK, and appraisal in a plugin.  The open question
 is which one(s) to support, and hence which subset of abstract APIs
 are needed.
