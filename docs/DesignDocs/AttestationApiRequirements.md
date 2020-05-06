@@ -1,15 +1,14 @@
-Proposed Attestation API Requirements
-=====================================
+# Proposed Attestation API Requirements
 
 This design document proposes requirements for APIs that applications can
 use for performing attestation of enclave applications.
 
-Motivation
-----------
+## Motivation
 
 Requirements:
 * Usable by Attesters, Verifiers, and Relying Parties
 * Able to support different TEEs
+* Able to support platforms of different endianness
 * Able to support different protocols
 * Able to support different topological models
   (e.g., Passport model vs Background-check model)
@@ -21,19 +20,18 @@ Requirements:
   in an enclave
 * Able to support different freshness models (e.g., nonce vs. timestamp)
 
-[Remote Attestation Procedures Architecture](https://tools.ietf.org/wg/rats/draft-ietf-rats-architecture/)
+The IETF [Remote Attestation Procedures Architecture](https://tools.ietf.org/wg/rats/draft-ietf-rats-architecture/)
 provides terminology and architecture for attestation procedures,
 and supports the above requirements.  It is still a draft form, but
 is fairly stable and while it may not be complete, the content that
 is there has good consensus and is very likely to be consistent with
-an eventual standard (perhaps in 2nd half of 2020?).
+an eventual standard (perhaps by end of 2020?).
 
-User Experience
----------------
+## User Experience
 
 Since the architecture can be used to support many possibilities, the
 use of plugins is essential.  This document does not cover how plugins
-are enumerated and registered, that is left to a separate design document
+are enumerated and registered; that is left to a separate design document
 that is not specific to attestation.  This document will only cover the
 developer experience assuming the plugins are already available underneath
 a general attestation API.
@@ -42,11 +40,11 @@ Depending on the plugin registration design, the app developer,
 the enclave signer, and/or the party configuring an application will choose
 one or more plugins to support and ensure they are available.
 
-NOTE: The RATS Architecture referenced below is maintained in the
+NOTE: The RATS Architecture document is maintained in the
 [RATS github repository](https://github.com/ietf-rats-wg/architecture)
-which may have a later version that the draft linked below.  When
+which may have a later version than the current Internet-Draft.  When
 in doubt, go to the github repo which has links to the Internet Draft,
-latest Editors' Copy, and diffs between them.
+the latest Editors' Copy, and the diffs between them.
 
 As noted in the
 [RATS Architecture](https://tools.ietf.org/wg/rats/draft-ietf-rats-architecture/),
@@ -58,9 +56,9 @@ Attestation Results to be processed by a Relying Party.  A Relying
 Party appraises Attestation Results and typically uses them for
 some authorization decision.
 
-The APIs are thus centered around that conceptual data flow, as
+The APIs are thus centered around the conceptual data flow
 depicted in Figure 1 in the
-[RATS Architecture](https://tools.ietf.org/wg/rats/draft-ietf-rats-architecture/).
+[RATS Architecture](https://tools.ietf.org/html/draft-ietf-rats-architecture-02#page-8).
 
 Specific formats of Evidence, Attestation Results, etc. are the
 responsibility of the relevant plugins to implement, not the application.
@@ -75,8 +73,23 @@ an Attester (in the Passport model) or a Relying Party (in the
 Background-check model) is the responsibility of the relevant
 plugins to implement, not the application.
 
-Specification
--------------
+It is an open question whether it is the responsibility of the app,
+the OE SDK, or plugins to actually apply an appraisal policy (e.g., to do
+the actual verify operation).  The appraisal policy might be hard-coded,
+or be encapsulated inside endorsements, or be configured separately
+through other APIs, or any combination of those.  This draft will suggest
+APIs that would be needed in all three designs: appraisal in the app,
+appraisal in the SDK, and appraisal in a plugin.  The open question
+is which one(s) to support, and hence which subset of abstract APIs
+are needed.
+
+Note that the deprecated `oe_verify_report()` API was designed for a
+combined Verifier+Relying Party, and did the appraisal underneath the
+API (i.e., in the OE SDK).  However, convoluting the two roles does
+not meet the more general requirements stated, and in separating them,
+the open issue remains.
+
+## Specification
 
 The APIs below are described as _abstract_ APIs, and any concrete
 APIs in C (or any other language) needs to accommodate an equivalent
@@ -87,9 +100,13 @@ need not be 1:1 as long as a mapping exists.
 These APIs apply to both the "northbound" API exposed to apps by the SDK,
 as well as the "southbound" API between the SDK and plugins.
 
-# Attester APIs
+### Attester APIs
 
-## GetEvidence call
+#### GetEvidence call
+
+This API is used by an app to retrieve an evidence buffer that can
+be sent to a Verifier (in the Passport model), or a Relying Party
+(in the Background-check model).
 
 Inputs:
 
@@ -123,7 +140,7 @@ The challenge buffer, which may be empty for some protocols (e.g.,
 those that use timestamps and synchronized clocks to check freshness),
 can be provided by the app if the app has its own way to get it
 from a Verifier.  For example, in the example in Section 15.4 of
-[RATS Architecture](https://tools.ietf.org/wg/rats/draft-ietf-rats-architecture/),
+[RATS Architecture](https://ietf-rats-wg.github.io/architecture/draft-ietf-rats-architecture.html),
 it is obtained via the (non-attestation specific) protocol between
 the Attester and the Relying Party.  (This buffer is first created
 by a Verifier in its GetChallenge call discussed below, but might be
@@ -134,9 +151,21 @@ where the challenge is obtained across the Attester-Verifier protocol,
 but that protocol is the responsibility of the plugin, not the app
 and so no challenge buffer needs be supplied by the app in such a model.
 
-# Verifier APIs
+### Verifier APIs
 
-## SetEvidenceAppraisalPolicy call
+#### SetEvidenceAppraisalPolicy call
+
+This call sets an appraisal policy to be used in subsequent
+AppraiseEvidence calls.
+
+This API applies only if verification is done by a plugin or API such
+as `oe_verify_report()`.  If instead verification is done by an application,
+then this is the app's responsibility and this API is not needed.
+
+If this API is needed, it is used to configure the OE SDK and/or plugin
+with an appraisal policy to be used for verification. Depending on the
+implementation, this policy might be persisted so it would only need to
+be set at configuration time, not at verification time.
 
 Inputs:
 
@@ -157,10 +186,11 @@ Return status codes:
   parsed
 * Other failure indicates that the call failed for any other reason
 
-This call sets an appraisal policy to be used in subsequent
-AppraiseEvidence calls.
+#### GetChallenge call
 
-## GetChallenge call
+This call gets a buffer containing a challenge from the Verifier,
+for use by an Attester when generating Evidence to be sent to
+that Verifier.
 
 Inputs: none
 
@@ -179,7 +209,10 @@ that Evidence generated by Attesters is fresh.  For more discussion,
 see sections 9, 15.2, and 15.4 of the
 [RATS Architecture](https://tools.ietf.org/wg/rats/draft-ietf-rats-architecture/).
 
-## AppraiseEvidence call
+The old OE API `oe_get_target_info_v2` would be another example of a
+use case provided by this API.
+
+#### AppraiseEvidence call
 
 Inputs:
 
@@ -200,7 +233,10 @@ Return status codes:
   and a Claim set handle was generated as requested
 * Invalid-handle indicates that the appraisal policy handle is not valid
 * Untrusted-Results indicates that the Evidence did not pass appraisal,
-  but a Claim set handle was still generated
+  but a Claim set handle was still generated.  This return status code
+  only applies if appraisal is done by the plugin.  If appraisal is left
+  to the app, this status code is not needed, and the API would be better
+  named as ParseEvidence rather than AppraiseEvidence.
 * Failed-to-get-endorsements indicates that the call failed because
   necessary endorsements could not be obtained
 * Specified-format-not-supported indicates that the specified
@@ -210,11 +246,24 @@ Return status codes:
 * Other failure indicates that the call failed for any other reason
 
 This is the main attestation functionality of the Verifier.
-A pure Verifier would pass the output handle to GetAttestationResults
+A pure Verifier (with verification done by the SDK or a plugin) would pass
+the output handle to GetAttestationResults
 in order to generated signed AttestationResults.  A combined
 Verifier/Relying Party could simply use it with GetClaimValue (see below).
+Similarly a Verifier that does verification in the app would also use
+the handle with GetClaimValue in order to retrieve values to apply the
+appraisal policy to.
 
-## GetAttestationResults call
+#### GetAttestationResults call
+
+This API generates Attestation Results in a requested format.
+If verification is done by the OE SDK and/or plugins, then
+this API does so using an Evidence claim set handle.   If
+verification is done by the app, then instead the claim set
+handle would be a new claim set created to contain claims to appear
+in the Attestation Results; the app would add claims using the
+SetClaimValue API before calling GetAttestationResults to serialize
+them to a given wire format.
 
 Inputs:
 
@@ -235,9 +284,53 @@ Return status codes:
   Attestation Results format could not be used
 * Other failure indicates that the call failed for any other reason
 
-# Relying Party APIs
+#### SetClaimValue call
 
-## SetAttestationResultsAppraisalPolicy call
+This API is only needed in the northbound (i.e., app) API if verification is
+done in an application.  It is needed in the southbound API if verification
+is done either in the application or in the OE SDK.
+
+Inputs:
+
+* Claim set HANDLE
+* Claim ID
+* Metadata ID (defaults to none, meaning get the claim value itself).  An
+  identifier of a claim about a claim, such as the timestamp at which a
+  given claim value was generated, if a timestamp is included along with
+  the claim.
+* Value buffer OCTET STRING
+
+Outputs: None
+
+Return status codes:
+
+* Success indicates that the claim value was set as requested
+* Invalid-handle indicates that the claim set handle is not valid
+* Other failure indicates that the call failed for any other reason
+
+#### CreateClaimSet call
+
+This API is only needed in the northbound (i.e., app) API if verification is
+done in an application.  It is needed in the southbound API if verification
+is done either in the application or in the OE SDK.
+
+Inputs: None
+
+Outputs:
+
+* Claim set HANDLE
+
+Return status codes:
+
+* Success indicates that an empty claim set was created as requested
+* Other failure indicates that the call failed for any reason
+
+This API returns an empty claim set for use with APIs such as SetClaimValue
+and GetAttestationResults.
+
+### Relying Party APIs
+
+#### SetAttestationResultsAppraisalPolicy call
 
 Inputs:
 
@@ -261,7 +354,7 @@ Return status codes:
 This call sets an appraisal policy to be used in subsequent
 AppraiseAttestationResults calls.
 
-## AppraiseAttestationResults call
+#### AppraiseAttestationResults call
 
 Inputs:
 
@@ -287,14 +380,14 @@ Return status codes:
   trust, or being past its validity period
 * Other failure indicates that the call failed for any other reason
 
-## GetClaimValue call
+#### GetClaimValue call
 
 Inputs:
 
 * Claim set HANDLE
 * Claim ID
-* Metadata ID (defaults to none, meaning get the claim value itself).  An
-  identifier of a claim about a claim, such as the timestamp at which a
+* Metadata ID (defaults to none, meaning get the claim value itself).  This
+  is an identifier of a claim about a claim, such as the timestamp at which a
   given claim value was generated, if a timestamp is included along with
   the claim.
 
@@ -311,7 +404,26 @@ Return status codes:
 * Metadata-ID-not-found indicates that no such metadata is available
 * Other failure indicates that the call failed for any other reason
 
-Authors
--------
+#### EnumerateClaimIds call
+
+This abstract API can be used to enumerate all claims in a given claim set.
+
+Inputs:
+
+* Claim set HANDLE
+
+Outputs:
+
+* List of entries where each entry has:
+    * Claim ID
+    * Metadata ID (defaults to none, meaning get the claim value itself)
+
+Return status codes:
+
+* Success indicates that the claims were enumerated
+* Invalid-handle indicates that the claim set handle is not valid
+* Other failure indicates that the call failed for any other reason
+
+## Authors
 
 Dave Thaler (dthaler@microsoft.com)
