@@ -10,8 +10,11 @@ let get_struct_by_name (cts : composite_type list) (name : string) =
   (* [cts] is a list of all composite types, but we're only
      interested in the structs, so we filter out the rest and unwrap
      them from [composite_type]. *)
-  let structs = filter_map (function StructDef s -> Some s | _ -> None) cts in
-  List.find_opt (fun s -> s.sname = name) structs
+  match
+    List.filter (function StructDef s -> s.sname = name | _ -> false) cts
+  with
+  | StructDef s::tl -> Some s
+  | _ -> None
 
 (** We need to check [Ptr]s for [Foreign] or [Struct] types, then
     check those against the user's [Struct]s, and then check if any

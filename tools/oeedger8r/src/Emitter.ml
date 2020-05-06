@@ -68,25 +68,25 @@ let warn_signed_size_or_count_types (fd : func_decl) =
   in
   (* Get the names of all size and count parameters for the function [fd]. *)
   let size_params =
-    filter_map
-      (fun (ptype, _) ->
+    List.fold_left
+      (fun names (ptype, _) ->
         (* The size may be either a [count] or [size], and then
            either a number or string. We are interested in the
            strings, as they indicate named [size] or [count]
            parameters. *)
-        let param_name { ps_size; ps_count } =
+        let prepend_param_name { ps_size; ps_count } =
           match (ps_size, ps_count) with
           (* [s] is the name of the parameter as a string. *)
-          | None, Some (AString s) | Some (AString s), None -> Some s
+          | None, Some (AString s) | Some (AString s), None -> s::names
           (* TODO: Check for [Some (ANumber n)] that [n < 1] *)
-          | _ -> None
+          | _ -> names
         in
         (* Only variables that are pointers where [chkptr] is true may
            have size parameters. *)
         match ptype with
-        | PTPtr (_, a) when a.pa_chkptr -> param_name a.pa_size
-        | _ -> None)
-      fd.plist
+        | PTPtr (_, a) when a.pa_chkptr -> prepend_param_name a.pa_size
+        | _ -> names)
+      [] fd.plist
   in
   (* Print warnings for size parameters that are [Signed]. *)
   List.iter
