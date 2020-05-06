@@ -626,7 +626,7 @@ static oe_result_t _add_eeid_pages(
 
         size_t num_bytes = 8 + sizeof(oe_eeid_t) + eeid->data_size;
         size_t num_pages =
-            num_bytes / OE_PAGE_SIZE + (num_bytes % OE_PAGE_SIZE) ? 1 : 0;
+            num_bytes / OE_PAGE_SIZE + ((num_bytes % OE_PAGE_SIZE) ? 1 : 0);
 
         sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)&props->sigstruct;
         memcpy(eeid->signature, (uint8_t*)sigstruct, sizeof(sgx_sigstruct_t));
