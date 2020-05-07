@@ -269,6 +269,7 @@ if (OE_SGX)
     sgx/sgxquote.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
+    sgx/signkey.c
     sgx/switchless.c)
 
   # OS specific as well.
@@ -352,7 +353,6 @@ list(
   files.c
   fopen.c
   memalign.c
-  signkey.c
   strings.c
   traceh_enclave.c)
 

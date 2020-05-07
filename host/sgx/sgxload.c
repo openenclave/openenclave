@@ -23,9 +23,9 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../memalign.h"
-#include "../signkey.h"
 #include "enclave.h"
 #include "sgxmeasure.h"
+#include "signkey.h"
 #include "xstate.h"
 
 #if !defined(OEHOSTMR)
