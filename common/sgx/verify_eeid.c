@@ -22,6 +22,7 @@
 #include "../../enclave/crypto/rsa.h"
 #else
 #include <openenclave/host.h>
+#include <openssl/opensslv.h>
 #include <openssl/rsa.h>
 #include "../../host/crypto/openssl/key.h"
 #include "../../host/crypto/openssl/rsa.h"
@@ -195,6 +196,9 @@ oe_result_t verify_eeid_nr(
             OE_RAISE(OE_INVALID_PARAMETER);
         mbedtls_pk_context* ikey = &pkctx;
 #else
+#if OPENSSL_VERSION_NUMBER < 0x1010100fL
+#error OpenSSL 1.0.2 not supported
+#endif
         BIGNUM* rm = BN_bin2bn(reversed_modulus, OE_KEY_SIZE, 0);
         BIGNUM* re = BN_bin2bn(reversed_exponent, OE_EXPONENT_SIZE, 0);
         RSA* rsa = RSA_new();
