@@ -13,6 +13,7 @@
 
 #include <string.h>
 
+#include <openenclave/attestation/sgx/report.h>
 #include <openenclave/host.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
@@ -21,11 +22,42 @@
 #include "../common/tls_server_enc_mrenclave.h"
 #include "../common/tls_server_enc_pubkey.h"
 
-bool verify_mrsigner_openssl(
-    char* pem_key_buffer,
+bool verify_mrsigner(
+    const char* pem_key_buffer,
     size_t pem_key_buffer_len,
     uint8_t* expected_signer,
-    size_t expected_signer_size);
+    size_t expected_signer_size)
+{
+    printf(TLS_CLIENT "Verify connecting server's identity\n");
+
+    uint8_t calculated_signer[OE_SIGNER_ID_SIZE];
+    size_t calculated_signer_size = sizeof(calculated_signer);
+    if (oe_sgx_get_signer_id_from_public_key(
+            pem_key_buffer,
+            pem_key_buffer_len,
+            calculated_signer,
+            &calculated_signer_size) != OE_OK)
+    {
+        printf("oe_sgx_get_signer_id_from_public_key failed\n");
+        return false;
+    }
+
+    // validate against
+    if (memcmp(calculated_signer, expected_signer, expected_signer_size) != 0)
+    {
+        printf("mrsigner is not equal!\n");
+        for (int i = 0; i < expected_signer_size; i++)
+        {
+            printf(
+                "0x%x - 0x%x\n",
+                (uint8_t)expected_signer[i],
+                (uint8_t)calculated_signer[i]);
+        }
+        return false;
+    }
+    printf("signer id (MRSIGNER) was successfully validated\n");
+    return true;
+}
 
 // This is the identity validation callback. An TLS connecting party (client or
 // server) can verify the passed in "identity" information to decide whether to
@@ -77,7 +109,7 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
     printf("\n");
 
     // In this sample, only signer_id validation is shown
-    if (!verify_mrsigner_openssl(
+    if (!verify_mrsigner(
             (char*)OTHER_ENCLAVE_PUBLIC_KEY,
             sizeof(OTHER_ENCLAVE_PUBLIC_KEY),
             identity->signer_id,

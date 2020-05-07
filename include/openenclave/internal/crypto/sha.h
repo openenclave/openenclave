@@ -66,6 +66,20 @@ oe_result_t oe_sha256_update(
  */
 oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256);
 
+/**
+ * Computes the SHA-256 hash of the input data
+ *
+ * This is a convenience function that can be used if the full data is
+ * available at once.
+ *
+ * @param[in] data buffer of data to be hashed
+ * @param[in] size size of the buffer
+ * @param[out] sha256 buffer where hash is written
+ *
+ * @return OE_OK upon success
+ */
+oe_result_t oe_sha256(const void* data, size_t size, OE_SHA256* sha256);
+
 OE_EXTERNC_END
 
 #endif /* _OE_SHA_H */

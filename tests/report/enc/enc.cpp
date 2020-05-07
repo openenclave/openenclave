@@ -137,6 +137,11 @@ void enclave_test_verify_report_with_collaterals()
     test_verify_report_with_collaterals();
 }
 
+void enclave_test_get_signer_id_from_public_key()
+{
+    test_get_signer_id_from_public_key();
+}
+
 OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */

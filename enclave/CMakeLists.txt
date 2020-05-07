@@ -10,6 +10,7 @@ if (OE_SGX)
       ../common/sgx/qeidentity.c
       ../common/sgx/quote.c
       ../common/sgx/report.c
+      ../common/sgx/report_helper.c
       ../common/sgx/collateral.c
       ../common/sgx/sgxcertextensions.c
       ../common/sgx/tcbinfo.c
@@ -29,6 +30,7 @@ add_enclave_library(
   STATIC
   ../common/attest_plugin.c
   ../common/datetime.c
+  ../common/sha.c
   asym_keys.c
   link.c
   tls_cert.c
