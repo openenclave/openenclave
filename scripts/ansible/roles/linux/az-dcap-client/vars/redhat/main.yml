@@ -8,6 +8,7 @@ yum_packages:
   - "pkg-config"
 
 git_repo_url: "https://github.com/Microsoft/Azure-DCAP-Client.git"
+git_repo_branch: "1.4.0"
 git_local_dir: "/tmp/Azure-DCAP-Client"
 
 validation_distribution_files:
