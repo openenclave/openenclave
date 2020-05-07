@@ -182,8 +182,7 @@ if (UNIX)
     crypto/openssl/hmac.c
     crypto/openssl/random.c
     linux/syscall.c
-    linux/time.c
-    linux/windows.c)
+    linux/time.c)
 elseif (WIN32)
   list(
     APPEND

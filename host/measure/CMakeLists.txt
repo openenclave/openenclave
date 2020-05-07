@@ -5,7 +5,7 @@
 if (UNIX)
   set(PLATFORM_HOST_MR_SRC
       crypto/openssl/init.c crypto/openssl/key.c crypto/openssl/rsa.c
-      crypto/openssl/sha.c linux/hostthread.c linux/windows.c)
+      crypto/openssl/sha.c linux/hostthread.c)
 elseif (WIN32)
   set(PLATFORM_HOST_MR_SRC
       crypto/bcrypt/key.c

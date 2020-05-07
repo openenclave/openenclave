@@ -34,6 +34,8 @@ Param(
     [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
     [string]$NSISURL = 'https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe',
     [string]$NSISHash = '1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB',
+    [string]$GetPipURL = 'https://bootstrap.pypa.io/3.4/get-pip.py',
+    [string]$GetPipHash = '564FABC2FBABD9085A71F4A5E43DBF06D5CCEA9AB833E260F30EE38E8CE63A69',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoDriver", "SGX1-NoDriver")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
@@ -114,6 +116,11 @@ $PACKAGES = @{
         "url" = $Python3ZipURL
         "hash" = $Python3ZipHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Python3.zip"
+    }
+    "get-pip" = @{
+        "url" = $GetPipURL
+        "hash" = $GetPipHash
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "get-pip.py"
     }
     "nsis" = @{
         "url" = $NSISURL
@@ -359,6 +366,17 @@ function Install-Python3 {
     New-Directory -Path $installDir -RemoveExisting
     Move-Item -Path "$tempInstallDir\*" -Destination $installDir
     Add-ToSystemPath -Path $installDir
+
+    Start-ExecuteWithRetry -ScriptBlock {
+        # Install PIP
+        python $PACKAGES["get-pip"]["local_file"]
+        $Scripts = Join-Path $installDir "Scripts"
+        Add-ToSystemPath -Path $Scripts
+
+        # Enable site packages so that PIP will run, by uncommenting out 'import site'
+        $configFile = Join-Path $installdir "python37._pth"
+        Set-Content -Path $configFile -Value "python37.zip`n.`n`nimport site"
+    } -MaxRetryCount $RetryCount -RetryInterval 3 -RetryMessage "Failed to install PIP. Retrying"
 
     Start-ExecuteWithRetry -ScriptBlock {
         pip install cmake_format
