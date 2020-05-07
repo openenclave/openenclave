@@ -78,6 +78,7 @@ if (UNIX
     add_subdirectory(SampleApp)
     add_subdirectory(SampleAppCRT)
     add_subdirectory(sealKey)
+    add_subdirectory(sim-mode)
     add_subdirectory(stdc)
     add_subdirectory(stdcxx)
     add_subdirectory(syscall)
