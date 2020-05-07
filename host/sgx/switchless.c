@@ -41,7 +41,7 @@ static void* _switchless_ocall_worker(void* arg)
             // will be scheduled in another available work thread and get
             // handled immediately.
             oe_handle_call_host_function(
-                (uint64_t)local_call_arg, context->enclave);
+                (uint64_t)local_call_arg, context->enc);
 
             // After handling the switchless call, mark this worker thread
             // as free by clearing the slot.
@@ -85,8 +85,8 @@ static void* _switchless_ecall_worker(void* arg)
     oe_enclave_worker_context_t* context = (oe_enclave_worker_context_t*)arg;
 
     // Enter enclave to process ecall messages.
-    if (oe_sgx_switchless_enclave_worker_thread_ecall(
-            context->enclave, context) != OE_OK)
+    if (oe_sgx_switchless_enclave_worker_thread_ecall(context->enc, context) !=
+        OE_OK)
     {
         OE_TRACE_ERROR("Switchless enclave worker thread failed\n");
     }
@@ -197,7 +197,7 @@ oe_result_t oe_start_switchless_manager(
     for (size_t i = 0; i < num_host_workers; i++)
     {
         OE_TRACE_INFO("Creating switchless host worker thread %d\n", (int)i);
-        manager->host_worker_contexts[i].enclave = enclave;
+        manager->host_worker_contexts[i].enc = enclave;
         if (oe_thread_create(
                 &manager->host_worker_threads[i],
                 _switchless_ocall_worker,
@@ -211,7 +211,7 @@ oe_result_t oe_start_switchless_manager(
     for (size_t i = 0; i < num_enclave_workers; i++)
     {
         OE_TRACE_INFO("Creating switchless enclave worker thread %d\n", (int)i);
-        manager->enclave_worker_contexts[i].enclave = enclave;
+        manager->enclave_worker_contexts[i].enc = enclave;
         manager->enclave_worker_contexts[i].spin_count_threshold =
             OE_ENCLAVE_WORKER_SPIN_COUNT_THRESHOLD;
         if (oe_thread_create(
