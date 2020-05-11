@@ -14,7 +14,8 @@ add_executable(host_verify host.c)
 install(
   TARGETS host_verify
   EXPORT openenclave-targets
-  DESTINATION ${CMAKE_INSTALL_BINDIR})
+  DESTINATION ${CMAKE_INSTALL_BINDIR}
+  COMPONENT OEHOSTVERIFY)
 
 target_include_directories(host_verify PRIVATE)
 
