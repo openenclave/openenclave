@@ -36,3 +36,5 @@ add_enclave(
 enclave_include_directories(exclude_system_edl_enc PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})
 enclave_link_libraries(exclude_system_edl_enc oelibc)
+enclave_compile_definitions(exclude_system_edl_enc PRIVATE
+                            OE_SWITCHLESS_OPT_OUT)

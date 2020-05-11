@@ -18,6 +18,7 @@
 #endif
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/ocall_optout.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/edger8r/common.h>

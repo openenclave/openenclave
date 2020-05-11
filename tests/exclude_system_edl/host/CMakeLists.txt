@@ -29,3 +29,5 @@ add_executable(exclude_system_edl_host host.c exclude_system_edl_u.c)
 target_include_directories(exclude_system_edl_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(exclude_system_edl_host oehostapp)
+target_compile_definitions(exclude_system_edl_host
+                           PRIVATE OE_SWITCHLESS_OPT_OUT)
