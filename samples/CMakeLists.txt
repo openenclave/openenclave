@@ -49,11 +49,19 @@ if (BUILD_ENCLAVES)
           DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 endif ()
 
+set(BUILD_HOSTVERIFY_INLINE ON)
 add_subdirectory(host_verify)
 
 install(
   DIRECTORY host_verify
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+  COMPONENT OEHOSTVERIFY)
+
+# Install host_verify binary
+install(
+  TARGETS host_verify
+  EXPORT openenclave-targets # TODO: Is this right?
+  DESTINATION ${CMAKE_INSTALL_BINDIR}
   COMPONENT OEHOSTVERIFY)
 
 if (WIN32)
