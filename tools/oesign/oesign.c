@@ -479,8 +479,8 @@ int oedump_eeid(const char* enclave)
     for (size_t i = 0; i < 2; i++)
         printf("%08x", eeid.hash_state.N[i]);
     printf("\nbase_sigstruct=");
-    for (size_t i = 0; i < sizeof(props.sigstruct); i++)
-        printf("%02x", props.sigstruct[i]);
+    for (size_t i = 0; i < sizeof(eeid.signature); i++)
+        printf("%02x", eeid.signature[i]);
     printf("\nvaddr=%lu", eeid.vaddr);
     printf("\n");
 
