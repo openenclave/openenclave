@@ -49,6 +49,8 @@ if (BUILD_ENCLAVES)
           DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 endif ()
 
+add_subdirectory(host_verify)
+
 install(
   DIRECTORY host_verify
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples

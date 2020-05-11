@@ -5,15 +5,21 @@ cmake_minimum_required(VERSION 3.11)
 
 project("Remote Host-side Enclave Verification Sample" LANGUAGES C CXX)
 
-find_package(OpenEnclave CONFIG REQUIRED)
+# find_package(OpenEnclave CONFIG REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)
 
 add_executable(host_verify host.c)
 
+install(
+  TARGETS host_verify
+  EXPORT openenclave-targets
+  DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 target_include_directories(host_verify PRIVATE)
 
-target_link_libraries(host_verify openenclave::oehostverify)
+# target_link_libraries(host_verify openenclave::oehostverify)
+target_link_libraries(host_verify oehostverify)
 
 add_custom_target(run DEPENDS host_verify)
 
