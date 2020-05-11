@@ -60,7 +60,7 @@ install(
 # Install host_verify binary
 install(
   TARGETS host_verify
-  EXPORT openenclave-targets # TODO: Is this right?
+  EXPORT openenclave-targets
   DESTINATION ${CMAKE_INSTALL_BINDIR}
   COMPONENT OEHOSTVERIFY)
 
