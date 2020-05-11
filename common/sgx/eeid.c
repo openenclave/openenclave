@@ -29,68 +29,69 @@
 #include "../../host/crypto/openssl/rsa.h"
 #endif
 
-static oe_result_t serialize_elem(
+static oe_result_t serialize_element(
     const char* name,
-    char** p,
-    size_t* r,
-    const uint8_t* e,
-    size_t e_sz)
+    char** position,
+    size_t* remaining,
+    const uint8_t* element,
+    size_t element_size)
 {
     size_t name_sz = strlen(name);
 
-    if (*r < 2 * e_sz + 1 + name_sz + 1)
+    if (*remaining < 2 * element_size + 1 + name_sz + 1)
         return OE_BUFFER_TOO_SMALL;
 
-    snprintf(*p, *r, "%s=", name);
-    *p += name_sz + 1;
-    *r -= name_sz + 1;
+    snprintf(*position, *remaining, "%s=", name);
+    *position += name_sz + 1;
+    *remaining -= name_sz + 1;
 
-    oe_hex_string(*p, *r, e, e_sz);
-    *p += 2 * e_sz;
-    **p = '\n';
-    *p += 1;
-    *r -= 2 * e_sz + 1;
+    oe_hex_string(*position, *remaining, element, element_size);
+    *position += 2 * element_size;
+    **position = '\n';
+    *position += 1;
+    *remaining -= 2 * element_size + 1;
 
     return OE_OK;
 }
 
-static oe_result_t deserialize_elem(
-    const char** p,
-    size_t* r,
-    uint8_t* e,
-    size_t e_sz)
+static oe_result_t deserialize_element(
+    const char** position,
+    size_t* remaining,
+    uint8_t* element,
+    size_t element_size)
 {
     // Skip name
-    while (**p != ' ')
+    while (**position != ' ')
     {
-        *p += 1;
-        *r -= 1;
+        *position += 1;
+        *remaining -= 1;
     }
-    *p += 1;
-    *r -= 1;
+    *position += 1;
+    *remaining -= 1;
 
-    if (*r < 2 * e_sz + 2)
+    if (*remaining < 2 * element_size + 2)
         return OE_OUT_OF_BOUNDS;
 
-    for (size_t i = 0; i < e_sz; i++)
+    for (size_t i = 0; i < element_size; i++)
     {
         unsigned digit;
-        if (sscanf(*p, "%02x", &digit) != 1)
+        if (sscanf(*position, "%02x", &digit) != 1)
             return OE_INVALID_PARAMETER;
-        e[i] = (uint8_t)digit;
-        *p += 2;
-        *r -= 2;
+        element[i] = (uint8_t)digit;
+        *position += 2;
+        *remaining -= 2;
     }
 
-    if (**p != '\n')
+    if (**position != '\n')
         return OE_INVALID_PARAMETER;
 
-    *p += 1;
-    *r -= 1;
+    *position += 1;
+    *remaining -= 1;
 
     return OE_OK;
 }
 
+// Note: this needs to be updated when oe_eeid_t changes.
 oe_result_t oe_serialize_eeid(const oe_eeid_t* eeid, char* buf, size_t buf_size)
 {
     oe_result_t result;
@@ -98,50 +99,67 @@ oe_result_t oe_serialize_eeid(const oe_eeid_t* eeid, char* buf, size_t buf_size)
     if (!eeid || !buf || !buf_size)
         return OE_INVALID_PARAMETER;
 
-    char** p = &buf;
-    size_t r = buf_size;
+    char** position = &buf;
+    size_t remaining = buf_size;
 
-    OE_CHECK(serialize_elem(
-        "H", p, &r, (uint8_t*)eeid->hash_state.H, sizeof(eeid->hash_state.H)));
-    OE_CHECK(serialize_elem(
-        "N", p, &r, (uint8_t*)eeid->hash_state.N, sizeof(eeid->hash_state.N)));
-    OE_CHECK(serialize_elem(
+    OE_CHECK(serialize_element(
+        "H",
+        position,
+        &remaining,
+        (uint8_t*)eeid->hash_state.H,
+        sizeof(eeid->hash_state.H)));
+    OE_CHECK(serialize_element(
+        "N",
+        position,
+        &remaining,
+        (uint8_t*)eeid->hash_state.N,
+        sizeof(eeid->hash_state.N)));
+    OE_CHECK(serialize_element(
         "signature_size",
-        p,
-        &r,
+        position,
+        &remaining,
         (uint8_t*)&eeid->signature_size,
         sizeof(eeid->signature_size)));
-    OE_CHECK(serialize_elem(
-        "signature", p, &r, eeid->signature, eeid->signature_size));
-    OE_CHECK(serialize_elem(
+    OE_CHECK(serialize_element(
+        "signature",
+        position,
+        &remaining,
+        eeid->signature,
+        eeid->signature_size));
+    OE_CHECK(serialize_element(
         "settings",
-        p,
-        &r,
+        position,
+        &remaining,
         (uint8_t*)&eeid->size_settings,
         sizeof(eeid->size_settings)));
-    OE_CHECK(serialize_elem(
+    OE_CHECK(serialize_element(
         "data_size",
-        p,
-        &r,
+        position,
+        &remaining,
         (uint8_t*)&eeid->data_size,
         sizeof(eeid->data_size)));
-    OE_CHECK(serialize_elem(
-        "vaddr", p, &r, (uint8_t*)&eeid->vaddr, sizeof(eeid->vaddr)));
-    OE_CHECK(serialize_elem(
+    OE_CHECK(serialize_element(
+        "vaddr",
+        position,
+        &remaining,
+        (uint8_t*)&eeid->vaddr,
+        sizeof(eeid->vaddr)));
+    OE_CHECK(serialize_element(
         "entry_point",
-        p,
-        &r,
+        position,
+        &remaining,
         (uint8_t*)&eeid->entry_point,
         sizeof(eeid->entry_point)));
-    OE_CHECK(
-        serialize_elem("data", p, &r, (uint8_t*)eeid->data, eeid->data_size));
+    OE_CHECK(serialize_element(
+        "data", position, &remaining, (uint8_t*)eeid->data, eeid->data_size));
 
-    **p = '\0';
+    **position = '\0';
 
 done:
     return OE_OK;
 }
 
+// Note: this needs to be updated when oe_eeid_t changes.
 oe_result_t oe_deserialize_eeid(
     const char* buf,
     size_t buf_size,
@@ -152,35 +170,55 @@ oe_result_t oe_deserialize_eeid(
     if (!buf || !buf_size || !eeid)
         return OE_INVALID_PARAMETER;
 
-    const char** p = &buf;
-    size_t r = buf_size;
+    const char** position = &buf;
+    size_t remaining = buf_size;
 
     memset(eeid, 0, sizeof(oe_eeid_t));
 
-    OE_CHECK(deserialize_elem(
-        p, &r, (uint8_t*)eeid->hash_state.H, sizeof(eeid->hash_state.H)));
-    OE_CHECK(deserialize_elem(
-        p, &r, (uint8_t*)eeid->hash_state.N, sizeof(eeid->hash_state.N)));
-    OE_CHECK(deserialize_elem(
-        p, &r, (uint8_t*)&eeid->signature_size, sizeof(eeid->signature_size)));
-    OE_CHECK(deserialize_elem(p, &r, eeid->signature, eeid->signature_size));
-    OE_CHECK(deserialize_elem(
-        p, &r, (uint8_t*)&eeid->size_settings, sizeof(eeid->size_settings)));
-    OE_CHECK(deserialize_elem(
-        p, &r, (uint8_t*)&eeid->data_size, sizeof(eeid->data_size)));
-    OE_CHECK(
-        deserialize_elem(p, &r, (uint8_t*)&eeid->vaddr, sizeof(eeid->vaddr)));
-    OE_CHECK(deserialize_elem(
-        p, &r, (uint8_t*)&eeid->entry_point, sizeof(eeid->entry_point)));
-    OE_CHECK(deserialize_elem(p, &r, (uint8_t*)eeid->data, eeid->data_size));
+    OE_CHECK(deserialize_element(
+        position,
+        &remaining,
+        (uint8_t*)eeid->hash_state.H,
+        sizeof(eeid->hash_state.H)));
+    OE_CHECK(deserialize_element(
+        position,
+        &remaining,
+        (uint8_t*)eeid->hash_state.N,
+        sizeof(eeid->hash_state.N)));
+    OE_CHECK(deserialize_element(
+        position,
+        &remaining,
+        (uint8_t*)&eeid->signature_size,
+        sizeof(eeid->signature_size)));
+    OE_CHECK(deserialize_element(
+        position, &remaining, eeid->signature, eeid->signature_size));
+    OE_CHECK(deserialize_element(
+        position,
+        &remaining,
+        (uint8_t*)&eeid->size_settings,
+        sizeof(eeid->size_settings)));
+    OE_CHECK(deserialize_element(
+        position,
+        &remaining,
+        (uint8_t*)&eeid->data_size,
+        sizeof(eeid->data_size)));
+    OE_CHECK(deserialize_element(
+        position, &remaining, (uint8_t*)&eeid->vaddr, sizeof(eeid->vaddr)));
+    OE_CHECK(deserialize_element(
+        position,
+        &remaining,
+        (uint8_t*)&eeid->entry_point,
+        sizeof(eeid->entry_point)));
+    OE_CHECK(deserialize_element(
+        position, &remaining, (uint8_t*)eeid->data, eeid->data_size));
 
 done:
     return OE_OK;
 }
 
-oe_result_t oe_replay_eeid_pages(
+oe_result_t oe_remeasure_memory_pages(
     const oe_eeid_t* eeid,
-    struct _OE_SHA256* cpt_mrenclave,
+    struct _OE_SHA256* computed_enclave_hash,
     bool with_eeid_pages)
 {
     oe_result_t result;
@@ -206,12 +244,16 @@ oe_result_t oe_replay_eeid_pages(
 
     uint64_t vaddr = eeid->vaddr;
 
+    // This is where we replay the addition of memory pages, both, for
+    // verification of the extended image hash (with_eeid_pages=true) and the
+    // base image hash, for which there are no EEID pages, but one TCS page (or
+    // more if we decide to support arbitrary base image properties).
     if (with_eeid_pages)
     {
         oe_page_t fst_page;
-        *((uint64_t*)fst_page.data) =
-            0xEE1DEE1DEE1DEE1D; // A non-eeid enclave would segfault (no heap)
-                                // or see a 0.
+        *((uint64_t*)fst_page.data) = OE_EEID_MAGIC;
+        // A non-eeid enclave would either segfault (if there are no heap pages)
+        // or see a 0 (the default heap page content).
         size_t num_bytes = sizeof(oe_eeid_t) + eeid->data_size;
         size_t num_pages =
             num_bytes / OE_PAGE_SIZE + (num_bytes % OE_PAGE_SIZE) ? 1 : 0;
@@ -262,7 +304,7 @@ oe_result_t oe_replay_eeid_pages(
             ADD_PAGE(blank_pg, true);
     }
 
-    oe_sha256_final(&hctx, cpt_mrenclave);
+    oe_sha256_final(&hctx, computed_enclave_hash);
 
 done:
     return OE_OK;
@@ -276,12 +318,114 @@ static bool is_zero(const uint8_t* buf, size_t sz)
     return true;
 }
 
+static size_t _serialized_eeid_size(const oe_eeid_t* eeid)
+{
+    return 2 * (sizeof(oe_eeid_t) + eeid->data_size) + 8 + 1;
+}
+
+static oe_result_t verify_base_image_signature(const sgx_sigstruct_t* sigstruct)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    unsigned char buf[sizeof(sgx_sigstruct_t)];
+    size_t n = 0;
+
+    OE_CHECK(oe_memcpy_s(
+        buf,
+        sizeof(buf),
+        sgx_sigstruct_header(sigstruct),
+        sgx_sigstruct_header_size()));
+    n += sgx_sigstruct_header_size();
+    OE_CHECK(oe_memcpy_s(
+        &buf[n],
+        sizeof(buf) - n,
+        sgx_sigstruct_body(sigstruct),
+        sgx_sigstruct_body_size()));
+    n += sgx_sigstruct_body_size();
+
+    OE_SHA256 msg_hsh;
+    oe_sha256_context_t context;
+
+    oe_sha256_init(&context);
+    oe_sha256_update(&context, buf, n);
+    oe_sha256_final(&context, &msg_hsh);
+
+    uint8_t reversed_modulus[OE_KEY_SIZE];
+    for (size_t i = 0; i < OE_KEY_SIZE; i++)
+        reversed_modulus[i] = sigstruct->modulus[OE_KEY_SIZE - 1 - i];
+
+    uint8_t reversed_exponent[OE_KEY_SIZE];
+    for (size_t i = 0; i < OE_EXPONENT_SIZE; i++)
+        reversed_exponent[i] = sigstruct->exponent[OE_EXPONENT_SIZE - 1 - i];
+
+    uint8_t reversed_signature[OE_KEY_SIZE];
+    for (size_t i = 0; i < OE_KEY_SIZE; i++)
+        reversed_signature[i] = sigstruct->signature[OE_KEY_SIZE - 1 - i];
+
+    oe_rsa_public_key_t pk;
+#ifdef OE_BUILD_ENCLAVE
+    mbedtls_pk_context pkctx;
+    mbedtls_pk_init(&pkctx);
+    const mbedtls_pk_info_t* info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
+    mbedtls_pk_setup(&pkctx, info);
+
+    mbedtls_rsa_context* rsa_ctx = mbedtls_pk_rsa(pkctx);
+    mbedtls_rsa_init(rsa_ctx, 0, 0);
+    mbedtls_rsa_import_raw(
+        rsa_ctx,
+        reversed_modulus,
+        OE_KEY_SIZE, // N
+        NULL,
+        0,
+        NULL,
+        0,
+        NULL,
+        0, // P Q D
+        reversed_exponent,
+        OE_EXPONENT_SIZE);
+    if (mbedtls_rsa_check_pubkey(rsa_ctx) != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+    mbedtls_pk_context* ikey = &pkctx;
+#else
+#if OPENSSL_VERSION_NUMBER < 0x1010100fL
+#error OpenSSL 1.0.2 not supported
+#endif
+    BIGNUM* rm = BN_bin2bn(reversed_modulus, OE_KEY_SIZE, 0);
+    BIGNUM* re = BN_bin2bn(reversed_exponent, OE_EXPONENT_SIZE, 0);
+    RSA* rsa = RSA_new();
+    RSA_set0_key(rsa, rm, re, NULL);
+    EVP_PKEY* ikey = EVP_PKEY_new();
+    EVP_PKEY_assign_RSA(ikey, rsa);
+#endif
+    oe_rsa_public_key_init(&pk, ikey);
+
+    OE_CHECK(oe_rsa_public_key_verify(
+        &pk,
+        OE_HASH_TYPE_SHA256,
+        msg_hsh.buf,
+        sizeof(msg_hsh.buf),
+        reversed_signature,
+        OE_KEY_SIZE));
+
+    oe_rsa_public_key_free(&pk);
+
+#ifdef OE_BUILD_ENCLAVE
+    mbedtls_pk_free(ikey);
+#else
+    EVP_PKEY_free(ikey);
+#endif
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 oe_result_t verify_eeid(
-    const uint8_t* r_mrenclave,
-    const uint8_t* r_mrsigner,
-    uint16_t r_product_id,
-    uint32_t r_security_version,
-    uint64_t r_attributes,
+    const uint8_t* reported_enclave_hash,
+    const uint8_t* reported_enclave_signer,
+    uint16_t reported_product_id,
+    uint32_t reported_security_version,
+    uint64_t reported_attributes,
     const oe_eeid_t* eeid)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -292,160 +436,64 @@ oe_result_t verify_eeid(
     if (eeid->signature_size != 1808) // We only support SGX sigstructs for now.
         OE_RAISE(OE_VERIFY_FAILED);
 
-    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_WARNING)
+    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
     {
-        char buf[2 * (sizeof(oe_eeid_t) + eeid->data_size) + 8];
+        char buf[_serialized_eeid_size(eeid)];
         OE_CHECK(oe_serialize_eeid(eeid, buf, sizeof(buf)));
         printf("EEID:\n%s", buf);
     }
 
-    // Compute expected mrenclave
-    OE_SHA256 cpt_mrenclave;
-    oe_replay_eeid_pages(eeid, &cpt_mrenclave, true);
+    // Compute expected enclave hash
+    OE_SHA256 computed_enclave_hash;
+    oe_remeasure_memory_pages(eeid, &computed_enclave_hash, true);
 
-    // Extract reported mrenclave
-    OE_SHA256 reported_mrenclave;
-    uint8_t reported_mrsigner[OE_SIGNER_ID_SIZE];
-
-    memcpy(reported_mrenclave.buf, r_mrenclave, OE_SHA256_SIZE);
-    memcpy(reported_mrsigner, r_mrsigner, OE_SIGNER_ID_SIZE);
-
-    // Check recomputed mrenclave against reported mrenclave
-    if (memcmp(cpt_mrenclave.buf, reported_mrenclave.buf, OE_SHA256_SIZE) != 0)
+    // Check recomputed enclave hash against reported enclave hash
+    if (memcmp(
+            computed_enclave_hash.buf, reported_enclave_hash, OE_SHA256_SIZE) !=
+        0)
         OE_RAISE(OE_VERIFY_FAILED);
 
-    static const uint8_t debug_public_key[] = {
-        0xca, 0x9a, 0xd7, 0x33, 0x14, 0x48, 0x98, 0x0a, 0xa2, 0x88, 0x90,
-        0xce, 0x73, 0xe4, 0x33, 0x63, 0x83, 0x77, 0xf1, 0x79, 0xab, 0x44,
-        0x56, 0xb2, 0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0xa};
-
-    if (memcmp(debug_public_key, reported_mrsigner, OE_SIGNER_ID_SIZE) != 0)
+    if (memcmp(
+            OE_DEBUG_PUBLIC_KEY, reported_enclave_signer, OE_SIGNER_ID_SIZE) !=
+        0)
         OE_RAISE(OE_VERIFY_FAILED);
 
     const sgx_sigstruct_t* sigstruct = (const sgx_sigstruct_t*)&eeid->signature;
 
     // Compute and check base image hash
-    const uint8_t* base_mrenclave = sigstruct->enclavehash;
-    OE_SHA256 cpt_base_mrenclave;
+    const uint8_t* reported_base_enclave_hash = sigstruct->enclavehash;
+    OE_SHA256 computed_base_enclave_hash;
     oe_eeid_t tmp_eeid = *eeid;
     // If we saved non-zero heap/stack sizes for the base image, we could add
     // them here.
     tmp_eeid.size_settings.num_heap_pages = 0;
     tmp_eeid.size_settings.num_stack_pages = 0;
     tmp_eeid.size_settings.num_tcs = 1;
-    oe_replay_eeid_pages(&tmp_eeid, &cpt_base_mrenclave, false);
+    oe_remeasure_memory_pages(&tmp_eeid, &computed_base_enclave_hash, false);
 
-    if (memcmp(cpt_base_mrenclave.buf, base_mrenclave, OE_SHA256_SIZE) != 0)
+    if (memcmp(
+            computed_base_enclave_hash.buf,
+            reported_base_enclave_hash,
+            OE_SHA256_SIZE) != 0)
         OE_RAISE(OE_VERIFY_FAILED);
 
     // Check other image properties have not changed
-    bool sigstruct_debug = sigstruct->attributes.flags & SGX_FLAGS_DEBUG;
-    bool reported_debug = r_attributes & OE_REPORT_ATTRIBUTES_DEBUG;
+    bool base_debug = sigstruct->attributes.flags & SGX_FLAGS_DEBUG;
+    bool extended_debug = reported_attributes & OE_REPORT_ATTRIBUTES_DEBUG;
 
-    if (sigstruct_debug != reported_debug ||
-        sigstruct->isvprodid != r_product_id ||
-        sigstruct->isvsvn != r_security_version)
+    if (base_debug != extended_debug ||
+        sigstruct->isvprodid != reported_product_id ||
+        sigstruct->isvsvn != reported_security_version)
         OE_RAISE(OE_VERIFY_FAILED);
 
     // Check old signature (new signature has been checked above)
-    if (sigstruct_debug && is_zero(sigstruct->signature, OE_KEY_SIZE))
-        return OE_OK; // Unsigned debug image is ok?
+    if (base_debug && is_zero(sigstruct->signature, OE_KEY_SIZE))
+        return OE_OK; // Unsigned debug image is ok.
     else
-    {
-        unsigned char buf[sizeof(sgx_sigstruct_t)];
-        size_t n = 0;
-
-        OE_CHECK(oe_memcpy_s(
-            buf,
-            sizeof(buf),
-            sgx_sigstruct_header(sigstruct),
-            sgx_sigstruct_header_size()));
-        n += sgx_sigstruct_header_size();
-        OE_CHECK(oe_memcpy_s(
-            &buf[n],
-            sizeof(buf) - n,
-            sgx_sigstruct_body(sigstruct),
-            sgx_sigstruct_body_size()));
-        n += sgx_sigstruct_body_size();
-
-        OE_SHA256 msg_hsh;
-        oe_sha256_context_t context;
-
-        oe_sha256_init(&context);
-        oe_sha256_update(&context, buf, n);
-        oe_sha256_final(&context, &msg_hsh);
-
-        uint8_t reversed_modulus[OE_KEY_SIZE];
-        for (size_t i = 0; i < OE_KEY_SIZE; i++)
-            reversed_modulus[i] = sigstruct->modulus[OE_KEY_SIZE - 1 - i];
-
-        uint8_t reversed_exponent[OE_KEY_SIZE];
-        for (size_t i = 0; i < OE_EXPONENT_SIZE; i++)
-            reversed_exponent[i] =
-                sigstruct->exponent[OE_EXPONENT_SIZE - 1 - i];
-
-        uint8_t reversed_signature[OE_KEY_SIZE];
-        for (size_t i = 0; i < OE_KEY_SIZE; i++)
-            reversed_signature[i] = sigstruct->signature[OE_KEY_SIZE - 1 - i];
-
-        oe_rsa_public_key_t pk;
-#ifdef OE_BUILD_ENCLAVE
-        mbedtls_pk_context pkctx;
-        mbedtls_pk_init(&pkctx);
-        const mbedtls_pk_info_t* info =
-            mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
-        mbedtls_pk_setup(&pkctx, info);
-
-        mbedtls_rsa_context* rsa_ctx = mbedtls_pk_rsa(pkctx);
-        mbedtls_rsa_init(rsa_ctx, 0, 0);
-        mbedtls_rsa_import_raw(
-            rsa_ctx,
-            reversed_modulus,
-            OE_KEY_SIZE, // N
-            NULL,
-            0,
-            NULL,
-            0,
-            NULL,
-            0, // P Q D
-            reversed_exponent,
-            OE_EXPONENT_SIZE);
-        if (mbedtls_rsa_check_pubkey(rsa_ctx) != 0)
-            OE_RAISE(OE_INVALID_PARAMETER);
-        mbedtls_pk_context* ikey = &pkctx;
-#else
-#if OPENSSL_VERSION_NUMBER < 0x1010100fL
-#error OpenSSL 1.0.2 not supported
-#endif
-        BIGNUM* rm = BN_bin2bn(reversed_modulus, OE_KEY_SIZE, 0);
-        BIGNUM* re = BN_bin2bn(reversed_exponent, OE_EXPONENT_SIZE, 0);
-        RSA* rsa = RSA_new();
-        RSA_set0_key(rsa, rm, re, NULL);
-        EVP_PKEY* ikey = EVP_PKEY_new();
-        EVP_PKEY_assign_RSA(ikey, rsa);
-#endif
-        oe_rsa_public_key_init(&pk, ikey);
-
-        OE_CHECK(oe_rsa_public_key_verify(
-            &pk,
-            OE_HASH_TYPE_SHA256,
-            msg_hsh.buf,
-            sizeof(msg_hsh.buf),
-            reversed_signature,
-            OE_KEY_SIZE));
-
-        oe_rsa_public_key_free(&pk);
-
-#ifdef OE_BUILD_ENCLAVE
-        mbedtls_pk_free(ikey);
-#else
-        EVP_PKEY_free(ikey);
-#endif
-    }
+        OE_CHECK(verify_base_image_signature(sigstruct));
 
     result = OE_OK;
 
 done:
-
     return result;
 }

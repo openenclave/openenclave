@@ -25,33 +25,37 @@ typedef struct _header
 static void _test_and_register_attester()
 {
     printf("====== running _test_and_register_attester\n");
-    OE_TEST(oe_register_attester(&eeid_attester, NULL, 0) == OE_OK);
-    OE_TEST(oe_register_attester(&eeid_attester, NULL, 0) == OE_ALREADY_EXISTS);
-    OE_TEST(oe_register_attester(&eeid_attester, NULL, 0) == OE_ALREADY_EXISTS);
+    oe_attester_t* attester = oe_eeid_plugin_attester();
+    OE_TEST(oe_register_attester(attester, NULL, 0) == OE_OK);
+    OE_TEST(oe_register_attester(attester, NULL, 0) == OE_ALREADY_EXISTS);
+    OE_TEST(oe_register_attester(attester, NULL, 0) == OE_ALREADY_EXISTS);
 }
 
 static void _test_and_register_verifier()
 {
     printf("====== running _test_and_register_verifier\n");
-    OE_TEST(oe_register_verifier(&eeid_verifier, NULL, 0) == OE_OK);
-    OE_TEST(oe_register_verifier(&eeid_verifier, NULL, 0) == OE_ALREADY_EXISTS);
-    OE_TEST(oe_register_verifier(&eeid_verifier, NULL, 0) == OE_ALREADY_EXISTS);
+    oe_verifier_t* verifier = oe_eeid_plugin_verifier();
+    OE_TEST(oe_register_verifier(verifier, NULL, 0) == OE_OK);
+    OE_TEST(oe_register_verifier(verifier, NULL, 0) == OE_ALREADY_EXISTS);
+    OE_TEST(oe_register_verifier(verifier, NULL, 0) == OE_ALREADY_EXISTS);
 }
 
 static void _test_and_unregister_attester()
 {
     printf("====== running _test_and_unregister_attester\n");
-    OE_TEST(oe_unregister_attester(&eeid_attester) == OE_OK);
-    OE_TEST(oe_unregister_attester(&eeid_attester) == OE_NOT_FOUND);
-    OE_TEST(oe_unregister_attester(&eeid_attester) == OE_NOT_FOUND);
+    oe_attester_t* attester = oe_eeid_plugin_attester();
+    OE_TEST(oe_unregister_attester(attester) == OE_OK);
+    OE_TEST(oe_unregister_attester(attester) == OE_NOT_FOUND);
+    OE_TEST(oe_unregister_attester(attester) == OE_NOT_FOUND);
 }
 
 static void _test_and_unregister_verifier()
 {
     printf("====== running _test_and_unregister_verifier\n");
-    OE_TEST(oe_unregister_verifier(&eeid_verifier) == OE_OK);
-    OE_TEST(oe_unregister_verifier(&eeid_verifier) == OE_NOT_FOUND);
-    OE_TEST(oe_unregister_verifier(&eeid_verifier) == OE_NOT_FOUND);
+    oe_verifier_t* verifier = oe_eeid_plugin_verifier();
+    OE_TEST(oe_unregister_verifier(verifier) == OE_OK);
+    OE_TEST(oe_unregister_verifier(verifier) == OE_NOT_FOUND);
+    OE_TEST(oe_unregister_verifier(verifier) == OE_NOT_FOUND);
 }
 
 static header_t* make_endorsements(
@@ -130,11 +134,12 @@ static void _test_get_evidence_fail()
     size_t evidence_size;
 
     // Test get_evidence when plugin is unregistered.
-    OE_TEST(oe_unregister_attester(&eeid_attester) == OE_OK);
+    oe_attester_t* attester = oe_eeid_plugin_attester();
+    OE_TEST(oe_unregister_attester(attester) == OE_OK);
 
     OE_TEST(
         oe_get_evidence(
-            &eeid_attester.base.format_id,
+            &attester->base.format_id,
             0,
             NULL,
             0,
@@ -145,7 +150,7 @@ static void _test_get_evidence_fail()
             NULL,
             NULL) == OE_NOT_FOUND);
 
-    OE_TEST(oe_register_attester(&eeid_attester, NULL, 0) == OE_OK);
+    OE_TEST(oe_register_attester(attester, NULL, 0) == OE_OK);
 }
 
 static void _test_verify_evidence_fail()
@@ -159,9 +164,10 @@ static void _test_verify_evidence_fail()
     oe_claim_t* claims;
     size_t claims_length;
 
+    oe_attester_t* attester = oe_eeid_plugin_attester();
     OE_TEST(
         oe_get_evidence(
-            &eeid_attester.base.format_id,
+            &attester->base.format_id,
             0,
             NULL,
             0,
@@ -196,7 +202,8 @@ static void _test_verify_evidence_fail()
             &claims_length) == OE_INVALID_PARAMETER);
 
     // Test verify evidence when plugin is unregistered
-    OE_TEST(oe_unregister_verifier(&eeid_verifier) == OE_OK);
+    oe_verifier_t* verifier = oe_eeid_plugin_verifier();
+    OE_TEST(oe_unregister_verifier(verifier) == OE_OK);
     OE_TEST(
         oe_verify_evidence(
             evidence,
@@ -207,10 +214,7 @@ static void _test_verify_evidence_fail()
             0,
             &claims,
             &claims_length) == OE_NOT_FOUND);
-    OE_TEST(oe_register_verifier(&eeid_verifier, NULL, 0) == OE_OK);
-
-    // Test verify when evidence / endorsement id don't match?
-    // Test faulty verifier when they don't have the right claims?
+    OE_TEST(oe_register_verifier(verifier, NULL, 0) == OE_OK);
 
     OE_TEST(oe_free_evidence(evidence) == OE_OK);
     OE_TEST(oe_free_endorsements(endorsements) == OE_OK);
@@ -225,7 +229,7 @@ void run_tests()
     _test_and_register_verifier();
 
     // Test get evidence + verify evidence with the proper claims.
-    _test_evidence_success(&eeid_attester.base.format_id);
+    _test_evidence_success(&oe_eeid_plugin_attester()->base.format_id);
 
     // Test failures.
     _test_get_evidence_fail();

@@ -8,37 +8,18 @@
 
 #include <openenclave/internal/sgx/eeid_plugin.h>
 
-oe_result_t eeid_verify_evidence(
-    oe_verifier_t* context,
-    const uint8_t* evidence_buffer,
-    size_t evidence_buffer_size,
-    const uint8_t* endorsements_buffer,
-    size_t endorsements_buffer_size,
-    const oe_policy_t* policies,
-    size_t policies_size,
-    oe_claim_t** claims,
-    size_t* claims_length);
+OE_EXTERNC_BEGIN
 
-oe_result_t eeid_free_claims_list(
-    oe_verifier_t* context,
-    oe_claim_t* claims,
-    size_t claims_length);
+/**
+ * Helper function that returns the EEID verifier that can then be sent to
+ * `oe_register_verifier`.
+ *
+ * @experimental
+ *
+ * @retval A pointer to the EEID verifier. This function never fails.
+ */
+oe_verifier_t* oe_eeid_plugin_verifier(void);
 
-oe_result_t eeid_verifier_on_register(
-    oe_attestation_role_t* context,
-    const void* config_data,
-    size_t config_data_size);
-
-oe_result_t eeid_verifier_on_unregister(oe_attestation_role_t* context);
-
-static oe_verifier_t eeid_verifier = {
-    .base =
-        {
-            .format_id = {OE_EEID_PLUGIN_UUID},
-            .on_register = &eeid_verifier_on_register,
-            .on_unregister = &eeid_verifier_on_unregister,
-        },
-    .verify_evidence = &eeid_verify_evidence,
-    .free_claims_list = &eeid_free_claims_list};
+OE_EXTERNC_END
 
 #endif // _OE_EEID_VERIFIER_H

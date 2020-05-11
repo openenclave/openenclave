@@ -5,11 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
-#else
-#include <openenclave/host.h>
-#endif
 
 #include <openenclave/attestation/sgx/eeid_attester.h>
 #include <openenclave/bits/eeid.h>
@@ -20,14 +16,10 @@
 
 extern const void* __oe_get_eeid();
 
-#ifdef OE_BUILD_ENCLAVE
 #include <openenclave/attestation/sgx/attester.h>
 #include <openenclave/enclave.h>
-#else
-#include <openenclave/host.h>
-#endif
 
-oe_result_t eeid_attester_on_register(
+static oe_result_t _eeid_attester_on_register(
     oe_attestation_role_t* context,
     const void* config_data,
     size_t config_data_size)
@@ -38,36 +30,28 @@ oe_result_t eeid_attester_on_register(
 
     oe_result_t result = OE_UNEXPECTED;
 
-#ifdef OE_BUILD_ENCLAVE
     oe_attester_t* sgx_attest = oe_sgx_plugin_attester();
     result = oe_register_attester(sgx_attest, NULL, 0);
     if (result != OE_ALREADY_EXISTS)
         return result;
-#else
-    return OE_UNSUPPORTED;
-#endif
 
     return result;
 }
 
-oe_result_t eeid_attester_on_unregister(oe_attestation_role_t* context)
+static oe_result_t _eeid_attester_on_unregister(oe_attestation_role_t* context)
 {
     OE_UNUSED(context);
     oe_result_t result = OE_UNEXPECTED;
 
-#ifdef OE_BUILD_ENCLAVE
     oe_attester_t* sgx_attest = oe_sgx_plugin_attester();
     result = oe_unregister_attester(sgx_attest);
     if (result != OE_OK && result != OE_NOT_FOUND)
         return result;
-#else
-    return OE_UNSUPPORTED;
-#endif
 
     return result;
 }
 
-oe_result_t eeid_get_evidence(
+static oe_result_t _eeid_get_evidence(
     oe_attester_t* context,
     uint32_t flags,
     const oe_claim_t* custom_claims,
@@ -97,9 +81,6 @@ oe_result_t eeid_get_evidence(
     if (endorsements_buffer_size)
         *endorsements_buffer_size = 0;
 
-#ifndef OE_BUILD_ENCLAVE
-    return OE_UNSUPPORTED;
-#else
     oe_result_t result = OE_UNEXPECTED;
 
     const oe_eeid_t* eeid = __oe_get_eeid();
@@ -158,21 +139,38 @@ oe_result_t eeid_get_evidence(
 
 done:
     return result;
-#endif
 }
 
-oe_result_t eeid_free_evidence(oe_attester_t* context, uint8_t* evidence_buffer)
+static oe_result_t _eeid_free_evidence(
+    oe_attester_t* context,
+    uint8_t* evidence_buffer)
 {
     OE_UNUSED(context);
     free(evidence_buffer);
     return OE_OK;
 }
 
-oe_result_t eeid_free_endorsements(
+static oe_result_t _eeid_free_endorsements(
     oe_attester_t* context,
     uint8_t* endorsements_buffer)
 {
     OE_UNUSED(context);
     free(endorsements_buffer);
     return OE_OK;
+}
+
+static oe_attester_t _eeid_attester = {
+    .base =
+        {
+            .format_id = {OE_EEID_PLUGIN_UUID},
+            .on_register = &_eeid_attester_on_register,
+            .on_unregister = &_eeid_attester_on_unregister,
+        },
+    .get_evidence = &_eeid_get_evidence,
+    .free_evidence = &_eeid_free_evidence,
+    .free_endorsements = &_eeid_free_endorsements};
+
+oe_attester_t* oe_eeid_plugin_attester()
+{
+    return &_eeid_attester;
 }

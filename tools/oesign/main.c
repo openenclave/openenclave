@@ -14,7 +14,9 @@
 #endif
 
 int oedump(const char*);
+#ifdef OE_WITH_EXPERIMENTAL_EEID
 int oedump_eeid(const char* enclave);
+#endif
 int oesign(
     const char* enclave,
     const char* conffile,
@@ -94,6 +96,9 @@ static const char _usage_dump[] =
     "\n"
     "Options:\n"
     "  -e, --enclave-image      path of an enclave image file.\n"
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    "  -x, --eeid               include EEID-relevant information.\n"
+#endif
     "\n"
     "Description:\n"
     "  This option dumps the .oeinfo data segment and the embedded "
@@ -166,9 +171,8 @@ int dump_parser(int argc, const char* argv[])
 #ifdef OE_WITH_EXPERIMENTAL_EEID
         if (with_eeid)
             ret = oedump_eeid(enclave);
-        else
 #endif
-            ret = oedump(enclave);
+        ret = oedump(enclave);
     }
 
 done:

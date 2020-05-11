@@ -18,7 +18,7 @@
 #include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/trace.h>
 
-oe_result_t eeid_verifier_on_register(
+static oe_result_t _eeid_verifier_on_register(
     oe_attestation_role_t* context,
     const void* config_data,
     size_t config_data_size)
@@ -34,7 +34,7 @@ oe_result_t eeid_verifier_on_register(
     return result == OE_ALREADY_EXISTS ? OE_OK : result;
 }
 
-oe_result_t eeid_verifier_on_unregister(oe_attestation_role_t* context)
+static oe_result_t _eeid_verifier_on_unregister(oe_attestation_role_t* context)
 {
     OE_UNUSED(context);
     oe_result_t result = OE_UNEXPECTED;
@@ -55,7 +55,7 @@ typedef struct _header
     uint8_t data[];
 } header_t;
 
-oe_result_t eeid_verify_evidence(
+static oe_result_t _eeid_verify_evidence(
     oe_verifier_t* context,
     const uint8_t* evidence_buffer,
     size_t evidence_buffer_size,
@@ -159,7 +159,7 @@ done:
     return result;
 }
 
-oe_result_t eeid_free_claims_list(
+static oe_result_t _eeid_free_claims_list(
     oe_verifier_t* context,
     oe_claim_t* claims,
     size_t claims_length)
@@ -168,4 +168,19 @@ oe_result_t eeid_free_claims_list(
     OE_UNUSED(claims_length);
     free(claims);
     return OE_OK;
+}
+
+static oe_verifier_t _eeid_verifier = {
+    .base =
+        {
+            .format_id = {OE_EEID_PLUGIN_UUID},
+            .on_register = &_eeid_verifier_on_register,
+            .on_unregister = &_eeid_verifier_on_unregister,
+        },
+    .verify_evidence = &_eeid_verify_evidence,
+    .free_claims_list = &_eeid_free_claims_list};
+
+oe_verifier_t* oe_eeid_plugin_verifier(void)
+{
+    return &_eeid_verifier;
 }

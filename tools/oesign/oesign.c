@@ -463,6 +463,8 @@ int oedump_eeid(const char* enclave)
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
     oe_eeid_t eeid;
+    memset(&eeid, 0, sizeof(oe_eeid_t));
+
     OE_CHECK_ERR(
         oe_sgx_build_enclave(&context, enclave, &props, &eeid, &enc),
         "oe_sgx_build_enclave(): result=%s (%#x)",
@@ -476,7 +478,7 @@ int oedump_eeid(const char* enclave)
     printf("\nN=");
     for (size_t i = 0; i < 2; i++)
         printf("%08x", eeid.hash_state.N[i]);
-    printf("\nsigstruct=");
+    printf("\nbase_sigstruct=");
     for (size_t i = 0; i < sizeof(props.sigstruct); i++)
         printf("%02x", props.sigstruct[i]);
     printf("\nvaddr=%lu", eeid.vaddr);

@@ -73,21 +73,21 @@ done:
 
 oe_result_t oe_sha256_save(
     const oe_sha256_context_t* context,
-    uint32_t* H,
-    uint32_t* N)
+    uint32_t* internal_hash,
+    uint32_t* num_hashed)
 {
     oe_result_t result = OE_INVALID_PARAMETER;
 
-    if (!context || !H || !N)
+    if (!context || !internal_hash || !num_hashed)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
     for (size_t i = 0; i < 8; i++)
-        H[i] = impl->ctx.h[i];
+        internal_hash[i] = impl->ctx.h[i];
 
-    N[0] = impl->ctx.Nl;
-    N[1] = impl->ctx.Nh;
+    num_hashed[0] = impl->ctx.Nl;
+    num_hashed[1] = impl->ctx.Nh;
 
 done:
     return result;
@@ -95,22 +95,22 @@ done:
 
 oe_result_t oe_sha256_restore(
     oe_sha256_context_t* context,
-    const uint32_t* H,
-    const uint32_t* N)
+    const uint32_t* internal_hash,
+    const uint32_t* num_hashed)
 {
     oe_result_t result = OE_INVALID_PARAMETER;
 
-    if (!context || !H || !N)
+    if (!context || !internal_hash || !num_hashed)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
     oe_sha256_init(context);
 
     for (size_t i = 0; i < 8; i++)
-        impl->ctx.h[i] = H[i];
+        impl->ctx.h[i] = internal_hash[i];
 
-    impl->ctx.Nl = N[0];
-    impl->ctx.Nh = N[1];
+    impl->ctx.Nl = num_hashed[0];
+    impl->ctx.Nh = num_hashed[1];
 
 done:
     return result;

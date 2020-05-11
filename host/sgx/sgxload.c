@@ -135,7 +135,13 @@ static sgx_secs_t* _new_secs(
 
     memset(secs, 0, sizeof(sgx_secs_t));
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    secs->size = 68719476736; /* Max acceptable */
+    /* This is the maximum size SGX allows. When signing base images we don't
+     * know the size that the final image will have, so we chose the maximum
+     * here. If we want to be able to use any base image for EEID, this is
+     * needed. If we decide that we want EEID to work only with special base
+     * images (like zero memory images), we can make this conditional on a flag.
+     */
+    secs->size = 68719476736;
     (void)(size);
 #else
     secs->size = size;

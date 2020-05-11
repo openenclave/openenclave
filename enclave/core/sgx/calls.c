@@ -139,12 +139,12 @@ extern const volatile oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 extern volatile oe_sgx_enclave_properties_t oe_enclave_properties_sgx_mutable;
 extern volatile int _have_eeid;
 
-static oe_result_t _eeid_expand()
+static oe_result_t _eeid_patch_memory_sizes()
 {
     oe_result_t r = OE_OK;
     uint64_t* heap_start = (uint64_t*)__oe_get_heap_base();
 
-    if (*heap_start == 0xEE1DEE1DEE1DEE1D)
+    if (*heap_start == OE_EEID_MAGIC)
     {
         oe_eeid_t* eeid = (oe_eeid_t*)(heap_start + 1);
         oe_enclave_properties_sgx_mutable.header.size_settings =
@@ -208,7 +208,7 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-            OE_CHECK(_eeid_expand());
+            OE_CHECK(_eeid_patch_memory_sizes());
 #endif
 
 #ifdef OE_USE_BUILTIN_EDL

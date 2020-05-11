@@ -7,6 +7,13 @@
 /* Note: The variables below are initialized during enclave loading */
 
 extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
+
+/* The memory properties(only the properties, not the actual amount of memory
+   pages etc), are patched during enclave initialization to avoid patches to the
+   base image, which would not be verifiable without having an actual copy of
+   the base image. This means that we need a mutable version of
+   oe_enclave_properties_sgx, which is initialized to a copy thereof, so that
+   non-EEID enclaves won't see a difference. */
 volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx_mutable;
 
 #if defined(__linux__)

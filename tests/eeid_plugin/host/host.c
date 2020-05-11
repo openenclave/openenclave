@@ -28,7 +28,8 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    // Skip test in simulation mode.
+    // Skip test in simulation mode because of memory alignment issues, same as
+    // tests/attestation_plugin).
     const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
         return SKIP_RETURN_CODE;

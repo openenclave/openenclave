@@ -592,7 +592,7 @@ static oe_result_t _eeid_resign(
             properties->config.attributes,
             properties->config.product_id,
             properties->config.security_version,
-            OE_DEBUG_SIGN_KEY, /* Use different key? */
+            OE_DEBUG_SIGN_KEY,
             OE_DEBUG_SIGN_KEY_SIZE,
             sigstruct));
     }
@@ -633,9 +633,7 @@ static oe_result_t _add_eeid_pages(
 
         oe_page_t* pages =
             oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t) * num_pages);
-        *((uint64_t*)pages->data) =
-            0xEE1DEE1DEE1DEE1D; // A non-eeid enclave would segfault (no heap)
-                                // or see a 0.
+        *((uint64_t*)pages->data) = OE_EEID_MAGIC;
         memcpy(
             pages->data + sizeof(uint64_t),
             eeid,
