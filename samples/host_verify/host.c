@@ -161,6 +161,15 @@ int main(int argc, const char* argv[])
             "Usage:\n  %s -r <report_file>\n  %s -c <certificate_file>\n",
             argv[0],
             argv[0]);
+        fprintf(
+            stdout,
+            "Verify the integrity of enclave remote report or attestation "
+            "certificate.\n");
+        fprintf(
+            stdout,
+            "WARNING: %s does not have a stable CLI interface. Use with "
+            "caution.\n",
+            argv[0]);
 
         if (argc == 2 && memcmp(argv[1], "-h", 2) == 0)
         {
