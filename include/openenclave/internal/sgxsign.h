@@ -20,6 +20,9 @@ OE_EXTERNC_BEGIN
  * **sigstruct** parameter (an SGX signature structure).
  *
  * @param mrenclave[in] hash of the enclave being signed
+ * @param attributes[in] ATTRIBUTES flag values for the SGX sigstruct
+ * @param product_id[in] ISVPRODID value for the SGX sigstruct
+ * @param security_version[in] ISVSVN value for the SGX sigstruct
  * @param pem_data[in] PEM buffer containing the signing key
  * @param pem_size[in] size of the PEM buffer
  * @param sigstruct[out] the SGX signature
@@ -45,8 +48,12 @@ oe_result_t oe_sgx_sign_enclave(
  * **sigstruct** parameter (an SGX signature structure).
  *
  * @param mrenclave[in] hash of the enclave being signed
+ * @param attributes[in] ATTRIBUTES flag values for the SGX sigstruct
+ * @param product_id[in] ISVPRODID value for the SGX sigstruct
+ * @param security_version[in] ISVSVN value for the SGX sigstruct
  * @param engine_id[in] text name of the engine to use
- * @param key_id[in] integer handle for the key to use.
+ * @param engine_load_path[in] file path to the openssl engine to use
+ * @param key_id[in] integer handle for the key to use
  * @param sigstruct[out] the SGX signature
  *
  * @return OE_OK success
@@ -60,6 +67,25 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     const char* engine_load_path,
     const char* key_id,
     sgx_sigstruct_t* sigstruct);
+
+/**
+ * Get the digest of an unsigned sigstruct given the expected MRENCLAVE,
+ * ATTRIBUTES, ISVPRODID, and ISVSVN values.
+ *
+ * @param mrenclave[in] hash of the enclave to be signed
+ * @param attributes[in] ATTRIBUTES flag values for the SGX sigstruct
+ * @param product_id[in] ISVPRODID value for the SGX sigstruct
+ * @param security_version[in] ISVSVN value for the SGX sigstruct
+ * @param digest[out] the digest of the sigstruct to be signed
+ *
+ * @return OE_OK success
+ */
+oe_result_t oe_sgx_get_sigstruct_digest(
+    const OE_SHA256* mrenclave,
+    uint64_t attributes,
+    uint16_t product_id,
+    uint16_t security_version,
+    OE_SHA256* digest);
 
 OE_EXTERNC_END
 
