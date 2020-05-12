@@ -127,7 +127,7 @@ oe_result_t oe_serialize_eeid(const oe_eeid_t* eeid, char* buf, size_t buf_size)
         eeid->signature,
         eeid->signature_size));
     OE_CHECK(serialize_element(
-        "settings",
+        "size_settings",
         position,
         &remaining,
         (uint8_t*)&eeid->size_settings,
