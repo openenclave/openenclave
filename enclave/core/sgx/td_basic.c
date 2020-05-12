@@ -13,10 +13,7 @@
 #include "asmdefs.h"
 #include "td.h"
 #include "thread.h"
-
-#if __linux__
-#include "linux/threadlocal.h"
-#endif
+#include "threadlocal.h"
 
 /*
 **==============================================================================
@@ -113,9 +110,7 @@ void td_init(oe_sgx_td_t* td)
         /* List of callsites is initially empty */
         td->callsites = NULL;
 
-#if __linux__
         oe_thread_local_init(td);
-#endif
     }
 }
 
@@ -139,9 +134,7 @@ void td_clear(oe_sgx_td_t* td)
     // pthread_create_key.
     oe_thread_destruct_specific();
 
-#if __linux__
     oe_thread_local_cleanup(td);
-#endif
 
     // The call sites and depth are cleaned up after the thread-local storage is
     // cleaned up since thread-local dynamic destructors could make ocalls.

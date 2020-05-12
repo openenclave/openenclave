@@ -4,7 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/globals.h>
-#include "../init.h"
+#include "init.h"
 
 /*
 **==============================================================================

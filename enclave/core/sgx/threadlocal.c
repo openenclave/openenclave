@@ -10,7 +10,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
-#include "../td.h"
+#include "td.h"
 
 /*
 **==============================================================================

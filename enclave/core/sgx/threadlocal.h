@@ -5,7 +5,7 @@
 #define _OE_CORE_THREADLOCAL_H
 
 #include <openenclave/enclave.h>
-#include "../td.h"
+#include "td.h"
 
 OE_EXTERNC_BEGIN
 
