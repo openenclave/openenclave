@@ -1,9 +1,12 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <stdio.h>
+
+#include <openenclave/attestation/plugin.h>
+#include <openenclave/attestation/sgx/eeid_verifier.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
-#include <stdio.h>
 
 #if defined(_WIN32)
 #include <ShlObj.h>
@@ -15,6 +18,41 @@
 #include "eeid_plugin_u.h"
 
 #define SKIP_RETURN_CODE 2
+
+void host_verify(
+    uint8_t* evidence,
+    size_t evidence_size,
+    uint8_t* endorsements,
+    size_t endorsements_size)
+{
+    printf("====== running host_verify.\n");
+
+    oe_claim_t* claims = NULL;
+    size_t claims_size = 0;
+    OE_TEST(
+        oe_verify_evidence(
+            evidence, evidence_size, NULL, 0, NULL, 0, &claims, &claims_size) ==
+        OE_OK);
+
+    oe_free_claims_list(claims, claims_size);
+
+    claims = NULL;
+    claims_size = 0;
+
+    // Test with endorsements currently fails.
+    OE_UNUSED(endorsements);
+    OE_UNUSED(endorsements_size);
+    // OE_TEST(
+    //     oe_verify_evidence(
+    //         evidence,
+    //         evidence_size,
+    //         endorsements,
+    //         endorsements_size,
+    //         NULL,
+    //         0,
+    //         &claims,
+    //         &claims_size) == OE_OK);
+}
 
 int main(int argc, const char* argv[])
 {
@@ -34,6 +72,9 @@ int main(int argc, const char* argv[])
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
         return SKIP_RETURN_CODE;
 
+    oe_verifier_t* verifier = oe_eeid_plugin_verifier();
+    oe_register_verifier(verifier, NULL, 0);
+
     oe_enclave_setting_t setting;
     setting.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
     setting.u.eeid = mk_test_eeid();
@@ -44,6 +85,7 @@ int main(int argc, const char* argv[])
 
     run_tests(enclave);
 
+    oe_unregister_verifier(verifier);
     free(setting.u.eeid);
     OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
     return 0;

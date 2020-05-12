@@ -13,10 +13,13 @@
 
 #include <openenclave/attestation/sgx/eeid_verifier.h>
 #include <openenclave/attestation/sgx/verifier.h>
+#include <openenclave/bits/attestation.h>
 #include <openenclave/bits/eeid.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/trace.h>
+
+#include "../common.h"
 
 static oe_result_t _eeid_verifier_on_register(
     oe_attestation_role_t* context,
@@ -55,6 +58,114 @@ typedef struct _header
     uint8_t data[];
 } header_t;
 
+static oe_result_t _add_claim(
+    oe_claim_t* claim,
+    void* name,
+    size_t name_size,
+    void* value,
+    size_t value_size)
+{
+    if (*((uint8_t*)name + name_size - 1) != '\0')
+        return OE_CONSTRAINT_FAILED;
+
+    claim->name = (char*)oe_malloc(name_size);
+    if (claim->name == NULL)
+        return OE_OUT_OF_MEMORY;
+    memcpy(claim->name, name, name_size);
+
+    claim->value = (uint8_t*)oe_malloc(value_size);
+    if (claim->value == NULL)
+    {
+        oe_free(claim->name);
+        claim->name = NULL;
+        return OE_OUT_OF_MEMORY;
+    }
+    memcpy(claim->value, value, value_size);
+    claim->value_size = value_size;
+
+    return OE_OK;
+}
+
+static oe_result_t _add_claims(
+    oe_verifier_t* context,
+    const uint8_t* r_enclave_hash,
+    const uint8_t* r_signer_id,
+    uint16_t r_product_id,
+    uint32_t r_security_version,
+    uint64_t r_attributes,
+    uint32_t r_id_version,
+    oe_claim_t** claims_out,
+    size_t* claims_size_out)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!claims_out || !claims_size_out)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    oe_claim_t* claims =
+        (oe_claim_t*)oe_malloc(OE_REQUIRED_CLAIMS_COUNT * sizeof(oe_claim_t));
+    if (claims == NULL)
+        return OE_OUT_OF_MEMORY;
+
+    size_t claims_index = 0;
+
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_ID_VERSION,
+        sizeof(OE_CLAIM_ID_VERSION),
+        &r_id_version,
+        sizeof(r_id_version)));
+
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SECURITY_VERSION,
+        sizeof(OE_CLAIM_SECURITY_VERSION),
+        &r_security_version,
+        sizeof(r_security_version)));
+
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_ATTRIBUTES,
+        sizeof(OE_CLAIM_ATTRIBUTES),
+        &r_attributes,
+        sizeof(r_attributes)));
+
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_UNIQUE_ID,
+        sizeof(OE_CLAIM_UNIQUE_ID),
+        &r_enclave_hash,
+        sizeof(r_enclave_hash)));
+
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SIGNER_ID,
+        sizeof(OE_CLAIM_SIGNER_ID),
+        &r_signer_id,
+        sizeof(r_signer_id)));
+
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_PRODUCT_ID,
+        sizeof(OE_CLAIM_PRODUCT_ID),
+        &r_product_id,
+        sizeof(r_product_id)));
+
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_PLUGIN_UUID,
+        sizeof(OE_CLAIM_PLUGIN_UUID),
+        &context->base.format_id,
+        sizeof(oe_uuid_t)));
+
+    *claims_out = claims;
+    *claims_size_out = 7;
+
+    result = OE_OK;
+done:
+    return result;
+}
+
 static oe_result_t _eeid_verify_evidence(
     oe_verifier_t* context,
     const uint8_t* evidence_buffer,
@@ -72,8 +183,8 @@ static oe_result_t _eeid_verify_evidence(
 
     oe_result_t result = OE_UNEXPECTED;
 
-    if (!evidence_buffer || evidence_buffer_size == 0 || !endorsements_buffer ||
-        endorsements_buffer_size == 0)
+    if (!evidence_buffer || evidence_buffer_size == 0 ||
+        (endorsements_buffer && endorsements_buffer_size == 0))
         return OE_INVALID_PARAMETER;
 
     eeid_evidence_t* eeide = (eeid_evidence_t*)evidence_buffer;
@@ -95,30 +206,40 @@ static oe_result_t _eeid_verify_evidence(
         &sgx_claims,
         &sgx_claims_size));
 
-    const uint8_t* r_mrenclave = NULL;
-    const uint8_t* r_mrsigner = NULL;
+    const uint8_t* r_enclave_hash = NULL;
+    const uint8_t* r_signer_id = NULL;
     uint16_t r_product_id = 0;
     uint32_t r_security_version = 0;
     uint64_t r_attributes = 0;
+    uint32_t r_id_version = 0;
 
     for (size_t i = 0; i < sgx_claims_size; i++)
     {
-        if (strcmp(sgx_claims[i].name, "unique_id") == 0)
-            r_mrenclave = sgx_claims[i].value;
-        else if (strcmp(sgx_claims[i].name, "signer_id") == 0)
-            r_mrsigner = sgx_claims[i].value;
-        else if (strcmp(sgx_claims[i].name, "product_id") == 0)
+        if (strcmp(sgx_claims[i].name, OE_CLAIM_UNIQUE_ID) == 0)
+            r_enclave_hash = sgx_claims[i].value;
+        else if (strcmp(sgx_claims[i].name, OE_CLAIM_SIGNER_ID) == 0)
+            r_signer_id = sgx_claims[i].value;
+        else if (strcmp(sgx_claims[i].name, OE_CLAIM_PRODUCT_ID) == 0)
             r_product_id = *sgx_claims[i].value;
-        else if (strcmp(sgx_claims[i].name, "security_version") == 0)
+        else if (strcmp(sgx_claims[i].name, OE_CLAIM_SECURITY_VERSION) == 0)
             r_security_version = *sgx_claims[i].value;
-        else if (strcmp(sgx_claims[i].name, "attributes") == 0)
+        else if (strcmp(sgx_claims[i].name, OE_CLAIM_ATTRIBUTES) == 0)
             r_attributes = *sgx_claims[i].value;
+        else if (strcmp(sgx_claims[i].name, OE_CLAIM_ID_VERSION) == 0)
+            r_id_version = *sgx_claims[i].value;
     }
 
-    const oe_eeid_t* aeeid = /* EEID from attester */
+    /* EEID from attester */
+    const oe_eeid_t* aeeid =
         (oe_eeid_t*)(eeide->data + eeide->evidence_sz + eeide->endorsements_sz);
-    const oe_eeid_t* veeid =
-        (oe_eeid_t*)endorsements_buffer; /* EEID from verifier */
+
+    /* EEID passed to verifier */
+    const oe_eeid_t* veeid = NULL;
+    if (endorsements_buffer)
+    {
+        oe_endorsements_t* e = (oe_endorsements_t*)endorsements_buffer;
+        veeid = (oe_eeid_t*)e->buffer;
+    }
 
     // Check that the enclave-reported EEID data matches the verifier's
     // expectation.
@@ -127,29 +248,23 @@ static oe_result_t _eeid_verify_evidence(
         return OE_VERIFY_FAILED;
 
     OE_CHECK(verify_eeid(
-        r_mrenclave,
-        r_mrsigner,
+        r_enclave_hash,
+        r_signer_id,
         r_product_id,
         r_security_version,
         r_attributes,
         aeeid));
 
-    *claims =
-        (oe_claim_t*)malloc(OE_REQUIRED_CLAIMS_COUNT * sizeof(oe_claim_t));
-    if (*claims == NULL)
-        return OE_OUT_OF_MEMORY;
-
-    for (int i = 0; i < OE_REQUIRED_CLAIMS_COUNT; i++)
-    {
-        (*claims)[i].name = (char*)(OE_REQUIRED_CLAIMS[i]);
-        if (strcmp(OE_REQUIRED_CLAIMS[i], OE_CLAIM_PLUGIN_UUID) == 0)
-        {
-            (*claims)[i].value = (uint8_t*)&context->base.format_id;
-            (*claims)[i].value_size = sizeof(oe_uuid_t);
-        }
-        // Forward base-image claims?
-    }
-    *claims_length = OE_REQUIRED_CLAIMS_COUNT;
+    _add_claims(
+        context,
+        r_enclave_hash,
+        r_signer_id,
+        r_product_id,
+        r_security_version,
+        r_attributes,
+        r_id_version,
+        claims,
+        claims_length);
 
     OE_CHECK(oe_free_claims_list(sgx_claims, sgx_claims_size));
 

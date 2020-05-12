@@ -7,5 +7,11 @@ enclave {
         public void run_tests();
     };
 
-    untrusted {};
+    untrusted {
+      void host_verify(
+            [in, size=evidence_size] uint8_t* evidence,
+            size_t evidence_size,
+            [in, size=endorsements_size] uint8_t* endorsements,
+            size_t endorsements_size);
+    };
 };

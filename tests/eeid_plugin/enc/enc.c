@@ -3,6 +3,7 @@
 
 #include <openenclave/attestation/sgx/eeid_attester.h>
 #include <openenclave/attestation/sgx/eeid_verifier.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/tests.h>
@@ -58,21 +59,6 @@ static void _test_and_unregister_verifier()
     OE_TEST(oe_unregister_verifier(verifier) == OE_NOT_FOUND);
 }
 
-static header_t* make_endorsements(
-    const oe_eeid_t* eeid,
-    size_t* endorsements_size)
-{
-    oe_uuid_t plugin_uuid = OE_EEID_PLUGIN_UUID;
-    size_t eeid_size = sizeof(oe_eeid_t) + eeid->data_size;
-    *endorsements_size = sizeof(header_t) + eeid_size;
-    header_t* endorsements = malloc(*endorsements_size);
-    endorsements->version = 1;
-    endorsements->format_id = plugin_uuid;
-    endorsements->data_size = eeid_size;
-    memcpy(endorsements->data, eeid, eeid_size);
-    return endorsements;
-}
-
 static void _test_evidence_success(const oe_uuid_t* format_id)
 {
     printf("====== running _test_evidence_success\n");
@@ -87,7 +73,7 @@ static void _test_evidence_success(const oe_uuid_t* format_id)
     oe_result_t r = oe_get_evidence(
         format_id,
         OE_REPORT_FLAGS_REMOTE_ATTESTATION,
-        NULL,
+        claims,
         claims_length,
         NULL,
         0,
@@ -102,28 +88,40 @@ static void _test_evidence_success(const oe_uuid_t* format_id)
 #else
     OE_TEST(r == OE_OK);
 
-    oe_eeid_t* eeid = mk_test_eeid();
-    size_t v_endorsements_size = 0;
-    header_t* v_endorsements = make_endorsements(eeid, &v_endorsements_size);
-
+    // Verify evidence without endorsements.
     OE_TEST(
         oe_verify_evidence(
             evidence,
             evidence_size,
-            (uint8_t*)v_endorsements,
-            v_endorsements_size,
+            NULL,
+            0,
             NULL,
             0,
             &claims,
             &claims_length) == OE_OK);
 
-    free(v_endorsements);
-    free(eeid);
-    free(endorsements);
-#endif
-
-    OE_TEST(oe_free_evidence(evidence) == OE_OK);
     OE_TEST(oe_free_claims_list(claims, claims_length) == OE_OK);
+
+    // Verify with endorsements.
+    OE_TEST(
+        oe_verify_evidence(
+            evidence,
+            evidence_size,
+            endorsements,
+            endorsements_size,
+            NULL,
+            0,
+            &claims,
+            &claims_length) == OE_OK);
+
+    OE_TEST(
+        host_verify(evidence, evidence_size, endorsements, endorsements_size) ==
+        OE_OK);
+
+    OE_TEST(oe_free_claims_list(claims, claims_length) == OE_OK);
+    OE_TEST(oe_free_endorsements(endorsements) == OE_OK);
+    OE_TEST(oe_free_evidence(evidence) == OE_OK);
+#endif
 }
 
 static void _test_get_evidence_fail()

@@ -8,6 +8,7 @@
 #include <openenclave/enclave.h>
 
 #include <openenclave/attestation/sgx/eeid_attester.h>
+#include <openenclave/bits/attestation.h>
 #include <openenclave/bits/eeid.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgx/eeid_plugin.h>
@@ -130,6 +131,15 @@ static oe_result_t _eeid_get_evidence(
         eeide->data + eeide->evidence_sz + eeide->endorsements_sz,
         eeid,
         eeid_sz);
+
+    *endorsements_buffer_size = sizeof(oe_endorsements_t) + eeid_sz;
+    oe_endorsements_t* endorsements = malloc(*endorsements_buffer_size);
+    endorsements->version = OE_ATTESTATION_ENDORSEMENT_VERSION;
+    endorsements->enclave_type = OE_ENCLAVE_TYPE_AUTO;
+    endorsements->num_elements = 1;
+    endorsements->buffer_size = (uint32_t)eeid_sz;
+    memcpy(endorsements->buffer, eeid, eeid_sz);
+    *endorsements_buffer = (uint8_t*)endorsements;
 
     OE_CHECK(oe_free_evidence(sgx_evidence_buffer));
     OE_CHECK(oe_free_endorsements(sgx_endorsements_buffer));
