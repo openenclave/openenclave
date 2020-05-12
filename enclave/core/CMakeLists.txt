@@ -75,6 +75,7 @@ if (OE_SGX)
     APPEND
     PLATFORM_SRC
     ../../common/sgx/endorsements.c
+    ../../common/sgx/rand.S
     sgx/backtrace.c
     sgx/calls.c
     sgx/cpuid.c
@@ -91,6 +92,7 @@ if (OE_SGX)
     sgx/memory.c
     sgx/properties.c
     sgx/random_internal.c
+    sgx/reloc.c
     sgx/report.c
     sgx/sched_yield.c
     sgx/setjmp.S
@@ -99,6 +101,7 @@ if (OE_SGX)
     sgx/td.c
     sgx/td_basic.c
     sgx/thread.c
+    sgx/threadlocal.c
     sgx/tracee.c)
 
   # Functions in td_basic.c will change the status of td and may trigger
@@ -106,13 +109,6 @@ if (OE_SGX)
   set_source_files_properties(sgx/td_basic.c PROPERTIES COMPILE_FLAGS
                                                         -fno-stack-protector)
 
-  # OS specific sources for SGX.
-  if (UNIX OR USE_CLANGW)
-    list(APPEND PLATFORM_SRC ../../common/sgx/rand.S sgx/linux/reloc.c
-         sgx/linux/threadlocal.c)
-  elseif (WIN32)
-    list(APPEND PLATFORM_SRC ../../common/sgx/rand.asm sgx/windows/reloc.c)
-  endif ()
 elseif (OE_TRUSTZONE)
   list(
     APPEND
@@ -141,9 +137,9 @@ endif ()
 
 if (USE_SNMALLOC)
   set(DEFAULT_ALLOCATOR oesnmalloc)
-else()
+else ()
   set(DEFAULT_ALLOCATOR oedlmalloc)
-endif()
+endif ()
 
 add_enclave_library(
   oecore

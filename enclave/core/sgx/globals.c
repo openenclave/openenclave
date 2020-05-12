@@ -8,7 +8,6 @@
 
 extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 
-#if defined(__linux__)
 /**
  *****************************************************************************
  * Global variables and RIP-relative addressing
@@ -128,8 +127,6 @@ static volatile uint64_t _enclave_rva;
 static volatile uint64_t _reloc_rva;
 static volatile uint64_t _reloc_size;
 
-#endif
-
 /*
 **==============================================================================
 **
@@ -140,17 +137,7 @@ static volatile uint64_t _reloc_size;
 
 const void* __oe_get_enclave_base()
 {
-#if defined(__linux__)
     return (uint8_t*)&_enclave_rva - _enclave_rva;
-#else
-    /*
-     * Note: In windows, the reference to &oe_image_info will be compiled
-     * IP-relative by the C-compiler on x86_64, and hence does not have a
-     * relocation entry. Thus it works both pre- and post-relocation.
-     */
-    return (uint8_t*)&oe_enclave_properties_sgx -
-           oe_enclave_properties_sgx.image_info.oeinfo_rva;
-#endif
 }
 
 size_t __oe_get_enclave_size()
@@ -175,11 +162,7 @@ const void* __oe_get_reloc_base()
 {
     const unsigned char* base = __oe_get_enclave_base();
 
-#if defined(__linux__)
     return base + _reloc_rva;
-#else
-    return base + oe_enclave_properties_sgx.IMAGE_INFO.reloc_rva;
-#endif
 }
 
 const void* __oe_get_reloc_end()
@@ -189,11 +172,7 @@ const void* __oe_get_reloc_end()
 
 size_t __oe_get_reloc_size()
 {
-#if defined(__linux__)
     return _reloc_size;
-#else
-    return oe_enclave_properties_sgx.image_info.reloc_size;
-#endif
 }
 
 /*
