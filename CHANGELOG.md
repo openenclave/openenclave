@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
+- Remove CRL_ISSUER_CHAIN_PCK_PROC_CA field from endorsement struct define in include/openenclave/bits/attestation.h.
 
 [0.9.0][v0.9.0_log]
 ------------
