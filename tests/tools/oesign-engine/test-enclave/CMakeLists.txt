@@ -113,5 +113,3 @@ add_test(
 
 add_test(NAME tests/oesign-engine-sign-runnable COMMAND host/helloworld_host
                                                         enclave/enclave.signed)
-set_tests_properties(tests/oesign-engine-sign-runnable
-                     PROPERTIES SKIP_RETURN_CODE 2)
