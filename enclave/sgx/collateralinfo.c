@@ -13,6 +13,40 @@
 #include "platform_t.h"
 
 /**
+ * Update these default size values as needed.
+ * These represent the default buffer sizes that can store their
+ * corresponding quote_verification_collateral_args completely.
+ * Last updated as per arg-sizes observered as of May 2020.
+ */
+#define TCBINFO_DEFAULT_SIZE 5000
+#define PCK_CRL_DEFAULT_SIZE 600
+#define QE_IDENTITY_DEFAULT_SIZE 1500
+#define ROOT_CA_CRL_DEFAULT_SIZE 600
+#define ALL_ISSUER_CHAIN_DEFAULT_SIZE 3000
+
+/**
+ * Pre-allocate memory for the resources that get passed into the
+ * oe_get_quote_verification_collateral_ocall. To avoid extra passes
+ * needed to take care of OE_BUFFER_TOO_SMALL failures.
+ *
+ * @param[in] buf The quote verification collateral.
+ * [in] def_sizes The default quote verification collateral sizes.
+ */
+void oe_prealloc_quote_verification_collateral_args(
+    oe_get_sgx_quote_verification_collateral_args_t* buf,
+    oe_get_sgx_quote_verification_collateral_args_t* default_sizes);
+
+/**
+ * This function is called to update the default collateral arg sizes.
+ *
+ * @param[in] default_sizes The default quote verification collateral sizes.
+ * [in] src_args The quote verification collateral.
+ */
+void oe_update_default_collateral_arg_sizes(
+    oe_get_sgx_quote_verification_collateral_args_t* src_args,
+    oe_get_sgx_quote_verification_collateral_args_t* default_sizes);
+
+/**
  * Call into host to fetch collateral information.
  */
 oe_result_t oe_get_sgx_quote_verification_collateral(
@@ -21,6 +55,29 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     oe_result_t result = OE_FAILURE;
     oe_get_sgx_quote_verification_collateral_args_t in = {0};
     oe_get_sgx_quote_verification_collateral_args_t out = {0};
+
+    /**
+     * This variable is used to store default collateral arg sizes.
+     */
+    static oe_get_sgx_quote_verification_collateral_args_t default_arg_size = {
+        0,
+        {0},
+        0,
+        TCBINFO_DEFAULT_SIZE,
+        0,
+        ALL_ISSUER_CHAIN_DEFAULT_SIZE,
+        0,
+        PCK_CRL_DEFAULT_SIZE,
+        0,
+        ALL_ISSUER_CHAIN_DEFAULT_SIZE,
+        0,
+        ROOT_CA_CRL_DEFAULT_SIZE,
+        0,
+        QE_IDENTITY_DEFAULT_SIZE,
+        0,
+        ALL_ISSUER_CHAIN_DEFAULT_SIZE,
+        0};
+
     uint32_t retval;
 
     if (!args)
@@ -28,6 +85,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
 
     /* fmspc */
     memcpy(in.fmspc, args->fmspc, sizeof(in.fmspc));
+    oe_prealloc_quote_verification_collateral_args(&in, &default_arg_size);
 
     for (;;)
     {
@@ -153,6 +211,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
 
     OE_CHECK((oe_result_t)retval);
 
+    oe_update_default_collateral_arg_sizes(&out, &default_arg_size);
     *args = out;
     memset(&out, 0, sizeof(out));
     result = OE_OK;
@@ -167,6 +226,130 @@ done:
     }
 
     return result;
+}
+
+void oe_prealloc_quote_verification_collateral_args(
+    oe_get_sgx_quote_verification_collateral_args_t* buf,
+    oe_get_sgx_quote_verification_collateral_args_t* default_sizes)
+{
+    /* Allocate estimated buffers for quote_verification_collateral_args */
+
+    buf->tcb_info = (uint8_t*)calloc(1, default_sizes->tcb_info_size);
+
+    if (buf->tcb_info)
+    {
+        buf->tcb_info_size = default_sizes->tcb_info_size;
+    }
+    else
+    {
+        goto done;
+    }
+
+    buf->tcb_info_issuer_chain =
+        (uint8_t*)calloc(1, default_sizes->tcb_info_issuer_chain_size);
+
+    if (buf->tcb_info_issuer_chain)
+    {
+        buf->tcb_info_issuer_chain_size =
+            default_sizes->tcb_info_issuer_chain_size;
+    }
+    else
+    {
+        goto done;
+    }
+
+    buf->pck_crl = (uint8_t*)calloc(1, default_sizes->pck_crl_size);
+
+    if (buf->pck_crl)
+    {
+        buf->pck_crl_size = default_sizes->pck_crl_size;
+    }
+    else
+    {
+        goto done;
+    }
+
+    buf->root_ca_crl = (uint8_t*)calloc(1, default_sizes->root_ca_crl_size);
+
+    if (buf->root_ca_crl)
+    {
+        buf->root_ca_crl_size = default_sizes->root_ca_crl_size;
+    }
+    else
+    {
+        goto done;
+    }
+
+    buf->pck_crl_issuer_chain =
+        (uint8_t*)calloc(1, default_sizes->pck_crl_issuer_chain_size);
+
+    if (buf->pck_crl_issuer_chain)
+    {
+        buf->pck_crl_issuer_chain_size =
+            default_sizes->pck_crl_issuer_chain_size;
+    }
+    else
+    {
+        goto done;
+    }
+
+    buf->qe_identity = (uint8_t*)calloc(1, default_sizes->qe_identity_size);
+
+    if (buf->qe_identity)
+    {
+        buf->qe_identity_size = default_sizes->qe_identity_size;
+    }
+    else
+    {
+        goto done;
+    }
+
+    buf->qe_identity_issuer_chain =
+        (uint8_t*)calloc(1, default_sizes->qe_identity_issuer_chain_size);
+
+    if (buf->qe_identity_issuer_chain)
+    {
+        buf->qe_identity_issuer_chain_size =
+            default_sizes->qe_identity_issuer_chain_size;
+    }
+    else
+    {
+        goto done;
+    }
+    return;
+done:
+    /*if any of the args remain unallocated, clear all values*/
+    oe_free_sgx_quote_verification_collateral_args(buf);
+    buf->qe_identity_issuer_chain_size = 0;
+    buf->qe_identity_size = 0;
+    buf->pck_crl_issuer_chain_size = 0;
+    buf->pck_crl_size = 0;
+    buf->tcb_info_size = 0;
+    buf->tcb_info_issuer_chain_size = 0;
+    buf->root_ca_crl_size = 0;
+    return;
+}
+
+void oe_update_default_collateral_arg_sizes(
+    oe_get_sgx_quote_verification_collateral_args_t* src_args,
+    oe_get_sgx_quote_verification_collateral_args_t* default_sizes)
+{
+    /**
+     * Update the default sizes after the actual collateral
+     * arg sizes have been retrieved
+     * */
+
+    default_sizes->tcb_info_size = src_args->tcb_info_size;
+    default_sizes->tcb_info_issuer_chain_size =
+        src_args->tcb_info_issuer_chain_size;
+    default_sizes->root_ca_crl_size = src_args->root_ca_crl_size;
+    default_sizes->pck_crl_size = src_args->pck_crl_size;
+    default_sizes->pck_crl_issuer_chain_size =
+        src_args->pck_crl_issuer_chain_size;
+    default_sizes->qe_identity_size = src_args->qe_identity_size;
+    default_sizes->qe_identity_issuer_chain_size =
+        src_args->qe_identity_issuer_chain_size;
+    return;
 }
 
 void oe_free_sgx_quote_verification_collateral_args(
