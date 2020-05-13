@@ -5,3 +5,4 @@ This directory tests enclave memory management with the following tests:
     and freeing.
   - Stress test the malloc family functions by rapid allocation and freeing
     in a multi-threaded context.
+  - Check for memory fragmentation inside an enclave after repeated mallocs and frees.

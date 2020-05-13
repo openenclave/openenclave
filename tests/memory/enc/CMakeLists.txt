@@ -19,6 +19,7 @@ add_enclave(
   boundaries.c
   enc.c
   stress.c
+  fragment.c
   memory_t.c)
 
 if (WIN32)
@@ -26,4 +27,4 @@ if (WIN32)
 endif ()
 
 enclave_include_directories(memory_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-enclave_link_libraries(memory_enc oelibc)
+enclave_link_libraries(memory_enc oelibc oecore)

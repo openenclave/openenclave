@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <time.h>
 #include <cstdio>
 #include <thread>
 #include <vector>
@@ -120,12 +121,34 @@ static void _malloc_boundary_test(oe_enclave_t* enclave, uint32_t flags)
     free(heapbuf);
 }
 
+#if !defined(OE_USE_DEBUG_MALLOC)
+static void _malloc_fixed_size_fragment_test(oe_enclave_t* enclave)
+{
+    test_malloc_fixed_size_fragment(enclave);
+}
+
+static void _malloc_random_size_fragment_test(oe_enclave_t* enclave, int seed)
+{
+    unsigned int chosen_seed;
+
+    if (seed < 0)
+    {
+        chosen_seed = (unsigned int)time(NULL);
+    }
+    else
+    {
+        chosen_seed = (unsigned int)seed;
+    }
+    test_malloc_random_size_fragment(enclave, chosen_seed);
+}
+#endif
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
-    if (argc != 2)
+    if (argc < 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);
         return 1;
@@ -147,6 +170,27 @@ int main(int argc, const char* argv[])
 
     printf("===Starting malloc boundary test.\n");
     _malloc_boundary_test(enclave, flags);
+
+#if !defined(OE_USE_DEBUG_MALLOC)
+    printf("===Starting malloc fixed size fragment test.\n");
+    _malloc_fixed_size_fragment_test(enclave);
+
+    printf("===Starting malloc random size fragment test.\n");
+    int seed = -1;
+    if (argc > 2)
+    {
+        // Try to parse seed passed from command-line
+        int len = (int)strlen(argv[2]);
+        char* endptr = NULL;
+        seed = (int)strtol(argv[2], &endptr, 10);
+        if (endptr - argv[2] != len)
+        {
+            fprintf(stderr, "%s is not a valid seed\n", argv[2]);
+            return 1;
+        }
+    }
+    _malloc_random_size_fragment_test(enclave, seed);
+#endif
 
     printf("===All tests pass.\n");
 

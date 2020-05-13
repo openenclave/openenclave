@@ -11,5 +11,9 @@ add_custom_command(
 
 add_executable(memory_host host.cpp memory_u.c)
 
+if(USE_DEBUG_MALLOC)
+    target_compile_definitions(memory_host PRIVATE OE_USE_DEBUG_MALLOC)
+endif()
+
 target_include_directories(memory_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(memory_host oehostapp)
