@@ -33,6 +33,7 @@ if (OE_SGX)
   add_subdirectory(switchless)
   add_subdirectory(switchless_threads)
   add_subdirectory(switchless_nestedcalls)
+  add_subdirectory(switchless_worksleep)
 endif ()
 
 if (UNIX
