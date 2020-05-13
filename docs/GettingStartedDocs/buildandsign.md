@@ -122,9 +122,6 @@ Any properties set in the code also serve as default values when the enclave is
 signed using oesign, so the signing `CONFFILE` only needs to specify override
 parameters during signing.
 
-Using the `OE_SET_ENCLAVE_SGX` macro in code is not recommended and it
-may be removed in a future release.
-
 **Since enclaves that run in debug mode are not confidential, you should disable
 the ability to run the enclave in debug mode before deploying it into production.**
 
@@ -177,7 +174,6 @@ The flags property can contain any of the flags defined in the
 | TA_FLAG_MULTI_SESSION       | allow multiple sessions from host apps      |
 | TA_FLAG_INSTANCE_KEEP_ALIVE | keep enclave running after sessions end     |
 | TA_FLAG_SECURE_DATA_PATH    | accesses SDP memory                         |
-| TA_FLAG_REMAP_SUPPORT       | use map/unmap syscalls                      |
 | TA_FLAG_CACHE_MAINTENANCE   | use cache flush syscall                     |
 
 For more details, see sections 2.1.6 and 4.5 of the
