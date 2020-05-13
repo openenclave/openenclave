@@ -73,7 +73,12 @@ int main(int argc, const char* argv[])
                 process_result = close(fpipe[0]);
                 OE_TEST(result == OE_OK);
                 oe_terminate_enclave(enclave);
-                wait(NULL);
+
+                // Wait for child
+                int child_status = -1;
+                while (wait(&child_status) > 0)
+                    ;
+                OE_TEST(child_status == 0);
             }
             else
             {
@@ -90,11 +95,19 @@ int main(int argc, const char* argv[])
             else if (pid > 0) // parent process
             {
                 uint32_t magic;
+
                 result = get_magic_ecall(enclave, &magic);
                 OE_TEST(result == OE_OK);
                 OE_TEST(magic == 0x1234);
-                oe_terminate_enclave(enclave);
-                wait(NULL);
+                result = oe_terminate_enclave(enclave);
+                OE_TEST(result == OE_OK);
+                enclave = nullptr;
+
+                // Wait for child
+                int child_status = -1;
+                while (wait(&child_status) > 0)
+                    ;
+                OE_TEST(child_status == 0);
             }
             else
             {
@@ -122,7 +135,12 @@ int main(int argc, const char* argv[])
             {
                 fprintf(stdout, "parent pid = %d\n", getpid());
                 oe_terminate_enclave(enclave);
-                wait(NULL);
+
+                // Wait for child
+                int child_status = -1;
+                while (wait(&child_status) > 0)
+                    ;
+                OE_TEST(child_status == 0);
             }
             else
             {
