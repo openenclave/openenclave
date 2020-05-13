@@ -6,6 +6,8 @@ enclave {
   // shares the same host. This tests the ability of a single host to
   // include multiple enclave headers (and so host multiple enclaves).
 
+  from "shared.edl" import *;
+
   struct MyOther {
     int x;
   };

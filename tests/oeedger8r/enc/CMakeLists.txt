@@ -51,6 +51,7 @@ add_enclave(
   testenum.cpp
   testerrno.cpp
   testforeign.cpp
+  testshared.cpp
   testpointer.cpp
   teststring.cpp
   teststruct.cpp
@@ -82,7 +83,7 @@ add_custom_command(
   OUTPUT other_t.h other_t.c
   DEPENDS ${EDL_FILE} edger8r
   COMMAND edger8r --trusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+          ${CMAKE_CURRENT_SOURCE_DIR}/../edl)
 
 add_enclave(
   TARGET

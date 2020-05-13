@@ -787,12 +787,37 @@ let generate_trusted (ec : enclave_content) (ep : Intel.Util.edger8r_params) =
 (* Generate host ECALL wrapper function. *)
 let get_host_ecall_wrapper get_deepcopy enclave_name (tf : trusted_func) =
   let fd = tf.tf_fdecl in
+  (* To avoid symbol name conflicts on the host for multiple enclaves
+   * importing the same edl file, we will prefix the name of this function
+   * with the name of the enclave. A non-prefixed function pointer with
+   * weak/selectany will point to the prefixed function. *)
+  let prefixed_fd : func_decl = {
+    fname=(sprintf "%s_%s" enclave_name fd.fname);
+    rtype=fd.rtype;
+    plist=fd.plist;
+  }
+  in
   let ecall_function =
     if tf.tf_is_switchless then "oe_switchless_call_enclave_function"
     else "oe_call_enclave_function"
   in
+  let params_list =
+    let args =
+      [
+        ["enclave"];
+        ( match fd.rtype with
+        | Void -> []
+        | _ -> ["_retval" ] );
+        List.map (fun p -> (snd p).identifier) fd.plist;
+      ]
+      |> List.flatten
+    in
+    match args with
+    | [ arg ] -> arg
+    | _ -> "\n    " ^ String.concat ",\n    " args
+  in
   [
-    get_wrapper_prototype fd true;
+    "EDGER8R_UNUSED static " ^ get_wrapper_prototype prefixed_fd true;
     "{";
     "    oe_result_t _result = OE_FAILURE;";
     "";
@@ -847,6 +872,21 @@ let get_host_ecall_wrapper get_deepcopy enclave_name (tf : trusted_func) =
     "";
     "    return _result;";
     "}";
+    "";
+
+    (* If system EDL host stubs are built into liboehost, then they will be in the
+     * same static library as the weak stubs used for opting out of system calls.
+     * In that case, the stubs generated from EDL should be strong so that they always
+     * overwrite the weak stubs. OE_USE_BUILTIN_EDL will be deprecated after the v0.10
+     * release and we will no longer need to support this scenario. *)
+    "#ifdef OE_USE_BUILTIN_EDL";
+    get_wrapper_prototype fd true;
+    "{";
+    sprintf "    return %s(%s);" prefixed_fd.fname params_list;
+    "}";
+    "#else";
+    sprintf "EDGER8R_WEAK_ALIAS(%s, %s);" prefixed_fd.fname fd.fname;
+    "#endif";
     "";
   ]
 

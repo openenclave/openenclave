@@ -12,6 +12,12 @@ MyOther ecall_other(MyOther o)
     return MyOther{o.x + 1};
 }
 
+void ecall_shared_func()
+{
+    // do nothing
+    return;
+}
+
 void test_other_edl_ocalls()
 {
     MyOther ret;

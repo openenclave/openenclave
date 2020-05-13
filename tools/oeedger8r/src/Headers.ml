@@ -141,10 +141,13 @@ let get_marshal_struct (fd : func_decl) (errno : bool) =
     |> List.flatten
   in
   [
+    "#ifndef EDGER8R_STRUCT_" ^ String.uppercase_ascii struct_name;
+    "#define EDGER8R_STRUCT_" ^ String.uppercase_ascii struct_name;
     "typedef struct _" ^ struct_name;
     "{";
     "    " ^ String.concat "\n    " members;
     "} " ^ struct_name ^ ";";
+    "#endif";
     "";
   ]
 

@@ -11,6 +11,7 @@ enclave  {
     from "errno.edl"    import *;
     from "foreign.edl"  import *;
     from "pointer.edl"  import *;
+    from "shared.edl" import *;
     from "string.edl"   import *;
     from "struct.edl"   import *;
     from "switchless.edl" import *;

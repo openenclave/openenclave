@@ -106,6 +106,26 @@ OE_INLINE size_t oe_wcslen(const wchar_t* s)
     return wcslen(s);
 }
 
+#if __GNUC__
+#define EDGER8R_WEAK_ALIAS(OLD, NEW) \
+    extern __typeof(OLD) NEW __attribute__((__weak__, alias(#OLD)))
+#elif _MSC_VER
+#define EDGER8R_WEAK_ALIAS(OLD, NEW) \
+    __pragma(comment(linker, "/alternatename:" #NEW "=" #OLD))
+#else
+#error OE_WEAK_ALIAS not implemented
+#endif
+
+// Statically defined functions which are aliased should be marked as unused
+// to prevent compiler warnings in GCC and Clang
+#if __GNUC__
+#define EDGER8R_UNUSED __attribute__((unused))
+#elif _MSC_VER
+#define EDGER8R_UNUSED
+#else
+#error EDGER8R_UNUSED not implemented
+#endif
+
 OE_EXTERNC_END
 
 #endif // _OE_EDGER8R_HOST_H
