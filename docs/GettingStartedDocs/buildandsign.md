@@ -139,13 +139,14 @@ The `oesign` tool is currently SGX-only.  For OP-TEE enclaves, signing
 is instead performed by the `sign.py` script that comes with OP-TEE, and the
 script uses a key that is integrated into OP-TEE itself.  The signing key
 and script, among other artifacts, are exported to a "TA Dev Kit" during
-OP-TEE's build process. The Open Enclave SDK takes a CMake parameter at
+OP-TEE's build process. The Open Enclave SDK takes a `OE_TA_DEV_KIT_DIR`
+CMake parameter at
 build time that specifies where to find the TA Dev Kit. This enables
 the `add_enclave` CMake function to locate sign.py and the TA signing key
 and apply them automatically to every TA built as part of the build process.
 
 There is currently no equivalent of a .conf file for OP-TEE, so all settings
-must be done using the `OE_SET_ENCLAVE_OPTEE` macro:
+must be specified using the `OE_SET_ENCLAVE_OPTEE` macro:
 
 ```c
 #define TA_UUID                                            \
@@ -158,8 +159,8 @@ must be done using the `OE_SET_ENCLAVE_OPTEE` macro:
 
 OE_SET_ENCLAVE_OPTEE(
     TA_UUID,               /* UUID */
-    2 * 1024 * 1024,       /* Heap size, in bytes */
-    24 * 1024,             /* Stack size, in bytes */
+    4 * 1024 * 1024,       /* Heap size, in bytes */
+    4 * 1024,              /* Stack size, in bytes */
     TA_FLAG_MULTI_SESSION, /* Flags */
     "1.0.0",               /* Version */
     "Sample enclave");     /* Description */
