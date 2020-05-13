@@ -395,6 +395,39 @@ done:
     return result;
 }
 
+oe_result_t _write_digest_file(OE_SHA256* digest, const char* digest_file)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    FILE* file = NULL;
+
+#ifdef _WIN32
+    if (fopen_s(&file, digest_file, "wb") != 0)
+#else
+    if (!(file = fopen(digest_file, "wb")))
+#endif
+    {
+        oe_err("Failed to open: %s", digest_file);
+        goto done;
+    }
+
+    if (fwrite(digest->buf, 1, sizeof(OE_SHA256), file) != sizeof(OE_SHA256))
+    {
+        oe_err("Failed to write: %s", digest_file);
+        goto done;
+    }
+
+    printf("Created %s\n", digest_file);
+    result = OE_OK;
+
+done:
+    if (file)
+    {
+        fclose(file);
+        file = NULL;
+    }
+    return result;
+}
+
 int oesign(
     const char* enclave,
     const char* conffile,
@@ -501,6 +534,9 @@ int oedigest(const char* enclave, const char* conffile, const char* digest_file)
         result);
 
     /* Write the sigstruct digest value to file */
+    OE_CHECK_NO_TRACE(_write_digest_file(&digest, digest_file));
+
+    ret = 0;
 
 done:
     return ret;
