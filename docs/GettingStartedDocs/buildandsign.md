@@ -136,8 +136,8 @@ Debug=0
 ## Signing an OP-TEE Enclave
 
 The `oesign` tool is currently SGX-only.  For OP-TEE enclaves, signing
-is instead performed by the `sign.py` script that comes with OP-TEE, and the
-script uses a key that is integrated into OP-TEE itself.  The signing key
+is instead performed by the `sign.py` script that comes with OP-TEE.
+The signing key
 and script, among other artifacts, are exported to a "TA Dev Kit" during
 OP-TEE's build process. The Open Enclave SDK takes a `OE_TA_DEV_KIT_DIR`
 CMake parameter at
