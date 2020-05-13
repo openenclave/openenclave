@@ -166,10 +166,10 @@ int run_all_tests()
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    512,  /* HeapPageCount */
-    256,  /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    512,  /* NumHeapPages */
+    256,  /* NumStackPages */
+    4);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* d7fe296a-24e9-46d1-aa78-9c7395082a41 */           \
@@ -183,6 +183,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     1 * 1024 * 1024,
     12 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "libc test")

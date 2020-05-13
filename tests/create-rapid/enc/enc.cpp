@@ -12,10 +12,10 @@ int test(int arg)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    8,    /* HeapPageCount */
-    8,    /* StackPageCount */
-    1);   /* TCSCount */
+    true, /* Debug */
+    8,    /* NumHeapPages */
+    8,    /* NumStackPages */
+    1);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* 688ab13f-5bc0-40af-8dc6-01d007fd2210 */           \
@@ -29,6 +29,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     1 * 1024 * 1024,
     12 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "Create Rapid test")

@@ -99,7 +99,7 @@ void enc_test_reentrancy()
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    128,  /* StackPageCount */
-    16);  /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    128,  /* NumStackPages */
+    16);  /* NumTCS */

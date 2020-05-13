@@ -19,7 +19,7 @@ void enc_ecall2_switchless(void)
 OE_SET_ENCLAVE_SGX(
     1,        /* ProductID */
     1,        /* SecurityVersion */
-    true,     /* AllowDebug */
-    64,       /* HeapPageCount */
-    64,       /* StackPageCount */
-    NUM_TCS); /* TCSCount */
+    true,     /* Debug */
+    64,       /* NumHeapPages */
+    64,       /* NumStackPages */
+    NUM_TCS); /* NumTCS */

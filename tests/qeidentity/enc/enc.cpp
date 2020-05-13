@@ -34,7 +34,7 @@ oe_result_t test_verify_qe_identity_info(
 OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

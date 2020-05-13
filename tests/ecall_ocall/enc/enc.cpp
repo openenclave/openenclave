@@ -148,7 +148,7 @@ void enc_make_ocall(int n)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    256,  /* HeapPageCount */
-    16,   /* StackPageCount */
-    5);   /* TCSCount */
+    true, /* Debug */
+    256,  /* NumHeapPages */
+    16,   /* NumStackPages */
+    5);   /* NumTCS */
