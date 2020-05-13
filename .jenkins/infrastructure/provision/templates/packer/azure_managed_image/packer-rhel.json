@@ -54,10 +54,6 @@
         "{{ user `ansible_group` }}"
       ],
       "playbook_file": "{{ user `ansible_dir` }}/{{ user `playbook_file_name` }}",
-      "extra_arguments": [
-        "--extra-vars",
-        "flc_enabled=false"
-      ],
       "ansible_env_vars": [
         "ANSIBLE_ROLES_PATH={{ user `ansible_dir` }}/roles",
         "ANSIBLE_INVENTORY={{ user `ansible_dir` }}/inventory",

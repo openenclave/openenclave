@@ -14,29 +14,23 @@ AGENTS_LABELS = [
 ]
 
 
-def simulationTest(String version, String platform_mode, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF') {
-    def has_quote_provider = "OFF"
-    if (platform_mode == "SGX1FLC") {
-        has_quote_provider = "ON"
-    }
-    stage("Sim clang-7 Ubuntu${version} ${platform_mode} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
+def simulationContainerTest(String version, String build_type, List extra_cmake_args = []) {
+    stage("Simulation Ubuntu ${version} clang-7 ${build_type}, extra_cmake_args: ${extra_cmake_args}") {
         node(AGENTS_LABELS["ubuntu-nonsgx"]) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
                 cleanWs()
                 checkout scm
+                def task = """
+                           cmake ${WORKSPACE}                                           \
+                               -G Ninja                                                 \
+                               -DCMAKE_BUILD_TYPE=${build_type}                         \
+                               -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
+                               ${extra_cmake_args.join(' ')}                            \
+                               -Wdev
+                           ninja -v
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                           """
                 withEnv(["OE_SIMULATION=1"]) {
-                    def task = """
-                               cmake ${WORKSPACE}                                            \
-                                    -G Ninja                                                 \
-                                    -DCMAKE_BUILD_TYPE=${build_type}                         \
-                                    -DHAS_QUOTE_PROVIDER=${has_quote_provider}               \
-                                    -DLVI_MITIGATION=${lvi_mitigation}                       \
-                                    -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
-                                    -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} \
-                                    -Wdev
-                               ninja -v
-                               ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
-                               """
                     oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-7", task, "--cap-add=SYS_PTRACE")
                 }
             }
@@ -104,36 +98,37 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
 
 try{
     oe.emailJobStatus('STARTED')
+    def testing_stages = [
+        "Check CI":                                { checkCI() },
+        "Check Developer Experience Ubuntu 16.04": { checkDevFlows('16.04') },
+        "Check Developer Experience Ubuntu 18.04": { checkDevFlows('18.04') },
+        "AArch64 1604 GNU gcc Debug":              { AArch64GNUTest('16.04', 'Debug') },
+        "AArch64 1604 GNU gcc Release":            { AArch64GNUTest('16.04', 'Release') },
+        "AArch64 1804 GNU gcc Debug":              { AArch64GNUTest('18.04', 'Debug') },
+        "AArch64 1804 GNU gcc Release":            { AArch64GNUTest('18.04', 'Release') }
+    ]
     if(FULL_TEST_SUITE == "true") {
-      stage("Full Test Suite") {
-        parallel "Check CI" :                                               { checkCI() },
-                 "Check Developer Experience Ubuntu 16.04" :                { checkDevFlows('16.04') },
-                 "Check Developer Experience Ubuntu 18.04" :                { checkDevFlows('18.04') },
-                 "AArch64 1604 GNU gcc Debug" :                             { AArch64GNUTest('16.04', 'Debug')},
-                 "AArch64 1604 GNU gcc Release" :                           { AArch64GNUTest('16.04', 'Release')},
-                 "AArch64 1804 GNU gcc Debug" :                             { AArch64GNUTest('18.04', 'Debug')},
-                 "AArch64 1804 GNU gcc Release" :                           { AArch64GNUTest('18.04', 'Release')},
-                 "Sim 1804 clang-7 SGX1 Debug" :                            { simulationTest('18.04', 'SGX1', 'Debug')},
-                 "Sim 1804 clang-7 SGX1 Release" :                          { simulationTest('18.04', 'SGX1', 'Release')},
-                 "Sim 1804 clang-7 SGX1-FLC Debug" :                        { simulationTest('18.04', 'SGX1FLC', 'Debug')},
-                 "Sim 1804 clang-7 SGX1-FLC Release" :                      { simulationTest('18.04', 'SGX1FLC', 'Release')}
-      }
+        stage("Full Test Suite") {
+            testing_stages += [
+                "Sim 1804 clang-7 SGX1 Debug":      { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-7 SGX1 Release":    { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-7 SGX1FLC Debug":   { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-7 SGX1FLC Release": { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) }
+            ]
+            parallel testing_stages
+        }
     } else {
-      stage("PR Testing") {
-        parallel "Check CI" :                                               { checkCI() },
-                 "Check Developer Experience Ubuntu 16.04" :                { checkDevFlows('16.04') },
-                 "Check Developer Experience Ubuntu 18.04" :                { checkDevFlows('18.04') },
-                 "AArch64 1604 GNU gcc Debug" :                             { AArch64GNUTest('16.04', 'Debug')},
-                 "AArch64 1604 GNU gcc Release" :                           { AArch64GNUTest('16.04', 'Release')},
-                 "AArch64 1804 GNU gcc Debug" :                             { AArch64GNUTest('18.04', 'Debug')},
-                 "AArch64 1804 GNU gcc Release" :                           { AArch64GNUTest('18.04', 'Release')},
-                 "Sim 1804 clang-7 SGX1 Release" :                          { simulationTest('18.04', 'SGX1', 'Release', 'ON')},
-                 "Sim 1804 clang-7 SGX1-FLC Debug" :                        { simulationTest('18.04', 'SGX1FLC', 'Debug', 'ON')},
-                 "Sim 1804 clang-7 SGX1-FLC Release" :                      { simulationTest('18.04', 'SGX1FLC', 'Release', 'ON')}
-      }
+        stage("PR Testing") {
+            testing_stages += [
+                "Sim 1804 clang-7 SGX1 Release":    { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "Sim 1804 clang-7 SGX1FLC Debug":   { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "Sim 1804 clang-7 SGX1FLC Release": { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) }
+            ]
+            parallel testing_stages
+        }
     }
 } catch(Exception e) {
-    println "Caught global pipeline exception :" + e
+    println "Caught global pipeline exception: " + e
     GLOBAL_ERROR = e
     throw e
 } finally {
