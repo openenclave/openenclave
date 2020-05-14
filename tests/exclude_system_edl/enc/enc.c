@@ -19,10 +19,10 @@ void enc_nanosleep()
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    1);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    1);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* b07e2f2c-b911-48d3-8c4f-a29831d604d2 */           \
@@ -36,6 +36,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     1 * 1024 * 1024,
     12 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "Exclude System EDL test")

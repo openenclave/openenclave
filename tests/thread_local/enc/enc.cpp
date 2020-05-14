@@ -178,7 +178,7 @@ void enclave_thread(int thread_num, int iters, int step)
 OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */
-    true, /* AllowDebug */
-    64,   /* HeapPageCount */
-    16,   /* StackPageCount */
-    16);  /* TCSCount */
+    true, /* Debug */
+    64,   /* NumHeapPages */
+    16,   /* NumStackPages */
+    16);  /* NumTCS */

@@ -74,10 +74,10 @@ void test_host_free(void_ptr in_ptr)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    128,  /* StackPageCount */
-    16);  /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    128,  /* NumStackPages */
+    16);  /* NumTCS */
 
 #define TA_UUID                                            \
     { /* 60814a64-61e9-4fd9-9159-e158d73f6a2e */           \
@@ -91,6 +91,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     1 * 1024 * 1024,
     12 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "Host Calls test")

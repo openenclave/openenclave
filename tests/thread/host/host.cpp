@@ -249,7 +249,7 @@ void* tcs_thread(oe_enclave_t* enclave, size_t expected_out_of_threads)
 void test_tcs_exhaustion(oe_enclave_t* enclave)
 {
     std::vector<std::thread> threads;
-    // Set the test_tcs_count to a value greater than the enclave TCSCount
+    // Set the test_tcs_count to a value greater than the enclave NumTCS
     const size_t test_tcs_req_count = enclave->num_bindings * 2;
     const size_t expected_out_of_threads = enclave->num_bindings;
     printf(

@@ -13,10 +13,10 @@ void foo_cpp(int a)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    256,  /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    256,  /* NumStackPages */
+    4);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* 952c55c8-59f3-47a0-814c-ae3276a9808f */           \
@@ -30,6 +30,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     1 * 1024 * 1024,
     12 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "Mixed C/C++ test")

@@ -41,10 +41,10 @@ int enc_c99_compliant()
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    256,  /* HeapPageCount */
-    256,  /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    256,  /* NumHeapPages */
+    256,  /* NumStackPages */
+    2);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* b843807a-e05c-423c-bcfb-1062cadb482f */           \
@@ -58,6 +58,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     1 * 1024 * 1024,
     12 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "C99-compliant test")

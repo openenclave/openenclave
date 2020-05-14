@@ -193,10 +193,10 @@ void test()
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* f0be7db0-ce7c-4dc4-b8c8-b161f4216225 */           \
@@ -210,6 +210,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     2 * 1024 * 1024,
     24 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "Crypto test")

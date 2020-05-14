@@ -32,7 +32,7 @@ int stay_in_ocall_ecall()
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    8,    /* HeapPageCount */
-    8,    /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    8,    /* NumHeapPages */
+    8,    /* NumStackPages */
+    4);   /* NumTCS */

@@ -55,7 +55,7 @@ void ecall_test_crls(
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */
