@@ -14,14 +14,14 @@ DOCKER_IMAGES_NAMES = ["oetools-full-16.04", "oetools-full-18.04", "oetools-mini
 AZURE_IMAGES_MAP = [
     // Mapping between shared gallery image definition name and
     // generated Azure managed image name
-    "ubuntu-16.04":    "${env.IMAGE_ID}-ubuntu-16.04-SGX",
-    "ubuntu-18.04":    "${env.IMAGE_ID}-ubuntu-18.04-SGX",
-    "rhel-8":          "${env.IMAGE_ID}-rhel-8-SGX",
-    "ws2016-nonSGX":   "${env.IMAGE_ID}-ws2016-nonSGX",
-    "ws2016-SGX":      "${env.IMAGE_ID}-ws2016-SGX",
-    "ws2016-SGX-DCAP": "${env.IMAGE_ID}-ws2016-SGX-DCAP",
-    "ws2019-SGX":      "${env.IMAGE_ID}-ws2019-SGX",
-    "ws2019-SGX-DCAP": "${env.IMAGE_ID}-ws2019-SGX-DCAP"
+    "ubuntu-16.04":         "${env.IMAGE_ID}-ubuntu-16.04-SGX",
+    "ubuntu-18.04":         "${env.IMAGE_ID}-ubuntu-18.04-SGX",
+    "rhel-8":               "${env.IMAGE_ID}-rhel-8-SGX",
+    "ws2016-nonSGX-gen2":   "${env.IMAGE_ID}-ws2016-nonSGX-gen2",
+    "ws2016-SGX-gen2":      "${env.IMAGE_ID}-ws2016-SGX-gen2",
+    "ws2016-SGX-DCAP-gen2": "${env.IMAGE_ID}-ws2016-SGX-DCAP-gen2",
+    "ws2019-SGX":           "${env.IMAGE_ID}-ws2019-SGX",
+    "ws2019-SGX-DCAP":      "${env.IMAGE_ID}-ws2019-SGX-DCAP"
 ]
 IMAGES_BUILD_LABEL = env.IMAGES_BUILD_LABEL ?: "nonSGX"
 
