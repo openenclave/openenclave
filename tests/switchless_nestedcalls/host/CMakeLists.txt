@@ -13,4 +13,4 @@ add_executable(switchless_nestedcalls_host host.c switchless_nestedcalls_u.c)
 
 target_include_directories(switchless_nestedcalls_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(switchless_nestedcalls_host oehostapp)
+target_link_libraries(switchless_nestedcalls_host oehost)

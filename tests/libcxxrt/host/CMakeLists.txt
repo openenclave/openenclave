@@ -14,4 +14,4 @@ add_executable(libcxxrt_host host.cpp libcxxrt_u.c)
 target_include_directories(libcxxrt_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                                  ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(libcxxrt_host oehostapp)
+target_link_libraries(libcxxrt_host oehost)

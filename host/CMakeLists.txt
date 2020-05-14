@@ -563,15 +563,8 @@ target_compile_definitions(
 set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY
                                     ${OE_LIBDIR}/openenclave/host)
 
-# Convenience library for creating a host-app (that needs the
-# -rdynamic link flag). We do this by default for the oehostverify target too.
-add_library(oehostapp INTERFACE)
-
-target_link_libraries(oehostapp INTERFACE oehost)
-
 if (UNIX)
   target_link_libraries(oehost INTERFACE -Wl,-z,noexecstack)
-  target_link_libraries(oehostapp INTERFACE -rdynamic)
   target_link_libraries(oehostverify INTERFACE -Wl,-z,noexecstack -rdynamic)
 endif ()
 
@@ -580,8 +573,6 @@ install(
   TARGETS oehost
   EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
-
-install(TARGETS oehostapp EXPORT openenclave-targets)
 
 install(
   TARGETS oehostverify

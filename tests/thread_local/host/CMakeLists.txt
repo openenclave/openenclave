@@ -15,4 +15,4 @@ target_include_directories(thread_local_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_options(thread_local_host
                        PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
-target_link_libraries(thread_local_host oehostapp)
+target_link_libraries(thread_local_host oehost)

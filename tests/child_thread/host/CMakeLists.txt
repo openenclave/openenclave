@@ -13,4 +13,4 @@ add_executable(child_thread_host host.cpp child_thread_u.c)
 
 target_include_directories(child_thread_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(child_thread_host oehostapp)
+target_link_libraries(child_thread_host oehost)

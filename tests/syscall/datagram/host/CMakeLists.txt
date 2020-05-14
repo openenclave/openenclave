@@ -14,4 +14,4 @@ add_executable(datagram_host host.c test_datagram_u.c)
 
 target_include_directories(datagram_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(datagram_host oehostapp)
+target_link_libraries(datagram_host oehost)

@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(pingpong_host host.cpp pingpong_u.c)
 
 target_include_directories(pingpong_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(pingpong_host oehostapp)
+target_link_libraries(pingpong_host oehost)

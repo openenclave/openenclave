@@ -3,4 +3,4 @@
 
 add_executable(test_win_paths host.cpp)
 
-target_link_libraries(test_win_paths oehostapp)
+target_link_libraries(test_win_paths oehost)

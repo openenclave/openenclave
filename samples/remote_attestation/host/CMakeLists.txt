@@ -21,4 +21,4 @@ if (WIN32)
   add_dependencies(remote_attestation_host remote_attestation_oedebugrt_target)
 endif ()
 
-target_link_libraries(remote_attestation_host openenclave::oehostapp)
+target_link_libraries(remote_attestation_host openenclave::oehost)

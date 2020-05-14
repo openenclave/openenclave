@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(mixed_c_cpp_host host.cpp mixed_u.c)
 
 target_include_directories(mixed_c_cpp_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(mixed_c_cpp_host oehostapp)
+target_link_libraries(mixed_c_cpp_host oehost)

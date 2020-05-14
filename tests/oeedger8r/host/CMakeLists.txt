@@ -82,4 +82,4 @@ if (NOT WIN32)
   target_compile_options(edl_host PUBLIC -fstrict-aliasing
                                          -Werror=strict-aliasing)
 endif ()
-target_link_libraries(edl_host oehostapp)
+target_link_libraries(edl_host oehost)

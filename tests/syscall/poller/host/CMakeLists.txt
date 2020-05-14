@@ -14,4 +14,4 @@ add_executable(poller_host host.cpp ../client.cpp ../server.cpp ../poller.cpp
 
 target_include_directories(poller_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(poller_host oehostapp)
+target_link_libraries(poller_host oehost)

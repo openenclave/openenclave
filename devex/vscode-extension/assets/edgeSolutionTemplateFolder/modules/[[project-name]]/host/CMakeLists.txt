@@ -35,7 +35,7 @@ target_compile_definitions([[project-name]] PRIVATE USE_EDGE_MODULES)
 
 target_include_directories([[project-name]] PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries([[project-name]] openenclave::oehostapp)
+target_link_libraries([[project-name]] openenclave::oehost)
 
 set(AZUREIOT_LIB_FOLDER "/usr/lib/aarch64-linux-gnu")
 find_library(CURL_LIBRARY curl HINTS ${AZUREIOT_LIB_FOLDER})

@@ -19,4 +19,4 @@ endif ()
 
 target_include_directories(libmbedtest_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                                     ..)
-target_link_libraries(libmbedtest_host oehostapp)
+target_link_libraries(libmbedtest_host oehost)

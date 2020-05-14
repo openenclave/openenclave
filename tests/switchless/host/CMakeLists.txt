@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(switchless_host host.c switchless_u.c)
 
 target_include_directories(switchless_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(switchless_host oehostapp)
+target_link_libraries(switchless_host oehost)

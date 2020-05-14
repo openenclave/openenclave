@@ -13,7 +13,7 @@ add_library(pingpong-shared-lib SHARED host.cpp pingpong_u.c)
 
 target_include_directories(pingpong-shared-lib
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(pingpong-shared-lib oehostapp)
+target_link_libraries(pingpong-shared-lib oehost)
 
 add_executable(pingpong-shared_host main.cpp)
 target_link_libraries(pingpong-shared_host pingpong-shared-lib)

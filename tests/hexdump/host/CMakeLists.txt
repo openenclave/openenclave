@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(hexdump_host host.c hexdump_u.c)
 
 target_include_directories(hexdump_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(hexdump_host oehostapp)
+target_link_libraries(hexdump_host oehost)

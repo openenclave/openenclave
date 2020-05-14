@@ -13,4 +13,4 @@ add_executable(c99_compliant_host host.c c99_compliant_u.c)
 
 target_include_directories(c99_compliant_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(c99_compliant_host oehostapp)
+target_link_libraries(c99_compliant_host oehost)

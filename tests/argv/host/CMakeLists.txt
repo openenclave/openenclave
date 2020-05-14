@@ -13,4 +13,4 @@ add_executable(argv_host host.c argv_u.c)
 
 target_include_directories(argv_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(argv_host oehostapp)
+target_link_libraries(argv_host oehost)

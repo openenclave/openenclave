@@ -18,4 +18,4 @@ target_include_directories(
   switchless_host PRIVATE # Needed for the generated file switchless_u.h
                           ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(switchless_host openenclave::oehostapp)
+target_link_libraries(switchless_host openenclave::oehost)

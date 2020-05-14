@@ -14,7 +14,7 @@ add_custom_command(
 add_executable(tls_host host.cpp tls_u.c)
 
 target_include_directories(tls_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(tls_host oehostapp)
+target_link_libraries(tls_host oehost)
 
 # On Windows, explicitly add the nuget dependencies for the DCAP client to the target executable
 if (WIN32)

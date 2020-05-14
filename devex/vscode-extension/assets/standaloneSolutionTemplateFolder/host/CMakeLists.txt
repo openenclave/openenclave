@@ -16,4 +16,4 @@ add_executable([[project-name]]
 
 target_include_directories([[project-name]] PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries([[project-name]] openenclave::oehostapp)
+target_link_libraries([[project-name]] openenclave::oehost)

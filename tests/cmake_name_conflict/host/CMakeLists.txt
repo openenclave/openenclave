@@ -12,4 +12,4 @@ add_executable(name_conflict_host host.cpp name_conflict_u.c name_conflict_u.h
 
 target_include_directories(name_conflict_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(name_conflict_host oehostapp)
+target_link_libraries(name_conflict_host oehost)
