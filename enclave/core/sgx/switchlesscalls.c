@@ -5,6 +5,7 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include "handle_ecall.h"
@@ -259,4 +260,21 @@ void oe_sgx_switchless_enclave_worker_thread_ecall(
             asm volatile("pause");
         }
     }
+}
+
+/*
+ * Stubs for ocalls in the event they are not included
+ */
+OE_WEAK oe_result_t
+oe_sgx_wake_switchless_worker_ocall(oe_host_worker_context_t* context)
+{
+    OE_UNUSED(context);
+    return OE_UNSUPPORTED;
+}
+
+OE_WEAK oe_result_t
+oe_sgx_sleep_switchless_worker_ocall(oe_enclave_worker_context_t* context)
+{
+    OE_UNUSED(context);
+    return OE_UNSUPPORTED;
 }

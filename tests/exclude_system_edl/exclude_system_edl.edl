@@ -9,7 +9,10 @@ enclave
     // function, --gc-sections does not clean up any unused syscalls. If
     // liboesyscall is linked, all syscall ocalls must be imported.
     from "syscall.edl" import *;
-    from "platform.edl" import *;
+    from "sgx/sgx_attestation.edl" import *;
+    from "sgx/cpu.edl" import *;
+    from "sgx/debug.edl" import *;
+    from "sgx/thread.edl" import *;
 
     trusted
     {

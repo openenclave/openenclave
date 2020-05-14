@@ -4,6 +4,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/utils.h>
@@ -422,3 +423,40 @@ oe_result_t oe_switchless_call_enclave_function(
         output_buffer_size,
         output_bytes_written);
 }
+
+// When EDL is builtin to liboehost, the strong version is always chosen.
+// This causes a linker warning with gcc/clang because the below functions
+// will never be linked.
+#if !defined(OE_USE_BUILTIN_EDL) || defined(_MSC_VER)
+/*
+ * Stubs for switchless.edl ecalls if they are not included in EDL
+ */
+static oe_result_t _oe_sgx_init_context_switchless_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    oe_host_worker_context_t* host_worker_contexts,
+    uint64_t num_host_workers)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(_retval);
+    OE_UNUSED(host_worker_contexts);
+    OE_UNUSED(num_host_workers);
+    return OE_UNSUPPORTED;
+}
+
+static oe_result_t _oe_sgx_switchless_enclave_worker_thread_ecall(
+    oe_enclave_t* enclave,
+    oe_enclave_worker_context_t* context)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(context);
+    return OE_UNSUPPORTED;
+}
+
+OE_WEAK_ALIAS(
+    _oe_sgx_init_context_switchless_ecall,
+    oe_sgx_init_context_switchless_ecall);
+OE_WEAK_ALIAS(
+    _oe_sgx_switchless_enclave_worker_thread_ecall,
+    oe_sgx_switchless_enclave_worker_thread_ecall);
+#endif
