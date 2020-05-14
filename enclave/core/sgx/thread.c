@@ -20,7 +20,7 @@
 **==============================================================================
 */
 
-static int _thread_wait(oe_thread_data_t* self)
+static int _thread_wait(oe_sgx_td_t* self)
 {
     const void* tcs = td_to_tcs((oe_sgx_td_t*)self);
 
@@ -30,7 +30,7 @@ static int _thread_wait(oe_thread_data_t* self)
     return 0;
 }
 
-static int _thread_wake(oe_thread_data_t* self)
+static int _thread_wake(oe_sgx_td_t* self)
 {
     const void* tcs = td_to_tcs((oe_sgx_td_t*)self);
 
@@ -40,7 +40,7 @@ static int _thread_wake(oe_thread_data_t* self)
     return 0;
 }
 
-static int _thread_wake_wait(oe_thread_data_t* waiter, oe_thread_data_t* self)
+static int _thread_wake_wait(oe_sgx_td_t* waiter, oe_sgx_td_t* self)
 {
     int ret = -1;
     uint64_t waiter_tcs = (uint64_t)td_to_tcs((oe_sgx_td_t*)waiter);
@@ -66,11 +66,11 @@ done:
 
 typedef struct _queue
 {
-    oe_thread_data_t* front;
-    oe_thread_data_t* back;
+    oe_sgx_td_t* front;
+    oe_sgx_td_t* back;
 } Queue;
 
-static void _queue_push_back(Queue* queue, oe_thread_data_t* thread)
+static void _queue_push_back(Queue* queue, oe_sgx_td_t* thread)
 {
     thread->next = NULL;
 
@@ -82,9 +82,9 @@ static void _queue_push_back(Queue* queue, oe_thread_data_t* thread)
     queue->back = thread;
 }
 
-static oe_thread_data_t* _queue_pop_front(Queue* queue)
+static oe_sgx_td_t* _queue_pop_front(Queue* queue)
 {
-    oe_thread_data_t* thread = queue->front;
+    oe_sgx_td_t* thread = queue->front;
 
     if (thread)
     {
@@ -97,9 +97,9 @@ static oe_thread_data_t* _queue_pop_front(Queue* queue)
     return thread;
 }
 
-static bool _queue_contains(Queue* queue, oe_thread_data_t* thread)
+static bool _queue_contains(Queue* queue, oe_sgx_td_t* thread)
 {
-    oe_thread_data_t* p;
+    oe_sgx_td_t* p;
 
     for (p = queue->front; p; p = p->next)
     {
@@ -144,14 +144,14 @@ bool oe_thread_equal(oe_thread_t thread1, oe_thread_t thread2)
 /* Internal mutex implementation */
 typedef struct _oe_mutex_impl
 {
-    /* Lock used to synchronize access to oe_thread_data_t queue */
+    /* Lock used to synchronize access to oe_sgx_td_t queue */
     oe_spinlock_t lock;
 
     /* Number of references to support recursive locking */
     unsigned int refs;
 
     /* The thread that has locked this mutex */
-    oe_thread_data_t* owner;
+    oe_sgx_td_t* owner;
 
     /* Queue of waiting threads (front holds the mutex) */
     Queue queue;
@@ -176,7 +176,7 @@ oe_result_t oe_mutex_init(oe_mutex_t* mutex)
 }
 
 /* Caller manages the spinlock */
-static int _mutex_lock(oe_mutex_impl_t* m, oe_thread_data_t* self)
+static int _mutex_lock(oe_mutex_impl_t* m, oe_sgx_td_t* self)
 {
     /* If this thread has already locked the mutex */
     if (m->owner == self)
@@ -217,7 +217,7 @@ static int _mutex_lock(oe_mutex_impl_t* m, oe_thread_data_t* self)
 oe_result_t oe_mutex_lock(oe_mutex_t* mutex)
 {
     oe_mutex_impl_t* m = (oe_mutex_impl_t*)mutex;
-    oe_thread_data_t* self = oe_get_thread_data();
+    oe_sgx_td_t* self = oe_sgx_get_td();
 
     if (!m)
         return OE_INVALID_PARAMETER;
@@ -253,7 +253,7 @@ oe_result_t oe_mutex_lock(oe_mutex_t* mutex)
 oe_result_t oe_mutex_trylock(oe_mutex_t* mutex)
 {
     oe_mutex_impl_t* m = (oe_mutex_impl_t*)mutex;
-    oe_thread_data_t* self = oe_get_thread_data();
+    oe_sgx_td_t* self = oe_sgx_get_td();
 
     if (!m)
         return OE_INVALID_PARAMETER;
@@ -272,10 +272,10 @@ oe_result_t oe_mutex_trylock(oe_mutex_t* mutex)
     return OE_BUSY;
 }
 
-static int _mutex_unlock(oe_mutex_t* mutex, oe_thread_data_t** waiter)
+static int _mutex_unlock(oe_mutex_t* mutex, oe_sgx_td_t** waiter)
 {
     oe_mutex_impl_t* m = (oe_mutex_impl_t*)mutex;
-    oe_thread_data_t* self = oe_get_thread_data();
+    oe_sgx_td_t* self = oe_sgx_get_td();
     int ret = -1;
 
     oe_spin_lock(&m->lock);
@@ -303,7 +303,7 @@ static int _mutex_unlock(oe_mutex_t* mutex, oe_thread_data_t** waiter)
 
 oe_result_t oe_mutex_unlock(oe_mutex_t* m)
 {
-    oe_thread_data_t* waiter = NULL;
+    oe_sgx_td_t* waiter = NULL;
 
     if (!m)
         return OE_INVALID_PARAMETER;
@@ -359,8 +359,8 @@ typedef struct _oe_cond_impl
     /* Queue of threads waiting on this condition variable */
     struct
     {
-        oe_thread_data_t* front;
-        oe_thread_data_t* back;
+        oe_sgx_td_t* front;
+        oe_sgx_td_t* back;
     } queue;
 } oe_cond_impl_t;
 
@@ -406,14 +406,14 @@ oe_result_t oe_cond_destroy(oe_cond_t* condition)
 oe_result_t oe_cond_wait(oe_cond_t* condition, oe_mutex_t* mutex)
 {
     oe_cond_impl_t* cond = (oe_cond_impl_t*)condition;
-    oe_thread_data_t* self = oe_get_thread_data();
+    oe_sgx_td_t* self = oe_sgx_get_td();
 
     if (!cond || !mutex)
         return OE_INVALID_PARAMETER;
 
     oe_spin_lock(&cond->lock);
     {
-        oe_thread_data_t* waiter = NULL;
+        oe_sgx_td_t* waiter = NULL;
 
         /* Add the self thread to the end of the wait queue */
         _queue_push_back((Queue*)&cond->queue, self);
@@ -455,7 +455,7 @@ oe_result_t oe_cond_wait(oe_cond_t* condition, oe_mutex_t* mutex)
 oe_result_t oe_cond_signal(oe_cond_t* condition)
 {
     oe_cond_impl_t* cond = (oe_cond_impl_t*)condition;
-    oe_thread_data_t* waiter;
+    oe_sgx_td_t* waiter;
 
     if (!cond)
         return OE_INVALID_PARAMETER;
@@ -481,15 +481,15 @@ oe_result_t oe_cond_broadcast(oe_cond_t* condition)
 
     oe_spin_lock(&cond->lock);
     {
-        oe_thread_data_t* p;
+        oe_sgx_td_t* p;
 
         while ((p = _queue_pop_front((Queue*)&cond->queue)))
             _queue_push_back(&waiters, p);
     }
     oe_spin_unlock(&cond->lock);
 
-    oe_thread_data_t* p_next = NULL;
-    for (oe_thread_data_t* p = waiters.front; p; p = p_next)
+    oe_sgx_td_t* p_next = NULL;
+    for (oe_sgx_td_t* p = waiters.front; p; p = p_next)
     {
         // p could wake up and immediately use a synchronization
         // primitive that could modify the next field.
@@ -519,7 +519,7 @@ typedef struct _oe_rwlock_impl
     uint32_t readers;
 
     /* The writer thread that currently owns this lock.*/
-    oe_thread_data_t* writer;
+    oe_sgx_td_t* writer;
 
     /* Queue of threads waiting on this variable. */
     Queue queue;
@@ -547,7 +547,7 @@ oe_result_t oe_rwlock_init(oe_rwlock_t* read_write_lock)
 oe_result_t oe_rwlock_rdlock(oe_rwlock_t* read_write_lock)
 {
     oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
-    oe_thread_data_t* self = oe_get_thread_data();
+    oe_sgx_td_t* self = oe_sgx_get_td();
 
     if (!rw_lock)
         return OE_INVALID_PARAMETER;
@@ -605,7 +605,7 @@ oe_result_t oe_rwlock_tryrdlock(oe_rwlock_t* read_write_lock)
 // _wake_waiters releases ownership of the spinlock.
 static oe_result_t _wake_waiters(oe_rwlock_impl_t* rw_lock)
 {
-    oe_thread_data_t* p = NULL;
+    oe_sgx_td_t* p = NULL;
     Queue waiters = {NULL, NULL};
 
     // Take a snapshot of current list of waiters.
@@ -655,7 +655,7 @@ static oe_result_t _rwlock_rdunlock(oe_rwlock_t* read_write_lock)
 oe_result_t oe_rwlock_wrlock(oe_rwlock_t* read_write_lock)
 {
     oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
-    oe_thread_data_t* self = oe_get_thread_data();
+    oe_sgx_td_t* self = oe_sgx_get_td();
 
     if (!rw_lock)
         return OE_INVALID_PARAMETER;
@@ -694,7 +694,7 @@ oe_result_t oe_rwlock_wrlock(oe_rwlock_t* read_write_lock)
 oe_result_t oe_rwlock_trywrlock(oe_rwlock_t* read_write_lock)
 {
     oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
-    oe_thread_data_t* self = oe_get_thread_data();
+    oe_sgx_td_t* self = oe_sgx_get_td();
 
     if (!rw_lock)
         return OE_INVALID_PARAMETER;
@@ -717,7 +717,7 @@ oe_result_t oe_rwlock_trywrlock(oe_rwlock_t* read_write_lock)
 static oe_result_t _rwlock_wrunlock(oe_rwlock_t* read_write_lock)
 {
     oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
-    oe_thread_data_t* self = oe_get_thread_data();
+    oe_sgx_td_t* self = oe_sgx_get_td();
 
     if (!rw_lock)
         return OE_INVALID_PARAMETER;
@@ -770,7 +770,7 @@ oe_result_t oe_rwlock_destroy(oe_rwlock_t* read_write_lock)
 oe_result_t oe_rwlock_unlock(oe_rwlock_t* read_write_lock)
 {
     oe_rwlock_impl_t* rw_lock = (oe_rwlock_impl_t*)read_write_lock;
-    oe_thread_data_t* self = oe_get_thread_data();
+    oe_sgx_td_t* self = oe_sgx_get_td();
 
     if (!rw_lock)
         return OE_INVALID_PARAMETER;
