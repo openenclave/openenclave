@@ -29,7 +29,7 @@ oe_result_t oe_verify_remote_report(
 
     // The two host side attestation API's are oe_get_report and
     // oe_verify_report. Initialize the quote provider in both these APIs.
-    OE_CHECK(oe_initialize_quote_provider());
+    // OE_CHECK(oe_initialize_quote_provider());
 
     // Ensure that the report is parseable before using the header.
     OE_CHECK(oe_parse_report(report, report_size, &oe_report));

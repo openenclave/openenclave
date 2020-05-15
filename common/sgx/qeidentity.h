@@ -9,6 +9,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include "endorsements.h"
 
 OE_EXTERNC_BEGIN

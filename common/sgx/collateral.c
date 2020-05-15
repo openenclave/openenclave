@@ -203,7 +203,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral_from_certs(
         parsed_extension_info.fmspc,
         sizeof(parsed_extension_info.fmspc)));
 
-    OE_CHECK(oe_get_sgx_quote_verification_collateral(args));
+    // OE_CHECK(oe_get_sgx_quote_verification_collateral(args));
 
     result = OE_OK;
 done:

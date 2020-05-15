@@ -237,24 +237,24 @@ if (OE_SGX AND WIN32)
       -I${OE_INCDIR} ${CMAKE_CURRENT_SOURCE_DIR}/sgx/enter.c -o enter.obj)
 endif ()
 
+list(
+  APPEND
+  PLATFORM_HOST_ONLY_SRC
+  ../common/sgx/endorsements.c
+  ../common/sgx/qeidentity.c
+  ../common/sgx/quote.c
+  ../common/sgx/report.c
+  ../common/sgx/report_helper.c
+  ../common/sgx/collateral.c
+  ../common/sgx/sgxcertextensions.c
+  ../common/sgx/tcbinfo.c
+  ../common/sgx/tlsverifier.c
+  ../common/sgx/verifier.c
+  sgx/hostverify_report.c)
+  # sgx/sgxquoteprovider.c)
+
 # SGX specific files.
 if (OE_SGX)
-  list(
-    APPEND
-    PLATFORM_HOST_ONLY_SRC
-    ../common/sgx/endorsements.c
-    ../common/sgx/qeidentity.c
-    ../common/sgx/quote.c
-    ../common/sgx/report.c
-    ../common/sgx/report_helper.c
-    ../common/sgx/collateral.c
-    ../common/sgx/sgxcertextensions.c
-    ../common/sgx/tcbinfo.c
-    ../common/sgx/tlsverifier.c
-    ../common/sgx/verifier.c
-    sgx/hostverify_report.c
-    sgx/sgxquoteprovider.c)
-
   list(
     APPEND
     PLATFORM_SDK_ONLY_SRC
