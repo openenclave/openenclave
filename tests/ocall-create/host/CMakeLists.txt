@@ -14,4 +14,4 @@ add_executable(ocall_create_host host.c ocall_create_u.c)
 target_include_directories(ocall_create_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(ocall_create_host oehostapp)
+target_link_libraries(ocall_create_host oehost)

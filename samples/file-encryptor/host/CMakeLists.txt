@@ -20,4 +20,4 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} # Needed for #include "../shared.h"
           ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(file-encryptor_host openenclave::oehostapp)
+target_link_libraries(file-encryptor_host openenclave::oehost)

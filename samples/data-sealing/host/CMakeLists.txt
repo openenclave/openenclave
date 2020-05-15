@@ -20,4 +20,4 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../ # For common/shared.h
           ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(data-sealing_host openenclave::oehostapp)
+target_link_libraries(data-sealing_host openenclave::oehost)

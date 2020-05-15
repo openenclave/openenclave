@@ -14,4 +14,4 @@ add_executable(SampleAppHost SampleAppHost.cpp SampleApp_u.c)
 target_include_directories(SampleAppHost PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                                  ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(SampleAppHost oehostapp)
+target_link_libraries(SampleAppHost oehost)

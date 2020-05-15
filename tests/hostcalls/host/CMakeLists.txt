@@ -13,4 +13,4 @@ add_executable(hostcalls_host host.cpp hostcalls_u.c)
 
 target_include_directories(hostcalls_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                                   ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(hostcalls_host oehostapp)
+target_link_libraries(hostcalls_host oehost)

@@ -14,4 +14,4 @@ add_executable(dup_host host.c test_dup_u.c)
 
 target_include_directories(dup_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(dup_host oehostapp)
+target_link_libraries(dup_host oehost)

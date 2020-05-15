@@ -13,4 +13,4 @@ add_custom_command(
 add_executable(socketpair_host host.c socketpair_test_u.c)
 
 target_include_directories(socketpair_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(socketpair_host oehostapp)
+target_link_libraries(socketpair_host oehost)

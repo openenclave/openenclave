@@ -13,4 +13,4 @@ add_executable(initializers_host host.cpp initializers_u.c)
 
 target_include_directories(initializers_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(initializers_host oehostapp)
+target_link_libraries(initializers_host oehost)

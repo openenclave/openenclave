@@ -163,7 +163,7 @@ set(HOSTVERIFY_CLIBS
     "-rdynamic -Wl,-z,noexecstack -L\${libdir}/openenclave/host -loehostverify -ldl -lpthread"
 )
 set(HOST_CLIBS
-    "-rdynamic -Wl,-z,noexecstack -L\${libdir}/openenclave/host -loehost -ldl -lpthread ${SGX_LIBS}"
+    "-Wl,-z,noexecstack -L\${libdir}/openenclave/host -loehost -ldl -lpthread ${SGX_LIBS}"
 )
 
 set(HOSTVERIFY_CXXLIBS "${HOSTVERIFY_CLIBS}")

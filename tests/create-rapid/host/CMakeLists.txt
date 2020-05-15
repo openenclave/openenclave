@@ -13,4 +13,4 @@ add_executable(create_rapid_host host.cpp create_rapid_u.c)
 
 target_include_directories(create_rapid_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(create_rapid_host oehostapp)
+target_link_libraries(create_rapid_host oehost)

@@ -11,7 +11,7 @@ add_custom_command(
 
 add_executable(VectorException_host host.c VectorException_u.c)
 
-target_link_libraries(VectorException_host oehostapp)
+target_link_libraries(VectorException_host oehost)
 
 target_include_directories(VectorException_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

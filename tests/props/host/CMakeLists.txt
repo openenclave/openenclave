@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(props_host host.c props_u.c)
 
 target_include_directories(props_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(props_host oehostapp)
+target_link_libraries(props_host oehost)

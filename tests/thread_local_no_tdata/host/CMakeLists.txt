@@ -14,4 +14,4 @@ add_executable(no_tdata_host host.cpp no_tdata_u.c)
 target_include_directories(no_tdata_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_options(no_tdata_host
                        PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
-target_link_libraries(no_tdata_host oehostapp)
+target_link_libraries(no_tdata_host oehost)

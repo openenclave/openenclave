@@ -13,4 +13,4 @@ add_executable(epoll_host host.cpp epoll_u.c)
 
 target_include_directories(epoll_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(epoll_host oehostapp)
+target_link_libraries(epoll_host oehost)

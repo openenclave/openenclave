@@ -14,4 +14,4 @@ add_executable(stdcxx_host host.cpp stdcxx_u.c)
 target_include_directories(stdcxx_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                                ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(stdcxx_host oehostapp)
+target_link_libraries(stdcxx_host oehost)

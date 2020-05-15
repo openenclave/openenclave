@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(safecrt_host ../common/test.cpp host.cpp safecrt_u.c)
 
 target_include_directories(safecrt_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(safecrt_host oehostapp)
+target_link_libraries(safecrt_host oehost)

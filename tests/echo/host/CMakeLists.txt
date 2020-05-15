@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(echo_host host.c echo_u.c)
 
 target_include_directories(echo_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(echo_host oehostapp)
+target_link_libraries(echo_host oehost)
