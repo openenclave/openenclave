@@ -15,7 +15,7 @@
 
 OE_EXTERNC_BEGIN
 
-// #include <user_ta_header.h>
+#include <user_ta_header.h>
 
 #define TA_FRAMEWORK_STACK_SIZE 2048
 

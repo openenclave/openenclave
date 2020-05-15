@@ -401,12 +401,12 @@ oe_result_t oe_get_sgx_endorsements(
         oe_result_str(result));
 
     // Get quote verification collateral
-    // OE_CHECK_MSG(
-    //     oe_get_sgx_quote_verification_collateral_from_certs(
-    //         &leaf_cert, &quote_verification_collateral),
-    //     "Failed to get certificate quote verification collateral information. "
-    //     "%s",
-    //     oe_result_str(result));
+    OE_CHECK_MSG(
+        oe_get_sgx_quote_verification_collateral_from_certs(
+            &leaf_cert, &quote_verification_collateral),
+        "Failed to get certificate quote verification collateral information. "
+        "%s",
+        oe_result_str(result));
 
     OE_CHECK_MSG(
         oe_create_sgx_endorsements(
@@ -422,8 +422,8 @@ done:
     oe_cert_free(&leaf_cert);
     oe_cert_free(&intermediate_cert);
     oe_cert_chain_free(&pck_cert_chain);
-    // oe_free_sgx_quote_verification_collateral_args(
-    //     &quote_verification_collateral);
+    oe_free_sgx_quote_verification_collateral_args(
+        &quote_verification_collateral);
 
     OE_TRACE_INFO(
         "Exit call %s: %d(%s)\n", __FUNCTION__, result, oe_result_str(result));
