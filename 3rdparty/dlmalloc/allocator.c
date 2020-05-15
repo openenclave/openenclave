@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/enclave.h>
 #include <openenclave/internal/allocator.h>
 
 #define HAVE_MMAP 0
