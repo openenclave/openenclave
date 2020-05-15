@@ -31,3 +31,4 @@
 # The result of printf on host side is based on the OS. Thus it is better to
 # use different bench files on different host OS and let git ignore it.
 /tests/print/results/**           -text -eol
+/tests/libcxxrt/results/**        -text -eol
