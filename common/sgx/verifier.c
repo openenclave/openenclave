@@ -3,11 +3,11 @@
 
 #include <openenclave/attestation/plugin.h>
 #include <openenclave/attestation/sgx/verifier.h>
-#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgx/plugin.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 
 #include "../common.h"
 #include "endorsements.h"

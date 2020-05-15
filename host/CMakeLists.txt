@@ -251,7 +251,7 @@ list(
   ../common/sgx/tlsverifier.c
   ../common/sgx/verifier.c
   sgx/hostverify_report.c)
-# sgx/sgxquoteprovider.c)
+  # sgx/sgxquoteprovider.c)
 
 # SGX specific files.
 if (OE_SGX)

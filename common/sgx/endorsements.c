@@ -404,8 +404,7 @@ oe_result_t oe_get_sgx_endorsements(
     // OE_CHECK_MSG(
     //     oe_get_sgx_quote_verification_collateral_from_certs(
     //         &leaf_cert, &quote_verification_collateral),
-    //     "Failed to get certificate quote verification collateral information.
-    //     "
+    //     "Failed to get certificate quote verification collateral information. "
     //     "%s",
     //     oe_result_str(result));
 
