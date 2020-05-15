@@ -15,6 +15,14 @@ add_executable(host_verify host.c)
 
 target_include_directories(host_verify PRIVATE)
 
+if (BUILD_HOSTVERIFY_INLINE)
+  install(
+    TARGETS host_verify
+    EXPORT openenclave-targets
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+    COMPONENT OEHOSTVERIFY)
+endif ()
+
 if (NOT BUILD_HOSTVERIFY_INLINE)
   target_link_libraries(host_verify openenclave::oehostverify)
   add_custom_target(run DEPENDS host_verify)
