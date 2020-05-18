@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <errno.h>
 #include <openenclave/host_verify.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,20 +22,23 @@ bool read_binary_file(
     uint8_t** data_ptr,
     size_t* size_ptr)
 {
-    FILE* fp = fopen(filename, "rb");
     size_t size = 0;
     uint8_t* data = NULL;
     size_t bytes_read = 0;
     bool result = false;
+    FILE* fp = NULL;
+#ifdef _WIN32
+    if (fopen_s(&fp, filename, "rb") != 0)
+#else
+    if (!(fp = fopen(filename, "rb")))
+#endif
+    {
+        fprintf(stderr, "Failed to open: %s\n", filename);
+        goto exit;
+    }
 
     *data_ptr = NULL;
     *size_ptr = 0;
-
-    if (fp == NULL)
-    {
-        fprintf(stderr, "Failed to find file: %s\n", filename);
-        goto exit;
-    }
 
     // Find file size
     size = get_filesize(fp);
