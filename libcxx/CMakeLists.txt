@@ -12,11 +12,16 @@ maybe_build_using_clangw(oelibcxx)
 # in all the public compile options, compile definitions, and include
 # directories of these targets and their dependencies (such as
 # `oelibc`). Hence this file has more comments than code.
-enclave_link_libraries(oelibcxx
-  PUBLIC libcxx libcxxrt libunwind)
+enclave_link_libraries(oelibcxx PUBLIC libcxx libcxxrt libunwind)
 
-set_enclave_property(TARGET oelibcxx
-  PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/enclave)
+set_enclave_property(TARGET oelibcxx PROPERTY ARCHIVE_OUTPUT_DIRECTORY
+                     ${OE_LIBDIR}/enclave)
 
-install_enclaves(TARGETS oelibcxx EXPORT openenclave-targets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install_enclaves(
+  TARGETS
+  oelibcxx
+  EXPORT
+  openenclave-targets
+  ARCHIVE
+  DESTINATION
+  ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

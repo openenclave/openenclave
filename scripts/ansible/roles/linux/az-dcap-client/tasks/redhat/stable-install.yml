@@ -15,26 +15,12 @@
   git:
     repo: "{{ git_repo_url }}"
     dest: "{{ git_local_dir }}"
+    version: "{{ git_repo_branch }}"
     update: yes
     force: yes
 
-- name: Get latest git tag
-  shell: git describe --tags `git rev-list --tags --max-count=1`
-  register: latest_tag
-  args:
-    chdir: "{{ git_local_dir }}"
-
-- name: Checkout to latest git tag
-  git:
-    repo: "{{ git_repo_url }}"
-    dest: "{{ git_local_dir }}"
-    version: "{{ latest_tag.stdout }}"
-    clone: no
-    update: yes
-
 - name: Pull prerequisites and setup Makefile
   shell: ./configure
-  register: latest_tag
   args:
     chdir: "{{ git_local_dir }}/src/Linux"
 
@@ -46,6 +32,13 @@
   make:
     target: install
     chdir: "{{ git_local_dir }}/src/Linux"
+
+- name: Create symlink from /usr/local/lib to /usr/lib64
+  file:
+    src: /usr/local/lib/libdcap_quoteprov.so
+    dest: /usr/lib64/libdcap_quoteprov.so
+    force: yes
+    state: link
 
 - name: Cleanup installation
   file:

@@ -1,12 +1,13 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set (EDL_FILE ../props.edl)
+set(EDL_FILE ../props.edl)
 
 add_custom_command(
-    OUTPUT props_u.h props_u.c
-    DEPENDS ${EDL_FILE} edger8r
-    COMMAND edger8r --untrusted ${EDL_FILE} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+  OUTPUT props_u.h props_u.c
+  DEPENDS ${EDL_FILE} edger8r
+  COMMAND edger8r --untrusted ${EDL_FILE} --search-path
+          ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(props_host host.c props_u.c)
 

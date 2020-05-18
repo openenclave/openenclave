@@ -10,10 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+### Added
+- Added `oe_sgx_get_signer_id_from_public_key()` function which helps a verifier of SGX
+  reports extract the expected MRSIGNER value from the signer's public key PEM certificate.
+
+### Changed
+- Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
+
 [0.9.0][v0.9.0_log]
 ------------
 
 ### Added
+- Complete support for inttypes.h and stdlib.h in oelibc. See docs/LibcSupport.md for more details.
 - Support for Simulation Mode on Windows. Simulation mode only runs on systems with SGX enabled.
 - Support `transition_using_threads` EDL attribute for ecalls in oeedger8r.
   OE SDK now supports both switchless OCALLs and ECALLs.
@@ -22,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   are intended to be used by generated code and are not part of the OE public
   API surface.
 - Support for Windows Server 2019.
+- Experimental support for RHEL8.
 - Preview versions of VSCode and Visual Studio Extensions for OE are now part of the github repo.
 - Experimental support for enclave file system APIs on Windows host.
 - oelibcxx now supports up to `std=c++17`. Please see docs/LibcxxSupport.md for more details.
@@ -29,11 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   OCalls and ECalls into OE libraries as before. If it is set to off, each enclave
   application must import the ECalls/OCalls it needs into its own EDL file from
   `{OE_INSTALL_PATH}/include/openenclave/edl`.
+- Experimental support for snmalloc. To use snmalloc, build the SDK from source using -DUSE_SNMALLOC=ON.
 
 ### Changed
 - Moved `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`, and
   `oe_asymmetric_key_params_t` to `bits/asym_keys.h` from `bits/types.h`.
-- Update OE SDK on Windows to depend on OpenSSL version 1.1.1f.
 - Windows host libraries in the Open Enclave NuGet package have been compiled with /WX /W3 enabled.
 - Attestation plugin APIs in include/openenclave/attestation/plugin.h are marked experimental.
 
@@ -83,8 +92,8 @@ release notes for the set of issues addressed.
 [v0.8.1][v0.8.1_log] - 2020-02-07
 ---------------------
 
-### Fixed 
-- Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523. 
+### Fixed
+- Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523.
 
 ### Changed
 - `oe_random()` now depends on the hardware-based source of RNG instead of cryptography libraries.

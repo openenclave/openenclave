@@ -22,10 +22,6 @@
 #include "tests.h"
 #include "utils.h"
 
-/* Forward declarations for OS-agnostic memalign */
-void oe_memalign_free(void* ptr);
-void* oe_memalign(size_t alignment, size_t size);
-
 /* _CERT loads ec_cert_with_ext.pem
  * _SGX_CERT loads ec_cert_crl_distribution.pem
  * _CERT_WITHOUT_EXTENSIONS loads leaf.ec.crt.pem
@@ -896,7 +892,12 @@ static void _test_crl_distribution_points(void)
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     {
-        uint8_t* buffer = (uint8_t*)oe_memalign(8, buffer_size);
+        // Earlier version of this test used to do
+        //       uint8_t* buffer = (uint8_t*)oe_memalign(8, buffer_size);
+        // This is not necessary since, malloc returns memory that is
+        // aligned for objects of any type, including void* which has size
+        // of 8 bytes.
+        uint8_t* buffer = (uint8_t*)malloc(buffer_size);
         if (!buffer)
         {
             OE_PRINT(
@@ -917,7 +918,7 @@ static void _test_crl_distribution_points(void)
         OE_TEST(strcmp(urls[0], _URL) == 0);
 
         printf("URL{%s}\n", urls[0]);
-        oe_memalign_free(buffer);
+        free(buffer);
 
         OE_TEST(r == OE_OK);
     }

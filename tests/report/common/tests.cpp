@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "../common/tests.h"
+#include <openenclave/attestation/sgx/report.h>
 #include <openenclave/internal/crypto/cmac.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
@@ -17,6 +18,9 @@
 #include "../../../common/sgx/quote.h"
 
 #include <time.h>
+#include <array>
+
+using namespace std;
 
 /**
  * Get collateral data which can be used with future function
@@ -1386,4 +1390,72 @@ void test_verify_report_with_collaterals()
 
     collaterals_buffer_ptr = NULL;
     report_buffer_ptr = NULL;
+}
+
+void test_get_signer_id_from_public_key()
+{
+    static const char pem[] =
+        "-----BEGIN PUBLIC KEY-----\n"
+        "MIIBoDANBgkqhkiG9w0BAQEFAAOCAY0AMIIBiAKCAYEAqhEGbnOzUfNffyL98nRj\n"
+        "FOXYb+4d1Q/CluY3GlbDFv9OphD9zwY8TnSUz/cIBMdphAadGlnjIi8SS9Yey1If\n"
+        "RcIW1pMnRaAS8J1Kwh9WgBqBZlA/bFB4a45ZC16l+oeG5/u3MeQsKDsNIT1kfHJD\n"
+        "Sb18UHlvEPNcrzIDy+TAcAhd7q/aav1lDp28TgT7kUdVb5HitBzBQ67s4/L6Xzlo\n"
+        "yAMqSybT56nnTeADcNa/tvom8vqz0lZ5nXAQ7ZAhGKJKCWk+9aT5oxLNBCrUYQ+U\n"
+        "tnJ8429uzBYvG/fyaMcAGjkcfnW2irYSpwfFbpN6Ew2252V6O6KYTcFGKBGQaXKe\n"
+        "zflTOOQ6yRUr5a4GqwTsVc6TH+NvpIyL1SgY2zzSkwciqTRyHBh7UpfCC3E3ZNJK\n"
+        "T4CUPXu5eINL6v2Wmz8CRbc2hoPoD+oIvLoqcgClihZs3XlGp3D6ULEgKBP5ortC\n"
+        "gpUbitgtA0zGLrQlJhKHVkGgwxax1U9wLHPNLxzzsGaJAgED\n"
+        "-----END PUBLIC KEY-----\n";
+
+    static const array<uint8_t, OE_SIGNER_ID_SIZE> expected_signer_id{
+        0x6c, 0x1c, 0x59, 0xc8, 0x9e, 0xd4, 0xdd, 0x98, 0x25, 0x64, 0x94,
+        0x94, 0xfc, 0xb2, 0xeb, 0xf9, 0x6a, 0x8a, 0x61, 0x7a, 0x1d, 0x05,
+        0x89, 0xfe, 0x01, 0x47, 0xf0, 0xef, 0x1b, 0x3f, 0x78, 0x4d};
+
+    array<uint8_t, OE_SIGNER_ID_SIZE> actual_signer_id{};
+    size_t size = actual_signer_id.size();
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), actual_signer_id.data(), &size) == OE_OK);
+    OE_TEST(size == OE_SIGNER_ID_SIZE);
+    OE_TEST(expected_signer_id == actual_signer_id);
+
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            nullptr, sizeof(pem), actual_signer_id.data(), &size) ==
+        OE_INVALID_PARAMETER);
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, 0, actual_signer_id.data(), &size) == OE_INVALID_PARAMETER);
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem) - 1, actual_signer_id.data(), &size) ==
+        OE_INVALID_PARAMETER);
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), nullptr, nullptr) == OE_INVALID_PARAMETER);
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), actual_signer_id.data(), nullptr) ==
+        OE_INVALID_PARAMETER);
+
+    size = 0;
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), actual_signer_id.data(), &size) ==
+        OE_BUFFER_TOO_SMALL);
+    OE_TEST(size == OE_SIGNER_ID_SIZE);
+
+    size = 0;
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), nullptr, &size) == OE_BUFFER_TOO_SMALL);
+    OE_TEST(size == OE_SIGNER_ID_SIZE);
+
+    size = OE_SIGNER_ID_SIZE - 1;
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), actual_signer_id.data(), &size) ==
+        OE_BUFFER_TOO_SMALL);
+    OE_TEST(size == OE_SIGNER_ID_SIZE);
 }

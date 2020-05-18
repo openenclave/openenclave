@@ -14,11 +14,11 @@ OETOOLS_REPO = "oejenkinscidockerregistry.azurecr.io"
 OETOOLS_REPO_CREDENTIALS_ID = "oejenkinscidockerregistry"
 AZURE_IMAGES_MAP = [
     "win2016": [
-        "image": "MicrosoftWindowsServer:confidential-compute-preview:acc-windows-server-2016-datacenter:latest",
-        "generation": "V1"
+        "image": "MicrosoftWindowsServer:WindowsServer:2016-datacenter-gensecond:latest",
+        "generation": "V2"
     ],
     "win2019": [
-        "image": "MicrosoftWindowsServer:WindowsServer:2019-datacenter-with-containers-g2:latest",
+        "image": "MicrosoftWindowsServer:WindowsServer:2019-datacenter-gensecond:latest",
         "generation": "V2"
     ]
 ]
@@ -88,6 +88,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                 def managed_image_name_id = get_image_id()
                 def gallery_image_version = get_image_version()
                 def vm_rg_name = "build-${managed_image_name_id}-${img_name_suffix}-${BUILD_NUMBER}"
+                def vm_name = "${os_series}-vm"
                 def jenkins_rg_name = params.JENKINS_RESOURCE_GROUP
                 def jenkins_vnet_name = params.JENKINS_VNET_NAME
                 def jenkins_subnet_name = params.JENKINS_SUBNET_NAME
@@ -112,7 +113,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                         VM_ID=`az vm create \
                             --resource-group ${vm_rg_name} \
                             --location ${REGION} \
-                            --name ${img_name_suffix} \
+                            --name ${vm_name} \
                             --size Standard_DC4s \
                             --os-disk-size-gb 128 \
                             --subnet \$SUBNET_ID \
@@ -124,7 +125,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
 
                         az vm run-command invoke \
                             --resource-group ${vm_rg_name} \
-                            --name ${img_name_suffix} \
+                            --name ${vm_name} \
                             --command-id EnableRemotePS
 
                         PRIVATE_IP=`echo \$VM_DETAILS | jq -r '.privateIps'`
@@ -141,7 +142,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
 
                         az vm run-command invoke \
                             --resource-group ${vm_rg_name} \
-                            --name ${img_name_suffix} \
+                            --name ${vm_name} \
                             --command-id RunPowerShellScript \
                             --scripts @$WORKSPACE/.jenkins/infrastructure/provision/run-sysprep.ps1
 
@@ -202,8 +203,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
 parallel "Build Ubuntu 16.04"              : { buildLinuxManagedImage("ubuntu", "16.04") },
          "Build Ubuntu 18.04"              : { buildLinuxManagedImage("ubuntu", "18.04") },
          "Build RHEL 8"                    : { buildLinuxManagedImage("rhel", "8") },
-         "Build Windows 2016 SGX1"         : { buildWindowsManagedImage("win2016", "ws2016-SGX", "SGX1") },
-         "Build Windows 2016 SGX1FLC DCAP" : { buildWindowsManagedImage("win2016", "ws2016-SGX-DCAP", "SGX1FLC") },
-         "Build Windows 2016 nonSGX"       : { buildWindowsManagedImage("win2016", "ws2016-nonSGX", "SGX1FLC-NoDriver") },
+         "Build Windows 2016 SGX1"         : { buildWindowsManagedImage("win2016", "ws2016-SGX-gen2", "SGX1") },
+         "Build Windows 2016 SGX1FLC DCAP" : { buildWindowsManagedImage("win2016", "ws2016-SGX-DCAP-gen2", "SGX1FLC") },
+         "Build Windows 2016 nonSGX"       : { buildWindowsManagedImage("win2016", "ws2016-nonSGX-gen2", "SGX1FLC-NoDriver") },
          "Build Windows 2019 SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1-NoDriver") },
          "Build Windows 2019 SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC-NoDriver") }

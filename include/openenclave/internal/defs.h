@@ -7,8 +7,22 @@
 #include <openenclave/bits/defs.h>
 
 /* OE_WEAK_ALIAS */
+#ifdef __GNUC__
 #define OE_WEAK_ALIAS(OLD, NEW) \
     extern __typeof(OLD) NEW __attribute__((__weak__, alias(#OLD)))
+#elif _MSC_VER
+#define OE_WEAK_ALIAS(OLD, NEW) \
+    __pragma(comment(linker, "/alternatename:" #NEW "=" #OLD))
+#else
+#error OE_WEAK_ALIAS not implemented
+#endif
+
+/* OE_WEAK */
+#ifdef __GNUC__
+#define OE_WEAK __attribute__((weak))
+#else
+#define OE_WEAK
+#endif
 
 /* OE_ZERO_SIZED_ARRAY */
 #ifdef _WIN32

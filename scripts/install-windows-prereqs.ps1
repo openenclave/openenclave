@@ -5,8 +5,8 @@
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
     [string]$GitHash = '5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793',
-    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1f.exe',
-    [string]$OpenSSLHash = '3571bf0fc253312fb7289a12d0f543e5a63846bc628cf94b0bf25f73cf5fd641',
+    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1g.exe',
+    [string]$OpenSSLHash = 'c85a21661e6596e2a22799b7b56ba49ce8193a4fd89945b77086074ddad6065f',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
@@ -16,24 +16,26 @@ Param(
     [string]$NodeHash = 'F68B75EEA46232ADB8FD38126C977DC244166D29E7C6CD2DF930B460C38590A9',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
     [string]$Clang7Hash = '672E4C420D6543A8A9F8EC5F1E5F283D88AC2155EF4C57232A399160A02BFF57',
-    [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16464/Intel%20SGX%20PSW%20for%20Windows%20v2.7.100.2.exe',
-    [string]$IntelPSWHash = 'FA57D8D3E7E7B954F6267D91A174E7D477D2010199DBAAC635F54A98A2A8070D',
+    [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16607/Intel%20SGX%20PSW%20for%20Windows%20v2.7.101.2.exe',
+    [string]$IntelPSWHash = 'AF669A4593411E9AABCE18838C91003866DDDEDAC5BEEC61DE160025008B0A19',
     [string]$ShellCheckURL = 'https://shellcheck.storage.googleapis.com/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
     [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16474/Intel%20SGX%20DCAP%20for%20Windows%20v1.5.100.2.exe',
-    [string]$IntelDCAPHash = '67CC2E4BA54EEF3342DE53D2F63018A44F5B6B2EECA8BE107F80A40BDD923335',
+    [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16620/Intel%20SGX%20DCAP%20for%20Windows%20v1.6.100.2.exe',
+    [string]$IntelDCAPHash = '39DB3E183E79400A4A1C635E67A927C8E5C75A19E5A2A7FC537E1B24D8FDF42E',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
-    [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.3.0',
-    [string]$AzureDCAPNupkgHash = '0CEE9E204EA30519B8808D271459512BC4CEA875E0007AFB422451D2CD7375DB',
+    [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.4.2',
+    [string]$AzureDCAPNupkgHash = 'D1EB6842CE2F3E1243298A440743687BD16FE6B2AF9F1745837D4C445EA0A930',
     [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
     [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
     [string]$NSISURL = 'https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe',
     [string]$NSISHash = '1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB',
+    [string]$GetPipURL = 'https://bootstrap.pypa.io/3.4/get-pip.py',
+    [string]$GetPipHash = '564FABC2FBABD9085A71F4A5E43DBF06D5CCEA9AB833E260F30EE38E8CE63A69',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoDriver", "SGX1-NoDriver")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
@@ -108,12 +110,17 @@ $PACKAGES = @{
     "openssl" = @{
         "url" = $OpenSSLURL
         "hash" = $OpenSSLHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "Win64OpenSSL-1_1_1d.exe"
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "Win64OpenSSL-1_1_1g.exe"
     }
     "python3" = @{
         "url" = $Python3ZipURL
         "hash" = $Python3ZipHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Python3.zip"
+    }
+    "get-pip" = @{
+        "url" = $GetPipURL
+        "hash" = $GetPipHash
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "get-pip.py"
     }
     "nsis" = @{
         "url" = $NSISURL
@@ -176,11 +183,18 @@ function Start-LocalPackagesDownload {
 
 function Get-WindowsRelease {
     $releases = @{
+        18363 = "Win10"
+        18362 = "Win10"
         17763 = "WinServer2019"
         14393 = "WinServer2016"
     }
     $osBuild = [System.Environment]::OSVersion.Version.Build
+    $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
     $releaseName = $releases[$osBuild]
+    # ProductType: 1 - Work Station, 3 - Server
+    if (($osBuild -eq 17763) -and ($osInfo.ProductType -eq 1)) {
+        $releaseName = "Win10"
+    }
     if (!$releaseName) {
         Throw "Cannot find the Windows release name"
     }
@@ -352,6 +366,21 @@ function Install-Python3 {
     New-Directory -Path $installDir -RemoveExisting
     Move-Item -Path "$tempInstallDir\*" -Destination $installDir
     Add-ToSystemPath -Path $installDir
+
+    Start-ExecuteWithRetry -ScriptBlock {
+        # Install PIP
+        python $PACKAGES["get-pip"]["local_file"]
+        $Scripts = Join-Path $installDir "Scripts"
+        Add-ToSystemPath -Path $Scripts
+
+        # Enable site packages so that PIP will run, by uncommenting out 'import site'
+        $configFile = Join-Path $installdir "python37._pth"
+        Set-Content -Path $configFile -Value "python37.zip`n.`n`nimport site"
+    } -MaxRetryCount $RetryCount -RetryInterval 3 -RetryMessage "Failed to install PIP. Retrying"
+
+    Start-ExecuteWithRetry -ScriptBlock {
+        pip install cmake_format
+    } -RetryMessage "Failed to install cmake_format. Retrying"
 }
 
 function Install-Git {
@@ -542,6 +571,18 @@ function Install-DCAP-Dependencies {
                     'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
                 }
             }
+            'Win10' = @{
+                'sgx_base' = @{
+                    'zip_path'    = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\LC_driver_${OS_VERSION}\Signed_*.zip"
+                    'location'    = 'root\SgxLCDevice'
+                    'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
+                }
+                'sgx_dcap' = @{
+                    'zip_path'    = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel SGX DCAP for Windows *\DCAP_INF\${OS_VERSION}\Signed_*.zip"
+                    'location'    = 'root\SgxLCDevice_DCAP'
+                    'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
+                }
+            }
         }
         $devConBinaryPath = Get-DevconBinary
         foreach($driver in $drivers[${OS_VERSION}].Keys) {
@@ -563,7 +604,7 @@ function Install-DCAP-Dependencies {
                 $inf
                 Throw "Multiple $driver.inf files found"
             }
-            if ($LaunchConfiguration -eq "SGX1FLC")
+            if($LaunchConfiguration -eq "SGX1FLC")
             {
                 # Check if the driver is already installed and delete it
                 $output = & $devConBinaryPath find "$($drivers[${OS_VERSION}][$driver]['location'])"
@@ -582,6 +623,11 @@ function Install-DCAP-Dependencies {
                     Throw "Failed to install $driver driver"
                 }
                 Write-Output $install
+            }
+            elseif (($LaunchConfiguration -eq "SGX1FLC-NoDriver") -and (${OS_VERSION} -eq "WinServer2016"))
+            {
+                 Write-Output "Copying Intel_SGX_DCAP dll files into $($env:SystemRoot)\system32"
+                 Copy-item -Path $PACKAGES_DIRECTORY\Intel_SGX_DCAP\$driver\drivers\*\*.dll $env:SystemRoot\system32\
             }
         }
     }

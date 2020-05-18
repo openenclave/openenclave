@@ -7,6 +7,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/fault.h>
@@ -173,6 +174,10 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
             /* Initialize the CPUID table before calling global constructors. */
             OE_CHECK(oe_initialize_cpuid());
+
+            /* Initialize the allocator */
+            oe_allocator_init(
+                (void*)__oe_get_heap_base(), (void*)__oe_get_heap_end());
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
@@ -427,6 +432,9 @@ static void _handle_ecall(
                 result = OE_MEMORY_LEAK;
 
 #endif /* defined(OE_USE_DEBUG_MALLOC) */
+
+            /* Cleanup the allocator */
+            oe_allocator_cleanup();
 
             break;
         }

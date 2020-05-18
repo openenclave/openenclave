@@ -56,7 +56,7 @@ int oe_iov_pack(
     for (int i = 0; i < iovcnt; i++)
         data_size += iov[i].iov_len;
 
-    /* Caculate the total size of the resulting buffer. */
+    /* Calculate the total size of the resulting buffer. */
     buf_size = (sizeof(struct oe_iovec) * (size_t)iovcnt) + data_size;
 
     /* Allocate the output buffer. */

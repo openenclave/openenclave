@@ -1,0 +1,174 @@
+{
+  "tcbInfo": {
+    "version": 2,
+    "issueDate": "2018-06-06T10:12:17Z",
+    "nextUpdate": "2019-06-06T10:12:17Z",
+    "fmspc": "00906EA10000",
+    "tcbType": 1,
+    "tcbEvaluationDataNumber":5,
+    "tcbLevels": [
+      {
+        "tcb":{
+          "sgxtcbcomp01svn": 4,
+          "sgxtcbcomp02svn": 4,
+          "sgxtcbcomp03svn": 2,
+          "sgxtcbcomp04svn": 4,
+          "sgxtcbcomp05svn": 1,
+          "sgxtcbcomp06svn": 128,
+          "sgxtcbcomp07svn": 1,
+          "sgxtcbcomp08svn": 1,
+          "sgxtcbcomp09svn": 1,
+          "sgxtcbcomp10svn": 1,
+          "sgxtcbcomp11svn": 1,
+          "sgxtcbcomp12svn": 1,
+          "sgxtcbcomp13svn": 1,
+          "sgxtcbcomp14svn": 1,
+          "sgxtcbcomp15svn": 1,
+          "sgxtcbcomp16svn": 1,
+          "pcesvn":8
+        },
+        "tcbDate":"2018-01-04T01:02:03Z",
+        "tcbStatus":"UpToDate"
+      },
+      {
+        "tcb":{
+          "sgxtcbcomp01svn": 4,
+          "sgxtcbcomp02svn": 4,
+          "sgxtcbcomp03svn": 2,
+          "sgxtcbcomp04svn": 4,
+          "sgxtcbcomp05svn": 1,
+          "sgxtcbcomp06svn": 128,
+          "sgxtcbcomp07svn": 1,
+          "sgxtcbcomp08svn": 1,
+          "sgxtcbcomp09svn": 1,
+          "sgxtcbcomp10svn": 1,
+          "sgxtcbcomp11svn": 1,
+          "sgxtcbcomp12svn": 1,
+          "sgxtcbcomp13svn": 1,
+          "sgxtcbcomp14svn": 1,
+          "sgxtcbcomp15svn": 1,
+          "sgxtcbcomp16svn": 1,
+          "pcesvn":7
+        },
+        "tcbDate":"2018-01-04T01:02:03Z",
+        "tcbStatus":"SWHardeningNeeded"
+      },
+      {
+        "tcb":{
+          "sgxtcbcomp01svn": 4,
+          "sgxtcbcomp02svn": 4,
+          "sgxtcbcomp03svn": 2,
+          "sgxtcbcomp04svn": 4,
+          "sgxtcbcomp05svn": 1,
+          "sgxtcbcomp06svn": 128,
+          "sgxtcbcomp07svn": 1,
+          "sgxtcbcomp08svn": 1,
+          "sgxtcbcomp09svn": 1,
+          "sgxtcbcomp10svn": 1,
+          "sgxtcbcomp11svn": 1,
+          "sgxtcbcomp12svn": 1,
+          "sgxtcbcomp13svn": 1,
+          "sgxtcbcomp14svn": 1,
+          "sgxtcbcomp15svn": 1,
+          "sgxtcbcomp16svn": 1,
+          "pcesvn":6
+        },
+        "tcbDate":"2018-01-04T01:02:03Z",
+        "tcbStatus":"ConfigurationAndSWHardeningNeeded"
+      },
+      {
+        "tcb": {
+          "sgxtcbcomp01svn": 4,
+          "sgxtcbcomp02svn": 4,
+          "sgxtcbcomp03svn": 2,
+          "sgxtcbcomp04svn": 4,
+          "sgxtcbcomp05svn": 1,
+          "sgxtcbcomp06svn": 128,
+          "sgxtcbcomp07svn": 1,
+          "sgxtcbcomp08svn": 1,
+          "sgxtcbcomp09svn": 1,
+          "sgxtcbcomp10svn": 1,
+          "sgxtcbcomp11svn": 1,
+          "sgxtcbcomp12svn": 1,
+          "sgxtcbcomp13svn": 1,
+          "sgxtcbcomp14svn": 1,
+          "sgxtcbcomp15svn": 1,
+          "sgxtcbcomp16svn": 1,
+          "pcesvn": 5
+        },
+        "tcbDate":"2018-01-04T01:02:03Z",
+        "tcbStatus": "OutOfDateConfigurationNeeded"
+      },
+      {
+        "tcb": {
+          "sgxtcbcomp01svn": 2,
+          "sgxtcbcomp02svn": 2,
+          "sgxtcbcomp03svn": 2,
+          "sgxtcbcomp04svn": 4,
+          "sgxtcbcomp05svn": 1,
+          "sgxtcbcomp06svn": 128,
+          "sgxtcbcomp07svn": 1,
+          "sgxtcbcomp08svn": 1,
+          "sgxtcbcomp09svn": 1,
+          "sgxtcbcomp10svn": 1,
+          "sgxtcbcomp11svn": 1,
+          "sgxtcbcomp12svn": 1,
+          "sgxtcbcomp13svn": 1,
+          "sgxtcbcomp14svn": 1,
+          "sgxtcbcomp15svn": 1,
+          "sgxtcbcomp16svn": 1,
+          "pcesvn": 4
+        },
+        "tcbDate":"2018-01-04T01:02:03Z",
+        "tcbStatus": "ConfigurationNeeded"
+      },
+      {
+        "tcb": {
+          "sgxtcbcomp01svn": 2,
+          "sgxtcbcomp02svn": 2,
+          "sgxtcbcomp03svn": 2,
+          "sgxtcbcomp04svn": 4,
+          "sgxtcbcomp05svn": 1,
+          "sgxtcbcomp06svn": 128,
+          "sgxtcbcomp07svn": 1,
+          "sgxtcbcomp08svn": 1,
+          "sgxtcbcomp09svn": 1,
+          "sgxtcbcomp10svn": 1,
+          "sgxtcbcomp11svn": 1,
+          "sgxtcbcomp12svn": 1,
+          "sgxtcbcomp13svn": 1,
+          "sgxtcbcomp14svn": 1,
+          "sgxtcbcomp15svn": 1,
+          "sgxtcbcomp16svn": 1,
+          "pcesvn": 3
+        },
+        "tcbDate":"2018-01-04T01:02:03Z",
+        "tcbStatus": "OutOfDate"
+      },
+      {
+        "tcb": {
+          "sgxtcbcomp01svn": 2,
+          "sgxtcbcomp02svn": 2,
+          "sgxtcbcomp03svn": 2,
+          "sgxtcbcomp04svn": 4,
+          "sgxtcbcomp05svn": 1,
+          "sgxtcbcomp06svn": 128,
+          "sgxtcbcomp07svn": 1,
+          "sgxtcbcomp08svn": 1,
+          "sgxtcbcomp09svn": 1,
+          "sgxtcbcomp10svn": 1,
+          "sgxtcbcomp11svn": 1,
+          "sgxtcbcomp12svn": 1,
+          "sgxtcbcomp13svn": 1,
+          "sgxtcbcomp14svn": 1,
+          "sgxtcbcomp15svn": 1,
+          "sgxtcbcomp16svn": 1,
+          "pcesvn": 2
+        },
+        "tcbDate":"2018-01-04T01:02:03Z",
+        "tcbStatus": "Revoked"
+      }
+    ]
+  },
+  "signature": "62d181c4ba863213b825d1c0b66b92a3dbdb27b8ff7c7250cb2b2ab87a8f90d5e5a1416914369d8f82c56cd3d875caa54ae4b917caf4af7a93dec52067cbfd7b"
+}

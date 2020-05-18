@@ -1,0 +1,129 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+#include <openenclave/enclave.h>
+#include <openenclave/internal/globals.h>
+#include <openenclave/internal/tests.h>
+
+#include <malloc.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "memory_t.h"
+
+#define MALLOC_SIZE_SMALL 1024
+#define EFFICIENCY_TEST_TIMES 5000000
+
+struct mallinfo
+{
+    size_t arena;    /* non-mmapped space allocated from system */
+    size_t ordblks;  /* number of free chunks */
+    size_t smblks;   /* always 0 */
+    size_t hblks;    /* always 0 */
+    size_t hblkhd;   /* space in mmapped regions */
+    size_t usmblks;  /* maximum total allocated space */
+    size_t fsmblks;  /* always 0 */
+    size_t uordblks; /* total allocated space */
+    size_t fordblks; /* total free space */
+    size_t keepcost; /* releasable (via malloc_trim) space */
+};
+
+struct mallinfo dlmallinfo(void);
+
+static size_t _get_heap_size()
+{
+    // call malloc to update the global data.
+    free(malloc(1));
+    return dlmallinfo().keepcost;
+}
+
+static int _malloc_free_fixed_size(size_t size, int times)
+{
+    int i = 0;
+    int* buffer = NULL;
+
+    for (i = 0; i < times; i++)
+    {
+        buffer = (int*)malloc(size);
+        if (NULL == buffer)
+        {
+            return -1;
+        }
+        free(buffer);
+    }
+
+    oe_host_printf("_malloc_free_fixed_size malloc times = %d.\n", i);
+    return 0;
+}
+
+static inline size_t _randx(size_t x)
+{
+    /* Note that rand() % N is biased if RAND_MAX + 1 isn't divisible
+     * by N. But, slight probability bias doesn't really matter in these
+     * tests. */
+    return (size_t)rand() % x;
+}
+
+/*
+ * Test making `times` allocations of random sizes.
+ * If seed is < 0 just use time() as a seed. If seed >= 0, use the provided
+ * to seed the rng.
+ */
+static int _malloc_free_random_size(int times, unsigned int seed)
+{
+    int i = 0;
+    size_t size = 0;
+    void* buffer = NULL;
+
+    oe_host_printf("_malloc_free_random_size seed = %d\n", seed);
+    srand(seed);
+    for (i = 0; i < times; i++)
+    {
+        size = _randx(_get_heap_size());
+        buffer = malloc(size);
+        if (NULL == buffer)
+        {
+            return -1;
+        }
+
+        free(buffer);
+    }
+    oe_host_printf("_malloc_free_random_size malloc times = %d.\n", i);
+    return 0;
+}
+
+void test_malloc_fixed_size_fragment(void)
+{
+    // get heap size before tests
+    size_t heap_size_before_test = _get_heap_size();
+    oe_host_printf(
+        "[test_malloc_fixed_size_fragment]heap size before test : %zu.\n",
+        heap_size_before_test);
+
+    OE_TEST(
+        _malloc_free_fixed_size(MALLOC_SIZE_SMALL, EFFICIENCY_TEST_TIMES) == 0);
+
+    size_t heap_size_after_test = _get_heap_size();
+    oe_host_printf(
+        "[test_malloc_fixed_size_fragment]heap size after test : %zu.\n",
+        heap_size_after_test);
+    OE_TEST(heap_size_before_test == heap_size_after_test);
+}
+
+void test_malloc_random_size_fragment(unsigned int seed)
+{
+    // get heap size before tests
+    size_t heap_size_before_test = _get_heap_size();
+    oe_host_printf(
+        "[test_malloc_random_size_fragment]heap size before test : %zu.\n",
+        heap_size_before_test);
+
+    OE_TEST(_malloc_free_random_size(EFFICIENCY_TEST_TIMES, seed) == 0);
+
+    size_t heap_size_after_test = _get_heap_size();
+    oe_host_printf(
+        "[test_malloc_random_size_fragment]heap size after test : %zu.\n",
+        heap_size_after_test);
+    OE_TEST(heap_size_before_test == heap_size_after_test);
+}

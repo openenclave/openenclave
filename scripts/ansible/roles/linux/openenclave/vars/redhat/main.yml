@@ -30,7 +30,7 @@ yum_packages:
   - "libcurl-devel"
   - "libX11-devel"
   - "ncurses-devel"
-  - "clang"
+  - "clang-8.0.1"
   - "gcc"
   - "gdb"
   - "git"

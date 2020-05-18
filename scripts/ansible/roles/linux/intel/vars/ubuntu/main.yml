@@ -8,12 +8,17 @@ intel_sgx_packages:
   - "libsgx-ae-qve"
   - "libsgx-ae-pce"
   - "libsgx-ae-qe3"
+  - "libsgx-qe3-logic"
+  - "libsgx-pce-logic"
 
 intel_dcap_packages:
   - "libsgx-dcap-ql"
   - "libsgx-dcap-ql-dev"
+  - "libsgx-urts"
 
 packages_validation_distribution_files:
   - "/usr/lib/x86_64-linux-gnu/libsgx_enclave_common.so"
+  - "/usr/lib/x86_64-linux-gnu/libsgx_pce_logic.so"
+  - "/usr/lib/x86_64-linux-gnu/libsgx_qe3_logic.so"
   - "/usr/lib/x86_64-linux-gnu/libsgx_dcap_ql.so"
   - "/usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so"

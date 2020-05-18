@@ -18,6 +18,8 @@
 - [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
 - [Python 3](https://www.python.org/downloads/windows/)
 - [ShellCheck](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip)
+- [OpenSSL 1.1.1](https://slproweb.com/products/Win32OpenSSL.html)
+- [cmake format](https://github.com/cheshirekow/cmake_format)
 
 ## Prerequisites specific to SGX support on your system
 
@@ -43,14 +45,7 @@ C:\Program Files\Git\bin\bash.exe
 ```
 
 Tools available in the Git bash environment are also used for test and sample
-builds. For example, OpenSSL is used to generate test certificates, so it is
-also useful to have the `Git\mingw64\bin` folder added to PATH. This can be checked
-from the command prompt as well:
-
-```cmd
-C:\>where openssl
-C:\Program Files\Git\mingw64\bin\openssl.exe
-```
+builds. It is also useful to have the `Git\mingw64\bin` folder added to PATH.
 
 ## Clang
 
@@ -92,8 +87,9 @@ C:\Users\test\AppData\Roaming\npm\esy
 ## Python 3
 
 Install [Python 3 for Windows](https://www.python.org/downloads/windows/) and ensure that python.exe is available in your PATH.
+Make sure the checkbox for PIP is checked when installing.
 
-Python 3 is used as part of the mbedtls tests.
+Python 3 is used as part of the mbedtls tests and for cmake-format.
 
 ## ShellCheck
 
@@ -101,3 +97,22 @@ Python 3 is used as part of the mbedtls tests.
 
 Download the [ShellCheck zip](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip).
 Inside it there is a shellcheck-v0.7.0.exe which must be copied to a directory in your PATH and renamed to shellcheck.exe.
+
+## OpenSSL
+
+Download and install the latest [Win64 OpenSSL 1.1.1](https://slproweb.com/products/Win32OpenSSL.html). Do not choose the light version; for example, use Win64OpenSSL-1_1_1g.exe, not Win64OpenSSL_Light-1_1_1g.exe.
+
+## cmake format
+
+Install `cmake-format` as follows.
+
+```cmd
+pip install cmake_format
+```
+
+Open up a command prompt and ensure that `cmake-format` is added to the `PATH`.
+
+```cmd
+C:\Users\test> where cmake-format
+C:\Users\test\AppData\Local\Programs\Python\Python37-32\Scripts\cmake-format.exe
+```

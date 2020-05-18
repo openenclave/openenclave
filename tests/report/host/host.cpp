@@ -212,6 +212,9 @@ int main(int argc, const char* argv[])
     OE_TEST(enclave_test_local_verify_report(enclave) == OE_OK);
 #endif
 
+    test_get_signer_id_from_public_key();
+    OE_TEST(enclave_test_get_signer_id_from_public_key(enclave) == OE_OK);
+
     // Get current time and pass it to enclave.
     std::time_t t = std::time(0);
     std::tm tm;

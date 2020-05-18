@@ -4,6 +4,7 @@
 #include "debugmalloc.h"
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/malloc.h>
@@ -14,8 +15,6 @@
 #include <openenclave/internal/utils.h>
 
 #if defined(OE_USE_DEBUG_MALLOC)
-
-#include "oe_nodebug_alloc.h"
 
 /*
 **==============================================================================
@@ -312,7 +311,7 @@ void* oe_debug_malloc(size_t size)
     void* block;
     const size_t block_size = _calculate_block_size(0, size);
 
-    if (!(block = oe_nodebug_malloc(block_size)))
+    if (!(block = oe_allocator_malloc(block_size)))
         return NULL;
 
     /* Fill block with 0xAA (Allocated) bytes */
@@ -339,7 +338,7 @@ void oe_debug_free(void* ptr)
         size_t block_size = _get_block_size(ptr);
         oe_memset_s(block, block_size, 0xDD, block_size);
 
-        oe_nodebug_free(block);
+        oe_allocator_free(block);
     }
 }
 
@@ -352,7 +351,7 @@ void* oe_debug_calloc(size_t nmemb, size_t size)
 
     const size_t total_size = nmemb * size;
 
-    if (!(ptr = oe_debug_malloc(total_size)))
+    if (!(ptr = oe_allocator_malloc(total_size)))
         return NULL;
 
     oe_memset_s(ptr, total_size, 0, total_size);
@@ -399,33 +398,39 @@ void* oe_debug_realloc(void* ptr, size_t size)
 
 void* oe_debug_memalign(size_t alignment, size_t size)
 {
-    const size_t padding_size = _get_padding_size(alignment);
-    const size_t block_size = _calculate_block_size(alignment, size);
-    void* block;
-    header_t* header;
+    void* ptr = NULL;
 
-    if (!(block = oe_nodebug_memalign(alignment, block_size)))
-        return NULL;
+    // The only difference between posix_memalign and the obsolete memalign is
+    // that posix_memalign requires alignment to be a multiple of sizeof(void*).
+    // Adjust the alignment if needed.
+    alignment = oe_round_up_to_multiple(alignment, sizeof(void*));
 
-    header = (header_t*)((uint8_t*)block + padding_size);
-
-    INIT_BLOCK(header, alignment, size);
-    _check_block(header);
-    _list_insert(&_list, header);
-
-    return header->data;
+    oe_debug_posix_memalign(&ptr, alignment, size);
+    return ptr;
 }
 
 int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
 {
+    const size_t padding_size = _get_padding_size(alignment);
+    const size_t block_size = _calculate_block_size(alignment, size);
+    void* block = NULL;
+    header_t* header = NULL;
+
     if (!memptr)
         return OE_EINVAL;
 
     if (!oe_is_ptrsize_multiple(alignment) || !oe_is_pow2(alignment))
         return OE_EINVAL;
 
-    if (!(*memptr = oe_debug_memalign(alignment, size)))
+    if (oe_allocator_posix_memalign(&block, alignment, block_size) != 0)
         return OE_ENOMEM;
+
+    header = (header_t*)((uint8_t*)block + padding_size);
+
+    INIT_BLOCK(header, alignment, size);
+    _check_block(header);
+    _list_insert(&_list, header);
+    *memptr = header->data;
 
     return 0;
 }

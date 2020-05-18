@@ -1,0 +1,19 @@
+chair:
+  - TBD
+
+# final approval of architecture documents handled by chair only
+approvers:
+  - sig-architecture-chair
+
+# reviews should be solicited from all SIG Chairs
+reviewers:
+  - sig-api-chair
+  - sig-attestation-chair
+  - sig-testing-chair
+  - sig-tools-chair
+  - sig-release-chair
+  - sig-sgx-chair
+  - sig-optee-chair
+
+# NOTE(Aeva): sig-website is not listed here because the website
+# represents output from, not input into, the design process

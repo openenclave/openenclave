@@ -3,6 +3,7 @@
 
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/argv.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
@@ -11,7 +12,6 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
-#include "../oe_nodebug_alloc.h"
 #include "core_t.h"
 #include "platform_t.h"
 
@@ -183,13 +183,17 @@ done:
 
 char** oe_backtrace_symbols(void* const* buffer, int size)
 {
-    /* Backtrace must use the internal allocator to bypass debug-malloc. */
+    /* Backtrace must use the allocator directly to bypass debug-malloc. */
     return oe_backtrace_symbols_impl(
-        buffer, size, oe_nodebug_malloc, oe_nodebug_realloc, oe_nodebug_free);
+        buffer,
+        size,
+        oe_allocator_malloc,
+        oe_allocator_realloc,
+        oe_allocator_free);
 }
 
 void oe_backtrace_symbols_free(char** ptr)
 {
-    /* Backtrace must use the internal allocator to bypass debug-malloc. */
-    oe_nodebug_free(ptr);
+    /* Backtrace must use the allocator directly to bypass debug-malloc. */
+    oe_allocator_free(ptr);
 }

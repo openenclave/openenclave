@@ -54,6 +54,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     1 * 1024 * 1024,
     12 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "[[project-name]]")

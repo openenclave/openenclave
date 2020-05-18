@@ -36,8 +36,6 @@
 #define REPORT_FILENAME "sgx_report.bin"
 #define REPORT_BAD_FILENAME "sgx_report_bad.bin"
 
-#define SKIP_RETURN_CODE 2
-
 oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
 {
     OE_UNUSED(arg);
@@ -272,14 +270,6 @@ static int _verify_report(
 
 int main()
 {
-    const uint32_t flags = oe_get_create_flags();
-    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
-    {
-        printf("=== Skipped unsupported test in simulation mode "
-               "(host_verify)\n");
-        return SKIP_RETURN_CODE;
-    }
-
     //
     // Report only tests
     //

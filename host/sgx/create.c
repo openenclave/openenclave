@@ -860,6 +860,9 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     if (!enclave || enclave->magic != ENCLAVE_MAGIC)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* Shut down the switchless manager */
+    OE_CHECK(oe_stop_switchless_manager(enclave));
+
     /* Call the enclave destructor */
     OE_CHECK(oe_ecall(enclave, OE_ECALL_DESTRUCTOR, 0, NULL));
 
@@ -875,9 +878,6 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 
     /* Remove this enclave from the global list. */
     oe_remove_enclave_instance(enclave);
-
-    /* Shut down the switchless manager */
-    OE_CHECK(oe_stop_switchless_manager(enclave));
 
     /* Clear the magic number */
     enclave->magic = 0;

@@ -7,5 +7,5 @@
 	url = https://github.com/ms-iot/optee_client
 	branch = ms-iot-openenclave
 [submodule "3rdparty/snmalloc"]
-	path = 3rdparty/snmalloc
+	path = 3rdparty/snmalloc/snmalloc
 	url = https://github.com/Microsoft/snmalloc.git

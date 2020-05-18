@@ -31,6 +31,8 @@ typedef void* oe_sgx_plugin_opt_params;
  * Helper function that returns the SGX attester that can then be sent to
  * `oe_register_attester`.
  *
+ * @experimental
+ *
  * @retval A pointer to the SGX attester. This function never fails.
  */
 oe_attester_t* oe_sgx_plugin_attester(void);

@@ -327,7 +327,7 @@ extern "C" void test_fd_set(void)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    256,  /* StackPageCount */
-    9);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    256,  /* NumStackPages */
+    9);   /* NumTCS */

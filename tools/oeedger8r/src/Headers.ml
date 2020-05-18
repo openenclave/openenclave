@@ -51,7 +51,7 @@ let get_composite_type =
   let get_struct (s : struct_def) =
     [
       "#ifndef EDGER8R_STRUCT_" ^ String.uppercase_ascii s.sname;
-      "#define EDGER8R_STRUCT_" ^ String.uppercase_ascii s.sname;
+      "#define EDGER8R_STRUCT_" ^ String.uppercase s.sname;
       "typedef struct " ^ s.sname;
       "{";
       String.concat "\n"
@@ -69,8 +69,8 @@ let get_composite_type =
   in
   let get_union (u : union_def) =
     [
-      "#ifndef EDGER8R_UNION_" ^ String.uppercase_ascii u.uname;
-      "#define EDGER8R_UNION_" ^ String.uppercase_ascii u.uname;
+      "#ifndef EDGER8R_UNION_" ^ String.uppercase u.uname;
+      "#define EDGER8R_UNION_" ^ String.uppercase u.uname;
       "typedef union " ^ u.uname;
       "{";
       String.concat "\n"
@@ -86,8 +86,8 @@ let get_composite_type =
   in
   let get_enum (e : enum_def) =
     [
-      "#ifndef EDGER8R_ENUM_" ^ String.uppercase_ascii e.enname;
-      "#define EDGER8R_ENUM_" ^ String.uppercase_ascii e.enname;
+      "#ifndef EDGER8R_ENUM_" ^ String.uppercase e.enname;
+      "#define EDGER8R_ENUM_" ^ String.uppercase e.enname;
       "typedef enum " ^ e.enname;
       "{";
       String.concat ",\n"
@@ -151,7 +151,7 @@ let get_marshal_struct (fd : func_decl) (errno : bool) =
 (* Generate [args.h] which contains [struct]s for ecalls and ocalls *)
 let generate_args (ec : enclave_content) =
   let guard_macro =
-    "EDGER8R_" ^ String.uppercase_ascii ec.enclave_name ^ "_ARGS_H"
+    "EDGER8R_" ^ String.uppercase ec.enclave_name ^ "_ARGS_H"
   in
   let user_includes =
     let includes = ec.include_list in
@@ -181,7 +181,7 @@ let generate_args (ec : enclave_content) =
 (* Includes are emitted in [args.h]. Imported functions have already
    been brought into function lists. *)
 let generate_trusted (ec : enclave_content) =
-  let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_T_H" in
+  let guard = "EDGER8R_" ^ String.uppercase ec.file_shortnm ^ "_T_H" in
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
   let trusted_function_ids =
@@ -271,7 +271,7 @@ let generate_trusted (ec : enclave_content) =
   ]
 
 let generate_untrusted (ec : enclave_content) =
-  let guard = "EDGER8R_" ^ String.uppercase_ascii ec.file_shortnm ^ "_U_H" in
+  let guard = "EDGER8R_" ^ String.uppercase ec.file_shortnm ^ "_U_H" in
   let tfs = ec.tfunc_decls in
   let ufs = ec.ufunc_decls in
   let trusted_function_ids =

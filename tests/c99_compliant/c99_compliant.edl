@@ -1,0 +1,8 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        public int enc_c99_compliant();
+    };
+};

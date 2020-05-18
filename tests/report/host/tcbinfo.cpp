@@ -442,6 +442,8 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
         "./data_v2/tcbInfoNegativeIntegerOverflow.json",
         "./data_v2/tcbInfoNegativeIntegerWithSign.json",
         "./data_v2/tcbInfoNegativeFloat.json",
+        // TcbType != 0.
+        "./data_v2/tcbInfoNegativeTcbType.json",
     };
 
     for (size_t i = 0; i < sizeof(negative_files) / sizeof(negative_files[0]);

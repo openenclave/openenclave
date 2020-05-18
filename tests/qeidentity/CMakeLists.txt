@@ -4,8 +4,8 @@
 add_subdirectory(host)
 
 if (BUILD_ENCLAVES)
-	add_subdirectory(enc)
-endif()
+  add_subdirectory(enc)
+endif ()
 
 # Run all tests
 add_enclave_test(tests/qeidentity qeidentity_host qeidentity_enc)

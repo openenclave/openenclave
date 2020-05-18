@@ -4,6 +4,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/utils.h>
@@ -41,7 +42,7 @@ static void* _switchless_ocall_worker(void* arg)
             // will be scheduled in another available work thread and get
             // handled immediately.
             oe_handle_call_host_function(
-                (uint64_t)local_call_arg, context->enclave);
+                (uint64_t)local_call_arg, context->enc);
 
             // After handling the switchless call, mark this worker thread
             // as free by clearing the slot.
@@ -70,6 +71,12 @@ static void* _switchless_ocall_worker(void* arg)
     return NULL;
 }
 
+void oe_sgx_sleep_switchless_worker_ocall(oe_enclave_worker_context_t* context)
+{
+    // Wait for messages.
+    oe_enclave_worker_wait(context);
+}
+
 /*
 ** The thread function that handles switchless ecalls
 **
@@ -78,20 +85,13 @@ static void* _switchless_ecall_worker(void* arg)
 {
     oe_enclave_worker_context_t* context = (oe_enclave_worker_context_t*)arg;
 
-    // Loop until stop has been requested.
-    while (!context->is_stopping)
+    // Enter enclave to process ecall messages.
+    if (oe_sgx_switchless_enclave_worker_thread_ecall(context->enc, context) !=
+        OE_OK)
     {
-        // Wait for event to start executing.
-        oe_enclave_worker_wait(context);
-
-        // Enter enclave to process ecall messages.
-        if (oe_sgx_switchless_enclave_worker_thread_ecall(
-                context->enclave, context) != OE_OK)
-        {
-            OE_TRACE_ERROR("Switchless enclave worker thread failed\n");
-            break;
-        }
+        OE_TRACE_ERROR("Switchless enclave worker thread failed\n");
     }
+
     return NULL;
 }
 
@@ -198,7 +198,7 @@ oe_result_t oe_start_switchless_manager(
     for (size_t i = 0; i < num_host_workers; i++)
     {
         OE_TRACE_INFO("Creating switchless host worker thread %d\n", (int)i);
-        manager->host_worker_contexts[i].enclave = enclave;
+        manager->host_worker_contexts[i].enc = enclave;
         if (oe_thread_create(
                 &manager->host_worker_threads[i],
                 _switchless_ocall_worker,
@@ -212,7 +212,7 @@ oe_result_t oe_start_switchless_manager(
     for (size_t i = 0; i < num_enclave_workers; i++)
     {
         OE_TRACE_INFO("Creating switchless enclave worker thread %d\n", (int)i);
-        manager->enclave_worker_contexts[i].enclave = enclave;
+        manager->enclave_worker_contexts[i].enc = enclave;
         manager->enclave_worker_contexts[i].spin_count_threshold =
             OE_ENCLAVE_WORKER_SPIN_COUNT_THRESHOLD;
         if (oe_thread_create(
@@ -423,3 +423,40 @@ oe_result_t oe_switchless_call_enclave_function(
         output_buffer_size,
         output_bytes_written);
 }
+
+// When EDL is builtin to liboehost, the strong version is always chosen.
+// This causes a linker warning with gcc/clang because the below functions
+// will never be linked.
+#if !defined(OE_USE_BUILTIN_EDL) || defined(_MSC_VER)
+/*
+ * Stubs for switchless.edl ecalls if they are not included in EDL
+ */
+static oe_result_t _oe_sgx_init_context_switchless_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    oe_host_worker_context_t* host_worker_contexts,
+    uint64_t num_host_workers)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(_retval);
+    OE_UNUSED(host_worker_contexts);
+    OE_UNUSED(num_host_workers);
+    return OE_UNSUPPORTED;
+}
+
+static oe_result_t _oe_sgx_switchless_enclave_worker_thread_ecall(
+    oe_enclave_t* enclave,
+    oe_enclave_worker_context_t* context)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(context);
+    return OE_UNSUPPORTED;
+}
+
+OE_WEAK_ALIAS(
+    _oe_sgx_init_context_switchless_ecall,
+    oe_sgx_init_context_switchless_ecall);
+OE_WEAK_ALIAS(
+    _oe_sgx_switchless_enclave_worker_thread_ecall,
+    oe_sgx_switchless_enclave_worker_thread_ecall);
+#endif

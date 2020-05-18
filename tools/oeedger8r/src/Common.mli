@@ -7,8 +7,6 @@ val get_array_dims : int list -> string
 
 val get_parameter_str : Intel.Ast.pdecl -> string
 
-val filter_map : ('a -> 'b option) -> 'a list -> 'b list
-
 val flatten_map : ('a -> 'b list) -> 'a list -> 'b list
 
 val flatten_map2 : ('a -> 'b -> 'c list) -> 'a list -> 'b list -> 'c list
