@@ -36,8 +36,8 @@ void enc_test(test_args* args)
     args->magic2 = NEW_MAGIC;
 
     /* Get thread data */
-    const oe_thread_data_t* td;
-    if ((td = oe_get_thread_data()))
+    const oe_sgx_td_t* td;
+    if ((td = oe_sgx_get_td()))
     {
         args->thread_data = *td;
         args->thread_data_addr = reinterpret_cast<uint64_t>(td);

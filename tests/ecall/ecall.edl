@@ -15,7 +15,7 @@ enclave {
         uint64_t num_heap_pages;
         uint64_t num_pages;
         void* base;
-        oe_thread_data_t thread_data;
+        oe_sgx_td_t thread_data;
         uint64_t thread_data_addr;
         unsigned int mm;
         unsigned int dd;
