@@ -699,10 +699,15 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 
         /* If %fs was saved prior to OCall, restore it. Assume that if %fs
          * was changed previously, then the wrfsbase instruction is available.
-         * Even if it isn't, OE will emulated it in the exception handler. */
+         * Even if it isn't, OE will emulate it in the exception handler. In
+         * simulation mode, just use a host function supplied in the ecall
+         * context. */
         if (saved_fs)
         {
-            asm volatile("wrfsbase %0" ::"r"(saved_fs));
+            if (td->host_ecall_context->set_fsbase)
+                td->host_ecall_context->set_fsbase((void*)saved_fs);
+            else
+                asm volatile("wrfsbase %0" ::"r"(saved_fs));
         }
     }
 
