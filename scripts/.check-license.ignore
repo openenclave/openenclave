@@ -43,6 +43,7 @@ devex/vsextension/ItemTemplates/.*
 devex/vsextension/ProjectTemplates/.*
 tools/oeedger8r/esy\.lock/.*
 tools/oeedger8r/intel/.*
+tools/oeedger8r-cpp/*
 tests/libcxxrt/results/.*
 tests/print/results/.*
 docs/*

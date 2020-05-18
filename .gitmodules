@@ -9,3 +9,6 @@
 [submodule "3rdparty/snmalloc"]
 	path = 3rdparty/snmalloc/snmalloc
 	url = https://github.com/Microsoft/snmalloc.git
+[submodule "tools/oeedger8r-cpp"]
+	path = tools/oeedger8r-cpp
+	url = https://github.com/openenclave/oeedger8r-cpp
