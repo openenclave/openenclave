@@ -9,10 +9,7 @@
 #define LACKS_SYS_TYPES_H
 #define LACKS_TIME_H
 #define MORECORE dlmalloc_sbrk
-#define ABORT oe_abort()
 #define USE_DL_PREFIX
-#define LACKS_STDLIB_H
-#define LACKS_STRING_H
 #define USE_LOCKS 1
 #define fprintf _dlmalloc_stats_fprintf
 #define NO_MALLOC_STATS 1
@@ -20,15 +17,6 @@
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wparentheses-equality"
 #endif
-
-OE_INLINE
-int sched_yield(void)
-{
-#ifdef __x86__
-    asm volatile("pause");
-#endif
-    return 0;
-}
 
 void* dlmalloc_sbrk(ptrdiff_t increment);
 

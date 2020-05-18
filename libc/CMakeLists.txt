@@ -53,6 +53,13 @@ else ()
        optee/arc4random.c optee/trace.c)
 endif ()
 
+# Exclude the following files that are part of oecore.
+# - prng/rand.c
+# - string/memcmp.c
+# - string/memcpy.c
+# - string/memmove.c
+# - string/memset.c
+
 add_enclave_library(
   oelibc
   STATIC
@@ -513,7 +520,6 @@ add_enclave_library(
   ${MUSLSRC}/prng/lrand48.c
   ${MUSLSRC}/prng/mrand48.c
   ${MUSLSRC}/prng/__rand48_step.c
-  ${MUSLSRC}/prng/rand.c
   ${MUSLSRC}/prng/random.c
   ${MUSLSRC}/prng/rand_r.c
   ${MUSLSRC}/prng/__seed48.c
@@ -675,13 +681,9 @@ add_enclave_library(
   ${MUSLSRC}/string/index.c
   ${MUSLSRC}/string/memccpy.c
   ${MUSLSRC}/string/memchr.c
-  ${MUSLSRC}/string/memcmp.c
-  ${MUSLSRC}/string/memcpy.c
   ${MUSLSRC}/string/memmem.c
-  ${MUSLSRC}/string/memmove.c
   ${MUSLSRC}/string/mempcpy.c
   ${MUSLSRC}/string/memrchr.c
-  ${MUSLSRC}/string/memset.c
   ${MUSLSRC}/string/rindex.c
   ${MUSLSRC}/string/stpcpy.c
   ${MUSLSRC}/string/stpncpy.c

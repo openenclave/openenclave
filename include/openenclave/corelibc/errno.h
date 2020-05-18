@@ -307,6 +307,11 @@ extern int* __oe_errno_location(void);
 
 #define errno oe_errno
 
+OE_INLINE int* __errno_location(void)
+{
+    return __oe_errno_location();
+}
+
 #endif /* defined(OE_NEED_STDC_NAMES) */
 
 OE_EXTERNC_END
