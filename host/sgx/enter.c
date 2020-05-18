@@ -119,6 +119,7 @@ OE_INLINE void _setup_ecall_context(oe_ecall_context_t* ecall_context)
     }
     ecall_context->ocall_buffer = binding->ocall_buffer;
     ecall_context->ocall_buffer_size = binding->ocall_buffer_size;
+    ecall_context->set_fsbase = NULL;
 }
 
 /**
@@ -236,6 +237,7 @@ void oe_enter_sim(
     sgx_tcs_t* sgx_tcs = (sgx_tcs_t*)tcs;
     oe_ecall_context_t ecall_context = {{0}};
     _setup_ecall_context(&ecall_context);
+    ecall_context.set_fsbase = oe_set_fs_register_base;
 
     while (1)
     {
