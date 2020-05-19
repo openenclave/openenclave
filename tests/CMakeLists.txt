@@ -106,10 +106,7 @@ endif ()
 
 if (UNIX)
   if (OE_SGX)
-    # This test is currently disabled due to differences in SGX DCAP driver
-    # versions. See child_process/README.md for more info.
-    # add_subdirectory(child_process)
-
+    add_subdirectory(child_process)
     add_subdirectory(cmake_name_conflict)
   endif ()
   add_subdirectory(libc)

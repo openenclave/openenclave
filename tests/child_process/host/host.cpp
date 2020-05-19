@@ -58,8 +58,8 @@ int main(int argc, const char* argv[])
                 fprintf(stdout, "child pid = %d\n", getpid());
                 uint32_t magic = 2;
                 result_child_process = get_magic_ecall(enclave, &magic);
-                OE_TEST(result_child_process != OE_OK);
-                OE_TEST(magic == 2);
+                OE_TEST(result_child_process == OE_OK);
+                OE_TEST(magic == 0x1234);
                 process_result =
                     write(fpipe[1], &result_child_process, sizeof(oe_result_t));
                 process_result = close(fpipe[1]);
@@ -72,7 +72,9 @@ int main(int argc, const char* argv[])
                 process_result = read(fpipe[0], &result, sizeof(oe_result_t));
                 process_result = close(fpipe[0]);
                 OE_TEST(result == OE_OK);
-                oe_terminate_enclave(enclave);
+                result = oe_terminate_enclave(enclave);
+                OE_TEST(result == OE_OK);
+                enclave = nullptr;
 
                 // Wait for child
                 int child_status = -1;
@@ -90,7 +92,9 @@ int main(int argc, const char* argv[])
             if (pid == 0) // child process
             {
                 result_child_process = oe_terminate_enclave(enclave);
-                OE_TEST(result_child_process == OE_INVALID_PARAMETER);
+                OE_TEST(result_child_process == OE_OK);
+                enclave = nullptr;
+                _exit(EXIT_SUCCESS);
             }
             else if (pid > 0) // parent process
             {
