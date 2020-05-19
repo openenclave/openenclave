@@ -151,7 +151,6 @@ add_enclave_library(
   ${MUSL_SRC_DIR}/string/memcpy.c
   ${MUSL_SRC_DIR}/string/memmove.c
   ${MUSL_SRC_DIR}/string/memset.c
-  __secs_to_tm.c
   __stack_chk_fail.c
   arena.c
   assert.c
@@ -161,7 +160,6 @@ add_enclave_library(
   ctype.c
   debugmalloc.c
   errno.c
-  gmtime.c
   hexdump.c
   hostcalls.c
   intstr.c
@@ -195,13 +193,11 @@ list(
   ${MUSL_SRC_DIR}/string/memset.c
   ${MUSL_SRC_DIR}/string/memcmp.c
   ${MUSL_SRC_DIR}/string/memcpy.c
-  __secs_to_tm.c
   debugmalloc.c
   strtok_r.c)
 
 list(APPEND W_NO_CONVERSION ${MUSL_SRC_DIR}/prng/rand.c
-     ${MUSL_SRC_DIR}/string/memmove.c ${MUSL_SRC_DIR}/string/memset.c
-     __secs_to_tm.c)
+     ${MUSL_SRC_DIR}/string/memmove.c ${MUSL_SRC_DIR}/string/memset.c)
 
 set_property(
   SOURCE ${W_NO_CONVERSION}
