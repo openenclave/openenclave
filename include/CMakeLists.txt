@@ -10,9 +10,19 @@ target_include_directories(
             $<BUILD_INTERFACE:${OE_INCDIR}>
             $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>)
 install(
-  DIRECTORY openenclave/bits
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/
+  FILES openenclave/bits/attestation.h openenclave/bits/defs.h
+        openenclave/bits/report.h openenclave/bits/result.h
+        openenclave/bits/types.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/bits/
   COMPONENT OEHOSTVERIFY)
+install(DIRECTORY openenclave/bits
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
+install(DIRECTORY openenclave/bits/edl
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/bits/)
+install(DIRECTORY openenclave/bits/optee
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/bits/)
+install(DIRECTORY openenclave/bits/sgx
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/bits/)
 install(DIRECTORY openenclave/edger8r
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(FILES openenclave/enclave.h
@@ -34,6 +44,11 @@ install(
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/sgx/
   COMPONENT OEHOSTVERIFY)
 install(TARGETS oe_includes EXPORT openenclave-targets)
+install(
+  TARGETS oe_includes
+  EXPORT openenclave-hostverify-targets
+  COMPONENT OEHOSTVERIFY
+  EXCLUDE_FROM_ALL)
 
 # Install parts of oelibc needed by edger8r-generated code
 list(

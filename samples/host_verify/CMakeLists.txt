@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.11)
 project("Remote Host-side Enclave Verification Sample" LANGUAGES C CXX)
 
 if (NOT BUILD_HOSTVERIFY_INLINE)
+  set(SKIP_OE_SGX_CHECK 1)
   find_package(OpenEnclave CONFIG REQUIRED)
 endif ()
 
@@ -19,8 +20,14 @@ if (BUILD_HOSTVERIFY_INLINE)
   install(
     TARGETS host_verify
     EXPORT openenclave-targets
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+  install(
+    TARGETS host_verify
+    EXPORT openenclave-hostverify-targets
     DESTINATION ${CMAKE_INSTALL_BINDIR}
-    COMPONENT OEHOSTVERIFY)
+    COMPONENT OEHOSTVERIFY
+    EXCLUDE_FROM_ALL)
 endif ()
 
 if (NOT BUILD_HOSTVERIFY_INLINE)

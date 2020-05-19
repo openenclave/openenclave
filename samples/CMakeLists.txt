@@ -1,36 +1,36 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-if (HAS_QUOTE_PROVIDER)
-  install(
-    DIRECTORY remote_attestation
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    PATTERN
-      "gen_pubkey_header.sh"
-      PERMISSIONS
-        OWNER_EXECUTE
-        OWNER_WRITE
-        OWNER_READ
-        GROUP_EXECUTE
-        GROUP_READ
-        WORLD_EXECUTE
-        WORLD_READ)
-  install(
-    DIRECTORY attested_tls
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    PATTERN
-      "gen_pubkey_header.sh"
-      PERMISSIONS
-        OWNER_EXECUTE
-        OWNER_WRITE
-        OWNER_READ
-        GROUP_EXECUTE
-        GROUP_READ
-        WORLD_EXECUTE
-        WORLD_READ)
-endif ()
-
 if (BUILD_ENCLAVES)
+  if (HAS_QUOTE_PROVIDER)
+    install(
+      DIRECTORY remote_attestation
+      DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+      PATTERN
+        "gen_pubkey_header.sh"
+        PERMISSIONS
+          OWNER_EXECUTE
+          OWNER_WRITE
+          OWNER_READ
+          GROUP_EXECUTE
+          GROUP_READ
+          WORLD_EXECUTE
+          WORLD_READ)
+    install(
+      DIRECTORY attested_tls
+      DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+      PATTERN
+        "gen_pubkey_header.sh"
+        PERMISSIONS
+          OWNER_EXECUTE
+          OWNER_WRITE
+          OWNER_READ
+          GROUP_EXECUTE
+          GROUP_READ
+          WORLD_EXECUTE
+          WORLD_READ)
+  endif ()
+
   install(
     DIRECTORY local_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
