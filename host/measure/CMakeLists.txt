@@ -4,8 +4,14 @@
 # Add a library oehostmr independent of libsgx_enclave_common/libsgx_dcap_ql
 if (UNIX)
   set(PLATFORM_HOST_MR_SRC
-      crypto/openssl/init.c crypto/openssl/key.c crypto/openssl/rsa.c
-      crypto/openssl/sha.c linux/hostthread.c)
+      crypto/openssl/asn1.c
+      crypto/openssl/cert.c
+      crypto/openssl/ec.c
+      crypto/openssl/init.c
+      crypto/openssl/key.c
+      crypto/openssl/rsa.c
+      crypto/openssl/sha.c
+      linux/hostthread.c)
 elseif (WIN32)
   set(PLATFORM_HOST_MR_SRC
       crypto/bcrypt/key.c

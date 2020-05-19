@@ -195,7 +195,7 @@ done:
     return rc;
 }
 
-static int _load_pem_file(const char* path, void** data, size_t* size)
+static int _load_file(const char* path, void** data, size_t* size)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -220,8 +220,8 @@ static int _load_pem_file(const char* path, void** data, size_t* size)
         *size = (size_t)st.st_size;
     }
 
-    /* Allocate memory. We add 1 to null terimate the file since the crypto
-     * libraries require null terminated PEM data. */
+    /* Allocate memory. We add 1 to allow for adding a null terminator
+     * since the crypto libraries require null terminated PEM data. */
     if (*size == SIZE_MAX)
         goto done;
 
@@ -239,13 +239,6 @@ static int _load_pem_file(const char* path, void** data, size_t* size)
     /* Read file into memory */
     if (fread(*data, 1, *size, is) != *size)
         goto done;
-
-    /* Zero terminate the PEM data. */
-    {
-        uint8_t* data_tmp = (uint8_t*)*data;
-        data_tmp[*size] = 0;
-        *size += 1;
-    }
 
     rc = 0;
 
@@ -267,6 +260,20 @@ done:
         fclose(is);
 
     return rc;
+}
+
+static int _load_pem_file(const char* path, void** data, size_t* size)
+{
+    int err = _load_file(path, data, size);
+    if (err == 0)
+    {
+        /* Zero terminate the PEM data. */
+        uint8_t* data_tmp = (uint8_t*)*data;
+        data_tmp[*size] = 0;
+        *size += 1;
+    }
+
+    return err;
 }
 
 /* Merge configuration file options into enclave properties */
@@ -432,6 +439,8 @@ int oesign(
     const char* enclave,
     const char* conffile,
     const char* keyfile,
+    const char* digest_signature,
+    const char* x509,
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id)
@@ -440,8 +449,9 @@ int oesign(
     oe_result_t result = OE_UNEXPECTED;
     void* pem_data = NULL;
     size_t pem_size;
+    void* signature_data = NULL;
+    size_t signature_size = 0;
     oe_sgx_enclave_properties_t properties;
-
     OE_SHA256 hash = {0};
 
     OE_CHECK_NO_TRACE(
@@ -465,6 +475,54 @@ int oesign(
             "oe_sgx_sign_enclave_from_engine() failed: result=%s (%#x)",
             oe_result_str(result),
             result);
+    }
+    else if (digest_signature)
+    {
+        /* Load the public key from the x509 certificate */
+        if (_load_pem_file(x509, &pem_data, &pem_size) != 0)
+        {
+            oe_err("Failed to load file: %s", x509 ? x509 : "NULL");
+            goto done;
+        }
+
+        /* Load the digest signature */
+        if (_load_file(digest_signature, &signature_data, &signature_size) != 0)
+        {
+            oe_err(
+                "Failed to load file: %s",
+                digest_signature ? digest_signature : "NULL");
+            goto done;
+        }
+
+        /* Initialize the sigstruct with the signature */
+        result = oe_sgx_digest_sign_enclave(
+            &hash,
+            properties.config.attributes,
+            properties.config.product_id,
+            properties.config.security_version,
+            pem_data,
+            pem_size,
+            signature_data,
+            signature_size,
+            (sgx_sigstruct_t*)properties.sigstruct);
+
+        if (result != OE_OK)
+        {
+            if (result == OE_VERIFY_FAILED)
+            {
+                oe_err("Digest signature cannot be validated against the "
+                       "specified enclave configuration using the provided "
+                       "certificate.");
+            }
+            else
+            {
+                oe_err(
+                    "oe_sgx_digest_sign_enclave() failed: result=%s (%#x)",
+                    oe_result_str(result),
+                    result);
+            }
+            goto done;
+        }
     }
     else
     {
@@ -503,13 +561,14 @@ done:
     if (pem_data)
         free(pem_data);
 
+    if (signature_data)
+        free(signature_data);
+
     return ret;
 }
 
 int oedigest(const char* enclave, const char* conffile, const char* digest_file)
 {
-    OE_UNUSED(digest_file);
-
     int ret = -1;
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t properties;
