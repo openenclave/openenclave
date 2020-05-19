@@ -4,7 +4,7 @@
 #ifndef OE_ADVANCED_ALLOCATOR_H
 #define OE_ADVANCED_ALLOCATOR_H
 
-#include <openenclave/enclave.h>
+#include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
 
