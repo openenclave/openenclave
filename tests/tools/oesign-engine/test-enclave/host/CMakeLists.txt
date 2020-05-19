@@ -12,4 +12,4 @@ target_include_directories(
   helloworld_host PRIVATE # Needed for the generated file helloworld_u.h
                           ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(helloworld_host oehostapp)
+target_link_libraries(helloworld_host oehost)

@@ -14,4 +14,4 @@ add_executable(debug_host host.c debug_mode_u.c)
 target_include_directories(debug_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                               ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(debug_host oehostapp)
+target_link_libraries(debug_host oehost)

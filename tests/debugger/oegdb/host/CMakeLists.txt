@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(oe_gdb_test_host host.c contract.c oe_gdb_test_u.c)
 
 target_include_directories(oe_gdb_test_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(oe_gdb_test_host oehostapp)
+target_link_libraries(oe_gdb_test_host oehost)

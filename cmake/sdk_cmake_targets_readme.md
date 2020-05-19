@@ -26,7 +26,7 @@ The targets relevant to users of the SDK are:
 - `openenclave::oeenclave`
 - `openenclave::oelibc`
 - `openenclave::oelibcxx`
-- `openenclave::oehostapp`
+- `openenclave::oehost`
 
 The remaining targets in `openenclave-targets.cmake` are automatically included
 when needed by the above.
@@ -157,12 +157,12 @@ the latter sets up a dependency where it only signs if the enclave is rebuilt.
 ### Creating a host
 
 Host targets in CMake should use `add_executable`, link to
-`openenclave::oehostapp`, and include the untrusted EDL code if `oeedger8r` was
+`openenclave::oehost`, and include the untrusted EDL code if `oeedger8r` was
 used. An example is:
 
 ```cmake
 add_executable(example_host host.cpp example_u.c)
-target_link_libraries(example_host openenclave::oehostapp)
+target_link_libraries(example_host openenclave::oehost)
 ```
 
 ### Running the enclave

@@ -13,4 +13,4 @@ add_executable(switchless_worksleep_host host.cpp switchless_worksleep_u.c)
 
 target_include_directories(switchless_worksleep_host
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(switchless_worksleep_host oehostapp)
+target_link_libraries(switchless_worksleep_host oehost)

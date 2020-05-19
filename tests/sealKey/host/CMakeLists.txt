@@ -13,4 +13,4 @@ add_executable(sealKey_host host.cpp sealKey_u.c)
 
 target_include_directories(sealKey_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                                                 ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(sealKey_host oehostapp)
+target_link_libraries(sealKey_host oehost)

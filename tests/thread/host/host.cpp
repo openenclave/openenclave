@@ -220,6 +220,7 @@ void test_errno_multi_threads_diffenclave(
 static std::atomic<size_t> g_tcs_out_thread_count(0);
 static std::mutex g_tcs_mutex;
 static std::condition_variable g_tcs_cv;
+static bool g_notify_called = false;
 
 // this is the test_tcs worker thread
 void* tcs_thread(oe_enclave_t* enclave, size_t expected_out_of_threads)
@@ -230,7 +231,19 @@ void* tcs_thread(oe_enclave_t* enclave, size_t expected_out_of_threads)
         // Increment tcs count. Resume threads if expected tcs exhaustion
         // failures have been reached.
         if (++g_tcs_out_thread_count == expected_out_of_threads)
+        {
+            // It can happen that an enclave thread may call host_wait and wait
+            // on the condition variable after the notify_all below is called.
+            // In such a case, that thread may wait forever since notify_all has
+            // already been called. To prevent threads from going into wait
+            // after notify_all has been called, we set g_notify_called to true.
+            // Enclave threads will first check this variable and only go on to
+            // wait if notify has not been called. It is important that
+            // g_notify_called is set and tested with a lock.
+            std::unique_lock<std::mutex> lock(g_tcs_mutex);
             g_tcs_cv.notify_all();
+            g_notify_called = true;
+        }
     }
     else
     {
@@ -285,9 +298,10 @@ void test_tcs_exhaustion(oe_enclave_t* enclave)
 
 void host_wait()
 {
-    // Wait until explicitly notified.
+    // Wait until explicitly notified or notify_all has already been called.
     std::unique_lock<std::mutex> lock(g_tcs_mutex);
-    g_tcs_cv.wait(lock);
+    if (!g_notify_called)
+        g_tcs_cv.wait(lock);
 }
 
 int main(int argc, const char* argv[])

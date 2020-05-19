@@ -3,17 +3,19 @@
 
 add_enclave_library(oesnmalloc OBJECT allocator.cpp)
 
-enclave_link_libraries(oesnmalloc PRIVATE oe_includes oelibc_includes)
-
 if (OE_TRUSTZONE)
-    enclave_link_libraries(oesnmalloc PUBLIC oelibutee_includes)
-    set(TEE_C_FLAGS ${OE_TZ_TA_C_FLAGS})
-else()
-    set(TEE_C_FLAGS -mcx16)
-endif()
+  enclave_link_libraries(oesnmalloc PUBLIC oelibutee_includes)
+  set(TEE_C_FLAGS ${OE_TZ_TA_C_FLAGS})
+else ()
+  set(TEE_C_FLAGS -mcx16)
+endif ()
 
-enclave_compile_options(oesnmalloc PRIVATE
+enclave_compile_options(
+  oesnmalloc
+  PRIVATE
+  -I${PROJECT_SOURCE_DIR}/include
   -I${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/include
+  -I${PROJECT_BINARY_DIR}/output/include/openenclave/libc
   -Wno-conversion
   -ftls-model=local-exec
   -nostdinc++

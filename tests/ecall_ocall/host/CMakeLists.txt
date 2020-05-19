@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(ecall_ocall_host host.cpp ecall_ocall_u.c)
 
 target_include_directories(ecall_ocall_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(ecall_ocall_host oehostapp)
+target_link_libraries(ecall_ocall_host oehost)

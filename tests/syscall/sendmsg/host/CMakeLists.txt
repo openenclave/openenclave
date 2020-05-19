@@ -13,4 +13,4 @@ add_executable(sendmsg_host host.c ../client.c ../server.c sendmsg_u.c)
 
 target_include_directories(sendmsg_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(sendmsg_host oehostapp)
+target_link_libraries(sendmsg_host oehost)

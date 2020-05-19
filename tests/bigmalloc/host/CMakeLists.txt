@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(bigmalloc_host host.c bigmalloc_u.c)
 
 target_include_directories(bigmalloc_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(bigmalloc_host oehostapp)
+target_link_libraries(bigmalloc_host oehost)

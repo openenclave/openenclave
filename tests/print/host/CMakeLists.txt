@@ -12,4 +12,4 @@ add_custom_command(
 add_executable(print_host host.cpp print_u.c)
 
 target_include_directories(print_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(print_host oehostapp)
+target_link_libraries(print_host oehost)
