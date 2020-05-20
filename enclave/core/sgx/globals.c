@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/eeid.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
 
@@ -127,6 +128,11 @@ static volatile uint64_t _enclave_rva;
 static volatile uint64_t _reloc_rva;
 static volatile uint64_t _reloc_size;
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+oe_eeid_t* oe_eeid = NULL;
+size_t oe_eeid_extended_size = 0;
+#endif
+
 /*
 **==============================================================================
 **
@@ -142,7 +148,12 @@ const void* __oe_get_enclave_base()
 
 size_t __oe_get_enclave_size()
 {
-    return oe_enclave_properties_sgx.image_info.enclave_size;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    if (oe_eeid)
+        return oe_eeid_extended_size;
+    else
+#endif
+        return oe_enclave_properties_sgx.image_info.enclave_size;
 }
 
 const void* __oe_get_enclave_elf_header(void)
@@ -175,6 +186,21 @@ size_t __oe_get_reloc_size()
     return _reloc_size;
 }
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+/*
+**==============================================================================
+**
+** Extended enclave initialization data boundaries:
+**
+**==============================================================================
+*/
+
+const void* __oe_get_eeid()
+{
+    return oe_eeid;
+}
+#endif
+
 /*
 **==============================================================================
 **
@@ -192,8 +218,13 @@ const void* __oe_get_heap_base()
 
 size_t __oe_get_heap_size()
 {
-    return oe_enclave_properties_sgx.header.size_settings.num_heap_pages *
-           OE_PAGE_SIZE;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    if (oe_eeid)
+        return oe_eeid->size_settings.num_heap_pages * OE_PAGE_SIZE;
+    else
+#endif
+        return oe_enclave_properties_sgx.header.size_settings.num_heap_pages *
+               OE_PAGE_SIZE;
 }
 
 const void* __oe_get_heap_end()

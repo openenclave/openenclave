@@ -4,6 +4,7 @@
 #ifndef _OE_SGXCREATE_H
 #define _OE_SGXCREATE_H
 
+#include <openenclave/bits/eeid.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include "crypto/sha.h"
@@ -62,6 +63,11 @@ struct _oe_sgx_load_context
 
     /* Hash context used to measure enclave as it is loaded */
     oe_sha256_context_t hash_context;
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    /* EEID data needed during enclave creation */
+    oe_eeid_t* eeid;
+#endif
 };
 
 oe_result_t oe_sgx_initialize_load_context(

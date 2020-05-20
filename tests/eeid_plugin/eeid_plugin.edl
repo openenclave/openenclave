@@ -1,0 +1,26 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+
+    trusted {
+        public void run_tests();
+
+        public oe_result_t get_eeid_evidence(
+          [out, size=evidence_size] uint8_t* evidence_out,
+          size_t evidence_size,
+          [out] size_t* evidence_out_size,
+          [out, size=endorsements_size] uint8_t* endorsements,
+          size_t endorsements_size,
+          [out] size_t* endorsements_out_size
+        );
+    };
+
+    untrusted {
+      void host_ocall_verify(
+            [in, size=evidence_size] uint8_t* evidence,
+            size_t evidence_size,
+            [in, size=endorsements_size] uint8_t* endorsements,
+            size_t endorsements_size);
+    };
+};

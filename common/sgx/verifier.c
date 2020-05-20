@@ -341,7 +341,7 @@ done:
     return result;
 }
 
-static oe_result_t _extract_claims(
+oe_result_t oe_sgx_extract_claims(
     const uint8_t* evidence,
     size_t evidence_size,
     const oe_sgx_endorsements_t* sgx_endorsements,
@@ -474,7 +474,7 @@ static oe_result_t _verify_evidence(
     }
 
     // Last step is to return the required and custom claims.
-    OE_CHECK(_extract_claims(
+    OE_CHECK(oe_sgx_extract_claims(
         evidence_buffer,
         evidence_buffer_size,
         &sgx_endorsements,

@@ -83,7 +83,7 @@ static void _set_claims(
     }
 }
 
-static oe_result_t _serialize_claims(
+oe_result_t oe_sgx_serialize_claims(
     const oe_claim_t* custom_claims,
     size_t custom_claims_length,
     uint8_t** claims_out,
@@ -152,7 +152,7 @@ static oe_result_t _get_evidence(
 
     // Serialize the claims.
     OE_CHECK_MSG(
-        _serialize_claims(
+        oe_sgx_serialize_claims(
             custom_claims, custom_claims_length, &claims, &claims_size, &hash),
         "SGX Plugin: Failed to serialize claims. %s",
         oe_result_str(result));
