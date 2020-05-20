@@ -12,7 +12,7 @@ from a second source that the verifier can use for attestation verification.
 Terminology
 ----------
 From Remote Attestation Procedures Architecture (RATS)
-(https://tools.ietf.org/html/draft-ietf-rats-architecture).  This
+(https://github.com/ietf-rats-wg/architecture).  This
 a draft that is Work in Progress and subject to change.
 
 - Evidence is provable Claims about a specific Computing Environment
