@@ -66,4 +66,6 @@ When you see the following message displayed on the screen, it means you have su
 Usage:
   ./host_verify -r <report_file>
   ./host_verify -c <certificate_file>
+Verify the integrity of enclave remote report or attestation certificate.
+WARNING: host_verify does not have a stable CLI interface. Use with caution.
 ```
