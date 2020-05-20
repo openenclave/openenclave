@@ -203,8 +203,8 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
 parallel "Build Ubuntu 16.04"              : { buildLinuxManagedImage("ubuntu", "16.04") },
          "Build Ubuntu 18.04"              : { buildLinuxManagedImage("ubuntu", "18.04") },
          "Build RHEL 8"                    : { buildLinuxManagedImage("rhel", "8") },
-         "Build Windows 2016 SGX1"         : { buildWindowsManagedImage("win2016", "ws2016-SGX-gen2", "SGX1") },
-         "Build Windows 2016 SGX1FLC DCAP" : { buildWindowsManagedImage("win2016", "ws2016-SGX-DCAP-gen2", "SGX1FLC") },
-         "Build Windows 2016 nonSGX"       : { buildWindowsManagedImage("win2016", "ws2016-nonSGX-gen2", "SGX1FLC-NoDriver") },
+         "Build Windows 2016 SGX1"         : { buildWindowsManagedImage("win2016", "ws2016-SGX", "SGX1") },
+         "Build Windows 2016 SGX1FLC DCAP" : { buildWindowsManagedImage("win2016", "ws2016-SGX-DCAP", "SGX1FLC") },
+         "Build Windows 2016 nonSGX"       : { buildWindowsManagedImage("win2016", "ws2016-nonSGX", "SGX1FLC-NoDriver") },
          "Build Windows 2019 SGX1"         : { buildWindowsManagedImage("win2019", "ws2019-SGX", "SGX1-NoDriver") },
          "Build Windows 2019 SGX1FLC DCAP" : { buildWindowsManagedImage("win2019", "ws2019-SGX-DCAP", "SGX1FLC-NoDriver") }
