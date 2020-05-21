@@ -132,8 +132,13 @@ When OP-TEE reads a TA binary
 from the REE TA store, the store takes care of performing signature
 verification and decryption.
 
-By the time a TA binary reaches the TA loader proper (i.e., the component
-that lays out ELF sections onto memory), if the binary was loaded from
+In this document, we refer to the component that lays out ELF sections
+onto secure-world memory as the "TA loader proper", to distinguish it
+from the REE TA Store that loads a binary from the non-secure filesystem.
+The TA loader proper goes through the binary and readies it in secure
+memory for execution.
+
+By the time a TA binary reaches the TA loader proper, if the binary was loaded from
 the REE TA store, the TA binary header has already been stripped away
 and the entire binary is in cleartext. If the binary was loaded from
 either of the other two stores, the TA binary header will already never
@@ -150,7 +155,7 @@ When a TA is read from the REE's filesystem, the REE TA store checks that
 the signature of the hash is correct. Then, it computes the hash as per the
 formulas above, choosing which one depending on whether the TA is encrypted,
 and verifies that it matches the signed hash. If everything checks out, the
-cleartext, standard ELF binary is passed to the ELF loader proper.
+cleartext, standard ELF binary is passed to the TA loader proper.
 
 #### TA Stores & Open Enclave
 
