@@ -1003,11 +1003,19 @@ oe_result_t oe_create_enclave(
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
 
-    /* Apply the list of settings to the enclave */
-    OE_CHECK(_configure_enclave(enclave, settings, setting_count));
-
     /* Setup logging configuration */
     oe_log_enclave_init(enclave);
+
+    /* Apply the list of settings to the enclave.
+     * This may initialize switchless manager too.
+     * Doing this as the last step in enclave initialization ensures
+     * that all the ecalls necessary for enclave initialization have already
+     * been executed. Now all available tcs can be taken up by ecall worker
+     * threads. If we initialize the switchless manager earlier, then any
+     * normal ecalls required for initialization may not complete if all the
+     * tcs are taken up by ecall worker threads.
+     */
+    OE_CHECK(_configure_enclave(enclave, settings, setting_count));
 
     *enclave_out = enclave;
     result = OE_OK;
