@@ -6,6 +6,16 @@
 * Trusted Application (TA): OP-TEE's term for an enclave
 * Client Application (CA): OP-TEE's term for a host application
 
+### Pseudo-TAs
+
+Separate from TAs, OP-TEE also has the concept of a "Pseudo-TA (PTA)" which
+is a _kernel-mode_ extension of OP-TEE whose interface boundaries are the
+same as those of a regular (i.e., user-mode) TA.
+The Open Enclave SDK cannot currently be used to write
+Pseudo-TAs since they are kernel-mode extensions baked into OP-TEE itself,
+whereas the Open Enclave SDK
+is designed for developing user-mode apps that can be unloaded at runtime.
+
 ## Design Notes
 
 ### Enclave Load Procedure
@@ -166,8 +176,7 @@ you can make that into an early TA by feeding it to OP-TEE's build system,
 which will embed the TA binary into OP-TEE itself. Similarly, you can take
 an Open Enclave TA and install it into secure storage.
 
-There is a Pseudo-TA (PTA, a kernel-mode extension of OP-TEE whose interface
-boundaries are those of a regular TA) called the Secure Storage Management
+There is a Pseudo-TA called the Secure Storage Management
 PTA (henceforth, secstor PTA). The secstor PTA exposes an install command to
 the non-secure world. This commands takes a TA binary that sits in the REE's
 filesystem, performs the same validation steps as the REE TA store on the
@@ -175,10 +184,6 @@ TA binary header (except that encrypted TAs cannot be installed), and if it
 all checks out, the cleartext, standard ELF is written out to secure storage
 (either to the RPMB, or to an encrypted blob on the REE's filesystem for
 which only OP-TEE has the key).
-
-What you can't do currently, however, is use the Open Enclave SDK to write
-PTAs. This might be feasible in the future, but PTAs are meant to easily and
-cleanly extend OP-TEE, not as a general-purpose runtime.
 
 ### TA Metadata
 
@@ -196,8 +201,16 @@ header is only used at load time.
 The primary global variable, `ta_props`, is used by libutee. libutee is the
 secure user-mode library that implements the
 [GlobalPlatform TEE Internal Core API](https://globalplatform.org/specs-library/tee-internal-core-api-specification-v1-2/)
-for OP-TEE. This API is the oeenclave-equivalent for GlobalPlatform, and
-contains property retrieval functions (see section 4.4 of that spec), among
+for OP-TEE.
+
+Just like Open Enclave has host-side APIs and enclave-side
+APIs, so too does GlobalPlatform: the GlobalPlatform TEE Client API is
+host-side and the GlobalPlatform TEE Internal Core API is enclave-side.
+Thus, the OpenEnclave host-side APIs are implemented on top of the
+GlobalPlatform TEE Client API, and the OpenEnclave enclave-side APIs
+are implemented on top of the GlobalPlatform TEE Internal Core API.
+
+The libutee API contains property retrieval functions (see section 4.4 of that spec), among
 others. These property retrieval functions are implemented by libutee and
 read `ta_props`.  `ta_props` is not used for anything else, and its contents
 do not affect the runtime behavior of the TA.
