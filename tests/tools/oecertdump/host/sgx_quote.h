@@ -13,6 +13,12 @@ void oecertdump_quote_provider_log(
     const char* message);
 void set_log_callback();
 
-oe_result_t gen_report(oe_enclave_t* enclave);
+oe_result_t generate_sgx_report(oe_enclave_t* enclave, bool verbose);
+oe_result_t output_sgx_report(const uint8_t* report, size_t report_size);
+oe_result_t get_sgx_report_from_certificate(
+    const uint8_t* certificate_in_der,
+    size_t certificate_in_der_length,
+    uint8_t** report,
+    size_t* report_size);
 
 #endif // _SGX_QUOTE
