@@ -294,8 +294,8 @@ the properties (i.e., `ta_props`).
 
 Regarding the TA binary and TA headers, which are not specified by
 GlobalPlatform, there is no specific call-out for backwards compatibility.
-However, Linaro's behavior so far indicates that they do not wish for TAs
-built for old versions of OP-TEE to break when run on newer versions. The
+However, OP-TEE continues to ensure that TAs built for old versions don't
+break when run on newer versions. The
 notion of legacy TAs vs bootstrap TAs is an example of this.
 
 It would nevertheless perhaps be preferable to explicitly version metadata
@@ -304,10 +304,11 @@ across the board, though that would again require changing OP-TEE.
 ### Enclave Signing Procedure
 
 sign.py and the key baked into OP-TEE, among other artifacts, are exported
-to the TA Dev Kit during OP-TEE's build process. The SDK takes a CMake
+to the TA Dev Kit during OP-TEE's build process. The SDK uses the
+`OE_TA_DEV_KIT_DIR` CMake
 parameter at build-time that specifies where the TA Dev Kit lives against
 which the SDK must be built. The `add_enclave` CMake function picks up
-sign.py and the TA signing key from the TA Dev Kit and applies it to every
+`sign.py` and the TA signing key from the TA Dev Kit and applies it to every
 TA built.
 
 For users who consume the SDK in binary form, the onus is currently on them
