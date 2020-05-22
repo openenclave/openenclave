@@ -230,12 +230,7 @@ oe_enter:
 
 .clear_enclave_registers:
 
-    // Clear these so information will not be leaked to host
-    // Retain %r11 which is used to reference the td structure. It will be
-    // cleared immediately before EEXIT.
-    mov %r11, OM_ENC_TD
     oe_cleanup_registers
-    mov OM_ENC_TD, %r11
 
 .restore_host_registers:
 

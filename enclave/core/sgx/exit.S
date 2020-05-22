@@ -60,7 +60,7 @@ oe_asm_exit:
 
     // Check the depth of the ECALL stack (zero for clean exit)
     // exit-type-check.
-    mov td_depth(%r9), %r8
+    mov td_depth(%r11), %r8
     cmp $0, %r8
     je .clean_exit
 
@@ -69,7 +69,7 @@ oe_asm_exit:
     // exit-type-check.
     lfence 
 
-    mov %rsp, td_last_sp(%r9)
+    mov %rsp, td_last_sp(%r11)
 
     jmp .clear_enclave_registers
 
@@ -79,28 +79,23 @@ oe_asm_exit:
     lfence
 
     // Clear the oe_sgx_td_t.last_sp field (force oe_enter to calculate stack pointer)
-    movq $0, td_last_sp(%r9)
+    movq $0, td_last_sp(%r11)
 
 .clear_enclave_registers:
 
-    // Clear registers so information will not be leaked to host
-    // Retain %r9 which is used to reference the td structure. It will be
-    // cleared immediately before EEXIT.
-    push %r9
     oe_cleanup_registers
-    pop %r9
 
 .restore_host_registers:
 
-    mov td_host_rcx(%r9), %rcx
-    mov td_host_rsp(%r9), %rsp
-    mov td_host_rbp(%r9), %rbp
+    mov td_host_rcx(%r11), %rcx
+    mov td_host_rsp(%r11), %rsp
+    mov td_host_rbp(%r11), %rbp
 
 .execute_eexit:
 
     // Check oe_sgx_td_t.simulate flag
     // simulate-flag-check.
-    mov td_simulate(%r9), %rax
+    mov td_simulate(%r11), %rax
     cmp $0, %rax
     jz .execute_eexit_instruction
 
@@ -109,8 +104,8 @@ oe_asm_exit:
     // simulate-flag-check.
     lfence
 
-    // Clear %r9 which was being used to maintain td pointer
-    xor %r9, %r9
+    // Clear %r11 which was being used to maintain td pointer
+    xor %r11, %r11
 
     // Jump to return address:
     mov $1, %rax
@@ -123,7 +118,7 @@ oe_asm_exit:
     lfence
 
     // Clear %r9 which was being used to maintain td pointer
-    xor %r9, %r9
+    xor %r11, %r11
     
     // EEXIT(RAX=EEXIT, RBX=RETADDR, RCX=AEP, RDI=ARG1, RSI=ARG2)
     mov %rcx, %rbx
