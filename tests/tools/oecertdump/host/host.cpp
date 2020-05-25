@@ -86,24 +86,6 @@ done:
     return result;
 }
 
-void output_certificate(const uint8_t* data, size_t data_len)
-{
-#if defined(__linux__)
-    printf("\n");
-    X509* x509;
-    BIO* input = BIO_new_mem_buf(data, (int)data_len);
-    x509 = d2i_X509_bio(input, nullptr);
-    if (x509)
-    {
-        X509_print_ex_fp(stdout, x509, XN_FLAG_COMPAT, XN_FLAG_SEP_CPLUS_SPC);
-    }
-    BIO_free_all(input);
-    printf("\n");
-#endif
-    OE_UNUSED(data);
-    OE_UNUSED(data_len);
-}
-
 oe_result_t validate_certificate(uint8_t* certificate, size_t certificate_size)
 {
     oe_result_t result;
@@ -228,9 +210,9 @@ static int _parse_args(int argc, const char* argv[])
 
     while (i < argc)
     {
-        if (strcmp(DEFAULT_OUT_FILE, argv[i]) == 0)
+        if (strcmp(INPUT_PARAM_OUT_FILE, argv[i]) == 0)
         {
-            if (argc >= i + 1)
+            if (argc >= i + 2)
             {
                 _params.out_filename = argv[i + 1];
                 i += 2;
@@ -238,14 +220,15 @@ static int _parse_args(int argc, const char* argv[])
             else
             {
                 printf(
-                    "%s has invalid number of parameters.\n", DEFAULT_OUT_FILE);
+                    "%s has invalid number of parameters.\n",
+                    INPUT_PARAM_OUT_FILE);
                 _display_help(argv[0]);
                 return 1;
             }
         }
         else if (strcmp(INPUT_PARAM_OUT_TYPE, argv[i]) == 0)
         {
-            if (argc >= i + 1)
+            if (argc >= i + 2)
             {
                 _params.out_type = argv[i + 1];
                 i += 2;

@@ -3,8 +3,10 @@
 
 #include "sgx_quote.h"
 
+#include <ctype.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/tests.h>
@@ -28,6 +30,12 @@
 
 extern FILE* log_file;
 
+#define OE_PEM_BEGIN_CERTIFICATE "-----BEGIN CERTIFICATE-----"
+#define OE_PEM_BEGIN_CERTIFICATE_LEN (sizeof(OE_PEM_BEGIN_CERTIFICATE) - 1)
+#define OE_PEM_END_CERTIFICATE "-----END CERTIFICATE-----"
+#define OE_PEM_END_CERTIFICATE_LEN (sizeof(OE_PEM_END_CERTIFICATE) - 1)
+#define SGX_EXTENSION_OID_STR "1.2.840.113741.1.13.1"
+
 void log(const char* fmt, ...)
 {
     char message[4096];
@@ -47,6 +55,125 @@ void log(const char* fmt, ...)
     {
         printf("%s", message);
     }
+}
+
+void output_certificate(const uint8_t* data, size_t data_len)
+{
+#if defined(__linux__)
+    printf("\n");
+    X509* x509;
+    BIO* input = BIO_new_mem_buf(data, (int)data_len);
+    x509 = d2i_X509_bio(input, nullptr);
+    if (x509)
+        X509_print_ex_fp(
+            stdout,
+            x509,
+            XN_FLAG_COMPAT,
+            XN_FLAG_SEP_CPLUS_SPC | XN_FLAG_DUMP_UNKNOWN_FIELDS);
+    BIO_free_all(input);
+    printf("\n");
+#endif
+    OE_UNUSED(data);
+    OE_UNUSED(data_len);
+}
+
+void output_certificate_chain(const uint8_t* data, size_t data_len)
+{
+#if defined(__linux__)
+    oe_result_t result = OE_FAILURE;
+    oe_cert_chain_t cert_chain = {0};
+    oe_cert_t leaf_cert = {0};
+    ParsedExtensionInfo extension_info = {{0}};
+
+    X509* x509;
+    const char* pem = (char*)data;
+    size_t buffer_size = 1024;
+    uint8_t* buffer = NULL;
+    bool is_leaf_cert = true;
+
+    // get leaf cert to parse sgx extension
+    oe_cert_chain_read_pem(&cert_chain, data, data_len);
+    oe_cert_chain_get_leaf_cert(&cert_chain, &leaf_cert);
+
+    // Try parsing the extensions.
+    buffer = (uint8_t*)malloc(buffer_size);
+    if (buffer == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+    result =
+        ParseSGXExtensions(&leaf_cert, buffer, &buffer_size, &extension_info);
+
+    if (result == OE_BUFFER_TOO_SMALL)
+    {
+        free(buffer);
+        buffer = (uint8_t*)malloc(buffer_size);
+        if (buffer == NULL)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        result = ParseSGXExtensions(
+            &leaf_cert, buffer, &buffer_size, &extension_info);
+    }
+
+    // print decoded PEM certificate chain
+    while (*pem)
+    {
+        const char* end;
+        // The PEM certificate starts with "-----BEGIN CERTIFICATE-----"
+        if (strncmp(
+                pem, OE_PEM_BEGIN_CERTIFICATE, OE_PEM_BEGIN_CERTIFICATE_LEN) !=
+            0)
+            break;
+        // Find the end of certificate ending with "-----END CERTIFICATE-----"
+        if (!(end = strstr(pem, OE_PEM_END_CERTIFICATE)))
+            break;
+        end += OE_PEM_END_CERTIFICATE_LEN;
+        // Print each certificate
+        BIO* input = BIO_new_mem_buf(pem, (int)(end - pem));
+        x509 = PEM_read_bio_X509(input, NULL, 0, NULL);
+        if (x509)
+            X509_print_ex_fp(
+                stdout, x509, XN_FLAG_COMPAT, XN_FLAG_SEP_CPLUS_SPC);
+        // Print sgx extention in leaf certificate
+        if (is_leaf_cert)
+        {
+            printf(
+                "\n    parsed qe certificate extension (%s) {\n",
+                SGX_EXTENSION_OID_STR);
+            printf("        ppid (hex): ");
+            oe_hex_dump(extension_info.ppid, OE_COUNTOF(extension_info.ppid));
+            printf("        comp_svn (hex): ");
+            oe_hex_dump(
+                extension_info.comp_svn, OE_COUNTOF(extension_info.comp_svn));
+            printf("        pce_svn: 0x%x\n", extension_info.pce_svn);
+            printf("        cpu_svn (hex): ");
+            oe_hex_dump(
+                extension_info.cpu_svn, OE_COUNTOF(extension_info.cpu_svn));
+            printf("        pce_id (hex): ");
+            oe_hex_dump(
+                extension_info.pce_id, OE_COUNTOF(extension_info.pce_id));
+            printf("        fmspc (hex): ");
+            oe_hex_dump(extension_info.fmspc, OE_COUNTOF(extension_info.fmspc));
+            printf("        sgx_type: %d\n", extension_info.sgx_type);
+            printf(
+                "        opt_dynamic_platform: %s\n",
+                extension_info.opt_dynamic_platform ? "true" : "false");
+            printf(
+                "        opt_cached_keys: %s\n",
+                extension_info.opt_cached_keys ? "true" : "false");
+            printf("    } qe cert extension \n");
+            is_leaf_cert = false;
+        }
+        BIO_free_all(input);
+        output_certificate((const uint8_t*)pem, (size_t)(end - pem));
+        while (isspace(*end))
+            end++;
+        pem = end;
+    }
+done:
+    free(buffer);
+    oe_cert_chain_free(&cert_chain);
+    oe_cert_free(&leaf_cert);
+#endif
+    OE_UNUSED(data);
+    OE_UNUSED(data_len);
 }
 
 // DCAP client (libdcap_quoteprov) log callback to this function.
@@ -142,7 +269,7 @@ oe_result_t output_sgx_report(const uint8_t* report, size_t report_size)
     printf("        sign_type: %d\n", quote->sign_type);
     printf("        qe_svn: 0x%x\n", quote->qe_svn);
     printf("        pce_svn: 0x%x\n", quote->pce_svn);
-    printf("        uuid: ");
+    printf("        uuid (hex): ");
     oe_hex_dump(quote->uuid, OE_COUNTOF(quote->uuid));
     printf("        user_data (first_32_bytes == qe_id) (hex): ");
     oe_hex_dump(quote->user_data, OE_COUNTOF(quote->user_data));
@@ -205,8 +332,10 @@ oe_result_t output_sgx_report(const uint8_t* report, size_t report_size)
     printf("    qe_cert_data {\n");
     printf("        type: 0x%x\n", qe_cert_data.type);
     printf("        size: %d\n", qe_cert_data.size);
-    printf("        qe cert:\n");
+    printf("        qe cert PEM:\n");
     printf("%s\n", qe_cert_data.data);
+    printf("        qe cert (decoded):\n");
+    output_certificate_chain(qe_cert_data.data, qe_cert_data.size);
     printf("    } qe_cert_data\n");
 
     printf("} oe_report_header\n");
