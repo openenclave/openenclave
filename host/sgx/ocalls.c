@@ -185,6 +185,9 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.tcb_info_size,
         &buffer_too_small));
 
+    if (buffer_too_small)
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+
     OE_CHECK(_copy_output_buffer(
         tcb_info_issuer_chain,
         tcb_info_issuer_chain_size,
@@ -192,6 +195,9 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.tcb_info_issuer_chain,
         args.tcb_info_issuer_chain_size,
         &buffer_too_small));
+
+    if (buffer_too_small)
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
 
     OE_CHECK(_copy_output_buffer(
         pck_crl,
@@ -201,6 +207,9 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.pck_crl_size,
         &buffer_too_small));
 
+    if (buffer_too_small)
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+
     OE_CHECK(_copy_output_buffer(
         root_ca_crl,
         root_ca_crl_size,
@@ -208,6 +217,9 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.root_ca_crl,
         args.root_ca_crl_size,
         &buffer_too_small));
+
+    if (buffer_too_small)
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
 
     OE_CHECK(_copy_output_buffer(
         pck_crl_issuer_chain,
@@ -217,6 +229,9 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.pck_crl_issuer_chain_size,
         &buffer_too_small));
 
+    if (buffer_too_small)
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+
     OE_CHECK(_copy_output_buffer(
         qe_identity,
         qe_identity_size,
@@ -224,6 +239,9 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.qe_identity,
         args.qe_identity_size,
         &buffer_too_small));
+
+    if (buffer_too_small)
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
 
     OE_CHECK(_copy_output_buffer(
         qe_identity_issuer_chain,
