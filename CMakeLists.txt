@@ -7,6 +7,19 @@
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
+# Utility to ensure specific submodules are present.
+function (check_submodule_not_empty path)
+  file(GLOB submodule_files "${path}/*")
+  list(LENGTH submodule_files number)
+  if (${number} EQUAL 0)
+    message(
+      FATAL_ERROR
+        "Submodule ${path} is empty. You can initialize the submodule now with \
+         'git submodule update --recursive --init',\
+         or during 'git clone' by passing '--recursive'.")
+  endif ()
+endfunction ()
+
 # Read version from "VERSION" file.
 file(STRINGS "VERSION" OE_VERSION_WITH_V)
 string(REGEX REPLACE "^v" "" OE_VERSION ${OE_VERSION_WITH_V})
