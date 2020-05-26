@@ -12,8 +12,6 @@ Param(
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
-    [string]$OCamlURL = 'https://www.ocamlpro.com/pub/ocpwin/ocpwin-builds/ocpwin64/20160113/ocpwin64-20160113-4.02.1+ocp1-mingw64.zip',
-    [string]$OCamlHash = '369F900F7CDA543ABF674520ED6004CC75008E10BEED0D34845E8A42866D0F3A',
     [string]$NodeURL = 'https://nodejs.org/dist/v10.16.3/node-v10.16.3-x64.msi',
     [string]$NodeHash = 'F68B75EEA46232ADB8FD38126C977DC244166D29E7C6CD2DF930B460C38590A9',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
@@ -63,11 +61,6 @@ $PACKAGES = @{
         "url" = $VSBuildToolsURL
         "hash" = $VSBuildToolsHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "vs_buildtools.exe"
-    }
-    "ocaml" = @{
-        "url" = $OCamlURL
-        "hash" = $OCamlHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "ocpwin64.zip"
     }
     "node" = @{
         "url" = $NodeURL
@@ -458,19 +451,6 @@ function Install-VisualStudio {
                                    "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\Common7\Tools")
 }
 
-function Install-OCaml {
-    $installDir = Join-Path $env:ProgramFiles "OCaml"
-    $tmpDir = Join-Path $PACKAGES_DIRECTORY "ocpwin64"
-    if(Test-Path -Path $tmpDir) {
-        Remove-Item -Recurse -Force -Path $tmpDir
-    }
-    Install-ZipTool -ZipPath $PACKAGES["ocaml"]["local_file"] `
-                    -InstallDirectory $tmpDir `
-                    -EnvironmentPath @("$installDir\bin")
-    New-Directory -Path $installDir -RemoveExisting
-    Move-Item -Path "$tmpDir\*\*" -Destination $installDir
-}
-
 function Install-Node {
     $installDir = Join-Path $env:ProgramFiles "nodejs"
     Install-Tool -InstallerPath $PACKAGES["node"]["local_file"] `
@@ -720,7 +700,6 @@ try {
     Start-LocalPackagesDownload
 
     Install-7Zip
-    Install-OCaml
     Install-Nuget
     Install-Python3
     Install-VisualStudio

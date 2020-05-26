@@ -80,6 +80,42 @@ oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256);
  */
 oe_result_t oe_sha256(const void* data, size_t size, OE_SHA256* sha256);
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+/**
+ * Saves the internal state of a SHA-256 context
+ *
+ * This function saves the internal state of a SHA-256 context to H and N
+ * buffers.
+ *
+ * @param context handle of context to finalized
+ * @param internal_hash buffer to write the internal hash to
+ * @param num_hashed buffer to write the number of hashed bytes to
+ *
+ * @return OE_OK upon success
+ */
+oe_result_t oe_sha256_save(
+    const oe_sha256_context_t* context,
+    uint32_t* internal_hash,
+    uint32_t* num_hashed);
+
+/**
+ * Restores the internal state of a SHA-256 context
+ *
+ * This function restores the internal state of a SHA-256 context from
+ * H and N buffers.
+ *
+ * @param context handle of context to finalized
+ * @param internal_hash buffer to read the internal hash from
+ * @param num_hashed buffer to read the number of hashed bytes from
+ *
+ * @return OE_OK upon success
+ */
+oe_result_t oe_sha256_restore(
+    oe_sha256_context_t* context,
+    const uint32_t* internal_hash,
+    const uint32_t* num_hashed);
+#endif
+
 OE_EXTERNC_END
 
 #endif /* _OE_SHA_H */

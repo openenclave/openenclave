@@ -77,3 +77,55 @@ oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
 done:
     return result;
 }
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+oe_result_t oe_sha256_save(
+    const oe_sha256_context_t* context,
+    uint32_t* internal_hash,
+    uint32_t* num_hashed)
+{
+    oe_result_t result = OE_INVALID_PARAMETER;
+
+    if (!context || !internal_hash || !num_hashed)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+
+    for (size_t i = 0; i < 8; i++)
+        internal_hash[i] = impl->ctx.state[i];
+
+    num_hashed[0] = impl->ctx.total[0] * 8;
+    num_hashed[1] = (impl->ctx.total[1] * 8) + (impl->ctx.total[0] >> 29);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_sha256_restore(
+    oe_sha256_context_t* context,
+    const uint32_t* internal_hash,
+    const uint32_t* num_hashed)
+{
+    oe_result_t result = OE_INVALID_PARAMETER;
+
+    if (!context || !internal_hash || !num_hashed)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+    oe_sha256_init(context);
+
+    for (size_t i = 0; i < 8; i++)
+        impl->ctx.state[i] = internal_hash[i];
+
+    uint64_t NB = ((((uint64_t)num_hashed[1]) << 32) + num_hashed[0]) / 8;
+    impl->ctx.total[0] = NB & 0xFFFFFFFF;
+    impl->ctx.total[1] = (NB >> 32) & 0xFFFFFFFF;
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif

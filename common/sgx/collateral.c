@@ -221,7 +221,7 @@ oe_result_t oe_validate_revocation_list(
 
     ParsedExtensionInfo parsed_extension_info = {{0}};
     oe_cert_chain_t tcb_issuer_chain = {0};
-    oe_cert_chain_t crl_issuer_chain[3] = {{{0}}};
+    oe_cert_chain_t crl_issuer_chain = {0};
     oe_cert_t tcb_cert = {0};
     oe_parsed_tcb_info_t parsed_tcb_info = {0};
     oe_tcb_info_tcb_level_t platform_tcb_level = {{0}};
@@ -247,8 +247,9 @@ oe_result_t oe_validate_revocation_list(
             version,
             OE_SGX_ENDORSEMENTS_VERSION);
 
-    OE_STATIC_ASSERT(
-        OE_COUNTOF(crl_issuer_chain) >= OE_SGX_ENDORSEMENTS_CRL_COUNT);
+    OE_STATIC_ASSERT(OE_COUNTOF(crls) >= OE_SGX_ENDORSEMENTS_CRL_COUNT);
+
+    OE_STATIC_ASSERT(OE_COUNTOF(crl_ptrs) >= OE_SGX_ENDORSEMENTS_CRL_COUNT);
 
     OE_CHECK_MSG(
         _parse_sgx_extensions(pck_cert, &parsed_extension_info),
@@ -265,6 +266,24 @@ oe_result_t oe_validate_revocation_list(
         "Failed to read TCB chain certificate. %s",
         oe_result_str(result));
 
+    OE_CHECK_MSG(
+        oe_cert_chain_read_pem(
+            &crl_issuer_chain,
+            sgx_endorsements
+                ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT]
+                .data,
+            sgx_endorsements
+                ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT]
+                .size),
+        "Failed to read CRL issuer cert chain. %s",
+        oe_result_str(result));
+
+    OE_TRACE_VERBOSE(
+        "CRL certificate: \n[%s]\n",
+        (const char*)sgx_endorsements
+            ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT]
+            .data);
+
     // Read CRLs for each cert other than root. If any CRL is missing, the read
     // will error out.
     for (uint32_t i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; ++i)
@@ -280,25 +299,6 @@ oe_result_t oe_validate_revocation_list(
                     .size),
             "Failed to read CRL. %s",
             oe_result_str(result));
-        OE_CHECK_MSG(
-            oe_cert_chain_read_pem(
-                &crl_issuer_chain[i],
-                sgx_endorsements
-                    ->items
-                        [OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT + i]
-                    .data,
-                sgx_endorsements
-                    ->items
-                        [OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT + i]
-                    .size),
-            "Failed to read CRL cert chain. %s",
-            oe_result_str(result));
-        OE_TRACE_VERBOSE(
-            "CRL certificate[%d]: \n[%s]\n",
-            i,
-            (const char*)sgx_endorsements
-                ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT + i]
-                .data);
     }
 
     // Verify the leaf cert.
@@ -318,7 +318,7 @@ oe_result_t oe_validate_revocation_list(
     // for certificates in the chain.
     OE_CHECK_MSG(
         oe_cert_verify(
-            pck_cert, crl_issuer_chain, crl_ptrs, OE_COUNTOF(crl_ptrs)),
+            pck_cert, &crl_issuer_chain, crl_ptrs, OE_COUNTOF(crl_ptrs)),
         "Failed to verify leaf certificate. %s",
         oe_result_str(result));
 
@@ -437,11 +437,8 @@ done:
     {
         oe_crl_free(&crls[i]);
     }
-    for (uint32_t i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; ++i)
-    {
-        oe_cert_chain_free(&crl_issuer_chain[i]);
-    }
     oe_cert_chain_free(&tcb_issuer_chain);
+    oe_cert_chain_free(&crl_issuer_chain);
     oe_cert_free(&tcb_cert);
 
     return result;

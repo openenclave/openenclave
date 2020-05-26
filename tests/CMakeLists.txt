@@ -34,6 +34,7 @@ if (OE_SGX)
   add_subdirectory(switchless_threads)
   add_subdirectory(switchless_nestedcalls)
   add_subdirectory(switchless_worksleep)
+  add_subdirectory(switchless_one_tcs)
 endif ()
 
 if (UNIX
@@ -91,6 +92,10 @@ if (UNIX
     add_subdirectory(thread_local_no_tdata)
     add_subdirectory(VectorException)
     add_subdirectory(stack_smashing_protector)
+
+    if (WITH_EEID)
+      add_subdirectory(eeid_plugin)
+    endif ()
   endif ()
 
   add_subdirectory(c99_compliant)
@@ -106,10 +111,7 @@ endif ()
 
 if (UNIX)
   if (OE_SGX)
-    # This test is currently disabled due to differences in SGX DCAP driver
-    # versions. See child_process/README.md for more info.
-    # add_subdirectory(child_process)
-
+    add_subdirectory(child_process)
     add_subdirectory(cmake_name_conflict)
   endif ()
   add_subdirectory(libc)

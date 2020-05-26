@@ -5,10 +5,10 @@
 #define _OE_SYSCALL_UNISTD_H
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/time.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
-#include <openenclave/corelibc/time.h>
 #include <openenclave/internal/syscall/unistd.h>
 
 OE_EXTERNC_BEGIN

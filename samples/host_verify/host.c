@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <errno.h>
 #include <openenclave/host_verify.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,20 +22,23 @@ bool read_binary_file(
     uint8_t** data_ptr,
     size_t* size_ptr)
 {
-    FILE* fp = fopen(filename, "rb");
     size_t size = 0;
     uint8_t* data = NULL;
     size_t bytes_read = 0;
     bool result = false;
+    FILE* fp = NULL;
+#ifdef _WIN32
+    if (fopen_s(&fp, filename, "rb") != 0)
+#else
+    if (!(fp = fopen(filename, "rb")))
+#endif
+    {
+        fprintf(stderr, "Failed to open: %s\n", filename);
+        goto exit;
+    }
 
     *data_ptr = NULL;
     *size_ptr = 0;
-
-    if (fp == NULL)
-    {
-        fprintf(stderr, "Failed to find file: %s\n", filename);
-        goto exit;
-    }
 
     // Find file size
     size = get_filesize(fp);
@@ -160,6 +164,15 @@ int main(int argc, const char* argv[])
             stdout,
             "Usage:\n  %s -r <report_file>\n  %s -c <certificate_file>\n",
             argv[0],
+            argv[0]);
+        fprintf(
+            stdout,
+            "Verify the integrity of enclave remote report or attestation "
+            "certificate.\n");
+        fprintf(
+            stdout,
+            "WARNING: %s does not have a stable CLI interface. Use with "
+            "caution.\n",
             argv[0]);
 
         if (argc == 2 && memcmp(argv[1], "-h", 2) == 0)

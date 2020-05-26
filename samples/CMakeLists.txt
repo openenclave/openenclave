@@ -49,6 +49,11 @@ if (BUILD_ENCLAVES)
           DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 endif ()
 
+if (OE_SGX)
+  set(BUILD_HOSTVERIFY_INLINE ON)
+  add_subdirectory(host_verify)
+endif ()
+
 install(
   DIRECTORY host_verify
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples

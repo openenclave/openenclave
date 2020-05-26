@@ -13,6 +13,7 @@ if (OE_SGX)
       ../common/sgx/report_helper.c
       ../common/sgx/collateral.c
       ../common/sgx/sgxcertextensions.c
+      ../common/sgx/sgxmeasure.c
       ../common/sgx/tcbinfo.c
       ../common/sgx/tlsverifier.c
       ../common/sgx/verifier.c
@@ -20,6 +21,10 @@ if (OE_SGX)
       sgx/report.c
       sgx/collateralinfo.c
       sgx/start.S)
+  if (WITH_EEID)
+    list(APPEND PLATFORM_SRC ../common/sgx/eeid_verifier.c ../common/sgx/eeid.c
+         sgx/eeid_attester.c)
+  endif ()
 elseif (OE_TRUSTZONE)
   set(PLATFORM_SRC optee/report.c optee/start.S)
   message("TODO: ADD ARM files.")
@@ -65,3 +70,7 @@ install_enclaves(
   ARCHIVE
   DESTINATION
   ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+if (WITH_EEID)
+  target_compile_definitions(oeenclave PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif ()
