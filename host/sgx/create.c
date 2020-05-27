@@ -813,7 +813,7 @@ oe_result_t oe_sgx_build_enclave(
     enclave->text = enclave_addr + oeimage.text_rva;
 
     /* Patch image */
-    OE_CHECK(oeimage.patch(&oeimage, enclave_end));
+    OE_CHECK(oeimage.patch(&oeimage, enclave_size));
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
