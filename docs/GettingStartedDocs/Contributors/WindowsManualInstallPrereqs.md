@@ -13,8 +13,6 @@
 ## Software prerequisites
 - [Microsoft Visual Studio Build Tools 2019](https://aka.ms/vs/15/release/vs_buildtools.exe)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
-- [Node.js 10.x](https://nodejs.org/en/download/)
-- [esy](https://esy.sh/)
 - [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
 - [Python 3](https://www.python.org/downloads/windows/)
 - [ShellCheck](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip)
@@ -61,27 +59,6 @@ C:\> where llvm-ar
 C:\Program Files\LLVM\bin\llvm-ar.exe
 C:\> where ld.lld
 C:\Program Files\LLVM\bin\ld.lld.exe
-```
-
-## OCaml via esy with Node.js
-
-Install [Node.js 10.x](https://nodejs.org/en/download/) from the "Previous
-Releases" page. Ensure `npm` is in your `PATH` (should be done by the MSI
-installer).
-
-Then install [esy](https://esy.sh/) via `npm`.
-
-```cmd
-npm install -g esy@0.5.8
-```
-
-OCaml (managed via `esy`) is used to build the oeedger8r tool as part of the OE SDK.
-
-Open up a command prompt and ensure that `esy` is added to the `PATH`.
-
-```cmd
-C:\Users\test> where esy
-C:\Users\test\AppData\Roaming\npm\esy
 ```
 
 ## Python 3
