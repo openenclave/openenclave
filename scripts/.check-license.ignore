@@ -41,8 +41,6 @@ tests/mbed/tests\..*$
 3rdparty/optee/optee_os/.*
 devex/vsextension/ItemTemplates/.*
 devex/vsextension/ProjectTemplates/.*
-tools/oeedger8r/esy\.lock/.*
-tools/oeedger8r/intel/.*
 tools/oeedger8r-cpp/*
 tests/libcxxrt/results/.*
 tests/print/results/.*
@@ -82,9 +80,6 @@ include/openenclave/internal/queue\.h
 samples/file-encryptor/testfile
 tests/ocall/debugging\.txt
 tests/str/test1\.txt
-tools/oeedger8r/src/\.ocamlformat
-tools/oeedger8r/src/\.ocamlformat-ignore
-tools/oeedger8r/src/main\.ml
 tools/oesign/getopt\.h
 tools/oesign/getopt_long\.c
 tests/host_verify/data/.*

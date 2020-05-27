@@ -4,11 +4,8 @@
 ---
 cmake_target_version: "3.13.1"
 clang_target_version: "7.1.0"
-esy_target_version: "0.5.8"
 shellcheck_target_version: "0.4.6"
 cmake_prefix: "/usr/local"
-esy_prefix: "/usr/local/lib/esy"
-esy_bin_prefix: "/usr/local/bin"
 
 clang_binary_name: "clang-7"
 

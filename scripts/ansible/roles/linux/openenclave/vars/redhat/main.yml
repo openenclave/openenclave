@@ -4,11 +4,8 @@
 ---
 cmake_target_version: "3.13.1"
 clang_target_version: "8.0.1"
-esy_target_version: "0.5.8"
 shellcheck_target_version: "0.4.7"
 cmake_prefix: "/usr"
-esy_prefix: "/usr/lib/esy"
-esy_bin_prefix: "/usr/bin"
 
 shellcheck_sha256sum: "deeea92a4d3a9c5b16ba15210d9c1ab84a2e12e29bf856427700afd896bbdc93"
 
