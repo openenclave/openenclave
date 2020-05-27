@@ -3,9 +3,9 @@
 
 #include <stdio.h>
 
-#include <openenclave/attestation/plugin.h>
 #include <openenclave/attestation/sgx/eeid_verifier.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/plugin.h>
 #include <openenclave/internal/tests.h>
 
 #include "../../../common/sgx/endorsements.h"
@@ -26,22 +26,16 @@ void host_ocall_verify(
     // Without endorsements
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
-    OE_TEST(
+    OE_TEST_CODE(
         oe_verify_evidence(
-            evidence,
-            evidence_size,
-            NULL,
-            0,
-            NULL,
-            0,
-            &claims,
-            &claims_length) == OE_OK);
+            evidence, evidence_size, NULL, 0, NULL, 0, &claims, &claims_length),
+        OE_OK);
 
     claims = NULL;
     claims_length = 0;
 
     // With endorsements
-    OE_TEST(
+    OE_TEST_CODE(
         oe_verify_evidence(
             evidence,
             evidence_size,
@@ -50,7 +44,8 @@ void host_ocall_verify(
             NULL,
             0,
             &claims,
-            &claims_length) == OE_OK);
+            &claims_length),
+        OE_OK);
 }
 
 void host_remote_verify(oe_enclave_t* enclave)
@@ -66,7 +61,7 @@ void host_remote_verify(oe_enclave_t* enclave)
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
 
-    OE_TEST(
+    OE_TEST_CODE(
         get_eeid_evidence(
             enclave,
             &result,
@@ -75,11 +70,12 @@ void host_remote_verify(oe_enclave_t* enclave)
             &evidence_out_size,
             endorsements,
             endorsements_size,
-            &endorsements_out_size) == OE_OK);
+            &endorsements_out_size),
+        OE_OK);
     OE_TEST(result == OE_OK);
 
     // Without endorsements
-    OE_TEST(
+    OE_TEST_CODE(
         oe_verify_evidence(
             evidence,
             evidence_out_size,
@@ -88,10 +84,11 @@ void host_remote_verify(oe_enclave_t* enclave)
             NULL,
             0,
             &claims,
-            &claims_length) == OE_OK);
+            &claims_length),
+        OE_OK);
 
     // With endorsements
-    OE_TEST(
+    OE_TEST_CODE(
         oe_verify_evidence(
             evidence,
             evidence_out_size,
@@ -100,7 +97,8 @@ void host_remote_verify(oe_enclave_t* enclave)
             NULL,
             0,
             &claims,
-            &claims_length) == OE_OK);
+            &claims_length),
+        OE_OK);
 }
 
 void one_enclave_tests(const char* filename, uint32_t flags)
@@ -156,14 +154,15 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
     setting.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
     setting.u.eeid = stuff->eeid;
 
-    OE_TEST(
+    OE_TEST_CODE(
         oe_create_eeid_plugin_enclave(
             stuff->filename,
             OE_ENCLAVE_TYPE_AUTO,
             flags,
             &setting,
             1,
-            &stuff->enclave) == OE_OK);
+            &stuff->enclave),
+        OE_OK);
 
     stuff->evidence_size = 65536;
     stuff->evidence = malloc(stuff->evidence_size);
@@ -172,7 +171,7 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
     stuff->claims = NULL;
     stuff->claims_length = 0;
 
-    OE_TEST(
+    OE_TEST_CODE(
         get_eeid_evidence(
             stuff->enclave,
             &result,
@@ -181,7 +180,8 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
             &stuff->evidence_out_size,
             stuff->endorsements,
             stuff->endorsements_size,
-            &stuff->endorsements_out_size) == OE_OK);
+            &stuff->endorsements_out_size),
+        OE_OK);
     OE_TEST(result == OE_OK);
 
     OE_TEST(
@@ -286,13 +286,12 @@ int main(int argc, const char* argv[])
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
         return SKIP_RETURN_CODE;
 
-    oe_verifier_t* verifier = oe_eeid_plugin_verifier();
-    oe_register_verifier(verifier, NULL, 0);
+    OE_TEST_CODE(oe_sgx_eeid_verifier_initialize(), OE_OK);
 
     one_enclave_tests(argv[1], flags);
     multiple_enclaves_tests(argv[1], flags);
 
-    oe_unregister_verifier(verifier);
+    oe_sgx_eeid_verifier_shutdown();
 
     return 0;
 #else

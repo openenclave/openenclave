@@ -2,9 +2,8 @@
 // Licensed under the MIT License.
 
 // Published headers under the include directory.
-#include <openenclave/attestation/plugin.h>
-#include <openenclave/attestation/sgx/attester.h>
-#include <openenclave/attestation/sgx/verifier.h>
+#include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/bits/attestation.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/edl/syscall_types.h>
@@ -14,6 +13,7 @@
 #include <openenclave/bits/properties.h> // Implicitly test sgxproperties.h and opteeproperties.h.
 #include <openenclave/bits/report.h>
 #include <openenclave/bits/result.h>
+#include <openenclave/internal/plugin.h>
 #if __x86_64__ || _M_X64
 #include <openenclave/bits/sgx/epid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>

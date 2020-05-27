@@ -6,6 +6,8 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/sgx/eeid_plugin.h>
+#include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +16,8 @@
 #include "../../../common/sgx/quote.h"
 #include "../test_helpers.h"
 #include "eeid_plugin_t.h"
+
+static const oe_uuid_t _eeid_uuid = {OE_FORMAT_UUID_SGX_EEID_ECDSA_P256};
 
 typedef struct _header
 {
@@ -26,37 +30,25 @@ typedef struct _header
 static void _test_and_register_attester()
 {
     printf("====== running _test_and_register_attester\n");
-    oe_attester_t* attester = oe_eeid_plugin_attester();
-    OE_TEST(oe_register_attester(attester, NULL, 0) == OE_OK);
-    OE_TEST(oe_register_attester(attester, NULL, 0) == OE_ALREADY_EXISTS);
-    OE_TEST(oe_register_attester(attester, NULL, 0) == OE_ALREADY_EXISTS);
+    OE_TEST_CODE(oe_sgx_eeid_attester_initialize(), OE_OK);
 }
 
 static void _test_and_register_verifier()
 {
     printf("====== running _test_and_register_verifier\n");
-    oe_verifier_t* verifier = oe_eeid_plugin_verifier();
-    OE_TEST(oe_register_verifier(verifier, NULL, 0) == OE_OK);
-    OE_TEST(oe_register_verifier(verifier, NULL, 0) == OE_ALREADY_EXISTS);
-    OE_TEST(oe_register_verifier(verifier, NULL, 0) == OE_ALREADY_EXISTS);
+    OE_TEST_CODE(oe_sgx_eeid_verifier_initialize(), OE_OK);
 }
 
 static void _test_and_unregister_attester()
 {
     printf("====== running _test_and_unregister_attester\n");
-    oe_attester_t* attester = oe_eeid_plugin_attester();
-    OE_TEST(oe_unregister_attester(attester) == OE_OK);
-    OE_TEST(oe_unregister_attester(attester) == OE_NOT_FOUND);
-    OE_TEST(oe_unregister_attester(attester) == OE_NOT_FOUND);
+    OE_TEST_CODE(oe_sgx_eeid_attester_shutdown(), OE_OK);
 }
 
 static void _test_and_unregister_verifier()
 {
     printf("====== running _test_and_unregister_verifier\n");
-    oe_verifier_t* verifier = oe_eeid_plugin_verifier();
-    OE_TEST(oe_unregister_verifier(verifier) == OE_OK);
-    OE_TEST(oe_unregister_verifier(verifier) == OE_NOT_FOUND);
-    OE_TEST(oe_unregister_verifier(verifier) == OE_NOT_FOUND);
+    OE_TEST_CODE(oe_sgx_eeid_verifier_shutdown(), OE_OK);
 }
 
 static void _test_evidence_success(const oe_uuid_t* format_id)
@@ -72,7 +64,6 @@ static void _test_evidence_success(const oe_uuid_t* format_id)
 
     oe_result_t r = oe_get_evidence(
         format_id,
-        OE_REPORT_FLAGS_REMOTE_ATTESTATION,
         claims,
         claims_length,
         NULL,
@@ -100,7 +91,7 @@ static void _test_evidence_success(const oe_uuid_t* format_id)
             &claims,
             &claims_length) == OE_OK);
 
-    OE_TEST(oe_free_claims_list(claims, claims_length) == OE_OK);
+    OE_TEST(oe_free_claims(claims, claims_length) == OE_OK);
 
     // Verify with endorsements.
     OE_TEST(
@@ -118,7 +109,7 @@ static void _test_evidence_success(const oe_uuid_t* format_id)
         host_ocall_verify(
             evidence, evidence_size, endorsements, endorsements_size) == OE_OK);
 
-    OE_TEST(oe_free_claims_list(claims, claims_length) == OE_OK);
+    OE_TEST(oe_free_claims(claims, claims_length) == OE_OK);
     OE_TEST(oe_free_endorsements(endorsements) == OE_OK);
     OE_TEST(oe_free_evidence(evidence) == OE_OK);
 #endif
@@ -132,13 +123,11 @@ static void _test_get_evidence_fail()
     size_t evidence_size;
 
     // Test get_evidence when plugin is unregistered.
-    oe_attester_t* attester = oe_eeid_plugin_attester();
-    OE_TEST(oe_unregister_attester(attester) == OE_OK);
+    OE_TEST_CODE(oe_sgx_eeid_attester_shutdown(), OE_OK);
 
-    OE_TEST(
+    OE_TEST_CODE(
         oe_get_evidence(
-            &attester->base.format_id,
-            0,
+            &_eeid_uuid,
             NULL,
             0,
             NULL,
@@ -146,9 +135,10 @@ static void _test_get_evidence_fail()
             &evidence,
             &evidence_size,
             NULL,
-            NULL) == OE_NOT_FOUND);
+            NULL),
+        OE_NOT_FOUND);
 
-    OE_TEST(oe_register_attester(attester, NULL, 0) == OE_OK);
+    OE_TEST_CODE(oe_sgx_eeid_attester_initialize(), OE_OK);
 }
 
 static void _test_verify_evidence_fail()
@@ -162,11 +152,9 @@ static void _test_verify_evidence_fail()
     oe_claim_t* claims;
     size_t claims_length;
 
-    oe_attester_t* attester = oe_eeid_plugin_attester();
-    OE_TEST(
+    OE_TEST_CODE(
         oe_get_evidence(
-            &attester->base.format_id,
-            0,
+            &_eeid_uuid,
             NULL,
             0,
             NULL,
@@ -174,10 +162,11 @@ static void _test_verify_evidence_fail()
             &evidence,
             &evidence_size,
             &endorsements,
-            &endorsements_size) == OE_OK);
+            &endorsements_size),
+        OE_OK);
 
     // Test verify_evidence with wrong sizes
-    OE_TEST(
+    OE_TEST_CODE(
         oe_verify_evidence(
             evidence,
             0,
@@ -186,9 +175,10 @@ static void _test_verify_evidence_fail()
             NULL,
             0,
             &claims,
-            &claims_length) == OE_INVALID_PARAMETER);
+            &claims_length),
+        OE_INVALID_PARAMETER);
 
-    OE_TEST(
+    OE_TEST_CODE(
         oe_verify_evidence(
             evidence,
             evidence_size,
@@ -197,12 +187,12 @@ static void _test_verify_evidence_fail()
             NULL,
             0,
             &claims,
-            &claims_length) == OE_INVALID_PARAMETER);
+            &claims_length),
+        OE_INVALID_PARAMETER);
 
     // Test verify evidence when plugin is unregistered
-    oe_verifier_t* verifier = oe_eeid_plugin_verifier();
-    OE_TEST(oe_unregister_verifier(verifier) == OE_OK);
-    OE_TEST(
+    OE_TEST_CODE(oe_sgx_eeid_verifier_shutdown(), OE_OK);
+    OE_TEST_CODE(
         oe_verify_evidence(
             evidence,
             evidence_size,
@@ -211,8 +201,9 @@ static void _test_verify_evidence_fail()
             NULL,
             0,
             &claims,
-            &claims_length) == OE_NOT_FOUND);
-    OE_TEST(oe_register_verifier(verifier, NULL, 0) == OE_OK);
+            &claims_length),
+        OE_NOT_FOUND);
+    OE_TEST_CODE(oe_sgx_eeid_verifier_initialize(), OE_OK);
 
     OE_TEST(oe_free_evidence(evidence) == OE_OK);
     OE_TEST(oe_free_endorsements(endorsements) == OE_OK);
@@ -227,7 +218,7 @@ void run_tests()
     _test_and_register_verifier();
 
     // Test get evidence + verify evidence with the proper claims.
-    _test_evidence_success(&oe_eeid_plugin_attester()->base.format_id);
+    _test_evidence_success(&_eeid_uuid);
 
     // Test failures.
     _test_get_evidence_fail();
@@ -251,13 +242,11 @@ oe_result_t get_eeid_evidence(
     uint8_t* local_endorsements = NULL;
     size_t local_endorsements_size = 0;
 
-    oe_attester_t* attester = oe_eeid_plugin_attester();
-    OE_TEST(oe_register_attester(attester, NULL, 0) == OE_OK);
+    OE_TEST_CODE(oe_sgx_eeid_attester_initialize(), OE_OK);
 
-    OE_TEST(
+    OE_TEST_CODE(
         oe_get_evidence(
-            &attester->base.format_id,
-            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+            &_eeid_uuid,
             NULL,
             0,
             NULL,
@@ -265,7 +254,8 @@ oe_result_t get_eeid_evidence(
             &local_evidence,
             &local_evidence_size,
             &local_endorsements,
-            &local_endorsements_size) == OE_OK);
+            &local_endorsements_size),
+        OE_OK);
 
     if (local_evidence_size > evidence_size ||
         local_endorsements_size > endorsements_size)
@@ -277,7 +267,7 @@ oe_result_t get_eeid_evidence(
     memcpy(evidence, local_evidence, local_evidence_size);
     memcpy(endorsements, local_endorsements, local_endorsements_size);
 
-    OE_TEST(oe_unregister_attester(attester) == OE_OK);
+    OE_TEST_CODE(oe_sgx_eeid_attester_shutdown(), OE_OK);
 
     return OE_OK;
 }

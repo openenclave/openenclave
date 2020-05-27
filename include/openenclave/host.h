@@ -23,7 +23,7 @@
 #include <string.h>
 #include "bits/defs.h"
 #include "bits/eeid.h"
-#include "bits/report.h"
+#include "bits/evidence.h"
 #include "bits/result.h"
 #include "bits/types.h"
 #include "host_verify.h"

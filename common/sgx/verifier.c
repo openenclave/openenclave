@@ -1,12 +1,13 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/attestation/plugin.h>
-#include <openenclave/attestation/sgx/verifier.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgx/plugin.h>
+#include <openenclave/internal/tests.h>
 
 #include "../common.h"
 #include "endorsements.h"
@@ -15,14 +16,29 @@
 #include "../../host/sgx/sgxquoteprovider.h"
 #endif
 
+#ifdef OE_BUILD_ENCLAVE
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/thread.h>
+#include "../../enclave/core/sgx/report.h"
+#include "../enclave/sgx/report.h"
+#else
+#include "../../host/hostthread.h"
+#include "../../host/sgx/quote.h"
+typedef oe_mutex oe_mutex_t;
+#define OE_MUTEX_INITIALIZER OE_H_MUTEX_INITIALIZER
+#endif
+
+static const oe_uuid_t _local_uuid = {OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION};
+static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
+
 static oe_result_t _on_register(
     oe_attestation_role_t* context,
-    const void* config_data,
-    size_t config_data_size)
+    const void* configuration_data,
+    size_t configuration_data_size)
 {
     OE_UNUSED(context);
-    OE_UNUSED(config_data);
-    OE_UNUSED(config_data_size);
+    OE_UNUSED(configuration_data);
+    OE_UNUSED(configuration_data_size);
 
 #if defined(OE_BUILD_ENCLAVE) || !defined(OE_LINK_SGX_DCAP_QL)
     return OE_OK;
@@ -43,7 +59,7 @@ static void _free_claim(oe_claim_t* claim)
     oe_free(claim->value);
 }
 
-static oe_result_t _free_claims_list(
+static oe_result_t _free_claims(
     oe_verifier_t* context,
     oe_claim_t* claims,
     size_t claims_length)
@@ -93,7 +109,8 @@ static oe_result_t _verify_local_report(
     // Do a normal report verification on the enclave side.
     // Local report verification is unsupported for host side.
 #ifdef OE_BUILD_ENCLAVE
-    return oe_verify_report(evidence_buffer, evidence_buffer_size, NULL);
+    return oe_verify_report_internal(
+        evidence_buffer, evidence_buffer_size, NULL);
 #else
     OE_UNUSED(evidence_buffer);
     OE_UNUSED(evidence_buffer_size);
@@ -138,9 +155,9 @@ done:
 
 static oe_result_t _add_claim(
     oe_claim_t* claim,
-    void* name,
+    const void* name,
     size_t name_size,
-    void* value,
+    const void* value,
     size_t value_size)
 {
     if (*((uint8_t*)name + name_size - 1) != '\0')
@@ -165,6 +182,7 @@ static oe_result_t _add_claim(
 }
 
 static oe_result_t _fill_with_known_claims(
+    const oe_uuid_t* format_id,
     const uint8_t* report,
     size_t report_size,
     const oe_sgx_endorsements_t* sgx_endorsements,
@@ -175,7 +193,6 @@ static oe_result_t _fill_with_known_claims(
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t parsed_report = {0};
     oe_identity_t* id = &parsed_report.identity;
-    oe_uuid_t plugin_id = {OE_SGX_PLUGIN_UUID};
     size_t claims_index = 0;
     oe_report_header_t* header = (oe_report_header_t*)report;
     oe_datetime_t valid_from = {0};
@@ -241,10 +258,10 @@ static oe_result_t _fill_with_known_claims(
     // Plugin UUID
     OE_CHECK(_add_claim(
         &claims[claims_index++],
-        OE_CLAIM_PLUGIN_UUID,
-        sizeof(OE_CLAIM_PLUGIN_UUID),
-        &plugin_id,
-        sizeof(plugin_id)));
+        OE_CLAIM_FORMAT_UUID,
+        sizeof(OE_CLAIM_FORMAT_UUID),
+        format_id,
+        sizeof(*format_id)));
 
     if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
@@ -342,6 +359,7 @@ done:
 }
 
 oe_result_t oe_sgx_extract_claims(
+    const oe_uuid_t* format_id,
     const uint8_t* evidence,
     size_t evidence_size,
     const oe_sgx_endorsements_t* sgx_endorsements,
@@ -389,6 +407,7 @@ oe_result_t oe_sgx_extract_claims(
 
     // Fill the list with the known claims.
     OE_CHECK(_fill_with_known_claims(
+        format_id,
         evidence,
         report_size,
         sgx_endorsements,
@@ -410,7 +429,7 @@ oe_result_t oe_sgx_extract_claims(
 
 done:
     if (claims)
-        _free_claims_list(NULL, claims, claims_length);
+        _free_claims(NULL, claims, claims_length);
     return result;
 }
 
@@ -475,6 +494,7 @@ static oe_result_t _verify_evidence(
 
     // Last step is to return the required and custom claims.
     OE_CHECK(oe_sgx_extract_claims(
+        &context->base.format_id,
         evidence_buffer,
         evidence_buffer_size,
         &sgx_endorsements,
@@ -490,16 +510,218 @@ done:
     return result;
 }
 
-static oe_verifier_t _verifier = {.base =
-                                      {
-                                          .format_id = {OE_SGX_PLUGIN_UUID},
-                                          .on_register = &_on_register,
-                                          .on_unregister = &_on_unregister,
-                                      },
-                                  .verify_evidence = &_verify_evidence,
-                                  .free_claims_list = &_free_claims_list};
-
-oe_verifier_t* oe_sgx_plugin_verifier()
+// Gets the optional format settings for the given verifier plugin context.
+// For SGX local attestation, this would be the sgx_target_info_t struct.
+static oe_result_t _get_format_settings(
+    oe_verifier_t* context,
+    uint8_t** settings,
+    size_t* settings_size)
 {
-    return &_verifier;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_report_header_t* report = NULL;
+
+    if (!context || !settings || !settings_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!memcmp(&context->base.format_id, &_local_uuid, sizeof(oe_uuid_t)))
+    {
+#ifdef OE_BUILD_ENCLAVE
+        // Enclave-side, SGX local attestation is supported
+        uint8_t* tmp_target = NULL;
+        size_t tmp_target_size = 0;
+
+        report = (oe_report_header_t*)oe_malloc(
+            sizeof(oe_report_header_t) + sizeof(sgx_report_t));
+        if (!report)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        OE_CHECK(sgx_create_report(
+            NULL, 0, NULL, 0, (sgx_report_t*)&report->report));
+
+        report->version = OE_REPORT_HEADER_VERSION;
+        report->report_type = OE_REPORT_TYPE_SGX_LOCAL;
+        report->report_size = sizeof(sgx_report_t);
+
+        OE_CHECK(oe_get_target_info_v2(
+            (const uint8_t*)report,
+            sizeof(oe_report_header_t) + sizeof(sgx_report_t),
+            (void**)&tmp_target,
+            &tmp_target_size));
+
+        *settings = tmp_target;
+        *settings_size = tmp_target_size;
+        tmp_target = NULL;
+        result = OE_OK;
+#else
+        // Host-side, SGX local attestation is not supported
+        OE_RAISE(OE_UNSUPPORTED);
+#endif
+    }
+    else if (!memcmp(&context->base.format_id, &_ecdsa_uuid, sizeof(oe_uuid_t)))
+    {
+        *settings = NULL;
+        *settings_size = 0;
+        result = OE_OK;
+    }
+    else
+    {
+        OE_RAISE(OE_UNSUPPORTED);
+    }
+
+done:
+    if (report)
+        oe_free(report);
+    return result;
+}
+
+static oe_result_t _verify_report(
+    oe_verifier_t* context,
+    const uint8_t* report,
+    size_t report_size,
+    oe_report_t* parsed_report)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!context || !report || report_size == 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Enclave-side, verifies ECDSA and local report
+    // Host-side, verifies only ECDSA report
+    if (
+#ifdef OE_BUILD_ENCLAVE
+        !memcmp(&context->base.format_id, &_local_uuid, sizeof(oe_uuid_t)) ||
+#endif
+        !memcmp(&context->base.format_id, &_ecdsa_uuid, sizeof(oe_uuid_t)))
+    {
+#ifdef OE_BUILD_ENCLAVE
+        OE_CHECK(oe_verify_report_internal(report, report_size, parsed_report));
+#else
+        OE_CHECK(oe_verify_report_internal(
+            NULL, report, report_size, parsed_report));
+#endif
+        result = OE_OK;
+    }
+    else
+        OE_RAISE(OE_UNSUPPORTED);
+
+done:
+    return result;
+}
+
+static oe_result_t _get_verifier_plugins(
+    oe_verifier_t** verifiers,
+    size_t* verifiers_length)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    size_t uuid_count = 0;
+
+    if (!verifiers || !verifiers_length)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+#ifdef OE_BUILD_ENCLAVE
+    uuid_count = 2; // In enclave, only support local and ECDSA formats
+#else
+    uuid_count = 1; // In host, only support ECDSA format
+#endif
+
+    *verifiers = (oe_verifier_t*)oe_malloc(sizeof(oe_verifier_t) * uuid_count);
+    if (*verifiers == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    for (size_t i = 0; i < uuid_count; i++)
+    {
+        oe_verifier_t* plugin = *verifiers + i;
+        memcpy(
+            &plugin->base.format_id,
+#ifdef OE_BUILD_ENCLAVE
+            (!i ? &_local_uuid : &_ecdsa_uuid),
+#else
+            &_ecdsa_uuid,
+#endif
+            sizeof(oe_uuid_t));
+        plugin->base.on_register = &_on_register;
+        plugin->base.on_unregister = &_on_unregister;
+        plugin->get_format_settings = &_get_format_settings;
+        plugin->verify_evidence = &_verify_evidence;
+        plugin->verify_report = &_verify_report;
+        plugin->free_claims = &_free_claims;
+    }
+    *verifiers_length = uuid_count;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static oe_verifier_t* verifiers = NULL;
+static size_t verifiers_length = 0;
+static oe_mutex_t init_mutex = OE_MUTEX_INITIALIZER;
+
+oe_result_t oe_verifier_initialize(void)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    OE_TEST(oe_mutex_lock(&init_mutex) == 0);
+
+    // Do nothing if verifier plugins are already initialized
+    if (verifiers)
+    {
+        OE_TRACE_INFO(
+            "verifiers is not NULL, verifiers_length=%d", verifiers_length);
+        result = OE_OK;
+        goto done;
+    }
+
+    OE_CHECK(_get_verifier_plugins(&verifiers, &verifiers_length));
+
+    OE_TRACE_INFO("got verifiers_length=%d plugins", verifiers_length);
+
+    for (size_t i = 0; i < verifiers_length; i++)
+    {
+        result = oe_register_verifier_plugin(verifiers + i, NULL, 0);
+        OE_CHECK(result);
+    }
+    result = OE_OK;
+
+done:
+    oe_mutex_unlock(&init_mutex);
+    return result;
+}
+
+// Registration of plugins does not allocate any resources to them.
+oe_result_t oe_verifier_shutdown(void)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    OE_TEST(oe_mutex_lock(&init_mutex) == 0);
+
+    // Either verifier plugins have not been initialized,
+    // or there is no supported plugin
+    if (!verifiers)
+    {
+        OE_TRACE_INFO("verifiers is NULL");
+        result = OE_OK;
+        goto done;
+    }
+
+    OE_TRACE_INFO("free verifiers_length=%d plugins", verifiers_length);
+
+    for (size_t i = 0; i < verifiers_length; i++)
+    {
+        result = oe_unregister_verifier_plugin(verifiers + i);
+        if (result != OE_OK)
+            OE_TRACE_ERROR(
+                "oe_unregister_verifier_plugin() #%lu failed with %s",
+                i,
+                oe_result_str(result));
+    }
+
+    oe_free(verifiers);
+    verifiers = NULL;
+    verifiers_length = 0;
+    result = OE_OK;
+
+done:
+    oe_mutex_unlock(&init_mutex);
+    return result;
 }

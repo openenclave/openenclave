@@ -33,6 +33,7 @@ endif ()
 add_enclave_library(
   oeenclave
   STATIC
+  attest_plugin.c
   ../common/attest_plugin.c
   ../common/datetime.c
   ../common/sha.c

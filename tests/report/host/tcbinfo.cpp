@@ -102,7 +102,7 @@ void TestVerifyTCBInfo(
             (const char*)&tcbInfo[0],
             platform_tcb_level,
             parsed_info) == OE_OK);
-    OE_TEST(ecall_result == expected);
+    OE_TEST_CODE(ecall_result, expected);
     AssertParsedValues(*parsed_info, version);
 
     oe_datetime_t nextUpdate = {2019, 6, 6, 10, 12, 17};

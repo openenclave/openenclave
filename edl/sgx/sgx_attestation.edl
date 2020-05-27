@@ -29,14 +29,41 @@ enclave
             [in, size=opt_params_size] const void* opt_params,
             size_t opt_params_size,
             [out] sgx_report_t* report);
+
+        public oe_result_t oe_get_report_v2_ecall(
+            uint32_t flags,
+            [in, size=opt_params_size] const void* opt_params,
+            size_t opt_params_size,
+            [out] uint8_t** report_buffer,
+            [out] size_t* report_buffer_size);
+
+        public oe_result_t oe_verify_local_report_ecall(
+            [in, size=report_size] const uint8_t* report,
+            size_t report_size,
+            [out] oe_report_t* parsed_report);
     };
 
     untrusted
     {
+        // Input and output size values in number of bytes,
+        //    not number of UUIDs
+        // If format_ids buffer is NULL or too small,
+        // return needed buffer size in format_ids_size_out
+        oe_result_t oe_get_supported_attester_format_ids_ocall(
+            [out, size=format_ids_size] void* format_ids,
+            size_t format_ids_size,
+            [out] size_t* format_ids_size_out);
+
         oe_result_t oe_get_qetarget_info_ocall(
+            [in] const oe_uuid_t* format_id,
+            [in, size=opt_params_size] const void* opt_params,
+            size_t opt_params_size,
             [out] sgx_target_info_t* target_info);
 
         oe_result_t oe_get_quote_ocall(
+            [in] const oe_uuid_t* format_id,
+            [in, size=opt_params_size] const void* opt_params,
+            size_t opt_params_size,
             [in] const sgx_report_t* sgx_report,
             [out, size=quote_size] void* quote,
             size_t quote_size,

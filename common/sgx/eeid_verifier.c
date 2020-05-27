@@ -13,12 +13,14 @@
 #endif
 
 #include <openenclave/attestation/sgx/eeid_verifier.h>
-#include <openenclave/attestation/sgx/verifier.h>
 #include <openenclave/bits/attestation.h>
 #include <openenclave/bits/eeid.h>
+#include <openenclave/bits/evidence.h>
 #include <openenclave/internal/eeid.h>
+#include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/sgx/eeid_plugin.h>
 #include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/trace.h>
 
@@ -146,8 +148,8 @@ static oe_result_t _add_claims(
 
     OE_CHECK(_add_claim(
         &claims[claims_index++],
-        OE_CLAIM_PLUGIN_UUID,
-        sizeof(OE_CLAIM_PLUGIN_UUID),
+        OE_CLAIM_FORMAT_UUID,
+        sizeof(OE_CLAIM_FORMAT_UUID),
         &context->base.format_id,
         sizeof(oe_uuid_t)));
 
@@ -167,6 +169,7 @@ done:
 }
 
 static oe_result_t _verify_sgx_report(
+    const oe_verifier_t* context,
     const oe_policy_t* policies,
     size_t policies_size,
     const uint8_t* sgx_evidence_buffer,
@@ -212,6 +215,7 @@ static oe_result_t _verify_sgx_report(
 
     /* Extract SGX claims */
     oe_sgx_extract_claims(
+        &context->base.format_id,
         sgx_evidence_buffer,
         sgx_evidence_buffer_size,
         &sgx_endorsements,
@@ -296,6 +300,7 @@ static oe_result_t _eeid_verify_evidence(
     oe_claim_t* sgx_claims = NULL;
     size_t sgx_claims_length = 0;
     _verify_sgx_report(
+        context,
         policies,
         policies_size,
         sgx_evidence_buffer,
@@ -387,14 +392,19 @@ static oe_result_t _eeid_free_claims_list(
 static oe_verifier_t _eeid_verifier = {
     .base =
         {
-            .format_id = {OE_EEID_PLUGIN_UUID},
+            .format_id = {OE_FORMAT_UUID_SGX_EEID_ECDSA_P256},
             .on_register = &_eeid_verifier_on_register,
             .on_unregister = &_eeid_verifier_on_unregister,
         },
     .verify_evidence = &_eeid_verify_evidence,
-    .free_claims_list = &_eeid_free_claims_list};
+    .free_claims = &_eeid_free_claims_list};
 
-oe_verifier_t* oe_eeid_plugin_verifier(void)
+oe_result_t oe_sgx_eeid_verifier_initialize(void)
 {
-    return &_eeid_verifier;
+    return oe_register_verifier_plugin(&_eeid_verifier, NULL, 0);
+}
+
+oe_result_t oe_sgx_eeid_verifier_shutdown(void)
+{
+    return oe_unregister_verifier_plugin(&_eeid_verifier);
 }

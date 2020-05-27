@@ -13,6 +13,9 @@ OE_EXTERNC_BEGIN
 // ISO 8601 format: YYYY-MM-DDThh:mm:ssZ
 #define OE_DATETIME_FORMAT ("YYYY-MM-DDThh:mm:ssZ")
 
+// Size of buffer to hold oe_datatime_t in string format.
+#define OE_DATETIME_STRING_SIZE 21
+
 #ifdef _WIN32
 #define gmtime_r(now, timeinfo) gmtime_s(timeinfo, now)
 #endif
