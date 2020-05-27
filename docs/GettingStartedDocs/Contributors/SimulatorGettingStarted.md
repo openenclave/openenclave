@@ -43,7 +43,7 @@ cd build/
 Then run `cmake` to configure the build and generate the make files and build:
 
 ```bash
-cmake -DHAS_QUOTE_PROVIDER=OFF ..
+cmake ..
 make
 ```
 
@@ -112,4 +112,4 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 ## Build and run samples
 
-To build and run the samples, please look [here](/samples/README_Linux.md).
+To build and run the samples, please look [here](/samples/README.md).

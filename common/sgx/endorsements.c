@@ -302,14 +302,21 @@ oe_result_t oe_parse_sgx_endorsements(
         uint8_t* item_ptr = data_ptr_start + offsets[i];
         uint32_t item_size;
 
-        if (offsets[i] >= endorsements->buffer_size)
+        if (offsets[i] >= data_size)
             OE_RAISE_MSG(
                 OE_INVALID_PARAMETER,
                 "Offset value when creating SGX endorsement is incorrect.",
                 NULL);
 
         if (i < OE_SGX_ENDORSEMENT_COUNT - 1)
+        {
+            if (offsets[i + 1] <= offsets[i])
+                OE_RAISE_MSG(
+                    OE_INVALID_PARAMETER,
+                    "Endorsement offset values should be in ascending order.",
+                    NULL);
             item_size = offsets[i + 1] - offsets[i];
+        }
         else
             item_size = data_size - offsets[i];
 

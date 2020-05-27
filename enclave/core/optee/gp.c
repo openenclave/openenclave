@@ -184,23 +184,9 @@ static TEE_Result _handle_call_enclave_function(
         u_output_buffer_size = params[3].memref.size;
     }
 
-    /* Resolve which ECALL table to use. */
-    if (args.table_id == OE_UINT64_MAX)
-    {
-        ecall_table.ecalls = __oe_ecalls_table;
-        ecall_table.num_ecalls = __oe_ecalls_table_size;
-    }
-    else
-    {
-        if (args.table_id >= OE_MAX_ECALL_TABLES)
-            return TEE_ERROR_ITEM_NOT_FOUND;
-
-        ecall_table.ecalls = _ecall_tables[args.table_id].ecalls;
-        ecall_table.num_ecalls = _ecall_tables[args.table_id].num_ecalls;
-
-        if (!ecall_table.ecalls)
-            return TEE_ERROR_ITEM_NOT_FOUND;
-    }
+    /* __oe_calls_table is defined in the oeedger8r-generated code. */
+    ecall_table.ecalls = __oe_ecalls_table;
+    ecall_table.num_ecalls = __oe_ecalls_table_size;
 
     /* Fetch matching function */
     if (args.function_id >= ecall_table.num_ecalls)
@@ -414,12 +400,6 @@ TEE_Result TA_CreateEntryPoint(void)
 
     /* Call compiler-generated initialization functions */
     oe_call_init_functions();
-
-#ifdef OE_USE_BUILTIN_EDL
-    /* Install the common TEE ECALL function table. */
-    if (oe_register_core_ecall_function_table() != OE_OK)
-        return TEE_ERROR_GENERIC;
-#endif
 
     /* Done */
     __oe_initialized = 1;

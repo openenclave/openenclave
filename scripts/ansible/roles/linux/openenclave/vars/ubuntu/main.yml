@@ -7,6 +7,7 @@ clang_target_version: "7.1.0"
 shellcheck_target_version: "0.4.6"
 cmake_prefix: "/usr/local"
 
+#TODO: Flip to Clang-8 after https://github.com/openenclave/openenclave/pull/3574 is merged
 clang_binary_name: "clang-7"
 
 apt_packages:
@@ -32,6 +33,8 @@ apt_packages:
   - "libcurl4-openssl-dev"
   - "libx11-dev"
   - "libncurses5-dev"
+  - "clang-8"
+  - "clang-format-8"
 
 apt_arm_packages:
   - "gcc-arm-linux-gnueabi"
@@ -48,6 +51,7 @@ apt_arm_packages:
 validation_distribution_binaries:
   - "/usr/bin/shellcheck"
   - "/usr/bin/clang-7"
+  - "/usr/bin/clang-8"
 
 validation_distribution_files:
   - "/usr/lib/x86_64-linux-gnu/libssl.so"

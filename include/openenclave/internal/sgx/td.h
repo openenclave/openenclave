@@ -76,14 +76,14 @@ oe_thread_data_t* oe_get_thread_data(void);
 
 /**
  * thread_specific_data is the last field in oe_sgx_td_t. It takes up any
- * remainaing space after the declarations of the previous fields. Its size is
+ * remaining space after the declarations of the previous fields. Its size is
  * equal to sizeof(oe_sgx_td_t) - OE_OFFSETOF(oe_sgx_td_t, thread_specific_data)
  * Due to the inability to use OE_OFFSETOF on a struct while defining its
  * members, this value is computed and hard-coded.
  */
 #define OE_THREAD_SPECIFIC_DATA_SIZE (3744)
 
-typedef struct _callsite Callsite;
+typedef struct _oe_callsite oe_callsite_t;
 
 /* Thread specific TLS atexit call parameters */
 typedef struct _oe_tls_atexit
@@ -129,8 +129,8 @@ typedef struct _td
     uint16_t padding[2];
     uint64_t oret_arg;
 
-    /* List of Callsite structures (most recent call is first) */
-    Callsite* callsites;
+    /* List of oe_callsite_t structures (most recent call is first) */
+    oe_callsite_t* callsites;
 
     /* Simulation mode is active if non-zero */
     uint64_t simulate;

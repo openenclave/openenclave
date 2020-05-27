@@ -1,6 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/advanced/mallinfo.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/tests.h>
@@ -15,27 +17,12 @@
 #define MALLOC_SIZE_SMALL 1024
 #define EFFICIENCY_TEST_TIMES 5000000
 
-struct mallinfo
-{
-    size_t arena;    /* non-mmapped space allocated from system */
-    size_t ordblks;  /* number of free chunks */
-    size_t smblks;   /* always 0 */
-    size_t hblks;    /* always 0 */
-    size_t hblkhd;   /* space in mmapped regions */
-    size_t usmblks;  /* maximum total allocated space */
-    size_t fsmblks;  /* always 0 */
-    size_t uordblks; /* total allocated space */
-    size_t fordblks; /* total free space */
-    size_t keepcost; /* releasable (via malloc_trim) space */
-};
-
-struct mallinfo dlmallinfo(void);
-
 static size_t _get_heap_size()
 {
-    // call malloc to update the global data.
-    free(malloc(1));
-    return dlmallinfo().keepcost;
+    oe_mallinfo_t info;
+    oe_result_t rc = oe_allocator_mallinfo(&info);
+    OE_TEST(rc == OE_OK);
+    return info.current_allocated_heap_size;
 }
 
 static int _malloc_free_fixed_size(size_t size, int times)
@@ -95,6 +82,8 @@ static int _malloc_free_random_size(int times, unsigned int seed)
 
 void test_malloc_fixed_size_fragment(void)
 {
+    oe_use_debug_malloc_memset = false;
+
     // get heap size before tests
     size_t heap_size_before_test = _get_heap_size();
     oe_host_printf(
@@ -109,10 +98,14 @@ void test_malloc_fixed_size_fragment(void)
         "[test_malloc_fixed_size_fragment]heap size after test : %zu.\n",
         heap_size_after_test);
     OE_TEST(heap_size_before_test == heap_size_after_test);
+
+    oe_use_debug_malloc_memset = true;
 }
 
 void test_malloc_random_size_fragment(unsigned int seed)
 {
+    oe_use_debug_malloc = false;
+
     // get heap size before tests
     size_t heap_size_before_test = _get_heap_size();
     oe_host_printf(
@@ -126,4 +119,6 @@ void test_malloc_random_size_fragment(unsigned int seed)
         "[test_malloc_random_size_fragment]heap size after test : %zu.\n",
         heap_size_after_test);
     OE_TEST(heap_size_before_test == heap_size_after_test);
+
+    oe_use_debug_malloc = true;
 }

@@ -5,7 +5,7 @@ BRANCH_NAME = env.BRANCH_NAME ?: "master"
 OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
 oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
-GLOBAL_TIMEOUT_MINUTES = 240
+GLOBAL_TIMEOUT_MINUTES = 120
 CTEST_TIMEOUT_SECONDS = 480
 GLOBAL_ERROR = null
 
@@ -23,9 +23,9 @@ def LinuxPackaging(String version, String build_type, String lvi_mitigation = 'N
                              -DLVI_MITIGATION=${lvi_mitigation}             \
                              -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin
                            make
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            cpack -D CPACK_DEB_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
                            cpack
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
                 oe.Run("clang-7", task)
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')

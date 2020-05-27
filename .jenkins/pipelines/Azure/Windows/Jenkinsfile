@@ -4,7 +4,7 @@
 OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
 oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
-GLOBAL_TIMEOUT_MINUTES = 240
+GLOBAL_TIMEOUT_MINUTES = 120
 CTEST_TIMEOUT_SECONDS = 1200
 GLOBAL_ERROR = null
 
@@ -17,7 +17,7 @@ AGENTS_LABELS = [
     "acc-win2019-dcap": env.WINDOWS_2019_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2019-DCAP"
 ]
 
-def windowsLinuxElfBuild(String label, String version, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF') {
+def windowsLinuxElfBuild(String label, String version, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node(AGENTS_LABELS["ubuntu-nonsgx"]) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -31,7 +31,8 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
                                -DLVI_MITIGATION=${lvi_mitigation}                       \
                                -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
                                -DLVI_MITIGATION_SKIP_TESTS=${lvi_mitigation_skip_tests} \
-                               -Wdev
+                               -Wdev                                                    \
+                               ${extra_cmake_args.join(' ')}
                            ninja -v
                            """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", compiler, task, "--cap-add=SYS_PTRACE")
@@ -59,7 +60,7 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
     }
 }
 
-def windowsCrossCompile(String label, String build_type, String has_quote_provider = 'OFF', String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF') {
+def windowsCrossCompile(String label, String build_type, String has_quote_provider = 'OFF', String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
     def node_label = AGENTS_LABELS[label]
     if (has_quote_provider == "ON") {
         node_label = AGENTS_LABELS["${label}-dcap"]
@@ -68,7 +69,7 @@ def windowsCrossCompile(String label, String build_type, String has_quote_provid
         node(node_label) {
             withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
-                    oe.WinCompilePackageTest("build/X64-${build_type}", build_type, has_quote_provider, CTEST_TIMEOUT_SECONDS, lvi_mitigation, lvi_mitigation_skip_tests)
+                    oe.WinCompilePackageTest("build/X64-${build_type}", build_type, has_quote_provider, CTEST_TIMEOUT_SECONDS, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
                 }
             }
         }
@@ -122,21 +123,27 @@ try{
                 "Win2019 Debug Cross Compile with DCAP libs":             { windowsCrossCompile('acc-win2019', 'Debug', 'ON') },
                 "Win2019 Release Cross Compile with DCAP libs":           { windowsCrossCompile('acc-win2019', 'Release', 'ON') },
                 "Win2019 Debug Cross Compile DCAP LVI":                   { windowsCrossCompile('acc-win2019', 'Debug', 'ON', 'ControlFlow') },
-                "Win2019 Release Cross Compile DCAP LVI":                 { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow') }
+                "Win2019 Release Cross Compile DCAP LVI":                 { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow') },
+
+                "Win2016 Sim Release Cross Compile LVI snmalloc":         { windowsCrossCompile('acc-win2016', 'Release', 'OFF', 'ControlFlow', '1', 'OFF', ['-DUSE_SNMALLOC=ON']) },
+                "Win2016 Release Cross Compile DCAP LVI snmalloc":        { windowsCrossCompile('acc-win2016', 'Release', 'ON', 'ControlFlow', '0', 'OFF', ['-DUSE_SNMALLOC=ON']) },
+                "Win2019 Sim Debug Cross Compile LVI snmalloc":           { windowsCrossCompile('acc-win2019', 'Debug', 'OFF', 'ControlFlow', '1', 'OFF', ['-DUSE_SNMALLOC=ON']) },
+                "Win2019 Release Cross Compile DCAP LVI snmalloc":        { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow', '0', 'OFF', ['-DUSE_SNMALLOC=ON']) }
             ]
             parallel testing_stages
         }
     } else {
         stage("PR Testing") {
             testing_stages += [
-                "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI": { windowsLinuxElfBuild('acc-win2016-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
-                "Win2016 Sim Release Cross Compile LVI ":                 { windowsCrossCompile('acc-win2016', 'Release', 'OFF', 'ControlFlow', '1', 'ON') },
-                "Win2016 Debug Cross Compile DCAP LVI":                   { windowsCrossCompile('acc-win2016', 'Debug', 'ON', 'ControlFlow', '0', 'ON') },
-                "Win2016 Release Cross Compile DCAP LVI":                 { windowsCrossCompile('acc-win2016', 'Release', 'ON', 'ControlFlow', '0', 'ON') },
-                "Win2019 Ubuntu1804 clang-7 Release Linux-Elf-build LVI": { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
-                "Win2019 Sim Release Cross Compile LVI ":                 { windowsCrossCompile('acc-win2019', 'Release', 'OFF', 'ControlFlow', '1', 'ON') },
-                "Win2019 Debug Cross Compile DCAP LVI":                   { windowsCrossCompile('acc-win2019', 'Debug', 'ON', 'ControlFlow', '0', 'ON') },
-                "Win2019 Release Cross Compile DCAP LVI FULL Tests":      { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow') }
+                "Win2016 Ubuntu1804 clang-7 Release Linux-Elf-build LVI":          { windowsLinuxElfBuild('acc-win2016-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
+                "Win2016 Sim Release Cross Compile LVI ":                          { windowsCrossCompile('acc-win2016', 'Release', 'OFF', 'ControlFlow', '1', 'ON') },
+                "Win2016 Debug Cross Compile DCAP LVI":                            { windowsCrossCompile('acc-win2016', 'Debug', 'ON', 'ControlFlow', '0', 'ON') },
+                "Win2016 Release Cross Compile DCAP LVI":                          { windowsCrossCompile('acc-win2016', 'Release', 'ON', 'ControlFlow', '0', 'ON') },
+                "Win2019 Ubuntu1804 clang-7 Release Linux-Elf-build LVI":          { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
+                "Win2019 Sim Release Cross Compile LVI ":                          { windowsCrossCompile('acc-win2019', 'Release', 'OFF', 'ControlFlow', '1', 'ON') },
+                "Win2019 Debug Cross Compile DCAP LVI":                            { windowsCrossCompile('acc-win2019', 'Debug', 'ON', 'ControlFlow', '0', 'ON') },
+                "Win2019 Release Cross Compile DCAP LVI FULL Tests":               { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow') },
+                "Win2019 Release Cross Compile DCAP LVI FULL Tests snmalloc":      { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow', '0', 'OFF', ['-DUSE_SNMALLOC=ON']) }
             ]
             parallel testing_stages
         }

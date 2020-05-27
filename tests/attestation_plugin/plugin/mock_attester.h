@@ -49,8 +49,8 @@ static inline oe_result_t mock_attester_unregister(
 
 static inline oe_result_t mock_get_evidence(
     oe_attester_t* context,
-    const oe_claim_t* custom_claims,
-    size_t custom_claims_length,
+    const void* custom_claims_buffer,
+    size_t custom_claims_buffer_size,
     const void* opt_params,
     size_t opt_params_size,
     uint8_t** evidence_buffer,
@@ -58,19 +58,46 @@ static inline oe_result_t mock_get_evidence(
     uint8_t** endorsements_buffer,
     size_t* endorsements_buffer_size)
 {
+    oe_result_t result = OE_UNEXPECTED;
+
     OE_UNUSED(context);
-    OE_UNUSED(custom_claims);
-    OE_UNUSED(custom_claims_length);
+    OE_UNUSED(custom_claims_buffer);
+    OE_UNUSED(custom_claims_buffer_size);
     OE_UNUSED(opt_params);
     OE_UNUSED(opt_params_size);
-    *evidence_buffer = (uint8_t*)MOCK_EVIDENCE;
+
+    if (!evidence_buffer || !evidence_buffer_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // The evidence buffer must be a dynamically allocated one.
+    *evidence_buffer = oe_malloc(sizeof(MOCK_EVIDENCE));
+    if (!*evidence_buffer)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    memcpy(*evidence_buffer, (uint8_t*)MOCK_EVIDENCE, sizeof(MOCK_EVIDENCE));
     *evidence_buffer_size = sizeof(MOCK_EVIDENCE);
+
     if (endorsements_buffer)
     {
-        *endorsements_buffer = (uint8_t*)MOCK_ENDORSEMENTS;
+        if (!endorsements_buffer_size)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        // The endorsements buffer must be a dynamically allocated one.
+        *endorsements_buffer = oe_malloc(sizeof(MOCK_ENDORSEMENTS));
+        if (!*endorsements_buffer)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        memcpy(
+            *endorsements_buffer,
+            (uint8_t*)MOCK_ENDORSEMENTS,
+            sizeof(MOCK_ENDORSEMENTS));
         *endorsements_buffer_size = sizeof(MOCK_ENDORSEMENTS);
     }
-    return OE_OK;
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 static inline oe_result_t mock_free_evidence(
@@ -78,7 +105,7 @@ static inline oe_result_t mock_free_evidence(
     uint8_t* evidence_buffer)
 {
     OE_UNUSED(context);
-    OE_UNUSED(evidence_buffer);
+    oe_free(evidence_buffer);
     return OE_OK;
 }
 
@@ -87,7 +114,7 @@ static inline oe_result_t mock_free_endorsements(
     uint8_t* endorsements_buffer)
 {
     OE_UNUSED(context);
-    OE_UNUSED(endorsements_buffer);
+    oe_free(endorsements_buffer);
     return OE_OK;
 }
 

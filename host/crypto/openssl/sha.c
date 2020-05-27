@@ -78,11 +78,10 @@ oe_result_t oe_sha256_save(
     uint32_t* num_hashed)
 {
     oe_result_t result = OE_INVALID_PARAMETER;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
     if (!context || !internal_hash || !num_hashed)
         OE_RAISE(OE_INVALID_PARAMETER);
-
-    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
     for (size_t i = 0; i < 8; i++)
         internal_hash[i] = impl->ctx.h[i];
@@ -102,11 +101,11 @@ oe_result_t oe_sha256_restore(
     const uint32_t* num_hashed)
 {
     oe_result_t result = OE_INVALID_PARAMETER;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
     if (!context || !internal_hash || !num_hashed)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
     oe_sha256_init(context);
 
     for (size_t i = 0; i < 8; i++)

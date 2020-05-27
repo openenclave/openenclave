@@ -34,7 +34,7 @@ oe_result_t oe_read_oeinfo_sgx(
 
 done:
 
-    if (oeimage.u.elf.elf.magic == ELF_MAGIC)
+    if (oeimage.elf.elf.magic == ELF_MAGIC)
         oeimage.unload(&oeimage);
 
     return result;
@@ -92,8 +92,8 @@ oe_result_t oe_write_oeinfo_sgx(
             goto done;
         }
 
-        if (fwrite(oeimage.u.elf.elf.data, 1, oeimage.u.elf.elf.size, os) !=
-            oeimage.u.elf.elf.size)
+        if (fwrite(oeimage.elf.elf.data, 1, oeimage.elf.elf.size, os) !=
+            oeimage.elf.elf.size)
         {
             oe_err("Failed to write: %s", p);
             goto done;

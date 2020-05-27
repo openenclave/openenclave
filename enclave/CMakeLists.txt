@@ -19,6 +19,7 @@ if (OE_SGX)
       ../common/sgx/verifier.c
       sgx/attester.c
       sgx/report.c
+      sgx/verifier.c
       sgx/collateralinfo.c
       sgx/start.S)
   if (WITH_EEID)
@@ -35,6 +36,7 @@ add_enclave_library(
   STATIC
   attest_plugin.c
   ../common/attest_plugin.c
+  ../common/custom_claims.c
   ../common/datetime.c
   ../common/sha.c
   asym_keys.c
@@ -75,5 +77,5 @@ install_enclaves(
   ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
 if (WITH_EEID)
-  target_compile_definitions(oeenclave PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+  enclave_compile_definitions(oeenclave PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()

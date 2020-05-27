@@ -1,7 +1,5 @@
-Testing and CI/CD Special Interest Group
+Testing Special Interest Group
 ========================================
-
-All things testing within the OE SDK project.
 
 This SIG is specifically interested in making it easier for the OE SDK community
 to run and contribute tests, as well as integrate downstream testing, to ensure
@@ -21,15 +19,22 @@ Regular SIG-Testing meeting: Weekly on [Tuesdays at 17:30 PT (Pacific Time)](htt
 
 [Meeting Agenda and Notes](https://hackmd.io/@aeva/oesdk-sig-testing)
 
-SIG leads
+SIG Chair
 ---------
 
-TBD
+Anand Krishnamoorthi ([anakrish](https://github.com/anakrish))
 
-Meeting Chair
+SIG Approvers
 -------------
 
-TBD
+* Anand Krishnamoorthi ([anakrish](https://github.com/anakrish))
+* Brett McLaren ([BRMcLaren](https://github.com/BRMcLaren))
+* John Kordich ([johnkord](https://github.com/johnkord))
+
+SIG Reviewers
+-------------
+
+(none)
 
 Charter
 -------

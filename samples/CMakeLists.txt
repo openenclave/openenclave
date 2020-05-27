@@ -1,9 +1,9 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-if (HAS_QUOTE_PROVIDER)
+if (BUILD_ENCLAVES)
   install(
-    DIRECTORY remote_attestation
+    DIRECTORY attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     PATTERN
       "gen_pubkey_header.sh"
@@ -28,30 +28,15 @@ if (HAS_QUOTE_PROVIDER)
         GROUP_READ
         WORLD_EXECUTE
         WORLD_READ)
-endif ()
 
-if (BUILD_ENCLAVES)
-  install(
-    DIRECTORY local_attestation
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    PATTERN
-      "gen_pubkey_header.sh"
-      PERMISSIONS
-        OWNER_EXECUTE
-        OWNER_WRITE
-        OWNER_READ
-        GROUP_EXECUTE
-        GROUP_READ
-        WORLD_EXECUTE
-        WORLD_READ)
-
-  install(DIRECTORY helloworld file-encryptor data-sealing switchless
+  install(DIRECTORY data-sealing file-encryptor helloworld log_callback
+                    switchless
           DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
-endif ()
 
-if (OE_SGX)
-  set(BUILD_HOSTVERIFY_INLINE ON)
-  add_subdirectory(host_verify)
+  if (COMPILER_SUPPORTS_SNMALLOC)
+    install(DIRECTORY pluggable_allocator
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+  endif ()
 endif ()
 
 install(
@@ -59,35 +44,35 @@ install(
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
   COMPONENT OEHOSTVERIFY)
 
-if (WIN32)
+install(
+  FILES README.md BuildSamplesWindows.md BuildSamplesLinux.md
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+
+if(UNIX)
   install(
-    FILES README_Windows.md
+    FILES config.mk
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    RENAME README.md)
-else ()
-  install(FILES config.mk
-          DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
-  install(
-    FILES README_Linux.md
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    RENAME README.md)
-endif ()
+    COMPONENT OEHOSTVERIFY)
+endif()
 
 if (WIN32)
   add_test(
     NAME samples
     COMMAND
-      ${CMAKE_COMMAND} -DHAS_QUOTE_PROVIDER=${HAS_QUOTE_PROVIDER}
-      -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
-      -DBUILD_DIR=${PROJECT_BINARY_DIR} -DPREFIX_DIR=${CMAKE_INSTALL_PREFIX}
-      -DNUGET_PACKAGE_PATH=${NUGET_PACKAGE_PATH} -P
+      ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+      -DBUILD_ENCLAVES=${BUILD_ENCLAVES} -DBUILD_DIR=${PROJECT_BINARY_DIR}
+      -DPREFIX_DIR=${CMAKE_INSTALL_PREFIX}
+      -DNUGET_PACKAGE_PATH=${NUGET_PACKAGE_PATH}
+      -DCOMPILER_SUPPORTS_SNMALLOC=on -DUSE_DEBUG_MALLOC=${USE_DEBUG_MALLOC} -P
       ${CMAKE_CURRENT_SOURCE_DIR}/test-samples.cmake)
 else ()
   add_test(
     NAME samples
     COMMAND
-      ${CMAKE_COMMAND} -DHAS_QUOTE_PROVIDER=${HAS_QUOTE_PROVIDER}
-      -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
-      -DBUILD_DIR=${PROJECT_BINARY_DIR} -DPREFIX_DIR=${CMAKE_INSTALL_PREFIX} -P
+      ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+      -DBUILD_ENCLAVES=${BUILD_ENCLAVES} -DBUILD_DIR=${PROJECT_BINARY_DIR}
+      -DPREFIX_DIR=${CMAKE_INSTALL_PREFIX}
+      -DCOMPILER_SUPPORTS_SNMALLOC=${COMPILER_SUPPORTS_SNMALLOC}
+      -DUSE_DEBUG_MALLOC=${USE_DEBUG_MALLOC} -P
       ${CMAKE_CURRENT_SOURCE_DIR}/test-samples.cmake)
 endif ()

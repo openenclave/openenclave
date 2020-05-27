@@ -16,6 +16,77 @@
 #include <openenclave/internal/utils.h>
 #include "platform_t.h"
 
+/**
+ * Declare the prototypes of the following functions to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_get_qetarget_info_ocall(
+    oe_result_t* _retval,
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    sgx_target_info_t* target_info);
+oe_result_t _oe_get_quote_ocall(
+    oe_result_t* _retval,
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    const sgx_report_t* sgx_report,
+    void* quote,
+    size_t quote_size,
+    size_t* quote_size_out);
+
+/**
+ * Make the following OCALLs weak to support the system EDL opt-in.
+ * When the user does not opt into (import) the EDL, the linker will pick
+ * the following default implementations. If the user opts into the EDL,
+ * the implementations (which are strong) in the oeedger8r-generated code will
+ * be used.
+ */
+oe_result_t _oe_get_qetarget_info_ocall(
+    oe_result_t* _retval,
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    sgx_target_info_t* target_info)
+{
+    OE_UNUSED(format_id);
+    OE_UNUSED(opt_params);
+    OE_UNUSED(opt_params_size);
+    OE_UNUSED(target_info);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_get_qetarget_info_ocall, oe_get_qetarget_info_ocall);
+
+oe_result_t _oe_get_quote_ocall(
+    oe_result_t* _retval,
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    const sgx_report_t* sgx_report,
+    void* quote,
+    size_t quote_size,
+    size_t* quote_size_out)
+{
+    OE_UNUSED(format_id);
+    OE_UNUSED(opt_params);
+    OE_UNUSED(opt_params_size);
+    OE_UNUSED(sgx_report);
+    OE_UNUSED(quote);
+    OE_UNUSED(quote_size);
+    OE_UNUSED(quote_size_out);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_get_quote_ocall, oe_get_quote_ocall);
+
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
 OE_STATIC_ASSERT(sizeof(oe_identity_t) == 96);
@@ -127,14 +198,21 @@ static oe_result_t _get_sgx_target_info(
     size_t opt_params_size,
     sgx_target_info_t* target_info)
 {
+    oe_result_t result = OE_UNEXPECTED;
     uint32_t retval;
 
-    if (oe_get_qetarget_info_ocall(
-            &retval, format_id, opt_params, opt_params_size, target_info) !=
-        OE_OK)
-        return OE_FAILURE;
+    OE_CHECK(oe_get_qetarget_info_ocall(
+        &retval, format_id, opt_params, opt_params_size, target_info));
+    result = (oe_result_t)retval;
 
-    return (oe_result_t)retval;
+done:
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING(
+            "SGX remote attestation is not enabled. To "
+            "enable, please add\n\n"
+            "from \"openenclave/edl/sgx/attestation.edl\" import *;\n\n"
+            "in the edl file.\n");
+    return result;
 }
 
 static oe_result_t _get_quote(
@@ -166,7 +244,12 @@ static oe_result_t _get_quote(
     result = (oe_result_t)retval;
 
 done:
-
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING(
+            "SGX remote attestation is not enabled. To "
+            "enable, please add\n\n"
+            "from \"openenclave/edl/sgx/attestation.edl\" import *;\n\n"
+            "in the edl file.\n");
     return result;
 }
 
@@ -184,11 +267,6 @@ oe_result_t oe_get_remote_report(
     sgx_report_t sgx_report = {{{0}}};
     size_t sgx_report_size = sizeof(sgx_report);
     sgx_quote_t* sgx_quote = NULL;
-
-    // For remote attestation, the Quoting Enclave's target info is used.
-    // opt_params must not be supplied.
-    if (opt_params != NULL || opt_params_size != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
 
     /*
      * OCall: Get target info from Quoting Enclave.

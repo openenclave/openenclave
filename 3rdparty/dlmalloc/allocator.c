@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/advanced/allocator.h>
+#include <openenclave/advanced/mallinfo.h>
 #include <openenclave/enclave.h>
 
 #define HAVE_MMAP 0
@@ -38,6 +39,7 @@ void* dlmalloc_sbrk(ptrdiff_t increment);
 static uint8_t* _heap_start;
 static uint8_t* _heap_end;
 static uint8_t* _heap_next;
+static size_t _max_heap_size;
 static int _lock = 0;
 void* dlmalloc_sbrk(ptrdiff_t increment)
 {
@@ -67,6 +69,7 @@ void oe_allocator_init(void* heap_start_address, void* heap_end_address)
 {
     _heap_start = heap_start_address;
     _heap_end = heap_end_address;
+    _max_heap_size = _heap_end - _heap_start;
 }
 
 void oe_allocator_cleanup(void)
@@ -114,4 +117,19 @@ int oe_allocator_posix_memalign(void** memptr, size_t alignment, size_t size)
 size_t oe_allocator_malloc_usable_size(void* ptr)
 {
     return dlmalloc_usable_size(ptr);
+}
+
+oe_result_t oe_allocator_mallinfo(oe_mallinfo_t* info)
+{
+    info->max_total_heap_size = _max_heap_size;
+
+    struct mallinfo minfo = dlmallinfo();
+    // uordblks:  current total allocated space (normal or mmapped)
+    info->current_allocated_heap_size = minfo.uordblks;
+
+    // usmblks:   the maximum total allocated space. This will be greater
+    //            than current total if trimming has occurred.
+    info->peak_allocated_heap_size = minfo.usmblks;
+
+    return OE_OK;
 }

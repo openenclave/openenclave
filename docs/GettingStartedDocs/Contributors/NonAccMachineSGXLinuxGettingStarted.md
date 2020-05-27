@@ -1,4 +1,4 @@
-# Configure OE SDK SGX on Linux in non-ACC Machines
+﻿# Configure OE SDK SGX on Linux in non-ACC Machines
 
 ## Disclaimer
 This document is to provide a viable solution to enable Open Enclave SGX DCAP remote attestation to run on non-Azure Confidential Computing (ACC) machines. It relies on several Intel components and services which are subject to Intel's changes.
@@ -72,21 +72,21 @@ sudo apt-get update
 
 - Or Install Intel DCAP Quote Provider with dpkg manually
 
-The [libsgx-dcap-default-qpl directory](https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/ubuntuServer18.04/debian_pkgs/libs/libsgx-dcap-default-qpl/) lists all different version of libsgx-dcap-default-qpl, please download the most recent version that matches your OS version. For Ubuntu 18.04 (code name [Bionic Beaver](https://wiki.ubuntu.com/BionicBeaver)), please download the version libsgx-dcap-default-qpl_{version}-bionic1_amd64.deb. For Ubuntu 16.04 (code name [Xenial Xerus](https://wiki.ubuntu.com/XenialXerus)), please download the version libsgx-dcap-default-qpl_{version}-xenial1_amd64.deb.
+The [libsgx-dcap-default-qpl directory](https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/) lists all different version of libsgx-dcap-default-qpl, please download the most recent version that matches your OS version. For Ubuntu 18.04 (code name [Bionic Beaver](https://wiki.ubuntu.com/BionicBeaver)), please download the version libsgx-dcap-default-qpl_{version}-bionic1_amd64.deb. For Ubuntu 16.04 (code name [Xenial Xerus](https://wiki.ubuntu.com/XenialXerus)), please download the version libsgx-dcap-default-qpl_{version}-xenial1_amd64.deb.
 
-In this document, we use libsgx-dcap-default-qpl_1.6.100.2-bionic1_amd64.deb as an example, run the command below to download the package
+In this document, we use libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb as an example, run the command below to download the package
 ```bash
 cd ~
-wget https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/ubuntuServer18.04/debian_pkgs/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.6.100.2-bionic1_amd64.deb
+wget https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb
 ```
 
 Then install the package
 ```bash
-sudo dpkg -i libsgx-dcap-default-qpl_1.6.100.2-bionic1_amd64.deb
+sudo dpkg -i libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb
 ```
 
 ### 3.2 Create a soft link
-OE expects the file name of the qpl to be libdcap_quoteprov.so. But the Intel default qpl creates installed libdcap_quoteprov.so.1 and libdcap_quoteprov.so.1.6.100.2.  libdcap_quoteprov.so.1 is a soft link to libdcap_quoteprov.so.1.6.100.2. To allow OE works properly, we need to create the other soft link called libdcap_quoteprov.s linking to libdcap_quoteprov.so.1.6.100.2
+OE expects the file name of the qpl to be libdcap_quoteprov.so. But the Intel default qpl creates installed libdcap_quoteprov.so.1 and libdcap_quoteprov.so.1.8.100.2.  libdcap_quoteprov.so.1 is a soft link to libdcap_quoteprov.so.1.8.100.2. To allow OE works properly, we need to create the other soft link called libdcap_quoteprov.s linking to libdcap_quoteprov.so.1.8.100.2
 
 Check where those files are installed.
 ```bash
@@ -98,7 +98,7 @@ In most cases, it should be in /usr/lib/x86_64-linux-gnu/
 Use /usr/lib/x86_64-linux-gnu/ as an example.
 ```bash
 cd /usr/lib/x86_64-linux-gnu/
-sudo ln -s libdcap_quoteprov.so.1.6.100.2 libdcap_quoteprov.so
+sudo ln -s libdcap_quoteprov.so.1.8.100.2 libdcap_quoteprov.so
 ```
 
 NOTES TO USERS WHO HAVE ALREADY INSTALLED AZURE DCAP CLIENT:
@@ -175,17 +175,17 @@ NOTE: In case the Intel SGX APT source repository is not added to your system. S
 
 - Or Install PCCS with dpkg manually
 
-From the [list of different versions of pccs](https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/ubuntuServer18.04/debian_pkgs/web/sgx-dcap-pccs/), please download the most recent version that matches your OS version.
+From the [list of different versions of pccs](https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/web/sgx-dcap-pccs/), please download the most recent version that matches your OS version.
 
-In this document, we use sgx-dcap-pccs_1.6.100.2-bionic1_amd64.deb as an example.  Run the command below to download the package
+In this document, we use sgx-dcap-pccs_1.8.100.2-bionic1_amd64.deb as an example.  Run the command below to download the package
 ```bash
 cd ~
-wget https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/ubuntuServer18.04/debian_pkgs/web/sgx-dcap-pccs/sgx-dcap-pccs_1.6.100.2-bionic1_amd64.deb
+wget https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/web/sgx-dcap-pccs/sgx-dcap-pccs_1.8.100.2-bionic1_amd64.deb
 ```
 
 Then install the package.
 ```bash
-sudo dpkg -i sgx-dcap-pccs_1.6.100.2-bionic1_amd64.deb
+sudo dpkg -i sgx-dcap-pccs_1.8.100.2-bionic1_amd64.deb
 ```
 
 You will be asked to finish the configuration during the installation process.
@@ -275,3 +275,41 @@ Total Test time (real) =  83.61 sec
 ```
 
 A clean pass of the above unit tests is an indication that your Open Enclave setup was successful.
+
+Above remote attestation tests/samples will only succeed if using a production CPU. 
+If you want remote attestation tests/samples to succeed on the pre-production CPU, you should follow below steps to switch backend provisioning server to pre-production.
+
+## 6. (Optional) Verify OE remote attestation on pre-production platforms
+You will need to make some changes in Step 4.1 and 5 above when using the pre-production platforms.
+
+### 6.1 Get SBX (Sand Box) primary key for Provisioning Certificate Caching Service (PCCS) in Step 4.1
+Get the SBX primary key from https://sbx.api.portal.trustedservices.intel.com/provisioning-certification.
+The steps of installing and configuring PCCS are similar to Step 4.2.
+
+Please check PCCS configuration file (config/production-0.json)
+- uri - The URL needs to be set as https://sbx.api.trustedservices.intel.com/sgx/certification/v2/.
+- ApiKey - The API key needs to be set as SBX primary key.
+
+### 6.2 Replace the Intel root certificate's public key value before Step 5
+
+```patch
+common/sgx/quote.c
+ // Public key of Intel's root certificate.
+ static const char* g_expected_root_certificate_key =
+     "-----BEGIN PUBLIC KEY-----\n"
+-    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
+-    "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
++    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAET/oP/VYc2tbA+Y0wjIEoxbknonMy\n"
++    "yOjrE/a+QrVx1kZvU8ZE/8L/wQKCIOSaSWbPAvMuL7TTSbssuu0okDegLQ==\n"
+     "-----END PUBLIC KEY-----\n";
+
+common/sgx/tcbinfo.c
+ // Public key of Intel's root certificate.
+ static const char* _trusted_root_key_pem =
+     "-----BEGIN PUBLIC KEY-----\n"
+-    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
+-    "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
++    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAET/oP/VYc2tbA+Y0wjIEoxbknonMy\n"
++    "yOjrE/a+QrVx1kZvU8ZE/8L/wQKCIOSaSWbPAvMuL7TTSbssuu0okDegLQ==\n"
+     "-----END PUBLIC KEY-----\n";
+```

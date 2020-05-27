@@ -1,0 +1,23 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/logging.edl" import oe_write_ocall; // Support OE_TEST
+    from "openenclave/edl/fcntl.edl" import // Support code coverage analysis
+        oe_syscall_open_ocall,
+        oe_syscall_close_ocall,
+        oe_syscall_readv_ocall,
+        oe_syscall_writev_ocall,
+        oe_syscall_lseek_ocall,
+        oe_syscall_dup_ocall,
+        oe_syscall_flock_ocall;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/cpu.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
+
+    trusted {
+        public void enc_edl_opt_out();
+    };
+};

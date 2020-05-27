@@ -110,7 +110,7 @@ int setup()
     oe_result_t result;
 
     /* Load the host file system module. */
-    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
+    if ((result = oe_load_module_host_file_system()) != OE_OK)
         return -1;
 
     /* Mount the host file system on the root directory. */
@@ -380,6 +380,8 @@ functions.
 | close             | none                                                     |
 | dup               | none                                                     |
 | dup2              | none                                                     |
+| fdatasync         | none                                                     |
+| fsync             | none                                                     |
 | getcwd            | none                                                     |
 | getdomainname     | none                                                     |
 | getegid           | none                                                     |
@@ -541,6 +543,7 @@ following functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
+| fstat             | none                                                     |
 | mkdir             | none                                                     |
 | stat              | none                                                     |
 |                   | <img width="1000">                                       |

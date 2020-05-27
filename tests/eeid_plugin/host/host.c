@@ -6,6 +6,8 @@
 #include <openenclave/attestation/sgx/eeid_verifier.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/plugin.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 
 #include "../../../common/sgx/endorsements.h"
@@ -28,7 +30,15 @@ void host_ocall_verify(
     size_t claims_length = 0;
     OE_TEST_CODE(
         oe_verify_evidence(
-            evidence, evidence_size, NULL, 0, NULL, 0, &claims, &claims_length),
+            NULL,
+            evidence,
+            evidence_size,
+            NULL,
+            0,
+            NULL,
+            0,
+            &claims,
+            &claims_length),
         OE_OK);
 
     claims = NULL;
@@ -37,6 +47,7 @@ void host_ocall_verify(
     // With endorsements
     OE_TEST_CODE(
         oe_verify_evidence(
+            NULL,
             evidence,
             evidence_size,
             endorsements,
@@ -72,11 +83,11 @@ void host_remote_verify(oe_enclave_t* enclave)
             endorsements_size,
             &endorsements_out_size),
         OE_OK);
-    OE_TEST(result == OE_OK);
 
     // Without endorsements
     OE_TEST_CODE(
         oe_verify_evidence(
+            NULL,
             evidence,
             evidence_out_size,
             NULL,
@@ -90,6 +101,7 @@ void host_remote_verify(oe_enclave_t* enclave)
     // With endorsements
     OE_TEST_CODE(
         oe_verify_evidence(
+            NULL,
             evidence,
             evidence_out_size,
             endorsements,
@@ -107,7 +119,7 @@ void one_enclave_tests(const char* filename, uint32_t flags)
 
     oe_enclave_setting_t setting;
     setting.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
-    make_test_eeid(&setting.u.eeid);
+    make_test_eeid(&setting.u.eeid, 10 * OE_PAGE_SIZE);
 
     oe_enclave_t* enclave = NULL;
     oe_result_t result = oe_create_eeid_plugin_enclave(
@@ -186,6 +198,7 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
 
     OE_TEST(
         oe_verify_evidence(
+            NULL,
             stuff->evidence,
             stuff->evidence_out_size,
             NULL,
@@ -197,6 +210,7 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
 
     OE_TEST(
         oe_verify_evidence(
+            NULL,
             stuff->evidence,
             stuff->evidence_out_size,
             stuff->endorsements,
@@ -222,12 +236,12 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
 
     // Enclave A
     enclave_stuff_t A;
-    OE_TEST(make_test_eeid(&A.eeid) == OE_OK);
+    OE_TEST(make_test_eeid(&A.eeid, 10) == OE_OK);
     start_enclave(filename, flags, &A);
 
     // Enclave B with reversed EEID
     enclave_stuff_t B;
-    OE_TEST(make_test_eeid(&B.eeid) == OE_OK);
+    OE_TEST(make_test_eeid(&B.eeid, 10) == OE_OK);
     for (size_t i = 0; i < B.eeid->data_size; i++)
         B.eeid->data[i] = (uint8_t)(9 - i);
     start_enclave(filename, flags, &B);
@@ -238,6 +252,7 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
     // Faulty endorsements must fail
     OE_TEST(
         oe_verify_evidence(
+            NULL,
             A.evidence,
             A.evidence_out_size,
             B.endorsements,
@@ -252,7 +267,7 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
 
     // Enclave C with same EEID as A
     enclave_stuff_t C;
-    OE_TEST(make_test_eeid(&C.eeid) == OE_OK);
+    OE_TEST(make_test_eeid(&C.eeid, 10) == OE_OK);
     start_enclave(filename, flags, &C);
 
     // Check that the hashes of A and C are indeed the same
@@ -273,11 +288,18 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_LINK_SGX_DCAP_QL
     if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
         exit(1);
+    }
+
+    if (!oe_has_sgx_quote_provider())
+    {
+        // this test should not run on any platforms where DCAP libraries are
+        // not found.
+        OE_TRACE_INFO("=== tests skipped when DCAP libraries are not found.\n");
+        return SKIP_RETURN_CODE;
     }
 
     // Skip test in simulation mode because of memory alignment issues, same as
@@ -294,12 +316,4 @@ int main(int argc, const char* argv[])
     oe_sgx_eeid_verifier_shutdown();
 
     return 0;
-#else
-    // This test should not run on any platforms where HAS_QUOTE_PROVIDER is not
-    // defined.
-    OE_UNUSED(argc);
-    OE_UNUSED(argv);
-    printf("=== tests skipped when built with HAS_QUOTE_PROVIDER=OFF\n");
-    return SKIP_RETURN_CODE;
-#endif
 }

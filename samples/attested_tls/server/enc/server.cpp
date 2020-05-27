@@ -20,7 +20,7 @@
 
 extern "C"
 {
-    int setup_tls_server(char* server_port);
+    int setup_tls_server(char* server_port, bool keep_server_up);
 };
 
 #define MAX_ERROR_BUFF_SIZE 256
@@ -123,14 +123,18 @@ exit:
 int handle_communication_until_done(
     mbedtls_ssl_context* ssl,
     mbedtls_net_context* listen_fd,
-    mbedtls_net_context* client_fd)
+    mbedtls_net_context* client_fd,
+    bool keep_server_up)
 {
     int ret = 0;
     int len = 0;
 
 waiting_for_connection_request:
 
-    if (ret != 0)
+    if (ret != 0 &&
+        // ignore EOF errors, which can be caused due to Load Balancers
+        // or health checks
+        ret != MBEDTLS_ERR_SSL_CONN_EOF)
     {
         mbedtls_strerror(ret, error_buf, MAX_ERROR_BUFF_SIZE);
         printf("Last error was: %d - %s\n", ret, error_buf);
@@ -140,7 +144,8 @@ waiting_for_connection_request:
     mbedtls_net_free(client_fd);
     mbedtls_ssl_session_reset(ssl);
 
-    printf(TLS_SERVER "Waiting for a client connection request...\n");
+    if (ret != MBEDTLS_ERR_SSL_CONN_EOF)
+        printf(TLS_SERVER "Waiting for a client connection request...\n");
     if ((ret = mbedtls_net_accept(listen_fd, client_fd, NULL, 0, NULL)) != 0)
     {
         char errbuf[512];
@@ -151,20 +156,19 @@ waiting_for_connection_request:
             errbuf);
         goto done;
     }
-    printf(
-        TLS_SERVER
-        "mbedtls_net_accept returned successfully.(listen_fd = %d) (client_fd "
-        "= %d) \n",
-        listen_fd->fd,
-        client_fd->fd);
 
     // set up bio callbacks
     mbedtls_ssl_set_bio(
         ssl, client_fd, mbedtls_net_send, mbedtls_net_recv, NULL);
 
-    printf(TLS_SERVER "Performing the SSL/TLS handshake...\n");
     while ((ret = mbedtls_ssl_handshake(ssl)) != 0)
     {
+        // Load balancer health-check pings can cause EOF errors
+        // Ignore the error, and wait for client to send request
+        if (ret == MBEDTLS_ERR_SSL_CONN_EOF)
+        {
+            goto waiting_for_connection_request;
+        }
         if (ret != MBEDTLS_ERR_SSL_WANT_READ &&
             ret != MBEDTLS_ERR_SSL_WANT_WRITE)
         {
@@ -269,14 +273,15 @@ waiting_for_connection_request:
     }
 
     ret = 0;
-    // comment out the following line if you want the server in a loop
-    // goto waiting_for_connection_request;
+
+    if (keep_server_up)
+        goto waiting_for_connection_request;
 
 done:
     return ret;
 }
 
-int setup_tls_server(char* server_port)
+int setup_tls_server(char* server_port, bool keep_server_up)
 {
     int ret = 0;
     oe_result_t result = OE_FAILURE;
@@ -316,6 +321,7 @@ int setup_tls_server(char* server_port)
     mbedtls_pk_init(&pkey);
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
+    oe_verifier_initialize();
 
     printf(
         TLS_SERVER "Setup the listening TCP socket on SERVER_IP= [%s] "
@@ -356,7 +362,8 @@ int setup_tls_server(char* server_port)
     }
 
     // handle communication
-    ret = handle_communication_until_done(&ssl, &listen_fd, &client_fd);
+    ret = handle_communication_until_done(
+        &ssl, &listen_fd, &client_fd, keep_server_up);
     if (ret != 0)
     {
         printf(TLS_SERVER "server communication error %d\n", ret);
@@ -382,6 +389,7 @@ exit:
     mbedtls_ssl_cache_free(&cache);
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);
+    oe_verifier_shutdown();
     fflush(stdout);
     return (ret);
 }

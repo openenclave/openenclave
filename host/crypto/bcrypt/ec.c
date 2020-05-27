@@ -591,7 +591,7 @@ oe_result_t oe_ec_private_key_sign(
     if (!signature)
     {
         *signature_size = max_encoded_size;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     OE_CHECK(oe_private_key_sign(
@@ -621,7 +621,10 @@ oe_result_t oe_ec_private_key_sign(
                 assert(*signature_size <= max_encoded_size);
                 *signature_size = max_encoded_size;
             }
-            OE_CHECK(encode_result);
+            if (!signature && encode_result == OE_BUFFER_TOO_SMALL)
+                OE_CHECK_NO_TRACE(encode_result);
+            else
+                OE_CHECK(encode_result);
         }
     }
 
@@ -1036,7 +1039,13 @@ oe_result_t oe_ecdsa_signature_write_der(
         if (encoded_size > *signature_size)
         {
             *signature_size = (size_t)encoded_size;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+            if (signature)
+                OE_RAISE(OE_BUFFER_TOO_SMALL);
+            /* If signature is null, this call is intented to get the correct
+             * signature_size so no need to trace OE_BUFFER_TOO_SMALL */
+            else
+                OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
         }
 
         if (!success)

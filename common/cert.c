@@ -203,7 +203,13 @@ oe_result_t oe_get_crl_distribution_points(
     if (offset > *buffer_size)
     {
         *buffer_size = offset;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (buffer)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If buffer is null, this call is intented to get the correct
+         * buffer_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     *buffer_size = offset;

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "report.h"
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/stdlib.h>
@@ -22,7 +23,7 @@
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
 static const oe_uuid_t _local_uuid = {OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION};
-static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
+static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 
 static oe_result_t _get_report_key(
     const sgx_report_t* sgx_report,
@@ -42,8 +43,48 @@ static oe_result_t _get_report_key(
     result = OE_OK;
 
 done:
-    // Cleanup secret.
+    // Clean up secret.
     oe_secure_zero_fill(&sgx_key_request, sizeof(sgx_key_request));
+
+    return result;
+}
+
+// The input report_buffer holds a raw sgx_report_t structure.
+oe_result_t oe_verify_raw_sgx_report(
+    const uint8_t* report_buffer,
+    size_t report_buffer_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    sgx_key_t sgx_key = {{0}};
+    const size_t aes_cmac_length = sizeof(sgx_key);
+    oe_aes_cmac_t report_aes_cmac = {{0}};
+    oe_aes_cmac_t computed_aes_cmac = {{0}};
+    sgx_report_t* sgx_report = (sgx_report_t*)report_buffer;
+
+    if (!report_buffer || report_buffer_size < sizeof(sgx_report_t))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(_get_report_key(sgx_report, &sgx_key));
+
+    OE_CHECK(oe_aes_cmac_sign(
+        (uint8_t*)&sgx_key,
+        sizeof(sgx_key),
+        (uint8_t*)&sgx_report->body,
+        sizeof(sgx_report->body),
+        &computed_aes_cmac));
+
+    // Fetch cmac from sgx_report.
+    // Note: sizeof(sgx_report->mac) <= sizeof(oe_aes_cmac_t).
+    oe_secure_memcpy(&report_aes_cmac, sgx_report->mac, aes_cmac_length);
+
+    if (!oe_secure_aes_cmac_equal(&computed_aes_cmac, &report_aes_cmac))
+        OE_RAISE(OE_VERIFY_FAILED_AES_CMAC_MISMATCH);
+
+    result = OE_OK;
+
+done:
+    // Clean up secret.
+    oe_secure_zero_fill(&sgx_key, sizeof(sgx_key));
 
     return result;
 }
@@ -59,14 +100,7 @@ oe_result_t oe_verify_report_internal(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oe_report = {0};
-    sgx_key_t sgx_key = {{0}};
     oe_report_header_t* header = (oe_report_header_t*)report;
-
-    sgx_report_t* sgx_report = NULL;
-
-    const size_t aes_cmac_length = sizeof(sgx_key);
-    oe_aes_cmac_t report_aes_cmac = {{0}};
-    oe_aes_cmac_t computed_aes_cmac = {{0}};
 
     // Ensure that the report is parseable before using the header.
     OE_CHECK(oe_parse_report(report, report_size, &oe_report));
@@ -78,23 +112,7 @@ oe_result_t oe_verify_report_internal(
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
-        sgx_report = (sgx_report_t*)header->report;
-
-        OE_CHECK(_get_report_key(sgx_report, &sgx_key));
-
-        OE_CHECK(oe_aes_cmac_sign(
-            (uint8_t*)&sgx_key,
-            sizeof(sgx_key),
-            (uint8_t*)&sgx_report->body,
-            sizeof(sgx_report->body),
-            &computed_aes_cmac));
-
-        // Fetch cmac from sgx_report.
-        // Note: sizeof(sgx_report->mac) <= sizeof(oe_aes_cmac_t).
-        oe_secure_memcpy(&report_aes_cmac, sgx_report->mac, aes_cmac_length);
-
-        if (!oe_secure_aes_cmac_equal(&computed_aes_cmac, &report_aes_cmac))
-            OE_RAISE(OE_VERIFY_FAILED_AES_CMAC_MISMATCH);
+        OE_CHECK(oe_verify_raw_sgx_report(header->report, header->report_size));
     }
     else
     {
@@ -108,9 +126,6 @@ oe_result_t oe_verify_report_internal(
     result = OE_OK;
 
 done:
-    // Cleanup secret.
-    oe_secure_zero_fill(&sgx_key, sizeof(sgx_key));
-
     return result;
 }
 
@@ -141,9 +156,21 @@ oe_result_t oe_get_report_v2(
           (report_data && report_data_size)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!((!opt_params && !opt_params_size) ||
-          (opt_params && opt_params_size == sizeof(sgx_target_info_t))))
-        OE_RAISE(OE_INVALID_PARAMETER);
+    if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
+    {
+        // For remote attestation, the Quoting Enclave's target info is used.
+        // opt_params must not be supplied.
+        if (opt_params != NULL || opt_params_size != 0)
+            OE_RAISE(OE_INVALID_PARAMETER);
+    }
+    else
+    {
+        // For local report, opt_params may be null, in which case SGX returns
+        // the report for the enclave itself
+        if (!((!opt_params && !opt_params_size) ||
+              (opt_params && opt_params_size == sizeof(sgx_target_info_t))))
+            OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
     if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
         format_id = &_ecdsa_uuid;

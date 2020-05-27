@@ -58,11 +58,11 @@ would like to install the packages to `C:/oe_prereqs`.
 ```
 
 On Windows Server 2019 and versions of Windows 10 newer than 1709, the Intel PSW
-should already be automatically installed. Attempting to run the PSW installer will fail if
-that is the case. To skip the PSW installer:
+and DCAP software components should already be automatically installed. To skip
+updating the PSW and DCAP software components:
 
 ```powershell
-./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1-NoDriver -DCAPClientType None
+./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1-NoIntelDrivers -DCAPClientType None
 ```
 
 Once the installation is done, please ignore the following message(s) and continue on to the next step.
@@ -91,7 +91,7 @@ To build debug enclaves:
 cd C:/Users/test/openenclave
 mkdir build/x64-Debug
 cd build/x64-Debug
-cmake -G Ninja -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
+cmake -G Ninja -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
 ninja
 ```
 
@@ -102,7 +102,7 @@ Similarly, to build release enclaves, specify the flag
 cd C:/Users/test/openenclave
 mkdir build/x64-Release
 cd build/x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=c:/openenclave ../..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=c:/openenclave ../..
 ninja
 ```
 
@@ -111,7 +111,7 @@ To build enclaves with LVI mitigation, specify the flag `-DLVI_MITIGATION=Contro
 cd C:/Users/test/openenclave
 mkdir build/x64-LVI
 cd build/x64-LVI
-cmake -G Ninja -DLVI_MITIGATION=ControlFlow -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
+cmake -G Ninja -DLVI_MITIGATION=ControlFlow -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
 ninja
 ```
 Refer to the [LVI Mitigation](AdvancedBuildInfo.md#lvi-mitigation) documentation for further information.
@@ -149,7 +149,7 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 ## Build and run samples
 
-To build and run the samples without building and then installing the OE SDK, please refer to the [README for Windows samples](/samples/README_Windows.md).
+To build and run the samples without building and then installing the OE SDK, please refer to the [README for samples](/samples/README.md).
 
 ## Known Issues
 

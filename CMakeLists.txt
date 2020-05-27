@@ -158,6 +158,12 @@ else () # NOT OE_SGX
   endif ()
 endif ()
 
+option(BUILD_OPENSSL "[EXPERIMENTAL] Build OpenSSL libraries." OFF)
+
+if (BUILD_OPENSSL AND OE_TRUSTZONE)
+  message(FATAL_ERROR "BUILD_OPENSSL is not supported on ARM yet.")
+endif ()
+
 if (WIN32)
   # NOTE: On Windows we have found that we must use Git Bash, not the
   # Bash from the Windows Subsystem for Linux. Hence this is
@@ -171,6 +177,26 @@ if (WIN32)
   if (NOT OE_BASH)
     message(FATAL_ERROR "Git Bash not found!")
   endif ()
+
+  # Looking for Perl and Dos2unix if BUILD_OPENSSL is ON.
+  if (BUILD_OPENSSL)
+    # OpenSSL relies on Perl to generate files (e.g., headers, assembly files, and test cases).
+    find_program(OE_PERL perl PATHS "C:/Program Files/Git/bin"
+                                    "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
+    if (NOT OE_PERL)
+      message(FATAL_ERROR "Perl not found!")
+    endif ()
+
+    # Dos2unix utility is used to convert CRLF to LF, which is required by some
+    # OpenSSL tests.
+    find_program(
+      OE_DOS2UNIX dos2unix PATHS "C:/Program Files/Git/bin"
+                                 "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
+    if (NOT OE_DOS2UNIX)
+      message(FATAL_ERROR "Dos2unix not found!")
+    endif ()
+  endif ()
+
   if (NOT NUGET_PACKAGE_PATH)
     message(
       FATAL_ERROR
@@ -182,6 +208,16 @@ else ()
   if (NOT OE_BASH)
     message(FATAL_ERROR "Bash not found!")
   endif ()
+
+  # Looking for Perl if BUILD_OPENSSL is ON.
+  if (BUILD_OPENSSL)
+    # OpenSSL relies on Perl to generate files (e.g., headers, assembly files, and test cases).
+    find_program(OE_PERL perl)
+    if (NOT OE_PERL)
+      message(FATAL_ERROR "Perl not found!")
+    endif ()
+  endif ()
+
 endif ()
 
 # See `cmake/enclave_cmake_wrappers.cmake` for wrapper functions.
@@ -200,22 +236,12 @@ include(package_settings)
 # See `cmake/add_enclave.cmake` for enclave creation logic
 include(add_enclave)
 
-# User configurable options.
-option(
-  HAS_QUOTE_PROVIDER
-  "Take a build dependency on SGX DCAP, which requires FLC on target device to run."
-  ON)
-
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
-if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG" AND NOT WIN32)
-  # In non-win32 debug build, debug_malloc is on by default
+if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+  # In debug builds, debug_malloc is on by default
   option(USE_DEBUG_MALLOC
          "Build oeenclave with memory leak detection capability." ON)
-else ()
-  # In win32 or non-debug builds, debug_malloc is off by default
-  option(USE_DEBUG_MALLOC
-         "Build oeenclave with memory leak detection capability." OFF)
 endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
@@ -240,11 +266,6 @@ option(
 if (NOT USE_SNMALLOC)
   set(USE_DLMALLOC true)
 endif ()
-
-option(
-  COMPILE_SYSTEM_EDL
-  "Build system ecalls and ocalls into OE libraries. If not set, they must be included by application EDL to use."
-  OFF)
 
 option(BUILD_TESTS "Build OE tests" ON)
 
@@ -352,23 +373,21 @@ include(add_enclave_test)
 add_subdirectory(include)
 add_subdirectory(host)
 
-# Tests and samples have been ported to manually include system edl files.
-# They can no longer be used when system EDL is builtin.
-if (NOT COMPILE_SYSTEM_EDL)
-  if (BUILD_TESTS)
-    add_subdirectory(tests)
-  endif ()
-
-  # Skip samples when enabling the code coverage test.
-  # Otherwise, all the samples need to explicitly link against the libgcov library.
-  if (BUILD_ENCLAVES AND (NOT CODE_COVERAGE))
-    add_subdirectory(samples)
-  endif ()
+if (BUILD_TESTS AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
+  add_subdirectory(tests)
 endif ()
 
-add_subdirectory(tools)
+# Skip samples when enabling the code coverage test.
+# Otherwise, all the samples need to explicitly link against the libgcov library.
+if (NOT CODE_COVERAGE)
+  add_subdirectory(samples)
+endif ()
 
-if (BUILD_ENCLAVES)
+if (NOT COMPONENT MATCHES OEHOSTVERFIY)
+  add_subdirectory(tools)
+endif ()
+
+if (BUILD_ENCLAVES AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
   add_subdirectory(enclave)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)
@@ -376,7 +395,7 @@ if (BUILD_ENCLAVES)
   add_subdirectory(syscall)
 endif ()
 
-if (OE_SGX)
+if (OE_SGX AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
   add_subdirectory(debugger)
 endif ()
 

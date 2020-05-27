@@ -387,8 +387,6 @@ oe_result_t oe_ec_public_key_from_coordinates(
 
         if (!EC_KEY_set_public_key(ec, point))
             OE_RAISE(OE_CRYPTO_ERROR);
-
-        point = NULL;
     }
 
     /* Create the PKEY public key wrapper */
@@ -496,7 +494,13 @@ oe_result_t oe_ecdsa_signature_write_der(
     if ((size_t)sig_len > *signature_size)
     {
         *signature_size = (size_t)sig_len;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (signature)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If signature is null, this call is intented to get the correct
+         * signature_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Set the size of the output buffer */

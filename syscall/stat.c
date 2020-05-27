@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/syscall/device.h>
+#include <openenclave/internal/syscall/fdtable.h>
 #include <openenclave/internal/syscall/raise.h>
 #include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/trace.h>
@@ -40,6 +41,17 @@ int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat_t* buf)
         ret = dev->ops.fs.stat(dev, pathname, buf);
     }
 
+done:
+    return ret;
+}
+
+int oe_fstat(int fd, struct oe_stat_t* buf)
+{
+    int ret = -1;
+    oe_fd_t* const file = oe_fdtable_get(fd, OE_FD_TYPE_FILE);
+    if (!file)
+        OE_RAISE_ERRNO(oe_errno);
+    ret = file->ops.file.fstat(file, buf);
 done:
     return ret;
 }

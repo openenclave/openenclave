@@ -52,7 +52,9 @@ set(PLATFORM_SRC "")
 if (OE_SGX)
   list(APPEND PLATFORM_SRC sgx/arc4random.c)
 else ()
-  list(APPEND PLATFORM_SRC
+  list(
+    APPEND
+    PLATFORM_SRC
     ${MUSLSRC}/math/exp2l.c
     ${MUSLSRC}/string/memcpy.c
     ${MUSLSRC}/string/memmove.c
@@ -213,6 +215,7 @@ add_enclave_library(
   ${MUSLSRC}/internal/floatscan.c
   ${MUSLSRC}/internal/intscan.c
   ${MUSLSRC}/internal/libc.c
+  ${MUSLSRC}/internal/procfdname.c
   ${MUSLSRC}/internal/shgetc.c
   ${MUSLSRC}/legacy/getpagesize.c
   ${MUSLSRC}/locale/bind_textdomain_codeset.c
@@ -545,6 +548,7 @@ add_enclave_library(
   ${MUSLSRC}/search/tfind.c
   ${MUSLSRC}/search/tsearch.c
   ${MUSLSRC}/search/twalk.c
+  ${MUSLSRC}/stat/fstat.c
   ${MUSLSRC}/stat/stat.c
   ${MUSLSRC}/stdio/asprintf.c
   ${MUSLSRC}/stdio/asprintf.c
@@ -758,6 +762,7 @@ add_enclave_library(
   ${MUSLSRC}/thread/__lock.c
   ${MUSLSRC}/thread/__wait.c
   ${MUSLSRC}/time/clock_gettime.c
+  ${MUSLSRC}/time/difftime.c
   ${MUSLSRC}/time/gettimeofday.c
   ${MUSLSRC}/time/gmtime.c
   ${MUSLSRC}/time/gmtime_r.c
@@ -775,6 +780,8 @@ add_enclave_library(
   ${MUSLSRC}/unistd/access.c
   ${MUSLSRC}/unistd/chdir.c
   ${MUSLSRC}/unistd/close.c
+  ${MUSLSRC}/unistd/fdatasync.c
+  ${MUSLSRC}/unistd/fsync.c
   ${MUSLSRC}/unistd/getgid.c
   ${MUSLSRC}/unistd/getegid.c
   ${MUSLSRC}/unistd/getuid.c
@@ -800,6 +807,7 @@ add_enclave_library(
   ${MUSLSRC}/unistd/unlink.c
   ${MUSLSRC}/unistd/write.c
   ${MUSLSRC}/unistd/writev.c
+  ${MUSLSRC}/unistd/usleep.c
   ${PLATFORM_SRC})
 
 maybe_build_using_clangw(oelibc)
@@ -859,9 +867,11 @@ elseif (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
 endif ()
 
 # Disable optimizations for twalk.c to avoid Clang 8 compiler bug, see #2556
-if (CMAKE_C_COMPILER_ID MATCHES Clang
-    AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 8
-    AND CMAKE_C_COMPILER_VERSION VERSION_LESS 9.0)
+# Always dose this on Windows as we cannot know the version of clang.
+if (WIN32
+    OR (CMAKE_C_COMPILER_ID MATCHES Clang
+        AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 8
+        AND CMAKE_C_COMPILER_VERSION VERSION_LESS 9.0))
   set_source_files_properties(${MUSLSRC}/search/twalk.c PROPERTIES COMPILE_FLAGS
                                                                    -O0)
 endif ()

@@ -58,3 +58,10 @@ Built target code_coverage
 ```
 
 The reports can be found in `build/coverage/coverage.xml` (cobertura) and `build/coverage/cov_filtered.info` (lcov).
+
+## Code Coverage reports for PRs
+
+After a bors run on a PR, developers can view the code coverage report on the PR.
+![Code Coverage Report Github](CodeCoverageOnGithub.png)
+
+Click on "Details" to drill into the code coverage report.

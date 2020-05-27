@@ -66,6 +66,20 @@ OE_EXTERNC_BEGIN
 
 #define OE_TEST_IGNORE(COND) OE_TEST_IF(COND, false)
 
+/* Multi-threaded test cases may need a specific base allocation
+ * when using allocators that make use of thread-local storage, such
+ * as tcmalloc or snmalloc.
+ *
+ * The formula below applies to snmalloc when SNMALLOC_USE_SMALL_CHUNKS
+ * is set, which it is in Open Enclave. It corresponds to 256Kb for meta-data,
+ * and an intial 256Kb allocation per thread. Not all of that memory may be
+ * used, in particular if fewer threads than TCS are actually spawned, but it is
+ * a safe mininum value. Setting the enclave size to less than this value runs
+ * the risk of an abort being triggered by a thread creation unable to allocate
+ * its initial amount successfully.
+ */
+#define OE_TEST_MT_HEAP_SIZE(NUM_TCS) 64 + 64 * NUM_TCS
+
 /*
  * Return flags to pass to oe_create_enclave() based on the OE_SIMULATION
  * environment variable.

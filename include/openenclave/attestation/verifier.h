@@ -37,23 +37,23 @@ oe_result_t oe_verifier_initialize(void);
 /**
  * oe_verifier_get_formats
  *
- * Gets a list of evidence formats accepted by the verifier for evidence
+ * Gets a list of evidence format ids accepted by the verifier for evidence
  * verification.
  *
  * @experimental
  *
- * @param[out] formats An output pointer that will be assigned the address of
- * a dynamically allocated buffer that holds the returned list of formats
+ * @param[out] format_ids An output pointer that will be assigned the address of
+ * a dynamically allocated buffer that holds the returned list of format ids
  * supported for evidence verification.
- * @param[out] formats_length A pointer that points to the length of the
- * returned formats list (number of format ID entries).
+ * @param[out] format_ids_length A pointer that points to the length of the
+ * returned format id list (number of format id entries).
  * @retval OE_OK on success.
  * @retval OE_INVALID_PARAMETER At least one of the parameters is invalid.
  * @retval other appropriate error code.
  */
 oe_result_t oe_verifier_get_formats(
-    oe_uuid_t** formats,
-    size_t* formats_length);
+    oe_uuid_t** format_ids,
+    size_t* format_ids_length);
 
 /**
  * oe_verifier_free_formats
@@ -62,11 +62,11 @@ oe_result_t oe_verifier_get_formats(
  *
  * @experimental
  *
- * @param[in] formats The formats list.
+ * @param[in] format_ids The formats list.
  * @retval OE_OK The function succeeded.
  * @retval other appropriate error code.
  */
-oe_result_t oe_verifier_free_formats(oe_uuid_t* formats);
+oe_result_t oe_verifier_free_formats(oe_uuid_t* format_ids);
 
 /**
  * oe_verifier_get_format_settings
@@ -75,7 +75,8 @@ oe_result_t oe_verifier_free_formats(oe_uuid_t* formats);
  *
  * @experimental
  *
- * @param[in] format The format for which to retrieve the optional settings.
+ * @param[in] format_id The format ID for which to retrieve the optional
+ * settings.
  * @param[out] settings An output pointer that will be assigned the address of
  * a dynamically allocated buffer that holds the returned settings data. This
  * pointer will be assigned a NULL value if there is no settings needed.
@@ -86,7 +87,7 @@ oe_result_t oe_verifier_free_formats(oe_uuid_t* formats);
  * @retval other appropriate error code.
  */
 oe_result_t oe_verifier_get_format_settings(
-    const oe_uuid_t* format,
+    const oe_uuid_t* format_id,
     uint8_t** settings,
     size_t* settings_size);
 
@@ -112,7 +113,7 @@ oe_result_t oe_verifier_free_format_settings(uint8_t* settings);
  * The following base claims will be returned at the minimum:
  *
  * - id_version (uint32_t)
- *     - Version number. Must be 1.
+ *     - Version number.
  * - security_version (uint32_t)
  *     - Security version of the enclave. (ISVN for SGX).
  * - attributes (uint64_t)
@@ -132,23 +133,32 @@ oe_result_t oe_verifier_free_format_settings(uint8_t* settings);
  * - validity_until (oe_datetime_t, optional)
  *     - Overall datetime at which the evidence and endorsements expire.
  * - format_uuid (uint8_t[16])
- *     - The format UUID of the verified evidence.
+ *     - The format id of the verified evidence.
  *
  * @experimental
  *
+ * @param[in] format_id The optional format id of the evidence to be verified.
+ * If this parameter is NULL, the evidence_buffer (and endorsement_buffer if
+ * not NULL) must contain data with an attestation header holding a valid
+ * format id. Otherwise, this parameter must hold a valid format id, and the
+ * envidence and endorsements data must not be wrapped with an attestation
+ * header.
  * @param[in] evidence_buffer The evidence buffer.
  * @param[in] evidence_buffer_size The size of evidence_buffer in bytes.
  * @param[in] endorsements_buffer The optional endorsements buffer.
  * @param[in] endorsements_buffer_size The size of endorsements_buffer in bytes.
  * @param[in] policies An optional list of policies to use.
  * @param[in] policies_size The size of the policy list.
- * @param[out] claims The list of claims (including base and custom).
- * @param[out] claims_length The length of the claims list.
+ * @param[out] claims If not NULL, an output pointer that will be assigned the
+ * address of the dynamically allocated list of claims (including base and
+ * custom).
+ * @param[out] claims_length If not NULL, the length of the claims list.
  * @retval OE_OK The function succeeded.
  * @retval OE_INVALID_PARAMETER At least one of the parameters is invalid.
  * @retval other appropriate error code.
  */
 oe_result_t oe_verify_evidence(
+    const oe_uuid_t* format_id,
     const uint8_t* evidence_buffer,
     size_t evidence_buffer_size,
     const uint8_t* endorsements_buffer,
@@ -157,6 +167,46 @@ oe_result_t oe_verify_evidence(
     size_t policies_size,
     oe_claim_t** claims,
     size_t* claims_length);
+
+/**
+ * Type definition for a claims verification callback.
+ *
+ * @param[in] claims a pointer to an array of claims
+ * @param[in] claims_length length of the claims array
+ * @param[in] arg caller defined context
+ */
+typedef oe_result_t (*oe_verify_claims_callback_t)(
+    oe_claim_t* claims,
+    size_t claims_length,
+    void* arg);
+
+/**
+ * oe_verify_attestation_certificate_with_evidence
+ *
+ * This function performs a custom validation on the input certificate. This
+ * validation includes extracting an attestation evidence extension from the
+ * certificate before validating this evidence. An optional
+ * claim_verify_callback could be passed in for a calling client to further
+ * validate the claims of the enclave creating the certificate.
+ * OE_FAILURE is returned if the expected certificate extension OID is not
+ * found.
+ * @param[in] cert_in_der a pointer to buffer holding certificate contents
+ *  in DER format
+ * @param[in] cert_in_der_len size of certificate buffer above
+ * @param[in] claim_verify_callback callback routine for custom claim checking
+ * @param[in] arg an optional context pointer argument specified by the caller
+ * when setting callback
+ * @retval OE_OK on a successful validation
+ * @retval OE_VERIFY_FAILED on quote failure
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid
+ * @retval OE_FAILURE general failure
+ * @retval other appropriate error code
+ */
+oe_result_t oe_verify_attestation_certificate_with_evidence(
+    uint8_t* cert_in_der,
+    size_t cert_in_der_len,
+    oe_verify_claims_callback_t claim_verify_callback,
+    void* arg);
 
 /**
  * oe_free_claims

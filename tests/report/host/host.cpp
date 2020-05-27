@@ -1,11 +1,13 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/sgx/plugin.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
 #include <ctime>
@@ -22,20 +24,40 @@
 
 #define SKIP_RETURN_CODE 2
 
+#ifdef _WIN32
+
+#include <windows.h>
+
+#define TRY_TO_USE_SGX_DCAP_QVL() \
+    (GetEnvironmentVariableA("USE_SGX_QVL", NULL, 0) != 0)
+
+#else
+
+#define TRY_TO_USE_SGX_DCAP_QVL() (getenv("USE_SGX_QVL") != NULL)
+
+#endif
+
 extern void TestVerifyTCBInfo(
     oe_enclave_t* enclave,
     const char* test_file_name);
+extern void TestVerifyTCBInfo_Negative(
+    oe_enclave_t* enclave,
+    const char* file_names[],
+    size_t file_cnt);
 extern void TestVerifyTCBInfoV2(
     oe_enclave_t* enclave,
     const char* test_filename);
-extern void TestVerifyTCBInfoV2_AdvisoryIDs(
+extern void TestVerifyTCBInfo_AdvisoryIDs(
     oe_enclave_t* enclave,
-    const char* test_filename);
+    const char* test_filename,
+    uint32_t version);
 extern int FileToBytes(const char* path, std::vector<uint8_t>* output);
 
 void generate_and_save_report(oe_enclave_t* enclave)
 {
-#ifdef OE_LINK_SGX_DCAP_QL
+    if (!oe_has_sgx_quote_provider())
+        return;
+
     static uint8_t* report;
     size_t report_size;
     OE_TEST_CODE(
@@ -56,9 +78,6 @@ void generate_and_save_report(oe_enclave_t* enclave)
     fwrite(report, 1, report_size, file);
     fclose(file);
     oe_free_report(report);
-#else
-    OE_UNUSED(enclave);
-#endif
 }
 
 int load_and_verify_report()
@@ -158,81 +177,180 @@ int main(int argc, const char* argv[])
      */
     g_enclave = enclave;
 
-#ifdef OE_LINK_SGX_DCAP_QL
-
-    static oe_uuid_t sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
-
-    /* Initialize the target info */
+    if (oe_has_sgx_quote_provider())
     {
-        if ((result = sgx_get_qetarget_info(
-                 &sgx_ecdsa_uuid, NULL, 0, &target_info)) != OE_OK)
+        static oe_uuid_t sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
+
+        /* Initialize the target info */
         {
-            oe_put_err("sgx_get_qetarget_info(): result=%u", result);
+            if ((result = sgx_get_qetarget_info(
+                     &sgx_ecdsa_uuid, NULL, 0, &target_info)) != OE_OK)
+            {
+                oe_put_err("sgx_get_qetarget_info(): result=%u", result);
+            }
+        }
+
+        test_local_report(&target_info);
+        test_remote_report();
+        test_parse_report_negative();
+        test_local_verify_report();
+
+        test_remote_verify_report();
+
+        test_verify_report_with_collaterals();
+
+        OE_TEST(test_iso8601_time(enclave) == OE_OK);
+        OE_TEST(test_iso8601_time_negative(enclave) == OE_OK);
+
+        /*
+         * Enclave API tests.
+         */
+        OE_TEST_CODE(enclave_test_local_report(enclave, &target_info), OE_OK);
+        OE_TEST_CODE(enclave_test_remote_report(enclave), OE_OK);
+
+        OE_TEST_CODE(enclave_test_parse_report_negative(enclave), OE_OK);
+
+        OE_TEST_CODE(enclave_test_local_verify_report(enclave), OE_OK);
+
+        OE_TEST_CODE(enclave_test_remote_verify_report(enclave), OE_OK);
+
+        OE_TEST_CODE(
+            enclave_test_verify_report_with_collaterals(enclave), OE_OK);
+
+        TestVerifyTCBInfo(enclave, "./data/tcbInfo.json");
+        TestVerifyTCBInfo(enclave, "./data/tcbInfo_with_pceid.json");
+        const char* negative_files[] = {
+            // In the following files, a property in corresponding level has
+            // been
+            // capitalized. JSON is case sensitive and therefore schema
+            // validation
+            // should fail.
+            "./data/tcbInfoNegativePropertyMissingLevel0.json",
+            "./data/tcbInfoNegativePropertyMissingLevel1.json",
+            "./data/tcbInfoNegativePropertyMissingLevel2.json",
+            "./data/tcbInfoNegativePropertyMissingLevel3.json",
+            // In the following files, a property in corresponding level has
+            // wrong
+            // type.
+            "./data/tcbInfoNegativePropertyWrongTypeLevel0.json",
+            "./data/tcbInfoNegativePropertyWrongTypeLevel1.json",
+            "./data/tcbInfoNegativePropertyWrongTypeLevel2.json",
+            "./data/tcbInfoNegativePropertyWrongTypeLevel3.json",
+
+            // Comp Svn greater than uint8_t
+            "./data/tcbInfoNegativeCompSvn.json",
+
+            // pce Svn greater than uint16_t
+            "./data/tcbInfoNegativePceSvn.json",
+
+            // Invalid issueDate field.
+            "./data/tcbInfoNegativeInvalidIssueDate.json",
+
+            // Invalid nextUpdate field.
+            "./data/tcbInfoNegativeInvalidNextUpdate.json",
+
+            // Missing nextUpdate field.
+            "./data/tcbInfoNegativeMissingNextUpdate.json",
+
+            // Signature != 64 bytes
+            "./data/tcbInfoNegativeSignature.json",
+
+            // Unsupported JSON constructs
+            "./data/tcbInfoNegativeStringEscape.json",
+            "./data/tcbInfoNegativeIntegerOverflow.json",
+            "./data/tcbInfoNegativeIntegerWithSign.json",
+            "./data/tcbInfoNegativeFloat.json",
+        };
+        TestVerifyTCBInfo_Negative(
+            enclave, negative_files, OE_COUNTOF(negative_files));
+
+        TestVerifyTCBInfoV2(enclave, "./data_v2/tcbInfo.json");
+        TestVerifyTCBInfoV2(enclave, "./data_v2/tcbInfo_with_pceid.json");
+        TestVerifyTCBInfo_AdvisoryIDs(
+            enclave, "./data_v2/tcbInfoAdvisoryIds.json", 2);
+        const char* negative_files_v2[] = {
+            // In the following files, a property in corresponding level has
+            // been
+            // capitalized. JSON is case sensitive and therefore schema
+            // validation
+            // should fail.
+            "./data_v2/tcbInfoNegativePropertyMissingLevel0.json",
+            "./data_v2/tcbInfoNegativePropertyMissingLevel1.json",
+            "./data_v2/tcbInfoNegativePropertyMissingLevel2.json",
+            "./data_v2/tcbInfoNegativePropertyMissingLevel3.json",
+            // In the following files, a property in corresponding level has
+            // wrong
+            // type.
+            "./data_v2/tcbInfoNegativePropertyWrongTypeLevel0.json",
+            "./data_v2/tcbInfoNegativePropertyWrongTypeLevel1.json",
+            "./data_v2/tcbInfoNegativePropertyWrongTypeLevel2.json",
+            "./data_v2/tcbInfoNegativePropertyWrongTypeLevel3.json",
+
+            // Comp Svn greater than uint8_t
+            "./data_v2/tcbInfoNegativeCompSvn.json",
+
+            // pce Svn greater than uint16_t
+            "./data_v2/tcbInfoNegativePceSvn.json",
+
+            // Invalid issueDate field.
+            "./data_v2/tcbInfoNegativeInvalidIssueDate.json",
+
+            // Invalid nextUpdate field.
+            "./data_v2/tcbInfoNegativeInvalidNextUpdate.json",
+
+            // Missing nextUpdate field.
+            "./data_v2/tcbInfoNegativeMissingNextUpdate.json",
+
+            // Signature != 64 bytes
+            "./data_v2/tcbInfoNegativeSignature.json",
+
+            // Unsupported JSON constructs
+            "./data_v2/tcbInfoNegativeStringEscape.json",
+            "./data_v2/tcbInfoNegativeIntegerOverflow.json",
+            "./data_v2/tcbInfoNegativeIntegerWithSign.json",
+            "./data_v2/tcbInfoNegativeFloat.json",
+            // TcbType != 0.
+            "./data_v2/tcbInfoNegativeTcbType.json",
+        };
+        TestVerifyTCBInfo_Negative(
+            enclave, negative_files_v2, OE_COUNTOF(negative_files_v2));
+        {
+            // _sgx_minimim_crl_tcb_issue_date cannot be used in DCAP QVL
+            // Disable below test when using QVL
+            if (!TRY_TO_USE_SGX_DCAP_QVL())
+            {
+                // Get current time and pass it to enclave.
+                std::time_t t = std::time(0);
+                std::tm tm;
+                gmtime_r(&t, &tm);
+
+                // convert std::tm to oe_datetime_t
+                oe_datetime_t now = {(uint32_t)tm.tm_year + 1900,
+                                     (uint32_t)tm.tm_mon + 1,
+                                     (uint32_t)tm.tm_mday,
+                                     (uint32_t)tm.tm_hour,
+                                     (uint32_t)tm.tm_min,
+                                     (uint32_t)tm.tm_sec};
+                test_minimum_issue_date(enclave, now);
+            }
         }
     }
+    else
+    {
+        test_local_report(&target_info);
+        test_parse_report_negative();
+        test_local_verify_report();
 
-    test_local_report(&target_info);
-    test_remote_report();
-    test_parse_report_negative();
-    test_local_verify_report();
+        OE_TEST(test_iso8601_time(enclave) == OE_OK);
+        OE_TEST(test_iso8601_time_negative(enclave) == OE_OK);
 
-    test_remote_verify_report();
-
-    test_verify_report_with_collaterals();
-
-    OE_TEST(test_iso8601_time(enclave) == OE_OK);
-    OE_TEST(test_iso8601_time_negative(enclave) == OE_OK);
-
-    /*
-     * Enclave API tests.
-     */
-    OE_TEST_CODE(enclave_test_local_report(enclave, &target_info), OE_OK);
-    OE_TEST_CODE(enclave_test_remote_report(enclave), OE_OK);
-
-    OE_TEST_CODE(enclave_test_parse_report_negative(enclave), OE_OK);
-
-    OE_TEST_CODE(enclave_test_local_verify_report(enclave), OE_OK);
-
-    OE_TEST_CODE(enclave_test_remote_verify_report(enclave), OE_OK);
-
-    OE_TEST_CODE(enclave_test_verify_report_with_collaterals(enclave), OE_OK);
-
-    TestVerifyTCBInfo(enclave, "./data/tcbInfo.json");
-    TestVerifyTCBInfo(enclave, "./data/tcbInfo_with_pceid.json");
-
-    TestVerifyTCBInfoV2(enclave, "./data_v2/tcbInfo.json");
-    TestVerifyTCBInfoV2(enclave, "./data_v2/tcbInfo_with_pceid.json");
-    TestVerifyTCBInfoV2_AdvisoryIDs(
-        enclave, "./data_v2/tcbInfoAdvisoryIds.json");
-#else
-    test_local_report(&target_info);
-    test_parse_report_negative();
-    test_local_verify_report();
-
-    OE_TEST(test_iso8601_time(enclave) == OE_OK);
-    OE_TEST(test_iso8601_time_negative(enclave) == OE_OK);
-
-    OE_TEST(enclave_test_local_report(enclave, &target_info) == OE_OK);
-    OE_TEST(enclave_test_parse_report_negative(enclave) == OE_OK);
-    OE_TEST(enclave_test_local_verify_report(enclave) == OE_OK);
-#endif
+        OE_TEST(enclave_test_local_report(enclave, &target_info) == OE_OK);
+        OE_TEST(enclave_test_parse_report_negative(enclave) == OE_OK);
+        OE_TEST(enclave_test_local_verify_report(enclave) == OE_OK);
+    }
 
     test_get_signer_id_from_public_key();
     OE_TEST(enclave_test_get_signer_id_from_public_key(enclave) == OE_OK);
-
-    // Get current time and pass it to enclave.
-    std::time_t t = std::time(0);
-    std::tm tm;
-    gmtime_r(&t, &tm);
-
-    // convert std::tm to oe_datetime_t
-    oe_datetime_t now = {(uint32_t)tm.tm_year + 1900,
-                         (uint32_t)tm.tm_mon + 1,
-                         (uint32_t)tm.tm_mday,
-                         (uint32_t)tm.tm_hour,
-                         (uint32_t)tm.tm_min,
-                         (uint32_t)tm.tm_sec};
-    test_minimum_issue_date(enclave, now);
 
     generate_and_save_report(enclave);
 

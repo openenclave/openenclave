@@ -134,10 +134,17 @@ OE_CHECK_SIZE(sizeof(sgx_attributes_t), 16);
 #define SGX_SIGSTRUCT_MISCMASK 0xffffffff
 
 /* sgx_sigstruct_t.flags */
+/* Mask all bits except bit 2 for MODE64BIT */
 #define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0XfffffffffffffffbULL
 
 /* sgx_sigstruct_t.xfrm */
-#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0x0000000000000000ULL
+/* Mask all bits except for OS-controlled AVX enablement bits:
+ *  - bit 2: AVX enable
+ *  - bit 5: opmask for AVX-512
+ *  - bit 6: XMM_hi256 for AVX-512 enable
+ *  - bit 7: Hi16_ZMM for AVX-512 enable
+ */
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0Xffffffffffffff1bULL
 
 /* 1808 bytes */
 OE_PACK_BEGIN
@@ -674,6 +681,27 @@ OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(sgx_quote_t), 436);
 
+/*
+**==============================================================================
+**
+** sgx_ql_attestation_algorithm_id_t
+**
+**==============================================================================
+*/
+// Enumerates the different attestation key algorithms
+// For the sign_type field in sgx_quote_t
+typedef enum
+{
+    SGX_QL_ALG_EPID = 0,       // EPID 2.0 - Anonymous: EPID unlinkable
+    SGX_QL_ALG_RESERVED_1 = 1, // Reserved: EPID linkable
+    SGX_QL_ALG_ECDSA_P256 = 2, // ECDSA-256-with-P-256 curve
+    SGX_QL_ALG_ECDSA_P384 = 3, // ECDSA-384-with-P-384 curve (not supported)
+    SGX_QL_ALG_MAX = 4
+} sgx_ql_attestation_algorithm_id_t;
+
+// The required "version" value in sgx_quote_t for ECDSA quotes
+#define SGX_QE3_QUOTE_VERSION 3
+
 // Size of actual data within the quote excluding authentication information.
 // This data is signed for quote verification.
 #define SGX_QUOTE_SIGNED_DATA_SIZE OE_OFFSETOF(sgx_quote_t, signature_len)
@@ -1054,6 +1082,17 @@ typedef struct _sgx_key
 #define OE_SEALKEY_DEFAULT_FLAGSMASK (~SGX_FLAGS_NON_SECURITY_BITS)
 #define OE_SEALKEY_DEFAULT_MISCMASK (~SGX_MISC_NON_SECURITY_BITS)
 #define OE_SEALKEY_DEFAULT_XFRMMASK (0X0ULL)
+
+#define SGX_QL_MK_ERROR(x) (0x0000E000 | (x))
+
+// clang-format off
+/** Define quote3_error_t enumerations  used by OE attestation code. */
+typedef enum _quote3_error_t {
+    SGX_QL_SUCCESS = 0x0000,                                         ///< Success
+    SGX_QL_ERROR_UNEXPECTED = SGX_QL_MK_ERROR(0x0001),               ///< Unexpected error
+    SGX_QL_ERROR_MAX = SGX_QL_MK_ERROR(0x00FF),                      ///< Indicate max error to allow better translation.
+} quote3_error_t;
+// clang-format on
 
 OE_EXTERNC_END
 

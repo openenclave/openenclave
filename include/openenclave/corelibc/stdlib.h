@@ -28,6 +28,10 @@ typedef struct _oe_syscall_path
     char buf[OE_PATH_MAX];
 } oe_syscall_path_t;
 
+extern bool oe_use_debug_malloc;
+
+extern bool oe_use_debug_malloc_memset;
+
 void* oe_malloc(size_t size);
 
 void oe_free(void* ptr);

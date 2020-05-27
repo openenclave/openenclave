@@ -54,11 +54,12 @@ Run the following command to deploy all the prerequisites for building Open Encl
 ```
 
 On Windows Server 2019 and versions of Windows 10 newer than 1709, the Intel PSW
-should already be automatically installed. Attempting to run the PSW installer will fail if
-that is the case. To skip the PSW installer:
+and DCAP software components should already be automatically installed. To skip
+updating the PSW and DCAP software components:
+
 
 ```powershell
-./scripts/install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoDriver
+./scripts/install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoIntelDrivers
 ```
 
 To install the prerequisites along with the Azure DCAP Client, use the below
@@ -168,7 +169,7 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 ## Build and run samples
 
-To build and run the samples without building and then installing the OE SDK, please refer to the [README for Windows samples](/samples/README_Windows.md).
+To build and run the samples without building and then installing the OE SDK, please refer to the [README for Windows samples](/samples/README.md).
 
 ## Known Issues
 

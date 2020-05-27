@@ -6,6 +6,7 @@
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
+#include <openenclave/internal/localtime.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
@@ -47,13 +48,9 @@ static oe_result_t _get_date(unsigned int* date)
 
     t = time(NULL);
 
-#if defined(_MSC_VER)
-    if (localtime_s(&tm, &t) != 0)
+    if (oe_localtime(&t, &tm))
         OE_RAISE(OE_FAILURE);
-#else
-    if (localtime_r(&t, &tm) == NULL)
-        OE_RAISE(OE_FAILURE);
-#endif
+
     {
         char s[9];
         unsigned char b[8];
@@ -632,9 +629,7 @@ static oe_result_t _init_sigstruct(
 
     /* sgx_sigstruct_t.attributemask */
     sigstruct->attributemask.flags = SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS;
-    sigstruct->attributemask.xfrm =
-        SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM; // Reason this mask is 0 is because we
-                                          // don't enforce XFRM in signature
+    sigstruct->attributemask.xfrm = SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM;
 
     /* In debug enclaves, we don't care about the debug bit, so unmask it. */
     if (attributes & SGX_FLAGS_DEBUG)

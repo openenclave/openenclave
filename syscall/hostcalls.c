@@ -26,8 +26,6 @@
  * error.
  */
 
-#if !defined(OE_USE_BUILTIN_EDL)
-
 /*
 **==============================================================================
 **
@@ -37,7 +35,7 @@
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_epoll_create1_ocall(oe_host_fd_t* _retval, int flags);
@@ -124,7 +122,7 @@ OE_WEAK_ALIAS(_oe_syscall_epoll_close_ocall, oe_syscall_epoll_close_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_open_ocall(
@@ -172,6 +170,11 @@ oe_result_t _oe_syscall_pwrite_ocall(
     size_t count,
     oe_off_t offset);
 oe_result_t _oe_syscall_close_ocall(int* _retval, oe_host_fd_t fd);
+oe_result_t _oe_syscall_flock_ocall(
+    int* _retval,
+    oe_host_fd_t fd,
+    int operation);
+oe_result_t _oe_syscall_fsync_ocall(int* _retval, oe_host_fd_t fd);
 oe_result_t _oe_syscall_dup_ocall(oe_host_fd_t* _retval, oe_host_fd_t oldfd);
 oe_result_t _oe_syscall_opendir_ocall(uint64_t* _retval, const char* name);
 oe_result_t _oe_syscall_readdir_ocall(
@@ -183,6 +186,10 @@ oe_result_t _oe_syscall_closedir_ocall(int* _retval, uint64_t dirp);
 oe_result_t _oe_syscall_stat_ocall(
     int* _retval,
     const char* pathname,
+    struct oe_stat_t* buf);
+oe_result_t _oe_syscall_fstat_ocall(
+    int* _retval,
+    oe_host_fd_t fd,
     struct oe_stat_t* buf);
 oe_result_t _oe_syscall_access_ocall(
     int* _retval,
@@ -358,6 +365,15 @@ oe_result_t _oe_syscall_flock_ocall(
 }
 OE_WEAK_ALIAS(_oe_syscall_flock_ocall, oe_syscall_flock_ocall);
 
+oe_result_t _oe_syscall_fsync_ocall(int* _retval, oe_host_fd_t fd)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(fd);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_syscall_fsync_ocall, oe_syscall_fsync_ocall);
+OE_WEAK_ALIAS(_oe_syscall_fsync_ocall, oe_syscall_fdatasync_ocall);
+
 oe_result_t _oe_syscall_dup_ocall(oe_host_fd_t* _retval, oe_host_fd_t oldfd)
 {
     OE_UNUSED(_retval);
@@ -412,6 +428,18 @@ oe_result_t _oe_syscall_stat_ocall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_syscall_stat_ocall, oe_syscall_stat_ocall);
+
+oe_result_t _oe_syscall_fstat_ocall(
+    int* _retval,
+    oe_host_fd_t fd,
+    struct oe_stat_t* buf)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(fd);
+    OE_UNUSED(buf);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_syscall_fstat_ocall, oe_syscall_fstat_ocall);
 
 oe_result_t _oe_syscall_access_ocall(
     int* _retval,
@@ -516,7 +544,7 @@ OE_WEAK_ALIAS(_oe_syscall_fcntl_ocall, oe_syscall_fcntl_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_ioctl_ocall(
@@ -558,7 +586,7 @@ OE_WEAK_ALIAS(_oe_syscall_ioctl_ocall, oe_syscall_ioctl_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_kill_ocall(int* _retval, int pid, int signum);
@@ -585,7 +613,7 @@ OE_WEAK_ALIAS(_oe_syscall_kill_ocall, oe_syscall_kill_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_close_socket_ocall(int* _retval, oe_host_fd_t sockfd);
@@ -1194,7 +1222,7 @@ OE_WEAK_ALIAS(_oe_syscall_getnameinfo_ocall, oe_syscall_getnameinfo_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_poll_ocall(
@@ -1230,7 +1258,7 @@ OE_WEAK_ALIAS(_oe_syscall_poll_ocall, oe_syscall_poll_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_nanosleep_ocall(
@@ -1263,7 +1291,7 @@ OE_WEAK_ALIAS(_oe_syscall_nanosleep_ocall, oe_syscall_nanosleep_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_getpid_ocall(int* _retval);
@@ -1361,7 +1389,7 @@ OE_WEAK_ALIAS(_oe_syscall_getgroups_ocall, oe_syscall_getgroups_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_uname_ocall(int* _retval, struct oe_utsname* buf);
@@ -1377,5 +1405,3 @@ oe_result_t _oe_syscall_uname_ocall(int* _retval, struct oe_utsname* buf)
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_syscall_uname_ocall, oe_syscall_uname_ocall);
-
-#endif

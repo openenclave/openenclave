@@ -60,7 +60,7 @@ function (configure_lvi_mitigation_build)
   # Overwrite the default C compiler if CC is explicitly specified.
   # Otherwise, select the compiler based on the detection logic.
   if (DEFINED ENV{CC})
-    set(C_COMPILER $ENV{CC})
+    get_filename_component(C_COMPILER $ENV{CC} NAME)
   else ()
     detect_compiler(${OE_BINDIR} C)
   endif ()
@@ -70,13 +70,13 @@ function (configure_lvi_mitigation_build)
         ${OE_BINDIR}/${C_COMPILER}
         PARENT_SCOPE)
   else ()
-    message(FATAL_ERROR "-- ${C_COMPILER} is not found.")
+    message(FATAL_ERROR "-- ${OE_BINDIR}/${C_COMPILER} is not found.")
   endif ()
 
   # Overwrite the default C++ compiler if CXX is explicitly specified.
   # Otherwise, select the compiler based on the detection logic.
   if (DEFINED ENV{CXX})
-    set(CXX_COMPILER $ENV{CXX})
+    get_filename_component(CXX_COMPILER $ENV{CXX} NAME)
   else ()
     detect_compiler(${OE_BINDIR} CXX)
   endif ()
@@ -86,6 +86,6 @@ function (configure_lvi_mitigation_build)
         ${OE_BINDIR}/${CXX_COMPILER}
         PARENT_SCOPE)
   else ()
-    message(FATAL_ERROR "-- ${CXX_COMPILER} is not supported.")
+    message(FATAL_ERROR "-- ${OE_BINDIR}/${CXX_COMPILER} is not supported.")
   endif ()
 endfunction ()

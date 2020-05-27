@@ -71,6 +71,16 @@ class oe_fd_file_system
         return oe_pwrite(file, buf, count, offset);
     }
 
+    int fsync(file_handle file)
+    {
+        return oe_fsync(file);
+    }
+
+    int fdatasync(file_handle file)
+    {
+        return oe_fdatasync(file);
+    }
+
     int close(file_handle file)
     {
         return oe_close(file);
@@ -124,6 +134,11 @@ class oe_fd_file_system
     int stat(const char* pathname, struct oe_stat_t* buf)
     {
         return oe_stat(pathname, buf);
+    }
+
+    int fstat(file_handle file, struct oe_stat_t* buf)
+    {
+        return oe_fstat(file, buf);
     }
 
     int truncate(const char* path, off_t length)
@@ -216,6 +231,16 @@ class fd_file_system
         return ::pwrite(file, buf, count, offset);
     }
 
+    int fsync(file_handle file)
+    {
+        return ::fsync(file);
+    }
+
+    int fdatasync(file_handle file)
+    {
+        return ::fdatasync(file);
+    }
+
     int close(file_handle file)
     {
         return ::close(file);
@@ -269,6 +294,11 @@ class fd_file_system
     int stat(const char* pathname, struct oe_stat_t* buf)
     {
         return ::stat(pathname, (struct stat*)buf);
+    }
+
+    int fstat(file_handle file, struct oe_stat_t* buf)
+    {
+        return ::fstat(file, (struct stat*)buf);
     }
 
     int truncate(const char* path, off_t length)
@@ -479,6 +509,16 @@ class stream_file_system
         return ret;
     }
 
+    int fsync(file_handle file)
+    {
+        return fflush(file);
+    }
+
+    int fdatasync(file_handle file)
+    {
+        return fflush(file);
+    }
+
     int close(file_handle file)
     {
         return ::fclose(file);
@@ -532,6 +572,11 @@ class stream_file_system
     int stat(const char* pathname, struct stat* buf)
     {
         return ::stat(pathname, buf);
+    }
+
+    int fstat(file_handle file, struct stat* buf)
+    {
+        return ::fstat(fileno(file), buf);
     }
 
     int truncate(const char* path, off_t length)

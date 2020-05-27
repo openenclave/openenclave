@@ -4,6 +4,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/time.h>
 #include <time.h>
 
 #define UNIX_EPOCH_YEAR (1970)
@@ -234,7 +235,11 @@ oe_result_t oe_datetime_now(oe_datetime_t* value)
     if (value == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#ifndef OE_BUILD_ENCLAVE
     time(&now);
+#else
+    now = (time_t)(oe_get_time() / 1000);
+#endif
     gmtime_r(&now, &timeinfo);
 
     value->year = (uint32_t)timeinfo.tm_year + 1900;
@@ -259,4 +264,36 @@ void oe_datetime_log(const char* msg, const oe_datetime_t* date)
         oe_datetime_to_string(date, str, &size);
         OE_TRACE_VERBOSE("%s %s\n", msg, str);
     }
+}
+
+oe_result_t oe_datetime_to_time_t(const oe_datetime_t* datetime, time_t* value)
+{
+    oe_result_t result = OE_FAILURE;
+    time_t tmp = 0;
+    struct tm timeinfo = {0};
+
+    if (datetime == NULL || value == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(oe_datetime_is_valid(datetime));
+
+    // Update timeinfo based on input oe_date_time
+    timeinfo.tm_year = (int)datetime->year - 1900;
+    timeinfo.tm_mon = (int)datetime->month - 1;
+    timeinfo.tm_mday = (int)datetime->day;
+    timeinfo.tm_hour = (int)datetime->hours;
+    timeinfo.tm_min = (int)datetime->minutes;
+    timeinfo.tm_sec = (int)datetime->seconds;
+
+#ifdef _WIN32
+    tmp = _mkgmtime(&timeinfo);
+#else
+    tmp = timegm(&timeinfo);
+#endif
+
+    *value = tmp;
+
+    result = OE_OK;
+done:
+    return result;
 }

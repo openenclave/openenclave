@@ -36,5 +36,5 @@ install_enclaves(
   ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
 if (WITH_EEID)
-  target_compile_definitions(oecryptombed PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+  enclave_compile_definitions(oecryptombed PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()

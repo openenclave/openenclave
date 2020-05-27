@@ -69,7 +69,7 @@ void oe_free_ocall_buffer(void* buffer)
 
     // ecall context's buffer is managed by the host and does not have to be
     // freed.
-    if (buffer == ecall_context->ocall_buffer)
+    if (ecall_context && buffer == ecall_context->ocall_buffer)
         return;
 
     // Even though ecall_context is memory controlled by the host, there

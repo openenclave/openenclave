@@ -19,10 +19,6 @@ add_enclave(
   enc.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/tests_t.c)
 
-if (HAS_QUOTE_PROVIDER)
-  enclave_compile_definitions(qeidentity_enc PRIVATE HAS_QUOTE_PROVIDER)
-endif ()
-
 enclave_include_directories(qeidentity_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                             ${CMAKE_CURRENT_SOURCE_DIR}/../common)
 enclave_link_libraries(qeidentity_enc oelibc)

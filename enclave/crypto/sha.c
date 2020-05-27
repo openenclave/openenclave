@@ -121,7 +121,7 @@ oe_result_t oe_sha256_restore(
 
     uint64_t NB = ((((uint64_t)num_hashed[1]) << 32) + num_hashed[0]) / 8;
     impl->ctx.total[0] = NB & 0xFFFFFFFF;
-    impl->ctx.total[1] = (NB >> 32) & 0xFFFFFFFF;
+    impl->ctx.total[1] = ((uint32_t)(NB >> 32)) & 0xFFFFFFFF;
 
     result = OE_OK;
 

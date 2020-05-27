@@ -31,3 +31,17 @@ void security_ecall_test1(int* ptr)
 
     printf("_secret not leaked.\n");
 }
+
+// direct [in] pointer as ECALL parameter, will not leak data from enclave
+int security_ecall_test2(int* ptr)
+{
+    // ptr must lie within the enclave.
+    OE_TEST(oe_is_within_enclave(ptr, 4 * sizeof(*ptr)));
+
+    if ((512 != *(ptr)) || (1024 != *(ptr + 1)) || (768 != *(ptr + 2)) ||
+        (2048 != *(ptr + 3)))
+        return -1;
+
+    *(ptr) = *(ptr + 1) = *(ptr + 2) = *(ptr + 3) = 0;
+    return 0;
+}

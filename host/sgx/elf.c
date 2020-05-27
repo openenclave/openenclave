@@ -1909,7 +1909,11 @@ oe_result_t elf64_load_relocations(
     for (; p != end; p++)
     {
         uint64_t reloc_type = ELF64_R_TYPE(p->r_info);
-        if (reloc_type != R_X86_64_RELATIVE && reloc_type != R_X86_64_TPOFF64)
+        /* The enclave doesn't perform relocations on R_X86_64_GLOB_DAT, but
+         * we allow it for code that checks for the existence of weak symbols
+         * before using them. */
+        if (reloc_type != R_X86_64_RELATIVE && reloc_type != R_X86_64_TPOFF64 &&
+            reloc_type != R_X86_64_GLOB_DAT)
         {
             // Relocations are critical for correct code behavior.
             // Error out for unsupported relocations

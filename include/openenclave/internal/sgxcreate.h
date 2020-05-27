@@ -58,9 +58,6 @@ struct _oe_sgx_load_context
         size_t size;
     } sim;
 
-    /* Handle to isgx driver when creating enclave on Linux */
-    int dev;
-
     /* Hash context used to measure enclave as it is loaded */
     oe_sha256_context_t hash_context;
 

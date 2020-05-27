@@ -20,6 +20,8 @@ enclave {
 
     untrusted {
         void host_verify(
+            [in] const oe_uuid_t* format_id,
+            bool wrapped_with_header,
             [in, size=evidence_size] uint8_t* evidence,
             size_t evidence_size,
             [in, size=endorsements_size] uint8_t* endorsements,

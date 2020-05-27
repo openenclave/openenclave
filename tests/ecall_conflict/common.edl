@@ -1,0 +1,38 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+
+  // Define a struct to ensure that multiple definition error does not occur.
+  struct MyStruct {
+    int x;
+    int64_t y;
+  };
+
+  // Define a union to ensure that multiple definition error does not occur.
+  union MyUnion {
+    int x;
+    int64_t y;
+  };
+
+  // Define an enum to ensure that multiple definition error does not occur.
+  enum MyEnum {
+    RED,
+    GREEN = 10,
+    BLUE
+  };
+
+  trusted {
+     // Common ecalls.
+     public void enc_ecall1(MyStruct s);
+     public void enc_ecall2(MyUnion u);
+     public void enc_ecall3(MyEnum e);
+  };
+
+  untrusted {
+     // Common ocalls
+     void host_ocall1(MyStruct s);
+     void host_ocall2(MyUnion u);
+     void host_ocall3(MyEnum e);
+  };
+};

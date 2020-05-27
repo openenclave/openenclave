@@ -2,6 +2,16 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+# Exit on error.
+set -e
+
+# shellcheck disable=SC2154
+# Keep track of the last executed command.
+trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+# shellcheck disable=SC2154
+# Echo an error message upon a trap.
+trap 'echo "\"${last_command}\" command filed with exit code $?."' ERR
+
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
 curr_path=$(pwd)
@@ -27,6 +37,9 @@ cp "$script_path"/invoke_compiler "$bin_path"/invoke_compiler
 clang_versions=("" "-7" "-8" "-9")
 for version in "${clang_versions[@]}"; do
   clang="clang$version"
+  if ! [ -x "$(command -v "$clang")" ]; then
+    continue
+  fi
   clangcpp="clang++$version"
   clang_path=$(which "$clang")
   clangcpp_path=$(which "$clangcpp")
@@ -53,12 +66,12 @@ fi
 
 # Obtain `as` and `ld` from Intel site.
 intel_site="https://download.01.org/intel-sgx/sgx-linux/"
-intel_tool_version="2.9"
-intel_tarball="as.ld.objdump.gold.r1.tar.gz"
+intel_tool_version="2.10"
+intel_tarball="as.ld.objdump.gold.r2.tar.gz"
 wget "$intel_site"/"$intel_tool_version"/"$intel_tarball" -O /tmp/"$intel_tarball"
 tar -xf /tmp/"$intel_tarball" -C /tmp
 
-intel_extract_path=external/toolset
+intel_extract_path=external/toolset/ubuntu18.04
 rm -f "$bin_path"/as
 cp /tmp/"$intel_extract_path"/as "$bin_path"/as
 # The `ld` depends on glibc version 2.27.

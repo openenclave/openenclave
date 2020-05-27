@@ -31,7 +31,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${workspaceRoot}\\build\\x64-Debug",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=ON -DNUGET_PACKAGE_PATH=${workspaceRoot}\\prereqs\\nuget",
+      "cmakeCommandArgs": "-DBUILD_ENCLAVES=ON -DNUGET_PACKAGE_PATH=${workspaceRoot}\\prereqs\\nuget",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -42,7 +42,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${workspaceRoot}\\build\\x64-RelWithDebInfo",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=ON -DNUGET_PACKAGE_PATH=${workspaceRoot}\\prereqs\\nuget",
+      "cmakeCommandArgs": "-DBUILD_ENCLAVES=ON -DNUGET_PACKAGE_PATH=${workspaceRoot}\\prereqs\\nuget",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -53,7 +53,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${workspaceRoot}\\build\\x64-Release",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=ON -DNUGET_PACKAGE_PATH=${workspaceRoot}\\prereqs\\nuget",
+      "cmakeCommandArgs": "-DBUILD_ENCLAVES=ON -DNUGET_PACKAGE_PATH=${workspaceRoot}\\prereqs\\nuget",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     }

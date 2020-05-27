@@ -1,12 +1,52 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# This script requires the variables SOURCE_DIR, BUILD_DIR, and
-# PREFIX_DIR to be defined:
+# This script requires the variables SOURCE_DIR, BUILD_DIR,
+# COMPILER_SUPPORTS_SNMALLOC, USE_DEBUG_MALLOC and PREFIX_DIR to be defined:
 #
-#     cmake -DHAS_QUOTE_PROVIDER=ON -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
+#     cmake -DSOURCE_DIR=~/openenclave \
+#           -DBUILD_DIR=~/openenclave/build
+#           -DPREFIX_DIR=/opt/openenclave \
+#           -P ~/openenclave/samples/test-samples.cmake
 
-set(SAMPLES_LIST helloworld file-encryptor switchless host_verify)
+# Determine whether DCAP quote provider libraries are available in the system.
+# Delete the file and create afresh so that DCAP libraries are checked
+# every time samples test is run.
+file(REMOVE check_quote_provider/CMakeLists.txt)
+configure_file(${SOURCE_DIR}/check_quote_provider.cmake
+               check_quote_provider/CMakeLists.txt COPYONLY)
+
+# When executed in script mode (i.e -P), find_library command is not supported.
+# Therefore run cmake on the above created CMakeLists.txt. It internally
+# invokes find_library and will error out if sgx_dcap_ql is not found.
+execute_process(
+  COMMAND ${CMAKE_COMMAND} .
+  WORKING_DIRECTORY check_quote_provider
+  OUTPUT_QUIET ERROR_QUIET
+  RESULT_VARIABLE COMMAND_EXIT_CODE)
+
+if (COMMAND_EXIT_CODE EQUAL 0)
+  set(HAS_QUOTE_PROVIDER on)
+  message(
+    STATUS
+      "System has DCAP libraries. Attestation based samples will be tested.")
+else ()
+  set(HAS_QUOTE_PROVIDER off)
+  message(
+    WARNING
+      "System does not have DCAP libraries. Attestation based samples will NOT be tested."
+  )
+endif ()
+
+# Set SAMPLES_LIST so that helloworld becomes the first if BUILD_ENCLAVES=ON.
+if (BUILD_ENCLAVES)
+  set(SAMPLES_LIST file-encryptor helloworld log_callback switchless)
+  # Debug malloc will set allocated memory to a fixed pattern.
+  # Hence do not enable pluggable_allocator test under USE_DEBUG_MALLOC.
+  if (COMPILER_SUPPORTS_SNMALLOC AND NOT USE_DEBUG_MALLOC)
+    list(APPEND SAMPLES_LIST pluggable_allocator)
+  endif ()
+endif ()
 
 if ($ENV{OE_SIMULATION})
   message(
@@ -21,13 +61,14 @@ else ()
   # This sample can run on SGX, both with and without FLC, meaning
   # they can run even if they weren't built against SGX, because in
   # that cause they directly interface with the AESM service.
-  list(APPEND SAMPLES_LIST data-sealing local_attestation)
+  if (BUILD_ENCLAVES)
+    list(APPEND SAMPLES_LIST data-sealing)
 
-  # These tests can only run with SGX-FLC, meaning they were built
-  # against SGX.
-  if (HAS_QUOTE_PROVIDER)
-    list(APPEND SAMPLES_LIST remote_attestation)
-    list(APPEND SAMPLES_LIST attested_tls)
+    # These tests can only run with SGX-FLC, meaning they were built
+    # against SGX.
+    if (HAS_QUOTE_PROVIDER)
+      list(APPEND SAMPLES_LIST attested_tls attestation)
+    endif ()
   endif ()
 endif ()
 
@@ -66,8 +107,7 @@ foreach (SAMPLE ${SAMPLES_LIST})
       COMMAND
         ${CMAKE_COMMAND}
         -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/openenclave/cmake -G Ninja
-        -DNUGET_PACKAGE_PATH=${NUGET_PACKAGE_PATH}
-        -DHAS_QUOTE_PROVIDER=${HAS_QUOTE_PROVIDER} ${SAMPLE_SOURCE_DIR}
+        -DNUGET_PACKAGE_PATH=${NUGET_PACKAGE_PATH} ${SAMPLE_SOURCE_DIR}
       WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
   else ()
     execute_process(

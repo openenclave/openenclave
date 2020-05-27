@@ -848,7 +848,7 @@ oe_result_t oe_cert_verify(
                 OE_RAISE_MSG(
                     OE_INVALID_PARAMETER, "Invalid crls parameter", NULL);
 
-            if (!(p = malloc(sizeof(mbedtls_x509_crl))))
+            if (!(p = oe_malloc(sizeof(mbedtls_x509_crl))))
                 OE_RAISE(OE_OUT_OF_MEMORY);
 
             OE_CHECK(oe_memcpy_s(
@@ -908,7 +908,7 @@ done:
         for (mbedtls_x509_crl* p = crl_list; p;)
         {
             mbedtls_x509_crl* next = p->next;
-            free(p);
+            oe_free(p);
             p = next;
         }
     }
@@ -1089,7 +1089,7 @@ oe_result_t oe_gen_custom_x509_cert(
     mbedtls_x509write_crt_set_subject_key(&x509cert, &subject_key);
     mbedtls_x509write_crt_set_issuer_key(&x509cert, &issuer_key);
 
-    if ((buff = malloc(cert_buf_size)) == NULL)
+    if ((buff = oe_malloc(cert_buf_size)) == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Get the drbg object */
@@ -1175,10 +1175,15 @@ oe_result_t oe_gen_custom_x509_cert(
     // Write a built up certificate to a X509 DER structure Note: data
     // is written at the end of the buffer! Use the return value to
     // determine where you should start using the buffer.
-    *bytes_written = (size_t)mbedtls_x509write_crt_der(
+    ret = mbedtls_x509write_crt_der(
         &x509cert, buff, cert_buf_size, mbedtls_ctr_drbg_random, ctr_drbg);
-    if (*bytes_written <= 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "bytes_written = 0x%x ", *bytes_written);
+    if (ret < 0)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+    else
+    {
+        *bytes_written = (size_t)ret;
+        ret = 0;
+    }
 
     OE_CHECK(oe_memcpy_s(
         (void*)cert_buf,
@@ -1194,7 +1199,7 @@ done:
     // mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_pk_free(&issuer_key);
     mbedtls_pk_free(&subject_key);
-    free(buff);
+    oe_free(buff);
     if (ret)
         result = OE_CRYPTO_ERROR;
 

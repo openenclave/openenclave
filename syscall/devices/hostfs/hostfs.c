@@ -453,6 +453,36 @@ done:
     return ret;
 }
 
+static int _hostfs_fsync(oe_fd_t* desc)
+{
+    int ret = -1;
+    file_t* file = _cast_file(desc);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_fsync_ocall(&ret, file->host_fd) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return ret;
+}
+
+static int _hostfs_fdatasync(oe_fd_t* desc)
+{
+    int ret = -1;
+    file_t* file = _cast_file(desc);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_fdatasync_ocall(&ret, file->host_fd) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return ret;
+}
+
 static int _hostfs_dup(oe_fd_t* desc, oe_fd_t** new_file_out)
 {
     int ret = -1;
@@ -1044,6 +1074,28 @@ done:
     return ret;
 }
 
+static int _hostfs_fstat(oe_fd_t* desc, struct oe_stat_t* buf)
+{
+    int ret = -1;
+    file_t* file = _cast_file(desc);
+    int retval = -1;
+
+    if (buf)
+        oe_memset_s(buf, sizeof(*buf), 0, sizeof(*buf));
+
+    if (!file || !buf)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_fstat_ocall(&retval, file->host_fd, buf) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    ret = retval;
+
+done:
+
+    return ret;
+}
+
 static int _hostfs_access(oe_device_t* device, const char* pathname, int mode)
 {
     int ret = -1;
@@ -1272,6 +1324,9 @@ static oe_file_ops_t _file_ops =
     .pread = _hostfs_pread,
     .pwrite = _hostfs_pwrite,
     .getdents64 = _hostfs_getdents64,
+    .fstat = _hostfs_fstat,
+    .fsync = _hostfs_fsync,
+    .fdatasync = _hostfs_fdatasync,
 };
 // clang-format on
 

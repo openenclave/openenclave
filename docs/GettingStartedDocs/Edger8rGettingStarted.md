@@ -85,22 +85,44 @@ Once the `edl` methods are defined the headers and marshaling code needs to be g
 
 A single command can be issued to generate both the secure and unsecure files, or they can be generated separately.
 
-To generate both secure and insecure headers and marshaling files run the following:
+As an example, on Linux, for an application targeting SGX, to generate both secure and insecure headers and marshaling files, run the following (assuming that the Open Enclave SDK package was installed to /opt/openenclave):
 
 ```bash
-oeedger8r --trusted-dir enclave-directory --untrusted-dir host-directory hello.edl
+oeedger8r --trusted-dir enclave-directory --untrusted-dir host-directory hello.edl --search-path /opt/openenclave/include --search-path  /opt/openenclave/include/openenclave/edl/sgx
+```
+
+On Windows, for an application targeting SGX, to generate both secure and insecure headers and marshaling files, run the following (assuming that the Open Enclave SDK package was installed to c:\openenclave):
+
+```cmd
+oeedger8r.exe  --trusted-dir enclave-directory --untrusted-dir host-directory hello.edl --search-path c:\openenclave\include --search-path c:\openenclave\include\openenclave\edl\sgx
 ```
 
 To generate just the secure code for the enclave in the current directory run the following:
 
+On Linux:
+
 ```bash
-oeedger8r --trusted hello.edl
+oeedger8r --trusted hello.edl --search-path /opt/openenclave/include --search-path  /opt/openenclave/include/openenclave/edl/sgx
+```
+
+On Windows:
+
+```cmd
+oeedger8r --trusted hello.edl --search-path c:\openenclave\include --search-path c:\openenclave\include\openenclave\edl\sgx
 ```
 
 To generate just the unsecure code for the host in the current directory run the following:
 
+On Linux:
+
 ```bash
-edger8r --untrusted hello.edl
+oeedger8r --untrusted hello.edl --search-path /opt/openenclave/include --search-path  /opt/openenclave/include/openenclave/edl/sgx
+```
+
+On Windows:
+
+```cmd
+oeedger8r --untrusted hello.edl --search-path c:\openenclave\include --search-path c:\openenclave\include\openenclave\edl\sgx
 ```
 
 The generator creates the following trusted file:

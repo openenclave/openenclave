@@ -13,9 +13,8 @@
 
 #include "core_t.h"
 
-#if !defined(OE_USE_BUILTIN_EDL)
 /**
- * Declare the protoype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_log_is_supported_ocall();
@@ -24,7 +23,7 @@ oe_result_t _oe_write_ocall(int device, const char* str, size_t maxlen);
 
 /**
  * Make the following OCALLs weak to support the system EDL opt-in.
- * When the user does not opt in (import) the EDL, the linker will pick
+ * When the user does not opt into (import) the EDL, the linker will pick
  * the following default implementations. If the user opts into the EDL,
  * the implementions (which are strong) in the oeedger8r-generated code will be
  * used.
@@ -51,7 +50,6 @@ oe_result_t _oe_write_ocall(int device, const char* str, size_t maxlen)
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_write_ocall, oe_write_ocall);
-#endif
 
 void* oe_host_malloc(size_t size)
 {
@@ -82,6 +80,16 @@ void* oe_host_calloc(size_t nmemb, size_t size)
 
     return ptr;
 }
+
+oe_result_t _oe_realloc_ocall(void** retval, void* ptr, size_t size)
+{
+    OE_UNUSED(retval);
+    OE_UNUSED(ptr);
+    OE_UNUSED(size);
+    return OE_UNEXPECTED;
+}
+
+OE_WEAK_ALIAS(_oe_realloc_ocall, oe_realloc_ocall);
 
 void* oe_host_realloc(void* ptr, size_t size)
 {

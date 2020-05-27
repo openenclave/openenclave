@@ -4,6 +4,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/tests.h>
 #include "switchless_threads_t.h"
 
 #define STRING_LEN 100
@@ -66,10 +67,12 @@ int enc_echo_multiple(char* in, char out[STRING_LEN], int repeats)
     return 0;
 }
 
+#define NUM_TCS 8
+
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    128,  /* NumHeapPages */
-    128,  /* NumStackPages */
-    8);   /* NumTCS */
+    1,                             /* ProductID */
+    1,                             /* SecurityVersion */
+    true,                          /* Debug */
+    OE_TEST_MT_HEAP_SIZE(NUM_TCS), /* NumHeapPages */
+    128,                           /* NumStackPages */
+    NUM_TCS);                      /* NumTCS */

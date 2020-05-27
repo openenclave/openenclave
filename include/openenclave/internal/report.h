@@ -23,6 +23,7 @@ typedef struct _oe_get_sgx_quote_verification_collateral_args
 {
     oe_result_t result;                   /* out */
     uint8_t fmspc[6];                     /* in */
+    uint8_t collateral_provider;          /* in */
     uint8_t* tcb_info;                    /* out */
     size_t tcb_info_size;                 /* out */
     uint8_t* tcb_info_issuer_chain;       /* out */
@@ -39,6 +40,10 @@ typedef struct _oe_get_sgx_quote_verification_collateral_args
     size_t qe_identity_issuer_chain_size; /* out */
     uint8_t* host_out_buffer;             /* out */
 } oe_get_sgx_quote_verification_collateral_args_t;
+
+// Collateral provider for sgx quote verification
+#define CRL_CA_PROCESSOR (1)
+#define CRL_CA_PLATFORM (2)
 
 /*
 **==============================================================================
@@ -80,10 +85,13 @@ OE_STATIC_ASSERT(
     }
 #define X509_OID_FOR_QUOTE_STRING "1.2.840.113556.10.1.1"
 
+#define X509_OID_FOR_NEW_QUOTE_EXT                           \
+    {                                                        \
+        0x2B, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x69, 0x01 \
+    }
+#define X509_OID_FOR_NEW_QUOTE_STRING "1.3.6.1.4.1.311.105.1"
+
 // For old OE reports.
 #define OE_REPORT_HEADER_VERSION (1)
-
-// For attestation plugin reports.
-#define OE_ATTESTATION_HEADER_VERSION (2)
 
 #endif //_OE_INCLUDE_REPORT_H_

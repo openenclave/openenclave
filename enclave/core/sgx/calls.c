@@ -3,6 +3,8 @@
 
 #include "../calls.h"
 #include <openenclave/advanced/allocator.h>
+#include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
@@ -38,6 +40,7 @@
 #include "report.h"
 #include "switchlesscalls.h"
 #include "td.h"
+#include "xstate.h"
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -161,14 +164,6 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         {
             oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
 
-#ifdef OE_USE_BUILTIN_EDL
-            /* Install the common TEE ECALL function table. */
-            OE_CHECK(oe_register_core_ecall_function_table());
-
-            /* Install the SGX ECALL function table. */
-            OE_CHECK(oe_register_platform_ecall_function_table());
-#endif // OE_USE_BUILTIN_EDL
-
             if (!oe_is_outside_enclave(enclave, 1))
                 OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -176,6 +171,10 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
             /* Initialize the CPUID table before calling global constructors. */
             OE_CHECK(oe_initialize_cpuid());
+
+            /* Initialize the xstate settings
+             * Depends on TD and sgx_create_report, so can't happen earlier */
+            OE_CHECK(oe_set_is_xsave_supported());
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
@@ -242,23 +241,10 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
     OE_CHECK(oe_safe_add_u64(
         args.input_buffer_size, args.output_buffer_size, &buffer_size));
 
-    // Resolve which ecall table to use.
-    if (args_ptr->table_id == OE_UINT64_MAX)
-    {
-        ecall_table.ecalls = __oe_ecalls_table;
-        ecall_table.num_ecalls = __oe_ecalls_table_size;
-    }
-    else
-    {
-        if (args_ptr->table_id >= OE_MAX_ECALL_TABLES)
-            OE_RAISE(OE_NOT_FOUND);
-
-        ecall_table.ecalls = _ecall_tables[args_ptr->table_id].ecalls;
-        ecall_table.num_ecalls = _ecall_tables[args_ptr->table_id].num_ecalls;
-
-        if (!ecall_table.ecalls)
-            OE_RAISE(OE_NOT_FOUND);
-    }
+    // The __oe_ecall_table is defined in the oeedger8r-generated
+    // code.
+    ecall_table.ecalls = __oe_ecalls_table;
+    ecall_table.num_ecalls = __oe_ecalls_table_size;
 
     // Fetch matching function.
     if (args.function_id >= ecall_table.num_ecalls)
@@ -368,7 +354,7 @@ static void _handle_ecall(
     oe_result_t result = OE_OK;
 
     /* Insert ECALL context onto front of oe_sgx_td_t.ecalls list */
-    Callsite callsite = {{0}};
+    oe_callsite_t callsite = {{0}};
     uint64_t arg_out = 0;
 
     td_push_callsite(td, &callsite);
@@ -422,6 +408,12 @@ static void _handle_ecall(
 
             /* Call all finalization functions */
             oe_call_fini_functions();
+
+            /* Cleanup attesters */
+            oe_attester_shutdown();
+
+            /* Cleanup verifiers */
+            oe_verifier_shutdown();
 
 #if defined(OE_USE_DEBUG_MALLOC)
 
@@ -486,7 +478,7 @@ OE_INLINE void _handle_oret(
     uint16_t result,
     uint64_t arg)
 {
-    Callsite* callsite = td->callsites;
+    oe_callsite_t* callsite = td->callsites;
 
     if (!callsite)
         return;
@@ -644,7 +636,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_td_t* td = oe_sgx_get_td();
-    Callsite* callsite = td->callsites;
+    oe_callsite_t* callsite = td->callsites;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
@@ -692,8 +684,7 @@ done:
 **==============================================================================
 */
 
-oe_result_t oe_call_host_function_by_table_id(
-    uint64_t table_id,
+oe_result_t oe_call_host_function_internal(
     uint64_t function_id,
     const void* input_buffer,
     size_t input_buffer_size,
@@ -725,7 +716,6 @@ oe_result_t oe_call_host_function_by_table_id(
         OE_RAISE(OE_UNEXPECTED);
     }
 
-    args->table_id = table_id;
     args->function_id = function_id;
     args->input_buffer = input_buffer;
     args->input_buffer_size = input_buffer_size;
@@ -791,8 +781,7 @@ oe_result_t oe_call_host_function(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    return oe_call_host_function_by_table_id(
-        OE_UINT64_MAX,
+    return oe_call_host_function_internal(
         function_id,
         input_buffer,
         input_buffer_size,

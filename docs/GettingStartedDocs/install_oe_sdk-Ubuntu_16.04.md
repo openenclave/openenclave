@@ -21,10 +21,12 @@ wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 
 echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/16.04/prod xenial main" | sudo tee /etc/apt/sources.list.d/msprod.list
 wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+
+sudo apt update
 ```
 
 ### 2. Install the Intel SGX DCAP Driver
-<<<<<<< HEAD
+
 Some versions of Ubuntu come with the SGX driver already installed. You can check
 by running with the following:
 
@@ -38,7 +40,7 @@ If the output of the above is blank, you should proceed with installing the driv
 ```bash
 sudo apt update
 sudo apt -y install dkms
-wget https://download.01.org/intel-sgx/sgx-dcap/1.4/linux/distro/ubuntuServer16.04/sgx_linux_x64_driver_1.21.bin -O sgx_linux_x64_driver.bin
+wget https://download.01.org/intel-sgx/sgx-dcap/1.7/linux/distro/ubuntu16.04-server/sgx_linux_x64_driver_1.35.bin -O sgx_linux_x64_driver.bin
 chmod +x sgx_linux_x64_driver.bin
 sudo ./sgx_linux_x64_driver.bin
 ```
@@ -50,7 +52,7 @@ sudo ./sgx_linux_x64_driver.bin
 ### 3. Install the Intel and Open Enclave packages and dependencies
 
 ```bash
-sudo apt -y install clang-7 libssl-dev gdb libsgx-enclave-common libsgx-enclave-common-dev libprotobuf9v5 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave
+sudo apt -y install clang-7 libssl-dev gdb libsgx-enclave-common libprotobuf9v5 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave
 ```
 
 > This step also installs the [az-dcap-client](https://github.com/microsoft/azure-dcap-client)
@@ -63,7 +65,16 @@ If you wish to use the Ninja build system rather than make, also install
 sudo apt -y install ninja-build
 ```
 
-If you wish to make use of the Open Enclave CMake package, please install CMake and [follow the instructions here](/cmake/sdk_cmake_targets_readme.md).
+If you wish to make use of the Open Enclave CMake package, please install CMake:
+
+```
+sudo apt-get install python-pip
+sudo pip install cmake
+```
+
+and [follow the instructions here](/cmake/sdk_cmake_targets_readme.md).
+
+Open Enclave SDK binary packages can also be [downloaded from GitHub](https://github.com/openenclave/openenclave/releases).
 
 ### 4. Verify the Open Enclave SDK install
 

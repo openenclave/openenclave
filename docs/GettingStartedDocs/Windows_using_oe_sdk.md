@@ -25,12 +25,12 @@ It contains the following subfolders:
 
 ## Configure environment variables for Open Enclave SDK for Windows
 
-- Set `CMAKE_PREFIX_PATH` to the point to the cmake directory of the Open Enclave SDK installation
+- Add the point to the cmake directory of the Open Enclave SDK installation to `CMAKE_PREFIX_PATH`.
 
 As an example, if you installed the SDK to C:\openenclave, then you would set `CMAKE_PREFIX_PATH` as shown below.
 
 ```cmd
-set CMAKE_PREFIX_PATH=C:\openenclave\lib\openenclave\cmake
+set CMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH%;C:\openenclave\lib\openenclave\cmake
 ```
 
 ## Samples
@@ -38,7 +38,7 @@ set CMAKE_PREFIX_PATH=C:\openenclave\lib\openenclave\cmake
 One way to determine if your machine is correctly configured to build and run
 Open Enclave apps is to execute the samples. A description of all the included samples,
 what each one illustrates, and how to build and run them  can be found in
-[share/openenclave/samples/README.md](/samples/README_Windows.md).
+[share/openenclave/samples/README.md](/samples/README.md).
 
 Additional documentation is also available for:
 - [Building and signing enclaves](/docs/GettingStartedDocs/buildandsign.md)

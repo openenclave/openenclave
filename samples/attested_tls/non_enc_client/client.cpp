@@ -35,7 +35,7 @@ int parse_arguments(
     char** server_port)
 {
     int ret = 1;
-    const char* option = NULL;
+    const char* option = nullptr;
     int param_len = 0;
 
     if (argc != 3)
@@ -74,7 +74,7 @@ int communicate_with_server(SSL* ssl)
     int bytes_read = 0;
 
     // Write an GET request to the server
-    printf(TLS_CLIENT "Write to server-->:\n\n");
+    printf(TLS_CLIENT "-----> Write to server:\n");
     len = snprintf((char*)buf, sizeof(buf) - 1, CLIENT_PAYLOAD);
     while ((bytes_written = SSL_write(ssl, buf, (size_t)len)) <= 0)
     {
@@ -86,10 +86,10 @@ int communicate_with_server(SSL* ssl)
         goto done;
     }
 
-    printf(TLS_CLIENT "\n\n%d bytes written\n\n", bytes_written);
+    printf(TLS_CLIENT "%d bytes written\n", bytes_written);
 
     // Read the HTTP response from server
-    printf(TLS_CLIENT "\n\n<-- Read from server:\n");
+    printf(TLS_CLIENT "<---- Read from server:\n");
     do
     {
         len = sizeof(buf) - 1;
@@ -139,7 +139,7 @@ done:
 int create_socket(char* server_name, char* server_port)
 {
     int sockfd = -1;
-    char* addr_ptr = NULL;
+    char* addr_ptr = nullptr;
     int port = 0;
     struct addrinfo hints, *dest_info, *curr_di;
     int res;
@@ -218,12 +218,12 @@ done:
 int main(int argc, char** argv)
 {
     int ret = 1;
-    X509* cert = NULL;
-    SSL_CTX* ctx = NULL;
-    SSL* ssl = NULL;
+    X509* cert = nullptr;
+    SSL_CTX* ctx = nullptr;
+    SSL* ssl = nullptr;
     int serversocket = 0;
-    char* server_name = NULL;
-    char* server_port = NULL;
+    char* server_name = nullptr;
+    char* server_port = nullptr;
     int error = 0;
 
     printf("\nStarting" TLS_CLIENT "\n\n\n");
@@ -247,7 +247,7 @@ int main(int argc, char** argv)
         goto done;
     }
 
-    if ((ctx = SSL_CTX_new(SSLv23_client_method())) == NULL)
+    if ((ctx = SSL_CTX_new(SSLv23_client_method())) == nullptr)
     {
         printf(TLS_CLIENT "TLS client: unable to create a new SSL context\n");
         goto done;
@@ -262,7 +262,7 @@ int main(int argc, char** argv)
     // specify the verify_callback for custom verification
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, &verify_callback);
 
-    if ((ssl = SSL_new(ctx)) == NULL)
+    if ((ssl = SSL_new(ctx)) == nullptr)
     {
         printf(TLS_CLIENT
                "Unable to create a new SSL connection state object\n");

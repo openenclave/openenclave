@@ -106,9 +106,9 @@ int enc_echo_regular(
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,        /* ProductID */
-    1,        /* SecurityVersion */
-    true,     /* Debug */
-    64,       /* NumHeapPages */
-    64,       /* NumStackPages */
-    NUM_TCS); /* NumTCS */
+    1,                             /* ProductID */
+    1,                             /* SecurityVersion */
+    true,                          /* Debug */
+    OE_TEST_MT_HEAP_SIZE(NUM_TCS), /* NumHeapPages */
+    64,                            /* NumStackPages */
+    NUM_TCS);                      /* NumTCS */

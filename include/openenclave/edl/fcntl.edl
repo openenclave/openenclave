@@ -114,6 +114,14 @@ enclave
             int operation)
             propagate_errno;
 
+        int oe_syscall_fsync_ocall(
+            oe_host_fd_t fd)
+            propagate_errno;
+
+        int oe_syscall_fdatasync_ocall(
+            oe_host_fd_t fd)
+            propagate_errno;
+
         oe_host_fd_t oe_syscall_dup_ocall(
             oe_host_fd_t oldfd)
             propagate_errno;
@@ -138,6 +146,11 @@ enclave
         int oe_syscall_stat_ocall(
             [in, string] const char* pathname,
             [out, count=1] struct oe_stat_t* buf)
+            propagate_errno;
+
+        int oe_syscall_fstat_ocall(
+            oe_host_fd_t fd,
+            [out] struct oe_stat_t* buf)
             propagate_errno;
 
         int oe_syscall_access_ocall(
