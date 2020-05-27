@@ -16,7 +16,7 @@ if (OE_LVI_MITIGATION MATCHES ControlFlow)
     endif()
     include("${CMAKE_CURRENT_LIST_DIR}/configure_lvi_mitigation_build.cmake")
     # Pick up the customized compilation toolchain based on the specified path.
-    configure_lvi_mitigation_build(${LVI_MITIGATION_BINDIR})
+    configure_lvi_mitigation_build(BINDIR ${LVI_MITIGATION_BINDIR} IN_PACKAGE)
   endif()
   include("${CMAKE_CURRENT_LIST_DIR}/apply_lvi_mitigation.cmake")
 else()

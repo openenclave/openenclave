@@ -60,7 +60,7 @@ if (UNIX AND LVI_MITIGATION MATCHES ControlFlow)
     message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
   endif ()
   include(configure_lvi_mitigation_build)
-  configure_lvi_mitigation_build(${LVI_MITIGATION_BINDIR})
+  configure_lvi_mitigation_build(BINDIR ${LVI_MITIGATION_BINDIR})
 endif ()
 
 project(
