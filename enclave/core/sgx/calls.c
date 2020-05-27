@@ -610,6 +610,7 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
 {
     static bool _initialized = false;
     static bool _stitch_ocall_stack = false;
+    oe_sgx_td_t* td = oe_sgx_get_td();
 
     // Since determining whether an enclave supports debugging is a stateless
     // idempotent operation, there is no need to lock. The result is cached
@@ -623,7 +624,6 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
 
     if (_stitch_ocall_stack)
     {
-        oe_sgx_td_t* td = oe_sgx_get_td();
         oe_ecall_context_t* host_ecall_context = td->host_ecall_context;
 
         // Make sure the context is valid.
@@ -639,7 +639,7 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
             host_ecall_context->debug_eexit_rip = frame[1];
         }
     }
-    oe_asm_exit(arg1, arg2);
+    oe_asm_exit(arg1, arg2, td);
 }
 
 /*

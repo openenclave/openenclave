@@ -15,8 +15,6 @@
 #include "thread.h"
 #include "threadlocal.h"
 
-#define TD_FROM_TCS (5 * OE_PAGE_SIZE)
-
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, magic) == td_magic);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, depth) == td_depth);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_sgx_td_t, host_rcx) == td_host_rcx);
