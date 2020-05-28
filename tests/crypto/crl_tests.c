@@ -127,6 +127,19 @@ static bool _year_is_a_leap_year(uint32_t year)
     }
 }
 
+static int32_t _diff_oe_datetime(oe_datetime_t* t1, oe_datetime_t* t2)
+{
+    int32_t dyear = (int32_t)t1->year - (int32_t)t2->year;
+    int32_t dmonth = (int32_t)t1->month - (int32_t)t2->month;
+    int32_t dday = (int32_t)t1->day - (int32_t)t2->day;
+    int32_t dhour = (int32_t)t1->hours - (int32_t)t2->hours;
+    int32_t dmin = (int32_t)t1->minutes - (int32_t)t2->minutes;
+    int32_t dsec = (int32_t)t1->seconds - (int32_t)t2->seconds;
+
+    return (dyear * 31556952) + (dmonth * 2592000) + (dday * 86400) +
+           (dhour * 3600) + (dmin * 60) + (dsec);
+}
+
 static void _test_get_dates(void)
 {
     printf("=== begin %s()\n", __FUNCTION__);
@@ -139,15 +152,9 @@ static void _test_get_dates(void)
     oe_datetime_t next;
     OE_TEST(oe_crl_get_update_dates(&crl, &last, &next) == OE_OK);
 
-    OE_TEST(last.year == _time.year);
-    OE_TEST(last.month == _time.month);
-    OE_TEST(last.day == _time.day);
-    OE_TEST(last.hours == _time.hours);
-    OE_TEST(last.minutes == _time.minutes);
-    // TEMPORARILY Disabled: _time is the certificate file's timestamp
-    // whereas last.seconds is the actual issue time of the certificate.
-    // The two values are not guaranteed to be equal.
-    // OE_TEST(last.seconds == _time.seconds);
+    int32_t diff = _diff_oe_datetime(&last, &_time);
+    printf("=== Diff between last and current time: %d\n", diff);
+    OE_TEST(abs(diff) < 60); // Ensure times are within 60 seconds
 
     oe_datetime_t next_expected;
     next_expected.year = _time.year + 1;
@@ -155,6 +162,7 @@ static void _test_get_dates(void)
     next_expected.day = _time.day;
     next_expected.hours = _time.hours;
     next_expected.minutes = _time.minutes;
+    next_expected.seconds = _time.seconds;
 
     // If a leap day occurs in the next time period, need to adjust
     // expected next date.
@@ -203,13 +211,9 @@ static void _test_get_dates(void)
         }
     }
 
-    OE_TEST(next.year == next_expected.year);
-    OE_TEST(next.month == next_expected.month);
-    OE_TEST(next.day == next_expected.day);
-    OE_TEST(next.hours == next_expected.hours);
-    OE_TEST(next.minutes == next_expected.minutes);
-    // TEMPORARILY Disabled: see above.
-    // OE_TEST(next.seconds == _time.seconds);
+    diff = _diff_oe_datetime(&next, &next_expected);
+    printf("=== Diff between next and next_expected time: %d\n", diff);
+    OE_TEST(abs(diff) < 60); // Ensure times are within 60 seconds
 
     OE_TEST(oe_crl_free(&crl) == OE_OK);
 
