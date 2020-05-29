@@ -12,6 +12,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
+#include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/utils.h>
 #include "platform_t.h"
 
@@ -120,17 +121,26 @@ done:
     return result;
 }
 
-static oe_result_t _get_sgx_target_info(sgx_target_info_t* target_info)
+static oe_result_t _get_sgx_target_info(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    sgx_target_info_t* target_info)
 {
     uint32_t retval;
 
-    if (oe_get_qetarget_info_ocall(&retval, target_info) != OE_OK)
+    if (oe_get_qetarget_info_ocall(
+            &retval, format_id, opt_params, opt_params_size, target_info) !=
+        OE_OK)
         return OE_FAILURE;
 
     return (oe_result_t)retval;
 }
 
 static oe_result_t _get_quote(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
     const sgx_report_t* sgx_report,
     uint8_t* quote,
     size_t* quote_size)
@@ -145,7 +155,14 @@ static oe_result_t _get_quote(
         *quote_size = 0;
 
     OE_CHECK(oe_get_quote_ocall(
-        &retval, sgx_report, quote, *quote_size, quote_size));
+        &retval,
+        format_id,
+        opt_params,
+        opt_params_size,
+        sgx_report,
+        quote,
+        *quote_size,
+        quote_size));
     result = (oe_result_t)retval;
 
 done:
@@ -154,6 +171,7 @@ done:
 }
 
 oe_result_t oe_get_remote_report(
+    const oe_uuid_t* format_id,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -179,7 +197,8 @@ oe_result_t oe_get_remote_report(
      * requires privacy. The trust decision is one of integrity verification
      * on the part of the report recipient.
      */
-    OE_CHECK(_get_sgx_target_info(&sgx_target_info));
+    OE_CHECK(_get_sgx_target_info(
+        format_id, opt_params, opt_params_size, &sgx_target_info));
 
     /*
      * Get enclave's local report passing in the quoting enclave's target info.
@@ -195,7 +214,13 @@ oe_result_t oe_get_remote_report(
     /*
      * OCall: Get the quote for the local report.
      */
-    result = _get_quote(&sgx_report, report_buffer, report_buffer_size);
+    result = _get_quote(
+        format_id,
+        opt_params,
+        opt_params_size,
+        &sgx_report,
+        report_buffer,
+        report_buffer_size);
     if (result == OE_BUFFER_TOO_SMALL)
         OE_CHECK_NO_TRACE(result);
     else
@@ -231,6 +256,7 @@ done:
 
 static oe_result_t _oe_get_report_internal(
     uint32_t flags,
+    const oe_uuid_t* format_id,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -255,6 +281,7 @@ static oe_result_t _oe_get_report_internal(
     if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
     {
         result = oe_get_remote_report(
+            format_id,
             report_data,
             report_data_size,
             opt_params,
@@ -296,8 +323,9 @@ done:
     return result;
 }
 
-oe_result_t oe_get_report_v2(
+oe_result_t oe_get_report_v2_internal(
     uint32_t flags,
+    const oe_uuid_t* format_id,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -320,6 +348,7 @@ oe_result_t oe_get_report_v2(
 
     result = _oe_get_report_internal(
         flags,
+        format_id,
         report_data,
         report_data_size,
         opt_params,
@@ -341,6 +370,7 @@ oe_result_t oe_get_report_v2(
     out_buffer_size = tmp_buffer_size;
     OE_CHECK(_oe_get_report_internal(
         flags,
+        format_id,
         report_data,
         report_data_size,
         opt_params,
@@ -362,11 +392,6 @@ done:
         oe_free(tmp_buffer);
 
     return result;
-}
-
-void oe_free_report(uint8_t* report_buffer)
-{
-    oe_free(report_buffer);
 }
 
 oe_result_t oe_get_sgx_report_ecall(

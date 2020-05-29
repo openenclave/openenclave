@@ -15,6 +15,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/eeid.h>
+#include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgx/eeid_plugin.h>
@@ -23,10 +24,11 @@
 
 #include "../common/sgx/endorsements.h"
 
+#include <openenclave/enclave.h>
+
 extern const void* __oe_get_eeid();
 
-#include <openenclave/attestation/sgx/attester.h>
-#include <openenclave/enclave.h>
+static const oe_uuid_t _local_uuid = {OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION};
 
 static oe_result_t _eeid_attester_on_register(
     oe_attestation_role_t* context,
@@ -105,7 +107,6 @@ done:
 
 static oe_result_t _eeid_get_evidence(
     oe_attester_t* context,
-    uint32_t flags,
     const oe_claim_t* custom_claims,
     size_t custom_claims_size,
     const void* opt_params,
@@ -115,8 +116,7 @@ static oe_result_t _eeid_get_evidence(
     uint8_t** endorsements_buffer,
     size_t* endorsements_buffer_size)
 {
-    OE_UNUSED(context);
-
+    uint32_t flags = 0;
     oe_result_t result = OE_UNEXPECTED;
     oe_endorsements_t* endorsements = NULL;
     oe_eeid_evidence_t* evidence = NULL;
@@ -124,8 +124,15 @@ static oe_result_t _eeid_get_evidence(
     size_t sgx_evidence_buffer_size = 0, sgx_endorsements_buffer_size = 0;
     const oe_eeid_t* eeid = __oe_get_eeid();
 
+    OE_UNUSED(context);
     if (!evidence_buffer || !evidence_buffer_size || !eeid)
         OE_RAISE(OE_FAILURE);
+
+    // Set flags based on format UUID, ignore and overwrite the input value
+    if (!memcmp(&context->base.format_id, &_local_uuid, sizeof(oe_uuid_t)))
+        flags = 0;
+    else
+        flags = OE_REPORT_FLAGS_REMOTE_ATTESTATION;
 
     *evidence_buffer = NULL;
     *evidence_buffer_size = 0;
@@ -228,7 +235,7 @@ static oe_result_t _eeid_free_endorsements(
 static oe_attester_t _eeid_attester = {
     .base =
         {
-            .format_id = {OE_EEID_PLUGIN_UUID},
+            .format_id = {OE_FORMAT_UUID_SGX_EEID_ECDSA_P256},
             .on_register = &_eeid_attester_on_register,
             .on_unregister = &_eeid_attester_on_unregister,
         },
@@ -236,7 +243,12 @@ static oe_attester_t _eeid_attester = {
     .free_evidence = &_eeid_free_evidence,
     .free_endorsements = &_eeid_free_endorsements};
 
-oe_attester_t* oe_eeid_plugin_attester()
+oe_result_t oe_sgx_eeid_attester_initialize(void)
 {
-    return &_eeid_attester;
+    return oe_register_attester_plugin(&_eeid_attester, NULL, 0);
+}
+
+oe_result_t oe_sgx_eeid_attester_shutdown(void)
+{
+    return oe_unregister_attester_plugin(&_eeid_attester);
 }

@@ -263,9 +263,10 @@ oe_result_t oe_parse_sgx_endorsements(
         (endorsements->enclave_type != OE_ENCLAVE_TYPE_SGX))
         OE_RAISE_MSG(
             OE_INVALID_PARAMETER,
-            "Failed to parse SGX endorsement. Invalid version or enclave "
-            "type.",
-            NULL);
+            "Failed to parse SGX endorsement. "
+            "Invalid version=%d or enclave type=%d",
+            endorsements->version,
+            endorsements->enclave_type);
 
     if (endorsements->num_elements != OE_SGX_ENDORSEMENT_COUNT)
         OE_RAISE_MSG(

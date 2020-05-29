@@ -5,6 +5,7 @@
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
 #include <ctime>
@@ -37,14 +38,15 @@ void generate_and_save_report(oe_enclave_t* enclave)
 #ifdef OE_LINK_SGX_DCAP_QL
     static uint8_t* report;
     size_t report_size;
-    OE_TEST(
+    OE_TEST_CODE(
         oe_get_report(
             enclave,
             OE_REPORT_FLAGS_REMOTE_ATTESTATION,
             NULL,
             0,
             &report,
-            &report_size) == OE_OK);
+            &report_size),
+        OE_OK);
     FILE* file;
 #ifdef _WIN32
     fopen_s(&file, "./data/generated_report.bytes", "wb");
@@ -158,9 +160,12 @@ int main(int argc, const char* argv[])
 
 #ifdef OE_LINK_SGX_DCAP_QL
 
+    static oe_uuid_t sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
+
     /* Initialize the target info */
     {
-        if ((result = sgx_get_qetarget_info(&target_info)) != OE_OK)
+        if ((result = sgx_get_qetarget_info(
+                 &sgx_ecdsa_uuid, NULL, 0, &target_info)) != OE_OK)
         {
             oe_put_err("sgx_get_qetarget_info(): result=%u", result);
         }
@@ -181,16 +186,16 @@ int main(int argc, const char* argv[])
     /*
      * Enclave API tests.
      */
-    OE_TEST(enclave_test_local_report(enclave, &target_info) == OE_OK);
-    OE_TEST(enclave_test_remote_report(enclave) == OE_OK);
+    OE_TEST_CODE(enclave_test_local_report(enclave, &target_info), OE_OK);
+    OE_TEST_CODE(enclave_test_remote_report(enclave), OE_OK);
 
-    OE_TEST(enclave_test_parse_report_negative(enclave) == OE_OK);
+    OE_TEST_CODE(enclave_test_parse_report_negative(enclave), OE_OK);
 
-    OE_TEST(enclave_test_local_verify_report(enclave) == OE_OK);
+    OE_TEST_CODE(enclave_test_local_verify_report(enclave), OE_OK);
 
-    OE_TEST(enclave_test_remote_verify_report(enclave) == OE_OK);
+    OE_TEST_CODE(enclave_test_remote_verify_report(enclave), OE_OK);
 
-    OE_TEST(enclave_test_verify_report_with_collaterals(enclave) == OE_OK);
+    OE_TEST_CODE(enclave_test_verify_report_with_collaterals(enclave), OE_OK);
 
     TestVerifyTCBInfo(enclave, "./data/tcbInfo.json");
     TestVerifyTCBInfo(enclave, "./data/tcbInfo_with_pceid.json");

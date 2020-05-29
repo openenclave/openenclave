@@ -315,8 +315,8 @@ if (COMPILE_SYSTEM_EDL)
 endif ()
 
 if (WITH_EEID)
-    enclave_compile_definitions(oecore PRIVATE OE_WITH_EXPERIMENTAL_EEID)
-endif()
+  enclave_compile_definitions(oecore PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif ()
 
 # Interface link flags for enclaves.
 if (OE_SGX)

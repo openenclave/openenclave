@@ -7,6 +7,7 @@
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../common.h"
 #include "collateral.h"
@@ -393,6 +394,7 @@ oe_result_t oe_get_quote_cert_chain_internal(
         "Failed to parse quote. %s",
         oe_result_str(result));
 
+    OE_TRACE_INFO("cert type=%d size=%d", qe_cert_data.type, qe_cert_data.size);
     *pem_pck_certificate = qe_cert_data.data;
     *pem_pck_certificate_size = qe_cert_data.size;
 
@@ -529,21 +531,37 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
     oe_datetime_log("Validation datetime: ", &validation_time);
     if (oe_datetime_compare(&validation_time, &validity_from) < 0)
     {
+        char vtime[OE_DATETIME_STRING_SIZE];
+        char vfrom[OE_DATETIME_STRING_SIZE];
+        size_t tsize = OE_DATETIME_STRING_SIZE;
+        oe_datetime_to_string(&validation_time, vtime, &tsize);
+        tsize = OE_DATETIME_STRING_SIZE;
+        oe_datetime_to_string(&validity_from, vfrom, &tsize);
+
         oe_datetime_log("Latest valid datetime: ", &validity_from);
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-            "Time to validate quote is earlier than the "
-            "latest 'valid from' value.",
-            NULL);
+            "Validation time %s is earlier than the "
+            "latest 'valid from' value %s.",
+            vtime,
+            vfrom);
     }
     if (oe_datetime_compare(&validation_time, &validity_until) > 0)
     {
+        char vtime[OE_DATETIME_STRING_SIZE];
+        char vuntil[OE_DATETIME_STRING_SIZE];
+        size_t tsize = OE_DATETIME_STRING_SIZE;
+        oe_datetime_to_string(&validation_time, vtime, &tsize);
+        tsize = OE_DATETIME_STRING_SIZE;
+        oe_datetime_to_string(&validity_until, vuntil, &tsize);
+
         oe_datetime_log("Earliest expiration datetime: ", &validity_until);
         OE_RAISE_MSG(
             OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
-            "Time to validate quote is later than the "
-            "earliest 'valid to' value.",
-            NULL);
+            "Validation time %s is later than the "
+            "earliest 'valid to' value %s.",
+            vtime,
+            vuntil);
     }
 
     result = OE_OK;

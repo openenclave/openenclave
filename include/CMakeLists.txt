@@ -23,15 +23,11 @@ install(
   FILES openenclave/host_verify.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/
   COMPONENT OEHOSTVERIFY)
+install(FILES openenclave/attestation/attester.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/)
 install(
-  FILES openenclave/attestation/plugin.h
+  FILES openenclave/attestation/verifier.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/
-  COMPONENT OEHOSTVERIFY)
-install(FILES openenclave/attestation/sgx/attester.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/sgx/)
-install(
-  FILES openenclave/attestation/sgx/verifier.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/sgx/
   COMPONENT OEHOSTVERIFY)
 install(
   FILES openenclave/attestation/sgx/report.h

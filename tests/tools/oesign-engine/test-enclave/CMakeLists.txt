@@ -17,12 +17,14 @@ else ()
 endif ()
 
 # Generate an empty config file
-add_custom_command(OUTPUT empty.conf
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/oesign-customize-config.py 0)
+add_custom_command(
+  OUTPUT empty.conf
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/oesign-customize-config.py 0)
 
 # Generate a config file with negative value
-add_custom_command(OUTPUT neg.conf
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/oesign-customize-config.py 1)
+add_custom_command(
+  OUTPUT neg.conf COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/oesign-customize-config.py
+                          1)
 
 # Generate key
 add_custom_command(
@@ -116,8 +118,8 @@ add_test(
   COMMAND
     ${CMAKE_CURRENT_SOURCE_DIR}/oesign-test.py --oesign-binary
     ${OE_BINDIR}/oesign --enclave-binary $<TARGET_FILE:enclave> --config-file
-    ${CMAKE_CURRENT_SOURCE_DIR}/neg.conf --engine-id
-    'oesign-test-engine' --engine-load-path
+    ${CMAKE_CURRENT_SOURCE_DIR}/neg.conf --engine-id 'oesign-test-engine'
+    --engine-load-path
     ${CMAKE_CURRENT_BINARY_DIR}/../test-engine/liboesign-test-engine.so
     --key-id ${CMAKE_CURRENT_BINARY_DIR}/private.pem --expect-fail)
 
@@ -126,8 +128,8 @@ add_test(
   COMMAND
     ${CMAKE_CURRENT_SOURCE_DIR}/oesign-test.py --oesign-binary
     ${OE_BINDIR}/oesign --enclave-binary $<TARGET_FILE:enclave> --config-file
-    ${CMAKE_CURRENT_SOURCE_DIR}/empty.conf --engine-id
-    'oesign-test-engine' --engine-load-path
+    ${CMAKE_CURRENT_SOURCE_DIR}/empty.conf --engine-id 'oesign-test-engine'
+    --engine-load-path
     ${CMAKE_CURRENT_BINARY_DIR}/../test-engine/liboesign-test-engine.so
     --key-id ${CMAKE_CURRENT_BINARY_DIR}/private.pem --expect-fail)
 

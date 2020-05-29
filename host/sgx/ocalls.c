@@ -99,6 +99,9 @@ void oe_sgx_thread_wake_wait_ocall(
 }
 
 oe_result_t oe_get_quote_ocall(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
     const sgx_report_t* sgx_report,
     void* quote,
     size_t quote_size,
@@ -106,7 +109,8 @@ oe_result_t oe_get_quote_ocall(
 {
     oe_result_t result;
 
-    result = sgx_get_quote(sgx_report, quote, &quote_size);
+    result = sgx_get_quote(
+        format_id, opt_params, opt_params_size, sgx_report, quote, &quote_size);
 
     if (quote_size_out)
         *quote_size_out = quote_size;
@@ -317,9 +321,14 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
 
 #endif /* !defined(OE_LINK_SGX_DCAP_QL) */
 
-oe_result_t oe_get_qetarget_info_ocall(sgx_target_info_t* target_info)
+oe_result_t oe_get_qetarget_info_ocall(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    sgx_target_info_t* target_info)
 {
-    return sgx_get_qetarget_info(target_info);
+    return sgx_get_qetarget_info(
+        format_id, opt_params, opt_params_size, target_info);
 }
 
 static char** _backtrace_symbols(
@@ -442,6 +451,22 @@ done:
 
     if (strings)
         free(strings);
+
+    return result;
+}
+
+oe_result_t oe_get_supported_attester_format_ids_ocall(
+    void* format_ids,
+    size_t format_ids_size,
+    size_t* format_ids_size_out)
+{
+    oe_result_t result;
+
+    result =
+        sgx_get_supported_attester_format_ids(format_ids, &format_ids_size);
+
+    if (format_ids_size_out)
+        *format_ids_size_out = format_ids_size;
 
     return result;
 }
