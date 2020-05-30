@@ -92,6 +92,7 @@ if (UNIX
     add_subdirectory(thread_local_no_tdata)
     add_subdirectory(VectorException)
     add_subdirectory(stack_smashing_protector)
+	add_subdirectory(stress)
 
     if (WITH_EEID)
       add_subdirectory(eeid_plugin)
