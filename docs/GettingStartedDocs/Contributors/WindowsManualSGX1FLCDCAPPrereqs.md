@@ -49,7 +49,7 @@ Note that this is optional since you can choose an alternate implementation of t
 The Azure DCAP client for Windows is necessary if you would like to perform enclave attestation on a Azure Confidential Computing VM. It is available from [nuget.org](https://www.nuget.org/packages/Microsoft.Azure.DCAP/) and can be installed directly via command below.
 
 ```cmd
-nuget.exe install Microsoft.Azure.DCAP -ExcludeVersion -Version 1.4.2 -OutputDirectory C:\oe_prereqs
+nuget.exe install Microsoft.Azure.DCAP -ExcludeVersion -Version 1.5.0 -OutputDirectory C:\oe_prereqs
 ```
 
 This example assumes you would like to install the package to `C:\oe_prereqs`.
