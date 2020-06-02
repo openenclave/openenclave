@@ -5,8 +5,10 @@
 add_custom_command(
   OUTPUT tls_server_t.h tls_server_t.c tls_server_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/server/tls_server.edl
-  COMMAND openenclave::oeedger8r --trusted
-          ${CMAKE_SOURCE_DIR}/server/tls_server.edl)
+  COMMAND
+    openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/server/tls_server.edl
+    --search-path ${OE_INCLUDEDIR} --search-path
+    ${OE_INCLUDEDIR}/openenclave/edl/sgx)
 
 # Sign enclave and generate a header file for server's MRENCLAVE
 add_custom_command(

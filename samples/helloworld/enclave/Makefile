@@ -16,6 +16,7 @@ endif
 
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
+INCDIR=$(shell pkg-config oeenclave-$(COMPILER) --variable=includedir)
 
 all:
 	$(MAKE) build
@@ -24,7 +25,9 @@ all:
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	oeedger8r ../helloworld.edl --trusted
+	oeedger8r ../helloworld.edl --trusted \
+		--search-path $(INCDIR) \
+		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 enc.c -o enc.o
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 helloworld_t.c -o helloworld_t.o
 	$(CC) -o helloworldenc helloworld_t.o enc.o $(LDFLAGS)

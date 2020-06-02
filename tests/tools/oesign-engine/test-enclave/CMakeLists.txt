@@ -1,12 +1,6 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-cmake_minimum_required(VERSION 3.11)
-
-project("oesign-test" LANGUAGES C CXX)
-
-set(CMAKE_CXX_STANDARD 11)
-
 add_subdirectory(enclave)
 add_subdirectory(host)
 

@@ -48,3 +48,14 @@ install(FILES ${CORELIBC_DEPS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/corelibc)
 install(FILES openenclave/corelibc/bits/defs.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/corelibc/bits)
+install(FILES openenclave/corelibc/bits/types.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/corelibc/bits)
+
+##==============================================================================
+##
+## Install all system EDL files to be included by user EDL
+##
+##==============================================================================
+
+install(DIRECTORY ./openenclave/edl/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/edl/)

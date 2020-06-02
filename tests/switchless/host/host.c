@@ -13,7 +13,7 @@
 #include <time.h>
 #include "../../../host/hostthread.h"
 #include "../../../host/strings.h"
-#include "switchless_u.h"
+#include "switchless_test_u.h"
 
 // Increase this number to have a meaningful performance measurement
 #define NUM_OCALLS (100000)
@@ -440,7 +440,7 @@ int main(int argc, const char* argv[])
         {.setting_type = OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS,
          .u.context_switchless_setting = &switchless_setting}};
 
-    if ((result = oe_create_switchless_enclave(
+    if ((result = oe_create_switchless_test_enclave(
              argv[1],
              OE_ENCLAVE_TYPE_SGX,
              flags,

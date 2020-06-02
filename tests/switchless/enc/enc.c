@@ -6,7 +6,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
 #include <string.h>
-#include "switchless_t.h"
+#include "switchless_test_t.h"
 
 #define STRING_LEN 100
 #define STRING_HELLO "Hello World"

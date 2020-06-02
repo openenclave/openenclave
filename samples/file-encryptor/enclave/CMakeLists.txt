@@ -5,8 +5,10 @@
 add_custom_command(
   OUTPUT fileencryptor_t.h fileencryptor_t.c fileencryptor_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/fileencryptor.edl
-  COMMAND openenclave::oeedger8r --trusted
-          ${CMAKE_SOURCE_DIR}/fileencryptor.edl)
+  COMMAND
+    openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/fileencryptor.edl
+    --search-path ${OE_INCLUDEDIR} --search-path
+    ${OE_INCLUDEDIR}/openenclave/edl/sgx)
 
 add_executable(enclave ecalls.cpp encryptor.cpp keys.cpp
                        ${CMAKE_CURRENT_BINARY_DIR}/fileencryptor_t.c)

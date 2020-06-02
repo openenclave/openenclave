@@ -21,15 +21,15 @@
 
 enclave {
 
-    from "epoll.edl" import *;
-    from "fcntl.edl" import *;
-    from "ioctl.edl" import *;
-    from "poll.edl" import *;
-    from "signal.edl" import *;
-    from "socket.edl" import *;
-    from "time.edl" import *;
-    from "unistd.edl" import *;
-    from "utsname.edl" import *;
+    from "openenclave/edl/epoll.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
+    from "openenclave/edl/ioctl.edl" import *;
+    from "openenclave/edl/poll.edl" import *;
+    from "openenclave/edl/signal.edl" import *;
+    from "openenclave/edl/socket.edl" import *;
+    from "openenclave/edl/time.edl" import *;
+    from "openenclave/edl/unistd.edl" import *;
+    from "openenclave/edl/utsname.edl" import *;
 
     trusted {
         public void oe_syscall_stub_ecall();

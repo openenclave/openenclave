@@ -2,6 +2,11 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/attestation.edl" import *;
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
 
         // Return the public key of this enclave along with the enclave's remote report.

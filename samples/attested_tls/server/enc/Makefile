@@ -6,6 +6,7 @@ include ../../../config.mk
 CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
 CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
+INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
 
 .PHONY: all build clean run
 
@@ -15,7 +16,10 @@ all:
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	oeedger8r ../tls_server.edl --trusted --trusted-dir .
+	oeedger8r ../tls_server.edl --trusted \
+		--trusted-dir . \
+		--search-path $(INCDIR) \
+		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp server.cpp identity_verifier.cpp cert_verifier.cpp ../../common/utility.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) tls_server_t.c
 	$(CXX) -o tls_server_enc ecalls.o server.o cert_verifier.o identity_verifier.o utility.o tls_server_t.o $(LDFLAGS) -lmbedtls -lmbedcrypto -loehostsock -loehostresolver -loecore -loelibc -loesyscall

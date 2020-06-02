@@ -2,6 +2,10 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public void enclave_add_N_switchless([in, out] int* m, int n);
         public void enclave_add_N_regular([in, out] int* m, int n);

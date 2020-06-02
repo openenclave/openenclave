@@ -6,8 +6,9 @@ set(EDL_FILE ../bigmalloc.edl)
 add_custom_command(
   OUTPUT bigmalloc_u.h bigmalloc_u.c
   DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --untrusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+  COMMAND
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(bigmalloc_host host.c bigmalloc_u.c)
 

@@ -6,8 +6,9 @@ set(EDL_FILE ../backtrace.edl)
 add_custom_command(
   OUTPUT backtrace_t.h backtrace_t.c
   DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --trusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+  COMMAND
+    edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_enclave(
   TARGET

@@ -2,8 +2,13 @@
 // Licensed under the MIT License.
 
 enclave {
-    trusted {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
 
-        public int launch_tls_client([in, string] char* server_name, [in, string] char* server_port);
+    trusted {
+        public int launch_tls_client(
+                        [in, string] char* server_name,
+                        [in, string] char* server_port);
     };
 };

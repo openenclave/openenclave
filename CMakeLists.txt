@@ -238,7 +238,7 @@ endif ()
 option(
   COMPILE_SYSTEM_EDL
   "Build system ecalls and ocalls into OE libraries. If not set, they must be included by application EDL to use."
-  ON)
+  OFF)
 
 option(BUILD_TESTS "Build OE tests" ON)
 
@@ -272,20 +272,15 @@ include(add_enclave_test)
 add_subdirectory(include)
 add_subdirectory(host)
 
-# Tests are not ported to include system edl files in order to use system
-# ocalls and ecalls.
-if (COMPILE_SYSTEM_EDL)
-
+# Tests and samples have been ported to manually include system edl files.
+# They can no longer be used when system EDL is builtin.
+if (NOT COMPILE_SYSTEM_EDL)
   if (BUILD_TESTS)
     add_subdirectory(tests)
   endif ()
 
   if (BUILD_ENCLAVES)
     add_subdirectory(samples)
-  endif ()
-else ()
-  if (BUILD_TESTS AND OE_SGX)
-    add_subdirectory(tests/exclude_system_edl)
   endif ()
 endif ()
 

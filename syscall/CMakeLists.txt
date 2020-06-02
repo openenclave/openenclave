@@ -8,13 +8,14 @@
 ##
 ##==============================================================================
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/edl)
+set(OE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/include/openenclave/edl)
 set(EDL_FILE ${EDL_DIR}/syscall.edl)
 if (COMPILE_SYSTEM_EDL)
   add_custom_command(
     OUTPUT syscall_t.h syscall_t.c syscall_args.h
     DEPENDS ${EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --trusted ${EDL_FILE})
+    COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --trusted ${EDL_FILE})
 
   add_custom_target(syscall_trusted_edl DEPENDS syscall_t.h syscall_t.c
                                                 syscall_args.h)
@@ -25,7 +26,7 @@ else ()
   add_custom_command(
     OUTPUT syscall_t.h syscall_args.h
     DEPENDS ${EDL_FILE} edger8r
-    COMMAND edger8r --header-only --search-path ${EDL_DIR} --trusted
+    COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --trusted
             ${EDL_FILE})
 
   add_custom_target(syscall_trusted_edl DEPENDS syscall_t.h syscall_args.h)

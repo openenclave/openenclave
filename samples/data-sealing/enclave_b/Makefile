@@ -6,6 +6,7 @@ include ../../config.mk
 CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
 CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
+INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
 
 all:
 	$(MAKE) build
@@ -14,6 +15,9 @@ all:
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
+	oeedger8r ../datasealing.edl --trusted  --trusted-dir ../common \
+		--search-path $(INCDIR) \
+		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -DOE_API_VERSION=2 -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/datasealing_t.c
 	$(CXX) -o enclave_b ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)

@@ -6,8 +6,9 @@ set(EDL_FILE ../switchless_nestedcalls.edl)
 add_custom_command(
   OUTPUT switchless_nestedcalls_t.h switchless_nestedcalls_t.c
   DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --trusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+  COMMAND
+    edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_enclave(
   TARGET

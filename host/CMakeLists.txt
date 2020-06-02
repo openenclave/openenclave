@@ -1,9 +1,10 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/edl)
+set(OE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/include/openenclave/edl)
 if (OE_SGX)
-  set(SGX_EDL_DIR ${CMAKE_SOURCE_DIR}/edl/sgx)
+  set(SGX_EDL_DIR ${EDL_DIR}/sgx)
 endif ()
 
 ##==============================================================================
@@ -18,7 +19,8 @@ if (COMPILE_SYSTEM_EDL)
   add_custom_command(
     OUTPUT core_u.h core_u.c core_args.h
     DEPENDS ${CORE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${CORE_EDL_FILE})
+    COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --untrusted
+            ${CORE_EDL_FILE})
 
   add_custom_target(core_untrusted_edl DEPENDS core_u.h core_u.c core_args.h)
 
@@ -28,7 +30,7 @@ else ()
   add_custom_command(
     OUTPUT core_u.h core_args.h
     DEPENDS ${CORE_EDL_FILE} edger8r
-    COMMAND edger8r --header-only --search-path ${EDL_DIR} --untrusted
+    COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --untrusted
             ${CORE_EDL_FILE})
 
   add_custom_target(core_untrusted_edl DEPENDS core_u.h core_args.h)
@@ -128,7 +130,7 @@ if (COMPILE_SYSTEM_EDL)
   add_custom_command(
     OUTPUT syscall_u.h syscall_u.c syscall_args.h
     DEPENDS ${SYSCALL_EDL} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SYSCALL_EDL})
+    COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --untrusted ${SYSCALL_EDL})
 
   add_custom_target(syscall_untrusted_edl DEPENDS syscall_u.h syscall_u.c
                                                   syscall_args.h)
@@ -138,20 +140,11 @@ else ()
   add_custom_command(
     OUTPUT syscall_u.h syscall_args.h
     DEPENDS ${SYSCALL_EDL} edger8r
-    COMMAND edger8r --header-only --search-path ${EDL_DIR} --untrusted
+    COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --untrusted
             ${SYSCALL_EDL})
 
   add_custom_target(syscall_untrusted_edl DEPENDS syscall_u.h syscall_args.h)
 endif ()
-
-##==============================================================================
-##
-## Install all system EDL files to be included by user EDL
-##
-##==============================================================================
-
-install(DIRECTORY ../edl/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/edl/)
 
 ##==============================================================================
 ##

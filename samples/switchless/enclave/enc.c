@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <stdio.h>
-#include "switchless_t.h"
+#include "switchless_sample_t.h"
 
 void enclave_add_N_switchless(int* m, int n)
 {

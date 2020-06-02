@@ -6,8 +6,9 @@ set(EDL_FILE ../safecrt.edl)
 add_custom_command(
   OUTPUT safecrt_u.h safecrt_u.c
   DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --untrusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+  COMMAND
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(safecrt_host ../common/test.cpp host.cpp safecrt_u.c)
 

@@ -6,8 +6,9 @@ set(EDL_FILE ../common/crypto_crls_cert_chains.edl)
 add_custom_command(
   OUTPUT crypto_crls_cert_chains_u.h crypto_crls_cert_chains_u.c
   DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --untrusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+  COMMAND
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(crypto-extra_host host.cpp crypto_crls_cert_chains_u.c)
 add_dependencies(crypto-extra_host crypto_crls_cert_chains_test_data)

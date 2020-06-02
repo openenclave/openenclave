@@ -4,7 +4,9 @@
 add_custom_command(
   OUTPUT ssp_t.h ssp_t.c ssp_args.h
   DEPENDS ../ssp.edl edger8r
-  COMMAND edger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../ssp.edl)
+  COMMAND
+    edger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../ssp.edl --search-path
+    ${PROJECT_SOURCE_DIR}/include --search-path ${PLATFORM_EDL_DIR})
 
 add_enclave(TARGET ssp_enc SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/ssp_t.c)
 

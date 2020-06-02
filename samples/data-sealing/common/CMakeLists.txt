@@ -5,7 +5,10 @@
 add_custom_command(
   OUTPUT datasealing_t.h datasealing_t.c datasealing_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/datasealing.edl
-  COMMAND openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/datasealing.edl)
+  COMMAND
+    openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/datasealing.edl
+    --search-path ${OE_INCLUDEDIR} --search-path
+    ${OE_INCLUDEDIR}/openenclave/edl/sgx)
 
 # Create a library common to each of our three enclaves.
 add_library(common STATIC dispatcher.cpp keys.cpp

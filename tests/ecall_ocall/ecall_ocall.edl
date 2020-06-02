@@ -2,6 +2,10 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public oe_result_t enc_get_init_ocall_result();
 

@@ -2,21 +2,9 @@
 // Licensed under the MIT License.
 
 enclave {
-    // A copy of the structure used inside the enclave.
-    // This must exactly match what is in common/edl/socket.edl
-    // but might not match the native "struct addrinfo" layout
-    // in the host OS.
-    struct oe_addrinfo
-    {
-        int ai_flags;
-        int ai_family;
-        int ai_socktype;
-        int ai_protocol;
-        uint32_t ai_addrlen;
-        [size=ai_addrlen] struct oe_sockaddr* ai_addr;
-        char* ai_canonname;
-        struct oe_addrinfo* ai_next;
-    };
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
 
     trusted
     {

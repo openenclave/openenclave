@@ -12,13 +12,13 @@ add_custom_command(
           ../edl/enum.edl
           ../edl/errno.edl
           ../edl/foreign.edl
-          ../edl/other.edl
           ../edl/pointer.edl
           ../edl/string.edl
           ../edl/struct.edl
-          ../edl/switchless.edl
+          ../edl/switchless_test.edl
   COMMAND
     edger8r --experimental --untrusted --search-path
+    ${PROJECT_SOURCE_DIR}/include --search-path
     ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path
     ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
 
@@ -28,29 +28,20 @@ add_custom_command(
   COMMAND edger8r --untrusted --header-only --search-path
           ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl bar.edl)
 
-add_custom_command(
-  OUTPUT other_u.h other_u.c other_args.h
-  DEPENDS ../edl/other.edl
-  COMMAND edger8r --untrusted --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl
-          other.edl)
+#add_custom_command(
+#OUTPUT other_u.h other_u.c other_args.h
+#DEPENDS ../edl/other.edl
+#COMMAND edger8r --untrusted --search-path ${PROJECT_SOURCE_DIR}/include
+#--search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl other.edl)
 
 # Dummy target used for generating from EDL on demand.
-add_custom_target(
-  edl_host_gen
-  DEPENDS all_u.h
-          all_u.c
-          all_args.h
-          bar_u.h
-          bar_args.h
-          other_u.h
-          other_u.c
-          other_args.h)
+add_custom_target(edl_host_gen DEPENDS all_u.h all_u.c all_args.h bar_u.h
+                                       bar_args.h)
 
 add_executable(
   edl_host
   all_u.c
   bar_u.h
-  other_u.c
   main.cpp
   bar.cpp
   foo.cpp
@@ -60,7 +51,6 @@ add_executable(
   testenum.cpp
   testerrno.cpp
   testforeign.cpp
-  testother.cpp
   testpointer.cpp
   teststring.cpp
   teststruct.cpp

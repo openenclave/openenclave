@@ -6,8 +6,9 @@ set(EDL_FILE ../atexit.edl)
 add_custom_command(
   OUTPUT atexit_u.h atexit_u.c
   DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --untrusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+  COMMAND
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(atexit_host host.cpp atexit_u.c)
 

@@ -6,8 +6,9 @@ set(EDL_FILE ../no_tdata.edl)
 add_custom_command(
   OUTPUT no_tdata_t.h no_tdata_t.c
   DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --trusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+  COMMAND
+    edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Build enclave that has no tdata
 add_enclave(

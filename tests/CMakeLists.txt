@@ -16,6 +16,12 @@ if (LVI_MITIGATION MATCHES ControlFlow AND LVI_MITIGATION_SKIP_TESTS)
   message("LVI_MITIGATION_SKIP_TESTS set - skip all tests with LVI mitigation")
 endif ()
 
+if (OE_SGX)
+  set(PLATFORM_EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl/sgx)
+elseif (OE_TRUSTZONE)
+  set(PLATFORM_EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl/optee)
+endif ()
+
 add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)

@@ -6,8 +6,9 @@ set(EDL_FILE ../crypto.edl)
 add_custom_command(
   OUTPUT crypto_t.h crypto_t.c
   DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --trusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+  COMMAND
+    edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(SRCS
     enc.c

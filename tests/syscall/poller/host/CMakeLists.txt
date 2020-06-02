@@ -6,8 +6,9 @@ set(EDL_FILE ../poller.edl)
 add_custom_command(
   OUTPUT poller_u.h poller_u.c
   DEPENDS ${EDL_FILE} edger8r
-  COMMAND edger8r --untrusted ${EDL_FILE} --search-path
-          ${CMAKE_CURRENT_SOURCE_DIR})
+  COMMAND
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(poller_host host.cpp ../client.cpp ../server.cpp ../poller.cpp
                            poller_u.c)

@@ -1,7 +1,8 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/edl)
+set(OE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/include/openenclave/edl)
 if (OE_SGX)
   set(SGX_EDL_DIR ${EDL_DIR}/sgx)
 endif ()
@@ -18,7 +19,7 @@ if (COMPILE_SYSTEM_EDL)
   add_custom_command(
     OUTPUT core_t.h core_t.c core_args.h
     DEPENDS ${CORE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --trusted ${CORE_EDL_FILE})
+    COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --trusted ${CORE_EDL_FILE})
 
   add_custom_target(core_trusted_edl DEPENDS core_t.h core_t.c core_args.h)
 
@@ -27,7 +28,7 @@ else ()
   add_custom_command(
     OUTPUT core_t.h core_args.h
     DEPENDS ${CORE_EDL_FILE} edger8r
-    COMMAND edger8r --header-only --search-path ${EDL_DIR} --trusted
+    COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --trusted
             ${CORE_EDL_FILE})
 
   add_custom_target(core_trusted_edl DEPENDS core_t.h core_args.h)

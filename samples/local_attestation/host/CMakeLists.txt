@@ -4,8 +4,10 @@
 add_custom_command(
   OUTPUT localattestation_u.h localattestation_u.c localattestation_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/localattestation.edl
-  COMMAND openenclave::oeedger8r --untrusted
-          ${CMAKE_SOURCE_DIR}/localattestation.edl)
+  COMMAND
+    openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/localattestation.edl
+    --search-path ${OE_INCLUDEDIR} --search-path
+    ${OE_INCLUDEDIR}/openenclave/edl/sgx)
 
 add_executable(local_attestation_host
                host.cpp ${CMAKE_CURRENT_BINARY_DIR}/localattestation_u.c)

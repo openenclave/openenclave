@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "switchless_u.h"
+#include "switchless_sample_u.h"
 
 #if defined(__linux__)
 
@@ -121,7 +121,7 @@ int main(int argc, const char* argv[])
         .u.context_switchless_setting = &switchless_setting,
     }};
 
-    if ((result = oe_create_switchless_enclave(
+    if ((result = oe_create_switchless_sample_enclave(
              argv[1],
              OE_ENCLAVE_TYPE_SGX,
              flags,

@@ -5,8 +5,10 @@
 add_custom_command(
   OUTPUT remoteattestation_t.h remoteattestation_t.c remoteattestation_args.h
   DEPENDS ${CMAKE_SOURCE_DIR}/remoteattestation.edl
-  COMMAND openenclave::oeedger8r --trusted
-          ${CMAKE_SOURCE_DIR}/remoteattestation.edl)
+  COMMAND
+    openenclave::oeedger8r --trusted ${CMAKE_SOURCE_DIR}/remoteattestation.edl
+    --search-path ${OE_INCLUDEDIR} --search-path
+    ${OE_INCLUDEDIR}/openenclave/edl/sgx)
 
 # Create a library common to each of our two enclaves.
 add_library(common STATIC attestation.cpp crypto.cpp dispatcher.cpp

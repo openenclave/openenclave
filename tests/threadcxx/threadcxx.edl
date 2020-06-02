@@ -2,6 +2,10 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public void enc_test_mutex_cxx();
         public void enc_test_mutex_cxx_counts(
