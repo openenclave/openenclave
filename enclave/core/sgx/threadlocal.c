@@ -9,6 +9,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include "td.h"
 
@@ -225,6 +226,23 @@ static uint64_t _get_aligned_size(uint64_t size, uint64_t align)
     return align ? oe_round_up_to_multiple(size, align) : size;
 }
 
+/*
+ * Call oe_allocator_init with heap start and end addresses.
+ */
+static void _call_oe_allocator_init(void)
+{
+    oe_allocator_init((void*)__oe_get_heap_base(), (void*)__oe_get_heap_end());
+}
+
+/*
+ * Initialize the allocator using oe_once.
+ */
+static void _initialize_allocator(void)
+{
+    static oe_once_t _once = OE_ONCE_INITIALIZER;
+    oe_once(&_once, _call_oe_allocator_init);
+}
+
 /**
  * Return pointer to start of tls data.
  *    tls-data-start = %FS - (aligned .tdata size + aligned .tbss size)
@@ -332,7 +350,33 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
             _thread_locals_relocated = true;
         }
 
-        // Must occur after thread local storage initialization
+        {
+            static bool _allocator_initialized = false;
+            bool initialized = _allocator_initialized;
+            OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
+            if (!initialized)
+            {
+                /* Initialize the allocator */
+                OE_ATOMIC_MEMORY_BARRIER_RELEASE();
+                _allocator_initialized = true;
+            }
+        }
+
+        // To properly initialize the allocator, oe_allocator_init must first be
+        // called with the heap start and end addresses. The allocator can
+        // initialize itself during this call. Then, every time an enclave
+        // thread is created, oe_allocator_thread_init will be called to allow
+        // the allocator to perform per thread initialization.
+        // It would seem that _handle_init_enclave is the natural place to call
+        // oe_allocator_init to initialize the enclave and here
+        // (oe_thread_local_init) is the natural place to call
+        // oe_allocator_thread_init to perform thread-specific allocator
+        // initialization. However, currently, td_init and hence
+        // oe_thread_local_init is called *before* _handle_init_enclave is
+        // called. This results in incorrect order of the allocator callbacks.
+        // Therefore, we call oe_allocator_init here (via oe_once)
+        // and then call oe_allocator_thread_init.
+        _initialize_allocator();
         oe_allocator_thread_init();
     }
 

@@ -7,17 +7,18 @@
 # details.
 set(LIBCXX_INCLUDES ${OE_INCDIR}/openenclave/libcxx)
 
+add_subdirectory(dlmalloc)
 add_subdirectory(libcxx)
 add_subdirectory(libcxxrt)
 add_subdirectory(libunwind)
 add_subdirectory(musl)
 add_subdirectory(mbedtls)
 
-if (USE_SNMALLOC)
+if (OE_SGX AND COMPILER_SUPPORTS_SNMALLOC)
+  # snmalloc is most useful in multi-threaded enclaves. Currently, only
+  # SGX enclaves can be multi-threaded.
   add_subdirectory(snmalloc)
-else()
-  add_subdirectory(dlmalloc)
-endif()
+endif ()
 
 if (OE_TRUSTZONE)
   # EL: (ARM) Exception Level
@@ -65,47 +66,47 @@ if (OE_TRUSTZONE)
   find_library(LIBTEEC NAMES teec libteec)
   if (LIBTEEC)
     add_library(teec SHARED IMPORTED)
-    set_target_properties(teec PROPERTIES
-      IMPORTED_LOCATION ${LIBTEEC})
+    set_target_properties(teec PROPERTIES IMPORTED_LOCATION ${LIBTEEC})
   else ()
     set(OPTEE_CLIENT_DIR ${CMAKE_CURRENT_BINARY_DIR}/optee_client)
 
     include(ExternalProject)
-    ExternalProject_Add(optee_client-wrap
+    ExternalProject_Add(
+      optee_client-wrap
       SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/optee_client
-      DOWNLOAD_COMMAND
-        ${CMAKE_COMMAND} -E copy_directory
-          ${OE_TZ_OPTEE_CLIENT_SRC}
-          ${OPTEE_CLIENT_DIR}
+      DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${OE_TZ_OPTEE_CLIENT_SRC} ${OPTEE_CLIENT_DIR}
       UPDATE_COMMAND ""
       PATCH_COMMAND ""
-      CMAKE_ARGS
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-      INSTALL_COMMAND ""
-      BYPRODUCTS
-        <BINARY_DIR>/libteec/libteec.a)
+      CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+      INSTALL_COMMAND "" BYPRODUCTS <BINARY_DIR>/libteec/libteec.a)
 
-    set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
-      ${CMAKE_CURRENT_BINARY_DIR}/optee_client
-      ${CMAKE_BINARY_DIR}/libteec/libteec.a
-    )
-    ExternalProject_Get_property(optee_client-wrap SOURCE_DIR)
-    ExternalProject_Get_property(optee_client-wrap BINARY_DIR)
+    set_property(
+      DIRECTORY
+      PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
+               ${CMAKE_CURRENT_BINARY_DIR}/optee_client
+               ${CMAKE_BINARY_DIR}/libteec/libteec.a)
+    ExternalProject_Get_Property(optee_client-wrap SOURCE_DIR)
+    ExternalProject_Get_Property(optee_client-wrap BINARY_DIR)
 
     add_library(teec_imported STATIC IMPORTED)
-    set_target_properties(teec_imported PROPERTIES
-      IMPORTED_LOCATION ${BINARY_DIR}/libteec/libteec.a)
+    set_target_properties(
+      teec_imported PROPERTIES IMPORTED_LOCATION
+                               ${BINARY_DIR}/libteec/libteec.a)
 
     add_library(teec INTERFACE)
     add_dependencies(teec optee_client-wrap)
-    target_link_libraries(teec INTERFACE
-      $<BUILD_INTERFACE:teec_imported>
-      $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/optee/libteec/libteec.a>)
+    target_link_libraries(
+      teec
+      INTERFACE
+        $<BUILD_INTERFACE:teec_imported>
+        $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/openenclave/optee/libteec/libteec.a>
+    )
 
     install(TARGETS teec EXPORT openenclave-targets)
 
     install(FILES ${BINARY_DIR}/libteec/libteec.a
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/optee/libteec)
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/optee/libteec)
   endif ()
 endif ()

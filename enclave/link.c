@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/malloc.h>
 #include "core_t.h"
 
@@ -21,6 +22,10 @@ const void* oe_link_enclave(void)
         oe_verify_report_ecall,
         oe_get_public_key_by_policy_ecall,
         oe_get_public_key_ecall,
+        // Specify oe_allocator_malloc so that there is a direct link from
+        // enclave entry-point to pluggable allocator functions. This will
+        // cause the first definitions of these functions to be picked up.
+        oe_allocator_malloc,
 #if defined(OE_USE_DEBUG_MALLOC)
         oe_debug_malloc_check,
 #endif /* defined(OE_USE_DEBUG_MALLOC) */

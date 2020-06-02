@@ -30,7 +30,7 @@ sudo docker run --device /dev/sgx:/dev/sgx -i -t oeciteam/oetools-full-18.04 bas
 5. Clone the Open Enclave repository from within this container and run the build and tests. For example, if your system has the SGX DCAP driver installed and it has been made available to the container:
 ```bash
 cd ~
-git clone https://github.com/openenclave/openenclave.git
+git clone --recursive https://github.com/openenclave/openenclave.git
 cd openenclave
 mkdir build
 cd build
