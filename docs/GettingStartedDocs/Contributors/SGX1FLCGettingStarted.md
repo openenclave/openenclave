@@ -11,7 +11,7 @@
 Use the following command to download the source code.
 
 ```bash
-git clone https://github.com/openenclave/openenclave.git
+git clone --recursive https://github.com/openenclave/openenclave.git
 ```
 
 This creates a source tree under the directory called openenclave.

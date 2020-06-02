@@ -21,7 +21,7 @@ A version of Windows OS with native support for SGX features:
 
 ```powershell
 cd C:/Users/test/
-git clone https://github.com/openenclave/openenclave.git
+git clone --recursive https://github.com/openenclave/openenclave.git
 ```
 
 This creates a source tree under the directory called `openenclave`.
