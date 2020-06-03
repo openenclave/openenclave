@@ -87,8 +87,8 @@ typedef struct _thread_binding
 oe_thread_binding_t* oe_get_thread_binding(void);
 
 /**
- *  This structure must be kept in sync with the defines in
- *  debugger/pythonExtension/gdb_sgx_plugin.py.
+ * Host-side representation of properties associated with each
+ * enclave instance.
  */
 typedef struct _oe_enclave
 {
