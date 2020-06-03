@@ -80,7 +80,7 @@ static int _malloc_free_random_size(int times, unsigned int seed)
     srand(seed);
     for (i = 0; i < times; i++)
     {
-        size = _randx(_get_heap_size());
+        size = _randx(_get_heap_size() - 23);
         buffer = malloc(size);
         if (NULL == buffer)
         {
