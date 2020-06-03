@@ -40,21 +40,6 @@ static inline size_t _min(size_t x, size_t y)
 
 static size_t _get_alloc_size(size_t max_size)
 {
-#if NO_PAGING_SUPPORT
-    /*
-     * Simple distribution to test varied memory allocation:
-     *  - 30% of the time pick 0 <= x < 64 bytes.
-     *  - 40% of the time pick 64 <= x <= 4K bytes.
-     *  - 30% of the time pick 4K <= x <= 256K bytes.
-     */
-    size_t val = _randx(100);
-    if (val < 30)
-        return _min(_randx(64), max_size);
-    else if (val < 70)
-        return _min(_randx(4096), max_size);
-    else
-        return _min(_randx(256 * 1024), max_size);
-#else
     /*
      * Simple distribution to test varied memory allocation:
      *  - 20% of the time pick 0 <= x < 64 bytes.
@@ -71,7 +56,6 @@ static size_t _get_alloc_size(size_t max_size)
         return _min(_randx(256 * 1024), max_size);
     else
         return _min(_randx(16 * 1024 * 1024), max_size);
-#endif
 }
 
 static void _handle_alloc(

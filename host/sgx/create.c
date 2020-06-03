@@ -804,6 +804,14 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(_calculate_enclave_size(
         image_size, &props, &enclave_end, &enclave_size));
 
+    if (context->type == OE_SGX_LOAD_TYPE_CREATE)
+    {
+        OE_TRACE_ERROR(
+            "[DEV INFO ASSERT]: enclave_end=%llu\n", OE_LLU(enclave_end));
+        OE_TRACE_ERROR(
+            "[DEV INFO ASSERT]: enclave_size=%llu\n", OE_LLU(enclave_size));
+    }
+
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(context, enclave_size, &enclave_addr));
 
