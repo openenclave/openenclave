@@ -621,8 +621,11 @@ static oe_result_t _add_eeid_marker_page(
         memset(page, 0, sizeof(oe_page_t));
         oe_eeid_marker_t* marker = (oe_eeid_marker_t*)page;
 
+        /* The offset to the EEID in marker->offset is also the extended
+         * commit size of the base image and dynamically configured data
+         * pages (stacks + heap) excluding the EEID data size.
+         */
         _calculate_enclave_size(image_size, props, &marker->offset, NULL);
-        marker->size = enclave->size;
 
         uint64_t addr = enclave->addr + *vaddr;
         uint64_t src = (uint64_t)page;
