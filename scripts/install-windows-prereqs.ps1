@@ -12,8 +12,6 @@ Param(
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
-    [string]$NodeURL = 'https://nodejs.org/dist/v10.16.3/node-v10.16.3-x64.msi',
-    [string]$NodeHash = 'F68B75EEA46232ADB8FD38126C977DC244166D29E7C6CD2DF930B460C38590A9',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
     [string]$Clang7Hash = '672E4C420D6543A8A9F8EC5F1E5F283D88AC2155EF4C57232A399160A02BFF57',
     [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16607/Intel%20SGX%20PSW%20for%20Windows%20v2.7.101.2.exe',
@@ -61,11 +59,6 @@ $PACKAGES = @{
         "url" = $VSBuildToolsURL
         "hash" = $VSBuildToolsHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "vs_buildtools.exe"
-    }
-    "node" = @{
-        "url" = $NodeURL
-        "hash" = $NodeHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "node-x64.msi"
     }
     "clang7" = @{
         "url" = $Clang7URL
@@ -451,20 +444,6 @@ function Install-VisualStudio {
                                    "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\Common7\Tools")
 }
 
-function Install-Node {
-    $installDir = Join-Path $env:ProgramFiles "nodejs"
-    Install-Tool -InstallerPath $PACKAGES["node"]["local_file"] `
-                 -InstallDirectory $installDir `
-                 -ArgumentList @("/quiet", "/passive") `
-                 -EnvironmentPath @($installDir)
-
-    Add-ToSystemPath -Path "${InstallPath}"
-
-    Start-ExecuteWithRetry -ScriptBlock {
-        npm install --prefix "${InstallPath}" -g esy@0.5.8
-    } -RetryMessage "Failed to install esy. Retrying"
-}
-
 function Install-LLVM {
     Install-Tool -InstallerPath $PACKAGES["clang7"]["local_file"] `
                  -ArgumentList "/S" `
@@ -715,8 +694,6 @@ try {
     }
 
     Install-DCAP-Dependencies
-    # Install-Node has to be executed after Install-DCAP-Dependencies because it removes existing $InstallPath directory
-    Install-Node
     Install-VCRuntime
 
 

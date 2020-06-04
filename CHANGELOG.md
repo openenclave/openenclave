@@ -20,9 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `COMPILE_SYSTEM_EDL` is now OFF by default, meaning system EDL must be imported by
   application EDL. See [system EDL opt-in document]
   (docs/DesignDocs/system_ocall_opt_in.md#how-to-port-your-application) for more information.
+- Switch to oeedger8r written in C++.
 
 ### Removed
 - Removed oehostapp and the appendent "-rdynamic" compiling option. Please use oehost instead and add the option back manually if necessary.
+- Removed dependencies on nodejs and esy, which were previously used to build Ocaml compiler and oeedger8r.
 
 [0.9.0][v0.9.0_log]
 ------------

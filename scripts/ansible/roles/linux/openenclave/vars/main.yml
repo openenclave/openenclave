@@ -10,7 +10,6 @@ validation_binaries:
   - "{{ cmake_prefix }}/bin/ccmake"
   - "{{ cmake_prefix }}/bin/cpack"
   - "{{ cmake_prefix }}/bin/ctest"
-  - "{{ esy_bin_prefix }}/esy"
   - "/usr/bin/make"
   - "/usr/bin/dot"
   - "/usr/bin/gcc"
