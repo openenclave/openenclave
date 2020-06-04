@@ -83,7 +83,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
             // Debug must be 0 or 1
             if (str_u64(&rhs, &value) != 0 || (value > 1))
             {
-                oe_err("%s(%zu): bad value for 'Debug'", path, line);
+                oe_err("%s(%zu): 'Debug' value must be 0 or 1", path, line);
                 goto done;
             }
 
@@ -93,9 +93,14 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0 || !oe_sgx_is_valid_num_heap_pages(n))
+            if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
+                !oe_sgx_is_valid_num_heap_pages(n))
             {
-                oe_err("%s(%zu): bad value for 'NumHeapPages'", path, line);
+                oe_err(
+                    "%s(%zu): bad value for 'NumHeapPages': %s",
+                    path,
+                    line,
+                    str_ptr(&rhs));
                 goto done;
             }
 
@@ -105,9 +110,14 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0 || !oe_sgx_is_valid_num_stack_pages(n))
+            if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
+                !oe_sgx_is_valid_num_stack_pages(n))
             {
-                oe_err("%s(%zu): bad value for 'NumStackPages'", path, line);
+                oe_err(
+                    "%s(%zu): bad value for 'NumStackPages': %s",
+                    path,
+                    line,
+                    str_ptr(&rhs));
                 goto done;
             }
 
@@ -117,9 +127,14 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0 || !oe_sgx_is_valid_num_tcs(n))
+            if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
+                !oe_sgx_is_valid_num_tcs(n))
             {
-                oe_err("%s(%zu): bad value for 'NumTCS'", path, line);
+                oe_err(
+                    "%s(%zu): bad value for 'NumTCS': %s",
+                    path,
+                    line,
+                    str_ptr(&rhs));
                 goto done;
             }
 
@@ -129,9 +144,14 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint16_t n;
 
-            if (str_u16(&rhs, &n) != 0 || !oe_sgx_is_valid_product_id(n))
+            if (str_ptr(&rhs)[0] == '-' || str_u16(&rhs, &n) != 0 ||
+                !oe_sgx_is_valid_product_id(n))
             {
-                oe_err("%s(%zu): bad value for 'ProductID'", path, line);
+                oe_err(
+                    "%s(%zu): bad value for 'ProductID': %s",
+                    path,
+                    line,
+                    str_ptr(&rhs));
                 goto done;
             }
 
@@ -141,9 +161,14 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint16_t n;
 
-            if (str_u16(&rhs, &n) != 0 || !oe_sgx_is_valid_security_version(n))
+            if (str_ptr(&rhs)[0] == '-' || str_u16(&rhs, &n) != 0 ||
+                !oe_sgx_is_valid_security_version(n))
             {
-                oe_err("%s(%zu): bad value for 'SecurityVersion'", path, line);
+                oe_err(
+                    "%s(%zu): bad value for 'SecurityVersion': %s",
+                    path,
+                    line,
+                    str_ptr(&rhs));
                 goto done;
             }
 
