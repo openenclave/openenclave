@@ -224,6 +224,16 @@ endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
 
+# snmalloc uses C++17 `if constexpr` which is available in GCC 7.1 and above.
+# Ubuntu 16.04's GCC is 5.4.0.
+# Versions of clang which we care about support the construct.
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION
+                                            VERSION_LESS "7.1")
+  set(COMPILER_SUPPORTS_SNMALLOC off)
+else ()
+  set(COMPILER_SUPPORTS_SNMALLOC on)
+endif ()
+
 # NOTE: Building OpenEnclave using snmalloc for memory allocation is an experimental option.
 # Longer term, there will be a pluggable allocator mechanism to allow users to choose from a
 # selection of allocators.

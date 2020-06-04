@@ -215,10 +215,6 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             /* Initialize the CPUID table before calling global constructors. */
             OE_CHECK(oe_initialize_cpuid());
 
-            /* Initialize the allocator */
-            oe_allocator_init(
-                (void*)__oe_get_heap_base(), (void*)__oe_get_heap_end());
-
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
             oe_call_init_functions();

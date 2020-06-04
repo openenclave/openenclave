@@ -41,13 +41,19 @@ if (OE_SGX)
   add_subdirectory(switchless_nestedcalls)
   add_subdirectory(switchless_worksleep)
   add_subdirectory(switchless_one_tcs)
+
+  if (COMPILER_SUPPORTS_SNMALLOC)
+    add_subdirectory(snmalloc)
+  else ()
+    message("The C++ compiler cannot compile snmalloc. Skipping snmalloc test.")
+  endif ()
 endif ()
 
 if (UNIX
     OR ADD_WINDOWS_ENCLAVE_TESTS
     OR USE_CLANGW)
   if (OE_SGX)
-    if (BUILD_ENCLAVES)
+    if (BUfILD_ENCLAVES)
       # Disable the memory test for the scenario of building the enclave in Linux and running
       # it on Windows because of the mismatch on the enclave heap size configuration.
       add_subdirectory(memory)
