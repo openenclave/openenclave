@@ -52,5 +52,3 @@ if __name__ == "__main__":
             print("oesign-test FAIL:\nretval %x\n" % (retval))
 
     sys.exit ( test_rslt )
-
-

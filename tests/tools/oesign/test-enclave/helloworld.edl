@@ -14,5 +14,3 @@ enclave {
         void host_helloworld();
     };
 };
-
-
