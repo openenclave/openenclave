@@ -18,7 +18,7 @@ def generate_empty_config():
 
 def generate_neg_config():
     print("Generating config file w/ negative values")
-    cfgname = "neg.conf"
+    cfgname = "negative_num_heap_pages.conf"
     abs_cfg = os.path.join(os.getcwd(),cfgname)
     print(abs_cfg)
     fh = open(abs_cfg, 'a+')

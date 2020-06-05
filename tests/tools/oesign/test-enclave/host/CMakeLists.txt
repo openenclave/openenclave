@@ -1,18 +1,19 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
+
+set(EDL_FILE ../helloworld.edl)
+
 add_custom_command(
   OUTPUT helloworld_u.h helloworld_u.c helloworld_args.h
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../helloworld.edl
+  DEPENDS ${EDL_FILE} edger8r
   COMMAND
-    edger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../helloworld.edl
-    --search-path ${PROJECT_SOURCE_DIR}/include --search-path
-    ${PLATFORM_EDL_DIR})
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(helloworld_host host.c
-                               ${CMAKE_CURRENT_BINARY_DIR}/helloworld_u.c)
+add_executable(oesign_test_host host.c
+                                ${CMAKE_CURRENT_BINARY_DIR}/helloworld_u.c)
 
-target_include_directories(
-  helloworld_host PRIVATE # Needed for the generated file helloworld_u.h
-                          ${CMAKE_CURRENT_BINARY_DIR})
+# Needed for the generated file helloworld_u.h
+target_include_directories(oesign_test_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(helloworld_host oehost)
+target_link_libraries(oesign_test_host oehost)
