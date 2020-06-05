@@ -9,10 +9,10 @@
 #include <stdio.h>
 #include "stress_u.h"
 
-#define ECALL_STRESS_TEST 		0
-#define OCALL_STRESS_TEST 		1
+#define ECALL_STRESS_TEST 0
+#define OCALL_STRESS_TEST 1
 #define ECALL_OCALL_STRESS_TEST 2
-//to add: more stress test types
+// to add: more stress test types
 
 void do_ecall_in_enclave(
     const char* path,
@@ -67,7 +67,10 @@ int main(int argc, const char* argv[])
 {
     if (argc != 5)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE_PATH TEST_TYPE ENCLAVE_COUNT ECALL_COUNT\n", argv[0]);
+        fprintf(
+            stderr,
+            "Usage: %s ENCLAVE_PATH TEST_TYPE ENCLAVE_COUNT ECALL_COUNT\n",
+            argv[0]);
         exit(1);
     }
 
@@ -83,22 +86,24 @@ int main(int argc, const char* argv[])
         case ECALL_STRESS_TEST:
             // 1. do ecall by count in same enclave
             // 1 enclave, 1000000 ecalls
-            do_ecall_by_count_in_same_env(argv[1], flags, atoi(argv[3]), atoi(argv[4]));  
+            do_ecall_by_count_in_same_env(
+                argv[1], flags, atoi(argv[3]), atoi(argv[4]));
             // 2. do ecall by count in diff enclaves sequentially
             // 100 enclaves, 100000 ecalls for each enclave, sequential
-            do_ecall_by_count_in_diff_env_sequential(argv[1], flags, atoi(argv[3]), atoi(argv[4]));	
-            //to add more do ecall stress tests:
+            do_ecall_by_count_in_diff_env_sequential(
+                argv[1], flags, atoi(argv[3]), atoi(argv[4]));
+            // to add more do ecall stress tests:
             // 3. do ecall by count in diff enclaves parallelly
             // 4. do ecall by count with multi-threads
             // 5. do ecall by timeout(hour, min, sec)
             break;
-        //to add: TEST_TYPE=1 - do ocall stress test
+        // to add: TEST_TYPE=1 - do ocall stress test
         case OCALL_STRESS_TEST:
             break;
-        //to add: TEST_TYPE=2 - do ecall + ocall stress test
+        // to add: TEST_TYPE=2 - do ecall + ocall stress test
         case ECALL_OCALL_STRESS_TEST:
             break;
-        //to add: more stress tests
+        // to add: more stress tests
         default:
             break;
     }
