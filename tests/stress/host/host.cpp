@@ -83,15 +83,13 @@ int main(int argc, const char* argv[])
     switch (atoi(argv[2]))
     {
         // TEST_TYPE=0 - do ecall stress test
+        // 1. do ecall by count in same enclave: 1 enclave, 1000000 ecalls
+        // 2. do ecall by count in diff enclaves sequentially: 100 enclaves, 100000 ecalls for each enclave, sequential
         case ECALL_STRESS_TEST:
-            // 1. do ecall by count in same enclave
-            // 1 enclave, 1000000 ecalls
-            do_ecall_by_count_in_same_env(
-                argv[1], flags, atoi(argv[3]), atoi(argv[4]));
-            // 2. do ecall by count in diff enclaves sequentially
-            // 100 enclaves, 100000 ecalls for each enclave, sequential
-            do_ecall_by_count_in_diff_env_sequential(
-                argv[1], flags, atoi(argv[3]), atoi(argv[4]));
+            if (atoi(argv[3]) == 1)
+                do_ecall_by_count_in_same_env(argv[1], flags, atoi(argv[3]), atoi(argv[4]));
+            if (atoi(argv[3]) > 1)
+                do_ecall_by_count_in_diff_env_sequential(argv[1], flags, atoi(argv[3]), atoi(argv[4]));
             // to add more do ecall stress tests:
             // 3. do ecall by count in diff enclaves parallelly
             // 4. do ecall by count with multi-threads
