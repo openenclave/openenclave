@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter
 OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
 oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
-GLOBAL_TIMEOUT_MINUTES = 240
+GLOBAL_TIMEOUT_MINUTES = 480
 
 JENKINS_USER_CREDS_ID = "oeadmin-credentials"
 OETOOLS_REPO = "oejenkinscidockerregistry.azurecr.io"
