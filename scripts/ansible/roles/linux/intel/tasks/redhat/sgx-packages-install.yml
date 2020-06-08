@@ -6,6 +6,9 @@
   yum:
     name: "{{ intel_sgx_package_dependencies }}"
     state: latest
+  retries: 10
+  register: install_sgx_dependencies
+  until: install_sgx_dependencies is success
 
 - name: Create Intel SGX directory
   file:
@@ -17,7 +20,7 @@
     url: "{{ intel_sgx_rpm_repo_tgz_url }}"
     dest: "/tmp/sgx_rpm_local_repo.tgz"
     timeout: 120
-  retries: 3
+  retries: 5
 
 - name: Unarchive Intel SGX local rpm repo tgz
   unarchive:
@@ -37,12 +40,18 @@
   yum:
     name: "{{ intel_sgx_packages }}"
     state: latest
+  retries: 10
+  register: install_sgx
+  until: install_sgx is success
 
 - name: Install the Intel DCAP packages
   yum:
     name: "{{ intel_dcap_packages }}"
     state: latest
   when: flc_enabled|bool
+  retries: 10
+  register: install_dcap
+  until: install_dcap is success
 
 - name: Cleanup installation
   file:
