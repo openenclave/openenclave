@@ -136,7 +136,7 @@ try{
                 "Win2019 Ubuntu1804 clang-7 Release Linux-Elf-build LVI": { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-7', 'Release', 'ControlFlow', 'ON') },
                 "Win2019 Sim Release Cross Compile LVI ":                 { windowsCrossCompile('acc-win2019', 'Release', 'OFF', 'ControlFlow', '1', 'ON') },
                 "Win2019 Debug Cross Compile DCAP LVI":                   { windowsCrossCompile('acc-win2019', 'Debug', 'ON', 'ControlFlow', '0', 'ON') },
-                "Win2019 Release Cross Compile DCAP LVI":                 { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow', '0', 'ON') }
+                "Win2019 Release Cross Compile DCAP LVI FULL Tests":      { windowsCrossCompile('acc-win2019', 'Release', 'ON', 'ControlFlow') }
             ]
             parallel testing_stages
         }
