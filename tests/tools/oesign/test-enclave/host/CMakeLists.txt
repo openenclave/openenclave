@@ -13,7 +13,8 @@ add_custom_command(
 add_executable(oesign_test_host host.c
                                 ${CMAKE_CURRENT_BINARY_DIR}/helloworld_u.c)
 
-# Needed for the generated file helloworld_u.h
-target_include_directories(oesign_test_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(
+  oesign_test_host PRIVATE # Needed for the generated file helloworld_u.h
+                           ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(oesign_test_host oehost)

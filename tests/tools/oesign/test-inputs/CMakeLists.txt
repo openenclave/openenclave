@@ -8,12 +8,14 @@ add_custom_command(
           ${CMAKE_CURRENT_BINARY_DIR})
 
 # Generate an empty config file
-add_custom_command(OUTPUT empty.conf
-                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py 0)
+add_custom_command(
+  OUTPUT empty.conf COMMAND python
+                            ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py 0)
 
 # Generate a config file with negative value
-add_custom_command(OUTPUT negative_num_heap_pages.conf
-                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py 1)
+add_custom_command(
+  OUTPUT negative_num_heap_pages.conf
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py 1)
 
 add_custom_target(oesign_test_configs ALL DEPENDS valid.conf empty.conf
                                                   negative_num_heap_pages.conf)
