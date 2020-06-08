@@ -29,7 +29,7 @@ void do_ecall_in_enclave(
     if (result != OE_OK)
         oe_put_err("oe_create_stress_enclave(): result=%u", result);
 
-    printf("Do ecall in enclave: %d\n", enclave_count);
+    printf("Start to do ecall in enclave: %d\n", enclave_count);
     for (int i = 0; i < ecall_count; i++)
     {
         if ((result = do_ecall(enclave, i)) != OE_OK)
@@ -38,22 +38,14 @@ void do_ecall_in_enclave(
             oe_put_err("test(): result=%u", result);
         }
     }
+    printf("Finish doing ecall in enclave: %d, total %d ecalls\n", enclave_count, ecall_count);	
 
     result = oe_terminate_enclave(enclave);
     if (result != OE_OK)
         oe_put_err("oe_terminate_enclave(): result=%u", result);
 }
 
-void do_ecall_by_count_in_same_env(
-    const char* path,
-    uint32_t flags,
-    int enclave_count,
-    int ecall_count)
-{
-    do_ecall_in_enclave(path, flags, enclave_count, ecall_count);
-}
-
-void do_ecall_by_count_in_diff_env_sequential(
+void do_ecall_by_count_in_env_sequential(
     const char* path,
     uint32_t flags,
     int enclave_count,
@@ -83,17 +75,13 @@ int main(int argc, const char* argv[])
     switch (atoi(argv[2]))
     {
         // TEST_TYPE=0 - do ecall stress test
-        // 1. do ecall by count in same enclave: 1 enclave, 1000000 ecalls
-        // 2. do ecall by count in diff enclaves sequentially: 100 enclaves, 100000 ecalls for each enclave, sequential
+        // 1. do ecall by count in env sequentially
         case ECALL_STRESS_TEST:
-            if (atoi(argv[3]) == 1)
-                do_ecall_by_count_in_same_env(argv[1], flags, atoi(argv[3]), atoi(argv[4]));
-            if (atoi(argv[3]) > 1)
-                do_ecall_by_count_in_diff_env_sequential(argv[1], flags, atoi(argv[3]), atoi(argv[4]));
+                do_ecall_by_count_in_env_sequential(argv[1], flags, atoi(argv[3]), atoi(argv[4]));
             // to add more do ecall stress tests:
-            // 3. do ecall by count in diff enclaves parallelly
-            // 4. do ecall by count with multi-threads
-            // 5. do ecall by timeout(hour, min, sec)
+            // 2. do ecall by count in env parallelly
+            // 3. do ecall by count with multi-threads
+            // 4. do ecall by timeout(hour, min, sec)
             break;
         // to add: TEST_TYPE=1 - do ocall stress test
         case OCALL_STRESS_TEST:

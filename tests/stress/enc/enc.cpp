@@ -6,7 +6,9 @@
 
 void do_ecall(int arg)
 {
-    oe_host_printf("Do ecall time: %d\n", arg);
+    // almost do nothing, just assign value
+    int rcv = 0;
+    rcv = arg;
 }
 
 OE_SET_ENCLAVE_SGX(
