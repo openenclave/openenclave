@@ -244,7 +244,7 @@ endif ()
 option(
   COMPILE_SYSTEM_EDL
   "Build system ecalls and ocalls into OE libraries. If not set, they must be included by application EDL to use."
-  OFF)
+  ON)
 
 option(BUILD_TESTS "Build OE tests" ON)
 
