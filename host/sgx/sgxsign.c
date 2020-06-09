@@ -107,7 +107,6 @@ static oe_result_t _get_exponent(
     const oe_rsa_public_key_t* rsa,
     uint8_t exponent[OE_EXPONENT_SIZE])
 {
-    static const uint8_t OE_SGX_SIGNING_EXPONENT[] = {3, 0, 0, 0};
     oe_result_t result = OE_UNEXPECTED;
     uint8_t buf[OE_EXPONENT_SIZE];
     size_t bufsize = sizeof(buf);
@@ -126,10 +125,6 @@ static oe_result_t _get_exponent(
         OE_EXPONENT_SIZE - bufsize,
         0,
         OE_EXPONENT_SIZE - bufsize));
-
-    /* Check that the exponent matches SGX requirement */
-    if (memcmp(OE_SGX_SIGNING_EXPONENT, exponent, OE_EXPONENT_SIZE) != 0)
-        OE_RAISE(OE_INVALID_SGX_SIGNING_KEY);
 
     result = OE_OK;
 
@@ -445,6 +440,8 @@ static oe_result_t _init_sigstruct(
     uint16_t product_id,
     uint16_t security_version,
     const oe_rsa_private_key_t* rsa,
+    const uint8_t* isvfamilyid,
+    const uint8_t* isvextprodid,
     sgx_sigstruct_t* sigstruct)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -520,6 +517,21 @@ static oe_result_t _init_sigstruct(
         sizeof(sigstruct->enclavehash),
         mrenclave,
         sizeof(*mrenclave)));
+
+    if (attributes & SGX_FLAGS_KSS)
+    {
+        OE_CHECK(oe_memcpy_s(
+            sigstruct->isvfamilyid,
+            sizeof(sigstruct->isvfamilyid),
+            isvfamilyid,
+            sizeof(sigstruct->isvfamilyid)));
+        OE_CHECK(oe_memcpy_s(
+            sigstruct->isvextprodid,
+            sizeof(sigstruct->isvextprodid),
+            isvextprodid,
+            sizeof(sigstruct->isvextprodid)));
+    }
+
 
     /* sgx_sigstruct_t.isvprodid */
     sigstruct->isvprodid = product_id;
@@ -598,6 +610,8 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id,
+    const uint8_t* isvfamilyid,
+    const uint8_t* isvextprodid,
     sgx_sigstruct_t* sigstruct)
 {
     oe_rsa_private_key_t rsa;
@@ -617,7 +631,7 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
 
     /* Initialize the sigstruct */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, &rsa, sigstruct));
+        mrenclave, attributes, product_id, security_version, &rsa, isvfamilyid, isvextprodid, sigstruct));
 
     result = OE_OK;
 
@@ -635,6 +649,8 @@ oe_result_t oe_sgx_sign_enclave(
     uint16_t security_version,
     const uint8_t* pem_data,
     size_t pem_size,
+    const uint8_t* isvfamilyid,
+    const uint8_t* isvextprodid,
     sgx_sigstruct_t* sigstruct)
 {
     oe_rsa_private_key_t rsa;
@@ -654,7 +670,7 @@ oe_result_t oe_sgx_sign_enclave(
 
     /* Initialize the sigstruct */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, &rsa, sigstruct));
+        mrenclave, attributes, product_id, security_version, &rsa, isvfamilyid, isvextprodid, isvfamilyidsigstruct));
 
     result = OE_OK;
 

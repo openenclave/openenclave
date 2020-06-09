@@ -22,6 +22,8 @@ typedef struct _config_file_options
     uint64_t num_tcs;
     uint16_t product_id;
     uint16_t security_version;
+    uint8_t *isv_family_id;
+    uint8_t *isv_ext_product_id;
 } ConfigFileOptions;
 
 #define CONFIG_FILE_OPTIONS_INITIALIZER                                 \
@@ -83,7 +85,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
             // Debug must be 0 or 1
             if (str_u64(&rhs, &value) != 0 || (value > 1))
             {
-                oe_err("%s(%zu): 'Debug' value must be 0 or 1", path, line);
+                oe_err("%s(%zu): bad value for 'Debug'", path, line);
                 goto done;
             }
 
@@ -93,14 +95,9 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
-                !oe_sgx_is_valid_num_heap_pages(n))
+            if (str_u64(&rhs, &n) != 0 || !oe_sgx_is_valid_num_heap_pages(n))
             {
-                oe_err(
-                    "%s(%zu): bad value for 'NumHeapPages': %s",
-                    path,
-                    line,
-                    str_ptr(&rhs));
+                oe_err("%s(%zu): bad value for 'NumHeapPages'", path, line);
                 goto done;
             }
 
@@ -110,14 +107,9 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
-                !oe_sgx_is_valid_num_stack_pages(n))
+            if (str_u64(&rhs, &n) != 0 || !oe_sgx_is_valid_num_stack_pages(n))
             {
-                oe_err(
-                    "%s(%zu): bad value for 'NumStackPages': %s",
-                    path,
-                    line,
-                    str_ptr(&rhs));
+                oe_err("%s(%zu): bad value for 'NumStackPages'", path, line);
                 goto done;
             }
 
@@ -127,14 +119,9 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
-                !oe_sgx_is_valid_num_tcs(n))
+            if (str_u64(&rhs, &n) != 0 || !oe_sgx_is_valid_num_tcs(n))
             {
-                oe_err(
-                    "%s(%zu): bad value for 'NumTCS': %s",
-                    path,
-                    line,
-                    str_ptr(&rhs));
+                oe_err("%s(%zu): bad value for 'NumTCS'", path, line);
                 goto done;
             }
 
@@ -144,14 +131,9 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint16_t n;
 
-            if (str_ptr(&rhs)[0] == '-' || str_u16(&rhs, &n) != 0 ||
-                !oe_sgx_is_valid_product_id(n))
+            if (str_u16(&rhs, &n) != 0 || !oe_sgx_is_valid_product_id(n))
             {
-                oe_err(
-                    "%s(%zu): bad value for 'ProductID': %s",
-                    path,
-                    line,
-                    str_ptr(&rhs));
+                oe_err("%s(%zu): bad value for 'ProductID'", path, line);
                 goto done;
             }
 
@@ -161,18 +143,57 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint16_t n;
 
-            if (str_ptr(&rhs)[0] == '-' || str_u16(&rhs, &n) != 0 ||
-                !oe_sgx_is_valid_security_version(n))
+            if (str_u16(&rhs, &n) != 0 || !oe_sgx_is_valid_security_version(n))
             {
-                oe_err(
-                    "%s(%zu): bad value for 'SecurityVersion': %s",
-                    path,
-                    line,
-                    str_ptr(&rhs));
+                oe_err("%s(%zu): bad value for 'SecurityVersion'", path, line);
                 goto done;
             }
 
             options->security_version = n;
+        }
+        else if (strcmp(str_ptr(&lhs), "IsvFamilyID_H") == 0)
+        {
+            uint64_t n;
+
+            if (str_u64(&rhs, &n) != 0)
+            {
+                oe_err("%s(%zu): bad value for 'IsvFamilyID_H'", path, line);
+                goto done;
+            }
+            memcpy_s(&(options->isv_family_id, 16, n, 8);
+        }
+        else if (strcmp(str_ptr(&lhs), "IsvFamilyID_L") == 0)
+        {
+            uint64_t n;
+
+            if (str_u64(&rhs, &n) != 0)
+            {
+                oe_err("%s(%zu): bad value for 'IsvFamilyID_H'", path, line);
+                goto done;
+            }
+            memcpy_s((uint8_t*)&(options->isv_family_id + 8 , 8, n, 8);
+        }
+        else if (strcmp(str_ptr(&lhs), "IsvExtProductID_H") == 0)
+        {
+            uint64_t n;
+
+            if (str_u64(&rhs, &n) != 0))
+            {
+                oe_err("%s(%zu): bad value for 'IsvExtProductID_H'", path, line);
+                goto done;
+            }
+            memcpy_s(&(options->isv_ext_product_id, 16, n, 8);
+        }
+        else if (strcmp(str_ptr(&lhs), "IsvExtProductID_L") == 0)
+        {
+            uint64_t n;
+
+            if (str_u64(&rhs, &n) != 0)
+            {
+                oe_err("%s(%zu): bad value for 'IsvExtProductID_L'", path, line);
+                goto done;
+            }
+            memcpy_s(&(options->isv_ext_product_id + 8, 16, n, 8);
         }
         else
         {
@@ -300,6 +321,10 @@ void _merge_config_file_options(
     if (options->security_version != OE_UINT16_MAX)
         properties->config.security_version = options->security_version;
 
+    /* If SecurityVersion option is present */
+    if (options->security_version != OE_UINT16_MAX)
+        properties->config.security_version = options->security_version;
+
     /* If NumHeapPages option is present */
     if (options->num_heap_pages != OE_UINT64_MAX)
         properties->header.size_settings.num_heap_pages =
@@ -389,6 +414,8 @@ int oesign(
                 engine_id,
                 engine_load_path,
                 key_id,
+                props.config.isvfamilyid,
+                props.config.isvextprodid,
                 (sgx_sigstruct_t*)props.sigstruct),
             "oe_sgx_sign_enclave_from_engine() failed: result=%s (%#x)",
             oe_result_str(result),
@@ -412,6 +439,8 @@ int oesign(
                 props.config.security_version,
                 pem_data,
                 pem_size,
+                props.config.isvfamilyid,
+                props.config.isvextprodid,
                 (sgx_sigstruct_t*)props.sigstruct),
             "oe_sgx_sign_enclave() failed: result=%s (%#x)",
             oe_result_str(result),
