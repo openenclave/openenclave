@@ -177,7 +177,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0))
+            if (str_u64(&rhs, &n) != 0)
             {
                 oe_err("%s(%zu): bad value for 'IsvExtProductID_H'", path, line);
                 goto done;
