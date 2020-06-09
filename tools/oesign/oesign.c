@@ -1,15 +1,15 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <string.h>
+#include <stdio.h>
+#include <sys/stat.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/str.h>
-#define __STDC_WANT_LIB_EXT1__ 1
-#include <string.h>
-#include <stdio.h>
-#include <sys/stat.h>
 #include "../host/sgx/enclave.h"
 #include "oe_err.h"
 #include "oeinfo.h"
