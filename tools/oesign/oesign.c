@@ -7,6 +7,7 @@
 #include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/str.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 #include "../host/sgx/enclave.h"
 #include "oe_err.h"
