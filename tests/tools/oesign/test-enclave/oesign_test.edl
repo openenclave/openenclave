@@ -7,10 +7,6 @@ enclave {
     from "platform.edl" import *;
 
     trusted {
-        public void enclave_helloworld();
-    };
-
-    untrusted {
-        void host_helloworld();
+        public bool is_test_signed();
     };
 };
