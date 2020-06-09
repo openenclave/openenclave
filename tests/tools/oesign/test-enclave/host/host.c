@@ -10,6 +10,7 @@
 // sdk tool oeedger8r against the helloworld.edl file.
 #include "helloworld_u.h"
 
+/* TODO: Replace with test environment simulation mode check */
 bool check_simulate_opt(int* argc, const char* argv[])
 {
     for (int i = 0; i < *argc; i++)
@@ -17,9 +18,6 @@ bool check_simulate_opt(int* argc, const char* argv[])
         if (strcmp(argv[i], "--simulate") == 0)
         {
             fprintf(stdout, "Running in simulation mode\n");
-            memmove(
-                &argv[i], &argv[i + 1], (unsigned)(*argc - i) * sizeof(char*));
-            (*argc)--;
             return true;
         }
     }
