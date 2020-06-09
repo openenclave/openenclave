@@ -162,7 +162,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
                 oe_err("%s(%zu): bad value for 'IsvFamilyID_H'", path, line);
                 goto done;
             }
-            memcpy_s(options->isv_family_id, 16, &n, 8);
+            memcpy(options->isv_family_id, &n, 8);
         }
         else if (strcmp(str_ptr(&lhs), "IsvFamilyID_L") == 0)
         {
@@ -173,7 +173,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
                 oe_err("%s(%zu): bad value for 'IsvFamilyID_H'", path, line);
                 goto done;
             }
-            memcpy_s((uint8_t*)(options->isv_family_id + 8) , 8, &n, 8);
+            memcpy((uint8_t*)(options->isv_family_id + 8) , &n, 8);
         }
         else if (strcmp(str_ptr(&lhs), "IsvExtProductID_H") == 0)
         {
@@ -184,7 +184,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
                 oe_err("%s(%zu): bad value for 'IsvExtProductID_H'", path, line);
                 goto done;
             }
-            memcpy_s(options->isv_ext_product_id, 16, &n, 8);
+            memcpy(options->isv_ext_product_id, &n, 8);
         }
         else if (strcmp(str_ptr(&lhs), "IsvExtProductID_L") == 0)
         {
@@ -195,7 +195,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
                 oe_err("%s(%zu): bad value for 'IsvExtProductID_L'", path, line);
                 goto done;
             }
-            memcpy_s(options->isv_ext_product_id + 8, 16, &n, 8);
+            memcpy((uint8_t*)(options->isv_ext_product_id + 8), &n, 8);
         }
         else
         {
