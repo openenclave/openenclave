@@ -143,3 +143,11 @@ add_test(
 
 add_test(NAME tests/oesign-engine-sign-runnable COMMAND host/helloworld_host
                                                         enclave/enclave.signed)
+
+add_test(
+  NAME tests/oesign-engine-sign-kss
+  COMMAND
+    oesign sign -e $<TARGET_FILE:enclave> -c
+    ${CMAKE_CURRENT_SOURCE_DIR}/enclave/test-enclave-kss.conf -n oesign-test-engine
+    -p ${CMAKE_CURRENT_BINARY_DIR}/../test-engine/liboesign-test-engine.so -i
+    ${CMAKE_CURRENT_BINARY_DIR}/sign_key.private.pem)

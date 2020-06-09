@@ -33,6 +33,8 @@ oe_result_t oe_sgx_sign_enclave(
     uint16_t security_version,
     const uint8_t* pem_data,
     size_t pem_size,
+    const uint8_t* isvfamilyid,
+    const uint8_t* isvextprodid,
     sgx_sigstruct_t* sigstruct);
 
 /**
@@ -59,6 +61,8 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id,
+    const uint8_t* isvfamilyid,
+    const uint8_t* isvextprodid,
     sgx_sigstruct_t* sigstruct);
 
 OE_EXTERNC_END

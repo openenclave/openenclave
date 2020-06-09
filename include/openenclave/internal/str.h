@@ -424,6 +424,78 @@ MEM_INLINE int str_split(str_t* str, const char* delim, str_t* lhs, str_t* rhs)
     return 0;
 }
 
+/**
+ * This type contains a Universally Unique Resource Identifier (UUID) type as
+ * defined in RFC4122. These UUID values are used to identify Trusted
+ * Applications.
+ */
+typedef struct
+{
+    uint32_t timeLow;
+    uint16_t timeMid;
+    uint16_t timeHiAndVersion;
+    uint8_t clockSeqAndNode[8];
+} TEEC_UUID;
+
+MEM_INLINE int uuid_from_string(str_t* str, TEEC_UUID* uuid)
+{
+    int i;
+    uint64_t uuid_parts[5];
+    char* id_copy;
+    char* posn;
+    char* current_token;
+
+#if defined(__linux__)
+    id_copy = strdup(str_ptr(str));
+#else
+    id_copy = _strdup(str_ptr(str));
+#endif
+    /* Remove ".ta" extension, if one is present */
+    size_t len = strlen(id_copy);
+    if ((len > 3) && (strcmp(&id_copy[len - 3], ".ta") == 0))
+    {
+        id_copy[len - 3] = 0;
+    }
+
+    if (strlen(id_copy) != 36)
+        return -1;
+
+    i = 5;
+#if defined(__linux__)
+    current_token = strtok_r(id_copy, "-", &posn);
+#else
+    current_token = strtok_s(id_copy, "-", &posn);
+#endif
+    while (current_token != NULL && i >= 0)
+    {
+        uuid_parts[--i] = strtoull(current_token, NULL, 16);
+#if defined(__linux__)
+        current_token = strtok_r(NULL, "-", &posn);
+#else
+        current_token = strtok_s(NULL, "-", &posn);
+#endif
+    }
+
+    free(id_copy);
+
+    if (i != 0)
+        return -1;
+
+    uuid->timeLow = (uint32_t)uuid_parts[4];
+    uuid->timeMid = (uint16_t)uuid_parts[3];
+    uuid->timeHiAndVersion = (uint16_t)uuid_parts[2];
+    uuid->clockSeqAndNode[0] = (uint8_t)(uuid_parts[1] >> (8 * 1));
+    uuid->clockSeqAndNode[1] = (uint8_t)(uuid_parts[1] >> (8 * 0));
+    uuid->clockSeqAndNode[2] = (uint8_t)(uuid_parts[0] >> (8 * 5));
+    uuid->clockSeqAndNode[3] = (uint8_t)(uuid_parts[0] >> (8 * 4));
+    uuid->clockSeqAndNode[4] = (uint8_t)(uuid_parts[0] >> (8 * 3));
+    uuid->clockSeqAndNode[5] = (uint8_t)(uuid_parts[0] >> (8 * 2));
+    uuid->clockSeqAndNode[6] = (uint8_t)(uuid_parts[0] >> (8 * 1));
+    uuid->clockSeqAndNode[7] = (uint8_t)(uuid_parts[0] >> (8 * 0));
+
+    return 0;
+}
+
 MEM_INLINE int str_u64(str_t* str, uint64_t* u64)
 {
     uint64_t x;

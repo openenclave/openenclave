@@ -24,6 +24,7 @@ OE_EXTERNC_BEGIN
 #define SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
 #define SGX_FLAGS_PROVISION_KEY 0x0000000000000010ULL
 #define SGX_FLAGS_EINITTOKEN_KEY 0x0000000000000020ULL
+#define SGX_FLAGS_KSS 0x0000000000000080ULL
 
 /* Legacy XFRM which includes basic feature bits required by SGX i.e. X87
  * (bit 0) and SSE state (bit 1)
@@ -185,7 +186,10 @@ typedef struct _sgx_sigstruct
     uint32_t miscmask;
 
     /* (908) Reserved. Must be 0. */
-    uint8_t reserved2[20];
+    uint8_t reserved2[4];
+
+    /* (912) ISV assigned Product Family Id*/
+    uint8_t isvfamilyid[16];
 
     /* (928) Enclave Attributes that must be set */
     sgx_attributes_t attributes;
@@ -197,7 +201,10 @@ typedef struct _sgx_sigstruct
     uint8_t enclavehash[OE_SHA256_SIZE];
 
     /* (992) Must be 0 */
-    uint8_t reserved3[32];
+    uint8_t reserved3[16];
+
+    /* (1008) ISV assigned extended Product ID */
+    uint8_t isvextprodid[16];
 
     /* (1024) ISV assigned Product ID */
     uint16_t isvprodid;
@@ -928,7 +935,11 @@ OE_STATIC_ASSERT(sizeof(sgx_quote_signature_t) == 664);
 /* Key policy. */
 #define SGX_KEYPOLICY_MRENCLAVE 0x0001
 #define SGX_KEYPOLICY_MRSIGNER 0x0002
-#define SGX_KEYPOLICY_ALL (SGX_KEYPOLICY_MRENCLAVE | SGX_KEYPOLICY_MRSIGNER)
+#define SGX_KEYPOLICY_NOISVPRODID 0x0004 
+#define SGX_KEYPOLICY_CONFIGID 0x0008
+#define SGX_KEYPOLICY_ISVFAMILYID 0x0010
+#define SGX_KEYPOLICY_ISVEXTPRODID 0x0020
+#define SGX_KEYPOLICY_ALL (SGX_KEYPOLICY_MRENCLAVE | SGX_KEYPOLICY_MRSIGNER | SGX_KEYPOLICY_NOISVPRODID | SGX_KEYPOLICY_CONFIGID | SGX_KEYPOLICY_ISVFAMILYID | SGX_KEYPOLICY_ISVEXTPRODID)
 
 OE_PACK_BEGIN
 typedef struct _sgx_key_request

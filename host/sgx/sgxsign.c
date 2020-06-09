@@ -445,6 +445,8 @@ static oe_result_t _init_sigstruct(
     uint16_t product_id,
     uint16_t security_version,
     const oe_rsa_private_key_t* rsa,
+    const uint8_t* isvfamilyid,
+    const uint8_t* isvextprodid,
     sgx_sigstruct_t* sigstruct)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -520,6 +522,21 @@ static oe_result_t _init_sigstruct(
         sizeof(sigstruct->enclavehash),
         mrenclave,
         sizeof(*mrenclave)));
+
+    if (attributes & SGX_FLAGS_KSS)
+    {
+        OE_CHECK(oe_memcpy_s(
+            sigstruct->isvfamilyid,
+            sizeof(sigstruct->isvfamilyid),
+            isvfamilyid,
+            sizeof(sigstruct->isvfamilyid)));
+        OE_CHECK(oe_memcpy_s(
+            sigstruct->isvextprodid,
+            sizeof(sigstruct->isvextprodid),
+            isvextprodid,
+            sizeof(sigstruct->isvextprodid)));
+    }
+
 
     /* sgx_sigstruct_t.isvprodid */
     sigstruct->isvprodid = product_id;
@@ -598,6 +615,8 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id,
+    const uint8_t* isvfamilyid,
+    const uint8_t* isvextprodid,
     sgx_sigstruct_t* sigstruct)
 {
     oe_rsa_private_key_t rsa;
@@ -617,7 +636,7 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
 
     /* Initialize the sigstruct */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, &rsa, sigstruct));
+        mrenclave, attributes, product_id, security_version, &rsa, isvfamilyid, isvextprodid, sigstruct));
 
     result = OE_OK;
 
@@ -635,6 +654,8 @@ oe_result_t oe_sgx_sign_enclave(
     uint16_t security_version,
     const uint8_t* pem_data,
     size_t pem_size,
+    const uint8_t* isvfamilyid,
+    const uint8_t* isvextprodid,
     sgx_sigstruct_t* sigstruct)
 {
     oe_rsa_private_key_t rsa;
@@ -654,7 +675,7 @@ oe_result_t oe_sgx_sign_enclave(
 
     /* Initialize the sigstruct */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, &rsa, sigstruct));
+        mrenclave, attributes, product_id, security_version, &rsa, isvfamilyid, isvextprodid, sigstruct));
 
     result = OE_OK;
 
