@@ -6,9 +6,9 @@
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/str.h>
-#include <stdio.h>
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <string.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include "../host/sgx/enclave.h"
 #include "oe_err.h"
