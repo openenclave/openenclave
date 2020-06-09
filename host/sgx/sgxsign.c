@@ -670,7 +670,7 @@ oe_result_t oe_sgx_sign_enclave(
 
     /* Initialize the sigstruct */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, &rsa, isvfamilyid, isvextprodid, isvfamilyidsigstruct));
+        mrenclave, attributes, product_id, security_version, &rsa, isvfamilyid, isvextprodid, sigstruct));
 
     result = OE_OK;
 
