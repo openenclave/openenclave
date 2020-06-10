@@ -437,7 +437,7 @@ typedef struct
     uint8_t clockSeqAndNode[8];
 } TEEC_UUID;
 
-MEM_INLINE int uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
+MEM_INLINE int uuid_from_string(str_t* str, TEEC_UUID* uuid)
 {
     int i;
     uint64_t uuid_parts[5];
@@ -445,7 +445,7 @@ MEM_INLINE int uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
     char* posn;
     const char* current_token;
 
-    id_copy = _strdup(uuid_str);
+    id_copy = _strdup(str);
 
     /* Remove ".ta" extension, if one is present */
     size_t len = strlen(id_copy);
