@@ -193,7 +193,7 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
         }
         else if (strcmp(str_ptr(&lhs), "IsvFamilyID") == 0)
         {
-            TEEC_UUID uuid id;
+            TEEC_UUID id;
 
             if (uuid_from_string(&rhs, &id) != 0)
             {
