@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/bits/poll.h>
 
 OE_EXTERNC_BEGIN
 
@@ -23,15 +24,6 @@ OE_EXTERNC_BEGIN
 #define OE_POLLHUP    0x010
 #define OE_POLLNVAL   0x020
 // clang-format on
-
-typedef uint64_t oe_nfds_t;
-
-struct oe_pollfd
-{
-    int fd;            /* File descriptor to poll.  */
-    short int events;  /* Types of events poller cares about.  */
-    short int revents; /* Types of events that actually occurred.  */
-};
 
 int oe_poll(struct oe_pollfd* fds, oe_nfds_t nfds, int timeout);
 

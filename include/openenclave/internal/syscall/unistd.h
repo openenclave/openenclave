@@ -5,10 +5,10 @@
 #define _OE_SYSCALL_UNISTD_H
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/time.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
-#include <openenclave/corelibc/time.h>
 #include <openenclave/internal/syscall/unistd.h>
 
 OE_EXTERNC_BEGIN
@@ -43,6 +43,10 @@ ssize_t oe_write(int fd, const void* buf, size_t count);
 #if !defined(WIN32) /* __feature_io__ */
 
 oe_off_t oe_lseek(int fd, oe_off_t offset, int whence);
+
+ssize_t oe_pread(int fd, void* buf, size_t count, oe_off_t offset);
+
+ssize_t oe_pwrite(int fd, const void* buf, size_t count, oe_off_t offset);
 
 int oe_truncate(const char* path, oe_off_t length);
 

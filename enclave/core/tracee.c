@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "tracee.h"
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/corelibc/stdio.h>
@@ -12,10 +13,9 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include "tee_t.h"
+#include "core_t.h"
 
 static oe_log_level_t _active_log_level = OE_LOG_LEVEL_ERROR;
 static char _enclave_filename[OE_MAX_FILENAME_LEN];

@@ -1,12 +1,14 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+// TODO: oelibc should not depend on SGX-specifc headers
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/pthread.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/pthreadhooks.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
 #include <pthread.h>
 

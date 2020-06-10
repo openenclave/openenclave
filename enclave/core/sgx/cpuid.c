@@ -7,7 +7,7 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
-#include "sgx_t.h"
+#include "platform_t.h"
 
 static uint32_t _cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 
@@ -26,8 +26,8 @@ oe_result_t oe_initialize_cpuid(void)
     oe_result_t result = OE_UNEXPECTED;
     uint32_t retval;
 
-    OE_CHECK(
-        oe_get_cpuid_table_ocall(&retval, _cpuid_table, sizeof(_cpuid_table)));
+    OE_CHECK(oe_sgx_get_cpuid_table_ocall(
+        &retval, _cpuid_table, sizeof(_cpuid_table)));
 
     OE_CHECK((oe_result_t)retval);
 

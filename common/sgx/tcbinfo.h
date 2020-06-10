@@ -6,10 +6,10 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/datetime.h>
-#include <openenclave/internal/sgxtypes.h>
 
 OE_EXTERNC_BEGIN
 
@@ -24,13 +24,13 @@ typedef union _oe_tcb_level_status {
         uint32_t outofdate : 1;            //! "OutOfDate"
         uint32_t configuration_needed : 1; //! "ConfigurationNeeded"
         uint32_t up_to_date : 1;           //! "UpToDate"
-
         /*! "OutOfDateConfigurationNeeded"
          *
          * This tcb status indicates that the QE Identity Info is out of date
          * and the TCB Info requires configuration "ConfigurationNeeded"
          */
         uint32_t qe_identity_out_of_date : 1;
+        uint32_t sw_hardening_needed : 1; //! "SWHardeningNeeded"
     } fields;
     uint32_t AsUINT32;
 

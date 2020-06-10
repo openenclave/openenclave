@@ -2,11 +2,13 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
 
     trusted {
         public void test_fs(
             [string, in] const char* src_dir,
             [string, in] const char* tmp_dir);
-
     };
 };

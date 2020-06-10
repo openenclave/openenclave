@@ -1,0 +1,38 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** logging.edl:
+**
+**     This file declares internal ECALLs/OCALLs used by liboehost/liboecore
+**     for logging to the host.
+**
+**==============================================================================
+*/
+
+enclave
+{
+
+    trusted
+    {
+        public void oe_log_init_ecall(
+            [in, string] const char* enclave_path,
+            uint32_t log_level);
+    };
+
+    untrusted
+    {
+        void oe_log_ocall(
+            uint32_t log_level,
+            [in, string] const char* message);
+
+        // Write a string to the console. Write to STDOUT if device=0. Write
+        // to STDERR if device=1. Write strnlen(str, maxlen) bytes.
+        void oe_write_ocall(
+            int device,
+            [in, string] const char* str,
+            size_t maxlen);
+    };
+};

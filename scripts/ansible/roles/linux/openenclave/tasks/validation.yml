@@ -45,10 +45,3 @@
   command: "gcc --version"
   register: gcc_check_version
   failed_when: gcc_check_version.stdout.find(gcc_target_version) == -1
-
-- name: Esy version check
-  shell: "esy --version"
-  args:
-    executable: /bin/bash
-  register: esy_check_version
-  failed_when: esy_check_version.stdout.find(esy_target_version) == -1

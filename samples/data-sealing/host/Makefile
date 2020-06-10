@@ -6,13 +6,15 @@ include ../../config.mk
 CFLAGS=$(shell pkg-config oehost-$(C_COMPILER) --cflags)
 CXXFLAGS=$(shell pkg-config oehost-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oehost-$(C_COMPILER) --libs)
-
+INCDIR=$(shell pkg-config oehost-$(C_COMPILER) --variable=includedir)
 
 all: build
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	oeedger8r ../datasealing.edl --untrusted
+	oeedger8r ../datasealing.edl --untrusted \
+		--search-path $(INCDIR) \
+		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. host.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. datasealing_u.c
 	$(CXX) -o data-sealing_host host.o datasealing_u.o $(LDFLAGS)

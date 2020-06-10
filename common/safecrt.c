@@ -82,7 +82,7 @@ oe_result_t oe_memset_s(void* dst, size_t dst_size, int value, size_t num_bytes)
 
     /* memset_s cannot be optimized away by the compiler */
     while (num_bytes--)
-        *p++ = (volatile unsigned char)value;
+        *p++ = (unsigned char)value;
 
 done:
     return result;

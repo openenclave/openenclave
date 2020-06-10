@@ -2,6 +2,11 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/attestation.edl" import *;
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public oe_result_t get_tls_cert_signed_with_key(
             [in, count=private_key_size] uint8_t *private_key,

@@ -12,7 +12,7 @@
 #include <openenclave/internal/stack_alloc.h>
 
 #include "arena.h"
-#include "tee_t.h"
+#include "core_t.h"
 
 void* oe_host_malloc(size_t size)
 {

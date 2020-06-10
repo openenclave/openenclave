@@ -8,22 +8,77 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 [Unreleased][Unreleased_log]
+--------------
+
+### Added
+- Added `oe_sgx_get_signer_id_from_public_key()` function which helps a verifier of SGX
+  reports extract the expected MRSIGNER value from the signer's public key PEM certificate.
+
+### Changed
+- Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
+- Remove CRL_ISSUER_CHAIN_PCK_PROC_CA field from endorsement struct define in include/openenclave/bits/attestation.h.
+- `COMPILE_SYSTEM_EDL` is now OFF by default, meaning system EDL must be imported by
+  application EDL. See [system EDL opt-in document]
+  (docs/DesignDocs/system_ocall_opt_in.md#how-to-port-your-application) for more information.
+- Switch to oeedger8r written in C++.
+
+### Removed
+- Removed oehostapp and the appendent "-rdynamic" compiling option. Please use oehost instead and add the option back manually if necessary.
+- Removed dependencies on nodejs and esy, which were previously used to build Ocaml compiler and oeedger8r.
+
+[0.9.0][v0.9.0_log]
 ------------
+
+### Added
+- Complete support for inttypes.h and stdlib.h in oelibc. See docs/LibcSupport.md for more details.
+- Support for Simulation Mode on Windows. Simulation mode only runs on systems with SGX enabled.
+- Support `transition_using_threads` EDL attribute for ecalls in oeedger8r.
+  OE SDK now supports both switchless OCALLs and ECALLs.
+- Published corelibc headers required by oeedger8r-generated code.
+  **Disclaimer:** these headers do not make any guarantees about stability. They
+  are intended to be used by generated code and are not part of the OE public
+  API surface.
+- Support for Windows Server 2019.
+- Experimental support for RHEL8.
+- Preview versions of VSCode and Visual Studio Extensions for OE are now part of the github repo.
+- Experimental support for enclave file system APIs on Windows host.
+- oelibcxx now supports up to `std=c++17`. Please see docs/LibcxxSupport.md for more details.
+- `COMPILE_SYSTEM_EDL` build flag. This is on by default and will compile system
+  OCalls and ECalls into OE libraries as before. If it is set to off, each enclave
+  application must import the ECalls/OCalls it needs into its own EDL file from
+  `{OE_INSTALL_PATH}/include/openenclave/edl`.
+- Experimental support for snmalloc. To use snmalloc, build the SDK from source using -DUSE_SNMALLOC=ON.
 
 ### Changed
 - Moved `oe_asymmetric_key_type_t`, `oe_asymmetric_key_format_t`, and
   `oe_asymmetric_key_params_t` to `bits/asym_keys.h` from `bits/types.h`.
+- Windows host libraries in the Open Enclave NuGet package have been compiled with /WX /W3 enabled.
+- Attestation plugin APIs in include/openenclave/attestation/plugin.h are marked experimental.
 
 ### Fixed
+- Fix #2828 which removes an explicit host side dependency on libsgx-urts on Linux.
 - Fix #2607 so that libmbedcrypto now includes mbedtls_hkdf().
+- Fix #2786 so that `CXX` is always `TRUE` in `add_enclave_sgx()` and `add_enclave_optee()`.
+- Fix #2544 and #2264. This removes oesign's dependency on libsgx_enclave_common and libsgx_dcap_ql.
+- Fix #2661 which caused inconsistent code generation in oeedger8r.
 
 ### Removed
 - Removed oe-gdb script which has been deprecated since v0.6. Use oegdb instead.
 
 ### Security
-- Update mbedTLS to version 2.16.5. Refer to [2.16.5](
+- Update mbedTLS to version 2.16.6. Refer to the [2.16.5](
 https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.5-and-2.7.14-released)
+and [2.16.6](https://tls.mbed.org/tech-updates/releases/mbedtls-2.16.6-and-2.7.15-released)
 release notes for the set of issues addressed.
+
+### Deprecated
+- oehostapp is being deprecated from cmake targets. Use oehost instead. See #2595.
+- In the next release (v0.10), system EDL will no longer be compiled into OE
+  libraries by default (COMPILE_SYSTEM_EDL will be OFF by default). See the
+  [system EDL opt-in document]
+  (docs/DesignDocs/system_ocall_opt_in.md#how-to-port-your-application) for
+  more details on how to rebuild the SDK to match this behavior and for
+  guidance on porting your application to the new model.
 
 
 [v0.8.2][v0.8.2_log] - 2020-03-10
@@ -46,11 +101,8 @@ release notes for the set of issues addressed.
 [v0.8.1][v0.8.1_log] - 2020-02-07
 ---------------------
 
-### Added
-- Support for Simulation Mode on Windows.
-
-### Fixed 
-- Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523. 
+### Fixed
+- Fixed Jenkins pipeline to produce a valid open-enclave NuGet package. Fixes #2523.
 
 ### Changed
 - `oe_random()` now depends on the hardware-based source of RNG instead of cryptography libraries.
@@ -335,7 +387,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.8.2...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.9.0...HEAD
+
+[v0.9.0_log]:https://github.com/openenclave/openenclave/compare/v0.8.2...v0.9.0
 
 [v0.8.2_log]:https://github.com/openenclave/openenclave/compare/v0.8.1...v0.8.2
 
@@ -354,4 +408,3 @@ Initial private preview release, no longer supported.
 [v0.4.0_log]:https://github.com/openenclave/openenclave/compare/v0.1.0...v0.4.0
 
 [v0.1.0_log]:https://github.com/openenclave/openenclave/compare/beb546f...v0.1.0
-

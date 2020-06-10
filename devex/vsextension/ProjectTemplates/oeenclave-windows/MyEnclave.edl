@@ -1,0 +1,11 @@
+enclave {
+    trusted {
+        /* define ECALLs here. */
+        public int ecall_DoWorkInEnclave();
+    };
+
+    untrusted {
+        /* define any OCALLs here. */
+        void ocall_DoWorkInHost();
+    };
+};

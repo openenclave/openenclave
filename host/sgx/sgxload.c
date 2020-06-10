@@ -14,18 +14,18 @@
 
 #include <assert.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxsign.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include "../common/sgx/sgxmeasure.h"
 #include "../memalign.h"
 #include "../signkey.h"
 #include "enclave.h"
-#include "sgxmeasure.h"
 #include "xstate.h"
 
 #if !defined(OEHOSTMR)
@@ -186,7 +186,7 @@ static void* _allocate_enclave_memory(size_t enclave_size, int fd)
          * the driver will do the alignment. */
         if (fd == -1)
         {
-            mflags |= MAP_ANONYMOUS;
+            mflags |= MAP_ANONYMOUS | MAP_NORESERVE;
             if (oe_safe_mul_u64(mmap_size, 2, &mmap_size) != OE_OK)
             {
                 OE_TRACE_ERROR(

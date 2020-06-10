@@ -82,8 +82,10 @@ OE_STATIC_ASSERT(TEEC_CONFIG_PAYLOAD_REF_COUNT >= 4);
 
 static void _initialize_enclave_host()
 {
-    oe_register_tee_ocall_function_table();
+#ifdef OE_USE_BUILTIN_EDL
+    oe_register_core_ocall_function_table();
     oe_register_syscall_ocall_function_table();
+#endif // OE_USE_BUILTIN_EDL
 }
 
 static oe_result_t _handle_call_host_function(

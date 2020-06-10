@@ -1,9 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/error.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
 #include <string.h>
 #include "../../../../host/sgx/enclave.h"

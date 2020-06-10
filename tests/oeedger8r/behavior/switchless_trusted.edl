@@ -1,9 +1,0 @@
-// Copyright (c) Open Enclave SDK contributors.
-// Licensed under the MIT License.
-
-enclave {
-    trusted {
-        // Switchless functions not supported.
-        public void foo() transition_using_threads;
-    };
-};

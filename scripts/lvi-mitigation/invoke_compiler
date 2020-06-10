@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+# shellcheck disable=SC2068 disable=SC2006 disable=SC2179 disable=SC2154
+
+function call_compiler {
+    if [[ -z ${compiler+x} ]] || [[ -z ${lvi_bin_path+x} ]]; then
+        printf '%s\n' "Error: compiler or lvi_bin_path is not specified." >&2
+        exit 1
+    fi
+
+    lvi_mitigation=0
+    args=()
+    for a; do
+        # Check the existence of LVI-mitigation-specific options.
+        [ "$a" == "-link-lvi-mitigation" ] && lvi_mitigation=1 && continue
+
+        if [[ "$a" == "-Wa,-mlfence-before-indirect-branch=register" ]] ||
+           [[ "$a" == "-Wa,-mlfence-before-ret=not" ]]; then
+	        lvi_mitigation=1
+	    fi
+        args+="$a "
+    done
+
+    if [ $lvi_mitigation == 0 ]; then
+        /usr/bin/"$compiler" $@
+    else
+        # Ensures that the compiler invokes customized
+        # `as` and `ld` instead of default ones.
+        compiler_sym="$lvi_bin_path"/"$compiler"_symlink
+        export PATH=/bin:/usr/local:"$lvi_bin_path"
+        "$compiler_sym" ${args[@]}
+    fi
+}

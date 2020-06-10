@@ -8,25 +8,20 @@ clang_target_version: 7.0.1
 
 validation_directories:
   - "C:\\Program Files\\7-Zip"
-  - "C:\\Program Files\\nodejs"
   - "C:\\Program Files\\LLVM\\bin"
   - "C:\\Program Files\\Git\\bin"
   - "C:\\Program Files\\Git\\mingw64\\bin"
   - "C:\\Program Files\\shellcheck"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Auxiliary\\Build"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\Common7\\Tools"
-  - "C:\\oe_prereqs\\node_modules\\esy"
 
 validation_files:
   - "C:\\Program Files\\LLVM\\lib\\libclang.lib"
-  - "C:\\Program Files\\nodejs\\npm.cmd"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\lib\\x64\\vcomp.lib"
 
 validation_binaries:
   - "C:\\Program Files\\LLVM\\bin\\clang.exe"
   - "C:\\Program Files\\LLVM\\bin\\llvm-ar.exe"
-  - "C:\\Program Files\\nodejs\\node.exe"
   - "C:\\Program Files\\shellcheck\\shellcheck.exe"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin\\Hostx64\\x64\\cl.exe"
   - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\\Tools\\MSVC\\14.16.27023\\bin\\Hostx64\\x64\\link.exe"
-  - "C:\\oe_prereqs\\esy"

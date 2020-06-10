@@ -252,37 +252,39 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/regression/putenv-doublefree.c
     3rdparty/musl/libc-test/src/regression/strverscmp.c
     3rdparty/musl/libc-test/src/functional/random.c
-    3rdparty/musl/libc-test/src/functional/time.c
-)
+    3rdparty/musl/libc-test/src/functional/time.c)
 
 # Exclude tests that fail on OP-TEE:
 if (NOT OE_TRUSTZONE)
-    list(APPEND LIBC_TESTS
-        # Depends on tls_align_dso.c, which requires TLS relocations.
-        3rdparty/musl/libc-test/src/functional/tls_align.c
-        # Fails on emulator (seemingly) due to insufficient FP precision.
-        3rdparty/musl/libc-test/src/regression/printf-fmt-g-round.c)
-endif()
+  list(
+    APPEND
+    LIBC_TESTS
+    # Depends on tls_align_dso.c, which requires TLS relocations.
+    3rdparty/musl/libc-test/src/functional/tls_align.c
+    # Fails on emulator (seemingly) due to insufficient FP precision.
+    3rdparty/musl/libc-test/src/regression/printf-fmt-g-round.c)
+endif ()
 
 # Exclude tests that fail on Clang:
 if (NOT (USE_CLANGW OR MY_COMPILER MATCHES "CLANG"))
-    list(APPEND LIBC_TESTS 
-        3rdparty/musl/libc-test/src/functional/tgmath.c
-        3rdparty/musl/libc-test/src/math/fmax.c
-        3rdparty/musl/libc-test/src/math/fmaxf.c
-        3rdparty/musl/libc-test/src/math/fmin.c
-        3rdparty/musl/libc-test/src/math/fminf.c
-        3rdparty/musl/libc-test/src/math/ilogb.c
-        3rdparty/musl/libc-test/src/math/ilogbf.c
-        3rdparty/musl/libc-test/src/math/ilogbl.c
-        3rdparty/musl/libc-test/src/math/pow.c
-        3rdparty/musl/libc-test/src/math/powl.c
-        3rdparty/musl/libc-test/src/math/tgammaf.c
-        3rdparty/musl/libc-test/src/math/y1.c
-        3rdparty/musl/libc-test/src/math/y1f.c
-        3rdparty/musl/libc-test/src/math/yn.c
-    )
-endif()
+  list(
+    APPEND
+    LIBC_TESTS
+    3rdparty/musl/libc-test/src/functional/tgmath.c
+    3rdparty/musl/libc-test/src/math/fmax.c
+    3rdparty/musl/libc-test/src/math/fmaxf.c
+    3rdparty/musl/libc-test/src/math/fmin.c
+    3rdparty/musl/libc-test/src/math/fminf.c
+    3rdparty/musl/libc-test/src/math/ilogb.c
+    3rdparty/musl/libc-test/src/math/ilogbf.c
+    3rdparty/musl/libc-test/src/math/ilogbl.c
+    3rdparty/musl/libc-test/src/math/pow.c
+    3rdparty/musl/libc-test/src/math/powl.c
+    3rdparty/musl/libc-test/src/math/tgammaf.c
+    3rdparty/musl/libc-test/src/math/y1.c
+    3rdparty/musl/libc-test/src/math/y1f.c
+    3rdparty/musl/libc-test/src/math/yn.c)
+endif ()
 
 ##==============================================================================
 ##
@@ -291,79 +293,80 @@ endif()
 ##==============================================================================
 
 if (FALSE)
-    list(APPEND LIBC_TESTS 
-        3rdparty/musl/libc-test/src/common/runtest.c
-        3rdparty/musl/libc-test/src/functional/crypt.c
-        3rdparty/musl/libc-test/src/functional/dlopen.c
-        3rdparty/musl/libc-test/src/functional/fcntl.c
-        3rdparty/musl/libc-test/src/functional/fscanf.c   # uses pipe
-        3rdparty/musl/libc-test/src/functional/ipc_msg.c
-        3rdparty/musl/libc-test/src/functional/ipc_sem.c
-        3rdparty/musl/libc-test/src/functional/ipc_shm.c
-        3rdparty/musl/libc-test/src/functional/mbc.c
-        3rdparty/musl/libc-test/src/functional/popen.c
-        3rdparty/musl/libc-test/src/functional/pthread_cancel.c
-        3rdparty/musl/libc-test/src/functional/pthread_cancel-points.c
-        3rdparty/musl/libc-test/src/functional/pthread_cond.c
-        3rdparty/musl/libc-test/src/functional/pthread_mutex.c
-        3rdparty/musl/libc-test/src/functional/pthread_robust.c
-        3rdparty/musl/libc-test/src/functional/pthread_tsd.c
-        # sscanf_long Runs out of memory on Windows and Linux CI
-        3rdparty/musl/libc-test/src/functional/sscanf_long.c
-        3rdparty/musl/libc-test/src/functional/search_hsearch.c
-        3rdparty/musl/libc-test/src/functional/sem_init.c
-        3rdparty/musl/libc-test/src/functional/sem_open.c
-        3rdparty/musl/libc-test/src/functional/setjmp.c
-        3rdparty/musl/libc-test/src/functional/spawn.c   # uses pipe
-        3rdparty/musl/libc-test/src/functional/stat.c
-        3rdparty/musl/libc-test/src/functional/strftime.c
-        3rdparty/musl/libc-test/src/functional/strptime.c
-        3rdparty/musl/libc-test/src/functional/swprintf.c
-        3rdparty/musl/libc-test/src/functional/tls_align_dlopen.c
-        3rdparty/musl/libc-test/src/functional/tls_init.c
-        3rdparty/musl/libc-test/src/functional/tls_init_dlopen.c
-        3rdparty/musl/libc-test/src/functional/tls_local_exec.c
-        3rdparty/musl/libc-test/src/functional/vfork.c  # uses fork, execv
-        3rdparty/musl/libc-test/src/math/fmal.c
-        3rdparty/musl/libc-test/src/math/jnf.c
-        3rdparty/musl/libc-test/src/math/tgamma.c
-        3rdparty/musl/libc-test/src/math/y0.c
-        3rdparty/musl/libc-test/src/math/y0f.c
-        3rdparty/musl/libc-test/src/math/ynf.c
-        3rdparty/musl/libc-test/src/regression/daemon-failure.c
-        3rdparty/musl/libc-test/src/regression/dn_expand-empty.c
-        3rdparty/musl/libc-test/src/regression/dn_expand-ptr-0.c
-        3rdparty/musl/libc-test/src/regression/execle-env.c
-        3rdparty/musl/libc-test/src/regression/fflush-exit.c
-        3rdparty/musl/libc-test/src/regression/fgetwc-buffering.c   # missing support for pipe
-        3rdparty/musl/libc-test/src/regression/flockfile-list.c     # missing support for unmap
-        3rdparty/musl/libc-test/src/regression/ftello-unflushed-append.c
-        3rdparty/musl/libc-test/src/regression/getpwnam_r-crash.c
-        3rdparty/musl/libc-test/src/regression/getpwnam_r-errno.c
-        3rdparty/musl/libc-test/src/regression/malloc-brk-fail.c
-        3rdparty/musl/libc-test/src/regression/malloc-oom.c
-        3rdparty/musl/libc-test/src/regression/pthread_atfork-errno-clobber.c
-        3rdparty/musl/libc-test/src/regression/pthread_cancel-sem_wait.c
-        3rdparty/musl/libc-test/src/regression/pthread_condattr_setclock.c
-        3rdparty/musl/libc-test/src/regression/pthread_cond-smasher.c
-        3rdparty/musl/libc-test/src/regression/pthread_cond_wait-cancel_ignored.c
-        3rdparty/musl/libc-test/src/regression/pthread_create-oom.c
-        3rdparty/musl/libc-test/src/regression/pthread_exit-cancel.c
-        3rdparty/musl/libc-test/src/regression/pthread_exit-dtor.c
-        3rdparty/musl/libc-test/src/regression/pthread_once-deadlock.c
-        3rdparty/musl/libc-test/src/regression/pthread-robust-detach.c
-        3rdparty/musl/libc-test/src/regression/pthread_rwlock-ebusy.c
-        3rdparty/musl/libc-test/src/regression/raise-race.c
-        3rdparty/musl/libc-test/src/regression/regex-escaped-high-byte.c
-        3rdparty/musl/libc-test/src/regression/rewind-clear-error.c
-        3rdparty/musl/libc-test/src/regression/rlimit-open-files.c
-        3rdparty/musl/libc-test/src/regression/setenv-oom.c
-        3rdparty/musl/libc-test/src/regression/sigaltstack.c
-        3rdparty/musl/libc-test/src/regression/sigprocmask-internal.c
-        3rdparty/musl/libc-test/src/regression/sigreturn.c
-        3rdparty/musl/libc-test/src/regression/statvfs.c
-        3rdparty/musl/libc-test/src/regression/syscall-sign-extend.c
-        3rdparty/musl/libc-test/src/regression/tls_get_new-dtv.c
-        3rdparty/musl/libc-test/src/regression/uselocale-0.c
-    )
-endif()
+  list(
+    APPEND
+    LIBC_TESTS
+    3rdparty/musl/libc-test/src/common/runtest.c
+    3rdparty/musl/libc-test/src/functional/crypt.c
+    3rdparty/musl/libc-test/src/functional/dlopen.c
+    3rdparty/musl/libc-test/src/functional/fcntl.c
+    3rdparty/musl/libc-test/src/functional/fscanf.c # uses pipe
+    3rdparty/musl/libc-test/src/functional/ipc_msg.c
+    3rdparty/musl/libc-test/src/functional/ipc_sem.c
+    3rdparty/musl/libc-test/src/functional/ipc_shm.c
+    3rdparty/musl/libc-test/src/functional/mbc.c
+    3rdparty/musl/libc-test/src/functional/popen.c
+    3rdparty/musl/libc-test/src/functional/pthread_cancel.c
+    3rdparty/musl/libc-test/src/functional/pthread_cancel-points.c
+    3rdparty/musl/libc-test/src/functional/pthread_cond.c
+    3rdparty/musl/libc-test/src/functional/pthread_mutex.c
+    3rdparty/musl/libc-test/src/functional/pthread_robust.c
+    3rdparty/musl/libc-test/src/functional/pthread_tsd.c
+    # sscanf_long Runs out of memory on Windows and Linux CI
+    3rdparty/musl/libc-test/src/functional/sscanf_long.c
+    3rdparty/musl/libc-test/src/functional/search_hsearch.c
+    3rdparty/musl/libc-test/src/functional/sem_init.c
+    3rdparty/musl/libc-test/src/functional/sem_open.c
+    3rdparty/musl/libc-test/src/functional/setjmp.c
+    3rdparty/musl/libc-test/src/functional/spawn.c # uses pipe
+    3rdparty/musl/libc-test/src/functional/stat.c
+    3rdparty/musl/libc-test/src/functional/strftime.c
+    3rdparty/musl/libc-test/src/functional/strptime.c
+    3rdparty/musl/libc-test/src/functional/swprintf.c
+    3rdparty/musl/libc-test/src/functional/tls_align_dlopen.c
+    3rdparty/musl/libc-test/src/functional/tls_init.c
+    3rdparty/musl/libc-test/src/functional/tls_init_dlopen.c
+    3rdparty/musl/libc-test/src/functional/tls_local_exec.c
+    3rdparty/musl/libc-test/src/functional/vfork.c # uses fork, execv
+    3rdparty/musl/libc-test/src/math/fmal.c
+    3rdparty/musl/libc-test/src/math/jnf.c
+    3rdparty/musl/libc-test/src/math/tgamma.c
+    3rdparty/musl/libc-test/src/math/y0.c
+    3rdparty/musl/libc-test/src/math/y0f.c
+    3rdparty/musl/libc-test/src/math/ynf.c
+    3rdparty/musl/libc-test/src/regression/daemon-failure.c
+    3rdparty/musl/libc-test/src/regression/dn_expand-empty.c
+    3rdparty/musl/libc-test/src/regression/dn_expand-ptr-0.c
+    3rdparty/musl/libc-test/src/regression/execle-env.c
+    3rdparty/musl/libc-test/src/regression/fflush-exit.c
+    3rdparty/musl/libc-test/src/regression/fgetwc-buffering.c # missing support for pipe
+    3rdparty/musl/libc-test/src/regression/flockfile-list.c # missing support for unmap
+    3rdparty/musl/libc-test/src/regression/ftello-unflushed-append.c
+    3rdparty/musl/libc-test/src/regression/getpwnam_r-crash.c
+    3rdparty/musl/libc-test/src/regression/getpwnam_r-errno.c
+    3rdparty/musl/libc-test/src/regression/malloc-brk-fail.c
+    3rdparty/musl/libc-test/src/regression/malloc-oom.c
+    3rdparty/musl/libc-test/src/regression/pthread_atfork-errno-clobber.c
+    3rdparty/musl/libc-test/src/regression/pthread_cancel-sem_wait.c
+    3rdparty/musl/libc-test/src/regression/pthread_condattr_setclock.c
+    3rdparty/musl/libc-test/src/regression/pthread_cond-smasher.c
+    3rdparty/musl/libc-test/src/regression/pthread_cond_wait-cancel_ignored.c
+    3rdparty/musl/libc-test/src/regression/pthread_create-oom.c
+    3rdparty/musl/libc-test/src/regression/pthread_exit-cancel.c
+    3rdparty/musl/libc-test/src/regression/pthread_exit-dtor.c
+    3rdparty/musl/libc-test/src/regression/pthread_once-deadlock.c
+    3rdparty/musl/libc-test/src/regression/pthread-robust-detach.c
+    3rdparty/musl/libc-test/src/regression/pthread_rwlock-ebusy.c
+    3rdparty/musl/libc-test/src/regression/raise-race.c
+    3rdparty/musl/libc-test/src/regression/regex-escaped-high-byte.c
+    3rdparty/musl/libc-test/src/regression/rewind-clear-error.c
+    3rdparty/musl/libc-test/src/regression/rlimit-open-files.c
+    3rdparty/musl/libc-test/src/regression/setenv-oom.c
+    3rdparty/musl/libc-test/src/regression/sigaltstack.c
+    3rdparty/musl/libc-test/src/regression/sigprocmask-internal.c
+    3rdparty/musl/libc-test/src/regression/sigreturn.c
+    3rdparty/musl/libc-test/src/regression/statvfs.c
+    3rdparty/musl/libc-test/src/regression/syscall-sign-extend.c
+    3rdparty/musl/libc-test/src/regression/tls_get_new-dtv.c
+    3rdparty/musl/libc-test/src/regression/uselocale-0.c)
+endif ()

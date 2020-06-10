@@ -77,7 +77,7 @@ int main(int argc, const char* argv[])
     /* Call enc_set_tsd */
     {
         int ret_val = -1;
-        result = enc_set_tsd(enclave, &ret_val, strdup("TSD-DATA"));
+        result = enc_set_tsd(enclave, &ret_val, _strdup("TSD-DATA"));
         OE_TEST(OE_OK == result);
         OE_TEST(0 == ret_val);
     }

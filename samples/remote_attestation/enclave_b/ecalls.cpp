@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 #include <common/dispatcher.h>
 #include <common/remoteattestation_t.h>
+#include <enclave_a_pubkey.h>
 #include <openenclave/enclave.h>
-#include "enclave_a_pubkey.h"
 
 // For this purpose of this example: demonstrating how to do remote attestation
 // g_enclave_secret_data is hardcoded as part of the enclave. In this sample,

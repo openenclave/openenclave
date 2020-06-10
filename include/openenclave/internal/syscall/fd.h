@@ -54,6 +54,11 @@ typedef struct _oe_file_ops
 
     oe_off_t (*lseek)(oe_fd_t* file, oe_off_t offset, int whence);
 
+    ssize_t (*pread)(oe_fd_t* desc, void* buf, size_t count, oe_off_t offset);
+
+    ssize_t (
+        *pwrite)(oe_fd_t* desc, const void* buf, size_t count, oe_off_t offset);
+
     int (*getdents64)(oe_fd_t* file, struct oe_dirent* dirp, uint32_t count);
 } oe_file_ops_t;
 
@@ -148,6 +153,8 @@ typedef struct _oe_epoll_ops
         struct oe_epoll_event* events,
         int maxevents,
         int timeout);
+
+    void (*on_close)(oe_fd_t* epoll, int fd);
 } oe_epoll_ops_t;
 
 struct _oe_fd

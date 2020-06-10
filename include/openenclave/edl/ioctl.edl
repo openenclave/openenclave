@@ -1,0 +1,29 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** ioctl.edl:
+**
+**     This file declares OCALLs needed by the enclave to implement functions in
+**     Linux ioctl.h.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    include "openenclave/bits/edl/syscall_types.h"
+
+    untrusted
+    {
+        int oe_syscall_ioctl_ocall(
+            oe_host_fd_t fd,
+            uint64_t request,
+            uint64_t arg,
+            uint64_t argsize,
+            [in,out,size=argsize] void* argout)
+            propagate_errno;
+    };
+};

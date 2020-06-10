@@ -39,7 +39,7 @@ int secure_str_patching(const char* src, char* dst, size_t dst_length)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    256,  /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    256,  /* NumStackPages */
+    4);   /* NumTCS */

@@ -2,6 +2,11 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/attestation.edl" import *;
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public int get_target_info([out] uint8_t** target_info_buffer, [out] size_t* target_info_size);
 

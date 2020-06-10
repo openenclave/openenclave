@@ -5,10 +5,7 @@
 #define _TEST_RESOLVER_UTILS_H
 
 #if defined(_MSC_VER)
-typedef int64_t oe_socklen_t;
-#include <openenclave/corelibc/bits/addrinfo.h>
-#define __inline__ __inline
-#define addrinfo __OE_ADDRINFO
+#include <winsock2.h>
 #else
 #include <netdb.h>
 #include <sys/socket.h>
@@ -16,7 +13,7 @@ typedef int64_t oe_socklen_t;
 #include <string.h>
 #include <sys/types.h>
 
-static __inline__ int addrinfo_compare(struct addrinfo* p, struct addrinfo* q)
+OE_INLINE int addrinfo_compare(struct addrinfo* p, struct addrinfo* q)
 {
     if (!p || !q)
         return -1;
@@ -69,11 +66,11 @@ static __inline__ int addrinfo_compare(struct addrinfo* p, struct addrinfo* q)
     return 0;
 }
 
-static __inline__ void addrinfo_dump(struct addrinfo* ai)
+OE_INLINE void addrinfo_dump(struct oe_addrinfo* ai)
 {
     printf("=== dump_addrinfo()\n");
 
-    for (struct addrinfo* p = ai; p; p = p->ai_next)
+    for (struct oe_addrinfo* p = ai; p; p = p->ai_next)
     {
         printf("ai_flags=%d\n", p->ai_flags);
         printf("ai_family=%d\n", p->ai_family);

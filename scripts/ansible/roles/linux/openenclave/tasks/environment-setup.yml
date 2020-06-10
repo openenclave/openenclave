@@ -12,9 +12,6 @@
 - name: Install distribution packages
   include_tasks: "{{ ansible_distribution | lower }}/packages-install.yml"
 
-- name: Install esy
-  include_tasks: esy-setup.yml
-
 - name: Setup lvi dependencies
   include_tasks: "{{ ansible_distribution | lower }}/lvi-setup.yml"
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'

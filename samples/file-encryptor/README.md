@@ -152,3 +152,13 @@ cd file-encryptor
 make build
 make run
 ```
+
+#### Note
+
+Fileencryptor sample can run under OE simulation mode.
+
+To run the sample in simulation mode from the command like, use the following:
+
+```bash
+./host/file-encryptor_host ./enclave/enclave.signed --simulate
+```

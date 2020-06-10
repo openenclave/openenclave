@@ -13,10 +13,10 @@ int test(void)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* 1083bbac-751e-4d26-ada6-c254bbfbe653 */           \
@@ -30,6 +30,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     1 * 1024 * 1024,
     12 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "Create Errors test")

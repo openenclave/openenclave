@@ -2,9 +2,8 @@
 
 ## Platform requirements
 
-- Ubuntu 16.04-LTS 64-bits
-- Ubuntu 18.04-LTS 64-bits
-- Red Hat Enterprise Linux 8 64-bits
+- Ubuntu 16.04-LTS 64-bits or Ubuntu 18.04-LTS 64-bits
+- For RHEL8 support, please see [ExperimentalSupportRHEL8.md](ExperimentalSupportRHEL8.md).
 - SGX1 capable system. Most likely this will be an Intel SkyLake or Intel KabyLake system
 
 ## Clone Open Enclave SDK repo from GitHub
@@ -12,7 +11,7 @@
 Use the following command to download the source code (make sure `git` is installed before doing this):
 
 ```bash
-git clone https://github.com/openenclave/openenclave.git
+git clone --recursive https://github.com/openenclave/openenclave.git
 ```
 
 This creates a source tree under the directory called openenclave.

@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
 #include <stdio.h>
@@ -137,10 +137,15 @@ void enclave_test_verify_report_with_collaterals()
     test_verify_report_with_collaterals();
 }
 
+void enclave_test_get_signer_id_from_public_key()
+{
+    test_get_signer_id_from_public_key();
+}
+
 OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

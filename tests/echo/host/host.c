@@ -11,13 +11,19 @@
 #include "../../../host/strings.h"
 #include "echo_u.h"
 
-int host_echo(char* in, char* out, char* str1, char* str2, char str3[100])
+int host_echo(
+    char* in,
+    char* out,
+    char* str1,
+    char* str2,
+    char* str3,
+    int out_length)
 {
     OE_TEST(strcmp(str1, "oe_host_strdup1") == 0);
     OE_TEST(strcmp(str2, "oe_host_strdup2") == 0);
     OE_TEST(strcmp(str3, "oe_host_strdup3") == 0);
 
-    strcpy(out, in);
+    strcpy_s(out, out_length, in);
 
     return 0;
 }

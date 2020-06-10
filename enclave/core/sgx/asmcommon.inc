@@ -33,11 +33,13 @@
     mov %r15, %rsi
 
     // Zero out GPRs.
+    // Retain r11 since it is used as a reference to the td structure.
+    // The exit and enter routines are responsible for clearing r11
+    // prior to returning.
     xor %rdx, %rdx
     xor %r8,  %r8
     xor %r9,  %r9
     xor %r10, %r10
-    xor %r11, %r11
     xor %r12, %r12
     xor %r13, %r13
     xor %r14, %r14

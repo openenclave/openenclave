@@ -2,11 +2,19 @@
 # Licensed under the MIT License.
 
 ---
-intel_sgx1_driver_url: "https://download.01.org/intel-sgx/sgx-linux/2.8/distro/rhel8.0-server/sgx_linux_x64_driver_2.6.0_51c4821.bin"
-intel_sgx_rpm_repo_tgz_url: "https://download.01.org/intel-sgx/sgx-linux/2.8/distro/rhel8.0-server/sgx_rpm_local_repo.tgz"
+intel_sgx_w_flc_driver_url: "https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/rhel8.0-Server/sgx_linux_x64_driver_1.33.bin"
+intel_sgx1_driver_url: "https://download.01.org/intel-sgx/sgx-linux/2.9.1/distro/rhel8.0-server/sgx_linux_x64_driver_2.6.0_95eaa6f.bin"
+intel_sgx_rpm_repo_tgz_url: "https://download.01.org/intel-sgx/sgx-linux/2.9.1/distro/rhel8.0-server/sgx_rpm_local_repo.tgz"
 intel_sgx_package_dependencies:
   - "kernel-devel-uname-r == {{ ansible_kernel }}"
   - "elfutils-libelf-devel"
   - "openssl-devel"
   - "libcurl-devel"
   - "protobuf-devel"
+  - "dkms"
+
+intel_dcap_packages:
+  - "https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/rhel8.0-Server/libsgx-ae-qve-1.6.100.2-1.el8.x86_64.rpm"
+  - "https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/rhel8.0-Server/libsgx-dcap-ql-1.6.100.2-1.el8.x86_64.rpm"
+  - "https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/rhel8.0-Server/libsgx-dcap-ql-devel-1.6.100.2-1.el8.x86_64.rpm"
+  - "https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/rhel8.0-Server/libsgx-urts-2.9.101.2-1.el8.x86_64.rpm"

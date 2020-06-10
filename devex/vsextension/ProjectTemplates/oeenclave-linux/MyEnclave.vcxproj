@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{$guid1$}</ProjectGuid>
+    <Keyword>Linux</Keyword>
+    <RootNamespace>$projectname$</RootNamespace>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <ApplicationType>Linux</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+    <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
+    <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
+    <ProjectName>$projectname$</ProjectName>
+    <OEType>Enclave</OEType>
+    <OETADevKitPath>$OETADevKitPath$</OETADevKitPath>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <GenerateManifest>false</GenerateManifest>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(NoInherit)</IncludePath>
+    <LibraryPath>$(NoInherit)</LibraryPath>
+    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteLdCommmandTimeout />
+    <TargetExt />
+    <TargetName>$(ProjectName)</TargetName>
+    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <GenerateManifest>false</GenerateManifest>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(NoInherit)</IncludePath>
+    <LibraryPath>$(NoInherit)</LibraryPath>
+    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteLdCommmandTimeout />
+    <TargetExt />
+    <TargetName>$(ProjectName)</TargetName>
+    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <GenerateManifest>false</GenerateManifest>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(NoInherit)</IncludePath>
+    <LibraryPath>$(NoInherit)</LibraryPath>
+    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteLdCommmandTimeout />
+    <TargetExt />
+    <TargetName>$(ProjectName)</TargetName>
+    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <GenerateManifest>false</GenerateManifest>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(NoInherit)</IncludePath>
+    <LibraryPath>$(NoInherit)</LibraryPath>
+    <RemoteCCompileToolExe>clang-7</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang-7</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang-7</RemoteLdToolExe>
+    <RemoteLdCommmandTimeout />
+    <TargetExt />
+    <TargetName>$(ProjectName)</TargetName>
+    <RemoteTargetPath>$(RemoteOutDir)/$(TargetName)</RemoteTargetPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ShowProgress>false</ShowProgress>
+      <Version>false</Version>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="$projectname$_ecalls.c" />
+    <ClCompile Include="$projectname$_t.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$projectname$_args.h" />
+    <ClInclude Include="$projectname$_t.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <EdlItem Include="$projectname$.edl">
+    </EdlItem>
+    <None Include="$projectname$.Debug.conf" />
+    <None Include="$projectname$.Release.conf" />
+    <None Include="makekey.sh">
+      <FileType>Text</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">makekey.sh</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating signing key</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">private.pem;public.pem;%(Outputs)</Outputs>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\open-enclave-cross.0.8.1-c3b6262c-3\build\native\open-enclave-cross.targets" Condition="Exists('..\packages\open-enclave-cross.0.8.1-c3b6262c-3\build\native\open-enclave-cross.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\open-enclave-cross.0.8.1-c3b6262c-3\build\native\open-enclave-cross.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\open-enclave-cross.0.8.1-c3b6262c-3\build\native\open-enclave-cross.targets'))" />
+  </Target>
+</Project>

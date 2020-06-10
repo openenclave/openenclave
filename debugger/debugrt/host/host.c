@@ -47,13 +47,26 @@ static bool raise_debugger_events()
         {
             // If specified, override oe_debugger_contract_version from the
             // environment.
-            char* version = getenv("OE_DEBUGGER_CONTRACT_VERSION");
-            if (version != NULL)
+            char* version;
+            size_t getenv_length;
+            getenv_s(&getenv_length, NULL, 0, "OE_DEBUGGER_CONTRACT_VERSION");
+
+            if (getenv_length > 0)
             {
-                int v = 0;
-                if (sscanf(version, "%d", &v) == 1)
+                version = (char*)malloc(sizeof(char) * getenv_length);
+                getenv_s(
+                    &getenv_length,
+                    version,
+                    sizeof(char) * getenv_length,
+                    "OE_DEBUGGER_CONTRACT_VERSION");
+
+                if (version != NULL)
                 {
-                    oe_debugger_contract_version = (uint32_t)v;
+                    int v = 0;
+                    if (sscanf_s(version, "%d", &v) == 1)
+                    {
+                        oe_debugger_contract_version = (uint32_t)v;
+                    }
                 }
             }
 

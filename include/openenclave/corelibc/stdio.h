@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/corelibc/bits/stdfile.h>
 #include <openenclave/corelibc/stdarg.h>
 #include <openenclave/corelibc/stdint.h>
 #include <openenclave/internal/syscall/unistd.h>
@@ -19,14 +20,6 @@ OE_EXTERNC_BEGIN
 **
 **==============================================================================
 */
-
-#define OE_BUFSIZ 8192
-#define OE_EOF (-1)
-
-typedef struct _OE_IO_FILE OE_FILE;
-extern OE_FILE* const oe_stdin;
-extern OE_FILE* const oe_stdout;
-extern OE_FILE* const oe_stderr;
 
 int oe_vsnprintf(char* str, size_t size, const char* format, oe_va_list ap);
 
@@ -105,7 +98,6 @@ OE_FILE* oe_fdopen(int fd, const char* mode);
 
 #if defined(OE_NEED_STDC_NAMES)
 
-#include <openenclave/corelibc/bits/stdfile.h>
 #define BUFSIZ OE_BUFSIZ
 #define EOF (-1)
 
@@ -136,7 +128,7 @@ OE_INLINE int sprintf(char* str, const char* format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    return oe_vsnprintf(str, SIZE_MAX, format, ap);
+    return oe_vsnprintf(str, OE_SIZE_MAX, format, ap);
     va_end(ap);
 }
 
@@ -174,8 +166,6 @@ OE_INLINE int rename(const char* oldpath, const char* newpath)
 {
     return oe_rename(oldpath, newpath);
 }
-
-typedef OE_FILE FILE;
 
 OE_INLINE FILE* fopen(const char* path, const char* mode)
 {

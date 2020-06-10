@@ -2,7 +2,8 @@
 
 ## Platform requirements
 
-- Ubuntu 16.04-LTS 64-bits
+- Ubuntu 16.04-LTS 64-bits or Ubuntu 18.04-LTS 64-bits.
+- For RHEL8 support, please see [ExperimentalSupportRHEL8.md](ExperimentalSupportRHEL8.md).
 - SGX1 capable system with Flexible Launch Control support. Most likely this will be an Intel Coffeelake system.
 
 ## Clone Open Enclave SDK repo from GitHub
@@ -10,7 +11,7 @@
 Use the following command to download the source code.
 
 ```bash
-git clone https://github.com/openenclave/openenclave.git
+git clone --recursive https://github.com/openenclave/openenclave.git
 ```
 
 This creates a source tree under the directory called openenclave.
@@ -38,6 +39,8 @@ If you are not running in an ACC VM, you should instead run:
 ```bash
 ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
+
+To learn more about setting up Open Enclave SGX on Linux in a Non-Azure Confidential Computing machine, read the document [Configure OE SDK SGX on Linux in non-ACC Machines](/docs/GettingStartedDocs/Contributors//NonAccMachineSGXLinuxGettingStarted.md).
 
 To support LVI mitigation, the command creates
 `/usr/local/lvi-mitigation/bin` that includes the dependencies.

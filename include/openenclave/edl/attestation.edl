@@ -1,0 +1,23 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** attestation.edl:
+**
+**     This file declares internal ECALLs used by liboehost/liboecore for
+**     gathering/verifying attestion information from the enclave.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    trusted
+    {
+        public oe_result_t oe_verify_report_ecall(
+            [in, size=report_size] const void* report,
+            size_t report_size);
+    };
+};

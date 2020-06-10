@@ -240,7 +240,7 @@ __attribute__((destructor)) void destructor(void)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    512,  /* HeapPageCount */
-    512,  /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    512,  /* NumHeapPages */
+    512,  /* NumStackPages */
+    2);   /* NumTCS */

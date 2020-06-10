@@ -16,11 +16,11 @@
 
 #include <openenclave/bits/asym_keys.h>
 #include "bits/defs.h"
+#include "bits/evidence.h"
 #include "bits/exception.h"
 #include "bits/fs.h"
 #include "bits/module.h"
 #include "bits/properties.h"
-#include "bits/report.h"
 #include "bits/result.h"
 #include "bits/types.h"
 

@@ -27,7 +27,7 @@ class oe_fd_file_system
   public:
     typedef int file_handle;
     typedef OE_DIR* dir_handle;
-    typedef struct oe_stat stat_type;
+    typedef struct oe_stat_t stat_type;
     typedef struct oe_dirent dirent_type;
 
     static constexpr file_handle invalid_file_handle = -1;
@@ -55,6 +55,20 @@ class oe_fd_file_system
     off_t lseek(file_handle file, off_t offset, int whence)
     {
         return oe_lseek(file, offset, whence);
+    }
+
+    ssize_t pread(file_handle file, void* buf, size_t count, off_t offset)
+    {
+        return oe_pread(file, buf, count, offset);
+    }
+
+    ssize_t pwrite(
+        file_handle file,
+        const void* buf,
+        size_t count,
+        off_t offset)
+    {
+        return oe_pwrite(file, buf, count, offset);
     }
 
     int close(file_handle file)
@@ -107,7 +121,7 @@ class oe_fd_file_system
         return oe_rmdir(pathname);
     }
 
-    int stat(const char* pathname, struct oe_stat* buf)
+    int stat(const char* pathname, struct oe_stat_t* buf)
     {
         return oe_stat(pathname, buf);
     }
@@ -158,7 +172,7 @@ class fd_file_system
   public:
     typedef int file_handle;
     typedef DIR* dir_handle;
-    typedef struct oe_stat stat_type;
+    typedef struct oe_stat_t stat_type;
     typedef struct dirent dirent_type;
 
     static constexpr file_handle invalid_file_handle = -1;
@@ -186,6 +200,20 @@ class fd_file_system
     off_t lseek(file_handle file, off_t offset, int whence)
     {
         return ::lseek(file, offset, whence);
+    }
+
+    ssize_t pread(file_handle file, void* buf, size_t count, off_t offset)
+    {
+        return ::pread(file, buf, count, offset);
+    }
+
+    ssize_t pwrite(
+        file_handle file,
+        const void* buf,
+        size_t count,
+        off_t offset)
+    {
+        return ::pwrite(file, buf, count, offset);
     }
 
     int close(file_handle file)
@@ -238,7 +266,7 @@ class fd_file_system
         return ::rmdir(pathname);
     }
 
-    int stat(const char* pathname, struct oe_stat* buf)
+    int stat(const char* pathname, struct oe_stat_t* buf)
     {
         return ::stat(pathname, (struct stat*)buf);
     }
@@ -422,6 +450,32 @@ class stream_file_system
         ret = ::ftell(file);
 
     done:
+        return ret;
+    }
+
+    ssize_t pread(file_handle file, void* buf, size_t count, off_t offset)
+    {
+        const long previous_offset = ::ftell(file);
+        if (previous_offset < 0 || ::fseek(file, offset, SEEK_SET) != 0)
+            return -1;
+
+        const ssize_t ret = read(file, buf, count);
+        ::fseek(file, previous_offset, SEEK_SET);
+        return ret;
+    }
+
+    ssize_t pwrite(
+        file_handle file,
+        const void* buf,
+        size_t count,
+        off_t offset)
+    {
+        const long previous_offset = ::ftell(file);
+        if (previous_offset < 0 || ::fseek(file, offset, SEEK_SET) != 0)
+            return -1;
+
+        const ssize_t ret = write(file, buf, count);
+        ::fseek(file, previous_offset, SEEK_SET);
         return ret;
     }
 

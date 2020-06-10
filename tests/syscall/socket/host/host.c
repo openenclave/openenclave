@@ -27,7 +27,7 @@ void* enclave_server_thread(void* arg)
     int retval = 0;
     oe_result_t r;
     const uint32_t flags = oe_get_create_flags();
-    const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
+    const oe_enclave_type_t type = OE_ENCLAVE_TYPE_AUTO;
 
     r = oe_create_socket_test_enclave(arg, type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
@@ -166,7 +166,7 @@ static void _run_host_server_test(const char* path)
     char test_data_rtn[1024] = {0};
     ssize_t test_data_len = 1024;
     const uint32_t flags = oe_get_create_flags();
-    const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
+    const oe_enclave_type_t type = OE_ENCLAVE_TYPE_AUTO;
     thread_t thread;
 
     sock_startup();

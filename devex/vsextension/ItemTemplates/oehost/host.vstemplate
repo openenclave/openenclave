@@ -1,0 +1,23 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Item">
+  <TemplateData>
+    <DefaultName>enclave_host.c</DefaultName>
+    <Name>Open Enclave Host Code</Name>
+    <Description>A C file for creating an Open Enclave host</Description>
+    <ProjectType>VC</ProjectType>
+    <SortOrder>10</SortOrder>
+    <Icon>__TemplateIcon.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <References />
+    <ProjectItem SubType="" TargetFileName="$fileinputname$.c" ReplaceParameters="true">host.c</ProjectItem>
+  </TemplateContent>
+  <WizardExtension>
+    <Assembly>OpenEnclaveSDK, Version=1.0.0.0, Culture=Neutral, PublicKeyToken=6089df5bbfa28701</Assembly>
+    <FullClassName>OpenEnclaveSDK.WizardImplementation</FullClassName>
+  </WizardExtension>
+  <WizardData>
+    <packages repository="extension" repositoryId="OpenEnclaveVisualStudioExtension-1">
+      <package id="open-enclave-cross" version="0.8.1-c3b6262c-3" />
+    </packages>
+  </WizardData>
+</VSTemplate>

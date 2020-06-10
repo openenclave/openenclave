@@ -6,6 +6,7 @@
 
 #ifndef __ASSEMBLER__
 #include <openenclave/enclave.h>
+#include <openenclave/internal/sgx/td.h>
 #endif
 
 #define ENCLU_EGETKEY 1
@@ -15,6 +16,7 @@
 #define PAGE_SIZE 4096
 #define STATIC_STACK_SIZE 8 * 100
 #define OE_WORD_SIZE 8
+#define TD_FROM_TCS (5 * PAGE_SIZE)
 
 #define CODE_ERET 0x200000000
 
@@ -23,7 +25,7 @@
 #define OE_ARG_FLAG_GS 0x0001
 #endif
 
-/* Offsets into td_t structure */
+/* Offsets into oe_sgx_td_t structure */
 #define td_self_addr 0
 #define td_last_sp 8
 #define td_magic 168
@@ -49,7 +51,7 @@
 void oe_exit_enclave(uint64_t arg1, uint64_t arg2) OE_NO_RETURN;
 
 /* This is the actual implementation of eexit */
-void oe_asm_exit(uint64_t arg1, uint64_t arg2) OE_NO_RETURN;
+void oe_asm_exit(uint64_t arg1, uint64_t arg2, oe_sgx_td_t* td) OE_NO_RETURN;
 #endif
 
 #ifndef __ASSEMBLER__

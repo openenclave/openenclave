@@ -15,6 +15,11 @@ license=("Copyright (c) Open Enclave SDK contributors." "Licensed under the MIT 
 
 root=$(git rev-parse --show-toplevel)
 
+# If we are inside mingw* environment, then we update the path to proper format
+if [[ $(uname) == MINGW* ]] ; then
+      root=$(cygpath -u "${root}")
+fi
+
 ignore_res=()
 while IFS= read -r i; do
       if [[ $i =~ ^# ]] || [[ -z $i ]]; then # ignore comments

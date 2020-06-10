@@ -102,7 +102,7 @@ void TestVerifyTCBInfo(
             (const char*)&tcbInfo[0],
             platform_tcb_level,
             parsed_info) == OE_OK);
-    OE_TEST(ecall_result == expected);
+    OE_TEST_CODE(ecall_result, expected);
     AssertParsedValues(*parsed_info, version);
 
     oe_datetime_t nextUpdate = {2019, 6, 6, 10, 12, 17};
@@ -270,17 +270,19 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
     oe_parsed_tcb_info_t parsed_info = {0};
 
     printf("TCB Info Version 2 tests:\n");
-    // ./data_v2/tcbInfo.json contains 5 tcb levels.
-    // The first level with pce svn = 6 is up to date.
-    // The second level with pce svn = 5 is OutOfDateConfigurationNeeded
-    // The third level with pce svn = 4 needs configuration.
-    // The fourth level with pce svn = 3 is out of date.
-    // The fifth level with pce svn = 2 is revoked.
+    // ./data_v2/tcbInfo.json contains 7 tcb levels.
+    // The first level with pce svn = 8 is up to date.
+    // The second level with pce svn = 7 is SWHardeningNeeded.
+    // The third level with pce svn = 6 is ConfigurationAndSWHardeningNeeded.
+    // The fourth level with pce svn = 5 is OutOfDateConfigurationNeeded
+    // The fifth level with pce svn = 4 needs configuration.
+    // The sixth level with pce svn = 3 is out of date.
+    // The seventh level with pce svn = 2 is revoked.
 
-    // Set platform pce svn to 8 and assert that
+    // Set platform pce svn to 9 and assert that
     // the determined status is up to date.
     platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    platform_tcb_level.pce_svn = 8;
+    platform_tcb_level.pce_svn = 9;
     TestVerifyTCBInfo(
         enclave,
         test_filename,
@@ -290,6 +292,37 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
         version);
     OE_TEST(platform_tcb_level.status.fields.up_to_date == 1);
     printf("UptoDate TCB Level determination test passed.\n");
+
+    // Set platform pce svn to 7 and assert that
+    // the determined status is SWHardeningNeeded.
+    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platform_tcb_level.pce_svn = 7;
+    TestVerifyTCBInfo(
+        enclave,
+        test_filename,
+        &platform_tcb_level,
+        &parsed_info,
+        OE_OK,
+        version);
+    OE_TEST(platform_tcb_level.status.fields.up_to_date == 1);
+    OE_TEST(platform_tcb_level.status.fields.sw_hardening_needed == 1);
+    printf("SWHardeningNeeded TCB Level determination test passed.\n");
+
+    // Set platform pce svn to 6 and assert that
+    // the determined status is ConfigurationAndSWHardeningNeeded.
+    platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platform_tcb_level.pce_svn = 6;
+    TestVerifyTCBInfo(
+        enclave,
+        test_filename,
+        &platform_tcb_level,
+        &parsed_info,
+        OE_TCB_LEVEL_INVALID,
+        version);
+    OE_TEST(platform_tcb_level.status.fields.configuration_needed == 1);
+    OE_TEST(platform_tcb_level.status.fields.sw_hardening_needed == 1);
+    printf("ConfigurationAndSWHardeningNeeded TCB Level determination test "
+           "passed.\n");
 
     // Set platform pce svn to 5 and assert that
     // the determined status is out of date configuration needed.
@@ -409,6 +442,8 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
         "./data_v2/tcbInfoNegativeIntegerOverflow.json",
         "./data_v2/tcbInfoNegativeIntegerWithSign.json",
         "./data_v2/tcbInfoNegativeFloat.json",
+        // TcbType != 0.
+        "./data_v2/tcbInfoNegativeTcbType.json",
     };
 
     for (size_t i = 0; i < sizeof(negative_files) / sizeof(negative_files[0]);
@@ -449,7 +484,7 @@ void TestVerifyTCBInfoV2_AdvisoryIDs(
     // Set platform pce svn to 8 and assert that
     // the determined status is up to date.
     platform_tcb_level.status.AsUINT32 = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    platform_tcb_level.pce_svn = 8;
+    platform_tcb_level.pce_svn = 9;
 
     // Contains nextUpdate field.
     memset(&parsed_info, 0, sizeof(parsed_info));

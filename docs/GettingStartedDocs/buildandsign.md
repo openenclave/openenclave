@@ -30,7 +30,7 @@ $(CC) -c $(CFLAGS) my_enclave.c -o my_enclave.o
 $(CC) -o my_enclave my_enclave.o $(LDFLAGS)
 ```
 
-You can also display in the shell what the options are with by runnin `pkg-config`
+You can also display in the shell what the options are by running `pkg-config`
 directly. For example, to see the host linker options when building C++ code with GCC:
 
 ```bash
@@ -38,12 +38,11 @@ pkg-config opt/openenclave/share/pkgconfig/oehost-g++.pc --libs
 ```
 ## Build options for using Open Enclave SDK with a CMake project
 If you have a CMake project and would like to bring in Open Enclave targets,
-please look at instructions available
-[here](https://github.com/openenclave/openenclave/blob/master/cmake/sdk_cmake_targets_readme.md).
+see the [Open Enclave SDK CMake Package instructions](https://github.com/openenclave/openenclave/blob/master/cmake/sdk_cmake_targets_readme.md).
 
-## Signing the Enclave
+## Signing an SGX Enclave
 
-Before the enclave can be run, the properties that define how the enclave should
+Before an SGX enclave can be run, the properties that define how the enclave should
 be loaded need to be specified for the enclave. These properties, along with the
 signing key, define the enclave identity that is used for attestation and sealing
 operations.
@@ -91,26 +90,26 @@ In addition, the following two properties are defined by the developer and map d
 Here is the example from helloworld.conf used in the helloworld sample:
 ```
 # Enclave settings:
+ProductID=1
+SecurityVersion=1
 Debug=1
 NumHeapPages=1024
 NumStackPages=1024
 NumTCS=1
-ProductID=1
-SecurityVersion=1
 ```
 
 As a convenience, you can also specify the enclave properties in code using the
-`OE_SET_ENCLAVE_SGX` macro. For example, the equivalent properties could be
-defined in any .cpp compiled into the enclave:
+`OE_SET_ENCLAVE_SGX` macro.  For example, the equivalent properties could be
+defined in any .c or .cpp file compiled into the enclave:
 
 ```c
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    1);   /* TCSCount */
+    1,    /* Debug */
+    1024, /* NumHeapPages: heap size in units of 4KB pages */
+    1024, /* NumStackPages: stack size, in units of 4KB pages */
+    1);   /* NumTCS */
 ```
 
 Specifying the enclave properties using the `OE_SET_ENCLAVE_SGX` also allows you
@@ -133,3 +132,50 @@ specify a `CONFFILE` that only changed that property:
 # Enclave settings:
 Debug=0
 ```
+
+## Signing an OP-TEE Enclave
+
+The `oesign` tool is currently SGX-only.  For OP-TEE enclaves, signing
+is instead performed by the `sign.py` script that comes with OP-TEE.
+The signing key
+and script, among other artifacts, are exported to a "TA Dev Kit" during
+OP-TEE's build process. The Open Enclave SDK takes a `OE_TA_DEV_KIT_DIR`
+CMake parameter at
+build time that specifies where to find the TA Dev Kit. This enables
+the `add_enclave` CMake function to locate sign.py and the TA signing key
+and apply them automatically to every TA built as part of the build process.
+
+There is currently no equivalent of a .conf file for OP-TEE, so all settings
+must be specified using the `OE_SET_ENCLAVE_OPTEE` macro:
+
+```c
+#define TA_UUID                                            \
+    { /* 126830b9-eb9f-412a-89a7-bcc8a517c12e */           \
+        0x126830b9, 0xeb9f, 0x412a,                        \
+        {                                                  \
+            0x89, 0xa7, 0xbc, 0xc8, 0xa5, 0x17, 0xc1, 0x2e \
+        }                                                  \
+    }
+
+OE_SET_ENCLAVE_OPTEE(
+    TA_UUID,               /* UUID */
+    4 * 1024 * 1024,       /* Heap size, in bytes */
+    4 * 1024,              /* Stack size, in bytes */
+    TA_FLAG_MULTI_SESSION, /* Flags */
+    "1.0.0",               /* Version */
+    "Sample enclave");     /* Description */
+```
+
+The flags property can contain any of the flags defined in the
+`include/user_ta_header.h` file in the TA Dev Kit:
+
+| Flag                        | Meaning                                     |
+| :-------------------------- | :------------------------------------------ |
+| TA_FLAG_SINGLE_INSTANCE     | all host apps use the same enclave instance |
+| TA_FLAG_MULTI_SESSION       | allow multiple sessions from host apps      |
+| TA_FLAG_INSTANCE_KEEP_ALIVE | keep enclave running after sessions end     |
+| TA_FLAG_SECURE_DATA_PATH    | accesses SDP memory                         |
+| TA_FLAG_CACHE_MAINTENANCE   | use cache flush syscall                     |
+
+For more details, see sections 2.1.6 and 4.5 of the
+[GlobalPlatform Internal Core API Specification v1.2.1](https://globalplatform.org/specs-library/tee-internal-core-api-specification-v1-2/).

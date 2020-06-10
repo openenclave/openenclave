@@ -5,6 +5,7 @@
 #define _OE_SYSCALL_SYS_STAT_H
 
 #include <openenclave/corelibc/bits/types.h>
+#include <openenclave/internal/bits/fcntl.h>
 #include <openenclave/internal/defs.h>
 
 OE_EXTERNC_BEGIN
@@ -45,9 +46,28 @@ OE_EXTERNC_BEGIN
 #define OE_S_IRWGRP (OE_S_IRGRP | OE_S_IWGRP)
 #define OE_S_IRWOTH (OE_S_IROTH | OE_S_IWOTH)
 
-#define __OE_STAT oe_stat
-#include <openenclave/internal/syscall/sys/bits/stat.h>
-#undef __OE_STAT
+OE_STATIC_ASSERT((sizeof(struct oe_stat_t) % 8) == 0);
+OE_STATIC_ASSERT(sizeof(struct oe_stat_t) == 120);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_dev) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_ino) == 8);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_nlink) == 16);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_mode) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_uid) == 28);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_gid) == 32);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_rdev) == 40);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_size) == 48);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_blksize) == 56);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_blocks) == 64);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_atim.tv_sec) == 72);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_atim.tv_nsec) == 80);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_mtim.tv_sec) == 88);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_mtim.tv_nsec) == 96);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_ctim.tv_sec) == 104);
+OE_STATIC_ASSERT(OE_OFFSETOF(struct oe_stat_t, st_ctim.tv_nsec) == 112);
+
+#define OE_R_OR 04
+#define OE_W_OR 02
+#define OE_X_OR 01
 
 #ifndef st_atime
 #define st_atime st_atim.tv_sec
@@ -61,9 +81,9 @@ OE_EXTERNC_BEGIN
 #define st_ctime st_ctim.tv_sec
 #endif
 
-int oe_stat(const char* pathname, struct oe_stat* buf);
+int oe_stat(const char* pathname, struct oe_stat_t* buf);
 
-int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat* buf);
+int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat_t* buf);
 
 int oe_mkdir(const char* pathname, oe_mode_t mode);
 

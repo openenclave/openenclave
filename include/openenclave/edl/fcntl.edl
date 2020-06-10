@@ -1,0 +1,179 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** fcntl.edl:
+**
+**     This file declares OCALLs needed by the enclave to implement the POSIX
+**     file APIs.
+**
+**==============================================================================
+*/
+
+enclave
+{
+
+    include "openenclave/corelibc/bits/types.h"
+    include "openenclave/bits/edl/syscall_types.h"
+
+    struct oe_dirent
+    {
+        uint64_t d_ino;
+        oe_off_t d_off;
+        uint16_t d_reclen;
+        uint8_t d_type;
+        char d_name[256]; // OE_NAME_MAX + 1 == 256. TODO: Math in EDL?
+    };
+
+    struct __st
+    {
+        time_t tv_sec;
+        suseconds_t tv_nsec;
+    };
+
+    struct oe_stat_t
+    {
+        oe_dev_t st_dev;
+        oe_ino_t st_ino;
+        oe_nlink_t st_nlink;
+        oe_mode_t st_mode;
+        oe_uid_t st_uid;
+        oe_gid_t st_gid;
+        uint32_t __st_pad0;
+        oe_dev_t st_rdev;
+        oe_off_t st_size;
+        oe_blksize_t st_blksize;
+        oe_blkcnt_t st_blocks;
+        struct __st st_atim;
+        struct __st st_mtim;
+        struct __st st_ctim;
+    };
+
+    untrusted
+    {
+        oe_host_fd_t oe_syscall_open_ocall(
+            [in, string] const char* pathname,
+            int flags,
+            oe_mode_t mode)
+            propagate_errno;
+
+        ssize_t oe_syscall_read_ocall(
+            oe_host_fd_t fd,
+            [out, size=count] void* buf,
+            size_t count)
+            propagate_errno;
+
+        ssize_t oe_syscall_write_ocall(
+            oe_host_fd_t fd,
+            [in, size=count] const void* buf,
+            size_t count)
+            propagate_errno;
+
+        ssize_t oe_syscall_readv_ocall(
+            oe_host_fd_t fd,
+            [in, out, size=iov_buf_size] void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        ssize_t oe_syscall_writev_ocall(
+            oe_host_fd_t fd,
+            [in, size=iov_buf_size] const void* iov_buf,
+            int iovcnt,
+            size_t iov_buf_size)
+            propagate_errno;
+
+        oe_off_t oe_syscall_lseek_ocall(
+            oe_host_fd_t fd,
+            oe_off_t offset,
+            int whence)
+            propagate_errno;
+
+        ssize_t oe_syscall_pread_ocall(
+            oe_host_fd_t fd,
+            [out, size=count] void* buf,
+            size_t count,
+            oe_off_t offset)
+            propagate_errno;
+
+        ssize_t oe_syscall_pwrite_ocall(
+            oe_host_fd_t fd,
+            [in, size=count] const void* buf,
+            size_t count,
+            oe_off_t offset)
+            propagate_errno;
+
+        int oe_syscall_close_ocall(
+            oe_host_fd_t fd)
+            propagate_errno;
+
+        oe_host_fd_t oe_syscall_dup_ocall(
+            oe_host_fd_t oldfd)
+            propagate_errno;
+
+        uint64_t oe_syscall_opendir_ocall(
+            [in, string] const char* name)
+            propagate_errno;
+
+        /* Returns 0 if entry found, 1 if none found, and -1 on error. */
+        int oe_syscall_readdir_ocall(
+            uint64_t dirp,
+            [out, count=1] struct oe_dirent* entry)
+            propagate_errno;
+
+        void oe_syscall_rewinddir_ocall(
+            uint64_t dirp);
+
+        int oe_syscall_closedir_ocall(
+            uint64_t dirp)
+            propagate_errno;
+
+        int oe_syscall_stat_ocall(
+            [in, string] const char* pathname,
+            [out, count=1] struct oe_stat_t* buf)
+            propagate_errno;
+
+        int oe_syscall_access_ocall(
+            [in, string] const char* pathname,
+            int mode)
+            propagate_errno;
+
+        int oe_syscall_link_ocall(
+            [in, string] const char* oldpath,
+            [in, string] const char* newpath)
+            propagate_errno;
+
+        int oe_syscall_unlink_ocall(
+            [in, string] const char* pathname)
+            propagate_errno;
+
+        int oe_syscall_rename_ocall(
+            [in, string] const char* oldpath,
+            [in, string] const char* newpath)
+            propagate_errno;
+
+        int oe_syscall_truncate_ocall(
+            [in, string] const char* path,
+            oe_off_t length)
+            propagate_errno;
+
+        int oe_syscall_mkdir_ocall(
+            [in, string] const char* pathname,
+            oe_mode_t mode)
+            propagate_errno;
+
+        int oe_syscall_rmdir_ocall(
+            [in, string] const char* pathname)
+            propagate_errno;
+
+        int oe_syscall_fcntl_ocall(
+            oe_host_fd_t fd,
+            int cmd,
+            uint64_t arg,
+            uint64_t argsize,
+            [in,out,size=argsize] void* argout)
+            propagate_errno;
+    };
+};

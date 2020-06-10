@@ -8,7 +8,9 @@
 
 OE_EXTERNC_BEGIN
 
-char* oe_win_path_to_posix(const char* path);
+#if defined(_WIN32)
+char* oe_win_path_to_posix(PCWSTR path);
+#endif
 
 OE_EXTERNC_END
 
