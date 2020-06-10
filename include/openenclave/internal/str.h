@@ -442,6 +442,7 @@ MEM_INLINE int uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
     int i;
     uint64_t uuid_parts[5];
     char* id_copy;
+    char* posn;
     const char* current_token;
 
     id_copy = _strdup(uuid_str);
@@ -457,11 +458,11 @@ MEM_INLINE int uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
         return -1;
 
     i = 5;
-    current_token = strtok_s(id_copy, "-");
+    current_token = strtok_s(id_copy, "-", &posn);
     while (current_token != NULL && i >= 0)
     {
         uuid_parts[--i] = strtoull(current_token, NULL, 16);
-        current_token = strtok_S(NULL, "-");
+        current_token = strtok_s(NULL, "-", &posn);
     }
 
     free(id_copy);
