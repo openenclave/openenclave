@@ -355,8 +355,8 @@ void _merge_config_file_options(
 
     if (options->kss)
     {
-        properties->config.isv_family_id = options->isv_family_id;
-        properties->config.isv_ext_product_id = options->isv_ext_product_id;
+        memcpy(properties->config.isv_family_id, options->isv_family_id, 16);
+        memcpy(properties->config.isv_ext_product_id, options->isv_ext_product_id, 16);
     }
 
     /* If NumHeapPages option is present */
@@ -448,8 +448,8 @@ int oesign(
                 engine_id,
                 engine_load_path,
                 key_id,
-                props.config.isvfamilyid,
-                props.config.isvextprodid,
+                props.config.isv_family_id,
+                props.config.isv_ext_product_id,
                 (sgx_sigstruct_t*)props.sigstruct),
             "oe_sgx_sign_enclave_from_engine() failed: result=%s (%#x)",
             oe_result_str(result),
@@ -473,8 +473,8 @@ int oesign(
                 props.config.security_version,
                 pem_data,
                 pem_size,
-                props.config.isvfamilyid,
-                props.config.isvextprodid,
+                props.config.isv_family_id,
+                props.config.isv_ext_product_id,
                 (sgx_sigstruct_t*)props.sigstruct),
             "oe_sgx_sign_enclave() failed: result=%s (%#x)",
             oe_result_str(result),
