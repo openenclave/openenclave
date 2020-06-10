@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <tee_client_api.h>
 #include "mem.h"
 
 #define STR_NPOS ((size_t)-1)
@@ -420,6 +421,53 @@ MEM_INLINE int str_split(str_t* str, const char* delim, str_t* lhs, str_t* rhs)
     /* Get right-hand-side */
     if (p != end)
         str_ncpy(rhs, p, (size_t)(end - p));
+
+    return 0;
+}
+
+MEM_INLINE int uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
+{
+    int i;
+    uint64_t uuid_parts[5];
+    char* id_copy;
+    const char* current_token;
+
+    id_copy = strdup(uuid_str);
+
+    /* Remove ".ta" extension, if one is present */
+    size_t len = strlen(id_copy);
+    if ((len > 3) && (strcmp(&id_copy[len - 3], ".ta") == 0))
+    {
+        id_copy[len - 3] = 0;
+    }
+
+    if (strlen(id_copy) != 36)
+        return -1;
+
+    i = 5;
+    current_token = strtok(id_copy, "-");
+    while (current_token != NULL && i >= 0)
+    {
+        uuid_parts[--i] = strtoull(current_token, NULL, 16);
+        current_token = strtok(NULL, "-");
+    }
+
+    free(id_copy);
+
+    if (i != 0)
+        return -1;
+
+    uuid->timeLow = (uint32_t)uuid_parts[4];
+    uuid->timeMid = (uint16_t)uuid_parts[3];
+    uuid->timeHiAndVersion = (uint16_t)uuid_parts[2];
+    uuid->clockSeqAndNode[0] = (uint8_t)(uuid_parts[1] >> (8 * 1));
+    uuid->clockSeqAndNode[1] = (uint8_t)(uuid_parts[1] >> (8 * 0));
+    uuid->clockSeqAndNode[2] = (uint8_t)(uuid_parts[0] >> (8 * 5));
+    uuid->clockSeqAndNode[3] = (uint8_t)(uuid_parts[0] >> (8 * 4));
+    uuid->clockSeqAndNode[4] = (uint8_t)(uuid_parts[0] >> (8 * 3));
+    uuid->clockSeqAndNode[5] = (uint8_t)(uuid_parts[0] >> (8 * 2));
+    uuid->clockSeqAndNode[6] = (uint8_t)(uuid_parts[0] >> (8 * 1));
+    uuid->clockSeqAndNode[7] = (uint8_t)(uuid_parts[0] >> (8 * 0));
 
     return 0;
 }

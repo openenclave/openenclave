@@ -1,10 +1,10 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#define __STDC_WANT_LIB_EXT1__ 1
 #include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <tee_client_api.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
@@ -24,8 +24,8 @@ typedef struct _config_file_options
     uint64_t num_tcs;
     uint16_t product_id;
     uint16_t security_version;
-    uint8_t *isv_family_id;
-    uint8_t *isv_ext_product_id;
+    oe_uuid_t isv_family_id;
+    oe_uuid_t isv_ext_product_id;
 } ConfigFileOptions;
 
 #define CONFIG_FILE_OPTIONS_INITIALIZER                                 \
@@ -178,49 +178,37 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
 
             options->security_version = n;
         }
-        else if (strcmp(str_ptr(&lhs), "IsvFamilyID_H") == 0)
+        else if (strcmp(str_ptr(&lhs), "IsvFamilyID") == 0)
         {
-            uint64_t n;
+            TEEC_UUID uuid id;
 
-            if (str_u64(&rhs, &n) != 0)
+            if (uuid_from_string(&rhs, &id) != 0)
             {
-                oe_err("%s(%zu): bad value for 'IsvFamilyID_H'", path, line);
+                oe_err(
+                    "%s(%zu): bad value for 'IsvFamilyID': %s",
+                    path,
+                    line,
+                    str_ptr(&rhs));
                 goto done;
             }
-            memcpy(options->isv_family_id, &n, 8);
+
+            memcpy(&options->isv_family_id, &id, 16);
         }
-        else if (strcmp(str_ptr(&lhs), "IsvFamilyID_L") == 0)
+        else if (strcmp(str_ptr(&lhs), "IsvExtProductID") == 0)
         {
-            uint64_t n;
+            TEEC_UUID id;
 
-            if (str_u64(&rhs, &n) != 0)
+            if (uuid_from_string(&rhs, &id) != 0)
             {
-                oe_err("%s(%zu): bad value for 'IsvFamilyID_H'", path, line);
+                oe_err(
+                    "%s(%zu): bad value for 'IsvExtProductID': %s",
+                    path,
+                    line,
+                    str_ptr(&rhs));
                 goto done;
             }
-            memcpy((uint8_t*)(options->isv_family_id + 8) , &n, 8);
-        }
-        else if (strcmp(str_ptr(&lhs), "IsvExtProductID_H") == 0)
-        {
-            uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0)
-            {
-                oe_err("%s(%zu): bad value for 'IsvExtProductID_H'", path, line);
-                goto done;
-            }
-            memcpy(options->isv_ext_product_id, &n, 8);
-        }
-        else if (strcmp(str_ptr(&lhs), "IsvExtProductID_L") == 0)
-        {
-            uint64_t n;
-
-            if (str_u64(&rhs, &n) != 0)
-            {
-                oe_err("%s(%zu): bad value for 'IsvExtProductID_L'", path, line);
-                goto done;
-            }
-            memcpy((uint8_t*)(options->isv_ext_product_id + 8), &n, 8);
+            memcpy(&options->isv_ext_product_id, &id, 16);
         }
         else
         {
@@ -343,10 +331,6 @@ void _merge_config_file_options(
     /* If ProductID option is present */
     if (options->product_id != OE_UINT16_MAX)
         properties->config.product_id = options->product_id;
-
-    /* If SecurityVersion option is present */
-    if (options->security_version != OE_UINT16_MAX)
-        properties->config.security_version = options->security_version;
 
     /* If SecurityVersion option is present */
     if (options->security_version != OE_UINT16_MAX)

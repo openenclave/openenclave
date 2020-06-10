@@ -107,6 +107,7 @@ static oe_result_t _get_exponent(
     const oe_rsa_public_key_t* rsa,
     uint8_t exponent[OE_EXPONENT_SIZE])
 {
+    static const uint8_t OE_SGX_SIGNING_EXPONENT[] = {3, 0, 0, 0};
     oe_result_t result = OE_UNEXPECTED;
     uint8_t buf[OE_EXPONENT_SIZE];
     size_t bufsize = sizeof(buf);
@@ -125,6 +126,10 @@ static oe_result_t _get_exponent(
         OE_EXPONENT_SIZE - bufsize,
         0,
         OE_EXPONENT_SIZE - bufsize));
+
+    /* Check that the exponent matches SGX requirement */
+    if (memcmp(OE_SGX_SIGNING_EXPONENT, exponent, OE_EXPONENT_SIZE) != 0)
+        OE_RAISE(OE_INVALID_SGX_SIGNING_KEY);
 
     result = OE_OK;
 
