@@ -1,4 +1,5 @@
-# Copyright (c) Open Enclave SDK contributors. Licensed under the MIT License.
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
 #
 # Top-level CMake file for the Open Enclave SDK
 #
@@ -23,20 +24,22 @@ endfunction ()
 file(STRINGS "VERSION" OE_VERSION_WITH_V)
 string(REGEX REPLACE "^v" "" OE_VERSION ${OE_VERSION_WITH_V})
 
-# Temporary fix to account for differences in expected version numbers between
-# Debian packages and NuGet packages.
+# Temporary fix to account for differences in expected version numbers
+# between Debian packages and NuGet packages.
 if (WIN32)
   string(REGEX REPLACE "~" "-" OE_VERSION ${OE_VERSION})
 endif ()
 
-# Select the assembler TODO: See #755: This should probably be removed
+# Select the assembler
+# TODO: See #755: This should probably be removed
 if (UNIX)
   set(OE_ASM ASM)
 elseif (WIN32)
   set(OE_ASM ASM_MASM)
 endif ()
 
-# Set compiler search order to prefer Clang This has to be done before `project`
+# Set compiler search order to prefer Clang
+# This has to be done before `project`
 # http://cmake.3232098.n2.nabble.com/Prefer-clang-over-gcc-td7597742.html
 set(CMAKE_C_COMPILER_NAMES clang-7 cc)
 set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
@@ -50,8 +53,8 @@ set(LVI_MITIGATION
 set(LVI_MITIGATION_BINDIR
     "None"
     CACHE STRING "Path to the LVI mitigation bindir.")
-# On Unix, configuring cmake to adopt the customized compilation toolchain for
-# LVI mitigation. Note that this has be done before `project`.
+# On Unix, configuring cmake to adopt the customized compilation toolchain for LVI mitigation.
+# Note that this has be done before `project`.
 if (UNIX AND LVI_MITIGATION MATCHES ControlFlow)
   if (${LVI_MITIGATION_BINDIR} MATCHES None)
     message(FATAL_ERROR "LVI_MITIGATION_BINDIR is not specified.")
@@ -86,8 +89,9 @@ if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
        DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks")
 endif ()
 
-# Generates `compile_commands.json` used by some developers. Only supported by
-# Makefile and Ninja generators, but is otherwise ignored.
+# Generates `compile_commands.json` used by some developers. Only
+# supported by Makefile and Ninja generators, but is otherwise
+# ignored.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Validate CMAKE_BUILD_TYPE
@@ -104,8 +108,8 @@ else ()
   set(BUILD_NUMBER "0")
 endif ()
 
-# Set the architecture. We do this before the compiler settings, since some of
-# them are arch specific.
+# Set the architecture. We do this before the compiler settings, since some
+# of them are arch specific.
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
   # TODO: Right now assume it's Intel+SGX for x86_64 processors
   set(OE_SGX 1)
@@ -158,9 +162,9 @@ else () # NOT OE_SGX
 endif ()
 
 if (WIN32)
-  # NOTE: On Windows we have found that we must use Git Bash, not the Bash from
-  # the Windows Subsystem for Linux. Hence this is explicitly searching only for
-  # Git Bash. See #1302 for more.
+  # NOTE: On Windows we have found that we must use Git Bash, not the
+  # Bash from the Windows Subsystem for Linux. Hence this is
+  # explicitly searching only for Git Bash. See #1302 for more.
   find_program(GIT git)
   get_filename_component(GIT_DIR ${GIT} DIRECTORY)
   find_program(
@@ -186,8 +190,8 @@ endif ()
 # See `cmake/enclave_cmake_wrappers.cmake` for wrapper functions.
 include(enclave_cmake_wrappers)
 
-# This is always included. maybe_build_using_clangw will be a noop if USE_CLANGW
-# is false.
+# This is always included.
+# maybe_build_using_clangw will be a noop if USE_CLANGW is false.
 include(maybe_build_using_clangw)
 
 # See `cmake/compiler_settings.cmake` for all compiler settings
@@ -205,8 +209,8 @@ option(
   "Take a build dependency on SGX DCAP, which requires FLC on target device to run."
   ON)
 
-# TODO: See #756: Fix this because it is incompatible with multi-configuration
-# generators
+# TODO: See #756: Fix this because it is incompatible with
+# multi-configuration generators
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG" AND NOT WIN32)
   # In non-win32 debug build, debug_malloc is on by default
   option(USE_DEBUG_MALLOC
@@ -351,7 +355,7 @@ endif ()
 install(FILES LICENSE THIRD_PARTY_NOTICES
         DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/licenses)
 
-# Configure all the CPACK settings. This must be last because CPack must be
-# aware of all the component information in order for it to create different
-# component based packages.
+# Configure all the CPACK settings. This must be last because
+# CPack must be aware of all the component information in order
+# for it to create different component based packages.
 include(cpack_settings)

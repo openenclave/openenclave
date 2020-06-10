@@ -56,8 +56,7 @@ if (BUILD_ENCLAVES)
 
     set(LVI_MITIGATION_FLAGS_CLANG ${ENCLAVE_CFLAGS_CLANG_LIST}
                                    ${LVI_MITIGATION_FLAGS} -no-integrated-as)
-    list(JOIN LVI_MITIGATION_FLAGS_CLANG " "
-         ENCLAVE_LVI_MITIGATION_CFLAGS_CLANG)
+    list(JOIN LVI_MITIGATION_FLAGS_CLANG " " ENCLAVE_LVI_MITIGATION_CFLAGS_CLANG)
   endif ()
 
   ##==============================================================================

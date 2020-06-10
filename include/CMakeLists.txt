@@ -10,8 +10,10 @@ target_include_directories(
             $<BUILD_INTERFACE:${OE_INCDIR}>
             $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>)
 install(
-  FILES openenclave/bits/attestation.h openenclave/bits/defs.h
-        openenclave/bits/report.h openenclave/bits/result.h
+  FILES openenclave/bits/attestation.h
+        openenclave/bits/defs.h
+        openenclave/bits/report.h
+        openenclave/bits/result.h
         openenclave/bits/types.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/bits/
   COMPONENT OEHOSTVERIFY)
