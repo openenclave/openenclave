@@ -56,11 +56,9 @@ typedef struct _oe_sgx_endorsements_t
     ///<     crl[0] = CRL for the SGX PCK Certificate
     ///<     crl[1] = CRL for the SGX PCK Processor CA
 
-    ///< OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT to
-    ///<    OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_PROC_CA
+    ///< OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT
     ///< CRLs issuer chains in PEM format, null-terminated string
-    ///<     crl[0] = Issuer Chain for the SGX PCK Certificate
-    ///<     crl[1] = CRL for the SGX PCK Processor CA
+    ///<     Issuer Chain for the SGX PCK Certificate
 
     ///< OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO
     ///<    QE Identity info, null-terminated JSON string

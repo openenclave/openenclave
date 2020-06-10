@@ -2,6 +2,10 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public void enc_set_value(uint64_t value);
         public uint64_t enc_get_value();

@@ -6,12 +6,9 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/bits/utsname.h>
 
 OE_EXTERNC_BEGIN
-
-#define __OE_UTSNAME oe_utsname
-#include <openenclave/internal/syscall/sys/bits/utsname.h>
-#undef __OE_UTSNAME
 
 int oe_uname(struct oe_utsname* buf);
 

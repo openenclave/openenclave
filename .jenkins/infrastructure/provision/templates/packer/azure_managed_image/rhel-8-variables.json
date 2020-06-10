@@ -1,0 +1,11 @@
+{
+    "managed_image_name_suffix": "rhel-8-SGX",
+    "os_type": "Linux",
+    "gallery_image_name": "rhel-8",
+    "image_publisher": "RedHat",
+    "image_offer": "RHEL",
+    "image_sku": "8-gen2",
+    "vm_size": "Standard_DC2s",
+    "ansible_group": "linux-agents",
+    "playbook_file_name": "oe-linux-acc-setup.yml"
+}

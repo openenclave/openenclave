@@ -11,7 +11,7 @@ if (UNIX)
 
   install(PROGRAMS oegdb DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-endif()
+endif ()
 
 # debugrt is built on all SGX platforms
 add_subdirectory(debugrt)

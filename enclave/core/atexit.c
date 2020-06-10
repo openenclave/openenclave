@@ -3,9 +3,9 @@
 
 #include "atexit.h"
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/thread.h>
-#include "oe_nodebug_alloc.h"
 
 /*
 **==============================================================================
@@ -45,7 +45,7 @@ static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 {
     oe_atexit_entry_t* entry;
 
-    if ((entry = (oe_atexit_entry_t*)oe_nodebug_malloc(
+    if ((entry = (oe_atexit_entry_t*)oe_allocator_malloc(
              sizeof(oe_atexit_entry_t))) == (void*)-1)
         return NULL;
 

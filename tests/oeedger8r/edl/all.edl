@@ -2,6 +2,15 @@
 // Licensed under the MIT License.
 
 enclave  {
+    // Import system edl
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "openenclave/edl/sgx/sgx_attestation.edl" import *;
+    from "openenclave/edl/sgx/cpu.edl" import *;
+    from "openenclave/edl/sgx/debug.edl" import *;
+    from "openenclave/edl/sgx/thread.edl" import *;
+    from "openenclave/edl/sgx/switchless.edl" import *;
+
     // import all edl files into one EDL file.
     from "aliasing.edl" import *;
     from "array.edl"    import *;
@@ -13,7 +22,7 @@ enclave  {
     from "pointer.edl"  import *;
     from "string.edl"   import *;
     from "struct.edl"   import *;
-    from "switchless.edl" import *;
+    from "switchless_test.edl" import *;
     
     from "foo.edl" import 
         enc_foo1,

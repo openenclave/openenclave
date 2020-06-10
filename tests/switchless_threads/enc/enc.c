@@ -69,7 +69,7 @@ int enc_echo_multiple(char* in, char out[STRING_LEN], int repeats)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    128,  /* StackPageCount */
-    8);   /* TCSCount */
+    true, /* Debug */
+    128,  /* NumHeapPages */
+    128,  /* NumStackPages */
+    8);   /* NumTCS */

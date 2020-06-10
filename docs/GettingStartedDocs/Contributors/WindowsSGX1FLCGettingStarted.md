@@ -7,9 +7,11 @@ Intel® X86-64bit architecture with SGX1 and Flexible Launch Control (FLC) suppo
 Note: To check if your system has support for SGX1 with FLC, please look [here](../SGXSupportLevel.md).
 
 A version of Windows OS with native support for SGX features:
-- For server: Windows Server 2016
+- For server: Windows Server 2016 or 2019
 - For client: Windows 10 64-bit version 1709 or newer
-- To check your Windows version, run `winver` on the command line.
+- To check your Windows version, run `winver` from the command line
+
+*Note:* The following instructions assume running `powershell` as adminstrator.
 
 ## Install Git and Clone the Open Enclave SDK repo
 
@@ -19,7 +21,7 @@ A version of Windows OS with native support for SGX features:
 
 ```powershell
 cd C:/Users/test/
-git clone https://github.com/openenclave/openenclave.git
+git clone --recursive https://github.com/openenclave/openenclave.git
 ```
 
 This creates a source tree under the directory called `openenclave`.
@@ -33,14 +35,27 @@ cloned it):
 cd C:/Users/test/openenclave
 ```
 
-Run the following from PowerShell to deploy all the prerequisites for building Open Enclave:
+Also, make sure the execution policy is set to `RemoteSigned` with the following command.
+
+```powershell
+Get-ExecutionPolicy
+```
+
+If not, set the policy with the following command and confirm the change by typing `Y`.
+
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
+
+Run the following command to deploy all the prerequisites for building Open Enclave:
 
 ```powershell
 ./scripts/install-windows-prereqs.ps1
 ```
 
-On Windows 10, the Intel PSW is delivered via Windows Update. Running the
-executable installer will fail on Windows 10 machines. To skip PSW installation:
+On Windows Server 2019 and versions of Windows 10 newer than 1709, the Intel PSW
+should already be automatically installed. Attempting to run the PSW installer will fail if
+that is the case. To skip the PSW installer:
 
 ```powershell
 ./scripts/install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoDriver
@@ -67,6 +82,12 @@ command:
 
 ```powershell
 ./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1FLC -DCAPClientType Azure
+```
+
+Once the installation is done, please ignore the following message(s) and continue on to the next step.
+
+```powershell
+Please reboot your computer for the configuration to complete.
 ```
 
 If you prefer to manually install prerequisites, please refer to this
@@ -147,8 +168,8 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 ## Build and run samples
 
-To build and run the samples independently of SDK building/installation, please look [here](/samples/README_Windows.md).
+To build and run the samples without building and then installing the OE SDK, please refer to the [README for Windows samples](/samples/README_Windows.md).
 
 ## Known Issues
 
-Not all tests currently run on Windows. See `tests/CMakeLists.txt` for a list of supported tests.
+Not all tests currently run on Windows. See [tests/CMakeLists.txt](/tests/CMakeLists.txt) for a list of supported tests.

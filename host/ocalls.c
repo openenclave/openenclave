@@ -8,8 +8,8 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
 
+#include "core_u.h"
 #include "ocalls.h"
-#include "tee_u.h"
 
 void HandleMalloc(uint64_t arg_in, uint64_t* arg_out)
 {

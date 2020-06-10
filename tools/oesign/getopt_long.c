@@ -41,6 +41,10 @@ int optopt = '?'; /* character checked for validity */
 int optreset;     /* reset getopt */
 char* optarg;     /* argument associated with option */
 
+#ifdef _WIN32
+size_t getenv_length; /* argument associated with getenv_s() */
+#endif
+
 #define BUILD_ASSERT_TYPE(POINTER, TYPE) \
     ((void)sizeof((int)((POINTER) == (TYPE)(POINTER))))
 #define CONST_CAST(TYPE, POINTER) \
@@ -48,9 +52,13 @@ char* optarg;     /* argument associated with option */
 #define IGNORE_FIRST (*options == '-' || *options == '+')
 #define PRINT_ERROR \
     ((opterr) && ((*options != ':') || (IGNORE_FIRST && options[1] != ':')))
+#ifdef _WIN32
+#define IS_POSIXLY_CORRECT \
+    (getenv_s(&getenv_length, NULL, 0, "POSIXLY_CORRECT") > 0)
+#else
 #define IS_POSIXLY_CORRECT (getenv("POSIXLY_CORRECT") != NULL)
+#endif
 #define PERMUTE (!IS_POSIXLY_CORRECT && !IGNORE_FIRST)
-
 #define IN_ORDER (!IS_POSIXLY_CORRECT && *options == '-')
 
 /* return values */

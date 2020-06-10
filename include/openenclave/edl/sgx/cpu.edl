@@ -1,0 +1,23 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** sgx/cpu.edl:
+**
+**     Internal OCALLs to be used by liboehost/liboecore for CPU operations
+**     which are specific to the x86_64 architecture.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    untrusted
+    {
+        oe_result_t oe_sgx_get_cpuid_table_ocall(
+            [out, size=cpuid_table_buffer_size] void* cpuid_table_buffer,
+            size_t cpuid_table_buffer_size);
+    };
+};

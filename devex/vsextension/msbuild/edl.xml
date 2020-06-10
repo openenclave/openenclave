@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Open Enclave SDK contributors.
+     Licensed under the MIT License.
+  -->
+<ProjectSchemaDefinitions xmlns="http://schemas.microsoft.com/build/2009/properties" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <ItemType Name="EdlItem" DisplayName="Enclave Definition Language (EDL) file" />
+  <ContentType Name="EdlContent" ItemType="EdlItem" DisplayName="EDL Content" />
+  <FileExtension Name="*.edl" ContentType="EdlContent" />
+</ProjectSchemaDefinitions>

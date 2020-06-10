@@ -18,6 +18,7 @@
 #error "unsupported platform"
 #endif
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/debugrt/host.h>
@@ -25,7 +26,7 @@
 #include <openenclave/internal/registers.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/utils.h>
 #include "../calls.h"
@@ -98,7 +99,7 @@ static oe_result_t _enter_sim(
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_tcs_t* tcs = (sgx_tcs_t*)tcs_;
-    td_t* td = NULL;
+    oe_sgx_td_t* td = NULL;
 
     /* Reject null parameters */
     if (!enclave || !enclave->addr || !tcs || !tcs->oentry || !tcs->gsbase)
@@ -109,8 +110,8 @@ static oe_result_t _enter_sim(
     if (!tcs->u.entry)
         OE_RAISE(OE_NOT_FOUND);
 
-    /* Set td_t.simulate flag */
-    td = (td_t*)(enclave->addr + tcs->gsbase);
+    /* Set oe_sgx_td_t.simulate flag */
+    td = (oe_sgx_td_t*)(enclave->addr + tcs->gsbase);
     td->simulate = true;
 
     /* Call into enclave */
@@ -487,7 +488,7 @@ static void* _assign_tcs(oe_enclave_t* enclave)
 
     oe_mutex_lock(&enclave->lock);
     {
-        /* First attempt to find a busy td_t owned by this thread */
+        /* First attempt to find a busy oe_sgx_td_t owned by this thread */
         for (i = 0; i < enclave->num_bindings; i++)
         {
             oe_thread_binding_t* binding = &enclave->bindings[i];
@@ -610,7 +611,7 @@ oe_result_t oe_ecall(
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Assign a td_t for this operation */
+    /* Assign a oe_sgx_td_t for this operation */
     if (!(tcs = _assign_tcs(enclave)))
         OE_RAISE(OE_OUT_OF_THREADS);
 
@@ -655,89 +656,4 @@ done:
     /* SetEnclave(NULL); */
 
     return result;
-}
-
-/*
-**==============================================================================
-**
-** oe_switchless_call_enclave_function_by_table_id()
-**
-** Switchlessly call the enclave function specified by the given table-id and
-*function-id.
-**
-**==============================================================================
-*/
-
-static oe_result_t oe_switchless_call_enclave_function_by_table_id(
-    oe_enclave_t* enclave,
-    uint64_t table_id,
-    uint64_t function_id,
-    const void* input_buffer,
-    size_t input_buffer_size,
-    void* output_buffer,
-    size_t output_buffer_size,
-    size_t* output_bytes_written)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_call_enclave_function_args_t args;
-
-    /* Reject invalid parameters */
-    if (!enclave)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize the call_enclave_args structure */
-    {
-        args.table_id = table_id;
-        args.function_id = function_id;
-        args.input_buffer = input_buffer;
-        args.input_buffer_size = input_buffer_size;
-        args.output_buffer = output_buffer;
-        args.output_buffer_size = output_buffer_size;
-        args.output_bytes_written = 0;
-        args.result = OE_UNEXPECTED;
-    }
-
-    /* TODO: @EMumau Perform the Switchless ECALL */
-    {
-        OE_RAISE(OE_UNSUPPORTED);
-    }
-
-    /* Check the result */
-    OE_CHECK(args.result);
-
-    *output_bytes_written = args.output_bytes_written;
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-/*
-**==============================================================================
-**
-** oe_switchless_call_enclave_function()
-**
-** Switchlessly call the enclave function specified by the given function-id in
-** the default function table.
-**
-**==============================================================================
-*/
-oe_result_t oe_switchless_call_enclave_function(
-    oe_enclave_t* enclave,
-    uint32_t function_id,
-    const void* input_buffer,
-    size_t input_buffer_size,
-    void* output_buffer,
-    size_t output_buffer_size,
-    size_t* output_bytes_written)
-{
-    return oe_switchless_call_enclave_function_by_table_id(
-        enclave,
-        OE_UINT64_MAX,
-        function_id,
-        input_buffer,
-        input_buffer_size,
-        output_buffer,
-        output_buffer_size,
-        output_bytes_written);
 }

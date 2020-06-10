@@ -8,8 +8,6 @@
 
 #if defined(_WIN32)
 #include <windows.h>
-#elif defined(__linux__)
-#include "../linux/windows.h"
 #endif
 
 static oe_result_t _get_image_type(const char* path, oe_image_type* type)
@@ -30,26 +28,6 @@ static oe_result_t _get_image_type(const char* path, oe_image_type* type)
         if (elf64_test_header(&header) == 0)
         {
             *type = OE_IMAGE_TYPE_ELF;
-            OE_RAISE(OE_OK);
-        }
-
-        fclose(is);
-        is = NULL;
-    }
-
-    /* Check whether this is a PE image */
-    {
-        IMAGE_DOS_HEADER header;
-
-        if (oe_fopen(&is, path, "rb") != 0)
-            OE_RAISE(OE_NOT_FOUND);
-
-        if (fread(&header, 1, sizeof(header), is) != sizeof(header))
-            OE_RAISE(OE_FAILURE);
-
-        if (header.e_magic == IMAGE_DOS_SIGNATURE)
-        {
-            *type = OE_IMAGE_TYPE_PE;
             OE_RAISE(OE_OK);
         }
 
@@ -83,8 +61,6 @@ oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image)
             OE_RAISE_MSG(OE_FAILURE, "Bad image type:OE_IMAGE_TYPE_NONE", NULL);
         case OE_IMAGE_TYPE_ELF:
             OE_RAISE(oe_load_elf_enclave_image(path, image));
-        case OE_IMAGE_TYPE_PE:
-            OE_RAISE(oe_load_pe_enclave_image(path, image));
     }
 done:
     return result;

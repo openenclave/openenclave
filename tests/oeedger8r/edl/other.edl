@@ -2,6 +2,15 @@
 // Licensed under the MIT License.
 
 enclave {
+  // Import system edl
+  from "openenclave/edl/logging.edl" import *;
+  from "openenclave/edl/syscall.edl" import *;
+  from "openenclave/edl/sgx/sgx_attestation.edl" import *;
+  from "openenclave/edl/sgx/cpu.edl" import *;
+  from "openenclave/edl/sgx/debug.edl" import *;
+  from "openenclave/edl/sgx/thread.edl" import *;
+  from "openenclave/edl/sgx/switchless.edl" import *;
+
   // This enclave is explicitly separate from the `all` enclave, but
   // shares the same host. This tests the ability of a single host to
   // include multiple enclave headers (and so host multiple enclaves).

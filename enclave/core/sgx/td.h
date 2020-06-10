@@ -4,8 +4,9 @@
 #ifndef _TD_H
 #define _TD_H
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/jump.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/types.h>
 #include "asmdefs.h"
 
@@ -63,31 +64,31 @@ struct _callsite
 /*
 **==============================================================================
 **
-** td_t methods defined in td.c
+** oe_sgx_td_t methods defined in td.c
 **
 **==============================================================================
 */
 
-void td_push_callsite(td_t* td, Callsite* ec);
+void td_push_callsite(oe_sgx_td_t* td, Callsite* ec);
 
-td_t* td_from_tcs(void* tcs);
+oe_sgx_td_t* td_from_tcs(void* tcs);
 
-void* td_to_tcs(const td_t* td);
+void* td_to_tcs(const oe_sgx_td_t* td);
 
-bool td_initialized(td_t* td);
+bool td_initialized(oe_sgx_td_t* td);
 
 /*
 **==============================================================================
 **
-** td_t methods defined in td_basic.c
+** oe_sgx_td_t methods defined in td_basic.c
 **
 **==============================================================================
 */
 
-void td_pop_callsite(td_t* td);
+void td_pop_callsite(oe_sgx_td_t* td);
 
-void td_init(td_t* td);
+void td_init(oe_sgx_td_t* td);
 
-void td_clear(td_t* td);
+void td_clear(oe_sgx_td_t* td);
 
 #endif /* _TD_H */

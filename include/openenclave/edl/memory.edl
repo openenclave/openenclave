@@ -1,0 +1,23 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** memory.edl:
+**
+**     This file declares internal ECALLs used by liboehost/liboecore for
+**     manipulating memory allocations across the enclave boundary.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    untrusted
+    {
+        void* oe_realloc_ocall(
+            [user_check] void* ptr,
+            size_t size);
+    };
+};

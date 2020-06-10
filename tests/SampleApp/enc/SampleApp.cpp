@@ -39,10 +39,10 @@ int secure_str_patching(const char* src, char* dst, size_t dst_length)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    256,  /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    256,  /* NumStackPages */
+    4);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* 25419627-14f6-4625-9329-cf5f10a57fea */           \

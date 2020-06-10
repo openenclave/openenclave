@@ -1,0 +1,183 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
+oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
+
+GLOBAL_TIMEOUT_MINUTES = 240
+CTEST_TIMEOUT_SECONDS = 480
+GLOBAL_ERROR = null
+
+DOCKER_TAG = env.DOCKER_TAG ?: "latest"
+AGENTS_LABELS = [
+    "ubuntu-nonsgx":    env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX"
+]
+
+
+def simulationContainerTest(String version, String build_type, List extra_cmake_args = []) {
+    stage("Simulation Ubuntu ${version} clang-7 ${build_type}, extra_cmake_args: ${extra_cmake_args}") {
+        node(AGENTS_LABELS["ubuntu-nonsgx"]) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                def task = """
+                           cmake ${WORKSPACE}                                           \
+                               -G Ninja                                                 \
+                               -DCMAKE_BUILD_TYPE=${build_type}                         \
+                               -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
+                               ${extra_cmake_args.join(' ')}                            \
+                               -Wdev
+                           ninja -v
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                           """
+                withEnv(["OE_SIMULATION=1"]) {
+                    oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-7", task, "--cap-add=SYS_PTRACE")
+                }
+            }
+        }
+    }
+}
+
+def AArch64GNUTest(String version, String build_type) {
+    stage("AArch64 GNU gcc Ubuntu${version} ${build_type}") {
+        node(AGENTS_LABELS["ubuntu-nonsgx"]) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                def task = """
+                            cmake ${WORKSPACE}                                                     \
+                                -G Ninja                                                           \
+                                -DCMAKE_BUILD_TYPE=${build_type}                                   \
+                                -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/cmake/arm-cross.cmake          \
+                                -DOE_TA_DEV_KIT_DIR=/devkits/vexpress-qemu_armv8a/export-ta_arm64  \
+                                -DHAS_QUOTE_PROVIDER=OFF                                           \
+                                -Wdev
+                            ninja -v
+
+                            mkdir \${HOME}/.ssh
+
+                            cd /armtz_emulator
+                            nohup ./qemu-system-aarch64 \
+                                    -nographic \
+                                    -serial file:ree.log -serial file:tee.log \
+                                    -smp 1 \
+                                    -machine virt,secure=on -cpu cortex-a57 \
+                                    -d unimp -semihosting-config enable,target=native \
+                                    -m 1057 \
+                                    -bios bl1.bin \
+                                    -initrd rootfs.cpio.gz \
+                                    -kernel Image \
+                                    -no-acpi \
+                                    -append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2' \
+                                    -virtfs local,id=sh0,path=${WORKSPACE},security_model=passthrough,mount_tag=sh0 \
+                                    -netdev user,id=vmnic,hostfwd=tcp::5555-:22 \
+                                    -device virtio-net-device,netdev=vmnic &
+                            disown
+
+                            while ! nc -z 127.0.0.1 5555; do sleep 1; done
+
+                            ssh-keyscan -T 300 -p 5555 localhost >> \${HOME}/.ssh/known_hosts
+
+                            CMD="su -c\""
+                            CMD="\${CMD} mkdir -p ${WORKSPACE} &&"
+                            CMD="\${CMD} mount -t 9p -o trans=virtio sh0 ${WORKSPACE} -oversion=9p2000.L &&"
+                            CMD="\${CMD} cd ${WORKSPACE} &&"
+                            CMD="\${CMD} cd build &&"
+                            CMD="\${CMD} find tests -name *.ta -type f | xargs -I {} cp {} /lib/optee_armtz &&"
+                            CMD="\${CMD} chmod 0644 /lib/optee_armtz/* &&"
+                            CMD="\${CMD} ctest --output-on-failure\""
+
+                            sshpass -p runner ssh runner@localhost -p 5555 "\${CMD}"
+                            EXIT_CODE=\$?
+
+                            echo "Linux Logs"
+                            echo "========================================"
+                            cat ree.log
+
+                            echo "OP-TEE Logs"
+                            echo "========================================"
+                            cat tee.log
+
+                            exit \$EXIT_CODE
+                            """
+                oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "cross", task, "--cap-add=SYS_PTRACE")
+            }
+        }
+    }
+}
+
+def checkDevFlows(String version) {
+    stage('Default compiler') {
+        node(AGENTS_LABELS["ubuntu-nonsgx"]) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                def task = """
+                           cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
+                           ninja -v
+                           """
+                oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-7", task, "--cap-add=SYS_PTRACE")
+            }
+        }
+    }
+}
+
+def checkCI() {
+    stage('Check CI') {
+        node(AGENTS_LABELS["ubuntu-nonsgx"]) {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                // At the moment, the check-ci script assumes that it's executed from the
+                // root source code directory.
+                oe.ContainerRun("oetools-minimal-18.04:${DOCKER_TAG}", "clang-7", "cd ${WORKSPACE} && ./scripts/check-ci", "--cap-add=SYS_PTRACE")
+            }
+        }
+    }
+}
+
+properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
+                                      artifactNumToKeepStr: '180',
+                                      daysToKeepStr: '90',
+                                      numToKeepStr: '180')),
+            [$class: 'JobRestrictionProperty']])
+
+try{
+    oe.emailJobStatus('STARTED')
+    def testing_stages = [
+        "Check CI":                                { checkCI() },
+        "Check Developer Experience Ubuntu 16.04": { checkDevFlows('16.04') },
+        "Check Developer Experience Ubuntu 18.04": { checkDevFlows('18.04') },
+        "AArch64 1604 GNU gcc Debug":              { AArch64GNUTest('16.04', 'Debug') },
+        "AArch64 1604 GNU gcc Release":            { AArch64GNUTest('16.04', 'Release') },
+        "AArch64 1804 GNU gcc Debug":              { AArch64GNUTest('18.04', 'Debug') },
+        "AArch64 1804 GNU gcc Release":            { AArch64GNUTest('18.04', 'Release') }
+    ]
+    if(FULL_TEST_SUITE == "true") {
+        stage("Full Test Suite") {
+            testing_stages += [
+                "Sim 1804 clang-7 SGX1 Debug":      { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-7 SGX1 Release":    { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-7 SGX1FLC Debug":   { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-7 SGX1FLC Release": { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) }
+            ]
+            parallel testing_stages
+        }
+    } else {
+        stage("PR Testing") {
+            testing_stages += [
+                "Sim 1804 clang-7 SGX1 Release":    { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "Sim 1804 clang-7 SGX1FLC Debug":   { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "Sim 1804 clang-7 SGX1FLC Release": { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) }
+            ]
+            parallel testing_stages
+        }
+    }
+} catch(Exception e) {
+    println "Caught global pipeline exception: " + e
+    GLOBAL_ERROR = e
+    throw e
+} finally {
+    currentBuild.result = (GLOBAL_ERROR != null) ? 'FAILURE' : "SUCCESS"
+    oe.emailJobStatus(currentBuild.result)
+}

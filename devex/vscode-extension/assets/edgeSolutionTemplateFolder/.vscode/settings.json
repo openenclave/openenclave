@@ -1,0 +1,11 @@
+
+{
+    "azure-iot-edge.defaultPlatform": {
+        "platform": "ls1012",
+        "alias": null
+      },
+      "azure-iot-edge.platforms": {
+        "aarch64-qemu": [],
+        "ls1012": [],
+    }
+}

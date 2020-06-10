@@ -280,7 +280,7 @@ int main(int argc, const char* argv[])
     }
 
     // Disable stdout buffering on host
-    setbuf(stdout, NULL);
+    setvbuf(stdout, NULL, _IONBF, 0);
 
     printf("=== %s: %s\n", argv[0], argv[1]);
 

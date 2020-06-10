@@ -1,9 +1,10 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/report.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sgx/td.h>
 
 #include "../tracee.h"
 #include "report.h"
@@ -13,7 +14,7 @@
 bool is_enclave_debug_allowed()
 {
     bool ret = false;
-    td_t* td = oe_get_td();
+    oe_sgx_td_t* td = oe_sgx_get_td();
 
     if (td->simulate)
     {

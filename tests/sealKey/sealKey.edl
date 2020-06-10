@@ -2,6 +2,11 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/keys.edl" import *;
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public int test_seal_key (
             int in);

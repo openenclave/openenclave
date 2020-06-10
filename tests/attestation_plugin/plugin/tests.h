@@ -4,7 +4,7 @@
 #ifndef _OE_ATTESTATION_PLUGIN_TESTS
 #define _OE_ATTESTATION_PLUGIN_TESTS
 
-#include <openenclave/attestation/plugin.h>
+#include <openenclave/internal/plugin.h>
 
 #define CLAIM1_NAME "Hello"
 #define CLAIM1_VALUE "World!"

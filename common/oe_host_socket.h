@@ -30,6 +30,24 @@ typedef struct _getaddrinfo_handle
 
 OE_INLINE getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_);
 
+/**
+ * _strcpy_to_utf8.
+ *
+ * This function copies a native (UTF-16LE on Windows) string into a UTF-8
+ * buffer. If the buffer is not large enough, the value returned will be larger
+ * than ai_canonname_buf_len.
+ *
+ * @param[out] ai_canonname_buf The buffer to fill in with a UTF-8 string
+ * @param[in] ai_canonname_buf_len The size in bytes of the buffer to fill in
+ * @param[in] ai_canonname The native string to copy from
+ *
+ * @return The size in bytes needed for the output buffer, or 0 on failure
+ */
+size_t _strcpy_to_utf8(
+    char* ai_canonname_buf,
+    size_t ai_canonname_buf_len,
+    void* ai_canonname);
+
 int _getaddrinfo_read(
     uint64_t handle_,
     int* ai_flags,
@@ -104,20 +122,10 @@ int _getaddrinfo_read(
         *ai_family = p->ai_family;
         *ai_socktype = p->ai_socktype;
         *ai_protocol = p->ai_protocol;
-        *ai_addrlen = p->ai_addrlen;
-
-        if (p->ai_canonname)
-            *ai_canonnamelen = strlen(p->ai_canonname) + 1;
-        else
-            *ai_canonnamelen = 0;
+        *ai_addrlen = (oe_socklen_t)p->ai_addrlen;
+        *ai_canonnamelen = 0;
 
         if (*ai_addrlen > ai_addrlen_in)
-        {
-            *err_no = OE_ENAMETOOLONG;
-            goto done;
-        }
-
-        if (*ai_canonnamelen > ai_canonnamelen_in)
         {
             *err_no = OE_ENAMETOOLONG;
             goto done;
@@ -130,7 +138,13 @@ int _getaddrinfo_read(
 
         if (ai_canonname && p->ai_canonname)
         {
-            memcpy(ai_canonname, p->ai_canonname, *ai_canonnamelen);
+            *ai_canonnamelen = _strcpy_to_utf8(
+                ai_canonname, ai_canonnamelen_in, p->ai_canonname);
+            if (*ai_canonnamelen > ai_canonnamelen_in)
+            {
+                *err_no = OE_ENAMETOOLONG;
+                goto done;
+            }
         }
 
         handle->next = handle->next->ai_next;

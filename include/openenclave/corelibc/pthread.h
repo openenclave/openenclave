@@ -4,8 +4,8 @@
 #ifndef _OE_PTHREAD_H
 #define _OE_PTHREAD_H
 
+#include <openenclave/bits/time.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/time.h>
 
 OE_EXTERNC_BEGIN
 

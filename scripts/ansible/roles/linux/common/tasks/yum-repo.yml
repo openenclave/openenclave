@@ -1,0 +1,13 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- name: Add YUM repository
+  yum:
+    name: "{{ yum_repository_rpm_url }}"
+    state: present
+
+- name: Add YUM repository key
+  rpm_key:
+    key: "{{ yum_repository_key_path }}"
+    state: present

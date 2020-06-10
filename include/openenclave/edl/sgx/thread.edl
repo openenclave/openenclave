@@ -1,0 +1,27 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** sgx/thread.edl:
+**
+**     Internal OCALLs to be used by liboehost/liboecore for thread operations.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    // Needed for oe_enclave_t. Foreign struct is ok since this is
+    // intentionally kept in host memory.
+    include "openenclave/bits/types.h"
+
+    untrusted
+    {
+        void oe_sgx_thread_wake_wait_ocall(
+            [user_check] oe_enclave_t* oe_enclave,
+            uint64_t waiter_tcs,
+            uint64_t self_tcs);
+    };
+};

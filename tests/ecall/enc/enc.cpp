@@ -36,8 +36,8 @@ void enc_test(test_args* args)
     args->magic2 = NEW_MAGIC;
 
     /* Get thread data */
-    const oe_thread_data_t* td;
-    if ((td = oe_get_thread_data()))
+    const oe_sgx_td_t* td;
+    if ((td = oe_sgx_get_td()))
     {
         args->thread_data = *td;
         args->thread_data_addr = reinterpret_cast<uint64_t>(td);
@@ -154,7 +154,7 @@ void enc_test(test_args* args)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

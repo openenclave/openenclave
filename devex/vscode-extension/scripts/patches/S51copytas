@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+case "$1" in
+  start)
+	printf "Copying TAs: "
+	mkdir /mnt/host
+	mount -t 9p -o trans=virtio sh0 /mnt/host -oversion=9p2000.L
+	# shellcheck disable=SC2181
+	[ $? != 0 ] && echo "FAIL" && exit 1
+
+	cp /mnt/host/bin/*.ta /lib/optee_armtz
+	# shellcheck disable=SC2181
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+	;;
+  *)
+	echo "Usage: $0 {start}"
+	exit 1
+esac
+
+exit $?

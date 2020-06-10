@@ -2,6 +2,10 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public void set_up();
         public void tear_down();
@@ -9,5 +13,7 @@ enclave {
         public void trigger_and_add_event();
         public void trigger_and_delete_event();
         public void cancel_wait();
+
+        public void test_close_without_delete();
     };
 };

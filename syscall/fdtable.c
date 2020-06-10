@@ -166,6 +166,8 @@ static void _assert_fd(oe_fd_t* desc)
         case OE_FD_TYPE_FILE:
         {
             oe_assert(desc->ops.file.lseek);
+            oe_assert(desc->ops.file.pread);
+            oe_assert(desc->ops.file.pwrite);
             oe_assert(desc->ops.file.getdents64);
             break;
         }
@@ -192,6 +194,7 @@ static void _assert_fd(oe_fd_t* desc)
         {
             oe_assert(desc->ops.epoll.epoll_ctl);
             oe_assert(desc->ops.epoll.epoll_wait);
+            oe_assert(desc->ops.epoll.on_close);
             break;
         }
     }
@@ -361,4 +364,23 @@ oe_fd_t* oe_fdtable_get(int fd, oe_fd_type_t type)
 
 done:
     return ret;
+}
+
+void oe_fdtable_foreach(
+    oe_fd_type_t type,
+    void* arg,
+    void (*callback)(oe_fd_t* desc, void* arg))
+{
+    oe_assert(callback);
+
+    oe_spin_lock(&_lock);
+
+    for (size_t i = 0; i < _table_size; ++i)
+    {
+        oe_fd_t* const desc = _table[i];
+        if (desc && (type == OE_FD_TYPE_ANY || desc->type == type))
+            callback(desc, arg);
+    }
+
+    oe_spin_unlock(&_lock);
 }

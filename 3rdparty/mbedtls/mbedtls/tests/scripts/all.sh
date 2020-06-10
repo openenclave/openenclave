@@ -1283,6 +1283,12 @@ component_build_armcc () {
     armc6_build_test "--target=aarch64-arm-none-eabi -march=armv8.2-a"
 }
 
+component_build_ssl_hw_record_accel() {
+    msg "build: default config with MBEDTLS_SSL_HW_RECORD_ACCEL enabled"
+    scripts/config.pl set MBEDTLS_SSL_HW_RECORD_ACCEL
+    make CFLAGS='-Werror -O1'
+}
+
 component_test_allow_sha1 () {
     msg "build: allow SHA1 in certificates by default"
     scripts/config.pl set MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_CERTIFICATES
@@ -1404,7 +1410,13 @@ component_test_zeroize () {
 }
 
 support_check_python_files () {
-    type pylint3 >/dev/null 2>/dev/null
+    # Find the installed version of Pylint. Installed as a distro package this can
+    # be pylint3 and as a PEP egg, pylint.
+    if type pylint >/dev/null 2>/dev/null || type pylint3 >/dev/null 2>/dev/null; then
+        true;
+    else
+        false;
+    fi
 }
 component_check_python_files () {
     msg "Lint: Python scripts"

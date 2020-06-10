@@ -144,7 +144,7 @@ int run_enclave_server()
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    256,  /* HeapPageCount */
-    256,  /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    256,  /* NumHeapPages */
+    256,  /* NumStackPages */
+    4);   /* NumTCS */

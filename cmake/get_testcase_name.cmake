@@ -12,7 +12,7 @@
 # filename - filename containing the test
 # namevar - variable to receive the testcase name
 #
-function(get_testcase_name FILENAME NAMEVAR PREFIX)
+function (get_testcase_name FILENAME NAMEVAR PREFIX)
   string(REGEX REPLACE "\.c(pp)?$" "" n ${FILENAME})
   if (NOT PREFIX STREQUAL "")
     string(REGEX REPLACE ${PREFIX} "" n ${n})
@@ -32,5 +32,7 @@ function(get_testcase_name FILENAME NAMEVAR PREFIX)
     string(SUBSTRING ${n} ${start_pos} ${max_length} n)
   endif ()
 
-  set(${NAMEVAR} ${n} PARENT_SCOPE)
-endfunction(get_testcase_name)
+  set(${NAMEVAR}
+      ${n}
+      PARENT_SCOPE)
+endfunction (get_testcase_name)

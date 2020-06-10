@@ -87,10 +87,10 @@ typedef struct _thread_binding
 oe_thread_binding_t* oe_get_thread_binding(void);
 
 /**
- *  This structure must be kept in sync with the defines in
- *  debugger/pythonExtension/gdb_sgx_plugin.py.
+ * Host-side representation of properties associated with each
+ * enclave instance.
  */
-struct _oe_enclave
+typedef struct _oe_enclave
 {
     /* A "magic number" to validate structure */
     uint64_t magic;
@@ -130,7 +130,7 @@ struct _oe_enclave
 
     /* Manager for switchless calls */
     oe_switchless_call_manager_t* switchless_manager;
-};
+} oe_enclave_t;
 
 /* Get the event for the given TCS */
 EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);

@@ -2,12 +2,16 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted
     {
         public int ecall_device_init();
 
         public int ecall_getaddrinfo(
-            [in,out,count=1] struct addrinfo** res);
+            [in,out,count=1] struct oe_addrinfo** res);
 
         public int ecall_getnameinfo(
             [in, out, count=bufflen] char* buffer,

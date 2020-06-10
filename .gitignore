@@ -10,6 +10,10 @@ graphviz/
 build/
 winbuild/
 
+devex/vscode-extension/node_modules
+devex/vscode-extension/out
+devex/vscode-extension/*.vsix
+
 scripts/ansible/*.retry
 
 prereqs/aesm/.build

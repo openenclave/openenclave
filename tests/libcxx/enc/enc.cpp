@@ -281,11 +281,11 @@ int enc_test(char test_name[STRLEN])
 OE_SET_ENCLAVE_SGX(
     1,                   /* ProductID */
     1,                   /* SecurityVersion */
-    true,                /* AllowDebug */
+    true,                /* Debug */
 #ifdef FULL_LIBCXX_TESTS /* Full tests require large heap memory. */
-    12288,               /* HeapPageCount */
+    12288,               /* NumHeapPages */
 #else
-    512, /* HeapPageCount */
+    512, /* NumHeapPages */
 #endif
-    512, /* StackPageCount */
-    8);  /* TCSCount */
+    512, /* NumStackPages */
+    8);  /* NumTCS */

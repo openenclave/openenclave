@@ -2,6 +2,13 @@
 # Licensed under the MIT License.
 
 ---
+- include_role:
+    name: linux/common
+    tasks_from: yum-repo.yml
+  vars:
+    yum_repository_rpm_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+    yum_repository_key_path: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+
 - name: Install all the Open Enclave prerequisites YUM packages for development
   yum:
     name: "{{ yum_packages }}"

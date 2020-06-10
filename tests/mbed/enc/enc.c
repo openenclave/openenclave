@@ -149,7 +149,7 @@ static oe_result_t _syscall_hook(
         case SYS_lseek:
         {
             int rval = 0;
-            result = mbed_test_lseek(&rval, (int)arg1, (off_t)arg2, (int)arg3);
+            result = mbed_test_lseek(&rval, (int)arg1, (int)arg2, (int)arg3);
             break;
         }
         case SYS_readv:
@@ -224,7 +224,7 @@ void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    512,  /* HeapPageCount */
-    512,  /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    512,  /* NumHeapPages */
+    512,  /* NumStackPages */
+    2);   /* NumTCS */

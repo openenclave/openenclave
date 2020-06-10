@@ -5,6 +5,7 @@
 #define _OE_SYS_EPOLL_H
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/edl/syscall_types.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/syscall/sys/bits/sigset.h>
 #include <openenclave/internal/types.h>
@@ -41,16 +42,6 @@ enum OE_EPOLL_EVENTS
     OE_EPOLLONESHOT = 1u << 30,
     OE_EPOLLET = 1u << 31
 };
-
-#define __OE_EPOLL_DATA oe_epoll_data
-#define __OE_EPOLL_DATA_T oe_epoll_data_t
-#include <openenclave/internal/syscall/sys/bits/epoll_data.h>
-#undef __OE_EPOLL_DATA
-#undef __OE_EPOLL_DATA_T
-
-#define __OE_EPOLL_EVENT oe_epoll_event
-#include <openenclave/internal/syscall/sys/bits/epoll_event.h>
-#undef __OE_EPOLL_EVENT
 
 int oe_epoll_create(int size);
 

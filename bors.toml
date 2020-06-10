@@ -3,7 +3,8 @@ pr_status = [ "DCO" ]
 required_approvals = 2
 block_labels = [ "do not merge" ]
 delete_merged_branches = true
-timeout_sec = 7200 # two hours
+# Extend Bors timeout_sec to 12 x the average CI run to counteract https://forum.bors.tech/t/bors-keeps-timing-out/87/2.
+timeout_sec = 43200 # Twelve hours
 
 [committer]
 name = "oe-bors[bot]"

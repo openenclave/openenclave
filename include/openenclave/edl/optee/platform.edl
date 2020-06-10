@@ -1,0 +1,20 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** optee/platform.edl:
+**
+**     This is a temporary wrapper for aggregating all OPTEE-specific ECALLs and
+**     OCALLs for convenient use by oecore.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    // Because OP-TEE enclaves are not linked with --gc-sections, they all
+    // depend on oe_host_realloc which is built into liboecore.
+    from "openenclave/edl/memory.edl" import *;
+};

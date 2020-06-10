@@ -34,9 +34,12 @@ static char* get_fullpath(const char* path)
 
 #include <assert.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/eeid.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/debugrt/host.h>
+#include <openenclave/internal/eeid.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
@@ -45,16 +48,17 @@ static char* get_fullpath(const char* path)
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgxcreate.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
 #include "../memalign.h"
+#include "../signkey.h"
 #include "cpuid.h"
 #include "enclave.h"
 #include "exception.h"
-#include "sgx_u.h"
+#include "platform_u.h"
 #include "sgxload.h"
 
 #if !defined(OEHOSTMR)
@@ -76,10 +80,12 @@ static void _initialize_exception_handling(void)
 static void _initialize_enclave_host()
 {
     oe_once(&_enclave_init_once, _initialize_exception_handling);
-    oe_register_switchless_ocall_function_table();
-    oe_register_tee_ocall_function_table();
-    oe_register_sgx_ocall_function_table();
+
+#ifdef OE_USE_BUILTIN_EDL
+    oe_register_core_ocall_function_table();
+    oe_register_platform_ocall_function_table();
     oe_register_syscall_ocall_function_table();
+#endif // OE_USE_BUILTIN_EDL
 }
 #endif // OEHOSTMR
 
@@ -221,7 +227,7 @@ static oe_result_t _add_control_pages(
         tcs->oentry = entry;
 
         /* FS segment: Used for thread-local variables.
-         * The reserved (unused) space in td_t is used for thread-local
+         * The reserved (unused) space in oe_sgx_td_t is used for thread-local
          * variables.
          * Since negative offsets are used with FS, FS must point to end of the
          * segment.
@@ -295,7 +301,8 @@ static oe_result_t _calculate_enclave_size(
 
     size_settings = &props->header.size_settings;
 
-    *enclave_size = 0;
+    if (enclave_size)
+        *enclave_size = 0;
     *enclave_end = 0;
 
     /* Compute size in bytes of the heap */
@@ -313,8 +320,21 @@ static oe_result_t _calculate_enclave_size(
     *enclave_end = image_size + heap_size +
                    (size_settings->num_tcs * (stack_size + control_size));
 
-    /* Calculate the total size of the enclave */
-    *enclave_size = oe_round_u64_to_pow2(*enclave_end);
+    if (enclave_size)
+    {
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+        if (is_eeid_base_image(props))
+        {
+            /* This is the maximum size SGX allows. When signing base images we
+             * don't know the size that the final image will have, so we chose
+             * the maximum here. */
+            *enclave_size = 68719476736;
+        }
+        else
+#endif
+            /* Calculate the total size of the enclave */
+            *enclave_size = oe_round_u64_to_pow2(*enclave_end);
+    }
 
     result = OE_OK;
     return result;
@@ -361,7 +381,7 @@ done:
 }
 
 #if !defined(OEHOSTMR)
-oe_result_t oe_get_cpuid_table_ocall(
+oe_result_t oe_sgx_get_cpuid_table_ocall(
     void* cpuid_table_buffer,
     size_t cpuid_table_buffer_size)
 {
@@ -454,15 +474,17 @@ static oe_result_t _configure_enclave(
                     settings[i]
                         .u.context_switchless_setting->max_enclave_workers;
 
-                // Switchless ecalls are not enabled yet. Make sure the max
-                // number of enclave workers is always 0.
-                if (max_enclave_workers != 0)
-                    OE_RAISE(OE_INVALID_PARAMETER);
-
-                OE_CHECK(
-                    oe_start_switchless_manager(enclave, max_host_workers));
+                OE_CHECK(oe_start_switchless_manager(
+                    enclave, max_host_workers, max_enclave_workers));
                 break;
             }
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+            case OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA:
+            {
+                // Nothing
+                break;
+            }
+#endif
             default:
                 OE_RAISE(OE_INVALID_PARAMETER);
         }
@@ -542,19 +564,19 @@ oe_result_t oe_sgx_validate_enclave_properties(
         if (field_name)
             *field_name = "config.product_id";
         OE_TRACE_ERROR(
-            "oe_sgx_is_valid_product_id failed: num_tcs = %x\n",
+            "oe_sgx_is_valid_product_id failed: product_id = %x\n",
             properties->config.product_id);
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_security_version(properties->config.product_id))
+    if (!oe_sgx_is_valid_security_version(properties->config.security_version))
     {
         if (field_name)
             *field_name = "config.security_version";
         OE_TRACE_ERROR(
             "oe_sgx_is_valid_security_version failed: security_version = %x\n",
-            properties->config.product_id);
+            properties->config.security_version);
         result = OE_FAILURE;
         goto done;
     }
@@ -564,6 +586,131 @@ oe_result_t oe_sgx_validate_enclave_properties(
 done:
     return result;
 }
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+static oe_result_t _add_eeid_marker_page(
+    oe_sgx_load_context_t* context,
+    oe_enclave_t* enclave,
+    size_t image_size,
+    uint64_t entry_point,
+    oe_sgx_enclave_properties_t* props,
+    uint64_t* vaddr)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_eeid_t* eeid = context->eeid;
+
+    if (eeid && is_eeid_base_image(props) &&
+        context->type == OE_SGX_LOAD_TYPE_CREATE)
+    {
+        // Finalize the memory settings
+        props->header.size_settings = eeid->size_settings;
+
+        // Record EEID information
+        eeid->version = OE_EEID_VERSION;
+        oe_sha256_context_t* hctx = &context->hash_context;
+        oe_sha256_save(hctx, eeid->hash_state.H, eeid->hash_state.N);
+        eeid->entry_point = entry_point;
+        eeid->vaddr = *vaddr;
+        eeid->signature_size = sizeof(sgx_sigstruct_t);
+        memcpy(
+            eeid->data + eeid->data_size,
+            (uint8_t*)&props->sigstruct,
+            sizeof(sgx_sigstruct_t));
+
+        oe_page_t* page = oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
+        memset(page, 0, sizeof(oe_page_t));
+        oe_eeid_marker_t* marker = (oe_eeid_marker_t*)page;
+
+        _calculate_enclave_size(image_size, props, &marker->offset, NULL);
+        marker->size = enclave->size;
+
+        uint64_t addr = enclave->addr + *vaddr;
+        uint64_t src = (uint64_t)page;
+        uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
+
+        OE_CHECK(oe_sgx_load_enclave_data(
+            context, enclave->addr, addr, src, flags, false));
+        (*vaddr) += OE_PAGE_SIZE;
+        free(page);
+
+        // Marker page counts as a heap page
+        if (props->header.size_settings.num_heap_pages > 0)
+            props->header.size_settings.num_heap_pages--;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static oe_result_t _eeid_resign(
+    oe_sgx_load_context_t* context,
+    oe_sgx_enclave_properties_t* properties)
+{
+    oe_result_t result = OE_OK;
+    oe_eeid_t* eeid = context->eeid;
+
+    if (eeid && eeid->data_size > 0)
+    {
+        sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)properties->sigstruct;
+
+        OE_SHA256 ext_mrenclave;
+        oe_sha256_final(&context->hash_context, &ext_mrenclave);
+
+        OE_CHECK(oe_sgx_sign_enclave(
+            &ext_mrenclave,
+            properties->config.attributes,
+            properties->config.product_id,
+            properties->config.security_version,
+            OE_DEBUG_SIGN_KEY,
+            OE_DEBUG_SIGN_KEY_SIZE,
+            sigstruct));
+    }
+
+done:
+    return result;
+}
+
+static oe_result_t _add_eeid_pages(
+    oe_sgx_load_context_t* context,
+    uint64_t enclave_addr,
+    uint64_t* vaddr)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_eeid_t* eeid = context->eeid;
+
+    if (eeid)
+    {
+        size_t num_bytes = oe_eeid_byte_size(eeid);
+        size_t num_pages =
+            num_bytes / OE_PAGE_SIZE + ((num_bytes % OE_PAGE_SIZE) ? 1 : 0);
+
+        oe_page_t* pages =
+            oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t) * num_pages);
+        memset(pages, 0, sizeof(oe_page_t) * num_pages);
+        memcpy(pages->data, eeid, num_bytes);
+
+        for (size_t i = 0; i < num_pages; i++)
+        {
+            uint64_t addr = enclave_addr + *vaddr;
+            uint64_t src = (uint64_t)(pages + i * OE_PAGE_SIZE);
+            uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
+
+            OE_CHECK(oe_sgx_load_enclave_data(
+                context, enclave_addr, addr, src, flags, true));
+            *vaddr += OE_PAGE_SIZE;
+        }
+
+        oe_memalign_free(pages);
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
 
 oe_result_t oe_sgx_build_enclave(
     oe_sgx_load_context_t* context,
@@ -671,9 +818,22 @@ oe_result_t oe_sgx_build_enclave(
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    OE_CHECK(_add_eeid_marker_page(
+        context, enclave, image_size, oeimage.entry_rva, &props, &vaddr));
+#endif
+
     /* Add data pages */
     OE_CHECK(
         _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    /* Add optional EEID pages */
+    OE_CHECK(_add_eeid_pages(context, enclave_addr, &vaddr));
+
+    /* Resign */
+    OE_CHECK(_eeid_resign(context, &props));
+#endif
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(oe_sgx_initialize_enclave(
@@ -757,7 +917,6 @@ oe_result_t oe_create_enclave(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
 #if defined(_WIN32)
-
     /* Create Windows events for each TCS binding. Enclaves use
      * this event when calling into the host to handle waits/wakes
      * as part of the enclave mutex and condition variable
@@ -783,6 +942,15 @@ oe_result_t oe_create_enclave(
     /* Initialize the context parameter and any driver handles */
     OE_CHECK(oe_sgx_initialize_load_context(
         &context, OE_SGX_LOAD_TYPE_CREATE, flags));
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    for (size_t i = 0; i < setting_count; i++)
+        if (settings[i].setting_type == OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA)
+        {
+            context.eeid = settings[i].u.eeid;
+            break;
+        }
+#endif
 
     /* Build the enclave */
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));
@@ -835,11 +1003,19 @@ oe_result_t oe_create_enclave(
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
 
-    /* Apply the list of settings to the enclave */
-    OE_CHECK(_configure_enclave(enclave, settings, setting_count));
-
     /* Setup logging configuration */
     oe_log_enclave_init(enclave);
+
+    /* Apply the list of settings to the enclave.
+     * This may initialize switchless manager too.
+     * Doing this as the last step in enclave initialization ensures
+     * that all the ecalls necessary for enclave initialization have already
+     * been executed. Now all available tcs can be taken up by ecall worker
+     * threads. If we initialize the switchless manager earlier, then any
+     * normal ecalls required for initialization may not complete if all the
+     * tcs are taken up by ecall worker threads.
+     */
+    OE_CHECK(_configure_enclave(enclave, settings, setting_count));
 
     *enclave_out = enclave;
     result = OE_OK;
@@ -864,6 +1040,9 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     if (!enclave || enclave->magic != ENCLAVE_MAGIC)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* Shut down the switchless manager */
+    OE_CHECK(oe_stop_switchless_manager(enclave));
+
     /* Call the enclave destructor */
     OE_CHECK(oe_ecall(enclave, OE_ECALL_DESTRUCTOR, 0, NULL));
 
@@ -879,9 +1058,6 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 
     /* Remove this enclave from the global list. */
     oe_remove_enclave_instance(enclave);
-
-    /* Shut down the switchless manager */
-    OE_CHECK(oe_stop_switchless_manager(enclave));
 
     /* Clear the magic number */
     enclave->magic = 0;

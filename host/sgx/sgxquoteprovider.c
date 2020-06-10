@@ -12,6 +12,9 @@
 #include "../hostthread.h"
 #include "sgxquoteprovider.h"
 
+// Define the name of CA
+static uint8_t CRL_CA_PROCESSOR[] = "processor";
+
 /**
  * This file manages the dcap_quoteprov shared library.
  * It loads the library during program startup and keeps it loaded until the
@@ -50,235 +53,96 @@ done:
     return result;
 }
 
-oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
-{
-    oe_result_t result = OE_FAILURE;
-    sgx_ql_get_revocation_info_params_t params = {0};
-    sgx_plat_error_t r = SGX_PLAT_ERROR_OUT_OF_MEMORY;
-    sgx_ql_revocation_info_t* revocation_info = NULL;
-    uint32_t host_buffer_size = 0;
-    uint8_t* p = 0;
-    uint8_t* p_end = 0;
-
-    OE_CHECK(oe_initialize_quote_provider());
-
-    if (!provider.get_revocation_info || !provider.free_revocation_info)
-        OE_RAISE(OE_QUOTE_PROVIDER_LOAD_ERROR);
-
-    params.version = SGX_QL_REVOCATION_INFO_VERSION_1;
-    params.fmspc = args->fmspc;
-    params.fmspc_size = sizeof(args->fmspc);
-    params.crl_urls = args->crl_urls;
-    params.crl_url_count = args->num_crl_urls;
-
-    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
-    {
-        // If info tracing is enabled, install the logging function.
-        OE_TRACE_INFO("input: fmspc = \n");
-        oe_hex_dump(params.fmspc, params.fmspc_size);
-        for (uint32_t i = 0; i < params.crl_url_count; ++i)
-        {
-            OE_TRACE_INFO("input: crl_url[%d] = %s\n", i, params.crl_urls[i]);
-        }
-    }
-
-    r = provider.get_revocation_info(&params, &revocation_info);
-
-    if (r != SGX_PLAT_ERROR_OK || revocation_info == NULL)
-    {
-        OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
-    }
-
-    if (revocation_info->tcb_info == NULL ||
-        revocation_info->tcb_info_size == 0)
-    {
-        OE_RAISE_MSG(OE_INVALID_REVOCATION_INFO, "tcb_info is NULL", NULL);
-    }
-    host_buffer_size += revocation_info->tcb_info_size + 1;
-
-    if (revocation_info->tcb_issuer_chain == NULL ||
-        revocation_info->tcb_issuer_chain_size == 0)
-    {
-        OE_RAISE_MSG(
-            OE_INVALID_REVOCATION_INFO, "tcb_issuer_chain is NULL", NULL);
-    }
-    host_buffer_size += revocation_info->tcb_issuer_chain_size + 1;
-
-    if (revocation_info->crl_count != args->num_crl_urls)
-    {
-        OE_RAISE_MSG(
-            OE_INVALID_REVOCATION_INFO,
-            "crl_count mismatch: %d != %d",
-            revocation_info->crl_count,
-            args->num_crl_urls);
-    }
-
-    for (uint32_t i = 0; i < revocation_info->crl_count; ++i)
-    {
-        if (revocation_info->crls[i].crl_data == NULL ||
-            revocation_info->crls[i].crl_data_size == 0)
-        {
-            OE_RAISE_MSG(
-                OE_INVALID_REVOCATION_INFO, "crl[%d].crl_data is NULL.", i);
-        }
-        OE_TRACE_VERBOSE(
-            "crl_data = \n[%s]\n", revocation_info->crls[i].crl_data);
-        // CRL is in DER format. Null not added.
-        host_buffer_size += revocation_info->crls[i].crl_data_size;
-
-        if (revocation_info->crls[i].crl_issuer_chain == NULL ||
-            revocation_info->crls[i].crl_issuer_chain_size == 0)
-        {
-            OE_RAISE_MSG(
-                OE_INVALID_REVOCATION_INFO,
-                "crl[%d].crl_issuer_chain is NULL.",
-                i);
-        }
-        host_buffer_size += revocation_info->crls[i].crl_issuer_chain_size + 1;
-    }
-
-    p = (uint8_t*)calloc(1, host_buffer_size);
-    p_end = p + host_buffer_size;
-    if (p == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    args->buffer = p;
-
-    if (revocation_info->tcb_info != NULL)
-    {
-        args->tcb_info = p;
-        args->tcb_info_size = revocation_info->tcb_info_size;
-        OE_CHECK(oe_memcpy_s(
-            args->tcb_info,
-            args->tcb_info_size,
-            revocation_info->tcb_info,
-            revocation_info->tcb_info_size));
-        // Add null terminator
-        args->tcb_info[args->tcb_info_size++] = 0;
-        p += args->tcb_info_size;
-        OE_TRACE_INFO("tcb_info_size = %d\n", revocation_info->tcb_info_size);
-        OE_TRACE_INFO("tcb_info json = \n%s\n", args->tcb_info);
-    }
-
-    if (revocation_info->tcb_issuer_chain != NULL)
-    {
-        args->tcb_issuer_chain = p;
-        args->tcb_issuer_chain_size = revocation_info->tcb_issuer_chain_size;
-        OE_CHECK(oe_memcpy_s(
-            args->tcb_issuer_chain,
-            args->tcb_issuer_chain_size,
-            revocation_info->tcb_issuer_chain,
-            revocation_info->tcb_issuer_chain_size));
-        // Add null terminator
-        args->tcb_issuer_chain[args->tcb_issuer_chain_size++] = 0;
-        p += args->tcb_issuer_chain_size;
-        OE_TRACE_INFO(
-            "tcb_issuer_chain_size = %d\n",
-            revocation_info->tcb_issuer_chain_size);
-    }
-
-    for (uint32_t i = 0; i < revocation_info->crl_count; ++i)
-    {
-        if (revocation_info->crls[i].crl_data != NULL)
-        {
-            args->crl[i] = p;
-            args->crl_size[i] = revocation_info->crls[i].crl_data_size;
-            OE_CHECK(oe_memcpy_s(
-                args->crl[i],
-                args->crl_size[i],
-                revocation_info->crls[i].crl_data,
-                revocation_info->crls[i].crl_data_size));
-            // CRL is in DER format. Null not added.
-            p += args->crl_size[i];
-            OE_TRACE_INFO(
-                "crls[%d].crl_data_size = %d\n",
-                i,
-                revocation_info->crls[i].crl_data_size);
-        }
-        if (revocation_info->crls[i].crl_issuer_chain != NULL)
-        {
-            args->crl_issuer_chain[i] = p;
-            args->crl_issuer_chain_size[i] =
-                revocation_info->crls[i].crl_issuer_chain_size;
-            OE_CHECK(oe_memcpy_s(
-                args->crl_issuer_chain[i],
-                args->crl_issuer_chain_size[i],
-                revocation_info->crls[i].crl_issuer_chain,
-                revocation_info->crls[i].crl_issuer_chain_size));
-            // Add null terminator
-            args->crl_issuer_chain[i][args->crl_issuer_chain_size[i]++] = 0;
-            p += args->crl_issuer_chain_size[i];
-            OE_TRACE_INFO(
-                "crls[%d].crl_issuer_chain_size = %d\n",
-                i,
-                revocation_info->crls[i].crl_issuer_chain_size);
-            OE_TRACE_INFO(
-                "crls[%d].crl_issuer_chain = \n%*.*s\n",
-                i,
-                revocation_info->crls[i].crl_issuer_chain_size,
-                revocation_info->crls[i].crl_issuer_chain_size,
-                revocation_info->crls[i].crl_issuer_chain);
-        }
-    }
-
-    if (p != p_end)
-        OE_RAISE(OE_UNEXPECTED);
-
-    result = OE_OK;
-done:
-    if (revocation_info != NULL)
-        provider.free_revocation_info(revocation_info);
-
-    return result;
-}
-
-void oe_free_get_revocation_info_args(oe_get_revocation_info_args_t* args)
-{
-    if (args)
-    {
-        if (args->buffer)
-            free(args->buffer);
-    }
-}
-
-oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
+oe_result_t oe_get_sgx_quote_verification_collateral(
+    oe_get_sgx_quote_verification_collateral_args_t* args)
 {
     oe_result_t result = OE_FAILURE;
     sgx_plat_error_t r = SGX_PLAT_ERROR_OUT_OF_MEMORY;
-    sgx_qe_identity_info_t* identity = NULL;
+    sgx_ql_qve_collateral_t* collateral = NULL;
     uint32_t host_buffer_size = 0;
     uint8_t* p = 0;
     uint8_t* p_end = 0;
     OE_TRACE_INFO("Calling %s\n", __FUNCTION__);
 
+    uint8_t* fmspc = args->fmspc;
+    uint16_t fmspc_size = sizeof(args->fmspc);
+
     OE_CHECK(oe_initialize_quote_provider());
 
-    if (!provider.get_qe_identity_info || !provider.free_qe_identity_info)
+    if (!provider.get_sgx_quote_verification_collateral ||
+        !provider.free_sgx_quote_verification_collateral)
     {
-        OE_TRACE_WARNING(
-            "Warning: QE Identity was not supported by quote provider\n");
+        OE_TRACE_WARNING("Warning: Quote verification collateral was not "
+                         "supported by quote provider\n");
         result = OE_QUOTE_PROVIDER_CALL_ERROR;
         goto done;
     }
 
-    // fetch qe identity information
-    r = provider.get_qe_identity_info(&identity);
-    if (r != SGX_PLAT_ERROR_OK || identity == NULL)
+    // fetch collateral information
+    r = provider.get_sgx_quote_verification_collateral(
+        fmspc, fmspc_size, (char*)CRL_CA_PROCESSOR, &collateral);
+    if (r != SGX_PLAT_ERROR_OK || collateral == NULL)
     {
         OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
     }
 
-    if (identity->qe_id_info == NULL || identity->qe_id_info_size == 0)
+    if (collateral->version != SGX_QL_QVE_COLLATERAL_VERSION)
     {
-        OE_TRACE_ERROR("qe_id_info is NULL.\n");
-        OE_RAISE(OE_INVALID_QE_IDENTITY_INFO);
+        OE_RAISE_MSG(
+            OE_INVALID_ENDORSEMENT,
+            "Expected version to be %d, but got %d",
+            SGX_QL_QVE_COLLATERAL_VERSION,
+            collateral->version);
     }
-    host_buffer_size += identity->qe_id_info_size + 1;
 
-    if (identity->issuer_chain == NULL || identity->issuer_chain_size == 0)
-        OE_RAISE_MSG(OE_INVALID_QE_IDENTITY_INFO, "issuer_chain is NULL", NULL);
+    if (collateral->pck_crl_issuer_chain == NULL ||
+        collateral->pck_crl_issuer_chain_size == 0)
+    {
+        OE_RAISE_MSG(
+            OE_INVALID_ENDORSEMENT, "pck_crl_issuer_chain is NULL", NULL);
+    }
+    host_buffer_size += collateral->pck_crl_issuer_chain_size;
 
-    host_buffer_size += identity->issuer_chain_size + 1;
+    if (collateral->root_ca_crl == NULL || collateral->root_ca_crl_size == 0)
+    {
+        OE_RAISE_MSG(OE_INVALID_ENDORSEMENT, "root_ca_crl is NULL", NULL);
+    }
+    host_buffer_size += collateral->root_ca_crl_size;
+
+    if (collateral->pck_crl == NULL || collateral->pck_crl_size == 0)
+    {
+        OE_RAISE_MSG(OE_INVALID_ENDORSEMENT, "pck_crl is NULL", NULL);
+    }
+    host_buffer_size += collateral->pck_crl_size;
+
+    if (collateral->tcb_info_issuer_chain == NULL ||
+        collateral->tcb_info_issuer_chain_size == 0)
+    {
+        OE_RAISE_MSG(
+            OE_INVALID_ENDORSEMENT, "tcb_info_issuer_chain is NULL", NULL);
+    }
+    host_buffer_size += collateral->tcb_info_issuer_chain_size;
+
+    if (collateral->tcb_info == NULL || collateral->tcb_info_size == 0)
+    {
+        OE_RAISE_MSG(OE_INVALID_ENDORSEMENT, "tcb_info is NULL", NULL);
+    }
+    host_buffer_size += collateral->tcb_info_size;
+
+    if (collateral->qe_identity_issuer_chain == NULL ||
+        collateral->qe_identity_issuer_chain_size == 0)
+    {
+        OE_RAISE_MSG(
+            OE_INVALID_ENDORSEMENT, "qe_identity_issuer_chain is NULL", NULL);
+    }
+    host_buffer_size += collateral->qe_identity_issuer_chain_size;
+
+    if (collateral->qe_identity == NULL || collateral->qe_identity_size == 0)
+    {
+        OE_RAISE_MSG(OE_INVALID_ENDORSEMENT, "qe_identity is NULL", NULL);
+    }
+    host_buffer_size += collateral->qe_identity_size;
+
     p = (uint8_t*)calloc(1, host_buffer_size);
     p_end = p + host_buffer_size;
     if (p == NULL)
@@ -286,50 +150,137 @@ oe_result_t oe_get_qe_identity_info(oe_get_qe_identity_info_args_t* args)
 
     args->host_out_buffer = p;
 
-    if (identity->qe_id_info != NULL)
+    if (collateral->pck_crl_issuer_chain != NULL)
     {
-        args->qe_id_info = p;
-        args->qe_id_info_size = identity->qe_id_info_size;
+        args->pck_crl_issuer_chain = p;
+        args->pck_crl_issuer_chain_size = collateral->pck_crl_issuer_chain_size;
         OE_CHECK(oe_memcpy_s(
-            args->qe_id_info,
-            args->qe_id_info_size,
-            identity->qe_id_info,
-            identity->qe_id_info_size));
+            args->pck_crl_issuer_chain,
+            args->pck_crl_issuer_chain_size,
+            collateral->pck_crl_issuer_chain,
+            collateral->pck_crl_issuer_chain_size));
         // Add null terminator
-        args->qe_id_info[args->qe_id_info_size++] = 0;
-        p += args->qe_id_info_size;
-        OE_TRACE_INFO("qe_id_info_size = %ld\n", args->qe_id_info_size);
-        OE_TRACE_INFO("qe_id_info json = \n%s\n", args->qe_id_info);
+        args->pck_crl_issuer_chain[args->pck_crl_issuer_chain_size - 1] = 0;
+        p += args->pck_crl_issuer_chain_size;
+        OE_TRACE_INFO(
+            "pck_crl_issuer_chain_size = %ld\n",
+            args->pck_crl_issuer_chain_size);
+        OE_TRACE_INFO(
+            "pck_crl_issuer_chain json = \n%s\n", args->pck_crl_issuer_chain);
     }
 
-    if (identity->issuer_chain != NULL)
+    if (collateral->root_ca_crl != NULL)
     {
-        args->issuer_chain = p;
-        args->issuer_chain_size = identity->issuer_chain_size;
+        args->root_ca_crl = p;
+        args->root_ca_crl_size = collateral->root_ca_crl_size;
         OE_CHECK(oe_memcpy_s(
-            args->issuer_chain,
-            args->issuer_chain_size,
-            identity->issuer_chain,
-            identity->issuer_chain_size));
+            args->root_ca_crl,
+            args->root_ca_crl_size,
+            collateral->root_ca_crl,
+            collateral->root_ca_crl_size));
         // Add null terminator
-        args->issuer_chain[args->issuer_chain_size++] = 0;
-        p += args->issuer_chain_size;
-        OE_TRACE_INFO("issuer_chain_size = %ld\n", args->issuer_chain_size);
+        args->root_ca_crl[args->root_ca_crl_size - 1] = 0;
+        p += args->root_ca_crl_size;
+        OE_TRACE_INFO("root_ca_crl_size = %ld\n", args->root_ca_crl_size);
+    }
+
+    if (collateral->pck_crl != NULL)
+    {
+        args->pck_crl = p;
+        args->pck_crl_size = collateral->pck_crl_size;
+        OE_CHECK(oe_memcpy_s(
+            args->pck_crl,
+            args->pck_crl_size,
+            collateral->pck_crl,
+            collateral->pck_crl_size));
+        // Add null terminator
+        args->pck_crl[args->pck_crl_size - 1] = 0;
+        p += args->pck_crl_size;
+        OE_TRACE_INFO("pck_crl_size = %ld\n", args->pck_crl_size);
+    }
+
+    if (collateral->tcb_info_issuer_chain != NULL)
+    {
+        args->tcb_info_issuer_chain = p;
+        args->tcb_info_issuer_chain_size =
+            collateral->tcb_info_issuer_chain_size;
+        OE_CHECK(oe_memcpy_s(
+            args->tcb_info_issuer_chain,
+            args->tcb_info_issuer_chain_size,
+            collateral->tcb_info_issuer_chain,
+            collateral->tcb_info_issuer_chain_size));
+        // Add null terminator
+        args->tcb_info_issuer_chain[args->tcb_info_issuer_chain_size - 1] = 0;
+        p += args->tcb_info_issuer_chain_size;
+        OE_TRACE_INFO("pck_crl_size = %ld\n", args->tcb_info_issuer_chain_size);
+    }
+
+    if (collateral->tcb_info != NULL)
+    {
+        args->tcb_info = p;
+        args->tcb_info_size = collateral->tcb_info_size;
+        OE_CHECK(oe_memcpy_s(
+            args->tcb_info,
+            args->tcb_info_size,
+            collateral->tcb_info,
+            collateral->tcb_info_size));
+        // Add null terminator
+        args->tcb_info[args->tcb_info_size - 1] = 0;
+        p += args->tcb_info_size;
+        OE_TRACE_INFO("tcb_info_size = %ld\n", args->tcb_info_size);
+    }
+
+    if (collateral->qe_identity_issuer_chain != NULL)
+    {
+        args->qe_identity_issuer_chain = p;
+        args->qe_identity_issuer_chain_size =
+            collateral->qe_identity_issuer_chain_size;
+        OE_CHECK(oe_memcpy_s(
+            args->qe_identity_issuer_chain,
+            args->qe_identity_issuer_chain_size,
+            collateral->qe_identity_issuer_chain,
+            collateral->qe_identity_issuer_chain_size));
+        // Add null terminator
+        args->qe_identity_issuer_chain
+            [args->qe_identity_issuer_chain_size - 1] = 0;
+        p += args->qe_identity_issuer_chain_size;
+        OE_TRACE_INFO(
+            "qe_identity_issuer_chain_size = %ld\n",
+            args->qe_identity_issuer_chain_size);
+    }
+
+    if (collateral->qe_identity != NULL)
+    {
+        args->qe_identity = p;
+        args->qe_identity_size = collateral->qe_identity_size;
+        OE_CHECK(oe_memcpy_s(
+            args->qe_identity,
+            args->qe_identity_size,
+            collateral->qe_identity,
+            collateral->qe_identity_size));
+        // Add null terminator
+        args->qe_identity[args->qe_identity_size - 1] = 0;
+        p += args->qe_identity_size;
+        OE_TRACE_INFO("qe_identity_size = %ld\n", args->qe_identity_size);
     }
 
     if (p != p_end)
+    {
         OE_RAISE(OE_UNEXPECTED);
+    }
 
     result = OE_OK;
 done:
-    if (identity != NULL)
+    if (collateral != NULL)
     {
-        provider.free_qe_identity_info(identity);
+        provider.free_sgx_quote_verification_collateral(collateral);
     }
+
     return result;
 }
 
-void oe_free_qe_identity_info_args(oe_get_qe_identity_info_args_t* args)
+void oe_free_sgx_quote_verification_collateral_args(
+    oe_get_sgx_quote_verification_collateral_args_t* args)
 {
     if (args)
     {

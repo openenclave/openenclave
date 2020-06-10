@@ -1,0 +1,21 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+# snmalloc uses C++!7 `if constexpr` which is available in GCC 7.1 and above.
+# Ubuntu 16.04's GCC is 5.4.0.
+# Versions of clang which we care about support the construct.
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION
+                                            VERSION_LESS "7.1")
+  message(
+    "snmalloc requires GCC 7.1 for specific c++17 features. Skipping snmalloc test."
+  )
+  return()
+endif ()
+
+add_subdirectory(host)
+
+if (BUILD_ENCLAVES)
+  add_subdirectory(enc)
+endif ()
+
+add_enclave_test(tests/snmalloc snmalloc_host snmalloc_enc)

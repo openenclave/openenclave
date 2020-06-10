@@ -1,0 +1,16 @@
+{
+  "$schema-version": "0.0.1",
+  "description": "",
+  "image": {
+    "repository": "[[docker-repo]]",
+    "tag": {
+      "version": "0.0.1",
+      "platforms": {
+        "aarch64-qemu": "./Dockerfile.aarch64-qemu",
+        "ls1012": "./Dockerfile.ls1012"
+      }
+    },
+    "buildOptions": []
+  },
+  "language": "c"
+}

@@ -33,22 +33,25 @@ Please refer to the following [documentation](/docs/GettingStartedDocs/SGXSuppor
 
    On Linux, if your target system does not have any SGX hardware support, you may want to choose simulation.
 
-   On Windows, Open Enclave SDK does not support simulation mode.
+   On Windows, Open Enclave SDK supports simulation mode but only on systems with SGX1 or SGX1+FLC support.
 
 #### 3. Build, install and run
 
    Choose an operating mode that is compatible with the SGX support level of your target system.
    The links below contain instructions on how to set up Open Enclave SDK environment for a given mode.
 
-On Linux:
-  - [Setup Open Enclave SDK for SGX1+FLC](SGX1FLCGettingStarted.md)
-  - [Setup Open Enclave SDK for SGX1](SGX1GettingStarted.md)
-  - [Setup Open Enclave SDK for simulation mode](SimulatorGettingStarted.md)
+On Ubuntu 1604 or Ubuntu 1804
+  - [Set up Open Enclave SDK for SGX1+FLC](SGX1FLCGettingStarted.md)
+  - [Set up Open Enclave SDK for SGX1](SGX1GettingStarted.md)
+  - [Set up Open Enclave SDK for simulation mode](SimulatorGettingStarted.md)
 
-On Windows:
+On RHEL8
+ - [Set up Open Enclave SDK on RHEL8](ExperimentalSupportRHEL8.md)
+
+On Windows
  - [Set up Open Enclave SDK for SGX1+FLC](WindowsSGX1FLCGettingStarted.md)
  - [Set up Open Enclave SDK for SGX1](WindowsSGX1GettingStarted.md)
- - Simulation mode is not supported on Windows
+ - Simulation mode is supported on Windows but only on systems that have SGX1 or SGX1+FLC support.
 
 ## Samples
 

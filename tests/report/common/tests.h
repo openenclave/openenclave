@@ -26,5 +26,6 @@ void test_parse_report_negative();
 void test_local_verify_report();
 void test_remote_verify_report();
 void test_verify_report_with_collaterals();
+void test_get_signer_id_from_public_key();
 
 #endif

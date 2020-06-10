@@ -14,12 +14,13 @@ oe_result_t test_malloc()
     uint8_t* ptr = NULL;
     extern void* oe_malloc(size_t n);
     extern void oe_free(void* ptr);
+    extern void* dlmalloc_sbrk(size_t n);
     oe_result_t return_value = OE_UNEXPECTED;
 
     /* Determine how much heap memory remains */
     {
         const uint8_t* base = (const uint8_t*)__oe_get_heap_base();
-        const uint8_t* brk = (const uint8_t*)oe_sbrk(0);
+        const uint8_t* brk = (const uint8_t*)dlmalloc_sbrk(0);
         const uint8_t* end = (const uint8_t*)__oe_get_heap_end();
 
         /* Sanity checks */

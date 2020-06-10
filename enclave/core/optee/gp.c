@@ -13,7 +13,7 @@
 #include "../atexit.h"
 #include "../calls.h"
 #include "../init_fini.h"
-#include "tee_t.h"
+#include "core_t.h"
 
 #include <tee_internal_api.h>
 
@@ -409,9 +409,11 @@ TEE_Result TA_CreateEntryPoint(void)
     /* Call compiler-generated initialization functions */
     oe_call_init_functions();
 
+#ifdef OE_USE_BUILTIN_EDL
     /* Install the common TEE ECALL function table. */
-    if (oe_register_tee_ecall_function_table() != OE_OK)
+    if (oe_register_core_ecall_function_table() != OE_OK)
         return TEE_ERROR_GENERIC;
+#endif
 
     /* Done */
     __oe_initialized = 1;

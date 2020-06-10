@@ -153,6 +153,28 @@ oe_off_t oe_syscall_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
     return lseek((int)fd, offset, whence);
 }
 
+ssize_t oe_syscall_pread_ocall(
+    oe_host_fd_t fd,
+    void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    errno = 0;
+
+    return pread((int)fd, buf, count, offset);
+}
+
+ssize_t oe_syscall_pwrite_ocall(
+    oe_host_fd_t fd,
+    const void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    errno = 0;
+
+    return pwrite((int)fd, buf, count, offset);
+}
+
 int oe_syscall_close_ocall(oe_host_fd_t fd)
 {
     errno = 0;
@@ -249,7 +271,7 @@ int oe_syscall_closedir_ocall(uint64_t dirp)
     return closedir((DIR*)dirp);
 }
 
-int oe_syscall_stat_ocall(const char* pathname, struct oe_stat* buf)
+int oe_syscall_stat_ocall(const char* pathname, struct oe_stat_t* buf)
 {
     int ret = -1;
     struct stat st;
@@ -837,6 +859,21 @@ done:
         free(handle);
 
     return ret;
+}
+
+size_t _strcpy_to_utf8(
+    char* ai_canonname_buf,
+    size_t ai_canonname_buf_len,
+    void* ai_canonname)
+{
+    const char* canonname = (const char*)ai_canonname;
+
+    size_t buf_needed = strlen(canonname) + 1;
+    if (buf_needed <= ai_canonname_buf_len)
+    {
+        memcpy(ai_canonname_buf, canonname, buf_needed);
+    }
+    return buf_needed;
 }
 
 int oe_syscall_getaddrinfo_read_ocall(

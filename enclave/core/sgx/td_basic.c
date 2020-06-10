@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
@@ -8,15 +9,11 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/rdrand.h>
 #include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "asmdefs.h"
 #include "td.h"
 #include "thread.h"
-
-#if __linux__
-#include "linux/threadlocal.h"
-#endif
+#include "threadlocal.h"
 
 /*
 **==============================================================================
@@ -24,12 +21,12 @@
 ** td_pop_callsite()
 **
 **     Remove the Callsite structure that is at the head of the
-**     td_t.callsites list.
+**     oe_sgx_td_t.callsites list.
 **
 **==============================================================================
 */
 
-void td_pop_callsite(td_t* td)
+void td_pop_callsite(oe_sgx_td_t* td)
 {
     if (!td->callsites)
         oe_abort();
@@ -53,8 +50,10 @@ void td_pop_callsite(td_t* td)
 **
 ** td_init()
 **
-**     Initialize the thread data structure (td_t) if not already initialized.
-**     The td_t resides in the FS segment and is located relative to the TCS.
+**     Initialize the thread data structure (oe_sgx_td_t) if not already
+*initialized.
+**     The oe_sgx_td_t resides in the FS segment and is located relative to the
+*TCS.
 **     Refer to the following layout.
 **
 **         +----------------------------+
@@ -74,7 +73,7 @@ void td_pop_callsite(td_t* td)
 **         +----------------------------+
 **         | Thread local storage       |
 **         +----------------------------+
-**         | FS/GS Page (td_t + tsp)    |
+**         | FS/GS Page (oe_sgx_td_t + tsp)    |
 **         +----------------------------+
 **
 **     Note: the host register fields are pre-initialized by oe_enter:
@@ -82,13 +81,13 @@ void td_pop_callsite(td_t* td)
 **==============================================================================
 */
 
-void td_init(td_t* td)
+void td_init(oe_sgx_td_t* td)
 {
     /* If not already initialized */
     if (!td_initialized(td))
     {
-        // td_t.hostsp, td_t.hostbp, and td_t.retaddr already set by
-        // oe_enter().
+        // oe_sgx_td_t.hostsp, oe_sgx_td_t.hostbp, and oe_sgx_td_t.retaddr
+        // already set by oe_enter().
 
         /* Clear base structure */
         memset(&td->base, 0, sizeof(td->base));
@@ -111,9 +110,7 @@ void td_init(td_t* td)
         /* List of callsites is initially empty */
         td->callsites = NULL;
 
-#if __linux__
         oe_thread_local_init(td);
-#endif
     }
 }
 
@@ -122,13 +119,13 @@ void td_init(td_t* td)
 **
 ** td_clear()
 **
-**     Clear the td_t. This is called when the ECALL depth falls to zero
+**     Clear the oe_sgx_td_t. This is called when the ECALL depth falls to zero
 **     in td_pop_callsite().
 **
 **==============================================================================
 */
 
-void td_clear(td_t* td)
+void td_clear(oe_sgx_td_t* td)
 {
     if (td->depth != 1)
         oe_abort();
@@ -137,9 +134,7 @@ void td_clear(td_t* td)
     // pthread_create_key.
     oe_thread_destruct_specific();
 
-#if __linux__
     oe_thread_local_cleanup(td);
-#endif
 
     // The call sites and depth are cleaned up after the thread-local storage is
     // cleaned up since thread-local dynamic destructors could make ocalls.
@@ -157,5 +152,5 @@ void td_clear(td_t* td)
     /* Clear the magic number */
     td->magic = 0;
 
-    /* Never clear td_t.initialized nor host registers */
+    /* Never clear oe_sgx_td_t.initialized nor host registers */
 }

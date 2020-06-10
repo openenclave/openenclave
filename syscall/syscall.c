@@ -112,6 +112,26 @@ static long _syscall(
             ret = oe_lseek(fd, off, whence);
             goto done;
         }
+        case OE_SYS_pread64:
+        {
+            const int fd = (int)arg1;
+            void* const buf = (void*)arg2;
+            const size_t count = (size_t)arg3;
+            const oe_off_t offset = (oe_off_t)arg4;
+
+            ret = oe_pread(fd, buf, count, offset);
+            goto done;
+        }
+        case OE_SYS_pwrite64:
+        {
+            const int fd = (int)arg1;
+            const void* const buf = (void*)arg2;
+            const size_t count = (size_t)arg3;
+            const oe_off_t offset = (oe_off_t)arg4;
+
+            ret = oe_pwrite(fd, buf, count, offset);
+            goto done;
+        }
         case OE_SYS_readv:
         {
             int fd = (int)arg1;
@@ -191,7 +211,7 @@ static long _syscall(
         case OE_SYS_stat:
         {
             const char* pathname = (const char*)arg1;
-            struct oe_stat* buf = (struct oe_stat*)arg2;
+            struct oe_stat_t* buf = (struct oe_stat_t*)arg2;
             ret = oe_stat(pathname, buf);
             goto done;
         }
@@ -200,7 +220,7 @@ static long _syscall(
         {
             int dirfd = (int)arg1;
             const char* pathname = (const char*)arg2;
-            struct oe_stat* buf = (struct oe_stat*)arg3;
+            struct oe_stat_t* buf = (struct oe_stat_t*)arg3;
             int flags = (int)arg4;
 
             if (dirfd != OE_AT_FDCWD)
