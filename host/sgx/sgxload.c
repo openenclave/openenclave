@@ -345,8 +345,8 @@ static oe_result_t _get_sig_struct(
             properties->config.security_version,
             OE_DEBUG_SIGN_KEY,
             OE_DEBUG_SIGN_KEY_SIZE,
-            properties->config.isvfamilyid,
-            properties->config.isvextprodid,
+            properties->config.isv_family_id,
+            properties->config.isv_ext_product_id,
             sigstruct));
     }
     else
