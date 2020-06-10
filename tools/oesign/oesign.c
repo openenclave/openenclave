@@ -355,8 +355,8 @@ void _merge_config_file_options(
 
     if (options->kss)
     {
-        memcpy(properties->config.isv_family_id, options->isv_family_id, 16);
-        memcpy(properties->config.isv_ext_product_id, options->isv_ext_product_id, 16);
+        memcpy(properties->config.isv_family_id, &options->isv_family_id, 16);
+        memcpy(properties->config.isv_ext_product_id, &options->isv_ext_product_id, 16);
     }
 
     /* If NumHeapPages option is present */
