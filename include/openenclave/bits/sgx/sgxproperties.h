@@ -38,8 +38,8 @@ typedef struct oe_sgx_enclave_config_t
 {
     uint16_t product_id;
     uint16_t security_version;
-    oe_uuid_t isv_family_id;
-    oe_uuid_t isv_ext_product_id;
+    uint8_t isv_family_id[16];
+    uint8_t isv_ext_product_id[16];
 
     /* Padding to make packed and unpacked size the same */
     uint32_t padding;
