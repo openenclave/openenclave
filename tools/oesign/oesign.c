@@ -19,6 +19,7 @@
 typedef struct _config_file_options
 {
     bool debug;
+    bool kss;
     uint64_t num_heap_pages;
     uint64_t num_stack_pages;
     uint64_t num_tcs;
@@ -30,7 +31,7 @@ typedef struct _config_file_options
 
 #define CONFIG_FILE_OPTIONS_INITIALIZER                                 \
     {                                                                   \
-        .debug = false, .num_heap_pages = OE_UINT64_MAX,                \
+        .debug = false, .kss = false, .num_heap_pages = OE_UINT64_MAX,  \
         .num_stack_pages = OE_UINT64_MAX, .num_tcs = OE_UINT64_MAX,     \
         .product_id = OE_UINT16_MAX, .security_version = OE_UINT16_MAX, \
     }
@@ -92,6 +93,19 @@ static int _load_config_file(const char* path, ConfigFileOptions* options)
             }
 
             options->debug = (bool)value;
+        }
+        else if (strcmp(str_ptr(&lhs), "Kss") == 0)
+        {
+            uint64_t value;
+
+            // Debug must be 0 or 1
+            if (str_u64(&rhs, &value) != 0 || (value > 1))
+            {
+                oe_err("%s(%zu): 'Kss' value must be 0 or 1", path, line);
+                goto done;
+            }
+
+            options->kss = (bool)value;
         }
         else if (strcmp(str_ptr(&lhs), "NumHeapPages") == 0)
         {
@@ -328,6 +342,10 @@ void _merge_config_file_options(
     if (options->debug)
         properties->config.attributes |= SGX_FLAGS_DEBUG;
 
+    /* Kss option is present */
+    if (options->kss)
+        properties->config.attributes |= SGX_FLAGS_KSS;
+
     /* If ProductID option is present */
     if (options->product_id != OE_UINT16_MAX)
         properties->config.product_id = options->product_id;
@@ -335,6 +353,12 @@ void _merge_config_file_options(
     /* If SecurityVersion option is present */
     if (options->security_version != OE_UINT16_MAX)
         properties->config.security_version = options->security_version;
+
+    if (options->kss)
+    {
+        properties->config.isv_family_id = options->isv_family_id;
+        properties->config.isv_ext_product_id = options->isv_ext_product_id;
+    }
 
     /* If NumHeapPages option is present */
     if (options->num_heap_pages != OE_UINT64_MAX)

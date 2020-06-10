@@ -77,6 +77,9 @@ typedef struct _oe_sgx_enclave_properties
 #define OE_MAKE_ATTRIBUTES(ALLOW_DEBUG) \
     (OE_SGX_FLAGS_MODE64BIT | (ALLOW_DEBUG ? OE_SGX_FLAGS_DEBUG : 0))
 
+#define OE_MAKE_ATTRIBUTES_EX(ALLOW_KSS, ALLOW_DEBUG) \
+    (OE_SGX_FLAGS_MODE64BIT | (ALLOW_KSS ? OE_SGX_FLAGS_KSS : 0) | (ALLOW_DEBUG ? OE_SGX_FLAGS_DEBUG : 0))
+
 // This macro initializes and injects an oe_sgx_enclave_properties_t struct
 // into the .oeinfo section.
 
@@ -128,6 +131,51 @@ typedef struct _oe_sgx_enclave_properties
             .security_version = SECURITY_VERSION,                         \
             .padding = 0,                                                 \
             .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG)                 \
+        },                                                                \
+        .image_info =                                                     \
+        {                                                                 \
+            0, 0, 0, 0, 0, 0                                              \
+        },                                                                \
+        .sigstruct =                                                      \
+        {                                                                 \
+            0                                                             \
+        },                                                                \
+        .end_marker = 0xecececececececec,                                 \
+    };                                                                    \
+    OE_INFO_SECTION_END
+
+#define OE_SET_ENCLAVE_SGX_EX(                                               \
+    PRODUCT_ID,                                                           \
+    SECURITY_VERSION,                                                     \
+    ISV_FAMILY_ID,                                                        \    
+    ISV_EXT_PRODUCT_ID,                                                   \
+    ALLOW_DEBUG,                                                          \
+    ALLOW_KSS,
+    HEAP_PAGE_COUNT,                                                      \
+    STACK_PAGE_COUNT,                                                     \
+    TCS_COUNT)                                                            \
+    OE_INFO_SECTION_BEGIN                                                 \
+    volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx = \
+    {                                                                     \
+        .header =                                                         \
+        {                                                                 \
+            .size = sizeof(oe_sgx_enclave_properties_t),                  \
+            .enclave_type = OE_ENCLAVE_TYPE_SGX,                          \
+            .size_settings =                                              \
+            {                                                             \
+                .num_heap_pages = HEAP_PAGE_COUNT,                        \
+                .num_stack_pages = STACK_PAGE_COUNT,                      \
+                .num_tcs = TCS_COUNT                                      \
+            }                                                             \
+        },                                                                \
+        .config =                                                         \
+        {                                                                 \
+            .product_id = PRODUCT_ID,                                     \
+            .security_version = SECURITY_VERSION,                         \
+            .isvfamilyid = ISV_FAMILY_ID,                                 \
+            .isvextprodid = ISV_EXT_PRODUCT_ID,                           \
+            .padding = 0,                                                 \
+            .attributes = OE_MAKE_ATTRIBUTES_EX(ALLOW_KSS, ALLOW_DEBUG)   \
         },                                                                \
         .image_info =                                                     \
         {                                                                 \
