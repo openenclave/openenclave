@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <tee_client_api.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>

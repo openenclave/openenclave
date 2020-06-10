@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <tee_client_api.h>
 #include "mem.h"
 
 #define STR_NPOS ((size_t)-1)
@@ -424,6 +423,19 @@ MEM_INLINE int str_split(str_t* str, const char* delim, str_t* lhs, str_t* rhs)
 
     return 0;
 }
+
+/**
+ * This type contains a Universally Unique Resource Identifier (UUID) type as
+ * defined in RFC4122. These UUID values are used to identify Trusted
+ * Applications.
+ */
+typedef struct
+{
+    uint32_t timeLow;
+    uint16_t timeMid;
+    uint16_t timeHiAndVersion;
+    uint8_t clockSeqAndNode[8];
+} TEEC_UUID;
 
 MEM_INLINE int uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
 {
