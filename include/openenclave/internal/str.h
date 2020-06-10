@@ -444,7 +444,7 @@ MEM_INLINE int uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
     char* id_copy;
     const char* current_token;
 
-    id_copy = strdup(uuid_str);
+    id_copy = _strdup(uuid_str);
 
     /* Remove ".ta" extension, if one is present */
     size_t len = strlen(id_copy);
@@ -457,11 +457,11 @@ MEM_INLINE int uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
         return -1;
 
     i = 5;
-    current_token = strtok(id_copy, "-");
+    current_token = strtok_s(id_copy, "-");
     while (current_token != NULL && i >= 0)
     {
         uuid_parts[--i] = strtoull(current_token, NULL, 16);
-        current_token = strtok(NULL, "-");
+        current_token = strtok_S(NULL, "-");
     }
 
     free(id_copy);
