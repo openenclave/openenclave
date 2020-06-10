@@ -144,13 +144,13 @@ typedef struct _oe_sgx_enclave_properties
     };                                                                    \
     OE_INFO_SECTION_END
 
-#define OE_SET_ENCLAVE_SGX_EX(                                               \
+#define OE_SET_ENCLAVE_SGX_EX(                                            \
     PRODUCT_ID,                                                           \
     SECURITY_VERSION,                                                     \
     ISV_FAMILY_ID,                                                        \    
     ISV_EXT_PRODUCT_ID,                                                   \
     ALLOW_DEBUG,                                                          \
-    ALLOW_KSS,
+    ALLOW_KSS,                                                            \   
     HEAP_PAGE_COUNT,                                                      \
     STACK_PAGE_COUNT,                                                     \
     TCS_COUNT)                                                            \
