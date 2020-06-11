@@ -77,6 +77,7 @@ if (OE_SGX)
     PLATFORM_SRC
     ../../common/sgx/endorsements.c
     ../../common/sgx/rand.S
+    sgx/arena.c
     sgx/backtrace.c
     sgx/calls.c
     sgx/cpuid.c
@@ -104,7 +105,6 @@ if (OE_SGX)
     sgx/td_basic.c
     sgx/thread.c
     sgx/threadlocal.c
-    sgx/tls.c
     sgx/tracee.c)
 
   # Functions in td_basic.c will change the status of td and may trigger
@@ -132,7 +132,6 @@ elseif (OE_TRUSTZONE)
     optee/spinlock.c
     optee/stubs.c
     optee/thread.c
-    optee/tls.c
     optee/tracee.c)
 endif ()
 
@@ -157,7 +156,6 @@ add_enclave_library(
   ${MUSL_SRC_DIR}/string/memmove.c
   ${MUSL_SRC_DIR}/string/memset.c
   __stack_chk_fail.c
-  arena.c
   assert.c
   atexit.c
   backtrace.c

@@ -28,7 +28,7 @@
 #include <openenclave/internal/utils.h>
 #include "../../../common/sgx/sgxmeasure.h"
 #include "../../sgx/report.h"
-#include "../arena.h"
+#include "arena.h"
 #include "../atexit.h"
 #include "../tracee.h"
 #include "asmdefs.h"

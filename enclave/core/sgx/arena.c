@@ -7,8 +7,8 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/internal/tls.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/sgx/td.h>
 
 // Default shared memory arena capacity is 1 mb
 static size_t _capacity = 1024 * 1024;
@@ -17,6 +17,11 @@ static const size_t _max_capacity = 1 << 30;
 
 void* oe_allocate_arena(size_t capacity);
 void oe_deallocate_arena(void* buffer);
+
+static oe_shared_memory_arena_t* _get_arena()
+{
+    return &oe_sgx_get_td()->arena;
+}
 
 bool oe_configure_arena_capacity(size_t cap)
 {
@@ -33,9 +38,9 @@ void* oe_arena_malloc(size_t size)
     oe_result_t result = OE_UNEXPECTED;
     size_t total_size = 0;
     const size_t align = OE_EDGER8R_BUFFER_ALIGNMENT;
-    oe_shared_memory_arena_t* arena = oe_get_shared_memory_arena_tls();
+    oe_shared_memory_arena_t* arena = _get_arena();
 
-    // Create the anera if it hasn't been created.
+    // Create the arena if it hasn't been created.
     if (arena->buffer == NULL)
     {
         arena->capacity = __atomic_load_n(&_capacity, __ATOMIC_SEQ_CST);
@@ -88,14 +93,14 @@ void* oe_arena_calloc(size_t num, size_t size)
 
 void oe_arena_free_all()
 {
-    oe_shared_memory_arena_t* arena = oe_get_shared_memory_arena_tls();
+    oe_shared_memory_arena_t* arena = _get_arena();
     arena->used = 0;
 }
 
 // Free the arena in the current thread.
 void oe_teardown_arena()
 {
-    oe_shared_memory_arena_t* arena = oe_get_shared_memory_arena_tls();
+    oe_shared_memory_arena_t* arena = _get_arena();
 
     if (arena->buffer != NULL)
         oe_deallocate_arena(arena->buffer);
