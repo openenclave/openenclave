@@ -4,6 +4,7 @@
 #ifndef _OE_SGX_TD_H
 #define _OE_SGX_TD_H
 
+#include <openenclave/internal/types.h>
 #include <openenclave/internal/defs.h>
 
 OE_EXTERNC_BEGIN

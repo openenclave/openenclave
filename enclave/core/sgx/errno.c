@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/errno.h>
-#include <openenclave/enclave.h>
 #include <openenclave/internal/sgx/td.h>
 
 int* __oe_errno_location(void)
