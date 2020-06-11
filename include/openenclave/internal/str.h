@@ -445,7 +445,7 @@ MEM_INLINE int uuid_from_string(str_t* str, TEEC_UUID* uuid)
     char* posn;
     char* current_token;
 
-    id_copy = _strdup(str_ptr(str));
+    id_copy = strdup(str_ptr(str));
 
     /* Remove ".ta" extension, if one is present */
     size_t len = strlen(id_copy);
