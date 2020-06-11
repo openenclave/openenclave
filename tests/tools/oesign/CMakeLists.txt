@@ -4,6 +4,7 @@
 # oesign tests need to build a target enclave to sign
 if (BUILD_ENCLAVES)
   add_subdirectory(test-enclave)
+  add_subdirectory(test-digest)
   add_subdirectory(test-inputs)
   add_subdirectory(test-sign)
 

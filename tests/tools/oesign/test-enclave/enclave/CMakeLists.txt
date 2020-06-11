@@ -31,3 +31,20 @@ target_compile_definitions(oesign_test_enc PUBLIC OE_API_VERSION=2)
 target_include_directories(oesign_test_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(oesign_test_enc oeenclave oelibc)
+
+# Generate an alternative version of the same test enclave with an additional
+# function and preconfigured SGX properties prior to signing.
+add_executable(oesign_test_alt_enc enc.c sgx_conf.c
+                                   ${CMAKE_CURRENT_BINARY_DIR}/oesign_test_t.c)
+
+if (WIN32)
+  maybe_build_using_clangw(oesign_test_alt_enc)
+endif ()
+
+target_compile_definitions(oesign_test_alt_enc PUBLIC OE_API_VERSION=2)
+
+target_include_directories(oesign_test_alt_enc
+                           PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries(oesign_test_alt_enc oeenclave oelibc
+                      -Wl,--undefined=oesign_test_extra_function)
