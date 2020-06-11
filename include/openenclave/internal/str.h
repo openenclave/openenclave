@@ -443,7 +443,7 @@ MEM_INLINE int uuid_from_string(str_t* str, TEEC_UUID* uuid)
     uint64_t uuid_parts[5];
     char* id_copy;
     char* posn;
-    const char* current_token;
+    char* current_token;
 
     id_copy = _strdup(str_ptr(str));
 
