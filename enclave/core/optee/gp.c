@@ -8,7 +8,9 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/globals.h>
 #include <openenclave/internal/raise.h>
 #include "../atexit.h"
 #include "../calls.h"
@@ -399,6 +401,10 @@ TEE_Result TA_CreateEntryPoint(void)
 
     TEE_UUID pta_uuid = PTA_RPC_UUID;
 
+    /* Initialize the memory allocator */
+    oe_allocator_init((void*)__oe_get_heap_base(), (void*)__oe_get_heap_end());
+    oe_allocator_thread_init();
+
     /* Open a TA2TA session against the RPC Pseudo TA (PTA), required for
      * making OCALLs. If we cannot open one, fail to initialize the TA */
     result =
@@ -502,4 +508,8 @@ void TA_DestroyEntryPoint(void)
 
     /* Call all finalization functions */
     oe_call_fini_functions();
+
+    /* Clean up the memory allocator */
+    oe_allocator_thread_cleanup();
+    oe_allocator_cleanup();
 }
