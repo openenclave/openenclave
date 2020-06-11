@@ -94,12 +94,18 @@ endif ()
 # ignored.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+  set(CMAKE_BUILD_TYPE "Debug")
+endif ()
+
 # Validate CMAKE_BUILD_TYPE
 string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
-list(APPEND uppercase_build_type "" "DEBUG" "RELEASE" "RELWITHDEBINFO")
+list(APPEND uppercase_build_type "DEBUG" "RELEASE" "RELWITHDEBINFO")
 if (NOT uppercase_CMAKE_BUILD_TYPE IN_LIST uppercase_build_type)
   message(FATAL_ERROR "UNKNOWN CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 endif ()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 # Get Jenkins build number
 if (DEFINED ENV{BUILD_NUMBER})
