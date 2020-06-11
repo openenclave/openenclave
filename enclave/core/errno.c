@@ -4,10 +4,9 @@
 #include <openenclave/enclave.h>
 
 #include <openenclave/corelibc/errno.h>
-
-static __thread int _errno = 0;
+#include <openenclave/internal/sgx/td.h>
 
 int* __oe_errno_location(void)
 {
-    return &_errno;
+    return &oe_sgx_get_td()->errnum;
 }

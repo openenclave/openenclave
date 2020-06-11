@@ -6,14 +6,6 @@
 
 #include <openenclave/bits/types.h>
 
-typedef struct _shared_memory_arena_t
-{
-    /* Buffer holding the shared memory pool */
-    uint8_t* buffer;
-    size_t capacity;
-    size_t used;
-} shared_memory_arena_t;
-
 bool oe_configure_arena_capacity(size_t cap);
 
 void* oe_arena_malloc(size_t size);
