@@ -2,52 +2,34 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# generate user-defined config files for oesign tests.
-# usage: oesign-customize-config.py 0|1
-
+import sys
 import argparse
-import os
-
-def generate_empty_config():
-    print("Generating empty config")
-    cfgname = "empty.conf"
-    abs_cfg = os.path.join(os.getcwd(),cfgname)
-    print(abs_cfg)
-    fh = open(abs_cfg, 'a+')
-    fh.close()
-
-def generate_neg_config():
-    print("Generating config file w/ negative values")
-    cfgname = "negative_num_heap_pages.conf"
-    abs_cfg = os.path.join(os.getcwd(),cfgname)
-    print(abs_cfg)
-    fh = open(abs_cfg, 'a+')
-    cfg_seq = [
-        "NumHeapPages=-3    \n",
-        "NumStackPages=1024 \n",
-        "NumTCS=1           \n",
-        "ProductID=1        \n",
-        "SecurityVersion=1  \n"
-    ]
-    fh.writelines(cfg_seq)
-    fh.close()
-
-def print_help_info():
-    print("Input Arguments Invalid!! Expected [0|1]!")
 
 if __name__ == "__main__":
-    print("Generating user-defined config file")
-    cfg_argparser = argparse.ArgumentParser(usage='%(prog)s [0|1]',
-        description='0 for empty config, 1 for neg config')
 
-    cfg_argparser.add_argument("type", type=int,
-        help="0 - empty config, 1 - config containing neg val")
+    arg_parser = argparse.ArgumentParser(description="Generates oesign config file variations from a basic valid template")
+    arg_parser.add_argument('--config_file', default=None, type=str, help="Full path to output the generated oesign config file to.")
+    arg_parser.add_argument('--debug', default="1", type=str, help="Value for the Debug property. Defaults to 1 (true).")
+    arg_parser.add_argument('--num_heap_pages', default="1024", type=str, help="Value for the NumHeapPages property. Defaults to 1024.")
+    arg_parser.add_argument('--num_stack_pages', default="1024", type=str, help="Value for the NumStackPages property. Defaults to 1024.")
+    arg_parser.add_argument('--num_tcs', default="1", type=str, help="Value for the NumCS property. Defaults to 1.")
+    arg_parser.add_argument('--product_id', default="1", type=str, help="Value for the ProductID property. Defaults to 1.")
+    arg_parser.add_argument('--security_version', default="1", type=str, help="Value for the SecurityVersion property. Defaults to 1.")
 
-    cmd_args = cfg_argparser.parse_args()
+    args = arg_parser.parse_args()
 
-    if cmd_args.type == 0:
-        generate_empty_config()
-    elif cmd_args.type == 1:
-        generate_neg_config()
-    else:
-        print_help_info()
+    if not args.config_file:
+        arg_parser.print_help()
+        sys.exit(1)
+
+    print("Generating {} ...".format(args.config_file))
+    print("Configuration used: {}".format(args))
+
+    out_file = open(args.config_file, 'w')
+    out_file.write("Debug={}\n".format(args.debug))
+    out_file.write("NumHeapPages={}\n".format(args.num_heap_pages))
+    out_file.write("NumStackPages={}\n".format(args.num_stack_pages))
+    out_file.write("NumTCS={}\n".format(args.num_tcs))
+    out_file.write("ProductID={}\n".format(args.product_id))
+    out_file.write("SecurityVersion={}\n".format(args.security_version))
+    out_file.close()

@@ -1,22 +1,29 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# Copy all manually authored test configs to output folder
+# Generate test variations from a standard baseline configuration
+# TODO: Any test configurations that consist of more than just manipulations
+# of the standard configuration values (e.g. syntax error tests) should be
+# added to the test-inputs source folder and copied to the binary output
+# folder on build.
+
 add_custom_command(
   OUTPUT valid.conf
-  COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/valid.conf
-          ${CMAKE_CURRENT_BINARY_DIR})
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+          --config_file valid.conf)
 
-# Generate an empty config file
-add_custom_command(OUTPUT empty.conf
-                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py 0)
+add_custom_command(
+  OUTPUT negative_num_heap_pages.conf
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+          --config_file negative_num_heap_pages.conf --num_heap_pages -3)
 
-# Generate a config file with negative value
-add_custom_command(OUTPUT negative_num_heap_pages.conf
-                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py 1)
+# Generate empty config file
+add_custom_command(
+  OUTPUT empty.conf COMMAND cmake -E touch
+                            ${CMAKE_CURRENT_BINARY_DIR}/empty.conf)
 
-add_custom_target(oesign_test_configs ALL DEPENDS valid.conf empty.conf
-                                                  negative_num_heap_pages.conf)
+add_custom_target(oesign_test_configs ALL
+                  DEPENDS empty.conf negative_num_heap_pages.conf valid.conf)
 
 # Generate a valid SGX signing key-pair
 add_custom_command(
