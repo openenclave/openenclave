@@ -458,11 +458,19 @@ MEM_INLINE int uuid_from_string(str_t* str, TEEC_UUID* uuid)
         return -1;
 
     i = 5;
+#if defined(__linux__)
+    current_token = strtok_r(id_copy, "-", &posn);
+#else
     current_token = strtok_s(id_copy, "-", &posn);
+#endif
     while (current_token != NULL && i >= 0)
     {
         uuid_parts[--i] = strtoull(current_token, NULL, 16);
+#if defined(__linux__)
+        current_token = strtok_r(NULL, "-", &posn);
+#else
         current_token = strtok_s(NULL, "-", &posn);
+#endif
     }
 
     free(id_copy);
