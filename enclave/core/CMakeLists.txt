@@ -82,6 +82,7 @@ if (OE_SGX)
     sgx/cpuid.c
     sgx/enter.S
     sgx/entropy.c
+    sgx/errno.c
     sgx/exception.c
     sgx/exit.S
     sgx/getkey.S
@@ -103,6 +104,7 @@ if (OE_SGX)
     sgx/td_basic.c
     sgx/thread.c
     sgx/threadlocal.c
+    sgx/tls.c
     sgx/tracee.c)
 
   # Functions in td_basic.c will change the status of td and may trigger
@@ -118,6 +120,7 @@ elseif (OE_TRUSTZONE)
     optee/bounds.c
     optee/calls.c
     optee/entropy.c
+    optee/errno.c
     optee/header.c
     optee/hostcalls.c
     optee/globals.c
@@ -129,6 +132,7 @@ elseif (OE_TRUSTZONE)
     optee/spinlock.c
     optee/stubs.c
     optee/thread.c
+    optee/tls.c
     optee/tracee.c)
 endif ()
 
@@ -160,7 +164,6 @@ add_enclave_library(
   calls.c
   ctype.c
   debugmalloc.c
-  errno.c
   hexdump.c
   hostcalls.c
   intstr.c

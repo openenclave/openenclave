@@ -5,6 +5,7 @@
 #define _OE_SGX_TD_H
 
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/tls.h>
 
 OE_EXTERNC_BEGIN
 
@@ -90,19 +91,6 @@ typedef struct _oe_tls_atexit
     void (*destructor)(void*);
     void* object;
 } oe_tls_atexit_t;
-
-/* This structure manages a pool of shared memory (memory visible to both
- * the enclave and the host). An instance of this structure is maintained
- * for each thread. This structure is used in enclave/core/arena.c.
- */
-typedef struct _oe_shared_memory_arena_t
-{
-    uint8_t* buffer;
-    uint64_t capacity;
-    uint64_t used;
-} oe_shared_memory_arena_t;
-
-OE_CHECK_SIZE(sizeof(oe_shared_memory_arena_t), 24);
 
 OE_PACK_BEGIN
 typedef struct _td
