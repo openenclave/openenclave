@@ -172,7 +172,7 @@ int main(int argc, const char* argv[])
             is_signed,
             1111,                                        /* product_id */
             2222,                                        /* security_version */
-            OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT | OE_SGX_FLAGS_KSS, /* attributes */
+            OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
             512,                                         /* num_heap_pages  */
             512,                                         /* num_stack_pages */
             4);                                          /* num_tcs */
@@ -184,7 +184,7 @@ int main(int argc, const char* argv[])
             is_signed,
             1234,                                        /* product_id */
             5678,                                        /* security_version */
-            OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT | OE_SGX_FLAGS_KSS, /* attributes */
+            OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
             512,                                         /* num_heap_pages  */
             512,                                         /* num_stack_pages */
             4);                                          /* num_tcs */
