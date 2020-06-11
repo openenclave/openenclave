@@ -6,9 +6,9 @@
 #include <openenclave/edger8r/common.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safemath.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/sgx/td.h>
 
 // Default shared memory arena capacity is 1 mb
 static size_t _capacity = 1024 * 1024;

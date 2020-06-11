@@ -4,7 +4,7 @@
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
 
-static __thread _errno;
+static __thread int _errno = 0;
 
 int* __oe_errno_location(void)
 {

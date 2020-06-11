@@ -8,9 +8,9 @@
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+#include "arena.h"
 #include "handle_ecall.h"
 #include "platform_t.h"
-#include "arena.h"
 
 // The number of host thread workers. Initialized by host through ECALL
 static size_t _host_worker_count = 0;
