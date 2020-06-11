@@ -285,7 +285,7 @@ add_subdirectory(host)
 # Tests and samples have been ported to manually include system edl files.
 # They can no longer be used when system EDL is builtin.
 if (NOT COMPILE_SYSTEM_EDL)
-  if (BUILD_TESTS AND BUILD_ENCLAVES)
+  if (BUILD_TESTS)
     add_subdirectory(tests)
   endif ()
   add_subdirectory(samples)
