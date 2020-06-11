@@ -445,8 +445,11 @@ MEM_INLINE int uuid_from_string(str_t* str, TEEC_UUID* uuid)
     char* posn;
     char* current_token;
 
+#if defined(__linux__)
     id_copy = strdup(str_ptr(str));
-
+#else
+    id_copy = _strdup(str_ptr(str));
+#endif
     /* Remove ".ta" extension, if one is present */
     size_t len = strlen(id_copy);
     if ((len > 3) && (strcmp(&id_copy[len - 3], ".ta") == 0))
