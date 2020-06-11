@@ -93,7 +93,7 @@ typedef struct _oe_tls_atexit
 
 /* This structure manages a pool of shared memory (memory visible to both
  * the enclave and the host). An instance of this structure is maintained
- * for each thread. See openenclave/
+ * for each thread. This structure is used in enclave/core/arena.c.
  */
 typedef struct _oe_shared_memory_arena_t
 {
