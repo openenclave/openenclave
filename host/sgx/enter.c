@@ -254,7 +254,9 @@ void oe_enter_sim(
 
         // Define register bindings and initialize the registers.
         // See oe_enter for ENCLU contract.
-        OE_DEFINE_REGISTER(rax, 0 /* CSSA */);
+
+        /* CSSA */
+        OE_DEFINE_REGISTER(rax, ((sgx_tcs_t*)tcs)->cssa);
         OE_DEFINE_REGISTER(rbx, tcs);
         OE_DEFINE_REGISTER(rcx, 0 /* filled in asm snippet */);
         OE_DEFINE_REGISTER(rdx, &ecall_context);

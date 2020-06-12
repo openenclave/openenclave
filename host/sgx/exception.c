@@ -58,7 +58,7 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
         }
         else
         {
-            // Un-handled enclave exception happened.
+            // Unhandled enclave exception happened.
             // We continue the exception handler search as if it were a
             // non-enclave exception.
             return OE_EXCEPTION_CONTINUE_SEARCH;

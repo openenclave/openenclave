@@ -282,10 +282,17 @@ if (OE_SGX)
       PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
       sgx/enter.c
+      sgx/exception_sim.c
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
       sgx/linux/xstate.c)
+
+    # Functions in sgx/exception_sim.c will change the fs register and may trigger
+    # stack check fail, thus it is necessary to turn off stack check.
+    set_source_files_properties(sgx/exception_sim.c
+                                PROPERTIES COMPILE_FLAGS -fno-stack-protector)
+
   else ()
     list(APPEND PLATFORM_HOST_ONLY_SRC sgx/windows/sgxquoteproviderloader.c)
 

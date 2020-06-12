@@ -114,6 +114,9 @@ static oe_result_t _enter_sim(
     td = (oe_sgx_td_t*)(enclave->addr + tcs->gsbase);
     td->simulate = true;
 
+    td->host_fsbase = (uint64_t)oe_get_fs_register_base();
+    td->host_gsbase = (uint64_t)oe_get_gs_register_base();
+
     /* Call into enclave */
     if (arg3)
         *arg3 = 0;

@@ -146,12 +146,14 @@ int main(int argc, const char* argv[])
            "functionalities.\n");
 
     const uint32_t flags = oe_get_create_flags();
+#if defined(_WIN32)
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
         printf("=== Skipped unsupported test in simulation mode "
                "(VectorException)\n");
         return SKIP_RETURN_CODE;
     }
+#endif
 
     if ((result = oe_create_VectorException_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
@@ -162,7 +164,13 @@ int main(int argc, const char* argv[])
     OE_TEST(enc_test_cpuid_in_global_constructors(enclave) == OE_OK);
 
     test_vector_exception(enclave);
-    test_sigill_handling(enclave);
+
+    // SGX specific test is not available in simulation.
+    if (!(flags & OE_ENCLAVE_FLAG_SIMULATE))
+    {
+        test_sigill_handling(enclave);
+    }
+
     test_ocall_in_handler(enclave);
 
     oe_terminate_enclave(enclave);
