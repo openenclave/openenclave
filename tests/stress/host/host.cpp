@@ -38,7 +38,10 @@ void do_ecall_in_enclave(
             oe_put_err("test(): result=%u", result);
         }
     }
-    printf("Finish doing ecall in enclave: %d, total %d ecalls\n", enclave_count, ecall_count);	
+    printf(
+        "Finish doing ecall in enclave: %d, total %d ecalls\n",
+        enclave_count,
+        ecall_count);
 
     result = oe_terminate_enclave(enclave);
     if (result != OE_OK)
@@ -77,7 +80,8 @@ int main(int argc, const char* argv[])
         // TEST_TYPE=0 - do ecall stress test
         // 1. do ecall by count in env sequentially
         case ECALL_STRESS_TEST:
-                do_ecall_by_count_in_env_sequential(argv[1], flags, atoi(argv[3]), atoi(argv[4]));
+            do_ecall_by_count_in_env_sequential(
+                argv[1], flags, atoi(argv[3]), atoi(argv[4]));
             // to add more do ecall stress tests:
             // 2. do ecall by count in env parallelly
             // 3. do ecall by count with multi-threads
