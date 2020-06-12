@@ -13,29 +13,28 @@ macro (detect_compiler BINDIR CC)
   set(COMPILER "${CC}_COMPILER")
 
   # Use the second level of unwrapping on COMPILER to get the compiler name.
-  # If the default compiler is found, return.
-  if (EXISTS "${BINDIR}/${${COMPILER}}")
-    return()
-  endif ()
-
-  if (NOT OE_IN_PACKAGE)
-    # Build OE. Fallback to gcc/g++.
-    set(${COMPILER} ${GCC})
-  else ()
-    # Build enclave applications. Try to search newer versions of clang/clang++.
-    # Be consistent to the logic implemented by samples/config.mk.
-    foreach (VERSION 9 8 7)
-      set(CLANG_VERSION "")
-      if (EXISTS "${BINDIR}/${${COMPILER}}-${VERSION}")
-        set(CLANG_VERSION ${VERSION})
-        break()
-      endif ()
-    endforeach ()
-    # Set the compiler if a version of clang/clang++ is found.
-    if (CLANG_VERSION)
-      set(${COMPILER} ${CLANG}-${CLANG_VERSION})
-    else ()
+  # If the default compiler is not found, use the following logic to detect
+  # the compiler.
+  if (NOT EXISTS "${BINDIR}/${${COMPILER}}")
+    if (NOT OE_IN_PACKAGE)
+      # Build OE. Fallback to gcc/g++.
       set(${COMPILER} ${GCC})
+    else ()
+      # Build enclave applications. Try to search newer versions of clang/clang++.
+      # Be consistent to the logic implemented by samples/config.mk.
+      foreach (VERSION 9 8 7)
+        set(CLANG_VERSION "")
+        if (EXISTS "${BINDIR}/${${COMPILER}}-${VERSION}")
+          set(CLANG_VERSION ${VERSION})
+          break()
+        endif ()
+      endforeach ()
+      # Set the compiler if a version of clang/clang++ is found.
+      if (CLANG_VERSION)
+        set(${COMPILER} ${CLANG}-${CLANG_VERSION})
+      else ()
+        set(${COMPILER} ${GCC})
+      endif ()
     endif ()
   endif ()
 endmacro ()

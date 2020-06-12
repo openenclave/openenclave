@@ -400,6 +400,7 @@ void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context)
 oe_result_t oe_sgx_create_enclave(
     oe_sgx_load_context_t* context,
     size_t enclave_size,
+    size_t enclave_commit_size,
     uint64_t* enclave_addr)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -409,10 +410,14 @@ oe_result_t oe_sgx_create_enclave(
     if (enclave_addr)
         *enclave_addr = 0;
 
-    if (!context || !enclave_size || !enclave_addr)
+    if (!context || !enclave_commit_size || !enclave_size || !enclave_addr)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (context->state != OE_SGX_LOAD_STATE_INITIALIZED)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* initial commit size must be bounded by enclave size */
+    if (enclave_size < enclave_commit_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* SIZE must be a power of two */
@@ -462,7 +467,7 @@ oe_result_t oe_sgx_create_enclave(
         void* base = enclave_create(
             NULL, /* Let OS choose the enclave base address */
             secs->size,
-            secs->size,
+            enclave_commit_size,
             ENCLAVE_TYPE_SGX1,
             (const void*)secs,
             sizeof(sgx_secs_t),
