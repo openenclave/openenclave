@@ -106,7 +106,7 @@ oe_result_t oe_sgx_get_supported_attester_format_ids(
     if (!format_ids || *format_ids_size < sizeof(oe_uuid_t))
     {
         *format_ids_size = sizeof(oe_uuid_t);
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+        return OE_BUFFER_TOO_SMALL;
     }
     memcpy(format_ids, &_ecdsa_uuid, sizeof(oe_uuid_t));
     *format_ids_size = sizeof(oe_uuid_t);
