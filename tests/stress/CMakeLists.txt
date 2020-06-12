@@ -19,7 +19,7 @@ set(OCALL_STRESS_TEST 1)
 set(ECALL_OCALL_STRESS_TEST 2)
 
 add_enclave_test(tests/stress_ecall_1 stress_host stress_enc ${ECALL_STRESS_TEST} 1 10000)
-add_enclave_test(tests/stress_ecall_2 stress_host stress_enc ${ECALL_STRESS_TEST} 100 100)
+add_enclave_test(tests/stress_ecall_2 stress_host stress_enc ${ECALL_STRESS_TEST} 10 100)
 
 if (ENABLE_FULL_STRESS_TESTS)
   add_enclave_test(tests/stress_ecall_1 stress_host stress_enc ${ECALL_STRESS_TEST} 1 1000000)
