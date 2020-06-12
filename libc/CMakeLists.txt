@@ -762,6 +762,7 @@ add_enclave_library(
   ${MUSLSRC}/time/strftime.c
   ${MUSLSRC}/time/__tz.c
   ${MUSLSRC}/time/time.c
+  ${MUSLSRC}/time/timegm.c
   ${MUSLSRC}/time/__tm_to_secs.c
   ${MUSLSRC}/time/__year_to_secs.c
   ${MUSLSRC}/unistd/access.c

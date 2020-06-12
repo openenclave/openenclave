@@ -13,8 +13,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "readfile.h"
 #include "tests.h"
+#if defined(_WIN32)
+#define timegm _mkgmtime
+#endif
+
+#define ACCEPTABLE_ERROR_IN_SECONDS 60
 
 /* _CERT1 loads intermediate.cert.pem
  * _CERT2 loads leaf.cert.pem
@@ -127,17 +133,43 @@ static bool _year_is_a_leap_year(uint32_t year)
     }
 }
 
-static int32_t _diff_oe_datetime(oe_datetime_t* t1, oe_datetime_t* t2)
+static int _diff_oe_datetime(oe_datetime_t* t1, oe_datetime_t* t2)
 {
-    int32_t dyear = (int32_t)t1->year - (int32_t)t2->year;
-    int32_t dmonth = (int32_t)t1->month - (int32_t)t2->month;
-    int32_t dday = (int32_t)t1->day - (int32_t)t2->day;
-    int32_t dhour = (int32_t)t1->hours - (int32_t)t2->hours;
-    int32_t dmin = (int32_t)t1->minutes - (int32_t)t2->minutes;
-    int32_t dsec = (int32_t)t1->seconds - (int32_t)t2->seconds;
+    struct tm tm1, tm2;
 
-    return (dyear * 31556952) + (dmonth * 2592000) + (dday * 86400) +
-           (dhour * 3600) + (dmin * 60) + (dsec);
+    tm1.tm_sec = (int)t1->seconds;
+    tm1.tm_min = (int)t1->minutes;
+    tm1.tm_hour = (int)t1->hours;
+    tm1.tm_mday = (int)t1->day;
+    tm1.tm_mon = (int)t1->month;
+    tm1.tm_year = (int)t1->year;
+    tm1.tm_isdst = -1;
+
+    tm2.tm_sec = (int)t2->seconds;
+    tm2.tm_min = (int)t2->minutes;
+    tm2.tm_hour = (int)t2->hours;
+    tm2.tm_mday = (int)t2->day;
+    tm2.tm_mon = (int)t2->month;
+    tm2.tm_year = (int)t2->year;
+    tm2.tm_isdst = -1;
+
+    time_t time1 = timegm(&tm1);
+    time_t time2 = timegm(&tm2);
+    return (int)(time2 - time1);
+}
+
+static void _print_oe_datetime(const char* s, const oe_datetime_t* t)
+{
+    fprintf(
+        stderr,
+        "[%s] Year=%u, Month=%u, Day=%u, Hour=%u, Minute=%u, Second=%u\n",
+        s,
+        t->year,
+        t->month,
+        t->day,
+        t->hours,
+        t->minutes,
+        t->seconds);
 }
 
 static void _test_get_dates(void)
@@ -152,22 +184,24 @@ static void _test_get_dates(void)
     oe_datetime_t next;
     OE_TEST(oe_crl_get_update_dates(&crl, &last, &next) == OE_OK);
 
-    int32_t diff = _diff_oe_datetime(&last, &_time);
-    printf("=== Diff between last and current time: %d\n", diff);
-    OE_TEST(abs(diff) < 60); // Ensure times are within 60 seconds
+    _print_oe_datetime("Actual CRL last", &last);
+    _print_oe_datetime("Expected CRL last", &_time);
+
+    int diff = _diff_oe_datetime(&last, &_time);
+    OE_TEST(abs(diff) < ACCEPTABLE_ERROR_IN_SECONDS);
 
     oe_datetime_t next_expected;
-    next_expected.year = _time.year + 1;
-    next_expected.month = _time.month;
-    next_expected.day = _time.day;
-    next_expected.hours = _time.hours;
-    next_expected.minutes = _time.minutes;
-    next_expected.seconds = _time.seconds;
+    next_expected.year = last.year + 1;
+    next_expected.month = last.month;
+    next_expected.day = last.day;
+    next_expected.hours = last.hours;
+    next_expected.minutes = last.minutes;
+    next_expected.seconds = last.seconds;
 
     // If a leap day occurs in the next time period, need to adjust
     // expected next date.
-    if ((_time.month >= 3 && _year_is_a_leap_year(next.year)) ||
-        (_time.month <= 2 && _year_is_a_leap_year(_time.year)))
+    if ((last.month >= 3 && _year_is_a_leap_year(next.year)) ||
+        (last.month <= 2 && _year_is_a_leap_year(last.year)))
     {
         next_expected.day -= 1;
         if (next_expected.day == 0)
@@ -212,9 +246,11 @@ static void _test_get_dates(void)
     }
 
     diff = _diff_oe_datetime(&next, &next_expected);
-    printf("=== Diff between next and next_expected time: %d\n", diff);
-    OE_TEST(abs(diff) < 60); // Ensure times are within 60 seconds
 
+    _print_oe_datetime("Actual CRL next", &next);
+    _print_oe_datetime("Expected CRL next", &next_expected);
+
+    OE_TEST(abs(diff) < ACCEPTABLE_ERROR_IN_SECONDS);
     OE_TEST(oe_crl_free(&crl) == OE_OK);
 
     printf("=== passed %s()\n", __FUNCTION__);
