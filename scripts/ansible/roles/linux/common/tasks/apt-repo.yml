@@ -6,14 +6,23 @@
   apt:
     name: apt-transport-https
     state: latest
+  retries: 10
+  register: add_transport
+  until: add_transport is success
 
 - name: Add APT repository key
   apt_key:
     url: "{{ apt_key_url }}"
     state: present
+  retries: 10
+  register: add_key
+  until: add_key is success
 
 - name: Add APT repository
   apt_repository:
     repo: "{{ apt_repository }}"
     state: present
     update_cache: yes
+  retries: 10
+  register: add_repo
+  until: add_repo is success
