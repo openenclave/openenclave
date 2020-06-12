@@ -69,6 +69,7 @@ if (UNIX
     if (NOT USE_SNMALLOC)
       add_subdirectory(bigmalloc)
     endif ()
+    add_subdirectory(c99_compliant)
     add_subdirectory(child_thread)
     add_subdirectory(cppException)
     add_subdirectory(create-rapid)
@@ -92,6 +93,7 @@ if (UNIX
     add_subdirectory(props)
     add_subdirectory(qeidentity)
     add_subdirectory(report)
+    add_subdirectory(SampleAppCRT)
     add_subdirectory(sealKey)
     add_subdirectory(sim-mode)
     add_subdirectory(stdcxx)
@@ -108,7 +110,6 @@ if (UNIX
     endif ()
   endif ()
 
-  add_subdirectory(c99_compliant)
   add_subdirectory(create-errors)
   add_subdirectory(crypto)
   add_subdirectory(hexdump)
@@ -117,7 +118,6 @@ if (UNIX
   add_subdirectory(pingpong)
   add_subdirectory(pingpong-shared)
   add_subdirectory(SampleApp)
-  add_subdirectory(SampleAppCRT)
   add_subdirectory(stdc)
 endif ()
 
