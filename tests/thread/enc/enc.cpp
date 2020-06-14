@@ -290,9 +290,9 @@ size_t enc_tcs_used_thread_count()
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    128,  /* NumHeapPages */
-    16,   /* NumStackPages */
-    16);  /* NumTCS */
+    1,        /* ProductID */
+    1,        /* SecurityVersion */
+    true,     /* Debug */
+    3 * 1024, /* NumHeapPages */
+    16,       /* NumStackPages */
+    16);      /* NumTCS */

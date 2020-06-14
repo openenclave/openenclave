@@ -24,6 +24,10 @@ if (CODE_COVERAGE OR BUILD_LIBGCOV)
   add_subdirectory(libgcov)
 endif ()
 
+if (OE_SGX)
+  add_subdirectory(tcmalloc)
+endif ()
+
 if (OE_TRUSTZONE)
   # EL: (ARM) Exception Level
   # GP: GlobalPlatform

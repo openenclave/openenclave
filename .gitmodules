@@ -17,3 +17,7 @@
 	url = https://github.com/llvm-mirror/compiler-rt
 	branch = release_70
 	ignore = all
+[submodule "3rdparty/tcmalloc/gperftools"]
+	path = 3rdparty/tcmalloc/gperftools
+	url = https://github.com/openenclave/gperftools
+	branch = openenclave-port-2.7

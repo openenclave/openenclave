@@ -43,3 +43,43 @@ enclave_include_directories(pthread_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 
 enclave_include_directories(oethread_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                             ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_enclave(
+  TARGET
+  pthread_enc_tcmalloc
+  UUID
+  a499f756-3332-4b4a-ad67-656754c6adbe
+  CXX
+  SOURCES
+  enc.cpp
+  cond_tests.cpp
+  rwlock_tests.cpp
+  errno_tests.cpp
+  thread_t.c)
+
+add_enclave(
+  TARGET
+  oethread_enc_tcmalloc
+  UUID
+  ddd06e41-e7a0-4977-9c3b-b2252bb055c8
+  CXX
+  SOURCES
+  enc.cpp
+  cond_tests.cpp
+  rwlock_tests.cpp
+  errno_tests.cpp
+  thread_t.c)
+
+enclave_compile_definitions(pthread_enc_tcmalloc PRIVATE -D_PTHREAD_ENC_)
+
+enclave_include_directories(
+  pthread_enc_tcmalloc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR})
+
+enclave_link_libraries(pthread_enc_tcmalloc oetcmalloc)
+
+enclave_include_directories(
+  oethread_enc_tcmalloc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR})
+
+enclave_link_libraries(oethread_enc_tcmalloc oetcmalloc)
