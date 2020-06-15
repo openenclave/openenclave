@@ -19,18 +19,9 @@ static const size_t _max_capacity = 1 << 30;
 void* oe_allocate_arena(size_t capacity);
 void oe_deallocate_arena(void* buffer);
 
-static void _zero_initialize_arena(void)
-{
-    oe_sgx_td_t* td = oe_sgx_get_td();
-    memset(&td->arena, 0, sizeof(td->arena));
-}
-
 static oe_shared_memory_arena_t* _get_arena()
 {
-    static oe_once_t _once = OE_ONCE_INITIALIZER;
-
-    oe_once(&_once, _zero_initialize_arena);
-
+    /* Note: arenas are zero-initialized by td_init() */
     return &oe_sgx_get_td()->arena;
 }
 
