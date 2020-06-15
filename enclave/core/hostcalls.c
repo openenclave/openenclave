@@ -11,7 +11,6 @@
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/stack_alloc.h>
 
-#include "arena.h"
 #include "core_t.h"
 
 void* oe_host_malloc(size_t size)
@@ -148,26 +147,6 @@ int oe_host_fprintf(int device, const char* fmt, ...)
     oe_va_end(ap);
 
     return n;
-}
-
-// Function used by oeedger8r for allocating switchless ocall buffers.
-// Preallocate a pool of shared memory per thread for switchless ocalls
-// and then allocate memory from that pool. Since OE does not support
-// reentrant ecalls in the same thread, there can at most be one ecall
-// and one ocall active in a thread. Although an enclave function can
-// make multiple OCALLs, the OCALLs are serialized. So the allocation
-// for one OCALL doesn't interfere with the allocation for the next OCALL.
-// A stack-based allocation scheme is the most efficient in this case.
-void* oe_allocate_switchless_ocall_buffer(size_t size)
-{
-    return oe_arena_malloc(size);
-}
-
-// Function used by oeedger8r for freeing ocall buffers.
-void oe_free_switchless_ocall_buffer(void* buffer)
-{
-    OE_UNUSED(buffer);
-    oe_arena_free_all();
 }
 
 int oe_host_write(int device, const char* str, size_t len)

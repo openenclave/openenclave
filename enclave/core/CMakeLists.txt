@@ -77,11 +77,13 @@ if (OE_SGX)
     PLATFORM_SRC
     ../../common/sgx/endorsements.c
     ../../common/sgx/rand.S
+    sgx/arena.c
     sgx/backtrace.c
     sgx/calls.c
     sgx/cpuid.c
     sgx/enter.S
     sgx/entropy.c
+    sgx/errno.c
     sgx/exception.c
     sgx/exit.S
     sgx/getkey.S
@@ -118,6 +120,7 @@ elseif (OE_TRUSTZONE)
     optee/bounds.c
     optee/calls.c
     optee/entropy.c
+    optee/errno.c
     optee/header.c
     optee/hostcalls.c
     optee/globals.c
@@ -153,14 +156,12 @@ add_enclave_library(
   ${MUSL_SRC_DIR}/string/memmove.c
   ${MUSL_SRC_DIR}/string/memset.c
   __stack_chk_fail.c
-  arena.c
   assert.c
   atexit.c
   backtrace.c
   calls.c
   ctype.c
   debugmalloc.c
-  errno.c
   hexdump.c
   hostcalls.c
   intstr.c

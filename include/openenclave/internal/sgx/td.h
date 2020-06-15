@@ -5,6 +5,7 @@
 #define _OE_SGX_TD_H
 
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/types.h>
 
 OE_EXTERNC_BEGIN
 
@@ -80,7 +81,7 @@ oe_thread_data_t* oe_get_thread_data(void);
  * Due to the inability to use OE_OFFSETOF on a struct while defining its
  * members, this value is computed and hard-coded.
  */
-#define OE_THREAD_SPECIFIC_DATA_SIZE (3792)
+#define OE_THREAD_SPECIFIC_DATA_SIZE (3744)
 
 typedef struct _callsite Callsite;
 
@@ -90,6 +91,19 @@ typedef struct _oe_tls_atexit
     void (*destructor)(void*);
     void* object;
 } oe_tls_atexit_t;
+
+/* This structure manages a pool of shared memory (memory visible to both
+ * the enclave and the host). An instance of this structure is maintained
+ * for each thread. This structure is used in enclave/core/arena.c.
+ */
+typedef struct _oe_shared_memory_arena_t
+{
+    uint8_t* buffer;
+    uint64_t capacity;
+    uint64_t used;
+} oe_shared_memory_arena_t;
+
+OE_CHECK_SIZE(sizeof(oe_shared_memory_arena_t), 24);
 
 OE_PACK_BEGIN
 typedef struct _td
@@ -137,6 +151,17 @@ typedef struct _td
 
     /* The threads implementations uses this to put threads on queues */
     struct _td* next;
+
+    /* POSIX errno (renamed to prevent clash with errno macro) */
+    int32_t errnum;
+    int32_t padding2;
+
+    /* Thread-specific shared memory pool (see enclave/core/arena.c) */
+    oe_shared_memory_arena_t arena;
+
+    /* TLS atexit functions (see enclave/core/sgx/threadlocal.c) */
+    oe_tls_atexit_t* tls_atexit_functions;
+    uint64_t num_tls_atexit_functions;
 
     /* Reserved for thread specific data. */
     uint8_t thread_specific_data[OE_THREAD_SPECIFIC_DATA_SIZE];
