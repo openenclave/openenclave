@@ -38,3 +38,7 @@
     - import_role:
         name: linux/az-dcap-client
         tasks_from: validation.yml
+
+    - import_role:
+        name: linux/openenclave
+        tasks_from: code-coverage-setup.yml

@@ -51,3 +51,18 @@ validation_distribution_binaries:
 
 validation_distribution_files:
   - "/usr/lib/x86_64-linux-gnu/libssl.so"
+
+apt_packages_code_coverage:
+  - "lcov"
+  - "llvm-7"
+  - "python"
+  - "python-pip"
+
+pip_packages_code_coverage:
+  - "lcov_cobertura"
+
+validation_code_coverage_binaries:
+  - "/usr/bin/lcov"
+  - "/usr/bin/llvm-cov-7"
+  - "/usr/bin/pip"
+  - "/usr/bin/python"

@@ -1,0 +1,7 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- name: Setup code coverage dependencies
+  include_tasks: "{{ ansible_distribution | lower }}/code-coverage.yml"
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'

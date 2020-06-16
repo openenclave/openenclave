@@ -1,0 +1,26 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+#
+
+---
+- name: Include vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}/main.yml"
+
+- name: Install all the prerequisites APT packages for code coverage
+  apt:
+    name: "{{ apt_packages_code_coverage }}"
+    state: latest
+    update_cache: yes
+    install_recommends: no
+
+- name: Check for existing required binaries for code coverage
+  stat:
+    path: "{{ item }}"
+  with_items: "{{ validation_code_coverage_binaries }}"
+  register: binary
+  failed_when: binary.stat.executable == False
+
+- name: Install all the prerequisites PyPI packages for code coverage
+  pip:
+    name: "{{ pip_packages_code_coverage }}"
