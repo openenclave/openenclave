@@ -8,7 +8,7 @@ import argparse
 if __name__ == "__main__":
 
     arg_parser = argparse.ArgumentParser(description="Generates oesign config file variations from a basic valid template")
-    arg_parser.add_argument('--config_file', default=None, type=str, help="Full path to output the generated oesign config file to.")
+    arg_parser.add_argument('--config_file', default=None, type=str, required=True, help="Full path to output the generated oesign config file to.")
     arg_parser.add_argument('--debug', default="1", type=str, help="Value for the Debug property. Defaults to 1 (true).")
     arg_parser.add_argument('--num_heap_pages', default="1024", type=str, help="Value for the NumHeapPages property. Defaults to 1024.")
     arg_parser.add_argument('--num_stack_pages', default="1024", type=str, help="Value for the NumStackPages property. Defaults to 1024.")
@@ -17,11 +17,6 @@ if __name__ == "__main__":
     arg_parser.add_argument('--security_version', default="1", type=str, help="Value for the SecurityVersion property. Defaults to 1.")
 
     args = arg_parser.parse_args()
-
-    if not args.config_file:
-        arg_parser.print_help()
-        sys.exit(1)
-
     print("Generating {} ...".format(args.config_file))
     print("Configuration used: {}".format(args))
 
