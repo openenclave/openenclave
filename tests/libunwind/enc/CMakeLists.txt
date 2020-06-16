@@ -61,6 +61,9 @@ function (add_libunwind_test_enc NAME TESTFILE)
   endif ()
   enclave_compile_definitions(libunwindtest-${NAME}_enc PRIVATE -DWITH_MAIN
                               -D__TEST__="${TESTFILE}" -DUNW_LOCAL_ONLY=1)
+  if (CODE_COVERAGE)
+    enclave_compile_definitions(libunwindtest-${NAME}_enc PRIVATE CODE_COVERAGE)
+  endif ()
   enclave_link_libraries(libunwindtest-${NAME}_enc libunwindtest-support)
   enclave_link_libraries(libunwindtest-${NAME}_enc
                          -Wl,--undefined=pthread_mutex_lock)

@@ -47,7 +47,7 @@ foreach (testcase ${alltests})
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMAND
         ${OE_BASH} -c
-        "./host/libcxxrt_host ./enc/libcxxrttest-${name}_enc > ${name}_output.log 2>&1 &&
+        "OE_LOG_LEVEL=NONE ./host/libcxxrt_host ./enc/libcxxrttest-${name}_enc > ${name}_output.log 2>&1 &&
             diff ${name}_output.log ${RESULTDIR}/exp_${name}_output.log")
   endif ()
 endforeach (testcase)

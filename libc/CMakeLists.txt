@@ -865,6 +865,13 @@ if (USE_DEBUG_MALLOC)
   enclave_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
+if (CODE_COVERAGE)
+  # Enable code coverage.
+  enclave_compile_options(oelibc PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
+  # Link against libgcov.
+  enclave_link_libraries(oelibc PRIVATE gcov)
+endif ()
+
 # This project (and its dependents) require the enclave headers and
 # library, and the musl headers.
 enclave_link_libraries(

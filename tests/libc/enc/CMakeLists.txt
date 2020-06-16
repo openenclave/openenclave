@@ -73,6 +73,10 @@ enclave_compile_options(
   -Wno-unused-value
   -Wno-overflow)
 
+if (CODE_COVERAGE)
+  enclave_compile_definitions(libc_enc PRIVATE CODE_COVERAGE)
+endif ()
+
 if (OE_SGX)
   enclave_compile_options(libc_enc PRIVATE -Wno-macro-redefined
                           -Wno-literal-range -Wno-writable-strings)

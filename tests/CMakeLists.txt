@@ -79,7 +79,6 @@ if (UNIX
     endif ()
     add_subdirectory(child_thread)
     add_subdirectory(cppException)
-    add_subdirectory(create-rapid)
     add_subdirectory(crypto_crls_cert_chains)
     add_subdirectory(debug-mode)
     add_subdirectory(ecall)
@@ -114,6 +113,14 @@ if (UNIX
     add_subdirectory(stack_smashing_protector)
     add_subdirectory(stress)
 
+    # The tests in create-rapid fail when enabling code coverage analysis.
+    # The failure happens if the first enclave process terminates, the
+    # host fs that libgcov requires in the subsequent enclave processes
+    # can no longer be used.
+    if (NOT CODE_COVERAGE)
+      add_subdirectory(create-rapid)
+    endif ()
+
     if (WITH_EEID)
       add_subdirectory(eeid_plugin)
     endif ()
@@ -132,8 +139,14 @@ endif ()
 
 if (UNIX)
   if (OE_SGX)
-    add_subdirectory(child_process)
     add_subdirectory(cmake_name_conflict)
+    # The tests in child_process fail when enabling code coverage analysis.
+    # The failure happens if a child process terminates after the parent
+    # process does. At this point, the host fs that libgcov requires can no
+    # longer be used.
+    if (NOT CODE_COVERAGE)
+      add_subdirectory(child_process)
+    endif ()
   endif ()
   add_subdirectory(libc)
 endif ()

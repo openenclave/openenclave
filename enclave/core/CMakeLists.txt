@@ -293,6 +293,14 @@ endif ()
 
 enclave_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
+enclave_enable_code_coverage(oecore)
+if (CODE_COVERAGE)
+  # Disable the complier flag to the following sources to
+  # avoid conflicts.
+  set_source_files_properties(once.c sgx/calls.c sgx/init.c
+                              PROPERTIES COMPILE_FLAGS -fno-profile-arcs)
+endif ()
+
 enclave_compile_definitions(
   oecore
   PUBLIC

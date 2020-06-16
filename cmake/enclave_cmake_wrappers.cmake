@@ -144,3 +144,14 @@ function (install_enclaves)
     endif ()
   endforeach (target)
 endfunction (install_enclaves)
+
+function (enclave_enable_code_coverage NAME)
+  if (NOT CODE_COVERAGE)
+    return()
+  endif ()
+
+  # Enable code coverage.
+  enclave_compile_options(${NAME} PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
+  # Link against libgcov.
+  enclave_link_libraries(${NAME} PRIVATE gcov)
+endfunction (enclave_enable_code_coverage)

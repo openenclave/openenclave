@@ -52,6 +52,8 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
   endif ()
 endif ()
 
+enclave_enable_code_coverage(oeenclave)
+
 # Add location of the oeedger8r-generated trusted headers for internal
 # functions implemented via EDL files.
 enclave_include_directories(oeenclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/core)

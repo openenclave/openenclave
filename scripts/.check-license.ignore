@@ -81,6 +81,7 @@ debugger/pythonExtension/readelf\.py
 host/linux/pe\.h
 include/openenclave/internal/queue\.h
 samples/file-encryptor/testfile
+scripts/llvm-gcov
 tests/ocall/debugging\.txt
 tests/str/test1\.txt
 tools/oesign/getopt\.h
