@@ -271,6 +271,12 @@ if (CODE_COVERAGE)
       FATAL_ERROR
         "The CODE_COVERAGE option currently is not supported on Windows.")
   endif ()
+  if (USE_DEBUG_MALLOC)
+    message(
+      FATAL_ERROR
+        "The CODE_COVERAGE option currently is not supported when the USE_DEBUG_MALLOC option is ON."
+    )
+  endif ()
   message("-- CODE_COVERAGE set - enable code coverage tests")
 
   if (CMAKE_C_COMPILER_ID MATCHES GNU)
