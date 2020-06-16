@@ -80,6 +80,8 @@ unsigned int oe_sleep(unsigned int seconds);
 
 int oe_nanosleep(struct oe_timespec* req, struct oe_timespec* rem);
 
+int oe_flock(int fd, int operation);
+
 int oe_dup(int fd);
 
 int oe_dup2(int fd, int newfd);

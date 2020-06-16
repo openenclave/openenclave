@@ -228,6 +228,7 @@ add_enclave_library(
   ${MUSLSRC}/locale/wcsxfrm.c
   ${MUSLSRC}/linux/mount.c
   ${MUSLSRC}/linux/epoll.c
+  ${MUSLSRC}/linux/flock.c
   ${MUSLSRC}/math/acos.c
   ${MUSLSRC}/math/acosf.c
   ${MUSLSRC}/math/acosh.c

@@ -109,6 +109,11 @@ enclave
             oe_host_fd_t fd)
             propagate_errno;
 
+        int oe_syscall_flock_ocall(
+            oe_host_fd_t fd,
+            int operation)
+            propagate_errno;
+
         oe_host_fd_t oe_syscall_dup_ocall(
             oe_host_fd_t oldfd)
             propagate_errno;
