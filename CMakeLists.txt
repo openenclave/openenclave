@@ -7,18 +7,10 @@
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-# Utility to ensure specific submodules are present.
-function (check_submodule_not_empty path)
-  file(GLOB submodule_files "${path}/*")
-  list(LENGTH submodule_files number)
-  if (${number} EQUAL 0)
-    message(
-      FATAL_ERROR
-        "Submodule ${path} is empty. You can initialize the submodule now with \
-         'git submodule update --recursive --init',\
-         or during 'git clone' by passing '--recursive'.")
-  endif ()
-endfunction ()
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Include utilities such as `check_submodule_not_empty`.
+include(utilities)
 
 # Read version from "VERSION" file.
 file(STRINGS "VERSION" OE_VERSION_WITH_V)
@@ -43,8 +35,6 @@ endif ()
 # http://cmake.3232098.n2.nabble.com/Prefer-clang-over-gcc-td7597742.html
 set(CMAKE_C_COMPILER_NAMES clang-7 cc)
 set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Will be overwritten during the cmake initialization.
 set(LVI_MITIGATION
@@ -270,6 +260,80 @@ elseif (WITH_EEID AND OE_TRUSTZONE)
   message(FATAL_ERROR "WITH_EEID is not supported on ARM yet.")
 endif ()
 
+# Option to build and expose the libgcov such that enclave applications can use.
+# Note that this option is only effective when CODE_COVERAGE is not set.
+option(BUILD_LIBGCOV "Build the code coverage library" OFF)
+
+option(CODE_COVERAGE "Enable code coverage testing" OFF)
+if (CODE_COVERAGE)
+  if (WIN32)
+    message(
+      FATAL_ERROR
+        "The CODE_COVERAGE option currently is not supported on Windows.")
+  endif ()
+  if (USE_DEBUG_MALLOC)
+    message(
+      FATAL_ERROR
+        "The CODE_COVERAGE option currently is not supported when the USE_DEBUG_MALLOC option is ON."
+    )
+  endif ()
+  message("-- CODE_COVERAGE set - enable code coverage tests")
+
+  if (CMAKE_C_COMPILER_ID MATCHES GNU)
+    message(FATAL_ERROR "Code coverage is currently only supported by clang.")
+  else ()
+    if (CMAKE_C_COMPILER_VERSION VERSION_LESS 7 OR CMAKE_C_COMPILER_VERSION
+                                                   VERSION_GREATER 7.99)
+      message(
+        WARNING "Code coverage may not work with clang versions other than 7.")
+    endif ()
+  endif ()
+
+  find_program(LCOV "lcov")
+  if (LCOV)
+    message("-- LCOV is found")
+  else ()
+    message(FATAL_ERROR "LCOV is not found.")
+  endif ()
+
+  add_custom_target(
+    code_coverage
+    COMMAND mkdir -p coverage
+    COMMAND lcov -c -i -d ${CMAKE_BINARY_DIR} --gcov-tool
+            ${OE_SCRIPTSDIR}/code-coverage/llvm-gcov -o coverage/base.info
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+  set(FILTERED_LIST
+      "'${PROJECT_SOURCE_DIR}/tests/*'" "'${PROJECT_SOURCE_DIR}/3rdparty/*'"
+      "'${CMAKE_BINARY_DIR}/tests/*'" "'${CMAKE_BINARY_DIR}/3rdparty/*'")
+
+  add_custom_command(
+    TARGET code_coverage
+    COMMAND
+      lcov -d ${CMAKE_BINARY_DIR} --gcov-tool
+      ${OE_SCRIPTSDIR}/code-coverage/llvm-gcov -c -o cov.info --rc
+      lcov_branch_coverage=1
+    COMMAND lcov -a base.info -a cov.info -o cov_total.info --rc
+            lcov_branch_coverage=1
+    COMMAND lcov --remove cov_total.info ${FILTERED_LIST} -o cov_filtered.info
+            --rc lcov_branch_coverage=1
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/coverage)
+
+  add_custom_command(
+    TARGET code_coverage
+    DEPENDS ${CMAKE_BINARY_DIR}/coverage/cov_filtered.info
+    COMMAND
+      ${OE_SCRIPTSDIR}/code-coverage/lcov_cobertura
+      ${CMAKE_BINARY_DIR}/coverage/cov_filtered.info -o
+      ${CMAKE_BINARY_DIR}/coverage/coverage.xml
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+
+  add_custom_target(
+    code_coverage_clean
+    COMMAND find ${CMAKE_BINARY_DIR} -type f -name '*.gcda' -delete
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endif ()
+
 find_program(VALGRIND "valgrind")
 if (VALGRIND)
   set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
@@ -295,7 +359,9 @@ if (NOT COMPILE_SYSTEM_EDL)
     add_subdirectory(tests)
   endif ()
 
-  if (BUILD_ENCLAVES)
+  # Skip samples when enabling the code coverage test.
+  # Otherwise, all the samples need to explicitly link against the libgcov library.
+  if (BUILD_ENCLAVES AND (NOT CODE_COVERAGE))
     add_subdirectory(samples)
   endif ()
 endif ()

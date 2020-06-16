@@ -2,12 +2,19 @@
 # Licensed under the MIT License.
 
 add_subdirectory(cpio)
-add_subdirectory(dup)
-add_subdirectory(fs)
-add_subdirectory(hostfs)
 add_subdirectory(resolver)
 add_subdirectory(socket)
 add_subdirectory(tool)
+
+# Skip the fs-related tests when doing code coverage analysis,
+# that cause conflicts to the use of host fs between the
+# tests and libgcov.
+if (NOT CODE_COVERAGE)
+  add_subdirectory(dup)
+  add_subdirectory(fs)
+  add_subdirectory(hostfs)
+endif ()
+
 if (UNIX)
   add_subdirectory(datagram)
   add_subdirectory(epoll)

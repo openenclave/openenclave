@@ -12,3 +12,8 @@
 [submodule "tools/oeedger8r-cpp"]
 	path = tools/oeedger8r-cpp
 	url = https://github.com/openenclave/oeedger8r-cpp
+[submodule "3rdparty/libgcov/compiler-rt"]
+	path = 3rdparty/libgcov/compiler-rt
+	url = https://github.com/llvm-mirror/compiler-rt
+	branch = release_70
+	ignore = all

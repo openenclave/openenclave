@@ -8,7 +8,9 @@ maybe_build_using_clangw(oehostepoll)
 enclave_include_directories(oehostepoll PRIVATE ${CMAKE_BINARY_DIR}/syscall
                             ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
-enclave_link_libraries(oehostepoll oesyscall)
+enclave_enable_code_coverage(oehostepoll)
+
+enclave_link_libraries(oehostepoll PRIVATE oesyscall)
 
 install_enclaves(
   TARGETS

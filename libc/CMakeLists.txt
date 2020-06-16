@@ -228,6 +228,7 @@ add_enclave_library(
   ${MUSLSRC}/locale/wcsxfrm.c
   ${MUSLSRC}/linux/mount.c
   ${MUSLSRC}/linux/epoll.c
+  ${MUSLSRC}/linux/flock.c
   ${MUSLSRC}/math/acos.c
   ${MUSLSRC}/math/acosf.c
   ${MUSLSRC}/math/acosh.c
@@ -862,6 +863,13 @@ enclave_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
 
 if (USE_DEBUG_MALLOC)
   enclave_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+endif ()
+
+if (CODE_COVERAGE)
+  # Enable code coverage.
+  enclave_compile_options(oelibc PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
+  # Link against libgcov.
+  enclave_link_libraries(oelibc PRIVATE gcov)
 endif ()
 
 # This project (and its dependents) require the enclave headers and

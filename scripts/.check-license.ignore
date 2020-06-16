@@ -32,6 +32,8 @@ tests/mbed/tests\..*$
 3rdparty/dlmalloc/dlmalloc/.*
 3rdparty/libcxx/libcxx/.*
 3rdparty/libcxxrt/libcxxrt/.*
+3rdparty/libgcov/compiler-rt/.*
+3rdparty/libgcov/patches/.*
 3rdparty/libunwind/libunwind/.*
 3rdparty/mbedtls/mbedtls/.*
 3rdparty/musl/libc-test/.*
@@ -48,6 +50,7 @@ docs/*
 
 # Files
 3rdparty/LICENSES
+3rdparty/libgcov/compiler-rt
 3rdparty/libunwind/setcontext\.S
 3rdparty/mbedtls/config\.h
 3rdparty/musl/COPYRIGHT
@@ -78,6 +81,7 @@ debugger/pythonExtension/readelf\.py
 host/linux/pe\.h
 include/openenclave/internal/queue\.h
 samples/file-encryptor/testfile
+scripts/llvm-gcov
 tests/ocall/debugging\.txt
 tests/str/test1\.txt
 tools/oesign/getopt\.h

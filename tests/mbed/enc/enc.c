@@ -198,6 +198,11 @@ int test(
     strncpy(out_testname, __TEST__, STRLEN);
     out_testname[STRLEN - 1] = '\0';
 
+#ifdef CODE_COVERAGE
+    // Unregister the syscall hook when enabling code coverage testing.
+    oe_register_syscall_hook(NULL);
+#endif
+
     return return_value;
 }
 

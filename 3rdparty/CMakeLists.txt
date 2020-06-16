@@ -20,6 +20,10 @@ if (OE_SGX AND COMPILER_SUPPORTS_SNMALLOC)
   add_subdirectory(snmalloc)
 endif ()
 
+if (CODE_COVERAGE OR BUILD_LIBGCOV)
+  add_subdirectory(libgcov)
+endif ()
+
 if (OE_TRUSTZONE)
   # EL: (ARM) Exception Level
   # GP: GlobalPlatform

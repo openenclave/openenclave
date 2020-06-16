@@ -1426,6 +1426,14 @@ done:
     return ret;
 }
 
+// Unsupported yet.
+int oe_syscall_flock_ocall(oe_host_fd_t fd, int operation)
+{
+    OE_UNUSED(fd);
+    OE_UNUSED(operation);
+    return 0;
+}
+
 static oe_host_fd_t _dup_socket(oe_host_fd_t);
 
 oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t fd)
