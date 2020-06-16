@@ -12,11 +12,11 @@
 #ifndef _OE_ATTESTATION_ATTESTER_H
 #define _OE_ATTESTATION_ATTESTER_H
 
-#ifndef OE_BUILD_ENCLAVE
+#ifdef _OE_HOST_H
 
 #error "The header attester.h is only available for the enclave."
 
-#else // OE_BUILD_ENCLAVE
+#else // _OE_HOST_H
 
 #include <openenclave/bits/evidence.h>
 #include <openenclave/bits/result.h>
