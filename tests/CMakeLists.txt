@@ -11,6 +11,14 @@ else ()
   message("ENABLE_FULL_LIBCXX_TESTS not set - building some libcxx tests")
 endif ()
 
+option(ENABLE_FULL_STRESS_TESTS
+       "Build all stress tests and include in test list" OFF)
+if (ENABLE_FULL_STRESS_TESTS)
+  message("ENABLE_FULL_STRESS_TESTS set - building all stress tests")
+else ()
+  message("ENABLE_FULL_STRESS_TESTS not set - building some stress tests")
+endif ()
+
 option(LVI_MITIGATION_SKIP_TESTS "Skip all tests with LVI mitigation" OFF)
 if (LVI_MITIGATION MATCHES ControlFlow AND LVI_MITIGATION_SKIP_TESTS)
   message("LVI_MITIGATION_SKIP_TESTS set - skip all tests with LVI mitigation")
@@ -104,6 +112,7 @@ if (UNIX
     add_subdirectory(thread_local_no_tdata)
     add_subdirectory(VectorException)
     add_subdirectory(stack_smashing_protector)
+    add_subdirectory(stress)
 
     if (WITH_EEID)
       add_subdirectory(eeid_plugin)
