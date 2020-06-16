@@ -33,6 +33,7 @@ tests/mbed/tests\..*$
 3rdparty/libcxx/libcxx/.*
 3rdparty/libcxxrt/libcxxrt/.*
 3rdparty/libgcov/compiler-rt/.*
+3rdparty/libgcov/patches/.*
 3rdparty/libunwind/libunwind/.*
 3rdparty/mbedtls/mbedtls/.*
 3rdparty/musl/libc-test/.*

@@ -7,18 +7,10 @@
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-# Utility to ensure specific submodules are present.
-function (check_submodule_not_empty path)
-  file(GLOB submodule_files "${path}/*")
-  list(LENGTH submodule_files number)
-  if (${number} EQUAL 0)
-    message(
-      FATAL_ERROR
-        "Submodule ${path} is empty. You can initialize the submodule now with \
-         'git submodule update --recursive --init',\
-         or during 'git clone' by passing '--recursive'.")
-  endif ()
-endfunction ()
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Include utilities such as `check_submodule_not_empty`.
+include(utilities)
 
 # Read version from "VERSION" file.
 file(STRINGS "VERSION" OE_VERSION_WITH_V)
@@ -43,8 +35,6 @@ endif ()
 # http://cmake.3232098.n2.nabble.com/Prefer-clang-over-gcc-td7597742.html
 set(CMAKE_C_COMPILER_NAMES clang-7 cc)
 set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Will be overwritten during the cmake initialization.
 set(LVI_MITIGATION
