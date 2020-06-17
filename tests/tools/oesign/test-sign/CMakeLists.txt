@@ -67,6 +67,79 @@ set_tests_properties(
   PROPERTIES PASS_REGULAR_EXPRESSION
              "ERROR: Failed to load file: does_not_exist.pem")
 
+# Test invalid .conf with duplicate Debug property
+add_test(
+  NAME tests/oesign-sign-duplicate-debug-config
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/duplicate_debug.conf -k
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+set_tests_properties(
+  tests/oesign-sign-duplicate-debug-config
+  PROPERTIES PASS_REGULAR_EXPRESSION "Duplicate 'Debug' value provided")
+
+# Test invalid .conf with duplicate NumHeapPages property
+add_test(
+  NAME tests/oesign-sign-duplicate-num-heap-pages-config
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/duplicate_num_heap_pages.conf -k
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+set_tests_properties(
+  tests/oesign-sign-duplicate-num-heap-pages-config
+  PROPERTIES PASS_REGULAR_EXPRESSION "Duplicate 'NumHeapPages' value provided")
+
+# Test invalid .conf with duplicate NumStackPages property
+add_test(
+  NAME tests/oesign-sign-duplicate-num-stack-pages-config
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/duplicate_num_stack_pages.conf -k
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+set_tests_properties(
+  tests/oesign-sign-duplicate-num-stack-pages-config
+  PROPERTIES PASS_REGULAR_EXPRESSION "Duplicate 'NumStackPages' value provided")
+
+# Test invalid .conf with duplicate NumTCS property
+add_test(
+  NAME tests/oesign-sign-duplicate-num-tcs-config
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/duplicate_num_tcs.conf -k
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+set_tests_properties(
+  tests/oesign-sign-duplicate-num-tcs-config
+  PROPERTIES PASS_REGULAR_EXPRESSION "Duplicate 'NumTCS' value provided")
+
+# Test invalid .conf with duplicate ProductID property
+add_test(
+  NAME tests/oesign-sign-duplicate-product-id-config
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/duplicate_product_id.conf -k
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+set_tests_properties(
+  tests/oesign-sign-duplicate-product-id-config
+  PROPERTIES PASS_REGULAR_EXPRESSION "Duplicate 'ProductID' value provided")
+
+# Test invalid .conf with duplicate SecurityVersion property
+add_test(
+  NAME tests/oesign-sign-duplicate-security-version-config
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/duplicate_security_version.conf -k
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+set_tests_properties(
+  tests/oesign-sign-duplicate-security-version-config
+  PROPERTIES PASS_REGULAR_EXPRESSION
+             "Duplicate 'SecurityVersion' value provided")
+
 # Test signing key with invalid exponent for SGX signing
 add_test(
   NAME tests/oesign-sign-invalid-key-exp

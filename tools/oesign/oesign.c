@@ -12,24 +12,35 @@
 #include "oe_err.h"
 #include "oeinfo.h"
 
+typedef struct _optional_bool
+{
+    bool has_value;
+    bool value;
+} optional_bool_t;
+
+typedef struct _optional_uint64
+{
+    bool has_value;
+    uint64_t value;
+} optional_uint64_t;
+
+typedef struct _optional_uint16
+{
+    bool has_value;
+    uint16_t value;
+} optional_uint16_t;
+
 // Options loaded from .conf file. Uninitialized fields contain the maximum
 // integer value for the corresponding type.
 typedef struct _config_file_options
 {
-    bool debug;
-    uint64_t num_heap_pages;
-    uint64_t num_stack_pages;
-    uint64_t num_tcs;
-    uint16_t product_id;
-    uint16_t security_version;
+    optional_bool_t debug;
+    optional_uint64_t num_heap_pages;
+    optional_uint64_t num_stack_pages;
+    optional_uint64_t num_tcs;
+    optional_uint16_t product_id;
+    optional_uint16_t security_version;
 } config_file_options_t;
-
-#define CONFIG_FILE_OPTIONS_INITIALIZER                                 \
-    {                                                                   \
-        .debug = false, .num_heap_pages = OE_UINT64_MAX,                \
-        .num_stack_pages = OE_UINT64_MAX, .num_tcs = OE_UINT64_MAX,     \
-        .product_id = OE_UINT16_MAX, .security_version = OE_UINT16_MAX, \
-    }
 
 static int _load_config_file(const char* path, config_file_options_t* options)
 {
@@ -80,6 +91,12 @@ static int _load_config_file(const char* path, config_file_options_t* options)
         {
             uint64_t value;
 
+            if (options->debug.has_value)
+            {
+                oe_err("%s(%zu): Duplicate 'Debug' value provided", path, line);
+                goto done;
+            }
+
             // Debug must be 0 or 1
             if (str_u64(&rhs, &value) != 0 || (value > 1))
             {
@@ -87,11 +104,21 @@ static int _load_config_file(const char* path, config_file_options_t* options)
                 goto done;
             }
 
-            options->debug = (bool)value;
+            options->debug.value = (bool)value;
+            options->debug.has_value = true;
         }
         else if (strcmp(str_ptr(&lhs), "NumHeapPages") == 0)
         {
             uint64_t n;
+
+            if (options->num_heap_pages.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'NumHeapPages' value provided",
+                    path,
+                    line);
+                goto done;
+            }
 
             if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
                 !oe_sgx_is_valid_num_heap_pages(n))
@@ -104,11 +131,21 @@ static int _load_config_file(const char* path, config_file_options_t* options)
                 goto done;
             }
 
-            options->num_heap_pages = n;
+            options->num_heap_pages.value = n;
+            options->num_heap_pages.has_value = true;
         }
         else if (strcmp(str_ptr(&lhs), "NumStackPages") == 0)
         {
             uint64_t n;
+
+            if (options->num_stack_pages.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'NumStackPages' value provided",
+                    path,
+                    line);
+                goto done;
+            }
 
             if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
                 !oe_sgx_is_valid_num_stack_pages(n))
@@ -121,11 +158,19 @@ static int _load_config_file(const char* path, config_file_options_t* options)
                 goto done;
             }
 
-            options->num_stack_pages = n;
+            options->num_stack_pages.value = n;
+            options->num_stack_pages.has_value = true;
         }
         else if (strcmp(str_ptr(&lhs), "NumTCS") == 0)
         {
             uint64_t n;
+
+            if (options->num_tcs.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'NumTCS' value provided", path, line);
+                goto done;
+            }
 
             if (str_ptr(&rhs)[0] == '-' || str_u64(&rhs, &n) != 0 ||
                 !oe_sgx_is_valid_num_tcs(n))
@@ -138,11 +183,21 @@ static int _load_config_file(const char* path, config_file_options_t* options)
                 goto done;
             }
 
-            options->num_tcs = n;
+            options->num_tcs.value = n;
+            options->num_tcs.has_value = true;
         }
         else if (strcmp(str_ptr(&lhs), "ProductID") == 0)
         {
             uint16_t n;
+
+            if (options->product_id.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'ProductID' value provided",
+                    path,
+                    line);
+                goto done;
+            }
 
             if (str_ptr(&rhs)[0] == '-' || str_u16(&rhs, &n) != 0 ||
                 !oe_sgx_is_valid_product_id(n))
@@ -155,11 +210,21 @@ static int _load_config_file(const char* path, config_file_options_t* options)
                 goto done;
             }
 
-            options->product_id = n;
+            options->product_id.value = n;
+            options->product_id.has_value = true;
         }
         else if (strcmp(str_ptr(&lhs), "SecurityVersion") == 0)
         {
             uint16_t n;
+
+            if (options->security_version.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'SecurityVersion' value provided",
+                    path,
+                    line);
+                goto done;
+            }
 
             if (str_ptr(&rhs)[0] == '-' || str_u16(&rhs, &n) != 0 ||
                 !oe_sgx_is_valid_security_version(n))
@@ -172,7 +237,8 @@ static int _load_config_file(const char* path, config_file_options_t* options)
                 goto done;
             }
 
-            options->security_version = n;
+            options->security_version.value = n;
+            options->security_version.has_value = true;
         }
         else
         {
@@ -296,30 +362,35 @@ void _merge_config_file_options(
     }
 
     /* Debug option is present */
-    if (options->debug)
-        properties->config.attributes |= SGX_FLAGS_DEBUG;
+    if (options->debug.has_value)
+    {
+        if (options->debug.value)
+            properties->config.attributes |= SGX_FLAGS_DEBUG;
+        else
+            properties->config.attributes &= ~SGX_FLAGS_DEBUG;
+    }
 
     /* If ProductID option is present */
-    if (options->product_id != OE_UINT16_MAX)
-        properties->config.product_id = options->product_id;
+    if (options->product_id.has_value)
+        properties->config.product_id = options->product_id.value;
 
     /* If SecurityVersion option is present */
-    if (options->security_version != OE_UINT16_MAX)
-        properties->config.security_version = options->security_version;
+    if (options->security_version.has_value)
+        properties->config.security_version = options->security_version.value;
 
     /* If NumHeapPages option is present */
-    if (options->num_heap_pages != OE_UINT64_MAX)
+    if (options->num_heap_pages.has_value)
         properties->header.size_settings.num_heap_pages =
-            options->num_heap_pages;
+            options->num_heap_pages.value;
 
     /* If NumStackPages option is present */
-    if (options->num_stack_pages != OE_UINT64_MAX)
+    if (options->num_stack_pages.has_value)
         properties->header.size_settings.num_stack_pages =
-            options->num_stack_pages;
+            options->num_stack_pages.value;
 
     /* If NumTCS option is present */
-    if (options->num_tcs != OE_UINT64_MAX)
-        properties->header.size_settings.num_tcs = options->num_tcs;
+    if (options->num_tcs.has_value)
+        properties->header.size_settings.num_tcs = options->num_tcs.value;
 }
 
 oe_result_t _initialize_enclave_properties(
@@ -328,7 +399,7 @@ oe_result_t _initialize_enclave_properties(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_INVALID_PARAMETER;
-    config_file_options_t options = CONFIG_FILE_OPTIONS_INITIALIZER;
+    config_file_options_t options = {{0}};
 
     /* Load the configuration file */
     if (conffile && _load_config_file(conffile, &options) != 0)
