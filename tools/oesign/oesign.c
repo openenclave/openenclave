@@ -22,7 +22,7 @@ typedef struct _config_file_options
     uint64_t num_tcs;
     uint16_t product_id;
     uint16_t security_version;
-} ConfigFileOptions;
+} config_file_options_t;
 
 #define CONFIG_FILE_OPTIONS_INITIALIZER                                 \
     {                                                                   \
@@ -31,7 +31,7 @@ typedef struct _config_file_options
         .product_id = OE_UINT16_MAX, .security_version = OE_UINT16_MAX, \
     }
 
-static int _load_config_file(const char* path, ConfigFileOptions* options)
+static int _load_config_file(const char* path, config_file_options_t* options)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -195,7 +195,7 @@ done:
     return rc;
 }
 
-static int _load_pem_file(const char* path, void** data, size_t* size)
+static int _load_file(const char* path, void** data, size_t* size)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -220,8 +220,8 @@ static int _load_pem_file(const char* path, void** data, size_t* size)
         *size = (size_t)st.st_size;
     }
 
-    /* Allocate memory. We add 1 to null terimate the file since the crypto
-     * libraries require null terminated PEM data. */
+    /* Allocate memory. We add 1 to allow for adding a null terminator
+     * since the crypto libraries require null terminated PEM data. */
     if (*size == SIZE_MAX)
         goto done;
 
@@ -239,13 +239,6 @@ static int _load_pem_file(const char* path, void** data, size_t* size)
     /* Read file into memory */
     if (fread(*data, 1, *size, is) != *size)
         goto done;
-
-    /* Zero terminate the PEM data. */
-    {
-        uint8_t* data_tmp = (uint8_t*)*data;
-        data_tmp[*size] = 0;
-        *size += 1;
-    }
 
     rc = 0;
 
@@ -269,10 +262,24 @@ done:
     return rc;
 }
 
+static int _load_pem_file(const char* path, void** data, size_t* size)
+{
+    int err = _load_file(path, data, size);
+    if (err == 0)
+    {
+        /* Zero terminate the PEM data. */
+        uint8_t* data_tmp = (uint8_t*)*data;
+        data_tmp[*size] = 0;
+        *size += 1;
+    }
+
+    return err;
+}
+
 /* Merge configuration file options into enclave properties */
 void _merge_config_file_options(
     oe_sgx_enclave_properties_t* properties,
-    const ConfigFileOptions* options)
+    const config_file_options_t* options)
 {
     bool initialized = false;
 
@@ -315,22 +322,13 @@ void _merge_config_file_options(
         properties->header.size_settings.num_tcs = options->num_tcs;
 }
 
-int oesign(
+oe_result_t _initialize_enclave_properties(
     const char* enclave,
     const char* conffile,
-    const char* keyfile,
-    const char* engine_id,
-    const char* engine_load_path,
-    const char* key_id)
+    oe_sgx_enclave_properties_t* properties)
 {
-    int ret = 1;
-    oe_result_t result = OE_UNEXPECTED;
-    oe_enclave_t enc;
-    void* pem_data = NULL;
-    size_t pem_size;
-    ConfigFileOptions options = CONFIG_FILE_OPTIONS_INITIALIZER;
-    oe_sgx_enclave_properties_t props;
-    oe_sgx_load_context_t context;
+    oe_result_t result = OE_INVALID_PARAMETER;
+    config_file_options_t options = CONFIG_FILE_OPTIONS_INITIALIZER;
 
     /* Load the configuration file */
     if (conffile && _load_config_file(conffile, &options) != 0)
@@ -346,53 +344,185 @@ int oesign(
      * found or fails the load.
      */
     OE_CHECK_ERR(
-        oe_read_oeinfo_sgx(enclave, &props),
+        oe_read_oeinfo_sgx(enclave, properties),
         "Failed to load enclave: %s: result=%s (%#x)",
         enclave,
         oe_result_str(result),
         result);
 
     /* Merge the loaded configuration file with existing enclave properties */
-    _merge_config_file_options(&props, &options);
+    _merge_config_file_options(properties, &options);
 
     /* Check whether enclave properties are valid */
     {
         const char* field_name;
         OE_CHECK_ERR(
-            oe_sgx_validate_enclave_properties(&props, &field_name),
+            oe_sgx_validate_enclave_properties(properties, &field_name),
             "Invalid enclave property value: %s",
             field_name);
     }
 
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t _get_sgx_enclave_hash(
+    const char* enclave,
+    const oe_sgx_enclave_properties_t* properties,
+    OE_SHA256* hash)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_enclave_t enc;
+    oe_sgx_load_context_t context = {0};
+
     /* Initialize the context parameters for measurement only */
     OE_CHECK_ERR(
         oe_sgx_initialize_load_context(
-            &context, OE_SGX_LOAD_TYPE_MEASURE, props.config.attributes),
-        "oe_sgx_initialize_load_context() failed");
+            &context, OE_SGX_LOAD_TYPE_MEASURE, properties->config.attributes),
+        "oe_sgx_initialize_load_context(): result=%s (%#x)",
+        oe_result_str(result),
+        result);
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
     OE_CHECK_ERR(
-        oe_sgx_build_enclave(&context, enclave, &props, &enc),
+        oe_sgx_build_enclave(&context, enclave, properties, &enc),
         "oe_sgx_build_enclave(): result=%s (%#x)",
         oe_result_str(result),
         result);
+
+    /* Copy the resulting hash out */
+    OE_STATIC_ASSERT(sizeof(enc.hash.buf) == 32);
+    memcpy(hash->buf, enc.hash.buf, sizeof(enc.hash.buf));
+    result = OE_OK;
+
+done:
+    oe_sgx_cleanup_load_context(&context);
+    return result;
+}
+
+oe_result_t _write_digest_file(OE_SHA256* digest, const char* digest_file)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    FILE* file = NULL;
+
+#ifdef _WIN32
+    if (fopen_s(&file, digest_file, "wb") != 0)
+#else
+    if (!(file = fopen(digest_file, "wb")))
+#endif
+    {
+        oe_err("Failed to open: %s", digest_file);
+        goto done;
+    }
+
+    if (fwrite(digest->buf, 1, sizeof(OE_SHA256), file) != sizeof(OE_SHA256))
+    {
+        oe_err("Failed to write: %s", digest_file);
+        goto done;
+    }
+
+    printf("Created %s\n", digest_file);
+    result = OE_OK;
+
+done:
+    if (file)
+    {
+        fclose(file);
+        file = NULL;
+    }
+    return result;
+}
+
+int oesign(
+    const char* enclave,
+    const char* conffile,
+    const char* keyfile,
+    const char* digest_signature,
+    const char* x509,
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id)
+{
+    int ret = 1;
+    oe_result_t result = OE_UNEXPECTED;
+    void* pem_data = NULL;
+    size_t pem_size;
+    void* signature_data = NULL;
+    size_t signature_size = 0;
+    oe_sgx_enclave_properties_t properties;
+    OE_SHA256 hash = {0};
+
+    OE_CHECK_NO_TRACE(
+        _initialize_enclave_properties(enclave, conffile, &properties));
+
+    OE_CHECK_NO_TRACE(_get_sgx_enclave_hash(enclave, &properties, &hash));
 
     if (engine_id)
     {
         /* Initialize the sigstruct object */
         OE_CHECK_ERR(
             oe_sgx_sign_enclave_from_engine(
-                &enc.hash,
-                props.config.attributes,
-                props.config.product_id,
-                props.config.security_version,
+                &hash,
+                properties.config.attributes,
+                properties.config.product_id,
+                properties.config.security_version,
                 engine_id,
                 engine_load_path,
                 key_id,
-                (sgx_sigstruct_t*)props.sigstruct),
+                (sgx_sigstruct_t*)properties.sigstruct),
             "oe_sgx_sign_enclave_from_engine() failed: result=%s (%#x)",
             oe_result_str(result),
             result);
+    }
+    else if (digest_signature)
+    {
+        /* Load the public key from the x509 certificate */
+        if (_load_pem_file(x509, &pem_data, &pem_size) != 0)
+        {
+            oe_err("Failed to load file: %s", x509 ? x509 : "NULL");
+            goto done;
+        }
+
+        /* Load the digest signature */
+        if (_load_file(digest_signature, &signature_data, &signature_size) != 0)
+        {
+            oe_err(
+                "Failed to load file: %s",
+                digest_signature ? digest_signature : "NULL");
+            goto done;
+        }
+
+        /* Initialize the sigstruct with the signature */
+        result = oe_sgx_digest_sign_enclave(
+            &hash,
+            properties.config.attributes,
+            properties.config.product_id,
+            properties.config.security_version,
+            pem_data,
+            pem_size,
+            signature_data,
+            signature_size,
+            (sgx_sigstruct_t*)properties.sigstruct);
+
+        if (result != OE_OK)
+        {
+            if (result == OE_VERIFY_FAILED)
+            {
+                oe_err("Digest signature cannot be validated against the "
+                       "specified enclave configuration using the provided "
+                       "certificate.");
+            }
+            else
+            {
+                oe_err(
+                    "oe_sgx_digest_sign_enclave() failed: result=%s (%#x)",
+                    oe_result_str(result),
+                    result);
+            }
+            goto done;
+        }
     }
     else
     {
@@ -406,13 +536,13 @@ int oesign(
         /* Initialize the SigStruct object */
         OE_CHECK_ERR(
             oe_sgx_sign_enclave(
-                &enc.hash,
-                props.config.attributes,
-                props.config.product_id,
-                props.config.security_version,
+                &hash,
+                properties.config.attributes,
+                properties.config.product_id,
+                properties.config.security_version,
                 pem_data,
                 pem_size,
-                (sgx_sigstruct_t*)props.sigstruct),
+                (sgx_sigstruct_t*)properties.sigstruct),
             "oe_sgx_sign_enclave() failed: result=%s (%#x)",
             oe_result_str(result),
             result);
@@ -420,7 +550,7 @@ int oesign(
 
     /* Create signature section and write out new file */
     OE_CHECK_ERR(
-        oe_write_oeinfo_sgx(enclave, &props),
+        oe_write_oeinfo_sgx(enclave, &properties),
         "oe_write_oeinfo_sgx(): result=%s (%#x)",
         oe_result_str(result),
         result);
@@ -428,11 +558,45 @@ int oesign(
     ret = 0;
 
 done:
-
     if (pem_data)
         free(pem_data);
 
-    oe_sgx_cleanup_load_context(&context);
+    if (signature_data)
+        free(signature_data);
 
+    return ret;
+}
+
+int oedigest(const char* enclave, const char* conffile, const char* digest_file)
+{
+    int ret = -1;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sgx_enclave_properties_t properties;
+    OE_SHA256 mrenclave = {0};
+    OE_SHA256 digest = {0};
+
+    OE_CHECK_NO_TRACE(
+        _initialize_enclave_properties(enclave, conffile, &properties));
+
+    OE_CHECK_NO_TRACE(_get_sgx_enclave_hash(enclave, &properties, &mrenclave));
+
+    /* Construct the unsigned sigstruct with the MRENCLAVE and get its digest */
+    OE_CHECK_ERR(
+        oe_sgx_get_sigstruct_digest(
+            &mrenclave,
+            properties.config.attributes,
+            properties.config.product_id,
+            properties.config.security_version,
+            &digest),
+        "oe_sgx_get_sigstruct_digest(): result=%s (%#x)",
+        oe_result_str(result),
+        result);
+
+    /* Write the sigstruct digest value to file */
+    OE_CHECK_NO_TRACE(_write_digest_file(&digest, digest_file));
+
+    ret = 0;
+
+done:
     return ret;
 }

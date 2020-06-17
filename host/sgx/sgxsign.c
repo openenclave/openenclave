@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/crypto/cert.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/mem.h>
@@ -439,17 +440,144 @@ done:
 }
 #endif
 
-static oe_result_t _init_sigstruct(
-    const OE_SHA256* mrenclave,
-    uint64_t attributes,
-    uint16_t product_id,
-    uint16_t security_version,
+static oe_result_t _hash_sigstruct(
+    const sgx_sigstruct_t* sigstruct,
+    OE_SHA256* hash)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    unsigned char buf[sizeof(sgx_sigstruct_t)];
+    size_t buf_size = 0;
+
+    /* Note that the sigstruct header and body sections are non-contiguous
+     * and are copied into a single buffer to be hashed as defined by SGX */
+    OE_CHECK(oe_memcpy_s(
+        buf,
+        sizeof(buf),
+        sgx_sigstruct_header(sigstruct),
+        sgx_sigstruct_header_size()));
+    buf_size += sgx_sigstruct_header_size();
+
+    OE_CHECK(oe_memcpy_s(
+        &buf[buf_size],
+        sizeof(buf) - buf_size,
+        sgx_sigstruct_body(sigstruct),
+        sgx_sigstruct_body_size()));
+    buf_size += sgx_sigstruct_body_size();
+
+    OE_CHECK(oe_sha256(buf, buf_size, hash));
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static oe_result_t _digest_sign_sigstruct(
+    const oe_rsa_public_key_t* rsa,
+    const uint8_t* digest_signature,
+    size_t digest_signature_size,
+    sgx_sigstruct_t* sigstruct)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    OE_SHA256 digest = {0};
+
+    /* sgx_sigstruct_t.modulus */
+    OE_CHECK(_get_modulus(rsa, sigstruct->modulus));
+
+    /* sgx_sigstruct_t.exponent */
+    OE_CHECK(_get_exponent(rsa, sigstruct->exponent));
+
+    /* sgx_sigstruct_t.signature */
+    OE_CHECK(_hash_sigstruct(sigstruct, &digest));
+
+    /* The signature is backwards and needs to be reversed */
+    _mem_reverse(sigstruct->signature, digest_signature, digest_signature_size);
+
+    /* sgx_sigstruct_t.q1 and q2 */
+    OE_CHECK(_get_q1_and_q2(
+        sigstruct->signature,
+        sizeof(sigstruct->signature),
+        sigstruct->modulus,
+        sizeof(sigstruct->modulus),
+        sigstruct->q1,
+        sizeof(sigstruct->q1),
+        sigstruct->q2,
+        sizeof(sigstruct->q2)));
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static oe_result_t _sign_sigstruct(
     const oe_rsa_private_key_t* rsa,
     sgx_sigstruct_t* sigstruct)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_rsa_public_key_t rsa_public;
     bool key_initialized = false;
+
+    OE_CHECK(oe_rsa_get_public_key_from_private(rsa, &rsa_public));
+    key_initialized = true;
+
+    /* sgx_sigstruct_t.modulus */
+    OE_CHECK(_get_modulus(&rsa_public, sigstruct->modulus));
+
+    /* sgx_sigstruct_t.exponent */
+    OE_CHECK(_get_exponent(&rsa_public, sigstruct->exponent));
+
+    /* sgx_sigstruct_t.signature */
+    {
+        OE_SHA256 sha256;
+        unsigned char signature[OE_KEY_SIZE];
+        size_t signature_size = sizeof(signature);
+
+        OE_CHECK(_hash_sigstruct(sigstruct, &sha256));
+
+        OE_CHECK(oe_rsa_private_key_sign(
+            rsa,
+            OE_HASH_TYPE_SHA256,
+            sha256.buf,
+            sizeof(sha256),
+            signature,
+            &signature_size));
+
+        if (sizeof(sigstruct->signature) != signature_size)
+            OE_RAISE(OE_FAILURE);
+
+        /* The signature is backwards and needs to be reversed */
+        _mem_reverse(sigstruct->signature, signature, sizeof(signature));
+    }
+
+    /* sgx_sigstruct_t.q1 and q2 */
+    OE_CHECK(_get_q1_and_q2(
+        sigstruct->signature,
+        sizeof(sigstruct->signature),
+        sigstruct->modulus,
+        sizeof(sigstruct->modulus),
+        sigstruct->q1,
+        sizeof(sigstruct->q1),
+        sigstruct->q2,
+        sizeof(sigstruct->q2)));
+
+    result = OE_OK;
+
+done:
+    if (key_initialized)
+        oe_rsa_public_key_free(&rsa_public);
+
+    return result;
+}
+
+static oe_result_t _init_sigstruct(
+    const OE_SHA256* mrenclave,
+    uint64_t attributes,
+    uint16_t product_id,
+    uint16_t security_version,
+    sgx_sigstruct_t* sigstruct)
+{
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!sigstruct)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -483,16 +611,12 @@ static oe_result_t _init_sigstruct(
     /* sgx_sigstruct_t.swdefined */
     sigstruct->swdefined = 0;
 
-    OE_CHECK(oe_rsa_get_public_key_from_private(rsa, &rsa_public));
-    key_initialized = true;
-
-    /* sgx_sigstruct_t.modulus */
-    OE_CHECK(_get_modulus(&rsa_public, sigstruct->modulus));
-
-    /* sgx_sigstruct_t.exponent */
-    OE_CHECK(_get_exponent(&rsa_public, sigstruct->exponent));
-
-    /* sgx_sigstruct_t.signature: fill in after other fields */
+    /*
+     * Skip signature fields:
+     * sgx_sigstruct_t.modulus
+     * sgx_sigstruct_t.exponent
+     * sgx_sigstruct_t.signature
+     */
 
     /* sgx_sigstruct_t.miscselect */
     sigstruct->miscselect = SGX_SIGSTRUCT_MISCSELECT;
@@ -527,66 +651,15 @@ static oe_result_t _init_sigstruct(
     /* sgx_sigstruct_t.isvsvn */
     sigstruct->isvsvn = security_version;
 
-    /* Sign header and body sections of SigStruct */
-    {
-        unsigned char buf[sizeof(sgx_sigstruct_t)];
-        size_t n = 0;
-
-        OE_CHECK(oe_memcpy_s(
-            buf,
-            sizeof(buf),
-            sgx_sigstruct_header(sigstruct),
-            sgx_sigstruct_header_size()));
-        n += sgx_sigstruct_header_size();
-        OE_CHECK(oe_memcpy_s(
-            &buf[n],
-            sizeof(buf) - n,
-            sgx_sigstruct_body(sigstruct),
-            sgx_sigstruct_body_size()));
-        n += sgx_sigstruct_body_size();
-
-        {
-            OE_SHA256 sha256;
-            oe_sha256_context_t context;
-            unsigned char signature[OE_KEY_SIZE];
-            size_t signature_size = sizeof(signature);
-
-            oe_sha256_init(&context);
-            oe_sha256_update(&context, buf, n);
-            oe_sha256_final(&context, &sha256);
-
-            OE_CHECK(oe_rsa_private_key_sign(
-                rsa,
-                OE_HASH_TYPE_SHA256,
-                sha256.buf,
-                sizeof(sha256),
-                signature,
-                &signature_size));
-
-            if (sizeof(sigstruct->signature) != signature_size)
-                OE_RAISE(OE_FAILURE);
-
-            /* The signature is backwards and needs to be reversed */
-            _mem_reverse(sigstruct->signature, signature, sizeof(signature));
-        }
-    }
-
-    OE_CHECK(_get_q1_and_q2(
-        sigstruct->signature,
-        sizeof(sigstruct->signature),
-        sigstruct->modulus,
-        sizeof(sigstruct->modulus),
-        sigstruct->q1,
-        sizeof(sigstruct->q1),
-        sigstruct->q2,
-        sizeof(sigstruct->q2)));
+    /*
+     * Skip signature fields:
+     * sgx_sigstruct_t.q1
+     * sgx_sigstruct_t.q2
+     */
 
     result = OE_OK;
 
 done:
-    if (key_initialized)
-        oe_rsa_public_key_free(&rsa_public);
-
     return result;
 }
 
@@ -615,9 +688,10 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
         &rsa, engine_id, engine_load_path, key_id));
     rsa_initalized = true;
 
-    /* Initialize the sigstruct */
+    /* Initialize & sign the sigstruct */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, &rsa, sigstruct));
+        mrenclave, attributes, product_id, security_version, sigstruct));
+    OE_CHECK(_sign_sigstruct(&rsa, sigstruct));
 
     result = OE_OK;
 
@@ -652,15 +726,108 @@ oe_result_t oe_sgx_sign_enclave(
     OE_CHECK(oe_rsa_private_key_read_pem(&rsa, pem_data, pem_size));
     rsa_initalized = true;
 
-    /* Initialize the sigstruct */
+    /* Initialize & sign the sigstruct */
     OE_CHECK(_init_sigstruct(
-        mrenclave, attributes, product_id, security_version, &rsa, sigstruct));
+        mrenclave, attributes, product_id, security_version, sigstruct));
+    OE_CHECK(_sign_sigstruct(&rsa, sigstruct));
 
     result = OE_OK;
 
 done:
     if (rsa_initalized)
         oe_rsa_private_key_free(&rsa);
+
+    return result;
+}
+
+oe_result_t oe_sgx_get_sigstruct_digest(
+    const OE_SHA256* mrenclave,
+    uint64_t attributes,
+    uint16_t product_id,
+    uint16_t security_version,
+    OE_SHA256* digest)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    sgx_sigstruct_t sigstruct;
+
+    if (digest)
+        memset(digest, 0, sizeof(OE_SHA256));
+
+    /* Check parameters */
+    if (!mrenclave || !digest)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Initialize & sign the sigstruct */
+    OE_CHECK(_init_sigstruct(
+        mrenclave, attributes, product_id, security_version, &sigstruct));
+    OE_CHECK(_hash_sigstruct(&sigstruct, digest));
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_sgx_digest_sign_enclave(
+    const OE_SHA256* mrenclave,
+    uint64_t attributes,
+    uint16_t product_id,
+    uint16_t security_version,
+    const uint8_t* cert_pem_data,
+    size_t cert_pem_size,
+    const uint8_t* digest_signature,
+    size_t digest_signature_size,
+    sgx_sigstruct_t* sigstruct)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_cert_t cert = {0};
+    bool cert_initialized = false;
+    oe_rsa_public_key_t rsa = {0};
+    bool rsa_initalized = false;
+    OE_SHA256 digest = {0};
+
+    if (sigstruct)
+        memset(sigstruct, 0, sizeof(sgx_sigstruct_t));
+
+    /* Check parameters */
+    if (!mrenclave || !sigstruct || !cert_pem_data)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Load the RSA public key from x509 PEM certificate */
+    OE_CHECK(oe_cert_read_pem(&cert, cert_pem_data, cert_pem_size));
+    cert_initialized = true;
+
+    OE_CHECK(oe_cert_get_rsa_public_key(&cert, &rsa));
+    rsa_initalized = true;
+
+    /* Initialize the sigstruct with the provided parameters */
+    OE_CHECK(_init_sigstruct(
+        mrenclave, attributes, product_id, security_version, sigstruct));
+
+    /* Verify that the digest of the resulting sigstruct still
+     * matches the expected signature */
+    OE_CHECK(_hash_sigstruct(sigstruct, &digest));
+
+    OE_CHECK(oe_rsa_public_key_verify(
+        &rsa,
+        OE_HASH_TYPE_SHA256,
+        digest.buf,
+        sizeof(digest.buf),
+        digest_signature,
+        digest_signature_size));
+
+    /* Sign the verified sigstruct with the provided signature */
+    OE_CHECK(_digest_sign_sigstruct(
+        &rsa, digest_signature, digest_signature_size, sigstruct));
+
+    result = OE_OK;
+
+done:
+    if (rsa_initalized)
+        oe_rsa_public_key_free(&rsa);
+
+    if (cert_initialized)
+        oe_cert_free(&cert);
 
     return result;
 }

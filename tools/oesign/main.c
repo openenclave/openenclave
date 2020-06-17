@@ -21,15 +21,22 @@ int oesign(
     const char* enclave,
     const char* conffile,
     const char* keyfile,
+    const char* digest_signature,
+    const char* x509,
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id);
+int oedigest(
+    const char* enclave,
+    const char* conffile,
+    const char* digest_file);
 
 static const char _usage_gen[] =
     "Usage: %s <command> [options]\n"
     "\n"
     "Commands:\n"
     "  sign  -  Sign the specified enclave.\n"
+    "  digest - Create a digest of the specified enclave for signing.\n"
     "  dump  -  Print out the Open Enclave metadata for the specified "
     "enclave.\n"
     "\n"
@@ -46,6 +53,13 @@ static const char _usage_sign[] =
     "[SIGN_OPTIONS] can be one of the following sets of options:\n"
     "  -k, --key-file           path to a private key file in PEM\n"
     "                           format to sign enclave image with.\n"
+    "\n"
+    "  OR\n"
+    "\n"
+    "  -x, --x509               path to the PEM-encoded x509 public key\n"
+    "                           certificate used to sign the digest file.\n"
+    "  -d, --digest-file        path to the signed digest file matching the\n"
+    "                           enclave image and specified configuration.\n"
 #if HAS_ENGINE_SUPPORT
     "\n"
     "  OR\n"
@@ -59,7 +73,7 @@ static const char _usage_sign[] =
 #endif
     "\n"
     "Description:\n"
-    "  This utility (1) injects runtime properties into an enclave image\n"
+    "  This option (1) injects runtime properties into an enclave image\n"
     "  and (2) digitally signs that image.\n"
     "\n"
     "  The properties are read from the CONFIG_FILE. They override any\n"
@@ -89,6 +103,32 @@ static const char _usage_sign[] =
     "    -----BEGIN RSA PRIVATE KEY-----\n"
     "\n"
     "  The resulting image is written to ENCLAVE_IMAGE.signed\n"
+    "\n";
+
+static const char _usage_digest[] =
+    "Usage: %s -e ENCLAVE_IMAGE [-c CONFIG_FILE] -d DIGEST_FILE\n"
+    "\n"
+    "Options:\n"
+    "  -e, --enclave-image      path of an enclave image file.\n"
+    "  -c, --config-file        [optional] configuration file specifying\n"
+    "                           the enclave properties.\n"
+    "  -d, --digest-file        path to output the digest file.\n"
+    "\n"
+    "Description:\n"
+    "  This option generates the digest for the enclave signature that can\n"
+    "  be independently signed by a separate code signing authority. The\n"
+    "  resulting signed digest can then be used to create the embedded\n"
+    "  enclave signature with the oesign `sign` command, without requiring\n"
+    "  that the private code signing key be made available to the environment\n"
+    "  running oesign.\n"
+    "\n"
+    "  The properties to be used for generating the signature digest are read\n"
+    "  from the CONFIG_FILE, if specified. They override any properties that\n"
+    "  were already defined in the ENCLAVE_IMAGE by the OE_SET_ENCLAVE_SGX\n"
+    "  macro. For a list of the enclave properties, run `oesign sign --help`.\n"
+    "\n"
+    "  The resulting digest value is written to the specified DIGEST_FILE in\n"
+    "  raw binary form.\n"
     "\n";
 
 static const char _usage_dump[] =
@@ -244,17 +284,19 @@ int sign_parser(int argc, const char* argv[])
     const char* enclave = NULL;
     const char* conffile = NULL;
     const char* keyfile = NULL;
-#if HAS_ENGINE_SUPPORT
+    const char* digest_signature = NULL;
+    const char* x509 = NULL;
     const char* engine_id = NULL;
     const char* engine_load_path = NULL;
     const char* key_id = NULL;
-#endif
 
     const struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"enclave-image", required_argument, NULL, 'e'},
         {"config-file", required_argument, NULL, 'c'},
         {"key-file", required_argument, NULL, 'k'},
+        {"digest-signature", required_argument, NULL, 'd'},
+        {"x509", required_argument, NULL, 'x'},
 #if HAS_ENGINE_SUPPORT
         {"engine", required_argument, NULL, 'n'},
         {"load-path", required_argument, NULL, 'p'},
@@ -262,7 +304,7 @@ int sign_parser(int argc, const char* argv[])
 #endif
         {NULL, 0, NULL, 0},
     };
-    const char short_options[] = "he:c:k:n:p:i:";
+    const char short_options[] = "he:c:k:n:p:i:d:x:";
 
     int c;
 
@@ -297,6 +339,12 @@ int sign_parser(int argc, const char* argv[])
             case 'k':
                 keyfile = optarg;
                 break;
+            case 'd':
+                digest_signature = optarg;
+                break;
+            case 'x':
+                x509 = optarg;
+                break;
 #if HAS_ENGINE_SUPPORT
             case 'n':
                 engine_id = optarg;
@@ -320,46 +368,158 @@ int sign_parser(int argc, const char* argv[])
         }
     } while (1);
 
-#if HAS_ENGINE_SUPPORT
-    if (keyfile)
+    if (enclave == NULL)
     {
-        if (engine_id || engine_load_path || key_id)
+        oe_err("--enclave-image option is missing");
+        ret = 1;
+        goto done;
+    }
+
+#if HAS_ENGINE_SUPPORT
+    if (engine_id || engine_load_path || key_id)
+    {
+        if (keyfile)
         {
             oe_err("--key-file cannot be used with engine options");
             ret = 1;
             goto done;
         }
-    }
-    else
-    {
+        if (digest_signature || x509)
+        {
+            oe_err("--digest-signature and --x509 cannot be used with engine "
+                   "options");
+            ret = 1;
+            goto done;
+        }
         if (!engine_id || !key_id)
         {
-            oe_err("Either --key-file or --key-id and its --engine must be "
-                   "specified");
+            oe_err("Both --key-id and its --engine must be specified");
             ret = 1;
             goto done;
         }
     }
-    if (!ret)
+    else
+#endif
+        if (digest_signature || x509)
     {
-        ret = oesign(
-            enclave, conffile, keyfile, engine_id, engine_load_path, key_id);
+        if (keyfile)
+        {
+            oe_err("--key-file cannot be used with digest signing options");
+            ret = 1;
+            goto done;
+        }
+        if (!digest_signature || !x509)
+        {
+            oe_err("--digest-signature must be used with --x509");
+            ret = 1;
+            goto done;
+        }
     }
-#else
-    if (keyfile == NULL)
+    else if (!keyfile)
     {
-        oe_err("--key-file option is missing");
+        oe_err("One of the SIGN_OPTIONS like --key-file must be specified");
         ret = 1;
         goto done;
     }
+
     if (!ret)
     {
-        ret = oesign(enclave, conffile, keyfile, NULL, NULL, NULL);
+        ret = oesign(
+            enclave,
+            conffile,
+            keyfile,
+            digest_signature,
+            x509,
+            engine_id,
+            engine_load_path,
+            key_id);
     }
-#endif
 
 done:
+    return ret;
+}
 
+int digest_parser(int argc, const char* argv[])
+{
+    int ret = 0;
+    const char* enclave = NULL;
+    const char* conffile = NULL;
+    const char* digest_file = NULL;
+
+    const struct option long_options[] = {
+        {"help", no_argument, NULL, 'h'},
+        {"enclave-image", required_argument, NULL, 'e'},
+        {"config-file", required_argument, NULL, 'c'},
+        {"digest-file", required_argument, NULL, 'd'},
+        {NULL, 0, NULL, 0},
+    };
+    const char short_options[] = "he:c:d:";
+
+    int c;
+
+    if (argc <= 2)
+    {
+        fprintf(stderr, _usage_digest, argv[0]);
+        ret = 1;
+        goto done;
+    }
+
+    do
+    {
+        c = getopt_long(
+            argc, (char* const*)argv, short_options, long_options, NULL);
+        if (c == -1)
+        {
+            // all the command-line options are parsed
+            break;
+        }
+
+        switch (c)
+        {
+            case 'h':
+                fprintf(stderr, _usage_digest, argv[0]);
+                goto done;
+            case 'e':
+                enclave = optarg;
+                break;
+            case 'c':
+                conffile = optarg;
+                break;
+            case 'd':
+                digest_file = optarg;
+                break;
+            case ':':
+                // Missing option argument
+                ret = 1;
+                goto done;
+            case '?':
+            default:
+                // Invalid option
+                ret = 1;
+                goto done;
+        }
+    } while (1);
+
+    if (enclave == NULL)
+    {
+        oe_err("--enclave-image option is missing");
+        ret = 1;
+        goto done;
+    }
+
+    if (digest_file == NULL)
+    {
+        oe_err("--digest-file option is missing");
+        ret = 1;
+        goto done;
+    }
+
+    if (!ret)
+    {
+        ret = oedigest(enclave, conffile, digest_file);
+    }
+
+done:
     return ret;
 }
 
@@ -374,6 +534,8 @@ int arg_handler(int argc, const char* argv[])
 #endif
     else if ((strcmp(argv[1], "sign") == 0))
         ret = sign_parser(argc, argv);
+    else if ((strcmp(argv[1], "digest") == 0))
+        ret = digest_parser(argc, argv);
     else
     {
         fprintf(stderr, _usage_gen, argv[0], argv[0]);
