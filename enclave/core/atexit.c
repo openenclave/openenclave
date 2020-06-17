@@ -1,8 +1,9 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "atexit.h"
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/thread.h>
 
@@ -34,7 +35,8 @@ static oe_spinlock_t _spin = OE_SPINLOCK_INITIALIZER;
 **
 ** _new_atexit_entry()
 **
-**     Allocate an oe_atexit_entry_t structure from the heap using sbrk().
+**     Allocate an oe_atexit_entry_t structure from the heap,
+**     using oe_nodebug_malloc().
 **
 **==============================================================================
 */
@@ -43,8 +45,8 @@ static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 {
     oe_atexit_entry_t* entry;
 
-    if ((entry = (oe_atexit_entry_t*)oe_sbrk(sizeof(oe_atexit_entry_t))) ==
-        (void*)-1)
+    if ((entry = (oe_atexit_entry_t*)oe_allocator_malloc(
+             sizeof(oe_atexit_entry_t))) == (void*)-1)
         return NULL;
 
     entry->func = func;
@@ -56,7 +58,7 @@ static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 /*
 **==============================================================================
 **
-** __cxa_atexit()
+** oe_cxa_atexit()
 **
 **     Installs a function to be invoked upon exit (enclave termination).
 **
@@ -66,7 +68,7 @@ static oe_atexit_entry_t* _new_atexit_entry(void (*func)(void*), void* arg)
 **==============================================================================
 */
 
-int __cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
+int oe_cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
 {
     oe_atexit_entry_t* entry;
     OE_UNUSED(dso_handle);
@@ -105,7 +107,7 @@ int oe_atexit(void (*function)(void))
      * is pushed on the stack but then ignored by function(), which expects
      * no arguments.
      */
-    return __cxa_atexit((Function)function, NULL, NULL);
+    return oe_cxa_atexit((Function)function, NULL, NULL);
 }
 
 /*

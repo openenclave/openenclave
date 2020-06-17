@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 /**
@@ -15,6 +15,14 @@
 #include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
+
+/** Return value used by an enclave vectored exception handler to indicate
+ *  to the dispatcher that it should continue searching for the next handler. */
+#define OE_EXCEPTION_CONTINUE_SEARCH 0x0
+
+/** Return value used by an enclave vectored exception handler to indicate
+ *  to the dispatcher that it should stop searching and continue execution. */
+#define OE_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
 
 /**
  * Divider exception code, used by vectored exception handler.
@@ -153,9 +161,10 @@ typedef struct _oe_exception_record
 /**
  * oe_vectored_exception_handler_t - Function pointer for a vectored exception
  * handler in an enclave.
- * @param exception_context The record of exception information to be handled by
- * the function which includes any flags, the failure code, faulting address and
- * calling context for the exception.
+ *
+ * @param[in] exception_context The record of exception information to be
+ * handled by the function which includes any flags, the failure code, faulting
+ * address and calling context for the exception.
  */
 typedef uint64_t (*oe_vectored_exception_handler_t)(
     oe_exception_record_t* exception_context);

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <assert.h>
@@ -18,14 +18,15 @@
 #error "unsupported platform"
 #endif
 
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/registers.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/utils.h>
 #include "../calls.h"
@@ -40,58 +41,41 @@
 **
 ** _set_thread_binding()
 **
-**     Store the thread data in the GS segment register. Note that the GS
-**     register is unused on X86-64 on Linux, unlike the FS register that is
-**     used by the pthread implementation.
-**
-**     The OE_AEP() function (aep.S) uses the GS segment register to retrieve
-**     the ThreadBinding.tcs field.
+**     Store the enclave/tcs binding for the current thread in thread specific
+**     storage.
 **
 **==============================================================================
 */
 
-#define USE_TLS_FOR_THREADING_BINDING
-
-#if defined(USE_TLS_FOR_THREADING_BINDING)
 static oe_once_type _thread_binding_once;
 static oe_thread_key _thread_binding_key;
-#endif
 
-#if defined(USE_TLS_FOR_THREADING_BINDING)
 static void _create_thread_binding_key(void)
 {
     oe_thread_key_create(&_thread_binding_key);
 }
-#endif
 
-static void _set_thread_binding(ThreadBinding* binding)
+static void _set_thread_binding(oe_thread_binding_t* binding)
 {
-#if defined(USE_TLS_FOR_THREADING_BINDING)
     oe_once(&_thread_binding_once, _create_thread_binding_key);
     oe_thread_setspecific(_thread_binding_key, binding);
-#else
-    return oe_set_gs_register_base(binding);
-#endif
 }
 
 /*
 **==============================================================================
 **
-** GetThreadBinding()
+** oe_get_thread_binding()
 **
-**     Retrieve the a pointer to the ThreadBinding from the GS segment register.
+**     Retrieve the a pointer to the oe_get_thread_binding from thread specific
+**     storage.
 **
 **==============================================================================
 */
 
-ThreadBinding* GetThreadBinding()
+oe_thread_binding_t* oe_get_thread_binding()
 {
-#if defined(USE_TLS_FOR_THREADING_BINDING)
     oe_once(&_thread_binding_once, _create_thread_binding_key);
-    return (ThreadBinding*)oe_thread_getspecific(_thread_binding_key);
-#else
-    return (ThreadBinding*)oe_get_gs_register_base();
-#endif
+    return (oe_thread_binding_t*)oe_thread_getspecific(_thread_binding_key);
 }
 
 /*
@@ -115,8 +99,7 @@ static oe_result_t _enter_sim(
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_tcs_t* tcs = (sgx_tcs_t*)tcs_;
-    ThreadBinding* binding = GetThreadBinding();
-    td_t* td = NULL;
+    oe_sgx_td_t* td = NULL;
 
     /* Reject null parameters */
     if (!enclave || !enclave->addr || !tcs || !tcs->oentry || !tcs->gsbase)
@@ -127,22 +110,8 @@ static oe_result_t _enter_sim(
     if (!tcs->u.entry)
         OE_RAISE(OE_NOT_FOUND);
 
-    /* Save old GS and FS register bases */
-    binding->host_gs = oe_get_gs_register_base();
-    binding->host_fs = oe_get_fs_register_base();
-
-    /* Change GS and FS registers to the values for the enclave thread. At this
-     * point thread-locals, pthread, libc etc won't work within the host thread
-     * since they depend on FS register.
-     * This means that when the enclave makes an ocall, the GS and FS registers
-     * must be immediately restored upon entry to host.
-     * See __oe_dispatch_ocall.
-     */
-    td = (td_t*)(enclave->addr + tcs->gsbase);
-    oe_set_gs_register_base(td);
-    oe_set_fs_register_base((void*)(enclave->addr + tcs->fsbase));
-
-    /* Set td_t.simulate flag */
+    /* Set oe_sgx_td_t.simulate flag */
+    td = (oe_sgx_td_t*)(enclave->addr + tcs->gsbase);
     td->simulate = true;
 
     /* Call into enclave */
@@ -153,13 +122,6 @@ static oe_result_t _enter_sim(
         *arg4 = 0;
 
     oe_enter_sim(tcs, aep, arg1, arg2, arg3, arg4, enclave);
-
-    /* Restore GS and GS registers. After this, host side library calls can be
-     * safely called.
-     */
-    oe_set_fs_register_base(binding->host_fs);
-    oe_set_gs_register_base(binding->host_gs);
-
     result = OE_OK;
 
 done:
@@ -337,15 +299,13 @@ static const char* oe_ocall_str(oe_func_t ocall)
         "THREAD_WAIT",
         "MALLOC",
         "FREE",
-        "SLEEP",
-        "GET_TIME",
+        "GET_TIME"
     };
     // clang-format on
 
     OE_STATIC_ASSERT(OE_OCALL_BASE + OE_COUNTOF(func_names) == OE_OCALL_MAX);
 
-    if (ocall >= OE_OCALL_BASE &&
-        ocall < (OE_OCALL_BASE + OE_COUNTOF(func_names)))
+    if (ocall >= OE_OCALL_BASE && ocall < OE_OCALL_MAX)
         return func_names[ocall - OE_OCALL_BASE];
     else
         return "UNKNOWN";
@@ -359,15 +319,13 @@ static const char* oe_ecall_str(oe_func_t ecall)
         "DESTRUCTOR",
         "INIT_ENCLAVE",
         "CALL_ENCLAVE_FUNCTION",
-        "VIRTUAL_EXCEPTION_HANDLER",
-        "INIT_CONTEXT_SWITCHLESS",
+        "VIRTUAL_EXCEPTION_HANDLER"
     };
     // clang-format on
 
     OE_STATIC_ASSERT(OE_ECALL_BASE + OE_COUNTOF(func_names) == OE_ECALL_MAX);
 
-    if (ecall >= OE_ECALL_BASE &&
-        ecall < (OE_ECALL_BASE + OE_COUNTOF(func_names)))
+    if (ecall >= OE_ECALL_BASE && ecall < OE_ECALL_MAX)
         return func_names[ecall - OE_ECALL_BASE];
     else
         return "UNKNOWN";
@@ -426,10 +384,6 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_THREAD_WAKE:
             HandleThreadWake(enclave, arg_in);
-            break;
-
-        case OE_OCALL_SLEEP:
-            oe_handle_sleep(arg_in);
             break;
 
         case OE_OCALL_GET_TIME:
@@ -491,38 +445,8 @@ int __oe_dispatch_ocall(
         // Handling an OCALL can make ecalls to other enclaves, which
         // may result in overriding the thread-binding. Therefore,
         // upon return from the OCALL, the binding must be restored.
-        ThreadBinding* binding = NULL;
+        oe_thread_binding_t* binding = oe_get_thread_binding();
         uint64_t arg_out = 0;
-
-        if (enclave->simulate)
-        {
-            /**
-             * GetThreadBinding may not work since it uses pthread APIs.
-             * pthread depends on FS register being set correctly, which
-             * is what we are trying to do. So loop through the bindings
-             * to figure out the correct one for the given tcs.
-             */
-            for (size_t i = 0; i < OE_COUNTOF(enclave->bindings); ++i)
-            {
-                if (enclave->bindings[i].tcs == (uint64_t)tcs)
-                {
-                    binding = &enclave->bindings[i];
-                    break;
-                }
-            }
-
-            /**
-             * Restore FS and GS registers when making an OCALL.
-             * This makes sure that thread-locals, libc on host work.
-             */
-            oe_set_fs_register_base(binding->host_fs);
-            oe_set_gs_register_base(binding->host_gs);
-        }
-        else
-        {
-            // FS, GS registers are restored by the EEXIT instruction.
-            binding = GetThreadBinding();
-        }
 
         oe_result_t result = _handle_ocall(enclave, tcs, func, arg, &arg_out);
         *arg1_out = oe_make_call_arg1(OE_CODE_ORET, func, 0, result);
@@ -530,14 +454,6 @@ int __oe_dispatch_ocall(
 
         // Restore the binding.
         _set_thread_binding(binding);
-
-        if (enclave->simulate)
-        {
-            // Prior to returning back to the enclave, set the GS and FS
-            // registers to their values for the enclave thread.
-            oe_set_fs_register_base((void*)(enclave->addr + tcs->fsbase));
-            oe_set_gs_register_base((void*)(enclave->addr + tcs->gsbase));
-        }
         return 0;
     }
 
@@ -572,10 +488,10 @@ static void* _assign_tcs(oe_enclave_t* enclave)
 
     oe_mutex_lock(&enclave->lock);
     {
-        /* First attempt to find a busy td_t owned by this thread */
+        /* First attempt to find a busy oe_sgx_td_t owned by this thread */
         for (i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadBinding* binding = &enclave->bindings[i];
+            oe_thread_binding_t* binding = &enclave->bindings[i];
 
             if ((binding->flags & _OE_THREAD_BUSY) && binding->thread == thread)
             {
@@ -595,18 +511,19 @@ static void* _assign_tcs(oe_enclave_t* enclave)
         {
             for (i = 0; i < enclave->num_bindings; i++)
             {
-                ThreadBinding* binding = &enclave->bindings[i];
+                oe_thread_binding_t* binding = &enclave->bindings[i];
 
                 if (!(binding->flags & _OE_THREAD_BUSY))
                 {
                     binding->flags |= _OE_THREAD_BUSY;
                     binding->thread = thread;
                     binding->count = 1;
+
                     tcs = (void*)binding->tcs;
 
                     /* Set into TSD so asynchronous exceptions can get it */
                     _set_thread_binding(binding);
-                    assert(GetThreadBinding() == binding);
+                    assert(oe_get_thread_binding() == binding);
 
                     /* Notify the debugger runtime */
                     if (enclave->debug && enclave->debug_enclave != NULL)
@@ -641,7 +558,7 @@ static void _release_tcs(oe_enclave_t* enclave, void* tcs)
     {
         for (i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadBinding* binding = &enclave->bindings[i];
+            oe_thread_binding_t* binding = &enclave->bindings[i];
 
             if ((binding->flags & _OE_THREAD_BUSY) &&
                 (void*)binding->tcs == tcs)
@@ -658,7 +575,7 @@ static void _release_tcs(oe_enclave_t* enclave, void* tcs)
                     binding->thread = 0;
                     memset(&binding->event, 0, sizeof(binding->event));
                     _set_thread_binding(NULL);
-                    assert(GetThreadBinding() == NULL);
+                    assert(oe_get_thread_binding() == NULL);
                 }
                 break;
             }
@@ -694,7 +611,7 @@ oe_result_t oe_ecall(
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Assign a td_t for this operation */
+    /* Assign a oe_sgx_td_t for this operation */
     if (!(tcs = _assign_tcs(enclave)))
         OE_RAISE(OE_OUT_OF_THREADS);
 
@@ -740,117 +657,3 @@ done:
 
     return result;
 }
-
-/*
-**==============================================================================
-**
-** oe_switchless_call_enclave_function_by_table_id()
-**
-** Switchlessly call the enclave function specified by the given table-id and
-*function-id.
-**
-**==============================================================================
-*/
-
-static oe_result_t oe_switchless_call_enclave_function_by_table_id(
-    oe_enclave_t* enclave,
-    uint64_t table_id,
-    uint64_t function_id,
-    const void* input_buffer,
-    size_t input_buffer_size,
-    void* output_buffer,
-    size_t output_buffer_size,
-    size_t* output_bytes_written)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_call_enclave_function_args_t args;
-
-    /* Reject invalid parameters */
-    if (!enclave)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize the call_enclave_args structure */
-    {
-        args.table_id = table_id;
-        args.function_id = function_id;
-        args.input_buffer = input_buffer;
-        args.input_buffer_size = input_buffer_size;
-        args.output_buffer = output_buffer;
-        args.output_buffer_size = output_buffer_size;
-        args.output_bytes_written = 0;
-        args.result = OE_UNEXPECTED;
-    }
-
-    /* TODO: @EMumau Perform the Switchless ECALL */
-    {
-        OE_RAISE(OE_UNSUPPORTED);
-    }
-
-    /* Check the result */
-    OE_CHECK(args.result);
-
-    *output_bytes_written = args.output_bytes_written;
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-/*
-**==============================================================================
-**
-** oe_switchless_call_enclave_function()
-**
-** Switchlessly call the enclave function specified by the given function-id in
-** the default function table.
-**
-**==============================================================================
-*/
-oe_result_t oe_switchless_call_enclave_function(
-    oe_enclave_t* enclave,
-    uint32_t function_id,
-    const void* input_buffer,
-    size_t input_buffer_size,
-    void* output_buffer,
-    size_t output_buffer_size,
-    size_t* output_bytes_written)
-{
-    return oe_switchless_call_enclave_function_by_table_id(
-        enclave,
-        OE_UINT64_MAX,
-        function_id,
-        input_buffer,
-        input_buffer_size,
-        output_buffer,
-        output_buffer_size,
-        output_bytes_written);
-}
-
-/*
-** These two functions are needed to notify the debugger. They should not be
-** optimized out even though they don't do anything in here.
-*/
-
-OE_NO_OPTIMIZE_BEGIN
-
-OE_NEVER_INLINE void oe_notify_ocall_start(
-    oe_host_ocall_frame_t* frame_pointer,
-    void* tcs)
-{
-    OE_UNUSED(frame_pointer);
-    OE_UNUSED(tcs);
-
-    return;
-}
-
-OE_NEVER_INLINE void oe_notify_ocall_end(
-    oe_host_ocall_frame_t* frame_pointer,
-    void* tcs)
-{
-    OE_UNUSED(frame_pointer);
-    OE_UNUSED(tcs);
-
-    return;
-}
-
-OE_NO_OPTIMIZE_END

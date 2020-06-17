@@ -15,7 +15,7 @@ int main(void)
 	#pragma STDC FENV_ACCESS ON
 	float y;
 	float d;
-	int e, i, err = 0;
+	int e, i, bad, err = 0;
 	struct f_f *p;
 
 	for (i = 0; i < sizeof t/sizeof *t; i++) {
@@ -35,13 +35,14 @@ int main(void)
 			err++;
 		}
 		d = ulperrf(y, p->y, p->dy);
-		if ((!(p->x < 0) && !checkulp(d, p->r)) || (p->x < 0 && !isnan(y) && y != -inf)) {
-//			printf("%s:%d: %s y0f(%a) want %a got %a ulperr %.3f = %a + %a\n",
-//				p->file, p->line, rstr(p->r), p->x, p->y, y, d, d-p->dy, p->dy);
-			err++;
-			// TODO: avoid spamming the output
-			printf(__FILE__ ": known to be broken near zeros\n");
-			break;
+		bad = p->x < 0 && !isnan(y) && y != -inf;
+		if (bad || (!(p->x < 0) && !checkulp(d, p->r))) {
+			if (!bad && fabsf(d) < 0x1p23f)
+				printf("X ");
+			else
+				err++;
+			printf("%s:%d: %s y0f(%a) want %a got %a ulperr %.3f = %a + %a\n",
+				p->file, p->line, rstr(p->r), p->x, p->y, y, d, d-p->dy, p->dy);
 		}
 	}
 	return !!err;

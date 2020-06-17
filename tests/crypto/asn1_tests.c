@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #if defined(OE_BUILD_ENCLAVE)
@@ -265,6 +265,9 @@ static oe_result_t _parse(oe_asn1_t* asn1)
                     goto done;
 
                 result = _parse(&sequence);
+
+                if (result != OE_OK)
+                    goto done;
 
                 break;
             }

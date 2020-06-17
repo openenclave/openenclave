@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 /**
@@ -33,6 +33,10 @@ typedef long ptrdiff_t;
 typedef long intptr_t;
 typedef long time_t;
 typedef long suseconds_t;
+
+#ifndef __cplusplus
+typedef __WCHAR_TYPE__ wchar_t;
+#endif
 
 #elif defined(_MSC_VER)
 typedef long long ssize_t;
@@ -164,64 +168,16 @@ typedef enum _oe_seal_policy
 } oe_seal_policy_t;
 
 /**
- * This enumeration defines the type of a asymmetric key.
- * This definition is shared by the enclave and the host.
+ * This struct defines a datetime up to 1 second precision.
  */
-typedef enum _oe_asymmetric_key_type
+typedef struct _oe_datetime
 {
-    /**
-     * A secp256r1/NIST P-256 elliptic curve key.
-     */
-    OE_ASYMMETRIC_KEY_EC_SECP256P1 = 1,
-
-    /**
-     * Unused.
-     */
-    _OE_ASYMMETRIC_KEY_TYPE_MAX = OE_ENUM_MAX,
-} oe_asymmetric_key_type_t;
-
-/**
- * This enumeration defines the format of the asymmetric key.
- * This definition is shared by the enclave and the host.
- */
-typedef enum _oe_asymmetric_key_format
-{
-    /**
-     * The PEM format.
-     */
-    OE_ASYMMETRIC_KEY_PEM = 1,
-
-    /**
-     * Unused.
-     */
-    _OE_ASYMMETRIC_KEY_FORMAT_MAX = OE_ENUM_MAX,
-} oe_asymmetric_key_format_t;
-
-/**
- * This struct contains the parameters for asymmetric key derivation.
- * This definition is shared by the enclave and the host.
- */
-typedef struct _oe_asymmetric_key_params
-{
-    /**
-     *  The type of asymmetric key.
-     */
-    oe_asymmetric_key_type_t type;
-
-    /**
-     * The exported format of the key.
-     */
-    oe_asymmetric_key_format_t format;
-
-    /**
-     * Optional user data to add to the key derivation.
-     */
-    void* user_data;
-
-    /**
-     * The size of user_data.
-     */
-    size_t user_data_size;
-} oe_asymmetric_key_params_t;
+    uint32_t year;    /* format: 1970, 2018, 2020 */
+    uint32_t month;   /* range: 1-12 */
+    uint32_t day;     /* range: 1-31 */
+    uint32_t hours;   /* range: 0-23 */
+    uint32_t minutes; /* range: 0-59 */
+    uint32_t seconds; /* range: 0-59 */
+} oe_datetime_t;
 
 #endif /* _OE_BITS_TYPES_H */

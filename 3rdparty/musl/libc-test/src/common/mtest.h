@@ -122,7 +122,8 @@ static int checkulp(float d, int r)
 	// TODO: we only care about >=1.5 ulp errors for now, should be 1.0
 	if (r == RN)
 		return fabsf(d) < 1.5;
-	return 1;
+	// accept larger error in non-nearest rounding mode
+	return fabsf(d) < 3.0;
 }
 
 static int checkcr(long double y, long double ywant, int r)

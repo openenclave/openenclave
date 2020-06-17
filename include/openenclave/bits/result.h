@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 /**
@@ -260,6 +260,11 @@ typedef enum _oe_result
     OE_INVALID_QE_IDENTITY_INFO,
 
     /**
+     * The quote verification collateral is invalid.
+     */
+    OE_INVALID_ENDORSEMENT,
+
+    /**
      * The enclave image contains unsupported constructs.
      */
     OE_UNSUPPORTED_ENCLAVE_IMAGE,
@@ -278,6 +283,11 @@ typedef enum _oe_result
      * The certificate or signature has been revoked.
      */
     OE_VERIFY_REVOKED,
+
+    /**
+     * Could not find a valid validity period.
+     */
+    OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD,
 
     /**
      * An underlying crypto provider returned an error.
@@ -329,6 +339,28 @@ typedef enum _oe_result
      */
     OE_THREAD_JOIN_ERROR,
 
+    /**
+     * The desired resource already exists.
+     */
+    OE_ALREADY_EXISTS,
+
+    /**
+     * The desired resource has already been initialized.
+     */
+    OE_ALREADY_INITIALIZED,
+
+    /**
+     * The hash of claims section in the quote does not match the hash value
+     * held in the report_data field. This occurs when claims are tampered.
+     */
+    OE_QUOTE_HASH_MISMATCH,
+
+    /**
+     * The signing key provided cannot be used for SGX signing. This is
+     * usually because the key is not an 3084-bit RSA key with exponent 3.
+     */
+    OE_INVALID_SGX_SIGNING_KEY,
+
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
 /**< typedef enum _oe_result oe_result_t*/
@@ -339,7 +371,7 @@ typedef enum _oe_result
  * This function retrieves a string description for the given **result**
  * parameter.
  *
- * @param result Retrieve string description for this result code.
+ * @param[in] result Retrieve string description for this result code.
  *
  * @returns Returns a pointer to a static string description.
  *

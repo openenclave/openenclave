@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <dirent.h>
@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/poll.h>
 #include <sys/signal.h>
@@ -21,6 +22,7 @@
 #include <sys/uio.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include "../../common/oe_host_socket.h"
 #include "../host/strings.h"
 #include "syscall_u.h"
 
@@ -152,6 +154,28 @@ oe_off_t oe_syscall_lseek_ocall(oe_host_fd_t fd, oe_off_t offset, int whence)
     return lseek((int)fd, offset, whence);
 }
 
+ssize_t oe_syscall_pread_ocall(
+    oe_host_fd_t fd,
+    void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    errno = 0;
+
+    return pread((int)fd, buf, count, offset);
+}
+
+ssize_t oe_syscall_pwrite_ocall(
+    oe_host_fd_t fd,
+    const void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    errno = 0;
+
+    return pwrite((int)fd, buf, count, offset);
+}
+
 int oe_syscall_close_ocall(oe_host_fd_t fd)
 {
     errno = 0;
@@ -164,6 +188,13 @@ int oe_syscall_close_socket_ocall(oe_host_fd_t fd)
     errno = 0;
 
     return close((int)fd);
+}
+
+int oe_syscall_flock_ocall(oe_host_fd_t fd, int operation)
+{
+    errno = 0;
+
+    return flock((int)fd, operation);
 }
 
 oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t oldfd)
@@ -248,7 +279,7 @@ int oe_syscall_closedir_ocall(uint64_t dirp)
     return closedir((DIR*)dirp);
 }
 
-int oe_syscall_stat_ocall(const char* pathname, struct oe_stat* buf)
+int oe_syscall_stat_ocall(const char* pathname, struct oe_stat_t* buf)
 {
     int ret = -1;
     struct stat st;
@@ -792,25 +823,6 @@ int oe_syscall_kill_ocall(int pid, int signum)
 **==============================================================================
 */
 
-#define GETADDRINFO_HANDLE_MAGIC 0xed11d13a
-
-typedef struct _getaddrinfo_handle
-{
-    uint32_t magic;
-    struct addrinfo* res;
-    struct addrinfo* next;
-} getaddrinfo_handle_t;
-
-static getaddrinfo_handle_t* _cast_getaddrinfo_handle(void* handle_)
-{
-    getaddrinfo_handle_t* handle = (getaddrinfo_handle_t*)handle_;
-
-    if (!handle || handle->magic != GETADDRINFO_HANDLE_MAGIC || !handle->res)
-        return NULL;
-
-    return handle;
-}
-
 int oe_syscall_getaddrinfo_open_ocall(
     const char* node,
     const char* service,
@@ -857,6 +869,21 @@ done:
     return ret;
 }
 
+size_t _strcpy_to_utf8(
+    char* ai_canonname_buf,
+    size_t ai_canonname_buf_len,
+    void* ai_canonname)
+{
+    const char* canonname = (const char*)ai_canonname;
+
+    size_t buf_needed = strlen(canonname) + 1;
+    if (buf_needed <= ai_canonname_buf_len)
+    {
+        memcpy(ai_canonname_buf, canonname, buf_needed);
+    }
+    return buf_needed;
+}
+
 int oe_syscall_getaddrinfo_read_ocall(
     uint64_t handle_,
     int* ai_flags,
@@ -870,75 +897,22 @@ int oe_syscall_getaddrinfo_read_ocall(
     size_t* ai_canonnamelen,
     char* ai_canonname)
 {
-    int ret = -1;
-    getaddrinfo_handle_t* handle = _cast_getaddrinfo_handle((void*)handle_);
+    int err_no = 0;
+    int ret = _getaddrinfo_read(
+        handle_,
+        ai_flags,
+        ai_family,
+        ai_socktype,
+        ai_protocol,
+        ai_addrlen_in,
+        ai_addrlen,
+        ai_addr,
+        ai_canonnamelen_in,
+        ai_canonnamelen,
+        ai_canonname,
+        &err_no);
+    errno = err_no;
 
-    errno = 0;
-
-    if (!handle || !ai_flags || !ai_family || !ai_socktype || !ai_protocol ||
-        !ai_addrlen || !ai_canonnamelen)
-    {
-        errno = EINVAL;
-        goto done;
-    }
-
-    if (!ai_addr && ai_addrlen_in)
-    {
-        errno = EINVAL;
-        goto done;
-    }
-
-    if (!ai_canonname && ai_canonnamelen_in)
-    {
-        errno = EINVAL;
-        goto done;
-    }
-
-    if (handle->next)
-    {
-        struct addrinfo* p = handle->next;
-
-        *ai_flags = p->ai_flags;
-        *ai_family = p->ai_family;
-        *ai_socktype = p->ai_socktype;
-        *ai_protocol = p->ai_protocol;
-        *ai_addrlen = p->ai_addrlen;
-
-        if (p->ai_canonname)
-            *ai_canonnamelen = strlen(p->ai_canonname) + 1;
-        else
-            *ai_canonnamelen = 0;
-
-        if (*ai_addrlen > ai_addrlen_in)
-        {
-            errno = ENAMETOOLONG;
-            goto done;
-        }
-
-        if (*ai_canonnamelen > ai_canonnamelen_in)
-        {
-            errno = ENAMETOOLONG;
-            goto done;
-        }
-
-        memcpy(ai_addr, p->ai_addr, *ai_addrlen);
-
-        if (p->ai_canonname)
-            memcpy(ai_canonname, p->ai_canonname, *ai_canonnamelen);
-
-        handle->next = handle->next->ai_next;
-
-        ret = 0;
-        goto done;
-    }
-    else
-    {
-        /* Done */
-        ret = 1;
-        goto done;
-    }
-
-done:
     return ret;
 }
 
@@ -1448,4 +1422,19 @@ int oe_syscall_uname_ocall(struct oe_utsname* buf)
 
 done:
     return ret;
+}
+
+/*
+**==============================================================================
+**
+** sleep():
+**
+**==============================================================================
+*/
+
+int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
+{
+    errno = 0;
+
+    return nanosleep((struct timespec*)req, (struct timespec*)rem);
 }

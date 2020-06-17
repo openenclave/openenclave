@@ -1,0 +1,8 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+validation_binaries:
+  - "/usr/bin/docker"
+  - "/usr/bin/dockerd"
+  - "/usr/bin/git"

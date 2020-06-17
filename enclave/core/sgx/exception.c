@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/constants_x64.h>
@@ -10,7 +10,8 @@
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include "asmdefs.h"
@@ -167,7 +168,9 @@ typedef struct _ssa_info
 **
 **==============================================================================
 */
-static int _get_enclave_thread_first_ssa_info(td_t* td, SSA_Info* ssa_info)
+static int _get_enclave_thread_first_ssa_info(
+    oe_sgx_td_t* td,
+    SSA_Info* ssa_info)
 {
     sgx_tcs_t* tcs = (sgx_tcs_t*)td_to_tcs(td);
     uint64_t ssa_frame_size = td->base.__ssa_frame_size;
@@ -242,19 +245,28 @@ int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 */
 void oe_real_exception_dispatcher(oe_context_t* oe_context)
 {
-    td_t* td = oe_get_td();
+    oe_sgx_td_t* td = oe_sgx_get_td();
 
     // Change the rip of oe_context to the real exception address.
-    oe_context->rip = td->base.exception_address;
+    oe_context->rip = td->exception_address;
 
     // Compose the oe_exception_record_t.
     // N.B. In second pass exception handling, the XSTATE is recovered by SGX
     // hardware correctly on ERESUME, so we don't touch the XSTATE.
     oe_exception_record_t oe_exception_record = {0};
-    oe_exception_record.code = td->base.exception_code;
-    oe_exception_record.flags = td->base.exception_flags;
-    oe_exception_record.address = td->base.exception_address;
+    oe_exception_record.code = td->exception_code;
+    oe_exception_record.flags = td->exception_flags;
+    oe_exception_record.address = td->exception_address;
     oe_exception_record.context = oe_context;
+
+    // Refer to oe_enter in host/sgx/enter.c. The contract we defined for EENTER
+    // is the RBP should not change after return from EENTER.
+    // When the exception is handled, restores the host RBP, RSP to the
+    // value when regular ECALL happens before first pass exception
+    // handling.
+    td->host_rbp = td->host_previous_rbp;
+    td->host_rsp = td->host_previous_rsp;
+    td->host_ecall_context = td->host_previous_ecall_context;
 
     // Traverse the existing exception handlers, stop when
     // OE_EXCEPTION_CONTINUE_EXECUTION is found.
@@ -271,14 +283,6 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     // Jump to the point where oe_context refers to and continue.
     if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
     {
-        // Refer to oe_enter in host/enter.S. The contract we defined for EENTER
-        // is the RBP should not change after return from EENTER.
-        // When the exception is handled, restores the host RBP, RSP to the
-        // value when regular ECALL happens before first pass exception
-        // handling.
-        td->host_rbp = td->host_previous_rbp;
-        td->host_rsp = td->host_previous_rsp;
-
         oe_continue_execution(oe_exception_record.context);
 
         // Code should never run to here.
@@ -288,8 +292,6 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
 
     // Exception can't be handled by trusted handlers, abort the enclave.
     // Let the oe_abort to run on the stack where the exception happens.
-    td->host_rbp = td->host_previous_rbp;
-    td->host_rsp = td->host_previous_rsp;
     oe_exception_record.context->rip = (uint64_t)oe_abort;
     oe_continue_execution(oe_exception_record.context);
 
@@ -299,7 +301,7 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
 /*
 **==============================================================================
 **
-** oe_virtual_exception_dispatcher(td_t* td, uint64_t arg_in, uint64_t*
+** oe_virtual_exception_dispatcher(oe_sgx_td_t* td, uint64_t arg_in, uint64_t*
 *arg_out)
 **
 **  The virtual (first pass) exception dispatcher. It checks whether or not
@@ -309,7 +311,7 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
 **==============================================================================
 */
 void oe_virtual_exception_dispatcher(
-    td_t* td,
+    oe_sgx_td_t* td,
     uint64_t arg_in,
     uint64_t* arg_out)
 {
@@ -333,36 +335,37 @@ void oe_virtual_exception_dispatcher(
     }
 
     // Get the exception address, code, and flags.
-    td->base.exception_address = ssa_gpr->rip;
-    td->base.exception_code = OE_EXCEPTION_UNKNOWN;
+    td->exception_address = ssa_gpr->rip;
+    td->exception_code = OE_EXCEPTION_UNKNOWN;
     for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
          i++)
     {
         if (g_vector_to_exception_code_mapping[i].sgx_vector ==
             ssa_gpr->exit_info.as_fields.vector)
         {
-            td->base.exception_code =
+            td->exception_code =
                 g_vector_to_exception_code_mapping[i].exception_code;
             break;
         }
     }
 
-    td->base.exception_flags = 0;
+    td->exception_flags = 0;
     if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HARDWARE)
     {
-        td->base.exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+        td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
     }
     else if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
     {
-        td->base.exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        td->exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
     }
 
-    if (td->base.exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
+    if (td->exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
         _emulate_illegal_instruction(ssa_gpr) == 0)
     {
         // Restore the RBP & RSP as required by return from EENTER
         td->host_rbp = td->host_previous_rbp;
         td->host_rsp = td->host_previous_rsp;
+        td->host_ecall_context = td->host_previous_ecall_context;
 
         // Advance RIP to the next instruction for continuation
         ssa_gpr->rip += 2;

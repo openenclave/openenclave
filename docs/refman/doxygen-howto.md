@@ -139,7 +139,7 @@ To bold text, use double asterisks as follows.
 
 ```
 /**
- * This is my *bold* example.
+ * This is my **bold** example.
  *
  */
 ```
@@ -182,6 +182,7 @@ For example.
  */
 ```
 
+<a name="disable-doxygen"></a>
 ### Disabling Doxygen documentation from blocks of code
 
 To disable Doxygen documentation from blocks of code with `#defines` or

@@ -1,11 +1,12 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _TD_H
 #define _TD_H
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/jump.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/types.h>
 #include "asmdefs.h"
 
@@ -54,26 +55,40 @@ struct _callsite
     Callsite* next;
 };
 
+/* Some basic td function do not have the opportunity to keep consistency of
+   td then may trigger stack check fail. Such functions are moved to a separate
+   source file td_basic.c and the stack guard protector is disabled by force
+   through fno-stack-protector option.
+*/
+
 /*
 **==============================================================================
 **
-** td_t methods:
+** oe_sgx_td_t methods defined in td.c
 **
 **==============================================================================
 */
 
-void td_push_callsite(td_t* td, Callsite* ec);
+void td_push_callsite(oe_sgx_td_t* td, Callsite* ec);
 
-void td_pop_callsite(td_t* td);
+oe_sgx_td_t* td_from_tcs(void* tcs);
 
-td_t* td_from_tcs(void* tcs);
+void* td_to_tcs(const oe_sgx_td_t* td);
 
-void* td_to_tcs(const td_t* td);
+bool td_initialized(oe_sgx_td_t* td);
 
-void td_init(td_t* td);
+/*
+**==============================================================================
+**
+** oe_sgx_td_t methods defined in td_basic.c
+**
+**==============================================================================
+*/
 
-void td_clear(td_t* td);
+void td_pop_callsite(oe_sgx_td_t* td);
 
-bool td_initialized(td_t* td);
+void td_init(oe_sgx_td_t* td);
+
+void td_clear(oe_sgx_td_t* td);
 
 #endif /* _TD_H */

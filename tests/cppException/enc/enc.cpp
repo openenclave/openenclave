@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/edger8r/enclave.h>
@@ -52,7 +52,7 @@ int test_unhandled_exception(unhandled_exception_func_num func_num)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    64,   /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    128,  /* NumHeapPages */
+    64,   /* NumStackPages */
+    2);   /* NumTCS */

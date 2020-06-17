@@ -1,15 +1,16 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #define _GNU_SOURCE
 
 #include <openenclave/enclave.h>
 
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/syscall/device.h>
 #include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/internal/syscall/fdtable.h>
@@ -62,7 +63,7 @@ typedef struct _epoll
     size_t map_capacity;
 
     /* Synchronizes access to this structure. */
-    oe_spinlock_t lock;
+    oe_mutex_t lock;
 } epoll_t;
 
 static oe_epoll_ops_t _get_epoll_ops(void);
@@ -224,6 +225,10 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
         host_event.data.fd = fd;
     }
 
+    // The host call and the map update must be done in an atomic operation.
+    locked = true;
+    oe_mutex_lock(&epoll->lock);
+
     if (oe_syscall_epoll_ctl_ocall(
             &retval, host_epfd, OE_EPOLL_CTL_ADD, host_fd, &host_event) !=
         OE_OK)
@@ -233,9 +238,6 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 
     if (retval == 0)
     {
-        oe_spin_lock(&epoll->lock);
-        locked = true;
-
         if (_map_reserve(epoll, epoll->map_size + 1) != 0)
             OE_RAISE_ERRNO(OE_ENOMEM);
 
@@ -249,7 +251,7 @@ static int _epoll_ctl_add(epoll_t* epoll, int fd, struct oe_epoll_event* event)
 done:
 
     if (locked)
-        oe_spin_unlock(&epoll->lock);
+        oe_mutex_unlock(&epoll->lock);
 
     return ret;
 }
@@ -262,6 +264,7 @@ static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
     oe_host_fd_t host_fd;
     struct oe_epoll_event host_event;
     int retval;
+    bool locked = false;
 
     oe_errno = 0;
 
@@ -290,6 +293,10 @@ static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
         host_event.data.fd = fd;
     }
 
+    // The host call and the map update must be done in an atomic operation.
+    locked = true;
+    oe_mutex_lock(&epoll->lock);
+
     if (oe_syscall_epoll_ctl_ocall(
             &retval, host_epfd, OE_EPOLL_CTL_MOD, host_fd, &host_event) !=
         OE_OK)
@@ -300,22 +307,19 @@ static int _epoll_ctl_mod(epoll_t* epoll, int fd, struct oe_epoll_event* event)
     /* Modify the mapping. */
     if (retval == 0)
     {
-        mapping_t* mapping;
-
-        oe_spin_lock(&epoll->lock);
-        {
-            if ((mapping = _map_find(epoll, fd)))
-                mapping->event = *event;
-        }
-        oe_spin_unlock(&epoll->lock);
-
+        mapping_t* const mapping = _map_find(epoll, fd);
         if (!mapping)
             OE_RAISE_ERRNO(OE_ENOENT);
+
+        mapping->event = *event;
     }
 
     ret = 0;
 
 done:
+    if (locked)
+        oe_mutex_unlock(&epoll->lock);
+
     return ret;
 }
 
@@ -326,6 +330,7 @@ static int _epoll_ctl_del(epoll_t* epoll, int fd)
     oe_host_fd_t host_epfd;
     oe_host_fd_t host_fd;
     int retval;
+    bool locked = false;
 
     oe_errno = 0;
 
@@ -343,6 +348,10 @@ static int _epoll_ctl_del(epoll_t* epoll, int fd)
     if ((host_fd = desc->ops.fd.get_host_fd(desc)) == -1)
         OE_RAISE_ERRNO(oe_errno);
 
+    // The host call and the map update must be done in an atomic operation.
+    locked = true;
+    oe_mutex_lock(&epoll->lock);
+
     if (oe_syscall_epoll_ctl_ocall(
             &retval, host_epfd, OE_EPOLL_CTL_DEL, host_fd, NULL) != OE_OK)
     {
@@ -354,20 +363,16 @@ static int _epoll_ctl_del(epoll_t* epoll, int fd)
     {
         bool found = false;
 
-        oe_spin_lock(&epoll->lock);
+        for (size_t i = 0; i < epoll->map_size; i++)
         {
-            for (size_t i = 0; epoll->map_size; i++)
+            if (epoll->map[i].fd == fd)
             {
-                if (epoll->map[i].fd == fd)
-                {
-                    /* Swap with last element of array. */
-                    epoll->map[i] = epoll->map[--epoll->map_size];
-                    found = true;
-                    break;
-                }
+                /* Swap with last element of array. */
+                epoll->map[i] = epoll->map[--epoll->map_size];
+                found = true;
+                break;
             }
         }
-        oe_spin_unlock(&epoll->lock);
 
         if (!found)
             OE_RAISE_ERRNO(OE_ENOENT);
@@ -376,6 +381,9 @@ static int _epoll_ctl_del(epoll_t* epoll, int fd)
     ret = 0;
 
 done:
+    if (locked)
+        oe_mutex_unlock(&epoll->lock);
+
     return ret;
 }
 
@@ -434,6 +442,7 @@ static int _epoll_wait(
 {
     int ret = -1;
     int retval;
+    bool locked = false;
     epoll_t* epoll = _cast_epoll(epoll_);
     oe_host_fd_t host_epfd = -1;
 
@@ -457,26 +466,32 @@ static int _epoll_wait(
         if (retval > maxevents)
             OE_RAISE_ERRNO(OE_EINVAL);
 
+        locked = true;
+        oe_mutex_lock(&epoll->lock);
+
         for (int i = 0; i < retval; i++)
         {
-            struct oe_epoll_event* event = &events[i];
-            const mapping_t* mapping;
+            struct oe_epoll_event* const event = &events[i];
+            const mapping_t* const mapping = _map_find(epoll, event->data.fd);
 
-            oe_spin_lock(&epoll->lock);
+            if (mapping)
+                event->data.u64 = mapping->event.data.u64;
+            else
             {
-                if ((mapping = _map_find(epoll, event->data.fd)))
-                    event->data.u64 = mapping->event.data.u64;
+                // fd has been deleted between the return of epoll_wait and the
+                // acquisition of the lock.
+                --retval;
+                *event = events[retval];
+                --i;
             }
-            oe_spin_unlock(&epoll->lock);
-
-            if (!mapping)
-                OE_RAISE_ERRNO(OE_ENOENT);
         }
     }
 
     ret = (int)retval;
 
 done:
+    if (locked)
+        oe_mutex_unlock(&epoll->lock);
 
     return ret;
 }
@@ -743,10 +758,10 @@ static int _epoll_dup(oe_fd_t* epoll_, oe_fd_t** new_epoll_out)
 
     oe_errno = 0;
 
-    if (new_epoll_out)
-        *new_epoll_out = NULL;
-
     /* Check parameters. */
+    if (!new_epoll_out)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
     if (!epoll)
         OE_RAISE_ERRNO(OE_EINVAL);
 
@@ -795,6 +810,29 @@ done:
     return ret;
 }
 
+static void _epoll_on_close(oe_fd_t* epoll_, int fd)
+{
+    epoll_t* const epoll = _cast_epoll(epoll_);
+    oe_assert(epoll);
+
+    oe_assert(fd >= 0);
+
+    oe_mutex_lock(&epoll->lock);
+
+    /* Delete the mapping if it exists. */
+    for (size_t i = 0; i < epoll->map_size; i++)
+    {
+        if (epoll->map[i].fd == fd)
+        {
+            /* Swap with last element of array. */
+            epoll->map[i] = epoll->map[--epoll->map_size];
+            break;
+        }
+    }
+
+    oe_mutex_unlock(&epoll->lock);
+}
+
 static oe_epoll_ops_t _epoll_ops = {
     .fd.read = _epoll_read,
     .fd.write = _epoll_write,
@@ -807,6 +845,7 @@ static oe_epoll_ops_t _epoll_ops = {
     .fd.get_host_fd = _epoll_get_host_fd,
     .epoll_ctl = _epoll_ctl,
     .epoll_wait = _epoll_wait,
+    .on_close = _epoll_on_close,
 };
 
 static oe_epoll_ops_t _get_epoll_ops(void)

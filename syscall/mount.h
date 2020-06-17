@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved._ops
+// Copyright (c) Open Enclave SDK contributors._ops
 // Licensed under the MIT License.
 
 #ifndef _OE_SYSCALL_MOUNT_H

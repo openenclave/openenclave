@@ -1,0 +1,69 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(oegdb) Launch Intel SGX (Hardware)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bld/sgx/out/bin/[[project-name]]",
+            "args": [
+                "${workspaceFolder}/bld/sgx/out/bin/[[project-name]]_enclave.signed",
+                "--debug"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build for Intel SGX (x64)",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/opt/openenclave/bin/oegdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(oegdb) Launch Intel SGX (Simulation)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bld/sgx/out/bin/[[project-name]]",
+            "args": [
+                "${workspaceFolder}/bld/sgx/out/bin/[[project-name]]_enclave.signed",
+                "--debug",
+                "--simulate"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build for Intel SGX (x64)",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/opt/openenclave/bin/oegdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) Launch QEMU (AArch64/ARMv8-A)",
+            "type": "gdb",
+            "request": "attach",
+            "cwd": "${workspaceFolder}/bld/vexpress-qemu_armv8a",
+            "preLaunchTask": "QEMU (AArch64/ARMv8-A)",
+            "target": "localhost:6464",
+            "remote": true,
+            "gdbpath": "/usr/bin/gdb-multiarch",
+            "autorun": [
+                "symbol-file ./out/bin/[[project-name]]",
+                "add-symbol-file ./out/bin/[[generated-uuid]].elf 0x40017020",
+                "b ecall_handle_message"
+            ]
+        }
+    ]
+}

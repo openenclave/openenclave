@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_HOST_STRING_H
@@ -38,10 +38,21 @@ int oe_strncmp(const char* s1, const char* s2, size_t n)
 
 /* host already has an oe_strlcat implementation */
 
+/*
+ * There are separate OE functions for strerror and strerror_s.
+ * Therefore we suppress the warning about not using more secure CRT functions.
+ */
 OE_INLINE
 char* oe_strerror(int errnum)
 {
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
     return strerror(errnum);
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 }
 
 OE_INLINE

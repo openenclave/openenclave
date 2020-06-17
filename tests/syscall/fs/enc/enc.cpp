@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/limits.h>
@@ -159,6 +159,84 @@ static void test_read_file(FILE_SYSTEM& fs, const char* tmp_dir)
 }
 
 template <class FILE_SYSTEM>
+static void test_pread_file(FILE_SYSTEM& fs, const char* tmp_dir)
+{
+    char path[OE_PAGE_SIZE];
+    typename FILE_SYSTEM::file_handle file;
+    char buf[OE_PAGE_SIZE];
+
+    printf("--- %s()\n", __FUNCTION__);
+
+    mkpath(path, tmp_dir, "alphabet");
+
+    /* Open the file for input. */
+    {
+        const int flags = OE_O_RDONLY;
+        file = fs.open(path, flags, 0);
+        OE_TEST(file);
+    }
+
+    /* pread the whole file. */
+    {
+        ssize_t n = fs.pread(file, buf, sizeof(buf), 0);
+        OE_TEST(n == sizeof(ALPHABET));
+        OE_TEST(memcmp(buf, ALPHABET, sizeof(ALPHABET)) == 0);
+    }
+
+    /* read "ab" */
+    {
+        OE_TEST(fs.read(file, buf, 2) == 2);
+        OE_TEST(memcmp(buf, "ab", 2) == 0);
+    }
+
+    /* pread "lmnop" */
+    {
+        OE_TEST(fs.pread(file, buf, 5, 11) == 5);
+        OE_TEST(memcmp(buf, "lmnop", 5) == 0);
+    }
+
+    /* read "cd" (pread should not have changed file offset) */
+    {
+        OE_TEST(fs.read(file, buf, 2) == 2);
+        OE_TEST(memcmp(buf, "cd", 2) == 0);
+    }
+
+    /* Close the file. */
+    OE_TEST(fs.close(file) == 0);
+}
+
+template <class FILE_SYSTEM>
+static void test_pwrite_file(FILE_SYSTEM& fs, const char* tmp_dir)
+{
+    char path[OE_PAGE_SIZE];
+    typename FILE_SYSTEM::file_handle file;
+    char buf[OE_PAGE_SIZE];
+
+    printf("--- %s()\n", __FUNCTION__);
+
+    mkpath(path, tmp_dir, "alphabet");
+
+    /* Open the file for input/output. */
+    {
+        const int flags = O_RDWR;
+        file = fs.open(path, flags, 0);
+        OE_TEST(file);
+    }
+
+    /* write "xx" at offset 3 */
+    OE_TEST(fs.pwrite(file, "xx", 2, 3) == 2);
+
+    /* read "abcxxfg" */
+    {
+        OE_TEST(fs.read(file, buf, 7) == 7);
+        OE_TEST(memcmp(buf, "abcxxfg", 7) == 0);
+    }
+
+    /* Close the file. */
+    OE_TEST(fs.close(file) == 0);
+}
+
+template <class FILE_SYSTEM>
 static void test_stat_file(FILE_SYSTEM& fs, const char* tmp_dir)
 {
     char path[OE_PAGE_SIZE];
@@ -283,8 +361,8 @@ static void test_rename_file(FILE_SYSTEM& fs, const char* tmp_dir)
 
     printf("--- %s()\n", __FUNCTION__);
 
-    mkpath(oldname, tmp_dir, "alphabet.linked"),
-        mkpath(newname, tmp_dir, "alphabet.renamed");
+    mkpath(oldname, tmp_dir, "alphabet.linked");
+    mkpath(newname, tmp_dir, "alphabet.renamed");
 
     OE_TEST(fs.rename(oldname, newname) == 0);
     OE_TEST(fs.stat(oldname, &buf) != 0);
@@ -327,7 +405,18 @@ static void test_unlink_file(FILE_SYSTEM& fs, const char* tmp_dir)
 }
 
 template <class FILE_SYSTEM>
-void test_all(FILE_SYSTEM& fs, const char* tmp_dir)
+static void test_invalid_path(FILE_SYSTEM& fs)
+{
+    const char* const path = "doesnotexist";
+    printf("--- %s()\n", __FUNCTION__);
+    OE_TEST(fs.open(path, O_RDONLY, 0) == FILE_SYSTEM::invalid_file_handle);
+    OE_TEST(fs.opendir(path) == FILE_SYSTEM::invalid_dir_handle);
+    OE_TEST(fs.rmdir(path) == -1);
+    OE_TEST(fs.truncate(path, 0) == -1);
+}
+
+template <class FILE_SYSTEM>
+void test_common(FILE_SYSTEM& fs, const char* tmp_dir)
 {
     cleanup(fs, tmp_dir);
     test_create_file(fs, tmp_dir);
@@ -338,6 +427,17 @@ void test_all(FILE_SYSTEM& fs, const char* tmp_dir)
     test_readdir(fs, tmp_dir);
     test_truncate_file(fs, tmp_dir);
     test_unlink_file(fs, tmp_dir);
+    test_invalid_path(fs);
+    cleanup(fs, tmp_dir);
+}
+
+template <class FILE_SYSTEM>
+void test_pio(FILE_SYSTEM& fs, const char* tmp_dir)
+{
+    cleanup(fs, tmp_dir);
+    test_create_file(fs, tmp_dir);
+    test_pread_file(fs, tmp_dir);
+    test_pwrite_file(fs, tmp_dir);
     cleanup(fs, tmp_dir);
 }
 
@@ -549,7 +649,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
 
     OE_TEST(oe_mkdir_d(OE_DEVID_HOST_FILE_SYSTEM, tmp_dir, 0777) == 0);
 
-    printf("=== running all tests\n");
+    printf("=== running common tests\n");
     printf("--- src_dir=%s\n", src_dir);
     printf("--- tmp_dir=%s\n", tmp_dir);
 
@@ -558,7 +658,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         printf("=== testing oe-fd-hostfs:\n");
 
         oe_fd_hostfs_file_system fs;
-        test_all(fs, tmp_dir);
+        test_common(fs, tmp_dir);
     }
 
 #if defined(TEST_SGXFS)
@@ -567,7 +667,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         printf("=== testing oe-fd-sgxfs:\n");
 
         oe_fd_sgxfs_file_system fs;
-        test_all(fs, tmp_dir);
+        test_common(fs, tmp_dir);
     }
 #endif
 
@@ -576,7 +676,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         printf("=== testing fd-hostfs:\n");
 
         fd_hostfs_file_system fs;
-        test_all(fs, tmp_dir);
+        test_common(fs, tmp_dir);
     }
 
 #if defined(TEST_SGXFS)
@@ -585,7 +685,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         printf("=== testing fd-sgxfs:\n");
 
         fd_sgxfs_file_system fs;
-        test_all(fs, tmp_dir);
+        test_common(fs, tmp_dir);
     }
 #endif
 
@@ -594,7 +694,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         printf("=== testing stream I/O hostfs functions:\n");
 
         stream_hostfs_file_system fs;
-        test_all(fs, tmp_dir);
+        test_common(fs, tmp_dir);
     }
 
 #if defined(TEST_SGXFS)
@@ -603,7 +703,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         printf("=== testing stream I/O sgxfs functions:\n");
 
         stream_sgxfs_file_system fs;
-        test_all(fs, tmp_dir);
+        test_common(fs, tmp_dir);
     }
 #endif
 
@@ -613,7 +713,38 @@ void test_fs(const char* src_dir, const char* tmp_dir)
 
         fd_file_system fs;
         device_registrant reg(OE_DEVID_HOST_FILE_SYSTEM);
-        test_all(fs, tmp_dir);
+        test_common(fs, tmp_dir);
+    }
+
+    /* Test reading from enclave relative path */
+    {
+        char path[OE_PATH_MAX];
+        int fd;
+        mkpath(path, tmp_dir, "testfile");
+
+        // Create file in tmp dir
+        OE_TEST(
+            oe_mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
+        const int flags = OE_O_CREAT | OE_O_TRUNC | OE_O_WRONLY;
+        OE_TEST((fd = oe_open(path, flags, MODE)) != -1);
+        OE_TEST(close(fd) != -1);
+        OE_TEST(oe_umount("/") == 0);
+
+        // Open file in tmp dir using a relative path
+        OE_TEST(
+            oe_mount(
+                tmp_dir, tmp_dir, OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) ==
+            0);
+        OE_TEST(oe_chdir(tmp_dir) == 0);
+        OE_TEST((fd = oe_open("./testfile", OE_O_RDONLY, MODE)) != -1);
+        OE_TEST(close(fd) != -1);
+        OE_TEST(oe_umount(tmp_dir) == 0);
+
+        // Change workdir back for other tests.
+        OE_TEST(
+            oe_mount("/", "/", OE_DEVICE_NAME_HOST_FILE_SYSTEM, 0, NULL) == 0);
+        OE_TEST(oe_chdir("/") == 0);
+        OE_TEST(oe_umount("/") == 0);
     }
 
     /* Test writing to a read-only mounted file system. */
@@ -622,6 +753,7 @@ void test_fs(const char* src_dir, const char* tmp_dir)
         mkpath(path, tmp_dir, "somefile");
         const int flags = OE_O_CREAT | OE_O_TRUNC | OE_O_WRONLY;
 
+        // Create file
         OE_TEST(
             oe_mount(
                 "/",
@@ -629,8 +761,10 @@ void test_fs(const char* src_dir, const char* tmp_dir)
                 OE_DEVICE_NAME_HOST_FILE_SYSTEM,
                 OE_MS_RDONLY,
                 NULL) == 0);
+
         OE_TEST(oe_open(path, flags, MODE) == -1);
         OE_TEST(oe_errno == EPERM);
+
         OE_TEST(oe_umount("/") == 0);
     }
 
@@ -664,10 +798,88 @@ void test_fs(const char* src_dir, const char* tmp_dir)
     test_dup_case2(tmp_dir);
 }
 
+void test_fs_linux(const char* src_dir, const char* tmp_dir)
+{
+    (void)src_dir;
+
+    OE_TEST(oe_load_module_host_file_system() == OE_OK);
+#if defined(TEST_SGXFS)
+    OE_TEST(oe_load_module_sgx_file_system() == OE_OK);
+#endif
+
+    OE_TEST(oe_mkdir_d(OE_DEVID_HOST_FILE_SYSTEM, tmp_dir, 0777) == 0);
+
+    printf("=== running Linux-specific tests\n");
+    printf("--- src_dir=%s\n", src_dir);
+    printf("--- tmp_dir=%s\n", tmp_dir);
+
+    /* Test the HOSTFS oe file descriptor interfaces. */
+    {
+        printf("=== testing oe-fd-hostfs:\n");
+
+        oe_fd_hostfs_file_system fs;
+        test_pio(fs, tmp_dir);
+    }
+
+#if defined(TEST_SGXFS)
+    /* Test the SGXFS oe file descriptor interfaces. */
+    {
+        printf("=== testing oe-fd-sgxfs:\n");
+
+        oe_fd_sgxfs_file_system fs;
+        test_pio(fs, tmp_dir);
+    }
+#endif
+
+    /* Test the HOSTFS standard C descriptor interfaces. */
+    {
+        printf("=== testing fd-hostfs:\n");
+
+        fd_hostfs_file_system fs;
+        test_pio(fs, tmp_dir);
+    }
+
+#if defined(TEST_SGXFS)
+    /* Test the SGXFS standard C descriptor interfaces. */
+    {
+        printf("=== testing fd-sgxfs:\n");
+
+        fd_sgxfs_file_system fs;
+        test_pio(fs, tmp_dir);
+    }
+#endif
+
+    /* Test stream I/O hostfs functions. */
+    {
+        printf("=== testing stream I/O hostfs functions:\n");
+
+        stream_hostfs_file_system fs;
+        test_pio(fs, tmp_dir);
+    }
+
+#if defined(TEST_SGXFS)
+    /* Test stream I/O sgxfs functions. */
+    {
+        printf("=== testing stream I/O sgxfs functions:\n");
+
+        stream_sgxfs_file_system fs;
+        test_pio(fs, tmp_dir);
+    }
+#endif
+
+    /* Test oe_set_thread_devid() */
+    {
+        printf("=== testing oe_set_thread_devid:\n");
+
+        fd_file_system fs;
+        device_registrant reg(OE_DEVID_HOST_FILE_SYSTEM);
+        test_pio(fs, tmp_dir);
+    }
+}
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

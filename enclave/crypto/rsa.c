@@ -1,13 +1,12 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "rsa.h"
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 #include "key.h"
 #include "pem.h"
-#include "random_internal.h"
 
 static uint64_t _PRIVATE_KEY_MAGIC = 0xd48de5bae3994b41;
 static uint64_t _PUBLIC_KEY_MAGIC = 0x713600af058c447a;

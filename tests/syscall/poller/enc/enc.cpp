@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdio.h>
@@ -327,7 +327,7 @@ extern "C" void test_fd_set(void)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    256,  /* StackPageCount */
-    9);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    256,  /* NumStackPages */
+    9);   /* NumTCS */

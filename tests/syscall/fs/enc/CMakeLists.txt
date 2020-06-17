@@ -1,26 +1,32 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-if(UNIX)
-    set(EDL_FILE "../linux/fs.edl")
-else()
-    set(EDL_FILE "../windows/fs.edl")
-endif()
+if (UNIX)
+  set(EDL_FILE "../linux/fs.edl")
+else ()
+  set(EDL_FILE "../windows/fs.edl")
+endif ()
 
 set(EDL_SEARCH_DIR "../../../../syscall/devices/sgxfs")
 
-oeedl_file(${EDL_FILE} enclave gen --edl-search-dir ${EDL_SEARCH_DIR})
+add_custom_command(
+  OUTPUT fs_t.h fs_t.c
+  DEPENDS ${EDL_FILE} edger8r
+  COMMAND
+    edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR}
+    --search-path ${EDL_SEARCH_DIR})
 
-add_enclave(TARGET fs_enc SOURCES enc.cpp ${gen})
+add_enclave(TARGET fs_enc SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/fs_t.c)
 
-target_include_directories(fs_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(fs_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (TEST_SGXFS)
-    target_compile_definitions(fs_enc PRIVATE TEST_SGXFS=1)
-    set(OESGXFSENCLAVE oesgxfsenclave)
-else()
-    set(OESGXFSENCLAVE "")
-endif()
+  enclave_compile_definitions(fs_enc PRIVATE TEST_SGXFS=1)
+  set(OESGXFSENCLAVE oesgxfsenclave)
+else ()
+  set(OESGXFSENCLAVE "")
+endif ()
 
-target_link_libraries(fs_enc
-    ${OESGXFSENCLAVE} oelibcxx oecpio oeenclave oehostfs)
+enclave_link_libraries(fs_enc ${OESGXFSENCLAVE} oelibcxx oecpio oeenclave
+                       oehostfs)

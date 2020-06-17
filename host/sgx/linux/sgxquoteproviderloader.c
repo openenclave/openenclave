@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <dlfcn.h>
@@ -27,18 +27,6 @@ void oe_load_quote_provider()
             dlopen("libdcap_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
         if (provider.handle != 0)
         {
-            provider.get_revocation_info =
-                dlsym(provider.handle, SGX_QL_GET_REVOCATION_INFO_NAME);
-            provider.free_revocation_info =
-                dlsym(provider.handle, SGX_QL_FREE_REVOCATION_INFO_NAME);
-
-            OE_TRACE_INFO(
-                "sgxquoteprovider: provider.get_revocation_info = 0x%lx\n",
-                (uint64_t)provider.get_revocation_info);
-            OE_TRACE_INFO(
-                "sgxquoteprovider: provider.free_revocation_info = 0x%lx\n",
-                (uint64_t)provider.free_revocation_info);
-
             sgx_ql_set_logging_function_t set_log_fcn =
                 (sgx_ql_set_logging_function_t)dlsym(
                     provider.handle, "sgx_ql_set_logging_function");
@@ -53,28 +41,44 @@ void oe_load_quote_provider()
             }
             else
             {
-                OE_TRACE_ERROR("sgxquoteprovider: sgx_ql_set_logging_function "
-                               "not found\n");
+                OE_TRACE_WARNING(
+                    "sgxquoteprovider: sgx_ql_set_logging_function "
+                    "not found\n");
             }
 
-            provider.get_qe_identity_info =
-                dlsym(provider.handle, SGX_QL_GET_QE_IDENTITY_INFO_NAME);
-            provider.free_qe_identity_info =
-                dlsym(provider.handle, SGX_QL_FREE_QE_IDENTITY_INFO_NAME);
+            provider.get_sgx_quote_verification_collateral = dlsym(
+                provider.handle, SGX_QL_GET_QUOTE_VERIFICATION_COLLATERAL_NAME);
+            provider.free_sgx_quote_verification_collateral = dlsym(
+                provider.handle,
+                SGX_QL_FREE_QUOTE_VERIFICATION_COLLATERAL_NAME);
 
             OE_TRACE_INFO(
-                "sgxquoteprovider: provider.get_qe_identity_info = 0x%lx\n",
-                (uint64_t)provider.get_qe_identity_info);
+                "sgxquoteprovider: "
+                "provider.get_sgx_quote_verification_collateral "
+                "= 0x%lx\n",
+                (uint64_t)provider.get_sgx_quote_verification_collateral);
             OE_TRACE_INFO(
-                "sgxquoteprovider: provider.free_qe_identity_info = 0x%lx\n",
-                (uint64_t)provider.free_qe_identity_info);
+                "sgxquoteprovider: "
+                "provider.get_sgx_quote_verification_collateral "
+                "= 0x%lx\n",
+                (uint64_t)provider.free_sgx_quote_verification_collateral);
+
+            if (provider.get_sgx_quote_verification_collateral == NULL ||
+                provider.free_sgx_quote_verification_collateral == NULL)
+            {
+                OE_TRACE_ERROR(
+                    "sgxquoteprovider: get_sgx_quote_verification_collateral "
+                    "or free_sgx_quote_verification_collateral not found\n"
+                    "If you are using Azure DCAP client, please make sure its "
+                    "version is greater or equal to 1.2\n");
+            }
 
             atexit(_unload_quote_provider);
         }
         else
         {
             OE_TRACE_ERROR(
-                "sgxquoteprovider: libdcap_quoteprov.so not found \n");
+                "sgxquoteprovider: libdcap_quoteprov.so %s\n", dlerror());
         }
     }
 }

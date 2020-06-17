@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_CERT_H
@@ -340,10 +340,24 @@ oe_result_t oe_cert_find_extension(
  */
 oe_result_t oe_get_crl_distribution_points(
     const oe_cert_t* cert,
-    const char*** urls,
+    char*** urls,
     size_t* num_urls,
     uint8_t* buffer,
     size_t* buffer_size);
+
+/**
+ * Gets the validation datetimes from the certificate.
+ *
+ * @param cert[in] the certificate.
+ * @param not_before the date when the certificate validate starts (may be
+ * null).
+ * @param not_after the date at which this CRL should be considered invalid
+ *        (may be null).
+ */
+oe_result_t oe_cert_get_validity_dates(
+    const oe_cert_t* cert,
+    oe_datetime_t* not_before,
+    oe_datetime_t* not_after);
 
 #ifdef OE_BUILD_ENCLAVE
 

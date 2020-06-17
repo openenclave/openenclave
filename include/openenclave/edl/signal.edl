@@ -1,0 +1,24 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** signal.edl:
+**
+**     This file declares OCALLs needed by the enclave to implement functions in
+**     POSIX signal.h.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    untrusted
+    {
+        int oe_syscall_kill_ocall(
+            int pid,
+            int signum)
+            propagate_errno;
+    };
+};

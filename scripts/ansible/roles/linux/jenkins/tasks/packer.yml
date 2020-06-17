@@ -1,0 +1,54 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}/main.yml"
+
+- name: Jenkins | Install Java JRE needed by Jenkins
+  package:
+    name: "{{ java_packages }}"
+    state: latest
+  retries: 10
+  delay: 10
+  register: result
+  until: result is success
+
+- name: Jenkins | Create the Jenkins group
+  group:
+    name: jenkins
+    state: present
+
+- name: Jenkins | Add the Jenkins user
+  user:
+    name: jenkins
+    group: jenkins
+    state: present
+
+- import_role:
+    name: linux/docker
+    tasks_from: stable-install.yml
+
+- name: Docker | Add the Jenkins system user to the Docker group
+  user:
+    name: jenkins
+    groups: docker
+    append: yes
+
+- name: Jenkins | Pre-pull CI/CD Docker images
+  shell: |
+    set -o errexit
+    docker login {{ docker_registry }} -u {{ docker_user_name }} -p {{ docker_user_password }}
+    docker pull {{ docker_registry }}/oetools-full-16.04:{{ docker_tag }}
+    docker pull {{ docker_registry }}/oetools-full-18.04:{{ docker_tag }}
+    docker pull {{ docker_registry }}/oetools-minimal-18.04:{{ docker_tag }}
+    docker pull {{ docker_registry }}/oetools-deploy:{{ docker_tag }}
+  retries: 10
+  delay: 10
+  register: result
+  until: result is success
+  when: (docker_registry is defined and
+         docker_user_name is defined and
+         docker_user_password is defined and
+         docker_tag is defined)

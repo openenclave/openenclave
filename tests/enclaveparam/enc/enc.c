@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
@@ -33,7 +33,7 @@ void test_ocall_enclave_param(char* func)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    64,   /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    128,  /* NumHeapPages */
+    64,   /* NumStackPages */
+    4);   /* NumTCS */

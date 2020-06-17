@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 // ATTN: #define OE_LIBC_SUPPRESS_DEPRECATIONS
@@ -9,6 +9,7 @@
 #include "../../platform/linux.h"
 #endif
 
+#include <inttypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/types.h>
@@ -16,13 +17,17 @@
 
 #define SERVER_PORT "12345"
 
+#if _WIN32
+#define errno WSAGetLastError()
+#endif
+
 void* enclave_server_thread(void* arg)
 {
     oe_enclave_t* enclave = NULL;
     int retval = 0;
     oe_result_t r;
     const uint32_t flags = oe_get_create_flags();
-    const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
+    const oe_enclave_type_t type = OE_ENCLAVE_TYPE_AUTO;
 
     r = oe_create_socket_test_enclave(arg, type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
@@ -87,7 +92,7 @@ char* host_client(in_port_t port)
     static char recvBuff[1024];
     struct sockaddr_in serv_addr = {0};
 
-    memset(recvBuff, '0', sizeof(recvBuff));
+    memset(recvBuff, '\0', sizeof(recvBuff));
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("\n Error : Could not create socket \n");
@@ -113,7 +118,12 @@ char* host_client(in_port_t port)
             sock_close(sockfd);
             return NULL;
         }
-        else
+#if _WIN32
+        else if (errno == WSAEISCONN)
+        {
+            break;
+        }
+#endif
         {
             printf("Connect Failed. errno = %d Retrying \n", errno);
             sleep_msec(100);
@@ -125,7 +135,7 @@ char* host_client(in_port_t port)
         if ((n = sock_recv(sockfd, recvBuff, sizeof(recvBuff), 0)) > 0)
         {
             recvBuff[n] = '\0';
-            printf("host finished reading: %ld bytes...\n", n);
+            printf("host finished reading: %" PRIu64 " bytes...\n", n);
             break;
         }
         else
@@ -156,7 +166,7 @@ static void _run_host_server_test(const char* path)
     char test_data_rtn[1024] = {0};
     ssize_t test_data_len = 1024;
     const uint32_t flags = oe_get_create_flags();
-    const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
+    const oe_enclave_type_t type = OE_ENCLAVE_TYPE_AUTO;
     thread_t thread;
 
     sock_startup();

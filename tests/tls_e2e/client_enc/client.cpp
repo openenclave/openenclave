@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/edger8r/enclave.h>
@@ -195,7 +195,9 @@ int launch_tls_client(
         oe_module_loaded = true;
     }
 
+#if !defined(NDEBUG)
     mbedtls_debug_set_threshold(DEBUG_LEVEL);
+#endif
 
     // Initialize the RNG and the session data
     mbedtls_net_init(&server_fd);
@@ -394,7 +396,7 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    128,  /* StackPageCount */
-    1);   /* TCSCount */
+    true, /* Debug */
+    128,  /* NumHeapPages */
+    128,  /* NumStackPages */
+    1);   /* NumTCS */

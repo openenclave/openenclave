@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 /**
@@ -128,7 +128,7 @@ typedef struct _oe_sgx_enclave_properties
         },                                                                \
         .image_info =                                                     \
         {                                                                 \
-            0                                                             \
+            0, 0, 0, 0, 0, 0                                              \
         },                                                                \
         .sigstruct =                                                      \
         {                                                                 \

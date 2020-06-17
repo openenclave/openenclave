@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/edger8r/enclave.h>
@@ -140,10 +140,15 @@ void enc_set_factor(uint32_t factor)
     g_factor = factor;
 }
 
+void enc_make_ocall(int n)
+{
+    host_ocall_pointer(&n);
+}
+
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    256,  /* HeapPageCount */
-    16,   /* StackPageCount */
-    5);   /* TCSCount */
+    true, /* Debug */
+    256,  /* NumHeapPages */
+    16,   /* NumStackPages */
+    5);   /* NumTCS */

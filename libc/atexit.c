@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdlib.h>
@@ -16,3 +16,10 @@
 #undef OE_NEED_STDC_NAMES
 #undef __UNDEF_OE_NEED_STDC_NAMES
 #endif
+
+extern int oe_cxa_atexit(void (*func)(void*), void* arg, void* dso_handle);
+
+int __cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
+{
+    return oe_cxa_atexit(func, arg, dso_handle);
+}

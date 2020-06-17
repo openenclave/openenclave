@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
@@ -11,8 +11,9 @@ oe_result_t enclave_identity_verifier_callback(
     oe_identity_t* identity,
     void* arg)
 {
+    OE_UNUSED(arg);
+
     oe_result_t result = OE_VERIFY_FAILED;
-    bool bret = false;
 
     printf(TLS_SERVER
            "Server:enclave_identity_verifier_callback is called with enclave "

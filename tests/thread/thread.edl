@@ -1,7 +1,11 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public void cb_test_waiter_thread_impl();
 
@@ -25,8 +29,7 @@ enclave {
         public void enc_lock_and_unlock_mutexes(
             [in, string] const char* mutex_ids);
 
-        public void enc_test_tcs_exhaustion(
-            size_t tcs_req_count);
+        public void enc_test_tcs_exhaustion();
 
         public size_t enc_tcs_used_thread_count();
 
@@ -40,12 +43,21 @@ enclave {
             [out] size_t* max_readers,
             [out] size_t* max_writers,
             [out] bool* readers_and_writers);
+
+        public void* enc_malloc(
+            size_t size,
+            [out] int *err);
+
+        public int64_t enc_strtol(
+            [in, string] const char *nptr,
+            int base,
+            [out] int *err);
     };
 
     untrusted {
         void host_usleep(
             size_t microseconds);
 
-        size_t host_tcs_out_thread_count();
+        void host_wait();
     };
 };

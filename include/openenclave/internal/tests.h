@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_TESTS_H
@@ -20,6 +20,30 @@
 #endif
 
 OE_EXTERNC_BEGIN
+
+#define OE_TEST_CODE_IF(EXP, CODE, OE_TEST_ABORT)   \
+    do                                              \
+    {                                               \
+        oe_result_t _result_ = (EXP);               \
+        oe_result_t _code_ = (CODE);                \
+        if (_result_ != _code_)                     \
+        {                                           \
+            OE_PRINT(                               \
+                STDERR,                             \
+                "Test failed: %s(%u): %s %s!=%s\n", \
+                __FILE__,                           \
+                __LINE__,                           \
+                __FUNCTION__,                       \
+                oe_result_str(_result_),            \
+                oe_result_str(_code_));             \
+            if (OE_TEST_ABORT)                      \
+                OE_ABORT();                         \
+        }                                           \
+    } while (0)
+
+#define OE_TEST_CODE(EXP, CODE) OE_TEST_CODE_IF(EXP, CODE, true)
+
+#define OE_TEST_CODE_IGNORE(EXP, CODE) OE_TEST_CODE_IF(EXP, CODE, false)
 
 #define OE_TEST_IF(COND, OE_TEST_ABORT)         \
     do                                          \

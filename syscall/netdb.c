@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdlib.h>
@@ -69,6 +69,8 @@ int oe_getaddrinfo(
 
     if (res_out)
         *res_out = NULL;
+    else
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     oe_spin_lock(&_lock);
     locked = true;

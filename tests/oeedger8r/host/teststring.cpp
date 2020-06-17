@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "../edltestutils.h"
@@ -8,6 +8,8 @@
 #include <openenclave/internal/tests.h>
 #include <wchar.h>
 #include "all_u.h"
+
+#define STR_LENGTH 50
 
 oe_result_t ecall_string_no_null_terminator_modified(
     oe_enclave_t* enclave,
@@ -225,8 +227,8 @@ void test_string_edl_ecalls(oe_enclave_t* enclave)
 {
     const char* str_value = "Hello, World\n";
 
-    char str[50];
-    sprintf(str, "%s", str_value);
+    char str[STR_LENGTH];
+    sprintf_s(str, sizeof(str), "%s", str_value);
 
     // char*
     OE_TEST(ecall_string_fun1(enclave, str) == OE_OK);
@@ -241,7 +243,7 @@ void test_string_edl_ecalls(oe_enclave_t* enclave)
     OE_TEST(strcmp(str, "Goodbye\n") == 0);
 
     // Restore value.
-    sprintf(str, "%s", str_value);
+    sprintf_s(str, sizeof(str), "%s", str_value);
 
     // char* user check.
     OE_TEST(ecall_string_fun5(enclave, str) == OE_OK);
@@ -276,7 +278,6 @@ void test_string_edl_ecalls(oe_enclave_t* enclave)
     }
     // Test wstrings without null terminators.
     {
-        OE_UNUSED(ecall_wstring_no_null_terminator_modified);
         // wchar_t is not a portable type. Hence the test is performed
         // only on Linux.
 #ifdef __linux__
@@ -379,12 +380,12 @@ void ocall_string_fun7(char* s1, char* s2)
 void test_wstring_edl_ecalls(oe_enclave_t* enclave)
 {
     const wchar_t* str_value = L"Hello, World\n";
-    wchar_t str[50];
+    wchar_t str[STR_LENGTH];
 
     if (!g_enabled[TYPE_WCHAR_T])
         return;
 
-    swprintf(str, 50, L"%S", str_value);
+    swprintf(str, sizeof(str) / sizeof(wchar_t), L"%lS", str_value);
 
     // wchar_t*
     OE_TEST(ecall_wstring_fun1(enclave, str) == OE_OK);
@@ -399,7 +400,7 @@ void test_wstring_edl_ecalls(oe_enclave_t* enclave)
     OE_TEST(wcscmp(str, L"Goodbye\n") == 0);
 
     // Restore value.
-    swprintf(str, 50, L"%S", str_value);
+    swprintf(str, sizeof(str) / sizeof(wchar_t), L"%lS", str_value);
 
     // wchar_t* user check.
     OE_TEST(ecall_wstring_fun5(enclave, str) == OE_OK);

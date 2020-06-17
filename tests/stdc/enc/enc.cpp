@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <ctype.h>
@@ -274,6 +274,7 @@ int test(char buf1[BUFSIZE], char buf2[BUFSIZE])
     /* Cause malloc() to fail */
     void* p = malloc(1024 * 1024 * 1024);
     OE_TEST(p == NULL);
+
     OE_TEST(_called_allocation_failure_callback);
 
     return rval;
@@ -282,7 +283,7 @@ int test(char buf1[BUFSIZE], char buf2[BUFSIZE])
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

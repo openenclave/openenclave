@@ -1,11 +1,18 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-oeedl_file(../VectorException.edl host gen)
+set(EDL_FILE ../VectorException.edl)
 
-add_executable(VectorException_host host.c ${gen})
+add_custom_command(
+  OUTPUT VectorException_u.h VectorException_u.c
+  DEPENDS ${EDL_FILE} edger8r
+  COMMAND
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(VectorException_host oehostapp)
+add_executable(VectorException_host host.c VectorException_u.c)
 
-target_include_directories(VectorException_host PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(VectorException_host oehost)
+
+target_include_directories(VectorException_host
+                           PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

@@ -59,19 +59,23 @@
 #define mbedtls_snprintf  snprintf
 #endif
 
-
 #if defined(MBEDTLS_HAVE_TIME)
 #include "mbedtls/platform_time.h"
 #endif
-
-#if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
-#include <windows.h>
-#else
+#if defined(MBEDTLS_HAVE_TIME_DATE)
+#include "mbedtls/platform_util.h"
 #include <time.h>
 #endif
 
-#define CHECK(code) if( ( ret = code ) != 0 ){ return( ret ); }
-#define CHECK_RANGE(min, max, val) if( val < min || val > max ){ return( ret ); }
+#define CHECK(code) if( ( ret = ( code ) ) != 0 ){ return( ret ); }
+#define CHECK_RANGE(min, max, val)                      \
+    do                                                  \
+    {                                                   \
+        if( ( val ) < ( min ) || ( val ) > ( max ) )    \
+        {                                               \
+            return( ret );                              \
+        }                                               \
+    } while( 0 )
 
 /*
  *  CertificateSerialNumber  ::=  INTEGER
@@ -119,7 +123,7 @@ int mbedtls_x509_get_alg_null( unsigned char **p, const unsigned char *end,
 }
 
 /*
- * Parse an algorithm identifier with (optional) paramaters
+ * Parse an algorithm identifier with (optional) parameters
  */
 int mbedtls_x509_get_alg( unsigned char **p, const unsigned char *end,
                   mbedtls_x509_buf *alg, mbedtls_x509_buf *params )
@@ -897,36 +901,14 @@ int mbedtls_x509_key_size_helper( char *buf, size_t buf_size, const char *name )
  * Set the time structure to the current time.
  * Return 0 on success, non-zero on failure.
  */
-#if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
 static int x509_get_current_time( mbedtls_x509_time *now )
 {
-    SYSTEMTIME st;
-
-    GetSystemTime( &st );
-
-    now->year = st.wYear;
-    now->mon  = st.wMonth;
-    now->day  = st.wDay;
-    now->hour = st.wHour;
-    now->min  = st.wMinute;
-    now->sec  = st.wSecond;
-
-    return( 0 );
-}
-#else
-static int x509_get_current_time( mbedtls_x509_time *now )
-{
-    struct tm *lt;
+    struct tm *lt, tm_buf;
     mbedtls_time_t tt;
     int ret = 0;
 
-#if defined(MBEDTLS_THREADING_C)
-    if( mbedtls_mutex_lock( &mbedtls_threading_gmtime_mutex ) != 0 )
-        return( MBEDTLS_ERR_THREADING_MUTEX_ERROR );
-#endif
-
     tt = mbedtls_time( NULL );
-    lt = gmtime( &tt );
+    lt = mbedtls_platform_gmtime_r( &tt, &tm_buf );
 
     if( lt == NULL )
         ret = -1;
@@ -940,14 +922,8 @@ static int x509_get_current_time( mbedtls_x509_time *now )
         now->sec  = lt->tm_sec;
     }
 
-#if defined(MBEDTLS_THREADING_C)
-    if( mbedtls_mutex_unlock( &mbedtls_threading_gmtime_mutex ) != 0 )
-        return( MBEDTLS_ERR_THREADING_MUTEX_ERROR );
-#endif
-
     return( ret );
 }
-#endif /* _WIN32 && !EFIX64 && !EFI32 */
 
 /*
  * Return 0 if before <= after, 1 otherwise
@@ -1087,7 +1063,7 @@ cleanup:
     mbedtls_x509_crt_free( &clicert );
 #else
     ((void) verbose);
-#endif /* MBEDTLS_CERTS_C && MBEDTLS_SHA1_C */
+#endif /* MBEDTLS_CERTS_C && MBEDTLS_SHA256_C */
     return( ret );
 }
 

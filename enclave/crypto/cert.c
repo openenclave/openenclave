@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <mbedtls/ctr_drbg.h>
@@ -9,7 +9,7 @@
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
 
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/cert.h>
@@ -17,12 +17,14 @@
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
 #include "crl.h"
+#include "ctr_drbg.h"
 #include "ec.h"
 #include "pem.h"
-#include "random_internal.h"
 #include "rsa.h"
 
 /*
@@ -95,6 +97,9 @@ OE_INLINE void _referent_add_ref(Referent* referent)
 /* Decrease the reference count and release if count becomes zero */
 OE_INLINE void _referent_free(Referent* referent)
 {
+    if (!referent)
+        return;
+
     /* If this was the last reference, release the object */
     if (oe_atomic_decrement(&referent->refs) == 0)
     {
@@ -725,6 +730,8 @@ oe_result_t oe_cert_chain_read_pem(
     CertChain* impl = (CertChain*)chain;
     Referent* referent = NULL;
     int rc = 0;
+    uint8_t* tmp_pem_data = (uint8_t*)pem_data;
+    size_t tmp_pem_size = pem_size;
 
     /* Clear the implementation (making it invalid) */
     if (impl)
@@ -734,9 +741,18 @@ oe_result_t oe_cert_chain_read_pem(
     if (!pem_data || !pem_size || !chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
+    // mbedtls_x509_crt_parse() requires a trailing zero in its input buffer.
+    // If the input pem_data buffer does not have a trailing zero,
+    // we allocate a tmp buffer to add it.
+    if (strnlen((const char*)pem_data, pem_size) == pem_size)
+    {
+        tmp_pem_size = pem_size + 1;
+        if (!(tmp_pem_data = (uint8_t*)oe_malloc(tmp_pem_size)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        oe_memcpy_s(tmp_pem_data, tmp_pem_size, pem_data, pem_size);
+        tmp_pem_data[pem_size] = '\0';
+    }
 
     /* Create the referent */
     if (!(referent = _referent_new()))
@@ -744,7 +760,8 @@ oe_result_t oe_cert_chain_read_pem(
 
     /* Read the PEM buffer into DER format */
     rc = mbedtls_x509_crt_parse(
-        referent->crt, (const uint8_t*)pem_data, pem_size);
+        referent->crt, (const uint8_t*)tmp_pem_data, tmp_pem_size);
+
     if (rc != 0)
         OE_RAISE_MSG(OE_CRYPTO_ERROR, "mbedtls_x509_crt_parse rc = 0x%x\n", rc);
 
@@ -765,8 +782,10 @@ oe_result_t oe_cert_chain_read_pem(
 
 done:
 
-    _referent_free(referent);
+    if (tmp_pem_data && (tmp_pem_data != pem_data))
+        oe_free(tmp_pem_data);
 
+    _referent_free(referent);
     return result;
 }
 
@@ -1179,5 +1198,46 @@ done:
     if (ret)
         result = OE_CRYPTO_ERROR;
 
+    return result;
+}
+
+oe_result_t oe_cert_get_validity_dates(
+    const oe_cert_t* cert,
+    oe_datetime_t* not_before,
+    oe_datetime_t* not_after)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    const Cert* impl = (const Cert*)cert;
+
+    /* Reject invalid parameters */
+    if (!_cert_is_valid(impl))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (not_before)
+    {
+        memset(not_before, 0, sizeof(oe_datetime_t));
+
+        not_before->year = (uint32_t)impl->cert->valid_from.year;
+        not_before->month = (uint32_t)impl->cert->valid_from.mon;
+        not_before->day = (uint32_t)impl->cert->valid_from.day;
+        not_before->hours = (uint32_t)impl->cert->valid_from.hour;
+        not_before->minutes = (uint32_t)impl->cert->valid_from.min;
+        not_before->seconds = (uint32_t)impl->cert->valid_from.sec;
+    }
+
+    if (not_after)
+    {
+        memset(not_after, 0, sizeof(oe_datetime_t));
+
+        not_after->year = (uint32_t)impl->cert->valid_to.year;
+        not_after->month = (uint32_t)impl->cert->valid_to.mon;
+        not_after->day = (uint32_t)impl->cert->valid_to.day;
+        not_after->hours = (uint32_t)impl->cert->valid_to.hour;
+        not_after->minutes = (uint32_t)impl->cert->valid_to.min;
+        not_after->seconds = (uint32_t)impl->cert->valid_to.sec;
+    }
+    result = OE_OK;
+
+done:
     return result;
 }

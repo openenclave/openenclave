@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef OE_SAMPLES_ATTESTATION_ENC_CRYPTO_H
@@ -59,19 +59,6 @@ class Crypto
         size_t encrypted_data_size,
         uint8_t* data,
         size_t* data_size);
-
-    /**
-     * get_rsa_modulus_from_pem returns the RSA modulus in big endian format
-     * from the public key PEM data. This is needed to verify the MRSIGNER
-     * of the other enclave, which ensures that the other enclave has been
-     * signed by the right key. MRSIGNER is the SHA256 hash of the modulus
-     * in little endian.
-     */
-    bool get_rsa_modulus_from_pem(
-        const char* pem_data,
-        size_t pem_size,
-        uint8_t** modulus,
-        size_t* modulus_size);
 
     // Public key of another enclave.
     uint8_t* get_the_other_enclave_public_key()

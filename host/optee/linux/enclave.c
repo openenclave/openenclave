@@ -1,12 +1,12 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/safemath.h>
 #include <openenclave/edger8r/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safemath.h>
 
 #include "../../calls.h"
 #include "../../ocalls.h"
@@ -82,8 +82,10 @@ OE_STATIC_ASSERT(TEEC_CONFIG_PAYLOAD_REF_COUNT >= 4);
 
 static void _initialize_enclave_host()
 {
-    oe_register_tee_ocall_function_table();
+#ifdef OE_USE_BUILTIN_EDL
+    oe_register_core_ocall_function_table();
     oe_register_syscall_ocall_function_table();
+#endif // OE_USE_BUILTIN_EDL
 }
 
 static oe_result_t _handle_call_host_function(
@@ -210,10 +212,6 @@ static TEEC_Result _handle_generic_rpc(
 
         case OE_OCALL_THREAD_WAKE:
             return TEEC_ERROR_NOT_SUPPORTED;
-
-        case OE_OCALL_SLEEP:
-            oe_handle_sleep(*(uint64_t*)input_buffer);
-            break;
 
         case OE_OCALL_GET_TIME:
             oe_handle_get_time(
@@ -399,13 +397,8 @@ oe_result_t oe_create_enclave(
     const char* enclave_path,
     oe_enclave_type_t enclave_type,
     uint32_t flags,
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
-    const oe_enclave_config_t* configs,
-    uint32_t config_count,
-#else
-    const void* config,
-    uint32_t config_size,
-#endif
+    const oe_enclave_setting_t* settings,
+    uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
     oe_enclave_t** enclave_out)
@@ -430,12 +423,8 @@ oe_result_t oe_create_enclave(
     if (!enclave_path || !enclave_out ||
         ((enclave_type != OE_ENCLAVE_TYPE_OPTEE) &&
          (enclave_type != OE_ENCLAVE_TYPE_AUTO)) ||
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
-        (config_count > 0 && configs == NULL) ||
-        (config_count == 0 && configs != NULL) ||
-#else
-        config || config_size > 0 ||
-#endif
+        (setting_count > 0 && settings == NULL) ||
+        (setting_count == 0 && settings != NULL) ||
         (flags & OE_ENCLAVE_FLAG_RESERVED) ||
         (!(flags & OE_ENCLAVE_FLAG_SIMULATE) &&
          (flags & OE_ENCLAVE_FLAG_DEBUG)))

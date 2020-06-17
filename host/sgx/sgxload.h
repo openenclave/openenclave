@@ -1,12 +1,12 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_SGXLOAD_H
 #define _OE_SGXLOAD_H
 
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/sgxcreate.h>
-#include <openenclave/internal/sgxtypes.h>
 
 OE_EXTERNC_BEGIN
 
@@ -27,6 +27,7 @@ OE_INLINE bool oe_sgx_is_debug_load_context(
 oe_result_t oe_sgx_create_enclave(
     oe_sgx_load_context_t* context,
     size_t enclave_size,
+    size_t enclave_commit_size,
     uint64_t* enclave_addr);
 
 oe_result_t oe_sgx_load_enclave_data(

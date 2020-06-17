@@ -1,9 +1,8 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "report.h"
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
@@ -11,9 +10,11 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
+#include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/utils.h>
-#include "sgx_t.h"
+#include "platform_t.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
@@ -120,17 +121,26 @@ done:
     return result;
 }
 
-static oe_result_t _get_sgx_target_info(sgx_target_info_t* target_info)
+static oe_result_t _get_sgx_target_info(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    sgx_target_info_t* target_info)
 {
     uint32_t retval;
 
-    if (oe_get_qetarget_info_ocall(&retval, target_info) != OE_OK)
+    if (oe_get_qetarget_info_ocall(
+            &retval, format_id, opt_params, opt_params_size, target_info) !=
+        OE_OK)
         return OE_FAILURE;
 
     return (oe_result_t)retval;
 }
 
 static oe_result_t _get_quote(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
     const sgx_report_t* sgx_report,
     uint8_t* quote,
     size_t* quote_size)
@@ -145,7 +155,14 @@ static oe_result_t _get_quote(
         *quote_size = 0;
 
     OE_CHECK(oe_get_quote_ocall(
-        &retval, sgx_report, quote, *quote_size, quote_size));
+        &retval,
+        format_id,
+        opt_params,
+        opt_params_size,
+        sgx_report,
+        quote,
+        *quote_size,
+        quote_size));
     result = (oe_result_t)retval;
 
 done:
@@ -154,6 +171,7 @@ done:
 }
 
 oe_result_t oe_get_remote_report(
+    const oe_uuid_t* format_id,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -179,7 +197,8 @@ oe_result_t oe_get_remote_report(
      * requires privacy. The trust decision is one of integrity verification
      * on the part of the report recipient.
      */
-    OE_CHECK(_get_sgx_target_info(&sgx_target_info));
+    OE_CHECK(_get_sgx_target_info(
+        format_id, opt_params, opt_params_size, &sgx_target_info));
 
     /*
      * Get enclave's local report passing in the quoting enclave's target info.
@@ -195,7 +214,13 @@ oe_result_t oe_get_remote_report(
     /*
      * OCall: Get the quote for the local report.
      */
-    result = _get_quote(&sgx_report, report_buffer, report_buffer_size);
+    result = _get_quote(
+        format_id,
+        opt_params,
+        opt_params_size,
+        &sgx_report,
+        report_buffer,
+        report_buffer_size);
     if (result == OE_BUFFER_TOO_SMALL)
         OE_CHECK_NO_TRACE(result);
     else
@@ -209,6 +234,9 @@ oe_result_t oe_get_remote_report(
         OE_RAISE(OE_UNEXPECTED);
 
     sgx_quote = (sgx_quote_t*)report_buffer;
+
+    if (sgx_quote == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     // Ensure that report is within acceptable size.
     if (*report_buffer_size > OE_MAX_REPORT_SIZE)
@@ -228,6 +256,7 @@ done:
 
 static oe_result_t _oe_get_report_internal(
     uint32_t flags,
+    const oe_uuid_t* format_id,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -252,6 +281,7 @@ static oe_result_t _oe_get_report_internal(
     if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
     {
         result = oe_get_remote_report(
+            format_id,
             report_data,
             report_data_size,
             opt_params,
@@ -293,8 +323,9 @@ done:
     return result;
 }
 
-oe_result_t oe_get_report_v2(
+oe_result_t oe_get_report_v2_internal(
     uint32_t flags,
+    const oe_uuid_t* format_id,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -302,9 +333,10 @@ oe_result_t oe_get_report_v2(
     uint8_t** report_buffer,
     size_t* report_buffer_size)
 {
-    oe_result_t result;
+    oe_result_t result = OE_UNEXPECTED;
     uint8_t* tmp_buffer = NULL;
     size_t tmp_buffer_size = 0;
+    size_t out_buffer_size = 0;
 
     if ((report_buffer == NULL) || (report_buffer_size == NULL))
     {
@@ -316,6 +348,7 @@ oe_result_t oe_get_report_v2(
 
     result = _oe_get_report_internal(
         flags,
+        format_id,
         report_data,
         report_data_size,
         opt_params,
@@ -324,7 +357,8 @@ oe_result_t oe_get_report_v2(
         &tmp_buffer_size);
     if (result != OE_BUFFER_TOO_SMALL)
     {
-        return result;
+        result = (result == OE_OK) ? OE_UNEXPECTED : result;
+        OE_RAISE(result);
     }
 
     tmp_buffer = oe_calloc(1, tmp_buffer_size);
@@ -333,29 +367,31 @@ oe_result_t oe_get_report_v2(
         return OE_OUT_OF_MEMORY;
     }
 
-    result = _oe_get_report_internal(
+    out_buffer_size = tmp_buffer_size;
+    OE_CHECK(_oe_get_report_internal(
         flags,
+        format_id,
         report_data,
         report_data_size,
         opt_params,
         opt_params_size,
         tmp_buffer,
-        &tmp_buffer_size);
-    if (result != OE_OK)
-    {
-        oe_free(tmp_buffer);
-        return result;
-    }
+        &out_buffer_size));
 
-    *report_buffer = tmp_buffer;
+    if (out_buffer_size != tmp_buffer_size)
+        OE_RAISE(OE_UNEXPECTED);
+
     *report_buffer_size = tmp_buffer_size;
+    *report_buffer = tmp_buffer;
+    tmp_buffer = NULL;
 
-    return OE_OK;
-}
+    result = OE_OK;
 
-void oe_free_report(uint8_t* report_buffer)
-{
-    oe_free(report_buffer);
+done:
+    if (tmp_buffer)
+        oe_free(tmp_buffer);
+
+    return result;
 }
 
 oe_result_t oe_get_sgx_report_ecall(

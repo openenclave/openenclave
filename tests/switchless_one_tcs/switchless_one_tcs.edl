@@ -1,0 +1,28 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "openenclave/edl/sgx/sgx_attestation.edl" import *;
+    from "openenclave/edl/sgx/cpu.edl" import *;
+    from "openenclave/edl/sgx/debug.edl" import *;
+    from "openenclave/edl/sgx/thread.edl" import *;
+    from "openenclave/edl/sgx/switchless.edl" import *;
+
+    enum num_tcs_t {
+        NUM_TCS = 1
+    };
+
+    enum status_e {
+        FUNC_NOT_START,
+        FUNC_WORKING,
+        FUNC_EXIT
+    };
+
+    trusted {
+        public void enc_empty_regular (void);
+        public void enc_empty_switchless(
+            [user_check] status_e *status ) transition_using_threads;
+    };
+};

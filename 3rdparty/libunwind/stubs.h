@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef __OE_LIBUNWIND_STUBS_H
@@ -6,16 +6,16 @@
 
 #if !defined(__ASSEMBLER__)
 
-#include <pthread.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <fcntl.h>
-#include <stdio.h>
+#include <pthread.h>
 #include <signal.h>
-#include <sys/mman.h>
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 // Disable use of adaptive mutexes, which are defined by GCC headers but not
 // supported by MUSL pthreads. Note that libunwind is compiled with GCC headers
@@ -90,8 +90,9 @@ static __inline void* __libunwind_mmap(
     int fd,
     off_t offset)
 {
-    void* dlmemalign(size_t alignment, size_t size);
+    extern int oe_allocator_posix_memalign(void**, size_t, size_t);
     void* result = MAP_FAILED;
+    int r = 0;
 
     if (addr || fd != -1 || offset)
         goto done;
@@ -102,23 +103,23 @@ static __inline void* __libunwind_mmap(
     if (flags != (MAP_PRIVATE | MAP_ANONYMOUS))
         goto done;
 
-    result = dlmemalign(4096, length);
+    r = oe_allocator_posix_memalign(&result, 4096, length);
+    if (r != 0)
+        result = MAP_FAILED;
 
 done:
 
     return result;
 }
 
-
 static __inline int __libunwind_munmap(void* addr, size_t length)
 {
-    extern void dlfree(void *ptr);
-
+    extern void oe_allocator_free(void*);
     if (!addr)
         return -1;
 
     if (length)
-        dlfree(addr);
+        oe_allocator_free(addr);
 
     return 0;
 }
@@ -129,8 +130,8 @@ static __inline int __libunwind_msync(void* addr, size_t length, int flags)
 }
 
 static __inline int __libunwind_mincore(
-    void* addr, 
-    size_t length, 
+    void* addr,
+    size_t length,
     unsigned char* vec)
 {
     if (!addr || !vec)

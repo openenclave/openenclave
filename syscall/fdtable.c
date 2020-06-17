@@ -1,14 +1,14 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/bits/module.h>
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/syscall/fd.h>
 #include <openenclave/internal/syscall/fdtable.h>
 #include <openenclave/internal/syscall/raise.h>
@@ -166,6 +166,8 @@ static void _assert_fd(oe_fd_t* desc)
         case OE_FD_TYPE_FILE:
         {
             oe_assert(desc->ops.file.lseek);
+            oe_assert(desc->ops.file.pread);
+            oe_assert(desc->ops.file.pwrite);
             oe_assert(desc->ops.file.getdents64);
             break;
         }
@@ -192,6 +194,7 @@ static void _assert_fd(oe_fd_t* desc)
         {
             oe_assert(desc->ops.epoll.epoll_ctl);
             oe_assert(desc->ops.epoll.epoll_wait);
+            oe_assert(desc->ops.epoll.on_close);
             break;
         }
     }
@@ -283,12 +286,14 @@ int oe_fdtable_reassign(int fd, oe_fd_t* new_desc, oe_fd_t** old_desc)
     int ret = -1;
     bool locked = false;
 
+    if (!new_desc || !old_desc)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
 #if !defined(NDEBUG)
     _assert_fd(new_desc);
 #endif
 
-    if (old_desc)
-        *old_desc = NULL;
+    *old_desc = NULL;
 
     oe_spin_lock(&_lock);
     locked = true;
@@ -359,4 +364,23 @@ oe_fd_t* oe_fdtable_get(int fd, oe_fd_type_t type)
 
 done:
     return ret;
+}
+
+void oe_fdtable_foreach(
+    oe_fd_type_t type,
+    void* arg,
+    void (*callback)(oe_fd_t* desc, void* arg))
+{
+    oe_assert(callback);
+
+    oe_spin_lock(&_lock);
+
+    for (size_t i = 0; i < _table_size; ++i)
+    {
+        oe_fd_t* const desc = _table[i];
+        if (desc && (type == OE_FD_TYPE_ANY || desc->type == type))
+            callback(desc, arg);
+    }
+
+    oe_spin_unlock(&_lock);
 }

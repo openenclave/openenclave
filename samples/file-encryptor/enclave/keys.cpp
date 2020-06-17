@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <mbedtls/aes.h>
@@ -201,6 +201,7 @@ int ecall_dispatcher::cipher_encryption_key(
     unsigned int output_data_size)
 {
     int ret = 0;
+    (void)output_data_size;
     mbedtls_aes_context aescontext;
     unsigned char iv[IV_SIZE] = {0xb2,
                                  0x4b,
@@ -226,10 +227,19 @@ int ecall_dispatcher::cipher_encryption_key(
     mbedtls_aes_init(&aescontext);
 
     // set aes key
-    ret = mbedtls_aes_setkey_enc(&aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
+    if (encrypt)
+    {
+        ret = mbedtls_aes_setkey_enc(
+            &aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
+    }
+    else
+    {
+        ret = mbedtls_aes_setkey_dec(
+            &aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
+    }
     if (ret != 0)
     {
-        TRACE_ENCLAVE("mbedtls_aes_setkey_enc failed with %d", ret);
+        TRACE_ENCLAVE("mbedtls_aes_setkey_enc/dec failed with %d", ret);
         goto exit;
     }
 
@@ -371,8 +381,8 @@ int ecall_dispatcher::parse_encryption_header(
         DECRYPT_OPERATION,
         header->encrypted_key,
         ENCRYPTION_KEY_SIZE_IN_BYTES,
-        (unsigned char*)m_encryption_key,
         password_key,
+        (unsigned char*)m_encryption_key,
         ENCRYPTION_KEY_SIZE_IN_BYTES);
     if (ret != 0)
     {

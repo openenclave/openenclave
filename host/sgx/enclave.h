@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_HOST_ENCLAVE_H
@@ -68,12 +68,14 @@ typedef struct _thread_binding
     /* Event signaling object for enclave threading implementation */
     EnclaveEvent event;
 
-    /* The host GS and FS values saved before making an ecall */
-    void* host_gs;
-    void* host_fs;
-} ThreadBinding;
+    /* This field allows the simulation mode exception handler to read enclave
+     * properties of the current thread binding */
+    struct _oe_enclave* enclave;
 
-OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
+    /* Buffer used for ocall parameters */
+    void* ocall_buffer;
+    uint64_t ocall_buffer_size;
+} oe_thread_binding_t;
 
 /* Whether this binding is busy */
 #define _OE_THREAD_BUSY 0X1UL
@@ -82,13 +84,13 @@ OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
 #define _OE_THREAD_HANDLING_EXCEPTION 0X2UL
 
 /* Get thread data from thread-specific data (TSD) */
-ThreadBinding* GetThreadBinding(void);
+oe_thread_binding_t* oe_get_thread_binding(void);
 
 /**
- *  This structure must be kept in sync with the defines in
- *  debugger/pythonExtension/gdb_sgx_plugin.py.
+ * Host-side representation of properties associated with each
+ * enclave instance.
  */
-struct _oe_enclave
+typedef struct _oe_enclave
 {
     /* A "magic number" to validate structure */
     uint64_t magic;
@@ -106,7 +108,7 @@ struct _oe_enclave
     uint64_t size;
 
     /* Array of thread bindings */
-    ThreadBinding bindings[OE_SGX_MAX_TCS];
+    oe_thread_binding_t bindings[OE_SGX_MAX_TCS];
     size_t num_bindings;
     oe_mutex lock;
 
@@ -128,24 +130,7 @@ struct _oe_enclave
 
     /* Manager for switchless calls */
     oe_switchless_call_manager_t* switchless_manager;
-};
-
-// Static asserts for consistency with
-// debugger/pythonExtension/gdb_sgx_plugin.py
-#if defined(__linux__)
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, magic) == 0);
-
-// Python plugin only needs the field number which is 2
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, addr) == 2 * sizeof(void*));
-
-// The fields up to binding correspond to 'ENCLAVE_HEADER'
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, bindings) == 0x28);
-
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_t, debug) == 0x788);
-OE_STATIC_ASSERT(
-    OE_OFFSETOF(oe_enclave_t, debug) + 1 ==
-    OE_OFFSETOF(oe_enclave_t, simulate));
-#endif
+} oe_enclave_t;
 
 /* Get the event for the given TCS */
 EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);

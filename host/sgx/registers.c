@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #if defined(__linux__)
@@ -7,6 +7,7 @@
 #include <unistd.h>
 #elif defined(_WIN32)
 #include <Windows.h>
+#include <immintrin.h>
 #endif
 
 #include <assert.h>

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_INTERNAL_CONSTANTS_X64_H
@@ -21,7 +21,7 @@
 //
 
 #define OE_SSA_FROM_TCS_BYTE_OFFSET OE_PAGE_SIZE
-#define OE_TD_FROM_TCS_BYTE_OFFSET (4 * OE_PAGE_SIZE)
+#define OE_TD_FROM_TCS_BYTE_OFFSET (5 * OE_PAGE_SIZE)
 #define OE_DEFAULT_SSA_FRAME_SIZE 0x1
 #define OE_SGX_GPR_BYTE_SIZE 0xb8
 #define OE_SGX_TCS_HEADER_BYTE_SIZE 0x48
@@ -70,5 +70,11 @@
 
 //  AMD64 ABI needs a 128 bytes red zone.
 #define ABI_REDZONE_BYTE_SIZE 0x80
+
+// MXCSR initialization value for Linux x86_64 ABI in enclave
+#define ABI_MXCSR_INIT 0x1F80
+
+// x87 FPU control word initialization value for Linux x86_64 ABI in enclave
+#define ABI_FPUCW_INIT 0x037F
 
 #endif /* _OE_INTERNAL_CONSTANTS_X64_H */

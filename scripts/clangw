@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 # shellcheck disable=SC2068 disable=SC2006 disable=SC2179
@@ -19,6 +19,7 @@
 #    clangw -O2 enclave\core\calls.c
 # This ensure that the \ is retained when clang receives the arguments.
 function call_clang {
+    lvi_mitigation="NONE"
     args=()
  
     # Transform the arguments from a mix of MSVC and clang syntax
@@ -42,6 +43,24 @@ function call_clang {
         [ "$a" == "/FS" ]           && continue
         [ "$a" == "/showIncludes" ] && continue
         [ "$a" == "/JMC" ]          && continue
+        [ "$a" == "/W1" ]           && continue
+        [ "$a" == "/W2" ]           && continue
+        [ "$a" == "/W3" ]           && continue
+        [ "$a" == "/W4" ]           && continue
+        [ "$a" == "/WX" ]           && continue
+
+        # Ignore specific clang flags for the MSVC compatibility.
+        # See http://clang.llvm.org/docs/UsersManual.html#microsoft-extensions for more detail.
+        [ "$a" == "-fms-compatibility" ]            && continue
+        [ "$a" == "-fms-extension" ]                && continue
+        [ "$a" == "-fdelayed-template-parsing" ]    && continue
+        # Use regex to match the value-passing flag.
+        [[ "$a" =~ "-fms-compatibility-version=" ]] && continue
+
+        # Ignore warnings for specific error codes
+        if [[ "$a" =~ /[wW][dD][0-9]* ]]; then
+            continue
+        fi
 
         # Map the following arguments
         [ "$a" == "/DNDEBUG" ]   && args+="-DNDEBUG "   && continue
@@ -55,6 +74,10 @@ function call_clang {
         # link is passed in when clang is used as a linker
         [ "$a" == "link" ]  && linking=1 && continue
 
+        # LVI mitigation options
+        [ "$a" == "-lvi-mitigation-full" ] && lvi_mitigation="FULL" && continue
+        [ "$a" == "-lvi-mitigation-control-flow" ] && lvi_mitigation="CONTROLFLOW" && continue
+
         # Transform any response files
         # Response files start with an @
         if [[ "$a" == \@* ]]; then
@@ -62,14 +85,40 @@ function call_clang {
             sed -i 's/\\/\//g' "${a:1}"
         fi
 
+        # Record the input and ouput.
+        [ "$a" == "-c" ] && isin=1 && continue
+        [ "$isin" == 1 ] && input="$a" && isin=0 && continue
+        [ "$a" == "-o" ] && isout=1 && continue
+        [ "$isout" == 1 ] && output="$a" && isout=0 && continue
+
         args+="$a "
     done
 
     # Call clang with the transformed arguments arguments
     if [ $linking ]; then
-        clang -target x86_64-pc-linux ${args[@]} -fuse-ld="`which ld.lld`"
+        # shellcheck disable=SC2230
+        clang -target x86_64-pc-linux ${args[@]} -o "$output" -fuse-ld="`which ld.lld`"
     else
-        clang -target x86_64-pc-linux ${args[@]}
+        # Check if the LVI mitigation is enabled.
+        if [ $lvi_mitigation == "NONE" ]; then
+            clang -target x86_64-pc-linux ${args[@]} -o "$output" -c "$input"
+        else
+            clangw=$(readlink -f "$0")
+            clangw_path=$(dirname "$clangw")
+            script="$clangw_path"/lvi-mitigation/lvi-mitigation.py
+            asm="${output%.*}".s
+            asm_mitigated="${output%.*}".mitigated.s
+            if [[ $input == *.c* ]] || [[ $input == *.S ]]; then
+                clang -target x86_64-pc-linux -S ${args[@]} "$input" -o "$asm"
+                python "$script" -DMITIGATION="$lvi_mitigation" -s "$asm" -o "$asm_mitigated"
+                clang -target x86_64-pc-linux -o "$output" -c "$asm_mitigated"
+            elif [[ $input == *.s ]]; then
+                python "$script" -DMITIGATION="$lvi_mitigation" -s "$input" -o "$asm_mitigated"
+                clang -target x86_64-pc-linux -o "$output" -c "$asm_mitigated"
+            else
+                clang -target x86_64-pc-linux ${args[@]} -o "$output" -c "$input"
+            fi
+        fi
     fi
 }
 # shellcheck disable=SC2068

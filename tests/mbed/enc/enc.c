@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <assert.h>
@@ -146,6 +146,12 @@ static oe_result_t _syscall_hook(
             result = mbed_test_close(&rval, (int)arg1);
             break;
         }
+        case SYS_lseek:
+        {
+            int rval = 0;
+            result = mbed_test_lseek(&rval, (int)arg1, (int)arg2, (int)arg3);
+            break;
+        }
         case SYS_readv:
         default:
         {
@@ -192,6 +198,11 @@ int test(
     strncpy(out_testname, __TEST__, STRLEN);
     out_testname[STRLEN - 1] = '\0';
 
+#ifdef CODE_COVERAGE
+    // Unregister the syscall hook when enabling code coverage testing.
+    oe_register_syscall_hook(NULL);
+#endif
+
     return return_value;
 }
 
@@ -218,7 +229,7 @@ void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    512,  /* HeapPageCount */
-    512,  /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    512,  /* NumHeapPages */
+    512,  /* NumStackPages */
+    2);   /* NumTCS */

@@ -1,15 +1,16 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/utils.h>
 #include "../common/common.h"
+#include "quote.h"
 
 #define KEY_BUFF_SIZE 2048
 
@@ -127,7 +128,8 @@ oe_result_t oe_verify_attestation_certificate(
 #ifdef OE_BUILD_ENCLAVE
     result = oe_verify_report(report, report_size, &parsed_report);
 #else
-    result = oe_verify_remote_report(report, report_size, &parsed_report);
+    result =
+        oe_verify_remote_report(report, report_size, NULL, 0, &parsed_report);
 #endif
     OE_CHECK(result);
     OE_TRACE_VERBOSE("quote validation succeeded");

@@ -1,10 +1,7 @@
-;; Copyright (c) Microsoft Corporation. All rights reserved.
+;; Copyright (c) Open Enclave SDK contributors.
 ;; Licensed under the MIT License.
 
 include ksamd64.inc
-
-;; ThreadBinding_tcs EQU 0h
-;; ENCLU_ERESUME EQU 3h
 
 ;;==============================================================================
 ;;
@@ -26,11 +23,6 @@ NESTED_ENTRY OE_AEP, _TEXT$00
 
 
 aep LABEL FAR
-    ;; ATTN: port not complete but these are probably not needed
-    ;; mov rax, ENCLU_ERESUME
-    ;; mov rbx, fs:[ThreadBinding_tcs]
-    ;; lea rcx, aep
-    ;; mov rdx, 0
     ENCLU
     ud2
 

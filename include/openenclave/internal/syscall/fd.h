@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_SYSCALL_FD_H
@@ -35,6 +35,8 @@ typedef struct _oe_fd_ops
 
     ssize_t (*writev)(oe_fd_t* desc, const struct oe_iovec* iov, int iovcnt);
 
+    int (*flock)(oe_fd_t* desc, int operation);
+
     int (*dup)(oe_fd_t* desc, oe_fd_t** new_fd);
 
     int (*ioctl)(oe_fd_t* desc, unsigned long request, uint64_t arg);
@@ -53,6 +55,11 @@ typedef struct _oe_file_ops
     oe_fd_ops_t fd;
 
     oe_off_t (*lseek)(oe_fd_t* file, oe_off_t offset, int whence);
+
+    ssize_t (*pread)(oe_fd_t* desc, void* buf, size_t count, oe_off_t offset);
+
+    ssize_t (
+        *pwrite)(oe_fd_t* desc, const void* buf, size_t count, oe_off_t offset);
 
     int (*getdents64)(oe_fd_t* file, struct oe_dirent* dirp, uint32_t count);
 } oe_file_ops_t;
@@ -148,6 +155,8 @@ typedef struct _oe_epoll_ops
         struct oe_epoll_event* events,
         int maxevents,
         int timeout);
+
+    void (*on_close)(oe_fd_t* epoll, int fd);
 } oe_epoll_ops_t;
 
 struct _oe_fd

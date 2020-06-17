@@ -1,16 +1,34 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <assert.h>
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 
 #include "../magic.h"
 #include "bcrypt.h"
 #include "key.h"
 #include "pem.h"
+
+/* can't use an engine with bcrypt */
+oe_result_t oe_private_key_from_engine(
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id,
+    oe_private_key_t* key,
+    int key_type,
+    uint64_t magic)
+{
+    OE_UNUSED(engine_id);
+    OE_UNUSED(engine_load_path);
+    OE_UNUSED(key_id);
+    OE_UNUSED(key);
+    OE_UNUSED(key_type);
+    OE_UNUSED(magic);
+    return OE_UNSUPPORTED;
+}
 
 /* Caller is responsible for calling BCryptDestroyKey on key_handle */
 oe_result_t oe_bcrypt_decode_x509_public_key(
@@ -558,10 +576,15 @@ oe_result_t oe_public_key_verify(
         padding_info->type);
 
     if (!BCRYPT_SUCCESS(status))
-        OE_RAISE_MSG(
-            OE_CRYPTO_ERROR,
-            "BCryptVerifySignature failed (err=%#x)\n",
-            status);
+    {
+        if (status == STATUS_INVALID_SIGNATURE)
+            OE_RAISE(OE_VERIFY_FAILED);
+        else
+            OE_RAISE_MSG(
+                OE_CRYPTO_ERROR,
+                "BCryptVerifySignature failed (err=%#x)\n",
+                status);
+    }
 
     result = OE_OK;
 

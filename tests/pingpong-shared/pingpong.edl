@@ -1,18 +1,24 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         public void Ping(
             [in, string] const char* in,
-            [in, out, string] char* out);
+            [in, out, string] char* out,
+            int out_length);
 
     };
 
     untrusted {
         void Pong(
             [in, string] const char* in,
-            [in, out, string] char* out);
+            [in, out, string] char* out,
+            int out_length);
 
         void Log(
             [string, in] const char* str,

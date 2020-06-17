@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _PLATFORM_WINDOWS_H
@@ -20,6 +20,7 @@ typedef SOCKET socket_t;
 typedef int socklen_t;
 typedef int length_t;
 typedef void pthread_attr_t;
+typedef uint16_t in_port_t;
 
 OE_INLINE int sleep(unsigned int seconds)
 {

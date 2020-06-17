@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "asmdefs.h"
@@ -20,6 +20,7 @@
 //     Registers from host caller of EENTER:
 //         RDI - ARG1
 //         RSI - ARG2
+//         RDX - HOST ECALL CONTEXT
 //
 //     This function performs the following tasks:
 //
@@ -38,31 +39,44 @@
 oe_enter:
 .cfi_startproc
 
+.get_td:
+
+    // Get the location of the td_t structure for this thread. This value is
+    // expected to be present in %r11 for the remainder of oe_enter.
+    //
+    // Upon first entry to the enclave, td->base.self in the td_t structure
+    // is not yet initialized. However, the loader in host/sgx/create.c places
+    // the td_t structure as a specific offset from TCS.
+    lea TD_FROM_TCS(%rbx), %r11
+
 .save_host_registers:
-    // Backup the current host rbp and rsp to previous.
-    mov %gs:td_host_rbp, %r8
-    mov %r8, %gs:td_host_previous_rbp
-    mov %gs:td_host_rsp, %r8
-    mov %r8, %gs:td_host_previous_rsp
+    // Backup the current host rbp, rsp, and context to previous.
+    mov td_host_rbp(%r11), %r8
+    mov %r8, td_host_previous_rbp(%r11)
+    mov td_host_rsp(%r11), %r8
+    mov %r8, td_host_previous_rsp(%r11)
+    mov td_host_ecall_context(%r11), %r8
+    mov %r8, td_host_previous_ecall_context(%r11)
 
     // Save host registers (restored on EEXIT)
-    mov %rcx, %gs:td_host_rcx // host return address here
-    mov %rsp, %gs:td_host_rsp
-    mov %rbp, %gs:td_host_rbp
+    mov %rcx, td_host_rcx(%r11) // host return address here
+    mov %rsp, td_host_rsp(%r11)
+    mov %rbp, td_host_rbp(%r11)
+    mov %rdx, td_host_ecall_context(%r11)
 
 .determine_entry_type:
     // Check if this is exception dispatching request.
     // exception-dispatching-request-check
     cmp $0, %rax
     jne .exception_entry
-    
+
     // Stop speculative execution at fallthrough of conditional
     // exception-dispatching-request-check.
     lfence
 
     // Check whether this is a clean entry or a nested entry
     // clean-entry-check.
-    mov %gs:td_depth, %r8
+    mov td_depth(%r11), %r8
     cmp $0, %r8
     je .clean_entry
     jmp .nested_entry
@@ -99,7 +113,7 @@ oe_enter:
     lfence
 
     // Restore stack pointer and enclave registers:
-    mov %gs:td_last_sp, %rsp
+    mov td_last_sp(%r11), %rsp
 
     // align the stack
     and $-16, %rsp
@@ -119,10 +133,27 @@ oe_enter:
     mov %rsp, %rbp
 
 .call_function:
+    // Set the MXCSR according to the Linux x86_64 ABI
+    mov $ABI_MXCSR_INIT, %r10
+    push %r10
+    ldmxcsr (%rsp)
+    pop %r10
+
+    // Set the FPU Control Word according to the Linux x86_64 ABI
+    mov $ABI_FPUCW_INIT, %r10
+    push %r10
+    fldcw (%rsp)
+    pop %r10
+
+    // Initialize the RFLAGS prior to calling enclave functions
+    // This only clears the DF and state flag bits since
+    // the system flags and reserved bits are not writable here
+    push $0
+    popfq
 
     // Get the host stack pointer.
-    mov %gs:td_host_rsp, %r8
-    mov %gs:td_host_rbp, %r9
+    mov td_host_rsp(%r11), %r8
+    mov td_host_rbp(%r11), %r9
 
     // Construct the frame and align the stack.
     pushq $0
@@ -139,20 +170,24 @@ oe_enter:
 #define OM_HOST_RBP                 (-2*8)(%rbp)
 #define OM_HOST_OUTPUT_ARG1         (-3*8)(%rbp)
 #define OM_HOST_OUTPUT_ARG2         (-4*8)(%rbp)
-#define OM_HOST_RETURN_ADDR         (-5*8)(%rbp)
+#define OM_ENC_TD                   (-5*8)(%rbp)
+#define OM_HOST_RETURN_ADDR         (-6*8)(%rbp)
 
     // Allocate stack.
     sub $OM_STACK_LENGTH, %rsp
 
     // Save the host stack pointers to enclave stack.
-    mov %gs:td_host_rsp, %r8
-    mov %gs:td_host_rbp, %r9
+    mov td_host_rsp(%r11), %r8
+    mov td_host_rbp(%r11), %r9
     mov %r8, OM_HOST_RSP
     mov %r9, OM_HOST_RBP
 
     // Save the host return address to enclave stack.
-    mov %gs:td_host_rcx, %r8
+    mov td_host_rcx(%r11), %r8
     mov %r8, OM_HOST_RETURN_ADDR
+
+    // Save reference to the td structure to enclave stack.
+    mov %r11, OM_ENC_TD
 
     // Call __oe_handle_main(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX, OUTPUTARG1=R8, OUTPUTARG2=R9)
     mov %rax, %rdx
@@ -165,11 +200,14 @@ oe_enter:
     mov OM_HOST_OUTPUT_ARG1, %rdi
     mov OM_HOST_OUTPUT_ARG2, %rsi
 
+    // Restore td pointer
+    mov OM_ENC_TD, %r11
+
 .determine_exit_type:
 
     // Check the depth of the ECALL stack (zero for clean exit)
     // exit-type-check.
-    mov %gs:td_depth, %r8
+    mov td_depth(%r11), %r8
     cmp $0, %r8
     je .clean_exit
 
@@ -178,44 +216,20 @@ oe_enter:
     // exit-type-check.
     lfence
 
-    // Construct the oe_ocall_context_t(rbp, return address).
-    mov (4*OE_WORD_SIZE)(%rsp), %r12
-    push %r12
-    push %rbp
-    mov %rsp, %r12
-
-    // Save the parameters of oe_asm_exit into stack.
-    push %rdi
-    push %rsi
-
-    // Notify a nested exit happens.
-    // oe_notify_nested_exit_start(rdi=arg1, rsi=ocall_context)
-    mov %r12, %rsi
-    call oe_notify_nested_exit_start
-
-    // Restore the parameters of oe_asm_exit from stack.
-    pop %rsi
-    pop %rdi
-
-    // Restore the stack to correct status: rbp/rsp should not change after function call.
-    pop %r12
-    pop %r12
-
-    mov %rsp, %gs:td_last_sp
+    mov %rsp, td_last_sp(%r11)
 
     jmp .clear_enclave_registers
 
 .clean_exit:
-    // Stop speculative execution at target of conditional jump 
+    // Stop speculative execution at target of conditional jump
     // after exit-type-check.
     lfence
 
-    // Clear the td_t.last_sp field (force oe_enter to calculate stack pointer)
-    movq $0, %gs:td_last_sp
+    // Clear the oe_sgx_td_t.last_sp field (force oe_enter to calculate stack pointer)
+    movq $0, td_last_sp(%r11)
 
 .clear_enclave_registers:
 
-    // Clear these so information will not be leaked to host
     oe_cleanup_registers
 
 .restore_host_registers:
@@ -227,9 +241,9 @@ oe_enter:
 
 .execute_eexit:
 
-    // Check td_t.simulate flag
+    // Check oe_sgx_td_t.simulate flag
     // simulation-flag-check.
-    mov %gs:td_simulate, %rax
+    mov td_simulate(%r11), %rax
     cmp $0, %rax
     jz .execute_eexit_instruction
 
@@ -237,6 +251,9 @@ oe_enter:
     // Stop speculative execution at fallthrough of conditional
     // simulate-flag-check.
     lfence
+
+    // Clear %r11 which was being used to maintain td pointer
+    xor %r11, %r11
 
     // Jump to return address:
     mov $1, %rax
@@ -247,6 +264,9 @@ oe_enter:
     // Stop speculative execution at target of conditional jump
     // simulate-flag-check.
     lfence
+
+    // Clear %r11 which was being used to maintain td pointer
+    xor %r11, %r11
 
     // EEXIT(RAX=EEXIT, RBX=RETADDR, RCX=AEP, RDI=ARG1, RSI=ARG2)
     //mov %rcx, %rbx

@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/argv.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safemath.h>
 
 #if defined(OE_BUILD_ENCLAVE)
 #include <openenclave/corelibc/string.h>

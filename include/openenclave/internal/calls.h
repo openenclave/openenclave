@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_CALLS_H
@@ -75,7 +75,6 @@ typedef enum _oe_func
     OE_ECALL_INIT_ENCLAVE,
     OE_ECALL_CALL_ENCLAVE_FUNCTION,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
-    OE_ECALL_INIT_CONTEXT_SWITCHLESS,
     /* Caution: always add new ECALL function numbers here */
     OE_ECALL_MAX,
 
@@ -84,7 +83,6 @@ typedef enum _oe_func
     OE_OCALL_THREAD_WAIT,
     OE_OCALL_MALLOC,
     OE_OCALL_FREE,
-    OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
     /* Caution: always add new OCALL function numbers here */
     OE_OCALL_MAX, /* This value is never used */
@@ -93,9 +91,6 @@ typedef enum _oe_func
 } oe_func_t;
 
 OE_STATIC_ASSERT(sizeof(oe_func_t) == sizeof(unsigned int));
-
-#define OE_EXCEPTION_CONTINUE_SEARCH 0x0
-#define OE_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
 
 /*
 **==============================================================================
@@ -402,8 +397,10 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out);
 **==============================================================================
 */
 
-#define OE_TEE_OCALL_FUNCTION_TABLE_ID 0
-#define OE_TEE_ECALL_FUNCTION_TABLE_ID 0
+#ifdef OE_USE_BUILTIN_EDL
+
+#define OE_CORE_OCALL_FUNCTION_TABLE_ID 0
+#define OE_CORE_ECALL_FUNCTION_TABLE_ID 0
 
 #define OE_SGX_OCALL_FUNCTION_TABLE_ID 1
 #define OE_SGX_ECALL_FUNCTION_TABLE_ID 1
@@ -412,24 +409,26 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out);
 #define OE_SYSCALL_ECALL_FUNCTION_TABLE_ID 2
 
 /* Register the OCALL table needed by the common TEE interface (host side). */
-oe_result_t oe_register_tee_ocall_function_table(void);
+oe_result_t oe_register_core_ocall_function_table(void);
 
 /* Register the ECALL table needed by the common TEE interface (enclave side).
  */
-oe_result_t oe_register_tee_ecall_function_table(void);
+oe_result_t oe_register_core_ecall_function_table(void);
 
 /* Register the OCALL table needed by the SGX-specific interface (host side). */
-oe_result_t oe_register_sgx_ocall_function_table(void);
+oe_result_t oe_register_platform_ocall_function_table(void);
 
 /* Register the ECALL table needed by the SGX-specific interface (enclave side).
  */
-oe_result_t oe_register_sgx_ecall_function_table(void);
+oe_result_t oe_register_platform_ecall_function_table(void);
 
 /* Register the OCALL table needed by the SYSCALL interface (host side). */
 void oe_register_syscall_ocall_function_table(void);
 
 /* Register the ECALL table needed by the SYSCALL interface (enclave side). */
 void oe_register_syscall_ecall_function_table(void);
+
+#endif // OE_USE_BUILTIN_EDL
 
 OE_EXTERNC_END
 

@@ -1,11 +1,7 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 ---
-- name: Include distribution vars
-  include_vars:
-    file: "{{ ansible_distribution | lower }}.yml"
-
 - block:
   - import_role:
       name: common/jenkins
@@ -21,7 +17,7 @@
 - name: Jenkins | Install Java JRE needed by Jenkins
   apt:
     name: openjdk-8-jre
-    state: present
+    state: latest
     update_cache: yes
   retries: 10
   delay: 10

@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define mbedtls_printf          printf
+#define mbedtls_exit            exit
 #define MBEDTLS_EXIT_SUCCESS    EXIT_SUCCESS
 #define MBEDTLS_EXIT_FAILURE    EXIT_FAILURE
 #endif /* MBEDTLS_PLATFORM_C */
@@ -47,7 +48,6 @@
 #include <string.h>
 #endif
 
-
 #if !defined(MBEDTLS_BIGNUM_C) || !defined(MBEDTLS_PK_PARSE_C) ||  \
     !defined(MBEDTLS_FS_IO) || !defined(MBEDTLS_ENTROPY_C) || \
     !defined(MBEDTLS_CTR_DRBG_C)
@@ -59,6 +59,8 @@ int main( void )
     return( 0 );
 }
 #else
+
+
 int main( int argc, char *argv[] )
 {
     FILE *f;

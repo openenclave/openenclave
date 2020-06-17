@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2011-2017 Intel Corporation. All rights reserved.
+# Copyright (C) 2011-2019 Intel Corporation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,6 +30,8 @@
 #
 #
 
+# -*- coding: iso-8859-15 -*-
+
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -54,7 +56,7 @@ def GetLoadSymbolCommand(EnclaveFile, Base):
         # their offsets and add the Proj base address.
         for line in FileList:
             list = line.split();
-            if(len(list) > 0):
+            if(len(list) > 1):
                 SegOffset = -1;
                 # The readelf will put a space after the open bracket for single
                 # digit section numbers.  This causes the line.split to create
@@ -69,7 +71,7 @@ def GetLoadSymbolCommand(EnclaveFile, Base):
                         # If it is the .text section, put it in a special place in the array
                         # because the 'add-symbol-file' command treats it differently.
                         #print "%#08x" % (int(list[SegOffset+3], 16))
-                        if(list[SegOffset+1].find(".text") != -1):
+                        if(list[SegOffset+1] == ".text"):
                             Out[99][0] = "-s";
                             Out[99][1] = list[SegOffset+1];
                             Out[99][2] = str(int(list[SegOffset+3], 16) + int(Base, 10));

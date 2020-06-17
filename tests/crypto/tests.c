@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "tests.h"
@@ -13,8 +13,8 @@ void TestAll()
     TestRSA();
     TestRandom();
 #if defined(__x86_64__) || defined(__i386__)
-    // This test exercises the rdrand instruction, which is x86/64-specific.
-    TestRdrand();
+    // Test the RDRAND/RDSEED instructions, which are x86/64-specific.
+    TestCpuEntropy();
 #endif
     TestHMAC();
     TestKDF();

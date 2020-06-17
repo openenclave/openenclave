@@ -1,14 +1,14 @@
 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/ec.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/sgxkeys.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
 #include <stdlib.h>
 #include <string.h>
@@ -631,7 +631,7 @@ int enc_get_public_key(
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    256,  /* HeapPageCount */
-    64,   /* StackPageCount */
-    5);   /* TCSCount */
+    true, /* Debug */
+    256,  /* NumHeapPages */
+    64,   /* NumStackPages */
+    5);   /* NumTCS */

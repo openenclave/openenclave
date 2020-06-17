@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 # Copy MUSL headers to collector dir and wrap
@@ -55,9 +55,15 @@ ExternalProject_Add(musl_includes
     COMMAND ${CMAKE_COMMAND} -E copy
       ${PATCHES_DIR}/pthread_${ARCH}.h
       ${MUSL_DIR}/arch/${ARCH}/pthread_arch.h
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${PATCHES_DIR}/setjmp.h
+      ${MUSL_DIR}/include/setjmp.h
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${PATCHES_DIR}/execinfo.h
+      ${MUSL_DIR}/include/execinfo.h
   CONFIGURE_COMMAND
     ${CMAKE_COMMAND} -E chdir ${MUSL_DIR}
-    ${BASH} -x ./configure
+    ${OE_BASH} -x ./configure
       --includedir=${MUSL_INCLUDES}
       CFLAGS=${MUSL_CFLAGS}
       CC=${MUSL_CC}
@@ -73,12 +79,12 @@ ExternalProject_Add(musl_includes
         ${MUSL_DIR}/arch/${ARCH}/bits
         ${MUSL_INCLUDES}/bits
     # bash -c requires the command string to be in a single line
-    COMMAND ${BASH} -c "sed -f ${MUSL_DIR}/tools/mkalltypes.sed ${MUSL_DIR}/arch/${ARCH}/bits/alltypes.h.in ${MUSL_DIR}/include/alltypes.h.in > ${MUSL_INCLUDES}/bits/alltypes.h"
+    COMMAND ${OE_BASH} -c "sed -f ${MUSL_DIR}/tools/mkalltypes.sed ${MUSL_DIR}/arch/${ARCH}/bits/alltypes.h.in ${MUSL_DIR}/include/alltypes.h.in > ${MUSL_INCLUDES}/bits/alltypes.h"
     COMMAND ${CMAKE_COMMAND} -E copy
         ${MUSL_DIR}/arch/${ARCH}/bits/syscall.h.in
         ${MUSL_INCLUDES}/bits/syscall.h
     # bash -c requires the command string to be in a single line
-    COMMAND ${BASH} -c "sed -n -e s/__NR_/SYS_/p < ${MUSL_DIR}/arch/${ARCH}/bits/syscall.h.in >> ${MUSL_INCLUDES}/bits/syscall.h"
+    COMMAND ${OE_BASH} -c "sed -n -e s/__NR_/SYS_/p < ${MUSL_DIR}/arch/${ARCH}/bits/syscall.h.in >> ${MUSL_INCLUDES}/bits/syscall.h"
     COMMAND ${CMAKE_COMMAND} -E copy
       ${MUSL_INCLUDES}/endian.h
       ${MUSL_INCLUDES}/__endian.h
@@ -86,7 +92,7 @@ ExternalProject_Add(musl_includes
       ${PATCHES_DIR}/endian.h
       ${MUSL_INCLUDES}/endian.h
     # Append deprecations.h to all C header files.
-    COMMAND ${BASH} -c "${MUSL_APPEND_DEPRECATIONS}"
+    COMMAND ${OE_BASH} -c "${MUSL_APPEND_DEPRECATIONS}"
     # Copy local deprecations.h to include/bits/deprecated.h.
     COMMAND ${CMAKE_COMMAND} -E copy
       ${CMAKE_CURRENT_LIST_DIR}/deprecations.h

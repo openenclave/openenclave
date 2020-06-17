@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #define _GNU_SOURCE
@@ -19,7 +19,7 @@
 #include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 #include "syscall_t.h"
 
 #define DEVICE_MAGIC 0x536f636b
@@ -261,8 +261,11 @@ static oe_fd_t* _hostsock_accept(
         oe_host_fd_t retval = -1;
 
         if (oe_syscall_accept_ocall(
-                &retval, sock->host_fd, &buf.addr, addrlen_in, addrlen) !=
-            OE_OK)
+                &retval,
+                sock->host_fd,
+                addr ? &buf.addr : NULL,
+                addrlen_in,
+                addrlen) != OE_OK)
         {
             OE_RAISE_ERRNO(oe_errno);
         }
@@ -271,6 +274,14 @@ static oe_fd_t* _hostsock_accept(
             OE_RAISE_ERRNO_MSG(oe_errno, "retval=%d", retval);
 
         new_sock->host_fd = retval;
+
+        // copy peer addr to out buffer
+        if (addrlen)
+        {
+            oe_assert(addr);
+            if (oe_memcpy_s(addr, addrlen_in, &buf.addr, *addrlen) != OE_OK)
+                OE_RAISE_ERRNO(OE_EINVAL);
+        }
     }
 
     ret = &new_sock->base;
@@ -343,7 +354,7 @@ static ssize_t _hostsock_recv(
 
     if (buf)
     {
-        if (oe_memset_s(buf, sizeof(count), 0, sizeof(count)) != OE_OK)
+        if (oe_memset_s(buf, count, 0, count) != OE_OK)
             OE_RAISE_ERRNO(OE_EINVAL);
     }
 

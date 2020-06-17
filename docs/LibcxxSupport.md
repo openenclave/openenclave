@@ -1,5 +1,13 @@
 # Open Enclave Support for libcxx
 
+Open Enclave uses a a version of the [LLVM libc++](https://libcxx.llvm.org/) library adapted for an enclave environment. It is tested up to the C++17 standard, and supports most of the features in that standard. In general, the following kinds of features may not be supported.
+- Features that require system calls to the untrusted host.
+    - Some of these features, such as file I/O, require linking in the optional [oesyscall libraries](/syscall/README.md) and do not work by default.
+    - Others, such as thread creation, are simply not supported in the the enclave runtime.
+- Equivalent standard C library functions that are not supported, as documented in [LibcSupport.md](LibcSupport.md)
+
+For more details on the libcxx testing in Open Enclave, refer to this [document](/tests/libcxx/README.md).
+
 ## Concepts Library
 Header | Supported | Comments |
 :---:|:---:|:---|
@@ -13,7 +21,7 @@ coroutines | No | Header is not provided, C++20 is not yet supported. |
 ## Utilities Library
 Header | Supported | Comments |
 :---:|:---:|:---|
-any | No | C++17 is not yet supported. |
+any | Yes | Supported as part of C++17. |
 bitset | Yes | - |
 compare | No | C++20 is not yet supported. |
 csetjmp | Yes | - |
@@ -22,31 +30,31 @@ cstdarg | Yes | - |
 cstddef | Yes | - |
 cstdlib | Partial | **Unsupported functions:** at_quick_exit(), quick_exit() |
 ctime | Partial | All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. <br> **Supported functions:** time(), gettimeofday(), clock_gettime(), nanosleep(). _Please note that clock_gettime() only supports CLOCK_REALTIME_ |
-chrono | Partial | Supported as part of C++11. All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. <br> **Supported classes:** system_clock, treat_as_floating_point, duration_values |
-functional | No | - |
+chrono | Partial | Supported up to C++17. All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. <br> **Supported classes:** system_clock, treat_as_floating_point, duration_values |
+functional | Yes | Supported up to C++17. |
 initializer_list | Yes | Supported as part of C++11. |
-optional | No | C++17 is not yet supported. |
-tuple | Partial | Supported as part of C++11, known issues with apply() template. |
-type_traits | Yes | Supported as part of C++11. |
+optional | Yes | Supported as part of C++17. |
+tuple | Yes | Supported up to C++17. |
+type_traits | Yes | Supported up to C++17. |
 typeindex | Yes | Supported as part of C++11. |
 typeinfo | Yes | - |
-utility | Partial | **Unsupported template:** as_const. |
-variant | No | C++17 is not yet supported. |
+utility | Yes | - |
+variant | Yes | Supported as part of C++17. |
 version | No | C++20 is not yet supported. |
 
 #### Dynamic Memory Management
 Header | Supported | Comments |
 :---:|:---:|:---|
 new | Yes | - |
-memory | Partial | Supported as part of C++11, so features such uninitialized_move and destroy_at are not yet supported. |
+memory | Yes | - |
 scoped_allocator | Yes | - |
-memory_resource | No | Header is not provided, C++17 is not yet supported. |
+memory_resource | Yes | Supported as part of C++17. The header is under `experimental/` |
 
 #### Numeric Limits
 Header | Supported | Comments |
 :---:|:---:|:---|
 cfloat | Yes | - |
-cinttypes | Partial | Supported as part of C++11. <br> **Unsupported functions:** imaxabs(), imaxdiv() |
+cinttypes | Yes | Supported as part of C++11. |
 climits | Yes | - |
 cstdint | Yes | Supported as part of C++11. |
 limits | Yes | - |
@@ -55,44 +63,44 @@ limits | Yes | - |
 Header | Supported | Comments |
 :---:|:---:|:---|
 cassert | Yes | - |
-exception | Yes | Supported as part of C++11. |
+exception | Yes | Supported up to C++17. |
 stdexcept | Yes | - |
-system_error | Yes | - |
+system_error | Yes | Supported as part of C++11. |
 cerrno | Yes | - |
-contract | No | Header is not provided, C++20 is not yet supported. |
 
 ## Strings Library
 Header | Supported | Comments |
 :---:|:---:|:---|
 cctype | Partial | Only basic support for C/POSIX locale. |
-charconv | No | C++17 is not yet supported. |
+charconv | Yes | Supported as part of C++17. |
 cuchar | No | Header is not provided. |
 cwchar | Partial | Only basic support for C/POSIX locale. <br> **Unsupported functions:** <br> - All I/O (e.g. swprintf()). <br> - All multi-byte & wide string conversions (e.g. mbrtowc()). |
 cwctype | Partial | Only basic support for C/POSIX locale. |
 cstring | Partial | Only basic support for C/POSIX locale. |
-string | Yes | Supported as part of C++11. |
-string_view | No | C++17 is not yet supported. |
+format | No | C++20 is not yet supported. |
+string | Yes | Supported up to C++17. |
+string_view | Yes | Supported as part of C++17. |
 
 ## Containers Library
 Header | Supported | Comments |
 :---:|:---:|:---|
-array | Yes | Supported as part of C++11. |
-deque | Yes | - |
-forward_list | Yes | - |
-list | Yes | - |
-map | Yes | Supported as part of C++11. |
-queue | Yes | - |
-set | Yes | Supported as part of C++11. |
-stack | Yes | - |
-unordered_map | Yes | Supported as part of C++11. |
-unordered_set | Yes | Supported as part of C++11. |
-vector | Yes | - |
+array | Yes | Supported up to C++17. |
+deque | Yes | Supported up to C++17. |
+forward_list | Yes | Supported up to C++17. |
+list | Yes | Supported up to C++17. |
+map | Yes | Supported up to C++17. |
+queue | Yes | Supported up to C++17. |
+set | Yes | Supported up to C++17. |
+stack | Yes | Supported up to C++17. |
+unordered_map | Yes | Supported up to C++17. |
+unordered_set | Yes | Supported up to C++17. |
+vector | Yes | Supported up to C++17. |
 span | No | C++20 is not yet supported. |
 
 ## Iterators Library
 Header | Supported | Comments |
 :---:|:---:|:---|
-iterator | Yes | - |
+iterator | Yes | Supported up to C++17. |
 
 ## Ranges Library
 Header | Supported | Comments |
@@ -102,16 +110,16 @@ ranges | No | Header is not provided, C++20 is not yet supported. |
 ## Algorithms Library
 Header | Supported | Comments |
 :---:|:---:|:---|
-algorithm | Yes | Supported as part of C++11. |
+algorithm | Yes | Supported up to C++17. |
 
 ## Numerics Library
 Header | Supported | Comments |
 :---:|:---:|:---|
 bit | No | Header is not provided, C++20 is not yet supported. |
 cfenv | Yes | Supported as part of C++11. |
-cmath | Partial | **Unsupported functions:** acosh(), asinh(), fmal(), lgamma(), lgammaf(), sinh(), sinhl(), tgamma(). |
-complex | Yes | - |
-numeric | Yes | Supported as part of C++11. |
+cmath | Partial | fmal() and tgamma() fail on long-double precision tests. |
+complex | Yes | Supported up to C++17. |
+numeric | Yes | Supported up to C++17. |
 random | Partial | Supported as part of C++11. <br> **Unsupported class:** random_device. |
 ratio | Yes | Supported as part of C++11. |
 valarray | Yes | - |
@@ -142,20 +150,24 @@ locale | Partial | Only basic support for C locale. |
 ## Regular Expressions Library
 Header | Supported | Comments |
 :---:|:---:|:---|
-regex | No | - |
+regex | Yes | Supported up to C++17. |
 
 ## Atomic Operations Library
 Header | Supported | Comments |
 :---:|:---:|:---|
-atomic | Yes | Supported as part of C++11. |
+atomic | Yes | Supported up to C++17. |
 
 ## Thread Support Library
 Header | Supported | Comments |
 :---:|:---:|:---|
+barrier | No | C++20 is not yet supported. |
 condition_variable | Partial | Supported as part of C++11. Synchronization primitives are not secure across calls to host. Threads are still scheduled by the untrusted host process and an enclave cannot rely on threads making forward progress. |
 future | Partial | Supported as part of C++11. Asynchronous invocations are not secure across calls to host. Threads are still scheduled by the untrusted host process and an enclave cannot rely on threads making forward progress. |
-mutex | Partial | Supported as part of C++11. Synchronization primitives are not secure across calls to host. Threads are still scheduled by the untrusted host process and an enclave cannot rely on threads making forward progress. <br> **Unsupported classes:** timed_mutex, recursive_timed_mutex. |
+latch | No | C++20 is not yet supported. |
+mutex | Partial | Synchronization primitives are not secure across calls to host. Threads are still scheduled by the untrusted host process and an enclave cannot rely on threads making forward progress. <br> **Unsupported classes:** timed_mutex, recursive_timed_mutex, scoped_lock (C++17). |
+semaphore | No | C++20 is not yet supported. |
 shared_mutex | No | - |
+stop_token | No | C++20 is not yet supported. |
 thread | No | - |
 
 ## Filesystem Library

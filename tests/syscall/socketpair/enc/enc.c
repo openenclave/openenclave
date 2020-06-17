@@ -1,4 +1,4 @@
-/* Copyright (c) Microsoft Corporation. All rights reserved. */
+/* Copyright (c) Open Enclave SDK contributors. */
 /* Licensed under the MIT License. */
 
 #include <openenclave/enclave.h>
@@ -82,7 +82,7 @@ int run_enclave_client(char* recv_buff, ssize_t* recv_buff_len)
         {
             printf("Read error, retry\n");
             numtries++;
-            oe_sleep_msec(3000);
+            sleep(3);
         }
     } while (numtries < 10);
 
@@ -119,7 +119,7 @@ int run_enclave_server()
         {
             printf("write test data n = %ld errno = %d\n", n, oe_errno);
         }
-        oe_sleep_msec(1000);
+        sleep(1);
     } while (!done);
 
     // Shutdown the writing
@@ -144,7 +144,7 @@ int run_enclave_server()
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    256,  /* HeapPageCount */
-    256,  /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    256,  /* NumHeapPages */
+    256,  /* NumStackPages */
+    4);   /* NumTCS */

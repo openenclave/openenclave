@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/internal/syscall/device.h>
@@ -7,7 +7,7 @@
 #include <openenclave/internal/trace.h>
 #include "mount.h"
 
-int oe_stat(const char* pathname, struct oe_stat* buf)
+int oe_stat(const char* pathname, struct oe_stat_t* buf)
 {
     int ret = -1;
     oe_device_t* fs = NULL;
@@ -22,7 +22,7 @@ done:
     return ret;
 }
 
-int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat* buf)
+int oe_stat_d(uint64_t devid, const char* pathname, struct oe_stat_t* buf)
 {
     int ret = -1;
 

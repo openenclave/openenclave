@@ -1,0 +1,14 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+ci_apt_packages:
+  - "automake"
+  - "dh-exec"
+  - "dpkg-dev"
+  - "gawk"
+  - "git"
+  - "libmbedtls10"
+  - "sudo"
+  - "libcurl4"
+  - "libprotobuf10"

@@ -1,10 +1,10 @@
 #!/usr/bin/make -f
 
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 # mbedTLS library definitions
-VERSION=2.7.11
+VERSION=2.16.6
 BASE=mbedtls-$(VERSION)
 PKG=$(BASE)-apache.tgz
 
@@ -18,7 +18,6 @@ update-mbedtls:
 	mv $(BASE) mbedtls
 	rm -rf $(PKG)
 	rm mbedtls/.gitignore
-	rm mbedtls/yotta/.gitignore
 	rm mbedtls/programs/.gitignore
 	rm mbedtls/include/.gitignore
 	rm mbedtls/library/.gitignore

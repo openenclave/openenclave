@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 /**
@@ -14,6 +14,7 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 
+#include <openenclave/bits/asym_keys.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -21,12 +22,31 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bits/defs.h"
-#include "bits/report.h"
+#include "bits/eeid.h"
+#include "bits/evidence.h"
 #include "bits/result.h"
 #include "bits/types.h"
 #include "host_verify.h"
 
 OE_EXTERNC_BEGIN
+
+#ifndef _WIN32
+#define _getpid getpid
+#define sscanf_s sscanf
+#define sprintf_s(buffer, size, format, argument) \
+    sprintf(buffer, format, argument)
+#define strcat_s(destination, destination_size, source) \
+    strcat(destination, source)
+#define strcpy_s(destination, destination_size, source) \
+    ;                                                   \
+    {                                                   \
+        (void)(destination_size);                       \
+        strcpy(destination, source);                    \
+    }
+#define _strdup strdup
+#define strncat_s(destination, destination_size, source, source_size) \
+    strncat(destination, source, source_size)
+#endif
 
 /**
  *  Flag passed into oe_create_enclave to run the enclave in debug mode.
@@ -66,23 +86,20 @@ typedef void (*oe_ocall_func_t)(
     size_t* output_bytes_written);
 
 /**
- * The following structures are used by context-switchless calls, which is
- * experimental, and subject to changes.
+ * Types of settings passed into **oe_create_enclave**
  */
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
-
-/**
- * Types of configurations passed into **oe_create_enclave**
- */
-typedef enum _oe_enclave_config_type
+typedef enum _oe_enclave_setting_type
 {
-    OE_ENCLAVE_CONFIG_CONTEXT_SWITCHLESS = 0xdc73a628,
-} oe_enclave_config_type_t;
+    OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS = 0xdc73a628,
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA = 0x976a8f66,
+#endif
+} oe_enclave_setting_type_t;
 
 /**
- * The configuration for context-switchless calls.
+ * The setting for context-switchless calls.
  */
-typedef struct _oe_enclave_config_context_switchless
+typedef struct _oe_enclave_setting_context_switchless
 {
     /**
      * The max number of worker threads for context-switchless ocalls.
@@ -95,29 +112,31 @@ typedef struct _oe_enclave_config_context_switchless
      * workers should be 0.
      */
     size_t max_enclave_workers;
-} oe_enclave_config_context_switchless_t;
+} oe_enclave_setting_context_switchless_t;
 
 /**
  * The uniform structure type containing a specific type of enclave
- * configuration.
+ * setting.
  */
-typedef struct _oe_enclave_config
+typedef struct _oe_enclave_setting
 {
     /**
-     * The type of the configuration in **u**
+     * The type of the setting in **u**
      */
-    oe_enclave_config_type_t config_type;
+    oe_enclave_setting_type_t setting_type;
     /**
-     * The specific configuration for the enclave, such as configuring
+     * The specific setting for the enclave, such as for configuring
      * context-switchless calls.
      */
     union {
-        const oe_enclave_config_context_switchless_t* context_switchless_config;
-        /* Add new configuration types here. */
+        const oe_enclave_setting_context_switchless_t*
+            context_switchless_setting;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+        oe_eeid_t* eeid;
+#endif
+        /* Add new setting types here. */
     } u;
-} oe_enclave_config_t;
-
-#endif /* OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE */
+} oe_enclave_setting_t;
 
 /**
  * Create an enclave from an enclave image file.
@@ -125,30 +144,30 @@ typedef struct _oe_enclave_config
  * This function creates an enclave from an enclave image file. On successful
  * return, the enclave is fully initialized and ready to use.
  *
- * @param path The path of an enclave image file in ELF-64 format. This
+ * @param[in] path The path of an enclave image file in ELF-64 format. This
  * file must have been linked with the **oecore** library and signed by the
  * **oesign** tool.
  *
- * @param type The type of enclave supported by the enclave image file.
+ * @param[in] type The type of enclave supported by the enclave image file.
  *     - OE_ENCLAVE_TYPE_SGX - An SGX enclave
  *
- * @param flags These flags control how the enclave is run.
+ * @param[in] flags These flags control how the enclave is run.
  *     It is the bitwise OR of zero or more of the following flags
  *     - OE_ENCLAVE_FLAG_SIMULATE - runs the enclave in simulation mode
  *     - OE_ENCLAVE_FLAG_DEBUG - runs the enclave in debug mode.
  *                               DO NOT SHIP CODE with this flag
  *
- * @param configs Array of additional enclave creation configurations for
- * the specific enclave type.
+ * @param[in] settings Array of additional enclave creation settings for the
+ * specific enclave type.
  *
- * @param config_count The number of configurations in the **configs**.
+ * @param[in] setting_count The number of settings in the **settings**.
  *
- * @param ocall_table Pointer to table of ocall functions generated by
+ * @param[in] ocall_table Pointer to table of ocall functions generated by
  * oeedger8r.
  *
- * @param ocall_count The number of functions in the **ocall_table**.
+ * @param[in] ocall_count The number of functions in the **ocall_table**.
  *
- * @param enclave This points to the enclave instance upon success.
+ * @param[out] enclave This points to the enclave instance upon success.
  *
  * @returns Returns OE_OK on success.
  *
@@ -157,13 +176,8 @@ oe_result_t oe_create_enclave(
     const char* path,
     oe_enclave_type_t type,
     uint32_t flags,
-#ifdef OE_CONTEXT_SWITCHLESS_EXPERIMENTAL_FEATURE
-    const oe_enclave_config_t* configs,
-    uint32_t config_count,
-#else
-    const void* config,
-    uint32_t config_size,
-#endif
+    const oe_enclave_setting_t* settings,
+    uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
     oe_enclave_t** enclave);
@@ -175,7 +189,7 @@ oe_result_t oe_create_enclave(
  * involves unmapping the memory that was mapped by **oe_create_enclave()**.
  * Once this is performed, the enclave can no longer be accessed.
  *
- * @param enclave The instance of the enclave to be terminated.
+ * @param[in] enclave The instance of the enclave to be terminated.
  *
  * @returns Returns OE_OK on success.
  *
@@ -266,9 +280,9 @@ void oe_free_target_info(void* target_info_buffer);
 /**
  * Parse an enclave report into a standard format for reading.
  *
- * @param report The buffer containing the report to parse.
- * @param report_size The size of the **report** buffer.
- * @param parsed_report The **oe_report_t** structure to populate with the
+ * @param[in] report The buffer containing the report to parse.
+ * @param[in] report_size The size of the **report** buffer.
+ * @param[out] parsed_report The **oe_report_t** structure to populate with the
  * report
  * properties in a standard format. The *parsed_report* holds pointers to fields
  * within the supplied *report* and must not be used beyond the lifetime of the
@@ -290,12 +304,12 @@ oe_result_t oe_parse_report(
  * platform. If the report is remote, it verifies that the signing authority is
  * rooted to a trusted authority such as the enclave platform manufacturer.
  *
- * @param enclave The instance of the enclave that will be used to
+ * @param[in] enclave The instance of the enclave that will be used to
  * verify a local report. For remote reports, this parameter can be NULL.
- * @param report The buffer containing the report to verify.
- * @param report_size The size of the **report** buffer.
- * @param parsed_report Optional **oe_report_t** structure to populate with the
- * report properties in a standard format.
+ * @param[in] report The buffer containing the report to verify.
+ * @param[in] report_size The size of the **report** buffer.
+ * @param[out] parsed_report Optional **oe_report_t** structure to populate with
+ * the report properties in a standard format.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -311,17 +325,17 @@ oe_result_t oe_verify_report(
  * Returns a public key that is associated with the identity of the enclave
  * and the specified policy.
  *
- * @param enclave The enclave handle.
- * @param seal_policy The policy for the identity properties used to derive
+ * @param[in] enclave The enclave handle.
+ * @param[in] seal_policy The policy for the identity properties used to derive
  * the key.
- * @param key_params The parameters for the asymmetric key derivation.
- * @param key_buffer A pointer to the buffer that on success contains the
+ * @param[in] key_params The parameters for the asymmetric key derivation.
+ * @param[out] key_buffer A pointer to the buffer that on success contains the
  * requested public key.
- * @param key_buffer_size On success, this contains size of key_buffer.
- * @param key_info Optional pointer to a buffer for the enclave-specific key
- * information which can be used to retrieve the same key later on a newer
+ * @param[out] key_buffer_size On success, this contains size of key_buffer.
+ * @param[out] key_info Optional pointer to a buffer for the enclave-specific
+ * key information which can be used to retrieve the same key later on a newer
  * security version.
- * @param key_info_size On success, this contains the size of key_info.
+ * @param[out] key_info_size On success, this contains the size of key_info.
  *
  * @retval OE_OK The key was successfully requested.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -340,13 +354,13 @@ oe_result_t oe_get_public_key_by_policy(
 /**
  * Returns a public key that is associated with the identity of the enclave.
  *
- * @param enclave The enclave handle.
- * @param key_params The parameters for the asymmetric key derivation.
- * @param key_info The enclave-specific key information to derive the key.
- * @param key_info_size The size of the key_info buffer.
- * @param key_buffer A pointer to the buffer that on success contains the
+ * @param[in] enclave The enclave handle.
+ * @param[in] key_params The parameters for the asymmetric key derivation.
+ * @param[in] key_info The enclave-specific key information to derive the key.
+ * @param[in] key_info_size The size of the key_info buffer.
+ * @param[out] key_buffer A pointer to the buffer that on success contains the
  * requested public key.
- * @param key_buffer_size On success, this contains size of key_buffer.
+ * @param[out] key_buffer_size On success, this contains size of key_buffer.
  *
  * @retval OE_OK The key was successfully requested.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
@@ -366,10 +380,10 @@ oe_result_t oe_get_public_key(
  * Frees the given key and/or key info. Before freeing, this function will
  * zero out the key buffers to avoid leaking any confidential data.
  *
- * @param key_buffer If not NULL, the key buffer to free.
- * @param key_buffer_size The size of key_buffer.
- * @param key_info If not NULL, the key info to free.
- * @param key_info_size The size of key_info.
+ * @param[in] key_buffer If not NULL, the key buffer to free.
+ * @param[in] key_buffer_size The size of key_buffer.
+ * @param[in] key_info If not NULL, the key info to free.
+ * @param[in] key_info_size The size of key_info.
  */
 void oe_free_key(
     uint8_t* key_buffer,

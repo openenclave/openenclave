@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 /*
@@ -26,6 +26,7 @@
 #include <openenclave/internal/syscall/dirent.h>
 #include <openenclave/internal/syscall/sys/mount.h>
 #include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/syscall/fcntl.h>
 #include <openenclave/internal/syscall/sys/ioctl.h>
@@ -33,7 +34,7 @@
 #include <openenclave/internal/syscall/iov.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/bits/safecrt.h>
+#include <openenclave/internal/safecrt.h>
 
 #include "syscall_t.h"
 
@@ -220,6 +221,15 @@ static int _hostfs_mount(
     /* Remember whether this is a read-only mount. */
     if ((flags & OE_MS_RDONLY))
         fs->mount.flags = flags;
+
+    /* ---------------------------------------------------------------------
+     * Only support absolute paths. Hostfs is treated as an external
+     * filesystem. As such, it does not make sense to resolve relative paths
+     * using the enclave's current working directory.
+     * ---------------------------------------------------------------------
+     */
+    if (source && source[0] != '/')
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Save the source parameter (will be needed to form host paths). */
     oe_strlcpy(fs->mount.source, source, sizeof(fs->mount.source));
@@ -427,14 +437,32 @@ static oe_fd_t* _hostfs_open(
     }
 }
 
+static int _hostfs_flock(oe_fd_t* desc, int operation)
+{
+    int ret = -1;
+    file_t* file = _cast_file(desc);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Call the host to perform the flock(). */
+    if (oe_syscall_flock_ocall(&ret, file->host_fd, operation) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return ret;
+}
+
 static int _hostfs_dup(oe_fd_t* desc, oe_fd_t** new_file_out)
 {
     int ret = -1;
     file_t* file = _cast_file(desc);
     file_t* new_file = NULL;
 
-    if (new_file_out)
-        *new_file_out = NULL;
+    if (!new_file_out)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    *new_file_out = NULL;
 
     /* Check parameters. */
     if (!file)
@@ -689,6 +717,46 @@ done:
     return ret;
 }
 
+static ssize_t _hostfs_pread(
+    oe_fd_t* desc,
+    void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    ssize_t ret = -1;
+    file_t* file = _cast_file(desc);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_pread_ocall(&ret, file->host_fd, buf, count, offset) !=
+        OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return ret;
+}
+
+static ssize_t _hostfs_pwrite(
+    oe_fd_t* desc,
+    const void* buf,
+    size_t count,
+    oe_off_t offset)
+{
+    ssize_t ret = -1;
+    file_t* file = _cast_file(desc);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_pwrite_ocall(&ret, file->host_fd, buf, count, offset) !=
+        OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return ret;
+}
+
 static int _hostfs_close_file(oe_fd_t* desc)
 {
     int ret = -1;
@@ -871,13 +939,13 @@ static oe_fd_t* _hostfs_opendir(oe_device_t* device, const char* name)
     if (oe_syscall_opendir_ocall(&retval, host_name) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (retval != 0)
-    {
-        dir->base.type = OE_FD_TYPE_FILE;
-        dir->magic = DIR_MAGIC;
-        dir->base.ops.file = _get_file_ops();
-        dir->host_dir = retval;
-    }
+    if (!retval)
+        OE_RAISE_ERRNO(oe_errno);
+
+    dir->base.type = OE_FD_TYPE_FILE;
+    dir->magic = DIR_MAGIC;
+    dir->base.ops.file = _get_file_ops();
+    dir->host_dir = retval;
 
     ret = &dir->base;
     dir = NULL;
@@ -950,7 +1018,7 @@ done:
 static int _hostfs_stat(
     oe_device_t* device,
     const char* pathname,
-    struct oe_stat* buf)
+    struct oe_stat_t* buf)
 {
     int ret = -1;
     device_t* fs = _cast_device(device);
@@ -1194,12 +1262,15 @@ static oe_file_ops_t _file_ops =
     .fd.write = _hostfs_write,
     .fd.readv = _hostfs_readv,
     .fd.writev = _hostfs_writev,
+    .fd.flock = _hostfs_flock,
     .fd.dup = _hostfs_dup,
     .fd.ioctl = _hostfs_ioctl,
     .fd.fcntl = _hostfs_fcntl,
     .fd.close = _hostfs_close,
     .fd.get_host_fd = _hostfs_get_host_fd,
     .lseek = _hostfs_lseek,
+    .pread = _hostfs_pread,
+    .pwrite = _hostfs_pwrite,
     .getdents64 = _hostfs_getdents64,
 };
 // clang-format on

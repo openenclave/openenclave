@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/bits/result.h>
@@ -96,10 +96,14 @@ const char* oe_result_str(oe_result_t result)
             return "OE_INVALID_UTC_DATE_TIME";
         case OE_INVALID_QE_IDENTITY_INFO:
             return "OE_INVALID_QE_IDENTITY_INFO";
+        case OE_INVALID_ENDORSEMENT:
+            return "OE_INVALID_ENDORSEMENT";
         case OE_UNSUPPORTED_ENCLAVE_IMAGE:
             return "OE_UNSUPPORTED_ENCLAVE_IMAGE";
         case OE_VERIFY_CRL_EXPIRED:
             return "OE_VERIFY_CRL_EXPIRED";
+        case OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD:
+            return "OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD";
         case OE_VERIFY_CRL_MISSING:
             return "OE_VERIFY_CRL_MISSING";
         case OE_VERIFY_REVOKED:
@@ -124,6 +128,14 @@ const char* oe_result_str(oe_result_t result)
             return "OE_THREAD_CREATE_ERROR";
         case OE_THREAD_JOIN_ERROR:
             return "OE_THREAD_JOIN_ERROR";
+        case OE_ALREADY_EXISTS:
+            return "OE_ALREADY_EXISTS";
+        case OE_ALREADY_INITIALIZED:
+            return "OE_ALREADY_INITIALIZED";
+        case OE_QUOTE_HASH_MISMATCH:
+            return "OE_QUOTE_HASH_MISMATCH";
+        case OE_INVALID_SGX_SIGNING_KEY:
+            return "OE_INVALID_SGX_SIGNING_KEY";
         case __OE_RESULT_MAX:
             break;
     }
@@ -175,8 +187,10 @@ bool oe_is_valid_result(uint32_t result)
         case OE_INVALID_REVOCATION_INFO:
         case OE_INVALID_UTC_DATE_TIME:
         case OE_INVALID_QE_IDENTITY_INFO:
+        case OE_INVALID_ENDORSEMENT:
         case OE_UNSUPPORTED_ENCLAVE_IMAGE:
         case OE_VERIFY_CRL_EXPIRED:
+        case OE_VERIFY_FAILED_TO_FIND_VALIDITY_PERIOD:
         case OE_VERIFY_CRL_MISSING:
         case OE_VERIFY_REVOKED:
         case OE_CRYPTO_ERROR:
@@ -189,6 +203,10 @@ bool oe_is_valid_result(uint32_t result)
         case OE_CONTEXT_SWITCHLESS_OCALL_MISSED:
         case OE_THREAD_CREATE_ERROR:
         case OE_THREAD_JOIN_ERROR:
+        case OE_ALREADY_EXISTS:
+        case OE_ALREADY_INITIALIZED:
+        case OE_QUOTE_HASH_MISMATCH:
+        case OE_INVALID_SGX_SIGNING_KEY:
         {
             return true;
         }

@@ -1,25 +1,18 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 ---
 - name: Include distribution vars
   include_vars:
-    file: "{{ ansible_distribution | lower }}.yml"
+    file: "{{ ansible_distribution | lower }}/main.yml"
 
 - name: Include distribution release specific vars
   include_vars:
-    file: "{{ ansible_distribution_release | lower }}.yml"
-
-- name: Check for existing required directories
-  stat:
-    path: "{{ item }}"
-  with_items: "{{ packages_validation_directories }}"
-  register: directory
-  failed_when: directory.stat.isdir == False
+    file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
 
 - name: Check for existing required files
   stat:
     path: "{{ item }}"
-  with_items: "{{ packages_validation_files }}"
+  with_items: "{{ packages_validation_distribution_files }}"
   register: file
   failed_when: file.stat.exists == False

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <limits.h>
@@ -19,6 +19,8 @@
 #define TEST_EC_KEY 0
 #define TEST_RSA_KEY 1
 #define SKIP_RETURN_CODE 2
+
+#define FILENAME_LENGTH 80
 
 // This is the identity validation callback. An TLS connecting party (client or
 // server) can verify the passed in "identity" information to decide whether to
@@ -92,16 +94,21 @@ void run_test(oe_enclave_t* enclave, int test_type)
 
     {
         // for testing purpose, output the whole cer in DER format
-        char filename[80];
+        char filename[FILENAME_LENGTH];
         FILE* file = NULL;
 
-        sprintf(
+        sprintf_s(
             filename,
+            sizeof(filename),
             "./cert_%s.der",
             test_type == TEST_RSA_KEY ? "rsa" : "ec");
         OE_TRACE_INFO(
             "Host: Log quote embedded certificate to file: [%s]\n", filename);
+#ifdef _WIN32
+        fopen_s(&file, filename, "wb");
+#else
         file = fopen(filename, "wb");
+#endif
         fwrite(cert, 1, cert_size, file);
         fclose(file);
     }
@@ -123,7 +130,7 @@ void run_test(oe_enclave_t* enclave, int test_type)
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_USE_LIBSGX
+#ifdef OE_LINK_SGX_DCAP_QL
 
 #ifdef _WIN32
     /* This is a workaround for running in Visual Studio 2017 Test Explorer
@@ -189,11 +196,11 @@ int main(int argc, const char* argv[])
     OE_TRACE_INFO("=== passed all tests (tls)\n");
     return 0;
 #else
-    // this test should not run on any platforms where OE_USE_LIBSGX is not
+    // this test should not run on any platforms where HAS_QUOTE_PROVIDER is not
     // defined
     OE_UNUSED(argc);
     OE_UNUSED(argv);
-    OE_TRACE_INFO("=== tests skipped when built with OE_USE_LIBSGX=OFF\n");
+    OE_TRACE_INFO("=== tests skipped when built with HAS_QUOTE_PROVIDER=OFF\n");
     return SKIP_RETURN_CODE;
 #endif
 }

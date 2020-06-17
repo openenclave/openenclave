@@ -1,6 +1,7 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <inttypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include "bigmalloc_u.h"
@@ -30,7 +31,6 @@ int main(int argc, const char* argv[])
 {
     OE_UNUSED(argc);
     OE_UNUSED(argv);
-#if !defined(OE_USE_LIBSGX)
 
     oe_result_t result;
     const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
@@ -53,7 +53,8 @@ int main(int argc, const char* argv[])
         {
             fprintf(
                 stderr,
-                "%s: warning: insufficient memory to load enclave: %lu\n",
+                "%s: warning: insufficient memory to load enclave: %" PRIu64
+                "\n",
                 argv[0],
                 free_memory);
 
@@ -74,8 +75,6 @@ int main(int argc, const char* argv[])
     oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (%s)\n", argv[0]);
-
-#endif /* defined(OE_USE_LIBSGX) */
 
     return 0;
 }

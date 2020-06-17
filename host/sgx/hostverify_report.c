@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/bits/report.h>
@@ -13,6 +13,8 @@
 oe_result_t oe_verify_remote_report(
     const uint8_t* report,
     size_t report_size,
+    const uint8_t* endorsement,
+    size_t endorsement_size,
     oe_report_t* parsed_report)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -36,8 +38,12 @@ oe_result_t oe_verify_remote_report(
         OE_RAISE(OE_UNSUPPORTED);
 
     // Quote attestation can be done entirely on the host side.
-    OE_CHECK(oe_verify_quote_internal(
-        header->report, header->report_size, NULL, 0, NULL, 0, NULL, 0));
+    OE_CHECK(oe_verify_sgx_quote(
+        header->report,
+        header->report_size,
+        endorsement,
+        endorsement_size,
+        NULL));
 
     // Optionally return parsed report.
     if (parsed_report != NULL)

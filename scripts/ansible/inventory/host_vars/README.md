@@ -28,5 +28,5 @@ two scenarios, one must use the following variable to differentiate the
 targeted Ansible Windows nodes when configuring them:
 
 ```
-dcap_testing_node: true
+launch_configuration: "SGX1"
 ```

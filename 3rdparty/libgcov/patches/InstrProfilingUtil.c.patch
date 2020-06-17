@@ -1,0 +1,12 @@
+diff --git a/3rdparty/libgcov/compiler-rt/lib/profile/InstrProfilingUtil.c b/3rdparty/libgcov/compiler-rt/lib/profile/InstrProfilingUtil.c
+index 083bf14a3..4b71da592 100644
+--- a/3rdparty/libgcov/compiler-rt/lib/profile/InstrProfilingUtil.c
++++ b/3rdparty/libgcov/compiler-rt/lib/profile/InstrProfilingUtil.c
+@@ -15,6 +15,7 @@
+ #else
+ #include <sys/stat.h>
+ #include <sys/types.h>
++#include <sys/file.h> // Open Enclave: Include flock().
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <errno.h>

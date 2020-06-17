@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include "common.h"
 
 oe_result_t oe_memcpy_s(
@@ -82,7 +82,7 @@ oe_result_t oe_memset_s(void* dst, size_t dst_size, int value, size_t num_bytes)
 
     /* memset_s cannot be optimized away by the compiler */
     while (num_bytes--)
-        *p++ = (volatile unsigned char)value;
+        *p++ = (unsigned char)value;
 
 done:
     return result;

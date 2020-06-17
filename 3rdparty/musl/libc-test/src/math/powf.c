@@ -28,10 +28,13 @@ int main(void)
 		e = fetestexcept(INEXACT|INVALID|DIVBYZERO|UNDERFLOW|OVERFLOW);
 
 		if (!checkexcept(e, p->e, p->r)) {
+			if (fabsf(y) < 0x1p-126f && (e|INEXACT) == (INEXACT|UNDERFLOW))
+				printf("X ");
+			else
+				err++;
 			printf("%s:%d: bad fp exception: %s powf(%a,%a)=%a, want %s",
 				p->file, p->line, rstr(p->r), p->x, p->x2, p->y, estr(p->e));
 			printf(" got %s\n", estr(e));
-			err++;
 		}
 		d = ulperrf(y, p->y, p->dy);
 		if (!checkulp(d, p->r)) {

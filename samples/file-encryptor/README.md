@@ -17,7 +17,6 @@ It has the following properties:
   - mbedtls_entropy_*
   - mbedtls_ctr_drbg_*
   - mbedtls_sha256_*
-  - oe_is_outside_enclave
 - Also runs in OE simulation mode
 
 ## Host application
@@ -152,4 +151,14 @@ make run
 cd file-encryptor
 make build
 make run
+```
+
+#### Note
+
+Fileencryptor sample can run under OE simulation mode.
+
+To run the sample in simulation mode from the command like, use the following:
+
+```bash
+./host/file-encryptor_host ./enclave/enclave.signed --simulate
 ```

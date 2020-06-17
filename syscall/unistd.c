@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/errno.h>
@@ -100,7 +100,7 @@ int oe_chdir(const char* path)
 {
     int ret = -1;
     oe_syscall_path_t real_path;
-    struct oe_stat st;
+    struct oe_stat_t st;
     bool locked = false;
 
     /* Resolve to an absolute canonical path. */
@@ -138,12 +138,11 @@ done:
     return ret;
 }
 
-unsigned int oe_sleep(unsigned int seconds)
+int oe_nanosleep(struct oe_timespec* req, struct oe_timespec* rem)
 {
-    const uint64_t ONE_SECOND = 1000;
-    const uint64_t msec = seconds * ONE_SECOND;
-
-    return (oe_sleep_msec(msec) == 0) ? 0 : seconds;
+    int ret = 0;
+    oe_syscall_nanosleep_ocall(&ret, req, rem);
+    return ret;
 }
 
 oe_pid_t oe_getpid(void)
@@ -257,6 +256,17 @@ done:
     return ret;
 }
 
+static void _close_epoll_callback(oe_fd_t* desc, void* arg)
+{
+    oe_assert(desc);
+    oe_assert(desc->type == OE_FD_TYPE_EPOLL);
+
+    const int fd = (int)(intptr_t)arg;
+    oe_assert(fd >= 0);
+
+    desc->ops.epoll.on_close(desc, fd);
+}
+
 int oe_close(int fd)
 {
     int ret = -1;
@@ -266,7 +276,27 @@ int oe_close(int fd)
         OE_RAISE_ERRNO(oe_errno);
 
     if ((ret = desc->ops.fd.close(desc)) == 0)
+    {
+        // Notify epoll instances that this fd has been closed.
+        oe_fdtable_foreach(
+            OE_FD_TYPE_EPOLL, (void*)(intptr_t)fd, _close_epoll_callback);
+
         oe_fdtable_release(fd);
+    }
+
+done:
+    return ret;
+}
+
+int oe_flock(int fd, int operation)
+{
+    int ret = -1;
+    oe_fd_t* desc;
+
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = desc->ops.fd.flock(desc, operation);
 
 done:
     return ret;
@@ -496,6 +526,34 @@ oe_off_t oe_lseek(int fd, oe_off_t offset, int whence)
         OE_RAISE_ERRNO(oe_errno);
 
     ret = file->ops.file.lseek(file, offset, whence);
+
+done:
+    return ret;
+}
+
+ssize_t oe_pread(int fd, void* buf, size_t count, oe_off_t offset)
+{
+    ssize_t ret = -1;
+    oe_fd_t* file;
+
+    if (!(file = oe_fdtable_get(fd, OE_FD_TYPE_FILE)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = file->ops.file.pread(file, buf, count, offset);
+
+done:
+    return ret;
+}
+
+ssize_t oe_pwrite(int fd, const void* buf, size_t count, oe_off_t offset)
+{
+    ssize_t ret = -1;
+    oe_fd_t* file;
+
+    if (!(file = oe_fdtable_get(fd, OE_FD_TYPE_FILE)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = file->ops.file.pwrite(file, buf, count, offset);
 
 done:
     return ret;

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 // clang-format off
@@ -181,6 +181,7 @@ int launch_tls_client(
 int setup_tls_server(struct tls_control_args* config, char* server_port)
 {
     int ret = 0;
+    int server_ready_ret = 1;
     int len = 0;
     uint32_t uret = 1;
     oe_result_t result = OE_FAILURE;
@@ -217,7 +218,10 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
 
+#if !defined(NDEBUG)
     mbedtls_debug_set_threshold(DEBUG_LEVEL);
+#endif
+
     g_control_config = *config;
 
     OE_TRACE_INFO(
@@ -271,7 +275,7 @@ waiting_for_connection_request:
     mbedtls_ssl_session_reset(&ssl);
 
     OE_TRACE_INFO("Waiting for a remote connection request...\n");
-    server_is_ready(&ret);
+    server_is_ready(&server_ready_ret);
     if ((ret = mbedtls_net_accept(&listen_fd, &client_fd, NULL, 0, NULL)) != 0)
     {
         char errbuf[512];
@@ -408,6 +412,12 @@ done:
         char error_buf[100];
         mbedtls_strerror(ret, error_buf, 100);
         OE_TRACE_ERROR("Last error was: %d - %s\n\n", ret, error_buf);
+
+        // Mark server as done initializing if server_is_ready was never called
+        // to avoid deadlock
+        int init_failed_ret;
+        if (server_ready_ret != 0)
+            server_initialization_failed(&init_failed_ret);
     }
 
     // free resource
@@ -427,7 +437,7 @@ done:
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    128,  /* StackPageCount */
-    1);   /* TCSCount */
+    true, /* Debug */
+    128,  /* NumHeapPages */
+    128,  /* NumStackPages */
+    1);   /* NumTCS */

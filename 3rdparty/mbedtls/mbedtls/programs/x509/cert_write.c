@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define mbedtls_printf          printf
+#define mbedtls_exit            exit
 #define MBEDTLS_EXIT_SUCCESS    EXIT_SUCCESS
 #define MBEDTLS_EXIT_FAILURE    EXIT_FAILURE
 #endif /* MBEDTLS_PLATFORM_C */
@@ -152,6 +153,7 @@ int main( void )
     "                            email_ca\n"              \
     "                            object_signing_ca\n"     \
     "\n"
+
 
 /*
  * global options
@@ -614,11 +616,7 @@ int main( int argc, char *argv[] )
     //
     if( strlen( opt.issuer_crt ) )
     {
-        if( !mbedtls_pk_can_do( &issuer_crt.pk, MBEDTLS_PK_RSA ) ||
-            mbedtls_mpi_cmp_mpi( &mbedtls_pk_rsa( issuer_crt.pk )->N,
-                         &mbedtls_pk_rsa( *issuer_key )->N ) != 0 ||
-            mbedtls_mpi_cmp_mpi( &mbedtls_pk_rsa( issuer_crt.pk )->E,
-                         &mbedtls_pk_rsa( *issuer_key )->E ) != 0 )
+        if( mbedtls_pk_check_pair( &issuer_crt.pk, issuer_key ) != 0 )
         {
             mbedtls_printf( " failed\n  !  issuer_key does not match "
                             "issuer certificate\n\n" );

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_SYSCALL_HOST_H
@@ -8,7 +8,9 @@
 
 OE_EXTERNC_BEGIN
 
-char* oe_win_path_to_posix(const char* path);
+#if defined(_WIN32)
+char* oe_win_path_to_posix(PCWSTR path);
+#endif
 
 OE_EXTERNC_END
 

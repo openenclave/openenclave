@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/edger8r/enclave.h>
@@ -37,15 +37,21 @@ int enc_test()
 #endif
 
     void* temp_region = malloc(1);
+    void* temp_region_2 = NULL;
     if (temp_region == NULL)
     {
         return -2;
     }
 
-    temp_region = realloc(temp_region, sizeof(asciistring));
-    if (temp_region == NULL)
+    temp_region_2 = realloc(temp_region, sizeof(asciistring));
+    if (temp_region_2 == NULL)
     {
+        free(temp_region);
         return -3;
+    }
+    else
+    {
+        temp_region = temp_region_2;
     }
 
     wcstombs((char*)temp_region, wcstring, wcslen(wcstring));
@@ -64,11 +70,15 @@ int enc_test()
         return -5;
     }
 
-    temp_region = realloc(temp_region, sizeof(wcstring));
-    if (temp_region == NULL)
+    temp_region_2 = realloc(temp_region, sizeof(wcstring));
+    if (temp_region_2 == NULL)
     {
         free(temp_region);
         return -6;
+    }
+    else
+    {
+        temp_region = temp_region_2;
     }
 
     mbstowcs((wchar_t*)temp_region, asciistring, strlen(asciistring));
@@ -84,14 +94,13 @@ int enc_test()
 #endif
 
     free(temp_region);
-
     return 0;
 }
 
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    256,  /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    256,  /* NumStackPages */
+    4);   /* NumTCS */

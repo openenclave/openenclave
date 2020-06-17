@@ -1,8 +1,11 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/trace.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -12,13 +15,29 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
+#include "dupenv.h"
+#include "fopen.h"
 #include "hostthread.h"
 
-#define LOGGING_FORMAT_STRING "%02d:%02d:%02d:%06ld tid(0x%lx) (%s)[%s]%s"
+#define LOGGING_FORMAT_STRING "%s.%06ldZ [(%s)%s] tid(0x%llx) | %s"
+
+#if defined(__linux__)
+#define sprintf_s(buffer, size, format, argument) \
+    sprintf(buffer, format, argument)
+#endif
+
 static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
     {"NONE", "FATAL", "ERROR", "WARN", "INFO", "VERBOSE"};
 static oe_mutex _log_lock = OE_H_MUTEX_INITIALIZER;
-static const char* _log_file_name = NULL;
+static char _log_file_name[OE_PATH_MAX];
+static char _custom_log_format[OE_PATH_MAX];
+static bool _use_log_file = false;
+static bool _use_custom_log_format = false;
+static bool _log_all_streams = false;
+static bool _log_escape = false;
+static const size_t MAX_ESCAPED_CHAR_LEN = 5; // e.g. u2605
+static const size_t MAX_ESCAPED_MSG_MULTIPLIER =
+    7; // MAX_ESCAPED_CHAR_LEN + sizeof("\\\\")
 static bool _log_creation_failed_before = false;
 oe_log_level_t _log_level = OE_LOG_LEVEL_ERROR;
 static bool _initialized = false;
@@ -26,7 +45,7 @@ static bool _initialized = false;
 static oe_log_level_t _env2log_level(void)
 {
     oe_log_level_t level = OE_LOG_LEVEL_ERROR;
-    const char* level_str = getenv("OE_LOG_LEVEL");
+    char* level_str = oe_dupenv("OE_LOG_LEVEL");
 
     if (level_str == NULL)
     {
@@ -57,98 +76,203 @@ static oe_log_level_t _env2log_level(void)
         level = OE_LOG_LEVEL_NONE;
     }
 done:
+    if (level_str)
+        free(level_str);
+
     return level;
 }
 
 void initialize_log_config()
 {
+    oe_result_t ret;
+    char* env_log_file = NULL;
+    char* env_log_format = NULL;
+    char* env_log_all_streams = NULL;
+    char* env_log_escape = NULL;
+
     if (!_initialized)
     {
         // inititalize if not already
         _log_level = _env2log_level();
-        _log_file_name = getenv("OE_LOG_DEVICE");
+        env_log_file = oe_dupenv("OE_LOG_DEVICE");
+        env_log_format = oe_dupenv("OE_LOG_FORMAT");
+        env_log_all_streams = oe_dupenv("OE_LOG_ALL_STREAMS");
+        env_log_escape = oe_dupenv("OE_LOG_JSON_ESCAPE");
+
+        if (env_log_format)
+        {
+            // check that custom log format string terminates with a line return
+            size_t len = strlen(env_log_format);
+            if (env_log_format[len - 1] != '\n')
+            {
+                fprintf(
+                    stderr,
+                    "%s\n",
+                    "[ERROR] Custom log format does not end with a newline");
+                goto done;
+            }
+        }
         _initialized = true;
+    }
+
+done:
+    ret = OE_OK;
+
+    if (env_log_file)
+    {
+        ret = oe_strncpy_s(
+            _log_file_name, OE_PATH_MAX, env_log_file, strlen(env_log_file));
+        _use_log_file = true;
+
+        free(env_log_file);
+    }
+
+    if (env_log_format)
+    {
+        ret = oe_strncpy_s(
+            _custom_log_format,
+            OE_PATH_MAX,
+            env_log_format,
+            strlen(env_log_format));
+        _use_custom_log_format = true;
+        free(env_log_format);
+    }
+
+    if (env_log_all_streams)
+    {
+        _log_all_streams = true;
+        free(env_log_all_streams);
+    }
+
+    if (env_log_escape)
+    {
+        _log_escape = true;
+        free(env_log_escape);
+    }
+
+    if (!_initialized || ret != OE_OK)
+    {
+        fprintf(stderr, "%s\n", "[ERROR] Could not initialize logging.");
+        exit(1);
     }
 }
 
-static void _write_header_info_to_stream(FILE* stream)
+static bool _escape_characters(
+    const char* log_msg,
+    char* log_msg_escaped,
+    size_t msg_size,
+    size_t max_msg_size)
 {
-    time_t t = time(NULL);
-    struct tm* lt = localtime(&t);
-
-    fprintf(
-        stream, "================= New logging session =================\n");
-    fprintf(stream, "%s", asctime(lt));
-    fprintf(
-        stream,
-        "https://github.com/openenclave/openenclave branch:%s\n",
-        OE_REPO_BRANCH_NAME);
-    fprintf(stream, "Last commit:%s\n\n", OE_REPO_LAST_COMMIT);
+    size_t idx = 0;
+    for (size_t i = 0; i < msg_size; i++)
+    {
+        uint8_t c = (uint8_t)log_msg[i];
+        if (log_msg[i] == '\"')
+        {
+            // single quotes are OK for JSON
+            log_msg_escaped[idx] = '\'';
+        }
+        else if (log_msg[i] == '\\')
+        {
+            log_msg_escaped[idx] = '\\';
+            idx++;
+            log_msg_escaped[idx] = '\\';
+        }
+        else if (c <= 31 || c > 126 /* non printable ASCII values */)
+        {
+            log_msg_escaped[idx] = '\\';
+            idx++;
+            log_msg_escaped[idx] = '\\';
+            idx++;
+            switch (log_msg[i])
+            {
+                case '\b':
+                    log_msg_escaped[idx] = 'b';
+                    break;
+                case '\f':
+                    log_msg_escaped[idx] = 'f';
+                    break;
+                case '\n':
+                    log_msg_escaped[idx] = 'n';
+                    break;
+                case '\r':
+                    log_msg_escaped[idx] = 'r';
+                    break;
+                case '\t':
+                    log_msg_escaped[idx] = 't';
+                    break;
+                default:
+                    if (c > 126 /* max ASCII value that we can escape*/)
+                    {
+                        log_msg_escaped[idx] = '\0';
+                        return false;
+                    }
+                    sprintf_s(
+                        (char*)&log_msg_escaped[idx],
+                        msg_size - idx,
+                        "u%04hhx",
+                        log_msg[i]);
+                    // idx is also incremented after switch case
+                    idx += MAX_ESCAPED_CHAR_LEN - 1;
+                    break;
+            }
+        }
+        else
+        {
+            log_msg_escaped[idx] = log_msg[i];
+        }
+        idx++;
+    }
+    if (idx < max_msg_size)
+    {
+        log_msg_escaped[idx] = '\0';
+    }
+    return true;
 }
 
 static void _write_message_to_stream(
     FILE* stream,
     bool is_enclave,
+    const char* time,
+    long int usecs,
     oe_log_level_t level,
     const char* message)
 {
-#if defined(__linux__)
-    struct timeval time_now;
-    gettimeofday(&time_now, NULL);
-    struct tm* t = gmtime(&time_now.tv_sec);
-#else
-    time_t lt = time(NULL);
-    struct tm* t = localtime(&lt);
-#endif
-
-    oe_thread_t thread_id = oe_thread_self();
-
     fprintf(
         stream,
         LOGGING_FORMAT_STRING,
-        t->tm_hour,
-        t->tm_min,
-        t->tm_sec,
-#if defined(__linux__)
-        time_now.tv_usec,
-#else
-        0,
-#endif
-        thread_id,
+        time,
+        usecs,
         (is_enclave ? "E" : "H"),
         _log_level_strings[level],
+        (long long unsigned int)oe_thread_self(),
         message);
 }
 
-static void _log_session_header()
+static void _write_custom_format_message_to_stream(
+    FILE* stream,
+    bool is_enclave,
+    const char* time,
+    long int usecs,
+    oe_log_level_t level,
+    const char* message,
+    const char* file,
+    const char* function,
+    const char* number,
+    const char* log_format)
 {
-    if (!_log_file_name)
-    {
-        return;
-    }
-
-    // Take the log file lock.
-    if (!_log_creation_failed_before)
-    {
-        if (oe_mutex_lock(&_log_lock) == OE_OK)
-        {
-            FILE* log_file = NULL;
-            log_file = fopen(_log_file_name, "a");
-            if (log_file == NULL)
-            {
-                fprintf(
-                    stderr, "Failed to create logfile %s\n", _log_file_name);
-                oe_mutex_unlock(&_log_lock);
-                _log_creation_failed_before = true;
-                return;
-            }
-
-            _write_header_info_to_stream(log_file);
-            fflush(log_file);
-            fclose(log_file);
-            oe_mutex_unlock(&_log_lock);
-        }
-    }
+    fprintf(
+        stream,
+        log_format,
+        time,
+        usecs,
+        (is_enclave ? "E" : "H"),
+        _log_level_strings[level],
+        oe_thread_self(),
+        message,
+        file,
+        function,
+        number);
 }
 
 oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)
@@ -194,10 +318,18 @@ done:
 // and file operation.
 void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
 {
+    // get timestamp for log
+    struct tm t;
+    time_t lt = time(NULL);
+    gmtime_r(&lt, &t);
+
+    char time[20];
+    strftime(time, sizeof(time), "%Y-%m-%dT%H:%M:%S", &t);
+    long int usecs = 0;
+
     if (!_initialized)
     {
         initialize_log_config();
-        _log_session_header();
     }
     if (_initialized)
     {
@@ -208,14 +340,23 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
     // Take the log file lock.
     if (oe_mutex_lock(&_log_lock) == OE_OK)
     {
-        if (!_log_file_name)
+        if (_log_all_streams || !_use_log_file)
         {
-            _write_message_to_stream(stdout, is_enclave, level, message);
+            _write_message_to_stream(
+                stdout, is_enclave, time, usecs, level, message);
         }
-        else if (!_log_creation_failed_before)
+
+        if (!_use_log_file)
+        {
+            // Release the log file lock.
+            oe_mutex_unlock(&_log_lock);
+            return;
+        }
+
+        if (!_log_creation_failed_before)
         {
             FILE* log_file = NULL;
-            log_file = fopen(_log_file_name, "a");
+            oe_fopen(&log_file, _log_file_name, "a");
             if (log_file == NULL)
             {
                 fprintf(
@@ -224,7 +365,79 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                 _log_creation_failed_before = true;
                 return;
             }
-            _write_message_to_stream(log_file, is_enclave, level, message);
+
+            if (!_use_custom_log_format)
+            {
+                _write_message_to_stream(
+                    log_file, is_enclave, time, usecs, level, message);
+            }
+            else
+            {
+                char* message_cursor = NULL;
+#if defined(__linux__)
+                char* log_msg = strtok_r((char*)message, "[", &message_cursor);
+                char* file_name = strtok_r(NULL, ":", &message_cursor);
+                char* function = strtok_r(NULL, ":", &message_cursor);
+                char* line_number = strtok_r(NULL, "]", &message_cursor);
+#else
+                char* log_msg = strtok_s((char*)message, "[", &message_cursor);
+                char* file_name = strtok_s(NULL, ":", &message_cursor);
+                char* function = strtok_s(NULL, ":", &message_cursor);
+                char* line_number = strtok_s(NULL, "]", &message_cursor);
+#endif
+                if (!log_msg || !file_name || !function || !line_number)
+                {
+                    _write_message_to_stream(
+                        log_file,
+                        is_enclave,
+                        time,
+                        usecs,
+                        level,
+                        "Failed to apply custom formatter to message\n");
+                }
+                else
+                {
+                    if (_log_escape)
+                    {
+                        size_t msg_size = strlen(log_msg);
+                        size_t max_msg_size =
+                            MAX_ESCAPED_MSG_MULTIPLIER * msg_size + 1;
+                        char* log_msg_escaped = malloc(max_msg_size);
+                        bool escaped_ok = _escape_characters(
+                            log_msg, log_msg_escaped, msg_size, max_msg_size);
+
+                        _write_custom_format_message_to_stream(
+                            log_file,
+                            is_enclave,
+                            time,
+                            usecs,
+                            level,
+                            (escaped_ok ? log_msg_escaped
+                                        : "failed to escape log message"),
+                            file_name,
+                            function,
+                            line_number,
+                            _custom_log_format);
+
+                        free(log_msg_escaped);
+                    }
+                    else
+                    {
+                        _write_custom_format_message_to_stream(
+                            log_file,
+                            is_enclave,
+                            time,
+                            usecs,
+                            level,
+                            log_msg,
+                            file_name,
+                            function,
+                            line_number,
+                            _custom_log_format);
+                    }
+                }
+            }
+
             fflush(log_file);
             fclose(log_file);
         }

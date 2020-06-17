@@ -1,0 +1,99 @@
+{
+	"name": "msiot-vscode-openenclave",
+	"displayName": "Open Enclave",
+	"description": "Develop, deploy, and debug your enclaves",
+	"version": "2.0.0",
+	"publisher": "ms-iot",
+	"aiKey": "specifyt-here-alap-pins-ightskeyhere",
+	"icon": "openenclave.png",
+	"preview": true,
+	"engines": {
+		"vscode": "^1.32.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/openenclave/openenclave.git"
+	},
+	"homepage": "https://github.com/openenclave/openenclave",
+	"bugs": "https://github.com/openenclave/openenclave/issues",
+	"license": "MIT",
+	"categories": [
+		"Azure",
+		"Debuggers"
+	],
+	"keywords": [
+		"azure",
+		"iot",
+		"debug",
+		"IoT Edge",
+		"cloud",
+		"Trusted Agent",
+		"Open Enclave"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/src/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "msiot-vscode-openenclave.newSolution",
+				"title": "New Open Enclave Solution",
+				"category": "Open Enclave"
+			},
+			{
+				"command": "msiot-vscode-openenclave.checkSystemRequirements",
+				"title": "Check System Requirements",
+				"category": "Open Enclave"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "Open Enclave configuration",
+			"properties": {
+				"msiot-vscode-openenclave.systemRequirementsPassed": {
+					"type": "string",
+					"default": "0.0.0",
+					"description": "System requirement checks have all passed for this machine based on specified version."
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "npm run compile && node ./node_modules/vscode/bin/test",
+		"tslint": "tslint -t verbose src/**/*.ts"
+	},
+	"devDependencies": {
+		"@types/fs-extra": "^4.0.3",
+		"@types/mocha": "^2.2.42",
+		"@types/node": "^10.12.21",
+		"azure-arm-resource": "^3.1.1-preview",
+		"ts-loader": "^5.3.3",
+		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
+		"vscode": "^1.1.28"
+	},
+	"dependencies": {
+		"azure-arm-containerregistry": "^2.2.0",
+		"azure-storage": "^2.10.2",
+		"fs-extra": "^4.0.3",
+		"path": "^0.12.7",
+		"tar": "^4.4.8",
+		"tmp": "^0.1.0",
+		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
+		"uuid": "^3.3.2",
+		"vscode-extension-telemetry": "0.0.18"
+	},
+	"extensionDependencies": [
+		"ms-vscode.cpptools",
+		"ms-vscode.azure-account",
+		"vsciot-vscode.azure-iot-edge",
+		"webfreak.debug",
+		"microsoftdebuggingplatform.vscode-cdb"
+	]
+}

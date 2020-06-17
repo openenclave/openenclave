@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <errno.h>
@@ -53,6 +53,8 @@ int t_printf(const char* s, ...)
 
 int t_setrlim(int r, int64_t lim)
 {
+    OE_UNUSED(r);
+    OE_UNUSED(lim);
     return 0;
 }
 
@@ -65,9 +67,9 @@ int test(char test_name[201], uint32_t pid)
     int rval = 1;
     g_pid = pid;
     printf("RUNNING: %s\n", __TEST__);
-    if (!(__environ = (char**)calloc(1, sizeof(char**))))
+    if (!(__environ = (char**)calloc(1, sizeof(char*))))
     {
-        rval = 1;
+        return rval;
     }
 
     static const char* argv[] = {
@@ -78,13 +80,18 @@ int test(char test_name[201], uint32_t pid)
     strncpy(test_name, __TEST__, STRLEN_MAX);
 
     free(__environ);
+
+#ifdef CODE_COVERAGE
+    // Set __environ to NULL to avoid failing with code coverage test.
+    __environ = NULL;
+#endif
     return rval;
 }
 
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

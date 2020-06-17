@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/bits/result.h>
@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "tee_u.h"
+#include "core_u.h"
 
 /* This is the maximum default key buffer size. If the enclave produces
  * a key bigger than this, consider expanding this size so that the host
@@ -27,7 +27,7 @@ oe_result_t oe_get_public_key_by_policy(
     size_t* key_info_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint32_t retval;
+    oe_result_t retval;
     const size_t KEY_BUFFER_SIZE = DEFAULT_KEY_BUFFER_SIZE;
     const size_t KEY_INFO_SIZE = 1024;
     struct
@@ -85,7 +85,7 @@ oe_result_t oe_get_public_key_by_policy(
     }
 
     /* If the buffers were too small, try again with corrected sizes. */
-    if ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
+    if (retval == OE_BUFFER_TOO_SMALL)
     {
         if (!(arg.key_buffer = realloc(arg.key_buffer, arg.key_buffer_size)))
             OE_RAISE(OE_OUT_OF_MEMORY);
@@ -109,7 +109,7 @@ oe_result_t oe_get_public_key_by_policy(
         }
     }
 
-    OE_CHECK((oe_result_t)retval);
+    OE_CHECK(retval);
 
     *key_buffer = arg.key_buffer;
     *key_buffer_size = arg.key_buffer_size;
@@ -132,7 +132,7 @@ done:
     if (arg.key_info)
     {
         oe_secure_zero_fill(arg.key_info, arg.key_info_size);
-        free(arg.key_buffer);
+        free(arg.key_info);
     }
 
     return result;
@@ -147,7 +147,7 @@ oe_result_t oe_get_public_key(
     size_t* key_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint32_t retval;
+    oe_result_t retval;
     const size_t KEY_BUFFER_SIZE = DEFAULT_KEY_BUFFER_SIZE;
     struct
     {
@@ -190,7 +190,7 @@ oe_result_t oe_get_public_key(
     }
 
     /* If the buffers were too small, try again with corrected sizes. */
-    if ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
+    if (retval == OE_BUFFER_TOO_SMALL)
     {
         if (!(arg.key_buffer = realloc(arg.key_buffer, arg.key_buffer_size)))
             OE_RAISE(OE_OUT_OF_MEMORY);
@@ -209,7 +209,7 @@ oe_result_t oe_get_public_key(
         }
     }
 
-    OE_CHECK((oe_result_t)retval);
+    OE_CHECK(retval);
 
     *key_buffer = arg.key_buffer;
     *key_buffer_size = arg.key_buffer_size;

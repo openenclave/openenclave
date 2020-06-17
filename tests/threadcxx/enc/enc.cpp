@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/edger8r/enclave.h>
@@ -297,7 +297,7 @@ void enc_lock_and_unlock_mutexes_cxx(const char* mutexes)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    16,   /* StackPageCount */
-    16);  /* TCSCount */
+    true, /* Debug */
+    128,  /* NumHeapPages */
+    16,   /* NumStackPages */
+    16);  /* NumTCS */

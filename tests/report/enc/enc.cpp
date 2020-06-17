@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
 #include <stdio.h>
@@ -14,10 +14,10 @@
 
 oe_result_t test_verify_tcb_info(
     const char* tcb_info,
-    oe_tcb_level_t* platform_tcb_level,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_tcb_info)
 {
-#ifdef OE_USE_LIBSGX
+#ifdef OE_LINK_SGX_DCAP_QL
     return oe_parse_tcb_info_json(
         (const uint8_t*)tcb_info,
         strlen(tcb_info) + 1,
@@ -33,7 +33,7 @@ oe_result_t test_verify_tcb_info(
 
 void test_minimum_issue_date(oe_datetime_t now)
 {
-#ifdef OE_USE_LIBSGX
+#ifdef OE_LINK_SGX_DCAP_QL
     static uint8_t* report;
     size_t report_size = 0;
     static uint8_t* report_v2;
@@ -94,6 +94,10 @@ void test_minimum_issue_date(oe_datetime_t now)
         oe_verify_report(report_v2, report_v2_size, NULL) ==
         OE_INVALID_REVOCATION_INFO);
 
+    // Restore default minimum CRL/TCB issue date
+    OE_TEST(
+        __oe_sgx_set_minimum_crl_tcb_issue_date(2017, 3, 17, 0, 0, 0) == OE_OK);
+
     oe_free_report(report);
     oe_free_report(report_v2);
 
@@ -128,10 +132,20 @@ void enclave_test_remote_verify_report()
     test_remote_verify_report();
 }
 
+void enclave_test_verify_report_with_collaterals()
+{
+    test_verify_report_with_collaterals();
+}
+
+void enclave_test_get_signer_id_from_public_key()
+{
+    test_get_signer_id_from_public_key();
+}
+
 OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

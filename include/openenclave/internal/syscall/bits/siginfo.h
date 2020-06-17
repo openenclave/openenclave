@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 #define __OE_SI_PAD_SIZE ((128 / sizeof(int)) - 4)
 

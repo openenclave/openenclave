@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
@@ -12,8 +12,8 @@
 #include "create_rapid_u.h"
 
 #define MAX_ENCLAVES 200
-#define MAX_SIMULTANEOUS_ENCLAVES 32
-#define MAX_THREADS 32
+#define MAX_SIMULTANEOUS_ENCLAVES 16
+#define MAX_THREADS 8
 
 static void _launch_enclave(const char* path, uint32_t flags, bool call_enclave)
 {

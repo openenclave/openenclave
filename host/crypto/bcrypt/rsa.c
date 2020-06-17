@@ -1,10 +1,10 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <assert.h>
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 
 #include "../magic.h"
@@ -173,6 +173,18 @@ void oe_rsa_public_key_init(
 {
     oe_bcrypt_key_init(
         (oe_bcrypt_key_t*)public_key, key_handle, OE_RSA_PUBLIC_KEY_MAGIC);
+}
+
+oe_result_t oe_rsa_private_key_from_engine(
+    oe_rsa_private_key_t* private_key,
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id)
+{
+    /*
+     * bcrypt does not support engines, so nothing to do.
+     */
+    return OE_UNSUPPORTED;
 }
 
 oe_result_t oe_rsa_private_key_read_pem(
@@ -429,7 +441,6 @@ oe_result_t oe_rsa_public_key_equal(
     bool* equal)
 {
     oe_result_t result = OE_UNEXPECTED;
-    NTSTATUS status = STATUS_UNSUCCESSFUL;
 
     /* key1 and key2 are both BCRYPT_RSAKEY_BLOB structures
      * which should be comparable as raw byte buffers.

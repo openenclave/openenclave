@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_SYSCALL_NETDB_H_
 #define _OE_SYSCALL_NETDB_H_
 
+#include <openenclave/internal/bits/socket.h>
 #include <openenclave/internal/syscall/sys/socket.h>
 
 OE_EXTERNC_BEGIN
@@ -43,12 +44,6 @@ OE_EXTERNC_BEGIN
 #define OE_EAI_IDN_ENCODE -105
 #define OE_NI_MAXHOST 255
 #define OE_NI_MAXSERV 32
-
-#define __OE_ADDRINFO oe_addrinfo
-#define __OE_SOCKADDR oe_sockaddr
-#include <openenclave/internal/syscall/bits/addrinfo.h>
-#undef __OE_ADDRINFO
-#undef __OE_SOCKADDR
 
 int oe_getaddrinfo(
     const char* node,

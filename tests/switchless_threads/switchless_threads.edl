@@ -1,0 +1,33 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
+    trusted {
+        public int enc_echo_single(
+            [string, in] char* in,
+            [out] char out[100]);
+        public int enc_echo_multiple(
+            [string, in] char* in,
+            [out] char out[100],
+            int repeats);
+    };
+
+    untrusted {
+        int host_echo_switchless(
+            [string, in] char* in,
+            [out] char out[100],
+            [string, in] char* str1,
+            [in] char str2[100])
+            transition_using_threads;
+
+        int host_echo_regular(
+            [string, in] char* in,
+            [out] char out[100],
+            [string, in] char* str1,
+            [in] char str2[100]);
+    };
+};

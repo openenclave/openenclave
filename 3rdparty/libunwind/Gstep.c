@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #if defined(__clang__)
@@ -10,16 +10,15 @@
 #endif
 
 #include <libunwind.h>
-#include "unwind_i.h"
 #include <openenclave/enclave.h>
+#include "unwind_i.h"
 
 #undef unw_step
 #define unw_step _ULx86_64_step
 
-
 extern int _ULx86_64_step(unw_cursor_t* cursor);
 
-// Wrapper for calling unw_step() throughout libunwind source. This 
+// Wrapper for calling unw_step() throughout libunwind source. This
 // function checks whether the cursor is within the enclave image.
 int __libunwind_unw_step(unw_cursor_t* cursor)
 {

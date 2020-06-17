@@ -1,13 +1,13 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/syscall/iov.h>
 #include <openenclave/internal/syscall/sys/uio.h>
 #include <openenclave/internal/syscall/types.h>
@@ -56,7 +56,7 @@ int oe_iov_pack(
     for (int i = 0; i < iovcnt; i++)
         data_size += iov[i].iov_len;
 
-    /* Caculate the total size of the resulting buffer. */
+    /* Calculate the total size of the resulting buffer. */
     buf_size = (sizeof(struct oe_iovec) * (size_t)iovcnt) + data_size;
 
     /* Allocate the output buffer. */

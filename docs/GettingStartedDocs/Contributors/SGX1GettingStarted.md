@@ -2,53 +2,41 @@
 
 ## Platform requirements
 
-- Ubuntu 16.04-LTS 64-bits
+- Ubuntu 16.04-LTS 64-bits or Ubuntu 18.04-LTS 64-bits
+- For RHEL8 support, please see [ExperimentalSupportRHEL8.md](ExperimentalSupportRHEL8.md).
 - SGX1 capable system. Most likely this will be an Intel SkyLake or Intel KabyLake system
 
 ## Clone Open Enclave SDK repo from GitHub
 
-Use the following command to download the source code.
+Use the following command to download the source code (make sure `git` is installed before doing this):
 
 ```bash
-git clone https://github.com/openenclave/openenclave.git
+git clone --recursive https://github.com/openenclave/openenclave.git
 ```
 
 This creates a source tree under the directory called openenclave.
 
-## Install project prerequisites
-
-Ansible is required to install the project prerequisites. If not already installed, you can install it by running: `scripts/ansible/install-ansible.sh`. To install all the OpenEnclave prerequisites you can execute the `environment-setup.yml` tasks from `linux/openenclave` Ansible role:
-
+## Install project requirements
+First, change directory into the openenclave repository:
 ```bash
-cd openenclave/scripts/ansible
-ansible localhost -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" --become --ask-become-pass
+cd openenclave
 ```
 
-## Install Intel SGX1 support software packages
-
-There are two Intel packages needed for SGX1:
-
-- Intel® SGX Driver (/dev/isgx)
-- Intel® SGX AESM Service (from the Intel® SGX SDK)
-
-Refer to the [Intel® SGX Driver](https://github.com/01org/linux-sgx-driver) and [Intel® SGX AESM Service](https://github.com/01org/linux-sgx) github repositories for detailed instructions on how to build and install these packages.
-
-As a convenience, Open Enclave provides a script for downloading, building and
-installing both the driver and the AESM service. To install these dependencies
-type the following commands from the root of the source distribution:
-
+Ansible is required to install the project requirements. If not already installed, you can install it by running:
 ```bash
-sudo make -C prereqs
-sudo make -C prereqs install
+sudo scripts/ansible/install-ansible.sh
 ```
 
-After this completes verify that the AESM service is running as follows:
+Run the following command from the root of the source tree:
 
 ```bash
-service aesmd status
+ansible-playbook scripts/ansible/oe-contributors-setup-sgx1.yml
 ```
 
-Look for the string “active (running)”, usually highlighted in green.
+To support LVI mitigation, the command creates
+`/usr/local/lvi-mitigation/bin` that includes the dependencies.
+
+NOTE: The Ansible playbook command from above will try and execute tasks with `sudo` rights. Make sure that the user running the playbook has `sudo` rights, and if it uses a `sudo` password add the following extra parameter `--ask-become-pass`.
 
 ## Build
 
@@ -62,11 +50,21 @@ cd build/
 Then run `cmake` to configure the build and generate the make files and build:
 
 ```bash
-cmake -DUSE_LIBSGX=OFF ..
+cmake -DHAS_QUOTE_PROVIDER=OFF ..
 make
 ```
 
-Refer to the [Advanced Build Information](AdvancedBuildInfo.md) documentation for further information.
+To build with LVI mitigation, run
+
+```bash
+cmake -DHAS_QUOTE_PROVIDER=OFF .. \
+-DLVI_MITIGATION=ControlFlow \
+-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin
+make
+```
+
+Refer to [Advanced Build Information](AdvancedBuildInfo.md) and
+[LVI Mitigation](AdvancedBuildInfo.md#lvi-mitigation) documentation for further information.
 
 ## Run unit tests
 
@@ -110,4 +108,8 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 ## Install
 
- Follow the instructions in the [Install Info](InstallInfo.md) document to install the Open Enclave SDK built above.
+ Follow the instructions in the [Install Info](LinuxInstallInfo.md) document to install the Open Enclave SDK built above.
+
+## Build and run samples
+
+To build and run the samples, please look [here](/samples/README_Linux.md).

@@ -1,11 +1,18 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-oeedl_file(../ocall_create.edl host gen)
+set(EDL_FILE ../ocall_create.edl)
 
-add_executable(ocall_create_host host.c ${gen})
+add_custom_command(
+  OUTPUT ocall_create_u.h ocall_create_u.c
+  DEPENDS ${EDL_FILE} edger8r
+  COMMAND
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_include_directories(ocall_create_host PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR})
+add_executable(ocall_create_host host.c ocall_create_u.c)
 
-target_link_libraries(ocall_create_host oehostapp)
+target_include_directories(ocall_create_host
+                           PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries(ocall_create_host oehost)

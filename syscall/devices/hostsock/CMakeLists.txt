@@ -1,17 +1,22 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-add_library(oehostsock STATIC hostsock.c)
+add_enclave_library(oehostsock STATIC hostsock.c)
 
 maybe_build_using_clangw(oehostsock)
 
-add_dependencies(oehostsock syscall_trusted_edl)
+enclave_include_directories(oehostsock PRIVATE ${CMAKE_BINARY_DIR}/syscall
+                            ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
-target_include_directories(oehostsock PRIVATE
-    ${CMAKE_BINARY_DIR}/syscall
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+enclave_enable_code_coverage(oehostsock)
 
-target_link_libraries(oehostsock oesyscall)
+enclave_link_libraries(oehostsock PRIVATE oesyscall)
 
-install(TARGETS oehostsock EXPORT openenclave-targets ARCHIVE
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install_enclaves(
+  TARGETS
+  oehostsock
+  EXPORT
+  openenclave-targets
+  ARCHIVE
+  DESTINATION
+  ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

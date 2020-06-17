@@ -1,7 +1,8 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/print.h>
 
 void __oe_assert_fail(
@@ -12,5 +13,6 @@ void __oe_assert_fail(
 {
     oe_host_printf(
         "Assertion failed: %s (%s: %s: %d)\n", expr, file, function, line);
+    oe_print_backtrace();
     oe_abort();
 }

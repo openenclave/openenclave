@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+script=$(readlink -f "$0")
+script_path=$(dirname "$script")
+curr_path=$(pwd)
+bin_name="lvi_mitigation_bin"
+read -rp "Do you want to install in current directory? [yes/no]: " ans
+if [[ "$ans" == "yes" ]]; then
+  install_path="$curr_path"
+else
+  read -rp "Please input the directory which you want to install in: " install_path
+fi
+
+if [[ "$install_path" == "" ]]; then
+  install_path="$curr_path"
+fi
+
+bin_path="$install_path"/"$bin_name"
+bin_path="${bin_path/#\~/$HOME}"
+
+mkdir -p "$bin_path"
+
+cp "$script_path"/invoke_compiler "$bin_path"/invoke_compiler
+
+clang_versions=("" "-7" "-8" "-9")
+for version in "${clang_versions[@]}"; do
+  clang="clang$version"
+  clangcpp="clang++$version"
+  clang_path=$(which "$clang")
+  clangcpp_path=$(which "$clangcpp")
+  if [ "$clang_path" ] && [ "$clangcpp_path" ]; then
+    ln -sf "$clang_path" "$bin_path"/"$clang"_symlink
+    ln -sf "$clangcpp_path" "$bin_path"/"$clangcpp"_symlink
+    rm -f "$bin_path"/"$clang"
+    "$script_path"/generate_wrapper --name="$clang" --path="$bin_path"
+    rm -f "$bin_path"/"$clangcpp"
+    "$script_path"/generate_wrapper --name="$clangcpp" --path="$bin_path"
+  fi
+done
+
+gcc_path=$(which gcc)
+gcpp_path=$(which g++)
+if [ "$gcc_path" ] && [ "$gcpp_path" ]; then
+  ln -sf "$gcc_path" "$bin_path"/gcc_symlink
+  ln -sf "$gcpp_path" "$bin_path"/g++_symlink
+  rm -f "$bin_path"/gcc
+  "$script_path"/generate_wrapper --name=gcc --path="$bin_path"
+  rm -f "$bin_path"/g++
+  "$script_path"/generate_wrapper --name=g++ --path="$bin_path"
+fi
+
+# Obtain `as` and `ld` from Intel site.
+intel_site="https://download.01.org/intel-sgx/sgx-linux/"
+intel_tool_version="2.9"
+intel_tarball="as.ld.objdump.gold.r1.tar.gz"
+wget "$intel_site"/"$intel_tool_version"/"$intel_tarball" -O /tmp/"$intel_tarball"
+tar -xf /tmp/"$intel_tarball" -C /tmp
+
+intel_extract_path=external/toolset
+rm -f "$bin_path"/as
+cp /tmp/"$intel_extract_path"/as "$bin_path"/as
+# The `ld` depends on glibc version 2.27.
+glibc_version=$(ldd --version | awk '/ldd/{print $NF}')
+# shellcheck disable=SC2072
+if [[ "$glibc_version" > "2.26" ]]; then
+  rm -f "$bin_path"/ld
+  cp /tmp/"$intel_extract_path"/ld "$bin_path"/ld
+fi
+
+echo "Installed: $bin_path"

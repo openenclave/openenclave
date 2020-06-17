@@ -1,0 +1,9 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+docker_packages:
+  - "docker-ce"
+
+docker_target_version: "18.09"
+dockerd_target_version: "18.09"

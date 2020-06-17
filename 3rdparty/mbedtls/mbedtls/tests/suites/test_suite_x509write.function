@@ -1,4 +1,5 @@
 /* BEGIN_HEADER */
+#include "mbedtls/bignum.h"
 #include "mbedtls/x509_crt.h"
 #include "mbedtls/x509_csr.h"
 #include "mbedtls/pem.h"
@@ -211,7 +212,8 @@ exit:
 /* END_CASE */
 
 /* BEGIN_CASE depends_on:MBEDTLS_X509_CREATE_C:MBEDTLS_X509_USE_C */
-void mbedtls_x509_string_to_names( char *name, char *parsed_name, int result )
+void mbedtls_x509_string_to_names( char * name, char * parsed_name, int result
+                                   )
 {
     int ret;
     size_t len = 0;

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_ERRNO_H
@@ -153,6 +153,7 @@ OE_EXTERNC_BEGIN
 #define OE_ENOTRECOVERABLE 131
 #define OE_ERFKILL         132
 #define OE_EHWPOISON       133
+#define OE_EPROCLIM        134
 // clang-format on
 
 extern int* __oe_errno_location(void);

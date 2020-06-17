@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_INCLUDE_TIME_H
@@ -7,19 +7,6 @@
 #include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
-
-/*
-**==============================================================================
-**
-** oe_sleep_msec()
-**
-**     Sleep for milliseconds. Return 0 on success and -1 if thread
-**     interrupted.
-**
-**==============================================================================
-*/
-
-int oe_sleep_msec(uint64_t milliseconds);
 
 /*
 **==============================================================================

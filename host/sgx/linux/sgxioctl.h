@@ -1,10 +1,10 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_SGXIOCTL_H
 #define _OE_SGXIOCTL_H
 
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 
 int sgx_ioctl_enclave_create(int dev, sgx_secs_t* secs);
 

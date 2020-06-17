@@ -1,36 +1,45 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "../calls.h"
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
+#include <openenclave/bits/eeid.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/eeid.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
+#include <openenclave/internal/sgx/ecall_context.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
+#include "../../../common/sgx/sgxmeasure.h"
 #include "../../sgx/report.h"
-#include "../arena.h"
 #include "../atexit.h"
-#include "../switchlesscalls.h"
+#include "../tracee.h"
+#include "arena.h"
 #include "asmdefs.h"
+#include "core_t.h"
 #include "cpuid.h"
+#include "handle_ecall.h"
 #include "init.h"
+#include "platform_t.h"
 #include "report.h"
-#include "sgx_t.h"
+#include "switchlesscalls.h"
 #include "td.h"
-#include "tee_t.h"
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -51,8 +60,9 @@ extern bool oe_disable_debug_malloc_check;
 **                _start function. It also maintains the index of the
 **                current SSA (TCS.cssa) and the number of SSA's (TCS.nssa).
 **
-**     td_t       - Thread data. Per thread data as defined by the
-**                oe_thread_data_t structure and extended by the td_t structure.
+**     oe_sgx_td_t       - Thread data. Per thread data as defined by the
+**                oe_thread_data_t structure and extended by the oe_sgx_td_t
+*structure.
 **                This structure records the stack pointer of the last EENTER.
 **
 **     SP       - Stack pointer. Refers to the enclave's stack pointer.
@@ -125,6 +135,36 @@ extern bool oe_disable_debug_malloc_check;
 **==============================================================================
 */
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
+extern oe_eeid_t* oe_eeid;
+
+int _is_eeid_base_image(const volatile oe_sgx_enclave_properties_t* properties)
+{
+    return properties->header.size_settings.num_heap_pages == 0 &&
+           properties->header.size_settings.num_stack_pages == 0 &&
+           properties->header.size_settings.num_tcs == 1;
+}
+
+static oe_result_t _eeid_patch_memory()
+{
+    oe_result_t r = OE_OK;
+
+    if (_is_eeid_base_image(&oe_enclave_properties_sgx))
+    {
+        uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_base();
+        uint8_t* heap_base = (uint8_t*)__oe_get_heap_base();
+        oe_eeid_marker_t* marker = (oe_eeid_marker_t*)heap_base;
+        oe_eeid = (oe_eeid_t*)(enclave_base + marker->offset);
+
+        // Wipe the marker page
+        memset(heap_base, 0, OE_PAGE_SIZE);
+    }
+
+    return r;
+}
+#endif
+
 /*
 **==============================================================================
 **
@@ -153,11 +193,17 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         {
             oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+            OE_CHECK(_eeid_patch_memory());
+#endif
+
+#ifdef OE_USE_BUILTIN_EDL
             /* Install the common TEE ECALL function table. */
-            OE_CHECK(oe_register_tee_ecall_function_table());
+            OE_CHECK(oe_register_core_ecall_function_table());
 
             /* Install the SGX ECALL function table. */
-            OE_CHECK(oe_register_sgx_ecall_function_table());
+            OE_CHECK(oe_register_platform_ecall_function_table());
+#endif // OE_USE_BUILTIN_EDL
 
             if (!oe_is_outside_enclave(enclave, 1))
                 OE_RAISE(OE_INVALID_PARAMETER);
@@ -186,7 +232,7 @@ done:
 /**
  * This is the preferred way to call enclave functions.
  */
-static oe_result_t _handle_call_enclave_function(uint64_t arg_in)
+oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
 {
     oe_call_enclave_function_args_t args, *args_ptr;
     oe_result_t result = OE_OK;
@@ -312,6 +358,8 @@ done:
 **
 **==============================================================================
 */
+static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
+    OE_NO_RETURN;
 
 static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
 {
@@ -319,7 +367,7 @@ static void _handle_exit(oe_code_t code, uint16_t func, uint64_t arg)
 }
 
 void oe_virtual_exception_dispatcher(
-    td_t* td,
+    oe_sgx_td_t* td,
     uint64_t arg_in,
     uint64_t* arg_out);
 
@@ -334,15 +382,28 @@ void oe_virtual_exception_dispatcher(
 */
 
 static void _handle_ecall(
-    td_t* td,
+    oe_sgx_td_t* td,
     uint16_t func,
     uint64_t arg_in,
     uint64_t* output_arg1,
     uint64_t* output_arg2)
 {
+    /* To keep status of td consistent before and after _handle_ecall, td_init
+     is moved into _handle_ecall. In this way _handle_ecall will not trigger
+     stack check fail by accident. Of couse not all function have the
+     opportunity to keep such consistency. Such basic functions are moved to a
+     separate source file and the stack protector is disabled by force
+     through fno-stack-protector option. */
+
+    /* Initialize thread data structure (if not already initialized) */
+    if (!td_initialized(td))
+    {
+        td_init(td);
+    }
+
     oe_result_t result = OE_OK;
 
-    /* Insert ECALL context onto front of td_t.ecalls list */
+    /* Insert ECALL context onto front of oe_sgx_td_t.ecalls list */
     Callsite callsite = {{0}};
     uint64_t arg_out = 0;
 
@@ -387,12 +448,12 @@ static void _handle_ecall(
     {
         case OE_ECALL_CALL_ENCLAVE_FUNCTION:
         {
-            arg_out = _handle_call_enclave_function(arg_in);
+            arg_out = oe_handle_call_enclave_function(arg_in);
             break;
         }
         case OE_ECALL_DESTRUCTOR:
         {
-            /* Call functions installed by __cxa_atexit() and oe_atexit() */
+            /* Call functions installed by oe_cxa_atexit() and oe_atexit() */
             oe_call_atexit_functions();
 
             /* Call all finalization functions */
@@ -406,6 +467,9 @@ static void _handle_ecall(
 
 #endif /* defined(OE_USE_DEBUG_MALLOC) */
 
+            /* Cleanup the allocator */
+            oe_allocator_cleanup();
+
             break;
         }
         case OE_ECALL_VIRTUAL_EXCEPTION_HANDLER:
@@ -416,11 +480,6 @@ static void _handle_ecall(
         case OE_ECALL_INIT_ENCLAVE:
         {
             arg_out = _handle_init_enclave(arg_in);
-            break;
-        }
-        case OE_ECALL_INIT_CONTEXT_SWITCHLESS:
-        {
-            arg_out = oe_handle_init_switchless(arg_in);
             break;
         }
         default:
@@ -439,7 +498,7 @@ done:
         oe_teardown_arena();
     }
 
-    /* Remove ECALL context from front of td_t.ecalls list */
+    /* Remove ECALL context from front of oe_sgx_td_t.ecalls list */
     td_pop_callsite(td);
 
     /* Perform ERET, giving control back to host */
@@ -458,7 +517,7 @@ done:
 */
 
 OE_INLINE void _handle_oret(
-    td_t* td,
+    oe_sgx_td_t* td,
     uint16_t func,
     uint16_t result,
     uint64_t arg)
@@ -492,6 +551,119 @@ oe_result_t oe_get_enclave_status()
 /*
 **==============================================================================
 **
+** _exit_enclave()
+**
+** Exit the enclave.
+** Additionally, if a debug enclave, write the exit frame information to host's
+** ecall_context so that the host can stitch the ocall stack.
+**
+** This function is intended to be called by oe_asm_exit (see below).
+** When called, the call stack would look like this:
+**
+**     enclave-function
+**       -> oe_ocall
+**         -> oe_exit_enclave (aliased as __morestack)
+**           -> _exit_enclave
+**
+** For debug enclaves, _exit_enclave reads its caller (oe_exit_enclave/
+** __morestack) information (return address, rbp) and passes it along to the
+** host in the ecall_context.
+**
+** Then it proceeds to exit the enclave by invoking oe_asm_exit.
+** oe_asm_exit invokes eexit instruction which resumes execution in host at the
+** oe_enter function. The host dispatches the ocall via the following sequence:
+**
+**     oe_enter
+**       -> __oe_host_stack_bridge   (Stitches the ocall stack)
+**         -> __oe_dispatch_ocall
+**           -> invoke ocall function
+**
+** Now that the enclave exit frame is available to the host,
+** __oe_host_stack_bridge temporarily modifies its caller info with the
+** enclave's exit information so that the stitched stack looks like this:
+**
+**     enclave-function                                    |
+**       -> oe_ocall                                       |
+**         -> oe_exit_enclave (aliased as __morestack)     | in enclave
+**   --------------------------------------------------------------------------
+**           -> __oe_host_stack_bridge                     | in host
+**             -> __oe_dispatch_ocall                      |
+**               -> invoke ocall function                  |
+**
+** This stitching of the stack is temporary, and __oe_host_stack_bridge reverts
+** it prior to returning to its caller.
+**
+** Since the stitched (split) stack is preceded by the __morestack function, gdb
+** natively walks the stack correctly.
+**
+**==============================================================================
+*/
+OE_NEVER_INLINE
+OE_NO_RETURN
+static void _exit_enclave(uint64_t arg1, uint64_t arg2)
+{
+    static bool _initialized = false;
+    static bool _stitch_ocall_stack = false;
+    oe_sgx_td_t* td = oe_sgx_get_td();
+
+    // Since determining whether an enclave supports debugging is a stateless
+    // idempotent operation, there is no need to lock. The result is cached
+    // for performance since is_enclave_debug_allowed uses local report to
+    // securely determine if an enclave supports debugging or not.
+    if (!_initialized)
+    {
+        _stitch_ocall_stack = is_enclave_debug_allowed();
+        _initialized = true;
+    }
+
+    if (_stitch_ocall_stack)
+    {
+        oe_ecall_context_t* host_ecall_context = td->host_ecall_context;
+
+        // Make sure the context is valid.
+        if (host_ecall_context &&
+            oe_is_outside_enclave(
+                host_ecall_context, sizeof(*host_ecall_context)))
+        {
+            uint64_t* frame = (uint64_t*)__builtin_frame_address(0);
+            host_ecall_context->debug_eexit_rbp = frame[0];
+            // The caller's RSP is always given by this equation
+            //   RBP + 8 (caller frame pointer) + 8 (caller return address)
+            host_ecall_context->debug_eexit_rsp = frame[0] + 8;
+            host_ecall_context->debug_eexit_rip = frame[1];
+        }
+    }
+    oe_asm_exit(arg1, arg2, td);
+}
+
+/*
+**==============================================================================
+**
+** This function is wrapper of oe_asm_exit. It is needed to stitch the host
+** stack and enclave stack together. It calls oe_asm_exit via an intermediary
+** (_exit_enclave) that records the exit frame for ocall stack stitching.
+**
+** N.B: Don't change the function name, otherwise debugger can't work. GDB
+** depends on this hardcoded function name when does stack walking for split
+** stack. oe_exit_enclave has been #defined as __morestack.
+**==============================================================================
+*/
+
+OE_NEVER_INLINE
+void oe_exit_enclave(uint64_t arg1, uint64_t arg2)
+{
+    _exit_enclave(arg1, arg2);
+
+    // This code is never reached. It exists to prevent tail call optimization
+    // of the call to _exit_enclave. Tail-call optimization would effectively
+    // inline _exit_enclave, and its caller would be come the caller of
+    // oe_exit_enclave instead of oe_exit_enclave.
+    oe_abort();
+}
+
+/*
+**==============================================================================
+**
 ** oe_ocall()
 **
 **     Initiate a call into the host (exiting the enclave).
@@ -507,7 +679,7 @@ oe_result_t oe_get_enclave_status()
 oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 {
     oe_result_t result = OE_UNEXPECTED;
-    td_t* td = oe_get_td();
+    oe_sgx_td_t* td = oe_sgx_get_td();
     Callsite* callsite = td->callsites;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
@@ -573,15 +745,20 @@ oe_result_t oe_call_host_function_by_table_id(
     if (!input_buffer || input_buffer_size == 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Initialize the arguments */
-    args = switchless ? oe_arena_calloc(1, sizeof(*args))
-                      : oe_host_calloc(1, sizeof(*args));
+    /*
+     * oe_post_switchless_ocall (below) can make a regular ocall to wake up the
+     * host worker thread, and will end up using the ecall context's args.
+     * Therefore, for switchless calls, allocate args in the arena so that it is
+     * is not overwritten by oe_post_switchless_ocall.
+     */
+    args =
+        (oe_call_host_function_args_t*)(switchless ? oe_arena_malloc(sizeof(*args)) : oe_ecall_context_get_ocall_args());
 
     if (args == NULL)
     {
         /* Fail if the enclave is crashing. */
         OE_CHECK(__oe_enclave_status);
-        OE_RAISE(OE_OUT_OF_MEMORY);
+        OE_RAISE(OE_UNEXPECTED);
     }
 
     args->table_id = table_id;
@@ -629,10 +806,6 @@ oe_result_t oe_call_host_function_by_table_id(
     result = OE_OK;
 
 done:
-    if (!switchless)
-    {
-        oe_host_free(args);
-    }
 
     return result;
 }
@@ -698,25 +871,27 @@ oe_result_t oe_call_host_function(
 **     used by a thread entering the enclave). Each thread section has the
 **     following layout:
 **
-**         +--------------------------------+
-**         | Guard Page                     |
-**         +--------------------------------+
-**         | Stack pages                    |
-**         +--------------------------------+
-**         | Guard Page                     |
-**         +--------------------------------+
-**         | TCS Page                       |
-**         +--------------------------------+
-**         | SSA (State Save Area) 0        |
-**         +--------------------------------+
-**         | SSA (State Save Area) 1        |
-**         +--------------------------------+
-**         | Guard Page                     |
-**         +--------------------------------+
-**         | GS page (contains thread data) |
-**         +--------------------------------+
+**         +----------------------------+
+**         | Guard Page                 |
+**         +----------------------------+
+**         | Stack pages                |
+**         +----------------------------+
+**         | Guard Page                 |
+**         +----------------------------+
+**         | TCS Page                   |
+**         +----------------------------+
+**         | SSA (State Save Area) 0    |
+**         +----------------------------+
+**         | SSA (State Save Area) 1    |
+**         +----------------------------+
+**         | Guard Page                 |
+**         +----------------------------+
+**         | Thread local storage       |
+**         +----------------------------+
+**         | FS/GS Page (oe_sgx_td_t + tsp)    |
+**         +----------------------------+
 **
-**     EENTER sets the GS segment register to refer to the GS page before
+**     EENTER sets the FS segment register to refer to the FS page before
 **     calling this function.
 **
 **     If the enclave should fault, SGX saves the registers in the SSA slot
@@ -749,7 +924,7 @@ oe_result_t oe_call_host_function(
 **             to the TCS (one page before minus the STATIC stack size).
 **
 **         (*) For nested calls the stack pointer is obtained from the
-**             td_t.last_sp field (saved by the previous call).
+**             oe_sgx_td_t.last_sp field (saved by the previous call).
 **
 **==============================================================================
 */
@@ -813,11 +988,7 @@ void __oe_handle_main(
     oe_initialize_enclave();
 
     /* Get pointer to the thread data structure */
-    td_t* td = td_from_tcs(tcs);
-
-    /* Initialize thread data structure (if not already initialized) */
-    if (!td_initialized(td))
-        td_init(td);
+    oe_sgx_td_t* td = td_from_tcs(tcs);
 
     /* If this is a normal (non-exception) entry */
     if (cssa == 0)
@@ -853,45 +1024,6 @@ void __oe_handle_main(
     }
 }
 
-/*
-**==============================================================================
-**
-** oe_notify_nested_exit_start()
-**
-**     Notify the nested exit happens.
-**
-**     This function saves the current ocall context to the thread data. The
-**     ocall context contains the stack pointer and the return address of the
-**     function when ocall happens inside enclave (i.e. one type of nested
-**     exit).
-**     When debugger does stack stitching, it will update the untrusted ocall
-**     frame's previous stack frame pointer and return address with the ocall
-**     context from trusted thread data. When GDB does stack walking, the parent
-**     stack of an untrusted ocall will be stack of the _OE_EXIT trusted
-**     function instead of stack of oe_enter/__morestack untrusted function.
-**     Refer to the oe_notify_ocall_start function in host side, and the
-**     OCallStartBreakpoint and update_untrusted_ocall_frame function in the
-**     python plugin.
-**
-**==============================================================================
-*/
-void oe_notify_nested_exit_start(
-    uint64_t arg1,
-    oe_ocall_context_t* ocall_context)
-{
-    // Check if it is an OCALL.
-    oe_code_t code = oe_get_code_from_call_arg1(arg1);
-    if (code != OE_CODE_OCALL)
-        return;
-
-    // Save the ocall_context to the callsite of current enclave thread.
-    td_t* td = oe_get_td();
-    Callsite* callsite = td->callsites;
-    callsite->ocall_context = ocall_context;
-
-    return;
-}
-
 void oe_abort(void)
 {
     // Once it starts to crash, the state can only transit forward, not
@@ -906,5 +1038,4 @@ void oe_abort(void)
 
     // Return to the latest ECALL.
     _handle_exit(OE_CODE_ERET, 0, __oe_enclave_status);
-    return;
 }

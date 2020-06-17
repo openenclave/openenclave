@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -33,6 +33,9 @@ int enc_add(int a, int b)
     return c;
 }
 
+// The following function is intended to be called by the debugger.
+// It must be retained via OE_EXPORT.
+OE_EXPORT
 int square(int x)
 {
     printf("square called with %d\n", x);
@@ -44,10 +47,24 @@ int square(int x)
     return x * x;
 }
 
+static void enclave_function(void)
+{
+    volatile uint64_t enc_magic = 0;
+    OE_TEST(host_function() == OE_OK);
+    // The following assertion will fail if the debugger was not able to walk
+    // the ocall stack back to the enclave and set the value of enc_magic.
+    OE_TEST(enc_magic == MAGIC_VALUE);
+}
+
+void enc_test_stack_stitching(void)
+{
+    enclave_function();
+}
+
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

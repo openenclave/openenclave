@@ -33,11 +33,13 @@ int main(void)
 			err++;
 		}
 		d = ulperr(y, p->y, p->dy);
-		// TODO: 2 ulp errors allowed
-		if (p->r==RN && fabs(d)>2) {
+		if (!checkulp(d, p->r)) {
+			if (fabsf(d) < 5.5f)
+				printf("X ");
+			else
+				err++;
 			printf("%s:%d: %s tgamma(%a) want %a got %a ulperr %.3f = %a + %a\n",
 				p->file, p->line, rstr(p->r), p->x, p->y, y, d, d-p->dy, p->dy);
-			err++;
 		}
 	}
 	return !!err;

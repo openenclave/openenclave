@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 This directory contains the Ansible work used to automate all the required tasks for setting up new Open Enclave environments, and new Jenkins agents for the CI / CD system.
@@ -59,4 +59,5 @@ ansible-playbook jenkins-setup.yml
 
 * Ubuntu 16.04
 * Ubuntu 18.04
+* Red Hat Enterprise Linux 8
 * Windows Server 2016 (ACC VM)

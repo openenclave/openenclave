@@ -6,3 +6,14 @@
 	path = 3rdparty/optee/optee_client
 	url = https://github.com/ms-iot/optee_client
 	branch = ms-iot-openenclave
+[submodule "3rdparty/snmalloc"]
+	path = 3rdparty/snmalloc/snmalloc
+	url = https://github.com/Microsoft/snmalloc.git
+[submodule "tools/oeedger8r-cpp"]
+	path = tools/oeedger8r-cpp
+	url = https://github.com/openenclave/oeedger8r-cpp
+[submodule "3rdparty/libgcov/compiler-rt"]
+	path = 3rdparty/libgcov/compiler-rt
+	url = https://github.com/llvm-mirror/compiler-rt
+	branch = release_70
+	ignore = all

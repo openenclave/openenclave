@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _TESTS_CRYPTO_TESTS_H
@@ -9,7 +9,7 @@ void TestCRL(void);
 void TestEC(void);
 void TestKDF(void);
 void TestRandom(void);
-void TestRdrand(void);
+void TestCpuEntropy(void);
 void TestRSA(void);
 void TestSHA(void);
 void TestHMAC(void);

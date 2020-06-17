@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 /**
@@ -21,6 +21,11 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/edger8r/common.h>
+
+#include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/string.h>
+#include <openenclave/corelibc/wchar.h>
 
 OE_EXTERNC_BEGIN
 

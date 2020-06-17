@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #define OE_NEED_STDC_NAMES
@@ -8,12 +8,14 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/globals.h>
 #include <openenclave/internal/raise.h>
 #include "../atexit.h"
 #include "../calls.h"
 #include "../init_fini.h"
-#include "tee_t.h"
+#include "core_t.h"
 
 #include <tee_internal_api.h>
 
@@ -384,6 +386,13 @@ void oe_abort(void)
 {
     /* No return */
     TEE_Panic(TEE_ERROR_GENERIC);
+
+    /**
+     * TEE_Panic() does not return, but it is not properly annotated.
+     * Ensure the compiler does not return from this function.
+     */
+    while (1)
+        ;
 }
 
 TEE_Result TA_CreateEntryPoint(void)
@@ -391,6 +400,10 @@ TEE_Result TA_CreateEntryPoint(void)
     TEE_Result result;
 
     TEE_UUID pta_uuid = PTA_RPC_UUID;
+
+    /* Initialize the memory allocator */
+    oe_allocator_init((void*)__oe_get_heap_base(), (void*)__oe_get_heap_end());
+    oe_allocator_thread_init();
 
     /* Open a TA2TA session against the RPC Pseudo TA (PTA), required for
      * making OCALLs. If we cannot open one, fail to initialize the TA */
@@ -402,9 +415,11 @@ TEE_Result TA_CreateEntryPoint(void)
     /* Call compiler-generated initialization functions */
     oe_call_init_functions();
 
+#ifdef OE_USE_BUILTIN_EDL
     /* Install the common TEE ECALL function table. */
-    if (oe_register_tee_ecall_function_table() != OE_OK)
+    if (oe_register_core_ecall_function_table() != OE_OK)
         return TEE_ERROR_GENERIC;
+#endif
 
     /* Done */
     __oe_initialized = 1;
@@ -469,12 +484,6 @@ TEE_Result TA_InvokeCommandEntryPoint(
             result = TEE_ERROR_BAD_STATE;
             break;
         }
-        case OE_ECALL_INIT_CONTEXT_SWITCHLESS:
-        {
-            /* TODO: initialize switchless calls */
-            result = TEE_ERROR_NOT_IMPLEMENTED;
-            break;
-        }
         default:
         {
             /* No function found with the number */
@@ -494,9 +503,13 @@ void TA_CloseSessionEntryPoint(void* sess_ctx)
 
 void TA_DestroyEntryPoint(void)
 {
-    /* Call functions installed by __cxa_atexit() and oe_atexit() */
+    /* Call functions installed by oe_cxa_atexit() and oe_atexit() */
     oe_call_atexit_functions();
 
     /* Call all finalization functions */
     oe_call_fini_functions();
+
+    /* Clean up the memory allocator */
+    oe_allocator_thread_cleanup();
+    oe_allocator_cleanup();
 }

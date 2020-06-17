@@ -1,11 +1,11 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 add_subdirectory(host)
 
 if (BUILD_ENCLAVES)
-    add_subdirectory(enc)
-endif()
+  add_subdirectory(enc)
+endif ()
 
 set(TMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/tmp")
 

@@ -1,5 +1,5 @@
 {
-  // Copyright (c) Microsoft Corporation. All rights reserved.
+  // Copyright (c) Open Enclave SDK contributors.
   // Licensed under the MIT License.
   //
   // This file illustrates CMake settings to use for building and testing
@@ -31,7 +31,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${workspaceRoot}\\build\\x64-Debug",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DBUILD_ENCLAVES=1 -DUSE_LIBSGX=1",
+      "cmakeCommandArgs": "-DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=ON -DNUGET_PACKAGE_PATH=${workspaceRoot}\\prereqs\\nuget",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -42,7 +42,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${workspaceRoot}\\build\\x64-RelWithDebInfo",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DBUILD_ENCLAVES=1 -DUSE_LIBSGX=1",
+      "cmakeCommandArgs": "-DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=ON -DNUGET_PACKAGE_PATH=${workspaceRoot}\\prereqs\\nuget",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -53,7 +53,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${workspaceRoot}\\build\\x64-Release",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DBUILD_ENCLAVES=1 -DUSE_LIBSGX=1",
+      "cmakeCommandArgs": "-DBUILD_ENCLAVES=ON -DHAS_QUOTE_PROVIDER=ON -DNUGET_PACKAGE_PATH=${workspaceRoot}\\prereqs\\nuget",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     }

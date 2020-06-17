@@ -1,13 +1,18 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     include "includes.h"
     trusted {
         // qe identity info tests.
         public oe_result_t test_verify_qe_identity_info(
            [in, string] const char* info_json,
-           [user_check] oe_parsed_qe_identity_info_t* parsed_info);
+           [in] oe_qe_identity_info_tcb_level_t* platform_tcb_level,
+           [out] oe_parsed_qe_identity_info_t* parsed_info);
     };
     untrusted {
     };

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _ASMDEFS_H
@@ -7,6 +7,7 @@
 #ifndef __ASSEMBLER__
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/context.h>
+#include <openenclave/internal/sgx/ecall_context.h>
 #include <stdint.h>
 #endif
 
@@ -14,8 +15,6 @@
 #define ENCLU_EENTER 2
 #define ENCLU_ERESUME 3
 #endif
-
-#define ThreadBinding_tcs 0
 #define OE_WORDSIZE 8
 #define OE_OCALL_CODE 3
 
@@ -62,13 +61,14 @@ int __oe_dispatch_ocall(
 #endif
 
 #ifndef __ASSEMBLER__
-int _oe_host_stack_bridge(
+int __oe_host_stack_bridge(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg1_out,
     uint64_t* arg2_out,
     void* tcs,
-    void* rsp);
+    oe_enclave_t* enclave,
+    oe_ecall_context_t* ecall_context);
 #endif
 
 #ifndef __ASSEMBLER__
@@ -77,14 +77,6 @@ typedef struct _oe_host_ocall_frame
     uint64_t previous_rbp;
     uint64_t return_address;
 } oe_host_ocall_frame_t;
-#endif
-
-#ifndef __ASSEMBLER__
-void oe_notify_ocall_start(oe_host_ocall_frame_t* frame_pointer, void* tcs);
-#endif
-
-#ifndef __ASSEMBLER__
-void oe_notify_ocall_end(oe_host_ocall_frame_t* frame_pointer, void* tcs);
 #endif
 
 #ifndef __ASSEMBLER__

@@ -1,0 +1,28 @@
+diff --git a/qemu_v8.mk b/qemu_v8.mk
+index 4aad822..df54d21 100644
+--- a/qemu_v8.mk
++++ b/qemu_v8.mk
+@@ -162,7 +162,7 @@ linux-cleaner: linux-cleaner-common
+ # OP-TEE
+ ################################################################################
+ OPTEE_OS_COMMON_FLAGS += PLATFORM=vexpress-qemu_armv8a CFG_ARM64_core=y \
+-			 DEBUG=$(DEBUG)
++			 DEBUG=1 CFG_DEVICE_ENUM_PTA=n CFG_TEE_TA_LOG_LEVEL=4 CFG_TEE_CORE_TA_TRACE=y CFG_GENERIC_RPC=y
+ optee-os: optee-os-common
+ 
+ OPTEE_OS_CLEAN_COMMON_FLAGS += PLATFORM=vexpress-qemu_armv8a
+@@ -191,13 +191,9 @@ QEMU_SMP ?= 2
+ run-only:
+ 	ln -sf $(ROOT)/out-br/images/rootfs.cpio.gz $(BINARIES_PATH)/
+ 	$(call check-terminal)
+-	$(call run-help)
+-	$(call launch-terminal,54320,"Normal World")
+-	$(call launch-terminal,54321,"Secure World")
+-	$(call wait-for-ports,54320,54321)
+ 	cd $(BINARIES_PATH) && $(QEMU_PATH)/aarch64-softmmu/qemu-system-aarch64 \
+ 		-nographic \
+-		-serial tcp:localhost:54320 -serial tcp:localhost:54321 \
++		-serial pty -serial pty \
+ 		-smp $(QEMU_SMP) \
+ 		-s -S -machine virt,secure=on -cpu cortex-a57 \
+ 		-d unimp -semihosting-config enable,target=native \

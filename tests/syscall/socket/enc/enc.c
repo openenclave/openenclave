@@ -1,4 +1,4 @@
-/* Copyright (c) Microsoft Corporation. All rights reserved. */
+/* Copyright (c) Open Enclave SDK contributors. */
 /* Licensed under the MIT License. */
 
 #include <openenclave/enclave.h>
@@ -78,6 +78,15 @@ int ecall_run_client(char* recv_buff, ssize_t* recv_buff_len)
         }
     }
 
+    /* Verify that getpeername() returns the same address we connected to. */
+    struct oe_sockaddr_in peer_addr = {0};
+    oe_socklen_t peer_addr_len = sizeof(peer_addr);
+    OE_TEST(
+        oe_getpeername(
+            sockfd, (struct oe_sockaddr*)&peer_addr, &peer_addr_len) == 0);
+    OE_TEST(peer_addr_len == sizeof(serv_addr));
+    OE_TEST(memcmp(&serv_addr, &peer_addr, peer_addr_len) == 0);
+
     int sockdup = oe_dup(sockfd);
 
     printf("reading...\n");
@@ -95,6 +104,9 @@ int ecall_run_client(char* recv_buff, ssize_t* recv_buff_len)
         oe_host_printf("fail close\n");
         return OE_FAILURE;
     }
+
+    /* Make sure shutdown call also works. */
+    OE_TEST(oe_shutdown(sockfd, OE_SHUT_RDWR) == 0);
 
     oe_host_printf("success close\n");
     oe_close(sockfd);
@@ -140,17 +152,47 @@ int ecall_run_server()
         printf("listen error errno = %d\n", oe_errno);
     }
 
+    /* Verify that getsockname() returns the same address we bound to. */
+    struct oe_sockaddr_in local_addr = {0};
+    oe_socklen_t local_addr_len = sizeof(local_addr);
+    OE_TEST(
+        oe_getsockname(
+            listenfd, (struct oe_sockaddr*)&local_addr, &local_addr_len) == 0);
+    OE_TEST(local_addr_len == sizeof(serv_addr));
+    OE_TEST(memcmp(&serv_addr, &local_addr, local_addr_len) == 0);
+
     while (1)
     {
-        oe_sleep_msec(1);
         printf("enc: accepting\n");
-        connfd = oe_accept(listenfd, (struct oe_sockaddr*)NULL, NULL);
+
+        struct oe_sockaddr_in peer_addr = {0};
+        oe_socklen_t peer_addr_len = sizeof(peer_addr);
+        connfd = oe_accept(
+            listenfd, (struct oe_sockaddr*)&peer_addr, &peer_addr_len);
+        OE_TEST(peer_addr_len == sizeof(peer_addr));
+        OE_TEST(peer_addr.sin_family == OE_AF_INET);
+        OE_TEST(oe_ntohs(peer_addr.sin_port) >= 1024);
+        OE_TEST(oe_ntohl(peer_addr.sin_addr.s_addr) == OE_INADDR_LOOPBACK);
+
         if (connfd >= 0)
         {
             printf("enc: accepted fd = %d\n", connfd);
             do
             {
                 oe_host_printf("enclave: accepted\n");
+
+                /* Verify that getpeername() returns the same address accept
+                 * returned. */
+                struct oe_sockaddr_in remote_addr = {0};
+                oe_socklen_t remote_addr_len = sizeof(remote_addr);
+                OE_TEST(
+                    oe_getpeername(
+                        connfd,
+                        (struct oe_sockaddr*)&remote_addr,
+                        &remote_addr_len) == 0);
+                OE_TEST(remote_addr_len == peer_addr_len);
+                OE_TEST(memcmp(&remote_addr, &peer_addr, peer_addr_len) == 0);
+
                 ssize_t n = oe_write(connfd, TESTDATA, strlen(TESTDATA));
                 if (n > 0)
                 {
@@ -162,7 +204,6 @@ int ecall_run_server()
                 {
                     printf("write test data n = %ld errno = %d\n", n, oe_errno);
                 }
-                oe_sleep_msec(3);
             } while (1);
 
             break;
@@ -181,7 +222,7 @@ int ecall_run_server()
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    256,  /* HeapPageCount */
-    256,  /* StackPageCount */
-    1);   /* TCSCount */
+    true, /* Debug */
+    256,  /* NumHeapPages */
+    256,  /* NumStackPages */
+    1);   /* NumTCS */

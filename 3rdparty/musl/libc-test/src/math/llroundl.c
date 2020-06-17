@@ -31,7 +31,7 @@ int main(void)
 		yi = llroundl(p->x);
 		e = fetestexcept(INEXACT|INVALID|DIVBYZERO|UNDERFLOW|OVERFLOW);
 
-		if (!checkexcept(e, p->e, p->r)) {
+		if (!checkexcept(e, p->e, p->r) && (e|INEXACT) != p->e) {
 			printf("%s:%d: bad fp exception: %s llroundl(%La)=%lld, want %s",
 				p->file, p->line, rstr(p->r), p->x, p->i, estr(p->e));
 			printf(" got %s\n", estr(e));

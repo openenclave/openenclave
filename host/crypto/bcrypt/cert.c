@@ -1,13 +1,13 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <assert.h>
 #include <openenclave/bits/result.h>
-#include <openenclave/bits/safecrt.h>
-#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/utils.h>
 
 #include "../magic.h"
@@ -17,6 +17,7 @@
 #include "key.h"
 #include "pem.h"
 #include "rsa.h"
+#include "util.h"
 
 /*
 **==============================================================================
@@ -28,9 +29,8 @@
 
 #define _OE_CERT_CHAIN_LENGTH_ANY 0
 
-static const DWORD _OE_DEFAULT_GET_CRL_FLAGS = CERT_STORE_SIGNATURE_FLAG |
-                                               CERT_STORE_TIME_VALIDITY_FLAG |
-                                               CERT_STORE_BASE_CRL_FLAG;
+static const DWORD _OE_DEFAULT_GET_CRL_FLAGS =
+    CERT_STORE_SIGNATURE_FLAG | CERT_STORE_BASE_CRL_FLAG;
 
 static const CERT_CHAIN_POLICY_PARA _OE_DEFAULT_CERT_CHAIN_POLICY = {
     .cbSize = sizeof(CERT_CHAIN_POLICY_PARA),
@@ -43,8 +43,8 @@ static const CERT_STRONG_SIGN_PARA _OE_DEFAULT_SIGN_PARAMS = {
 
 static const CERT_CHAIN_PARA _OE_DEFAULT_CERT_CHAIN_PARAMS = {
     .cbSize = sizeof(CERT_CHAIN_PARA),
-    .RequestedUsage = {{0}},
-    .RequestedIssuancePolicy = {{0}},
+    .RequestedUsage = {0},
+    .RequestedIssuancePolicy = {0},
     .dwUrlRetrievalTimeout = 0,
     .fCheckRevocationFreshnessTime = FALSE,
     .dwRevocationFreshnessTime = 0,
@@ -204,7 +204,10 @@ static oe_result_t _bcrypt_load_cert_store_pem(
             OE_RAISE(find_result);
 
         OE_CHECK(oe_bcrypt_pem_to_der(
-            pem_cert, pem_cert_size, &der_blob.pbData, &der_blob.cbData));
+            (const uint8_t*)pem_cert,
+            pem_cert_size,
+            &der_blob.pbData,
+            &der_blob.cbData));
         free(pem_cert);
         pem_cert = NULL;
 
@@ -361,7 +364,7 @@ static oe_result_t _bcrypt_check_revocation(
         /* For parity with OpenSSL implementation, we require that a CRL
          * is provided for each issuer in the chain. */
         DWORD error = GetLastError();
-        if (error == CRYPT_E_NOT_FOUND)
+        if (error == (DWORD)CRYPT_E_NOT_FOUND)
             OE_RAISE(OE_VERIFY_CRL_MISSING);
         else
             OE_RAISE_MSG(
@@ -784,7 +787,8 @@ oe_result_t oe_cert_chain_read_pem(
     OE_CHECK(_bcrypt_load_cert_store_pem(pem_data, pem_data_size, &cert_store));
 
     /* Count the number of unique certs in the resulting cert store */
-    while (cert_context = CertEnumCertificatesInStore(cert_store, cert_context))
+    while (
+        (cert_context = CertEnumCertificatesInStore(cert_store, cert_context)))
         cert_count++;
 
     if (cert_count == 0)
@@ -796,7 +800,8 @@ oe_result_t oe_cert_chain_read_pem(
      * cert until a cert chain is found that uses all certs in the store and
      * terminates in a self-signed (root) certificate.
      */
-    while (cert_context = CertEnumCertificatesInStore(cert_store, cert_context))
+    while (
+        (cert_context = CertEnumCertificatesInStore(cert_store, cert_context)))
     {
         oe_result_t find_result = _bcrypt_get_cert_chain(
             cert_context, cert_store, cert_count, &cert_chain);
@@ -922,7 +927,7 @@ oe_result_t oe_cert_verify(
     }
 
     /* Add CRLs to cert store */
-    for (int j = 0; j < num_crls; j++)
+    for (size_t j = 0; j < num_crls; j++)
     {
         PCCRL_CONTEXT crl_context;
         OE_CHECK(oe_crl_get_context(crls[j], &crl_context));
@@ -960,7 +965,7 @@ done:
 
 oe_result_t oe_get_crl_distribution_points(
     const oe_cert_t* cert,
-    const char*** urls,
+    char*** urls,
     size_t* num_urls,
     uint8_t* buffer,
     size_t* buffer_size)
@@ -1044,7 +1049,7 @@ oe_result_t oe_get_crl_distribution_points(
         /* Copy the URLs array and pack the URL strings into buffer */
         if (buffer)
         {
-            uint8_t* offset = buffer + found_urls_size;
+            char* offset = (char*)buffer + found_urls_size;
             size_t remaining_bytes = found_urls_total_length;
             char** urls_array = (char**)buffer;
             for (DWORD k = 0; k < found_urls_count; k++)
@@ -1084,7 +1089,6 @@ oe_result_t oe_cert_get_rsa_public_key(
     oe_rsa_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
-    NTSTATUS status = STATUS_UNSUCCESSFUL;
     BCRYPT_KEY_HANDLE key_handle = NULL;
     PWSTR key_alg_name = NULL;
     ULONG key_alg_name_size;
@@ -1134,7 +1138,6 @@ oe_result_t oe_cert_get_ec_public_key(
     oe_ec_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
-    NTSTATUS status = STATUS_UNSUCCESSFUL;
     BCRYPT_KEY_HANDLE key_handle = NULL;
     PWSTR key_alg_name = NULL;
     ULONG key_alg_name_size;
@@ -1294,5 +1297,39 @@ oe_result_t oe_cert_find_extension(
     result = OE_OK;
 
 done:
+    return result;
+}
+
+oe_result_t oe_cert_get_validity_dates(
+    const oe_cert_t* cert,
+    oe_datetime_t* not_before,
+    oe_datetime_t* not_after)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    const cert_t* impl = (const cert_t*)cert;
+
+    if (!_cert_is_valid(impl))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (not_before)
+    {
+        memset(not_before, 0, sizeof(oe_datetime_t));
+
+        OE_CHECK(oe_util_filetime_to_oe_datetime(
+            &impl->cert->pCertInfo->NotBefore, not_before));
+    }
+
+    if (not_after)
+    {
+        memset(not_after, 0, sizeof(oe_datetime_t));
+
+        OE_CHECK(oe_util_filetime_to_oe_datetime(
+            &impl->cert->pCertInfo->NotAfter, not_after));
+    }
+
+    result = OE_OK;
+
+done:
+
     return result;
 }

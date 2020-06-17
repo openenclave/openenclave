@@ -1,0 +1,6 @@
+Open Enclave Host-Side Verification Library is an SDK for building applications
+in order to perform host-side enclave verification in C and C++.
+
+Host-side enclave verification means that a non-enclave application is trying to
+authenticate an enclave's hardware and software settings so that the application
+can determine whether or not to trust the enclave.

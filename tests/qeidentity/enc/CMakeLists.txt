@@ -1,14 +1,28 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set(EDL_FILE ../tests.edl)
 
-oeedl_file(../tests.edl enclave gen)
-# TODO: Does this need CXX?
-add_enclave(TARGET qeidentity_enc UUID a656f3b1-d319-4692-bcd6-a2f50d9fb1e5 SOURCES enc.cpp ${gen})
+add_custom_command(
+  OUTPUT tests_t.h tests_t.c
+  DEPENDS ${EDL_FILE} edger8r
+  COMMAND
+    edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-if(USE_LIBSGX)
-    target_compile_definitions(qeidentity_enc PRIVATE OE_USE_LIBSGX)
-endif()
+add_enclave(
+  TARGET
+  qeidentity_enc
+  UUID
+  a656f3b1-d319-4692-bcd6-a2f50d9fb1e5
+  SOURCES
+  enc.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/tests_t.c)
 
-target_include_directories(qeidentity_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../common)
-target_link_libraries(qeidentity_enc oelibc)
+if (HAS_QUOTE_PROVIDER)
+  enclave_compile_definitions(qeidentity_enc PRIVATE HAS_QUOTE_PROVIDER)
+endif ()
+
+enclave_include_directories(qeidentity_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+                            ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+enclave_link_libraries(qeidentity_enc oelibc)

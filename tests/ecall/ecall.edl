@@ -1,8 +1,12 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 enclave {
-    include "openenclave/internal/sgxtypes.h"
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
+    include "openenclave/internal/sgx/td.h"
     
     enum test_enum {
         NEW_MAGIC = 1967246473
@@ -15,7 +19,7 @@ enclave {
         uint64_t num_heap_pages;
         uint64_t num_pages;
         void* base;
-        oe_thread_data_t thread_data;
+        oe_sgx_td_t thread_data;
         uint64_t thread_data_addr;
         unsigned int mm;
         unsigned int dd;

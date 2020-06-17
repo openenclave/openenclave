@@ -1,15 +1,22 @@
 # This file uses regular expressions, not shell globs!
 
 # File extensions
+.*\.config$
 .*\.der$
 .*\.docx$
 .*\.html$
+.*\.ico$
+.*\.jpg$
 .*\.json$
 .*\.md$
+.*\.nupkg$
 .*\.patch$
 .*\.pdf$
 .*\.pem$
 .*\.png$
+.*\.resx$
+.*\.sln$
+.*\.snk$
 .*\.svg$
 .*\.toml$
 .*Jenkinsfile$
@@ -25,6 +32,8 @@ tests/mbed/tests\..*$
 3rdparty/dlmalloc/dlmalloc/.*
 3rdparty/libcxx/libcxx/.*
 3rdparty/libcxxrt/libcxxrt/.*
+3rdparty/libgcov/compiler-rt/.*
+3rdparty/libgcov/patches/.*
 3rdparty/libunwind/libunwind/.*
 3rdparty/mbedtls/mbedtls/.*
 3rdparty/musl/libc-test/.*
@@ -32,10 +41,16 @@ tests/mbed/tests\..*$
 3rdparty/optee/patches/.*
 3rdparty/optee/optee_client/.*
 3rdparty/optee/optee_os/.*
-tools/oeedger8r/intel/.*
+devex/vsextension/ItemTemplates/.*
+devex/vsextension/ProjectTemplates/.*
+tools/oeedger8r-cpp/*
+tests/libcxxrt/results/.*
+tests/print/results/.*
+docs/*
 
 # Files
 3rdparty/LICENSES
+3rdparty/libgcov/compiler-rt
 3rdparty/libunwind/setcontext\.S
 3rdparty/mbedtls/config\.h
 3rdparty/musl/COPYRIGHT
@@ -43,6 +58,14 @@ tools/oeedger8r/intel/.*
 3rdparty/musl/endian\.h\.suffix
 3rdparty/optee/optee_client
 3rdparty/optee/optee_os
+3rdparty/snmalloc
+cmake/NuGetDescription.txt
+cmake/HostVerifyNuGetDescription.txt
+devex/vscode-extension/.vscodeignore
+devex/vscode-extension/assets/devkit/devdata.tar.gz
+devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/\[\[project-name\]\]/Dockerfile.aarch64-qemu
+devex/vscode-extension/assets/edgeSolutionTemplateFolder/modules/\[\[project-name\]\]/Dockerfile.ls1012
+devex/vscode-extension/src/typings/azure-account.api.d.ts
 docs/CODEOWNERS
 LICENSE
 THIRD_PARTY_NOTICES
@@ -58,12 +81,12 @@ debugger/pythonExtension/readelf\.py
 host/linux/pe\.h
 include/openenclave/internal/queue\.h
 samples/file-encryptor/testfile
+scripts/llvm-gcov
 tests/ocall/debugging\.txt
-tests/print/printhost\.stderr
-tests/print/printhost\.stdout
 tests/str/test1\.txt
-tools/oeedger8r/\.merlin
-tools/oeedger8r/main\.ml
 tools/oesign/getopt\.h
 tools/oesign/getopt_long\.c
 tests/host_verify/data/.*
+
+# The following files use the BSD license.
+scripts/lvi-mitigation/lvi-mitigation.py

@@ -1,0 +1,29 @@
+{
+  "enclaveIdentity":
+    {
+      "id":"QVE",
+      "version":2,
+      "issueDate":"2018-10-18T01:26:20Z",
+      "nextUpdate":"2018-11-17T01:26:20Z",
+      "tcbEvaluationDataNumber":5,
+      "miscselect":"00000000",
+      "miscselectMask":"FFFFFFFF",
+      "attributes":"11000000000000000000000000000000",
+      "attributesMask":"FBFFFFFFFFFFFFFF0000000000000000",
+      "mrsigner":"8C4F5775D796503E96137F77C68A829A0056AC8DED70140B081B094490C57BFF",
+      "isvprodid":1,
+      "tcbLevels":[
+        {
+          "tcb":{"isvsvn":2},
+            "tcbDate":"2019-05-15T01:02:03Z",
+            "tcbStatus":"UpToDate"
+        },
+        {
+          "tcb":{"isvsvn":1},
+          "tcbDate":"2018-08-15T00:00:00Z",
+          "tcbStatus":"OutOfDate"
+        }
+      ]
+    },
+  "signature":"3ad9d2811548ac36b5d5648a74e352377ea681c2d780b75f579bb5058998c487a13c6fbf27b5bae23e77f7d55657fefef110c30ae9197202462913a963e6802b"
+}

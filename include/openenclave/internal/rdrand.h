@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_RDRAND_H
@@ -15,7 +15,7 @@ OE_EXTERNC_BEGIN
  * instruction. This method will block if there is insufficient hardware
  * entropy to provide the full 64-bits of randomness.
  *
- * @return OE_OK on success
+ * @return uint64_t 8-bytes of randomness.
  */
 uint64_t oe_rdrand(void);
 

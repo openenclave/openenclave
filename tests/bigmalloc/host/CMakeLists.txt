@@ -1,9 +1,16 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-oeedl_file(../bigmalloc.edl host gen)
+set(EDL_FILE ../bigmalloc.edl)
 
-add_executable(bigmalloc_host host.c ${gen})
+add_custom_command(
+  OUTPUT bigmalloc_u.h bigmalloc_u.c
+  DEPENDS ${EDL_FILE} edger8r
+  COMMAND
+    edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
+    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable(bigmalloc_host host.c bigmalloc_u.c)
 
 target_include_directories(bigmalloc_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(bigmalloc_host oehostapp)
+target_link_libraries(bigmalloc_host oehost)

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _OE_SYSCALL_SYS_SELECT_H
@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/time.h>
 #include <openenclave/internal/syscall/sys/time.h>
 #include <openenclave/internal/syscall/unistd.h>
 

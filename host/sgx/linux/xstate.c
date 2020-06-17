@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "../xstate.h"
-#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include "../cpuid.h"
 

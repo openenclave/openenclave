@@ -1,0 +1,33 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** sgx/debug.edl:
+**
+**     Internal ECALLs/OCALLs to be used by liboehost/liboecore for operations
+**     related to debugging.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    // Needed for oe_enclave_t. Foreign struct is ok since this is
+    // intentionally kept in host memory.
+    include "openenclave/bits/types.h"
+
+    untrusted
+    {
+        // Translate the addresses in buffer[] into symbol names.
+        // (similar to Linux backtrace_symbols().
+        oe_result_t oe_sgx_backtrace_symbols_ocall(
+            [user_check] oe_enclave_t* oe_enclave,
+            [in, count=size] const uint64_t* buffer,
+            size_t size,
+            [out, size=symbols_buffer_size] void* symbols_buffer,
+            size_t symbols_buffer_size,
+            [out] size_t* symbols_buffer_size_out);
+    };
+};

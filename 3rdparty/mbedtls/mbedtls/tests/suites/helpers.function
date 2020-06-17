@@ -1,4 +1,4 @@
-#line 1 "helpers.function"
+#line 2 "suites/helpers.function"
 /*----------------------------------------------------------------------------*/
 /* Headers */
 
@@ -23,8 +23,15 @@
 #include "mbedtls/memory_buffer_alloc.h"
 #endif
 
+#if defined(MBEDTLS_CHECK_PARAMS)
+#include "mbedtls/platform_util.h"
+#include <setjmp.h>
+#endif
+
 #ifdef _MSC_VER
 #include <basetsd.h>
+typedef UINT8 uint8_t;
+typedef INT32 int32_t;
 typedef UINT32 uint32_t;
 #define strncasecmp _strnicmp
 #define strcasecmp _stricmp
@@ -36,36 +43,186 @@ typedef UINT32 uint32_t;
 
 #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 #include <unistd.h>
+#include <strings.h>
 #endif
 
+/* Type for Hex parameters */
+typedef struct data_tag
+{
+    uint8_t *   x;
+    uint32_t    len;
+} data_t;
+
 /*----------------------------------------------------------------------------*/
-/* Constants */
+/* Status and error constants */
 
-#define DEPENDENCY_SUPPORTED        0
-#define DEPENDENCY_NOT_SUPPORTED    1
+#define DEPENDENCY_SUPPORTED            0   /* Dependency supported by build */
+#define KEY_VALUE_MAPPING_FOUND         0   /* Integer expression found */
+#define DISPATCH_TEST_SUCCESS           0   /* Test dispatch successful */
 
-#define KEY_VALUE_MAPPING_FOUND     0
-#define KEY_VALUE_MAPPING_NOT_FOUND -1
+#define KEY_VALUE_MAPPING_NOT_FOUND     -1  /* Integer expression not found */
+#define DEPENDENCY_NOT_SUPPORTED        -2  /* Dependency not supported */
+#define DISPATCH_TEST_FN_NOT_FOUND      -3  /* Test function not found */
+#define DISPATCH_INVALID_TEST_DATA      -4  /* Invalid test parameter type.
+                                               Only int, string, binary data
+                                               and integer expressions are
+                                               allowed */
+#define DISPATCH_UNSUPPORTED_SUITE      -5  /* Test suite not supported by the
+                                               build */
 
-#define DISPATCH_TEST_SUCCESS       0
-#define DISPATCH_TEST_FN_NOT_FOUND  1
-#define DISPATCH_INVALID_TEST_DATA  2
-#define DISPATCH_UNSUPPORTED_SUITE  3
+typedef enum
+{
+    PARAMFAIL_TESTSTATE_IDLE = 0,           /* No parameter failure call test */
+    PARAMFAIL_TESTSTATE_PENDING,            /* Test call to the parameter failure
+                                             * is pending */
+    PARAMFAIL_TESTSTATE_CALLED              /* The test call to the parameter
+                                             * failure function has been made */
+} paramfail_test_state_t;
 
 
 /*----------------------------------------------------------------------------*/
 /* Macros */
 
-#define TEST_ASSERT( TEST )                         \
+/**
+ * \brief   This macro tests the expression passed to it as a test step or
+ *          individual test in a test case.
+ *
+ *          It allows a library function to return a value and return an error
+ *          code that can be tested.
+ *
+ *          When MBEDTLS_CHECK_PARAMS is enabled, calls to the parameter failure
+ *          callback, MBEDTLS_PARAM_FAILED(), will be assumed to be a test
+ *          failure.
+ *
+ *          This macro is not suitable for negative parameter validation tests,
+ *          as it assumes the test step will not create an error.
+ *
+ * \param   TEST    The test expression to be tested.
+ */
+#define TEST_ASSERT( TEST )                                 \
+    do {                                                    \
+       if( ! (TEST) )                                       \
+       {                                                    \
+          test_fail( #TEST, __LINE__, __FILE__ );           \
+          goto exit;                                        \
+       }                                                    \
+    } while( 0 )
+
+/**
+ * \brief   This macro tests the expression passed to it and skips the
+ *          running test if it doesn't evaluate to 'true'.
+ *
+ * \param   TEST    The test expression to be tested.
+ */
+#define TEST_ASSUME( TEST )                         \
     do {                                            \
         if( ! (TEST) )                              \
         {                                           \
-            test_fail( #TEST, __LINE__, __FILE__ ); \
+            test_skip( #TEST, __LINE__, __FILE__ ); \
             goto exit;                              \
         }                                           \
     } while( 0 )
 
-#define assert(a) if( !( a ) )                                      \
+#if defined(MBEDTLS_CHECK_PARAMS) && !defined(MBEDTLS_PARAM_FAILED_ALT)
+/**
+ * \brief   This macro tests the statement passed to it as a test step or
+ *          individual test in a test case. The macro assumes the test will fail
+ *          and will generate an error.
+ *
+ *          It allows a library function to return a value and tests the return
+ *          code on return to confirm the given error code was returned.
+ *
+ *          When MBEDTLS_CHECK_PARAMS is enabled, calls to the parameter failure
+ *          callback, MBEDTLS_PARAM_FAILED(), are assumed to indicate the
+ *          expected failure, and the test will pass.
+ *
+ *          This macro is intended for negative parameter validation tests,
+ *          where the failing function may return an error value or call
+ *          MBEDTLS_PARAM_FAILED() to indicate the error.
+ *
+ * \param   PARAM_ERROR_VALUE   The expected error code.
+ *
+ * \param   TEST                The test expression to be tested.
+ */
+#define TEST_INVALID_PARAM_RET( PARAM_ERR_VALUE, TEST )                     \
+    do {                                                                    \
+        test_info.paramfail_test_state = PARAMFAIL_TESTSTATE_PENDING;       \
+        if( (TEST) != (PARAM_ERR_VALUE) ||                                  \
+            test_info.paramfail_test_state != PARAMFAIL_TESTSTATE_CALLED )  \
+        {                                                                   \
+            test_fail( #TEST, __LINE__, __FILE__ );                         \
+            goto exit;                                                      \
+        }                                                                   \
+   } while( 0 )
+
+/**
+ * \brief   This macro tests the statement passed to it as a test step or
+ *          individual test in a test case. The macro assumes the test will fail
+ *          and will generate an error.
+ *
+ *          It assumes the library function under test cannot return a value and
+ *          assumes errors can only be indicated byt calls to
+ *          MBEDTLS_PARAM_FAILED().
+ *
+ *          When MBEDTLS_CHECK_PARAMS is enabled, calls to the parameter failure
+ *          callback, MBEDTLS_PARAM_FAILED(), are assumed to indicate the
+ *          expected failure. If MBEDTLS_CHECK_PARAMS is not enabled, no test
+ *          can be made.
+ *
+ *          This macro is intended for negative parameter validation tests,
+ *          where the failing function can only return an error by calling
+ *          MBEDTLS_PARAM_FAILED() to indicate the error.
+ *
+ * \param   TEST                The test expression to be tested.
+ */
+#define TEST_INVALID_PARAM( TEST )                                          \
+    do {                                                                    \
+        memcpy(jmp_tmp, param_fail_jmp, sizeof(jmp_buf));                   \
+        if( setjmp( param_fail_jmp ) == 0 )                                 \
+        {                                                                   \
+            TEST;                                                           \
+            test_fail( #TEST, __LINE__, __FILE__ );                         \
+            goto exit;                                                      \
+        }                                                                   \
+        memcpy(param_fail_jmp, jmp_tmp, sizeof(jmp_buf));                   \
+    } while( 0 )
+#endif /* MBEDTLS_CHECK_PARAMS && !MBEDTLS_PARAM_FAILED_ALT */
+
+/**
+ * \brief   This macro tests the statement passed to it as a test step or
+ *          individual test in a test case. The macro assumes the test will not fail.
+ *
+ *          It assumes the library function under test cannot return a value and
+ *          assumes errors can only be indicated by calls to
+ *          MBEDTLS_PARAM_FAILED().
+ *
+ *          When MBEDTLS_CHECK_PARAMS is enabled, calls to the parameter failure
+ *          callback, MBEDTLS_PARAM_FAILED(), are assumed to indicate the
+ *          expected failure. If MBEDTLS_CHECK_PARAMS is not enabled, no test
+ *          can be made.
+ *
+ *          This macro is intended to test that functions returning void
+ *          accept all of the parameter values they're supposed to accept - eg
+ *          that they don't call MBEDTLS_PARAM_FAILED() when a parameter
+ *          that's allowed to be NULL happens to be NULL.
+ *
+ *          Note: for functions that return something other that void,
+ *          checking that they accept all the parameters they're supposed to
+ *          accept is best done by using TEST_ASSERT() and checking the return
+ *          value as well.
+ *
+ *          Note: this macro is available even when #MBEDTLS_CHECK_PARAMS is
+ *          disabled, as it makes sense to check that the functions accept all
+ *          legal values even if this option is disabled - only in that case,
+ *          the test is more about whether the function segfaults than about
+ *          whether it invokes MBEDTLS_PARAM_FAILED().
+ *
+ * \param   TEST                The test expression to be tested.
+ */
+#define TEST_VALID_PARAM( TEST )                                    \
+    TEST_ASSERT( ( TEST, 1 ) );
+
+#define TEST_HELPER_ASSERT(a) if( !( a ) )                                      \
 {                                                                   \
     mbedtls_fprintf( stderr, "Assertion Failed at %s:%d - %s\n",   \
                              __FILE__, __LINE__, #a );              \
@@ -99,16 +256,31 @@ typedef UINT32 uint32_t;
 /*----------------------------------------------------------------------------*/
 /* Global variables */
 
+typedef enum
+{
+    TEST_RESULT_SUCCESS = 0,
+    TEST_RESULT_FAILED,
+    TEST_RESULT_SKIPPED
+} test_result_t;
 
 static struct
 {
-    int failed;
+    paramfail_test_state_t paramfail_test_state;
+    test_result_t result;
     const char *test;
     const char *filename;
     int line_no;
 }
 test_info;
 
+#if defined(MBEDTLS_PLATFORM_C)
+mbedtls_platform_context platform_ctx;
+#endif
+
+#if defined(MBEDTLS_CHECK_PARAMS)
+jmp_buf param_fail_jmp;
+jmp_buf jmp_tmp;
+#endif
 
 /*----------------------------------------------------------------------------*/
 /* Helper flags for complex dependencies */
@@ -127,6 +299,62 @@ test_info;
 
 /*----------------------------------------------------------------------------*/
 /* Helper Functions */
+
+void test_fail( const char *test, int line_no, const char* filename )
+{
+    test_info.result = TEST_RESULT_FAILED;
+    test_info.test = test;
+    test_info.line_no = line_no;
+    test_info.filename = filename;
+}
+
+void test_skip( const char *test, int line_no, const char* filename )
+{
+    test_info.result = TEST_RESULT_SKIPPED;
+    test_info.test = test;
+    test_info.line_no = line_no;
+    test_info.filename = filename;
+}
+
+static int platform_setup()
+{
+    int ret = 0;
+#if defined(MBEDTLS_PLATFORM_C)
+    ret = mbedtls_platform_setup( &platform_ctx );
+#endif /* MBEDTLS_PLATFORM_C */
+    return( ret );
+}
+
+static void platform_teardown()
+{
+#if defined(MBEDTLS_PLATFORM_C)
+    mbedtls_platform_teardown( &platform_ctx );
+#endif /* MBEDTLS_PLATFORM_C */
+}
+
+#if defined(MBEDTLS_CHECK_PARAMS)
+void mbedtls_param_failed( const char *failure_condition,
+                           const char *file,
+                           int line )
+{
+    /* If we are testing the callback function...  */
+    if( test_info.paramfail_test_state == PARAMFAIL_TESTSTATE_PENDING )
+    {
+        test_info.paramfail_test_state = PARAMFAIL_TESTSTATE_CALLED;
+    }
+    else
+    {
+        /* ...else we treat this as an error */
+
+        /* Record the location of the failure, but not as a failure yet, in case
+         * it was part of the test */
+        test_fail( failure_condition, line, file );
+        test_info.result = TEST_RESULT_SUCCESS;
+
+        longjmp( param_fail_jmp, 1 );
+    }
+}
+#endif
 
 #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 static int redirect_output( FILE** out_stream, const char* path )
@@ -171,11 +399,11 @@ static void close_output( FILE* out_stream )
 }
 #endif /* __unix__ || __APPLE__ __MACH__ */
 
-static int unhexify( unsigned char *obuf, const char *ibuf )
+int unhexify( unsigned char *obuf, const char *ibuf )
 {
     unsigned char c, c2;
     int len = strlen( ibuf ) / 2;
-    assert( strlen( ibuf ) % 2 == 0 ); /* must be even number of bytes */
+    TEST_HELPER_ASSERT( strlen( ibuf ) % 2 == 0 ); /* must be even number of bytes */
 
     while( *ibuf != 0 )
     {
@@ -187,7 +415,7 @@ static int unhexify( unsigned char *obuf, const char *ibuf )
         else if( c >= 'A' && c <= 'F' )
             c -= 'A' - 10;
         else
-            assert( 0 );
+            TEST_HELPER_ASSERT( 0 );
 
         c2 = *ibuf++;
         if( c2 >= '0' && c2 <= '9' )
@@ -197,7 +425,7 @@ static int unhexify( unsigned char *obuf, const char *ibuf )
         else if( c2 >= 'A' && c2 <= 'F' )
             c2 -= 'A' - 10;
         else
-            assert( 0 );
+            TEST_HELPER_ASSERT( 0 );
 
         *obuf++ = ( c << 4 ) | c2;
     }
@@ -205,7 +433,7 @@ static int unhexify( unsigned char *obuf, const char *ibuf )
     return len;
 }
 
-static void hexify( unsigned char *obuf, const unsigned char *ibuf, int len )
+void hexify( unsigned char *obuf, const unsigned char *ibuf, int len )
 {
     unsigned char l, h;
 
@@ -242,7 +470,7 @@ static unsigned char *zero_alloc( size_t len )
     size_t actual_len = ( len != 0 ) ? len : 1;
 
     p = mbedtls_calloc( 1, actual_len );
-    assert( p != NULL );
+    TEST_HELPER_ASSERT( p != NULL );
 
     memset( p, 0x00, actual_len );
 
@@ -259,7 +487,7 @@ static unsigned char *zero_alloc( size_t len )
  *
  * For convenience, dies if allocation fails.
  */
-static unsigned char *unhexify_alloc( const char *ibuf, size_t *olen )
+unsigned char *unhexify_alloc( const char *ibuf, size_t *olen )
 {
     unsigned char *obuf;
 
@@ -269,7 +497,7 @@ static unsigned char *unhexify_alloc( const char *ibuf, size_t *olen )
         return( zero_alloc( *olen ) );
 
     obuf = mbedtls_calloc( 1, *olen );
-    assert( obuf != NULL );
+    TEST_HELPER_ASSERT( obuf != NULL );
 
     (void) unhexify( obuf, ibuf );
 
@@ -310,7 +538,7 @@ static int rnd_std_rand( void *rng_state, unsigned char *output, size_t len )
  *
  * rng_state shall be NULL.
  */
-static int rnd_zero_rand( void *rng_state, unsigned char *output, size_t len )
+int rnd_zero_rand( void *rng_state, unsigned char *output, size_t len )
 {
     if( rng_state != NULL )
         rng_state  = NULL;
@@ -337,7 +565,7 @@ typedef struct
  *
  * After the buffer is empty it will return rand();
  */
-static int rnd_buffer_rand( void *rng_state, unsigned char *output, size_t len )
+int rnd_buffer_rand( void *rng_state, unsigned char *output, size_t len )
 {
     rnd_buf_info *info = (rnd_buf_info *) rng_state;
     size_t use_len;
@@ -383,7 +611,7 @@ typedef struct
  *
  * rng_state shall be a pointer to a rnd_pseudo_info structure.
  */
-static int rnd_pseudo_rand( void *rng_state, unsigned char *output, size_t len )
+int rnd_pseudo_rand( void *rng_state, unsigned char *output, size_t len )
 {
     rnd_pseudo_info *info = (rnd_pseudo_info *) rng_state;
     uint32_t i, *k, sum, delta=0x9E3779B9;
@@ -417,10 +645,21 @@ static int rnd_pseudo_rand( void *rng_state, unsigned char *output, size_t len )
     return( 0 );
 }
 
-static void test_fail( const char *test, int line_no, const char* filename )
+int hexcmp( uint8_t * a, uint8_t * b, uint32_t a_len, uint32_t b_len )
 {
-    test_info.failed = 1;
-    test_info.test = test;
-    test_info.line_no = line_no;
-    test_info.filename = filename;
+    int ret = 0;
+    uint32_t i = 0;
+
+    if( a_len != b_len )
+        return( -1 );
+
+    for( i = 0; i < a_len; i++ )
+    {
+        if( a[i] != b[i] )
+        {
+            ret = -1;
+            break;
+        }
+    }
+    return ret;
 }

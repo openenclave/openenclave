@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
@@ -36,7 +36,7 @@ int main(int argc, const char* argv[])
             "GetBacktrace",
             "test",
             "ecall_test",
-            "_handle_call_enclave_function",
+            "oe_handle_call_enclave_function",
             "_handle_ecall",
             "__oe_handle_main",
             "oe_enter",
@@ -61,7 +61,7 @@ int main(int argc, const char* argv[])
             "func1",
             "test_unwind",
             "ecall_test_unwind",
-            "_handle_call_enclave_function",
+            "oe_handle_call_enclave_function",
             "_handle_ecall",
             "__oe_handle_main",
             "oe_enter",

@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 ---
@@ -15,5 +15,5 @@
 - name: Install the official Open Enclave APT package
   apt:
     name: open-enclave
-    state: present
+    state: latest
     update_cache: yes

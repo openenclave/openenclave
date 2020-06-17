@@ -1,24 +1,12 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# Detect C and C++ compiler options
-# if not gcc and g++, default to clang-7
-C_COMPILER=$(notdir $(CC))
-ifeq ($(C_COMPILER), gcc)
-        CXX_COMPILER=$(notdir $(CXX))
-        USE_GCC = true
-endif
-
-ifeq ($(USE_GCC),)
-        CC = clang-7
-        CXX = clang++-7
-        C_COMPILER=clang
-        CXX_COMPILER=clang++
-endif
+include ../../config.mk
 
 CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
 CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
+INCDIR=$(shell pkg-config oeenclave-$(COMPILER) --variable=includedir)
 
 all:
 	$(MAKE) genkey
@@ -45,7 +33,10 @@ genkey: public.pem
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
+	oeedger8r ../remoteattestation.edl --trusted --trusted-dir ../common \
+		--search-path $(INCDIR) \
+		--search-path $(INCDIR)/openenclave/edl/sgx
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I. -I.. -std=c++11 -DOE_API_VERSION=2 ecalls.cpp ../common/attestation.cpp ../common/crypto.cpp ../common/dispatcher.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/remoteattestation_t.c
 	$(CXX) -o enclave_b attestation.o crypto.o ecalls.o dispatcher.o remoteattestation_t.o $(LDFLAGS)
 
@@ -54,6 +45,4 @@ sign:
 
 clean:
 	rm -f *.o enclave_b enclave_b.signed ../common/remoteattestation_t.* ../common/remoteattestation_args.h *.pem enclave_a_pubkey.h
-
-
 

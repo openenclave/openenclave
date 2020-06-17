@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
 @PACKAGE_INIT@
@@ -12,30 +12,118 @@ set_and_check(OE_LIBDIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
 set_and_check(OE_BINDIR "@PACKAGE_CMAKE_INSTALL_BINDIR@")
 set_and_check(OE_DATADIR "@PACKAGE_CMAKE_INSTALL_DATADIR@")
 set_and_check(OE_INCLUDEDIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+set(OE_SCRIPTSDIR "@PACKAGE_CMAKE_INSTALL_BINDIR@/scripts")
+set (OE_SGX "@OE_SGX@")
+
+if (WIN32)
+  set(USE_CLANGW ON)
+
+  # NOTE: On Windows we have found that we must use Git Bash, not the
+  # Bash from the Windows Subsystem for Linux. Hence this is
+  # explicitly searching only for Git Bash. See #1302 for more.
+  find_program(GIT git)
+  get_filename_component(GIT_DIR ${GIT} DIRECTORY)
+  find_program(OE_BASH bash
+    PATHS "C:/Program Files/Git/bin" "${GIT_DIR}/../bin"
+    NO_DEFAULT_PATH) # Do not find WSL bash.
+
+  if (NOT OE_BASH)
+    message(FATAL_ERROR "-- Git Bash not found!")
+  endif ()
+  if (NOT NUGET_PACKAGE_PATH)
+    message(FATAL_ERROR "NUGET_PACKAGE_PATH not defined. Please define NUGET_PACKAGE_PATH as the path to the installed Intel and DCAP Client nuget packages.")
+  endif()
+else ()
+  find_program(OE_BASH bash)
+  if (NOT OE_BASH)
+    message(FATAL_ERROR "-- Bash not found!")
+  endif ()
+endif ()
+
 
 # Dependencies.
 include(CMakeFindDependencyMacro)
 find_dependency(Threads)
 if (UNIX)
-  if (NOT TARGET crypto)
+  if (NOT TARGET openenclave::crypto)
     find_library(CRYPTO_LIB NAMES crypto)
     if (NOT CRYPTO_LIB)
       message(FATAL_ERROR "-- Looking for crypto library - not found")
     else ()
       message("-- Looking for crypto library - found")
-      add_library(crypto SHARED IMPORTED)
-      set_target_properties(crypto PROPERTIES IMPORTED_LOCATION ${CRYPTO_LIB})
+      add_library(openenclave::crypto SHARED IMPORTED)
+      set_target_properties(openenclave::crypto PROPERTIES IMPORTED_LOCATION ${CRYPTO_LIB})
     endif ()
   endif ()
   
-  if (NOT TARGET dl)
+  if (NOT TARGET openenclave::dl)
     find_library(DL_LIB NAMES dl)
     if(NOT DL_LIB)
       message(FATAL_ERROR "-- Looking for dl library - not found")
     else ()
       message("-- Looking for dl library - found")
-      add_library(dl SHARED IMPORTED)
-      set_target_properties(dl PROPERTIES IMPORTED_LOCATION ${DL_LIB})
+      add_library(openenclave::dl SHARED IMPORTED)
+      set_target_properties(openenclave::dl PROPERTIES IMPORTED_LOCATION ${DL_LIB})
+    endif ()
+  endif ()
+elseif (WIN32)
+  if (NOT NUGET_PACKAGE_PATH)
+    message(FATAL_ERROR "NUGET_PACKAGE_PATH not defined. Please define NUGET_PACKAGE_PATH as the path to the Intel and DCAP Client nuget packages.")
+  endif()
+endif ()
+
+# Include the automatically exported targets.
+include("${CMAKE_CURRENT_LIST_DIR}/openenclave-targets.cmake")
+if (WIN32)
+  include("${CMAKE_CURRENT_LIST_DIR}/add_dcap_client_target.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/copy_oedebugrt_target.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/maybe_build_using_clangw.cmake")
+endif ()
+
+if (OE_SGX)
+  if (NOT TARGET openenclave::sgx_enclave_common)
+    if (UNIX)
+      find_library(SGX_ENCLAVE_COMMON_LIB NAMES sgx_enclave_common HINTS "/usr")
+    elseif (WIN32)
+      find_library(SGX_ENCLAVE_COMMON_LIB NAMES sgx_enclave_common
+           HINTS ${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/lib/native/x64-Release)
+    endif ()
+    if (NOT SGX_ENCLAVE_COMMON_LIB)
+      message(FATAL_ERROR "-- Looking for sgx_enclave_common library - not found")
+    else ()
+      message(VERBOSE "-- Looking for sgx_enclave_common library - found")
+      add_library(openenclave::sgx_enclave_common SHARED IMPORTED)
+      if (UNIX)
+        set_target_properties(openenclave::sgx_enclave_common PROPERTIES IMPORTED_LOCATION ${SGX_ENCLAVE_COMMON_LIB})
+      elseif (WIN32)
+        set_target_properties(openenclave::sgx_enclave_common PROPERTIES
+                              IMPORTED_LOCATION $ENV{WINDIR}/System32
+                              IMPORTED_IMPLIB ${SGX_ENCLAVE_COMMON_LIB})
+      endif ()
+      target_link_libraries(openenclave::oehost INTERFACE openenclave::sgx_enclave_common)
+    endif ()
+  endif ()
+
+  if (NOT TARGET openenclave::sgx_dcap_ql)
+    if (UNIX)
+      find_library(SGX_DCAP_QL_LIB NAMES sgx_dcap_ql HINTS "/usr")
+    elseif (WIN32)
+      find_library(SGX_DCAP_QL_LIB NAMES sgx_dcap_ql
+                 HINTS ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
+    endif ()
+    if (NOT SGX_DCAP_QL_LIB)
+      message(WARNING "-- Looking for sgx_dcap_ql library - not found. Attestations based on quotes would not function without the quote provider.")
+    else ()
+      message(VERBOSE "-- Looking for sgx_dcap_ql library - found")
+      add_library(openenclave::sgx_dcap_ql SHARED IMPORTED)
+      if (UNIX)
+        set_target_properties(openenclave::sgx_dcap_ql PROPERTIES IMPORTED_LOCATION ${SGX_DCAP_QL_LIB})
+      elseif (WIN32)
+        set_target_properties(openenclave::sgx_dcap_ql PROPERTIES
+                              IMPORTED_LOCATION $ENV{WINDIR}/System32
+                              IMPORTED_IMPLIB ${SGX_DCAP_QL_LIB})
+      endif ()
+      target_link_libraries(openenclave::oehost INTERFACE openenclave::sgx_dcap_ql)
     endif ()
   endif ()
 endif ()
@@ -52,9 +140,6 @@ if(NOT TARGET openenclave::oegdb)
   add_executable(openenclave::oegdb IMPORTED)
   set_target_properties(openenclave::oegdb PROPERTIES IMPORTED_LOCATION ${OE_BINDIR}/oegdb)
 endif ()
-
-# Include the automatically exported targets.
-include("${CMAKE_CURRENT_LIST_DIR}/openenclave-targets.cmake")
 
 # Apply Spectre mitigations if available.
 set(OE_SPECTRE_MITIGATION_FLAGS "@SPECTRE_MITIGATION_FLAGS@")

@@ -1,0 +1,25 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- name: Enable Docker CE stable repository
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docer-ce.repo
+    timeout: 10
+  retries: 10
+
+- name: Install Docker packages
+  yum:
+    name: "{{ docker_packages }}"
+    state: latest
+  retries: 10
+  delay: 10
+  register: result
+  until: result is success
+
+- name: Start Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
@@ -15,6 +15,9 @@
 
 /* Override oe_call_enclave_function() calls with _call_enclave_function(). */
 #define oe_call_enclave_function _call_enclave_function
+
+/* Obscure the generated creation function by renaming it. */
+#define oe_create_syscall_enclave __unused_oe_create_syscall_enclave
 
 /* The ocall edge routines will use this function to route ecalls. */
 static oe_result_t _call_enclave_function(
@@ -37,11 +40,8 @@ static oe_result_t _call_enclave_function(
         output_bytes_written);
 }
 
-/* Ignore missing edge-routine prototypes. */
-#if defined(__GNUC__)
-#pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#endif
-
+/* Include the oeedger8r generated C file. The macros defined above customize
+ * the generated code for internal use. */
 #include "syscall_u.c"
 
 static oe_once_type _once = OE_H_ONCE_INITIALIZER;

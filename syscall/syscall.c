@@ -1,7 +1,6 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safemath.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/setjmp.h>
 #include <openenclave/corelibc/stdarg.h>
@@ -9,6 +8,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/safemath.h>
 #include <openenclave/internal/syscall/device.h>
 #include <openenclave/internal/syscall/dirent.h>
 #include <openenclave/internal/syscall/fcntl.h>
@@ -112,6 +112,26 @@ static long _syscall(
             ret = oe_lseek(fd, off, whence);
             goto done;
         }
+        case OE_SYS_pread64:
+        {
+            const int fd = (int)arg1;
+            void* const buf = (void*)arg2;
+            const size_t count = (size_t)arg3;
+            const oe_off_t offset = (oe_off_t)arg4;
+
+            ret = oe_pread(fd, buf, count, offset);
+            goto done;
+        }
+        case OE_SYS_pwrite64:
+        {
+            const int fd = (int)arg1;
+            const void* const buf = (void*)arg2;
+            const size_t count = (size_t)arg3;
+            const oe_off_t offset = (oe_off_t)arg4;
+
+            ret = oe_pwrite(fd, buf, count, offset);
+            goto done;
+        }
         case OE_SYS_readv:
         {
             int fd = (int)arg1;
@@ -162,6 +182,14 @@ static long _syscall(
             ret = oe_dup(fd);
             goto done;
         }
+        case OE_SYS_flock:
+        {
+            int fd = (int)arg1;
+            int operation = (int)arg2;
+
+            ret = oe_flock(fd, operation);
+            goto done;
+        }
 #if defined(OE_SYS_dup2)
         case OE_SYS_dup2:
         {
@@ -191,7 +219,7 @@ static long _syscall(
         case OE_SYS_stat:
         {
             const char* pathname = (const char*)arg1;
-            struct oe_stat* buf = (struct oe_stat*)arg2;
+            struct oe_stat_t* buf = (struct oe_stat_t*)arg2;
             ret = oe_stat(pathname, buf);
             goto done;
         }
@@ -200,7 +228,7 @@ static long _syscall(
         {
             int dirfd = (int)arg1;
             const char* pathname = (const char*)arg2;
-            struct oe_stat* buf = (struct oe_stat*)arg3;
+            struct oe_stat_t* buf = (struct oe_stat_t*)arg3;
             int flags = (int)arg4;
 
             if (dirfd != OE_AT_FDCWD)
@@ -809,6 +837,13 @@ static long _syscall(
             goto done;
         }
 #endif
+        case OE_SYS_nanosleep:
+        {
+            struct oe_timespec* req = (struct oe_timespec*)arg1;
+            struct oe_timespec* rem = (struct oe_timespec*)arg2;
+            ret = (long)oe_nanosleep(req, rem);
+            goto done;
+        }
         default:
         {
             oe_errno = OE_ENOSYS;

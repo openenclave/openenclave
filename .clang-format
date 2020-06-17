@@ -24,5 +24,7 @@ ObjCSpaceBeforeProtocolList: false
 PenaltyBreakBeforeFirstCallParameter: 1
 PenaltyReturnTypeOnItsOwnLine: 300
 PointerAlignment: Left
+SpacesInContainerLiterals: false
+SpacesInSquareBrackets: false
 TabWidth: 4
 ...

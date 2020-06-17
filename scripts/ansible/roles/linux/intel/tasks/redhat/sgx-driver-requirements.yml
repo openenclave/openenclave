@@ -1,0 +1,15 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+---
+- include_role:
+    name: linux/common
+    tasks_from: yum-repo.yml
+  vars:
+    yum_repository_rpm_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+    yum_repository_key_path: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+
+- name: Install the Intel libsgx package dependencies
+  yum:
+    name: "{{ intel_sgx_package_dependencies }}"
+    state: latest

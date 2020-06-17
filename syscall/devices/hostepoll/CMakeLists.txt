@@ -1,17 +1,22 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-add_library(oehostepoll STATIC hostepoll.c)
+add_enclave_library(oehostepoll STATIC hostepoll.c)
 
 maybe_build_using_clangw(oehostepoll)
 
-add_dependencies(oehostepoll syscall_trusted_edl)
+enclave_include_directories(oehostepoll PRIVATE ${CMAKE_BINARY_DIR}/syscall
+                            ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
-target_include_directories(oehostepoll PRIVATE
-    ${CMAKE_BINARY_DIR}/syscall
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+enclave_enable_code_coverage(oehostepoll)
 
-target_link_libraries(oehostepoll oesyscall)
+enclave_link_libraries(oehostepoll PRIVATE oesyscall)
 
-install(TARGETS oehostepoll EXPORT openenclave-targets ARCHIVE
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install_enclaves(
+  TARGETS
+  oehostepoll
+  EXPORT
+  openenclave-targets
+  ARCHIVE
+  DESTINATION
+  ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

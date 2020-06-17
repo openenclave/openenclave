@@ -1,5 +1,11 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
+
+set(OE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(EDL_DIR ${CMAKE_SOURCE_DIR}/include/openenclave/edl)
+if (OE_SGX)
+  set(SGX_EDL_DIR ${EDL_DIR}/sgx)
+endif ()
 
 ##==============================================================================
 ##
@@ -8,17 +14,25 @@
 ##
 ##==============================================================================
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/common)
+set(CORE_EDL_FILE ${EDL_DIR}/core.edl)
+if (COMPILE_SYSTEM_EDL)
+  add_custom_command(
+    OUTPUT core_t.h core_t.c core_args.h
+    DEPENDS ${CORE_EDL_FILE} edger8r
+    COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --trusted ${CORE_EDL_FILE})
 
-set(TEE_EDL_FILE ${EDL_DIR}/tee.edl)
+  add_custom_target(core_trusted_edl DEPENDS core_t.h core_t.c core_args.h)
 
-add_custom_command(
-    OUTPUT tee_t.h tee_t.c tee_args.h
-    DEPENDS ${TEE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${EDL_DIR} --trusted ${TEE_EDL_FILE})
+  list(APPEND PLATFORM_SRC core_t_wrapper.c)
+else ()
+  add_custom_command(
+    OUTPUT core_t.h core_args.h
+    DEPENDS ${CORE_EDL_FILE} edger8r
+    COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --trusted
+            ${CORE_EDL_FILE})
 
-add_custom_target(tee_trusted_edl
-    DEPENDS tee_t.h tee_t.c tee_args.h)
+  add_custom_target(core_trusted_edl DEPENDS core_t.h core_args.h)
+endif ()
 
 ##==============================================================================
 ##
@@ -27,17 +41,27 @@ add_custom_target(tee_trusted_edl
 ##
 ##==============================================================================
 
-if(OE_SGX)
-    set(SGX_EDL_FILE ${EDL_DIR}/sgx/sgx.edl)
+set(SGX_EDL_FILE ${SGX_EDL_DIR}/platform.edl)
+if (OE_SGX AND COMPILE_SYSTEM_EDL)
+  add_custom_command(
+    OUTPUT platform_t.h platform_t.c platform_args.h
+    DEPENDS ${SGX_EDL_FILE} edger8r
+    COMMAND edger8r --search-path ${SGX_EDL_DIR} --trusted ${SGX_EDL_FILE})
 
-    add_custom_command(
-        OUTPUT sgx_t.h sgx_t.c sgx_args.h
-        DEPENDS ${SGX_EDL_FILE} edger8r
-        COMMAND edger8r --search-path ${EDL_DIR} --trusted ${SGX_EDL_FILE})
+  add_custom_target(platform_trusted_edl DEPENDS platform_t.h platform_t.c
+                                                 platform_args.h)
 
-    add_custom_target(sgx_trusted_edl
-        DEPENDS sgx_t.h sgx_t.c sgx_args.h)
-endif()
+  list(APPEND PLATFORM_SRC sgx/platform_t_wrapper.c)
+elseif (OE_SGX)
+  # Only generate headers
+  add_custom_command(
+    OUTPUT platform_t.h platform_args.h
+    DEPENDS ${SGX_EDL_FILE} edger8r
+    COMMAND edger8r --header-only --search-path ${SGX_EDL_DIR} --trusted
+            ${SGX_EDL_FILE})
+
+  add_custom_target(platform_trusted_edl DEPENDS platform_t.h platform_args.h)
+endif ()
 
 ##==============================================================================
 ##
@@ -45,157 +69,184 @@ endif()
 ##
 ##==============================================================================
 
-set(PLATFORM_SRC "")
 set(MUSL_SRC_DIR ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 if (OE_SGX)
-    list(APPEND PLATFORM_SRC
-        sgx/backtrace.c
-        sgx/calls.c
-        sgx/cpuid.c
-        sgx/entropy.c
-        sgx/exception.c
-        sgx/globals.c
-        sgx/hostcalls.c
-        sgx/init.c
-        sgx/sgx_t_wrapper.c
-        sgx/jump.c
-        sgx/keys.c
-        sgx/memory.c
-        sgx/properties.c
-        sgx/report.c
-        sgx/sched_yield.c
-        sgx/spinlock.c
-        sgx/td.c
-        sgx/thread.c
-        sgx/tracee.c
-        sgx/enter.S
-        sgx/exit.S
-        sgx/getkey.S
-        sgx/longjmp.S
-        sgx/setjmp.S)
+  list(
+    APPEND
+    PLATFORM_SRC
+    ../../common/sgx/endorsements.c
+    ../../common/sgx/rand.S
+    sgx/arena.c
+    sgx/backtrace.c
+    sgx/calls.c
+    sgx/cpuid.c
+    sgx/enter.S
+    sgx/entropy.c
+    sgx/errno.c
+    sgx/exception.c
+    sgx/exit.S
+    sgx/getkey.S
+    sgx/globals.c
+    sgx/hostcalls.c
+    sgx/init.c
+    sgx/keys.c
+    sgx/longjmp.S
+    sgx/memory.c
+    sgx/properties.c
+    sgx/random_internal.c
+    sgx/reloc.c
+    sgx/report.c
+    sgx/sched_yield.c
+    sgx/setjmp.S
+    sgx/spinlock.c
+    sgx/switchlesscalls.c
+    sgx/td.c
+    sgx/td_basic.c
+    sgx/thread.c
+    sgx/threadlocal.c
+    sgx/tracee.c)
 
-    # OS specific sources for SGX.
-    if (UNIX OR USE_CLANGW)
-        list(APPEND PLATFORM_SRC
-            ../../common/sgx/rand.S
-            sgx/linux/reloc.c
-            sgx/linux/threadlocal.c)
-    elseif (WIN32)
-        list(APPEND PLATFORM_SRC
-            ../../common/sgx/rand.asm
-            sgx/windows/reloc.c)
-    endif()
+  # Functions in td_basic.c will change the status of td and may trigger
+  # stack check fail, thus it is necessary to turn off stack check.
+  set_source_files_properties(sgx/td_basic.c PROPERTIES COMPILE_FLAGS
+                                                        -fno-stack-protector)
+
 elseif (OE_TRUSTZONE)
-    list(APPEND PLATFORM_SRC
-        optee/backtrace.c
-        optee/bounds.c
-        optee/calls.c
-        optee/entropy.c
-        optee/header.c
-        optee/hostcalls.c
-        optee/globals.c
-        optee/gp.c
-        optee/keys.c
-        optee/printf.c
-        optee/sched_yield.c
-        optee/spinlock.c
-        optee/stubs.c
-        optee/thread.c
-        optee/tracee.c)
-endif()
-
-if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
-    list(APPEND PLATFORM_SRC init_fini.c)
+  list(
+    APPEND
+    PLATFORM_SRC
+    optee/backtrace.c
+    optee/bounds.c
+    optee/calls.c
+    optee/entropy.c
+    optee/errno.c
+    optee/header.c
+    optee/hostcalls.c
+    optee/globals.c
+    optee/gp.c
+    optee/keys.c
+    optee/printf.c
+    optee/random_internal.c
+    optee/sched_yield.c
+    optee/spinlock.c
+    optee/stubs.c
+    optee/thread.c
+    optee/tracee.c)
 endif ()
 
-add_library(oecore STATIC
-    ../../common/safecrt.c
-    ../../common/argv.c
-    ${MUSL_SRC_DIR}/prng/rand.c
-    ${MUSL_SRC_DIR}/string/memcmp.c
-    ${MUSL_SRC_DIR}/string/memcpy.c
-    ${MUSL_SRC_DIR}/string/memmove.c
-    ${MUSL_SRC_DIR}/string/memset.c
-    __secs_to_tm.c
-    __stack_chk_fail.c
-    assert.c
-    atexit.c
-    backtrace.c
-    calls.c
-    ctype.c
-    debugmalloc.c
-    errno.c
-    gmtime.c
-    hexdump.c
-    hostcalls.c
-    intstr.c
-    malloc.c
-    once.c
-    printf.c
-    pthread.c
-    result.c
-    sbrk.c
-    arena.c
-    stdio.c
-    strerror.c
-    string.c
-    strtok_r.c
-    strtoul.c
-    switchlesscalls.c
-    tee_t_wrapper.c
-    time.c
-    tracee.c
-    ${PLATFORM_SRC})
+if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
+  list(APPEND PLATFORM_SRC init_fini.c)
+endif ()
 
-# Suppress type conversion warnings introduced by 3rdparty code
-set_source_files_properties(${MUSL_SRC_DIR}/prng/rand.c ROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(${MUSL_SRC_DIR}/string/memmove.c PROPERTIES
-    COMPILE_FLAGS -Wno-sign-conversion)
-set_source_files_properties(${MUSL_SRC_DIR}/string/memset.c PROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(__secs_to_tm.c PROPERTIES
-    COMPILE_FLAGS -Wno-conversion)
+if (USE_SNMALLOC)
+  set(DEFAULT_ALLOCATOR oesnmalloc)
+else ()
+  set(DEFAULT_ALLOCATOR oedlmalloc)
+endif ()
+
+add_enclave_library(
+  oecore
+  STATIC
+  ../../common/safecrt.c
+  ../../common/argv.c
+  ${MUSL_SRC_DIR}/prng/rand.c
+  ${MUSL_SRC_DIR}/string/memcmp.c
+  ${MUSL_SRC_DIR}/string/memcpy.c
+  ${MUSL_SRC_DIR}/string/memmove.c
+  ${MUSL_SRC_DIR}/string/memset.c
+  __stack_chk_fail.c
+  assert.c
+  atexit.c
+  backtrace.c
+  calls.c
+  ctype.c
+  debugmalloc.c
+  hexdump.c
+  hostcalls.c
+  intstr.c
+  malloc.c
+  once.c
+  printf.c
+  pthread.c
+  random.c
+  result.c
+  stdio.c
+  strerror.c
+  string.c
+  strtok_r.c
+  strtoul.c
+  time.c
+  tracee.c
+  wchar.c
+  $<TARGET_OBJECTS:${DEFAULT_ALLOCATOR}>
+  ${PLATFORM_SRC})
+
+# Some files in oecore come directly from the musl source. For these files,
+# corelibc functions with stdc names are required.
+# Additionally, suppress type conversion warnings introduced by 3rdparty code
+set(CORELIBC_INCLUDES ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+
+list(
+  APPEND
+  NEEDS_STDC_NAMES
+  ${MUSL_SRC_DIR}/prng/rand.c
+  ${MUSL_SRC_DIR}/string/memmove.c
+  ${MUSL_SRC_DIR}/string/memset.c
+  ${MUSL_SRC_DIR}/string/memcmp.c
+  ${MUSL_SRC_DIR}/string/memcpy.c
+  debugmalloc.c
+  strtok_r.c)
+
+list(APPEND W_NO_CONVERSION ${MUSL_SRC_DIR}/prng/rand.c
+     ${MUSL_SRC_DIR}/string/memmove.c ${MUSL_SRC_DIR}/string/memset.c)
+
+set_property(
+  SOURCE ${W_NO_CONVERSION}
+  APPEND_STRING
+  PROPERTY COMPILE_FLAGS " -Wno-conversion")
+
+set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND_STRING
+             PROPERTY COMPILE_FLAGS " -I${CORELIBC_INCLUDES}")
+set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND PROPERTY COMPILE_DEFINITIONS
+                                                        OE_NEED_STDC_NAMES)
 
 maybe_build_using_clangw(oecore)
 
-add_dependencies(oecore tee_trusted_edl)
-if(OE_SGX)
-    add_dependencies(oecore sgx_trusted_edl)
-endif()
-target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+add_enclave_dependencies(oecore core_trusted_edl)
+if (OE_SGX)
+  add_enclave_dependencies(oecore platform_trusted_edl)
+endif ()
 
-target_link_libraries(oecore PUBLIC oe_includes)
+enclave_include_directories(oecore PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+enclave_link_libraries(oecore PUBLIC oe_includes)
 if (OE_TRUSTZONE)
-    target_link_libraries(oecore PUBLIC oelibutee_includes)
+  enclave_link_libraries(oecore PUBLIC oelibutee_includes)
+
+  # OP-TEE header 3rdparty/optee/libutee/liboeutee/user_ta_header.h
+  # includes stdint.h. As a result all OP-TEE needs the corelibc headers
+  # in its include path.
+  enclave_include_directories(
+    oecore PRIVATE ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+endif ()
+
+enclave_link_libraries(oecore PUBLIC oe_includes)
+
+if (CMAKE_C_COMPILER_ID MATCHES GNU)
+  enclave_compile_options(oecore PRIVATE -Wjump-misses-init)
+endif ()
+
+if (OE_SGX)
+  set_source_files_properties(sgx/keys.c PROPERTIES COMPILE_FLAGS
+                                                    -Wno-type-limits)
+
+  # -m64 is an x86_64 specific flag
+  enclave_compile_options(oecore PUBLIC -m64)
 endif ()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
-    target_compile_options(oecore PRIVATE -Wjump-misses-init)
-endif()
-
-# This directory contains enclave core libc headers:
-target_include_directories(oecore PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
-
-# Unfortunately dlmalloc uses GNU extension that allows arithmetic
-# null pointers.
-set_source_files_properties(malloc.c
-    PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-null-pointer-arithmetic")
-
-if (OE_SGX)
-    # jump.s must be optimized for the correct call-frame.
-    set_source_files_properties(sgx/jump.c PROPERTIES COMPILE_FLAGS -O2)
-
-    set_source_files_properties(sgx/keys.c PROPERTIES COMPILE_FLAGS -Wno-type-limits)
-
-    # -m64 is an x86_64 specific flag
-    target_compile_options(oecore PUBLIC -m64)
-endif()
-
-if (CMAKE_C_COMPILER_ID MATCHES GNU)
-    target_compile_options(oecore PRIVATE -Wjump-misses-init)
+  enclave_compile_options(oecore PRIVATE -Wjump-misses-init)
 endif ()
 
 # NOTE: All code inside an enclave must be compile with "position
@@ -204,69 +255,112 @@ endif ()
 # or POSITION_INDEPENDENT_CODE, which would use the incorrect flag as
 # enclaves actually are executables.
 if (OE_SGX)
-    target_compile_options(oecore PUBLIC
-        -fPIE
-        -nostdinc
-        -fno-stack-protector
-        -fvisibility=hidden
-        # "The default without -fpic is 'initial-exec'; with -fpic the
-        # default is 'global-dynamic'."
-        # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
-        #
-        # Enclaves are linked using -pie and therefore global-dynamic is
-        # too conservative. Of the two efficient static thread-local
-        # storage models, inital-exec and local-exec, we choose the most
-        # optimal one.
-        -ftls-model=local-exec
-        # Disable builtin functions for enclaves, but only in our build.
-        #
-        # We do this to work-around compiler bugs (see #1429) due to our
-        # redefinition of `memmove` to `oe_memmove` causing an undefined
-        # symbol error when a built-in was inlined. However, we only do
-        # this for our code as we don't want to force these flags on the
-        # user. There are valid reasons for an end user to use built-ins.
-        $<BUILD_INTERFACE:-fno-builtin-malloc -fno-builtin-calloc -fno-builtin>)
-elseif (OE_TRUSTZONE)
-    target_compile_options(oecore PUBLIC
-        -fvisibility=hidden
-        ${OE_TZ_TA_C_FLAGS})
-endif()
-
-target_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
-
-target_compile_definitions(oecore
+  enclave_compile_options(
+    oecore
     PUBLIC
-    OE_BUILD_ENCLAVE
-    # NOTE: This definition is public to the rest of our project's
-    # targets, but should not yet be exposed to consumers of our
-    # package.
-    $<BUILD_INTERFACE:OE_API_VERSION=2>)
+    -fPIE
+    -nostdinc
+    -fstack-protector-strong
+    -fvisibility=hidden
+    # Preserve frame-pointer in Release mode to enable oe_backtrace.
+    -fno-omit-frame-pointer
+    # Put each function or data in its own section.
+    # This allows aggressively eliminating unused code.
+    -ffunction-sections
+    -fdata-sections
+    # "The default without -fpic is 'initial-exec'; with -fpic the
+    # default is 'global-dynamic'."
+    # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
+    #
+    # Enclaves are linked using -pie and therefore global-dynamic is
+    # too conservative. Of the two efficient static thread-local
+    # storage models, inital-exec and local-exec, we choose the most
+    # optimal one.
+    -ftls-model=local-exec
+    # Disable builtin functions for enclaves, but only in our build.
+    #
+    # We do this to work-around compiler bugs (see #1429) due to our
+    # redefinition of `memmove` to `oe_memmove` causing an undefined
+    # symbol error when a built-in was inlined. However, we only do
+    # this for our code as we don't want to force these flags on the
+    # user. There are valid reasons for an end user to use built-ins.
+    $<BUILD_INTERFACE:-fno-builtin-malloc
+    -fno-builtin-calloc
+    -fno-builtin>)
+elseif (OE_TRUSTZONE)
+  enclave_compile_options(oecore PUBLIC -fvisibility=hidden ${OE_TZ_TA_C_FLAGS})
+endif ()
 
-if(USE_LIBSGX)
-    target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
-endif()
+enclave_compile_options(oecore INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
 
-if(USE_DEBUG_MALLOC)
-    target_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
-    message("USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
-endif()
+enclave_enable_code_coverage(oecore)
+if (CODE_COVERAGE)
+  # Disable the complier flag to the following sources to
+  # avoid conflicts.
+  set_source_files_properties(once.c sgx/calls.c sgx/init.c
+                              PROPERTIES COMPILE_FLAGS -fno-profile-arcs)
+endif ()
+
+enclave_compile_definitions(
+  oecore
+  PUBLIC
+  OE_BUILD_ENCLAVE
+  # NOTE: This definition is public to the rest of our project's
+  # targets, but should not yet be exposed to consumers of our
+  # package.
+  $<BUILD_INTERFACE:OE_API_VERSION=2>)
+
+if (HAS_QUOTE_PROVIDER)
+  enclave_compile_definitions(oecore PUBLIC OE_LINK_SGX_DCAP_QL)
+endif ()
+
+if (USE_DEBUG_MALLOC)
+  enclave_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
+  message(
+    "USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
+endif ()
+
+if (COMPILE_SYSTEM_EDL)
+  enclave_compile_definitions(oecore PRIVATE OE_USE_BUILTIN_EDL)
+endif ()
+
+if (WITH_EEID)
+  enclave_compile_definitions(oecore PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif ()
 
 # Interface link flags for enclaves.
-if(OE_SGX)
-    target_link_libraries(oecore INTERFACE
-        -nostdlib -nodefaultlibs -nostartfiles
-        -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
-        -Wl,-z,noexecstack
-        -Wl,-z,now)
-elseif(OE_TRUSTZONE)
-    target_link_libraries(oecore INTERFACE
-        -nostdlib -nodefaultlibs -nostartfiles
-        --no-undefined
-        -pie
-        --sort-section=alignment
-        "-z max-page-size=4096"
-        --as-needed)
-endif()
+if (OE_SGX)
+  enclave_link_libraries(
+    oecore
+    INTERFACE
+    -nostdlib
+    -nodefaultlibs
+    -nostartfiles
+    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
+    -Wl,-z,noexecstack
+    -Wl,-z,now
+    -Wl,-gc-sections)
+elseif (OE_TRUSTZONE)
+  enclave_link_libraries(
+    oecore
+    INTERFACE
+    -nostdlib
+    -nodefaultlibs
+    -nostartfiles
+    --no-undefined
+    -pie
+    --sort-section=alignment
+    "-z max-page-size=4096"
+    --as-needed)
+endif ()
 
-set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
-install (TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+set_enclave_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY
+                     ${OE_LIBDIR}/openenclave/enclave)
+install_enclaves(
+  TARGETS
+  oecore
+  EXPORT
+  openenclave-targets
+  ARCHIVE
+  DESTINATION
+  ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

@@ -1,13 +1,13 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/safecrt.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/crypto/ec.h>
 #include <openenclave/internal/kdf.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
 
@@ -339,7 +339,7 @@ done:
     if (key != NULL)
     {
         oe_secure_zero_fill(key, key_size);
-        free(key);
+        oe_free(key);
     }
 
     return result;

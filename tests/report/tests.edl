@@ -1,7 +1,12 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+    from "openenclave/edl/attestation.edl" import *;
+    from "platform.edl" import *;
+
     include "includes.h"
 
     trusted {
@@ -12,7 +17,7 @@ enclave {
         // tcb info tests.
         public oe_result_t test_verify_tcb_info(
             [in, string] const char* tcb_info,
-            [user_check] oe_tcb_level_t* platform_tcb_level,
+            [user_check] oe_tcb_info_tcb_level_t* platform_tcb_level,
             [out] oe_parsed_tcb_info_t* parsed_tcb_info
         );
 
@@ -24,10 +29,10 @@ enclave {
         public void enclave_test_parse_report_negative();
         public void enclave_test_local_verify_report();
         public void enclave_test_remote_verify_report();
+        public void enclave_test_verify_report_with_collaterals();
+        public void enclave_test_get_signer_id_from_public_key();
     };
 
     untrusted {
-      
     };
 };
-

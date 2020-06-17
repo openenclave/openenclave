@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
@@ -6,11 +6,17 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
+#if defined(_WIN32)
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
 #include "libunwind_u.h"
 
 void Test(oe_enclave_t* enclave, uint32_t pid)
@@ -100,7 +106,7 @@ int main(int argc, const char* argv[])
     {
         oe_put_err("oe_create_libunwind_enclave(): result=%u", result);
     }
-    uint32_t pid = (uint32_t)getpid();
+    uint32_t pid = (uint32_t)_getpid();
 
     // Invoke "Test()" in the enclave.
     Test(enclave, pid);

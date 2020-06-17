@@ -1,24 +1,12 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# Detect C and C++ compiler options
-# if not gcc and g++, default to clang-7
-C_COMPILER=$(notdir $(CC))
-ifeq ($(C_COMPILER), gcc)
-        CXX_COMPILER=$(notdir $(CXX))
-        USE_GCC = true
-endif
-
-ifeq ($(USE_GCC),)
-        CC = clang-7
-        CXX = clang++-7
-        C_COMPILER=clang
-        CXX_COMPILER=clang++
-endif
+include ../../config.mk
 
 CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
 CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
+INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
 
 all:
 	$(MAKE) build
@@ -27,6 +15,9 @@ all:
 build:
 	cp ../enclave_a_v1/private.pem .
 	@ echo "Compilers used: $(CC), $(CXX)"
+	oeedger8r ../datasealing.edl --trusted  --trusted-dir ../common \
+		--search-path $(INCDIR) \
+		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I.. -DOE_API_VERSION=2 -std=c++11 ecalls.cpp ../common/dispatcher.cpp ../common/keys.cpp
 	$(CC) -g -c $(CFLAGS) $(CINCLUDES) -I.. -DOE_API_VERSION=2 ../common/datasealing_t.c
 	$(CXX) -o enclave_a_v2 ecalls.o dispatcher.o keys.o datasealing_t.o $(LDFLAGS)

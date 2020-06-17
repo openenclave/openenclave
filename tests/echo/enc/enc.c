@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/string.h>
@@ -42,7 +42,8 @@ int enc_echo(char* in, char out[100])
         out,
         "oe_host_strdup1",
         host_allocated_str,
-        stack_allocated_str);
+        stack_allocated_str,
+        sizeof(stack_allocated_str));
     if (result != OE_OK)
     {
         return -1;
@@ -63,7 +64,7 @@ int enc_echo(char* in, char out[100])
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

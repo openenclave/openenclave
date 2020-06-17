@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include "../hostthread.h"
@@ -57,6 +57,9 @@ static BOOL CALLBACK OnceHelper(
     _Inout_opt_ PVOID Parameter,
     _Out_opt_ PVOID* Context)
 {
+    OE_UNUSED(InitOnce);
+    OE_UNUSED(Context);
+
     ((void (*)(void))Parameter)();
     return TRUE;
 }

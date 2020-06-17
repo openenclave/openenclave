@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdlib.h>
@@ -133,6 +133,7 @@ int enc_test(bool* caught, bool* dynamic_cast_works, size_t* n_constructions)
 
         if (strcmp(p, "hello") != 0)
         {
+            delete[] p;
             return -1;
         }
 
@@ -204,7 +205,7 @@ int enc_test(bool* caught, bool* dynamic_cast_works, size_t* n_constructions)
                 int* p = new int[64];
                 ptrs.push_back(p);
             }
-            catch (std::bad_alloc)
+            catch (std::bad_alloc&)
             {
                 bad_alloc_caught = true;
                 printf("std::bad_alloc caught\n");
@@ -239,7 +240,7 @@ __attribute__((destructor)) void destructor(void)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    512,  /* HeapPageCount */
-    512,  /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    512,  /* NumHeapPages */
+    512,  /* NumStackPages */
+    2);   /* NumTCS */

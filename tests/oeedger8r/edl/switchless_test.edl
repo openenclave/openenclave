@@ -1,0 +1,14 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+  trusted {
+    // OE SDK does not support trusted switchless ecalls.
+
+    public void test_switchless_edl_ocalls();
+  };
+  untrusted {
+    int ocall_sum(int a, int b);
+    int switchless_ocall_sum(int a, int b) transition_using_threads;
+  };
+};

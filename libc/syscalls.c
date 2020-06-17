@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #define __OE_NEED_TIME_CALLS
@@ -98,34 +98,7 @@ done:
     return ret;
 }
 
-static long _syscall_nanosleep(long n, long x1, long x2)
-{
-    const struct timespec* req = (struct timespec*)x1;
-    struct timespec* rem = (struct timespec*)x2;
-    size_t ret = -1;
-    uint64_t milliseconds = 0;
-
-    OE_UNUSED(n);
-
-    if (rem)
-        memset(rem, 0, sizeof(*rem));
-
-    if (!req)
-        goto done;
-
-    /* Convert timespec to milliseconds */
-    milliseconds += req->tv_sec * 1000UL;
-    milliseconds += req->tv_nsec / 1000000UL;
-
-    /* Perform OCALL */
-    ret = oe_sleep_msec(milliseconds);
-
-done:
-
-    return ret;
-}
-
-static void _stat_to_oe_stat(struct stat* stat, struct oe_stat* oe_stat)
+static void _stat_to_oe_stat(struct stat* stat, struct oe_stat_t* oe_stat)
 {
     oe_stat->st_dev = stat->st_dev;
     oe_stat->st_ino = stat->st_ino;
@@ -145,7 +118,7 @@ static void _stat_to_oe_stat(struct stat* stat, struct oe_stat* oe_stat)
     oe_stat->st_mtim.tv_nsec = stat->st_mtim.tv_nsec;
 }
 
-static void _oe_stat_to_stat(struct oe_stat* oe_stat, struct stat* stat)
+static void _oe_stat_to_stat(struct oe_stat_t* oe_stat, struct stat* stat)
 {
     stat->st_dev = oe_stat->st_dev;
     stat->st_ino = oe_stat->st_ino;
@@ -182,7 +155,7 @@ static long _dispatch_oe_syscall(
         case SYS_stat:
         {
             struct stat* stat = (struct stat*)x2;
-            struct oe_stat oe_stat;
+            struct oe_stat_t oe_stat;
 
             _stat_to_oe_stat(stat, &oe_stat);
             x2 = (long)&oe_stat;
@@ -195,7 +168,7 @@ static long _dispatch_oe_syscall(
         case SYS_newfstatat:
         {
             struct stat* stat = (struct stat*)x3;
-            struct oe_stat oe_stat;
+            struct oe_stat_t oe_stat;
 
             _stat_to_oe_stat(stat, &oe_stat);
             x3 = (long)&oe_stat;
@@ -235,6 +208,20 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
         /* The hook ignored the syscall so fall through */
     }
 
+    /* Handle syscall internally if possible. */
+    switch (n)
+    {
+        case SYS_gettimeofday:
+            return _syscall_gettimeofday(n, x1, x2);
+        case SYS_clock_gettime:
+            return _syscall_clock_gettime(n, x1, x2);
+        case SYS_mmap:
+            return _syscall_mmap(n, x1, x2, x3, x4, x5, x6);
+        default:
+            /* Drop through and let the code below handle the syscall. */
+            break;
+    }
+
     /* Let liboesyscall handle select system calls. */
     {
         long ret;
@@ -247,31 +234,11 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
         {
             return ret;
         }
-
-        /* Drop through and let the code below handle the syscall. */
-        errno = 0;
     }
 
-    switch (n)
-    {
-        case SYS_nanosleep:
-            return _syscall_nanosleep(n, x1, x2);
-        case SYS_gettimeofday:
-            return _syscall_gettimeofday(n, x1, x2);
-        case SYS_clock_gettime:
-            return _syscall_clock_gettime(n, x1, x2);
-        case SYS_mmap:
-            return _syscall_mmap(n, x1, x2, x3, x4, x5, x6);
-        default:
-        {
-            /* All other MUSL-initiated syscalls are aborted. */
-            fprintf(stderr, "error: __syscall(): n=%lu\n", n);
-            abort();
-            return 0;
-        }
-    }
-
-    return 0;
+    /* All other MUSL-initiated syscalls are aborted. */
+    fprintf(stderr, "error: unhandled syscall: n=%lu\n", n);
+    abort();
 }
 
 /* Intercept __syscalls_cp() from MUSL */

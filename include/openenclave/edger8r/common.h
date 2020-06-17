@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 /**
@@ -66,14 +66,24 @@ done:
     return result;
 }
 
-#define OE_ADD_SIZE(total, size)                \
-    do                                          \
-    {                                           \
-        if (oe_add_size(&total, size) != OE_OK) \
-        {                                       \
-            _result = OE_INTEGER_OVERFLOW;      \
-            goto done;                          \
-        }                                       \
+#define OE_ADD_SIZE(total, size)                                   \
+    do                                                             \
+    {                                                              \
+        if (sizeof(total) > sizeof(size_t) && total > OE_SIZE_MAX) \
+        {                                                          \
+            _result = OE_INVALID_PARAMETER;                        \
+            goto done;                                             \
+        }                                                          \
+        if (sizeof(size) > sizeof(size_t) && size > OE_SIZE_MAX)   \
+        {                                                          \
+            _result = OE_INVALID_PARAMETER;                        \
+            goto done;                                             \
+        }                                                          \
+        if (oe_add_size((size_t*)&total, (size_t)size) != OE_OK)   \
+        {                                                          \
+            _result = OE_INTEGER_OVERFLOW;                         \
+            goto done;                                             \
+        }                                                          \
     } while (0)
 
 /**
@@ -99,7 +109,7 @@ done:
  * buffer. Make sure that the buffer has enough space.
  */
 #define OE_SET_OUT_POINTER(argname, argsize, argtype)                        \
-    if (pargs_in->argname)                                                   \
+    do                                                                       \
     {                                                                        \
         pargs_in->argname = (argtype)(output_buffer + output_buffer_offset); \
         OE_ADD_SIZE(output_buffer_offset, (size_t)(argsize));                \
@@ -108,7 +118,7 @@ done:
             _result = OE_BUFFER_TOO_SMALL;                                   \
             goto done;                                                       \
         }                                                                    \
-    }
+    } while (0)
 
 /**
  * Compute and set the pointer value for the given parameter within the output

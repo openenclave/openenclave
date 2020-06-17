@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
@@ -55,7 +55,7 @@ int main(int argc, const char* argv[])
     // read port parameter
     {
         char* option = (char*)"-port:";
-        int param_len = 0;
+        size_t param_len = 0;
         param_len = strlen(option);
         if (strncmp(argv[2], option, param_len) == 0)
         {

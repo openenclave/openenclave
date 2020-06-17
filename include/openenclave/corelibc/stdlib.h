@@ -1,11 +1,16 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
+
+/* DISCLAIMER:
+ * This header is published with no guarantees of stability and is not part
+ * of the Open Enclave public API surface. It is only intended to be used
+ * internally by the OE runtime. */
 
 #ifndef _OE_STDLIB_H
 #define _OE_STDLIB_H
 
+#include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/bits/defs.h>
 #include <openenclave/corelibc/limits.h>
 
 OE_EXTERNC_BEGIN
@@ -37,9 +42,9 @@ void* oe_memalign(size_t alignment, size_t size);
 
 int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 
-unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
+size_t oe_malloc_usable_size(void* ptr);
 
-long int oe_strtol(const char* nptr, char** endptr, int base);
+unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
 int oe_atexit(void (*function)(void));
 
@@ -64,11 +69,6 @@ int oe_atoi(const char* nptr);
 #include <openenclave/corelibc/bits/atexit.h>
 #include <openenclave/corelibc/bits/malloc.h>
 #include <openenclave/corelibc/bits/strtoul.h>
-
-OE_INLINE long int strtol(const char* nptr, char** endptr, int base)
-{
-    return oe_strtol(nptr, endptr, base);
-}
 
 OE_INLINE char* realpath(const char* path, char* resolved_path)
 {

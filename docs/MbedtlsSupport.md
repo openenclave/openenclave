@@ -15,7 +15,7 @@ ccm.h | Yes | - |
 cipher.h | Yes | - |
 cmac.h | Yes | - |
 ctr_drbg.h | Partial | Unsupported functions: mbedtls_ctr_drbg_write_seed_file(), mbedtls_ctr_drbg_update_seed_file() |
-debug.h | Yes | - |
+debug.h | No | - |
 des.h | Yes | - |
 dhm.h | No | - |
 ecdh.h | Yes | - |

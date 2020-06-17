@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _SHARED_H
@@ -20,6 +20,8 @@
 #define ERROR_SIGN_SEALED_DATA_FAIL 4
 #define ERROR_CIPHER_ERROR 5
 #define ERROR_UNSEALED_DATA_FAIL 6
+#define ERROR_SEALED_DATA_FAIL 7
+#define ERROR_INVALID_PARAMETER 8
 
 typedef struct _sealed_data_t
 {
@@ -30,7 +32,7 @@ typedef struct _sealed_data_t
     size_t key_info_size;
     size_t original_data_size;
     size_t encrypted_data_len;
-    unsigned char encrypted_data[];
+    unsigned char encrypted_data[1];
 } sealed_data_t;
 
 #endif /* _SHARED_H */

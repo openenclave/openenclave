@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
 #ifndef _HOST_KEY_H
@@ -50,6 +50,14 @@ oe_result_t oe_public_key_read_pem(
     const uint8_t* pem_data,
     size_t pem_size,
     oe_public_key_t* key,
+    int key_type,
+    uint64_t magic);
+
+oe_result_t oe_private_key_from_engine(
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id,
+    oe_private_key_t* key,
     int key_type,
     uint64_t magic);
 

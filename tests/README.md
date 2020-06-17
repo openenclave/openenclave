@@ -41,11 +41,6 @@ signalling a "did not run" state to ctest (rather than failing). To signal
 "did not run", such tests should return with an exit code of 2. ctest
 evaluates this specifically.
 
-# Testing on Windows [Work in progress]
-
-Refer to [Getting Started on Windows](/docs/GettingStartedDocs/GettingStarted.Windows.md) for
-instructions on testing Linux-built enclaves with Windows-built host apps.
-
 # On calls to add_enclave
 
 The test enclave targets are added by calling `add_enclave`, a CMake macro
