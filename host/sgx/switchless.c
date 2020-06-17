@@ -24,6 +24,20 @@
  */
 #define OE_ENCLAVE_WORKER_SPIN_COUNT_THRESHOLD (4096U)
 
+/**
+ * Declare the protoype of the following functions to avoid missing-prototypes
+ * warning.
+ */
+OE_UNUSED_FUNC oe_result_t _oe_sgx_init_context_switchless_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    oe_host_worker_context_t* host_worker_contexts,
+    uint64_t num_host_workers);
+
+OE_UNUSED_FUNC oe_result_t _oe_sgx_switchless_enclave_worker_thread_ecall(
+    oe_enclave_t* enclave,
+    oe_enclave_worker_context_t* context);
+
 /*
 ** The thread function that handles switchless ocalls
 **
@@ -443,7 +457,7 @@ oe_result_t oe_switchless_call_enclave_function(
 /*
  * Stubs for switchless.edl ecalls if they are not included in EDL
  */
-OE_UNUSED_FUNC static oe_result_t _oe_sgx_init_context_switchless_ecall(
+OE_UNUSED_FUNC oe_result_t _oe_sgx_init_context_switchless_ecall(
     oe_enclave_t* enclave,
     oe_result_t* _retval,
     oe_host_worker_context_t* host_worker_contexts,
@@ -456,8 +470,7 @@ OE_UNUSED_FUNC static oe_result_t _oe_sgx_init_context_switchless_ecall(
     return OE_UNSUPPORTED;
 }
 
-OE_UNUSED_FUNC static oe_result_t
-_oe_sgx_switchless_enclave_worker_thread_ecall(
+OE_UNUSED_FUNC oe_result_t _oe_sgx_switchless_enclave_worker_thread_ecall(
     oe_enclave_t* enclave,
     oe_enclave_worker_context_t* context)
 {
