@@ -13,8 +13,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "readfile.h"
 #include "tests.h"
+#if defined(_WIN32)
+#define timegm _mkgmtime
+#endif
+
+#define ACCEPTABLE_ERROR_IN_SECONDS 60
 
 /* _CERT1 loads intermediate.cert.pem
  * _CERT2 loads leaf.cert.pem
@@ -127,6 +133,45 @@ static bool _year_is_a_leap_year(uint32_t year)
     }
 }
 
+static int _diff_oe_datetime(oe_datetime_t* t1, oe_datetime_t* t2)
+{
+    struct tm tm1, tm2;
+
+    tm1.tm_sec = (int)t1->seconds;
+    tm1.tm_min = (int)t1->minutes;
+    tm1.tm_hour = (int)t1->hours;
+    tm1.tm_mday = (int)t1->day;
+    tm1.tm_mon = (int)t1->month;
+    tm1.tm_year = (int)t1->year;
+    tm1.tm_isdst = -1;
+
+    tm2.tm_sec = (int)t2->seconds;
+    tm2.tm_min = (int)t2->minutes;
+    tm2.tm_hour = (int)t2->hours;
+    tm2.tm_mday = (int)t2->day;
+    tm2.tm_mon = (int)t2->month;
+    tm2.tm_year = (int)t2->year;
+    tm2.tm_isdst = -1;
+
+    time_t time1 = timegm(&tm1);
+    time_t time2 = timegm(&tm2);
+    return (int)(time2 - time1);
+}
+
+static void _print_oe_datetime(const char* s, const oe_datetime_t* t)
+{
+    fprintf(
+        stderr,
+        "[%s] Year=%u, Month=%u, Day=%u, Hour=%u, Minute=%u, Second=%u\n",
+        s,
+        t->year,
+        t->month,
+        t->day,
+        t->hours,
+        t->minutes,
+        t->seconds);
+}
+
 static void _test_get_dates(void)
 {
     printf("=== begin %s()\n", __FUNCTION__);
@@ -139,27 +184,24 @@ static void _test_get_dates(void)
     oe_datetime_t next;
     OE_TEST(oe_crl_get_update_dates(&crl, &last, &next) == OE_OK);
 
-    OE_TEST(last.year == _time.year);
-    OE_TEST(last.month == _time.month);
-    OE_TEST(last.day == _time.day);
-    OE_TEST(last.hours == _time.hours);
-    OE_TEST(last.minutes == _time.minutes);
-    // TEMPORARILY Disabled: _time is the certificate file's timestamp
-    // whereas last.seconds is the actual issue time of the certificate.
-    // The two values are not guaranteed to be equal.
-    // OE_TEST(last.seconds == _time.seconds);
+    _print_oe_datetime("Actual CRL last", &last);
+    _print_oe_datetime("Expected CRL last", &_time);
+
+    int diff = _diff_oe_datetime(&last, &_time);
+    OE_TEST(abs(diff) < ACCEPTABLE_ERROR_IN_SECONDS);
 
     oe_datetime_t next_expected;
-    next_expected.year = _time.year + 1;
-    next_expected.month = _time.month;
-    next_expected.day = _time.day;
-    next_expected.hours = _time.hours;
-    next_expected.minutes = _time.minutes;
+    next_expected.year = last.year + 1;
+    next_expected.month = last.month;
+    next_expected.day = last.day;
+    next_expected.hours = last.hours;
+    next_expected.minutes = last.minutes;
+    next_expected.seconds = last.seconds;
 
     // If a leap day occurs in the next time period, need to adjust
     // expected next date.
-    if ((_time.month >= 3 && _year_is_a_leap_year(next.year)) ||
-        (_time.month <= 2 && _year_is_a_leap_year(_time.year)))
+    if ((last.month >= 3 && _year_is_a_leap_year(next.year)) ||
+        (last.month <= 2 && _year_is_a_leap_year(last.year)))
     {
         next_expected.day -= 1;
         if (next_expected.day == 0)
@@ -203,14 +245,12 @@ static void _test_get_dates(void)
         }
     }
 
-    OE_TEST(next.year == next_expected.year);
-    OE_TEST(next.month == next_expected.month);
-    OE_TEST(next.day == next_expected.day);
-    OE_TEST(next.hours == next_expected.hours);
-    OE_TEST(next.minutes == next_expected.minutes);
-    // TEMPORARILY Disabled: see above.
-    // OE_TEST(next.seconds == _time.seconds);
+    diff = _diff_oe_datetime(&next, &next_expected);
 
+    _print_oe_datetime("Actual CRL next", &next);
+    _print_oe_datetime("Expected CRL next", &next_expected);
+
+    OE_TEST(abs(diff) < ACCEPTABLE_ERROR_IN_SECONDS);
     OE_TEST(oe_crl_free(&crl) == OE_OK);
 
     printf("=== passed %s()\n", __FUNCTION__);
