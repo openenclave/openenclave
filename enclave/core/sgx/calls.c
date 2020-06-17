@@ -159,6 +159,10 @@ static oe_result_t _eeid_patch_memory()
 
         // Wipe the marker page
         memset(heap_base, 0, OE_PAGE_SIZE);
+
+        // Re-initialize the memory allocator with updated heap size
+        oe_allocator_init(
+            (void*)__oe_get_heap_base(), (void*)__oe_get_heap_end());
     }
 
     return r;
