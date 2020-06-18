@@ -121,7 +121,7 @@ else ()
       "Unknown processor. Only Intel SGX and ARM TrustZone are supported")
 endif ()
 
-if (OE_SGX)
+if (OE_SGX AND NOT COMPONENT MATCHES OEHOSTVERIFY)
   if (NOT DEFINED BUILD_ENCLAVES)
     set(BUILD_ENCLAVES ON)
   endif ()
@@ -155,7 +155,7 @@ else () # NOT OE_SGX
   # On non-sgx enclaves are built by default on Unix
   if (NOT DEFINED BUILD_ENCLAVES)
     set(BUILD_ENCLAVES OFF)
-    if (UNIX)
+    if (UNIX AND NOT COMPONENT MATCHES OEHOSTVERIFY)
       set(BUILD_ENCLAVES ON)
     endif ()
   endif ()
