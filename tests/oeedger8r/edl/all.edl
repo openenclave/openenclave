@@ -3,7 +3,7 @@
 
 enclave  {
     // Import system edl
-    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/logging.edl" import oe_write_ocall;
     from "openenclave/edl/syscall.edl" import *;
     from "openenclave/edl/sgx/sgx_attestation.edl" import *;
     from "openenclave/edl/sgx/cpu.edl" import *;
