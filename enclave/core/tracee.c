@@ -53,6 +53,11 @@ void oe_log_init_ecall(const char* enclave_path, uint32_t log_level)
 {
     const char* filename;
 
+    // Returning OE_UNSUPPORTED means that the logging.edl is not properly
+    // imported. Do not perform the initialization in this case.
+    if (oe_log_is_supported_ocall() == OE_UNSUPPORTED)
+        return;
+
     _active_log_level = (oe_log_level_t)log_level;
 
     if ((filename = get_filename_from_path(enclave_path)))
