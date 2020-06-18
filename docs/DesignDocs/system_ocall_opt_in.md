@@ -150,11 +150,6 @@ To build the SDK in the way it will be built for v0.10, you can pass
 
 ### Currently required EDL by all applications
 
-**logging.edl**
-
-Logging can not currently be disabled so all enclaves will need the logging
-calls.
-
 **sgx/platform.edl**
 
 There are currently 4 features which use OCalls on SGX which cannot be
