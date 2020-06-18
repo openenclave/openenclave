@@ -1,14 +1,12 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(COMPONENT OEHOSTVERIFY)
-
 cmake_minimum_required(VERSION 3.11)
 
 project("Remote Host-side Enclave Verification Sample" LANGUAGES C CXX)
 
 if (NOT BUILD_HOSTVERIFY_INLINE)
-  find_package(OpenEnclave COMPONENTS host_verify)
+  find_package(OpenEnclave CONFIG REQUIRED)
 endif ()
 
 set(CMAKE_CXX_STANDARD 11)

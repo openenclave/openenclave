@@ -586,8 +586,8 @@ if (CMAKE_C_COMPILER_ID MATCHES GNU)
 endif ()
 
 # TODO: Remove this hard coded output directory.
-# set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY
-#                                     ${OE_LIBDIR}/openenclave/host)
+set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY
+                                    ${OE_LIBDIR}/openenclave/host)
 
 if (UNIX)
   target_link_libraries(oehost INTERFACE -Wl,-z,noexecstack)

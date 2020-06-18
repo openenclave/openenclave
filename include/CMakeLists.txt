@@ -19,12 +19,6 @@ install(
   COMPONENT OEHOSTVERIFY)
 install(DIRECTORY openenclave/bits
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
-install(DIRECTORY openenclave/bits/edl
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/bits/)
-install(DIRECTORY openenclave/bits/optee
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/bits/)
-install(DIRECTORY openenclave/bits/sgx
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/bits/)
 install(DIRECTORY openenclave/edger8r
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(FILES openenclave/enclave.h
