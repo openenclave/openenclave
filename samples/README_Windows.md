@@ -57,6 +57,12 @@ ninja
 ninja run
 ```
 
+5. To run the sample in simulation mode, use below:
+
+```cmd
+ninja simulate
+```
+
 #### Build and Run samples with LVI mitigation
 
 Refer to [here](helloworld#build-and-run-with-lvi-mitigation) for more details.
