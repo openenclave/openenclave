@@ -69,7 +69,11 @@ static bool (*_enclave_set_information)(
 // - RTLD_NOW  Bind all undefined symbols before dlopen returns.
 // - RTLD_GLOBAL Make symbols from this shared library visible to
 //   subsequently loaded libraries.
+<<<<<<< HEAD
 #define LOAD_SGX_ENCLAVE_COMMON() dlopen(LIBRARY_NAME, RTLD_NOW | RTLD_GLOBAL)
+=======
+#define LOAD_SGX_ENCLAVE_COMMON() dlopen(LIBRARY_NAME, RTLD_NOW | RTLD_LOCAL)
+>>>>>>> Dynamically load sgx_enclave_common
 
 #define LOOKUP_FUNCTION(fcn) (void*)dlsym(_module, fcn)
 
