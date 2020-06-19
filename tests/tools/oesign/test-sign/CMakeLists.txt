@@ -180,3 +180,26 @@ set_tests_properties(
   PROPERTIES
     PASS_REGULAR_EXPRESSION
     "ERROR: Invalid enclave property value: header.size_settings.num_tcs")
+
+# Test invalid config file with invalid debug value specified
+add_test(
+  NAME tests/oesign-sign-debug-out-of-range
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/debug_out_of_range.conf -k
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+set_tests_properties(
+  tests/oesign-sign-debug-out-of-range
+  PROPERTIES PASS_REGULAR_EXPRESSION "'Debug' value must be 0 or 1")
+
+# Test invalid config file with invalid syntax "Debug" --> "debug"
+add_test(
+  NAME tests/oesign-sign-lowercase-debug-property
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/lowercase_debug_property.conf -k
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+set_tests_properties(tests/oesign-sign-lowercase-debug-property
+                     PROPERTIES PASS_REGULAR_EXPRESSION "unknown setting")
