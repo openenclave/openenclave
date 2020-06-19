@@ -448,7 +448,7 @@ endif ()
 # For including edge routines.
 target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-if (OE_SGX)
+if (OE_SGX AND NOT COMPONENT MATCHES OEHOSTVERIFY)
   # Always link with the EnclaveCommonAPI
   if (WIN32)
     set(LIBPATHS ${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/lib/native/x64-Release)
