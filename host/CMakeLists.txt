@@ -269,6 +269,7 @@ if (OE_SGX)
     sgx/quote.c
     sgx/registers.c
     sgx/report.c
+    sgx/sgx_enclave_common_wrapper.c
     sgx/sgxload.c
     sgx/sgxquote.c
     sgx/sgxsign.c
@@ -449,34 +450,9 @@ endif ()
 target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (OE_SGX)
-  # Always link with the EnclaveCommonAPI
-  if (WIN32)
-    set(LIBPATHS ${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/lib/native/x64-Release)
-    set(INCPATHS "${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/Header Files")
-  endif ()
   if (NOT LIBPATHS)
     set(LIBPATHS "/usr")
   endif ()
-  find_library(
-    LIBSGX_COMMON
-    NAMES sgx_enclave_common
-    HINTS ${LIBPATHS})
-  if (NOT LIBSGX_COMMON)
-    message(
-      FATAL_ERROR "Intel SGX EnclaveCommonAPI library not found, aborting!")
-  endif ()
-  add_library(sgx_enclave_common SHARED IMPORTED)
-  if (WIN32)
-    set_target_properties(
-      sgx_enclave_common
-      PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${INCPATHS}"
-                 IMPORTED_LOCATION $ENV{WINDIR}/System32 IMPORTED_IMPLIB
-                                                         ${LIBSGX_COMMON})
-  elseif (UNIX)
-    set_target_properties(sgx_enclave_common PROPERTIES IMPORTED_LOCATION
-                                                        ${LIBSGX_COMMON})
-  endif ()
-  target_link_libraries(oehost PUBLIC $<BUILD_INTERFACE:sgx_enclave_common>)
 
   # Optionally link in DCAP library
   if (HAS_QUOTE_PROVIDER)
