@@ -13,6 +13,46 @@
 
 #include "core_t.h"
 
+#if !defined(OE_USE_BUILTIN_EDL)
+/**
+ * Declare the protoype of the following functions to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_log_is_supported_ocall();
+oe_result_t _oe_log_ocall(uint32_t log_level, const char* message);
+oe_result_t _oe_write_ocall(int device, const char* str, size_t maxlen);
+
+/**
+ * Make the following OCALLs weak to support the system EDL opt-in.
+ * When the user does not opt in (import) the EDL, the linker will picked
+ * the following default implementations. If the user opts in the EDL,
+ * the implementions (which are strong) in the oeedger8r-generated code will be
+ * used.
+ */
+oe_result_t _oe_log_is_supported_ocall()
+{
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_log_is_supported_ocall, oe_log_is_supported_ocall);
+
+oe_result_t _oe_log_ocall(uint32_t log_level, const char* message)
+{
+    OE_UNUSED(log_level);
+    OE_UNUSED(message);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_log_ocall, oe_log_ocall);
+
+oe_result_t _oe_write_ocall(int device, const char* str, size_t maxlen)
+{
+    OE_UNUSED(device);
+    OE_UNUSED(str);
+    OE_UNUSED(maxlen);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_write_ocall, oe_write_ocall);
+#endif
+
 void* oe_host_malloc(size_t size)
 {
     uint64_t arg_in = size;

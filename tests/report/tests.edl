@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 enclave {
-    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/logging.edl" import oe_write_ocall;
     from "openenclave/edl/syscall.edl" import *;
     from "openenclave/edl/attestation.edl" import *;
     from "platform.edl" import *;
