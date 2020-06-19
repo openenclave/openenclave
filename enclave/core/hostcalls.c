@@ -24,8 +24,8 @@ oe_result_t _oe_write_ocall(int device, const char* str, size_t maxlen);
 
 /**
  * Make the following OCALLs weak to support the system EDL opt-in.
- * When the user does not opt in (import) the EDL, the linker will picked
- * the following default implementations. If the user opts in the EDL,
+ * When the user does not opt in (import) the EDL, the linker will pick
+ * the following default implementations. If the user opts into the EDL,
  * the implementions (which are strong) in the oeedger8r-generated code will be
  * used.
  */
