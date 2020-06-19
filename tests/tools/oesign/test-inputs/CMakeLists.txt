@@ -8,9 +8,13 @@
 # added to the test-inputs source folder and copied to the binary output
 # folder on build.
 add_custom_command(
-  OUTPUT duplicate_debug.conf duplicate_num_heap_pages.conf
-         duplicate_num_stack_pages.conf duplicate_num_tcs.conf
-         duplicate_product_id.conf duplicate_security_version.conf
+  OUTPUT duplicate_debug.conf
+         duplicate_num_heap_pages.conf
+         duplicate_num_stack_pages.conf
+         duplicate_num_tcs.conf
+         duplicate_product_id.conf
+         duplicate_security_version.conf
+         lowercase_debug_property.conf
   COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}
           ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -33,6 +37,12 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file non_debug.conf --debug 0)
+
+add_custom_command(
+  OUTPUT debug_out_of_range.conf
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+          --config_file debug_out_of_range.conf --debug 333)
 
 add_custom_command(
   OUTPUT more_num_heap_pages.conf
@@ -77,6 +87,8 @@ add_custom_target(
           duplicate_num_tcs.conf
           duplicate_product_id.conf
           duplicate_security_version.conf
+          lowercase_debug_property.conf
+          debug_out_of_range.conf
           empty.conf
           more_num_heap_pages.conf
           more_num_stack_pages.conf
