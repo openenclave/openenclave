@@ -154,9 +154,7 @@ set(HOST_CXXFLAGS_GCC ${HOST_CFLAGS_GCC})
 ##==============================================================================
 
 if (HAS_QUOTE_PROVIDER)
-  set(SGX_LIBS "-lsgx_enclave_common -lsgx_dcap_ql")
-else ()
-  set(SGX_LIBS "-lsgx_enclave_common")
+  set(SGX_LIBS "-lsgx_dcap_ql")
 endif ()
 
 set(HOSTVERIFY_CLIBS
