@@ -12,6 +12,7 @@
 #include "../../host/memalign.h"
 #endif
 
+#include <openenclave/attestation/sgx/eeid_plugin.h>
 #include <openenclave/attestation/sgx/eeid_verifier.h>
 #include <openenclave/bits/attestation.h>
 #include <openenclave/bits/eeid.h>
@@ -20,7 +21,6 @@
 #include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
-#include <openenclave/internal/sgx/eeid_plugin.h>
 #include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/trace.h>
 

@@ -75,6 +75,9 @@ if (OE_SGX)
   list(
     APPEND
     PLATFORM_SRC
+    ${MUSL_SRC_DIR}/string/x86_64/memcpy.s
+    ${MUSL_SRC_DIR}/string/x86_64/memmove.s
+    ${MUSL_SRC_DIR}/string/x86_64/memset.s
     ../../common/sgx/endorsements.c
     ../../common/sgx/rand.S
     sgx/arena.c
@@ -112,10 +115,27 @@ if (OE_SGX)
   set_source_files_properties(sgx/td_basic.c PROPERTIES COMPILE_FLAGS
                                                         -fno-stack-protector)
 
+  # To avoid the `unused-command-line-argument` warning, which we treat as an
+  # error, we explicitly turn off the warning when compiling these assembly
+  # files.
+  list(
+    APPEND
+    W_NO_UNUSED_COMMAND_LINE_ARGUMENT
+    ${MUSL_SRC_DIR}/string/x86_64/memcpy.s
+    ${MUSL_SRC_DIR}/string/x86_64/memmove.s
+    ${MUSL_SRC_DIR}/string/x86_64/memset.s)
+
+  set_property(
+    SOURCE ${W_NO_UNUSED_COMMAND_LINE_ARGUMENT}
+    APPEND_STRING
+    PROPERTY COMPILE_FLAGS "-Wno-error=unused-command-line-argument")
 elseif (OE_TRUSTZONE)
   list(
     APPEND
     PLATFORM_SRC
+    ${MUSL_SRC_DIR}/string/memcpy.c
+    ${MUSL_SRC_DIR}/string/memmove.c
+    ${MUSL_SRC_DIR}/string/memset.c
     optee/backtrace.c
     optee/bounds.c
     optee/calls.c
@@ -133,6 +153,12 @@ elseif (OE_TRUSTZONE)
     optee/stubs.c
     optee/thread.c
     optee/tracee.c)
+
+  list(APPEND NEEDS_STDC_NAMES ${MUSL_SRC_DIR}/string/memmove.c
+       ${MUSL_SRC_DIR}/string/memset.c ${MUSL_SRC_DIR}/string/memcpy.c)
+
+  list(APPEND W_NO_CONVERSION ${MUSL_SRC_DIR}/string/memmove.c
+       ${MUSL_SRC_DIR}/string/memset.c)
 endif ()
 
 if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
@@ -152,9 +178,6 @@ add_enclave_library(
   ../../common/argv.c
   ${MUSL_SRC_DIR}/prng/rand.c
   ${MUSL_SRC_DIR}/string/memcmp.c
-  ${MUSL_SRC_DIR}/string/memcpy.c
-  ${MUSL_SRC_DIR}/string/memmove.c
-  ${MUSL_SRC_DIR}/string/memset.c
   __stack_chk_fail.c
   assert.c
   atexit.c
@@ -187,24 +210,13 @@ add_enclave_library(
 # Additionally, suppress type conversion warnings introduced by 3rdparty code
 set(CORELIBC_INCLUDES ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 
-list(
-  APPEND
-  NEEDS_STDC_NAMES
-  ${MUSL_SRC_DIR}/prng/rand.c
-  ${MUSL_SRC_DIR}/string/memmove.c
-  ${MUSL_SRC_DIR}/string/memset.c
-  ${MUSL_SRC_DIR}/string/memcmp.c
-  ${MUSL_SRC_DIR}/string/memcpy.c
-  debugmalloc.c
-  strtok_r.c)
+list(APPEND NEEDS_STDC_NAMES ${MUSL_SRC_DIR}/prng/rand.c
+     ${MUSL_SRC_DIR}/string/memcmp.c debugmalloc.c strtok_r.c)
 
-list(APPEND W_NO_CONVERSION ${MUSL_SRC_DIR}/prng/rand.c
-     ${MUSL_SRC_DIR}/string/memmove.c ${MUSL_SRC_DIR}/string/memset.c)
+list(APPEND W_NO_CONVERSION ${MUSL_SRC_DIR}/prng/rand.c)
 
-set_property(
-  SOURCE ${W_NO_CONVERSION}
-  APPEND_STRING
-  PROPERTY COMPILE_FLAGS " -Wno-conversion")
+set_property(SOURCE ${W_NO_CONVERSION} APPEND_STRING PROPERTY COMPILE_FLAGS
+                                                              "-Wno-conversion")
 
 set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND_STRING
              PROPERTY COMPILE_FLAGS " -I${CORELIBC_INCLUDES}")
