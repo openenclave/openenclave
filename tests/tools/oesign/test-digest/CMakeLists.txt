@@ -9,12 +9,37 @@ add_custom_command(
   COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../sign-and-verify.py
           ${CMAKE_CURRENT_BINARY_DIR})
 
+add_custom_command(
+  OUTPUT oesign_test_enc.baseline.digest.sig
+  DEPENDS oesign_test_enc oesign_test_configs oesign_test_keys
+  COMMAND
+    oesign digest -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/valid.conf -d oesign_test_enc.baseline.digest
+  COMMAND
+    openssl pkeyutl -sign -pkeyopt digest:sha256 -in
+    oesign_test_enc.baseline.digest -inkey
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem -keyform PEM -out
+    oesign_test_enc.baseline.digest.sig)
+
+add_custom_command(
+  OUTPUT oesign_test_alt_enc.baseline.digest.sig
+  DEPENDS oesign_test_alt_enc
+  COMMAND oesign digest -e $<TARGET_FILE:oesign_test_alt_enc> -d
+          oesign_test_alt_enc.baseline.digest
+  COMMAND
+    openssl pkeyutl -sign -pkeyopt digest:sha256 -in
+    oesign_test_alt_enc.baseline.digest -inkey
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem -keyform PEM -out
+    oesign_test_alt_enc.baseline.digest.sig)
+
 add_custom_target(
   oesign_digest_test_dependencies ALL
   DEPENDS oesign
           oesign_test_host
           oesign_test_enc
+          oesign_test_enc.baseline.digest.sig
           oesign_test_alt_enc
+          oesign_test_alt_enc.baseline.digest.sig
           oesign_test_keys
           oesign_test_configs
           sign-and-verify.py)
@@ -111,7 +136,8 @@ add_test(
   NAME tests/oesign-digest-sign-missing-enclave-arg
   COMMAND
     oesign sign -c ${OESIGN_TEST_INPUTS_DIR}/valid.conf -x
-    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d oesign_test_enc.digest.sig)
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d
+    oesign_test_enc.baseline.digest.sig)
 
 set_tests_properties(
   tests/oesign-digest-sign-missing-enclave-arg
@@ -120,8 +146,9 @@ set_tests_properties(
 # Test sign command for digest options missing --x509 (-x) argument
 add_test(
   NAME tests/oesign-digest-sign-missing-x509-arg
-  COMMAND oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
-          ${OESIGN_TEST_INPUTS_DIR}/valid.conf -d oesign_test_enc.digest.sig)
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/valid.conf -d oesign_test_enc.baseline.digest.sig)
 
 set_tests_properties(
   tests/oesign-digest-sign-missing-x509-arg
@@ -147,8 +174,9 @@ add_test(
   COMMAND
     oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
     ${OESIGN_TEST_INPUTS_DIR}/valid.conf -x
-    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d oesign_test_enc.digest.sig
-    -k ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d
+    oesign_test_enc.baseline.digest.sig -k
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
 
 set_tests_properties(
   tests/oesign-digest-sign-conflicting-key-file-arg
@@ -161,7 +189,8 @@ add_test(
   COMMAND
     oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
     ${OESIGN_TEST_INPUTS_DIR}/valid.conf -x
-    ${OESIGN_TEST_INPUTS_DIR}/sign_key_2.cert.pem -d oesign_test_enc.digest.sig)
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key_2.cert.pem -d
+    oesign_test_enc.baseline.digest.sig)
 
 set(OESIGN_DIGEST_SIGN_MISMATCHED_X509_REGEX
     "ERROR: Digest signature cannot be validated against the specified enclave configuration using the provided certificate"
@@ -178,12 +207,14 @@ set_tests_properties(
              ${OESIGN_DIGEST_SIGN_MISMATCHED_X509_REGEX})
 
 # Test sign command for digest options with mismatched Debug config
+# Also validates that the config Debug value overwrites the build time one
 add_test(
   NAME tests/oesign-digest-sign-new-debug-config
   COMMAND
-    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    oesign sign -e $<TARGET_FILE:oesign_test_alt_enc> -c
     ${OESIGN_TEST_INPUTS_DIR}/non_debug.conf -x
-    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d oesign_test_enc.digest.sig)
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d
+    oesign_test_alt_enc.baseline.digest.sig)
 
 set_tests_properties(
   tests/oesign-digest-sign-new-debug-config
@@ -193,12 +224,14 @@ set_tests_properties(
 )
 
 # Test sign command for digest options with mismatched NumHeapPages config
+# Also validates that the config NumHeapPages value overwrites the build time one
 add_test(
   NAME tests/oesign-digest-sign-new-num-heap-pages
   COMMAND
-    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    oesign sign -e $<TARGET_FILE:oesign_test_alt_enc> -c
     ${OESIGN_TEST_INPUTS_DIR}/more_num_heap_pages.conf -x
-    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d oesign_test_enc.digest.sig)
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d
+    oesign_test_alt_enc.baseline.digest.sig)
 
 set_tests_properties(
   tests/oesign-digest-sign-new-num-heap-pages
@@ -208,12 +241,14 @@ set_tests_properties(
 )
 
 # Test sign command for digest options with mismatched NumStackPages config
+# Also validates that the config NumStackPages value overwrites the build time one
 add_test(
   NAME tests/oesign-digest-sign-new-num-stack-pages
   COMMAND
-    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    oesign sign -e $<TARGET_FILE:oesign_test_alt_enc> -c
     ${OESIGN_TEST_INPUTS_DIR}/more_num_stack_pages.conf -x
-    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d oesign_test_enc.digest.sig)
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d
+    oesign_test_alt_enc.baseline.digest.sig)
 
 set_tests_properties(
   tests/oesign-digest-sign-new-num-stack-pages
@@ -223,12 +258,14 @@ set_tests_properties(
 )
 
 # Test sign command for digest options with mismatched NumTCS config
+# Also validates that the config NumTCS value overwrites the build time one
 add_test(
   NAME tests/oesign-digest-sign-new-num-tcs
   COMMAND
-    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    oesign sign -e $<TARGET_FILE:oesign_test_alt_enc> -c
     ${OESIGN_TEST_INPUTS_DIR}/more_num_tcs.conf -x
-    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d oesign_test_enc.digest.sig)
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d
+    oesign_test_alt_enc.baseline.digest.sig)
 
 set_tests_properties(
   tests/oesign-digest-sign-new-num-tcs
@@ -238,12 +275,14 @@ set_tests_properties(
 )
 
 # Test sign command for digest options with mismatched ProductID config
+# Also validates that the config ProductID value overwrites the build time one
 add_test(
   NAME tests/oesign-digest-sign-new-product-id
   COMMAND
-    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    oesign sign -e $<TARGET_FILE:oesign_test_alt_enc> -c
     ${OESIGN_TEST_INPUTS_DIR}/new_product_id.conf -x
-    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d oesign_test_enc.digest.sig)
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d
+    oesign_test_alt_enc.baseline.digest.sig)
 
 set_tests_properties(
   tests/oesign-digest-sign-new-product-id
@@ -253,12 +292,14 @@ set_tests_properties(
 )
 
 # Test sign command for digest options with mismatched SecurityVersion config
+# Also validates that the config SecurityVersion value overwrites the build time one
 add_test(
   NAME tests/oesign-digest-sign-new-security-version
   COMMAND
-    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    oesign sign -e $<TARGET_FILE:oesign_test_alt_enc> -c
     ${OESIGN_TEST_INPUTS_DIR}/new_security_version.conf -x
-    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d oesign_test_enc.digest.sig)
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d
+    oesign_test_alt_enc.baseline.digest.sig)
 
 set_tests_properties(
   tests/oesign-digest-sign-new-security-version
@@ -273,7 +314,8 @@ add_test(
   COMMAND
     oesign sign -e $<TARGET_FILE:oesign_test_alt_enc> -c
     ${OESIGN_TEST_INPUTS_DIR}/valid.conf -x
-    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d oesign_test_enc.digest.sig)
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem -d
+    oesign_test_enc.baseline.digest.sig)
 
 set_tests_properties(
   tests/oesign-digest-sign-alt-enclave

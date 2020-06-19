@@ -1,12 +1,20 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# Generate test variations from a standard baseline configuration
-# TODO: Any test configurations that consist of more than just manipulations
+# Copy hand authored test configurations to output
+#
+# Any test configurations that consist of more than just manipulations
 # of the standard configuration values (e.g. syntax error tests) should be
 # added to the test-inputs source folder and copied to the binary output
 # folder on build.
+add_custom_command(
+  OUTPUT duplicate_debug.conf duplicate_num_heap_pages.conf
+         duplicate_num_stack_pages.conf duplicate_num_tcs.conf
+         duplicate_product_id.conf duplicate_security_version.conf
+  COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}
+          ${CMAKE_CURRENT_BINARY_DIR})
 
+# Generate test variations from a standard baseline configuration
 add_custom_command(
   OUTPUT valid.conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
@@ -63,7 +71,13 @@ add_custom_command(
 
 add_custom_target(
   oesign_test_configs ALL
-  DEPENDS empty.conf
+  DEPENDS duplicate_debug.conf
+          duplicate_num_heap_pages.conf
+          duplicate_num_stack_pages.conf
+          duplicate_num_tcs.conf
+          duplicate_product_id.conf
+          duplicate_security_version.conf
+          empty.conf
           more_num_heap_pages.conf
           more_num_stack_pages.conf
           more_num_tcs.conf

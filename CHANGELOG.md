@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   application EDL. See [system EDL opt-in document]
   (docs/DesignDocs/system_ocall_opt_in.md#how-to-port-your-application) for more information.
 - Switch to oeedger8r written in C++.
+- Fix #3134. oesign tool will now reject .conf files that contain duplicate property definitions.
 
 ### Removed
 - Removed oehostapp and the appendent "-rdynamic" compiling option. Please use oehost instead and add the option back manually if necessary.
