@@ -41,7 +41,7 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void))
           If the compare and exchange succeeds, then this thread owns the
           responsibility of invoking the function.
 
-          If the compar and exchange fails, then another thread has taken
+          If the compare and exchange fails, then another thread has taken
           ownership of calling the function and therefore this thread must
           wait for the other thread to complete the invocation.
 

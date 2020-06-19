@@ -30,11 +30,11 @@ oe_result_t _oe_log_init_ecall(
 
 /**
  * Make the following ECALL weak to support the system EDL opt-in.
- * When the user does not opt in (import) the EDL, the linker will picked
- * the following default implementation. If the user opts in the EDL,
- * the implementions (which also weak) in the oeedger8r-generated code will be
- * used. This behavior is guaranteed by the linker; i.e., the linker will pick
- * the symbols defined in the object before those in the library.
+ * When the user does not opt in (import) the EDL, the linker will pick
+ * the following default implementation. If the user opts into the EDL,
+ * the implementions (which are also weak) in the oeedger8r-generated code will
+ * be used. This behavior is guaranteed by the linker; i.e., the linker will
+ * pick the symbols defined in the object before those in the library.
  */
 oe_result_t _oe_log_init_ecall(
     oe_enclave_t* enclave,
