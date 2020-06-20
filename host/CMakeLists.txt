@@ -456,12 +456,6 @@ if (OE_SGX)
 
   # Optionally link in DCAP library
   if (HAS_QUOTE_PROVIDER)
-    if (WIN32)
-      list(APPEND LIBPATHS
-           ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
-      list(APPEND INCPATHS
-           "${NUGET_PACKAGE_PATH}/DCAP_Components/build/Header Files")
-    endif ()
     find_library(
       LIBSGX_QE
       NAMES sgx_dcap_ql
@@ -472,18 +466,7 @@ if (OE_SGX)
           "No quote provider library found, aborting! Set -DHAS_QUOTE_PROVIDER=OFF to ignore."
       )
     endif ()
-    add_library(sgx_dcap_ql SHARED IMPORTED)
-    if (WIN32)
-      set_target_properties(
-        sgx_dcap_ql
-        PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${INCPATHS}"
-                   IMPORTED_LOCATION $ENV{WINDIR}/System32 IMPORTED_IMPLIB
-                                                           ${LIBSGX_QE})
-    elseif (UNIX)
-      set_target_properties(sgx_dcap_ql PROPERTIES IMPORTED_LOCATION
-                                                   ${LIBSGX_QE})
-    endif ()
-    target_link_libraries(oehost PUBLIC $<BUILD_INTERFACE:sgx_dcap_ql>)
+
     # turn on 'OE_LINK_SGX_DCAP_QL' for the preprocessor
     target_compile_definitions(oehost PUBLIC OE_LINK_SGX_DCAP_QL)
   endif ()
