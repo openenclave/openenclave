@@ -153,18 +153,11 @@ set(HOST_CXXFLAGS_GCC ${HOST_CFLAGS_GCC})
 ##
 ##==============================================================================
 
-if (HAS_QUOTE_PROVIDER)
-  set(SGX_LIBS "-lsgx_dcap_ql")
-else ()
-  set(SGX_LIBS "")
-endif ()
-
 set(HOSTVERIFY_CLIBS
     "-rdynamic -Wl,-z,noexecstack -L\${libdir}/openenclave/host -loehostverify -ldl -lpthread"
 )
 set(HOST_CLIBS
-    "-Wl,-z,noexecstack -L\${libdir}/openenclave/host -loehost -ldl -lpthread ${SGX_LIBS}"
-)
+    "-Wl,-z,noexecstack -L\${libdir}/openenclave/host -loehost -ldl -lpthread")
 
 set(HOSTVERIFY_CXXLIBS "${HOSTVERIFY_CLIBS}")
 set(HOST_CXXLIBS "${HOST_CLIBS}")

@@ -100,7 +100,6 @@ if (OE_SGX)
                               IMPORTED_LOCATION $ENV{WINDIR}/System32
                               IMPORTED_IMPLIB ${SGX_DCAP_QL_LIB})
       endif ()
-      target_link_libraries(openenclave::oehost INTERFACE openenclave::sgx_dcap_ql)
     endif ()
   endif ()
 endif ()
