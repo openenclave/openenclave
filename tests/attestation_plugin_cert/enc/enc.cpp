@@ -6,13 +6,14 @@
 #include <mbedtls/pk.h>
 #include <mbedtls/rsa.h>
 #include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
+#include <openenclave/bits/evidence.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/bits/evidence.h>
-#include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,12 +23,15 @@
 // This is the claims validation callback. A TLS connecting party (client or
 // server) can verify the passed in claims to decide whether to
 // accept a connection request
-oe_result_t enclave_claims_verifier(oe_claim_t* claims, size_t claims_length, void* arg)
+oe_result_t sgx_enclave_claims_verifier(
+    oe_claim_t* claims,
+    size_t claims_length,
+    void* arg)
 {
     oe_result_t result = OE_VERIFY_FAILED;
 
     (void)arg;
-    OE_TRACE_INFO("enclave_claims_verifier is called with claims:\n");
+    OE_TRACE_INFO("sgx_enclave_claims_verifier is called with claims:\n");
 
     for (size_t i = 0; i < claims_length; i++)
     {
@@ -38,18 +42,19 @@ oe_result_t enclave_claims_verifier(oe_claim_t* claims, size_t claims_length, vo
             // Check the enclave's security version
             if (security_version < 1)
             {
-              OE_TRACE_ERROR(
-                  "identity->security_version checking failed (%d)\n",
-                  security_version);
-              goto done;
+                OE_TRACE_ERROR(
+                    "identity->security_version checking failed (%d)\n",
+                    security_version);
+                goto done;
             }
         }
         // Dump an enclave's unique ID, signer ID and Product ID. They are
-        // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves. In a real scenario,
-        // custom id checking should be done here
-        else if (strcmp(claim->name, OE_CLAIM_SIGNER_ID) == 0 ||
-                 strcmp(claim->name, OE_CLAIM_UNIQUE_ID) == 0 ||
-                 strcmp(claim->name, OE_CLAIM_PRODUCT_ID) == 0)
+        // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves. In a real
+        // scenario, custom id checking should be done here
+        else if (
+            strcmp(claim->name, OE_CLAIM_SIGNER_ID) == 0 ||
+            strcmp(claim->name, OE_CLAIM_UNIQUE_ID) == 0 ||
+            strcmp(claim->name, OE_CLAIM_PRODUCT_ID) == 0)
         {
             OE_TRACE_INFO("Enclave %s:\n", claim->name);
             for (size_t j = 0; j < claim->value_size; j++)
@@ -77,8 +82,8 @@ oe_result_t generate_key_pair(
     oe_asymmetric_key_params_t params;
     char user_data[] = "test user data!";
     size_t user_data_size = sizeof(user_data) - 1;
-    uint8_t* local_public_key = NULL;
-    uint8_t* local_private_key = NULL;
+    uint8_t* local_public_key = nullptr;
+    uint8_t* local_private_key = nullptr;
 
     OE_TRACE_INFO("Generate key pair");
 
@@ -94,8 +99,8 @@ oe_result_t generate_key_pair(
             &params,
             public_key,
             public_key_size,
-            NULL,
-            NULL);
+            nullptr,
+            nullptr);
         OE_CHECK(result);
 
         result = oe_get_private_key_by_policy(
@@ -103,8 +108,8 @@ oe_result_t generate_key_pair(
             &params,
             private_key,
             private_key_size,
-            NULL,
-            NULL);
+            nullptr,
+            nullptr);
         OE_CHECK(result);
     }
     else if (key_type == MBEDTLS_PK_RSA)
@@ -122,7 +127,11 @@ oe_result_t generate_key_pair(
 
         // Initialize entropy.
         res = mbedtls_ctr_drbg_seed(
-            &ctr_drbg_contex, mbedtls_entropy_func, &entropy_context, NULL, 0);
+            &ctr_drbg_contex,
+            mbedtls_entropy_func,
+            &entropy_context,
+            nullptr,
+            0);
         if (res != 0)
         {
             OE_TRACE_ERROR("mbedtls_ctr_drbg_seed failed.");
@@ -154,12 +163,12 @@ oe_result_t generate_key_pair(
 
         /* Call again with the allocated memory. */
         local_public_key = (uint8_t*)malloc(local_public_key_size);
-        if (local_public_key == NULL)
+        if (local_public_key == nullptr)
             OE_RAISE(OE_OUT_OF_MEMORY);
         memset((void*)local_public_key, 0, local_public_key_size);
 
         local_private_key = (uint8_t*)malloc(local_private_key_size);
-        if (local_private_key == NULL)
+        if (local_private_key == nullptr)
             OE_RAISE(OE_OUT_OF_MEMORY);
         memset((void*)local_private_key, 0, local_private_key_size);
 
@@ -188,8 +197,8 @@ oe_result_t generate_key_pair(
         *private_key = local_private_key;
         *private_key_size = strlen((const char*)local_private_key) + 1;
 
-        local_public_key = NULL;
-        local_private_key = NULL;
+        local_public_key = nullptr;
+        local_private_key = nullptr;
 
         OE_TRACE_INFO("public_key_size\n[%d]\n", *public_key_size);
         OE_TRACE_INFO("public_key\n[%s]\n", *public_key);
@@ -220,16 +229,16 @@ oe_result_t get_tls_cert_signed_with_key(
     size_t* cert_size)
 {
     oe_result_t result = OE_FAILURE;
-    uint8_t* host_cert_buf = NULL;
+    uint8_t* host_cert_buf = nullptr;
 
-    uint8_t* output_cert = NULL;
+    uint8_t* output_cert = nullptr;
     size_t output_cert_size = 0;
 
-    uint8_t* private_key = NULL;
+    uint8_t* private_key = nullptr;
     size_t private_key_size = 0;
-    uint8_t* public_key = NULL;
+    uint8_t* public_key = nullptr;
     size_t public_key_size = 0;
-    const oe_uuid_t format = {OE_SGX_PLUGIN_UUID};
+    const oe_uuid_t format = {OE_FORMAT_UUID_SGX_ECDSA_P256};
 
     OE_TRACE_INFO("called into enclave\n");
 
@@ -257,7 +266,7 @@ oe_result_t get_tls_cert_signed_with_key(
     // Initialize built-in OE attesters.
     oe_attester_initialize();
 
-    result = oe_generate_plugin_attestation_certificate(
+    result = oe_get_attestation_certificate_with_evidence(
         &format,
         (const unsigned char*)"CN=Open Enclave SDK,O=OESDK TLS,C=US",
         private_key,
@@ -276,15 +285,15 @@ oe_result_t get_tls_cert_signed_with_key(
 
     oe_verifier_initialize();
     // validate cert inside the enclave
-    result = oe_verify_plugin_attestation_certificate(
-        output_cert, output_cert_size, enclave_claims_verifier, NULL);
+    result = oe_verify_attestation_certificate_with_evidence(
+        output_cert, output_cert_size, sgx_enclave_claims_verifier, nullptr);
     OE_TRACE_INFO(
         "\nFrom inside enclave: verifying the certificate... %s\n",
         result == OE_OK ? "Success" : "Fail");
 
     // copy cert to host memory
     host_cert_buf = (uint8_t*)oe_host_malloc(output_cert_size);
-    if (host_cert_buf == NULL)
+    if (host_cert_buf == nullptr)
     {
         result = OE_OUT_OF_MEMORY;
         goto done;

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <limits.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/raise.h>
@@ -10,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tls_u.h"
-#include <openenclave/attestation/verifier.h>
 
 #if defined(_WIN32)
 #include <ShlObj.h>
@@ -26,12 +26,15 @@
 // This is the claims validation callback. A TLS connecting party (client or
 // server) can verify the passed in claims to decide whether to
 // accept a connection request
-oe_result_t enclave_claims_verifier(oe_claim_t* claims, size_t claims_length, void* arg)
+oe_result_t sgx_enclave_claims_verifier(
+    oe_claim_t* claims,
+    size_t claims_length,
+    void* arg)
 {
     oe_result_t result = OE_VERIFY_FAILED;
 
     (void)arg;
-    OE_TRACE_INFO("enclave_claims_verifier is called with claims:\n");
+    OE_TRACE_INFO("sgx_enclave_claims_verifier is called with claims:\n");
 
     for (size_t i = 0; i < claims_length; i++)
     {
@@ -42,18 +45,19 @@ oe_result_t enclave_claims_verifier(oe_claim_t* claims, size_t claims_length, vo
             // Check the enclave's security version
             if (security_version < 1)
             {
-              OE_TRACE_ERROR(
-                  "identity->security_version checking failed (%d)\n",
-                  security_version);
-              goto done;
+                OE_TRACE_ERROR(
+                    "identity->security_version checking failed (%d)\n",
+                    security_version);
+                goto done;
             }
         }
         // Dump an enclave's unique ID, signer ID and Product ID. They are
-        // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves. In a real scenario,
-        // custom id checking should be done here
-        else if (strcmp(claim->name, OE_CLAIM_SIGNER_ID) == 0 ||
-                 strcmp(claim->name, OE_CLAIM_UNIQUE_ID) == 0 ||
-                 strcmp(claim->name, OE_CLAIM_PRODUCT_ID) == 0)
+        // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves. In a real
+        // scenario, custom id checking should be done here
+        else if (
+            strcmp(claim->name, OE_CLAIM_SIGNER_ID) == 0 ||
+            strcmp(claim->name, OE_CLAIM_UNIQUE_ID) == 0 ||
+            strcmp(claim->name, OE_CLAIM_PRODUCT_ID) == 0)
         {
             OE_TRACE_INFO("Enclave %s:\n", claim->name);
             for (size_t j = 0; j < claim->value_size; j++)
@@ -72,7 +76,7 @@ void run_test(oe_enclave_t* enclave, int test_type)
 {
     oe_result_t result = OE_FAILURE;
     oe_result_t ecall_result;
-    unsigned char* cert = NULL;
+    unsigned char* cert = nullptr;
     size_t cert_size = 0;
 
     OE_TRACE_INFO(
@@ -100,7 +104,7 @@ void run_test(oe_enclave_t* enclave, int test_type)
     {
         // for testing purpose, output the whole cer in DER format
         char filename[FILENAME_LENGTH];
-        FILE* file = NULL;
+        FILE* file = nullptr;
 
         sprintf_s(
             filename,
@@ -121,8 +125,8 @@ void run_test(oe_enclave_t* enclave, int test_type)
     // validate cert
     OE_TRACE_INFO("Host: Verifying tls certificate\n");
     OE_TRACE_INFO("Host: cert = %p cert_size = %d\n", cert, cert_size);
-    result = oe_verify_plugin_attestation_certificate(
-        cert, cert_size, enclave_claims_verifier, NULL);
+    result = oe_verify_attestation_certificate_with_evidence(
+        cert, cert_size, sgx_enclave_claims_verifier, nullptr);
     OE_TRACE_INFO(
         "Host: Verifying the certificate from a host ... %s\n",
         result == OE_OK ? "Success" : "Fail");
@@ -130,55 +134,16 @@ void run_test(oe_enclave_t* enclave, int test_type)
     OE_TEST(result == OE_OK);
 
     OE_TRACE_INFO("free cert 0xx%p\n", cert);
-    //oe_verifier_shutdown();
+    // oe_verifier_shutdown();
     free(cert);
 }
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_LINK_SGX_DCAP_QL
-
-#ifdef _WIN32
-    /* This is a workaround for running in Visual Studio 2017 Test Explorer
-     * where the environment variables are not correctly propagated to the
-     * test. This is resolved in Visual Studio 2019 */
-    WCHAR path[_MAX_PATH];
-
-    if (!GetEnvironmentVariableW(L"SystemRoot", path, _MAX_PATH))
-    {
-        if (GetLastError() != ERROR_ENVVAR_NOT_FOUND)
-            exit(1);
-
-        UINT path_length = GetSystemWindowsDirectoryW(path, _MAX_PATH);
-        if (path_length == 0 || path_length > _MAX_PATH)
-            exit(1);
-
-        if (SetEnvironmentVariableW(L"SystemRoot", path) == 0)
-            exit(1);
-    }
-
-    if (!GetEnvironmentVariableW(L"LOCALAPPDATA", path, _MAX_PATH))
-    {
-        if (GetLastError() != ERROR_ENVVAR_NOT_FOUND)
-            exit(1);
-
-        WCHAR* local_path = NULL;
-        if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &local_path) !=
-            S_OK)
-        {
-            exit(1);
-        }
-
-        BOOL success = SetEnvironmentVariableW(L"LOCALAPPDATA", local_path);
-        CoTaskMemFree(local_path);
-
-        if (!success)
-            exit(1);
-    }
-#endif
+#ifdef OE_HAS_SGX_DCAP_QL
 
     oe_result_t result;
-    oe_enclave_t* enclave = NULL;
+    oe_enclave_t* enclave = nullptr;
 
     if (argc != 2)
     {
@@ -191,7 +156,8 @@ int main(int argc, const char* argv[])
         return SKIP_RETURN_CODE;
 
     if ((result = oe_create_tls_enclave(
-             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+             argv[1], OE_ENCLAVE_TYPE_SGX, flags, nullptr, 0, &enclave)) !=
+        OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     oe_verifier_initialize();
@@ -205,11 +171,11 @@ int main(int argc, const char* argv[])
     OE_TRACE_INFO("=== passed all tests (tls)\n");
     return 0;
 #else
-    // this test should not run on any platforms where HAS_QUOTE_PROVIDER is not
-    // defined
+    // This test should not run on any platforms where HAS_QUOTE_PROVIDER is not
+    // defined.
     OE_UNUSED(argc);
     OE_UNUSED(argv);
-    OE_TRACE_INFO("=== tests skipped when built with HAS_QUOTE_PROVIDER=OFF\n");
+    printf("=== tests skipped when built with HAS_QUOTE_PROVIDER=OFF\n");
     return SKIP_RETURN_CODE;
 #endif
 }

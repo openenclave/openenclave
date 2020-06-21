@@ -8,13 +8,13 @@ add_custom_command(
   DEPENDS ${EDL_FILE} edger8r
   COMMAND
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
-    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+    ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_enclave(
   TARGET
   tls_cert_enc
   UUID
-  6cc330ff-c8cf-49d4-92ef-e1674794f820
+  06999b6d-4132-461a-94da-f3972f68f301
   SOURCES
   enc.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/tls_t.c)

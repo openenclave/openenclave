@@ -18,6 +18,13 @@
 
 OE_EXTERNC_BEGIN
 
+// ISO(1).ANSI(2).USA(840).Microsoft(113556).ACC(10).Classes(1).Subclass(2)
+#define X509_OID_FOR_OE_EVIDENCE_EXT                         \
+    {                                                        \
+        0x2A, 0x86, 0x48, 0x86, 0xF7, 0x14, 0x0A, 0x01, 0x02 \
+    }
+#define X509_OID_FOR_OE_EVIDENCE_STRING "1.2.840.113556.10.1.2"
+
 /**
  * Bit mask for evidence of an SGX enclave in debug mode.
  */

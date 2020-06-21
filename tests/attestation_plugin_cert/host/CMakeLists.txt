@@ -10,9 +10,13 @@ add_custom_command(
   DEPENDS ${EDL_FILE} edger8r
   COMMAND
     edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
-    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
+    ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(tls_cert_host host.cpp tls_u.c)
+
+if (HAS_QUOTE_PROVIDER)
+  target_compile_definitions(tls_cert_host PRIVATE OE_HAS_SGX_DCAP_QL)
+endif ()
 
 target_include_directories(tls_cert_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(tls_cert_host oehost)

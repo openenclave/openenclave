@@ -16,6 +16,7 @@
 #endif
 
 #include "bits/defs.h"
+#include "bits/evidence.h"
 #include "bits/report.h"
 #include "bits/result.h"
 
@@ -84,19 +85,21 @@ oe_result_t oe_verify_attestation_certificate(
     void* arg);
 
 /**
- * claim validation callback type
+ * Type definition for a claims verification callback.
+ *
  * @param[in] claims a pointer to an array of claims
  * @param[in] claims_length length of the claims array
  * @param[in] arg caller defined context
  */
-typedef oe_result_t (
-    *oe_claim_verify_callback_t)(oe_claim_t* claims, size_t claims_length,
-        void* arg);
+typedef oe_result_t (*oe_verify_claims_callback_t)(
+    oe_claim_t* claims,
+    size_t claims_length,
+    void* arg);
 
 /**
- * oe_verify_plugin_attestation_certificate
+ * oe_verify_attestation_certificate_with_evidence
  *
- * This function perform a custom validation on the input certificate. This
+ * This function performs a custom validation on the input certificate. This
  * validation includes extracting an attestation evidence extension from the
  * certificate before validating this evidence. An optional
  * claim_verify_callback could be passed in for a calling client to further
@@ -113,10 +116,10 @@ typedef oe_result_t (
  * @retval OE_FAILURE general failure
  * @retval other appropriate error code
  */
-oe_result_t oe_verify_plugin_attestation_certificate(
+oe_result_t oe_verify_attestation_certificate_with_evidence(
     uint8_t* cert_in_der,
     size_t cert_in_der_len,
-    oe_claim_verify_callback_t claim_verify_callback,
+    oe_verify_claims_callback_t claim_verify_callback,
     void* arg);
 
 OE_EXTERNC_END
