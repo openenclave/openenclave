@@ -1,16 +1,15 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/attestation/attester.h>
 #include <openenclave/attestation/sgx/eeid_attester.h>
+#include <openenclave/attestation/sgx/eeid_plugin.h>
 #include <openenclave/attestation/sgx/eeid_verifier.h>
-#include <openenclave/corelibc/string.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/report.h>
-#include <openenclave/internal/sgx/eeid_plugin.h>
-#include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "../../../common/sgx/quote.h"
