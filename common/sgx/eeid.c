@@ -280,7 +280,7 @@ static oe_result_t _add_page(
         base,
         base + *vaddr,
         (uint64_t)page,
-        SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W,
+        SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W | SGX_SECINFO_X,
         t));
     *vaddr += OE_PAGE_SIZE;
     result = OE_OK;
