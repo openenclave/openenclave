@@ -219,7 +219,7 @@ static oe_result_t _eeid_free_evidence(
     uint8_t* evidence_buffer)
 {
     OE_UNUSED(context);
-    free(evidence_buffer);
+    oe_free(evidence_buffer);
     return OE_OK;
 }
 
@@ -228,7 +228,7 @@ static oe_result_t _eeid_free_endorsements(
     uint8_t* endorsements_buffer)
 {
     OE_UNUSED(context);
-    free(endorsements_buffer);
+    oe_free(endorsements_buffer);
     return OE_OK;
 }
 
