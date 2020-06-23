@@ -483,7 +483,11 @@ if (OE_SGX)
       set_target_properties(sgx_dcap_ql PROPERTIES IMPORTED_LOCATION
                                                    ${LIBSGX_QE})
     endif ()
-    target_link_libraries(oehost PUBLIC $<BUILD_INTERFACE:sgx_dcap_ql>)
+    # In Windows, add sgx_dcap_ql headers to the include path.
+    # In Linux, they are already available in /usr/include.
+    if (WIN32)
+      target_include_directories(oehost PRIVATE ${INCPATHS})
+    endif ()
     # turn on 'OE_LINK_SGX_DCAP_QL' for the preprocessor
     target_compile_definitions(oehost PUBLIC OE_LINK_SGX_DCAP_QL)
   endif ()
