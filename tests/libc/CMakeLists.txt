@@ -9,6 +9,11 @@ endif ()
 
 include(./tests.cmake)
 
+# Run the tests separately for the code coverage test.
+if (CODE_COVERAGE)
+  set(OE_SEPARATE_LIBC_TESTS ON)
+endif ()
+
 if (OE_SEPARATE_LIBC_TESTS)
   foreach (test_file ${LIBC_TESTS})
     string(MAKE_C_IDENTIFIER ${test_file} name)

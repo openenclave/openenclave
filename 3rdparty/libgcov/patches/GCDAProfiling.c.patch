@@ -1,0 +1,91 @@
+diff --git a/3rdparty/libgcov/compiler-rt/lib/profile/GCDAProfiling.c b/3rdparty/libgcov/compiler-rt/lib/profile/GCDAProfiling.c
+index cbca36551..3c42b1008 100644
+--- a/3rdparty/libgcov/compiler-rt/lib/profile/GCDAProfiling.c
++++ b/3rdparty/libgcov/compiler-rt/lib/profile/GCDAProfiling.c
+@@ -33,6 +33,7 @@
+ #else
+ #include <sys/mman.h>
+ #include <sys/file.h>
++#include <sys/mount.h>
+ #endif
+ 
+ #if defined(__FreeBSD__) && defined(__i386__)
+@@ -58,6 +59,11 @@ typedef unsigned int uint32_t;
+ typedef unsigned long long uint64_t;
+ #endif
+ 
++/* Beginning of the OE modfication */
++#include "openenclave/bits/module.h"
++#include "openenclave/bits/fs.h"
++/* End of the OE modification */
++
+ #include "InstrProfiling.h"
+ #include "InstrProfilingUtil.h"
+ 
+@@ -255,28 +261,42 @@ static int map_file() {
+   if (file_size == 0)
+     return -1;
+ 
++#if defined(COMPILER_RT_HAS_MMAP)
+   write_buffer = mmap(0, file_size, PROT_READ | PROT_WRITE,
+                       MAP_FILE | MAP_SHARED, fd, 0);
++#endif
++
++  write_buffer = malloc(file_size);
+   if (write_buffer == (void *)-1) {
+     int errnum = errno;
+     fprintf(stderr, "profiling: %s: cannot map: %s\n", filename,
+             strerror(errnum));
+     return -1;
+   }
++  fseek(output_file, 0L, SEEK_SET);
++  fread(write_buffer, file_size, 1, output_file);
+   return 0;
+ }
+ 
+ static void unmap_file() {
++#if defined(COMPILER_RT_HAS_MSYNC)
+   if (msync(write_buffer, file_size, MS_SYNC) == -1) {
+     int errnum = errno;
+     fprintf(stderr, "profiling: %s: cannot msync: %s\n", filename,
+             strerror(errnum));
+   }
++#endif
++
++  fseek(output_file, 0L, SEEK_SET);
++  fwrite(write_buffer, file_size, 1, output_file);
+ 
+   /* We explicitly ignore errors from unmapping because at this point the data
+    * is written and we don't care.
+    */
++#if defined(COMPILER_RT_HAS_MUNMAP)
+   (void)munmap(write_buffer, file_size);
++#endif
++  free(write_buffer);
+   write_buffer = NULL;
+   file_size = 0;
+ }
+@@ -598,6 +618,23 @@ void llvm_gcov_init(fn_ptr wfn, fn_ptr ffn) {
+   if (atexit_ran == 0) {
+     atexit_ran = 1;
+ 
++    /* Beginning of the OE modfication */
++    if (oe_load_module_host_file_system() != OE_OK) {
++      fprintf(stderr, "oe_load_module_host_file_system() failed\n");
++      exit(1);
++    }
++
++    if (mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL) != 0) {
++      fprintf(stderr, "[llvm_gcov_init] mount() failed\n");
++      exit(1);
++
++    }
++    // Workaround: Force to install the atexit handler of fdtable
++    //             prior to the llvm handler.
++    FILE *f = fopen("/dev/null", "r");
++    fclose(f);
++    /* End of the OE modification */
++
+     /* Make sure we write out the data and delete the data structures. */
+     atexit(llvm_delete_flush_function_list);
+     atexit(llvm_delete_writeout_function_list);

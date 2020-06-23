@@ -576,10 +576,15 @@ oe_result_t oe_public_key_verify(
         padding_info->type);
 
     if (!BCRYPT_SUCCESS(status))
-        OE_RAISE_MSG(
-            OE_CRYPTO_ERROR,
-            "BCryptVerifySignature failed (err=%#x)\n",
-            status);
+    {
+        if (status == STATUS_INVALID_SIGNATURE)
+            OE_RAISE(OE_VERIFY_FAILED);
+        else
+            OE_RAISE_MSG(
+                OE_CRYPTO_ERROR,
+                "BCryptVerifySignature failed (err=%#x)\n",
+                status);
+    }
 
     result = OE_OK;
 

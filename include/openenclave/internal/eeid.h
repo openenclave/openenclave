@@ -75,7 +75,6 @@ oe_result_t oe_deserialize_eeid(
 typedef struct
 {
     uint64_t offset;
-    uint64_t size;
 } oe_eeid_marker_t;
 
 /**

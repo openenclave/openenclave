@@ -27,6 +27,11 @@ void HandleFree(uint64_t arg)
     free((void*)arg);
 }
 
+/* A dummy ocall used to check if the logging.edl is imported. */
+void oe_log_is_supported_ocall()
+{
+}
+
 void oe_log_ocall(uint32_t log_level, const char* message)
 {
     oe_log_message(true, (oe_log_level_t)log_level, message);

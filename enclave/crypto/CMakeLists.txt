@@ -20,6 +20,8 @@ add_enclave_library(
 
 maybe_build_using_clangw(oecryptombed)
 
+enclave_enable_code_coverage(oecryptombed)
+
 enclave_link_libraries(oecryptombed PUBLIC mbedcrypto)
 
 set_enclave_property(TARGET oecryptombed PROPERTY ARCHIVE_OUTPUT_DIRECTORY

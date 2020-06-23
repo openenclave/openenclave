@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added `oe_sgx_get_signer_id_from_public_key()` function which helps a verifier of SGX
   reports extract the expected MRSIGNER value from the signer's public key PEM certificate.
+- OE SDK can now be built and run in simulation mode on a non SGX x64 Windows machine by passing HAS_QUOTE_PROVIDER=off.
+  Previously, the build would work, but running applications would fail due to missing sgx_enclave_common.dll.
+- OE SDK can now be installed from published packages on SGX machines without FLC, and non-SGX machines.
+  Previously, OE SDK could only be installed on SGX1 FLC machines due to a link-time dependency on sgx_dcap_ql which
+  was available only on SGX1 FLC machines.
 
 ### Changed
 - Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
@@ -21,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   application EDL. See [system EDL opt-in document]
   (docs/DesignDocs/system_ocall_opt_in.md#how-to-port-your-application) for more information.
 - Switch to oeedger8r written in C++.
+- Fix #3134. oesign tool will now reject .conf files that contain duplicate property definitions.
+- SGX Simulation Mode does not need SGX libraries to be present in the system.
+- oehost library dynamically loads sgx_dcap_ql shared library instead of linking against it. This allows the SDK to
+  be installed on non-FLC and non-SGX machines.
 
 ### Removed
 - Removed oehostapp and the appendent "-rdynamic" compiling option. Please use oehost instead and add the option back manually if necessary.

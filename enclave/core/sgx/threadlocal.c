@@ -9,6 +9,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include "td.h"
@@ -202,10 +203,6 @@ static volatile uint64_t _tbss_align = 1;
 // Number of thread-local relocations.
 static volatile bool _thread_locals_relocated = false;
 
-/* Thread local variables to track functions to call on thread exit */
-static __thread oe_tls_atexit_t* _tls_atexit_functions;
-static __thread uint64_t _num_tls_atexit_functions;
-
 // TODO: Make this flexible in case more than one page of thread local storage
 // need to allocate.
 
@@ -391,16 +388,18 @@ done:
  */
 void __cxa_thread_atexit(void (*destructor)(void*), void* object)
 {
+    oe_sgx_td_t* td = oe_sgx_get_td();
+
     oe_tls_atexit_t item = {destructor, object};
 
-    _num_tls_atexit_functions++;
+    td->num_tls_atexit_functions++;
 
     // TODO: What happens if realloc fails?
-    _tls_atexit_functions = oe_realloc(
-        _tls_atexit_functions,
-        sizeof(oe_tls_atexit_t) * _num_tls_atexit_functions);
+    td->tls_atexit_functions = oe_realloc(
+        td->tls_atexit_functions,
+        sizeof(oe_tls_atexit_t) * td->num_tls_atexit_functions);
 
-    _tls_atexit_functions[_num_tls_atexit_functions - 1] = item;
+    td->tls_atexit_functions[td->num_tls_atexit_functions - 1] = item;
 }
 
 /**
@@ -410,18 +409,18 @@ void __cxa_thread_atexit(void (*destructor)(void*), void* object)
 oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
 {
     /* Call tls atexit functions in reverse order*/
-    if (_tls_atexit_functions)
+    if (td->tls_atexit_functions)
     {
-        for (uint64_t i = _num_tls_atexit_functions; i > 0; --i)
+        for (uint64_t i = td->num_tls_atexit_functions; i > 0; --i)
         {
-            _tls_atexit_functions[i - 1].destructor(
-                _tls_atexit_functions[i - 1].object);
+            td->tls_atexit_functions[i - 1].destructor(
+                td->tls_atexit_functions[i - 1].object);
         }
 
         // Free the allocated at exit buffer.
-        oe_free(_tls_atexit_functions);
-        _tls_atexit_functions = NULL;
-        _num_tls_atexit_functions = 0;
+        oe_free(td->tls_atexit_functions);
+        td->tls_atexit_functions = NULL;
+        td->num_tls_atexit_functions = 0;
     }
 
     /* Clear tls section if it exists */

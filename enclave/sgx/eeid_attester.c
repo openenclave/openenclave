@@ -9,6 +9,7 @@
 #include <openenclave/enclave.h>
 
 #include <openenclave/attestation/sgx/eeid_attester.h>
+#include <openenclave/attestation/sgx/eeid_plugin.h>
 #include <openenclave/bits/attestation.h>
 #include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
@@ -18,7 +19,6 @@
 #include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
-#include <openenclave/internal/sgx/eeid_plugin.h>
 #include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/trace.h>
 
@@ -219,7 +219,7 @@ static oe_result_t _eeid_free_evidence(
     uint8_t* evidence_buffer)
 {
     OE_UNUSED(context);
-    free(evidence_buffer);
+    oe_free(evidence_buffer);
     return OE_OK;
 }
 
@@ -228,7 +228,7 @@ static oe_result_t _eeid_free_endorsements(
     uint8_t* endorsements_buffer)
 {
     OE_UNUSED(context);
-    free(endorsements_buffer);
+    oe_free(endorsements_buffer);
     return OE_OK;
 }
 

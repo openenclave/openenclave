@@ -46,8 +46,6 @@ size_t oe_malloc_usable_size(void* ptr);
 
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
-long int oe_strtol(const char* nptr, char** endptr, int base);
-
 int oe_atexit(void (*function)(void));
 
 char* oe_realpath(const char* path, oe_syscall_path_t* resolved_path);
@@ -71,11 +69,6 @@ int oe_atoi(const char* nptr);
 #include <openenclave/corelibc/bits/atexit.h>
 #include <openenclave/corelibc/bits/malloc.h>
 #include <openenclave/corelibc/bits/strtoul.h>
-
-OE_INLINE long int strtol(const char* nptr, char** endptr, int base)
-{
-    return oe_strtol(nptr, endptr, base);
-}
 
 OE_INLINE char* realpath(const char* path, char* resolved_path)
 {

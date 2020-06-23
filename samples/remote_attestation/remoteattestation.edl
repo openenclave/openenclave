@@ -3,7 +3,6 @@
 
 enclave {
     from "openenclave/edl/attestation.edl" import *;
-    from "openenclave/edl/logging.edl" import *;
     from "openenclave/edl/syscall.edl" import *;
     from "platform.edl" import *;
 

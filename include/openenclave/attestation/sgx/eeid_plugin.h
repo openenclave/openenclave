@@ -1,13 +1,10 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-// This file provides an implementation of EEID attester and verifier plugins.
+// This file provides the UUID of the EEID attester and verifier plugins.
 
 #ifndef _OE_EEID_UUID_H
 #define _OE_EEID_UUID_H
-
-#include <openenclave/internal/plugin.h>
-#include <openenclave/internal/sgx/plugin.h>
 
 #define OE_FORMAT_UUID_SGX_EEID_ECDSA_P256                                \
     {                                                                     \

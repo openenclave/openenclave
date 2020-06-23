@@ -30,7 +30,7 @@
  * needed to take care of OE_BUFFER_TOO_SMALL failures.
  *
  * @param[in] buf The quote verification collateral.
- * [in] def_sizes The default quote verification collateral sizes.
+ * @param[in] default_sizes The default quote verification collateral sizes.
  */
 void oe_prealloc_quote_verification_collateral_args(
     oe_get_sgx_quote_verification_collateral_args_t* buf,
@@ -39,8 +39,8 @@ void oe_prealloc_quote_verification_collateral_args(
 /**
  * This function is called to update the default collateral arg sizes.
  *
+ * @param[in] src_args The quote verification collateral.
  * @param[in] default_sizes The default quote verification collateral sizes.
- * [in] src_args The quote verification collateral.
  */
 void oe_update_default_collateral_arg_sizes(
     oe_get_sgx_quote_verification_collateral_args_t* src_args,
@@ -318,7 +318,7 @@ void oe_prealloc_quote_verification_collateral_args(
     }
     return;
 done:
-    /*if any of the args remain unallocated, clear all values*/
+    /* if any of the args remain unallocated, clear all values */
     oe_free_sgx_quote_verification_collateral_args(buf);
     buf->qe_identity_issuer_chain_size = 0;
     buf->qe_identity_size = 0;

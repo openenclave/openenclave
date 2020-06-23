@@ -13,6 +13,9 @@
   yum:
     name: "{{ yum_packages }}"
     state: latest
+  retries: 10
+  register: install
+  until: install is success
 
 - name: Download ShellCheck tar.xz archive
   get_url:

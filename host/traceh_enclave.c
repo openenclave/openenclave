@@ -18,6 +18,38 @@
 
 #include "core_u.h"
 
+#if !defined(OE_USE_BUILTIN_EDL)
+/**
+ * Declare the protoype of the following functions to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_log_init_ecall(
+    oe_enclave_t* enclave,
+    const char* enclave_path,
+    uint32_t log_level);
+
+/**
+ * Make the following ECALL weak to support the system EDL opt-in.
+ * When the user does not opt in (import) the EDL, the linker will pick
+ * the following default implementation. If the user opts into the EDL,
+ * the implementions (which are also weak) in the oeedger8r-generated code will
+ * be used. This behavior is guaranteed by the linker; i.e., the linker will
+ * pick the symbols defined in the object before those in the library.
+ */
+oe_result_t _oe_log_init_ecall(
+    oe_enclave_t* enclave,
+    const char* enclave_path,
+    uint32_t log_level)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(enclave_path);
+    OE_UNUSED(log_level);
+    return OE_UNSUPPORTED;
+}
+
+OE_WEAK_ALIAS(_oe_log_init_ecall, oe_log_init_ecall);
+#endif
+
 /*
  * This file is separated from traceh.c since the host verification library
  * should not depend on ECALLS.

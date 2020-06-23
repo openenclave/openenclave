@@ -11,8 +11,47 @@
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/stack_alloc.h>
 
-#include "arena.h"
 #include "core_t.h"
+
+#if !defined(OE_USE_BUILTIN_EDL)
+/**
+ * Declare the protoype of the following functions to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_log_is_supported_ocall();
+oe_result_t _oe_log_ocall(uint32_t log_level, const char* message);
+oe_result_t _oe_write_ocall(int device, const char* str, size_t maxlen);
+
+/**
+ * Make the following OCALLs weak to support the system EDL opt-in.
+ * When the user does not opt in (import) the EDL, the linker will pick
+ * the following default implementations. If the user opts into the EDL,
+ * the implementions (which are strong) in the oeedger8r-generated code will be
+ * used.
+ */
+oe_result_t _oe_log_is_supported_ocall()
+{
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_log_is_supported_ocall, oe_log_is_supported_ocall);
+
+oe_result_t _oe_log_ocall(uint32_t log_level, const char* message)
+{
+    OE_UNUSED(log_level);
+    OE_UNUSED(message);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_log_ocall, oe_log_ocall);
+
+oe_result_t _oe_write_ocall(int device, const char* str, size_t maxlen)
+{
+    OE_UNUSED(device);
+    OE_UNUSED(str);
+    OE_UNUSED(maxlen);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_write_ocall, oe_write_ocall);
+#endif
 
 void* oe_host_malloc(size_t size)
 {
@@ -148,26 +187,6 @@ int oe_host_fprintf(int device, const char* fmt, ...)
     oe_va_end(ap);
 
     return n;
-}
-
-// Function used by oeedger8r for allocating switchless ocall buffers.
-// Preallocate a pool of shared memory per thread for switchless ocalls
-// and then allocate memory from that pool. Since OE does not support
-// reentrant ecalls in the same thread, there can at most be one ecall
-// and one ocall active in a thread. Although an enclave function can
-// make multiple OCALLs, the OCALLs are serialized. So the allocation
-// for one OCALL doesn't interfere with the allocation for the next OCALL.
-// A stack-based allocation scheme is the most efficient in this case.
-void* oe_allocate_switchless_ocall_buffer(size_t size)
-{
-    return oe_arena_malloc(size);
-}
-
-// Function used by oeedger8r for freeing ocall buffers.
-void oe_free_switchless_ocall_buffer(void* buffer)
-{
-    OE_UNUSED(buffer);
-    oe_arena_free_all();
 }
 
 int oe_host_write(int device, const char* str, size_t len)

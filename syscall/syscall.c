@@ -182,6 +182,14 @@ static long _syscall(
             ret = oe_dup(fd);
             goto done;
         }
+        case OE_SYS_flock:
+        {
+            int fd = (int)arg1;
+            int operation = (int)arg2;
+
+            ret = oe_flock(fd, operation);
+            goto done;
+        }
 #if defined(OE_SYS_dup2)
         case OE_SYS_dup2:
         {

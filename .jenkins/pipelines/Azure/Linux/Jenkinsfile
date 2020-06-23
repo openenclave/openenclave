@@ -20,6 +20,46 @@ AGENTS_LABELS = [
     "acc-rhel-8-vanilla":       env.RHEL_8_VANILLA_CUSTOM_LABEL ?: "vanilla-rhel-8"
 ]
 
+def ACCCodeCoverageTest(String label, String compiler, String build_type) {
+    stage("${label} ${compiler} ${build_type} Code Coverage") {
+        node("${label}") {
+            timeout(GLOBAL_TIMEOUT_MINUTES) {
+                cleanWs()
+                checkout scm
+                def task = """
+                           cmake ${WORKSPACE}                                           \
+                               -G Ninja                                                 \
+                               -DCODE_COVERAGE=ON                                       \
+                               -DUSE_DEBUG_MALLOC=OFF                                   \
+                               -DCMAKE_BUILD_TYPE=${build_type}                         \
+                               -Wdev
+                           ninja -v
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                           ninja code_coverage
+                           """
+                oe.Run(compiler, task)
+
+                // Publish the report via Cobertura Plugin.
+                cobertura coberturaReportFile: 'build/coverage/coverage.xml'
+
+                // Publish the result to the PR(s) via GitHub Coverage reporter Plugin.
+                // Workaround to obtain the PR id(s) as Bors does not us to grab them reliably.
+                def log = sh (script: "git log -1 | grep -Po '(Try #\\K|Merge #\\K)[^:]*'", returnStdout: true).trim()
+                def id_list = log.split(' #')
+                id_list.each {
+                    echo "PR ID: ${it}, REPOSITORY_NAME: ${REPOSITORY_NAME}"
+                    withEnv(["CHANGE_URL=https://github.com/${REPOSITORY_NAME}/pull/${it}"]) {
+                        publishCoverageGithub(filepath:'build/coverage/coverage.xml',
+                                              coverageXmlType: 'cobertura',
+                                              comparisonOption: [ value: 'optionFixedCoverage', fixedCoverage: '0.60' ],
+                                              coverageRateType: 'Line')
+                    }
+                }
+            }
+        }
+    }
+}
+
 def ACCTest(String label, String compiler, String build_type, List extra_cmake_args = [], List test_env = [], boolean fresh_install = false) {
     stage("${label} ${compiler} ${build_type}, extra_cmake_args: ${extra_cmake_args}, test_env: ${test_env}${fresh_install ? ", e2e" : ""}") {
         node(label) {
@@ -240,14 +280,11 @@ try{
         "RHEL-8 ACC gcc-8 SGX1 Release":          { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF']) },
         "RHEL-8 ACC gcc-8 SGX1 Debug":            { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF']) },
 
+        "ACC1604 clang-7 Debug LVI e2e":          { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'clang-7', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
+        "ACC1804 gcc Debug LVI e2e":              { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
+    
         "RHEL-8 clang-8 simulation Release e2e":  { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
-        "RHEL-8 clang-8 simulation Debug e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
-        "RHEL-8 gcc-8 simulation Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
-        "RHEL-8 gcc-8 simulation Debug e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
-        "RHEL-8 ACC clang-8 SGX1 Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
-        "RHEL-8 ACC clang-8 SGX1 Debug e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
-        "RHEL-8 ACC gcc-8 SGX1 Release e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
-        "RHEL-8 ACC gcc-8 SGX1 Debug e2e":        { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) }
+        "RHEL-8 ACC clang-8 SGX1 Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) }
     ]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
@@ -274,6 +311,13 @@ try{
                 "RHEL-8 ACC clang-8 SGX1FLC Debug e2e":   { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON'], [], true) },
                 "RHEL-8 ACC gcc-8 SGX1FLC Release e2e":   { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=ON'], [], true) },
                 "RHEL-8 ACC gcc-8 SGX1FLC Debug e2e":     { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=ON'], [], true) },
+                "RHEL-8 clang-8 simulation Debug e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
+                "RHEL-8 gcc-8 simulation Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
+                "RHEL-8 gcc-8 simulation Debug e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
+                "RHEL-8 ACC clang-8 SGX1 Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
+                "RHEL-8 ACC clang-8 SGX1 Debug e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
+                "RHEL-8 ACC gcc-8 SGX1 Release e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
+                "RHEL-8 ACC gcc-8 SGX1 Debug e2e":        { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
 
                 "ACC1604 clang-7 Debug":                  { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-7', 'Debug',   ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1604 clang-7 Release":                { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-7', 'Release', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
@@ -292,13 +336,11 @@ try{
                 "ACC1804 gcc Debug LVI":                  { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 gcc Release LVI":                { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc',     'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
 
-                "ACC1604 clang-7 Debug LVI e2e":          { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'clang-7', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) },
                 "ACC1604 clang-7 Release LVI e2e":        { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'clang-7', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) },
                 "ACC1604 gcc Debug LVI e2e":              { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) },
                 "ACC1604 gcc Release LVI e2e":            { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'gcc',     'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) },
                 "ACC1804 clang-7 Debug LVI e2e":          { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-7', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) },
                 "ACC1804 clang-7 Release LVI e2e":        { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-7', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) },
-                "ACC1804 gcc Debug LVI e2e":              { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) },
                 "ACC1804 gcc Release LVI e2e":            { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'gcc',     'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) }
             ]
             parallel testing_stages
@@ -320,12 +362,8 @@ try{
                 "ACC1804 clang-7 Release LVI FULL Tests": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 gcc Debug LVI":                  { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "ACC1804 gcc Release LVI":                { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc',     'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-
-                "ACC1604 clang-7 Debug LVI e2e":          { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'clang-7', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
-                "ACC1604 gcc Release LVI e2e":            { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'gcc',     'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
-                "ACC1804 clang-7 Release LVI e2e":        { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-7', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
-                "ACC1804 gcc Debug LVI e2e":              { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) }
-            ]
+                "ACC1804 Code Coverage Test" :            { ACCCodeCoverageTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Debug') }
+                ]
             parallel testing_stages
         }
     }

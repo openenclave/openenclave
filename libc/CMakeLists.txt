@@ -21,7 +21,10 @@ if (OE_SGX)
     ${MUSLSRC}/math/x86_64/sqrtl.s
     ${MUSLSRC}/math/x86_64/sqrtf.s
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
-    ${MUSLSRC}/setjmp/x86_64/setjmp.s)
+    ${MUSLSRC}/setjmp/x86_64/setjmp.s
+    ${MUSLSRC}/string/x86_64/memcpy.s
+    ${MUSLSRC}/string/x86_64/memmove.s
+    ${MUSLSRC}/string/x86_64/memset.s)
 elseif (OE_TRUSTZONE)
   add_enclave_library(
     oelibasm
@@ -49,8 +52,14 @@ set(PLATFORM_SRC "")
 if (OE_SGX)
   list(APPEND PLATFORM_SRC sgx/arc4random.c)
 else ()
-  list(APPEND PLATFORM_SRC ${MUSLSRC}/math/exp2l.c optee/abort.c
-       optee/arc4random.c optee/trace.c)
+  list(APPEND PLATFORM_SRC
+    ${MUSLSRC}/math/exp2l.c
+    ${MUSLSRC}/string/memcpy.c
+    ${MUSLSRC}/string/memmove.c
+    ${MUSLSRC}/string/memset.c
+    optee/abort.c
+    optee/arc4random.c
+    optee/trace.c)
 endif ()
 
 add_enclave_library(
@@ -228,6 +237,7 @@ add_enclave_library(
   ${MUSLSRC}/locale/wcsxfrm.c
   ${MUSLSRC}/linux/mount.c
   ${MUSLSRC}/linux/epoll.c
+  ${MUSLSRC}/linux/flock.c
   ${MUSLSRC}/math/acos.c
   ${MUSLSRC}/math/acosf.c
   ${MUSLSRC}/math/acosh.c
@@ -676,12 +686,9 @@ add_enclave_library(
   ${MUSLSRC}/string/memccpy.c
   ${MUSLSRC}/string/memchr.c
   ${MUSLSRC}/string/memcmp.c
-  ${MUSLSRC}/string/memcpy.c
   ${MUSLSRC}/string/memmem.c
-  ${MUSLSRC}/string/memmove.c
   ${MUSLSRC}/string/mempcpy.c
   ${MUSLSRC}/string/memrchr.c
-  ${MUSLSRC}/string/memset.c
   ${MUSLSRC}/string/rindex.c
   ${MUSLSRC}/string/stpcpy.c
   ${MUSLSRC}/string/stpncpy.c
@@ -762,6 +769,7 @@ add_enclave_library(
   ${MUSLSRC}/time/strftime.c
   ${MUSLSRC}/time/__tz.c
   ${MUSLSRC}/time/time.c
+  ${MUSLSRC}/time/timegm.c
   ${MUSLSRC}/time/__tm_to_secs.c
   ${MUSLSRC}/time/__year_to_secs.c
   ${MUSLSRC}/unistd/access.c
@@ -862,6 +870,13 @@ enclave_compile_definitions(oelibc PRIVATE _XOPEN_SOURCE=700)
 
 if (USE_DEBUG_MALLOC)
   enclave_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+endif ()
+
+if (CODE_COVERAGE)
+  # Enable code coverage.
+  enclave_compile_options(oelibc PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
+  # Link against libgcov.
+  enclave_link_libraries(oelibc PRIVATE gcov)
 endif ()
 
 # This project (and its dependents) require the enclave headers and

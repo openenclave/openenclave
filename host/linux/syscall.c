@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/poll.h>
 #include <sys/signal.h>
@@ -187,6 +188,13 @@ int oe_syscall_close_socket_ocall(oe_host_fd_t fd)
     errno = 0;
 
     return close((int)fd);
+}
+
+int oe_syscall_flock_ocall(oe_host_fd_t fd, int operation)
+{
+    errno = 0;
+
+    return flock((int)fd, operation);
 }
 
 oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t oldfd)

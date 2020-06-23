@@ -24,6 +24,8 @@ enclave
 
     untrusted
     {
+        void oe_log_is_supported_ocall();
+
         void oe_log_ocall(
             uint32_t log_level,
             [in, string] const char* message);

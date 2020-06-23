@@ -31,6 +31,9 @@ install(
   COMPONENT OEHOSTVERIFY)
 install(FILES openenclave/attestation/attester.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/)
+install(FILES openenclave/attestation/sgx/eeid_attester.h
+              openenclave/attestation/sgx/eeid_plugin.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/sgx)
 install(
   FILES openenclave/attestation/verifier.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/

@@ -35,6 +35,8 @@ typedef struct _oe_fd_ops
 
     ssize_t (*writev)(oe_fd_t* desc, const struct oe_iovec* iov, int iovcnt);
 
+    int (*flock)(oe_fd_t* desc, int operation);
+
     int (*dup)(oe_fd_t* desc, oe_fd_t** new_fd);
 
     int (*ioctl)(oe_fd_t* desc, unsigned long request, uint64_t arg);
