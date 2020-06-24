@@ -20,14 +20,27 @@ int* security_get_secret_ptr()
 // trusted memory address as ECALL parameter, will not leak secrets.
 void security_ecall_test1(int* ptr)
 {
-    // Since host does serialization completely, the contents of ptr
-    // will not match _secret.
-    OE_TEST(*ptr != _secret);
+    OE_UNUSED(ptr);
+    oe_abort();
+}
 
-    // ptr must lie within the enclave.
-    OE_TEST(oe_is_within_enclave(ptr, sizeof(*ptr)));
+// trusted memory address as ECALL parameter, will not leak secrets.
+void security_ecall_test2(SecurityS* s)
+{
+    OE_UNUSED(s);
+    oe_abort();
+}
 
-    printf("_secret = %d, *ptr = %d\n", _secret, ptr);
+// trusted memory address as ECALL parameter, will not leak secrets.
+void security_ecall_test3(int* ptr)
+{
+    OE_UNUSED(ptr);
+    oe_abort();
+}
 
-    printf("_secret not leaked.\n");
+// trusted memory address as ECALL parameter, will not leak secrets.
+void security_ecall_test4(SecurityS* s)
+{
+    OE_UNUSED(s);
+    oe_abort();
 }

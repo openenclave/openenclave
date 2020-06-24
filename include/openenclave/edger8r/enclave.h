@@ -20,6 +20,14 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+
+/**
+ * Define OE_BUILD_ENCLAVE to enable enclave specific checks.
+ */
+#ifndef OE_BUILD_ENCLAVE
+#define OE_BUILD_ENCLAVE
+#endif
+
 #include <openenclave/edger8r/common.h>
 
 #include <openenclave/corelibc/errno.h>

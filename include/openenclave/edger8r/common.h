@@ -86,6 +86,17 @@ done:
         }                                                          \
     } while (0)
 
+#ifdef OE_BUILD_ENCLAVE
+#define OE_CHECK_PTR(ptr, size)            \
+    if (!oe_is_outside_enclave(ptr, size)) \
+    {                                      \
+        _result = OE_INVALID_PARAMETER;    \
+        goto done;                         \
+    }
+#else
+#define OE_CHECK_PTR(ptr, size) (void)ptr
+#endif
+
 /**
  * Compute and set the pointer value for the given parameter within the input
  * buffer. Make sure that the buffer has enough space.
@@ -93,6 +104,7 @@ done:
 #define OE_SET_IN_POINTER(argname, argsize, argtype)                       \
     if (pargs_in->argname)                                                 \
     {                                                                      \
+        OE_CHECK_PTR(pargs_in->argname, (size_t)argsize);                  \
         pargs_in->argname = (argtype)(input_buffer + input_buffer_offset); \
         OE_ADD_SIZE(input_buffer_offset, (size_t)(argsize));               \
         if (input_buffer_offset > input_buffer_size)                       \
@@ -143,12 +155,13 @@ done:
 /**
  * Copy an input parameter to input buffer.
  */
-#define OE_WRITE_IN_PARAM(argname, argsize, argtype)                     \
-    if (argname)                                                         \
-    {                                                                    \
-        _args.argname = (argtype)(_input_buffer + _input_buffer_offset); \
-        OE_ADD_SIZE(_input_buffer_offset, (size_t)(argsize));            \
-        memcpy((void*)_args.argname, argname, (size_t)(argsize));        \
+#define OE_WRITE_IN_PARAM(argname, argsize, argtype)          \
+    if (argname)                                              \
+    {                                                         \
+        void* _ptr = _input_buffer + _input_buffer_offset;    \
+        *(const void**)&_args.argname = (const void*)argname; \
+        OE_ADD_SIZE(_input_buffer_offset, (size_t)(argsize)); \
+        memcpy(_ptr, argname, (size_t)(argsize));             \
     }
 
 #define OE_WRITE_IN_OUT_PARAM OE_WRITE_IN_PARAM
