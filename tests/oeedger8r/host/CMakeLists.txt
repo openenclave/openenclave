@@ -13,6 +13,7 @@ add_custom_command(
           ../edl/errno.edl
           ../edl/foreign.edl
           ../edl/pointer.edl
+          ../edl/security.edl
           ../edl/string.edl
           ../edl/struct.edl
           ../edl/switchless_test.edl
@@ -52,6 +53,7 @@ add_executable(
   testerrno.cpp
   testforeign.cpp
   testpointer.cpp
+  testsecurity.cpp
   teststring.cpp
   teststruct.cpp
   testswitchless.cpp)

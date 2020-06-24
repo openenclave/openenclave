@@ -14,6 +14,7 @@ add_custom_command(
           ../edl/foreign.edl
           ../edl/other.edl
           ../edl/pointer.edl
+          ../edl/security.edl
           ../edl/string.edl
           ../edl/struct.edl
           ../edl/switchless_test.edl
@@ -53,6 +54,7 @@ add_enclave(
   testerrno.cpp
   testforeign.cpp
   testpointer.cpp
+  testsecurity.cpp
   teststring.cpp
   teststruct.cpp
   testswitchless.cpp)
