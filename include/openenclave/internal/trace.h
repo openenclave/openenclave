@@ -28,6 +28,17 @@ extern oe_log_level_t _log_level;
 #define OE_MAX_FILENAME_LEN 256U
 
 #if !defined(OE_BUILD_ENCLAVE)
+typedef void (*oe_log_callback_t)(
+    void* context,
+    bool is_enclave,
+    const char* time,
+    long int usecs,
+    oe_log_level_t level,
+    const char* message);
+oe_result_t oe_log_set_callback(void* context, oe_log_callback_t callback);
+extern void* oe_log_context;
+extern oe_log_callback_t oe_log_callback;
+
 oe_result_t oe_log_enclave_init(oe_enclave_t* enclave);
 void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message);
 #endif
