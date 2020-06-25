@@ -2,13 +2,13 @@
 // Licensed under the MIT License.
 
 #define OE_NEED_STDC_NAMES
+#include <openenclave/advanced/allocator.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/raise.h>

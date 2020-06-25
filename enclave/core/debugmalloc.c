@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include "debugmalloc.h"
+#include <openenclave/advanced/allocator.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/malloc.h>

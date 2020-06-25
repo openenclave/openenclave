@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   docs/DesignDocs/oesign_digest_signing_support.md).
 - Oeedger8r now supports the --use-prefix feature.
 - Oeedger8r now supports a subset of C-style preprocessor directives (#ifdef, #ifndef, #else, #endif).
+- The default memory allocator (dlmalloc) can be replaced by providing replacement functions. This ability to plug-in
+  a custom allocator is most applicable for multi-threaded enclaves with memory allocation patterns where the default
+  memory allocator may not be performant. See [Pluggable Allocators](docs/DesignDocs/Pluggableallocators.md).
 
 ### Changed
 - Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
