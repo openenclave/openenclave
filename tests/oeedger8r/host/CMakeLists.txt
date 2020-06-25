@@ -41,28 +41,27 @@ add_custom_target(edl_host_gen DEPENDS all_u.h all_u.c all_args.h bar_u.h
 
 add_executable(
   edl_host
-  all_u.c
+  all_u.h
+  all_u_wrapper.cpp
   bar_u.h
   main.cpp
   bar.cpp
   foo.cpp
   testarray.cpp
-  testbasic.cpp
   testdeepcopy.cpp
   testenum.cpp
-  testerrno.cpp
   testforeign.cpp
   testpointer.cpp
   testsecurity.cpp
-  teststring.cpp
   teststruct.cpp
   testswitchless.cpp)
 
 # The tests intentionally use floats etc in size context.
 # Disable warnings.
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  set_source_files_properties(all_u.c PROPERTIES COMPILE_FLAGS
-                                                 "-Wno-conversion")
+  set_source_files_properties(
+    all_u_wrapper.cpp PROPERTIES COMPILE_FLAGS
+                                 "-Wno-conversion -Wno-sign-compare")
   set_source_files_properties(testpointer.cpp teststring.cpp
                               PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 endif ()

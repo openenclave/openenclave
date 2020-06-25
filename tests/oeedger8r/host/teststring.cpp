@@ -357,6 +357,7 @@ void ocall_string_fun5(char* s)
 
 void ocall_string_fun6(const char* s)
 {
+    OE_UNUSED(s);
     ocall_string_fun6_args_t args;
     // constness is discarded when marshaling.
     check_type<char*>(args.s);
@@ -468,6 +469,7 @@ void ocall_wstring_fun5(wchar_t* s)
 
 void ocall_wstring_fun6(const wchar_t* s)
 {
+    OE_UNUSED(s);
     ocall_wstring_fun6_args_t args;
     // constness is discarded when marshaling.
     check_type<wchar_t*>(args.s);
