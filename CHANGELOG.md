@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OE SDK can now be installed from published packages on SGX machines without FLC, and non-SGX machines.
   Previously, OE SDK could only be installed on SGX1 FLC machines due to a link-time dependency on sgx_dcap_ql which
   was available only on SGX1 FLC machines.
+- oesign tool supports the new `digest` command and options for [2-step signing using the digest](
+  docs/DesignDocs/oesign_digest_signing_support.md).
 
 ### Changed
 - Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
@@ -30,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SGX Simulation Mode does not need SGX libraries to be present in the system.
 - oehost library dynamically loads sgx_dcap_ql shared library instead of linking against it. This allows the SDK to
   be installed on non-FLC and non-SGX machines.
+- oesign `dump` command now also displays the `MRSIGNER` value of an SGX enclave signature if it exists.
 
 ### Removed
 - Removed oehostapp and the appendent "-rdynamic" compiling option. Please use oehost instead and add the option back manually if necessary.
