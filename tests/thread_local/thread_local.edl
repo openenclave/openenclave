@@ -3,7 +3,8 @@
 
 enclave {
     from "openenclave/edl/logging.edl" import oe_write_ocall;
-    from "openenclave/edl/syscall.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
+    from "openenclave/edl/time.edl" import oe_syscall_nanosleep_ocall;
     from "platform.edl" import *;
 
     trusted {
