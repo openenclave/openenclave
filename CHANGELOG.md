@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   was available only on SGX1 FLC machines.
 - oesign tool supports the new `digest` command and options for [2-step signing using the digest](
   docs/DesignDocs/oesign_digest_signing_support.md).
+- Oeedger8r now supports the --use-prefix feature.
+- Oeedger8r now supports a subset of C-style preprocessor directives (#ifdef, #ifndef, #else, #endif).
 
 ### Changed
 - Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
@@ -33,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - oehost library dynamically loads sgx_dcap_ql shared library instead of linking against it. This allows the SDK to
   be installed on non-FLC and non-SGX machines.
 - oesign `dump` command now also displays the `MRSIGNER` value of an SGX enclave signature if it exists.
+- The Deep-copy feature of oeedger8r is now enabled by default.
+- The oeedger8r-generated header files now contain only the function prototypes. Marshalling structs, function id enums,
+  and function tables are generated only in the c files.
 
 ### Removed
 - Removed oehostapp and the appendent "-rdynamic" compiling option. Please use oehost instead and add the option back manually if necessary.
