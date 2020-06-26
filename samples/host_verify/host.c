@@ -89,21 +89,42 @@ exit:
     return result;
 }
 
-oe_result_t verify_report(const char* report_filename)
+oe_result_t verify_report(
+    const char* report_filename,
+    const char* endorsement_filename)
 {
     oe_result_t result = OE_FAILURE;
     size_t report_file_size = 0;
     uint8_t* report_data = NULL;
+    size_t endorsement_file_size = 0;
+    uint8_t* endorsement_data = NULL;
 
     if (read_binary_file(report_filename, &report_data, &report_file_size))
     {
+        if (endorsement_filename != NULL)
+        {
+            read_binary_file(
+                endorsement_filename,
+                &endorsement_data,
+                &endorsement_file_size);
+        }
+
         result = oe_verify_remote_report(
-            report_data, report_file_size, NULL, 0, NULL);
+            report_data,
+            report_file_size,
+            endorsement_data,
+            endorsement_file_size,
+            NULL);
     }
 
     if (report_data != NULL)
     {
         free(report_data);
+    }
+
+    if (endorsement_data != NULL)
+    {
+        free(endorsement_data);
     }
 
     return result;
@@ -152,28 +173,36 @@ oe_result_t verify_cert(const char* filename)
     return result;
 }
 
+void print_syntax(const char* program_name)
+{
+    fprintf(
+        stdout,
+        "Usage:\n  %s -r <report_file> [-e <endorsement_file>]\n  %s -c "
+        "<certificate_file>\n",
+        program_name,
+        program_name);
+    fprintf(
+        stdout,
+        "Verify the integrity of enclave remote report or attestation "
+        "certificate.\n");
+    fprintf(
+        stdout,
+        "WARNING: %s does not have a stable CLI interface. Use with "
+        "caution.\n",
+        program_name);
+}
+
 int main(int argc, const char* argv[])
 {
-    const char* filename = NULL;
+    const char* report_filename = NULL;
+    const char* endorsement_filename = NULL;
+    const char* certificate_filename = NULL;
     oe_result_t result = OE_FAILURE;
     int n = 0;
 
     if (argc <= 2)
     {
-        fprintf(
-            stdout,
-            "Usage:\n  %s -r <report_file>\n  %s -c <certificate_file>\n",
-            argv[0],
-            argv[0]);
-        fprintf(
-            stdout,
-            "Verify the integrity of enclave remote report or attestation "
-            "certificate.\n");
-        fprintf(
-            stdout,
-            "WARNING: %s does not have a stable CLI interface. Use with "
-            "caution.\n",
-            argv[0]);
+        print_syntax(argv[0]);
 
         if (argc == 2 && memcmp(argv[1], "-h", 2) == 0)
         {
@@ -187,20 +216,49 @@ int main(int argc, const char* argv[])
     {
         if (memcmp(argv[n], "-r", 2) == 0)
         {
-            filename = argv[++n];
-            fprintf(stdout, "Verifying report %s...\n", filename);
-            result = verify_report(filename);
+            if (argc > (n - 1))
+                report_filename = argv[++n];
+        }
+        else if (memcmp(argv[n], "-e", 2) == 0)
+        {
+            if (argc > (n - 1))
+                endorsement_filename = argv[++n];
+        }
+        else if (memcmp(argv[n], "-c", 2) == 0)
+        {
+            if (argc > (n - 1))
+                certificate_filename = argv[++n];
+        }
+        else
+        {
+            print_syntax(argv[0]);
+            return 1;
+        }
+    }
+
+    if (report_filename == NULL && certificate_filename == NULL)
+    {
+        print_syntax(argv[0]);
+        return 1;
+    }
+    else
+    {
+        if (report_filename != NULL)
+        {
+            fprintf(stdout, "Verifying report %s...\n", report_filename);
+            result = verify_report(report_filename, endorsement_filename);
             fprintf(
                 stdout,
                 "Report verification %s (%u).\n\n",
                 (result == OE_OK) ? "succeeded" : "failed",
                 result);
         }
-        else if (memcmp(argv[n], "-c", 2) == 0)
+
+        if (certificate_filename != NULL)
         {
-            filename = argv[++n];
-            fprintf(stdout, "Verifying certificate %s...\n", filename);
-            result = verify_cert(filename);
+            fprintf(
+                stdout, "Verifying certificate %s...\n", certificate_filename);
+            result = verify_cert(certificate_filename);
             fprintf(
                 stdout,
                 "\n\nCertificate verification %s (%u).\n\n",
