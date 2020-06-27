@@ -56,6 +56,10 @@ install(FILES openenclave/corelibc/bits/defs.h
 install(FILES openenclave/corelibc/bits/types.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/corelibc/bits)
 
+# Install pluggable allocator header.
+install(FILES openenclave/advanced/allocator.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/advanced)
+
 ##==============================================================================
 ##
 ## Install all system EDL files to be included by user EDL

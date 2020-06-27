@@ -1,7 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/allocator.h>
+#include <openenclave/advanced/allocator.h>
 
 namespace snmalloc
 {
