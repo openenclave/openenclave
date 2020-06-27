@@ -14,16 +14,17 @@
 
 #include "test_helpers.h"
 
-oe_result_t make_test_eeid(oe_eeid_t** eeid)
+oe_result_t make_test_eeid(oe_eeid_t** eeid, size_t data_size)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    OE_CHECK(oe_create_eeid_sgx(10, eeid));
+    OE_CHECK(oe_create_eeid_sgx(data_size, eeid));
     (*eeid)->version = 1;
-    (*eeid)->data_size = 10;
-    for (size_t i = 0; i < (*eeid)->data_size; i++)
-        (*eeid)->data[i] = (uint8_t)i;
-    (*eeid)->size_settings.num_heap_pages = 100;
+    (*eeid)->data_size = data_size;
+    for (size_t i = 0; i < data_size; i++)
+        (*eeid)->data[i] = 'a' + (i % 26);
+    (*eeid)->data[data_size - 1] = 0;
+    (*eeid)->size_settings.num_heap_pages = 100 + (data_size / OE_PAGE_SIZE);
     (*eeid)->size_settings.num_stack_pages = 50;
     (*eeid)->size_settings.num_tcs = 2;
 

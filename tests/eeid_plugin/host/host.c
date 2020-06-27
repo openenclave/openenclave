@@ -107,7 +107,7 @@ void one_enclave_tests(const char* filename, uint32_t flags)
 
     oe_enclave_setting_t setting;
     setting.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
-    make_test_eeid(&setting.u.eeid);
+    make_test_eeid(&setting.u.eeid, 10 * OE_PAGE_SIZE);
 
     oe_enclave_t* enclave = NULL;
     oe_result_t result = oe_create_eeid_plugin_enclave(
@@ -222,12 +222,12 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
 
     // Enclave A
     enclave_stuff_t A;
-    OE_TEST(make_test_eeid(&A.eeid) == OE_OK);
+    OE_TEST(make_test_eeid(&A.eeid, 10) == OE_OK);
     start_enclave(filename, flags, &A);
 
     // Enclave B with reversed EEID
     enclave_stuff_t B;
-    OE_TEST(make_test_eeid(&B.eeid) == OE_OK);
+    OE_TEST(make_test_eeid(&B.eeid, 10) == OE_OK);
     for (size_t i = 0; i < B.eeid->data_size; i++)
         B.eeid->data[i] = (uint8_t)(9 - i);
     start_enclave(filename, flags, &B);
@@ -252,7 +252,7 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
 
     // Enclave C with same EEID as A
     enclave_stuff_t C;
-    OE_TEST(make_test_eeid(&C.eeid) == OE_OK);
+    OE_TEST(make_test_eeid(&C.eeid, 10) == OE_OK);
     start_enclave(filename, flags, &C);
 
     // Check that the hashes of A and C are indeed the same
