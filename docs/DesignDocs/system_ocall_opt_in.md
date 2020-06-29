@@ -145,7 +145,7 @@ in one of the following EDL files
 * `edl/utsname.edl`
 * `edl/sgx/cpu.edl`
 * `edl/sgx/debug.edl`
-* `edl/sgx/sgx_attestation.edl`
+* `edl/sgx/attestation.edl`
 * `edl/sgx/switchless.edl`
 * `edl/sgx/thread.edl`
 

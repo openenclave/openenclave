@@ -8,8 +8,8 @@ add_custom_command(
   DEPENDS ${EDL_FILE} edger8r
   COMMAND
     edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
-    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR}
-    --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../../../include)
+    ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR} --search-path
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../include)
 
 add_executable(socket_host host.c socket_test_u.c)
 

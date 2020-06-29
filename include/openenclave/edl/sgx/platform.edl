@@ -14,9 +14,9 @@
 
 enclave
 {
-    from "sgx_attestation.edl" import *;
-    from "cpu.edl" import *;
-    from "debug.edl" import *;
-    from "thread.edl" import *;
-    from "switchless.edl" import *;
+    from "openenclave/edl/sgx/attestation.edl" import *;
+    from "openenclave/edl/sgx/cpu.edl" import *;
+    from "openenclave/edl/sgx/debug.edl" import *;
+    from "openenclave/edl/sgx/thread.edl" import *;
+    from "openenclave/edl/sgx/switchless.edl" import *;
 };
