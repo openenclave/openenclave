@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 enclave {
-    from "openenclave/edl/syscall.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
     from "platform.edl" import *;
 
     trusted {

@@ -7,6 +7,7 @@
 #include <openenclave/attestation/sgx/eeid_verifier.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>

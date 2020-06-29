@@ -46,6 +46,7 @@ list(
   ioctl.c
   fcntl.c
   fdtable.c
+  hostcalls.c
   iov.c
   mount.c
   netdb.c
