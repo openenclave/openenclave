@@ -24,10 +24,9 @@ if (LVI_MITIGATION MATCHES ControlFlow AND LVI_MITIGATION_SKIP_TESTS)
   message("LVI_MITIGATION_SKIP_TESTS set - skip all tests with LVI mitigation")
 endif ()
 
+# Define the `OE_SGX` macro used by the oeedger8r on the SGX build.
 if (OE_SGX)
-  set(PLATFORM_EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl/sgx)
-elseif (OE_TRUSTZONE)
-  set(PLATFORM_EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl/optee)
+  set(DEFINE_OE_SGX "-DOE_SGX")
 endif ()
 
 add_subdirectory(mem)
