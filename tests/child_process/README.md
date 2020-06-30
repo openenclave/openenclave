@@ -2,3 +2,4 @@ This directory tests if a parent process' enclave can be called or destroyed fro
 1. tests/child_process_ecall tries to make an ECall into an enclave from the child process.
 2. tests/child_process_destroy tries to destroy the enclave from the child process.
 3. tests/child_process_create tries to create a new enclave from the child process.
+4. tests/child_process_create_more tries to create new enclaves from the child processes.

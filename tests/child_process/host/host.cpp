@@ -16,6 +16,7 @@
 #define ECALL_IN_CHILD_PROCESS 0
 #define DESTROY_IN_CHILD_PROCESS 1
 #define CREATE_IN_CHILD_PROCESS 2
+#define CREATE_IN_CHILD_PROCESSES 3
 
 bool multi_process_flag = true;
 
@@ -152,6 +153,94 @@ int main(int argc, const char* argv[])
                 exit(1);
             }
             break;
+        case CREATE_IN_CHILD_PROCESSES:
+            if (pid == 0) // the first child process
+            {
+                fprintf(
+                    stdout,
+                    "create enclave in the first child process, pid %d\n",
+                    getpid());
+                oe_enclave_t* enclave_in_first_child_process = NULL;
+                result = oe_create_child_process_enclave(
+                    argv[1],
+                    OE_ENCLAVE_TYPE_SGX,
+                    flags,
+                    NULL,
+                    0,
+                    &enclave_in_first_child_process);
+                OE_TEST(result == OE_OK);
+                oe_terminate_enclave(enclave_in_first_child_process);
+                _exit(EXIT_SUCCESS);
+            }
+            else if (pid > 0) // parent process
+            {
+                fprintf(
+                    stdout,
+                    "create enclave in parent process, the second time, pid "
+                    "%d\n",
+                    getpid());
+                oe_enclave_t* enclave_in_parent_process_second = NULL;
+                result = oe_create_child_process_enclave(
+                    argv[1],
+                    OE_ENCLAVE_TYPE_SGX,
+                    flags,
+                    NULL,
+                    0,
+                    &enclave_in_parent_process_second);
+                OE_TEST(result == OE_OK);
+                oe_terminate_enclave(enclave_in_parent_process_second);
+
+                pid = fork();
+                if (pid == 0) // the second child process
+                {
+                    fprintf(
+                        stdout,
+                        "create enclave in the second child process, pid %d\n",
+                        getpid());
+                    oe_enclave_t* enclave_in_second_child_process = NULL;
+                    result = oe_create_child_process_enclave(
+                        argv[1],
+                        OE_ENCLAVE_TYPE_SGX,
+                        flags,
+                        NULL,
+                        0,
+                        &enclave_in_second_child_process);
+                    OE_TEST(result == OE_OK);
+                    oe_terminate_enclave(enclave_in_second_child_process);
+                    _exit(EXIT_SUCCESS);
+                }
+                else if (pid > 0) // parent process
+                {
+                    fprintf(
+                        stdout,
+                        "create enclave in parent process, the third time, pid "
+                        "%d\n",
+                        getpid());
+                    oe_enclave_t* enclave_in_parent_process_third = NULL;
+                    result = oe_create_child_process_enclave(
+                        argv[1],
+                        OE_ENCLAVE_TYPE_SGX,
+                        flags,
+                        NULL,
+                        0,
+                        &enclave_in_parent_process_third);
+                    OE_TEST(result == OE_OK);
+                    oe_terminate_enclave(enclave_in_parent_process_third);
+                }
+
+                // Wait for child
+                int child_status = -1;
+                while (wait(&child_status) > 0)
+                    ;
+                OE_TEST(child_status == 0);
+            }
+            else
+            {
+                fprintf(stderr, "failed to create child process.\n");
+                exit(1);
+            }
+            break;
+
         default:
             break;
     }
