@@ -141,12 +141,19 @@ void parse_certificate_extension(const uint8_t* data, size_t data_len)
     printf("        fmspc (hex): ");
     oe_hex_dump(extension_info.fmspc, OE_COUNTOF(extension_info.fmspc));
     printf("        sgx_type: %d\n", extension_info.sgx_type);
+    printf("        opt_platform_instance_id (hex): ");
+    oe_hex_dump(
+        extension_info.opt_platform_instance_id,
+        OE_COUNTOF(extension_info.opt_platform_instance_id));
     printf(
         "        opt_dynamic_platform: %s\n",
         extension_info.opt_dynamic_platform ? "true" : "false");
     printf(
         "        opt_cached_keys: %s\n",
         extension_info.opt_cached_keys ? "true" : "false");
+    printf(
+        "        opt_smt_enabled: %s\n",
+        extension_info.opt_smt_enabled ? "true" : "false");
     printf("    } qe cert extension \n");
 done:
     free(buffer);
