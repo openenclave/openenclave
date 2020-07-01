@@ -14,8 +14,8 @@ add_custom_command(
   DEPENDS ${EDL_FILE} edger8r
   COMMAND
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
-    --search-path ${PLATFORM_EDL_DIR} --search-path ${CMAKE_CURRENT_SOURCE_DIR}
-    --search-path ${EDL_SEARCH_DIR})
+    ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR} --search-path
+    ${EDL_SEARCH_DIR})
 
 add_enclave(TARGET fs_enc SOURCES enc.cpp ${CMAKE_CURRENT_BINARY_DIR}/fs_t.c)
 

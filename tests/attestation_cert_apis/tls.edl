@@ -3,8 +3,12 @@
 
 enclave {
     from "openenclave/edl/logging.edl" import *;
-    from "openenclave/edl/syscall.edl" import *;
-    from "platform.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
 
     trusted {
         public oe_result_t get_tls_cert_signed_with_ec_key([out] unsigned char** data, [out] size_t* data_size);

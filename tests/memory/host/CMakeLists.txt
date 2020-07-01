@@ -9,7 +9,7 @@ add_custom_command(
   OUTPUT memory_u.h memory_u.c
   DEPENDS ${EDL_FILE} edger8r
   COMMAND edger8r --untrusted ${EDL_FILE} --search-path
-          ${PROJECT_SOURCE_DIR}/include --search-path ${PLATFORM_EDL_DIR})
+          ${PROJECT_SOURCE_DIR}/include ${DEFINE_OE_SGX})
 
 add_executable(memory_host host.cpp memory_u.c)
 

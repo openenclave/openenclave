@@ -3,8 +3,14 @@
 
 enclave {
     from "openenclave/edl/logging.edl" import oe_write_ocall;
-    from "openenclave/edl/syscall.edl" import *;
-    from "platform.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
+    from "openenclave/edl/utsname.edl" import oe_syscall_uname_ocall;
+    from "openenclave/edl/socket.edl" import *;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
 
     trusted {
         /* define ECALLs here. */

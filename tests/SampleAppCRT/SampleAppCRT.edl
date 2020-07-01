@@ -2,8 +2,12 @@
 // Licensed under the MIT License.
 
 enclave {
-    from "openenclave/edl/syscall.edl" import *;
-    from "platform.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
 
     trusted {
         public int enc_test ();

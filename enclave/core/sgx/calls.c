@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 
 #include "../calls.h"
+#include <openenclave/advanced/allocator.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/fault.h>

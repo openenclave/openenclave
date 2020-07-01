@@ -2,9 +2,13 @@
 // Licensed under the MIT License.
 
 enclave {
-    from "openenclave/edl/syscall.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
     from "openenclave/edl/memory.edl" import *;
-    from "platform.edl" import *;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
 
     enum definitions {
         TEST_HOSTREALLOC_INIT_VALUE = 88

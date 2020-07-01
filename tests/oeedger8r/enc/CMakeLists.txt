@@ -20,8 +20,8 @@ add_custom_command(
           ../edl/switchless_test.edl
   COMMAND
     edger8r --experimental --trusted --search-path
-    ${PROJECT_SOURCE_DIR}/include --search-path ${PLATFORM_EDL_DIR}
-    --search-path ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path
+    ${PROJECT_SOURCE_DIR}/include ${DEFINE_OE_SGX} --search-path
+    ${CMAKE_CURRENT_SOURCE_DIR}/../edl --search-path
     ${CMAKE_CURRENT_SOURCE_DIR}/../moreedl all.edl)
 
 add_custom_command(

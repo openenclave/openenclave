@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OE SDK can now be installed from published packages on SGX machines without FLC, and non-SGX machines.
   Previously, OE SDK could only be installed on SGX1 FLC machines due to a link-time dependency on sgx_dcap_ql which
   was available only on SGX1 FLC machines.
+- oesign tool supports the new `digest` command and options for [2-step signing using the digest](
+  docs/DesignDocs/oesign_digest_signing_support.md).
+- Oeedger8r now supports the --use-prefix feature.
+- Oeedger8r now supports a subset of C-style preprocessor directives (#ifdef, #ifndef, #else, #endif).
+- The default memory allocator (dlmalloc) can be replaced by providing replacement functions. This ability to plug-in
+  a custom allocator is most applicable for multi-threaded enclaves with memory allocation patterns where the default
+  memory allocator may not be performant. See [Pluggable Allocators](docs/DesignDocs/Pluggableallocators.md).
 
 ### Changed
 - Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
@@ -31,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - oehost library dynamically loads sgx_dcap_ql shared library instead of linking against it. This allows the SDK to
   be installed on non-FLC and non-SGX machines.
 - Fix #3134. ParseSGXExtensions will now correctly parse the SGX extensions for PCK Certificates defined in [SGX spec](https://download.01.org/intel-sgx/latest/dcap-latest/linux/docs/Intel_SGX_PCK_Certificate_CRL_Spec-1.4.pdf).
+- oesign `dump` command now also displays the `MRSIGNER` value of an SGX enclave signature if it exists.
+- The Deep-copy feature of oeedger8r is now enabled by default.
+- The oeedger8r-generated header files now contain only the function prototypes. Marshalling structs, function id enums,
+  and function tables are generated only in the c files.
 
 ### Removed
 - Removed oehostapp and the appendent "-rdynamic" compiling option. Please use oehost instead and add the option back manually if necessary.

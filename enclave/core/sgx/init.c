@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 #include "init.h"
+#include <openenclave/advanced/allocator.h>
 #include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/allocator.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/eeid.h>
 #include <openenclave/internal/fault.h>

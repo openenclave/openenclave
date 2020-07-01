@@ -3,8 +3,13 @@
 
 enclave {
     from "openenclave/edl/logging.edl" import oe_write_ocall;
-    from "openenclave/edl/syscall.edl" import *;
-    from "platform.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
+    from "openenclave/edl/time.edl" import oe_syscall_nanosleep_ocall;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
 
     enum string_limit {
         BUFSIZE = 1024

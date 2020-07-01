@@ -5,8 +5,8 @@ add_custom_command(
   DEPENDS edger8r ../name_conflict.edl
   COMMAND
     edger8r --untrusted name_conflict.edl --search-path
-    ${PROJECT_SOURCE_DIR}/include --search-path ${PLATFORM_EDL_DIR}
-    --search-path ${CMAKE_CURRENT_SOURCE_DIR}/..)
+    ${PROJECT_SOURCE_DIR}/include ${DEFINE_OE_SGX} --search-path
+    ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 add_executable(name_conflict_host host.cpp name_conflict_u.c name_conflict_u.h
                                   name_conflict_args.h)

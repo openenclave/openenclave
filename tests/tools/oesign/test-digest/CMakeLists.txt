@@ -46,14 +46,13 @@ add_custom_target(
 
 # Test digest sign commands with valid short form of arguments succeed
 set(OESIGN_PKEYUTL_ARGS
-    "-in oesign_test_enc.digest -inkey ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem -keyform PEM -out oesign_test_enc.digest.sig"
+    "[-in,oesign_test_enc.digest,-inkey,${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem,-keyform,PEM,-out,oesign_test_enc.digest.sig]"
 )
-
 set(OESIGN_SIGN_VALID_SHORT_ARGS
-    "-c ${OESIGN_TEST_INPUTS_DIR}/valid.conf -d oesign_test_enc.digest.sig -x ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem"
+    "[-c,${OESIGN_TEST_INPUTS_DIR}/valid.conf,-d,oesign_test_enc.digest.sig,-x,${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem]"
 )
 set(OESIGN_DIGEST_VALID_SHORT_ARGS
-    "-c ${OESIGN_TEST_INPUTS_DIR}/valid.conf -d oesign_test_enc.digest")
+    "[-c,${OESIGN_TEST_INPUTS_DIR}/valid.conf,-d,oesign_test_enc.digest]")
 
 add_test(
   NAME tests/oesign-digest-valid-short-args
@@ -70,10 +69,10 @@ set_tests_properties(
 
 # Test digest sign commands with valid long form of arguments succeed
 set(OESIGN_SIGN_VALID_LONG_ARGS
-    "--config-file ${OESIGN_TEST_INPUTS_DIR}/valid.conf --digest-signature oesign_test_enc.digest.sig --x509 ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem"
+    "[--config-file,${OESIGN_TEST_INPUTS_DIR}/valid.conf,--digest-signature,oesign_test_enc.digest.sig,--x509,${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem]"
 )
 set(OESIGN_DIGEST_VALID_LONG_ARGS
-    "--config-file ${OESIGN_TEST_INPUTS_DIR}/valid.conf --digest-file oesign_test_enc.digest"
+    "[--config-file,${OESIGN_TEST_INPUTS_DIR}/valid.conf,--digest-file,oesign_test_enc.digest]"
 )
 
 add_test(
@@ -91,14 +90,13 @@ set_tests_properties(
 
 # Test digest sign commands without --config-file (-c) argument on preconfigured enclave succeeds
 set(OESIGN_PKEYUTL_DEV_CONFIG_ARGS
-    "-in oesign_test_alt_enc.digest -inkey ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem -keyform PEM -out oesign_test_alt_enc.digest.sig"
+    "[-in,oesign_test_alt_enc.digest,-inkey,${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem,-keyform,PEM,-out,oesign_test_alt_enc.digest.sig]"
 )
-
 set(OESIGN_SIGN_VALID_DEV_CONFIG_ARGS
-    "--digest-signature oesign_test_alt_enc.digest.sig --x509 ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem"
+    "[--digest-signature,oesign_test_alt_enc.digest.sig,--x509,${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem]"
 )
 set(OESIGN_DIGEST_VALID_DEV_CONFIG_ARGS
-    "--digest-file oesign_test_alt_enc.digest")
+    "[--digest-file,oesign_test_alt_enc.digest]")
 
 add_test(
   NAME tests/oesign-digest-valid-dev-config-args

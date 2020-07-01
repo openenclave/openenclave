@@ -3,9 +3,6 @@
 
 set(OE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 set(EDL_DIR ${CMAKE_SOURCE_DIR}/include/openenclave/edl)
-if (OE_SGX)
-  set(SGX_EDL_DIR ${EDL_DIR}/sgx)
-endif ()
 
 ##==============================================================================
 ##
@@ -41,12 +38,12 @@ endif ()
 ##
 ##==============================================================================
 
-set(SGX_EDL_FILE ${SGX_EDL_DIR}/platform.edl)
+set(SGX_EDL_FILE ${EDL_DIR}/sgx/platform.edl)
 if (OE_SGX AND COMPILE_SYSTEM_EDL)
   add_custom_command(
     OUTPUT platform_t.h platform_t.c platform_args.h
     DEPENDS ${SGX_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${SGX_EDL_DIR} --trusted ${SGX_EDL_FILE})
+    COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --trusted ${SGX_EDL_FILE})
 
   add_custom_target(platform_trusted_edl DEPENDS platform_t.h platform_t.c
                                                  platform_args.h)
@@ -57,7 +54,7 @@ elseif (OE_SGX)
   add_custom_command(
     OUTPUT platform_t.h platform_args.h
     DEPENDS ${SGX_EDL_FILE} edger8r
-    COMMAND edger8r --header-only --search-path ${SGX_EDL_DIR} --trusted
+    COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --trusted
             ${SGX_EDL_FILE})
 
   add_custom_target(platform_trusted_edl DEPENDS platform_t.h platform_args.h)

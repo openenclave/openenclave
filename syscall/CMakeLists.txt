@@ -46,6 +46,7 @@ list(
   ioctl.c
   fcntl.c
   fdtable.c
+  hostcalls.c
   iov.c
   mount.c
   netdb.c
@@ -56,7 +57,6 @@ list(
   stat.c
   stdio.c
   stdlib.c
-  stub.c
   syscall.c
   unistd.c
   utsname.c)

@@ -16,6 +16,13 @@ changes:
   entropy implementation mbedTLS libraries to avoid a circular dependency
   with the Open Enclave core runtime.
 
-- It patches `mbedtls/library/x509write_crt.c` with
-  `0001-Patch-x509write_crt.c-for-attestedTLS.patch` to add support for writing
-  certificates that support using TLS with enclave attestation for auth.
+- It backports mbedtls patches from the development branch to the LTS version
+  OE currently uses:
+
+  - Update `mbedtls/library/x509write_crt.c` with fixes from [#2632](
+    https://github.com/ARMmbed/mbedtls/pull/2632) contained in
+    `0001-Backport-2632-code-changes-to-2.16.patch`.
+
+  - Update `mbedtls/library/x509write_csr.c` with fixes from [#3464](
+    https://github.com/ARMmbed/mbedtls/pull/3464) contained in
+    `0001-Avoid-stack-allocation-of-large-memory-buffers.patch`.

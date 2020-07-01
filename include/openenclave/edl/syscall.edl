@@ -30,8 +30,4 @@ enclave {
     from "openenclave/edl/time.edl" import *;
     from "openenclave/edl/unistd.edl" import *;
     from "openenclave/edl/utsname.edl" import *;
-
-    trusted {
-        public void oe_syscall_stub_ecall();
-    };
 };
