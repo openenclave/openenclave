@@ -15,7 +15,9 @@ The sample does remote host-side enclave attestation by taking either of the two
 - An SGX report
 - An SGX certificate
 
-A user can generate a report or certificate with `oecert`. See [here](https://github.com/openenclave/openenclave/blob/master/tests/tools/oecert/README.md) for more details.
+The sample also accepts an endorsement file as input. See the end of the file for usage.
+
+A user can generate a report, an endorsement file or a certificate with `oecert`. See [here](https://github.com/openenclave/openenclave/blob/master/tests/tools/oecert/README.md) for more details.
 
 In the main function, if it sees the attribute `-r`, then it will continue to read the next argument to get the report and call `verify_report()` to verify the report.
 Likewise, if it sees the attribute `-c`, then it will continue to read the next argument to get the certificate and call `verify_cert()` to verify the certificate.
@@ -64,7 +66,7 @@ When you see the following message displayed on the screen, it means you have su
 
 ```bash
 Usage:
-  ./host_verify -r <report_file>
+  ./host_verify -r <report_file> [-e <endorsement_file>]
   ./host_verify -c <certificate_file>
 Verify the integrity of enclave remote report or attestation certificate.
 WARNING: host_verify does not have a stable CLI interface. Use with caution.

@@ -7,6 +7,8 @@ Studio Code on a development machine running either Windows or Linux, see the
 
 ## Prerequisites
 
+To install the Open Enclave Host-Verify SDK instead, see [installation instructions for Ubuntu 16.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_host_verify_Ubuntu_16.04.md) or [installation instructions for Ubuntu 18.04](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_host_verify_Ubuntu_18.04.md).
+
 To develop Linux applications using a Windows development machine, you will need the following:
 
 - [Visual Studio](https://visualstudio.microsoft.com/downloads/) 2019
@@ -28,7 +30,9 @@ any of the following:
 - a [Linux VM running on the Windows development machine](HyperVLinuxVMSetup.md)
 
 Ideally, the machine should be SGX capable (see [instructions for determining the SGX support level](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/SGXSupportLevel.md) if needed),
-but a non-SGX machine can still be used in simulation mode.
+but a non-SGX machine can still be used:
+ - in simulation mode, or
+ - if you would like to install the Open Enclave Host-Verify SDK and build evidence verification applications without enclaves.
 
 On the Linux build machine, or after opening an ssh session into the VM:
 
