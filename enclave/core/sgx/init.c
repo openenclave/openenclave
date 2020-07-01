@@ -52,6 +52,14 @@ static int _is_eeid_base_image(
            properties->header.size_settings.num_tcs == 1;
 }
 
+static int _is_within_eeid_enclave(const uint8_t* ptr)
+{
+    /* For EEID enclaves, the SGX-reported enclave size is always
+     * EEID_SECS_SIZE. */
+    const uint8_t* base = (const uint8_t*)__oe_get_enclave_base();
+    return ptr >= base && ptr < base + EEID_SECS_SIZE;
+}
+
 static oe_result_t _eeid_patch_memory()
 {
     oe_result_t r = OE_OK;
@@ -61,7 +69,12 @@ static oe_result_t _eeid_patch_memory()
         uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_base();
         uint8_t* heap_base = (uint8_t*)__oe_get_heap_base();
         oe_eeid_marker_t* marker = (oe_eeid_marker_t*)heap_base;
-        oe_eeid = (oe_eeid_t*)(enclave_base + marker->offset);
+        uint8_t* eeid_ptr = enclave_base + marker->offset;
+
+        if (!_is_within_eeid_enclave(eeid_ptr))
+            oe_abort();
+
+        oe_eeid = (oe_eeid_t*)eeid_ptr;
 
         // Wipe the marker page
         memset(heap_base, 0, OE_PAGE_SIZE);
