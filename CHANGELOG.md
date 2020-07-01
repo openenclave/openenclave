@@ -33,10 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   application EDL. See [system EDL opt-in document]
   (docs/DesignDocs/system_ocall_opt_in.md#how-to-port-your-application) for more information.
 - Switch to oeedger8r written in C++.
-- Fix #3134. oesign tool will now reject .conf files that contain duplicate property definitions.
+- Fix #3143. oesign tool will now reject .conf files that contain duplicate property definitions.
 - SGX Simulation Mode does not need SGX libraries to be present in the system.
 - oehost library dynamically loads sgx_dcap_ql shared library instead of linking against it. This allows the SDK to
   be installed on non-FLC and non-SGX machines.
+- Fix #3134. ParseSGXExtensions will now correctly parse the SGX extensions for PCK Certificates defined in [SGX spec](https://download.01.org/intel-sgx/latest/dcap-latest/linux/docs/Intel_SGX_PCK_Certificate_CRL_Spec-1.4.pdf).
 - oesign `dump` command now also displays the `MRSIGNER` value of an SGX enclave signature if it exists.
 - The Deep-copy feature of oeedger8r is now enabled by default.
 - The oeedger8r-generated header files now contain only the function prototypes. Marshalling structs, function id enums,
