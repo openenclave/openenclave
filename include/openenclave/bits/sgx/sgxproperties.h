@@ -28,6 +28,13 @@ typedef struct _oe_sgx_enclave_image_info_t
 /* Max number of threads in an enclave supported */
 #define OE_SGX_MAX_TCS 32
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+/* This is the maximum size SGX (currently) allows. When signing EEID base
+ * images we don't know the size that the final image will have, so chose
+ * this maximum. */
+#define EEID_SECS_SIZE 68719476736
+#endif
+
 // oe_sgx_enclave_properties_t SGX enclave properties derived type
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
