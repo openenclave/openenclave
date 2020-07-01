@@ -91,6 +91,7 @@ int main(int argc, const char* argv[])
         case DESTROY_IN_CHILD_PROCESS:
             if (pid == 0) // child process
             {
+                sleep(1);
                 result_child_process = oe_terminate_enclave(enclave);
                 OE_TEST(result_child_process == OE_OK);
                 enclave = nullptr;
