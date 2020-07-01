@@ -69,12 +69,14 @@ static oe_result_t _eeid_patch_memory()
         uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_base();
         uint8_t* heap_base = (uint8_t*)__oe_get_heap_base();
         oe_eeid_marker_t* marker = (oe_eeid_marker_t*)heap_base;
-        uint8_t* eeid_ptr = enclave_base + marker->offset;
+        oe_eeid_t* eeid = (oe_eeid_t*)(enclave_base + marker->offset);
 
-        if (!_is_within_eeid_enclave(eeid_ptr))
+        if (!_is_within_eeid_enclave((uint8_t*)eeid) ||
+            !_is_within_eeid_enclave(eeid->data) ||
+            !_is_within_eeid_enclave(eeid->data + eeid->data_size))
             oe_abort();
 
-        oe_eeid = (oe_eeid_t*)eeid_ptr;
+        oe_eeid = eeid;
 
         // Wipe the marker page
         memset(heap_base, 0, OE_PAGE_SIZE);
