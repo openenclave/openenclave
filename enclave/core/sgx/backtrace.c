@@ -19,6 +19,51 @@
 #error "optimized __builtin_return_address() not supported by Intel compiler"
 #endif
 
+#if !defined(OE_USE_BUILTIN_EDL)
+/**
+ * Declare the prototype of the following function to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_sgx_backtrace_symbols_ocall(
+    oe_result_t* _retval,
+    oe_enclave_t* oe_enclave,
+    const uint64_t* buffer,
+    size_t size,
+    void* symbols_buffer,
+    size_t symbols_buffer_size,
+    size_t* symbols_buffer_size_out);
+
+/**
+ * Make the following OCALL weak to support the system EDL opt-in.
+ * When the user does not opt into (import) the EDL, the linker will pick
+ * the following default implementation. If the user opts into the EDL,
+ * the implemention (which is strong) in the oeedger8r-generated code will be
+ * used.
+ */
+oe_result_t _oe_sgx_backtrace_symbols_ocall(
+    oe_result_t* _retval,
+    oe_enclave_t* oe_enclave,
+    const uint64_t* buffer,
+    size_t size,
+    void* symbols_buffer,
+    size_t symbols_buffer_size,
+    size_t* symbols_buffer_size_out)
+{
+    OE_UNUSED(oe_enclave);
+    OE_UNUSED(buffer);
+    OE_UNUSED(size);
+    OE_UNUSED(symbols_buffer);
+    OE_UNUSED(symbols_buffer_size);
+    OE_UNUSED(symbols_buffer_size_out);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_sgx_backtrace_symbols_ocall, oe_sgx_backtrace_symbols_ocall);
+#endif
+
 /* Return null if address is outside of the enclave; else return ptr. */
 const void* _check_address(const void* ptr)
 {
@@ -102,18 +147,18 @@ char** oe_backtrace_symbols_impl(
     const size_t SYMBOLS_BUFFER_SIZE = 4096;
     size_t symbols_buffer_size = SYMBOLS_BUFFER_SIZE;
     size_t symbols_buffer_size_out;
-    uint32_t retval;
+    oe_result_t result;
     char** argv = NULL;
 
     if (!buffer || size < 0)
-        goto done;
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!(symbols_buffer = malloc_fcn(symbols_buffer_size)))
-        goto done;
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* First call might return OE_BUFFER_TOO_SMALL. */
     if (oe_sgx_backtrace_symbols_ocall(
-            &retval,
+            &result,
             oe_get_enclave(),
             (const uint64_t*)buffer,
             (size_t)size,
@@ -125,15 +170,15 @@ char** oe_backtrace_symbols_impl(
     }
 
     /* Second call uses buffer size returned by first call. */
-    if ((oe_result_t)retval == OE_BUFFER_TOO_SMALL)
+    if (result == OE_BUFFER_TOO_SMALL)
     {
         symbols_buffer_size = symbols_buffer_size_out;
         if (!(symbols_buffer =
                   realloc_fcn(symbols_buffer, symbols_buffer_size)))
-            goto done;
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (oe_sgx_backtrace_symbols_ocall(
-                &retval,
+                &result,
                 oe_get_enclave(),
                 (const uint64_t*)buffer,
                 (size_t)size,
@@ -144,13 +189,12 @@ char** oe_backtrace_symbols_impl(
             goto done;
         }
 
-        if ((oe_result_t)retval != OE_OK ||
-            symbols_buffer_size_out != symbols_buffer_size)
+        if (result != OE_OK || symbols_buffer_size_out != symbols_buffer_size)
         {
             goto done;
         }
     }
-    else if ((oe_result_t)retval != OE_OK)
+    else if (result != OE_OK)
     {
         goto done;
     }
@@ -164,7 +208,7 @@ char** oe_backtrace_symbols_impl(
             malloc_fcn,
             free_fcn) != OE_OK)
     {
-        goto done;
+        OE_RAISE(OE_FAILURE);
     }
 
     ret = argv;
@@ -177,6 +221,12 @@ done:
 
     if (argv)
         free_fcn(argv);
+
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING(
+            "In-enclave backtrace is not supported. To enable, please add \n\n"
+            "from \"openenclave/edl/sgx/debug.edl\" import *;\n\n"
+            "in the edl file.\n");
 
     return ret;
 }
