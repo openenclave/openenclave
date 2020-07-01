@@ -21,7 +21,7 @@ static oe_log_level_t _active_log_level = OE_LOG_LEVEL_ERROR;
 static char _enclave_filename[OE_MAX_FILENAME_LEN];
 static bool _debug_allowed_enclave = false;
 
-const char* get_filename_from_path(const char* path)
+static const char* _get_filename_from_path(const char* path)
 {
     if (path)
     {
@@ -60,7 +60,7 @@ void oe_log_init_ecall(const char* enclave_path, uint32_t log_level)
 
     _active_log_level = (oe_log_level_t)log_level;
 
-    if ((filename = get_filename_from_path(enclave_path)))
+    if ((filename = _get_filename_from_path(enclave_path)))
     {
         oe_strlcpy(_enclave_filename, filename, sizeof(_enclave_filename));
     }
@@ -69,7 +69,7 @@ void oe_log_init_ecall(const char* enclave_path, uint32_t log_level)
         memset(_enclave_filename, 0, sizeof(_enclave_filename));
     }
 
-    _debug_allowed_enclave = is_enclave_debug_allowed();
+    _debug_allowed_enclave = oe_is_enclave_debug_allowed();
 }
 
 oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)

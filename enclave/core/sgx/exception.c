@@ -22,14 +22,14 @@
 #define MAX_EXCEPTION_HANDLER_COUNT 64
 
 // The spin lock to synchronize the exception handler access.
-static oe_spinlock_t g_exception_lock = OE_SPINLOCK_INITIALIZER;
+static oe_spinlock_t _exception_lock = OE_SPINLOCK_INITIALIZER;
 
 // Current registered exception handler count.
-uint32_t g_current_exception_handler_count = 0;
+static uint32_t _current_exception_handler_count = 0;
 
 // Current registered exception handlers.
-oe_vectored_exception_handler_t
-    g_exception_handler_arr[MAX_EXCEPTION_HANDLER_COUNT];
+static oe_vectored_exception_handler_t
+    _exception_handler_arr[MAX_EXCEPTION_HANDLER_COUNT];
 
 oe_result_t oe_add_vectored_exception_handler(
     bool is_first_handler,
@@ -47,7 +47,7 @@ oe_result_t oe_add_vectored_exception_handler(
     }
 
     // Acquire the lock.
-    lock_ret = oe_spin_lock(&g_exception_lock);
+    lock_ret = oe_spin_lock(&_exception_lock);
     if (lock_ret != 0)
     {
         result = OE_FAILURE;
@@ -55,9 +55,9 @@ oe_result_t oe_add_vectored_exception_handler(
     }
 
     // Check if the input handler is already registered.
-    for (uint32_t i = 0; i < g_current_exception_handler_count; i++)
+    for (uint32_t i = 0; i < _current_exception_handler_count; i++)
     {
-        if (g_exception_handler_arr[i] == vectored_handler)
+        if (_exception_handler_arr[i] == vectored_handler)
         {
             result = OE_FAILURE;
             goto cleanup;
@@ -65,7 +65,7 @@ oe_result_t oe_add_vectored_exception_handler(
     }
 
     // Check if there is space to add a new handler.
-    if (g_current_exception_handler_count >= MAX_EXCEPTION_HANDLER_COUNT)
+    if (_current_exception_handler_count >= MAX_EXCEPTION_HANDLER_COUNT)
     {
         result = OE_FAILURE;
         goto cleanup;
@@ -75,28 +75,28 @@ oe_result_t oe_add_vectored_exception_handler(
     if (!is_first_handler)
     {
         // Append the new handler if it is not the first handler.
-        g_exception_handler_arr[g_current_exception_handler_count] =
+        _exception_handler_arr[_current_exception_handler_count] =
             vectored_handler;
     }
     else
     {
         // Move the existing handlers backward by one if any.
-        for (uint32_t i = g_current_exception_handler_count; i > 0; i--)
+        for (uint32_t i = _current_exception_handler_count; i > 0; i--)
         {
-            g_exception_handler_arr[i] = g_exception_handler_arr[i - 1];
+            _exception_handler_arr[i] = _exception_handler_arr[i - 1];
         }
 
-        g_exception_handler_arr[0] = vectored_handler;
+        _exception_handler_arr[0] = vectored_handler;
     }
 
     result = OE_OK;
-    g_current_exception_handler_count++;
+    _current_exception_handler_count++;
 
 cleanup:
     // Release the lock if acquired.
     if (lock_ret == 0)
     {
-        oe_spin_unlock(&g_exception_lock);
+        oe_spin_unlock(&_exception_lock);
     }
 
     return result;
@@ -117,27 +117,27 @@ oe_result_t oe_remove_vectored_exception_handler(
     }
 
     // Acquire the lock.
-    lock_ret = oe_spin_lock(&g_exception_lock);
+    lock_ret = oe_spin_lock(&_exception_lock);
     if (lock_ret != 0)
     {
         goto cleanup;
     }
 
-    for (uint32_t i = 0; i < g_current_exception_handler_count; i++)
+    for (uint32_t i = 0; i < _current_exception_handler_count; i++)
     {
-        if (vectored_handler != (void*)g_exception_handler_arr[i])
+        if (vectored_handler != (void*)_exception_handler_arr[i])
         {
             continue;
         }
 
         // Found the target handler, move the following handlers forward by one
         // if any.
-        for (uint32_t j = i; j < g_current_exception_handler_count - 1; j++)
+        for (uint32_t j = i; j < _current_exception_handler_count - 1; j++)
         {
-            g_exception_handler_arr[j] = g_exception_handler_arr[j + 1];
+            _exception_handler_arr[j] = _exception_handler_arr[j + 1];
         }
 
-        g_current_exception_handler_count--;
+        _current_exception_handler_count--;
         result = OE_OK;
         goto cleanup;
     }
@@ -146,7 +146,7 @@ cleanup:
     // Release the lock if acquired.
     if (lock_ret == 0)
     {
-        oe_spin_unlock(&g_exception_lock);
+        oe_spin_unlock(&_exception_lock);
     }
 
     return result;
@@ -172,7 +172,7 @@ static int _get_enclave_thread_first_ssa_info(
     oe_sgx_td_t* td,
     SSA_Info* ssa_info)
 {
-    sgx_tcs_t* tcs = (sgx_tcs_t*)td_to_tcs(td);
+    sgx_tcs_t* tcs = (sgx_tcs_t*)oe_td_to_tcs(td);
     uint64_t ssa_frame_size = td->base.__ssa_frame_size;
     if (ssa_frame_size == 0)
     {
@@ -217,7 +217,7 @@ static struct
 **
 **==============================================================================
 */
-int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
+static int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 {
     // Emulate CPUID
     if (*((uint16_t*)ssa_gpr->rip) == OE_CPUID_OPCODE)
@@ -271,9 +271,9 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     // Traverse the existing exception handlers, stop when
     // OE_EXCEPTION_CONTINUE_EXECUTION is found.
     uint64_t handler_ret = OE_EXCEPTION_CONTINUE_SEARCH;
-    for (uint32_t i = 0; i < g_current_exception_handler_count; i++)
+    for (uint32_t i = 0; i < _current_exception_handler_count; i++)
     {
-        handler_ret = g_exception_handler_arr[i](&oe_exception_record);
+        handler_ret = _exception_handler_arr[i](&oe_exception_record);
         if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
         {
             break;

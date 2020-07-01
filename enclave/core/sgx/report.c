@@ -22,7 +22,7 @@ OE_STATIC_ASSERT(sizeof(oe_identity_t) == 96);
 
 OE_STATIC_ASSERT(sizeof(oe_report_t) == 144);
 
-oe_result_t sgx_create_report(
+oe_result_t oe_sgx_create_report(
     const void* report_data,
     size_t report_data_size,
     const void* target_info,
@@ -106,7 +106,7 @@ static oe_result_t _get_local_report(
         OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
-    OE_CHECK(sgx_create_report(
+    OE_CHECK(oe_sgx_create_report(
         report_data,
         report_data_size,
         opt_params,

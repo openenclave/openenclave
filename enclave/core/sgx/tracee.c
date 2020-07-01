@@ -11,7 +11,7 @@
 
 // Read an enclave's identity attribute to see to if it was signed as an debug
 // enclave
-bool is_enclave_debug_allowed()
+bool oe_is_enclave_debug_allowed()
 {
     bool ret = false;
     oe_sgx_td_t* td = oe_sgx_get_td();
@@ -25,7 +25,8 @@ bool is_enclave_debug_allowed()
     {
         // get a report on the enclave itself for enclave identity information
         sgx_report_t sgx_report;
-        oe_result_t result = sgx_create_report(NULL, 0, NULL, 0, &sgx_report);
+        oe_result_t result =
+            oe_sgx_create_report(NULL, 0, NULL, 0, &sgx_report);
         if (result != OE_OK)
             goto done;
 

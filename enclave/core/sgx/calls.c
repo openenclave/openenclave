@@ -253,8 +253,9 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
         if (args_ptr->table_id >= OE_MAX_ECALL_TABLES)
             OE_RAISE(OE_NOT_FOUND);
 
-        ecall_table.ecalls = _ecall_tables[args_ptr->table_id].ecalls;
-        ecall_table.num_ecalls = _ecall_tables[args_ptr->table_id].num_ecalls;
+        ecall_table.ecalls = __oe_ecall_tables[args_ptr->table_id].ecalls;
+        ecall_table.num_ecalls =
+            __oe_ecall_tables[args_ptr->table_id].num_ecalls;
 
         if (!ecall_table.ecalls)
             OE_RAISE(OE_NOT_FOUND);
@@ -352,17 +353,17 @@ static void _handle_ecall(
     uint64_t* output_arg1,
     uint64_t* output_arg2)
 {
-    /* To keep status of td consistent before and after _handle_ecall, td_init
-     is moved into _handle_ecall. In this way _handle_ecall will not trigger
-     stack check fail by accident. Of couse not all function have the
+    /* To keep status of td consistent before and after _handle_ecall,
+     oe_td_init is moved into _handle_ecall. In this way _handle_ecall will not
+     trigger stack check fail by accident. Of couse not all function have the
      opportunity to keep such consistency. Such basic functions are moved to a
      separate source file and the stack protector is disabled by force
      through fno-stack-protector option. */
 
     /* Initialize thread data structure (if not already initialized) */
-    if (!td_initialized(td))
+    if (!oe_td_initialized(td))
     {
-        td_init(td);
+        oe_td_init(td);
     }
 
     oe_result_t result = OE_OK;
@@ -371,7 +372,7 @@ static void _handle_ecall(
     Callsite callsite = {{0}};
     uint64_t arg_out = 0;
 
-    td_push_callsite(td, &callsite);
+    oe_td_push_callsite(td, &callsite);
 
     // Acquire release semantics for __oe_initialized are present in
     // _handle_init_enclave.
@@ -396,7 +397,7 @@ static void _handle_ecall(
         }
     }
 
-    // td_push_callsite increments the depth. depth > 1 indicates a reentrant
+    // oe_td_push_callsite increments the depth. depth > 1 indicates a reentrant
     // call. Reentrancy is allowed to handle exceptions and to terminate the
     // enclave.
     if (td->depth > 1 && (func != OE_ECALL_VIRTUAL_EXCEPTION_HANDLER &&
@@ -463,7 +464,7 @@ done:
     }
 
     /* Remove ECALL context from front of oe_sgx_td_t.ecalls list */
-    td_pop_callsite(td);
+    oe_td_pop_callsite(td);
 
     /* Perform ERET, giving control back to host */
     *output_arg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, result);
@@ -572,11 +573,11 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
 
     // Since determining whether an enclave supports debugging is a stateless
     // idempotent operation, there is no need to lock. The result is cached
-    // for performance since is_enclave_debug_allowed uses local report to
+    // for performance since oe_is_enclave_debug_allowed uses local report to
     // securely determine if an enclave supports debugging or not.
     if (!_initialized)
     {
-        _stitch_ocall_stack = is_enclave_debug_allowed();
+        _stitch_ocall_stack = oe_is_enclave_debug_allowed();
         _initialized = true;
     }
 
@@ -656,7 +657,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
         OE_RAISE_NO_TRACE(OE_UNEXPECTED);
 
     /* Check for unexpected failures */
-    if (!td_initialized(td))
+    if (!oe_td_initialized(td))
         OE_RAISE_NO_TRACE(OE_FAILURE);
 
     /* Save call site where execution will resume after OCALL */
@@ -952,7 +953,7 @@ void __oe_handle_main(
     oe_initialize_enclave();
 
     /* Get pointer to the thread data structure */
-    oe_sgx_td_t* td = td_from_tcs(tcs);
+    oe_sgx_td_t* td = oe_td_from_tcs(tcs);
 
     /* If this is a normal (non-exception) entry */
     if (cssa == 0)

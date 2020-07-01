@@ -69,13 +69,13 @@ struct _callsite
 **==============================================================================
 */
 
-void td_push_callsite(oe_sgx_td_t* td, Callsite* ec);
+void oe_td_push_callsite(oe_sgx_td_t* td, Callsite* ec);
 
-oe_sgx_td_t* td_from_tcs(void* tcs);
+oe_sgx_td_t* oe_td_from_tcs(void* tcs);
 
-void* td_to_tcs(const oe_sgx_td_t* td);
+void* oe_td_to_tcs(const oe_sgx_td_t* td);
 
-bool td_initialized(oe_sgx_td_t* td);
+bool oe_td_initialized(oe_sgx_td_t* td);
 
 /*
 **==============================================================================
@@ -85,10 +85,10 @@ bool td_initialized(oe_sgx_td_t* td);
 **==============================================================================
 */
 
-void td_pop_callsite(oe_sgx_td_t* td);
+void oe_td_pop_callsite(oe_sgx_td_t* td);
 
-void td_init(oe_sgx_td_t* td);
+void oe_td_init(oe_sgx_td_t* td);
 
-void td_clear(oe_sgx_td_t* td);
+void oe_td_clear(oe_sgx_td_t* td);
 
 #endif /* _TD_H */

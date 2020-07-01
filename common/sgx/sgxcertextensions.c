@@ -403,7 +403,7 @@ done:
     return result;
 }
 
-oe_result_t ParseSGXExtensions(
+oe_result_t oe_parse_sgx_extensions(
     oe_cert_t* cert,
     uint8_t* buffer,
     size_t* buffer_size,

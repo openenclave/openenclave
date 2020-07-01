@@ -18,7 +18,7 @@
 /*
 **==============================================================================
 **
-** td_pop_callsite()
+** oe_td_pop_callsite()
 **
 **     Remove the Callsite structure that is at the head of the
 **     oe_sgx_td_t.callsites list.
@@ -26,7 +26,7 @@
 **==============================================================================
 */
 
-void td_pop_callsite(oe_sgx_td_t* td)
+void oe_td_pop_callsite(oe_sgx_td_t* td)
 {
     if (!td->callsites)
         oe_abort();
@@ -35,7 +35,7 @@ void td_pop_callsite(oe_sgx_td_t* td)
     {
         // The outermost ecall is about to return.
         // Clear the thread-local storage.
-        td_clear(td);
+        oe_td_clear(td);
     }
     else
     {
@@ -48,7 +48,7 @@ void td_pop_callsite(oe_sgx_td_t* td)
 /*
 **==============================================================================
 **
-** td_init()
+** oe_td_init()
 **
 **     Initialize the thread data structure (oe_sgx_td_t) if not already
 *initialized.
@@ -81,10 +81,10 @@ void td_pop_callsite(oe_sgx_td_t* td)
 **==============================================================================
 */
 
-void td_init(oe_sgx_td_t* td)
+void oe_td_init(oe_sgx_td_t* td)
 {
     /* If not already initialized */
-    if (!td_initialized(td))
+    if (!oe_td_initialized(td))
     {
         // oe_sgx_td_t.hostsp, oe_sgx_td_t.hostbp, and oe_sgx_td_t.retaddr
         // already set by oe_enter().
@@ -117,15 +117,15 @@ void td_init(oe_sgx_td_t* td)
 /*
 **==============================================================================
 **
-** td_clear()
+** oe_td_clear()
 **
 **     Clear the oe_sgx_td_t. This is called when the ECALL depth falls to zero
-**     in td_pop_callsite().
+**     in oe_td_pop_callsite().
 **
 **==============================================================================
 */
 
-void td_clear(oe_sgx_td_t* td)
+void oe_td_clear(oe_sgx_td_t* td)
 {
     if (td->depth != 1)
         oe_abort();

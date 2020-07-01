@@ -64,7 +64,7 @@ oe_thread_data_t* oe_get_thread_data()
 /*
 **==============================================================================
 **
-** td_push_callsite()
+** oe_td_push_callsite()
 **
 **     Insert the Callsite structure for the current ECALL at the
 **     front of the oe_sgx_td_t.callsites list.
@@ -72,7 +72,7 @@ oe_thread_data_t* oe_get_thread_data()
 **==============================================================================
 */
 
-void td_push_callsite(oe_sgx_td_t* td, Callsite* callsite)
+void oe_td_push_callsite(oe_sgx_td_t* td, Callsite* callsite)
 {
     callsite->next = td->callsites;
     td->callsites = callsite;
@@ -91,7 +91,7 @@ void td_push_callsite(oe_sgx_td_t* td, Callsite* callsite)
 **     resigter until it is solved on Windows debugger.
 **     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 **
-** td_from_tcs()
+** oe_td_from_tcs()
 **
 **     This function calculates the address of the oe_sgx_td_t (thread data
 *structure)
@@ -127,7 +127,7 @@ void td_push_callsite(oe_sgx_td_t* td, Callsite* callsite)
 **==============================================================================
 */
 
-oe_sgx_td_t* td_from_tcs(void* tcs)
+oe_sgx_td_t* oe_td_from_tcs(void* tcs)
 {
     return (oe_sgx_td_t*)((uint8_t*)tcs + TD_FROM_TCS);
 }
@@ -135,14 +135,14 @@ oe_sgx_td_t* td_from_tcs(void* tcs)
 /*
 **==============================================================================
 **
-** td_to_tcs()
+** oe_td_to_tcs()
 **
 **     Compute a TCS pointer from a oe_sgx_td_t.
 **
 **==============================================================================
 */
 
-void* td_to_tcs(const oe_sgx_td_t* td)
+void* oe_td_to_tcs(const oe_sgx_td_t* td)
 {
     return (uint8_t*)td - TD_FROM_TCS;
 }
@@ -173,7 +173,7 @@ oe_sgx_td_t* oe_sgx_get_td()
 /*
 **==============================================================================
 **
-** td_initialized()
+** oe_td_initialized()
 **
 **     Returns TRUE if this thread data structure (oe_sgx_td_t) is initialized.
 *An
@@ -186,7 +186,7 @@ oe_sgx_td_t* oe_sgx_get_td()
 **==============================================================================
 */
 
-bool td_initialized(oe_sgx_td_t* td)
+bool oe_td_initialized(oe_sgx_td_t* td)
 {
     if (td && td->magic == TD_MAGIC && td->base.self_addr == (uint64_t)td)
         return true;

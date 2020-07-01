@@ -22,7 +22,7 @@
 #include "tcbinfo.h"
 
 // Defaults to Intel SGX 1.8 Release Date.
-oe_datetime_t _sgx_minimim_crl_tcb_issue_date = {2017, 3, 17};
+oe_datetime_t __oe_sgx_minimim_crl_tcb_issue_date = {2017, 3, 17};
 
 oe_result_t __oe_sgx_set_minimum_crl_tcb_issue_date(
     uint32_t year,
@@ -36,7 +36,7 @@ oe_result_t __oe_sgx_set_minimum_crl_tcb_issue_date(
     oe_datetime_t tmp = {year, month, day, hours, minutes, seconds};
 
     OE_CHECK(oe_datetime_is_valid(&tmp));
-    _sgx_minimim_crl_tcb_issue_date = tmp;
+    __oe_sgx_minimim_crl_tcb_issue_date = tmp;
 
     result = OE_OK;
 done:
@@ -158,7 +158,7 @@ static oe_result_t _parse_sgx_extensions(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     // Try parsing the extensions.
-    result = ParseSGXExtensions(
+    result = oe_parse_sgx_extensions(
         leaf_cert, buffer, &buffer_size, parsed_extension_info);
 
     if (result == OE_BUFFER_TOO_SMALL)
@@ -168,7 +168,7 @@ static oe_result_t _parse_sgx_extensions(
         oe_free(buffer);
         buffer = (uint8_t*)oe_malloc(buffer_size);
 
-        result = ParseSGXExtensions(
+        result = oe_parse_sgx_extensions(
             leaf_cert, buffer, &buffer_size, parsed_extension_info);
     }
 
@@ -381,25 +381,26 @@ oe_result_t oe_validate_revocation_list(
         "Failed to get revocation validity datetime info. %s",
         oe_result_str(result));
 
-    if (oe_datetime_compare(&latest_from, &_sgx_minimim_crl_tcb_issue_date) < 0)
+    if (oe_datetime_compare(
+            &latest_from, &__oe_sgx_minimim_crl_tcb_issue_date) < 0)
     {
         oe_datetime_log("Latest issue date : ", &latest_from);
         oe_datetime_log(
             " is earlier than minimum issue date: ",
-            &_sgx_minimim_crl_tcb_issue_date);
+            &__oe_sgx_minimim_crl_tcb_issue_date);
         OE_RAISE_MSG(
             OE_INVALID_REVOCATION_INFO,
             "Revocation validation failed minimum issue date. %s",
             oe_result_str(result));
     }
 
-    if (oe_datetime_compare(&earliest_until, &_sgx_minimim_crl_tcb_issue_date) <
-        0)
+    if (oe_datetime_compare(
+            &earliest_until, &__oe_sgx_minimim_crl_tcb_issue_date) < 0)
     {
         oe_datetime_log("Next update date : ", &earliest_until);
         oe_datetime_log(
             " is earlier than minimum issue date: ",
-            &_sgx_minimim_crl_tcb_issue_date);
+            &__oe_sgx_minimim_crl_tcb_issue_date);
         OE_RAISE_MSG(
             OE_INVALID_REVOCATION_INFO,
             "Revocation validation failed minimum issue date. %s",

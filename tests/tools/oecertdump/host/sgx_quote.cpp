@@ -114,8 +114,8 @@ void parse_certificate_extension(const uint8_t* data, size_t data_len)
     buffer = (uint8_t*)malloc(buffer_size);
     if (buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
-    result =
-        ParseSGXExtensions(&leaf_cert, buffer, &buffer_size, &extension_info);
+    result = oe_parse_sgx_extensions(
+        &leaf_cert, buffer, &buffer_size, &extension_info);
 
     if (result == OE_BUFFER_TOO_SMALL)
     {
@@ -123,7 +123,7 @@ void parse_certificate_extension(const uint8_t* data, size_t data_len)
         buffer = (uint8_t*)malloc(buffer_size);
         if (buffer == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
-        result = ParseSGXExtensions(
+        result = oe_parse_sgx_extensions(
             &leaf_cert, buffer, &buffer_size, &extension_info);
     }
     printf(

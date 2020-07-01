@@ -535,7 +535,7 @@ static oe_result_t _get_format_settings(
         if (!report)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        OE_CHECK(sgx_create_report(
+        OE_CHECK(oe_sgx_create_report(
             NULL, 0, NULL, 0, (sgx_report_t*)&report->report));
 
         report->version = OE_REPORT_HEADER_VERSION;

@@ -368,7 +368,7 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
         // oe_allocator_init to initialize the enclave and here
         // (oe_thread_local_init) is the natural place to call
         // oe_allocator_thread_init to perform thread-specific allocator
-        // initialization. However, currently, td_init and hence
+        // initialization. However, currently, oe_td_init and hence
         // oe_thread_local_init is called *before* _handle_init_enclave is
         // called. This results in incorrect order of the allocator callbacks.
         // Therefore, we call oe_allocator_init here (via oe_once)

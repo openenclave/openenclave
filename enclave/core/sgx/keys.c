@@ -196,7 +196,7 @@ static oe_result_t _get_default_key_request_attributes(
     oe_result_t result;
 
     // Get a local report of current enclave.
-    result = sgx_create_report(NULL, 0, NULL, 0, &sgx_report);
+    result = oe_sgx_create_report(NULL, 0, NULL, 0, &sgx_report);
 
     if (result != OE_OK)
     {

@@ -195,8 +195,8 @@ static TEE_Result _handle_call_enclave_function(
         if (args.table_id >= OE_MAX_ECALL_TABLES)
             return TEE_ERROR_ITEM_NOT_FOUND;
 
-        ecall_table.ecalls = _ecall_tables[args.table_id].ecalls;
-        ecall_table.num_ecalls = _ecall_tables[args.table_id].num_ecalls;
+        ecall_table.ecalls = __oe_ecall_tables[args.table_id].ecalls;
+        ecall_table.num_ecalls = __oe_ecall_tables[args.table_id].num_ecalls;
 
         if (!ecall_table.ecalls)
             return TEE_ERROR_ITEM_NOT_FOUND;

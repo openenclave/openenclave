@@ -22,7 +22,7 @@
 
 static int _thread_wait(oe_sgx_td_t* self)
 {
-    const void* tcs = td_to_tcs((oe_sgx_td_t*)self);
+    const void* tcs = oe_td_to_tcs((oe_sgx_td_t*)self);
 
     if (oe_ocall(OE_OCALL_THREAD_WAIT, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
@@ -32,7 +32,7 @@ static int _thread_wait(oe_sgx_td_t* self)
 
 static int _thread_wake(oe_sgx_td_t* self)
 {
-    const void* tcs = td_to_tcs((oe_sgx_td_t*)self);
+    const void* tcs = oe_td_to_tcs((oe_sgx_td_t*)self);
 
     if (oe_ocall(OE_OCALL_THREAD_WAKE, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
@@ -43,8 +43,8 @@ static int _thread_wake(oe_sgx_td_t* self)
 static int _thread_wake_wait(oe_sgx_td_t* waiter, oe_sgx_td_t* self)
 {
     int ret = -1;
-    uint64_t waiter_tcs = (uint64_t)td_to_tcs((oe_sgx_td_t*)waiter);
-    uint64_t self_tcs = (uint64_t)td_to_tcs((oe_sgx_td_t*)self);
+    uint64_t waiter_tcs = (uint64_t)oe_td_to_tcs((oe_sgx_td_t*)waiter);
+    uint64_t self_tcs = (uint64_t)oe_td_to_tcs((oe_sgx_td_t*)self);
 
     if (oe_sgx_thread_wake_wait_ocall(oe_get_enclave(), waiter_tcs, self_tcs) !=
         OE_OK)

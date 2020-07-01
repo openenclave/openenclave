@@ -21,7 +21,7 @@ void oe_deallocate_arena(void* buffer);
 
 static oe_shared_memory_arena_t* _get_arena()
 {
-    /* Note: arenas are zero-initialized by td_init() */
+    /* Note: arenas are zero-initialized by oe_td_init() */
     return &oe_sgx_get_td()->arena;
 }
 

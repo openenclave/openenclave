@@ -51,7 +51,7 @@ static const unsigned short _ctype_b[384] = {
 
 const unsigned short* __oe_ctype_b_loc = &_ctype_b[128];
 
-const unsigned int _ctype_toupper[384] = {
+static const unsigned int _ctype_toupper[384] = {
     0x00000080, 0x00000081, 0x00000082, 0x00000083, 0x00000084, 0x00000085,
     0x00000086, 0x00000087, 0x00000088, 0x00000089, 0x0000008a, 0x0000008b,
     0x0000008c, 0x0000008d, 0x0000008e, 0x0000008f, 0x00000090, 0x00000091,
@@ -120,7 +120,7 @@ const unsigned int _ctype_toupper[384] = {
 
 const unsigned int* __oe_ctype_toupper_loc = &_ctype_toupper[128];
 
-const unsigned int _ctype_tolower[384] = {
+static const unsigned int _ctype_tolower[384] = {
     0x00000080, 0x00000081, 0x00000082, 0x00000083, 0x00000084, 0x00000085,
     0x00000086, 0x00000087, 0x00000088, 0x00000089, 0x0000008a, 0x0000008b,
     0x0000008c, 0x0000008d, 0x0000008e, 0x0000008f, 0x00000090, 0x00000091,

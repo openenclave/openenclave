@@ -21,7 +21,7 @@ bool oe_disable_debug_malloc_check;
 **==============================================================================
 */
 
-ecall_table_t _ecall_tables[OE_MAX_ECALL_TABLES];
+ecall_table_t __oe_ecall_tables[OE_MAX_ECALL_TABLES];
 static oe_spinlock_t _ecall_tables_lock = OE_SPINLOCK_INITIALIZER;
 
 oe_result_t oe_register_ecall_function_table(
@@ -35,8 +35,8 @@ oe_result_t oe_register_ecall_function_table(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     oe_spin_lock(&_ecall_tables_lock);
-    _ecall_tables[table_id].ecalls = ecalls;
-    _ecall_tables[table_id].num_ecalls = num_ecalls;
+    __oe_ecall_tables[table_id].ecalls = ecalls;
+    __oe_ecall_tables[table_id].num_ecalls = num_ecalls;
     oe_spin_unlock(&_ecall_tables_lock);
 
     result = OE_OK;

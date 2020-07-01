@@ -8,7 +8,7 @@
 #include "../common.h"
 #include "tcbinfo.h"
 
-extern oe_datetime_t _sgx_minimim_crl_tcb_issue_date;
+extern oe_datetime_t __oe_sgx_minimim_crl_tcb_issue_date;
 
 static void dump_info(
     const char* title,
@@ -102,7 +102,7 @@ oe_result_t oe_validate_qe_identity(
     // Check that issue_date and next_update are after the earliest date that
     // the enclave accepts.
     if (oe_datetime_compare(
-            &parsed_info.issue_date, &_sgx_minimim_crl_tcb_issue_date) < 0)
+            &parsed_info.issue_date, &__oe_sgx_minimim_crl_tcb_issue_date) < 0)
         OE_RAISE_MSG(
             OE_INVALID_QE_IDENTITY_INFO,
             "QE identity info issue date does not meet CRL/TCB minimum issue "
@@ -110,7 +110,7 @@ oe_result_t oe_validate_qe_identity(
             NULL);
 
     if (oe_datetime_compare(
-            &parsed_info.next_update, &_sgx_minimim_crl_tcb_issue_date) < 0)
+            &parsed_info.next_update, &__oe_sgx_minimim_crl_tcb_issue_date) < 0)
         OE_RAISE_MSG(
             OE_INVALID_QE_IDENTITY_INFO,
             "QE identity info next update does not meet CRL/TCB minimum issue "

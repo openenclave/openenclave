@@ -20,7 +20,7 @@
 #endif
 
 /* Return null if address is outside of the enclave; else return ptr. */
-const void* _check_address(const void* ptr)
+static const void* _check_address(const void* ptr)
 {
     if (!oe_is_within_enclave(ptr, sizeof(uint64_t)))
         return NULL;
