@@ -60,7 +60,7 @@ if (UNIX
     OR ADD_WINDOWS_ENCLAVE_TESTS
     OR USE_CLANGW)
   if (OE_SGX)
-    if (BUfILD_ENCLAVES)
+    if (BUILD_ENCLAVES)
       # Disable the memory test for the scenario of building the enclave in Linux and running
       # it on Windows because of the mismatch on the enclave heap size configuration.
       add_subdirectory(memory)
