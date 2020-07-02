@@ -1010,10 +1010,10 @@ oe_result_t oe_create_enclave(
     /* Setup logging configuration */
     if (oe_log_enclave_init(enclave) == OE_UNSUPPORTED)
     {
-        oe_log(
-            OE_LOG_LEVEL_WARNING,
-            "The in-enclave logging is not supported. To enable, please import "
-            "the logging.edl.\n");
+        OE_TRACE_WARNING(
+            "In-enclave logging is not supported. To enable, please add \n\n"
+            "from \"openenclave/edl/logging.edl\" import *;\n\n"
+            "in the edl file.\n");
     }
 
     /* Apply the list of settings to the enclave.
