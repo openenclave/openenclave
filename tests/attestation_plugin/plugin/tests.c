@@ -347,6 +347,7 @@ void register_verifier()
 
     OE_TEST_CODE(oe_verifier_initialize(), OE_OK);
     OE_TEST_CODE(oe_verifier_get_formats(&formats, &formats_length), OE_OK);
+    free(formats);
 }
 
 void unregister_verifier()

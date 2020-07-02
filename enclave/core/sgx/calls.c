@@ -3,6 +3,8 @@
 
 #include "../calls.h"
 #include <openenclave/advanced/allocator.h>
+#include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
@@ -422,6 +424,12 @@ static void _handle_ecall(
 
             /* Call all finalization functions */
             oe_call_fini_functions();
+
+            /* Cleanup attesters */
+            oe_attester_shutdown();
+
+            /* Cleanup verifiers */
+            oe_verifier_shutdown();
 
 #if defined(OE_USE_DEBUG_MALLOC)
 

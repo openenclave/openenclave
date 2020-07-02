@@ -54,6 +54,10 @@ if (OE_SGX)
   else ()
     message("The C++ compiler cannot compile snmalloc. Skipping snmalloc test.")
   endif ()
+
+  if (USE_DEBUG_MALLOC)
+    add_subdirectory(debug_malloc)
+  endif ()
 endif ()
 
 if (UNIX
