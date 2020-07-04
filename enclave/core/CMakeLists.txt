@@ -1,8 +1,8 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(OE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/include/openenclave/edl)
+set(OE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+set(EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl)
 
 ##==============================================================================
 ##

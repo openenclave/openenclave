@@ -149,7 +149,7 @@ if (UNIX)
   endif ()
 elseif (WIN32)
   target_include_directories(
-    oehostmr PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
+    oehostmr PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
 endif ()
 
 # For including edge routines.

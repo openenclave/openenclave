@@ -1,8 +1,8 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(OE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/include/openenclave/edl)
+set(OE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+set(EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl)
 
 ##==============================================================================
 ##
@@ -432,12 +432,12 @@ if (UNIX)
   endif ()
 elseif (WIN32)
   target_include_directories(
-    oehost PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
+    oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   # Synchronization library is needed for WaitOnAddress/WakeByAddress functions
   # used by switchless ocalls worker threads.
   target_link_libraries(oehost PRIVATE bcrypt Crypt32 Synchronization)
   target_include_directories(
-    oehostverify PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
+    oehostverify PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   target_link_libraries(oehostverify PRIVATE bcrypt Crypt32)
 
   # TODO: Handle TrustZone on Windows.
