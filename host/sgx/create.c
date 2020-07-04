@@ -832,6 +832,11 @@ oe_result_t oe_sgx_build_enclave(
         &loaded_enclave_pages_size,
         &enclave_size));
 
+    if (props.config.attributes & OE_SGX_FLAGS_KSS)
+    {
+        context->attributes.flags |= OE_SGX_FLAGS_KSS;
+    }
+
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
         context, enclave_size, loaded_enclave_pages_size, &enclave_addr));

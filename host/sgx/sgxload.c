@@ -252,6 +252,8 @@ static oe_result_t _get_sig_struct(
             properties->config.security_version,
             OE_DEBUG_SIGN_KEY,
             OE_DEBUG_SIGN_KEY_SIZE,
+            properties->config.isv_family_id,
+            properties->config.isv_ext_product_id,
             sigstruct));
     }
     else
@@ -348,6 +350,11 @@ oe_result_t oe_sgx_create_enclave(
     /* Create SECS structure */
     if (!(secs = _new_secs((uint64_t)base, enclave_size, context)))
         OE_RAISE(OE_OUT_OF_MEMORY);
+
+    if (context->attributes.flags & OE_SGX_FLAGS_KSS)
+    {
+        secs->flags |= OE_SGX_FLAGS_KSS;
+    }
 
     /* Measure this operation */
     OE_CHECK(oe_sgx_measure_create_enclave(&context->hash_context, secs));
