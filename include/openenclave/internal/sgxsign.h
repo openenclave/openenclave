@@ -25,6 +25,8 @@ OE_EXTERNC_BEGIN
  * @param security_version[in] ISVSVN value for the SGX sigstruct
  * @param pem_data[in] PEM buffer containing the signing key
  * @param pem_size[in] size of the PEM buffer
+ * @param isv_family_id[in] ISVFAMILYID value for the SGX sigstruct
+ * @param isv_ext_product_id[in] ISVEXTPRODID value for the SGX sigstruct
  * @param sigstruct[out] the SGX signature
  *
  * @return OE_OK success
@@ -36,6 +38,8 @@ oe_result_t oe_sgx_sign_enclave(
     uint16_t security_version,
     const uint8_t* pem_data,
     size_t pem_size,
+    const uint8_t* isv_family_id,
+    const uint8_t* isv_ext_product_id,
     sgx_sigstruct_t* sigstruct);
 
 /**
@@ -53,6 +57,8 @@ oe_result_t oe_sgx_sign_enclave(
  * @param engine_id[in] text name of the engine to use
  * @param engine_load_path[in] file path to the openssl engine to use
  * @param key_id[in] integer handle for the key to use
+ * @param isv_family_id[in] ISVFAMILYID value for the SGX sigstruct
+ * @param isv_ext_product_id[in] ISVEXTPRODID value for the SGX sigstruct
  * @param sigstruct[out] the SGX signature
  *
  * @return OE_OK success
@@ -65,6 +71,8 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     const char* engine_id,
     const char* engine_load_path,
     const char* key_id,
+    const uint8_t* isv_family_id,
+    const uint8_t* isv_ext_product_id,
     sgx_sigstruct_t* sigstruct);
 
 /**

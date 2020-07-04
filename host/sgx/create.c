@@ -807,6 +807,11 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(_calculate_enclave_size(
         image_size, &props, &enclave_end, &enclave_size));
 
+    if (props.config.attributes & OE_SGX_FLAGS_KSS)
+    {
+        context->attributes.flags |= OE_SGX_FLAGS_KSS;
+    }
+
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
         context, enclave_size, enclave_end, &enclave_addr));

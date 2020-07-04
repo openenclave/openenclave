@@ -32,7 +32,7 @@ OE_INLINE bool oe_sgx_is_valid_num_tcs(uint64_t x)
 OE_INLINE bool oe_sgx_is_valid_attributes(uint64_t x)
 {
     /* Check for illegal bits */
-    if (x & ~(OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT))
+    if (x & ~(OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT | OE_SGX_FLAGS_KSS))
         return false;
 
     /* Check for missing MODE64BIT */

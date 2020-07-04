@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/report.h>
 #include <stdio.h>
 #include <string.h>
 #include "oesign_test_t.h"
@@ -51,4 +52,62 @@ bool is_test_signed()
     }
 
     return is_test_signed;
+}
+
+oe_result_t is_kss_extendedids_match(
+    oe_uuid_t* family_id,
+    oe_uuid_t* ext_product_id)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    size_t report_size = OE_MAX_REPORT_SIZE;
+    uint8_t* remote_report = NULL;
+    oe_report_header_t* header = NULL;
+    sgx_quote_t* quote = NULL;
+    uint64_t quote_size = 0;
+    char isvid_hex[33];
+
+    printf("========== Getting report with KSS feature\n");
+
+    result = oe_get_report(
+        OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+        NULL,
+        0,
+        NULL,
+        0,
+        (uint8_t**)&remote_report,
+        &report_size);
+
+    if (result == OE_OK)
+    {
+        printf("========== Got report, size = %zu\n", report_size);
+
+        header = (oe_report_header_t*)remote_report;
+        quote = (sgx_quote_t*)header->report;
+
+        quote_size = header->report_size;
+
+        sgx_report_body_t* report_body =
+            (sgx_report_body_t*)&quote->report_body;
+
+        oe_hex_string(
+            isvid_hex,
+            33,
+            report_body->isvfamilyid,
+            sizeof(report_body->isvfamilyid));
+        printf("Enclave ISV Family ID = %s\n", isvid_hex);
+
+        oe_hex_string(
+            isvid_hex,
+            33,
+            report_body->isvextprodid,
+            sizeof(report_body->isvextprodid));
+        printf("Enclave ISV Extended ProductID = %s\n", isvid_hex);
+
+        if (!memcmp(report_body->isvfamilyid, &family_id, 16) ||
+            !memcmp(report_body->isvextprodid, &ext_product_id, 16))
+            result = OE_REPORT_PARSE_ERROR;
+    }
+    oe_free_report(remote_report);
+
+    return result;
 }

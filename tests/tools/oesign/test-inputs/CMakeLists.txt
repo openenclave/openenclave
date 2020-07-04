@@ -74,6 +74,37 @@ add_custom_command(
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file new_security_version.conf --security_version 2)
 
+add_custom_command(
+  OUTPUT kss_valid.conf
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+          --config_file kss_valid.conf --kss 1 --isv_ext_product_id 47183823-2574-4bfd-b411-99ed177d3e43 --isv_family_id 47183823-2574-4bfd-b411-99ed177d3e43)
+
+
+add_custom_command(
+  OUTPUT ext_prod_id_too_long.conf
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+          --config_file ext_prod_id_too_long.conf --kss 1 --isv_ext_product_id 47183823-2574-4bfd-b411-99ed177d3e433)
+
+add_custom_command(
+  OUTPUT ext_prod_id_too_short.conf
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+          --config_file ext_prod_id_too_short.conf --kss 1 --isv_ext_product_id 47183823-2574-4bfd-b411-99ed177d3e4)
+
+add_custom_command(
+  OUTPUT family_id_too_long.conf
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+          --config_file family_id_too_long.conf --kss 1 --isv_family_id 47183823-2574-4bfd-b411-99ed177d3e433e433)
+
+add_custom_command(
+  OUTPUT family_id_too_short.conf
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
+          --config_file family_id_too_short.conf --kss 1 --isv_family_id 47183823-2574-4bfd-b411-99ed177d3e4)
+
 # Generate empty config file
 add_custom_command(
   OUTPUT empty.conf COMMAND cmake -E touch
@@ -97,6 +128,11 @@ add_custom_target(
           new_security_version.conf
           negative_num_heap_pages.conf
           non_debug.conf
+          kss_valid.conf
+          ext_prod_id_too_long.conf
+          ext_prod_id_too_short.conf
+          family_id_too_long.conf
+          family_id_too_short.conf
           valid.conf)
 
 # Generate a valid SGX signing key-pair and signing certificate
