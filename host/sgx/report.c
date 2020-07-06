@@ -19,6 +19,79 @@
 
 #include "sgxquoteprovider.h"
 
+#if !defined(OE_USE_BUILTIN_EDL)
+/**
+ * Declare the prototypes of the following functions to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_get_report_v2_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    uint32_t flags,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
+    size_t* report_buffer_size);
+
+oe_result_t _oe_verify_local_report_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    const uint8_t* report,
+    size_t report_size,
+    oe_report_t* parsed_report);
+
+/**
+ * Make the following ECALLs weak to support the system EDL opt-in.
+ * When the user does not opt into (import) the EDL, the linker will pick
+ * the following default implementations. If the user opts into the EDL,
+ * the implementations (which are strong) in the oeedger8r-generated code will
+ * be used. This behavior is guaranteed by the linker; i.e., the linker will
+ * pick the symbols defined in the object before those in the library.
+ */
+oe_result_t _oe_get_report_v2_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    uint32_t flags,
+    const void* opt_params,
+    size_t opt_params_size,
+    uint8_t** report_buffer,
+    size_t* report_buffer_size)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(flags);
+    OE_UNUSED(opt_params);
+    OE_UNUSED(opt_params_size);
+    OE_UNUSED(report_buffer);
+    OE_UNUSED(report_buffer_size);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_get_report_v2_ecall, oe_get_report_v2_ecall);
+
+oe_result_t _oe_verify_local_report_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    const uint8_t* report,
+    size_t report_size,
+    oe_report_t* parsed_report)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(report);
+    OE_UNUSED(report_size);
+    OE_UNUSED(parsed_report);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_verify_local_report_ecall, oe_verify_local_report_ecall);
+
+#endif
+
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
 static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
@@ -57,6 +130,13 @@ oe_result_t oe_get_report_v2(
 done:
     if (report)
         oe_free_report(report);
+
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING(
+            "SGX remote attestation is not enabled. To enable, please add\n\n"
+            "from \"openenclave/edl/sgx/attestation.edl\" import *;\n\n"
+            "in the edl file.\n");
+
     return result;
 }
 
@@ -108,6 +188,13 @@ oe_result_t oe_verify_report(
         OE_RAISE(OE_UNSUPPORTED);
 
 done:
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING("oe_verify_local_report_ecall is not supported. To "
+                         "enable, please add\n\n"
+                         "from \"openenclave/edl/sgx/attestation.edl\" import "
+                         "oe_verify_local_report_ecall;\n\n"
+                         "in the edl file.\n");
+
     return result;
 }
 

@@ -12,6 +12,103 @@
 #include "../common/sgx/collateral.h"
 #include "platform_t.h"
 
+#if !defined(OE_USE_BUILTIN_EDL)
+/**
+ * Declare the prototype of the following function to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_get_quote_verification_collateral_ocall(
+    oe_result_t* _retval,
+    uint8_t fmspc[6],
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_info_issuer_chain,
+    size_t tcb_info_issuer_chain_size,
+    size_t* tcb_info_issuer_chain_size_out,
+    void* pck_crl,
+    size_t pck_crl_size,
+    size_t* pck_crl_size_out,
+    void* root_ca_crl,
+    size_t root_ca_crl_size,
+    size_t* root_ca_crl_size_out,
+    void* pck_crl_issuer_chain,
+    size_t pck_crl_issuer_chain_size,
+    size_t* pck_crl_issuer_chain_size_out,
+    void* qe_identity,
+    size_t qe_identity_size,
+    size_t* qe_identity_size_out,
+    void* qe_identity_issuer_chain,
+    size_t qe_identity_issuer_chain_size,
+    size_t* qe_identity_issuer_chain_size_out);
+
+/**
+ * Make the following OCALL weak to support the system EDL opt-in.
+ * When the user does not opt into (import) the EDL, the linker will pick
+ * the following default implementation. If the user opts into the EDL,
+ * the implementation (which is strong) in the oeedger8r-generated code will be
+ * used.
+ */
+oe_result_t _oe_get_quote_verification_collateral_ocall(
+    oe_result_t* _retval,
+    uint8_t fmspc[6],
+    void* tcb_info,
+    size_t tcb_info_size,
+    size_t* tcb_info_size_out,
+    void* tcb_info_issuer_chain,
+    size_t tcb_info_issuer_chain_size,
+    size_t* tcb_info_issuer_chain_size_out,
+    void* pck_crl,
+    size_t pck_crl_size,
+    size_t* pck_crl_size_out,
+    void* root_ca_crl,
+    size_t root_ca_crl_size,
+    size_t* root_ca_crl_size_out,
+    void* pck_crl_issuer_chain,
+    size_t pck_crl_issuer_chain_size,
+    size_t* pck_crl_issuer_chain_size_out,
+    void* qe_identity,
+    size_t qe_identity_size,
+    size_t* qe_identity_size_out,
+    void* qe_identity_issuer_chain,
+    size_t qe_identity_issuer_chain_size,
+    size_t* qe_identity_issuer_chain_size_out)
+{
+    OE_UNUSED(fmspc);
+    OE_UNUSED(tcb_info);
+    OE_UNUSED(tcb_info_size);
+    OE_UNUSED(tcb_info_size_out);
+    OE_UNUSED(tcb_info_issuer_chain_size_out);
+    OE_UNUSED(tcb_info_issuer_chain);
+    OE_UNUSED(tcb_info_issuer_chain_size);
+    OE_UNUSED(tcb_info_issuer_chain_size_out);
+    OE_UNUSED(pck_crl);
+    OE_UNUSED(pck_crl_size);
+    OE_UNUSED(pck_crl_size_out);
+    OE_UNUSED(root_ca_crl);
+    OE_UNUSED(root_ca_crl_size);
+    OE_UNUSED(root_ca_crl_size_out);
+    OE_UNUSED(pck_crl_issuer_chain);
+    OE_UNUSED(pck_crl_issuer_chain_size);
+    OE_UNUSED(pck_crl_issuer_chain_size_out);
+    OE_UNUSED(qe_identity);
+    OE_UNUSED(qe_identity_size);
+    OE_UNUSED(qe_identity_size_out);
+    OE_UNUSED(qe_identity_issuer_chain);
+    OE_UNUSED(qe_identity_issuer_chain_size);
+    OE_UNUSED(qe_identity_issuer_chain_size_out);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_OK;
+}
+OE_WEAK_ALIAS(
+    _oe_get_quote_verification_collateral_ocall,
+    oe_get_quote_verification_collateral_ocall);
+
+#endif
+
 /**
  * Update these default size values as needed.
  * These represent the default buffer sizes that can store their
@@ -91,33 +188,30 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     {
         memcpy(&out, &in, sizeof(out));
 
-        if (oe_get_quote_verification_collateral_ocall(
-                &retval,
-                out.fmspc,
-                out.tcb_info,
-                out.tcb_info_size,
-                &out.tcb_info_size,
-                out.tcb_info_issuer_chain,
-                out.tcb_info_issuer_chain_size,
-                &out.tcb_info_issuer_chain_size,
-                out.pck_crl,
-                out.pck_crl_size,
-                &out.pck_crl_size,
-                out.root_ca_crl,
-                out.root_ca_crl_size,
-                &out.root_ca_crl_size,
-                out.pck_crl_issuer_chain,
-                out.pck_crl_issuer_chain_size,
-                &out.pck_crl_issuer_chain_size,
-                out.qe_identity,
-                out.qe_identity_size,
-                &out.qe_identity_size,
-                out.qe_identity_issuer_chain,
-                out.qe_identity_issuer_chain_size,
-                &out.qe_identity_issuer_chain_size) != OE_OK)
-        {
-            OE_RAISE(OE_FAILURE);
-        }
+        OE_CHECK(oe_get_quote_verification_collateral_ocall(
+            &retval,
+            out.fmspc,
+            out.tcb_info,
+            out.tcb_info_size,
+            &out.tcb_info_size,
+            out.tcb_info_issuer_chain,
+            out.tcb_info_issuer_chain_size,
+            &out.tcb_info_issuer_chain_size,
+            out.pck_crl,
+            out.pck_crl_size,
+            &out.pck_crl_size,
+            out.root_ca_crl,
+            out.root_ca_crl_size,
+            &out.root_ca_crl_size,
+            out.pck_crl_issuer_chain,
+            out.pck_crl_issuer_chain_size,
+            &out.pck_crl_issuer_chain_size,
+            out.qe_identity,
+            out.qe_identity_size,
+            &out.qe_identity_size,
+            out.qe_identity_issuer_chain,
+            out.qe_identity_issuer_chain_size,
+            &out.qe_identity_issuer_chain_size));
 
         if (retval != (oe_result_t)OE_BUFFER_TOO_SMALL)
             break;
@@ -217,6 +311,11 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     result = OE_OK;
 
 done:
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING(
+            "SGX remote attestation is not enabled. To enable, please add\n\n"
+            "from \"openenclave/edl/sgx/attestation.edl\" import *;\n\n"
+            "in the edl file.\n");
 
     /* Free buffers. */
     if (result != OE_OK)

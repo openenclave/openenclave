@@ -22,6 +22,45 @@
 #include "../core/sgx/report.h"
 #include "platform_t.h"
 
+#if !defined(OE_USE_BUILTIN_EDL)
+/**
+ * Declare the prototype of the following function to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_get_supported_attester_format_ids_ocall(
+    oe_result_t* _retval,
+    void* format_ids,
+    size_t format_ids_size,
+    size_t* format_ids_size_out);
+
+/**
+ * Make the following OCALL weak to support the system EDL opt-in.
+ * When the user does not opt into (import) the EDL, the linker will pick
+ * the following default implementation. If the user opts into the EDL,
+ * the implementation (which is strong) in the oeedger8r-generated code will be
+ * used.
+ */
+oe_result_t _oe_get_supported_attester_format_ids_ocall(
+    oe_result_t* _retval,
+    void* format_ids,
+    size_t format_ids_size,
+    size_t* format_ids_size_out)
+{
+    OE_UNUSED(format_ids);
+    OE_UNUSED(format_ids_size);
+    OE_UNUSED(format_ids_size_out);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_get_supported_attester_format_ids_ocall,
+    oe_get_supported_attester_format_ids_ocall);
+
+#endif
+
 static const oe_uuid_t _local_uuid = {OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION};
 static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
 
@@ -373,6 +412,13 @@ static oe_result_t _get_attester_plugins(
     result = OE_OK;
 
 done:
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING(
+            "SGX remote attestation is not enabled. To "
+            "enable, please add\n\n"
+            "from \"openenclave/edl/sgx/attestation.edl\" import *;\n\n"
+            "in the edl file.\n");
+
     if (temporary_buffer)
     {
         oe_free(temporary_buffer);
