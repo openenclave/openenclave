@@ -24,8 +24,9 @@
  */
 #define OE_ENCLAVE_WORKER_SPIN_COUNT_THRESHOLD (4096U)
 
+#if !defined(OE_USE_BUILTIN_EDL)
 /**
- * Declare the protoype of the following functions to avoid missing-prototypes
+ * Declare the prototypes of the following functions to avoid missing-prototypes
  * warning.
  */
 OE_UNUSED_FUNC oe_result_t _oe_sgx_init_context_switchless_ecall(
@@ -33,10 +34,50 @@ OE_UNUSED_FUNC oe_result_t _oe_sgx_init_context_switchless_ecall(
     oe_result_t* _retval,
     oe_host_worker_context_t* host_worker_contexts,
     uint64_t num_host_workers);
-
 OE_UNUSED_FUNC oe_result_t _oe_sgx_switchless_enclave_worker_thread_ecall(
     oe_enclave_t* enclave,
     oe_enclave_worker_context_t* context);
+
+/**
+ * Make the following ECALLs weak to support the system EDL opt-in.
+ * When the user does not opt into (import) the EDL, the linker will pick
+ * the following default implementations. If the user opts into the EDL,
+ * the implementions (which are also weak) in the oeedger8r-generated code will
+ * be used. This behavior is guaranteed by the linker; i.e., the linker will
+ * pick the symbols defined in the object before those in the library.
+ */
+oe_result_t _oe_sgx_init_context_switchless_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    oe_host_worker_context_t* host_worker_contexts,
+    uint64_t num_host_workers)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(host_worker_contexts);
+    OE_UNUSED(num_host_workers);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_sgx_init_context_switchless_ecall,
+    oe_sgx_init_context_switchless_ecall);
+
+oe_result_t _oe_sgx_switchless_enclave_worker_thread_ecall(
+    oe_enclave_t* enclave,
+    oe_enclave_worker_context_t* context)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(context);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_sgx_switchless_enclave_worker_thread_ecall,
+    oe_sgx_switchless_enclave_worker_thread_ecall);
+
+#endif
 
 /*
 ** The thread function that handles switchless ocalls
@@ -267,6 +308,12 @@ oe_result_t oe_start_switchless_manager(
     result = OE_OK;
 
 done:
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING(
+            "Switchless call is not supported. To enable, please add \n\n"
+            "from \"openenclave/edl/sgx/switchless.edl\" import *;\n\n"
+            "in the edl file.\n");
+
     if (result != OE_OK)
     {
         oe_stop_switchless_manager(enclave);
@@ -449,40 +496,3 @@ oe_result_t oe_switchless_call_enclave_function(
         output_buffer_size,
         output_bytes_written);
 }
-
-// When EDL is builtin to liboehost, the strong version is always chosen.
-// This causes a linker warning with gcc/clang because the below functions
-// will never be linked.
-#if !defined(OE_USE_BUILTIN_EDL) || defined(_MSC_VER)
-/*
- * Stubs for switchless.edl ecalls if they are not included in EDL
- */
-OE_UNUSED_FUNC oe_result_t _oe_sgx_init_context_switchless_ecall(
-    oe_enclave_t* enclave,
-    oe_result_t* _retval,
-    oe_host_worker_context_t* host_worker_contexts,
-    uint64_t num_host_workers)
-{
-    OE_UNUSED(enclave);
-    OE_UNUSED(_retval);
-    OE_UNUSED(host_worker_contexts);
-    OE_UNUSED(num_host_workers);
-    return OE_UNSUPPORTED;
-}
-
-OE_UNUSED_FUNC oe_result_t _oe_sgx_switchless_enclave_worker_thread_ecall(
-    oe_enclave_t* enclave,
-    oe_enclave_worker_context_t* context)
-{
-    OE_UNUSED(enclave);
-    OE_UNUSED(context);
-    return OE_UNSUPPORTED;
-}
-
-OE_WEAK_ALIAS(
-    _oe_sgx_init_context_switchless_ecall,
-    oe_sgx_init_context_switchless_ecall);
-OE_WEAK_ALIAS(
-    _oe_sgx_switchless_enclave_worker_thread_ecall,
-    oe_sgx_switchless_enclave_worker_thread_ecall);
-#endif

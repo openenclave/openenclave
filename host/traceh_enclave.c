@@ -20,7 +20,7 @@
 
 #if !defined(OE_USE_BUILTIN_EDL)
 /**
- * Declare the protoype of the following functions to avoid the
+ * Declare the prototype of the following function to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_log_init_ecall(
@@ -30,9 +30,9 @@ oe_result_t _oe_log_init_ecall(
 
 /**
  * Make the following ECALL weak to support the system EDL opt-in.
- * When the user does not opt in (import) the EDL, the linker will pick
+ * When the user does not opt into (import) the EDL, the linker will pick
  * the following default implementation. If the user opts into the EDL,
- * the implementions (which are also weak) in the oeedger8r-generated code will
+ * the implemention (which is also weak) in the oeedger8r-generated code will
  * be used. This behavior is guaranteed by the linker; i.e., the linker will
  * pick the symbols defined in the object before those in the library.
  */
@@ -46,8 +46,8 @@ oe_result_t _oe_log_init_ecall(
     OE_UNUSED(log_level);
     return OE_UNSUPPORTED;
 }
-
 OE_WEAK_ALIAS(_oe_log_init_ecall, oe_log_init_ecall);
+
 #endif
 
 /*

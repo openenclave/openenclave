@@ -62,6 +62,7 @@ oe_result_t _oe_sgx_backtrace_symbols_ocall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_sgx_backtrace_symbols_ocall, oe_sgx_backtrace_symbols_ocall);
+
 #endif
 
 /* Return null if address is outside of the enclave; else return ptr. */
