@@ -1,0 +1,12 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
+    from "openenclave/edl/core.edl" import *;
+    from "openenclave/edl/syscall.edl" import *;
+};
