@@ -57,15 +57,42 @@ set_tests_properties(
   PROPERTIES PASS_REGULAR_EXPRESSION
              "ERROR: Failed to load configuration file: does_not_exist.conf")
 
-# Test invalid --key-file (-k) argument
-add_test(NAME tests/oesign-sign-invalid-key-file
+# Test --key-file (-k) actually not exist
+add_test(NAME tests/oesign-sign-not-exist-key-file
          COMMAND oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
                  ${OESIGN_TEST_INPUTS_DIR}/valid.conf -k does_not_exist.pem)
 
 set_tests_properties(
-  tests/oesign-sign-invalid-key-file
+  tests/oesign-sign-not-exist-key-file
   PROPERTIES PASS_REGULAR_EXPRESSION
              "ERROR: Failed to load file: does_not_exist.pem")
+
+# Test --key-file (-k) argument w/ public key file
+add_test(NAME tests/oesign-sign-public-key-file
+         COMMAND oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+				${OESIGN_TEST_INPUTS_DIR}/valid.conf -k ${OESIGN_TEST_INPUTS_DIR}/sign_key.public.pem)
+
+set_tests_properties(
+	tests/oesign-sign-public-key-file
+	PROPERTIES WILL_FAIL TRUE)
+
+# Test --key-file (-k) argument: key file in wrong format
+add_test(NAME tests/oesign-sign-key-file-wrong-format
+         COMMAND oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+                 ${OESIGN_TEST_INPUTS_DIR}/valid.conf -k ${OESIGN_TEST_INPUTS_DIR}/sign_key.wrong_format.pem)
+
+set_tests_properties(
+	tests/oesign-sign-key-file-wrong-format
+	PROPERTIES WILL_FAIL TRUE)
+
+# Test --key-file (-k) argument: key file w/ wrong end
+add_test(NAME tests/oesign-sign-key-file-end-wrong
+         COMMAND oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+                 ${OESIGN_TEST_INPUTS_DIR}/valid.conf -k ${OESIGN_TEST_INPUTS_DIR}/sign_key.end_wrong.pem)
+
+set_tests_properties(
+	tests/oesign-sign-key-file-end-wrong
+	PROPERTIES WILL_FAIL TRUE)
 
 # Test invalid .conf with duplicate Debug property
 add_test(

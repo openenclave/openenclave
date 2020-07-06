@@ -109,6 +109,30 @@ add_custom_command(
     "/C=US/ST=Washington/L=Redmond/O=Open Enclave/CN=Self-signed Test Enclave Signer"
 )
 
+# Generate a valid SGX signing key-pair: private and public key
+add_custom_command(
+  OUTPUT sign_key.public.pem
+  DEPENDS sign_key.private.pem
+  COMMAND
+    openssl rsa -in sign_key.private.pem -pubout -out sign_key.public.pem
+)
+
+# Generate SGX signing key: private key and private key w/ wrong end
+add_custom_command(
+  OUTPUT sign_key.end_wrong.pem
+  DEPENDS sign_key.private.pem ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-key.py
+  COMMAND
+    ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-key.py --input sign_key.private.pem --outfile sign_key.end_wrong.pem
+)
+
+# Generate SGX signing key: private key and private key w/ wrong format
+add_custom_command(
+  OUTPUT sign_key.wrong_format.pem
+  DEPENDS sign_key.private.pem ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-key.py
+  COMMAND
+    ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-key.py --input sign_key.private.pem --outfile sign_key.wrong_format.pem
+)
+
 # Generate an alternative valid SGX signing key-pair and signing certificate
 add_custom_command(
   OUTPUT sign_key_2.private.pem sign_key_2.cert.pem
@@ -126,4 +150,5 @@ add_custom_command(OUTPUT bad_exp_key.private.pem
 add_custom_target(
   oesign_test_keys ALL
   DEPENDS sign_key.private.pem sign_key.cert.pem sign_key_2.private.pem
-          sign_key_2.cert.pem bad_exp_key.private.pem)
+          sign_key_2.cert.pem bad_exp_key.private.pem sign_key.public.pem
+		  sign_key.wrong_format.pem sign_key.end_wrong.pem)
