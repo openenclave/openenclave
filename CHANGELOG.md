@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+[0.10.0][v0.10.0_log]
+------------
 ### Added
 - Added `oe_sgx_get_signer_id_from_public_key()` function which helps a verifier of SGX
   reports extract the expected MRSIGNER value from the signer's public key PEM certificate.
@@ -408,7 +410,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.9.0...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.10.0...HEAD
+
+[v0.10.0_log]:https://github.com/openenclave/openenclave/compare/v0.9.0...v0.10.0
 
 [v0.9.0_log]:https://github.com/openenclave/openenclave/compare/v0.8.2...v0.9.0
 
