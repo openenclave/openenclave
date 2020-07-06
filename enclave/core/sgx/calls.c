@@ -12,6 +12,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/eeid.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
@@ -135,12 +136,58 @@ extern bool oe_disable_debug_malloc_check;
 **==============================================================================
 */
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+extern oe_eeid_t* oe_eeid;
+extern const oe_enclave_config_t* oe_enclave_config;
+
+static oe_result_t _load_config(const oe_enclave_config_t* config)
+{
+    if (config && config->data && config->size)
+    {
+        if (oe_is_within_enclave(config->data, config->size) ||
+            oe_eeid->version != OE_EEID_VERSION)
+            return OE_INVALID_PARAMETER;
+
+        /* Copy config into enclave heap */
+        oe_enclave_config_t* copy = oe_malloc(sizeof(oe_enclave_config_t));
+        if (!copy)
+            return OE_OUT_OF_MEMORY;
+        copy->size = config->size;
+        copy->data = oe_malloc(config->size);
+        if (!copy->data)
+            return OE_OUT_OF_MEMORY;
+        memcpy(copy->data, config->data, config->size);
+
+        if (!oe_is_within_enclave(copy->data, copy->size))
+            return OE_INVALID_PARAMETER;
+
+        oe_enclave_config = copy;
+        return OE_OK;
+    }
+    else
+        /* If we have an oe_eeid_t, we expect a config. */
+        return oe_eeid ? OE_INVALID_PARAMETER : OE_OK;
+}
+
+static oe_result_t _free_config()
+{
+    if (oe_enclave_config)
+    {
+        oe_free(oe_enclave_config->data);
+        oe_free((void*)oe_enclave_config);
+        oe_enclave_config = NULL;
+    }
+    return OE_OK;
+}
+#endif
+
 /*
 **==============================================================================
 **
 ** _handle_init_enclave()
 **
-**     Handle the OE_ECALL_INIT_ENCLAVE from host and ensures that each state
+**     Handle the OE_ECALL_INIT_ENCLAVE from host and ensures that each
+*state
 **     initialization function in the enclave only runs once.
 **
 **==============================================================================
@@ -161,7 +208,9 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
         if (_once == false)
         {
-            oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
+            oe_enclave_with_config_t* enclave_with_config =
+                (oe_enclave_with_config_t*)arg_in;
+            oe_enclave_t* enclave = enclave_with_config->enclave;
 
 #ifdef OE_USE_BUILTIN_EDL
             /* Install the common TEE ECALL function table. */
@@ -187,6 +236,11 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             OE_ATOMIC_MEMORY_BARRIER_RELEASE();
             _once = true;
             __oe_initialized = 1;
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+            /* Load config (configid or EEID data) */
+            OE_CHECK(_load_config(&enclave_with_config->config));
+#endif
         }
 
         oe_spin_unlock(&_lock);
@@ -430,6 +484,11 @@ static void _handle_ecall(
 
             /* Cleanup verifiers */
             oe_verifier_shutdown();
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+            /* Cleanup config */
+            _free_config();
+#endif
 
 #if defined(OE_USE_DEBUG_MALLOC)
 

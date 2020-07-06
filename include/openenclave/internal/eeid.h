@@ -14,6 +14,7 @@
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 
 #include <openenclave/bits/eeid.h>
+#include <openenclave/internal/crypto/sha.h>
 
 /** This is the public key corresponding to the private key OE_DEBUG_SIGN_KEY in
  * signkey.c/.h. */
@@ -22,16 +23,23 @@ static const uint8_t OE_DEBUG_PUBLIC_KEY[] = {
     0xce, 0x73, 0xe4, 0x33, 0x63, 0x83, 0x77, 0xf1, 0x79, 0xab, 0x44,
     0x56, 0xb2, 0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0xa};
 
+/** Layout of the EEID memory page. */
+typedef struct
+{
+    OE_SHA256 config_id;
+    oe_eeid_t eeid;
+} oe_eeid_page_t;
+
 /**
  * Determine whether properties are those of a base image to be used with EEID
  *
- * @param[in] properties Properties of an SGX enclave.
+ * @param[in] sizes The size properties of an SGX enclave.
  *
  * @returns Returns true if **properties** are consistent with those of an EEID
  * base image.
  *
  */
-int is_eeid_base_image(const oe_sgx_enclave_properties_t* properties);
+int is_eeid_base_image(const oe_enclave_size_settings_t* sizes);
 
 /**
  * Serialize an oe_eeid_t.
@@ -39,6 +47,10 @@ int is_eeid_base_image(const oe_sgx_enclave_properties_t* properties);
  * This function serializes an oe_eeid_t into a byte buffer.
  *
  * @param[in] eeid The oe_eeid_t to serialize.
+ *
+ * @param[in] data The EEID data (config) to serialize.
+ *
+ * @param[in] data_size The size of **data**.
  *
  * @param[in] buf The buffer to serialize to (must be non-NULL).
  *
@@ -49,6 +61,8 @@ int is_eeid_base_image(const oe_sgx_enclave_properties_t* properties);
  */
 oe_result_t oe_serialize_eeid(
     const oe_eeid_t* eeid,
+    const uint8_t* data,
+    size_t data_size,
     char* buf,
     size_t buf_size);
 
@@ -63,19 +77,19 @@ oe_result_t oe_serialize_eeid(
  *
  * @param[out] eeid The oe_eeid_t to deserialize to (must be non-NULL).
  *
+ * @param[out] data The EEID data.
+ *
+ * @param[out] data_size The size of **data**.
+ *
  * @returns Returns OE_OK on success.
  *
  */
 oe_result_t oe_deserialize_eeid(
     const char* buf,
     size_t buf_size,
-    oe_eeid_t* eeid);
-
-/** Marker structure to find EEID offset after enclave startup */
-typedef struct
-{
-    uint64_t offset;
-} oe_eeid_marker_t;
+    oe_eeid_t* eeid,
+    uint8_t** data,
+    size_t* data_size);
 
 /**
  * Remeasure EEID-defined memory pages.
@@ -84,6 +98,8 @@ typedef struct
  * EEID-enabled enclave creation.
  *
  * @param[in] eeid The EEID containing the required size settings.
+ *
+ * @param[in] config_hash The SHA256 of the enclave config.
  *
  * @param[in] computed_enclave_hash The final enclave hash after the memory
  * pages have been added.
@@ -94,10 +110,10 @@ typedef struct
  * @returns Returns OE_OK on success.
  *
  */
-struct _OE_SHA256;
 oe_result_t oe_remeasure_memory_pages(
     const oe_eeid_t* eeid,
-    struct _OE_SHA256* computed_enclave_hash,
+    const OE_SHA256* config_hash,
+    OE_SHA256* computed_enclave_hash,
     bool with_eeid_pages);
 
 /**
@@ -124,6 +140,8 @@ oe_result_t oe_remeasure_memory_pages(
  * @param[in] eeid The oe_eeid_t holding all relevant information about the base
  * image.
  *
+ * @param[in] config_hash The SHA256 of the enclave config.
+ *
  * @param[out] base_enclave_hash The hash of the base image
  *
  * @returns Returns OE_OK on success.
@@ -136,19 +154,23 @@ oe_result_t verify_eeid(
     uint32_t reported_security_version,
     uint64_t reported_attributes,
     const uint8_t** base_enclave_hash,
-    const oe_eeid_t* eeid);
+    const oe_eeid_t* eeid,
+    const OE_SHA256* config_hash,
+    const oe_enclave_size_settings_t* base_image_sizes);
 
 /**
  * Create an oe_eeid_t for SGX.
  *
- * @param[in] data_size the size of the data to be embedded in the oe_eeid_t
+ * @param[in] data The EEID data
  *
- * @param[out] eeid The oe_eeid_t
+ * @param[in] data_size The size of **data**.
+ *
+ * @param[out] eeid The oe_eeid_t.
  *
  * @returns Returns OE_OK on success.
  *
  */
-oe_result_t oe_create_eeid_sgx(size_t data_size, oe_eeid_t** eeid);
+oe_result_t oe_create_eeid_sgx(oe_eeid_t** eeid);
 
 /**
  * Compute the required size in bytes of an oe_eeid_t
@@ -199,8 +221,42 @@ typedef struct
     size_t sgx_evidence_size;     /* Size of base-image evidence */
     size_t sgx_endorsements_size; /* Size of base-image endorsements */
     size_t eeid_size;             /* Size of EEID */
+    size_t config_id_size;        /* Size of EEID or configid hash */
     uint8_t data[];               /* Data (same order as the sizes) */
 } oe_eeid_evidence_t;
+
+/**
+ * Serialize a uint64_t in network byte-order into a buffer.
+ *
+ * @param[in] x The uint64_t to serialize.
+ *
+ * @param[inout] position The position in a buffer to write to (will be
+ * updated).
+ *
+ * @param[inout] remaining The remaining space in the buffer (will be updated).
+ *
+ * @returns Returns OE_OK on success.
+ *
+ */
+oe_result_t hton_uint64_t(uint64_t x, uint8_t** position, size_t* remaining);
+
+/**
+ * Deserialize a uint64_t ifrom network byte-order into a buffer.
+ *
+ * @param[inout] position The position in a buffer to write to (will be
+ * updated).
+ *
+ * @param[inout] remaining The remaining space in the buffer (will be updated).
+ *
+ * @param[out] x The uint64_t to deserialize.
+ *
+ * @returns Returns OE_OK on success.
+ *
+ */
+oe_result_t ntoh_uint64_t(
+    const uint8_t** position,
+    size_t* remaining,
+    uint64_t* x);
 
 /**
  * Convert an oe_eeid_evidence_t into a buffer using network byte-order.

@@ -692,8 +692,11 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
     OE_CHECK(
         _set_uint64_t_symbol_value(image, "_reloc_size", image->reloc_size));
 
-    /* heap right after image */
-    oeprops->image_info.heap_rva = image->image_size + image->reloc_size;
+    size_t eeid_size = OE_PAGE_SIZE;
+
+    /* heap right after EEID */
+    oeprops->image_info.heap_rva =
+        image->image_size + image->reloc_size + eeid_size;
 
     if (image->tdata_size)
     {

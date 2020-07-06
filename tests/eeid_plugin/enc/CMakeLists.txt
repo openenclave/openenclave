@@ -10,6 +10,7 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
+# Enclave with dynamic memory sizes.
 add_enclave(
   TARGET
   eeid_plugin_enc
@@ -25,3 +26,22 @@ add_enclave(
 target_compile_definitions(eeid_plugin_enc PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 target_include_directories(eeid_plugin_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(eeid_plugin_enc oeenclave oelibc)
+
+# Enclave with static memory sizes.
+add_enclave(
+  TARGET
+  eeid_plugin_enc_static
+  UUID
+  0ed4cfa8-3d98-4ef6-a8e6-b3120517ccae
+  CONFIG
+  enc-static.conf
+  SOURCES
+  enc.c
+  ../test_helpers.c
+  ${CMAKE_CURRENT_BINARY_DIR}/eeid_plugin_t.c)
+
+target_compile_definitions(eeid_plugin_enc_static
+                           PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+target_include_directories(eeid_plugin_enc_static
+                           PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(eeid_plugin_enc_static oeenclave oelibc)

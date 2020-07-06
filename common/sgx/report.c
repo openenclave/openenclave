@@ -112,6 +112,8 @@ oe_result_t oe_parse_report(
         OE_RAISE(OE_REPORT_PARSE_ERROR);
     }
 
+    // parsed_report->identity.config_id = ? ;
+
 done:
     return result;
 }

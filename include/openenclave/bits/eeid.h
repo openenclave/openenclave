@@ -17,7 +17,10 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_EEID_VERSION (1)
+#define OE_EEID_VERSION (2)
+
+#define OE_CLAIM_CONFIG_ID "config_id"
+#define OE_CLAIM_CONFIG "config"
 
 OE_PACK_BEGIN
 /**
@@ -39,9 +42,6 @@ typedef struct _oe_eeid
         uint32_t N[2];
     } hash_state;
 
-    /** Size of the signature in bytes. */
-    uint64_t signature_size;
-
     /** Heap, stack, and thread configuration for an EEID enclave instance. */
     oe_enclave_size_settings_t size_settings;
 
@@ -51,11 +51,11 @@ typedef struct _oe_eeid
     /** Entry point of the image. */
     uint64_t entry_point;
 
-    /** Size of actual EEID data. */
-    uint64_t data_size;
+    /** Size of the signature in bytes. */
+    uint64_t signature_size;
 
-    /** Buffer holding EEID data and signature. */
-    uint8_t data[];
+    /** Buffer holding the signature. */
+    uint8_t signature[];
 } oe_eeid_t;
 OE_PACK_END
 

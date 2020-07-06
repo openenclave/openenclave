@@ -44,30 +44,16 @@ static void _check_memory_boundaries(void)
 extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 extern oe_eeid_t* oe_eeid;
 
-static int _is_eeid_base_image(
-    const volatile oe_sgx_enclave_properties_t* properties)
+static void _find_eeid()
 {
-    return properties->header.size_settings.num_heap_pages == 0 &&
-           properties->header.size_settings.num_stack_pages == 0 &&
-           properties->header.size_settings.num_tcs == 1;
-}
-
-static oe_result_t _eeid_patch_memory()
-{
-    oe_result_t r = OE_OK;
-
-    if (_is_eeid_base_image(&oe_enclave_properties_sgx))
-    {
-        uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_base();
-        uint8_t* heap_base = (uint8_t*)__oe_get_heap_base();
-        oe_eeid_marker_t* marker = (oe_eeid_marker_t*)heap_base;
-        oe_eeid = (oe_eeid_t*)(enclave_base + marker->offset);
-
-        // Wipe the marker page
-        memset(heap_base, 0, OE_PAGE_SIZE);
-    }
-
-    return r;
+    /* Get the last page before the heap. */
+    uint8_t* heap_base = (uint8_t*)__oe_get_heap_base();
+    oe_eeid_page_t* eeid_page = (oe_eeid_page_t*)(heap_base - OE_PAGE_SIZE);
+    if (!oe_is_within_enclave(eeid_page, OE_PAGE_SIZE))
+        oe_abort();
+    /* Without EEID, eeid_page page is all zero. */
+    if (eeid_page->eeid.version != 0)
+        oe_eeid = &eeid_page->eeid;
 }
 #endif
 
@@ -80,10 +66,7 @@ static void _initialize_enclave_image()
     }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    if (_eeid_patch_memory() != OE_OK)
-    {
-        oe_abort();
-    }
+    _find_eeid();
 #endif
 
     /* Check that memory boundaries are within enclave */

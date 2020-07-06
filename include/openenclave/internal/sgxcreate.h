@@ -67,6 +67,9 @@ struct _oe_sgx_load_context
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     /* EEID data needed during enclave creation */
     oe_eeid_t* eeid;
+
+    /* EEID/config data. */
+    oe_enclave_config_t config;
 #endif
 };
 

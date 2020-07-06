@@ -93,7 +93,6 @@ OE_WEAK_ALIAS(_oe_get_quote_ocall, oe_get_quote_ocall);
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
 OE_STATIC_ASSERT(sizeof(oe_identity_t) == 96);
-
 OE_STATIC_ASSERT(sizeof(oe_report_t) == 144);
 
 oe_result_t sgx_create_report(

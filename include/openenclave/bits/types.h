@@ -180,4 +180,24 @@ typedef struct _oe_datetime
     uint32_t seconds; /* range: 0-59 */
 } oe_datetime_t;
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+/**
+ * This struct defines a buffer for enclave configuration (EEID or configid).
+ */
+typedef struct
+{
+    uint8_t* data;
+    size_t size;
+} oe_enclave_config_t;
+
+/**
+ * This struct defines an enclave with config (EEID or configid).
+ */
+typedef struct
+{
+    oe_enclave_t* enclave;
+    oe_enclave_config_t config;
+} oe_enclave_with_config_t;
+#endif
+
 #endif /* _OE_BITS_TYPES_H */

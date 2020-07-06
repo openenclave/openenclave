@@ -90,6 +90,10 @@ static oe_result_t _add_claims(
     uint64_t r_attributes,
     uint32_t r_id_version,
     const uint8_t* r_enclave_base_hash,
+    const uint8_t* r_config_id,
+    const uint8_t* r_config,
+    size_t r_config_size,
+    const uint8_t* r_resigner_id,
     oe_claim_t** claims_out,
     size_t* claims_size_out)
 {
@@ -99,7 +103,7 @@ static oe_result_t _add_claims(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     oe_claim_t* claims = (oe_claim_t*)oe_malloc(
-        (OE_REQUIRED_CLAIMS_COUNT + 1) * sizeof(oe_claim_t));
+        (OE_REQUIRED_CLAIMS_COUNT + 4) * sizeof(oe_claim_t));
     if (claims == NULL)
         return OE_OUT_OF_MEMORY;
 
@@ -130,7 +134,7 @@ static oe_result_t _add_claims(
         &claims[claims_index++],
         OE_CLAIM_UNIQUE_ID,
         sizeof(OE_CLAIM_UNIQUE_ID),
-        (void*)r_enclave_hash,
+        (void*)r_enclave_base_hash,
         OE_UNIQUE_ID_SIZE));
 
     OE_CHECK(_add_claim(
@@ -154,15 +158,40 @@ static oe_result_t _add_claims(
         &context->base.format_id,
         sizeof(oe_uuid_t)));
 
+    /* EEID claims */
     OE_CHECK(_add_claim(
         &claims[claims_index++],
-        OE_CLAIM_EEID_BASE_ID,
-        sizeof(OE_CLAIM_EEID_BASE_ID),
-        (void*)r_enclave_base_hash,
+        OE_CLAIM_EEID_RESIGNED_UNIQUE_ID,
+        sizeof(OE_CLAIM_EEID_RESIGNED_UNIQUE_ID),
+        (void*)r_enclave_hash,
         OE_UNIQUE_ID_SIZE));
 
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_EEID_RESIGNER_ID,
+        sizeof(OE_CLAIM_EEID_RESIGNER_ID),
+        (void*)r_resigner_id,
+        OE_SIGNER_ID_SIZE));
+
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_CONFIG_ID,
+        sizeof(OE_CLAIM_CONFIG_ID),
+        (void*)r_config_id,
+        OE_CONFIG_ID_SIZE));
+
+    if (r_config)
+    {
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_CONFIG,
+            sizeof(OE_CLAIM_CONFIG),
+            (void*)r_config,
+            r_config_size));
+    }
+
     *claims_out = claims;
-    *claims_size_out = 8;
+    *claims_size_out = claims_index;
 
     result = OE_OK;
 done:
@@ -207,7 +236,6 @@ static oe_result_t _verify_sgx_report(
 
     size_t sgx_claims_size = sgx_evidence_buffer_size -
                              (header->report_size + sizeof(oe_report_header_t));
-    *sgx_claims = oe_malloc(sgx_claims_size);
 
     OE_CHECK(oe_parse_report(
         sgx_evidence_buffer,
@@ -227,8 +255,18 @@ static oe_result_t _verify_sgx_report(
         sgx_claims_length);
 
     result = OE_OK;
+
 done:
     return result;
+}
+
+static uint64_t _get_u64_claim(const oe_claim_t* claim)
+{
+    const uint8_t* pos = claim->value;
+    size_t rem = claim->value_size;
+    uint64_t r;
+    ntoh_uint64_t(&pos, &rem, &r);
+    return r;
 }
 
 static oe_result_t _eeid_verify_evidence(
@@ -249,8 +287,14 @@ static oe_result_t _eeid_verify_evidence(
             *eeid_buffer = NULL;
     size_t sgx_evidence_buffer_size = 0, sgx_endorsements_buffer_size = 0,
            eeid_buffer_size = 0;
-    oe_eeid_t *attester_eeid = NULL, *verifier_eeid = NULL;
+    oe_eeid_t* attester_eeid = NULL;
     oe_eeid_evidence_t* evidence = NULL;
+    OE_SHA256 attester_config_id;
+    size_t attester_config_id_size = 0;
+    const uint8_t* verifier_config = NULL;
+    size_t verifier_config_size = 0;
+    oe_claim_t* sgx_claims = NULL;
+    size_t sgx_claims_length = 0;
 
     if ((!endorsements_buffer && endorsements_buffer_size) ||
         (endorsements_buffer && !endorsements_buffer_size))
@@ -263,8 +307,18 @@ static oe_result_t _eeid_verify_evidence(
     sgx_evidence_buffer_size = evidence->sgx_evidence_size;
     sgx_endorsements_buffer_size = evidence->sgx_endorsements_size;
     eeid_buffer_size = evidence->eeid_size;
+    attester_config_id_size = evidence->config_id_size;
     eeid_buffer = evidence->data + evidence->sgx_evidence_size +
                   evidence->sgx_endorsements_size;
+
+    if (attester_config_id_size != OE_SHA256_SIZE)
+        OE_RAISE(OE_VERIFY_FAILED);
+
+    memcpy(
+        attester_config_id.buf,
+        evidence->data + evidence->sgx_evidence_size +
+            evidence->sgx_endorsements_size + evidence->eeid_size,
+        OE_SHA256_SIZE);
 
     // Make sure buffers are aligned so they can be cast to structs. Note that
     // the SGX evidendence and endorsements buffers contain structs that have
@@ -301,9 +355,7 @@ static oe_result_t _eeid_verify_evidence(
 
     /* Verify SGX report */
     oe_report_t parsed_report;
-    oe_claim_t* sgx_claims = NULL;
-    size_t sgx_claims_length = 0;
-    _verify_sgx_report(
+    OE_CHECK(_verify_sgx_report(
         context,
         policies,
         policies_size,
@@ -313,10 +365,10 @@ static oe_result_t _eeid_verify_evidence(
         sgx_endorsements_buffer_size,
         &sgx_claims,
         &sgx_claims_length,
-        &parsed_report);
+        &parsed_report));
 
     const uint8_t* r_enclave_hash = parsed_report.identity.unique_id;
-    const uint8_t* r_signer_id = parsed_report.identity.signer_id;
+    const uint8_t* r_resigner_id = parsed_report.identity.signer_id;
     uint16_t r_product_id = *((uint16_t*)parsed_report.identity.product_id);
     uint32_t r_security_version = parsed_report.identity.security_version;
     uint64_t r_attributes = parsed_report.identity.attributes;
@@ -325,35 +377,50 @@ static oe_result_t _eeid_verify_evidence(
     /* EEID passed to the verifier */
     if (endorsements_buffer)
     {
-        verifier_eeid =
-            oe_memalign(2 * sizeof(void*), endorsements_buffer_size);
-        if (!verifier_eeid)
-            OE_RAISE(OE_OUT_OF_MEMORY);
-        OE_CHECK(oe_eeid_ntoh(
-            endorsements_buffer, endorsements_buffer_size, verifier_eeid));
+        verifier_config = endorsements_buffer;
+        verifier_config_size = endorsements_buffer_size;
     }
 
-    /* Check that the enclave-reported EEID data matches the verifier's
-     * expectation. */
-    if (verifier_eeid &&
-        (attester_eeid->data_size != verifier_eeid->data_size ||
-         attester_eeid->signature_size != verifier_eeid->signature_size ||
-         memcmp(
-             attester_eeid->data,
-             verifier_eeid->data,
-             verifier_eeid->data_size + verifier_eeid->signature_size) != 0))
-        OE_RAISE(OE_VERIFY_FAILED);
+    /* If we have one, check that the enclave-reported config matches the
+     * verifier's expectation. */
+    if (verifier_config)
+    {
+        OE_SHA256 verifier_config_id;
+        oe_sha256(verifier_config, verifier_config_size, &verifier_config_id);
+        if (memcmp(
+                attester_config_id.buf,
+                verifier_config_id.buf,
+                OE_SHA256_SIZE) != 0)
+            OE_RAISE(OE_VERIFY_FAILED);
+    }
+
+    oe_enclave_size_settings_t base_image_sizes = {0};
+    uint8_t r_signer_id[OE_SIGNER_ID_SIZE];
+    for (size_t i = 0; i < sgx_claims_length; i++)
+    {
+        const oe_claim_t* c = &sgx_claims[i];
+        if (strcmp(c->name, "num_heap_pages") == 0)
+            base_image_sizes.num_heap_pages = _get_u64_claim(c);
+        else if (strcmp(c->name, "num_stack_pages") == 0)
+            base_image_sizes.num_stack_pages = _get_u64_claim(c);
+        else if (strcmp(c->name, "num_tcs") == 0)
+            base_image_sizes.num_tcs = _get_u64_claim(c);
+        else if (strcmp(c->name, OE_CLAIM_SIGNER_ID) == 0)
+            memcpy(r_signer_id, c->value, OE_SIGNER_ID_SIZE);
+    }
 
     /* Verify EEID */
     const uint8_t* r_enclave_base_hash;
     OE_CHECK(verify_eeid(
         r_enclave_hash,
-        r_signer_id,
+        r_resigner_id,
         r_product_id,
         r_security_version,
         r_attributes,
         &r_enclave_base_hash,
-        attester_eeid));
+        attester_eeid,
+        &attester_config_id,
+        &base_image_sizes));
 
     /* Produce claims */
     if (claims && claims_size)
@@ -366,6 +433,10 @@ static oe_result_t _eeid_verify_evidence(
             r_attributes,
             r_id_version,
             r_enclave_base_hash,
+            attester_config_id.buf,
+            verifier_config,
+            verifier_config_size,
+            r_resigner_id,
             claims,
             claims_size);
 
@@ -375,8 +446,8 @@ done:
 
     oe_free(sgx_evidence_buffer);
     oe_free(sgx_endorsements_buffer);
+    oe_free_claims(sgx_claims, sgx_claims_length);
     oe_free(attester_eeid);
-    oe_free(verifier_eeid);
     oe_free(evidence);
 
     return result;
@@ -389,7 +460,14 @@ static oe_result_t _eeid_free_claims_list(
 {
     OE_UNUSED(context);
     OE_UNUSED(claims_size);
-    free(claims);
+
+    for (size_t i = 0; i < claims_size; i++)
+    {
+        oe_free(claims[i].name);
+        oe_free(claims[i].value);
+    }
+    oe_free(claims);
+
     return OE_OK;
 }
 

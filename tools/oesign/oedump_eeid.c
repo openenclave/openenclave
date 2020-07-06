@@ -61,7 +61,7 @@ int oedump_eeid(const char* enclave)
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
     oe_eeid_t* eeid = NULL;
-    OE_CHECK(oe_create_eeid_sgx(0, &eeid));
+    OE_CHECK(oe_create_eeid_sgx(&eeid));
     context.eeid = eeid;
 
     OE_CHECK_ERR(
@@ -76,7 +76,7 @@ int oedump_eeid(const char* enclave)
     printf("N=");
     oe_hex_dump(eeid->hash_state.N, sizeof(uint32_t) * 2);
     printf("base_sigstruct=");
-    oe_hex_dump(eeid->data + eeid->data_size, sizeof(sgx_sigstruct_t));
+    oe_hex_dump(eeid->signature, eeid->signature_size);
     printf("vaddr=%lu", eeid->vaddr);
     printf("\n");
 

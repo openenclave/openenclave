@@ -41,8 +41,7 @@ void host_ocall_verify(
             &claims_length),
         OE_OK);
 
-    claims = NULL;
-    claims_length = 0;
+    oe_free_claims(claims, claims_length);
 
     // With endorsements
     OE_TEST_CODE(
@@ -57,6 +56,8 @@ void host_ocall_verify(
             &claims,
             &claims_length),
         OE_OK);
+
+    oe_free_claims(claims, claims_length);
 }
 
 void host_remote_verify(oe_enclave_t* enclave)
@@ -98,6 +99,8 @@ void host_remote_verify(oe_enclave_t* enclave)
             &claims_length),
         OE_OK);
 
+    oe_free_claims(claims, claims_length);
+
     // With endorsements
     OE_TEST_CODE(
         oe_verify_evidence(
@@ -111,15 +114,22 @@ void host_remote_verify(oe_enclave_t* enclave)
             &claims,
             &claims_length),
         OE_OK);
+
+    oe_free_claims(claims, claims_length);
 }
 
-void one_enclave_tests(const char* filename, uint32_t flags)
+void one_enclave_tests(const char* filename, uint32_t flags, bool static_sizes)
 {
-    printf("====== running one_enclave_tests.\n");
+    printf("======== one_enclave_tests.\n");
 
     oe_enclave_setting_t setting;
     setting.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
-    make_test_eeid(&setting.u.eeid, 10 * OE_PAGE_SIZE);
+    make_test_eeid(
+        &setting.u.eeid.eeid,
+        10 * OE_PAGE_SIZE,
+        &setting.u.eeid.config.data,
+        &setting.u.eeid.config.size,
+        static_sizes);
 
     oe_enclave_t* enclave = NULL;
     oe_result_t result = oe_create_eeid_plugin_enclave(
@@ -128,7 +138,8 @@ void one_enclave_tests(const char* filename, uint32_t flags)
 
     run_tests(enclave);
     host_remote_verify(enclave);
-    free(setting.u.eeid);
+    free(setting.u.eeid.config.data);
+    free(setting.u.eeid.eeid);
     OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
 }
 
@@ -137,6 +148,7 @@ typedef struct
     const char* filename;
     oe_enclave_t* enclave;
     oe_eeid_t* eeid;
+    oe_enclave_config_t config;
 
     size_t evidence_size;
     size_t evidence_out_size;
@@ -147,7 +159,7 @@ typedef struct
     oe_claim_t* claims;
     size_t claims_length;
     const uint8_t* enclave_hash;
-    const uint8_t* base_enclave_hash;
+    const uint8_t* resigned_enclave_hash;
 } enclave_stuff_t;
 
 void free_stuff(enclave_stuff_t* stuff)
@@ -155,6 +167,8 @@ void free_stuff(enclave_stuff_t* stuff)
     free(stuff->eeid);
     free(stuff->evidence);
     free(stuff->endorsements);
+    free(stuff->config.data);
+    oe_free_claims(stuff->claims, stuff->claims_length);
 }
 
 void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
@@ -164,7 +178,9 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
     stuff->enclave = NULL;
     oe_enclave_setting_t setting;
     setting.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
-    setting.u.eeid = stuff->eeid;
+    setting.u.eeid.eeid = stuff->eeid;
+    setting.u.eeid.config.data = stuff->config.data;
+    setting.u.eeid.config.size = stuff->config.size;
 
     OE_TEST_CODE(
         oe_create_eeid_plugin_enclave(
@@ -222,32 +238,47 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
 
     stuff->enclave_hash = NULL;
     for (size_t i = 0; i < stuff->claims_length; i++)
-        if (strcmp(stuff->claims[i].name, OE_CLAIM_UNIQUE_ID) == 0)
+    {
+        const char* name = stuff->claims[i].name;
+        if (strcmp(name, OE_CLAIM_UNIQUE_ID) == 0)
             stuff->enclave_hash = stuff->claims[i].value;
-        else if (strcmp(stuff->claims[i].name, OE_CLAIM_EEID_BASE_ID) == 0)
-            stuff->base_enclave_hash = stuff->claims[i].value;
+        else if (strcmp(name, OE_CLAIM_EEID_RESIGNED_UNIQUE_ID) == 0)
+            stuff->resigned_enclave_hash = stuff->claims[i].value;
+    }
 
     OE_TEST(stuff->enclave_hash != NULL);
 }
 
-void multiple_enclaves_tests(const char* filename, uint32_t flags)
+void multiple_enclaves_tests(
+    const char* filename,
+    uint32_t flags,
+    bool static_sizes)
 {
-    printf("====== running multiple_enclaves_tests.\n");
+    printf("======== multiple_enclaves_tests.\n");
 
     // Enclave A
     enclave_stuff_t A;
-    OE_TEST(make_test_eeid(&A.eeid, 10) == OE_OK);
+    OE_TEST(
+        make_test_eeid(
+            &A.eeid, 10, &A.config.data, &A.config.size, static_sizes) ==
+        OE_OK);
     start_enclave(filename, flags, &A);
 
     // Enclave B with reversed EEID
     enclave_stuff_t B;
-    OE_TEST(make_test_eeid(&B.eeid, 10) == OE_OK);
-    for (size_t i = 0; i < B.eeid->data_size; i++)
-        B.eeid->data[i] = (uint8_t)(9 - i);
+    OE_TEST(
+        make_test_eeid(
+            &B.eeid, 10, &B.config.data, &B.config.size, static_sizes) ==
+        OE_OK);
+    for (size_t i = 0; i < B.config.size; i++)
+        B.config.data[i] = (uint8_t)(9 - i);
     start_enclave(filename, flags, &B);
 
     // Check that the hashes of A and B are not the same
-    OE_TEST(memcmp(A.enclave_hash, B.enclave_hash, OE_SHA256_SIZE) != 0);
+    OE_TEST(
+        memcmp(
+            A.resigned_enclave_hash, B.resigned_enclave_hash, OE_SHA256_SIZE) !=
+        0);
 
     // Faulty endorsements must fail
     OE_TEST(
@@ -267,19 +298,23 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
 
     // Enclave C with same EEID as A
     enclave_stuff_t C;
-    OE_TEST(make_test_eeid(&C.eeid, 10) == OE_OK);
+    OE_TEST(
+        make_test_eeid(
+            &C.eeid, 10, &C.config.data, &C.config.size, static_sizes) ==
+        OE_OK);
     start_enclave(filename, flags, &C);
 
     // Check that the hashes of A and C are indeed the same
-    OE_TEST(memcmp(A.enclave_hash, C.enclave_hash, OE_SHA256_SIZE) == 0);
+    OE_TEST(
+        memcmp(
+            A.resigned_enclave_hash, C.resigned_enclave_hash, OE_SHA256_SIZE) ==
+        0);
 
     OE_TEST(oe_terminate_enclave(C.enclave) == OE_OK);
 
     // The base images of all three are the same
-    OE_TEST(
-        memcmp(A.base_enclave_hash, B.base_enclave_hash, OE_SHA256_SIZE) == 0);
-    OE_TEST(
-        memcmp(B.base_enclave_hash, C.base_enclave_hash, OE_SHA256_SIZE) == 0);
+    OE_TEST(memcmp(A.enclave_hash, B.enclave_hash, OE_SHA256_SIZE) == 0);
+    OE_TEST(memcmp(B.enclave_hash, C.enclave_hash, OE_SHA256_SIZE) == 0);
 
     free_stuff(&A);
     free_stuff(&B);
@@ -288,9 +323,9 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
 
 int main(int argc, const char* argv[])
 {
-    if (argc != 2)
+    if (argc != 3)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
+        fprintf(stderr, "Usage: %s ENCLAVE dynamic/static\n", argv[0]);
         exit(1);
     }
 
@@ -310,8 +345,9 @@ int main(int argc, const char* argv[])
 
     OE_TEST_CODE(oe_sgx_eeid_verifier_initialize(), OE_OK);
 
-    one_enclave_tests(argv[1], flags);
-    multiple_enclaves_tests(argv[1], flags);
+    bool static_sizes = strcmp(argv[2], "static") == 0;
+    one_enclave_tests(argv[1], flags, static_sizes);
+    multiple_enclaves_tests(argv[1], flags, static_sizes);
 
     oe_sgx_eeid_verifier_shutdown();
 

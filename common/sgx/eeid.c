@@ -28,14 +28,13 @@
 #include "../../host/crypto/openssl/rsa.h"
 #endif
 
-int is_eeid_base_image(const oe_sgx_enclave_properties_t* properties)
+int is_eeid_base_image(const oe_enclave_size_settings_t* sizes)
 {
-    return properties->header.size_settings.num_heap_pages == 0 &&
-           properties->header.size_settings.num_stack_pages == 0 &&
-           properties->header.size_settings.num_tcs == 1;
+    return sizes->num_heap_pages == 0 && sizes->num_stack_pages == 0 &&
+           sizes->num_tcs == 1;
 }
 
-oe_result_t oe_create_eeid_sgx(size_t data_size, oe_eeid_t** eeid)
+oe_result_t oe_create_eeid_sgx(oe_eeid_t** eeid)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t signature_size = sizeof(sgx_sigstruct_t);
@@ -43,11 +42,10 @@ oe_result_t oe_create_eeid_sgx(size_t data_size, oe_eeid_t** eeid)
     if (!eeid)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    *eeid = calloc(sizeof(oe_eeid_t) + data_size + signature_size, 1);
+    *eeid = calloc(sizeof(oe_eeid_t) + signature_size, 1);
     if (!*eeid)
         OE_RAISE(OE_OUT_OF_MEMORY);
     (*eeid)->signature_size = signature_size;
-    (*eeid)->data_size = data_size;
 
     result = OE_OK;
 done:
@@ -127,7 +125,12 @@ done:
 }
 
 // Note: this needs to be updated when oe_eeid_t changes.
-oe_result_t oe_serialize_eeid(const oe_eeid_t* eeid, char* buf, size_t buf_size)
+oe_result_t oe_serialize_eeid(
+    const oe_eeid_t* eeid,
+    const uint8_t* data,
+    size_t data_size,
+    char* buf,
+    size_t buf_size)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -156,23 +159,11 @@ oe_result_t oe_serialize_eeid(const oe_eeid_t* eeid, char* buf, size_t buf_size)
         (uint8_t*)eeid->hash_state.N,
         sizeof(eeid->hash_state.N)));
     OE_CHECK(serialize_element(
-        "signature_size",
-        position,
-        &remaining,
-        (uint8_t*)&eeid->signature_size,
-        sizeof(eeid->signature_size)));
-    OE_CHECK(serialize_element(
         "size_settings",
         position,
         &remaining,
         (uint8_t*)&eeid->size_settings,
         sizeof(eeid->size_settings)));
-    OE_CHECK(serialize_element(
-        "data_size",
-        position,
-        &remaining,
-        (uint8_t*)&eeid->data_size,
-        sizeof(eeid->data_size)));
     OE_CHECK(serialize_element(
         "vaddr",
         position,
@@ -186,11 +177,19 @@ oe_result_t oe_serialize_eeid(const oe_eeid_t* eeid, char* buf, size_t buf_size)
         (uint8_t*)&eeid->entry_point,
         sizeof(eeid->entry_point)));
     OE_CHECK(serialize_element(
-        "data",
+        "signature_size",
         position,
         &remaining,
-        (uint8_t*)eeid->data,
-        eeid->data_size + eeid->signature_size));
+        (uint8_t*)&eeid->signature_size,
+        sizeof(eeid->signature_size)));
+    OE_CHECK(serialize_element(
+        "data_size",
+        position,
+        &remaining,
+        (uint8_t*)&data_size,
+        sizeof(data_size)));
+    OE_CHECK(serialize_element(
+        "data", position, &remaining, (uint8_t*)data, data_size));
 
     **position = '\0';
 
@@ -204,7 +203,9 @@ done:
 oe_result_t oe_deserialize_eeid(
     const char* buf,
     size_t buf_size,
-    oe_eeid_t* eeid)
+    oe_eeid_t* eeid,
+    uint8_t** data,
+    size_t* data_size)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -233,18 +234,8 @@ oe_result_t oe_deserialize_eeid(
     OE_CHECK(deserialize_element(
         position,
         &remaining,
-        (uint8_t*)&eeid->signature_size,
-        sizeof(eeid->signature_size)));
-    OE_CHECK(deserialize_element(
-        position,
-        &remaining,
         (uint8_t*)&eeid->size_settings,
         sizeof(eeid->size_settings)));
-    OE_CHECK(deserialize_element(
-        position,
-        &remaining,
-        (uint8_t*)&eeid->data_size,
-        sizeof(eeid->data_size)));
     OE_CHECK(deserialize_element(
         position, &remaining, (uint8_t*)&eeid->vaddr, sizeof(eeid->vaddr)));
     OE_CHECK(deserialize_element(
@@ -255,8 +246,23 @@ oe_result_t oe_deserialize_eeid(
     OE_CHECK(deserialize_element(
         position,
         &remaining,
-        (uint8_t*)eeid->data,
-        eeid->data_size + eeid->signature_size));
+        (uint8_t*)&eeid->signature_size,
+        sizeof(eeid->signature_size)));
+    eeid = realloc(eeid, sizeof(oe_eeid_t) + eeid->signature_size);
+    if (!eeid)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+    OE_CHECK(deserialize_element(
+        position, &remaining, (uint8_t*)eeid->signature, eeid->signature_size));
+    OE_CHECK(deserialize_element(
+        position, &remaining, (uint8_t*)data_size, sizeof(*data_size)));
+    if (data)
+    {
+        *data = malloc(*data_size);
+        if (!*data)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        OE_CHECK(deserialize_element(
+            position, &remaining, (uint8_t*)data, *data_size));
+    }
 
     result = OE_OK;
 
@@ -288,10 +294,40 @@ done:
     return result;
 }
 
+static oe_result_t _remeasure_eeid_page(
+    oe_sha256_context_t* hctx,
+    uint64_t base,
+    uint64_t* vaddr,
+    const oe_eeid_t* eeid,
+    const OE_SHA256* config_id)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!eeid || !config_id)
+        OE_RAISE(OE_VERIFY_FAILED);
+
+    size_t eeid_page_size = sizeof(oe_eeid_page_t) + eeid->signature_size;
+    if (eeid_page_size > OE_PAGE_SIZE)
+        return OE_VERIFY_FAILED;
+
+    oe_eeid_page_t* eeid_page = calloc(1, OE_PAGE_SIZE);
+    memcpy(&eeid_page->eeid, eeid, sizeof(oe_eeid_t) + eeid->signature_size);
+    memcpy(eeid_page->config_id.buf, config_id->buf, sizeof(config_id->buf));
+
+    OE_CHECK(_add_page(hctx, base, eeid_page, vaddr, true, true));
+    free(eeid_page);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 oe_result_t oe_remeasure_memory_pages(
     const oe_eeid_t* eeid,
-    struct _OE_SHA256* computed_enclave_hash,
-    bool with_eeid_pages)
+    const OE_SHA256* config_id,
+    OE_SHA256* computed_enclave_hash,
+    bool with_eeid_page)
 {
     oe_result_t result;
     oe_sha256_context_t hctx;
@@ -299,10 +335,15 @@ oe_result_t oe_remeasure_memory_pages(
 
     uint64_t base = 0x0ab0c0d0e0f;
     oe_page_t blank_pg, stack_pg, tcs_pg;
-    memset(&blank_pg, 0, sizeof(blank_pg));
-    memset(&stack_pg, 0xcc, sizeof(stack_pg));
+    memset(blank_pg.data, 0, sizeof(blank_pg));
+    memset(stack_pg.data, 0xcc, sizeof(stack_pg));
 
     uint64_t vaddr = eeid->vaddr;
+
+    if (with_eeid_page)
+        OE_CHECK(_remeasure_eeid_page(&hctx, base, &vaddr, eeid, config_id));
+    else
+        OE_CHECK(_add_page(&hctx, base, blank_pg.data, &vaddr, true, true));
 
     // This is where we replay the addition of memory pages, both, for
     // verification of the extended image hash (with_eeid_pages=true) and
@@ -352,24 +393,6 @@ oe_result_t oe_remeasure_memory_pages(
 
         for (size_t i = 0; i < 2; i++)
             _measure_page(&hctx, base, &blank_pg, &vaddr, true, false);
-    }
-
-    if (with_eeid_pages)
-    {
-        char* eeid_bytes = (char*)eeid;
-        size_t num_bytes = oe_eeid_byte_size(eeid);
-        size_t num_pages =
-            num_bytes / OE_PAGE_SIZE + ((num_bytes % OE_PAGE_SIZE) ? 1 : 0);
-
-        oe_page_t page;
-        for (size_t i = 0; i < num_pages; i++)
-        {
-            memset(page.data, 0, sizeof(oe_page_t));
-            size_t n = (i != num_pages - 1) ? OE_PAGE_SIZE
-                                            : (num_bytes % OE_PAGE_SIZE);
-            memcpy(page.data, eeid_bytes + OE_PAGE_SIZE * i, n);
-            OE_CHECK(_measure_page(&hctx, base, page.data, &vaddr, true, true));
-        }
     }
 
     oe_sha256_final(&hctx, computed_enclave_hash);
@@ -496,7 +519,9 @@ oe_result_t verify_eeid(
     uint32_t reported_security_version,
     uint64_t reported_attributes,
     const uint8_t** base_enclave_hash,
-    const oe_eeid_t* eeid)
+    const oe_eeid_t* eeid,
+    const OE_SHA256* config_id,
+    const oe_enclave_size_settings_t* base_image_sizes)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -504,11 +529,11 @@ oe_result_t verify_eeid(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (eeid->signature_size != 1808) // We only support SGX sigstructs for now.
-        OE_RAISE(OE_VERIFY_FAILED);
+        OE_RAISE(OE_UNSUPPORTED);
 
     // Compute expected enclave hash
     OE_SHA256 computed_enclave_hash;
-    oe_remeasure_memory_pages(eeid, &computed_enclave_hash, true);
+    oe_remeasure_memory_pages(eeid, config_id, &computed_enclave_hash, true);
 
     // Check recomputed enclave hash against reported enclave hash
     if (memcmp(
@@ -521,19 +546,16 @@ oe_result_t verify_eeid(
         0)
         OE_RAISE(OE_VERIFY_FAILED);
 
-    const sgx_sigstruct_t* sigstruct =
-        (const sgx_sigstruct_t*)((uint8_t*)&eeid->data + eeid->data_size);
+    const sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)eeid->signature;
 
     // Compute and check base image hash
     *base_enclave_hash = sigstruct->enclavehash;
     OE_SHA256 computed_base_enclave_hash;
     oe_eeid_t tmp_eeid = *eeid;
-    // If we saved non-zero heap/stack sizes for the base image, we could
-    // add them here.
-    tmp_eeid.size_settings.num_heap_pages = 0;
-    tmp_eeid.size_settings.num_stack_pages = 0;
-    tmp_eeid.size_settings.num_tcs = 1;
-    oe_remeasure_memory_pages(&tmp_eeid, &computed_base_enclave_hash, false);
+    tmp_eeid.size_settings = *base_image_sizes;
+
+    oe_remeasure_memory_pages(
+        &tmp_eeid, NULL, &computed_base_enclave_hash, false);
 
     if (memcmp(
             computed_base_enclave_hash.buf,
@@ -597,10 +619,7 @@ static oe_result_t _ntoh_uint32_t(
     return OE_OK;
 }
 
-static oe_result_t _hton_uint64_t(
-    uint64_t x,
-    uint8_t** position,
-    size_t* remaining)
+oe_result_t hton_uint64_t(uint64_t x, uint8_t** position, size_t* remaining)
 {
     if (*remaining < 8)
         return OE_INVALID_PARAMETER;
@@ -614,7 +633,7 @@ static oe_result_t _hton_uint64_t(
     return OE_OK;
 }
 
-static oe_result_t _ntoh_uint64_t(
+oe_result_t ntoh_uint64_t(
     const uint8_t** position,
     size_t* remaining,
     uint64_t* x)
@@ -665,7 +684,7 @@ size_t oe_eeid_byte_size(const oe_eeid_t* eeid)
     return sizeof(eeid->version) + sizeof(eeid->hash_state) +
            sizeof(eeid->signature_size) + sizeof(eeid->size_settings) +
            sizeof(eeid->vaddr) + sizeof(eeid->entry_point) +
-           sizeof(eeid->data_size) + eeid->data_size + eeid->signature_size;
+           eeid->signature_size;
 }
 
 oe_result_t oe_eeid_hton(
@@ -689,24 +708,18 @@ oe_result_t oe_eeid_hton(
     for (size_t i = 0; i < 2; i++)
         OE_CHECK(_hton_uint32_t(eeid->hash_state.N[i], &position, &remaining));
 
-    OE_CHECK(_hton_uint64_t(eeid->signature_size, &position, &remaining));
-
-    OE_CHECK(_hton_uint64_t(
+    OE_CHECK(hton_uint64_t(
         eeid->size_settings.num_heap_pages, &position, &remaining));
-    OE_CHECK(_hton_uint64_t(
+    OE_CHECK(hton_uint64_t(
         eeid->size_settings.num_stack_pages, &position, &remaining));
-    OE_CHECK(
-        _hton_uint64_t(eeid->size_settings.num_tcs, &position, &remaining));
+    OE_CHECK(hton_uint64_t(eeid->size_settings.num_tcs, &position, &remaining));
 
-    OE_CHECK(_hton_uint64_t(eeid->vaddr, &position, &remaining));
-    OE_CHECK(_hton_uint64_t(eeid->entry_point, &position, &remaining));
+    OE_CHECK(hton_uint64_t(eeid->vaddr, &position, &remaining));
+    OE_CHECK(hton_uint64_t(eeid->entry_point, &position, &remaining));
 
-    OE_CHECK(_hton_uint64_t(eeid->data_size, &position, &remaining));
+    OE_CHECK(hton_uint64_t(eeid->signature_size, &position, &remaining));
     OE_CHECK(_hton_buffer(
-        eeid->data,
-        eeid->data_size + eeid->signature_size,
-        &position,
-        &remaining));
+        eeid->signature, eeid->signature_size, &position, &remaining));
 
     result = OE_OK;
 done:
@@ -736,24 +749,19 @@ oe_result_t oe_eeid_ntoh(
     for (size_t i = 0; i < 2; i++)
         OE_CHECK(_ntoh_uint32_t(&position, &remaining, &eeid->hash_state.N[i]));
 
-    OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->signature_size));
-
-    OE_CHECK(_ntoh_uint64_t(
+    OE_CHECK(ntoh_uint64_t(
         &position, &remaining, &eeid->size_settings.num_heap_pages));
-    OE_CHECK(_ntoh_uint64_t(
+    OE_CHECK(ntoh_uint64_t(
         &position, &remaining, &eeid->size_settings.num_stack_pages));
     OE_CHECK(
-        _ntoh_uint64_t(&position, &remaining, &eeid->size_settings.num_tcs));
+        ntoh_uint64_t(&position, &remaining, &eeid->size_settings.num_tcs));
 
-    OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->vaddr));
-    OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->entry_point));
+    OE_CHECK(ntoh_uint64_t(&position, &remaining, &eeid->vaddr));
+    OE_CHECK(ntoh_uint64_t(&position, &remaining, &eeid->entry_point));
 
-    OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->data_size));
+    OE_CHECK(ntoh_uint64_t(&position, &remaining, &eeid->signature_size));
     OE_CHECK(_ntoh_buffer(
-        &position,
-        &remaining,
-        eeid->data,
-        eeid->data_size + eeid->signature_size));
+        &position, &remaining, eeid->signature, eeid->signature_size));
 
     result = OE_OK;
 done:
@@ -773,14 +781,15 @@ oe_result_t oe_eeid_evidence_hton(
     uint8_t* position = buffer;
     size_t remaining = buffer_size;
 
+    OE_CHECK(hton_uint64_t(evidence->sgx_evidence_size, &position, &remaining));
     OE_CHECK(
-        _hton_uint64_t(evidence->sgx_evidence_size, &position, &remaining));
-    OE_CHECK(
-        _hton_uint64_t(evidence->sgx_endorsements_size, &position, &remaining));
-    OE_CHECK(_hton_uint64_t(evidence->eeid_size, &position, &remaining));
+        hton_uint64_t(evidence->sgx_endorsements_size, &position, &remaining));
+    OE_CHECK(hton_uint64_t(evidence->eeid_size, &position, &remaining));
+    OE_CHECK(hton_uint64_t(evidence->config_id_size, &position, &remaining));
 
     size_t data_size = evidence->sgx_evidence_size +
-                       evidence->sgx_endorsements_size + evidence->eeid_size;
+                       evidence->sgx_endorsements_size + evidence->eeid_size +
+                       evidence->config_id_size;
 
     OE_CHECK(_hton_buffer(evidence->data, data_size, &position, &remaining));
 
@@ -803,13 +812,15 @@ oe_result_t oe_eeid_evidence_ntoh(
     size_t remaining = buffer_size;
 
     OE_CHECK(
-        _ntoh_uint64_t(&position, &remaining, &evidence->sgx_evidence_size));
-    OE_CHECK(_ntoh_uint64_t(
-        &position, &remaining, &evidence->sgx_endorsements_size));
-    OE_CHECK(_ntoh_uint64_t(&position, &remaining, &evidence->eeid_size));
+        ntoh_uint64_t(&position, &remaining, &evidence->sgx_evidence_size));
+    OE_CHECK(
+        ntoh_uint64_t(&position, &remaining, &evidence->sgx_endorsements_size));
+    OE_CHECK(ntoh_uint64_t(&position, &remaining, &evidence->eeid_size));
+    OE_CHECK(ntoh_uint64_t(&position, &remaining, &evidence->config_id_size));
 
     size_t data_size = evidence->sgx_evidence_size +
-                       evidence->sgx_endorsements_size + evidence->eeid_size;
+                       evidence->sgx_endorsements_size + evidence->eeid_size +
+                       evidence->config_id_size;
 
     OE_CHECK(_ntoh_buffer(
         &position, &remaining, (uint8_t*)&evidence->data, data_size));

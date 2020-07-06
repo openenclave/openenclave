@@ -130,6 +130,7 @@ static volatile uint64_t _reloc_size;
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 oe_eeid_t* oe_eeid = NULL;
+oe_enclave_config_t* oe_enclave_config = NULL;
 #endif
 
 /*
@@ -192,6 +193,11 @@ size_t __oe_get_reloc_size()
 const void* __oe_get_eeid()
 {
     return oe_eeid;
+}
+
+const oe_enclave_config_t* __oe_get_enclave_config()
+{
+    return oe_enclave_config;
 }
 #endif
 

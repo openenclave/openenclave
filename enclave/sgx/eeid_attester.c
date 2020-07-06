@@ -16,6 +16,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/eeid.h>
+#include <openenclave/internal/globals.h>
 #include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
@@ -28,6 +29,8 @@
 #include <openenclave/enclave.h>
 
 extern const void* __oe_get_eeid();
+extern const oe_enclave_config_t* __oe_get_enclave_config();
+extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 
 static oe_result_t _eeid_attester_on_register(
     oe_attestation_role_t* context,
@@ -95,7 +98,21 @@ static oe_result_t _get_sgx_evidence(
     result = OE_OK;
 
 done:
+
+    free(report);
+    free(sgx_claims);
+
     return result;
+}
+
+static void _set_u64_claim(char* name, uint64_t value, oe_claim_t* claim)
+{
+    claim->name = name;
+    claim->value_size = sizeof(uint64_t);
+    claim->value = malloc(claim->value_size);
+    uint8_t* pos = claim->value;
+    size_t rem = claim->value_size;
+    hton_uint64_t(value, &pos, &rem);
 }
 
 static oe_result_t _eeid_get_evidence(
@@ -115,6 +132,9 @@ static oe_result_t _eeid_get_evidence(
     uint8_t *sgx_evidence_buffer = NULL, *sgx_endorsements_buffer = NULL;
     size_t sgx_evidence_buffer_size = 0, sgx_endorsements_buffer_size = 0;
     const oe_eeid_t* eeid = __oe_get_eeid();
+    const oe_enclave_config_t* config = __oe_get_enclave_config();
+    size_t sgx_custom_claims_size = 0;
+    oe_claim_t* sgx_custom_claims = NULL;
 
     OE_UNUSED(context);
     if (!evidence_buffer || !evidence_buffer_size || !eeid)
@@ -131,17 +151,37 @@ static oe_result_t _eeid_get_evidence(
     if (endorsements_buffer_size)
         *endorsements_buffer_size = 0;
 
-    if (!eeid || eeid->data_size == 0 ||
-        eeid->signature_size != sizeof(sgx_sigstruct_t))
+    if (eeid->signature_size != sizeof(sgx_sigstruct_t))
         OE_RAISE(OE_FAILURE);
 
     size_t eeid_size = oe_eeid_byte_size(eeid);
 
+    sgx_custom_claims_size = custom_claims_size + 3;
+    sgx_custom_claims = oe_malloc(sizeof(oe_claim_t) * sgx_custom_claims_size);
+    if (!sgx_custom_claims)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    _set_u64_claim(
+        "num_heap_pages",
+        oe_enclave_properties_sgx.header.size_settings.num_heap_pages,
+        &sgx_custom_claims[0]);
+    _set_u64_claim(
+        "num_stack_pages",
+        oe_enclave_properties_sgx.header.size_settings.num_stack_pages,
+        &sgx_custom_claims[1]);
+    _set_u64_claim(
+        "num_tcs",
+        oe_enclave_properties_sgx.header.size_settings.num_tcs,
+        &sgx_custom_claims[2]);
+
+    for (size_t i = 0; i < custom_claims_size; i++)
+        sgx_custom_claims[i + 3] = custom_claims[i];
+
     // Get SGX evidence
     OE_CHECK(_get_sgx_evidence(
         flags,
-        custom_claims,
-        custom_claims_size,
+        sgx_custom_claims,
+        sgx_custom_claims_size,
         opt_params,
         opt_params_size,
         &sgx_evidence_buffer,
@@ -150,10 +190,9 @@ static oe_result_t _eeid_get_evidence(
         &sgx_endorsements_buffer_size));
 
     // Prepare EEID evidence, prefixed with an attestation header.
-    *evidence_buffer_size = sizeof(oe_eeid_evidence_t) +
-                            sgx_evidence_buffer_size +
-                            sgx_endorsements_buffer_size + eeid_size;
-
+    *evidence_buffer_size =
+        sizeof(oe_eeid_evidence_t) + sgx_evidence_buffer_size +
+        sgx_endorsements_buffer_size + eeid_size + OE_CONFIG_ID_SIZE;
     evidence = oe_malloc(*evidence_buffer_size);
     if (!evidence)
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -161,6 +200,7 @@ static oe_result_t _eeid_get_evidence(
     evidence->sgx_evidence_size = sgx_evidence_buffer_size;
     evidence->sgx_endorsements_size = sgx_endorsements_buffer_size;
     evidence->eeid_size = eeid_size;
+    evidence->config_id_size = OE_CONFIG_ID_SIZE;
 
     if (sgx_evidence_buffer_size != 0)
         memcpy(evidence->data, sgx_evidence_buffer, sgx_evidence_buffer_size);
@@ -177,6 +217,18 @@ static oe_result_t _eeid_get_evidence(
             evidence->sgx_endorsements_size,
         eeid_size));
 
+    OE_SHA256 config_id;
+    if (config && config->data && config->size)
+        oe_sha256(config->data, config->size, &config_id);
+    else
+        memset(config_id.buf, 0, sizeof(config_id.buf));
+
+    memcpy(
+        evidence->data + evidence->sgx_evidence_size +
+            evidence->sgx_endorsements_size + eeid_size,
+        config_id.buf,
+        evidence->config_id_size);
+
     // Write evidence. This can't be done in-place.
     *evidence_buffer = oe_malloc(*evidence_buffer_size);
     if (!*evidence_buffer)
@@ -185,15 +237,13 @@ static oe_result_t _eeid_get_evidence(
         evidence, *evidence_buffer, *evidence_buffer_size));
 
     // Write endorsements
-    if (endorsements_buffer)
+    if (endorsements_buffer && config && config->data && config->size)
     {
-        *endorsements_buffer_size = eeid_size;
-        *endorsements_buffer = oe_malloc(*endorsements_buffer_size);
+        *endorsements_buffer_size = config->size;
+        *endorsements_buffer = oe_malloc(config->size);
         if (!*endorsements_buffer)
             OE_RAISE(OE_OUT_OF_MEMORY);
-
-        OE_CHECK(oe_eeid_hton(
-            eeid, *endorsements_buffer, *endorsements_buffer_size));
+        memcpy(*endorsements_buffer, config->data, config->size);
     }
 
     result = OE_OK;
@@ -202,6 +252,9 @@ done:
 
     oe_free(sgx_evidence_buffer);
     oe_free(sgx_endorsements_buffer);
+    for (size_t i = 0; i < 3; i++)
+        oe_free(sgx_custom_claims[i].value);
+    oe_free(sgx_custom_claims);
     oe_free(evidence);
 
     return result;

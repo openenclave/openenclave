@@ -48,6 +48,13 @@ OE_EXTERNC_BEGIN
  */
 #define OE_PRODUCT_ID_SIZE 16
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+/**
+ * Size of the enclave config hash in bytes.
+ */
+#define OE_CONFIG_ID_SIZE 32
+#endif
+
 /**
  * Bit mask for a debug report.
  */

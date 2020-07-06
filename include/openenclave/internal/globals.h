@@ -33,8 +33,11 @@ uint64_t oe_get_num_heap_pages(void);
 uint64_t oe_get_num_pages(void);
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-/* Extended enclave initialization data */
+/* Extended enclave initialization meta-data */
 const void* __oe_get_eeid(void);
+
+/* Enclave config (EEID or configid) */
+const oe_enclave_config_t* __oe_get_enclave_config(void);
 #endif
 
 OE_EXTERNC_END
