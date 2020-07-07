@@ -163,7 +163,7 @@ if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
 endif ()
 
 if (USE_SNMALLOC)
-  set(DEFAULT_ALLOCATOR oesnmalloc)
+  set(DEFAULT_ALLOCATOR oesnmalloc_obj)
 else ()
   set(DEFAULT_ALLOCATOR oedlmalloc)
 endif ()
