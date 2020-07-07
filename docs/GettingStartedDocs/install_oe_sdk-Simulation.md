@@ -7,9 +7,10 @@ The Open Enclave SDK can be installed on non-SGX Ubuntu 16.04 and 18.04 systems.
 - Attestation (both remote and local)
 - Signal handling (specifically: the oe_add_vectored_exception_handler and oe_remove_vectored_exception_handler APIs)
 
-Only three of the samples provided in the Open Enclave SDK will function in simulation mode:
+Only four of the samples provided in the Open Enclave SDK will function in simulation mode:
 - helloworld
 - file-encryptor
+- pluggable_allocator
 - switchless
 
 Note that enclaves that are run in simulation mode are not protected by a trusted execution environment. Therefore, simulation mode should only be used for prototype scenarios and validating ocall/ecalls.
