@@ -22,25 +22,27 @@ if (NOT HAVE_GETOPT_LONG)
   list(APPEND SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/getopt_long.c)
 endif ()
 
-add_executable(oesign ${SOURCES})
+if (NOT COMPONENT MATCHES OEHOSTVERIFY)
+  add_executable(oesign ${SOURCES})
 
-if (NOT HAVE_GETOPT_LONG)
-  target_include_directories(oesign PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-endif ()
+  if (NOT HAVE_GETOPT_LONG)
+    target_include_directories(oesign PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  endif ()
 
-# Link oesign against liboehostmr, which has no dependency on
-# lib_sgx_enclave_common and libsgx_dcap_ql.
-target_link_libraries(oesign oehostmr)
+  # Link oesign against liboehostmr, which has no dependency on
+  # lib_sgx_enclave_common and libsgx_dcap_ql.
+  target_link_libraries(oesign oehostmr)
 
-# assemble into proper collector dir
-set_property(TARGET oesign PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
+  # assemble into proper collector dir
+  set_property(TARGET oesign PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
 
-# install rule
-install(
-  TARGETS oesign
-  EXPORT openenclave-targets
-  DESTINATION ${CMAKE_INSTALL_BINDIR})
+  # install rule
+  install(
+    TARGETS oesign
+    EXPORT openenclave-targets
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-if (WITH_EEID)
-  target_compile_definitions(oesign PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+  if (WITH_EEID)
+    target_compile_definitions(oesign PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+  endif ()
 endif ()

@@ -104,8 +104,7 @@ install(
   FILES
     ${CMAKE_BINARY_DIR}/cmake/openenclave-lvi-mitigation-config.cmake
     ${CMAKE_BINARY_DIR}/cmake/openenclave-lvi-mitigation-config-version.cmake
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-  COMPONENT OEHOSTVERIFY)
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
 
 if (UNIX)
   # Generate the openenclaverc script.

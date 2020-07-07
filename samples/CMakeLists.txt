@@ -1,7 +1,7 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-if (HAS_QUOTE_PROVIDER)
+if (BUILD_ENCLAVES AND HAS_QUOTE_PROVIDER)
   install(
     DIRECTORY remote_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
@@ -65,8 +65,10 @@ if (WIN32)
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     RENAME README.md)
 else ()
-  install(FILES config.mk
-          DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+  install(
+    FILES config.mk
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    COMPONENT OEHOSTVERIFY)
   install(
     FILES README_Linux.md
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
