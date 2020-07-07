@@ -21,3 +21,7 @@ The subset of libcxx functionality provided by oelibcxx for use inside an enclav
 ## [mbedtls library](/docs/MbedtlsSupport.md)
 
 The subset of [mbedtls](https://tls.mbed.org/) functionality for use inside an enclave.
+
+## [System EDL files](/docs/SystemEdls.md)
+
+The list of system EDL files that allow for user opt-in.
