@@ -224,7 +224,7 @@ oe_result_t oe_verify_evidence(
         claims,
         claims_length));
 
-    if (!_check_claims(*claims, *claims_length))
+    if (claims && claims_length && !_check_claims(*claims, *claims_length))
     {
         verifier->free_claims(verifier, *claims, *claims_length);
         *claims = NULL;
