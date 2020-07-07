@@ -164,3 +164,9 @@ The following samples demonstrate how to develop enclave applications using OE A
 
 - Explain the concept of host-side enclave verification
 - Demonstrate attestation of a remote SGX enclave from outside an enclave
+
+#### [Pluggable Allocators](pluggable_allocator/README.md)
+
+- Demonstrate how to replace the default memory allocator by plugging in a custom allocator
+  that performs better in multi-threaded enclaves.
+- Provide overview of how to make an enclave-compatible allocator pluggable.
