@@ -37,7 +37,7 @@
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_epoll_create1_ocall(oe_host_fd_t* _retval, int flags);
@@ -124,7 +124,7 @@ OE_WEAK_ALIAS(_oe_syscall_epoll_close_ocall, oe_syscall_epoll_close_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_open_ocall(
@@ -516,7 +516,7 @@ OE_WEAK_ALIAS(_oe_syscall_fcntl_ocall, oe_syscall_fcntl_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_ioctl_ocall(
@@ -558,7 +558,7 @@ OE_WEAK_ALIAS(_oe_syscall_ioctl_ocall, oe_syscall_ioctl_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_kill_ocall(int* _retval, int pid, int signum);
@@ -585,7 +585,7 @@ OE_WEAK_ALIAS(_oe_syscall_kill_ocall, oe_syscall_kill_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_close_socket_ocall(int* _retval, oe_host_fd_t sockfd);
@@ -1194,7 +1194,7 @@ OE_WEAK_ALIAS(_oe_syscall_getnameinfo_ocall, oe_syscall_getnameinfo_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_poll_ocall(
@@ -1230,7 +1230,7 @@ OE_WEAK_ALIAS(_oe_syscall_poll_ocall, oe_syscall_poll_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_nanosleep_ocall(
@@ -1263,7 +1263,7 @@ OE_WEAK_ALIAS(_oe_syscall_nanosleep_ocall, oe_syscall_nanosleep_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_getpid_ocall(int* _retval);
@@ -1361,7 +1361,7 @@ OE_WEAK_ALIAS(_oe_syscall_getgroups_ocall, oe_syscall_getgroups_ocall);
 */
 
 /**
- * Declare the prototype of the following functions to avoid the
+ * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
  */
 oe_result_t _oe_syscall_uname_ocall(int* _retval, struct oe_utsname* buf);

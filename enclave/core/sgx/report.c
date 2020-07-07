@@ -27,7 +27,6 @@ oe_result_t _oe_get_qetarget_info_ocall(
     const void* opt_params,
     size_t opt_params_size,
     sgx_target_info_t* target_info);
-
 oe_result_t _oe_get_quote_ocall(
     oe_result_t* _retval,
     const oe_uuid_t* format_id,

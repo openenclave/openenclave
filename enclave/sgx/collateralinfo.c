@@ -101,7 +101,7 @@ oe_result_t _oe_get_quote_verification_collateral_ocall(
     if (_retval)
         *_retval = OE_UNSUPPORTED;
 
-    return OE_OK;
+    return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(
     _oe_get_quote_verification_collateral_ocall,

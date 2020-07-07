@@ -9,6 +9,9 @@ enclave {
 
       // trusted memory address as ECALL parameter, will not leak secrets.
       public void security_ecall_test1([size = 4,in] int* ptr);
+
+      // direct [in] pointer as ECALL parameter, will not leak data from enclave
+      public int security_ecall_test2([size = 16, in] int* ptr);
    };
 
 };

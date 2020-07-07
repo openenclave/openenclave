@@ -31,6 +31,45 @@ static bool _is_switchless_initialized = false;
  * */
 static int64_t _switchless_init_in_progress = 0;
 
+#if !defined(OE_USE_BUILTIN_EDL)
+/**
+ * Declare the prototypes of the following functions to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_sgx_wake_switchless_worker_ocall(
+    oe_host_worker_context_t* context);
+oe_result_t _oe_sgx_sleep_switchless_worker_ocall(
+    oe_enclave_worker_context_t* context);
+
+/**
+ * Make the following OCALLs weak to support the system EDL opt-in.
+ * When the user does not opt into (import) the EDL, the linker will pick
+ * the following default implementations. If the user opts into the EDL,
+ * the implementations (which are strong) in the oeedger8r-generated code will
+ * be used.
+ */
+oe_result_t _oe_sgx_wake_switchless_worker_ocall(
+    oe_host_worker_context_t* context)
+{
+    OE_UNUSED(context);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_sgx_wake_switchless_worker_ocall,
+    oe_sgx_wake_switchless_worker_ocall);
+
+oe_result_t _oe_sgx_sleep_switchless_worker_ocall(
+    oe_enclave_worker_context_t* context)
+{
+    OE_UNUSED(context);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_sgx_sleep_switchless_worker_ocall,
+    oe_sgx_sleep_switchless_worker_ocall);
+
+#endif
+
 /*
 **==============================================================================
 **
@@ -261,23 +300,6 @@ void oe_sgx_switchless_enclave_worker_thread_ecall(
             asm volatile("pause");
         }
     }
-}
-
-/*
- * Stubs for ocalls in the event they are not included
- */
-OE_WEAK oe_result_t
-oe_sgx_wake_switchless_worker_ocall(oe_host_worker_context_t* context)
-{
-    OE_UNUSED(context);
-    return OE_UNSUPPORTED;
-}
-
-OE_WEAK oe_result_t
-oe_sgx_sleep_switchless_worker_ocall(oe_enclave_worker_context_t* context)
-{
-    OE_UNUSED(context);
-    return OE_UNSUPPORTED;
 }
 
 // Function used by oeedger8r for allocating switchless ocall buffers.

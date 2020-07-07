@@ -32,13 +32,17 @@ oe_result_t _oe_get_report_v2_ecall(
     size_t opt_params_size,
     uint8_t** report_buffer,
     size_t* report_buffer_size);
-
 oe_result_t _oe_verify_local_report_ecall(
     oe_enclave_t* enclave,
     oe_result_t* _retval,
     const uint8_t* report,
     size_t report_size,
     oe_report_t* parsed_report);
+oe_result_t _oe_verify_report_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    const void* report,
+    size_t report_size);
 
 /**
  * Make the following ECALLs weak to support the system EDL opt-in.
@@ -89,6 +93,23 @@ oe_result_t _oe_verify_local_report_ecall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_verify_local_report_ecall, oe_verify_local_report_ecall);
+
+oe_result_t _oe_verify_report_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    const void* report,
+    size_t report_size)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(report);
+    OE_UNUSED(report_size);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_verify_report_ecall, oe_verify_report_ecall);
 
 #endif
 
@@ -250,5 +271,12 @@ oe_result_t oe_verify_report_internal(
 
     result = OE_OK;
 done:
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING("oe_verify_report_ecall is not supported. To "
+                         "enable, please add\n\n"
+                         "from \"openenclave/edl/attestation.edl\" import "
+                         "oe_verify_report_ecall;\n\n"
+                         "in the edl file.\n");
+
     return result;
 }
