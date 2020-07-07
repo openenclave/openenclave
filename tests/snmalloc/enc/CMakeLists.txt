@@ -10,8 +10,6 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave_library(snmalloc_test_lib $<TARGET_OBJECTS:oesnmalloc>)
-
 add_enclave(
   TARGET
   snmalloc_enc
@@ -22,7 +20,7 @@ add_enclave(
   ${CMAKE_CURRENT_BINARY_DIR}/snmalloc_t.c)
 
 enclave_include_directories(snmalloc_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-enclave_link_libraries(snmalloc_enc snmalloc_test_lib oelibc)
+enclave_link_libraries(snmalloc_enc oesnmalloc oelibc)
 
 add_enclave(
   TARGET
