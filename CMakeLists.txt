@@ -351,20 +351,22 @@ add_subdirectory(host)
 # Tests and samples have been ported to manually include system edl files.
 # They can no longer be used when system EDL is builtin.
 if (NOT COMPILE_SYSTEM_EDL)
-  if (BUILD_TESTS)
+  if (BUILD_TESTS AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
     add_subdirectory(tests)
   endif ()
 
   # Skip samples when enabling the code coverage test.
   # Otherwise, all the samples need to explicitly link against the libgcov library.
-  if (BUILD_ENCLAVES AND (NOT CODE_COVERAGE))
+  if (NOT CODE_COVERAGE)
     add_subdirectory(samples)
   endif ()
 endif ()
 
-add_subdirectory(tools)
+if (NOT COMPONENT MATCHES OEHOSTVERFIY)
+  add_subdirectory(tools)
+endif ()
 
-if (BUILD_ENCLAVES)
+if (BUILD_ENCLAVES AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
   add_subdirectory(enclave)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)
@@ -372,7 +374,7 @@ if (BUILD_ENCLAVES)
   add_subdirectory(syscall)
 endif ()
 
-if (OE_SGX)
+if (OE_SGX AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
   add_subdirectory(debugger)
 endif ()
 
