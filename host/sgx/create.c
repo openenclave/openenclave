@@ -350,7 +350,6 @@ static oe_result_t _add_data_pages(
     const oe_sgx_enclave_properties_t* props,
     uint64_t entry,
     uint64_t* vaddr)
-
 {
     oe_result_t result = OE_UNEXPECTED;
     const oe_enclave_size_settings_t* size_settings =
@@ -714,6 +713,41 @@ static oe_result_t _eeid_resign(
 done:
     return result;
 }
+
+static oe_result_t _add_eeid_data_pages(
+    oe_sgx_load_context_t* context,
+    oe_enclave_t* enclave,
+    oe_sgx_enclave_properties_t* props,
+    uint64_t entry,
+    uint64_t* vaddr)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (is_eeid_base_image(&props->header.size_settings))
+    {
+        /* Add data pages (dynamic memory settings) */
+        /* Save hash state before data pages. */
+        OE_CHECK(_add_eeid_page(context, enclave, entry, props, vaddr));
+        OE_CHECK(_add_data_pages(context, enclave, props, entry, vaddr));
+    }
+    else
+    {
+        /* Add data pages (static memory settings) */
+        /* Save hash state after data pages. */
+        uint64_t eeid_vaddr = *vaddr;
+        *vaddr += OE_PAGE_SIZE;
+        OE_CHECK(_add_data_pages(context, enclave, props, entry, vaddr));
+        OE_CHECK(_add_eeid_page(context, enclave, entry, props, &eeid_vaddr));
+    }
+
+    /* Resign */
+    OE_CHECK(_eeid_resign(context, props));
+
+    result = OE_OK;
+
+done:
+    return result;
+}
 #endif
 
 oe_result_t oe_sgx_build_enclave(
@@ -824,17 +858,13 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    OE_CHECK(
-        _add_eeid_page(context, enclave, oeimage.entry_rva, &props, &vaddr));
-#endif
-
+    /* Add data and EEID pages */
+    OE_CHECK(_add_eeid_data_pages(
+        context, enclave, &props, oeimage.entry_rva, &vaddr));
+#else
     /* Add data pages */
     OE_CHECK(
         _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
-
-#ifdef OE_WITH_EXPERIMENTAL_EEID
-    /* Resign */
-    OE_CHECK(_eeid_resign(context, &props));
 #endif
 
     /* Ask the platform to initialize the enclave and finalize the hash */

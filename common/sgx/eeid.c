@@ -294,7 +294,7 @@ done:
     return result;
 }
 
-static oe_result_t _remeasure_eeid_page(
+static oe_result_t _measure_eeid_page(
     oe_sha256_context_t* hctx,
     uint64_t base,
     uint64_t* vaddr,
@@ -314,7 +314,7 @@ static oe_result_t _remeasure_eeid_page(
     memcpy(&eeid_page->eeid, eeid, sizeof(oe_eeid_t) + eeid->signature_size);
     memcpy(eeid_page->config_id.buf, config_id->buf, sizeof(config_id->buf));
 
-    OE_CHECK(_add_page(hctx, base, eeid_page, vaddr, true, true));
+    OE_CHECK(_measure_page(hctx, base, eeid_page, vaddr, true, true));
     free(eeid_page);
 
     result = OE_OK;
@@ -327,7 +327,8 @@ oe_result_t oe_remeasure_memory_pages(
     const oe_eeid_t* eeid,
     const OE_SHA256* config_id,
     OE_SHA256* computed_enclave_hash,
-    bool with_eeid_page)
+    bool with_eeid_page,
+    bool static_sizes)
 {
     oe_result_t result;
     oe_sha256_context_t hctx;
@@ -341,58 +342,64 @@ oe_result_t oe_remeasure_memory_pages(
     uint64_t vaddr = eeid->vaddr;
 
     if (with_eeid_page)
-        OE_CHECK(_remeasure_eeid_page(&hctx, base, &vaddr, eeid, config_id));
+        OE_CHECK(_measure_eeid_page(&hctx, base, &vaddr, eeid, config_id));
     else
-        OE_CHECK(_add_page(&hctx, base, blank_pg.data, &vaddr, true, true));
+        OE_CHECK(_measure_page(&hctx, base, blank_pg.data, &vaddr, true, true));
 
-    // This is where we replay the addition of memory pages, both, for
-    // verification of the extended image hash (with_eeid_pages=true) and
-    // the base image hash, for which there are no EEID pages, but one TCS
-    // page.
-
-    for (size_t i = 0; i < eeid->size_settings.num_heap_pages; i++)
-        OE_CHECK(_measure_page(&hctx, base, &blank_pg, &vaddr, false, false));
-
-    for (size_t i = 0; i < eeid->size_settings.num_tcs; i++)
+    if (!static_sizes)
     {
-        vaddr += OE_PAGE_SIZE; /* guard page */
+        // This is where we replay the addition of memory pages, both, for
+        // verification of the extended image hash (with_eeid_pages=true) and
+        // the base image hash, for which there are no EEID pages, but one TCS
+        // page. This is only required when using dynamic memory settings, as
+        // the hash state is saved after the data pages in the case of static
+        // sizes.
 
-        for (size_t i = 0; i < eeid->size_settings.num_stack_pages; i++)
+        for (size_t i = 0; i < eeid->size_settings.num_heap_pages; i++)
             OE_CHECK(
-                _measure_page(&hctx, base, &stack_pg, &vaddr, true, false));
+                _measure_page(&hctx, base, &blank_pg, &vaddr, false, false));
 
-        vaddr += OE_PAGE_SIZE; /* guard page */
+        for (size_t i = 0; i < eeid->size_settings.num_tcs; i++)
+        {
+            vaddr += OE_PAGE_SIZE; /* guard page */
 
-        sgx_tcs_t* tcs;
-        memset(&tcs_pg, 0, sizeof(tcs_pg));
-        tcs = (sgx_tcs_t*)&tcs_pg;
-        tcs->flags = 0;
-        tcs->ossa = vaddr + OE_PAGE_SIZE;
-        tcs->cssa = 0;
-        tcs->nssa = 2;
-        tcs->oentry = eeid->entry_point;
-        tcs->fsbase = vaddr + (5 * OE_PAGE_SIZE);
-        tcs->gsbase = tcs->fsbase;
-        tcs->fslimit = 0xFFFFFFFF;
-        tcs->gslimit = 0xFFFFFFFF;
+            for (size_t i = 0; i < eeid->size_settings.num_stack_pages; i++)
+                OE_CHECK(
+                    _measure_page(&hctx, base, &stack_pg, &vaddr, true, false));
 
-        OE_CHECK(oe_sgx_measure_load_enclave_data(
-            &hctx,
-            base,
-            base + vaddr,
-            (uint64_t)&tcs_pg,
-            SGX_SECINFO_TCS,
-            true));
+            vaddr += OE_PAGE_SIZE; /* guard page */
 
-        vaddr += OE_PAGE_SIZE;
+            sgx_tcs_t* tcs;
+            memset(&tcs_pg, 0, sizeof(tcs_pg));
+            tcs = (sgx_tcs_t*)&tcs_pg;
+            tcs->flags = 0;
+            tcs->ossa = vaddr + OE_PAGE_SIZE;
+            tcs->cssa = 0;
+            tcs->nssa = 2;
+            tcs->oentry = eeid->entry_point;
+            tcs->fsbase = vaddr + (5 * OE_PAGE_SIZE);
+            tcs->gsbase = tcs->fsbase;
+            tcs->fslimit = 0xFFFFFFFF;
+            tcs->gslimit = 0xFFFFFFFF;
 
-        for (size_t i = 0; i < 2; i++)
-            _measure_page(&hctx, base, &blank_pg, &vaddr, true, false);
+            OE_CHECK(oe_sgx_measure_load_enclave_data(
+                &hctx,
+                base,
+                base + vaddr,
+                (uint64_t)&tcs_pg,
+                SGX_SECINFO_TCS,
+                true));
 
-        vaddr += OE_PAGE_SIZE; /* guard page */
+            vaddr += OE_PAGE_SIZE;
 
-        for (size_t i = 0; i < 2; i++)
-            _measure_page(&hctx, base, &blank_pg, &vaddr, true, false);
+            for (size_t i = 0; i < 2; i++)
+                _measure_page(&hctx, base, &blank_pg, &vaddr, true, false);
+
+            vaddr += OE_PAGE_SIZE; /* guard page */
+
+            for (size_t i = 0; i < 2; i++)
+                _measure_page(&hctx, base, &blank_pg, &vaddr, true, false);
+        }
     }
 
     oe_sha256_final(&hctx, computed_enclave_hash);
@@ -531,9 +538,12 @@ oe_result_t verify_eeid(
     if (eeid->signature_size != 1808) // We only support SGX sigstructs for now.
         OE_RAISE(OE_UNSUPPORTED);
 
+    bool static_sizes = !is_eeid_base_image(base_image_sizes);
+
     // Compute expected enclave hash
     OE_SHA256 computed_enclave_hash;
-    oe_remeasure_memory_pages(eeid, config_id, &computed_enclave_hash, true);
+    oe_remeasure_memory_pages(
+        eeid, config_id, &computed_enclave_hash, true, static_sizes);
 
     // Check recomputed enclave hash against reported enclave hash
     if (memcmp(
@@ -555,7 +565,7 @@ oe_result_t verify_eeid(
     tmp_eeid.size_settings = *base_image_sizes;
 
     oe_remeasure_memory_pages(
-        &tmp_eeid, NULL, &computed_base_enclave_hash, false);
+        &tmp_eeid, NULL, &computed_base_enclave_hash, false, static_sizes);
 
     if (memcmp(
             computed_base_enclave_hash.buf,

@@ -5,6 +5,7 @@
 
 #include <openenclave/attestation/sgx/eeid_verifier.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgx/tests.h>
@@ -66,10 +67,9 @@ void host_remote_verify(oe_enclave_t* enclave)
 
     oe_result_t result;
 
-    size_t evidence_size = 65536, evidence_out_size = 0;
-    uint8_t evidence[evidence_size];
-    size_t endorsements_size = 65536, endorsements_out_size = 0;
-    uint8_t endorsements[endorsements_size];
+    uint8_t evidence[65535];
+    uint8_t endorsements[65535];
+    size_t evidence_out_size = 0, endorsements_out_size = 0;
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
 
@@ -78,10 +78,10 @@ void host_remote_verify(oe_enclave_t* enclave)
             enclave,
             &result,
             evidence,
-            evidence_size,
+            sizeof(evidence),
             &evidence_out_size,
             endorsements,
-            endorsements_size,
+            sizeof(endorsements),
             &endorsements_out_size),
         OE_OK);
 
@@ -150,23 +150,20 @@ typedef struct
     oe_eeid_t* eeid;
     oe_enclave_config_t config;
 
-    size_t evidence_size;
+    uint8_t evidence[65535];
     size_t evidence_out_size;
-    uint8_t* evidence;
-    size_t endorsements_size;
+    uint8_t endorsements[65535];
     size_t endorsements_out_size;
-    uint8_t* endorsements;
     oe_claim_t* claims;
     size_t claims_length;
     const uint8_t* enclave_hash;
     const uint8_t* resigned_enclave_hash;
+    const uint8_t* config_hash;
 } enclave_stuff_t;
 
 void free_stuff(enclave_stuff_t* stuff)
 {
     free(stuff->eeid);
-    free(stuff->evidence);
-    free(stuff->endorsements);
     free(stuff->config.data);
     oe_free_claims(stuff->claims, stuff->claims_length);
 }
@@ -192,10 +189,6 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
             &stuff->enclave),
         OE_OK);
 
-    stuff->evidence_size = 65536;
-    stuff->evidence = malloc(stuff->evidence_size);
-    stuff->endorsements_size = 65536;
-    stuff->endorsements = malloc(stuff->endorsements_size);
     stuff->claims = NULL;
     stuff->claims_length = 0;
 
@@ -204,10 +197,10 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
             stuff->enclave,
             &result,
             stuff->evidence,
-            stuff->evidence_size,
+            sizeof(stuff->evidence),
             &stuff->evidence_out_size,
             stuff->endorsements,
-            stuff->endorsements_size,
+            sizeof(stuff->endorsements),
             &stuff->endorsements_out_size),
         OE_OK);
     OE_TEST(result == OE_OK);
@@ -244,9 +237,16 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
             stuff->enclave_hash = stuff->claims[i].value;
         else if (strcmp(name, OE_CLAIM_EEID_RESIGNED_UNIQUE_ID) == 0)
             stuff->resigned_enclave_hash = stuff->claims[i].value;
+        else if (strcmp(name, OE_CLAIM_CONFIG_ID) == 0)
+            stuff->config_hash = stuff->claims[i].value;
     }
 
     OE_TEST(stuff->enclave_hash != NULL);
+
+    /* Check that the claimed config_id matches */
+    OE_SHA256 config_hash;
+    oe_sha256(stuff->config.data, stuff->config.size, &config_hash);
+    OE_TEST(memcmp(config_hash.buf, stuff->config_hash, OE_SHA256_SIZE) == 0);
 }
 
 void multiple_enclaves_tests(

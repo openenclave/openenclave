@@ -114,7 +114,8 @@ oe_result_t oe_remeasure_memory_pages(
     const oe_eeid_t* eeid,
     const OE_SHA256* config_hash,
     OE_SHA256* computed_enclave_hash,
-    bool with_eeid_pages);
+    bool with_eeid_pages,
+    bool static_sizes);
 
 /**
  * Verify EEID hashes and signature.
