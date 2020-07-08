@@ -16,16 +16,31 @@ def LinuxPackaging(String version, String build_type, String lvi_mitigation = 'N
                 cleanWs()
                 checkout scm
                 def task = """
-                           cmake ${WORKSPACE}                               \
-                             -DCMAKE_BUILD_TYPE=${build_type}               \
-                             -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave' \
-                             -DCPACK_GENERATOR=DEB                          \
-                             -DLVI_MITIGATION=${lvi_mitigation}             \
+                           cmake ${WORKSPACE}                                         \
+                             -G Ninja                                                 \
+                             -DCMAKE_BUILD_TYPE=${build_type}                         \
+                             -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'           \
+                             -DCPACK_GENERATOR=DEB                                    \
                              -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin
-                           make
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
+                           ninja -v
+                           ninja -v package
+                           sudo ninja -v install
                            cpack -D CPACK_DEB_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
-                           cpack
+                           rm -rf ~/samples
+                           cp -r /opt/openenclave/share/openenclave/samples ~/
+                           cd ~/samples
+                           source /opt/openenclave/share/openenclave/openenclaverc
+                           for i in *; do
+                               if [ -d \${i} ]; then
+                                   cd \${i}
+                                   mkdir build
+                                   cd build
+                                   cmake ..
+                                   make
+                                   make run
+                                   cd ../..
+                               fi
+                           done
                            """
                 oe.Run("clang-7", task)
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
