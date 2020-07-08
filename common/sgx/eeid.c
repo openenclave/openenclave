@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include <openenclave/bits/attestation.h>
@@ -11,7 +10,6 @@
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/eeid.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/types.h>
@@ -266,22 +264,23 @@ done:
     return result;
 }
 
-static oe_result_t _add_page(
+static oe_result_t _measure_page(
     oe_sha256_context_t* hctx,
     uint64_t base,
     void* page,
     uint64_t* vaddr,
-    bool t)
+    bool extend,
+    bool readonly)
 {
     oe_result_t result = OE_UNEXPECTED;
 
+    uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
+
+    if (!readonly)
+        flags |= SGX_SECINFO_W;
+
     OE_CHECK(oe_sgx_measure_load_enclave_data(
-        hctx,
-        base,
-        base + *vaddr,
-        (uint64_t)page,
-        SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W,
-        t));
+        hctx, base, base + *vaddr, (uint64_t)page, flags, extend));
     *vaddr += OE_PAGE_SIZE;
     result = OE_OK;
 
@@ -311,14 +310,15 @@ oe_result_t oe_remeasure_memory_pages(
     // page.
 
     for (size_t i = 0; i < eeid->size_settings.num_heap_pages; i++)
-        OE_CHECK(_add_page(&hctx, base, &blank_pg, &vaddr, false));
+        OE_CHECK(_measure_page(&hctx, base, &blank_pg, &vaddr, false, false));
 
     for (size_t i = 0; i < eeid->size_settings.num_tcs; i++)
     {
         vaddr += OE_PAGE_SIZE; /* guard page */
 
         for (size_t i = 0; i < eeid->size_settings.num_stack_pages; i++)
-            OE_CHECK(_add_page(&hctx, base, &stack_pg, &vaddr, true));
+            OE_CHECK(
+                _measure_page(&hctx, base, &stack_pg, &vaddr, true, false));
 
         vaddr += OE_PAGE_SIZE; /* guard page */
 
@@ -346,29 +346,30 @@ oe_result_t oe_remeasure_memory_pages(
         vaddr += OE_PAGE_SIZE;
 
         for (size_t i = 0; i < 2; i++)
-            _add_page(&hctx, base, &blank_pg, &vaddr, true);
+            _measure_page(&hctx, base, &blank_pg, &vaddr, true, false);
 
         vaddr += OE_PAGE_SIZE; /* guard page */
 
         for (size_t i = 0; i < 2; i++)
-            _add_page(&hctx, base, &blank_pg, &vaddr, true);
+            _measure_page(&hctx, base, &blank_pg, &vaddr, true, false);
     }
 
     if (with_eeid_pages)
     {
+        char* eeid_bytes = (char*)eeid;
         size_t num_bytes = oe_eeid_byte_size(eeid);
         size_t num_pages =
             num_bytes / OE_PAGE_SIZE + ((num_bytes % OE_PAGE_SIZE) ? 1 : 0);
 
-        oe_page_t* pages = malloc(sizeof(oe_page_t) * num_pages);
-        memset(pages, 0, sizeof(oe_page_t) * num_pages);
-        memcpy(pages->data, eeid, num_bytes);
-
+        oe_page_t page;
         for (size_t i = 0; i < num_pages; i++)
-            OE_CHECK(
-                _add_page(&hctx, base, pages + i * OE_PAGE_SIZE, &vaddr, true));
-
-        free(pages);
+        {
+            memset(page.data, 0, sizeof(oe_page_t));
+            size_t n = (i != num_pages - 1) ? OE_PAGE_SIZE
+                                            : (num_bytes % OE_PAGE_SIZE);
+            memcpy(page.data, eeid_bytes + OE_PAGE_SIZE * i, n);
+            OE_CHECK(_measure_page(&hctx, base, page.data, &vaddr, true, true));
+        }
     }
 
     oe_sha256_final(&hctx, computed_enclave_hash);

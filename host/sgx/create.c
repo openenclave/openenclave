@@ -685,27 +685,27 @@ static oe_result_t _add_eeid_pages(
 
     if (eeid)
     {
+        char* eeid_bytes = (char*)eeid;
         size_t num_bytes = oe_eeid_byte_size(eeid);
         size_t num_pages =
             num_bytes / OE_PAGE_SIZE + ((num_bytes % OE_PAGE_SIZE) ? 1 : 0);
 
-        oe_page_t* pages =
-            oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t) * num_pages);
-        memset(pages, 0, sizeof(oe_page_t) * num_pages);
-        memcpy(pages->data, eeid, num_bytes);
-
+        oe_page_t* page = oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
         for (size_t i = 0; i < num_pages; i++)
         {
-            uint64_t addr = enclave_addr + *vaddr;
-            uint64_t src = (uint64_t)(pages + i * OE_PAGE_SIZE);
-            uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
+            memset(page->data, 0, sizeof(oe_page_t));
+            size_t n = (i != num_pages - 1) ? OE_PAGE_SIZE
+                                            : (num_bytes % OE_PAGE_SIZE);
+            memcpy(page->data, eeid_bytes + OE_PAGE_SIZE * i, n);
 
+            uint64_t addr = enclave_addr + *vaddr;
+            uint64_t src = (uint64_t)(page->data);
+            uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
             OE_CHECK(oe_sgx_load_enclave_data(
                 context, enclave_addr, addr, src, flags, true));
             *vaddr += OE_PAGE_SIZE;
         }
-
-        oe_memalign_free(pages);
+        oe_memalign_free(page);
     }
 
     result = OE_OK;

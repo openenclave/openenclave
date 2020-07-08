@@ -7,6 +7,6 @@
 #include <openenclave/bits/eeid.h>
 #include <openenclave/bits/result.h>
 
-oe_result_t make_test_eeid(oe_eeid_t** eeid);
+oe_result_t make_test_eeid(oe_eeid_t** eeid, size_t data_size);
 
 #endif // _OE_EEID_PLUGIN_TEST_HELPERS_S
