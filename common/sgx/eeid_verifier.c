@@ -367,11 +367,22 @@ static oe_result_t _eeid_verify_evidence(
         &sgx_claims_length,
         &parsed_report));
 
+    /* Extract various reported properties */
+    oe_report_header_t* report_header =
+        (oe_report_header_t*)sgx_evidence_buffer;
+    if (report_header->report_type != OE_REPORT_TYPE_SGX_REMOTE)
+        OE_RAISE(OE_VERIFY_FAILED);
+
+    const sgx_quote_t* sgx_quote = (const sgx_quote_t*)report_header->report;
+    const sgx_report_body_t* report_body = &sgx_quote->report_body;
+    const sgx_attributes_t* r_sgx_attributes = &report_body->attributes;
+    uint32_t r_misc_select = report_body->miscselect;
+
     const uint8_t* r_enclave_hash = parsed_report.identity.unique_id;
     const uint8_t* r_resigner_id = parsed_report.identity.signer_id;
+    uint64_t r_oe_attributes = parsed_report.identity.attributes;
     uint16_t r_product_id = *((uint16_t*)parsed_report.identity.product_id);
     uint32_t r_security_version = parsed_report.identity.security_version;
-    uint64_t r_attributes = parsed_report.identity.attributes;
     uint32_t r_id_version = parsed_report.identity.id_version;
 
     /* EEID passed to the verifier */
@@ -416,7 +427,9 @@ static oe_result_t _eeid_verify_evidence(
         r_resigner_id,
         r_product_id,
         r_security_version,
-        r_attributes,
+        r_oe_attributes,
+        r_sgx_attributes,
+        r_misc_select,
         &r_enclave_base_hash,
         attester_eeid,
         &attester_config_id,
@@ -430,7 +443,7 @@ static oe_result_t _eeid_verify_evidence(
             r_signer_id,
             r_product_id,
             r_security_version,
-            r_attributes,
+            r_oe_attributes,
             r_id_version,
             r_enclave_base_hash,
             attester_config_id.buf,

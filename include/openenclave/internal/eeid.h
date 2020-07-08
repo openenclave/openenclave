@@ -14,6 +14,7 @@
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 
 #include <openenclave/bits/eeid.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/crypto/sha.h>
 
 /** This is the public key corresponding to the private key OE_DEBUG_SIGN_KEY in
@@ -138,6 +139,10 @@ oe_result_t oe_remeasure_memory_pages(
  * @param[in] reported_attributes Attributes of the extended image (as reported
  * in the oe_report_t).
  *
+ * @param[in] reported_sgx_attributes Attributes reported in the SGX report.
+ *
+ * @param[in] reported_misc_select Reported miscselect field of SGX report.
+ *
  * @param[in] eeid The oe_eeid_t holding all relevant information about the base
  * image.
  *
@@ -154,6 +159,8 @@ oe_result_t verify_eeid(
     uint16_t reported_product_id,
     uint32_t reported_security_version,
     uint64_t reported_attributes,
+    const sgx_attributes_t* reported_sgx_attributes,
+    uint32_t reported_misc_select,
     const uint8_t** base_enclave_hash,
     const oe_eeid_t* eeid,
     const OE_SHA256* config_hash,

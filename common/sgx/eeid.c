@@ -525,6 +525,8 @@ oe_result_t verify_eeid(
     uint16_t reported_product_id,
     uint32_t reported_security_version,
     uint64_t reported_attributes,
+    const sgx_attributes_t* r_sgx_attributes,
+    uint32_t reported_misc_select,
     const uint8_t** base_enclave_hash,
     const oe_eeid_t* eeid,
     const OE_SHA256* config_id,
@@ -576,8 +578,10 @@ oe_result_t verify_eeid(
     // Check other image properties have not changed
     bool base_debug = sigstruct->attributes.flags & SGX_FLAGS_DEBUG;
     bool extended_debug = reported_attributes & OE_REPORT_ATTRIBUTES_DEBUG;
+    bool sgx_debug = r_sgx_attributes->flags & SGX_FLAGS_DEBUG;
 
-    if (base_debug != extended_debug ||
+    if (base_debug != extended_debug || base_debug != sgx_debug ||
+        sigstruct->miscselect != reported_misc_select ||
         sigstruct->isvprodid != reported_product_id ||
         sigstruct->isvsvn != reported_security_version)
         OE_RAISE(OE_VERIFY_FAILED);
