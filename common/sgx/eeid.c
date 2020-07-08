@@ -269,17 +269,18 @@ static oe_result_t _measure_page(
     uint64_t base,
     void* page,
     uint64_t* vaddr,
-    bool t)
+    bool extend,
+    bool readonly)
 {
     oe_result_t result = OE_UNEXPECTED;
 
+    uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
+
+    if (!readonly)
+        flags |= SGX_SECINFO_W;
+
     OE_CHECK(oe_sgx_measure_load_enclave_data(
-        hctx,
-        base,
-        base + *vaddr,
-        (uint64_t)page,
-        SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W,
-        t));
+        hctx, base, base + *vaddr, (uint64_t)page, flags, extend));
     *vaddr += OE_PAGE_SIZE;
     result = OE_OK;
 
@@ -309,14 +310,15 @@ oe_result_t oe_remeasure_memory_pages(
     // page.
 
     for (size_t i = 0; i < eeid->size_settings.num_heap_pages; i++)
-        OE_CHECK(_measure_page(&hctx, base, &blank_pg, &vaddr, false));
+        OE_CHECK(_measure_page(&hctx, base, &blank_pg, &vaddr, false, false));
 
     for (size_t i = 0; i < eeid->size_settings.num_tcs; i++)
     {
         vaddr += OE_PAGE_SIZE; /* guard page */
 
         for (size_t i = 0; i < eeid->size_settings.num_stack_pages; i++)
-            OE_CHECK(_measure_page(&hctx, base, &stack_pg, &vaddr, true));
+            OE_CHECK(
+                _measure_page(&hctx, base, &stack_pg, &vaddr, true, false));
 
         vaddr += OE_PAGE_SIZE; /* guard page */
 
@@ -344,12 +346,12 @@ oe_result_t oe_remeasure_memory_pages(
         vaddr += OE_PAGE_SIZE;
 
         for (size_t i = 0; i < 2; i++)
-            _measure_page(&hctx, base, &blank_pg, &vaddr, true);
+            _measure_page(&hctx, base, &blank_pg, &vaddr, true, false);
 
         vaddr += OE_PAGE_SIZE; /* guard page */
 
         for (size_t i = 0; i < 2; i++)
-            _measure_page(&hctx, base, &blank_pg, &vaddr, true);
+            _measure_page(&hctx, base, &blank_pg, &vaddr, true, false);
     }
 
     if (with_eeid_pages)
@@ -366,7 +368,7 @@ oe_result_t oe_remeasure_memory_pages(
             size_t n = (i != num_pages - 1) ? OE_PAGE_SIZE
                                             : (num_bytes % OE_PAGE_SIZE);
             memcpy(page.data, eeid_bytes + OE_PAGE_SIZE * i, n);
-            OE_CHECK(_measure_page(&hctx, base, page.data, &vaddr, true));
+            OE_CHECK(_measure_page(&hctx, base, page.data, &vaddr, true, true));
         }
     }
 
