@@ -106,7 +106,7 @@ static const char _usage_sign[] =
     "\n";
 
 static const char _usage_digest[] =
-    "Usage: %s -e ENCLAVE_IMAGE [-c CONFIG_FILE] -d DIGEST_FILE\n"
+    "Usage: %s digest -e ENCLAVE_IMAGE [-c CONFIG_FILE] -d DIGEST_FILE\n"
     "\n"
     "Options:\n"
     "  -e, --enclave-image      path of an enclave image file.\n"
