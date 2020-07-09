@@ -208,9 +208,14 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
         if (_once == false)
         {
+            oe_enclave_t* enclave;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
             oe_enclave_with_config_t* enclave_with_config =
                 (oe_enclave_with_config_t*)arg_in;
-            oe_enclave_t* enclave = enclave_with_config->enclave;
+            enclave = enclave_with_config->enclave;
+#else
+            enclave = (oe_enclave_t*)arg_in;
+#endif
 
 #ifdef OE_USE_BUILTIN_EDL
             /* Install the common TEE ECALL function table. */
