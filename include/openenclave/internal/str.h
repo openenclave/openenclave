@@ -13,10 +13,6 @@
 #include <string.h>
 #include "mem.h"
 
-#ifndef _WIN32
-#define _strdup strdup
-#endif
-
 #define STR_NPOS ((size_t)-1)
 
 #define STR_NULL_INIT \
@@ -426,71 +422,6 @@ MEM_INLINE int str_split(str_t* str, const char* delim, str_t* lhs, str_t* rhs)
     if (p != end)
         str_ncpy(rhs, p, (size_t)(end - p));
 
-    return 0;
-}
-
-MEM_INLINE char hex2char(char ch)
-{
-    if (ch >= '0' && ch <= '9')
-        return ch - '0';
-    if (ch >= 'a' && ch <= 'f')
-        return 10 + ch - 'a';
-    if (ch >= 'A' && ch <= 'F')
-        return 10 + ch - 'A';
-    return 0;
-}
-
-MEM_INLINE bool is_hex(char ch)
-{
-    return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') ||
-           (ch >= 'A' && ch <= 'F');
-}
-
-MEM_INLINE unsigned char hexpair2char(char a, char b)
-{
-    return (unsigned char)((hex2char(a) << 4) | hex2char(b));
-}
-
-MEM_INLINE int uuid_from_string(str_t* str, uint8_t* uuid)
-{
-    size_t index = 0;
-    size_t size = 0;
-    char* id_copy;
-    char value = 0;
-    bool firstDigit = true;
-
-    id_copy = _strdup(str_ptr(str));
-    size = strlen(id_copy);
-    if (size != 36)
-        return -1;
-
-    index = 0;
-
-    for (size_t i = 0; i < size; ++i)
-    {
-        if (id_copy[i] == '-')
-            continue;
-
-        if (index >= 16 || !is_hex(id_copy[i]))
-        {
-            return -2;
-        }
-
-        if (firstDigit)
-        {
-            value = id_copy[i];
-            firstDigit = false;
-        }
-        else
-        {
-            uuid[index++] = hexpair2char(value, id_copy[i]);
-            firstDigit = true;
-        }
-    }
-    if (index < 16)
-    {
-        return -3;
-    }
     return 0;
 }
 

@@ -54,7 +54,7 @@ bool is_test_signed()
     return is_test_signed;
 }
 
-oe_result_t is_kss_extendedids_match(
+oe_result_t check_kss_extended_ids(
     oe_uuid_t* family_id,
     oe_uuid_t* ext_product_id)
 {

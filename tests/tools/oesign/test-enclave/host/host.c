@@ -61,8 +61,8 @@ int main(int argc, const char* argv[])
         if (!_is_kss_supported() &&
             properties.config.attributes & SGX_FLAGS_KSS)
         {
-            printf("Skipping Enclave creation with Kss feature
-                if hardware doesn't support .\n");
+            printf("Skipping Enclave creation with Kss feature \
+            if hardware doesn't support .\n");
             return 0;
         }
         oe_put_err("oe_create_crypto_enclave(): result=%u", result);
