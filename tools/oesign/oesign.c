@@ -1,16 +1,17 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
-
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/sgxsign.h>
 #include <openenclave/internal/str.h>
+
 #include <stdio.h>
 #include <sys/stat.h>
 #include "../host/sgx/enclave.h"
 #include "oe_err.h"
 #include "oeinfo.h"
+#include <openenclave/corelibc/string.h>
 
 typedef struct _optional_bool
 {
@@ -50,6 +51,8 @@ typedef struct _config_file_options
     optional_oe_uuid_t isv_family_id;
     optional_oe_uuid_t isv_ext_product_id;
 } config_file_options_t;
+
+int uuid_from_string(str_t* str, uint8_t* uuid, size_t expected_size);
 
 static int _load_config_file(const char* path, config_file_options_t* options)
 {
@@ -284,7 +287,7 @@ static int _load_config_file(const char* path, config_file_options_t* options)
 
             if (str_len(&rhs) > 1)
             {
-                int rc = uuid_from_string(&rhs, id.b);
+                int rc = uuid_from_string(&rhs, id.b, sizeof(id.b));
                 if (rc != 0)
                 {
                     oe_err(
@@ -297,7 +300,7 @@ static int _load_config_file(const char* path, config_file_options_t* options)
                 }
             }
 
-            memcpy(&options->isv_family_id.value, &id, 16);
+            memcpy(&options->isv_family_id.value, &id, sizeof(id));
             options->isv_family_id.has_value = true;
         }
         else if (strcmp(str_ptr(&lhs), "IsvExtProductID") == 0)
@@ -315,7 +318,7 @@ static int _load_config_file(const char* path, config_file_options_t* options)
 
             if (str_len(&rhs) > 1)
             {
-                int rc = uuid_from_string(&rhs, id.b);
+                int rc = uuid_from_string(&rhs, id.b, sizeof(id.b));
                 if (rc != 0)
                 {
                     oe_err(
@@ -328,7 +331,7 @@ static int _load_config_file(const char* path, config_file_options_t* options)
                 }
             }
 
-            memcpy(&options->isv_ext_product_id.value, &id, 16);
+            memcpy(&options->isv_ext_product_id.value, &id, sizeof(id));
             options->isv_ext_product_id.has_value = true;
         }
         else
@@ -482,13 +485,15 @@ void _merge_config_file_options(
     {
         if (options->isv_family_id.has_value)
             memcpy(
-                properties->config.isv_family_id, &options->isv_family_id, 16);
+                properties->config.isv_family_id,
+                &options->isv_family_id.value,
+                sizeof(options->isv_family_id.value));
 
         if (options->isv_ext_product_id.has_value)
             memcpy(
                 properties->config.isv_ext_product_id,
-                &options->isv_ext_product_id,
-                16);
+                &options->isv_ext_product_id.value,
+                 sizeof(options->isv_ext_product_id.value));
     }
 
     /* If NumHeapPages option is present */
@@ -787,4 +792,77 @@ int oedigest(const char* enclave, const char* conffile, const char* digest_file)
 
 done:
     return ret;
+}
+
+char hexchar2int(char ch)
+{
+    if (ch >= '0' && ch <= '9')
+        return ch - '0';
+    if (ch >= 'a' && ch <= 'f')
+        return 10 + ch - 'a';
+    if (ch >= 'A' && ch <= 'F')
+        return 10 + ch - 'A';
+    return 0;
+}
+
+ bool is_hex(char ch)
+{
+    return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') ||
+           (ch >= 'A' && ch <= 'F');
+}
+
+unsigned char hexpair2char(char a, char b)
+{
+    return (unsigned char)((hexchar2int(a) << 4) | hexchar2int(b));
+}
+
+int uuid_from_string(str_t* str, uint8_t* uuid, size_t expected_size)
+{
+    size_t index = 0;
+    size_t size = 0;
+    char* id_copy;
+    char value = 0;
+    bool firstDigit = true;
+
+    id_copy = oe_strdup(str_ptr(str));
+    if (!id_copy)
+        return -1;
+
+    size = strlen(id_copy);
+    if (size != 36)
+    {
+        free(id_copy);
+        return -1;
+    }
+
+    index = 0;
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        if (id_copy[i] == '-')
+            continue;
+
+        if (index >= expected_size || !is_hex(id_copy[i]))
+        {
+            free(id_copy);
+            return -1;
+        }
+
+        if (firstDigit)
+        {
+            value = id_copy[i];
+            firstDigit = false;
+        }
+        else
+        {
+            uuid[index++] = hexpair2char(value, id_copy[i]);
+            firstDigit = true;
+        }
+    }
+    if (index < expected_size)
+    {
+        free(id_copy);
+        return -1;
+    }
+    return 0;
 }

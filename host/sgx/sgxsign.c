@@ -654,13 +654,13 @@ static oe_result_t _init_sigstruct(
                 sigstruct->isvfamilyid,
                 sizeof(sigstruct->isvfamilyid),
                 isv_family_id,
-                sizeof(sigstruct->isvfamilyid)));
+                sizeof(*isv_family_id)));
         if (isv_ext_product_id)
             OE_CHECK(oe_memcpy_s(
                 sigstruct->isvextprodid,
                 sizeof(sigstruct->isvextprodid),
                 isv_ext_product_id,
-                sizeof(sigstruct->isvextprodid)));
+                sizeof(*isv_ext_product_id)));
     }
 
     /* sgx_sigstruct_t.isvprodid */

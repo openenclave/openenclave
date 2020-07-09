@@ -88,7 +88,7 @@ In addition, the following two properties are defined by the developer and map d
   incremented whenever a security fix is made to the enclave code.
 
 Here is the example from helloworld.conf used in the helloworld sample:
-```
+
 # Enclave settings:
 ProductID=1
 SecurityVersion=1
@@ -97,6 +97,15 @@ NumHeapPages=1024
 NumStackPages=1024
 NumTCS=1
 ```
+Additionally, for platform that supports for Key sharing and separation (KSS),
+the following properties can be used:
+ **IsvFamilyID**: ISV assigned product family identity (ISVFAMILYID)
+ **IsvExtProductID**: ISV assigned extended product identity (ISVEXTPRODID)
+ ```
+ The example from kss_valid.conf
+ IsvFamilyID=47183823-2574-4bfd-b411-99ed177d3e43
+ IsvExtProductID=47183823-2574-4bfd-b411-99ed177d3e43
+ ```
 
 As a convenience, you can also specify the enclave properties in code using the
 `OE_SET_ENCLAVE_SGX` macro.  For example, the equivalent properties could be
