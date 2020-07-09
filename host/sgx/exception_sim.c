@@ -28,10 +28,12 @@ static void _oe_aex_sim(sgx_tcs_t* tcs)
         (oe_sgx_td_t*)((unsigned char*)tcs + OE_TD_FROM_TCS_BYTE_OFFSET);
     oe_set_fs_register_base((const void*)(td->host_fsbase));
     oe_set_gs_register_base((const void*)(td->host_gsbase));
+    printf("__LINE__: %d\n",__LINE__);//
 }
 
 static void _oe_eresume_sim(sgx_tcs_t* tcs)
 {
+    printf("__LINE__: %d\n",__LINE__);//
     // Update cssa as ERESUME does in real mode.
     tcs->cssa--;
 
@@ -46,6 +48,7 @@ static void _oe_eresume_sim(sgx_tcs_t* tcs)
 
 static sgx_ssa_gpr_t* _get_ssa_gpr(sgx_tcs_t* tcs)
 {
+    printf("__LINE__: %d\n",__LINE__);//
     uint32_t cssa = tcs->cssa;
     oe_sgx_td_t* td =
         (oe_sgx_td_t*)((unsigned char*)tcs + OE_TD_FROM_TCS_BYTE_OFFSET);
@@ -65,6 +68,7 @@ static sgx_ssa_gpr_t* _get_ssa_gpr(sgx_tcs_t* tcs)
 
 static void _update_ssa_from_context(ucontext_t* context, sgx_tcs_t* tcs)
 {
+    printf("__LINE__: %d\n",__LINE__);//
     sgx_ssa_gpr_t* ssa_gpr = _get_ssa_gpr(tcs);
 
     // Update gpr.
@@ -93,6 +97,7 @@ static void _update_ssa_from_context(ucontext_t* context, sgx_tcs_t* tcs)
 
 static void _update_sgx_vector(int sig_num, sgx_tcs_t* tcs)
 {
+    printf("__LINE__: %d\n",__LINE__);//
     // Hardcode here must match g_vector_to_exception_code_mapping[] in
     // enclave/core/sgx/exception.c
     uint32_t sgx_vector = OE_EXCEPTION_UNKNOWN;
@@ -122,6 +127,7 @@ static void _update_sgx_vector(int sig_num, sgx_tcs_t* tcs)
 
 static void _update_context_from_ssa(ucontext_t* context, sgx_tcs_t* tcs)
 {
+    printf("__LINE__: %d\n",__LINE__);//
     sgx_ssa_gpr_t* ssa_gpr = _get_ssa_gpr(tcs);
 
     context->uc_mcontext.gregs[REG_RAX] = (greg_t)ssa_gpr->rax;
