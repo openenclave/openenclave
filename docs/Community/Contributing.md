@@ -191,6 +191,8 @@ After a bors run, there is a known issue where Jenkins builds don't have links
 to the build logs for each pipeline. Please see #2878 for a workaround for
 this issue.
 
+After a successful bors run, the code coverage report is available to developers. See [Code Coverage](../GettingStartedDocs/Contributors/CodeCoverage.md##code-coverage-reports-for-prs) for more details.
+
 Note: If reviewers on a PR make suggestions which you accept using the "Commit
 Suggestion" button on Github, you would need to pull those changes and sign them
 off as required by [DCO](#developer-certificate-of-origin). If instead, you
