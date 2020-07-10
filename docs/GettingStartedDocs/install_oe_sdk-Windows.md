@@ -7,6 +7,8 @@ Note: To check if your system has support for SGX1 with or without FLC, please l
 
 - Windows Server 2016 or 2019
 
+Open Enclave SDK can also be installed for Simulation Mode on machines without SGX support.
+
 ## Software Prerequisites
 
 ### Microsoft Visual Studio Build Tools 2019
@@ -59,6 +61,8 @@ C:\Program Files\LLVM\bin\ld.lld.exe
 ### SGX1 with Flexible Launch Control (FLC) Prerequisites
 
 Instructions to install Intel's PSW, Intel's Data Center Attestation Primitives, and related dependencies can be found [here](Contributors/WindowsManualSGX1FLCDCAPPrereqs.md).
+
+These prerequisites can be skipped if installing for Simulation Mode.
 
 ## Download and install the Open Enclave SDK NuGet Package
 
