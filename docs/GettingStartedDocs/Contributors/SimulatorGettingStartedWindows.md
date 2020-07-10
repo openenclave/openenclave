@@ -1,4 +1,4 @@
-# Getting Started with Open Enclave in Simulation mode on Windows Machines Without SGX Support.
+# Getting Started with Open Enclave in Simulation Mode on Windows Machines Without SGX Support
 
 ## Platform requirement
 
