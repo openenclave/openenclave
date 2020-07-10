@@ -56,7 +56,7 @@ following from PowerShell:
 
 Launch the [x64 Native Tools Command Prompt for VS(2017 or 2019)](
 https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs),
-which is found in the `Visual Studio 2017` folder in the Start Menu.
+which is found in the `Visual Studio 2017` (or 2019) folder in the Start Menu.
 
 Run the command `powershell.exe` to open a PowerShell prompt within the native
 tools environment.
