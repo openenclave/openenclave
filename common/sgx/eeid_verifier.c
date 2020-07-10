@@ -24,6 +24,7 @@
 #include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/trace.h>
 
+#include "../attest_plugin.h"
 #include "../common.h"
 #include "quote.h"
 
@@ -215,9 +216,12 @@ static oe_result_t _verify_sgx_report(
 
     /* Extract SGX claims */
     oe_sgx_extract_claims(
+        SGX_FORMAT_TYPE_REMOTE,
         &context->base.format_id,
-        sgx_evidence_buffer,
-        sgx_evidence_buffer_size,
+        header->report,
+        header->report_size,
+        header->report + header->report_size,
+        sgx_claims_size,
         &sgx_endorsements,
         sgx_claims,
         sgx_claims_length);
@@ -248,8 +252,8 @@ static oe_result_t _eeid_verify_evidence(
     oe_eeid_t *attester_eeid = NULL, *verifier_eeid = NULL;
     oe_eeid_evidence_t* evidence = NULL;
 
-    if (!evidence_buffer || evidence_buffer_size == 0 ||
-        (endorsements_buffer && endorsements_buffer_size == 0))
+    if ((!endorsements_buffer && endorsements_buffer_size) ||
+        (endorsements_buffer && !endorsements_buffer_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     evidence = oe_malloc(evidence_buffer_size);

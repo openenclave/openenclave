@@ -3,6 +3,7 @@
 #if defined(OE_LINK_SGX_DCAP_QL)
 
 #include "sgxquote.h"
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgx/plugin.h>

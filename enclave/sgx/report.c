@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "report.h"
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/corelibc/stdlib.h>

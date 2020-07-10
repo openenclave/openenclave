@@ -28,7 +28,15 @@ void host_ocall_verify(
     size_t claims_length = 0;
     OE_TEST_CODE(
         oe_verify_evidence(
-            evidence, evidence_size, NULL, 0, NULL, 0, &claims, &claims_length),
+            NULL,
+            evidence,
+            evidence_size,
+            NULL,
+            0,
+            NULL,
+            0,
+            &claims,
+            &claims_length),
         OE_OK);
 
     claims = NULL;
@@ -37,6 +45,7 @@ void host_ocall_verify(
     // With endorsements
     OE_TEST_CODE(
         oe_verify_evidence(
+            NULL,
             evidence,
             evidence_size,
             endorsements,
@@ -72,11 +81,11 @@ void host_remote_verify(oe_enclave_t* enclave)
             endorsements_size,
             &endorsements_out_size),
         OE_OK);
-    OE_TEST(result == OE_OK);
 
     // Without endorsements
     OE_TEST_CODE(
         oe_verify_evidence(
+            NULL,
             evidence,
             evidence_out_size,
             NULL,
@@ -90,6 +99,7 @@ void host_remote_verify(oe_enclave_t* enclave)
     // With endorsements
     OE_TEST_CODE(
         oe_verify_evidence(
+            NULL,
             evidence,
             evidence_out_size,
             endorsements,
@@ -186,6 +196,7 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
 
     OE_TEST(
         oe_verify_evidence(
+            NULL,
             stuff->evidence,
             stuff->evidence_out_size,
             NULL,
@@ -197,6 +208,7 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
 
     OE_TEST(
         oe_verify_evidence(
+            NULL,
             stuff->evidence,
             stuff->evidence_out_size,
             stuff->endorsements,
@@ -238,6 +250,7 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
     // Faulty endorsements must fail
     OE_TEST(
         oe_verify_evidence(
+            NULL,
             A.evidence,
             A.evidence_out_size,
             B.endorsements,
