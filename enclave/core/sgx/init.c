@@ -53,7 +53,11 @@ static void _find_eeid()
         oe_abort();
     /* Without EEID, eeid_page page is all zero. */
     if (eeid_page->eeid.version != 0)
+    {
+        if (eeid_page->eeid.version != OE_EEID_VERSION)
+            oe_abort();
         oe_eeid = &eeid_page->eeid;
+    }
 }
 #endif
 

@@ -140,33 +140,32 @@ extern bool oe_disable_debug_malloc_check;
 extern oe_eeid_t* oe_eeid;
 extern const oe_enclave_config_t* oe_enclave_config;
 
-static oe_result_t _load_config(const oe_enclave_config_t* config)
+static oe_result_t _load_config(const oe_enclave_config_t* config_from_host)
 {
-    if (config && config->data && config->size)
-    {
-        if (oe_is_within_enclave(config->data, config->size) ||
-            oe_eeid->version != OE_EEID_VERSION)
-            return OE_INVALID_PARAMETER;
-
-        /* Copy config into enclave heap */
-        oe_enclave_config_t* copy = oe_malloc(sizeof(oe_enclave_config_t));
-        if (!copy)
-            return OE_OUT_OF_MEMORY;
-        copy->size = config->size;
-        copy->data = oe_malloc(config->size);
-        if (!copy->data)
-            return OE_OUT_OF_MEMORY;
-        memcpy(copy->data, config->data, config->size);
-
-        if (!oe_is_within_enclave(copy->data, copy->size))
-            return OE_INVALID_PARAMETER;
-
-        oe_enclave_config = copy;
+    if (!oe_eeid)
         return OE_OK;
-    }
-    else
-        /* If we have an oe_eeid_t, we expect a config. */
-        return oe_eeid ? OE_INVALID_PARAMETER : OE_OK;
+
+    /* With EEID, we expect a config */
+    if (!config_from_host)
+        return OE_INVALID_PARAMETER;
+
+    oe_enclave_config_t config = *config_from_host;
+
+    if (!config.data || !config.size)
+        return OE_INVALID_PARAMETER;
+
+    /* Copy config into enclave heap */
+    oe_enclave_config_t* copy = oe_malloc(sizeof(oe_enclave_config_t));
+    if (!copy)
+        return OE_OUT_OF_MEMORY;
+    copy->size = config.size;
+    copy->data = oe_malloc(config.size);
+    if (!copy->data)
+        return OE_OUT_OF_MEMORY;
+    memcpy(copy->data, config.data, config.size);
+
+    oe_enclave_config = copy;
+    return OE_OK;
 }
 
 static oe_result_t _free_config()
