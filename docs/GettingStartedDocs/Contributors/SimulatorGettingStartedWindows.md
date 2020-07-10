@@ -144,5 +144,5 @@ The `ninja install` command will install the SDK in `C:/openenclave`
 
 ## Build and run samples
 
-To build and run the samples, please look [here](/samples/README_Windows.md).
+To build and run the samples, see the [Windows samples README file](/samples/README_Windows.md).
 Use `ninja simulate` instead of `ninja run` to execute the samples in simulation mode.
