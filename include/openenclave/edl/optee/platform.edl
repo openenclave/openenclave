@@ -14,7 +14,6 @@
 
 enclave
 {
-    // Because OP-TEE enclaves are not linked with --gc-sections, they all
-    // depend on oe_host_realloc which is built into liboecore.
-    from "openenclave/edl/memory.edl" import *;
+    // OPTEE no longer has a hard requirement on memory.edl.
+    // This platform.edl can be removed in next release.
 };

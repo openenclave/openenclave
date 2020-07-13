@@ -83,6 +83,16 @@ void* oe_host_calloc(size_t nmemb, size_t size)
     return ptr;
 }
 
+oe_result_t _oe_realloc_ocall(void** retval, void* ptr, size_t size)
+{
+    OE_UNUSED(retval);
+    OE_UNUSED(ptr);
+    OE_UNUSED(size);
+    return OE_UNEXPECTED;
+}
+
+OE_WEAK_ALIAS(_oe_realloc_ocall, oe_realloc_ocall);
+
 void* oe_host_realloc(void* ptr, size_t size)
 {
     void* retval = NULL;
