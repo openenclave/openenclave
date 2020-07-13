@@ -21,8 +21,7 @@ void* ThreadAllocUntyped::get()
 
 #define OPEN_ENCLAVE
 #define SNMALLOC_SGX
-#define USE_RESERVE_MULTIPLE 1
-#define IS_ADDRESS_SPACE_CONSTRAINED
+#define SNMALLOC_USE_SMALL_CHUNKS
 #define SNMALLOC_EXTERNAL_THREAD_ALLOC
 #define SNMALLOC_NAME_MANGLE(a) oe_allocator_##a
 
