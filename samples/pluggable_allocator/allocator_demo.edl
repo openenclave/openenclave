@@ -1,0 +1,14 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
+    trusted {
+        public void enclave_thread(
+	    uint64_t num_allocations,      // Number of allocations to perform
+	    uint64_t max_allocation_size); // Maximum size of each allocated object
+    };
+
+};

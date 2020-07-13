@@ -1,7 +1,8 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# This script requires the variables SOURCE_DIR, BUILD_DIR, and
+# This script requires the variables SOURCE_DIR, BUILD_DIR,
+# COMPILER_SUPPORTS_SNMALLOC, USE_DEBUG_MALLOC and
 # PREFIX_DIR to be defined:
 #
 #     cmake -DHAS_QUOTE_PROVIDER=ON -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
@@ -9,6 +10,11 @@
 # Set SAMPLES_LIST so that helloworld becomes the first if BUILD_ENCLAVES=ON.
 if (BUILD_ENCLAVES)
   set(SAMPLES_LIST helloworld file-encryptor switchless host_verify)
+  # Debug malloc will set allocated memory to a fixed pattern.
+  # Hence do not enable pluggable_allocator test under USE_DEBUG_MALLOC.
+  if (COMPILER_SUPPORTS_SNMALLOC AND NOT USE_DEBUG_MALLOC)
+    list(APPEND SAMPLES_LIST pluggable_allocator)
+  endif ()
 else ()
   set(SAMPLES_LIST host_verify)
 endif ()
