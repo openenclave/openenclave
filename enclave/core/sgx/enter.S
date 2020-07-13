@@ -133,18 +133,6 @@ oe_enter:
     mov %rsp, %rbp
 
 .call_function:
-    // Set the MXCSR according to the Linux x86_64 ABI
-    mov $ABI_MXCSR_INIT, %r10
-    push %r10
-    ldmxcsr (%rsp)
-    pop %r10
-
-    // Set the FPU Control Word according to the Linux x86_64 ABI
-    mov $ABI_FPUCW_INIT, %r10
-    push %r10
-    fldcw (%rsp)
-    pop %r10
-
     // Initialize the RFLAGS prior to calling enclave functions
     // This only clears the DF and state flag bits since
     // the system flags and reserved bits are not writable here
@@ -188,6 +176,9 @@ oe_enter:
 
     // Save reference to the td structure to enclave stack.
     mov %r11, OM_ENC_TD
+
+    // Clear the XSTATE so that enclave has clean legacy SSE and extended states
+    oe_cleanup_xstates
 
     // Call __oe_handle_main(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX, OUTPUTARG1=R8, OUTPUTARG2=R9)
     mov %rax, %rdx

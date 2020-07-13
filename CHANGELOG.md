@@ -63,6 +63,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed oehostapp and the appendent "-rdynamic" compiling option. Please use oehost instead and add the option back manually if necessary.
 - Removed dependencies on nodejs and esy, which were previously used to build Ocaml compiler and oeedger8r.
 
+### Security
+- Fix [ABI poisoning vulnerability for x87 FPU operations in enclaves](
+https://github.com/openenclave/openenclave/security/advisories/GHSA-7wjx-wcwg-w999).
+
 [0.9.0][v0.9.0_log]
 ------------
 

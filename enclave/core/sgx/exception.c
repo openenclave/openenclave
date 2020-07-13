@@ -3,18 +3,10 @@
 
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/calls.h>
-#include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/context.h>
 #include <openenclave/internal/cpuid.h>
-#include <openenclave/internal/fault.h>
-#include <openenclave/internal/globals.h>
-#include <openenclave/internal/jump.h>
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/internal/trace.h>
-#include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
 #include "td.h"
@@ -384,40 +376,5 @@ void oe_virtual_exception_dispatcher(
     // Acknowledge this exception is an enclave exception, host should let keep
     // running, and let enclave handle the exception.
     *arg_out = OE_EXCEPTION_CONTINUE_EXECUTION;
-    return;
-}
-
-/*
-**==============================================================================
-**
-** void oe_cleanup_xstates(void)
-**
-**  Cleanup all XSTATE registers that include both legacy registers and extended
-**  registers.
-**
-**==============================================================================
-*/
-
-void oe_cleanup_xstates(void)
-{
-    // Temporary workaround for #144 xrstor64 fault with optimized builds as
-    // reserved guard pages
-    // are incorrectly accessed. Xsave area is increased from 0x240 to 0x1000.
-    // Making these static
-    OE_ALIGNED(XSAVE_ALIGNMENT)
-    static uint8_t
-        xsave_area[MINIMAL_XSTATE_AREA_LENGTH]; //#144 Making this static
-//__builtin_ia32_xrstor64 has different argument types in clang and gcc
-#ifdef __clang__
-    uint64_t restore_mask = ~((uint64_t)0x0);
-#else
-    int64_t restore_mask = ~(0x0);
-#endif
-
-    // The legacy registers(F87, SSE) values will be loaded from the
-    // LEGACY_XSAVE_AREA that at beginning of xsave_area.The extended registers
-    // will be initialized to their default values.
-    __builtin_ia32_xrstor64(xsave_area, restore_mask);
-
     return;
 }

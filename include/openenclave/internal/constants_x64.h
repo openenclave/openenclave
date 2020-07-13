@@ -60,9 +60,7 @@
 #define XSAVE_ALIGNMENT 0x40
 #define LEGACY_XSAVE_AREA 0X200
 #define XSAVE_HEADER_LENGTH 0X40
-//#define MINIMAL_XSTATE_AREA_LENGTH  (LEGACY_XSAVE_AREA + XSAVE_HEADER_LENGTH)
-// Workaround for #144 xrstor64 fault - Increasing from 0x240 to 0x1000
-#define MINIMAL_XSTATE_AREA_LENGTH 0x1000
+#define MINIMAL_XSTATE_AREA_LENGTH (LEGACY_XSAVE_AREA + XSAVE_HEADER_LENGTH)
 
 //
 //  AMD64 ABI related constants.
@@ -70,11 +68,5 @@
 
 //  AMD64 ABI needs a 128 bytes red zone.
 #define ABI_REDZONE_BYTE_SIZE 0x80
-
-// MXCSR initialization value for Linux x86_64 ABI in enclave
-#define ABI_MXCSR_INIT 0x1F80
-
-// x87 FPU control word initialization value for Linux x86_64 ABI in enclave
-#define ABI_FPUCW_INIT 0x037F
 
 #endif /* _OE_INTERNAL_CONSTANTS_X64_H */

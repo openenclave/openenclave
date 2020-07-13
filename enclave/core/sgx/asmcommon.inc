@@ -6,31 +6,56 @@
 
 //==============================================================================
 //
-// This macro is used to cleanup the enclave Registers. Following registers will be scrubbed:
-// 1. General Purpose registers excluding RAX, RBX, RCX, RDI, RSI, RBP, and RSP
-//     RAX and RBX are input registers of EEXIT.
-//     RCX is output register of EEXIT.
-//     RDI and RSI is output parameters defined by SDK.
-//     RBP and RSP will be set to host rbp and rsp right before EEXIT is executed.
+// This macro is used to reset all XSAVE supported state components to a
+// clean initial state. This includes:
 //
-// 2. Legacy SSE.
-// 3. Extended XState components.
+//  - The legacy SSE state:
+//    - Initializes the FPU control word to ABI-specified value 0x037F
+//    - Initializes MXCSR to ABI-specified value 0x1F80 and MXCSR_MASK to 0xFFFF
+//    - Clears FPU Status, Tag, OpCode, and FIP words
+//    - Clears all FDP bits
+//    - Clears all MMX/FPU registers
+//    - Clears all XMM registers
+//
+//  - The extended XSAVE state components:
+//    - Clears all XSTATE_BV bits
+//    - Sets XCOMP_BV bit-63 to support compaction mode
+//    - Clears all other XCOMP_BV bits
+//
+//==============================================================================
+.macro oe_cleanup_xstates
+    // Preserve registers being used
+    push %rax
+    push %rdx
+
+    // Set the XSAVE_MASK
+    mov $0xFFFFFFFF, %eax
+    mov $0xFFFFFFFF, %edx
+
+    // Restore initial enclave XSAVE state
+    xrstor64 OE_XSAVE_INITIAL_STATE(%rip)
+
+    // Restore the registers
+    pop %rdx
+    pop %rax
+.endm
+
+//==============================================================================
+//
+// This macro is used to clean up the enclave registers in addition to the
+// extended states (see oe_cleanup_xstates).
+//
+// It scrubs all general purpose registers excluding:
+//  - RAX and RBX, which are used as input registers of EEXIT.
+//  - RCX, which is used as the output register of EEXIT.
+//  - RDI and RSI, which are used as output parameters defined by SDK.
+//  - RBP and RSP, which will be set to host values of RBP & RSP right before
+//      EEXIT is executed.
+//
 //==============================================================================
 .macro oe_cleanup_registers
     // Scrub both Legacy SSE and extended XSTATEs.
-    // Save the rax, rcx, rdi and rsi.
-    mov %rax, %r12
-    mov %rcx, %r13
-    mov %rdi, %r14
-    mov %rsi, %r15
-
-    call oe_cleanup_xstates
-
-    // Restore the rax, rcx, rdi and rsi.
-    mov %r12, %rax
-    mov %r13, %rcx
-    mov %r14, %rdi
-    mov %r15, %rsi
+    oe_cleanup_xstates
 
     // Zero out GPRs.
     // Retain r11 since it is used as a reference to the td structure.
