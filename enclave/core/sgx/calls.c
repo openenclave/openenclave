@@ -153,7 +153,7 @@ static oe_result_t _load_config(const oe_enclave_config_t* config_from_host)
     oe_enclave_config_t config = *config_from_host;
 
     if (!config.data || !config.size)
-        return OE_INVALID_PARAMETER;
+        return OE_OK; /* no or zero-size configs are ok */
 
     /* Copy config into enclave heap */
     oe_enclave_config_t* copy = oe_malloc(sizeof(oe_enclave_config_t));
