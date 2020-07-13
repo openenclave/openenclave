@@ -10,7 +10,6 @@
 #include <openenclave/internal/utils.h>
 #include "../calls.h"
 #include "../hostthread.h"
-#include "../ocalls.h"
 #include "enclave.h"
 #include "platform_u.h"
 

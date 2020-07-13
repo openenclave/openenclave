@@ -228,7 +228,9 @@ if (OE_SGX)
     sgx/exception.c
     sgx/load.c
     sgx/loadelf.c
-    sgx/ocalls.c
+    sgx/ocalls/debug.c
+    sgx/ocalls/ocalls.c
+    sgx/ocalls/thread.c
     sgx/quote.c
     sgx/registers.c
     sgx/report.c
@@ -320,7 +322,10 @@ list(
   ../common/argv.c
   asym_keys.c
   calls.c
-  ocalls.c
+  ocalls/log.c
+  ocalls/ocalls.c
+  ocalls/memory.c
+  ocalls/write.c
   error.c
   files.c
   fopen.c
