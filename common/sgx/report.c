@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include "report.h"
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/raise.h>
@@ -9,7 +10,7 @@
 #include <openenclave/internal/utils.h>
 #include "../common.h"
 
-static oe_result_t _parse_sgx_report_body(
+oe_result_t oe_parse_sgx_report_body(
     const sgx_report_body_t* report_body,
     bool remote,
     oe_report_t* parsed_report)
@@ -96,13 +97,13 @@ oe_result_t oe_parse_report(
     {
         sgx_report = (const sgx_report_t*)header->report;
         OE_CHECK(
-            _parse_sgx_report_body(&sgx_report->body, false, parsed_report));
+            oe_parse_sgx_report_body(&sgx_report->body, false, parsed_report));
         result = OE_OK;
     }
     else if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
         sgx_quote = (const sgx_quote_t*)header->report;
-        OE_CHECK(_parse_sgx_report_body(
+        OE_CHECK(oe_parse_sgx_report_body(
             &sgx_quote->report_body, true, parsed_report));
         result = OE_OK;
     }

@@ -180,6 +180,7 @@ static bool _check_claims(const oe_claim_t* claims, size_t claims_length)
 }
 
 oe_result_t oe_verify_evidence(
+    const oe_uuid_t* format_id,
     const uint8_t* evidence_buffer,
     size_t evidence_buffer_size,
     const uint8_t* endorsements_buffer,
@@ -192,33 +193,67 @@ oe_result_t oe_verify_evidence(
     oe_result_t result = OE_UNEXPECTED;
     oe_plugin_list_node_t* plugin_node;
     oe_verifier_t* verifier;
-    oe_attestation_header_t* evidence =
-        (oe_attestation_header_t*)evidence_buffer;
-    oe_attestation_header_t* endorsements =
-        (oe_attestation_header_t*)endorsements_buffer;
+    const uint8_t* plugin_evidence = NULL;
+    size_t plugin_evidence_size = 0;
+    const uint8_t* plugin_endorsements = NULL;
+    size_t plugin_endorsements_size = 0;
 
-    if (!evidence_buffer || evidence_buffer_size < sizeof(*evidence) ||
-        (endorsements_buffer &&
-         endorsements_buffer_size < sizeof(*endorsements)))
+    if (!evidence_buffer || !evidence_buffer_size ||
+        (!endorsements_buffer && endorsements_buffer_size) ||
+        (endorsements_buffer && !endorsements_buffer_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    plugin_node = oe_attest_find_plugin(verifiers, &evidence->format_id, NULL);
+    if (!format_id)
+    {
+        oe_attestation_header_t* evidence =
+            (oe_attestation_header_t*)evidence_buffer;
+
+        if (evidence_buffer_size < sizeof(oe_attestation_header_t) ||
+            evidence->version != OE_ATTESTATION_HEADER_VERSION)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        if (endorsements_buffer)
+        {
+            oe_attestation_header_t* endorsements =
+                (oe_attestation_header_t*)endorsements_buffer;
+
+            if (endorsements_buffer_size < sizeof(oe_attestation_header_t) ||
+                endorsements->version != OE_ATTESTATION_HEADER_VERSION)
+                OE_RAISE(OE_INVALID_PARAMETER);
+
+            if (memcmp(
+                    &evidence->format_id,
+                    &endorsements->format_id,
+                    sizeof(evidence->format_id)) != 0)
+                OE_RAISE(OE_CONSTRAINT_FAILED);
+
+            plugin_endorsements = endorsements->data;
+            plugin_endorsements_size = endorsements->data_size;
+        }
+
+        plugin_evidence = evidence->data;
+        plugin_evidence_size = evidence->data_size;
+        format_id = &evidence->format_id;
+    }
+    else
+    {
+        plugin_evidence = evidence_buffer;
+        plugin_evidence_size = evidence_buffer_size;
+        plugin_endorsements = endorsements_buffer;
+        plugin_endorsements_size = endorsements_buffer_size;
+    }
+
+    plugin_node = oe_attest_find_plugin(verifiers, format_id, NULL);
     if (plugin_node == NULL)
         OE_RAISE(OE_NOT_FOUND);
-
-    if (endorsements && memcmp(
-                            &evidence->format_id,
-                            &endorsements->format_id,
-                            sizeof(evidence->format_id)) != 0)
-        OE_RAISE(OE_CONSTRAINT_FAILED);
 
     verifier = (oe_verifier_t*)plugin_node->plugin;
     OE_CHECK(verifier->verify_evidence(
         verifier,
-        evidence->data,
-        evidence->data_size,
-        endorsements ? endorsements->data : NULL,
-        endorsements ? endorsements->data_size : 0,
+        plugin_evidence,
+        plugin_evidence_size,
+        plugin_endorsements,
+        plugin_endorsements_size,
         policies,
         policies_size,
         claims,

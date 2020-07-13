@@ -94,8 +94,9 @@ struct _oe_attester
      * @experimental
      *
      * @param[in] context A pointer to the attester plugin struct.
-     * @param[in] custom_claims The optional custom claims list.
-     * @param[in] custom_claims_length The number of custom claims.
+     * @param[in] custom_claims The optional custom claims buffer.
+     * @param[in] custom_claims_size The number of bytes in the custom claims
+     * buffer.
      * @param[in] opt_params The optional plugin-specific input parameters.
      * @param[in] opt_params_size The size of opt_params in bytes.
      * @param[out] evidence_buffer An output pointer that will be assigned the
@@ -111,8 +112,8 @@ struct _oe_attester
      */
     oe_result_t (*get_evidence)(
         oe_attester_t* context,
-        const oe_claim_t* custom_claims,
-        size_t custom_claims_length,
+        const void* custom_claims,
+        size_t custom_claims_size,
         const void* opt_params,
         size_t opt_params_size,
         uint8_t** evidence_buffer,
@@ -121,8 +122,8 @@ struct _oe_attester
         size_t* endorsements_buffer_size);
 
     /**
-     * Creates a legacy SGX report to be used in local or remote attestation.
-     * The report shall contain the data given by the **report_data** parameter.
+     * Creates a legacy OE report to be used in SGX local or remote attestation.
+     * The report shall contain the data given by the report_data parameter.
      * This entry point is for the OE SDK framework to implement legacy API
      * oe_get_report_v2().
      *

@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/host.h>
 #include <openenclave/host_verify.h>
 #include <openenclave/internal/calls.h>

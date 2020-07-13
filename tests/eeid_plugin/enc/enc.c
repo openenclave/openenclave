@@ -64,6 +64,7 @@ static void _test_evidence_success(const oe_uuid_t* format_id)
 
     oe_result_t r = oe_get_evidence(
         format_id,
+        OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID,
         claims,
         claims_length,
         NULL,
@@ -75,13 +76,14 @@ static void _test_evidence_success(const oe_uuid_t* format_id)
 
 #ifndef _OE_ENCLAVE_H
     OE_UNUSED(_check_claims);
-    OE_TEST(r == OE_UNSUPPORTED);
+    OE_TEST_CODE(r, OE_UNSUPPORTED);
 #else
-    OE_TEST(r == OE_OK);
+    OE_TEST_CODE(r, OE_OK);
 
     // Verify evidence without endorsements.
     OE_TEST(
         oe_verify_evidence(
+            NULL,
             evidence,
             evidence_size,
             NULL,
@@ -96,6 +98,7 @@ static void _test_evidence_success(const oe_uuid_t* format_id)
     // Verify with endorsements.
     OE_TEST(
         oe_verify_evidence(
+            NULL,
             evidence,
             evidence_size,
             endorsements,
@@ -128,6 +131,7 @@ static void _test_get_evidence_fail()
     OE_TEST_CODE(
         oe_get_evidence(
             &_eeid_uuid,
+            OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID,
             NULL,
             0,
             NULL,
@@ -155,6 +159,7 @@ static void _test_verify_evidence_fail()
     OE_TEST_CODE(
         oe_get_evidence(
             &_eeid_uuid,
+            OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID,
             NULL,
             0,
             NULL,
@@ -168,6 +173,7 @@ static void _test_verify_evidence_fail()
     // Test verify_evidence with wrong sizes
     OE_TEST_CODE(
         oe_verify_evidence(
+            NULL,
             evidence,
             0,
             endorsements,
@@ -180,6 +186,7 @@ static void _test_verify_evidence_fail()
 
     OE_TEST_CODE(
         oe_verify_evidence(
+            NULL,
             evidence,
             evidence_size,
             endorsements,
@@ -194,6 +201,7 @@ static void _test_verify_evidence_fail()
     OE_TEST_CODE(oe_sgx_eeid_verifier_shutdown(), OE_OK);
     OE_TEST_CODE(
         oe_verify_evidence(
+            NULL,
             evidence,
             evidence_size,
             endorsements,
@@ -247,6 +255,7 @@ oe_result_t get_eeid_evidence(
     OE_TEST_CODE(
         oe_get_evidence(
             &_eeid_uuid,
+            OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID,
             NULL,
             0,
             NULL,

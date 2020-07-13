@@ -13,12 +13,6 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 
-/**
- * Flags passed to oe_get_evidence() function.
- */
-#define OE_EVIDENCE_FLAGS_LOCAL_ATTESTATION 0x00000000
-#define OE_EVIDENCE_FLAGS_REMOTE_ATTESTATION 0x00000001
-
 /*! Limit the size of the endorsements */
 #define OE_ATTESTATION_ENDORSEMENT_MAX_SIZE (20 * 1024)
 

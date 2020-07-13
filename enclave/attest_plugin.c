@@ -69,8 +69,9 @@ done:
 
 oe_result_t oe_get_evidence(
     const oe_uuid_t* format_id,
-    const oe_claim_t* custom_claims,
-    size_t custom_claims_length,
+    uint32_t flags,
+    const void* custom_claims,
+    size_t custom_claims_size,
     const void* optional_parameters,
     size_t optional_parameters_size,
     uint8_t** evidence_buffer,
@@ -89,6 +90,7 @@ oe_result_t oe_get_evidence(
     size_t total_evidence_size = 0;
     uint8_t* total_endorsements_buf = NULL;
     size_t total_endorsements_size = 0;
+    bool wrap_with_header = (flags & OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID);
 
     if (!format_id || !evidence_buffer || !evidence_buffer_size ||
         (endorsements_buffer && !endorsements_buffer_size) ||
@@ -105,7 +107,7 @@ oe_result_t oe_get_evidence(
     OE_CHECK(plugin->get_evidence(
         plugin,
         custom_claims,
-        custom_claims_length,
+        custom_claims_size,
         optional_parameters,
         optional_parameters_size,
         &plugin_evidence,
@@ -113,22 +115,38 @@ oe_result_t oe_get_evidence(
         endorsements_buffer ? &plugin_endorsements : NULL,
         endorsements_buffer ? &plugin_endorsements_size : NULL));
 
-    // Wrap the attestation header around the evidence.
-    OE_CHECK(_wrap_with_header(
-        format_id,
-        plugin_evidence,
-        plugin_evidence_size,
-        &total_evidence_buf,
-        &total_evidence_size));
-
-    if (endorsements_buffer)
+    // When requested, wrap the attestation header around the evidence.
+    if (wrap_with_header)
     {
         OE_CHECK(_wrap_with_header(
             format_id,
-            plugin_endorsements,
-            plugin_endorsements_size,
-            &total_endorsements_buf,
-            &total_endorsements_size));
+            plugin_evidence,
+            plugin_evidence_size,
+            &total_evidence_buf,
+            &total_evidence_size));
+
+        if (endorsements_buffer)
+        {
+            OE_CHECK(_wrap_with_header(
+                format_id,
+                plugin_endorsements,
+                plugin_endorsements_size,
+                &total_endorsements_buf,
+                &total_endorsements_size));
+        }
+    }
+    else // !wrap_with_header
+    {
+        total_evidence_buf = plugin_evidence;
+        total_evidence_size = plugin_evidence_size;
+        plugin_evidence = NULL;
+
+        if (endorsements_buffer)
+        {
+            total_endorsements_buf = plugin_endorsements;
+            total_endorsements_size = plugin_endorsements_size;
+            plugin_endorsements = NULL;
+        }
     }
 
     // Finally, set the out parameters.

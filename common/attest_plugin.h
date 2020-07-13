@@ -1,6 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#ifndef _OE_COMMON_ATTEST_PLUGIN_H
+#define _OE_COMMON_ATTEST_PLUGIN_H
+
 #include <openenclave/bits/defs.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/print.h>
@@ -15,9 +18,12 @@
 
 #include <openenclave/internal/plugin.h>
 
+OE_EXTERNC_BEGIN
+
 /**
  * Evidence header: the structure that the OE SDK runtime puts on top of
- * evidence data.
+ * evidence data, when oe_get_evidence() is asked to include the format ID
+ * with the evidence.
  */
 typedef struct _oe_attestation_header
 {
@@ -88,3 +94,7 @@ oe_result_t oe_attest_register_plugin(
 oe_result_t oe_attest_unregister_plugin(
     oe_plugin_list_node_t** list,
     oe_attestation_role_t* plugin);
+
+OE_EXTERNC_END
+
+#endif /* _OE_COMMON_ATTEST_PLUGIN_H */
