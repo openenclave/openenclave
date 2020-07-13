@@ -71,6 +71,7 @@ if (UNIX
       add_subdirectory(tls_e2e)
     endif ()
 
+    add_subdirectory(abi)
     add_subdirectory(abortStatus)
     add_subdirectory(argv)
     add_subdirectory(atexit)
