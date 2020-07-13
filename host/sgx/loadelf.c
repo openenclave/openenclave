@@ -692,11 +692,17 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
     OE_CHECK(
         _set_uint64_t_symbol_value(image, "_reloc_size", image->reloc_size));
 
-    size_t eeid_size = OE_PAGE_SIZE;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    /* exactly one guard or EEID page */
+    uint64_t eeid_rva = image->image_size + image->reloc_size;
+    OE_CHECK(_set_uint64_t_symbol_value(image, "_eeid_rva", eeid_rva));
 
-    /* heap right after EEID */
-    oeprops->image_info.heap_rva =
-        image->image_size + image->reloc_size + eeid_size;
+    /* heap right after guard/EEID page */
+    oeprops->image_info.heap_rva = eeid_rva + OE_PAGE_SIZE;
+#else
+    /* heap right after image */
+    oeprops->image_info.heap_rva = image->image_size + image->reloc_size;
+#endif
 
     if (image->tdata_size)
     {

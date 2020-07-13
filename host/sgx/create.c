@@ -305,9 +305,6 @@ static oe_result_t _calculate_enclave_size(
         *enclave_size = 0;
     *loaded_enclave_pages_size = 0;
 
-    /* EEID takes one page */
-    size_t eeid_size = OE_PAGE_SIZE;
-
     /* Compute size in bytes of the heap */
     heap_size = size_settings->num_heap_pages * OE_PAGE_SIZE;
 
@@ -320,9 +317,17 @@ static oe_result_t _calculate_enclave_size(
     control_size = 6 * OE_PAGE_SIZE;
 
     /* Compute end of the enclave */
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    size_t eeid_size = OE_PAGE_SIZE;
+
     *loaded_enclave_pages_size =
         image_size + eeid_size + heap_size +
         (size_settings->num_tcs * (stack_size + control_size));
+#else
+    *loaded_enclave_pages_size =
+        image_size + heap_size +
+        (size_settings->num_tcs * (stack_size + control_size));
+#endif
 
     if (enclave_size)
     {

@@ -41,23 +41,17 @@ static void _check_memory_boundaries(void)
 }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
-extern oe_eeid_t* oe_eeid;
-
 static void _find_eeid()
 {
-    /* Get the last page before the heap. */
-    uint8_t* heap_base = (uint8_t*)__oe_get_heap_base();
-    oe_eeid_page_t* eeid_page = (oe_eeid_page_t*)(heap_base - OE_PAGE_SIZE);
+    /* Get the guard/EEID page */
+    const oe_eeid_page_t* eeid_page = (oe_eeid_page_t*)__oe_get_eeid_page();
     if (!oe_is_within_enclave(eeid_page, OE_PAGE_SIZE))
         oe_abort();
-    /* Without EEID, eeid_page page is all zero. */
-    if (eeid_page->eeid.version != 0)
-    {
-        if (eeid_page->eeid.version != OE_EEID_VERSION)
-            oe_abort();
-        oe_eeid = &eeid_page->eeid;
-    }
+
+    /* Without EEID, eeid_page page is all zero (including the version). */
+    if (eeid_page->eeid.version != 0 &&
+        eeid_page->eeid.version != OE_EEID_VERSION)
+        oe_abort();
 }
 #endif
 

@@ -137,12 +137,13 @@ extern bool oe_disable_debug_malloc_check;
 */
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-extern oe_eeid_t* oe_eeid;
 extern const oe_enclave_config_t* oe_enclave_config;
 
 static oe_result_t _load_config(const oe_enclave_config_t* config_from_host)
 {
-    if (!oe_eeid)
+    const oe_eeid_t* eeid = __oe_get_eeid();
+
+    if (!eeid || eeid->version == 0)
         return OE_OK;
 
     /* With EEID, we expect a config */
