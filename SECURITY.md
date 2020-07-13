@@ -12,9 +12,9 @@ supported versions of Open Enclave:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.7.x   | :white_check_mark: |
-| 0.7.0   | :white_check_mark: |
-| < 0.7   | :x:                |
+| 0.10.x  | :white_check_mark: |
+| 0.10.0  | :white_check_mark: |
+| < 0.10  | :x:                |
 
 ## Reporting a Vulnerability
 
