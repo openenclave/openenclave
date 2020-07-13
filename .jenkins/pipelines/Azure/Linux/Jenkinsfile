@@ -68,8 +68,18 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
                 checkout scm
                 if (fresh_install) {
                     sh  """
-                        sudo bash scripts/ansible/install-ansible.sh
-                        sudo \$(which ansible-playbook) scripts/ansible/oe-contributors-acc-setup.yml
+                        # Install ansible
+                        for i in 1 2 3 4 5
+                        do
+                            sudo scripts/ansible/install-ansible.sh && break
+                            sleep 15
+                        done
+                        # Run ACC Playbook
+                        for i in 1 2 3 4 5
+                        do
+                            sudo \$(which ansible-playbook) scripts/ansible/oe-contributors-acc-setup.yml && break
+                            sleep 15
+                        done
                         """
                 }
                 def task = """
