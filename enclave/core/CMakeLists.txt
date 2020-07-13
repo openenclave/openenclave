@@ -78,6 +78,7 @@ if (OE_SGX)
     ../../common/sgx/endorsements.c
     ../../common/sgx/rand.S
     sgx/arena.c
+    sgx/asmdefs.c
     sgx/backtrace.c
     sgx/calls.c
     sgx/cpuid.c
