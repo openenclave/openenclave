@@ -37,7 +37,7 @@ oe_write_ocall | N/A | Required by internal APIs/macros such as `oe_host_printf`
 ### memory.edl
 Ocall | Dependent Public APIs | Comments |
 :---|:---:|:---|
-oe_realloc_ocall | oe_host_realloc | Required by OP-TEE. |
+oe_realloc_ocall | oe_host_realloc | _ |
 
 ## Syscall system EDLs
 

@@ -40,6 +40,20 @@ static int _thread_wake(oe_sgx_td_t* self)
     return 0;
 }
 
+oe_result_t _oe_sgx_thread_wake_wait_ocall(
+    oe_enclave_t* enclave,
+    uint64_t waiter_tcs,
+    uint64_t self_tcs)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(waiter_tcs);
+    OE_UNUSED(self_tcs);
+
+    return OE_UNSUPPORTED;
+}
+
+OE_WEAK_ALIAS(_oe_sgx_thread_wake_wait_ocall, oe_sgx_thread_wake_wait_ocall);
+
 static int _thread_wake_wait(oe_sgx_td_t* waiter, oe_sgx_td_t* self)
 {
     int ret = -1;
