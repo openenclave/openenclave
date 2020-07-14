@@ -170,7 +170,7 @@ Verification of EEID reports
 Verification of reports with EEID requires a fully populated `oe_eeid_t` and it performs the following steps (not necessarily in this order):
 
 - Create a SHA256 context and restore the internal state to `hash_state`,
-- re-measure the addition of heap, and thread sections with stacks (number of thread section is decided by the number of TCS pages) with the settings from `size_settings` (starting at address `vaddr` and with `entry_point` in the TCS control pages),
+- re-measure the addition of heap and thread sections with stacks using the updated `size_settings`. Note that the number of TCS pages determines the number of thread sections. The measurement starts at address `vaddr` and includes `entry_point` in the TCS control pages,
 - measure the additional page containing the `oe_eeid_t` (filled with the entire `oe_eeid_t`, including `data`),
 - check that the final hash matches the hash reported in the extended report (e.g. MRENCLAVE),
 - check the identity of the signer of the extended image (e.g. public key corresponding to `OE_DEBUG_SIGN_KEY`),
@@ -178,7 +178,9 @@ Verification of reports with EEID requires a fully populated `oe_eeid_t` and it 
 - restore the SHA256 internal state to `hash_state` again, re-measure the addition of one thread section with no stack page, check that the final hash matches the base image hash (e.g. `sigstruct.EnclaveHash` in the case of SGX), and finally
 - check the signature of the base image (e.g. `sigstruct` in the case of SGX; note this is integrity-protected by the hardware because of it's inclusion in the EEID pages).
   
-Essentially, the verification process confirms that heap, thread sections with stacks and theEEID pages were added exactly according to the SW convention, after the base image. For SGX, the content of heap and thread sections to be added are predetermined by the SW convention, expect TCS.OENTRY. To make sure TCS.OENTRY is set as expected when the TCS control pages were added, one thread section (containing a TCS control page) is included in the base image and measured, with the measurement reflected in the base image `sigstruct`. If TCS.OENTRY was not set as expected (matching the value used to produce the measurement in the base image `sigstruct`, and truthfully recorded in `entry_point` in `oe_eeid_t` ) when the TCS control pages were added, the base image measurement check or the MRENCLAVE check will detect the attack.  
+Essentially, the verification process confirms that heap, thread sections with stacks, and the EEID pages were added after the base image exactly according to the SW convention. For SGX, the SW convention predetermines the contents of the heap and thread sections except for `TCS.OENTRY`.
+
+To ensure that `TCS.OENTRY` is set as expected when the TCS control pages are added, one thread section (containing a TCS control page) is included in the base image and measured so that it is reflected in the base image `sigstruct`. Doing so allows the base image measurement check or MRENCLAVE check to detect if either the `TCS.OENTRY` value used during addition of the TCS control pages or the `oe_eeid_t.entry_point` value is unexpected.
 
 Authors
 -------
