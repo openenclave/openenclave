@@ -47,7 +47,7 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
 
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
 
     run_parse_advisoryids_json_test();
     run_qe_identity_test_cases(enclave);

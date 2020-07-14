@@ -17,7 +17,7 @@ oe_result_t test_verify_qe_identity_info(
     oe_qe_identity_info_tcb_level_t* platform_tcb_level,
     oe_parsed_qe_identity_info_t* parsed_info)
 {
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
     return oe_parse_qe_identity_info_json(
         (const uint8_t*)info_json,
         strlen(info_json) + 1,

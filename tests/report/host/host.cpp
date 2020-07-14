@@ -36,7 +36,7 @@ extern int FileToBytes(const char* path, std::vector<uint8_t>* output);
 
 void generate_and_save_report(oe_enclave_t* enclave)
 {
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
     static uint8_t* report;
     size_t report_size;
     OE_TEST_CODE(
@@ -159,7 +159,7 @@ int main(int argc, const char* argv[])
      */
     g_enclave = enclave;
 
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
 
     static oe_uuid_t sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
 

@@ -18,7 +18,7 @@ target_include_directories(oecertdump PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 target_link_libraries(oecertdump oehost OpenSSL::SSL)
 
 if (HAS_QUOTE_PROVIDER)
-  target_compile_definitions(oecertdump PRIVATE OE_LINK_SGX_DCAP_QL)
+  target_compile_definitions(oecertdump PRIVATE OE_HAS_SGX_DCAP_QL)
 endif ()
 
 # The X509_print_ex_fp function in OpenSSL requires to include applink.c, which

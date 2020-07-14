@@ -200,34 +200,6 @@ include(package_settings)
 # See `cmake/add_enclave.cmake` for enclave creation logic
 include(add_enclave)
 
-if (OE_SGX)
-  # Detect if sgx_dcap_ql is available on the machine.
-  if (NOT QL_LIBPATHS)
-    set(QL_LIBPATHS "/usr")
-  endif ()
-
-  if (WIN32)
-    list(APPEND QL_LIBPATHS
-         ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
-    list(APPEND INCPATHS
-         "${NUGET_PACKAGE_PATH}/DCAP_Components/build/Header Files")
-  endif ()
-
-  find_library(
-    LIBSGX_QE
-    NAMES sgx_dcap_ql
-    HINTS ${QL_LIBPATHS})
-
-  if (NOT LIBSGX_QE)
-    message(
-      STATUS
-        "No quote provider library found. Attestation tests and samples disabled."
-    )
-  else ()
-    set(HAS_QUOTE_PROVIDER on)
-  endif ()
-endif ()
-
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG")

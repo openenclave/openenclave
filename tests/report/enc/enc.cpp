@@ -17,7 +17,7 @@ oe_result_t test_verify_tcb_info(
     oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_tcb_info)
 {
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
     return oe_parse_tcb_info_json(
         (const uint8_t*)tcb_info,
         strlen(tcb_info) + 1,
@@ -33,7 +33,7 @@ oe_result_t test_verify_tcb_info(
 
 void test_minimum_issue_date(oe_datetime_t now)
 {
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
     static uint8_t* report;
     size_t report_size = 0;
     static uint8_t* report_v2;

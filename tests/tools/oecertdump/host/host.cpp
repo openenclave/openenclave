@@ -13,7 +13,7 @@
 
 #include "sgx_quote.h"
 
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
 
 #define INPUT_PARAM_USAGE "--help"
 #define INPUT_PARAM_OUT_FILE "--out"
@@ -272,13 +272,13 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     return result;
 }
 
-#endif // OE_LINK_SGX_DCAP_QL
+#endif // OE_HAS_SGX_DCAP_QL
 
 int main(int argc, const char* argv[])
 {
     int ret = 0;
 
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
     oe_result_t result;
     oe_enclave_t* enclave = nullptr;
 
@@ -349,7 +349,7 @@ exit:
 
 #else
 #pragma message( \
-    "OE_LINK_SGX_DCAP_QL is not set to ON.  This tool requires DCAP libraries.")
+    "OE_HAS_SGX_DCAP_QL is not set to ON.  This tool requires DCAP libraries.")
     OE_UNUSED(argc);
     OE_UNUSED(argv);
     printf("oecertdump requires DCAP libraries.\n");

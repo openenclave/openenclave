@@ -29,6 +29,35 @@ if (OE_SGX)
   set(DEFINE_OE_SGX "-DOE_SGX")
 endif ()
 
+# Detect if SGX_DCAP_QL is available on the machine.
+if (OE_SGX)
+  # Detect if sgx_dcap_ql is available on the machine.
+  if (NOT QL_LIBPATHS)
+    set(QL_LIBPATHS "/usr")
+  endif ()
+
+  if (WIN32)
+    list(APPEND QL_LIBPATHS
+         ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
+    list(APPEND INCPATHS
+         "${NUGET_PACKAGE_PATH}/DCAP_Components/build/Header Files")
+  endif ()
+
+  find_library(
+    LIBSGX_QE
+    NAMES sgx_dcap_ql
+    HINTS ${QL_LIBPATHS})
+
+  if (NOT LIBSGX_QE)
+    message(
+      STATUS
+        "No quote provider library found. Attestation tests and samples disabled."
+    )
+  else ()
+    set(HAS_QUOTE_PROVIDER on)
+  endif ()
+endif ()
+
 add_subdirectory(mem)
 add_subdirectory(safecrt)
 add_subdirectory(safemath)
