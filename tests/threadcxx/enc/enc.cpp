@@ -294,10 +294,12 @@ void enc_lock_and_unlock_mutexes_cxx(const char* mutexes)
     }
 }
 
+#define NUM_TCS 16
+
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    128,  /* NumHeapPages */
-    16,   /* NumStackPages */
-    16);  /* NumTCS */
+    1,                                  /* ProductID */
+    1,                                  /* SecurityVersion */
+    true,                               /* Debug */
+    OE_TEST_MT_HEAP_SIZE(NUM_TCS) + 64, /* NumHeapPages */
+    16,                                 /* NumStackPages */
+    NUM_TCS);                           /* NumTCS */

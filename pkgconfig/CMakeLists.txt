@@ -229,9 +229,10 @@ endif ()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/oehost-gcc.pc
                ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-gcc.pc @ONLY)
 
-install(FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-gcc.pc
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-        COMPONENT OEHOSTVERIFY)
+install(
+  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-gcc.pc
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+  COMPONENT OEHOSTVERIFY)
 
 ##==============================================================================
 ##
@@ -242,9 +243,10 @@ install(FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-gcc.pc
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/oehost-g++.pc
                ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-g++.pc @ONLY)
 
-install(FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-g++.pc
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-        COMPONENT OEHOSTVERIFY)
+install(
+  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-g++.pc
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+  COMPONENT OEHOSTVERIFY)
 
 ##==============================================================================
 ##
@@ -345,9 +347,10 @@ endif ()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/oehost-clang.pc
                ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang.pc @ONLY)
 
-install(FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang.pc
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-        COMPONENT OEHOSTVERIFY)
+install(
+  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang.pc
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+  COMPONENT OEHOSTVERIFY)
 
 ##==============================================================================
 ##
@@ -359,9 +362,10 @@ configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/oehost-clang++.pc
   ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang++.pc @ONLY)
 
-install(FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang++.pc
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-        COMPONENT OEHOSTVERIFY)
+install(
+  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang++.pc
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+  COMPONENT OEHOSTVERIFY)
 
 ##==============================================================================
 ##
