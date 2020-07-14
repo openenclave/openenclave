@@ -427,6 +427,24 @@ function Install-PSW {
     } -RetryMessage "Failed to start AESMService. Retrying"
 }
 
+function Update-PSW {
+    $tempInstallDir = "$PACKAGES_DIRECTORY\Intel_SGX_PSW"
+    if(Test-Path $tempInstallDir) {
+        Remove-Item -Recurse -Force $tempInstallDir
+    }
+    Install-ZipTool -ZipPath $PACKAGES["psw"]["local_file"] `
+                    -InstallDirectory $tempInstallDir
+
+    $inf = Get-Item "$tempInstallDir\Intel*SGX*\PSW_INF*\sgx_psw.inf"
+    $devConPath = Get-DevconBinary
+
+    $update = & $devConPath update $inf "SWC\VEN_INT&DEV_0E0C"
+    Write-Output update
+    if($LASTEXITCODE -ge 2) {
+        throw "Error: Failed to update PSW drivers - exit code $LASTEXITCODE"
+    }
+}
+
 function Install-VisualStudio {
     $installerArguments = @(
         "-q", "--wait", "--norestart",
@@ -543,11 +561,13 @@ function Install-DCAP-Dependencies {
                     'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\base\WindowsServer2019_Windows10"
                     'location'    = 'root\SgxLCDevice'
                     'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
+                    'hardwareId'  = '*INT0E0C'
                 }
                 'sgx_dcap' = @{
                     'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2019_Windows10"
                     'location'    = 'root\SgxLCDevice_DCAP'
                     'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
+                    'hardwareId'  = 'SWC\VEN_INT&DEV_0E0C_DCAP'
                 }
             }
             'Win10' = @{
@@ -582,17 +602,29 @@ function Install-DCAP-Dependencies {
                     Throw "Failed searching for $driver driver"
                 }
                 $output | ForEach-Object {
-                    if($_.Contains($drivers[${OS_VERSION}][$driver]['description'])) {
+                    if(($_.Contains($drivers[${OS_VERSION}][$driver]['description'])) -and ($OS_VERSION -eq 'WinServer2016')) {
                         Write-Output "Removing driver $($drivers[${OS_VERSION}][$driver]['location'])"
                         Remove-DCAPDriver -Name $drivers[${OS_VERSION}][$driver]['location']
                     }
                 }
-                Write-Output "Installing driver $($drivers[${OS_VERSION}][$driver]['location'])"
-                $install = & $devConBinaryPath install "$($inf.FullName)" $drivers[${OS_VERSION}][$driver]['location']
-                if($LASTEXITCODE) {
-                    Throw "Failed to install $driver driver"
+                try
+                {
+                    Write-Output "Installing driver $($drivers[${OS_VERSION}][$driver]['location'])"
+                    $install = & $devConBinaryPath install "$($inf.FullName)" $drivers[${OS_VERSION}][$driver]['location']
+                    Write-Output $install
+                    if($LASTEXITCODE) {
+                        Throw "Failed to install $driver driver"
+                    }
                 }
-                Write-Output $install
+                catch
+                {
+                    Write-Output "Updating driver $($drivers[${OS_VERSION}][$driver]['location'])"
+                    $update = & $devConBinaryPath update "$($inf.FullName)" $drivers[${OS_VERSION}][$driver]['hardwareId']
+                    Write-Output $update
+                    if($LASTEXITCODE -ge 2) {
+                        Throw "Failed to update $driver driver"
+                    }
+                }
             }
             elseif (($LaunchConfiguration -eq "SGX1FLC-NoDriver") -and (${OS_VERSION} -eq "WinServer2016"))
             {
@@ -642,7 +674,7 @@ function Install-DCAP-Dependencies {
         Throw "Failed to install nuget EnclaveCommonAPI"
     }
 
-    if (($LaunchConfiguration -eq "SGX1FLC") -or (${OS_VERSION} -eq "WinServer2019"))
+    if ($LaunchConfiguration -eq "SGX1FLC")
     {
         # Please refer to Intel's Windows DCAP documentation for this registry setting: https://download.01.org/intel-sgx/dcap-1.2/windows/docs/Intel_SGX_DCAP_Windows_SW_Installation_Guide.pdf
         New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters" -Name "SGX_Launch_Config_Optin" -Value 1 -PropertyType DWORD -Force
@@ -679,9 +711,17 @@ try {
     Install-Shellcheck
     Install-NSIS
 
+    $OS_VERSION = Get-WindowsRelease
     if (($LaunchConfiguration -ne "SGX1FLC-NoDriver") -and ($LaunchConfiguration -ne "SGX1-NoDriver"))
     {
-        Install-PSW
+        if (${OS_VERSION} -eq "WinServer2016")
+        {
+            Install-PSW
+        }
+        else
+        {
+            Update-PSW
+        }
     }
 
     Install-DCAP-Dependencies

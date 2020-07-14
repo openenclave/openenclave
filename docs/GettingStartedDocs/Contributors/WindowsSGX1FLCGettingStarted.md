@@ -53,14 +53,6 @@ Run the following command to deploy all the prerequisites for building Open Encl
 ./scripts/install-windows-prereqs.ps1
 ```
 
-On Windows Server 2019 and versions of Windows 10 newer than 1709, the Intel PSW
-should already be automatically installed. Attempting to run the PSW installer will fail if
-that is the case. To skip the PSW installer:
-
-```powershell
-./scripts/install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoDriver
-```
-
 To install the prerequisites along with the Azure DCAP Client, use the below
 command. The Azure DCAP Client is necessary to perform attestation on an Azure
 Confidential Computing VM. This command assumes that you would like the
