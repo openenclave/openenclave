@@ -701,6 +701,34 @@ size_t oe_eeid_byte_size(const oe_eeid_t* eeid)
            eeid->signature_size;
 }
 
+oe_result_t oe_enclave_size_settings_hton(
+    const oe_enclave_size_settings_t* sizes,
+    uint8_t** position,
+    size_t* remaining)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    OE_CHECK(hton_uint64_t(sizes->num_heap_pages, position, remaining));
+    OE_CHECK(hton_uint64_t(sizes->num_stack_pages, position, remaining));
+    OE_CHECK(hton_uint64_t(sizes->num_tcs, position, remaining));
+    result = OE_OK;
+done:
+    return result;
+}
+
+oe_result_t oe_enclave_size_settings_ntoh(
+    const uint8_t** position,
+    size_t* remaining,
+    oe_enclave_size_settings_t* sizes)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    OE_CHECK(ntoh_uint64_t(position, remaining, &sizes->num_heap_pages));
+    OE_CHECK(ntoh_uint64_t(position, remaining, &sizes->num_stack_pages));
+    OE_CHECK(ntoh_uint64_t(position, remaining, &sizes->num_tcs));
+    result = OE_OK;
+done:
+    return result;
+}
+
 oe_result_t oe_eeid_hton(
     const oe_eeid_t* eeid,
     uint8_t* buffer,
@@ -722,11 +750,8 @@ oe_result_t oe_eeid_hton(
     for (size_t i = 0; i < 2; i++)
         OE_CHECK(_hton_uint32_t(eeid->hash_state.N[i], &position, &remaining));
 
-    OE_CHECK(hton_uint64_t(
-        eeid->size_settings.num_heap_pages, &position, &remaining));
-    OE_CHECK(hton_uint64_t(
-        eeid->size_settings.num_stack_pages, &position, &remaining));
-    OE_CHECK(hton_uint64_t(eeid->size_settings.num_tcs, &position, &remaining));
+    OE_CHECK(oe_enclave_size_settings_hton(
+        &eeid->size_settings, &position, &remaining));
 
     OE_CHECK(hton_uint64_t(eeid->vaddr, &position, &remaining));
     OE_CHECK(hton_uint64_t(eeid->entry_point, &position, &remaining));
@@ -763,12 +788,7 @@ oe_result_t oe_eeid_ntoh(
     for (size_t i = 0; i < 2; i++)
         OE_CHECK(_ntoh_uint32_t(&position, &remaining, &eeid->hash_state.N[i]));
 
-    OE_CHECK(ntoh_uint64_t(
-        &position, &remaining, &eeid->size_settings.num_heap_pages));
-    OE_CHECK(ntoh_uint64_t(
-        &position, &remaining, &eeid->size_settings.num_stack_pages));
-    OE_CHECK(
-        ntoh_uint64_t(&position, &remaining, &eeid->size_settings.num_tcs));
+    oe_enclave_size_settings_ntoh(&position, &remaining, &eeid->size_settings);
 
     OE_CHECK(ntoh_uint64_t(&position, &remaining, &eeid->vaddr));
     OE_CHECK(ntoh_uint64_t(&position, &remaining, &eeid->entry_point));

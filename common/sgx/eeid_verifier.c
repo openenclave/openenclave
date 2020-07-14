@@ -260,13 +260,34 @@ done:
     return result;
 }
 
-static uint64_t _get_u64_claim(const oe_claim_t* claim)
+static oe_result_t _extract_base_image_properties(
+    const oe_claim_t* sgx_claims,
+    size_t sgx_claims_length,
+    uint8_t* signer_id,
+    oe_enclave_size_settings_t* sizes)
 {
-    const uint8_t* pos = claim->value;
-    size_t rem = claim->value_size;
-    uint64_t r;
-    ntoh_uint64_t(&pos, &rem, &r);
-    return r;
+    oe_result_t result = OE_UNEXPECTED;
+
+    for (size_t i = 0; i < sgx_claims_length; i++)
+    {
+        const oe_claim_t* c = &sgx_claims[i];
+
+        if (strcmp(c->name, OE_CLAIM_SIGNER_ID) == 0)
+            /* This is the EEID base image signer */
+            memcpy(signer_id, c->value, OE_SIGNER_ID_SIZE);
+        else if (strcmp(c->name, OE_CLAIM_CUSTOM_CLAIMS) == 0)
+        {
+            /* The custom claims contain the size settings */
+            const uint8_t* buf = c->value;
+            size_t remaining = c->value_size;
+            OE_CHECK(oe_enclave_size_settings_ntoh(&buf, &remaining, sizes));
+        }
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 static oe_result_t _eeid_verify_evidence(
@@ -407,18 +428,8 @@ static oe_result_t _eeid_verify_evidence(
 
     oe_enclave_size_settings_t base_image_sizes = {0};
     uint8_t r_signer_id[OE_SIGNER_ID_SIZE];
-    for (size_t i = 0; i < sgx_claims_length; i++)
-    {
-        const oe_claim_t* c = &sgx_claims[i];
-        if (strcmp(c->name, "num_heap_pages") == 0)
-            base_image_sizes.num_heap_pages = _get_u64_claim(c);
-        else if (strcmp(c->name, "num_stack_pages") == 0)
-            base_image_sizes.num_stack_pages = _get_u64_claim(c);
-        else if (strcmp(c->name, "num_tcs") == 0)
-            base_image_sizes.num_tcs = _get_u64_claim(c);
-        else if (strcmp(c->name, OE_CLAIM_SIGNER_ID) == 0)
-            memcpy(r_signer_id, c->value, OE_SIGNER_ID_SIZE);
-    }
+    OE_CHECK(_extract_base_image_properties(
+        sgx_claims, sgx_claims_length, r_signer_id, &base_image_sizes));
 
     /* Verify EEID */
     const uint8_t* r_enclave_base_hash;

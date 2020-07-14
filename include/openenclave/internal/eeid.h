@@ -249,9 +249,9 @@ typedef struct
 oe_result_t hton_uint64_t(uint64_t x, uint8_t** position, size_t* remaining);
 
 /**
- * Deserialize a uint64_t ifrom network byte-order into a buffer.
+ * Deserialize a uint64_t from network byte-order into a buffer.
  *
- * @param[inout] position The position in a buffer to write to (will be
+ * @param[inout] position The position in a buffer to read from (will be
  * updated).
  *
  * @param[inout] remaining The remaining space in the buffer (will be updated).
@@ -265,6 +265,43 @@ oe_result_t ntoh_uint64_t(
     const uint8_t** position,
     size_t* remaining,
     uint64_t* x);
+
+/**
+ * Serialize a oe_enclave_size_settings_t in network byte-order into a buffer.
+ *
+ * @param[in] sizes The oe_enclave_size_settings_t to serialize.
+ *
+ * @param[inout] position The position in a buffer to write to (will be
+ * updated).
+ *
+ * @param[inout] remaining The remaining space in the buffer (will be updated).
+ *
+ * @returns Returns OE_OK on success.
+ *
+ */
+oe_result_t oe_enclave_size_settings_hton(
+    const oe_enclave_size_settings_t* sizes,
+    uint8_t** position,
+    size_t* remaining);
+
+/**
+ * Deserialize a oe_enclave_size_settings_t from network byte-order into a
+ * buffer.
+ *
+ * @param[inout] position The position in a buffer to write to (will be
+ * updated).
+ *
+ * @param[inout] remaining The remaining space in the buffer (will be updated).
+ *
+ * @param[out] sizes The oe_enclave_size_settings_t to deserialize.
+ *
+ * @returns Returns OE_OK on success.
+ *
+ */
+oe_result_t oe_enclave_size_settings_ntoh(
+    const uint8_t** position,
+    size_t* remaining,
+    oe_enclave_size_settings_t* sizes);
 
 /**
  * Convert an oe_eeid_evidence_t into a buffer using network byte-order.

@@ -99,19 +99,8 @@ static oe_result_t _get_sgx_evidence(
 done:
 
     free(report);
-    free(sgx_claims);
 
     return result;
-}
-
-static void _set_u64_claim(char* name, uint64_t value, oe_claim_t* claim)
-{
-    claim->name = name;
-    claim->value_size = sizeof(uint64_t);
-    claim->value = malloc(claim->value_size);
-    uint8_t* pos = claim->value;
-    size_t rem = claim->value_size;
-    hton_uint64_t(value, &pos, &rem);
 }
 
 static oe_result_t _eeid_get_evidence(
@@ -130,8 +119,8 @@ static oe_result_t _eeid_get_evidence(
     oe_eeid_evidence_t* evidence = NULL;
     uint8_t *sgx_evidence_buffer = NULL, *sgx_endorsements_buffer = NULL;
     size_t sgx_evidence_buffer_size = 0, sgx_endorsements_buffer_size = 0;
+    uint8_t* sgx_custom_claims = NULL;
     size_t sgx_custom_claims_size = 0;
-    oe_claim_t* sgx_custom_claims = NULL;
     const oe_eeid_t* eeid = __oe_get_eeid();
     const oe_enclave_config_t* config = __oe_get_enclave_config();
 
@@ -155,26 +144,19 @@ static oe_result_t _eeid_get_evidence(
 
     size_t eeid_size = oe_eeid_byte_size(eeid);
 
-    sgx_custom_claims_size = custom_claims_size + 3;
+    // Serialize custom claims, including EEID base image sizes
+    sgx_custom_claims_size =
+        custom_claims_size + sizeof(oe_enclave_size_settings_t);
     sgx_custom_claims = oe_malloc(sizeof(oe_claim_t) * sgx_custom_claims_size);
     if (!sgx_custom_claims)
         OE_RAISE(OE_OUT_OF_MEMORY);
-
-    _set_u64_claim(
-        "num_heap_pages",
-        oe_enclave_properties_sgx.header.size_settings.num_heap_pages,
-        &sgx_custom_claims[0]);
-    _set_u64_claim(
-        "num_stack_pages",
-        oe_enclave_properties_sgx.header.size_settings.num_stack_pages,
-        &sgx_custom_claims[1]);
-    _set_u64_claim(
-        "num_tcs",
-        oe_enclave_properties_sgx.header.size_settings.num_tcs,
-        &sgx_custom_claims[2]);
-
-    for (size_t i = 0; i < custom_claims_size; i++)
-        sgx_custom_claims[i + 3] = custom_claims[i];
+    memcpy(sgx_custom_claims, custom_claims, custom_claims_size);
+    uint8_t* sizes_pos = sgx_custom_claims + custom_claims_size;
+    size_t buf_remaining = sgx_custom_claims_size - custom_claims_size;
+    oe_enclave_size_settings_t* sizes =
+        (oe_enclave_size_settings_t*)&oe_enclave_properties_sgx.header
+            .size_settings;
+    OE_CHECK(oe_enclave_size_settings_hton(sizes, &sizes_pos, &buf_remaining));
 
     // Get SGX evidence
     OE_CHECK(_get_sgx_evidence(
@@ -251,8 +233,6 @@ done:
 
     oe_free(sgx_evidence_buffer);
     oe_free(sgx_endorsements_buffer);
-    for (size_t i = 0; i < 3; i++)
-        oe_free(sgx_custom_claims[i].value);
     oe_free(sgx_custom_claims);
     oe_free(evidence);
 
