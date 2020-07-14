@@ -289,7 +289,7 @@ done:
 static oe_result_t _calculate_enclave_size(
     size_t image_size,
     const oe_sgx_enclave_properties_t* props,
-    size_t* enclave_end, /* end may be less than size due to rounding */
+    size_t* loaded_enclave_pages_size,
     size_t* enclave_size)
 
 {
@@ -303,7 +303,7 @@ static oe_result_t _calculate_enclave_size(
 
     if (enclave_size)
         *enclave_size = 0;
-    *enclave_end = 0;
+    *loaded_enclave_pages_size = 0;
 
     /* Compute size in bytes of the heap */
     heap_size = size_settings->num_heap_pages * OE_PAGE_SIZE;
@@ -317,8 +317,9 @@ static oe_result_t _calculate_enclave_size(
     control_size = 6 * OE_PAGE_SIZE;
 
     /* Compute end of the enclave */
-    *enclave_end = image_size + heap_size +
-                   (size_settings->num_tcs * (stack_size + control_size));
+    *loaded_enclave_pages_size =
+        image_size + heap_size +
+        (size_settings->num_tcs * (stack_size + control_size));
 
     if (enclave_size)
     {
@@ -333,7 +334,7 @@ static oe_result_t _calculate_enclave_size(
         else
 #endif
             /* Calculate the total size of the enclave */
-            *enclave_size = oe_round_u64_to_pow2(*enclave_end);
+            *enclave_size = oe_round_u64_to_pow2(*loaded_enclave_pages_size);
     }
 
     result = OE_OK;
@@ -722,7 +723,7 @@ oe_result_t oe_sgx_build_enclave(
     oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t enclave_end = 0;
+    size_t loaded_enclave_pages_size = 0;
     size_t enclave_size = 0;
     uint64_t enclave_addr = 0;
     oe_enclave_image_t oeimage;
@@ -805,11 +806,11 @@ oe_result_t oe_sgx_build_enclave(
 
     /* Calculate the size of this enclave in memory */
     OE_CHECK(_calculate_enclave_size(
-        image_size, &props, &enclave_end, &enclave_size));
+        image_size, &props, &loaded_enclave_pages_size, &enclave_size));
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
-        context, enclave_size, enclave_end, &enclave_addr));
+        context, enclave_size, loaded_enclave_pages_size, &enclave_addr));
 
     /* Save the enclave base address, size, and text address */
     enclave->addr = enclave_addr;

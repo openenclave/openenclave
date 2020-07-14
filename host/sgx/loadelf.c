@@ -646,7 +646,7 @@ done:
     return result;
 }
 
-static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_end)
+static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t* oeprops;
@@ -659,7 +659,7 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_end)
 
     assert((image->image_size & (OE_PAGE_SIZE - 1)) == 0);
     assert((image->reloc_size & (OE_PAGE_SIZE - 1)) == 0);
-    assert((enclave_end & (OE_PAGE_SIZE - 1)) == 0);
+    assert((enclave_size & (OE_PAGE_SIZE - 1)) == 0);
 
     /* Clear certain ELF header fields */
     for (i = 0; i < image->u.elf.num_segments; i++)
@@ -676,7 +676,7 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_end)
         }
     }
 
-    oeprops->image_info.enclave_size = enclave_end;
+    oeprops->image_info.enclave_size = enclave_size;
     oeprops->image_info.oeinfo_rva = image->oeinfo_rva;
     oeprops->image_info.oeinfo_size = sizeof(oe_sgx_enclave_properties_t);
 
