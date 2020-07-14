@@ -1,7 +1,7 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-if (BUILD_ENCLAVES AND HAS_QUOTE_PROVIDER)
+if (BUILD_ENCLAVES)
   install(
     DIRECTORY remote_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
@@ -28,9 +28,7 @@ if (BUILD_ENCLAVES AND HAS_QUOTE_PROVIDER)
         GROUP_READ
         WORLD_EXECUTE
         WORLD_READ)
-endif ()
 
-if (BUILD_ENCLAVES)
   install(
     DIRECTORY local_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
