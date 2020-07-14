@@ -97,7 +97,7 @@ def ACCGNUTest() {
                 cleanWs()
                 checkout scm
                 def task = """
-                           cmake ${WORKSPACE} -DHAS_QUOTE_PROVIDER=ON
+                           cmake ${WORKSPACE}
                            make
                            ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
@@ -180,7 +180,7 @@ def ACCHostVerificationTest(String version, String build_type) {
 
                 println("Generating certificates and reports ...")
                 def task = """
-                           cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=ON -DCMAKE_BUILD_TYPE=${build_type} -Wdev
+                           cmake ${WORKSPACE} -G Ninja -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                            ninja -v
                            pushd tests/host_verify/host
                            openssl ecparam -name prime256v1 -genkey -noout -out keyec.pem
@@ -218,7 +218,7 @@ def ACCHostVerificationTest(String version, String build_type) {
         }
     }
 
-    /* Compile the tests with HAS_QUOTE_PROVIDER=OFF and unstash the certs over for verification.  */
+    /* Compile the tests and unstash the certs over for verification.  */
     stage("Linux nonSGX Verify Quote") {
         node(AGENTS_LABELS["ubuntu-nonsgx"]) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -226,7 +226,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                 checkout scm
                 unstash "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
                 def task = """
-                           cmake ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev
+                           cmake ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -Wdev
                            ninja -v
                            ctest -R host_verify --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
@@ -246,7 +246,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                 dir('build') {
                     bat """
                         vcvars64.bat x64 && \
-                        cmake.exe ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DHAS_QUOTE_PROVIDER=OFF -DCMAKE_BUILD_TYPE=${build_type} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev && \
+                        cmake.exe ${WORKSPACE} -G Ninja -DBUILD_ENCLAVES=OFF -DCMAKE_BUILD_TYPE=${build_type} -DNUGET_PACKAGE_PATH=C:/oe_prereqs -Wdev && \
                         ninja -v && \
                         ctest.exe -V -C ${build_type} -R host_verify --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                         """
@@ -271,20 +271,20 @@ try{
 
         "ACC1804 GNU gcc SGX1FLC":                { ACCGNUTest() },
 
-        "RHEL-8 clang-8 simulation Release":      { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
-        "RHEL-8 clang-8 simulation Debug":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
-        "RHEL-8 gcc-8 simulation Release":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
-        "RHEL-8 gcc-8 simulation Debug":          { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
-        "RHEL-8 ACC clang-8 SGX1 Release":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF']) },
-        "RHEL-8 ACC clang-8 SGX1 Debug":          { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF']) },
-        "RHEL-8 ACC gcc-8 SGX1 Release":          { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF']) },
-        "RHEL-8 ACC gcc-8 SGX1 Debug":            { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF']) },
+        "RHEL-8 clang-8 simulation Release":      { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', [], ['OE_SIMULATION=1']) },
+        "RHEL-8 clang-8 simulation Debug":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   [], ['OE_SIMULATION=1']) },
+        "RHEL-8 gcc-8 simulation Release":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Release', [], ['OE_SIMULATION=1']) },
+        "RHEL-8 gcc-8 simulation Debug":          { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Debug',   [], ['OE_SIMULATION=1']) },
+        "RHEL-8 ACC clang-8 SGX1 Release":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', []) },
+        "RHEL-8 ACC clang-8 SGX1 Debug":          { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   []) },
+        "RHEL-8 ACC gcc-8 SGX1 Release":          { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Release', []) },
+        "RHEL-8 ACC gcc-8 SGX1 Debug":            { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Debug',   []) },
 
         "ACC1604 clang-7 Debug LVI e2e":          { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'clang-7', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
         "ACC1804 gcc Debug LVI e2e":              { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
     
-        "RHEL-8 clang-8 simulation Release e2e":  { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
-        "RHEL-8 ACC clang-8 SGX1 Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) }
+        "RHEL-8 clang-8 simulation Release e2e":  { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', [], ['OE_SIMULATION=1'], true) },
+        "RHEL-8 ACC clang-8 SGX1 Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', [], [], true) }
     ]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
@@ -302,22 +302,22 @@ try{
                 "ACC1804 Container RelWithDebInfo":       { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 Container RelWithDebInfo LVI":   { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
 
-                "RHEL-8 ACC clang-8 SGX1FLC Release":     { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=ON']) },
-                "RHEL-8 ACC clang-8 SGX1FLC Debug":       { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON']) },
-                "RHEL-8 ACC gcc-8 SGX1FLC Release":       { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=ON']) },
-                "RHEL-8 ACC gcc-8 SGX1FLC Debug":         { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=ON']) },
+                "RHEL-8 ACC clang-8 SGX1FLC Release":     { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', []) },
+                "RHEL-8 ACC clang-8 SGX1FLC Debug":       { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   []) },
+                "RHEL-8 ACC gcc-8 SGX1FLC Release":       { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Release', []) },
+                "RHEL-8 ACC gcc-8 SGX1FLC Debug":         { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Debug',   []) },
 
-                "RHEL-8 ACC clang-8 SGX1FLC Release e2e": { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=ON'], [], true) },
-                "RHEL-8 ACC clang-8 SGX1FLC Debug e2e":   { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON'], [], true) },
-                "RHEL-8 ACC gcc-8 SGX1FLC Release e2e":   { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=ON'], [], true) },
-                "RHEL-8 ACC gcc-8 SGX1FLC Debug e2e":     { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=ON'], [], true) },
-                "RHEL-8 clang-8 simulation Debug e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
-                "RHEL-8 gcc-8 simulation Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
-                "RHEL-8 gcc-8 simulation Debug e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
-                "RHEL-8 ACC clang-8 SGX1 Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
-                "RHEL-8 ACC clang-8 SGX1 Debug e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
-                "RHEL-8 ACC gcc-8 SGX1 Release e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
-                "RHEL-8 ACC gcc-8 SGX1 Debug e2e":        { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
+                "RHEL-8 ACC clang-8 SGX1FLC Release e2e": { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', [], [], true) },
+                "RHEL-8 ACC clang-8 SGX1FLC Debug e2e":   { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   [], [], true) },
+                "RHEL-8 ACC gcc-8 SGX1FLC Release e2e":   { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', [], [], true) },
+                "RHEL-8 ACC gcc-8 SGX1FLC Debug e2e":     { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   [], [], true) },
+                "RHEL-8 clang-8 simulation Debug e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   [], ['OE_SIMULATION=1'], true) },
+                "RHEL-8 gcc-8 simulation Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', [], ['OE_SIMULATION=1'], true) },
+                "RHEL-8 gcc-8 simulation Debug e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   [], ['OE_SIMULATION=1'], true) },
+                "RHEL-8 ACC clang-8 SGX1 Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', [], [], true) },
+                "RHEL-8 ACC clang-8 SGX1 Debug e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   [], [], true) },
+                "RHEL-8 ACC gcc-8 SGX1 Release e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Release', [], [], true) },
+                "RHEL-8 ACC gcc-8 SGX1 Debug e2e":        { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'gcc',   'Debug',   [], [], true) },
 
                 "ACC1604 clang-7 Debug":                  { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-7', 'Debug',   ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1604 clang-7 Release":                { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-7', 'Release', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
