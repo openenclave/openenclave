@@ -141,7 +141,8 @@ extern const oe_enclave_config_t* oe_enclave_config;
 
 static oe_result_t _load_config(const oe_enclave_config_t* config_from_host)
 {
-    const oe_eeid_t* eeid = __oe_get_eeid();
+    const oe_eeid_page_t* eeid_page = __oe_get_eeid_page();
+    const oe_eeid_t* eeid = &eeid_page->eeid;
 
     if (!eeid || eeid->version == 0)
         return OE_OK;
@@ -154,6 +155,12 @@ static oe_result_t _load_config(const oe_enclave_config_t* config_from_host)
 
     if (!config.data || !config.size)
         return OE_OK; /* no or zero-size configs are ok */
+
+    /* Check that the config hashes to the correct value */
+    OE_SHA256 config_hash;
+    oe_sha256(config.data, config.size, &config_hash);
+    if (memcmp(config_hash.buf, eeid_page->config_id.buf, OE_SHA256_SIZE) != 0)
+        return OE_INVALID_PARAMETER;
 
     /* Copy config into enclave heap */
     oe_enclave_config_t* copy = oe_malloc(sizeof(oe_enclave_config_t));
