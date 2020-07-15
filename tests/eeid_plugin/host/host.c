@@ -286,7 +286,7 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
     if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);

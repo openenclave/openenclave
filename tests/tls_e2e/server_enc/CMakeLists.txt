@@ -13,7 +13,7 @@ add_custom_command(
 add_enclave(TARGET tls_server_enc SOURCES server.cpp ../common/utility.cpp
             ${CMAKE_CURRENT_BINARY_DIR}/tls_e2e_t.c)
 if (HAS_QUOTE_PROVIDER)
-  enclave_compile_definitions(tls_server_enc PRIVATE OE_LINK_SGX_DCAP_QL)
+  enclave_compile_definitions(tls_server_enc PRIVATE OE_HAS_SGX_DCAP_QL)
 endif ()
 
 set_source_files_properties(tls_e2e_t.c PROPERTIES COMPILE_FLAGS

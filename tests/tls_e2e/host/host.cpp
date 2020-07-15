@@ -346,7 +346,7 @@ done:
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
     oe_result_t result = OE_FAILURE;
     uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
     int ret = 0;
@@ -402,12 +402,11 @@ done:
 
     return 0;
 #else
-    // this test should not run on any platforms where OE_LINK_SGX_DCAP_QL is
+    // this test should not run on any platforms where OE_HAS_SGX_DCAP_QL is
     // not defined
     OE_UNUSED(argc);
     OE_UNUSED(argv);
-    OE_TRACE_INFO(
-        "=== tests skipped when built with OE_LINK_SGX_DCAP_QL=OFF\n");
+    OE_TRACE_INFO("=== tests skipped when built with OE_HAS_SGX_DCAP_QL=OFF\n");
     return SKIP_RETURN_CODE;
 #endif
 }

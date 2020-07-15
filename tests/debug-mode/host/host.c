@@ -68,7 +68,7 @@ static void _test_debug_signed(const char* path)
 {
     /* Signed debug mode should always pass. */
     _launch_enclave_success(path, _create_flags(true));
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
     /* Only works with FLC */
     _launch_enclave_success(path, _create_flags(false));
 #endif
@@ -85,7 +85,7 @@ static void _test_non_debug_signed(const char* path)
 {
     /* Debug mode should fail. Non-debug mode should pass. */
     _launch_enclave_fail(path, _create_flags(true), OE_DEBUG_DOWNGRADE);
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
     /* Only works with FLC */
     _launch_enclave_success(path, _create_flags(false));
 #endif

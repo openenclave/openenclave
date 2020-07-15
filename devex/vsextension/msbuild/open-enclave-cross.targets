@@ -292,8 +292,8 @@
     <ItemDefinitionGroup Condition="'$(OEType)' == 'Enclave'">
         <ClCompile>
             <!-- SGX Hardware and Simulation -->
-            <PreprocessorDefinitions Condition="$(OEIsSgx) == True And $(OEIsDebug) == True">OE_NO_SAL;OE_API_VERSION=2;OE_BUILD_ENCLAVE;OE_LINK_SGX_DCAP_QL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-            <PreprocessorDefinitions Condition="$(OEIsSgx) == True And $(OEIsDebug) == False">OE_NO_SAL;OE_API_VERSION=2;OE_BUILD_ENCLAVE;OE_LINK_SGX_DCAP_QL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(OEIsSgx) == True And $(OEIsDebug) == True">OE_NO_SAL;OE_API_VERSION=2;OE_BUILD_ENCLAVE;OE_HAS_SGX_DCAP_QL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <PreprocessorDefinitions Condition="$(OEIsSgx) == True And $(OEIsDebug) == False">OE_NO_SAL;OE_API_VERSION=2;OE_BUILD_ENCLAVE;OE_HAS_SGX_DCAP_QL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
             <!-- OP-TEE Simulation -->
             <PreprocessorDefinitions Condition="$(OEIsTz) == True And $(OEIsSim) == True And $(OEIsDebug) == True">OE_SIMULATE_OPTEE;OE_API_VERSION=2;OE_BUILD_ENCLAVE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

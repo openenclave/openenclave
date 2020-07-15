@@ -13,7 +13,7 @@ add_custom_command(
 add_executable(qeidentity_host host.cpp qeidentifyinfo.cpp tests_u.c)
 
 if (HAS_QUOTE_PROVIDER)
-  target_compile_definitions(qeidentity_host PRIVATE OE_LINK_SGX_DCAP_QL)
+  target_compile_definitions(qeidentity_host PRIVATE OE_HAS_SGX_DCAP_QL)
 endif ()
 
 add_custom_command(

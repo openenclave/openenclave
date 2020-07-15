@@ -38,7 +38,7 @@ void host_verify(
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
 
 #ifdef _WIN32
     /* This is a workaround for running in Visual Studio 2017 Test Explorer
