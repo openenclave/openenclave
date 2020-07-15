@@ -32,7 +32,7 @@ You can verify that the correct version of Intel SGX PSW is installed by using
 Windows Explorer to open `C:\Windows\System32`. You should be able to find
 file `sgx_urts.dll` if PSW is installed. Right click on `sgx_urts.dll`,
 choose `Properties` and then find `Product version` on the `Details` tab.
-The version should be "2.7.xxx.xxx" or above.
+The version should be "2.8.xxx.xxx" or above.
 
 ## [Azure DCAP client for Windows](https://github.com/Microsoft/Azure-DCAP-Client/tree/master/src/Windows) [optional]
 
