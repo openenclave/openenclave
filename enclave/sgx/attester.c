@@ -24,45 +24,6 @@
 #include "../core/sgx/report.h"
 #include "platform_t.h"
 
-#if !defined(OE_USE_BUILTIN_EDL)
-/**
- * Declare the prototype of the following function to avoid the
- * missing-prototypes warning.
- */
-oe_result_t _oe_get_supported_attester_format_ids_ocall(
-    oe_result_t* _retval,
-    void* format_ids,
-    size_t format_ids_size,
-    size_t* format_ids_size_out);
-
-/**
- * Make the following OCALL weak to support the system EDL opt-in.
- * When the user does not opt into (import) the EDL, the linker will pick
- * the following default implementation. If the user opts into the EDL,
- * the implementation (which is strong) in the oeedger8r-generated code will be
- * used.
- */
-oe_result_t _oe_get_supported_attester_format_ids_ocall(
-    oe_result_t* _retval,
-    void* format_ids,
-    size_t format_ids_size,
-    size_t* format_ids_size_out)
-{
-    OE_UNUSED(format_ids);
-    OE_UNUSED(format_ids_size);
-    OE_UNUSED(format_ids_size_out);
-
-    if (_retval)
-        *_retval = OE_UNSUPPORTED;
-
-    return OE_UNSUPPORTED;
-}
-OE_WEAK_ALIAS(
-    _oe_get_supported_attester_format_ids_ocall,
-    oe_get_supported_attester_format_ids_ocall);
-
-#endif
-
 static const oe_uuid_t _local_uuid = {OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION};
 static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
 static const oe_uuid_t _ecdsa_report_uuid = {
@@ -113,7 +74,12 @@ static oe_result_t _get_evidence(
     uint8_t* endorsements = NULL;
     size_t endorsements_size = 0;
     sgx_evidence_format_type_t format_type = SGX_FORMAT_TYPE_UNKNOWN;
-    oe_uuid_t* format_id = NULL;
+    const oe_uuid_t* format_id = NULL;
+    // for ECDSA report / quote, oe_get_report_v2_internal() takes
+    // the original &_ecdsa_uuid. quote_format_id holds the format ID
+    // for this function.
+    const oe_uuid_t* quote_format_id = NULL;
+    bool is_epid_quote = false;
 
     if (!context || !evidence_buffer || !evidence_buffer_size ||
         (endorsements_buffer && !endorsements_buffer_size) ||
@@ -121,6 +87,7 @@ static oe_result_t _get_evidence(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     format_id = &context->base.format_id;
+    quote_format_id = format_id;
 
     // Set flags based on format UUID, ignore and overwrite the input value
     if (!memcmp(format_id, &_local_uuid, sizeof(oe_uuid_t)))
@@ -135,12 +102,22 @@ static oe_result_t _get_evidence(
         if (!memcmp(format_id, &_ecdsa_uuid, sizeof(oe_uuid_t)))
             format_type = SGX_FORMAT_TYPE_REMOTE;
         else if (!memcmp(format_id, &_ecdsa_report_uuid, sizeof(oe_uuid_t)))
+        {
             format_type = SGX_FORMAT_TYPE_LEGACY_REPORT;
+            quote_format_id = &_ecdsa_uuid;
+        }
+        else if (!memcmp(format_id, &_ecdsa_quote_uuid, sizeof(oe_uuid_t)))
+        {
+            format_type = SGX_FORMAT_TYPE_RAW_QUOTE;
+            quote_format_id = &_ecdsa_uuid;
+        }
         else if (
-            !memcmp(format_id, &_ecdsa_quote_uuid, sizeof(oe_uuid_t)) ||
             !memcmp(format_id, &_epid_linkable_uuid, sizeof(oe_uuid_t)) ||
             !memcmp(format_id, &_epid_unlinkable_uuid, sizeof(oe_uuid_t)))
+        {
             format_type = SGX_FORMAT_TYPE_RAW_QUOTE;
+            is_epid_quote = true;
+        }
         else
             OE_RAISE(OE_INVALID_PARAMETER);
     }
@@ -160,7 +137,7 @@ static oe_result_t _get_evidence(
         OE_CHECK_MSG(
             oe_get_report_v2_internal(
                 flags,
-                format_id,
+                quote_format_id,
                 hash.buf,
                 sizeof(hash.buf),
                 opt_params,
@@ -199,11 +176,10 @@ static oe_result_t _get_evidence(
     else // SGX_FORMAT_TYPE_LEGACY_REPORT or _QUOTE
     {
         // Get the report with the custom_claims as the report data.
-        // oe_get_report_v2_internal() takes the original &_ecdsa_uuid
         OE_CHECK_MSG(
             oe_get_report_v2_internal(
                 flags,
-                &_ecdsa_uuid,
+                quote_format_id,
                 custom_claims,
                 custom_claims_size,
                 opt_params,
@@ -214,7 +190,8 @@ static oe_result_t _get_evidence(
             oe_result_str(result));
 
         // Get the endorsements from the report if needed.
-        if (endorsements_buffer)
+        // No support of endorsements for  EPID quotes
+        if (endorsements_buffer && !is_epid_quote)
         {
             oe_report_header_t* header = (oe_report_header_t*)report;
 
@@ -430,13 +407,6 @@ static oe_result_t _get_attester_plugins(
     result = OE_OK;
 
 done:
-    if (result == OE_UNSUPPORTED)
-        OE_TRACE_WARNING(
-            "SGX remote attestation is not enabled. To "
-            "enable, please add\n\n"
-            "from \"openenclave/edl/sgx/attestation.edl\" import *;\n\n"
-            "in the edl file.\n");
-
     if (temporary_buffer)
     {
         oe_free(temporary_buffer);
