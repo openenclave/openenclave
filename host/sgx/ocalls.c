@@ -118,8 +118,6 @@ oe_result_t oe_get_quote_ocall(
     return result;
 }
 
-#if defined(OE_HAS_SGX_DCAP_QL)
-
 /* Copy the source array to an output buffer. */
 static oe_result_t _copy_output_buffer(
     void* dest,
@@ -266,60 +264,6 @@ done:
 
     return result;
 }
-
-#else /* !defined(OE_HAS_SGX_DCAP_QL) */
-
-oe_result_t oe_get_quote_verification_collateral_ocall(
-    uint8_t fmspc[6],
-    void* tcb_info,
-    size_t tcb_info_size,
-    size_t* tcb_info_size_out,
-    void* tcb_info_issuer_chain,
-    size_t tcb_info_issuer_chain_size,
-    size_t* tcb_info_issuer_chain_size_out,
-    void* pck_crl,
-    size_t pck_crl_size,
-    size_t* pck_crl_size_out,
-    void* root_ca_crl,
-    size_t root_ca_crl_size,
-    size_t* root_ca_crl_size_out,
-    void* pck_crl_issuer_chain,
-    size_t pck_crl_issuer_chain_size,
-    size_t* pck_crl_issuer_chain_size_out,
-    void* qe_identity,
-    size_t qe_identity_size,
-    size_t* qe_identity_size_out,
-    void* qe_identity_issuer_chain,
-    size_t qe_identity_issuer_chain_size,
-    size_t* qe_identity_issuer_chain_size_out)
-{
-    OE_UNUSED(fmspc);
-    OE_UNUSED(tcb_info);
-    OE_UNUSED(tcb_info_size);
-    OE_UNUSED(tcb_info_size_out);
-    OE_UNUSED(tcb_info_issuer_chain);
-    OE_UNUSED(tcb_info_issuer_chain_size);
-    OE_UNUSED(tcb_info_issuer_chain_size_out);
-    OE_UNUSED(pck_crl);
-    OE_UNUSED(pck_crl_size);
-    OE_UNUSED(pck_crl_size_out);
-    OE_UNUSED(root_ca_crl);
-    OE_UNUSED(root_ca_crl_size);
-    OE_UNUSED(root_ca_crl_size_out);
-    OE_UNUSED(pck_crl_issuer_chain);
-    OE_UNUSED(pck_crl_issuer_chain_size);
-    OE_UNUSED(pck_crl_issuer_chain_size_out);
-    OE_UNUSED(qe_identity);
-    OE_UNUSED(qe_identity_size);
-    OE_UNUSED(qe_identity_size_out);
-    OE_UNUSED(qe_identity_issuer_chain);
-    OE_UNUSED(qe_identity_issuer_chain_size);
-    OE_UNUSED(qe_identity_issuer_chain_size_out);
-
-    return OE_UNSUPPORTED;
-}
-
-#endif /* !defined(OE_HAS_SGX_DCAP_QL) */
 
 oe_result_t oe_get_qetarget_info_ocall(
     const oe_uuid_t* format_id,

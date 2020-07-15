@@ -9,5 +9,9 @@ add_custom_command(
 
 add_executable(oecert host.cpp ${CMAKE_CURRENT_BINARY_DIR}/oecert_u.c)
 
+if (HAS_QUOTE_PROVIDER)
+  target_compile_definitions(oecert PRIVATE OE_HAS_SGX_DCAP_QL)
+endif ()
+
 target_include_directories(oecert PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(oecert oehost)

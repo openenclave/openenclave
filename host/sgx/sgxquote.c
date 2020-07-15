@@ -1,6 +1,5 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
-#if defined(OE_HAS_SGX_DCAP_QL)
 
 #include "sgxquote.h"
 #include <openenclave/attestation/sgx/evidence.h>
@@ -235,5 +234,3 @@ oe_result_t oe_sgx_get_supported_attester_format_ids(
 done:
     return result;
 }
-
-#endif
