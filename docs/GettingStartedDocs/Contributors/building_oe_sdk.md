@@ -48,7 +48,7 @@ On RHEL8
 On Windows
  - [Set up Open Enclave SDK for SGX1+FLC](WindowsSGX1FLCGettingStarted.md)
  - [Set up Open Enclave SDK for SGX1](WindowsSGX1GettingStarted.md)
- - Simulation mode is supported on Windows but only on systems that have SGX1 or SGX1+FLC support.
+ - [Set up Open Enclave SDK for simulation mode](WindowsSimulatorGettingStarted.md)
 
 ## Samples
 
