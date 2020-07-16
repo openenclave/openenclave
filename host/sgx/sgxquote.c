@@ -4,11 +4,11 @@
 
 #include "sgxquote.h"
 #include <openenclave/attestation/sgx/evidence.h>
+#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/trace.h>
-#include <sgx_dcap_ql_wrapper.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../hostthread.h"
