@@ -4,8 +4,8 @@
 #include <openenclave/bits/eeid.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/elf.h>
 #include <openenclave/internal/globals.h>
-#include <openenclave/internal/print.h>
 
 /* Note: The variables below are initialized during enclave loading */
 
@@ -193,26 +193,8 @@ const void* __oe_get_isolated_image_base(void)
 
 const void* __oe_get_isolated_image_entry_point(void)
 {
-    struct elf64_ehdr
-    {
-        unsigned char e_ident[16];
-        uint16_t e_type;
-        uint16_t e_machine;
-        uint32_t e_version;
-        uint64_t e_entry;
-        uint64_t e_phoff;
-        uint64_t e_shoff;
-        uint32_t e_flags;
-        uint16_t e_ehsize;
-        uint16_t e_phentsize;
-        uint16_t e_phnum;
-        uint16_t e_shentsize;
-        uint16_t e_shnum;
-        uint16_t e_shstrndx;
-    };
-    const struct elf64_ehdr* ehdr;
+    const elf64_ehdr_t* ehdr;
 
-    oe_host_printf("sizeof=%zu\n", sizeof(struct elf64_ehdr));
     if (!(ehdr = __oe_get_isolated_image_base()))
         return NULL;
 
