@@ -7,6 +7,7 @@
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
@@ -622,7 +623,7 @@ oe_result_t oe_load_image(const char* path, oe_image_t* image)
             }
 
             /* Copy the segment to the image */
-            if (!(segdata = elf64_get_segment(&image->u.elf.elf, i)))
+            if ((segdata = elf64_get_segment(&image->u.elf.elf, i)))
                 memcpy(image_base + seg->vaddr, segdata, seg->filesz);
 
             n++;
@@ -982,7 +983,13 @@ done:
     return result;
 }
 
-static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_end)
+static oe_result_t _patch(
+    oe_enclave_image_t* image,
+    size_t enclave_end,
+    size_t isolated_image_rva,
+    size_t isolated_image_size,
+    size_t isolated_reloc_rva,
+    size_t isolated_reloc_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t* oeprops;
@@ -1047,6 +1054,33 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_end)
 
         aligned_size +=
             oe_round_up_to_multiple(image->tbss_size, image->tbss_size);
+    }
+
+    /* Set isolated-image related values */
+    {
+        if (isolated_image_rva)
+        {
+            _set_uint64_t_symbol_value(
+                image, "_isolated_image_rva", isolated_image_rva);
+        }
+
+        if (isolated_image_size)
+        {
+            _set_uint64_t_symbol_value(
+                image, "_isolated_image_size", isolated_image_size);
+        }
+
+        if (isolated_reloc_rva)
+        {
+            _set_uint64_t_symbol_value(
+                image, "_isolated_reloc_rva", isolated_reloc_rva);
+        }
+
+        if (isolated_reloc_size)
+        {
+            _set_uint64_t_symbol_value(
+                image, "_isolated_reloc_size", isolated_reloc_size);
+        }
     }
 
     if (aligned_size > OE_THREAD_LOCAL_SPACE)

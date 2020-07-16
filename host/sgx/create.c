@@ -720,7 +720,7 @@ done:
 
 oe_result_t oe_sgx_build_enclave(
     oe_sgx_load_context_t* context,
-    const char* path_in,
+    const char* path,
     const oe_sgx_enclave_properties_t* properties,
     oe_enclave_t* enclave)
 {
@@ -729,14 +729,15 @@ oe_result_t oe_sgx_build_enclave(
     size_t enclave_size = 0;
     uint64_t enclave_addr = 0;
     oe_enclave_image_t oeimage;
-    oe_image_t image;
     void* ecall_data = NULL;
     size_t oeimage_size;
-    size_t image_size;
     uint64_t vaddr = 0;
     oe_sgx_enclave_properties_t props;
     char* path1 = NULL;
     const char* path2 = NULL;
+    oe_image_t image;
+    size_t image_offset;
+    size_t image_size = 0;
 
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -758,14 +759,14 @@ oe_result_t oe_sgx_build_enclave(
         OE_RAISE(OE_FAILURE);
 
     /* Reject invalid parameters */
-    if (!context || !path_in || !enclave)
+    if (!context || !path || !enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Split the path into two paths: path and path2 */
+    /* Split the path into two paths: path1 and path2 */
     {
         char* p;
 
-        if (!(path1 = strdup(path_in)))
+        if (!(path1 = strdup(path)))
             OE_RAISE(OE_OUT_OF_MEMORY);
 
         if ((p = strchr(path1, ':')))
@@ -775,11 +776,11 @@ oe_result_t oe_sgx_build_enclave(
         }
     }
 
-    /* Load the primary enclave image */
+    /* Load the enclave image */
     if (oe_load_enclave_image(path1, &oeimage) != OE_OK)
         OE_RAISE(OE_FAILURE);
 
-    /* Load the secondary image */
+    /* Load the isolated image */
     if (path2)
     {
         if (oe_load_image(path2, &image) != OE_OK)
@@ -792,7 +793,7 @@ oe_result_t oe_sgx_build_enclave(
     {
         props = *properties;
 
-        /* Update image to the properties passed in */
+        /* Update the enclave image to the properties passed in */
         memcpy(oeimage.image_base + oeimage.oeinfo_rva, &props, sizeof(props));
     }
     else
@@ -830,15 +831,20 @@ oe_result_t oe_sgx_build_enclave(
     // Set the XFRM field
     props.config.xfrm = context->attributes.xfrm;
 
-    /* Calculate the size of image */
+    /* Calculate the size of enclave image */
     OE_CHECK(oeimage.calculate_size(&oeimage, &oeimage_size));
 
-    /* Calculate the secondary image size (zero if no secondary image) */
-    image_size = path2 ? (image.image_size + image.u.elf.reloc_size) : 0;
+    /* Calculate the isolated image size */
+    if (path2)
+        image_size = (image.image_size + image.u.elf.reloc_size);
 
     /* Calculate the size of this enclave in memory */
     OE_CHECK(_calculate_enclave_size(
         oeimage_size + image_size, &props, &enclave_end, &enclave_size));
+
+    /* Calculate the offset of the isolated image */
+    if (path2)
+        image_offset = enclave_end - image_size;
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
@@ -849,29 +855,53 @@ oe_result_t oe_sgx_build_enclave(
     enclave->size = enclave_size;
     enclave->text = enclave_addr + oeimage.text_rva;
 
-    /* Patch primary image (no need to patch the secondary image) */
-    OE_CHECK(oeimage.patch(&oeimage, enclave_size));
+    /* Patch primary image (no need to patch the secondary isolated image) */
+    {
+        const size_t isolated_image_rva = image_offset;
+        const size_t isolated_image_size = image.image_size;
+        const size_t isolated_reloc_rva = image_offset + image.image_size;
+        const size_t isolated_reloc_size = image.u.elf.reloc_size;
 
-    /* Add image to enclave */
+        OE_CHECK(oeimage.patch(
+            &oeimage,
+            enclave_size,
+            isolated_image_rva,
+            isolated_image_size,
+            isolated_reloc_rva,
+            isolated_reloc_size));
+    }
+
+    /* Add enclave image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_CHECK(_add_eeid_marker_page(
-        context, enclave, image_size, oeimage.entry_rva, &props, &vaddr));
+        context,
+        enclave,
+        oeimage_size + image_size,
+        oeimage.entry_rva,
+        &props,
+        &vaddr));
 #endif
 
     /* Add data pages */
     OE_CHECK(
         _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
 
+    /* Add the isolated image pages */
+    if (path2)
+    {
+        /* Cross-check the isolated image offset */
+        if (image_offset != vaddr)
+            OE_RAISE_MSG(OE_UNEXPECTED, "isolated image offset is wrong");
+
+        OE_CHECK(oe_add_image_pages(&image, context, enclave, &vaddr));
+    }
+
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Add optional EEID pages */
     OE_CHECK(_add_eeid_pages(context, enclave_addr, &vaddr));
-#endif
 
-    OE_CHECK(oe_add_image_pages(&image, context, enclave, &vaddr));
-
-#ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Resign */
     OE_CHECK(_eeid_resign(context, &props));
 #endif

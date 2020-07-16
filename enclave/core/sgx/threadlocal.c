@@ -24,7 +24,6 @@
 #define OE_HEAP_END_ADDRESS ((unsigned char*)__oe_get_heap_end())
 #endif /* defined (OE_HEAP_ALLOTTED_PAGE_COUNT) */
 
-
 /*
 **==============================================================================
 **

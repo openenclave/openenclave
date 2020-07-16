@@ -3,6 +3,8 @@
 
 add_executable(image image.c)
 
+add_definitions(-fPIE)
+
 target_link_libraries(
   image
   -nostdlib
