@@ -736,7 +736,7 @@ oe_result_t oe_sgx_build_enclave(
     char* path1 = NULL;
     const char* path2 = NULL;
     oe_image_t image;
-    size_t image_offset;
+    size_t image_offset = 0;
     size_t image_size = 0;
 
     if (!enclave)

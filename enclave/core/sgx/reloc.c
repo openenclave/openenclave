@@ -53,8 +53,6 @@ static bool _apply_relocations(
 
 bool oe_apply_relocations(void)
 {
-    const void* isolated_image_base;
-
     if (!_apply_relocations(
             __oe_get_enclave_base(),
             __oe_get_reloc_base(),
@@ -63,14 +61,19 @@ bool oe_apply_relocations(void)
         return false;
     }
 
-    if ((isolated_image_base = __oe_get_isolated_image_base()))
+    /* Apply locations to the isolated image if any */
     {
-        if (!_apply_relocations(
-                isolated_image_base,
-                __oe_get_isolated_reloc_base(),
-                __oe_get_isolated_reloc_size()))
+        const void* base;
+
+        if ((base = __oe_get_isolated_image_base()))
         {
-            return false;
+            if (!_apply_relocations(
+                    base,
+                    __oe_get_isolated_reloc_base(),
+                    __oe_get_isolated_reloc_size()))
+            {
+                return false;
+            }
         }
     }
 

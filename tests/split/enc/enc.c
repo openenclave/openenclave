@@ -13,17 +13,18 @@
 
 static void callback(const char* msg)
 {
-    oe_host_printf("callback(%s)\n", msg);
+    oe_host_printf("callback(): msg=\"%s\"\n", msg);
 }
 
 int split_ecall(void)
 {
-    typedef void (*start_t)(void (*callback)(const char* msg));
+    typedef int (*start_t)(void (*callback)(const char* msg));
     start_t start = __oe_get_isolated_image_entry_point();
 
     oe_assert(start);
 
-    (*start)(callback);
+    int ret = (*start)(callback);
+    printf("ret=%d\n", ret);
 
     return 0;
 }
