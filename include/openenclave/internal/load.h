@@ -50,6 +50,7 @@ typedef struct _oe_enclave_elf_image
     oe_elf_segment_t* segments;
     size_t num_segments;
     void* reloc_data;
+    size_t reloc_size;
 } oe_enclave_elf_image_t;
 
 typedef struct _oe_enclave_pe_image
@@ -76,9 +77,6 @@ struct _oe_enclave_image
     /*      oe_sgx_enclave_properties_t during signing          */
     uint64_t oeinfo_rva;
     uint64_t oeinfo_file_pos;
-
-    /* size of relocation */
-    size_t reloc_size;
 
     /* Thread-local storage .tdata section */
     uint64_t tdata_rva;
@@ -131,6 +129,26 @@ oe_result_t oe_load_pe_enclave_image(
     oe_enclave_image_t* image);
 
 oe_result_t oe_unload_enclave_image(oe_enclave_image_t* oeimage);
+
+typedef struct _oe_image
+{
+    union {
+        oe_enclave_elf_image_t elf;
+    } u;
+
+    void* image_data;
+    size_t image_size;
+} oe_image_t;
+
+oe_result_t oe_load_image(const char* path, oe_image_t* image);
+
+oe_result_t oe_free_image(oe_image_t* image);
+
+oe_result_t oe_add_image_pages(
+    oe_image_t* image,
+    oe_sgx_load_context_t* context,
+    oe_enclave_t* enclave,
+    uint64_t* vaddr);
 
 /**
  * Find the oe_sgx_enclave_properties_t struct within the given section
