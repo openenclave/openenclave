@@ -1,6 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
-#if defined(OE_LINK_SGX_DCAP_QL)
+#if defined(OE_HAS_SGX_DCAP_QL)
 
 #include "sgxquote.h"
 #include <openenclave/attestation/sgx/evidence.h>

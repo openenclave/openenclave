@@ -485,8 +485,8 @@ if (OE_SGX)
     if (WIN32)
       target_include_directories(oehost PRIVATE ${INCPATHS})
     endif ()
-    # turn on 'OE_LINK_SGX_DCAP_QL' for the preprocessor
-    target_compile_definitions(oehost PUBLIC OE_LINK_SGX_DCAP_QL)
+    # turn on 'OE_HAS_SGX_DCAP_QL' for the preprocessor
+    target_compile_definitions(oehost PUBLIC OE_HAS_SGX_DCAP_QL)
   endif ()
 endif ()
 

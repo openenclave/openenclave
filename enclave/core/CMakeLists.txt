@@ -321,7 +321,7 @@ enclave_compile_definitions(
   $<BUILD_INTERFACE:OE_API_VERSION=2>)
 
 if (HAS_QUOTE_PROVIDER)
-  enclave_compile_definitions(oecore PUBLIC OE_LINK_SGX_DCAP_QL)
+  enclave_compile_definitions(oecore PUBLIC OE_HAS_SGX_DCAP_QL)
 endif ()
 
 if (USE_DEBUG_MALLOC)

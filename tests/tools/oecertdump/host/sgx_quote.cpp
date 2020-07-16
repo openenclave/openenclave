@@ -28,7 +28,7 @@
 #include "../../../../common/sgx/quote.h"
 #include "../../../../host/sgx/sgxquoteprovider.h"
 
-#ifdef OE_LINK_SGX_DCAP_QL
+#ifdef OE_HAS_SGX_DCAP_QL
 
 extern FILE* log_file;
 
@@ -574,4 +574,4 @@ oe_result_t get_sgx_report_from_certificate(
     return result;
 }
 
-#endif // OE_LINK_SGX_DCAP_QL
+#endif // OE_HAS_SGX_DCAP_QL
