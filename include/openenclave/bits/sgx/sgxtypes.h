@@ -1035,6 +1035,17 @@ typedef struct _sgx_key
 #define OE_SEALKEY_DEFAULT_MISCMASK (~SGX_MISC_NON_SECURITY_BITS)
 #define OE_SEALKEY_DEFAULT_XFRMMASK (0X0ULL)
 
+#define SGX_QL_MK_ERROR(x) (0x0000E000 | (x))
+
+// clang-format off
+/** Define quote3_error_t enumerations  used by OE attestation code. */
+typedef enum _quote3_error_t {
+    SGX_QL_SUCCESS = 0x0000,                                         ///< Success
+    SGX_QL_ERROR_UNEXPECTED = SGX_QL_MK_ERROR(0x0001),               ///< Unexpected error
+    SGX_QL_ERROR_MAX = SGX_QL_MK_ERROR(0x00FF),                      ///< Indicate max error to allow better translation.
+} quote3_error_t;
+// clang-format on
+
 OE_EXTERNC_END
 
 #endif /* _OE_SGXTYPES_H */
