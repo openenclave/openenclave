@@ -11,7 +11,7 @@ add_subdirectory(image)
 
 add_test(
   tests/split1
-  oesign
+  ${CMAKE_BINARY_DIR}/output/bin/oesign
   sign
   -e
   ./enc/split_enc:./image/image
