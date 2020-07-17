@@ -9,17 +9,21 @@ endif ()
 
 add_subdirectory(image)
 
+set(ENCLAVE "./enc/split_enc:./image/image")
+
+set(SIGNED_ENCLAVE "./enc/split_enc.signed:./image/image")
+
 add_test(
   tests/split1
   ${CMAKE_BINARY_DIR}/output/bin/oesign
   sign
   -e
-  ./enc/split_enc:./image/image
+  ${SIGNED_ENCLAVE}
   -c
   ${CMAKE_CURRENT_SOURCE_DIR}/sign.conf
   -k
   ${CMAKE_CURRENT_SOURCE_DIR}/key.pem)
 
-add_test(tests/split2 ./host/split_host ./enc/split_enc:./image/image)
+add_test(tests/split2 ./host/split_host ${ENCLAVE})
 
-add_test(tests/split3 ./host/split_host ./enc/split_enc.signed:./image/image)
+add_test(tests/split3 ./host/split_host ${SIGNED_ENCLAVE})
