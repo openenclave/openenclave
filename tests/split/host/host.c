@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
+#include <openenclave/internal/eeid.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +16,30 @@ int main(int argc, const char* argv[])
     const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
     const uint32_t flags = oe_get_create_flags();
     int retval;
+    oe_enclave_setting_t setting_buf;
+    const oe_enclave_setting_t* settings = NULL;
+    size_t settings_count = 0;
+    oe_eeid_t* eeid = NULL;
+
+    (void)setting_buf;
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    {
+        char data[] = "abcdefghijklmnopqrstuvwxyz";
+
+        oe_create_eeid_sgx(sizeof(data), &eeid);
+        eeid->size_settings.num_heap_pages = 4096;
+        eeid->size_settings.num_stack_pages = 1024;
+        eeid->size_settings.num_tcs = 4;
+        memcpy(eeid->data, data, sizeof(data));
+
+        memset(&setting_buf, 0, sizeof(setting_buf));
+        setting_buf.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
+        setting_buf.u.eeid = eeid;
+        settings = &setting_buf;
+        settings_count = 1;
+    }
+#endif
 
     if (argc != 2)
     {
@@ -22,7 +47,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    r = oe_create_split_enclave(argv[1], type, flags, NULL, 0, &enclave);
+    r = oe_create_split_enclave(argv[1], type, flags, settings, 1, &enclave);
     OE_TEST(r == OE_OK);
 
     r = split_ecall(enclave, &retval);
@@ -32,6 +57,8 @@ int main(int argc, const char* argv[])
     OE_TEST(r == OE_OK);
 
     printf("=== passed all tests (split)\n");
+
+    free(eeid);
 
     return 0;
 }

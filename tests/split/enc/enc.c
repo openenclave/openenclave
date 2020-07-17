@@ -20,7 +20,6 @@ int split_ecall(void)
 {
     typedef int (*start_t)(void (*callback)(const char* msg));
     start_t start = __oe_get_isolated_image_entry_point();
-
     oe_assert(start);
 
     int ret = (*start)(callback);
@@ -29,7 +28,7 @@ int split_ecall(void)
     return 0;
 }
 
-#if 1
+#if 0
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */

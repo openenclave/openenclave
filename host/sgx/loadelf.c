@@ -1068,6 +1068,8 @@ static oe_result_t _patch(
         {
             _set_uint64_t_symbol_value(
                 image, "_isolated_image_size", isolated_image_size);
+
+            oeprops->image_info.heap_rva += isolated_image_size;
         }
 
         if (isolated_reloc_rva)
@@ -1080,6 +1082,8 @@ static oe_result_t _patch(
         {
             _set_uint64_t_symbol_value(
                 image, "_isolated_reloc_size", isolated_reloc_size);
+
+            oeprops->image_info.heap_rva += isolated_reloc_size;
         }
     }
 

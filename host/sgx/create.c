@@ -843,7 +843,7 @@ oe_result_t oe_sgx_build_enclave(
 
     /* Calculate the offset of the isolated image */
     if (path2)
-        image_offset = enclave_end - image_size;
+        image_offset = oeimage_size;
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
@@ -873,6 +873,22 @@ oe_result_t oe_sgx_build_enclave(
     /* Add enclave image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
+    /* Add the isolated image pages to the enclave */
+    if (path2)
+    {
+        /* Cross-check the isolated image offset */
+        if (image_offset != vaddr)
+        {
+            OE_RAISE_MSG(
+                OE_UNEXPECTED,
+                "isolated image offset is wrong: image_offset=%lu vaddr=%lu",
+                image_offset,
+                vaddr);
+        }
+
+        OE_CHECK(oe_add_image_pages(&image, context, enclave, &vaddr));
+    }
+
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_CHECK(_add_eeid_marker_page(
         context,
@@ -886,16 +902,6 @@ oe_result_t oe_sgx_build_enclave(
     /* Add data pages */
     OE_CHECK(
         _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
-
-    /* Add the isolated image pages */
-    if (path2)
-    {
-        /* Cross-check the isolated image offset */
-        if (image_offset != vaddr)
-            OE_RAISE_MSG(OE_UNEXPECTED, "isolated image offset is wrong");
-
-        OE_CHECK(oe_add_image_pages(&image, context, enclave, &vaddr));
-    }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Add optional EEID pages */
