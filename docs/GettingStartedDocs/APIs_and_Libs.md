@@ -25,3 +25,5 @@ The subset of [mbedtls](https://tls.mbed.org/) functionality for use inside an e
 ## [System EDL files](/docs/SystemEdls.md)
 
 The list of system EDL files that allow for user opt-in.
+
+Note: At this time, a single application consuming both an OE SDK enclave and an Intel SGX SDK enclave is an unsupported scenario. Issue #3174 tracks this scenario.
