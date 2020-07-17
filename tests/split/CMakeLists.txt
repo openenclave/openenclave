@@ -20,10 +20,10 @@ add_test(
   -e
   ${ENCLAVE}
   -c
-  ${CMAKE_CURRENT_SOURCE_DIR}/sign2.conf
+  ${CMAKE_CURRENT_SOURCE_DIR}/sign.conf
   -k
   ${CMAKE_CURRENT_SOURCE_DIR}/key.pem)
 
-#add_test(tests/split2 ./host/split_host ${ENCLAVE})
+add_test(tests/split2 ./host/split_host ${ENCLAVE})
 
 add_test(tests/split3 ./host/split_host ${SIGNED_ENCLAVE})
