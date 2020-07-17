@@ -5,6 +5,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <signal.h>
 #include <stdio.h>
@@ -346,7 +347,14 @@ done:
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_HAS_SGX_DCAP_QL
+    if (!oe_has_sgx_quote_provider())
+    {
+        // this test should not run on any platforms where DCAP libraries are
+        // not found.
+        OE_TRACE_INFO("=== tests skipped when DCAP libraries are not found.\n");
+        return SKIP_RETURN_CODE;
+    }
+
     oe_result_t result = OE_FAILURE;
     uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
     int ret = 0;
@@ -401,12 +409,4 @@ done:
     OE_TRACE_INFO("=== passed all tests (tls)\n");
 
     return 0;
-#else
-    // this test should not run on any platforms where OE_HAS_SGX_DCAP_QL is
-    // not defined
-    OE_UNUSED(argc);
-    OE_UNUSED(argv);
-    OE_TRACE_INFO("=== tests skipped when built with OE_HAS_SGX_DCAP_QL=OFF\n");
-    return SKIP_RETURN_CODE;
-#endif
 }

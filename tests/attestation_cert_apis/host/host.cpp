@@ -5,6 +5,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,7 +131,13 @@ void run_test(oe_enclave_t* enclave, int test_type)
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_HAS_SGX_DCAP_QL
+    if (!oe_has_sgx_quote_provider())
+    {
+        // this test should not run on any platforms where DCAP libraries are
+        // not found.
+        OE_TRACE_INFO("=== tests skipped when DCAP libraries are not found.\n");
+        return SKIP_RETURN_CODE;
+    }
 
 #ifdef _WIN32
     /* This is a workaround for running in Visual Studio 2017 Test Explorer
@@ -195,12 +202,4 @@ int main(int argc, const char* argv[])
     OE_TEST(result == OE_OK);
     OE_TRACE_INFO("=== passed all tests (tls)\n");
     return 0;
-#else
-    // this test should not run on any platforms where HAS_QUOTE_PROVIDER is not
-    // defined
-    OE_UNUSED(argc);
-    OE_UNUSED(argv);
-    OE_TRACE_INFO("=== tests skipped when built with HAS_QUOTE_PROVIDER=OFF\n");
-    return SKIP_RETURN_CODE;
-#endif
 }

@@ -12,10 +12,6 @@ add_custom_command(
 
 add_executable(qeidentity_host host.cpp qeidentifyinfo.cpp tests_u.c)
 
-if (HAS_QUOTE_PROVIDER)
-  target_compile_definitions(qeidentity_host PRIVATE OE_HAS_SGX_DCAP_QL)
-endif ()
-
 add_custom_command(
   TARGET qeidentity_host
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data

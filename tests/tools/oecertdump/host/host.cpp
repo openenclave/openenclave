@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
@@ -12,8 +13,6 @@
 #include "oecertdump_u.h"
 
 #include "sgx_quote.h"
-
-#ifdef OE_HAS_SGX_DCAP_QL
 
 #define INPUT_PARAM_USAGE "--help"
 #define INPUT_PARAM_OUT_FILE "--out"
@@ -272,13 +271,17 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     return result;
 }
 
-#endif // OE_HAS_SGX_DCAP_QL
-
 int main(int argc, const char* argv[])
 {
     int ret = 0;
 
-#ifdef OE_HAS_SGX_DCAP_QL
+    if (!oe_has_sgx_quote_provider())
+    {
+        fprintf(
+            stderr, "FAILURE: DCAP libraries must be present for this test.\n");
+        return -1;
+    }
+
     oe_result_t result;
     oe_enclave_t* enclave = nullptr;
 
@@ -347,12 +350,5 @@ exit:
         fclose(log_file);
     }
 
-#else
-#pragma message( \
-    "OE_HAS_SGX_DCAP_QL is not set to ON.  This tool requires DCAP libraries.")
-    OE_UNUSED(argc);
-    OE_UNUSED(argv);
-    printf("oecertdump requires DCAP libraries.\n");
-#endif
     return ret;
 }

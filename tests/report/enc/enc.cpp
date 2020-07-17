@@ -17,23 +17,15 @@ oe_result_t test_verify_tcb_info(
     oe_tcb_info_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_tcb_info)
 {
-#ifdef OE_HAS_SGX_DCAP_QL
     return oe_parse_tcb_info_json(
         (const uint8_t*)tcb_info,
         strlen(tcb_info) + 1,
         platform_tcb_level,
         parsed_tcb_info);
-#else
-    OE_UNUSED(tcb_info);
-    OE_UNUSED(platform_tcb_level);
-    OE_UNUSED(parsed_tcb_info);
-    return OE_OK;
-#endif
 }
 
 void test_minimum_issue_date(oe_datetime_t now)
 {
-#ifdef OE_HAS_SGX_DCAP_QL
     static uint8_t* report;
     size_t report_size = 0;
     static uint8_t* report_v2;
@@ -102,9 +94,6 @@ void test_minimum_issue_date(oe_datetime_t now)
     oe_free_report(report_v2);
 
     printf("test_minimum_issue_date passed.\n");
-#else
-    OE_UNUSED(now);
-#endif
 }
 
 void enclave_test_local_report(sgx_target_info_t* target_info)
