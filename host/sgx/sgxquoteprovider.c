@@ -12,9 +12,6 @@
 #include "../hostthread.h"
 #include "sgxquoteprovider.h"
 
-// Define the name of CA
-static uint8_t CRL_CA_PROCESSOR[] = "processor";
-
 /**
  * This file manages the dcap_quoteprov shared library.
  * It loads the library during program startup and keeps it loaded until the
@@ -59,6 +56,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
     oe_result_t result = OE_FAILURE;
     sgx_plat_error_t r = SGX_PLAT_ERROR_OUT_OF_MEMORY;
     sgx_ql_qve_collateral_t* collateral = NULL;
+    char* ca_type = NULL;
     uint32_t host_buffer_size = 0;
     uint8_t* p = 0;
     uint8_t* p_end = 0;
@@ -66,6 +64,13 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
 
     uint8_t* fmspc = args->fmspc;
     uint16_t fmspc_size = sizeof(args->fmspc);
+
+    if (args->collateral_provider == CRL_CA_PROCESSOR)
+        ca_type = "processor";
+    else if (args->collateral_provider == CRL_CA_PLATFORM)
+        ca_type = "platform";
+    else
+        OE_RAISE_MSG(OE_INVALID_ENDORSEMENT, "invalid CA type", NULL);
 
     OE_CHECK(oe_initialize_quote_provider());
 
@@ -80,7 +85,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
 
     // fetch collateral information
     r = provider.get_sgx_quote_verification_collateral(
-        fmspc, fmspc_size, (char*)CRL_CA_PROCESSOR, &collateral);
+        fmspc, fmspc_size, ca_type, &collateral);
     if (r != SGX_PLAT_ERROR_OK || collateral == NULL)
     {
         OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);

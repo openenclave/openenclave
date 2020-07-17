@@ -71,6 +71,7 @@ enclave
 
         oe_result_t oe_get_quote_verification_collateral_ocall(
             [in] uint8_t fmspc[6],
+            uint8_t collateral_provider,
             [out, size=tcb_info_size] void* tcb_info,
             size_t tcb_info_size,
             [out] size_t* tcb_info_size_out,

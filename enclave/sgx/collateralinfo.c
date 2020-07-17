@@ -20,6 +20,7 @@
 oe_result_t _oe_get_quote_verification_collateral_ocall(
     oe_result_t* _retval,
     uint8_t fmspc[6],
+    uint8_t collateral_provider,
     void* tcb_info,
     size_t tcb_info_size,
     size_t* tcb_info_size_out,
@@ -52,6 +53,7 @@ oe_result_t _oe_get_quote_verification_collateral_ocall(
 oe_result_t _oe_get_quote_verification_collateral_ocall(
     oe_result_t* _retval,
     uint8_t fmspc[6],
+    uint8_t collateral_provider,
     void* tcb_info,
     size_t tcb_info_size,
     size_t* tcb_info_size_out,
@@ -75,6 +77,7 @@ oe_result_t _oe_get_quote_verification_collateral_ocall(
     size_t* qe_identity_issuer_chain_size_out)
 {
     OE_UNUSED(fmspc);
+    OE_UNUSED(collateral_provider);
     OE_UNUSED(tcb_info);
     OE_UNUSED(tcb_info_size);
     OE_UNUSED(tcb_info_size_out);
@@ -160,6 +163,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         0,
         {0},
         0,
+        0,
         TCBINFO_DEFAULT_SIZE,
         0,
         ALL_ISSUER_CHAIN_DEFAULT_SIZE,
@@ -182,6 +186,8 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
 
     /* fmspc */
     memcpy(in.fmspc, args->fmspc, sizeof(in.fmspc));
+    /* collateral_provider */
+    in.collateral_provider = args->collateral_provider;
     oe_prealloc_quote_verification_collateral_args(&in, &default_arg_size);
 
     for (;;)
@@ -191,6 +197,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         OE_CHECK(oe_get_quote_verification_collateral_ocall(
             &retval,
             out.fmspc,
+            out.collateral_provider,
             out.tcb_info,
             out.tcb_info_size,
             &out.tcb_info_size,

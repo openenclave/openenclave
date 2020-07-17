@@ -43,6 +43,22 @@ done:
     return result;
 }
 
+// determine CA provider type by platform_instance_id from SGX PCK certificate
+// which is 16 bytes long
+static oe_result_t _get_crl_ca_type(
+    uint8_t* platform_instance_id,
+    oe_get_sgx_quote_verification_collateral_args_t* args)
+{
+    uint8_t null_platform_id[16] = {0};
+    if (memcmp(
+            platform_instance_id, null_platform_id, sizeof(null_platform_id)) ==
+        0)
+        args->collateral_provider = CRL_CA_PROCESSOR;
+    else
+        args->collateral_provider = CRL_CA_PLATFORM;
+    return OE_OK;
+}
+
 static oe_result_t _get_tcb_info_validity(
     const oe_parsed_tcb_info_t* parsed_tcb_info,
     oe_datetime_t* from,
@@ -203,6 +219,9 @@ oe_result_t oe_get_sgx_quote_verification_collateral_from_certs(
         parsed_extension_info.fmspc,
         sizeof(parsed_extension_info.fmspc)));
 
+    // Use platform instance id to determine the collateral provider (PCK CA)
+    OE_CHECK(
+        _get_crl_ca_type(parsed_extension_info.opt_platform_instance_id, args));
     OE_CHECK(oe_get_sgx_quote_verification_collateral(args));
 
     result = OE_OK;
