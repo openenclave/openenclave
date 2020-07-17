@@ -15,8 +15,10 @@ limits.h | Yes | - |
 locale.h | Partial | Only basic support for C/POSIX locale |
 malloc.h | Partial | - |
 math.h | Partial | **Unsupported functions:** fmal(), tgamma() |
+netdb.h | Partial | Functions implicitly call out to untrusted host. **Supported functions:** getaddrinfo(), freeaddrinfo(), getnameinfo() |
 setjmp.h | Yes | - |
 signal.h | No | - |
+socket.h | Partial | Functions implicitly call out to untrusted host. <br> Full support available on Linux hosts. <br> **Unsupported functions on Windows hosts:**  recvmsg(), sendmsg(), socketpair() |
 stdalign.h | No | - |
 stdarg.h | Yes | - |
 stdatomic.h | No | - |
