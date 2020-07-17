@@ -20,7 +20,7 @@ add_enclave(
   ${CMAKE_CURRENT_BINARY_DIR}/tests_t.c)
 
 if (HAS_QUOTE_PROVIDER)
-  enclave_compile_definitions(qeidentity_enc PRIVATE HAS_QUOTE_PROVIDER)
+  enclave_compile_definitions(qeidentity_enc PRIVATE OE_HAS_SGX_DCAP_QL)
 endif ()
 
 enclave_include_directories(qeidentity_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}

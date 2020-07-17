@@ -320,10 +320,6 @@ enclave_compile_definitions(
   # package.
   $<BUILD_INTERFACE:OE_API_VERSION=2>)
 
-if (HAS_QUOTE_PROVIDER)
-  enclave_compile_definitions(oecore PUBLIC OE_HAS_SGX_DCAP_QL)
-endif ()
-
 if (USE_DEBUG_MALLOC)
   enclave_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
   message(

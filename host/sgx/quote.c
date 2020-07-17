@@ -10,10 +10,8 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 
-#if defined(OE_HAS_SGX_DCAP_QL)
 #include "sgxquote.h"
 #include "sgxquoteprovider.h"
-#endif
 
 oe_result_t sgx_get_qetarget_info(
     const oe_uuid_t* format_id,
@@ -28,7 +26,6 @@ oe_result_t sgx_get_qetarget_info(
 
     memset(target_info, 0, sizeof(sgx_target_info_t));
 
-#if defined(OE_HAS_SGX_DCAP_QL)
     // Quote workflow always begins with obtaining the target info. Therefore
     // initializing the quote provider here ensures that that we can control its
     // life time rather than Intel's attestation libraries.
@@ -39,9 +36,6 @@ oe_result_t sgx_get_qetarget_info(
     OE_CHECK(oe_sgx_qe_get_target_info(
         format_id, opt_params, opt_params_size, (uint8_t*)target_info));
     result = OE_OK;
-#else
-    result = OE_UNSUPPORTED;
-#endif
 done:
     return result;
 }
@@ -63,12 +57,8 @@ oe_result_t sgx_get_quote_size(
     if (!quote_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if defined(OE_HAS_SGX_DCAP_QL)
     result = oe_sgx_qe_get_quote_size(
         format_id, opt_params, opt_params_size, quote_size);
-#else
-    result = OE_UNSUPPORTED;
-#endif
 
 done:
     return result;
@@ -111,8 +101,6 @@ oe_result_t sgx_get_quote(
     memset(quote, 0, *quote_size);
 
     /* Get the quote from the AESM service */
-
-#if defined(OE_HAS_SGX_DCAP_QL)
     result = oe_sgx_qe_get_quote(
         format_id,
         opt_params,
@@ -120,9 +108,6 @@ oe_result_t sgx_get_quote(
         (uint8_t*)report,
         *quote_size,
         quote);
-#else
-    result = OE_UNSUPPORTED;
-#endif
 
 done:
 
@@ -138,14 +123,8 @@ oe_result_t sgx_get_supported_attester_format_ids(
     if (!format_ids && !format_ids_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if defined(OE_HAS_SGX_DCAP_QL)
     result =
         oe_sgx_get_supported_attester_format_ids(format_ids, format_ids_size);
-#else
-    // No supported format ID
-    *format_ids_size = 0;
-    result = OE_OK;
-#endif
 
 done:
     return result;
