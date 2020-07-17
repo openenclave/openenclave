@@ -692,7 +692,6 @@ static oe_result_t _add_eeid_pages(
         size_t num_bytes = oe_eeid_byte_size(eeid);
         size_t num_pages =
             num_bytes / OE_PAGE_SIZE + ((num_bytes % OE_PAGE_SIZE) ? 1 : 0);
-
         oe_page_t* page = oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
         for (size_t i = 0; i < num_pages; i++)
         {

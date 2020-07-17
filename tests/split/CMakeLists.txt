@@ -18,7 +18,7 @@ add_test(
   ${CMAKE_BINARY_DIR}/output/bin/oesign
   sign
   -e
-  ${SIGNED_ENCLAVE}
+  ${ENCLAVE}
   -c
   ${CMAKE_CURRENT_SOURCE_DIR}/sign.conf
   -k

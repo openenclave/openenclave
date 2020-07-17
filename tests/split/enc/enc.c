@@ -29,6 +29,7 @@ int split_ecall(void)
     return 0;
 }
 
+#if 1
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
@@ -36,3 +37,4 @@ OE_SET_ENCLAVE_SGX(
     1024, /* NumHeapPages */
     1024, /* NumStackPages */
     2);   /* NumTCS */
+#endif
