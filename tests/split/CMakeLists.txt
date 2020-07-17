@@ -20,6 +20,6 @@ add_test(
   -k
   ${CMAKE_CURRENT_SOURCE_DIR}/key.pem)
 
-add_test(tests/split2 ./host/split_host ./enc/split_enc ./image/image)
+add_test(tests/split2 ./host/split_host ./enc/split_enc:./image/image)
 
-add_test(tests/split3 ./host/split_host ./enc/split_enc.signed ./image/image)
+add_test(tests/split3 ./host/split_host ./enc/split_enc.signed:./image/image)
