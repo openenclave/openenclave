@@ -55,10 +55,10 @@ Plugging in a custom allocator is a straight-forward process that involves two s
     # snmalloc requires at least 256 KB per enclave thread.
     # Given 16 enclave threads (NumTCS), this implies
     #    minimum heap size = (256 * 1024 * 16) / 4096 = 1044 pages.
-    # The heap size (8192 pages) is well above the minimum requirement,
+    # The heap size (4096 pages) is well above the minimum requirement,
     # and accounts for the large number of allocations performed by
     # each enclave thread in the sample.
-    NumHeapPages=8192
+    NumHeapPages=4096
     NumTCS=16
     ```
 
