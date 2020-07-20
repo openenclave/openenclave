@@ -21,10 +21,6 @@ add_enclave(
   ../common/tests.cpp
   tests_t.c)
 
-if (HAS_QUOTE_PROVIDER)
-  enclave_compile_definitions(report_enc PRIVATE OE_HAS_SGX_DCAP_QL)
-endif ()
-
 enclave_include_directories(report_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                             ${CMAKE_CURRENT_SOURCE_DIR}/../common)
 

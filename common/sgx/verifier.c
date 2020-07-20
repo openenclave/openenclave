@@ -16,7 +16,7 @@
 #include "quote.h"
 #include "report.h"
 
-#if defined(OE_HAS_SGX_DCAP_QL) && !defined(OE_BUILD_ENCLAVE)
+#if !defined(OE_BUILD_ENCLAVE)
 #include "../../host/sgx/sgxquoteprovider.h"
 #endif
 
@@ -48,7 +48,7 @@ static oe_result_t _on_register(
     OE_UNUSED(configuration_data);
     OE_UNUSED(configuration_data_size);
 
-#if defined(OE_BUILD_ENCLAVE) || !defined(OE_HAS_SGX_DCAP_QL)
+#if defined(OE_BUILD_ENCLAVE)
     return OE_OK;
 #else
     return oe_initialize_quote_provider();

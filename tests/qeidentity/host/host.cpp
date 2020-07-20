@@ -4,6 +4,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
 #include <ctime>
@@ -47,13 +48,12 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
 
-#ifdef OE_HAS_SGX_DCAP_QL
-
-    run_parse_advisoryids_json_test();
-    run_qe_identity_test_cases(enclave);
-    run_qe_identity_v2_test_cases(enclave);
-
-#endif
+    if (oe_has_sgx_quote_provider())
+    {
+        run_parse_advisoryids_json_test();
+        run_qe_identity_test_cases(enclave);
+        run_qe_identity_v2_test_cases(enclave);
+    }
 
     /* Terminate the enclave */
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)

@@ -6,6 +6,8 @@
 #include <openenclave/attestation/sgx/eeid_verifier.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/plugin.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 
 #include "../../../common/sgx/endorsements.h"
@@ -286,11 +288,18 @@ void multiple_enclaves_tests(const char* filename, uint32_t flags)
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_HAS_SGX_DCAP_QL
     if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
         exit(1);
+    }
+
+    if (!oe_has_sgx_quote_provider())
+    {
+        // this test should not run on any platforms where DCAP libraries are
+        // not found.
+        OE_TRACE_INFO("=== tests skipped when DCAP libraries are not found.\n");
+        return SKIP_RETURN_CODE;
     }
 
     // Skip test in simulation mode because of memory alignment issues, same as
@@ -307,12 +316,4 @@ int main(int argc, const char* argv[])
     oe_sgx_eeid_verifier_shutdown();
 
     return 0;
-#else
-    // This test should not run on any platforms where HAS_QUOTE_PROVIDER is not
-    // defined.
-    OE_UNUSED(argc);
-    OE_UNUSED(argv);
-    printf("=== tests skipped when built with HAS_QUOTE_PROVIDER=OFF\n");
-    return SKIP_RETURN_CODE;
-#endif
 }

@@ -28,8 +28,6 @@
 #include "../../../../common/sgx/quote.h"
 #include "../../../../host/sgx/sgxquoteprovider.h"
 
-#ifdef OE_HAS_SGX_DCAP_QL
-
 extern FILE* log_file;
 
 #define OE_PEM_BEGIN_CERTIFICATE "-----BEGIN CERTIFICATE-----"
@@ -573,5 +571,3 @@ oe_result_t get_sgx_report_from_certificate(
 
     return result;
 }
-
-#endif // OE_HAS_SGX_DCAP_QL

@@ -14,10 +14,6 @@ add_custom_command(
 
 add_executable(report_host host.cpp tcbinfo.cpp ../common/tests.cpp tests_u.c)
 
-if (HAS_QUOTE_PROVIDER)
-  target_compile_definitions(report_host PRIVATE OE_HAS_SGX_DCAP_QL)
-endif ()
-
 add_custom_command(
   TARGET report_host
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../data

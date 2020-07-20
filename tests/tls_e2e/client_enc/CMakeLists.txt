@@ -19,10 +19,6 @@ add_enclave(
   ../common/utility.cpp
   tls_e2e_t.c)
 
-if (HAS_QUOTE_PROVIDER)
-  enclave_compile_definitions(tls_client_enc PRIVATE OE_HAS_SGX_DCAP_QL)
-endif ()
-
 set_source_files_properties(tls_e2e_t.c PROPERTIES COMPILE_FLAGS
                                                    "-Wno-conversion")
 

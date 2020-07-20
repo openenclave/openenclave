@@ -1,6 +1,5 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
-#ifdef OE_HAS_SGX_DCAP_QL
 
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
@@ -393,5 +392,3 @@ void run_qe_identity_v2_test_cases(oe_enclave_t* enclave)
         printf("passed\n");
     }
 }
-
-#endif
