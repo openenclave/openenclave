@@ -91,7 +91,7 @@ To build debug enclaves:
 cd C:/Users/test/openenclave
 mkdir build/x64-Debug
 cd build/x64-Debug
-cmake -G Ninja -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
+cmake -G Ninja -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
 ninja
 ```
 
@@ -102,7 +102,7 @@ Similarly, to build release enclaves, specify the flag
 cd C:/Users/test/openenclave
 mkdir build/x64-Release
 cd build/x64-Release
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=c:/openenclave ../..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=c:/openenclave ../..
 ninja
 ```
 
@@ -111,7 +111,7 @@ To build enclaves with LVI mitigation, specify the flag `-DLVI_MITIGATION=Contro
 cd C:/Users/test/openenclave
 mkdir build/x64-LVI
 cd build/x64-LVI
-cmake -G Ninja -DLVI_MITIGATION=ControlFlow -DHAS_QUOTE_PROVIDER=OFF -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
+cmake -G Ninja -DLVI_MITIGATION=ControlFlow -DNUGET_PACKAGE_PATH=C:/oe_prereqs -DCMAKE_INSTALL_PREFIX=C:/openenclave ../..
 ninja
 ```
 Refer to the [LVI Mitigation](AdvancedBuildInfo.md#lvi-mitigation) documentation for further information.

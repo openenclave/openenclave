@@ -2,10 +2,41 @@
 # Licensed under the MIT License.
 
 # This script requires the variables SOURCE_DIR, BUILD_DIR,
-# COMPILER_SUPPORTS_SNMALLOC, USE_DEBUG_MALLOC and
-# PREFIX_DIR to be defined:
+# COMPILER_SUPPORTS_SNMALLOC, USE_DEBUG_MALLOC and PREFIX_DIR to be defined:
 #
-#     cmake -DHAS_QUOTE_PROVIDER=ON -DSOURCE_DIR=~/openenclave -DBUILD_DIR=~/openenclave/build -DPREFIX_DIR=/opt/openenclave -P ~/openenclave/samples/test-samples.cmake
+#     cmake -DSOURCE_DIR=~/openenclave \
+#           -DBUILD_DIR=~/openenclave/build
+#           -DPREFIX_DIR=/opt/openenclave \
+#           -P ~/openenclave/samples/test-samples.cmake
+
+# Determine whether DCAP quote provider libraries are available in the system.
+# Delete the file and create afresh so that DCAP libraries are checked
+# every time samples test is run.
+file(REMOVE check_quote_provider/CMakeLists.txt)
+configure_file(${SOURCE_DIR}/check_quote_provider.cmake
+               check_quote_provider/CMakeLists.txt COPYONLY)
+
+# When executed in script mode (i.e -P), find_library command is not supported.
+# Therefore run cmake on the above created CMakeLists.txt. It internally
+# invokes find_library and will error out if sgx_dcap_ql is not found.
+execute_process(
+  COMMAND ${CMAKE_COMMAND} .
+  WORKING_DIRECTORY check_quote_provider
+  OUTPUT_QUIET ERROR_QUIET
+  RESULT_VARIABLE COMMAND_EXIT_CODE)
+
+if (COMMAND_EXIT_CODE EQUAL 0)
+  set(HAS_QUOTE_PROVIDER on)
+  message(
+    STATUS
+      "System has DCAP libraries. Attestation based samples will be tested.")
+else ()
+  set(HAS_QUOTE_PROVIDER off)
+  message(
+    WARNING
+      "System does not have DCAP libraries. Attestation based samples will NOT be tested."
+  )
+endif ()
 
 # Set SAMPLES_LIST so that helloworld becomes the first if BUILD_ENCLAVES=ON.
 if (BUILD_ENCLAVES)
@@ -79,8 +110,7 @@ foreach (SAMPLE ${SAMPLES_LIST})
       COMMAND
         ${CMAKE_COMMAND}
         -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/openenclave/cmake -G Ninja
-        -DNUGET_PACKAGE_PATH=${NUGET_PACKAGE_PATH}
-        -DHAS_QUOTE_PROVIDER=${HAS_QUOTE_PROVIDER} ${SAMPLE_SOURCE_DIR}
+        -DNUGET_PACKAGE_PATH=${NUGET_PACKAGE_PATH} ${SAMPLE_SOURCE_DIR}
       WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
   else ()
     execute_process(

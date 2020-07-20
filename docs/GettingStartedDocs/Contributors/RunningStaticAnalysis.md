@@ -22,7 +22,7 @@
     For example:
 
     ```{bash}
-    $ scan-build cmake .. -G Ninja -DHAS_QUOTE_PROVIDER=OFF
+    $ scan-build cmake .. -G Ninja
     $ scan-build ninja
     ```
 
@@ -55,7 +55,7 @@ bugs and should be fixed.
 Clang 8 adds the ability to exclude specific directories from static analysis.
 
 ```{bash}
-$ scan-build-8 cmake .. -G Ninja -DHAS_QUOTE_PROVIDER=OFF
+$ scan-build-8 cmake .. -G Ninja
 $ scan-build-8 --exclude 3rdparty/ ninja
 ```
 
@@ -63,6 +63,6 @@ Additionally, scan-build can be run with a mismatched version of clang. For exam
 scan-build-8 can use clang-7 as a compiler:
 
 ```
-$ scan-build-8 --use-analyzer=/usr/bin/clang-7 cmake .. -G Ninja -DHAS_QUOTE_PROVIDER=OFF
+$ scan-build-8 --use-analyzer=/usr/bin/clang-7 cmake .. -G Ninja
 $ scan-build-8 --use-analyzer=/usr/bin/clang-7 --exclude 3rdparty/ ninja
 ```

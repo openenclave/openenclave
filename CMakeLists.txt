@@ -200,12 +200,6 @@ include(package_settings)
 # See `cmake/add_enclave.cmake` for enclave creation logic
 include(add_enclave)
 
-# User configurable options.
-option(
-  HAS_QUOTE_PROVIDER
-  "Take a build dependency on SGX DCAP, which requires FLC on target device to run."
-  ON)
-
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG")

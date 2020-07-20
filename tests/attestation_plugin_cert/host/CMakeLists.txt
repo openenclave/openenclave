@@ -14,10 +14,6 @@ add_custom_command(
 
 add_executable(tls_cert_host host.cpp tls_u.c)
 
-if (HAS_QUOTE_PROVIDER)
-  target_compile_definitions(tls_cert_host PRIVATE OE_HAS_SGX_DCAP_QL)
-endif ()
-
 target_include_directories(tls_cert_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(tls_cert_host oehost)
 
