@@ -86,6 +86,6 @@ function (configure_lvi_mitigation_build)
         ${OE_BINDIR}/${CXX_COMPILER}
         PARENT_SCOPE)
   else ()
-    message(FATAL_ERROR "-- ${CXX_COMPILER} is not supported.")
+    message(FATAL_ERROR "-- ${OE_BINDIR}/${CXX_COMPILER} is not supported.")
   endif ()
 endfunction ()
