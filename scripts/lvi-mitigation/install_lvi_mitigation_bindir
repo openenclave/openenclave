@@ -2,6 +2,8 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
+set -o errexit
+
 script=$(readlink -f "$0")
 script_path=$(dirname "$script")
 curr_path=$(pwd)
