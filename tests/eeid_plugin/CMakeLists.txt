@@ -8,4 +8,4 @@ if (BUILD_ENCLAVES)
 endif ()
 
 add_enclave_test(tests/eeid_plugin eeid_plugin_host eeid_plugin_enc_signed)
-set_tests_properties(tests/eeid_plugin PROPERTIES SKIP_RETURN_CODE 2)
+set_enclave_tests_properties(tests/eeid_plugin PROPERTIES SKIP_RETURN_CODE 2)

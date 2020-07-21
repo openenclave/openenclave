@@ -22,6 +22,6 @@ add_enclave(
   ../test_helpers.c
   ${CMAKE_CURRENT_BINARY_DIR}/eeid_plugin_t.c)
 
-target_compile_definitions(eeid_plugin_enc PRIVATE OE_WITH_EXPERIMENTAL_EEID)
-target_include_directories(eeid_plugin_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(eeid_plugin_enc oeenclave oelibc)
+enclave_compile_definitions(eeid_plugin_enc PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+enclave_include_directories(eeid_plugin_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+enclave_link_libraries(eeid_plugin_enc oeenclave oelibc)
