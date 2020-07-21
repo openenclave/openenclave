@@ -54,11 +54,11 @@ Plugging in a custom allocator is a straight-forward process that involves two s
     ```
     # snmalloc requires at least 256 KB per enclave thread.
     # Given 16 enclave threads (NumTCS), this implies
-    #    minimum heap size = (256 * 1024 * 16) / 4096 = 1044 pages.
-    # The heap size (8192 pages) is well above the minimum requirement,
+    #    minimum heap size = (256 * 1024 * 8) / 4096 = 512 pages.
+    # The heap size (4096 pages) is well above the minimum requirement,
     # and accounts for the large number of allocations performed by
     # each enclave thread in the sample.
-    NumHeapPages=8192
+    NumHeapPages=4096
     NumTCS=16
     ```
 
@@ -116,7 +116,7 @@ The elapsed times give an indication of how much speed up the custom allocator p
 the default allocator.
 
 The host then repeats the benchmarks on the two enclaves, but increases the number of threads
-each time, until the maximum number of threads (15) is reached.
+each time, until the maximum number of threads (8) is reached.
 
 It can be observed that the custom allocator scales nicely with multiple threads whereas the
 default allocator does not.
@@ -135,7 +135,7 @@ $ make
 ```
 
 On the test machine, running the sample produces the following output that shows
-that `oesnmalloc` shows a speed up factor between 2X and 35X depending upon the
+that `oesnmalloc` shows a speed up factor of up to 15X depending upon the
 number of threads.
 
 ```
@@ -145,36 +145,36 @@ Configuration:
         num-allocations (per-thread) = 100000
                  max-allocation-size = 16384 bytes
 num-threads = 1:
-      dlmalloc   (default allocator) =    9 milliseconds
-    oesnmalloc (pluggable allocator) =    6 milliseconds
+      dlmalloc   (default allocator) =   12 milliseconds
+    oesnmalloc (pluggable allocator) =   12 milliseconds
 
 num-threads = 2:
-      dlmalloc   (default allocator) =   39 milliseconds
-    oesnmalloc (pluggable allocator) =   10 milliseconds
+      dlmalloc   (default allocator) =   70 milliseconds
+    oesnmalloc (pluggable allocator) =   17 milliseconds
 
-...
-...
-...
+num-threads = 3:
+      dlmalloc   (default allocator) =  116 milliseconds
+    oesnmalloc (pluggable allocator) =   20 milliseconds
 
-num-threads = 12:
-      dlmalloc   (default allocator) =  974 milliseconds
-    oesnmalloc (pluggable allocator) =   35 milliseconds
+num-threads = 4:
+      dlmalloc   (default allocator) =  173 milliseconds
+    oesnmalloc (pluggable allocator) =   23 milliseconds
 
-num-threads = 13:
-      dlmalloc   (default allocator) = 1106 milliseconds
-    oesnmalloc (pluggable allocator) =   35 milliseconds
+num-threads = 5:
+      dlmalloc   (default allocator) =  235 milliseconds
+    oesnmalloc (pluggable allocator) =   28 milliseconds
 
-num-threads = 14:
-      dlmalloc   (default allocator) = 1235 milliseconds
-    oesnmalloc (pluggable allocator) =   40 milliseconds
+num-threads = 6:
+      dlmalloc   (default allocator) =  253 milliseconds
+    oesnmalloc (pluggable allocator) =   30 milliseconds
 
-num-threads = 15:
-      dlmalloc   (default allocator) = 1469 milliseconds
-    oesnmalloc (pluggable allocator) =   40 milliseconds
+num-threads = 7:
+      dlmalloc   (default allocator) =  319 milliseconds
+    oesnmalloc (pluggable allocator) =   31 milliseconds
 
-num-threads = 16:
-      dlmalloc   (default allocator) = 1565 milliseconds
-    oesnmalloc (pluggable allocator) =   43 milliseconds
+num-threads = 8:
+      dlmalloc   (default allocator) =  510 milliseconds
+    oesnmalloc (pluggable allocator) =   34 milliseconds
 ```
 
 
