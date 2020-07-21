@@ -669,6 +669,8 @@ oe_result_t oe_cert_chain_read_pem(
     result = OE_OK;
 
 done:
+    if (result != OE_OK && sk)
+        sk_X509_pop_free(sk, X509_free);
 
     if (tmp_pem_data && (tmp_pem_data != pem_data))
         oe_free(tmp_pem_data);
@@ -742,7 +744,6 @@ oe_result_t oe_cert_get_rsa_public_key(
     oe_result_t result = OE_UNEXPECTED;
     const cert_t* impl = (const cert_t*)cert;
     EVP_PKEY* pkey = NULL;
-    RSA* rsa = NULL;
 
     /* Clear public key for all error pathways */
     if (public_key)
@@ -755,10 +756,6 @@ oe_result_t oe_cert_get_rsa_public_key(
     /* Get public key (increments reference count) */
     if (!(pkey = X509_get_pubkey(impl->x509)))
         OE_RAISE(OE_CRYPTO_ERROR);
-
-    /* Get RSA public key (increments reference count) */
-    if (!(rsa = EVP_PKEY_get1_RSA(pkey)))
-        OE_RAISE(OE_PUBLIC_KEY_NOT_FOUND);
 
     /* Initialize the RSA public key */
     oe_rsa_public_key_init(public_key, pkey);

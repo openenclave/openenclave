@@ -387,8 +387,6 @@ oe_result_t oe_ec_public_key_from_coordinates(
 
         if (!EC_KEY_set_public_key(ec, point))
             OE_RAISE(OE_CRYPTO_ERROR);
-
-        point = NULL;
     }
 
     /* Create the PKEY public key wrapper */
