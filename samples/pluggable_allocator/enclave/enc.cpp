@@ -13,6 +13,8 @@
 
 #define QUEUE_LENGTH 15
 
+__attribute__((used)) static bool _init = (srand((unsigned)time(NULL)), true);
+
 void enclave_thread(uint64_t num_allocations, uint64_t max_allocation_size)
 {
     std::queue<void*> allocations;
