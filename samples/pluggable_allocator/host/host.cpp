@@ -15,7 +15,7 @@
 using namespace std;
 using namespace std::chrono;
 
-static uint32_t _max_threads = 16;
+static uint32_t _max_threads = 8;
 static uint64_t _num_allocations = 100000;
 static uint64_t _max_allocation_size = 16 * 1024;
 static uint32_t _flags = OE_ENCLAVE_FLAG_DEBUG;
