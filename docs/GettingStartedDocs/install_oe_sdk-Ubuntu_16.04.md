@@ -38,7 +38,7 @@ If the output of the above is blank, you should proceed with installing the driv
 ```bash
 sudo apt update
 sudo apt -y install dkms
-wget https://download.01.org/intel-sgx/sgx-dcap/1.4/linux/distro/ubuntuServer16.04/sgx_linux_x64_driver_1.21.bin -O sgx_linux_x64_driver.bin
+wget https://download.01.org/intel-sgx/sgx-dcap/1.7/linux/distro/ubuntu16.04-server/sgx_linux_x64_driver_1.35.bin -O sgx_linux_x64_driver.bin
 chmod +x sgx_linux_x64_driver.bin
 sudo ./sgx_linux_x64_driver.bin
 ```
