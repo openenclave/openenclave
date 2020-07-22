@@ -138,6 +138,7 @@ void enc_edl_opt_out()
             oe_get_quote_verification_collateral_ocall(
                 &result,
                 NULL,
+                0,
                 NULL,
                 0,
                 NULL,

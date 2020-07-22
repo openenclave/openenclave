@@ -147,6 +147,7 @@ done:
 
 oe_result_t oe_get_quote_verification_collateral_ocall(
     uint8_t fmspc[6],
+    uint8_t collateral_provider,
     void* tcb_info,
     size_t tcb_info_size,
     size_t* tcb_info_size_out,
@@ -175,6 +176,9 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
 
     /* fmspc */
     memcpy(args.fmspc, fmspc, sizeof(args.fmspc));
+
+    /* collateral_provider */
+    args.collateral_provider = collateral_provider;
 
     /* Populate the output fields. */
     OE_CHECK(oe_get_sgx_quote_verification_collateral(&args));
