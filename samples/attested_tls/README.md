@@ -93,3 +93,10 @@ mkdir build && cd build
 cmake ..
 make run
 ```
+### Running attested TLS server in loop
+By default the server exits after completing a TLS session with a client. `-server-in-loop` run-time option changes this behavior to allow the TLS server to handle multiple client requests.
+```bash
+./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341 -server-in-loop
+or
+make run-server-in-loop
+```

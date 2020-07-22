@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include "tls_server_u.h"
 
+#define LOOP_OPTION "-server-in-loop"
+
 oe_enclave_t* create_enclave(const char* enclave_path)
 {
     oe_enclave_t* enclave = NULL;
@@ -43,15 +45,32 @@ int main(int argc, const char* argv[])
     oe_result_t result = OE_OK;
     int ret = 1;
     char* server_port = NULL;
+    bool keep_server_up = false;
 
     /* Check argument count */
     if (argc != 3)
     {
+        if (argc == 4)
+        {
+            if (strcmp(argv[3], LOOP_OPTION) != 0)
+            {
+                goto print_usage;
+            }
+            else
+            {
+                keep_server_up = true;
+                goto read_port;
+            }
+        }
     print_usage:
-        printf("Usage: %s TLS_SERVER_ENCLAVE_PATH -port:<port>\n", argv[0]);
+        printf(
+            "Usage: %s TLS_SERVER_ENCLAVE_PATH -port:<port> [%s]\n",
+            argv[0],
+            LOOP_OPTION);
         return 1;
     }
 
+read_port:
     // read port parameter
     {
         char* option = (char*)"-port:";
@@ -77,7 +96,7 @@ int main(int argc, const char* argv[])
     }
 
     printf("Host: calling setup_tls_server\n");
-    ret = setup_tls_server(enclave, &ret, server_port);
+    ret = setup_tls_server(enclave, &ret, server_port, keep_server_up);
     if (ret != 0)
     {
         printf("Host: setup_tls_server failed\n");

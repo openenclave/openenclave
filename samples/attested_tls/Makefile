@@ -24,3 +24,7 @@ run:
 	./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341 &
 	sleep 2
 	./non_enc_client/tls_non_enc_client -server:localhost -port:12341
+
+run-server-in-loop:
+	echo "Launch long-running Attested TLS server"
+	./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341 -server-in-loop

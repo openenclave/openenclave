@@ -6,6 +6,6 @@ enclave {
     from "platform.edl" import *;
 
     trusted {
-        public int setup_tls_server([in, string] char* port);
+        public int setup_tls_server([in, string] char* port, bool keep_server_up);
     };
 };
