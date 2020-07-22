@@ -77,6 +77,7 @@ if (UNIX
     add_subdirectory(atexit)
     add_subdirectory(attestation_cert_apis)
     add_subdirectory(attestation_plugin)
+    add_subdirectory(attestation_plugin_cert)
     add_subdirectory(backtrace)
     if (NOT USE_SNMALLOC)
       add_subdirectory(bigmalloc)

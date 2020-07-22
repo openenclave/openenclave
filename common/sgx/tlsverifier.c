@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>

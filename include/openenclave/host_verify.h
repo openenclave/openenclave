@@ -16,6 +16,7 @@
 #endif
 
 #include "bits/defs.h"
+#include "bits/evidence.h"
 #include "bits/report.h"
 #include "bits/result.h"
 
@@ -81,6 +82,44 @@ oe_result_t oe_verify_attestation_certificate(
     uint8_t* cert_in_der,
     size_t cert_in_der_len,
     oe_identity_verify_callback_t enclave_identity_callback,
+    void* arg);
+
+/**
+ * Type definition for a claims verification callback.
+ *
+ * @param[in] claims a pointer to an array of claims
+ * @param[in] claims_length length of the claims array
+ * @param[in] arg caller defined context
+ */
+typedef oe_result_t (*oe_verify_claims_callback_t)(
+    oe_claim_t* claims,
+    size_t claims_length,
+    void* arg);
+
+/**
+ * oe_verify_attestation_certificate_with_evidence
+ *
+ * This function performs a custom validation on the input certificate. This
+ * validation includes extracting an attestation evidence extension from the
+ * certificate before validating this evidence. An optional
+ * claim_verify_callback could be passed in for a calling client to further
+ * validate the claims of the enclave creating the certificate.
+ * @param[in] cert_in_der a pointer to buffer holding certificate contents
+ *  in DER format
+ * @param[in] cert_in_der_len size of certificate buffer above
+ * @param[in] claim_verify_callback callback routine for custom claim checking
+ * @param[in] arg an optional context pointer argument specified by the caller
+ * when setting callback
+ * @retval OE_OK on a successful validation
+ * @retval OE_VERIFY_FAILED on quote failure
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid
+ * @retval OE_FAILURE general failure
+ * @retval other appropriate error code
+ */
+oe_result_t oe_verify_attestation_certificate_with_evidence(
+    uint8_t* cert_in_der,
+    size_t cert_in_der_len,
+    oe_verify_claims_callback_t claim_verify_callback,
     void* arg);
 
 OE_EXTERNC_END
