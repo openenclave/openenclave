@@ -11,6 +11,7 @@ typedef struct _host_exception_context
 {
     uint64_t rax;
     uint64_t rbx;
+    uint64_t address;
     uint64_t rip;
 } oe_host_exception_context_t;
 
