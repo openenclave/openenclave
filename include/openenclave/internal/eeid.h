@@ -94,7 +94,7 @@ oe_result_t oe_deserialize_eeid(
  *
  * @param[in] eeid The EEID containing the required size settings.
  *
- * @param[in] config_hash The SHA256 of the enclave config.
+ * @param[in] config_hash The SHA256 hash of the enclave config.
  *
  * @param[in] computed_enclave_hash The final enclave hash after the memory
  * pages have been added.
@@ -139,7 +139,7 @@ oe_result_t oe_remeasure_memory_pages(
  * @param[in] eeid The oe_eeid_t holding all relevant information about the base
  * image.
  *
- * @param[in] config_hash The SHA256 of the enclave config.
+ * @param[in] config_hash The SHA256 hash of the enclave config.
  *
  * @param[out] base_enclave_hash The hash of the base image
  *
@@ -276,7 +276,7 @@ oe_result_t oe_enclave_size_settings_hton(
     size_t* remaining);
 
 /**
- * Deserialize a oe_enclave_size_settings_t from network byte-order into a
+ * Deserialize an oe_enclave_size_settings_t from network byte-order into a
  * buffer.
  *
  * @param[inout] position The position in a buffer to write to (will be
