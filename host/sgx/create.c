@@ -293,6 +293,10 @@ static oe_result_t _calculate_enclave_size(
     size_t* enclave_size,
     bool eeid_enabled)
 {
+#ifndef OE_WITH_EXPERIMENTAL_EEID
+    OE_UNUSED(eeid_enabled);
+#endif
+
     oe_result_t result = OE_UNEXPECTED;
     size_t heap_size;
     size_t stack_size;
