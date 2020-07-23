@@ -16,12 +16,13 @@ int main(int argc, const char* argv[])
     const oe_enclave_type_t type = OE_ENCLAVE_TYPE_SGX;
     const uint32_t flags = oe_get_create_flags();
     int retval;
-    oe_enclave_setting_t setting_buf;
     const oe_enclave_setting_t* settings = NULL;
-    size_t settings_count = 0;
+    uint32_t settings_count = 0;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    oe_enclave_setting_t setting_buf;
     oe_eeid_t* eeid = NULL;
+#endif
 
-    (void)setting_buf;
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     {
@@ -47,7 +48,8 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    r = oe_create_split_enclave(argv[1], type, flags, settings, 1, &enclave);
+    r = oe_create_split_enclave(
+        argv[1], type, flags, settings, settings_count, &enclave);
     OE_TEST(r == OE_OK);
 
     r = split_ecall(enclave, &retval);
@@ -58,7 +60,9 @@ int main(int argc, const char* argv[])
 
     printf("=== passed all tests (split)\n");
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
     free(eeid);
+#endif
 
     return 0;
 }
