@@ -25,12 +25,13 @@ static const uint8_t OE_DEBUG_PUBLIC_KEY[] = {
     0x56, 0xb2, 0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0xa};
 
 /**
- * Determine whether properties are those of a base image to be used with EEID
+ * Determine whether memory size settings are those of a base image to be used
+ * with EEID.
  *
- * @param[in] sizes The size properties of an SGX enclave.
+ * @param[in] sizes The memory size settings of an SGX enclave.
  *
- * @returns Returns true if **properties** are consistent with those of an EEID
- * base image.
+ * @returns Returns true if **sizes** are consistent with those of an EEID base
+ * image.
  *
  */
 int is_eeid_base_image(const oe_enclave_size_settings_t* sizes);
