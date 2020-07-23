@@ -188,7 +188,7 @@ typedef struct
 {
     uint8_t* data;
     size_t size;
-} oe_enclave_config_t;
+} oe_enclave_initialization_data_t;
 
 /**
  * This struct defines an enclave with config (EEID or configid).
@@ -196,7 +196,7 @@ typedef struct
 typedef struct
 {
     oe_enclave_t* enclave;
-    oe_enclave_config_t config;
+    oe_enclave_initialization_data_t config;
 } oe_enclave_with_config_t;
 #endif
 

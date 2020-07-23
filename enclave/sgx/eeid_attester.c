@@ -28,7 +28,7 @@
 
 #include <openenclave/enclave.h>
 
-extern const oe_enclave_config_t* __oe_get_enclave_config();
+extern const oe_enclave_initialization_data_t* __oe_get_enclave_config();
 extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 
 static oe_result_t _eeid_attester_on_register(
@@ -122,7 +122,7 @@ static oe_result_t _eeid_get_evidence(
     uint8_t* sgx_custom_claims = NULL;
     size_t sgx_custom_claims_size = 0;
     const oe_eeid_t* eeid = __oe_get_eeid();
-    const oe_enclave_config_t* config = __oe_get_enclave_config();
+    const oe_enclave_initialization_data_t* config = __oe_get_enclave_config();
 
     OE_UNUSED(context);
     if (!evidence_buffer || !evidence_buffer_size || !eeid)

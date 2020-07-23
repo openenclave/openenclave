@@ -137,14 +137,15 @@ extern bool oe_disable_debug_malloc_check;
 */
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-static oe_enclave_config_t* oe_enclave_config = NULL;
+static oe_enclave_initialization_data_t* oe_enclave_config = NULL;
 
-const oe_enclave_config_t* __oe_get_enclave_config()
+const oe_enclave_initialization_data_t* __oe_get_enclave_config()
 {
     return oe_enclave_config;
 }
 
-static oe_result_t _load_config(const oe_enclave_config_t* config_from_host)
+static oe_result_t _load_config(
+    const oe_enclave_initialization_data_t* config_from_host)
 {
     if (__oe_have_eeid())
     {
@@ -154,13 +155,14 @@ static oe_result_t _load_config(const oe_enclave_config_t* config_from_host)
         if (!config_from_host)
             return OE_INVALID_PARAMETER;
 
-        oe_enclave_config_t config = *config_from_host;
+        oe_enclave_initialization_data_t config = *config_from_host;
 
         if (!config.data || !config.size)
             return OE_OK; /* no or zero-size configs are ok */
 
         /* Copy config into enclave heap */
-        oe_enclave_config_t* copy = oe_malloc(sizeof(oe_enclave_config_t));
+        oe_enclave_initialization_data_t* copy =
+            oe_malloc(sizeof(oe_enclave_initialization_data_t));
         if (!copy)
             return OE_OUT_OF_MEMORY;
         copy->size = config.size;
