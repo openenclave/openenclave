@@ -1091,7 +1091,7 @@ oe_result_t oe_create_enclave(
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     if (context.eeid_setting)
     {
-        oe_enclave_with_config_t enclave_with_config;
+        oe_enclave_with_config_t enclave_with_config = {0};
         enclave_with_config.enclave = enclave;
         enclave_with_config.config.data = (uint8_t*)context.eeid_setting->data;
         enclave_with_config.config.size = context.eeid_setting->data_size;

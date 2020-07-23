@@ -201,8 +201,7 @@ static oe_result_t _free_config()
 **
 ** _handle_init_enclave()
 **
-**     Handle the OE_ECALL_INIT_ENCLAVE from host and ensures that each
-*state
+**     Handle the OE_ECALL_INIT_ENCLAVE from host and ensures that each state
 **     initialization function in the enclave only runs once.
 **
 **==============================================================================
@@ -225,12 +224,15 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         {
             oe_enclave_t* enclave;
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-            oe_enclave_with_config_t* enclave_with_config =
-                (oe_enclave_with_config_t*)arg_in;
-            enclave = enclave_with_config->enclave;
-#else
-            enclave = (oe_enclave_t*)arg_in;
+            oe_enclave_with_config_t* enclave_with_config = NULL;
+            if (__oe_have_eeid())
+            {
+                enclave_with_config = (oe_enclave_with_config_t*)arg_in;
+                enclave = enclave_with_config->enclave;
+            }
+            else
 #endif
+                enclave = (oe_enclave_t*)arg_in;
 
 #ifdef OE_USE_BUILTIN_EDL
             /* Install the common TEE ECALL function table. */
@@ -259,7 +261,8 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
             /* Load config (configid or EEID data) */
-            OE_CHECK(_load_config(&enclave_with_config->config));
+            if (enclave_with_config)
+                OE_CHECK(_load_config(&enclave_with_config->config));
 #endif
         }
 
