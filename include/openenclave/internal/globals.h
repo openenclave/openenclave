@@ -8,6 +8,10 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/types.h>
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+#include <openenclave/internal/eeid.h>
+#endif
+
 OE_EXTERNC_BEGIN
 
 /* Enclave */
@@ -33,8 +37,9 @@ uint64_t oe_get_num_heap_pages(void);
 uint64_t oe_get_num_pages(void);
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-/* Extended enclave initialization data */
-const void* __oe_get_eeid(void);
+/* Extended enclave initialization meta-data */
+bool oe_have_eeid(void);
+const oe_eeid_t* oe_get_eeid(void);
 #endif
 
 OE_EXTERNC_END

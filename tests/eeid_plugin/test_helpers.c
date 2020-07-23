@@ -14,22 +14,34 @@
 
 #include "test_helpers.h"
 
-oe_result_t make_test_eeid(oe_eeid_t** eeid, size_t data_size)
+oe_result_t make_test_eeid(
+    oe_enclave_setting_eeid_t** eeid_setting,
+    size_t data_size,
+    bool static_sizes)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    oe_enclave_setting_eeid_t* setting =
+        calloc(1, sizeof(oe_enclave_setting_eeid_t) + data_size);
 
-    OE_CHECK(oe_create_eeid_sgx(data_size, eeid));
-    (*eeid)->version = 1;
-    (*eeid)->data_size = data_size;
+    if (static_sizes)
+    {
+        /* Set EEID sizes to base-image sizes to indicate that we want to use
+         * static sizes. */
+        setting->size_settings.num_heap_pages = 0;
+        setting->size_settings.num_stack_pages = 0;
+        setting->size_settings.num_tcs = 1;
+    }
+    else
+    {
+        setting->size_settings.num_heap_pages = 100;
+        setting->size_settings.num_stack_pages = 50;
+        setting->size_settings.num_tcs = 2;
+    }
+
+    setting->data_size = data_size;
     for (size_t i = 0; i < data_size; i++)
-        (*eeid)->data[i] = 'a' + (i % 26);
-    (*eeid)->data[data_size - 1] = 0;
-    (*eeid)->size_settings.num_heap_pages = 100 + (data_size / OE_PAGE_SIZE);
-    (*eeid)->size_settings.num_stack_pages = 50;
-    (*eeid)->size_settings.num_tcs = 2;
+        setting->data[i] = (uint8_t)i;
 
-    result = OE_OK;
+    *eeid_setting = setting;
 
-done:
-    return result;
+    return OE_OK;
 }

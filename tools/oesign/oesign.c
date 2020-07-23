@@ -442,8 +442,12 @@ done:
 oe_result_t _get_sgx_enclave_hash(
     const char* enclave,
     const oe_sgx_enclave_properties_t* properties,
-    OE_SHA256* hash)
+    OE_SHA256* hash,
+    int for_eeid)
 {
+#ifndef OE_WITH_EXPERIMENTAL_EEID
+    OE_UNUSED(for_eeid);
+#endif
     oe_result_t result = OE_UNEXPECTED;
     oe_enclave_t enc;
     oe_sgx_load_context_t context = {0};
@@ -455,6 +459,12 @@ oe_result_t _get_sgx_enclave_hash(
         "oe_sgx_initialize_load_context(): result=%s (%#x)",
         oe_result_str(result),
         result);
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    if (for_eeid)
+        /* Dummy, just to trigger the measurement of the additional EEID page*/
+        context.eeid_setting = calloc(1, sizeof(oe_enclave_setting_eeid_t));
+#endif
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
     OE_CHECK_ERR(
@@ -469,6 +479,9 @@ oe_result_t _get_sgx_enclave_hash(
     result = OE_OK;
 
 done:
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    free((void*)context.eeid_setting);
+#endif
     oe_sgx_cleanup_load_context(&context);
     return result;
 }
@@ -514,7 +527,8 @@ int oesign(
     const char* x509,
     const char* engine_id,
     const char* engine_load_path,
-    const char* key_id)
+    const char* key_id,
+    int for_eeid)
 {
     int ret = 1;
     oe_result_t result = OE_UNEXPECTED;
@@ -528,7 +542,8 @@ int oesign(
     OE_CHECK_NO_TRACE(
         _initialize_enclave_properties(enclave, conffile, &properties));
 
-    OE_CHECK_NO_TRACE(_get_sgx_enclave_hash(enclave, &properties, &hash));
+    OE_CHECK_NO_TRACE(
+        _get_sgx_enclave_hash(enclave, &properties, &hash, for_eeid));
 
     if (engine_id)
     {
@@ -649,7 +664,8 @@ int oedigest(const char* enclave, const char* conffile, const char* digest_file)
     OE_CHECK_NO_TRACE(
         _initialize_enclave_properties(enclave, conffile, &properties));
 
-    OE_CHECK_NO_TRACE(_get_sgx_enclave_hash(enclave, &properties, &mrenclave));
+    OE_CHECK_NO_TRACE(
+        _get_sgx_enclave_hash(enclave, &properties, &mrenclave, false));
 
     /* Construct the unsigned sigstruct with the MRENCLAVE and get its digest */
     OE_CHECK_ERR(

@@ -12,6 +12,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/eeid.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
@@ -135,6 +136,68 @@ extern bool oe_disable_debug_malloc_check;
 **==============================================================================
 */
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+static oe_enclave_initialization_data_t* oe_enclave_initialization_data = NULL;
+
+const oe_enclave_initialization_data_t* oe_get_enclave_initialization_data()
+{
+    return oe_enclave_initialization_data;
+}
+
+static oe_result_t _load_config(
+    const oe_enclave_initialization_data_t* config_from_host)
+{
+    if (oe_have_eeid())
+    {
+        const oe_eeid_t* eeid = oe_get_eeid();
+
+        /* With EEID, we expect a config */
+        if (!config_from_host)
+            return OE_INVALID_PARAMETER;
+
+        oe_enclave_initialization_data_t config = *config_from_host;
+
+        if (!config.data || !config.size)
+            return OE_OK; /* no or zero-size configs are ok */
+
+        /* Copy config into enclave heap */
+        oe_enclave_initialization_data_t* copy =
+            oe_malloc(sizeof(oe_enclave_initialization_data_t));
+        if (!copy)
+            return OE_OUT_OF_MEMORY;
+        copy->size = config.size;
+        copy->data = oe_malloc(config.size);
+        if (!copy->data)
+            return OE_OUT_OF_MEMORY;
+        memcpy(copy->data, config.data, config.size);
+
+        /* Check that the config hashes to the correct value */
+        OE_SHA256 config_hash;
+        oe_sha256(copy->data, copy->size, &config_hash);
+        if (memcmp(config_hash.buf, eeid->config_id, OE_SHA256_SIZE) != 0)
+        {
+            oe_free(copy);
+            return OE_VERIFY_FAILED;
+        }
+
+        oe_enclave_initialization_data = copy;
+    }
+
+    return OE_OK;
+}
+
+static oe_result_t _free_config()
+{
+    if (oe_enclave_initialization_data)
+    {
+        oe_free(oe_enclave_initialization_data->data);
+        oe_free((void*)oe_enclave_initialization_data);
+        oe_enclave_initialization_data = NULL;
+    }
+    return OE_OK;
+}
+#endif
+
 /*
 **==============================================================================
 **
@@ -161,7 +224,17 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
         if (_once == false)
         {
-            oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
+            oe_enclave_t* enclave;
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+            oe_enclave_with_config_t* enclave_with_config = NULL;
+            if (oe_have_eeid())
+            {
+                enclave_with_config = (oe_enclave_with_config_t*)arg_in;
+                enclave = enclave_with_config->enclave;
+            }
+            else
+#endif
+                enclave = (oe_enclave_t*)arg_in;
 
 #ifdef OE_USE_BUILTIN_EDL
             /* Install the common TEE ECALL function table. */
@@ -187,6 +260,12 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             OE_ATOMIC_MEMORY_BARRIER_RELEASE();
             _once = true;
             __oe_initialized = 1;
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+            /* Load config (configid or EEID data) */
+            if (enclave_with_config)
+                OE_CHECK(_load_config(&enclave_with_config->config));
+#endif
         }
 
         oe_spin_unlock(&_lock);
@@ -430,6 +509,11 @@ static void _handle_ecall(
 
             /* Cleanup verifiers */
             oe_verifier_shutdown();
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+            /* Clean up config */
+            _free_config();
+#endif
 
 #if defined(OE_USE_DEBUG_MALLOC)
 

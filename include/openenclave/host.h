@@ -132,7 +132,7 @@ typedef struct _oe_enclave_setting
         const oe_enclave_setting_context_switchless_t*
             context_switchless_setting;
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-        oe_eeid_t* eeid;
+        const oe_enclave_setting_eeid_t* eeid_setting;
 #endif
         /* Add new setting types here. */
     } u;

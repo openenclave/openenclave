@@ -65,7 +65,11 @@ struct _oe_sgx_load_context
     oe_sha256_context_t hash_context;
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    /* EEID data needed during enclave creation */
+    /* EEID information needed during enclave creation */
+    const oe_enclave_setting_eeid_t* eeid_setting;
+
+    /* EEID information recorded during enclave creation, e.g. for oedump */
+    /* Should this go into oe_sgx_enclave_properties_t? */
     oe_eeid_t* eeid;
 #endif
 };

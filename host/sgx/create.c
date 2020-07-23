@@ -290,9 +290,13 @@ static oe_result_t _calculate_enclave_size(
     size_t image_size,
     const oe_sgx_enclave_properties_t* props,
     size_t* loaded_enclave_pages_size,
-    size_t* enclave_size)
-
+    size_t* enclave_size,
+    bool eeid_enabled)
 {
+#ifndef OE_WITH_EXPERIMENTAL_EEID
+    OE_UNUSED(eeid_enabled);
+#endif
+
     oe_result_t result = OE_UNEXPECTED;
     size_t heap_size;
     size_t stack_size;
@@ -320,11 +324,15 @@ static oe_result_t _calculate_enclave_size(
     *loaded_enclave_pages_size =
         image_size + heap_size +
         (size_settings->num_tcs * (stack_size + control_size));
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    if (eeid_enabled)
+        *loaded_enclave_pages_size += OE_PAGE_SIZE;
+#endif
 
     if (enclave_size)
     {
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-        if (is_eeid_base_image(props))
+        if (is_eeid_base_image(&props->header.size_settings))
         {
             /* This is the maximum size SGX allows. When signing base images we
              * don't know the size that the final image will have, so we chose
@@ -347,7 +355,6 @@ static oe_result_t _add_data_pages(
     const oe_sgx_enclave_properties_t* props,
     uint64_t entry,
     uint64_t* vaddr)
-
 {
     oe_result_t result = OE_UNEXPECTED;
     const oe_enclave_size_settings_t* size_settings =
@@ -426,6 +433,34 @@ done:
 **
 **==============================================================================
 */
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+static oe_result_t _initialize_enclave_with_config(
+    oe_enclave_with_config_t* enclave_with_config)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    uint64_t result_out = 0;
+
+    OE_CHECK(oe_ecall(
+        enclave_with_config->enclave,
+        OE_ECALL_INIT_ENCLAVE,
+        (uint64_t)enclave_with_config,
+        &result_out));
+
+    if (result_out > OE_UINT32_MAX)
+        OE_RAISE(OE_FAILURE);
+
+    if (!oe_is_valid_result((uint32_t)result_out))
+        OE_RAISE(OE_FAILURE);
+
+    OE_CHECK((oe_result_t)result_out);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#endif
 
 static oe_result_t _initialize_enclave(oe_enclave_t* enclave)
 {
@@ -589,57 +624,85 @@ done:
 }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-static oe_result_t _add_eeid_marker_page(
+static oe_result_t _save_eeid_info(
     oe_sgx_load_context_t* context,
-    oe_enclave_t* enclave,
-    size_t image_size,
     uint64_t entry_point,
     oe_sgx_enclave_properties_t* props,
     uint64_t* vaddr)
 {
-    oe_result_t result = OE_UNEXPECTED;
-    oe_eeid_t* eeid = context->eeid;
+    const oe_enclave_setting_eeid_t* eeid_setting = context->eeid_setting;
 
-    if (eeid && is_eeid_base_image(props) &&
-        context->type == OE_SGX_LOAD_TYPE_CREATE)
+    if (eeid_setting)
     {
-        // Finalize the memory settings
-        props->header.size_settings = eeid->size_settings;
+        /* EEID must fit on a single page. */
+        size_t signature_size = sizeof(sgx_sigstruct_t);
+        size_t eeid_size = sizeof(oe_eeid_t) + signature_size;
+        if (eeid_size > OE_PAGE_SIZE)
+            return OE_INVALID_PARAMETER;
 
-        // Record EEID information
+        oe_eeid_t* eeid = NULL;
+        oe_create_eeid_sgx(&eeid);
+
+        /* Finalize the memory settings */
+        if (context->type == OE_SGX_LOAD_TYPE_CREATE &&
+            is_eeid_base_image(&props->header.size_settings))
+            props->header.size_settings = eeid_setting->size_settings;
+        else
+            eeid->size_settings = props->header.size_settings;
+
+        /* Record EEID information */
         eeid->version = OE_EEID_VERSION;
         oe_sha256_context_t* hctx = &context->hash_context;
         oe_sha256_save(hctx, eeid->hash_state.H, eeid->hash_state.N);
+        eeid->size_settings = props->header.size_settings;
         eeid->entry_point = entry_point;
         eeid->vaddr = *vaddr;
-        eeid->signature_size = sizeof(sgx_sigstruct_t);
-        memcpy(
-            eeid->data + eeid->data_size,
-            (uint8_t*)&props->sigstruct,
-            sizeof(sgx_sigstruct_t));
+        eeid->signature_size = signature_size;
+        memcpy(eeid->signature, props->sigstruct, signature_size);
+
+        /* Compute config hash (all zero during signing) */
+        memset(eeid->config_id, 0, sizeof(eeid->config_id));
+        if (eeid_setting->data_size > 0)
+        {
+            OE_SHA256 config_hash;
+            oe_sha256(
+                eeid_setting->data, eeid_setting->data_size, &config_hash);
+            memcpy(eeid->config_id, config_hash.buf, sizeof(eeid->config_id));
+        }
+
+        context->eeid = eeid;
+    }
+
+    return OE_OK;
+}
+
+static oe_result_t _add_eeid_page(
+    oe_sgx_load_context_t* context,
+    oe_enclave_t* enclave,
+    uint64_t* vaddr)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (context->eeid_setting)
+    {
+        if (!context->eeid)
+            return OE_INVALID_PARAMETER;
 
         oe_page_t* page = oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
         memset(page, 0, sizeof(oe_page_t));
-        oe_eeid_marker_t* marker = (oe_eeid_marker_t*)page;
 
-        /* The offset to the EEID in marker->offset is also the extended
-         * commit size of the base image and dynamically configured data
-         * pages (stacks + heap) excluding the EEID data size.
-         */
-        _calculate_enclave_size(image_size, props, &marker->offset, NULL);
+        /* Write EEID memory page content */
+        size_t eeid_size = sizeof(oe_eeid_t) + context->eeid->signature_size;
+        memcpy(page, context->eeid, eeid_size);
 
         uint64_t addr = enclave->addr + *vaddr;
-        uint64_t src = (uint64_t)page;
-        uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
+        uint64_t src = (uint64_t)page->data;
+        uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
 
         OE_CHECK(oe_sgx_load_enclave_data(
-            context, enclave->addr, addr, src, flags, false));
+            context, enclave->addr, addr, src, flags, true));
         (*vaddr) += OE_PAGE_SIZE;
         free(page);
-
-        // Marker page counts as a heap page
-        if (props->header.size_settings.num_heap_pages > 0)
-            props->header.size_settings.num_heap_pages--;
     }
 
     result = OE_OK;
@@ -653,9 +716,8 @@ static oe_result_t _eeid_resign(
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_OK;
-    oe_eeid_t* eeid = context->eeid;
 
-    if (eeid && eeid->data_size > 0)
+    if (context->eeid_setting)
     {
         sgx_sigstruct_t* sigstruct = (sgx_sigstruct_t*)properties->sigstruct;
 
@@ -676,37 +738,52 @@ done:
     return result;
 }
 
-static oe_result_t _add_eeid_pages(
+static oe_result_t _add_eeid_data_pages(
     oe_sgx_load_context_t* context,
-    uint64_t enclave_addr,
+    oe_enclave_t* enclave,
+    oe_sgx_enclave_properties_t* props,
+    uint64_t entry,
     uint64_t* vaddr)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_eeid_t* eeid = context->eeid;
 
-    if (eeid)
+    /* Note: context->eeid_setting is also needed at signing time, for static
+     * EEID memory settings (but it can be all zeroes). */
+    bool is_eeid_dynamic = is_eeid_base_image(&props->header.size_settings);
+    bool is_eeid_static = !is_eeid_dynamic && context->eeid_setting;
+
+    if (!is_eeid_dynamic && !is_eeid_static)
     {
-        char* eeid_bytes = (char*)eeid;
-        size_t num_bytes = oe_eeid_byte_size(eeid);
-        size_t num_pages =
-            num_bytes / OE_PAGE_SIZE + ((num_bytes % OE_PAGE_SIZE) ? 1 : 0);
+        /* Non-EEID image */
+        OE_CHECK(_add_data_pages(context, enclave, props, entry, vaddr));
+    }
+    else
+    {
+        /* Leave a gap of one page before the data pages */
+        uint64_t eeid_vaddr = *vaddr;
+        *vaddr += OE_PAGE_SIZE;
 
-        oe_page_t* page = oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
-        for (size_t i = 0; i < num_pages; i++)
+        if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
         {
-            memset(page->data, 0, sizeof(oe_page_t));
-            size_t n = (i != num_pages - 1) ? OE_PAGE_SIZE
-                                            : (num_bytes % OE_PAGE_SIZE);
-            memcpy(page->data, eeid_bytes + OE_PAGE_SIZE * i, n);
-
-            uint64_t addr = enclave_addr + *vaddr;
-            uint64_t src = (uint64_t)(page->data);
-            uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
-            OE_CHECK(oe_sgx_load_enclave_data(
-                context, enclave_addr, addr, src, flags, true));
-            *vaddr += OE_PAGE_SIZE;
+            /* Save EEID info so oesign can dump it */
+            OE_CHECK(_save_eeid_info(context, entry, props, &eeid_vaddr));
+            OE_CHECK(_add_data_pages(context, enclave, props, entry, vaddr));
         }
-        oe_memalign_free(page);
+        else
+        {
+            /* Save EEID info and add data pages */
+            if (is_eeid_dynamic)
+                OE_CHECK(_save_eeid_info(context, entry, props, &eeid_vaddr));
+            OE_CHECK(_add_data_pages(context, enclave, props, entry, vaddr));
+            if (is_eeid_static)
+                OE_CHECK(_save_eeid_info(context, entry, props, &eeid_vaddr));
+
+            /* Add EEID page */
+            OE_CHECK(_add_eeid_page(context, enclave, &eeid_vaddr));
+
+            /* Resign */
+            OE_CHECK(_eeid_resign(context, props));
+        }
     }
 
     result = OE_OK;
@@ -804,9 +881,21 @@ oe_result_t oe_sgx_build_enclave(
     /* Calculate the size of image */
     OE_CHECK(oeimage.calculate_size(&oeimage, &image_size));
 
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    /* This is needed to tell `patch` to include an extra page for EEID */
+    oeimage.eeid_enabled = is_eeid_base_image(&props.header.size_settings) ||
+                           context->eeid_setting;
+#else
+    oeimage.eeid_enabled = false;
+#endif
+
     /* Calculate the size of this enclave in memory */
     OE_CHECK(_calculate_enclave_size(
-        image_size, &props, &loaded_enclave_pages_size, &enclave_size));
+        image_size,
+        &props,
+        &loaded_enclave_pages_size,
+        &enclave_size,
+        oeimage.eeid_enabled));
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
@@ -824,20 +913,13 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    OE_CHECK(_add_eeid_marker_page(
-        context, enclave, image_size, oeimage.entry_rva, &props, &vaddr));
-#endif
-
+    /* Add data and EEID pages */
+    OE_CHECK(_add_eeid_data_pages(
+        context, enclave, &props, oeimage.entry_rva, &vaddr));
+#else
     /* Add data pages */
     OE_CHECK(
         _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
-
-#ifdef OE_WITH_EXPERIMENTAL_EEID
-    /* Add optional EEID pages */
-    OE_CHECK(_add_eeid_pages(context, enclave_addr, &vaddr));
-
-    /* Resign */
-    OE_CHECK(_eeid_resign(context, &props));
 #endif
 
     /* Ask the platform to initialize the enclave and finalize the hash */
@@ -952,7 +1034,7 @@ oe_result_t oe_create_enclave(
     for (size_t i = 0; i < setting_count; i++)
         if (settings[i].setting_type == OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA)
         {
-            context.eeid = settings[i].u.eeid;
+            context.eeid_setting = settings[i].u.eeid_setting;
             break;
         }
 #endif
@@ -1005,8 +1087,19 @@ oe_result_t oe_create_enclave(
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_count;
 
-    /* Invoke enclave initialization. */
-    OE_CHECK(_initialize_enclave(enclave));
+/* Invoke enclave initialization. */
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    if (context.eeid_setting)
+    {
+        oe_enclave_with_config_t enclave_with_config = {0};
+        enclave_with_config.enclave = enclave;
+        enclave_with_config.config.data = (uint8_t*)context.eeid_setting->data;
+        enclave_with_config.config.size = context.eeid_setting->data_size;
+        OE_CHECK(_initialize_enclave_with_config(&enclave_with_config));
+    }
+    else
+#endif
+        OE_CHECK(_initialize_enclave(enclave));
 
     /* Setup logging configuration */
     if (oe_log_enclave_init(enclave) == OE_UNSUPPORTED)

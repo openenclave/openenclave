@@ -276,6 +276,9 @@ oe_result_t get_eeid_evidence(
     memcpy(evidence, local_evidence, local_evidence_size);
     memcpy(endorsements, local_endorsements, local_endorsements_size);
 
+    oe_free_evidence(local_evidence);
+    oe_free_endorsements(local_endorsements);
+
     OE_TEST_CODE(oe_sgx_eeid_attester_shutdown(), OE_OK);
 
     return OE_OK;
