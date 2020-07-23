@@ -237,7 +237,7 @@ typedef struct
  * @returns Returns OE_OK on success.
  *
  */
-oe_result_t hton_uint64_t(uint64_t x, uint8_t** position, size_t* remaining);
+oe_result_t oe_hton_uint64(uint64_t x, uint8_t** position, size_t* remaining);
 
 /**
  * Deserialize a uint64_t from network byte-order into a buffer.
@@ -252,7 +252,7 @@ oe_result_t hton_uint64_t(uint64_t x, uint8_t** position, size_t* remaining);
  * @returns Returns OE_OK on success.
  *
  */
-oe_result_t ntoh_uint64_t(
+oe_result_t oe_ntoh_uint64(
     const uint8_t** position,
     size_t* remaining,
     uint64_t* x);

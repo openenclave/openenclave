@@ -595,7 +595,7 @@ done:
     return result;
 }
 
-static oe_result_t _hton_uint16_t(
+static oe_result_t _hton_uint16(
     uint16_t x,
     uint8_t** position,
     size_t* remaining)
@@ -612,7 +612,7 @@ static oe_result_t _hton_uint16_t(
     return OE_OK;
 }
 
-static oe_result_t _ntoh_uint16_t(
+static oe_result_t _ntoh_uint16(
     const uint8_t** position,
     size_t* remaining,
     uint16_t* x)
@@ -630,7 +630,7 @@ static oe_result_t _ntoh_uint16_t(
     return OE_OK;
 }
 
-static oe_result_t _hton_uint32_t(
+static oe_result_t _hton_uint32(
     uint32_t x,
     uint8_t** position,
     size_t* remaining)
@@ -647,7 +647,7 @@ static oe_result_t _hton_uint32_t(
     return OE_OK;
 }
 
-static oe_result_t _ntoh_uint32_t(
+static oe_result_t _ntoh_uint32(
     const uint8_t** position,
     size_t* remaining,
     uint32_t* x)
@@ -665,7 +665,7 @@ static oe_result_t _ntoh_uint32_t(
     return OE_OK;
 }
 
-oe_result_t hton_uint64_t(uint64_t x, uint8_t** position, size_t* remaining)
+oe_result_t oe_hton_uint64(uint64_t x, uint8_t** position, size_t* remaining)
 {
     if (*remaining < 8)
         return OE_INVALID_PARAMETER;
@@ -679,7 +679,7 @@ oe_result_t hton_uint64_t(uint64_t x, uint8_t** position, size_t* remaining)
     return OE_OK;
 }
 
-oe_result_t ntoh_uint64_t(
+oe_result_t oe_ntoh_uint64(
     const uint8_t** position,
     size_t* remaining,
     uint64_t* x)
@@ -740,9 +740,9 @@ oe_result_t oe_enclave_size_settings_hton(
     size_t* remaining)
 {
     oe_result_t result = OE_UNEXPECTED;
-    OE_CHECK(hton_uint64_t(sizes->num_heap_pages, position, remaining));
-    OE_CHECK(hton_uint64_t(sizes->num_stack_pages, position, remaining));
-    OE_CHECK(hton_uint64_t(sizes->num_tcs, position, remaining));
+    OE_CHECK(oe_hton_uint64(sizes->num_heap_pages, position, remaining));
+    OE_CHECK(oe_hton_uint64(sizes->num_stack_pages, position, remaining));
+    OE_CHECK(oe_hton_uint64(sizes->num_tcs, position, remaining));
     result = OE_OK;
 done:
     return result;
@@ -754,9 +754,9 @@ oe_result_t oe_enclave_size_settings_ntoh(
     oe_enclave_size_settings_t* sizes)
 {
     oe_result_t result = OE_UNEXPECTED;
-    OE_CHECK(ntoh_uint64_t(position, remaining, &sizes->num_heap_pages));
-    OE_CHECK(ntoh_uint64_t(position, remaining, &sizes->num_stack_pages));
-    OE_CHECK(ntoh_uint64_t(position, remaining, &sizes->num_tcs));
+    OE_CHECK(oe_ntoh_uint64(position, remaining, &sizes->num_heap_pages));
+    OE_CHECK(oe_ntoh_uint64(position, remaining, &sizes->num_stack_pages));
+    OE_CHECK(oe_ntoh_uint64(position, remaining, &sizes->num_tcs));
     result = OE_OK;
 done:
     return result;
@@ -776,24 +776,24 @@ oe_result_t oe_eeid_hton(
     uint8_t* position = buffer;
     size_t remaining = buffer_size;
 
-    OE_CHECK(_hton_uint32_t(eeid->version, &position, &remaining));
+    OE_CHECK(_hton_uint32(eeid->version, &position, &remaining));
 
     for (size_t i = 0; i < 8; i++)
-        OE_CHECK(_hton_uint32_t(eeid->hash_state.H[i], &position, &remaining));
+        OE_CHECK(_hton_uint32(eeid->hash_state.H[i], &position, &remaining));
     for (size_t i = 0; i < 2; i++)
-        OE_CHECK(_hton_uint32_t(eeid->hash_state.N[i], &position, &remaining));
+        OE_CHECK(_hton_uint32(eeid->hash_state.N[i], &position, &remaining));
 
     OE_CHECK(oe_enclave_size_settings_hton(
         &eeid->size_settings, &position, &remaining));
 
     OE_CHECK(_hton_buffer(
         eeid->config_id, sizeof(eeid->config_id), &position, &remaining));
-    OE_CHECK(_hton_uint16_t(eeid->config_svn, &position, &remaining));
+    OE_CHECK(_hton_uint16(eeid->config_svn, &position, &remaining));
 
-    OE_CHECK(hton_uint64_t(eeid->vaddr, &position, &remaining));
-    OE_CHECK(hton_uint64_t(eeid->entry_point, &position, &remaining));
+    OE_CHECK(oe_hton_uint64(eeid->vaddr, &position, &remaining));
+    OE_CHECK(oe_hton_uint64(eeid->entry_point, &position, &remaining));
 
-    OE_CHECK(hton_uint64_t(eeid->signature_size, &position, &remaining));
+    OE_CHECK(oe_hton_uint64(eeid->signature_size, &position, &remaining));
     OE_CHECK(_hton_buffer(
         eeid->signature, eeid->signature_size, &position, &remaining));
 
@@ -815,26 +815,26 @@ oe_result_t oe_eeid_ntoh(
     const uint8_t* position = buffer;
     size_t remaining = buffer_size;
 
-    OE_CHECK(_ntoh_uint32_t(&position, &remaining, &eeid->version));
+    OE_CHECK(_ntoh_uint32(&position, &remaining, &eeid->version));
 
     if (eeid->version != OE_EEID_VERSION)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     for (size_t i = 0; i < 8; i++)
-        OE_CHECK(_ntoh_uint32_t(&position, &remaining, &eeid->hash_state.H[i]));
+        OE_CHECK(_ntoh_uint32(&position, &remaining, &eeid->hash_state.H[i]));
     for (size_t i = 0; i < 2; i++)
-        OE_CHECK(_ntoh_uint32_t(&position, &remaining, &eeid->hash_state.N[i]));
+        OE_CHECK(_ntoh_uint32(&position, &remaining, &eeid->hash_state.N[i]));
 
     oe_enclave_size_settings_ntoh(&position, &remaining, &eeid->size_settings);
 
     OE_CHECK(_ntoh_buffer(
         &position, &remaining, eeid->config_id, sizeof(eeid->config_id)));
-    OE_CHECK(_ntoh_uint16_t(&position, &remaining, &eeid->config_svn));
+    OE_CHECK(_ntoh_uint16(&position, &remaining, &eeid->config_svn));
 
-    OE_CHECK(ntoh_uint64_t(&position, &remaining, &eeid->vaddr));
-    OE_CHECK(ntoh_uint64_t(&position, &remaining, &eeid->entry_point));
+    OE_CHECK(oe_ntoh_uint64(&position, &remaining, &eeid->vaddr));
+    OE_CHECK(oe_ntoh_uint64(&position, &remaining, &eeid->entry_point));
 
-    OE_CHECK(ntoh_uint64_t(&position, &remaining, &eeid->signature_size));
+    OE_CHECK(oe_ntoh_uint64(&position, &remaining, &eeid->signature_size));
     OE_CHECK(_ntoh_buffer(
         &position, &remaining, eeid->signature, eeid->signature_size));
 
@@ -856,10 +856,11 @@ oe_result_t oe_eeid_evidence_hton(
     uint8_t* position = buffer;
     size_t remaining = buffer_size;
 
-    OE_CHECK(hton_uint64_t(evidence->sgx_evidence_size, &position, &remaining));
     OE_CHECK(
-        hton_uint64_t(evidence->sgx_endorsements_size, &position, &remaining));
-    OE_CHECK(hton_uint64_t(evidence->eeid_size, &position, &remaining));
+        oe_hton_uint64(evidence->sgx_evidence_size, &position, &remaining));
+    OE_CHECK(
+        oe_hton_uint64(evidence->sgx_endorsements_size, &position, &remaining));
+    OE_CHECK(oe_hton_uint64(evidence->eeid_size, &position, &remaining));
 
     size_t data_size = evidence->sgx_evidence_size +
                        evidence->sgx_endorsements_size + evidence->eeid_size;
@@ -885,10 +886,10 @@ oe_result_t oe_eeid_evidence_ntoh(
     size_t remaining = buffer_size;
 
     OE_CHECK(
-        ntoh_uint64_t(&position, &remaining, &evidence->sgx_evidence_size));
-    OE_CHECK(
-        ntoh_uint64_t(&position, &remaining, &evidence->sgx_endorsements_size));
-    OE_CHECK(ntoh_uint64_t(&position, &remaining, &evidence->eeid_size));
+        oe_ntoh_uint64(&position, &remaining, &evidence->sgx_evidence_size));
+    OE_CHECK(oe_ntoh_uint64(
+        &position, &remaining, &evidence->sgx_endorsements_size));
+    OE_CHECK(oe_ntoh_uint64(&position, &remaining, &evidence->eeid_size));
 
     size_t data_size = evidence->sgx_evidence_size +
                        evidence->sgx_endorsements_size + evidence->eeid_size;
