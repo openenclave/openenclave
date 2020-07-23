@@ -14,6 +14,10 @@
 #include <openenclave/internal/utils.h>
 #include "td.h"
 
+#ifdef OE_HEAP_ALLOTTED_PAGE_COUNT
+#undef OE_HEAP_ALLOTTED_PAGE_COUNT
+#endif
+
 // Quick fix to allow SGX-LKL to partition the heap
 // TODO: Add an official mechanism for clients to reserve heap memory.
 #if defined(OE_HEAP_ALLOTTED_PAGE_COUNT)
