@@ -57,7 +57,7 @@ cd build/
 Then run `cmake` to configure the build and generate the make files and build:
 
 ```bash
-cmake -DHAS_QUOTE_PROVIDER=OFF ..
+cmake ..
 make
 ctest
 ```

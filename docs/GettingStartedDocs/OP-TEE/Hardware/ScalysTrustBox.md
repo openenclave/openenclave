@@ -353,7 +353,6 @@ cd build
 # Configure the SDK
 cmake ../sdk \
     -G Ninja \
-	-DHAS_QUOTE_PROVIDER=OFF \
 	-DCMAKE_TOOLCHAIN_FILE=../sdk/cmake/arm-cross.cmake \
 	-DOE_TA_DEV_KIT_DIR=$PWD/../lsdk/build/optee/export-ta_arm64 \
 	-DCMAKE_BUILD_TYPE=Debug

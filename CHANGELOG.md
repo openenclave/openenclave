@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+### Added
+- OE SDK Release packages can now be built on non-SGX and non-FLC machines.
+
+### Changed
+
+### Removed
+
+
 [0.10.0][v0.10.0_log]
 ------------
 ### Added
