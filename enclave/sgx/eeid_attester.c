@@ -171,9 +171,9 @@ static oe_result_t _eeid_get_evidence(
         &sgx_endorsements_buffer_size));
 
     // Prepare EEID evidence, prefixed with an attestation header.
-    *evidence_buffer_size =
-        sizeof(oe_eeid_evidence_t) + sgx_evidence_buffer_size +
-        sgx_endorsements_buffer_size + eeid_size + OE_CONFIG_ID_SIZE;
+    *evidence_buffer_size = sizeof(oe_eeid_evidence_t) +
+                            sgx_evidence_buffer_size +
+                            sgx_endorsements_buffer_size + eeid_size;
     evidence = oe_malloc(*evidence_buffer_size);
     if (!evidence)
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -181,7 +181,6 @@ static oe_result_t _eeid_get_evidence(
     evidence->sgx_evidence_size = sgx_evidence_buffer_size;
     evidence->sgx_endorsements_size = sgx_endorsements_buffer_size;
     evidence->eeid_size = eeid_size;
-    evidence->config_id_size = OE_CONFIG_ID_SIZE;
 
     if (sgx_evidence_buffer_size != 0)
         memcpy(evidence->data, sgx_evidence_buffer, sgx_evidence_buffer_size);
@@ -197,18 +196,6 @@ static oe_result_t _eeid_get_evidence(
         evidence->data + evidence->sgx_evidence_size +
             evidence->sgx_endorsements_size,
         eeid_size));
-
-    OE_SHA256 config_id;
-    if (config && config->data && config->size)
-        oe_sha256(config->data, config->size, &config_id);
-    else
-        memset(config_id.buf, 0, sizeof(config_id.buf));
-
-    memcpy(
-        evidence->data + evidence->sgx_evidence_size +
-            evidence->sgx_endorsements_size + eeid_size,
-        config_id.buf,
-        evidence->config_id_size);
 
     // Write evidence. This can't be done in-place.
     *evidence_buffer = oe_malloc(*evidence_buffer_size);

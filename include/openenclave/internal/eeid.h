@@ -24,13 +24,6 @@ static const uint8_t OE_DEBUG_PUBLIC_KEY[] = {
     0xce, 0x73, 0xe4, 0x33, 0x63, 0x83, 0x77, 0xf1, 0x79, 0xab, 0x44,
     0x56, 0xb2, 0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0xa};
 
-/** Layout of the EEID memory page. */
-typedef struct
-{
-    OE_SHA256 config_id;
-    oe_eeid_t eeid;
-} oe_eeid_page_t;
-
 /**
  * Determine whether properties are those of a base image to be used with EEID
  *
@@ -113,7 +106,6 @@ oe_result_t oe_deserialize_eeid(
  */
 oe_result_t oe_remeasure_memory_pages(
     const oe_eeid_t* eeid,
-    const OE_SHA256* config_hash,
     OE_SHA256* computed_enclave_hash,
     bool with_eeid_pages,
     bool static_sizes);
@@ -163,7 +155,6 @@ oe_result_t verify_eeid(
     uint32_t reported_misc_select,
     const uint8_t** base_enclave_hash,
     const oe_eeid_t* eeid,
-    const OE_SHA256* config_hash,
     const oe_enclave_size_settings_t* base_image_sizes);
 
 /**
@@ -229,7 +220,6 @@ typedef struct
     size_t sgx_evidence_size;     /* Size of base-image evidence */
     size_t sgx_endorsements_size; /* Size of base-image endorsements */
     size_t eeid_size;             /* Size of EEID */
-    size_t config_id_size;        /* Size of EEID or configid hash */
     uint8_t data[];               /* Data (same order as the sizes) */
 } oe_eeid_evidence_t;
 

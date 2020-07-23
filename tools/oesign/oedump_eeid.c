@@ -59,10 +59,9 @@ int oedump_eeid(const char* enclave)
         return 1;
     }
 
-    /* Build an enclave to obtain the MRENCLAVE measurement */
-    oe_eeid_t* eeid = NULL;
-    OE_CHECK(oe_create_eeid_sgx(&eeid));
-    context.eeid = eeid;
+    /* Build an enclave with EEID enabled */
+    oe_enclave_setting_eeid_t eeid_setting = {{0}};
+    context.eeid_setting = &eeid_setting;
 
     OE_CHECK_ERR(
         oe_sgx_build_enclave(&context, enclave, &props, &enc),
@@ -72,18 +71,19 @@ int oedump_eeid(const char* enclave)
 
     printf("=== Extended Information for EEID: \n");
     printf("H=");
-    oe_hex_dump(eeid->hash_state.H, sizeof(uint32_t) * 8);
+    oe_hex_dump(context.eeid->hash_state.H, sizeof(uint32_t) * 8);
     printf("N=");
-    oe_hex_dump(eeid->hash_state.N, sizeof(uint32_t) * 2);
+    oe_hex_dump(context.eeid->hash_state.N, sizeof(uint32_t) * 2);
     printf("base_sigstruct=");
-    oe_hex_dump(eeid->signature, eeid->signature_size);
-    printf("vaddr=%lu", eeid->vaddr);
+    oe_hex_dump(context.eeid->signature, context.eeid->signature_size);
+    printf("vaddr=%lu", context.eeid->vaddr);
     printf("\n");
 
     ret = 0;
 
 done:
 
+    free(context.eeid);
     oe_sgx_cleanup_load_context(&context);
 
     return ret;

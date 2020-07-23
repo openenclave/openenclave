@@ -7,6 +7,7 @@
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/eeid.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
@@ -680,7 +681,7 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
     oeprops->image_info.oeinfo_rva = image->oeinfo_rva;
     oeprops->image_info.oeinfo_size = sizeof(oe_sgx_enclave_properties_t);
 
-    /* Set _enclave_rva to its own rva offset*/
+    /* Set _enclave_rva to its own rva offset */
     OE_CHECK(_get_symbol_rva(image, "_enclave_rva", &enclave_rva));
     OE_CHECK(_set_uint64_t_symbol_value(image, "_enclave_rva", enclave_rva));
 
@@ -692,16 +693,19 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
     OE_CHECK(
         _set_uint64_t_symbol_value(image, "_reloc_size", image->reloc_size));
 
-#ifdef OE_WITH_EXPERIMENTAL_EEID
-    /* exactly one guard or EEID page */
-    uint64_t eeid_rva = image->image_size + image->reloc_size;
-    OE_CHECK(_set_uint64_t_symbol_value(image, "_eeid_rva", eeid_rva));
-
-    /* heap right after guard/EEID page */
-    oeprops->image_info.heap_rva = eeid_rva + OE_PAGE_SIZE;
-#else
     /* heap right after image */
     oeprops->image_info.heap_rva = image->image_size + image->reloc_size;
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    /* if there is an EEID page, it's just before the heap */
+    if (image->eeid_enabled)
+    {
+        OE_CHECK(_set_uint64_t_symbol_value(
+            image, "_eeid_rva", oeprops->image_info.heap_rva));
+        oeprops->image_info.heap_rva += OE_PAGE_SIZE;
+    }
+    else
+        OE_CHECK(_set_uint64_t_symbol_value(image, "_eeid_rva", 0));
 #endif
 
     if (image->tdata_size)

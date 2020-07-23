@@ -137,42 +137,50 @@ extern bool oe_disable_debug_malloc_check;
 */
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-extern const oe_enclave_config_t* oe_enclave_config;
+static oe_enclave_config_t* oe_enclave_config = NULL;
+
+const oe_enclave_config_t* __oe_get_enclave_config()
+{
+    return oe_enclave_config;
+}
 
 static oe_result_t _load_config(const oe_enclave_config_t* config_from_host)
 {
-    const oe_eeid_page_t* eeid_page = __oe_get_eeid_page();
-    const oe_eeid_t* eeid = &eeid_page->eeid;
+    if (__oe_have_eeid())
+    {
+        const oe_eeid_t* eeid = __oe_get_eeid();
 
-    if (!eeid || eeid->version == 0)
-        return OE_OK;
+        /* With EEID, we expect a config */
+        if (!config_from_host)
+            return OE_INVALID_PARAMETER;
 
-    /* With EEID, we expect a config */
-    if (!config_from_host)
-        return OE_INVALID_PARAMETER;
+        oe_enclave_config_t config = *config_from_host;
 
-    oe_enclave_config_t config = *config_from_host;
+        if (!config.data || !config.size)
+            return OE_OK; /* no or zero-size configs are ok */
 
-    if (!config.data || !config.size)
-        return OE_OK; /* no or zero-size configs are ok */
+        /* Copy config into enclave heap */
+        oe_enclave_config_t* copy = oe_malloc(sizeof(oe_enclave_config_t));
+        if (!copy)
+            return OE_OUT_OF_MEMORY;
+        copy->size = config.size;
+        copy->data = oe_malloc(config.size);
+        if (!copy->data)
+            return OE_OUT_OF_MEMORY;
+        memcpy(copy->data, config.data, config.size);
 
-    /* Check that the config hashes to the correct value */
-    OE_SHA256 config_hash;
-    oe_sha256(config.data, config.size, &config_hash);
-    if (memcmp(config_hash.buf, eeid_page->config_id.buf, OE_SHA256_SIZE) != 0)
-        return OE_INVALID_PARAMETER;
+        /* Check that the config hashes to the correct value */
+        OE_SHA256 config_hash;
+        oe_sha256(copy->data, copy->size, &config_hash);
+        if (memcmp(config_hash.buf, eeid->config_id, OE_SHA256_SIZE) != 0)
+        {
+            oe_free(copy);
+            return OE_INVALID_PARAMETER;
+        }
 
-    /* Copy config into enclave heap */
-    oe_enclave_config_t* copy = oe_malloc(sizeof(oe_enclave_config_t));
-    if (!copy)
-        return OE_OUT_OF_MEMORY;
-    copy->size = config.size;
-    copy->data = oe_malloc(config.size);
-    if (!copy->data)
-        return OE_OUT_OF_MEMORY;
-    memcpy(copy->data, config.data, config.size);
+        oe_enclave_config = copy;
+    }
 
-    oe_enclave_config = copy;
     return OE_OK;
 }
 
@@ -498,7 +506,7 @@ static void _handle_ecall(
             oe_verifier_shutdown();
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-            /* Cleanup config */
+            /* Clean up config */
             _free_config();
 #endif
 

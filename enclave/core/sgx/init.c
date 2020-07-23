@@ -41,17 +41,23 @@ static void _check_memory_boundaries(void)
 }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-static void _find_eeid()
+static void _check_eeid()
 {
-    /* Get the guard/EEID page */
-    const oe_eeid_page_t* eeid_page = (oe_eeid_page_t*)__oe_get_eeid_page();
-    if (!oe_is_within_enclave(eeid_page, OE_PAGE_SIZE))
-        oe_abort();
+    if (__oe_have_eeid())
+    {
+        /* Check that the EEID (meta-)data is within the enclave */
+        const oe_eeid_t* eeid = (oe_eeid_t*)__oe_get_eeid();
+        if (!oe_is_within_enclave(eeid, OE_PAGE_SIZE))
+            oe_abort();
 
-    /* Without EEID, eeid_page page is all zero (including the version). */
-    if (eeid_page->eeid.version != 0 &&
-        eeid_page->eeid.version != OE_EEID_VERSION)
-        oe_abort();
+        /* Check that the signature is within the EEID page */
+        if (sizeof(oe_eeid_t) + eeid->signature_size > OE_PAGE_SIZE)
+            oe_abort();
+
+        /* Check that the EEID version matches */
+        if (eeid->version != OE_EEID_VERSION)
+            oe_abort();
+    }
 }
 #endif
 
@@ -64,7 +70,7 @@ static void _initialize_enclave_image()
     }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    _find_eeid();
+    _check_eeid();
 #endif
 
     /* Check that memory boundaries are within enclave */

@@ -118,6 +118,11 @@ struct _oe_enclave_image
         const oe_sgx_enclave_properties_t* properties);
 
     oe_result_t (*unload)(oe_enclave_image_t* image);
+
+    /* Flag to tell _patch whether EEID is enabled. Not #ifdef'd on purpose,
+     * because some tests are built without it and their stacks get smashed when
+     * the structs don't have the same size. Where should this go? */
+    bool eeid_enabled;
 };
 
 oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image);

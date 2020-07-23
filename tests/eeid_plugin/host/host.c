@@ -122,14 +122,11 @@ void one_enclave_tests(const char* filename, uint32_t flags, bool static_sizes)
 {
     printf("======== one_enclave_tests.\n");
 
+    oe_enclave_setting_eeid_t* eeid_setting = NULL;
     oe_enclave_setting_t setting;
     setting.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
-    make_test_eeid(
-        &setting.u.eeid.eeid,
-        10 * OE_PAGE_SIZE,
-        &setting.u.eeid.config.data,
-        &setting.u.eeid.config.size,
-        static_sizes);
+    make_test_eeid(&eeid_setting, 10 * OE_PAGE_SIZE, static_sizes);
+    setting.u.eeid_setting = eeid_setting;
 
     oe_enclave_t* enclave = NULL;
     oe_result_t result = oe_create_eeid_plugin_enclave(
@@ -138,8 +135,7 @@ void one_enclave_tests(const char* filename, uint32_t flags, bool static_sizes)
 
     run_tests(enclave);
     host_remote_verify(enclave);
-    free(setting.u.eeid.config.data);
-    free(setting.u.eeid.eeid);
+    free((void*)setting.u.eeid_setting);
     OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
 }
 
@@ -147,8 +143,7 @@ typedef struct
 {
     const char* filename;
     oe_enclave_t* enclave;
-    oe_eeid_t* eeid;
-    oe_enclave_config_t config;
+    oe_enclave_setting_eeid_t* eeid_setting;
 
     uint8_t evidence[65535];
     size_t evidence_out_size;
@@ -163,8 +158,7 @@ typedef struct
 
 void free_stuff(enclave_stuff_t* stuff)
 {
-    free(stuff->eeid);
-    free(stuff->config.data);
+    free(stuff->eeid_setting);
     oe_free_claims(stuff->claims, stuff->claims_length);
 }
 
@@ -175,9 +169,7 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
     stuff->enclave = NULL;
     oe_enclave_setting_t setting;
     setting.setting_type = OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA;
-    setting.u.eeid.eeid = stuff->eeid;
-    setting.u.eeid.config.data = stuff->config.data;
-    setting.u.eeid.config.size = stuff->config.size;
+    setting.u.eeid_setting = stuff->eeid_setting;
 
     OE_TEST_CODE(
         oe_create_eeid_plugin_enclave(
@@ -245,7 +237,10 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
 
     /* Check that the claimed config_id matches */
     OE_SHA256 config_hash;
-    oe_sha256(stuff->config.data, stuff->config.size, &config_hash);
+    oe_sha256(
+        stuff->eeid_setting->data,
+        stuff->eeid_setting->data_size,
+        &config_hash);
     OE_TEST(memcmp(config_hash.buf, stuff->config_hash, OE_SHA256_SIZE) == 0);
 }
 
@@ -258,20 +253,14 @@ void multiple_enclaves_tests(
 
     // Enclave A
     enclave_stuff_t A;
-    OE_TEST(
-        make_test_eeid(
-            &A.eeid, 10, &A.config.data, &A.config.size, static_sizes) ==
-        OE_OK);
+    OE_TEST(make_test_eeid(&A.eeid_setting, 10, static_sizes) == OE_OK);
     start_enclave(filename, flags, &A);
 
     // Enclave B with reversed EEID
     enclave_stuff_t B;
-    OE_TEST(
-        make_test_eeid(
-            &B.eeid, 10, &B.config.data, &B.config.size, static_sizes) ==
-        OE_OK);
-    for (size_t i = 0; i < B.config.size; i++)
-        B.config.data[i] = (uint8_t)(9 - i);
+    OE_TEST(make_test_eeid(&B.eeid_setting, 10, static_sizes) == OE_OK);
+    for (size_t i = 0; i < B.eeid_setting->data_size; i++)
+        B.eeid_setting->data[i] = (uint8_t)(9 - i);
     start_enclave(filename, flags, &B);
 
     // Check that the hashes of A and B are not the same
@@ -298,10 +287,7 @@ void multiple_enclaves_tests(
 
     // Enclave C with same EEID as A
     enclave_stuff_t C;
-    OE_TEST(
-        make_test_eeid(
-            &C.eeid, 10, &C.config.data, &C.config.size, static_sizes) ==
-        OE_OK);
+    OE_TEST(make_test_eeid(&C.eeid_setting, 10, static_sizes) == OE_OK);
     start_enclave(filename, flags, &C);
 
     // Check that the hashes of A and C are indeed the same

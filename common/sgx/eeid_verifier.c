@@ -310,8 +310,6 @@ static oe_result_t _eeid_verify_evidence(
            eeid_buffer_size = 0;
     oe_eeid_t* attester_eeid = NULL;
     oe_eeid_evidence_t* evidence = NULL;
-    OE_SHA256 attester_config_id;
-    size_t attester_config_id_size = 0;
     const uint8_t* verifier_config = NULL;
     size_t verifier_config_size = 0;
     oe_claim_t* sgx_claims = NULL;
@@ -328,18 +326,8 @@ static oe_result_t _eeid_verify_evidence(
     sgx_evidence_buffer_size = evidence->sgx_evidence_size;
     sgx_endorsements_buffer_size = evidence->sgx_endorsements_size;
     eeid_buffer_size = evidence->eeid_size;
-    attester_config_id_size = evidence->config_id_size;
     eeid_buffer = evidence->data + evidence->sgx_evidence_size +
                   evidence->sgx_endorsements_size;
-
-    if (attester_config_id_size != OE_SHA256_SIZE)
-        OE_RAISE(OE_VERIFY_FAILED);
-
-    memcpy(
-        attester_config_id.buf,
-        evidence->data + evidence->sgx_evidence_size +
-            evidence->sgx_endorsements_size + evidence->eeid_size,
-        OE_SHA256_SIZE);
 
     // Make sure buffers are aligned so they can be cast to structs. Note that
     // the SGX evidendence and endorsements buffers contain structs that have
@@ -420,7 +408,7 @@ static oe_result_t _eeid_verify_evidence(
         OE_SHA256 verifier_config_id;
         oe_sha256(verifier_config, verifier_config_size, &verifier_config_id);
         if (memcmp(
-                attester_config_id.buf,
+                attester_eeid->config_id,
                 verifier_config_id.buf,
                 OE_SHA256_SIZE) != 0)
             OE_RAISE(OE_VERIFY_FAILED);
@@ -443,7 +431,6 @@ static oe_result_t _eeid_verify_evidence(
         r_misc_select,
         &r_enclave_base_hash,
         attester_eeid,
-        &attester_config_id,
         &base_image_sizes));
 
     /* Produce claims */
@@ -457,7 +444,7 @@ static oe_result_t _eeid_verify_evidence(
             r_oe_attributes,
             r_id_version,
             r_enclave_base_hash,
-            attester_config_id.buf,
+            attester_eeid->config_id,
             verifier_config,
             verifier_config_size,
             r_resigner_id,

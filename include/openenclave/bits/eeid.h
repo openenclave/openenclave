@@ -45,6 +45,14 @@ typedef struct _oe_eeid
     /** Heap, stack, and thread configuration for an EEID enclave instance. */
     oe_enclave_size_settings_t size_settings;
 
+    /** Identity of the config/code/data to be loaded into the enclave after
+     * enclave init */
+    uint8_t config_id[32];
+
+    /** Minimum SVN of the config/code/data to be loaded into the enclave after
+     * enclave init */
+    uint16_t config_svn;
+
     /** Location of the added data pages in enclave memory. */
     uint64_t vaddr;
 
@@ -58,6 +66,23 @@ typedef struct _oe_eeid
     uint8_t signature[];
 } oe_eeid_t;
 OE_PACK_END
+
+/**
+ * Structure to keep EEID related options during enclave creation
+ */
+typedef struct _oe_enclave_setting_eeid
+{
+    /** Heap, stack, and thread configuration for an EEID enclave instance. */
+    oe_enclave_size_settings_t size_settings;
+
+    /** Config ID */
+    uint8_t config_id[32];
+    uint16_t config_svn;
+
+    /** EEID Data */
+    size_t data_size;
+    uint8_t data[];
+} oe_enclave_setting_eeid_t;
 
 OE_EXTERNC_END
 
