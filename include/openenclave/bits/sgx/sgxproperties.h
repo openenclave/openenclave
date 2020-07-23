@@ -29,10 +29,10 @@ typedef struct _oe_sgx_enclave_image_info_t
 #define OE_SGX_MAX_TCS 32
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-/* This is the maximum size SGX (currently) allows. When signing EEID base
- * images we don't know the size that the final image will have, so chose
- * this maximum. */
-#define EEID_SECS_SIZE 68719476736
+/* This is the maximum size SGX (currently) allows (64GB). When signing EEID
+ * base images we don't know the size that the final image will have, so we
+ * chose this maximum. */
+#define EEID_SECS_SIZE 0x1000000000
 #endif
 
 // oe_sgx_enclave_properties_t SGX enclave properties derived type
