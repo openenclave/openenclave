@@ -177,7 +177,7 @@ static oe_result_t _load_config(
         if (memcmp(config_hash.buf, eeid->config_id, OE_SHA256_SIZE) != 0)
         {
             oe_free(copy);
-            return OE_INVALID_PARAMETER;
+            return OE_VERIFY_FAILED;
         }
 
         oe_enclave_config = copy;
