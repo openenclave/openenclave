@@ -50,7 +50,7 @@ OE_EXTERNC_BEGIN
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 /**
- * Size of the enclave config hash in bytes.
+ * Size of the enclave's config ID in bytes.
  */
 #define OE_CONFIG_ID_SIZE 32
 #endif
