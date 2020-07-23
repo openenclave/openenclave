@@ -327,6 +327,24 @@ oe_result_t oe_eeid_evidence_ntoh(
     size_t buffer_size,
     oe_eeid_evidence_t* evidence);
 
+/**
+ * This struct defines a buffer for enclave configuration with EEID.
+ */
+typedef struct
+{
+    uint8_t* data;
+    size_t size;
+} oe_enclave_initialization_data_t;
+
+/**
+ * This struct defines an enclave with EEID data.
+ */
+typedef struct
+{
+    oe_enclave_t* enclave;
+    oe_enclave_initialization_data_t config;
+} oe_enclave_with_config_t;
+
 #endif /* OE_WITH_EXPERIMENTAL_EEID */
 
 #endif /* _OE_INTERNAL_EEID_H */
