@@ -104,6 +104,7 @@ if (UNIX
     add_subdirectory(file)
     add_subdirectory(getenclave)
     add_subdirectory(ocall)
+    add_subdirectory(ldd)
     add_subdirectory(libcxx)
     add_subdirectory(libcxxrt)
     add_subdirectory(libunwind)
