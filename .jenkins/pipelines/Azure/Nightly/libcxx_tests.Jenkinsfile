@@ -18,7 +18,7 @@ def ACCLibcxxTest(String label, String compiler, String build_type) {
                 cleanWs()
                 checkout scm
                 def task = """
-                           cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DHAS_QUOTE_PROVIDER=ON -DENABLE_FULL_LIBCXX_TESTS=ON
+                           cmake .. -DCMAKE_BUILD_TYPE=${build_type} -DENABLE_FULL_LIBCXX_TESTS=ON
                            make
                            ctest -VV -debug --timeout ${CTEST_TIMEOUT_SECONDS}
                            """

@@ -50,7 +50,6 @@ def AArch64GNUTest(String version, String build_type) {
                                 -DCMAKE_BUILD_TYPE=${build_type}                                   \
                                 -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/cmake/arm-cross.cmake          \
                                 -DOE_TA_DEV_KIT_DIR=/devkits/vexpress-qemu_armv8a/export-ta_arm64  \
-                                -DHAS_QUOTE_PROVIDER=OFF                                           \
                                 -Wdev
                             ninja -v
                             """
@@ -67,7 +66,7 @@ def checkDevFlows(String version) {
                 cleanWs()
                 checkout scm
                 def task = """
-                           cmake ${WORKSPACE} -G Ninja -DHAS_QUOTE_PROVIDER=OFF -Wdev --warn-uninitialized -Werror=dev
+                           cmake ${WORKSPACE} -G Ninja -Wdev --warn-uninitialized -Werror=dev
                            ninja -v
                            """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-7", task, "--cap-add=SYS_PTRACE")
@@ -110,19 +109,16 @@ try{
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-                "Sim 1804 clang-7 SGX1 Debug":      { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-7 SGX1 Release":    { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-7 SGX1FLC Debug":   { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "Sim 1804 clang-7 SGX1FLC Release": { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) }
+                "Sim 1804 clang-7 SGX1 Debug":   { simulationContainerTest('18.04', 'Debug',   ['-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
+                "Sim 1804 clang-7 SGX1 Release": { simulationContainerTest('18.04', 'Release', ['-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) }
             ]
             parallel testing_stages
         }
     } else {
         stage("PR Testing") {
             testing_stages += [
-                "Sim 1804 clang-7 SGX1 Release":    { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "Sim 1804 clang-7 SGX1FLC Debug":   { simulationContainerTest('18.04', 'Debug',   ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "Sim 1804 clang-7 SGX1FLC Release": { simulationContainerTest('18.04', 'Release', ['-DHAS_QUOTE_PROVIDER=ON',  '-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) }
+                "Sim 1804 clang-7 SGX1 Debug":   { simulationContainerTest('18.04', 'Debug',   ['-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
+                "Sim 1804 clang-7 SGX1 Release": { simulationContainerTest('18.04', 'Release', ['-DLVI_MITIGATION=None', '-DLVI_MITIGATION_SKIP_TESTS=ON']) }
             ]
             parallel testing_stages
         }
