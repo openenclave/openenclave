@@ -189,14 +189,14 @@ size_t __oe_get_reloc_size()
 **==============================================================================
 */
 
-bool __oe_have_eeid(void)
+bool oe_have_eeid(void)
 {
     return _eeid_rva != 0;
 }
 
-const oe_eeid_t* __oe_get_eeid()
+const oe_eeid_t* oe_get_eeid()
 {
-    if (!__oe_have_eeid())
+    if (!oe_have_eeid())
         return NULL;
 
     const unsigned char* base = __oe_get_enclave_base();
@@ -222,8 +222,8 @@ const void* __oe_get_heap_base()
 size_t __oe_get_heap_size()
 {
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    if (__oe_have_eeid())
-        return __oe_get_eeid()->size_settings.num_heap_pages * OE_PAGE_SIZE;
+    if (oe_have_eeid())
+        return oe_get_eeid()->size_settings.num_heap_pages * OE_PAGE_SIZE;
     else
 #endif
         return oe_enclave_properties_sgx.header.size_settings.num_heap_pages *

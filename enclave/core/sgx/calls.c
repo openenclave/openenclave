@@ -139,7 +139,7 @@ extern bool oe_disable_debug_malloc_check;
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 static oe_enclave_initialization_data_t* oe_enclave_config = NULL;
 
-const oe_enclave_initialization_data_t* __oe_get_enclave_config()
+const oe_enclave_initialization_data_t* oe_get_enclave_config()
 {
     return oe_enclave_config;
 }
@@ -147,9 +147,9 @@ const oe_enclave_initialization_data_t* __oe_get_enclave_config()
 static oe_result_t _load_config(
     const oe_enclave_initialization_data_t* config_from_host)
 {
-    if (__oe_have_eeid())
+    if (oe_have_eeid())
     {
-        const oe_eeid_t* eeid = __oe_get_eeid();
+        const oe_eeid_t* eeid = oe_get_eeid();
 
         /* With EEID, we expect a config */
         if (!config_from_host)
@@ -227,7 +227,7 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             oe_enclave_t* enclave;
 #ifdef OE_WITH_EXPERIMENTAL_EEID
             oe_enclave_with_config_t* enclave_with_config = NULL;
-            if (__oe_have_eeid())
+            if (oe_have_eeid())
             {
                 enclave_with_config = (oe_enclave_with_config_t*)arg_in;
                 enclave = enclave_with_config->enclave;

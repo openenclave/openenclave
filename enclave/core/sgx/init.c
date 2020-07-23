@@ -43,10 +43,10 @@ static void _check_memory_boundaries(void)
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 static void _check_eeid()
 {
-    if (__oe_have_eeid())
+    if (oe_have_eeid())
     {
         /* Check that the EEID (meta-)data is within the enclave */
-        const oe_eeid_t* eeid = (oe_eeid_t*)__oe_get_eeid();
+        const oe_eeid_t* eeid = (oe_eeid_t*)oe_get_eeid();
         if (!oe_is_within_enclave(eeid, OE_PAGE_SIZE))
             oe_abort();
 
