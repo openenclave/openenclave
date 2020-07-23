@@ -28,7 +28,8 @@
 
 #include <openenclave/enclave.h>
 
-extern const oe_enclave_initialization_data_t* oe_get_enclave_config();
+extern const oe_enclave_initialization_data_t*
+oe_get_enclave_initialization_data();
 extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 
 static oe_result_t _eeid_attester_on_register(
@@ -122,7 +123,8 @@ static oe_result_t _eeid_get_evidence(
     uint8_t* sgx_custom_claims = NULL;
     size_t sgx_custom_claims_size = 0;
     const oe_eeid_t* eeid = oe_get_eeid();
-    const oe_enclave_initialization_data_t* config = oe_get_enclave_config();
+    const oe_enclave_initialization_data_t* initialization_data =
+        oe_get_enclave_initialization_data();
 
     OE_UNUSED(context);
     if (!evidence_buffer || !evidence_buffer_size || !eeid)
@@ -205,13 +207,17 @@ static oe_result_t _eeid_get_evidence(
         evidence, *evidence_buffer, *evidence_buffer_size));
 
     // Write endorsements
-    if (endorsements_buffer && config && config->data && config->size)
+    if (endorsements_buffer && initialization_data &&
+        initialization_data->data && initialization_data->size)
     {
-        *endorsements_buffer_size = config->size;
-        *endorsements_buffer = oe_malloc(config->size);
+        *endorsements_buffer_size = initialization_data->size;
+        *endorsements_buffer = oe_malloc(initialization_data->size);
         if (!*endorsements_buffer)
             OE_RAISE(OE_OUT_OF_MEMORY);
-        memcpy(*endorsements_buffer, config->data, config->size);
+        memcpy(
+            *endorsements_buffer,
+            initialization_data->data,
+            initialization_data->size);
     }
 
     result = OE_OK;

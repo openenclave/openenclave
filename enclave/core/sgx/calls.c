@@ -137,11 +137,11 @@ extern bool oe_disable_debug_malloc_check;
 */
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-static oe_enclave_initialization_data_t* oe_enclave_config = NULL;
+static oe_enclave_initialization_data_t* oe_enclave_initialization_data = NULL;
 
-const oe_enclave_initialization_data_t* oe_get_enclave_config()
+const oe_enclave_initialization_data_t* oe_get_enclave_initialization_data()
 {
-    return oe_enclave_config;
+    return oe_enclave_initialization_data;
 }
 
 static oe_result_t _load_config(
@@ -180,7 +180,7 @@ static oe_result_t _load_config(
             return OE_VERIFY_FAILED;
         }
 
-        oe_enclave_config = copy;
+        oe_enclave_initialization_data = copy;
     }
 
     return OE_OK;
@@ -188,11 +188,11 @@ static oe_result_t _load_config(
 
 static oe_result_t _free_config()
 {
-    if (oe_enclave_config)
+    if (oe_enclave_initialization_data)
     {
-        oe_free(oe_enclave_config->data);
-        oe_free((void*)oe_enclave_config);
-        oe_enclave_config = NULL;
+        oe_free(oe_enclave_initialization_data->data);
+        oe_free((void*)oe_enclave_initialization_data);
+        oe_enclave_initialization_data = NULL;
     }
     return OE_OK;
 }
