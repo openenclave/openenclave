@@ -11,8 +11,8 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_CLAIM_EEID_RESIGNED_UNIQUE_ID "eeid_resigned_unique_id"
-#define OE_CLAIM_EEID_RESIGNER_ID "eeid_resigner_id"
+#define OE_CLAIM_EEID_UNIQUE_ID "eeid_unique_id"
+#define OE_CLAIM_EEID_SIGNER_ID "eeid_signer_id"
 
 /**
  * oe_sgx_eeid_verifier_initialize

@@ -227,7 +227,7 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
         const char* name = stuff->claims[i].name;
         if (strcmp(name, OE_CLAIM_UNIQUE_ID) == 0)
             stuff->enclave_hash = stuff->claims[i].value;
-        else if (strcmp(name, OE_CLAIM_EEID_RESIGNED_UNIQUE_ID) == 0)
+        else if (strcmp(name, OE_CLAIM_EEID_UNIQUE_ID) == 0)
             stuff->resigned_enclave_hash = stuff->claims[i].value;
         else if (strcmp(name, OE_CLAIM_CONFIG_ID) == 0)
             stuff->config_hash = stuff->claims[i].value;
