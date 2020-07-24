@@ -577,14 +577,17 @@ oe_result_t verify_eeid(
     bool sgx_debug = reported_sgx_attributes->flags & SGX_FLAGS_DEBUG;
 
     uint64_t attributes_masked =
-        reported_sgx_attributes->flags & ~sigstruct->attributemask.flags;
+        reported_sgx_attributes->flags & sigstruct->attributemask.flags;
     uint64_t base_attributes_masked =
-        sigstruct->attributes.flags & ~sigstruct->attributemask.flags;
+        sigstruct->attributes.flags & sigstruct->attributemask.flags;
+    /*The base image sigstruct is missing the SGX_FLAGS_INITTED flag because it
+     * was never created or initialized */
+    base_attributes_masked |= SGX_FLAGS_INITTED;
     bool attributes_match = attributes_masked == base_attributes_masked;
 
-    uint64_t miscselect_masked = reported_misc_select & ~sigstruct->miscmask;
+    uint64_t miscselect_masked = reported_misc_select & sigstruct->miscmask;
     uint64_t base_miscselect_masked =
-        sigstruct->miscselect & ~sigstruct->miscmask;
+        sigstruct->miscselect & sigstruct->miscmask;
     bool miscselect_match = miscselect_masked == base_miscselect_masked;
 
     if (base_debug != extended_debug || base_debug != sgx_debug ||
