@@ -522,7 +522,7 @@ oe_result_t verify_eeid(
     uint16_t reported_product_id,
     uint32_t reported_security_version,
     uint64_t reported_attributes,
-    const sgx_attributes_t* r_sgx_attributes,
+    const sgx_attributes_t* reported_sgx_attributes,
     uint32_t reported_misc_select,
     const uint8_t** base_enclave_hash,
     const oe_eeid_t* eeid,
@@ -574,12 +574,23 @@ oe_result_t verify_eeid(
     // Check other image properties have not changed
     bool base_debug = sigstruct->attributes.flags & SGX_FLAGS_DEBUG;
     bool extended_debug = reported_attributes & OE_REPORT_ATTRIBUTES_DEBUG;
-    bool sgx_debug = r_sgx_attributes->flags & SGX_FLAGS_DEBUG;
+    bool sgx_debug = reported_sgx_attributes->flags & SGX_FLAGS_DEBUG;
+
+    uint64_t attributes_masked =
+        reported_sgx_attributes->flags & ~sigstruct->attributemask.flags;
+    uint64_t base_attributes_masked =
+        sigstruct->attributes.flags & ~sigstruct->attributemask.flags;
+    bool attributes_match = attributes_masked == base_attributes_masked;
+
+    uint64_t miscselect_masked = reported_misc_select & ~sigstruct->miscmask;
+    uint64_t base_miscselect_masked =
+        sigstruct->miscselect & ~sigstruct->miscmask;
+    bool miscselect_match = miscselect_masked == base_miscselect_masked;
 
     if (base_debug != extended_debug || base_debug != sgx_debug ||
-        sigstruct->miscselect != reported_misc_select ||
         sigstruct->isvprodid != reported_product_id ||
-        sigstruct->isvsvn != reported_security_version)
+        sigstruct->isvsvn != reported_security_version || !attributes_match ||
+        !miscselect_match)
         OE_RAISE(OE_VERIFY_FAILED);
 
     // Check old signature (new signature has been checked above)
