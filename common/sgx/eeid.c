@@ -604,7 +604,7 @@ static oe_result_t _hton_uint16(
         return OE_INVALID_PARAMETER;
 
     for (size_t i = 0; i < 2; i++)
-        (*position)[i] = (x >> (32 - ((i + 1) * 8))) & 0xFF;
+        (*position)[i] = (x >> (16 - ((i + 1) * 8))) & 0xFF;
 
     *position += 2;
     *remaining -= 2;

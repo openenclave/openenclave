@@ -41,7 +41,27 @@ oe_result_t make_test_eeid(
     for (size_t i = 0; i < data_size; i++)
         setting->data[i] = (uint8_t)i;
 
+    setting->config_svn = 42;
+
     *eeid_setting = setting;
 
+    return OE_OK;
+}
+
+oe_result_t make_test_config_id(
+    oe_enclave_setting_eeid_t** eeid_setting,
+    size_t data_size,
+    bool static_sizes)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    OE_CHECK(make_test_eeid(eeid_setting, data_size, static_sizes));
+
+    oe_enclave_setting_eeid_t* es = *eeid_setting;
+    OE_SHA256 config_hash;
+    OE_CHECK(oe_sha256(es->data, es->data_size, &config_hash));
+    memcpy(es->config_id, config_hash.buf, sizeof(es->config_id));
+
+    es->data_size = 0;
+done:
     return OE_OK;
 }

@@ -91,6 +91,7 @@ static oe_result_t _add_claims(
     uint32_t id_version,
     const uint8_t* enclave_base_hash,
     const uint8_t* config_id,
+    uint16_t config_svn,
     const uint8_t* config,
     size_t config_size,
     const uint8_t* eeid_signer_id,
@@ -102,8 +103,9 @@ static oe_result_t _add_claims(
     if (!claims_out || !claims_size_out)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    oe_claim_t* claims = (oe_claim_t*)oe_malloc(
-        (OE_REQUIRED_CLAIMS_COUNT + 4) * sizeof(oe_claim_t));
+    size_t num_claims = OE_REQUIRED_CLAIMS_COUNT + (config ? 5 : 4);
+    oe_claim_t* claims =
+        (oe_claim_t*)oe_malloc(num_claims * sizeof(oe_claim_t));
     if (claims == NULL)
         return OE_OUT_OF_MEMORY;
 
@@ -179,6 +181,13 @@ static oe_result_t _add_claims(
         sizeof(OE_CLAIM_CONFIG_ID),
         (void*)config_id,
         OE_CONFIG_ID_SIZE));
+
+    OE_CHECK(_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_CONFIG_SVN,
+        sizeof(OE_CLAIM_CONFIG_SVN),
+        &config_svn,
+        sizeof(config_svn)));
 
     if (config)
     {
@@ -315,10 +324,6 @@ static oe_result_t _eeid_verify_evidence(
     oe_claim_t* sgx_claims = NULL;
     size_t sgx_claims_length = 0;
 
-    if ((!endorsements_buffer && endorsements_buffer_size) ||
-        (endorsements_buffer && !endorsements_buffer_size))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     evidence = oe_malloc(evidence_buffer_size);
     OE_CHECK(
         oe_eeid_evidence_ntoh(evidence_buffer, evidence_buffer_size, evidence));
@@ -397,7 +402,7 @@ static oe_result_t _eeid_verify_evidence(
     uint32_t reported_id_version = parsed_report.identity.id_version;
 
     /* EEID passed to the verifier */
-    if (endorsements_buffer)
+    if (endorsements_buffer && endorsements_buffer_size)
     {
         verifier_config = endorsements_buffer;
         verifier_config_size = endorsements_buffer_size;
@@ -407,11 +412,11 @@ static oe_result_t _eeid_verify_evidence(
      * verifier's expectation. */
     if (verifier_config)
     {
-        OE_SHA256 verifier_config_id;
-        oe_sha256(verifier_config, verifier_config_size, &verifier_config_id);
+        OE_SHA256 verifier_config_hash;
+        oe_sha256(verifier_config, verifier_config_size, &verifier_config_hash);
         if (memcmp(
                 attester_eeid->config_id,
-                verifier_config_id.buf,
+                verifier_config_hash.buf,
                 OE_SHA256_SIZE) != 0)
             OE_RAISE(OE_VERIFY_FAILED);
     }
@@ -447,6 +452,7 @@ static oe_result_t _eeid_verify_evidence(
             reported_id_version,
             reported_enclave_base_hash,
             attester_eeid->config_id,
+            attester_eeid->config_svn,
             verifier_config,
             verifier_config_size,
             reported_resigner_id,

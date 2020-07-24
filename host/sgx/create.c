@@ -669,6 +669,15 @@ static oe_result_t _save_eeid_info(
                 eeid_setting->data, eeid_setting->data_size, &config_hash);
             memcpy(eeid->config_id, config_hash.buf, sizeof(eeid->config_id));
         }
+        else
+        {
+            /* Only a config_id was provided; just keep it */
+            memcpy(
+                eeid->config_id,
+                eeid_setting->config_id,
+                sizeof(eeid_setting->config_id));
+        }
+        eeid->config_svn = eeid_setting->config_svn;
 
         context->eeid = eeid;
     }

@@ -21,6 +21,7 @@ OE_EXTERNC_BEGIN
 
 #define OE_CLAIM_CONFIG_ID "config_id"
 #define OE_CLAIM_CONFIG "config"
+#define OE_CLAIM_CONFIG_SVN "config_svn"
 
 OE_PACK_BEGIN
 /**

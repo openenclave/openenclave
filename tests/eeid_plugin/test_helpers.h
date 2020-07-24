@@ -12,4 +12,9 @@ oe_result_t make_test_eeid(
     size_t data_size,
     bool static_sizes);
 
+oe_result_t make_test_config_id(
+    oe_enclave_setting_eeid_t** eeid,
+    size_t data_size,
+    bool static_sizes);
+
 #endif // _OE_EEID_PLUGIN_TEST_HELPERS_S
