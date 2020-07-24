@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include <openenclave/bits/attestation.h>
-#include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/eeid.h>

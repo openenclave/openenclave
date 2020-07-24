@@ -11,7 +11,6 @@
 #include <openenclave/attestation/sgx/eeid_attester.h>
 #include <openenclave/attestation/sgx/eeid_plugin.h>
 #include <openenclave/bits/attestation.h>
-#include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/internal/crypto/sha.h>

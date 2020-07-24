@@ -3,7 +3,6 @@
 
 #include "init.h"
 #include <openenclave/advanced/allocator.h>
-#include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>

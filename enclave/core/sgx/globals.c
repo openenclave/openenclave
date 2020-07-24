@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/eeid.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/eeid.h>
 #include <openenclave/internal/globals.h>
 
 /* Note: The variables below are initialized during enclave loading */

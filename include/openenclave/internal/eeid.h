@@ -13,7 +13,6 @@
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 
-#include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/crypto/sha.h>
 
@@ -23,6 +22,53 @@ static const uint8_t OE_DEBUG_PUBLIC_KEY[] = {
     0xca, 0x9a, 0xd7, 0x33, 0x14, 0x48, 0x98, 0x0a, 0xa2, 0x88, 0x90,
     0xce, 0x73, 0xe4, 0x33, 0x63, 0x83, 0x77, 0xf1, 0x79, 0xab, 0x44,
     0x56, 0xb2, 0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0xa};
+
+#define OE_EEID_VERSION (2)
+
+OE_PACK_BEGIN
+/**
+ * Structure to keep all information relevant to EEID.
+ */
+typedef struct _oe_eeid
+{
+    /** Version number of the oe_eeid_t structure. */
+    uint32_t version;
+
+    /** Internal state of the hash computation at the end of the enclave base
+     * image. */
+    struct
+    {
+        /** Internal hash state. */
+        uint32_t H[8];
+
+        /** Number of bytes hashed. */
+        uint32_t N[2];
+    } hash_state;
+
+    /** Heap, stack, and thread configuration for an EEID enclave instance. */
+    oe_enclave_size_settings_t size_settings;
+
+    /** Identity of the config/code/data to be loaded into the enclave after
+     * enclave init */
+    uint8_t config_id[32];
+
+    /** Minimum SVN of the config/code/data to be loaded into the enclave after
+     * enclave init */
+    uint16_t config_svn;
+
+    /** Location of the added data pages in enclave memory. */
+    uint64_t vaddr;
+
+    /** Entry point of the image. */
+    uint64_t entry_point;
+
+    /** Size of the signature in bytes. */
+    uint64_t signature_size;
+
+    /** Buffer holding the signature. */
+    uint8_t signature[];
+} oe_eeid_t;
+OE_PACK_END
 
 /**
  * Determine whether memory size settings are those of a base image to be used

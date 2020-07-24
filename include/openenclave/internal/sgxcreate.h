@@ -7,6 +7,7 @@
 #include <openenclave/bits/eeid.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
+#include <openenclave/internal/eeid.h>
 #include "crypto/sha.h"
 #include "load.h"
 
