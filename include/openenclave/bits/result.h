@@ -361,6 +361,11 @@ typedef enum _oe_result
      */
     OE_INVALID_SGX_SIGNING_KEY,
 
+    /**
+     * The binary image being loaded into the enclave could not be parsed.
+     */
+    OE_INVALID_IMAGE,
+
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
 /**< typedef enum _oe_result oe_result_t*/
