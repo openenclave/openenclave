@@ -164,9 +164,9 @@ if (OE_TRUSTZONE OR (OE_SGX AND (UNIX OR USE_CLANGW)))
 endif ()
 
 if (USE_SNMALLOC)
-  set(DEFAULT_ALLOCATOR oesnmalloc_obj)
+  set(DEFAULT_ALLOCATOR_LIB oesnmalloc_obj)
 else ()
-  set(DEFAULT_ALLOCATOR oedlmalloc)
+  set(DEFAULT_ALLOCATOR_LIB oedlmalloc_obj)
 endif ()
 
 add_enclave_library(
@@ -200,7 +200,6 @@ add_enclave_library(
   time.c
   tracee.c
   wchar.c
-  $<TARGET_OBJECTS:${DEFAULT_ALLOCATOR}>
   ${PLATFORM_SRC})
 
 # Some files in oecore come directly from the musl source. For these files,
@@ -241,7 +240,7 @@ if (OE_TRUSTZONE)
     oecore PRIVATE ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 endif ()
 
-enclave_link_libraries(oecore PUBLIC oe_includes)
+enclave_link_libraries(oecore PUBLIC oe_includes ${DEFAULT_ALLOCATOR_LIB})
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   enclave_compile_options(oecore PRIVATE -Wjump-misses-init)
