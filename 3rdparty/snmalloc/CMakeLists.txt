@@ -72,11 +72,13 @@ maybe_build_using_clangw(oesnmalloc_obj)
 
 # Create snmalloc library to make snmalloc available to the user
 # as a pluggable allocator.
-add_enclave_library(oesnmalloc $<TARGET_OBJECTS:oesnmalloc_obj>)
+add_enclave_library(oesnmalloc STATIC)
+enclave_link_libraries(oesnmalloc oesnmalloc_obj)
 maybe_build_using_clangw(oesnmalloc)
 
 install_enclaves(
   TARGETS
+  oesnmalloc_obj
   oesnmalloc
   EXPORT
   openenclave-targets
