@@ -325,7 +325,7 @@ static oe_result_t _calculate_enclave_size(
     {
 #ifdef OE_WITH_EXPERIMENTAL_EEID
         if (is_eeid_base_image(props))
-            *enclave_size = EEID_ELRANGE;
+            *enclave_size = OE_EEID_SGX_ELRANGE;
         else
 #endif
             /* Calculate the total size of the enclave */
