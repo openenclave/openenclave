@@ -73,7 +73,8 @@ static oe_result_t _eeid_patch_memory()
 
         uint8_t* heap_end = (uint8_t*)__oe_get_heap_end();
         uint8_t* tcs_end =
-            heap_end + (6 + 2 + eeid->size_settings.num_stack_pages) *
+            heap_end + (OE_SGX_TCS_CONTROL_PAGES + OE_SGX_TCS_GUARD_PAGES +
+                        eeid->size_settings.num_stack_pages) *
                            OE_PAGE_SIZE * eeid->size_settings.num_tcs;
 
         /* EEID must not overlap with tcs/stack/control pages */
