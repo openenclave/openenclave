@@ -597,10 +597,9 @@ oe_result_t verify_eeid(
         sigstruct->miscselect & sigstruct->miscmask;
     bool miscselect_match = miscselect_masked == base_miscselect_masked;
 
-    if (debug != oe_debug || !oe_remote ||
-        sigstruct->isvprodid != reported_product_id ||
-        sigstruct->isvsvn != reported_security_version || !flags_match ||
-        !xfrm_match || !miscselect_match)
+    if (debug != oe_debug || !oe_remote || !flags_match || !xfrm_match ||
+        !miscselect_match || sigstruct->isvprodid != reported_product_id ||
+        sigstruct->isvsvn != reported_security_version)
         OE_RAISE(OE_VERIFY_FAILED);
 
     // Check old signature (new signature has been checked above)
