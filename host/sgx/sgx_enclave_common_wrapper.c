@@ -63,7 +63,9 @@ static bool (*_enclave_set_information)(
 
 #include <dlfcn.h>
 
-#define LIBRARY_NAME "libsgx_enclave_common.so"
+// Explicitly choose the version of libsgx_enclave_common.so (currently 1)
+// that OE is compatible with.
+#define LIBRARY_NAME "libsgx_enclave_common.so.1"
 
 // Use best practices
 // - RTLD_NOW  Bind all undefined symbols before dlopen returns.
