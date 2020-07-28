@@ -232,8 +232,9 @@ static void _test_sgx_local()
         oe_attester_select_format(&_local_uuid, 1, &selected_format), OE_OK);
 
     printf("====== running _test_sgx_local #0: Getting target info.\n");
-    OE_TEST(oe_verifier_get_format_settings(
-        &selected_format, &target, &target_size));
+    OE_TEST(
+        oe_verifier_get_format_settings(
+            &selected_format, &target, &target_size) == OE_OK);
 
     // Only evidence.
     printf("====== running _test_sgx_local #1: Just evidence\n");

@@ -548,6 +548,8 @@ oe_result_t oe_verifier_get_format_settings(
     plugin = (oe_verifier_t*)plugin_node->plugin;
     OE_CHECK(plugin->get_format_settings(plugin, settings, settings_size));
 
+    result = OE_OK;
+
 done:
     return result;
 }
