@@ -15,11 +15,12 @@
 
 #include <openenclave/bits/eeid.h>
 
-#ifdef OE_WITH_EXPERIMENTAL_EEID
 /* When signing EEID base images we don't know the size that the final image
  * will have, so we chose a reasonably large size here (64GB). */
 #define EEID_ELRANGE 0x1000000000
-#endif
+
+#define OE_SGX_TCS_CONTROL_PAGES 6
+#define OE_SGX_TCS_GUARD_PAGES 2
 
 /** This is the public key corresponding to the private key OE_DEBUG_SIGN_KEY in
  * signkey.c/.h. */
