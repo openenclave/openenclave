@@ -41,25 +41,25 @@
 
 - name: Download as/ld tarball
   get_url:
-    url: 'https://download.01.org/intel-sgx/sgx-linux/2.9/as.ld.objdump.gold.r1.tar.gz'
-    dest: '/tmp/as.ld.objdump.gold.r1.tar.gz'
+    url: 'https://download.01.org/intel-sgx/sgx-linux/2.10/as.ld.objdump.gold.r2.tar.gz'
+    dest: '/tmp/as.ld.objdump.gold.r2.tar.gz'
 
 - name: Extract as and ld binaries
   unarchive:
-    src: '/tmp/as.ld.objdump.gold.r1.tar.gz'
+    src: '/tmp/as.ld.objdump.gold.r2.tar.gz'
     dest: '{{ local_lvi_directory }}/'
     remote_src: yes
 
 - name: Create symbolic link to as
   file:
-    src: '{{ local_lvi_directory }}/external/toolset/as'
+    src: '{{ local_lvi_directory }}/external/toolset/ubuntu18.04/as'
     dest: '{{ local_lvi_directory }}/bin/as'
     state: link
     force: yes
 
 - name: Create symbolic link to ld
   file:
-    src: '{{ local_lvi_directory }}/external/toolset/ld'
+    src: '{{ local_lvi_directory }}/external/toolset/ubuntu18.04/ld'
     dest: '{{ local_lvi_directory }}/bin/ld'
     state: link
     force: yes
