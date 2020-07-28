@@ -175,8 +175,8 @@ oe_result_t oe_remeasure_memory_pages(
  * @param[in] reported_security_version Security version of the extended image
  * (as reported in the oe_report_t).
  *
- * @param[in] reported_attributes Attributes of the extended image (as reported
- * in the oe_report_t).
+ * @param[in] reported_oe_attributes Attributes of the extended image (as
+ * reported in the oe_report_t).
  *
  * @param[in] reported_sgx_attributes Attributes reported in the SGX report.
  *
@@ -197,7 +197,7 @@ oe_result_t verify_eeid(
     const uint8_t* reported_enclave_signer,
     uint16_t reported_product_id,
     uint32_t reported_security_version,
-    uint64_t reported_attributes,
+    uint64_t reported_oe_attributes,
     const sgx_attributes_t* reported_sgx_attributes,
     uint32_t reported_misc_select,
     const uint8_t** base_enclave_hash,

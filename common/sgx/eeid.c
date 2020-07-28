@@ -521,7 +521,7 @@ oe_result_t verify_eeid(
     const uint8_t* reported_enclave_signer,
     uint16_t reported_product_id,
     uint32_t reported_security_version,
-    uint64_t reported_attributes,
+    uint64_t reported_oe_attributes,
     const sgx_attributes_t* reported_sgx_attributes,
     uint32_t reported_misc_select,
     const uint8_t** base_enclave_hash,
@@ -572,32 +572,39 @@ oe_result_t verify_eeid(
         OE_RAISE(OE_VERIFY_FAILED);
 
     // Check other image properties have not changed
-    bool base_debug = sigstruct->attributes.flags & SGX_FLAGS_DEBUG;
-    bool extended_debug = reported_attributes & OE_REPORT_ATTRIBUTES_DEBUG;
-    bool sgx_debug = reported_sgx_attributes->flags & SGX_FLAGS_DEBUG;
+    bool debug = reported_sgx_attributes->flags & SGX_FLAGS_DEBUG;
+    bool oe_debug = reported_oe_attributes & OE_REPORT_ATTRIBUTES_DEBUG;
+    bool oe_remote = reported_oe_attributes & OE_REPORT_ATTRIBUTES_REMOTE;
 
-    uint64_t attributes_masked =
+    uint64_t flags_masked =
         reported_sgx_attributes->flags & sigstruct->attributemask.flags;
-    uint64_t base_attributes_masked =
+    uint64_t base_flags_masked =
         sigstruct->attributes.flags & sigstruct->attributemask.flags;
+
     /*The base image sigstruct is missing the SGX_FLAGS_INITTED flag because it
      * was never created or initialized */
-    base_attributes_masked |= SGX_FLAGS_INITTED;
-    bool attributes_match = attributes_masked == base_attributes_masked;
+    base_flags_masked |= SGX_FLAGS_INITTED;
+    bool flags_match = flags_masked == base_flags_masked;
+
+    uint64_t xfrm_masked =
+        reported_sgx_attributes->xfrm & sigstruct->attributemask.xfrm;
+    uint64_t base_xfrm_masked =
+        sigstruct->attributes.xfrm & sigstruct->attributemask.xfrm;
+    bool xfrm_match = xfrm_masked == base_xfrm_masked;
 
     uint64_t miscselect_masked = reported_misc_select & sigstruct->miscmask;
     uint64_t base_miscselect_masked =
         sigstruct->miscselect & sigstruct->miscmask;
     bool miscselect_match = miscselect_masked == base_miscselect_masked;
 
-    if (base_debug != extended_debug || base_debug != sgx_debug ||
+    if (debug != oe_debug || !oe_remote ||
         sigstruct->isvprodid != reported_product_id ||
-        sigstruct->isvsvn != reported_security_version || !attributes_match ||
-        !miscselect_match)
+        sigstruct->isvsvn != reported_security_version || !flags_match ||
+        !xfrm_match || !miscselect_match)
         OE_RAISE(OE_VERIFY_FAILED);
 
     // Check old signature (new signature has been checked above)
-    if (base_debug && is_zero(sigstruct->signature, OE_KEY_SIZE))
+    if (debug && is_zero(sigstruct->signature, OE_KEY_SIZE))
         return OE_OK; // Unsigned debug image is ok.
     else
         OE_CHECK(verify_base_image_signature(sigstruct));
