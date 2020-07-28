@@ -29,6 +29,7 @@ install(
   FILES openenclave/attestation/sgx/eeid_attester.h
         openenclave/attestation/sgx/eeid_plugin.h
         openenclave/attestation/sgx/eeid_verifier.h
+        openenclave/attestation/sgx/evidence.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/sgx)
 install(
   FILES openenclave/attestation/verifier.h
