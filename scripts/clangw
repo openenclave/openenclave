@@ -49,14 +49,6 @@ function call_clang {
         [ "$a" == "/W4" ]           && continue
         [ "$a" == "/WX" ]           && continue
 
-        # Ignore specific clang flags for the MSVC compatibility.
-        # See http://clang.llvm.org/docs/UsersManual.html#microsoft-extensions for more detail.
-        [ "$a" == "-fms-compatibility" ]            && continue
-        [ "$a" == "-fms-extension" ]                && continue
-        [ "$a" == "-fdelayed-template-parsing" ]    && continue
-        # Use regex to match the value-passing flag.
-        [[ "$a" =~ "-fms-compatibility-version=" ]] && continue
-
         # Ignore warnings for specific error codes
         if [[ "$a" =~ /[wW][dD][0-9]* ]]; then
             continue
