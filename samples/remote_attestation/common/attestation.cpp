@@ -48,8 +48,8 @@ bool Attestation::generate_remote_evidence(
     result = oe_get_evidence(
         &sgx_remote_uuid,
         NULL,
-        NULL,
-        0,
+        sha256, // Store sha256 in report_data field
+        sizeof(sha256),
         NULL,
         0,
         remote_evidence_buf,
@@ -95,6 +95,12 @@ static const oe_claim_t* _find_claim(
  * evidence. 2) Next, to establish trust of the enclave that  generated the
  * remote evidence, the mrsigner, product_id, isvsvn values are checked to  see
  * if they are predefined trusted values.
+ * 2) Next, to establish trust of the enclave that generated the
+ * remote evidence, the mrsigner, product_id, isvsvn values are checked to see
+ * if they are predefined trusted values.
+ * 3) Once the enclave's trust has been established, the validity of
+ * accompanying data is ensured by comparing its SHA256 digest against the
+ * OE_CLAIM_SGX_REPORT_DATA claim.
  */
 bool Attestation::attest_remote_evidence(
     const uint8_t* remote_evidence,
@@ -102,10 +108,8 @@ bool Attestation::attest_remote_evidence(
     const uint8_t* data,
     size_t data_size)
 {
-    OE_UNUSED(data);
-    OE_UNUSED(data_size);
-
     bool ret = false;
+    uint8_t sha256[32];
     oe_result_t result = OE_OK;
     oe_result_t verifier_result = OE_OK;
     oe_claim_t* claims = NULL;
@@ -128,7 +132,7 @@ bool Attestation::attest_remote_evidence(
         goto exit;
     }
 
-    // Validate the evidence's trustworthiness
+    // 1) Validate the evidence's trustworthiness
     // Verify the remote evidence to ensure its authenticity.
     result = oe_verify_evidence(
         &sgx_remote_uuid,
@@ -147,7 +151,10 @@ bool Attestation::attest_remote_evidence(
         goto exit;
     }
 
-    // 1) Validate the signer id.
+    // 2) validate the enclave identity's signed_id is the hash of the public
+    // signing key that was used to sign an enclave. Check that the enclave was
+    // signed by an trusted entity.
+    // Validate the signer id.
     if ((claim = _find_claim(claims, claims_length, OE_CLAIM_SIGNER_ID)) ==
         NULL)
     {
@@ -179,7 +186,7 @@ bool Attestation::attest_remote_evidence(
         goto exit;
     }
 
-    // 2) Check the enclave's product id.
+    // Check the enclave's product id.
     if ((claim = _find_claim(claims, claims_length, OE_CLAIM_PRODUCT_ID)) ==
         NULL)
     {
@@ -187,13 +194,13 @@ bool Attestation::attest_remote_evidence(
         goto exit;
     };
 
-    if (claim->value[0] != 1)
+    if (*(claim->value) != 1)
     {
         TRACE_ENCLAVE("product_id checking failed.");
         goto exit;
     }
 
-    // 3) Check the enclave's security version.
+    // Check the enclave's security version.
     if ((claim = _find_claim(
              claims, claims_length, OE_CLAIM_SECURITY_VERSION)) == NULL)
     {
@@ -201,9 +208,29 @@ bool Attestation::attest_remote_evidence(
         goto exit;
     };
 
-    if (claim->value[0] < 1)
+    if (*(claim->value) < 1)
     {
         TRACE_ENCLAVE("security_version checking failed.");
+        goto exit;
+    }
+
+    // 3) Validate the report data
+    //    The report_data has the hash value of the report data
+    if ((claim = _find_claim(claims, claims_length, OE_CLAIM_CUSTOM_CLAIMS)) ==
+        NULL)
+    {
+        TRACE_ENCLAVE("Could not find claim.");
+        goto exit;
+    }
+
+    if (m_crypto->Sha256(data, data_size, sha256) != 0)
+    {
+        goto exit;
+    }
+
+    if (memcmp(claim->value, sha256, sizeof(sha256)) != 0)
+    {
+        TRACE_ENCLAVE("SHA256 mismatch.");
         goto exit;
     }
 

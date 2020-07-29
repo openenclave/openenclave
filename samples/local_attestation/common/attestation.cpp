@@ -2,8 +2,15 @@
 // Licensed under the MIT License.
 
 #include "attestation.h"
+#include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/sgx/evidence.h>
+#include <openenclave/attestation/verifier.h>
 #include <string.h>
 #include "log.h"
+
+// SGX local attestation UUID.
+static oe_uuid_t sgx_local_uuid = {OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION};
+oe_uuid_t selected_format;
 
 Attestation::Attestation(Crypto* crypto, uint8_t* enclave_mrsigner)
 {
@@ -12,154 +19,194 @@ Attestation::Attestation(Crypto* crypto, uint8_t* enclave_mrsigner)
 }
 
 /**
- * Generate a report for the given data. The SHA256 digest of the data is
- * stored in the report_data field of the generated report.
+ * Generate evidence for the given data.
  */
-bool Attestation::generate_local_report(
+bool Attestation::generate_local_attestation_evidence(
     uint8_t* target_info_buffer,
     size_t target_info_size,
     const uint8_t* data,
     const size_t data_size,
-    uint8_t** report_buf,
-    size_t* remote_report_buf_size)
+    uint8_t** evidence_buffer,
+    size_t* local_evidence_buffer_size)
 {
     bool ret = false;
     uint8_t sha256[32];
     oe_result_t result = OE_OK;
-    uint8_t* temp_buf = NULL;
+    oe_result_t attester_result = OE_OK;
 
     if (m_crypto->Sha256(data, data_size, sha256) != 0)
     {
         goto exit;
     }
 
-    // To generate a local report that just needs to be attested by another
-    // enclave running on the same platform, set flags to 0 in oe_get_report
-    // call. This uses the EREPORT instruction to generate this enclave's local
-    // report.
-    result = oe_get_report(
-        0,      // get a local report
+    // Initialize attester and use the SGX plugin.
+    attester_result = oe_attester_initialize();
+    if (attester_result != OE_OK)
+    {
+        TRACE_ENCLAVE("oe_attester_initialize failed.");
+        goto exit;
+    }
+
+    // Generate evidence based on the format selected by the attester.
+    result = oe_get_evidence(
+        &sgx_local_uuid,
+        0,
         sha256, // Store sha256 in report_data field
         sizeof(sha256),
         target_info_buffer,
         target_info_size,
-        &temp_buf,
-        remote_report_buf_size);
+        evidence_buffer,
+        local_evidence_buffer_size,
+        nullptr,
+        0);
     if (result != OE_OK)
     {
-        TRACE_ENCLAVE("oe_get_report failed.");
+        TRACE_ENCLAVE("oe_get_evidence failed.");
         goto exit;
     }
-    *report_buf = temp_buf;
+
     ret = true;
-    TRACE_ENCLAVE("generate_local_report succeeded.");
+    TRACE_ENCLAVE("generate_local_attestation_evidence succeeded.");
 exit:
     return ret;
 }
 
 /**
- * Attest the given local report and accompanying data. It consists of the
+ * Attest the given evidence and accompanying data. It consists of the
  * following three steps:
  *
- * 1) The local report is first attested using the oe_verify_report API. This
- * ensures the authenticity of the enclave that generated the report.
- * 2) Next, to establish trust of the enclave that generated the report,
- * the mrsigner, product_id, isvsvn values are checked to  see if they are
+ * 1) The local evidence is first attested using the oe_verify_evidence API.
+ * This ensures the authenticity of the enclave that generated the evidence. 2)
+ * Next, to establish trust of the enclave that generated the evidence, the
+ * mrsigner, product_id, isvsvn values are checked to see if they are
  * predefined trusted values.
- * 3) Once the enclave's trust has been established, the validity of
- * accompanying data is ensured by comparing its SHA256 digest against the
- * report_data field.
  */
-bool Attestation::attest_local_report(
-    const uint8_t* local_report,
-    size_t report_size,
+bool Attestation::attest_local_evidence(
+    const uint8_t* local_evidence,
+    size_t evidence_size,
     const uint8_t* data,
     size_t data_size)
 {
     bool ret = false;
     uint8_t sha256[32];
-    oe_report_t parsed_report = {0};
     oe_result_t result = OE_OK;
+    oe_result_t verifier_result = OE_OK;
+    oe_claim_t* claims = nullptr;
+    size_t claims_length = 0;
 
-    // While attesting, the report being attested must not be tampered
+    // While attesting, the evidence being attested must not be tampered
     // with. Ensure that it has been copied over to the enclave.
-    if (!oe_is_within_enclave(local_report, report_size))
+    if (!oe_is_within_enclave(local_evidence, evidence_size))
     {
-        TRACE_ENCLAVE("Cannot attest report in host memory. Unsafe.");
+        TRACE_ENCLAVE("Cannot attest evidence in host memory. Unsafe.");
         goto exit;
     }
 
-    TRACE_ENCLAVE("report_size = %ld", report_size);
+    TRACE_ENCLAVE("evidence_size = %ld", evidence_size);
 
-    // 1)  Validate the report's trustworthiness
-    // Verify the report to ensure its authenticity.
-    result = oe_verify_report(local_report, report_size, &parsed_report);
+    verifier_result = oe_verifier_initialize();
+    if (verifier_result != OE_OK)
+    {
+        TRACE_ENCLAVE("oe_verifier_initialize failed.");
+        goto exit;
+    }
+
+    // 1)  Validate the evidence's trustworthiness
+    // Verify the evidence to ensure its authenticity.
+    result = oe_verify_evidence(
+        &sgx_local_uuid,
+        local_evidence,
+        evidence_size,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        &claims,
+        &claims_length);
     if (result != OE_OK)
     {
-        TRACE_ENCLAVE("oe_verify_report failed (%s).\n", oe_result_str(result));
-        goto exit;
-    }
-
-    TRACE_ENCLAVE("oe_verify_report succeeded\n");
-
-    // 2) validate the enclave identity's signed_id is the hash of the public
-    // signing key that was used to sign an enclave. Check that the enclave was
-    // signed by an trusted entity.
-    if (memcmp(parsed_report.identity.signer_id, m_enclave_mrsigner, 32) != 0)
-    {
-        TRACE_ENCLAVE("identity.signer_id checking failed.");
         TRACE_ENCLAVE(
-            "identity.signer_id %s", parsed_report.identity.signer_id);
+            "oe_verify_evidence failed (%s).\n", oe_result_str(result));
+        goto exit;
+    }
 
-        for (int i = 0; i < 32; i++)
+    TRACE_ENCLAVE("oe_verify_evidence succeeded\n");
+
+    // Iterate through list of claims.
+    for (size_t i = 0; i < claims_length; i++)
+    {
+        // 2) validate the enclave identity's signed_id is the hash of the
+        // public signing key that was used to sign an enclave. Check that the
+        // enclave was signed by an trusted entity.
+        if (strcmp(claims[i].name, OE_CLAIM_SIGNER_ID) == 0)
         {
-            TRACE_ENCLAVE(
-                "m_enclave_mrsigner[%d]=0x%0x\n",
-                i,
-                (uint8_t)m_enclave_mrsigner[i]);
+            // Validate the signer id.
+            if (memcmp(claims[i].value, m_enclave_mrsigner, 32) != 0)
+            {
+                TRACE_ENCLAVE("signer_id checking failed.");
+                TRACE_ENCLAVE("signer_id %s", claims[i].value);
+
+                for (int j = 0; j < 32; j++)
+                {
+                    TRACE_ENCLAVE(
+                        "m_enclave_mrsigner[%d]=0x%0x\n",
+                        j,
+                        (uint8_t)m_enclave_mrsigner[j]);
+                }
+
+                TRACE_ENCLAVE("\n\n\n");
+
+                for (int j = 0; j < 32; j++)
+                {
+                    TRACE_ENCLAVE(
+                        "signer_id)[%d]=0x%0x\n",
+                        j,
+                        (uint8_t)claims[i].value[j]);
+                }
+                TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
+                goto exit;
+            }
         }
-
-        TRACE_ENCLAVE("\n\n\n");
-
-        for (int i = 0; i < 32; i++)
+        if (strcmp(claims[i].name, OE_CLAIM_PRODUCT_ID) == 0)
         {
-            TRACE_ENCLAVE(
-                "parsedReport.identity.signer_id)[%d]=0x%0x\n",
-                i,
-                (uint8_t)parsed_report.identity.signer_id[i]);
+            // Check the enclave's product id.
+            if (*(claims[i].value) != 1)
+            {
+                TRACE_ENCLAVE("product_id checking failed.");
+                goto exit;
+            }
         }
-        TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
-        goto exit;
+        if (strcmp(claims[i].name, OE_CLAIM_SECURITY_VERSION) == 0)
+        {
+            // Check the enclave's security version.
+            if (*(claims[i].value) < 1)
+            {
+                TRACE_ENCLAVE("security_version checking failed.");
+                goto exit;
+            }
+        }
+        // 3) Validate the report data
+        //    The report_data has the hash value of the report data
+        if (strcmp(claims[i].name, OE_CLAIM_CUSTOM_CLAIMS) == 0)
+        {
+            if (m_crypto->Sha256(data, data_size, sha256) != 0)
+            {
+                goto exit;
+            }
+            if (memcmp(claims[i].value, sha256, sizeof(sha256)) != 0)
+            {
+                TRACE_ENCLAVE("SHA256 mismatch.");
+                goto exit;
+            }
+        }
     }
 
-    // Check the enclave's product id and security version
-    // See enc.conf for values specified when signing the enclave.
-    if (parsed_report.identity.product_id[0] != 1)
-    {
-        TRACE_ENCLAVE("identity.product_id checking failed.");
-        goto exit;
-    }
-
-    if (parsed_report.identity.security_version < 1)
-    {
-        TRACE_ENCLAVE("identity.security_version checking failed.");
-        goto exit;
-    }
-
-    // 3) Validate the report data
-    //    The report_data has the hash value of the report data
-    if (m_crypto->Sha256(data, data_size, sha256) != 0)
-    {
-        goto exit;
-    }
-
-    if (memcmp(parsed_report.report_data, sha256, sizeof(sha256)) != 0)
-    {
-        TRACE_ENCLAVE("SHA256 mismatch.");
-        goto exit;
-    }
     ret = true;
     TRACE_ENCLAVE("attestation succeeded.");
 exit:
+    // Shut down attester/verifier and free claims.
+    oe_attester_shutdown();
+    oe_verifier_shutdown();
+    oe_free_claims(claims, claims_length);
     return ret;
 }
