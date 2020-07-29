@@ -3,6 +3,7 @@
 
 #include <openenclave/advanced/allocator.h>
 #include <openenclave/enclave.h>
+#include <openenclave/corelibc/errno.h>
 
 #define HAVE_MMAP 0
 #define LACKS_UNISTD_H
@@ -33,22 +34,40 @@ int sched_yield(void)
 
 void* dlmalloc_sbrk(ptrdiff_t increment);
 
+#define LACKS_ERRNO_H
+#define EINVAL OE_EINVAL
+#define ENOMEM OE_ENOMEM
+#define MALLOC_FAILURE_ACTION oe_errno = ENOMEM;
+
 #include "dlmalloc/malloc.c"
 
 static uint8_t* _heap_start;
 static uint8_t* _heap_end;
 static uint8_t* _heap_next;
 static int _lock = 0;
+static int _initialized;
+
 void* dlmalloc_sbrk(ptrdiff_t increment)
 {
+    extern const void* __oe_get_heap_base(void);
+    extern const void* __oe_get_heap_end(void);
     void* ptr = (void*)-1;
 
     ACQUIRE_LOCK(&_lock);
     {
         ptrdiff_t remaining;
 
+        if (_initialized == 0)
+        {
+            _heap_start = (void*)__oe_get_heap_base();
+            _heap_end = (void*)__oe_get_heap_end();
+            _initialized = 1;
+        }
+
         if (!_heap_next)
+        {
             _heap_next = _heap_start;
+        }
 
         remaining = _heap_end - _heap_next;
 
@@ -65,8 +84,11 @@ void* dlmalloc_sbrk(ptrdiff_t increment)
 
 void oe_allocator_init(void* heap_start_address, void* heap_end_address)
 {
-    _heap_start = heap_start_address;
-    _heap_end = heap_end_address;
+    // Initialize _heap_start and _heap_end in dlmalloc_sbrk() since
+    // dlmalloc_sbrk() is called prior to TLS setup (which calls this
+    // function) in some cases.
+    (void)heap_start_address;
+    (void)heap_end_address;
 }
 
 void oe_allocator_cleanup(void)
