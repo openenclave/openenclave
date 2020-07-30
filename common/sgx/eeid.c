@@ -27,12 +27,6 @@
 #include "../../host/crypto/openssl/rsa.h"
 #endif
 
-int is_eeid_base_image(const oe_enclave_size_settings_t* sizes)
-{
-    return sizes->num_heap_pages == 0 && sizes->num_stack_pages == 0 &&
-           sizes->num_tcs == 1;
-}
-
 oe_result_t oe_create_eeid_sgx(oe_eeid_t** eeid)
 {
     oe_result_t result = OE_UNEXPECTED;

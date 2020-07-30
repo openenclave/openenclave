@@ -25,8 +25,7 @@ int oesign(
     const char* x509,
     const char* engine_id,
     const char* engine_load_path,
-    const char* key_id,
-    int for_eeid);
+    const char* key_id);
 int oedigest(
     const char* enclave,
     const char* conffile,
@@ -290,7 +289,6 @@ int sign_parser(int argc, const char* argv[])
     const char* engine_id = NULL;
     const char* engine_load_path = NULL;
     const char* key_id = NULL;
-    int for_eeid = 0;
 
     const struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
@@ -303,9 +301,6 @@ int sign_parser(int argc, const char* argv[])
         {"engine", required_argument, NULL, 'n'},
         {"load-path", required_argument, NULL, 'p'},
         {"key-id", required_argument, NULL, 'i'},
-#endif
-#ifdef OE_WITH_EXPERIMENTAL_EEID
-        {"for-eeid", no_argument, NULL, 'E'},
 #endif
         {NULL, 0, NULL, 0},
     };
@@ -359,11 +354,6 @@ int sign_parser(int argc, const char* argv[])
                 break;
             case 'i':
                 key_id = optarg;
-                break;
-#endif
-#ifdef OE_WITH_EXPERIMENTAL_EEID
-            case 'E':
-                for_eeid = 1;
                 break;
 #endif
             case ':':
@@ -442,8 +432,7 @@ int sign_parser(int argc, const char* argv[])
             x509,
             engine_id,
             engine_load_path,
-            key_id,
-            for_eeid);
+            key_id);
     }
 
 done:

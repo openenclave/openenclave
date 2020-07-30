@@ -28,7 +28,7 @@ oe_result_t make_test_eeid(
          * static sizes. */
         setting->size_settings.num_heap_pages = 0;
         setting->size_settings.num_stack_pages = 0;
-        setting->size_settings.num_tcs = 1;
+        setting->size_settings.num_tcs = 0;
     }
     else
     {

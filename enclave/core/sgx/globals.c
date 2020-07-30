@@ -128,10 +128,6 @@ static volatile uint64_t _enclave_rva;
 static volatile uint64_t _reloc_rva;
 static volatile uint64_t _reloc_size;
 
-#ifdef OE_WITH_EXPERIMENTAL_EEID
-static volatile uint64_t _eeid_rva;
-#endif
-
 /*
 **==============================================================================
 **
@@ -189,18 +185,12 @@ size_t __oe_get_reloc_size()
 **==============================================================================
 */
 
-bool oe_have_eeid(void)
-{
-    return _eeid_rva != 0;
-}
-
 const oe_eeid_t* oe_get_eeid()
 {
-    if (!oe_have_eeid())
-        return NULL;
-
-    const unsigned char* base = __oe_get_enclave_base();
-    return (oe_eeid_t*)(base + _eeid_rva);
+    const unsigned char* heap_base = __oe_get_heap_base();
+    oe_eeid_t* r = (oe_eeid_t*)(heap_base - OE_PAGE_SIZE);
+    /* r->version will segfault if EEID is not present */
+    return (r->version != OE_EEID_VERSION) ? NULL : r;
 }
 #endif
 
@@ -222,8 +212,11 @@ const void* __oe_get_heap_base()
 size_t __oe_get_heap_size()
 {
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    if (oe_have_eeid())
-        return oe_get_eeid()->size_settings.num_heap_pages * OE_PAGE_SIZE;
+    if (is_eeid_base_image(&oe_enclave_properties_sgx.header.size_settings))
+    {
+        const oe_eeid_t* eeid = oe_get_eeid();
+        return eeid->size_settings.num_heap_pages * OE_PAGE_SIZE;
+    }
     else
 #endif
         return oe_enclave_properties_sgx.header.size_settings.num_heap_pages *

@@ -38,7 +38,6 @@ uint64_t oe_get_num_pages(void);
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 /* Extended enclave initialization meta-data */
-bool oe_have_eeid(void);
 const oe_eeid_t* oe_get_eeid(void);
 #endif
 

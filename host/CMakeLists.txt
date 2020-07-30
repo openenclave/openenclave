@@ -248,7 +248,7 @@ if (OE_SGX)
 
   if (WITH_EEID)
     list(APPEND PLATFORM_HOST_ONLY_SRC ../common/sgx/eeid_verifier.c
-         ../common/sgx/eeid.c)
+         ../common/sgx/eeid.c ../common/sgx/eeid_base_image_properties.c)
   endif ()
 
   list(

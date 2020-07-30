@@ -38,9 +38,7 @@ add_enclave(
   SOURCES
   enc.c
   ../test_helpers.c
-  ${CMAKE_CURRENT_BINARY_DIR}/eeid_plugin_t.c
-  EEID
-  true)
+  ${CMAKE_CURRENT_BINARY_DIR}/eeid_plugin_t.c)
 
 target_compile_definitions(eeid_plugin_enc_static
                            PRIVATE OE_WITH_EXPERIMENTAL_EEID)

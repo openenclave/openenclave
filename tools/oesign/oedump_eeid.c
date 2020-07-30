@@ -51,14 +51,6 @@ int oedump_eeid(const char* enclave)
             &context, OE_SGX_LOAD_TYPE_MEASURE, props.config.attributes),
         "oe_sgx_initialize_load_context() failed");
 
-    if (props.header.size_settings.num_heap_pages != 0 ||
-        props.header.size_settings.num_stack_pages != 0 ||
-        props.header.size_settings.num_tcs != 1)
-    {
-        printf("Memory settings are != 0; image is not suitable for EEID.\n");
-        return 1;
-    }
-
     /* Build an enclave with EEID enabled */
     oe_enclave_setting_eeid_t eeid_setting = {{0}};
     context.eeid_setting = &eeid_setting;

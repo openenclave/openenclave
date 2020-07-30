@@ -13,6 +13,7 @@
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 
+#include <openenclave/bits/defs.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/crypto/sha.h>
 
@@ -80,7 +81,7 @@ OE_PACK_END
  * image.
  *
  */
-int is_eeid_base_image(const oe_enclave_size_settings_t* sizes);
+int is_eeid_base_image(const volatile oe_enclave_size_settings_t* sizes);
 
 /**
  * Serialize an oe_eeid_t.
@@ -389,8 +390,8 @@ typedef struct
 typedef struct
 {
     oe_enclave_t* enclave;
-    oe_enclave_initialization_data_t config;
-} oe_enclave_with_config_t;
+    oe_enclave_initialization_data_t* initialization_data;
+} oe_enclave_with_initialization_data_t;
 
 #endif /* OE_WITH_EXPERIMENTAL_EEID */
 

@@ -75,6 +75,7 @@ if (OE_SGX)
     ${MUSL_SRC_DIR}/string/x86_64/memcpy.s
     ${MUSL_SRC_DIR}/string/x86_64/memmove.s
     ${MUSL_SRC_DIR}/string/x86_64/memset.s
+    ../../common/sgx/eeid_base_image_properties.c
     ../../common/sgx/endorsements.c
     ../../common/sgx/rand.S
     ../../common/sha.c

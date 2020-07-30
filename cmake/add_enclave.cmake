@@ -46,7 +46,7 @@
 # default custom target.
 # TODO: (3) Validate arguments into this function
 macro (add_enclave)
-  set(options CXX ADD_LVI_MITIGATION EEID)
+  set(options CXX ADD_LVI_MITIGATION)
   set(oneValueArgs
       TARGET
       UUID
@@ -78,9 +78,7 @@ macro (add_enclave)
       ADD_LVI_MITIGATION
       ${ENCLAVE_ADD_LVI_MITIGATION}
       SOURCES
-      ${ENCLAVE_SOURCES}
-      EEID
-      ${ENCLAVE_EEID})
+      ${ENCLAVE_SOURCES})
   elseif (OE_TRUSTZONE)
     add_enclave_optee(
       CXX
@@ -97,14 +95,8 @@ macro (add_enclave)
 endmacro ()
 
 function (sign_enclave_sgx)
-  set(oneValueArgs
-      TARGET
-      CONFIG
-      KEY
-      SIGNING_ENGINE
-      ENGINE_LOAD_PATH
-      ENGINE_KEY_ID
-      EEID)
+  set(oneValueArgs TARGET CONFIG KEY SIGNING_ENGINE ENGINE_LOAD_PATH
+                   ENGINE_KEY_ID)
   cmake_parse_arguments(ENCLAVE "" "${oneValueArgs}" "" ${ARGN})
 
   if (NOT ENCLAVE_CONFIG)
@@ -126,16 +118,13 @@ function (sign_enclave_sgx)
 
   # Sign the enclave using `oesign`.
   if (ENCLAVE_CONFIG)
-    if (ENCLAVE_EEID)
-      set(SIGN_EXTRA -E)
-    endif ()
     if (ENCLAVE_SIGNING_ENGINE)
       add_custom_command(
         OUTPUT ${SIGNED_LOCATION}
         COMMAND
           oesign sign -e $<TARGET_FILE:${ENCLAVE_TARGET}> -c ${ENCLAVE_CONFIG}
           -n ${ENCLAVE_SIGNING_ENGINE} -p ${ENCLAVE_ENGINE_LOAD_PATH} -i
-          ${ENCLAVE_ENGINE_KEY_ID} ${SIGN_EXTRA}
+          ${ENCLAVE_ENGINE_KEY_ID}
         DEPENDS oesign ${ENCLAVE_TARGET} ${ENCLAVE_CONFIG}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     else ()
@@ -168,8 +157,7 @@ function (add_enclave_sgx)
       ENGINE_LOAD_PATH
       ENGINE_KEY_ID
       CXX
-      ADD_LVI_MITIGATION
-      EEID)
+      ADD_LVI_MITIGATION)
   set(multiValueArgs SOURCES)
   cmake_parse_arguments(ENCLAVE "" "${oneValueArgs}" "${multiValueArgs}"
                         ${ARGN})
@@ -259,9 +247,7 @@ function (add_enclave_sgx)
     ENGINE_LOAD_PATH
     ${ENCLAVE_ENGINE_LOAD_PATH}
     ENGINE_KEY_ID
-    ${ENCLAVE_ENGINE_KEY_ID}
-    EEID
-    ${ENCLAVE_EEID})
+    ${ENCLAVE_ENGINE_KEY_ID})
   if (TARGET ${ENCLAVE_TARGET}-lvi-cfg)
     sign_enclave_sgx(
       TARGET

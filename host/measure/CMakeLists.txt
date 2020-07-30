@@ -57,7 +57,8 @@ if (OE_SGX)
     ../common/sgx/report_helper.c)
 
   if (WITH_EEID)
-    list(APPEND PLATFORM_HOST_MR_SRC ../common/sgx/eeid.c)
+    list(APPEND PLATFORM_HOST_MR_SRC ../common/sgx/eeid.c
+         ../common/sgx/eeid_base_image_properties.c)
   endif ()
 
   # OS specific as well.

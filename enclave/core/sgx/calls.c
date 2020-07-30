@@ -137,6 +137,7 @@ extern bool oe_disable_debug_malloc_check;
 */
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
+extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 static oe_enclave_initialization_data_t* oe_enclave_initialization_data = NULL;
 
 const oe_enclave_initialization_data_t* oe_get_enclave_initialization_data()
@@ -144,46 +145,106 @@ const oe_enclave_initialization_data_t* oe_get_enclave_initialization_data()
     return oe_enclave_initialization_data;
 }
 
-static oe_result_t _load_config(
-    const oe_enclave_initialization_data_t* config_from_host)
+static oe_result_t _copy_initialization_data(
+    const oe_enclave_initialization_data_t* from,
+    oe_enclave_initialization_data_t* to)
 {
-    if (oe_have_eeid())
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!to)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!from)
     {
-        const oe_eeid_t* eeid = oe_get_eeid();
-
-        /* With EEID, we expect a config */
-        if (!config_from_host)
-            return OE_INVALID_PARAMETER;
-
-        oe_enclave_initialization_data_t config = *config_from_host;
-
-        if (!config.data || !config.size)
-            return OE_OK; /* no or zero-size configs are ok */
-
-        /* Copy config into enclave heap */
-        oe_enclave_initialization_data_t* copy =
-            oe_malloc(sizeof(oe_enclave_initialization_data_t));
-        if (!copy)
-            return OE_OUT_OF_MEMORY;
-        copy->size = config.size;
-        copy->data = oe_malloc(config.size);
-        if (!copy->data)
-            return OE_OUT_OF_MEMORY;
-        memcpy(copy->data, config.data, config.size);
-
-        /* Check that the config hashes to the correct value */
-        OE_SHA256 config_hash;
-        oe_sha256(copy->data, copy->size, &config_hash);
-        if (memcmp(config_hash.buf, eeid->config_id, OE_SHA256_SIZE) != 0)
-        {
-            oe_free(copy);
-            return OE_VERIFY_FAILED;
-        }
-
-        oe_enclave_initialization_data = copy;
+        to->data = NULL;
+        to->size = 0;
+        return OE_OK;
     }
 
-    return OE_OK;
+    to->size = from->size;
+    if (to->size)
+    {
+        to->data = oe_malloc(to->size);
+        if (!to->data)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+    }
+    memcpy(to->data, from->data, to->size);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static oe_result_t _check_and_load_initialization_data(
+    const oe_enclave_with_initialization_data_t* enclave_plus)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    const oe_eeid_t* eeid = NULL;
+    oe_enclave_initialization_data_t data = {0};
+    bool have_base_image_props =
+        is_eeid_base_image(&oe_enclave_properties_sgx.header.size_settings);
+    bool have_data = false, have_empty_data = false;
+
+    /* Copy all information so the host can't change its mind. */
+    OE_CHECK(
+        _copy_initialization_data(enclave_plus->initialization_data, &data));
+
+    have_data = data.data && data.size;
+    have_empty_data = enclave_plus->initialization_data && !have_data;
+
+    /* Without any initialization data, we assume there is no EEID at all.
+     * We can check the base image property, but accessing the EEID page
+     * would trigger a segfault. */
+    if (!have_data && !have_empty_data)
+        return have_base_image_props ? OE_VERIFY_FAILED : OE_OK;
+
+    /* From here on, we assume EEID is present. If it is missing,
+     * oe_get_eeid() will trigger a segfault. */
+
+    /* Check that the EEID (meta-)data is within the enclave */
+    eeid = (oe_eeid_t*)oe_get_eeid();
+    if (!oe_is_within_enclave(eeid, OE_PAGE_SIZE))
+        oe_abort();
+
+    /* Check that the signature is within the EEID page */
+    if (sizeof(oe_eeid_t) + eeid->signature_size > OE_PAGE_SIZE)
+        oe_abort();
+
+    /* Check that the EEID version matches */
+    if (eeid->version != OE_EEID_VERSION)
+        oe_abort();
+
+    if (have_data)
+    {
+        /* Check that the data hashes to the correct value */
+        OE_SHA256 config_hash;
+        oe_sha256(data.data, data.size, &config_hash);
+        if (memcmp(config_hash.buf, eeid->config_id, OE_SHA256_SIZE) != 0)
+            OE_RAISE(OE_VERIFY_FAILED);
+
+        /* Copy the initialization data into enclave heap */
+        oe_enclave_initialization_data =
+            oe_malloc(sizeof(oe_enclave_initialization_data_t));
+        if (!oe_enclave_initialization_data)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        oe_enclave_initialization_data->data = data.data;
+        oe_enclave_initialization_data->size = data.size;
+        data.data = NULL;
+        data.size = 0;
+    }
+    else
+    {
+        /* We have EEID with a config_id, but no data. It is up to the user to
+         * check that the config_id is as expected. */
+    }
+
+    result = OE_OK;
+
+done:
+    oe_free(data.data);
+
+    return result;
 }
 
 static oe_result_t _free_config()
@@ -226,15 +287,14 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         {
             oe_enclave_t* enclave;
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-            oe_enclave_with_config_t* enclave_with_config = NULL;
-            if (oe_have_eeid())
-            {
-                enclave_with_config = (oe_enclave_with_config_t*)arg_in;
-                enclave = enclave_with_config->enclave;
-            }
-            else
+            oe_enclave_with_initialization_data_t* enclave_plus =
+                (oe_enclave_with_initialization_data_t*)arg_in;
+            enclave = enclave_plus->enclave;
+
+            OE_CHECK(_check_and_load_initialization_data(enclave_plus));
+#else
+            enclave = (oe_enclave_t*)arg_in;
 #endif
-                enclave = (oe_enclave_t*)arg_in;
 
 #ifdef OE_USE_BUILTIN_EDL
             /* Install the common TEE ECALL function table. */
@@ -260,12 +320,6 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             OE_ATOMIC_MEMORY_BARRIER_RELEASE();
             _once = true;
             __oe_initialized = 1;
-
-#ifdef OE_WITH_EXPERIMENTAL_EEID
-            /* Load config (configid or EEID data) */
-            if (enclave_with_config)
-                OE_CHECK(_load_config(&enclave_with_config->config));
-#endif
         }
 
         oe_spin_unlock(&_lock);

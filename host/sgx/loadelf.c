@@ -697,15 +697,8 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
     oeprops->image_info.heap_rva = image->image_size + image->reloc_size;
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    /* if there is an EEID page, it's just before the heap */
-    if (image->eeid_enabled)
-    {
-        OE_CHECK(_set_uint64_t_symbol_value(
-            image, "_eeid_rva", oeprops->image_info.heap_rva));
-        oeprops->image_info.heap_rva += OE_PAGE_SIZE;
-    }
-    else
-        OE_CHECK(_set_uint64_t_symbol_value(image, "_eeid_rva", 0));
+    /* 1 guard/EEID page*/
+    oeprops->image_info.heap_rva += OE_PAGE_SIZE;
 #endif
 
     if (image->tdata_size)
