@@ -286,6 +286,7 @@ if (OE_SGX)
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
+      sgx/linux/sgxquoteexloader.c
       sgx/linux/xstate.c)
   else ()
     list(APPEND PLATFORM_HOST_ONLY_SRC sgx/windows/sgxquoteproviderloader.c)
@@ -297,6 +298,7 @@ if (OE_SGX)
       ${CMAKE_CURRENT_BINARY_DIR}/enter.obj
       sgx/windows/exception.c
       sgx/windows/switchless.c
+      sgx/windows/sgxquoteexloader.c
       sgx/windows/xstate.c)
   endif ()
 
@@ -368,6 +370,11 @@ add_library(oehostverify STATIC ${PLATFORM_HOST_ONLY_SRC})
 
 target_link_libraries(oehostverify PUBLIC oe_includes)
 target_link_libraries(oehost PUBLIC oe_includes)
+
+if (OE_SGX)
+  target_include_directories(
+    oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
+endif ()
 
 if (WIN32)
   target_link_libraries(oehost PUBLIC ws2_32 shlwapi)

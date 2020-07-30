@@ -41,6 +41,7 @@ tests/mbed/tests\..*$
 3rdparty/optee/patches/.*
 3rdparty/optee/optee_client/.*
 3rdparty/optee/optee_os/.*
+3rdparty/sgxsdk/include/.*
 devex/vsextension/ItemTemplates/.*
 devex/vsextension/ProjectTemplates/.*
 tools/oeedger8r-cpp/*
