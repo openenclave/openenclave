@@ -4,6 +4,12 @@
 #include "attestation.h"
 #include <string.h>
 #include "log.h"
+#include <openenclave/attestation/sgx/evidence.h>
+#include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/verifier.h>
+
+// SGX Remote Attestation UUID.
+static oe_uuid_t sgx_remote_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
 
 Attestation::Attestation(Crypto* crypto, uint8_t* enclave_mrsigner)
 {
@@ -24,37 +30,30 @@ bool Attestation::generate_remote_report(
     bool ret = false;
     uint8_t sha256[32];
     oe_result_t result = OE_OK;
-    uint8_t* temp_buf = NULL;
+    oe_result_t attester_result = OE_OK;
+    // uint8_t* temp_buf = NULL;
 
     if (m_crypto->Sha256(data, data_size, sha256) != 0)
     {
         goto exit;
     }
 
-    // To generate a remote report that can be attested remotely by an enclave
-    // running  on a different platform, pass the
-    // OE_REPORT_FLAGS_REMOTE_ATTESTATION option. This uses the trusted
-    // quoting enclave to generate the report based on this enclave's local
-    // report.
-    // To generate a remote report that just needs to be attested by another
-    // enclave running on the same platform, pass 0 instead. This uses the
-    // EREPORT instruction to generate this enclave's local report.
-    // Both kinds of reports can be verified using the oe_verify_report
-    // function.
-    result = oe_get_report(
-        OE_REPORT_FLAGS_REMOTE_ATTESTATION,
-        sha256, // Store sha256 in report_data field
-        sizeof(sha256),
-        NULL, // opt_params must be null
-        0,
-        &temp_buf,
-        remote_report_buf_size);
+    // Initialize attester and use the SGX plugin.
+    attester_result = oe_attester_initialize();
+    if (attester_result != OE_OK)
+    {
+        TRACE_ENCLAVE("oe_attester_initialize failed.");
+        goto exit;
+    }
+
+    // Generate evidence based on the format selected by the attester.
+    result = oe_get_evidence(&sgx_remote_uuid, NULL, NULL, 0, NULL, 0, remote_report_buf, remote_report_buf_size, NULL, 0);
     if (result != OE_OK)
     {
         TRACE_ENCLAVE("oe_get_report failed.");
         goto exit;
     }
-    *remote_report_buf = temp_buf;
+    //*remote_report_buf = temp_buf;
     ret = true;
     TRACE_ENCLAVE("generate_remote_report succeeded.");
 exit:
@@ -84,6 +83,9 @@ bool Attestation::attest_remote_report(
     uint8_t sha256[32];
     oe_report_t parsed_report = {0};
     oe_result_t result = OE_OK;
+    oe_result_t verifier_result = OE_OK;
+    oe_claim_t* claims = NULL;
+    size_t claims_length = 0;
 
     // While attesting, the remote report being attested must not be tampered
     // with. Ensure that it has been copied over to the enclave.
@@ -93,72 +95,77 @@ bool Attestation::attest_remote_report(
         goto exit;
     }
 
+    // Initialize the verifier.
+    verifier_result = oe_verifier_initialize();
+    if (verifier_result != OE_OK)
+    {
+        TRACE_ENCLAVE("oe_verifier_initialize failed.");
+        goto exit;
+    }
+
     // 1)  Validate the report's trustworthiness
     // Verify the remote report to ensure its authenticity.
     result =
-        oe_verify_report(remote_report, remote_report_size, &parsed_report);
+        oe_verify_evidence(&sgx_remote_uuid, remote_report, remote_report_size, NULL, 0, NULL, 0, &claims, &claims_length);
     if (result != OE_OK)
     {
-        TRACE_ENCLAVE("oe_verify_report failed (%s).\n", oe_result_str(result));
+        TRACE_ENCLAVE("oe_verify_evidence failed (%s).\n", oe_result_str(result));
         goto exit;
     }
 
-    // 2) validate the enclave identity's signed_id is the hash of the public
-    // signing key that was used to sign an enclave. Check that the enclave was
-    // signed by an trusted entity.
-    if (memcmp(parsed_report.identity.signer_id, m_enclave_mrsigner, 32) != 0)
+    // Iterate through list of claims.
+    for (size_t i = 0; i < claims_length; i++) 
     {
-        TRACE_ENCLAVE("identity.signer_id checking failed.");
-        TRACE_ENCLAVE(
-            "identity.signer_id %s", parsed_report.identity.signer_id);
-
-        for (int i = 0; i < 32; i++)
+        if (strcmp(claims[i].name, OE_CLAIM_SIGNER_ID) == 0)
         {
-            TRACE_ENCLAVE(
-                "m_enclave_mrsigner[%d]=0x%0x\n",
-                i,
-                (uint8_t)m_enclave_mrsigner[i]);
+            // Validate the signer id.
+            if (memcmp(claims[i].value, m_enclave_mrsigner, 32) != 0)
+            {
+                TRACE_ENCLAVE("signer_id checking failed.");
+                TRACE_ENCLAVE(
+                    "signer_id %s", claims[i].value);
+
+                for (int j = 0; j < 32; j++)
+                {
+                    TRACE_ENCLAVE(
+                        "m_enclave_mrsigner[%d]=0x%0x\n",
+                        j,
+                        (uint8_t)m_enclave_mrsigner[j]);
+                }
+
+                TRACE_ENCLAVE("\n\n\n");
+
+                for (int j = 0; j < 32; j++)
+                {
+                    TRACE_ENCLAVE(
+                        "signer_id)[%d]=0x%0x\n",
+                        j,
+                        (uint8_t)claims[i].value[j]);
+                }
+                TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
+                goto exit;
+            }
         }
-
-        TRACE_ENCLAVE("\n\n\n");
-
-        for (int i = 0; i < 32; i++)
+        if (strcmp(claims[i].name, OE_CLAIM_PRODUCT_ID) == 0)
         {
-            TRACE_ENCLAVE(
-                "parsedReport.identity.signer_id)[%d]=0x%0x\n",
-                i,
-                (uint8_t)parsed_report.identity.signer_id[i]);
+            // Check the enclave's product id.
+            if (claims[i].value[0] != 1)
+            {
+                TRACE_ENCLAVE("product_id checking failed.");
+                goto exit;
+            }
         }
-        TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
-        goto exit;
+        if (strcmp(claims[i].name, OE_CLAIM_SECURITY_VERSION) == 0)
+        {
+            // Check the enclave's security version.
+            if (claims[1].value[0] < 1)
+            {
+                TRACE_ENCLAVE("security_version checking failed.");
+                goto exit;
+            }
+        }
     }
 
-    // Check the enclave's product id and security version
-    // See enc.conf for values specified when signing the enclave.
-    if (parsed_report.identity.product_id[0] != 1)
-    {
-        TRACE_ENCLAVE("identity.product_id checking failed.");
-        goto exit;
-    }
-
-    if (parsed_report.identity.security_version < 1)
-    {
-        TRACE_ENCLAVE("identity.security_version checking failed.");
-        goto exit;
-    }
-
-    // 3) Validate the report data
-    //    The report_data has the hash value of the report data
-    if (m_crypto->Sha256(data, data_size, sha256) != 0)
-    {
-        goto exit;
-    }
-
-    if (memcmp(parsed_report.report_data, sha256, sizeof(sha256)) != 0)
-    {
-        TRACE_ENCLAVE("SHA256 mismatch.");
-        goto exit;
-    }
     ret = true;
     TRACE_ENCLAVE("remote attestation succeeded.");
 exit:
