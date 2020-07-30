@@ -4,6 +4,7 @@
 #include "dispatcher.h"
 #include <openenclave/attestation/sgx/report.h>
 #include <openenclave/enclave.h>
+#include <openenclave/attestation/attester.h>
 
 ecall_dispatcher::ecall_dispatcher(
     const char* name,
@@ -89,8 +90,8 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
             pem_public_key, sizeof(pem_public_key), &evidence, &evidence_size))
     {
         // Allocate memory on the host and copy the evidence over.
-        *remote_evidence = (uint8_t*)oe_host_malloc(evidence_size);
-        if (*remote_evidence == NULL)
+        *remote_report = (uint8_t*)oe_host_malloc(evidence_size);
+        if (*remote_report == NULL)
         {
             ret = OE_OUT_OF_MEMORY;
             goto exit;
