@@ -193,6 +193,7 @@ static oe_result_t _check_and_load_initialization_data(
     const oe_enclave_with_initialization_data_t* local_enclave_plus = NULL;
     const oe_enclave_initialization_data_t* local_init_data = NULL;
     const uint8_t* local_config_data = NULL;
+    size_t local_config_size = 0;
 
     if (!enclave_plus)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -202,7 +203,7 @@ static oe_result_t _check_and_load_initialization_data(
     local_enclave_plus = enclave_plus;
     local_init_data = local_enclave_plus->initialization_data;
     local_config_data = local_init_data ? local_init_data->data : NULL;
-    size_t local_config_size = local_init_data ? local_init_data->size : 0;
+    local_config_size = local_init_data ? local_init_data->size : 0;
 
     if (!oe_is_outside_enclave(
             local_enclave_plus,
