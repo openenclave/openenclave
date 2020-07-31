@@ -271,11 +271,6 @@ oe_result_t oe_get_remote_report(
     size_t sgx_report_size = sizeof(sgx_report);
     sgx_quote_t* sgx_quote = NULL;
 
-    // For remote attestation, the Quoting Enclave's target info is used.
-    // opt_params must not be supplied.
-    if (opt_params != NULL || opt_params_size != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     /*
      * OCall: Get target info from Quoting Enclave.
      * This involves a call to host. The target provided by targetinfo does not

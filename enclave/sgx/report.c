@@ -142,9 +142,21 @@ oe_result_t oe_get_report_v2(
           (report_data && report_data_size)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!((!opt_params && !opt_params_size) ||
-          (opt_params && opt_params_size == sizeof(sgx_target_info_t))))
-        OE_RAISE(OE_INVALID_PARAMETER);
+    if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
+    {
+        // For remote attestation, the Quoting Enclave's target info is used.
+        // opt_params must not be supplied.
+        if (opt_params != NULL || opt_params_size != 0)
+            OE_RAISE(OE_INVALID_PARAMETER);
+    }
+    else
+    {
+        // For local report, opt_params may be null, in which case SGX returns
+        // the report for the enclave itself
+        if (!((!opt_params && !opt_params_size) ||
+              (opt_params && opt_params_size == sizeof(sgx_target_info_t))))
+            OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
     if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
         format_id = &_ecdsa_uuid;

@@ -113,7 +113,12 @@ static oe_result_t _get_evidence(
     uint8_t* endorsements = NULL;
     size_t endorsements_size = 0;
     sgx_evidence_format_type_t format_type = SGX_FORMAT_TYPE_UNKNOWN;
-    oe_uuid_t* format_id = NULL;
+    const oe_uuid_t* format_id = NULL;
+    // for ECDSA report / quote, oe_get_report_v2_internal() takes
+    // the original &_ecdsa_uuid. quote_format_id holds the format ID
+    // for this function.
+    const oe_uuid_t* quote_format_id = NULL;
+    bool is_epid_quote = false;
 
     if (!context || !evidence_buffer || !evidence_buffer_size ||
         (endorsements_buffer && !endorsements_buffer_size) ||
@@ -121,6 +126,7 @@ static oe_result_t _get_evidence(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     format_id = &context->base.format_id;
+    quote_format_id = format_id;
 
     // Set flags based on format UUID, ignore and overwrite the input value
     if (!memcmp(format_id, &_local_uuid, sizeof(oe_uuid_t)))
@@ -135,12 +141,22 @@ static oe_result_t _get_evidence(
         if (!memcmp(format_id, &_ecdsa_uuid, sizeof(oe_uuid_t)))
             format_type = SGX_FORMAT_TYPE_REMOTE;
         else if (!memcmp(format_id, &_ecdsa_report_uuid, sizeof(oe_uuid_t)))
+        {
             format_type = SGX_FORMAT_TYPE_LEGACY_REPORT;
+            quote_format_id = &_ecdsa_uuid;
+        }
+        else if (!memcmp(format_id, &_ecdsa_quote_uuid, sizeof(oe_uuid_t)))
+        {
+            format_type = SGX_FORMAT_TYPE_RAW_QUOTE;
+            quote_format_id = &_ecdsa_uuid;
+        }
         else if (
-            !memcmp(format_id, &_ecdsa_quote_uuid, sizeof(oe_uuid_t)) ||
             !memcmp(format_id, &_epid_linkable_uuid, sizeof(oe_uuid_t)) ||
             !memcmp(format_id, &_epid_unlinkable_uuid, sizeof(oe_uuid_t)))
+        {
             format_type = SGX_FORMAT_TYPE_RAW_QUOTE;
+            is_epid_quote = true;
+        }
         else
             OE_RAISE(OE_INVALID_PARAMETER);
     }
@@ -160,7 +176,7 @@ static oe_result_t _get_evidence(
         OE_CHECK_MSG(
             oe_get_report_v2_internal(
                 flags,
-                format_id,
+                quote_format_id,
                 hash.buf,
                 sizeof(hash.buf),
                 opt_params,
@@ -199,11 +215,10 @@ static oe_result_t _get_evidence(
     else // SGX_FORMAT_TYPE_LEGACY_REPORT or _QUOTE
     {
         // Get the report with the custom_claims as the report data.
-        // oe_get_report_v2_internal() takes the original &_ecdsa_uuid
         OE_CHECK_MSG(
             oe_get_report_v2_internal(
                 flags,
-                &_ecdsa_uuid,
+                quote_format_id,
                 custom_claims,
                 custom_claims_size,
                 opt_params,
@@ -214,7 +229,8 @@ static oe_result_t _get_evidence(
             oe_result_str(result));
 
         // Get the endorsements from the report if needed.
-        if (endorsements_buffer)
+        // No support of endorsements for EPID quotes
+        if (endorsements_buffer && !is_epid_quote)
         {
             oe_report_header_t* header = (oe_report_header_t*)report;
 

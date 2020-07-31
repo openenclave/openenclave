@@ -23,6 +23,9 @@ static const oe_uuid_t _ecdsa_report_uuid = {
     OE_FORMAT_UUID_SGX_ECDSA_P256_REPORT};
 static const oe_uuid_t _ecdsa_quote_uuid = {
     OE_FORMAT_UUID_SGX_ECDSA_P256_QUOTE};
+static const oe_uuid_t _epid_linkable_uuid = {OE_FORMAT_UUID_SGX_EPID_LINKABLE};
+static const oe_uuid_t _epid_unlinkable_uuid = {
+    OE_FORMAT_UUID_SGX_EPID_UNLINKABLE};
 
 void run_runtime_test()
 {
@@ -214,6 +217,62 @@ static void _test_sgx_remote()
         0);
     OE_TEST(oe_free_evidence(evidence) == OE_OK);
     OE_TEST(oe_free_endorsements(endorsements) == OE_OK);
+
+    if (oe_attester_select_format(&_epid_linkable_uuid, 1, &selected_format) ==
+        OE_OK)
+    {
+        uint8_t spid[16] = "SPID";
+
+        printf("====== running _test_sgx_remote #6: get EPID evidence\n");
+
+        OE_TEST_CODE(
+            oe_get_evidence(
+                &_epid_linkable_uuid,
+                0,
+                NULL,
+                0,
+                NULL,
+                0,
+                &evidence,
+                &evidence_size,
+                &endorsements,
+                &endorsements_size),
+            OE_OK);
+        OE_TEST(oe_free_evidence(evidence) == OE_OK);
+        OE_TEST(oe_free_endorsements(endorsements) == OE_OK);
+
+        OE_TEST_CODE(
+            oe_get_evidence(
+                &_epid_unlinkable_uuid,
+                0,
+                NULL,
+                0,
+                spid,
+                sizeof(spid),
+                &evidence,
+                &evidence_size,
+                &endorsements,
+                &endorsements_size),
+            OE_OK);
+        OE_TEST(oe_free_evidence(evidence) == OE_OK);
+        OE_TEST(oe_free_endorsements(endorsements) == OE_OK);
+
+        OE_TEST_CODE(
+            oe_get_evidence(
+                &_epid_unlinkable_uuid,
+                0,
+                NULL,
+                0,
+                spid,
+                1,
+                &evidence,
+                &evidence_size,
+                &endorsements,
+                &endorsements_size),
+            OE_INVALID_PARAMETER);
+    }
+    else
+        printf("====== note: _test_sgx_remote #6: EPID not supported\n");
 
     printf("====== done _test_sgx_remote\n");
 }
