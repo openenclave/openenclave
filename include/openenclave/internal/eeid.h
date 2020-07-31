@@ -399,7 +399,7 @@ typedef struct
  * @returns Returns the initialization data.
  *
  */
-const oe_enclave_initialization_data_t* oe_get_initialization_data();
+const volatile oe_enclave_initialization_data_t* oe_get_initialization_data();
 
 #endif /* OE_WITH_EXPERIMENTAL_EEID */
 

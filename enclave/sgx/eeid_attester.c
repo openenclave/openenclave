@@ -28,6 +28,7 @@
 #include <openenclave/enclave.h>
 
 extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
+extern volatile bool eeid_checked;
 
 static oe_result_t _eeid_attester_on_register(
     oe_attestation_role_t* context,
@@ -120,11 +121,11 @@ static oe_result_t _eeid_get_evidence(
     uint8_t* sgx_custom_claims = NULL;
     size_t sgx_custom_claims_size = 0;
     const oe_eeid_t* eeid = oe_get_eeid();
-    const oe_enclave_initialization_data_t* initialization_data =
+    const volatile oe_enclave_initialization_data_t* initialization_data =
         oe_get_initialization_data();
 
     OE_UNUSED(context);
-    if (!evidence_buffer || !evidence_buffer_size || !eeid)
+    if (!evidence_buffer || !evidence_buffer_size || !eeid || !eeid_checked)
         OE_RAISE(OE_FAILURE);
 
     // For EEID, the flag is always set for remote attestation

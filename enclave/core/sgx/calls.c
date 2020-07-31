@@ -138,15 +138,20 @@ extern bool oe_disable_debug_malloc_check;
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
-static oe_enclave_initialization_data_t* oe_enclave_initialization_data = NULL;
 
-const oe_enclave_initialization_data_t* oe_get_initialization_data()
+volatile bool eeid_checked = false;
+
+static volatile oe_enclave_initialization_data_t* _enclave_initialization_data =
+    NULL;
+
+const volatile oe_enclave_initialization_data_t* oe_get_initialization_data()
 {
-    return oe_enclave_initialization_data;
+    return eeid_checked ? _enclave_initialization_data : NULL;
 }
 
 static oe_result_t _copy_initialization_data(
-    const oe_enclave_initialization_data_t* from,
+    const uint8_t* from_data,
+    size_t from_size,
     oe_enclave_initialization_data_t* to)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -154,21 +159,21 @@ static oe_result_t _copy_initialization_data(
     if (!to)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!from)
+    if (!from_data || !from_size)
     {
         to->data = NULL;
         to->size = 0;
         return OE_OK;
     }
 
-    to->size = from->size;
+    to->size = from_size;
     if (to->size)
     {
         to->data = oe_malloc(to->size);
         if (!to->data)
             OE_RAISE(OE_OUT_OF_MEMORY);
     }
-    memcpy(to->data, from->data, to->size);
+    memcpy(to->data, from_data, to->size);
 
     result = OE_OK;
 
@@ -185,13 +190,33 @@ static oe_result_t _check_and_load_initialization_data(
     bool have_base_image_props =
         is_eeid_base_image(&oe_enclave_properties_sgx.header.size_settings);
     bool have_data = false, have_empty_data = false;
+    const oe_enclave_with_initialization_data_t* local_enclave_plus = NULL;
+    const oe_enclave_initialization_data_t* local_init_data = NULL;
+    const uint8_t* local_config_data = NULL;
 
-    /* Copy all information so the host can't change its mind. */
+    if (!enclave_plus)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Make sure data is outside of enclave to prevent side-channel attacks
+     * and copy data to local buffers so the host can't change its mind. */
+    local_enclave_plus = enclave_plus;
+    local_init_data = local_enclave_plus->initialization_data;
+    local_config_data = local_init_data ? local_init_data->data : NULL;
+    size_t local_config_size = local_init_data ? local_init_data->size : 0;
+
+    if (!oe_is_outside_enclave(
+            local_enclave_plus,
+            sizeof(oe_enclave_with_initialization_data_t)) ||
+        (local_init_data &&
+         (!oe_is_outside_enclave(
+              local_init_data, sizeof(oe_enclave_initialization_data_t)) ||
+          !oe_is_outside_enclave(local_config_data, local_config_size))))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     OE_CHECK(
-        _copy_initialization_data(enclave_plus->initialization_data, &data));
-
+        _copy_initialization_data(local_config_data, local_config_size, &data));
     have_data = data.data && data.size;
-    have_empty_data = enclave_plus->initialization_data && !have_data;
+    have_empty_data = local_init_data && !have_data;
 
     /* Without any initialization data, we assume there is no EEID at all.
      * We can check the base image property, but accessing the EEID page
@@ -228,12 +253,12 @@ static oe_result_t _check_and_load_initialization_data(
             OE_RAISE(OE_VERIFY_FAILED);
 
         /* Copy the initialization data into enclave heap. */
-        oe_enclave_initialization_data =
+        _enclave_initialization_data =
             oe_malloc(sizeof(oe_enclave_initialization_data_t));
-        if (!oe_enclave_initialization_data)
+        if (!_enclave_initialization_data)
             OE_RAISE(OE_OUT_OF_MEMORY);
-        oe_enclave_initialization_data->data = data.data;
-        oe_enclave_initialization_data->size = data.size;
+        _enclave_initialization_data->data = data.data;
+        _enclave_initialization_data->size = data.size;
         data.data = NULL;
         data.size = 0;
     }
@@ -243,6 +268,7 @@ static oe_result_t _check_and_load_initialization_data(
          * check that the config_id is as expected. */
     }
 
+    eeid_checked = true;
     result = OE_OK;
 
 done:
@@ -253,11 +279,11 @@ done:
 
 static oe_result_t _free_config()
 {
-    if (oe_enclave_initialization_data)
+    if (_enclave_initialization_data)
     {
-        oe_free(oe_enclave_initialization_data->data);
-        oe_free((void*)oe_enclave_initialization_data);
-        oe_enclave_initialization_data = NULL;
+        oe_free(_enclave_initialization_data->data);
+        oe_free((void*)_enclave_initialization_data);
+        _enclave_initialization_data = NULL;
     }
     return OE_OK;
 }
