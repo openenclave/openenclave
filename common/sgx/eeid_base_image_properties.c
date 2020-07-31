@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/properties.h>
 #include <openenclave/internal/eeid.h>
 
 /* This file avoids linking against the whole of eeid.c in
