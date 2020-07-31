@@ -701,6 +701,8 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
     oeprops->image_info.heap_rva += OE_PAGE_SIZE;
 #endif
 
+    oeprops->image_info.entry_rva = image->entry_rva;
+
     if (image->tdata_size)
     {
         _set_uint64_t_symbol_value(image, "_tdata_rva", image->tdata_rva);
@@ -763,7 +765,7 @@ static oe_result_t _sgx_update_enclave_properties(
     oe_result_t result = OE_UNEXPECTED;
     OE_UNUSED(section_name);
 
-    /* Copy to both the image and ELF file*/
+    /* Copy to both the image and ELF file */
     OE_CHECK(oe_memcpy_s(
         (uint8_t*)image->u.elf.elf.data + image->oeinfo_file_pos,
         sizeof(*properties),

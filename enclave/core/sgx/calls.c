@@ -140,7 +140,7 @@ extern bool oe_disable_debug_malloc_check;
 extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
 static oe_enclave_initialization_data_t* oe_enclave_initialization_data = NULL;
 
-const oe_enclave_initialization_data_t* oe_get_enclave_initialization_data()
+const oe_enclave_initialization_data_t* oe_get_initialization_data()
 {
     return oe_enclave_initialization_data;
 }
@@ -202,28 +202,32 @@ static oe_result_t _check_and_load_initialization_data(
     /* From here on, we assume EEID is present. If it is missing,
      * oe_get_eeid() will trigger a segfault. */
 
-    /* Check that the EEID (meta-)data is within the enclave */
+    /* Check that the EEID (meta-)data is within the enclave. */
     eeid = (oe_eeid_t*)oe_get_eeid();
     if (!oe_is_within_enclave(eeid, OE_PAGE_SIZE))
         oe_abort();
 
-    /* Check that the signature is within the EEID page */
+    /* Check that the signature is within the EEID page. */
     if (sizeof(oe_eeid_t) + eeid->signature_size > OE_PAGE_SIZE)
         oe_abort();
 
-    /* Check that the EEID version matches */
+    /* Check that the EEID version matches. */
     if (eeid->version != OE_EEID_VERSION)
+        oe_abort();
+
+    /* Check that the entry-point is as expected. */
+    if (eeid->entry_point != oe_enclave_properties_sgx.image_info.entry_rva)
         oe_abort();
 
     if (have_data)
     {
-        /* Check that the data hashes to the correct value */
+        /* Check that the data hashes to the correct value. */
         OE_SHA256 config_hash;
         oe_sha256(data.data, data.size, &config_hash);
         if (memcmp(config_hash.buf, eeid->config_id, OE_SHA256_SIZE) != 0)
             OE_RAISE(OE_VERIFY_FAILED);
 
-        /* Copy the initialization data into enclave heap */
+        /* Copy the initialization data into enclave heap. */
         oe_enclave_initialization_data =
             oe_malloc(sizeof(oe_enclave_initialization_data_t));
         if (!oe_enclave_initialization_data)

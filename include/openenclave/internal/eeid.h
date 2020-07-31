@@ -393,6 +393,14 @@ typedef struct
     oe_enclave_initialization_data_t* initialization_data;
 } oe_enclave_with_initialization_data_t;
 
+/**
+ * Get the enclave initialization data.
+ *
+ * @returns Returns the initialization data.
+ *
+ */
+const oe_enclave_initialization_data_t* oe_get_initialization_data();
+
 #endif /* OE_WITH_EXPERIMENTAL_EEID */
 
 #endif /* _OE_INTERNAL_EEID_H */

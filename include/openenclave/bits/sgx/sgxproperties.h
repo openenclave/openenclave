@@ -23,6 +23,7 @@ typedef struct _oe_sgx_enclave_image_info_t
     uint64_t reloc_size;
     uint64_t heap_rva; /* heap size is in header.sizesettings */
     uint64_t enclave_size;
+    uint64_t entry_rva;
 } oe_sgx_enclave_image_info_t;
 
 /* Max number of threads in an enclave supported */
@@ -57,13 +58,13 @@ typedef struct _oe_sgx_enclave_properties
     /* (32) */
     oe_sgx_enclave_config_t config;
 
-    /* (48) */
+    /* (56) */
     oe_sgx_enclave_image_info_t image_info;
 
-    /* (96)  */
+    /* (112)  */
     uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
 
-    /* (1904) end-marker to make sure 0-filled signstruct doesn't get omitted */
+    /* (1928) end-marker to make sure 0-filled signstruct doesn't get omitted */
     uint64_t end_marker;
 } oe_sgx_enclave_properties_t;
 

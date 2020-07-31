@@ -13,7 +13,9 @@
 
 static bool verbose_opt = false;
 
-static void _dump_entry_point(const elf64_t* elf)
+static void _dump_entry_point(
+    const elf64_t* elf,
+    const oe_sgx_enclave_properties_t* props)
 {
     elf64_sym_t sym;
     const char* name;
@@ -37,9 +39,18 @@ static void _dump_entry_point(const elf64_t* elf)
         return;
     }
 
+    unsigned long long address = OE_LLX(sym.st_value);
     printf("=== Entry point: \n");
     printf("name=%s\n", name);
-    printf("address=%#016llx\n", OE_LLX(sym.st_value));
+    printf("address=%#016llx\n", address);
+
+    if (address != props->image_info.entry_rva)
+        printf(
+            "Warning: entry point in image (%#016llx) and .oeinfo (%#016lx) "
+            "don't match.\n",
+            address,
+            props->image_info.entry_rva);
+
     printf("\n");
 }
 
@@ -130,7 +141,7 @@ int oedump(const char* enc_bin)
     printf("\n");
 
     /* Dump the entry point */
-    _dump_entry_point(&elf);
+    _dump_entry_point(&elf, &props);
 
     /* Dump the signature section */
     _dump_enclave_properties(&props);
