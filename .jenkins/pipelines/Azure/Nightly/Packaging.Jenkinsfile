@@ -23,9 +23,9 @@ def LinuxPackaging(String version, String build_type, String lvi_mitigation = 'N
                              -DLVI_MITIGATION=${lvi_mitigation}             \
                              -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin
                            make
-                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            cpack -D CPACK_DEB_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY
                            cpack
+                           ctest --output-on-failure --timeout ${CTEST_TIMEOUT_SECONDS}
                            """
                 oe.Run("clang-7", task)
                 azureUpload(storageCredentialId: 'oe_jenkins_storage_account', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: "${BRANCH_NAME}/${BUILD_NUMBER}/ubuntu/${version}/${build_type}/lvi-mitigation-${lvi_mitigation}/SGX1FLC/", containerName: 'oejenkins')
