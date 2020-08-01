@@ -99,7 +99,10 @@ struct _oe_enclave_image
         oe_enclave_t* enclave,
         uint64_t* vaddr);
 
-    oe_result_t (*patch)(oe_enclave_image_t* image, size_t enclave_size);
+    oe_result_t (*sgx_patch)(
+        oe_enclave_image_t* image,
+        oe_sgx_load_context_t* context,
+        size_t enclave_size);
 
     oe_result_t (*sgx_load_enclave_properties)(
         const oe_enclave_image_t* image,

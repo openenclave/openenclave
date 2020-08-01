@@ -179,13 +179,13 @@ static oe_result_t _add_control_pages(
         !enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Create four "control" pages:
+    /* Create "control" pages:
      *     page1 - page containing thread control structure (TCS)
      *     page2 - state-save-area (SSA) slot (zero-filled)
      *     page3 - state-save-area (SSA) slot (zero-filled)
      *     page4 - guard page
-     *     page5 - thread local storage page.
-     *     page6 - extra segment space for thread-specific data.
+     *             thread local storage pages.
+     *     pageN - extra segment space for thread-specific data.
      */
 
     /* Save the address of new TCS page into enclave object */
@@ -232,7 +232,9 @@ static oe_result_t _add_control_pages(
          * Since negative offsets are used with FS, FS must point to end of the
          * segment.
          */
-        tcs->fsbase = *vaddr + (5 * OE_PAGE_SIZE);
+        tcs->fsbase =
+            *vaddr +
+            (context->num_tls_pages + OE_SGX_NUM_CONTROL_PAGES) * OE_PAGE_SIZE;
 
         /* The existing Windows SGX enclave debugger finds the start of the
          * thread data by assuming that it is located at the start of the GS
@@ -271,8 +273,9 @@ static oe_result_t _add_control_pages(
     /* Skip over guard page */
     (*vaddr) += OE_PAGE_SIZE;
 
-    /* Add one blank pages (for either FS segment or GS segment) */
-    OE_CHECK(_add_filled_pages(context, enclave_addr, vaddr, 1, 0, true));
+    /* Add blank pages (for either FS segment or GS segment) */
+    OE_CHECK(_add_filled_pages(
+        context, enclave_addr, vaddr, context->num_tls_pages, 0, true));
 
     /* Add one page for thread-specific data (TSD) slots */
     OE_CHECK(_add_filled_pages(context, enclave_addr, vaddr, 1, 0, true));
@@ -813,7 +816,7 @@ oe_result_t oe_sgx_build_enclave(
     enclave->text = enclave_addr + oeimage.text_rva;
 
     /* Patch image */
-    OE_CHECK(oeimage.patch(&oeimage, enclave_size));
+    OE_CHECK(oeimage.sgx_patch(&oeimage, context, enclave_size));
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
