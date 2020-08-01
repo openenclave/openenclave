@@ -1434,6 +1434,19 @@ int oe_syscall_flock_ocall(oe_host_fd_t fd, int operation)
     return 0;
 }
 
+int oe_syscall_fsync_ocall(oe_host_fd_t fd)
+{
+    if (FlushFileBuffers((HANDLE)fd))
+        return 0;
+    _set_errno(_winerr_to_errno(GetLastError()));
+    return -1;
+}
+
+int oe_syscall_fdatasync_ocall(oe_host_fd_t fd)
+{
+    return oe_syscall_fsync_ocall(fd);
+}
+
 static oe_host_fd_t _dup_socket(oe_host_fd_t);
 
 oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t fd)

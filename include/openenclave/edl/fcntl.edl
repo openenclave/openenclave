@@ -114,6 +114,14 @@ enclave
             int operation)
             propagate_errno;
 
+        int oe_syscall_fsync_ocall(
+            oe_host_fd_t fd)
+            propagate_errno;
+
+        int oe_syscall_fdatasync_ocall(
+            oe_host_fd_t fd)
+            propagate_errno;
+
         oe_host_fd_t oe_syscall_dup_ocall(
             oe_host_fd_t oldfd)
             propagate_errno;

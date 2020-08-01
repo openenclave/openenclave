@@ -71,6 +71,16 @@ class oe_fd_file_system
         return oe_pwrite(file, buf, count, offset);
     }
 
+    int fsync(file_handle file)
+    {
+        return oe_fsync(file);
+    }
+
+    int fdatasync(file_handle file)
+    {
+        return oe_fdatasync(file);
+    }
+
     int close(file_handle file)
     {
         return oe_close(file);
@@ -214,6 +224,16 @@ class fd_file_system
         off_t offset)
     {
         return ::pwrite(file, buf, count, offset);
+    }
+
+    int fsync(file_handle file)
+    {
+        return ::fsync(file);
+    }
+
+    int fdatasync(file_handle file)
+    {
+        return ::fdatasync(file);
     }
 
     int close(file_handle file)
@@ -477,6 +497,16 @@ class stream_file_system
         const ssize_t ret = write(file, buf, count);
         ::fseek(file, previous_offset, SEEK_SET);
         return ret;
+    }
+
+    int fsync(file_handle file)
+    {
+        return fflush(file);
+    }
+
+    int fdatasync(file_handle file)
+    {
+        return fflush(file);
     }
 
     int close(file_handle file)

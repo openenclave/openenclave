@@ -358,6 +358,15 @@ oe_result_t _oe_syscall_flock_ocall(
 }
 OE_WEAK_ALIAS(_oe_syscall_flock_ocall, oe_syscall_flock_ocall);
 
+oe_result_t _oe_syscall_fsync_ocall(int* _retval, oe_host_fd_t fd)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(fd);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_syscall_fsync_ocall, oe_syscall_fsync_ocall);
+OE_WEAK_ALIAS(_oe_syscall_fsync_ocall, oe_syscall_fdatasync_ocall);
+
 oe_result_t _oe_syscall_dup_ocall(oe_host_fd_t* _retval, oe_host_fd_t oldfd)
 {
     OE_UNUSED(_retval);
