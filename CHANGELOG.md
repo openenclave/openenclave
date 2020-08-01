@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - OE SDK Release packages can now be built on non-SGX and non-FLC machines.
+- Support for arbitrarily large thread-local data for SGX machines.
 
 ### Changed
 
@@ -46,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   application EDL. See [system EDL opt-in document](docs/DesignDocs/system_ocall_opt_in.md#how-to-port-your-application) for more information.
   - Note: SDK users would need to import logging.edl to enable logging. Logging is disabled by default.
   - See [System edls](docs/SystemEdls.md) for list of all edls and associated OCalls.
-  - A known issue is that different enclaves importing functions from System EDLs cannot be loaded by the same host app unless all of the functions were imported with exactly the same ordinals. See #3250 for details. This will be addressed in the next release based on design proposal #3086. 
+  - A known issue is that different enclaves importing functions from System EDLs cannot be loaded by the same host app unless all of the functions were imported with exactly the same ordinals. See #3250 for details. This will be addressed in the next release based on design proposal #3086.
   - A workaround for this issue in the meantime is to define a standard import EDL for any enclaves that need to be loaded into the same host app. Ensuring this shared EDL is then the first import in each enclave's EDL will result in the common imports being assigned the same ordinals in each resulting enclave.
 - Mark APIs in include/openenclave/attestation/sgx/attester.h and verifier.h as experimental.
 - Remove CRL_ISSUER_CHAIN_PCK_PROC_CA field from endorsement struct define in include/openenclave/bits/attestation.h.

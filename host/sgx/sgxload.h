@@ -8,6 +8,8 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/sgxcreate.h>
 
+#define OE_SGX_NUM_CONTROL_PAGES 4
+
 OE_EXTERNC_BEGIN
 
 #define OE_SGX_NO_DEVICE_HANDLE -1
