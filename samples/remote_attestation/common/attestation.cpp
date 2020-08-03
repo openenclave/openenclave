@@ -59,6 +59,24 @@ exit:
 }
 
 /**
+ * Helper function used to make the claim-finding process more convenient. Given
+ * the claim name, claim list, and its size, returns the value stored with that
+ * claim name in the list.
+ */
+static void* _find_claim(
+    const oe_claim_t* claims,
+    size_t claims_size,
+    const char* name)
+{
+    for (size_t i = 0; i < claims_size; i++)
+    {
+        if (strcmp(claims[i].name, name) == 0)
+            return claims[i].value;
+    }
+    return NULL;
+}
+
+/**
  * Attest the given remote evidence and accompanying data. It consists of the
  * following three steps:
  *
@@ -107,58 +125,108 @@ bool Attestation::attest_remote_evidence(
         goto exit;
     }
 
-    // Iterate through list of claims.
-    for (size_t i = 0; i < claims_length; i++) 
+    uint8_t* value;
+
+    // 1) Validate the signer id.
+    value = (uint8_t*)_find_claim(claims, claims_length, OE_CLAIM_SIGNER_ID);
+
+    if (memcmp(value, m_enclave_mrsigner, 32) != 0)
     {
-        if (strcmp(claims[i].name, OE_CLAIM_SIGNER_ID) == 0)
-        {
-            // Validate the signer id.
-            if (memcmp(claims[i].value, m_enclave_mrsigner, 32) != 0)
-            {
-                TRACE_ENCLAVE("signer_id checking failed.");
-                TRACE_ENCLAVE(
-                    "signer_id %s", claims[i].value);
+        TRACE_ENCLAVE("signer_id checking failed.");
+        TRACE_ENCLAVE(
+            "signer_id %s", value);
 
-                for (int j = 0; j < 32; j++)
-                {
-                    TRACE_ENCLAVE(
-                        "m_enclave_mrsigner[%d]=0x%0x\n",
-                        j,
-                        (uint8_t)m_enclave_mrsigner[j]);
-                }
-
-                TRACE_ENCLAVE("\n\n\n");
-
-                for (int j = 0; j < 32; j++)
-                {
-                    TRACE_ENCLAVE(
-                        "signer_id)[%d]=0x%0x\n",
-                        j,
-                        (uint8_t)claims[i].value[j]);
-                }
-                TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
-                goto exit;
-            }
-        }
-        if (strcmp(claims[i].name, OE_CLAIM_PRODUCT_ID) == 0)
+        for (int j = 0; j < 32; j++)
         {
-            // Check the enclave's product id.
-            if (claims[i].value[0] != 1)
-            {
-                TRACE_ENCLAVE("product_id checking failed.");
-                goto exit;
-            }
+            TRACE_ENCLAVE(
+                "m_enclave_mrsigner[%d]=0x%0x\n",
+                j,
+                (uint8_t)m_enclave_mrsigner[j]);
         }
-        if (strcmp(claims[i].name, OE_CLAIM_SECURITY_VERSION) == 0)
+
+        TRACE_ENCLAVE("\n\n\n");
+
+        for (int j = 0; j < 32; j++)
         {
-            // Check the enclave's security version.
-            if (claims[1].value[0] < 1)
-            {
-                TRACE_ENCLAVE("security_version checking failed.");
-                goto exit;
-            }
+            TRACE_ENCLAVE(
+                "signer_id)[%d]=0x%0x\n",
+                j,
+                (uint8_t)value[j]);
         }
+        TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
+        goto exit;
     }
+
+    // 2) Check the enclave's product id.
+    value = (uint8_t*)_find_claim(claims, claims_length, OE_CLAIM_PRODUCT_ID);
+
+    if (value[0] != 1)
+    {
+        TRACE_ENCLAVE("product_id checking failed.");
+        goto exit;
+    }
+
+    // 3) Check the enclave's security version.
+    value = (uint8_t*)_find_claim(claims, claims_length, OE_CLAIM_SECURITY_VERSION);
+
+    if (value[0] < 1)
+    {
+        TRACE_ENCLAVE("security_version checking failed.");
+        goto exit;
+    }
+
+    // // Iterate through list of claims.
+    // for (size_t i = 0; i < claims_length; i++) 
+    // {
+    //     if (strcmp(claims[i].name, OE_CLAIM_SIGNER_ID) == 0)
+    //     {
+    //         // Validate the signer id.
+    //         if (memcmp(claims[i].value, m_enclave_mrsigner, 32) != 0)
+    //         {
+    //             TRACE_ENCLAVE("signer_id checking failed.");
+    //             TRACE_ENCLAVE(
+    //                 "signer_id %s", claims[i].value);
+
+    //             for (int j = 0; j < 32; j++)
+    //             {
+    //                 TRACE_ENCLAVE(
+    //                     "m_enclave_mrsigner[%d]=0x%0x\n",
+    //                     j,
+    //                     (uint8_t)m_enclave_mrsigner[j]);
+    //             }
+
+    //             TRACE_ENCLAVE("\n\n\n");
+
+    //             for (int j = 0; j < 32; j++)
+    //             {
+    //                 TRACE_ENCLAVE(
+    //                     "signer_id)[%d]=0x%0x\n",
+    //                     j,
+    //                     (uint8_t)claims[i].value[j]);
+    //             }
+    //             TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
+    //             goto exit;
+    //         }
+    //     }
+    //     if (strcmp(claims[i].name, OE_CLAIM_PRODUCT_ID) == 0)
+    //     {
+    //         // Check the enclave's product id.
+    //         if (claims[i].value[0] != 1)
+    //         {
+    //             TRACE_ENCLAVE("product_id checking failed.");
+    //             goto exit;
+    //         }
+    //     }
+    //     if (strcmp(claims[i].name, OE_CLAIM_SECURITY_VERSION) == 0)
+    //     {
+    //         // Check the enclave's security version.
+    //         if (claims[1].value[0] < 1)
+    //         {
+    //             TRACE_ENCLAVE("security_version checking failed.");
+    //             goto exit;
+    //         }
+    //     }
+    // }
 
     ret = true;
     TRACE_ENCLAVE("remote attestation succeeded.");
