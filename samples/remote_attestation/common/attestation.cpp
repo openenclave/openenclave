@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 #include "attestation.h"
+#include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/sgx/evidence.h>
+#include <openenclave/attestation/verifier.h>
 #include <string.h>
 #include "log.h"
-#include <openenclave/attestation/sgx/evidence.h>
-#include <openenclave/attestation/attester.h>
-#include <openenclave/attestation/verifier.h>
 
 // SGX Remote Attestation UUID.
 static oe_uuid_t sgx_remote_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
@@ -45,7 +45,17 @@ bool Attestation::generate_remote_evidence(
     }
 
     // Generate evidence based on the format selected by the attester.
-    result = oe_get_evidence(&sgx_remote_uuid, NULL, NULL, 0, NULL, 0, remote_evidence_buf, remote_evidence_buf_size, NULL, 0);
+    result = oe_get_evidence(
+        &sgx_remote_uuid,
+        NULL,
+        NULL,
+        0,
+        NULL,
+        0,
+        remote_evidence_buf,
+        remote_evidence_buf_size,
+        NULL,
+        0);
     if (result != OE_OK)
     {
         TRACE_ENCLAVE("oe_get_evidence failed.");
@@ -80,11 +90,11 @@ static void* _find_claim(
  * Attest the given remote evidence and accompanying data. It consists of the
  * following three steps:
  *
- * 1) The remote evidence is first attested using the oe_verify_evidence API. This
- * ensures the authenticity of the enclave that generated the remote evidence.
- * 2) Next, to establish trust of the enclave that  generated the remote evidence,
- * the mrsigner, product_id, isvsvn values are checked to  see if they are
- * predefined trusted values.
+ * 1) The remote evidence is first attested using the oe_verify_evidence API.
+ * This ensures the authenticity of the enclave that generated the remote
+ * evidence. 2) Next, to establish trust of the enclave that  generated the
+ * remote evidence, the mrsigner, product_id, isvsvn values are checked to  see
+ * if they are predefined trusted values.
  */
 bool Attestation::attest_remote_evidence(
     const uint8_t* remote_evidence,
@@ -117,11 +127,20 @@ bool Attestation::attest_remote_evidence(
 
     // Validate the evidence's trustworthiness
     // Verify the remote evidence to ensure its authenticity.
-    result =
-        oe_verify_evidence(&sgx_remote_uuid, remote_evidence, remote_evidence_size, NULL, 0, NULL, 0, &claims, &claims_length);
+    result = oe_verify_evidence(
+        &sgx_remote_uuid,
+        remote_evidence,
+        remote_evidence_size,
+        NULL,
+        0,
+        NULL,
+        0,
+        &claims,
+        &claims_length);
     if (result != OE_OK)
     {
-        TRACE_ENCLAVE("oe_verify_evidence failed (%s).\n", oe_result_str(result));
+        TRACE_ENCLAVE(
+            "oe_verify_evidence failed (%s).\n", oe_result_str(result));
         goto exit;
     }
 
@@ -133,8 +152,7 @@ bool Attestation::attest_remote_evidence(
     if (memcmp(value, m_enclave_mrsigner, 32) != 0)
     {
         TRACE_ENCLAVE("signer_id checking failed.");
-        TRACE_ENCLAVE(
-            "signer_id %s", value);
+        TRACE_ENCLAVE("signer_id %s", value);
 
         for (int j = 0; j < 32; j++)
         {
@@ -148,10 +166,7 @@ bool Attestation::attest_remote_evidence(
 
         for (int j = 0; j < 32; j++)
         {
-            TRACE_ENCLAVE(
-                "signer_id)[%d]=0x%0x\n",
-                j,
-                (uint8_t)value[j]);
+            TRACE_ENCLAVE("signer_id)[%d]=0x%0x\n", j, (uint8_t)value[j]);
         }
         TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
         goto exit;
@@ -167,66 +182,14 @@ bool Attestation::attest_remote_evidence(
     }
 
     // 3) Check the enclave's security version.
-    value = (uint8_t*)_find_claim(claims, claims_length, OE_CLAIM_SECURITY_VERSION);
+    value =
+        (uint8_t*)_find_claim(claims, claims_length, OE_CLAIM_SECURITY_VERSION);
 
     if (value[0] < 1)
     {
         TRACE_ENCLAVE("security_version checking failed.");
         goto exit;
     }
-
-    // // Iterate through list of claims.
-    // for (size_t i = 0; i < claims_length; i++) 
-    // {
-    //     if (strcmp(claims[i].name, OE_CLAIM_SIGNER_ID) == 0)
-    //     {
-    //         // Validate the signer id.
-    //         if (memcmp(claims[i].value, m_enclave_mrsigner, 32) != 0)
-    //         {
-    //             TRACE_ENCLAVE("signer_id checking failed.");
-    //             TRACE_ENCLAVE(
-    //                 "signer_id %s", claims[i].value);
-
-    //             for (int j = 0; j < 32; j++)
-    //             {
-    //                 TRACE_ENCLAVE(
-    //                     "m_enclave_mrsigner[%d]=0x%0x\n",
-    //                     j,
-    //                     (uint8_t)m_enclave_mrsigner[j]);
-    //             }
-
-    //             TRACE_ENCLAVE("\n\n\n");
-
-    //             for (int j = 0; j < 32; j++)
-    //             {
-    //                 TRACE_ENCLAVE(
-    //                     "signer_id)[%d]=0x%0x\n",
-    //                     j,
-    //                     (uint8_t)claims[i].value[j]);
-    //             }
-    //             TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
-    //             goto exit;
-    //         }
-    //     }
-    //     if (strcmp(claims[i].name, OE_CLAIM_PRODUCT_ID) == 0)
-    //     {
-    //         // Check the enclave's product id.
-    //         if (claims[i].value[0] != 1)
-    //         {
-    //             TRACE_ENCLAVE("product_id checking failed.");
-    //             goto exit;
-    //         }
-    //     }
-    //     if (strcmp(claims[i].name, OE_CLAIM_SECURITY_VERSION) == 0)
-    //     {
-    //         // Check the enclave's security version.
-    //         if (claims[1].value[0] < 1)
-    //         {
-    //             TRACE_ENCLAVE("security_version checking failed.");
-    //             goto exit;
-    //         }
-    //     }
-    // }
 
     ret = true;
     TRACE_ENCLAVE("remote attestation succeeded.");

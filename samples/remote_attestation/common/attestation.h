@@ -25,10 +25,10 @@ class Attestation
         size_t* remote_evidence_buf_size);
 
     /**
-     * Attest the given remote evidence and accompanying data. The remote evidence
-     * is first attested using the oe_verify_evidence API. This ensures the
-     * authenticity of the enclave that generated the remote evidence. Next the
-     * mrsigner and mrenclave values are tested to establish trust of the
+     * Attest the given remote evidence and accompanying data. The remote
+     * evidence is first attested using the oe_verify_evidence API. This ensures
+     * the authenticity of the enclave that generated the remote evidence. Next
+     * the mrsigner and mrenclave values are tested to establish trust of the
      * enclave that generated the remote evidence.
      */
     bool attest_remote_evidence(

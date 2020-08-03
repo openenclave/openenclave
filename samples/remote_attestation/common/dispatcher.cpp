@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include "dispatcher.h"
+#include <openenclave/attestation/attester.h>
 #include <openenclave/attestation/sgx/report.h>
 #include <openenclave/enclave.h>
-#include <openenclave/attestation/attester.h>
 
 ecall_dispatcher::ecall_dispatcher(
     const char* name,
@@ -59,9 +59,9 @@ exit:
 }
 
 /**
- * Return the public key of this enclave along with the enclave's remote evidence.
- * The enclave that receives the key will use the remote evidence to attest this
- * enclave.
+ * Return the public key of this enclave along with the enclave's remote
+ * evidence. The enclave that receives the key will use the remote evidence to
+ * attest this enclave.
  */
 int ecall_dispatcher::get_remote_report_with_pubkey(
     uint8_t** pem_key,
