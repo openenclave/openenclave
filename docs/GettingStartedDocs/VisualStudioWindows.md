@@ -24,7 +24,7 @@ You will need the following:
 - Intel's PSW2.6. This should be automatically installed on Windows 10 systems that support SGX.  If manual install is needed:
   - For systems with support for SGX1: [Intel's PSW 2.6,Intel Enclave Common API library](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/Contributors/WindowsManualSGX1Prereqs.md)
   - For systems with support for SGX1+FLC: [Intel's PSW2.6, Intel's Data Center Attestation Primitives and related dependencies](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/Contributors/WindowsManualSGX1FLCDCAPPrereqs.md)
-- [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe).  The installer will ask whether LLVM should be added to the PATH, and this must be done at least for the current user, so Visual Studio can find it.
+- [Clang/LLVM for Windows 64-bit](https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe).  The installer will ask whether LLVM should be added to the PATH, and this must be done at least for the current user, so Visual Studio can find it.
 
 ## Walkthrough: Creating a C/C++ Enclave Application
 
