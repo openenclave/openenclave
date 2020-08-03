@@ -2,7 +2,7 @@ Extended Enclave Initialization Data V2
 =======================================
 
 In this paper, we present an updated design of the extended enclave
-initialization data (EEID).
+initialization data (EEID) for SGX.
 
 Problem Statement
 -----------------
@@ -85,7 +85,7 @@ to:
 
 ```C
 #ifdef EXPERIMENTAL_EEID
-typedef struct oe_eeid_t_
+typedef struct oe_sgx_eeid_t_
 {
     uint32_t version;        /* version number of the structure */
     uint32_t hash_state[10]; /* internal state of the hash computation at the
@@ -106,23 +106,78 @@ typedef struct oe_eeid_t_
     uint64_t signature_size; /* size of signature, max size is
                                 4096-sizeof(oe_eeid_t) bytes */
     uint8_t signature[];     /* Buffer holding the signature */
-} oe_eeid_t;
+} oe_sgx_eeid_t;
 #endif
 ```
 
-The enclave developer owns the definition of config_id and config_svn. The
-enclave developer is also responsible for the host side code that calculates the
-identity of the code/data to be loaded into enclave post enclave initialization
-and pass the proper values for config_id/config_svn to the enclave loader. The
-enclave loader sets the config_id/config_svn through the eeid page or in SGX
-`SECS` if SGX KSS is supported. The enclave developer should implement an
-explicit function (typically an ECALL) to load the code/data into the enclave
-memory post enclave initialization and to verify the identity and/or SVN of the
-loaded code/data against config_id/config_svn. On SGX CPUs supporting the KSS
-feature, config_id and config_svn are available in the SGX `REPORT`. The OE SDK
-libs will provide an API to retrieve config_id and config_svn. The low level
-implementation difference between EEID based solution and SGX KSS feature based
-solution is not exposed to the developer's code.
+The EEID implementation and the SGX KSS based implementation both support a
+default definition of config_id, as well as enclave developer owned definition
+of config_id and config_svn.
+
+For the default definition case, config_id is a SHA256 hash of a variable length
+configuration data to be loaded post enclave initialization, and config_svn is
+not used. With the default definition, the enclave runtime automatically set
+config_id and load the configuration data.
+
+For the case of enclave developer owned definition, the enclave developer is
+responsible for the host side code that produces the identity of the additional
+content and pass the proper values for config_id/config_svn to the enclave
+runtime. The enclave runtime sets the config_id/config_svn through the eeid page
+or in SGX `SECS` if SGX KSS is supported. The enclave developer should also
+implement an explicit function (typically an ECALL) to load the additional
+content into the enclave memory post enclave initialization, and to verify the
+identity and/or SVN of the loaded content against config_id/config_svn. On SGX
+CPUs supporting the KSS feature, config_id and config_svn are available in the
+SGX `REPORT`. The OE SDK libs will provide an API to retrieve config_id and
+config_svn. The low level implementation difference between EEID implementation
+and SGX KSS feature based implementation is not exposed to the developer's code.
+
+The SGX enclave attester and verifier plugins will include config_id and
+config_svn as base claims and may include the configuration data as custom
+claims. For SGX enclaves that don't support config_id/config_svn, for example, a
+non-EEID enclave running on a SGX CPU that does not support KSS feature,
+config_id and config_svn claims should be 0.
+
+The enclave application passes config_id/config_svn, and optionally the
+config_data, to the enclave loader through the
+`OE_ENCLAVE_SETTING_CONTEXT_PRE_MEASURED_CONTENT` type enclave setting context:
+
+```C
+/**
+ * Types of settings passed into **oe_create_enclave**
+ */
+typedef enum _oe_enclave_setting_type
+{
+    OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS = 0xdc73a628,
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+    OE_ENCLAVE_SETTING_CONTEXT_PRE_MEASURED_CONTENT = 0x976a8f66,
+#endif
+} oe_enclave_setting_type_t;
+
+/**
+ * Structure to keep EEID related options during enclave creation
+ */
+typedef struct _oe_enclave_pre_measured_content
+{
+    /** Heap, stack, and thread configuration for an EEID enclave instance. */
+    oe_enclave_size_settings_t size_settings;
+
+    /** The identity of additional content allowed to be loaded
+     *  into the enclave post enclave initialization. The identity is covered
+     *  by TEE generated Enclave Attestation Evidence.
+     */
+    uint8_t config_id[32];
+    uint16_t config_svn;
+
+    /** Optional config data to be loaded automatically by the enclave runtime.
+      * If provided, the enclave runtime overrides config_id field with the
+      * SHA256 hash of the config data, and verifies the hash value when the
+      * data is loaded.
+      */
+    size_t data_size;
+    uint8_t data[];
+} oe_enclave_pre_measured_content_t;
+```
 
 Supporting heap/stack size and #TCS specified at enclave signing time or loading time
 -------------------------------------------------------------------------------------
@@ -188,62 +243,32 @@ measurement recreation algorithm used in EEID enclave attestation verification.
 This updated design addresses the need to capture the expected `TCS.OENTRY`
 value in a different way.
 
-`oe_sgx_enclave_properties` is part of the initialized data of the SGX enclave,
-and covered by the base enclave measurement. The enclave loader will include the
-expected `TCS.OENTRY` value in `oe_sgx_enclave_properties`. The definition of
-`oe_sgx_enclave_properties` is changed from:
+`oe_sgx_enclave_image_info_t` is part of the initialized data of the SGX
+enclave, and covered by the base enclave measurement. The enclave loader will
+include the expected `TCS.OENTRY` value in `oe_sgx_enclave_image_info_t`. A new
+`entry_rva` member is added to `oe_sgx_enclave_image_info_t` definition:
 
 ```C
 /* Extends oe_enclave_properties_header_t base type */
-typedef struct _oe_sgx_enclave_properties
+typedef struct _oe_sgx_enclave_image_info_t
 {
-    /* (0) */
-    oe_enclave_properties_header_t header;
-
-    /* (32) */
-    oe_sgx_enclave_config_t config;
-
-    /* (48) */
-    oe_sgx_enclave_image_info_t image_info;
-
-    /* (96)  */
-    uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
-
-    /* (1904) end-marker to make sure 0-filled sigstruct doesn't get omitted */
-    uint64_t end_marker;
-} oe_sgx_enclave_properties_t;
-```
-
-to:
-
-```C
-/* Extends oe_enclave_properties_header_t base type */
-typedef struct _oe_sgx_enclave_properties
-{
-    /* (0) */
-    oe_enclave_properties_header_t header;
-
-    /* (32) */
-    oe_sgx_enclave_config_t config;
-
-    /* (48) */
-    oe_sgx_enclave_image_info_t image_info;
-
-    /* (96)  */
-    uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
-
-    /* (1904) from oeimage.entry_rva, must match TCS.OENTRY */
-    uint64_t entry_rva;
-} oe_sgx_enclave_properties_t;
+    uint64_t oeinfo_rva;
+    uint64_t oeinfo_size;
+    uint64_t reloc_rva;
+    uint64_t reloc_size;
+    uint64_t heap_rva; /* heap size is in header.sizesettings */
+    uint64_t enclave_size;
+    uint64_t entry_rva; /*from oeimage.entry_rva, must match TCS.OENTRY */
+} oe_sgx_enclave_image_info_t;
 ```
 
 The EEID initialization code inside the enclave makes sure the `entry_point` in
-the EEID data structure matches `entry_rva` in `oe_sgx_enclave_properties`.
+the EEID data structure matches `entry_rva` in `oe_sgx_enclave_image_info_t`.
 
 With this change, the base enclave of an EEID enclave with heap/stack size and
 #TCS selected by the loader can safely use  `NumStackPages=0`, `NumHeapPages=0`,
 and `NumTCS=0`. Recording the expected `TCS.OENTRY` value in
-`oe_sgx_enclave_properties` of a SGX enclave (regular enclave or EEID enclave)
+`oe_sgx_enclave_image_info_t` of a SGX enclave (regular enclave or EEID enclave)
 also simplifies the implementation of Enclave Dynamic Memory Management (EDMM)
 based thread context creation support in the future, where the enclave code
 needs to verify the content of a TCS page added by the OS.
@@ -251,7 +276,7 @@ needs to verify the content of a TCS page added by the OS.
 Preserving base enclave properties in the signature
 ---------------------------------------------------
 
-When res-signing the image using the `OE_DEBUG_SIGN_KEY`, the dynamically
+When re-signing the image using the `OE_DEBUG_SIGN_KEY`, the dynamically
 generated signature should preserve all relevant fields from the base enclave
 signature, except the enclave measurement field and the fields related to the
 signing operation. For SGX, the dynamically generated `SIGSTRUCT` should be
