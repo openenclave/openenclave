@@ -7,7 +7,7 @@ add_custom_command(
   COMMAND edger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../oecert.edl
           --search-path ${PROJECT_SOURCE_DIR}/include ${DEFINE_OE_SGX})
 
-add_enclave(TARGET oecert_enc SOURCES enc.cpp
+add_enclave(TARGET oecert_enc SOURCES crypto.cpp enc.cpp
             ${CMAKE_CURRENT_BINARY_DIR}/oecert_t.c)
 
 # Need for the generated file oecert_t.h

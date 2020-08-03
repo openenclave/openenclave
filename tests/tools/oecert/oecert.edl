@@ -19,5 +19,11 @@ enclave {
             size_t public_key_size,
             [out] unsigned char **data, 
             [out] size_t *data_size);
+
+        public oe_result_t get_remote_report_with_custom_data(
+            [in, count=custom_data_size] uint8_t *custom_data,
+            size_t custom_data_size,
+            [out] uint8_t **report_buffer,
+            [out] size_t *report_buffer_size);
     };
 };

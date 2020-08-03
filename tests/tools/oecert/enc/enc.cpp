@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "crypto.h"
 #include "oecert_t.h"
 
 // This is the identity validation callback. A TLS connecting party (client or
@@ -109,6 +110,37 @@ done:
 
     oe_free_attestation_certificate(output_cert);
 
+    return result;
+}
+
+oe_result_t get_remote_report_with_custom_data(
+    uint8_t* custom_data,
+    size_t custom_data_size,
+    uint8_t** report_buffer,
+    size_t* report_buffer_size)
+{
+    oe_result_t result = OE_FAILURE;
+
+    uint8_t sha256[32];
+
+    init_mbedtls();
+
+    if (Sha256(custom_data, custom_data_size, sha256) != 0)
+    {
+        goto done;
+    }
+
+    result = oe_get_report(
+        OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+        sha256,
+        sizeof(sha256),
+        NULL,
+        0,
+        report_buffer,
+        report_buffer_size);
+
+done:
+    cleanup_mbedtls();
     return result;
 }
 

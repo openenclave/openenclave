@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <assert.h>
 #include <limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/report.h>
@@ -16,6 +17,7 @@
 #define INPUT_PARAM_OPTION_CERT "--cert"
 #define INPUT_PARAM_OPTION_REPORT "--report"
 #define INPUT_PARAM_OPTION_OUT_FILE "--out"
+#define INPUT_PARAM_OPTION_CUSTOM_DATA "--custom_data"
 
 // Structure to store input parameters
 //
@@ -24,12 +26,13 @@ typedef struct _input_params
     const char* enclave_filename;
     const char* private_key_filename;
     const char* public_key_filename;
+    const char* custom_data_filename;
     const char* out_filename;
     bool gen_cert;
     bool gen_report;
 } input_params_t;
 
-static input_params_t _params;
+static input_params_t _params = {};
 
 // This is the identity validation callback. An TLS connecting party (client or
 // server) can verify the passed in "identity" information to decide whether to
@@ -147,17 +150,58 @@ exit:
 
 static oe_result_t _gen_report(
     oe_enclave_t* enclave,
-    const char* report_filename)
+    const char* report_filename,
+    const char* custom_data_filename)
 {
     size_t report_size = OE_MAX_REPORT_SIZE;
     uint8_t* remote_report = NULL;
-    oe_result_t result = oe_get_report(
-        enclave,
-        OE_REPORT_FLAGS_REMOTE_ATTESTATION,
-        NULL, // opt_params must be null
-        0,
-        (uint8_t**)&remote_report,
-        &report_size);
+    oe_result_t result = OE_FAILURE;
+    oe_result_t ecall_result = OE_FAILURE;
+
+    if (custom_data_filename == NULL)
+    {
+        result = oe_get_report(
+            enclave,
+            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+            NULL, // opt_params must be null
+            0,
+            (uint8_t**)&remote_report,
+            &report_size);
+    }
+    else
+    {
+        FILE* fp = fopen(custom_data_filename, "rb");
+        fseek(fp, 0, SEEK_END);
+        long file_size = ftell(fp);
+        assert(file_size > 0);
+        size_t size = (size_t)file_size;
+
+        uint8_t* buffer = (uint8_t*)malloc(sizeof(uint8_t) * size);
+        if (buffer == NULL)
+        {
+            fclose(fp);
+            printf("Out of memory!");
+            goto exit;
+        }
+
+        fseek(fp, 0, SEEK_SET);
+        fread(buffer, sizeof(uint8_t), size, fp);
+        fclose(fp);
+
+        result = get_remote_report_with_custom_data(
+            enclave,
+            &ecall_result,
+            buffer,
+            size,
+            (uint8_t**)&remote_report,
+            &report_size);
+
+        if (ecall_result != OE_OK)
+        {
+            result = ecall_result;
+        }
+    }
+
     if (result == OE_OK)
     {
         printf("oe_get_report succeeded report_size = %zu\n", report_size);
@@ -272,6 +316,8 @@ static void _display_help(const char* cmd)
     printf(
         "\t%s : generate binary enclave evidence and endorsements.\n",
         INPUT_PARAM_OPTION_REPORT);
+    printf(
+        "\t%s : input custom data filename.\n", INPUT_PARAM_OPTION_CUSTOM_DATA);
     printf("\t%s : output filename.\n", INPUT_PARAM_OPTION_OUT_FILE);
 
     // TODO: Add option to display certs
@@ -360,6 +406,22 @@ static int _parse_args(int argc, const char* argv[])
                 printf(
                     "%s has invalid number of parameters.\n",
                     INPUT_PARAM_OPTION_OUT_FILE);
+                _display_help(argv[0]);
+                return 1;
+            }
+        }
+        else if (strcmp(INPUT_PARAM_OPTION_CUSTOM_DATA, argv[i]) == 0)
+        {
+            if (argc >= i + 1)
+            {
+                _params.custom_data_filename = argv[i + 1];
+                i += 2;
+            }
+            else
+            {
+                printf(
+                    "%s has invalid number of parameters.\n",
+                    INPUT_PARAM_OPTION_CUSTOM_DATA);
                 _display_help(argv[0]);
                 return 1;
             }
@@ -465,7 +527,8 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
     }
     else if (_params.gen_report)
     {
-        result = _gen_report(enclave, _params.out_filename);
+        result = _gen_report(
+            enclave, _params.out_filename, _params.custom_data_filename);
     }
 
     return result;
