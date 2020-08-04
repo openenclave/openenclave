@@ -34,6 +34,7 @@ typedef void (*oe_log_callback_t)(
     const char* time,
     long int usecs,
     oe_log_level_t level,
+    uint64_t host_thread_id,
     const char* message);
 oe_result_t oe_log_set_callback(void* context, oe_log_callback_t callback);
 extern void* oe_log_context;

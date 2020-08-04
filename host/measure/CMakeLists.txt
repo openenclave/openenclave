@@ -11,7 +11,8 @@ if (UNIX)
       crypto/openssl/key.c
       crypto/openssl/rsa.c
       crypto/openssl/sha.c
-      linux/hostthread.c)
+      linux/hostthread.c
+      linux/time.c)
 elseif (WIN32)
   set(PLATFORM_HOST_MR_SRC
       crypto/bcrypt/key.c
