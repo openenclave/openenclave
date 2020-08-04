@@ -1,4 +1,4 @@
-# Configure OE SDK SGX on Linux in non-ACC Machines
+﻿# Configure OE SDK SGX on Linux in non-ACC Machines
 
 ## Disclaimer
 This document is to provide a viable solution to enable Open Enclave SGX DCAP remote attestation to run on non-Azure Confidential Computing (ACC) machines. It relies on several Intel components and services which are subject to Intel's changes.
@@ -275,3 +275,41 @@ Total Test time (real) =  83.61 sec
 ```
 
 A clean pass of the above unit tests is an indication that your Open Enclave setup was successful.
+
+Above remote attestation tests/samples will only succeed if using a production CPU. 
+If you want remote attestation tests/samples to succeed on the pre-production CPU, you should follow below steps to switch backend provisioning server to pre-production.
+
+## 6. (Optional) Verify OE remote attestation on pre-production platforms
+You will need to make some changes in Step 4.1 and 5 above when using the pre-production platforms.
+
+### 6.1 Get SBX (Sand Box) primary key for Provisioning Certificate Caching Service (PCCS) in Step 4.1
+Get the SBX primary key from https://sbx.api.portal.trustedservices.intel.com/provisioning-certification.
+The steps of installing and configuring PCCS are similar to Step 4.2.
+
+Please check PCCS configuration file (config/production-0.json)
+- uri - The URL needs to be set as https://sbx.api.trustedservices.intel.com/sgx/certification/v2/.
+- ApiKey - The API key needs to be set as SBX primary key.
+
+### 6.2 Replace the Intel root certificate's public key value before Step 5
+
+```patch
+common/sgx/quote.c
+ // Public key of Intel's root certificate.
+ static const char* g_expected_root_certificate_key =
+     "-----BEGIN PUBLIC KEY-----\n"
+-    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
+-    "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
++    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAET/oP/VYc2tbA+Y0wjIEoxbknonMy\n"
++    "yOjrE/a+QrVx1kZvU8ZE/8L/wQKCIOSaSWbPAvMuL7TTSbssuu0okDegLQ==\n"
+     "-----END PUBLIC KEY-----\n";
+
+common/sgx/tcbinfo.c
+ // Public key of Intel's root certificate.
+ static const char* _trusted_root_key_pem =
+     "-----BEGIN PUBLIC KEY-----\n"
+-    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
+-    "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
++    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAET/oP/VYc2tbA+Y0wjIEoxbknonMy\n"
++    "yOjrE/a+QrVx1kZvU8ZE/8L/wQKCIOSaSWbPAvMuL7TTSbssuu0okDegLQ==\n"
+     "-----END PUBLIC KEY-----\n";
+```
