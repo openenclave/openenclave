@@ -325,12 +325,7 @@ static oe_result_t _calculate_enclave_size(
     {
 #ifdef OE_WITH_EXPERIMENTAL_EEID
         if (is_eeid_base_image(props))
-        {
-            /* This is the maximum size SGX allows. When signing base images we
-             * don't know the size that the final image will have, so we chose
-             * the maximum here. */
-            *enclave_size = 68719476736;
-        }
+            *enclave_size = OE_EEID_SGX_ELRANGE;
         else
 #endif
             /* Calculate the total size of the enclave */

@@ -60,8 +60,26 @@ static oe_result_t _eeid_patch_memory()
     {
         uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_base();
         uint8_t* heap_base = (uint8_t*)__oe_get_heap_base();
-        oe_eeid_marker_t* marker = (oe_eeid_marker_t*)heap_base;
-        oe_eeid = (oe_eeid_t*)(enclave_base + marker->offset);
+        const oe_eeid_marker_t* marker = (oe_eeid_marker_t*)heap_base;
+        oe_eeid_t* eeid = (oe_eeid_t*)(enclave_base + marker->offset);
+
+        /* EEID must be within the enclave memory */
+        if (!oe_is_within_enclave(eeid, sizeof(oe_eeid_t)) ||
+            !oe_is_within_enclave(
+                eeid->data, eeid->data_size + eeid->signature_size))
+            oe_abort();
+
+        oe_eeid = eeid;
+
+        uint8_t* heap_end = (uint8_t*)__oe_get_heap_end();
+        uint8_t* tcs_end =
+            heap_end + (OE_SGX_TCS_CONTROL_PAGES + OE_SGX_TCS_GUARD_PAGES +
+                        eeid->size_settings.num_stack_pages) *
+                           OE_PAGE_SIZE * eeid->size_settings.num_tcs;
+
+        /* EEID must not overlap with tcs/stack/control pages */
+        if ((uint8_t*)eeid < tcs_end)
+            oe_abort();
 
         // Wipe the marker page
         memset(heap_base, 0, OE_PAGE_SIZE);
