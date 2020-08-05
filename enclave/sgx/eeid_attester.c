@@ -115,6 +115,7 @@ static oe_result_t _eeid_get_evidence(
     uint8_t *sgx_evidence_buffer = NULL, *sgx_endorsements_buffer = NULL;
     size_t sgx_evidence_buffer_size = 0, sgx_endorsements_buffer_size = 0;
     const oe_eeid_t* eeid = __oe_get_eeid();
+    size_t eeid_size = 0;
 
     OE_UNUSED(context);
     if (!evidence_buffer || !evidence_buffer_size || !eeid)
@@ -135,7 +136,7 @@ static oe_result_t _eeid_get_evidence(
         eeid->signature_size != sizeof(sgx_sigstruct_t))
         OE_RAISE(OE_FAILURE);
 
-    size_t eeid_size = oe_eeid_byte_size(eeid);
+    eeid_size = oe_eeid_byte_size(eeid);
 
     // Get SGX evidence
     OE_CHECK(_get_sgx_evidence(
