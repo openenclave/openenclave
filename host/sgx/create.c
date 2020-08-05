@@ -854,6 +854,24 @@ oe_result_t oe_sgx_build_enclave(
     enclave->size = enclave_size;
     enclave->text = enclave_addr + oeimage.text_rva;
 
+    /* Populate debugger contract for the isolated image */
+    if (path2)
+    {
+        oe_debug_image_t di;
+
+        di.magic = OE_DEBUG_IMAGE_MAGIC;
+        di.version = 1;
+
+        if (!(di.path = get_fullpath(path2)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        di.path_length = strlen(di.path);
+        di.base_address = enclave_addr + image_offset;
+        di.size = image_size;
+
+        enclave->debug_images[enclave->num_debug_images++] = di;
+    }
+
     /* Patch primary image (no need to patch the secondary isolated image) */
     {
         const size_t isolated_image_rva = image_offset;
@@ -1073,6 +1091,9 @@ oe_result_t oe_create_enclave(
 
         enclave->debug_enclave = debug_enclave;
         oe_debug_notify_enclave_created(debug_enclave);
+
+        for (size_t i = 0; i < enclave->num_debug_images; ++i)
+            oe_debug_notify_image_loaded(&enclave->debug_images[i]);
     }
 
     /* Enclave initialization invokes global constructors which could make
@@ -1134,6 +1155,12 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 
     if (enclave->debug_enclave)
     {
+        for (size_t i = 0; i < enclave->num_debug_images; ++i)
+        {
+            oe_debug_notify_image_unloaded(&enclave->debug_images[i]);
+            free(enclave->debug_images[i].path);
+        }
+
         oe_debug_notify_enclave_terminated(enclave->debug_enclave);
         free(enclave->debug_enclave->tcs_array);
         free(enclave->debug_enclave);

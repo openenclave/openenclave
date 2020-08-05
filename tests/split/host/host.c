@@ -23,7 +23,6 @@ int main(int argc, const char* argv[])
     oe_eeid_t* eeid = NULL;
 #endif
 
-
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     {
         char data[] = "abcdefghijklmnopqrstuvwxyz";
