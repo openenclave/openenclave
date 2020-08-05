@@ -125,8 +125,6 @@ typedef struct oe_sgx_eeid_t_
      **/
     unit16_t config_svn;
 } oe_sgx_eeid_t;
-
-
 #endif
 ```
 
@@ -238,19 +236,34 @@ linear address = linear address of the last Code/Data page + 4KB).
 
 For an EEID enclave, the enclave loader records the Guard Page location, adds
 the heap and the thread sections, and then the EEID page at the Guard Page
-location, as read-only. The Guard/EEID page location is fixed, as
-(heap_base-4KB). The EEID initialization code inside the enclave always accesses
-the EEID data structure at the fixed location. When signing the base enclave of
-an EEID enclave, the enclave signer adds the eeid measurement context page,
-instead of the EEID page. This mechanism makes sure the EEID enclave attestation
-verifier can detect loader derivation from the SW convention. A malicious loader
-might `EREMOVE` an initialized data page, `EADD` the EEID page in its place, and
-set `vaddr` to match where the EEID page is actually added. The EEID enclave
-attestation verifier will not detect any abnormality when verifying the EEID
-enclave measurement using the info from the EEID page, but with the measurement
-context following the SW convention included in the base enclave measurement,
-the attestation verifier will detect base enclave measurement mismatch using the
-info from the EEID page.
+location, as read-only. The Guard/EEID page location is fixed, relevant to the
+heap base, as (heap_base-4KB). The EEID initialization code inside the enclave
+always accesses the EEID data structure at the fixed location. When signing the
+base enclave of an EEID enclave, the enclave signer adds the eeid measurement
+context page, instead of the EEID page. This mechanism makes sure the EEID
+enclave attestation verifier can detect loader derivation from the SW
+convention.
+
+The security design goal of the EEID enclave is to make sure a potentially
+malicious enclave loader can't deviate from the expected SW convention of adding
+the EEID page and heap/thread pages according to the enclave memory layout,
+without detection. The EEID enclave attestation verifier recreates the EEID
+enclave's measurement according to the SW convention, and compare it against the
+HW reported `MRENCLAVE`. But certain base enclave specific information, such as
+the starting address of the additional pages to be added after the base enclave
+pages are added, or the `TCS.OENTRY` value for the TCS page, cannot be
+"hardcoded" in the verifier logic. Instead, they are set by the loader and
+recorded in the EEID page. A malicious loader might `EREMOVE` an initialized
+data page or code page, `EADD` the EEID page in its place, and set `vaddr` in
+the EEID page to match where the EEID page is actually added. A malicious loader
+might also set `TCS.OENTRY` to cause `EENTER` to enter the enclave at the wrong
+entry point, and set `entry_point` of the EEID page accordingly. The EEID
+enclave attestation verifier will not detect any abnormality when verifying the
+EEID enclave measurement using the info from the EEID page. But with the
+measurement context produced by the trusted signing tool included in the base
+enclave measurement, if the malicious loader put spoofed values in the EEID
+page, the attestation verifier will detect base enclave measurement mismatch
+when recreating the measurement using the info from the EEID page.
 
 For EEID enclaves with heap/stack size and #TCS specified at enclave signing
 time, the loader only adds one extra measured page after the heap and thread
@@ -278,6 +291,15 @@ measurement. If the malicious loader sets it to a spoofed value, the attestation
 verifier will detect base enclave measurement mismatch. With this mechanism, the
 base enclave of an EEID enclave with heap/stack size and #TCS selected by the
 loader can safely use  `NumStackPages=0`, `NumHeapPages=0`, and `NumTCS=0`.
+
+Most EEID related code does not need to be included in a regular SGX enclave,
+but some code does resides in common flows and will be included. To make sure
+the code flow can be properly switched, and to avoid potential security pitfalls
+associated with unexpected code flow,  a flag distinguishing EEID SGX enclaves
+from regular SGX enclaves will be included in the initialized data of a SGX
+enclave. The SGX enclave development tool chain also needs to be augmented to
+allow the enclave developer to designate whether the SGX enclave built and
+signed is a EEID SGX enclave.
 
 Preserving base enclave properties in the signature
 ---------------------------------------------------
