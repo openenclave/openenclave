@@ -178,7 +178,21 @@ oe_enter:
     mov %r11, OM_ENC_TD
 
     // Clear the XSTATE so that enclave has clean legacy SSE and extended states
-    oe_cleanup_xstates
+    //oe_cleanup_xstates
+    // Preserve registers being used
+    push %rax
+    push %rdx
+
+    // Set the XSAVE_MASK
+    mov $0xFFFFFFFF, %eax
+    mov $0xFFFFFFFF, %edx
+
+    // Restore initial enclave XSAVE state
+    xrstor64 OE_XSAVE_INITIAL_STATE(%rip)
+
+    // Restore the registers
+    pop %rdx
+    pop %rax
 
     // Call __oe_handle_main(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX, OUTPUTARG1=R8, OUTPUTARG2=R9)
     mov %rax, %rdx
