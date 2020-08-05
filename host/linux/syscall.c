@@ -1438,3 +1438,26 @@ int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
 
     return nanosleep((struct timespec*)req, (struct timespec*)rem);
 }
+
+/*
+**==============================================================================
+**
+** clock_gettime():
+**
+**==============================================================================
+*/
+
+int oe_syscall_clock_gettime_ocall(int clock_id, struct oe_timespec* cur_time)
+{
+    if (!cur_time)
+        return -1;
+    memset(cur_time, 0, sizeof(struct oe_timespec));
+    if (clock_id != CLOCK_REALTIME)
+    {
+        /* Only supporting CLOCK_REALTIME */
+        return -1;
+    }
+    if (clock_gettime(CLOCK_REALTIME, (struct timespec*)cur_time) != 0)
+        return -1;
+    return 0;
+}

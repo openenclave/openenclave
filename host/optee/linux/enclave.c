@@ -213,11 +213,6 @@ static TEEC_Result _handle_generic_rpc(
         case OE_OCALL_THREAD_WAKE:
             return TEEC_ERROR_NOT_SUPPORTED;
 
-        case OE_OCALL_GET_TIME:
-            oe_handle_get_time(
-                *(uint64_t*)input_buffer, (uint64_t*)output_buffer);
-            break;
-
         default:
         {
             /* No function found with the number */

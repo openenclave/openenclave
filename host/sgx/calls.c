@@ -298,8 +298,7 @@ static const char* oe_ocall_str(oe_func_t ocall)
         "THREAD_WAKE",
         "THREAD_WAIT",
         "MALLOC",
-        "FREE",
-        "GET_TIME"
+        "FREE"
     };
     // clang-format on
 
@@ -384,10 +383,6 @@ static oe_result_t _handle_ocall(
 
         case OE_OCALL_THREAD_WAKE:
             HandleThreadWake(enclave, arg_in);
-            break;
-
-        case OE_OCALL_GET_TIME:
-            oe_handle_get_time(arg_in, arg_out);
             break;
 
         default:

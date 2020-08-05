@@ -1238,6 +1238,10 @@ oe_result_t _oe_syscall_nanosleep_ocall(
     struct oe_timespec* req,
     struct oe_timespec* rem);
 
+oe_result_t _oe_syscall_clock_gettime_ocall(
+    int* _retval,
+    int clock_id,
+    struct oe_timespec* cur_time);
 /**
  * Implement the functions and make them as the weak aliases of
  * the public ocall wrappers.
@@ -1253,6 +1257,18 @@ oe_result_t _oe_syscall_nanosleep_ocall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_syscall_nanosleep_ocall, oe_syscall_nanosleep_ocall);
+
+oe_result_t _oe_syscall_clock_gettime_ocall(
+    int* _retval,
+    int clock_id,
+    struct oe_timespec* cur_time)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(clock_id);
+    OE_UNUSED(cur_time);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_syscall_clock_gettime_ocall, oe_syscall_clock_gettime_ocall);
 
 /*
 **==============================================================================

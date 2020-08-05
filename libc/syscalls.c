@@ -12,7 +12,6 @@
 #include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/syscall/sys/syscall.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/internal/time.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,77 +24,11 @@
 static oe_syscall_hook_t _hook;
 static oe_spinlock_t _lock;
 
-static const uint64_t _SEC_TO_MSEC = 1000UL;
-static const uint64_t _MSEC_TO_USEC = 1000UL;
-static const uint64_t _MSEC_TO_NSEC = 1000000UL;
-
 static long _syscall_mmap(long n, ...)
 {
     /* Always fail */
     OE_UNUSED(n);
     return EPERM;
-}
-
-static long _syscall_clock_gettime(long n, long x1, long x2)
-{
-    clockid_t clk_id = (clockid_t)x1;
-    struct timespec* tp = (struct timespec*)x2;
-    int ret = -1;
-    uint64_t msec;
-
-    OE_UNUSED(n);
-
-    if (!tp)
-        goto done;
-
-    if (clk_id != CLOCK_REALTIME)
-    {
-        /* Only supporting CLOCK_REALTIME */
-        oe_assert("clock_gettime(): panic" == NULL);
-        goto done;
-    }
-
-    if ((msec = oe_get_time()) == (uint64_t)-1)
-        goto done;
-
-    tp->tv_sec = msec / _SEC_TO_MSEC;
-    tp->tv_nsec = (msec % _SEC_TO_MSEC) * _MSEC_TO_NSEC;
-
-    ret = 0;
-
-done:
-
-    return ret;
-}
-
-static long _syscall_gettimeofday(long n, long x1, long x2)
-{
-    struct timeval* tv = (struct timeval*)x1;
-    void* tz = (void*)x2;
-    int ret = -1;
-    uint64_t msec;
-
-    OE_UNUSED(n);
-
-    if (tv)
-        memset(tv, 0, sizeof(struct timeval));
-
-    if (tz)
-        memset(tz, 0, sizeof(struct timezone));
-
-    if (!tv)
-        goto done;
-
-    if ((msec = oe_get_time()) == (uint64_t)-1)
-        goto done;
-
-    tv->tv_sec = msec / _SEC_TO_MSEC;
-    tv->tv_usec = msec % _MSEC_TO_USEC;
-
-    ret = 0;
-
-done:
-    return ret;
 }
 
 static void _stat_to_oe_stat(struct stat* stat, struct oe_stat_t* oe_stat)
@@ -211,10 +144,6 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     /* Handle syscall internally if possible. */
     switch (n)
     {
-        case SYS_gettimeofday:
-            return _syscall_gettimeofday(n, x1, x2);
-        case SYS_clock_gettime:
-            return _syscall_clock_gettime(n, x1, x2);
         case SYS_mmap:
             return _syscall_mmap(n, x1, x2, x3, x4, x5, x6);
         default:

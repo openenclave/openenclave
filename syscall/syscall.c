@@ -844,6 +844,20 @@ static long _syscall(
             ret = (long)oe_nanosleep(req, rem);
             goto done;
         }
+        case OE_SYS_clock_gettime:
+        {
+            int clock_id = (int)arg1;
+            struct oe_timespec* cur_time = (struct oe_timespec*)arg2;
+            ret = (long)oe_clock_gettime(clock_id, cur_time);
+            goto done;
+        }
+        case OE_SYS_gettimeofday:
+        {
+            struct oe_timeval* tv = (struct oe_timeval*)arg1;
+            struct oe_timezone* tz = (struct oe_timezone*)arg2;
+            ret = (long)oe_gettimeofday(tv, tz);
+            goto done;
+        }
         default:
         {
             oe_errno = OE_ENOSYS;

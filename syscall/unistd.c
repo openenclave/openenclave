@@ -13,7 +13,6 @@
 #include <openenclave/internal/syscall/sys/utsname.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/internal/time.h>
 #include <openenclave/internal/trace.h>
 #include "mount.h"
 #include "syscall_t.h"
@@ -143,6 +142,34 @@ int oe_nanosleep(struct oe_timespec* req, struct oe_timespec* rem)
     int ret = 0;
     oe_syscall_nanosleep_ocall(&ret, req, rem);
     return ret;
+}
+
+int oe_clock_gettime(int clock_id, struct oe_timespec* cur_time)
+{
+    int ret = 0;
+    oe_syscall_clock_gettime_ocall(&ret, clock_id, cur_time);
+    return ret;
+}
+
+int oe_gettimeofday(struct oe_timeval* tv, struct oe_timezone* tz)
+{
+    int ret = -1;
+    if (tv)
+        memset(tv, 0, sizeof(struct oe_timeval));
+    if (tz)
+        memset(tz, 0, sizeof(struct oe_timezone));
+    if (!tv)
+        goto done;
+    int response = 0;
+    struct oe_timespec cur_time;
+    oe_syscall_clock_gettime_ocall(&response, 0, &cur_time);
+    if (response == -1)
+        goto done;
+    tv->tv_sec = cur_time.tv_sec;
+    tv->tv_usec = (unsigned long)cur_time.tv_nsec / 1000UL;
+    ret = 0;
+    done:
+        return ret;
 }
 
 oe_pid_t oe_getpid(void)

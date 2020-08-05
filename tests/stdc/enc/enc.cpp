@@ -11,7 +11,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/tests.h>
-#include <openenclave/internal/time.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -172,6 +171,8 @@ static void _allocation_failure_callback(
 static void _test_time_functions(void)
 {
     const uint64_t SEC_TO_USEC = 1000000UL;
+    const uint64_t SEC_TO_MSEC = 1000UL;
+    const uint64_t MSEC_TO_NSEC = 1000000UL;
     const uint64_t JAN_1_2018 = 1514786400UL * SEC_TO_USEC;
     const uint64_t JAN_1_2050 = 2524629600UL * SEC_TO_USEC;
     uint64_t now;
@@ -211,7 +212,9 @@ static void _test_time_functions(void)
     {
         const uint64_t SLEEP_SECS = 3;
 
-        uint64_t before = oe_get_time();
+        struct timespec ts;
+        clock_gettime(0, &ts);
+        uint64_t before = ((uint64_t)ts.tv_sec * SEC_TO_MSEC) + ((uint64_t)ts.tv_nsec / MSEC_TO_NSEC);
 
         /* Sleep for SLEEP_SECS seconds */
         {
@@ -220,8 +223,8 @@ static void _test_time_functions(void)
             OE_TEST(nanosleep(&req, &rem) == 0);
         }
 
-        uint64_t after = oe_get_time();
-
+        clock_gettime(0, &ts);
+        uint64_t after = ((uint64_t)ts.tv_sec * SEC_TO_MSEC) + ((uint64_t)ts.tv_nsec / MSEC_TO_NSEC);
         OE_TEST(after > before);
     }
 }

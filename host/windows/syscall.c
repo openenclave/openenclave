@@ -3032,3 +3032,69 @@ int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
     _set_errno(0);
     return 0;
 }
+
+/*
+**==============================================================================
+**
+** clock_gettime():
+**
+**==============================================================================
+*/
+
+/*
+**==============================================================================
+**
+** POSIX_TO_WINDOWS_EPOCH_TICKS:
+**
+** The ticks elapsed since 1970-01-01 00:00 (UTC). This value was derived with
+** the following function.
+**
+**     LONGLONG get_posix_to_windows_epoch_ticks()
+**     {
+**         SYSTEMTIME st = { .wYear = 1970, .wMonth = 1, .wDay = 1 };
+**         FILETIME ft;
+**         ULARGE_INTEGER x;
+**
+**         SystemTimeToFileTime(&st, &ft);
+**         x.u.LowPart = ft.dwLowDateTime;
+**         x.u.HighPart = ft.dwHighDateTime;
+**
+**         return x.QuadPart;
+**     }
+**
+**==============================================================================
+*/
+
+const LONGLONG POSIX_TO_WINDOWS_EPOCH_TICKS = 0X19DB1DED53E8000;
+
+/* Return milliseconds elapsed since the Epoch. */
+static void _time(struct oe_timespec* cur_time)
+{
+    FILETIME ft;
+    ULARGE_INTEGER x;
+    const LONGLONG TICKS_PER_MILLISECOND = 10000UL;
+    const LONGLONG MILLIS_PER_SEC = 1000UL;
+    const LONGLONG NANOS_PER_MILLI = 1000000UL;
+    GetSystemTimeAsFileTime(&ft);
+    x.u.LowPart = ft.dwLowDateTime;
+    x.u.HighPart = ft.dwHighDateTime;
+    x.QuadPart -= POSIX_TO_WINDOWS_EPOCH_TICKS;
+
+    uint64_t msec = (x.QuadPart / TICKS_PER_MILLISECOND);
+    cur_time->tv_sec = (msec / MILLIS_PER_SEC);
+    cur_time->tv_nsec = (msec % MILLIS_PER_SEC) * NANOS_PER_MILLI;
+}
+
+int oe_syscall_clock_gettime_ocall(int clock_id, struct oe_timespec* cur_time)
+{
+    if (!cur_time)
+        return -1;
+    memset(cur_time, 0, sizeof(struct oe_timespec));
+    if (clock_id != CLOCK_REALTIME)
+    {
+        /* Only supporting CLOCK_REALTIME */
+        return -1;
+    }
+    _time(&cur_time);
+    return 0;
+}
