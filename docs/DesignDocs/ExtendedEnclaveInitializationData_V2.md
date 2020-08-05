@@ -41,12 +41,15 @@ attractive.
 
 This update to the design aims to achieve the following goals:
 
-- Unify the APIs related to manage and access the additional code/data allowed
-  to be loaded into the enclave, between the EEID based solution and HW
-  CONFIGID/CONFIGSVN based solution.
+- Unify the APIs related to manage and access the additional content allowed to
+  be loaded into the enclave, between the EEID based solution and HW
+  CONFIGID/CONFIGSVN based solution. Note that the HW CONFIGID/CONFIGSVN feature
+  supports binding SGX Seal key with CONFIGID and/or CONFIGSVN. This updated
+  design does NOT attempt to support the same SGX Seal key binding feature in
+  EEID enclaves.
 - Add support for EEID enclave with heap/stack size and #TCS specified at
   enclave signing time.
-- Simplify EEID design/implementation, especially for EEID enclave with with
+- Simplify EEID design/implementation, especially for EEID enclave with
   heap/stack size and #TCS specified at enclave signing time.
 
 Compatibility with KSS based solution
@@ -85,28 +88,45 @@ to:
 
 ```C
 #ifdef EXPERIMENTAL_EEID
+typedef struct oe_sgx_eeid_measurement_context_
+{
+    /** internal state of the hash computation at the end of the enclave base
+     *  image before the measurement context page is added.
+     **/
+    uint32_t hash_state[10];
+    /** location (offset from the enclave base) of the EEID page in enclave
+     *  memory, heap and thread sections immediately thereafter.
+     **/
+    uint64_t vaddr;
+    /** entry point of the base enclave, matches TCS.OENTRY */
+    uint64_t entry_point;
+} oe_sgx_eeid_measurement_context_t;
+
 typedef struct oe_sgx_eeid_t_
 {
-    uint32_t version;        /* version number of the structure */
-    uint32_t hash_state[10]; /* internal state of the hash computation at the
-                                end of the enclave base image */
-    uint8_t config_id[32];   /* identity of the code/data allowed to be
-                                loaded into the enclave after enclave init */
-    unit16_t config_svn;     /* minimum SVN of the code/data allowed to be
-                                loaded into the enclave after enclave init */
-    oe_enclave_size_settings_t size_settings; /* heap, stack and thread
-                                                 configuration for this instance.
-                                                 if all-0, indicating heap/stack
-                                                 size and #TCS are specified at
-                                                 enclave signing time */
-    uint64_t vaddr;          /* location of the EEID page in enclave memory,
-                                heap and thread sections immediately thereafter */
-    uint64_t entry_point;    /* entry point of the image, for SGX, matches
-                                TCS.OENTRY */
-    uint64_t signature_size; /* size of signature, max size is
-                                4096-sizeof(oe_eeid_t) bytes */
-    uint8_t signature[];     /* Buffer holding the signature */
+    /** version number of the structure */
+    uint32_t version;
+    /** measurement context for EEID enclave attestation verifier, also included
+     *  in the base enclave measurement */
+    oe_sgx_eeid_measurement_context context;
+    /** SGX SIGSTRUCT of the base enclave */
+    uint8_t sigstruct[1808];
+    /** heap, stack and thread configuration selected at enclave loading time
+     * if all-0, indicating heap/stack size and #TCS are specified at base
+     * enclave signing time
+     **/
+    oe_enclave_size_settings_t size_settings_dynamic;
+    /** identity of the additional content allowed to be loaded into the
+     * enclave post enclave init
+     **/
+    uint8_t config_id[64];
+    /** Optional subsidiary information for the additional content, for
+     *  example, a version number
+     **/
+    unit16_t config_svn;
 } oe_sgx_eeid_t;
+
+
 #endif
 ```
 
@@ -166,7 +186,7 @@ typedef struct _oe_enclave_pre_measured_content
      *  into the enclave post enclave initialization. The identity is covered
      *  by TEE generated Enclave Attestation Evidence.
      */
-    uint8_t config_id[32];
+    uint8_t config_id[64];
     uint16_t config_svn;
 
     /** Optional config data to be loaded automatically by the enclave runtime.
@@ -183,14 +203,14 @@ Supporting heap/stack size and #TCS specified at enclave signing time or loading
 -------------------------------------------------------------------------------------
 
 For SGX, to simplify the design and implementation, the updated design adds a
-*Guard/EEID* page in the enclave memory layout between the Code and Initialized
+*Guard* page or a *EEID/context* page in the enclave memory layout between the Code and Initialized
 Data pages and the first heap page, for both the regular enclave and the EEID
 enclave.
 
 | OE SGX Enclave Memory Layout    |
 | :------------------------------ |
 | Code and Initialized Data Pages |
-| *Guard Page or EEID Page*       |
+| *Guard or EEID/context Page*    |
 | Heap Pages                      |
 | Guard Page                      |
 | Stack pages                     |
@@ -220,13 +240,24 @@ For an EEID enclave, the enclave loader records the Guard Page location, adds
 the heap and the thread sections, and then the EEID page at the Guard Page
 location, as read-only. The Guard/EEID page location is fixed, as
 (heap_base-4KB). The EEID initialization code inside the enclave always accesses
-the EEID data structure at the fixed location.
+the EEID data structure at the fixed location. When signing the base enclave of
+an EEID enclave, the enclave signer adds the eeid measurement context page,
+instead of the EEID page. This mechanism makes sure the EEID enclave attestation
+verifier can detect loader derivation from the SW convention. A malicious loader
+might `EREMOVE` an initialized data page, `EADD` the EEID page in its place, and
+set `vaddr` to match where the EEID page is actually added. The EEID enclave
+attestation verifier will not detect any abnormality when verifying the EEID
+enclave measurement using the info from the EEID page, but with the measurement
+context following the SW convention included in the base enclave measurement,
+the attestation verifier will detect base enclave measurement mismatch using the
+info from the EEID page.
 
 For EEID enclaves with heap/stack size and #TCS specified at enclave signing
-time, the loader only adds one extra measured page after the original base
-enclave is measured by the CPU. The `hash_state` in the EEID data structure
-records the measurement after the heap and thread sections are added. This type
-of EEID enclave's SECS.Enclave_Size is determined by the base enclave.
+time, the loader only adds one extra measured page after the heap and thread
+sections of the original base enclave is measured by the CPU. The `hash_state`
+in the EEID data structure records the measurement after the heap and thread
+sections are added. This type of EEID enclave's SECS.Enclave_Size is determined
+by the base enclave.
 
 For EEID enclaves with heap/stack size and #TCS selected by the loader at
 enclave loading time, the loader adds heap pages, thread sections and the EEID
@@ -235,43 +266,18 @@ The `hash_state` records the measurement before the heap and thread sections are
 added. This type of of EEID enclave's Enclave_Size in `SECS` is fixed as a large
 value, for example 64GB.
 
-As discussed in the original EEID design doc, an EEID enclave with
-heap/stack size and #TCS selected by the loader at enclave load time needs to
-have one thread section in the base image to capture the expected `TCS.OENTRY`
-value in the base enclave measurement, which does complicate the base enclave
-measurement recreation algorithm used in EEID enclave attestation verification.
-This updated design addresses the need to capture the expected `TCS.OENTRY`
-value in a different way.
-
-`oe_sgx_enclave_image_info_t` is part of the initialized data of the SGX
-enclave, and covered by the base enclave measurement. The enclave loader will
-include the expected `TCS.OENTRY` value in `oe_sgx_enclave_image_info_t`. A new
-`entry_rva` member is added to `oe_sgx_enclave_image_info_t` definition:
-
-```C
-/* Extends oe_enclave_properties_header_t base type */
-typedef struct _oe_sgx_enclave_image_info_t
-{
-    uint64_t oeinfo_rva;
-    uint64_t oeinfo_size;
-    uint64_t reloc_rva;
-    uint64_t reloc_size;
-    uint64_t heap_rva; /* heap size is in header.sizesettings */
-    uint64_t enclave_size;
-    uint64_t entry_rva; /*from oeimage.entry_rva, must match TCS.OENTRY */
-} oe_sgx_enclave_image_info_t;
-```
-
-The EEID initialization code inside the enclave makes sure the `entry_point` in
-the EEID data structure matches `entry_rva` in `oe_sgx_enclave_image_info_t`.
-
-With this change, the base enclave of an EEID enclave with heap/stack size and
-#TCS selected by the loader can safely use  `NumStackPages=0`, `NumHeapPages=0`,
-and `NumTCS=0`. Recording the expected `TCS.OENTRY` value in
-`oe_sgx_enclave_image_info_t` of a SGX enclave (regular enclave or EEID enclave)
-also simplifies the implementation of Enclave Dynamic Memory Management (EDMM)
-based thread context creation support in the future, where the enclave code
-needs to verify the content of a TCS page added by the OS.
+As discussed in the original EEID design doc, an EEID enclave with heap/stack
+size and #TCS selected by the loader at enclave load time needs to have one
+thread section in the base image to capture the expected `TCS.OENTRY` value in
+the base enclave measurement, which does complicate the base enclave measurement
+recreation algorithm used in EEID enclave attestation verification. This updated
+design addresses the need to capture the expected `TCS.OENTRY` value in a
+different way. The `entry_point` field in the measurement context, part of the
+EEID page, is used by the attestation verifier to recreate the base enclave
+measurement. If the malicious loader sets it to a spoofed value, the attestation
+verifier will detect base enclave measurement mismatch. With this mechanism, the
+base enclave of an EEID enclave with heap/stack size and #TCS selected by the
+loader can safely use  `NumStackPages=0`, `NumHeapPages=0`, and `NumTCS=0`.
 
 Preserving base enclave properties in the signature
 ---------------------------------------------------
@@ -295,28 +301,30 @@ Verification of attestation evidence with EEID still requires a fully populated
 `oe_eeid_t` and it performs the following steps (not necessarily in this order):
 
 - Create a SHA256 context and restore the internal state to `hash_state`,
-- re-create the base image hash from the SHA256 context
-- measure the additional pages added after the base image. For EEID enclave with
-  the size of heap/stack and #TCS specified at enclave signing time, the only
-  additional page is the `oe_eeid_t` page. For EEID enclave with the size of
-  heap/stack and #TCS selected by the enclave loader at enclave loading time,
-  the additional pages include the heap and thread sections with stack using the
-  `size_settings` in `oe_eeid_t`. Note that the number of TCS pages determines
-  the number of thread sections. The measurement of the heap and thread section
-  starts at address `vaddr`+4KB and includes `entry_point` in the TCS control
-  pages. The measurement of the eeid page at `vaddr` is added last.
+- re-create the base enclave measurement from the SHA256 context, by adding the
+  measurement context page at address `vaddr`,
+- restore the SHA256 context to `hash_state`, measure the additional pages added
+  after the base image. For EEID enclave with the size of heap/stack and #TCS
+  specified at enclave signing time, the only additional page is the `oe_eeid_t`
+  page. For EEID enclave with the size of heap/stack and #TCS selected by the
+  enclave loader at enclave loading time, the additional pages include the heap
+  and thread sections with stack using the `size_settings` in `oe_eeid_t`. Note
+  that the number of TCS pages determines the number of thread sections. The
+  measurement of the heap and thread section starts at address `vaddr` and
+  includes `entry_point` in the TCS control pages. The measurement of the eeid
+  page at `vaddr` is added last.
 - check that the final hash matches the hash reported in the extended report
   (e.g. MRENCLAVE),
 - check the identity of the signer of the extended image (e.g. public key
   corresponding to `OE_DEBUG_SIGN_KEY`),
-- check that the base image signature matches the ones in the extended report,
-  except the image hash field (e.g. `sigstruct.EnclaveHash` in the case of SGX)
-  and the signature section
-- check that the base image hash matches the value in the base image signature
-  (e.g. `sigstruct.EnclaveHash` in the case of SGX), and finally
-- check the signature of the base image (e.g. `sigstruct` in the case of SGX;
-  note this is integrity-protected by the hardware because of it's inclusion in
-  the EEID pages).
+- check that the base enclave `sigstruct` would produce the SGX `REPORT` fields
+  in the extended report, except the image hash field (e.g.
+  `sigstruct.EnclaveHash`) and the signature section
+- check that the base enclave measurement matches the value in the base enclave
+  `sigstruct`, and finally
+- check `sigstruct` signature of the base enclave (note this is
+  integrity-protected by the hardware because of it's inclusion in the EEID
+  pages).
 
 The claims produced by the enclave attestation verification should include
 config_id and config_svn, as well as the base enclave's identity information
@@ -327,12 +335,13 @@ the heap and thread sections) after the base image, by checking the expected
 measurements. So the base enclave's identity information recorded in the EEID
 page can be trusted to reflect the base enclave loaded.
 
-As the enclave developer owns the definition of config_id and config_svn, the
-developer is responsible for providing the configuration data identified by
-config_id/config_svn to the Relying Party, if it's necessary for the Relying
-Party to analyze the configuration data. The Relying Party should make sure the
-identity of the configuration data received matches config_id/config_svn claims
-produced by the enclave attestation verification process.
+If the enclave developer choses to not use the default definition of config_id
+and config_svn, the developer is responsible for providing the additional content
+identified by config_id/config_svn to the Relying Party, if it's necessary
+for the Relying Party to analyze the additional content. The Relying Party
+should make sure the identity of the additional content received matches
+config_id/config_svn claims produced by the enclave attestation verification
+process.
 
 For SGX KSS feature based solution, the attestation evidence verification
 implementation will be different, but the claims produced will also include
