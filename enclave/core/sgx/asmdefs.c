@@ -37,7 +37,7 @@ OE_XSAVE_INITIAL_STATE[MINIMAL_XSTATE_AREA_LENGTH/sizeof(uint32_t)] = {
     /* XSAVE Header */
     /* Clear XSTATE_BV, set XCOMP_BV[63] = 1 to support compaction mode;
      * SGX-capable systems should support it */
-    0, 0, 0, 0x80000000,
+    0, 0, 0, 0x00000000,
 
     /* Reserved XSAVE header bits */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
