@@ -73,7 +73,7 @@ exit:
  * the claim name, claim list, and its size, returns the value stored with that
  * claim name in the list.
  */
-static void* _find_claim(
+static const oe_claim_t* _find_claim(
     const oe_claim_t* claims,
     size_t claims_size,
     const char* name)
@@ -81,7 +81,7 @@ static void* _find_claim(
     for (size_t i = 0; i < claims_size; i++)
     {
         if (strcmp(claims[i].name, name) == 0)
-            return claims[i].value;
+            return &(claims[i]);
     }
     return NULL;
 }
@@ -108,6 +108,7 @@ bool Attestation::attest_remote_evidence(
     oe_result_t verifier_result = OE_OK;
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
+    const oe_claim_t* claim;
 
     // While attesting, the remote evidence being attested must not be tampered
     // with. Ensure that it has been copied over to the enclave.
@@ -144,15 +145,18 @@ bool Attestation::attest_remote_evidence(
         goto exit;
     }
 
-    uint8_t* value;
-
     // 1) Validate the signer id.
-    value = (uint8_t*)_find_claim(claims, claims_length, OE_CLAIM_SIGNER_ID);
+    if ((claim = _find_claim(claims, claims_length, OE_CLAIM_SIGNER_ID)) ==
+        NULL)
+    {
+        TRACE_ENCLAVE("Could not find claim.");
+        goto exit;
+    };
 
-    if (memcmp(value, m_enclave_mrsigner, 32) != 0)
+    if (memcmp(claim->value, m_enclave_mrsigner, 32) != 0)
     {
         TRACE_ENCLAVE("signer_id checking failed.");
-        TRACE_ENCLAVE("signer_id %s", value);
+        TRACE_ENCLAVE("signer_id %s", claim->value);
 
         for (int j = 0; j < 32; j++)
         {
@@ -166,26 +170,36 @@ bool Attestation::attest_remote_evidence(
 
         for (int j = 0; j < 32; j++)
         {
-            TRACE_ENCLAVE("signer_id)[%d]=0x%0x\n", j, (uint8_t)value[j]);
+            TRACE_ENCLAVE(
+                "signer_id)[%d]=0x%0x\n", j, (uint8_t)claim->value[j]);
         }
         TRACE_ENCLAVE("m_enclave_mrsigner %s", m_enclave_mrsigner);
         goto exit;
     }
 
     // 2) Check the enclave's product id.
-    value = (uint8_t*)_find_claim(claims, claims_length, OE_CLAIM_PRODUCT_ID);
+    if ((claim = _find_claim(claims, claims_length, OE_CLAIM_PRODUCT_ID)) ==
+        NULL)
+    {
+        TRACE_ENCLAVE("Could not find claim.");
+        goto exit;
+    };
 
-    if (value[0] != 1)
+    if (claim->value[0] != 1)
     {
         TRACE_ENCLAVE("product_id checking failed.");
         goto exit;
     }
 
     // 3) Check the enclave's security version.
-    value =
-        (uint8_t*)_find_claim(claims, claims_length, OE_CLAIM_SECURITY_VERSION);
+    if ((claim = _find_claim(
+             claims, claims_length, OE_CLAIM_SECURITY_VERSION)) == NULL)
+    {
+        TRACE_ENCLAVE("Could not find claim.");
+        goto exit;
+    };
 
-    if (value[0] < 1)
+    if (claim->value[0] < 1)
     {
         TRACE_ENCLAVE("security_version checking failed.");
         goto exit;
