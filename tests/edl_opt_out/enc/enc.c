@@ -24,6 +24,8 @@ void enc_edl_opt_out()
     OE_TEST(oe_syscall_write_ocall(NULL, 0, NULL, 0) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_pread_ocall(NULL, 0, NULL, 0, 0) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_pwrite_ocall(NULL, 0, NULL, 0, 0) == OE_UNSUPPORTED);
+    OE_TEST(oe_syscall_fsync_ocall(NULL, 0) == OE_UNSUPPORTED);
+    OE_TEST(oe_syscall_fdatasync_ocall(NULL, 0) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_opendir_ocall(NULL, NULL) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_readdir_ocall(NULL, 0, NULL) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_rewinddir_ocall(0) == OE_UNSUPPORTED);
