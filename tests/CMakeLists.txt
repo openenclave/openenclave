@@ -129,6 +129,10 @@ if (UNIX
     if (WITH_EEID)
       add_subdirectory(eeid_plugin)
     endif ()
+
+    if (BUILD_OPENSSL)
+      add_subdirectory(openssl)
+    endif ()
   endif ()
 
   add_subdirectory(c99_compliant)
