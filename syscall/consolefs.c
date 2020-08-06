@@ -401,6 +401,14 @@ done:
     return -1;
 }
 
+static int _consolefs_fsync(oe_fd_t* file)
+{
+    OE_UNUSED(file);
+    OE_RAISE_ERRNO(OE_EINVAL);
+done:
+    return -1;
+}
+
 static oe_file_ops_t _ops = {
     .fd.read = _consolefs_read,
     .fd.write = _consolefs_write,
@@ -415,6 +423,8 @@ static oe_file_ops_t _ops = {
     .pread = _consolefs_pread,
     .pwrite = _consolefs_pwrite,
     .getdents64 = _consolefs_getdents64,
+    .fsync = _consolefs_fsync,
+    .fdatasync = _consolefs_fsync,
 };
 
 static oe_file_ops_t _get_ops(void)

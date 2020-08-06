@@ -172,6 +172,11 @@ oe_result_t _oe_syscall_pwrite_ocall(
     size_t count,
     oe_off_t offset);
 oe_result_t _oe_syscall_close_ocall(int* _retval, oe_host_fd_t fd);
+oe_result_t _oe_syscall_flock_ocall(
+    int* _retval,
+    oe_host_fd_t fd,
+    int operation);
+oe_result_t _oe_syscall_fsync_ocall(int* _retval, oe_host_fd_t fd);
 oe_result_t _oe_syscall_dup_ocall(oe_host_fd_t* _retval, oe_host_fd_t oldfd);
 oe_result_t _oe_syscall_opendir_ocall(uint64_t* _retval, const char* name);
 oe_result_t _oe_syscall_readdir_ocall(
@@ -357,6 +362,15 @@ oe_result_t _oe_syscall_flock_ocall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_syscall_flock_ocall, oe_syscall_flock_ocall);
+
+oe_result_t _oe_syscall_fsync_ocall(int* _retval, oe_host_fd_t fd)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(fd);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_syscall_fsync_ocall, oe_syscall_fsync_ocall);
+OE_WEAK_ALIAS(_oe_syscall_fsync_ocall, oe_syscall_fdatasync_ocall);
 
 oe_result_t _oe_syscall_dup_ocall(oe_host_fd_t* _retval, oe_host_fd_t oldfd)
 {

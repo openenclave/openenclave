@@ -197,6 +197,20 @@ int oe_syscall_flock_ocall(oe_host_fd_t fd, int operation)
     return flock((int)fd, operation);
 }
 
+int oe_syscall_fsync_ocall(oe_host_fd_t fd)
+{
+    errno = 0;
+
+    return fsync((int)fd);
+}
+
+int oe_syscall_fdatasync_ocall(oe_host_fd_t fd)
+{
+    errno = 0;
+
+    return fdatasync((int)fd);
+}
+
 oe_host_fd_t oe_syscall_dup_ocall(oe_host_fd_t oldfd)
 {
     errno = 0;

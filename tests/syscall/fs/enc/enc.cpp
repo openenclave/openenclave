@@ -107,6 +107,10 @@ static void test_create_file(FILE_SYSTEM& fs, const char* tmp_dir)
         OE_TEST(n == sizeof(ALPHABET));
     }
 
+    /* Sync the file. */
+    OE_TEST(fs.fdatasync(file) == 0);
+    OE_TEST(fs.fsync(file) == 0);
+
     /* Close the file. */
     OE_TEST(fs.close(file) == 0);
 }

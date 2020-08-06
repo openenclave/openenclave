@@ -69,6 +69,8 @@ oe_syscall_pread_ocall | pread | - |
 oe_syscall_pwrite_ocall | pwrite | - |
 oe_syscall_close_ocall | close | - |
 oe_syscall_flock_ocall | flock | - |
+oe_syscall_fsync_ocall | fsync | - |
+oe_syscall_fdatasync_ocall | fdatasync | - |
 oe_syscall_dup_ocall | dup | Required by performing I/O via console. |
 oe_syscall_opendir_ocall | opendir | - |
 oe_syscall_readdir_ocall | readdir | - |
