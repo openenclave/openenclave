@@ -692,7 +692,7 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
             image, "_tbss_align", image->tbss_align);
 
         aligned_size +=
-            oe_round_up_to_multiple(image->tbss_size, image->tbss_size);
+            oe_round_up_to_multiple(image->tbss_size, image->tbss_align);
     }
 
     if (aligned_size > OE_THREAD_LOCAL_SPACE)
