@@ -7,7 +7,8 @@
 
 /* Note: The variables below are initialized during enclave loading */
 
-extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
+OE_EXPORT extern volatile const oe_sgx_enclave_properties_t
+    oe_enclave_properties_sgx;
 
 /**
  *****************************************************************************
@@ -124,9 +125,9 @@ extern volatile const oe_sgx_enclave_properties_t oe_enclave_properties_sgx;
  *
  **/
 
-static volatile uint64_t _enclave_rva;
-static volatile uint64_t _reloc_rva;
-static volatile uint64_t _reloc_size;
+OE_EXPORT volatile uint64_t _enclave_rva;
+OE_EXPORT volatile uint64_t _reloc_rva;
+OE_EXPORT volatile uint64_t _reloc_size;
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 oe_eeid_t* oe_eeid = NULL;

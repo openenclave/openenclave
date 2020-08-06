@@ -606,7 +606,7 @@ done:
     return result;
 }
 
-static oe_result_t _get_symbol_rva(
+static oe_result_t _get_dynamic_symbol_rva(
     oe_enclave_image_t* image,
     const char* name,
     uint64_t* rva)
@@ -617,7 +617,7 @@ static oe_result_t _get_symbol_rva(
     if (!image || !name || !rva)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (elf64_find_symbol_by_name(&image->u.elf.elf, name, &sym) != 0)
+    if (elf64_find_dynamic_symbol_by_name(&image->u.elf.elf, name, &sym) != 0)
         goto done;
 
     *rva = sym.st_value;
@@ -626,7 +626,7 @@ done:
     return result;
 }
 
-static oe_result_t _set_uint64_t_symbol_value(
+static oe_result_t _set_uint64_t_dynamic_symbol_value(
     oe_enclave_image_t* image,
     const char* name,
     uint64_t value)
@@ -635,7 +635,7 @@ static oe_result_t _set_uint64_t_symbol_value(
     elf64_sym_t sym = {0};
     uint64_t* symbol_address = NULL;
 
-    if (elf64_find_symbol_by_name(&image->u.elf.elf, name, &sym) != 0)
+    if (elf64_find_dynamic_symbol_by_name(&image->u.elf.elf, name, &sym) != 0)
         goto done;
 
     symbol_address = (uint64_t*)(image->image_base + sym.st_value);
@@ -681,33 +681,39 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
     oeprops->image_info.oeinfo_size = sizeof(oe_sgx_enclave_properties_t);
 
     /* Set _enclave_rva to its own rva offset*/
-    OE_CHECK(_get_symbol_rva(image, "_enclave_rva", &enclave_rva));
-    OE_CHECK(_set_uint64_t_symbol_value(image, "_enclave_rva", enclave_rva));
+    OE_CHECK(_get_dynamic_symbol_rva(image, "_enclave_rva", &enclave_rva));
+    OE_CHECK(
+        _set_uint64_t_dynamic_symbol_value(image, "_enclave_rva", enclave_rva));
 
     /* reloc right after image */
     oeprops->image_info.reloc_rva = image->image_size;
     oeprops->image_info.reloc_size = image->reloc_size;
-    OE_CHECK(
-        _set_uint64_t_symbol_value(image, "_reloc_rva", image->image_size));
-    OE_CHECK(
-        _set_uint64_t_symbol_value(image, "_reloc_size", image->reloc_size));
+    OE_CHECK(_set_uint64_t_dynamic_symbol_value(
+        image, "_reloc_rva", image->image_size));
+    OE_CHECK(_set_uint64_t_dynamic_symbol_value(
+        image, "_reloc_size", image->reloc_size));
 
     /* heap right after image */
     oeprops->image_info.heap_rva = image->image_size + image->reloc_size;
 
     if (image->tdata_size)
     {
-        _set_uint64_t_symbol_value(image, "_tdata_rva", image->tdata_rva);
-        _set_uint64_t_symbol_value(image, "_tdata_size", image->tdata_size);
-        _set_uint64_t_symbol_value(image, "_tdata_align", image->tdata_align);
+        _set_uint64_t_dynamic_symbol_value(
+            image, "_tdata_rva", image->tdata_rva);
+        _set_uint64_t_dynamic_symbol_value(
+            image, "_tdata_size", image->tdata_size);
+        _set_uint64_t_dynamic_symbol_value(
+            image, "_tdata_align", image->tdata_align);
 
         aligned_size +=
             oe_round_up_to_multiple(image->tdata_size, image->tdata_align);
     }
     if (image->tbss_size)
     {
-        _set_uint64_t_symbol_value(image, "_tbss_size", image->tbss_size);
-        _set_uint64_t_symbol_value(image, "_tbss_align", image->tbss_align);
+        _set_uint64_t_dynamic_symbol_value(
+            image, "_tbss_size", image->tbss_size);
+        _set_uint64_t_dynamic_symbol_value(
+            image, "_tbss_align", image->tbss_align);
 
         aligned_size +=
             oe_round_up_to_multiple(image->tbss_size, image->tbss_size);
