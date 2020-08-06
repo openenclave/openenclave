@@ -333,6 +333,7 @@ list(
   APPEND
   PLATFORM_HOST_ONLY_SRC
   ../common/attest_plugin.c
+  ../common/custom_claims.c
   ../common/datetime.c
   ../common/safecrt.c
   ../common/sha.c

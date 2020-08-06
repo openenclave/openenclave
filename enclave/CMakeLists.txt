@@ -35,6 +35,7 @@ add_enclave_library(
   STATIC
   attest_plugin.c
   ../common/attest_plugin.c
+  ../common/custom_claims.c
   ../common/datetime.c
   ../common/sha.c
   asym_keys.c

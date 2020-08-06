@@ -85,6 +85,7 @@ if (UNIX
     add_subdirectory(child_thread)
     add_subdirectory(cppException)
     add_subdirectory(crypto_crls_cert_chains)
+    add_subdirectory(custom_claims)
     add_subdirectory(debug-mode)
     add_subdirectory(ecall)
     add_subdirectory(ecall_ocall)
