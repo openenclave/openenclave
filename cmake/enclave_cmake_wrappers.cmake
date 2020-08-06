@@ -94,10 +94,10 @@ function (enclave_link_libraries NAME)
 endfunction (enclave_link_libraries)
 
 # Wrapper of `set_tests_properties`
-macro (set_enclave_tests_properties NAME PROPERTIES)
-  set_tests_properties(${NAME} PROPERTIES ${ARGN})
+macro (set_enclave_tests_properties NAME PROPERTIES PROP)
+  set_tests_properties(${NAME} PROPERTIES ${PROP} "${ARGN}")
   if (TEST ${NAME}-lvi-cfg)
-    set_tests_properties(${NAME}-lvi-cfg PROPERTIES ${ARGN})
+    set_tests_properties(${NAME}-lvi-cfg PROPERTIES ${PROP} "${ARGN}")
   endif ()
 endmacro (set_enclave_tests_properties)
 
