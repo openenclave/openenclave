@@ -17,3 +17,7 @@
 	url = https://github.com/llvm-mirror/compiler-rt
 	branch = release_70
 	ignore = all
+[submodule "3rdparty/openssl/openssl"]
+	path = 3rdparty/openssl/openssl
+	url = https://github.com/openssl/openssl
+	branch = OpenSSL_1_1_1-stable
