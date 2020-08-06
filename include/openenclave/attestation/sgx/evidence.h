@@ -64,7 +64,19 @@ OE_EXTERNC_BEGIN
     }
 
 /**
- * SGX specific claim: for the report data embedded in the SGX quote.
+ * SGX specific claim: SGX Quote verification collateral.
+ */
+#define OE_CLAIM_SGX_TCB_INFO "sgx_tcb_info"
+#define OE_CLAIM_SGX_TCB_ISSUER_CHAIN "sgx_tcb_issuer_chain"
+#define OE_CLAIM_SGX_PCK_CRL "sgx_pck_crl"
+#define OE_CLAIM_SGX_ROOT_CA_CRL "sgx_root_ca_crl"
+#define OE_CLAIM_SGX_CRL_ISSUER_CHAIN "sgx_crl_issuer_chain"
+#define OE_CLAIM_SGX_QE_ID_INFO "sgx_qe_id_info"
+#define OE_CLAIM_SGX_QE_ID_ISSUER_CHAIN "sgx_qe_id_issuer_chain"
+#define OE_SGX_CLAIMS_COUNT 7
+
+/**
+ * Additional SGX specific claim: for the report data embedded in the SGX quote.
  */
 #define OE_CLAIM_SGX_REPORT_DATA "sgx_report_data"
 

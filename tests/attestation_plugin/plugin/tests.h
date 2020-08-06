@@ -22,6 +22,9 @@ void verify_sgx_evidence(
     size_t evidence_size,
     const uint8_t* endorsements,
     size_t endorsements_size,
+    const uint8_t*
+        expected_endorsements, // validate endorsements related claims
+    size_t expected_endorsements_size,
     const uint8_t* custom_claims,
     size_t custom_claims_size);
 

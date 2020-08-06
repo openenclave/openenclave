@@ -34,6 +34,8 @@ void host_verify(
         evidence_size,
         endorsements,
         endorsements_size,
+        endorsements,
+        endorsements_size,
         test_claims,
         TEST_CLAIMS_SIZE);
 }

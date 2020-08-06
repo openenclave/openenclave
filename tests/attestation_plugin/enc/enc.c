@@ -58,7 +58,7 @@ static void _test_sgx_remote()
     OE_TEST_CODE(
         oe_attester_select_format(&_ecdsa_uuid, 1, &selected_format), OE_OK);
 
-    // Get a remote attestation report.
+    // Get evidence.
     printf("====== running _test_sgx_remote #1: Just evidence\n");
     OE_TEST_CODE(
         oe_get_evidence(
@@ -77,11 +77,20 @@ static void _test_sgx_remote()
     printf("    ====== evidence_size=%d\n", evidence_size);
 
     verify_sgx_evidence(
-        &selected_format, true, evidence, evidence_size, NULL, 0, NULL, 0);
+        &selected_format,
+        true,
+        evidence,
+        evidence_size,
+        NULL,
+        0,
+        NULL,
+        0,
+        NULL,
+        0);
 
     OE_TEST(oe_free_evidence(evidence) == OE_OK);
 
-    // Get a remote report with endorsements.
+    // Get evidence with endorsements.
     printf("====== running _test_sgx_remote #2: + Endorsements\n");
     OE_TEST_CODE(
         oe_get_evidence(
@@ -102,12 +111,28 @@ static void _test_sgx_remote()
         evidence_size,
         endorsements_size);
 
+    printf("====== verify evidence by passing NULL endorsements\n");
+    verify_sgx_evidence(
+        &selected_format,
+        true,
+        evidence,
+        evidence_size,
+        NULL, // endorsements
+        0,
+        endorsements, // expected_endorsements
+        endorsements_size,
+        NULL,
+        0);
+
+    printf("====== verify evidence by passing non-NULL endorsements\n");
     verify_sgx_evidence(
         &selected_format,
         true,
         evidence,
         evidence_size,
         endorsements,
+        endorsements_size,
+        endorsements, // expected_endorsements
         endorsements_size,
         NULL,
         0);
@@ -142,6 +167,8 @@ static void _test_sgx_remote()
         true,
         evidence,
         evidence_size,
+        endorsements,
+        endorsements_size,
         endorsements,
         endorsements_size,
         test_claims,
@@ -183,6 +210,8 @@ static void _test_sgx_remote()
         evidence_size,
         endorsements,
         endorsements_size,
+        endorsements,
+        endorsements_size,
         NULL,
         0);
     OE_TEST(oe_free_evidence(evidence) == OE_OK);
@@ -208,6 +237,8 @@ static void _test_sgx_remote()
         false,
         evidence,
         evidence_size,
+        endorsements,
+        endorsements_size,
         endorsements,
         endorsements_size,
         NULL,
@@ -252,7 +283,16 @@ static void _test_sgx_local()
             0) == OE_OK);
 
     verify_sgx_evidence(
-        &selected_format, true, evidence, evidence_size, NULL, 0, NULL, 0);
+        &selected_format,
+        true,
+        evidence,
+        evidence_size,
+        NULL,
+        0,
+        NULL,
+        0,
+        NULL,
+        0);
 
     OE_TEST(oe_free_evidence(evidence) == OE_OK);
 
@@ -276,6 +316,8 @@ static void _test_sgx_local()
         true,
         evidence,
         evidence_size,
+        NULL,
+        0,
         NULL,
         0,
         test_claims,
