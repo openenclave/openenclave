@@ -364,6 +364,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                         cpack -D CPACK_NUGET_COMPONENT_INSTALL=ON -DCPACK_COMPONENTS_ALL=OEHOSTVERIFY && \
                         copy tests\\host_verify\\host\\*.der ${WORKSPACE}\\samples\\host_verify && \
                         copy tests\\host_verify\\host\\*.bin ${WORKSPACE}\\samples\\host_verify && \
+                        if exist C:\\oe (rmdir C:\\oe) && \
                         nuget.exe install open-enclave.OEHOSTVERIFY -Source ${WORKSPACE}\\build -OutputDirectory C:\\oe -ExcludeVersion && \
                         xcopy /E C:\\oe\\open-enclave.OEHOSTVERIFY\\openenclave C:\\openenclave\\ && \
                         pushd ${WORKSPACE}\\samples\\host_verify && \
