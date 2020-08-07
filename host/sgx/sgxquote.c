@@ -172,7 +172,9 @@ static void _load_quote_ex_library_once(void)
     sgx_att_key_id_ext_t* local_key_id = NULL;
     oe_result_t result = OE_UNEXPECTED;
 
-    if (_load_sgx_dcap_ql() && SGX_DCAP_IN_PROCESS_QUOTING())
+    // First test if DCAP in-process quoting is requested.
+    // If not, there is no need to load DCAP without using it.
+    if (SGX_DCAP_IN_PROCESS_QUOTING() && _load_sgx_dcap_ql())
     {
         OE_TRACE_INFO("DCAP installed and set for in-process quoting.");
         _quote_ex_library.use_dcap_library_instead = true;
