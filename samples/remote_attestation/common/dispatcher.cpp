@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "dispatcher.h"
+#include <openenclave/attestation/attester.h>
 #include <openenclave/attestation/sgx/report.h>
 #include <openenclave/enclave.h>
 
@@ -58,9 +59,9 @@ exit:
 }
 
 /**
- * Return the public key of this enclave along with the enclave's remote report.
- * The enclave that receives the key will use the remote report to attest this
- * enclave.
+ * Return the public key of this enclave along with the enclave's remote
+ * evidence. The enclave that receives the key will use the remote evidence to
+ * attest this enclave.
  */
 int ecall_dispatcher::get_remote_report_with_pubkey(
     uint8_t** pem_key,
@@ -69,8 +70,8 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
     size_t* remote_report_size)
 {
     uint8_t pem_public_key[512];
-    uint8_t* report = NULL;
-    size_t report_size = 0;
+    uint8_t* evidence = NULL;
+    size_t evidence_size = 0;
     uint8_t* key_buf = NULL;
     int ret = 1;
 
@@ -83,21 +84,21 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
 
     m_crypto->retrieve_public_key(pem_public_key);
 
-    // Generate a remote report for the public key so that the enclave that
+    // Generate a remote evidence for the public key so that the enclave that
     // receives the key can attest this enclave.
-    if (m_attestation->generate_remote_report(
-            pem_public_key, sizeof(pem_public_key), &report, &report_size))
+    if (m_attestation->generate_remote_evidence(
+            pem_public_key, sizeof(pem_public_key), &evidence, &evidence_size))
     {
-        // Allocate memory on the host and copy the report over.
-        *remote_report = (uint8_t*)oe_host_malloc(report_size);
+        // Allocate memory on the host and copy the evidence over.
+        *remote_report = (uint8_t*)oe_host_malloc(evidence_size);
         if (*remote_report == NULL)
         {
             ret = OE_OUT_OF_MEMORY;
             goto exit;
         }
-        memcpy(*remote_report, report, report_size);
-        *remote_report_size = report_size;
-        oe_free_report(report);
+        memcpy(*remote_report, evidence, evidence_size);
+        *remote_report_size = evidence_size;
+        oe_free_evidence(evidence);
 
         key_buf = (uint8_t*)oe_host_malloc(512);
         if (key_buf == NULL)
@@ -121,8 +122,8 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
 exit:
     if (ret != 0)
     {
-        if (report)
-            oe_free_report(report);
+        if (evidence)
+            oe_free_evidence(evidence);
         if (key_buf)
             oe_host_free(key_buf);
         if (*remote_report)
@@ -145,8 +146,8 @@ int ecall_dispatcher::verify_report_and_set_pubkey(
         goto exit;
     }
 
-    // Attest the remote report and accompanying key.
-    if (m_attestation->attest_remote_report(
+    // Attest the remote evidence and accompanying key.
+    if (m_attestation->attest_remote_evidence(
             remote_report, remote_report_size, pem_key, key_size))
     {
         memcpy(m_crypto->get_the_other_enclave_public_key(), pem_key, key_size);
