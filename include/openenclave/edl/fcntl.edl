@@ -148,6 +148,11 @@ enclave
             [out, count=1] struct oe_stat_t* buf)
             propagate_errno;
 
+        int oe_syscall_fstat_ocall(
+            oe_host_fd_t fd,
+            [out] struct oe_stat_t* buf)
+            propagate_errno;
+
         int oe_syscall_access_ocall(
             [in, string] const char* pathname,
             int mode)

@@ -8,6 +8,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/syscall/sys/epoll.h>
 #include <openenclave/internal/syscall/sys/socket.h>
+#include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/syscall/sys/uio.h>
 #include <openenclave/internal/syscall/types.h>
 
@@ -62,6 +63,8 @@ typedef struct _oe_file_ops
         *pwrite)(oe_fd_t* desc, const void* buf, size_t count, oe_off_t offset);
 
     int (*getdents64)(oe_fd_t* file, struct oe_dirent* dirp, uint32_t count);
+
+    int (*fstat)(oe_fd_t* file, struct oe_stat_t* buf);
 
     int (*fsync)(oe_fd_t* file);
     int (*fdatasync)(oe_fd_t* file);

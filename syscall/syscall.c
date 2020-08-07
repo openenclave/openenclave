@@ -260,6 +260,13 @@ static long _syscall(
             ret = oe_stat(pathname, buf);
             goto done;
         }
+        case OE_SYS_fstat:
+        {
+            const int fd = (int)arg1;
+            struct oe_stat_t* const buf = (struct oe_stat_t*)arg2;
+            ret = oe_fstat(fd, buf);
+            goto done;
+        }
 #if defined(OE_SYS_link)
         case OE_SYS_link:
         {

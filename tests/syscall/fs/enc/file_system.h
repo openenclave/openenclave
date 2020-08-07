@@ -136,6 +136,11 @@ class oe_fd_file_system
         return oe_stat(pathname, buf);
     }
 
+    int fstat(file_handle file, struct oe_stat_t* buf)
+    {
+        return oe_fstat(file, buf);
+    }
+
     int truncate(const char* path, off_t length)
     {
         return oe_truncate(path, length);
@@ -289,6 +294,11 @@ class fd_file_system
     int stat(const char* pathname, struct oe_stat_t* buf)
     {
         return ::stat(pathname, (struct stat*)buf);
+    }
+
+    int fstat(file_handle file, struct oe_stat_t* buf)
+    {
+        return ::fstat(file, (struct stat*)buf);
     }
 
     int truncate(const char* path, off_t length)
@@ -562,6 +572,11 @@ class stream_file_system
     int stat(const char* pathname, struct stat* buf)
     {
         return ::stat(pathname, buf);
+    }
+
+    int fstat(file_handle file, struct stat* buf)
+    {
+        return ::fstat(fileno(file), buf);
     }
 
     int truncate(const char* path, off_t length)

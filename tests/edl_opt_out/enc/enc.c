@@ -31,6 +31,7 @@ void enc_edl_opt_out()
     OE_TEST(oe_syscall_rewinddir_ocall(0) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_closedir_ocall(NULL, 0) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_stat_ocall(NULL, NULL, NULL) == OE_UNSUPPORTED);
+    OE_TEST(oe_syscall_fstat_ocall(NULL, 0, NULL) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_access_ocall(NULL, NULL, 0) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_link_ocall(NULL, NULL, NULL) == OE_UNSUPPORTED);
     OE_TEST(oe_syscall_unlink_ocall(NULL, NULL) == OE_UNSUPPORTED);

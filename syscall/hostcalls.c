@@ -189,6 +189,10 @@ oe_result_t _oe_syscall_stat_ocall(
     int* _retval,
     const char* pathname,
     struct oe_stat_t* buf);
+oe_result_t _oe_syscall_fstat_ocall(
+    int* _retval,
+    oe_host_fd_t fd,
+    struct oe_stat_t* buf);
 oe_result_t _oe_syscall_access_ocall(
     int* _retval,
     const char* pathname,
@@ -426,6 +430,18 @@ oe_result_t _oe_syscall_stat_ocall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_syscall_stat_ocall, oe_syscall_stat_ocall);
+
+oe_result_t _oe_syscall_fstat_ocall(
+    int* _retval,
+    oe_host_fd_t fd,
+    struct oe_stat_t* buf)
+{
+    OE_UNUSED(_retval);
+    OE_UNUSED(fd);
+    OE_UNUSED(buf);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_syscall_fstat_ocall, oe_syscall_fstat_ocall);
 
 oe_result_t _oe_syscall_access_ocall(
     int* _retval,
