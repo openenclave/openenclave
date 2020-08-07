@@ -158,6 +158,12 @@ else () # NOT OE_SGX
   endif ()
 endif ()
 
+option(BUILD_OPENSSL "[EXPERIMENTAL] Build OpenSSL libraries." OFF)
+
+if (BUILD_OPENSSL AND OE_TRUSTZONE)
+  message(FATAL_ERROR "BUILD_OPENSSL is not supported on ARM yet.")
+endif ()
+
 if (WIN32)
   # NOTE: On Windows we have found that we must use Git Bash, not the
   # Bash from the Windows Subsystem for Linux. Hence this is
@@ -171,6 +177,26 @@ if (WIN32)
   if (NOT OE_BASH)
     message(FATAL_ERROR "Git Bash not found!")
   endif ()
+
+  # Looking for Perl and Dos2unix if BUILD_OPENSSL is ON.
+  if (BUILD_OPENSSL)
+    # OpenSSL relies on Perl to generate files (e.g., headers, assembly files, and test cases).
+    find_program(OE_PERL perl PATHS "C:/Program Files/Git/bin"
+                                    "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
+    if (NOT OE_PERL)
+      message(FATAL_ERROR "Perl not found!")
+    endif ()
+
+    # Dos2unix utility is used to convert CRLF to LF, which is required by some
+    # OpenSSL tests.
+    find_program(
+      OE_DOS2UNIX dos2unix PATHS "C:/Program Files/Git/bin"
+                                 "${GIT_DIR}/../usr/bin" NO_DEFAULT_PATH)
+    if (NOT OE_DOS2UNIX)
+      message(FATAL_ERROR "Dos2unix not found!")
+    endif ()
+  endif ()
+
   if (NOT NUGET_PACKAGE_PATH)
     message(
       FATAL_ERROR
@@ -182,6 +208,16 @@ else ()
   if (NOT OE_BASH)
     message(FATAL_ERROR "Bash not found!")
   endif ()
+
+  # Looking for Perl if BUILD_OPENSSL is ON.
+  if (BUILD_OPENSSL)
+    # OpenSSL relies on Perl to generate files (e.g., headers, assembly files, and test cases).
+    find_program(OE_PERL perl)
+    if (NOT OE_PERL)
+      message(FATAL_ERROR "Perl not found!")
+    endif ()
+  endif ()
+
 endif ()
 
 # See `cmake/enclave_cmake_wrappers.cmake` for wrapper functions.

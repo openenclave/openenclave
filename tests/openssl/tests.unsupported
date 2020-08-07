@@ -1,0 +1,21 @@
+# Test aborts as expected, but the test harness does not currently support treating it as a pass.
+../../3rdparty/openssl/openssl/test/aborttest.c
+# Require localtime, which is not supported.
+../../3rdparty/openssl/openssl/test/asn1_time_test.c
+# Require fork, which is not supported.
+../../3rdparty/openssl/openssl/test/drbgtest.c
+# Disable the stress test that takes too long to finish (e.g., ~70 second on both Linux and Windows).
+../../3rdparty/openssl/openssl/test/ecstresstest.c
+# Not supported by opensl v1.1.1. Fixed by https://github.com/openssl/openssl/pull/10337 (targeted for v3.0.0).
+../../3rdparty/openssl/openssl/test/ssl_ctx_test.c
+# Fail with the stress test because of insufficient heap size (still fail with 25600 pages/100 MB).
+# The memory usage peak of running the non-enclave version of the test is 171.69 MB.
+../../3rdparty/openssl/openssl/test/lhash_test.c
+# Require openssl libapp.a, which is not included by OE.
+../../3rdparty/openssl/openssl/test/uitest.c
+# Require getservbyname, which is not supported.
+../../3rdparty/openssl/openssl/test/ssltest_old.c
+# Depend on the OPENSSL_NO_SECURE_MEMORY build flag that is not supported by OE.
+../../3rdparty/openssl/openssl/test/secmemtest.c
+# GOST engine is not supported by OE (require dynamic loading).
+../../3rdparty/openssl/openssl/test/gosttest.c

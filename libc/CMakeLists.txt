@@ -52,7 +52,9 @@ set(PLATFORM_SRC "")
 if (OE_SGX)
   list(APPEND PLATFORM_SRC sgx/arc4random.c)
 else ()
-  list(APPEND PLATFORM_SRC
+  list(
+    APPEND
+    PLATFORM_SRC
     ${MUSLSRC}/math/exp2l.c
     ${MUSLSRC}/string/memcpy.c
     ${MUSLSRC}/string/memmove.c
@@ -758,6 +760,7 @@ add_enclave_library(
   ${MUSLSRC}/thread/__lock.c
   ${MUSLSRC}/thread/__wait.c
   ${MUSLSRC}/time/clock_gettime.c
+  ${MUSLSRC}/time/difftime.c
   ${MUSLSRC}/time/gettimeofday.c
   ${MUSLSRC}/time/gmtime.c
   ${MUSLSRC}/time/gmtime_r.c
@@ -802,6 +805,7 @@ add_enclave_library(
   ${MUSLSRC}/unistd/unlink.c
   ${MUSLSRC}/unistd/write.c
   ${MUSLSRC}/unistd/writev.c
+  ${MUSLSRC}/unistd/usleep.c
   ${PLATFORM_SRC})
 
 maybe_build_using_clangw(oelibc)

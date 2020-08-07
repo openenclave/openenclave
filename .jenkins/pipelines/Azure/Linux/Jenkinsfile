@@ -405,6 +405,9 @@ try{
 
         "ACC1804 GNU gcc SGX1FLC":                       { ACCGNUTest() },
 
+        "ACC1804 clang-7 Release EEID Experimental LVI FULL Tests": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DWITH_EEID=ON']) },
+        "ACC1804 clang-7 Release OpenSSL Experimental LVI FULL Tests": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DBUILD_OPENSSL=ON']) },
+
         "RHEL-8 clang-8 simulation Release":             { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
         "RHEL-8 clang-8 simulation Debug":               { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
         "RHEL-8 gcc-8 simulation Release":               { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1']) },
