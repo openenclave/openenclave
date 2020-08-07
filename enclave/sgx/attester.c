@@ -13,7 +13,6 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgx/plugin.h>
-#include <openenclave/internal/tests.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 
@@ -469,7 +468,8 @@ oe_result_t oe_attester_initialize(void)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    OE_TEST(oe_mutex_lock(&mutex) == 0);
+    if (oe_mutex_lock(&mutex))
+        OE_RAISE(OE_UNEXPECTED);
 
     // Do nothing if attester plugins are already initialized
     if (attesters)
@@ -503,7 +503,8 @@ oe_result_t oe_attester_shutdown(void)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    OE_TEST(oe_mutex_lock(&mutex) == 0);
+    if (oe_mutex_lock(&mutex))
+        OE_RAISE(OE_UNEXPECTED);
 
     // Either attester plugins have not been initialized,
     // or there is no supported plugin

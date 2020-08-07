@@ -8,7 +8,6 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgx/plugin.h>
-#include <openenclave/internal/tests.h>
 
 #include "../attest_plugin.h"
 #include "../common.h"
@@ -806,7 +805,8 @@ oe_result_t oe_verifier_initialize(void)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    OE_TEST(oe_mutex_lock(&init_mutex) == 0);
+    if (oe_mutex_lock(&init_mutex))
+        OE_RAISE(OE_UNEXPECTED);
 
     // Do nothing if verifier plugins are already initialized
     if (verifiers)
@@ -838,7 +838,8 @@ oe_result_t oe_verifier_shutdown(void)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    OE_TEST(oe_mutex_lock(&init_mutex) == 0);
+    if (oe_mutex_lock(&init_mutex))
+        OE_RAISE(OE_UNEXPECTED);
 
     // Either verifier plugins have not been initialized,
     // or there is no supported plugin
