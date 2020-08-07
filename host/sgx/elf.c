@@ -557,6 +557,53 @@ done:
     return rc;
 }
 
+oe_result_t elf64_get_dynamic_section(
+    const elf64_t* elf,
+    const elf64_dyn_t** dyn,
+    size_t* dyn_count)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    size_t index;
+    const elf64_shdr_t* shdr;
+    const elf64_dyn_t* dyn_entries = NULL;
+    size_t dyn_entries_count = 0;
+
+    if (dyn)
+        *dyn = 0;
+
+    if (dyn_count)
+        *dyn_count = 0;
+
+    if (!_is_valid_elf64(elf) || !dyn || !dyn_count)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the .dynamic section header */
+    index = _find_shdr(elf, ".dynamic");
+    if (index == (size_t)-1)
+        OE_RAISE(OE_NOT_FOUND);
+
+    shdr = _get_shdr(elf, index);
+    if (shdr == NULL || shdr->sh_type != SHT_DYNAMIC ||
+        shdr->sh_entsize != sizeof(elf64_dyn_t))
+        OE_RAISE(OE_INVALID_IMAGE);
+
+    /* Calculate number of dynamic entries and sanity check */
+    dyn_entries =
+        (const elf64_dyn_t*)((elf64_off_t)elf->data + shdr->sh_offset);
+    dyn_entries_count = shdr->sh_size / shdr->sh_entsize;
+
+    if (dyn_entries[dyn_entries_count - 1].d_tag != DT_NULL)
+        OE_RAISE(OE_INVALID_IMAGE);
+
+    /* Set the return pointers */
+    *dyn = dyn_entries;
+    *dyn_count = dyn_entries_count;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 const char* elf64_get_string_from_dynstr(
     const elf64_t* elf,
     elf64_word_t offset)
