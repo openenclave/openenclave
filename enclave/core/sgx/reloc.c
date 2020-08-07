@@ -20,6 +20,7 @@
 
 bool oe_apply_relocations(void)
 {
+    /* TODO: relocs still only works for single dependency */
     const elf64_rela_t* relocs = (const elf64_rela_t*)__oe_get_reloc_base();
     size_t nrelocs = __oe_get_reloc_size() / sizeof(elf64_rela_t);
     const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
@@ -38,11 +39,24 @@ bool oe_apply_relocations(void)
         uint64_t reloc_type = ELF64_R_TYPE(p->r_info);
 
         /* Relocate the reference */
-        if (reloc_type == R_X86_64_RELATIVE)
+        switch (reloc_type)
         {
-            *dest = (uint64_t)(baseaddr + p->r_addend);
+            case R_X86_64_RELATIVE:
+            {
+                *dest = (uint64_t)(baseaddr + p->r_addend);
+                break;
+            }
+            case R_X86_64_GLOB_DAT:
+            {
+                /* OE SDK overloads the addend but this should be usually the
+                 * symbol address */
+                int64_t addend = p->r_addend;
+                if (addend)
+                {
+                    *dest = (uint64_t)(baseaddr + p->r_addend);
+                }
+            }
         }
     }
-
     return true;
 }

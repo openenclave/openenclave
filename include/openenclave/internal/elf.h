@@ -19,8 +19,6 @@
 
 ELF_EXTERNC_BEGIN
 
-//#define EI_NIDENT 16
-
 /* elf64_ehdr_t.e_ident */
 #define EI_MAG0 0    /* File identification */
 #define EI_MAG1 1    /* File identification */
@@ -136,7 +134,58 @@ ELF_EXTERNC_BEGIN
 #define STT_LOPROC 13 /* Processor-specific use */
 #define STT_HIPROC 15
 
+/* elf64_dyn_t.d_tag values */
+#define DT_NULL 0          /* Last entry of the _DYNAMIC array */
+#define DT_NEEDED 1        /* String table offset to name of a needed library */
+#define DT_PLTRELSZ 2      /* Size of PLT relocs */
+#define DT_PLTGOT 3        /* Address associated with PLT/GOT by processor */
+#define DT_HASH 4          /* Address of symbol hash table */
+#define DT_STRTAB 5        /* Address of string table */
+#define DT_SYMTAB 6        /* Address of symbol table */
+#define DT_RELA 7          /* Address of relocation table (explicit addends) */
+#define DT_RELASZ 8        /* Size of DT_RELA relocs */
+#define DT_RELAENT 9       /* Size of a DT_RELA entry */
+#define DT_STRSZ 10        /* Size of string table */
+#define DT_SYMENT 11       /* Size of a symbol table entry */
+#define DT_INIT 12         /* Address of initialization function */
+#define DT_FINI 13         /* Address of termination function */
+#define DT_SONAME 14       /* String table offset to name of a shared object */
+#define DT_RPATH 15        /* String table offset to library search path */
+#define DT_SYMBOLIC 16     /* Indicates symbol search starts in current .so */
+#define DT_REL 17          /* Address of relocation table (implicit addends) */
+#define DT_RELSZ 18        /* Size of DT_REL relocs */
+#define DT_RELENT 19       /* Size of a DT_REL entry */
+#define DT_PLTREL 20       /* Type of reloc (DT_RELA/DT_REL) in PLT */
+#define DT_DEBUG 21        /* Debugger defined, unused by ABI */
+#define DT_TEXTREL 22      /* Indicates relocs might modify RO segment */
+#define DT_JMPREL 23       /* Address of PLT relocs */
+#define DT_BIND_NOW 24     /* Indicates no lazy binding */
+#define DT_INIT_ARRAY 25   /* Address of initialization functions ptr array */
+#define DT_FINI_ARRAY 26   /* Address of termination functions ptr array */
+#define DT_INIT_ARRAYSZ 27 /* Size in bytes of DT_INIT_ARRAY */
+#define DT_FINI_ARRAYSZ 28 /* Size in bytes of DT_FINI_ARRAY */
+#define DT_RUNPATH 29      /* String table offset to library search path */
+#define DT_FLAGS 30        /* Flags specific to object being loaded */
+
+#define DT_ENCODING 32        /* Sentinel value for d_un interpretation */
+#define DT_PREINIT_ARRAY 32   /* Address of pre-init functions ptr array */
+#define DT_PREINIT_ARRAYSZ 33 /* Size in bytes of DT_PREINIT_ARRAY */
+#define DT_SYMTAB_SHNDX 34    /* Address of SHT_SYMTAB_SHNDX section */
+
+#define DT_LOOS 0x6000000d   /* Start of OS-specific reserved range */
+#define DT_HIOS 0x6ffff000   /* End of OS-specific reserved range */
+#define DT_LOPROC 0x70000000 /* Start of processor-specific reserved range */
+#define DT_HIPROC 0x7fffffff /* End of processor-specific reserved range */
+
+/* elf64_dyn_t.d_un.d_val values for DT_FLAGS entry */
+#define DF_ORIGIN 0x00000001   /* Object may use $ORIGIN substitution string */
+#define DF_SYMBOLIC 0x00000002 /* Symbol search starts in current .so  */
+#define DF_TEXTREL 0x00000004  /* Relocations might modify RO segment */
+#define DF_BIND_NOW 0x00000008 /* No lazy binding */
+#define DF_STATIC_TLS 0x00000010 /* Object uses static TLS scheme */
+
 /* elf64_rel.r_info */
+#define R_X86_64_GLOB_DAT 6
 #define R_X86_64_RELATIVE 8
 
 /* Supported thread-local storage relocations */
@@ -221,6 +270,15 @@ typedef struct
     elf64_sxword_t r_addend; /* Constant part of expression */
 } elf64_rela_t;
 
+typedef struct
+{
+    elf64_sword_t d_tag;
+    union {
+        elf64_word_t d_val;
+        elf64_addr_t d_ptr;
+    } d_un;
+} elf64_dyn_t;
+
 #define ELF_MAGIC 0x7d7ad33b
 #define ELF64_INIT         \
     {                      \
@@ -249,6 +307,11 @@ int elf64_get_dynamic_symbol_table(
     const elf64_t* elf,
     const elf64_sym_t** symtab,
     size_t* size);
+
+oe_result_t elf64_get_dynamic_section(
+    const elf64_t* elf,
+    const elf64_dyn_t** dyn,
+    size_t* dyn_count);
 
 void elf64_dump_header(const elf64_ehdr_t* ehdr);
 
@@ -330,6 +393,11 @@ oe_result_t elf64_load_relocations(
     const elf64_t* elf,
     void** data,
     size_t* size);
+
+oe_result_t elf64_load_dynamic(
+    const elf64_t* elf,
+    void** data_out,
+    size_t* size_out);
 
 /* Get the segment with the given index; return NULL on error */
 void* elf64_get_segment(const elf64_t* elf, size_t index);

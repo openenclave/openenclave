@@ -12,6 +12,8 @@
 
 OE_EXTERNC_BEGIN
 
+typedef struct _oe_enclave_elf_image oe_enclave_elf_image_t;
+
 typedef struct _oe_enclave_image oe_enclave_image_t;
 
 typedef struct _oe_sgx_load_context oe_sgx_load_context_t;
@@ -33,7 +35,7 @@ typedef struct _oe_elf_segment
     uint32_t flags;
 } oe_elf_segment_t;
 
-typedef struct _oe_enclave_elf_image
+struct _oe_enclave_elf_image
 {
     elf64_t elf;
 
@@ -57,8 +59,12 @@ typedef struct _oe_enclave_elf_image
     uint64_t tbss_size;
     uint64_t tbss_align;
 
+    /* Dependency images */
+    oe_enclave_elf_image_t* needed_images;
+    size_t num_needed_images;
+
     /*
-     * Additional properties used for SGX enclave handling
+     * Additional properties used for primary SGX enclave handling
      */
 
     /* RVA of the enclave entry point to set in TCS.OENTRY */
@@ -71,8 +77,7 @@ typedef struct _oe_enclave_elf_image
     /* Offset to write back to the file oe_sgx_enclave_properties_t
      * during signing */
     uint64_t oeinfo_file_pos;
-
-} oe_enclave_elf_image_t;
+};
 
 typedef enum _oe_image_type
 {
