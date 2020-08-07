@@ -12,6 +12,7 @@
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/switchless.h>
 #include <stdbool.h>
+#include "../ecall_ids.h"
 #include "../hostthread.h"
 #include "asmdefs.h"
 
@@ -127,6 +128,11 @@ typedef struct _oe_enclave
 
     /* Manager for switchless calls */
     oe_switchless_call_manager_t* switchless_manager;
+
+    /* Table of global to local ecall ids */
+    oe_ecall_id_t* ecall_id_table;
+    size_t ecall_id_table_size;
+    size_t num_ecalls;
 } oe_enclave_t;
 
 /* Get the event for the given TCS */

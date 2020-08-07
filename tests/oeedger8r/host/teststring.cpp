@@ -20,6 +20,8 @@ oe_result_t ecall_string_no_null_terminator_modified(
 {
     oe_result_t _result = OE_FAILURE;
 
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
+
     /* Marshalling struct */
     ecall_string_no_null_terminator_args_t _args, *_pargs_in = NULL,
                                                   *_pargs_out = NULL;
@@ -82,7 +84,9 @@ oe_result_t ecall_string_no_null_terminator_modified(
     /* Call enclave function */
     if ((_result = oe_call_enclave_function(
              enclave,
-             all_fcn_id_ecall_string_no_null_terminator,
+             &global_id,
+             __all_ecall_info_table[all_fcn_id_ecall_string_no_null_terminator]
+                 .name,
              _input_buffer,
              _input_buffer_size,
              _output_buffer,
@@ -125,6 +129,8 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     size_t s2_len)
 {
     oe_result_t _result = OE_FAILURE;
+
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
 
     /* Marshalling struct */
     ecall_wstring_no_null_terminator_args_t _args, *_pargs_in = NULL,
@@ -188,7 +194,9 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     /* Call enclave function */
     if ((_result = oe_call_enclave_function(
              enclave,
-             all_fcn_id_ecall_wstring_no_null_terminator,
+             &global_id,
+             __all_ecall_info_table[all_fcn_id_ecall_wstring_no_null_terminator]
+                 .name,
              _input_buffer,
              _input_buffer_size,
              _output_buffer,

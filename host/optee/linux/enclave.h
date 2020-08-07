@@ -10,6 +10,7 @@
 #include <tee_client_api_extensions.h>
 
 #include <openenclave/host.h>
+#include "../../ecall_ids.h"
 
 #define ENCLAVE_MAGIC 0x85ab45987c7ef1e3
 
@@ -39,6 +40,11 @@ struct _oe_enclave
     /* Array of ocall functions */
     const oe_ocall_func_t* ocalls;
     size_t num_ocalls;
+
+    /* Table of global to local ecall ids */
+    oe_ecall_id_t* ecall_id_table;
+    size_t ecall_id_table_size;
+    size_t num_ecalls;
 };
 
 #endif /* _OE_HOST_ENCLAVE_H */

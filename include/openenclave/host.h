@@ -139,6 +139,14 @@ typedef struct _oe_enclave_setting
 } oe_enclave_setting_t;
 
 /**
+ * Structure describing an ecall.
+ */
+typedef struct _oe_ecall_info_t
+{
+    const char* name;
+} oe_ecall_info_t;
+
+/**
  * Create an enclave from an enclave image file.
  *
  * This function creates an enclave from an enclave image file. On successful
@@ -167,6 +175,10 @@ typedef struct _oe_enclave_setting
  *
  * @param[in] ocall_count The number of functions in the **ocall_table**.
  *
+ * @param[in] ecall_name_table Table of ecall names.
+ *
+ * @param[i] ecall_count Number of ecalls.
+ *
  * @param[out] enclave This points to the enclave instance upon success.
  *
  * @returns Returns OE_OK on success.
@@ -180,6 +192,8 @@ oe_result_t oe_create_enclave(
     uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
+    const oe_ecall_info_t* ecall_name_table,
+    uint32_t ecall_count,
     oe_enclave_t** enclave);
 
 /**

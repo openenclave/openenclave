@@ -863,6 +863,40 @@ done:
     return result;
 }
 
+oe_result_t oe_get_ecall_id_table(
+    oe_enclave_t* enclave,
+    oe_ecall_id_t** ecall_id_table,
+    uint64_t* ecall_id_table_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    if (!enclave || !ecall_id_table || !ecall_id_table_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    *ecall_id_table = enclave->ecall_id_table;
+    *ecall_id_table_size = enclave->ecall_id_table_size;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_set_ecall_id_table(
+    oe_enclave_t* enclave,
+    oe_ecall_id_t* ecall_id_table,
+    uint64_t ecall_id_table_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    if (!enclave || !ecall_id_table || !ecall_id_table_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    enclave->ecall_id_table = ecall_id_table;
+    enclave->ecall_id_table_size = ecall_id_table_size;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 #if !defined(OEHOSTMR)
 /*
 ** This method encapsulates all steps of the enclave creation process:
@@ -887,6 +921,8 @@ oe_result_t oe_create_enclave(
     uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
+    const oe_ecall_info_t* ecall_name_table,
+    uint32_t ecall_count,
     oe_enclave_t** enclave_out)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -1002,6 +1038,10 @@ oe_result_t oe_create_enclave(
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_count;
 
+    /* Register ecalls */
+    enclave->num_ecalls = ecall_count;
+    oe_register_ecalls(enclave, ecall_name_table, ecall_count);
+
     /* Invoke enclave initialization. */
     OE_CHECK(_initialize_enclave(enclave));
 
@@ -1060,6 +1100,10 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
         free(enclave->debug_enclave->tcs_array);
         free(enclave->debug_enclave);
     }
+
+    /* Destroy the ecall id table */
+    if (enclave->ecall_id_table)
+        free(enclave->ecall_id_table);
 
     /* Once the enclave destructor has been invoked, the enclave memory
      * and data structures are freed on a best effort basis from here on */
