@@ -193,12 +193,12 @@
  * the loader fetches the symbol's sh-value and stores it in the r_addend field
  * (r_added field is otherwise zero for R_X86_64_TPOFF64).
  */
-static volatile uint64_t _tdata_rva = 0;
-static volatile uint64_t _tdata_size = 0;
-static volatile uint64_t _tdata_align = 1;
+OE_EXPORT volatile uint64_t _tdata_rva = 0;
+OE_EXPORT volatile uint64_t _tdata_size = 0;
+OE_EXPORT volatile uint64_t _tdata_align = 1;
 
-static volatile uint64_t _tbss_size = 0;
-static volatile uint64_t _tbss_align = 1;
+OE_EXPORT volatile uint64_t _tbss_size = 0;
+OE_EXPORT volatile uint64_t _tbss_align = 1;
 
 // Number of thread-local relocations.
 static volatile bool _thread_locals_relocated = false;
