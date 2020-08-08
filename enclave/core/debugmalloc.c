@@ -4,6 +4,7 @@
 #include "debugmalloc.h"
 #include <openenclave/advanced/allocator.h>
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
@@ -315,7 +316,10 @@ void* oe_debug_malloc(size_t size)
         return NULL;
 
     /* Fill block with 0xAA (Allocated) bytes */
-    oe_memset_s(block, block_size, 0xAA, block_size);
+    if (oe_use_debug_malloc_memset)
+    {
+        oe_memset_s(block, block_size, 0xAA, block_size);
+    }
 
     header_t* header = (header_t*)block;
     INIT_BLOCK(header, 0, size);

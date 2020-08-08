@@ -5,6 +5,7 @@
 #include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgx/plugin.h>
@@ -48,6 +49,8 @@ void unregister_sgx()
 
 static void _test_sgx_remote()
 {
+    oe_use_debug_malloc = false;
+
     printf("====== running _test_sgx_remote\n");
     uint8_t* evidence = NULL;
     size_t evidence_size = 0;
@@ -216,6 +219,8 @@ static void _test_sgx_remote()
     OE_TEST(oe_free_endorsements(endorsements) == OE_OK);
 
     printf("====== done _test_sgx_remote\n");
+
+    oe_use_debug_malloc = true;
 }
 
 static void _test_sgx_local()

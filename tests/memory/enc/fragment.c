@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/tests.h>
@@ -95,6 +96,8 @@ static int _malloc_free_random_size(int times, unsigned int seed)
 
 void test_malloc_fixed_size_fragment(void)
 {
+    oe_use_debug_malloc_memset = false;
+
     // get heap size before tests
     size_t heap_size_before_test = _get_heap_size();
     oe_host_printf(
@@ -109,10 +112,14 @@ void test_malloc_fixed_size_fragment(void)
         "[test_malloc_fixed_size_fragment]heap size after test : %zu.\n",
         heap_size_after_test);
     OE_TEST(heap_size_before_test == heap_size_after_test);
+
+    oe_use_debug_malloc_memset = true;
 }
 
 void test_malloc_random_size_fragment(unsigned int seed)
 {
+    oe_use_debug_malloc = false;
+
     // get heap size before tests
     size_t heap_size_before_test = _get_heap_size();
     oe_host_printf(
@@ -126,4 +133,6 @@ void test_malloc_random_size_fragment(unsigned int seed)
         "[test_malloc_random_size_fragment]heap size after test : %zu.\n",
         heap_size_after_test);
     OE_TEST(heap_size_before_test == heap_size_after_test);
+
+    oe_use_debug_malloc = true;
 }
