@@ -102,8 +102,10 @@ bool Attestation::attest_remote_evidence(
     const uint8_t* data,
     size_t data_size)
 {
+    OE_UNUSED(data);
+    OE_UNUSED(data_size);
+
     bool ret = false;
-    uint8_t sha256[32];
     oe_result_t result = OE_OK;
     oe_result_t verifier_result = OE_OK;
     oe_claim_t* claims = NULL;
