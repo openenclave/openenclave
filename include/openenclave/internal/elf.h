@@ -116,6 +116,11 @@ ELF_EXTERNC_BEGIN
 #define PF_MASKOS 0x00FF0000   /* environment-specific use */
 #define PF_MASKPROC 0xFF000000 /* processor-specific use */
 
+/* Macros for extracting ST_BIND and ST_TYPE from ST_INFO */
+#define ELF64_ST_BIND(val) (((unsigned char)(val)) >> 4)
+#define ELF64_ST_TYPE(val) ((val)&0xf)
+#define ELF64_ST_INFO(bind, type) (((bind) << 4) + ((type)&0xf))
+
 #define STB_LOCAL 0  /* Not visible outside the object file */
 #define STB_GLOBAL 1 /* Global symbol, visible to all object files */
 #define STB_WEAK 2   /* Global scope, but with lower precedence than globals */
