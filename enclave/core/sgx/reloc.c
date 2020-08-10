@@ -4,6 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/utils.h>
 #include "init.h"
 
 /*
@@ -18,27 +19,32 @@
 **==============================================================================
 */
 
-bool oe_apply_relocations(void)
+static uint64_t _apply_relocations(
+    const uint8_t* baseaddr,
+    const elf64_rela_t* relocs,
+    size_t nrelocs)
 {
-    /* TODO: relocs still only works for single dependency */
-    const elf64_rela_t* relocs = (const elf64_rela_t*)__oe_get_reloc_base();
-    size_t nrelocs = __oe_get_reloc_size() / sizeof(elf64_rela_t);
-    const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
-
     for (size_t i = 0; i < nrelocs; i++)
     {
         const elf64_rela_t* p = &relocs[i];
 
-        /* If zero-padded bytes reached */
+        /* If zero-padded bytes reached need to skip to next
+         * page boundary and check for relocs for next image.
+         *
+         * TODO: Fix relocs to only zero pad on final reloc
+         * section */
         if (p->r_offset == 0)
-            break;
+        {
+            return oe_round_up_to_page_size((uint64_t)p);
+        }
 
-        /* Compute address of reference to be relocated */
+        /* Compute address of reference to be relocated.
+         * The target offset for the fixup should have been fixed during
+         * the dynamic binding at load time. */
         uint64_t* dest = (uint64_t*)(baseaddr + p->r_offset);
 
-        uint64_t reloc_type = ELF64_R_TYPE(p->r_info);
-
         /* Relocate the reference */
+        uint64_t reloc_type = ELF64_R_TYPE(p->r_info);
         switch (reloc_type)
         {
             case R_X86_64_RELATIVE:
@@ -58,5 +64,22 @@ bool oe_apply_relocations(void)
             }
         }
     }
+
+    return (uint64_t)relocs + (nrelocs * sizeof(elf64_rela_t));
+}
+
+bool oe_apply_relocations(void)
+{
+    const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
+    uint64_t relocs = (uint64_t)__oe_get_reloc_base();
+    uint64_t reloc_end = relocs + __oe_get_reloc_size();
+
+    while (relocs < reloc_end)
+    {
+        size_t nrelocs = (reloc_end - relocs) / sizeof(elf64_rela_t);
+        relocs =
+            _apply_relocations(baseaddr, (const elf64_rela_t*)relocs, nrelocs);
+    }
+
     return true;
 }

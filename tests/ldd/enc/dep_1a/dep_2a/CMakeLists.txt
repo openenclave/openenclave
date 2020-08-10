@@ -1,20 +1,17 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-# Build enclave shared object dependencies
-add_subdirectory(dep_2a)
-
 # Build enclave shared object dependency
-set(LDD_TEST_DEP_SUFFIX 1a)
-set(LDD_TEST_DEP_MAGIC 1001)
-configure_file(../dep_common.c.in dep_common.c)
+set(LDD_TEST_DEP_SUFFIX 2a)
+set(LDD_TEST_DEP_MAGIC 2001)
+configure_file(${CMAKE_SOURCE_DIR}/tests/ldd/enc/dep_common.c.in dep_common.c)
 
-add_library(ldd_enc_dep_1a SHARED dep_1a.c dep_common.c)
-set_target_properties(ldd_enc_dep_1a PROPERTIES LIBRARY_OUTPUT_DIRECTORY
+add_library(ldd_enc_dep_2a SHARED dep_common.c)
+set_target_properties(ldd_enc_dep_2a PROPERTIES LIBRARY_OUTPUT_DIRECTORY
                                                 ${LDD_TEST_ENC_DIR})
-target_include_directories(ldd_enc_dep_1a PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(ldd_enc_dep_2a PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_compile_options(
-  ldd_enc_dep_1a
+  ldd_enc_dep_2a
   PUBLIC
     -fPIC
     -nostdinc
@@ -46,9 +43,8 @@ target_compile_options(
     -fno-builtin>)
 
 target_link_libraries(
-  ldd_enc_dep_1a
+  ldd_enc_dep_2a
   PRIVATE
-    ldd_enc_dep_2a
     -nostdlib
     -nodefaultlibs
     -nostartfiles
