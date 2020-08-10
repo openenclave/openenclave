@@ -211,10 +211,13 @@ static void _test_time_functions(void)
     /* Test nanosleep() */
     {
         const uint64_t SLEEP_SECS = 3;
-
+        uint64_t before  = 0;
+        uint64_t after  = 0;
         struct timespec ts;
-        clock_gettime(0, &ts);
-        uint64_t before = ((uint64_t)ts.tv_sec * SEC_TO_MSEC) + ((uint64_t)ts.tv_nsec / MSEC_TO_NSEC);
+
+        clock_gettime(CLOCK_REALTIME, &ts);
+        before = ((uint64_t)ts.tv_sec * SEC_TO_MSEC) +
+                          ((uint64_t)ts.tv_nsec / MSEC_TO_NSEC);
 
         /* Sleep for SLEEP_SECS seconds */
         {
@@ -223,8 +226,9 @@ static void _test_time_functions(void)
             OE_TEST(nanosleep(&req, &rem) == 0);
         }
 
-        clock_gettime(0, &ts);
-        uint64_t after = ((uint64_t)ts.tv_sec * SEC_TO_MSEC) + ((uint64_t)ts.tv_nsec / MSEC_TO_NSEC);
+        clock_gettime(CLOCK_REALTIME, &ts);
+        after = ((uint64_t)ts.tv_sec * SEC_TO_MSEC) +
+                         ((uint64_t)ts.tv_nsec / MSEC_TO_NSEC);
         OE_TEST(after > before);
     }
 }

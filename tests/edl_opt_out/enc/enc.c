@@ -95,6 +95,7 @@ void enc_edl_opt_out()
 
     /* time.edl */
     OE_TEST(oe_syscall_nanosleep_ocall(NULL, NULL, NULL) == OE_UNSUPPORTED);
+    OE_TEST(oe_syscall_clock_gettime_ocall(NULL, 0, NULL) == OE_UNSUPPORTED);
 
     /* unistd.edl */
     OE_TEST(oe_syscall_getpid_ocall(NULL) == OE_UNSUPPORTED);

@@ -3067,8 +3067,8 @@ int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
 
 const LONGLONG POSIX_TO_WINDOWS_EPOCH_TICKS = 0X19DB1DED53E8000;
 
-/* Return milliseconds elapsed since the Epoch. */
-static void _time(struct oe_timespec* cur_time)
+/* gets the current time and puts it into the buffer pointed to by cur_time */
+static void _clock_gettime_realtime(struct oe_timespec* cur_time)
 {
     FILETIME ft;
     ULARGE_INTEGER x;
@@ -3087,14 +3087,26 @@ static void _time(struct oe_timespec* cur_time)
 
 int oe_syscall_clock_gettime_ocall(int clock_id, struct oe_timespec* cur_time)
 {
+    int ret = -1;
+
     if (!cur_time)
-        return -1;
+        goto done;
+
     memset(cur_time, 0, sizeof(struct oe_timespec));
+
     if (clock_id != CLOCK_REALTIME)
     {
-        /* Only supporting CLOCK_REALTIME */
-        return -1;
+        /* On windows, only CLOCK_REALTIME is supported. To support for other clock such as
+        CLOCK_MONOTONIC, CLOCK_PROCESS_CPUTIME_ID we need to implement specific functions
+        similar to _clock_gettime_realtime. This is required only on windows. For linux, underlying
+        syscall clock_gettime handles all the scenarios and no additional implementation is required */
+
+        goto done;
     }
-    _time(&cur_time);
-    return 0;
+
+    _clock_gettime_realtime(&cur_time);
+    ret = 0;
+
+done:
+    return ret;
 }

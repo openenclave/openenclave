@@ -132,6 +132,7 @@ oe_syscall_getnameinfo_ocall | N/A | Used by internal APIs to resolve `addrinfo`
 Ocall | Dependent syscall | Comments |
 :---|:---:|:---|
 oe_syscall_nanosleep_ocall | nanosleep | - |
+oe_syscall_clock_gettime_ocall | clock_gettime | On Windows, only CLOCK_REALTIME is supported for clock_id |
 
 ### unistd.edl
 Ocall | Dependent syscall | Comments |
