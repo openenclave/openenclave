@@ -133,10 +133,17 @@ OE_CHECK_SIZE(sizeof(sgx_attributes_t), 16);
 #define SGX_SIGSTRUCT_MISCMASK 0xffffffff
 
 /* sgx_sigstruct_t.flags */
+/* Mask all bits except bit 2 for MODE64BIT */
 #define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0XfffffffffffffffbULL
 
 /* sgx_sigstruct_t.xfrm */
-#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0x0000000000000000ULL
+/* Mask all bits except for OS-controlled AVX enablement bits:
+ *  - bit 2: AVX enable
+ *  - bit 5: opmask for AVX-512
+ *  - bit 6: XMM_hi256 for AVX-512 enable
+ *  - bit 7: Hi16_ZMM for AVX-512 enable
+ */
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0Xffffffffffffff1bULL
 
 /* 1808 bytes */
 OE_PACK_BEGIN
