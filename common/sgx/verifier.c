@@ -240,7 +240,8 @@ static oe_result_t _fill_with_known_claims(
 
     // Optional claims are needed for SGX quotes for remote attestation
     if (format_type != SGX_FORMAT_TYPE_LOCAL &&
-        claims_length < OE_REQUIRED_CLAIMS_COUNT + OE_OPTIONAL_CLAIMS_COUNT)
+        claims_length < OE_REQUIRED_CLAIMS_COUNT + OE_OPTIONAL_CLAIMS_COUNT +
+                            OE_SGX_CLAIMS_COUNT)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // ID version.
@@ -324,6 +325,73 @@ static oe_result_t _fill_with_known_claims(
             sizeof(OE_CLAIM_VALIDITY_UNTIL),
             &valid_until,
             sizeof(valid_until)));
+
+        // TCB info
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_SGX_TCB_INFO,
+            sizeof(OE_CLAIM_SGX_TCB_INFO),
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].data,
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].size));
+
+        // TCB issuer chain
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_SGX_TCB_ISSUER_CHAIN,
+            sizeof(OE_CLAIM_SGX_TCB_ISSUER_CHAIN),
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN]
+                .data,
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN]
+                .size));
+
+        // PCK CRL
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_SGX_PCK_CRL,
+            sizeof(OE_CLAIM_SGX_PCK_CRL),
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT].data,
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT]
+                .size));
+
+        // Root CA CRL
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_SGX_ROOT_CA_CRL,
+            sizeof(OE_CLAIM_SGX_ROOT_CA_CRL),
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_PROC_CA]
+                .data,
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_PROC_CA]
+                .size));
+
+        // CRL Issuer Chain
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_SGX_CRL_ISSUER_CHAIN,
+            sizeof(OE_CLAIM_SGX_CRL_ISSUER_CHAIN),
+            sgx_endorsements
+                ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT]
+                .data,
+            sgx_endorsements
+                ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT]
+                .size));
+
+        // QE ID info
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_SGX_QE_ID_INFO,
+            sizeof(OE_CLAIM_SGX_QE_ID_INFO),
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].data,
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].size));
+
+        // QE ID issuer chain
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_SGX_QE_ID_ISSUER_CHAIN,
+            sizeof(OE_CLAIM_SGX_QE_ID_ISSUER_CHAIN),
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN]
+                .data,
+            sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN]
+                .size));
     }
 
     *claims_added = claims_index;
@@ -414,7 +482,9 @@ oe_result_t oe_sgx_extract_claims(
     if (format_type != SGX_FORMAT_TYPE_LOCAL)
     {
         OE_CHECK(oe_safe_add_u64(
-            claims_length, OE_OPTIONAL_CLAIMS_COUNT, &claims_length));
+            claims_length,
+            OE_OPTIONAL_CLAIMS_COUNT + OE_SGX_CLAIMS_COUNT,
+            &claims_length));
     }
 
     OE_CHECK(oe_safe_mul_u64(claims_length, sizeof(oe_claim_t), &claims_size));

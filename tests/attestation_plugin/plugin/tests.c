@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "../../../common/attest_plugin.h"
+#include "../../../common/sgx/endorsements.h"
 #include "../../../common/sgx/quote.h"
 #include "../../../common/sgx/report.h"
 #include "mock_attester.h"
@@ -371,6 +372,30 @@ static void* _find_claim(
     return NULL;
 }
 
+static void _process_endorsements(
+    const uint8_t* endorsements,
+    size_t endorsements_size,
+    bool wrapped_with_header,
+    const uint8_t** endorsements_body,
+    size_t* endorsements_body_size)
+{
+    if (endorsements && wrapped_with_header)
+    {
+        oe_attestation_header_t* endorsements_header =
+            (oe_attestation_header_t*)endorsements;
+
+        OE_TEST(endorsements_size >= sizeof(oe_attestation_header_t));
+
+        *endorsements_body = endorsements_header->data;
+        *endorsements_body_size = endorsements_header->data_size;
+    }
+    else
+    {
+        *endorsements_body = endorsements;
+        *endorsements_body_size = endorsements_size;
+    }
+}
+
 static void _test_time(
     const uint8_t* report_body,
     size_t report_body_size,
@@ -509,6 +534,8 @@ void verify_sgx_evidence(
     size_t evidence_size,
     const uint8_t* endorsements,
     size_t endorsements_size,
+    const uint8_t* expected_endorsements,
+    size_t expected_endorsements_size,
     const uint8_t* custom_claims,
     size_t custom_claims_size)
 {
@@ -519,6 +546,7 @@ void verify_sgx_evidence(
     oe_report_t report;
     oe_claim_t* claims = NULL;
     size_t claims_size = 0;
+    oe_sgx_endorsements_t sgx_endorsements;
     void* value;
     void* from;
     void* until;
@@ -594,21 +622,29 @@ void verify_sgx_evidence(
     else
         OE_TEST_CODE(OE_INVALID_PARAMETER, OE_OK);
 
-    if (endorsements && wrapped_with_header)
+    // Parse into SGX endorsements to validate endorsements related claims.
+    _process_endorsements(
+        expected_endorsements,
+        expected_endorsements_size,
+        wrapped_with_header,
+        &endorsements_body,
+        &endorsements_body_size);
+    if (endorsements_body)
     {
-        oe_attestation_header_t* endorsements_header =
-            (oe_attestation_header_t*)endorsements;
-
-        OE_TEST(endorsements_size >= sizeof(oe_attestation_header_t));
-
-        endorsements_body = endorsements_header->data;
-        endorsements_body_size = endorsements_header->data_size;
+        OE_TEST_CODE(
+            oe_parse_sgx_endorsements(
+                (oe_endorsements_t*)endorsements_body,
+                endorsements_body_size,
+                &sgx_endorsements),
+            OE_OK);
     }
-    else
-    {
-        endorsements_body = endorsements;
-        endorsements_body_size = endorsements_size;
-    }
+
+    _process_endorsements(
+        endorsements,
+        endorsements_size,
+        wrapped_with_header,
+        &endorsements_body,
+        &endorsements_body_size);
 
     // Try with no policies.
     OE_TEST_CODE(
@@ -684,7 +720,24 @@ void verify_sgx_evidence(
     until = _find_claim(claims, claims_size, OE_CLAIM_VALIDITY_UNTIL);
     OE_TEST(is_local || until != NULL);
 
-    if (!is_local && endorsements)
+    // Check SGX endorsements related claims:
+    if (expected_endorsements)
+    {
+        for (uint32_t i = OE_REQUIRED_CLAIMS_COUNT + OE_OPTIONAL_CLAIMS_COUNT,
+                      j = 1;
+             j <= OE_SGX_CLAIMS_COUNT;
+             i++, j++)
+        {
+            value = claims[i].value;
+            OE_TEST(
+                value != NULL && memcmp(
+                                     value,
+                                     sgx_endorsements.items[j].data,
+                                     sgx_endorsements.items[j].size) == 0);
+        }
+    }
+
+    if (endorsements)
     {
         _test_time(
             report_body,
