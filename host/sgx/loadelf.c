@@ -27,9 +27,7 @@
 #include "sgxload.h"
 
 /* Forward declarations */
-static oe_result_t _load_elf_image(
-    const char* path,
-    oe_enclave_elf_image_t* image);
+static oe_result_t _load_elf_image(char* path, oe_enclave_elf_image_t* image);
 
 oe_result_t _load_needed_images(
     const char* path,
@@ -56,6 +54,9 @@ static void _unload_elf_image(oe_enclave_elf_image_t* image)
 
         if (image->elf.data)
             free(image->elf.data);
+
+        if (image->image_path)
+            free(image->image_path);
 
         if (image->image_base)
             oe_memalign_free(image->image_base);
@@ -522,7 +523,7 @@ oe_result_t _load_needed_images(
                     needed_image_path, &image->needed_images[image_index]));
 
                 image_index++;
-                free(needed_image_path);
+                /* Ownership of path string is transferred to image */
                 needed_image_path = NULL;
             }
         }
@@ -578,9 +579,7 @@ static size_t _get_folder_path_length(const char* path, int path_length)
  * The caller is expected to have zeroed the output image memory buffer and is
  * responsible for calling _unload_elf_image on the resulting buffer when done.
  */
-static oe_result_t _load_elf_image(
-    const char* path,
-    oe_enclave_elf_image_t* image)
+static oe_result_t _load_elf_image(char* path, oe_enclave_elf_image_t* image)
 {
     oe_result_t result = OE_UNEXPECTED;
     elf64_ehdr_t* ehdr = NULL;
@@ -592,6 +591,9 @@ static oe_result_t _load_elf_image(
         OE_RAISE_MSG(
             OE_INVALID_PARAMETER,
             "Enclave path is not null-terminated or exceeds OE_INT32_MAX");
+
+    /* Take ownership of the path string for lifetime of image */
+    image->image_path = path;
 
     OE_CHECK(_read_elf_header(path, image, &ehdr));
 
@@ -970,6 +972,7 @@ static oe_result_t _link_elf_images(
     oe_result_t result = OE_UNEXPECTED;
 
     OE_TRACE_INFO("Performing program linking\n");
+    image->image_rva = *module_base;
 
     /* Patch relocations in the image. */
     elf64_rela_t* relocs = (elf64_rela_t*)image->reloc_data;
@@ -1229,6 +1232,73 @@ done:
     return result;
 }
 
+static void _sum_needed_images(oe_enclave_elf_image_t* image, size_t* sum)
+{
+    *sum += 1;
+    for (size_t i = 0; i < image->num_needed_images; i++)
+    {
+        _sum_needed_images(&image->needed_images[i], sum);
+    }
+}
+
+static oe_result_t _get_elf_debug_info(
+    oe_enclave_elf_image_t* image,
+    oe_enclave_t* enclave,
+    size_t* debug_module_index)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    size_t i = *debug_module_index;
+
+    enclave->debug_modules[i].magic = OE_DEBUG_MODULE_MAGIC;
+    enclave->debug_modules[i].version = 1;
+    enclave->debug_modules[i].base_address = enclave->addr + image->image_rva;
+    enclave->debug_modules[i].size = image->image_size;
+    enclave->debug_modules[i].path = image->image_path;
+    enclave->debug_modules[i].path_length =
+        strlen(enclave->debug_modules[i].path);
+
+    /* Transfer ownership of image_path string to debug module */
+    image->image_path = NULL;
+    *debug_module_index += 1;
+
+    for (size_t j = 0; j < image->num_needed_images; j++)
+    {
+        OE_CHECK(_get_elf_debug_info(
+            &image->needed_images[j], enclave, debug_module_index));
+    }
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+static oe_result_t _get_debug_info(
+    oe_enclave_image_t* image,
+    oe_enclave_t* enclave)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (image->elf.num_needed_images > 0)
+    {
+        /* Get total number of modules to load */
+        size_t index = 0;
+        _sum_needed_images(&image->elf, &enclave->num_debug_modules);
+
+        enclave->debug_modules = (oe_debug_module_t*)calloc(
+            1, enclave->num_debug_modules * sizeof(oe_debug_module_t));
+        if (!enclave->debug_modules)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        /* Initialize each debug load module */
+        OE_CHECK(_get_elf_debug_info(&image->elf, enclave, &index));
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 oe_result_t oe_load_elf_enclave_image(
     const char* path,
     oe_enclave_image_t* image)
@@ -1236,9 +1306,10 @@ oe_result_t oe_load_elf_enclave_image(
     oe_result_t result = OE_UNEXPECTED;
 
     memset(image, 0, sizeof(oe_enclave_image_t));
+    char* image_path = oe_strdup(path);
 
     /* Load the program segments into memory */
-    OE_CHECK(_load_elf_image(path, &image->elf));
+    OE_CHECK(_load_elf_image(image_path, &image->elf));
 
     /* Verify that primary enclave image properties are found */
     if (!image->elf.entry_rva)
@@ -1261,6 +1332,7 @@ oe_result_t oe_load_elf_enclave_image(
     image->sgx_load_enclave_properties = _sgx_load_enclave_properties;
     image->sgx_update_enclave_properties = _sgx_update_enclave_properties;
     image->unload = _unload_image;
+    image->get_debug_info = _get_debug_info;
 
     result = OE_OK;
 

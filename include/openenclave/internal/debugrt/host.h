@@ -96,6 +96,25 @@ OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, thread_id) == 24);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, enclave) == 32);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_thread_binding_t, tcs) == 40);
 
+typedef struct _debug_module_t
+{
+    uint64_t magic;
+    uint64_t version;
+    char* path;
+    uint64_t path_length;
+    uint64_t base_address;
+    uint64_t size;
+} oe_debug_module_t;
+
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_module_t, magic) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_module_t, version) == 8);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_module_t, path) == 16);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_module_t, path_length) == 24);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_module_t, base_address) == 32);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_debug_module_t, size) == 40);
+
+#define OE_DEBUG_MODULE_MAGIC 0x0ccad3302d644b28
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////// Symbols Exported by the Runtime ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -187,6 +206,18 @@ oe_debug_push_thread_binding(oe_debug_enclave_t* enclave, struct _sgx_tcs* tcs);
  * Pop the last binding for the current thread.
  */
 OE_DEBUGRT_EXPORT oe_result_t oe_debug_pop_thread_binding(void);
+
+/**
+ * Notify that a module has been loaded within enclave address space.
+ */
+OE_DEBUGRT_EXPORT
+oe_result_t oe_debug_notify_module_loaded(oe_debug_module_t* module);
+
+/**
+ * Notify that a module is about to be unloaded within enclave address space.
+ */
+OE_DEBUGRT_EXPORT
+oe_result_t oe_debug_notify_module_unloaded(oe_debug_module_t* module);
 
 OE_EXTERNC_END
 
