@@ -847,6 +847,11 @@ oe_result_t oe_sgx_build_enclave(
     if (!(enclave->path = get_fullpath(path)))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
+    if (enclave->debug)
+    {
+        OE_CHECK(oeimage.get_debug_info(&oeimage, enclave));
+    }
+
     /* Set the magic number only if we have actually created an enclave */
     if (context->type == OE_SGX_LOAD_TYPE_CREATE)
         enclave->magic = ENCLAVE_MAGIC;
@@ -1031,6 +1036,9 @@ oe_result_t oe_create_enclave(
 
         enclave->debug_enclave = debug_enclave;
         oe_debug_notify_enclave_created(debug_enclave);
+
+        for (size_t i = 0; i < enclave->num_debug_modules; ++i)
+            oe_debug_notify_module_loaded(&enclave->debug_modules[i]);
     }
 
     /* Enclave initialization invokes global constructors which could make
@@ -1096,6 +1104,12 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 
     if (enclave->debug_enclave)
     {
+        for (size_t i = 0; i < enclave->num_debug_modules; ++i)
+        {
+            oe_debug_notify_module_unloaded(&enclave->debug_modules[i]);
+            free(enclave->debug_modules[i].path);
+        }
+
         oe_debug_notify_enclave_terminated(enclave->debug_enclave);
         free(enclave->debug_enclave->tcs_array);
         free(enclave->debug_enclave);

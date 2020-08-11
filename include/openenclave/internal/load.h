@@ -39,8 +39,10 @@ struct _oe_enclave_elf_image
 {
     elf64_t elf;
 
-    char* image_base;  /* Base of the loaded segment contents */
-    size_t image_size; /* Size of all loaded segment contents */
+    char* image_base;   /* Base of the loaded segment contents */
+    size_t image_size;  /* Size of all loaded segment contents */
+    char* image_path;   /* File path the image was loaded from */
+    uint64_t image_rva; /* RVA for where this image was added to enclave */
 
     /* Cached properties of loadable segments for enclave page add */
     oe_elf_segment_t* segments;
@@ -119,6 +121,9 @@ struct _oe_enclave_image
         const oe_sgx_enclave_properties_t* properties);
 
     oe_result_t (*unload)(oe_enclave_image_t* image);
+
+    oe_result_t (
+        *get_debug_info)(oe_enclave_image_t* image, oe_enclave_t* enclave);
 };
 
 oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image);

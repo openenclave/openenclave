@@ -133,6 +133,10 @@ typedef struct _oe_enclave
     oe_ecall_id_t* ecall_id_table;
     size_t ecall_id_table_size;
     size_t num_ecalls;
+
+    /* Debug modules within the enclave */
+    oe_debug_module_t* debug_modules;
+    size_t num_debug_modules;
 } oe_enclave_t;
 
 /* Get the event for the given TCS */
