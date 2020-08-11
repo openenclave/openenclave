@@ -49,20 +49,3 @@ using the following command from Powershell.
 ```powershell
 Start-Service "AESMService"
 ```
-
-## [Intel Data Center Attestation Primitives (DCAP) Libraries v1.6](http://registrationcenter-download.intel.com/akdlm/irc_nas/16620/Intel%20SGX%20DCAP%20for%20Windows%20v1.6.100.2.exe)
-
-While SGX1 machines without FLC support do not support DCAP quoting and attestation, the DCAP libraries package
-contains the **Intel Enclave Common API library** as well. This library is necessary for creating, initializing, and deleting enclaves.
-
-After unpacking the self-extracting ZIP executable, you will need to install the nuget package for the Enclave
-Common API library if you want to build OE SDK on the target device. To do so, make sure you have the [nuget CLI tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) installed and its location in your `PATH`.
-
-The following example will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.6.100.2`
-and that `C:\oe_prereqs` is where you would like the prerequisites to be installed:
-
-```cmd
-nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.6.100.2\nuget" -OutputDirectory c:\oe_prereqs
-```
-
-You can verify that the library is installed properly by checking whether `sgx_enclave_common.lib` exists in the folder `C:\oe_prereqs`.

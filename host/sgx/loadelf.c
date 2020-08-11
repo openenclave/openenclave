@@ -46,21 +46,14 @@ static oe_result_t _free_elf_image(oe_enclave_image_t* image)
     return OE_OK;
 }
 
-static int _compare_segments(const void* s1, const void* s2)
-{
-    const oe_elf_segment_t* seg1 = (const oe_elf_segment_t*)s1;
-    const oe_elf_segment_t* seg2 = (const oe_elf_segment_t*)s2;
-
-    return (int)(seg1->vaddr - seg2->vaddr);
-}
-
 static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t i;
     const elf64_ehdr_t* eh;
-    size_t num_segments;
+    size_t pt_load_segments_index;
     bool has_build_id = false;
+    size_t segments_size = 0;
 
     assert(image && path);
 
@@ -68,30 +61,33 @@ static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
 
     if (elf64_load(path, &image->u.elf.elf) != 0)
     {
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_IMAGE);
     }
 
     /* Save pointer to header for convenience */
     eh = (elf64_ehdr_t*)image->u.elf.elf.data;
 
-/* Fail if not a dynamic object */
-#if 0
+    /* Fail if not PIE or shared object */
     if (eh->e_type != ET_DYN)
-        OE_RAISE(OE_FAILURE);
-#endif
+        OE_RAISE_MSG(
+            OE_INVALID_IMAGE, "elf image is not a PIE or shared object", NULL);
 
     /* Fail if not Intel X86 64-bit */
     if (eh->e_machine != EM_X86_64)
-        OE_RAISE_MSG(OE_FAILURE, "elf image is not Intel X86 64-bit", NULL);
-
-    /* Fail if image is relocatable */
-    if (eh->e_type == ET_REL)
-        OE_RAISE_MSG(OE_FAILURE, "elf image is relocatable", NULL);
+        OE_RAISE_MSG(
+            OE_INVALID_IMAGE, "elf image is not Intel X86 64-bit", NULL);
 
     /* Save entry point address */
     image->entry_rva = eh->e_entry;
 
-    /* Find the addresses of the ".text", ".ecall", and ".oeinfo" sections */
+    /* Scan through the section headers and extract the following values from
+     * these sections.
+     *   .text: text_rva
+     *   .oeinfo: oeinfo_rva, oeinfo_file_pos
+     *   .note.gnu.build-id: has_build_id
+     *   .tdata: tdata_rva, tdata_size, tdata_align
+     *   .tbss: tbss_size, tbss_align
+     */
     {
         for (i = 0; i < eh->e_shnum; i++)
         {
@@ -100,7 +96,7 @@ static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
 
             /* Invalid section header. The elf file is corrupted. */
             if (sh == NULL)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE(OE_INVALID_IMAGE);
 
             const char* name =
                 elf64_get_string_from_shstrtab(&image->u.elf.elf, sh->sh_name);
@@ -113,13 +109,6 @@ static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
                 }
                 else if (strcmp(name, ".oeinfo") == 0)
                 {
-#if 0
-                    /* .oeinfo must contain exactly the property */
-                    if (sh->sh_size != sizeof(oe_sgx_enclave_properties_t))
-                    {
-                        OE_RAISE(OE_FAILURE);
-                    }
-#endif
                     image->oeinfo_rva = sh->sh_addr;
                     image->oeinfo_file_pos = sh->sh_offset;
                     OE_TRACE_VERBOSE(
@@ -160,7 +149,7 @@ static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
         /* Fail if required sections not found */
         if ((0 == image->text_rva) || (0 == image->oeinfo_rva))
         {
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_INVALID_IMAGE);
         }
 
         /* It is now the default for linux shared libraries and executables to
@@ -186,25 +175,15 @@ static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
 
             /* Check for corrupted program header. */
             if (ph == NULL)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE(OE_INVALID_IMAGE);
 
             /* Check for proper sizes for the program segment. */
             if (ph->p_filesz > ph->p_memsz)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE(OE_INVALID_IMAGE);
 
             switch (ph->p_type)
             {
                 case PT_LOAD:
-
-/* kind of surprised that segments may not be page aligned */
-#if 0
-                /* p_vaddr must be page aligned */
-                if (ph->p_vaddr & (OE_PAGE_SIZE - 1))
-                {
-                    OE_RAISE(OE_FAILURE);
-                }
-#endif
-
                     if (lo > ph->p_vaddr)
                         lo = ph->p_vaddr;
 
@@ -221,27 +200,25 @@ static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
 
         /* Fail if LO not found */
         if (lo != 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_INVALID_IMAGE);
 
         /* Fail if HI not found */
         if (hi == 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_INVALID_IMAGE);
 
         /* Fail if no segment found */
         if (image->u.elf.num_segments == 0)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_INVALID_IMAGE);
 
         /* Calculate the full size of the image (rounded up to the page size) */
         image->image_size = oe_round_up_to_page_size(hi - lo);
     }
 
-    /* allocate segments */
-    image->u.elf.segments = (oe_elf_segment_t*)oe_memalign(
-        OE_PAGE_SIZE, image->u.elf.num_segments * sizeof(oe_elf_segment_t));
-    memset(
-        image->u.elf.segments,
-        0,
-        image->u.elf.num_segments * sizeof(oe_elf_segment_t));
+    /* Allocate segments */
+    segments_size = image->u.elf.num_segments * sizeof(oe_elf_segment_t);
+    image->u.elf.segments =
+        (oe_elf_segment_t*)oe_memalign(OE_PAGE_SIZE, segments_size);
+    memset(image->u.elf.segments, 0, segments_size);
     if (!image->u.elf.segments)
     {
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -258,118 +235,118 @@ static oe_result_t _load_elf_image(const char* path, oe_enclave_image_t* image)
     memset(image->image_base, 0, image->image_size);
 
     /* Add all loadable program segments to SEGMENTS array */
-    for (i = 0, num_segments = 0; i < eh->e_phnum; i++)
+    for (i = 0, pt_load_segments_index = 0; i < eh->e_phnum; i++)
     {
         const elf64_phdr_t* ph = elf64_get_program_header(&image->u.elf.elf, i);
-        oe_elf_segment_t* seg = &image->u.elf.segments[num_segments];
+        oe_elf_segment_t* seg = &image->u.elf.segments[pt_load_segments_index];
         void* segdata;
 
         assert(ph);
         assert(ph->p_filesz <= ph->p_memsz);
-        if (ph->p_type == PT_TLS)
+
+        switch (ph->p_type)
         {
-            // The ELF Handling for ELF Storage spec
-            // (https://uclibc.org/docs/tls.pdf) says in page 4:
-            //     "The section header is not usable; instead a new program
-            //      header entry is created."
-            // These assertions exist to understand those scenarios better.
-            // Currently, in all cases except one, the section and program
-            // header values are observed to be same.
-            if (image->tdata_rva != ph->p_vaddr)
+            case PT_LOAD:
             {
-                if (image->tdata_rva == 0)
+                /* Cache the segment properties used during the image load */
+                seg->memsz = ph->p_memsz;
+                seg->vaddr = ph->p_vaddr;
+
+                /* Map the segment permission flags to OE equivalents */
                 {
-                    // The ELF has no thread local variables that are
-                    // explicitly initialized. There for there is no .tdata
-                    // section; only a .tbss section.
-                    // In this case, the linker seems to put the address of the
-                    // .tbss section in p_vaddr field; however it leaves the
-                    // size zero. This seems to be strange linker behavior;
-                    // we don't assert on it.
-                    OE_TRACE_INFO("Ignoring .tdata_rva, p_vaddr mismatch for "
-                                  "empty .tdata section");
+                    if (ph->p_flags & PF_R)
+                        seg->flags |= OE_SEGMENT_FLAG_READ;
+
+                    if (ph->p_flags & PF_W)
+                        seg->flags |= OE_SEGMENT_FLAG_WRITE;
+
+                    if (ph->p_flags & PF_X)
+                        seg->flags |= OE_SEGMENT_FLAG_EXEC;
                 }
-                else
+
+                segdata = elf64_get_segment(&image->u.elf.elf, i);
+                if (!segdata)
                 {
+                    OE_RAISE_MSG(
+                        OE_INVALID_IMAGE,
+                        "loadelf: failed to get segment at index %lu\n",
+                        i);
+                }
+
+                /* Copy the segment to the image */
+                memcpy(image->image_base + seg->vaddr, segdata, ph->p_filesz);
+                pt_load_segments_index++;
+                break;
+            }
+            case PT_TLS:
+            {
+                // The ELF Handling for ELF Storage spec
+                // (https://uclibc.org/docs/tls.pdf) says in page 4:
+                //     "The section header is not usable; instead a new program
+                //      header entry is created."
+                // These assertions exist to understand those scenarios better.
+                // Currently, in all cases except one, the section and program
+                // header values are observed to be same.
+                if (image->tdata_rva != ph->p_vaddr)
+                {
+                    if (image->tdata_rva == 0)
+                    {
+                        // The ELF has no thread local variables that are
+                        // explicitly initialized. Therefore there is no .tdata
+                        // section; only a .tbss section.
+                        //
+                        // In this case, the linker seems to put the address of
+                        // the .tbss section in p_vaddr field; however it leaves
+                        // the size zero. This seems to be strange linker
+                        // behavior; we don't assert on it.
+                        OE_TRACE_INFO(
+                            "Ignoring .tdata_rva, p_vaddr mismatch for "
+                            "empty .tdata section");
+                    }
+                    else
+                    {
+                        OE_TRACE_ERROR(
+                            "loadelf: .tdata rva mismatch. Section value = "
+                            "%lx, "
+                            "Program header value = 0x%lx\n",
+                            image->tdata_rva,
+                            ph->p_vaddr);
+                        OE_RAISE(OE_INVALID_IMAGE);
+                    }
+                }
+                if (image->tdata_size != ph->p_filesz)
+                {
+                    // Always assert on size mismatch.
                     OE_TRACE_ERROR(
-                        "loadelf: .tdata rva mismatch. Section value = %lx, "
-                        "Program header value = 0x%lx\n",
-                        image->tdata_rva,
-                        ph->p_vaddr);
-                    OE_RAISE(OE_FAILURE);
+                        "loadelf: .tdata_size mismatch. Section value = %lx, "
+                        "Program "
+                        "header value = 0x%lx\n",
+                        image->tdata_size,
+                        ph->p_filesz);
+                    OE_RAISE(OE_INVALID_IMAGE);
                 }
+                break;
             }
-            if (image->tdata_size != ph->p_filesz)
-            {
-                // Always assert on size mismatch.
-                OE_TRACE_ERROR(
-                    "loadelf: .tdata_size mismatch. Section value = %lx, "
-                    "Program "
-                    "header value = 0x%lx\n",
-                    image->tdata_size,
-                    ph->p_filesz);
-                OE_RAISE(OE_FAILURE);
-            }
-            continue;
+            default:
+                /* Ignore all other segment types */
+                break;
         }
-
-        /* Skip non-loadable program segments */
-        if (ph->p_type != PT_LOAD)
-            continue;
-
-        /* Set oe_elf_segment_t.memsz */
-        seg->memsz = ph->p_memsz;
-
-        /* Set oe_elf_segment_t.filesz, IS THIS FIELD NEEDED??? */
-        seg->filesz = ph->p_filesz;
-
-        /* Set oe_elf_segment_t.offset. IS THIS FIELD NEEDED??? */
-        seg->offset = ph->p_offset;
-
-        /* Set oe_elf_segment_t.vaddr */
-        seg->vaddr = ph->p_vaddr;
-
-        /* Set oe_elf_segment_t.flags */
-        {
-            if (ph->p_flags & PF_R)
-                seg->flags |= OE_SEGMENT_FLAG_READ;
-
-            if (ph->p_flags & PF_W)
-                seg->flags |= OE_SEGMENT_FLAG_WRITE;
-
-            if (ph->p_flags & PF_X)
-                seg->flags |= OE_SEGMENT_FLAG_EXEC;
-        }
-
-        /* Set oe_elf_segment_t.filedata  IS THE FIELD NEEDED??? */
-        seg->filedata = (unsigned char*)image->u.elf.elf.data + seg->offset;
-
-        /* Should we fail if elf64_get_segment failed??? */
-        segdata = elf64_get_segment(&image->u.elf.elf, i);
-        if (segdata)
-        {
-            /* copy the segment to image */
-            memcpy(image->image_base + seg->vaddr, segdata, seg->filesz);
-        }
-
-        num_segments++;
     }
 
-    assert(num_segments == image->u.elf.num_segments);
-
-    /* sort the segment by vaddr. NOT SURE IF THIS IS NEED - IS ELF SEGMENTED
-     * SORTED LIKE PE SECTIONS? */
-    qsort(
-        image->u.elf.segments,
-        num_segments,
-        sizeof(oe_elf_segment_t),
-        _compare_segments);
+    assert(pt_load_segments_index == image->u.elf.num_segments);
 
     /* check that segments are valid */
     for (i = 0; i < image->u.elf.num_segments - 1; i++)
     {
         const oe_elf_segment_t* seg = &image->u.elf.segments[i];
         const oe_elf_segment_t* seg_next = &image->u.elf.segments[i + 1];
+        if (seg->vaddr >= seg_next->vaddr)
+        {
+            OE_RAISE_MSG(
+                OE_UNEXPECTED,
+                "loadelf: segment vaddrs found out of order\n",
+                NULL);
+        }
         if ((seg->vaddr + seg->memsz) >
             oe_round_down_to_page_size(seg_next->vaddr))
         {
@@ -539,9 +516,8 @@ static oe_result_t _add_segment_pages(
 
     if (flags == 0)
     {
-        /* should we fail or just skip? follow the old logic for now*/
-        result = OE_OK;
-        goto done;
+        OE_RAISE_MSG(
+            OE_UNEXPECTED, "Segment with no page protections found.\n", NULL);
     }
 
     flags |= SGX_SECINFO_REG;
@@ -723,7 +699,7 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
     {
         OE_TRACE_ERROR(
             "Thread-local variables exceed available thread-local space.\n");
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_IMAGE);
     }
 
     /* Clear the hash when taking the measure */
@@ -797,7 +773,7 @@ oe_result_t oe_load_elf_enclave_image(
     if (elf64_load_relocations(
             &image->u.elf.elf, &image->u.elf.reloc_data, &image->reloc_size) !=
         0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_IMAGE);
 
     if (oe_get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
         _dump_relocations(image->u.elf.reloc_data, image->reloc_size);

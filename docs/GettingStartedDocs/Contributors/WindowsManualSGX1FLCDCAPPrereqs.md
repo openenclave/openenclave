@@ -51,19 +51,9 @@ After unpacking the self-extracting ZIP executable, you can refer to the *Intel 
 for more details on how to install the contents of the package.
 
 Note that Windows Server 2019 should have this package installed by default via Windows Update.
-In that case, it is only necessary to set the registry key to allow the LC_driver to run, and install the
-DCAP nuget packages if you want to build the OE SDK.
+In that case, it is only necessary to set the registry key to allow the LC_driver to run.
 
 The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.7.100.2`:
-
-### Install the Intel DCAP nuget packages
-
-The standalone `nuget.exe` [CLI tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) can be used to do this from the command prompt:
-
-```cmd
-nuget.exe install DCAP_Components -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.7.100.2\nuget" -OutputDirectory c:\oe_prereqs
-nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.7.100.2\nuget" -OutputDirectory c:\oe_prereqs
-```
 
 ### Install the Intel DCAP driver
 
@@ -92,12 +82,4 @@ nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP fo
       ```cmd
       devcon.exe update base\WindowsServer2019_Windows10\sgx_base.inf *INT0E0C
       devcon.exe update dcap\WindowsServer2019_Windows10\sgx_dcap.inf "SWC\VEN_INT&DEV_0E0C_DCAP"
-      ```
-
-3. Install the DCAP nuget packages:
-    - The standalone `nuget.exe` [CLI tool](https://dist.nuget.org/win-x86-commandline/latest/nuget.exe) can be used to do this from the command prompt:
-
-      ```cmd
-      nuget.exe install DCAP_Components -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.7.100.2\nuget" -OutputDirectory c:\oe_prereqs
-      nuget.exe install EnclaveCommonAPI -ExcludeVersion -Source "C:\Intel SGX DCAP for Windows v1.7.100.2\nuget" -OutputDirectory c:\oe_prereqs
       ```

@@ -25,12 +25,6 @@ typedef struct _oe_sgx_enclave_properties oe_sgx_enclave_properties_t;
 
 typedef struct _oe_elf_segment
 {
-    /* Pointer to segment from ELF file */
-    void* filedata;
-
-    /* Size of this segment in the ELF file */
-    size_t filesz;
-
     /* Size of this segment in memory */
     size_t memsz;
 
