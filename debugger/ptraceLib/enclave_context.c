@@ -161,17 +161,14 @@ cleanup:
 
 static int _get_enclave_ssa_frame_size(
     pid_t pid,
-    void* tcs_addr,
+    void* td_t_addr,
     uint64_t* ssa_frame_size)
 {
     int ret;
     oe_thread_data_t oe_thread_data;
     size_t read_byte_length = 0;
 
-    // oe_sgx_td_t is in OE_TD_FROM_TCS_BYTE_OFFSET from tcs.
-    // It is defined by enclave layout in td.c.
-    oe_sgx_td_t* td =
-        (oe_sgx_td_t*)(((unsigned char*)tcs_addr) + OE_TD_FROM_TCS_BYTE_OFFSET);
+    oe_sgx_td_t* td = (oe_sgx_td_t*)td_t_addr;
     ret = oe_read_process_memory(
         pid,
         (void*)td,
@@ -206,6 +203,8 @@ static int _get_enclave_thread_current_ssa_info(
     size_t read_byte_length;
     uint64_t ssa_frame_size = 0;
     sgx_tcs_t tcs;
+    void* enclave_base_address;
+    void* td_t_addr;
 
     // Read TCS header.
     ret = oe_read_process_memory(
@@ -224,8 +223,25 @@ static int _get_enclave_thread_current_ssa_info(
         return -1;
     }
 
+    // SSA is assigned to the page immediately after the tcs page.
+    // SSA address is also derived from adding tcs.ossa to enclave base address.
+    // See: host/sgx/create.c
+    // See:
+    // https://github.com/intel/linux-sgx/blob/62b116c502b09b125db9acc965694d3ecff8e698/sdk/debugger_interface/linux/se_ptrace.c#L194-L199
+    // This can be used to compute the enclave base address:
+    //    encave-base-address + tcs.ossa = tcs_addr + page-size
+    //    enclave-base-address = tcs_addr + page-size - tcs.ossa
+    enclave_base_address = (uint8_t*)tcs_addr + OE_PAGE_SIZE - tcs.ossa;
+
+    // GS register will point to td_t. GS register value can be computed by
+    // adding tcs.gsbase to enclave base address.
+    // Note: FS register will also point to td_t upon enclave entry, but
+    // enclaves can modify FS register to implement their own threading
+    // libraries.
+    td_t_addr = (uint8_t*)enclave_base_address + tcs.gsbase;
+
     // Get SSA frame size
-    _get_enclave_ssa_frame_size(pid, tcs_addr, &ssa_frame_size);
+    _get_enclave_ssa_frame_size(pid, td_t_addr, &ssa_frame_size);
     if (ret != 0)
     {
         return ret;

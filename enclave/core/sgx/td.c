@@ -42,7 +42,7 @@ OE_STATIC_ASSERT(sizeof(oe_ocall_context_t) == (2 * sizeof(uintptr_t)));
 
 // Offset of the td page from the tcs page in bytes. This varies depending on
 // the size of thread-local data.
-OE_EXPORT uint64_t td_from_tcs_offset;
+OE_EXPORT uint64_t _td_from_tcs_offset;
 
 /*
 **==============================================================================
@@ -132,7 +132,7 @@ void td_push_callsite(oe_sgx_td_t* td, Callsite* callsite)
 
 oe_sgx_td_t* td_from_tcs(void* tcs)
 {
-    return (oe_sgx_td_t*)((uint8_t*)tcs + td_from_tcs_offset);
+    return (oe_sgx_td_t*)((uint8_t*)tcs + _td_from_tcs_offset);
 }
 
 /*
@@ -147,7 +147,7 @@ oe_sgx_td_t* td_from_tcs(void* tcs)
 
 void* td_to_tcs(const oe_sgx_td_t* td)
 {
-    return (uint8_t*)td - td_from_tcs_offset;
+    return (uint8_t*)td - _td_from_tcs_offset;
 }
 
 /*
