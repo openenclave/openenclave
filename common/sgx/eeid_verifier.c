@@ -182,7 +182,6 @@ static oe_result_t _verify_sgx_report(
     oe_report_t* parsed_report)
 {
     oe_result_t result = OE_UNEXPECTED;
-    OE_UNUSED(sgx_evidence_buffer_size);
     const uint8_t* report_buffer = sgx_evidence_buffer;
     oe_datetime_t* time = NULL;
     oe_report_header_t* header = (oe_report_header_t*)report_buffer;
@@ -208,7 +207,7 @@ static oe_result_t _verify_sgx_report(
 
     sgx_claims_size = sgx_evidence_buffer_size -
                       (header->report_size + sizeof(oe_report_header_t));
-    *sgx_claims = oe_malloc(sgx_claims_size);
+    *sgx_claims = NULL;
 
     OE_CHECK(oe_parse_report(
         sgx_evidence_buffer,
@@ -324,6 +323,8 @@ static oe_result_t _eeid_verify_evidence(
         uint64_t r_attributes = parsed_report.identity.attributes;
         uint32_t r_id_version = parsed_report.identity.id_version;
 
+        oe_free_claims(sgx_claims, sgx_claims_length);
+
         /* EEID passed to the verifier */
         if (endorsements_buffer)
         {
@@ -393,7 +394,12 @@ static oe_result_t _eeid_free_claims_list(
 {
     OE_UNUSED(context);
     OE_UNUSED(claims_size);
-    free(claims);
+    for (size_t i = 0; i < claims_size; i++)
+    {
+        oe_free(claims[i].name);
+        oe_free(claims[i].value);
+    }
+    oe_free(claims);
     return OE_OK;
 }
 

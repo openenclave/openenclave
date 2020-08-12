@@ -95,6 +95,9 @@ static oe_result_t _get_sgx_evidence(
     result = OE_OK;
 
 done:
+
+    oe_free(report);
+
     return result;
 }
 
