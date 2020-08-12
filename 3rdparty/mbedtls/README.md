@@ -2,10 +2,9 @@ mbedTLS:
 ========
 
 This directory contains the **mbedTLS** crypto library for enclaves.
-The `./mbedtls` subdirectory contains a clone of the sources downloaded
-from https://tls.mbed.org/download-archive.
 
-The version of mbedTLS currently in use is reflected in `update.make`.
+The `./mbedtls` subdirectory is the https://github.com/ARMmbed/mbedtls
+repo LTS mbedtls-2.16 branch, included as a git submodule.
 
 The enclave version of mbedTLS builds the cloned sources with the following
 changes:
@@ -16,13 +15,8 @@ changes:
   entropy implementation mbedTLS libraries to avoid a circular dependency
   with the Open Enclave core runtime.
 
-- It backports mbedtls patches from the development branch to the LTS version
-  OE currently uses:
+- It cherry-picks mbedtls patches from the development branch to the LTS
+  branch:
 
-  - Update `mbedtls/library/x509write_crt.c` with fixes from [#2632](
-    https://github.com/ARMmbed/mbedtls/pull/2632) contained in
-    `0001-Backport-2632-code-changes-to-2.16.patch`.
-
-  - Update `mbedtls/library/x509write_csr.c` with fixes from [#3464](
-    https://github.com/ARMmbed/mbedtls/pull/3464) contained in
-    `0001-Avoid-stack-allocation-of-large-memory-buffers.patch`.
+  - de7e036: Merge pull request #3489 from CodeMonkeyLeet/mbedtls-2.16_backport_3464
+  - dfd5172: Merge pull request #3488 from CodeMonkeyLeet/mbedtls-2.16_backport_2632
