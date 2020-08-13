@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+### Security
+- Update mbedTLS to version 2.16.7. Refer to the [2.16.7 release notes](
+  https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.7) for the set of
+  issues addressed.
 
 [0.10.0][v0.10.0_log]
 ------------
