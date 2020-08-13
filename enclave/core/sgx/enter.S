@@ -47,7 +47,8 @@ oe_enter:
     // Upon first entry to the enclave, td->base.self in the td_t structure
     // is not yet initialized. However, the loader in host/sgx/create.c places
     // the td_t structure as a specific offset from TCS.
-    lea TD_FROM_TCS(%rbx), %r11
+    mov td_from_tcs_offset(%rip), %r11
+    add %rbx, %r11
 
 .save_host_registers:
     // Backup the current host rbp, rsp, and context to previous.

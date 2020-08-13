@@ -64,6 +64,9 @@ struct _oe_sgx_load_context
     /* Hash context used to measure enclave as it is loaded */
     oe_sha256_context_t hash_context;
 
+    /* Number of pages needed for thread-local data */
+    size_t num_tls_pages;
+
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     /* EEID data needed during enclave creation */
     oe_eeid_t* eeid;
