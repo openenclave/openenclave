@@ -295,6 +295,9 @@ int oe_syscall_closedir_ocall(uint64_t dirp)
 
 static void _stat_copy(const struct stat* st, struct oe_stat_t* buf)
 {
+    // Make sure unset members are zero.
+    *buf = (struct oe_stat_t){0};
+
     buf->st_dev = st->st_dev;
     buf->st_ino = st->st_ino;
     buf->st_nlink = st->st_nlink;

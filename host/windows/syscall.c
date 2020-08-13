@@ -1696,6 +1696,9 @@ done:
 
 static void _stat_copy(const struct _stat64* winstat, struct oe_stat_t* buf)
 {
+    // Make sure unset members are zero.
+    *buf = (struct oe_stat_t){0};
+
     // The macro #define st_atime st_atim.tv_sec
     // provides backward compatibility for older versions of POSIX. Here we need
     // to undef to avoid winstat.st_atime be treated as winstat.st_atim.tv_sec.
