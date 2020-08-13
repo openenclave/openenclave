@@ -701,7 +701,7 @@ static oe_result_t _patch(
     aligned_size = oe_round_up_to_multiple(aligned_size, OE_PAGE_SIZE);
     _set_uint64_t_dynamic_symbol_value(
         image,
-        "td_from_tcs_offset",
+        "_td_from_tcs_offset",
         aligned_size + OE_SGX_NUM_CONTROL_PAGES * OE_PAGE_SIZE);
     context->num_tls_pages = aligned_size / OE_PAGE_SIZE;
 
