@@ -110,7 +110,7 @@ int setup()
     oe_result_t result;
 
     /* Load the host file system module. */
-    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
+    if ((result = oe_load_module_host_file_system()) != OE_OK)
         return -1;
 
     /* Mount the host file system on the root directory. */
