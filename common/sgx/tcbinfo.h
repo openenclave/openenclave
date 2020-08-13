@@ -15,6 +15,14 @@ OE_EXTERNC_BEGIN
 
 #define OE_TCB_LEVEL_STATUS_UNKNOWN (0)
 
+/*! \enum _oe_tcb_info_id
+ *  \brief TCB Info id (V3 only)
+ */
+typedef enum _oe_tcb_info_id
+{
+    TCB_INFO_ID_SGX,
+} oe_tcb_info_id_t;
+
 /*! \struct oe_tcb_level_status_t
  */
 typedef union _oe_tcb_level_status {
@@ -73,12 +81,19 @@ typedef struct _oe_parsed_tcb_info
     uint8_t signature[64];
 
     // V2 fields
+    // HW representation of CPUSVN for a given FMSPC is not architecturally
+    // defined to provide designers more flexibility. SW needs "tcbType" to
+    // determine how to decompose the CPUSVN. Each FMSPC has its own
+    // tcbType. For now, there is only one tcbType(0) has been defined.
     uint32_t tcb_type;
     uint32_t tcb_evaluation_data_number;
     oe_tcb_info_tcb_level_t tcb_level;
 
     const uint8_t* tcb_info_start;
     size_t tcb_info_size;
+
+    // V3 field
+    oe_tcb_info_id_t id;
 
 } oe_parsed_tcb_info_t;
 

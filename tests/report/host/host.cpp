@@ -27,10 +27,18 @@
 extern void TestVerifyTCBInfo(
     oe_enclave_t* enclave,
     const char* test_file_name);
+extern void TestVerifyTCBInfo_Negative(
+    oe_enclave_t* enclave,
+    const char* file_names[],
+    size_t file_cnt);
 extern void TestVerifyTCBInfoV2(
     oe_enclave_t* enclave,
     const char* test_filename);
-extern void TestVerifyTCBInfoV2_AdvisoryIDs(
+extern void TestVerifyTCBInfo_AdvisoryIDs(
+    oe_enclave_t* enclave,
+    const char* test_filename,
+    uint32_t version);
+extern void TestVerifyTCBInfoV3(
     oe_enclave_t* enclave,
     const char* test_filename);
 extern int FileToBytes(const char* path, std::vector<uint8_t>* output);
@@ -201,11 +209,156 @@ int main(int argc, const char* argv[])
 
         TestVerifyTCBInfo(enclave, "./data/tcbInfo.json");
         TestVerifyTCBInfo(enclave, "./data/tcbInfo_with_pceid.json");
+        const char* negative_files[] = {
+            // In the following files, a property in corresponding level has
+            // been capitalized. JSON is case sensitive and therefore schema
+            // validation should fail.
+            "./data/tcbInfoNegativePropertyMissingLevel0.json",
+            "./data/tcbInfoNegativePropertyMissingLevel1.json",
+            "./data/tcbInfoNegativePropertyMissingLevel2.json",
+            "./data/tcbInfoNegativePropertyMissingLevel3.json",
+            // In the following files, a property in corresponding level has
+            // wrong type.
+            "./data/tcbInfoNegativePropertyWrongTypeLevel0.json",
+            "./data/tcbInfoNegativePropertyWrongTypeLevel1.json",
+            "./data/tcbInfoNegativePropertyWrongTypeLevel2.json",
+            "./data/tcbInfoNegativePropertyWrongTypeLevel3.json",
+
+            // Comp Svn greater than uint8_t
+            "./data/tcbInfoNegativeCompSvn.json",
+
+            // pce Svn greater than uint16_t
+            "./data/tcbInfoNegativePceSvn.json",
+
+            // Invalid issueDate field.
+            "./data/tcbInfoNegativeInvalidIssueDate.json",
+
+            // Invalid nextUpdate field.
+            "./data/tcbInfoNegativeInvalidNextUpdate.json",
+
+            // Missing nextUpdate field.
+            "./data/tcbInfoNegativeMissingNextUpdate.json",
+
+            // Signature != 64 bytes
+            "./data/tcbInfoNegativeSignature.json",
+
+            // Unsupported JSON constructs
+            "./data/tcbInfoNegativeStringEscape.json",
+            "./data/tcbInfoNegativeIntegerOverflow.json",
+            "./data/tcbInfoNegativeIntegerWithSign.json",
+            "./data/tcbInfoNegativeFloat.json",
+        };
+        TestVerifyTCBInfo_Negative(
+            enclave,
+            negative_files,
+            sizeof(negative_files) / sizeof(negative_files[0]));
 
         TestVerifyTCBInfoV2(enclave, "./data_v2/tcbInfo.json");
         TestVerifyTCBInfoV2(enclave, "./data_v2/tcbInfo_with_pceid.json");
-        TestVerifyTCBInfoV2_AdvisoryIDs(
-            enclave, "./data_v2/tcbInfoAdvisoryIds.json");
+        const char* negative_files_v2[] = {
+            // In the following files, a property in corresponding level has
+            // been capitalized. JSON is case sensitive and therefore schema
+            // validation should fail.
+            "./data_v2/tcbInfoNegativePropertyMissingLevel0.json",
+            "./data_v2/tcbInfoNegativePropertyMissingLevel1.json",
+            "./data_v2/tcbInfoNegativePropertyMissingLevel2.json",
+            "./data_v2/tcbInfoNegativePropertyMissingLevel3.json",
+
+            // In the following files, a property in corresponding level has
+            // wrong type.
+            "./data_v2/tcbInfoNegativePropertyWrongTypeLevel0.json",
+            "./data_v2/tcbInfoNegativePropertyWrongTypeLevel1.json",
+            "./data_v2/tcbInfoNegativePropertyWrongTypeLevel2.json",
+            "./data_v2/tcbInfoNegativePropertyWrongTypeLevel3.json",
+
+            // Comp Svn greater than uint8_t
+            "./data_v2/tcbInfoNegativeCompSvn.json",
+
+            // pce Svn greater than uint16_t
+            "./data_v2/tcbInfoNegativePceSvn.json",
+
+            // Invalid issueDate field.
+            "./data_v2/tcbInfoNegativeInvalidIssueDate.json",
+
+            // Invalid nextUpdate field.
+            "./data_v2/tcbInfoNegativeInvalidNextUpdate.json",
+
+            // Missing nextUpdate field.
+            "./data_v2/tcbInfoNegativeMissingNextUpdate.json",
+
+            // Signature != 64 bytes
+            "./data_v2/tcbInfoNegativeSignature.json",
+
+            // Unsupported JSON constructs
+            "./data_v2/tcbInfoNegativeStringEscape.json",
+            "./data_v2/tcbInfoNegativeIntegerOverflow.json",
+            "./data_v2/tcbInfoNegativeIntegerWithSign.json",
+            "./data_v2/tcbInfoNegativeFloat.json",
+            // TcbType != 0.
+            "./data_v2/tcbInfoNegativeTcbType.json",
+        };
+        TestVerifyTCBInfo_Negative(
+            enclave,
+            negative_files_v2,
+            sizeof(negative_files_v2) / sizeof(negative_files_v2[0]));
+        TestVerifyTCBInfo_AdvisoryIDs(
+            enclave, "./data_v2/tcbInfoAdvisoryIds.json", 2);
+
+        TestVerifyTCBInfoV3(enclave, "./data_v3/tcbInfo.json");
+        TestVerifyTCBInfoV3(enclave, "./data_v3/tcbInfo_with_pceid.json");
+        const char* negative_files_v3[] = {
+            // In the following files, id property is missing or has unsupported
+            // value.
+            "./data_v3/tcbInfoNegativeMissingId.json",
+            "./data_v3/tcbInfoNegativeId.json",
+
+            // In the following files, a property in corresponding level has
+            // been capitalized. JSON is case sensitive and therefore schema
+            // validation should fail.
+            "./data_v3/tcbInfoNegativePropertyMissingLevel0.json",
+            "./data_v3/tcbInfoNegativePropertyMissingLevel1.json",
+            "./data_v3/tcbInfoNegativePropertyMissingLevel2.json",
+            "./data_v3/tcbInfoNegativePropertyMissingLevel3.json",
+
+            // In the following files, a property in corresponding level has
+            // wrong type.
+            "./data_v3/tcbInfoNegativePropertyWrongTypeLevel0.json",
+            "./data_v3/tcbInfoNegativePropertyWrongTypeLevel1.json",
+            "./data_v3/tcbInfoNegativePropertyWrongTypeLevel2.json",
+            "./data_v3/tcbInfoNegativePropertyWrongTypeLevel3.json",
+
+            // Comp Svn greater than uint8_t
+            "./data_v3/tcbInfoNegativeCompSvn.json",
+
+            // pce Svn greater than uint16_t
+            "./data_v3/tcbInfoNegativePceSvn.json",
+
+            // Invalid issueDate field.
+            "./data_v3/tcbInfoNegativeInvalidIssueDate.json",
+
+            // Invalid nextUpdate field.
+            "./data_v3/tcbInfoNegativeInvalidNextUpdate.json",
+
+            // Missing nextUpdate field.
+            "./data_v3/tcbInfoNegativeMissingNextUpdate.json",
+
+            // Signature != 64 bytes
+            "./data_v3/tcbInfoNegativeSignature.json",
+
+            // Unsupported JSON constructs
+            "./data_v3/tcbInfoNegativeStringEscape.json",
+            "./data_v3/tcbInfoNegativeIntegerOverflow.json",
+            "./data_v3/tcbInfoNegativeIntegerWithSign.json",
+            "./data_v3/tcbInfoNegativeFloat.json",
+            // TcbType != 0.
+            "./data_v3/tcbInfoNegativeTcbType.json",
+        };
+        TestVerifyTCBInfo_Negative(
+            enclave,
+            negative_files_v3,
+            sizeof(negative_files_v3) / sizeof(negative_files_v3[0]));
+        TestVerifyTCBInfo_AdvisoryIDs(
+            enclave, "./data_v3/tcbInfoAdvisoryIds.json", 3);
     }
     else
     {

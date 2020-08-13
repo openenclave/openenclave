@@ -500,6 +500,32 @@ done:
 }
 
 /**
+ * Type: tcbLevel in TCB Info (V3)
+ * Schema: Identical to tcbLevel in V2 TCB Info
+ * {
+ *    "tcb" : object of type tcb (Note: QE Identity info has the same object,
+ * but with different set of values). "tcbDate" : oe_datetime_t when TCB level
+ * was certified not to be vulnerable. ISO 8601 standard(YYYY-MM-DDThh:mm:ssZ).
+ *    "tcbStatus" : one of "UpToDate" or "OutOfDate" or "Revoked" or
+ *                  "ConfigurationNeeded" or "OutOfDateConfigurationNeeded" or
+ *                  "SWHardeningNeeded" or "ConfigurationAndSWHardeningNeeded"
+ *    "advisoryIDs" :
+ * array of strings describing vulnerabilities that this TCB level is vulnerable
+ * to.  Example: ["INTEL-SA-00079", "INTEL-SA-00076"]
+ * }
+ */
+static oe_result_t _read_tcb_info_tcb_level_v3(
+    const uint8_t* info_json,
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
+    oe_tcb_info_tcb_level_t* tcb_level)
+{
+    return _read_tcb_info_tcb_level_v2(
+        info_json, itr, end, platform_tcb_level, tcb_level);
+}
+
+/**
  * type = tcbInfo
  * V1 Schema:
  * {
@@ -522,6 +548,19 @@ done:
  *    "tcbEvaluationDataNumber" : integer
  *    "tcbLevels" : [ objects of type oe_tcb_info_tcb_level_t ]
  * }
+ *
+ * V3 Schema:
+ * {
+ *    "id" : string,
+ *    "version" : integer,
+ *    "issueDate" : string,
+ *    "nextUpdate" : string,
+ *    "fmspc" : "hex string (12 nibbles)"
+ *    "pceId" : "hex string (4 nibbles)"
+ *    "tcbType" : integer
+ *    "tcbEvaluationDataNumber" : integer
+ *    "tcbLevels" : [ objects of type oe_tcb_info_tcb_level_t ]
+ * }
  */
 static oe_result_t _read_tcb_info(
     const uint8_t* tcb_info_json,
@@ -532,15 +571,45 @@ static oe_result_t _read_tcb_info(
 {
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
     uint64_t value = 0;
+    const uint8_t* id_str = NULL;
+    size_t id_size = 0;
+    // if tcb info has the property "id", the lowest version is 3
+    bool has_id = false;
     const uint8_t* date_str = NULL;
     size_t date_size = 0;
 
     parsed_info->tcb_info_start = *itr;
     OE_CHECK(_read('{', itr, end));
 
+    // From version 3, the first property is "id" instead of "version"
+    if (OE_JSON_INFO_PARSE_ERROR !=
+        _read_property_name_and_colon("id", itr, end))
+    {
+        OE_TRACE_VERBOSE("Reading id");
+        OE_CHECK(_read_string(itr, end, &id_str, &id_size));
+        if (!_json_str_equal(id_str, id_size, "SGX"))
+        {
+            OE_RAISE_MSG(
+                OE_JSON_INFO_PARSE_ERROR,
+                "Unsupported TCB level info id %s",
+                id_str);
+        }
+        parsed_info->id = TCB_INFO_ID_SGX;
+        has_id = true;
+        OE_CHECK(_read(',', itr, end));
+    }
+
     OE_TRACE_VERBOSE("Reading version");
     OE_CHECK(_read_property_name_and_colon("version", itr, end));
     OE_CHECK(_read_integer(itr, end, &value));
+    if ((value > 2) != has_id)
+    {
+        OE_RAISE_MSG(
+            OE_JSON_INFO_PARSE_ERROR,
+            "Unsupported TCB version %s when TCB %s",
+            value,
+            (has_id ? "has id" : "doesn't have id"));
+    }
     parsed_info->version = (uint32_t)value;
     OE_CHECK(_read(',', itr, end));
 
@@ -590,16 +659,59 @@ static oe_result_t _read_tcb_info(
         }
     }
 
-    if (parsed_info->version == 2)
+    if (parsed_info->version == 3)
+    {
+        OE_TRACE_VERBOSE("V3: Reading tcbType");
+        OE_CHECK(_read_property_name_and_colon("tcbType", itr, end));
+        OE_CHECK(_read_integer(itr, end, &value));
+
+        if (value != 0)
+            OE_RAISE_MSG(
+                OE_JSON_INFO_PARSE_ERROR, "Unsupported tcbType(%d).", value);
+        parsed_info->tcb_type = (uint32_t)value;
+        OE_CHECK(_read(',', itr, end));
+
+        OE_TRACE_VERBOSE("V3: Reading tcbEvaluationDataNumber");
+        OE_CHECK(
+            _read_property_name_and_colon("tcbEvaluationDataNumber", itr, end));
+        OE_CHECK(_read_integer(itr, end, &value));
+        parsed_info->tcb_evaluation_data_number = (uint32_t)value;
+        OE_CHECK(_read(',', itr, end));
+
+        OE_TRACE_VERBOSE("Reading tcbLevels (V3)");
+        OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
+        OE_CHECK(_read('[', itr, end));
+        while (*itr < end)
+        {
+            OE_CHECK(_read_tcb_info_tcb_level_v3(
+                tcb_info_json,
+                itr,
+                end,
+                platform_tcb_level,
+                &parsed_info->tcb_level));
+
+            // Optimization
+            if (platform_tcb_level->status.AsUINT32 !=
+                OE_TCB_LEVEL_STATUS_UNKNOWN)
+            {
+                // Found matching TCB level, go to the end of the array.
+                _move_to_end_of_tcb_levels(itr, end);
+            }
+
+            // Read end of array or comma separator.
+            if (*itr < end && **itr == ']')
+                break;
+
+            OE_CHECK(_read(',', itr, end));
+        }
+        OE_CHECK(_read(']', itr, end));
+    }
+    else if (parsed_info->version == 2)
     {
         OE_TRACE_VERBOSE("V2: Reading tcbType");
         OE_CHECK(_read_property_name_and_colon("tcbType", itr, end));
         OE_CHECK(_read_integer(itr, end, &value));
 
-        // HW representation of CPUSVN for a given FMSPC is not architecturally
-        // defined to provide designers more flexibility. SW needs "tcbType" to
-        // determine how to decompose the CPUSVN. Each FMSPC has its own
-        // tcbType. For now, there is only one tcbType(0) has been defined.
         if (value != 0)
             OE_RAISE_MSG(
                 OE_JSON_INFO_PARSE_ERROR, "Unsupported tcbType(%d).", value);
