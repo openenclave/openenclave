@@ -695,7 +695,7 @@ static oe_result_t _patch(
             image, "_tbss_align", image->tbss_align);
 
         aligned_size +=
-            oe_round_up_to_multiple(image->tbss_size, image->tbss_size);
+            oe_round_up_to_multiple(image->tbss_size, image->tbss_align);
     }
 
     aligned_size = oe_round_up_to_multiple(aligned_size, OE_PAGE_SIZE);
