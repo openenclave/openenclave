@@ -11,6 +11,7 @@
 #include <openenclave/internal/syscall.h>
 #include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/syscall/sys/syscall.h>
+#include <openenclave/internal/syscall_decls.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/time.h>
 #include <stdarg.h>
@@ -29,17 +30,30 @@ static const uint64_t _SEC_TO_MSEC = 1000UL;
 static const uint64_t _MSEC_TO_USEC = 1000UL;
 static const uint64_t _MSEC_TO_NSEC = 1000000UL;
 
-static long _syscall_mmap(long n, ...)
+OE_DEFINE_SYSCALL(SYS_mmap)
 {
-    /* Always fail */
-    OE_UNUSED(n);
     return EPERM;
 }
 
-static long _syscall_clock_gettime(long n, long x1, long x2)
+OE_DEFINE_SYSCALL(SYS_munmap)
 {
-    clockid_t clk_id = (clockid_t)x1;
-    struct timespec* tp = (struct timespec*)x2;
+    return EPERM;
+}
+
+OE_DEFINE_SYSCALL(SYS_futex)
+{
+    return 0;
+}
+
+OE_DEFINE_SYSCALL(SYS_fstat)
+{
+    return 0;
+}
+
+OE_DEFINE_SYSCALL(SYS_clock_gettime)
+{
+    clockid_t clk_id = (clockid_t)arg1;
+    struct timespec* tp = (struct timespec*)arg2;
     int ret = -1;
     uint64_t msec;
 
@@ -68,10 +82,10 @@ done:
     return ret;
 }
 
-static long _syscall_gettimeofday(long n, long x1, long x2)
+OE_DEFINE_SYSCALL(SYS_gettimeofday)
 {
-    struct timeval* tv = (struct timeval*)x1;
-    void* tz = (void*)x2;
+    struct timeval* tv = (struct timeval*)arg1;
+    void* tz = (void*)arg2;
     int ret = -1;
     uint64_t msec;
 
@@ -159,7 +173,7 @@ static long _dispatch_oe_syscall(
 
             _stat_to_oe_stat(stat, &oe_stat);
             x2 = (long)&oe_stat;
-            ret = oe_syscall(OE_SYS_stat, x1, x2, x3, x4, x5, x6);
+            ret = OE_SYSCALL6(OE_SYS_stat, x1, x2, x3, x4, x5, x6);
             _oe_stat_to_stat(&oe_stat, stat);
 
             break;
@@ -172,7 +186,7 @@ static long _dispatch_oe_syscall(
 
             _stat_to_oe_stat(stat, &oe_stat);
             x3 = (long)&oe_stat;
-            ret = oe_syscall(OE_SYS_newfstatat, x1, x2, x3, x4, x5, x6);
+            ret = OE_SYSCALL6(OE_SYS_newfstatat, x1, x2, x3, x4, x5, x6);
             _oe_stat_to_stat(&oe_stat, stat);
 
             break;
@@ -212,11 +226,11 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     switch (n)
     {
         case SYS_gettimeofday:
-            return _syscall_gettimeofday(n, x1, x2);
+            return OE_SYSCALL2(SYS_gettimeofday, x1, x2);
         case SYS_clock_gettime:
-            return _syscall_clock_gettime(n, x1, x2);
+            return OE_SYSCALL2(SYS_clock_gettime, x1, x2);
         case SYS_mmap:
-            return _syscall_mmap(n, x1, x2, x3, x4, x5, x6);
+            return OE_SYSCALL6(SYS_mmap, x1, x2, x3, x4, x5, x6);
         default:
             /* Drop through and let the code below handle the syscall. */
             break;
