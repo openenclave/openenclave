@@ -264,6 +264,7 @@ if (OE_SGX)
     sgx/loadelf.c
     sgx/ocalls.c
     sgx/quote.c
+    sgx/region.c
     sgx/registers.c
     sgx/report.c
     sgx/sgx_enclave_common_wrapper.c

@@ -602,6 +602,28 @@ done:
     return result;
 }
 
+static oe_result_t _set_bytes_dynamic_symbol_value(
+    oe_enclave_image_t* image,
+    const char* name,
+    const void* bytes,
+    size_t count)
+{
+    oe_result_t result = OE_OK;
+    elf64_sym_t sym = {0};
+    uint64_t* symbol_address = NULL;
+
+    if (elf64_find_dynamic_symbol_by_name(&image->u.elf.elf, name, &sym) != 0)
+    {
+        OE_RAISE(OE_FAILURE);
+    }
+
+    symbol_address = (uint64_t*)(image->image_base + sym.st_value);
+    memcpy(symbol_address, bytes, count);
+
+done:
+    return result;
+}
+
 static oe_result_t _set_uint64_t_dynamic_symbol_value(
     oe_enclave_image_t* image,
     const char* name,
@@ -622,7 +644,10 @@ done:
     return result;
 }
 
-static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
+static oe_result_t _patch(
+    oe_enclave_image_t* image,
+    size_t enclave_size,
+    size_t regions_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t* oeprops;
@@ -672,6 +697,9 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
     /* heap right after image */
     oeprops->image_info.heap_rva = image->image_size + image->reloc_size;
 
+    /* move heap past regions */
+    oeprops->image_info.heap_rva += regions_size;
+
     if (image->tdata_size)
     {
         _set_uint64_t_dynamic_symbol_value(
@@ -700,6 +728,12 @@ static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
         OE_TRACE_ERROR(
             "Thread-local variables exceed available thread-local space.\n");
         OE_RAISE(OE_INVALID_IMAGE);
+    }
+
+    if (image->num_regions)
+    {
+        OE_CHECK(_set_bytes_dynamic_symbol_value(
+            image, "_oe_regions", image->regions, sizeof(image->regions)));
     }
 
     /* Clear the hash when taking the measure */

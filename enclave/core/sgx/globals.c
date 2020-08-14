@@ -2,8 +2,11 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/eeid.h>
+#include <openenclave/bits/sgx/region.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/raise.h>
 
 /* Note: The variables below are initialized during enclave loading */
 
@@ -268,4 +271,41 @@ uint64_t oe_get_num_heap_pages(void)
 uint64_t oe_get_num_pages(void)
 {
     return __oe_get_enclave_size() / OE_PAGE_SIZE;
+}
+
+/*
+**==============================================================================
+**
+** regions
+**
+**==============================================================================
+*/
+
+OE_EXPORT volatile oe_region_t _oe_regions[OE_MAX_REGIONS];
+OE_EXPORT volatile size_t _oe_num_regions;
+
+oe_result_t oe_region_get(uint64_t id, oe_region_t* region)
+{
+    oe_result_t result = OE_OK;
+
+    if (region)
+        memset(region, 0, sizeof(oe_region_t));
+
+    if (!region)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    for (size_t i = 0; i < _oe_num_regions; i++)
+    {
+        if (_oe_regions[i].id == id)
+        {
+            oe_region_t* region = (oe_region_t*)&_oe_regions[i];
+            memcpy(region, region, sizeof(oe_region_t));
+            goto done;
+        }
+    }
+
+    result = OE_NOT_FOUND;
+
+done:
+    return result;
 }
