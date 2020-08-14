@@ -23,7 +23,8 @@ OE_EXTERNC_BEGIN
 
 #define OE_DECLARE_SYSCALL(idx) OE_SYSCALL_PROTOTYPE(idx);
 
-#define OE_DEFINE_SYSCALL(idx) OE_SYSCALL_PROTOTYPE(idx)
+#undef weak
+#define OE_DEFINE_SYSCALL(idx) OE_WEAK OE_SYSCALL_PROTOTYPE(idx)
 
 #define __oescc(x) (long)(x)
 #define OE_SYSCALL7(n, a, b, c, d, e, f, g) \

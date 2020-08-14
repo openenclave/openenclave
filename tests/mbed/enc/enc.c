@@ -8,6 +8,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/syscall.h>
+#include <openenclave/internal/syscall_decls.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -161,6 +162,46 @@ static oe_result_t _syscall_hook(
 
 done:
     return result;
+}
+
+OE_SYSCALL_PROTOTYPE(SYS_open)
+{
+    OE_UNUSED(arg7);
+    long ret = -1;
+    _syscall_hook(n, arg1, arg2, arg3, arg4, arg5, arg6, &ret);
+    return ret;
+}
+
+OE_SYSCALL_PROTOTYPE(SYS_read)
+{
+    OE_UNUSED(arg7);
+    long ret = -1;
+    _syscall_hook(n, arg1, arg2, arg3, arg4, arg5, arg6, &ret);
+    return ret;
+}
+
+OE_SYSCALL_PROTOTYPE(SYS_writev)
+{
+    OE_UNUSED(arg7);
+    long ret = -1;
+    _syscall_hook(n, arg1, arg2, arg3, arg4, arg5, arg6, &ret);
+    return ret;
+}
+
+OE_SYSCALL_PROTOTYPE(SYS_close)
+{
+    OE_UNUSED(arg7);
+    long ret = -1;
+    _syscall_hook(n, arg1, arg2, arg3, arg4, arg5, arg6, &ret);
+    return ret;
+}
+
+OE_SYSCALL_PROTOTYPE(SYS_lseek)
+{
+    OE_UNUSED(arg7);
+    long ret = -1;
+    _syscall_hook(n, arg1, arg2, arg3, arg4, arg5, arg6, &ret);
+    return ret;
 }
 
 int test(
