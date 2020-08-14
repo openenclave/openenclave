@@ -48,6 +48,11 @@ if (ENABLE_REFMAN)
     # This list of files is explicit because we disable recursion.
     enclave.h
     host.h
+    attestation/attester.h
+    attestation/custom_claims.h
+    attestation/verifier.h
+    attestation/sgx/evidence.h
+    bits/evidence.h
     bits/properties.h
     bits/report.h
     bits/result.h
@@ -55,8 +60,6 @@ if (ENABLE_REFMAN)
     bits/exception.h
     bits/module.h
     ../../docs/refman/MainPage.md
-    WORKING_DIRECTORY
-    ${PROJECT_SOURCE_DIR}/include/openenclave/
-    COMMENT
-    "Generating refman HTML documentation")
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/include/openenclave/
+    COMMENT "Generating refman HTML documentation")
 endif ()

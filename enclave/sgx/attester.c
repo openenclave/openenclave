@@ -127,7 +127,7 @@ static oe_result_t _get_evidence(
     format_id = &context->base.format_id;
     quote_format_id = format_id;
 
-    // Set flags based on format UUID, ignore and overwrite the input value
+    // Set flags based on format id, ignore and overwrite the input value
     if (!memcmp(format_id, &_local_uuid, sizeof(oe_uuid_t)))
     {
         flags = 0;

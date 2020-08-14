@@ -2,16 +2,16 @@
 // Licensed under the MIT License.
 
 /**
- * @file sgx/evidence.h
+ * @file attestation/sgx/evidence.h
  *
- * This file defines helper functions for verifying an SGX report.
+ * This file defines options for SGX evidence.
  *
  */
 
 #ifndef _OE_ATTESTATION_SGX_EVIDENCE_H
 #define _OE_ATTESTATION_SGX_EVIDENCE_H
 
-#include <openenclave/bits/result.h>
+#include <openenclave/bits/defs.h>
 
 OE_EXTERNC_BEGIN
 
