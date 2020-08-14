@@ -734,6 +734,9 @@ static oe_result_t _patch(
     {
         OE_CHECK(_set_bytes_dynamic_symbol_value(
             image, "_oe_regions", image->regions, sizeof(image->regions)));
+
+        OE_CHECK(_set_uint64_t_dynamic_symbol_value(
+            image, "_oe_num_regions", image->num_regions));
     }
 
     /* Clear the hash when taking the measure */

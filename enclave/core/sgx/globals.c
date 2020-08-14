@@ -298,8 +298,8 @@ oe_result_t oe_region_get(uint64_t id, oe_region_t* region)
     {
         if (_oe_regions[i].id == id)
         {
-            oe_region_t* region = (oe_region_t*)&_oe_regions[i];
-            memcpy(region, region, sizeof(oe_region_t));
+            oe_region_t* ptr = (oe_region_t*)&_oe_regions[i];
+            memcpy(region, ptr, sizeof(oe_region_t));
             goto done;
         }
     }

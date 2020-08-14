@@ -77,7 +77,7 @@ oe_result_t oe_region_add_regions(oe_region_context_t* context, uint64_t vaddr)
     if (!(page = memalign(OE_PAGE_SIZE, OE_PAGE_SIZE)))
         assert(0);
 
-    memset(page, 0xAA, OE_PAGE_SIZE);
+    memset(page, 0xAB, OE_PAGE_SIZE);
 
     assert(oe_region_start(context, 1001, false) == OE_OK);
     assert(oe_region_add_page(context, vaddr, page, flags, true) == OE_OK);

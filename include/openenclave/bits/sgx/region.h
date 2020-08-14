@@ -116,6 +116,8 @@ typedef struct _oe_region
     uint64_t size;  /* is of the region in bytes */
 } oe_region_t;
 
+oe_result_t oe_region_get(uint64_t id, oe_region_t* region);
+
 OE_EXTERNC_END
 
 #endif /* _OE_INTERNAL_REGION_H */

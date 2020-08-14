@@ -309,8 +309,12 @@ static oe_result_t _calculate_enclave_size(
         *enclave_size = 0;
 
     /* Calculate the size of the regions (if any) */
-    OE_CHECK(oe_region_add_regions(region_context, 0));
-    regions_size = region_context->vaddr;
+    {
+        uint64_t start_vaddr = region_context->vaddr;
+        OE_CHECK(oe_region_add_regions(region_context, start_vaddr));
+        regions_size = region_context->vaddr - start_vaddr;
+        printf("regions_size=%lu\n", regions_size);
+    }
 
     *loaded_enclave_pages_size = 0;
 
@@ -819,7 +823,7 @@ oe_result_t oe_sgx_build_enclave(
         memset(&region_context, 0, sizeof(region_context));
         region_context.enclave_addr = 0;
         region_context.sgx_load_context = NULL;
-        region_context.vaddr = 0;
+        region_context.vaddr = image_size;
 
         OE_CHECK(_calculate_enclave_size(
             &region_context,
