@@ -48,11 +48,15 @@ void test_mutex(oe_enclave_t* enclave)
     OE_TEST(count2 == NUM_THREADS);
 }
 
+// This variable does not need to be atomic only one thread will run to
+// completion at a time.
+static volatile uint64_t _num_completed_threads = 0;
 void* waiter_thread(oe_enclave_t* enclave)
 {
     oe_result_t result = enc_wait(enclave, NUM_THREADS);
     OE_TEST(result == OE_OK);
 
+    ++_num_completed_threads;
     return NULL;
 }
 
@@ -65,11 +69,17 @@ void test_cond(oe_enclave_t* enclave)
         threads[i] = std::thread(waiter_thread, enclave);
     }
 
+    // Wait for all the threads to wait on the condition variable.
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
+        uint64_t n = _num_completed_threads;
         OE_TEST(enc_signal(enclave) == OE_OK);
+
+        // Wait for one thread to be signalled.
+        while (_num_completed_threads == n)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     for (size_t i = 0; i < NUM_THREADS; i++)
