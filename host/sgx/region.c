@@ -1,17 +1,12 @@
+#include "region.h"
 #include <openenclave/bits/sgx/region.h>
 #include <openenclave/internal/raise.h>
 #include "sgxload.h"
 
 static bool _valid_context(oe_region_context_t* context)
 {
-    if (!context)
+    if (!context || (context->sgx_load_context && !context->enclave_addr))
         return false;
-
-    if (context->load)
-    {
-        if (!context->enclave_addr || !context->sgx_load_context)
-            return false;
-    }
 
     return true;
 };
@@ -89,7 +84,7 @@ oe_result_t oe_region_add_page(
     if (vaddr < region->vaddr)
         OE_RAISE(OE_FAILURE);
 
-    if (context->load)
+    if (context->sgx_load_context)
     {
         OE_CHECK(oe_sgx_load_enclave_data(
             context->sgx_load_context,

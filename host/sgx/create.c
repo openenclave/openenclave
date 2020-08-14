@@ -60,6 +60,7 @@ static char* get_fullpath(const char* path)
 #include "enclave.h"
 #include "exception.h"
 #include "platform_u.h"
+#include "region.h"
 #include "sgxload.h"
 
 #if !defined(OEHOSTMR)
@@ -308,7 +309,7 @@ static oe_result_t _calculate_enclave_size(
         *enclave_size = 0;
 
     /* Calculate the size of the regions (if any) */
-    OE_CHECK(oe_region_add_regions(region_context));
+    OE_CHECK(oe_region_add_regions(region_context, 0));
     regions_size = region_context->vaddr;
 
     *loaded_enclave_pages_size = 0;
@@ -816,7 +817,6 @@ oe_result_t oe_sgx_build_enclave(
     /* Calculate the size of this enclave in memory */
     {
         memset(&region_context, 0, sizeof(region_context));
-        region_context.load = false;
         region_context.enclave_addr = 0;
         region_context.sgx_load_context = NULL;
         region_context.vaddr = 0;
@@ -852,11 +852,10 @@ oe_result_t oe_sgx_build_enclave(
     /* Add the regions to the enclave */
     {
         memset(&region_context, 0, sizeof(region_context));
-        region_context.load = true;
         region_context.enclave_addr = enclave_addr;
         region_context.sgx_load_context = context;
         region_context.vaddr = vaddr;
-        OE_CHECK(oe_region_add_regions(&region_context));
+        OE_CHECK(oe_region_add_regions(&region_context, vaddr));
         vaddr = region_context.vaddr;
     }
 
@@ -1149,8 +1148,9 @@ done:
 
 /* This weak form may be overriden by the enclave application */
 OE_WEAK
-oe_result_t oe_region_add_regions(oe_region_context_t* context)
+oe_result_t oe_region_add_regions(oe_region_context_t* context, uint64_t vaddr)
 {
     (void)context;
+    (void)vaddr;
     return OE_OK;
 }

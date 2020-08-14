@@ -38,7 +38,7 @@ typedef struct oe_region_context oe_region_context_t;
  * @returns OE_INVALID_PARAMETER invalid parameter
  * @returns OE_FAILURE general failure.
  */
-oe_result_t oe_region_add_regions(oe_region_context_t* context);
+oe_result_t oe_region_add_regions(oe_region_context_t* context, uint64_t vaddr);
 
 /**
  * Starts a new memory region.
@@ -115,27 +115,6 @@ typedef struct _oe_region
     uint64_t vaddr; /* virtual address of the region */
     uint64_t size;  /* is of the region in bytes */
 } oe_region_t;
-
-typedef struct _oe_sgx_load_context oe_sgx_load_context_t;
-
-struct oe_region_context
-{
-    /* If false, then only determine the size of the regions */
-    bool load;
-
-    /* The current virtual address */
-    uint64_t vaddr;
-
-    /* Region table */
-    oe_region_t regions[OE_MAX_REGIONS];
-    size_t num_regions;
-
-    /* The encclave base address */
-    uint64_t enclave_addr;
-
-    /* The context needed to load SGX pages */
-    oe_sgx_load_context_t* sgx_load_context;
-};
 
 OE_EXTERNC_END
 

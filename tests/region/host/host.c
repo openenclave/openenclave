@@ -69,9 +69,8 @@ int main(int argc, const char* argv[])
     return 0;
 }
 
-oe_result_t oe_region_add_regions(oe_region_context_t* context)
+oe_result_t oe_region_add_regions(oe_region_context_t* context, uint64_t vaddr)
 {
-    uint64_t vaddr = context->vaddr;
     uint64_t flags = SGX_SECINFO_R | SGX_SECINFO_REG;
     uint8_t* page = NULL;
 
