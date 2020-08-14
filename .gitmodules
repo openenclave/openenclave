@@ -21,3 +21,6 @@
 	path = 3rdparty/openssl/openssl
 	url = https://github.com/openssl/openssl
 	branch = OpenSSL_1_1_1-stable
+[submodule "debugger/ptrace"]
+	path = debugger/ptrace
+	url = https://github.com/anakrish/sgxptrace

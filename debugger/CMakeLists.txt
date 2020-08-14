@@ -2,7 +2,25 @@
 # Licensed under the MIT License.
 
 if (UNIX)
-  add_subdirectory(ptraceLib)
+  check_submodule_not_empty(ptrace)
+  set(PTRACE_LIBRARY ${OE_LIBDIR}/openenclave/debugger/liboe_ptrace.so)
+
+  include(ExternalProject)
+
+  ExternalProject_Add(
+    sgxptrace
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ptrace
+    BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/ptrace
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    BUILD_ALWAYS on
+    TEST_BEFORE_INSTALL off
+    INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/ptrace/libsgxptrace.so
+                    ${PTRACE_LIBRARY}
+    BUILD_BYPRODUCTS ${PTRACE_LIBRARY})
+
+  install(PROGRAMS ${PTRACE_LIBRARY}
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/debugger)
+
   add_subdirectory(pythonExtension)
 
   # Copy oegdb to build/output/bin so that it can be used
