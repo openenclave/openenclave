@@ -313,7 +313,6 @@ static oe_result_t _calculate_enclave_size(
         uint64_t start_vaddr = region_context->vaddr;
         OE_CHECK(oe_region_add_regions(region_context, start_vaddr));
         regions_size = region_context->vaddr - start_vaddr;
-        printf("regions_size=%lu\n", regions_size);
     }
 
     *loaded_enclave_pages_size = 0;
