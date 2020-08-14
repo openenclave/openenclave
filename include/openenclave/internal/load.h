@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
+#include <openenclave/bits/sgx/region.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/elf.h>
 #include "types.h"
@@ -72,6 +73,10 @@ typedef struct _oe_enclave_elf_image
      * during signing */
     uint64_t oeinfo_file_pos;
 
+    /* Extended memory regions */
+    oe_region_t regions[OE_MAX_REGIONS];
+    size_t num_regions;
+
 } oe_enclave_elf_image_t;
 
 typedef enum _oe_image_type
@@ -105,7 +110,8 @@ struct _oe_enclave_image
     oe_result_t (*sgx_patch)(
         oe_enclave_image_t* image,
         oe_sgx_load_context_t* context,
-        size_t enclave_size);
+        size_t enclave_size,
+        size_t regions_size);
 
     oe_result_t (*sgx_load_enclave_properties)(
         const oe_enclave_image_t* image,

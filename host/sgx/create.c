@@ -35,6 +35,7 @@ static char* get_fullpath(const char* path)
 #include <assert.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/eeid.h>
+#include <openenclave/bits/sgx/region.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
@@ -60,6 +61,7 @@ static char* get_fullpath(const char* path)
 #include "enclave.h"
 #include "exception.h"
 #include "platform_u.h"
+#include "region.h"
 #include "sgxload.h"
 
 #if !defined(OEHOSTMR)
@@ -286,12 +288,13 @@ done:
 }
 
 static oe_result_t _calculate_enclave_size(
+    oe_region_context_t* region_context,
     size_t image_size,
     size_t tls_page_count,
     const oe_sgx_enclave_properties_t* props,
     size_t* loaded_enclave_pages_size,
-    size_t* enclave_size)
-
+    size_t* enclave_size,
+    size_t* regions_size_out)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t heap_size;
@@ -299,11 +302,20 @@ static oe_result_t _calculate_enclave_size(
     size_t tls_size;
     size_t control_size;
     const oe_enclave_size_settings_t* size_settings;
+    size_t regions_size = 0;
 
     size_settings = &props->header.size_settings;
 
     if (enclave_size)
         *enclave_size = 0;
+
+    /* Calculate the size of the regions (if any) */
+    {
+        uint64_t start_vaddr = region_context->vaddr;
+        OE_CHECK(oe_region_add_regions(region_context, start_vaddr));
+        regions_size = region_context->vaddr - start_vaddr;
+    }
+
     *loaded_enclave_pages_size = 0;
 
     /* Compute size in bytes of the heap */
@@ -337,7 +349,11 @@ static oe_result_t _calculate_enclave_size(
             *enclave_size = oe_round_u64_to_pow2(*loaded_enclave_pages_size);
     }
 
+    *regions_size_out = regions_size;
+
     result = OE_OK;
+
+done:
     return result;
 }
 
@@ -742,6 +758,8 @@ oe_result_t oe_sgx_build_enclave(
     size_t tls_page_count;
     uint64_t vaddr = 0;
     oe_sgx_enclave_properties_t props;
+    oe_region_context_t region_context;
+    size_t regions_size = 0;
 
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -825,12 +843,22 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(oeimage.get_tls_page_count(&oeimage, &tls_page_count));
 
     /* Calculate the size of this enclave in memory */
-    OE_CHECK(_calculate_enclave_size(
-        image_size,
-        tls_page_count,
-        &props,
-        &loaded_enclave_pages_size,
-        &enclave_size));
+    {
+        memset(&region_context, 0, sizeof(region_context));
+        region_context.enclave_addr = 0;
+        region_context.sgx_load_context = NULL;
+        region_context.vaddr = image_size;
+
+        OE_CHECK(_calculate_enclave_size(
+            &region_context,
+            image_size,
+            tls_page_count,
+            &props,
+            &loaded_enclave_pages_size,
+            &enclave_size,
+            &regions_size));
+    }
+
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
@@ -840,11 +868,25 @@ oe_result_t oe_sgx_build_enclave(
     enclave->addr = enclave_addr;
     enclave->size = enclave_size;
 
+    /* Populate the oeimage regions so they will be patched below */
+    memcpy(oeimage.elf.regions, region_context.regions, sizeof(oeimage.elf.regions));
+    oeimage.elf.num_regions = region_context.num_regions;
+
     /* Patch image */
-    OE_CHECK(oeimage.sgx_patch(&oeimage, context, enclave_size));
+    OE_CHECK(oeimage.sgx_patch(&oeimage, context, enclave_size, regions_size));
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
+
+    /* Add the regions to the enclave */
+    {
+        memset(&region_context, 0, sizeof(region_context));
+        region_context.enclave_addr = enclave_addr;
+        region_context.sgx_load_context = context;
+        region_context.vaddr = vaddr;
+        OE_CHECK(oe_region_add_regions(&region_context, vaddr));
+        vaddr = region_context.vaddr;
+    }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_CHECK(_add_eeid_marker_page(
@@ -1187,3 +1229,12 @@ done:
     return result;
 }
 #endif // OEHOSTMR
+
+/* This weak form may be overriden by the enclave application */
+OE_WEAK
+oe_result_t oe_region_add_regions(oe_region_context_t* context, uint64_t vaddr)
+{
+    (void)context;
+    (void)vaddr;
+    return OE_OK;
+}

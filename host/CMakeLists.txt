@@ -231,6 +231,7 @@ if (OE_SGX)
     sgx/ocalls/ocalls.c
     sgx/ocalls/thread.c
     sgx/quote.c
+    sgx/region.c
     sgx/registers.c
     sgx/report_common.c
     sgx/report.c
