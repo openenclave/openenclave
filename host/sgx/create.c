@@ -892,6 +892,11 @@ oe_result_t oe_sgx_build_enclave(
         vaddr = region_context.vaddr;
     }
 
+    /* Copy the region context into the enclave */
+    memcpy(&enclave->region_context, &region_context, sizeof(region_context));
+
+    /* ATTN:MEB: release debug paths here */
+
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_CHECK(_add_eeid_marker_page(
         context,
@@ -1114,6 +1119,8 @@ oe_result_t oe_create_enclave(
 
         enclave->debug_enclave = debug_enclave;
         oe_debug_notify_enclave_created(debug_enclave);
+
+        oe_region_debug_notify_loaded(&enclave->region_context);
     }
 
     /* Enclave initialization invokes global constructors which could make
@@ -1179,6 +1186,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 
     if (enclave->debug_enclave)
     {
+        oe_region_debug_notify_unloaded(&enclave->region_context);
         oe_debug_notify_enclave_terminated(enclave->debug_enclave);
         free(enclave->debug_enclave->tcs_array);
         free(enclave->debug_enclave);

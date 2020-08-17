@@ -52,7 +52,7 @@ oe_result_t oe_region_add_regions(oe_region_context_t* context, uint64_t vaddr);
  *
  * @param[in] context the context parameter from **oe_add_regions()**
  * @param[in] id an integer identifier for this region (caller defined)
- * @param[in] is_elf true if the region contains an ELF image
+ * @param[in] path path of the image (used only by for ELF image)
  *
  * @returns OE_OK
  * @returns OE_INVALID_PARAMETER invalid parameter
@@ -61,7 +61,8 @@ oe_result_t oe_region_add_regions(oe_region_context_t* context, uint64_t vaddr);
 oe_result_t oe_region_start(
     oe_region_context_t* context,
     uint64_t id,
-    bool is_elf);
+    bool is_elf,
+    const char* path);
 
 /**
  * Ends a new memory region.
@@ -70,8 +71,6 @@ oe_result_t oe_region_start(
  * table.
  *
  * @param[in] context the context parameter from **oe_add_regions()**
- * @param[in] region_size the size of the region in bytes
- * @param[in] elf_image true if the region contains an ELF image
  *
  * @returns OE_OK
  * @returns OE_INVALID_PARAMETER invalid parameter
@@ -106,6 +105,8 @@ oe_result_t oe_region_add_page(
     const void* page,
     uint64_t flags,
     bool extend);
+
+#define OE_REGION_MAX_PATH 1024
 
 /* Region structure */
 typedef struct _oe_region
