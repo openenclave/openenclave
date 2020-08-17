@@ -154,116 +154,25 @@ static sgx_secs_t* _new_secs(
 }
 
 #if !defined(OEHOSTMR)
-/*
-** Allocate memory for an enclave so that it has the following layout:
-**
-**    [............xxxxxxxxxxxxxxxxxxxxxxxx...............]
-**     ^           ^                       ^              ^
-**    MPTR        BASE                 BASE+SIZE      MPTR+SIZE*2
-**
-**    [MPTR...BASE]                 - unused
-**    [BASE...BASE+SIZE]            - used
-**    [BASE+SIZE...MPTR+SIZE*2]     - unused
-*/
-static void* _allocate_enclave_memory(size_t enclave_size, int fd)
+
+/* Allocate enclave memory for simulation mode */
+static void* _allocate_enclave_memory(size_t enclave_size)
 {
+    void* result = NULL;
+
 #if defined(__linux__)
-
-    /* Allocate enclave memory for simulated and real mode */
-    void* result = NULL;
-    void* base = NULL;
-    void* mptr = MAP_FAILED;
-
     /* Map memory region */
+    int mprot = PROT_READ | PROT_WRITE | PROT_EXEC;
+    int mflags = MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE;
+
+    result = mmap(NULL, enclave_size, mprot, mflags, -1, 0);
+    if (result == MAP_FAILED)
     {
-        int mprot = PROT_READ | PROT_WRITE | PROT_EXEC;
-        int mflags = MAP_SHARED;
-        uint64_t mmap_size = enclave_size;
-
-        /* If no file descriptor, then perform anonymous mapping and double
-         * the allocation size, so that BASE can be aligned on the SIZE
-         * boundary. This isn't neccessary on hardware backed enclaves, since
-         * the driver will do the alignment. */
-        if (fd == -1)
-        {
-            mflags |= MAP_ANONYMOUS | MAP_NORESERVE;
-            if (oe_safe_mul_u64(mmap_size, 2, &mmap_size) != OE_OK)
-            {
-                OE_TRACE_ERROR(
-                    "oe_safe_mul_u64 failed mmap_size = %ld", mmap_size);
-                goto done;
-            }
-        }
-
-        mptr = mmap(NULL, mmap_size, mprot, mflags, fd, 0);
-        if (mptr == MAP_FAILED)
-        {
-            OE_TRACE_ERROR(
-                "mmap failed mmap_size=%ld mflags=0x%x", mmap_size, mflags);
-            goto done;
-        }
-
-        /* Exit early in hardware backed enclaves, since it's aligned. */
-        if (fd > -1)
-        {
-            assert((uintptr_t)mptr % mmap_size == 0);
-            result = mptr;
-            goto done;
-        }
+        OE_TRACE_ERROR(
+            "mmap failed mmap_size=%ld mflags=0x%x", enclave_size, mflags);
+        goto done;
     }
-
-    /* Align BASE on a boundary of SIZE */
-    {
-        uint64_t n = enclave_size;
-        uint64_t addr = ((uint64_t)mptr + (n - 1)) / n * n;
-        base = (void*)addr;
-    }
-
-    /* Unmap [MPTR...BASE] */
-    {
-        uint8_t* start = (uint8_t*)mptr;
-        uint8_t* end = (uint8_t*)base;
-
-        if (start != end && munmap(start, (size_t)(end - start)) != 0)
-        {
-            OE_TRACE_ERROR(
-                "Unmap [MPTR...BASE] failed start=0x%p end=0x%p", start, end);
-            goto done;
-        }
-    }
-
-    /* Unmap [BASE+SIZE...MPTR+SIZE*2] */
-    {
-        uint8_t* start = (uint8_t*)base + enclave_size;
-        uint8_t* end = (uint8_t*)mptr + enclave_size * 2;
-
-        if (start != end && munmap(start, (size_t)(end - start)) != 0)
-        {
-            OE_TRACE_ERROR(
-                "Unmap [BASE+SIZE...MPTR+SIZE*2] failed start=0x%p end=0x%p",
-                start,
-                end);
-            goto done;
-        }
-    }
-
-    result = base;
-
-done:
-
-    /* On failure, unmap initially allocated region.
-     * Linux will handle already unmapped regions within this original range */
-    if (!result && mptr != MAP_FAILED)
-        munmap(mptr, enclave_size * 2);
-
-    return result;
-
 #elif defined(_WIN32)
-    OE_UNUSED(fd);
-
-    /* Allocate enclave memory for simulated mode only */
-    void* result = NULL;
-
     /* Allocate virtual memory for this enclave */
     if (!(result = VirtualAlloc(
               NULL,
@@ -274,12 +183,10 @@ done:
         OE_TRACE_ERROR("VirtualAlloc failed enclave_size=0x%lx", enclave_size);
         goto done;
     }
+#endif /* defined(_WIN32) */
 
 done:
-
     return result;
-
-#endif /* defined(_WIN32) */
 }
 
 static oe_result_t _sgx_free_enclave_memory(
@@ -381,9 +288,6 @@ oe_result_t oe_sgx_initialize_load_context(
     context->type = type;
     context->attributes.flags = attributes;
     context->attributes.xfrm = _detect_xfrm();
-
-    context->dev = OE_SGX_NO_DEVICE_HANDLE;
-
     context->state = OE_SGX_LOAD_STATE_INITIALIZED;
     result = OE_OK;
 
@@ -424,15 +328,14 @@ oe_result_t oe_sgx_create_enclave(
     if (enclave_size != oe_round_u64_to_pow2(enclave_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Only allocate memory if we are creating an enclave in either simulation
-     * mode or on Linux Kabylake machines. */
+    /* Only allocate memory if we are creating an enclave in simulation mode */
     if (context->type == OE_SGX_LOAD_TYPE_CREATE)
     {
 #if !defined(OEHOSTMR)
         if (oe_sgx_is_simulation_load_context(context))
         {
             /* Allocation memory-mapped region */
-            if (!(base = _allocate_enclave_memory(enclave_size, context->dev)))
+            if (!(base = _allocate_enclave_memory(enclave_size)))
                 OE_RAISE(OE_OUT_OF_MEMORY);
         }
 #else
