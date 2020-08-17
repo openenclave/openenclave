@@ -20,6 +20,7 @@
 
 bool oe_apply_relocations(void)
 {
+    __oe_set_enclave_base_pre_relocation();
     const elf64_rela_t* relocs = (const elf64_rela_t*)__oe_get_reloc_base();
     size_t nrelocs = __oe_get_reloc_size() / sizeof(elf64_rela_t);
     const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();

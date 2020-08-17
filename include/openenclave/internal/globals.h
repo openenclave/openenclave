@@ -11,6 +11,7 @@
 OE_EXTERNC_BEGIN
 
 /* Enclave */
+void __oe_set_enclave_base_pre_relocation(void);
 const void* __oe_get_enclave_base(void);
 size_t __oe_get_enclave_size(void);
 const void* __oe_get_enclave_elf_header(void);

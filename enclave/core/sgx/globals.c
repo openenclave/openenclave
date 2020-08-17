@@ -125,7 +125,8 @@ OE_EXPORT extern volatile const oe_sgx_enclave_properties_t
  *
  **/
 
-OE_EXPORT volatile uint64_t _enclave_rva;
+OE_EXPORT volatile void* _enclave_rva = &_enclave_rva;
+volatile void* _enclave_base;
 OE_EXPORT volatile uint64_t _reloc_rva;
 OE_EXPORT volatile uint64_t _reloc_size;
 
@@ -140,10 +141,14 @@ oe_eeid_t* oe_eeid = NULL;
 **
 **==============================================================================
 */
+void __oe_set_enclave_base_pre_relocation(void)
+{
+    _enclave_base = (uint8_t*)&_enclave_rva - (uint64_t)_enclave_rva;
+}
 
 const void* __oe_get_enclave_base()
 {
-    return (uint8_t*)&_enclave_rva - _enclave_rva;
+    return (void*)_enclave_base;
 }
 
 size_t __oe_get_enclave_size()

@@ -659,10 +659,10 @@ static oe_result_t _patch(
     oeprops->image_info.oeinfo_rva = image->oeinfo_rva;
     oeprops->image_info.oeinfo_size = sizeof(oe_sgx_enclave_properties_t);
 
-    /* Set _enclave_rva to its own rva offset*/
+    /* Assert that _enclave_rva has its own rva in image.*/
     OE_CHECK(_get_dynamic_symbol_rva(image, "_enclave_rva", &enclave_rva));
-    OE_CHECK(
-        _set_uint64_t_dynamic_symbol_value(image, "_enclave_rva", enclave_rva));
+    if (*(uint64_t*)(image->image_base + enclave_rva) != enclave_rva)
+        OE_RAISE(OE_FAILURE);
 
     /* reloc right after image */
     oeprops->image_info.reloc_rva = image->image_size;
