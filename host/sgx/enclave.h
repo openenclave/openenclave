@@ -11,6 +11,7 @@
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/switchless.h>
+#include "region.h"
 #include <stdbool.h>
 #include "../hostthread.h"
 #include "asmdefs.h"
@@ -130,6 +131,9 @@ typedef struct _oe_enclave
 
     /* Manager for switchless calls */
     oe_switchless_call_manager_t* switchless_manager;
+
+    /* The region context, which contains any debug instances */
+    oe_region_context_t region_context;
 } oe_enclave_t;
 
 /* Get the event for the given TCS */
