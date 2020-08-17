@@ -5,6 +5,7 @@
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/rsa.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/raise.h>
@@ -49,6 +50,55 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
     OE_TRACE_INFO("\nidentity->product_id :\n");
     for (int i = 0; i < OE_PRODUCT_ID_SIZE; i++)
         OE_TRACE_INFO("0x%0x ", (uint8_t)identity->product_id[i]);
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+// This is the claims validation callback. A TLS connecting party (client or
+// server) can verify the passed in claims to decide whether to
+// accept a connection request
+oe_result_t sgx_enclave_claims_verifier(
+    oe_claim_t* claims,
+    size_t claims_length,
+    void* arg)
+{
+    oe_result_t result = OE_VERIFY_FAILED;
+
+    (void)arg;
+    OE_TRACE_INFO("sgx_enclave_claims_verifier is called with claims:\n");
+
+    for (size_t i = 0; i < claims_length; i++)
+    {
+        oe_claim_t* claim = &claims[i];
+        if (strcmp(claim->name, OE_CLAIM_SECURITY_VERSION) == 0)
+        {
+            uint32_t security_version = *(uint32_t*)(claim->value);
+            // Check the enclave's security version
+            if (security_version < 1)
+            {
+                OE_TRACE_ERROR(
+                    "identity->security_version checking failed (%d)\n",
+                    security_version);
+                goto done;
+            }
+        }
+        // Dump an enclave's unique ID, signer ID and Product ID. They are
+        // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves. In a real
+        // scenario, custom id checking should be done here
+        else if (
+            strcmp(claim->name, OE_CLAIM_SIGNER_ID) == 0 ||
+            strcmp(claim->name, OE_CLAIM_UNIQUE_ID) == 0 ||
+            strcmp(claim->name, OE_CLAIM_PRODUCT_ID) == 0)
+        {
+            OE_TRACE_INFO("Enclave %s:\n", claim->name);
+            for (size_t j = 0; j < claim->value_size; j++)
+            {
+                OE_TRACE_INFO("0x%0x ", claim->value[j]);
+            }
+        }
+    }
 
     result = OE_OK;
 done:
@@ -263,7 +313,22 @@ oe_result_t get_tls_cert_signed_with_key(
     result = oe_verify_attestation_certificate(
         output_cert, output_cert_size, enclave_identity_verifier, NULL);
     OE_TRACE_INFO(
-        "\nFrom inside enclave: verifying the certificate... %s\n",
+        "\nFrom inside enclave: verifying the certificate with "
+        "oe_verify_attestation_certificate()... %s\n",
+        result == OE_OK ? "Success" : "Fail");
+
+    if (result != OE_OK)
+    {
+        goto done;
+    }
+
+    // validate cert with oe_verify_attestation_certificate_with_evidence() to
+    // ensure that the added report verifier part of the function works well
+    result = oe_verify_attestation_certificate_with_evidence(
+        output_cert, output_cert_size, sgx_enclave_claims_verifier, NULL);
+    OE_TRACE_INFO(
+        "\nFrom inside enclave: verifying the certificate with "
+        "oe_verify_attestation_certificate_with_evidence()... %s\n",
         result == OE_OK ? "Success" : "Fail");
 
     // copy cert to host memory
