@@ -23,7 +23,6 @@
 #include "../core/sgx/report.h"
 #include "platform_t.h"
 
-#if !defined(OE_USE_BUILTIN_EDL)
 /**
  * Declare the prototype of the following function to avoid the
  * missing-prototypes warning.
@@ -59,8 +58,6 @@ oe_result_t _oe_get_supported_attester_format_ids_ocall(
 OE_WEAK_ALIAS(
     _oe_get_supported_attester_format_ids_ocall,
     oe_get_supported_attester_format_ids_ocall);
-
-#endif
 
 static const oe_uuid_t _local_uuid = {OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION};
 static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};

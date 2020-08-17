@@ -16,7 +16,6 @@
 #include <openenclave/internal/utils.h>
 #include "platform_t.h"
 
-#if !defined(OE_USE_BUILTIN_EDL)
 /**
  * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
@@ -87,8 +86,6 @@ oe_result_t _oe_get_quote_ocall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_get_quote_ocall, oe_get_quote_ocall);
-
-#endif
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 

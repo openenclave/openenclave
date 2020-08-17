@@ -13,7 +13,6 @@
 
 #include "core_t.h"
 
-#if !defined(OE_USE_BUILTIN_EDL)
 /**
  * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
@@ -51,7 +50,6 @@ oe_result_t _oe_write_ocall(int device, const char* str, size_t maxlen)
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_write_ocall, oe_write_ocall);
-#endif
 
 void* oe_host_malloc(size_t size)
 {

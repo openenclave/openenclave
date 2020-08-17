@@ -19,7 +19,6 @@
 #error "optimized __builtin_return_address() not supported by Intel compiler"
 #endif
 
-#if !defined(OE_USE_BUILTIN_EDL)
 /**
  * Declare the prototype of the following function to avoid the
  * missing-prototypes warning.
@@ -62,8 +61,6 @@ oe_result_t _oe_sgx_backtrace_symbols_ocall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_sgx_backtrace_symbols_ocall, oe_sgx_backtrace_symbols_ocall);
-
-#endif
 
 /* Return null if address is outside of the enclave; else return ptr. */
 const void* _check_address(const void* ptr)

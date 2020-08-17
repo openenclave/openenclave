@@ -80,12 +80,6 @@ static void _initialize_exception_handling(void)
 static void _initialize_enclave_host()
 {
     oe_once(&_enclave_init_once, _initialize_exception_handling);
-
-#ifdef OE_USE_BUILTIN_EDL
-    oe_register_core_ocall_function_table();
-    oe_register_platform_ocall_function_table();
-    oe_register_syscall_ocall_function_table();
-#endif // OE_USE_BUILTIN_EDL
 }
 #endif // OEHOSTMR
 

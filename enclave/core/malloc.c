@@ -32,6 +32,9 @@
 
 #endif
 
+/* If true, disable the debug malloc checking */
+bool oe_disable_debug_malloc_check;
+
 static oe_allocation_failure_callback_t _failure_callback;
 
 void oe_set_allocation_failure_callback(

@@ -163,14 +163,6 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         {
             oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
 
-#ifdef OE_USE_BUILTIN_EDL
-            /* Install the common TEE ECALL function table. */
-            OE_CHECK(oe_register_core_ecall_function_table());
-
-            /* Install the SGX ECALL function table. */
-            OE_CHECK(oe_register_platform_ecall_function_table());
-#endif // OE_USE_BUILTIN_EDL
-
             if (!oe_is_outside_enclave(enclave, 1))
                 OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -244,23 +236,10 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
     OE_CHECK(oe_safe_add_u64(
         args.input_buffer_size, args.output_buffer_size, &buffer_size));
 
-    // Resolve which ecall table to use.
-    if (args_ptr->table_id == OE_UINT64_MAX)
-    {
-        ecall_table.ecalls = __oe_ecalls_table;
-        ecall_table.num_ecalls = __oe_ecalls_table_size;
-    }
-    else
-    {
-        if (args_ptr->table_id >= OE_MAX_ECALL_TABLES)
-            OE_RAISE(OE_NOT_FOUND);
-
-        ecall_table.ecalls = _ecall_tables[args_ptr->table_id].ecalls;
-        ecall_table.num_ecalls = _ecall_tables[args_ptr->table_id].num_ecalls;
-
-        if (!ecall_table.ecalls)
-            OE_RAISE(OE_NOT_FOUND);
-    }
+    // The __oe_ecall_table is defined in the oeedger8r-generated
+    // code.
+    ecall_table.ecalls = __oe_ecalls_table;
+    ecall_table.num_ecalls = __oe_ecalls_table_size;
 
     // Fetch matching function.
     if (args.function_id >= ecall_table.num_ecalls)
@@ -700,8 +679,7 @@ done:
 **==============================================================================
 */
 
-oe_result_t oe_call_host_function_by_table_id(
-    uint64_t table_id,
+oe_result_t oe_call_host_function_internal(
     uint64_t function_id,
     const void* input_buffer,
     size_t input_buffer_size,
@@ -733,7 +711,6 @@ oe_result_t oe_call_host_function_by_table_id(
         OE_RAISE(OE_UNEXPECTED);
     }
 
-    args->table_id = table_id;
     args->function_id = function_id;
     args->input_buffer = input_buffer;
     args->input_buffer_size = input_buffer_size;
@@ -799,8 +776,7 @@ oe_result_t oe_call_host_function(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    return oe_call_host_function_by_table_id(
-        OE_UINT64_MAX,
+    return oe_call_host_function_internal(
         function_id,
         input_buffer,
         input_buffer_size,

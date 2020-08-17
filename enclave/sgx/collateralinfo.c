@@ -12,7 +12,6 @@
 #include "../common/sgx/collateral.h"
 #include "platform_t.h"
 
-#if !defined(OE_USE_BUILTIN_EDL)
 /**
  * Declare the prototype of the following function to avoid the
  * missing-prototypes warning.
@@ -109,8 +108,6 @@ oe_result_t _oe_get_quote_verification_collateral_ocall(
 OE_WEAK_ALIAS(
     _oe_get_quote_verification_collateral_ocall,
     oe_get_quote_verification_collateral_ocall);
-
-#endif
 
 /**
  * Update these default size values as needed.
