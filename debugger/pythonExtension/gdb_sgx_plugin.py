@@ -304,6 +304,28 @@ class ImageUnloadBreakpoint(gdb.Breakpoint):
         print ("oegdb: Unloaded enclave image %s" % debug_image.path)
         return False
 
+class LibraryLoadBreakpoint(gdb.Breakpoint):
+    def __init__(self):
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_debugger_library_load", internal=1)
+
+    def stop(self):
+        image_addr = int(gdb.parse_and_eval("$rdi"))
+        debug_image = oe_debug_image_t(image_addr)
+        load_enclave_symbol(debug_image.path, debug_image.base_address)
+        print ("oegdb: Loaded enclave image %s" % debug_image.path)
+        return False
+
+class LibraryUnloadBreakpoint(gdb.Breakpoint):
+    def __init__(self):
+        gdb.Breakpoint.__init__ (self, spec="oe_notify_debugger_library_unload", internal=1)
+
+    def stop(self):
+        image_addr = int(gdb.parse_and_eval("$rdi"))
+        debug_image = oe_debug_image_t(image_addr)
+        unload_enclave_symbol(debug_image.path, debug_image.base_address)
+        print ("oegdb: Unloaded enclave image %s" % debug_image.path)
+        return False
+
 def new_objfile_handler(event):
     global g_enclave_list_parsed
     if not g_enclave_list_parsed:
@@ -367,6 +389,8 @@ def oe_debugger_init():
     EnclaveTerminationBreakpoint()
     ImageLoadBreakpoint()
     ImageUnloadBreakpoint()
+    LibraryLoadBreakpoint()
+    LibraryUnloadBreakpoint()
     return
 
 def oe_debugger_cleanup():
