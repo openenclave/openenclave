@@ -33,6 +33,7 @@ install(
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/sgx)
 install(
   FILES openenclave/attestation/verifier.h
+        openenclave/attestation/custom_claims.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/attestation/
   COMPONENT OEHOSTVERIFY)
 install(
