@@ -29,6 +29,11 @@
 #include "tests.h"
 
 uint8_t test_claims[TEST_CLAIMS_SIZE] = "This is a sample test claims buffer";
+// Should succeed for oe_evidence oe_but fail for oe_report and raw sgx quote.
+// As for later two evidence formats, custom claims are placed in report data
+// directly which are limited to 64 bytes.
+uint8_t test_large_claims[TEST_LARGE_CLAIMS_SIZE] =
+    "This is a sample test large claims buffer";
 
 #ifdef OE_BUILD_ENCLAVE
 static bool _check_claims(const oe_claim_t* claims, size_t claims_length)
@@ -351,7 +356,7 @@ void register_verifier()
 
     OE_TEST_CODE(oe_verifier_initialize(), OE_OK);
     OE_TEST_CODE(oe_verifier_get_formats(&formats, &formats_length), OE_OK);
-    free(formats);
+    OE_TEST_CODE(oe_verifier_free_formats(formats), OE_OK);
 }
 
 void unregister_verifier()
@@ -539,7 +544,7 @@ void verify_sgx_evidence(
     const uint8_t* custom_claims,
     size_t custom_claims_size)
 {
-    printf("====== running verify_sgx_evidence\n");
+    printf("running verify_sgx_evidence\n");
 
     oe_attestation_header_t* evidence_header =
         (oe_attestation_header_t*)evidence;
@@ -767,7 +772,6 @@ void verify_sgx_evidence(
             value = _find_claim(claims, claims_size, OE_CLAIM_CUSTOM_CLAIMS);
         else
             value = _find_claim(claims, claims_size, OE_CLAIM_SGX_REPORT_DATA);
-
         OE_TEST(
             value != NULL && !memcmp(custom_claims, value, custom_claims_size));
     }
@@ -780,8 +784,7 @@ void verify_sgx_evidence(
     if (custom_claims && (format_type == SGX_FORMAT_TYPE_LOCAL ||
                           format_type == SGX_FORMAT_TYPE_REMOTE))
     {
-        printf(
-            "====== running verify_sgx_evidence failed with hampered claims\n");
+        printf("running verify_sgx_evidence failed with hampered claims\n");
 
         // Tamper with the last byte of the custom claims data.
         evidence_header->data[evidence_header->data_size - 1] ^= 1;
@@ -811,7 +814,7 @@ void verify_sgx_evidence(
     if (wrapped_with_header &&
         !memcmp(format_id, &_ecdsa_uuid, sizeof(oe_uuid_t)))
     {
-        printf("====== running verify_sgx_evidence failed on treating evidence "
+        printf("running verify_sgx_evidence failed on treating evidence "
                "wrapped_with_header as not\n");
 
         // The plugin for the given format_id shall not be able to verify the
@@ -846,8 +849,8 @@ void verify_sgx_evidence(
             (oe_report_header_t*)evidence_header->data;
         OE_SHA256 hash;
 
-        printf("====== running verify_sgx_evidence on extracted OE_report "
-               "/ SGX_quote\n");
+        printf(
+            "running verify_sgx_evidence on extracted OE_report / SGX_quote\n");
 
         OE_TEST_CODE(
             oe_sgx_hash_custom_claims(custom_claims, custom_claims_size, &hash),
@@ -895,8 +898,8 @@ void verify_sgx_evidence(
         claims = NULL;
         claims_size = 0;
 
-        printf("====== running verify_sgx_evidence failed on OE_report"
-               " treated as wrapped_with_header\n");
+        printf("running verify_sgx_evidence failed on OE_report treated as "
+               "wrapped_with_header\n");
 
         // oe_verify_evidence() shall fail header check or not be able to
         // find a plugin, since the evidence has no valid attestation header.
@@ -914,6 +917,6 @@ void verify_sgx_evidence(
 
         // With failed oe_verify_evidence(), no claims are returned.
 
-        printf("====== done verify_sgx_evidence on OE_report / SGX_quote\n");
+        printf("done verify_sgx_evidence on OE_report / SGX_quote\n");
     }
 }

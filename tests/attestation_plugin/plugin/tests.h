@@ -9,6 +9,9 @@
 #define TEST_CLAIMS_SIZE 64
 extern uint8_t test_claims[TEST_CLAIMS_SIZE];
 
+#define TEST_LARGE_CLAIMS_SIZE 65 // Larger than report data size limit
+extern uint8_t test_large_claims[TEST_LARGE_CLAIMS_SIZE];
+
 void test_runtime();
 
 void register_verifier();
