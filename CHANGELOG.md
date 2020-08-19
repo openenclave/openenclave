@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for arbitrarily large thread-local data for SGX machines.
 
 ### Changed
+- Rename custom_claims to to custom_claims_buffer.
 
 ### Removed
 

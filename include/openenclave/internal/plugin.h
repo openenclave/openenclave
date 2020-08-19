@@ -94,9 +94,9 @@ struct _oe_attester
      * @experimental
      *
      * @param[in] context A pointer to the attester plugin struct.
-     * @param[in] custom_claims The optional custom claims buffer.
-     * @param[in] custom_claims_size The number of bytes in the custom claims
-     * buffer.
+     * @param[in] custom_claims_buffer The optional custom claims buffer.
+     * @param[in] custom_claims_buffer_size The number of bytes in the custom
+     * claims buffer.
      * @param[in] opt_params The optional plugin-specific input parameters.
      * @param[in] opt_params_size The size of opt_params in bytes.
      * @param[out] evidence_buffer An output pointer that will be assigned the
@@ -112,8 +112,8 @@ struct _oe_attester
      */
     oe_result_t (*get_evidence)(
         oe_attester_t* context,
-        const void* custom_claims,
-        size_t custom_claims_size,
+        const void* custom_claims_buffer,
+        size_t custom_claims_buffer_size,
         const void* opt_params,
         size_t opt_params_size,
         uint8_t** evidence_buffer,

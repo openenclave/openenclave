@@ -28,7 +28,7 @@ void verify_sgx_evidence(
     const uint8_t*
         expected_endorsements, // validate endorsements related claims
     size_t expected_endorsements_size,
-    const uint8_t* custom_claims,
-    size_t custom_claims_size);
+    const uint8_t* custom_claims_buffer,
+    size_t custom_claims_buffer_size);
 
 #endif // _OE_ATTESTATION_PLUGIN_TESTS

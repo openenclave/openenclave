@@ -70,8 +70,8 @@ done:
 oe_result_t oe_get_evidence(
     const oe_uuid_t* format_id,
     uint32_t flags,
-    const void* custom_claims,
-    size_t custom_claims_size,
+    const void* custom_claims_buffer,
+    size_t custom_claims_buffer_size,
     const void* optional_parameters,
     size_t optional_parameters_size,
     uint8_t** evidence_buffer,
@@ -106,8 +106,8 @@ oe_result_t oe_get_evidence(
     plugin = (oe_attester_t*)plugin_node->plugin;
     OE_CHECK(plugin->get_evidence(
         plugin,
-        custom_claims,
-        custom_claims_size,
+        custom_claims_buffer,
+        custom_claims_buffer_size,
         optional_parameters,
         optional_parameters_size,
         &plugin_evidence,

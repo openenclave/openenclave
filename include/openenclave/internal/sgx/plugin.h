@@ -33,9 +33,10 @@ typedef enum _sgx_evidence_format_type_t
  * @param[in] report_body Pointer to a buffer with raw SGX quote / report.
  * @param[in] report_body_size Size of the report_body buffer.
  * @param[in] sgx_endorsements Pointer to the endorsements buffer.
- * @param[in] custom_claims the data in a flat buffer to be packaged as a
- * claim of ID OE_CLAIM_CUSTOM_CLAIMS when format_type has the right value.
- * @param[in] custom_claims_size The size of the custom_claims buffer.
+ * @param[in] custom_claims_buffer The data in a flat buffer to be packaged as a
+ * claim of ID OE_CLAIM_CUSTOM_CLAIMS_BUFFER when format_type has the right
+ * value.
+ * @param[in] custom_claims_buffer_size The size of the custom_claims buffer.
  * @param[out] claims_out Pointer to the address of a dynamically allocated
  * buffer holding the list of claims (including base and custom claims).
  * @param[out] claims_length_out The length of the claims_out list.
@@ -49,14 +50,14 @@ oe_result_t oe_sgx_extract_claims(
     const oe_uuid_t* format_id,
     const uint8_t* report_body,
     size_t report_body_size,
-    const uint8_t* custom_claims,
-    size_t custom_claims_size,
+    const uint8_t* custom_claims_buffer,
+    size_t custom_claims_buffer_size,
     const struct _oe_sgx_endorsements_t* sgx_endorsements,
     oe_claim_t** claims_out,
     size_t* claims_length_out);
 
 /**
- * oe_sgx_hash_custom_claims
+ * oe_sgx_hash_custom_claims_buffer
  *
  * Calculate the hash of a custom_claims buffer
  *
@@ -64,17 +65,17 @@ oe_result_t oe_sgx_extract_claims(
  *
  * @experimental
  *
- * @param[in] custom_claims Custom claims in a flat buffer.
- * @param[in] custom_claims_size The number of bytes in the custom claims
+ * @param[in] custom_claims_buffer Custom claims in a flat buffer.
+ * @param[in] custom_claims_buffer_size The number of bytes in the custom claims
  * buffer.
  * @param[out] hash_out hash of the custom claims.
  * @retval OE_OK on success.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
  * @retval An appropriate error code on failure.
  */
-oe_result_t oe_sgx_hash_custom_claims(
-    const void* custom_claims,
-    size_t custom_claims_size,
+oe_result_t oe_sgx_hash_custom_claims_buffer(
+    const void* custom_claims_buffer,
+    size_t custom_claims_buffer_size,
     OE_SHA256* hash_out);
 
 OE_EXTERNC_END
