@@ -123,7 +123,8 @@ oe_result_t oe_sgx_init_context_switchless_ecall(
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
-    /* lfence after checks. */
+    // Prevent speculative execution from accessing context that
+    // has failed the oe_is_outside_enclave checks.
     oe_lfence();
 
     // Stash host worker information in enclave memory.
@@ -252,7 +253,8 @@ void oe_sgx_switchless_enclave_worker_thread_ecall(
     if (!oe_is_outside_enclave(context, sizeof(*context)))
         return;
 
-    // Prevent speculative execution.
+    // Prevent speculative execution from accessing context that
+    // has failed the oe_is_within_enclave checks.
     oe_lfence();
 
     const uint64_t spin_count_threshold = context->spin_count_threshold;

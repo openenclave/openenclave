@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/sgx/sgxtypes.h>
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/context.h>
 #include <openenclave/internal/cpuid.h>
@@ -37,6 +38,10 @@ oe_result_t oe_add_vectored_exception_handler(
         result = OE_INVALID_PARAMETER;
         goto cleanup;
     }
+
+    // Prevent speculative execution from accessing vectored_handler that
+    // has failed the oe_is_within_enclave check.
+    oe_lfence();
 
     // Acquire the lock.
     lock_ret = oe_spin_lock(&g_exception_lock);

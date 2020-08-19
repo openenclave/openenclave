@@ -166,6 +166,11 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             if (!oe_is_outside_enclave(enclave, 1))
                 OE_RAISE(OE_INVALID_PARAMETER);
 
+            // Eventhough oe_enclave_t* is an opaque type that is never
+            // dereferenced within the enclave, for consistency add an oe_lfence
+            // to accompany the oe_is_outside_enclave check.
+            oe_lfence();
+
             oe_enclave = enclave;
 
             /* Initialize the CPUID table before calling global constructors. */
@@ -224,6 +229,10 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
         args.output_buffer_size < sizeof(oe_result_t) ||
         !oe_is_outside_enclave(args.output_buffer, args.output_buffer_size))
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Prevent speculative execution from accessing parameters that
+    // have failed the oe_is_outside_enclave check.
+    oe_lfence();
 
     // Validate output and input buffer sizes.
     // Buffer sizes must be correctly aligned.
@@ -576,6 +585,10 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
             oe_is_outside_enclave(
                 host_ecall_context, sizeof(*host_ecall_context)))
         {
+            // Prevent speculative execution from accessing context that
+            // has failed the oe_is_outside_enclave check.
+            oe_lfence();
+
             uint64_t* frame = (uint64_t*)__builtin_frame_address(0);
             host_ecall_context->debug_eexit_rbp = frame[0];
             // The caller's RSP is always given by this equation

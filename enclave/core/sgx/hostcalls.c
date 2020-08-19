@@ -14,9 +14,13 @@ static oe_ecall_context_t* _get_ecall_context()
 {
     oe_sgx_td_t* td = oe_sgx_get_td();
     oe_ecall_context_t* ecall_context = td->host_ecall_context;
-    return oe_is_outside_enclave(ecall_context, sizeof(*ecall_context))
-               ? ecall_context
-               : NULL;
+    if (!oe_is_outside_enclave(ecall_context, sizeof(*ecall_context)))
+        return NULL;
+
+    // Prevent speculative execution from accessing ecall_context that
+    // has failed the !oe_is_outside_enclave check.
+    oe_lfence();
+    return ecall_context;
 }
 
 /**
@@ -42,7 +46,13 @@ void* oe_ecall_context_get_ocall_buffer(uint64_t size)
         volatile uint64_t ocall_buffer_size = ecall_context->ocall_buffer_size;
         if (ocall_buffer_size >= size &&
             oe_is_outside_enclave(ocall_buffer, ocall_buffer_size))
+        {
+            // Prevent speculative execution from accessing ocall_buffer that
+            // has failed the oe_is_outside_enclave check.
+            oe_lfence();
+
             return (void*)ocall_buffer;
+        }
     }
     return NULL;
 }

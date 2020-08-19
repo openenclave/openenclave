@@ -6,6 +6,7 @@
 #include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/string.h>
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/eeid.h>
@@ -38,6 +39,10 @@ static void _check_memory_boundaries(void)
 
     if (!oe_is_within_enclave(__oe_get_heap_base(), __oe_get_heap_size()))
         oe_abort();
+
+    // Prevent speculative execution from accessing above data if they have
+    // failed the oe_is_within_enclave checks.
+    oe_lfence();
 }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
@@ -68,6 +73,10 @@ static oe_result_t _eeid_patch_memory()
             !oe_is_within_enclave(
                 eeid->data, eeid->data_size + eeid->signature_size))
             oe_abort();
+
+        // Prevent speculative execution from accessing eeid that
+        // has failed the oe_is_within_enclave check.
+        oe_lfence();
 
         oe_eeid = eeid;
 

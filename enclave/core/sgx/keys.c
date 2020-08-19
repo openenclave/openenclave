@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
@@ -91,6 +92,10 @@ oe_result_t oe_get_key(
     {
         return OE_INVALID_PARAMETER;
     }
+
+    // Prevent speculative execution from accessing parameters that
+    // have failed the oe_is_within_enclave check.
+    oe_lfence();
 
     // Reserved fields inside key request must be all zero.
     if (sgx_key_request->reserved1 != 0)

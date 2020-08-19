@@ -3,6 +3,7 @@
 
 #include <openenclave/advanced/allocator.h>
 #include <openenclave/corelibc/stdio.h>
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/argv.h>
 #include <openenclave/internal/backtrace.h>
@@ -67,6 +68,10 @@ const void* _check_address(const void* ptr)
 {
     if (!oe_is_within_enclave(ptr, sizeof(uint64_t)))
         return NULL;
+
+    // Prevent speculative execution from accessing ptr that
+    // has failed the oe_is_within_enclave check.
+    oe_lfence();
 
     return ptr;
 }

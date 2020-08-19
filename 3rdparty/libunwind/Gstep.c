@@ -10,6 +10,7 @@
 #endif
 
 #include <libunwind.h>
+#include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include "unwind_i.h"
 
@@ -36,6 +37,10 @@ int __libunwind_unw_step(unw_cursor_t* cursor)
         if (!oe_is_within_enclave((void*)c->cfa, 1024))
             return 0;
     }
+
+    // Prevent speculative execution from accessing cursor that
+    // has failed the oe_is_within_enclave checks.
+    oe_lfence();
 
     return unw_step(cursor);
 }

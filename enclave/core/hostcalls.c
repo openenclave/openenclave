@@ -64,6 +64,9 @@ void* oe_host_malloc(size_t size)
     if (arg_out && !oe_is_outside_enclave((void*)arg_out, size))
         oe_abort();
 
+    // Prevent speculative execution from accessing arg_out that
+    // has failed the oe_is_outside_enclave check.
+    oe_lfence();
     return (void*)arg_out;
 }
 
@@ -107,6 +110,9 @@ void* oe_host_realloc(void* ptr, size_t size)
         oe_abort();
     }
 
+    // Prevent speculative execution from accessing retval that
+    // has failed the oe_is_outside_enclave check.
+    oe_lfence();
     return retval;
 }
 
