@@ -543,6 +543,7 @@ following functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
+| fstat             | none                                                     |
 | mkdir             | none                                                     |
 | stat              | none                                                     |
 |                   | <img width="1000">                                       |

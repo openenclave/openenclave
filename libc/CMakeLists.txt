@@ -215,6 +215,7 @@ add_enclave_library(
   ${MUSLSRC}/internal/floatscan.c
   ${MUSLSRC}/internal/intscan.c
   ${MUSLSRC}/internal/libc.c
+  ${MUSLSRC}/internal/procfdname.c
   ${MUSLSRC}/internal/shgetc.c
   ${MUSLSRC}/legacy/getpagesize.c
   ${MUSLSRC}/locale/bind_textdomain_codeset.c
@@ -547,6 +548,7 @@ add_enclave_library(
   ${MUSLSRC}/search/tfind.c
   ${MUSLSRC}/search/tsearch.c
   ${MUSLSRC}/search/twalk.c
+  ${MUSLSRC}/stat/fstat.c
   ${MUSLSRC}/stat/stat.c
   ${MUSLSRC}/stdio/asprintf.c
   ${MUSLSRC}/stdio/asprintf.c

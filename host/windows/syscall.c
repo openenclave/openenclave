@@ -1694,6 +1694,31 @@ done:
     return ret;
 }
 
+static void _stat_copy(const struct _stat64* winstat, struct oe_stat_t* buf)
+{
+    // Make sure unset members are zero.
+    *buf = (struct oe_stat_t){0};
+
+    // The macro #define st_atime st_atim.tv_sec
+    // provides backward compatibility for older versions of POSIX. Here we need
+    // to undef to avoid winstat.st_atime be treated as winstat.st_atim.tv_sec.
+#undef st_atime
+#undef st_mtime
+#undef st_ctime
+
+    buf->st_dev = winstat->st_dev;
+    buf->st_ino = winstat->st_ino;
+    buf->st_mode = _win_stat_mode_to_posix(winstat->st_mode);
+    buf->st_nlink = winstat->st_nlink;
+    buf->st_uid = winstat->st_uid;
+    buf->st_gid = winstat->st_gid;
+    buf->st_rdev = winstat->st_rdev;
+    buf->st_size = winstat->st_size;
+    buf->st_atim.tv_sec = winstat->st_atime;
+    buf->st_mtim.tv_sec = winstat->st_mtime;
+    buf->st_ctim.tv_sec = winstat->st_ctime;
+}
+
 int oe_syscall_stat_ocall(const char* pathname, struct oe_stat_t* buf)
 {
     int ret = -1;
@@ -1707,28 +1732,10 @@ int oe_syscall_stat_ocall(const char* pathname, struct oe_stat_t* buf)
     ret = _wstat64(wpathname, &winstat);
     if (ret < 0)
     {
-        _set_errno(_winerr_to_errno(GetLastError()));
         goto done;
     }
 
-    // The macro #define st_atime st_atim.tv_sec
-    // provides backward compatibility for older version POSIX. Here we need
-    // to undef to avoid winstat.st_atime be treated as winstat.st_atim.tv_sec.
-#undef st_atime
-#undef st_mtime
-#undef st_ctime
-
-    buf->st_dev = winstat.st_dev;
-    buf->st_ino = winstat.st_ino;
-    buf->st_mode = _win_stat_mode_to_posix(winstat.st_mode);
-    buf->st_nlink = winstat.st_nlink;
-    buf->st_uid = winstat.st_uid;
-    buf->st_gid = winstat.st_gid;
-    buf->st_rdev = winstat.st_rdev;
-    buf->st_size = winstat.st_size;
-    buf->st_atim.tv_sec = winstat.st_atime;
-    buf->st_mtim.tv_sec = winstat.st_mtime;
-    buf->st_ctim.tv_sec = winstat.st_ctime;
+    _stat_copy(&winstat, buf);
 
 done:
 
@@ -1736,6 +1743,43 @@ done:
     {
         free(wpathname);
     }
+    return ret;
+}
+
+int oe_syscall_fstat_ocall(oe_host_fd_t fd, struct oe_stat_t* buf)
+{
+    // We must duplicate the handle because closing the fd obtained by
+    // _open_osfhandle will also close the underlying handle.
+    const HANDLE hProcess = GetCurrentProcess();
+    HANDLE hFile = NULL;
+    if (!DuplicateHandle(
+            hProcess,
+            (HANDLE)fd,
+            hProcess,
+            &hFile,
+            0,
+            false,
+            DUPLICATE_SAME_ACCESS))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        return -1;
+    }
+
+    const int temp_fd = _open_osfhandle((intptr_t)hFile, 0);
+    if (temp_fd < 0)
+    {
+        CloseHandle(hFile);
+        _set_errno(EINVAL);
+        return -1;
+    }
+
+    struct _stat64 winstat = {0};
+    const int ret = _fstat64(temp_fd, &winstat);
+    _close(temp_fd);
+
+    if (ret >= 0)
+        _stat_copy(&winstat, buf);
+
     return ret;
 }
 

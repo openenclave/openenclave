@@ -401,6 +401,15 @@ done:
     return -1;
 }
 
+static int _consolefs_fstat(oe_fd_t* file, struct oe_stat_t* buf)
+{
+    OE_UNUSED(file);
+    OE_UNUSED(buf);
+    OE_RAISE_ERRNO(OE_ENOTSUP);
+done:
+    return -1;
+}
+
 static int _consolefs_fsync(oe_fd_t* file)
 {
     OE_UNUSED(file);
@@ -423,6 +432,7 @@ static oe_file_ops_t _ops = {
     .pread = _consolefs_pread,
     .pwrite = _consolefs_pwrite,
     .getdents64 = _consolefs_getdents64,
+    .fstat = _consolefs_fstat,
     .fsync = _consolefs_fsync,
     .fdatasync = _consolefs_fsync,
 };

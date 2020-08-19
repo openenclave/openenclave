@@ -169,6 +169,7 @@ static void _assert_fd(oe_fd_t* desc)
             oe_assert(desc->ops.file.pread);
             oe_assert(desc->ops.file.pwrite);
             oe_assert(desc->ops.file.getdents64);
+            oe_assert(desc->ops.file.fstat);
             oe_assert(desc->ops.file.fsync);
             oe_assert(desc->ops.file.fdatasync);
             break;

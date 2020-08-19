@@ -293,6 +293,29 @@ int oe_syscall_closedir_ocall(uint64_t dirp)
     return closedir((DIR*)dirp);
 }
 
+static void _stat_copy(const struct stat* st, struct oe_stat_t* buf)
+{
+    // Make sure unset members are zero.
+    *buf = (struct oe_stat_t){0};
+
+    buf->st_dev = st->st_dev;
+    buf->st_ino = st->st_ino;
+    buf->st_nlink = st->st_nlink;
+    buf->st_mode = st->st_mode;
+    buf->st_uid = st->st_uid;
+    buf->st_gid = st->st_gid;
+    buf->st_rdev = st->st_rdev;
+    buf->st_size = st->st_size;
+    buf->st_blksize = st->st_blksize;
+    buf->st_blocks = st->st_blocks;
+    buf->st_atim.tv_sec = st->st_atim.tv_sec;
+    buf->st_atim.tv_nsec = st->st_atim.tv_nsec;
+    buf->st_mtim.tv_sec = st->st_mtim.tv_sec;
+    buf->st_mtim.tv_nsec = st->st_mtim.tv_nsec;
+    buf->st_ctim.tv_sec = st->st_ctim.tv_sec;
+    buf->st_ctim.tv_nsec = st->st_ctim.tv_nsec;
+}
+
 int oe_syscall_stat_ocall(const char* pathname, struct oe_stat_t* buf)
 {
     int ret = -1;
@@ -306,23 +329,26 @@ int oe_syscall_stat_ocall(const char* pathname, struct oe_stat_t* buf)
     if ((ret = stat(pathname, &st)) == -1)
         goto done;
 
-    buf->st_dev = st.st_dev;
-    buf->st_dev = st.st_dev;
-    buf->st_ino = st.st_ino;
-    buf->st_nlink = st.st_nlink;
-    buf->st_mode = st.st_mode;
-    buf->st_uid = st.st_uid;
-    buf->st_gid = st.st_gid;
-    buf->st_rdev = st.st_rdev;
-    buf->st_size = st.st_size;
-    buf->st_blksize = st.st_blksize;
-    buf->st_blocks = st.st_blocks;
-    buf->st_atim.tv_sec = st.st_atim.tv_sec;
-    buf->st_atim.tv_nsec = st.st_atim.tv_nsec;
-    buf->st_mtim.tv_sec = st.st_mtim.tv_sec;
-    buf->st_mtim.tv_nsec = st.st_mtim.tv_nsec;
-    buf->st_ctim.tv_sec = st.st_ctim.tv_sec;
-    buf->st_ctim.tv_nsec = st.st_ctim.tv_nsec;
+    _stat_copy(&st, buf);
+
+done:
+    return ret;
+}
+
+int oe_syscall_fstat_ocall(oe_host_fd_t fd, struct oe_stat_t* buf)
+{
+    int ret = -1;
+    struct stat st;
+
+    errno = 0;
+
+    if (!buf)
+        goto done;
+
+    if ((ret = fstat((int)fd, &st)) == -1)
+        goto done;
+
+    _stat_copy(&st, buf);
 
 done:
     return ret;

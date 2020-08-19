@@ -244,7 +244,7 @@ template <class FILE_SYSTEM>
 static void test_stat_file(FILE_SYSTEM& fs, const char* tmp_dir)
 {
     char path[OE_PAGE_SIZE];
-    typename FILE_SYSTEM::stat_type buf;
+    typename FILE_SYSTEM::stat_type buf, fbuf;
 
     printf("--- %s()\n", __FUNCTION__);
 
@@ -260,6 +260,20 @@ static void test_stat_file(FILE_SYSTEM& fs, const char* tmp_dir)
     OE_TEST(
         (buf.st_mode & ((OE_S_IFREG | MODE) & (OE_S_IRUSR | OE_S_IWUSR))) ==
         ((OE_S_IFREG | MODE) & (OE_S_IRUSR | OE_S_IWUSR)));
+
+    /* fstat should return the same result as stat */
+    const auto file = fs.open(path, 0, 0);
+    OE_TEST(file);
+    OE_TEST(fs.fstat(file, &fbuf) == 0);
+    OE_TEST(fs.close(file) == 0);
+    OE_TEST(fbuf.st_ino == buf.st_ino);
+    OE_TEST(fbuf.st_nlink == buf.st_nlink);
+    OE_TEST(fbuf.st_mode == buf.st_mode);
+    OE_TEST(fbuf.st_uid == buf.st_uid);
+    OE_TEST(fbuf.st_gid == buf.st_gid);
+    OE_TEST(fbuf.st_size == buf.st_size);
+    OE_TEST(fbuf.st_blksize == buf.st_blksize);
+    OE_TEST(fbuf.st_blocks == buf.st_blocks);
 }
 
 template <class FILE_SYSTEM>

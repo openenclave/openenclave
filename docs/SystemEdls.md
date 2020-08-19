@@ -77,6 +77,7 @@ oe_syscall_readdir_ocall | readdir | - |
 oe_syscall_rewinddir_ocall | rewinddir | - |
 oe_syscall_closedir_ocall | closedir | - |
 oe_syscall_stat_ocall | stat | - |
+oe_syscall_fstat_ocall | fstat | - |
 oe_syscall_access_ocall | access | - |
 oe_syscall_link_ocall | link | - |
 oe_syscall_unlink_ocall | unlink | - |
