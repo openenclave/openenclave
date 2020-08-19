@@ -12,24 +12,13 @@ set(EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl)
 ##==============================================================================
 
 set(CORE_EDL_FILE ${EDL_DIR}/core.edl)
-if (COMPILE_SYSTEM_EDL)
-  add_custom_command(
-    OUTPUT core_t.h core_t.c core_args.h
-    DEPENDS ${CORE_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --trusted ${CORE_EDL_FILE})
+add_custom_command(
+  OUTPUT core_t.h core_args.h
+  DEPENDS ${CORE_EDL_FILE} edger8r
+  COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --trusted
+          ${CORE_EDL_FILE})
 
-  add_custom_target(core_trusted_edl DEPENDS core_t.h core_t.c core_args.h)
-
-  list(APPEND PLATFORM_SRC core_t_wrapper.c)
-else ()
-  add_custom_command(
-    OUTPUT core_t.h core_args.h
-    DEPENDS ${CORE_EDL_FILE} edger8r
-    COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --trusted
-            ${CORE_EDL_FILE})
-
-  add_custom_target(core_trusted_edl DEPENDS core_t.h core_args.h)
-endif ()
+add_custom_target(core_trusted_edl DEPENDS core_t.h core_args.h)
 
 ##==============================================================================
 ##
@@ -39,17 +28,7 @@ endif ()
 ##==============================================================================
 
 set(SGX_EDL_FILE ${EDL_DIR}/sgx/platform.edl)
-if (OE_SGX AND COMPILE_SYSTEM_EDL)
-  add_custom_command(
-    OUTPUT platform_t.h platform_t.c platform_args.h
-    DEPENDS ${SGX_EDL_FILE} edger8r
-    COMMAND edger8r --search-path ${OE_INCLUDE_DIR} --trusted ${SGX_EDL_FILE})
-
-  add_custom_target(platform_trusted_edl DEPENDS platform_t.h platform_t.c
-                                                 platform_args.h)
-
-  list(APPEND PLATFORM_SRC sgx/platform_t_wrapper.c)
-elseif (OE_SGX)
+if (OE_SGX)
   # Only generate headers
   add_custom_command(
     OUTPUT platform_t.h platform_args.h
@@ -180,7 +159,6 @@ add_enclave_library(
   assert.c
   atexit.c
   backtrace.c
-  calls.c
   ctype.c
   debugmalloc.c
   hexdump.c
@@ -323,10 +301,6 @@ if (USE_DEBUG_MALLOC)
   enclave_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
   message(
     "USE_DEBUG_MALLOC is set, building oecore with memory leak detection.")
-endif ()
-
-if (COMPILE_SYSTEM_EDL)
-  enclave_compile_definitions(oecore PRIVATE OE_USE_BUILTIN_EDL)
 endif ()
 
 if (WITH_EEID)

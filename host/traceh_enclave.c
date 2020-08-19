@@ -18,7 +18,6 @@
 
 #include "core_u.h"
 
-#if !defined(OE_USE_BUILTIN_EDL)
 /**
  * Declare the prototype of the following function to avoid the
  * missing-prototypes warning.
@@ -47,8 +46,6 @@ oe_result_t _oe_log_init_ecall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_log_init_ecall, oe_log_init_ecall);
-
-#endif
 
 /*
  * This file is separated from traceh.c since the host verification library

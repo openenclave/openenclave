@@ -267,11 +267,6 @@ if (NOT USE_SNMALLOC)
   set(USE_DLMALLOC true)
 endif ()
 
-option(
-  COMPILE_SYSTEM_EDL
-  "Build system ecalls and ocalls into OE libraries. If not set, they must be included by application EDL to use."
-  OFF)
-
 option(BUILD_TESTS "Build OE tests" ON)
 
 # For EEID see https://github.com/openenclave/openenclave/pull/2647
@@ -378,18 +373,14 @@ include(add_enclave_test)
 add_subdirectory(include)
 add_subdirectory(host)
 
-# Tests and samples have been ported to manually include system edl files.
-# They can no longer be used when system EDL is builtin.
-if (NOT COMPILE_SYSTEM_EDL)
-  if (BUILD_TESTS AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
-    add_subdirectory(tests)
-  endif ()
+if (BUILD_TESTS AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
+  add_subdirectory(tests)
+endif ()
 
-  # Skip samples when enabling the code coverage test.
-  # Otherwise, all the samples need to explicitly link against the libgcov library.
-  if (NOT CODE_COVERAGE)
-    add_subdirectory(samples)
-  endif ()
+# Skip samples when enabling the code coverage test.
+# Otherwise, all the samples need to explicitly link against the libgcov library.
+if (NOT CODE_COVERAGE)
+  add_subdirectory(samples)
 endif ()
 
 if (NOT COMPONENT MATCHES OEHOSTVERFIY)

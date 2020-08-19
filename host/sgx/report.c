@@ -20,7 +20,6 @@
 
 #include "sgxquoteprovider.h"
 
-#if !defined(OE_USE_BUILTIN_EDL)
 /**
  * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
@@ -111,8 +110,6 @@ oe_result_t _oe_verify_report_ecall(
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_verify_report_ecall, oe_verify_report_ecall);
-
-#endif
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 

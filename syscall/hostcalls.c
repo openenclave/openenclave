@@ -26,8 +26,6 @@
  * error.
  */
 
-#if !defined(OE_USE_BUILTIN_EDL)
-
 /*
 **==============================================================================
 **
@@ -1407,5 +1405,3 @@ oe_result_t _oe_syscall_uname_ocall(int* _retval, struct oe_utsname* buf)
     return OE_UNSUPPORTED;
 }
 OE_WEAK_ALIAS(_oe_syscall_uname_ocall, oe_syscall_uname_ocall);
-
-#endif

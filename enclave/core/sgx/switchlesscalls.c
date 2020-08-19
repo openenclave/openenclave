@@ -31,7 +31,6 @@ static bool _is_switchless_initialized = false;
  * */
 static int64_t _switchless_init_in_progress = 0;
 
-#if !defined(OE_USE_BUILTIN_EDL)
 /**
  * Declare the prototypes of the following functions to avoid the
  * missing-prototypes warning.
@@ -67,8 +66,6 @@ oe_result_t _oe_sgx_sleep_switchless_worker_ocall(
 OE_WEAK_ALIAS(
     _oe_sgx_sleep_switchless_worker_ocall,
     oe_sgx_sleep_switchless_worker_ocall);
-
-#endif
 
 /*
 **==============================================================================
@@ -238,8 +235,7 @@ oe_result_t oe_switchless_call_host_function(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    return oe_call_host_function_by_table_id(
-        OE_UINT64_MAX,
+    return oe_call_host_function_internal(
         function_id,
         input_buffer,
         input_buffer_size,

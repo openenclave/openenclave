@@ -80,14 +80,6 @@
  * the value is indeed at least as large as we assume it to be. */
 OE_STATIC_ASSERT(TEEC_CONFIG_PAYLOAD_REF_COUNT >= 4);
 
-static void _initialize_enclave_host()
-{
-#ifdef OE_USE_BUILTIN_EDL
-    oe_register_core_ocall_function_table();
-    oe_register_syscall_ocall_function_table();
-#endif // OE_USE_BUILTIN_EDL
-}
-
 static oe_result_t _handle_call_host_function(
     void* inout_buffer,
     size_t inout_buffer_size,
@@ -116,23 +108,8 @@ static oe_result_t _handle_call_host_function(
     if (args_ptr == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Resolve which OCALL table to use. */
-    if (args_ptr->table_id == OE_UINT64_MAX)
-    {
-        ocall_table.ocalls = enclave->ocalls;
-        ocall_table.num_ocalls = enclave->num_ocalls;
-    }
-    else
-    {
-        if (args_ptr->table_id >= OE_MAX_OCALL_TABLES)
-            OE_RAISE(OE_NOT_FOUND);
-
-        ocall_table.ocalls = _ocall_tables[args_ptr->table_id].ocalls;
-        ocall_table.num_ocalls = _ocall_tables[args_ptr->table_id].num_ocalls;
-
-        if (!ocall_table.ocalls)
-            OE_RAISE(OE_NOT_FOUND);
-    }
+    ocall_table.ocalls = enclave->ocalls;
+    ocall_table.num_ocalls = enclave->num_ocalls;
 
     /* Fetch matching function */
     if (args_ptr->function_id >= ocall_table.num_ocalls)
@@ -413,8 +390,6 @@ oe_result_t oe_create_enclave(
     bool have_mutex = false;
     bool have_context = false;
     bool have_session = false;
-
-    _initialize_enclave_host();
 
     if (enclave_out)
         *enclave_out = NULL;

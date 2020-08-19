@@ -18,6 +18,4 @@ typedef struct _ecall_table
     size_t num_ecalls;
 } ecall_table_t;
 
-extern ecall_table_t _ecall_tables[];
-
 #endif /* OE_CALLS_H */
