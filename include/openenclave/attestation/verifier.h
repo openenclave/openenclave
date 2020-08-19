@@ -37,23 +37,23 @@ oe_result_t oe_verifier_initialize(void);
 /**
  * oe_verifier_get_formats
  *
- * Gets a list of evidence formats accepted by the verifier for evidence
+ * Gets a list of evidence format ids accepted by the verifier for evidence
  * verification.
  *
  * @experimental
  *
- * @param[out] formats An output pointer that will be assigned the address of
- * a dynamically allocated buffer that holds the returned list of formats
+ * @param[out] format_ids An output pointer that will be assigned the address of
+ * a dynamically allocated buffer that holds the returned list of format ids
  * supported for evidence verification.
- * @param[out] formats_length A pointer that points to the length of the
- * returned formats list (number of format ID entries).
+ * @param[out] format_ids_length A pointer that points to the length of the
+ * returned format id list (number of format id entries).
  * @retval OE_OK on success.
  * @retval OE_INVALID_PARAMETER At least one of the parameters is invalid.
  * @retval other appropriate error code.
  */
 oe_result_t oe_verifier_get_formats(
-    oe_uuid_t** formats,
-    size_t* formats_length);
+    oe_uuid_t** format_ids,
+    size_t* format_ids_length);
 
 /**
  * oe_verifier_free_formats
@@ -62,11 +62,11 @@ oe_result_t oe_verifier_get_formats(
  *
  * @experimental
  *
- * @param[in] formats The formats list.
+ * @param[in] format_ids The formats list.
  * @retval OE_OK The function succeeded.
  * @retval other appropriate error code.
  */
-oe_result_t oe_verifier_free_formats(oe_uuid_t* formats);
+oe_result_t oe_verifier_free_formats(oe_uuid_t* format_ids);
 
 /**
  * oe_verifier_get_format_settings
@@ -75,7 +75,8 @@ oe_result_t oe_verifier_free_formats(oe_uuid_t* formats);
  *
  * @experimental
  *
- * @param[in] format The format for which to retrieve the optional settings.
+ * @param[in] format_id The format ID for which to retrieve the optional
+ * settings.
  * @param[out] settings An output pointer that will be assigned the address of
  * a dynamically allocated buffer that holds the returned settings data. This
  * pointer will be assigned a NULL value if there is no settings needed.
@@ -86,7 +87,7 @@ oe_result_t oe_verifier_free_formats(oe_uuid_t* formats);
  * @retval other appropriate error code.
  */
 oe_result_t oe_verifier_get_format_settings(
-    const oe_uuid_t* format,
+    const oe_uuid_t* format_id,
     uint8_t** settings,
     size_t* settings_size);
 
@@ -112,7 +113,7 @@ oe_result_t oe_verifier_free_format_settings(uint8_t* settings);
  * The following base claims will be returned at the minimum:
  *
  * - id_version (uint32_t)
- *     - Version number. Must be 1.
+ *     - Version number.
  * - security_version (uint32_t)
  *     - Security version of the enclave. (ISVN for SGX).
  * - attributes (uint64_t)
@@ -132,14 +133,14 @@ oe_result_t oe_verifier_free_format_settings(uint8_t* settings);
  * - validity_until (oe_datetime_t, optional)
  *     - Overall datetime at which the evidence and endorsements expire.
  * - format_uuid (uint8_t[16])
- *     - The format UUID of the verified evidence.
+ *     - The format id of the verified evidence.
  *
  * @experimental
  *
- * @param[in] format_id The optional format UUID of the evidence to be verified.
+ * @param[in] format_id The optional format id of the evidence to be verified.
  * If this parameter is NULL, the evidence_buffer (and endorsement_buffer if
  * not NULL) must contain data with an attestation header holding a valid
- * format ID. Otherwise, this parameter must hold a valid format ID, and the
+ * format id. Otherwise, this parameter must hold a valid format id, and the
  * envidence and endorsements data must not be wrapped with an attestation
  * header.
  * @param[in] evidence_buffer The evidence buffer.

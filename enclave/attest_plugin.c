@@ -190,20 +190,20 @@ oe_result_t oe_free_endorsements(uint8_t* evidence_buffer)
 }
 
 oe_result_t oe_attester_select_format(
-    const oe_uuid_t* formats,
-    size_t formats_length,
-    oe_uuid_t* selected_format)
+    const oe_uuid_t* format_ids,
+    size_t format_ids_length,
+    oe_uuid_t* selected_format_id)
 {
     oe_result_t result = OE_NOT_FOUND;
 
-    if (!formats || !formats_length || !selected_format)
+    if (!format_ids || !format_ids_length || !selected_format_id)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    for (size_t i = 0; i < formats_length; i++)
+    for (size_t i = 0; i < format_ids_length; i++)
     {
-        if (oe_attest_find_plugin(attesters, formats + i, NULL))
+        if (oe_attest_find_plugin(attesters, format_ids + i, NULL))
         {
-            memcpy(selected_format, formats + i, sizeof(oe_uuid_t));
+            memcpy(selected_format_id, format_ids + i, sizeof(oe_uuid_t));
             result = OE_OK;
             break;
         }

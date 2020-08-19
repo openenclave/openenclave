@@ -1,9 +1,13 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/evidence.h>
 #include <openenclave/internal/cert.h>
+#include <openenclave/internal/evidence.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/plugin.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
@@ -15,10 +19,6 @@
 
 #include "attest_plugin.h"
 #include "common.h"
-
-#include <openenclave/attestation/verifier.h>
-#include <openenclave/bits/evidence.h>
-#include <openenclave/internal/plugin.h>
 
 #define KEY_BUFF_SIZE 2048
 
@@ -137,8 +137,7 @@ oe_result_t oe_attest_register_plugin(
     result = OE_OK;
 
 done:
-    if (plugin_node != NULL)
-        oe_free(plugin_node);
+    oe_free(plugin_node);
 
     return result;
 }
@@ -361,7 +360,7 @@ oe_result_t oe_verify_attestation_certificate_with_evidence(
         OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid report version", NULL);
 
     result = oe_verify_evidence(
-        // rely on the format UUID in the header. For attestation
+        // rely on the format id in the header. For attestation
         // certificate, the report should always include the header.
         NULL,
         report,
@@ -471,20 +470,22 @@ static size_t _count_plugins(const oe_plugin_list_node_t* head)
     return count;
 }
 
-oe_result_t oe_verifier_get_formats(oe_uuid_t** formats, size_t* formats_length)
+oe_result_t oe_verifier_get_formats(
+    oe_uuid_t** format_ids,
+    size_t* format_ids_length)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t count = 0;
-    oe_uuid_t* formats_buf = NULL;
+    oe_uuid_t* format_ids_buffer = NULL;
 
-    if (!formats || !formats_length)
+    if (!format_ids || !format_ids_length)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     count = _count_plugins(verifiers);
     if (!count)
     {
-        *formats = NULL;
-        *formats_length = 0;
+        *format_ids = NULL;
+        *format_ids_length = 0;
         result = OE_OK;
     }
     else
@@ -492,8 +493,8 @@ oe_result_t oe_verifier_get_formats(oe_uuid_t** formats, size_t* formats_length)
         oe_plugin_list_node_t* cur = NULL;
         size_t idx = 0;
 
-        formats_buf = (oe_uuid_t*)oe_malloc(count * sizeof(oe_uuid_t));
-        if (!formats_buf)
+        format_ids_buffer = (oe_uuid_t*)oe_malloc(count * sizeof(oe_uuid_t));
+        if (!format_ids_buffer)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
         cur = verifiers;
@@ -501,7 +502,9 @@ oe_result_t oe_verifier_get_formats(oe_uuid_t** formats, size_t* formats_length)
         while (cur && idx < count)
         {
             memcpy(
-                formats_buf + idx, &cur->plugin->format_id, sizeof(oe_uuid_t));
+                format_ids_buffer + idx,
+                &cur->plugin->format_id,
+                sizeof(oe_uuid_t));
             cur = cur->next;
             idx++;
         }
@@ -511,26 +514,25 @@ oe_result_t oe_verifier_get_formats(oe_uuid_t** formats, size_t* formats_length)
         if (idx < count || cur)
             OE_RAISE(OE_UNEXPECTED);
 
-        *formats = formats_buf;
-        *formats_length = count;
-        formats_buf = NULL;
+        *format_ids = format_ids_buffer;
+        *format_ids_length = count;
+        format_ids_buffer = NULL;
         result = OE_OK;
     }
 
 done:
-    if (formats_buf)
-        oe_free(formats_buf);
+    oe_free(format_ids_buffer);
     return result;
 }
 
-oe_result_t oe_verifier_free_formats(oe_uuid_t* formats)
+oe_result_t oe_verifier_free_formats(oe_uuid_t* format_ids)
 {
-    oe_free(formats);
+    oe_free(format_ids);
     return OE_OK;
 }
 
 oe_result_t oe_verifier_get_format_settings(
-    const oe_uuid_t* format,
+    const oe_uuid_t* format_id,
     uint8_t** settings,
     size_t* settings_size)
 {
@@ -538,10 +540,10 @@ oe_result_t oe_verifier_get_format_settings(
     oe_plugin_list_node_t* plugin_node = NULL;
     oe_verifier_t* plugin = NULL;
 
-    if (!format || !settings || !settings_size)
+    if (!format_id || !settings || !settings_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    plugin_node = oe_attest_find_plugin(verifiers, format, NULL);
+    plugin_node = oe_attest_find_plugin(verifiers, format_id, NULL);
     if (!plugin_node)
         OE_RAISE(OE_NOT_FOUND);
 

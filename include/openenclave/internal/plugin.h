@@ -231,7 +231,7 @@ struct _oe_verifier
      *
      * Each plugin must return the following required claims:
      *  - id_version (uint32_t)
-     *      - Version number. Must be 1.
+     *      - Version number.
      *  - security_version (uint32_t)
      *      - Security version of the enclave. (ISVN for SGX).
      *  - attributes (uint64_t)
@@ -253,7 +253,7 @@ struct _oe_verifier
      *      - The latest datetime until which the evidence and endorsements are
      *        both valid.
      * - format_uuid (uint8_t[16])
-     *      - The format UUID of the verified evidence.
+     *      - The format id of the verified evidence.
      *
      * The plugin is responsible for handling endianness and ensuring that the
      * data from the raw evidence converted properly for each platform.
