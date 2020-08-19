@@ -31,10 +31,10 @@
 #include <openenclave/internal/utils.h>
 #include "../calls.h"
 #include "../hostthread.h"
-#include "../ocalls.h"
+#include "../ocalls/ocalls.h"
 #include "asmdefs.h"
 #include "enclave.h"
-#include "ocalls.h"
+#include "ocalls/ocalls.h"
 
 /*
 **==============================================================================

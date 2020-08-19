@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <openenclave/internal/time.h>
 #include <time.h>
-#include "../ocalls.h"
+#include "../ocalls/ocalls.h"
 
 static const uint64_t _SEC_TO_MSEC = 1000UL;
 static const uint64_t _MSEC_TO_NSEC = 1000000UL;

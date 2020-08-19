@@ -9,7 +9,7 @@
 #include <openenclave/internal/safemath.h>
 
 #include "../../calls.h"
-#include "../../ocalls.h"
+#include "../../ocalls/ocalls.h"
 #include "enclave.h"
 
 // clang-format off
