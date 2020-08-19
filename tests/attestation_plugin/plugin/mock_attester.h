@@ -49,8 +49,8 @@ static inline oe_result_t mock_attester_unregister(
 
 static inline oe_result_t mock_get_evidence(
     oe_attester_t* context,
-    const void* custom_claims,
-    size_t custom_claims_size,
+    const void* custom_claims_buffer,
+    size_t custom_claims_buffer_size,
     const void* opt_params,
     size_t opt_params_size,
     uint8_t** evidence_buffer,
@@ -61,8 +61,8 @@ static inline oe_result_t mock_get_evidence(
     oe_result_t result = OE_UNEXPECTED;
 
     OE_UNUSED(context);
-    OE_UNUSED(custom_claims);
-    OE_UNUSED(custom_claims_size);
+    OE_UNUSED(custom_claims_buffer);
+    OE_UNUSED(custom_claims_buffer_size);
     OE_UNUSED(opt_params);
     OE_UNUSED(opt_params_size);
 

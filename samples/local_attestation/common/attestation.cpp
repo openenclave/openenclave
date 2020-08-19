@@ -187,7 +187,7 @@ bool Attestation::attest_local_evidence(
         }
         // 3) Validate the report data
         //    The report_data has the hash value of the report data
-        if (strcmp(claims[i].name, OE_CLAIM_CUSTOM_CLAIMS) == 0)
+        if (strcmp(claims[i].name, OE_CLAIM_CUSTOM_CLAIMS_BUFFER) == 0)
         {
             if (m_crypto->Sha256(data, data_size, sha256) != 0)
             {

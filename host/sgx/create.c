@@ -757,12 +757,18 @@ oe_result_t oe_sgx_build_enclave(
         props = *properties;
 
         /* Update image to the properties passed in */
-        memcpy(oeimage.image_base + oeimage.oeinfo_rva, &props, sizeof(props));
+        memcpy(
+            oeimage.elf.image_base + oeimage.elf.oeinfo_rva,
+            &props,
+            sizeof(props));
     }
     else
     {
         /* Copy the properties from the image */
-        memcpy(&props, oeimage.image_base + oeimage.oeinfo_rva, sizeof(props));
+        memcpy(
+            &props,
+            oeimage.elf.image_base + oeimage.elf.oeinfo_rva,
+            sizeof(props));
     }
 
     /* Validate the enclave prop_override structure */
@@ -807,7 +813,6 @@ oe_result_t oe_sgx_build_enclave(
     /* Save the enclave base address, size, and text address */
     enclave->addr = enclave_addr;
     enclave->size = enclave_size;
-    enclave->text = enclave_addr + oeimage.text_rva;
 
     /* Patch image */
     OE_CHECK(oeimage.sgx_patch(&oeimage, context, enclave_size));
@@ -817,12 +822,12 @@ oe_result_t oe_sgx_build_enclave(
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_CHECK(_add_eeid_marker_page(
-        context, enclave, image_size, oeimage.entry_rva, &props, &vaddr));
+        context, enclave, image_size, oeimage.elf.entry_rva, &props, &vaddr));
 #endif
 
     /* Add data pages */
-    OE_CHECK(
-        _add_data_pages(context, enclave, &props, oeimage.entry_rva, &vaddr));
+    OE_CHECK(_add_data_pages(
+        context, enclave, &props, oeimage.elf.entry_rva, &vaddr));
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Add optional EEID pages */

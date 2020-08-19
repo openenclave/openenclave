@@ -48,8 +48,8 @@ static oe_result_t _eeid_attester_on_unregister(oe_attestation_role_t* context)
 
 static oe_result_t _get_sgx_evidence(
     uint32_t flags,
-    const void* custom_claims,
-    size_t custom_claims_size,
+    const void* custom_claims_buffer,
+    size_t custom_claims_buffer_size,
     const void* opt_params,
     size_t opt_params_size,
     uint8_t** evidence_buffer,
@@ -63,8 +63,8 @@ static oe_result_t _get_sgx_evidence(
     uint8_t* report = NULL;
     size_t report_size = 0;
 
-    OE_CHECK(
-        oe_sgx_hash_custom_claims(custom_claims, custom_claims_size, &hash));
+    OE_CHECK(oe_sgx_hash_custom_claims_buffer(
+        custom_claims_buffer, custom_claims_buffer_size, &hash));
 
     OE_CHECK(oe_get_report(
         flags,
@@ -75,12 +75,15 @@ static oe_result_t _get_sgx_evidence(
         &report,
         &report_size));
 
-    *evidence_buffer_size = report_size + custom_claims_size;
+    *evidence_buffer_size = report_size + custom_claims_buffer_size;
     *evidence_buffer = oe_malloc(*evidence_buffer_size);
     if (!*evidence_buffer)
         OE_RAISE(OE_OUT_OF_MEMORY);
     memcpy(*evidence_buffer, report, report_size);
-    memcpy(*evidence_buffer + report_size, custom_claims, custom_claims_size);
+    memcpy(
+        *evidence_buffer + report_size,
+        custom_claims_buffer,
+        custom_claims_buffer_size);
 
     if (endorsements_buffer && (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION))
     {
@@ -100,8 +103,8 @@ done:
 
 static oe_result_t _eeid_get_evidence(
     oe_attester_t* context,
-    const void* custom_claims,
-    size_t custom_claims_size,
+    const void* custom_claims_buffer,
+    size_t custom_claims_buffer_size,
     const void* opt_params,
     size_t opt_params_size,
     uint8_t** evidence_buffer,
@@ -141,8 +144,8 @@ static oe_result_t _eeid_get_evidence(
     // Get SGX evidence
     OE_CHECK(_get_sgx_evidence(
         flags,
-        custom_claims,
-        custom_claims_size,
+        custom_claims_buffer,
+        custom_claims_buffer_size,
         opt_params,
         opt_params_size,
         &sgx_evidence_buffer,

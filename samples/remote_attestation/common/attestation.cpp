@@ -216,8 +216,8 @@ bool Attestation::attest_remote_evidence(
 
     // 3) Validate the report data
     //    The report_data has the hash value of the report data
-    if ((claim = _find_claim(claims, claims_length, OE_CLAIM_CUSTOM_CLAIMS)) ==
-        NULL)
+    if ((claim = _find_claim(
+             claims, claims_length, OE_CLAIM_CUSTOM_CLAIMS_BUFFER)) == NULL)
     {
         TRACE_ENCLAVE("Could not find claim.");
         goto exit;

@@ -85,8 +85,8 @@ oe_result_t oe_attester_select_format(
  * defined: OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID. If this bit is set,
  * the evidence and endorsements will be wrapped with a header containing
  * the format ID.
- * @param[in] custom_claims The optional custom claims buffer.
- * @param[in] custom_claims_size The number of bytes in the custom claims
+ * @param[in] custom_claims_buffer The optional custom claims buffer.
+ * @param[in] custom_claims_buffer_size The number of bytes in the custom claims
  * buffer.
  * @param[in] optional_parameters The optional format-specific input parameters.
  * @param[in] optional_parameters_size The size of optional_parameters in bytes.
@@ -106,8 +106,8 @@ oe_result_t oe_attester_select_format(
 oe_result_t oe_get_evidence(
     const oe_uuid_t* format_id,
     uint32_t flags,
-    const void* custom_claims,
-    size_t custom_claims_size,
+    const void* custom_claims_buffer,
+    size_t custom_claims_buffer_size,
     const void* optional_parameters,
     size_t optional_parameters_size,
     uint8_t** evidence_buffer,

@@ -541,8 +541,8 @@ void verify_sgx_evidence(
     size_t endorsements_size,
     const uint8_t* expected_endorsements,
     size_t expected_endorsements_size,
-    const uint8_t* custom_claims,
-    size_t custom_claims_size)
+    const uint8_t* custom_claims_buffer,
+    size_t custom_claims_buffer_size)
 {
     printf("running verify_sgx_evidence\n");
 
@@ -765,15 +765,17 @@ void verify_sgx_evidence(
 
     // Check custom claims.
     // For SGX report or quote, this is captured in SGX report data.
-    if (custom_claims)
+    if (custom_claims_buffer)
     {
         if (format_type == SGX_FORMAT_TYPE_LOCAL ||
             format_type == SGX_FORMAT_TYPE_REMOTE)
-            value = _find_claim(claims, claims_size, OE_CLAIM_CUSTOM_CLAIMS);
+            value =
+                _find_claim(claims, claims_size, OE_CLAIM_CUSTOM_CLAIMS_BUFFER);
         else
             value = _find_claim(claims, claims_size, OE_CLAIM_SGX_REPORT_DATA);
         OE_TEST(
-            value != NULL && !memcmp(custom_claims, value, custom_claims_size));
+            value != NULL &&
+            !memcmp(custom_claims_buffer, value, custom_claims_buffer_size));
     }
     OE_TEST_CODE(oe_free_claims(claims, claims_size), OE_OK);
     claims = NULL;
@@ -781,8 +783,8 @@ void verify_sgx_evidence(
 
     // Test SGX evidence verification using tampered-with custom claims.
     // Doable only when non-empty custom claims data is present
-    if (custom_claims && (format_type == SGX_FORMAT_TYPE_LOCAL ||
-                          format_type == SGX_FORMAT_TYPE_REMOTE))
+    if (custom_claims_buffer && (format_type == SGX_FORMAT_TYPE_LOCAL ||
+                                 format_type == SGX_FORMAT_TYPE_REMOTE))
     {
         printf("running verify_sgx_evidence failed with hampered claims\n");
 
@@ -853,7 +855,8 @@ void verify_sgx_evidence(
             "running verify_sgx_evidence on extracted OE_report / SGX_quote\n");
 
         OE_TEST_CODE(
-            oe_sgx_hash_custom_claims(custom_claims, custom_claims_size, &hash),
+            oe_sgx_hash_custom_claims_buffer(
+                custom_claims_buffer, custom_claims_buffer_size, &hash),
             OE_OK);
 
         OE_TEST_CODE(

@@ -101,9 +101,6 @@ typedef struct _oe_enclave
     /* Base address of enclave within enclave address space (BASEADDR) */
     uint64_t addr;
 
-    /* Address of .text section (for gdb) */
-    uint64_t text;
-
     /* Size of enclave in bytes */
     uint64_t size;
 

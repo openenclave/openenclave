@@ -50,7 +50,7 @@ static oe_result_t _verify_public_key_claim(
     oe_result_t result = OE_FAILURE;
     for (int i = (int)claims_length - 1; i >= 0; i--)
     {
-        if (oe_strcmp(claims[i].name, OE_CLAIM_CUSTOM_CLAIMS) == 0)
+        if (oe_strcmp(claims[i].name, OE_CLAIM_CUSTOM_CLAIMS_BUFFER) == 0)
         {
             if (claims[i].value_size == public_key_buffer_size &&
                 memcmp(

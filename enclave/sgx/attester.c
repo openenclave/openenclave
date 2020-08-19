@@ -91,8 +91,8 @@ static oe_result_t _on_unregister(oe_attestation_role_t* context)
 // Roughtly 0.5 seconds with endorsements.
 static oe_result_t _get_evidence(
     oe_attester_t* context,
-    const void* custom_claims,
-    size_t custom_claims_size,
+    const void* custom_claims_buffer,
+    size_t custom_claims_buffer_size,
     const void* opt_params,
     size_t opt_params_size,
     uint8_t** evidence_buffer,
@@ -162,13 +162,15 @@ static oe_result_t _get_evidence(
     { // Evidence of these types has its custom claims hashed.
         OE_SHA256 hash;
 
-        // Hash the custom_claims.
+        // Hash the custom_claims_buffer.
         OE_CHECK_MSG(
-            oe_sgx_hash_custom_claims(custom_claims, custom_claims_size, &hash),
-            "SGX Plugin: Failed to hash custom_claims. %s",
+            oe_sgx_hash_custom_claims_buffer(
+                custom_claims_buffer, custom_claims_buffer_size, &hash),
+            "SGX Plugin: Failed to hash custom_claims_buffer. %s",
             oe_result_str(result));
 
-        // Get the report with the hash of the custom_claims as the report data.
+        // Get the report with the hash of the custom_claims_buffer as the
+        // report data.
         OE_CHECK_MSG(
             oe_get_report_v2_internal(
                 flags,
@@ -182,8 +184,8 @@ static oe_result_t _get_evidence(
             "SGX Plugin: Failed to get OE report. %s",
             oe_result_str(result));
 
-        // Combine the report and custom_claims to get the evidence.
-        tmp_buffer_size = report_size + custom_claims_size;
+        // Combine the report and custom_claims_buffer to get the evidence.
+        tmp_buffer_size = report_size + custom_claims_buffer_size;
         tmp_buffer = (uint8_t*)oe_malloc(tmp_buffer_size);
         if (tmp_buffer == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
@@ -191,7 +193,10 @@ static oe_result_t _get_evidence(
         // Copy SGX report to evidence
         memcpy(tmp_buffer, report, report_size);
         // Copy custom claims to evidence
-        memcpy(tmp_buffer + report_size, custom_claims, custom_claims_size);
+        memcpy(
+            tmp_buffer + report_size,
+            custom_claims_buffer,
+            custom_claims_buffer_size);
 
         // Get the endorsements from the report if needed.
         if (endorsements_buffer && flags == OE_REPORT_FLAGS_REMOTE_ATTESTATION)
@@ -210,13 +215,13 @@ static oe_result_t _get_evidence(
     }
     else // SGX_FORMAT_TYPE_LEGACY_REPORT or _QUOTE
     {
-        // Get the report with the custom_claims as the report data.
+        // Get the report with the custom_claims_buffer as the report data.
         OE_CHECK_MSG(
             oe_get_report_v2_internal(
                 flags,
                 quote_format_id,
-                custom_claims,
-                custom_claims_size,
+                custom_claims_buffer,
+                custom_claims_buffer_size,
                 opt_params,
                 opt_params_size,
                 &report,

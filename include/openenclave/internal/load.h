@@ -12,11 +12,6 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_MAX_SEGMENTS 16
-#define OE_SEGMENT_FLAG_READ 1
-#define OE_SEGMENT_FLAG_WRITE 2
-#define OE_SEGMENT_FLAG_EXEC 4
-
 typedef struct _oe_enclave_image oe_enclave_image_t;
 
 typedef struct _oe_sgx_load_context oe_sgx_load_context_t;
@@ -41,37 +36,16 @@ typedef struct _oe_elf_segment
 typedef struct _oe_enclave_elf_image
 {
     elf64_t elf;
+
+    char* image_base;  /* Base of the loaded segment contents */
+    size_t image_size; /* Size of all loaded segment contents */
+
+    /* Cached properties of loadable segments for enclave page add */
     oe_elf_segment_t* segments;
     size_t num_segments;
+
+    /* Relocation info for enclave initialization */
     void* reloc_data;
-} oe_enclave_elf_image_t;
-
-typedef struct _oe_enclave_pe_image
-{
-    void* module;
-    void* nt_header;
-    uint64_t reloc_rva;
-} oe_enclave_pe_image_t;
-
-typedef enum _oe_image_type
-{
-    OE_IMAGE_TYPE_NONE,
-    OE_IMAGE_TYPE_ELF,
-} oe_image_type;
-
-struct _oe_enclave_image
-{
-    char* image_base;   /* base of image */
-    size_t image_size;  /* rva of entry_rva point */
-    uint64_t entry_rva; /* rva of .text section */
-    uint64_t text_rva;  /* rva and file position of .oeinfo section */
-
-    /* N.B. file position is needed when we need to write back  */
-    /*      oe_sgx_enclave_properties_t during signing          */
-    uint64_t oeinfo_rva;
-    uint64_t oeinfo_file_pos;
-
-    /* size of relocation */
     size_t reloc_size;
 
     /* Thread-local storage .tdata section */
@@ -83,13 +57,38 @@ struct _oe_enclave_image
     uint64_t tbss_size;
     uint64_t tbss_align;
 
+    /*
+     * Additional properties used for SGX enclave handling
+     */
+
+    /* RVA of the enclave entry point to set in TCS.OENTRY */
+    uint64_t entry_rva;
+
+    /* RVA of the .oeinfo section to read oe_sgx_enclave_properties_t
+     * during enclave load */
+    uint64_t oeinfo_rva;
+
+    /* Offset to write back to the file oe_sgx_enclave_properties_t
+     * during signing */
+    uint64_t oeinfo_file_pos;
+
+} oe_enclave_elf_image_t;
+
+typedef enum _oe_image_type
+{
+    OE_IMAGE_TYPE_NONE,
+    OE_IMAGE_TYPE_ELF,
+} oe_image_type;
+
+struct _oe_enclave_image
+{
     oe_image_type type;
 
-    union {
-        oe_enclave_elf_image_t elf;
-        oe_enclave_pe_image_t pe;
-    } u;
+    /* Note: this can be part of a union distinguished by type if
+     * other enclave binary formats are supported later */
+    oe_enclave_elf_image_t elf;
 
+    /* Image type specific callbacks to handle enclave loading */
     oe_result_t (
         *calculate_size)(const oe_enclave_image_t* image, size_t* image_size);
 
@@ -120,10 +119,6 @@ struct _oe_enclave_image
 oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image);
 
 oe_result_t oe_load_elf_enclave_image(
-    const char* path,
-    oe_enclave_image_t* image);
-
-oe_result_t oe_load_pe_enclave_image(
     const char* path,
     oe_enclave_image_t* image);
 
