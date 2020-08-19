@@ -23,11 +23,28 @@ enclave
         long tv_nsec;
     };
 
+    struct oe_timeval
+    {
+        time_t tv_sec;
+        suseconds_t tv_usec;
+    };
+
+    struct oe_timezone
+    {
+        int tz_minuteswest;     /* minutes west of Greenwich */
+        int tz_dsttime;         /* type of DST correction */
+    };
+
     untrusted
     {
         int oe_syscall_nanosleep_ocall(
             [in] struct oe_timespec* req,
             [in, out] struct oe_timespec* rem)
+            propagate_errno;
+
+        int oe_syscall_clock_gettime_ocall(
+            int clock_id,
+            [out] struct oe_timespec* cur_time)
             propagate_errno;
     };
 };

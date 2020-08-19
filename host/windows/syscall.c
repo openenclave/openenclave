@@ -3089,3 +3089,81 @@ int oe_syscall_nanosleep_ocall(struct oe_timespec* req, struct oe_timespec* rem)
     _set_errno(0);
     return 0;
 }
+
+/*
+**==============================================================================
+**
+** clock_gettime():
+**
+**==============================================================================
+*/
+
+/*
+**==============================================================================
+**
+** POSIX_TO_WINDOWS_EPOCH_TICKS:
+**
+** The ticks elapsed since 1970-01-01 00:00 (UTC). This value was derived with
+** the following function.
+**
+**     LONGLONG get_posix_to_windows_epoch_ticks()
+**     {
+**         SYSTEMTIME st = { .wYear = 1970, .wMonth = 1, .wDay = 1 };
+**         FILETIME ft;
+**         ULARGE_INTEGER x;
+**
+**         SystemTimeToFileTime(&st, &ft);
+**         x.u.LowPart = ft.dwLowDateTime;
+**         x.u.HighPart = ft.dwHighDateTime;
+**
+**         return x.QuadPart;
+**     }
+**
+**==============================================================================
+*/
+
+const LONGLONG POSIX_TO_WINDOWS_EPOCH_TICKS = 0X19DB1DED53E8000;
+
+/* gets the current time and puts it into the buffer pointed to by cur_time */
+static void _clock_gettime_realtime(struct oe_timespec* cur_time)
+{
+    FILETIME ft;
+    ULARGE_INTEGER x;
+    const LONGLONG TICKS_PER_MILLISECOND = 10000UL;
+    const LONGLONG MILLIS_PER_SEC = 1000UL;
+    const LONGLONG NANOS_PER_MILLI = 1000000UL;
+    GetSystemTimeAsFileTime(&ft);
+    x.u.LowPart = ft.dwLowDateTime;
+    x.u.HighPart = ft.dwHighDateTime;
+    x.QuadPart -= POSIX_TO_WINDOWS_EPOCH_TICKS;
+
+    uint64_t msec = (x.QuadPart / TICKS_PER_MILLISECOND);
+    cur_time->tv_sec = (msec / MILLIS_PER_SEC);
+    cur_time->tv_nsec = (msec % MILLIS_PER_SEC) * NANOS_PER_MILLI;
+}
+
+int oe_syscall_clock_gettime_ocall(int clock_id, struct oe_timespec* cur_time)
+{
+    int ret = -1;
+
+    if (!cur_time)
+        goto done;
+
+    memset(cur_time, 0, sizeof(struct oe_timespec));
+
+    if (clock_id != CLOCK_REALTIME)
+    {
+        /* On windows, only CLOCK_REALTIME is supported. To support for other clock such as
+        CLOCK_MONOTONIC, CLOCK_PROCESS_CPUTIME_ID we need to implement specific functions
+        similar to _clock_gettime_realtime. This is required only on windows. For linux, underlying
+        syscall clock_gettime handles all the scenarios and no additional implementation is required */
+
+        goto done;
+    }
+
+    _clock_gettime_realtime(&cur_time);
+    ret = 0;
+
+done:
+    return ret;
+}

@@ -13,10 +13,11 @@
 #include <openenclave/internal/syscall/sys/utsname.h>
 #include <openenclave/internal/syscall/unistd.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/internal/time.h>
 #include <openenclave/internal/trace.h>
 #include "mount.h"
 #include "syscall_t.h"
+
+#define CLOCK_REALTIME 0
 
 int oe_gethostname(char* name, size_t len)
 {
@@ -142,6 +143,42 @@ int oe_nanosleep(struct oe_timespec* req, struct oe_timespec* rem)
 {
     int ret = 0;
     oe_syscall_nanosleep_ocall(&ret, req, rem);
+    return ret;
+}
+
+int oe_clock_gettime(int clock_id, struct oe_timespec* cur_time)
+{
+    int ret = -1;
+
+    if( oe_syscall_clock_gettime_ocall(&ret, clock_id, cur_time) != OE_OK)
+        goto done;
+
+done:
+    return ret;
+}
+
+int oe_gettimeofday(struct oe_timeval* tv, struct oe_timezone* tz)
+{
+    int ret = -1;
+
+    if (tv)
+        memset(tv, 0, sizeof(struct oe_timeval));
+
+    if (tz)
+        memset(tz, 0, sizeof(struct oe_timezone));
+
+    if (!tv)
+        goto done;
+
+    struct oe_timespec cur_time;
+
+    if( oe_syscall_clock_gettime_ocall(&ret, CLOCK_REALTIME, &cur_time) != OE_OK)
+        goto done;
+
+    tv->tv_sec = cur_time.tv_sec;
+    tv->tv_usec = cur_time.tv_nsec / 1000;
+
+done:
     return ret;
 }
 

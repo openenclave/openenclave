@@ -2,7 +2,6 @@
 /* Licensed under the MIT License. */
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/time.h>
 
 // enclave.h must come before socket.h
 #include <openenclave/corelibc/errno.h>

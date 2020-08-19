@@ -2,7 +2,6 @@
 /* Licensed under the MIT License. */
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/time.h>
 
 #include <openenclave/internal/syscall/arpa/inet.h>
 #include <openenclave/internal/syscall/netdb.h>
