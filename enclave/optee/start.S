@@ -3,7 +3,7 @@
 
 //==============================================================================
 //
-// _start(): 
+// _start():
 //
 //     The entry point for the enclave image. This function is set as the entry
 //     point in add_enclave.cmake by passing "--entry _start" to the linker.

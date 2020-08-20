@@ -54,8 +54,8 @@ if (OE_SGX)
     ${MUSL_SRC_DIR}/string/x86_64/memcpy.s
     ${MUSL_SRC_DIR}/string/x86_64/memmove.s
     ${MUSL_SRC_DIR}/string/x86_64/memset.s
-    ../../common/sgx/endorsements.c
-    ../../common/sgx/rand.S
+    ${PROJECT_SOURCE_DIR}/common/sgx/endorsements.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/rand.S
     sgx/arena.c
     sgx/asmdefs.c
     sgx/backtrace.c
@@ -151,8 +151,8 @@ endif ()
 add_enclave_library(
   oecore
   STATIC
-  ../../common/safecrt.c
-  ../../common/argv.c
+  ${PROJECT_SOURCE_DIR}/common/safecrt.c
+  ${PROJECT_SOURCE_DIR}/common/argv.c
   ${MUSL_SRC_DIR}/prng/rand.c
   ${MUSL_SRC_DIR}/string/memcmp.c
   __stack_chk_fail.c

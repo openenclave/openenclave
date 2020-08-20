@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - OE SDK Release packages can now be built on non-SGX and non-FLC machines.
 - Support for arbitrarily large thread-local data for SGX machines.
+- Add the `oeattestation` library by separating out the attestation-related code from `oeenclave`.
 
 ### Changed
 - Rename custom_claims to to custom_claims_buffer.

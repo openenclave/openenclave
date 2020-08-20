@@ -23,8 +23,8 @@
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/thread.h>
+#include "../../enclave/attestation/sgx/report.h"
 #include "../../enclave/core/sgx/report.h"
-#include "../enclave/sgx/report.h"
 #else
 #include "../../host/hostthread.h"
 #include "../../host/sgx/quote.h"

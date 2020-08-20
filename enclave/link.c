@@ -19,9 +19,6 @@
 const void* oe_link_enclave(void)
 {
     static const void* symbols[] = {
-        oe_verify_report_ecall,
-        oe_get_public_key_by_policy_ecall,
-        oe_get_public_key_ecall,
         // Specify oe_allocator_malloc so that there is a direct link from
         // enclave entry-point to pluggable allocator functions. This will
         // cause the first definitions of these functions to be picked up.

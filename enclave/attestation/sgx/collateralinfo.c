@@ -9,7 +9,7 @@
 #include <openenclave/internal/safemath.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../common/sgx/collateral.h"
+#include "../../../common/sgx/collateral.h"
 #include "platform_t.h"
 
 /**

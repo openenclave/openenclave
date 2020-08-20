@@ -17,7 +17,7 @@
 #include <openenclave/internal/sgxkeys.h>
 #include <openenclave/internal/utils.h>
 #include <stdlib.h>
-#include "../common/sgx/quote.h"
+#include "../../../common/sgx/quote.h"
 #include "platform_t.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));

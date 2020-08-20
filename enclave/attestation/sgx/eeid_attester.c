@@ -22,8 +22,8 @@
 #include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/trace.h>
 
-#include "../common/attest_plugin.h"
-#include "../common/sgx/endorsements.h"
+#include "../../../common/attest_plugin.h"
+#include "../../../common/sgx/endorsements.h"
 
 #include <openenclave/enclave.h>
 

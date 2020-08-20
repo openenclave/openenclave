@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../common/attest_plugin.h"
-#include "../common/common.h"
+#include "../../common/attest_plugin.h"
+#include "../../common/common.h"
 
 #include <openenclave/attestation/attester.h>
 #include <openenclave/attestation/verifier.h>
