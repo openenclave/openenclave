@@ -1,23 +1,23 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifndef _OE_INFERIOR_STATUS_H_
-#define _OE_INFERIOR_STATUS_H_
+#ifndef _INFERIOR_STATUS_H_
+#define _INFERIOR_STATUS_H_
 
-#include <openenclave/bits/types.h>
 #include <pthread.h>
+#include <stdint.h>
 
-typedef enum _oe_inferior_flags
+typedef enum _sgx_inferior_flags
 {
-    OE_INFERIOR_SINGLE_STEP = 0X1
-} oe_inferior_flags_t;
+    SGX_INFERIOR_SINGLE_STEP = 0X1
+} sgx_inferior_flags_t;
 
-int oe_track_inferior(pid_t pid);
+int sgx_track_inferior(pid_t pid);
 
-int oe_untrack_inferior(pid_t pid);
+int sgx_untrack_inferior(pid_t pid);
 
-int oe_get_inferior_flags(pid_t pid, int64_t* flags);
+int sgx_get_inferior_flags(pid_t pid, int64_t* flags);
 
-int oe_set_inferior_flags(pid_t pid, int64_t flags);
+int sgx_set_inferior_flags(pid_t pid, int64_t flags);
 
 #endif
