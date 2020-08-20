@@ -395,8 +395,14 @@ oe_result_t oe_sgx_qe_get_target_info(
     else
     {
         _load_sgx_dcap_ql();
-        err = _sgx_qe_get_target_info((sgx_target_info_t*)target_info);
+        if (!_sgx_qe_get_target_info)
+            OE_RAISE_MSG(
+                OE_QUOTE_LIBRARY_LOAD_ERROR,
+                "Failed to access _sgx_qe_get_target_info from quote "
+                "library\n",
+                NULL);
 
+        err = _sgx_qe_get_target_info((sgx_target_info_t*)target_info);
         if (err != SGX_QL_SUCCESS)
             OE_RAISE_MSG(OE_PLATFORM_ERROR, "quote3_error_t=0x%x\n", err);
 
@@ -454,6 +460,13 @@ oe_result_t oe_sgx_qe_get_quote_size(
     else
     {
         _load_sgx_dcap_ql();
+
+        if (!_sgx_qe_get_quote_size)
+            OE_RAISE_MSG(
+                OE_QUOTE_LIBRARY_LOAD_ERROR,
+                "Failed to access _sgx_qe_get_quote_size from quote library\n",
+                NULL);
+
         err = _sgx_qe_get_quote_size(&local_quote_size);
 
         if (err != SGX_QL_SUCCESS)
