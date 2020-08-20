@@ -13,9 +13,8 @@
 #define _OE_BITS_EVIDENCE_H
 
 #include "defs.h"
-#include "types.h"
-
 #include "report.h"
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 

@@ -85,6 +85,12 @@ OE_STATIC_ASSERT(
     }
 #define X509_OID_FOR_QUOTE_STRING "1.2.840.113556.10.1.1"
 
+#define X509_OID_FOR_NEW_QUOTE_EXT                           \
+    {                                                        \
+        0x2B, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x69, 0x01 \
+    }
+#define X509_OID_FOR_NEW_QUOTE_STRING "1.3.6.1.4.1.311.105.1"
+
 // For old OE reports.
 #define OE_REPORT_HEADER_VERSION (1)
 
