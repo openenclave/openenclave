@@ -30,42 +30,45 @@ enclave_config_data_t config_data = {g_enclave_secret_data,
 static ecall_dispatcher dispatcher("Enclave2", &config_data);
 const char* enclave_name = "Enclave2";
 
-int get_target_info(uint8_t** target_info_buffer, size_t* target_info_size)
+int get_enclave_format_settings(
+    uint8_t** format_settings,
+    size_t* format_settings_size)
 {
-    return dispatcher.get_target_info(target_info_buffer, target_info_size);
+    return dispatcher.get_enclave_format_settings(
+        format_settings, format_settings_size);
 }
 
 /**
- * Return the public key of this enclave along with the enclave's report.
- * Another enclave can use the report to attest the enclave and verify
+ * Return the public key of this enclave along with the enclave's evidence.
+ * Another enclave can use the evidence to attest the enclave and verify
  * the integrity of the public key.
  */
-int get_targeted_report_with_pubkey(
+int get_targeted_evidence_with_public_key(
     uint8_t* target_info_buffer,
     size_t target_info_size,
     uint8_t** pem_key,
     size_t* key_size,
-    uint8_t** report,
-    size_t* report_size)
+    uint8_t** evidence_buffer,
+    size_t* evidence_buffer_size)
 {
-    return dispatcher.get_targeted_report_with_pubkey(
+    return dispatcher.get_targeted_evidence_with_public_key(
         target_info_buffer,
         target_info_size,
         pem_key,
         key_size,
-        report,
-        report_size);
+        evidence_buffer,
+        evidence_buffer_size);
 }
 
 // Attest and store the public key of another enclave.
-int verify_report_and_set_pubkey(
+int verify_evidence_and_set_public_key(
     uint8_t* pem_key,
     size_t pem_key_size,
-    uint8_t* local_report,
-    size_t report_size)
+    uint8_t* evidence,
+    size_t evidence_size)
 {
-    return dispatcher.verify_report_and_set_pubkey(
-        pem_key, pem_key_size, local_report, report_size);
+    return dispatcher.verify_evidence_and_set_public_key(
+        pem_key, pem_key_size, evidence, evidence_size);
 }
 
 // Encrypt message for another enclave using the public key stored for it.
@@ -75,7 +78,7 @@ int generate_encrypted_message(uint8_t** data, size_t* size)
 }
 
 // Process encrypted message
-int process_encrypted_msg(uint8_t* data, size_t size)
+int process_encrypted_message(uint8_t* data, size_t size)
 {
-    return dispatcher.process_encrypted_msg(data, size);
+    return dispatcher.process_encrypted_message(data, size);
 }

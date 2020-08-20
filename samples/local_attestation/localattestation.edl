@@ -7,30 +7,30 @@ enclave {
     from "platform.edl" import *;
 
     trusted {
-        public int get_target_info([out] uint8_t** target_info_buffer, [out] size_t* target_info_size);
+        public int get_enclave_format_settings([out] uint8_t** format_settings, [out] size_t* format_settings_size);
 
         // Return the public key of this enclave along with the enclave's report.
         // Another enclave can use the report to attest the enclave and verify
         // the integrity of the public key.
-        public int get_targeted_report_with_pubkey( [in, size=target_info_size] uint8_t* target_info_buffer,
-                                                    size_t target_info_size,
-                                                    [out] uint8_t **pem_key,
-                                                    [out] size_t *pem_key_size,
-                                                    [out] uint8_t **report,
-                                                    [out] size_t  *report_size);
+        public int get_targeted_evidence_with_public_key( [in, size=target_info_size] uint8_t* target_info_buffer,
+                                                          size_t target_info_size,
+                                                          [out] uint8_t **pem_key,
+                                                          [out] size_t *pem_key_size,
+                                                          [out] uint8_t **evidence_buffer,
+                                                          [out] size_t  *evidence_buffer_size);
 
         // Attest and store the public key of another enclave
-        public int verify_report_and_set_pubkey([in, count=key_size] uint8_t *pem_key, 
-                                                size_t key_size,
-                                                [in, count=report_size] uint8_t *report,
-                                                size_t report_size);
+        public int verify_evidence_and_set_public_key( [in, count=key_size] uint8_t *pem_key,
+                                                       size_t key_size,
+                                                       [in, count=evidence_size] uint8_t *evidence,
+                                                       size_t evidence_size);
 
         // Encrypt message for another enclave using the public key stored for it
         public int generate_encrypted_message(  [out] uint8_t** data,
                                               [out] size_t*  size);
 
         // Process encrypted message
-        public int process_encrypted_msg(  [in, count=size] uint8_t* data,
+        public int process_encrypted_message(  [in, count=size] uint8_t* data,
                                                size_t  size);
     };
 

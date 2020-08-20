@@ -12,10 +12,15 @@ class Attestation
 {
   private:
     Crypto* m_crypto;
-    uint8_t* m_enclave_mrsigner;
+    uint8_t* m_enclave_signer_id;
 
   public:
-    Attestation(Crypto* crypto, uint8_t* enclave_mrsigner);
+    Attestation(Crypto* crypto, uint8_t* enclave_signer_id);
+
+    // Get format settings.
+    bool get_format_settings(
+        uint8_t** format_settings_buffer,
+        size_t* format_settings_buffer_size);
 
     // Generate evidence for the given data.
     bool generate_local_attestation_evidence(
@@ -23,18 +28,18 @@ class Attestation
         size_t target_info_size,
         const uint8_t* data,
         size_t data_size,
-        uint8_t** evidence_buffer,
-        size_t* local_evidence_buffer_size);
+        uint8_t** evidence,
+        size_t* evidence_size);
 
     /**
      * Attest the given evidence and accompanying data. The evidence
      * is first attested using the oe_verify_evidence API. This ensures the
-     * authenticity of the enclave that generated the evidence. Next the
-     * mrsigner and mrenclave values are tested to establish trust of the
+     * authenticity of the enclave that generated the evidence. Next the enclave
+     * signer_id and unqiue_id values are tested to establish trust of the
      * enclave that generated the evidence.
      */
-    bool attest_local_evidence(
-        const uint8_t* local_evidence,
+    bool attest_local_attestation_evidence(
+        const uint8_t* evidence,
         size_t evidence_size,
         const uint8_t* data,
         size_t data_size);

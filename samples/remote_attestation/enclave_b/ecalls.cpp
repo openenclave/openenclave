@@ -31,27 +31,27 @@ static ecall_dispatcher dispatcher("Enclave2", &config_data);
 const char* enclave_name = "Enclave2";
 
 /**
- * Return the public key of this enclave along with the enclave's remote report.
- * Another enclave can use the remote report to attest the enclave and verify
- * the integrity of the public key.
+ * Return the public key of this enclave along with the enclave's remote
+ * evidence. Another enclave can use the remote evidence to attest the enclave
+ * and verify the integrity of the public key.
  */
-int get_remote_report_with_pubkey(
+int get_remote_evidence_with_public_key(
     uint8_t** pem_key,
     size_t* key_size,
-    uint8_t** remote_report,
-    size_t* remote_report_size)
+    uint8_t** remote_evidence,
+    size_t* remote_evidence_size)
 {
-    return dispatcher.get_remote_report_with_pubkey(
-        pem_key, key_size, remote_report, remote_report_size);
+    return dispatcher.get_remote_evidence_with_public_key(
+        pem_key, key_size, remote_evidence, remote_evidence_size);
 }
 
 // Attest and store the public key of another enclave.
-int verify_report_and_set_pubkey(
+int verify_evidence_and_set_public_key(
     uint8_t* pem_key,
     size_t key_size,
-    uint8_t* remote_report,
-    size_t remote_report_size)
+    uint8_t* remote_evidence,
+    size_t remote_evidence_size)
 {
-    return dispatcher.verify_report_and_set_pubkey(
-        pem_key, key_size, remote_report, remote_report_size);
+    return dispatcher.verify_evidence_and_set_public_key(
+        pem_key, key_size, remote_evidence, remote_evidence_size);
 }
