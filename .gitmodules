@@ -21,3 +21,7 @@
 	path = 3rdparty/openssl/openssl
 	url = https://github.com/openssl/openssl
 	branch = OpenSSL_1_1_1-stable
+[submodule "3rdparty/mbedtls/mbedtls"]
+	path = 3rdparty/mbedtls/mbedtls
+	url = https://github.com/openenclave/openenclave-mbedtls.git
+	branch = openenclave-mbedtls-2.16

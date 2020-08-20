@@ -56,6 +56,7 @@ docs/*
 3rdparty/libgcov/compiler-rt
 3rdparty/libunwind/setcontext\.S
 3rdparty/mbedtls/config\.h
+3rdparty/mbedtls/mbedtls
 3rdparty/musl/COPYRIGHT
 3rdparty/musl/endian\.h\.prefix
 3rdparty/musl/endian\.h\.suffix
