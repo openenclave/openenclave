@@ -440,7 +440,7 @@ done:
 }
 
 oe_result_t _get_sgx_enclave_hash(
-    const char* enclave,
+    const char* path,
     const oe_sgx_enclave_properties_t* properties,
     OE_SHA256* hash)
 {
@@ -458,7 +458,7 @@ oe_result_t _get_sgx_enclave_hash(
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
     OE_CHECK_ERR(
-        oe_sgx_build_enclave(&context, enclave, properties, &enc),
+        oe_sgx_build_enclave(&context, path, properties, &enc),
         "oe_sgx_build_enclave(): result=%s (%#x)",
         oe_result_str(result),
         result);
@@ -507,7 +507,7 @@ done:
 }
 
 int oesign(
-    const char* enclave,
+    const char* path, /* colon separated path */
     const char* conffile,
     const char* keyfile,
     const char* digest_signature,
@@ -524,11 +524,25 @@ int oesign(
     size_t signature_size = 0;
     oe_sgx_enclave_properties_t properties;
     OE_SHA256 hash = {0};
+    char* enclave = NULL;
+    char* image = NULL;
+
+    /* Split <path> into <enclave> and <image> */
+    {
+        if (!(enclave = strdup(path)))
+        {
+            oe_err("out of memory");
+            goto done;
+        }
+
+        if ((image = strchr(enclave, ':')))
+            *image++ = '\0';
+    }
 
     OE_CHECK_NO_TRACE(
         _initialize_enclave_properties(enclave, conffile, &properties));
 
-    OE_CHECK_NO_TRACE(_get_sgx_enclave_hash(enclave, &properties, &hash));
+    OE_CHECK_NO_TRACE(_get_sgx_enclave_hash(path, &properties, &hash));
 
     if (engine_id)
     {

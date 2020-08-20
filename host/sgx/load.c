@@ -49,11 +49,30 @@ oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_image_type type;
+    char* path1 = NULL;
+    const char* path2 = NULL;
 
     if (!path || !image)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(_get_image_type(path, &type));
+    /* Split the path into two paths: path1 and path2 */
+    {
+        char* p;
+
+        if (!(path1 = strdup(path)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        if ((p = strchr(path1, ':')))
+        {
+            *p = '\0';
+            path2 = p + 1;
+        }
+    }
+
+    OE_CHECK(_get_image_type(path1, &type));
+
+    if (path2)
+        OE_CHECK(_get_image_type(path2, &type));
 
     switch (type)
     {
@@ -63,6 +82,10 @@ oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image)
             OE_RAISE(oe_load_elf_enclave_image(path, image));
     }
 done:
+
+    if (path1)
+        free(path1);
+
     return result;
 }
 

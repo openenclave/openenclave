@@ -86,6 +86,10 @@ typedef struct _thread_binding
 /* Get thread data from thread-specific data (TSD) */
 oe_thread_binding_t* oe_get_thread_binding(void);
 
+/* The maxium number of loadable ELF images (in addition to the enclave ELF
+ * image) */
+#define MAX_DEBUG_IMAGES 8
+
 /**
  * Host-side representation of properties associated with each
  * enclave instance.
@@ -130,6 +134,10 @@ typedef struct _oe_enclave
 
     /* Manager for switchless calls */
     oe_switchless_call_manager_t* switchless_manager;
+
+    oe_debug_image_t debug_images[MAX_DEBUG_IMAGES];
+    size_t num_debug_images;
+
 } oe_enclave_t;
 
 /* Get the event for the given TCS */

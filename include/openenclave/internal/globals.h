@@ -15,6 +15,13 @@ const void* __oe_get_enclave_base(void);
 size_t __oe_get_enclave_size(void);
 const void* __oe_get_enclave_elf_header(void);
 
+/* Isolated image */
+const void* __oe_get_isolated_image_base(void);
+size_t __oe_get_isolated_image_size(void);
+const void* __oe_get_isolated_reloc_base(void);
+size_t __oe_get_isolated_reloc_size(void);
+const void* __oe_get_isolated_image_entry_point(void);
+
 /* Reloc */
 const void* __oe_get_reloc_base(void);
 const void* __oe_get_reloc_end(void);

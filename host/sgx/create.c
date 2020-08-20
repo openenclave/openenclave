@@ -292,7 +292,6 @@ static oe_result_t _calculate_enclave_size(
     const oe_sgx_enclave_properties_t* props,
     size_t* loaded_enclave_pages_size,
     size_t* enclave_size)
-
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t heap_size;
@@ -326,7 +325,9 @@ static oe_result_t _calculate_enclave_size(
     {
 #ifdef OE_WITH_EXPERIMENTAL_EEID
         if (is_eeid_base_image(props))
+        {
             *enclave_size = OE_EEID_SGX_ELRANGE;
+        }
         else
 #endif
             /* Calculate the total size of the enclave */
@@ -689,7 +690,6 @@ static oe_result_t _add_eeid_pages(
         size_t num_bytes = oe_eeid_byte_size(eeid);
         size_t num_pages =
             num_bytes / OE_PAGE_SIZE + ((num_bytes % OE_PAGE_SIZE) ? 1 : 0);
-
         oe_page_t* page = oe_memalign(OE_PAGE_SIZE, sizeof(oe_page_t));
         for (size_t i = 0; i < num_pages; i++)
         {
@@ -727,14 +727,20 @@ oe_result_t oe_sgx_build_enclave(
     uint64_t enclave_addr = 0;
     oe_enclave_image_t oeimage;
     void* ecall_data = NULL;
-    size_t image_size;
+    size_t oeimage_size;
     uint64_t vaddr = 0;
     oe_sgx_enclave_properties_t props;
+    char* path1 = NULL;
+    const char* path2 = NULL;
+    oe_image_t image;
+    size_t image_offset = 0;
+    size_t image_size = 0;
 
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     memset(&oeimage, 0, sizeof(oeimage));
+    memset(&image, 0, sizeof(image));
 
     /* Clear and initialize enclave structure */
     {
@@ -753,9 +759,30 @@ oe_result_t oe_sgx_build_enclave(
     if (!context || !path || !enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Load the elf object */
-    if (oe_load_enclave_image(path, &oeimage) != OE_OK)
+    /* Split the path into two paths: path1 and path2 */
+    {
+        char* p;
+
+        if (!(path1 = strdup(path)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        if ((p = strchr(path1, ':')))
+        {
+            *p = '\0';
+            path2 = p + 1;
+        }
+    }
+
+    /* Load the enclave image */
+    if (oe_load_enclave_image(path1, &oeimage) != OE_OK)
         OE_RAISE(OE_FAILURE);
+
+    /* Load the isolated image */
+    if (path2)
+    {
+        if (oe_load_image(path2, &image) != OE_OK)
+            OE_RAISE(OE_FAILURE);
+    }
 
     // If the **properties** parameter is non-null, use those properties.
     // Else use the properties stored in the .oeinfo section.
@@ -763,7 +790,7 @@ oe_result_t oe_sgx_build_enclave(
     {
         props = *properties;
 
-        /* Update image to the properties passed in */
+        /* Update the enclave image to the properties passed in */
         memcpy(oeimage.image_base + oeimage.oeinfo_rva, &props, sizeof(props));
     }
     else
@@ -797,15 +824,27 @@ oe_result_t oe_sgx_build_enclave(
                 NULL);
         }
     }
+
     // Set the XFRM field
     props.config.xfrm = context->attributes.xfrm;
 
-    /* Calculate the size of image */
-    OE_CHECK(oeimage.calculate_size(&oeimage, &image_size));
+    /* Calculate the size of enclave image */
+    OE_CHECK(oeimage.calculate_size(&oeimage, &oeimage_size));
+
+    /* Calculate the isolated image size */
+    if (path2)
+        image_size = (image.image_size + image.u.elf.reloc_size);
 
     /* Calculate the size of this enclave in memory */
     OE_CHECK(_calculate_enclave_size(
-        image_size, &props, &loaded_enclave_pages_size, &enclave_size));
+        oeimage_size + image_size,
+        &props,
+        &loaded_enclave_pages_size,
+        &enclave_size));
+
+    /* Calculate the offset of the isolated image */
+    if (path2)
+        image_offset = oeimage_size;
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
@@ -816,15 +855,67 @@ oe_result_t oe_sgx_build_enclave(
     enclave->size = enclave_size;
     enclave->text = enclave_addr + oeimage.text_rva;
 
-    /* Patch image */
-    OE_CHECK(oeimage.patch(&oeimage, enclave_size));
+    /* Populate debugger contract for the isolated image */
+    if (path2)
+    {
+        oe_debug_image_t di;
 
-    /* Add image to enclave */
+        di.magic = OE_DEBUG_IMAGE_MAGIC;
+        di.version = 1;
+
+        if (!(di.path = get_fullpath(path2)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        di.path_length = strlen(di.path);
+        di.base_address = enclave_addr + image_offset;
+        di.size = image_size;
+
+        enclave->debug_images[enclave->num_debug_images++] = di;
+    }
+
+    /* Patch primary image (no need to patch the secondary isolated image) */
+    {
+        const size_t isolated_image_rva = image_offset;
+        const size_t isolated_image_size = image.image_size;
+        const size_t isolated_reloc_rva = image_offset + image.image_size;
+        const size_t isolated_reloc_size = image.u.elf.reloc_size;
+
+        OE_CHECK(oeimage.patch(
+            &oeimage,
+            enclave_size,
+            isolated_image_rva,
+            isolated_image_size,
+            isolated_reloc_rva,
+            isolated_reloc_size));
+    }
+
+    /* Add enclave image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
+
+    /* Add the isolated image pages to the enclave */
+    if (path2)
+    {
+        /* Cross-check the isolated image offset */
+        if (image_offset != vaddr)
+        {
+            OE_RAISE_MSG(
+                OE_UNEXPECTED,
+                "isolated image offset is wrong: image_offset=%lu vaddr=%lu",
+                image_offset,
+                vaddr);
+        }
+
+        OE_CHECK(oe_add_image_pages(&image, context, enclave, &vaddr));
+    }
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_CHECK(_add_eeid_marker_page(
-        context, enclave, image_size, oeimage.entry_rva, &props, &vaddr));
+        context,
+        enclave,
+        oeimage_size + image_size,
+        oeimage.entry_rva,
+        &props,
+        &vaddr));
 #endif
 
     /* Add data pages */
@@ -846,7 +937,7 @@ oe_result_t oe_sgx_build_enclave(
     /* Save full path of this enclave. When a debugger attaches to the host
      * process, it needs the fullpath so that it can load the image binary and
      * extract the debugging symbols. */
-    if (!(enclave->path = get_fullpath(path)))
+    if (!(enclave->path = get_fullpath(path1)))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Set the magic number only if we have actually created an enclave */
@@ -857,9 +948,13 @@ oe_result_t oe_sgx_build_enclave(
 
 done:
 
+    if (path1)
+        free(path1);
+
     if (ecall_data)
         free(ecall_data);
 
+    oe_free_image(&image);
     oe_unload_enclave_image(&oeimage);
 
     return result;
@@ -997,6 +1092,9 @@ oe_result_t oe_create_enclave(
 
         enclave->debug_enclave = debug_enclave;
         oe_debug_notify_enclave_created(debug_enclave);
+
+        for (size_t i = 0; i < enclave->num_debug_images; ++i)
+            oe_debug_notify_image_loaded(&enclave->debug_images[i]);
     }
 
     /* Enclave initialization invokes global constructors which could make
@@ -1058,6 +1156,12 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 
     if (enclave->debug_enclave)
     {
+        for (size_t i = 0; i < enclave->num_debug_images; ++i)
+        {
+            oe_debug_notify_image_unloaded(&enclave->debug_images[i]);
+            free(enclave->debug_images[i].path);
+        }
+
         oe_debug_notify_enclave_terminated(enclave->debug_enclave);
         free(enclave->debug_enclave->tcs_array);
         free(enclave->debug_enclave);

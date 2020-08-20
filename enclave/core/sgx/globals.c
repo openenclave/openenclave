@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/eeid.h>
+#include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/elf.h>
 #include <openenclave/internal/globals.h>
 
 /* Note: The variables below are initialized during enclave loading */
@@ -128,6 +130,11 @@ static volatile uint64_t _enclave_rva;
 static volatile uint64_t _reloc_rva;
 static volatile uint64_t _reloc_size;
 
+static volatile uint64_t _isolated_image_rva;
+static volatile uint64_t _isolated_image_size;
+static volatile uint64_t _isolated_reloc_rva;
+static volatile uint64_t _isolated_reloc_size;
+
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 oe_eeid_t* oe_eeid = NULL;
 #endif
@@ -153,6 +160,62 @@ size_t __oe_get_enclave_size()
 const void* __oe_get_enclave_elf_header(void)
 {
     return __oe_get_enclave_base();
+}
+
+/*
+**==============================================================================
+**
+** Isolated image boundaries:
+**
+**==============================================================================
+*/
+
+const void* __oe_get_isolated_image_base(void)
+{
+    const uint64_t base = (uint64_t)__oe_get_enclave_base();
+    const uint64_t offset = (uint64_t)_isolated_image_rva;
+    const uint8_t signature[] = {0x7f, 'E', 'L', 'F'};
+    void* p;
+
+    if (!offset)
+        return NULL;
+
+    p = (void*)(base + offset);
+
+    if (memcmp(p, signature, sizeof(signature)) != 0)
+    {
+        oe_assert("__oe_get_isolated_image_base(): panic" == NULL);
+        oe_abort();
+    }
+
+    return p;
+}
+
+const void* __oe_get_isolated_image_entry_point(void)
+{
+    const elf64_ehdr_t* ehdr;
+
+    if (!(ehdr = __oe_get_isolated_image_base()))
+        return NULL;
+
+    return (uint8_t*)ehdr + ehdr->e_entry;
+}
+
+size_t __oe_get_isolated_image_size(void)
+{
+    return _isolated_image_size;
+}
+
+const void* __oe_get_isolated_reloc_base(void)
+{
+    const uint64_t base = (uint64_t)__oe_get_enclave_base();
+    const uint64_t offset = (uint64_t)_isolated_reloc_rva;
+    return (void*)(base + offset);
+}
+
+size_t __oe_get_isolated_reloc_size(void)
+{
+    return _isolated_reloc_size;
 }
 
 /*

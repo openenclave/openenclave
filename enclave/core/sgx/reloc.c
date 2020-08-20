@@ -4,6 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/print.h>
 #include "init.h"
 
 /*
@@ -18,11 +19,14 @@
 **==============================================================================
 */
 
-bool oe_apply_relocations(void)
+static bool _apply_relocations(
+    const void* base,
+    const void* reloc_base,
+    size_t reloc_size)
 {
-    const elf64_rela_t* relocs = (const elf64_rela_t*)__oe_get_reloc_base();
-    size_t nrelocs = __oe_get_reloc_size() / sizeof(elf64_rela_t);
-    const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
+    const elf64_rela_t* relocs = (const elf64_rela_t*)reloc_base;
+    size_t nrelocs = reloc_size / sizeof(elf64_rela_t);
+    const uint8_t* baseaddr = (const uint8_t*)base;
 
     for (size_t i = 0; i < nrelocs; i++)
     {
@@ -41,6 +45,35 @@ bool oe_apply_relocations(void)
         if (reloc_type == R_X86_64_RELATIVE)
         {
             *dest = (uint64_t)(baseaddr + p->r_addend);
+        }
+    }
+
+    return true;
+}
+
+bool oe_apply_relocations(void)
+{
+    if (!_apply_relocations(
+            __oe_get_enclave_base(),
+            __oe_get_reloc_base(),
+            __oe_get_reloc_size()))
+    {
+        return false;
+    }
+
+    /* Apply locations to the isolated image if any */
+    {
+        const void* base;
+
+        if ((base = __oe_get_isolated_image_base()))
+        {
+            if (!_apply_relocations(
+                    base,
+                    __oe_get_isolated_reloc_base(),
+                    __oe_get_isolated_reloc_size()))
+            {
+                return false;
+            }
         }
     }
 
