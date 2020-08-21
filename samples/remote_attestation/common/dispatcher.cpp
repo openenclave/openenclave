@@ -9,7 +9,7 @@
 ecall_dispatcher::ecall_dispatcher(
     const char* name,
     enclave_config_data_t* enclave_config)
-    : m_crypto(NULL), m_attestation(NULL)
+    : m_crypto(nullptr), m_attestation(nullptr)
 {
     m_enclave_config = enclave_config;
     m_initialized = initialize(name);
@@ -30,25 +30,25 @@ bool ecall_dispatcher::initialize(const char* name)
 
     m_name = name;
     m_crypto = new Crypto();
-    if (m_crypto == NULL)
+    if (m_crypto == nullptr)
     {
         goto exit;
     }
 
     {
-        size_t other_enclave_mrsigner_size = sizeof(m_other_enclave_mrsigner);
+        size_t other_enclave_signer_id_size = sizeof(m_other_enclave_signer_id);
         if (oe_sgx_get_signer_id_from_public_key(
-                m_enclave_config->other_enclave_pubkey_pem,
-                m_enclave_config->other_enclave_pubkey_pem_size,
-                m_other_enclave_mrsigner,
-                &other_enclave_mrsigner_size) != OE_OK)
+                m_enclave_config->other_enclave_public_key_pem,
+                m_enclave_config->other_enclave_public_key_pem_size,
+                m_other_enclave_signer_id,
+                &other_enclave_signer_id_size) != OE_OK)
         {
             goto exit;
         }
     }
 
-    m_attestation = new Attestation(m_crypto, m_other_enclave_mrsigner);
-    if (m_attestation == NULL)
+    m_attestation = new Attestation(m_crypto, m_other_enclave_signer_id);
+    if (m_attestation == nullptr)
     {
         goto exit;
     }
@@ -63,19 +63,19 @@ exit:
  * evidence. The enclave that receives the key will use the remote evidence to
  * attest this enclave.
  */
-int ecall_dispatcher::get_remote_report_with_pubkey(
+int ecall_dispatcher::get_remote_evidence_with_public_key(
     uint8_t** pem_key,
     size_t* key_size,
-    uint8_t** remote_report,
-    size_t* remote_report_size)
+    uint8_t** evidence_buffer,
+    size_t* evidence_buffer_size)
 {
     uint8_t pem_public_key[512];
-    uint8_t* evidence = NULL;
+    uint8_t* evidence = nullptr;
     size_t evidence_size = 0;
-    uint8_t* key_buf = NULL;
+    uint8_t* key_buffer = nullptr;
     int ret = 1;
 
-    TRACE_ENCLAVE("get_remote_report_with_pubkey");
+    TRACE_ENCLAVE("get_remote_evidence_with_public_key");
     if (m_initialized == false)
     {
         TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
@@ -86,57 +86,61 @@ int ecall_dispatcher::get_remote_report_with_pubkey(
 
     // Generate a remote evidence for the public key so that the enclave that
     // receives the key can attest this enclave.
-    if (m_attestation->generate_remote_evidence(
-            pem_public_key, sizeof(pem_public_key), &evidence, &evidence_size))
+    if (m_attestation->generate_remote_attestation_evidence(
+            pem_public_key,
+            sizeof(pem_public_key),
+            &evidence,
+            &evidence_size) == false)
     {
-        // Allocate memory on the host and copy the evidence over.
-        *remote_report = (uint8_t*)oe_host_malloc(evidence_size);
-        if (*remote_report == NULL)
-        {
-            ret = OE_OUT_OF_MEMORY;
-            goto exit;
-        }
-        memcpy(*remote_report, evidence, evidence_size);
-        *remote_report_size = evidence_size;
-        oe_free_evidence(evidence);
-
-        key_buf = (uint8_t*)oe_host_malloc(512);
-        if (key_buf == NULL)
-        {
-            ret = OE_OUT_OF_MEMORY;
-            goto exit;
-        }
-        memcpy(key_buf, pem_public_key, sizeof(pem_public_key));
-
-        *pem_key = key_buf;
-        *key_size = sizeof(pem_public_key);
-
-        ret = 0;
-        TRACE_ENCLAVE("get_remote_report_with_pubkey succeeded");
+        TRACE_ENCLAVE("get_remote_evidence_with_public_key failed");
+        goto exit;
     }
-    else
+
+    // Allocate memory on the host and copy the evidence over.
+    *evidence_buffer = (uint8_t*)oe_host_malloc(evidence_size);
+    if (*evidence_buffer == nullptr)
     {
-        TRACE_ENCLAVE("get_remote_report_with_pubkey failed.");
+        ret = OE_OUT_OF_MEMORY;
+        TRACE_ENCLAVE("copying evidence_buffer failed, out of memory");
+        goto exit;
     }
+    memcpy(*evidence_buffer, evidence, evidence_size);
+    *evidence_buffer_size = evidence_size;
+    oe_free_evidence(evidence);
+
+    key_buffer = (uint8_t*)oe_host_malloc(512);
+    if (key_buffer == nullptr)
+    {
+        ret = OE_OUT_OF_MEMORY;
+        TRACE_ENCLAVE("copying key_buffer failed, out of memory");
+        goto exit;
+    }
+    memcpy(key_buffer, pem_public_key, sizeof(pem_public_key));
+
+    *pem_key = key_buffer;
+    *key_size = sizeof(pem_public_key);
+
+    ret = 0;
+    TRACE_ENCLAVE("get_remote_evidence_with_public_key succeeded");
 
 exit:
     if (ret != 0)
     {
         if (evidence)
             oe_free_evidence(evidence);
-        if (key_buf)
-            oe_host_free(key_buf);
-        if (*remote_report)
-            oe_host_free(*remote_report);
+        if (key_buffer)
+            oe_host_free(key_buffer);
+        if (*evidence_buffer)
+            oe_host_free(*evidence_buffer);
     }
     return ret;
 }
 
-int ecall_dispatcher::verify_report_and_set_pubkey(
+int ecall_dispatcher::verify_evidence_and_set_public_key(
     uint8_t* pem_key,
     size_t key_size,
-    uint8_t* remote_report,
-    size_t remote_report_size)
+    uint8_t* evidence,
+    size_t evidence_size)
 {
     int ret = 1;
 
@@ -147,18 +151,17 @@ int ecall_dispatcher::verify_report_and_set_pubkey(
     }
 
     // Attest the remote evidence and accompanying key.
-    if (m_attestation->attest_remote_evidence(
-            remote_report, remote_report_size, pem_key, key_size))
+    if (m_attestation->attest_remote_attestation_evidence(
+            evidence, evidence_size, pem_key, key_size) == false)
     {
-        memcpy(m_crypto->get_the_other_enclave_public_key(), pem_key, key_size);
-    }
-    else
-    {
-        TRACE_ENCLAVE("verify_report_and_set_pubkey failed.");
+        TRACE_ENCLAVE("verify_evidence_and_set_public_key failed.");
         goto exit;
     }
+
+    memcpy(m_crypto->get_the_other_enclave_public_key(), pem_key, key_size);
+
     ret = 0;
-    TRACE_ENCLAVE("verify_report_and_set_pubkey succeeded.");
+    TRACE_ENCLAVE("verify_evidence_and_set_public_key succeeded.");
 
 exit:
     return ret;

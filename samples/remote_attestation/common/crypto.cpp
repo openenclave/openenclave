@@ -34,7 +34,11 @@ bool Crypto::init_mbedtls(void)
 
     // Initialize entropy.
     res = mbedtls_ctr_drbg_seed(
-        &m_ctr_drbg_contex, mbedtls_entropy_func, &m_entropy_context, NULL, 0);
+        &m_ctr_drbg_contex,
+        mbedtls_entropy_func,
+        &m_entropy_context,
+        nullptr,
+        0);
     if (res != 0)
     {
         TRACE_ENCLAVE("mbedtls_ctr_drbg_seed failed.");

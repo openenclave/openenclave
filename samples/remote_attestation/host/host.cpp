@@ -41,14 +41,14 @@ int main(int argc, const char* argv[])
 {
     oe_enclave_t* enclave_a = NULL;
     oe_enclave_t* enclave_b = NULL;
-    uint8_t* encrypted_msg = NULL;
-    size_t encrypted_msg_size = 0;
+    uint8_t* encrypted_message = NULL;
+    size_t encrypted_message_size = 0;
     oe_result_t result = OE_OK;
     int ret = 1;
     uint8_t* pem_key = NULL;
     size_t pem_key_size = 0;
-    uint8_t* remote_report = NULL;
-    size_t remote_report_size = 0;
+    uint8_t* evidence = NULL;
+    size_t evidence_size = 0;
 
     /* Check argument count */
     if (argc != 3)
@@ -69,19 +69,14 @@ int main(int argc, const char* argv[])
         goto exit;
     }
 
-    printf("Host: requesting a remote report and the encryption key from 1st "
+    printf("Host: requesting a remote evidence and the encryption key from 1st "
            "enclave\n");
-    result = get_remote_report_with_pubkey(
-        enclave_a,
-        &ret,
-        &pem_key,
-        &pem_key_size,
-        &remote_report,
-        &remote_report_size);
+    result = get_remote_evidence_with_public_key(
+        enclave_a, &ret, &pem_key, &pem_key_size, &evidence, &evidence_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
-            "Host: verify_report_and_set_pubkey failed. %s",
+            "Host: verify_evidence_and_set_public_key failed. %s",
             oe_result_str(result));
         if (ret == 0)
             ret = 1;
@@ -90,18 +85,13 @@ int main(int argc, const char* argv[])
     printf("Host: 1st enclave's public key: \n%s", pem_key);
 
     printf("Host: requesting 2nd enclave to attest 1st enclave's the remote "
-           "report and the public key\n");
-    result = verify_report_and_set_pubkey(
-        enclave_b,
-        &ret,
-        pem_key,
-        pem_key_size,
-        remote_report,
-        remote_report_size);
+           "evidence and the public key\n");
+    result = verify_evidence_and_set_public_key(
+        enclave_b, &ret, pem_key, pem_key_size, evidence, evidence_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
-            "Host: verify_report_and_set_pubkey failed. %s",
+            "Host: verify_evidence_and_set_public_key failed. %s",
             oe_result_str(result));
         if (ret == 0)
             ret = 1;
@@ -109,22 +99,17 @@ int main(int argc, const char* argv[])
     }
     free(pem_key);
     pem_key = NULL;
-    free(remote_report);
-    remote_report = NULL;
+    free(evidence);
+    evidence = NULL;
 
-    printf("Host: Requesting a remote report and the encryption key from "
+    printf("Host: Requesting a remote evidence and the encryption key from "
            "2nd enclave=====\n");
-    result = get_remote_report_with_pubkey(
-        enclave_b,
-        &ret,
-        &pem_key,
-        &pem_key_size,
-        &remote_report,
-        &remote_report_size);
+    result = get_remote_evidence_with_public_key(
+        enclave_b, &ret, &pem_key, &pem_key_size, &evidence, &evidence_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
-            "Host: verify_report_and_set_pubkey failed. %s",
+            "Host: verify_evidence_and_set_public_key failed. %s",
             oe_result_str(result));
         if (ret == 0)
             ret = 1;
@@ -134,18 +119,13 @@ int main(int argc, const char* argv[])
     printf("Host: 2nd enclave's public key: \n%s", pem_key);
 
     printf("Host: Requesting first enclave to attest 2nd enclave's "
-           "remote report and the public key=====\n");
-    result = verify_report_and_set_pubkey(
-        enclave_a,
-        &ret,
-        pem_key,
-        pem_key_size,
-        remote_report,
-        remote_report_size);
+           "remote evidence and the public key=====\n");
+    result = verify_evidence_and_set_public_key(
+        enclave_a, &ret, pem_key, pem_key_size, evidence, evidence_size);
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
-            "Host: verify_report_and_set_pubkey failed. %s",
+            "Host: verify_evidence_and_set_public_key failed. %s",
             oe_result_str(result));
         if (ret == 0)
             ret = 1;
@@ -153,25 +133,25 @@ int main(int argc, const char* argv[])
     }
     free(pem_key);
     pem_key = NULL;
-    free(remote_report);
-    remote_report = NULL;
+    free(evidence);
+    evidence = NULL;
 
     printf("Host: Remote attestation Succeeded\n");
 
     // Free host memory allocated by the enclave.
-    free(encrypted_msg);
-    encrypted_msg = NULL;
+    free(encrypted_message);
+    encrypted_message = NULL;
     ret = 0;
 
 exit:
     if (pem_key)
         free(pem_key);
 
-    if (remote_report)
-        free(remote_report);
+    if (evidence)
+        free(evidence);
 
-    if (encrypted_msg != NULL)
-        free(encrypted_msg);
+    if (encrypted_message != NULL)
+        free(encrypted_message);
 
     printf("Host: Terminating enclaves\n");
     if (enclave_a)
