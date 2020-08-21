@@ -11,19 +11,27 @@ OE_EXTERNC_BEGIN
 
 typedef struct _oe_module_link_info
 {
+    /* Module image rva */
     uint64_t base_rva;
 
-    // TODO: Update td_init to use these values.
+    /* Dynamic relocation info .rela.dyn section */
+    uint64_t reloc_rva;
+    uint64_t reloc_size;
+
+    /* Thread-local storage .tdata section */
     uint64_t tdata_rva;
     uint64_t tdata_size;
     uint64_t tdata_align;
+
+    /* Thread-local storage .tbss section */
     uint64_t tbss_size;
     uint64_t tbss_align;
 
-    // Init and fini sections.
-    // TODO: Do we need preinit section?
+    /* Global initialization .init_array section */
     uint64_t init_array_rva;
     uint64_t init_array_size;
+
+    /* Global destructors .fini_array section */
     uint64_t fini_array_rva;
     uint64_t fini_array_size;
 

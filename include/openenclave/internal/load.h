@@ -8,6 +8,7 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/elf.h>
+#include <openenclave/internal/link.h>
 #include "types.h"
 
 OE_EXTERNC_BEGIN
@@ -39,10 +40,9 @@ struct _oe_enclave_elf_image
 {
     elf64_t elf;
 
-    char* image_base;   /* Base of the loaded segment contents */
-    size_t image_size;  /* Size of all loaded segment contents */
-    char* image_path;   /* File path the image was loaded from */
-    uint64_t image_rva; /* RVA for where this image was added to enclave */
+    char* image_base;  /* Base of the loaded segment contents */
+    size_t image_size; /* Size of all loaded segment contents */
+    char* image_path;  /* File path the image was loaded from */
 
     /* Cached properties of loadable segments for enclave page add */
     oe_elf_segment_t* segments;
@@ -52,22 +52,8 @@ struct _oe_enclave_elf_image
     void* reloc_data;
     size_t reloc_size;
 
-    /* Thread-local storage .tdata section */
-    uint64_t tdata_rva;
-    uint64_t tdata_size;
-    uint64_t tdata_align;
-
-    /* Thread-local storage .tbss section */
-    uint64_t tbss_size;
-    uint64_t tbss_align;
-
-    /* Global initialization .init_array section */
-    uint64_t init_array_rva;
-    uint64_t init_array_size;
-
-    /* Global destructors .fini_array section */
-    uint64_t fini_array_rva;
-    uint64_t fini_array_size;
+    /* Link info to be passed into the module */
+    oe_module_link_info_t link_info;
 
     /* Dependency images */
     oe_enclave_elf_image_t* needed_images;

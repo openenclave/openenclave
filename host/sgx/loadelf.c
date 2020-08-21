@@ -165,9 +165,9 @@ static oe_result_t _read_sections(
             else if (strcmp(name, ".tdata") == 0)
             {
                 // These items must match program header values.
-                image->tdata_rva = sh->sh_addr;
-                image->tdata_size = sh->sh_size;
-                image->tdata_align = sh->sh_addralign;
+                image->link_info.tdata_rva = sh->sh_addr;
+                image->link_info.tdata_size = sh->sh_size;
+                image->link_info.tdata_align = sh->sh_addralign;
 
                 OE_TRACE_VERBOSE(
                     "tdata { rva=%lx, size=%lx, align=%ld }",
@@ -177,8 +177,8 @@ static oe_result_t _read_sections(
             }
             else if (strcmp(name, ".tbss") == 0)
             {
-                image->tbss_size = sh->sh_size;
-                image->tbss_align = sh->sh_addralign;
+                image->link_info.tbss_size = sh->sh_size;
+                image->link_info.tbss_align = sh->sh_addralign;
                 OE_TRACE_VERBOSE(
                     "tbss { size=%ld, align=%ld }",
                     sh->sh_size,
@@ -186,8 +186,8 @@ static oe_result_t _read_sections(
             }
             else if (strcmp(name, ".init_array") == 0)
             {
-                image->init_array_rva = sh->sh_addr;
-                image->init_array_size = sh->sh_size;
+                image->link_info.init_array_rva = sh->sh_addr;
+                image->link_info.init_array_size = sh->sh_size;
                 OE_TRACE_VERBOSE(
                     "init_array { rva=%lx, size=%lx }",
                     sh->sh_addr,
@@ -195,8 +195,8 @@ static oe_result_t _read_sections(
             }
             else if (strcmp(name, ".fini_array") == 0)
             {
-                image->fini_array_rva = sh->sh_addr;
-                image->fini_array_size = sh->sh_size;
+                image->link_info.fini_array_rva = sh->sh_addr;
+                image->link_info.fini_array_size = sh->sh_size;
                 OE_TRACE_VERBOSE(
                     "fini_array { rva=%lx, size=%lx }",
                     sh->sh_addr,
@@ -366,9 +366,9 @@ static oe_result_t _stage_image_segments(
                 // These assertions exist to understand those scenarios better.
                 // Currently, in all cases except one, the section and program
                 // header values are observed to be same.
-                if (image->tdata_rva != ph->p_vaddr)
+                if (image->link_info.tdata_rva != ph->p_vaddr)
                 {
-                    if (image->tdata_rva == 0)
+                    if (image->link_info.tdata_rva == 0)
                     {
                         // The ELF has no thread local variables that are
                         // explicitly initialized. Therefore there is no .tdata
@@ -388,18 +388,18 @@ static oe_result_t _stage_image_segments(
                             OE_INVALID_IMAGE,
                             ".tdata rva mismatch. Section value = "
                             "%lx, Program header value = 0x%lx",
-                            image->tdata_rva,
+                            image->link_info.tdata_rva,
                             ph->p_vaddr);
                     }
                 }
-                if (image->tdata_size != ph->p_filesz)
+                if (image->link_info.tdata_size != ph->p_filesz)
                 {
                     // Always assert on size mismatch.
                     OE_RAISE_MSG(
                         OE_INVALID_IMAGE,
                         ".tdata_size mismatch. Section value = %lx, "
                         "Program header value = 0x%lx",
-                        image->tdata_size,
+                        image->link_info.tdata_size,
                         ph->p_filesz);
                 }
                 break;
@@ -968,7 +968,7 @@ static oe_result_t _link_elf_images(
     oe_result_t result = OE_UNEXPECTED;
 
     OE_TRACE_INFO("Performing program linking\n");
-    image->image_rva = *module_base;
+    image->link_info.base_rva = *module_base;
 
     /* Patch relocations in the image. */
     elf64_rela_t* relocs = (elf64_rela_t*)image->reloc_data;
@@ -1087,11 +1087,11 @@ done:
 
 static oe_result_t _write_link_info(
     oe_enclave_elf_image_t* image,
-    oe_module_link_info_t* link_info,
+    oe_module_link_info_t* link_info_array,
     size_t* link_info_index)
 {
     assert(image);
-    assert(link_info);
+    assert(link_info_array);
     assert(link_info_index);
 
     oe_result_t result = OE_UNEXPECTED;
@@ -1103,25 +1103,28 @@ static oe_result_t _write_link_info(
             "Enclave links more modules than max %lu supported",
             OE_MAX_NUM_MODULES);
 
-    link_info[current].base_rva = image->image_rva;
-    link_info[current].tdata_rva =
-        image->tdata_rva ? image->image_rva + image->tdata_rva : 0;
-    link_info[current].tdata_size = image->tdata_size;
-    link_info[current].tdata_align = image->tdata_align;
-    link_info[current].tbss_size = image->tbss_size;
-    link_info[current].tbss_align = image->tbss_align;
-    link_info[current].init_array_rva =
-        image->init_array_rva ? image->image_rva + image->init_array_rva : 0;
-    link_info[current].init_array_size = image->init_array_size;
-    link_info[current].fini_array_rva =
-        image->fini_array_rva ? image->image_rva + image->fini_array_rva : 0;
-    link_info[current].fini_array_size = image->fini_array_size;
+    oe_module_link_info_t* link_info = &link_info_array[current];
+    *link_info = image->link_info;
+
+    link_info->tdata_rva =
+        link_info->tdata_rva ? link_info->base_rva + link_info->tdata_rva : 0;
+
+    link_info->init_array_rva =
+        link_info->init_array_rva
+            ? link_info->base_rva + link_info->init_array_rva
+            : 0;
+
+    link_info->fini_array_rva =
+        link_info->fini_array_rva
+            ? link_info->base_rva + link_info->fini_array_rva
+            : 0;
 
     *link_info_index += 1;
 
     for (size_t i = 0; i < image->num_needed_images; i++)
     {
-        _write_link_info(&image->needed_images[i], link_info, link_info_index);
+        _write_link_info(
+            &image->needed_images[i], link_info_array, link_info_index);
     }
 
     result = OE_OK;
@@ -1204,27 +1207,27 @@ static oe_result_t _patch_elf_image(
 
     /* TODO: Remove these as special globals once thread init for multiple
      * modules is added */
-    if (image->tdata_size)
+    if (image->link_info.tdata_size)
     {
         _set_uint64_t_dynamic_symbol_value(
-            image, "_tdata_rva", image->tdata_rva);
+            image, "_tdata_rva", image->link_info.tdata_rva);
         _set_uint64_t_dynamic_symbol_value(
-            image, "_tdata_size", image->tdata_size);
+            image, "_tdata_size", image->link_info.tdata_size);
         _set_uint64_t_dynamic_symbol_value(
-            image, "_tdata_align", image->tdata_align);
+            image, "_tdata_align", image->link_info.tdata_align);
 
-        aligned_size +=
-            oe_round_up_to_multiple(image->tdata_size, image->tdata_align);
+        aligned_size += oe_round_up_to_multiple(
+            image->link_info.tdata_size, image->link_info.tdata_align);
     }
-    if (image->tbss_size)
+    if (image->link_info.tbss_size)
     {
         _set_uint64_t_dynamic_symbol_value(
-            image, "_tbss_size", image->tbss_size);
+            image, "_tbss_size", image->link_info.tbss_size);
         _set_uint64_t_dynamic_symbol_value(
-            image, "_tbss_align", image->tbss_align);
+            image, "_tbss_align", image->link_info.tbss_align);
 
-        aligned_size +=
-            oe_round_up_to_multiple(image->tbss_size, image->tbss_align);
+        aligned_size += oe_round_up_to_multiple(
+            image->link_info.tbss_size, image->link_info.tbss_align);
     }
 
     aligned_size = oe_round_up_to_multiple(aligned_size, OE_PAGE_SIZE);
@@ -1243,7 +1246,7 @@ static oe_result_t _patch_elf_image(
     /* Patch the link info for all loaded modules as a global array
      *
      * TODO: Fix implicit dependency on _link_elf_images for setting
-     * the image->image_rva value, which could be done up front
+     * the image->link_info.image_rva value, which could be done up front
      * during the elf image load
      * */
     OE_CHECK(_patch_link_info_array(image));
@@ -1328,7 +1331,8 @@ static oe_result_t _get_elf_debug_info(
 
     enclave->debug_modules[i].magic = OE_DEBUG_MODULE_MAGIC;
     enclave->debug_modules[i].version = 1;
-    enclave->debug_modules[i].base_address = enclave->addr + image->image_rva;
+    enclave->debug_modules[i].base_address =
+        enclave->addr + image->link_info.base_rva;
     enclave->debug_modules[i].size = image->image_size;
     enclave->debug_modules[i].path = image->image_path;
     enclave->debug_modules[i].path_length =
