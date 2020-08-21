@@ -7,6 +7,8 @@
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/globals.h>
+#include <openenclave/internal/link.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
@@ -181,6 +183,24 @@ static oe_result_t _read_sections(
                     "tbss { size=%ld, align=%ld }",
                     sh->sh_size,
                     sh->sh_addralign);
+            }
+            else if (strcmp(name, ".init_array") == 0)
+            {
+                image->init_array_rva = sh->sh_addr;
+                image->init_array_size = sh->sh_size;
+                OE_TRACE_VERBOSE(
+                    "init_array { rva=%lx, size=%lx }",
+                    sh->sh_addr,
+                    sh->sh_size);
+            }
+            else if (strcmp(name, ".fini_array") == 0)
+            {
+                image->fini_array_rva = sh->sh_addr;
+                image->fini_array_size = sh->sh_size;
+                OE_TRACE_VERBOSE(
+                    "fini_array { rva=%lx, size=%lx }",
+                    sh->sh_addr,
+                    sh->sh_size);
             }
         }
     }
@@ -1065,6 +1085,80 @@ done:
     return result;
 }
 
+static oe_result_t _write_link_info(
+    oe_enclave_elf_image_t* image,
+    oe_module_link_info_t* link_info,
+    size_t* link_info_index)
+{
+    assert(image);
+    assert(link_info);
+    assert(link_info_index);
+
+    oe_result_t result = OE_UNEXPECTED;
+    size_t current = *link_info_index;
+
+    if (current >= OE_MAX_NUM_MODULES)
+        OE_RAISE_MSG(
+            OE_OUT_OF_BOUNDS,
+            "Enclave links more modules than max %lu supported",
+            OE_MAX_NUM_MODULES);
+
+    link_info[current].base_rva = image->image_rva;
+    link_info[current].tdata_rva =
+        image->tdata_rva ? image->image_rva + image->tdata_rva : 0;
+    link_info[current].tdata_size = image->tdata_size;
+    link_info[current].tdata_align = image->tdata_align;
+    link_info[current].tbss_size = image->tbss_size;
+    link_info[current].tbss_align = image->tbss_align;
+    link_info[current].init_array_rva =
+        image->init_array_rva ? image->image_rva + image->init_array_rva : 0;
+    link_info[current].init_array_size = image->init_array_size;
+    link_info[current].fini_array_rva =
+        image->fini_array_rva ? image->image_rva + image->fini_array_rva : 0;
+    link_info[current].fini_array_size = image->fini_array_size;
+
+    *link_info_index += 1;
+
+    for (size_t i = 0; i < image->num_needed_images; i++)
+    {
+        _write_link_info(&image->needed_images[i], link_info, link_info_index);
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static oe_result_t _patch_link_info_array(oe_enclave_elf_image_t* image)
+{
+    assert(image);
+    oe_result_t result = OE_UNEXPECTED;
+    size_t linked_modules_rva = 0;
+    oe_module_link_info_t* link_info = NULL;
+    size_t link_info_index = 0;
+
+    if (image->num_needed_images + 1 >= OE_MAX_NUM_MODULES)
+        OE_RAISE_MSG(
+            OE_OUT_OF_BOUNDS,
+            "Enclave links more modules than max %lu supported",
+            OE_MAX_NUM_MODULES);
+
+    /* Get the offset to the link info global to patch */
+    OE_CHECK(_get_dynamic_symbol_rva(
+        image, "oe_linked_modules", &linked_modules_rva));
+    link_info =
+        (oe_module_link_info_t*)(image->image_base + linked_modules_rva);
+
+    /* Patch for the primary image and then all its dependencies */
+    OE_CHECK(_write_link_info(image, link_info, &link_info_index));
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 static oe_result_t _patch_elf_image(
     oe_enclave_elf_image_t* image,
     oe_sgx_load_context_t* context,
@@ -1108,6 +1202,8 @@ static oe_result_t _patch_elf_image(
     oeprops->image_info.heap_rva =
         oeprops->image_info.reloc_rva + oeprops->image_info.reloc_size;
 
+    /* TODO: Remove these as special globals once thread init for multiple
+     * modules is added */
     if (image->tdata_size)
     {
         _set_uint64_t_dynamic_symbol_value(
@@ -1143,6 +1239,14 @@ static oe_result_t _patch_elf_image(
 
     /* Dynamically link the enclave and its needed modules */
     OE_CHECK(_link_elf_images(image, &module_base));
+
+    /* Patch the link info for all loaded modules as a global array
+     *
+     * TODO: Fix implicit dependency on _link_elf_images for setting
+     * the image->image_rva value, which could be done up front
+     * during the elf image load
+     * */
+    OE_CHECK(_patch_link_info_array(image));
 
     result = OE_OK;
 done:

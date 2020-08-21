@@ -11,6 +11,16 @@ int multiply_local_const_@LDD_TEST_DEP_SUFFIX@(int a)
 
 int global_@LDD_TEST_DEP_SUFFIX@ = @LDD_TEST_DEP_MAGIC@ * 10;
 
+__attribute__((constructor)) static void constructor_@LDD_TEST_DEP_SUFFIX@(void)
+{
+    global_@LDD_TEST_DEP_SUFFIX@ += 1;
+}
+
+__attribute__((destructor)) static void destructor_@LDD_TEST_DEP_SUFFIX@(void)
+{
+    global_@LDD_TEST_DEP_SUFFIX@ = -(@LDD_TEST_DEP_MAGIC@ * 10);
+}
+
 int add_global_@LDD_TEST_DEP_SUFFIX@(int a, int b)
 {
     return a + b + global_@LDD_TEST_DEP_SUFFIX@;

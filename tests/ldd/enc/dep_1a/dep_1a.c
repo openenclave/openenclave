@@ -24,7 +24,7 @@ int test_nested_dependencies()
 
     if (add_global_2a)
     {
-        const int expected = 21110;
+        const int expected = 21111;
         int value = add_global_2a(1000, 100);
         if (value != expected)
             failed_tests++;

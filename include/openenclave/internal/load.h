@@ -61,6 +61,14 @@ struct _oe_enclave_elf_image
     uint64_t tbss_size;
     uint64_t tbss_align;
 
+    /* Global initialization .init_array section */
+    uint64_t init_array_rva;
+    uint64_t init_array_size;
+
+    /* Global destructors .fini_array section */
+    uint64_t fini_array_rva;
+    uint64_t fini_array_size;
+
     /* Dependency images */
     oe_enclave_elf_image_t* needed_images;
     size_t num_needed_images;
