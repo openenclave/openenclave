@@ -366,6 +366,12 @@ typedef enum _oe_result
      */
     OE_INVALID_IMAGE,
 
+    /**
+     * Failed to load the quote library used for quote generation and
+     * attestation.
+     */
+    OE_QUOTE_LIBRARY_LOAD_ERROR,
+
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
 /**< typedef enum _oe_result oe_result_t*/
