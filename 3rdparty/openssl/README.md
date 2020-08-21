@@ -7,6 +7,17 @@ that work with Open Enclave. The structure of the directory is as follows.
 - openssl/
   The clone of official OpenSSL repository that is included as a git submodule.
 
+- intel-sgx-ssl/
+  The clone of Intel SGX SSL that includes the necessary changes to support full LVI mitigation.
+  OpenSSL assembly files (generated via perl scripts) may contain constant-encoded instructions
+  that are incompatible with LVI mitigation tools. More specifically, the assembler looks for
+  the mnemonics rather than the encodings of instructions. Therefore, the relevant changes in the
+  repository include:
+  - A modified x86_64-xlate.pl perl script that is used to generate assemebly files that are compatible
+    with LVI mitigation.
+  - A set of patched assemebly files cached in the repository. The reason for the additional patching is
+    that those files still contain constant encodings that the modified perl script cannot eliminate.
+
 - CMakeLists.txt
   The cmake script for building and installing the libcrypso and libssl as static libraries.
 
