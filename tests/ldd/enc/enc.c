@@ -14,9 +14,21 @@ __attribute__((weak)) int add_global_1b(int a, int b);
 
 __attribute__((weak)) int unlinked_function(int a, int b);
 
+int enc_global = 0;
+__attribute__((constructor)) static void my_constructor(void)
+{
+    enc_global = 1;
+}
+
 int test_enclave()
 {
     int failed_tests = 0;
+
+    if (enc_global != 1)
+    {
+        printf("enc_global was not initialized (%d)\n", enc_global);
+        failed_tests++;
+    }
 
     /*
      * Test dep_1a functions
@@ -40,7 +52,7 @@ int test_enclave()
 
     if (add_global_1a)
     {
-        const int expected = 11110;
+        const int expected = 11111;
         int value = add_global_1a(1000, 100);
         printf("add_global_1a(10) = %d, expected = %d\n", value, expected);
         if (value != expected)
@@ -86,7 +98,7 @@ int test_enclave()
 
     if (add_global_1b)
     {
-        const int expected = 11120;
+        const int expected = 11121;
         int value = add_global_1b(1000, 100);
         printf("add_global_1b(10) = %d, expected = %d\n", value, expected);
         if (value != expected)

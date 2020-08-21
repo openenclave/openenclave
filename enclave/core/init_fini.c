@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "init_fini.h"
+#include <openenclave/internal/globals.h>
 
 /*
 **==============================================================================
@@ -57,13 +58,29 @@
 
 void oe_call_init_functions(void)
 {
-    void (**fn)(void);
-    extern void (*__init_array_start)(void);
-    extern void (*__init_array_end)(void);
+    const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
 
-    for (fn = &__init_array_start; fn < &__init_array_end; fn++)
+    /* Call the start functions of each module in order. */
+    for (size_t i = 0; i < OE_MAX_NUM_MODULES; ++i)
     {
-        (*fn)();
+        const oe_module_link_info_t* link_info = &oe_linked_modules[i];
+
+        /* Check if module is valid. Relocated RVA should be non-zero. */
+        if (link_info->init_array_rva && link_info->init_array_size)
+        {
+            uint64_t init_array_start =
+                (uint64_t)baseaddr + link_info->init_array_rva;
+
+            uint64_t init_array_end =
+                init_array_start + link_info->init_array_size;
+
+            for (uint64_t fn = init_array_start; fn < init_array_end;
+                 fn += sizeof(void*))
+            {
+                void (**init)(void) = (void (**)(void))fn;
+                (*init)();
+            }
+        }
     }
 }
 
@@ -113,12 +130,28 @@ void oe_call_init_functions(void)
 
 void oe_call_fini_functions(void)
 {
-    void (**fn)(void);
-    extern void (*__fini_array_start)(void);
-    extern void (*__fini_array_end)(void);
+    const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
 
-    for (fn = &__fini_array_end - 1; fn >= &__fini_array_start; fn--)
+    /* Call the finalization functions of each module in reverse order. */
+    for (size_t i = OE_MAX_NUM_MODULES - 1; i < OE_MAX_NUM_MODULES; --i)
     {
-        (*fn)();
+        const oe_module_link_info_t* link_info = &oe_linked_modules[i];
+
+        /* Check if module is valid. Relocated RVA should be non-zero. */
+        if (link_info->fini_array_rva && link_info->fini_array_size)
+        {
+            uint64_t fini_array_start =
+                (uint64_t)baseaddr + link_info->fini_array_rva;
+
+            uint64_t fini_array_end =
+                fini_array_start + link_info->fini_array_size;
+
+            for (uint64_t fn = fini_array_start; fn < fini_array_end;
+                 fn += sizeof(void*))
+            {
+                void (**fini)(void) = (void (**)(void))fn;
+                (*fini)();
+            }
+        }
     }
 }

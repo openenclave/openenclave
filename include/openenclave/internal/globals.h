@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/link.h>
 #include <openenclave/internal/types.h>
 
 OE_EXTERNC_BEGIN
@@ -36,6 +37,10 @@ uint64_t oe_get_num_pages(void);
 /* Extended enclave initialization data */
 const void* __oe_get_eeid(void);
 #endif
+
+#define OE_MAX_NUM_MODULES 32
+extern OE_EXPORT const oe_module_link_info_t
+    oe_linked_modules[OE_MAX_NUM_MODULES];
 
 OE_EXTERNC_END
 

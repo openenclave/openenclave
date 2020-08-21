@@ -269,3 +269,12 @@ uint64_t oe_get_num_pages(void)
 {
     return __oe_get_enclave_size() / OE_PAGE_SIZE;
 }
+
+/*
+**==============================================================================
+**
+** Linking information for enclave modules.
+**
+**==============================================================================
+*/
+OE_EXPORT const oe_module_link_info_t oe_linked_modules[OE_MAX_NUM_MODULES];
