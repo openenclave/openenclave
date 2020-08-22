@@ -12,7 +12,7 @@
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
-#include <openenclave/internal/syscall.h>
+#include <openenclave/internal/syscall/hook.h>
 #include <openenclave/internal/tests.h>
 #include <stdarg.h>
 #include <stdio.h>
