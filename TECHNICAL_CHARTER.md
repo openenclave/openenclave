@@ -14,9 +14,9 @@ This charter (the "Charter") sets forth the responsibilities and procedures for 
 
     a. The Technical Steering Committee (the "TSC") will be responsible for all technical oversight of the open source Project.
 
-    b. The TSC voting members are initially the Project's Committers. At the inception of the project, the Committers of the Project will be as set forth within the "CONTRIBUTING" file within the Project's code repository. The TSC may choose an alternative approach for determining the voting members of the TSC, and any such alternative approach will be documented in the CONTRIBUTING file. Any meetings of the Technical Steering Committee are intended to be open to the public, and can be conducted electronically, via teleconference, or in person.
+    b. The TSC voting members are initially the Project's Committers. At the inception of the project, the Committers of the Project will be as set forth within the "Community/Governance.md" file within the Project's code repository. The TSC may choose an alternative approach for determining the voting members of the TSC, and any such alternative approach will be documented in the Community/governance/charter.md file. Any meetings of the Technical Steering Committee are intended to be open to the public, and can be conducted electronically, via teleconference, or in person.
 
-    c. TSC projects generally will involve Contributors and Committers. The TSC may adopt or modify roles so long as the roles are documented in the CONTRIBUTING file. Unless otherwise documented:
+    c. TSC projects generally will involve Contributors and Committers. The TSC may adopt or modify roles so long as the roles are documented in the Community/README.md file. Unless otherwise documented:
 
         i. Contributors include anyone in the technical community that contributes code, documentation, or other technical artifacts to the Project;
 
@@ -44,7 +44,7 @@ This charter (the "Charter") sets forth the responsibilities and procedures for 
 
         vi. establishing community norms, workflows, issuing releases, and security issue reporting policies;
 
-        vii. approving and implementing policies and processes for contributing (to be published in the CONTRIBUTING file) and coordinating with the series manager of the Project (as provided for in the Series Agreement, the "Series Manager") to resolve matters or concerns that may arise as set forth in Section 7 of this Charter;
+        vii. approving and implementing policies and processes for contributing (to be published in the Contributing.md file) and coordinating with the series manager of the Project (as provided for in the Series Agreement, the "Series Manager") to resolve matters or concerns that may arise as set forth in Section 7 of this Charter;
 
         viii. discussions, seeking consensus, and where necessary, voting on technical matters relating to the code base that affect multiple projects; and
 
