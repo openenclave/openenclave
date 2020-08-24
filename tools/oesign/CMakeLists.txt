@@ -24,17 +24,21 @@ endif ()
 
 if (NOT COMPONENT MATCHES OEHOSTVERIFY)
   add_executable(oesign ${SOURCES})
+  add_library(oesignlib ${SOURCES})
 
   if (NOT HAVE_GETOPT_LONG)
     target_include_directories(oesign PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(oesignlib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   endif ()
 
   # Link oesign against liboehostmr, which has no dependency on
   # lib_sgx_enclave_common and libsgx_dcap_ql.
   target_link_libraries(oesign oehostmr)
+  target_link_libraries(oesignlib PRIVATE oe_includes)
 
   # assemble into proper collector dir
   set_property(TARGET oesign PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
+  set_property(TARGET oesignlib PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
 
   # install rule
   install(
@@ -42,7 +46,13 @@ if (NOT COMPONENT MATCHES OEHOSTVERIFY)
     EXPORT openenclave-targets
     DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+  install(
+    TARGETS oesignlib
+    EXPORT openenclave-targets
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
+
   if (WITH_EEID)
     target_compile_definitions(oesign PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+    target_compile_definitions(oesignlib PRIVATE OE_WITH_EXPERIMENTAL_EEID)
   endif ()
 endif ()
