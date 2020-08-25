@@ -168,33 +168,34 @@ typedef enum _oe_enclave_setting_type
 {
     OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS = 0xdc73a628,
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    OE_ENCLAVE_SETTING_CONTEXT_PRE_MEASURED_CONTENT = 0x976a8f66,
+    /** Heap, stack, and thread configuration for an dynamic sizing SGX EEID
+     *  enclave instance. Only supported if the base enclave is a dynamic
+     *  sizing EEID enclave.
+     */
+    OE_ENCLAVE_SETTING_CONTEXT_EEID_DYNAMIC_SIZING = 0x976a8f66,
 #endif
+    /** Identity of additional content allowed to be loaded into the enclave
+     *  post enclave initialization. Currently only supported by SGX Enclaves
+     *  with KSS feature enabled or SGX EEID enclaves.
+     */
+    OE_ENCLAVE_SETTING_CONTEXT_PRE_MEASURED_CONTENT = 0xeaef0557
 } oe_enclave_setting_type_t;
 
-/**
- * Structure to keep EEID related options during enclave creation
- */
 typedef struct _oe_enclave_pre_measured_content
 {
-    /** Heap, stack, and thread configuration for an EEID enclave instance. */
-    oe_enclave_size_settings_t size_settings;
-
     /** The identity of additional content allowed to be loaded
      *  into the enclave post enclave initialization. The identity is covered
      *  by TEE generated Enclave Attestation Evidence.
      */
     uint8_t config_id[64];
     uint16_t config_svn;
-
-    /** Optional config data to be loaded automatically by the enclave runtime.
-      * If provided, the enclave runtime overrides config_id field with the
-      * SHA256 hash of the config data, and verifies the hash value when the
-      * data is loaded.
-      */
-    size_t data_size;
-    uint8_t data[];
 } oe_enclave_pre_measured_content_t;
+
+typedef struct _oe_enclave_eeid_dynamic_sizing
+{
+    /** Heap, stack, and thread configuration for an EEID enclave instance. */
+    oe_enclave_size_settings_t size_settings;
+} oe_enclave_eeid_dynamic_sizing_t;
 ```
 
 Supporting heap/stack size and #TCS specified at enclave signing time or loading time
