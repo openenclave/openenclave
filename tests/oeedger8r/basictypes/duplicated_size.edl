@@ -1,0 +1,9 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        // error: duplicated attribute: `size'.
+        public void ecall_size([out, size = len, size = 1024] char* dst,[in, size = 512, size = len] const char* src,size_t len);
+    };
+};
