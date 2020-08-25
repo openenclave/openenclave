@@ -1,0 +1,38 @@
+parameters:
+- name: image
+  displayName: Pool Image
+  type: string
+  default: 1804BaseSGXagentspool
+  values:
+  - 1804BaseSGXagentspool
+  - 1804CISGXagentspool
+  - 1604BaseSGXagentspool
+  - 1604CISGXagentspool
+
+jobs:
+- job: Ubuntu_${{ parameters.image }}
+  pool: ${{ parameters.image }}
+  steps:
+  - checkout: self
+    submodules: true
+    persistCredentials: true
+
+  - task: Bash@3
+    displayName: "Install and Run Ansible Playbook"
+    inputs:
+      targetType: 'inline'
+      script: |
+          sudo ./install-ansible.sh
+          sudo ansible-playbook oe-contributors-acc-setup.yml
+      workingDirectory: 'scripts/ansible'
+
+  - task: Bash@3
+    displayName: "Build and Test OE SDK"
+    inputs:
+      targetType: 'inline'
+      script: |
+          mkdir build && \
+          cd build && \
+          cmake -G "Ninja" .. && \
+          ninja && \
+          ctest

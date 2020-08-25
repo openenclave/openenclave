@@ -1,0 +1,64 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+jobs:
+- job: base_1804_build
+  displayName: Ubuntu 18.04 Tests
+  pool: 1804BaseSGXagentspool
+  steps:
+  - checkout: self
+    submodules: true
+    persistCredentials: true
+
+  - task: Bash@3
+    displayName: "Install and Run Ansible Playbook"
+    inputs:
+      targetType: 'inline'
+      script: |
+          sudo ./install-ansible.sh
+          sudo ansible-playbook oe-contributors-acc-setup.yml
+      workingDirectory: 'scripts/ansible'
+
+  - task: Bash@3
+    displayName: "Build and Test OE SDK"
+    inputs:
+      targetType: 'inline'
+      script: |
+          mkdir build && \
+          cd build && \
+          cmake -G "Ninja" .. && \
+          ninja && \
+          ctest
+
+- job: base_1604_build
+  displayName: Ubuntu 16.04 Tests
+  pool: 1604BaseSGXagentspool
+  steps:
+  - checkout: self
+    submodules: true
+    persistCredentials: true
+
+  - task: Bash@3
+    displayName: "Install and Run Ansible Playbook"
+    inputs:
+      targetType: 'inline'
+      script: |
+          sudo ./install-ansible.sh
+          sudo ansible-playbook oe-contributors-acc-setup.yml
+      workingDirectory: 'scripts/ansible'
+
+  - task: Bash@3
+    displayName: "Build and Test OE SDK"
+    inputs:
+      targetType: 'inline'
+      script: |
+          mkdir build && \
+          cd build && \
+          cmake -G "Ninja" .. && \
+          ninja && \
+          ctest

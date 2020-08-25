@@ -1,0 +1,38 @@
+parameters:
+- name: image
+  displayName: Pool Image
+  type: string
+  default: 2019BaseSGXagentspool
+  values:
+  - 2016BaseSGXagentspool
+  - 2016CISGXagentspool
+  - 2019BaseSGXagentspool
+  - 2019CISGXagentspool
+
+jobs:
+- job: Windows_${{ parameters.image }}
+  pool: ${{ parameters.image }}
+  steps:
+  - checkout: self
+    submodules: true
+    persistCredentials: true
+
+  - task: PowerShell@2
+    displayName: "Install and Run Ansible Playbook"
+    inputs:
+      targetType: 'inline'
+      script: |
+        ./install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoDriver -InstallPath C://oe_prereqs -DCAPClientType Azure
+      workingDirectory: 'scripts'
+
+  - task: PowerShell@2
+    displayName: "Build and Test OE SDK"
+    inputs:
+      targetType: 'inline'
+      script: |
+          vcvars64.bat x64
+          mkdir build
+          cd build
+          cmake.exe -G "Ninja" ..
+          ninja.exe
+          ctest.exe

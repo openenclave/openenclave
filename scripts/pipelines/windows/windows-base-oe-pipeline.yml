@@ -1,0 +1,10 @@
+trigger:
+- master
+
+jobs:
+- template: windows-base-oe-sdk-tests.yml
+  parameters:
+    image: 2019BaseSGXagentspool
+- template: windows-base-oe-sdk-tests.yml
+  parameters:
+    image: 2016BaseSGXagentspool

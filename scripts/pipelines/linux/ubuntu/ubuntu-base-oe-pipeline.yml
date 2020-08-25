@@ -1,0 +1,10 @@
+trigger:
+- master
+
+jobs:
+- template: ubuntu-base-oe-sdk-tests.yml
+  parameters:
+    image: 1804BaseSGXagentspool
+- template: ubuntu-base-oe-sdk-tests.yml
+  parameters:
+    image: 1604BaseSGXagentspool
