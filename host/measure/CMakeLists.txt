@@ -200,4 +200,4 @@ endif ()
 install(
   TARGETS oehostmr
   EXPORT openenclave-targets
-  DESTINATION ${CMAKE_INSTALL_BINDIR})
+  DESTINATION ${CMAKE_INSTALL_LIBDIR})
