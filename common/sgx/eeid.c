@@ -24,10 +24,16 @@
 #include "../../enclave/crypto/mbedtls/rsa.h"
 #else
 #include <openenclave/host.h>
+#ifdef _WIN32
+#include "../../host/crypto/bcrypt/bcrypt.h"
+#include "../../host/crypto/bcrypt/key.h"
+#include "../../host/crypto/bcrypt/rsa.h"
+#else
 #include <openssl/opensslv.h>
 #include <openssl/rsa.h>
 #include "../crypto/openssl/key.h"
 #include "../crypto/openssl/rsa.h"
+#endif
 #endif
 
 int is_eeid_base_image(const oe_sgx_enclave_properties_t* properties)
@@ -238,6 +244,62 @@ done:
     return result;
 }
 #else
+#ifdef _WIN32
+static oe_result_t _verify_signature(
+    const OE_SHA256* msg_hsh,
+    const uint8_t* reversed_modulus,
+    const uint8_t* reversed_exponent,
+    const uint8_t* reversed_signature)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_rsa_public_key_t pk;
+
+    BCRYPT_ALG_HANDLE hAlgorithm;
+    BCRYPT_KEY_HANDLE ikey;
+
+    if (!BCRYPT_SUCCESS(BCryptOpenAlgorithmProvider(
+            &hAlgorithm, BCRYPT_RSA_ALGORITHM, NULL, 0)))
+        OE_RAISE(OE_UNEXPECTED);
+
+    OE_PACK_BEGIN
+    struct
+    {
+        BCRYPT_RSAKEY_BLOB blob;
+        uint8_t bytes[65535];
+    } key_data;
+    OE_PACK_END
+
+    if (!BCRYPT_SUCCESS(BCryptImportKeyPair(
+            hAlgorithm,
+            NULL,
+            BCRYPT_RSAPUBLIC_BLOB,
+            &ikey,
+            (PUCHAR)&key_data,
+            sizeof(key_data),
+            0)))
+        OE_RAISE(OE_UNEXPECTED);
+
+    oe_rsa_public_key_init(&pk, ikey);
+
+    OE_CHECK(oe_rsa_public_key_verify(
+        &pk,
+        OE_HASH_TYPE_SHA256,
+        msg_hsh->buf,
+        sizeof(msg_hsh->buf),
+        reversed_signature,
+        OE_KEY_SIZE));
+
+    OE_CHECK(oe_rsa_public_key_free(&pk));
+
+    if (!BCRYPT_SUCCESS(BCryptCloseAlgorithmProvider(hAlgorithm, 0)))
+        OE_RAISE(OE_UNEXPECTED);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+#else
 static oe_result_t _verify_signature(
     const OE_SHA256* msg_hsh,
     const uint8_t* reversed_modulus,
@@ -283,6 +345,7 @@ static oe_result_t _verify_signature(
 done:
     return result;
 }
+#endif
 #endif
 
 static oe_result_t _verify_base_image_signature(

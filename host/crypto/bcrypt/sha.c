@@ -81,3 +81,41 @@ oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
 done:
     return result;
 }
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+oe_result_t oe_sha256_save(
+    const oe_sha256_context_t* context,
+    uint32_t* internal_hash,
+    uint32_t* num_hashed)
+{
+    oe_result_t result = OE_INVALID_PARAMETER;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+
+    if (!context || !internal_hash || !num_hashed)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    result = OE_UNSUPPORTED;
+
+done:
+    return result;
+}
+
+oe_result_t oe_sha256_restore(
+    oe_sha256_context_t* context,
+    const uint32_t* internal_hash,
+    const uint32_t* num_hashed)
+{
+    oe_result_t result = OE_INVALID_PARAMETER;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+
+    if (!context || !internal_hash || !num_hashed)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    oe_sha256_init(context);
+
+    result = OE_UNSUPPORTED;
+
+done:
+    return result;
+}
+#endif

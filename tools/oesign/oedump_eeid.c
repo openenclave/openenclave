@@ -77,7 +77,7 @@ int oedump_eeid(const char* enclave)
     oe_hex_dump(eeid->hash_state.N, sizeof(uint32_t) * 2);
     printf("base_sigstruct=");
     oe_hex_dump(eeid->data + eeid->data_size, sizeof(sgx_sigstruct_t));
-    printf("vaddr=%lu", eeid->vaddr);
+    printf("vaddr=%llu", eeid->vaddr);
     printf("\n");
 
     ret = 0;
