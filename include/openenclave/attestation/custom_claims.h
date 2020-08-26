@@ -1,6 +1,14 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+/**
+ * @file custom_claims.h
+ *
+ * This file defines the programming interface for application software
+ * to access the OE SDK attestation custom claims functionality.
+ *
+ */
+
 #ifndef _OE_CUSTOM_CLAIMS
 #define _OE_CUSTOM_CLAIMS
 
@@ -15,9 +23,9 @@ OE_EXTERNC_BEGIN
  *
  * Free buffer of serialized custom claims.
  *
- * @param[in] custom_claims_buffer Serialized Custom claims
+ * @param[in] custom_claims_buffer Serialized custom claims
  * buffer to free.
- * @retval OE_OK on success.
+ * @retval OE_OK The function was successful.
  */
 oe_result_t oe_free_serialized_custom_claims(uint8_t* custom_claims_buffer);
 
@@ -28,7 +36,7 @@ oe_result_t oe_free_serialized_custom_claims(uint8_t* custom_claims_buffer);
  *
  * @param[in] custom_claims Custom claims array to free.
  * @param[in] custom_claims_length Length of custom_claims.
- * @retval OE_OK on success.
+ * @retval OE_OK The function was successful.
  */
 oe_result_t oe_free_custom_claims(
     oe_claim_t* custom_claims,
@@ -44,9 +52,10 @@ oe_result_t oe_free_custom_claims(
  * @param[out] claims_out Pointer to the address of a dynamically
  * allocated buffer holding the serialized custom claims.
  * @param[out] claims_size_out Size of the serialized custom claims.
- * @retval OE_OK on success.
+ * @retval OE_OK The function was successful.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval An appropriate error code on failure.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ * @retval OE_UNEXPECTED An unexpected error happened.
  */
 oe_result_t oe_serialize_custom_claims(
     const oe_claim_t* custom_claims,
@@ -65,9 +74,12 @@ oe_result_t oe_serialize_custom_claims(
  * @param[out] claims_out Pointer to the address of a dynamically allocated
  * buffer holding the list of custom claims.
  * @param[out] claims_length_out The length of the claims_out list.
- * @retval OE_OK on success.
+ * @retval OE_OK The function was successful.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval An appropriate error code on failure.
+ * @retval OE_CONSTRAINT_FAILED The serialized custom claims buffer size is too
+ * small or invalid.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ * @retval OE_UNEXPECTED An unexpected error happened.
  */
 oe_result_t oe_deserialize_custom_claims(
     const uint8_t* claims_buffer,
