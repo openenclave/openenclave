@@ -7,6 +7,7 @@
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
+#define oe_memalign_free oe_free
 #else
 #include <openenclave/host.h>
 #include "../../host/memalign.h"
