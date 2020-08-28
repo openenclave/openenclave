@@ -19,3 +19,4 @@ add_custom_target(edl_gen DEPENDS edl_enc_gen edl_host_gen)
 
 add_subdirectory(behavior)
 add_subdirectory(basictypes)
+add_subdirectory(string)
