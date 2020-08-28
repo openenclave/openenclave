@@ -378,10 +378,10 @@ static oe_result_t _eeid_verify_evidence(
 
 done:
 
-    oe_free(sgx_evidence_buffer);
-    oe_free(sgx_endorsements_buffer);
-    oe_free(attester_eeid);
-    oe_free(verifier_eeid);
+    oe_memalign_free(sgx_evidence_buffer);
+    oe_memalign_free(sgx_endorsements_buffer);
+    oe_memalign_free(attester_eeid);
+    oe_memalign_free(verifier_eeid);
     oe_free(evidence);
 
     return result;
