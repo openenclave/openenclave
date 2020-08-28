@@ -11,7 +11,9 @@
 
 #include <openenclave/bits/defs.h>
 
-#if __STDC_VERSION__ >= 199901L
+/* MSVC 19.27.29111 reports a clash between the prototypes for memcpy (no
+ * 'restrict' in its libc).*/
+#if __STDC_VERSION__ >= 199901L && !defined(_MSC_VER)
 #define OE_RESTRICT restrict
 #elif !defined(__GNUC__) || defined(__cplusplus)
 #define OE_RESTRICT

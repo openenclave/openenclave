@@ -59,7 +59,7 @@ function call_clang {
         [ "$a" == "/Zi" ]        && args+="-g "         && continue
         [ "$a" == "/ZI" ]        && args+="-g "         && continue
         [ "$a" == "/O2" ]        && args+="-O2 "        && continue
-        [ "$a" == "-std:c11" ]                          && continue
+        [ "$a" == "-std:c11" ]                          && continue # MSVC 19.27.29111 claims that, according to C11, we would have to use '__asm' instead of 'asm'.*/
         [ "$a" == "-std:c++11" ] && args+="-std=c++11 " && continue
         [ "$a" == "-std:c++14" ] && args+="-std=c++14 " && continue
         [ "$a" == "-std:c++17" ] && args+="-std=c++17 " && continue
