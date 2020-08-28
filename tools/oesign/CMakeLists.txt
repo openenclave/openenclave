@@ -26,6 +26,9 @@ if (NOT COMPONENT MATCHES OEHOSTVERIFY)
   add_executable(oesign ${SOURCES})
   add_library(oesignlib ${SOURCES})
 
+  target_compile_options(oesign PRIVATE -fPIC)
+  target_compile_options(oesignlib PRIVATE -fPIC)
+
   if (NOT HAVE_GETOPT_LONG)
     target_include_directories(oesign PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_include_directories(oesignlib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
