@@ -393,7 +393,6 @@ static oe_result_t _eeid_free_claims_list(
     size_t claims_size)
 {
     OE_UNUSED(context);
-    OE_UNUSED(claims_size);
     for (size_t i = 0; i < claims_size; i++)
     {
         oe_free(claims[i].name);
