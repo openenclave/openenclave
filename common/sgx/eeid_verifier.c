@@ -304,7 +304,7 @@ static oe_result_t _eeid_verify_evidence(
         oe_report_t parsed_report;
         oe_claim_t* sgx_claims = NULL;
         size_t sgx_claims_length = 0;
-        _verify_sgx_report(
+        OE_CHECK(_verify_sgx_report(
             context,
             policies,
             policies_size,
@@ -314,7 +314,7 @@ static oe_result_t _eeid_verify_evidence(
             sgx_endorsements_buffer_size,
             &sgx_claims,
             &sgx_claims_length,
-            &parsed_report);
+            &parsed_report));
 
         const uint8_t* r_enclave_hash = parsed_report.identity.unique_id;
         const uint8_t* r_signer_id = parsed_report.identity.signer_id;
