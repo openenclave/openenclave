@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include <openenclave/attestation/sgx/report.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/host.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
@@ -22,13 +23,31 @@
 #include "../common/tls_server_enc_mrenclave.h"
 #include "../common/tls_server_enc_pubkey.h"
 
-bool verify_mrsigner(
+/**
+ * Helper function used to make the claim-finding process more convenient. Given
+ * the claim name, claim list, and its size, returns the claim with that claim
+ * name in the list.
+ */
+const oe_claim_t* find_claim(
+    const oe_claim_t* claims,
+    size_t claims_size,
+    const char* name)
+{
+    for (size_t i = 0; i < claims_size; i++)
+    {
+        if (strcmp(claims[i].name, name) == 0)
+            return &(claims[i]);
+    }
+    return NULL;
+}
+
+bool verify_signer_id(
     const char* pem_key_buffer,
     size_t pem_key_buffer_len,
     uint8_t* expected_signer,
     size_t expected_signer_size)
 {
-    printf(TLS_CLIENT "Verify connecting server's identity\n");
+    printf("\n" TLS_CLIENT "verify connecting server's identity\n");
 
     uint8_t calculated_signer[OE_SIGNER_ID_SIZE];
     size_t calculated_signer_size = sizeof(calculated_signer);
@@ -45,7 +64,7 @@ bool verify_mrsigner(
     // validate against
     if (memcmp(calculated_signer, expected_signer, expected_signer_size) != 0)
     {
-        printf("mrsigner is not equal!\n");
+        printf("signer_id is not equal\n");
         for (int i = 0; i < expected_signer_size; i++)
         {
             printf(
@@ -55,71 +74,127 @@ bool verify_mrsigner(
         }
         return false;
     }
-    printf("signer id (MRSIGNER) was successfully validated\n");
+    printf("signer_id was successfully validated\n");
     return true;
 }
 
-// This is the identity validation callback. An TLS connecting party (client or
-// server) can verify the passed in "identity" information to decide whether to
-// accept the connection reqest from an tls server running inside a specific
-// enclave In a real app, custom identity validation should be done inside this
-// routine
-oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
+// This is the evidence claims validation callback. An TLS connecting party
+// (client or server) can verify the passed in "identity" information to decide
+// whether to accept the connection reqest from an tls server running inside a
+// specific enclave In a real app, custom identity validation should be done
+// inside this routine
+oe_result_t enclave_claims_verifier(
+    oe_claim_t* claims,
+    size_t claims_length,
+    void* arg)
 {
     oe_result_t result = OE_VERIFY_FAILED;
+    const oe_claim_t* claim;
 
     (void)arg;
-    printf(TLS_CLIENT
-           "enclave_identity_verifier is called with parsed report:\n");
+    printf(TLS_CLIENT "enclave_claims_verifier is called with the claims from "
+                      "the evidence:\n");
 
     // Dump an identity information: unique ID, signer ID and Product ID
     // They are MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves.
-    printf(
-        TLS_CLIENT "identity.security_version = %d\n",
-        identity->security_version);
 
-    // the unique ID for the enclave, for SGX enclaves, this is the MRENCLAVE
-    // value
-    printf(TLS_CLIENT "Validating identity->unique_id(MRENCLAVE) :\n");
-    for (int i = 0; i < OE_UNIQUE_ID_SIZE; i++)
+    // Enclave's security version
+    if ((claim = find_claim(
+             claims, claims_length, OE_CLAIM_SECURITY_VERSION)) == NULL)
     {
-        printf("0x%0x ", (uint8_t)identity->unique_id[i]);
-        if (SERVER_ENCLAVE_MRENCLAVE[i] != (uint8_t)identity->unique_id[i])
+        printf(TLS_SERVER "could not find OE_CLAIM_SECURITY_VERSION\n");
+        goto done;
+    }
+    if (claim->value_size != sizeof(uint32_t))
+    {
+        printf(
+            "security_version size(%lu) checking failed\n", claim->value_size);
+        goto done;
+    }
+    printf(TLS_SERVER "\nsecurity_version = %d\n", *claim->value);
+
+    // The unique ID for the enclave, for SGX enclaves, this is the MRENCLAVE
+    // value
+    if ((claim = find_claim(claims, claims_length, OE_CLAIM_UNIQUE_ID)) == NULL)
+    {
+        printf(TLS_CLIENT "could not find OE_CLAIM_UNIQUE_ID\n");
+        goto done;
+    }
+    if (claim->value_size != OE_UNIQUE_ID_SIZE)
+    {
+        printf(
+            TLS_CLIENT "unique_id size(%lu) checking failed\n",
+            claim->value_size);
+        goto done;
+    }
+    printf(TLS_CLIENT "\nverify unique_id:\n");
+    for (int i = 0; i < claim->value_size; i++)
+    {
+        printf("0x%0x ", (uint8_t)claim->value[i]);
+        if (SERVER_ENCLAVE_MRENCLAVE[i] != (uint8_t)claim->value[i])
         {
             printf(
-                TLS_CLIENT
-                "identity->unique_id[%d] expected: 0x%0x  found: 0x%0x ",
+                TLS_CLIENT "unique_id[%d] expected: 0x%0x  found: 0x%0x ",
                 i,
                 SERVER_ENCLAVE_MRENCLAVE[i],
-                (uint8_t)identity->unique_id[i]);
-            printf(TLS_CLIENT "failed:unique_id not equal!\n");
+                (uint8_t)claim->value[i]);
+            printf(TLS_CLIENT "failed: unique_id not equal\n");
             goto done;
         }
     }
     printf("\n" TLS_CLIENT "unique_id validation passed\n");
 
-    printf("\n" TLS_CLIENT "identity->product_id : ");
-    for (int i = 0; i < OE_PRODUCT_ID_SIZE; i++)
-        printf("0x%0x ", (uint8_t)identity->product_id[i]);
-    printf("\n");
-
-    printf(TLS_CLIENT "identity->signer_id : ");
-    for (int i = 0; i < OE_SIGNER_ID_SIZE; i++)
-        printf("0x%0x ", (uint8_t)identity->signer_id[i]);
-    printf("\n");
-
-    // In this sample, only signer_id validation is shown
-    if (!verify_mrsigner(
-            (char*)OTHER_ENCLAVE_PUBLIC_KEY,
-            sizeof(OTHER_ENCLAVE_PUBLIC_KEY),
-            identity->signer_id,
-            sizeof(identity->signer_id)))
+    // The Product ID for the enclave, for SGX enclaves, this is the ISVPRODID
+    // value
+    if ((claim = find_claim(claims, claims_length, OE_CLAIM_PRODUCT_ID)) ==
+        NULL)
     {
-        printf("failed:mrsigner not equal!\n");
+        printf(TLS_CLIENT "could not find OE_CLAIM_PRODUCT_ID\n");
         goto done;
     }
+    if (claim->value_size != OE_PRODUCT_ID_SIZE)
+    {
+        printf(
+            TLS_CLIENT "product_id size(%lu) checking failed\n",
+            claim->value_size);
+        goto done;
+    }
+    printf(TLS_CLIENT "\nproduct_id :\n");
+    for (int i = 0; i < claim->value_size; i++)
+        printf("0x%0x ", (uint8_t)claim->value[i]);
+    printf("\n");
 
-    printf(TLS_CLIENT "enclave_identity_verifier returned success\n");
+    // The signer ID for the enclave, for SGX enclaves, this is the MRSIGNER
+    // value
+    if ((claim = find_claim(claims, claims_length, OE_CLAIM_SIGNER_ID)) == NULL)
+    {
+        printf(TLS_CLIENT "could not find OE_CLAIM_SIGNER_ID\n");
+        goto done;
+    }
+    if (claim->value_size != OE_SIGNER_ID_SIZE)
+    {
+        printf(
+            TLS_CLIENT "signer_id size(%lu) checking failed\n",
+            claim->value_size);
+        goto done;
+    }
+    printf(TLS_CLIENT "\nverify signer_id:\n");
+    for (int i = 0; i < claim->value_size; i++)
+        printf("0x%0x ", (uint8_t)claim->value[i]);
+
+    // In this sample, only signer_id validation is shown
+    if (!verify_signer_id(
+            (char*)OTHER_ENCLAVE_PUBLIC_KEY,
+            sizeof(OTHER_ENCLAVE_PUBLIC_KEY),
+            claim->value,
+            claim->value_size))
+    {
+        printf(TLS_CLIENT "failed: signer_id not equal\n");
+        goto done;
+    }
+    printf(TLS_CLIENT "signer_id validation passed.\n");
+
+    printf(TLS_CLIENT "enclave_claims_verifier returned success\n");
     result = OE_OK;
 done:
     return result;
@@ -199,8 +274,9 @@ int verify_callback(int preverify_ok, X509_STORE_CTX* ctx)
 #endif
 
     // verify tls certificate
-    result = oe_verify_attestation_certificate(
-        der, der_len, enclave_identity_verifier, NULL);
+    oe_verifier_initialize();
+    result = oe_verify_attestation_certificate_with_evidence(
+        der, der_len, enclave_claims_verifier, NULL);
     if (result != OE_OK)
     {
         printf(TLS_CLIENT "result=%s\n", oe_result_str(result));
@@ -215,8 +291,9 @@ done:
     if (err != X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT)
     {
         printf(
-            TLS_CLIENT "Verifying SGX certificate extensions ... %s\n",
+            TLS_CLIENT "verifying SGX certificate extensions ... %s\n",
             ret ? "succeeded" : "failed");
     }
+    oe_verifier_shutdown();
     return ret;
 }

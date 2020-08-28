@@ -74,7 +74,7 @@ int communicate_with_server(SSL* ssl)
     int bytes_read = 0;
 
     // Write an GET request to the server
-    printf(TLS_CLIENT "Write to server-->:\n\n");
+    printf(TLS_CLIENT "-----> Write to server:\n");
     len = snprintf((char*)buf, sizeof(buf) - 1, CLIENT_PAYLOAD);
     while ((bytes_written = SSL_write(ssl, buf, (size_t)len)) <= 0)
     {
@@ -86,10 +86,10 @@ int communicate_with_server(SSL* ssl)
         goto done;
     }
 
-    printf(TLS_CLIENT "\n\n%d bytes written\n\n", bytes_written);
+    printf(TLS_CLIENT "%d bytes written\n", bytes_written);
 
     // Read the HTTP response from server
-    printf(TLS_CLIENT "\n\n<-- Read from server:\n");
+    printf(TLS_CLIENT "<---- Read from server:\n");
     do
     {
         len = sizeof(buf) - 1;

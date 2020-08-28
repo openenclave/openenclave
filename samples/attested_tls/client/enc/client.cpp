@@ -114,7 +114,7 @@ int handle_communication_until_done(mbedtls_ssl_context* ssl)
     int exit_code = MBEDTLS_EXIT_FAILURE;
 
     // Write client payload to the server
-    printf(TLS_CLIENT "Write to server-->:");
+    printf(TLS_CLIENT "-----> Write to server:\n");
     len = sprintf((char*)buf, CLIENT_PAYLOAD);
     while ((ret = mbedtls_ssl_write(ssl, buf, (size_t)len)) <= 0)
     {
@@ -130,7 +130,7 @@ int handle_communication_until_done(mbedtls_ssl_context* ssl)
     printf(TLS_CLIENT "%d bytes written:\n[%s]\n", len, (char*)buf);
 
     printf(TLS_CLIENT "Read the response from server:\n");
-    printf(TLS_CLIENT "<-- Read from server:\n");
+    printf(TLS_CLIENT "<---- Read from server:\n");
     do
     {
         len = sizeof(buf) - 1;
