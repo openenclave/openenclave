@@ -279,8 +279,8 @@ oe_result_t get_eeid_evidence(
 
     OE_TEST_CODE(oe_sgx_eeid_attester_shutdown(), OE_OK);
 
-    free(local_evidence);
-    free(local_endorsements);
+    oe_free_evidence(local_evidence);
+    oe_free_endorsements(local_endorsements);
 
     return OE_OK;
 }
