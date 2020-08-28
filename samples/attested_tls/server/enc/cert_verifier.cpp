@@ -60,7 +60,6 @@ int cert_verify_callback(
     if (cert_size <= 0)
         goto exit;
 
-    oe_verifier_initialize();
     result = oe_verify_attestation_certificate_with_evidence(
         cert_buf, cert_size, enclave_claims_verifier_callback, NULL);
     if (result != OE_OK)
@@ -76,6 +75,5 @@ int cert_verify_callback(
     printf(TLS_SERVER "\n\n---------Establishing an Attested TLS channel "
                       "between two enclaves---------\n\n");
 exit:
-    oe_verifier_shutdown();
     return ret;
 }

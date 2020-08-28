@@ -219,6 +219,7 @@ int launch_tls_client(char* server_name, char* server_port)
     mbedtls_ctr_drbg_init(&ctr_drbg);
     mbedtls_x509_crt_init(&client_cert);
     mbedtls_pk_init(&pkey);
+    oe_verifier_initialize();
 
 #ifdef ADD_TEST_CHECKING
     if (CLIENT_PAYLOAD_SIZE != strlen(CLIENT_PAYLOAD))
@@ -333,6 +334,7 @@ exit:
     mbedtls_ssl_config_free(&conf);
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);
+    oe_verifier_shutdown();
 
     if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY)
         ret = 0;

@@ -316,6 +316,7 @@ int setup_tls_server(char* server_port)
     mbedtls_pk_init(&pkey);
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
+    oe_verifier_initialize();
 
     printf(
         TLS_SERVER "Setup the listening TCP socket on SERVER_IP= [%s] "
@@ -382,6 +383,7 @@ exit:
     mbedtls_ssl_cache_free(&cache);
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);
+    oe_verifier_shutdown();
     fflush(stdout);
     return (ret);
 }
