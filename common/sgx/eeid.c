@@ -93,7 +93,7 @@ oe_result_t oe_remeasure_memory_pages(
 {
     oe_result_t result;
     oe_sha256_context_t hctx;
-    oe_sha256_restore(&hctx, eeid->hash_state.H, eeid->hash_state.N);
+    OE_CHECK(oe_sha256_restore(&hctx, eeid->hash_state.H, eeid->hash_state.N));
 
     uint64_t base = 0x0ab0c0d0e0f;
     oe_page_t blank_pg, stack_pg, tcs_pg;
