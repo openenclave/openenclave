@@ -64,6 +64,7 @@ docs/*
 3rdparty/optee/optee_os
 3rdparty/snmalloc
 3rdparty/openssl/openssl
+3rdparty/openssl/intel-sgx-ssl
 3rdparty/openssl/bn_conf\.h
 3rdparty/openssl/dso_conf\.h
 3rdparty/openssl/opensslconf\.h

@@ -2,9 +2,11 @@
 # Licensed under the MIT License.
 
 check_submodule_not_empty(openssl)
+check_submodule_not_empty(intel-sgx-ssl)
 
 include(ExternalProject)
 
+set(INTELSSL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/intel-sgx-ssl/openssl_source)
 set(OPENSSL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/openssl)
 set(OPENSSL_BUILD ${CMAKE_CURRENT_BINARY_DIR}/build)
 set(OPENSSL_BUILD_INCLUDES ${OPENSSL_BUILD}/include)
@@ -36,38 +38,38 @@ set(OPENSSL_CONFIG_OPTIONS
     no-ssl3)
 
 if (OE_SGX)
-  list(
-    APPEND
-    PLATFORM_SRC
-    ${OPENSSL_BUILD}/crypto/aes/aesni-mb-x86_64.s
-    ${OPENSSL_BUILD}/crypto/aes/aesni-sha1-x86_64.s
-    ${OPENSSL_BUILD}/crypto/aes/aesni-sha256-x86_64.s
-    ${OPENSSL_BUILD}/crypto/aes/aesni-x86_64.s
-    ${OPENSSL_BUILD}/crypto/aes/vpaes-x86_64.s
-    ${OPENSSL_BUILD}/crypto/bn/rsaz-avx2.s
-    ${OPENSSL_BUILD}/crypto/bn/rsaz-x86_64.s
-    ${OPENSSL_BUILD}/crypto/bn/x86_64-gf2m.s
-    ${OPENSSL_BUILD}/crypto/bn/x86_64-mont.s
-    ${OPENSSL_BUILD}/crypto/bn/x86_64-mont5.s
-    ${OPENSSL_BUILD}/crypto/camellia/cmll-x86_64.s
-    ${OPENSSL_BUILD}/crypto/chacha/chacha-x86_64.s
-    ${OPENSSL_BUILD}/crypto/ec/ecp_nistz256-x86_64.s
-    ${OPENSSL_BUILD}/crypto/ec/x25519-x86_64.s
-    ${OPENSSL_BUILD}/crypto/md5/md5-x86_64.s
-    ${OPENSSL_BUILD}/crypto/modes/aesni-gcm-x86_64.s
-    ${OPENSSL_BUILD}/crypto/modes/ghash-x86_64.s
-    ${OPENSSL_BUILD}/crypto/poly1305/poly1305-x86_64.s
-    ${OPENSSL_BUILD}/crypto/rc4/rc4-md5-x86_64.s
-    ${OPENSSL_BUILD}/crypto/rc4/rc4-x86_64.s
-    ${OPENSSL_BUILD}/crypto/sha/keccak1600-x86_64.s
-    ${OPENSSL_BUILD}/crypto/sha/sha1-mb-x86_64.s
-    ${OPENSSL_BUILD}/crypto/sha/sha1-x86_64.s
-    ${OPENSSL_BUILD}/crypto/sha/sha256-mb-x86_64.s
-    ${OPENSSL_BUILD}/crypto/sha/sha256-x86_64.s
-    ${OPENSSL_BUILD}/crypto/sha/sha512-x86_64.s
-    ${OPENSSL_BUILD}/crypto/whrlpool/wp-x86_64.s
-    # Needed by the OPENSSL_CPUID_OBJ compilation definition.
-    ${OPENSSL_BUILD}/crypto/x86_64cpuid.s)
+  set(GENERATED_ASM_SRC
+      ${OPENSSL_BUILD}/crypto/aes/aesni-mb-x86_64.s
+      ${OPENSSL_BUILD}/crypto/aes/aesni-sha1-x86_64.s
+      ${OPENSSL_BUILD}/crypto/aes/aesni-sha256-x86_64.s
+      ${OPENSSL_BUILD}/crypto/bn/rsaz-avx2.s
+      ${OPENSSL_BUILD}/crypto/bn/rsaz-x86_64.s
+      ${OPENSSL_BUILD}/crypto/bn/x86_64-gf2m.s
+      ${OPENSSL_BUILD}/crypto/bn/x86_64-mont.s
+      ${OPENSSL_BUILD}/crypto/bn/x86_64-mont5.s
+      ${OPENSSL_BUILD}/crypto/camellia/cmll-x86_64.s
+      ${OPENSSL_BUILD}/crypto/chacha/chacha-x86_64.s
+      ${OPENSSL_BUILD}/crypto/ec/ecp_nistz256-x86_64.s
+      ${OPENSSL_BUILD}/crypto/ec/x25519-x86_64.s
+      ${OPENSSL_BUILD}/crypto/md5/md5-x86_64.s
+      ${OPENSSL_BUILD}/crypto/modes/aesni-gcm-x86_64.s
+      ${OPENSSL_BUILD}/crypto/modes/ghash-x86_64.s
+      ${OPENSSL_BUILD}/crypto/poly1305/poly1305-x86_64.s
+      ${OPENSSL_BUILD}/crypto/rc4/rc4-md5-x86_64.s
+      ${OPENSSL_BUILD}/crypto/rc4/rc4-x86_64.s
+      ${OPENSSL_BUILD}/crypto/sha/keccak1600-x86_64.s
+      ${OPENSSL_BUILD}/crypto/sha/sha1-mb-x86_64.s
+      ${OPENSSL_BUILD}/crypto/sha/sha1-x86_64.s
+      ${OPENSSL_BUILD}/crypto/sha/sha256-mb-x86_64.s
+      ${OPENSSL_BUILD}/crypto/sha/sha256-x86_64.s
+      ${OPENSSL_BUILD}/crypto/sha/sha512-x86_64.s
+      ${OPENSSL_BUILD}/crypto/whrlpool/wp-x86_64.s)
+
+  set(PATCHED_ASM_SRC
+      ${OPENSSL_BUILD}/crypto/aes/aesni-x86_64.s
+      ${OPENSSL_BUILD}/crypto/aes/vpaes-x86_64.s
+      # Needed by the OPENSSL_CPUID_OBJ compilation definition.
+      ${OPENSSL_BUILD}/crypto/x86_64cpuid.s)
 endif ()
 
 if (WIN32)
@@ -122,142 +124,232 @@ else ()
     INSTALL_COMMAND "")
 endif ()
 
+# Use the modified x86_64-xlate.pl from intel-sgx-ssl to generate assembly files.
+# The modification is emitting the ret instruction rather than its constant encoding,
+# which makes the generated the assembly files compatible with the LVI mitigation.
+# To allow other perl scripts find the x86_64-xlate.pl, we copy all the scripts
+# to the OPENSSL_BUILD and preserve the directory structure. For example, x86_64-xlate.pl
+# is put under OPENSSL_BUILD/crypto/perlasm and aesni-mb-x86_64.pl (used to generate
+# aesni-mb-x86_64.s) is put under OPENSSL_BUILD/crypto/aes/asm such that the latter can
+# find the former.
 ExternalProject_Add(
   openssl_generated
   SOURCE_DIR ${OPENSSL_DIR}
   CONFIGURE_COMMAND ""
   BUILD_COMMAND
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/aes
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/perlasm
+  COMMAND ${CMAKE_COMMAND} -E copy ${INTELSSL_DIR}/x86_64-xlate.pl
+          ${OPENSSL_BUILD}/crypto/perlasm/x86_64-xlate.pl
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/aes/asm
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/aes/asm/aesni-mb-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/aes/asm/aesni-mb-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/aes/asm/aesni-mb-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/aes/asm/aesni-mb-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/aes/aesni-mb-x86_64.s
   COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/aes/asm/aesni-sha1-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/aes/asm/aesni-sha1-x86_64.pl
+  COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/aes/asm/aesni-sha1-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/aes/asm/aesni-sha1-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/aes/aesni-sha1-x86_64.s
   COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${OPENSSL_DIR}/crypto/aes/asm/aesni-sha256-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/aes/asm/aesni-sha256-x86_64.pl
+  COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/aes/asm/aesni-sha256-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/aes/asm/aesni-sha256-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/aes/aesni-sha256-x86_64.s
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/bn/asm
+  COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/bn/asm/rsaz-avx2.pl
+          ${OPENSSL_BUILD}/crypto/bn/asm/rsaz-avx2.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/aes/asm/aesni-x86_64.pl elf
-    ${OPENSSL_BUILD}/crypto/aes/aesni-x86_64.s
-  COMMAND
-    ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/aes/asm/vpaes-x86_64.pl elf
-    ${OPENSSL_BUILD}/crypto/aes/vpaes-x86_64.s
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/bn
-  COMMAND
-    ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/bn/asm/rsaz-avx2.pl elf
+    ${OPENSSL_BUILD}/crypto/bn/asm/rsaz-avx2.pl elf
     ${OPENSSL_BUILD}/crypto/bn/rsaz-avx2.s
+  COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/bn/asm/rsaz-x86_64.pl
+          ${OPENSSL_BUILD}/crypto/bn/asm/rsaz-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/bn/asm/rsaz-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/bn/asm/rsaz-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/bn/rsaz-x86_64.s
+  COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/bn/asm/x86_64-gf2m.pl
+          ${OPENSSL_BUILD}/crypto/bn/asm/x86_64-gf2m.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/bn/asm/x86_64-gf2m.pl elf
+    ${OPENSSL_BUILD}/crypto/bn/asm/x86_64-gf2m.pl elf
     ${OPENSSL_BUILD}/crypto/bn/x86_64-gf2m.s
+  COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/bn/asm/x86_64-mont.pl
+          ${OPENSSL_BUILD}/crypto/bn/asm/x86_64-mont.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/bn/asm/x86_64-mont.pl elf
+    ${OPENSSL_BUILD}/crypto/bn/asm/x86_64-mont.pl elf
     ${OPENSSL_BUILD}/crypto/bn/x86_64-mont.s
+  COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/bn/asm/x86_64-mont5.pl
+          ${OPENSSL_BUILD}/crypto/bn/asm/x86_64-mont5.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/bn/asm/x86_64-mont5.pl elf
+    ${OPENSSL_BUILD}/crypto/bn/asm/x86_64-mont5.pl elf
     ${OPENSSL_BUILD}/crypto/bn/x86_64-mont5.s
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/camellia
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          ${OPENSSL_BUILD}/crypto/camellia/asm
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/camellia/asm/cmll-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/camellia/asm/cmll-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/camellia/asm/cmll-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/camellia/asm/cmll-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/camellia/cmll-x86_64.s
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/chacha
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/chacha/asm
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/chacha/asm/chacha-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/chacha/asm/chacha-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/chacha/asm/chacha-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/chacha/asm/chacha-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/chacha/chacha-x86_64.s
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/ec
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/ec/asm
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/ec/asm/ecp_nistz256-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/ec/asm/ecp_nistz256-x86_64.pl
+  COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/ec/ecp_nistz256_table.c
+          ${OPENSSL_BUILD}/crypto/ec/ecp_nistz256_table.c
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/ec/asm/ecp_nistz256-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/ec/asm/ecp_nistz256-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/ec/ecp_nistz256-x86_64.s
+  COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/ec/asm/x25519-x86_64.pl
+          ${OPENSSL_BUILD}/crypto/ec/asm/x25519-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/ec/asm/x25519-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/ec/asm/x25519-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/ec/x25519-x86_64.s
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/md5
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/md5/asm
+  COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/md5/asm/md5-x86_64.pl
+          ${OPENSSL_BUILD}/crypto/md5/asm/md5-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/md5/asm/md5-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/md5/asm/md5-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/md5/md5-x86_64.s
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/modes
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/modes/asm
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/modes/asm/aesni-gcm-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/modes/asm/aesni-gcm-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/modes/asm/aesni-gcm-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/modes/asm/aesni-gcm-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/modes/aesni-gcm-x86_64.s
   COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/modes/asm/ghash-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/modes/asm/ghash-x86_64.pl
+  COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/modes/asm/ghash-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/modes/asm/ghash-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/modes/ghash-x86_64.s
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/poly1305
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          ${OPENSSL_BUILD}/crypto/poly1305/asm
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${OPENSSL_DIR}/crypto/poly1305/asm/poly1305-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/poly1305/asm/poly1305-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/poly1305/asm/poly1305-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/poly1305/asm/poly1305-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/poly1305/poly1305-x86_64.s
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/rc4
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/rc4/asm
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/rc4/asm/rc4-md5-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/rc4/asm/rc4-md5-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/rc4/asm/rc4-md5-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/rc4/asm/rc4-md5-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/rc4/rc4-md5-x86_64.s
+  COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/rc4/asm/rc4-x86_64.pl
+          ${OPENSSL_BUILD}/crypto/rc4/asm/rc4-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/rc4/asm/rc4-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/rc4/asm/rc4-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/rc4/rc4-x86_64.s
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/sha
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/sha/asm
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/sha/asm/keccak1600-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/sha/asm/keccak1600-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/sha/asm/keccak1600-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/sha/asm/keccak1600-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/sha/keccak1600-x86_64.s
   COMMAND
-    ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/sha/asm/sha1-mb-x86_64.pl elf
-    ${OPENSSL_BUILD}/crypto/sha/sha1-mb-x86_64.s
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/sha/asm/sha1-mb-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/sha/asm/sha1-mb-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/sha/asm/sha1-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/sha/asm/sha1-mb-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/sha/sha1-mb-x86_64.s
+  COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/sha/asm/sha1-x86_64.pl
+          ${OPENSSL_BUILD}/crypto/sha/asm/sha1-x86_64.pl
+  COMMAND
+    ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
+    ${OPENSSL_BUILD}/crypto/sha/asm/sha1-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/sha/sha1-x86_64.s
   COMMAND
-    ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/sha/asm/sha256-mb-x86_64.pl elf
-    ${OPENSSL_BUILD}/crypto/sha/sha256-mb-x86_64.s
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/sha/asm/sha256-mb-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/sha/asm/sha256-mb-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/sha/asm/sha512-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/sha/asm/sha256-mb-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/sha/sha256-mb-x86_64.s
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/sha/asm/sha512-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/sha/asm/sha512-x86_64.pl
+  COMMAND
+    ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
+    ${OPENSSL_BUILD}/crypto/sha/asm/sha512-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/sha/sha256-x86_64.s
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/sha/asm/sha512-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/sha/asm/sha512-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/sha/sha512-x86_64.s
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD}/crypto/whrlpool
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          ${OPENSSL_BUILD}/crypto/whrlpool/asm
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_DIR}/crypto/whrlpool/asm/wp-x86_64.pl
+    ${OPENSSL_BUILD}/crypto/whrlpool/asm/wp-x86_64.pl
   COMMAND
     ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/whrlpool/asm/wp-x86_64.pl elf
+    ${OPENSSL_BUILD}/crypto/whrlpool/asm/wp-x86_64.pl elf
     ${OPENSSL_BUILD}/crypto/whrlpool/wp-x86_64.s
-  # Needed by the OPENSSL_CPUID_OBJ compilation definition.
-  COMMAND
-    ${CMAKE_COMMAND} -E env CC=${OPENSSL_C_COMPILER} ${OE_PERL}
-    ${OPENSSL_DIR}/crypto/x86_64cpuid.pl elf
-    ${OPENSSL_BUILD}/crypto/x86_64cpuid.s
-  BUILD_BYPRODUCTS ${PLATFORM_SRC}
+  BUILD_BYPRODUCTS ${GENERATED_ASM_SRC}
+  INSTALL_COMMAND "")
+
+# Few assembly files generated by the modified x86_64-xlate.pl still contain constant
+# encodings that require further patching for enabling LVI mitigation. Such files are checked
+# in the intel-sgx-ssl repository so we directly copy those files from there.
+# Note that only the following three files are required for control-flow-based LVI mitigation
+# that OE currently supports, refer to https://github.com/intel/intel-sgx-ssl/blob/master/Linux/prepare_openssl.sh#L224
+# for the reference.
+ExternalProject_Add(
+  openssl_copied
+  SOURCE_DIR ${INTELSSL_DIR}
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND
+  COMMAND ${CMAKE_COMMAND} -E copy ${INTELSSL_DIR}/Linux/aesni-x86_64.s
+          ${OPENSSL_BUILD}/crypto/aes/aesni-x86_64.s
+  COMMAND ${CMAKE_COMMAND} -E copy ${INTELSSL_DIR}/Linux/vpaes-x86_64.s
+          ${OPENSSL_BUILD}/crypto/aes/vpaes-x86_64.s
+  COMMAND ${CMAKE_COMMAND} -E copy ${INTELSSL_DIR}/Linux/x86_64cpuid.s
+          ${OPENSSL_BUILD}/crypto/x86_64cpuid.s
+  BUILD_BYPRODUCTS ${PATCHED_ASM_SRC}
   INSTALL_COMMAND "")
 
 add_dependencies(openssl_generated openssl_configure)
+add_dependencies(openssl_generated openssl_copied)
 
 # Add opensslcrypto (the libcrypto in openssl).
 # Including the same set of files for building libcrypto.a based on the OpenSSL Makefile.
+# The assembly files are modified to be compatible with LVI mitigation.
 add_enclave_library(
   opensslcrypto
   STATIC
@@ -892,7 +984,8 @@ add_enclave_library(
   openssl/crypto/x509v3/v3_tlsf.c
   openssl/crypto/x509v3/v3_utl.c
   openssl/crypto/x509v3/v3err.c
-  ${PLATFORM_SRC})
+  ${GENERATED_ASM_SRC}
+  ${PATCHED_ASM_SRC})
 
 # Add opensslssl (the libssl in openssl).
 # Including the same set of files for building libssl.a based on the OpenSSL Makefile.
@@ -958,7 +1051,7 @@ maybe_build_using_clangw(opensslcrypto)
 maybe_build_using_clangw(opensslssl)
 
 add_enclave_dependencies(opensslcrypto openssl_generated)
-add_enclave_dependencies(opensslssl openssl_generated)
+add_enclave_dependencies(opensslssl opensslcrypto)
 
 enclave_link_libraries(opensslcrypto PUBLIC oelibc oe_includes)
 enclave_link_libraries(opensslssl PUBLIC opensslcrypto)
