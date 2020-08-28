@@ -14,7 +14,7 @@ LDFLAGS=$(shell pkg-config oehost-$(CXX_COMPILER) --libs)
 all: build
 
 build:
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I/usr/include/openssl client.cpp verify_callback.cpp
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 -I/usr/include/openssl client.cpp verify_callback.cpp
 	$(CXX) -o tls_non_enc_client client.o verify_callback.o $(LDFLAGS)
 
 clean:
