@@ -1,0 +1,9 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+        // [string]  attribute can only be used for 'char *' type
+        public int ecall([string, in, out] wchar_t* s);
+    };
+};
