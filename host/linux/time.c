@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
+#include <openenclave/internal/localtime.h>
 #include <openenclave/internal/time.h>
 #include <time.h>
 #include "../ocalls/ocalls.h"
@@ -27,4 +28,9 @@ void oe_handle_get_time(uint64_t arg_in, uint64_t* arg_out)
 
     if (arg_out)
         *arg_out = _time();
+}
+
+int oe_localtime(time_t* timep, struct tm* result)
+{
+    return !localtime_r(timep, result);
 }

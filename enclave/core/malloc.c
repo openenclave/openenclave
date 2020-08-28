@@ -43,9 +43,21 @@ void oe_set_allocation_failure_callback(
     _failure_callback = function;
 }
 
+bool oe_use_debug_malloc = true;
+
+bool oe_use_debug_malloc_memset = true;
+
 void* oe_malloc(size_t size)
 {
-    void* p = MALLOC(size);
+    void* p = NULL;
+    if (oe_use_debug_malloc)
+    {
+        p = MALLOC(size);
+    }
+    else
+    {
+        p = oe_allocator_malloc(size);
+    }
 
     if (!p && size)
     {
@@ -58,12 +70,27 @@ void* oe_malloc(size_t size)
 
 void oe_free(void* ptr)
 {
-    FREE(ptr);
+    if (oe_use_debug_malloc)
+    {
+        FREE(ptr);
+    }
+    else
+    {
+        oe_allocator_free(ptr);
+    }
 }
 
 void* oe_calloc(size_t nmemb, size_t size)
 {
-    void* p = CALLOC(nmemb, size);
+    void* p = NULL;
+    if (oe_use_debug_malloc)
+    {
+        p = CALLOC(nmemb, size);
+    }
+    else
+    {
+        p = oe_allocator_calloc(nmemb, size);
+    }
 
     if (!p && nmemb && size)
     {
@@ -76,7 +103,15 @@ void* oe_calloc(size_t nmemb, size_t size)
 
 void* oe_realloc(void* ptr, size_t size)
 {
-    void* p = REALLOC(ptr, size);
+    void* p = NULL;
+    if (oe_use_debug_malloc)
+    {
+        p = REALLOC(ptr, size);
+    }
+    else
+    {
+        p = oe_allocator_realloc(ptr, size);
+    }
 
     if (!p && size)
     {
@@ -115,5 +150,12 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
 
 size_t oe_malloc_usable_size(void* ptr)
 {
-    return MALLOC_USABLE_SIZE(ptr);
+    if (oe_use_debug_malloc)
+    {
+        return MALLOC_USABLE_SIZE(ptr);
+    }
+    else
+    {
+        return oe_allocator_malloc_usable_size(ptr);
+    }
 }
