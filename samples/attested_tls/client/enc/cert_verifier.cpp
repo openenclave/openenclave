@@ -10,12 +10,12 @@
 #include <mbedtls/net_sockets.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/ssl.h>
-#include <openenclave/enclave.h>
 #include <string.h>
 #include "../../common/utility.h"
 
-oe_result_t enclave_identity_verifier_callback(
-    oe_identity_t* identity,
+oe_result_t enclave_claims_verifier_callback(
+    oe_claim_t* claims,
+    size_t claims_length,
     void* arg);
 
 // If set, the verify callback is called for each certificate in the chain.
@@ -48,13 +48,13 @@ int cert_verify_callback(
     if (cert_size <= 0)
         goto exit;
 
-    result = oe_verify_attestation_certificate(
-        cert_buf, cert_size, enclave_identity_verifier_callback, NULL);
+    result = oe_verify_attestation_certificate_with_evidence(
+        cert_buf, cert_size, enclave_claims_verifier_callback, NULL);
     if (result != OE_OK)
     {
         printf(
-            TLS_CLIENT
-            "oe_verify_attestation_certificate failed with result = %s\n",
+            TLS_CLIENT "oe_verify_attestation_certificate_with_evidence failed "
+                       "with result = %s\n",
             oe_result_str(result));
         goto exit;
     }

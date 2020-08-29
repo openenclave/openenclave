@@ -19,18 +19,19 @@
 #include <sys/socket.h>
 #include "../../common/utility.h"
 
-oe_result_t enclave_identity_verifier_callback(
-    oe_identity_t* identity,
+oe_result_t enclave_claims_verifier_callback(
+    oe_claim_t* claims,
+    size_t claims_length,
     void* arg);
 
 // The server end of this established is inside an enclave. If the connecting
 // client provides a certificate during the TLS handshaking,
 // cert_verify_callback will be called with client's certificate. When everthing
 // is validated successfully, mainly passing
-// oe_verify_attestation_certificate(), we can be sure the established TLS
-// channel is an Attested TLS channel between two enclaves. In the case of
-// establishing an Attested TLS channel between an non-enclave client and
-// enclave, cert_verify_callback won't be called in our sample.
+// oe_verify_attestation_certificate_with_evidence(), we can be sure the
+// established TLS channel is an Attested TLS channel between two enclaves. In
+// the case of establishing an Attested TLS channel between an non-enclave
+// client and enclave, cert_verify_callback won't be called in our sample.
 int cert_verify_callback(
     void* data,
     mbedtls_x509_crt* crt,
@@ -59,13 +60,13 @@ int cert_verify_callback(
     if (cert_size <= 0)
         goto exit;
 
-    result = oe_verify_attestation_certificate(
-        cert_buf, cert_size, enclave_identity_verifier_callback, NULL);
+    result = oe_verify_attestation_certificate_with_evidence(
+        cert_buf, cert_size, enclave_claims_verifier_callback, NULL);
     if (result != OE_OK)
     {
         printf(
-            TLS_SERVER
-            "oe_verify_attestation_certificate failed with result = %s\n",
+            TLS_SERVER "oe_verify_attestation_certificate_with_evidence failed "
+                       "with result = %s\n",
             oe_result_str(result));
         goto exit;
     }
