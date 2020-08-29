@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/host_verify.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,27 +131,50 @@ oe_result_t verify_report(
     return result;
 }
 
-oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
+oe_result_t sgx_enclave_claims_verifier(
+    oe_claim_t* claims,
+    size_t claims_length,
+    void* arg)
 {
+    oe_result_t result = OE_VERIFY_FAILED;
+
     (void)arg;
+    printf("sgx_enclave_claims_verifier is called with claims:\n");
 
-    printf(
-        "Enclave certificate contains the following identity information:\n");
-    printf("identity.security_version = %d\n", identity->security_version);
+    for (size_t i = 0; i < claims_length; i++)
+    {
+        oe_claim_t* claim = &claims[i];
+        if (strcmp(claim->name, OE_CLAIM_SECURITY_VERSION) == 0)
+        {
+            uint32_t security_version = *(uint32_t*)(claim->value);
+            // Check the enclave's security version
+            if (security_version < 1)
+            {
+                printf(
+                    "identity->security_version checking failed (%d)\n",
+                    security_version);
+                goto done;
+            }
+        }
+        // Dump an enclave's unique ID, signer ID and Product ID. They are
+        // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves. In a real
+        // scenario, custom id checking should be done here
+        else if (
+            strcmp(claim->name, OE_CLAIM_SIGNER_ID) == 0 ||
+            strcmp(claim->name, OE_CLAIM_UNIQUE_ID) == 0 ||
+            strcmp(claim->name, OE_CLAIM_PRODUCT_ID) == 0)
+        {
+            printf("Enclave %s:\n", claim->name);
+            for (size_t j = 0; j < claim->value_size; j++)
+            {
+                printf("0x%0x ", claim->value[j]);
+            }
+        }
+    }
 
-    printf("identity->unique_id:\n0x ");
-    for (int i = 0; i < 32; i++)
-        printf("%0x ", (uint8_t)identity->unique_id[i]);
-
-    printf("\nidentity->signer_id:\n0x ");
-    for (int i = 0; i < 32; i++)
-        printf("%0x ", (uint8_t)identity->signer_id[i]);
-
-    printf("\nidentity->product_id:\n0x ");
-    for (int i = 0; i < 16; i++)
-        printf("%0x ", (uint8_t)identity->product_id[i]);
-
-    return OE_OK;
+    result = OE_OK;
+done:
+    return result;
 }
 
 oe_result_t verify_cert(const char* filename)
@@ -161,8 +185,9 @@ oe_result_t verify_cert(const char* filename)
 
     if (read_binary_file(filename, &cert_data, &cert_file_size))
     {
-        result = oe_verify_attestation_certificate(
-            cert_data, cert_file_size, enclave_identity_verifier, NULL);
+        oe_verifier_initialize();
+        result = oe_verify_attestation_certificate_with_evidence(
+            cert_data, cert_file_size, sgx_enclave_claims_verifier, NULL);
     }
 
     if (cert_data != NULL)

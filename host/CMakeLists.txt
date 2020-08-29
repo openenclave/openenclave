@@ -205,6 +205,7 @@ if (OE_SGX)
     ../common/sgx/tlsverifier.c
     ../common/sgx/verifier.c
     sgx/hostverify_report.c
+    sgx/report_common.c
     sgx/sgxquoteprovider.c)
 
   if (WITH_EEID)
@@ -228,6 +229,7 @@ if (OE_SGX)
     sgx/ocalls/thread.c
     sgx/quote.c
     sgx/registers.c
+    sgx/report_common.c
     sgx/report.c
     sgx/sgx_enclave_common_wrapper.c
     sgx/sgxload.c
@@ -464,6 +466,8 @@ target_compile_definitions(
   oehostverify
   PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_DEFINITIONS>
   INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_DEFINITIONS>)
+
+target_compile_definitions(oehostverify PUBLIC OE_BUILD_HOST_VERIFY)
 
 # TODO: Remove this hard coded output directory.
 set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY
