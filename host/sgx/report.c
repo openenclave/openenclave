@@ -8,7 +8,7 @@
 
 #include "platform_u.h"
 
-static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
+static const oe_uuid_t _uuid_sgx_ecdsa = {OE_FORMAT_UUID_SGX_ECDSA};
 // Host version, supports ECDSA remote attestation natively.
 // for SGX local attestation, it makes ecall to the enclave.
 oe_result_t oe_verify_report(
@@ -26,7 +26,7 @@ oe_result_t oe_verify_report(
 
     if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
-        const oe_uuid_t* uuid = &_ecdsa_uuid;
+        const oe_uuid_t* uuid = &_uuid_sgx_ecdsa;
 
         OE_UNUSED(enclave);
 

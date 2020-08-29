@@ -161,7 +161,7 @@ int main(int argc, const char* argv[])
 
     if (oe_has_sgx_quote_provider())
     {
-        static oe_uuid_t sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
+        static oe_uuid_t sgx_ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 
         /* Initialize the target info */
         {

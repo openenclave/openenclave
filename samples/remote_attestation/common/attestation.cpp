@@ -11,7 +11,7 @@
 #include "log.h"
 
 // SGX Remote Attestation UUID.
-static oe_uuid_t sgx_remote_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
+static oe_uuid_t sgx_remote_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 
 Attestation::Attestation(Crypto* crypto, uint8_t* enclave_signer_id)
 {

@@ -21,6 +21,23 @@
 OE_EXTERNC_BEGIN
 
 /**
+ * Note: V1 is OE_REPORT_HEADER_VERSION, for legacy report headers
+ * of type oe_report_header_t.
+ *
+ * V2 is for legacy attestation headers of type oe_attestation_header_t.
+ * For SGX local and remote attestation, the evidence requires a legacy
+ * report header of type oe_report_header_t to prefix the SGX report or
+ * quote.
+ *
+ * V3 is the current version. Its also for attestation headers of type
+ * oe_attestation_header_t. SGX report or quote will not be prefixed with
+ * a legacy header of type oe_report_header_t.
+ *
+ * Only the latest header version is supported.
+ */
+#define OE_ATTESTATION_HEADER_VERSION (3)
+
+/**
  * Evidence header: the structure that the OE SDK runtime puts on top of
  * evidence data, when oe_get_evidence() is asked to include the format ID
  * with the evidence.

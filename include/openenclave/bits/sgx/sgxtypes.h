@@ -668,6 +668,27 @@ OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(sgx_quote_t), 436);
 
+/*
+**==============================================================================
+**
+** sgx_ql_attestation_algorithm_id_t
+**
+**==============================================================================
+*/
+// Enumerates the different attestation key algorithms
+// For the sign_type field in sgx_quote_t
+typedef enum
+{
+    SGX_QL_ALG_EPID = 0,       // EPID 2.0 - Anonymous: EPID unlinkable
+    SGX_QL_ALG_RESERVED_1 = 1, // Reserved: EPID linkable
+    SGX_QL_ALG_ECDSA_P256 = 2, // ECDSA-256-with-P-256 curve
+    SGX_QL_ALG_ECDSA_P384 = 3, // ECDSA-384-with-P-384 curve (not supported)
+    SGX_QL_ALG_MAX = 4
+} sgx_ql_attestation_algorithm_id_t;
+
+// The required "version" value in sgx_quote_t for ECDSA quotes
+#define SGX_QE3_QUOTE_VERSION 3
+
 // Size of actual data within the quote excluding authentication information.
 // This data is signed for quote verification.
 #define SGX_QUOTE_SIGNED_DATA_SIZE OE_OFFSETOF(sgx_quote_t, signature_len)

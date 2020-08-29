@@ -9,7 +9,7 @@
 #include <string.h>
 
 // SGX Remote Attestation UUID.
-static oe_uuid_t sgx_remote_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
+static oe_uuid_t _uuid_sgx_ecdsa = {OE_FORMAT_UUID_SGX_ECDSA};
 
 // input: input_data and input_data_len
 // output: key, key_size
@@ -97,7 +97,7 @@ oe_result_t generate_certificate_and_pkey(
     // both ec key such ASYMMETRIC_KEY_EC_SECP256P1 or RSA key work
     oe_attester_initialize();
     result = oe_get_attestation_certificate_with_evidence(
-        &sgx_remote_uuid,
+        &_uuid_sgx_ecdsa,
         (const unsigned char*)"CN=Open Enclave SDK,O=OESDK TLS,C=US",
         private_key_buf,
         private_key_buf_size,

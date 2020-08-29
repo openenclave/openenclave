@@ -22,7 +22,7 @@
 OE_STATIC_ASSERT(sizeof(sgx_target_info_t) == 512);
 OE_STATIC_ASSERT(sizeof(sgx_report_t) == 432);
 
-static const oe_uuid_t _ecdsa_p256_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P256};
+static const oe_uuid_t _ecdsa_p256_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 
 OE_STATIC_ASSERT(sizeof(sgx_att_key_id_ext_t) == sizeof(sgx_att_key_id_t));
 
@@ -32,7 +32,6 @@ OE_STATIC_ASSERT(sizeof(sgx_att_key_id_ext_t) == sizeof(sgx_att_key_id_t));
 
 static oe_sgx_quote_ex_library_t _quote_ex_library = {0};
 static const oe_uuid_t _unknown_uuid = {OE_FORMAT_UUID_SGX_UNKNOWN};
-static const oe_uuid_t _ecdsa_p384_uuid = {OE_FORMAT_UUID_SGX_ECDSA_P384};
 static const oe_uuid_t _epid_linkable_uuid = {OE_FORMAT_UUID_SGX_EPID_LINKABLE};
 static const oe_uuid_t _epid_unlinkable_uuid = {
     OE_FORMAT_UUID_SGX_EPID_UNLINKABLE};
@@ -246,11 +245,6 @@ static void _load_quote_ex_library_once(void)
                     break;
                 case SGX_QL_ALG_ECDSA_P256:
                     uuid = &_ecdsa_p256_uuid;
-                    local_mapped[i] = true;
-                    mapped_key_id_count++;
-                    break;
-                case SGX_QL_ALG_ECDSA_P384:
-                    uuid = &_ecdsa_p384_uuid;
                     local_mapped[i] = true;
                     mapped_key_id_count++;
                     break;
