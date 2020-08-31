@@ -127,3 +127,8 @@ The following samples demonstrate how to develop enclave applications using OE A
 - Demonstrate how to replace the default memory allocator by plugging in a custom allocator
   that performs better in multi-threaded enclaves.
 - Provide overview of how to make an enclave-compatible allocator pluggable.
+
+#### [oe_log_message() Callback API](log_callback/README.md)
+
+- Explain the callback API of oe_log_message().
+- Demonstrate how to customize the log function through the API.

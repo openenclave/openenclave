@@ -40,11 +40,6 @@ typedef void (*oe_log_callback_t)(
     uint64_t host_thread_id,
     const char* message);
 ```
-- The necessary global context. Context may be information to be added to message, or
-just a parameter used to process the message.
-```
-extern void* oe_log_context;
-```
 - The function to set up the callback:
 ```
 oe_result_t oe_log_set_callback(void* context, oe_log_callback_t callback)
@@ -63,7 +58,7 @@ typedef enum _oe_log_level
     OE_LOG_LEVEL_MAX
 } oe_log_level_t;
 
-extern const char* oe_log_level_strings[OE_LOG_LEVEL_MAX];
+extern const char* const oe_log_level_strings[OE_LOG_LEVEL_MAX];
 ```
 To avoid multiple definition errors, these items may be placed at a separate
 header file "log.h".
@@ -99,13 +94,20 @@ bool check_simulate_opt(int* argc, const char* argv[])
     return false;
 }
 
+// This is the function that the enclave will call back into to
+// print a message.
+void host_hello()
+{
+    fprintf(stdout, "Enclave called into host to print: Hello!\n");
+}
+
 void customized_log(
     void* context,
     bool is_enclave,
-    struct tm* t,
+    const struct tm* t,
     long int usecs,
     oe_log_level_t level,
-    uint64_t oe_thread,
+    uint64_t host_thread_id,
     const char* message)
 {
     char time[25];
@@ -134,9 +136,8 @@ void customized_log(
 
 int main(int argc, const char* argv[])
 {
-    oe_log_set_callback(NULL, customized_log);
     FILE* out_file = fopen("./oe_out.txt", "w");
-    oe_log_context = (void*)out_file;
+    oe_log_set_callback((void*)out_file, customized_log);
 
     oe_result_t result;
     int ret = 1;
@@ -169,15 +170,19 @@ int main(int argc, const char* argv[])
     }
 
     // Call into the enclave
-    result = enclave_log_callback(enclave);
+    result = enclave_hello(enclave);
     if (result != OE_OK)
     {
         fprintf(
             stderr,
-            "calling into enclave_log_callback failed: result=%u (%s)\n",
+            "calling into enclave_hello failed: result=%u (%s)\n",
             result,
             oe_result_str(result));
         goto exit;
+    }
+    else
+    {
+        fprintf(stdout, "Please check ./oe_out.txt for the redirected logs.\n");
     }
 
     ret = 0;
@@ -209,7 +214,7 @@ When oe_log_message() is called, the most recently registered custom log functio
 invoked. Obviously, if it is registered before starting
 the enclave, all the logs are affected.
 
-To pass in the specified log file, the context is assigned as a pointer to the
+By passing in the specified log file, the context is assigned as a pointer to the
 desired file "./oe_out.txt". In this case the context is used as the logging
 destination. Besides that context can be casted back as any desired type, since
 type of context is "void\*".
