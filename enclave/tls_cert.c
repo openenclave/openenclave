@@ -48,6 +48,7 @@ static oe_result_t generate_x509_self_signed_certificate(
     size_t bytes_written = 0;
     uint8_t* cert_buf = NULL;
     oe_cert_config_t config = {0};
+    size_t oe_cert_size = 0;
 
     config.private_key_buf = private_key_buf;
     config.private_key_buf_size = private_key_buf_size;
@@ -64,13 +65,16 @@ static oe_result_t generate_x509_self_signed_certificate(
     config.ext_oid = (char*)oid;
     config.ext_oid_size = oid_size;
 
-    // allocate memory for cert output buffer
-    cert_buf = (uint8_t*)oe_malloc(OE_MAX_CERT_SIZE);
+    // allocate memory for cert output buffer and leave room for paddings
+    oe_cert_size =
+        remote_report_buf_size + public_key_buf_size + OE_MIN_CERT_SIZE;
+    cert_buf = (uint8_t*)oe_malloc(oe_cert_size);
     if (cert_buf == NULL)
         goto done;
 
     result = oe_gen_custom_x509_cert(
-        &config, cert_buf, OE_MAX_CERT_SIZE, &bytes_written);
+        &config, cert_buf, oe_cert_size, &bytes_written);
+
     OE_CHECK_MSG(
         result,
         "oe_gen_custom_x509_cert failed with %s",
