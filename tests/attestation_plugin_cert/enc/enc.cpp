@@ -238,7 +238,7 @@ oe_result_t get_tls_cert_signed_with_key(
     size_t private_key_size = 0;
     uint8_t* public_key = nullptr;
     size_t public_key_size = 0;
-    const oe_uuid_t format = {OE_FORMAT_UUID_SGX_ECDSA_P256};
+    const oe_uuid_t format = {OE_FORMAT_UUID_SGX_ECDSA};
 
     OE_TRACE_INFO("called into enclave\n");
 
