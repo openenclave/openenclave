@@ -55,13 +55,13 @@ oe_result_t enclave_claims_verifier_callback(
         goto exit;
     }
     printf(TLS_CLIENT "\nverify unique_id:\n");
-    for (int i = 0; i < claim->value_size; i++)
+    for (size_t i = 0; i < claim->value_size; i++)
     {
         printf("0x%0x ", (uint8_t)claim->value[i]);
         if (SERVER_ENCLAVE_MRENCLAVE[i] != (uint8_t)claim->value[i])
         {
             printf(
-                TLS_CLIENT "\nunique_id[%d] expected: 0x%0x  found: 0x%0x ",
+                TLS_CLIENT "\nunique_id[%lu] expected: 0x%0x  found: 0x%0x ",
                 i,
                 SERVER_ENCLAVE_MRENCLAVE[i],
                 (uint8_t)claim->value[i]);
@@ -87,7 +87,7 @@ oe_result_t enclave_claims_verifier_callback(
         goto exit;
     }
     printf(TLS_CLIENT "\nverify signer_id:\n");
-    for (int i = 0; i < claim->value_size; i++)
+    for (size_t i = 0; i < claim->value_size; i++)
         printf("0x%0x ", (uint8_t)claim->value[i]);
 
     if (!verify_signer_id(
@@ -117,7 +117,7 @@ oe_result_t enclave_claims_verifier_callback(
         goto exit;
     }
     printf(TLS_CLIENT "\nproduct_id:\n");
-    for (int i = 0; i < claim->value_size; i++)
+    for (size_t i = 0; i < claim->value_size; i++)
         printf("0x%0x ", (uint8_t)claim->value[i]);
     printf("\n\n");
 

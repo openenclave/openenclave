@@ -65,7 +65,7 @@ bool verify_signer_id(
     if (memcmp(calculated_signer, expected_signer, expected_signer_size) != 0)
     {
         printf("signer_id is not equal\n");
-        for (int i = 0; i < expected_signer_size; i++)
+        for (size_t i = 0; i < expected_signer_size; i++)
         {
             printf(
                 "0x%x - 0x%x\n",
@@ -129,13 +129,13 @@ oe_result_t enclave_claims_verifier(
         goto done;
     }
     printf(TLS_CLIENT "\nverify unique_id:\n");
-    for (int i = 0; i < claim->value_size; i++)
+    for (size_t i = 0; i < claim->value_size; i++)
     {
         printf("0x%0x ", (uint8_t)claim->value[i]);
         if (SERVER_ENCLAVE_MRENCLAVE[i] != (uint8_t)claim->value[i])
         {
             printf(
-                TLS_CLIENT "unique_id[%d] expected: 0x%0x  found: 0x%0x ",
+                TLS_CLIENT "unique_id[%lu] expected: 0x%0x  found: 0x%0x ",
                 i,
                 SERVER_ENCLAVE_MRENCLAVE[i],
                 (uint8_t)claim->value[i]);
@@ -161,7 +161,7 @@ oe_result_t enclave_claims_verifier(
         goto done;
     }
     printf(TLS_CLIENT "\nproduct_id :\n");
-    for (int i = 0; i < claim->value_size; i++)
+    for (size_t i = 0; i < claim->value_size; i++)
         printf("0x%0x ", (uint8_t)claim->value[i]);
     printf("\n");
 
@@ -181,7 +181,7 @@ oe_result_t enclave_claims_verifier(
         goto done;
     }
     printf(TLS_CLIENT "\nverify signer_id:\n");
-    for (int i = 0; i < claim->value_size; i++)
+    for (size_t i = 0; i < claim->value_size; i++)
         printf("0x%0x ", (uint8_t)claim->value[i]);
 
     // In this sample, only signer_id validation is shown
