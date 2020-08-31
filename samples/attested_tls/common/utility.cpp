@@ -164,7 +164,7 @@ bool verify_signer_id(
     if (memcmp(signer, signer_id_buf, signer_id_buf_size) != 0)
     {
         printf("mrsigner is not equal!\n");
-        for (int i = 0; i < (int)signer_id_buf_size; i++)
+        for (size_t i = 0; i < signer_id_buf_size; i++)
         {
             printf(
                 "0x%x - 0x%x\n", (uint8_t)signer[i], (uint8_t)signer_id_buf[i]);
