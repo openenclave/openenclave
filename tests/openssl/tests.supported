@@ -13,14 +13,11 @@
 ../../3rdparty/openssl/openssl/test/bioprinttest.c
 ../../3rdparty/openssl/openssl/test/bntest.c
 ../../3rdparty/openssl/openssl/test/casttest.c
-../../3rdparty/openssl/openssl/test/chacha_internal_test.c
-../../3rdparty/openssl/openssl/test/cipher_overhead_test.c
 ../../3rdparty/openssl/openssl/test/cipherbytes_test.c
 ../../3rdparty/openssl/openssl/test/cipherlist_test.c
 ../../3rdparty/openssl/openssl/test/ciphername_test.c
 ../../3rdparty/openssl/openssl/test/clienthellotest.c
 ../../3rdparty/openssl/openssl/test/cmactest.c
-../../3rdparty/openssl/openssl/test/cmsapitest.c
 ../../3rdparty/openssl/openssl/test/conf_include_test.c
 ../../3rdparty/openssl/openssl/test/constant_time_test.c
 ../../3rdparty/openssl/openssl/test/crltest.c
@@ -34,7 +31,6 @@
 ../../3rdparty/openssl/openssl/test/drbg_cavs_test.c
 ../../3rdparty/openssl/openssl/test/dsa_no_digest_size_test.c
 ../../3rdparty/openssl/openssl/test/dsatest.c
-../../3rdparty/openssl/openssl/test/dtls_mtu_test.c
 ../../3rdparty/openssl/openssl/test/dtlstest.c
 ../../3rdparty/openssl/openssl/test/dtlsv1listentest.c
 ../../3rdparty/openssl/openssl/test/ec_internal_test.c
@@ -52,7 +48,6 @@
 ../../3rdparty/openssl/openssl/test/ideatest.c
 ../../3rdparty/openssl/openssl/test/igetest.c
 ../../3rdparty/openssl/openssl/test/md2test.c
-../../3rdparty/openssl/openssl/test/mdc2_internal_test.c
 ../../3rdparty/openssl/openssl/test/mdc2test.c
 ../../3rdparty/openssl/openssl/test/memleaktest.c
 ../../3rdparty/openssl/openssl/test/modes_internal_test.c
@@ -62,7 +57,6 @@
 ../../3rdparty/openssl/openssl/test/pemtest.c
 ../../3rdparty/openssl/openssl/test/pkey_meth_kdf_test.c
 ../../3rdparty/openssl/openssl/test/pkey_meth_test.c
-../../3rdparty/openssl/openssl/test/poly1305_internal_test.c
 ../../3rdparty/openssl/openssl/test/rc2test.c
 ../../3rdparty/openssl/openssl/test/rc4test.c
 ../../3rdparty/openssl/openssl/test/rc5test.c
@@ -73,9 +67,6 @@
 ../../3rdparty/openssl/openssl/test/rsa_test.c
 ../../3rdparty/openssl/openssl/test/sanitytest.c
 ../../3rdparty/openssl/openssl/test/servername_test.c
-../../3rdparty/openssl/openssl/test/siphash_internal_test.c
-../../3rdparty/openssl/openssl/test/sm2_internal_test.c
-../../3rdparty/openssl/openssl/test/sm4_internal_test.c
 ../../3rdparty/openssl/openssl/test/srptest.c
 ../../3rdparty/openssl/openssl/test/ssl_cert_table_internal_test.c
 ../../3rdparty/openssl/openssl/test/ssl_test.c
