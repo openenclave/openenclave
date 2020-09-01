@@ -1,10 +1,10 @@
-Proposal of OE SDK Attestation Public and Plugin API for V0.10 Release
+Proposal of OE SDK Attestation Public and Plugin API for V0.1x Release
 ====
 
 # Introduction
 
 This document describes the proposed OE SDK attestation public and plugin API
-for V0.10 release, as an evolution of the experimental attestation API
+for V0.1x release, as an evolution of the experimental attestation API
 implemented in the
 [OE SDK V0.9 release](https://github.com/openenclave/openenclave/tree/v0.9.x).
 
@@ -30,7 +30,7 @@ releases.
 Note: in the RATS model as described in the
 [[RATS Arch]](https://tools.ietf.org/html/draft-ietf-rats-architecture)
 document, there are three roles: an Attester, a Verifier, and a Relying Party.
-The OE SDK attestation stack V0.10 does not try to provide a complete implementation of
+The OE SDK attestation stack V0.1x does not try to provide a complete implementation of
 these roles, nor try to provide means for secure communication between them.
 The OE SDK attestation stack implements basic functionalities for evidence
 generation and verification, and exposes these functionalities to applications
@@ -68,7 +68,7 @@ Use cases for evidence generation:
   document.
 - Get evidence in a globally unique format, optionally along with a set of
 endorsements.
-  - Function `oe_result_t oe_get_evidence(const oe_uuid_t* format_id, uint32_t flags, const oe_claim_t* custom_claims, size_t custom_claims_length, const void* opt_params, size_t opt_params_size, uint8_t** evidence_buffer, size_t* vidence_buffer_size, uint8_t** endorsements_buffer, size_t* endorsements_buffer_size)`,
+  - Function `oe_result_t oe_get_evidence(const oe_uuid_t* format_id, uint32_t flags, const oe_claim_t* custom_claims_buffer, size_t custom_claims_buffer_length, const void* opt_params, size_t opt_params_size, uint8_t** evidence_buffer, size_t* vidence_buffer_size, uint8_t** endorsements_buffer, size_t* endorsements_buffer_size)`,
     declared in header file [openenclave/attestation/plugin.h](https://github.com/openenclave/openenclave/blob/v0.9.x/include/openenclave/attestation/plugin.h).
   - Upon successful evidence generation, `oe_get_evidence()` returns the
   generated evidence in a dynamically allocated buffer. It also has the option
@@ -83,7 +83,7 @@ endorsements.
   section of the
   [[Design Notes]](https://github.com/openenclave/openenclave/pull/2801)
   document for a discussion of the semantics
-  of the `custom_claims` and `opt_params` parameters.
+  of the `custom_claims_buffer` and `opt_params` parameters.
 - Free a dynamically allocated evidence buffer.
   - Function `oe_result_t oe_free_evidence(uint8_t* evidence_buffer)`,
   declared in header file [openenclave/attestation/plugin.h](https://github.com/openenclave/openenclave/blob/v0.9.x/include/openenclave/attestation/plugin.h)
@@ -146,7 +146,7 @@ single header file [openenclave/attestation/plugin.h](https://github.com/openenc
 - For SGX, the globally unique UUIDs identify the evidence formats.
 There is no need of local / remote flag.
 
-## Proposed OE SDK V0.10 Public API
+## Proposed OE SDK V0.1x Public API
 
 Objectives: address the areas of improvement in the existing public API.
 
@@ -194,7 +194,7 @@ Use cases for evidence generation:
   [[Attestation V3 Update]](CustomAttestation_V3.md)
 - Get evidence in an globally unique format, optionally along with a set of
 endorsements.
-  - Function `oe_result_t oe_get_evidence(const oe_uuid_t* format_id, uint32_t flags, const void* custom_claims, size_t custom_claims_size, const void* opt_params, size_t opt_params_size, uint8_t** evidence_buffer, size_t* evidence_buffer_size, uint8_t** endorsements_buffer, size_t* endorsements_buffer_size)`.
+  - Function `oe_result_t oe_get_evidence(const oe_uuid_t* format_id, uint32_t flags, const void* custom_claims_buffer, size_t custom_claims_buffer_size, const void* opt_params, size_t opt_params_size, uint8_t** evidence_buffer, size_t* evidence_buffer_size, uint8_t** endorsements_buffer, size_t* endorsements_buffer_size)`.
   - The `flags` parameter in the OE SDK V0.9 API release is redefined
   to be a bit-wise parameter. In the current version, there is one bit
   defined:
@@ -368,7 +368,7 @@ These use cases are supported by the attester plugin entry points defined in the
   - The same entry point definition for both attester and verifier plugins.
 - Get evidence in a specified format, optionally along with a set of
 endorsements.
-  - Entry point `oe_result_t (*get_evidence)(oe_attester_t* context, uint32_t flags, const oe_claim_t* custom_claims, size_t custom_claims_length, const void* opt_params, size_t opt_params_size, uint8_t** evidence_buffer, size_t* evidence_buffer_size, uint8_t** endorsements_buffer, size_t* endorsements_buffer_size)`.
+  - Entry point `oe_result_t (*get_evidence)(oe_attester_t* context, uint32_t flags, const oe_claim_t* custom_claims_buffer, size_t custom_claims_buffer_length, const void* opt_params, size_t opt_params_size, uint8_t** evidence_buffer, size_t* evidence_buffer_size, uint8_t** endorsements_buffer, size_t* endorsements_buffer_size)`.
 - Free a dynamically allocated evidence buffer.
   - Entry point `oe_result_t (*free_evidence)(oe_attester_t* context, uint8_t* evidence_buffer)`.
 - Free a dynamically allocated endorsements buffer.
@@ -412,7 +412,7 @@ To setup this plugin, the application software invokes public API function
 `oe_sgx_plugin_verifier()` to get an `oe_verifier_t` structure, and calls public
 API function `oe_register_verifier()` with this structure.
 
-## Proposed OE SDK V0.10 Plugin API
+## Proposed OE SDK V0.1x Plugin API
 
 ### Objectives
 
@@ -438,9 +438,9 @@ by the attester plugin entry points defined in the `oe_attester_t` structure:
   - The same entry point definition as in the OE SDK V0.9 release.
 - Get evidence in an globally unique format, optionally along with a set of
 endorsements.
-  - Entry point `oe_result_t (*get_evidence)(oe_attester_t* context, const void* custom_claims, size_t custom_claims_size, const void* opt_params, size_t opt_params_size, uint8_t** evidence_buffer, size_t* evidence_buffer_size, uint8_t** endorsements_buffer, size_t* endorsements_buffer_size)`.
+  - Entry point `oe_result_t (*get_evidence)(oe_attester_t* context, const void* custom_claims_buffer, size_t custom_claims_buffer_size, const void* opt_params, size_t opt_params_size, uint8_t** evidence_buffer, size_t* evidence_buffer_size, uint8_t** endorsements_buffer, size_t* endorsements_buffer_size)`.
   - The legacy `flags` parameter in the OE SDK V0.9 release is removed.
-  - The optional custom claims are input as a flat buffer in `custom_claims`.
+  - The optional custom claims are input as a flat buffer in `custom_claims_buffer`.
   - The output evidence and endorsements data must be held in dynamically
   allocated buffers
   in trusted enclave memory. These buffers will be freed by the plugin framework
@@ -478,7 +478,7 @@ OE SDK framework:
   - The same definition as in the OE SDK V0.9 release, except that this function
   is not part of the public API, and the function name is changed.
 
-In the OE SDK V0.10 release, attester plugins are managed internally between
+In the OE SDK V0.1x release, attester plugins are managed internally between
 the OE SDK framework and plugin libraries, without exposing details to
 application software. As explained in the
 [[Design Notes]](https://github.com/shnwc/openenclave/blob/master/docs/DesignDocs/NotesOnAttestationAPI.md#options-for-enclave-side-plugin-library-initialization)
@@ -528,7 +528,7 @@ Use cases for a verifier plugin to interact with the OE SDK framework:
   - The same definition as in the OE SDK V0.9 release, except that this function
   is not part of the public API, and the function name is changed.
 
-In the OE SDK V0.10 release, initialization of verifier plugin libraries is
+In the OE SDK V0.1x release, initialization of verifier plugin libraries is
 triggered with the application call to `oe_verifier_initialize()`.
 The initialization function of every linked library enumerates its supported
 evidence formats and registers their plugins with the OE SDK framework via
@@ -555,18 +555,18 @@ implementation of the public API function `oe_sgx_plugin_verifier()`. This
 verifier plugin implementation is linked to both the OE SDK enclave-side and host-side
 static libraries.
 
-## Proposed V0.10 Implementation
+## Proposed V0.1x Implementation
 
-The OE SDK V0.10 release will have enclave-side SGX attester plugins for
+The OE SDK V0.1x release will have enclave-side SGX attester plugins for
 generation of SGX evidence in local, ECDSA, and EPID formats. These formats
 are defined as:
 - `OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION`: for SGX local attestation.
-- `OE_FORMAT_UUID_SGX_ECDSA_P256`: for SGX ECDSA-p256 evidence format
-  - Note: this is the same as existing `OE_SGX_PLUGIN_UUID`.
+- `OE_FORMAT_UUID_SGX_ECDSA`: for SGX ECDSA-p256 evidence format
+  - Note: this is the same as `OE_SGX_PLUGIN_UUID` in V0.9.
 - `OE_FORMAT_UUID_SGX_EPID_LINKABLE`: for SGX linkable EPID evidence format.
 - `OE_FORMAT_UUID_SGX_EPID_UNLINKABLE`: for SGX unlinkable EPID evidence format.
 
-These plugins will be implemented by a single set of plugin libraries,
+These attester plugins will be implemented by a single set of plugin libraries,
 composed of:
 - One enclave-side SGX evidence generation plugin library.
   - It implements the OE SDK public API function
@@ -576,9 +576,12 @@ composed of:
   - It implements OCALLs for the enclave-side library to access
   host-side services for SGX quote generation.
 
-The OE SDK V0.10 release will have enclave-side plugins for verification of
-SGX local and ECDSA evidence, and host-side plugins for verification of
-SGX ECDSA evidence. These plugins will be implemented by a single set of
+The OE SDK V0.1x release will have enclave-side verifier plugins for
+verification of `OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION` and
+`OE_FORMAT_UUID_SGX_ECDSA` evidence,
+and host-side verifier plugins for verification of
+`OE_FORMAT_UUID_SGX_ECDSA` evidence.
+These plugins will be implemented by a single set of
 plugin libraries, composed of:
 - One enclave-side SGX evidence verification plugin library.
   - It implements the enclave-side OE SDK public API function
@@ -591,63 +594,125 @@ plugin libraries, composed of:
   - It also implements OCALLs for the enclave-side library to access
   host-side services for SGX quote verification.
 
-The OE SDK V0.10 release will also have enclave-side and host-side plugins
-for verification of SGX ECDSA reports generated by the legacy API function
-`oe_get_report()` and raw SGX ECDSA quotes generated by the Intel SGX SDK.
-These two evidence formats are identified by their UUIDs:
-- `OE_FORMAT_UUID_SGX_ECDSA_P256_REPORT`: for SGX ECDSA report generated
-by `oe_get_report()`.
-- `OE_FORMAT_UUID_SGX_ECDSA_P256_QUOTE`: for raw SGX ECDSA quote generated
-by the Intel SGX SDK.
+Currently there is no plan to implement verifier plugins for verification of
+EPID evidence. Verification of SGX EPID quotes is not supported by
+the Intel SGX SDK. In all existing SGX EPID solutions, EPID quotes are sent to
+Intel Attestation Service (IAS) backend for verification. For more information,
+please see the open-source project
+["Intel Software Guard Extensions (SGX) Remote Attestation End-to-End Sample for EPID Attestations"](https://github.com/intel/sgx-ra-sample).
+The document ["Code Sample: Intel Software Guard Extensions Remote Attestation End-to-End Example"](https://software.intel.com/content/www/us/en/develop/articles/code-sample-intel-software-guard-extensions-remote-attestation-end-to-end-example.html)
+explains how the EPID-based remote attestation flow implemented in this sample
+project works.
+
+The OE SDK V0.1x release will also have enclave-side and host-side plugins
+for verification of selected types of OE reports for SGX generated by the legacy
+API function `oe_get_report()` and selected types of SGX quotes generated by
+the Intel SGX SDK DCAP and quote-ex libraries. Note: the plan is for
+the attestation API function `oe_verify_evidence()` to only support a minimum
+set of legacy OE reports and SGX quotes as needed. There is no intention for
+`oe_verify_evidence()` to support verification of all possible types of legacy
+OE reports and SGX quotes.
+
+- `OE_FORMAT_UUID_LEGACY_REPORT_REMOTE`
+  - For OE reports generated by the legacy API function `oe_get_report()`
+  with the `OE_REPORT_FLAGS_REMOTE_ATTESTATION` flag.
+  - Note: no plan to provide verifier plugin for verification of OE reports
+  generated by the legacy API function `oe_get_report()` without the
+  `OE_REPORT_FLAGS_REMOTE_ATTESTATION` flag (for local attestation).
+  These reports can be verified using legacy API function `oe_verify_report()`.
+- `OE_FORMAT_UUID_RAW_SGX_QUOTE_ECDSA`
+  - For SGX quotes in ECDSA_P256 format generated by the Intel SGX SDK DCAP
+  library, and the Intel SGX quote-ex library with algorithm ID
+  `SGX_QL_ALG_ECDSA_P256`.
+    - Note: the DCAP library only generates ECDSA-p256 quotes
+  - Note: no plan to provide verifier plugin for verification of SGX quotes
+  generated by the quote-ex library with other algorithm IDs (e.g. EPID quotes).
 
 For evidence data in format `OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION`
-or `OE_FORMAT_UUID_SGX_ECDSA_P256`, custom claims buffer
-(if not empty) is attached to the end of the evidence, the list of claims returned
-by `oe_verify_evidence()` will contain one claim named
-`OE_CLAIM_CUSTOM_CLAIMS` if the evidence data contains a non-empty custom
-claims buffer. For evidence data in format `OE_FORMAT_UUID_SGX_ECDSA_P256_REPORT`
-or `OE_FORMAT_UUID_SGX_ECDSA_P256_QUOTE`, since this evidence data embeds the
+or `OE_FORMAT_UUID_SGX_ECDSA`, the custom claims buffer
+(if not empty) is attached to the end of the evidence. The list of claims
+returned by `oe_verify_evidence()` will contain one claim named
+`OE_CLAIM_CUSTOM_CLAIMS_BUFFER` if the evidence data contains a non-empty custom
+claims buffer. For evidence data in format `OE_FORMAT_UUID_LEGACY_REPORT_REMOTE`
+or `OE_FORMAT_UUID_RAW_SGX_QUOTE_ECDSA`, since this evidence data embeds the
 custom claims buffer in its SGX quote directly,
 the list of claims will contain one claim named `OE_CLAIM_SGX_REPORT_DATA`.
 
-To allow test of `oe_verify_evidence()` verification of SGX ECDSA reports and
-raw SGX ECDSA quotes, `oe_get_evidence()` will be extended to take one of the
-two format IDs (`OE_FORMAT_UUID_SGX_ECDSA_P256_REPORT` and
-`OE_FORMAT_UUID_SGX_ECDSA_P256_QUOTE`), to generate evidence in the specified
-format. For both formats, the
-`custom_claims` data will be put in the `report_data` field in the SGX quote
-contained in the output evidence.
-
-Similarly, for EPID evidence generation, the `custom_claims` input will be
+For EPID evidence generation, the `custom_claims_buffer` input will be
 used as the SGX quote `report_data` directly. This design is consistent with
-existing SGX EPID-based solutions behavior, and will help maintain backward
+existing SGX SDK EPID-based solutions behavior, and will help maintain backward
 compatibility.
 
-The table below shows the structure of the evidence data for all the
-SGX format IDs, as generated by an attester plugin or verified by a verifier
-plugin. For every listed format, `oe_get_evidence()` can wrap with
-an attestation header when the `OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID` bit in its
+### Summary
+
+The API function `oe_get_evidence()` supports the values listed below in its
+`format_id` parameter. The output evidence will be prefixed with an
+`oe_attestation_header` if the `OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID` bit in its
 `flags` parameter is set.
+* `OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION`
+* `OE_FORMAT_UUID_SGX_ECDSA`
+* `OE_FORMAT_UUID_SGX_EPID_LINKABLE`
+* `OE_FORMAT_UUID_SGX_EPID_UNLINKABLE`
+
+The API function `oe_verify_evidence()` supports the values listed below in its
+`format_id` parameter.
+* `NULL`:
+  * The input evidence is generated by `oe_get_evidence()`, with
+  the `OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID` bit set in its `flags` parameter.
+* `OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION`:
+  * The input evidence is generated by `oe_get_evidence()` for format
+  `OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION`, with the
+  `OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID` bit cleared in its `flags` parameter.
+* `OE_FORMAT_UUID_SGX_ECDSA`:
+  * The input evidence is generated by `oe_get_evidence()` for format
+  `OE_FORMAT_UUID_SGX_ECDSA`, with the
+  `OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID` bit cleared in its `flags` parameter.
+* `OE_FORMAT_UUID_LEGACY_REPORT_REMOTE`:
+  * The input evidence is an OE report generated by the legacy API function
+  `oe_get_report()` with the `OE_REPORT_FLAGS_REMOTE_ATTESTATION` flag.
+* `OE_FORMAT_UUID_RAW_SGX_QUOTE_ECDSA`:
+  * The input evidence is an SGX ECDSA quote generated by the
+  Intel SGX SDK DCAP library, or the quote-ex library with algorithm ID
+  `SGX_QL_ALG_ECDSA_P256`.
+
+The table below shows the structure of the evidence data for all the supported
+SGX format IDs, as generated by an attester plugin or verified by a verifier
+plugin.
 
 | Format ID | Evidence structure  |
 | -- | - |
-| `OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION` | `oe_report_header \|\| SGX_report(hash) \|\| custom_claims` |
-| `OE_FORMAT_UUID_SGX_ECDSA_P256` | `oe_report_header \|\| SGX_ECDSA_quote(hash) \|\| custom_claims` |
-| `OE_FORMAT_UUID_SGX_ECDSA_P256_REPORT` | `oe_report_header \|\| SGX_ECDSA_quote(custom_claims)` |
-| `OE_FORMAT_UUID_SGX_ECDSA_P256_QUOTE` | `SGX_ECDSA_quote(custom_claims)` |
-| `OE_FORMAT_UUID_SGX_EPID_LINKABLE` | `SGX_EPID_linkable_quote(custom_claims)` |
-| `OE_FORMAT_UUID_SGX_EPID_UNLINKABLE` | `SGX_EPID_unlinkable_quote(custom_claims)` |
+| `OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION` | `[ oe_attestation_header ] \|\| SGX_report(hash) \|\| custom_claims_buffer` |
+| `OE_FORMAT_UUID_SGX_ECDSA` | `[ oe_attestation_header ] \|\| SGX_ECDSA_quote(hash) \|\| custom_claims_buffer` |
+| `OE_FORMAT_UUID_SGX_EPID_LINKABLE` | `[ oe_attestation_header ] \|\| SGX_EPID_linkable_quote(custom_claims_buffer)` |
+| `OE_FORMAT_UUID_SGX_EPID_UNLINKABLE` | `[ oe_attestation_header ] \|\| SGX_EPID_unlinkable_quote(custom_claims_buffer)` |
+| `OE_FORMAT_UUID_LEGACY_REPORT_REMOTE` | `oe_report_header (for remote attestation) \|\| SGX_ECDSA_quote(custom_claims_buffer)` |
+| `OE_FORMAT_UUID_RAW_SGX_QUOTE_ECDSA` | `SGX_ECDSA_quote(custom_claims_buffer)` |
 
 In the above table:
+* The optional header `oe_attestation_header` is a structure of type
+`oe_attestation_header_t`.
+* For every format supported by `oe_get_evidence()`, the evidence
+will be prefixed with an `oe_attestation_header` when the
+`OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID` bit in its `flags` parameter is set.
 * `oe_report_header` is the OE report header of type `oe_report_header_t`.
 * `hash` is the SHA256 hash of the custom claims held in a flat buffer
-`custom_claims`.
-* An SGX report (`SGX_report()`) or quote (`SGX_*_quote()`) contains a
+`custom_claims_buffer`.
+* An SGX report (`SGX_report()`, of type `sgx_report_t`) or quote (`SGX_*quote()`
+of type `sgx_quote_t`) embeds a
 flat buffer of 64 bytes for its SGX report data field. Depending on the format,
 this field holds either the `hash` of the custom claims, or the custom claims
 directly.
+* Note: for all evidence generated by API `oe_get_evidence()`, the
+`oe_report_header` is no longer included.
+  * `oe_report_header` was defined for legacy API `oe_get_report()`.
+  Its `report_type` field is only intended to only indicate between SGX report
+  (for local attestation) and SGX ECDSA-p256 quote (for remote attestation).
+  * SGX Verifier plugins are able to identify the `custom_claims_buffer`
+  without the help of the `report_size` field in the `oe_report_header`.
 
-Note: host-side SGX plugin library implementation of the public API functions
+### Discussion
+
+The host-side SGX plugin library implementation of the public API functions
 `oe_verifier_initialize()` and `oe_verifier_shutdown()` indicates that
 this library can't be linked to an verifier application along with
 other plugin libraries that implement the same public API functions.
@@ -661,12 +726,6 @@ document.
 Verification of an SGX evidence for local attestation can only be performed by
 the enclave to which the SGX report is targeted. So no host-side plugin
 for SGX local attestation evidence can be supported.
-
-Verification of SGX EPID evidence (or quote) is not supported by the
-Intel SGX SDK. In existing SGX solutions, EPID quotes are sent from an
-attester enclave to a relying party, which forwards the EPID quotes to
-an Intel Attestation Service (IAS) for verification. There is no plan
-in the OE SDK V0.10 release to provide EPID evidence verifier plugin.
 
 The OE SDK has legacy API functions `oe_get_report()` and `oe_verify_report()`
 for generation and verification of SGX local and ECDSA reports.
