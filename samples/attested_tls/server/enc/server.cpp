@@ -127,8 +127,7 @@ int handle_communication_until_done(
     bool keep_server_up)
 {
     int ret = 0;
-    int len = 0;
-
+    int len = 0
 waiting_for_connection_request:
 
     if (ret != 0 &&
