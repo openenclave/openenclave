@@ -312,6 +312,15 @@ oe_result_t oe_verify_evidence(
                 evidence->version,
                 OE_ATTESTATION_HEADER_VERSION);
 
+        if (evidence_buffer_size !=
+            (evidence->data_size + sizeof(oe_attestation_header_t)))
+            OE_RAISE_MSG(
+                OE_INVALID_PARAMETER,
+                "Evidence size is invalid. "
+                "Header data size: %d bytes, evidence buffer size: %d",
+                evidence->data_size,
+                evidence_buffer_size);
+
         if (endorsements_buffer)
         {
             oe_attestation_header_t* endorsements =
@@ -324,6 +333,15 @@ oe_result_t oe_verify_evidence(
                     "Invalid attestation header version %d, expected %d",
                     endorsements->version,
                     OE_ATTESTATION_HEADER_VERSION);
+
+            if (endorsements_buffer_size !=
+                (endorsements->data_size + sizeof(oe_attestation_header_t)))
+                OE_RAISE_MSG(
+                    OE_INVALID_PARAMETER,
+                    "Endorsements buffer size is invalid. "
+                    "Header data size: %d bytes, endorsements buffer size: %d",
+                    endorsements->data_size,
+                    endorsements_buffer_size);
 
             if (memcmp(
                     &evidence->format_id,
