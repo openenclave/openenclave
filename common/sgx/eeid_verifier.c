@@ -388,21 +388,6 @@ done:
     return result;
 }
 
-static oe_result_t _eeid_free_claims_list(
-    oe_verifier_t* context,
-    oe_claim_t* claims,
-    size_t claims_size)
-{
-    OE_UNUSED(context);
-    for (size_t i = 0; i < claims_size; i++)
-    {
-        oe_free(claims[i].name);
-        oe_free(claims[i].value);
-    }
-    oe_free(claims);
-    return OE_OK;
-}
-
 static oe_verifier_t _eeid_verifier = {
     .base =
         {
@@ -411,7 +396,7 @@ static oe_verifier_t _eeid_verifier = {
             .on_unregister = &_eeid_verifier_on_unregister,
         },
     .verify_evidence = &_eeid_verify_evidence,
-    .free_claims = &_eeid_free_claims_list};
+    .free_claims = &sgx_attestation_plugin_free_claims_list};
 
 oe_result_t oe_sgx_eeid_verifier_initialize(void)
 {
