@@ -189,9 +189,9 @@ static bool is_zero(const uint8_t* buf, size_t sz)
 #ifdef OE_BUILD_ENCLAVE
 static oe_result_t _verify_signature(
     const OE_SHA256* msg_hsh,
-    const uint8_t* reversed_modulus,
-    const uint8_t* reversed_exponent,
-    const uint8_t* reversed_signature)
+    const uint8_t* modulus,
+    const uint8_t* exponent,
+    const uint8_t* signature)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_rsa_public_key_t pk;
@@ -209,7 +209,7 @@ static oe_result_t _verify_signature(
     mbedtls_rsa_init(rsa_ctx, 0, 0);
     if (mbedtls_rsa_import_raw(
             rsa_ctx,
-            reversed_modulus,
+            modulus,
             OE_KEY_SIZE, // N
             NULL,
             0,
@@ -217,7 +217,7 @@ static oe_result_t _verify_signature(
             0,
             NULL,
             0, // P Q D
-            reversed_exponent,
+            exponent,
             OE_EXPONENT_SIZE) != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
     if (mbedtls_rsa_check_pubkey(rsa_ctx) != 0)
@@ -231,7 +231,7 @@ static oe_result_t _verify_signature(
         OE_HASH_TYPE_SHA256,
         msg_hsh->buf,
         sizeof(msg_hsh->buf),
-        reversed_signature,
+        signature,
         OE_KEY_SIZE));
 
     OE_CHECK(oe_rsa_public_key_free(&pk));
@@ -247,9 +247,9 @@ done:
 #ifdef _WIN32
 static oe_result_t _verify_signature(
     const OE_SHA256* msg_hsh,
-    const uint8_t* reversed_modulus,
-    const uint8_t* reversed_exponent,
-    const uint8_t* reversed_signature)
+    const uint8_t* modulus,
+    const uint8_t* exponent,
+    const uint8_t* signature)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_rsa_public_key_t pk;
@@ -265,9 +265,19 @@ static oe_result_t _verify_signature(
     struct
     {
         BCRYPT_RSAKEY_BLOB blob;
-        uint8_t bytes[65535];
+        uint8_t bytes[OE_EXPONENT_SIZE + OE_KEY_SIZE];
     } key_data;
     OE_PACK_END
+
+    key_data.blob.BitLength = OE_KEY_SIZE;
+    key_data.blob.cbModulus = OE_KEY_SIZE;
+    key_data.blob.cbPublicExp = OE_EXPONENT_SIZE;
+    key_data.blob.Magic = BCRYPT_RSAPUBLIC_MAGIC;
+    key_data.blob.cbPrime1 = 0;
+    key_data.blob.cbPrime2 = 0;
+
+    memcpy(key_data.bytes, exponent, OE_EXPONENT_SIZE);
+    memcpy(key_data.bytes + OE_EXPONENT_SIZE, modulus, OE_KEY_SIZE);
 
     if (!BCRYPT_SUCCESS(BCryptImportKeyPair(
             hAlgorithm,
@@ -276,7 +286,7 @@ static oe_result_t _verify_signature(
             &ikey,
             (PUCHAR)&key_data,
             sizeof(key_data),
-            0)))
+            BCRYPT_NO_KEY_VALIDATION)))
         OE_RAISE(OE_UNEXPECTED);
 
     oe_rsa_public_key_init(&pk, ikey);
@@ -286,7 +296,7 @@ static oe_result_t _verify_signature(
         OE_HASH_TYPE_SHA256,
         msg_hsh->buf,
         sizeof(msg_hsh->buf),
-        reversed_signature,
+        signature,
         OE_KEY_SIZE));
 
     OE_CHECK(oe_rsa_public_key_free(&pk));
@@ -302,9 +312,9 @@ done:
 #else
 static oe_result_t _verify_signature(
     const OE_SHA256* msg_hsh,
-    const uint8_t* reversed_modulus,
-    const uint8_t* reversed_exponent,
-    const uint8_t* reversed_signature)
+    const uint8_t* modulus,
+    const uint8_t* exponent,
+    const uint8_t* signature)
 {
 #if OPENSSL_VERSION_NUMBER < 0x1010100fL
 #error OpenSSL 1.0.2 not supported
@@ -315,8 +325,8 @@ static oe_result_t _verify_signature(
     RSA* rsa;
     EVP_PKEY* ikey;
 
-    rm = BN_bin2bn(reversed_modulus, OE_KEY_SIZE, 0);
-    re = BN_bin2bn(reversed_exponent, OE_EXPONENT_SIZE, 0);
+    rm = BN_bin2bn(modulus, OE_KEY_SIZE, 0);
+    re = BN_bin2bn(exponent, OE_EXPONENT_SIZE, 0);
     rsa = RSA_new();
     if (RSA_set0_key(rsa, rm, re, NULL) != 1)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -332,7 +342,7 @@ static oe_result_t _verify_signature(
         OE_HASH_TYPE_SHA256,
         msg_hsh->buf,
         sizeof(msg_hsh->buf),
-        reversed_signature,
+        signature,
         OE_KEY_SIZE));
 
     OE_CHECK(oe_rsa_public_key_free(&pk));
@@ -375,20 +385,19 @@ static oe_result_t _verify_base_image_signature(
     oe_sha256_update(&context, buf, n);
     oe_sha256_final(&context, &msg_hsh);
 
-    uint8_t reversed_modulus[OE_KEY_SIZE];
+    uint8_t modulus[OE_KEY_SIZE];
     for (size_t i = 0; i < OE_KEY_SIZE; i++)
-        reversed_modulus[i] = sigstruct->modulus[OE_KEY_SIZE - 1 - i];
+        modulus[i] = sigstruct->modulus[OE_KEY_SIZE - 1 - i];
 
-    uint8_t reversed_exponent[OE_KEY_SIZE];
+    uint8_t exponent[OE_KEY_SIZE];
     for (size_t i = 0; i < OE_EXPONENT_SIZE; i++)
-        reversed_exponent[i] = sigstruct->exponent[OE_EXPONENT_SIZE - 1 - i];
+        exponent[i] = sigstruct->exponent[OE_EXPONENT_SIZE - 1 - i];
 
-    uint8_t reversed_signature[OE_KEY_SIZE];
+    uint8_t signature[OE_KEY_SIZE];
     for (size_t i = 0; i < OE_KEY_SIZE; i++)
-        reversed_signature[i] = sigstruct->signature[OE_KEY_SIZE - 1 - i];
+        signature[i] = sigstruct->signature[OE_KEY_SIZE - 1 - i];
 
-    OE_CHECK(_verify_signature(
-        &msg_hsh, reversed_modulus, reversed_exponent, reversed_signature));
+    OE_CHECK(_verify_signature(&msg_hsh, modulus, exponent, signature));
 
     result = OE_OK;
 
