@@ -34,6 +34,8 @@ sudo apt -y install ninja-build
 
 If you wish to make use of the Open Enclave Host-Verify CMake package, please install CMake and [follow the instructions here](/cmake/sdk_cmake_targets_readme.md).
 
+Open Enclave SDK binary packages can also be [downloaded from GitHub](https://github.com/openenclave/openenclave/releases).
+
 ### 3. Verify the Open Enclave Host-Verify SDK install
 
 See [Using the Open Enclave Host-Verify SDK](Linux_using_host_verify.md) for verifying and using the installed SDK.

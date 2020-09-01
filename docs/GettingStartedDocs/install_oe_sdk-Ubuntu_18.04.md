@@ -61,6 +61,8 @@ sudo apt -y install ninja-build
 
 If you wish to make use of the Open Enclave CMake package, please install CMake and [follow the instructions here](/cmake/sdk_cmake_targets_readme.md).
 
+Open Enclave SDK binary packages can also be [downloaded from GitHub](https://github.com/openenclave/openenclave/releases).
+
 ### 4. Verify the Open Enclave SDK install
 
 See [Using the Open Enclave SDK](Linux_using_oe_sdk.md) for verifying and using the installed SDK.

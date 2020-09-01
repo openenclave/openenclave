@@ -49,15 +49,11 @@ systems.
 Getting Started Using OE SDK
 ---------------
 
-See the API documentation on [openenclave.io](https://openenclave.io/sdk/)
-
-Binary packages can be [downloaded from GitHub](https://github.com/openenclave/openenclave/releases)
+You'll find comprehensive documentation in the
+[Getting Started Guide](docs/GettingStartedDocs).
 
 Contributing to OE SDK
 ---------------
-
-You'll find comprehensive documentation in the
-[Contributor's Getting Started Guide](docs/GettingStartedDocs).
 
 The [community documentation](docs/Community/) hosts lots of information on
 where to go to get engaged with the community, whether you want to contribute
