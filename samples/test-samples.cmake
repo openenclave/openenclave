@@ -40,14 +40,12 @@ endif ()
 
 # Set SAMPLES_LIST so that helloworld becomes the first if BUILD_ENCLAVES=ON.
 if (BUILD_ENCLAVES)
-  set(SAMPLES_LIST helloworld file-encryptor switchless host_verify)
+  set(SAMPLES_LIST helloworld file-encryptor switchless)
   # Debug malloc will set allocated memory to a fixed pattern.
   # Hence do not enable pluggable_allocator test under USE_DEBUG_MALLOC.
   if (COMPILER_SUPPORTS_SNMALLOC AND NOT USE_DEBUG_MALLOC)
     list(APPEND SAMPLES_LIST pluggable_allocator)
   endif ()
-else ()
-  set(SAMPLES_LIST host_verify)
 endif ()
 
 if ($ENV{OE_SIMULATION})
