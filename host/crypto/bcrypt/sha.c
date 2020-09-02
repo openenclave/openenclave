@@ -127,7 +127,7 @@ done:
 oe_result_t oe_sha256_save(
     const oe_sha256_context_t* context,
     uint32_t* internal_hash,
-    uint32_t* num_hashed)
+    uint32_t* hashed_count)
 {
     oe_result_t result = OE_INVALID_PARAMETER;
     oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
