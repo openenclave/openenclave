@@ -127,7 +127,12 @@ int handle_communication_until_done(
     bool keep_server_up)
 {
     int ret = 0;
-    int len = 0
+    int len = 0;
+    size_t hi = 10;
+   for (int i = 0; i < hi; i++)
+   {
+      printf("%d\n", i);
+   }
 waiting_for_connection_request:
 
     if (ret != 0 &&
