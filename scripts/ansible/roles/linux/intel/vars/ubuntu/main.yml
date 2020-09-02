@@ -21,4 +21,3 @@ packages_validation_distribution_files:
   - "/usr/lib/x86_64-linux-gnu/libsgx_pce_logic.so"
   - "/usr/lib/x86_64-linux-gnu/libsgx_qe3_logic.so"
   - "/usr/lib/x86_64-linux-gnu/libsgx_dcap_ql.so"
-  - "/usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so"
