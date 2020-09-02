@@ -7,6 +7,7 @@
 
 #include <openenclave/bits/attestation.h>
 #include <openenclave/bits/eeid.h>
+#include <openenclave/bits/report.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/crypto/sha.h>
