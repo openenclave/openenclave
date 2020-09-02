@@ -12,8 +12,8 @@
 typedef struct _oe_sha256_context_impl
 {
     BCRYPT_HASH_HANDLE handle;
-    PBYTE pbHashObject;
-    DWORD cbHashObject;
+    PBYTE hash_state;
+    DWORD hash_state_size;
 } oe_sha256_context_impl_t;
 
 OE_STATIC_ASSERT(
@@ -30,15 +30,18 @@ oe_result_t oe_sha256_init(oe_sha256_context_t* context)
     NTSTATUS status;
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
-    DWORD cbData = 0, cbHash = 0;
+    /* oe_sha256_save and oe_sha256_restore require access to the internal hash
+     * state, which is not exposed later, so we ask BCrypt to use a memory block
+     * we pre-allocate. */
+    DWORD data_size = 0;
 
     /* Get required size for hash state object */
     status = BCryptGetProperty(
         BCRYPT_SHA256_ALG_HANDLE,
         BCRYPT_OBJECT_LENGTH,
-        (PBYTE)&impl->cbHashObject,
+        (PBYTE)&impl->hash_state_size,
         sizeof(DWORD),
-        &cbData,
+        &data_size,
         0);
 
     if (!BCRYPT_SUCCESS(status))
@@ -46,22 +49,22 @@ oe_result_t oe_sha256_init(oe_sha256_context_t* context)
             OE_CRYPTO_ERROR, "BCryptGetProperty failed (err=%#x)\n", status);
 
     /* Check that the hash state object has the expected size */
-    if (!impl->pbHashObject == 326)
+    if (impl->hash_state_size != 326)
         OE_RAISE(OE_UNEXPECTED);
 
-    impl->pbHashObject = malloc(impl->cbHashObject);
-    if (!impl->pbHashObject)
+    impl->hash_state = malloc(impl->hash_state_size);
+    if (!impl->hash_state)
         OE_RAISE(OE_OUT_OF_MEMORY);
 #else
-    impl->pbHashObject = NULL;
-    impl->cbHashObject = 0;
+    impl->hash_state = NULL;
+    impl->hash_state_size = 0;
 #endif
 
     status = BCryptCreateHash(
         BCRYPT_SHA256_ALG_HANDLE,
         &impl->handle,
-        impl->pbHashObject,
-        impl->cbHashObject,
+        impl->hash_state,
+        impl->hash_state_size,
         NULL,
         0,
         0);
@@ -136,12 +139,12 @@ oe_result_t oe_sha256_save(
      * without notice. Since bcrypt doesn't provide this information elsewhere,
      * the only solution I can think of is to use a different library for
      * SHA256.*/
-    uint32_t* state = (uint32_t*)&impl->pbHashObject[272];
+    uint32_t* state = (uint32_t*)&impl->hash_state[272];
     for (size_t i = 0; i < 8; i++)
         internal_hash[i] = state[i];
 
-    uint32_t low = *(uint32_t*)(&impl->pbHashObject[192]);
-    uint32_t high = *(uint32_t*)(&impl->pbHashObject[196]);
+    uint32_t low = *(uint32_t*)(&impl->hash_state[192]);
+    uint32_t high = *(uint32_t*)(&impl->hash_state[196]);
 
     num_hashed[0] = low * 8;
     num_hashed[1] = high * 8 + (low >> 29);
@@ -165,14 +168,13 @@ oe_result_t oe_sha256_restore(
 
     oe_sha256_init(context);
 
-    uint32_t* state = (uint32_t*)&impl->pbHashObject[272];
+    uint32_t* state = (uint32_t*)&impl->hash_state[272];
     for (size_t i = 0; i < 8; i++)
         state[i] = internal_hash[i];
 
     uint64_t NB = ((((uint64_t)num_hashed[1]) << 32) + num_hashed[0]) / 8;
-    *(uint32_t*)(&impl->pbHashObject[192]) = NB & 0xFFFFFFFF;
-    *(uint32_t*)(&impl->pbHashObject[196]) =
-        ((uint32_t)(NB >> 32)) & 0xFFFFFFFF;
+    *(uint32_t*)(&impl->hash_state[192]) = NB & 0xFFFFFFFF;
+    *(uint32_t*)(&impl->hash_state[196]) = ((uint32_t)(NB >> 32)) & 0xFFFFFFFF;
 
     result = OE_OK;
 
