@@ -25,14 +25,14 @@ jobs:
         ./install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoDriver -InstallPath C://oe_prereqs -DCAPClientType Azure
       workingDirectory: 'scripts'
 
+
   - task: PowerShell@2
-    displayName: "Build and Test OE SDK"
     inputs:
       targetType: 'inline'
       script: |
-          vcvars64.bat x64
-          mkdir build
-          cd build
-          cmake.exe -G "Ninja" ..
-          ninja.exe
-          ctest.exe
+        vcvars64.bat x64
+
+  - task: BatchScript@1
+    displayName: "Build and Test OE SDK"
+    inputs:
+      filename: 'scripts/pipelines/windows/buildAndTest.sh'
