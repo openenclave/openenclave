@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
@@ -223,7 +224,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         /* tcb_info */
         if (in.tcb_info_size < out.tcb_info_size)
         {
-            if (!(in.tcb_info = realloc(in.tcb_info, out.tcb_info_size)))
+            if (!(in.tcb_info = oe_realloc(in.tcb_info, out.tcb_info_size)))
             {
                 OE_RAISE(OE_OUT_OF_MEMORY);
             }
@@ -234,7 +235,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         /* tcb_issuer_chain */
         if (in.tcb_info_issuer_chain_size < out.tcb_info_issuer_chain_size)
         {
-            if (!(in.tcb_info_issuer_chain = realloc(
+            if (!(in.tcb_info_issuer_chain = oe_realloc(
                       in.tcb_info_issuer_chain,
                       out.tcb_info_issuer_chain_size)))
             {
@@ -247,7 +248,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         /* pck crl */
         if (in.pck_crl_size < out.pck_crl_size)
         {
-            if (!(in.pck_crl = realloc(in.pck_crl, out.pck_crl_size)))
+            if (!(in.pck_crl = oe_realloc(in.pck_crl, out.pck_crl_size)))
             {
                 OE_RAISE(OE_OUT_OF_MEMORY);
             }
@@ -259,7 +260,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         if (in.root_ca_crl_size < out.root_ca_crl_size)
         {
             if (!(in.root_ca_crl =
-                      realloc(in.root_ca_crl, out.root_ca_crl_size)))
+                      oe_realloc(in.root_ca_crl, out.root_ca_crl_size)))
             {
                 OE_RAISE(OE_OUT_OF_MEMORY);
             }
@@ -270,7 +271,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         /* pck crl issuer chain */
         if (in.pck_crl_issuer_chain_size < out.pck_crl_issuer_chain_size)
         {
-            if (!(in.pck_crl_issuer_chain = realloc(
+            if (!(in.pck_crl_issuer_chain = oe_realloc(
                       in.pck_crl_issuer_chain, out.pck_crl_issuer_chain_size)))
             {
                 OE_RAISE(OE_OUT_OF_MEMORY);
@@ -283,7 +284,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         if (in.qe_identity_size < out.qe_identity_size)
         {
             if (!(in.qe_identity =
-                      realloc(in.qe_identity, out.qe_identity_size)))
+                      oe_realloc(in.qe_identity, out.qe_identity_size)))
             {
                 OE_RAISE(OE_OUT_OF_MEMORY);
             }
@@ -295,7 +296,7 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         if (in.qe_identity_issuer_chain_size <
             out.qe_identity_issuer_chain_size)
         {
-            if (!(in.qe_identity_issuer_chain = realloc(
+            if (!(in.qe_identity_issuer_chain = oe_realloc(
                       in.qe_identity_issuer_chain,
                       out.qe_identity_issuer_chain_size)))
             {
@@ -337,7 +338,7 @@ void oe_prealloc_quote_verification_collateral_args(
 {
     /* Allocate estimated buffers for quote_verification_collateral_args */
 
-    buf->tcb_info = (uint8_t*)calloc(1, default_sizes->tcb_info_size);
+    buf->tcb_info = (uint8_t*)oe_calloc(1, default_sizes->tcb_info_size);
 
     if (buf->tcb_info)
     {
@@ -349,7 +350,7 @@ void oe_prealloc_quote_verification_collateral_args(
     }
 
     buf->tcb_info_issuer_chain =
-        (uint8_t*)calloc(1, default_sizes->tcb_info_issuer_chain_size);
+        (uint8_t*)oe_calloc(1, default_sizes->tcb_info_issuer_chain_size);
 
     if (buf->tcb_info_issuer_chain)
     {
@@ -361,7 +362,7 @@ void oe_prealloc_quote_verification_collateral_args(
         goto done;
     }
 
-    buf->pck_crl = (uint8_t*)calloc(1, default_sizes->pck_crl_size);
+    buf->pck_crl = (uint8_t*)oe_calloc(1, default_sizes->pck_crl_size);
 
     if (buf->pck_crl)
     {
@@ -372,7 +373,7 @@ void oe_prealloc_quote_verification_collateral_args(
         goto done;
     }
 
-    buf->root_ca_crl = (uint8_t*)calloc(1, default_sizes->root_ca_crl_size);
+    buf->root_ca_crl = (uint8_t*)oe_calloc(1, default_sizes->root_ca_crl_size);
 
     if (buf->root_ca_crl)
     {
@@ -384,7 +385,7 @@ void oe_prealloc_quote_verification_collateral_args(
     }
 
     buf->pck_crl_issuer_chain =
-        (uint8_t*)calloc(1, default_sizes->pck_crl_issuer_chain_size);
+        (uint8_t*)oe_calloc(1, default_sizes->pck_crl_issuer_chain_size);
 
     if (buf->pck_crl_issuer_chain)
     {
@@ -396,7 +397,7 @@ void oe_prealloc_quote_verification_collateral_args(
         goto done;
     }
 
-    buf->qe_identity = (uint8_t*)calloc(1, default_sizes->qe_identity_size);
+    buf->qe_identity = (uint8_t*)oe_calloc(1, default_sizes->qe_identity_size);
 
     if (buf->qe_identity)
     {
@@ -408,7 +409,7 @@ void oe_prealloc_quote_verification_collateral_args(
     }
 
     buf->qe_identity_issuer_chain =
-        (uint8_t*)calloc(1, default_sizes->qe_identity_issuer_chain_size);
+        (uint8_t*)oe_calloc(1, default_sizes->qe_identity_issuer_chain_size);
 
     if (buf->qe_identity_issuer_chain)
     {
@@ -460,13 +461,13 @@ void oe_free_sgx_quote_verification_collateral_args(
 {
     if (args)
     {
-        free(args->tcb_info);
-        free(args->tcb_info_issuer_chain);
-        free(args->pck_crl);
-        free(args->root_ca_crl);
-        free(args->pck_crl_issuer_chain);
-        free(args->qe_identity);
-        free(args->qe_identity_issuer_chain);
-        free(args->host_out_buffer);
+        oe_free(args->tcb_info);
+        oe_free(args->tcb_info_issuer_chain);
+        oe_free(args->pck_crl);
+        oe_free(args->root_ca_crl);
+        oe_free(args->pck_crl_issuer_chain);
+        oe_free(args->qe_identity);
+        oe_free(args->qe_identity_issuer_chain);
+        oe_free(args->host_out_buffer);
     }
 }

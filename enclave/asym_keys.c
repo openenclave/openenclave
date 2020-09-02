@@ -199,7 +199,7 @@ static oe_result_t _export_keypair(
         OE_RAISE(result);
 
     /* Call again with the allocated memory. */
-    key = (uint8_t*)malloc(key_size);
+    key = (uint8_t*)oe_malloc(key_size);
     if (key == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -220,7 +220,7 @@ done:
     if (key != NULL)
     {
         oe_secure_zero_fill(key, key_size);
-        free(key);
+        oe_free(key);
     }
 
     return result;
@@ -327,13 +327,13 @@ done:
     if (key_buffer_local != NULL)
     {
         oe_secure_zero_fill(key_buffer_local, key_buffer_size_local);
-        free(key_buffer_local);
+        oe_free(key_buffer_local);
     }
 
     if (key_info_local != NULL)
     {
         oe_secure_zero_fill(key_info_local, key_info_size_local);
-        free(key_info_local);
+        oe_free(key_info_local);
     }
 
     if (key != NULL)
@@ -386,13 +386,13 @@ done:
     if (key_buffer_local != NULL)
     {
         oe_secure_zero_fill(key_buffer_local, key_buffer_size_local);
-        free(key_buffer_local);
+        oe_free(key_buffer_local);
     }
 
     if (key != NULL)
     {
         oe_secure_zero_fill(key, key_size);
-        free(key);
+        oe_free(key);
     }
 
     return result;
@@ -470,13 +470,13 @@ void oe_free_key(
     if (key_buffer)
     {
         oe_secure_zero_fill(key_buffer, key_buffer_size);
-        free(key_buffer);
+        oe_free(key_buffer);
     }
 
     if (key_info)
     {
         oe_secure_zero_fill(key_info, key_info_size);
-        free(key_info);
+        oe_free(key_info);
     }
 }
 
