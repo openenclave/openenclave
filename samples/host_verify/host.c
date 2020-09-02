@@ -358,7 +358,7 @@ int main(int argc, const char* argv[])
             result = verify_evidence(evidence_filename, endorsement_filename);
             fprintf(
                 stdout,
-                "Evicence verification %s (%u).\n\n",
+                "Evidence verification %s (%u).\n\n",
                 (result == OE_OK) ? "succeeded" : "failed",
                 result);
         }
