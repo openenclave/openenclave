@@ -189,7 +189,7 @@ static bool is_zero(const uint8_t* buf, size_t sz)
 
 #ifdef OE_BUILD_ENCLAVE
 static oe_result_t _verify_signature(
-    const OE_SHA256* msg_hsh,
+    const OE_SHA256* hash,
     const uint8_t* modulus,
     const uint8_t* exponent,
     const uint8_t* signature)
@@ -230,8 +230,8 @@ static oe_result_t _verify_signature(
     OE_CHECK(oe_rsa_public_key_verify(
         &pk,
         OE_HASH_TYPE_SHA256,
-        msg_hsh->buf,
-        sizeof(msg_hsh->buf),
+        hash->buf,
+        sizeof(hash->buf),
         signature,
         OE_KEY_SIZE));
 
@@ -247,7 +247,7 @@ done:
 #else
 #ifdef _WIN32
 static oe_result_t _verify_signature(
-    const OE_SHA256* msg_hsh,
+    const OE_SHA256* hash,
     const uint8_t* modulus,
     const uint8_t* exponent,
     const uint8_t* signature)
@@ -289,8 +289,8 @@ static oe_result_t _verify_signature(
     OE_CHECK(oe_rsa_public_key_verify(
         &pk,
         OE_HASH_TYPE_SHA256,
-        msg_hsh->buf,
-        sizeof(msg_hsh->buf),
+        hash->buf,
+        sizeof(hash->buf),
         signature,
         OE_KEY_SIZE));
 
@@ -303,7 +303,7 @@ done:
 }
 #else
 static oe_result_t _verify_signature(
-    const OE_SHA256* msg_hsh,
+    const OE_SHA256* hash,
     const uint8_t* modulus,
     const uint8_t* exponent,
     const uint8_t* signature)
@@ -332,8 +332,8 @@ static oe_result_t _verify_signature(
     OE_CHECK(oe_rsa_public_key_verify(
         &pk,
         OE_HASH_TYPE_SHA256,
-        msg_hsh->buf,
-        sizeof(msg_hsh->buf),
+        hash->buf,
+        sizeof(hash->buf),
         signature,
         OE_KEY_SIZE));
 
@@ -370,12 +370,12 @@ static oe_result_t _verify_base_image_signature(
         sgx_sigstruct_body_size()));
     n += sgx_sigstruct_body_size();
 
-    OE_SHA256 msg_hsh;
+    OE_SHA256 hash;
     oe_sha256_context_t context;
 
     oe_sha256_init(&context);
     oe_sha256_update(&context, buf, n);
-    oe_sha256_final(&context, &msg_hsh);
+    oe_sha256_final(&context, &hash);
 
     uint8_t modulus[OE_KEY_SIZE];
     for (size_t i = 0; i < OE_KEY_SIZE; i++)
@@ -389,7 +389,7 @@ static oe_result_t _verify_base_image_signature(
     for (size_t i = 0; i < OE_KEY_SIZE; i++)
         signature[i] = sigstruct->signature[OE_KEY_SIZE - 1 - i];
 
-    OE_CHECK(_verify_signature(&msg_hsh, modulus, exponent, signature));
+    OE_CHECK(_verify_signature(&hash, modulus, exponent, signature));
 
     result = OE_OK;
 
