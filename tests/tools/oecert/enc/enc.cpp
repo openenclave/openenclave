@@ -1,6 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/raise.h>
@@ -108,6 +110,55 @@ oe_result_t get_tls_cert_signed_with_key(
 done:
 
     oe_free_attestation_certificate(output_cert);
+
+    return result;
+}
+
+oe_result_t get_plugin_evidence(
+    uint8_t* evidence,
+    size_t evidence_size,
+    size_t* evidence_out_size,
+    uint8_t* endorsements,
+    size_t endorsements_size,
+    size_t* endorsements_out_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    uint8_t* local_evidence = NULL;
+    size_t local_evidence_size = 0;
+    uint8_t* local_endorsements = NULL;
+    size_t local_endorsements_size = 0;
+
+    static const oe_uuid_t _ecdsa_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
+
+    OE_CHECK(oe_attester_initialize());
+
+    OE_CHECK(oe_get_evidence(
+        &_ecdsa_uuid,
+        OE_EVIDENCE_FLAGS_EMBED_FORMAT_ID,
+        NULL,
+        0,
+        NULL,
+        0,
+        &local_evidence,
+        &local_evidence_size,
+        &local_endorsements,
+        &local_endorsements_size));
+
+    if (local_evidence_size > evidence_size ||
+        local_endorsements_size > endorsements_size)
+        return OE_BUFFER_TOO_SMALL;
+
+    *evidence_out_size = local_evidence_size;
+    *endorsements_out_size = local_endorsements_size;
+
+    memcpy(evidence, local_evidence, local_evidence_size);
+    memcpy(endorsements, local_endorsements, local_endorsements_size);
+
+    OE_CHECK(oe_attester_shutdown());
+
+    result = OE_OK;
+
+done:
 
     return result;
 }
