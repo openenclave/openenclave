@@ -254,13 +254,7 @@ static oe_result_t _verify_signature(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_rsa_public_key_t pk;
-
-    BCRYPT_ALG_HANDLE hAlgorithm;
     BCRYPT_KEY_HANDLE ikey;
-
-    if (!BCRYPT_SUCCESS(BCryptOpenAlgorithmProvider(
-            &hAlgorithm, BCRYPT_RSA_ALGORITHM, NULL, 0)))
-        OE_RAISE(OE_UNEXPECTED);
 
     OE_PACK_BEGIN
     struct
@@ -281,7 +275,7 @@ static oe_result_t _verify_signature(
     memcpy(key_data.bytes + OE_EXPONENT_SIZE, modulus, OE_KEY_SIZE);
 
     if (!BCRYPT_SUCCESS(BCryptImportKeyPair(
-            hAlgorithm,
+            BCRYPT_RSA_ALG_HANDLE,
             NULL,
             BCRYPT_RSAPUBLIC_BLOB,
             &ikey,
@@ -301,9 +295,6 @@ static oe_result_t _verify_signature(
         OE_KEY_SIZE));
 
     OE_CHECK(oe_rsa_public_key_free(&pk));
-
-    if (!BCRYPT_SUCCESS(BCryptCloseAlgorithmProvider(hAlgorithm, 0)))
-        OE_RAISE(OE_UNEXPECTED);
 
     result = OE_OK;
 
