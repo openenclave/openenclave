@@ -189,7 +189,7 @@ static bool is_zero(const uint8_t* buf, size_t sz)
     return true;
 }
 
-#ifdef OE_BUILD_ENCLAVE
+#ifdef OE_BUILD_ENCLAVE /* mbedTLS/Enclave */
 static oe_result_t _verify_signature(
     const OE_SHA256* hash,
     const uint8_t* modulus,
@@ -246,8 +246,8 @@ done:
 
     return result;
 }
-#else
-#ifdef _WIN32
+#else         /* Host */
+#ifdef _WIN32 /* BCrypt/Windows */
 static oe_result_t _verify_signature(
     const OE_SHA256* hash,
     const uint8_t* modulus,
@@ -306,7 +306,7 @@ done:
 
     return result;
 }
-#else
+#else         /* OpenSSL/Linux */
 static oe_result_t _verify_signature(
     const OE_SHA256* hash,
     const uint8_t* modulus,
@@ -353,8 +353,8 @@ done:
 
     return result;
 }
-#endif
-#endif
+#endif /* OpenSSL/Linux */
+#endif /* Host */
 
 static oe_result_t _verify_base_image_signature(
     const sgx_sigstruct_t* sigstruct)
