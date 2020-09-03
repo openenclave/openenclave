@@ -22,6 +22,7 @@
 #include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/sgx/plugin.h>
 #include <openenclave/internal/trace.h>
 
@@ -61,13 +62,15 @@ static oe_result_t _add_claim(
     void* value,
     size_t value_size)
 {
+    oe_result_t result = OE_UNEXPECTED;
+
     if (*((uint8_t*)name + name_size - 1) != '\0')
         return OE_CONSTRAINT_FAILED;
 
     claim->name = (char*)oe_malloc(name_size);
     if (claim->name == NULL)
         return OE_OUT_OF_MEMORY;
-    memcpy(claim->name, name, name_size);
+    OE_CHECK(oe_memcpy_s(claim->name, name_size, name, name_size));
 
     claim->value = (uint8_t*)oe_malloc(value_size);
     if (claim->value == NULL)
@@ -76,10 +79,12 @@ static oe_result_t _add_claim(
         claim->name = NULL;
         return OE_OUT_OF_MEMORY;
     }
-    memcpy(claim->value, value, value_size);
+    OE_CHECK(oe_memcpy_s(claim->value, value_size, value, value_size));
     claim->value_size = value_size;
 
-    return OE_OK;
+    result = OE_OK;
+done:
+    return result;
 }
 
 static oe_result_t _add_claims(
@@ -275,7 +280,11 @@ static oe_result_t _eeid_verify_evidence(
         if ((sgx_evidence_buffer =
                  oe_memalign(2 * sizeof(void*), sgx_evidence_buffer_size)) == 0)
             OE_RAISE(OE_OUT_OF_MEMORY);
-        memcpy(sgx_evidence_buffer, evidence->data, sgx_evidence_buffer_size);
+        OE_CHECK(oe_memcpy_s(
+            sgx_evidence_buffer,
+            sgx_evidence_buffer_size,
+            evidence->data,
+            sgx_evidence_buffer_size));
     }
 
     if (sgx_endorsements_buffer_size != 0)
@@ -283,10 +292,11 @@ static oe_result_t _eeid_verify_evidence(
         if ((sgx_endorsements_buffer = oe_memalign(
                  2 * sizeof(void*), sgx_endorsements_buffer_size)) == 0)
             OE_RAISE(OE_OUT_OF_MEMORY);
-        memcpy(
+        OE_CHECK(oe_memcpy_s(
             sgx_endorsements_buffer,
+            sgx_endorsements_buffer_size,
             evidence->data + evidence->sgx_evidence_size,
-            sgx_endorsements_buffer_size);
+            sgx_endorsements_buffer_size));
     }
 
     if (eeid_buffer_size != 0)
