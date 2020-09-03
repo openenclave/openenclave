@@ -199,10 +199,10 @@ static oe_result_t _verify_signature(
     oe_result_t result = OE_UNEXPECTED;
     oe_rsa_public_key_t pk;
     mbedtls_pk_context pkctx;
-    mbedtls_rsa_context* rsa_ctx;
-    mbedtls_pk_context* ikey;
+    mbedtls_rsa_context* rsa_ctx = NULL;
+    mbedtls_pk_context* ikey = NULL;
     mbedtls_pk_init(&pkctx);
-    const mbedtls_pk_info_t* info;
+    const mbedtls_pk_info_t* info = NULL;
 
     info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
     if (mbedtls_pk_setup(&pkctx, info) != 0)
@@ -237,13 +237,13 @@ static oe_result_t _verify_signature(
         signature,
         OE_KEY_SIZE));
 
-    OE_CHECK(oe_rsa_public_key_free(&pk));
-
-    mbedtls_pk_free(ikey);
-
     result = OE_OK;
 
 done:
+    if (result == OE_OK)
+        result = oe_rsa_public_key_free(&pk);
+    mbedtls_pk_free(ikey);
+
     return result;
 }
 #else
@@ -298,11 +298,12 @@ static oe_result_t _verify_signature(
         signature,
         OE_KEY_SIZE));
 
-    OE_CHECK(oe_rsa_public_key_free(&pk));
-
     result = OE_OK;
 
 done:
+    if (result == OE_OK)
+        result = oe_rsa_public_key_free(&pk);
+
     return result;
 }
 #else
@@ -317,9 +318,9 @@ static oe_result_t _verify_signature(
 #endif
     oe_result_t result = OE_UNEXPECTED;
     oe_rsa_public_key_t pk;
-    BIGNUM *rm, *re;
-    RSA* rsa;
-    EVP_PKEY* ikey;
+    BIGNUM *rm = NULL, *re = NULL;
+    RSA* rsa = NULL;
+    EVP_PKEY* ikey = NULL;
 
     rm = BN_bin2bn(modulus, OE_KEY_SIZE, 0);
     re = BN_bin2bn(exponent, OE_EXPONENT_SIZE, 0);
@@ -341,14 +342,15 @@ static oe_result_t _verify_signature(
         signature,
         OE_KEY_SIZE));
 
-    OE_CHECK(oe_rsa_public_key_free(&pk));
+    result = OE_OK;
+
+done:
+    if (result == OE_OK)
+        result = oe_rsa_public_key_free(&pk);
 
     // The OpenSSL flavour of oe_rsa_public_key_init does not copy the key,
     // so oe_rsa_public_key_free already freed it.
 
-    result = OE_OK;
-
-done:
     return result;
 }
 #endif
