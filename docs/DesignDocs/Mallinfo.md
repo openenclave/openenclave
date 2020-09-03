@@ -48,9 +48,9 @@ struct oe_mallinfo_t {
   size_t peak_allocated_heap_size;
 }
 
-int oe_allocator_mallinfo(struct oe_mallinfo_t * info);
+oe_result_t oe_allocator_mallinfo(struct oe_mallinfo_t * info);
 ```
 
 The allocator will set `max_total_heap_size` to the maximum number of bytes it can allocate in total, and `current_allocated_heap_size` to the number of bytes allocated at the moment. `peak_allocated_heap_size` will contain the highest value reached by `current_allocated_heap_size` during execution.
 
-Successful calls return 0, failures non-zero.
+Successful calls return OE_OK. The allocator may return OE_UNSUPPORTED if it does not support the interface, or OE_FAILURE for other failures.
