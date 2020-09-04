@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
-#include <openenclave/host_verify.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -99,6 +99,10 @@ oe_result_t verify_report(
     uint8_t* report_data = NULL;
     size_t endorsement_file_size = 0;
     uint8_t* endorsement_data = NULL;
+    oe_claim_t* claims = NULL;
+    size_t claims_length = 0;
+    static const oe_uuid_t _uuid_legacy_report_remote = {
+        OE_FORMAT_UUID_LEGACY_REPORT_REMOTE};
 
     if (read_binary_file(report_filename, &report_data, &report_file_size))
     {
@@ -110,12 +114,23 @@ oe_result_t verify_report(
                 &endorsement_file_size);
         }
 
-        result = oe_verify_remote_report(
+        oe_verifier_initialize();
+        result = oe_verify_evidence(
+            &_uuid_legacy_report_remote,
             report_data,
             report_file_size,
             endorsement_data,
             endorsement_file_size,
-            NULL);
+            NULL,
+            0,
+            &claims,
+            &claims_length);
+    }
+
+    printf("Printing Claim Names(Claim value size)\n");
+    for (size_t j = 0; j < claims_length; j++)
+    {
+        printf("%s(%zu) \n", claims[j].name, claims[j].value_size);
     }
 
     if (report_data != NULL)
