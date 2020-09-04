@@ -1,0 +1,26 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    // Selectively import calls and ocalls.
+    // All types are imported.
+    from "common.edl" import
+      enc_ecall2,
+      enc_ecall1,
+      host_ocall1,
+      host_ocall2;
+
+    from "openenclave/edl/logging.edl" import oe_write_ocall;
+    from "openenclave/edl/fcntl.edl" import *;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
+
+
+
+    trusted {
+        public int enc_local_ecall2(int val);
+    };
+};

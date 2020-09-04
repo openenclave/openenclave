@@ -318,6 +318,7 @@ list(
   ../common/kdf.c
   ../common/argv.c
   asym_keys.c
+  ecall_ids.c
   calls.c
   ocalls/log.c
   ocalls/ocalls.c

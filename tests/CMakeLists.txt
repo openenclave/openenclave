@@ -88,6 +88,7 @@ if (UNIX
     add_subdirectory(custom_claims)
     add_subdirectory(debug-mode)
     add_subdirectory(ecall)
+    add_subdirectory(ecall_conflict)
     add_subdirectory(ecall_ocall)
     add_subdirectory(echo)
     add_subdirectory(enclaveparam)
