@@ -131,9 +131,6 @@ oe_result_t oe_rsa_public_key_from_modulus(
     size_t exponent_size,
     oe_rsa_public_key_t* public_key)
 {
-#if OPENSSL_VERSION_NUMBER < 0x1010100fL
-#error OpenSSL <= 1.0.2 not supported
-#endif
     oe_result_t result = OE_UNEXPECTED;
     BIGNUM *bignum_modulus = NULL, *bignum_exponent = NULL;
     RSA* rsa = NULL;
