@@ -1,22 +1,29 @@
-SIG API
-========
+API Special Interest Group
+==========================
 
-SIG-API is responsible for reviewing and approving changes to the project's core APIs.
+SIG-API is responsible for reviewing and approving changes to the project's
+public APIs, and for maintaining [guidelines](../../ApiGuidelines.md)
+around creating such APIs.
 
 Meetings
 --------
 
-TBD
+Currently combined with [SIG-Architecture](../sig-architecture/README.md).
 
-SIG leads
+SIG Chair
 ---------
 
-TBD
+Dave Thaler ([dthaler](https://github.com/dthaler))
 
-Meeting Chair
+SIG Approvers
 -------------
 
-TBD
+(none)
+
+SIG Reviewers
+-------------
+
+(none)
 
 Charter
 -------
