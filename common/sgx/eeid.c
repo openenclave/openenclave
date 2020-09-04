@@ -189,7 +189,6 @@ static bool is_zero(const uint8_t* buf, size_t sz)
     return true;
 }
 
-#ifdef OE_BUILD_ENCLAVE /* mbedTLS/Enclave */
 static oe_result_t _verify_signature(
     const OE_SHA256* hash,
     const uint8_t* modulus,
@@ -197,40 +196,13 @@ static oe_result_t _verify_signature(
     const uint8_t* signature)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_rsa_public_key_t pk;
-    mbedtls_pk_context pkctx;
-    mbedtls_rsa_context* rsa_ctx = NULL;
-    mbedtls_pk_context* ikey = NULL;
-    mbedtls_pk_init(&pkctx);
-    const mbedtls_pk_info_t* info = NULL;
+    oe_rsa_public_key_t public_key;
 
-    info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
-    if (mbedtls_pk_setup(&pkctx, info) != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    rsa_ctx = mbedtls_pk_rsa(pkctx);
-    mbedtls_rsa_init(rsa_ctx, 0, 0);
-    if (mbedtls_rsa_import_raw(
-            rsa_ctx,
-            modulus,
-            OE_KEY_SIZE, // N
-            NULL,
-            0,
-            NULL,
-            0,
-            NULL,
-            0, // P Q D
-            exponent,
-            OE_EXPONENT_SIZE) != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-    if (mbedtls_rsa_check_pubkey(rsa_ctx) != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    ikey = &pkctx;
-    oe_rsa_public_key_init(&pk, ikey);
+    OE_CHECK(oe_rsa_public_key_from_modulus(
+        modulus, OE_KEY_SIZE, exponent, OE_EXPONENT_SIZE, &public_key));
 
     OE_CHECK(oe_rsa_public_key_verify(
-        &pk,
+        &public_key,
         OE_HASH_TYPE_SHA256,
         hash->buf,
         sizeof(hash->buf),
@@ -240,121 +212,20 @@ static oe_result_t _verify_signature(
     result = OE_OK;
 
 done:
-    if (result == OE_OK)
-        result = oe_rsa_public_key_free(&pk);
-    mbedtls_pk_free(ikey);
-
-    return result;
-}
-#else         /* Host */
-#ifdef _WIN32 /* BCrypt/Windows */
-static oe_result_t _verify_signature(
-    const OE_SHA256* hash,
-    const uint8_t* modulus,
-    const uint8_t* exponent,
-    const uint8_t* signature)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_rsa_public_key_t pk;
-    BCRYPT_KEY_HANDLE ikey;
-
-    OE_PACK_BEGIN
-    struct
+#ifdef OE_BUILD_ENCLAVE
+    // The mbedTLS flavour of oe_rsa_public_key_init copies the key,
+    // so we need both, an oe_rsa_public_key_free and an mbedtls_pk_free.
     {
-        BCRYPT_RSAKEY_BLOB blob;
-        uint8_t bytes[OE_EXPONENT_SIZE + OE_KEY_SIZE];
-    } key_data;
-    OE_PACK_END
-
-    key_data.blob.BitLength = OE_KEY_SIZE;
-    key_data.blob.cbModulus = OE_KEY_SIZE;
-    key_data.blob.cbPublicExp = OE_EXPONENT_SIZE;
-    key_data.blob.Magic = BCRYPT_RSAPUBLIC_MAGIC;
-    key_data.blob.cbPrime1 = 0;
-    key_data.blob.cbPrime2 = 0;
-
-    OE_CHECK(oe_memcpy_s(
-        key_data.bytes, OE_EXPONENT_SIZE, exponent, OE_EXPONENT_SIZE));
-    OE_CHECK(oe_memcpy_s(
-        key_data.bytes + OE_EXPONENT_SIZE, OE_KEY_SIZE, modulus, OE_KEY_SIZE));
-
-    if (!BCRYPT_SUCCESS(BCryptImportKeyPair(
-            BCRYPT_RSA_ALG_HANDLE,
-            NULL,
-            BCRYPT_RSAPUBLIC_BLOB,
-            &ikey,
-            (PUCHAR)&key_data,
-            sizeof(key_data),
-            BCRYPT_NO_KEY_VALIDATION)))
-        OE_RAISE(OE_UNEXPECTED);
-
-    oe_rsa_public_key_init(&pk, ikey);
-
-    OE_CHECK(oe_rsa_public_key_verify(
-        &pk,
-        OE_HASH_TYPE_SHA256,
-        hash->buf,
-        sizeof(hash->buf),
-        signature,
-        OE_KEY_SIZE));
-
-    result = OE_OK;
-
-done:
-    if (result == OE_OK)
-        result = oe_rsa_public_key_free(&pk);
-
-    return result;
-}
-#else         /* OpenSSL/Linux */
-static oe_result_t _verify_signature(
-    const OE_SHA256* hash,
-    const uint8_t* modulus,
-    const uint8_t* exponent,
-    const uint8_t* signature)
-{
-#if OPENSSL_VERSION_NUMBER < 0x1010100fL
-#error OpenSSL 1.0.2 not supported
+        oe_public_key_t* pk = (oe_public_key_t*)&public_key;
+        mbedtls_pk_free(&pk->pk);
+    }
 #endif
-    oe_result_t result = OE_UNEXPECTED;
-    oe_rsa_public_key_t pk;
-    BIGNUM *rm = NULL, *re = NULL;
-    RSA* rsa = NULL;
-    EVP_PKEY* ikey = NULL;
 
-    rm = BN_bin2bn(modulus, OE_KEY_SIZE, 0);
-    re = BN_bin2bn(exponent, OE_EXPONENT_SIZE, 0);
-    rsa = RSA_new();
-    if (RSA_set0_key(rsa, rm, re, NULL) != 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    ikey = EVP_PKEY_new();
-    if (EVP_PKEY_assign_RSA(ikey, rsa) != 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    oe_rsa_public_key_init(&pk, ikey);
-
-    OE_CHECK(oe_rsa_public_key_verify(
-        &pk,
-        OE_HASH_TYPE_SHA256,
-        hash->buf,
-        sizeof(hash->buf),
-        signature,
-        OE_KEY_SIZE));
-
-    result = OE_OK;
-
-done:
     if (result == OE_OK)
-        result = oe_rsa_public_key_free(&pk);
-
-    // The OpenSSL flavour of oe_rsa_public_key_init does not copy the key,
-    // so oe_rsa_public_key_free already freed it.
+        result = oe_rsa_public_key_free(&public_key);
 
     return result;
 }
-#endif /* OpenSSL/Linux */
-#endif /* Host */
 
 static oe_result_t _verify_base_image_signature(
     const sgx_sigstruct_t* sigstruct)

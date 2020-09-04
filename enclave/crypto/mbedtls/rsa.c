@@ -319,3 +319,51 @@ oe_result_t oe_rsa_public_key_equal(
     return oe_public_key_equal(
         (oe_public_key_t*)public_key1, (oe_public_key_t*)public_key2, equal);
 }
+
+oe_result_t oe_rsa_public_key_from_modulus(
+    const uint8_t* modulus,
+    size_t modulus_size,
+    const uint8_t* exponent,
+    size_t exponent_size,
+    oe_rsa_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    mbedtls_pk_context pkctx;
+    mbedtls_rsa_context* rsa_ctx = NULL;
+    mbedtls_pk_context* ikey = NULL;
+    mbedtls_pk_init(&pkctx);
+    const mbedtls_pk_info_t* info = NULL;
+
+    info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
+    if (mbedtls_pk_setup(&pkctx, info) != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    rsa_ctx = mbedtls_pk_rsa(pkctx);
+    mbedtls_rsa_init(rsa_ctx, 0, 0);
+
+    if (mbedtls_rsa_import_raw(
+            rsa_ctx,
+            modulus,
+            modulus_size, // N
+            NULL,
+            0,
+            NULL,
+            0,
+            NULL,
+            0, // P Q D
+            exponent,
+            exponent_size) != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (mbedtls_rsa_check_pubkey(rsa_ctx) != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    ikey = &pkctx;
+    oe_rsa_public_key_init(public_key, ikey);
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}

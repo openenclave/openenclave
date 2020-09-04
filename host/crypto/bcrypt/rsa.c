@@ -558,3 +558,49 @@ done:
 
     return result;
 }
+
+oe_result_t oe_rsa_public_key_from_modulus(
+    const uint8_t* modulus,
+    const uint8_t* exponent,
+    oe_rsa_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    BCRYPT_KEY_HANDLE ikey;
+
+    OE_PACK_BEGIN
+    struct
+    {
+        BCRYPT_RSAKEY_BLOB blob;
+        uint8_t bytes[OE_EXPONENT_SIZE + OE_KEY_SIZE];
+    } key_data;
+    OE_PACK_END
+
+    key_data.blob.BitLength = OE_KEY_SIZE;
+    key_data.blob.cbModulus = OE_KEY_SIZE;
+    key_data.blob.cbPublicExp = OE_EXPONENT_SIZE;
+    key_data.blob.Magic = BCRYPT_RSAPUBLIC_MAGIC;
+    key_data.blob.cbPrime1 = 0;
+    key_data.blob.cbPrime2 = 0;
+
+    OE_CHECK(oe_memcpy_s(
+        key_data.bytes, OE_EXPONENT_SIZE, exponent, OE_EXPONENT_SIZE));
+    OE_CHECK(oe_memcpy_s(
+        key_data.bytes + OE_EXPONENT_SIZE, OE_KEY_SIZE, modulus, OE_KEY_SIZE));
+
+    if (!BCRYPT_SUCCESS(BCryptImportKeyPair(
+            BCRYPT_RSA_ALG_HANDLE,
+            NULL,
+            BCRYPT_RSAPUBLIC_BLOB,
+            &ikey,
+            (PUCHAR)&key_data,
+            sizeof(key_data),
+            BCRYPT_NO_KEY_VALIDATION)))
+        OE_RAISE(OE_UNEXPECTED);
+
+    oe_rsa_public_key_init(public_key, ikey);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
