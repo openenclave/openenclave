@@ -561,46 +561,60 @@ done:
 
 oe_result_t oe_rsa_public_key_from_modulus(
     const uint8_t* modulus,
+    size_t modulus_size,
     const uint8_t* exponent,
+    size_t exponent_size,
     oe_rsa_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
-    BCRYPT_KEY_HANDLE ikey;
+    BCRYPT_KEY_HANDLE key_handle;
+    uint8_t* key_data_bytes = NULL;
+    size_t key_data_size = 0;
 
-    OE_PACK_BEGIN
-    struct
-    {
-        BCRYPT_RSAKEY_BLOB blob;
-        uint8_t bytes[OE_EXPONENT_SIZE + OE_KEY_SIZE];
-    } key_data;
-    OE_PACK_END
+    if (!public_key || modulus_size > ULONG_MAX || exponent_size > ULONG_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
-    key_data.blob.BitLength = OE_KEY_SIZE;
-    key_data.blob.cbModulus = OE_KEY_SIZE;
-    key_data.blob.cbPublicExp = OE_EXPONENT_SIZE;
-    key_data.blob.Magic = BCRYPT_RSAPUBLIC_MAGIC;
-    key_data.blob.cbPrime1 = 0;
-    key_data.blob.cbPrime2 = 0;
+    key_data_size = sizeof(BCRYPT_RSAKEY_BLOB) + exponent_size + modulus_size;
+    key_data_bytes = malloc(key_data_size);
+    if (!key_data_bytes)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    BCRYPT_RSAKEY_BLOB* blob = (BCRYPT_RSAKEY_BLOB*)key_data_bytes;
+
+    blob->BitLength = (ULONG)modulus_size;
+    blob->cbModulus = (ULONG)modulus_size;
+    blob->cbPublicExp = (ULONG)exponent_size;
+    blob->Magic = BCRYPT_RSAPUBLIC_MAGIC;
+    blob->cbPrime1 = 0;
+    blob->cbPrime2 = 0;
 
     OE_CHECK(oe_memcpy_s(
-        key_data.bytes, OE_EXPONENT_SIZE, exponent, OE_EXPONENT_SIZE));
+        key_data_bytes + sizeof(BCRYPT_RSAKEY_BLOB),
+        (ULONG)exponent_size,
+        exponent,
+        (ULONG)exponent_size));
     OE_CHECK(oe_memcpy_s(
-        key_data.bytes + OE_EXPONENT_SIZE, OE_KEY_SIZE, modulus, OE_KEY_SIZE));
+        key_data_bytes + sizeof(BCRYPT_RSAKEY_BLOB) + exponent_size,
+        (ULONG)modulus_size,
+        modulus,
+        (ULONG)modulus_size));
 
     if (!BCRYPT_SUCCESS(BCryptImportKeyPair(
             BCRYPT_RSA_ALG_HANDLE,
             NULL,
             BCRYPT_RSAPUBLIC_BLOB,
-            &ikey,
-            (PUCHAR)&key_data,
-            sizeof(key_data),
+            &key_handle,
+            (PUCHAR)key_data_bytes,
+            (ULONG)key_data_size,
             BCRYPT_NO_KEY_VALIDATION)))
         OE_RAISE(OE_UNEXPECTED);
 
-    oe_rsa_public_key_init(public_key, ikey);
+    oe_rsa_public_key_init(public_key, key_handle);
 
     result = OE_OK;
 
 done:
+    free(key_data_bytes);
+
     return result;
 }
