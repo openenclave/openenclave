@@ -128,27 +128,24 @@ typedef struct oe_sgx_eeid_t_
 #endif
 ```
 
-The EEID implementation and the SGX KSS based implementation both support a
-default definition of config_id, as well as enclave developer owned definition
-of config_id and config_svn.
+The enclave developer is responsible for the host side code that produces the
+identity of the additional content and pass the proper values for
+config_id/config_svn to the enclave runtime. The enclave runtime sets the
+config_id/config_svn through the eeid page or in SGX `SECS` if SGX KSS is
+supported. The enclave developer should also implement an explicit function
+(typically an ECALL) to load the additional content into the enclave memory post
+enclave initialization, and to verify the identity and/or SVN of the loaded
+content against config_id/config_svn. On SGX CPUs supporting the KSS feature,
+config_id and config_svn are available in the SGX `REPORT`. The OE SDK libs will
+provide an API to retrieve config_id and config_svn. The low level
+implementation difference between EEID implementation and SGX KSS feature based
+implementation is not exposed to the developer's code.
 
-For the default definition case, config_id is a SHA256 hash of a variable length
-configuration data to be loaded post enclave initialization, and config_svn is
-not used. With the default definition, the enclave runtime automatically set
-config_id and load the configuration data.
-
-For the case of enclave developer owned definition, the enclave developer is
-responsible for the host side code that produces the identity of the additional
-content and pass the proper values for config_id/config_svn to the enclave
-runtime. The enclave runtime sets the config_id/config_svn through the eeid page
-or in SGX `SECS` if SGX KSS is supported. The enclave developer should also
-implement an explicit function (typically an ECALL) to load the additional
-content into the enclave memory post enclave initialization, and to verify the
-identity and/or SVN of the loaded content against config_id/config_svn. On SGX
-CPUs supporting the KSS feature, config_id and config_svn are available in the
-SGX `REPORT`. The OE SDK libs will provide an API to retrieve config_id and
-config_svn. The low level implementation difference between EEID implementation
-and SGX KSS feature based implementation is not exposed to the developer's code.
+OE SDK can provide helper functions on the host side and the enclave side that
+implement a default definition of config_id/config_svn. The host side helper
+function generates config_id value as a SHA256 hash of a variable length
+configuration data to be loaded post enclave initialization, and sets config_svn
+as 0. The helper functions also load the configuration data into the enclave and verifies its validity according to the config_id value in the EEID page. At the time of this design doc, the helper functions will only be provided for EEID enclaves.
 
 The SGX enclave attester and verifier plugins will include config_id and
 config_svn as base claims and may include the configuration data as custom
@@ -182,7 +179,7 @@ typedef enum _oe_enclave_setting_type
      *  runtime post enclave initialization. Currently only supported by SGX
      *  Enclaves with KSS feature enabled or SGX EEID enclaves.
      */
-    OE_ENCLAVE_SETTING_CONTEXT_PRE_MEASURED_DATA = 0x976a8f68,
+    OE_ENCLAVE_SETTING_CONTEXT_EEID_PRE_MEASURED_DATA = 0x976a8f68,
 #endif
 } oe_enclave_setting_type_t;
 /**
@@ -204,7 +201,7 @@ typedef struct _oe_enclave_eeid_dynamic_sizes
     oe_enclave_size_settings_t size_settings;
 }
 oe_enclave_eeid_dynamic_sizes_t;
-typedef struct _oe_enclave_pre_measured_data
+typedef struct _oe_enclave_eeid_pre_measured_data
     /** Config data to be loaded automatically by the enclave runtime.
      * If provided, the enclave runtime overrides config_id field with the
      * SHA256 hash of the config data, and verifies the hash value when the
@@ -212,27 +209,38 @@ typedef struct _oe_enclave_pre_measured_data
      */
     size_t data_size;
     uint8_t data[];
-} oe_enclave_pre_measured_data_t;
+} oe_enclave_eeid_pre_measured_data_t;
 ```
 
 Interaction of settings
 -----------------------
 
-The behavior of each of the combinations of settings is as follows (x meaning
-enabled):
+Based on the type of the base enclave image, the behavior of each of the
+combinations of settings is as follows (x meaning provided):
 
-| DYN | PREID | RREDATA | Behavior
+*Non-EEID SGX Enclave*
+
+| DYN | PREID | PREDATA | Behavior
 |-----|-------|---------|-----------------------------------
-|  -  |   -   |   -     | SGX1.0 non-EEID enlave
-|  -  |   -   |   x     | SGX-KSS/EEID: loader sets KSS/EEID config_id as PREDATA hash, and config_svn as 0, enclave runtime loads/verifies PREDATA
-|  -  |   x   |   -     | SGX-KSS/EEID: loader copies PREID to KSS/EEID {config_id, config_svn}
-|  -  |   x   |   x     | SGX-KSS/EEID: loader ignores PREID, sets KSS/EEID config_id as PREDATA hash, and config_svn as 0, enclave runtime loads/verifies PREDATA
-|  x  |   -   |   -     | Dynamic sizing EEID only: loader sets EEID {config_id, config_svn} as 0s
-|  x  |   -   |   x     | Dynamic sizing EEID only: loader sets EEID config_id as PREDATA hash, and config_svn as 0, enclave runtime loads/verifies PREDATA 
-|  x  |   x   |   -     | Dynamic sizing EEID only: loader copies PREID to EEID {config_id, config_svn}
-|  x  |   x   |   x     | Dynamic sizing EEID only: loader ignores PREID, sets EEID config_id as PREDATA hash, and config_svn as 0, enclave runtime loads/verifies PREDATA
+|  -  |   -   |   -     | On system where SGX-KSS feature is not available or disabled: N/A; On system with SGX-KSS enabled: loader sets SECS.config_id and SECS.config_svn as 0
+|  -  |   x   |   -     | On system where SGX-KSS feature is not available or disabled: Invalid;  On system with SGX-KSS enabled only: loader copies PREID to SECS.config_id and SECS.config_svn
 
-Where the pre-measured data is empty (data size is 0), it's configured as no pre-measured data.
+*Static sizing EEID SGX Enclave*
+
+| DYN | PREID | PREDATA | Behavior
+|-----|-------|---------|-----------------------------------
+|  -  |   -   |   x     | Static sizing EEID enclave only: loader sets eeid_page.config_id as PREDATA hash, and eeid_page.config_svn as 0, enclave runtime loads/verifies PREDATA
+|  -  |   x   |   -     | static sizing EEID enclave only: loader copies PREID to SECS.config_id and SECS.config_svn
+
+*Dynamic sizing EEID SGX Enclave*
+
+| DYN | PREID | PREDATA | Behavior
+|-----|-------|---------|-----------------------------------
+|  x  |   -   |   -     | loader selects heap/stack/thread, sets eeid_page.config_id and eeid_page.config_svn as 0s
+|  x  |   x   |         | loader selects heap/stack/thread, copies PREID to eeid_page.config_id and eeid_page.config_svn
+|  x  |   -   |   x     | loader selects heap/stack/thread, sets eeid_page.config_id as PREDATA hash, and eeid_page.config_svn as 0, enclave runtime loads/verifies PREDATA
+
+Combinations not listed in the table above shall be rejected by the loader. If the pre-measured data is empty (data size is 0), it's considered as no pre-measured data.
 
 Supporting heap/stack size and #TCS specified at enclave signing time or loading time
 -------------------------------------------------------------------------------------
