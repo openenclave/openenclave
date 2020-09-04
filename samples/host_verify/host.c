@@ -3,8 +3,8 @@
 
 #include <errno.h>
 
-#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/sgx/eeid_verifier.h>
+#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <stdio.h>
 #include <stdlib.h>
