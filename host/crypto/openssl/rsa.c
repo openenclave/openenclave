@@ -132,27 +132,27 @@ oe_result_t oe_rsa_public_key_from_modulus(
     oe_rsa_public_key_t* public_key)
 {
 #if OPENSSL_VERSION_NUMBER < 0x1010100fL
-#error OpenSSL 1.0.2 not supported
+#error OpenSSL <= 1.0.2 not supported
 #endif
     oe_result_t result = OE_UNEXPECTED;
-    BIGNUM *rm = NULL, *re = NULL;
+    BIGNUM *bignum_modulus = NULL, *bignum_exponent = NULL;
     RSA* rsa = NULL;
-    EVP_PKEY* ikey = NULL;
+    EVP_PKEY* pkey = NULL;
 
     if (!public_key || modulus_size > INT_MAX || exponent_size > INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    rm = BN_bin2bn(modulus, (int)modulus_size, 0);
-    re = BN_bin2bn(exponent, (int)exponent_size, 0);
+    bignum_modulus = BN_bin2bn(modulus, (int)modulus_size, 0);
+    bignum_exponent = BN_bin2bn(exponent, (int)exponent_size, 0);
     rsa = RSA_new();
-    if (RSA_set0_key(rsa, rm, re, NULL) != 1)
+    if (RSA_set0_key(rsa, bignum_modulus, bignum_exponent, NULL) != 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    ikey = EVP_PKEY_new();
-    if (EVP_PKEY_assign_RSA(ikey, rsa) != 1)
+    pkey = EVP_PKEY_new();
+    if (EVP_PKEY_assign_RSA(pkey, rsa) != 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    oe_rsa_public_key_init(public_key, ikey);
+    oe_rsa_public_key_init(public_key, pkey);
 
     result = OE_OK;
 

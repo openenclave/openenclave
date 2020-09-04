@@ -330,10 +330,9 @@ oe_result_t oe_rsa_public_key_from_modulus(
     oe_result_t result = OE_UNEXPECTED;
     mbedtls_pk_context pkctx;
     mbedtls_rsa_context* rsa_ctx = NULL;
-    mbedtls_pk_context* ikey = NULL;
-    mbedtls_pk_init(&pkctx);
     const mbedtls_pk_info_t* info = NULL;
 
+    mbedtls_pk_init(&pkctx);
     info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
     if (mbedtls_pk_setup(&pkctx, info) != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -358,8 +357,7 @@ oe_result_t oe_rsa_public_key_from_modulus(
     if (mbedtls_rsa_check_pubkey(rsa_ctx) != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    ikey = &pkctx;
-    oe_rsa_public_key_init(public_key, ikey);
+    OE_CHECK(oe_rsa_public_key_init(public_key, &pkctx));
 
     result = OE_OK;
 
