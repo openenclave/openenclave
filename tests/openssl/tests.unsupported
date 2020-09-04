@@ -2,6 +2,8 @@
 ../../3rdparty/openssl/openssl/test/aborttest.c
 # Require localtime, which is not supported.
 ../../3rdparty/openssl/openssl/test/asn1_time_test.c
+# The MS CryptoAPI engine (capieng) is disabled.
+../../3rdparty/openssl/openssl/test/cmsapitest.c
 # Require fork, which is not supported.
 ../../3rdparty/openssl/openssl/test/drbgtest.c
 # Disable the stress test that takes too long to finish (e.g., ~70 second on both Linux and Windows).
@@ -19,3 +21,21 @@
 ../../3rdparty/openssl/openssl/test/secmemtest.c
 # GOST engine is not supported by OE (require dynamic loading).
 ../../3rdparty/openssl/openssl/test/gosttest.c
+# Depend on PSK that is disabled by OE.
+../../3rdparty/openssl/openssl/test/dtls_mtu_test.c
+# Poly1305 is disabled OE.
+../../3rdparty/openssl/openssl/test/poly1305_internal_test.c
+# Chacha is disabled by OE.
+../../3rdparty/openssl/openssl/test/chacha_internal_test.c
+# SipHash is disabled by OE.
+../../3rdparty/openssl/openssl/test/siphash_internal_test.c
+# SM2 is disabled by OE.
+../../3rdparty/openssl/openssl/test/sm2_internal_test.c
+# SM4 is disabled by OE.
+../../3rdparty/openssl/openssl/test/sm4_internal_test.c
+# MDC2 is disabled by OE.
+../../3rdparty/openssl/openssl/test/mdc2_internal_test.c
+# Depend on the shared configuration that is disabled by OE.
+../../3rdparty/openssl/openssl/test/cipher_overhead_test.c
+# The 25-cipher.conf depends on chacha and poly1305 that are disabled by OE.
+../../3rdparty/openssl/openssl/test/ssl_test.c

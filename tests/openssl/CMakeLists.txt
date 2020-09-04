@@ -333,14 +333,6 @@ foreach (testcase ${openssltests})
       ENVIRONMENT
       "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
     )
-    add_openssl_test("${name}-cipher" "${name}"
-                     ${OPENSSL_TEST_DIR}/ssl-tests/25-cipher.conf)
-    set_enclave_tests_properties(
-      tests/openssl/${name}-cipher
-      PROPERTIES
-      ENVIRONMENT
-      "CTLOG_FILE=${OPENSSL_TEST_DIR}/ct/log_list.conf;TEST_CERTS_DIR=${OPENSSL_TEST_DIR}/certs"
-    )
     add_openssl_test("${name}-ticket-appdata" "${name}"
                      ${OPENSSL_TEST_DIR}/ssl-tests/27-ticket-appdata.conf)
     set_enclave_tests_properties(

@@ -1,23 +1,83 @@
 # Open Enclave Support for OpenSSL
 
 The OpenSSL on OE is configured with following options
-- no-hw
-- no-shared
-- no-threads
+- no-afalgeng
+  - Disable the AF_ALG hardware engine.
+- no-autoerrinit
+- no-autoload-config
+- no-aria
+  - Disable ARIA block cipher.
+- no-blake2
+  - Disable Blake2.
+- no-bf
+  - Disable Blowfish.
+- no-camellia
+  - Disable camellia.
+- no-cast
+  - Disable CAST5 block cipher.
+- no-capieng
+  - Disable the Microsoft CryptoAPI engine.
+- no-cms
+  - Disable cryptographic message syntax that handles S/MIME v3.1 mail.
+- no-ct
+  - Disable certificate transparency as it depends on host file system (CT log files).
 - no-dso
+  - Disable the OpenSSL DSO API.
+- no-gost
+  - Disable the Russian GOST crypto engine that requires dynamic loading.
+- no-hw
+- no-idea
+  - Disable IDEA.
+- no-md2
+  - Disable MD2.
+- no-md4
+  - Disable MD4.
+- no-mdc2
+  - Disable MDC2.
+- no-nextprotoneg
+  - Disable Next Protocol Negotiation (NPN).
+- no-psk
+  - Disable PSK.
+- no-poly1305
+  - Disable Poly-1305.
+- no-rfc3779
+  - Disable RFC 3379 (Delegated Path Discovery).
+- no-rmd160
+  - Disable RIPEMD-160.
+- no-seed
+  - Disable SEED ciphersuites.
+- no-rc4
+  - Disable RC4.
+- no-shared
+- no-sm2
+  - Disable Chinese cryptographic algorithms.
+- no-sm3
+  - Disable Chinese cryptographic algorithms.
+- no-sm4
+  - Disable Chinese cryptographic algorithms
+- no-siphash
+  - Disable SipHash.
+- no-scrypt
+  - Disable scrypt KDF.
+- no-srp
+  - Disable Secure Remote Password (SRP).
 - no-ssl2
-- no-ss3
+- no-ssl3
+- no-whirlpool
+  - Disable Whirlpool hash.
+- no-threads
+- no-ui-console
+  - Disable support for the openssl command-line tool that is not required by OE.
+- no-zlib
+  - Disable the ZLIb support.
 - --with-rand-seed=none
 
-OE also explicitly disables the following features
-- AFALGENG (AF_ALG hardware engine)
-  - Require special hardware.
-- GOST (Russian GOST crypto engine)
-  - Require dynamic loading.
+*Note:* The autoalginit option is required by APIs (e.g., EVP) that retrieve algorithms by name so
+can not be disabled.
+
+OE also explicitly disables the following feature:
 - SECURE_MEMORY
   - Require mman features (e.g., madvise, mlock, mprotect) that are not supported inside an enclave.
-- UI_CONSOLE
-  - Used by the openssl command-line tool that is not required by OE.
 
 In addition, OpenSSL by default disables the following algorithms/features
 - MD2
@@ -101,13 +161,13 @@ async.h | Yes | - |
 asyncerr.h | Yes | - |
 bio.h | Partial | SCTP support is disabled by default. |
 bioerr.h | Yes | - |
-blowfish.h | Yes | - |
+blowfish.h | No | Blowfish is disabled by default. |
 bn.h | Yes | - |
 bnerr.h | Yes | - |
 buffer.h | Yes | - |
 buffererr.h | Yes | - |
-camellia.h | Yes | - |
-cast.h | Yes | - |
+camellia.h | No | Camellia is disabled by OE. |
+cast.h | No | CAST5 is disabled by OE. |
 cmac.h | Yes | - |
 cms.h | Yes | - |
 cmserr.h | Yes | - |
@@ -118,7 +178,7 @@ conf_api.h | Yes | - |
 conferr.h | Yes | - |
 crypto.h | Yes | SECURE_MEMORY APIs (e.g., CRYPTO_secure_malloc, CRYPT_secure_free) are disabled. |
 cryptoerr.h | Yes | - |
-ct.h | Yes | - |
+ct.h | No | Certificate Transparency is disabled by OE. |
 cterr.h | Yes | - |
 des.h | Yes | - |
 dh.h | Yes | - |
@@ -138,14 +198,14 @@ err.h | Yes | - |
 evp.h | Partial | MD2 and RC5 are disabled by default. |
 evperr.h | Yes | - |
 hmac.h | Yes | - |
-idea.h | Yes | - |
+idea.h | No | IDEA is disabled by OE. |
 kdf.h | Yes | - |
 kdferr.h | Yes | - |
 lhash.h | Yes | The lhash test is disabled becuase of requiring too much heap size. Refer to the [unsuppored test list](/tests/openssl/tests.unsupported) for more detail. |
 md2.h | No | MD2 is disabled by default (header is present). |
-md4.h | Yes | - |
+md4.h | No | MD4 is disabled by OE. |
 md5.h | Yes | - |
-mdc2.h | Yes | - |
+mdc2.h | No | MDC2 is disabled by OE. |
 modes.h | Yes | - |
 obj_mac.h | Yes | - |
 objects.h | Yes | - |
@@ -165,15 +225,15 @@ rand.h | Partial | EGD is disabled by default. The default method (RAND_OpenSSL)
 rand_drbg.h | Partial | OE by default does not depend on the default rand method. Therefore, rand_drbg APIs are supported but have no impact on rand APIs. The drbg test is disabled. Refer to the [unsuppored test list](/tests/openssl/tests.unsupported) for more detail. |
 randerr.h | Yes | - |
 rc2.h | Yes | - |
-rc4.h | Yes | - |
+rc4.h | No | RC4 is disabled by OE. |
 rc5.h | No | RC5 is disabled by default (header is present). |
-ripemd.h | Yes | - |
+ripemd.h | No | RIPEMD-160 is disabled by OE.  |
 rsa.h | Yes | - |
 rsaerr.h | Yes | - |
 safestack.h | Yes | - |
-seed.h | Yes | - |
+seed.h | No | SEED is disabled by OE. |
 sha.h | Yes | - |
-srp.h | Yes | - |
+srp.h | No | SRC is disabled by OE. |
 srtp.h | Yes | - |
 ssl.h | Partial | SSL2 and SSL3 methods are disabled. Heartbeats extension is disabled by defailt. |
 ssl2.h | Yes | - |
@@ -187,9 +247,9 @@ tls1.h | Partial | Heartbeats extension is disabled by default. |
 ts.h | Yes | - |
 tserr.h | Yes | - |
 txt_db.h | Yes | - |
-ui.h | No | Built with OPENSSL_NO_UI_CONSOLE. |
+ui.h | No | Configured with no-ui-console. |
 uierr.h | Yes | - |
-whrlpool.h | Yes | - |
+whrlpool.h | No | Whirlpool is disabled by OE. |
 x509.h | Yes | - |
 x509_vfy.h | Yes | - |
 x509err.h | Yes | - |
