@@ -3,12 +3,15 @@
 
 #include <errno.h>
 
-#include <openenclave/attestation/sgx/eeid_verifier.h>
 #include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+#include <openenclave/attestation/sgx/eeid_verifier.h>
+#endif
 
 size_t get_filesize(FILE* fp)
 {
