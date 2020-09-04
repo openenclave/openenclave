@@ -11,7 +11,7 @@
         intel_psw_url:       "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20PSW%20for%20Windows%20v2.9.100.2.exe"
         intel_psw_hash:      "A2F357F3AC1629C2A714A05DCA14CF8C7F25868A0B3352FAE351B14AD121BDFC"
         intel_dcap_url:      "https://oejenkins.blob.core.windows.net/oejenkins/Intel%20SGX%20DCAP%20for%20Windows%20v1.8.100.2.exe"
-        intel_dcap_hash:     "A3599509AF7411EF7FCA3B564B6FE99B551725C640D1A3021F06AD6F5C969F37"
+        intel_dcap_hash:     "F45D12351A1839C6F1AF58CC53D64B0810BC12E7DFF0E9DBF80A0031754AA925"
         git_url:             "https://oejenkins.blob.core.windows.net/oejenkins/Git-2.19.1-64-bit.exe"
         git_hash:            "5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793"
         seven_zip_url:       "https://oejenkins.blob.core.windows.net/oejenkins/7z1806-x64.msi"
