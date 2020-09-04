@@ -314,7 +314,7 @@ int main(int argc, const char* argv[])
             if (argc > (n - 1))
                 report_filename = argv[++n];
         }
-        if (memcmp(argv[n], "-v", 2) == 0)
+        else if (memcmp(argv[n], "-v", 2) == 0)
         {
             if (argc > (n - 1))
                 evidence_filename = argv[++n];
