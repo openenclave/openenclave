@@ -545,7 +545,7 @@ function Install-DCAP-Dependencies {
                     'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
                 }
                 'sgx_dcap' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2019_Windows10""
+                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2019_Windows10"
                     'location'    = 'root\SgxLCDevice_DCAP'
                     'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
                 }
@@ -557,7 +557,7 @@ function Install-DCAP-Dependencies {
                     'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
                 }
                 'sgx_dcap' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2019_Windows10""
+                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2019_Windows10"
                     'location'    = 'root\SgxLCDevice_DCAP'
                     'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
                 }
