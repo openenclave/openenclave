@@ -195,6 +195,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --cert keyec.pem publicec.pem --out sgx_cert_ec.der
                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der
                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --report --out sgx_report.bin
+                           ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --evidence --out sgx_evidence.bin --endorsements sgx_endorsements.bin
                            popd
                            """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-7", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
@@ -202,6 +203,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
                 def report_created = fileExists 'build/tests/host_verify/host/sgx_report.bin'
+                def evidence_created = fileExists 'build/tests/host_verify/host/sgx_evidence.bin'
                 if (ec_cert_created) {
                     println("EC cert file created successfully!")
                 } else {
@@ -216,6 +218,11 @@ def ACCHostVerificationTest(String version, String build_type) {
                     println("SGX report file created successfully!")
                 } else {
                     error("Failed to create SGX report file.")
+                }
+                if (evidence_created) {
+                    println("SGX evidence file created successfully!")
+                } else {
+                    error("Failed to create SGX evidence file.")
                 }
 
                 stash includes: 'build/tests/host_verify/host/*.der,build/tests/host_verify/host/*.bin', name: "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
@@ -291,6 +298,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
                 def report_created = fileExists 'build/tests/host_verify/host/sgx_report.bin'
+                def evidence_created = fileExists 'build/tests/host_verify/host/sgx_evidence.bin'
                 if (ec_cert_created) {
                     println("EC cert file created successfully!")
                 } else {
@@ -305,6 +313,11 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                     println("SGX report file created successfully!")
                 } else {
                     error("Failed to create SGX report file.")
+                }
+                if (evidence_created) {
+                    println("SGX evidence file created successfully!")
+                } else {
+                    error("Failed to create SGX evidence file.")
                 }
 
                 stash includes: 'build/tests/host_verify/host/*.der,build/tests/host_verify/host/*.bin', name: "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
