@@ -29,6 +29,6 @@ OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */
     true, /* Debug */
-    64,   /* NumHeapPages */
-    16,   /* NumStackPages */
+    128,  /* NumHeapPages */
+    32,   /* NumStackPages */
     1);   /* NumTCS */

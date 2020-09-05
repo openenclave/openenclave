@@ -175,10 +175,12 @@ void enclave_thread(int thread_num, int iters, int step)
     wait_for_test_completion();
 }
 
+#define NUM_TCS 16
+
 OE_SET_ENCLAVE_SGX(
-    0,    /* ProductID */
-    0,    /* SecurityVersion */
-    true, /* Debug */
-    64,   /* NumHeapPages */
-    16,   /* NumStackPages */
-    16);  /* NumTCS */
+    0,                                  /* ProductID */
+    0,                                  /* SecurityVersion */
+    true,                               /* Debug */
+    OE_TEST_MT_HEAP_SIZE(NUM_TCS) + 64, /* NumHeapPages */
+    16,                                 /* NumStackPages */
+    NUM_TCS);                           /* NumTCS */
