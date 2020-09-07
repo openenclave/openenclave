@@ -62,6 +62,21 @@ typedef struct _oe_eeid
 } oe_eeid_t;
 OE_PACK_END
 
+OE_PACK_BEGIN
+/**
+ * Structure to keep EEID endorsements.
+ */
+typedef struct
+{
+    /** Size of the underlying SGX endorsements. */
+    size_t sgx_endorsements_size;
+    /** Size of EEID endorsements (EEID data). */
+    size_t eeid_endorsements_size;
+    /** Buffer holding the data (same order as the sizes). */
+    uint8_t data[];
+} oe_eeid_endorsements_t;
+OE_PACK_END
+
 OE_EXTERNC_END
 
 #endif /* OE_WITH_EXPERIMENTAL_EEID */

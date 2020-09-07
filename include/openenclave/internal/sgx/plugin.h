@@ -80,19 +80,68 @@ oe_result_t oe_sgx_hash_custom_claims_buffer(
     OE_SHA256* hash_out);
 
 /**
- * sgx_attestation_plugin_free_claims_list
+ * oe_sgx_free_claims_list
  *
  * Free a claims list produced by the SGX verifier plugin.
  *
  * @param[in] context Plugin context (may be NULL).
  * @param[in] claims List of claims.
  * @param[in] claims_length The length of claims.
- * @retval OE_OK on success, otherwise an appropriate error code.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
  */
-oe_result_t sgx_attestation_plugin_free_claims_list(
+oe_result_t oe_sgx_free_claims_list(
     oe_verifier_t* context,
     oe_claim_t* claims,
     size_t claims_length);
+
+/**
+ * oe_sgx_add_claim
+ *
+ * Add a claim to the list of SGX claims.
+ *
+ * @param[in] claim The claim struct to populate.
+ * @param[in] name The name of the claim.
+ * @param[in] name_size The length of the claim name.
+ * @param[in] value The value of the claim.
+ * @param[in] value_size The length of the claim's value.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
+ */
+oe_result_t oe_sgx_add_claim(
+    oe_claim_t* claim,
+    const void* name,
+    size_t name_size,
+    const void* value,
+    size_t value_size);
+
+/**
+ * oe_sgx_verify_evidence
+ *
+ * Verify SGX evidence.
+ *
+ * @param[in] context Plugin context.
+ * @param[in] evidence_buffer The evidence buffer.
+ * @param[in] evidence_buffer_size The size of the evidence buffer.
+ * @param[in] endorsements_buffer The endorsements buffer.
+ * @param[in] endorsements_buffer_size The size of the endorsements buffer.
+ * @param[in] policies The policies.
+ * @param[in] policies_size The number of policies.
+ * @param[out] claims The claims.
+ * @param[out] claims_length The number of claims.
+ * @retval OE_OK The operation was successful.
+ * @retval other An appropriate error code.
+ */
+oe_result_t oe_sgx_verify_evidence(
+    oe_verifier_t* context,
+    const uint8_t* evidence_buffer,
+    size_t evidence_buffer_size,
+    const uint8_t* endorsements_buffer,
+    size_t endorsements_buffer_size,
+    const oe_policy_t* policies,
+    size_t policies_size,
+    oe_claim_t** claims,
+    size_t* claims_length);
 
 OE_EXTERNC_END
 
