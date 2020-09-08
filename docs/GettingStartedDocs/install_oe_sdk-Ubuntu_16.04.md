@@ -24,7 +24,7 @@ wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add 
 ```
 
 ### 2. Install the Intel SGX DCAP Driver
-<<<<<<< HEAD
+
 Some versions of Ubuntu come with the SGX driver already installed. You can check
 by running with the following:
 
@@ -64,6 +64,8 @@ sudo apt -y install ninja-build
 ```
 
 If you wish to make use of the Open Enclave CMake package, please install CMake and [follow the instructions here](/cmake/sdk_cmake_targets_readme.md).
+
+Open Enclave SDK binary packages can also be [downloaded from GitHub](https://github.com/openenclave/openenclave/releases).
 
 ### 4. Verify the Open Enclave SDK install
 
