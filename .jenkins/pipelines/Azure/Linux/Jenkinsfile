@@ -491,8 +491,6 @@ try{
                 "ACC1804 Package RelWithDebInfo LVI snmalloc":     { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF',  '-DUSE_SNMALLOC=ON']) },
 
                 "ACC1604 clang-7 Release LVI e2e snmalloc":        { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'clang-7', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
-                "ACC1604 gcc Debug LVI e2e snmalloc":              { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
-                "ACC1604 gcc Release LVI e2e snmalloc":            { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'gcc',     'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
                 "ACC1804 clang-7 Debug LVI e2e snmalloc":          { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-7', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
                 "ACC1804 clang-7 Release LVI e2e snmalloc":        { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-7', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
                 "ACC1804 gcc Release LVI e2e snmalloc":            { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'gcc',     'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
