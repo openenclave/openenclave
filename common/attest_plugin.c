@@ -463,7 +463,8 @@ oe_result_t oe_verify_attestation_certificate_with_evidence(
 
     // if there is no match
     if (oid_array_index == oid_array_count)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE_MSG(
+            OE_FAILURE, "No expected certificate extension matched", NULL);
 
     // find the extension
     OE_TRACE_VERBOSE("extract_x509_report_extension() succeeded");

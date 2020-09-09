@@ -138,7 +138,8 @@ oe_result_t oe_verify_attestation_certificate(
     }
     else
     {
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE_MSG(
+            OE_FAILURE, "No expected certificate extension matched", NULL);
     }
 
     OE_TRACE_VERBOSE("extract_x509_report_extension() succeeded");
