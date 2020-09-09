@@ -72,7 +72,12 @@ if (UNIX
       if (NOT USE_SNMALLOC)
         add_subdirectory(memory)
       endif ()
-      add_subdirectory(tls_e2e)
+      # Disable tls_e2e on RHEL. For some reasons it may hang on RHEL.
+      # https://github.com/openenclave/openenclave/issues/3508
+      find_file(REDHAT_FOUND redhat-release redhat-release.conf PATHS /etc)
+      if (NOT REDHAT_FOUND)
+        add_subdirectory(tls_e2e)
+      endif ()
     endif ()
 
     add_subdirectory(abi)
