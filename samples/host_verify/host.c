@@ -119,7 +119,6 @@ oe_result_t verify_report(
                 &endorsement_file_size);
         }
 
-        oe_verifier_initialize();
         result = oe_verify_evidence(
             &_uuid_legacy_report_remote,
             report_data,
@@ -171,11 +170,6 @@ oe_result_t verify_evidence(
         oe_claim_t* claims = NULL;
         size_t claims_length = 0;
 
-        oe_verifier_initialize();
-#ifdef OE_WITH_EXPERIMENTAL_EEID
-        oe_sgx_eeid_verifier_initialize();
-#endif
-
         result = oe_verify_evidence(
             NULL,
             evidence,
@@ -190,11 +184,6 @@ oe_result_t verify_evidence(
         oe_free_claims(claims, claims_length);
         free(evidence);
         free(endorsements);
-
-        oe_verifier_shutdown();
-#ifdef OE_WITH_EXPERIMENTAL_EEID
-        oe_sgx_eeid_verifier_shutdown();
-#endif
     }
 
     return result;
@@ -254,7 +243,6 @@ oe_result_t verify_cert(const char* filename)
 
     if (read_binary_file(filename, &cert_data, &cert_file_size))
     {
-        oe_verifier_initialize();
         result = oe_verify_attestation_certificate_with_evidence(
             cert_data, cert_file_size, sgx_enclave_claims_verifier, NULL);
     }
@@ -347,6 +335,11 @@ int main(int argc, const char* argv[])
     }
     else
     {
+        oe_verifier_initialize();
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+        oe_sgx_eeid_verifier_initialize();
+#endif
+
         if (report_filename != NULL)
         {
             fprintf(stdout, "Verifying report %s...\n", report_filename);
@@ -380,6 +373,11 @@ int main(int argc, const char* argv[])
                 (result == OE_OK) ? "succeeded" : "failed",
                 result);
         }
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
+        oe_sgx_eeid_verifier_shutdown();
+#endif
+        oe_verifier_shutdown();
     }
 
     return 0;
