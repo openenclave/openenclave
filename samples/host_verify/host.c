@@ -271,8 +271,11 @@ void print_syntax(const char* program_name)
 {
     fprintf(
         stdout,
-        "Usage:\n  %s -r <report_file> -v <evidence_file> "
-        "[-e <endorsement_file>]\n  %s -c <certificate_file>\n",
+        "Usage:\n"
+        "  %s -r <report_file> [-e <endorsement_file>]\n"
+        "  %s -v <evidence_file> [-e <endorsement_file>]\n"
+        "  %s -c <certificate_file>\n",
+        program_name,
         program_name,
         program_name);
     fprintf(
