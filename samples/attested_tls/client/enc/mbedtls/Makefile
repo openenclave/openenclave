@@ -1,7 +1,7 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-include ../../../config.mk
+include ../../../../config.mk
 
 CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
 CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
@@ -16,10 +16,10 @@ all:
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	oeedger8r ../tls_client.edl --trusted --trusted-dir . \
+	oeedger8r ../../tls_client.edl --trusted --trusted-dir . \
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp client.cpp cert_verifier.cpp identity_verifier.cpp ../../common/utility.cpp
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp client.cpp cert_verifier.cpp identity_verifier.cpp ../../../common/utility.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) ./tls_client_t.c
 	$(CXX) -o tls_client_enclave ecalls.o client.o cert_verifier.o identity_verifier.o utility.o tls_client_t.o $(LDFLAGS) -lmbedtls -lmbedcrypto -loehostsock -loehostresolver -loecore -loelibc -loesyscall
 

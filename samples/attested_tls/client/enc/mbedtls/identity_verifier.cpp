@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <string>
 
-#include "../../common/tls_server_enc_mrenclave.h"
-#include "../../common/tls_server_enc_pubkey.h"
-#include "../../common/utility.h"
+#include "../../../common/tls_server_enc_mrenclave.h"
+#include "../../../common/tls_server_enc_pubkey.h"
+#include "../../../common/utility.h"
 
 oe_result_t enclave_claims_verifier_callback(
     oe_claim_t* claims,

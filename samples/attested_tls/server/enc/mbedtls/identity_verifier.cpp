@@ -4,8 +4,8 @@
 #include <openenclave/enclave.h>
 #include <stdlib.h>
 #include <string>
-#include "../../common/tls_client_enc_pubkey.h"
-#include "../../common/utility.h"
+#include "../../../common/tls_client_enc_pubkey.h"
+#include "../../../common/utility.h"
 
 oe_result_t enclave_claims_verifier_callback(
     oe_claim_t* claims,

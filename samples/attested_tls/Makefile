@@ -3,6 +3,9 @@
 
 .PHONY: all build clean run
 
+OE_CRYPTO_LIB := mbedtls
+export OE_CRYPTO_LIB
+
 all: build
 
 build:
@@ -17,14 +20,14 @@ clean:
 
 run:
 	echo "Launch processes to establish an Attested TLS between two enclaves"
-	./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341 &
+	./server/host/tls_server_host ./server/enc/${OE_CRYPTO_LIB}/tls_server_enc.signed -port:12341 &
 	sleep 2
-	./client/host/tls_client_host ./client/enc/tls_client_enclave.signed -server:localhost -port:12341
+	./client/host/tls_client_host ./client/enc/${OE_CRYPTO_LIB}/tls_client_enclave.signed -server:localhost -port:12341
 	echo "Launch processes to establish an Attested TLS between an non-encalve TLS client and an TLS server running inside an enclave"
-	./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341 &
+	./server/host/tls_server_host ./server/enc/${OE_CRYPTO_LIB}/tls_server_enc.signed -port:12341 &
 	sleep 2
 	./non_enc_client/tls_non_enc_client -server:localhost -port:12341
 
 run-server-in-loop:
 	echo "Launch long-running Attested TLS server"
-	./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341 -server-in-loop
+	./server/host/tls_server_host ./server/enc/${OE_CRYPTO_LIB}/tls_server_enc.signed -port:12341 -server-in-loop
