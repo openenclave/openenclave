@@ -20,6 +20,7 @@ if (OE_SGX)
       sgx/attester.c
       sgx/report.c
       sgx/collateralinfo.c
+      sgx/openssl_init.c
       sgx/start.S)
   if (WITH_EEID)
     list(APPEND PLATFORM_SRC ../common/sgx/eeid_verifier.c ../common/sgx/eeid.c
