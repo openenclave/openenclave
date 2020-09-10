@@ -161,6 +161,7 @@ add_enclave_library(
   backtrace.c
   ctype.c
   debugmalloc.c
+  gmtime.c
   hexdump.c
   hostcalls.c
   intstr.c
