@@ -689,6 +689,9 @@ try {
         Install-PSW
         Install-DCAP-Dependencies
     } elseif($DCAPClientType -eq "Azure") {
+        # This has an edge case which is a user uses windows 2019, turns off Windows Update, runs this scripts and has an old PSW
+        # and then the latest dcap.. change would require splitting and refactoring the below into seperate functions but there seems
+        # to be an issue with EnclaveCommonAPI. Opening https://github.com/openenclave/openenclave/issues/3524 to tracK
         Install-DCAP-Dependencies
     }
 
@@ -711,6 +714,6 @@ try {
     Write-Output $_.ScriptStackTrace
     Exit 1
 } finally {
-    #Remove-Item -Recurse -Force $PACKAGES_DIRECTORY -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force $PACKAGES_DIRECTORY -ErrorAction SilentlyContinue
 }
 Exit 0
