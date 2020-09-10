@@ -10,8 +10,8 @@ cat > "$destfile" << EOF
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifndef SAMPLES_REMOTE_ATTESTATION_PUBKEY_H
-#define SAMPLES_REMOTE_ATTESTATION_PUBKEY_H
+#ifndef SAMPLES_ATTESTATION_PUBKEY_H
+#define SAMPLES_ATTESTATION_PUBKEY_H
 
 EOF
 
@@ -27,5 +27,5 @@ printf ';\n' >> "$destfile"
 
 cat >> "$destfile" << EOF
 
-#endif /* SAMPLES_REMOTE_ATTESTATION_PUBKEY_H */
+#endif /* SAMPLES_ATTESTATION_PUBKEY_H */
 EOF

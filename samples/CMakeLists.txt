@@ -3,7 +3,7 @@
 
 if (BUILD_ENCLAVES)
   install(
-    DIRECTORY remote_attestation
+    DIRECTORY attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     PATTERN
       "gen_pubkey_header.sh"
@@ -17,22 +17,6 @@ if (BUILD_ENCLAVES)
         WORLD_READ)
   install(
     DIRECTORY attested_tls
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    PATTERN
-      "gen_pubkey_header.sh"
-      PERMISSIONS
-        OWNER_EXECUTE
-        OWNER_WRITE
-        OWNER_READ
-        GROUP_EXECUTE
-        GROUP_READ
-        WORLD_EXECUTE
-        WORLD_READ)
-endif ()
-
-if (BUILD_ENCLAVES)
-  install(
-    DIRECTORY local_attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     PATTERN
       "gen_pubkey_header.sh"

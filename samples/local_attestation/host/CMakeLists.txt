@@ -2,24 +2,25 @@
 # Licensed under the MIT License.
 
 add_custom_command(
-  OUTPUT localattestation_u.h localattestation_u.c localattestation_args.h
-  DEPENDS ${CMAKE_SOURCE_DIR}/localattestation.edl
+  OUTPUT attestation_u.h attestation_u.c attestation_args.h
+  DEPENDS ${CMAKE_SOURCE_DIR}/attestation.edl
   COMMAND
-    openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/localattestation.edl
-    --search-path ${OE_INCLUDEDIR} --search-path
-    ${OE_INCLUDEDIR}/openenclave/edl/sgx)
+    openenclave::oeedger8r --untrusted
+    ${CMAKE_SOURCE_DIR}/attestation.edl --search-path ${OE_INCLUDEDIR}
+    --search-path ${OE_INCLUDEDIR}/openenclave/edl/sgx)
 
-add_executable(local_attestation_host
-               host.cpp ${CMAKE_CURRENT_BINARY_DIR}/localattestation_u.c)
-
-if (WIN32)
-  copy_oedebugrt_target(local_attestation_host_oedebugrt)
-  add_dependencies(local_attestation_host local_attestation_host_oedebugrt)
-endif ()
-
+add_executable(attestation_host
+               host.cpp ${CMAKE_CURRENT_BINARY_DIR}/attestation_u.c)
 target_include_directories(
-  local_attestation_host
+  attestation_host
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../ # For common/shared.h
           ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(local_attestation_host openenclave::oehost)
+if (WIN32)
+  add_dcap_client_target(attestation_dcap_target)
+  add_dependencies(attestation_host attestation_dcap_target)
+  copy_oedebugrt_target(attestation_oedebugrt_target)
+  add_dependencies(attestation_host attestation_oedebugrt_target)
+endif ()
+
+target_link_libraries(attestation_host openenclave::oehost)

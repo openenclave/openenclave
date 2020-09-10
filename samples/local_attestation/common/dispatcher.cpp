@@ -3,10 +3,8 @@
 
 #include "dispatcher.h"
 #include <openenclave/attestation/attester.h>
-#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/sgx/report.h>
 #include <openenclave/attestation/verifier.h>
-#include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
 
 ecall_dispatcher::ecall_dispatcher(
@@ -40,6 +38,7 @@ bool ecall_dispatcher::initialize(const char* name)
 
     {
         size_t other_enclave_signer_id_size = sizeof(m_other_enclave_signer_id);
+        // TODO: the following call is not TEE-agnostic.
         if (oe_sgx_get_signer_id_from_public_key(
                 m_enclave_config->other_enclave_public_key_pem,
                 m_enclave_config->other_enclave_public_key_pem_size,
@@ -62,6 +61,7 @@ exit:
 }
 
 int ecall_dispatcher::get_enclave_format_settings(
+    const oe_uuid_t* format_id,
     uint8_t** format_settings_buffer,
     size_t* format_settings_buffer_size)
 {
@@ -79,12 +79,15 @@ int ecall_dispatcher::get_enclave_format_settings(
     // settings can attest this enclave.
     TRACE_ENCLAVE("get_enclave_format_settings");
     if (m_attestation->get_format_settings(
-            &format_settings, &format_settings_size) == false)
+            format_id, &format_settings, &format_settings_size) == false)
     {
         TRACE_ENCLAVE("get_enclave_format_settings failed");
         goto exit;
     }
+
     // Allocate memory on the host and copy the format settings over.
+    // TODO: the following code is not TEE-agnostic, as it assumes the
+    // enclave can directly write into host memory
     *format_settings_buffer = (uint8_t*)oe_host_malloc(format_settings_size);
     if (*format_settings_buffer == nullptr)
     {
@@ -105,15 +108,16 @@ exit:
 }
 
 /**
- * Return the public key of this enclave along with the enclave's local
- * evidence. The enclave that receives the key will use the local evidence to
+ * Return the public key of this enclave along with the enclave's
+ * evidence. The enclave that receives the key will use the evidence to
  * attest this enclave.
  */
-int ecall_dispatcher::get_targeted_evidence_with_public_key(
+int ecall_dispatcher::get_evidence_with_public_key(
+    const oe_uuid_t* format_id,
     uint8_t* format_settings,
     size_t format_settings_size,
     uint8_t** pem_key,
-    size_t* key_size,
+    size_t* pem_key_size,
     uint8_t** evidence_buffer,
     size_t* evidence_buffer_size)
 {
@@ -123,7 +127,7 @@ int ecall_dispatcher::get_targeted_evidence_with_public_key(
     uint8_t* key_buffer = nullptr;
     int ret = 1;
 
-    TRACE_ENCLAVE("get_targeted_evidence_with_public_key");
+    TRACE_ENCLAVE("get_evidence_with_public_key");
     if (m_initialized == false)
     {
         TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
@@ -134,7 +138,8 @@ int ecall_dispatcher::get_targeted_evidence_with_public_key(
 
     // Generate evidence for the public key so that the enclave that
     // receives the key can attest this enclave.
-    if (m_attestation->generate_local_attestation_evidence(
+    if (m_attestation->generate_attestation_evidence(
+            format_id,
             format_settings,
             format_settings_size,
             pem_public_key,
@@ -142,11 +147,13 @@ int ecall_dispatcher::get_targeted_evidence_with_public_key(
             &evidence,
             &evidence_size) == false)
     {
-        TRACE_ENCLAVE("get_targeted_evidence_with_public_key failed.");
+        TRACE_ENCLAVE("get_evidence_with_public_key failed");
         goto exit;
     }
 
     // Allocate memory on the host and copy the evidence over.
+    // TODO: the following code is not TEE-agnostic, as it assumes the
+    // enclave can directly write into host memory
     *evidence_buffer = (uint8_t*)oe_host_malloc(evidence_size);
     if (*evidence_buffer == nullptr)
     {
@@ -168,13 +175,12 @@ int ecall_dispatcher::get_targeted_evidence_with_public_key(
     memcpy(key_buffer, pem_public_key, sizeof(pem_public_key));
 
     *pem_key = key_buffer;
-    *key_size = sizeof(pem_public_key);
+    *pem_key_size = sizeof(pem_public_key);
 
     ret = 0;
-    TRACE_ENCLAVE("get_targeted_evidence_with_public_key succeeded");
+    TRACE_ENCLAVE("get_evidence_with_public_key succeeded");
 
 exit:
-
     if (ret != 0)
     {
         if (evidence)
@@ -188,6 +194,7 @@ exit:
 }
 
 int ecall_dispatcher::verify_evidence_and_set_public_key(
+    const oe_uuid_t* format_id,
     uint8_t* pem_key,
     size_t pem_key_size,
     uint8_t* evidence,
@@ -197,21 +204,22 @@ int ecall_dispatcher::verify_evidence_and_set_public_key(
 
     if (m_initialized == false)
     {
-        TRACE_ENCLAVE("ecall_dispatcher initialization failed");
+        TRACE_ENCLAVE("ecall_dispatcher initialization failed.");
         goto exit;
     }
 
     // Attest the evidence and accompanying key.
-    if (m_attestation->attest_local_attestation_evidence(
-            evidence, evidence_size, pem_key, pem_key_size) == false)
+    if (m_attestation->attest_attestation_evidence(
+            format_id, evidence, evidence_size, pem_key, pem_key_size) == false)
     {
-        TRACE_ENCLAVE("verify_evidence_and_set_public_key failed");
+        TRACE_ENCLAVE("verify_evidence_and_set_public_key failed.");
         goto exit;
     }
+
     memcpy(m_crypto->get_the_other_enclave_public_key(), pem_key, pem_key_size);
 
     ret = 0;
-    TRACE_ENCLAVE("verify_evidence_and_set_public_key succeeded");
+    TRACE_ENCLAVE("verify_evidence_and_set_public_key succeeded.");
 
 exit:
     return ret;
@@ -242,6 +250,8 @@ int ecall_dispatcher::generate_encrypted_message(uint8_t** data, size_t* size)
         goto exit;
     }
 
+    // TODO: the following code is not TEE-agnostic, as it assumes the
+    // enclave can directly write into host memory
     host_buffer = (uint8_t*)oe_host_malloc(encrypted_data_size);
     if (host_buffer == nullptr)
     {

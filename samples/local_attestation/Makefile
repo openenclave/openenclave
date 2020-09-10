@@ -16,4 +16,7 @@ clean:
 	$(MAKE) -C host clean
 
 run:
-	host/attestation_host ./enclave_a/enclave_a.signed ./enclave_b/enclave_b.signed
+	host/attestation_host sgxlocal ./enclave_a/enclave_a.signed ./enclave_b/enclave_b.signed
+
+runsgxremote:
+	host/attestation_host sgxremote ./enclave_a/enclave_a.signed ./enclave_b/enclave_b.signed

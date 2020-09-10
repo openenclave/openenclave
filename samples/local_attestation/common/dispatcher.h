@@ -30,18 +30,20 @@ class ecall_dispatcher
     ecall_dispatcher(const char* name, enclave_config_data_t* enclave_config);
     ~ecall_dispatcher();
     int get_enclave_format_settings(
+        const oe_uuid_t* format_id,
         uint8_t** format_settings,
         size_t* format_settings_size);
 
-    int get_targeted_evidence_with_public_key(
+    int get_evidence_with_public_key(
+        const oe_uuid_t* format_id,
         uint8_t* format_settings,
         size_t format_settings_size,
         uint8_t** pem_key,
         size_t* pem_key_size,
         uint8_t** evidence_buffer,
         size_t* evidence_buffer_size);
-
     int verify_evidence_and_set_public_key(
+        const oe_uuid_t* format_id,
         uint8_t* pem_key,
         size_t pem_key_size,
         uint8_t* evidence,

@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifndef OE_SAMPLES_ATTESTATION_ENC_LOG_H
-#define OE_SAMPLES_ATTESTATION_ENC_LOG_H
+#ifndef OE_SAMPLES_ATTESTATION_COMMON_LOG_H
+#define OE_SAMPLES_ATTESTATION_COMMON_LOG_H
 
 #include <stdio.h>
 
@@ -17,4 +17,4 @@ extern const char* enclave_name;
         __LINE__,                   \
         ##__VA_ARGS__)
 
-#endif // OE_SAMPLES_ATTESTATION_ENC_LOG_H
+#endif // OE_SAMPLES_ATTESTATION_COMMON_LOG_H

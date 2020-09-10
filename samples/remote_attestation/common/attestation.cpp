@@ -4,14 +4,10 @@
 #include "attestation.h"
 #include <openenclave/attestation/attester.h>
 #include <openenclave/attestation/custom_claims.h>
-#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/bits/report.h>
 #include <string.h>
 #include "log.h"
-
-// SGX Remote Attestation UUID.
-static oe_uuid_t sgx_remote_uuid = {OE_FORMAT_UUID_SGX_ECDSA};
 
 Attestation::Attestation(Crypto* crypto, uint8_t* enclave_signer_id)
 {
@@ -20,9 +16,42 @@ Attestation::Attestation(Crypto* crypto, uint8_t* enclave_signer_id)
 }
 
 /**
- * Generate remote evidence for the given data.
+ * Get format settings for the given enclave.
  */
-bool Attestation::generate_remote_attestation_evidence(
+bool Attestation::get_format_settings(
+    const oe_uuid_t* format_id,
+    uint8_t** format_settings,
+    size_t* format_settings_size)
+{
+    bool ret = false;
+
+    // Intialize verifier to get enclave's format settings.
+    if (oe_verifier_initialize() != OE_OK)
+    {
+        TRACE_ENCLAVE("oe_verifier_initialize failed");
+        goto exit;
+    }
+
+    // Use the plugin.
+    if (oe_verifier_get_format_settings(
+            format_id, format_settings, format_settings_size) != OE_OK)
+    {
+        TRACE_ENCLAVE("oe_verifier_get_format_settings failed");
+        goto exit;
+    }
+    ret = true;
+
+exit:
+    return ret;
+}
+
+/**
+ * Generate evidence for the given data.
+ */
+bool Attestation::generate_attestation_evidence(
+    const oe_uuid_t* format_id,
+    uint8_t* format_settings,
+    size_t format_settings_size,
     const uint8_t* data,
     const size_t data_size,
     uint8_t** evidence,
@@ -34,7 +63,7 @@ bool Attestation::generate_remote_attestation_evidence(
     uint8_t* custom_claims_buffer = nullptr;
     size_t custom_claims_buffer_size = 0;
     char custom_claim1_name[] = "Event";
-    char custom_claim1_value[] = "Remote attestation sample";
+    char custom_claim1_value[] = "Attestation sample";
     char custom_claim2_name[] = "Public key hash";
 
     // The custom_claims[1].value will be filled with hash of public key later
@@ -46,10 +75,11 @@ bool Attestation::generate_remote_attestation_evidence(
 
     if (m_crypto->Sha256(data, data_size, hash) != 0)
     {
+        TRACE_ENCLAVE("data hashing failed");
         goto exit;
     }
 
-    // Initialize attester and use the SGX plugin.
+    // Initialize attester and use the plugin.
     result = oe_attester_initialize();
     if (result != OE_OK)
     {
@@ -76,24 +106,24 @@ bool Attestation::generate_remote_attestation_evidence(
 
     // Generate evidence based on the format selected by the attester.
     result = oe_get_evidence(
-        &sgx_remote_uuid,
+        format_id,
         0,
         custom_claims_buffer,
         custom_claims_buffer_size,
-        nullptr,
-        0,
+        format_settings,
+        format_settings_size,
         evidence,
         evidence_size,
         nullptr,
         0);
     if (result != OE_OK)
     {
-        TRACE_ENCLAVE("oe_get_evidence failed.");
+        TRACE_ENCLAVE("oe_get_evidence failed.(%s)", oe_result_str(result));
         goto exit;
     }
 
     ret = true;
-    TRACE_ENCLAVE("generate_remote_evidence succeeded.");
+    TRACE_ENCLAVE("generate_attestation_evidence succeeded.");
 exit:
     return ret;
 }
@@ -115,22 +145,22 @@ static const oe_claim_t* _find_claim(
     }
     return nullptr;
 }
+
 /**
- * Attest the given remote evidence and accompanying data. It consists of the
+ * Attest the given evidence and accompanying data. It consists of the
  * following three steps:
  *
- * 1) The remote evidence is first attested using the oe_verify_evidence API.
- * This ensures the authenticity of the enclave that generated the remote
- * evidence. 2) Next, to establish trust of the enclave that  generated the
- * remote evidence, the signer_id, product_id, security version values are
- * checked to see if they are predefined trusted values. 2) Next, to establish
- * trust of the enclave that generated the remote evidence, the signer_id,
- * product_id, the security version values are checked to see if they are
- * predefined trusted values. 3) Once the enclave's trust has been established,
+ * 1) The evidence is first attested using the oe_verify_evidence API.
+ * This ensures the authenticity of the enclave that generated the evidence.
+ * 2) Next, to establish trust in the enclave that generated the
+ * evidence, the signer_id, product_id, and security version values are
+ * checked to see if they are predefined trusted values.
+ * 3) Once the enclave's trust has been established,
  * the validity of accompanying data is ensured by comparing its SHA256 digest
- * against the OE_CLAIM_SGX_REPORT_DATA claim.
+ * against the OE_CLAIM_CUSTOM_CLAIMS_BUFFER claim.
  */
-bool Attestation::attest_remote_attestation_evidence(
+bool Attestation::attest_attestation_evidence(
+    const oe_uuid_t* format_id,
     const uint8_t* evidence,
     size_t evidence_size,
     const uint8_t* data,
@@ -139,33 +169,24 @@ bool Attestation::attest_remote_attestation_evidence(
     bool ret = false;
     uint8_t hash[32];
     oe_result_t result = OE_OK;
-    oe_result_t verifier_result = OE_OK;
     oe_claim_t* claims = nullptr;
     size_t claims_length = 0;
     const oe_claim_t* claim;
     oe_claim_t* custom_claims = nullptr;
     size_t custom_claims_length = 0;
 
-    // While attesting, the remote evidence being attested must not be tampered
+    // While attesting, the evidence being attested must not be tampered
     // with. Ensure that it has been copied over to the enclave.
     if (!oe_is_within_enclave(evidence, evidence_size))
     {
-        TRACE_ENCLAVE("Cannot attest remote evidence in host memory. Unsafe.");
-        goto exit;
-    }
-
-    // Initialize the verifier.
-    verifier_result = oe_verifier_initialize();
-    if (verifier_result != OE_OK)
-    {
-        TRACE_ENCLAVE("oe_verifier_initialize failed.");
+        TRACE_ENCLAVE("Cannot attest evidence in host memory. Unsafe.");
         goto exit;
     }
 
     // 1) Validate the evidence's trustworthiness
-    // Verify the remote evidence to ensure its authenticity.
+    // Verify the evidence to ensure its authenticity.
     result = oe_verify_evidence(
-        &sgx_remote_uuid,
+        format_id,
         evidence,
         evidence_size,
         nullptr,
@@ -180,6 +201,8 @@ bool Attestation::attest_remote_attestation_evidence(
             "oe_verify_evidence failed (%s).\n", oe_result_str(result));
         goto exit;
     }
+
+    TRACE_ENCLAVE("oe_verify_evidence succeeded");
 
     // 2) validate the enclave identity's signer_id is the hash of the public
     // signing key that was used to sign an enclave. Check that the enclave was
@@ -264,7 +287,7 @@ bool Attestation::attest_remote_attestation_evidence(
 
     // 3) Validate the custom claims buffer
     //    Deserialize the custom claims buffer to custom claims list, then fetch
-    //    the hash value of the data held in custom_claims[1]
+    //    the hash value of the data held in custom_claims[1].
     if ((claim = _find_claim(
              claims, claims_length, OE_CLAIM_CUSTOM_CLAIMS_BUFFER)) == nullptr)
     {
@@ -294,7 +317,7 @@ bool Attestation::attest_remote_attestation_evidence(
         custom_claims[0].name,
         custom_claims[0].value);
 
-    TRACE_ENCLAVE("custom_claim 2(%s) hash check:", custom_claims[1].name);
+    TRACE_ENCLAVE("custom claim 2(%s) hash check:", custom_claims[1].name);
 
     if (custom_claims[1].value_size != sizeof(hash) ||
         memcmp(custom_claims[1].value, hash, sizeof(hash)) != 0)
@@ -305,7 +328,11 @@ bool Attestation::attest_remote_attestation_evidence(
     TRACE_ENCLAVE("hash match");
 
     ret = true;
-    TRACE_ENCLAVE("remote attestation succeeded");
+    TRACE_ENCLAVE("attestation succeeded");
 exit:
+    // Shut down attester/verifier and free claims.
+    oe_attester_shutdown();
+    oe_verifier_shutdown();
+    oe_free_claims(claims, claims_length);
     return ret;
 }

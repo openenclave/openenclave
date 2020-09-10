@@ -1,11 +1,11 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
+#include <common/attestation_t.h>
 #include <common/dispatcher.h>
-#include <common/remoteattestation_t.h>
 #include <enclave_a_pubkey.h>
 #include <openenclave/enclave.h>
 
-// For this purpose of this example: demonstrating how to do remote attestation
+// For this purpose of this example: demonstrating how to do attestation
 // g_enclave_secret_data is hardcoded as part of the enclave. In this sample,
 // the secret data is hard coded as part of the enclave binary. In a real world
 // enclave implementation, secrets are never hard coded in the enclave binary
@@ -30,28 +30,59 @@ enclave_config_data_t config_data = {g_enclave_secret_data,
 static ecall_dispatcher dispatcher("Enclave2", &config_data);
 const char* enclave_name = "Enclave2";
 
+int get_enclave_format_settings(
+    const oe_uuid_t* format_id,
+    uint8_t** format_settings,
+    size_t* format_settings_size)
+{
+    return dispatcher.get_enclave_format_settings(
+        format_id, format_settings, format_settings_size);
+}
+
 /**
- * Return the public key of this enclave along with the enclave's remote
- * evidence. Another enclave can use the remote evidence to attest the enclave
+ * Return the public key of this enclave along with the enclave's
+ * evidence. Another enclave can use the evidence to attest the enclave
  * and verify the integrity of the public key.
  */
-int get_remote_evidence_with_public_key(
+int get_evidence_with_public_key(
+    const oe_uuid_t* format_id,
+    uint8_t* format_settings,
+    size_t format_settings_size,
     uint8_t** pem_key,
-    size_t* key_size,
-    uint8_t** remote_evidence,
-    size_t* remote_evidence_size)
+    size_t* pem_key_size,
+    uint8_t** evidence,
+    size_t* evidence_size)
 {
-    return dispatcher.get_remote_evidence_with_public_key(
-        pem_key, key_size, remote_evidence, remote_evidence_size);
+    return dispatcher.get_evidence_with_public_key(
+        format_id,
+        format_settings,
+        format_settings_size,
+        pem_key,
+        pem_key_size,
+        evidence,
+        evidence_size);
 }
 
 // Attest and store the public key of another enclave.
 int verify_evidence_and_set_public_key(
+    const oe_uuid_t* format_id,
     uint8_t* pem_key,
-    size_t key_size,
-    uint8_t* remote_evidence,
-    size_t remote_evidence_size)
+    size_t pem_key_size,
+    uint8_t* evidence,
+    size_t evidence_size)
 {
     return dispatcher.verify_evidence_and_set_public_key(
-        pem_key, key_size, remote_evidence, remote_evidence_size);
+        format_id, pem_key, pem_key_size, evidence, evidence_size);
+}
+
+// Encrypt message for another enclave using the public key stored for it.
+int generate_encrypted_message(uint8_t** data, size_t* size)
+{
+    return dispatcher.generate_encrypted_message(data, size);
+}
+
+// Process encrypted message
+int process_encrypted_message(uint8_t* data, size_t size)
+{
+    return dispatcher.process_encrypted_message(data, size);
 }

@@ -29,16 +29,31 @@ class ecall_dispatcher
   public:
     ecall_dispatcher(const char* name, enclave_config_data_t* enclave_config);
     ~ecall_dispatcher();
-    int get_remote_evidence_with_public_key(
+    int get_enclave_format_settings(
+        const oe_uuid_t* format_id,
+        uint8_t** format_settings,
+        size_t* format_settings_size);
+
+    int get_evidence_with_public_key(
+        const oe_uuid_t* format_id,
+        uint8_t* format_settings,
+        size_t format_settings_size,
         uint8_t** pem_key,
-        size_t* key_size,
+        size_t* pem_key_size,
         uint8_t** evidence_buffer,
         size_t* evidence_buffer_size);
     int verify_evidence_and_set_public_key(
+        const oe_uuid_t* format_id,
         uint8_t* pem_key,
-        size_t key_size,
+        size_t pem_key_size,
         uint8_t* evidence,
         size_t evidence_size);
+
+    int generate_encrypted_message(uint8_t** data, size_t* size);
+
+    int process_encrypted_message(
+        uint8_t* encrypted_data,
+        size_t encrypted_data_size);
 
   private:
     bool initialize(const char* name);

@@ -145,6 +145,7 @@ bool Crypto::Encrypt(
     mbedtls_rsa_context* rsa_context;
 
     mbedtls_pk_init(&key);
+
     if (!m_initialized)
         goto exit;
 
@@ -173,7 +174,7 @@ bool Crypto::Encrypt(
 
     // Encrypt the data.
     res = mbedtls_rsa_pkcs1_encrypt(
-        mbedtls_pk_rsa(key),
+        rsa_context,
         mbedtls_ctr_drbg_random,
         &m_ctr_drbg_contex,
         MBEDTLS_RSA_PUBLIC,

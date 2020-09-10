@@ -2,15 +2,11 @@
 # Licensed under the MIT License.
 
 # Generate header with public key of enclave A
-
-# Copyright (c) Open Enclave SDK contributors.
-# Licensed under the MIT License.
-
 add_custom_command(
   OUTPUT enclave_a_pubkey.h
   DEPENDS public_key_a ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
-  COMMAND ${OE_BASH} ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh
-          enclave_a_pubkey.h ${CMAKE_BINARY_DIR}/enclave_a/public_a.pem)
+  COMMAND ${CMAKE_SOURCE_DIR}/gen_pubkey_header.sh enclave_a_pubkey.h
+          ${CMAKE_BINARY_DIR}/enclave_a/public_a.pem)
 
 add_executable(enclave_b ecalls.cpp
                          ${CMAKE_CURRENT_BINARY_DIR}/enclave_a_pubkey.h)

@@ -4,14 +4,10 @@
 #include "attestation.h"
 #include <openenclave/attestation/attester.h>
 #include <openenclave/attestation/custom_claims.h>
-#include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/bits/report.h>
 #include <string.h>
 #include "log.h"
-
-// SGX local attestation UUID.
-static oe_uuid_t sgx_local_uuid = {OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION};
 
 Attestation::Attestation(Crypto* crypto, uint8_t* enclave_signer_id)
 {
@@ -23,6 +19,7 @@ Attestation::Attestation(Crypto* crypto, uint8_t* enclave_signer_id)
  * Get format settings for the given enclave.
  */
 bool Attestation::get_format_settings(
+    const oe_uuid_t* format_id,
     uint8_t** format_settings,
     size_t* format_settings_size)
 {
@@ -35,14 +32,15 @@ bool Attestation::get_format_settings(
         goto exit;
     }
 
-    // Use the SGX plugin.
+    // Use the plugin.
     if (oe_verifier_get_format_settings(
-            &sgx_local_uuid, format_settings, format_settings_size) != OE_OK)
+            format_id, format_settings, format_settings_size) != OE_OK)
     {
         TRACE_ENCLAVE("oe_verifier_get_format_settings failed");
         goto exit;
     }
     ret = true;
+
 exit:
     return ret;
 }
@@ -50,7 +48,8 @@ exit:
 /**
  * Generate evidence for the given data.
  */
-bool Attestation::generate_local_attestation_evidence(
+bool Attestation::generate_attestation_evidence(
+    const oe_uuid_t* format_id,
     uint8_t* format_settings,
     size_t format_settings_size,
     const uint8_t* data,
@@ -64,7 +63,7 @@ bool Attestation::generate_local_attestation_evidence(
     uint8_t* custom_claims_buffer = nullptr;
     size_t custom_claims_buffer_size = 0;
     char custom_claim1_name[] = "Event";
-    char custom_claim1_value[] = "Local attestation sample";
+    char custom_claim1_value[] = "Attestation sample";
     char custom_claim2_name[] = "Public key hash";
 
     // The custom_claims[1].value will be filled with hash of public key later
@@ -80,7 +79,7 @@ bool Attestation::generate_local_attestation_evidence(
         goto exit;
     }
 
-    // Initialize attester and use the SGX plugin.
+    // Initialize attester and use the plugin.
     result = oe_attester_initialize();
     if (result != OE_OK)
     {
@@ -107,7 +106,7 @@ bool Attestation::generate_local_attestation_evidence(
 
     // Generate evidence based on the format selected by the attester.
     result = oe_get_evidence(
-        &sgx_local_uuid,
+        format_id,
         0,
         custom_claims_buffer,
         custom_claims_buffer_size,
@@ -122,8 +121,9 @@ bool Attestation::generate_local_attestation_evidence(
         TRACE_ENCLAVE("oe_get_evidence failed.(%s)", oe_result_str(result));
         goto exit;
     }
+
     ret = true;
-    TRACE_ENCLAVE("generate_local_attestation_evidence succeeded");
+    TRACE_ENCLAVE("generate_attestation_evidence succeeded.");
 exit:
     return ret;
 }
@@ -150,13 +150,17 @@ static const oe_claim_t* _find_claim(
  * Attest the given evidence and accompanying data. It consists of the
  * following three steps:
  *
- * 1) The local evidence is first attested using the oe_verify_evidence API.
- * This ensures the authenticity of the enclave that generated the evidence. 2)
- * Next, to establish trust of the enclave that generated the evidence, the
- * signer_id, product_id, the security version values are checked to see if they
- * are predefined trusted values.
+ * 1) The evidence is first attested using the oe_verify_evidence API.
+ * This ensures the authenticity of the enclave that generated the evidence.
+ * 2) Next, to establish trust in the enclave that generated the
+ * evidence, the signer_id, product_id, and security version values are
+ * checked to see if they are predefined trusted values.
+ * 3) Once the enclave's trust has been established,
+ * the validity of accompanying data is ensured by comparing its SHA256 digest
+ * against the OE_CLAIM_CUSTOM_CLAIMS_BUFFER claim.
  */
-bool Attestation::attest_local_attestation_evidence(
+bool Attestation::attest_attestation_evidence(
+    const oe_uuid_t* format_id,
     const uint8_t* evidence,
     size_t evidence_size,
     const uint8_t* data,
@@ -175,16 +179,14 @@ bool Attestation::attest_local_attestation_evidence(
     // with. Ensure that it has been copied over to the enclave.
     if (!oe_is_within_enclave(evidence, evidence_size))
     {
-        TRACE_ENCLAVE("cannot attest evidence in host memory. unsafe");
+        TRACE_ENCLAVE("Cannot attest evidence in host memory. Unsafe.");
         goto exit;
     }
 
-    // 1)  Validate the evidence's trustworthiness
+    // 1) Validate the evidence's trustworthiness
     // Verify the evidence to ensure its authenticity.
-    // We do not need to initialize the verifier as the verifier, using the SGX
-    // plugin, has been initialized when getting the enclave's format settings
     result = oe_verify_evidence(
-        &sgx_local_uuid,
+        format_id,
         evidence,
         evidence_size,
         nullptr,
@@ -195,13 +197,14 @@ bool Attestation::attest_local_attestation_evidence(
         &claims_length);
     if (result != OE_OK)
     {
-        TRACE_ENCLAVE("oe_verify_evidence failed (%s)", oe_result_str(result));
+        TRACE_ENCLAVE(
+            "oe_verify_evidence failed (%s).\n", oe_result_str(result));
         goto exit;
     }
 
     TRACE_ENCLAVE("oe_verify_evidence succeeded");
 
-    // 2) validate the enclave identity's signed_id is the hash of the public
+    // 2) validate the enclave identity's signer_id is the hash of the public
     // signing key that was used to sign an enclave. Check that the enclave was
     // signed by an trusted entity.
 
@@ -284,7 +287,7 @@ bool Attestation::attest_local_attestation_evidence(
 
     // 3) Validate the custom claims buffer
     //    Deserialize the custom claims buffer to custom claims list, then fetch
-    //    the hash value of the data held in custom_claims[1]
+    //    the hash value of the data held in custom_claims[1].
     if ((claim = _find_claim(
              claims, claims_length, OE_CLAIM_CUSTOM_CLAIMS_BUFFER)) == nullptr)
     {
@@ -325,7 +328,7 @@ bool Attestation::attest_local_attestation_evidence(
     TRACE_ENCLAVE("hash match");
 
     ret = true;
-    TRACE_ENCLAVE("attest_local_attestation_evidence succeeded");
+    TRACE_ENCLAVE("attestation succeeded");
 exit:
     // Shut down attester/verifier and free claims.
     oe_attester_shutdown();

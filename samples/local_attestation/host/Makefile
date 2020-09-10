@@ -12,15 +12,12 @@ all: build
 
 build:
 	@ echo "Compilers used: $(CC), $(CXX)"
-	oeedger8r ../localattestation.edl --untrusted \
+	oeedger8r ../attestation.edl --untrusted \
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
-	$(CC) -g -c $(CFLAGS) $(CINCLUDES) localattestation_u.c
+	$(CC) -g -c $(CFLAGS) $(CINCLUDES) attestation_u.c
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) host.cpp
-	$(CXX) -o attestation_host host.o localattestation_u.o $(LDFLAGS)
+	$(CXX) -o attestation_host host.o attestation_u.o $(LDFLAGS)
 
 clean:
-	rm -f attestation_host *.o localattestation_u.*  localattestation_args.h
-
-
-
+	rm -f attestation_host *.o attestation_u.*  attestation_args.h
