@@ -22,7 +22,7 @@ A user can generate a report, an endorsement file or a certificate with `oecert`
 In the main function, if it sees the attribute `-r`, then it will continue to read the next argument to get the report and call `verify_report()` to verify the report.
 Likewise, if it sees the attribute `-c`, then it will continue to read the next argument to get the certificate and call `verify_cert()` to verify the certificate.
 If it sees the attribute `-h`, it will show the usage of this program.
-There is also an `enclave_identity_verifier()` function, which is called by `verify_cert()` and shows the information of a certificate if you feed it to the program.
+There is also an `sgx_enclave_claims_verifier()` function, which is called by `verify_cert()` and shows the information of a certificate if you feed it to the program.
 
 ## Build and run
 
