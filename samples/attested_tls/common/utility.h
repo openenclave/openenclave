@@ -9,6 +9,12 @@
 #include <openenclave/enclave.h>
 #include "common.h"
 
+oe_result_t generate_certificate_and_pkey_buffers(
+    uint8_t*& output_cert,
+    size_t& output_cert_size,
+    uint8_t*& private_key_buf,
+    size_t& private_key_buf_size);
+
 oe_result_t generate_certificate_and_pkey(
     mbedtls_x509_crt* cert,
     mbedtls_pk_context* private_key);

@@ -67,16 +67,13 @@ done:
     return result;
 }
 
-// Consider to move this function into a shared directory
-oe_result_t generate_certificate_and_pkey(
-    mbedtls_x509_crt* cert,
-    mbedtls_pk_context* private_key)
+oe_result_t generate_certificate_and_pkey_buffers(
+    uint8_t*& output_cert,
+    size_t& output_cert_size,
+    uint8_t*& private_key_buf,
+    size_t& private_key_buf_size)
 {
     oe_result_t result = OE_FAILURE;
-    uint8_t* output_cert = NULL;
-    size_t output_cert_size = 0;
-    uint8_t* private_key_buf = NULL;
-    size_t private_key_buf_size = 0;
     uint8_t* public_key_buf = NULL;
     size_t public_key_buf_size = 0;
     int ret = 0;
@@ -92,7 +89,7 @@ oe_result_t generate_certificate_and_pkey(
         goto exit;
     }
 
-    printf("public key used:\n%s\n", public_key_buf);
+    printf(" here public key used:\n%s\n", public_key_buf);
 
     // both ec key such ASYMMETRIC_KEY_EC_SECP256P1 or RSA key work
     oe_attester_initialize();
@@ -110,13 +107,47 @@ oe_result_t generate_certificate_and_pkey(
         printf(" failed with %s\n", oe_result_str(result));
         goto exit;
     }
+    // create mbedtls_x509_crt from output_cert
+    if (ret != 0)
+    {
+        printf(" failed with ret = %d\n", ret);
+        result = OE_FAILURE;
+        goto exit;
+    }
+
+exit:
+    oe_attester_shutdown();
+    oe_free_key(public_key_buf, public_key_buf_size, NULL, 0);
+    return result;
+}
+
+// Consider to move this function into a shared directory
+oe_result_t generate_certificate_and_pkey(
+    mbedtls_x509_crt* cert,
+    mbedtls_pk_context* private_key)
+{
+    oe_result_t result = OE_FAILURE;
+    uint8_t* output_cert = NULL;
+    size_t output_cert_size = 0;
+    uint8_t* private_key_buf = NULL;
+    size_t private_key_buf_size = 0;
+    int ret = 0;
+
+    if (generate_certificate_and_pkey_buffers(
+            output_cert,
+            output_cert_size,
+            private_key_buf,
+            private_key_buf_size) != OE_OK)
+    {
+        printf(" failed generating certificate and private key buffers \n");
+        goto exit;
+    }
 
     // create mbedtls_x509_crt from output_cert
     ret = mbedtls_x509_crt_parse_der(cert, output_cert, output_cert_size);
     if (ret != 0)
     {
         printf(" failed with ret = %d\n", ret);
-        result = OE_FAILURE;
         goto exit;
     }
 
@@ -130,14 +161,11 @@ oe_result_t generate_certificate_and_pkey(
     if (ret != 0)
     {
         printf(" failed with ret = %d\n", ret);
-        result = OE_FAILURE;
         goto exit;
     }
-
+    result = OE_OK;
 exit:
-    oe_attester_shutdown();
     oe_free_key(private_key_buf, private_key_buf_size, NULL, 0);
-    oe_free_key(public_key_buf, public_key_buf_size, NULL, 0);
     oe_free_attestation_certificate(output_cert);
     return result;
 }
