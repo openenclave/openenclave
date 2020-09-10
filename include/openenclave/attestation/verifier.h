@@ -186,6 +186,8 @@ typedef oe_result_t (*oe_verify_claims_callback_t)(
  * certificate before validating this evidence. An optional
  * claim_verify_callback could be passed in for a calling client to further
  * validate the claims of the enclave creating the certificate.
+ * OE_FAILURE is returned if the expected certificate extension OID is not
+ * found.
  * @param[in] cert_in_der a pointer to buffer holding certificate contents
  *  in DER format
  * @param[in] cert_in_der_len size of certificate buffer above
