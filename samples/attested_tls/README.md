@@ -6,14 +6,14 @@
 
 It has the following properties:
 
-- Demonstrates attested TLS feature 
+- Demonstrates attested TLS feature
   - between two enclaves
   - between an enclave application and a non enclave application
 - Use of mbedTLS within enclaves for TLS
 - Enclave APIs used:
-  - oe_generate_attestation_certificate
+  - oe_get_attestation_certificate_with_evidence
   - oe_free_attestation_certificate
-  - oe_verify_attestation_certificate
+  - oe_verify_attestation_certificate_with_evidence
 
 **Note: Currently this sample only works on SGX-FLC systems.** The underlying SGX library support for end-to-end remote attestation is required but available only on SGX-FLC system. There is no plan to back port those libraries to either SGX1 system or software emulator.
 
@@ -24,7 +24,7 @@ In first part of this sample, there are two enclave applications in this sample:
  ![Attested TLS channel between two enclaves](tls_between_enclaves.png)
 
 In the 2nd part of this sample, there is one regular application functioning as a non-enclave TLS client and an enclave application
-instantiating an enclave which hosts an TLS server. 
+instantiating an enclave which hosts an TLS server.
 
  ![Attested TLS channel between a non enclave application and an enclave](tls_between_non_enclave_enclave.png)
 
@@ -34,7 +34,7 @@ Note: Both of them can run on the same machine or separate machines.
   - Host part (tls_server_host)
     - Instantiate an enclave before transitioning the control into the enclave via an ecall.
   - Enclave (tls_server_enclave.signed)
-    - Calls oe_generate_attestation_certificate to generate an certificate
+    - Calls oe_get_attestation_certificate_with_evidence to generate an certificate
     - Use Mbedtls API to configure an TLS server after configuring above certificate as the server's certificate
     - Launch a TLS server and wait for client connection request
     - Read client payload and reply with server payload
@@ -46,7 +46,7 @@ Note: Both of them can run on the same machine or separate machines.
   - Host part (tls_client_host)
     - Instantiate an enclave before transitioning the control into the enclave via an ecall.
   - Enclave (tls_client_enclave.signed)
-    - Calls oe_generate_attestation_certificate to generate an certificate
+    - Calls oe_get_attestation_certificate_with_evidence to generate an certificate
     - Use Mbedtls API to configure an TLS client after configuring above certificate as the client's certificate
     - Launch a TLS client and connect to the server
     - Send client payload and wait for server's payload
@@ -59,7 +59,7 @@ Note: Both of them can run on the same machine or separate machines.
  - When used in this scenario, this non-enclave client is assumed to be a trusted party holding secrets and only shares it with the server after the server is validated
  - Connect to server port via socket
  - Use OpenSSL API to configure a TLS client
- - Call oe_verify_attestation_certificate to validate server's certificate
+ - Call oe_verify_attestation_certificate_with_evidence to validate server's certificate
  - Send client payload and wait for server's payload
 
 ```
