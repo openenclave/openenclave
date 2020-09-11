@@ -128,10 +128,10 @@ The host does the following in this sample:
 
    4. Repeat steps 2 and 3 for asking enclave\_a to validate enclave\_b.
 
-   5. Ask enclave\_a to generate a message encrypted with enclave\b's public key. 
+   5. Ask enclave\_a to generate a message encrypted with enclave\b's public key.
 
       ```c
-      generate_encrypted_message(enclave_a, &ret, &encrypted_message, &encrypted_message_size); 
+      generate_encrypted_message(enclave_a, &ret, &encrypted_message, &encrypted_message_size);
       ```
 
    6. Send the encrypted message to enclave\_b to decrypt and validate if the decrypted
