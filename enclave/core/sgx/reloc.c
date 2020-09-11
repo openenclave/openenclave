@@ -52,6 +52,7 @@ static uint64_t _apply_relocations(
                 *dest = (uint64_t)(baseaddr + p->r_addend);
                 break;
             }
+            case R_X86_64_JUMP_SLOT:
             case R_X86_64_GLOB_DAT:
             {
                 /* OE SDK overloads the addend but this should be usually the

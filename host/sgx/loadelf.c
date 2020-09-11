@@ -997,6 +997,7 @@ static oe_result_t _link_elf_images(
                 p->r_addend += *module_base;
                 break;
             }
+            case R_X86_64_JUMP_SLOT:
             case R_X86_64_GLOB_DAT:
             {
                 p->r_offset += *module_base;

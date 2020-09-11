@@ -1892,32 +1892,21 @@ done:
     return result;
 }
 
-oe_result_t elf64_load_relocations(
+static oe_result_t _load_relocation_data(
+    const char* header_name,
     const elf64_t* elf,
-    void** data_out,
+    uint8_t** data_out,
     size_t* size_out)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t index;
     elf64_shdr_t* shdr;
-    uint8_t* data;
-    size_t size;
+    size_t size = 0;
+    uint8_t* data = 0;
     elf64_rela_t* p;
     elf64_rela_t* end;
-    const elf64_sym_t* symtab = NULL;
-    size_t symtab_size = 0;
-
-    if (data_out)
-        *data_out = 0;
-
-    if (size_out)
-        *size_out = 0;
-
-    if (!_is_valid_elf64(elf) || !data_out || !size_out)
-        goto done;
 
     /* Get Shdr for the ".rela.dyn" section. */
-    index = _find_shdr(elf, ".rela.dyn");
+    size_t index = _find_shdr(elf, header_name);
     if (index == (size_t)-1)
     {
         *data_out = NULL;
@@ -1944,10 +1933,6 @@ oe_result_t elf64_load_relocations(
     if (data == NULL)
         goto done;
 
-    /* Get pointer to symbol table */
-    if (elf64_get_dynamic_symbol_table(elf, &symtab, &symtab_size))
-        goto done;
-
     /* Set pointers to start and end of relocation table */
     p = (elf64_rela_t*)data;
     end = p + (size / sizeof(elf64_rela_t));
@@ -1957,7 +1942,7 @@ oe_result_t elf64_load_relocations(
     {
         uint64_t reloc_type = ELF64_R_TYPE(p->r_info);
         if (reloc_type != R_X86_64_RELATIVE && reloc_type != R_X86_64_TPOFF64 &&
-            reloc_type != R_X86_64_GLOB_DAT)
+            reloc_type != R_X86_64_GLOB_DAT && reloc_type != R_X86_64_JUMP_SLOT)
         {
             // Relocations are critical for correct code behavior.
             // Error out for unsupported relocations
@@ -1968,9 +1953,48 @@ oe_result_t elf64_load_relocations(
         }
     }
 
+    *data_out = data;
+    *size_out = size;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t elf64_load_relocations(
+    const elf64_t* elf,
+    void** data_out,
+    size_t* size_out)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    uint8_t* dyn_data = NULL;
+    size_t dyn_size = 0;
+    uint8_t* plt_data = NULL;
+    size_t plt_size = 0;
+
+    if (data_out)
+        *data_out = 0;
+
+    if (size_out)
+        *size_out = 0;
+
+    if (!_is_valid_elf64(elf) || !data_out || !size_out)
+        goto done;
+
+    OE_CHECK(_load_relocation_data(".rela.dyn", elf, &dyn_data, &dyn_size));
+    OE_CHECK(_load_relocation_data(".rela.plt", elf, &plt_data, &plt_size));
+
     /* Make a copy of the relocation section (zero-padded to page size) */
     {
-        *size_out = oe_round_up_to_page_size(size);
+        const elf64_sym_t* symtab = NULL;
+        size_t symtab_size = 0;
+        elf64_rela_t* p;
+        elf64_rela_t* end;
+
+        size_t total_size;
+        OE_CHECK(oe_safe_add_sizet(dyn_size, plt_size, &total_size));
+
+        *size_out = oe_round_up_to_page_size(total_size);
 
         if (!(*data_out = oe_memalign(OE_PAGE_SIZE, *size_out)))
         {
@@ -1979,11 +2003,22 @@ oe_result_t elf64_load_relocations(
         }
 
         memset(*data_out, 0, *size_out);
-        OE_CHECK(oe_memcpy_s(*data_out, *size_out, data, size));
+        if (dyn_data)
+            OE_CHECK(oe_memcpy_s(*data_out, *size_out, dyn_data, dyn_size));
+        if (plt_data)
+            OE_CHECK(oe_memcpy_s(
+                (uint8_t*)*data_out + dyn_size,
+                *size_out - dyn_size,
+                plt_data,
+                plt_size));
+
+        /* Get pointer to symbol table */
+        if (elf64_get_dynamic_symbol_table(elf, &symtab, &symtab_size))
+            goto done;
 
         // Fix up thread-local relocations.
         p = (elf64_rela_t*)*data_out;
-        end = p + (size / sizeof(elf64_rela_t));
+        end = p + (total_size / sizeof(elf64_rela_t));
 
         for (; p != end; p++)
         {
