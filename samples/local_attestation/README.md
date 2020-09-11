@@ -11,17 +11,21 @@ It has the following properties:
 - Use of mbedTLS within the enclave
 - Use Asymmetric / Public-Key Encryption to establish secure communications between two attesting enclaves
 - Enclave APIs used:
-  - oe_get_report
-  - oe_verify_report,
-  - oe_get_target_info
-  
+  - oe_verifier_initialize,
+  - oe_attester_initialize,
+  - oe_serialize_custom_claims,
+  - oe_deserialize_custom_claims,
+  - oe_get_evidence,
+  - oe_verify_evidence,
+  - oe_verifier_get_format_settings
+
 ## Attestation primer
 
 See [Remote Attestation's README](../remote_attestation/README.md#attestation-primer) for information
 
 ## Local Attestation sample
 
-This sample demonstrates how to attest two enclaves to each other locally by using Open Enclave APIs: `oe_get_report`, `oe_get_target_info`, and `oe_verify_report`. They work together to complete a local attestation process.
+This sample demonstrates how to attest two enclaves to each other locally by using Open Enclave APIs: `oe_get_evidence`, `oe_verifier_get_format_settings`, and `oe_verify_evidence`. They work together to complete a local attestation process.
 
 To simplify this sample without losing the focus in explaining how the local attestation works, host1 and host2 are combined into one single host to eliminate the need for additional  code for inter-process communication between two hosts.
 Diagram 2 is the configuration used in this sample.
@@ -30,14 +34,13 @@ Diagram 2 is the configuration used in this sample.
 
 ### Local Attestation steps
 
-For two enclaves on the same system to locally attest each other, the enclaves need to know each other’s identities. OE SDK provides `oe_get_report`, `oe_get_target_info`, and `oe_verify_report` APIs to help broker the identity retrieval, exchange and validation between two enclaves. 
+For two enclaves on the same system to locally attest each other, the enclaves need to know each other’s identities. OE SDK provides `oe_get_evidence`, `oe_verifier_get_format_settings`, and `oe_verify_evidence` APIs to help broker the identity retrieval, exchange and validation between two enclaves.
 
 Here are the basic steps of a typical local attestation between two enclaves.
 
 Let's say two enclaves involved are enclave_a and enclave_b.
 
-1. Inside enclave_a, call `oe_get_report` to get enclave_a's report, then call `oe_get_target_info` on enclave_a's report
-   to get enclave_a's target info, enclave_a's identity.
+1. Inside enclave_a, call `oe_get_evidence` to get enclave_a's report.
 
 2. Send enclave_a's identity to enclave_b.
 
@@ -46,7 +49,7 @@ Let's say two enclaves involved are enclave_a and enclave_b.
 
 4. Send the enclave_b report above to enclave_a.
 
-5. Inside enclave_a, call `oe_verify_report` to verify enclave_b report, on success, it means enclave_b was successfully attested to enclave_a.
+5. Inside enclave_a, call `oe_verify_evidence` to verify enclave_b report, on success, it means enclave_b was successfully attested to enclave_a.
 
 Step 1-5 completes the process of local attesting enclave_b to enclave_a
 
@@ -84,13 +87,13 @@ The host does the following in this sample:
     generate_encrypted_message(enclave_a, &ret, &encrypted_msg, &encrypted_msg_size);
     ```
 
-5. Sending the encrypted message to 2nd enclave to decrypt and validate if the decrypted 
+5. Sending the encrypted message to 2nd enclave to decrypt and validate if the decrypted
    message is correct.
 
    Note: both enclaves hardcode their sample messages for this validation.
 
     ```c
-    process_encrypted_msg(enclave_b, &ret, encrypted_msg, encrypted_msg_size);
+    process_encrypted_message(enclave_b, &ret, encrypted_msg, encrypted_msg_size);
     ```
 
 #### attest_one_enclave_to_the_other() routine
@@ -98,16 +101,21 @@ The host does the following in this sample:
 This routine handles the process of attesting enclave_b to enclave_a with the following three steps.
 
 ```c
-get_target_info(enclave_a, &ret, &target_info_buf, &target_info_size);
+get_enclave_format_settings(enclave_a, &ret, &format_settings, &format_settings_size);
 
-get_targeted_report_with_pubkey(enclave_b, &ret,
-                                target_info_buf, target_info_size,
-                                &pem_key, &pem_key_size,
-                                &report, &report_size);
+get_targeted_evidence_with_public_key(
+        enclave_b,
+        &ret,
+        format_settings,
+        format_settings_size,
+        &pem_key,
+        &pem_key_size,
+        &evidence,
+        &evidence_size);
 
-verify_report_and_set_pubkey(enclave_a, &ret,
-                             pem_key,pem_key_size,
-                             report, report_size);
+verify_evidence_and_set_public_key(
+        enclave_a, &ret, pem_key, pem_key_size, evidence, evidence_size);
+
 ```
 
 ### Authoring the Enclave
@@ -118,100 +126,69 @@ Let's say, we want to attest enclave 2 to enclave 1.
 
 Attesting an enclave consists of three steps:
 
-##### 1) Get an enclave's identity (target info)
+##### 1) Get an enclave's oe_verifier_get_format_settings
 
-To conduct a local attestation, both enclaves need to know each other’s identities.
-This is done by calling oe_get_target_info on the enclave 1's own report.
+If anything specific from verifier needs to be included for evidence generation,
+call oe_verifier_get_format_settings and get the required format settings.
 
 ```c
-oe_result_t oe_get_target_info(
-    const uint8_t* report,
-    size_t report_size,
-    void* target_info_buffer,
-    size_t* target_info_size);
+oe_result_t oe_verifier_get_format_settings(
+    const oe_uuid_t *format_id,
+    uint8_t **settings,
+    size_t *settings_size);
 ```
 
-On a successful return, target_info_buffer will be deposited with platform specific identity information needed for local attestation.
 
-##### 2) Generate a targeted report with the other enclave's target info (identity)
+##### 2) Generate a targeted report
 
-Inside enclave 2, call oe_get_report with the target info as opt_params. This creates a enclave_b report that' targeted at enclave 1,
+Inside enclave 2, call oe_get_evidence with uuid  = OE_FORMAT_UUID_SGX_LOCAL_ATTESTATION. This creates a enclave_b report that' targeted at enclave 1,
 that is, for enclave 1 to validate.
 
 ```c
-oe_result_t oe_get_report(
+oe_result_t oe_get_evidence(
+    const oe_uuid_t *format_id,
     uint32_t flags,
-    const uint8_t* report_data,
-    size_t report_data_size,
-    const void* opt_params,
-    size_t opt_params_size,
-    uint8_t* report_buffer,
-    size_t* report_buffer_size);
+    const void *custom_claims_buffer,
+    size_t custom_claims_buffer_size,
+    const void *optional_parameters,
+    size_t optional_parameters_size,
+    uint8_t **evidence_buffer,
+    size_t *evidence_buffer_size,
+    uint8_t **endorsements_buffer,
+    size_t *endorsements_buffer_size);
 ```
 
 ##### 3) Verify targeted report
 
-This validation consists two parts:
 
-1. Integrity of the Enclave Report
+Integrity of the Enclave Report
 
-    Enclave 1 can call `oe_verify_report` to validate the report originated from an Trust Execution Environment (TEE),
-    which in this case would be a valid SGX platform.
+Enclave 1 can call `oe_verify_evidence` to validate the report originated from an Trust Execution Environment (TEE),
+which in this case would be a valid SGX platform.
 
-    ```c
-    oe_result_t oe_verify_report(const uint8_t* report, size_t report_size, oe_report_t* parsed_report);
-    ```
+```c
+    oe_result_t oe_verify_evidence(
+       const oe_uuid_t *format_id,
+       const uint8_t *evidence_buffer,
+       size_t evidence_buffer_size,
+       const uint8_t *endorsements_buffer,
+       size_t endorsements_buffer_size,
+       const oe_policy_t *policies,
+       size_t policies_size,
+       oe_claim_t **claims,
+       size_t *claims_length);
+```
 
-    At this point, Enclave 1 knows that the report originated from an enclave running in a TEE, and that the information in the report can be trusted.
+At this point, Enclave 1 knows that the report originated from an enclave running in a TEE, and that the information in the report can be trusted.
 
-1. Validation of an enclave identity
+##### 4) Verifying Enclave identity
 
-    Finally, **it is up to the enclave app to check that identity and properties of the enclave reflected in the report matches its expectation**.
-    Open Enclave exposes a generalized identity model to support this process across TEE types. `oe_identity_t` is the data structure that defined for this 
-    identity model.
+`Attestation::attest_local_attestation_evidence()` performs enclave identity validation by examining these claims:
 
-    ```c
-    typedef struct _oe_identity
-    {
-        /** Version of the oe_identity_t structure */
-        uint32_t idVersion;
-
-        /** Security version of the enclave. For SGX enclaves, this is the
-         *  ISVN value */
-        uint32_t securityVersion;
-
-        /** Values of the attributes flags for the enclave -
-         *  OE_REPORT_ATTRIBUTES_DEBUG: The report is for a debug enclave.
-         *  OE_REPORT_ATTRIBUTES_REMOTE: The report can be used for remote
-         *  attestation */
-        uint64_t attributes;
-
-        /** The unique ID for the enclave.
-         * For SGX enclaves, this is the MRENCLAVE value */
-        uint8_t uniqueID[OE_UNIQUE_ID_SIZE];
-
-        /** The author ID for the enclave.
-         * For SGX enclaves, this is the MRSIGNER value */
-        uint8_t authorID[OE_AUTHOR_ID_SIZE];
-
-        /** The Product ID for the enclave.
-         * For SGX enclaves, this is the ISVPRODID value. */
-        uint8_t productID[OE_PRODUCT_ID_SIZE];
-    } oe_identity_t;
-    ```
-
-    As shown in the sample, the set of validations performed on these properties is up to the app.
-
-    In general, we would strongly recommend:
-
-    - Ensure that the identity of the enclave matches the expected value:
-    - Verify the `uniqueID` value if you want to match the exact bitwise identity of the enclave. Bear in mind that any patches to the enclave will change the uniqueID in the future.
-    - Verify the `authorID` and `productID` values if you want to match the identity of an enclave that might span multiple binary versions. This is what the attestation sample does.
-    - Ensure that the `securityVersion` of the enclave matches your minimum required security version.
-    - Ensure that the `reportData` matches the hash of the data provided with the report, as illustrated by the sample.
-
-    In the sample, the app-specific `Attestation::attest_local_report` method calls `oe_parse_report` to obtain an `oe_report_t`
-    for report integrity checking before conducting enclave identity validation based on the information inside `parsed_report`.
+* "signer_id"
+* "product_id"
+* "security_version"
+* "Public key hash" claim in custom claims ("custom_claims_buffer")
 
 ## Using Cryptography in an Enclave
 
