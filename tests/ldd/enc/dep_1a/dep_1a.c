@@ -1,7 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-__attribute__((weak)) int multiply_local_const_2a(int a);
+int multiply_local_const_2a(int a);
 __attribute__((weak)) int add_global_2a(int a, int b);
 
 __attribute__((weak)) int unlinked_function(int a, int b);
@@ -10,17 +10,10 @@ int test_nested_dependencies()
 {
     int failed_tests = 0;
 
-    if (multiply_local_const_2a)
-    {
-        const int expected = 20010;
-        int value = multiply_local_const_2a(10);
-        if (value != expected)
-            failed_tests++;
-    }
-    else
-    {
+    const int expected = 20010;
+    int value = multiply_local_const_2a(10);
+    if (value != expected)
         failed_tests++;
-    }
 
     if (add_global_2a)
     {

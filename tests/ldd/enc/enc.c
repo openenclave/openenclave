@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "ldd_t.h"
 
-__attribute__((weak)) int multiply_local_const_1a(int a);
+int multiply_local_const_1a(int a);
 __attribute__((weak)) int add_global_1a(int a, int b);
 __attribute__((weak)) int test_nested_dependencies();
 
@@ -33,22 +33,12 @@ int test_enclave()
     /*
      * Test dep_1a functions
      */
-    if (multiply_local_const_1a)
-    {
-        const int expected = 10010;
-        int value = multiply_local_const_1a(10);
-        printf(
-            "multiply_local_const_1a(10) = %d, expected = %d\n",
-            value,
-            expected);
-        if (value != expected)
-            failed_tests++;
-    }
-    else
-    {
-        printf("multiply_local_const_1a not defined\n");
+    const int expected = 10010;
+    int value = multiply_local_const_1a(10);
+    printf(
+        "multiply_local_const_1a(10) = %d, expected = %d\n", value, expected);
+    if (value != expected)
         failed_tests++;
-    }
 
     if (add_global_1a)
     {
