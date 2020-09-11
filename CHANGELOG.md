@@ -59,9 +59,8 @@ OE_FORMAT_UUID_SGX_ECDSA_P256_QUOTE | OE_FORMAT_UUID_RAW_SGX_QUOTE_ECDSA |
 - oe_get_evidence() support of SGX legacy formats OE_FORMAT_UUID_SGX_ECDSA_P256_REPORT and OE_FORMAT_UUID_SGX_ECDSA_P256_QUOTE is removed.
 
 ### Security
-- Update mbedTLS to version 2.16.7. Refer to the [2.16.7 release notes](
-  https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.7) for the set of
-  issues addressed.
+- Update mbedTLS to version 2.16.8. Refer to the [2.16.7](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.7)
+  and [2.16.8](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.8) release notes for the set of issues addressed.
 
 [0.10.0][v0.10.0_log]
 ------------
