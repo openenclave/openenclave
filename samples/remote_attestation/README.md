@@ -141,24 +141,4 @@ See [here](https://github.com/openenclave/openenclave/tree/master/docs/MbedtlsSu
 
 ## Build and run
 
-Note that there are two different build systems supported, one using GNU Make and
-`pkg-config`, the other using CMake.
-
-### CMake
-
-This uses the CMake package provided by the Open Enclave SDK.
-
-```bash
-cd remote_attestation
-mkdir build && cd build
-cmake ..
-make run
-```
-
-### GNU Make
-
-```bash
-cd remote_attestation
-make build
-make run
-```
+In order to build and run this sample, please refer to the common sample [README file](../README.md#building-the-samples).

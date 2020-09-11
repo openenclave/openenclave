@@ -125,19 +125,13 @@ Note: The benchmark may not mirror the allocation pattern of your enclaves. Ther
 is strongly encouraged to perform their own benchmarks to choose the allocator that is most
 appropriate for their application.
 
-To build the sample
-
-```bash
-$ mkdir build
-$ cd build
-$ cmake .. -DCMAKE_BUILD_TYPE=Release
-$ make
-```
+In order to build and run this sample, please refer to the common sample [README file](../README.md#building-the-samples).
 
 On the test machine, running the sample produces the following output that shows
 that `oesnmalloc` shows a speed up factor of up to 15X depending upon the
 number of threads.
 
+The following example shows the sample running on Linux.
 ```
 $ make run
 Configuration:

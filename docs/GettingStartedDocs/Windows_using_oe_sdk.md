@@ -38,7 +38,7 @@ set CMAKE_PREFIX_PATH=C:\openenclave\lib\openenclave\cmake
 One way to determine if your machine is correctly configured to build and run
 Open Enclave apps is to execute the samples. A description of all the included samples,
 what each one illustrates, and how to build and run them  can be found in
-[share/openenclave/samples/README.md](/samples/README_Windows.md).
+[share/openenclave/samples/README.md](/samples/README.md).
 
 Additional documentation is also available for:
 - [Building and signing enclaves](/docs/GettingStartedDocs/buildandsign.md)

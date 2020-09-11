@@ -126,4 +126,4 @@ Follow the instructions in the [Install Info](LinuxInstallInfo.md) document to i
 
 ## Build and run samples
 
-To build and run the samples, please look [here](/samples/README_Linux.md).
+To build and run the samples, please look [here](/samples/README.md).
