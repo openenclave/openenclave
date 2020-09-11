@@ -20,9 +20,9 @@ build:
 		--trusted-dir . \
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp server.cpp ../../../common/utility.cpp
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 ecalls.cpp server.cpp ../../../common/utility.cpp ../../../common/openssl_utility.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) tls_server_t.c
-	$(CXX) -o tls_server_enc ecalls.o server.o utility.o tls_server_t.o $(LDFLAGS) -lmbedtls -lmbedcrypto -loehostsock -loehostresolver -loecore -lopensslssl -lopensslcrypto -loelibc -loesyscall
+	$(CXX) -o tls_server_enc ecalls.o server.o utility.o openssl_utility.o tls_server_t.o $(LDFLAGS) -lmbedtls -lmbedcrypto -loehostsock -loehostresolver -loecore -lopensslssl -lopensslcrypto -loelibc -loesyscall
 
 sign:
 	oesign sign -e tls_server_enc -c enc.conf -k private.pem

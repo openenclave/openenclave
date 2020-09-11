@@ -24,6 +24,7 @@
 #include <openssl/x509_vfy.h>
 
 #include "../common/common.h"
+#include "../common/openssl_utility.h"
 
 int verify_callback(int preverify_ok, X509_STORE_CTX* ctx);
 int create_socket(char* server_name, char* server_port);
@@ -66,70 +67,24 @@ done:
 // server
 int communicate_with_server(SSL* ssl)
 {
-    unsigned char buf[200];
     int ret = 1;
     int error = 0;
-    int len = 0;
-    int bytes_written = 0;
-    int bytes_read = 0;
-
     // Write an GET request to the server
     printf(TLS_CLIENT "-----> Write to server:\n");
-    len = snprintf((char*)buf, sizeof(buf) - 1, CLIENT_PAYLOAD);
-    while ((bytes_written = SSL_write(ssl, buf, (size_t)len)) <= 0)
+    if (write_to_session_peer(ssl, CLIENT_PAYLOAD, CLIENT_PAYLOAD_SIZE) != 0)
     {
-        error = SSL_get_error(ssl, bytes_written);
-        if (error == SSL_ERROR_WANT_WRITE)
-            continue;
-        printf(TLS_CLIENT "Failed! SSL_write returned %d\n", error);
-        ret = bytes_written;
+        printf(" write to server failed \n");
         goto done;
     }
 
-    printf(TLS_CLIENT "%d bytes written\n", bytes_written);
-
     // Read the HTTP response from server
     printf(TLS_CLIENT "<---- Read from server:\n");
-    do
+    if (read_from_session_peer(ssl, SERVER_PAYLOAD, SERVER_PAYLOAD_SIZE) != 0)
     {
-        len = sizeof(buf) - 1;
-        memset(buf, 0, sizeof(buf));
-        bytes_read = SSL_read(ssl, buf, (size_t)len);
-        if (bytes_read <= 0)
-        {
-            int error = SSL_get_error(ssl, bytes_read);
-            if (error == SSL_ERROR_WANT_READ)
-                continue;
+        printf(" read from server failed \n");
+        goto done;
+    }
 
-            printf(TLS_CLIENT "Failed! SSL_read returned error=%d\n", error);
-            ret = bytes_read;
-            break;
-        }
-
-        printf(TLS_CLIENT " %d bytes read\n", bytes_read);
-#ifdef ADD_TEST_CHECKING
-        // check to to see if received payload is expected
-        if ((bytes_read != SERVER_PAYLOAD_SIZE) ||
-            (memcmp(SERVER_PAYLOAD, buf, bytes_read) != 0))
-        {
-            printf(
-                TLS_CLIENT "ERROR: expected reading %lu bytes but only "
-                           "received %d bytes\n",
-                SERVER_PAYLOAD_SIZE,
-                bytes_read);
-            ret = bytes_read;
-            goto done;
-        }
-        else
-        {
-            printf(TLS_CLIENT
-                   " received all the expected data from server\n\n");
-            ret = 0;
-            break;
-        }
-        printf("Verified: the contents of server payload were expected\n\n");
-#endif
-    } while (1);
     ret = 0;
 done:
     return ret;
