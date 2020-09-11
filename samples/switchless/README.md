@@ -217,32 +217,9 @@ We expect to see a speed up of the switchless calls over the regular calls.
 
 ### CMake
 
-This uses the CMake package provided by the Open Enclave SDK.
+In order to build and run this sample, please refer to the common sample [README file](../README.md#building-the-samples).
 
-```bash
-cd switchless
-mkdir build && cd build
-cmake ..
-make run
-```
-
-### GNU Make
-
-```bash
-cd switchless
-make build
-make run
-```
 
 #### Note
 
-switchless sample can run under Open Enclave simulation mode.
-
-To run the switchless sample in simulation mode from the command like, use the following:
-
-```bash
-# if built with cmake
-./host/switchless_host ./enclave/switchless_enc.signed --simulate
-# or, if built with GNU Make and pkg-config
-make simulate
-```
+The switchless sample can run under Open Enclave simulation mode.

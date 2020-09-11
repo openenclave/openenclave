@@ -264,7 +264,4 @@ As of 2020-03-10, it looks like this:
 With the LVI mitigation enabled, Open Enclave SDK provides a new option that
 allows users to build enclaves on top of the mitigated version of libraries.
 
-See [Build and Run samples with LVI mitigation on Linux
-](/samples/README_Linux.md#build-and-run-samples-with-lvi-mitigation) and
-[Build and Run samples with LVI mitigation on Windows
-](/samples/README_Windows.md#build-and-run-samples-with-lvi-mitigation) for more details.
+See [Build and Run samples with LVI mitigation](/samples/helloworld/README.md#build-and-run-with-LVI-mitigation).

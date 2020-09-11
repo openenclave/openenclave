@@ -131,34 +131,8 @@ Free all the resources allocated for this encryptor instance.
 
 ## Build and run
 
-Note that there are two different build systems supported, one using GNU Make and
-`pkg-config`, the other using CMake.
-
-### CMake
-
-This uses the CMake package provided by the Open Enclave SDK.
-
-```bash
-cd file-encryptor
-mkdir build && cd build
-cmake ..
-make run
-```
-
-### GNU Make
-
-```bash
-cd file-encryptor
-make build
-make run
-```
+To build and run this sample, please refer to documentation provided in the main [README file](../README.md#building-the-samples)
 
 #### Note
 
-Fileencryptor sample can run under OE simulation mode.
-
-To run the sample in simulation mode from the command like, use the following:
-
-```bash
-./host/file-encryptor_host ./enclave/enclave.signed --simulate
-```
+The file-encryptor sample can run under OE simulation mode.

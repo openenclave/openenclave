@@ -26,41 +26,7 @@ There is also an `sgx_enclave_claims_verifier()` function, which is called by `v
 
 ## Build and run
 
-Open Enclave SDK supports building the sample on both Linux and Windows.
-Linux supports two types of build systems, GNU Make with `pkg-config` and CMake,
-while Windows supports only CMake.
-
-### Linux
-
-#### CMake
-
-This uses the CMake package provided by the Open Enclave SDK.
-
-```bash
-cd host_verify
-mkdir build && cd build
-cmake ..
-make run
-```
-
-#### GNU Make
-
-```bash
-cd host_verify
-make build
-make run
-```
-
-### Windows
-
-#### CMake
-
-```bash
-mkdir build && cd build
-cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs
-ninja
-ninja run
-```
+In order to build and run this sample, please refer to the common sample sample [README file](../README.md#building-the-samples)
 
 When you see the following message displayed on the screen, it means you have successfully run the sample.
 

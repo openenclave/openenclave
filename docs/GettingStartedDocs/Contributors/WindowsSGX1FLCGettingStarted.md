@@ -169,7 +169,7 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 ## Build and run samples
 
-To build and run the samples without building and then installing the OE SDK, please refer to the [README for Windows samples](/samples/README_Windows.md).
+To build and run the samples without building and then installing the OE SDK, please refer to the [README for Windows samples](/samples/README.md).
 
 ## Known Issues
 

@@ -112,4 +112,4 @@ For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) docu
 
 ## Build and run samples
 
-To build and run the samples, please look at [README_Linux.md](/samples/README_Linux.md).
+To build and run the samples, please look at [README.md](/samples/README.md).
