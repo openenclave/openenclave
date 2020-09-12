@@ -148,6 +148,31 @@ Note that the code snippet for the RDRAND engine opt-in is required to use not o
 but also other OpenSSL APIs that internally depend on the RAND APIs. Alternatively, developers
 can implement their own RAND method to replace the default method via `RAND_set_rand_method` API.
 
+## Security Guidance for using OpenSSL APIs/Macros
+
+OpenSSL provides APIs that allow users to configure sensitive settings like certificate trust and cipher suite preference from files.
+Because the host file system is considered untrusted in contexts such as SGX enclaves, OE SDK marks these APIs as unsupported to discourage their use.
+OE SDK does this by patching the OpenSSL headers that include such APIs or macros (i.e., appending the inclusion of an "unsupported.h" file to these headers).
+This ensures that when an enclave includes a patched OpenSSL header and uses the specific API or macro, user will receive compile-time errors.
+The errors can be disabled by specifying the `OE_OPENSSL_SUPPRESS_UNSUPPORTED` option to the compiler.
+
+See the following table for the detailed list of APIs/Macros.
+
+API / Macro | Original header | Comments | Guidance |
+:---:|:---:|:---|:---|
+OPENSSL_INIT_LOAD_CONFIG | crypto.h | The macro represents an option to the OPENSSL_init_ssl and OPENSSL_init_crypto APIs that initializes an application based on the openssl.cnf (loaded from the host filesystem). Therefore, the use of this option would allow an untrusted host to fully control the initialization of the application. | The recommendation is not to invoke initialization APIs with this option. Note that starting from v1.1.0, the explicit initialization is not required. |
+SSL_CTX_load_verify_locations | ssl.h | The API specifies the default locations from which an application looks up CA certificates for verification purposes. The API would allow an untrusted host to fully control what certificates the application will trust. | The recommendation is using the SSL_CTX_set_cert_store API that specifies an in-memory certificate verification storage (`X509_STORE`). Another alternative is to implement a customized verification callback and sets the callback via the SSL_CTX_set_verify API, which effectively bypasses the default implementation. |
+SSL_CTX_set_default_verify_paths | ssl.h | The API specifies the locations as part of arguments from which an application looks up CA certificates for verification purposes. The API would allow an untrusted host to fully control what certificates the application will trust. | The recommendation is using the SSL_CTX_set_cert_store API that specifies an in-memory certificate verification storage (`X509_STORE`). Another alternative is to implement a customized verification callback and sets the callback via the SSL_CTX_set_verify API, which effectively bypasses the default implementation. |
+SSL_CTX_set_default_verify_dir | ssl.h | Similar to SSL_CTX_set_default_verify_paths except for specifying dir only. | The recommendation is using the SSL_CTX_set_cert_store API that specifies an in-memory certificate verification storage (`X509_STORE`). Another alternative is to implement a customized verification callback and sets the callback via the SSL_CTX_set_verify API, which effectively bypasses the default implementation. |
+SSL_CTX_set_default_verify_file | ssl.h | Similar to SSL_CTX_set_default_verify_paths except for specifying file only. | The recommendation is using the SSL_CTX_set_cert_store API that specifies an in-memory certificate verification storage (`X509_STORE`). Another alternative is to implement a customized verification callback and sets the callback via the SSL_CTX_set_verify API, which effectively bypasses the default implementation. |
+X509_LOOKUP_hash_dir | x509_vfy.h | This API returns a `X509_LOOKUP_METHOD` method that loads files (certificates or CRLs) from the path specified by the `SSL_CERT_DIR` environment variable. This would allow an untrusted host to control what files the enclave will load. The API is used internally by SSL_CTX_set_default_verify_dir and SSL_CTX_set_default_verify_paths. | The recommendation is to implement a customized `X509_LOOKUP_METHOD` method based on in-memory operations. Note that to opt-in the new method, the user needs to explicitly register the method to a `X509_STORE` via the X509_STORE_add_lookup API and the set the `X509_STORE` to an `SSL_CTX` via SSL_CTX_set_cert_store. |
+X509_LOOKUP_file | x509_vfy.h | This API returns a `X509_LOOKUP_METHOD` method that loads files (certificates or CRLs) from the path specified by the `SSL_CERT_FILE` environment variable. This would allow an untrusted host to control what files the enclave will load. The API is used internally by SSL_CTX_set_default_verify_file and SSL_CTX_set_default_verify_paths. | The recommendation is to implement a customized `X509_LOOKUP_METHOD` method based on in-memory operations. Note that to opt-in the new method, the user needs to explicitly register the method to a `X509_STORE` via the X509_STORE_add_lookup API and the set the `X509_STORE` to an `SSL_CTX` via SSL_CTX_set_cert_store. |
+X509_STORE_load_locations | x509_vfy.h | The API adds X509_LOOKUP_file or X509_LOOKUP_hash_dir to a `X509_STORE` via the X509_STORE_add_lookup API. The API is used internally by SSL_CTX_load_verify_locations. | The recommendation is to add a customized `X509_LOOKUP_METHOD` method to the `X509_STORE` via X509_STORE_add_lookup. |
+X509_STORE_set_default_paths | x509_vfy.h | The API adds X509_LOOKUP_file or X509_LOOKUP_hash_dir to a `X509_STORE` via X509_STORE_add_lookup. The API is used internally by SSL_CTX_set_default_verify_paths. | The recommendation is to add a customized `X509_LOOKUP_METHOD` method to the `X509_STORE` via X509_STORE_add_lookup. |
+X509_load_cert_file | x509_vfy.h | The API loads certificates from the untrusted host filesystem and adds the certificates to the `X509_STORE` via the X509_STORE_add_cert API. The API is used internally by X509_LOOKUP_hash_dir and X509_LOOKUP_file methods. | The recommendation is not to use this API. An alternative is obtaining in-memory certificates in a secure manner (e.g., secure channel, encrypted storage) and adding the certificates to the `X509_STORE` via X509_STORE_add_cert. |
+X509_load_crl_file | x509_vfy.h | The API loads CRL from the untrusted host filesystem and adds the CRL to the `X509_STORE` via the X509_STORE_add_crl API. The API is used internally by X509_LOOKUP_hash_dir and X509_LOOKUP_file methods. | The recommendation is not to use this API. An alternative is obtaining in-memory certificates in a secure manner (e.g., secure channel, encrypted storage) and adding the CRL to the `X509_STORE` via X509_STORE_add_crl. |
+X509_load_cert_crl_file | x509_vfy.h | The API is the combination of X509_load_cert_file and X509_load_crl_file. | The recommendation is not to use this API. An alternative is obtaining in-memory certificates in a secure manner (e.g., secure channel, encrypted storage) and adding the certificates/CRL to the `X509_STORE` via X509_STORE_add_cert/X509_STORE_add_crl. |
+
 ## API Support
 
 Header | Supported | Comments |
@@ -176,7 +201,7 @@ comperr.h | Yes | - |
 conf.h | Yes | - |
 conf_api.h | Yes | - |
 conferr.h | Yes | - |
-crypto.h | Yes | SECURE_MEMORY APIs (e.g., CRYPTO_secure_malloc, CRYPT_secure_free) are disabled. |
+crypto.h | Yes | SECURE_MEMORY APIs (e.g., CRYPTO_secure_malloc, CRYPT_secure_free) are disabled. The `OPENSSL_INIT_LOAD_CONFIG` macro is disabled for security concerns. Refer to [Security Guidance for using OpenSSL APIs/Macros](#security-guidance-for-using-openssl-apismacros) for more detail. |
 cryptoerr.h | Yes | - |
 ct.h | No | Certificate Transparency is disabled by OE. |
 cterr.h | Yes | - |
@@ -235,7 +260,7 @@ seed.h | No | SEED is disabled by OE. |
 sha.h | Yes | - |
 srp.h | No | SRC is disabled by OE. |
 srtp.h | Yes | - |
-ssl.h | Partial | SSL2 and SSL3 methods are disabled. Heartbeats extension is disabled by defailt. |
+ssl.h | Partial | SSL2 and SSL3 methods are disabled. Heartbeats extension is disabled by default. Functions that are unsupported by OE for security concerns include: `SSL_CTX_set_default_verify_paths`, `SSL_CTX_set_default_verify_dir`, `SSL_CTX_set_default_verify_file`, `SSL_CTX_load_verify_locations`. Refer to [Security Guidance for using OpenSSL APIs/Macros](#security-guidance-for-using-openssl-apismacros) for more detail |
 ssl2.h | Yes | - |
 ssl3.h | Yes | - |
 sslerr.h | Yes | - |
@@ -251,7 +276,7 @@ ui.h | No | Configured with no-ui-console. |
 uierr.h | Yes | - |
 whrlpool.h | No | Whirlpool is disabled by OE. |
 x509.h | Yes | - |
-x509_vfy.h | Yes | - |
+x509_vfy.h | Partial | Functions that are unsupported by OE for security concerns include: `X509_load_cert_file`, `X509_load_crl_file`, `X509_LOOKUP_hash_dir`, `X509_LOOKUP_file`, `X509_load_cert_crl_file`, `X509_STORE_load_locations`, `X509_STORE_set_default_paths`. Refer to [Security Guidance for using OpenSSL APIs/Macros](#security-guidance-for-using-openssl-apismacros) for more detail. |
 x509err.h | Yes | - |
 x509v3.h | Yes | - |
 x509v3err.h | Yes | - |

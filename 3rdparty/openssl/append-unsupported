@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+##==============================================================================
+##
+## append-unsupported:
+##
+##     Append inclusion of the unsupported.h to corresponding header file under
+##     the given directory.
+##
+##==============================================================================
+
+## Check arguments.
+if [ "$#" != "1" ]; then
+    echo "Usage: $0 directory"
+    exit 1
+fi
+
+## Name arguments.
+directory=$1
+
+## If the directory does not exist:
+if [ ! -d "${directory}" ]; then
+    echo "$0: no such directory: ${directory}"
+    exit 1
+fi
+
+headers=`find ${directory} -name '*.h'`
+
+## Append the inclusion of unsupported.h */
+for i in ${headers}
+do
+    if [[ "${i}" != *"crypto.h" ]] && [[ "${i}" != *"ssl.h" ]] && [[ "${i}" != *"x509_vfy.h" ]]; then
+        continue
+    fi
+    echo "#include <openssl/unsupported.h>" >> ${i}
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to append ${string}"
+        exit 1
+    fi
+done

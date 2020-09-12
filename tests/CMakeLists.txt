@@ -144,6 +144,7 @@ if (UNIX
 
     if (BUILD_OPENSSL)
       add_subdirectory(openssl)
+      add_subdirectory(openssl_unsupported)
     endif ()
   endif ()
 

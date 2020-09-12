@@ -96,7 +96,7 @@ function (add_openssl_test_enc NAME BUILDTEST)
     ${CMAKE_CURRENT_BINARY_DIR}/openssl_t.c)
 
   enclave_include_directories(
-    openssl-${NAME}_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+    openssl-${NAME}_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}
     ${OPENSSL_DIR}/include ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
 
   enclave_compile_options(

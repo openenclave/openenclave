@@ -27,3 +27,10 @@ that work with Open Enclave. The structure of the directory is as follows.
   the version of Perl that comes with the git bash does not support the Pod::Usage module required by the OpenSSL
   configuration scripts. See https://groups.google.com/g/git-for-windows/c/AQf2YbaxH6U/m/mwRScOGRCwAJ
   for the reference on the perl issue with git bash on Windows.
+
+- unsupported.h
+  The header lists the OpenSSL APIs, which are unsupported by OE for security concerns.
+
+- append-unsupported
+  Script to append the `#include<openssl/unsupported.h>` to the OpenSSL headers that include the
+  corresponding APIs. The patched headers will be installed as part of OE release packages.
