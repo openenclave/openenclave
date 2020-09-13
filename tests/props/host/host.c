@@ -124,9 +124,16 @@ done:
 
 int main(int argc, const char* argv[])
 {
+    typedef enum
+    {
+        TEST_PROPS_UNSIGNED,
+        TEST_PROPS_SIGNED,
+        TEST_PROPS_CUSTOM_SIGNED
+    } test_type_t;
+
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
-    bool is_signed = false;
+    test_type_t test_type;
     oe_sgx_enclave_properties_t properties;
 
     if (argc != 3)
@@ -136,15 +143,20 @@ int main(int argc, const char* argv[])
     }
 
     /* Extract "signed" or "unsigned" command-line argument */
-    if (strcmp(argv[2], "signed") == 0)
+    if (strcmp(argv[2], "unsigned") == 0)
     {
-        is_signed = true;
+        test_type = TEST_PROPS_UNSIGNED;
+        _set_xfrm(SGX_XFRM_LEGACY | SGX_XFRM_AVX);
+    }
+    else if (strcmp(argv[2], "signed") == 0)
+    {
+        test_type = TEST_PROPS_SIGNED;
         _set_xfrm(SGX_XFRM_LEGACY);
     }
-    else if (strcmp(argv[2], "unsigned") == 0)
+    else if (strcmp(argv[2], "custom") == 0)
     {
-        is_signed = false;
-        _set_xfrm(SGX_XFRM_LEGACY | SGX_XFRM_AVX);
+        test_type = TEST_PROPS_CUSTOM_SIGNED;
+        _set_xfrm(SGX_XFRM_LEGACY);
     }
     else
     {
@@ -165,29 +177,45 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     /* Check expected enclave property values */
-    if (is_signed)
+    switch (test_type)
     {
-        _check_properties(
-            &properties,
-            is_signed,
-            1111,                                        /* product_id */
-            2222,                                        /* security_version */
-            OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
-            512,                                         /* num_heap_pages  */
-            512,                                         /* num_stack_pages */
-            4);                                          /* num_tcs */
-    }
-    else
-    {
-        _check_properties(
-            &properties,
-            is_signed,
-            1234,                                        /* product_id */
-            5678,                                        /* security_version */
-            OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
-            512,                                         /* num_heap_pages  */
-            512,                                         /* num_stack_pages */
-            4);                                          /* num_tcs */
+        case TEST_PROPS_UNSIGNED:
+            _check_properties(
+                &properties,
+                (test_type != TEST_PROPS_UNSIGNED),
+                1234, /* product_id */
+                5678, /* security_version */
+                OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
+                512, /* num_heap_pages  */
+                512, /* num_stack_pages */
+                4);  /* num_tcs */
+            break;
+        case TEST_PROPS_SIGNED:
+            _check_properties(
+                &properties,
+                (test_type != TEST_PROPS_UNSIGNED),
+                1111, /* product_id */
+                2222, /* security_version */
+                OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
+                512, /* num_heap_pages  */
+                512, /* num_stack_pages */
+                4);  /* num_tcs */
+            break;
+        case TEST_PROPS_CUSTOM_SIGNED:
+            _check_properties(
+                &properties,
+                (test_type != TEST_PROPS_UNSIGNED),
+                1111, /* product_id */
+                2222, /* security_version */
+                OE_SGX_FLAGS_PROVISION_KEY | OE_SGX_FLAGS_DEBUG |
+                    OE_SGX_FLAGS_MODE64BIT, /* attributes */
+                512,                        /* num_heap_pages  */
+                512,                        /* num_stack_pages */
+                4);                         /* num_tcs */
+            break;
+        default:
+            fprintf(stderr, "%s: invalid test type: %s\n", argv[0], argv[2]);
+            exit(1);
     }
 
     int out_param = -1;
