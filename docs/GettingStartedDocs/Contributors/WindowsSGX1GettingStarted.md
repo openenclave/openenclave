@@ -62,7 +62,7 @@ and DCAP software components should already be automatically installed. To skip
 updating the PSW and DCAP software components:
 
 ```powershell
-./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1-NoPSWDCAP -DCAPClientType None
+./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1-NoIntelDrivers -DCAPClientType None
 ```
 
 Once the installation is done, please ignore the following message(s) and continue on to the next step.

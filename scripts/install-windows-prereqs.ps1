@@ -35,7 +35,7 @@ Param(
     [string]$GetPipURL = 'https://bootstrap.pypa.io/3.4/get-pip.py',
     [string]$GetPipHash = '564FABC2FBABD9085A71F4A5E43DBF06D5CCEA9AB833E260F30EE38E8CE63A69',
     [Parameter(mandatory=$true)][string]$InstallPath,
-    [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoPSWDCAP", "SGX1-NoPSWDCAP")][string]$LaunchConfiguration,
+    [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
 )
 
@@ -684,7 +684,7 @@ try {
     Install-Shellcheck
     Install-NSIS
 
-    if (($LaunchConfiguration -ne "SGX1FLC-NoPSWDCAP") -and ($LaunchConfiguration -ne "SGX1-NoPSWDCAP"))
+    if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers"))
     {
         Install-PSW
         Install-DCAP-Dependencies
