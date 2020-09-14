@@ -1044,6 +1044,39 @@ void test_remote_report()
         oe_free_report(report_buffer_ptr);
         report_buffer_ptr = NULL;
     }
+
+    {
+        uint8_t* report_buffer = NULL;
+        oe_report_t parsed_report = {0};
+        size_t report_size = OE_MAX_REPORT_SIZE;
+
+        // Get a valid remote report and tweak fields.
+        OE_TEST(
+            GetReport_v2(
+                OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+                NULL,
+                0,
+                NULL,
+                0,
+                &report_buffer,
+                &report_size) == OE_OK);
+        OE_TEST(
+            oe_parse_report(report_buffer, report_size, &parsed_report) ==
+            OE_OK);
+
+        const auto header =
+            reinterpret_cast<oe_report_header_t*>(report_buffer);
+
+        // 1. Header's report_size is too small.
+        // ie: header->report_size < sizeof(sgx_quote_t)
+        header->report_size = sizeof(sgx_quote_t) - 1;
+        report_size = header->report_size + sizeof(oe_report_header_t);
+        OE_TEST(
+            oe_parse_report(report_buffer, report_size, &parsed_report) ==
+            OE_INCORRECT_REPORT_SIZE);
+
+        oe_free_report(report_buffer);
+    }
 }
 
 void test_parse_report_negative()
@@ -1120,32 +1153,6 @@ void test_parse_report_negative()
     OE_TEST(
         oe_parse_report(report_buffer, report_size, &parsed_report) ==
         OE_REPORT_PARSE_ERROR);
-
-    oe_free_report(report_buffer);
-
-    // Get a valid remote report and tweak fields.
-    report_size = OE_MAX_REPORT_SIZE;
-    OE_TEST(
-        GetReport_v2(
-            OE_REPORT_FLAGS_REMOTE_ATTESTATION,
-            NULL,
-            0,
-            NULL,
-            0,
-            &report_buffer,
-            &report_size) == OE_OK);
-    OE_TEST(
-        oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
-
-    header = (oe_report_header_t*)report_buffer;
-
-    // 1. Header's report_size is too small.
-    // ie: header->report_size < sizeof(sgx_quote_t)
-    header->report_size = sizeof(sgx_quote_t) - 1;
-    report_size = header->report_size + sizeof(oe_report_header_t);
-    OE_TEST(
-        oe_parse_report(report_buffer, report_size, &parsed_report) ==
-        OE_INCORRECT_REPORT_SIZE);
 
     oe_free_report(report_buffer);
 }
