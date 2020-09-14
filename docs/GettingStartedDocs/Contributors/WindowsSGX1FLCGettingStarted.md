@@ -59,7 +59,7 @@ updating the PSW and DCAP software components:
 
 
 ```powershell
-./scripts/install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoPSWDCAP
+./scripts/install-windows-prereqs.ps1 -LaunchConfiguration SGX1FLC-NoIntelDrivers
 ```
 
 To install the prerequisites along with the Azure DCAP Client, use the below
