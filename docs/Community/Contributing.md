@@ -316,7 +316,9 @@ Copying Files from Other Projects
 
 Open Enclave uses some files from other projects, typically to provide a default
 level of functionality within the enclave where a binary distribution does not
-exist or would be inconvenient.
+exist or would be inconvenient.  Using submodules is preferred over copying
+copies from other projects, however.  When a fork is needed, see the
+[Repository Guidelines](Repositories.md).
 
 The following rules must be followed for PRs that include files from another
 project:
