@@ -1,6 +1,6 @@
 # SGX1 with Flexible Launch Control (FLC) Prerequisites on Windows
 
-## [Intel Platform Software for Windows (PSW) v2.8](http://registrationcenter-download.intel.com/akdlm/irc_nas/16766/Intel%20SGX%20PSW%20for%20Windows%20v2.8.100.2.exe)
+## [Intel Platform Software for Windows (PSW) v2.9](http://registrationcenter-download.intel.com/akdlm/irc_nas/16899/Intel%20SGX%20PSW%20for%20Windows%20v2.9.100.2.exe)
 
 The PSW only needs to be manually installed if you are running on Windows Server
 2016 or a version of Windows client lower than 1709. It should be installed automatically
@@ -12,7 +12,7 @@ To install the PSW on Windows Server 2016 and Windows client < 1709, unpack the 
 ZIP executable, and run the installer under `PSW_EXE_RS2_and_before`:
 
 ```cmd
-"C:\Intel SGX PSW for Windows v2.8.100.2\PSW_EXE_RS2_and_before\Intel(R)_SGX_Windows_x64_PSW_2.8.100.2.exe"
+"C:\Intel SGX PSW for Windows v2.9.100.2\PSW_EXE_RS2_and_before\Intel(R)_SGX_Windows_x64_PSW_2.9.100.2.exe"
 ```
 
 If you would like to manually update the PSW on Windows Server 2019 or Windows
@@ -32,7 +32,7 @@ You can verify that the correct version of Intel SGX PSW is installed by using
 Windows Explorer to open `C:\Windows\System32`. You should be able to find
 file `sgx_urts.dll` if PSW is installed. Right click on `sgx_urts.dll`,
 choose `Properties` and then find `Product version` on the `Details` tab.
-The version should be "2.8.xxx.xxx" or above.
+The version should be "2.9.xxx.xxx" or above.
 
 ## [Azure DCAP client for Windows](https://github.com/Microsoft/Azure-DCAP-Client/tree/master/src/Windows) [optional]
 
@@ -45,7 +45,7 @@ nuget.exe install Microsoft.Azure.DCAP -ExcludeVersion -Version 1.6.0 -OutputDir
 
 This example assumes you would like to install the package to `C:\oe_prereqs`.
 
-## [Intel Data Center Attestation Primitives (DCAP) Libraries v1.7](http://registrationcenter-download.intel.com/akdlm/irc_nas/16767/Intel%20SGX%20DCAP%20for%20Windows%20v1.7.100.2.exe)
+## [Intel Data Center Attestation Primitives (DCAP) Libraries v1.8](http://registrationcenter-download.intel.com/akdlm/irc_nas/16928/Intel%20SGX%20DCAP%20for%20Windows%20v1.8.100.2.exe)
 
 After unpacking the self-extracting ZIP executable, you can refer to the *Intel SGX DCAP Windows SW Installation Guide.pdf*
 for more details on how to install the contents of the package.
@@ -53,7 +53,7 @@ for more details on how to install the contents of the package.
 Note that Windows Server 2019 should have this package installed by default via Windows Update.
 In that case, it is only necessary to set the registry key to allow the LC_driver to run.
 
-The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.7.100.2`:
+The following summary will assume that the contents were extracted to `C:\Intel SGX DCAP for Windows v1.8.100.2`:
 
 ### Install the Intel DCAP driver
 
@@ -69,7 +69,7 @@ The following summary will assume that the contents were extracted to `C:\Intel 
 
 2. Install or update the drivers:
     - Refer to the PSW section above for notes on acquiring and using `devcon.exe`.
-    - Please note that the following commands will be ran from the `C:\Intel SGX DCAP for Windows v1.7.100.2` folder.
+    - Please note that the following commands will be ran from the `C:\Intel SGX DCAP for Windows v1.8.100.2` folder.
     - On Windows Server 2016, the drivers can be installed using:
 
       ```cmd
