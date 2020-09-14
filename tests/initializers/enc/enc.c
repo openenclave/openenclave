@@ -105,4 +105,4 @@ OE_SET_ENCLAVE_OPTEE(
     12 * 1024,
     0,
     "1.0.0",
-    "Initializers test")
+    "Initializers test");

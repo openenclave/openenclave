@@ -320,6 +320,9 @@ macro (add_enclave_optee)
     target_link_libraries(${ENCLAVE_TARGET} oelibcxx)
   endif ()
 
+  set_target_properties(${ENCLAVE_TARGET}
+    PROPERTIES ENCLAVE_UUID ${ENCLAVE_UUID})
+
   # Strip unneeded bits.
   string(REPLACE "gcc" "objcopy" OBJCOPY ${CMAKE_C_COMPILER})
   add_custom_target(

@@ -90,7 +90,9 @@ if (WIN32)
       -DNUGET_PACKAGE_PATH=${NUGET_PACKAGE_PATH}
       -DCOMPILER_SUPPORTS_SNMALLOC=on -DUSE_DEBUG_MALLOC=${USE_DEBUG_MALLOC} -P
       ${CMAKE_CURRENT_SOURCE_DIR}/test-samples.cmake)
-else ()
+elseif (OE_SGX)
+  # The emulated ARM TrustZone environment does not currently support running
+  # CMake with the necessary prerequisites.
   add_test(
     NAME samples
     COMMAND

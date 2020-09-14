@@ -182,8 +182,8 @@ OE_SET_ENCLAVE_SGX(
 
 OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
-    1 * 1024 * 1024,
-    12 * 1024,
+    512 * 4096,
+    256 * 4096,
     0,
     "1.0.0",
-    "libc test")
+    "libc test");

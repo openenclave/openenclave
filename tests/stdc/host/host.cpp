@@ -42,7 +42,7 @@ int main(int argc, const char* argv[])
     oe_enclave_t* enclave = NULL;
 
     oe_result_t result = oe_create_stdc_enclave(
-        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+        argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         oe_put_err("oe_create_stdc_enclave(): result=%u", result);
