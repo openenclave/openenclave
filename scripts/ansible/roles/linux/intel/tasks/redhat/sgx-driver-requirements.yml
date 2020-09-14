@@ -13,3 +13,4 @@
   yum:
     name: "{{ intel_sgx_package_dependencies }}"
     state: latest
+  retries: 10
