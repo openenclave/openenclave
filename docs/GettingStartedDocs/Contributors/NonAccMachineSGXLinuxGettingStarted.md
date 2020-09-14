@@ -72,21 +72,21 @@ sudo apt-get update
 
 - Or Install Intel DCAP Quote Provider with dpkg manually
 
-The [libsgx-dcap-default-qpl directory](https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/ubuntuServer18.04/debian_pkgs/libs/libsgx-dcap-default-qpl/) lists all different version of libsgx-dcap-default-qpl, please download the most recent version that matches your OS version. For Ubuntu 18.04 (code name [Bionic Beaver](https://wiki.ubuntu.com/BionicBeaver)), please download the version libsgx-dcap-default-qpl_{version}-bionic1_amd64.deb. For Ubuntu 16.04 (code name [Xenial Xerus](https://wiki.ubuntu.com/XenialXerus)), please download the version libsgx-dcap-default-qpl_{version}-xenial1_amd64.deb.
+The [libsgx-dcap-default-qpl directory](https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/) lists all different version of libsgx-dcap-default-qpl, please download the most recent version that matches your OS version. For Ubuntu 18.04 (code name [Bionic Beaver](https://wiki.ubuntu.com/BionicBeaver)), please download the version libsgx-dcap-default-qpl_{version}-bionic1_amd64.deb. For Ubuntu 16.04 (code name [Xenial Xerus](https://wiki.ubuntu.com/XenialXerus)), please download the version libsgx-dcap-default-qpl_{version}-xenial1_amd64.deb.
 
-In this document, we use libsgx-dcap-default-qpl_1.6.100.2-bionic1_amd64.deb as an example, run the command below to download the package
+In this document, we use libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb as an example, run the command below to download the package
 ```bash
 cd ~
-wget https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/ubuntuServer18.04/debian_pkgs/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.6.100.2-bionic1_amd64.deb
+wget https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb
 ```
 
 Then install the package
 ```bash
-sudo dpkg -i libsgx-dcap-default-qpl_1.6.100.2-bionic1_amd64.deb
+sudo dpkg -i libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb
 ```
 
 ### 3.2 Create a soft link
-OE expects the file name of the qpl to be libdcap_quoteprov.so. But the Intel default qpl creates installed libdcap_quoteprov.so.1 and libdcap_quoteprov.so.1.6.100.2.  libdcap_quoteprov.so.1 is a soft link to libdcap_quoteprov.so.1.6.100.2. To allow OE works properly, we need to create the other soft link called libdcap_quoteprov.s linking to libdcap_quoteprov.so.1.6.100.2
+OE expects the file name of the qpl to be libdcap_quoteprov.so. But the Intel default qpl creates installed libdcap_quoteprov.so.1 and libdcap_quoteprov.so.1.8.100.2.  libdcap_quoteprov.so.1 is a soft link to libdcap_quoteprov.so.1.8.100.2. To allow OE works properly, we need to create the other soft link called libdcap_quoteprov.s linking to libdcap_quoteprov.so.1.8.100.2
 
 Check where those files are installed.
 ```bash
@@ -98,7 +98,7 @@ In most cases, it should be in /usr/lib/x86_64-linux-gnu/
 Use /usr/lib/x86_64-linux-gnu/ as an example.
 ```bash
 cd /usr/lib/x86_64-linux-gnu/
-sudo ln -s libdcap_quoteprov.so.1.6.100.2 libdcap_quoteprov.so
+sudo ln -s libdcap_quoteprov.so.1.8.100.2 libdcap_quoteprov.so
 ```
 
 NOTES TO USERS WHO HAVE ALREADY INSTALLED AZURE DCAP CLIENT:
@@ -175,17 +175,17 @@ NOTE: In case the Intel SGX APT source repository is not added to your system. S
 
 - Or Install PCCS with dpkg manually
 
-From the [list of different versions of pccs](https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/ubuntuServer18.04/debian_pkgs/web/sgx-dcap-pccs/), please download the most recent version that matches your OS version.
+From the [list of different versions of pccs](https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/web/sgx-dcap-pccs/), please download the most recent version that matches your OS version.
 
-In this document, we use sgx-dcap-pccs_1.6.100.2-bionic1_amd64.deb as an example.  Run the command below to download the package
+In this document, we use sgx-dcap-pccs_1.8.100.2-bionic1_amd64.deb as an example.  Run the command below to download the package
 ```bash
 cd ~
-wget https://download.01.org/intel-sgx/sgx-dcap/1.6/linux/distro/ubuntuServer18.04/debian_pkgs/web/sgx-dcap-pccs/sgx-dcap-pccs_1.6.100.2-bionic1_amd64.deb
+wget https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/web/sgx-dcap-pccs/sgx-dcap-pccs_1.8.100.2-bionic1_amd64.deb
 ```
 
 Then install the package.
 ```bash
-sudo dpkg -i sgx-dcap-pccs_1.6.100.2-bionic1_amd64.deb
+sudo dpkg -i sgx-dcap-pccs_1.8.100.2-bionic1_amd64.deb
 ```
 
 You will be asked to finish the configuration during the installation process.

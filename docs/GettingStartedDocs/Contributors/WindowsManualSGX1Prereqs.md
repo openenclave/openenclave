@@ -1,6 +1,6 @@
 # SGX1 Prerequisites on Windows
 
-## [Intel Platform Software for Windows (PSW) v2.8](http://registrationcenter-download.intel.com/akdlm/irc_nas/16766/Intel%20SGX%20PSW%20for%20Windows%20v2.8.100.2.exe)
+## [Intel Platform Software for Windows (PSW) v2.9](http://registrationcenter-download.intel.com/akdlm/irc_nas/16899/Intel%20SGX%20PSW%20for%20Windows%20v2.9.100.2.exe)
 
 The PSW only needs to be manually installed if you are running on Windows Server
 2016 or a version of Windows client lower than 1709. It should be installed automatically
@@ -11,7 +11,7 @@ To install the PSW on Windows Server 2016 and Windows client < 1709, unpack the 
 ZIP executable, and run the installer under `PSW_EXE_RS2_and_before`:
 
 ```cmd
-"C:\Intel SGX PSW for Windows v2.8.100.2\PSW_EXE_RS2_and_before\Intel(R)_SGX_Windows_x64_PSW_2.8.100.2.exe"
+"C:\Intel SGX PSW for Windows v2.9.100.2\PSW_EXE_RS2_and_before\Intel(R)_SGX_Windows_x64_PSW_2.9.100.2.exe"
 ```
 
 On Windows 10 and Windows Server 2019, you should ensure that you have the latest drivers
@@ -34,7 +34,7 @@ You can verify that the correct version of Intel SGX PSW is installed by using
 Windows Explorer to open `C:\Windows\System32`. You should be able to find
 file `sgx_urts.dll` if PSW is installed. Right click on `sgx_urts.dll`,
 choose `Properties` and then find `Product version` on the `Details` tab.
-The version should be "2.8.xxx.xxx" or above.
+The version should be "2.9.xxx.xxx" or above.
 
 To verify that Intel SGX PSW is running, use the following command:
 
