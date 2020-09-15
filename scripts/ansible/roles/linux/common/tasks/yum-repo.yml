@@ -6,8 +6,14 @@
   yum:
     name: "{{ yum_repository_rpm_url }}"
     state: present
+  retries: 10
+  register: add_yum_repo
+  until: add_yum_repo is success
 
 - name: Add YUM repository key
   rpm_key:
     key: "{{ yum_repository_key_path }}"
     state: present
+  retries: 10
+  register: add_yum_repo_key
+  until: add_yum_repo_key is success

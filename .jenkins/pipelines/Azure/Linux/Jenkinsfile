@@ -4,7 +4,7 @@
 OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
 oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
-GLOBAL_TIMEOUT_MINUTES = 240
+GLOBAL_TIMEOUT_MINUTES = 120
 CTEST_TIMEOUT_SECONDS = 480
 GLOBAL_ERROR = null
 
@@ -69,7 +69,12 @@ def ACCTest(String label, String compiler, String build_type, List extra_cmake_a
                 if (fresh_install) {
                     sh  """
                         sudo bash scripts/ansible/install-ansible.sh
-                        sudo \$(which ansible-playbook) scripts/ansible/oe-contributors-acc-setup.yml
+                        # Run ACC Playbook
+                        for i in 1 2 3 4 5
+                        do
+                            sudo \$(which ansible-playbook) scripts/ansible/oe-contributors-acc-setup.yml && break
+                            sleep 60
+                        done
                         """
                 }
                 def task = """
