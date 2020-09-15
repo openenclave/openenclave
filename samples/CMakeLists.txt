@@ -45,7 +45,8 @@ if (BUILD_ENCLAVES)
         WORLD_EXECUTE
         WORLD_READ)
 
-  install(DIRECTORY helloworld file-encryptor data-sealing switchless
+  install(DIRECTORY data-sealing file-encryptor helloworld log_callback
+                    switchless
           DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
   if (COMPILER_SUPPORTS_SNMALLOC)

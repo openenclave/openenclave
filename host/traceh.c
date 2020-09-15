@@ -9,6 +9,7 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/time.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/trace.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,8 +29,9 @@
     sprintf(buffer, format, argument)
 #endif
 
-static char* _log_level_strings[OE_LOG_LEVEL_MAX] =
+const char* const oe_log_level_strings[OE_LOG_LEVEL_MAX] =
     {"NONE", "FATAL", "ERROR", "WARN", "INFO", "VERBOSE"};
+
 static oe_mutex _log_lock = OE_H_MUTEX_INITIALIZER;
 static char _log_file_name[OE_PATH_MAX];
 static char _custom_log_format[OE_PATH_MAX];
@@ -235,18 +237,21 @@ static bool _escape_characters(
 static void _write_message_to_stream(
     FILE* stream,
     bool is_enclave,
-    const char* time,
+    const struct tm* t,
     long int usecs,
     oe_log_level_t level,
     const char* message)
 {
+    char time[25];
+    strftime(time, sizeof(time), "%Y-%m-%dT%H:%M:%S%z", t);
+
     fprintf(
         stream,
         LOGGING_FORMAT_STRING,
         time,
         usecs,
         (is_enclave ? "E" : "H"),
-        _log_level_strings[level],
+        oe_log_level_strings[level],
         (long long unsigned int)oe_thread_self(),
         message);
 }
@@ -254,7 +259,7 @@ static void _write_message_to_stream(
 static void _write_custom_format_message_to_stream(
     FILE* stream,
     bool is_enclave,
-    const char* time,
+    const struct tm* t,
     long int usecs,
     oe_log_level_t level,
     const char* message,
@@ -263,13 +268,16 @@ static void _write_custom_format_message_to_stream(
     const char* number,
     const char* log_format)
 {
+    char time[25];
+    strftime(time, sizeof(time), "%Y-%m-%dT%H:%M:%S%z", t);
+
     fprintf(
         stream,
         log_format,
         time,
         usecs,
         (is_enclave ? "E" : "H"),
-        _log_level_strings[level],
+        oe_log_level_strings[level],
         oe_thread_self(),
         message,
         file,
@@ -362,7 +370,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
             (oe_log_callback)(
                 oe_log_context,
                 is_enclave,
-                time,
+                &t,
                 usecs,
                 level,
                 (uint64_t)oe_thread_self(),
@@ -381,7 +389,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
         if (_log_all_streams || !_use_log_file)
         {
             _write_message_to_stream(
-                stdout, is_enclave, time, usecs, level, message);
+                stdout, is_enclave, &t, usecs, level, message);
         }
 
         if (!_use_log_file)
@@ -407,7 +415,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
             if (!_use_custom_log_format)
             {
                 _write_message_to_stream(
-                    log_file, is_enclave, time, usecs, level, message);
+                    log_file, is_enclave, &t, usecs, level, message);
             }
             else
             {
@@ -428,7 +436,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                     _write_message_to_stream(
                         log_file,
                         is_enclave,
-                        time,
+                        &t,
                         usecs,
                         level,
                         "Failed to apply custom formatter to message\n");
@@ -447,7 +455,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                         _write_custom_format_message_to_stream(
                             log_file,
                             is_enclave,
-                            time,
+                            &t,
                             usecs,
                             level,
                             (escaped_ok ? log_msg_escaped
@@ -464,7 +472,7 @@ void oe_log_message(bool is_enclave, oe_log_level_t level, const char* message)
                         _write_custom_format_message_to_stream(
                             log_file,
                             is_enclave,
-                            time,
+                            &t,
                             usecs,
                             level,
                             log_msg,

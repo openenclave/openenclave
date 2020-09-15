@@ -19,6 +19,10 @@ install(FILES openenclave/enclave.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(FILES openenclave/host.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
+install(FILES openenclave/log.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
+install(FILES openenclave/trace.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(
   FILES openenclave/host_verify.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/

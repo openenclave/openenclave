@@ -40,7 +40,7 @@ endif ()
 
 # Set SAMPLES_LIST so that helloworld becomes the first if BUILD_ENCLAVES=ON.
 if (BUILD_ENCLAVES)
-  set(SAMPLES_LIST helloworld file-encryptor switchless)
+  set(SAMPLES_LIST file-encryptor helloworld log_callback switchless)
   # Debug malloc will set allocated memory to a fixed pattern.
   # Hence do not enable pluggable_allocator test under USE_DEBUG_MALLOC.
   if (COMPILER_SUPPORTS_SNMALLOC AND NOT USE_DEBUG_MALLOC)
