@@ -22,15 +22,11 @@ target_compile_options(
     # This allows aggressively eliminating unused code.
     -ffunction-sections
     -fdata-sections
-    # "The default without -fpic is 'initial-exec'; with -fpic the
-    # default is 'global-dynamic'."
-    # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options
-    #
-    # Enclaves are linked using -pie and therefore global-dynamic is
-    # too conservative. Of the two efficient static thread-local
-    # storage models, inital-exec and local-exec, we choose the most
-    # optimal one.
-    -ftls-model=local-exec
+    # The secondary modules are compiled with -ftls-model=initial-exec flag.
+    # This informs the compiler that the modules will be loaded along with the main module,
+    # rather than being dynamically loaded via dlopen. In this case, the compiler
+    # will generate R_X86_64_TPOFF relocations for thread-local variables.
+    -ftls-model=initial-exec
     # Disable builtin functions for enclaves, but only in our build.
     #
     # We do this to work-around compiler bugs (see #1429) due to our
@@ -48,7 +44,10 @@ target_link_libraries(
     -nostdlib
     -nodefaultlibs
     -nostartfiles
-    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id
+    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,--build-id
+    # Secondary modules are linked as position independent libraries (-pic) instead
+    # of position independent executables (-pie).
+    -Wl,-pic
     -Wl,-z,noexecstack
     -Wl,-z,now
     -Wl,-gc-sections)

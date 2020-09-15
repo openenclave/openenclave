@@ -62,6 +62,17 @@ static uint64_t _apply_relocations(
                 {
                     *dest = (uint64_t)(baseaddr + p->r_addend);
                 }
+                break;
+            }
+            case R_X86_64_TPOFF64:
+            {
+                /* TODO: Thread local relocation RHS does not depend on base
+                 * address and is a precomputed constant value. Therefore the
+                 * loader itself can apply the relocation before measurement.
+                 * NOTE: OE SDK performs this relocation differently.
+                 * See loadelf.c */
+                *dest = (uint64_t)p->r_addend;
+                break;
             }
         }
     }

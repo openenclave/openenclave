@@ -12,6 +12,7 @@
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
+#include "openenclave/internal/link.h"
 #include "td.h"
 
 /*
@@ -190,20 +191,9 @@
  * value.
  *
  * To avoid looking up symbols within the enclave (symbols are not available)
- * the loader fetches the symbol's sh-value and stores it in the r_addend field
- * (r_added field is otherwise zero for R_X86_64_TPOFF64).
+ * the loader performs the relocations and patches the enclave image before
+ * measurement.
  */
-OE_EXPORT volatile uint64_t _tdata_rva = 0;
-OE_EXPORT volatile uint64_t _tdata_size = 0;
-OE_EXPORT volatile uint64_t _tdata_align = 1;
-
-OE_EXPORT volatile uint64_t _tbss_size = 0;
-OE_EXPORT volatile uint64_t _tbss_align = 1;
-
-static volatile bool _thread_locals_relocated = false;
-
-// TODO: Make this flexible in case more than one page of thread local storage
-// need to allocate.
 
 /* The thread data (td) object is always populated at the start of the
    FS segment, so this method just returns the address of the td.
@@ -212,14 +202,6 @@ static uint8_t* _get_fs_from_td(oe_sgx_td_t* td)
 {
     uint8_t* fs = (uint8_t*)td;
     return fs;
-}
-
-/**
- * Return aligned size.
- */
-static uint64_t _get_aligned_size(uint64_t size, uint64_t align)
-{
-    return align ? oe_round_up_to_multiple(size, align) : size;
 }
 
 /*
@@ -240,110 +222,59 @@ static void _initialize_allocator(void)
 }
 
 /**
- * Return pointer to start of tls data.
- *    tls-data-start = %FS - (aligned .tdata size + aligned .tbss size)
- */
-static uint8_t* _get_thread_local_data_start(oe_sgx_td_t* td)
-{
-    // Check if this enclave has thread-local data.
-    if (!_tdata_size && !_tbss_size)
-        return NULL;
-
-    uint8_t* fs = _get_fs_from_td(td);
-    uint64_t alignment = 0;
-
-    // Alignments must be non-zero.
-    if (!_tdata_align || !_tbss_align)
-        oe_abort();
-
-    // Choose the largest of the two alignments to align both the sections.
-    // Assert that one alignment is a multiple of the other.
-    if (_tdata_align >= _tbss_align)
-    {
-        alignment = _tdata_align;
-        if (alignment % _tbss_align)
-            oe_abort();
-    }
-    else
-    {
-        alignment = _tbss_align;
-        if (alignment % _tdata_align)
-            oe_abort();
-    }
-
-    // Alignment must be a power of two.
-    if (alignment & (alignment - 1))
-        oe_abort();
-
-    // Align both the sections.
-    fs -= _get_aligned_size(_tbss_size, alignment);
-    fs -= _get_aligned_size(_tdata_size, alignment);
-
-    return fs;
-}
-
-/**
  * Initialize the thread-local section for a given thread.
  * This must be called immediately after td itself is initialized.
  */
 oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
 {
     oe_result_t result = OE_FAILURE;
-    uint8_t* tls_start = _get_thread_local_data_start(td);
+    uint8_t* fs = _get_fs_from_td(td);
+    uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_base();
 
     if (td == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (tls_start)
+    /* Initialize thread-locals for each module. */
+    int64_t previous_module_tls_start_offset = 0;
+    for (size_t i = 0; i < OE_MAX_NUM_MODULES; ++i)
     {
-        // Fetch the tls data start for the thread.
-        uint8_t* fs = _get_fs_from_td(td);
+        const oe_module_link_info_t* link_info = &oe_linked_modules[i];
 
-        // Set the self pointer.
-        *(void**)fs = fs;
-
-        uint64_t tls_data_size = (uint64_t)(fs - tls_start);
-
-        // Initialize the tls data to zero.
-        oe_memset_s(tls_start, tls_data_size, 0, tls_data_size);
-
-        // Fetch the .tdata template.
-        void* tdata = (uint8_t*)__oe_get_enclave_base() + _tdata_rva;
-
-        // Copy the template
-        oe_memcpy_s(tls_start, _tdata_size, tdata, _tdata_size);
-
-        // Perform thread-local relocations, only run once.
-        if (!_thread_locals_relocated)
+        /* Check if module has tls data */
+        if (oe_module_has_tls(link_info))
         {
-            // Note: For an enclave, thread-local relocations always set the
-            // value of the tpoff variables to a computed constant value. Hence
-            // this is inherently thread-safe and also can be called multiple
-            // times.
-            const elf64_rela_t* relocs =
-                (const elf64_rela_t*)__oe_get_reloc_base();
-            size_t nrelocs = __oe_get_reloc_size() / sizeof(elf64_rela_t);
-            const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
+            // Find start of thread-local data for this module.
+            int64_t tls_start_offset = oe_get_module_tls_start_offset(
+                link_info, previous_module_tls_start_offset);
+            uint8_t* tls_start = fs + tls_start_offset;
 
-            for (size_t i = 0; i < nrelocs; i++)
-            {
-                const elf64_rela_t* p = &relocs[i];
+            // Initialize the tls data to zero.
+            uint64_t tls_size =
+                (uint64_t)(previous_module_tls_start_offset - tls_start_offset);
 
-                // If zero-padded bytes reached
-                if (p->r_offset == 0)
-                    break;
+            // Ensure that tls_start_offset is negative and that tls for this
+            // module lies within the enclave.
+            if (tls_start_offset > 0 ||
+                !oe_is_within_enclave(tls_start, tls_size))
+                oe_abort();
 
-                if (ELF64_R_TYPE(p->r_info) == R_X86_64_TPOFF64)
-                {
-                    // Compute address of tpoff variable
-                    int64_t* tpoff = (int64_t*)(baseaddr + p->r_offset);
+            oe_memset_s(tls_start, tls_size, 0, tls_size);
 
-                    // Set tpoff to the offset value relative to FS
-                    *tpoff = (tls_start + p->r_addend - fs);
-                }
-            }
+            // Copy tls_template for the module.
+            // NOTE: tdata_rva contains the offset of tdata_rva from enclave
+            // base.
+            if (link_info->base_rva > link_info->tdata_rva)
+                oe_abort();
 
-            _thread_locals_relocated = true;
+            void* tdata = enclave_base + link_info->tdata_rva;
+            if (!oe_is_within_enclave(tdata, link_info->tdata_size))
+                oe_abort();
+
+            oe_memcpy_s(
+                tls_start, link_info->tdata_size, tdata, link_info->tdata_size);
+
+            // Move to next module.
+            previous_module_tls_start_offset = tls_start_offset;
         }
     }
 
@@ -412,14 +343,30 @@ oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
         td->num_tls_atexit_functions = 0;
     }
 
-    /* Clear tls section if it exists */
+    /* Find the start of the tls section of all modules combined */
     uint8_t* fs = _get_fs_from_td(td);
-    uint8_t* tls_start = _get_thread_local_data_start(td);
-    // Invoke the cleanup function even when the thread-local data is empty
-    // (i.e., tls_start is NULL when tdata and tbss are zero).
+    int64_t tls_start_offset = 0;
+    for (size_t i = 0; i < OE_MAX_NUM_MODULES; ++i)
+    {
+        const oe_module_link_info_t* link_info = &oe_linked_modules[i];
+        if (oe_module_has_tls(link_info))
+            tls_start_offset =
+                oe_get_module_tls_start_offset(link_info, tls_start_offset);
+    }
+
+    // Invoke the cleanup function even when the thread-local data is
+    // empty (i.e., tls_start is NULL when tdata and tbss are zero).
     oe_allocator_thread_cleanup();
-    if (tls_start)
-        oe_memset_s(tls_start, (uint64_t)(fs - tls_start), 0, 0);
+
+    uint64_t tls_size = (uint64_t)-tls_start_offset;
+    if (tls_size)
+    {
+        // Ensure that the aggregate tls section is valid.
+        uint8_t* tls_start = fs + tls_start_offset;
+        if (tls_start_offset > 0 || !oe_is_within_enclave(tls_start, tls_size))
+            oe_abort();
+        oe_memset_s(tls_start, tls_size, 0, tls_size);
+    }
 
     return OE_OK;
 }

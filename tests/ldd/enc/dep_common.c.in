@@ -3,9 +3,11 @@
 
 #include <openenclave/bits/types.h>
 
+__thread int tls_var_@LDD_TEST_DEP_SUFFIX@ = @LDD_TEST_DEP_MAGIC@;
+
 int multiply_local_const_@LDD_TEST_DEP_SUFFIX@(int a)
 {
-    const int magic = @LDD_TEST_DEP_MAGIC@;
+    const int magic = tls_var_@LDD_TEST_DEP_SUFFIX@;
     return a * magic;
 }
 
