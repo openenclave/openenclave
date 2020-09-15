@@ -49,7 +49,7 @@ To deploy all the prerequisities for building Open Enclave, you can run the
 following from PowerShell:
 
 ```powershell
-./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1-NoDriver -DCAPClientType None
+./scripts/install-windows-prereqs.ps1 -InstallPath C:/oe_prereqs -LaunchConfiguration SGX1-NoIntelDrivers -DCAPClientType None
 ```
 
 ## Building on Windows using Developer Command Prompt

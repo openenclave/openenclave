@@ -35,7 +35,7 @@ Param(
     [string]$GetPipURL = 'https://bootstrap.pypa.io/3.4/get-pip.py',
     [string]$GetPipHash = '564FABC2FBABD9085A71F4A5E43DBF06D5CCEA9AB833E260F30EE38E8CE63A69',
     [Parameter(mandatory=$true)][string]$InstallPath,
-    [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoDriver", "SGX1-NoDriver")][string]$LaunchConfiguration,
+    [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
 )
 
@@ -401,27 +401,32 @@ function Install-7Zip {
 }
 
 function Install-PSW {
+
+    $OS_VERSION = Get-WindowsRelease
     $tempInstallDir = "$PACKAGES_DIRECTORY\Intel_SGX_PSW"
     if(Test-Path $tempInstallDir) {
         Remove-Item -Recurse -Force $tempInstallDir
     }
     Install-ZipTool -ZipPath $PACKAGES["psw"]["local_file"] `
                     -InstallDirectory $tempInstallDir
-
-    $installer = Get-Item "$tempInstallDir\Intel*SGX*\PSW_EXE*\Intel(R)_SGX_Windows_x64_PSW_*.exe"
-    if(!$installer) {
-        Throw "Cannot find the installer executable"
+    if ($OS_VERSION -eq "WinServer2016") {
+        $installer = Get-Item "$tempInstallDir\Intel*SGX*\PSW_EXE*\Intel(R)_SGX_Windows_x64_PSW_*.exe"
+        if(!$installer) {
+            Throw "Cannot find the installer executable"
+        }
+        if($installer.Count -gt 1) {
+            Throw "Multiple installer executables found"
+        }
+        $unattendedParams = @('--s', '--a', 'install', "--output=$tempInstallDir\psw-installer.log", '--eula=accept', '--no-progress')
+        $p = Start-Process -Wait -NoNewWindow -FilePath $installer -ArgumentList $unattendedParams -PassThru
+        if($p.ExitCode -ne 0) {
+            Get-Content "$tempInstallDir\psw-installer.log"
+            Throw "Failed to install Intel PSW"
+        }
+    } else {
+        $psw_dir = Get-Item "$tempInstallDir\Intel*SGX*\PSW_INF*\"
+        pnputil /add-driver $psw_dir\sgx_psw.inf /install
     }
-    if($installer.Count -gt 1) {
-        Throw "Multiple installer executables found"
-    }
-    $unattendedParams = @('--s', '--a', 'install', "--output=$tempInstallDir\psw-installer.log", '--eula=accept', '--no-progress')
-    $p = Start-Process -Wait -NoNewWindow -FilePath $installer -ArgumentList $unattendedParams -PassThru
-    if($p.ExitCode -ne 0) {
-        Get-Content "$tempInstallDir\psw-installer.log"
-        Throw "Failed to install Intel PSW"
-    }
-
     Start-ExecuteWithRetry -ScriptBlock {
         Start-Service "AESMService" -ErrorAction Stop
     } -RetryMessage "Failed to start AESMService. Retrying"
@@ -523,7 +528,7 @@ function Install-DCAP-Dependencies {
                  -ArgumentList @('/auto', "$PACKAGES_DIRECTORY\Intel_SGX_DCAP")
 
     $OS_VERSION = Get-WindowsRelease
-    if (($LaunchConfiguration -eq "SGX1FLC") -or ($LaunchConfiguration -eq "SGX1FLC-NoDriver") -or ($DCAPClientType -eq "Azure"))
+    if (($LaunchConfiguration -eq "SGX1FLC") -or ($DCAPClientType -eq "Azure"))
     {
         $drivers = @{
             'WinServer2016' = @{
@@ -588,16 +593,16 @@ function Install-DCAP-Dependencies {
                     }
                 }
                 Write-Output "Installing driver $($drivers[${OS_VERSION}][$driver]['location'])"
-                $install = & $devConBinaryPath install "$($inf.FullName)" $drivers[${OS_VERSION}][$driver]['location']
-                if($LASTEXITCODE) {
-                    Throw "Failed to install $driver driver"
+                if($OS_VERSION -eq "WinServer2016")
+                {
+                    $install = & $devConBinaryPath install "$($inf.FullName)" $drivers[${OS_VERSION}][$driver]['location']
+                    if($LASTEXITCODE) {
+                        Throw "Failed to install $driver driver"
+                    }
+                } else{
+                    $install = & pnputil /add-driver "$($inf.FullName)" /install
                 }
                 Write-Output $install
-            }
-            elseif (($LaunchConfiguration -eq "SGX1FLC-NoDriver") -and (${OS_VERSION} -eq "WinServer2016"))
-            {
-                 Write-Output "Copying Intel_SGX_DCAP dll files into $($env:SystemRoot)\system32"
-                 Copy-item -Path "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2016\*.dll" $env:SystemRoot\system32\
             }
         }
     }
@@ -630,7 +635,7 @@ function Install-DCAP-Dependencies {
         }
         popd
     }
-    if (($LaunchConfiguration -eq "SGX1FLC") -or ($LaunchConfiguration -eq "SGX1FLC-NoDriver") -or ($DCAPClientType -eq "Azure"))
+    if (($LaunchConfiguration -eq "SGX1FLC") -or ($DCAPClientType -eq "Azure"))
     {
         & nuget.exe install 'DCAP_Components' -Source "$TEMP_NUGET_DIR;nuget.org" -OutputDirectory "$OE_NUGET_DIR" -ExcludeVersion
         if($LASTEXITCODE -ne 0) {
@@ -679,12 +684,17 @@ try {
     Install-Shellcheck
     Install-NSIS
 
-    if (($LaunchConfiguration -ne "SGX1FLC-NoDriver") -and ($LaunchConfiguration -ne "SGX1-NoDriver"))
+    if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers"))
     {
         Install-PSW
+        Install-DCAP-Dependencies
+    } elseif($DCAPClientType -eq "Azure") {
+        # This has an edge case which is a user uses windows 2019, turns off Windows Update, runs this scripts and has an old PSW
+        # and then the latest dcap.. change would require splitting and refactoring the below into seperate functions but there seems
+        # to be an issue with EnclaveCommonAPI. Opening https://github.com/openenclave/openenclave/issues/3524 to tracK
+        Install-DCAP-Dependencies
     }
 
-    Install-DCAP-Dependencies
     Install-VCRuntime
 
 
