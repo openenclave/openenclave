@@ -26,6 +26,7 @@
 #include "../memalign.h"
 #include "../strings.h"
 #include "enclave.h"
+#include "openenclave/bits/result.h"
 #include "sgxload.h"
 
 /* Forward declarations */
@@ -987,9 +988,12 @@ static void _update_module_offset(
 
 static oe_result_t _link_elf_images(
     oe_enclave_elf_image_t* image,
-    uint64_t* module_base)
+    uint64_t* module_base,
+    int64_t* previous_module_tls_start_offset)
 {
     oe_result_t result = OE_UNEXPECTED;
+    int64_t module_tls_start_offset = oe_get_module_tls_start_offset(
+        &image->link_info, *previous_module_tls_start_offset);
 
     OE_TRACE_INFO("Performing program linking\n");
     image->link_info.base_rva = *module_base;
@@ -1068,14 +1072,43 @@ static oe_result_t _link_elf_images(
                         "symbol %s not found in needed images\n", name);
                 break;
             }
+            case R_X86_64_TPOFF64:
+            {
+                // Performing thread-local relocations requires knowledge of
+                // the module's tls start offset. Since the relocations from
+                // different modules are aggregated into a single array of
+                // relocations, it is not possible for the enclave to figure out
+                // which module each relocation came from. As a result, enclave
+                // cannot perform thread local relocations.
+                // To address this, the loader performs part of the calculation
+                // that requires the module's tls start offset. It uses the
+                // r_addend field to save this result. The enclave does the rest
+                // of thread local relocation, interpreting r_addend differently
+                // from how MUSL would interpret it.
+                //
+                // module_tls_start_offset contains negative value that is added
+                // to FS register to obtain the starting address of this
+                // module's thread local data. Adding p->r_added gives this
+                // thread local variable's FS relative offset. Store this value
+                // back into r_addend.
+                p->r_offset += *module_base;
+                p->r_addend =
+                    (elf64_sxword_t)module_tls_start_offset - p->r_addend;
+                break;
+            }
         }
     }
 
     /* Repeat for the rest of the images */
     *module_base += image->image_size;
+    /* The tls end for the next module is the the tls start of this module */
+    *previous_module_tls_start_offset = module_tls_start_offset;
     for (size_t i = 0; i < image->num_needed_images; i++)
     {
-        OE_CHECK(_link_elf_images(&image->needed_images[i], module_base));
+        OE_CHECK(_link_elf_images(
+            &image->needed_images[i],
+            module_base,
+            previous_module_tls_start_offset));
     }
 
     result = OE_OK;
@@ -1196,10 +1229,10 @@ static oe_result_t _patch_elf_image(
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t* oeprops;
     uint64_t enclave_rva = 0;
-    uint64_t aligned_size = 0;
     uint64_t module_base = 0;
 
     OE_UNUSED(context);
+    OE_UNUSED(tls_page_count);
 
     oeprops =
         (oe_sgx_enclave_properties_t*)(image->image_base + image->oeinfo_rva);
@@ -1233,41 +1266,30 @@ static oe_result_t _patch_elf_image(
     oeprops->image_info.heap_rva =
         oeprops->image_info.reloc_rva + oeprops->image_info.reloc_size;
 
-    /* TODO: Remove these as special globals once thread init for multiple
-     * modules is added */
-    if (image->link_info.tdata_size)
-    {
-        _set_uint64_t_dynamic_symbol_value(
-            image, "_tdata_rva", image->link_info.tdata_rva);
-        _set_uint64_t_dynamic_symbol_value(
-            image, "_tdata_size", image->link_info.tdata_size);
-        _set_uint64_t_dynamic_symbol_value(
-            image, "_tdata_align", image->link_info.tdata_align);
-
-        aligned_size += oe_round_up_to_multiple(
-            image->link_info.tdata_size, image->link_info.tdata_align);
-    }
-    if (image->link_info.tbss_size)
-    {
-        _set_uint64_t_dynamic_symbol_value(
-            image, "_tbss_size", image->link_info.tbss_size);
-        _set_uint64_t_dynamic_symbol_value(
-            image, "_tbss_align", image->link_info.tbss_align);
-
-        aligned_size += oe_round_up_to_multiple(
-            image->link_info.tbss_size, image->link_info.tbss_align);
-    }
-
-    _set_uint64_t_dynamic_symbol_value(
-        image,
-        "_td_from_tcs_offset",
-        (tls_page_count + OE_SGX_TCS_CONTROL_PAGES) * OE_PAGE_SIZE);
-
     /* Clear the hash when taking the measure */
     memset(oeprops->sigstruct, 0, sizeof(oeprops->sigstruct));
 
     /* Dynamically link the enclave and its needed modules */
-    OE_CHECK(_link_elf_images(image, &module_base));
+    {
+        int64_t tls_start_offset = 0;
+        OE_CHECK(_link_elf_images(image, &module_base, &tls_start_offset));
+
+        // Assert that tls_start_offset is a negative value.
+        if (tls_start_offset > 0)
+        {
+            OE_TRACE_ERROR("tls starting offset is non negative.");
+            OE_RAISE(OE_FAILURE);
+        }
+
+        // Compute the offset of td from total thread local size.
+        uint64_t total_tls_size = (uint64_t)-tls_start_offset;
+        uint64_t aligned_total_tls_size =
+            oe_round_up_to_multiple(total_tls_size, OE_PAGE_SIZE);
+        _set_uint64_t_dynamic_symbol_value(
+            image,
+            "_td_from_tcs_offset",
+            aligned_total_tls_size + OE_SGX_TCS_CONTROL_PAGES * OE_PAGE_SIZE);
+    }
 
     /* Patch the link info for all loaded modules as a global array
      *
