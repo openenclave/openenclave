@@ -24,3 +24,6 @@ update-sgxsdk-headers:
 	( cd include; wget https://raw.githubusercontent.com/intel/SGXDataCenterAttestationPrimitives/$(DCAP_VERSION)/QuoteGeneration/quote_wrapper/common/inc/sgx_quote_3.h )
 	( cd include; wget https://raw.githubusercontent.com/intel/SGXDataCenterAttestationPrimitives/$(DCAP_VERSION)/QuoteGeneration/quote_wrapper/common/inc/sgx_ql_lib_common.h )
 	( cd include; wget https://raw.githubusercontent.com/intel/SGXDataCenterAttestationPrimitives/$(DCAP_VERSION)/QuoteGeneration/pce_wrapper/inc/sgx_pce.h )
+	( cd include; wget https://raw.githubusercontent.com/intel/SGXDataCenterAttestationPrimitives/$(DCAP_VERSION)/QuoteGeneration/quote_wrapper/common/inc/sgx_ql_quote.h )
+	( cd include; wget https://raw.githubusercontent.com/intel/SGXDataCenterAttestationPrimitives/$(DCAP_VERSION)/QuoteVerification/QvE/Include/sgx_qve_header.h )
+	( cd include; wget https://raw.githubusercontent.com/intel/SGXDataCenterAttestationPrimitives/$(DCAP_VERSION)/QuoteVerification/dcap_quoteverify/inc/sgx_dcap_quoteverify.h )

@@ -24,6 +24,19 @@
 
 #define SKIP_RETURN_CODE 2
 
+#ifdef _WIN32
+
+#include <windows.h>
+
+#define TRY_TO_USE_SGX_DCAP_QVL() \
+    (GetEnvironmentVariableA("USE_SGX_QVL", NULL, 0) != 0)
+
+#else
+
+#define TRY_TO_USE_SGX_DCAP_QVL() (getenv("USE_SGX_QVL") != NULL)
+
+#endif
+
 extern void TestVerifyTCBInfo(
     oe_enclave_t* enclave,
     const char* test_file_name);
@@ -302,19 +315,24 @@ int main(int argc, const char* argv[])
         TestVerifyTCBInfo_Negative(
             enclave, negative_files_v2, OE_COUNTOF(negative_files_v2));
         {
-            // Get current time and pass it to enclave.
-            std::time_t t = std::time(0);
-            std::tm tm;
-            gmtime_r(&t, &tm);
+            // _sgx_minimim_crl_tcb_issue_date cannot be used in DCAP QVL
+            // Disable below test when using QVL
+            if (!TRY_TO_USE_SGX_DCAP_QVL())
+            {
+                // Get current time and pass it to enclave.
+                std::time_t t = std::time(0);
+                std::tm tm;
+                gmtime_r(&t, &tm);
 
-            // convert std::tm to oe_datetime_t
-            oe_datetime_t now = {(uint32_t)tm.tm_year + 1900,
-                                 (uint32_t)tm.tm_mon + 1,
-                                 (uint32_t)tm.tm_mday,
-                                 (uint32_t)tm.tm_hour,
-                                 (uint32_t)tm.tm_min,
-                                 (uint32_t)tm.tm_sec};
-            test_minimum_issue_date(enclave, now);
+                // convert std::tm to oe_datetime_t
+                oe_datetime_t now = {(uint32_t)tm.tm_year + 1900,
+                                     (uint32_t)tm.tm_mon + 1,
+                                     (uint32_t)tm.tm_mday,
+                                     (uint32_t)tm.tm_hour,
+                                     (uint32_t)tm.tm_min,
+                                     (uint32_t)tm.tm_sec};
+                test_minimum_issue_date(enclave, now);
+            }
         }
     }
     else

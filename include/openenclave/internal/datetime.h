@@ -58,6 +58,11 @@ oe_result_t oe_datetime_now(oe_datetime_t* value);
  */
 void oe_datetime_log(const char* msg, const oe_datetime_t* date);
 
+/**
+ * Convert oe datetime to time_t.
+ */
+oe_result_t oe_datetime_to_time_t(const oe_datetime_t* datetime, time_t* value);
+
 OE_EXTERNC_END
 
 #endif /* _OE_INTERNAL_DATETIME_H */
