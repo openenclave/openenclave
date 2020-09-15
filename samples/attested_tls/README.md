@@ -68,35 +68,23 @@ Note: Both of them can run on the same machine or separate machines.
 
 ## Build and run
 
-Note that there are two different build systems supported, one using GNU Make and
-`pkg-config`, the other using CMake.
-
-You can go build from the sample's root directory or go to tls_between_enclaves or tls_between_non_enclave_enclave subdirectory to build each sub-sample
+To build and run the samples, refer to documentation in the main [README file](../README.md#building-the-samples.md).
 
 Note: This sample uses an OE SDK customized version of mbedtls library for TLS channel connection. It has MBEDTLS_NET_C component enabled, which has a dependency on the newly added [socket support](../../docs/UsingTheIOSubsystem.md#socketh) in 0.6.0 OE SDK release (for more details see [Using the Open Enclave I/O subsystem](../../docs/UsingTheIOSubsystem.md#opting-in) for details). So in order to build successfully, you would need to link with liboehostsock and libhostresolver libraries to satisfy the dependency.
 
-### GNU Make
-
-```bash
-cd attested_tls
-make
-make run
-```
-
-### CMake
-
-This uses the CMake package provided by the Open Enclave SDK.
-
-```bash
-cd attested_tls
-mkdir build && cd build
-cmake ..
-make run
-```
 ### Running attested TLS server in loop
 By default the server exits after completing a TLS session with a client. `-server-in-loop` run-time option changes this behavior to allow the TLS server to handle multiple client requests.
+
+On Linux:
+
 ```bash
 ./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341 -server-in-loop
 or
 make run-server-in-loop
+```
+
+On Windows after building the sample as described in the [README file](../README.md#building-the-samples.md):
+
+```cmd
+.\server\host\tls_server_host .\server\enc\tls_server_enc.signed -port:12341 -server-in-loop
 ```
