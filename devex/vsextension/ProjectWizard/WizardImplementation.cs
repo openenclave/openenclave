@@ -135,7 +135,7 @@ namespace OpenEnclaveSDK
                 // User picked a specific board for which we have binaries in the nuget package.
                 string solutionDirectory;
                 replacementsDictionary.TryGetValue("$solutiondirectory$", out solutionDirectory);
-                oeFolder = Path.Combine(solutionDirectory, "packages\\open-enclave-cross.0.8.1-c3b6262c-3\\lib\\native\\linux\\optee\\v3.6.0\\" + board);
+                oeFolder = Path.Combine(solutionDirectory, "packages\\open-enclave-cross.0.11.0-rc1-cbe4dedc-2\\lib\\native\\linux\\optee\\v3.6.0\\" + board);
             }
             else
             {

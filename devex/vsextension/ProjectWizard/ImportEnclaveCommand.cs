@@ -345,7 +345,7 @@ namespace OpenEnclaveSDK
                     // Add nuget package to project.
                     // See https://stackoverflow.com/questions/41803738/how-to-programmatically-install-a-nuget-package/41895490#41895490
                     // and more particularly https://docs.microsoft.com/en-us/nuget/visual-studio-extensibility/nuget-api-in-visual-studio
-                    var packageVersions = new Dictionary<string, string>() { { "open-enclave-cross", "0.8.1-c3b6262c-3" } };
+                    var packageVersions = new Dictionary<string, string>() { { "open-enclave-cross", "0.11.0-rc1-cbe4dedc-2" } };
                     var componentModel = (IComponentModel)(await this.ServiceProvider.GetServiceAsync(typeof(SComponentModel)));
                     var packageInstaller = componentModel.GetService<IVsPackageInstaller2>();
                     packageInstaller.InstallPackagesFromVSExtensionRepository(

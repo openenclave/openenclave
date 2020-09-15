@@ -11,6 +11,6 @@
 
   <Target Name="_OEGenerateUntrustedCode" BeforeTargets="ClCompile" Inputs="%(EdlItem.Identity)" Outputs="%(EdlItem.Identity)_u.h;%(EdlItem.Identity)_u.c;%(EdlItem.Identity)_args.h">
     <Message Text="Creating untrusted proxy/bridge routines: %(EdlItem.Identity)" />
-    <Exec Command='"$(OEEdger8rPath)" --untrusted "%(EdlItem.Identity)" --search-path "$(OEIncludePath)"'/>
+    <Exec Command='"$(OEEdger8rPath)" --untrusted "%(EdlItem.Identity)" --search-path "$(OEIncludePath)" --search-path "$(OEPlatformEdlPath)"'/>
   </Target>  
 </Project>
