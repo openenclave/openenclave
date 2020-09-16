@@ -1,4 +1,7 @@
 enclave {
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         /* define ECALLs here. */
         public int ecall_DoWorkInEnclave();
