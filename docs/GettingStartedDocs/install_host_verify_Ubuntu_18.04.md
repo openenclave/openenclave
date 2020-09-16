@@ -32,7 +32,14 @@ If you wish to use the Ninja build system rather than make, also install
 sudo apt -y install ninja-build
 ```
 
-If you wish to make use of the Open Enclave Host-Verify CMake package, please install CMake and [follow the instructions here](/cmake/sdk_cmake_targets_readme.md).
+If you wish to make use of the Open Enclave Host-Verify CMake package, please install CMake:
+
+```
+sudo apt-get install python-pip
+sudo pip install cmake
+```
+
+and [follow the instructions here](/cmake/sdk_cmake_targets_readme.md).
 
 ### 3. Verify the Open Enclave Host-Verify SDK install
 
