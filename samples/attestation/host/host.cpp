@@ -92,7 +92,7 @@ int attest_one_enclave_to_the_other(
     if ((result != OE_OK) || (ret != 0))
     {
         printf(
-            "Host: get_evidence_with_public_key failed. %s",
+            "Host: get_evidence_with_public_key failed. %s\n",
             oe_result_str(result));
         if (ret == 0)
             ret = 1;

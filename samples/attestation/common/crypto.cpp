@@ -187,7 +187,7 @@ bool Crypto::Encrypt(
         goto exit;
     }
 
-    *encrypted_data_size = mbedtls_pk_rsa(key)->len;
+    *encrypted_data_size = rsa_context->len;
     result = true;
 exit:
     mbedtls_pk_free(&key);

@@ -24,7 +24,7 @@ It has the following properties:
 
 ### What is Attestation
 
-Attestation is the process of demonstrating that a software component (such as an enclave image) has been properly instantiated on an Trusted Execution Environment (TEE, such as the SGX enabled platform).
+Attestation is the process of demonstrating that a software component (such as an enclave image) has been properly instantiated on a Trusted Execution Environment (TEE, such as the SGX enabled platform).
 
 A successfully attested enclave proves:
 
@@ -124,7 +124,7 @@ The host does the following in this sample:
                                          evidence_size);
       ```
 
-      In the enclave_b's implementation of `verify_evidence_and_set_public_key()`, it calls `oe_verify_evidence()`, which will be described in the enclave section to handle all the platform specfic evidence validation operations. If successful the public key in `pem_key` will be stored inside the enclave for future use.
+      In the enclave_b's implementation of `verify_evidence_and_set_public_key()`, it calls `oe_verify_evidence()`, which will be described in the enclave section to handle all the platform-specfic evidence validation operations. If successful the public key in `pem_key` will be stored inside the enclave for future use.
 
    4. Repeat steps 2 and 3 for asking enclave\_a to validate enclave\_b.
 
@@ -198,7 +198,7 @@ An important feature of `oe_get_evidence()` is that you can pass in application 
 
   - Other usage examples for `custom_claims_buffer` might be to include a nonce, or to initiate a Diffie-Helman key exchange.
 
-##### 2) Verifying the integrity of the evidence
+##### 3) Verifying the integrity of the evidence
 
 Once the evidence is generated and passed to the Verifier, the Verifier can
 call `oe_verify_evidence()` to validate the evidence.
@@ -208,7 +208,7 @@ Note: Currently, remote attestation verification is only supported in Azure ACC 
 
 At this point, the challenger knows that the evidence originated from an enclave running in a TEE, and that the information in the evidence can be trusted.
 
-##### 3) Verifying the Attester enclave identity
+##### 4) Verifying the Attester enclave identity
 
 This validation consists two parts:
 
@@ -232,7 +232,7 @@ This validation consists two parts:
 
     At this point, Enclave 1 knows that the evidence originated from an enclave running in a TEE, and that the information in the evidence can be trusted.
 
-1. Establish trust in the Attester enclave
+2. Establish trust in the Attester enclave
 
 To establish trust in the enclave that generated the evidence,
 the Signer ID, Product ID, and Security Version values are
@@ -251,7 +251,7 @@ As shown in the sample, the set of validations performed on these properties is 
 
 ## Using Cryptography in an Enclave
 
-The attestation `attestation/common/crypto.cpp` file from the sample illustrates how to use mbedTLS inside the enclave for cryptographic operations such as:
+The `attestation/common/crypto.cpp` file from the sample illustrates how to use mbedTLS inside the enclave for cryptographic operations such as:
 
 - RSA key generation, encryption and decryption
 - SHA256 hashing
@@ -264,7 +264,13 @@ See [here](https://github.com/openenclave/openenclave/tree/master/docs/MbedtlsSu
 
 In order to build and run this sample, please refer to the common sample [README file](../README.md#building-the-samples).
 
-To use the SGX remote functionality, instead of the SGX local functionality:
+To use only the SGX local functionality:
+
+* On Linux, use `make runsgxlocal` instead of `make run`.
+
+* On Windows, use `ninja runsgxlocal` instead of `ninja run`.
+
+To use only the SGX remote functionality:
 
 * On Linux, use `make runsgxremote` instead of `make run`.
 

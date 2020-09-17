@@ -17,8 +17,10 @@ add_subdirectory(host)
 add_custom_target(sign ALL DEPENDS enclave_a_signed enclave_b_signed)
 
 if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
+  add_custom_target(run DEPENDS runsgxlocal runsgxremote)
+
   add_custom_target(
-    run
+    runsgxlocal
     DEPENDS attestation_host sign
     COMMAND
       attestation_host sgxlocal ${CMAKE_BINARY_DIR}/enclave_a/enclave_a.signed
