@@ -10,7 +10,7 @@
 #include "../../../common/oe_host_stdlib.h"
 #include "../sgxquote_ex.h"
 
-static const char* _quote_ex_library_file_name = "libsgx_quote_ex.dll";
+static const char* _quote_ex_library_file_name = "sgx_quote_ex.dll";
 
 static oe_sgx_quote_ex_library_t* _quote_ex_library = NULL;
 
