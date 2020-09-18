@@ -10,7 +10,7 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(TARGET stress_enc SOURCES enc.cpp
+add_enclave(TARGET stress_enc SOURCES enc.c
             ${CMAKE_CURRENT_BINARY_DIR}/stress_t.c)
 
 enclave_include_directories(stress_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
