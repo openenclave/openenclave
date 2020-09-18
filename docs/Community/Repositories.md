@@ -54,21 +54,23 @@ needed at all if a branch can be created in the related project.)
 
 If the Open Enclave SDK needs to directly depend on a fork of the related
 project, it is generally better for the fork to be done under the openenclave
-organization.  This makes it clear that Open Enclave itself, rather than
-a just a random developer, depends on the fork.
+organization.  This makes it clear that the fork is a dependency for Open Enclave
+SDK and is not intended for general public use.
 
 #### Rules
 
-   1. Must adopt the Open Enclave [Code of Conduct](Governance.md#code-of-conduct)
+The repository must:
+
+   1. Adopt the Open Enclave [Code of Conduct](Governance.md#code-of-conduct)
       statement in their repo.
-   2. Must use the same license and copyright rules as the forked project.
-   3. Must adopt the [DCO](Contributing.md#developer-certificate-of-origin)
+   2. Use the same license and copyright rules as the forked project.
+   3. Adopt the [DCO](Contributing.md#developer-certificate-of-origin)
       bot automation for pull requests
       unless otherwise approved by the [CGC](governance/README.md).
-   4. Must follow other [contributing guidelines](Contributing.md)
+   4. Follow the other [contributing guidelines](Contributing.md)
       unless otherwise approved by the [CGC](governance/README.md).
-   5. Must live under `github.com/openenclave/<project-name>`.
-   6. Repository must be approved by [SIG-Architecture](sig-architecture/README.md).
+   5. Be created under `github.com/openenclave/<project-name>`.
+   6. Be approved by [SIG-Architecture](sig-architecture/README.md).
 
 Other than rule 2, all other rules are the same as for core repositories.
 
@@ -82,15 +84,16 @@ In addition to stating any deviations from the Open Enclave defaults
 discussed under Rules above, any request to create a new repository
 should also answer the following questions:
 
-1. Should github issues be filed in the new repo, or in the main
-   openenclave repo?
-2. Should issues in the new repo be discussed in the master openenclave
+1. How should issues with the new repo be tracked and triaged?
+   Should github issues be filed in the new repo, or in the main
+   openenclave repo?  Should they be discussed in the master openenclave
    triage meeting, or in some separate process?
-3. Should one or more of the existing SIGs (e.g.,
+2. Should one or more of the existing SIGs (e.g.,
    [SIG-Architecture](sig-architecture/README.md),
    [SIG-Testing](sig-testing/README.md)) oversee relevant aspects of the
    new repo, or not?
-4. Will the repo be public or private, and if private, why?
+3. Who is reponsible for maintaining the new repo?  How is their
+   contact info published?
 
 Once a repository is created, answers to 1-3 are also expected to be
 explained in the repository's README.md file, or other files reachable
@@ -118,5 +121,4 @@ following criteria:
    * There are no longer any active maintainers for the project and no
      replacements can be found.
    * All PRs or Issues have gone un-addressed for longer than six months.
-   * There have been no new commits or other changes in more than a year.
    * The contents have been folded into another actively maintained project.
