@@ -10,6 +10,7 @@ set(INTELSSL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/intel-sgx-ssl/openssl_source)
 set(OPENSSL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/openssl)
 set(OPENSSL_BUILD ${CMAKE_CURRENT_BINARY_DIR}/build)
 set(OPENSSL_BUILD_INCLUDES ${OPENSSL_BUILD}/include)
+set(OPENSSL_INSTALL_INCLUDES ${OE_INCDIR}/openenclave/openssl)
 # CMake-generated path.
 set(OPENSSL_GENERATED_BUILD
     ${CMAKE_CURRENT_BINARY_DIR}/openssl_generated-prefix/src/openssl_generated-build
@@ -17,6 +18,10 @@ set(OPENSSL_GENERATED_BUILD
 
 set(OPENSSL_C_COMPILER ${CMAKE_C_COMPILER})
 set(OPENSSL_CXX_COMPILER ${CMAKE_CXX_COMPILER})
+
+set(OPENSSL_APPEND_UNSUPPORTED
+    "${CMAKE_CURRENT_SOURCE_DIR}/append-unsupported ${OPENSSL_INSTALL_INCLUDES}"
+)
 
 if (OE_SGX)
   set(ARCH "linux-x86_64")
@@ -77,6 +82,27 @@ ExternalProject_Add(
           ${OPENSSL_BUILD_INCLUDES}/crypto/dso_conf.h
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/opensslconf.h
           ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
+  BUILD_COMMAND ""
+  INSTALL_COMMAND "")
+
+# The following commmand prepares the headers to be published. The headers
+# consist of those in the openssl/include/openssl folder, opensslconf.h,
+# and unsupported.h. The unsupported.h header file includes a list of APIs that are
+# disabled by OE for security concerns. A few headers are patched (using the
+# append-unsupported script) to include unsupported.h so that OE can enforce
+# compile-time errors when any of those unsafe APIs is used.
+ExternalProject_Add(
+  openssl_includes
+  SOURCE_DIR ${OPENSSL_DIR}
+  CONFIGURE_COMMAND
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${OPENSSL_DIR}/include/openssl
+          ${OPENSSL_INSTALL_INCLUDES}
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
+    ${OPENSSL_INSTALL_INCLUDES}/opensslconf.h
+  COMMAND ${OE_BASH} -c "${OPENSSL_APPEND_UNSUPPORTED}"
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/unsupported.h
+          ${OPENSSL_INSTALL_INCLUDES}/unsupported.h
   BUILD_COMMAND ""
   INSTALL_COMMAND "")
 
@@ -250,6 +276,7 @@ ExternalProject_Add(
   BUILD_BYPRODUCTS ${PATCHED_ASM_SRC}
   INSTALL_COMMAND "")
 
+add_dependencies(openssl_includes openssl_configure)
 add_dependencies(openssl_generated openssl_configure)
 add_dependencies(openssl_generated openssl_copied)
 
@@ -868,12 +895,12 @@ add_enclave_library(
   openssl/ssl/tls_srp.c)
 
 enclave_include_directories(
-  opensslcrypto PUBLIC $<BUILD_INTERFACE:${OPENSSL_BUILD_INCLUDES}>
+  opensslcrypto PRIVATE $<BUILD_INTERFACE:${OPENSSL_BUILD_INCLUDES}>
   $<BUILD_INTERFACE:${OPENSSL_DIR}> $<BUILD_INTERFACE:${OPENSSL_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
 
 enclave_include_directories(
-  opensslssl PUBLIC $<BUILD_INTERFACE:${OPENSSL_BUILD_INCLUDES}>
+  opensslssl PRIVATE $<BUILD_INTERFACE:${OPENSSL_BUILD_INCLUDES}>
   $<BUILD_INTERFACE:${OPENSSL_DIR}> $<BUILD_INTERFACE:${OPENSSL_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
 
@@ -1034,13 +1061,11 @@ install_enclaves(
   DESTINATION
   ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 install(
-  DIRECTORY ${OPENSSL_DIR}/include/openssl
+  DIRECTORY ${OPENSSL_INSTALL_INCLUDES}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty
   PATTERN "__DECC_INCLUDE_EPILOGUE.H" EXCLUDE
   PATTERN "__DECC_INCLUDE_PROLOGUE.H" EXCLUDE
   PATTERN "opensslconf.h.in" EXCLUDE)
-install(FILES ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty/openssl)
 
 # Create openssl export target.
 add_enclave_library(openssl INTERFACE)
