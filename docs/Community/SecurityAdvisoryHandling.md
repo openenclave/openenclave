@@ -11,9 +11,9 @@ Vulnerability reporting for the OE SDK is currently still being handled through 
 
 Once a vulnerability related to the Open Enclave SDK is reported to MSRC, the report is forwarded to the committers responsible for reviewing security issues:
 
-- Anand Krishnamoorthi (@anakrish)
-- Ming-wei Shih (@mingweishih)
-- Simon Leet (@codemonkeyleet)
+- Anand Krishnamoorthi ([@anakrish](https://github.com/anakrish))
+- Ming-Wei Shih ([@mingweishih](https://github.com/mingweishih))
+- Simon Leet ([@codemonkeyleet](https://github.com/codemonkeyleet))
 
 > - [ ] TODO: Formalize SIG-Security and its membership with the CGC.
 
@@ -23,7 +23,7 @@ The security reviewers are responsible for the initial triage of the report. Thi
 
 - reaching out to the appropriate OE SDK area owners or subject matter experts
 - evaluating the severity of the issue against the bug bar
-- writing up the initial assessment and plan of action for MSRC
+- writing up an initial assessment and a plan of action for MSRC
 - coordinating with MSRC on additional information, acknowledgment, and public disclosure plans with the reporters of the issue
 
 > - [ ] TODO: Clean up and finalize the security bug triage bar (PR #2634).
@@ -35,25 +35,27 @@ All individuals entrusted with the information should exercise due diligence in 
 
 If OE SDK needs to issue a Security Advisory to address the reported concern, one of the security reviewers will:
 
-1. Create a new GitHub [Security Advisory (SA)](https://github.com/openenclave/openenclave/security/advisories) for OE SDK.
+1. [Create](https://docs.github.com/en/github/managing-security-vulnerabilities/creating-a-security-advisory#creating-a-security-advisory)
+   a new GitHub [Security Advisory (SA) for OE SDK](https://github.com/openenclave/openenclave/security/advisories).
    1. The description of the SA should accurately capture the nature, severity, and workarounds for the issue.
       1. It does not need to capture the full technical details of the vulnerability or fix for brevity.
-2. Request a Common Vulnerability Enumeration (CVE) through GitHub.
+2. [Request a Common Vulnerability Enumeration (CVE)](https://docs.github.com/en/github/managing-security-vulnerabilities/publishing-a-security-advisory#requesting-a-cve-identification-number) through GitHub.
    1. This was previously done through MSRC as a CVE Numbering Authority (CNA), but OE has shifted to using GitHub as the CNA as a Linux Foundation project.
-3. Assign the appropriate collaborators to the SA, which includes:
+3. [Assign the appropriate collaborators](https://docs.github.com/en/github/managing-security-vulnerabilities/adding-a-collaborator-to-a-security-advisory) to the SA, which includes:
    1. The assignee(s) responsible for fixing the issue.
    2. Any area owners or subject matter experts needed for review.
-   3. CI/CD coordinators for private testing and integration with the release. (e.g. @brmclaren).
-4. Create a temporary private fork to implement the code changes as part of the SA.
+   3. CI/CD coordinators for private testing and integration with the release. (e.g., [@brmclaren](https://github.com/brmclaren)).
+4. [Create a temporary private fork](https://docs.github.com/en/github/managing-security-vulnerabilities/collaborating-in-a-temporary-private-fork-to-resolve-a-security-vulnerability#creating-a-temporary-private-fork)
+   to implement the code changes as part of the SA.
    1. The assignee should follow the GitHub instructions and create an `advisory-fix` branch for their code changes.
       1. The code changes should include an update to [CHANGELOG.md](/CHANGELOG.md) under the `### Security` subheader describing the issue addressed.
    2. Once the changes are ready for review, they should be submitted as a PR to the master branch of the temporary fork.
-      1. GitHub does not currently appear to support protecting the master branch in temporary forks, so maintainers will need to enforce this process manually.
+      1. GitHub does not currently appear to support requiring PR reviews to merge into the master branch of a temporary fork, so maintainers will need to enforce this process manually.
 5. Reach out to the CI/CD maintainers to establish a private CI/CD pipeline for testing code changes.
 
-By default, all SA are targeted for inclusion into the next release of the OE SDK, which usually happens quarterly.
+By default, all SAs are targeted for inclusion into the next release of the OE SDK, which usually happens quarterly.
 If the fix cannot be implemented or verified in time for an upcoming release, it can be included in a following patch version release.
-The security reviewers are responsible for deciding if a patch release is needed to address vulnerability before its scheduled public disclosure date.
+The security reviewers are responsible for deciding if a patch release is needed to address a vulnerability before its scheduled public disclosure date.
 
 Once the security fix is reviewed, tested, and merged into the temporary fork master branch for release,
 the assignee and the release manager will coordinate integrating the fix into the release branch.
@@ -68,7 +70,7 @@ This usually includes:
 
 ## Disclosure
 
-Open Enclave SDK project currently relies on the principles for [Coordinated Vulnerability Disclosure (CVD)](https://www.microsoft.com/en-us/msrc/cvd) put forth by MSRC.
+The Open Enclave SDK project currently relies on the principles for [Coordinated Vulnerability Disclosure (CVD)](https://www.microsoft.com/en-us/msrc/cvd) put forth by MSRC.
 The CVD includes a couple of policies such as:
 
 - acknowledgment of vulnerability reports within 24 hours (via MSRC)
