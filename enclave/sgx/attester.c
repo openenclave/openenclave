@@ -372,10 +372,7 @@ static oe_result_t _get_attester_plugins(
 
         // Get the format IDs
         result = oe_get_supported_attester_format_ids_ocall(
-            (uint32_t*)&retval,
-            temporary_buffer,
-            temporary_buffer_size,
-            &temporary_buffer_size);
+            (uint32_t*)&retval, temporary_buffer, temporary_buffer_size, NULL);
         OE_CHECK(result);
         OE_CHECK(retval);
     }
