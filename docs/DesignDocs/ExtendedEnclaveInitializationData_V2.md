@@ -145,7 +145,10 @@ OE SDK can provide helper functions on the host side and the enclave side that
 implement a default definition of config_id/config_svn. The host side helper
 function generates config_id value as a SHA256 hash of a variable length
 configuration data to be loaded post enclave initialization, and sets config_svn
-as 0. The helper functions also load the configuration data into the enclave and verifies its validity according to the config_id value in the EEID page. At the time of this design doc, the helper functions will only be provided for EEID enclaves.
+as 0. The helper functions also load the configuration data into the enclave and
+verifies its validity according to the config_id value in the EEID page. At the
+time of this design doc, the helper functions will only be provided for EEID
+enclaves.
 
 The SGX enclave attester and verifier plugins will include config_id and
 config_svn as base claims and may include the configuration data as custom
@@ -222,15 +225,15 @@ combinations of settings is as follows (x meaning provided):
 
 | DYN | PREID | PREDATA | Behavior
 |-----|-------|---------|-----------------------------------
-|  -  |   -   |   -     | On system where SGX-KSS feature is not available or disabled: N/A; On system with SGX-KSS enabled: loader sets SECS.config_id and SECS.config_svn as 0
-|  -  |   x   |   -     | On system where SGX-KSS feature is not available or disabled: Invalid;  On system with SGX-KSS enabled only: loader copies PREID to SECS.config_id and SECS.config_svn
+|  -  |   -   |   -     | On system where SGX-KSS feature is not available or disabled: No Action; On system with SGX-KSS enabled: loader sets SECS.config_id and SECS.config_svn as 0
+|  -  |   x   |   -     | On system where SGX-KSS feature is not available or disabled: Invalid;  On system with SGX-KSS enabled: loader copies PREID to SECS.config_id and SECS.config_svn
 
 *Static sizing EEID SGX Enclave*
 
 | DYN | PREID | PREDATA | Behavior
 |-----|-------|---------|-----------------------------------
 |  -  |   -   |   x     | Static sizing EEID enclave only: loader sets eeid_page.config_id as PREDATA hash, and eeid_page.config_svn as 0, enclave runtime loads/verifies PREDATA
-|  -  |   x   |   -     | static sizing EEID enclave only: loader copies PREID to SECS.config_id and SECS.config_svn
+|  -  |   x   |   -     | static sizing EEID enclave only: loader copies PREID to eeid_page.config_id and eeid_page.config_svn.
 
 *Dynamic sizing EEID SGX Enclave*
 
