@@ -13,17 +13,17 @@ add_custom_command(
 # Sign enclave
 add_custom_command(
   OUTPUT tls_client_enc.signed
-  DEPENDS tls_client_enc enc.conf
-          ${CMAKE_SOURCE_DIR}/client/enc/${OE_CRYPTO_LIB}/private.pem
+  DEPENDS tls_client_enc enc.conf ${CMAKE_SOURCE_DIR}/client/enc/private.pem
   COMMAND
     openenclave::oesign sign -e $<TARGET_FILE:tls_client_enc> -c
-    ${CMAKE_SOURCE_DIR}/client/enc/${OE_CRYPTO_LIB}/enc.conf -k
-    ${CMAKE_SOURCE_DIR}/client/enc/${OE_CRYPTO_LIB}/private.pem)
+    ${CMAKE_SOURCE_DIR}/client/enc/enc.conf -k
+    ${CMAKE_SOURCE_DIR}/client/enc/private.pem)
 
 add_executable(
   tls_client_enc
-  ecalls.cpp client.cpp cert_verifier.cpp identity_verifier.cpp
-  ../../../common/utility.cpp ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
+  ecalls.cpp ${OE_CRYPTO_LIB}/client.cpp ${OE_CRYPTO_LIB}/cert_verifier.cpp
+  ${OE_CRYPTO_LIB}/identity_verifier.cpp ../../../common/utility.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
 
 add_dependencies(tls_client_enc tls_server_sign_enc)
 
@@ -36,7 +36,7 @@ target_compile_definitions(tls_client_enc PUBLIC OE_API_VERSION=2)
 target_include_directories(
   tls_client_enc
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
-          ${CMAKE_BINARY_DIR}/client/enc/${OE_CRYPTO_LIB})
+          ${CMAKE_BINARY_DIR}/client/enc)
 
 target_link_libraries(
   tls_client_enc openenclave::oeenclave openenclave::oelibcxx

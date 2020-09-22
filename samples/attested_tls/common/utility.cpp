@@ -89,7 +89,7 @@ oe_result_t generate_certificate_and_pkey_buffers(
         goto exit;
     }
 
-    printf(" here public key used:\n%s\n", public_key_buf);
+    printf("public key used:\n%s\n", public_key_buf);
 
     // both ec key such ASYMMETRIC_KEY_EC_SECP256P1 or RSA key work
     oe_attester_initialize();
