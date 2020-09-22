@@ -185,6 +185,9 @@ function (add_enclave_sgx)
   if (ENCLAVE_CXX)
     enclave_link_libraries(${ENCLAVE_TARGET} oelibcxx)
   endif ()
+  if (USE_DEBUG_MALLOC)
+    enclave_link_libraries(${ENCLAVE_TARGET} oedebugmalloc)
+  endif ()
 
   # Cross-compile if needed.
   if (USE_CLANGW)

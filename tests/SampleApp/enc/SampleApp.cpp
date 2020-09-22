@@ -1,14 +1,33 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/corelibc/stdlib.h>
+#include <openenclave/debugmalloc.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
+#include <stdio.h>
 #include "SampleApp_t.h"
 
 const char* ProtectedMessage = "Hello world from Enclave\n\0";
 
 int secure_str_patching(const char* src, char* dst, size_t dst_length)
 {
+    oe_debug_malloc_tracking_start();
+
+    void* buf = oe_malloc(4096);
+
+    oe_debug_malloc_tracking_stop();
+
+    uint64_t num;
+    char* report;
+    if (oe_debug_malloc_tracking_report(&num, &report) == OE_OK)
+    {
+        printf("There are %d un-freed objects:\n%s", num, report);
+    }
+
+    oe_free(buf);
+    oe_free(report);
+
     const char* running_src = src;
     size_t running_length = dst_length;
     while (running_length > 0 && *running_src != '\0')

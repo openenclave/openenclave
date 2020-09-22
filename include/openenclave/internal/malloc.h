@@ -25,6 +25,9 @@ void oe_debug_malloc_dump(void);
 /* Print trace of memory still in use. Return number of blocks allocated. */
 size_t oe_debug_malloc_check(void);
 
+/* Check memory leaks */
+oe_result_t oe_check_memory_leaks(void);
+
 //
 // If true, oe_debug_malloc_check() is not called on enclave termination.
 // To use this mechanism in an enclave:

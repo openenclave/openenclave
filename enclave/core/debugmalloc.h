@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifndef _OE_DEBUG_MALLOC_H
-#define _OE_DEBUG_MALLOC_H
+#ifndef _OE_DEBUG_MALLOC_INTERNAL_H
+#define _OE_DEBUG_MALLOC_INTERNAL_H
 
 #include <openenclave/bits/types.h>
 
