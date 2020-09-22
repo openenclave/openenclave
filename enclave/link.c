@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/advanced/allocator.h>
+#include <openenclave/debugmalloc.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
 #include "core_t.h"
@@ -26,6 +27,7 @@ const void* oe_link_enclave(void)
         // enclave entry-point to pluggable allocator functions. This will
         // cause the first definitions of these functions to be picked up.
         oe_allocator_malloc,
+        oe_debug_malloc_tracking_start,
 #if defined(OE_USE_DEBUG_MALLOC)
         oe_debug_malloc_check,
 #endif /* defined(OE_USE_DEBUG_MALLOC) */

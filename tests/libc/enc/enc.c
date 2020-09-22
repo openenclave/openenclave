@@ -102,8 +102,10 @@ int run_test_helper(const char* test_name, libc_test_function_t test_function)
 #endif
 
     /* Disable Open Enclave debug malloc checks. */
+#if OE_USE_DEBUG_MALLOC
     extern bool oe_disable_debug_malloc_check;
     oe_disable_debug_malloc_check = true;
+#endif
 
     /* Allocate an environment for invoking the test. */
     if (!(environ = (char**)calloc(1, sizeof(char*))))

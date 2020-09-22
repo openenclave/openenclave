@@ -45,8 +45,6 @@
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
 
-extern bool oe_disable_debug_malloc_check;
-
 /*
 **==============================================================================
 **
@@ -415,13 +413,8 @@ static void _handle_ecall(
             /* Cleanup verifiers */
             oe_verifier_shutdown();
 
-#if defined(OE_USE_DEBUG_MALLOC)
-
             /* If memory still allocated, print a trace and return an error */
-            if (!oe_disable_debug_malloc_check && oe_debug_malloc_check() != 0)
-                result = OE_MEMORY_LEAK;
-
-#endif /* defined(OE_USE_DEBUG_MALLOC) */
+            OE_CHECK(oe_check_memory_leaks());
 
             /* Cleanup the allocator */
             oe_allocator_cleanup();
