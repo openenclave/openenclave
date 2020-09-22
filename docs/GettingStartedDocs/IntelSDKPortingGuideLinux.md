@@ -1,8 +1,9 @@
-# Intel SGX SDK to Open Enclave SDK Porting Guide (Linux)
+# Intel SGX SDK for Linux to Open Enclave SDK Porting Guide
 
-Intel SGX SDK and Open Enclave SDK share many design principles but differ in
-implementations. It requires source code changes to build enclaves with Open
-Enclave SDK that were developed initially with Intel SGX SDK.
+Intel SGX SDK for Linux and Open Enclave SDK share many design principles but
+differ in implementations. It requires source code changes to build enclaves
+with Open Enclave SDK that were developed initially with Intel SGX SDK for
+Linux.
 
 Please note that this doc focuses on **Linux**, and applies to *Intel SGX SDK
 for Linux* only unless explicitly noted otherwise.
@@ -29,9 +30,9 @@ project("MyEnclaveProject" LANGUAGE C CXX)
 ```
 
 Next, import the `OpenEnclave` package. Please note that the statement below
-requires appending */path/to/OpenEnclave_InstallDir* to `CMAKE_PREFIX_PATH`
+requires appending */path/to/OpenEnclave_InstallDir* to `$CMAKE_PREFIX_PATH`
 environment variable, or appending */path/to/OpenEnclave_InstallDir*/bin to
-`PATH`. A convenient way to do it is to source
+`$PATH`. A convenient way to do it is to source
 */path/to/OpenEnclave_InstallDir*/shared/openenclave/openenclaverc.
 
 ```cmake
@@ -95,22 +96,22 @@ consumed by enclave loaders to instantiate enclaves, such as heap size, stack
 size, number of trusted hardware threads (i.e., number of TCS's), etc.
 
 Enclave settings are specified in human readable text formats by enclave
-developers, referred to as *configuration files*. Both Intel SGX SDK and Open
-Enclave SDK provide tools to compile configuration files into their binary form
-and embed them into the final enclave image. However, they differ in both
-format and feature set.
+developers, referred to as *configuration files*. Both Intel SGX SDK for Linux
+and Open Enclave SDK provide tools to compile configuration files into their
+binary form and embed them into the final enclave image. However, they differ
+in both format and feature set.
 
 ### Configuration File Formats
 
-The Intel SGX SDK adopted an XML format for encoding enclave settings in text
-form, which is usually named as *Enclave*.config.xml. The signing tool (i.e.,
-`sgx_sign`) converts it into binary form and stores it in a dedicated section
-(i.e., `.sgxmeta`) of the enclave's ELF image before it calculates the
+Intel SGX SDK for Linux adopted an XML format for encoding enclave settings in
+text form, which is usually named as *Enclave*.config.xml. The signing tool
+(i.e., `sgx_sign`) converts it into binary form and stores it in a dedicated
+section (i.e., `.sgxmeta`) of the enclave's ELF image before it calculates the
 enclave's measurement (i.e., `SIGSTRUCT::MRENCLAVE`). At runtime, the ELF
 section `.sgxmeta` is consumed by the enclave loader to instantiate the exact
 enclave that matches the measurement calculated by the signing tool.
 
-Below comes from the sample code - SampleEnclave, of Intel SGX SDK.
+Below comes from the sample code - SampleEnclave, of Intel SGX SDK for Linux.
 
 ```xml
 <EnclaveConfiguration>
@@ -169,12 +170,13 @@ Debug=1
 # <MiscMask>0xFFFFFFFF</MiscMask>
 ```
 
-### Supported Enclave Settings by Intel SGX and Open Enclave SDKs
+### Supported Enclave Settings by Intel SGX SDK for Linux and Open Enclave SDK
 
-At the time of this writing, Intel SGX SDK supports a superset of Open Enclave
-SDK's features, hence not every element of Intel SGX SDK's *Enclave*.conf.xml
-has a corresponding setting in Open Enclave SDK's *enclave*.conf file. The
-table below summarizes the correspondence and difference.
+At the time of this writing, Intel SGX SDK for Linux supports a superset of
+Open Enclave SDK's features, hence not every element of Intel's
+*Enclave*.conf.xml has a corresponding setting in Open Enclave SDK's
+*enclave*.conf file. The table below summarizes the correspondence and
+difference.
 
 |.xml Element (Intel)|.conf Key (Open Enclave)|Type|Definition|Notes|
 |---|---|---|---|---|
@@ -232,7 +234,7 @@ OE_INFO_SECTION_END
 If compatibilities with both SDKs are desired, avoid using features specific to
 either SDK.
 
-As a final note, neither Intel SGX SDK nor Open Enclave SDK provides
+As a final note, neither Intel SGX SDK for Linux nor Open Enclave SDK provides
 configuration settings for enabling/disabling X features (e.g., AVX, AVX-512,
 etc.) explicitly. Open Enclave's SGX enclave loader uses the enabled X features
 on the local platform to initialize `SECS::ATTRIBUTES::XFRM`, and hard-codes
@@ -241,23 +243,22 @@ and must *NOT* be relied upon for security.
 
 ## Migrate ECall/OCall Definitions (EDL Files)
 
-Both Intel SGX SDK and Open Enclave SDK support the same grammer for defining
-trusted/untrusted functions (aka. ECalls/OCalls) in EDL files. However,
-built-in OCalls are defined in different headers. Intel SGX SDK's built-in
+Both Intel SGX SDK for Linux and Open Enclave SDK support the same grammer for
+defining trusted/untrusted functions (aka. ECalls/OCalls) in EDL files.
+However, built-in OCalls are defined in different headers. Intel's built-in
 OCalls are defined in `sgx_tstdc.edl` while Open Enclave SDK's are defined in
 `platform.edl`.
 
 Most EDL files include (by `include` statements) common C headers for both host
 and enclave sides. The most commonly included header is the one defining SGX
-architectural structures, which is `arch.h` in Intel SGX SDK or
+architectural structures, which is `arch.h` in Intel SGX SDK for Linux or
 `openenclave/bits/sgx/sgxtypes.h` in Open Enclave SDK. Please also note that
 some structures may be named differently, e.g., the EINITTOKEN architectural
-structure is defined as `token_t` in Intel SGX SDK but `einittoken_t` in Open
-Enclave SDK.
+structure is defined as `token_t` in Intel SGX SDK for Linux but `einittoken_t`
+in Open Enclave SDK.
 
 The code snippet below shows a way to include/import C headers and EDL
-definitions conditionally, in order to be compatible with both Intel SGX and
-Open Enclave SDKs.
+definitions conditionally, in order to be compatible with both SDKs.
 
 ```
 enclave {
@@ -278,8 +279,8 @@ macros at command line, even though both `sgx_edger8r` and `oeedger8r` support
 preprocessing.
 
 The last thing worth noting is that Open Enclave doesn't support nested ECall
-(i.e., an ECall in the context of an OCall) like the Intel SGX SDK does.
-Existing enclaves making use of nested ECalls need to be reworked to be
+(i.e., an ECall in the context of an OCall) like the Intel SGX SDK for Linux
+does. Existing enclaves making use of nested ECalls need to be reworked to be
 compatible with the Open Enclave SDK.
 
 ## Port C/C++ Source Code
@@ -294,13 +295,17 @@ incompatibilities still exist in
 - APIs - Most Open Enclave APIs are prefixed by `oe_` while Intel's APIs are by
   `sgx_`. Moreover, some APIs may take parameters in different orders.
 - Structure definitions - Structure members may be named differently. Some
-  structures are organized differently. For example, Intel SGX SDK defines
-  EINITTOKEN as `token_t` with all MAC'ed fields captured in a child structure
-  `launch_body_t`; while Open Enclave defines it as a flat `einittoken_t`
-  structure.
-- Crypto lib - Intel SGX SDK supports 2 crypto libs - IPP and OpenSSL, and
-  provides a wrapper layer to unify crypto APIs. Open Enclave supports only
-  MbedTLS and provides no wrapper.
+  structures are organized differently. For example, Intel SGX SDK for Linux
+  defines EINITTOKEN as `token_t` with all MAC'ed fields captured in a child
+  structure `launch_body_t`; while Open Enclave defines it as a flat
+  `einittoken_t` structure.
+- Crypto lib - Intel SGX SDK for Linux supports 2 crypto libs - IPP and
+  OpenSSL, and provides a wrapper layer to unify crypto APIs. Open Enclave
+  supports only MbedTLS and provides no wrapper.
 
 Generally, there's no good way to fast port source code rather than reacting to
 compiler errors and substituting text strings manually.
+
+## Authors
+
+Cedric Xing (cedric.xing@intel.com)
