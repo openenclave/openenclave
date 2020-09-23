@@ -90,12 +90,6 @@ def checkCI() {
     }
 }
 
-properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
-                                      artifactNumToKeepStr: '180',
-                                      daysToKeepStr: '90',
-                                      numToKeepStr: '180')),
-            [$class: 'JobRestrictionProperty']])
-
 try{
     oe.emailJobStatus('STARTED')
     def testing_stages = [
