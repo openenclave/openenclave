@@ -12,8 +12,8 @@ Param(
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
-    [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
-    [string]$Clang7Hash = '672E4C420D6543A8A9F8EC5F1E5F283D88AC2155EF4C57232A399160A02BFF57',
+    [string]$Clang8URL = 'https://releases.llvm.org/8.0.0/LLVM-8.0.0-win64.exe',
+    [string]$Clang8Hash = '56D582EED2D5DEF6ACCAEDABBE11AE368186600798E2A6A7EB86A727FA7BB20C',
     [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16899/Intel%20SGX%20PSW%20for%20Windows%20v2.9.100.2.exe',
     [string]$IntelPSWHash = 'A2F357F3AC1629C2A714A05DCA14CF8C7F25868A0B3352FAE351B14AD121BDFC',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
@@ -61,8 +61,8 @@ $PACKAGES = @{
         "local_file" = Join-Path $PACKAGES_DIRECTORY "vs_buildtools.exe"
     }
     "clang7" = @{
-        "url" = $Clang7URL
-        "hash" = $Clang7Hash
+        "url" = $Clang8URL
+        "hash" = $Clang8Hash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "LLVM-win64.exe"
     }
     "psw" = @{
