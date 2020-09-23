@@ -5,8 +5,8 @@
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
     [string]$GitHash = '5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793',
-    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1g.exe',
-    [string]$OpenSSLHash = 'c85a21661e6596e2a22799b7b56ba49ce8193a4fd89945b77086074ddad6065f',
+    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1h.exe',
+    [string]$OpenSSLHash = 'C98DCF06D700DFFBC5EB3B10520BE77C44C176B4C1B990543FF72FFA643FEB5F',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
