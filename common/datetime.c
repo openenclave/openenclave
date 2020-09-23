@@ -238,7 +238,7 @@ oe_result_t oe_datetime_now(oe_datetime_t* value)
 #ifndef OE_BUILD_ENCLAVE
     time(&now);
 #else
-    now = oe_get_time() / 1000;
+    now = (time_t)(oe_get_time() / 1000);
 #endif
     gmtime_r(&now, &timeinfo);
 
