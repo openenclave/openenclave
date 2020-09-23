@@ -7,6 +7,7 @@ oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave
 GLOBAL_TIMEOUT_MINUTES = 120
 CTEST_TIMEOUT_SECONDS = 480
 GLOBAL_ERROR = null
+FULL_TEST_SUITE = true
 
 DOCKER_TAG = env.DOCKER_TAG ?: "latest"
 AGENTS_LABELS = [
