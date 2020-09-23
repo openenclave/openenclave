@@ -31,15 +31,15 @@ def ACCLibcxxTest(String label, String compiler, String build_type) {
 
 try {
     oe.emailJobStatus('STARTED')
-    parallel "Libcxx ACC1604 clang-7 Debug" :          { ACCLibcxxTest(XENIAL_LABEL, 'clang-7', 'Debug') },
-             "Libcxx ACC1604 clang-7 Release" :        { ACCLibcxxTest(XENIAL_LABEL, 'clang-7','Release') },
-             "Libcxx ACC1604 clang-7 RelWithDebInfo" : { ACCLibcxxTest(XENIAL_LABEL, 'clang-7', 'RelWithDebInfo') },
+    parallel "Libcxx ACC1604 clang-8 Debug" :          { ACCLibcxxTest(XENIAL_LABEL, 'clang-8', 'Debug') },
+             "Libcxx ACC1604 clang-8 Release" :        { ACCLibcxxTest(XENIAL_LABEL, 'clang-8','Release') },
+             "Libcxx ACC1604 clang-8 RelWithDebInfo" : { ACCLibcxxTest(XENIAL_LABEL, 'clang-8', 'RelWithDebInfo') },
              "Libcxx ACC1604 gcc Debug" :              { ACCLibcxxTest(XENIAL_LABEL, 'gcc', 'Debug') },
              "Libcxx ACC1604 gcc Release" :            { ACCLibcxxTest(XENIAL_LABEL, 'gcc', 'Release') },
              "Libcxx ACC1604 gcc RelWithDebInfo" :     { ACCLibcxxTest(XENIAL_LABEL, 'gcc', 'RelWithDebInfo') },
-             "Libcxx ACC1804 clang-7 Debug" :          { ACCLibcxxTest(BIONIC_LABEL, 'clang-7', 'Debug') },
-             "Libcxx ACC1804 clang-7 Release" :        { ACCLibcxxTest(BIONIC_LABEL, 'clang-7', 'Release') },
-             "Libcxx ACC1804 clang-7 RelWithDebInfo" : { ACCLibcxxTest(BIONIC_LABEL, 'clang-7', 'RelWithDebInfo') },
+             "Libcxx ACC1804 clang-8 Debug" :          { ACCLibcxxTest(BIONIC_LABEL, 'clang-8', 'Debug') },
+             "Libcxx ACC1804 clang-8 Release" :        { ACCLibcxxTest(BIONIC_LABEL, 'clang-8', 'Release') },
+             "Libcxx ACC1804 clang-8 RelWithDebInfo" : { ACCLibcxxTest(BIONIC_LABEL, 'clang-8', 'RelWithDebInfo') },
              "Libcxx ACC1804 gcc Debug" :              { ACCLibcxxTest(BIONIC_LABEL, 'gcc', 'Debug') },
              "Libcxx ACC1804 gcc Release" :            { ACCLibcxxTest(BIONIC_LABEL, 'gcc', 'Release') },
              "Libcxx ACC1804 gcc RelWithDebInfo" :     { ACCLibcxxTest(BIONIC_LABEL, 'gcc', 'RelWithDebInfo') }
