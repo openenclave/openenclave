@@ -7,6 +7,7 @@
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
+#define oe_memalign_free oe_free
 #else
 #include <openenclave/host.h>
 #include "../../host/memalign.h"
@@ -182,7 +183,6 @@ static oe_result_t _verify_sgx_report(
     oe_report_t* parsed_report)
 {
     oe_result_t result = OE_UNEXPECTED;
-    OE_UNUSED(sgx_evidence_buffer_size);
     const uint8_t* report_buffer = sgx_evidence_buffer;
     oe_datetime_t* time = NULL;
     oe_report_header_t* header = (oe_report_header_t*)report_buffer;
@@ -208,7 +208,7 @@ static oe_result_t _verify_sgx_report(
 
     sgx_claims_size = sgx_evidence_buffer_size -
                       (header->report_size + sizeof(oe_report_header_t));
-    *sgx_claims = oe_malloc(sgx_claims_size);
+    *sgx_claims = NULL;
 
     OE_CHECK(oe_parse_report(
         sgx_evidence_buffer,
@@ -305,7 +305,7 @@ static oe_result_t _eeid_verify_evidence(
         oe_report_t parsed_report;
         oe_claim_t* sgx_claims = NULL;
         size_t sgx_claims_length = 0;
-        _verify_sgx_report(
+        OE_CHECK(_verify_sgx_report(
             context,
             policies,
             policies_size,
@@ -315,7 +315,7 @@ static oe_result_t _eeid_verify_evidence(
             sgx_endorsements_buffer_size,
             &sgx_claims,
             &sgx_claims_length,
-            &parsed_report);
+            &parsed_report));
 
         const uint8_t* r_enclave_hash = parsed_report.identity.unique_id;
         const uint8_t* r_signer_id = parsed_report.identity.signer_id;
@@ -323,6 +323,8 @@ static oe_result_t _eeid_verify_evidence(
         uint32_t r_security_version = parsed_report.identity.security_version;
         uint64_t r_attributes = parsed_report.identity.attributes;
         uint32_t r_id_version = parsed_report.identity.id_version;
+
+        oe_free_claims(sgx_claims, sgx_claims_length);
 
         /* EEID passed to the verifier */
         if (endorsements_buffer)
@@ -377,24 +379,13 @@ static oe_result_t _eeid_verify_evidence(
 
 done:
 
-    oe_free(sgx_evidence_buffer);
-    oe_free(sgx_endorsements_buffer);
-    oe_free(attester_eeid);
-    oe_free(verifier_eeid);
+    oe_memalign_free(sgx_evidence_buffer);
+    oe_memalign_free(sgx_endorsements_buffer);
+    oe_memalign_free(attester_eeid);
+    oe_memalign_free(verifier_eeid);
     oe_free(evidence);
 
     return result;
-}
-
-static oe_result_t _eeid_free_claims_list(
-    oe_verifier_t* context,
-    oe_claim_t* claims,
-    size_t claims_size)
-{
-    OE_UNUSED(context);
-    OE_UNUSED(claims_size);
-    free(claims);
-    return OE_OK;
 }
 
 static oe_verifier_t _eeid_verifier = {
@@ -405,7 +396,7 @@ static oe_verifier_t _eeid_verifier = {
             .on_unregister = &_eeid_verifier_on_unregister,
         },
     .verify_evidence = &_eeid_verify_evidence,
-    .free_claims = &_eeid_free_claims_list};
+    .free_claims = &sgx_attestation_plugin_free_claims_list};
 
 oe_result_t oe_sgx_eeid_verifier_initialize(void)
 {

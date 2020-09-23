@@ -69,7 +69,7 @@ static void _free_claim(oe_claim_t* claim)
     oe_free(claim->value);
 }
 
-static oe_result_t _free_claims(
+oe_result_t sgx_attestation_plugin_free_claims_list(
     oe_verifier_t* context,
     oe_claim_t* claims,
     size_t claims_length)
@@ -542,7 +542,7 @@ oe_result_t oe_sgx_extract_claims(
 
 done:
     if (claims)
-        _free_claims(NULL, claims, claims_length);
+        sgx_attestation_plugin_free_claims_list(NULL, claims, claims_length);
     return result;
 }
 
@@ -870,7 +870,7 @@ static oe_result_t _get_verifier_plugins(
         plugin->get_format_settings = &_get_format_settings;
         plugin->verify_evidence = &_verify_evidence;
         plugin->verify_report = &_verify_report;
-        plugin->free_claims = &_free_claims;
+        plugin->free_claims = &sgx_attestation_plugin_free_claims_list;
     }
     *verifiers_length = uuid_count;
     result = OE_OK;

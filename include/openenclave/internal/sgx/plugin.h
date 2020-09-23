@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/report.h>
 #include <openenclave/internal/crypto/sha.h>
+#include <openenclave/internal/plugin.h>
 
 OE_EXTERNC_BEGIN
 
@@ -77,6 +78,21 @@ oe_result_t oe_sgx_hash_custom_claims_buffer(
     const void* custom_claims_buffer,
     size_t custom_claims_buffer_size,
     OE_SHA256* hash_out);
+
+/**
+ * sgx_attestation_plugin_free_claims_list
+ *
+ * Free a claims list produced by the SGX verifier plugin.
+ *
+ * @param[in] context Plugin context (may be NULL).
+ * @param[in] claims List of claims.
+ * @param[in] claims_length The length of claims.
+ * @retval OE_OK on success, otherwise an appropriate error code.
+ */
+oe_result_t sgx_attestation_plugin_free_claims_list(
+    oe_verifier_t* context,
+    oe_claim_t* claims,
+    size_t claims_length);
 
 OE_EXTERNC_END
 
