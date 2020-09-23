@@ -4,6 +4,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/time.h>
 #include <time.h>
 
 #define UNIX_EPOCH_YEAR (1970)
@@ -234,7 +235,11 @@ oe_result_t oe_datetime_now(oe_datetime_t* value)
     if (value == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#ifndef OE_BUILD_ENCLAVE
     time(&now);
+#else
+    now = (time_t)(oe_get_time() / 1000);
+#endif
     gmtime_r(&now, &timeinfo);
 
     value->year = (uint32_t)timeinfo.tm_year + 1900;
