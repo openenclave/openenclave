@@ -377,11 +377,7 @@ function Install-Python3 {
 }
 
 function Install-Git {
-    $installDir = Join-Path $env:ProgramFiles "Git"
-    Install-Tool -InstallerPath $PACKAGES["git"]["local_file"] `
-                 -InstallDirectory $installDir `
-                 -ArgumentList @("/SILENT") `
-                 -EnvironmentPath @("$installDir\cmd", "$installDir\bin", "$installDir\mingw64\bin")
+    choco install git -y
 }
 
 function Install-OpenSSL {
