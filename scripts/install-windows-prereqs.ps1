@@ -516,7 +516,10 @@ function Install-Build-Dependencies {
         --add Microsoft.VisualStudio.Component.VC.v141.ARM.Spectre
         --add Microsoft.VisualStudio.Component.VC.v141.ARM64.Spectre
         --includeRecommended" -y
-
+    
+    # Add builds tools to path explicitly
+    Add-ToSystemPath -Path "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build"
+    
     # Pip installation
     cinst python3 -y
     cinst pip -y
@@ -540,11 +543,12 @@ function Install-Run-Time-Dependencies {
 }
 
 function Install-Test-Dependencies {
-    if ($ImageConfiguration -eq "CICD")
-    {
+    # Do regardless for testing.
+    #if ($ImageConfiguration -eq "CICD")
+    #{
         # Need NSIS to install packages in CICD for verification/validation, contributors can ignore
         cinst nsis -y
-    }
+    #}
 }
 
 try {
