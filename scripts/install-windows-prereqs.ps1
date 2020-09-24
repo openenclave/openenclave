@@ -508,7 +508,6 @@ function Install-Build-Dependencies {
     cinst llvm --version 7.0 -y
     cinst shellcheck -y
     cinst vcredist2012 -y
-    choco install cmake -y
     # Consider upgrading to 2019 at a later date and sync with Anakrish regarding this
     cinst visualstudio2017professional --params "--no-update" -y
     cinst visualstudio2017-workload-vctools --params "
@@ -523,7 +522,7 @@ function Install-Build-Dependencies {
     cinst pip -y
     # Need to explicitly add to PATH here before trying to use
     Add-ToSystemPath -Path $EnvironmentPath
-    #pip install cmake-format
+    pip install cmake-format
 }
 
 function Install-Run-Time-Dependencies {
