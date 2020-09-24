@@ -347,30 +347,8 @@ function Install-Nuget {
 }
 
 function Install-Python3 {
-    $tempInstallDir = "$PACKAGES_DIRECTORY\python3"
-    if(Test-Path -Path $tempInstallDir) {
-        Remove-Item -Path $tempInstallDir -Force -Recurse
-    }
-    Install-ZipTool -ZipPath $PACKAGES["python3"]["local_file"] `
-                    -InstallDirectory $tempInstallDir `
-                    -EnvironmentPath @("$tempInstallDir")
-
-    $installDir = Join-Path $env:ProgramFiles "python-3.7.4"
-    New-Directory -Path $installDir -RemoveExisting
-    Move-Item -Path "$tempInstallDir\*" -Destination $installDir
-    Add-ToSystemPath -Path $installDir
-
-    Start-ExecuteWithRetry -ScriptBlock {
-        # Install PIP
-        python $PACKAGES["get-pip"]["local_file"]
-        $Scripts = Join-Path $installDir "Scripts"
-        Add-ToSystemPath -Path $Scripts
-
-        # Enable site packages so that PIP will run, by uncommenting out 'import site'
-        $configFile = Join-Path $installdir "python37._pth"
-        Set-Content -Path $configFile -Value "python37.zip`n.`n`nimport site"
-    } -MaxRetryCount $RetryCount -RetryInterval 3 -RetryMessage "Failed to install PIP. Retrying"
-
+    choco install python3 -y
+    
     Start-ExecuteWithRetry -ScriptBlock {
         pip install cmake_format
     } -RetryMessage "Failed to install cmake_format. Retrying"
