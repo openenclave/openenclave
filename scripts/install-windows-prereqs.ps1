@@ -536,14 +536,6 @@ function Install-DCAP-Dependencies {
     }
 }
 
-function Install-VCRuntime {
-    Write-Log "Installing VC 2012 runtime"
-    $p = Start-Process -Wait -PassThru -FilePath $PACKAGES["vc_runtime_2012"]["local_file"] -ArgumentList @("/install", "/passive")
-    if($p.ExitCode -ne 0) {
-        Throw ("Failed to install VC 2012 runtime. Exit code: {0}" -f $p.ExitCode)
-    }
-}
-
 function Install-NSIS {
     choco install nsis -y
 }
@@ -580,16 +572,13 @@ function Install-Build-Dependencies {
     choco install 7zip -y
     choco install llvm --version 7.0 -y
     choco install shellcheck -y
+    choco install vcredist2012 -y
+    #Install-Python3
 }
 
-try {
-    Start-LocalPackagesDownload
 
-    Install-Chocolatey
-    Install-Build-Dependencies
-    #Install-Python3
-    Install-VisualStudio
-    
+function Install-Run-Time-Dependencies {
+
     if ($ImageConfiguration -eq "CICD")
     {
         # Need NSIS to install packages in CICD for verification/validation, contributors can ignore
@@ -606,9 +595,6 @@ try {
         Install-DCAP-Dependencies
     }
 
-    Install-VCRuntime
-
-
     # The Open Enclave source directory tree might have file paths exceeding
     # the default limit of 260 characters (especially the 3rd party libraries
     # file paths). Unless the git directory location is short (for example
@@ -618,7 +604,15 @@ try {
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
                      -Name LongPathsEnabled `
                      -Value 1
+}
 
+try {
+    Start-LocalPackagesDownload
+
+    Install-Chocolatey
+    Install-Build-Dependencies
+    Install-Run-Time-Dependencies
+    
     Write-Output 'Please reboot your computer for the configuration to complete.'
 } catch {
     Write-Output $_.ToString()
