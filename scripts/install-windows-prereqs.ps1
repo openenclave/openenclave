@@ -8,18 +8,12 @@ Param(
     [string]$VSBuildToolsHash = '',
     [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16899/Intel%20SGX%20PSW%20for%20Windows%20v2.9.100.2.exe',
     [string]$IntelPSWHash = 'A2F357F3AC1629C2A714A05DCA14CF8C7F25868A0B3352FAE351B14AD121BDFC',
-    [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
-    [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
     [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16928/Intel%20SGX%20DCAP%20for%20Windows%20v1.8.100.2.exe',
     [string]$IntelDCAPHash = 'F45D12351A1839C6F1AF58CC53D64B0810BC12E7DFF0E9DBF80A0031754AA925',
-    [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
-    [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.6.0',
     [string]$AzureDCAPNupkgHash = 'CC6D4071CE03B9E6922C3265D99FB1C0E56FCDB3409CBCEDB5A76F4886A3964A',
-    [string]$GetPipURL = 'https://bootstrap.pypa.io/3.4/get-pip.py',
-    [string]$GetPipHash = '564FABC2FBABD9085A71F4A5E43DBF06D5CCEA9AB833E260F30EE38E8CE63A69',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
@@ -42,11 +36,6 @@ $PACKAGES = @{
         "hash" = $IntelPSWHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Intel_SGX_PSW_for_Windows.exe"
     }
-    "shellcheck" = @{
-        "url" = $ShellCheckURL
-        "hash" = $ShellCheckHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "shellcheck.zip"
-    }
     "devcon" = @{
         "url" = $DevconURL
         "hash" = $DevconHash
@@ -56,11 +45,6 @@ $PACKAGES = @{
         "url" = $IntelDCAPURL
         "hash" = $IntelDCAPHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Intel_SGX_DCAP.exe"
-    }
-    "vc_runtime_2012" = @{
-        "url" = $VCRuntime2012URL
-        "hash" = $VCRuntime2012Hash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "vcredist_x64.exe"
     }
     "azure_dcap_client_nupkg" = @{
         "url" = $AzureDCAPNupkgURL
