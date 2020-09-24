@@ -333,17 +333,7 @@ function Install-ZipTool {
 }
 
 function Install-Nuget {
-    $tempInstallDir = "$PACKAGES_DIRECTORY\nuget"
-    if(Test-Path -Path $tempInstallDir) {
-        Remove-Item -Path $tempInstallDir -Force -Recurse
-    }
-    Install-ZipTool -ZipPath $PACKAGES["nuget"]["local_file"] `
-                    -InstallDirectory $tempInstallDir `
-                    -EnvironmentPath @("$tempInstallDir")
-    $installDir = Join-Path $env:ProgramFiles "nuget-3.4.3"
-    New-Directory -Path $installDir -RemoveExisting
-    Move-Item -Path "$tempInstallDir\build\native\Nuget.exe" -Destination $installDir
-    Add-ToSystemPath -Path $installDir
+    choco install nuget.commandline -y
 }
 
 function Install-Python3 {
