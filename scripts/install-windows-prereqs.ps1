@@ -5,8 +5,8 @@
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
     [string]$GitHash = '5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793',
-    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1g.exe',
-    [string]$OpenSSLHash = 'c85a21661e6596e2a22799b7b56ba49ce8193a4fd89945b77086074ddad6065f',
+    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1h.exe',
+    [string]$OpenSSLHash = 'C98DCF06D700DFFBC5EB3B10520BE77C44C176B4C1B990543FF72FFA643FEB5F',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
@@ -671,9 +671,33 @@ function Install-NSIS {
                  -EnvironmentPath @($installDir, "${installDir}\Bin")
 }
 
+function Install-choco {
+# Set TLS Protocol, choco causes issues on older versions of Windows
+[Net.ServicePointManager]::SecurityProtocol = "tls12"
+
+$ErrorActionPreference = "Stop"
+
+# Elevate to administrator if not already in admin mode
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
+    # Set directory for installation - Chocolatey does not lock
+    # down the directory if not the default
+    $InstallDir='C:\ProgramData\chocoportable'
+    $env:ChocolateyInstall="$InstallDir"
+
+    # If your PowerShell Execution policy is restrictive, you may
+    # not be able to get around that. Try setting your session to
+    # Bypass.
+    Set-ExecutionPolicy Bypass -Scope Process -Force;
+
+    # All install options - offline, proxy, etc at
+    # https://chocolatey.org/install
+    iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+}
+
 try {
     Start-LocalPackagesDownload
 
+    Install-choco
     Install-7Zip
     Install-Nuget
     Install-Python3
