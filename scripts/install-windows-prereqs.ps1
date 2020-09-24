@@ -659,22 +659,19 @@ function Install-VCRuntime {
 }
 
 function Install-NSIS {
-    $installDir = Join-Path ${env:ProgramFiles(x86)} "NSIS"
-
-    Install-Tool -InstallerPath $PACKAGES["nsis"]["local_file"] `
-                 -InstallDirectory $installDir `
-                 -ArgumentList @("/S") `
-                 -EnvironmentPath @($installDir, "${installDir}\Bin")
+    choco install nsis -y
 }
 
 function Install-choco {
-# Set TLS Protocol, choco causes issues on older versions of Windows
-[Net.ServicePointManager]::SecurityProtocol = "tls12"
 
-$ErrorActionPreference = "Stop"
+    # Set TLS Protocol, choco causes issues on older versions of Windows
+    [Net.ServicePointManager]::SecurityProtocol = "tls12"
 
-# Elevate to administrator if not already in admin mode
-if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
+    $ErrorActionPreference = "Stop"
+
+    # Elevate to administrator if not already in admin mode
+    if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
+
     # Set directory for installation - Chocolatey does not lock
     # down the directory if not the default
     $InstallDir='C:\ProgramData\chocoportable'
