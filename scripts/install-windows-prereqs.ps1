@@ -18,8 +18,6 @@ Param(
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.6.0',
     [string]$AzureDCAPNupkgHash = 'CC6D4071CE03B9E6922C3265D99FB1C0E56FCDB3409CBCEDB5A76F4886A3964A',
-    [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
-    [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
     [string]$GetPipURL = 'https://bootstrap.pypa.io/3.4/get-pip.py',
     [string]$GetPipHash = '564FABC2FBABD9085A71F4A5E43DBF06D5CCEA9AB833E260F30EE38E8CE63A69',
     [Parameter(mandatory=$true)][string]$InstallPath,
@@ -68,16 +66,6 @@ $PACKAGES = @{
         "url" = $AzureDCAPNupkgURL
         "hash" = $AzureDCAPNupkgHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "Microsoft.Azure.DCAP.nupkg"
-    }
-    "python3" = @{
-        "url" = $Python3ZipURL
-        "hash" = $Python3ZipHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "Python3.zip"
-    }
-    "get-pip" = @{
-        "url" = $GetPipURL
-        "hash" = $GetPipHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "get-pip.py"
     }
 }
 
@@ -293,11 +281,13 @@ function Install-ZipTool {
 
 function Install-Python3 {
     choco install python3 -y
-    refreshenv
+    # Need to explicitly add to PATH here before trying to use
+    Add-ToSystemPath -Path $EnvironmentPath
     choco install pip -y
-    refreshenv
+    # Need to explicitly add to PATH here before trying to use
+    Add-ToSystemPath -Path $EnvironmentPath
     Start-ExecuteWithRetry -ScriptBlock {
-        pip install cmake-format -y
+        pip install cmake-format
     } -RetryMessage "Failed to install cmake-format. Retrying"
 }
 
@@ -573,7 +563,7 @@ function Install-Build-Dependencies {
     choco install llvm --version 7.0 -y
     choco install shellcheck -y
     choco install vcredist2012 -y
-    #Install-Python3
+    Install-Python3
 }
 
 
@@ -612,7 +602,8 @@ try {
     Install-Chocolatey
     Install-Build-Dependencies
     Install-Run-Time-Dependencies
-    
+
+    Add-ToSystemPath -Path $EnvironmentPath
     Write-Output 'Please reboot your computer for the configuration to complete.'
 } catch {
     Write-Output $_.ToString()
