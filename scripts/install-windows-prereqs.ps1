@@ -385,11 +385,7 @@ function Install-Git {
 }
 
 function Install-OpenSSL {
-    $installDir = Join-Path $env:ProgramFiles "OpenSSL-Win64"
-    Install-Tool -InstallerPath $PACKAGES["openssl"]["local_file"] `
-                 -InstallDirectory $installDir `
-                 -ArgumentList @("/silent", "/eula=accept") `
-                 -EnvironmentPath @("$installDir\bin")
+    choco install openssl -y
 }
 
 function Install-7Zip {
@@ -450,16 +446,7 @@ function Install-LLVM {
 }
 
 function Install-Shellcheck {
-    $installDir = Join-Path $env:ProgramFiles "shellcheck"
-    if(Test-Path -Path $installDir) {
-        Remove-Item -Path $installDir -Force -Recurse
-    }
-    Install-ZipTool -ZipPath $PACKAGES["shellcheck"]["local_file"] `
-                    -InstallDirectory $installDir `
-                    -EnvironmentPath @("$installDir")
-    $filePath = Join-Path $installDir "shellcheck*.exe"
-    $scexe = Get-ChildItem $filePath
-    Rename-Item $scexe "shellcheck.exe"
+    choco install shellcheck -y
 }
 
 function Get-DevconBinary {
