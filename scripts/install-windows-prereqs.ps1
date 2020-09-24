@@ -6,14 +6,10 @@ Param(
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
-    [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
-    [string]$Clang7Hash = '672E4C420D6543A8A9F8EC5F1E5F283D88AC2155EF4C57232A399160A02BFF57',
     [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16899/Intel%20SGX%20PSW%20for%20Windows%20v2.9.100.2.exe',
     [string]$IntelPSWHash = 'A2F357F3AC1629C2A714A05DCA14CF8C7F25868A0B3352FAE351B14AD121BDFC',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
-    [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
-    [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
     [string]$IntelDCAPURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16928/Intel%20SGX%20DCAP%20for%20Windows%20v1.8.100.2.exe',
@@ -24,8 +20,6 @@ Param(
     [string]$AzureDCAPNupkgHash = 'CC6D4071CE03B9E6922C3265D99FB1C0E56FCDB3409CBCEDB5A76F4886A3964A',
     [string]$Python3ZipURL = 'https://www.python.org/ftp/python/3.7.4/python-3.7.4-embed-amd64.zip',
     [string]$Python3ZipHash = 'FB65E5CD595AD01049F73B47BC0EE23FD03F0CBADC56CB318990CEE83B37761B',
-    [string]$NSISURL = 'https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe',
-    [string]$NSISHash = '1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB',
     [string]$GetPipURL = 'https://bootstrap.pypa.io/3.4/get-pip.py',
     [string]$GetPipHash = '564FABC2FBABD9085A71F4A5E43DBF06D5CCEA9AB833E260F30EE38E8CE63A69',
     [Parameter(mandatory=$true)][string]$InstallPath,
@@ -44,11 +38,6 @@ $PACKAGES = @{
         "hash" = $VSBuildToolsHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "vs_buildtools.exe"
     }
-    "clang7" = @{
-        "url" = $Clang7URL
-        "hash" = $Clang7Hash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "LLVM-win64.exe"
-    }
     "psw" = @{
         "url" = $IntelPSWURL
         "hash" = $IntelPSWHash
@@ -58,11 +47,6 @@ $PACKAGES = @{
         "url" = $ShellCheckURL
         "hash" = $ShellCheckHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "shellcheck.zip"
-    }
-    "nuget" = @{
-        "url" = $NugetURL
-        "hash" = $NugetHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "nuget.zip"
     }
     "devcon" = @{
         "url" = $DevconURL
@@ -93,11 +77,6 @@ $PACKAGES = @{
         "url" = $GetPipURL
         "hash" = $GetPipHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "get-pip.py"
-    }
-    "nsis" = @{
-        "url" = $NSISURL
-        "hash" = $NSISHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "nsis-3.05-setup.exe"
     }
 }
 
@@ -317,10 +296,12 @@ function Install-Nuget {
 
 function Install-Python3 {
     choco install python3 -y
-    
+    refreshenv
+    choco install pip -y
+    refreshenv
     Start-ExecuteWithRetry -ScriptBlock {
-        pip install cmake_format
-    } -RetryMessage "Failed to install cmake_format. Retrying"
+        pip install cmake-format -y
+    } -RetryMessage "Failed to install cmake-format. Retrying"
 }
 
 function Install-Git {
@@ -570,8 +551,8 @@ function Install-DCAP-Dependencies {
     if($LASTEXITCODE -ne 0) {
         Throw "Failed to install nuget EnclaveCommonAPI"
     }
-
-    if (($LaunchConfiguration -eq "SGX1FLC") -or (${OS_VERSION} -eq "WinServer2019"))
+    # Check appropriate launch configuration and if running in a container
+    if (($LaunchConfiguration -eq "SGX1FLC") -or (${OS_VERSION} -eq "WinServer2019") -and !($env:UserName -eq "ContainerAdministrator") -and ($env:UserDomain -eq "User Manager")))
     {
         # Please refer to Intel's Windows DCAP documentation for this registry setting: https://download.01.org/intel-sgx/dcap-1.2/windows/docs/Intel_SGX_DCAP_Windows_SW_Installation_Guide.pdf
         New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters" -Name "SGX_Launch_Config_Optin" -Value 1 -PropertyType DWORD -Force
@@ -621,7 +602,7 @@ try {
     Install-choco
     Install-7Zip
     Install-Nuget
-    Install-Python3
+    #Install-Python3
     Install-VisualStudio
     Install-OpenSSL
     Install-LLVM
