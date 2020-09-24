@@ -446,9 +446,7 @@ function Install-VisualStudio {
 }
 
 function Install-LLVM {
-    Install-Tool -InstallerPath $PACKAGES["clang7"]["local_file"] `
-                 -ArgumentList "/S" `
-                 -EnvironmentPath "${env:ProgramFiles}\LLVM\bin"
+    choco install llvm --version 7.0 -y
 }
 
 function Install-Shellcheck {
