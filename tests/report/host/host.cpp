@@ -206,6 +206,22 @@ int main(int argc, const char* argv[])
         TestVerifyTCBInfoV2(enclave, "./data_v2/tcbInfo_with_pceid.json");
         TestVerifyTCBInfoV2_AdvisoryIDs(
             enclave, "./data_v2/tcbInfoAdvisoryIds.json");
+
+        {
+            // Get current time and pass it to enclave.
+            std::time_t t = std::time(0);
+            std::tm tm;
+            gmtime_r(&t, &tm);
+
+            // convert std::tm to oe_datetime_t
+            oe_datetime_t now = {(uint32_t)tm.tm_year + 1900,
+                                 (uint32_t)tm.tm_mon + 1,
+                                 (uint32_t)tm.tm_mday,
+                                 (uint32_t)tm.tm_hour,
+                                 (uint32_t)tm.tm_min,
+                                 (uint32_t)tm.tm_sec};
+            test_minimum_issue_date(enclave, now);
+        }
     }
     else
     {
@@ -223,20 +239,6 @@ int main(int argc, const char* argv[])
 
     test_get_signer_id_from_public_key();
     OE_TEST(enclave_test_get_signer_id_from_public_key(enclave) == OE_OK);
-
-    // Get current time and pass it to enclave.
-    std::time_t t = std::time(0);
-    std::tm tm;
-    gmtime_r(&t, &tm);
-
-    // convert std::tm to oe_datetime_t
-    oe_datetime_t now = {(uint32_t)tm.tm_year + 1900,
-                         (uint32_t)tm.tm_mon + 1,
-                         (uint32_t)tm.tm_mday,
-                         (uint32_t)tm.tm_hour,
-                         (uint32_t)tm.tm_min,
-                         (uint32_t)tm.tm_sec};
-    test_minimum_issue_date(enclave, now);
 
     generate_and_save_report(enclave);
 
