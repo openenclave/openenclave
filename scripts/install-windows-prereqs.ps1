@@ -279,18 +279,6 @@ function Install-ZipTool {
     Add-ToSystemPath $EnvironmentPath
 }
 
-function Install-Python3 {
-    choco install python3 -y
-    # Need to explicitly add to PATH here before trying to use
-    Add-ToSystemPath -Path $EnvironmentPath
-    choco install pip -y
-    # Need to explicitly add to PATH here before trying to use
-    Add-ToSystemPath -Path $EnvironmentPath
-    Start-ExecuteWithRetry -ScriptBlock {
-        pip install cmake-format
-    } -RetryMessage "Failed to install cmake-format. Retrying"
-}
-
 function Install-PSW {
 
     $OS_VERSION = Get-WindowsRelease
@@ -556,6 +544,7 @@ function Install-Chocolatey {
 }
 
 function Install-Build-Dependencies {
+    
     choco install nuget.commandline -y
     choco install git -y
     choco install openssl -y
@@ -563,9 +552,16 @@ function Install-Build-Dependencies {
     choco install llvm --version 7.0 -y
     choco install shellcheck -y
     choco install vcredist2012 -y
-    Install-Python3
-}
 
+    # Pip installation
+    choco install python3 -y
+    # Need to explicitly add to PATH here before trying to use
+    Add-ToSystemPath -Path $EnvironmentPath
+    choco install pip -y
+    # Need to explicitly add to PATH here before trying to use
+    Add-ToSystemPath -Path $EnvironmentPath
+    pip install cmake-format
+}
 
 function Install-Run-Time-Dependencies {
 
