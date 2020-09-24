@@ -393,11 +393,7 @@ function Install-OpenSSL {
 }
 
 function Install-7Zip {
-    $installDir = Join-Path $env:ProgramFiles "7-Zip"
-    Install-Tool -InstallerPath $PACKAGES["7z"]["local_file"] `
-                 -InstallDirectory $installDir `
-                 -ArgumentList @("/quiet", "/passive") `
-                 -EnvironmentPath @($installDir)
+    choco install 7zip -y
 }
 
 function Install-PSW {
