@@ -517,11 +517,10 @@ function Install-Build-Dependencies {
         --add Microsoft.VisualStudio.Component.VC.v141.ARM.Spectre
         --add Microsoft.VisualStudio.Component.VC.v141.ARM64.Spectre
         --includeRecommended" -y
+
     # Pip installation
-    #cinst python3 -y
-    # Need to explicitly add to PATH here before trying to use
-    Add-ToSystemPath -Path $EnvironmentPath
-    #cinst pip -y
+    cinst python3 -y
+    cinst pip -y
     # Need to explicitly add to PATH here before trying to use
     Add-ToSystemPath -Path $EnvironmentPath
     #pip install cmake-format
