@@ -4,8 +4,6 @@
 # The Hash parameter defaults below are calculated using Get-FileHash with the default SHA256 hashing algorithm
 Param(
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
-    [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
-    [string]$VSBuildToolsHash = '',
     [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16899/Intel%20SGX%20PSW%20for%20Windows%20v2.9.100.2.exe',
     [string]$IntelPSWHash = 'A2F357F3AC1629C2A714A05DCA14CF8C7F25868A0B3352FAE351B14AD121BDFC',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
@@ -26,11 +24,6 @@ $PACKAGES_DIRECTORY = Join-Path $env:TEMP "packages"
 $OE_NUGET_DIR = $InstallPath
 
 $PACKAGES = @{
-    "vs_buildtools" = @{
-        "url" = $VSBuildToolsURL
-        "hash" = $VSBuildToolsHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "vs_buildtools.exe"
-    }
     "psw" = @{
         "url" = $IntelPSWURL
         "hash" = $IntelPSWHash
@@ -295,23 +288,6 @@ function Install-PSW {
     } -RetryMessage "Failed to start AESMService. Retrying"
 }
 
-function Install-VisualStudio {
-    $installerArguments = @(
-        "-q", "--wait", "--norestart",
-        "--add Microsoft.VisualStudio.Workload.VCTools",
-        "--add Microsoft.VisualStudio.Component.VC.CMake.Project"
-        "--add Microsoft.VisualStudio.Component.Windows10SDK.17134"
-        "--add Microsoft.VisualStudio.Component.VC.v141.ARM.Spectre"
-        "--add Microsoft.VisualStudio.Component.VC.v141.ARM64.Spectre"
-        "--includeRecommended"
-    )
-
-    Install-Tool -InstallerPath $PACKAGES["vs_buildtools"]["local_file"] `
-                -ArgumentList $installerArguments `
-                -EnvironmentPath @("${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build", `
-                                   "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\Common7\Tools")
-}
-
 function Get-DevconBinary {
     $devConBinaryPath = Join-Path $PACKAGES_DIRECTORY "devcon.exe"
     if(Test-Path $devConBinaryPath) {
@@ -498,10 +474,6 @@ function Install-DCAP-Dependencies {
     }
 }
 
-function Install-NSIS {
-    choco install nsis -y
-}
-
 function Install-Chocolatey {
 
     # Set TLS Protocol, choco causes issues on older versions of Windows
@@ -529,31 +501,34 @@ function Install-Chocolatey {
 
 function Install-Build-Dependencies {
     
-    choco install nuget.commandline -y
-    choco install git -y
-    choco install openssl -y
-    choco install 7zip -y
-    choco install llvm --version 7.0 -y
-    choco install shellcheck -y
-    choco install vcredist2012 -y
-
+    cinst nuget.commandline -y
+    cinst git -y
+    cinst openssl -y
+    cinst 7zip -y
+    cinst llvm --version 7.0 -y
+    cinst shellcheck -y
+    cinst vcredist2012 -y
+    choco install cmake -y
+    # Consider upgrading to 2019 at a later date and sync with Anakrish regarding this
+    cinst visualstudio2017professional --params "--no-update" -y
+    cinst visualstudio2017-workload-vctools --params "
+        --add Microsoft.VisualStudio.Component.VC.CMake.Project
+        --add Microsoft.VisualStudio.Component.Windows10SDK.17134
+        --add Microsoft.VisualStudio.Component.VC.v141.ARM.Spectre
+        --add Microsoft.VisualStudio.Component.VC.v141.ARM64.Spectre
+        --includeRecommended" -y
     # Pip installation
-    choco install python3 -y
+    #cinst python3 -y
     # Need to explicitly add to PATH here before trying to use
     Add-ToSystemPath -Path $EnvironmentPath
-    choco install pip -y
+    #cinst pip -y
     # Need to explicitly add to PATH here before trying to use
     Add-ToSystemPath -Path $EnvironmentPath
-    pip install cmake-format
+    #pip install cmake-format
 }
 
 function Install-Run-Time-Dependencies {
 
-    if ($ImageConfiguration -eq "CICD")
-    {
-        # Need NSIS to install packages in CICD for verification/validation, contributors can ignore
-        Install-NSIS
-    }
     if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers"))
     {
         Install-PSW
@@ -564,6 +539,23 @@ function Install-Run-Time-Dependencies {
         # to be an issue with EnclaveCommonAPI. Opening https://github.com/openenclave/openenclave/issues/3524 to tracK
         Install-DCAP-Dependencies
     }
+}
+
+function Install-Test-Dependencies {
+    if ($ImageConfiguration -eq "CICD")
+    {
+        # Need NSIS to install packages in CICD for verification/validation, contributors can ignore
+        cinst nsis -y
+    }
+}
+
+try {
+    Start-LocalPackagesDownload
+
+    Install-Chocolatey
+    Install-Build-Dependencies
+    Install-Run-Time-Dependencies
+    Install-Test-Dependencies
 
     # The Open Enclave source directory tree might have file paths exceeding
     # the default limit of 260 characters (especially the 3rd party libraries
@@ -574,15 +566,6 @@ function Install-Run-Time-Dependencies {
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
                      -Name LongPathsEnabled `
                      -Value 1
-}
-
-try {
-    Start-LocalPackagesDownload
-
-    Install-Chocolatey
-    Install-Build-Dependencies
-    Install-Run-Time-Dependencies
-
     Add-ToSystemPath -Path $EnvironmentPath
     Write-Output 'Please reboot your computer for the configuration to complete.'
 } catch {
