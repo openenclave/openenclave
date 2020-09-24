@@ -65,9 +65,9 @@ docs/*
 3rdparty/snmalloc
 3rdparty/openssl/openssl
 3rdparty/openssl/intel-sgx-ssl
-3rdparty/openssl/bn_conf\.h
-3rdparty/openssl/dso_conf\.h
-3rdparty/openssl/opensslconf\.h
+3rdparty/openssl/include/bn_conf\.h
+3rdparty/openssl/include/dso_conf\.h
+3rdparty/openssl/include/opensslconf\.h
 cmake/NuGetDescription.txt
 cmake/HostVerifyNuGetDescription.txt
 devex/vscode-extension/.vscodeignore

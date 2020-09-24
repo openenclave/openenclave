@@ -152,7 +152,7 @@ can implement their own RAND method to replace the default method via `RAND_set_
 
 OpenSSL provides APIs that allow users to configure sensitive settings like certificate trust and cipher suite preference from files.
 Because the host file system is considered untrusted in contexts such as SGX enclaves, OE SDK marks these APIs as unsupported to discourage their use.
-OE SDK does this by patching the OpenSSL headers that include such APIs or macros (i.e., appending the inclusion of an "unsupported.h" file to these headers).
+OE SDK does this by patching the OpenSSL headers that include such APIs or macros (i.e., appending the inclusion of an "*_unsupported.h" file to these headers).
 This ensures that when an enclave includes a patched OpenSSL header and uses the specific API or macro, user will receive compile-time errors.
 The errors can be disabled by specifying the `OE_OPENSSL_SUPPRESS_UNSUPPORTED` option to the compiler.
 
