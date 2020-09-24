@@ -24,7 +24,8 @@ Param(
     [string]$GetPipHash = '564FABC2FBABD9085A71F4A5E43DBF06D5CCEA9AB833E260F30EE38E8CE63A69',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
-    [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
+    [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
+    [Parameter(mandatory=$false)][ValidateSet("CICD", "None")][string]$ImageConfiguration
 )
 
 $ErrorActionPreference = "Stop"
@@ -290,10 +291,6 @@ function Install-ZipTool {
     Add-ToSystemPath $EnvironmentPath
 }
 
-function Install-Nuget {
-    choco install nuget.commandline -y
-}
-
 function Install-Python3 {
     choco install python3 -y
     refreshenv
@@ -302,18 +299,6 @@ function Install-Python3 {
     Start-ExecuteWithRetry -ScriptBlock {
         pip install cmake-format -y
     } -RetryMessage "Failed to install cmake-format. Retrying"
-}
-
-function Install-Git {
-    choco install git -y
-}
-
-function Install-OpenSSL {
-    choco install openssl -y
-}
-
-function Install-7Zip {
-    choco install 7zip -y
 }
 
 function Install-PSW {
@@ -363,14 +348,6 @@ function Install-VisualStudio {
                 -ArgumentList $installerArguments `
                 -EnvironmentPath @("${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build", `
                                    "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\BuildTools\Common7\Tools")
-}
-
-function Install-LLVM {
-    choco install llvm --version 7.0 -y
-}
-
-function Install-Shellcheck {
-    choco install shellcheck -y
 }
 
 function Get-DevconBinary {
@@ -552,7 +529,7 @@ function Install-DCAP-Dependencies {
         Throw "Failed to install nuget EnclaveCommonAPI"
     }
     # Check appropriate launch configuration and if running in a container
-    if (($LaunchConfiguration -eq "SGX1FLC") -or (${OS_VERSION} -eq "WinServer2019") -and !($env:UserName -eq "ContainerAdministrator") -and ($env:UserDomain -eq "User Manager")))
+    if (($LaunchConfiguration -eq "SGX1FLC") -or (${OS_VERSION} -eq "WinServer2019") -and !($env:UserName -eq "ContainerAdministrator") -and ($env:UserDomain -eq "User Manager"))
     {
         # Please refer to Intel's Windows DCAP documentation for this registry setting: https://download.01.org/intel-sgx/dcap-1.2/windows/docs/Intel_SGX_DCAP_Windows_SW_Installation_Guide.pdf
         New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters" -Name "SGX_Launch_Config_Optin" -Value 1 -PropertyType DWORD -Force
@@ -571,7 +548,7 @@ function Install-NSIS {
     choco install nsis -y
 }
 
-function Install-choco {
+function Install-Chocolatey {
 
     # Set TLS Protocol, choco causes issues on older versions of Windows
     [Net.ServicePointManager]::SecurityProtocol = "tls12"
@@ -596,20 +573,28 @@ function Install-choco {
     iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 }
 
+function Install-Build-Dependencies {
+    choco install nuget.commandline -y
+    choco install git -y
+    choco install openssl -y
+    choco install 7zip -y
+    choco install llvm --version 7.0 -y
+    choco install shellcheck -y
+}
+
 try {
     Start-LocalPackagesDownload
 
-    Install-choco
-    Install-7Zip
-    Install-Nuget
+    Install-Chocolatey
+    Install-Build-Dependencies
     #Install-Python3
     Install-VisualStudio
-    Install-OpenSSL
-    Install-LLVM
-    Install-Git
-    Install-Shellcheck
-    Install-NSIS
-
+    
+    if ($ImageConfiguration -eq "CICD")
+    {
+        # Need NSIS to install packages in CICD for verification/validation, contributors can ignore
+        Install-NSIS
+    }
     if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers"))
     {
         Install-PSW
