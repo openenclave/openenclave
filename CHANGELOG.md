@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+### Added
+- Initial implementation of the [Malloc Info API](docs/DesignDocs/Mallinfo.md) for dlmalloc (default allocator), and snmalloc.
+
 ### Deprecated
 
 - The Open Enclave SDK will be dropping support for WS2016 after Dec 2020.
