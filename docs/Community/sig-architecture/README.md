@@ -30,6 +30,7 @@ SIG Reviewers
 * [SIG-Release](../sig-release/README.md) Chair
 * [SIG-SGX](../sig-sgx/README.md) Chair
 * [SIG-OPTEE](../sig-optee/README.md) Chair
+* [SIG-CI](../sig-ci/README.md) Chair
 
 Charter
 -------
