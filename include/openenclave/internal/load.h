@@ -92,6 +92,10 @@ struct _oe_enclave_image
     oe_result_t (
         *calculate_size)(const oe_enclave_image_t* image, size_t* image_size);
 
+    oe_result_t (*get_tls_page_count)(
+        const oe_enclave_image_t* image,
+        size_t* tls_page_count);
+
     oe_result_t (*add_pages)(
         oe_enclave_image_t* image,
         oe_sgx_load_context_t* context,

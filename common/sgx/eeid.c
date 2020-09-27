@@ -7,6 +7,7 @@
 #include <openenclave/bits/attestation.h>
 #include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
+#include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/eeid.h>
 #include <openenclave/internal/hexdump.h>
@@ -120,7 +121,9 @@ oe_result_t oe_remeasure_memory_pages(
         tcs->cssa = 0;
         tcs->nssa = 2;
         tcs->oentry = eeid->entry_point;
-        tcs->fsbase = vaddr + (5 * OE_PAGE_SIZE);
+        tcs->fsbase =
+            vaddr +
+            (eeid->tls_page_count + OE_SGX_TCS_CONTROL_PAGES) * OE_PAGE_SIZE;
         tcs->gsbase = tcs->fsbase;
         tcs->fslimit = 0xFFFFFFFF;
         tcs->gslimit = 0xFFFFFFFF;
@@ -508,7 +511,8 @@ size_t oe_eeid_byte_size(const oe_eeid_t* eeid)
     return sizeof(eeid->version) + sizeof(eeid->hash_state) +
            sizeof(eeid->signature_size) + sizeof(eeid->size_settings) +
            sizeof(eeid->vaddr) + sizeof(eeid->entry_point) +
-           sizeof(eeid->data_size) + eeid->data_size + eeid->signature_size;
+           sizeof(eeid->tls_page_count) + sizeof(eeid->data_size) +
+           eeid->data_size + eeid->signature_size;
 }
 
 oe_result_t oe_eeid_hton(
@@ -542,6 +546,7 @@ oe_result_t oe_eeid_hton(
 
     OE_CHECK(_hton_uint64_t(eeid->vaddr, &position, &remaining));
     OE_CHECK(_hton_uint64_t(eeid->entry_point, &position, &remaining));
+    OE_CHECK(_hton_uint64_t(eeid->tls_page_count, &position, &remaining));
 
     OE_CHECK(_hton_uint64_t(eeid->data_size, &position, &remaining));
     OE_CHECK(_hton_buffer(
@@ -588,6 +593,7 @@ oe_result_t oe_eeid_ntoh(
 
     OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->vaddr));
     OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->entry_point));
+    OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->tls_page_count));
 
     OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->data_size));
     OE_CHECK(_ntoh_buffer(

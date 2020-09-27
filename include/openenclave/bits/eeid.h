@@ -51,6 +51,9 @@ typedef struct _oe_eeid
     /** Entry point of the image. */
     uint64_t entry_point;
 
+    /* Number of pages needed for thread-local data */
+    uint64_t tls_page_count;
+
     /** Size of actual EEID data. */
     uint64_t data_size;
 
