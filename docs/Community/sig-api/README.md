@@ -75,8 +75,3 @@ appropriate include:
   For example, Windows requires [`closesocket()`](https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-closesocket)
   to close a socket rather than the POSIX `close()` API.
   Hence this reference should be consulted for discussion of "standard" APIs.
-
-* (Microsoft-internal only) [Win32 API Design Guidelines](https://osgwiki.com/wiki/Win32_API_Design_Guidelines):
-  Although this reference is only accessible to Microsoft employees, it does
-  contain some useful design guidance for C APIs, such as the
-  [recommendation against call-twice APIs](https://osgwiki.com/wiki/Win32_API_Design_Guidelines#Designing_variable-sized_out_parameters).
