@@ -392,7 +392,7 @@ oe_result_t oe_sgx_get_cpuid_table_ocall(
     for (unsigned int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         oe_get_cpuid(
-            i,
+            supported_cpuid_leaves[i],
             subleaf,
             &leaf[OE_CPUID_RAX],
             &leaf[OE_CPUID_RBX],

@@ -13,6 +13,7 @@
 #define SKIP_RETURN_CODE 2
 
 static bool _was_ocall_called = false;
+
 void host_set_was_ocall_called()
 {
     _was_ocall_called = true;
@@ -92,7 +93,8 @@ void test_sigill_handling(oe_enclave_t* enclave)
     // Check all values.
     for (uint32_t i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        if (!oe_is_emulated_cpuid_leaf(i))
+        uint32_t leaf = supported_cpuid_leaves[i];
+        if (!oe_is_emulated_cpuid_leaf(leaf))
         {
             continue;
         }
@@ -100,7 +102,7 @@ void test_sigill_handling(oe_enclave_t* enclave)
         uint32_t cpuid_info[OE_CPUID_REG_COUNT];
         memset(cpuid_info, 0, sizeof(cpuid_info));
         oe_get_cpuid(
-            i,
+            leaf,
             0,
             &cpuid_info[OE_CPUID_RAX],
             &cpuid_info[OE_CPUID_RBX],
