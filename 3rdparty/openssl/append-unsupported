@@ -35,7 +35,8 @@ do
     if [[ "${i}" != *"crypto.h" ]] && [[ "${i}" != *"ssl.h" ]] && [[ "${i}" != *"x509_vfy.h" ]]; then
         continue
     fi
-    echo "#include <openssl/unsupported.h>" >> ${i}
+    name="$(basename -s .h $i)"
+    echo "#include <openssl/${name}_unsupported.h>" >> ${i}
     if [ "$?" != "0" ]; then
         echo "$0: failed to append ${string}"
         exit 1
