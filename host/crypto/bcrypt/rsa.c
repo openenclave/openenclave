@@ -607,7 +607,10 @@ oe_result_t oe_rsa_public_key_from_modulus(
             (PUCHAR)key_data_bytes,
             (ULONG)key_data_size,
             BCRYPT_NO_KEY_VALIDATION)))
-        OE_RAISE(OE_UNEXPECTED);
+        OE_RAISE_MSG(
+            OE_CRYPTO_ERROR,
+            "BCryptImportKeyPair failed with %#x",
+            bcrypt_status);
 
     oe_rsa_public_key_init(public_key, key_handle);
 
