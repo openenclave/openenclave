@@ -116,11 +116,7 @@ static oe_result_t _generate_certificate(
         FILE* file = NULL;
 
         printf("Creating certificate file: %s\n", out_filename);
-#ifdef _WIN32
         fopen_s(&file, out_filename, "wb");
-#else
-        file = fopen(out_filename, "wb");
-#endif
         if (file == NULL)
         {
             printf("Failed to open file: %s\n", out_filename);
@@ -171,11 +167,7 @@ static oe_result_t _generate_report(
         // Write report to file
         {
             FILE* output = NULL;
-#ifdef _WIN32
             fopen_s(&output, report_filename, "wb");
-#else
-            output = fopen(report_filename, "wb");
-#endif
             if (!output)
             {
                 printf("Failed to open report file %s\n", report_filename);
@@ -234,11 +226,7 @@ static oe_result_t _generate_report(
             }
 
             FILE* col_fp;
-#ifdef _WIN32
             fopen_s(&col_fp, collateral_filename, "wb");
-#else
-            col_fp = fopen(collateral_filename, "wb");
-#endif
             if (!col_fp)
             {
                 printf(
@@ -298,11 +286,7 @@ static oe_result_t _generate_evidence(
     // Write evidence to file
     {
         FILE* output = NULL;
-#ifdef _WIN32
         fopen_s(&output, evidence_filename, "wb");
-#else
-        output = fopen(evidence_filename, "wb");
-#endif
         if (!output)
             OE_RAISE_MSG(
                 OE_FAILURE,
@@ -342,11 +326,7 @@ static oe_result_t _generate_evidence(
     if (endorsements_filename)
     {
         FILE* endorsements_file;
-#ifdef _WIN32
         fopen_s(&endorsements_file, endorsements_filename, "wb");
-#else
-        endorsements_file = fopen(endorsements_filename, "wb");
-#endif
         if (!endorsements_file)
             OE_RAISE_MSG(
                 OE_FAILURE,
@@ -409,11 +389,7 @@ static int _parse_args(int argc, const char* argv[])
 
     // Verify enclave file is valid
     FILE* fp;
-#ifdef _WIN32
     fopen_s(&fp, _params.enclave_filename, "rb");
-#else
-    fp = fopen(_params.enclave_filename, "rb");
-#endif
     if (!fp)
     {
         printf("Failed to find file: %s\n", _params.enclave_filename);
@@ -530,11 +506,7 @@ static int _parse_args(int argc, const char* argv[])
 static oe_result_t _read_key(const char* filename, uint8_t** data, size_t* size)
 {
     FILE* fp;
-#ifdef _WIN32
     fopen_s(&fp, filename, "rb");
-#else
-    fp = fopen(filename, "rb");
-#endif
     size_t file_size;
     oe_result_t result = OE_FAILURE;
     uint8_t* memory = NULL;
