@@ -363,5 +363,8 @@ oe_result_t oe_rsa_public_key_from_modulus(
 
 done:
 
+    mbedtls_rsa_free(rsa_ctx);
+    mbedtls_pk_free(&pkctx);
+
     return result;
 }
