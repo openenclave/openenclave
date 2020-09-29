@@ -81,3 +81,5 @@ Send general questions, announcements, and discussion to the
 
 To report a problem or suggest a new feature, file a
 [GitHub issue](https://github.com/openenclave/openenclave/issues).
+
+To report a security issue, please follow the [process to report a vulnerability](SECURITY.md#reporting-a-vulnerability).
