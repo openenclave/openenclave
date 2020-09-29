@@ -276,7 +276,7 @@ oe_result_t oe_rsa_get_public_key_from_private(
  * @param modulus_size[in] The size of the modulus.
  * @param exponent[in] The exponent.
  * @param exponent_size[in] The size of the exponent.
- * @param public_key[out] key to be constructed.
+ * @param public_key[out] The key to be constructed.
  *
  * @return OE_OK upon success
  */
