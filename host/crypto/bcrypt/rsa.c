@@ -567,6 +567,7 @@ oe_result_t oe_rsa_public_key_from_modulus(
     oe_rsa_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
+    NTSTATUS status;
     BCRYPT_KEY_HANDLE key_handle;
     uint8_t* key_data_bytes = NULL;
     size_t key_data_size = 0;
@@ -599,18 +600,18 @@ oe_result_t oe_rsa_public_key_from_modulus(
         modulus,
         (ULONG)modulus_size));
 
-    if (!BCRYPT_SUCCESS(BCryptImportKeyPair(
-            BCRYPT_RSA_ALG_HANDLE,
-            NULL,
-            BCRYPT_RSAPUBLIC_BLOB,
-            &key_handle,
-            (PUCHAR)key_data_bytes,
-            (ULONG)key_data_size,
-            BCRYPT_NO_KEY_VALIDATION)))
+    status = BCryptImportKeyPair(
+        BCRYPT_RSA_ALG_HANDLE,
+        NULL,
+        BCRYPT_RSAPUBLIC_BLOB,
+        &key_handle,
+        (PUCHAR)key_data_bytes,
+        (ULONG)key_data_size,
+        BCRYPT_NO_KEY_VALIDATION);
+
+    if (!BCRYPT_SUCCESS(status))
         OE_RAISE_MSG(
-            OE_CRYPTO_ERROR,
-            "BCryptImportKeyPair failed with %#x",
-            bcrypt_status);
+            OE_CRYPTO_ERROR, "BCryptImportKeyPair failed with %#x", status);
 
     oe_rsa_public_key_init(public_key, key_handle);
 
