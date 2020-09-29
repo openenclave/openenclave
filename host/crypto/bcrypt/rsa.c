@@ -344,7 +344,13 @@ oe_result_t oe_rsa_public_key_get_modulus(
     if (keyblob->cbModulus > *modulus_size)
     {
         *modulus_size = keyblob->cbModulus;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (modulus)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If modulus is null, this call is intented to get the correct
+         * modulus_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     /*
@@ -404,7 +410,13 @@ oe_result_t oe_rsa_public_key_get_exponent(
     if (keyblob->cbPublicExp > *exponent_size)
     {
         *exponent_size = keyblob->cbPublicExp;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (exponent)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If exponent is null, this call is intented to get the correct
+         * exponent_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     /*

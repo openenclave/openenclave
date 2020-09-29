@@ -128,7 +128,13 @@ static oe_result_t _get_public_key_get_modulus_or_exponent(
     if (!buffer || (*buffer_size < required_size))
     {
         *buffer_size = required_size;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (buffer)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If buffer is null, this call is intented to get the correct
+         * buffer_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Copy key bytes to the caller's buffer */

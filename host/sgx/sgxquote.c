@@ -578,7 +578,13 @@ oe_result_t oe_sgx_get_supported_attester_format_ids(
             (!format_ids || *format_ids_size < sizeof(oe_uuid_t) * count))
         {
             *format_ids_size = sizeof(oe_uuid_t) * count;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+            if (format_ids)
+                OE_RAISE(OE_BUFFER_TOO_SMALL);
+            /* If format_ids is null, this call is intented to get the correct
+             * format_ids_size so no need to trace OE_BUFFER_TOO_SMALL */
+            else
+                OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
         }
 
         for (size_t i = 0; i < _quote_ex_library.key_id_count; i++)
