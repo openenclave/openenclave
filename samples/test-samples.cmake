@@ -62,12 +62,12 @@ else ()
   # they can run even if they weren't built against SGX, because in
   # that cause they directly interface with the AESM service.
   if (BUILD_ENCLAVES)
-    list(APPEND SAMPLES_LIST data-sealing attestation)
+    list(APPEND SAMPLES_LIST data-sealing)
 
     # These tests can only run with SGX-FLC, meaning they were built
     # against SGX.
     if (HAS_QUOTE_PROVIDER)
-      list(APPEND SAMPLES_LIST attested_tls)
+      list(APPEND SAMPLES_LIST attested_tls attestation)
     endif ()
   endif ()
 endif ()
