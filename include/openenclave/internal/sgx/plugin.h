@@ -33,11 +33,11 @@ typedef enum _sgx_evidence_format_type_t
  * @param[in] format_id Pointer to the evidence format ID requested.
  * @param[in] report_body Pointer to a buffer with raw SGX quote / report.
  * @param[in] report_body_size Size of the report_body buffer.
- * @param[in] sgx_endorsements Pointer to the endorsements buffer.
- * @param[in] custom_claims_buffer The data in a flat buffer to be packaged as a
- * claim of ID OE_CLAIM_CUSTOM_CLAIMS_BUFFER when format_type has the right
- * value.
+ * @param[in] custom_claims_buffer If not NULL, it holds the data in a flat
+ * buffer to be packaged as a claim of ID OE_CLAIM_CUSTOM_CLAIMS_BUFFER when
+ * format_type has the right value.
  * @param[in] custom_claims_buffer_size The size of the custom_claims buffer.
+ * @param[in] sgx_endorsements Pointer to the endorsements buffer.
  * @param[out] claims_out Pointer to the address of a dynamically allocated
  * buffer holding the list of claims (including base and custom claims).
  * @param[out] claims_length_out The length of the claims_out list.
