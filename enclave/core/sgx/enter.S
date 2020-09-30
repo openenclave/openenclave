@@ -134,12 +134,6 @@ oe_enter:
     mov %rsp, %rbp
 
 .call_function:
-    // Initialize the RFLAGS prior to calling enclave functions
-    // This only clears the DF and state flag bits since
-    // the system flags and reserved bits are not writable here
-    push $0
-    popfq
-
     // Get the host stack pointer.
     mov td_host_rsp(%r11), %r8
     mov td_host_rbp(%r11), %r9
@@ -179,7 +173,8 @@ oe_enter:
     mov %r11, OM_ENC_TD
 
     // Clear the XSTATE so that enclave has clean legacy SSE and extended states
-    oe_cleanup_xstates
+    xor %r11, %r11
+    oe_cleanup_registers
 
     // Call __oe_handle_main(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX, OUTPUTARG1=R8, OUTPUTARG2=R9)
     mov %rax, %rdx

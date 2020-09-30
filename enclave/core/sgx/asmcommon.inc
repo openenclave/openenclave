@@ -28,13 +28,22 @@
     push %rax
     push %rdx
 
+    // Check if XSAVE/XRSTOR is supported
+    lea     oe_is_xsave_supported(%rip), %rax
+    movl    (%rax), %eax
+    cmpl    $0, %eax
+    jz      1f
+
     // Set the XSAVE_MASK
     mov $0xFFFFFFFF, %eax
     mov $0xFFFFFFFF, %edx
 
     // Restore initial enclave XSAVE state
     xrstor64 OE_XSAVE_INITIAL_STATE(%rip)
-
+    jmp     2f
+1:
+    fxrstor64 OE_XSAVE_INITIAL_STATE(%rip)
+2:
     // Restore the registers
     pop %rdx
     pop %rax
@@ -70,7 +79,9 @@
     xor %r14, %r14
     xor %r15, %r15
 
-    // zero out flags
+    // Zero out the RFLAGS
+    // This only clears the DF and state flag bits since
+    // the system flags and reserved bits are not writable here
     push %r15
     popfq
 .endm

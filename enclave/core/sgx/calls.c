@@ -40,6 +40,7 @@
 #include "report.h"
 #include "switchlesscalls.h"
 #include "td.h"
+#include "xstate.h"
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -170,6 +171,10 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
             /* Initialize the CPUID table before calling global constructors. */
             OE_CHECK(oe_initialize_cpuid());
+
+            /* Initialize the xstate settings
+             * Depends on TD and sgx_create_report, so can't happen earlier */
+            OE_CHECK(oe_set_is_xsave_supported());
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
