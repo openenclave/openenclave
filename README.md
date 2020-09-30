@@ -67,7 +67,7 @@ non-TEE-enabled hardware.
 
 ----
 
-Licensing
+License
 ---------
 
 This project is released under the
