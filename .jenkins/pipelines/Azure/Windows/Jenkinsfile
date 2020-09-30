@@ -61,6 +61,7 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
     }
 }
 
+//TODO Refactor out quote provider in openenclave-ci
 def windowsCrossCompile(String label, String build_type, String has_quote_provider = 'OFF', String lvi_mitigation = 'None', String OE_SIMULATION = "0", String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
     def node_label = AGENTS_LABELS[label]
     if (has_quote_provider == "ON") {
