@@ -6,6 +6,8 @@
 #include <openenclave/internal/print.h>
 #include "VectorException_t.h"
 
+#define OE_CPUID_TRACE_ENUM_LEAF 0x14
+
 // Wrapper over the CPUID instruction.
 void get_cpuid(
     unsigned int leaf,
@@ -164,12 +166,13 @@ int enc_test_sigill_handling(
     }
 
     // Test unsupported CPUID leaves
-    if (!test_unsupported_cpuid_leaf(OE_CPUID_LEAF_COUNT))
+    // Assume 0x14 is an unsupported CPUID leaf and oe_is_emulated_cpuid_leaf()
+    // returns false in this case
+    if (oe_is_emulated_cpuid_leaf(OE_CPUID_TRACE_ENUM_LEAF) != false)
     {
         return -1;
     }
-
-    if (!test_unsupported_cpuid_leaf(OE_CPUID_EXTENDED_CPUID_LEAF))
+    if (!test_unsupported_cpuid_leaf(OE_CPUID_TRACE_ENUM_LEAF))
     {
         return -1;
     }
@@ -177,10 +180,10 @@ int enc_test_sigill_handling(
     // Return enclave-cached CPUID leaves to host for further validation
     for (uint32_t i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        if (oe_is_emulated_cpuid_leaf(i))
+        if (oe_is_emulated_cpuid_leaf(supported_cpuid_leaves[i]))
         {
             get_cpuid(
-                i,
+                supported_cpuid_leaves[i],
                 0,
                 &(cpuid_table[i][OE_CPUID_RAX]),
                 &(cpuid_table[i][OE_CPUID_RBX]),

@@ -216,6 +216,7 @@ if (OE_SGX)
   list(
     APPEND
     PLATFORM_SDK_ONLY_SRC
+    ../common/sgx/cpuid.c
     sgx/calls.c
     sgx/create.c
     sgx/elf.c
