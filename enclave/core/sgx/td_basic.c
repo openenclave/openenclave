@@ -20,7 +20,7 @@
 **
 ** td_pop_callsite()
 **
-**     Remove the Callsite structure that is at the head of the
+**     Remove the oe_callsite_t structure that is at the head of the
 **     oe_sgx_td_t.callsites list.
 **
 **==============================================================================
