@@ -158,6 +158,11 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
     oe_get_sgx_quote_verification_collateral_args_t args = {0};
     bool buffer_too_small = false;
 
+    /* The value of any_buffer_too_small will be true if any buffer_too_small
+     * value becomes true. It is used to prevent terminating the collateral
+     * initialization process early. */
+    bool any_buffer_too_small = false;
+
     /* fmspc */
     memcpy(args.fmspc, fmspc, sizeof(args.fmspc));
 
@@ -175,8 +180,7 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.tcb_info_size,
         &buffer_too_small));
 
-    if (buffer_too_small)
-        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+    any_buffer_too_small |= buffer_too_small;
 
     OE_CHECK(_copy_output_buffer(
         tcb_info_issuer_chain,
@@ -186,8 +190,7 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.tcb_info_issuer_chain_size,
         &buffer_too_small));
 
-    if (buffer_too_small)
-        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+    any_buffer_too_small |= buffer_too_small;
 
     OE_CHECK(_copy_output_buffer(
         pck_crl,
@@ -197,8 +200,7 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.pck_crl_size,
         &buffer_too_small));
 
-    if (buffer_too_small)
-        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+    any_buffer_too_small |= buffer_too_small;
 
     OE_CHECK(_copy_output_buffer(
         root_ca_crl,
@@ -208,8 +210,7 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.root_ca_crl_size,
         &buffer_too_small));
 
-    if (buffer_too_small)
-        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+    any_buffer_too_small |= buffer_too_small;
 
     OE_CHECK(_copy_output_buffer(
         pck_crl_issuer_chain,
@@ -219,8 +220,7 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.pck_crl_issuer_chain_size,
         &buffer_too_small));
 
-    if (buffer_too_small)
-        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+    any_buffer_too_small |= buffer_too_small;
 
     OE_CHECK(_copy_output_buffer(
         qe_identity,
@@ -230,8 +230,7 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.qe_identity_size,
         &buffer_too_small));
 
-    if (buffer_too_small)
-        OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
+    any_buffer_too_small |= buffer_too_small;
 
     OE_CHECK(_copy_output_buffer(
         qe_identity_issuer_chain,
@@ -241,7 +240,9 @@ oe_result_t oe_get_quote_verification_collateral_ocall(
         args.qe_identity_issuer_chain_size,
         &buffer_too_small));
 
-    if (buffer_too_small)
+    any_buffer_too_small |= buffer_too_small;
+
+    if (any_buffer_too_small)
         OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
 
     result = OE_OK;
