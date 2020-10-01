@@ -349,7 +349,7 @@ static void _handle_ecall(
     oe_result_t result = OE_OK;
 
     /* Insert ECALL context onto front of oe_sgx_td_t.ecalls list */
-    Callsite callsite = {{0}};
+    oe_callsite_t callsite = {{0}};
     uint64_t arg_out = 0;
 
     td_push_callsite(td, &callsite);
@@ -473,7 +473,7 @@ OE_INLINE void _handle_oret(
     uint16_t result,
     uint64_t arg)
 {
-    Callsite* callsite = td->callsites;
+    oe_callsite_t* callsite = td->callsites;
 
     if (!callsite)
         return;
@@ -631,7 +631,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_td_t* td = oe_sgx_get_td();
-    Callsite* callsite = td->callsites;
+    oe_callsite_t* callsite = td->callsites;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */

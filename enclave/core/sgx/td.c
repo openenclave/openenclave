@@ -37,7 +37,7 @@ OE_STATIC_ASSERT(
 // Static asserts for consistency with
 // debugger/pythonExtension/gdb_sgx_plugin.py
 OE_STATIC_ASSERT(td_callsites == 0xf0);
-OE_STATIC_ASSERT(OE_OFFSETOF(Callsite, ocall_context) == 0x40);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_callsite_t, ocall_context) == 0x40);
 OE_STATIC_ASSERT(sizeof(oe_ocall_context_t) == (2 * sizeof(uintptr_t)));
 
 // Offset of the td page from the tcs page in bytes. This varies depending on
@@ -69,13 +69,13 @@ oe_thread_data_t* oe_get_thread_data()
 **
 ** td_push_callsite()
 **
-**     Insert the Callsite structure for the current ECALL at the
+**     Insert the oe_callsite_t structure for the current ECALL at the
 **     front of the oe_sgx_td_t.callsites list.
 **
 **==============================================================================
 */
 
-void td_push_callsite(oe_sgx_td_t* td, Callsite* callsite)
+void td_push_callsite(oe_sgx_td_t* td, oe_callsite_t* callsite)
 {
     callsite->next = td->callsites;
     td->callsites = callsite;
