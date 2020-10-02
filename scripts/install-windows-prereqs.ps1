@@ -12,8 +12,8 @@ Param(
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
     [string]$VSBuildToolsURL = 'https://aka.ms/vs/15/release/vs_buildtools.exe',
     [string]$VSBuildToolsHash = '',
-    [string]$Clang8URL = 'https://releases.llvm.org/8.0.0/LLVM-8.0.0-win64.exe',
-    [string]$Clang8Hash = '56D582EED2D5DEF6ACCAEDABBE11AE368186600798E2A6A7EB86A727FA7BB20C',
+    [string]$Clang8URL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe',
+    [string]$Clang8Hash = 'E3AF139C2F93075C13DCBC4091C1311F66FC6E4E8705649FCAF9BEF8B3368F41',
     [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16899/Intel%20SGX%20PSW%20for%20Windows%20v2.9.100.2.exe',
     [string]$IntelPSWHash = 'A2F357F3AC1629C2A714A05DCA14CF8C7F25868A0B3352FAE351B14AD121BDFC',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
@@ -60,7 +60,7 @@ $PACKAGES = @{
         "hash" = $VSBuildToolsHash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "vs_buildtools.exe"
     }
-    "clang7" = @{
+    "clang8" = @{
         "url" = $Clang8URL
         "hash" = $Clang8Hash
         "local_file" = Join-Path $PACKAGES_DIRECTORY "LLVM-win64.exe"
@@ -450,7 +450,7 @@ function Install-VisualStudio {
 }
 
 function Install-LLVM {
-    Install-Tool -InstallerPath $PACKAGES["clang7"]["local_file"] `
+    Install-Tool -InstallerPath $PACKAGES["clang8"]["local_file"] `
                  -ArgumentList "/S" `
                  -EnvironmentPath "${env:ProgramFiles}\LLVM\bin"
 }

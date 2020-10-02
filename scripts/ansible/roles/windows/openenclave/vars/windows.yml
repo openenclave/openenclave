@@ -4,7 +4,7 @@
 ---
 cmake_target_version: 3.12.18081601
 ninja_target_version: 1.8.2
-clang_target_version: 7.0.1
+clang_target_version: 8.0.1
 
 validation_directories:
   - "C:\\Program Files\\7-Zip"

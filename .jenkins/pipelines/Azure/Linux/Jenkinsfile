@@ -432,7 +432,7 @@ try{
         "RHEL-8 ACC clang-8 SGX1 Release snmalloc":      { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DUSE_SNMALLOC=ON']) },
         "RHEL-8 ACC gcc-8 SGX1 Release snmalloc":        { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'gcc',   'Release', ['-DHAS_QUOTE_PROVIDER=OFF', '-DUSE_SNMALLOC=ON']) },
     ]
-    if(FULL_TEST_SUITE != "true") {
+    if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
                 "Host verification 1604 Debug":           { ACCHostVerificationTest('16.04', 'Debug') },
