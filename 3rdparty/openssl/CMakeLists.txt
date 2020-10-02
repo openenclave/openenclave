@@ -78,10 +78,12 @@ ExternalProject_Add(
   COMMAND ${CMAKE_COMMAND} -E make_directory ${OPENSSL_BUILD_INCLUDES}/openssl
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/bn_conf.h
           ${OPENSSL_BUILD_INCLUDES}/crypto/bn_conf.h
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/dso_conf.h
-          ${OPENSSL_BUILD_INCLUDES}/crypto/dso_conf.h
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/opensslconf.h
-          ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/dso_conf.h
+    ${OPENSSL_BUILD_INCLUDES}/crypto/dso_conf.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/opensslconf.h
+    ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
   BUILD_COMMAND ""
   INSTALL_COMMAND "")
 
@@ -101,14 +103,21 @@ ExternalProject_Add(
     ${CMAKE_COMMAND} -E copy ${OPENSSL_BUILD_INCLUDES}/openssl/opensslconf.h
     ${OPENSSL_INSTALL_INCLUDES}/opensslconf.h
   COMMAND ${OE_BASH} -c "${OPENSSL_APPEND_UNSUPPORTED}"
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/unsupported.h
-          ${OPENSSL_INSTALL_INCLUDES}/unsupported.h
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/crypto_unsupported.h
-          ${OPENSSL_INSTALL_INCLUDES}/crypto_unsupported.h
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/ssl_unsupported.h
-          ${OPENSSL_INSTALL_INCLUDES}/ssl_unsupported.h
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/x509_vfy_unsupported.h
-          ${OPENSSL_INSTALL_INCLUDES}/x509_vfy_unsupported.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/include/unsupported.h
+    ${OPENSSL_INSTALL_INCLUDES}/unsupported.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/crypto_unsupported.h
+    ${OPENSSL_INSTALL_INCLUDES}/crypto_unsupported.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ssl_unsupported.h
+    ${OPENSSL_INSTALL_INCLUDES}/ssl_unsupported.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/x509_vfy_unsupported.h
+    ${OPENSSL_INSTALL_INCLUDES}/x509_vfy_unsupported.h
   BUILD_COMMAND ""
   INSTALL_COMMAND "")
 
@@ -943,8 +952,11 @@ enclave_compile_options(opensslssl PRIVATE ${OPENSSL_COMPILE_OPTIONS})
 
 # Clang verion greater than 8 fails on compiling the following soruce with optimization.
 # Explicitly set -O0 as a workaround. See #2556 for the similar issue.
-if (OPENSSL_C_COMPILER MATCHES clang AND CMAKE_C_COMPILER_VERSION
-                                         VERSION_GREATER_EQUAL 8)
+# Always dose this on Windows as we cannot know the version of clang.
+if (WIN32
+    OR (OPENSSL_C_COMPILER MATCHES clang
+        AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 8
+        AND CMAKE_C_COMPILER_VERSION VERSION_LESS 9.0))
   set_property(
     SOURCE openssl/crypto/modes/cts128.c
     APPEND_STRING
