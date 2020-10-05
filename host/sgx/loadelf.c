@@ -7,6 +7,7 @@
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
@@ -454,6 +455,29 @@ static oe_result_t _calculate_size(
     return OE_OK;
 }
 
+static oe_result_t _get_tls_page_count(
+    const oe_enclave_image_t* image,
+    size_t* tls_page_count)
+{
+    size_t tls_size = 0;
+
+    if (image->elf.tdata_size)
+    {
+        tls_size += oe_round_up_to_multiple(
+            image->elf.tdata_size, image->elf.tdata_align);
+    }
+    if (image->elf.tbss_size)
+    {
+        tls_size += oe_round_up_to_multiple(
+            image->elf.tbss_size, image->elf.tbss_align);
+    }
+
+    tls_size = oe_round_up_to_multiple(tls_size, OE_PAGE_SIZE);
+
+    *tls_page_count = tls_size / OE_PAGE_SIZE;
+    return OE_OK;
+}
+
 // ------------------------------------------------------------------
 
 /*
@@ -677,12 +701,14 @@ done:
 static oe_result_t _patch_elf_image(
     oe_enclave_elf_image_t* image,
     oe_sgx_load_context_t* context,
-    size_t enclave_size)
+    size_t enclave_size,
+    size_t tls_page_count)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t* oeprops;
     uint64_t enclave_rva = 0;
-    uint64_t aligned_size = 0;
+
+    OE_UNUSED(context);
 
     oeprops =
         (oe_sgx_enclave_properties_t*)(image->image_base + image->oeinfo_rva);
@@ -734,9 +760,6 @@ static oe_result_t _patch_elf_image(
             image, "_tdata_size", image->tdata_size);
         _set_uint64_t_dynamic_symbol_value(
             image, "_tdata_align", image->tdata_align);
-
-        aligned_size +=
-            oe_round_up_to_multiple(image->tdata_size, image->tdata_align);
     }
     if (image->tbss_size)
     {
@@ -744,17 +767,12 @@ static oe_result_t _patch_elf_image(
             image, "_tbss_size", image->tbss_size);
         _set_uint64_t_dynamic_symbol_value(
             image, "_tbss_align", image->tbss_align);
-
-        aligned_size +=
-            oe_round_up_to_multiple(image->tbss_size, image->tbss_align);
     }
 
-    aligned_size = oe_round_up_to_multiple(aligned_size, OE_PAGE_SIZE);
     _set_uint64_t_dynamic_symbol_value(
         image,
         "_td_from_tcs_offset",
-        aligned_size + OE_SGX_NUM_CONTROL_PAGES * OE_PAGE_SIZE);
-    context->num_tls_pages = aligned_size / OE_PAGE_SIZE;
+        (tls_page_count + OE_SGX_TCS_CONTROL_PAGES) * OE_PAGE_SIZE);
 
     /* Clear the hash when taking the measure */
     memset(oeprops->sigstruct, 0, sizeof(oeprops->sigstruct));
@@ -769,7 +787,16 @@ static oe_result_t _patch(
     oe_sgx_load_context_t* context,
     size_t enclave_size)
 {
-    return _patch_elf_image(&image->elf, context, enclave_size);
+    oe_result_t result = OE_UNEXPECTED;
+    size_t tls_page_count;
+
+    OE_CHECK(image->get_tls_page_count(image, &tls_page_count));
+    OE_CHECK(
+        _patch_elf_image(&image->elf, context, enclave_size, tls_page_count));
+
+    result = OE_OK;
+done:
+    return result;
 }
 
 static oe_result_t _sgx_load_enclave_properties(
@@ -846,6 +873,7 @@ oe_result_t oe_load_elf_enclave_image(
 
     image->type = OE_IMAGE_TYPE_ELF;
     image->calculate_size = _calculate_size;
+    image->get_tls_page_count = _get_tls_page_count;
     image->add_pages = _add_pages;
     image->sgx_patch = _patch;
     image->sgx_load_enclave_properties = _sgx_load_enclave_properties;

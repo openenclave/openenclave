@@ -27,6 +27,7 @@ oe_result_t make_test_eeid(oe_eeid_t** eeid, size_t data_size)
     (*eeid)->size_settings.num_heap_pages = 110 + (data_size / OE_PAGE_SIZE);
     (*eeid)->size_settings.num_stack_pages = 50;
     (*eeid)->size_settings.num_tcs = 2;
+    (*eeid)->tls_page_count = 1;
 
     result = OE_OK;
 

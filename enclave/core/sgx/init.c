@@ -8,6 +8,7 @@
 #include <openenclave/corelibc/string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/eeid.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
@@ -74,6 +75,7 @@ static oe_result_t _eeid_patch_memory()
         uint8_t* heap_end = (uint8_t*)__oe_get_heap_end();
         uint8_t* tcs_end =
             heap_end + (OE_SGX_TCS_CONTROL_PAGES + OE_SGX_TCS_GUARD_PAGES +
+                        OE_SGX_TCS_THREAD_DATA_PAGES + eeid->tls_page_count +
                         eeid->size_settings.num_stack_pages) *
                            OE_PAGE_SIZE * eeid->size_settings.num_tcs;
 

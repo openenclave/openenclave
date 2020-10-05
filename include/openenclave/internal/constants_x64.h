@@ -26,6 +26,15 @@
 #define OE_SGX_TCS_HEADER_BYTE_SIZE 0x48
 
 //
+// SGX control pages, excluding thread data and local storage:
+// 1 TCS page + 2 SSA pages + 1 guard page
+//
+
+#define OE_SGX_TCS_CONTROL_PAGES 4
+
+#define OE_SGX_TCS_THREAD_DATA_PAGES 1
+
+//
 // oe_context_t Structure size and offset definitions.
 //
 
