@@ -87,6 +87,8 @@ int oe_pthread_spin_init(oe_pthread_spinlock_t* spinlock, int pshared);
 
 int oe_pthread_spin_lock(oe_pthread_spinlock_t* spinlock);
 
+int oe_pthread_spin_trylock(oe_pthread_spinlock_t* spinlock);
+
 int oe_pthread_spin_unlock(oe_pthread_spinlock_t* spinlock);
 
 int oe_pthread_spin_destroy(oe_pthread_spinlock_t* spinlock);
