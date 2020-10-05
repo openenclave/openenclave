@@ -73,6 +73,10 @@ typedef struct _oe_parsed_tcb_info
     uint8_t signature[64];
 
     // V2 fields
+    // HW representation of CPUSVN for a given FMSPC is not architecturally
+    // defined to provide designers more flexibility. SW needs "tcbType" to
+    // determine how to decompose the CPUSVN. Each FMSPC has its own
+    // tcbType. For now, there is only one tcbType(0) has been defined.
     uint32_t tcb_type;
     uint32_t tcb_evaluation_data_number;
     oe_tcb_info_tcb_level_t tcb_level;
