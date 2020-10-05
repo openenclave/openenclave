@@ -119,7 +119,7 @@ export class OpenEnclaveManager {
 
                 // Get Solution Path
                 const openEnclaveFolder: string = path.join(parentFolder, openEnclaveName);
-                await fse.mkdirsSync(openEnclaveFolder);
+                fse.mkdirsSync(openEnclaveFolder);
 
                 // Create new UUID for solution
                 const uuidv4 = require("uuid/v4");
@@ -133,7 +133,7 @@ export class OpenEnclaveManager {
                     this.setupTemplateReplacementMap(openEnclaveFolder, openEnclaveName, sdkFolder, devkitFolder, buildFolder, uuid, dockerRepo);
 
                 const enclaveFolder = (createEdgeSolution) ? path.join(openEnclaveFolder, Constants.edgeModulesFolder, openEnclaveName) : openEnclaveFolder;
-                await fse.mkdirsSync(enclaveFolder);
+                fse.mkdirsSync(enclaveFolder);
 
                 // Create user files with template replacements made
                 this.progressAndOutput("Creating base files", progress, outputChannel);
@@ -167,9 +167,9 @@ export class OpenEnclaveManager {
                 } else {
                     // Ensure that the build folders are created for the standalone project
                     this.progressAndOutput("Creating build folders", progress, outputChannel);
-                    await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "sgx"));
-                    await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_armv8a"));
-                    await fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "ls-ls1012grapeboard"));
+                    fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "sgx"));
+                    fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_armv8a"));
+                    fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "ls-ls1012grapeboard"));
                 }
 
                 // Ensure that the devkit is present on the system
@@ -179,6 +179,7 @@ export class OpenEnclaveManager {
                     this.progressAndOutput("Expanding platform devkit (this is infrequent)", progress, outputChannel);
                     await this.internalExpandDevkit(fse.createReadStream(embeddedDevkitPath), sharedDevkitLocation, progress, outputChannel);
                 }
+
                 // Ensure that the devkit is present in the project
                 this.progressAndOutput("Adding devkit to solution", progress, outputChannel);
                 await this.internalMakeCopyOrLink(sharedDevkitLocation, path.join(enclaveFolder, Constants.devKitFolder), !createEdgeSolution);
