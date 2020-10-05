@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
     trusted {
         /* define ECALLs here. */
         public int ecall_handle_message([in, string] char *input_msg, [out, count=enclave_msg_size] char *enclave_ms, unsigned int enclave_msg_size);

@@ -42,23 +42,37 @@ function (add_enclave_sgx)
   cmake_parse_arguments(ENCLAVE "${options}" "${oneValueArgs}"
                         "${multiValueArgs}" ${ARGN})
 
+  add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
+
   if (WIN32)
-    maybe_build_using_clangw(enclave)
+    maybe_build_using_clangw(${ENCLAVE_TARGET})
   endif ()
 
-  add_executable(${ENCLAVE_TARGET} ${ENCLAVE_SOURCES})
   target_compile_definitions(${ENCLAVE_TARGET} PUBLIC OE_API_VERSION=2)
+
+  # Needed to include the generated *_t.h header.
   target_include_directories(${ENCLAVE_TARGET}
                              PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-  target_link_libraries(${ENCLAVE_TARGET} openenclave::oeenclave
-                        openenclave::oelibc)
 
+  if (LVI_MITIGATION MATCHES ControlFlow)
+    # Helper to enable compiler options for LVI mitigation.
+    apply_lvi_mitigation(${ENCLAVE_TARGET})
+    # Link against LVI-mitigated libraries.
+    target_link_libraries(${ENCLAVE_TARGET} openenclave::oeenclave-lvi-cfg
+                          openenclave::oelibc-lvi-cfg)
+  else ()
+    target_link_libraries(${ENCLAVE_TARGET} openenclave::oeenclave
+                          openenclave::oelibc)
+  endif ()
+
+  # Generate key
   add_custom_command(
     OUTPUT ${ENCLAVE_TARGET}-private.pem ${ENCLAVE_TARGET}-public.pem
     COMMAND openssl genrsa -out ${ENCLAVE_TARGET}-private.pem -3 3072
     COMMAND openssl rsa -in ${ENCLAVE_TARGET}-private.pem -pubout -out
             ${ENCLAVE_TARGET}-public.pem)
 
+  # Sign enclave
   add_custom_command(
     OUTPUT ${ENCLAVE_TARGET}.signed
     DEPENDS ${ENCLAVE_TARGET} ${ENCLAVE_TARGET}.conf
