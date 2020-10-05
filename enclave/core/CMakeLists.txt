@@ -86,7 +86,8 @@ if (OE_SGX)
     sgx/td_basic.c
     sgx/thread.c
     sgx/threadlocal.c
-    sgx/tracee.c)
+    sgx/tracee.c
+    sgx/xstate.c)
 
   # Functions in td_basic.c will change the status of td and may trigger
   # stack check fail, thus it is necessary to turn off stack check.
