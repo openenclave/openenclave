@@ -168,6 +168,7 @@ export class OpenEnclaveManager {
                     // Ensure that the build folders are created for the standalone project
                     this.progressAndOutput("Creating build folders", progress, outputChannel);
                     fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "sgx"));
+                    fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "sgx-lvi"));
                     fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "vexpress-qemu_armv8a"));
                     fse.mkdirsSync(path.join(openEnclaveFolder, Constants.standaloneBuildFolder, "ls-ls1012grapeboard"));
                 }

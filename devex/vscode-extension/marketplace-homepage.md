@@ -313,6 +313,18 @@ system you run the extension on.
             referred to as "Intel SGX Linux X.Y Release" while the latter, as
             "Intel SGX DCAP Linux A.B Release".
 
+* Install the LVI mitigations toolchain:
+  ```bash
+  sudo mkdir -p /usr/local/lvi-mitigation/bin
+  cd /usr/local/lvi-mitigation/bin
+
+  # Answer 'yes' to the prompt.
+  sudo /opt/openenclave/bin/scripts/lvi-mitigation/install_lvi_mitigation_bindir
+
+  sudo mv lvi_mitigation_bin/* .
+  sudo rmdir lvi_mitigation_bin
+  ```
+
 * Ensure that the requirements are met for the
   [Azure IoT Edge extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge).
 
