@@ -414,6 +414,10 @@ FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry
 
 ## Release Notes
 
+### 2.1.0
+
+Support for the Open Enclave SDK version v0.11.0 and LVI mitigations for SGX.
+
 ### 2.0.0
 
 Support for the Open Enclave SDK master branch and Intel SGX on Linux.

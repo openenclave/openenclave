@@ -2,7 +2,7 @@
 	"name": "msiot-vscode-openenclave",
 	"displayName": "Open Enclave",
 	"description": "Develop, deploy, and debug your enclaves",
-	"version": "2.0.0",
+	"version": "2.1.0",
 	"publisher": "ms-iot",
 	"aiKey": "specifyt-here-alap-pins-ightskeyhere",
 	"icon": "openenclave.png",
