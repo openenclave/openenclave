@@ -1175,10 +1175,15 @@ oe_result_t oe_gen_custom_x509_cert(
     // Write a built up certificate to a X509 DER structure Note: data
     // is written at the end of the buffer! Use the return value to
     // determine where you should start using the buffer.
-    *bytes_written = (size_t)mbedtls_x509write_crt_der(
+    ret = mbedtls_x509write_crt_der(
         &x509cert, buff, cert_buf_size, mbedtls_ctr_drbg_random, ctr_drbg);
-    if (*bytes_written <= 0)
-        OE_RAISE_MSG(OE_CRYPTO_ERROR, "bytes_written = 0x%x ", *bytes_written);
+    if (ret < 0)
+        OE_RAISE_MSG(OE_CRYPTO_ERROR, "ret = 0x%x ", ret);
+    else
+    {
+        *bytes_written = (size_t)ret;
+        ret = 0;
+    }
 
     OE_CHECK(oe_memcpy_s(
         (void*)cert_buf,
