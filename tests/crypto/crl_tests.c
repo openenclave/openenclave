@@ -16,9 +16,6 @@
 #include <time.h>
 #include "readfile.h"
 #include "tests.h"
-#if defined(_WIN32)
-#define timegm _mkgmtime
-#endif
 
 #define ACCEPTABLE_ERROR_IN_SECONDS 60
 

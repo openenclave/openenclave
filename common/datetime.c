@@ -285,11 +285,7 @@ oe_result_t oe_datetime_to_time_t(const oe_datetime_t* datetime, time_t* value)
     timeinfo.tm_min = (int)datetime->minutes;
     timeinfo.tm_sec = (int)datetime->seconds;
 
-#ifdef _WIN32
-    tmp = _mkgmtime(&timeinfo);
-#else
     tmp = timegm(&timeinfo);
-#endif
 
     *value = tmp;
 
