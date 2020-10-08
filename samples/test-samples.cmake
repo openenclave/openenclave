@@ -45,7 +45,7 @@ if (BUILD_ENCLAVES)
   # Debug malloc will set allocated memory to a fixed pattern.
   # Hence do not enable pluggable_allocator test under USE_DEBUG_MALLOC.
   if (COMPILER_SUPPORTS_SNMALLOC AND NOT USE_DEBUG_MALLOC)
-    #    list(APPEND SAMPLES_LIST pluggable_allocator)
+    list(APPEND SAMPLES_LIST pluggable_allocator)
   endif ()
 endif ()
 

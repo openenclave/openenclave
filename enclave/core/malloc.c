@@ -10,42 +10,6 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 
-//#include "debugmalloc_helper.h"
-// void oe_debug_malloc_start_tracking(void)
-//{
-//#if defined(OE_USE_DEBUG_MALLOC)
-//    oe_debug_malloc_start();
-//#endif /* defined(OE_USE_DEBUG_MALLOC) */
-//}
-//
-// void oe_debug_malloc_stop_tracking(void)
-//{
-//}
-//
-// void oe_debug_malloc_print_objects(void)
-//{
-//}
-
-oe_result_t oe_debug_malloc_tracking_start(void)
-{
-    return OE_OK;
-}
-
-oe_result_t oe_debug_malloc_tracking_stop(void)
-{
-    return OE_OK;
-}
-
-oe_result_t oe_debug_malloc_tracking_report(
-    uint64_t* out_num_objects,
-    char** report)
-{
-    OE_UNUSED(out_num_objects);
-    OE_UNUSED(report);
-
-    return OE_OK;
-}
-
 static oe_allocation_failure_callback_t _failure_callback;
 
 void oe_set_allocation_failure_callback(
@@ -74,7 +38,7 @@ void oe_free(void* ptr)
 
 void* oe_calloc(size_t nmemb, size_t size)
 {
-    void* p = p = oe_allocator_calloc(nmemb, size);
+    void* p = oe_allocator_calloc(nmemb, size);
 
     if (!p && nmemb && size)
     {
@@ -87,7 +51,7 @@ void* oe_calloc(size_t nmemb, size_t size)
 
 void* oe_realloc(void* ptr, size_t size)
 {
-    void* p = p = oe_allocator_realloc(ptr, size);
+    void* p = oe_allocator_realloc(ptr, size);
 
     if (!p && size)
     {
@@ -129,8 +93,33 @@ size_t oe_malloc_usable_size(void* ptr)
     return oe_allocator_malloc_usable_size(ptr);
 }
 
+// Dummy item in malloc.c for the real variables and functions in debugmalloc.c
+bool oe_disable_debug_malloc_check;
+
 oe_result_t oe_check_memory_leaks(void)
 {
     // Without debug malloc, no leaks are reported.
     return OE_OK;
+}
+
+oe_result_t oe_debug_malloc_tracking_start(void)
+{
+    return OE_OK;
+}
+
+oe_result_t oe_debug_malloc_tracking_stop(void)
+{
+    return OE_OK;
+}
+
+oe_result_t oe_debug_malloc_tracking_report(
+    uint64_t* out_object_count,
+    char** report)
+{
+    *out_object_count = 0;
+    *report = NULL;
+
+    // return OE_FAILURE on purpose, to differentiate from the api in
+    // debugmalloc.c
+    return OE_FAILURE;
 }
