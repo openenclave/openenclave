@@ -349,6 +349,14 @@ enclave_link_libraries(oedebugmalloc oecore)
 set_enclave_property(TARGET oedebugmalloc PROPERTY ARCHIVE_OUTPUT_DIRECTORY
                      ${OE_LIBDIR}/openenclave/enclave)
 
+if (OE_TRUSTZONE)
+  # dependent header 3rdparty/optee/libutee/liboeutee/user_ta_header.h
+  # includes inttypes.h. As a result oedebugmalloc needs the corelibc headers
+  # in its include path.
+  enclave_include_directories(
+    oedebugmalloc PRIVATE ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
+endif ()
+
 install_enclaves(
   TARGETS
   oedebugmalloc

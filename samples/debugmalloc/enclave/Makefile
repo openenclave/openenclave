@@ -16,6 +16,7 @@ endif
 
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
+LDFLAGS_CUSTOM=$(subst -loelibc, -loedebugmalloc -loelibc, $(LDFLAGS))
 INCDIR=$(shell pkg-config oeenclave-$(COMPILER) --variable=includedir)
 
 all:
@@ -30,7 +31,7 @@ build:
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 enc.c -o enc.o
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 debugmalloc_t.c -o debugmalloc_t.o
-	$(CC) -o debugmallocenc debugmalloc_t.o enc.o $(LDFLAGS)
+	$(CC) -o debugmallocenc debugmalloc_t.o enc.o $(LDFLAGS_CUSTOM)
 
 sign:
 	oesign sign -e debugmallocenc -c debugmalloc.conf -k private.pem

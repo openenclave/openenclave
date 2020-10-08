@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
-#include <openenclave/trace.h>
 #include <stdio.h>
 
 // Include the untrusted debugmalloc header that is generated
@@ -29,47 +28,11 @@ bool check_simulate_opt(int* argc, const char* argv[])
 // print a message.
 void host_hello()
 {
-    fprintf(stdout, "Enclave called into host to print: Hello!\n");
-}
-
-void customized_log(
-    void* context,
-    bool is_enclave,
-    const struct tm* t,
-    long int usecs,
-    oe_log_level_t level,
-    uint64_t host_thread_id,
-    const char* message)
-{
-    char time[25];
-    strftime(time, sizeof(time), "%Y-%m-%dT%H:%M:%S%z", t);
-
-    FILE* log_file = NULL;
-    if (level >= OE_LOG_LEVEL_WARNING)
-    {
-        log_file = (FILE*)context;
-    }
-    else
-    {
-        log_file = stderr;
-    }
-
-    fprintf(
-        log_file,
-        "%s.%06ld, %s, %s, %llx, %s",
-        time,
-        usecs,
-        (is_enclave ? "E" : "H"),
-        oe_log_level_strings[level],
-        host_thread_id,
-        message);
+    fprintf(stdout, "Enclave called into host to print: Hello World!\n");
 }
 
 int main(int argc, const char* argv[])
 {
-    FILE* out_file = fopen("./oe_out.txt", "w");
-    oe_log_set_callback((void*)out_file, customized_log);
-
     oe_result_t result;
     int ret = 1;
     oe_enclave_t* enclave = NULL;
@@ -111,18 +74,11 @@ int main(int argc, const char* argv[])
             oe_result_str(result));
         goto exit;
     }
-    else
-    {
-        fprintf(stdout, "Please check ./oe_out.txt for the redirected logs.\n");
-    }
 
     ret = 0;
 
 exit:
     // Clean up the enclave if we created one
-    if (out_file)
-        fclose(out_file);
-
     if (enclave)
         oe_terminate_enclave(enclave);
 
