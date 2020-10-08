@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial implementation of the [Malloc Info API](docs/DesignDocs/Mallinfo.md) for dlmalloc (default allocator), and snmalloc.
+- Added missing attribute validations to oeedger8r C++ implementation.
 
 ### Deprecated
 
@@ -22,6 +23,13 @@ https://github.com/openenclave/openenclave/issues/3539 tracks this.
 - The Open Enclave SDK is deprecating support for gcc while *building the SDK from source* after Dec 2020.
 The recommended compiler while building the SDK from source is Clang.
 https://github.com/openenclave/openenclave/issues/3555 tracks this.
+
+### Security
+- Security fixes in oeedger8r
+     - Fix TOCTOU vulnerability in NULL terminator checks for ocall in/out string parameters.
+     - Count/size properties in deep-copied in/out structs are treated as readonly to prevent the host
+	   from changing corrupting enclave memory by changing these properties.
+
 
 [v0.11.0][v0.11.0_log]
 --------------
