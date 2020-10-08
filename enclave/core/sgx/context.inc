@@ -11,7 +11,7 @@
 //
 // This function captures the context of the caller. All register values except
 // the rip are exactly same as the values before this function call instruction
-// is executed. The rip in the output context is set to the return address of 
+// is executed. The rip in the output context is set to the return address of
 // this function.
 //
 // Arguments:

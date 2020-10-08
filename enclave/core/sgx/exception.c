@@ -3,10 +3,10 @@
 
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/context.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
+#include "context.h"
 #include "cpuid.h"
 #include "init.h"
 #include "td.h"
