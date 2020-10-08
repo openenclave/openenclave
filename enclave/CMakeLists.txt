@@ -19,6 +19,7 @@ if (OE_SGX)
       ../common/sgx/verifier.c
       sgx/attester.c
       sgx/report.c
+      sgx/verifier.c
       sgx/collateralinfo.c
       sgx/start.S)
   if (WITH_EEID)
