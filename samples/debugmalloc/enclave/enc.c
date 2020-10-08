@@ -15,14 +15,35 @@
 // the host to print a message from there too.
 void enclave_hello()
 {
-    oe_debug_malloc_start_tracking();
+    void *buffer1, *buffer2, *buffer3;
+    uint64_t count;
+    char* report;
 
-    //    void* buf = oe_malloc(4096);
-    //    oe_free(buf);
+    oe_assert(oe_debug_malloc_tracking_start() == OE_OK);
+    buffer1 = oe_malloc(4096);
+    oe_assert(oe_debug_malloc_tracking_stop() == OE_OK);
+    if (oe_debug_malloc_tracking_report(&count, &report) == OE_OK)
+    {
+        printf("There are %d un-freed objects reported:\n%s\n", count, report);
+        oe_free(report);
+    }
 
-    oe_debug_malloc_stop_tracking();
+    oe_assert(oe_debug_malloc_tracking_start() == OE_OK);
+    buffer2 = oe_malloc(4096);
+    oe_assert(oe_debug_malloc_tracking_stop() == OE_OK);
 
-    oe_debug_malloc_print_objects();
+    oe_assert(oe_debug_malloc_tracking_start() == OE_OK);
+    buffer3 = oe_malloc(4096);
+    oe_assert(oe_debug_malloc_tracking_stop() == OE_OK);
+    if (oe_debug_malloc_tracking_report(&count, &report) == OE_OK)
+    {
+        printf("There are %d un-freed objects reported:\n%s\n", count, report);
+        oe_free(report);
+    }
+
+    oe_free(buffer1);
+    oe_free(buffer2);
+    oe_free(buffer3);
 
     // Call back into the host
     oe_result_t result = host_hello();

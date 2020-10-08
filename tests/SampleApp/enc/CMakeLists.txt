@@ -19,7 +19,6 @@ add_enclave(
   SampleApp.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/SampleApp_t.c)
 
-target_link_options(SampleApp PRIVATE -Wl,-Map=output.map)
 enclave_include_directories(SampleApp PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                             ${CMAKE_CURRENT_SOURCE_DIR})
 enclave_link_libraries(SampleApp oelibc)

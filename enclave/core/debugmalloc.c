@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include "debugmalloc.h"
 #include <openenclave/advanced/allocator.h>
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/corelibc/stdio.h>
@@ -17,14 +18,14 @@
 #include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
 
-//#include "debugmalloc.h"
-//#include "debugmalloc_helper.h"
 /* Flags to control runtime behavior. */
 bool oe_use_debug_malloc = true;
 bool oe_use_debug_malloc_memset = true;
 
 /* Flags to define the local tracking state. */
 bool oe_use_debug_malloc_tracking = false;
+/* Session number to identify the session of local tracking. */
+int32_t oe_debug_malloc_session_number = 0;
 
 /*
 **==============================================================================
@@ -82,10 +83,10 @@ struct header
     uint64_t num_addrs;
 
     /* Option if current object is tracked */
-    bool local_tracking;
+    int32_t session_number;
 
     /* Padding to make header a multiple of 16 */
-    uint8_t padding[7];
+    uint8_t padding[4];
 
     /* Contains HEADER_MAGIC2 */
     uint64_t magic2;
@@ -122,19 +123,20 @@ OE_INLINE footer_t* _get_footer(void* ptr)
 }
 
 /* Use a macro so the function name will not appear in the backtrace */
-#define INIT_BLOCK(HEADER, ALIGNMENT, SIZE)                          \
-    do                                                               \
-    {                                                                \
-        HEADER->magic1 = HEADER_MAGIC1;                              \
-        HEADER->next = NULL;                                         \
-        HEADER->prev = NULL;                                         \
-        HEADER->alignment = ALIGNMENT;                               \
-        HEADER->size = SIZE;                                         \
-        HEADER->num_addrs =                                          \
-            (uint64_t)oe_backtrace(HEADER->addrs, OE_BACKTRACE_MAX); \
-        HEADER->local_tracking = oe_use_debug_malloc_tracking;       \
-        HEADER->magic2 = HEADER_MAGIC2;                              \
-        _get_footer(HEADER->data)->magic = FOOTER_MAGIC;             \
+#define INIT_BLOCK(HEADER, ALIGNMENT, SIZE)                                    \
+    do                                                                         \
+    {                                                                          \
+        HEADER->magic1 = HEADER_MAGIC1;                                        \
+        HEADER->next = NULL;                                                   \
+        HEADER->prev = NULL;                                                   \
+        HEADER->alignment = ALIGNMENT;                                         \
+        HEADER->size = SIZE;                                                   \
+        HEADER->num_addrs =                                                    \
+            (uint64_t)oe_backtrace(HEADER->addrs, OE_BACKTRACE_MAX);           \
+        HEADER->session_number =                                               \
+            oe_use_debug_malloc_tracking ? oe_debug_malloc_session_number : 0; \
+        HEADER->magic2 = HEADER_MAGIC2;                                        \
+        _get_footer(HEADER->data)->magic = FOOTER_MAGIC;                       \
     } while (0)
 
 /* Assert and abort if magic numbers are wrong */
@@ -262,23 +264,21 @@ OE_INLINE bool _check_multiply_overflow(size_t x, size_t y)
 
 static void _malloc_dump(size_t size, void* addrs[], int num_addrs)
 {
-    char** syms = NULL;
+    char** symbols = NULL;
 
     /* Get symbol names for these addresses */
-    if (!(syms = oe_backtrace_symbols(addrs, num_addrs)))
+    if (!(symbols = oe_backtrace_symbols(addrs, num_addrs)))
         goto done;
 
     oe_host_printf("%llu bytes\n", OE_LLX(size));
 
     for (int i = 0; i < num_addrs; i++)
-        oe_host_printf("%s(): %p\n", syms[i], addrs[i]);
+        oe_host_printf("%s(): %p\n", symbols[i], addrs[i]);
 
     oe_host_printf("\n");
 
 done:
-
-    if (syms)
-        oe_backtrace_symbols_free(syms);
+    oe_backtrace_symbols_free(symbols);
 }
 
 static void _dump(bool need_lock)
@@ -631,6 +631,7 @@ oe_result_t oe_debug_malloc_tracking_start(void)
     if (!oe_use_debug_malloc_tracking)
     {
         oe_use_debug_malloc_tracking = true;
+        ++oe_debug_malloc_session_number;
         result = OE_OK;
     }
     oe_spin_unlock(&_spin);
@@ -653,144 +654,43 @@ oe_result_t oe_debug_malloc_tracking_stop(void)
     return result;
 }
 
-// static oe_result_t _copy_string(
-//    char** str,
-//    size_t* len,
-//    size_t* index,
-//    char* newstr)
-//{
-//    oe_result_t result = OE_OK;
-//
-//    size_t newlen = oe_strlen(newstr);
-//    if (*index + newlen >= *len)
-//    {
-//        while (*index + newlen >= *len)
-//        {
-//            (*len) *= 2;
-//        }
-//        *str = oe_realloc(*str, *len);
-//        if (*str == NULL)
-//        {
-//            result = OE_ENOMEM;
-//            goto done;
-//        }
-//    }
-//
-//    memcpy(*str + *index, newstr, newlen);
-//    (*index) += newlen;
-//    (*str)[*index] = '\0';
-//
-// done:
-//    return result;
-//}
-//
-// static oe_result_t _copy_frames(
-//    header_t* p,
-//    char** str,
-//    size_t* len,
-//    size_t* index)
-//{
-//    oe_result_t result = OE_OK;
-//
-//    if (*index != 0)
-//    {
-//        _copy_string(str, len, index, "\n");
-//    }
-//    for (uint64_t i = 0; i < p->num_addrs; i++)
-//    {
-//        result = _copy_string(str, len, index, p->addrs[i]);
-//        if (result != OE_OK)
-//        {
-//            goto done;
-//        }
-//    }
-//
-// done:
-//    return result;
-//}
-//
-// static void _malloc_dump(size_t size, void* addrs[], int num_addrs)
-//{
-//    char** syms = NULL;
-//
-//    /* Get symbol names for these addresses */
-//    if (!(syms = oe_backtrace_symbols(addrs, num_addrs)))
-//        goto done;
-//
-//    oe_host_printf("%llu bytes\n", OE_LLX(size));
-//
-//    for (int i = 0; i < num_addrs; i++)
-//        oe_host_printf("%s(): %p\n", syms[i], addrs[i]);
-//
-//    oe_host_printf("\n");
-//
-// done:
-//
-//    if (syms)
-//        oe_backtrace_symbols_free(syms);
-//}
-//
-// static void _dump(bool need_lock)
-//{
-//    list_t* list = &_list;
-//
-//    if (need_lock)
-//        oe_spin_lock(&_spin);
-//
-//    {
-//        size_t blocks = 0;
-//        size_t bytes = 0;
-//
-//        /* Count bytes allocated and blocks still in use */
-//        for (header_t* p = list->head; p; p = p->next)
-//        {
-//            blocks++;
-//            bytes += p->size;
-//        }
-//
-//        oe_host_printf(
-//            "=== %s(): %zu bytes in %zu blocks\n", __FUNCTION__, bytes,
-//            blocks);
-//
-//        for (header_t* p = list->head; p; p = p->next)
-//            _malloc_dump(p->size, p->addrs, (int)p->num_addrs);
-//
-//        oe_host_printf("\n");
-//    }
-//
-//    if (need_lock)
-//        oe_spin_unlock(&_spin);
-//}
-
-static oe_result_t _copy_frames2(
+static oe_result_t _copy_frames(
     header_t* p,
     char** str,
-    size_t* len,
+    size_t* size,
     size_t* index)
 {
     oe_result_t result = OE_FAILURE;
-    char** syms = NULL;
+    char** symbols = NULL;
 
-    if (!(syms = oe_backtrace_symbols(p->addrs, (int)(p->num_addrs))))
+    if (!(symbols = oe_backtrace_symbols(p->addrs, (int)(p->num_addrs))))
     {
         goto done;
     }
 
     for (uint64_t i = 0; i < p->num_addrs; i++)
     {
-        size_t size_s = oe_strlen(syms[i]);
-        size_t size_a = oe_strlen(p->addrs[i]);
-        size_t size = size_s + size_a + 6;
-        if (*index + size >= *len)
+        size_t length_s = oe_strlen(symbols[i]);
+        size_t length_a = sizeof(p->addrs[i]) * 2;
+        size_t length = length_s + length_a + 6;
+
+        if (*index + length >= *size)
         {
-            while (*index + size >= *len)
+            while (*index + length >= *size)
             {
-                *len *= 2;
+                *size *= 2;
             }
-            *str = oe_realloc(*str, *len);
+
+            *str = oe_realloc(*str, *size);
+            if (*str == NULL)
+            {
+                result = OE_ENOMEM;
+                goto done;
+            }
         }
-        oe_snprintf(*str + *index, size, "%s(): %p\n", syms[i], p->addrs[i]);
-        //        *index += size - 1;
+
+        oe_snprintf(
+            *str + *index, length, "%s(): %p\n", symbols[i], p->addrs[i]);
         *index = oe_strlen(*str);
     }
 
@@ -800,8 +700,7 @@ static oe_result_t _copy_frames2(
     result = OE_OK;
 
 done:
-    if (syms)
-        oe_backtrace_symbols_free(syms);
+    oe_backtrace_symbols_free(symbols);
 
     return result;
 }
@@ -810,25 +709,28 @@ oe_result_t oe_debug_malloc_tracking_report(
     uint64_t* out_object_count,
     char** report)
 {
-    OE_UNUSED(report);
-
     oe_result_t result = OE_OK;
     uint64_t count = 0;
 
     size_t index = 0;
-    size_t len = 4096;
-    char* str = oe_malloc(len);
-    str[0] = '\0';
+    size_t length = 4096;
+    char* report_string = oe_malloc(length);
+    if (!report_string)
+    {
+        result = OE_ENOMEM;
+        goto done;
+    }
+    report_string[0] = '\0';
 
     list_t* list = &_list;
     oe_spin_lock(&_spin);
     {
         for (header_t* p = list->head; p; p = p->next)
         {
-            if (p->local_tracking)
+            if (p->session_number)
             {
                 count++;
-                result = _copy_frames2(p, &str, &len, &index);
+                result = _copy_frames(p, &report_string, &length, &index);
                 if (result != OE_OK)
                 {
                     goto done;
@@ -838,11 +740,16 @@ oe_result_t oe_debug_malloc_tracking_report(
     }
     oe_spin_unlock(&_spin);
 
-    len = index + 1;
-    str = oe_realloc(str, len);
+    length = index + 1;
+    report_string = oe_realloc(report_string, length);
+    if (!report_string)
+    {
+        result = OE_ENOMEM;
+        goto done;
+    }
 
     *out_object_count = count;
-    *report = str;
+    *report = report_string;
 
 done:
     oe_spin_unlock(&_spin);
