@@ -19,8 +19,8 @@ add_custom_target(run DEPENDS host_verify)
 
 if (NOT
     (EXISTS "sgx_cert_ec.der"
-      OR EXISTS "sgx_cert_rsa.der"
-      OR EXISTS "sgx_report.bin"))
+     OR EXISTS "sgx_cert_rsa.der"
+     OR EXISTS "sgx_report.bin"))
   add_custom_target(
     run1
     DEPENDS host_verify
@@ -33,20 +33,6 @@ else ()
       DEPENDS host_verify
       COMMAND host_verify -c sgx_cert_ec.der)
     add_dependencies(run run1)
-    if (EXISTS "sgx_evidence.bin")
-      add_custom_target(
-        run4
-        DEPENDS host_verify
-        COMMAND host_verify -v sgx_evidence.bin)
-      add_dependencies(run run4)
-      if (EXISTS "sgx_endorsements.bin")
-        add_custom_target(
-          run5
-          DEPENDS host_verify
-          COMMAND host_verify -v sgx_evidence.bin -e sgx_endorsements.bin)
-        add_dependencies(run run5)
-      endif ()
-    endif ()
   endif ()
   if (EXISTS "sgx_cert_rsa.der")
     add_custom_target(
@@ -61,5 +47,19 @@ else ()
       DEPENDS host_verify
       COMMAND host_verify -r sgx_report.bin)
     add_dependencies(run run3)
+  endif ()
+  if (EXISTS "sgx_evidence.bin")
+    add_custom_target(
+      run4
+      DEPENDS host_verify
+      COMMAND host_verify -v sgx_evidence.bin)
+    add_dependencies(run run4)
+    if (EXISTS "sgx_endorsements.bin")
+      add_custom_target(
+        run5
+        DEPENDS host_verify
+        COMMAND host_verify -v sgx_evidence.bin -e sgx_endorsements.bin)
+      add_dependencies(run run5)
+    endif ()
   endif ()
 endif ()
