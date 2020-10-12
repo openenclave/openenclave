@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+
+[v0.12.0][v0.12.0_log]
+--------------
+
 ### Added
 - Initial implementation of the [Malloc Info API](docs/DesignDocs/Mallinfo.md) for dlmalloc (default allocator), and snmalloc.
 - Added missing attribute validations to oeedger8r C++ implementation.
@@ -502,7 +506,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.11.0...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.12.0...HEAD
+
+[v0.12.0_log]:https://github.com/openenclave/openenclave/compare/v0.11.0...v0.12.0
 
 [v0.11.0_log]:https://github.com/openenclave/openenclave/compare/v0.10.0...v0.11.0
 
