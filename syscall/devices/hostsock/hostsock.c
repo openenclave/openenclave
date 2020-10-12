@@ -349,7 +349,15 @@ static ssize_t _hostsock_recv(
 
     oe_errno = 0;
 
-    if (!sock || (count && !buf))
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/recv.html
+     * for more detail.
+     */
+    if (!sock || (count && !buf) || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (buf)
@@ -361,6 +369,16 @@ static ssize_t _hostsock_recv(
     if (oe_syscall_recv_ocall(&ret, sock->host_fd, buf, count, flags) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
 
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The return value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
 done:
     return ret;
 }
@@ -370,19 +388,32 @@ static ssize_t _hostsock_recvfrom(
     void* buf,
     size_t count,
     int flags,
-    const struct oe_sockaddr* src_addr,
+    struct oe_sockaddr* src_addr,
     oe_socklen_t* addrlen)
 {
     ssize_t ret = -1;
     sock_t* sock = _cast_sock(sock_);
     oe_socklen_t addrlen_in = 0;
+    oe_socklen_t addrlen_out = 0;
 
     oe_errno = 0;
 
-    if (!sock || (count && !buf))
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/recvfrom.html
+     * for more detail.
+     */
+    if (!sock || (count && !buf) || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (addrlen)
+    /*
+     * Update the addrlen_in to the value pointed by addrlen
+     * only if both src_addr and addrlen are not NULL.
+     */
+    if (src_addr && addrlen)
         addrlen_in = *addrlen;
 
     if (oe_syscall_recvfrom_ocall(
@@ -391,10 +422,40 @@ static ssize_t _hostsock_recvfrom(
             buf,
             count,
             flags,
-            (struct oe_sockaddr*)src_addr,
+            src_addr,
             addrlen_in,
-            addrlen) != OE_OK)
+            &addrlen_out) != OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Update the value pointed by addrlen based on the host-set
+     * addrlen_out only if both src_addr and addrlen are not NULL.
+     */
+    if (src_addr && addrlen)
+    {
+        /*
+         * Error out the case if the addrlen_out is greater than the size
+         * of sockaddr_storage.
+         */
+        if (addrlen_out > sizeof(struct oe_sockaddr_storage))
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        /*
+         * Note that the returned value can still exceed the supplied one,
+         * which indicates a truncation.
+         */
+        *addrlen = addrlen_out;
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The return value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
@@ -412,14 +473,30 @@ static ssize_t _hostsock_recvmsg(
     oe_errno = 0;
     void* buf = NULL;
     size_t buf_size = 0;
+    size_t data_size = 0;
+    oe_socklen_t namelen_out = 0;
+    size_t controllen_out = 0;
 
     /* Check the parameters. */
     if (!sock || !msg || (msg->msg_iovlen && !msg->msg_iov))
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(msg->msg_iov, (int)msg->msg_iovlen, &buf, &buf_size) != 0)
+    if (oe_iov_pack(
+            msg->msg_iov, (int)msg->msg_iovlen, &buf, &buf_size, &data_size) !=
+        0)
         OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /*
+     * According to the POSIX specification, when the data_size is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/recvmsg.html
+     * for more detail.
+     */
+    if (data_size > OE_SSIZE_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     {
@@ -428,13 +505,13 @@ static ssize_t _hostsock_recvmsg(
                 sock->host_fd,
                 msg->msg_name,
                 msg->msg_namelen,
-                &msg->msg_namelen,
+                &namelen_out,
                 buf,
                 msg->msg_iovlen,
                 buf_size,
                 msg->msg_control,
                 msg->msg_controllen,
-                &msg->msg_controllen,
+                &controllen_out,
                 flags) != OE_OK)
         {
             OE_RAISE_ERRNO(OE_EINVAL);
@@ -442,6 +519,51 @@ static ssize_t _hostsock_recvmsg(
 
         if (ret == -1)
             OE_RAISE_ERRNO(oe_errno);
+    }
+
+    if (!msg->msg_name)
+        msg->msg_namelen = 0;
+    else
+    {
+        /*
+         * Error out the case if the namelen_out is greater than the size
+         * of sockaddr_storage.
+         */
+        if (namelen_out > sizeof(struct oe_sockaddr_storage))
+            OE_RAISE_ERRNO(OE_EINVAL);
+
+        /*
+         * Note that the returned value can still exceed the supplied one,
+         * which indicates a truncation.
+         */
+        if (msg->msg_namelen >= namelen_out)
+            msg->msg_namelen = namelen_out;
+    }
+
+    if (!msg->msg_control)
+        msg->msg_controllen = 0;
+    else
+    {
+        /*
+         * Update the msg_controllen only if the supplied value is greater than
+         * or equal to the returned value. Otherwise, keep the msg_controllen
+         * unchanged, which indicates a truncation. In addition, explicitly
+         * setting the MSG_CTRUNC flag when the truncation occurs.
+         */
+        if (msg->msg_controllen >= controllen_out)
+            msg->msg_controllen = controllen_out;
+        else
+            msg->msg_flags |= OE_MSG_CTRUNC;
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The return value should not exceed data_size.
+     */
+    if (ret > (ssize_t)data_size)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
     }
 
     /* Synchronize data read with IO vector. */
@@ -467,11 +589,29 @@ static ssize_t _hostsock_send(
 
     oe_errno = 0;
 
-    if (!sock || (count && !buf))
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/send.html for
+     * for more detail.
+     */
+    if (!sock || (count && !buf) || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_syscall_send_ocall(&ret, sock->host_fd, buf, count, flags) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The return value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
     return ret;
@@ -490,7 +630,15 @@ static ssize_t _hostsock_sendto(
 
     oe_errno = 0;
 
-    if (!sock || (count && !buf))
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/sendto.html
+     * for more detail.
+     */
+    if (!sock || (count && !buf) || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_syscall_sendto_ocall(
@@ -502,6 +650,16 @@ static ssize_t _hostsock_sendto(
             (struct oe_sockaddr*)dest_addr,
             addrlen) != OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The return value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
@@ -518,6 +676,7 @@ static ssize_t _hostsock_sendmsg(
     sock_t* sock = _cast_sock(sock_);
     void* buf = NULL;
     size_t buf_size = 0;
+    size_t data_size = 0;
 
     oe_errno = 0;
 
@@ -526,8 +685,21 @@ static ssize_t _hostsock_sendmsg(
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(msg->msg_iov, (int)msg->msg_iovlen, &buf, &buf_size) != 0)
+    if (oe_iov_pack(
+            msg->msg_iov, (int)msg->msg_iovlen, &buf, &buf_size, &data_size) !=
+        0)
         OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /*
+     * According to the POSIX specification, when the data_size is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/sendmsg.html
+     * for more detail.
+     */
+    if (data_size > OE_SSIZE_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_sendmsg_ocall(
@@ -542,6 +714,16 @@ static ssize_t _hostsock_sendmsg(
             msg->msg_controllen,
             flags) != OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The return value should not exceed data_size.
+     */
+    if (ret > (ssize_t)data_size)
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
@@ -686,21 +868,41 @@ static int _hostsock_getsockopt(
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
     oe_socklen_t optlen_in = 0;
+    oe_socklen_t optlen_out = 0;
 
     oe_errno = 0;
 
-    if (!sock)
+    if (!sock || !optval || !optlen)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (optlen)
-        optlen_in = *optlen;
+    optlen_in = *optlen;
 
     if (oe_syscall_getsockopt_ocall(
-            &ret, sock->host_fd, level, optname, optval, optlen_in, optlen) !=
-        OE_OK)
+            &ret,
+            sock->host_fd,
+            level,
+            optname,
+            optval,
+            optlen_in,
+            &optlen_out) != OE_OK)
     {
         OE_RAISE_ERRNO(OE_EINVAL);
     }
+
+    /*
+     * The POSIX specification for getsockopt states that if the size of optval
+     * is greater than the input optlen, then the value stored in the object
+     * pointed to by the optval argument shall be silently truncated. We do this
+     * in the enclave to ensure that the untrusted host has not returned an
+     * arbitrarily large optlen value.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/getsockopt.html
+     * for more detail.
+     */
+    if (optlen_out > optlen_in)
+        optlen_out = optlen_in;
+
+    *optlen = optlen_out;
 
 done:
 
@@ -760,24 +962,41 @@ static int _hostsock_getpeername(
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
     oe_socklen_t addrlen_in = 0;
+    oe_socklen_t addrlen_out = 0;
 
     oe_errno = 0;
 
-    if (!sock)
+    if (!sock || !addr || !addrlen)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (addrlen)
-        addrlen_in = *addrlen;
+    addrlen_in = *addrlen;
+    if (addrlen_in < 0)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_syscall_getpeername_ocall(
             &ret,
             sock->host_fd,
             (struct oe_sockaddr*)addr,
             addrlen_in,
-            addrlen) != OE_OK)
+            &addrlen_out) != OE_OK)
     {
         OE_RAISE_ERRNO(OE_EINVAL);
     }
+
+    /*
+     * Error out the case if the addrlen_out is greater than the size
+     * of sockaddr_storage.
+     */
+    if (addrlen_out > sizeof(struct oe_sockaddr_storage))
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Note that the returned value can still exceed the supplied one,
+     * which indicates a truncation. Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/getpeername.html
+     * for more detail.
+     */
+    *addrlen = addrlen_out;
 
 done:
 
@@ -792,24 +1011,38 @@ static int _hostsock_getsockname(
     int ret = -1;
     sock_t* sock = _cast_sock(sock_);
     oe_socklen_t addrlen_in = 0;
+    oe_socklen_t addrlen_out = 0;
 
     oe_errno = 0;
 
-    if (!sock)
+    if (!sock || !addr || !addrlen)
         OE_RAISE_ERRNO(OE_EINVAL);
 
-    if (addrlen)
-        addrlen_in = *addrlen;
+    addrlen_in = *addrlen;
+    if (addrlen_in < 0)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_syscall_getsockname_ocall(
-            &ret,
-            sock->host_fd,
-            (struct oe_sockaddr*)addr,
-            addrlen_in,
-            addrlen) != OE_OK)
+            &ret, sock->host_fd, addr, addrlen_in, &addrlen_out) != OE_OK)
     {
         OE_RAISE_ERRNO(OE_EINVAL);
     }
+
+    /*
+     * Error out the case if the addrlen_out is greater than the size
+     * of sockaddr_storage.
+     */
+    if (addrlen_out > sizeof(struct oe_sockaddr_storage))
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Note that the returned value can still exceed the supplied one, which
+     * indicates a truncation. Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/getsockname.html
+     * for more detail.
+     */
+    if (addrlen_in >= addrlen_out)
+        *addrlen = addrlen_out;
 
 done:
 
@@ -835,18 +1068,40 @@ static ssize_t _hostsock_readv(
     sock_t* sock = _cast_sock(desc);
     void* buf = NULL;
     size_t buf_size = 0;
+    size_t data_size = 0;
 
     if (!sock || (!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size, &data_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /*
+     * According to the POSIX specification, when the data_size is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/readv.html
+     * for more detail.
+     */
+    if (data_size > OE_SSIZE_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_recvv_ocall(&ret, sock->host_fd, buf, iovcnt, buf_size) !=
         OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed data_size.
+     */
+    if (ret > (ssize_t)(data_size))
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
@@ -874,18 +1129,40 @@ static ssize_t _hostsock_writev(
     sock_t* sock = _cast_sock(desc);
     void* buf = NULL;
     size_t buf_size = 0;
+    size_t data_size = 0;
 
     if (!sock || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size, &data_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /*
+     * According to the POSIX specification, when the data_size is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/writev.html
+     * for more detail.
+     */
+    if (data_size > OE_SSIZE_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_sendv_ocall(&ret, sock->host_fd, buf, iovcnt, buf_size) !=
         OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The return value should not exceed data_size.
+     */
+    if (ret > (ssize_t)data_size)
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 

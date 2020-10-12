@@ -18,8 +18,6 @@
 
 enclave
 {
-
-
     // Headers needed for integral types
     include "openenclave/corelibc/bits/types.h"
     include "openenclave/bits/edl/syscall_types.h"
@@ -73,7 +71,7 @@ enclave
 
         oe_host_fd_t oe_syscall_accept_ocall(
             oe_host_fd_t sockfd,
-            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
+            [out, size=addrlen_in] struct oe_sockaddr* addr,
             oe_socklen_t addrlen_in,
             [out, count=1] oe_socklen_t* addrlen_out)
             propagate_errno;
@@ -117,7 +115,7 @@ enclave
 
         ssize_t oe_syscall_recv_ocall(
             oe_host_fd_t sockfd,
-            [in, out, size=len] void* buf,
+            [out, size=len] void* buf,
             size_t len,
             int flags)
             propagate_errno;
@@ -127,7 +125,7 @@ enclave
             [out, size=len] void* buf,
             size_t len,
             int flags,
-            [in, out, size=addrlen_in] struct oe_sockaddr* src_addr,
+            [out, size=addrlen_in] struct oe_sockaddr* src_addr,
             oe_socklen_t addrlen_in,
             [out, count=1] oe_socklen_t* addrlen_out)
             propagate_errno;
@@ -186,14 +184,14 @@ enclave
 
         int oe_syscall_getsockname_ocall(
             oe_host_fd_t sockfd,
-            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
+            [out, size=addrlen_in] struct oe_sockaddr* addr,
             oe_socklen_t addrlen_in,
             [out, size=1] oe_socklen_t* addrlen_out)
             propagate_errno;
 
         int oe_syscall_getpeername_ocall(
             oe_host_fd_t sockfd,
-            [in, out, size=addrlen_in] struct oe_sockaddr* addr,
+            [out, size=addrlen_in] struct oe_sockaddr* addr,
             oe_socklen_t addrlen_in,
             [out, size=1] oe_socklen_t* addrlen_out)
             propagate_errno;
