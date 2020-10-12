@@ -29,6 +29,7 @@ https://github.com/openenclave/openenclave/issues/3555 tracks this.
      - Fix TOCTOU vulnerability in NULL terminator checks for ocall in/out string parameters.
      - Count/size properties in deep-copied in/out structs are treated as readonly to prevent the host
 	   from changing corrupting enclave memory by changing these properties.
+- Fix CVE-2020-15224.
 
 
 [v0.11.0][v0.11.0_log]
