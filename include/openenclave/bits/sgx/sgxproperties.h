@@ -38,8 +38,8 @@ typedef struct oe_sgx_enclave_config_t
 {
     uint16_t product_id;
     uint16_t security_version;
-    uint8_t isv_family_id[16];
-    uint8_t isv_ext_product_id[16];
+    uint8_t family_id[16];
+    uint8_t ext_product_id[16];
 
     /* Padding to make packed and unpacked size the same */
     uint32_t padding;
@@ -76,10 +76,6 @@ typedef struct _oe_sgx_enclave_properties
 
 #define OE_MAKE_ATTRIBUTES(ALLOW_DEBUG) \
     (OE_SGX_FLAGS_MODE64BIT | (ALLOW_DEBUG ? OE_SGX_FLAGS_DEBUG : 0))
-
-#define OE_MAKE_ATTRIBUTES_EX(ALLOW_KSS, ALLOW_DEBUG)              \
-    (OE_SGX_FLAGS_MODE64BIT | (ALLOW_KSS ? OE_SGX_FLAGS_KSS : 0) | \
-     (ALLOW_DEBUG ? OE_SGX_FLAGS_DEBUG : 0))
 
 // This macro initializes and injects an oe_sgx_enclave_properties_t struct
 // into the .oeinfo section.

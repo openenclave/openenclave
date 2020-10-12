@@ -18,7 +18,7 @@ static bool _is_kss_supported()
     // Obtain feature information using CPUID
     oe_get_cpuid(0x12, 0x1, &eax, &ebx, &ecx, &edx);
 
-    // Check if KSS  (bit 7) are supported in processor
+    // Check if KSS (bit 7) is supported by the processor
     if (!(eax & (1 << 7)))
         return false;
     else
@@ -58,13 +58,6 @@ int main(int argc, const char* argv[])
     if ((result = oe_create_oesign_test_enclave(
              argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        if (!_is_kss_supported() &&
-            properties.config.attributes & SGX_FLAGS_KSS)
-        {
-            printf("Skipping Enclave creation with Kss feature \
-            if hardware doesn't support .\n");
-            return 0;
-        }
         oe_put_err("oe_create_crypto_enclave(): result=%u", result);
     }
 
@@ -91,11 +84,11 @@ int main(int argc, const char* argv[])
 
     if (_is_kss_supported())
     {
-        result = is_kss_extendedids_match(
+        result = check_kss_extended_ids(
             enclave,
             &ecall_result,
-            (oe_uuid_t*)properties.config.isv_family_id,
-            (oe_uuid_t*)properties.config.isv_ext_product_id);
+            (oe_uuid_t*)properties.config.family_id,
+            (oe_uuid_t*)properties.config.ext_product_id);
         if (result != OE_OK || ecall_result != OE_OK)
         {
             oe_put_err(

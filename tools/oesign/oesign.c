@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <sys/stat.h>
+#include "../host/sgx/cpuid.h"
 #include "../host/sgx/enclave.h"
 #include "oe_err.h"
 #include "oeinfo.h"
@@ -42,14 +43,13 @@ typedef struct _optional_oe_uuid_t
 typedef struct _config_file_options
 {
     optional_bool_t debug;
-    optional_bool_t kss;
     optional_uint64_t num_heap_pages;
     optional_uint64_t num_stack_pages;
     optional_uint64_t num_tcs;
     optional_uint16_t product_id;
     optional_uint16_t security_version;
-    optional_oe_uuid_t isv_family_id;
-    optional_oe_uuid_t isv_ext_product_id;
+    optional_oe_uuid_t family_id;
+    optional_oe_uuid_t ext_product_id;
 } config_file_options_t;
 
 int uuid_from_string(str_t* str, uint8_t* uuid, size_t expected_size);
@@ -118,26 +118,6 @@ static int _load_config_file(const char* path, config_file_options_t* options)
 
             options->debug.value = (bool)value;
             options->debug.has_value = true;
-        }
-        else if (strcmp(str_ptr(&lhs), "Kss") == 0)
-        {
-            uint64_t value;
-
-            if (options->kss.has_value)
-            {
-                oe_err("%s(%zu): Duplicate 'Kss' value provided", path, line);
-                goto done;
-            }
-
-            // Debug must be 0 or 1
-            if (str_u64(&rhs, &value) != 0 || (value > 1))
-            {
-                oe_err("%s(%zu): 'Kss' value must be 0 or 1", path, line);
-                goto done;
-            }
-
-            options->kss.value = (bool)value;
-            options->kss.has_value = true;
         }
         else if (strcmp(str_ptr(&lhs), "NumHeapPages") == 0)
         {
@@ -276,7 +256,7 @@ static int _load_config_file(const char* path, config_file_options_t* options)
         {
             oe_uuid_t id;
 
-            if (options->isv_family_id.has_value)
+            if (options->family_id.has_value)
             {
                 oe_err(
                     "%s(%zu): Duplicate 'IsvFamilyID' value provided",
@@ -300,14 +280,14 @@ static int _load_config_file(const char* path, config_file_options_t* options)
                 }
             }
 
-            memcpy(&options->isv_family_id.value, &id, sizeof(id));
-            options->isv_family_id.has_value = true;
+            memcpy(&options->family_id.value, &id, sizeof(id));
+            options->family_id.has_value = true;
         }
         else if (strcmp(str_ptr(&lhs), "IsvExtProductID") == 0)
         {
             oe_uuid_t id;
 
-            if (options->isv_ext_product_id.has_value)
+            if (options->ext_product_id.has_value)
             {
                 oe_err(
                     "%s(%zu): Duplicate 'IsvExtProductID' value provided",
@@ -331,8 +311,8 @@ static int _load_config_file(const char* path, config_file_options_t* options)
                 }
             }
 
-            memcpy(&options->isv_ext_product_id.value, &id, sizeof(id));
-            options->isv_ext_product_id.has_value = true;
+            memcpy(&options->ext_product_id.value, &id, sizeof(id));
+            options->ext_product_id.has_value = true;
         }
         else
         {
@@ -436,6 +416,21 @@ static int _load_pem_file(const char* path, void** data, size_t* size)
     return err;
 }
 
+static bool _is_kss_supported()
+{
+    uint32_t eax, ebx, ecx, edx;
+    eax = ebx = ecx = edx = 0;
+
+    // Obtain feature information using CPUID
+    oe_get_cpuid(0x12, 0x1, &eax, &ebx, &ecx, &edx);
+
+    // Check if KSS (bit 7) is supported by the processor
+    if (!(eax & (1 << 7)))
+        return false;
+    else
+        return true;
+}
+
 /* Merge configuration file options into enclave properties */
 void _merge_config_file_options(
     oe_sgx_enclave_properties_t* properties,
@@ -464,15 +459,6 @@ void _merge_config_file_options(
             properties->config.attributes &= ~SGX_FLAGS_DEBUG;
     }
 
-    /* Kss option is present */
-    if (options->kss.has_value)
-    {
-        if (options->kss.value)
-            properties->config.attributes |= SGX_FLAGS_KSS;
-        else
-            properties->config.attributes &= ~SGX_FLAGS_KSS;
-    }
-
     /* If ProductID option is present */
     if (options->product_id.has_value)
         properties->config.product_id = options->product_id.value;
@@ -481,19 +467,22 @@ void _merge_config_file_options(
     if (options->security_version.has_value)
         properties->config.security_version = options->security_version.value;
 
-    if (options->kss.has_value && options->kss.value)
-    {
-        if (options->isv_family_id.has_value)
+    bool kss_supported = _is_kss_supported();
+    if (kss_supported) {
+        if (options->family_id.has_value)
             memcpy(
-                properties->config.isv_family_id,
-                &options->isv_family_id.value,
-                sizeof(options->isv_family_id.value));
+                properties->config.family_id,
+                &options->family_id.value,
+                sizeof(options->family_id.value));
 
-        if (options->isv_ext_product_id.has_value)
+        if (options->ext_product_id.has_value)
             memcpy(
-                properties->config.isv_ext_product_id,
-                &options->isv_ext_product_id.value,
-                 sizeof(options->isv_ext_product_id.value));
+                properties->config.ext_product_id,
+                &options->ext_product_id.value,
+                    sizeof(options->ext_product_id.value));
+
+        if (options->family_id.has_value || options->ext_product_id.has_value)
+            properties->config.attributes |= SGX_FLAGS_KSS;
     }
 
     /* If NumHeapPages option is present */
@@ -660,8 +649,8 @@ int oesign(
                 engine_id,
                 engine_load_path,
                 key_id,
-                properties.config.isv_family_id,
-                properties.config.isv_ext_product_id,
+                properties.config.family_id,
+                properties.config.ext_product_id,
                 (sgx_sigstruct_t*)properties.sigstruct),
             "oe_sgx_sign_enclave_from_engine() failed: result=%s (%#x)",
             oe_result_str(result),
@@ -733,8 +722,8 @@ int oesign(
                 properties.config.security_version,
                 pem_data,
                 pem_size,
-                properties.config.isv_family_id,
-                properties.config.isv_ext_product_id,
+                properties.config.family_id,
+                properties.config.ext_product_id,
                 (sgx_sigstruct_t*)properties.sigstruct),
             "oe_sgx_sign_enclave() failed: result=%s (%#x)",
             oe_result_str(result),
@@ -780,6 +769,8 @@ int oedigest(const char* enclave, const char* conffile, const char* digest_file)
             properties.config.attributes,
             properties.config.product_id,
             properties.config.security_version,
+            properties.config.family_id,
+            properties.config.ext_product_id,
             &digest),
         "oe_sgx_get_sigstruct_digest(): result=%s (%#x)",
         oe_result_str(result),

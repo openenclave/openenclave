@@ -18,6 +18,7 @@ OE_EXTERNC_BEGIN
 
 #ifdef _WIN32
 #define gmtime_r(now, timeinfo) gmtime_s(timeinfo, now)
+#define timegm(tm) _mkgmtime(tm)
 #endif
 
 /**
