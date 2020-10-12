@@ -44,14 +44,18 @@
 #endif
 
 // The following registers are inputs to ENCLU instruction. They are also
-// clobbered. Hence marked as +r.
+// clobbered and hence are marked as +r.
 #define OE_ENCLU_REGISTERS \
     "+r"(rax), "+r"(rbx), "+r"(rcx), "+r"(rdi), "+r"(rsi), "+r"(rdx)
 
 // The following registers are clobbered by ENCLU.
-// Only rbp and rsp are preserved.
-#define OE_ENCLU_CLOBBERED_REGISTERS \
-    "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
+// Only rbp and rsp are preserved on return from ENCLU.
+// The XMM registers are listed as clobbered to signal to the compiler that
+// they need to be preserved when --target=x86_64-msvc-windows and are
+// ignored on Linux builds.
+#define OE_ENCLU_CLOBBERED_REGISTERS                                      \
+    "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "xmm6", "xmm7", \
+        "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15"
 
 // The following function must not be inlined and must have a frame-pointer
 // so that the frame can be manipulated to stitch the ocall stack.
@@ -141,10 +145,8 @@ OE_INLINE void _setup_ecall_context(oe_ecall_context_t* ecall_context)
  * are preserved across function calls.
  * As per x64 Windows ABI, the registers RBX, RBP, RDI, RSI, RSP, R12, R13, R14,
  * R15, and XMM6-15 are preserved across function calls.
- * The general purpose callee-saved registers are listed in
- * OE_ENCLU_CLOBBERED_REGISTERS. Since we explicitly save and restore the
- * floating-point state via fxsave/fxrstor, the xmm registers are not listed
- * in the clobber list.
+ * The general purpose callee-saved registers and XMM registers are listed in
+ * OE_ENCLU_CLOBBERED_REGISTERS.
  */
 OE_NEVER_INLINE
 void oe_enter(
@@ -156,11 +158,11 @@ void oe_enter(
     uint64_t* arg4,
     oe_enclave_t* enclave)
 {
-    // The general purpose registers are preserved by the compiler.
-    // The floating point state and the flags must be explicitly preserved.
-    // The space for saving the floating-point state must be 16 byte aligned.
-    OE_ALIGNED(16)
-    uint64_t fx_state[64];
+    // Additional control registers that need to be preserved as part of the
+    // Windows and Linux x64 ABIs
+    uint32_t mxcsr = 0;
+    uint16_t fcw = 0;
+
     oe_ecall_context_t ecall_context = {{0}};
     _setup_ecall_context(&ecall_context);
 
@@ -178,13 +180,15 @@ void oe_enter(
         OE_DEFINE_REGISTER(rsi, arg2);
         OE_DEFINE_FRAME_POINTER(rbp, OE_FRAME_POINTER_VALUE);
 
-        asm volatile("fxsave %[fx_state] \n\t" // Save floating point state.
-                     "pushfq \n\t"             // Save flags.
-                     "enclu \n\t"
-                     "popfq \n\t"               // Restore flags.
-                     "fxrstor %[fx_state] \n\t" // Restore floating point state.
+        asm volatile("stmxcsr %[mxcsr] \n\t" // Save MXCSR
+                     "fstcw %[fcw] \n\t"     // Save x87 control word
+                     "pushfq \n\t"           // Save RFLAGS
+                     "enclu \n\t"            // EENTER
+                     "popfq \n\t"            // Restore RFLAGS
+                     "fldcw %[fcw] \n\t"     // Restore x87 control word
+                     "ldmxcsr %[mxcsr] \n\t" // Restore MXCSR
                      : OE_ENCLU_REGISTERS
-                     : [fx_state] "m"(fx_state)OE_FRAME_POINTER
+                     : [fcw] "m"(fcw), [mxcsr] "m"(mxcsr)OE_FRAME_POINTER
                      : OE_ENCLU_CLOBBERED_REGISTERS);
 
         // Update arg1 and arg2 with outputs returned by the enclave.

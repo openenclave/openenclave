@@ -10,9 +10,19 @@ add_custom_command(
     edger8r --untrusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-list(APPEND ABI_HOST_SRC host.cpp abi_u.c)
+list(APPEND ABI_HOST_SRC abi_u.c)
 if (WIN32)
-  list(APPEND ABI_HOST_SRC abi.asm)
+  # Use clang to compile the inline assembly on Windows as well.
+  add_custom_command(
+    OUTPUT host.obj
+    DEPENDS abi_u.h host.cpp
+    COMMAND
+      clang -c -O2 -m64 --target=x86_64-msvc-windows
+      -I${PROJECT_SOURCE_DIR}/include -I${CMAKE_CURRENT_BINARY_DIR}
+      -I${OE_INCDIR} ${CMAKE_CURRENT_SOURCE_DIR}/host.cpp -o host.obj)
+  list(APPEND ABI_HOST_SRC ${CMAKE_CURRENT_BINARY_DIR}/host.obj abi.asm)
+else ()
+  list(APPEND ABI_HOST_SRC host.cpp)
 endif ()
 
 add_executable(abi_host ${ABI_HOST_SRC})

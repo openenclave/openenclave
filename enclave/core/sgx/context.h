@@ -33,7 +33,6 @@ OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, mxcsr), OE_CONTEXT_MXCSR);
 OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, basic_xstate), OE_CONTEXT_FLOAT);
 
 void oe_snap_current_context(oe_context_t* oe_context);
-void oe_restore_partial_context(oe_context_t* oe_context);
 void oe_continue_execution(oe_context_t* oe_context);
 
 #endif // !__ASSEMBLER__
