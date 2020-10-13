@@ -13,6 +13,8 @@ install(
   DIRECTORY openenclave/bits
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/
   COMPONENT OEHOSTVERIFY)
+install(FILES openenclave/debugmalloc.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(DIRECTORY openenclave/edger8r
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/)
 install(FILES openenclave/enclave.h

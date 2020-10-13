@@ -4,7 +4,10 @@
 #include "debugmalloc.h"
 #include <openenclave/advanced/allocator.h>
 #include <openenclave/corelibc/errno.h>
+#include <openenclave/corelibc/stdio.h>
 #include <openenclave/corelibc/stdlib.h>
+#include <openenclave/corelibc/string.h>
+#include <openenclave/debugmalloc.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
@@ -15,7 +18,14 @@
 #include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
 
-#if defined(OE_USE_DEBUG_MALLOC)
+/* Flags to control runtime behavior. */
+bool oe_use_debug_malloc = true;
+bool oe_use_debug_malloc_memset = true;
+
+/* Flags to define the local tracking state. */
+bool oe_use_debug_malloc_tracking = false;
+/* Session number to identify the session of local tracking. */
+int32_t oe_debug_malloc_session_number = 0;
 
 /*
 **==============================================================================
@@ -72,8 +82,11 @@ struct header
     void* addrs[OE_BACKTRACE_MAX];
     uint64_t num_addrs;
 
+    /* Option if current object is tracked */
+    int32_t session_number;
+
     /* Padding to make header a multiple of 16 */
-    uint64_t padding;
+    uint8_t padding[4];
 
     /* Contains HEADER_MAGIC2 */
     uint64_t magic2;
@@ -110,18 +123,20 @@ OE_INLINE footer_t* _get_footer(void* ptr)
 }
 
 /* Use a macro so the function name will not appear in the backtrace */
-#define INIT_BLOCK(HEADER, ALIGNMENT, SIZE)                          \
-    do                                                               \
-    {                                                                \
-        HEADER->magic1 = HEADER_MAGIC1;                              \
-        HEADER->next = NULL;                                         \
-        HEADER->prev = NULL;                                         \
-        HEADER->alignment = ALIGNMENT;                               \
-        HEADER->size = SIZE;                                         \
-        HEADER->num_addrs =                                          \
-            (uint64_t)oe_backtrace(HEADER->addrs, OE_BACKTRACE_MAX); \
-        HEADER->magic2 = HEADER_MAGIC2;                              \
-        _get_footer(HEADER->data)->magic = FOOTER_MAGIC;             \
+#define INIT_BLOCK(HEADER, ALIGNMENT, SIZE)                                    \
+    do                                                                         \
+    {                                                                          \
+        HEADER->magic1 = HEADER_MAGIC1;                                        \
+        HEADER->next = NULL;                                                   \
+        HEADER->prev = NULL;                                                   \
+        HEADER->alignment = ALIGNMENT;                                         \
+        HEADER->size = SIZE;                                                   \
+        HEADER->num_addrs =                                                    \
+            (uint64_t)oe_backtrace(HEADER->addrs, OE_BACKTRACE_MAX);           \
+        HEADER->session_number =                                               \
+            oe_use_debug_malloc_tracking ? oe_debug_malloc_session_number : 0; \
+        HEADER->magic2 = HEADER_MAGIC2;                                        \
+        _get_footer(HEADER->data)->magic = FOOTER_MAGIC;                       \
     } while (0)
 
 /* Assert and abort if magic numbers are wrong */
@@ -249,23 +264,21 @@ OE_INLINE bool _check_multiply_overflow(size_t x, size_t y)
 
 static void _malloc_dump(size_t size, void* addrs[], int num_addrs)
 {
-    char** syms = NULL;
+    char** symbols = NULL;
 
     /* Get symbol names for these addresses */
-    if (!(syms = oe_backtrace_symbols(addrs, num_addrs)))
+    if (!(symbols = oe_backtrace_symbols(addrs, num_addrs)))
         goto done;
 
     oe_host_printf("%llu bytes\n", OE_LLX(size));
 
     for (int i = 0; i < num_addrs; i++)
-        oe_host_printf("%s(): %p\n", syms[i], addrs[i]);
+        oe_host_printf("%s(): %p\n", symbols[i], addrs[i]);
 
     oe_host_printf("\n");
 
 done:
-
-    if (syms)
-        oe_backtrace_symbols_free(syms);
+    oe_backtrace_symbols_free(symbols);
 }
 
 static void _dump(bool need_lock)
@@ -400,19 +413,6 @@ void* oe_debug_realloc(void* ptr, size_t size)
     }
 }
 
-void* oe_debug_memalign(size_t alignment, size_t size)
-{
-    void* ptr = NULL;
-
-    // The only difference between posix_memalign and the obsolete memalign is
-    // that posix_memalign requires alignment to be a multiple of sizeof(void*).
-    // Adjust the alignment if needed.
-    alignment = oe_round_up_to_multiple(alignment, sizeof(void*));
-
-    oe_debug_posix_memalign(&ptr, alignment, size);
-    return ptr;
-}
-
 int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
 {
     const size_t padding_size = _get_padding_size(alignment);
@@ -437,6 +437,19 @@ int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
     *memptr = header->data;
 
     return 0;
+}
+
+void* oe_debug_memalign(size_t alignment, size_t size)
+{
+    void* ptr = NULL;
+
+    // The only difference between posix_memalign and the obsolete memalign is
+    // that posix_memalign requires alignment to be a multiple of sizeof(void*).
+    // Adjust the alignment if needed.
+    alignment = oe_round_up_to_multiple(alignment, sizeof(void*));
+
+    oe_debug_posix_memalign(&ptr, alignment, size);
+    return ptr;
 }
 
 size_t oe_debug_malloc_usable_size(void* ptr)
@@ -474,4 +487,271 @@ size_t oe_debug_malloc_check(void)
     return count;
 }
 
-#endif /* defined(OE_USE_DEBUG_MALLOC) */
+/* If true, disable the debug malloc checking */
+bool oe_disable_debug_malloc_check;
+
+static oe_allocation_failure_callback_t _failure_callback;
+
+void oe_set_allocation_failure_callback(
+    oe_allocation_failure_callback_t function)
+{
+    _failure_callback = function;
+}
+
+void* oe_malloc(size_t size)
+{
+    void* p = NULL;
+    if (oe_use_debug_malloc)
+    {
+        p = oe_debug_malloc(size);
+    }
+    else
+    {
+        p = oe_allocator_malloc(size);
+    }
+
+    if (!p && size)
+    {
+        if (_failure_callback)
+            _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
+    }
+
+    return p;
+}
+
+void oe_free(void* ptr)
+{
+    if (oe_use_debug_malloc)
+    {
+        oe_debug_free(ptr);
+    }
+    else
+    {
+        oe_allocator_free(ptr);
+    }
+}
+
+void* oe_calloc(size_t nmemb, size_t size)
+{
+    void* p = NULL;
+    if (oe_use_debug_malloc)
+    {
+        p = oe_debug_calloc(nmemb, size);
+    }
+    else
+    {
+        p = oe_allocator_calloc(nmemb, size);
+    }
+
+    if (!p && nmemb && size)
+    {
+        if (_failure_callback)
+            _failure_callback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
+    }
+
+    return p;
+}
+
+void* oe_realloc(void* ptr, size_t size)
+{
+    void* p = NULL;
+    if (oe_use_debug_malloc)
+    {
+        p = oe_debug_realloc(ptr, size);
+    }
+    else
+    {
+        p = oe_allocator_realloc(ptr, size);
+    }
+
+    if (!p && size)
+    {
+        if (_failure_callback)
+            _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
+    }
+
+    return p;
+}
+
+void* oe_memalign(size_t alignment, size_t size)
+{
+    void* ptr = NULL;
+
+    // The only difference between posix_memalign and the obsolete memalign is
+    // that posix_memalign requires alignment to be a multiple of sizeof(void*).
+    // Adjust the alignment if needed.
+    alignment = oe_round_up_to_multiple(alignment, sizeof(void*));
+
+    oe_posix_memalign(&ptr, alignment, size);
+    return ptr;
+}
+
+int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
+{
+    int rc = -1;
+
+    if (oe_use_debug_malloc)
+        rc = oe_debug_posix_memalign(memptr, alignment, size);
+    else
+        rc = oe_posix_memalign(memptr, alignment, size);
+
+    if (rc != 0 && size)
+    {
+        if (_failure_callback)
+            _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
+    }
+
+    return rc;
+}
+
+size_t oe_malloc_usable_size(void* ptr)
+{
+    if (oe_use_debug_malloc)
+    {
+        return oe_debug_malloc_usable_size(ptr);
+    }
+    else
+    {
+        return oe_allocator_malloc_usable_size(ptr);
+    }
+}
+
+oe_result_t oe_check_memory_leaks(void)
+{
+    if (!oe_disable_debug_malloc_check && oe_debug_malloc_check() != 0)
+        return OE_MEMORY_LEAK;
+    return OE_OK;
+}
+
+oe_result_t oe_debug_malloc_tracking_start(void)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    oe_spin_lock(&_spin);
+    if (!oe_use_debug_malloc_tracking)
+    {
+        oe_use_debug_malloc_tracking = true;
+        ++oe_debug_malloc_session_number;
+        result = OE_OK;
+    }
+    oe_spin_unlock(&_spin);
+
+    return result;
+}
+
+oe_result_t oe_debug_malloc_tracking_stop(void)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    oe_spin_lock(&_spin);
+    if (oe_use_debug_malloc_tracking)
+    {
+        oe_use_debug_malloc_tracking = false;
+        result = OE_OK;
+    }
+    oe_spin_unlock(&_spin);
+
+    return result;
+}
+
+static oe_result_t _copy_frames(
+    header_t* p,
+    char** str,
+    size_t* size,
+    size_t* index)
+{
+    oe_result_t result = OE_FAILURE;
+    char** symbols = NULL;
+
+    if (!(symbols = oe_backtrace_symbols(p->addrs, (int)(p->num_addrs))))
+    {
+        goto done;
+    }
+
+    for (uint64_t i = 0; i < p->num_addrs; i++)
+    {
+        size_t length_s = oe_strlen(symbols[i]);
+        size_t length_a = sizeof(p->addrs[i]) * 2;
+        size_t length = length_s + length_a + 6;
+
+        if (*index + length >= *size)
+        {
+            while (*index + length >= *size)
+            {
+                *size *= 2;
+            }
+
+            *str = oe_realloc(*str, *size);
+            if (*str == NULL)
+            {
+                result = OE_ENOMEM;
+                goto done;
+            }
+        }
+
+        oe_snprintf(
+            *str + *index, length, "%s(): %p\n", symbols[i], p->addrs[i]);
+        *index = oe_strlen(*str);
+    }
+
+    (*str)[(*index)++] = '\n';
+    (*str)[*index] = '\0';
+
+    result = OE_OK;
+
+done:
+    oe_backtrace_symbols_free(symbols);
+
+    return result;
+}
+
+oe_result_t oe_debug_malloc_tracking_report(
+    uint64_t* out_object_count,
+    char** report)
+{
+    oe_result_t result = OE_OK;
+    uint64_t count = 0;
+
+    size_t index = 0;
+    size_t length = 4096;
+    char* report_string = oe_malloc(length);
+    if (!report_string)
+    {
+        result = OE_ENOMEM;
+        goto done;
+    }
+    report_string[0] = '\0';
+
+    list_t* list = &_list;
+    oe_spin_lock(&_spin);
+    {
+        for (header_t* p = list->head; p; p = p->next)
+        {
+            if (p->session_number)
+            {
+                count++;
+                result = _copy_frames(p, &report_string, &length, &index);
+                if (result != OE_OK)
+                {
+                    goto done;
+                }
+            }
+        }
+    }
+    oe_spin_unlock(&_spin);
+
+    length = index + 1;
+    report_string = oe_realloc(report_string, length);
+    if (!report_string)
+    {
+        result = OE_ENOMEM;
+        goto done;
+    }
+
+    *out_object_count = count;
+    *report = report_string;
+
+done:
+    oe_spin_unlock(&_spin);
+    return result;
+}
