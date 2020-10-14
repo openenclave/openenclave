@@ -42,7 +42,7 @@ The work sequence should be like,
 * Other threads(Host): OE_OCALL_THREAD_WAIT return after being waked up.
 * Other threads(Enclave): in pthread_join() check the status of the child thread before return.
 
-### pthread_self
+### oe_thread_self
 The function is used to get the calling thread’s ID. It will be wrapped to pthread_self finally.
 
 Currently it returns the td pointer. It will be changed to return an internal structure pointer which 
