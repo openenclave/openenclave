@@ -134,18 +134,10 @@ OE_EXTERNC_BEGIN
         result = (RESULT);                                           \
         if (result != OE_OK)                                         \
         {                                                            \
-            if (!_strcmp(#__VA_ARGS__, "NULL"))                      \
-            {                                                        \
-                OE_TRACE_ERROR(                                      \
-                    fmt " (oe_result_t=%s)", oe_result_str(result)); \
-            }                                                        \
-            else                                                     \
-            {                                                        \
-                OE_TRACE_ERROR(                                      \
-                    fmt " (oe_result_t=%s)",                         \
-                    ##__VA_ARGS__,                                   \
-                    oe_result_str(result));                          \
-            }                                                        \
+            OE_TRACE_ERROR(                                          \
+                fmt " (oe_result_t=%s)",                             \
+                ##__VA_ARGS__,                                       \
+                oe_result_str(result));                              \
         }                                                            \
         goto done;                                                   \
     } while (0)
