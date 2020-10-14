@@ -343,7 +343,7 @@ static oe_result_t _handle_ocall(
 
     oe_log(
         OE_LOG_LEVEL_VERBOSE,
-        "%s 0x%x %s: %s\n",
+        "%s 0x%llx %s: %s\n",
         enclave->path,
         enclave->addr,
         func == OE_OCALL_CALL_HOST_FUNCTION ? "EDL_OCALL" : "OE_OCALL",
@@ -602,7 +602,7 @@ oe_result_t oe_ecall(
 
     oe_log(
         OE_LOG_LEVEL_VERBOSE,
-        "%s 0x%x %s: %s\n",
+        "%s 0x%llx %s: %s\n",
         enclave->path,
         enclave->addr,
         func == OE_ECALL_CALL_ENCLAVE_FUNCTION ? "EDL_ECALL" : "OE_ECALL",
