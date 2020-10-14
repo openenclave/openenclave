@@ -25,7 +25,7 @@ tracking the number of currently mapped pages. For performance reasons, we
 propose to add a switchless version of the OCALL whenever
 `OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS` is enabled:
 
-    trusted {
+    untrusted {
       public oe_result_t oe_add_pages(size_t count);
       public oe_result_t oe_add_pages_switchless(size_t count) transition_using_threads;
     };
