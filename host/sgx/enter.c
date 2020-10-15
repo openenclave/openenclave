@@ -7,6 +7,7 @@
 #include <openenclave/internal/sgx/ecall_context.h>
 #include "asmdefs.h"
 #include "enclave.h"
+#include "xstate.h"
 
 // Define a variable with given name and bind it to the register with the
 // corresponding name. This allows manipulating the register as a normal
@@ -56,6 +57,27 @@
 #define OE_ENCLU_CLOBBERED_REGISTERS                                      \
     "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "xmm6", "xmm7", \
         "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15"
+
+#define OE_VZEROUPPER              \
+    asm volatile("vzeroupper \n\t" \
+                 :                 \
+                 :                 \
+                 : "ymm0",         \
+                   "ymm1",         \
+                   "ymm2",         \
+                   "ymm3",         \
+                   "ymm4",         \
+                   "ymm5",         \
+                   "ymm6",         \
+                   "ymm7",         \
+                   "ymm8",         \
+                   "ymm9",         \
+                   "ymm10",        \
+                   "ymm11",        \
+                   "ymm12",        \
+                   "ymm13",        \
+                   "ymm14",        \
+                   "ymm15")
 
 // The following function must not be inlined and must have a frame-pointer
 // so that the frame can be manipulated to stitch the ocall stack.
@@ -168,6 +190,14 @@ void oe_enter(
 
     while (1)
     {
+        // Compiler will usually handle this on exiting a function that uses
+        // AVX, but we need to avoid the AVX-SSE transition penalty here
+        // manually as part of the transition to enclave. See
+        // https://software.intel.com/content/www/us/en/develop/articles
+        // /avoiding-avx-sse-transition-penalties.html
+        if (oe_is_avx_enabled)
+            OE_VZEROUPPER;
+
         // Define register bindings and initialize the registers.
         // On Windows, explicitly setup rbp as a Linux ABI style frame-pointer.
         // On Linux, the frame-pointer is set up by compiling the file with the
@@ -255,6 +285,10 @@ void oe_enter_sim(
         // register to the desired value. See host/sgx/create.c.
         oe_set_fs_register_base((void*)(enclave->addr + sgx_tcs->fsbase));
         oe_set_gs_register_base((void*)(enclave->addr + sgx_tcs->gsbase));
+
+        // For parity with oe_enter, see comments there.
+        if (oe_is_avx_enabled)
+            OE_VZEROUPPER;
 
         // Define register bindings and initialize the registers.
         // See oe_enter for ENCLU contract.
