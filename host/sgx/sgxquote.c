@@ -32,6 +32,11 @@ OE_STATIC_ASSERT(sizeof(sgx_att_key_id_ext_t) == sizeof(sgx_att_key_id_t));
 #define SGX_QL_ALG_EPID_UNLINKABLE SGX_QL_ALG_EPID
 #define SGX_QL_ALG_EPID_LINKABLE SGX_QL_ALG_RESERVED_1
 
+// Facilitate writing switch statement for quote3_error_t values
+#define CASE_ERROR_RETURN_ERROR_STRING(x) \
+    case x:                               \
+        return #x;
+
 static oe_sgx_quote_ex_library_t _quote_ex_library = {0};
 static const oe_uuid_t _unknown_uuid = {OE_FORMAT_UUID_SGX_UNKNOWN};
 static const oe_uuid_t _epid_linkable_uuid = {OE_FORMAT_UUID_SGX_EPID_LINKABLE};
@@ -121,6 +126,9 @@ static quote3_error_t (*_sgx_qv_verify_quote)(
 #define SGX_DCAP_IN_PROCESS_QUOTING() (getenv("SGX_AESM_ADDR") == NULL)
 
 #define TRY_TO_USE_SGX_DCAP_QVL() (getenv("USE_SGX_QVL") != NULL)
+
+#define sprintf_s(buffer, size, format, argument) \
+    sprintf(buffer, format, argument)
 
 #endif
 
@@ -401,6 +409,101 @@ static bool _use_quote_ex_library(void)
         _quote_ex_library.load_result == OE_OK);
 }
 
+// This is a helper for getting "human error messages" - as mentioned in issue
+// 2945 - so that we do not have to return complex quote3_error_t codes in error
+// messages.
+static const char* get_quote3_error_t_string(quote3_error_t err)
+{
+    static char quote3_error_t_number[16];
+    sprintf_s(
+        quote3_error_t_number, sizeof(quote3_error_t_number), "0x%x", err);
+
+    switch (err)
+    {
+        // all possible quote3_error_t error codes
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_UNEXPECTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_INVALID_PARAMETER);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_OUT_OF_MEMORY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_ECDSA_ID_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PATHNAME_BUFFER_OVERFLOW_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_FILE_ACCESS_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_STORED_KEY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_PUB_KEY_ID_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_INVALID_PCE_SIG_SCHEME);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ATT_KEY_BLOB_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNSUPPORTED_ATT_KEY_ID);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNSUPPORTED_LOADING_POLICY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_INTERFACE_UNAVAILABLE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PLATFORM_LIB_UNAVAILABLE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ATT_KEY_NOT_INITIALIZED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ATT_KEY_CERT_DATA_INVALID);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_PLATFORM_CERT_DATA);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_OUT_OF_EPC);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_REPORT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ENCLAVE_LOST);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_INVALID_REPORT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ENCLAVE_LOAD_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNABLE_TO_GENERATE_QE_REPORT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_KEY_CERTIFCATION_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NETWORK_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_MESSAGE_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_QUOTE_COLLATERAL_DATA);
+        CASE_ERROR_RETURN_ERROR_STRING(
+            SGX_QL_QUOTE_CERTIFICATION_DATA_UNSUPPORTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QUOTE_FORMAT_UNSUPPORTED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNABLE_TO_GENERATE_REPORT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QE_REPORT_INVALID_SIGNATURE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QE_REPORT_UNSUPPORTED_FORMAT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PCK_CERT_UNSUPPORTED_FORMAT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PCK_CERT_CHAIN_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCBINFO_UNSUPPORTED_FORMAT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCBINFO_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QEIDENTITY_UNSUPPORTED_FORMAT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QEIDENTITY_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_OUT_OF_DATE);
+        CASE_ERROR_RETURN_ERROR_STRING(
+            SGX_QL_TCB_OUT_OF_DATE_CONFIGURATION_NEEDED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_ENCLAVE_IDENTITY_OUT_OF_DATE);
+        CASE_ERROR_RETURN_ERROR_STRING(
+            SGX_QL_SGX_ENCLAVE_REPORT_ISVSVN_OUT_OF_DATE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QE_IDENTITY_OUT_OF_DATE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_TCB_INFO_EXPIRED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_PCK_CERT_CHAIN_EXPIRED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_CRL_EXPIRED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_SIGNING_CERT_CHAIN_EXPIRED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SGX_ENCLAVE_IDENTITY_EXPIRED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PCK_REVOKED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_REVOKED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_CONFIGURATION_NEEDED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNABLE_TO_GET_COLLATERAL);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_INVALID_PRIVILEGE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_QVE_IDENTITY_DATA);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_CRL_UNSUPPORTED_FORMAT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QEIDENTITY_CHAIN_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCBINFO_CHAIN_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_QVL_QVE_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_TCB_SW_HARDENING_NEEDED);
+        CASE_ERROR_RETURN_ERROR_STRING(
+            SGX_QL_TCB_CONFIGURATION_AND_SW_HARDENING_NEEDED);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNSUPPORTED_MODE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NO_DEVICE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SERVICE_UNAVAILABLE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_NETWORK_FAILURE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_SERVICE_TIMEOUT);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_BUSY);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_UNKNOWN_MESSAGE_RESPONSE);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PERSISTENT_STORAGE_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_ERROR_MESSAGE_PARSING_ERROR);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_PLATFORM_UNKNOWN);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QVEIDENTITY_MISMATCH);
+        CASE_ERROR_RETURN_ERROR_STRING(SGX_QL_QVE_OUT_OF_DATE);
+
+        // return the error number as is in the default case
+        default:
+            return quote3_error_t_number;
+    }
+}
+
 oe_result_t oe_sgx_qe_get_target_info(
     const oe_uuid_t* format_id,
     const void* opt_params,
@@ -479,7 +582,10 @@ oe_result_t oe_sgx_qe_get_target_info(
 
         err = _sgx_qe_get_target_info((sgx_target_info_t*)target_info);
         if (err != SGX_QL_SUCCESS)
-            OE_RAISE_MSG(OE_PLATFORM_ERROR, "quote3_error_t=0x%x\n", err);
+            OE_RAISE_MSG(
+                OE_PLATFORM_ERROR,
+                "quote3_error_t=%s\n",
+                get_quote3_error_t_string(err));
 
         result = OE_OK;
     }
@@ -546,7 +652,10 @@ oe_result_t oe_sgx_qe_get_quote_size(
         err = _sgx_qe_get_quote_size(&local_quote_size);
 
         if (err != SGX_QL_SUCCESS)
-            OE_RAISE_MSG(OE_PLATFORM_ERROR, "quote3_error_t=0x%x\n", err);
+            OE_RAISE_MSG(
+                OE_PLATFORM_ERROR,
+                "quote3_error_t=%s\n",
+                get_quote3_error_t_string(err));
 
         *quote_size = local_quote_size;
         result = OE_OK;
@@ -635,7 +744,10 @@ oe_result_t oe_sgx_qe_get_quote(
             err = _sgx_qe_get_quote(
                 (sgx_report_t*)report, local_quote_size, quote);
             if (err != SGX_QL_SUCCESS)
-                OE_RAISE_MSG(OE_PLATFORM_ERROR, "quote3_error_t=0x%x\n", err);
+                OE_RAISE_MSG(
+                    OE_PLATFORM_ERROR,
+                    "quote3_error_t=%s\n",
+                    get_quote3_error_t_string(err));
             OE_TRACE_INFO("quote_size=%d", local_quote_size);
 
             result = OE_OK;
