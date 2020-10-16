@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added missing attribute validations to oeedger8r C++ implementation.
 - Added new API *oe_log_message*.  See [design doc](docs/DesignDocs/oe_log_message()_callback_proposal.md) and [sample](samples/log_callback/README.md).
 - Added support of QVL/QVE based SGX evidence verification, as described in [design doc](docs/DesignDocs/SGX_QuoteVerify_Integration.md).
+- Added a new oeverify tool that subsumes the existing host_verify sample which was installed as part of the host verify package.
+It is basically the same utility as host_verify with added flexibility to pass a custom format for the evidence to be verified.
 
 ### Changed
 - Fixed https://github.com/openenclave/openenclave/issues/3543, updated openenclaverc file and documents on Windows to avoid overwriting CMAKE_PREFIX_PATH.
