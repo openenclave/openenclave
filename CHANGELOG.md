@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial implementation of the [Malloc Info API](docs/DesignDocs/Mallinfo.md) for dlmalloc (default allocator), and snmalloc.
 - Added missing attribute validations to oeedger8r C++ implementation.
 - Added new API *oe_log_message*.  See [design doc](docs/DesignDocs/oe_log_message()_callback_proposal.md) and [sample](samples/log_callback/README.md).
+- Added APIs and a library for developers to detect leaks in enclaves. See [design doc](docs/DesignDocs/Enabledebugmalloc.md) and [sample](samples/debugmalloc/README.md).
 - Added support of QVL/QVE based SGX evidence verification, as described in [design doc](docs/DesignDocs/SGX_QuoteVerify_Integration.md).
 
 ### Changed
