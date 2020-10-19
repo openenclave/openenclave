@@ -1,0 +1,38 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    struct MyStruct {
+        int       a1;
+        short int a2;
+        long int  a3;
+
+        unsigned int       b1;
+        unsigned short int b2;
+        unsigned long  int b3;
+
+        unsigned       c1;
+        unsigned short c2;
+        unsigned long  c3;
+
+        short d1;
+        long  d2;
+
+        long long          e1;
+        unsigned long long e2;
+
+        char          f1;
+        unsigned char f2;
+
+        long double   g;
+        float f[8];
+
+        char *s;
+        struct Foo foo;
+    };
+
+
+    trusted {
+        public struct MyStruct ecall([isptr, in, out] MyStruct s[8]);
+    };
+};
