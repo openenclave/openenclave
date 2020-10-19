@@ -158,6 +158,21 @@ oe_result_t oe_spin_init(oe_spinlock_t* spinlock);
 oe_result_t oe_spin_lock(oe_spinlock_t* spinlock);
 
 /**
+ * Try to acquire a lock on a spin lock.
+ *
+ * This function attempts to acquire a lock on the given spin lock if it is
+ * available. If the spin lock is unavailable, the function returns immediately.
+ *
+ * @param spinlock Lock this spin lock.
+ *
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_BUSY the lock was busy
+ *
+ */
+oe_result_t oe_spin_trylock(oe_spinlock_t* spinlock);
+
+/**
  * Release the lock on a spin lock.
  *
  * A thread calls this function to release a lock on a spin lock.

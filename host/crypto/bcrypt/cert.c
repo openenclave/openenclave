@@ -1043,7 +1043,13 @@ oe_result_t oe_get_crl_distribution_points(
         if (*buffer_size < required_size)
         {
             *buffer_size = required_size;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+            if (buffer)
+                OE_RAISE(OE_BUFFER_TOO_SMALL);
+            /* If buffer is null, this call is intented to get the correct
+             * buffer_size so no need to trace OE_BUFFER_TOO_SMALL */
+            else
+                OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
         }
 
         /* Copy the URLs array and pack the URL strings into buffer */
@@ -1281,7 +1287,13 @@ oe_result_t oe_cert_find_extension(
     if (extension->Value.cbData > *data_size)
     {
         *data_size = extension->Value.cbData;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (data)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If data is null, this call is intented to get the correct
+         * data_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     if (data)

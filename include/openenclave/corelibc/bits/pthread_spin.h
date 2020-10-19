@@ -17,6 +17,12 @@ int pthread_spin_lock(pthread_spinlock_t* spinlock)
 }
 
 OE_INLINE
+int pthread_spin_trylock(pthread_spinlock_t* spinlock)
+{
+    return oe_pthread_spin_trylock((oe_pthread_spinlock_t*)spinlock);
+}
+
+OE_INLINE
 int pthread_spin_unlock(pthread_spinlock_t* spinlock)
 {
     return oe_pthread_spin_unlock((oe_pthread_spinlock_t*)spinlock);

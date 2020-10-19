@@ -15,8 +15,8 @@ update-openssl-headers:
 									no-shared no-siphash no-sm2 no-sm3 no-sm4 no-srp no-ssl2 no-ssl3 \
 									no-threads no-ui-console no-whirlpool no-zlib CC=clang-7 CXX=clang++-7; \
 	perl "-I." -Mconfigdata "openssl/util/dofile.pl" "-oMakefile" "openssl/include/crypto/bn_conf.h.in" \
-			> bn_conf.h; \
+			> include/bn_conf.h; \
 	perl "-I." -Mconfigdata "openssl/util/dofile.pl" "-oMakefile" "openssl/include/crypto/dso_conf.h.in" \
-			> dso_conf.h; \
+			> include/dso_conf.h; \
 	perl "-I." -Mconfigdata "openssl/util/dofile.pl" "-oMakefile" "openssl/include/openssl/opensslconf.h.in" \
-			> opensslconf.h; )
+			> include/opensslconf.h; )

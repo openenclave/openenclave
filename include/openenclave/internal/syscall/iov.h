@@ -15,7 +15,8 @@ int oe_iov_pack(
     const struct oe_iovec* iov,
     int iovcnt,
     void** buf_out,
-    size_t* buf_size_out);
+    size_t* buf_size_out,
+    size_t* data_size_out);
 
 int oe_iov_sync(
     const struct oe_iovec* iov,

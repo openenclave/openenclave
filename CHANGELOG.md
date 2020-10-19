@@ -10,6 +10,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+[v0.12.0][v0.12.0_log]
+--------------
+
+### Added
+- Initial implementation of the [Malloc Info API](docs/DesignDocs/Mallinfo.md) for dlmalloc (default allocator), and snmalloc.
+- Added missing attribute validations to oeedger8r C++ implementation.
+- Added new API *oe_log_message*.  See [design doc](docs/DesignDocs/oe_log_message()_callback_proposal.md) and [sample](samples/log_callback/README.md).
+- Added APIs and a library for developers to detect leaks in enclaves. See [design doc](docs/DesignDocs/Enabledebugmalloc.md) and [sample](samples/debugmalloc/README.md).
+- Added support of QVL/QVE based SGX evidence verification, as described in [design doc](docs/DesignDocs/SGX_QuoteVerify_Integration.md).
+- Added a new oeverify tool that subsumes the existing host_verify sample which was installed as part of the host verify package.
+It is basically the same utility as host_verify with added flexibility to pass a custom format for the evidence to be verified.
+
+### Changed
+- Fixed https://github.com/openenclave/openenclave/issues/3543, updated openenclaverc file and documents on Windows to avoid overwriting CMAKE_PREFIX_PATH.
+- The local and remote attestation samples are merged into a [single sample](samples/attestation/README.md).
+- Disabled a set of OpenSSL APIs/macros that are considered as unsafe based on OE's threat model.
+ More specifically, those APIs allow users to configure an OpenSSL application to read certificates from the host filesystem, which is not trusted, and therefore not recommended for use in enclaves. [OpenSSLSupport.md](docs/OpenSSLSupport.md) has been updated to reflect the changes.
+
+### Deprecated
+
+- The Open Enclave SDK will be dropping support for Ubuntu 16.04 after Dec 2020.
+Developers and partners using Ubuntu 16.04 will need to move to using Ubuntu 18.04 by then.
+https://github.com/openenclave/openenclave/issues/3625 tracks this.
+
+- The Open Enclave SDK will be dropping support for WS2016 after Dec 2020.
+Developers and partners using WS2016 will need to move to using WS2019 by then.
+https://github.com/openenclave/openenclave/issues/3539 tracks this.
+
+- The Open Enclave SDK is deprecating support for gcc while *building the SDK from source* after Dec 2020.
+The recommended compiler while building the SDK from source is Clang.
+https://github.com/openenclave/openenclave/issues/3555 tracks this.
+
+### Security
+- Security fixes in oeedger8r
+     - Fix TOCTOU vulnerability in NULL terminator checks for ocall in/out string parameters.
+     - Count/size properties in deep-copied in/out structs are treated as read-only to prevent the host
+	   from changing corrupting enclave memory by changing these properties.
+- Fixed [Socket syscalls can leak enclave memory contents](https://github.com/openenclave/openenclave/security/advisories/GHSA-525h-wxcc-f66m) (CVE-2020-15224).
+
 [v0.11.0][v0.11.0_log]
 --------------
 
@@ -481,7 +520,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.11.0...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.12.0...HEAD
+
+[v0.12.0_log]:https://github.com/openenclave/openenclave/compare/v0.11.0...v0.12.0
 
 [v0.11.0_log]:https://github.com/openenclave/openenclave/compare/v0.10.0...v0.11.0
 

@@ -3,7 +3,7 @@
 
 enclave {
     trusted {
-        // [string]  attribute can only be used for 'char *' type
+        // [string] attribute can only be used for 'char *' type
         public int ecall([string, in, out] wchar_t* s);
     };
 };

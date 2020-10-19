@@ -468,7 +468,13 @@ oe_result_t oe_ecdsa_signature_write_der(
     if (len > *signature_size)
     {
         *signature_size = len;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (signature)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If signature is null, this call is intented to get the correct
+         * signature_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     OE_CHECK(oe_memcpy_s(signature, *signature_size, p, len));

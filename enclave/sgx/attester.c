@@ -365,6 +365,7 @@ static oe_result_t _get_attester_plugins(
     // It's possible that there is no supported format
     if (temporary_buffer_size >= sizeof(oe_uuid_t))
     {
+        size_t allocated_buffer_size = temporary_buffer_size;
         // Allocate buffer to held the format IDs
         temporary_buffer = (uint8_t*)oe_malloc(temporary_buffer_size);
         if (temporary_buffer == NULL)
@@ -374,10 +375,12 @@ static oe_result_t _get_attester_plugins(
         result = oe_get_supported_attester_format_ids_ocall(
             (uint32_t*)&retval,
             temporary_buffer,
-            temporary_buffer_size,
+            allocated_buffer_size,
             &temporary_buffer_size);
         OE_CHECK(result);
         OE_CHECK(retval);
+        if (temporary_buffer_size != allocated_buffer_size)
+            OE_RAISE(OE_UNEXPECTED);
     }
 
     uuid_list = (oe_uuid_t*)temporary_buffer;

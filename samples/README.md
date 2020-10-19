@@ -42,15 +42,10 @@ The following samples demonstrate how to develop enclave applications using OE A
   - OE_SEAL_POLICY_UNIQUE
   - OE_SEAL_POLICY_PRODUCT
 
-#### [Remote Attestation](remote_attestation/README.md)
+#### [Attestation](attestation/README.md)
 
 - Explain how OE attestation works
-- Demonstrate an implementation of remote attestation between two enclaves running on different machines
-
-#### [Local Attestation](local_attestation/README.md)
-
-- Explain the concept of OE local attestation
-- Demonstrate an implementation of local attestation between two enclaves on the same machine
+- Demonstrate an implementation of attestation between two enclaves
 
 #### [Attested TLS](attested_tls/README.md)
 

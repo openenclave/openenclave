@@ -675,6 +675,44 @@ void verify_sgx_evidence(
         &endorsements_body,
         &endorsements_body_size);
 
+    // Try with no output claims.
+    OE_TEST_CODE(
+        oe_verify_evidence(
+            wrapped_with_header ? NULL : format_id,
+            evidence,
+            evidence_size,
+            endorsements,
+            endorsements_size,
+            NULL,
+            0,
+            NULL,
+            NULL),
+        OE_OK);
+    OE_TEST_CODE(
+        oe_verify_evidence(
+            wrapped_with_header ? NULL : format_id,
+            evidence,
+            evidence_size,
+            endorsements,
+            endorsements_size,
+            NULL,
+            0,
+            &claims,
+            NULL),
+        OE_INVALID_PARAMETER);
+    OE_TEST_CODE(
+        oe_verify_evidence(
+            wrapped_with_header ? NULL : format_id,
+            evidence,
+            evidence_size,
+            endorsements,
+            endorsements_size,
+            NULL,
+            0,
+            NULL,
+            &claims_size),
+        OE_INVALID_PARAMETER);
+
     // Try with no policies.
     OE_TEST_CODE(
         oe_verify_evidence(

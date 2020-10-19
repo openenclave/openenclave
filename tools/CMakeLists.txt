@@ -41,4 +41,5 @@ install(
 if (OE_SGX)
   add_subdirectory(oesgx)
   add_subdirectory(oesign)
+  add_subdirectory(oeverify)
 endif ()

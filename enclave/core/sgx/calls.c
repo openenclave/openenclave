@@ -40,11 +40,10 @@
 #include "report.h"
 #include "switchlesscalls.h"
 #include "td.h"
+#include "xstate.h"
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
-
-extern bool oe_disable_debug_malloc_check;
 
 /*
 **==============================================================================
@@ -170,6 +169,10 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
             /* Initialize the CPUID table before calling global constructors. */
             OE_CHECK(oe_initialize_cpuid());
+
+            /* Initialize the xstate settings
+             * Depends on TD and sgx_create_report, so can't happen earlier */
+            OE_CHECK(oe_set_is_xsave_supported());
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
@@ -349,7 +352,7 @@ static void _handle_ecall(
     oe_result_t result = OE_OK;
 
     /* Insert ECALL context onto front of oe_sgx_td_t.ecalls list */
-    Callsite callsite = {{0}};
+    oe_callsite_t callsite = {{0}};
     uint64_t arg_out = 0;
 
     td_push_callsite(td, &callsite);
@@ -410,13 +413,8 @@ static void _handle_ecall(
             /* Cleanup verifiers */
             oe_verifier_shutdown();
 
-#if defined(OE_USE_DEBUG_MALLOC)
-
             /* If memory still allocated, print a trace and return an error */
-            if (!oe_disable_debug_malloc_check && oe_debug_malloc_check() != 0)
-                result = OE_MEMORY_LEAK;
-
-#endif /* defined(OE_USE_DEBUG_MALLOC) */
+            OE_CHECK(oe_check_memory_leaks());
 
             /* Cleanup the allocator */
             oe_allocator_cleanup();
@@ -473,7 +471,7 @@ OE_INLINE void _handle_oret(
     uint16_t result,
     uint64_t arg)
 {
-    Callsite* callsite = td->callsites;
+    oe_callsite_t* callsite = td->callsites;
 
     if (!callsite)
         return;
@@ -631,7 +629,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_td_t* td = oe_sgx_get_td();
-    Callsite* callsite = td->callsites;
+    oe_callsite_t* callsite = td->callsites;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */

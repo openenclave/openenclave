@@ -69,7 +69,7 @@ static void _free_claim(oe_claim_t* claim)
     oe_free(claim->value);
 }
 
-static oe_result_t _free_claims(
+oe_result_t sgx_attestation_plugin_free_claims_list(
     oe_verifier_t* context,
     oe_claim_t* claims,
     size_t claims_length)
@@ -456,8 +456,9 @@ oe_result_t oe_sgx_extract_claims(
 
     // Note: some callers can have custom_claims_buffer pointing to a non-NULL
     // buffer containing a zero-sized array.
-    if (!format_id || !report_body || !report_body_size ||
-        (!custom_claims_buffer && custom_claims_buffer_size))
+    if (!format_id || !report_body || !report_body_size || !claims_out ||
+        !claims_length_out ||
+        (!custom_claims_buffer != !custom_claims_buffer_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // verify the integrity of the custom_claims_buffer with hash stored in
@@ -542,7 +543,7 @@ oe_result_t oe_sgx_extract_claims(
 
 done:
     if (claims)
-        _free_claims(NULL, claims, claims_length);
+        sgx_attestation_plugin_free_claims_list(NULL, claims, claims_length);
     return result;
 }
 
@@ -569,8 +570,9 @@ static oe_result_t _verify_evidence(
     size_t custom_claims_buffer_size = 0;
     oe_uuid_t* format_id = NULL;
 
-    if (!context || !evidence_buffer || !evidence_buffer_size || !claims ||
-        !claims_length)
+    if (!context || !evidence_buffer || !evidence_buffer_size ||
+        (!endorsements_buffer != !endorsements_buffer_size) ||
+        (!claims != !claims_length))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     format_id = &context->base.format_id;
@@ -695,26 +697,31 @@ static oe_result_t _verify_evidence(
     }
 
     // Last step is to return the required and custom claims.
-    OE_CHECK(oe_sgx_extract_claims(
-        format_type,
-        format_id,
-        report_body,
-        report_body_size,
-        custom_claims_buffer,
-        custom_claims_buffer_size,
-        &sgx_endorsements,
-        claims,
-        claims_length));
-
-    // Avoid running the loop unless traces are actually generated
-    if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
+    if (claims)
     {
-        OE_TRACE_INFO("extracted %lu claims", *claims_length);
-        for (size_t i = 0; i < *claims_length; i++)
+        OE_CHECK(oe_sgx_extract_claims(
+            format_type,
+            format_id,
+            report_body,
+            report_body_size,
+            custom_claims_buffer,
+            custom_claims_buffer_size,
+            &sgx_endorsements,
+            claims,
+            claims_length));
+
+        // Avoid running the loop unless traces are actually generated
+        if (oe_get_current_logging_level() >= OE_LOG_LEVEL_INFO)
         {
-            OE_TRACE_INFO(
-                "claim %s[%lu]: ", (*claims)[i].name, (*claims)[i].value_size);
-            oe_hex_dump((*claims)[i].value, (*claims)[i].value_size);
+            OE_TRACE_INFO("extracted %lu claims", *claims_length);
+            for (size_t i = 0; i < *claims_length; i++)
+            {
+                OE_TRACE_INFO(
+                    "claim %s[%lu]: ",
+                    (*claims)[i].name,
+                    (*claims)[i].value_size);
+                oe_hex_dump((*claims)[i].value, (*claims)[i].value_size);
+            }
         }
     }
 
@@ -870,7 +877,7 @@ static oe_result_t _get_verifier_plugins(
         plugin->get_format_settings = &_get_format_settings;
         plugin->verify_evidence = &_verify_evidence;
         plugin->verify_report = &_verify_report;
-        plugin->free_claims = &_free_claims;
+        plugin->free_claims = &sgx_attestation_plugin_free_claims_list;
     }
     *verifiers_length = uuid_count;
     result = OE_OK;

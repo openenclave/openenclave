@@ -7,6 +7,7 @@
 #include <openenclave/bits/attestation.h>
 #include <openenclave/bits/eeid.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
+#include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/eeid.h>
 #include <openenclave/internal/hexdump.h>
@@ -50,214 +51,6 @@ oe_result_t oe_create_eeid_sgx(size_t data_size, oe_eeid_t** eeid)
     (*eeid)->data_size = data_size;
 
     result = OE_OK;
-done:
-    return result;
-}
-
-static oe_result_t serialize_element(
-    const char* name,
-    char** position,
-    size_t* remaining,
-    const uint8_t* element,
-    size_t element_size)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    size_t name_sz = strlen(name);
-
-    if (*remaining < 2 * element_size + 1 + name_sz + 1)
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
-
-    snprintf(*position, *remaining, "%s=", name);
-    *position += name_sz + 1;
-    *remaining -= name_sz + 1;
-
-    oe_hex_string(*position, *remaining, element, element_size);
-    *position += 2 * element_size;
-    **position = '\n';
-    *position += 1;
-    *remaining -= 2 * element_size + 1;
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-static oe_result_t deserialize_element(
-    const char** position,
-    size_t* remaining,
-    uint8_t* element,
-    size_t element_size)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    // Skip name
-    while (**position != ' ')
-    {
-        *position += 1;
-        *remaining -= 1;
-    }
-    *position += 1;
-    *remaining -= 1;
-
-    if (*remaining < 2 * element_size + 2)
-        return OE_OUT_OF_BOUNDS;
-
-    for (size_t i = 0; i < element_size; i++)
-    {
-        unsigned digit;
-        if (sscanf(*position, "%02x", &digit) != 1)
-            OE_RAISE(OE_INVALID_PARAMETER);
-        element[i] = (uint8_t)digit;
-        *position += 2;
-        *remaining -= 2;
-    }
-
-    if (**position != '\n')
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    *position += 1;
-    *remaining -= 1;
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-// Note: this needs to be updated when oe_eeid_t changes.
-oe_result_t oe_serialize_eeid(const oe_eeid_t* eeid, char* buf, size_t buf_size)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    char** position = &buf;
-    size_t remaining = buf_size;
-
-    if (!eeid || !buf || !buf_size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    OE_CHECK(serialize_element(
-        "version",
-        position,
-        &remaining,
-        (uint8_t*)&eeid->version,
-        sizeof(eeid->version)));
-    OE_CHECK(serialize_element(
-        "H",
-        position,
-        &remaining,
-        (uint8_t*)eeid->hash_state.H,
-        sizeof(eeid->hash_state.H)));
-    OE_CHECK(serialize_element(
-        "N",
-        position,
-        &remaining,
-        (uint8_t*)eeid->hash_state.N,
-        sizeof(eeid->hash_state.N)));
-    OE_CHECK(serialize_element(
-        "signature_size",
-        position,
-        &remaining,
-        (uint8_t*)&eeid->signature_size,
-        sizeof(eeid->signature_size)));
-    OE_CHECK(serialize_element(
-        "size_settings",
-        position,
-        &remaining,
-        (uint8_t*)&eeid->size_settings,
-        sizeof(eeid->size_settings)));
-    OE_CHECK(serialize_element(
-        "data_size",
-        position,
-        &remaining,
-        (uint8_t*)&eeid->data_size,
-        sizeof(eeid->data_size)));
-    OE_CHECK(serialize_element(
-        "vaddr",
-        position,
-        &remaining,
-        (uint8_t*)&eeid->vaddr,
-        sizeof(eeid->vaddr)));
-    OE_CHECK(serialize_element(
-        "entry_point",
-        position,
-        &remaining,
-        (uint8_t*)&eeid->entry_point,
-        sizeof(eeid->entry_point)));
-    OE_CHECK(serialize_element(
-        "data",
-        position,
-        &remaining,
-        (uint8_t*)eeid->data,
-        eeid->data_size + eeid->signature_size));
-
-    **position = '\0';
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-// Note: this needs to be updated when oe_eeid_t changes.
-oe_result_t oe_deserialize_eeid(
-    const char* buf,
-    size_t buf_size,
-    oe_eeid_t* eeid)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    const char** position = &buf;
-    size_t remaining = buf_size;
-
-    if (!buf || !buf_size || !eeid)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    memset(eeid, 0, sizeof(oe_eeid_t));
-
-    OE_CHECK(deserialize_element(
-        position, &remaining, (uint8_t*)&eeid->version, sizeof(eeid->version)));
-    if (eeid->version != OE_EEID_VERSION)
-        OE_RAISE(OE_INVALID_PARAMETER);
-    OE_CHECK(deserialize_element(
-        position,
-        &remaining,
-        (uint8_t*)eeid->hash_state.H,
-        sizeof(eeid->hash_state.H)));
-    OE_CHECK(deserialize_element(
-        position,
-        &remaining,
-        (uint8_t*)eeid->hash_state.N,
-        sizeof(eeid->hash_state.N)));
-    OE_CHECK(deserialize_element(
-        position,
-        &remaining,
-        (uint8_t*)&eeid->signature_size,
-        sizeof(eeid->signature_size)));
-    OE_CHECK(deserialize_element(
-        position,
-        &remaining,
-        (uint8_t*)&eeid->size_settings,
-        sizeof(eeid->size_settings)));
-    OE_CHECK(deserialize_element(
-        position,
-        &remaining,
-        (uint8_t*)&eeid->data_size,
-        sizeof(eeid->data_size)));
-    OE_CHECK(deserialize_element(
-        position, &remaining, (uint8_t*)&eeid->vaddr, sizeof(eeid->vaddr)));
-    OE_CHECK(deserialize_element(
-        position,
-        &remaining,
-        (uint8_t*)&eeid->entry_point,
-        sizeof(eeid->entry_point)));
-    OE_CHECK(deserialize_element(
-        position,
-        &remaining,
-        (uint8_t*)eeid->data,
-        eeid->data_size + eeid->signature_size));
-
-    result = OE_OK;
-
 done:
     return result;
 }
@@ -328,7 +121,9 @@ oe_result_t oe_remeasure_memory_pages(
         tcs->cssa = 0;
         tcs->nssa = 2;
         tcs->oentry = eeid->entry_point;
-        tcs->fsbase = vaddr + (5 * OE_PAGE_SIZE);
+        tcs->fsbase =
+            vaddr +
+            (eeid->tls_page_count + OE_SGX_TCS_CONTROL_PAGES) * OE_PAGE_SIZE;
         tcs->gsbase = tcs->fsbase;
         tcs->fslimit = 0xFFFFFFFF;
         tcs->gslimit = 0xFFFFFFFF;
@@ -716,7 +511,8 @@ size_t oe_eeid_byte_size(const oe_eeid_t* eeid)
     return sizeof(eeid->version) + sizeof(eeid->hash_state) +
            sizeof(eeid->signature_size) + sizeof(eeid->size_settings) +
            sizeof(eeid->vaddr) + sizeof(eeid->entry_point) +
-           sizeof(eeid->data_size) + eeid->data_size + eeid->signature_size;
+           sizeof(eeid->tls_page_count) + sizeof(eeid->data_size) +
+           eeid->data_size + eeid->signature_size;
 }
 
 oe_result_t oe_eeid_hton(
@@ -750,6 +546,7 @@ oe_result_t oe_eeid_hton(
 
     OE_CHECK(_hton_uint64_t(eeid->vaddr, &position, &remaining));
     OE_CHECK(_hton_uint64_t(eeid->entry_point, &position, &remaining));
+    OE_CHECK(_hton_uint64_t(eeid->tls_page_count, &position, &remaining));
 
     OE_CHECK(_hton_uint64_t(eeid->data_size, &position, &remaining));
     OE_CHECK(_hton_buffer(
@@ -796,6 +593,7 @@ oe_result_t oe_eeid_ntoh(
 
     OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->vaddr));
     OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->entry_point));
+    OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->tls_page_count));
 
     OE_CHECK(_ntoh_uint64_t(&position, &remaining, &eeid->data_size));
     OE_CHECK(_ntoh_buffer(

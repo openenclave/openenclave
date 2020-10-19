@@ -28,6 +28,14 @@ oe_result_t oe_spin_lock(oe_spinlock_t* spinlock)
     return OE_OK;
 }
 
+oe_result_t oe_spin_trylock(oe_spinlock_t* spinlock)
+{
+    if (!spinlock)
+        return OE_INVALID_PARAMETER;
+
+    return OE_OK;
+}
+
 oe_result_t oe_spin_unlock(oe_spinlock_t* spinlock)
 {
     if (!spinlock)

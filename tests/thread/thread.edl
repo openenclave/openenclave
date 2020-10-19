@@ -21,6 +21,8 @@ enclave {
             [out] size_t* count1,
             [out] size_t* count2);
 
+        public void enc_test_spin_trylock();
+
         public void enc_wait(
             size_t num_threads);
 

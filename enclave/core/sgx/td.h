@@ -13,7 +13,7 @@
 /*
 **==============================================================================
 **
-** Callsite
+** oe_callsite_t
 **
 **     This structure stores callsite information saved when initiating an
 **     OCALL (__oe_ocall). It stores:
@@ -41,9 +41,9 @@
 **==============================================================================
 */
 
-typedef struct _callsite Callsite;
+typedef struct _oe_callsite oe_callsite_t;
 
-struct _callsite
+struct _oe_callsite
 {
     /* Enclave callsite stored here when exiting to make an OCALL */
     oe_jmpbuf_t jmpbuf;
@@ -52,7 +52,7 @@ struct _callsite
     oe_ocall_context_t* ocall_context;
 
     /* Pointer to next ECALL context */
-    Callsite* next;
+    oe_callsite_t* next;
 };
 
 /* Some basic td function do not have the opportunity to keep consistency of
@@ -69,7 +69,7 @@ struct _callsite
 **==============================================================================
 */
 
-void td_push_callsite(oe_sgx_td_t* td, Callsite* ec);
+void td_push_callsite(oe_sgx_td_t* td, oe_callsite_t* ec);
 
 oe_sgx_td_t* td_from_tcs(void* tcs);
 

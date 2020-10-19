@@ -379,7 +379,13 @@ oe_result_t oe_private_key_sign(
     if (*signature_size < buffer_size)
     {
         *signature_size = buffer_size;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (signature)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If signature is null, this call is intented to get the correct
+         * signature_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Copy result to output buffer */

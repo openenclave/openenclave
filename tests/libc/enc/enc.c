@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/tests.h>
 #include <search.h>
 #include <stdarg.h>

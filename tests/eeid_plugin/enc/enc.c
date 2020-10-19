@@ -11,6 +11,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "../../../common/sgx/quote.h"
@@ -277,6 +278,9 @@ oe_result_t get_eeid_evidence(
     memcpy(endorsements, local_endorsements, local_endorsements_size);
 
     OE_TEST_CODE(oe_sgx_eeid_attester_shutdown(), OE_OK);
+
+    oe_free_evidence(local_evidence);
+    oe_free_endorsements(local_endorsements);
 
     return OE_OK;
 }

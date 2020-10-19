@@ -26,12 +26,12 @@ xcopy C:\openenclave\share\openenclave\samples C:\mysample
 1. [x64 Native Tools Command Prompt for VS2017 or 2019](
 https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 
-2. Set `CMAKE_PREFIX_PATH` to the cmake directory in the Open Enclave SDK installation.
+2. Add the cmake directory in the Open Enclave SDK installation to `CMAKE_PREFIX_PATH`.
 
 As an example, if the Open Enclave SDK is installed to `C:\openenclave`, then you would set `CMAKE_PREFIX_PATH` as shown below
 
 ```cmd
-set CMAKE_PREFIX_PATH=C:\openenclave\lib\openenclave\cmake
+set CMAKE_PREFIX_PATH=%CMAKE_PREFIX_PATH%;C:\openenclave\lib\openenclave\cmake
 ```
 
 3. To build a sample using CMake, change directory to your target sample directory and execute the following commands:

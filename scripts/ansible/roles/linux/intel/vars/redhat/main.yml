@@ -5,15 +5,12 @@
 intel_sgx_packages:
   - "sgx-aesm-service"
   - "libsgx-enclave-common"
-  - "libsgx-enclave-common-devel"
   - "libsgx-ae-pce"
   - "libsgx-ae-qe3"
   - "libsgx-qe3-logic"
   - "libsgx-pce-logic"
 
 packages_validation_distribution_files:
-  - "/usr/include/sgx_attributes.h"
-  - "/usr/include/sgx_enclave_common.h"
-  - "/usr/lib64/libsgx_enclave_common.so"
+  - "/usr/lib64/libsgx_enclave_common.so.1"
   - "/usr/lib64/libsgx_pce.signed.so"
   - "/usr/lib64/libsgx_qe3.signed.so"

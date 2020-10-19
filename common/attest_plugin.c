@@ -295,8 +295,8 @@ oe_result_t oe_verify_evidence(
     size_t plugin_endorsements_size = 0;
 
     if (!evidence_buffer || !evidence_buffer_size ||
-        (!endorsements_buffer && endorsements_buffer_size) ||
-        (endorsements_buffer && !endorsements_buffer_size))
+        (!endorsements_buffer != !endorsements_buffer_size) ||
+        (!claims != !claims_length))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!format_id)

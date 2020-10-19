@@ -5,8 +5,8 @@
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
     [string]$GitHash = '5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793',
-    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1g.exe',
-    [string]$OpenSSLHash = 'c85a21661e6596e2a22799b7b56ba49ce8193a4fd89945b77086074ddad6065f',
+    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1h.exe',
+    [string]$OpenSSLHash = 'C98DCF06D700DFFBC5EB3B10520BE77C44C176B4C1B990543FF72FFA643FEB5F',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
@@ -14,8 +14,8 @@ Param(
     [string]$VSBuildToolsHash = '',
     [string]$Clang7URL = 'http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe',
     [string]$Clang7Hash = '672E4C420D6543A8A9F8EC5F1E5F283D88AC2155EF4C57232A399160A02BFF57',
-    [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/16899/Intel%20SGX%20PSW%20for%20Windows%20v2.9.100.2.exe',
-    [string]$IntelPSWHash = 'A2F357F3AC1629C2A714A05DCA14CF8C7F25868A0B3352FAE351B14AD121BDFC',
+    [string]$IntelPSWURL = 'http://registrationcenter-download.intel.com/akdlm/irc_nas/17027/Intel%20SGX%20PSW%20for%20Windows%20v2.10.100.2.exe',
+    [string]$IntelPSWHash = 'E054644788C54C1CBAA10CBF743BB1FA14BE793B42875E3E5C0D62FD0CB6EAEB',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',

@@ -19,6 +19,8 @@ OE_EXTERNC_BEGIN
 
 long oe_syscall(long number, ...);
 
+#include <openenclave/internal/syscall/declarations.h>
+
 OE_EXTERNC_END
 
 #endif /* _OE_SYSCALL_SYS_SYSCALL_H */
