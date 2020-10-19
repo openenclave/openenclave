@@ -13,6 +13,9 @@ add_custom_command(
 add_enclave(
   TARGET
   tls_client_enc
+  # Current implementation only supports Mbed TLS.
+  CRYPTO_LIB
+  mbedtls
   SOURCES
   client.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/tls_e2e_t.c

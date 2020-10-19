@@ -9,6 +9,9 @@ void TestAll()
     TestASN1();
 #endif
     TestCRL();
+#if defined(OE_BUILD_ENCLAVE)
+    TestCert();
+#endif
     TestEC();
     TestRSA();
     TestRandom();

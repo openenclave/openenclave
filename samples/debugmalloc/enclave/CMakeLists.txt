@@ -21,4 +21,4 @@ target_compile_definitions(enclave PUBLIC OE_API_VERSION=2)
 # Need for the generated file debugmalloc_t.h
 target_include_directories(enclave PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(enclave openenclave::oedebugmalloc openenclave::oeenclave
-                      openenclave::oelibc)
+                      openenclave::oecryptombedtls openenclave::oelibc)

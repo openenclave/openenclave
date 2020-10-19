@@ -23,4 +23,5 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} # Needed for #include "../shared.h"
           ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(enclave openenclave::oeenclave openenclave::oelibcxx)
+target_link_libraries(enclave openenclave::oeenclave
+                      openenclave::oecryptombedtls openenclave::oelibcxx)
