@@ -1,9 +1,24 @@
-required_reviewers:
-  - BRMcLaren
-  - oe-ci-robot
-reviewers:
-  - BRMcLaren
-  - oe-ci-robot
 approvers:
-  - BRMcLaren
-  - oe-ci-robot
+  - AevaOnline
+  - gupta-ak
+  - achamayou
+  - anakrish
+  - andschwa
+  - dthaler
+  - johnkord
+  - jhand2
+  - mikbras
+  - radhikaj
+  - CodeMonkeyLeet
+reviewers:
+  - AevaOnline
+  - gupta-ak
+  - achamayou
+  - anakrish
+  - andschwa
+  - dthaler
+  - johnkord
+  - jhand2
+  - mikbras
+  - radhikaj
+  - CodeMonkeyLeet
