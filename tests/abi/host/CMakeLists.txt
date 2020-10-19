@@ -17,9 +17,9 @@ if (WIN32)
     OUTPUT host.obj
     DEPENDS abi_u.h host.cpp
     COMMAND
-      clang -c -O2 -m64 --target=x86_64-msvc-windows
-      -I${PROJECT_SOURCE_DIR}/include -I${CMAKE_CURRENT_BINARY_DIR}
-      -I${OE_INCDIR} ${CMAKE_CURRENT_SOURCE_DIR}/host.cpp -o host.obj)
+      clang -c -O2 -m64 -I${PROJECT_SOURCE_DIR}/include
+      -I${CMAKE_CURRENT_BINARY_DIR} -I${OE_INCDIR} -I${PROJECT_SOURCE_DIR}
+      ${CMAKE_CURRENT_SOURCE_DIR}/host.cpp -o host.obj)
   list(APPEND ABI_HOST_SRC ${CMAKE_CURRENT_BINARY_DIR}/host.obj abi.asm)
 else ()
   list(APPEND ABI_HOST_SRC host.cpp)
@@ -27,6 +27,13 @@ endif ()
 
 add_executable(abi_host ${ABI_HOST_SRC})
 
-target_include_directories(abi_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPERCASE_CMAKE_BUILD_TYPE)
+if (NOT UPPERCASE_CMAKE_BUILD_TYPE STREQUAL "DEBUG" AND CMAKE_CXX_COMPILER_ID
+                                                        MATCHES "GNU")
+  target_compile_definitions(abi_host PRIVATE GCC_RELEASE)
+endif ()
+
+target_include_directories(abi_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+                                            ${PROJECT_SOURCE_DIR})
 
 target_link_libraries(abi_host oehost)
