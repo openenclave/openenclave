@@ -16,8 +16,6 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 
-#include <mbedtls/sha256.h>
-
 #include "../common/attest_plugin.h"
 #include "../common/sgx/endorsements.h"
 #include "../core/sgx/report.h"

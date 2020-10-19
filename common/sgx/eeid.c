@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <openenclave/bits/attestation.h>
@@ -19,14 +20,14 @@
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
-#include "../../enclave/crypto/key.h"
-#include "../../enclave/crypto/rsa.h"
+#include "../../enclave/crypto/mbedtls/key.h"
+#include "../../enclave/crypto/mbedtls/rsa.h"
 #else
 #include <openenclave/host.h>
 #include <openssl/opensslv.h>
 #include <openssl/rsa.h>
-#include "../../host/crypto/openssl/key.h"
-#include "../../host/crypto/openssl/rsa.h"
+#include "../crypto/openssl/key.h"
+#include "../crypto/openssl/rsa.h"
 #endif
 
 int is_eeid_base_image(const oe_sgx_enclave_properties_t* properties)

@@ -10,11 +10,11 @@
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/utils.h>
 
-#include "../magic.h"
 #include "bcrypt.h"
 #include "crl.h"
 #include "ec.h"
 #include "key.h"
+#include "magic.h"
 #include "pem.h"
 #include "rsa.h"
 #include "util.h"

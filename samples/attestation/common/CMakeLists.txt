@@ -29,6 +29,6 @@ target_link_libraries(
          # Alternatively we could use a CMake OBJECT library, but that
          # requires a newish version of CMake.
          $<$<PLATFORM_ID:Linux>:-Wl,--require-defined=__oe_ecalls_table>
-         openenclave::oeenclave openenclave::oelibcxx)
+         openenclave::oeenclave openenclave::oecryptombed openenclave::oelibcxx)
 target_include_directories(common PUBLIC ${CMAKE_SOURCE_DIR}
                                          ${CMAKE_BINARY_DIR})

@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifndef _HOST_KEY_H
-#define _HOST_KEY_H
+#ifndef _OE_COMMON_CRYPTO_OPENSSL_KEY_H
+#define _OE_COMMON_CRYPTO_OPENSSL_KEY_H
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
@@ -96,4 +96,4 @@ oe_result_t oe_public_key_verify(
     size_t signature_size,
     uint64_t magic);
 
-#endif /* _HOST_KEY_H */
+#endif /* _OE_COMMON_CRYPTO_OPENSSL_KEY_H */

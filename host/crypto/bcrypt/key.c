@@ -7,9 +7,9 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 
-#include "../magic.h"
 #include "bcrypt.h"
 #include "key.h"
+#include "magic.h"
 #include "pem.h"
 
 /* can't use an engine with bcrypt */

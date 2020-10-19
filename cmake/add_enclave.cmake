@@ -10,6 +10,7 @@
 #              [<UUID uuid>]
 #              [CXX]
 #              [ADD_LVI_MITIGATION]
+#              [<CRYPTO_LIB lib>]
 #              <SOURCES sources>
 #              [<CONFIG config>]
 #              [<KEY key>])
@@ -54,7 +55,8 @@ macro (add_enclave)
       KEY
       SIGNING_ENGINE
       ENGINE_LOAD_PATH
-      ENGINE_KEY_ID)
+      ENGINE_KEY_ID
+      CRYPTO_LIB)
   set(multiValueArgs SOURCES)
   cmake_parse_arguments(ENCLAVE "${options}" "${oneValueArgs}"
                         "${multiValueArgs}" ${ARGN})
@@ -75,6 +77,8 @@ macro (add_enclave)
       ${ENCLAVE_ENGINE_LOAD_PATH}
       ENGINE_KEY_ID
       ${ENCLAVE_ENGINE_KEY_ID}
+      CRYPTO_LIB
+      ${ENCLAVE_CRYPTO_LIB}
       ADD_LVI_MITIGATION
       ${ENCLAVE_ADD_LVI_MITIGATION}
       SOURCES
@@ -89,6 +93,8 @@ macro (add_enclave)
       ${ENCLAVE_UUID}
       KEY
       ${ENCLAVE_KEY}
+      CRYPTO_LIB
+      ${ENCLAVE_CRYPTO_LIB}
       SOURCES
       ${ENCLAVE_SOURCES})
   endif ()
@@ -156,6 +162,7 @@ function (add_enclave_sgx)
       SIGNING_ENGINE
       ENGINE_LOAD_PATH
       ENGINE_KEY_ID
+      CRYPTO_LIB
       CXX
       ADD_LVI_MITIGATION)
   set(multiValueArgs SOURCES)
@@ -182,6 +189,24 @@ function (add_enclave_sgx)
   endif ()
 
   enclave_link_libraries(${ENCLAVE_TARGET} oeenclave)
+
+  # If the CRYPTO_LIB argument to add_enclave() is not set, the following
+  # logic determines the default crypto library based on the value of the
+  # DEFAULT_TEST_ENCLAVE_CRYPTO_LIB global variable (e.g., either "MbedTLS" or "OpenSSL").
+  # If the CRYPTO_LIB argument is set, it overrides the DEFAULT_TEST_ENCLAVE_CRYPTO_LIB.
+  if (NOT ENCLAVE_CRYPTO_LIB)
+    set(ENCLAVE_CRYPTO_LIB ${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB})
+  endif ()
+
+  string(TOLOWER "${ENCLAVE_CRYPTO_LIB}" ENCLAVE_CRYPTO_LIB_LOWER)
+  if (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "mbedtls")
+    enclave_link_libraries(${ENCLAVE_TARGET} oecryptombedtls)
+  elseif (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl")
+    enclave_link_libraries(${ENCLAVE_TARGET} oecryptoopenssl)
+  else ()
+    message(FATAL_ERROR "Unsupported crypto library ${ENCLAVE_CRYPTO_LIB}.")
+  endif ()
+
   if (ENCLAVE_CXX)
     enclave_link_libraries(${ENCLAVE_TARGET} oelibcxx)
   endif ()
@@ -269,7 +294,7 @@ function (add_enclave_sgx)
 endfunction ()
 
 macro (add_enclave_optee)
-  set(oneValueArgs TARGET UUID KEY CXX)
+  set(oneValueArgs TARGET UUID KEY CRYPTO_LIB CXX)
   set(multiValueArgs SOURCES)
   cmake_parse_arguments(ENCLAVE "" "${oneValueArgs}" "${multiValueArgs}"
                         ${ARGN})
@@ -318,7 +343,27 @@ macro (add_enclave_optee)
   add_dependencies(${ENCLAVE_TARGET} ${ENCLAVE_TARGET}.ld)
   target_include_directories(${ENCLAVE_TARGET}
                              PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/optee)
+
   target_link_libraries(${ENCLAVE_TARGET} oeenclave)
+
+  # If the CRYPTO_LIB argument to add_enclave() is not set, the following
+  # logic determines the default crypto library based on the value of the
+  # DEFAULT_TEST_ENCLAVE_CRYPTO_LIB global variable (e.g., either "MbedTLS" or "OpenSSL").
+  # If the CRYPTO_LIB argument is set, it overrides the DEFAULT_TEST_ENCLAVE_CRYPTO_LIB.
+  # Note that the OpenSSL-based crypto library is currently not supported on OP-TEE.
+  if (NOT ENCLAVE_CRYPTO_LIB)
+    set(ENCLAVE_CRYPTO_LIB ${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB})
+  endif ()
+
+  string(TOLOWER "${ENCLAVE_CRYPTO_LIB}" ENCLAVE_CRYPTO_LIB_LOWER)
+  if (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "mbedtls")
+    enclave_link_libraries(${ENCLAVE_TARGET} oecryptombedtls)
+  elseif (ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl")
+    enclave_link_libraries(${ENCLAVE_TARGET} oecryptoopenssl)
+  else ()
+    message(FATAL_ERROR "Unsupported crypto library ${ENCLAVE_CRYPTO_LIB}.")
+  endif ()
+
   if (ENCLAVE_CXX)
     target_link_libraries(${ENCLAVE_TARGET} oelibcxx)
   endif ()

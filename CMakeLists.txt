@@ -164,6 +164,24 @@ if (BUILD_OPENSSL AND OE_TRUSTZONE)
   message(FATAL_ERROR "BUILD_OPENSSL is not supported on ARM yet.")
 endif ()
 
+set(DEFAULT_TEST_ENCLAVE_CRYPTO_LIB
+    "mbedtls"
+    CACHE STRING "Default crypto library used by the enclaves.")
+string(TOLOWER "${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB}"
+               DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER)
+if ((NOT DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "mbedtls")
+    AND (NOT DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl"))
+  message(
+    FATAL_ERROR "Unsupported crypto library: ${DEFAULT_ENCLAVE_CRYPTO_LIB}")
+endif ()
+if ((DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl")
+    AND (NOT BUILD_OPENSSL))
+  message(
+    FATAL_ERROR
+      "Cannot set OpenSSL as the default crypto library when BUILD_OPENSSL is OFF"
+  )
+endif ()
+
 if (WIN32)
   # NOTE: On Windows we have found that we must use Git Bash, not the
   # Bash from the Windows Subsystem for Linux. Hence this is

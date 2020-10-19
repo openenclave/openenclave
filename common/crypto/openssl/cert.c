@@ -5,6 +5,9 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
+#if !defined(OE_BUILD_ENCLAVE)
+#include <openenclave/internal/crypto/init.h>
+#endif
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
@@ -14,15 +17,12 @@
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
-#include <openssl/x509_vfy.h>
-#include <openssl/x509v3.h>
 #include <string.h>
-#include "../../../common/oe_host_stdlib.h"
-#include "../magic.h"
+#include "../../oe_host_stdlib.h"
 #include "asn1.h"
 #include "crl.h"
 #include "ec.h"
-#include "init.h"
+#include "magic.h"
 #include "rsa.h"
 
 /*
@@ -498,8 +498,10 @@ oe_result_t oe_cert_read_pem(
     if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#if !defined(OE_BUILD_ENCLAVE)
     /* Initialize OpenSSL (if not already initialized) */
-    oe_initialize_openssl();
+    oe_crypto_initialize();
+#endif
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
@@ -543,8 +545,10 @@ oe_result_t oe_cert_read_der(
     if (!der_data || !der_size || der_size > OE_INT_MAX || !cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#if !defined(OE_BUILD_ENCLAVE)
     /* Initialize OpenSSL (if not already initialized) */
-    oe_initialize_openssl();
+    oe_crypto_initialize();
+#endif
 
     p = (unsigned char*)der_data;
 
@@ -651,8 +655,10 @@ oe_result_t oe_cert_chain_read_pem(
         tmp_pem_data[pem_size] = '\0';
     }
 
+#if !defined(OE_BUILD_ENCLAVE)
     /* Initialize OpenSSL (if not already initialized) */
-    oe_initialize_openssl();
+    oe_crypto_initialize();
+#endif
 
     /* Read the certificate chain into memory */
     if (!(sk = _read_cert_chain((const char*)tmp_pem_data)))
@@ -721,8 +727,10 @@ oe_result_t oe_cert_verify(
         OE_RAISE_MSG(OE_INVALID_PARAMETER, "Invalid chain parameter", NULL);
     }
 
+#if !defined(OE_BUILD_ENCLAVE)
     /* Initialize OpenSSL (if not already initialized) */
-    oe_initialize_openssl();
+    oe_crypto_initialize();
+#endif
 
     /* Verify the certificate */
     OE_CHECK(_verify_cert(

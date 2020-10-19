@@ -7,10 +7,9 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 
-#include "../magic.h"
-#include "../rsa.h"
 #include "bcrypt.h"
 #include "key.h"
+#include "magic.h"
 #include "rsa.h"
 
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));

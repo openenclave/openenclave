@@ -262,6 +262,11 @@ oe_result_t oe_rsa_public_key_equal(
     const oe_rsa_public_key_t* public_key2,
     bool* equal);
 
+/* Caller is responsible for freeing public key. */
+oe_result_t oe_rsa_get_public_key_from_private(
+    const oe_rsa_private_key_t* private_key,
+    oe_rsa_public_key_t* public_key);
+
 OE_EXTERNC_END
 
 #endif /* _OE_RSA_H */

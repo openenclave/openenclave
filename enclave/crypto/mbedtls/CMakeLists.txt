@@ -4,16 +4,17 @@
 add_enclave_library(
   oecryptombedtls
   STATIC
-  ../../../common/asn1.c
-  ../../../common/cert.c
-  ../../../common/kdf.c
+  ${PROJECT_SOURCE_DIR}/common/asn1.c
+  ${PROJECT_SOURCE_DIR}/common/cert.c
+  ${PROJECT_SOURCE_DIR}/common/kdf.c
   asn1.c
   cert.c
+  cmac.c
   crl.c
   ctr_drbg.c
   ec.c
-  cmac.c
   hmac.c
+  init.c
   key.c
   rsa.c
   sha.c)

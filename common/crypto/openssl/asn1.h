@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifndef _OE_HOST_CRYPTO_ASN1_OPENSSL_H
-#define _OE_HOST_CRYPTO_ASN1_OPENSSL_H
+#ifndef _OE_COMMON_CRYPTO_OPENSSL_ASN1_H
+#define _OE_COMMON_CRYPTO_OPENSSL_ASN1_H
 
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/result.h>
@@ -25,4 +25,4 @@ oe_result_t oe_asn1_string_to_date(const char* str, oe_datetime_t* date);
  */
 oe_result_t oe_asn1_time_to_date(const ASN1_TIME* time, oe_datetime_t* date);
 
-#endif /* _OE_HOST_CRYPTO_ASN1_OPENSSL_H */
+#endif /* _OE_COMMON_CRYPTO_OPENSSL_ASN1_H */

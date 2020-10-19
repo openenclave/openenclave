@@ -25,8 +25,10 @@ if (LVI_MITIGATION MATCHES ControlFlow)
   # Helper to enable compiler options for LVI mitigation.
   apply_lvi_mitigation(enclave)
   # Link against LVI-mitigated libraries.
-  target_link_libraries(enclave openenclave::oeenclave-lvi-cfg
-                        openenclave::oelibc-lvi-cfg)
+  target_link_libraries(
+    enclave openenclave::oeenclave-lvi-cfg openenclave::oecryptombed-lvi-cfg
+    openenclave::oelibc-lvi-cfg)
 else ()
-  target_link_libraries(enclave openenclave::oeenclave openenclave::oelibc)
+  target_link_libraries(enclave openenclave::oeenclave
+                        openenclave::oecryptombed openenclave::oelibc)
 endif ()
