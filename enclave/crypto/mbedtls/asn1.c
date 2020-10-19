@@ -1,7 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include "../../common/asn1.h"
+#include "../../../common/asn1.h"
 
 #include <mbedtls/asn1.h>
 #include <mbedtls/oid.h>
