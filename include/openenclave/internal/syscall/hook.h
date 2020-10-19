@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifndef _OE_INTERNAL_SYSCALL_H
-#define _OE_INTERNAL_SYSCALL_H
+#ifndef _OE_SYSCALL_HOOK_H
+#define _OE_SYSCALL_HOOK_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
@@ -37,4 +37,4 @@ void oe_register_syscall_hook(oe_syscall_hook_t hook);
 
 OE_EXTERNC_END
 
-#endif /* _OE_INTERNAL_SYSCALL_H */
+#endif /* _OE_SYSCALL_HOOK_H */
