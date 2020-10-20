@@ -510,17 +510,6 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
     uint32_t supplemental_data_size_out = 0;
     time_t expiration_check_date;
 
-#ifdef OE_BUILD_ENCLAVE
-    sgx_ql_qe_report_info_t qve_report_info = {{{0}}};
-    sgx_nonce_t nonce = {0};
-    uint8_t* p_self_report = NULL;
-    size_t report_size = 0;
-    sgx_target_info_t* p_self_target_info = NULL;
-    size_t target_info_size = 0;
-    uint16_t qve_isvsvn_threshold = 3;
-    oe_result_t retval = OE_UNEXPECTED;
-#endif
-
     // Verify quote/endorsements for the given time.  Use endorsements
     // creation time if one was not provided.
     if (input_validation_time == NULL)
@@ -549,122 +538,7 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
     // Convert validation time to time_t
     OE_CHECK(oe_datetime_to_time_t(&validation_time, &expiration_check_date));
 
-    // Try to call SGX DCAP QVL to verify quote first
-#ifdef OE_BUILD_ENCLAVE
-
-    // Generate nonce
-    OE_CHECK(oe_random(&nonce, 16));
-    OE_CHECK(oe_memcpy_s(
-        &qve_report_info.nonce,
-        sizeof(sgx_nonce_t),
-        &nonce,
-        sizeof(sgx_nonce_t)));
-
-    // Try to get self target info
-    OE_CHECK(oe_get_report(0, NULL, 0, NULL, 0, &p_self_report, &report_size));
-
-    OE_CHECK(oe_get_target_info(
-        p_self_report,
-        report_size,
-        (void**)(&p_self_target_info),
-        &target_info_size));
-
-    OE_CHECK(oe_memcpy_s(
-        &qve_report_info.app_enclave_target_info,
-        sizeof(sgx_target_info_t),
-        p_self_target_info,
-        target_info_size));
-
-    OE_CHECK(oe_verify_quote_ocall(
-        &retval,
-        &_ecdsa_uuid,
-        NULL,
-        0,
-        quote,
-        (uint32_t)quote_size,
-        expiration_check_date,
-        &collateral_expiration_status,
-        &quote_verification_result,
-        &qve_report_info,
-        sizeof(qve_report_info),
-        supplemental_data,
-        MAX_SUPPLEMENTAL_DATA_SIZE,
-        &supplemental_data_size_out,
-        *(uint32_t*)(sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_VERSION]
-                         .data),
-        (void*)(sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO]
-                    .data),
-        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].size,
-        (void*)(sgx_endorsements
-                    ->items[OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN]
-                    .data),
-        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_ISSUER_CHAIN].size,
-        (void*)(sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT]
-                    .data),
-        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT].size,
-        (void*)(sgx_endorsements
-                    ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_PROC_CA]
-                    .data),
-        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_PROC_CA].size,
-        (void*)(sgx_endorsements
-                    ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT]
-                    .data),
-        sgx_endorsements
-            ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT]
-            .size,
-        (void*)(sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO]
-                    .data),
-        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].size,
-        (void*)(sgx_endorsements
-                    ->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN]
-                    .data),
-        sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN]
-            .size));
-
-    result = (oe_result_t)retval;
-
-    if (result != OE_PLATFORM_ERROR)
-    {
-        OE_TRACE_INFO(
-            "SGX DCAP QvE-based quote verification is used, res: %s\n", result);
-
-        if (result != OE_OK)
-        {
-            OE_RAISE_MSG(
-                result,
-                "SGX QvE-based quote verification failed with error 0x%x",
-                result);
-        }
-
-        // Defense in depth
-        if (memcmp(&nonce, &qve_report_info.nonce, sizeof(sgx_nonce_t)) != 0)
-        {
-            OE_RAISE_MSG(
-                OE_UNEXPECTED,
-                "Nonce during SGX quote verification has been tampered.\n",
-                NULL);
-        }
-
-        // Call internal API to verify QvE identity
-        OE_CHECK_MSG(
-            oe_verify_qve_report_and_identity(
-                quote,
-                (uint32_t)quote_size,
-                &qve_report_info,
-                expiration_check_date,
-                collateral_expiration_status,
-                quote_verification_result,
-                supplemental_data,
-                supplemental_data_size_out,
-                qve_isvsvn_threshold),
-            "Failed to check QvE report and identity",
-            oe_result_str(result));
-
-        result = OE_OK;
-    }
-
-#else
-
+    // Try to call SGX DCAP QVL/QvE to verify quote first
     result = sgx_verify_quote(
         &_ecdsa_uuid,
         NULL,
@@ -712,21 +586,16 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
 
     if (result != OE_PLATFORM_ERROR)
     {
-        OE_TRACE_INFO(
-            "SGX DCAP QVL-based quote verification is used, res: %s\n", result);
-
         if (result != OE_OK)
         {
             OE_RAISE_MSG(
                 result,
-                "SGX QVL-based quote verification failed with error 0x%x",
+                "SGX QVL/QvE based quote verification failed with error 0x%x",
                 result);
         }
 
         result = OE_OK;
     }
-
-#endif
 
     // DCAP QVL doesn't exist or system env `SGX_DCAP_QVL` doesn't set
     if (result == OE_PLATFORM_ERROR)
@@ -785,11 +654,6 @@ oe_result_t oe_verify_quote_with_sgx_endorsements(
     result = OE_OK;
 
 done:
-
-#ifdef OE_BUILD_ENCLAVE
-    oe_free_target_info(p_self_target_info);
-    oe_free_report(p_self_report);
-#endif
 
     return result;
 }

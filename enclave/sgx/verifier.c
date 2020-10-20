@@ -3,6 +3,7 @@
 
 #include "verifier.h"
 #include <openenclave/corelibc/stdio.h>
+#include <openenclave/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/crypto/sha.h>
@@ -345,5 +346,179 @@ oe_result_t oe_verify_qve_report_and_identity(
     result = OE_OK;
 
 done:
+    return result;
+}
+
+oe_result_t sgx_verify_quote(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    const uint8_t* p_quote,
+    uint32_t quote_size,
+    time_t expiration_check_date,
+    uint32_t* p_collateral_expiration_status,
+    uint32_t* p_quote_verification_result,
+    void* p_qve_report_info,
+    uint32_t qve_report_info_size,
+    void* p_supplemental_data,
+    uint32_t supplemental_data_size,
+    uint32_t* p_supplemental_data_size_out,
+    uint32_t collateral_version,
+    const void* p_tcb_info,
+    uint32_t tcb_info_size,
+    const void* p_tcb_info_issuer_chain,
+    uint32_t tcb_info_issuer_chain_size,
+    const void* p_pck_crl,
+    uint32_t pck_crl_size,
+    const void* p_root_ca_crl,
+    uint32_t root_ca_crl_size,
+    const void* p_pck_crl_issuer_chain,
+    uint32_t pck_crl_issuer_chain_size,
+    const void* p_qe_identity,
+    uint32_t qe_identity_size,
+    const void* p_qe_identity_issuer_chain,
+    uint32_t qe_identity_issuer_chain_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    sgx_nonce_t nonce = {0};
+    uint8_t* p_self_report = NULL;
+    size_t report_size = 0;
+    sgx_target_info_t* p_self_target_info = NULL;
+    size_t target_info_size = 0;
+    uint16_t qve_isvsvn_threshold = 3;
+    oe_result_t retval = OE_UNEXPECTED;
+
+    sgx_ql_qe_report_info_t* p_qve_report_info_internal = p_qve_report_info;
+
+    // Add format_id for forward compatibility
+    if (!format_id || !supplemental_data_size ||
+        (!opt_params && opt_params_size > 0))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if ((p_qve_report_info &&
+         (qve_report_info_size != sizeof(sgx_ql_qe_report_info_t))) ||
+        (!p_qve_report_info && qve_report_info_size != 0))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!p_qve_report_info)
+    {
+        p_qve_report_info_internal = (sgx_ql_qe_report_info_t*)oe_malloc(
+            sizeof(sgx_ql_qe_report_info_t));
+        if (p_qve_report_info_internal == NULL)
+        {
+            result = OE_OUT_OF_MEMORY;
+            goto done;
+        }
+
+        oe_memset_s(
+            p_qve_report_info_internal,
+            sizeof(sgx_ql_qe_report_info_t),
+            0,
+            sizeof(sgx_ql_qe_report_info_t));
+
+        qve_report_info_size = sizeof(sgx_ql_qe_report_info_t);
+
+        // Generate nonce
+        OE_CHECK(oe_random(&nonce, 16));
+        OE_CHECK(oe_memcpy_s(
+            &p_qve_report_info_internal->nonce,
+            sizeof(sgx_nonce_t),
+            &nonce,
+            sizeof(sgx_nonce_t)));
+
+        // Try to get self target info
+        OE_CHECK(
+            oe_get_report(0, NULL, 0, NULL, 0, &p_self_report, &report_size));
+
+        OE_CHECK(oe_get_target_info(
+            p_self_report,
+            report_size,
+            (void**)(&p_self_target_info),
+            &target_info_size));
+
+        OE_CHECK(oe_memcpy_s(
+            &p_qve_report_info_internal->app_enclave_target_info,
+            sizeof(sgx_target_info_t),
+            p_self_target_info,
+            target_info_size));
+    }
+
+    OE_CHECK(oe_verify_quote_ocall(
+        &retval,
+        format_id,
+        NULL,
+        0,
+        p_quote,
+        quote_size,
+        expiration_check_date,
+        p_collateral_expiration_status,
+        p_quote_verification_result,
+        p_qve_report_info_internal,
+        qve_report_info_size,
+        p_supplemental_data,
+        supplemental_data_size,
+        p_supplemental_data_size_out,
+        collateral_version,
+        p_tcb_info,
+        tcb_info_size,
+        p_tcb_info_issuer_chain,
+        tcb_info_issuer_chain_size,
+        p_pck_crl,
+        pck_crl_size,
+        p_root_ca_crl,
+        root_ca_crl_size,
+        p_pck_crl_issuer_chain,
+        pck_crl_issuer_chain_size,
+        p_qe_identity,
+        qe_identity_size,
+        p_qe_identity_issuer_chain,
+        qe_identity_issuer_chain_size));
+
+    result = (oe_result_t)retval;
+
+    if (result != OE_PLATFORM_ERROR)
+    {
+        if (result != OE_OK)
+        {
+            OE_RAISE_MSG(
+                result,
+                "SGX QvE-based quote verification failed with error 0x%x",
+                result);
+        }
+
+        // Defense in depth
+        if (memcmp(
+                &nonce,
+                &p_qve_report_info_internal->nonce,
+                sizeof(sgx_nonce_t)) != 0)
+        {
+            OE_RAISE_MSG(
+                OE_VERIFY_FAILED,
+                "Nonce during SGX quote verification has been tampered with.\n",
+                NULL);
+        }
+
+        // Call internal API to verify QvE identity
+        OE_CHECK_MSG(
+            oe_verify_qve_report_and_identity(
+                p_quote,
+                quote_size,
+                p_qve_report_info_internal,
+                expiration_check_date,
+                *p_collateral_expiration_status,
+                *p_quote_verification_result,
+                p_supplemental_data,
+                *p_supplemental_data_size_out,
+                qve_isvsvn_threshold),
+            "Failed to check QvE report and identity",
+            oe_result_str(result));
+
+        result = OE_OK;
+    }
+
+done:
+    oe_free_target_info(p_self_target_info);
+    oe_free_report(p_self_report);
+    oe_free(p_qve_report_info_internal);
     return result;
 }

@@ -243,6 +243,17 @@ oe_result_t sgx_verify_quote(
         qe_identity_size,
         p_qe_identity_issuer_chain,
         qe_identity_issuer_chain_size);
+
+    if (p_qve_report_info != NULL)
+    {
+        OE_TRACE_INFO(
+            "SGX DCAP QvE-based quote verification is used, res: %s\n", result);
+    }
+    else
+    {
+        OE_TRACE_INFO(
+            "SGX DCAP QVL-based quote verification is used, res: %s\n", result);
+    }
 done:
 
     return result;
