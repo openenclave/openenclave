@@ -56,6 +56,7 @@ oe_thread_self is an internal function which will be wrapped to an external API 
 Currently it returns the td pointer. It will be changed to return an internal structure pointer which 
 is used in oe_thread_exit and oe_thread_join.
 
+```
 typedef struct _oe_thread_impl
 {
     volatile oe_spinlock_t lock;
@@ -68,7 +69,7 @@ typedef struct _oe_thread_impl
     void* retval;  // Used by oe_thread_exit() and oe_thread_join() to pass the exit message
     void* tid;
 } oe_thread_impl_t
-
+```
 
 ## Support OSes
 To get better performance, the OS thread created in host should be detached. Currently the OS thread can be created 
