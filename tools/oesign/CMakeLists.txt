@@ -36,6 +36,8 @@ if (NOT COMPONENT MATCHES OEHOSTVERIFY)
   # assemble into proper collector dir
   set_property(TARGET oesign PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
 
+  set_target_properties(oesign PROPERTIES LINK_FLAGS "/Guard:CF")
+
   # install rule
   install(
     TARGETS oesign
