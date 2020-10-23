@@ -17,13 +17,16 @@ OE_SET_ENCLAVE_OPTEE(
     "$projectname$ TA");   /* DESCRIPTION */
 
 OE_SET_ENCLAVE_SGX(
-    1, /* ProductID */
-    1, /* SecurityVersion */
+    1,   /* ProductID */
+    1,   /* SecurityVersion */
+    {0}, /* FamilyID */
+    {0}, /* ExtendedProductID */
 #ifdef _DEBUG
     1, /* Debug */
 #else
     0, /* Debug */
 #endif
+    false,                            /* Kss */
     HEAP_SIZE_BYTES / SGX_PAGE_SIZE,  /* NumHeapPages */
     STACK_SIZE_BYTES / SGX_PAGE_SIZE, /* NumStackPages */
     1);                               /* NumTCS */

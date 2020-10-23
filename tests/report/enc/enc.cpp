@@ -132,9 +132,12 @@ void enclave_test_get_signer_id_from_public_key()
 }
 
 OE_SET_ENCLAVE_SGX(
-    0,    /* ProductID */
-    0,    /* SecurityVersion */
-    true, /* Debug */
-    1024, /* NumHeapPages */
-    1024, /* NumStackPages */
-    2);   /* NumTCS */
+    0,     /* ProductID */
+    0,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    1024,  /* NumHeapPages */
+    1024,  /* NumStackPages */
+    2);    /* NumTCS */

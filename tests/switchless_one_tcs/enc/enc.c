@@ -26,7 +26,10 @@ void enc_empty_switchless(status_e* status)
 OE_SET_ENCLAVE_SGX(
     1,                             /* ProductID */
     1,                             /* SecurityVersion */
-    true,                          /* AllowDebug */
+    {0},                           /* FamilyID */
+    {0},                           /* ExtendedProductID */
+    true,                          /* Debug */
+    false,                         /* Kss */
     OE_TEST_MT_HEAP_SIZE(NUM_TCS), /* HeapPageCount */
     64,                            /* StackPageCount */
     NUM_TCS);                      /* TCSCount */

@@ -15,9 +15,8 @@ if __name__ == "__main__":
     arg_parser.add_argument('--num_tcs', default="1", type=str, help="Value for the NumCS property. Defaults to 1.")
     arg_parser.add_argument('--product_id', default="1", type=str, help="Value for the ProductID property. Defaults to 1.")
     arg_parser.add_argument('--security_version', default="1", type=str, help="Value for the SecurityVersion property. Defaults to 1.")
-    arg_parser.add_argument('--kss', default="0", type=str, help="Value for the Debug property. Defaults to 0 (false).")
-    arg_parser.add_argument('--isv_ext_product_id', default=None, type=str, help="Value for the IsvExtProductID property. Defaults to empty string")
-    arg_parser.add_argument('--isv_family_id', default=None, type=str, help="Value for the IsvFamilyID property. Defaults to empty string.")
+    arg_parser.add_argument('--extended_product_id', type=str, help="Value for the ExtendedProductID property. Defaults to empty string")
+    arg_parser.add_argument('--family_id', type=str, help="Value for the FamilyID property. Defaults to empty string.")
 
     args = arg_parser.parse_args()
     print("Generating {} ...".format(args.config_file))
@@ -30,9 +29,8 @@ if __name__ == "__main__":
     out_file.write("NumTCS={}\n".format(args.num_tcs))
     out_file.write("ProductID={}\n".format(args.product_id))
     out_file.write("SecurityVersion={}\n".format(args.security_version))
-    out_file.write("Kss={}\n".format(args.kss))
-    if args.isv_ext_product_id != None:
-        out_file.write("IsvExtProductID={}\n".format(args.isv_ext_product_id))
-    if args.isv_family_id != None:
-        out_file.write("IsvFamilyID={}\n".format(args.isv_family_id))
+    if args.extended_product_id:
+        out_file.write("ExtendedProductID={}\n".format(args.extended_product_id))
+    if args.family_id:
+        out_file.write("FamilyID={}\n".format(args.family_id))
     out_file.close()

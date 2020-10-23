@@ -321,3 +321,19 @@ set_tests_properties(
     PASS_REGULAR_EXPRESSION
     "ERROR: Digest signature cannot be validated against the specified enclave configuration using the provided certificate"
 )
+
+set(OESIGN_DIGEST_VALID_KSS_ARGS
+    "[--config-file,${OESIGN_TEST_INPUTS_DIR}/kss_valid.conf,--digest-file,oesign_test_enc.digest]"
+)
+
+add_test(
+  NAME tests/oesign-digest-valid-kss-args
+  COMMAND
+    python sign-and-verify.py --host-path $<TARGET_FILE:oesign_test_host>
+    --enclave-path $<TARGET_FILE:oesign_test_enc> --oesign-path
+    $<TARGET_FILE:oesign> --digest-args ${OESIGN_DIGEST_VALID_KSS_ARGS}
+    --oesign-args ${OESIGN_SIGN_VALID_SHORT_ARGS})
+
+set_tests_properties(
+  tests/oesign-digest-valid-kss-args
+  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Launch of signed enclave succeeded")

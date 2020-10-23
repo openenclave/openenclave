@@ -5,9 +5,12 @@
 #include <openenclave/enclave.h>
 
 OE_SET_ENCLAVE_SGX(
-    1234, /* ProductID */
-    5678, /* SecurityVersion */
-    true, /* Debug */
+    1234,  /* ProductID */
+    5678,  /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
 #ifdef NO_PAGING_SUPPORT
     /* Set smaller heap for systems without paging support. */
     2560, /* NumHeapPages */

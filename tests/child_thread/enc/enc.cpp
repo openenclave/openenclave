@@ -30,9 +30,12 @@ int stay_in_ocall_ecall()
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    1024, /* NumHeapPages */
-    1024, /* NumStackPages */
-    4);   /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    1024,  /* NumHeapPages */
+    1024,  /* NumStackPages */
+    4);    /* NumTCS */

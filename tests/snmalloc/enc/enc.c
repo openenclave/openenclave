@@ -24,7 +24,10 @@ void enc_test_snmalloc_basic()
 OE_SET_ENCLAVE_SGX(
     1,                  /* ProductID */
     1,                  /* SecurityVersion */
+    {0},                /* FamilyID */
+    {0},                /* ExtendedProductID */
     true,               /* Debug */
+    false,              /* Kss */
     MIN_NUM_HEAP_PAGES, /* NumHeapPages */
     1024,               /* NumStackPages */
     2);                 /* NumTCS */

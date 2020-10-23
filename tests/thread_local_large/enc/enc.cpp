@@ -26,9 +26,12 @@ void enc_test()
 }
 
 OE_SET_ENCLAVE_SGX(
-    0,    /* ProductID */
-    0,    /* SecurityVersion */
-    true, /* Debug */
-    128,  /* NumHeapPages */
-    32,   /* NumStackPages */
-    1);   /* NumTCS */
+    0,     /* ProductID */
+    0,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    128,   /* NumHeapPages */
+    32,    /* NumStackPages */
+    1);    /* NumTCS */

@@ -456,9 +456,12 @@ void test_sgx()
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    320,  /* NumHeapPages */
-    128,  /* NumStackPages */
-    1);   /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    320,   /* NumHeapPages */
+    128,   /* NumStackPages */
+    1);    /* NumTCS */

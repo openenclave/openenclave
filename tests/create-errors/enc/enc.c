@@ -11,12 +11,15 @@ int test(void)
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    1024, /* NumHeapPages */
-    1024, /* NumStackPages */
-    2);   /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    1024,  /* NumHeapPages */
+    1024,  /* NumStackPages */
+    2);    /* NumTCS */
 
 #define TA_UUID                                            \
     { /* 1083bbac-751e-4d26-ada6-c254bbfbe653 */           \

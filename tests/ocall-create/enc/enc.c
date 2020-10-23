@@ -85,9 +85,12 @@ int enc_test_ocall_enclave(const char* path, uint32_t flags)
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    256,  /* NumHeapPages */
-    128,  /* NumStackPages */
-    2);   /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    256,   /* NumHeapPages */
+    128,   /* NumStackPages */
+    2);    /* NumTCS */

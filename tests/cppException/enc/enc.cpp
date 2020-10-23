@@ -50,9 +50,12 @@ int test_unhandled_exception(unhandled_exception_func_num func_num)
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    128,  /* NumHeapPages */
-    64,   /* NumStackPages */
-    2);   /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    128,   /* NumHeapPages */
+    64,    /* NumStackPages */
+    2);    /* NumTCS */

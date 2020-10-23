@@ -174,12 +174,15 @@ void enc_edl_opt_out()
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    1024, /* NumHeapPages */
-    1024, /* NumStackPages */
-    1);   /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    1024,  /* NumHeapPages */
+    1024,  /* NumStackPages */
+    1);    /* NumTCS */
 
 #define TA_UUID                                            \
     { /* 892e7f65-5da1-45d0-8209-53795ce5be8f */           \

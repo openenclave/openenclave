@@ -35,6 +35,9 @@ OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1952);
 OE_SET_ENCLAVE_SGX(
     OE_UINT16_MAX,
     OE_UINT16_MAX,
+    {0},
+    {0},
+    false,
     false,
     OE_UINT16_MAX,
     OE_UINT16_MAX,

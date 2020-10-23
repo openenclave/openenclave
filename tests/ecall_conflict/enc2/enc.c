@@ -24,9 +24,12 @@ int enc_local_ecall2(int val)
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    512,  /* NumHeapPages */
-    512,  /* NumStackPages */
-    1);   /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    512,   /* NumHeapPages */
+    512,   /* NumStackPages */
+    1);    /* NumTCS */

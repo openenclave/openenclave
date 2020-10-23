@@ -227,9 +227,12 @@ void oe_handle_verify_report(uint64_t arg_in, uint64_t* arg_out)
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    512,  /* NumHeapPages */
-    512,  /* NumStackPages */
-    2);   /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    512,   /* NumHeapPages */
+    512,   /* NumStackPages */
+    2);    /* NumTCS */

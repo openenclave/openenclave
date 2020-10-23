@@ -13,9 +13,12 @@ void oesign_test_extra_function()
 /* NOTE: These need to be kept in sync with the default values set by
  * test-inputs/make-oesign-config.py */
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    1,    /* Debug */
-    1024, /* NumHeapPages */
-    1024, /* NumStackPages */
-    1);   /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    1024,  /* NumHeapPages */
+    1024,  /* NumStackPages */
+    1);    /* NumTCS */

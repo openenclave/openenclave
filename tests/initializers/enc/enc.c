@@ -84,12 +84,15 @@ void set_globals(
 }
 
 OE_SET_ENCLAVE_SGX(
-    1234, /* ProductID */
-    5678, /* SecurityVersion */
-    true, /* Debug */
-    128,  /* NumHeapPages */
-    64,   /* NumStackPages */
-    4);   /* NumTCS */
+    1234,  /* ProductID */
+    5678,  /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    128,   /* NumHeapPages */
+    64,    /* NumStackPages */
+    4);    /* NumTCS */
 
 #define TA_UUID                                            \
     { /* 62f73b00-bdfe-4763-a06a-dc561a3a34d8 */           \

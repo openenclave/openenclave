@@ -20,7 +20,10 @@ void enc_ecall2_switchless(void)
 OE_SET_ENCLAVE_SGX(
     1,                             /* ProductID */
     1,                             /* SecurityVersion */
+    {0},                           /* FamilyID */
+    {0},                           /* ExtendedProductID */
     true,                          /* Debug */
+    false,                         /* Kss */
     OE_TEST_MT_HEAP_SIZE(NUM_TCS), /* NumHeapPages */
     64,                            /* NumStackPages */
     NUM_TCS);                      /* NumTCS */

@@ -58,13 +58,17 @@ oe_result_t check_kss_extended_ids(
     oe_uuid_t* family_id,
     oe_uuid_t* ext_product_id)
 {
+    /* Null-terminated hex string buffer size with 2 char per byte */
+    const size_t OE_KSS_ID_HEX_BUFFER_SIZE = sizeof(oe_uuid_t) * 2 + 1;
+
     oe_result_t result = OE_UNEXPECTED;
     size_t report_size = OE_MAX_REPORT_SIZE;
     uint8_t* remote_report = NULL;
     oe_report_header_t* header = NULL;
     sgx_quote_t* quote = NULL;
     uint64_t quote_size = 0;
-    char isvid_hex[33];
+
+    char isvid_hex[OE_KSS_ID_HEX_BUFFER_SIZE];
 
     printf("========== Getting report with KSS feature\n");
 
@@ -91,20 +95,20 @@ oe_result_t check_kss_extended_ids(
 
         oe_hex_string(
             isvid_hex,
-            33,
+            OE_KSS_ID_HEX_BUFFER_SIZE,
             report_body->isvfamilyid,
             sizeof(report_body->isvfamilyid));
         printf("Enclave ISV Family ID = %s\n", isvid_hex);
 
         oe_hex_string(
             isvid_hex,
-            33,
+            OE_KSS_ID_HEX_BUFFER_SIZE,
             report_body->isvextprodid,
             sizeof(report_body->isvextprodid));
         printf("Enclave ISV Extended ProductID = %s\n", isvid_hex);
 
-        if (!memcmp(report_body->isvfamilyid, &family_id, 16) ||
-            !memcmp(report_body->isvextprodid, &ext_product_id, 16))
+        if (!memcmp(report_body->isvfamilyid, &family_id, sizeof(oe_uuid_t))||
+            !memcmp(report_body->isvextprodid, &ext_product_id, sizeof(oe_uuid_t)))
             result = OE_REPORT_PARSE_ERROR;
     }
     oe_free_report(remote_report);

@@ -72,12 +72,15 @@ void test_host_free(void_ptr in_ptr)
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    1024, /* NumHeapPages */
-    128,  /* NumStackPages */
-    16);  /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    1024,  /* NumHeapPages */
+    128,   /* NumStackPages */
+    16);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* 60814a64-61e9-4fd9-9159-e158d73f6a2e */           \

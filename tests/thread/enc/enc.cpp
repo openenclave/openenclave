@@ -294,7 +294,10 @@ size_t enc_tcs_used_thread_count()
 OE_SET_ENCLAVE_SGX(
     1,                                  /* ProductID */
     1,                                  /* SecurityVersion */
+    {0},                                /* FamilyID */
+    {0},                                /* ExtendedProductID */
     true,                               /* Debug */
+    false,                              /* Kss */
     OE_TEST_MT_HEAP_SIZE(NUM_TCS) + 64, /* NumHeapPages */
     16,                                 /* NumStackPages */
     NUM_TCS);                           /* NumTCS */

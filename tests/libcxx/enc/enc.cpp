@@ -281,7 +281,10 @@ int enc_test(char test_name[STRLEN])
 OE_SET_ENCLAVE_SGX(
     1,                   /* ProductID */
     1,                   /* SecurityVersion */
+    {0},                 /* FamilyID */
+    {0},                 /* ExtendedProductID */
     true,                /* Debug */
+    false,               /* Kss */
 #ifdef FULL_LIBCXX_TESTS /* Full tests require large heap memory. */
     12288,               /* NumHeapPages */
 #else

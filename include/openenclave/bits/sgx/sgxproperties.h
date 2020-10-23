@@ -31,19 +31,19 @@ typedef struct _oe_sgx_enclave_image_info_t
 // oe_sgx_enclave_properties_t SGX enclave properties derived type
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
-#define OE_SGX_FLAGS_KSS 0x0000000000000080ULL
+#define OE_SGX_FLAGS_KSS 0x0000000000000008ULL
 #define OE_SGX_SIGSTRUCT_SIZE 1808
 
 typedef struct oe_sgx_enclave_config_t
 {
     uint16_t product_id;
     uint16_t security_version;
-    uint8_t isv_family_id[16];
-    uint8_t isv_ext_product_id[16];
 
     /* Padding to make packed and unpacked size the same */
     uint32_t padding;
 
+    uint8_t family_id[16];
+    uint8_t extended_product_id[16];
     /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT | OE_SGX_FLAGS_KSS) */
     uint64_t attributes;
 
@@ -74,12 +74,9 @@ typedef struct _oe_sgx_enclave_properties
     OE_EXTERNC __attribute__((section(OE_INFO_SECTION_NAME)))
 #define OE_INFO_SECTION_END
 
-#define OE_MAKE_ATTRIBUTES(ALLOW_DEBUG) \
-    (OE_SGX_FLAGS_MODE64BIT | (ALLOW_DEBUG ? OE_SGX_FLAGS_DEBUG : 0))
-
-#define OE_MAKE_ATTRIBUTES_EX(ALLOW_KSS, ALLOW_DEBUG)              \
-    (OE_SGX_FLAGS_MODE64BIT | (ALLOW_KSS ? OE_SGX_FLAGS_KSS : 0) | \
-     (ALLOW_DEBUG ? OE_SGX_FLAGS_DEBUG : 0))
+#define OE_MAKE_ATTRIBUTES(ALLOW_DEBUG, ALLOW_KSS)                     \
+    (OE_SGX_FLAGS_MODE64BIT | (ALLOW_DEBUG ? OE_SGX_FLAGS_DEBUG : 0) | \
+     (ALLOW_KSS ? OE_SGX_FLAGS_KSS : 0))
 
 // This macro initializes and injects an oe_sgx_enclave_properties_t struct
 // into the .oeinfo section.
@@ -108,7 +105,10 @@ typedef struct _oe_sgx_enclave_properties
 #define OE_SET_ENCLAVE_SGX(                                               \
     PRODUCT_ID,                                                           \
     SECURITY_VERSION,                                                     \
+    EXTENDED_PRODUCT_ID,                                                  \
+    FAMILY_ID,                                                            \
     ALLOW_DEBUG,                                                          \
+    ALLOW_KSS,                                                            \
     HEAP_PAGE_COUNT,                                                      \
     STACK_PAGE_COUNT,                                                     \
     TCS_COUNT)                                                            \
@@ -131,7 +131,9 @@ typedef struct _oe_sgx_enclave_properties
             .product_id = PRODUCT_ID,                                     \
             .security_version = SECURITY_VERSION,                         \
             .padding = 0,                                                 \
-            .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG)                 \
+            .family_id = FAMILY_ID,                                       \
+            .extended_product_id = EXTENDED_PRODUCT_ID,                   \
+            .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG, ALLOW_KSS)      \
         },                                                                \
         .image_info =                                                     \
         {                                                                 \

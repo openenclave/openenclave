@@ -140,6 +140,8 @@ static sgx_secs_t* _new_secs(
     secs->flags = SGX_FLAGS_MODE64BIT;
     if (oe_sgx_is_debug_load_context(context))
         secs->flags |= SGX_FLAGS_DEBUG;
+    if (oe_sgx_is_kss_load_context(context))
+        secs->flags |= SGX_FLAGS_KSS;
 
     /* what the driver sees with SGX SDK */
     secs->xfrm = context->attributes.xfrm;
@@ -252,8 +254,8 @@ static oe_result_t _get_sig_struct(
             properties->config.security_version,
             OE_DEBUG_SIGN_KEY,
             OE_DEBUG_SIGN_KEY_SIZE,
-            properties->config.isv_family_id,
-            properties->config.isv_ext_product_id,
+            properties->config.family_id,
+            properties->config.extended_product_id,
             sigstruct));
     }
     else
@@ -350,11 +352,6 @@ oe_result_t oe_sgx_create_enclave(
     /* Create SECS structure */
     if (!(secs = _new_secs((uint64_t)base, enclave_size, context)))
         OE_RAISE(OE_OUT_OF_MEMORY);
-
-    if (context->attributes.flags & OE_SGX_FLAGS_KSS)
-    {
-        secs->flags |= OE_SGX_FLAGS_KSS;
-    }
 
     /* Measure this operation */
     OE_CHECK(oe_sgx_measure_create_enclave(&context->hash_context, secs));

@@ -91,9 +91,12 @@ done:
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    6144, /* HeapPageCount */
-    128,  /* StackPageCount */
-    1);   /* TCSCount */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    6144,  /* HeapPageCount */
+    128,   /* StackPageCount */
+    1);    /* TCSCount */

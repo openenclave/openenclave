@@ -39,12 +39,15 @@ int enc_c99_compliant()
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* Debug */
-    256,  /* NumHeapPages */
-    256,  /* NumStackPages */
-    2);   /* NumTCS */
+    1,     /* ProductID */
+    1,     /* SecurityVersion */
+    {0},   /* FamilyID */
+    {0},   /* ExtendedProductID */
+    true,  /* Debug */
+    false, /* Kss */
+    256,   /* NumHeapPages */
+    256,   /* NumStackPages */
+    2);    /* NumTCS */
 
 #define TA_UUID                                            \
     { /* b843807a-e05c-423c-bcfb-1062cadb482f */           \
