@@ -72,7 +72,7 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     const char* engine_load_path,
     const char* key_id,
     const uint8_t* family_id,
-    const uint8_t* ext_product_id,
+    const uint8_t* extended_product_id,
     sgx_sigstruct_t* sigstruct);
 
 /**
