@@ -31,7 +31,7 @@ typedef struct _oe_sgx_enclave_image_info_t
 // oe_sgx_enclave_properties_t SGX enclave properties derived type
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
-#define OE_SGX_FLAGS_KSS 0x0000000000000008ULL
+#define OE_SGX_FLAGS_KSS 0x0000000000000080ULL
 #define OE_SGX_SIGSTRUCT_SIZE 1808
 
 typedef struct oe_sgx_enclave_config_t

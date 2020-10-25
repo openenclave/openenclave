@@ -834,7 +834,7 @@ oe_result_t oe_sgx_build_enclave(
 
     if (props.config.attributes & OE_SGX_FLAGS_KSS)
     {
-        context->attributes.flags |= OE_SGX_FLAGS_KSS;
+        context->attributes.flags |= OE_ENCLAVE_FLAG_KSS;
     }
 
     /* Perform the ECREATE operation */

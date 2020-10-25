@@ -465,8 +465,7 @@ void _merge_config_file_options(
     if (options->security_version.has_value)
         properties->config.security_version = options->security_version.value;
 
-    bool kss_supported = _is_kss_supported();
-    if (kss_supported)
+    if (_is_kss_supported())
     {
         if (options->family_id.has_value)
             memcpy(
@@ -482,7 +481,11 @@ void _merge_config_file_options(
 
         if (options->family_id.has_value ||
             options->extended_product_id.has_value)
-            properties->config.attributes |= OE_SGX_FLAGS_KSS;
+            properties->config.attributes |= SGX_FLAGS_KSS;
+    }
+    else
+    {
+        properties->config.attributes &= ~SGX_FLAGS_KSS;
     }
 
     /* If NumHeapPages option is present */

@@ -97,10 +97,6 @@ int main(int argc, const char* argv[])
                 oe_result_str(result));
         }
     }
-    else
-    {
-        OE_TEST(!(properties.config.attributes & OE_SGX_FLAGS_KSS));
-    }
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {

@@ -66,13 +66,14 @@ OE_EXTERNC_BEGIN
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002u
 
 /**
- *  Flag passed into oe_create_enclave to run the enclave with kss config.
+ * @cond DEV
+ */
+
+/**
+ *  Flag passed into oe_create_enclave to run the enclave with kss mode.
  */
 #define OE_ENCLAVE_FLAG_KSS 0x00000004u
 
-/**
- * @cond DEV
- */
 #define OE_ENCLAVE_FLAG_RESERVED \
     (~(OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_SIMULATE))
 

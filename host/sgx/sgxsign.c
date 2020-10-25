@@ -656,10 +656,12 @@ static oe_result_t _init_sigstruct(
                 sizeof(sigstruct->isvextprodid),
                 ext_product_id,
                 sizeof(*ext_product_id)));
+        sigstruct->attributemask.flags |= SGX_FLAGS_KSS;
     }
     else
     {
-        uint8_t zeros[16] = {0};
+        sigstruct->attributemask.flags &= ~SGX_FLAGS_KSS;
+        uint8_t zeros[OE_UUID_SIZE] = {0};
         if (memcmp(sigstruct->isvfamilyid, zeros, sizeof(zeros)) != 0 ||
             memcmp(sigstruct->isvextprodid, zeros, sizeof(zeros)) != 0)
         {
