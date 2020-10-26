@@ -45,8 +45,10 @@ void sample_enclave_call(void)
     oe_result_t result = create_$enclavename$_enclave(
 #ifdef OE_USE_OPTEE
         "$enclaveguid$",
-#else
+#elif defined(_WIN32)
         "$enclavename$.elf.signed",
+#else
+        "$enclavename$",
 #endif
         &enclave);
     if (result != OE_OK)
