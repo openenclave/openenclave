@@ -96,18 +96,23 @@ static oe_result_t _add_claims(
     uint64_t r_attributes,
     uint32_t r_id_version,
     const uint8_t* r_enclave_base_hash,
+    uint8_t* eeid_data,
+    size_t eeid_data_size,
     oe_claim_t** claims_out,
     size_t* claims_size_out)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t claims_index = 0;
     oe_claim_t* claims = NULL;
+    size_t num_claims = OE_REQUIRED_CLAIMS_COUNT + 1;
 
     if (!claims_out || !claims_size_out)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    claims = (oe_claim_t*)oe_malloc(
-        (OE_REQUIRED_CLAIMS_COUNT + 1) * sizeof(oe_claim_t));
+    if (eeid_data && eeid_data_size)
+        num_claims++;
+
+    claims = (oe_claim_t*)oe_malloc(num_claims * sizeof(oe_claim_t));
     if (claims == NULL)
         return OE_OUT_OF_MEMORY;
 
@@ -167,8 +172,18 @@ static oe_result_t _add_claims(
         (void*)r_enclave_base_hash,
         OE_UNIQUE_ID_SIZE));
 
+    if (eeid_data && eeid_data_size)
+    {
+        OE_CHECK(_add_claim(
+            &claims[claims_index++],
+            OE_CLAIM_EEID_DATA,
+            sizeof(OE_CLAIM_EEID_DATA),
+            (void*)eeid_data,
+            eeid_data_size));
+    }
+
     *claims_out = claims;
-    *claims_size_out = 8;
+    *claims_size_out = claims_index;
 
     result = OE_OK;
 done:
@@ -381,6 +396,8 @@ static oe_result_t _eeid_verify_evidence(
                 r_attributes,
                 r_id_version,
                 r_enclave_base_hash,
+                attester_eeid->data,
+                attester_eeid->data_size,
                 claims,
                 claims_size);
     }
