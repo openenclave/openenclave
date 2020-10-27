@@ -2,7 +2,7 @@ Open Enclave SDK
 ================
 
 [![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/21855)
-[![Join the chat at https://gitter.im/openenclave/community](https://badges.gitter.im/openenclave/community.svg)](https://gitter.im/openenclave/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Element Channel](https://img.shields.io/badge/Chat-Join-green)](https://chat.openenclave.io/#/room/#general:openenclave.io)
 
 Integration Partners
 --------------------
