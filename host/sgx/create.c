@@ -337,7 +337,7 @@ static oe_result_t _calculate_enclave_size(
 
     /* Compute end of the enclave */
     *loaded_enclave_pages_size =
-        image_size + heap_size +
+        image_size + regions_size + heap_size +
         (size_settings->num_tcs * (stack_size + tls_size + control_size));
 
     if (enclave_size)
@@ -863,7 +863,6 @@ oe_result_t oe_sgx_build_enclave(
             &regions_size));
     }
 
-
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
         context, enclave_size, loaded_enclave_pages_size, &enclave_addr));
@@ -873,7 +872,10 @@ oe_result_t oe_sgx_build_enclave(
     enclave->size = enclave_size;
 
     /* Populate the oeimage regions so they will be patched below */
-    memcpy(oeimage.elf.regions, region_context.regions, sizeof(oeimage.elf.regions));
+    memcpy(
+        oeimage.elf.regions,
+        region_context.regions,
+        sizeof(oeimage.elf.regions));
     oeimage.elf.num_regions = region_context.num_regions;
 
     /* Patch image */
