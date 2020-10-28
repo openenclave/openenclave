@@ -155,12 +155,11 @@ config_id/config_svn.
  * and the plugin implementation, the content might or might not be further
  * encrypted.
  * @param[in] runtime_custom_claims_buffer_size The number of bytes in the
- * runtime custom claims buffer. When provided, the content of the buffer is
- * included in the evidence_buffer as plaintext. The integrity protection of
- * the content is provided by the underlining TEE and the enclave SW outside
- * the plugin.
+ * runtime custom claims buffer.
  * @param[in] inittime_custom_claims_buffer The optional inittime custom claims
- * buffer.
+ * buffer. When provided, the content of the buffer is included in the
+ * evidence_buffer as plaintext. The integrity protection of the content is
+ * provided by the underlining TEE and the enclave SW outside the plugin.
  * @param[in] inittime_custom_claims_buffer_size The number of bytes in the
  * inittime custom claims buffer.
  * @param[in] optional_parameters The optional format-specific input parameters.
@@ -203,7 +202,7 @@ typedef struct _oe_inittime_custom_claim_buffer_t
     char buffer[];
 } oe_inittime_custom_claim_buffer_t;
 ```
- 
+
 Authors
 -------
 
