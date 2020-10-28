@@ -688,12 +688,12 @@ static oe_result_t _set_bytes_dynamic_symbol_value(
     elf64_sym_t sym = {0};
     uint64_t* symbol_address = NULL;
 
-    if (elf64_find_dynamic_symbol_by_name(&image->u.elf.elf, name, &sym) != 0)
+    if (elf64_find_dynamic_symbol_by_name(&image->elf.elf, name, &sym) != 0)
     {
         OE_RAISE(OE_FAILURE);
     }
 
-    symbol_address = (uint64_t*)(image->image_base + sym.st_value);
+    symbol_address = (uint64_t*)(image->elf.image_base + sym.st_value);
     memcpy(symbol_address, bytes, count);
 
 done:
@@ -721,7 +721,7 @@ done:
 }
 
 static oe_result_t _patch_elf_image(
-    oe_enclave_image_t* image,
+    oe_enclave_image_t* oeimg,
     oe_enclave_elf_image_t* image,
     oe_sgx_load_context_t* context,
     size_t enclave_size,
@@ -801,13 +801,13 @@ static oe_result_t _patch_elf_image(
         "_td_from_tcs_offset",
         (tls_page_count + OE_SGX_TCS_CONTROL_PAGES) * OE_PAGE_SIZE);
 
-    if (image->num_regions)
+    if (oeimg->num_regions)
     {
         OE_CHECK(_set_bytes_dynamic_symbol_value(
-            image, "_oe_regions", image->regions, sizeof(image->regions)));
+            oeimg, "_oe_regions", oeimg->regions, sizeof(oeimg->regions)));
 
         OE_CHECK(_set_uint64_t_dynamic_symbol_value(
-            image, "_oe_num_regions", image->num_regions));
+            image, "_oe_num_regions", oeimg->num_regions));
     }
 
     /* Clear the hash when taking the measure */
@@ -828,9 +828,13 @@ static oe_result_t _patch(
     size_t tls_page_count;
 
     OE_CHECK(image->get_tls_page_count(image, &tls_page_count));
-    OE_CHECK(
-        _patch_elf_image(image,
-            &image->elf, context, enclave_size, regions_size, tls_page_count));
+    OE_CHECK(_patch_elf_image(
+        image,
+        &image->elf,
+        context,
+        enclave_size,
+        regions_size,
+        tls_page_count));
 
     result = OE_OK;
 done:
