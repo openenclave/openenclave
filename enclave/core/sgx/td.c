@@ -156,7 +156,7 @@ void* td_to_tcs(const oe_sgx_td_t* td)
 ** oe_sgx_get_td()
 **
 **     Returns a pointer to the thread data structure for the current thread.
-**     This structure resides in the GS segment. Offset zero of this segment
+**     This structure resides in the FS segment. Offset zero of this segment
 **     contains the oe_thread_data_t.self_addr field (a back pointer to the
 **     structure itself). This field is zero until the structure is initialized
 **     by __oe_handle_main (which happens immediately an EENTER).
@@ -167,8 +167,22 @@ void* td_to_tcs(const oe_sgx_td_t* td)
 oe_sgx_td_t* oe_sgx_get_td()
 {
     oe_sgx_td_t* td;
+    void* fsbase;
+    void* gsbase;
 
-    asm("mov %%fs:0, %0" : "=r"(td));
+    asm("mov %%fs:0, %0" : "=r"(fsbase));
+    asm("mov %%gs:0, %0" : "=r"(gsbase));
+
+    // The OE loader ensures that FS and GS point to the same place. To make
+    // accesses to td more robust to changes to FS or GS from an application,
+    // check if fs and gs are different. If they are, fall back to GS.
+    // TODO: If the application wants to use fs or gs, they should really tell
+    // us. We could provide an API to allow an application to request use of fs
+    // or gs, but not both.
+    if (fsbase == gsbase)
+        td = (oe_sgx_td_t*)fsbase;
+    else
+        td = (oe_sgx_td_t*)gsbase;
 
     return td;
 }

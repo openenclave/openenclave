@@ -11,6 +11,7 @@
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/switchless.h>
+#include "region.h"
 #include <stdbool.h>
 #include "../ecall_ids.h"
 #include "../hostthread.h"
@@ -128,6 +129,9 @@ typedef struct _oe_enclave
 
     /* Manager for switchless calls */
     oe_switchless_call_manager_t* switchless_manager;
+
+    /* The region context, which contains any debug instances */
+    oe_region_context_t region_context;
 
     /* Table of global to local ecall ids */
     oe_ecall_id_t* ecall_id_table;

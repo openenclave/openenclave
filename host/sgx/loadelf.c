@@ -678,6 +678,28 @@ done:
     return result;
 }
 
+static oe_result_t _set_bytes_dynamic_symbol_value(
+    oe_enclave_image_t* image,
+    const char* name,
+    const void* bytes,
+    size_t count)
+{
+    oe_result_t result = OE_OK;
+    elf64_sym_t sym = {0};
+    uint64_t* symbol_address = NULL;
+
+    if (elf64_find_dynamic_symbol_by_name(&image->u.elf.elf, name, &sym) != 0)
+    {
+        OE_RAISE(OE_FAILURE);
+    }
+
+    symbol_address = (uint64_t*)(image->image_base + sym.st_value);
+    memcpy(symbol_address, bytes, count);
+
+done:
+    return result;
+}
+
 static oe_result_t _set_uint64_t_dynamic_symbol_value(
     oe_enclave_elf_image_t* image,
     const char* name,
@@ -699,9 +721,11 @@ done:
 }
 
 static oe_result_t _patch_elf_image(
+    oe_enclave_image_t* image,
     oe_enclave_elf_image_t* image,
     oe_sgx_load_context_t* context,
     size_t enclave_size,
+    size_t regions_size,
     size_t tls_page_count)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -752,6 +776,9 @@ static oe_result_t _patch_elf_image(
     /* heap right after image */
     oeprops->image_info.heap_rva = image->image_size + image->reloc_size;
 
+    /* move heap past regions */
+    oeprops->image_info.heap_rva += regions_size;
+
     if (image->tdata_size)
     {
         _set_uint64_t_dynamic_symbol_value(
@@ -774,6 +801,15 @@ static oe_result_t _patch_elf_image(
         "_td_from_tcs_offset",
         (tls_page_count + OE_SGX_TCS_CONTROL_PAGES) * OE_PAGE_SIZE);
 
+    if (image->num_regions)
+    {
+        OE_CHECK(_set_bytes_dynamic_symbol_value(
+            image, "_oe_regions", image->regions, sizeof(image->regions)));
+
+        OE_CHECK(_set_uint64_t_dynamic_symbol_value(
+            image, "_oe_num_regions", image->num_regions));
+    }
+
     /* Clear the hash when taking the measure */
     memset(oeprops->sigstruct, 0, sizeof(oeprops->sigstruct));
 
@@ -785,14 +821,16 @@ done:
 static oe_result_t _patch(
     oe_enclave_image_t* image,
     oe_sgx_load_context_t* context,
-    size_t enclave_size)
+    size_t enclave_size,
+    size_t regions_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t tls_page_count;
 
     OE_CHECK(image->get_tls_page_count(image, &tls_page_count));
     OE_CHECK(
-        _patch_elf_image(&image->elf, context, enclave_size, tls_page_count));
+        _patch_elf_image(image,
+            &image->elf, context, enclave_size, regions_size, tls_page_count));
 
     result = OE_OK;
 done:

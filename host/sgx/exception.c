@@ -44,10 +44,17 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
         // Set the flag marks this thread is handling an enclave exception.
         thread_data->flags |= _OE_THREAD_HANDLING_EXCEPTION;
 
+        oe_exception_record_t oe_exception_record = {0};
+
+        /* TODO PRP: We need to save the exception information in
+         * oe_exception_record */
+
         // Call into enclave first pass exception handler.
         uint64_t arg_out = 0;
-        oe_result_t result =
-            oe_ecall(enclave, OE_ECALL_VIRTUAL_EXCEPTION_HANDLER, 0, &arg_out);
+        uint64_t arg_in = (uint64_t)&oe_exception_record;
+
+        oe_result_t result = oe_ecall(
+            enclave, OE_ECALL_VIRTUAL_EXCEPTION_HANDLER, arg_in, &arg_out);
 
         // Reset the flag
         thread_data->flags &= (~_OE_THREAD_HANDLING_EXCEPTION);
