@@ -641,8 +641,11 @@ static oe_result_t _verify_evidence(
     {
         report_body = evidence_buffer;
         report_body_size = sizeof(sgx_report_t);
-        custom_claims_buffer = report_body + report_body_size;
-        custom_claims_buffer_size = evidence_buffer_size - report_body_size;
+        if (evidence_buffer_size > report_body_size)
+        {
+            custom_claims_buffer = report_body + report_body_size;
+            custom_claims_buffer_size = evidence_buffer_size - report_body_size;
+        }
 
         OE_CHECK(_verify_local_report(report_body, report_body_size));
     }
@@ -654,8 +657,12 @@ static oe_result_t _verify_evidence(
 
             report_body = evidence_buffer;
             report_body_size = sizeof(*quote) + quote->signature_len;
-            custom_claims_buffer = report_body + report_body_size;
-            custom_claims_buffer_size = evidence_buffer_size - report_body_size;
+            if (evidence_buffer_size > report_body_size)
+            {
+                custom_claims_buffer = report_body + report_body_size;
+                custom_claims_buffer_size =
+                    evidence_buffer_size - report_body_size;
+            }
         }
         else if (format_type == SGX_FORMAT_TYPE_LEGACY_REPORT)
         {
