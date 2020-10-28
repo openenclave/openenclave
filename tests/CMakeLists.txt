@@ -111,6 +111,7 @@ if (UNIX
     add_subdirectory(print)
     add_subdirectory(props)
     add_subdirectory(qeidentity)
+    add_subdirectory(region)
     add_subdirectory(report)
     add_subdirectory(SampleApp)
     add_subdirectory(SampleAppCRT)

@@ -68,7 +68,7 @@ static oe_result_t _measure_page(
     uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
 
     if (!readonly)
-        flags |= SGX_SECINFO_W;
+        flags |= SGX_SECINFO_W | SGX_SECINFO_X;
 
     OE_CHECK(oe_sgx_measure_load_enclave_data(
         hctx, base, base + *vaddr, (uint64_t)page, flags, extend));

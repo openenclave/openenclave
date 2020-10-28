@@ -11,6 +11,7 @@
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/switchless.h>
+#include "region.h"
 #include <stdbool.h>
 #include "../ecall_ids.h"
 #include "../hostthread.h"
@@ -133,6 +134,9 @@ typedef struct _oe_enclave
     oe_ecall_id_t* ecall_id_table;
     size_t ecall_id_table_size;
     size_t num_ecalls;
+
+    /* The region context, which contains any debug instances */
+    oe_region_context_t region_context;
 } oe_enclave_t;
 
 /* Get the event for the given TCS */

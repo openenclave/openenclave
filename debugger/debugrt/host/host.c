@@ -175,6 +175,20 @@ OE_NEVER_INLINE void oe_notify_debugger_enclave_termination(
     return;
 }
 
+OE_EXPORT
+OE_NEVER_INLINE
+void oe_notify_debugger_image_load(oe_debug_image_t* image)
+{
+    OE_UNUSED(image);
+}
+
+OE_EXPORT
+OE_NEVER_INLINE
+void oe_notify_debugger_image_unload(oe_debug_image_t* image)
+{
+    OE_UNUSED(image);
+}
+
 OE_NO_OPTIMIZE_END
 
 #else
@@ -340,4 +354,16 @@ done:
         spin_unlock();
 
     return result;
+}
+
+oe_result_t oe_debug_notify_image_loaded(oe_debug_image_t* image)
+{
+    oe_notify_debugger_image_load(image);
+    return OE_OK;
+}
+
+oe_result_t oe_debug_notify_image_unloaded(oe_debug_image_t* image)
+{
+    oe_notify_debugger_image_unload(image);
+    return OE_OK;
 }

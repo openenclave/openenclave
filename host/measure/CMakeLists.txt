@@ -196,3 +196,8 @@ set_property(TARGET oehostmr PROPERTY ARCHIVE_OUTPUT_DIRECTORY
 if (UNIX)
   target_link_libraries(oehostmr INTERFACE -Wl,-z,noexecstack)
 endif ()
+
+install(
+  TARGETS oehostmr
+  EXPORT openenclave-targets
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
