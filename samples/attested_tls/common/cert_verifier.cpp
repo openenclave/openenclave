@@ -11,7 +11,19 @@
 #include <mbedtls/platform.h>
 #include <mbedtls/ssl.h>
 #include <string.h>
-#include "../../common/utility.h"
+#include "utility.h"
+
+#if defined(CLIENT_CERT_VERIFY_CALLBACK)
+#include "tls_server_enc_mrenclave.h"
+#include "tls_server_enc_pubkey.h"
+#define TLS_ENCLAVE TLS_CLIENT
+#elif defined(SERVER_CERT_VERIFY_CALLBACK)
+#include "tls_client_enc_pubkey.h"
+#define TLS_ENCLAVE TLS_SERVER
+#else
+#error \
+    "Either one of compile time flags CLIENT_CERT_VERIFY_CALLBACK or SERVER_CERT_VERIFY_CALLBACK should be defined"
+#endif
 
 oe_result_t enclave_claims_verifier_callback(
     oe_claim_t* claims,
@@ -34,14 +46,14 @@ int cert_verify_callback(
 
     (void)data;
 
-    printf(TLS_CLIENT "Received TLS certificate from server\n");
-    printf(TLS_CLIENT "cert_verify_callback with depth = %d\n", depth);
+    printf(TLS_ENCLAVE "Received TLS certificate\n");
+    printf(TLS_ENCLAVE "cert_verify_callback with depth = %d\n", depth);
 
     cert_buf = crt->raw.p;
     cert_size = crt->raw.len;
 
     printf(
-        TLS_CLIENT "crt->version = %d cert_size = %zu\n",
+        TLS_ENCLAVE "crt->version = %d cert_size = %zu\n",
         crt->version,
         cert_size);
 
@@ -53,13 +65,20 @@ int cert_verify_callback(
     if (result != OE_OK)
     {
         printf(
-            TLS_CLIENT "oe_verify_attestation_certificate_with_evidence failed "
-                       "with result = %s\n",
+            TLS_ENCLAVE
+            "oe_verify_attestation_certificate_with_evidence failed "
+            "with result = %s\n",
             oe_result_str(result));
         goto exit;
     }
     ret = 0;
     *flags = 0;
+
+#if defined(SERVER_CERT_VERIFY_CALLBACK)
+    printf(TLS_ENCLAVE "\n\n---------Establishing an Attested TLS channel "
+                       "between two enclaves---------\n\n");
+#endif
+
 exit:
     return ret;
 }

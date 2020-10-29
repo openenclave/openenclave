@@ -3,7 +3,7 @@
 
 find_package(OpenSSL REQUIRED)
 
-add_executable(tls_non_enc_client client.cpp verify_callback.cpp)
+add_executable(tls_non_enc_client client.cpp ../common/verify_callback.cpp)
 
 add_dependencies(tls_non_enc_client tls_server_sign_enc)
 
