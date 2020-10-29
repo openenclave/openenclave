@@ -19,9 +19,9 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/x509_vfy.h>
-#include "../common/common.h"
-#include "../common/tls_server_enc_mrenclave.h"
-#include "../common/tls_server_enc_pubkey.h"
+#include "common.h"
+#include "tls_server_enc_mrenclave.h"
+#include "tls_server_enc_pubkey.h"
 
 /**
  * Helper function used to make the claim-finding process more convenient. Given

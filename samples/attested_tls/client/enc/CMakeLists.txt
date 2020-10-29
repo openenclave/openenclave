@@ -19,10 +19,13 @@ add_custom_command(
     ${CMAKE_SOURCE_DIR}/client/enc/enc.conf -k
     ${CMAKE_SOURCE_DIR}/client/enc/private.pem)
 
+add_definitions(-DCLIENT_CERT_VERIFY_CALLBACK)
+
 add_executable(
   tls_client_enc
-  ecalls.cpp client.cpp cert_verifier.cpp identity_verifier.cpp
-  ../../common/utility.cpp ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
+  ecalls.cpp client.cpp ../../common/cert_verifier.cpp
+  ../../common/identity_verifier.cpp ../../common/utility.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
 
 add_dependencies(tls_client_enc tls_server_sign_enc)
 
