@@ -51,6 +51,55 @@
             ]
         },
         {
+            "name": "(oegdb) Launch Intel SGX (Hardware) [LVI]",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bld/sgx-lvi/out/bin/[[project-name]]",
+            "args": [
+                "${workspaceFolder}/bld/sgx-lvi/out/bin/[[project-name]]_enclave.signed",
+                "--debug"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build for Intel SGX (x64) [LVI]",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/opt/openenclave/bin/oegdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(oegdb) Launch Intel SGX (Simulation) [LVI]",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bld/sgx-lvi/out/bin/[[project-name]]",
+            "args": [
+                "${workspaceFolder}/bld/sgx-lvi/out/bin/[[project-name]]_enclave.signed",
+                "--debug",
+                "--simulate"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build for Intel SGX (x64) [LVI]",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/opt/openenclave/bin/oegdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "name": "(gdb) Launch QEMU (AArch64/ARMv8-A)",
             "type": "gdb",
             "request": "attach",

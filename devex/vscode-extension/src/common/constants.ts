@@ -16,7 +16,7 @@ export class Constants {
     public static DevKitBlobAccount = "";
     public static DevKitBlobContainerName = "";
     public static DevKitBlobName = "";
-    public static DevKitVersion = "2.0.0";
+    public static DevKitVersion = "3.0.0";
 
     //
     // System requirements version ... update this when the requirements change

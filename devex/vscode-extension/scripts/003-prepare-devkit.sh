@@ -6,10 +6,11 @@
 # NOTE: The final result of this script will be devdata.tar.gz.
 
 EMU_PATH=emu
+SDK_VERSION=v0.11.0
 
 # Clone the SDK
 if [ ! -d sdk ]; then
-    git clone --recursive --depth=1 https://github.com/openenclave/openenclave sdk
+    git clone --recursive --depth=1 https://github.com/openenclave/openenclave sdk -b $SDK_VERSION
 fi
 
 # Delete all previous output
@@ -116,9 +117,11 @@ unset TA_CROSS_COMPILE_32
 
 # Build the SDK for Intel SGX
 pushd "$OE_SDK_SGX_OUT_PATH" || exit
-cmake -G Ninja "$OE_SDK_PATH"                       \
-    -DCMAKE_BUILD_TYPE=Debug                        \
-    -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'  \
+cmake -G Ninja "$OE_SDK_PATH"                              \
+    -DLVI_MITIGATION=ControlFlow                           \
+    -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin  \
+    -DCMAKE_BUILD_TYPE=Debug                               \
+    -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'         \
     -DCPACK_GENERATOR=DEB || exit
 ninja package || exit
 
@@ -190,5 +193,6 @@ cp -r "$EMU_PATH" payload/emu
 
 # Zip everything up
 pushd payload || exit
-tar cvzf ../devdata.tar.gz emu/ sdk/
+echo $SDK_VERSION > VERSION
+GZIP=-9 tar cvzf ../devdata.tar.gz emu/ sdk/ VERSION
 popd || exit

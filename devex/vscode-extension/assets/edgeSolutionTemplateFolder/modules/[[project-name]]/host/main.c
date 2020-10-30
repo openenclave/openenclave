@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <openenclave/host.h>
-
 #include <azure_c_shared_utility/crt_abstractions.h>
 #include <azure_c_shared_utility/platform.h>
 #include <azure_c_shared_utility/shared_util_options.h>
@@ -302,10 +300,10 @@ void iothub_module()
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result = OE_OK;
+    int result;
 
     result = create_enclave(argc, argv);
-    if (result != OE_OK)
+    if (result)
     {
         return result;
     }

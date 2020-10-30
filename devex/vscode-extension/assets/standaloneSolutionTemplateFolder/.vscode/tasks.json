@@ -28,6 +28,34 @@
             ]
         },
         {
+            "label": "Configure for Intel SGX (x64) [LVI]",
+            "type": "process",
+            "command": "cmake",
+            "options": {
+                "cwd": "[[build-folder]]/sgx-lvi"
+            },
+            "args": [
+                "-DOE_TEE=SGX",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-DLVI_MITIGATION=ControlFlow",
+                "-DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin",
+                "[[solution-folder]]"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Build for Intel SGX (x64) [LVI]",
+            "type": "process",
+            "command": "make",
+            "options": {
+                "cwd": "[[build-folder]]/sgx-lvi"
+            },
+            "problemMatcher": [],
+            "dependsOn": [
+                "Configure for Intel SGX (x64) [LVI]"
+            ]
+        },
+        {
             "label": "Configure for QEMU (AArch64/ARMv8-A)",
             "type": "process",
             "command": "cmake",
