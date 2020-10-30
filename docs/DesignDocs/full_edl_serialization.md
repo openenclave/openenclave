@@ -85,6 +85,9 @@ enclave
 This example introduces a local structure definition (**local_iovec**) which
 provides an annotation allowing **iov_base** to be serialized.
 
+See [Support Deep Copy of Variable-Length Out Parameters](/docs/DesignDocs/DeepCopyOutParameters.md)
+for more detail.
+
 The following EDL considers a second scenario that implicitly passes untrusted
 memory into the trusted implementation.
 
@@ -112,10 +115,10 @@ enclave
 ```
 
 Although EDL provides sufficient mechanisms for performing full serialization,
-the generator does not currently enforce these mechanisms. By default, the
-generator produces edge routines that implicitly copy untrusted memory
-references into the enclave. This results in potential security flaws and
-non-portable code.
+the generator does not currently enforce these mechanisms. As shown above,
+without using proper syntax or annotations, the generator may still produce edge
+routines that implicitly copy untrusted memory references into the enclave.
+This results in potential security flaws and non-portable code.
 
 To overcome these problems, the generator can be modified to warn when an EDL
 specification cannot be fully serialized.
