@@ -20,6 +20,7 @@ add_enclave(
   client.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/tls_e2e_t.c
   ../common/utility.cpp
+  ../common/mbedtls_utility.cpp
   tls_e2e_t.c)
 
 set_source_files_properties(tls_e2e_t.c PROPERTIES COMPILE_FLAGS

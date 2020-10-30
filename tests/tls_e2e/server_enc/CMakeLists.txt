@@ -18,6 +18,7 @@ add_enclave(
   SOURCES
   server.cpp
   ../common/utility.cpp
+  ../common/mbedtls_utility.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/tls_e2e_t.c)
 
 set_source_files_properties(tls_e2e_t.c PROPERTIES COMPILE_FLAGS

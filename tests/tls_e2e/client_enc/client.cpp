@@ -4,7 +4,6 @@
 #include <openenclave/edger8r/enclave.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/report.h>
 #include <openenclave/internal/syscall/arpa/inet.h>
 #include <openenclave/internal/syscall/device.h>
 #include <openenclave/internal/syscall/netdb.h>
@@ -33,7 +32,7 @@
 // clang-format on
 
 #include "tls_e2e_t.h"
-#include "../common/utility.h"
+#include "../common/mbedtls_utility.h"
 
 extern "C"
 {
@@ -45,48 +44,6 @@ extern "C"
 };
 
 struct tls_control_args g_control_config;
-
-// This is the identity validation callback. A TLS connecting party (client or
-// server) can verify the passed in "identity" information to decide whether to
-// accept an connection request
-oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
-{
-    oe_result_t result = OE_VERIFY_FAILED;
-
-    (void)arg;
-
-    OE_TRACE_INFO("enclave_identity_verifier is called with parsed report:\n");
-    if (g_control_config.fail_enclave_identity_verifier_callback)
-        goto done;
-
-    // Check the enclave's security version
-    if (identity->security_version < 1)
-    {
-        OE_TRACE_ERROR(
-            "identity->security_version checking failed (%d)\n",
-            identity->security_version);
-        goto done;
-    }
-
-    // Dump an enclave's unique ID, signer ID and Product ID. They are
-    // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves. In a real scenario,
-    // custom id checking should be done here
-    OE_TRACE_INFO("\nidentity->unique_id :\n");
-    for (int i = 0; i < OE_UNIQUE_ID_SIZE; i++)
-        OE_TRACE_INFO("0x%0x ", (uint8_t)identity->unique_id[i]);
-
-    OE_TRACE_INFO("\nparsed_report->identity.signer_id :\n");
-    for (int i = 0; i < OE_SIGNER_ID_SIZE; i++)
-        OE_TRACE_INFO("0x%0x ", (uint8_t)identity->signer_id[i]);
-
-    OE_TRACE_INFO("\nidentity->product_id :\n");
-    for (int i = 0; i < OE_PRODUCT_ID_SIZE; i++)
-        OE_TRACE_INFO("0x%0x ", (uint8_t)identity->product_id[i]);
-
-    result = OE_OK;
-done:
-    return result;
-}
 
 static void debug_print(
     void* ctx,

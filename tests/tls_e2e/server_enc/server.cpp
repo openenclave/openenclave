@@ -29,7 +29,7 @@
 // clang-format on
 
 #include "tls_e2e_t.h"
-#include "../common/utility.h"
+#include "../common/mbedtls_utility.h"
 
 extern "C"
 {
@@ -40,61 +40,7 @@ extern "C"
         char* server_port);
 };
 
-#define SERVER_IP "127.0.0.1"
-
 struct tls_control_args g_control_config;
-
-// This is the identity validation callback. An TLS connecting party (client or
-// server) can verify the passed in "identity" information to decide whether to
-// accept an connection reqest
-oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
-{
-    oe_result_t result = OE_VERIFY_FAILED;
-    (void)arg;
-
-    if (g_control_config.fail_enclave_identity_verifier_callback)
-        goto done;
-
-    OE_TRACE_INFO("Server:enclave_identity_verifier is called with enclave "
-                  "identity information:\n");
-
-    // the enclave's security version
-    OE_TRACE_INFO(
-        "identity->security_version = %d\n", identity->security_version);
-
-    // Dump an enclave's unique ID, signer ID and Product ID. They are
-    // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves In a real scenario,
-    // custom id checking should be done here
-    OE_TRACE_INFO("identity->unique_id(MRENCLAVE) :\n");
-    for (int i = 0; i < OE_UNIQUE_ID_SIZE; i++)
-        OE_TRACE_INFO("0x%0x ", (uint8_t)identity->unique_id[i]);
-
-    OE_TRACE_INFO("\nidentity->signer_id(MRSIGNER) :\n");
-    for (int i = 0; i < OE_SIGNER_ID_SIZE; i++)
-        OE_TRACE_INFO("0x%0x ", (uint8_t)identity->signer_id[i]);
-
-    // On a real enclave product, this is the place to check again the enclave
-    // signing key by calling function like verify_mrsigner below. However, we
-    // are not siging test cases, so this checking will be skipped.
-    // tls_between_enclaves sample will have code show how to dothis checking if
-    // (!verify_mrsigner((char *)OTHER_ENCLAVE_PUBLIC_KEY,
-    //                     sizeof(OTHER_ENCLAVE_PUBLIC_KEY),
-    //                     identity->signer_id,
-    //                     sizeof(identity->signer_id)))
-    // {
-    //     OE_TRACE_ERROR("failed:mrsigner not equal!\n");
-    //     goto done;
-    // }
-
-    OE_TRACE_INFO("\nidentity->product_id :\n");
-    for (int i = 0; i < OE_PRODUCT_ID_SIZE; i++)
-        OE_TRACE_INFO("0x%0x ", (uint8_t)identity->product_id[i]);
-
-    result = OE_OK;
-
-done:
-    return result;
-}
 
 static void debug_print(
     void* ctx,
