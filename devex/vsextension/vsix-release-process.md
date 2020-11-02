@@ -6,7 +6,7 @@ a Microsoft signature generated using the Microsoft [PODSS](https://aka.ms/podss
 In the future, this process will change to a use a non-Microsoft
 signature once another signing process is defined for Open Enclave.
 
-1. Build the latest [Cross-Platform Open Enclave SDK NuGet Package](https://github.com/HernanGatta/openenclave-cross-plat-nuget).
+1. Build the latest [Cross-Platform Open Enclave SDK NuGet Package](../cross-nuget/README.md).
    Make a note of the new version number for use in step 4.
 
 2. Copy the resulting `open-enclave-cross.*.nupkg` NuGet package
