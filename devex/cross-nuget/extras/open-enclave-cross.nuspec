@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Open Enclave SDK contributors.
+     Licensed under the MIT License.
+  -->
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>open-enclave-cross</id>
+    <version>0.11.0</version>
+    <authors>Open Enclave SDK Contributors</authors>
+    <owners>Open Enclave SDK Contributors</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/openenclave/openenclave/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/openenclave/openenclave</projectUrl>
+    <tags>native openenclave enclave tee ccc confidential sgx optee op-tee</tags>
+    <description>
+Open Enclave (OE) is an SDK for building enclave applications in C and C++.
+
+This package includes builds of the SDK for Windows and Linux and is used in the Visual Studio extension for OE.
+
+Use the open-enclave NuGet package for your own projects.
+</description>
+    <summary>Open Enclave SDK</summary>
+  </metadata>
+</package>
