@@ -25,8 +25,8 @@
 #define DATE_NOT_VALID_BEFORE "20190501000000"
 #define DATE_NOT_VALID_AFTER "20501231235959"
 
-static const unsigned char oid_oe_report[] = X509_OID_FOR_QUOTE_EXT;
-static const unsigned char oid_oe_evidence[] = X509_OID_FOR_OE_EVIDENCE_EXT;
+static const unsigned char oid_oe_report[] = X509_OID_FOR_NEW_QUOTE_EXT;
+static const unsigned char oid_oe_evidence[] = X509_OID_FOR_NEW_OE_EVIDENCE_EXT;
 
 // Input: an issuer and subject key pair
 // Output: a self-signed certificate embedded critical extension with quote
