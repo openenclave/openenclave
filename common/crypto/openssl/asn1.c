@@ -1,7 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include "../common/asn1.h"
+#include "../../asn1.h"
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/defs.h>

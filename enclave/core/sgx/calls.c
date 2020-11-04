@@ -12,6 +12,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/crypto/init.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
@@ -173,6 +174,9 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
             /* Initialize the xstate settings
              * Depends on TD and sgx_create_report, so can't happen earlier */
             OE_CHECK(oe_set_is_xsave_supported());
+
+            /* Initialize the OE crypto library. */
+            oe_crypto_initialize();
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */

@@ -1,15 +1,17 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#if !defined(OE_BUILD_ENCLAVE)
+#include <openenclave/internal/crypto/init.h>
+#endif
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include <openssl/obj_mac.h>
 #include <openssl/pem.h>
 
-#include "../magic.h"
 #include "ec.h"
-#include "init.h"
 #include "key.h"
+#include "magic.h"
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 /* Needed for compatibility with ssl1.1 */
@@ -73,8 +75,8 @@ static oe_result_t _public_key_equal(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!oe_public_key_is_valid(public_key1, OE_RSA_PUBLIC_KEY_MAGIC) ||
-        !oe_public_key_is_valid(public_key2, OE_RSA_PUBLIC_KEY_MAGIC) || !equal)
+    if (!oe_public_key_is_valid(public_key1, OE_EC_PUBLIC_KEY_MAGIC) ||
+        !oe_public_key_is_valid(public_key2, OE_EC_PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
@@ -112,13 +114,13 @@ done:
 void oe_ec_public_key_init(oe_ec_public_key_t* public_key, EVP_PKEY* pkey)
 {
     oe_public_key_init(
-        (oe_public_key_t*)public_key, pkey, OE_RSA_PUBLIC_KEY_MAGIC);
+        (oe_public_key_t*)public_key, pkey, OE_EC_PUBLIC_KEY_MAGIC);
 }
 
 void oe_ec_private_key_init(oe_ec_private_key_t* private_key, EVP_PKEY* pkey)
 {
     oe_private_key_init(
-        (oe_private_key_t*)private_key, pkey, OE_RSA_PRIVATE_KEY_MAGIC);
+        (oe_private_key_t*)private_key, pkey, OE_EC_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_read_pem(
@@ -131,7 +133,7 @@ oe_result_t oe_ec_private_key_read_pem(
         pem_size,
         (oe_private_key_t*)private_key,
         EVP_PKEY_EC,
-        OE_RSA_PRIVATE_KEY_MAGIC);
+        OE_EC_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_write_pem(
@@ -144,7 +146,7 @@ oe_result_t oe_ec_private_key_write_pem(
         pem_data,
         pem_size,
         _private_key_write_pem_callback,
-        OE_RSA_PRIVATE_KEY_MAGIC);
+        OE_EC_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_public_key_read_pem(
@@ -157,7 +159,7 @@ oe_result_t oe_ec_public_key_read_pem(
         pem_size,
         (oe_public_key_t*)public_key,
         EVP_PKEY_EC,
-        OE_RSA_PUBLIC_KEY_MAGIC);
+        OE_EC_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_public_key_write_pem(
@@ -169,19 +171,19 @@ oe_result_t oe_ec_public_key_write_pem(
         (const oe_public_key_t*)public_key,
         pem_data,
         pem_size,
-        OE_RSA_PUBLIC_KEY_MAGIC);
+        OE_EC_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* private_key)
 {
     return oe_private_key_free(
-        (oe_private_key_t*)private_key, OE_RSA_PRIVATE_KEY_MAGIC);
+        (oe_private_key_t*)private_key, OE_EC_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* public_key)
 {
     return oe_public_key_free(
-        (oe_public_key_t*)public_key, OE_RSA_PUBLIC_KEY_MAGIC);
+        (oe_public_key_t*)public_key, OE_EC_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_sign(
@@ -199,7 +201,7 @@ oe_result_t oe_ec_private_key_sign(
         hash_size,
         signature,
         signature_size,
-        OE_RSA_PRIVATE_KEY_MAGIC);
+        OE_EC_PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_public_key_verify(
@@ -217,7 +219,7 @@ oe_result_t oe_ec_public_key_verify(
         hash_size,
         signature,
         signature_size,
-        OE_RSA_PUBLIC_KEY_MAGIC);
+        OE_EC_PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_generate_key_pair_from_private(
@@ -241,8 +243,10 @@ oe_result_t oe_ec_generate_key_pair_from_private(
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
+#if !defined(OE_BUILD_ENCLAVE)
     /* Initialize OpenSSL. */
-    oe_initialize_openssl();
+    oe_crypto_initialize();
+#endif
 
     /* Initialize the EC key. */
     key = EC_KEY_new_by_curve_name(_get_nid(curve));
@@ -347,8 +351,10 @@ oe_result_t oe_ec_public_key_from_coordinates(
     if (public_key)
         oe_secure_zero_fill(public_key, sizeof(oe_ec_public_key_t));
 
+#if !defined(OE_BUILD_ENCLAVE)
     /* Initialize OpenSSL */
-    oe_initialize_openssl();
+    oe_crypto_initialize();
+#endif
 
     /* Reject invalid parameters */
     if (!public_key || !x_data || !x_size || x_size > OE_INT_MAX || !y_data ||
@@ -405,7 +411,7 @@ oe_result_t oe_ec_public_key_from_coordinates(
 
         /* Initialize the public key */
         {
-            oe_public_key_init(impl, pkey, OE_RSA_PUBLIC_KEY_MAGIC);
+            oe_public_key_init(impl, pkey, OE_EC_PUBLIC_KEY_MAGIC);
             pkey = NULL;
         }
     }

@@ -10,8 +10,15 @@ add_custom_command(
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
     ${DEFINE_OE_SGX} --search-path ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_enclave(TARGET tls_server_enc SOURCES server.cpp ../common/utility.cpp
-            ${CMAKE_CURRENT_BINARY_DIR}/tls_e2e_t.c)
+add_enclave(
+  TARGET
+  tls_server_enc
+  CRYPTO_LIB
+  mbedtls
+  SOURCES
+  server.cpp
+  ../common/utility.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/tls_e2e_t.c)
 
 set_source_files_properties(tls_e2e_t.c PROPERTIES COMPILE_FLAGS
                                                    "-Wno-conversion")

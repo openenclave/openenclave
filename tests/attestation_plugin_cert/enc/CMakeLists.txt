@@ -12,12 +12,36 @@ add_custom_command(
 
 add_enclave(
   TARGET
-  tls_cert_enc
+  tls_cert_mbedtls_enc
   UUID
   06999b6d-4132-461a-94da-f3972f68f301
+  CRYPTO_LIB
+  mbedtls
   SOURCES
   enc.cpp
+  mbedtls_rsa.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/tls_t.c)
 
-enclave_include_directories(tls_cert_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-enclave_link_libraries(tls_cert_enc oeenclave oelibc)
+enclave_include_directories(
+  tls_cert_mbedtls_enc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR})
+
+if (BUILD_OPENSSL)
+  add_enclave(
+    TARGET
+    tls_cert_openssl_enc
+    UUID
+    470f7d75-4c00-4f03-8125-f6e5175d0b7e
+    CRYPTO_LIB
+    openssl
+    SOURCES
+    enc.cpp
+    openssl_rsa.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/tls_t.c)
+
+  enclave_compile_definitions(tls_cert_openssl_enc PRIVATE OE_USE_OPENSSL)
+
+  enclave_include_directories(
+    tls_cert_openssl_enc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR})
+endif ()

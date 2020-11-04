@@ -14,9 +14,9 @@
 #include <string.h>
 #include <time.h>
 
-#include "../magic.h"
 #include "asn1.h"
 #include "crl.h"
+#include "magic.h"
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 /* Needed for compatibility with ssl1.1 */

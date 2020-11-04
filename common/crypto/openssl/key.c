@@ -1,7 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include "key.h"
+#if !defined(OE_BUILD_ENCLAVE)
+#include <openenclave/internal/crypto/init.h>
+#endif
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
@@ -10,7 +12,9 @@
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <string.h>
-#include "init.h"
+
+#include "key.h"
+#include "magic.h"
 
 bool oe_private_key_is_valid(const oe_private_key_t* impl, uint64_t magic)
 {
@@ -155,8 +159,10 @@ oe_result_t oe_private_key_read_pem(
     if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#if !defined(OE_BUILD_ENCLAVE)
     /* Initialize OpenSSL */
-    oe_initialize_openssl();
+    oe_crypto_initialize();
+#endif
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
@@ -212,8 +218,10 @@ oe_result_t oe_public_key_read_pem(
     if (strnlen((const char*)pem_data, pem_size) != pem_size - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#if !defined(OE_BUILD_ENCLAVE)
     /* Initialize OpenSSL */
-    oe_initialize_openssl();
+    oe_crypto_initialize();
+#endif
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pem_data, (int)pem_size)))
@@ -449,8 +457,10 @@ oe_result_t oe_private_key_sign(
     if (!signature && *signature_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#if !defined(OE_BUILD_ENCLAVE)
     /* Initialize OpenSSL */
-    oe_initialize_openssl();
+    oe_crypto_initialize();
+#endif
 
     /* Create signing context */
     if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
@@ -525,8 +535,10 @@ oe_result_t oe_public_key_verify(
     if (hash_type > hash_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#if !defined(OE_BUILD_ENCLAVE)
     /* Initialize OpenSSL */
-    oe_initialize_openssl();
+    oe_crypto_initialize();
+#endif
 
     /* Create signing context */
     if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))

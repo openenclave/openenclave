@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+## Breaking Changes
+- liboecryptombed is now called liboecryptombedtls and will no longer be automatically included as a link dependency when linking liboeenclave in CMake.
+     - The `openenclave-config.cmake` and `openenclave-lvi-mitigation-config.cmake` will not specify the renamed liboecryptombedtls as a `PUBLIC` link requirement for liboeenclave.
+     - Enclave apps that build with CMake and use the Open Enclave cmake configurations must now explicitly include `openenclave::oecryptombedtls` when linking `openenclave::oeenclave`.
+     - See the [CMakeLists.txt in the helloworld sample](samples/helloworld/enclave/CMakeLists.txt#L32) for an example.
+     - This change does not currently affect enclave apps relying on pkgconfig.
+
 [v0.12.0][v0.12.0_log]
 --------------
 

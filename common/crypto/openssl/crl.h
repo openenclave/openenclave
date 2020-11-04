@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifndef _OE_HOST_CRYPTO_CRL_H
-#define _OE_HOST_CRYPTO_CRL_H
+#ifndef _OE_COMMON_CRYPTO_OPENSSL_CRL_H
+#define _OE_COMMON_CRYPTO_OPENSSL_CRL_H
 
 #include <openenclave/internal/crypto/crl.h>
 #include <openssl/x509.h>
@@ -15,4 +15,4 @@ typedef struct _crl
 
 bool crl_is_valid(const crl_t* impl);
 
-#endif /* _OE_HOST_CRYPTO_CRL_H */
+#endif /* _OE_COMMON_CRYPTO_OPENSSL_CRL_H */

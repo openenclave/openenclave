@@ -4,13 +4,14 @@
 # Add a library oehostmr independent of libsgx_enclave_common/libsgx_dcap_ql
 if (UNIX)
   set(PLATFORM_HOST_MR_SRC
-      crypto/openssl/asn1.c
-      crypto/openssl/cert.c
-      crypto/openssl/ec.c
+      ${PROJECT_SOURCE_DIR}/common/crypto/openssl/asn1.c
+      ${PROJECT_SOURCE_DIR}/common/crypto/openssl/cert.c
+      ${PROJECT_SOURCE_DIR}/common/crypto/openssl/ec.c
+      ${PROJECT_SOURCE_DIR}/common/crypto/openssl/key.c
+      ${PROJECT_SOURCE_DIR}/common/crypto/openssl/rsa.c
+      ${PROJECT_SOURCE_DIR}/common/crypto/openssl/sha.c
       crypto/openssl/init.c
-      crypto/openssl/key.c
       crypto/openssl/rsa.c
-      crypto/openssl/sha.c
       linux/hostthread.c
       linux/time.c)
 elseif (WIN32)
@@ -21,10 +22,10 @@ elseif (WIN32)
       crypto/bcrypt/pem.c
       crypto/bcrypt/util.c
       windows/hostthread.c
-      ../3rdparty/mbedtls/mbedtls/library/bignum.c
-      ../3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
-      ../common/asn1.c
-      ../common/cert.c
+      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/bignum.c
+      ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
+      ${PROJECT_SOURCE_DIR}/common/asn1.c
+      ${PROJECT_SOURCE_DIR}/common/cert.c
       crypto/bcrypt/cert.c
       crypto/bcrypt/crl.c
       crypto/bcrypt/ec.c
@@ -47,7 +48,7 @@ if (OE_SGX)
     APPEND
     PLATFORM_HOST_MR_SRC
     signkey.c
-    ../common/sgx/sgxmeasure.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/sgxmeasure.c
     sgx/create.c
     sgx/elf.c
     sgx/load.c
@@ -55,10 +56,10 @@ if (OE_SGX)
     sgx/sgxload.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
-    ../common/sgx/report_helper.c)
+    ${PROJECT_SOURCE_DIR}/common/sgx/report_helper.c)
 
   if (WITH_EEID)
-    list(APPEND PLATFORM_HOST_MR_SRC ../common/sgx/eeid.c)
+    list(APPEND PLATFORM_HOST_MR_SRC ${PROJECT_SOURCE_DIR}/common/sgx/eeid.c)
   endif ()
 
   # OS specific as well.
@@ -86,8 +87,8 @@ endif ()
 list(
   APPEND
   PLATFORM_HOST_MR_SRC
-  ../common/safecrt.c
-  ../common/sha.c
+  ${PROJECT_SOURCE_DIR}/common/safecrt.c
+  ${PROJECT_SOURCE_DIR}/common/sha.c
   hexdump.c
   dupenv.c
   fopen.c

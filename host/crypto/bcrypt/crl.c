@@ -6,9 +6,9 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 
-#include "../magic.h"
 #include "bcrypt.h"
 #include "crl.h"
+#include "magic.h"
 #include "util.h"
 
 #define DER_DATA_SIZE 8192
