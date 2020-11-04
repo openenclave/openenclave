@@ -222,6 +222,7 @@ waiting_for_connection_request:
 
     OE_TRACE_INFO("Waiting for a remote connection request...\n");
     server_is_ready(&server_ready_ret);
+
     if ((ret = mbedtls_net_accept(&listen_fd, &client_fd, NULL, 0, NULL)) != 0)
     {
         char errbuf[512];

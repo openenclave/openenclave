@@ -2,11 +2,7 @@
 // Licensed under the MIT License.
 
 #include <mbedtls/pk.h>
-#include <mbedtls/platform.h>
-#include <mbedtls/rsa.h>
-#include <mbedtls/sha256.h>
 #include <mbedtls/x509_crt.h>
-#include <openenclave/internal/print.h>
 #include "utility.h"
 
 oe_result_t generate_certificate_and_pkey(

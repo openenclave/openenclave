@@ -26,10 +26,6 @@ oe_result_t generate_certificate_and_pkey(
         &private_key_buf_size);
     OE_CHECK_MSG(result, " failed with %s\n", oe_result_str(result));
 
-#if 0
-    OE_TRACE_INFO("private_key_buf_size:[%ld]\n", private_key_buf_size);
-#endif
-
     OE_TRACE_INFO("public_key_buf_size:[%ld]\n", public_key_buf_size);
     OE_TRACE_INFO("public key used:\n[%s]", public_key_buf);
 
