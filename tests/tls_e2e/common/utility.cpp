@@ -117,3 +117,28 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
 done:
     return result;
 }
+
+int load_oe_modules()
+{
+    int ret = -1;
+    oe_result_t result = OE_FAILURE;
+
+    // Explicitly enabling features
+    if ((result = oe_load_module_host_resolver()) != OE_OK)
+    {
+        OE_TRACE_ERROR(
+            "oe_load_module_host_resolver failed with %s\n",
+            oe_result_str(result));
+        goto exit;
+    }
+    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
+    {
+        OE_TRACE_ERROR(
+            "oe_load_module_host_socket_interface failed with %s\n",
+            oe_result_str(result));
+        goto exit;
+    }
+    ret = 0;
+exit:
+    return ret;
+}

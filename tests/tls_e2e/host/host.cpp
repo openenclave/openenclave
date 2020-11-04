@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "tls_e2e_u.h"
 
 #include <condition_variable>
@@ -163,14 +164,8 @@ void run_server(void* arg)
         config->args.fail_enclave_identity_verifier_callback ||
         config->args.fail_oe_verify_attestation_certificate)
     {
-        printf(
-            "\n output of g_server_thread_exit_code %d \n",
-            g_server_thread_exit_code);
         OE_TEST(g_server_thread_exit_code == FATAL_TLS_HANDSHAKE_ERROR);
         g_server_thread_exit_code = 0;
-        printf(
-            "\n ^^^^^^^^^^^^^^^ resetting done %d ^^^^^^^^^^^^^^^^^^^^^^",
-            g_server_thread_exit_code);
     }
 
     OE_TRACE_INFO("Leaving server thread...\n");

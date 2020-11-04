@@ -46,89 +46,6 @@ int launch_tls_client(
     return 0;
 }
 
-int load_oe_modules()
-{
-    int ret = -1;
-    oe_result_t result = OE_FAILURE;
-
-    // Explicitly enabling features
-    if ((result = oe_load_module_host_resolver()) != OE_OK)
-    {
-        OE_TRACE_ERROR(
-            TLS_SERVER "oe_load_module_host_resolver failed with %s\n",
-            oe_result_str(result));
-        goto exit;
-    }
-    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
-    {
-        OE_TRACE_ERROR(
-            TLS_SERVER "oe_load_module_host_socket_interface failed with %s\n",
-            oe_result_str(result));
-        goto exit;
-    }
-    ret = 0;
-exit:
-    return ret;
-}
-
-void init_openssl_library()
-{
-    OpenSSL_add_ssl_algorithms();
-    SSL_load_error_strings();
-    SSL_load_error_strings();
-}
-
-int initalize_ssl_context(SSL_CTX*& ctx)
-{
-    int ret = -1;
-    if ((ctx = SSL_CTX_new(SSLv23_server_method())) == NULL)
-    {
-        OE_TRACE_ERROR(TLS_SERVER " unable to create a new SSL context\n");
-        goto exit;
-    }
-    // choose TLSv1.2 by excluding SSLv2, SSLv3 ,TLS 1.0 and TLS 1.1
-    SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
-    SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv3);
-    SSL_CTX_set_options(ctx, SSL_OP_NO_TLSv1);
-    SSL_CTX_set_options(ctx, SSL_OP_NO_TLSv1_1);
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, &cert_verify_callback);
-    ret = 0;
-exit:
-    return ret;
-}
-
-int load_ssl_certificates_and_keys(SSL_CTX* ctx, X509*& cert, EVP_PKEY*& pkey)
-{
-    int ret = -1;
-    if (generate_certificate_and_pkey(cert, pkey) != OE_OK)
-    {
-        OE_TRACE_ERROR(TLS_SERVER "Cannot generate certificate and pkey\n");
-        goto exit;
-    }
-    if (!SSL_CTX_use_certificate(ctx, cert))
-    {
-        OE_TRACE_ERROR(TLS_SERVER "Cannot load certificate on the server\n");
-        goto exit;
-    }
-
-    if (!SSL_CTX_use_PrivateKey(ctx, pkey))
-    {
-        OE_TRACE_ERROR(TLS_SERVER "Cannot load private key on the server\n");
-        goto exit;
-    }
-
-    /* verify private key */
-    if (!SSL_CTX_check_private_key(ctx))
-    {
-        OE_TRACE_ERROR(TLS_SERVER
-                       "Private key does not match the public certificate\n");
-        goto exit;
-    }
-    ret = 0;
-exit:
-    return ret;
-}
-
 int create_listener_socket(uint16_t port, int& server_socket)
 {
     int ret = -1;
@@ -254,15 +171,6 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     if (load_oe_modules() != 0)
     {
         OE_TRACE_ERROR(TLS_SERVER "loading required oe modules failed \n");
-        goto exit;
-    }
-
-    // initialize openssl library and register algorithms
-    init_openssl_library();
-    if (SSL_library_init() < 0)
-    {
-        OE_TRACE_ERROR(TLS_SERVER
-                       " could not initialize the OpenSSL library !\n");
         goto exit;
     }
 

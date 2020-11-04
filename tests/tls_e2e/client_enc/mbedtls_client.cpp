@@ -129,7 +129,6 @@ int launch_tls_client(
 {
     int ret = 1;
     uint32_t uret = 1;
-    oe_result_t result = OE_FAILURE;
     int len = 0;
     int exit_code = MBEDTLS_EXIT_FAILURE;
     unsigned char buf[1024];
@@ -147,8 +146,11 @@ int launch_tls_client(
     // mbedtls' TLS feature
     if (!oe_module_loaded)
     {
-        OE_CHECK(oe_load_module_host_socket_interface());
-        OE_CHECK(oe_load_module_host_resolver());
+        if (load_oe_modules() != 0)
+        {
+            OE_TRACE_ERROR(TLS_CLIENT "loading required oe modules failed \n");
+            goto done;
+        }
         oe_module_loaded = true;
     }
 

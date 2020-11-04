@@ -18,6 +18,11 @@ oe_result_t generate_key_pair(
     uint8_t** private_key,
     size_t* private_key_size);
 
+int load_oe_modules();
+
+#define TLS_SERVER "TLS_TEST_SERVER: "
+#define TLS_CLIENT "TLS_TEST_CLIENT: "
+
 #define SERVER_IP "127.0.0.1"
 
 #define CLIENT_REQUEST_PAYLOAD_SIZE 18

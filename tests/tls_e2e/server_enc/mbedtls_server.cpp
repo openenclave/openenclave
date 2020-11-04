@@ -130,7 +130,6 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     int server_ready_ret = 1;
     int len = 0;
     uint32_t uret = 1;
-    oe_result_t result = OE_FAILURE;
     static bool oe_module_loaded = false;
 
     mbedtls_entropy_context entropy;
@@ -148,8 +147,11 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     // mbedtls' TLS feature
     if (!oe_module_loaded)
     {
-        OE_CHECK(oe_load_module_host_socket_interface());
-        OE_CHECK(oe_load_module_host_resolver());
+        if (load_oe_modules() != 0)
+        {
+            OE_TRACE_ERROR(TLS_SERVER "loading required oe modules failed \n");
+            goto done;
+        }
         oe_module_loaded = true;
     }
 
