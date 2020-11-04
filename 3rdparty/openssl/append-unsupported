@@ -29,14 +29,16 @@ fi
 
 headers=`find ${directory} -name '*.h'`
 
-## Append the inclusion of unsupported.h */
+## Append the inclusion of *_unsupported.h
 for i in ${headers}
 do
     if [[ "${i}" != *"crypto.h" ]] && [[ "${i}" != *"ssl.h" ]] && [[ "${i}" != *"x509_vfy.h" ]]; then
         continue
     fi
     name="$(basename -s .h $i)"
-    echo "#include <openssl/${name}_unsupported.h>" >> ${i}
+    # We assume that every header ends with #endif, which is the case for OpenSSL.
+    sed -i '$d' ${i}
+    echo -e "#include <openssl/${name}_unsupported.h>\n#endif" >> ${i}
     if [ "$?" != "0" ]; then
         echo "$0: failed to append ${string}"
         exit 1
