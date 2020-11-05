@@ -361,8 +361,8 @@ try{
                 "ACC1804 clang-7 Debug LVI":              { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "ACC1804 clang-7 Release LVI FULL Tests": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 gcc Debug LVI":                  { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "ACC1804 gcc Release LVI":                { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc',     'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "ACC1804 Code Coverage Test" :            { ACCCodeCoverageTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Debug') }
+                "ACC1804 gcc Release LVI":                { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc',     'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) }
+                //"ACC1804 Code Coverage Test" :            { ACCCodeCoverageTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Debug') }
                 ]
             parallel testing_stages
         }
