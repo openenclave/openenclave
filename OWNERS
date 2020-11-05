@@ -6,7 +6,6 @@ approvers:
   - andschwa
   - dthaler
   - johnkord
-  - jhand2
   - mikbras
   - radhikaj
   - CodeMonkeyLeet
@@ -18,7 +17,9 @@ reviewers:
   - andschwa
   - dthaler
   - johnkord
-  - jhand2
   - mikbras
   - radhikaj
   - CodeMonkeyLeet
+
+emeritus_approvers:
+  - jhand2    # 2020-11-05
