@@ -129,6 +129,16 @@ OE_SET_ENCLAVE_SGX_KSS(
     1);   /* NumTCS */
 ```
 
+On the new platform that support kss, user can also add the config_id and config_svn. The config_id can be used to contain the hash of a signing key for verifying the additional content. Similar to the relationship between MRSIGNER and ISVSVN, config_id needs a version number config_svn. After defining these properties, at running time user can make use of the additional content.
+
+A typical sample of config_id/config_svn is as follows:
+```
+Config_id=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+Config_svn=02
+```
+
+These properties will be included on the sgx report, which are parts of the keys for attestation.
+
 You can also specify the enclave properties in code using the
 `OE_SET_ENCLAVE_SGX` macro if no KSS properties needed.  For example, the equivalent properties could be
 defined in any .c or .cpp file compiled into the enclave:

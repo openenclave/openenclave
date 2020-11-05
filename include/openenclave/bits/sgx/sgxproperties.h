@@ -49,6 +49,10 @@ typedef struct oe_sgx_enclave_config_t
 
     /* XSave Feature Request Mask */
     uint64_t xfrm;
+
+    uint8_t config_id[64];
+    uint16_t config_svn;
+    uint16_t padding2[3];
 } oe_sgx_enclave_config_t;
 
 /* Extends oe_enclave_properties_header_t base type */
@@ -60,10 +64,10 @@ typedef struct _oe_sgx_enclave_properties
     /* (32) */
     oe_sgx_enclave_config_t config;
 
-    /* (48) */
+    /* (160) */
     oe_sgx_enclave_image_info_t image_info;
 
-    /* (96)  */
+    /* (208)  */
     uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
 
     /* (1904) end-marker to make sure 0-filled signstruct doesn't get omitted */

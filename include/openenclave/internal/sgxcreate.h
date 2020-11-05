@@ -61,6 +61,10 @@ struct _oe_sgx_load_context
     /* Hash context used to measure enclave as it is loaded */
     oe_sha256_context_t hash_context;
 
+    /* config_id and config_svn. */
+    uint8_t config_id[64];
+    uint16_t config_svn;
+
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     /* EEID data needed during enclave creation */
     oe_eeid_t* eeid;

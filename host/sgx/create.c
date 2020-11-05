@@ -885,6 +885,14 @@ oe_result_t oe_sgx_build_enclave(
                 NULL);
         }
         context->attributes.flags |= OE_ENCLAVE_FLAG_SGX_KSS;
+
+        /* Update config_id and config_svn of context from props. */
+        memcpy(
+            context->config_id,
+            props.config.config_id,
+            sizeof(context->config_id));
+
+        context->config_svn = props.config.config_svn;
     }
 
     /* Perform the ECREATE operation */

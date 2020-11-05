@@ -292,7 +292,10 @@ typedef struct _sgx_secs
     uint8_t reserved3[96];  /* 160 */
     uint16_t isvvprodid;    /* 256 */
     uint16_t isvsvn;        /* 258 */
-    uint8_t reserved[3836]; /* 260 */
+    uint8_t reserved4[20];  /* 260 */
+    uint8_t config_id[64];  /* 280 */
+    uint16_t config_svn;    /* 344 */
+    uint8_t reserved[3750]; /* 260 */
 } sgx_secs_t;
 
 OE_CHECK_SIZE(sizeof(sgx_secs_t), 4096);
