@@ -300,11 +300,11 @@ waiting_for_connection_request:
         len = ret;
         OE_TRACE_INFO(" %d bytes read\n\n[%s]", len, (char*)buf);
 
-        if (len != CLIENT_REQUEST_PAYLOAD_SIZE) // hard coded to match client
+        if (len != sizeof(CLIENT_GET_REQUEST)) // hard coded to match client
         {
             OE_TRACE_INFO(
                 "ERROR: expected reading %d bytes but only got %d bytes\n",
-                CLIENT_REQUEST_PAYLOAD_SIZE,
+                sizeof(CLIENT_GET_REQUEST),
                 len);
             ret = 1;
             goto done;

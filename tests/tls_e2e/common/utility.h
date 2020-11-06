@@ -25,8 +25,6 @@ int load_oe_modules();
 
 #define SERVER_IP "127.0.0.1"
 
-#define CLIENT_REQUEST_PAYLOAD_SIZE 18
-
 #define CLIENT_GET_REQUEST "GET / HTTP/1.0\r\n\r\n"
 
 #define SERVER_HTTP_RESPONSE                             \

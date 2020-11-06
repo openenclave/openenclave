@@ -168,14 +168,6 @@ int launch_tls_client(
     mbedtls_pk_init(&pkey);
 
     g_control_config = *config;
-    if (CLIENT_REQUEST_PAYLOAD_SIZE != strlen(CLIENT_GET_REQUEST))
-    {
-        OE_TRACE_ERROR(
-            "Error: this client's request payload size does not match"
-            " what's defined in CLIENT_REQUEST_PAYLOAD_SIZE, please fix it\n");
-        exit_code = MBEDTLS_EXIT_FAILURE;
-        goto done;
-    }
 
     mbedtls_entropy_init(&entropy);
     if ((ret = mbedtls_ctr_drbg_seed(
@@ -305,11 +297,11 @@ int launch_tls_client(
         }
         len = ret;
         OE_TRACE_INFO(" %d bytes read\n%s", len, (char*)buf);
-        if (len != SERVER_RESPONSE_PAYLOAD_SIZE) // hard coded to match server
+        if (len != sizeof(SERVER_HTTP_RESPONSE)) // hard coded to match server
         {
             OE_TRACE_ERROR(
                 "ERROR: expected reading %d bytes but only got %d bytes\n",
-                SERVER_RESPONSE_PAYLOAD_SIZE,
+                sizeof(SERVER_HTTP_RESPONSE),
                 len);
             exit_code = MBEDTLS_EXIT_FAILURE;
             goto done;

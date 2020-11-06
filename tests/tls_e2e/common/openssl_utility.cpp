@@ -255,7 +255,6 @@ int initalize_ssl_context(SSL_CTX*& ctx)
     SSL_CTX_set_options(ctx, SSL_OP_NO_TLSv1_1);
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, &cert_verify_callback);
     ret = 0;
-exit:
     return ret;
 }
 
