@@ -84,6 +84,21 @@ static void _initialize_enclave_host()
 }
 #endif // OEHOSTMR
 
+static bool _is_kss_supported()
+{
+    uint32_t eax, ebx, ecx, edx;
+    eax = ebx = ecx = edx = 0;
+
+    // Obtain feature information using CPUID
+    oe_get_cpuid(0x12, 0x1, &eax, &ebx, &ecx, &edx);
+
+    // Check if KSS (bit 7) is supported by the processor
+    if (!(eax & (1 << 7)))
+        return false;
+    else
+        return true;
+}
+
 static oe_result_t _add_filled_pages(
     oe_sgx_load_context_t* context,
     uint64_t enclave_addr,
@@ -589,6 +604,24 @@ oe_result_t oe_sgx_validate_enclave_properties(
         goto done;
     }
 
+    if (!(properties->config.attributes & OE_SGX_FLAGS_KSS))
+    {
+        if (!oe_sgx_is_unset_uuid(
+                (uint8_t*)properties->config.extended_product_id))
+        {
+            OE_TRACE_ERROR("oe_sgx_is_unset_uuid failed: extended_product_id "
+                           "should be empty");
+            result = OE_FAILURE;
+            goto done;
+        }
+        if (!oe_sgx_is_unset_uuid((uint8_t*)properties->config.family_id))
+        {
+            OE_TRACE_ERROR(
+                "oe_sgx_is_unset_uuid failed: family_id should be empty");
+            result = OE_FAILURE;
+            goto done;
+        }
+    }
     result = OE_OK;
 
 done:
@@ -679,6 +712,8 @@ static oe_result_t _eeid_resign(
             properties->config.security_version,
             OE_DEBUG_SIGN_KEY,
             OE_DEBUG_SIGN_KEY_SIZE,
+            properties->config.family_id,
+            properties->config.extended_product_id,
             sigstruct));
     }
 
@@ -831,6 +866,21 @@ oe_result_t oe_sgx_build_enclave(
         &props,
         &loaded_enclave_pages_size,
         &enclave_size));
+
+    if (props.config.attributes & OE_SGX_FLAGS_KSS)
+    {
+        if ((context->type == OE_SGX_LOAD_TYPE_CREATE) && !_is_kss_supported())
+        {
+            // Fail if the CPU does not support KSS and the enclave specifies
+            // the KSS flag
+            OE_RAISE_MSG(
+                OE_UNSUPPORTED,
+                "Enclave image was signed with kss flag but CPU doesn't "
+                "support KSS\n",
+                NULL);
+        }
+        context->attributes.flags |= OE_ENCLAVE_FLAG_SGX_KSS;
+    }
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
