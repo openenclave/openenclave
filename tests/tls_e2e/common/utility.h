@@ -35,7 +35,7 @@ int load_oe_modules();
     "<p>Successful connection using: %s</p>\r\n"         \
     "A message from TLS server inside enclave\r\n"
 
-#define SERVER_RESPONSE_PAYLOAD_SIZE 194
+#define SERVER_RESPONSE_PAYLOAD_SIZE 158
 
 const unsigned char certificate_subject_name[] =
     "CN=Open Enclave SDK,O=OESDK TLS,C=US";

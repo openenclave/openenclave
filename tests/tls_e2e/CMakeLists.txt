@@ -15,7 +15,7 @@ set_enclave_tests_properties(tests/mbedtls_tls_e2e PROPERTIES SKIP_RETURN_CODE
 
 if (BUILD_OPENSSL)
   add_enclave_test(tests/openssl_tls_e2e tls_e2e_host openssl_tls_server_enc
-                   $<TARGET_FILE:mbedtls_tls_client_enc>)
+                   $<TARGET_FILE:openssl_tls_client_enc>)
   set_enclave_tests_properties(tests/openssl_tls_e2e PROPERTIES
                                SKIP_RETURN_CODE 2)
 endif ()

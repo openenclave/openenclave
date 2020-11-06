@@ -5,10 +5,6 @@
 #include <openssl/ssl.h>
 #include "utility.h"
 
-oe_result_t generate_certificate_and_pkey(X509*& cert, EVP_PKEY*& pkey);
-
-int cert_verify_callback(int preverify_ok, X509_STORE_CTX* ctx);
-
 int read_from_session_peer(
     SSL*& ssl_session,
     const char* payload,

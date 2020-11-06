@@ -27,8 +27,7 @@ set_source_files_properties(tls_e2e_t.c PROPERTIES COMPILE_FLAGS
 enclave_include_directories(mbedtls_tls_server_enc PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})
 
-enclave_link_libraries(mbedtls_tls_server_enc oeenclave openssl oelibc
-                       oehostsock oehostresolver)
+enclave_link_libraries(mbedtls_tls_server_enc oehostsock oehostresolver)
 
 if (BUILD_OPENSSL)
 

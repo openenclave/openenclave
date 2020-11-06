@@ -11,13 +11,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+
 #include "tls_e2e_u.h"
 
 #include <condition_variable>
 #include <exception>
 #include <mutex>
 #include <thread>
+
+#if defined(_WIN32)
+#include <windows.h>
+#define sleep(x) Sleep(1000 * (x))
+#else
+#include <unistd.h>
+#endif
 
 #define SERVER_PORT "12345"
 #define SERVER_IP "127.0.0.1"
@@ -331,7 +338,8 @@ int run_scenarios_tests()
                 "This is a %s test case. Expect %s errors\n",
                 (unittests_configs[j].negative_test ? "negative" : "positive"),
                 (unittests_configs[j].negative_test ? "" : "no"));
-
+            if (j == 1)
+                sleep(90);
             ret = run_test_with_config(&test_configs);
             if (ret)
             {

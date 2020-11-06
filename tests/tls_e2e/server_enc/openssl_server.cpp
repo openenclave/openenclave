@@ -126,7 +126,7 @@ waiting_for_connection_request:
 
     OE_TRACE_INFO(TLS_SERVER "<---- Read from client:\n");
     if (read_from_session_peer(
-            ssl_session, CLIENT_GET_REQUEST, CLIENT_REQUEST_PAYLOAD_SIZE) != 0)
+            ssl_session, CLIENT_GET_REQUEST, sizeof(CLIENT_GET_REQUEST)) != 0)
     {
         OE_TRACE_INFO(" Read from client failed \n");
         goto exit;
@@ -134,7 +134,7 @@ waiting_for_connection_request:
 
     OE_TRACE_INFO(TLS_SERVER "<---- Write to client:\n");
     if (write_to_session_peer(
-            ssl_session, SERVER_HTTP_RESPONSE, SERVER_RESPONSE_PAYLOAD_SIZE) !=
+            ssl_session, SERVER_HTTP_RESPONSE, sizeof(SERVER_HTTP_RESPONSE)) !=
         0)
     {
         OE_TRACE_INFO(TLS_SERVER " Write to client failed \n");
@@ -171,6 +171,12 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     if (load_oe_modules() != 0)
     {
         OE_TRACE_ERROR(TLS_SERVER "loading required oe modules failed \n");
+        goto exit;
+    }
+
+    if ((ssl_server_ctx = SSL_CTX_new(TLS_server_method())) == NULL)
+    {
+        OE_TRACE_ERROR(TLS_SERVER " unable to create a new SSL context\n");
         goto exit;
     }
 

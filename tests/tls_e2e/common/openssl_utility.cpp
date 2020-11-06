@@ -248,11 +248,6 @@ exit:
 int initalize_ssl_context(SSL_CTX*& ctx)
 {
     int ret = -1;
-    if ((ctx = SSL_CTX_new(SSLv23_server_method())) == NULL)
-    {
-        OE_TRACE_ERROR(TLS_SERVER " unable to create a new SSL context\n");
-        goto exit;
-    }
     // choose TLSv1.2 by excluding SSLv2, SSLv3 ,TLS 1.0 and TLS 1.1
     SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
     SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv3);
