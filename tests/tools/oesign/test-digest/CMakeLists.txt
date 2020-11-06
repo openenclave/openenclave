@@ -65,7 +65,7 @@ add_test(
 
 set_tests_properties(
   tests/oesign-digest-valid-short-args
-  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Launch of signed enclave succeeded")
+  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Signed enclave test app succeeded")
 
 # Test digest sign commands with valid long form of arguments succeed
 set(OESIGN_SIGN_VALID_LONG_ARGS
@@ -86,7 +86,7 @@ add_test(
 
 set_tests_properties(
   tests/oesign-digest-valid-long-args
-  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Launch of signed enclave succeeded")
+  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Signed enclave test app succeeded")
 
 # Test digest sign commands without --config-file (-c) argument on preconfigured enclave succeeds
 set(OESIGN_PKEYUTL_DEV_CONFIG_ARGS
@@ -109,7 +109,7 @@ add_test(
 
 set_tests_properties(
   tests/oesign-digest-valid-dev-config-args
-  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Launch of signed enclave succeeded")
+  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Signed enclave test app succeeded")
 
 # Test digest command missing --enclave-image (-e) argument
 add_test(NAME tests/oesign-digest-missing-enclave-arg

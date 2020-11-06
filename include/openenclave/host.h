@@ -68,6 +68,13 @@ OE_EXTERNC_BEGIN
 /**
  * @cond DEV
  */
+
+/**
+ *  Flag reserved for internal use to indicate the enclave was configured to run
+ * in kss mode
+ */
+#define OE_ENCLAVE_FLAG_SGX_KSS 0x00000004u
+
 #define OE_ENCLAVE_FLAG_RESERVED \
     (~(OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_SIMULATE))
 

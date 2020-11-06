@@ -97,9 +97,40 @@ NumHeapPages=1024
 NumStackPages=1024
 NumTCS=1
 ```
+Additionally, a developer can specify additional Key Sharing and Separation (KSS) identity properties
+for use on the platforms that support it (for SGX enclave only):
+- **FamilyID**: The product family identity (ISVFAMILYID for SGX) a developer can specify to group
+different enclaves under a common identity such as an identifier for the application suite
+which includes several enclave apps.
+- **ExtendedProductID**: The extended product identity (ISVEXTPRODID for SGX) value that a developer
+can use as 128-bit globally unique identifier for the enclave where the 16-bit ProductID proves too restrictive.
+For more details, see Table 37-19 of the
+[Intel's Software Developers Manual](https://software.intel.com/content/www/us/en/develop/articles/intel-sdm.html#combined/).
 
-As a convenience, you can also specify the enclave properties in code using the
-`OE_SET_ENCLAVE_SGX` macro.  For example, the equivalent properties could be
+For example, in kss_valid.conf:
+```
+FamilyID=47183823-2574-4bfd-b411-99ed177d3e43
+ExtendedProductID=2768c720-1e28-11eb-adc1-0242ac120002
+```
+
+As a convenience, you can specify the enclave properties in code using the
+`OE_SET_ENCLAVE_SGX_KSS` macro if KSS properties are included.  For example, the equivalent properties could be
+defined in any .c or .cpp file compiled into the enclave:
+
+```c
+OE_SET_ENCLAVE_SGX_KSS(
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    1,    /* Debug */
+    47183823-2574-4bfd-b411-99ed177d3e43, /* FamilyID */
+    2768c720-1e28-11eb-adc1-0242ac120002, /* ExtendedProductID */
+    1024, /* NumHeapPages: heap size in units of 4KB pages */
+    1024, /* NumStackPages: stack size, in units of 4KB pages */
+    1);   /* NumTCS */
+```
+
+You can also specify the enclave properties in code using the
+`OE_SET_ENCLAVE_SGX` macro if no KSS properties needed.  For example, the equivalent properties could be
 defined in any .c or .cpp file compiled into the enclave:
 
 ```c

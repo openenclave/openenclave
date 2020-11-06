@@ -1,6 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
-
+#include <ctype.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include "../host/sgx/enclave.h"
+#include "../host/strings.h"
 #include "oe_err.h"
 #include "oeinfo.h"
 
@@ -30,6 +31,12 @@ typedef struct _optional_uint16
     uint16_t value;
 } optional_uint16_t;
 
+typedef struct _optional_oe_uuid_t
+{
+    bool has_value;
+    oe_uuid_t value;
+} optional_oe_uuid_t;
+
 // Options loaded from .conf file. Uninitialized fields contain the maximum
 // integer value for the corresponding type.
 typedef struct _config_file_options
@@ -40,7 +47,11 @@ typedef struct _config_file_options
     optional_uint64_t num_tcs;
     optional_uint16_t product_id;
     optional_uint16_t security_version;
+    optional_oe_uuid_t family_id;
+    optional_oe_uuid_t extended_product_id;
 } config_file_options_t;
+
+int uuid_from_string(str_t* str, uint8_t* uuid, size_t expected_size);
 
 static int _load_config_file(const char* path, config_file_options_t* options)
 {
@@ -240,6 +251,66 @@ static int _load_config_file(const char* path, config_file_options_t* options)
             options->security_version.value = n;
             options->security_version.has_value = true;
         }
+        else if (strcmp(str_ptr(&lhs), "FamilyID") == 0)
+        {
+            oe_uuid_t id;
+
+            if (options->family_id.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'FamilyID' value provided", path, line);
+                goto done;
+            }
+
+            if (str_len(&rhs) > 1)
+            {
+                int rc = uuid_from_string(&rhs, id.b, sizeof(id.b));
+                if (rc != 0)
+                {
+                    oe_err(
+                        "%s(%zu): bad value for 'FamilyID': %s, rc=%d",
+                        path,
+                        line,
+                        str_ptr(&rhs),
+                        rc);
+                    goto done;
+                }
+            }
+
+            memcpy(&options->family_id.value, &id, sizeof(id));
+            options->family_id.has_value = true;
+        }
+        else if (strcmp(str_ptr(&lhs), "ExtendedProductID") == 0)
+        {
+            oe_uuid_t id;
+
+            if (options->extended_product_id.has_value)
+            {
+                oe_err(
+                    "%s(%zu): Duplicate 'ExtendedProductID' value provided",
+                    path,
+                    line);
+                goto done;
+            }
+
+            if (str_len(&rhs) > 1)
+            {
+                int rc = uuid_from_string(&rhs, id.b, sizeof(id.b));
+                if (rc != 0)
+                {
+                    oe_err(
+                        "%s(%zu): bad value for 'ExtendedProductID': %s, rc=%d",
+                        path,
+                        line,
+                        str_ptr(&rhs),
+                        rc);
+                    goto done;
+                }
+            }
+
+            memcpy(&options->extended_product_id.value, &id, sizeof(id));
+            options->extended_product_id.has_value = true;
+        }
         else
         {
             oe_err("%s(%zu): unknown setting: %s", path, line, str_ptr(&rhs));
@@ -377,6 +448,21 @@ void _merge_config_file_options(
     /* If SecurityVersion option is present */
     if (options->security_version.has_value)
         properties->config.security_version = options->security_version.value;
+
+    if (options->family_id.has_value)
+        memcpy(
+            properties->config.family_id,
+            &options->family_id.value,
+            sizeof(options->family_id.value));
+
+    if (options->extended_product_id.has_value)
+        memcpy(
+            properties->config.extended_product_id,
+            &options->extended_product_id.value,
+            sizeof(options->extended_product_id.value));
+
+    if (options->family_id.has_value || options->extended_product_id.has_value)
+        properties->config.attributes |= SGX_FLAGS_KSS;
 
     /* If NumHeapPages option is present */
     if (options->num_heap_pages.has_value)
@@ -542,6 +628,8 @@ int oesign(
                 engine_id,
                 engine_load_path,
                 key_id,
+                properties.config.family_id,
+                properties.config.extended_product_id,
                 (sgx_sigstruct_t*)properties.sigstruct),
             "oe_sgx_sign_enclave_from_engine() failed: result=%s (%#x)",
             oe_result_str(result),
@@ -575,6 +663,8 @@ int oesign(
             pem_size,
             signature_data,
             signature_size,
+            properties.config.family_id,
+            properties.config.extended_product_id,
             (sgx_sigstruct_t*)properties.sigstruct);
 
         if (result != OE_OK)
@@ -613,6 +703,8 @@ int oesign(
                 properties.config.security_version,
                 pem_data,
                 pem_size,
+                properties.config.family_id,
+                properties.config.extended_product_id,
                 (sgx_sigstruct_t*)properties.sigstruct),
             "oe_sgx_sign_enclave() failed: result=%s (%#x)",
             oe_result_str(result),
@@ -658,6 +750,8 @@ int oedigest(const char* enclave, const char* conffile, const char* digest_file)
             properties.config.attributes,
             properties.config.product_id,
             properties.config.security_version,
+            properties.config.family_id,
+            properties.config.extended_product_id,
             &digest),
         "oe_sgx_get_sigstruct_digest(): result=%s (%#x)",
         oe_result_str(result),
@@ -670,4 +764,65 @@ int oedigest(const char* enclave, const char* conffile, const char* digest_file)
 
 done:
     return ret;
+}
+
+char hexchar2int(char ch)
+{
+    if (ch >= '0' && ch <= '9')
+        return (char)(ch - '0');
+    if (ch >= 'a' && ch <= 'f')
+        return (char)(10 + ch - 'a');
+    if (ch >= 'A' && ch <= 'F')
+        return (char)(10 + ch - 'A');
+    return 0;
+}
+
+unsigned char hexpair2char(char a, char b)
+{
+    return (unsigned char)((hexchar2int(a) << 4) | hexchar2int(b));
+}
+
+int uuid_from_string(str_t* str, uint8_t* uuid, size_t expected_size)
+{
+    int rc = -1;
+    size_t index = 0;
+    size_t size = 0;
+    char* id_copy;
+    char value = 0;
+    bool first_digit = true;
+
+    id_copy = oe_strdup(str_ptr(str));
+    if (!id_copy)
+        goto done;
+
+    size = strlen(id_copy);
+    if (size != 36)
+        goto done;
+
+    index = 0;
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        if (id_copy[i] == '-')
+            continue;
+
+        if (index >= expected_size || !isxdigit(id_copy[i]))
+            goto done;
+
+        if (first_digit)
+        {
+            value = id_copy[i];
+            first_digit = false;
+        }
+        else
+        {
+            uuid[index++] = hexpair2char(value, id_copy[i]);
+            first_digit = true;
+        }
+    }
+    if (index == expected_size)
+        rc = 0;
+done:
+    oe_free(id_copy);
+    return rc;
 }

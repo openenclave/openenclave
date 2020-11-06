@@ -50,6 +50,6 @@ if __name__ == "__main__":
     call_subprocess(sign_cmd, "Sign succeeded")
 
     launch_cmd = [args.host_path, "{}.signed".format(args.enclave_path)]
-    call_subprocess(launch_cmd, "Launch of signed enclave succeeded")
+    call_subprocess(launch_cmd, "Signed enclave test app succeeded")
 
     sys.exit(0)

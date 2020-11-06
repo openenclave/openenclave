@@ -140,6 +140,8 @@ static sgx_secs_t* _new_secs(
     secs->flags = SGX_FLAGS_MODE64BIT;
     if (oe_sgx_is_debug_load_context(context))
         secs->flags |= SGX_FLAGS_DEBUG;
+    if (oe_sgx_is_kss_load_context(context))
+        secs->flags |= SGX_FLAGS_KSS;
 
     /* what the driver sees with SGX SDK */
     secs->xfrm = context->attributes.xfrm;
@@ -252,6 +254,8 @@ static oe_result_t _get_sig_struct(
             properties->config.security_version,
             OE_DEBUG_SIGN_KEY,
             OE_DEBUG_SIGN_KEY_SIZE,
+            properties->config.family_id,
+            properties->config.extended_product_id,
             sigstruct));
     }
     else
