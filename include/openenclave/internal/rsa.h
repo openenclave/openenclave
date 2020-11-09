@@ -267,6 +267,26 @@ oe_result_t oe_rsa_get_public_key_from_private(
     const oe_rsa_private_key_t* private_key,
     oe_rsa_public_key_t* public_key);
 
+/**
+ * Get a public RSA key from modulus and exponent.
+ *
+ * This function constructs a public RSA key from a given modulus and exponent.
+ *
+ * @param modulus[in] The modulus.
+ * @param modulus_size[in] The size of the modulus.
+ * @param exponent[in] The exponent.
+ * @param exponent_size[in] The size of the exponent.
+ * @param public_key[out] The key to be constructed.
+ *
+ * @return OE_OK upon success
+ */
+oe_result_t oe_rsa_public_key_from_modulus(
+    const uint8_t* modulus,
+    size_t modulus_size,
+    const uint8_t* exponent,
+    size_t exponent_size,
+    oe_rsa_public_key_t* public_key);
+
 OE_EXTERNC_END
 
 #endif /* _OE_RSA_H */

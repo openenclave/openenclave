@@ -312,6 +312,7 @@ list(
   ${PROJECT_SOURCE_DIR}/common/datetime.c
   ${PROJECT_SOURCE_DIR}/common/safecrt.c
   ${PROJECT_SOURCE_DIR}/common/sha.c
+  memalign.c
   hexdump.c
   dupenv.c
   fopen.c
@@ -335,7 +336,6 @@ list(
   error.c
   files.c
   fopen.c
-  memalign.c
   signkey.c
   strings.c
   traceh_enclave.c)

@@ -7,6 +7,7 @@
 
 #include <openenclave/bits/attestation.h>
 #include <openenclave/bits/eeid.h>
+#include <openenclave/bits/report.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/crypto/sha.h>
@@ -24,10 +25,16 @@
 #include "../../enclave/crypto/mbedtls/rsa.h"
 #else
 #include <openenclave/host.h>
+#ifdef _WIN32
+#include "../../host/crypto/bcrypt/bcrypt.h"
+#include "../../host/crypto/bcrypt/key.h"
+#include "../../host/crypto/bcrypt/rsa.h"
+#else
 #include <openssl/opensslv.h>
 #include <openssl/rsa.h>
 #include "../crypto/openssl/key.h"
 #include "../crypto/openssl/rsa.h"
+#endif
 #endif
 
 int is_eeid_base_image(const oe_sgx_enclave_properties_t* properties)
@@ -87,12 +94,12 @@ oe_result_t oe_remeasure_memory_pages(
 {
     oe_result_t result;
     oe_sha256_context_t hctx;
-    oe_sha256_restore(&hctx, eeid->hash_state.H, eeid->hash_state.N);
+    OE_CHECK(oe_sha256_restore(&hctx, eeid->hash_state.H, eeid->hash_state.N));
 
     uint64_t base = 0x0ab0c0d0e0f;
     oe_page_t blank_pg, stack_pg, tcs_pg;
-    memset(&blank_pg, 0, sizeof(blank_pg));
-    memset(&stack_pg, 0xcc, sizeof(stack_pg));
+    OE_CHECK(oe_memset_s(&blank_pg, sizeof(blank_pg), 0, sizeof(blank_pg)));
+    OE_CHECK(oe_memset_s(&stack_pg, sizeof(stack_pg), 0xcc, sizeof(stack_pg)));
 
     uint64_t vaddr = eeid->vaddr;
 
@@ -115,7 +122,7 @@ oe_result_t oe_remeasure_memory_pages(
         vaddr += OE_PAGE_SIZE; /* guard page */
 
         sgx_tcs_t* tcs;
-        memset(&tcs_pg, 0, sizeof(tcs_pg));
+        OE_CHECK(oe_memset_s(&tcs_pg, sizeof(tcs_pg), 0, sizeof(tcs_pg)));
         tcs = (sgx_tcs_t*)&tcs_pg;
         tcs->flags = 0;
         tcs->ossa = vaddr + OE_PAGE_SIZE;
@@ -158,10 +165,12 @@ oe_result_t oe_remeasure_memory_pages(
         oe_page_t page;
         for (size_t i = 0; i < num_pages; i++)
         {
-            memset(page.data, 0, sizeof(oe_page_t));
+            OE_CHECK(
+                oe_memset_s(page.data, OE_PAGE_SIZE, 0, sizeof(oe_page_t)));
             size_t n = (i != num_pages - 1) ? OE_PAGE_SIZE
                                             : (num_bytes % OE_PAGE_SIZE);
-            memcpy(page.data, eeid_bytes + OE_PAGE_SIZE * i, n);
+            OE_CHECK(oe_memcpy_s(
+                page.data, OE_PAGE_SIZE, eeid_bytes + OE_PAGE_SIZE * i, n));
             OE_CHECK(_measure_page(&hctx, base, page.data, &vaddr, true, true));
         }
     }
@@ -180,110 +189,43 @@ static bool is_zero(const uint8_t* buf, size_t sz)
     return true;
 }
 
+static oe_result_t _verify_signature(
+    const OE_SHA256* hash,
+    const uint8_t* modulus,
+    const uint8_t* exponent,
+    const uint8_t* signature)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_rsa_public_key_t public_key;
+
+    OE_CHECK(oe_rsa_public_key_from_modulus(
+        modulus, OE_KEY_SIZE, exponent, OE_EXPONENT_SIZE, &public_key));
+
+    OE_CHECK(oe_rsa_public_key_verify(
+        &public_key,
+        OE_HASH_TYPE_SHA256,
+        hash->buf,
+        sizeof(hash->buf),
+        signature,
+        OE_KEY_SIZE));
+
+    result = OE_OK;
+
+done:
 #ifdef OE_BUILD_ENCLAVE
-static oe_result_t _verify_signature(
-    const OE_SHA256* msg_hsh,
-    const uint8_t* reversed_modulus,
-    const uint8_t* reversed_exponent,
-    const uint8_t* reversed_signature)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_rsa_public_key_t pk;
-    mbedtls_pk_context pkctx;
-    mbedtls_rsa_context* rsa_ctx;
-    mbedtls_pk_context* ikey;
-    mbedtls_pk_init(&pkctx);
-    const mbedtls_pk_info_t* info;
+    // The mbedTLS flavour of oe_rsa_public_key_init copies the key,
+    // so we need both, an oe_rsa_public_key_free and an mbedtls_pk_free.
+    {
+        oe_public_key_t* pk = (oe_public_key_t*)&public_key;
+        mbedtls_pk_free(&pk->pk);
+    }
+#endif
 
-    info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
-    if (mbedtls_pk_setup(&pkctx, info) != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
+    if (result == OE_OK)
+        result = oe_rsa_public_key_free(&public_key);
 
-    rsa_ctx = mbedtls_pk_rsa(pkctx);
-    mbedtls_rsa_init(rsa_ctx, 0, 0);
-    if (mbedtls_rsa_import_raw(
-            rsa_ctx,
-            reversed_modulus,
-            OE_KEY_SIZE, // N
-            NULL,
-            0,
-            NULL,
-            0,
-            NULL,
-            0, // P Q D
-            reversed_exponent,
-            OE_EXPONENT_SIZE) != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-    if (mbedtls_rsa_check_pubkey(rsa_ctx) != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    ikey = &pkctx;
-    oe_rsa_public_key_init(&pk, ikey);
-
-    OE_CHECK(oe_rsa_public_key_verify(
-        &pk,
-        OE_HASH_TYPE_SHA256,
-        msg_hsh->buf,
-        sizeof(msg_hsh->buf),
-        reversed_signature,
-        OE_KEY_SIZE));
-
-    OE_CHECK(oe_rsa_public_key_free(&pk));
-
-    mbedtls_pk_free(ikey);
-
-    result = OE_OK;
-
-done:
     return result;
 }
-#else
-static oe_result_t _verify_signature(
-    const OE_SHA256* msg_hsh,
-    const uint8_t* reversed_modulus,
-    const uint8_t* reversed_exponent,
-    const uint8_t* reversed_signature)
-{
-#if OPENSSL_VERSION_NUMBER < 0x1010100fL
-#error OpenSSL 1.0.2 not supported
-#endif
-    oe_result_t result = OE_UNEXPECTED;
-    oe_rsa_public_key_t pk;
-    BIGNUM *rm, *re;
-    RSA* rsa;
-    EVP_PKEY* ikey;
-
-    rm = BN_bin2bn(reversed_modulus, OE_KEY_SIZE, 0);
-    re = BN_bin2bn(reversed_exponent, OE_EXPONENT_SIZE, 0);
-    rsa = RSA_new();
-    if (RSA_set0_key(rsa, rm, re, NULL) != 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    ikey = EVP_PKEY_new();
-    if (EVP_PKEY_assign_RSA(ikey, rsa) != 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    oe_rsa_public_key_init(&pk, ikey);
-
-    OE_CHECK(oe_rsa_public_key_verify(
-        &pk,
-        OE_HASH_TYPE_SHA256,
-        msg_hsh->buf,
-        sizeof(msg_hsh->buf),
-        reversed_signature,
-        OE_KEY_SIZE));
-
-    OE_CHECK(oe_rsa_public_key_free(&pk));
-
-    // The OpenSSL flavour of oe_rsa_public_key_init does not copy the key,
-    // so oe_rsa_public_key_free already freed it.
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-#endif
 
 static oe_result_t _verify_base_image_signature(
     const sgx_sigstruct_t* sigstruct)
@@ -305,27 +247,26 @@ static oe_result_t _verify_base_image_signature(
         sgx_sigstruct_body_size()));
     n += sgx_sigstruct_body_size();
 
-    OE_SHA256 msg_hsh;
+    OE_SHA256 hash;
     oe_sha256_context_t context;
 
     oe_sha256_init(&context);
     oe_sha256_update(&context, buf, n);
-    oe_sha256_final(&context, &msg_hsh);
+    oe_sha256_final(&context, &hash);
 
-    uint8_t reversed_modulus[OE_KEY_SIZE];
+    uint8_t modulus[OE_KEY_SIZE];
     for (size_t i = 0; i < OE_KEY_SIZE; i++)
-        reversed_modulus[i] = sigstruct->modulus[OE_KEY_SIZE - 1 - i];
+        modulus[i] = sigstruct->modulus[OE_KEY_SIZE - 1 - i];
 
-    uint8_t reversed_exponent[OE_KEY_SIZE];
+    uint8_t exponent[OE_KEY_SIZE];
     for (size_t i = 0; i < OE_EXPONENT_SIZE; i++)
-        reversed_exponent[i] = sigstruct->exponent[OE_EXPONENT_SIZE - 1 - i];
+        exponent[i] = sigstruct->exponent[OE_EXPONENT_SIZE - 1 - i];
 
-    uint8_t reversed_signature[OE_KEY_SIZE];
+    uint8_t signature[OE_KEY_SIZE];
     for (size_t i = 0; i < OE_KEY_SIZE; i++)
-        reversed_signature[i] = sigstruct->signature[OE_KEY_SIZE - 1 - i];
+        signature[i] = sigstruct->signature[OE_KEY_SIZE - 1 - i];
 
-    OE_CHECK(_verify_signature(
-        &msg_hsh, reversed_modulus, reversed_exponent, reversed_signature));
+    OE_CHECK(_verify_signature(&hash, modulus, exponent, signature));
 
     result = OE_OK;
 
@@ -485,12 +426,15 @@ static oe_result_t _hton_buffer(
     uint8_t** position,
     size_t* remaining)
 {
+    oe_result_t result = OE_UNEXPECTED;
     if (*remaining < buffer_size)
         return OE_INVALID_PARAMETER;
-    memcpy(*position, buffer, buffer_size);
+    OE_CHECK(oe_memcpy_s(*position, *remaining, buffer, buffer_size));
     *position += buffer_size;
     *remaining -= buffer_size;
-    return OE_OK;
+    result = OE_OK;
+done:
+    return result;
 }
 
 static oe_result_t _ntoh_buffer(
@@ -499,12 +443,15 @@ static oe_result_t _ntoh_buffer(
     uint8_t* buffer,
     size_t buffer_size)
 {
+    oe_result_t result = OE_UNEXPECTED;
     if (*remaining < buffer_size)
         return OE_INVALID_PARAMETER;
-    memcpy(buffer, *position, buffer_size);
+    OE_CHECK(oe_memcpy_s(buffer, *remaining, *position, buffer_size));
     *position += buffer_size;
     *remaining -= buffer_size;
-    return OE_OK;
+    result = OE_OK;
+done:
+    return result;
 }
 
 size_t oe_eeid_byte_size(const oe_eeid_t* eeid)

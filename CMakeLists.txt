@@ -293,9 +293,7 @@ option(
   "[EXPERIMENTAL] Include support for Extended Enclave Initialization Data."
   OFF)
 
-if (WITH_EEID AND WIN32)
-  message(FATAL_ERROR "WITH_EEID is not supported on Windows yet.")
-elseif (WITH_EEID AND OE_TRUSTZONE)
+if (WITH_EEID AND OE_TRUSTZONE)
   message(FATAL_ERROR "WITH_EEID is not supported on ARM yet.")
 endif ()
 

@@ -65,10 +65,10 @@ void host_remote_verify(oe_enclave_t* enclave)
 
     oe_result_t result;
 
-    size_t evidence_size = 65536, evidence_out_size = 0;
-    uint8_t evidence[evidence_size];
-    size_t endorsements_size = 65536, endorsements_out_size = 0;
-    uint8_t endorsements[endorsements_size];
+    size_t evidence_out_size = 0;
+    uint8_t evidence[65536];
+    size_t endorsements_out_size = 0;
+    uint8_t endorsements[65536];
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
 
@@ -77,10 +77,10 @@ void host_remote_verify(oe_enclave_t* enclave)
             enclave,
             &result,
             evidence,
-            evidence_size,
+            sizeof(evidence),
             &evidence_out_size,
             endorsements,
-            endorsements_size,
+            sizeof(endorsements),
             &endorsements_out_size),
         OE_OK);
 

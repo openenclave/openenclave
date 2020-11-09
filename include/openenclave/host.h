@@ -46,6 +46,7 @@ OE_EXTERNC_BEGIN
 #define _strdup strdup
 #define strncat_s(destination, destination_size, source, source_size) \
     strncat(destination, source, source_size)
+#define fopen_s(pfp, name, mode) *(pfp) = fopen((name), (mode))
 #endif
 
 /**

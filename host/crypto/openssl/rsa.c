@@ -123,3 +123,36 @@ done:
 
     return result;
 }
+
+oe_result_t oe_rsa_public_key_from_modulus(
+    const uint8_t* modulus,
+    size_t modulus_size,
+    const uint8_t* exponent,
+    size_t exponent_size,
+    oe_rsa_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    BIGNUM *bignum_modulus = NULL, *bignum_exponent = NULL;
+    RSA* rsa = NULL;
+    EVP_PKEY* pkey = NULL;
+
+    if (!public_key || modulus_size > INT_MAX || exponent_size > INT_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    bignum_modulus = BN_bin2bn(modulus, (int)modulus_size, 0);
+    bignum_exponent = BN_bin2bn(exponent, (int)exponent_size, 0);
+    rsa = RSA_new();
+    if (RSA_set0_key(rsa, bignum_modulus, bignum_exponent, NULL) != 1)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    pkey = EVP_PKEY_new();
+    if (EVP_PKEY_assign_RSA(pkey, rsa) != 1)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    oe_rsa_public_key_init(public_key, pkey);
+
+    result = OE_OK;
+
+done:
+    return result;
+}

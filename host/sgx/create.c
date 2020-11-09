@@ -678,7 +678,7 @@ static oe_result_t _add_eeid_marker_page(
         OE_CHECK(oe_sgx_load_enclave_data(
             context, enclave->addr, addr, src, flags, false));
         (*vaddr) += OE_PAGE_SIZE;
-        free(page);
+        oe_memalign_free(page);
 
         // Marker page counts as a heap page
         if (props->header.size_settings.num_heap_pages > 0)
