@@ -275,11 +275,7 @@ done:
 }
 
 oe_result_t verify_eeid(
-    const uint8_t* reported_enclave_hash,
-    const uint8_t* reported_enclave_signer,
-    uint16_t reported_product_id,
-    uint32_t reported_security_version,
-    uint64_t reported_attributes,
+    const oe_eeid_relevant_base_claims_t* relevant_claims,
     const uint8_t** base_enclave_hash,
     const oe_eeid_t* eeid)
 {
@@ -300,13 +296,15 @@ oe_result_t verify_eeid(
 
     // Check recomputed enclave hash against reported enclave hash
     if (memcmp(
-            computed_enclave_hash.buf, reported_enclave_hash, OE_SHA256_SIZE) !=
-        0)
+            computed_enclave_hash.buf,
+            relevant_claims->enclave_hash,
+            OE_SHA256_SIZE) != 0)
         OE_RAISE(OE_VERIFY_FAILED);
 
     if (memcmp(
-            OE_DEBUG_PUBLIC_KEY, reported_enclave_signer, OE_SIGNER_ID_SIZE) !=
-        0)
+            OE_DEBUG_PUBLIC_KEY,
+            relevant_claims->signer_id,
+            OE_SIGNER_ID_SIZE) != 0)
         OE_RAISE(OE_VERIFY_FAILED);
 
     sigstruct =
@@ -331,11 +329,11 @@ oe_result_t verify_eeid(
 
     // Check other image properties have not changed
     base_debug = sigstruct->attributes.flags & SGX_FLAGS_DEBUG;
-    extended_debug = reported_attributes & OE_REPORT_ATTRIBUTES_DEBUG;
+    extended_debug = relevant_claims->attributes & OE_REPORT_ATTRIBUTES_DEBUG;
 
     if (base_debug != extended_debug ||
-        sigstruct->isvprodid != reported_product_id ||
-        sigstruct->isvsvn != reported_security_version)
+        sigstruct->isvprodid != relevant_claims->product_id ||
+        sigstruct->isvsvn != relevant_claims->security_version)
         OE_RAISE(OE_VERIFY_FAILED);
 
     // Check old signature (new signature has been checked above)
@@ -569,13 +567,10 @@ oe_result_t oe_eeid_evidence_hton(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_CHECK(
-        _hton_uint64_t(evidence->sgx_evidence_size, &position, &remaining));
-    OE_CHECK(
-        _hton_uint64_t(evidence->sgx_endorsements_size, &position, &remaining));
+        _hton_uint64_t(evidence->base_evidence_size, &position, &remaining));
     OE_CHECK(_hton_uint64_t(evidence->eeid_size, &position, &remaining));
 
-    data_size = evidence->sgx_evidence_size + evidence->sgx_endorsements_size +
-                evidence->eeid_size;
+    data_size = evidence->base_evidence_size + evidence->eeid_size;
 
     OE_CHECK(_hton_buffer(evidence->data, data_size, &position, &remaining));
 
@@ -598,16 +593,71 @@ oe_result_t oe_eeid_evidence_ntoh(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_CHECK(
-        _ntoh_uint64_t(&position, &remaining, &evidence->sgx_evidence_size));
-    OE_CHECK(_ntoh_uint64_t(
-        &position, &remaining, &evidence->sgx_endorsements_size));
+        _ntoh_uint64_t(&position, &remaining, &evidence->base_evidence_size));
     OE_CHECK(_ntoh_uint64_t(&position, &remaining, &evidence->eeid_size));
 
-    data_size = evidence->sgx_evidence_size + evidence->sgx_endorsements_size +
-                evidence->eeid_size;
+    data_size = evidence->base_evidence_size + evidence->eeid_size;
 
     OE_CHECK(_ntoh_buffer(
         &position, &remaining, (uint8_t*)&evidence->data, data_size));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+oe_result_t oe_eeid_endorsements_hton(
+    const oe_eeid_endorsements_t* endorsements,
+    uint8_t* buffer,
+    size_t buffer_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    uint8_t* position = buffer;
+    size_t remaining = buffer_size;
+    size_t data_size = 0;
+
+    if (!buffer || buffer_size == 0 || !endorsements)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(_hton_uint64_t(
+        endorsements->sgx_endorsements_size, &position, &remaining));
+    OE_CHECK(_hton_uint64_t(
+        endorsements->eeid_endorsements_size, &position, &remaining));
+
+    data_size = endorsements->sgx_endorsements_size +
+                endorsements->eeid_endorsements_size;
+
+    OE_CHECK(
+        _hton_buffer(endorsements->data, data_size, &position, &remaining));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+oe_result_t oe_eeid_endorsements_ntoh(
+    const uint8_t* buffer,
+    size_t buffer_size,
+    oe_eeid_endorsements_t* endorsements)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    const uint8_t* position = buffer;
+    size_t remaining = buffer_size;
+    size_t data_size = 0;
+
+    if (!buffer || buffer_size == 0 || !endorsements)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(_ntoh_uint64_t(
+        &position, &remaining, &endorsements->sgx_endorsements_size));
+    OE_CHECK(_ntoh_uint64_t(
+        &position, &remaining, &endorsements->eeid_endorsements_size));
+
+    data_size = endorsements->sgx_endorsements_size +
+                endorsements->eeid_endorsements_size;
+
+    OE_CHECK(_ntoh_buffer(
+        &position, &remaining, (uint8_t*)&endorsements->data, data_size));
 
     result = OE_OK;
 done:
