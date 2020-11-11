@@ -214,7 +214,9 @@ endfunction ()
 ##
 ##==============================================================================
 
-set(PACKAGE_CONFIG_FILES_LIST oeenclave-gcc.pc oeenclave-g++.pc
+set(PACKAGE_CONFIG_FILES_LIST oehost-gcc.pc oehost-g++.pc
+                              oehost-clang.pc oehost-clang++.pc
+                              oeenclave-gcc.pc oeenclave-g++.pc
                               oeenclave-clang.pc oeenclave-clang++.pc)
 
 ##==============================================================================
@@ -234,14 +236,8 @@ set(LVI_MITIGATION_PACKAGE_CONFIG_FILES_LIST
 ##==============================================================================
 
 set(HOST_VERIFY_PACKAGE_CONFIG_FILES_LIST
-    oehost-gcc.pc
-    oehost-g++.pc
-    oehostverify-gcc.pc
-    oehostverify-g++.pc
-    oehost-clang.pc
-    oehost-clang++.pc
-    oehostverify-clang.pc
-    oehostverify-clang++.pc)
+    oehostverify-gcc.pc oehostverify-g++.pc
+    oehostverify-clang.pc oehostverify-clang++.pc)
 
 foreach (file_name ${PACKAGE_CONFIG_FILES_LIST})
   configure_and_install_pkg_config(${file_name} "")

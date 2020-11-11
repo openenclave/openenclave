@@ -388,7 +388,7 @@ include(add_enclave_test)
 add_subdirectory(include)
 add_subdirectory(host)
 
-if (BUILD_TESTS AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
+if (BUILD_TESTS)
   add_subdirectory(tests)
 endif ()
 
@@ -398,11 +398,9 @@ if (NOT CODE_COVERAGE)
   add_subdirectory(samples)
 endif ()
 
-if (NOT COMPONENT MATCHES OEHOSTVERFIY)
-  add_subdirectory(tools)
-endif ()
+add_subdirectory(tools)
 
-if (BUILD_ENCLAVES AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
+if (BUILD_ENCLAVES)
   add_subdirectory(enclave)
   add_subdirectory(3rdparty)
   add_subdirectory(libc)
@@ -410,7 +408,7 @@ if (BUILD_ENCLAVES AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
   add_subdirectory(syscall)
 endif ()
 
-if (OE_SGX AND (NOT COMPONENT MATCHES OEHOSTVERIFY))
+if (OE_SGX)
   add_subdirectory(debugger)
 endif ()
 
@@ -425,11 +423,14 @@ if (WIN32)
   install(FILES ./scripts/install-windows-prereqs.ps1
           DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
   install(FILES ./cmake/maybe_build_using_clangw.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+          COMPONENT OEHOSTVERIFY)
   install(FILES ./cmake/add_dcap_client_target.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+          COMPONENT OEHOSTVERIFY)
   install(FILES ./cmake/copy_oedebugrt_target.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake)
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+          COMPONENT OEHOSTVERIFY)
 endif ()
 
 # Install necessary files for LVI mitigation.
