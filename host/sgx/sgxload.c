@@ -126,6 +126,7 @@ static uint64_t _detect_xfrm()
 static sgx_secs_t* _new_secs(
     uint64_t base,
     size_t size,
+    uint64_t attributes,
     const oe_sgx_load_context_t* context)
 {
     sgx_secs_t* secs = NULL;
@@ -137,7 +138,7 @@ static sgx_secs_t* _new_secs(
     secs->size = size;
     secs->base = base;
 
-    secs->flags = SGX_FLAGS_MODE64BIT;
+    secs->flags = attributes;
     if (oe_sgx_is_debug_load_context(context))
         secs->flags |= SGX_FLAGS_DEBUG;
     if (oe_sgx_is_kss_load_context(context))
@@ -307,6 +308,7 @@ void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context)
 
 oe_result_t oe_sgx_create_enclave(
     oe_sgx_load_context_t* context,
+    const oe_sgx_enclave_properties_t* props,
     size_t enclave_size,
     size_t enclave_commit_size,
     uint64_t* enclave_addr)
@@ -350,7 +352,8 @@ oe_result_t oe_sgx_create_enclave(
     }
 
     /* Create SECS structure */
-    if (!(secs = _new_secs((uint64_t)base, enclave_size, context)))
+    if (!(secs = _new_secs(
+              (uint64_t)base, enclave_size, props->config.attributes, context)))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Measure this operation */

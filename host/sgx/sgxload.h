@@ -29,6 +29,7 @@ OE_INLINE bool oe_sgx_is_kss_load_context(const oe_sgx_load_context_t* context)
 
 oe_result_t oe_sgx_create_enclave(
     oe_sgx_load_context_t* context,
+    const oe_sgx_enclave_properties_t* props,
     size_t enclave_size,
     size_t enclave_commit_size,
     uint64_t* enclave_addr);

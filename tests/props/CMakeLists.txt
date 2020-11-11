@@ -12,3 +12,4 @@ endif ()
 
 # Test a signed enclave:
 add_enclave_test(tests/props props_host props_enc_signed signed)
+add_enclave_test(tests/props_custom props_host props_enc_custom_signed custom)

@@ -30,10 +30,24 @@ add_enclave(
   enc.c
   props.c
   ${CMAKE_CURRENT_BINARY_DIR}/props_t.c)
+add_enclave(
+  TARGET
+  props_enc_custom
+  UUID
+  058b8306-9566-4951-8e01-a86599cbb177
+  CONFIG
+  sign.conf
+  SOURCES
+  enc.c
+  custom_props.c
+  ${CMAKE_CURRENT_BINARY_DIR}/props_t.c)
 
 enclave_include_directories(props_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 enclave_include_directories(props_enc_unsigned PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})
+enclave_include_directories(props_enc_custom PRIVATE
+                            ${CMAKE_CURRENT_BINARY_DIR})
 
 enclave_link_libraries(props_enc oelibc)
 enclave_link_libraries(props_enc_unsigned oelibc)
+enclave_link_libraries(props_enc_custom oelibc)

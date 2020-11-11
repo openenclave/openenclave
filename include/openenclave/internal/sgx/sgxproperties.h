@@ -39,7 +39,8 @@ OE_INLINE bool oe_sgx_is_unset_uuid(uint8_t* x)
 OE_INLINE bool oe_sgx_is_valid_attributes(uint64_t x)
 {
     /* Check for illegal bits */
-    if (x & ~(OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT | OE_SGX_FLAGS_KSS))
+    if (x & ~(OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT | OE_SGX_FLAGS_KSS |
+              OE_SGX_FLAGS_PROVISION_KEY | OE_SGX_FLAGS_EINITTOKEN_KEY))
         return false;
 
     /* Check for missing MODE64BIT */

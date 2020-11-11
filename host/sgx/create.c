@@ -884,7 +884,11 @@ oe_result_t oe_sgx_build_enclave(
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
-        context, enclave_size, loaded_enclave_pages_size, &enclave_addr));
+        context,
+        &props,
+        enclave_size,
+        loaded_enclave_pages_size,
+        &enclave_addr));
 
     /* Save the enclave base address, size, and text address */
     enclave->addr = enclave_addr;
