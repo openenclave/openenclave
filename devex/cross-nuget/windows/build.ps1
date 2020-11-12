@@ -6,9 +6,11 @@
 #    |- Debug
 #    |- Release
 
-$ErrorActionPreference = "Stop"
+Param(
+  [string]$OE_SDK_TAG = 'master'
+)
 
-$OE_SDK_TAG=v0.11.0
+$ErrorActionPreference = "Stop"
 
 If (-not (Test-Path -Path SDK))
 {

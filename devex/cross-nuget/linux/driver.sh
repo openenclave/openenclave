@@ -3,7 +3,23 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-OE_SDK_TAG=v0.11.0
+OE_SDK_TAG="master"
+
+options=$(getopt -l "oe_sdk_tag:" -o "t:" -- "$@")
+eval set -- "$options"
+
+while true ; do
+  case $1 in
+  -t|--oe_sdk_tag)
+      shift
+      export OE_SDK_TAG=$1
+      ;;
+  --)
+      shift
+      break;;
+  esac
+  shift
+done
 
 # Clone the SDK
 if [ ! -d sdk ]; then

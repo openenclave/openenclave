@@ -46,7 +46,7 @@ This section explains how to set up both environments.
    containers.
 4. Clone the SDK:
    ```bash
-   git clone -b v0.11.0 --recursive --depth=1 https://github.com/openenclave/openenclave sdk
+   git clone -b <latest release tag, eg. 'v0.12.x'> --recursive --depth=1 https://github.com/openenclave/openenclave sdk
    ```
 5. Open `scripts/ansible/oe-contributors-setup.yml` and comment out the step
    that installs the Intel SGX driver because drivers cannot be installed inside
