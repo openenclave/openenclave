@@ -898,7 +898,7 @@ oe_result_t oe_sgx_build_enclave(
     enclave->size = enclave_size;
 
     /* Patch image */
-    OE_CHECK(oeimage.sgx_patch(&oeimage, context, enclave_size));
+    OE_CHECK(oeimage.sgx_patch(&oeimage, enclave_size));
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));

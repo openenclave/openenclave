@@ -50,8 +50,8 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the SGX enclave properties */
-    if ((result = oe_sgx_load_enclave_properties(
-             &oeimage, OE_INFO_SECTION_NAME, &properties)) != OE_OK)
+    if ((result = oe_sgx_load_enclave_properties(&oeimage, &properties)) !=
+        OE_OK)
     {
         oe_put_err("oe_sgx_load_enclave_properties(): result=%u", result);
     }
