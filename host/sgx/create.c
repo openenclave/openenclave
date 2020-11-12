@@ -61,12 +61,17 @@ static char* get_fullpath(const char* path)
 #include "exception.h"
 #include "platform_u.h"
 #include "sgxload.h"
+#include "xstate.h"
 
 #if !defined(OEHOSTMR)
 static oe_once_type _enclave_init_once;
 
-static void _initialize_exception_handling(void)
+/* Global for caching the result of AVX check used by oe_enter */
+bool oe_is_avx_enabled = false;
+
+static void _initialize_enclave_host_impl(void)
 {
+    oe_is_avx_enabled = oe_get_xfrm() & (SGX_XFRM_AVX | SGX_XFRM_AVX512);
     oe_initialize_host_exception();
 }
 
@@ -80,7 +85,7 @@ static void _initialize_exception_handling(void)
 
 static void _initialize_enclave_host()
 {
-    oe_once(&_enclave_init_once, _initialize_exception_handling);
+    oe_once(&_enclave_init_once, _initialize_enclave_host_impl);
 }
 #endif // OEHOSTMR
 

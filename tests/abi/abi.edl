@@ -12,5 +12,10 @@ enclave {
 
     trusted {
         public double enclave_add_float();
+        public double enclave_check_abi();
+    };
+
+    untrusted {
+        double host_check_abi();
     };
 };

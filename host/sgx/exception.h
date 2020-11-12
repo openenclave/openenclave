@@ -4,7 +4,7 @@
 #ifndef _OE_HOST_EXCEPTION_H
 #define _OE_HOST_EXCEPTION_H
 
-#include <openenclave/bits/types.h>
+#include <openenclave/bits/exception.h>
 #include <openenclave/internal/calls.h>
 
 typedef struct _host_exception_context

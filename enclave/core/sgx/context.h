@@ -8,7 +8,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/exception.h>
 #include <openenclave/bits/types.h>
-#include "constants_x64.h"
+#include <openenclave/internal/constants_x64.h>
 
 OE_CHECK_SIZE(sizeof(oe_context_t), OE_CONTEXT_SIZE);
 OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, flags), OE_CONTEXT_FLAGS);
@@ -33,7 +33,6 @@ OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, mxcsr), OE_CONTEXT_MXCSR);
 OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, basic_xstate), OE_CONTEXT_FLOAT);
 
 void oe_snap_current_context(oe_context_t* oe_context);
-void oe_restore_partial_context(oe_context_t* oe_context);
 void oe_continue_execution(oe_context_t* oe_context);
 
 #endif // !__ASSEMBLER__

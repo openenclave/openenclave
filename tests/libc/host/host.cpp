@@ -10,28 +10,6 @@
 #include <cstring>
 #include "libc_u.h"
 
-#if defined(_WIN32) && (defined(__x86_64__) || defined(_M_X64))
-#define XMM_OK
-#endif
-
-#if defined(XMM_OK)
-#include <xmmintrin.h>
-
-uint32_t my_getmxcsr()
-{
-    uint32_t csr;
-
-    csr = _mm_getcsr();
-    return csr;
-}
-
-void my_setmxcsr(uint32_t csr)
-{
-    _mm_setcsr(csr);
-}
-
-#endif
-
 void Test(oe_enclave_t* enclave, const char* test_name)
 {
     oe_result_t result;
@@ -75,31 +53,15 @@ int main(int argc, const char* argv[])
 
     printf("=== %s: %s\n", argv[0], argv[1]);
 
-#if defined(XMM_OK)
-    volatile uint32_t csr;
-    csr = my_getmxcsr();
-    OE_TEST(csr == 0x1f80);
-#endif
-
     // Create the enclave:
     if ((result = oe_create_libc_enclave(
              argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_libc_enclave(): result=%u", result);
 
-#if defined(XMM_OK)
-    csr = my_getmxcsr();
-    OE_TEST(csr == 0x1f80);
-#endif
-
     if (argc > 2)
         Test(enclave, argv[2]);
     else
         Test(enclave, NULL);
-
-#if defined(XMM_OK)
-    csr = my_getmxcsr();
-    OE_TEST(csr == 0x1f80);
-#endif
 
     r = oe_terminate_enclave(enclave);
     OE_TEST(r == OE_OK);

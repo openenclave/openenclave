@@ -7,6 +7,7 @@
 #include <openenclave/internal/sgx/ecall_context.h>
 #include "asmdefs.h"
 #include "enclave.h"
+#include "xstate.h"
 
 // Define a variable with given name and bind it to the register with the
 // corresponding name. This allows manipulating the register as a normal
@@ -44,14 +45,39 @@
 #endif
 
 // The following registers are inputs to ENCLU instruction. They are also
-// clobbered. Hence marked as +r.
+// clobbered and hence are marked as +r.
 #define OE_ENCLU_REGISTERS \
     "+r"(rax), "+r"(rbx), "+r"(rcx), "+r"(rdi), "+r"(rsi), "+r"(rdx)
 
 // The following registers are clobbered by ENCLU.
-// Only rbp and rsp are preserved.
-#define OE_ENCLU_CLOBBERED_REGISTERS \
-    "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
+// Only rbp and rsp are preserved on return from ENCLU.
+// The XMM registers are listed as clobbered to signal to the compiler that
+// they need to be preserved when --target=x86_64-msvc-windows and are
+// ignored on Linux builds.
+#define OE_ENCLU_CLOBBERED_REGISTERS                                      \
+    "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "xmm6", "xmm7", \
+        "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15"
+
+#define OE_VZEROUPPER              \
+    asm volatile("vzeroupper \n\t" \
+                 :                 \
+                 :                 \
+                 : "ymm0",         \
+                   "ymm1",         \
+                   "ymm2",         \
+                   "ymm3",         \
+                   "ymm4",         \
+                   "ymm5",         \
+                   "ymm6",         \
+                   "ymm7",         \
+                   "ymm8",         \
+                   "ymm9",         \
+                   "ymm10",        \
+                   "ymm11",        \
+                   "ymm12",        \
+                   "ymm13",        \
+                   "ymm14",        \
+                   "ymm15")
 
 // The following function must not be inlined and must have a frame-pointer
 // so that the frame can be manipulated to stitch the ocall stack.
@@ -141,10 +167,8 @@ OE_INLINE void _setup_ecall_context(oe_ecall_context_t* ecall_context)
  * are preserved across function calls.
  * As per x64 Windows ABI, the registers RBX, RBP, RDI, RSI, RSP, R12, R13, R14,
  * R15, and XMM6-15 are preserved across function calls.
- * The general purpose callee-saved registers are listed in
- * OE_ENCLU_CLOBBERED_REGISTERS. Since we explicitly save and restore the
- * floating-point state via fxsave/fxrstor, the xmm registers are not listed
- * in the clobber list.
+ * The general purpose callee-saved registers and XMM registers are listed in
+ * OE_ENCLU_CLOBBERED_REGISTERS.
  */
 OE_NEVER_INLINE
 void oe_enter(
@@ -156,16 +180,24 @@ void oe_enter(
     uint64_t* arg4,
     oe_enclave_t* enclave)
 {
-    // The general purpose registers are preserved by the compiler.
-    // The floating point state and the flags must be explicitly preserved.
-    // The space for saving the floating-point state must be 16 byte aligned.
-    OE_ALIGNED(16)
-    uint64_t fx_state[64];
+    // Additional control registers that need to be preserved as part of the
+    // Windows and Linux x64 ABIs
+    uint32_t mxcsr = 0;
+    uint16_t fcw = 0;
+
     oe_ecall_context_t ecall_context = {{0}};
     _setup_ecall_context(&ecall_context);
 
     while (1)
     {
+        // Compiler will usually handle this on exiting a function that uses
+        // AVX, but we need to avoid the AVX-SSE transition penalty here
+        // manually as part of the transition to enclave. See
+        // https://software.intel.com/content/www/us/en/develop/articles
+        // /avoiding-avx-sse-transition-penalties.html
+        if (oe_is_avx_enabled)
+            OE_VZEROUPPER;
+
         // Define register bindings and initialize the registers.
         // On Windows, explicitly setup rbp as a Linux ABI style frame-pointer.
         // On Linux, the frame-pointer is set up by compiling the file with the
@@ -178,13 +210,15 @@ void oe_enter(
         OE_DEFINE_REGISTER(rsi, arg2);
         OE_DEFINE_FRAME_POINTER(rbp, OE_FRAME_POINTER_VALUE);
 
-        asm volatile("fxsave %[fx_state] \n\t" // Save floating point state.
-                     "pushfq \n\t"             // Save flags.
-                     "enclu \n\t"
-                     "popfq \n\t"               // Restore flags.
-                     "fxrstor %[fx_state] \n\t" // Restore floating point state.
+        asm volatile("stmxcsr %[mxcsr] \n\t" // Save MXCSR
+                     "fstcw %[fcw] \n\t"     // Save x87 control word
+                     "pushfq \n\t"           // Save RFLAGS
+                     "enclu \n\t"            // EENTER
+                     "popfq \n\t"            // Restore RFLAGS
+                     "fldcw %[fcw] \n\t"     // Restore x87 control word
+                     "ldmxcsr %[mxcsr] \n\t" // Restore MXCSR
                      : OE_ENCLU_REGISTERS
-                     : [fx_state] "m"(fx_state)OE_FRAME_POINTER
+                     : [fcw] "m"(fcw), [mxcsr] "m"(mxcsr)OE_FRAME_POINTER
                      : OE_ENCLU_CLOBBERED_REGISTERS);
 
         // Update arg1 and arg2 with outputs returned by the enclave.
@@ -251,6 +285,10 @@ void oe_enter_sim(
         // register to the desired value. See host/sgx/create.c.
         oe_set_fs_register_base((void*)(enclave->addr + sgx_tcs->fsbase));
         oe_set_gs_register_base((void*)(enclave->addr + sgx_tcs->gsbase));
+
+        // For parity with oe_enter, see comments there.
+        if (oe_is_avx_enabled)
+            OE_VZEROUPPER;
 
         // Define register bindings and initialize the registers.
         // See oe_enter for ENCLU contract.

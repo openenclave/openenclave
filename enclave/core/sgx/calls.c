@@ -484,6 +484,17 @@ OE_INLINE void _handle_oret(
     td->oret_result = result;
     td->oret_arg = arg;
 
+    /* Restore the FXSTATE and flags */
+    asm volatile("pushq %[rflags] \n\t" // Restore flags.
+                 "popfq \n\t"
+                 "fldcw %[fcw] \n\t"     // Restore x87 control word
+                 "ldmxcsr %[mxcsr] \n\t" // Restore MXCSR
+                 : [mxcsr] "=m"(callsite->mxcsr),
+                   [fcw] "=m"(callsite->fcw),
+                   [rflags] "=m"(callsite->rflags)
+                 :
+                 : "cc");
+
     oe_longjmp(&callsite->jmpbuf, 1);
 }
 
@@ -647,6 +658,17 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     /* Check for unexpected failures */
     if (!td_initialized(td))
         OE_RAISE_NO_TRACE(OE_FAILURE);
+
+    /* Preserve the FXSTATE and flags */
+    asm volatile("stmxcsr %[mxcsr] \n\t" // Save MXCSR
+                 "fstcw %[fcw] \n\t"     // Save x87 control word
+                 "pushfq \n\t"           // Save flags.
+                 "popq %[rflags] \n\t"
+                 :
+                 : [mxcsr] "m"(callsite->mxcsr),
+                   [fcw] "m"(callsite->fcw),
+                   [rflags] "m"(callsite->rflags)
+                 :);
 
     /* Save call site where execution will resume after OCALL */
     if (oe_setjmp(&callsite->jmpbuf) == 0)

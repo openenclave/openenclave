@@ -8,10 +8,10 @@
  * Initialization state for XSAVE area in the enclave.
  */
 /* clang-format off */
-OE_ALIGNED(XSAVE_ALIGNMENT) const uint32_t
-OE_XSAVE_INITIAL_STATE[MINIMAL_XSTATE_AREA_LENGTH/sizeof(uint32_t)] = {
+OE_ALIGNED(OE_XSAVE_ALIGNMENT) const uint32_t
+OE_XSAVE_INITIAL_STATE[OE_MINIMAL_XSTATE_AREA_SIZE/sizeof(uint32_t)] = {
 
-    /* LEGACY_XSAVE_AREA */
+    /* FXSAVE (a.k.a. legacy XSAVE) area */
     /* Set FPU Control Word to ABI init value of 0x037F,
      * clear Status, Tag, OpCode, FIP words */
     0x037F, 0, 0, 0,
@@ -30,7 +30,7 @@ OE_XSAVE_INITIAL_STATE[MINIMAL_XSTATE_AREA_LENGTH/sizeof(uint32_t)] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
-    /* Reserved bits up to end of LEGACY_XSAVE_AREA */
+    /* Reserved bits up to end of FXSAVE area */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
 
