@@ -6,10 +6,11 @@ a Microsoft signature generated using the Microsoft [PODSS](https://aka.ms/podss
 In the future, this process will change to a use a non-Microsoft
 signature once another signing process is defined for Open Enclave.
 
-1. Build the latest [Cross-Platform Open Enclave SDK NuGet Package](../cross-nuget/README.md).
-   Make a note of the new version number for use in step 4.
+1. Take note of the latest published version of the [Cross-Platform Open Enclave SDK NuGet Package](https://www.nuget.org/packages/open-enclave-cross). The latest published
+   version of the package should be used when building the VS Extension.
 
-2. Copy the resulting `open-enclave-cross.*.nupkg` NuGet package
+2. In the steps below, modify the references to the Cross-Platform Open Enclave
+   SDK NuGet Package. During the build process, the package will be [downloaded](https://github.com/openenclave/openenclave/blob/master/devex/vsextension/ProjectWizard/VSExtension.csproj#L490)
    into your local `openenclave\devex\vsextension\ProjectWizard\Packages\`
    directory in the open-enclave repository, where the VS extension solution
    will look for it.

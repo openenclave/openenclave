@@ -37,6 +37,27 @@ Function Copy-Tools([String]$SgxPlatform)
     Copy-Item -Path "$($Bin.FullName)\*" -Destination .\Pack\tools\win\default -Recurse -Force
 }
 
+Function Copy-DebugTools()
+{
+
+    $Locations = @(
+        New-Object PSObject -Property @{folder="$PWD\Build\Default\Debug\host\CMakeFiles\oehost.dir";file="oehost.pdb";destination="$PWD\Pack\lib\native\win\sgx\default\debug\host\msvc-14.16.27023"}
+        New-Object PSObject -Property @{folder="$PWD\Build\Default\Release\debugger\debugrt\host";file="oedebugrt.*";destination="$PWD\Pack\tools\win\default"}
+    )
+
+    foreach ($location in $Locations) {
+        Push-Location $location.folder
+        $Bin = (Get-ChildItem -Recurse $location.file | Where { ! $_.FullName.Contains("manifest") } )
+        Pop-Location
+        foreach ($file in $Bin)
+        {
+            Copy-Item -Path "$($file.FullName)" -Destination $location.destination -Force
+        }
+    }
+
+}
+
+
 Function Copy-Includes([String]$SgxPlatform, [String]$BuildType)
 {
     Push-Location $PWD\Build\$SgxPlatform\$BuildType\_CPack_Packages\win64\NuGet
@@ -72,3 +93,4 @@ Copy-Includes Default Debug
 Copy-Includes Default Release
 
 Copy-Tools Default
+Copy-DebugTools

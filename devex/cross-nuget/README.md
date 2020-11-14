@@ -94,9 +94,9 @@ packaged as well as the version of the NuGet package itself:
 
 1. Change the name of the output NuGet package in all the instructions that
    follow;
-2. Change the value in `devex/cross-nuget/extras/open-enclave.nuspec`;
-3. Change `OE_SDK_TAG` in `devex/cross-nuget/linux/driver.sh`;
-4. Change `OE_SDK_TAG` in `devex/cross-nuget/windows/build.ps1`.
+2. Change the `OE_CROSS_PLAT_VERSION` in `devex/cross-nuget/extras/open-enclave.nuspec` - refer to the [NuGet page](https://www.nuget.org/packages/open-enclave-cross/) for the current version;
+3. Change `OE_SDK_TAG` in `devex/cross-nuget/linux/driver.sh` or run with the `--oe_sdk_tag <sdk tag>` argument during the build phase of the [Ubuntu section](#Ubuntu);
+4. Change `OE_SDK_TAG` in `devex/cross-nuget/windows/build.ps1` or run with the `-OE_SDK_TAG <sdk tag>` argument during the build phase of the [Windows section](#Windows).
 
 ### Windows
 
