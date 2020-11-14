@@ -575,10 +575,12 @@ void verify_sgx_evidence(
     void* from;
     void* until;
     bool is_local;
+    bool flag;
 
     sgx_evidence_format_type_t format_type = SGX_FORMAT_TYPE_UNKNOWN;
     const uint8_t* report_body = NULL;
     size_t report_body_size = 0;
+    const sgx_report_body_t* sgx_report_body = NULL;
     const uint8_t* endorsements_body = NULL;
     size_t endorsements_body_size = 0;
 
@@ -727,16 +729,14 @@ void verify_sgx_evidence(
             &claims_size),
         OE_OK);
 
-    // Make sure that the identity info matches with the regular oe report.
+    // Check SGX report identity and OE claims
+    sgx_report_body = format_type == SGX_FORMAT_TYPE_LOCAL
+                          ? &((sgx_report_t*)report_body)->body
+                          : &((sgx_quote_t*)report_body)->report_body;
 
+    // Make sure that the identity info matches with the regular oe report.
     OE_TEST_CODE(
-        oe_parse_sgx_report_body(
-            (format_type == SGX_FORMAT_TYPE_LOCAL
-                 ? &((sgx_report_t*)report_body)->body
-                 : &((sgx_quote_t*)report_body)->report_body),
-            !is_local,
-            &report),
-        OE_OK);
+        oe_parse_sgx_report_body(sgx_report_body, !is_local, &report), OE_OK);
 
     // Check id version.
     value = _find_claim(claims, claims_size, OE_CLAIM_ID_VERSION);
@@ -780,6 +780,65 @@ void verify_sgx_evidence(
     value = _find_claim(claims, claims_size, OE_CLAIM_FORMAT_UUID);
     OE_TEST(value != NULL && memcmp(value, format_id, sizeof(*format_id)) == 0);
 
+    // Check SGX Page Fault, General Protection Exception Reported to an SSA
+    // Frame or Not
+    flag = !!(sgx_report_body->miscselect & SGX_MISC_FLAGS_PF_GP_EXIT_INFO);
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_PF_GP_EXINFO_ENABLED);
+    OE_TEST(value != NULL && memcmp(value, &flag, sizeof(flag)) == 0);
+
+    // Check SGX Report ISV Extended Product ID
+    value =
+        _find_claim(claims, claims_size, OE_CLAIM_SGX_ISV_EXTENDED_PRODUCT_ID);
+    OE_TEST(
+        value != NULL && memcmp(
+                             value,
+                             sgx_report_body->isvextprodid,
+                             sizeof(sgx_report_body->isvextprodid)) == 0);
+
+    // Check SGX Report Is Mode 64bit or Not
+    flag = !!(sgx_report_body->attributes.flags & SGX_FLAGS_MODE64BIT);
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_IS_MODE64BIT);
+    OE_TEST(value != NULL && memcmp(value, &flag, sizeof(flag)) == 0);
+
+    // Check SGX Report Has Provision Key or Not
+    flag = !!(sgx_report_body->attributes.flags & SGX_FLAGS_PROVISION_KEY);
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_HAS_PROVISION_KEY);
+    OE_TEST(value != NULL && memcmp(value, &flag, sizeof(flag)) == 0);
+
+    // Check SGX Report Has Einittoken Key or Not
+    flag = !!(sgx_report_body->attributes.flags & SGX_FLAGS_EINITTOKEN_KEY);
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_HAS_EINITTOKEN_KEY);
+    OE_TEST(value != NULL && memcmp(value, &flag, sizeof(flag)) == 0);
+
+    // Check SGX Use KSS or Not
+    flag = !!(sgx_report_body->attributes.flags & SGX_FLAGS_KSS);
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_USES_KSS);
+    OE_TEST(value != NULL && memcmp(value, &flag, sizeof(flag)) == 0);
+
+    // Check SGX Report Configuration ID
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_CONFIG_ID);
+    OE_TEST(
+        value != NULL && memcmp(
+                             value,
+                             sgx_report_body->configid,
+                             sizeof(sgx_report_body->configid)) == 0);
+
+    // Check SGX Report Configuration Security Version
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_CONFIG_SVN);
+    OE_TEST(
+        value != NULL && memcmp(
+                             value,
+                             &sgx_report_body->configsvn,
+                             sizeof(sgx_report_body->configsvn)) == 0);
+
+    // Check SGX Report ISV Family ID
+    value = _find_claim(claims, claims_size, OE_CLAIM_SGX_ISV_FAMILY_ID);
+    OE_TEST(
+        value != NULL && memcmp(
+                             value,
+                             sgx_report_body->isvfamilyid,
+                             sizeof(sgx_report_body->isvfamilyid)) == 0);
+
     // Check date time.
     from = _find_claim(claims, claims_size, OE_CLAIM_VALIDITY_FROM);
     OE_TEST(is_local || from != NULL);
@@ -787,12 +846,14 @@ void verify_sgx_evidence(
     until = _find_claim(claims, claims_size, OE_CLAIM_VALIDITY_UNTIL);
     OE_TEST(is_local || until != NULL);
 
-    // Check SGX endorsements related claims:
+    // Check SGX optional claims:
     if (expected_endorsements)
     {
-        for (uint32_t i = OE_REQUIRED_CLAIMS_COUNT + OE_OPTIONAL_CLAIMS_COUNT,
+        for (uint32_t i = OE_REQUIRED_CLAIMS_COUNT +
+                          OE_SGX_REQUIRED_CLAIMS_COUNT +
+                          OE_OPTIONAL_CLAIMS_COUNT,
                       j = 1;
-             j <= OE_SGX_CLAIMS_COUNT;
+             j <= OE_SGX_OPTIONAL_CLAIMS_COUNT;
              i++, j++)
         {
             value = claims[i].value;

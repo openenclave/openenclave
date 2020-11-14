@@ -597,14 +597,17 @@ typedef struct _sgx_report_body
     /* (64) Enclave measurement */
     uint8_t mrenclave[OE_SHA256_SIZE];
 
-    /* (96) */
+    /* (96) Reserved */
     uint8_t reserved2[32];
 
     /* (128) The value of the enclave's SIGNER measurement */
     uint8_t mrsigner[OE_SHA256_SIZE];
 
-    /* (160) */
-    uint8_t reserved3[96];
+    /* (160) Reserved */
+    uint8_t reserved3[32];
+
+    /* (192) Enclave Configuration ID*/
+    uint8_t configid[64];
 
     /* (256) Enclave product ID */
     uint16_t isvprodid;
@@ -612,8 +615,11 @@ typedef struct _sgx_report_body
     /* (258) Enclave security version */
     uint16_t isvsvn;
 
-    /* (260) Reserved */
-    uint8_t reserved4[44];
+    /* (260) Enclave Configuration Security Version*/
+    uint16_t configsvn;
+
+    /* (262) Reserved */
+    uint8_t reserved4[42];
 
     /* (304) Enclave family ID */
     uint8_t isvfamilyid[16];
@@ -1041,6 +1047,11 @@ typedef struct _sgx_key
 {
     uint8_t buf[16];
 } sgx_key_t;
+
+/* Enclave MISCSELECT Flags Bit Masks, additional information to an SSA frame */
+/* If set, then the enclave page fault and general protection exception are
+ * reported*/
+#define SGX_MISC_FLAGS_PF_GP_EXIT_INFO 0x0000000000000001ULL
 
 /* Enclave Flags Bit Masks */
 /* If set, then the enclave is initialized */
