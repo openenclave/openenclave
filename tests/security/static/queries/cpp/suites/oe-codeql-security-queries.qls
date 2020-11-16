@@ -1,0 +1,7 @@
+- description: OpenEnclave and CodeQL Security Queries for C and C++
+- qlpack: openenclave-codeql-cpp
+- apply: suites/oe-security.yml
+  from: openenclave-codeql-cpp
+- qlpack: codeql-cpp
+- apply: suites/codeql-security-queries.yml
+  from: openenclave-codeql-cpp

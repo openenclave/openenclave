@@ -38,3 +38,8 @@ prereqs/dcap/*.deb
 prereqs/nuget/*
 prereqs/packages/.packages
 prereqs/sgx-driver/*.bin
+
+.cache
+_lgtm_build_dir/
+_lgtm_detected_source_root
+

@@ -1,0 +1,6 @@
+{
+    "provide": [
+        "*/codeql/.codeqlmanifest.json",
+        "queries/**"
+    ]
+}

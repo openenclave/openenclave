@@ -1,6 +1,8 @@
 # Getting started with running static analysis tools
+## CodeQL Analysis
+[Steps to perform CodeQL Analysis](/tests/security/static/README.md)
 
-## scan-build
+## Clang Static Analyzer: scan-build
 
 *Note: scan-build only works with clang and gcc and as such is only currently supported for linux builds*
 

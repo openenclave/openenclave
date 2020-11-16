@@ -1,0 +1,30 @@
+- description: C/C++ Security Queries
+- include:
+    query path:
+      - Security/CWE/CWE-120/BadlyBoundedWrite.ql
+      - Security/CWE/CWE-120/OverrunWrite.ql
+      - Security/CWE/CWE-120/OverrunWriteFloat.ql
+      - Security/CWE/CWE-120/UnboundedWrite.ql
+      - Security/CWE/CWE-121/UnterminatedVarargsCall.ql
+      - Security/CWE/CWE-129/ImproperArrayIndexValidation.ql
+      - Security/CWE/CWE-131/NoSpaceForZeroTerminator.ql
+      - Security/CWE/CWE-170/ImproperNullTerminationTainted.ql
+      - Security/CWE/CWE-190/ArithmeticUncontrolled.ql
+      - Security/CWE/CWE-190/ArithmeticWithExtremeValues.ql
+      - Security/CWE/CWE-190/ComparisonWithWiderType.ql
+      - Security/CWE/CWE-807/TaintedCondition.ql
+      - Critical/UseAfterFree.ql
+      - Critical/SizeCheck.ql
+      - Critical/SizeCheck2.ql
+      - Critical/ReturnStackAllocatedObject.ql
+      - Critical/ReturnValueIgnored.ql
+      - Critical/OverflowCalculated.ql
+      - Critical/OverflowDestination.ql
+      - Critical/OverflowStatic.ql
+      - Likely Bugs/Arithmetic/BadAdditionOverflowCheck.ql
+      - Likely Bugs/Arithmetic/BitwiseSignCheck.ql
+      - Likely Bugs/Arithmetic/IntMultToLong.ql
+      - Likely Bugs/Arithmetic/SignedOverflowCheck.ql
+      - Likely Bugs/Arithmetic/UnsignedGEZero.ql
+      - Likely Bugs/Conversion/ArrayArgSizeMismatch.ql
+      - Likely Bugs/Conversion/CastArrayPointerArithmetic.ql
