@@ -252,6 +252,118 @@ typedef struct _oe_inittime_custom_claim_buffer_t
 } oe_inittime_custom_claim_buffer_t;
 ```
 
+The following pseudocode demonstrates how the proposed interface can be used.
+
+```C
+    /// Untrusted Code of the OE Application
+    ///
+
+    // Set up extra content and config id
+    rsa3072_public_key_t  pubkey = {...};
+    oe_sgx_config_data_t = 
+    {
+        SHA256(pubkey), // config_id
+        0
+    };
+    oe_enclave_setting_t settings[] =
+    {
+        {
+            setting_type = OE_ENCLAVE_INITTIME_CONFIGURATION_DATA,
+            u.oe_sgx_config_data_t = &oe_sgx_config_data_t
+        }
+    };
+
+    // Create enclave
+    oe_create_enclave(..., settings, ...);
+
+    /// Enclave code of the OE Application
+    ///
+
+    // Load the pubkey into enclave memory and verify it against
+    // config_id
+    ...
+
+    // Set up init-time claims for attestation
+    uint8 claim_buffer[sizeof(uint32_t)+sizeof(rsa3072_public_key_t);
+    oe_inittime_custom_claim_buffer_t *p_inittime_custom_claims_buffer 
+                                          = claim_buffer;
+
+    p_inittime_custom_claims_buffer->integrity_algorithm_id = 0;
+    memcpy(p_inittime_custom_claims_buffer->buffer, pubkey, sizeof(rsa3072_public_key_t));
+  
+    size_t inittime_custom_claims_buffer_size =
+        sizeof(claim_buffer);
+
+    // Generate evidence #1
+    oe_get_evidence(...,
+        runtime_custom_claims_buffer_1,
+        runtime_custom_claims_buffer_size_1,
+        p_inittime_custom_claims_buffer,
+        inittime_custom_claims_buffer_size,
+        evidence_buffer_1,
+        ...);
+    // Send evidence to Verifier
+    send_evidence_to_REST_URL(..., evidence_buffer_1, evidence_buffer_size_1,...);
+    ...
+
+    // Generate evidence #2
+    oe_get_evidence(...,
+        runtime_custom_claims_buffer_2,
+        runtime_custom_claims_buffer_size_2,
+        p_inittime_custom_claims_buffer,
+        inittime_custom_claims_buffer_size,
+        evidence_buffer_2,
+        ...);
+
+    // Send evidence to Verifier
+    send_evidence_to_REST_URL(..., evidence_buffer_2, evidence_buffer_size_2,...);
+
+
+    /// Verifier Plugin
+    ///
+    oe_result_t oe_verify_evidence(
+    const oe_uuid_t* format_id,
+    const uint8_t* evidence_buffer,
+    size_t evidence_buffer_size,
+    const uint8_t* endorsements_buffer,
+    size_t endorsements_buffer_size,
+    const oe_policy_t* policies,
+    size_t policies_size,
+    oe_claim_t** claims,
+    size_t* claims_length)
+    {
+        ...
+        //extract the init_time_claims_buffer and verify it 
+        inittime_claims_buffer = _find_init_time_claim_buffer(evidence_buffer,
+                                                              evidence_buffer_size);
+        inittime_claims_buffer_size = _find_init_time_claim_buffer_size(evidence_buffer,
+                                                              evidence_buffer_size);                                                     
+        config_id = _find_config_id(evidence_buffer, evidence_buffer_size);
+        if (inittime_claim_buffer.integrity_algorithm_id ! = 0 )
+            return error;
+        if (SHA256(inittime_claim_buffer.buffer, inittime_claims_buffer_size) != config_id)
+            return error;
+        //output init_time claims
+        ...
+    }
+
+
+
+    /// Verifier
+    ///
+
+    // Verify evidence
+    oe_verify_evidence(...,
+            evidence_buffer,
+            ...,
+            &claims,
+            &claims_length);
+    
+    // Check claims against policy, including init_time claims
+    // reported by the plugin.
+    ...
+```
+
 Alternative Design
 -------------------
 
@@ -264,6 +376,284 @@ buffer received using the Enclave Init-time Configuration Data base claim. In
 this approach, the upper level SW within the attesting Enclave app and the
 Verifier should establish an agreement on the implementation-specific integrity
 algorithm.
+
+The following pseudocode demonstrates how the proposed interface can be used. 
+```C
+
+    /// Untrusted Code of the OE Application
+    ///
+
+    // Set up extra content and config id
+    rsa3072_public_key_t  pubkey = {...};
+    oe_sgx_config_data_t = 
+    {
+        SHA256(pubkey), // config_id
+        0
+    };
+    oe_enclave_setting_t settings[] =
+    {
+        {
+            setting_type = OE_ENCLAVE_INITTIME_CONFIGURATION_DATA,
+            u.oe_sgx_config_data_t = &oe_sgx_config_data_t
+        }
+    };
+
+    // Create enclave
+    oe_create_enclave(..., settings, ...);
+
+    /// Enclave code of the OE Application
+    ///
+
+    // Load the pubkey into enclave memory and verify it against
+    // config_id
+    ...
+
+    // Set up init-time claims for attestation
+    uint8 claim_buffer[sizeof(uint32_t)+sizeof(rsa3072_public_key_t);
+    oe_inittime_custom_claim_buffer_t *p_inittime_custom_claims_buffer
+                                                        = claim_buffer;
+
+    p_inittime_custom_claims_buffer->integrity_algorithm_id = 0;
+    memcpy(p_inittime_custom_claims_buffer->buffer, pubkey,
+           sizeof(rsa3072_public_key_t));
+  
+    size_t inittime_custom_claims_buffer_size =
+        sizeof(claim_buffer);
+
+    // Generate evidence #1
+    oe_get_evidence(...,
+        runtime_custom_claims_buffer_1,
+        runtime_custom_claims_buffer_size_1,
+        evidence_buffer_1,
+        ...);
+
+    //Assemble the data buffer with evidence and inittime_claim
+    ...
+    data_buffer->evidence_buffer_size = evidence_buffer_size_1;
+    data_buffer->inittime_claims_buffer_size = inittime_custom_claims_buffer_size;
+    memcpy(data_buffer->data, evidence_buffer_1, evidence_buffer_size_1);
+    memcpy(data_buffer->data + evidence_buffer_size_1;
+    p_inittime_custom_claims_buffer, inittime_custom_claims_buffer_size);
+    ...
+
+    // Send data_buffer to Verifier
+    send_evidence_to_REST_URL(..., data_buffer, data_buffer_size, ....);
+    ...
+
+    // Generate evidence #2
+    oe_get_evidence(...,
+        runtime_custom_claims_buffer_2,
+        runtime_custom_claims_buffer_size_2,
+        p_inittime_custom_claims_buffer,
+        inittime_custom_claims_buffer_size,
+        evidence_buffer_2,
+        ...);
+
+    //Assemble the data buffer with evidence and inittime_claim
+    ...
+    data_buffer->evidence_buffer_size = evidence_buffer_size_2;
+    data_buffer->inittime_claims_buffer_size = inittime_custom_claims_buffer_size;
+    memcpy(data_buffer->data, evidence_buffer_1, evidence_buffer_size_2);
+    memcpy(data_buffer->data + evidence_buffer_size_2;
+    p_inittime_custom_claims_buffer, inittime_custom_claims_buffer_size);
+    ...
+
+    // Send evidence to Verifier
+    send_evidence_to_REST_URL(..., data_buffer, data_buffer_size,...);
+
+    /// Verifier Plugin
+    ///
+    oe_result_t oe_verify_evidence(
+    const oe_uuid_t* format_id,
+    const uint8_t* evidence_buffer,
+    size_t evidence_buffer_size,
+    const uint8_t* endorsements_buffer,
+    size_t endorsements_buffer_size,
+    const oe_policy_t* policies,
+    size_t policies_size,
+    oe_claim_t** claims,
+    size_t* claims_length)
+    {
+        ...
+        //extract the customer_claims_buffer and verify it
+        custom_claims_buffer = _find_custom_time_claim_buffer(evidence_buffer,
+                                                              evidence_buffer_size);
+        custom_claims_buffer_size = _find_init_time_claim_buffer_size(evidence_buffer,
+                                                              evidence_buffer_size);
+        report_data = _find_report_data(evidence_buffer, evidence_buffer_size);
+        if (SHA256(custom_claims_buffer, custom_claims_buffer_size) != report_data)
+            return error;
+        // has to output the custom claim buffer as a whole, as the buffer internal structure is opaque to the Plugin.
+        oe_add_claim(claims, custom_claims_buffer, custom_claims_buffer_size, OE_SGX_CUSTOM_CLAIM_BUFFER)
+        ...
+    }
+
+
+    /// Verifier
+    ///
+
+    // Verify evidence
+    oe_verify_evidence(...,
+            data_buffer->data,
+            data_buffer->evidence_buffer_size,
+            ...,
+            &claims,
+            &claims_length);
+    // Check claims provided by Verifier Plugin against policy,
+    ...
+    // Verifier has to validate init-time claims buffer
+    config_id = _find_claim(claims, claims_length, OE_SGX_CONFIG_ID);
+    // check init-time claim  
+    p_init_time_custom_claims_buffer = data_buffer->data + evidence_buffer_size;
+    if (p_inittime_claim_buffer->integrity_algorithm_id ! = 0 )
+            return error;
+    if (SHA256(p_inittime_claim_buffer->buffer, data_buffer->inittime_claims_buffer_size
+               - sizeof(p_inittime_claim_buffer->integrity_algorithm_id)) != config_id)
+            return error;
+    ...
+    // Check p_inittime_claim_buffer->buffer against policy.
+    ...
+```
+
+In the alternative design, the caller of `oe_get_evidence` is not supposed to include the init-time customer claim buffer inside the `custom_claim_buffer` input to the API. If the caller does so indeed, the Verifier logic would have to change. The The following pseudocode shows the difference.
+
+```C
+
+    /// Untrusted Code of the OE Application
+    ///
+
+    // Set up extra content and config id
+    rsa3072_public_key_t  pubkey = {...};
+    oe_sgx_config_data_t = 
+    {
+        SHA256(pubkey), // config_id
+        0
+    };
+    oe_enclave_setting_t settings[] =
+    {
+        {
+            setting_type = OE_ENCLAVE_INITTIME_CONFIGURATION_DATA,
+            u.oe_sgx_config_data_t = &oe_sgx_config_data_t
+        }
+    };
+
+    // Create enclave
+    oe_create_enclave(..., settings, ...);
+
+    /// Enclave code of the OE Application
+    ///
+
+    // Load the pubkey into enclave memory and verify it against
+    // config_id
+    ...
+
+    // Set up init-time claims for attestation
+    uint8 claim_buffer[sizeof(uint32_t)+sizeof(rsa3072_public_key_t);
+    oe_inittime_custom_claim_buffer_t *p_inittime_custom_claims_buffer
+                                                        = claim_buffer;
+
+    p_inittime_custom_claims_buffer->integrity_algorithm_id = 0;
+    memcpy(p_inittime_custom_claims_buffer->buffer, pubkey,
+           sizeof(rsa3072_public_key_t));
+  
+    size_t inittime_custom_claims_buffer_size =
+        sizeof(claim_buffer);
+
+    // Generate evidence #1
+    //Assemble the runtime claim and initime claim into a single custom claim buffer
+    ...
+    claim_buffer->runtime_claims_buffer_size= runtime_custom_claims_buffer_size_1;
+    claim_buffer->inittime_claims_buffer_size = inittime_custom_claims_buffer_size;
+    memcpy(claim_buffer->data, runtime_custom_claims_buffer_1, runtime_custom_claims_buffer_size_1);
+    memcpy(data_buffer->data + runtime_custom_claims_buffer_size_1;
+           p_inittime_custom_claims_buffer, inittime_custom_claims_buffer_size);
+    ...
+    oe_get_evidence(...,
+        claim_buffer,
+        sizeof(claim_buffer)
+            + claim_buffer->runtime_claims_buffer_size
+            + claim_buffer->inittime_claims_buffer_size,
+        evidence_buffer_1,
+        ...);
+
+    // Send evidence to Verifier
+    send_evidence_to_REST_URL(..., evidence_buffer_1, evidence_buffer_size_1, ....);
+    ...
+
+    // Generate evidence #2
+    //Assemble the runtime claim and initime claim into a single custom claim buffer
+    ...
+    claim_buffer->runtime_claims_buffer_size= runtime_custom_claims_buffer_size_2;
+    claim_buffer->inittime_claims_buffer_size = inittime_custom_claims_buffer_size;
+    memcpy(claim_buffer->data, runtime_custom_claims_buffer_2, runtime_custom_claims_buffer_size_2);
+    memcpy(data_buffer->data + runtime_custom_claims_buffer_size_2;
+           p_inittime_custom_claims_buffer, inittime_custom_claims_buffer_size);
+    ...
+    oe_get_evidence(...,
+        claim_buffer,
+        sizeof(claim_buffer)
+            + claim_buffer->runtime_claims_buffer_size
+            + claim_buffer->inittime_claims_buffer_size,
+        evidence_buffer_2,
+        ...);
+    ...
+    // Send evidence to Verifier
+    send_evidence_to_REST_URL(..., evidence_buffer_2, evidence_buffer_size_2,...);
+
+    /// Verifier Plugin
+    ///
+    oe_result_t oe_verify_evidence(
+    const oe_uuid_t* format_id,
+    const uint8_t* evidence_buffer,
+    size_t evidence_buffer_size,
+    const uint8_t* endorsements_buffer,
+    size_t endorsements_buffer_size,
+    const oe_policy_t* policies,
+    size_t policies_size,
+    oe_claim_t** claims,
+    size_t* claims_length)
+    {
+        ...
+        //extract the customer_claims_buffer and verify it
+        custom_claims_buffer = _find_custom_time_claim_buffer(evidence_buffer,
+                                                              evidence_buffer_size);
+        custom_claims_buffer_size = _find_init_time_claim_buffer_size(evidence_buffer,
+                                                              evidence_buffer_size);
+        report_data = _find_report_data(evidence_buffer, evidence_buffer_size);
+        if (SHA256(custom_claims_buffer, custom_claims_buffer_size) != report_data)
+            return error;
+        // has to output the custom claim buffer as a whole, as the buffer internal structure is opaque to the Plugin.
+        oe_add_claim(claims, custom_claims_buffer, custom_claims_buffer_size, OE_SGX_CUSTOM_CLAIM_BUFFER)
+        ...
+    }
+
+
+    /// Verifier
+    ///
+
+    // Verify evidence
+    oe_verify_evidence(...,
+            evidence_buffer,
+            evidence_buffer_size,
+            ...,
+            &claims,
+            &claims_length);
+    // Check claims provided by Verifier Plugin against policy,
+    ...
+    // Verifier has to validate init-time claims buffer within the OE_SGX_CUSTOM_CLAIM_BUFFER claim
+    config_id = _find_claim(claims, claims_length, OE_SGX_CONFIG_ID);
+    data_buffer = _find_claim(claims, claims_length, OE_SGX_CUSTOM_CLAIM_BUFFER);
+    // check init-time claim buffer within the data_buffer
+    p_init_time_custom_claims_buffer = data_buffer->data + data_buffer->runtime_claims_buffer_size;
+    if (p_inittime_claim_buffer->integrity_algorithm_id ! = 0 )
+            return error;
+    if (SHA256(p_inittime_claim_buffer->buffer, data_buffer->inittime_claims_buffer_size
+               - sizeof(p_inittime_claim_buffer->integrity_algorithm_id)) != config_id)
+            return error;
+    ...
+    // Check p_inittime_claim_buffer->buffer against policy.
+    ...
+```
 
 Authors
 -------
