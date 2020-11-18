@@ -118,9 +118,9 @@ waiting_for_connection_request:
     if (SSL_accept(ssl_session) <= 0)
     {
         OE_TRACE_ERROR(TLS_SERVER " SSL handshake failed \n");
-        ret = -0x3000; // To match with SSL handshake error for mbedtls so that
-                       // same error return code is compared for failure test
-                       // cases
+        // To match with SSL handshake error for mbedtls so that
+        // same error return code is compared for failure test
+        // cases
         goto exit;
     }
 
