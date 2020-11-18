@@ -34,7 +34,7 @@ typedef int (*ioctl_proc)(
     long arg3,
     long arg4);
 
-OE_DEFINE_SYSCALL3(SYS_accept)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_accept)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -44,7 +44,7 @@ OE_DEFINE_SYSCALL3(SYS_accept)
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL2(SYS_access)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_access)
 {
     oe_errno = 0;
     const char* pathname = (const char*)arg1;
@@ -54,7 +54,7 @@ OE_DEFINE_SYSCALL2(SYS_access)
 }
 #endif
 
-OE_DEFINE_SYSCALL3(SYS_bind)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_bind)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -63,7 +63,7 @@ OE_DEFINE_SYSCALL3(SYS_bind)
     return oe_bind(sockfd, addr, addrlen);
 }
 
-OE_DEFINE_SYSCALL1(SYS_chdir)
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_chdir)
 {
     oe_errno = 0;
     char* path = (char*)arg1;
@@ -71,7 +71,7 @@ OE_DEFINE_SYSCALL1(SYS_chdir)
     return oe_chdir(path);
 }
 
-OE_DEFINE_SYSCALL1(SYS_close)
+OE_WEAK OE_DEFINE_SYSCALL1_M(SYS_close)
 {
     oe_errno = 0;
     int fd = (int)arg1;
@@ -79,7 +79,7 @@ OE_DEFINE_SYSCALL1(SYS_close)
     return oe_close(fd);
 }
 
-OE_DEFINE_SYSCALL3(SYS_connect)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_connect)
 {
     oe_errno = 0;
     int sd = (int)arg1;
@@ -89,7 +89,7 @@ OE_DEFINE_SYSCALL3(SYS_connect)
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL2(SYS_creat)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_creat)
 {
     oe_errno = 0;
     long ret = -1;
@@ -111,7 +111,7 @@ OE_DEFINE_SYSCALL2(SYS_creat)
 }
 #endif
 
-OE_DEFINE_SYSCALL1(SYS_dup)
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_dup)
 {
     oe_errno = 0;
     int fd = (int)arg1;
@@ -120,7 +120,7 @@ OE_DEFINE_SYSCALL1(SYS_dup)
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL2(SYS_dup2)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_dup2)
 {
     oe_errno = 0;
     int oldfd = (int)arg1;
@@ -130,7 +130,7 @@ OE_DEFINE_SYSCALL2(SYS_dup2)
 }
 #endif
 
-OE_DEFINE_SYSCALL3(SYS_dup3)
+OE_WEAK OE_DEFINE_SYSCALL3(SYS_dup3)
 {
     oe_errno = 0;
     long ret = -1;
@@ -150,7 +150,7 @@ done:
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL1(SYS_epoll_create)
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_epoll_create)
 {
     oe_errno = 0;
     int size = (int)arg1;
@@ -158,14 +158,14 @@ OE_DEFINE_SYSCALL1(SYS_epoll_create)
 }
 #endif
 
-OE_DEFINE_SYSCALL1(SYS_epoll_create1)
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_epoll_create1)
 {
     oe_errno = 0;
     int flags = (int)arg1;
     return oe_epoll_create1(flags);
 }
 
-OE_DEFINE_SYSCALL4(SYS_epoll_ctl)
+OE_WEAK OE_DEFINE_SYSCALL4(SYS_epoll_ctl)
 {
     oe_errno = 0;
     int epfd = (int)arg1;
@@ -175,7 +175,7 @@ OE_DEFINE_SYSCALL4(SYS_epoll_ctl)
     return oe_epoll_ctl(epfd, op, fd, event);
 }
 
-OE_DEFINE_SYSCALL5(SYS_epoll_pwait)
+OE_WEAK OE_DEFINE_SYSCALL5_M(SYS_epoll_pwait)
 {
     oe_errno = 0;
     int epfd = (int)arg1;
@@ -187,7 +187,7 @@ OE_DEFINE_SYSCALL5(SYS_epoll_pwait)
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL4(SYS_epoll_wait)
+OE_WEAK OE_DEFINE_SYSCALL4_M(SYS_epoll_wait)
 {
     oe_errno = 0;
     int epfd = (int)arg1;
@@ -198,7 +198,7 @@ OE_DEFINE_SYSCALL4(SYS_epoll_wait)
 }
 #endif
 
-OE_DEFINE_SYSCALL1(SYS_exit)
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_exit)
 {
     oe_errno = 0;
     int status = (int)arg1;
@@ -209,13 +209,14 @@ OE_DEFINE_SYSCALL1(SYS_exit)
     return -1;
 }
 
-OE_DEFINE_SYSCALL0(SYS_exit_group)
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_exit_group)
 {
+    OE_UNUSED(arg1);
     oe_errno = 0;
     return 0;
 }
 
-OE_DEFINE_SYSCALL4(SYS_faccessat)
+OE_WEAK OE_DEFINE_SYSCALL4(SYS_faccessat)
 {
     oe_errno = 0;
     long ret = -1;
@@ -241,16 +242,22 @@ done:
     return ret;
 }
 
-OE_DEFINE_SYSCALL3(SYS_fcntl)
+OE_WEAK OE_DEFINE_SYSCALL2_M(SYS_fcntl)
 {
+    oe_va_list ap;
+    oe_va_start(ap, arg2);
+    long arg3 = oe_va_arg(ap, long);
+    oe_va_end(ap);
+
     oe_errno = 0;
     int fd = (int)arg1;
     int cmd = (int)arg2;
     uint64_t arg = (uint64_t)arg3;
+
     return oe_fcntl(fd, cmd, arg);
 }
 
-OE_DEFINE_SYSCALL1(SYS_fdatasync)
+OE_WEAK OE_DEFINE_SYSCALL1_M(SYS_fdatasync)
 {
     oe_errno = 0;
     const int fd = (int)arg1;
@@ -258,7 +265,7 @@ OE_DEFINE_SYSCALL1(SYS_fdatasync)
     return oe_fdatasync(fd);
 }
 
-OE_DEFINE_SYSCALL2(SYS_flock)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_flock)
 {
     oe_errno = 0;
     int fd = (int)arg1;
@@ -267,7 +274,7 @@ OE_DEFINE_SYSCALL2(SYS_flock)
     return oe_flock(fd, operation);
 }
 
-OE_DEFINE_SYSCALL2(SYS_fstat)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_fstat)
 {
     oe_errno = 0;
     const int fd = (int)arg1;
@@ -275,7 +282,33 @@ OE_DEFINE_SYSCALL2(SYS_fstat)
     return oe_fstat(fd, buf);
 }
 
-OE_DEFINE_SYSCALL1(SYS_fsync)
+OE_WEAK OE_DEFINE_SYSCALL4(SYS_fstatat)
+{
+    oe_errno = 0;
+    long ret = -1;
+    int dirfd = (int)arg1;
+    const char* pathname = (const char*)arg2;
+    struct oe_stat_t* stat = (struct oe_stat_t*)arg3;
+    int flags = (int)arg4;
+
+    if (dirfd != OE_AT_FDCWD)
+    {
+        oe_errno = OE_EBADF;
+        goto done;
+    }
+
+    if (flags != 0)
+    {
+        oe_errno = OE_EINVAL;
+        goto done;
+    }
+
+    ret = oe_stat(pathname, stat);
+done:
+    return ret;
+}
+
+OE_WEAK OE_DEFINE_SYSCALL1_M(SYS_fsync)
 {
     oe_errno = 0;
     const int fd = (int)arg1;
@@ -283,7 +316,15 @@ OE_DEFINE_SYSCALL1(SYS_fsync)
     return oe_fsync(fd);
 }
 
-OE_DEFINE_SYSCALL2(SYS_getcwd)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_futex)
+{
+    OE_UNUSED(arg1);
+    OE_UNUSED(arg2);
+    OE_UNUSED(arg3);
+    return -1;
+}
+
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_getcwd)
 {
     oe_errno = 0;
     long ret = -1;
@@ -302,7 +343,7 @@ OE_DEFINE_SYSCALL2(SYS_getcwd)
     return ret;
 }
 
-OE_DEFINE_SYSCALL3(SYS_getdents64)
+OE_WEAK OE_DEFINE_SYSCALL3(SYS_getdents)
 {
     oe_errno = 0;
     unsigned int fd = (unsigned int)arg1;
@@ -311,19 +352,28 @@ OE_DEFINE_SYSCALL3(SYS_getdents64)
     return oe_getdents64(fd, ent, count);
 }
 
-OE_DEFINE_SYSCALL0(SYS_getegid)
+OE_WEAK OE_DEFINE_SYSCALL3(SYS_getdents64)
+{
+    oe_errno = 0;
+    unsigned int fd = (unsigned int)arg1;
+    struct oe_dirent* ent = (struct oe_dirent*)arg2;
+    unsigned int count = (unsigned int)arg3;
+    return oe_getdents64(fd, ent, count);
+}
+
+OE_WEAK OE_DEFINE_SYSCALL0(SYS_getegid)
 {
     oe_errno = 0;
     return (long)oe_getegid();
 }
 
-OE_DEFINE_SYSCALL0(SYS_geteuid)
+OE_WEAK OE_DEFINE_SYSCALL0(SYS_geteuid)
 {
     oe_errno = 0;
     return (long)oe_geteuid();
 }
 
-OE_DEFINE_SYSCALL2(SYS_getgroups)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_getgroups)
 {
     oe_errno = 0;
     int size = (int)arg1;
@@ -331,7 +381,7 @@ OE_DEFINE_SYSCALL2(SYS_getgroups)
     return (long)oe_getgroups(size, list);
 }
 
-OE_DEFINE_SYSCALL3(SYS_getpeername)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_getpeername)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -340,7 +390,7 @@ OE_DEFINE_SYSCALL3(SYS_getpeername)
     return oe_getpeername(sockfd, (struct oe_sockaddr*)addr, addrlen);
 }
 
-OE_DEFINE_SYSCALL1(SYS_getpgid)
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_getpgid)
 {
     oe_errno = 0;
     int pid = (int)arg1;
@@ -348,32 +398,32 @@ OE_DEFINE_SYSCALL1(SYS_getpgid)
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL0(SYS_getpgrp)
+OE_WEAK OE_DEFINE_SYSCALL0(SYS_getpgrp)
 {
     oe_errno = 0;
     return (long)oe_getpgrp();
 }
 #endif
 
-OE_DEFINE_SYSCALL0(SYS_getpid)
+OE_WEAK OE_DEFINE_SYSCALL0(SYS_getpid)
 {
     oe_errno = 0;
     return (long)oe_getpid();
 }
 
-OE_DEFINE_SYSCALL0(SYS_getgid)
+OE_WEAK OE_DEFINE_SYSCALL0(SYS_getgid)
 {
     oe_errno = 0;
     return (long)oe_getgid();
 }
 
-OE_DEFINE_SYSCALL0(SYS_getppid)
+OE_WEAK OE_DEFINE_SYSCALL0(SYS_getppid)
 {
     oe_errno = 0;
     return (long)oe_getppid();
 }
 
-OE_DEFINE_SYSCALL3(SYS_getsockname)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_getsockname)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -382,7 +432,7 @@ OE_DEFINE_SYSCALL3(SYS_getsockname)
     return oe_getsockname(sockfd, (struct oe_sockaddr*)addr, addrlen);
 }
 
-OE_DEFINE_SYSCALL5(SYS_getsockopt)
+OE_WEAK OE_DEFINE_SYSCALL5_M(SYS_getsockopt)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -393,14 +443,21 @@ OE_DEFINE_SYSCALL5(SYS_getsockopt)
     return oe_getsockopt(sockfd, level, optname, optval, optlen);
 }
 
-OE_DEFINE_SYSCALL0(SYS_getuid)
+OE_WEAK OE_DEFINE_SYSCALL0(SYS_getuid)
 {
     oe_errno = 0;
     return (long)oe_getuid();
 }
 
-OE_DEFINE_SYSCALL6(SYS_ioctl)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_ioctl)
 {
+    oe_va_list ap;
+    oe_va_start(ap, arg3);
+    long arg4 = oe_va_arg(ap, long);
+    long arg5 = oe_va_arg(ap, long);
+    long arg6 = oe_va_arg(ap, long);
+    oe_va_end(ap);
+
     oe_errno = 0;
     int fd = (int)arg1;
     unsigned long request = (unsigned long)arg2;
@@ -413,7 +470,7 @@ OE_DEFINE_SYSCALL6(SYS_ioctl)
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL2(SYS_link)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_link)
 {
     oe_errno = 0;
     const char* oldpath = (const char*)arg1;
@@ -422,7 +479,7 @@ OE_DEFINE_SYSCALL2(SYS_link)
 }
 #endif
 
-OE_DEFINE_SYSCALL5(SYS_linkat)
+OE_WEAK OE_DEFINE_SYSCALL5(SYS_linkat)
 {
     oe_errno = 0;
     long ret = -1;
@@ -455,7 +512,7 @@ done:
     return ret;
 }
 
-OE_DEFINE_SYSCALL2(SYS_listen)
+OE_WEAK OE_DEFINE_SYSCALL2_M(SYS_listen)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -463,7 +520,7 @@ OE_DEFINE_SYSCALL2(SYS_listen)
     return oe_listen(sockfd, backlog);
 }
 
-OE_DEFINE_SYSCALL3(SYS_lseek)
+OE_WEAK OE_WEAK OE_DEFINE_SYSCALL3(SYS_lseek)
 {
     oe_errno = 0;
     int fd = (int)arg1;
@@ -473,7 +530,7 @@ OE_DEFINE_SYSCALL3(SYS_lseek)
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL2(SYS_mkdir)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_mkdir)
 {
     oe_errno = 0;
     const char* pathname = (const char*)arg1;
@@ -483,7 +540,7 @@ OE_DEFINE_SYSCALL2(SYS_mkdir)
 }
 #endif
 
-OE_DEFINE_SYSCALL3(SYS_mkdirat)
+OE_WEAK OE_DEFINE_SYSCALL3(SYS_mkdirat)
 {
     oe_errno = 0;
     long ret = -1;
@@ -502,7 +559,7 @@ done:
     return ret;
 }
 
-OE_DEFINE_SYSCALL5(SYS_mount)
+OE_WEAK OE_DEFINE_SYSCALL5(SYS_mount)
 {
     oe_errno = 0;
     const char* source = (const char*)arg1;
@@ -514,7 +571,7 @@ OE_DEFINE_SYSCALL5(SYS_mount)
     return oe_mount(source, target, fstype, flags, data);
 }
 
-OE_DEFINE_SYSCALL2(SYS_nanosleep)
+OE_WEAK OE_DEFINE_SYSCALL2_M(SYS_nanosleep)
 {
     oe_errno = 0;
     struct oe_timespec* req = (struct oe_timespec*)arg1;
@@ -522,7 +579,7 @@ OE_DEFINE_SYSCALL2(SYS_nanosleep)
     return (long)oe_nanosleep(req, rem);
 }
 
-OE_DEFINE_SYSCALL4(SYS_newfstatat)
+OE_WEAK OE_DEFINE_SYSCALL4(SYS_newfstatat)
 {
     oe_errno = 0;
     long ret = -1;
@@ -549,8 +606,13 @@ done:
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL3(SYS_open)
+OE_WEAK OE_DEFINE_SYSCALL2_M(SYS_open)
 {
+    oe_va_list ap;
+    oe_va_start(ap, arg2);
+    long arg3 = oe_va_arg(ap, long);
+    oe_va_end(ap);
+
     oe_errno = 0;
     long ret = -1;
 
@@ -569,8 +631,14 @@ done:
 }
 #endif
 
-OE_DEFINE_SYSCALL4(SYS_openat)
+OE_WEAK OE_DEFINE_SYSCALL2_M(SYS_openat)
 {
+    oe_va_list ap;
+    oe_va_start(ap, arg2);
+    long arg3 = oe_va_arg(ap, long);
+    long arg4 = oe_va_arg(ap, long);
+    oe_va_end(ap);
+
     oe_errno = 0;
     long ret = -1;
     int dirfd = (int)arg1;
@@ -595,7 +663,7 @@ done:
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL3(SYS_poll)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_poll)
 {
     oe_errno = 0;
     struct oe_pollfd* fds = (struct oe_pollfd*)arg1;
@@ -605,7 +673,7 @@ OE_DEFINE_SYSCALL3(SYS_poll)
 }
 #endif
 
-OE_DEFINE_SYSCALL4(SYS_ppoll)
+OE_WEAK OE_DEFINE_SYSCALL4_M(SYS_ppoll)
 {
     oe_errno = 0;
     long ret = -1;
@@ -655,7 +723,7 @@ done:
     return ret;
 }
 
-OE_DEFINE_SYSCALL4(SYS_pread64)
+OE_WEAK OE_DEFINE_SYSCALL4_M(SYS_pread)
 {
     oe_errno = 0;
     const int fd = (int)arg1;
@@ -666,7 +734,18 @@ OE_DEFINE_SYSCALL4(SYS_pread64)
     return oe_pread(fd, buf, count, offset);
 }
 
-OE_DEFINE_SYSCALL5(SYS_pselect6)
+OE_WEAK OE_DEFINE_SYSCALL4(SYS_pread64)
+{
+    oe_errno = 0;
+    const int fd = (int)arg1;
+    void* const buffer = (void*)arg2;
+    const size_t count = (size_t)arg3;
+    const oe_off_t offset = (oe_off_t)arg4;
+
+    return oe_pread(fd, buffer, count, offset);
+}
+
+OE_WEAK OE_DEFINE_SYSCALL5_M(SYS_pselect6)
 {
     oe_errno = 0;
     int nfds = (int)arg1;
@@ -687,7 +766,18 @@ OE_DEFINE_SYSCALL5(SYS_pselect6)
     return oe_select(nfds, readfds, writefds, exceptfds, tv);
 }
 
-OE_DEFINE_SYSCALL4(SYS_pwrite64)
+OE_WEAK OE_DEFINE_SYSCALL4_M(SYS_pwrite)
+{
+    oe_errno = 0;
+    const int fd = (int)arg1;
+    const void* const buffer = (void*)arg2;
+    const size_t count = (size_t)arg3;
+    const oe_off_t offset = (oe_off_t)arg4;
+
+    return oe_pwrite(fd, buffer, count, offset);
+}
+
+OE_WEAK OE_DEFINE_SYSCALL4(SYS_pwrite64)
 {
     oe_errno = 0;
     const int fd = (int)arg1;
@@ -698,7 +788,7 @@ OE_DEFINE_SYSCALL4(SYS_pwrite64)
     return oe_pwrite(fd, buf, count, offset);
 }
 
-OE_DEFINE_SYSCALL3(SYS_read)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_read)
 {
     oe_errno = 0;
     int fd = (int)arg1;
@@ -708,7 +798,7 @@ OE_DEFINE_SYSCALL3(SYS_read)
     return oe_read(fd, buf, count);
 }
 
-OE_DEFINE_SYSCALL3(SYS_readv)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_readv)
 {
     oe_errno = 0;
     int fd = (int)arg1;
@@ -718,7 +808,7 @@ OE_DEFINE_SYSCALL3(SYS_readv)
     return oe_readv(fd, iov, iovcnt);
 }
 
-OE_DEFINE_SYSCALL6(SYS_recvfrom)
+OE_WEAK OE_DEFINE_SYSCALL6(SYS_recvfrom)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -731,7 +821,7 @@ OE_DEFINE_SYSCALL6(SYS_recvfrom)
     return oe_recvfrom(sockfd, buf, len, flags, dest_add, addrlen);
 }
 
-OE_DEFINE_SYSCALL3(SYS_recvmsg)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_recvmsg)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -742,7 +832,7 @@ OE_DEFINE_SYSCALL3(SYS_recvmsg)
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL2(SYS_rename)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_rename)
 {
     oe_errno = 0;
     const char* oldpath = (const char*)arg1;
@@ -752,8 +842,13 @@ OE_DEFINE_SYSCALL2(SYS_rename)
 }
 #endif
 
-OE_DEFINE_SYSCALL5(SYS_renameat)
+OE_WEAK OE_DEFINE_SYSCALL4_M(SYS_renameat)
 {
+    oe_va_list ap;
+    oe_va_start(ap, arg4);
+    long arg5 = oe_va_arg(ap, long);
+    oe_va_end(ap);
+
     oe_errno = 0;
     long ret = -1;
     int olddirfd = (int)arg1;
@@ -786,7 +881,7 @@ done:
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL1(SYS_rmdir)
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_rmdir)
 {
     oe_errno = 0;
     const char* pathname = (const char*)arg1;
@@ -795,7 +890,7 @@ OE_DEFINE_SYSCALL1(SYS_rmdir)
 #endif
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL5(SYS_select)
+OE_WEAK OE_DEFINE_SYSCALL5_M(SYS_select)
 {
     oe_errno = 0;
     int nfds = (int)arg1;
@@ -807,7 +902,7 @@ OE_DEFINE_SYSCALL5(SYS_select)
 }
 #endif
 
-OE_DEFINE_SYSCALL6(SYS_sendto)
+OE_WEAK OE_DEFINE_SYSCALL6(SYS_sendto)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -820,7 +915,7 @@ OE_DEFINE_SYSCALL6(SYS_sendto)
     return oe_sendto(sockfd, buf, len, flags, dest_add, addrlen);
 }
 
-OE_DEFINE_SYSCALL3(SYS_sendmsg)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_sendmsg)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -830,7 +925,7 @@ OE_DEFINE_SYSCALL3(SYS_sendmsg)
     return oe_sendmsg(sockfd, (struct oe_msghdr*)buf, flags);
 }
 
-OE_DEFINE_SYSCALL5(SYS_setsockopt)
+OE_WEAK OE_DEFINE_SYSCALL5_M(SYS_setsockopt)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -841,7 +936,7 @@ OE_DEFINE_SYSCALL5(SYS_setsockopt)
     return oe_setsockopt(sockfd, level, optname, optval, optlen);
 }
 
-OE_DEFINE_SYSCALL2(SYS_shutdown)
+OE_WEAK OE_DEFINE_SYSCALL2_M(SYS_shutdown)
 {
     oe_errno = 0;
     int sockfd = (int)arg1;
@@ -849,7 +944,7 @@ OE_DEFINE_SYSCALL2(SYS_shutdown)
     return oe_shutdown(sockfd, how);
 }
 
-OE_DEFINE_SYSCALL3(SYS_socket)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_socket)
 {
     oe_errno = 0;
     int domain = (int)arg1;
@@ -858,7 +953,7 @@ OE_DEFINE_SYSCALL3(SYS_socket)
     return oe_socket(domain, type, protocol);
 }
 
-OE_DEFINE_SYSCALL4(SYS_socketpair)
+OE_WEAK OE_DEFINE_SYSCALL4_M(SYS_socketpair)
 {
     oe_errno = 0;
     int domain = (int)arg1;
@@ -870,7 +965,7 @@ OE_DEFINE_SYSCALL4(SYS_socketpair)
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL2(SYS_stat)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_stat)
 {
     oe_errno = 0;
     const char* pathname = (const char*)arg1;
@@ -879,7 +974,7 @@ OE_DEFINE_SYSCALL2(SYS_stat)
 }
 #endif
 
-OE_DEFINE_SYSCALL2(SYS_truncate)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_truncate)
 {
     oe_errno = 0;
     const char* path = (const char*)arg1;
@@ -888,7 +983,7 @@ OE_DEFINE_SYSCALL2(SYS_truncate)
     return oe_truncate(path, length);
 }
 
-OE_DEFINE_SYSCALL3(SYS_write)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_write)
 {
     oe_errno = 0;
     int fd = (int)arg1;
@@ -898,7 +993,7 @@ OE_DEFINE_SYSCALL3(SYS_write)
     return oe_write(fd, buf, count);
 }
 
-OE_DEFINE_SYSCALL3(SYS_writev)
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_writev)
 {
     oe_errno = 0;
     int fd = (int)arg1;
@@ -908,7 +1003,7 @@ OE_DEFINE_SYSCALL3(SYS_writev)
     return oe_writev(fd, iov, iovcnt);
 }
 
-OE_DEFINE_SYSCALL1(SYS_uname)
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_uname)
 {
     oe_errno = 0;
     struct oe_utsname* buf = (struct oe_utsname*)arg1;
@@ -916,7 +1011,7 @@ OE_DEFINE_SYSCALL1(SYS_uname)
 }
 
 #if __x86_64__ || _M_X64
-OE_DEFINE_SYSCALL1(SYS_unlink)
+OE_WEAK OE_DEFINE_SYSCALL1(SYS_unlink)
 {
     oe_errno = 0;
     const char* pathname = (const char*)arg1;
@@ -925,7 +1020,7 @@ OE_DEFINE_SYSCALL1(SYS_unlink)
 }
 #endif
 
-OE_DEFINE_SYSCALL3(SYS_unlinkat)
+OE_WEAK OE_DEFINE_SYSCALL3(SYS_unlinkat)
 {
     oe_errno = 0;
     long ret = -1;
@@ -953,7 +1048,7 @@ done:
     return ret;
 }
 
-OE_DEFINE_SYSCALL2(SYS_umount2)
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_umount2)
 {
     oe_errno = 0;
     const char* target = (const char*)arg1;
@@ -1005,9 +1100,9 @@ static long _syscall(
         OE_SYSCALL_DISPATCH(SYS_epoll_wait, arg1, arg2, arg3, arg4);
 #endif
         OE_SYSCALL_DISPATCH(SYS_exit, arg1);
-        OE_SYSCALL_DISPATCH(SYS_exit_group);
+        OE_SYSCALL_DISPATCH(SYS_exit_group, arg1);
         OE_SYSCALL_DISPATCH(SYS_faccessat, arg1, arg2, arg3, arg4);
-        OE_SYSCALL_DISPATCH(SYS_fcntl, arg1, arg2, arg3);
+        OE_SYSCALL_DISPATCH(SYS_fcntl, arg1, arg2, arg3, arg4);
         OE_SYSCALL_DISPATCH(SYS_fdatasync, arg1);
         OE_SYSCALL_DISPATCH(SYS_flock, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_fstat, arg1, arg2);
@@ -1105,8 +1200,8 @@ long oe_syscall(long number, ...)
     long arg4 = oe_va_arg(ap, long);
     long arg5 = oe_va_arg(ap, long);
     long arg6 = oe_va_arg(ap, long);
-    ret = _syscall(number, arg1, arg2, arg3, arg4, arg5, arg6);
     oe_va_end(ap);
+    ret = _syscall(number, arg1, arg2, arg3, arg4, arg5, arg6);
 
     return ret;
 }

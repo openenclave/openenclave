@@ -7,6 +7,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/syscall/declarations.h>
 #include <openenclave/internal/syscall/hook.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -65,6 +66,114 @@ void test_checker(char* str)
     }
 }
 
+// Tests need these syscall overrides.
+__thread oe_result_t tls_result;
+OE_DEFINE_SYSCALL2_M(SYS_open)
+{
+    oe_va_list ap;
+    oe_va_start(ap, arg2);
+    errno = 0;
+    const int flags = (const int)arg2;
+    long arg3 = oe_va_arg(ap, long);
+    oe_va_end(ap);
+    if (flags == O_RDONLY)
+    {
+        int rval = 0;
+        tls_result =
+            mbed_test_open(&rval, (char*)arg1, (int)arg2, (mode_t)arg3);
+        return rval;
+    }
+    return -1;
+}
+
+OE_DEFINE_SYSCALL3_M(SYS_read)
+{
+    errno = 0;
+    int ret = -1;
+    ssize_t rval = 0;
+    const size_t buffer_len = (size_t)arg3;
+    char* host_buffer = (char*)oe_host_malloc(buffer_len);
+    tls_result = mbed_test_read(&rval, (int)arg1, host_buffer, buffer_len);
+    if (rval > 0)
+    {
+        char* enc_buf = (char*)arg2;
+        memcpy(enc_buf, host_buffer, buffer_len);
+    }
+    ret = (int)rval;
+    oe_host_free(host_buffer);
+    return ret;
+}
+
+OE_DEFINE_SYSCALL3_M(SYS_writev)
+{
+    OE_UNUSED(arg1);
+    errno = 0;
+    int ret = -1;
+    char* str_full;
+    size_t total_buff_len = 0;
+    const struct iovec* iov = (const struct iovec*)arg2;
+    int iovcnt = (int)arg3;
+    // Calculating  buffer length
+    for (int i = 0; i < iovcnt; i++)
+    {
+        total_buff_len += iov[i].iov_len;
+    }
+    // Considering string terminating character
+    total_buff_len += 1;
+    str_full = (char*)calloc(total_buff_len, sizeof(char));
+    for (int i = 0; i < iovcnt; i++)
+    {
+        strncat(str_full, iov[i].iov_base, iov[i].iov_len);
+    }
+    test_checker(str_full);
+    free(str_full);
+    // expecting the runtime implementation of SYS_writev to also be
+    // called.
+    tls_result = OE_UNSUPPORTED;
+    return ret;
+}
+
+OE_DEFINE_SYSCALL1_M(SYS_close)
+{
+    errno = 0;
+    int rval = 0;
+    tls_result = mbed_test_close(&rval, (int)arg1);
+    return rval;
+}
+
+OE_DEFINE_SYSCALL3(SYS_lseek)
+{
+    errno = 0;
+    int rval = 0;
+    tls_result = mbed_test_lseek(&rval, (int)arg1, (int)arg2, (int)arg3);
+    return rval;
+}
+
+static long _syscall_dispatch(
+    long number,
+    long arg1,
+    long arg2,
+    long arg3,
+    long arg4,
+    long arg5,
+    long arg6)
+{
+    OE_UNUSED(arg4);
+    OE_UNUSED(arg5);
+    OE_UNUSED(arg6);
+
+    switch (number)
+    {
+        OE_SYSCALL_DISPATCH(SYS_open, arg1, arg2, arg3);
+        OE_SYSCALL_DISPATCH(SYS_read, arg1, arg2, arg3);
+        OE_SYSCALL_DISPATCH(SYS_writev, arg1, arg2, arg3);
+        OE_SYSCALL_DISPATCH(SYS_close, arg1);
+        OE_SYSCALL_DISPATCH(SYS_lseek, arg1, arg2, arg3);
+        default:
+            return -1;
+    }
+}
+
 static oe_result_t _syscall_hook(
     long number,
     long arg1,
@@ -75,92 +184,19 @@ static oe_result_t _syscall_hook(
     long arg6,
     long* ret)
 {
-    oe_result_t result = OE_UNEXPECTED;
-    OE_UNUSED(arg4);
-    OE_UNUSED(arg5);
-    OE_UNUSED(arg6);
-
+    tls_result = OE_UNEXPECTED;
     if (ret)
         *ret = -1;
 
     if (!ret)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    switch (number)
     {
-        case SYS_open:
-        {
-            const int flags = (const int)arg2;
-            if (flags == O_RDONLY)
-            {
-                int rval = 0;
-                result =
-                    mbed_test_open(&rval, (char*)arg1, (int)arg2, (mode_t)arg3);
-                *ret = rval;
-            }
-            break;
-        }
-        case SYS_read:
-        {
-            ssize_t rval = 0;
-            const size_t buf_len = (size_t)arg3;
-            char* host_buf = (char*)oe_host_malloc(buf_len);
-            result = mbed_test_read(&rval, (int)arg1, host_buf, buf_len);
-            if (rval > 0)
-            {
-                char* enc_buf = (char*)arg2;
-                memcpy(enc_buf, host_buf, buf_len);
-            }
-            *ret = (int)rval;
-            oe_host_free(host_buf);
-            break;
-        }
-        case SYS_writev:
-        {
-            char* str_full;
-            size_t total_buff_len = 0;
-            const struct iovec* iov = (const struct iovec*)arg2;
-            int iovcnt = (int)arg3;
-            // Calculating  buffer length
-            for (int i = 0; i < iovcnt; i++)
-            {
-                total_buff_len += iov[i].iov_len;
-            }
-            // Considering string terminating character
-            total_buff_len += 1;
-            str_full = (char*)calloc(total_buff_len, sizeof(char));
-            for (int i = 0; i < iovcnt; i++)
-            {
-                strncat(str_full, iov[i].iov_base, iov[i].iov_len);
-            }
-            test_checker(str_full);
-            free(str_full);
-            // expecting the runtime implementation of SYS_writev to also be
-            // called.
-            result = OE_UNSUPPORTED;
-            break;
-        }
-        case SYS_close:
-        {
-            int rval = 0;
-            result = mbed_test_close(&rval, (int)arg1);
-            break;
-        }
-        case SYS_lseek:
-        {
-            int rval = 0;
-            result = mbed_test_lseek(&rval, (int)arg1, (int)arg2, (int)arg3);
-            break;
-        }
-        case SYS_readv:
-        default:
-        {
-            OE_RAISE(OE_UNSUPPORTED);
-        }
+        tls_result = OE_INVALID_PARAMETER;
+        goto done;
     }
 
+    *ret = _syscall_dispatch(number, arg1, arg2, arg3, arg4, arg5, arg6);
 done:
-    return result;
+    return tls_result;
 }
 
 int test(
