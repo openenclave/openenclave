@@ -5,7 +5,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>open-enclave-cross</id>
-    <version>OE_CROSS_PLAT_VERSION</version>
+    <version>OE_CROSS_PLATFORM_VERSION</version>
     <authors>Open Enclave SDK Contributors</authors>
     <owners>Open Enclave SDK Contributors</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
