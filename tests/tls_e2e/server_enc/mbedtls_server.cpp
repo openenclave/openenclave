@@ -147,7 +147,7 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     // mbedtls' TLS feature
     if (!oe_module_loaded)
     {
-        if (load_oe_modules() != 0)
+        if (load_oe_modules() != OE_OK)
         {
             OE_TRACE_ERROR(TLS_SERVER "loading required oe modules failed \n");
             goto done;

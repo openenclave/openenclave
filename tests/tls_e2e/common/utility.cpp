@@ -118,9 +118,8 @@ done:
     return result;
 }
 
-int load_oe_modules()
+oe_result_t load_oe_modules()
 {
-    int ret = -1;
     oe_result_t result = OE_FAILURE;
 
     // Explicitly enabling features
@@ -138,7 +137,6 @@ int load_oe_modules()
             oe_result_str(result));
         goto exit;
     }
-    ret = 0;
 exit:
-    return ret;
+    return result;
 }

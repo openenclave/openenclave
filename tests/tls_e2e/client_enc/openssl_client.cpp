@@ -116,7 +116,7 @@ int launch_tls_client(
     g_control_config = *config;
 
     /* Load host resolver and socket interface modules explicitly*/
-    if (load_oe_modules() != 0)
+    if (load_oe_modules() != OE_OK)
     {
         OE_TRACE_ERROR(TLS_CLIENT "loading required oe modules failed \n");
         goto done;
@@ -168,6 +168,12 @@ int launch_tls_client(
 
     if ((error = SSL_connect(ssl_session)) != 1)
     {
+        // SSL_connect returns 0 when handshake failure happens.
+        // https://www.openssl.org/docs/man1.0.2/man3/SSL_connect.html
+        // SSL_connect return value is stored in new variable 'error' instead of
+        // 'ret' unlike other blocks so that handshake failure case return value
+        // is not stored as success in ret variable.
+
         OE_TRACE_ERROR(
             TLS_CLIENT "Error: Could not establish an SSL session ret2=%d "
                        "SSL_get_error()=%d\n",

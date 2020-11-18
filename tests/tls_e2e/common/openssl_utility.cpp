@@ -117,7 +117,12 @@ int cert_verify_callback(int preverify_ok, X509_STORE_CTX* ctx)
         if (err == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT)
         {
             // A self-signed certificate is expected, return 1 to continue the
-            // verification process
+            // verification process. if the generated certificate is a
+            // self-signed one, we are catching that error and sending return
+            // value as 1, which keeps preverify_ok = 1 and further certificate
+            // verification is done in the next call. In total,
+            // cert_verify_callback would be called twice once with preverify_ok
+            // = 0 and second time with preverify_ok=1
             OE_TRACE_INFO(TLS_SERVER "self-signed certificated detected\n");
             ret = 1;
             goto done;
@@ -245,22 +250,25 @@ exit:
     return ret;
 }
 
-int initalize_ssl_context(SSL_CTX*& ctx)
+oe_result_t initalize_ssl_context(SSL_CTX*& ctx)
 {
-    int ret = -1;
+    oe_result_t ret = OE_FAILURE;
     // choose TLSv1.2 by excluding SSLv2, SSLv3 ,TLS 1.0 and TLS 1.1
     SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
     SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv3);
     SSL_CTX_set_options(ctx, SSL_OP_NO_TLSv1);
     SSL_CTX_set_options(ctx, SSL_OP_NO_TLSv1_1);
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, &cert_verify_callback);
-    ret = 0;
+    ret = OE_OK;
     return ret;
 }
 
-int load_ssl_certificates_and_keys(SSL_CTX* ctx, X509*& cert, EVP_PKEY*& pkey)
+oe_result_t load_ssl_certificates_and_keys(
+    SSL_CTX* ctx,
+    X509*& cert,
+    EVP_PKEY*& pkey)
 {
-    int ret = -1;
+    oe_result_t result = OE_FAILURE;
     if (generate_certificate_and_pkey(cert, pkey) != OE_OK)
     {
         OE_TRACE_ERROR(TLS_SERVER "Cannot generate certificate and pkey\n");
@@ -285,7 +293,7 @@ int load_ssl_certificates_and_keys(SSL_CTX* ctx, X509*& cert, EVP_PKEY*& pkey)
                        "Private key does not match the public certificate\n");
         goto exit;
     }
-    ret = 0;
+    result = OE_OK;
 exit:
-    return ret;
+    return result;
 }

@@ -168,7 +168,7 @@ int setup_tls_server(struct tls_control_args* config, char* server_port)
     g_control_config = *config;
 
     /* Load host resolver and socket interface modules explicitly*/
-    if (load_oe_modules() != 0)
+    if (load_oe_modules() != OE_OK)
     {
         OE_TRACE_ERROR(TLS_SERVER "loading required oe modules failed \n");
         goto exit;
