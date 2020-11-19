@@ -14,6 +14,10 @@
 #include <openenclave/internal/utils.h>
 #include "td.h"
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+#include <openenclave/internal/dynlink.h>
+#endif
+
 /*
 **==============================================================================
 **
@@ -193,6 +197,8 @@
  * the loader fetches the symbol's sh-value and stores it in the r_addend field
  * (r_added field is otherwise zero for R_X86_64_TPOFF64).
  */
+
+#if !defined(OE_USE_DSO_DYNAMIC_BINDING)
 OE_EXPORT volatile uint64_t _tdata_rva = 0;
 OE_EXPORT volatile uint64_t _tdata_size = 0;
 OE_EXPORT volatile uint64_t _tdata_align = 1;
@@ -201,6 +207,7 @@ OE_EXPORT volatile uint64_t _tbss_size = 0;
 OE_EXPORT volatile uint64_t _tbss_align = 1;
 
 static volatile bool _thread_locals_relocated = false;
+#endif
 
 // TODO: Make this flexible in case more than one page of thread local storage
 // need to allocate.
@@ -212,14 +219,6 @@ static uint8_t* _get_fs_from_td(oe_sgx_td_t* td)
 {
     uint8_t* fs = (uint8_t*)td;
     return fs;
-}
-
-/**
- * Return aligned size.
- */
-static uint64_t _get_aligned_size(uint64_t size, uint64_t align)
-{
-    return align ? oe_round_up_to_multiple(size, align) : size;
 }
 
 /*
@@ -237,6 +236,15 @@ static void _initialize_allocator(void)
 {
     static oe_once_t _once = OE_ONCE_INITIALIZER;
     oe_once(&_once, _call_oe_allocator_init);
+}
+
+#if !defined(OE_USE_DSO_DYNAMIC_BINDING)
+/**
+ * Return aligned size.
+ */
+static uint64_t _get_aligned_size(uint64_t size, uint64_t align)
+{
+    return align ? oe_round_up_to_multiple(size, align) : size;
 }
 
 /**
@@ -281,6 +289,7 @@ static uint8_t* _get_thread_local_data_start(oe_sgx_td_t* td)
 
     return fs;
 }
+#endif
 
 /**
  * Initialize the thread-local section for a given thread.
@@ -289,16 +298,30 @@ static uint8_t* _get_thread_local_data_start(oe_sgx_td_t* td)
 oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
 {
     oe_result_t result = OE_FAILURE;
-    uint8_t* tls_start = _get_thread_local_data_start(td);
+    uint8_t* fs = _get_fs_from_td(td);
 
     if (td == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+    // NOTE: See __copy_tls()  in musl/musl/src/env/__init_tls.c for a
+    // comparison. The OE version here does not track DTV indices.
+    dso_t* dso_head = (dso_t*)oe_get_dso_head();
+    for (dso_t* p = dso_head; p; p = p->next)
+    {
+        if (p->tls.size)
+        {
+            uint8_t* tls_start = fs - p->tls.offset;
+            if (!oe_is_within_enclave(tls_start, p->tls.size))
+                oe_abort();
+            oe_memcpy_s(tls_start, p->tls.size, p->tls.image, p->tls.len);
+        }
+    }
+#else
+    /* Initialize thread-locals for each module. */
+    uint8_t* tls_start = _get_thread_local_data_start(td);
     if (tls_start)
     {
-        // Fetch the tls data start for the thread.
-        uint8_t* fs = _get_fs_from_td(td);
-
         // Set the self pointer.
         *(void**)fs = fs;
 
@@ -346,7 +369,7 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
             _thread_locals_relocated = true;
         }
     }
-
+#endif
     // To properly initialize the allocator, oe_allocator_init must first be
     // called with the heap start and end addresses. The allocator can
     // initialize itself during this call. Then, every time an enclave
@@ -413,6 +436,33 @@ oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
     }
 
     /* Clear tls section if it exists */
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+    // Invoke the cleanup function even when the thread-local data is
+    // empty (i.e., tls_start is NULL when tdata and tbss are zero).
+    oe_allocator_thread_cleanup();
+
+    // NOTE: This can probably be optimized so that it does not need to be
+    // recalculated on every init and cleanup
+    uint8_t* fs = _get_fs_from_td(td);
+    size_t tls_size = 0;
+    dso_t* dso_head = (dso_t*)oe_get_dso_head();
+    for (dso_t* p = dso_head; p; p = p->next)
+    {
+        if (p->tls.size)
+        {
+            tls_size += p->tls.size;
+        }
+    }
+    if (tls_size)
+    {
+        uint8_t* tls_start = fs - tls_size;
+        if (!oe_is_within_enclave(tls_start, tls_size))
+            oe_abort();
+
+        oe_memset_s(tls_start, tls_size, 0, tls_size);
+    }
+#else
+    /* Find the start of the tls section of all modules combined */
     uint8_t* fs = _get_fs_from_td(td);
     uint8_t* tls_start = _get_thread_local_data_start(td);
     // Invoke the cleanup function even when the thread-local data is empty
@@ -421,5 +471,6 @@ oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
     if (tls_start)
         oe_memset_s(tls_start, (uint64_t)(fs - tls_start), 0, 0);
 
+#endif
     return OE_OK;
 }

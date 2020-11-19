@@ -2,11 +2,18 @@
 // Licensed under the MIT License.
 
 #include "oeinfo.h"
+#include <fcntl.h>
 #include <openenclave/bits/properties.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/raise.h>
+#include <sys/stat.h>
 #include "oe_err.h"
+
+#ifdef __linux__
+#define __USE_GNU
+#include <unistd.h>
+#endif
 
 // Load the SGX enclave properties from an enclave's .oeinfo section.
 oe_result_t oe_read_oeinfo_sgx(
@@ -32,10 +39,7 @@ oe_result_t oe_read_oeinfo_sgx(
     result = OE_OK;
 
 done:
-
-    if (oeimage.elf.elf.magic == ELF_MAGIC)
-        oeimage.unload(&oeimage);
-
+    oe_unload_enclave_image(&oeimage);
     return result;
 }
 
@@ -56,7 +60,11 @@ oe_result_t oe_write_oeinfo_sgx(
 {
     oe_result_t result = OE_FAILURE;
     oe_enclave_image_t oeimage;
-    FILE* os = NULL;
+    int out_fd = 0;
+    oe_sgx_enclave_properties_t* oeinfo = NULL;
+    size_t oeinfo_offset = 0;
+
+    int in_fd = 0;
 
     /* Open ELF file */
     OE_CHECK_ERR(
@@ -73,32 +81,52 @@ oe_result_t oe_write_oeinfo_sgx(
     /* Write new signed executable */
     {
         char* p = _make_signed_lib_name(path);
-
-        if (!p)
-        {
-            oe_err("Bad executable name: %s", path);
-            goto done;
-        }
+        OE_ERR_IF(!p, "Bad executable name: %s", path);
 
 #ifdef _WIN32
-        if (fopen_s(&os, p, "wb") != 0)
+        OE_ERR_IF(
+            !CopyFileEx(path, p, NULL, NULL, NULL, 0),
+            "Failed to copy %s to %s",
+            path,
+            p);
+
+        out_fd = _open(p, _O_WRONLY | _O_BINARY);
+        OE_ERR_IF(out_fd <= 0, "Failed to open: %s", p);
 #else
-        if (!(os = fopen(p, "wb")))
+        {
+            struct stat statbuf;
+            ssize_t l = 0;
+
+            in_fd = open(path, O_RDONLY);
+            OE_ERR_IF(in_fd <= 0, "Failed to open: %s", path);
+
+            OE_ERR_IF(fstat(in_fd, &statbuf), "Failed to stat: %s", path);
+
+            out_fd = open(p, O_WRONLY | O_CREAT, statbuf.st_mode);
+            OE_ERR_IF(out_fd <= 0, "Failed to open: %s", p);
+
+            l = copy_file_range(
+                in_fd, NULL, out_fd, NULL, (size_t)statbuf.st_size, 0);
+            OE_ERR_IF(
+                (l < 0 || l != statbuf.st_size),
+                "Failed to copy %s to %s",
+                path,
+                p);
+        }
 #endif
-        {
-            oe_err("Failed to open: %s", p);
-            goto done;
-        }
 
-        if (fwrite(oeimage.elf.elf.data, 1, oeimage.elf.elf.size, os) !=
-            oeimage.elf.elf.size)
-        {
-            oe_err("Failed to write: %s", p);
-            goto done;
-        }
+        OE_CHECK(oeimage.sgx_get_enclave_properties(
+            &oeimage, &oeinfo, &oeinfo_offset));
 
-        fclose(os);
-        os = NULL;
+        ssize_t l = pwrite(
+            out_fd, (void*)oeinfo, sizeof(*oeinfo), (off_t)oeinfo_offset);
+        OE_ERR_IF(
+            (l < 0 || (size_t)l != sizeof(*oeinfo)),
+            "Failed to write .oeinfo to file %s",
+            p);
+
+        close(out_fd);
+        out_fd = 0;
 
         printf("Created %s\n", p);
 
@@ -108,9 +136,16 @@ oe_result_t oe_write_oeinfo_sgx(
     result = OE_OK;
 
 done:
-
-    if (os)
-        fclose(os);
+    if (in_fd > 0)
+    {
+        close(in_fd);
+        in_fd = 0;
+    }
+    if (out_fd > 0)
+    {
+        close(out_fd);
+        out_fd = 0;
+    }
 
     oeimage.unload(&oeimage);
 

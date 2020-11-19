@@ -296,6 +296,12 @@ if (WITH_EEID AND OE_TRUSTZONE)
   message(FATAL_ERROR "WITH_EEID is not supported on ARM yet.")
 endif ()
 
+# Build option for using SGX enclave loader supporting multiple modules
+option(
+  USE_DSO_DYNAMIC_BINDING
+  "[EXPERIMENTAL] Use the MUSL derived SGX enclave loader that supports dynamic binding."
+  OFF)
+
 # Option to build and expose the libgcov such that enclave applications can use.
 # Note that this option is only effective when CODE_COVERAGE is not set.
 option(BUILD_LIBGCOV "Build the code coverage library" OFF)
@@ -422,15 +428,18 @@ if (WIN32)
           DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
   install(FILES ./scripts/install-windows-prereqs.ps1
           DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
-  install(FILES ./cmake/maybe_build_using_clangw.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-          COMPONENT OEHOSTVERIFY)
-  install(FILES ./cmake/add_dcap_client_target.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-          COMPONENT OEHOSTVERIFY)
-  install(FILES ./cmake/copy_oedebugrt_target.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-          COMPONENT OEHOSTVERIFY)
+  install(
+    FILES ./cmake/maybe_build_using_clangw.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+    COMPONENT OEHOSTVERIFY)
+  install(
+    FILES ./cmake/add_dcap_client_target.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+    COMPONENT OEHOSTVERIFY)
+  install(
+    FILES ./cmake/copy_oedebugrt_target.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+    COMPONENT OEHOSTVERIFY)
 endif ()
 
 # Install necessary files for LVI mitigation.

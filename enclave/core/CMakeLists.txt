@@ -89,6 +89,10 @@ if (OE_SGX)
     sgx/tracee.c
     sgx/xstate.c)
 
+  if (USE_DSO_DYNAMIC_BINDING)
+    list(APPEND PLATFORM_SRC ${PROJECT_SOURCE_DIR}/common/sgx/dynlink.c)
+  endif ()
+
   # Functions in td_basic.c will change the status of td and may trigger
   # stack check fail, thus it is necessary to turn off stack check.
   set_source_files_properties(sgx/td_basic.c PROPERTIES COMPILE_FLAGS
@@ -301,6 +305,10 @@ enclave_compile_definitions(
 
 if (WITH_EEID)
   enclave_compile_definitions(oecore PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+endif ()
+
+if (USE_DSO_DYNAMIC_BINDING)
+  enclave_compile_definitions(oecore PRIVATE OE_USE_DSO_DYNAMIC_BINDING)
 endif ()
 
 # Interface link flags for enclaves.

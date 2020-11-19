@@ -10,6 +10,10 @@
 #include <openenclave/internal/elf.h>
 #include "types.h"
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+#include <openenclave/internal/dynlink.h>
+#endif
+
 OE_EXTERNC_BEGIN
 
 typedef struct _oe_enclave_elf_image oe_enclave_elf_image_t;
@@ -85,9 +89,13 @@ struct _oe_enclave_image
 {
     oe_image_type type;
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+    oe_dso_load_state_t dso_load_state;
+#else
     /* Note: this can be part of a union distinguished by type if
      * other enclave binary formats are supported later */
     oe_enclave_elf_image_t elf;
+#endif
 
     /* Image type specific callbacks to handle enclave loading */
     oe_result_t (
@@ -117,6 +125,11 @@ struct _oe_enclave_image
 
     oe_result_t (
         *get_debug_info)(oe_enclave_image_t* image, oe_enclave_t* enclave);
+
+    oe_result_t (*sgx_get_enclave_properties)(
+        const oe_enclave_image_t* image,
+        oe_sgx_enclave_properties_t** properties,
+        size_t* file_offset);
 };
 
 oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image);

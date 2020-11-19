@@ -20,3 +20,13 @@ void oe_print_err_count();
             goto done;                         \
         }                                      \
     } while (0)
+
+#define OE_ERR_IF(CONDITION, err_fmt, ...)  \
+    do                                      \
+    {                                       \
+        if (CONDITION)                      \
+        {                                   \
+            oe_err(err_fmt, ##__VA_ARGS__); \
+            goto done;                      \
+        }                                   \
+    } while (0)

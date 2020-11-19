@@ -22,15 +22,17 @@ ELF_EXTERNC_BEGIN
 //#define EI_NIDENT 16
 
 /* elf64_ehdr_t.e_ident */
-#define EI_MAG0 0    /* File identification */
-#define EI_MAG1 1    /* File identification */
-#define EI_MAG2 2    /* File identification */
-#define EI_MAG3 3    /* File identification */
-#define EI_CLASS 4   /* File class */
-#define EI_DATA 5    /* Data encoding */
-#define EI_VERSION 6 /* File version */
-#define EI_PAD 7     /* Start of padding bytes */
-#define EI_NIDENT 16 /* Size of e_ident[] */
+#define EI_MAG0 0       /* File identification */
+#define EI_MAG1 1       /* File identification */
+#define EI_MAG2 2       /* File identification */
+#define EI_MAG3 3       /* File identification */
+#define EI_CLASS 4      /* File class */
+#define EI_DATA 5       /* Data encoding */
+#define EI_VERSION 6    /* File version */
+#define EI_OSABI 7      /* Operating system/ABI identification */
+#define EI_ABIVERSION 8 /* ABI version */
+#define EI_PAD 9        /* Start of padding bytes */
+#define EI_NIDENT (16)  /* Size of e_ident[] */
 #define ELFMAG0 0x7f
 #define ELFMAG1 'E'
 #define ELFMAG2 'L'
@@ -89,9 +91,9 @@ ELF_EXTERNC_BEGIN
 #define SHT_SHLIB 10        /* Reserved */
 #define SHT_DYNSYM 11       /* a dynamic loader symbol table */
 #define SHT_LOOS 0x60000000 /* Environment-specific use */
-#define SHT_HIOS 0x6FFFFFFF
+#define SHT_HIOS 0x6fffffff
 #define SHT_LOPROC 0x70000000 /* Processor-specific use */
-#define SHT_HIPROC 0x7FFFFFFF
+#define SHT_HIPROC 0x7fffffff
 
 #define PT_NULL 0          /* Unused entry */
 #define PT_LOAD 1          /* Loadable segment */
@@ -102,26 +104,40 @@ ELF_EXTERNC_BEGIN
 #define PT_PHDR 6          /* Program header table */
 #define PT_TLS 7           /* Thread local storage segment */
 #define PT_LOOS 0x60000000 /* Environment-specific use */
-#define PT_HIOS 0x6FFFFFFF
+#define PT_HIOS 0x6fffffff
 #define PT_LOPROC 0x70000000 /* Processor-specific use */
-#define PT_HIPROC 0x7FFFFFFF
+#define PT_HIPROC 0x7fffffff
 
-#define SHF_WRITE 0x1     /* Section contains writable data */
-#define SHF_ALLOC 0x2     /* Section is allocated in memory image of program */
-#define SHF_EXECINSTR 0x4 /* Section contains executable instructions */
-#define SHF_MASKOS 0x0F000000   /* Environment-specific use */
-#define SHF_MASKPROC 0xF0000000 /* Processor-specific use */
+#define SHF_WRITE (1 << 0) /* Section contains writable data */
+#define SHF_ALLOC (1 << 1) /* Section allocated in memory image of program */
+#define SHF_EXECINSTR (1 << 2)  /* Section contains executable instructions */
+#define SHF_MASKOS 0x0ff00000   /* Environment-specific use */
+#define SHF_MASKPROC 0xf0000000 /* Processor-specific use */
 
-#define PF_X 0x1               /* Execute permission */
-#define PF_W 0x2               /* Write permission */
-#define PF_R 0x4               /* Read permission */
-#define PF_MASKOS 0x00FF0000   /* environment-specific use */
-#define PF_MASKPROC 0xFF000000 /* processor-specific use */
+#define PF_X (1 << 0)          /* Execute permission */
+#define PF_W (1 << 1)          /* Write permission */
+#define PF_R (1 << 2)          /* Read permission */
+#define PF_MASKOS 0x0ff00000   /* environment-specific use */
+#define PF_MASKPROC 0xf0000000 /* processor-specific use */
+
+/* Macros for extracting ST_BIND and ST_TYPE from ST_INFO
+ * Note that we define these in terms of ELF32_ST_* macros for consistency
+ * with the MUSL elf.h so that they can be used together without conflict */
+/* clang-format off */
+#define ELF32_ST_BIND(val)		(((unsigned char) (val)) >> 4)
+#define ELF32_ST_TYPE(val)		((val) & 0xf)
+#define ELF32_ST_INFO(bind, type)	(((bind) << 4) + ((type) & 0xf))
+
+#define ELF64_ST_BIND(val)		ELF32_ST_BIND (val)
+#define ELF64_ST_TYPE(val)		ELF32_ST_TYPE (val)
+#define ELF64_ST_INFO(bind, type)	ELF32_ST_INFO ((bind), (type))
+/* clang-format on */
 
 #define STB_LOCAL 0  /* Not visible outside the object file */
 #define STB_GLOBAL 1 /* Global symbol, visible to all object files */
 #define STB_WEAK 2   /* Global scope, but with lower precedence than globals */
 #define STB_LOOS 10  /* Environment-specific use */
+#define STB_GNU_UNIQUE 10 /* Alias for GNU-specific use binding type */
 #define STB_HIOS 12
 #define STB_LOPROC 13 /* Processor-specific use */
 #define STB_HIPROC 15
@@ -131,21 +147,89 @@ ELF_EXTERNC_BEGIN
 #define STT_FUNC 2    /* Function entry point */
 #define STT_SECTION 3 /* Symbol is associated with a section */
 #define STT_FILE 4    /* Source file associated with the object file */
+#define STT_COMMON 5  /* Tentative/common block symbol */
+#define STT_TLS 6     /* Thread local storage symbol */
 #define STT_LOOS 10   /* Environment-specific use */
 #define STT_HIOS 12
 #define STT_LOPROC 13 /* Processor-specific use */
 #define STT_HIPROC 15
 
+/* elf64_dyn_t.d_tag values */
+#define DT_NULL 0          /* Last entry of the _DYNAMIC array */
+#define DT_NEEDED 1        /* String table offset to name of a needed library */
+#define DT_PLTRELSZ 2      /* Size of PLT relocs */
+#define DT_PLTGOT 3        /* Address associated with PLT/GOT by processor */
+#define DT_HASH 4          /* Address of symbol hash table */
+#define DT_STRTAB 5        /* Address of string table */
+#define DT_SYMTAB 6        /* Address of symbol table */
+#define DT_RELA 7          /* Address of relocation table (explicit addends) */
+#define DT_RELASZ 8        /* Size of DT_RELA relocs */
+#define DT_RELAENT 9       /* Size of a DT_RELA entry */
+#define DT_STRSZ 10        /* Size of string table */
+#define DT_SYMENT 11       /* Size of a symbol table entry */
+#define DT_INIT 12         /* Address of initialization function */
+#define DT_FINI 13         /* Address of termination function */
+#define DT_SONAME 14       /* String table offset to name of a shared object */
+#define DT_RPATH 15        /* String table offset to library search path */
+#define DT_SYMBOLIC 16     /* Indicates symbol search starts in current .so */
+#define DT_REL 17          /* Address of relocation table (implicit addends) */
+#define DT_RELSZ 18        /* Size of DT_REL relocs */
+#define DT_RELENT 19       /* Size of a DT_REL entry */
+#define DT_PLTREL 20       /* Type of reloc (DT_RELA/DT_REL) in PLT */
+#define DT_DEBUG 21        /* Debugger defined, unused by ABI */
+#define DT_TEXTREL 22      /* Indicates relocs might modify RO segment */
+#define DT_JMPREL 23       /* Address of PLT relocs */
+#define DT_BIND_NOW 24     /* Indicates no lazy binding */
+#define DT_INIT_ARRAY 25   /* Address of initialization functions ptr array */
+#define DT_FINI_ARRAY 26   /* Address of termination functions ptr array */
+#define DT_INIT_ARRAYSZ 27 /* Size in bytes of DT_INIT_ARRAY */
+#define DT_FINI_ARRAYSZ 28 /* Size in bytes of DT_FINI_ARRAY */
+#define DT_RUNPATH 29      /* String table offset to library search path */
+#define DT_FLAGS 30        /* Flags specific to object being loaded */
+
+#define DT_ENCODING 32        /* Sentinel value for d_un interpretation */
+#define DT_PREINIT_ARRAY 32   /* Address of pre-init functions ptr array */
+#define DT_PREINIT_ARRAYSZ 33 /* Size in bytes of DT_PREINIT_ARRAY */
+#define DT_SYMTAB_SHNDX 34    /* Address of SHT_SYMTAB_SHNDX section */
+
+#define DT_LOOS 0x6000000d   /* Start of OS-specific reserved range */
+#define DT_HIOS 0x6ffff000   /* End of OS-specific reserved range */
+#define DT_LOPROC 0x70000000 /* Start of processor-specific reserved range */
+#define DT_HIPROC 0x7fffffff /* End of processor-specific reserved range */
+
+#define DT_GNU_HASH 0x6ffffef5 /* GNU compiler generated symbol lookup */
+#define DT_VERSYM 0x6ffffff0   /* GNU versioning entry type */
+
+/* elf64_dyn_t.d_un.d_val values for DT_FLAGS entry */
+#define DF_ORIGIN 0x00000001   /* Object may use $ORIGIN substitution string */
+#define DF_SYMBOLIC 0x00000002 /* Symbol search starts in current .so  */
+#define DF_TEXTREL 0x00000004  /* Relocations might modify RO segment */
+#define DF_BIND_NOW 0x00000008 /* No lazy binding */
+#define DF_STATIC_TLS 0x00000010 /* Object uses static TLS scheme */
+
 /* elf64_rel.r_info */
+#define R_X86_64_NONE 0
 #define R_X86_64_GLOB_DAT 6
+#define R_X86_64_JUMP_SLOT 7
 #define R_X86_64_RELATIVE 8
 
 /* Supported thread-local storage relocations */
 #define R_X86_64_TPOFF64 18 /* Offset in initial TLS block */
 
+/* Other currently untested relocation types in reloc.c */
+#define R_X86_64_64 1
+#define R_X86_64_PC32 2
+#define R_X86_64_COPY 5
+#define R_X86_64_DTPMOD64 16
+#define R_X86_64_DTPOFF64 17
+
+/* Keeping these definitions in sync with MUSL elf.h so that they can both
+ * be used without conflict */
+/* clang-format off */
 #define ELF64_R_SYM(i) ((i) >> 32)
-#define ELF64_R_TYPE(i) ((i)&0xffffffffL)
-#define ELF64_R_INFO(s, t) (((s) << 32) + ((t)&0xffffffffL))
+#define ELF64_R_TYPE(i) ((i) & 0xffffffff)
+#define ELF64_R_INFO(sym,type) ((((Elf64_Xword) (sym)) << 32) + (type))
+/* clang-format on */
 
 typedef uint64_t elf64_addr_t;
 typedef uint64_t elf64_off_t;
@@ -154,6 +238,9 @@ typedef unsigned int elf64_word_t;
 typedef signed int elf64_sword_t;
 typedef uint64_t elf64_xword_t;
 typedef int64_t elf64_sxword_t;
+
+/* The entries in the .hash table always have 32-bits */
+typedef uint32_t elf_symndx_t;
 
 typedef struct
 {

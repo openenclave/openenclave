@@ -783,6 +783,8 @@ oe_result_t oe_sgx_build_enclave(
     size_t image_size;
     size_t tls_page_count;
     uint64_t vaddr = 0;
+    void* oeinfo_data = NULL;
+    uint64_t entry_rva = 0;
     oe_sgx_enclave_properties_t props;
 
     if (!enclave)
@@ -811,25 +813,29 @@ oe_result_t oe_sgx_build_enclave(
     if (oe_load_enclave_image(path, &oeimage) != OE_OK)
         OE_RAISE(OE_FAILURE);
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+    {
+        dso_t* head = oeimage.dso_load_state.head;
+        oeinfo_data = head->map + head->oeinfo_rva;
+        entry_rva = head->entry_rva;
+    }
+#else
+    oeinfo_data = oeimage.elf.image_base + oeimage.elf.oeinfo_rva;
+    entry_rva = oeimage.elf.entry_rva;
+#endif
+
     // If the **properties** parameter is non-null, use those properties.
     // Else use the properties stored in the .oeinfo section.
     if (properties)
     {
         props = *properties;
-
         /* Update image to the properties passed in */
-        memcpy(
-            oeimage.elf.image_base + oeimage.elf.oeinfo_rva,
-            &props,
-            sizeof(props));
+        memcpy(oeinfo_data, &props, sizeof(props));
     }
     else
     {
         /* Copy the properties from the image */
-        memcpy(
-            &props,
-            oeimage.elf.image_base + oeimage.elf.oeinfo_rva,
-            sizeof(props));
+        memcpy(&props, oeinfo_data, sizeof(props));
     }
 
     /* Validate the enclave prop_override structure */
@@ -909,24 +915,18 @@ oe_result_t oe_sgx_build_enclave(
         enclave,
         image_size,
         tls_page_count,
-        oeimage.elf.entry_rva,
+        entry_rva,
         &props,
         &vaddr));
 #endif
 
     /* Add data pages */
     OE_CHECK(_add_data_pages(
-        context,
-        enclave,
-        &props,
-        oeimage.elf.entry_rva,
-        tls_page_count,
-        &vaddr));
+        context, enclave, &props, entry_rva, tls_page_count, &vaddr));
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Add optional EEID pages */
     OE_CHECK(_add_eeid_pages(context, enclave_addr, &vaddr));
-
     /* Resign */
     OE_CHECK(_eeid_resign(context, &props));
 #endif

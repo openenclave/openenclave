@@ -229,7 +229,6 @@ if (OE_SGX)
     sgx/enclavemanager.c
     sgx/exception.c
     sgx/load.c
-    sgx/loadelf.c
     sgx/ocalls/debug.c
     sgx/ocalls/ocalls.c
     sgx/ocalls/thread.c
@@ -244,6 +243,13 @@ if (OE_SGX)
     sgx/sgxtypes.c
     sgx/switchless.c
     sgx/tests.c)
+
+  if (USE_DSO_DYNAMIC_BINDING)
+    list(APPEND PLATFORM_SDK_ONLY_SRC
+         ${PROJECT_SOURCE_DIR}/common/sgx/dynlink.c sgx/dynlink.c sgx/loaddso.c)
+  else ()
+    list(APPEND PLATFORM_SDK_ONLY_SRC sgx/loadelf.c)
+  endif ()
 
   # OS specific as well.
   if (UNIX)
@@ -458,6 +464,11 @@ if (USE_DEBUG_MALLOC)
   target_compile_definitions(oehostverify PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
+if (USE_DSO_DYNAMIC_BINDING)
+  target_compile_definitions(oehost PRIVATE OE_USE_DSO_DYNAMIC_BINDING)
+  target_compile_definitions(oehostverify PRIVATE OE_USE_DSO_DYNAMIC_BINDING)
+endif ()
+
 if (WITH_EEID)
   target_compile_definitions(oehost PRIVATE OE_WITH_EXPERIMENTAL_EEID)
   target_compile_definitions(oehostverify PRIVATE OE_WITH_EXPERIMENTAL_EEID)
@@ -467,6 +478,8 @@ if (UNIX)
   target_compile_options(
     oehost
     PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
+            #TEMP: Allow compiler to check unused functions during porting
+            -Wno-unused-function
     PUBLIC -fstack-protector-strong)
   target_compile_definitions(
     oehost
