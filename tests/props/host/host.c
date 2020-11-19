@@ -71,10 +71,7 @@ static oe_result_t _sgx_load_enclave_properties(
     result = OE_OK;
 
 done:
-
-    if (oeimage.elf.elf.magic == ELF_MAGIC)
-        oe_unload_enclave_image(&oeimage);
-
+    oe_unload_enclave_image(&oeimage);
     return result;
 }
 

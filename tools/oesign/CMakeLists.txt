@@ -45,6 +45,10 @@ install(
   EXPORT openenclave-targets
   DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+if (USE_DSO_DYNAMIC_BINDING)
+  target_compile_definitions(oesign PRIVATE OE_USE_DSO_DYNAMIC_BINDING)
+endif ()
+
 if (WITH_EEID)
   target_compile_definitions(oesign PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()

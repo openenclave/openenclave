@@ -26,7 +26,6 @@
 #include "../memalign.h"
 #include "../strings.h"
 #include "enclave.h"
-#include "openenclave/bits/result.h"
 #include "sgxload.h"
 
 /* Forward declarations */
@@ -1344,6 +1343,25 @@ done:
     return result;
 }
 
+static oe_result_t _sgx_get_enclave_properties(
+    const oe_enclave_image_t* image,
+    oe_sgx_enclave_properties_t** properties,
+    size_t* file_offset)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    if (!image->elf.oeinfo_file_pos)
+        OE_RAISE_MSG(
+            OE_NOT_FOUND,
+            ".oeinfo section has not been loaded for the image",
+            NULL);
+    *properties =
+        (oe_sgx_enclave_properties_t*)((uint8_t*)image->elf.elf.data + image->elf.oeinfo_file_pos);
+    *file_offset = image->elf.oeinfo_file_pos;
+    result = OE_OK;
+done:
+    return result;
+}
+
 static void _sum_needed_images(oe_enclave_elf_image_t* image, size_t* sum)
 {
     *sum += 1;
@@ -1444,6 +1462,7 @@ oe_result_t oe_load_elf_enclave_image(
     image->sgx_patch = _patch;
     image->sgx_load_enclave_properties = _sgx_load_enclave_properties;
     image->sgx_update_enclave_properties = _sgx_update_enclave_properties;
+    image->sgx_get_enclave_properties = _sgx_get_enclave_properties;
     image->unload = _unload_image;
     image->get_debug_info = _get_debug_info;
 

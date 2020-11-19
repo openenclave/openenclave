@@ -8,12 +8,44 @@
 #include <stdio.h>
 #include <string.h>
 
-/* Used by libunwind to iterate program ELF phdrs */
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+#include <openenclave/internal/dynlink.h>
+#endif
 
+/* Used by libunwind to iterate program ELF phdrs */
 int dl_iterate_phdr(
     int (*callback)(struct dl_phdr_info* info, size_t size, void* data),
     void* data)
 {
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+    dso_t* head = (dso_t*)oe_get_dso_head();
+    struct dl_phdr_info info = {0};
+    int ret = 0;
+
+    /* Note that OE does not support dynamic loading and so the
+     * DSO linked list is expected to be constant in the enclave.
+     * Compared to the MUSL implementation, this means that:
+     *   - iteration of the linked list is not guarded by mutex
+     *   - dlpi_adds is always 0 as the count of dynamically added DSOs.
+     */
+    for (dso_t* current = head; current; current = current->next)
+    {
+        info.dlpi_addr = (uintptr_t)current->base;
+        info.dlpi_name = current->name;
+        info.dlpi_phdr = (Elf64_Phdr*)current->phdr;
+        info.dlpi_phnum = current->phnum;
+        info.dlpi_adds = 0;
+        info.dlpi_subs = 0;
+        info.dlpi_tls_modid = current->tls_id;
+        info.dlpi_tls_data = current->tls.image;
+
+        ret = (callback)(&info, sizeof(info), data);
+
+        if (ret != 0)
+            break;
+    }
+    return ret;
+#else
     const Elf64_Ehdr* ehdr = (Elf64_Ehdr*)__oe_get_enclave_elf_header();
 
     const uint8_t ident[] = {0x7f, 'E', 'L', 'F'};
@@ -32,4 +64,5 @@ int dl_iterate_phdr(
     info.dlpi_phnum = ehdr->e_phnum;
 
     return callback(&info, sizeof(info), data);
+#endif
 }

@@ -52,11 +52,17 @@ if (OE_SGX)
     sgx/create.c
     sgx/elf.c
     sgx/load.c
-    sgx/loadelf.c
     sgx/sgxload.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
     ${PROJECT_SOURCE_DIR}/common/sgx/report_helper.c)
+
+  if (USE_DSO_DYNAMIC_BINDING)
+    list(APPEND PLATFORM_HOST_MR_SRC ${PROJECT_SOURCE_DIR}/common/sgx/dynlink.c
+         sgx/dynlink.c sgx/loaddso.c)
+  else ()
+    list(APPEND PLATFORM_HOST_MR_SRC sgx/loadelf.c)
+  endif ()
 
   if (WITH_EEID)
     list(APPEND PLATFORM_HOST_MR_SRC ${PROJECT_SOURCE_DIR}/common/sgx/eeid.c)
@@ -171,6 +177,10 @@ if (USE_DEBUG_MALLOC)
   target_compile_definitions(oehostmr PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
+if (USE_DSO_DYNAMIC_BINDING)
+  target_compile_definitions(oehostmr PRIVATE OE_USE_DSO_DYNAMIC_BINDING)
+endif ()
+
 if (WITH_EEID)
   target_compile_definitions(oehostmr PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()
@@ -179,6 +189,8 @@ if (UNIX)
   target_compile_options(
     oehostmr
     PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
+            #TEMP: Allow compiler to check unused functions during porting
+            -Wno-unused-function
     PUBLIC -fstack-protector-strong)
   target_compile_definitions(
     oehostmr

@@ -883,6 +883,10 @@ if (USE_DEBUG_MALLOC)
   enclave_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
+if (USE_DSO_DYNAMIC_BINDING)
+  enclave_compile_definitions(oelibc PRIVATE OE_USE_DSO_DYNAMIC_BINDING)
+endif ()
+
 if (CODE_COVERAGE)
   # Enable code coverage.
   enclave_compile_options(oelibc PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)

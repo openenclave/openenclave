@@ -126,8 +126,14 @@ OE_EXPORT extern volatile const oe_sgx_enclave_properties_t
  **/
 
 OE_EXPORT volatile uint64_t _enclave_rva;
+
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+OE_EXPORT volatile uint64_t _dso_head_rva;
+OE_EXPORT volatile uint64_t _dso_data_size;
+#else
 OE_EXPORT volatile uint64_t _reloc_rva;
 OE_EXPORT volatile uint64_t _reloc_size;
+#endif
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 oe_eeid_t* oe_eeid = NULL;
@@ -156,6 +162,34 @@ const void* __oe_get_enclave_elf_header(void)
     return __oe_get_enclave_base();
 }
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+/*
+**==============================================================================
+**
+** DSO boundaries:
+**
+**==============================================================================
+*/
+
+void* oe_get_dso_head()
+{
+    const unsigned char* base = __oe_get_enclave_base();
+
+    return (uint8_t*)base + _dso_head_rva;
+}
+
+size_t oe_get_dso_data_size()
+{
+    return _dso_data_size;
+}
+
+void* oe_get_dso_end()
+{
+    return (uint8_t*)oe_get_dso_head() + oe_get_dso_data_size();
+}
+
+#else  /* OE_USE_DSO_DYNAMIC_BINDING not defined */
+
 /*
 **==============================================================================
 **
@@ -180,6 +214,7 @@ size_t __oe_get_reloc_size()
 {
     return _reloc_size;
 }
+#endif /* OE_USE_DSO_DYNAMIC_BINDING */
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
 /*

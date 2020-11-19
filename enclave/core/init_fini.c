@@ -4,6 +4,49 @@
 #include "init_fini.h"
 #include <openenclave/internal/globals.h>
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+#include <openenclave/internal/dynlink.h>
+
+static dso_t* fini_head;
+
+static void do_init_fini(dso_t* p)
+{
+    /* NOTE: OE expects do_init_fini to be invoked only once on enclave
+     * init and elides the locking around the setting of fini_head.
+     * If dynamic loading is permitted in global constructors, then
+     * the locking check would need to be added */
+
+    fini_head = NULL;
+    size_t dyn[DYN_CNT];
+
+    for (; p; p = p->prev)
+    {
+        if (p->constructed)
+            continue;
+        p->constructed = 1;
+        decode_vec(p->dynv, dyn, DYN_CNT);
+        if (dyn[0] & ((1 << DT_FINI) | (1 << DT_FINI_ARRAY)))
+        {
+            p->fini_next = fini_head;
+            fini_head = p;
+        }
+
+        /* MUSL supports legacy init/fini functions which OE
+         * does not, but could be added with: */
+        // if ((dyn[0] & (1 << DT_INIT)) && dyn[DT_INIT])
+        //     fpaddr(p, dyn[DT_INIT])();
+
+        if (dyn[0] & (1 << DT_INIT_ARRAY))
+        {
+            size_t n = dyn[DT_INIT_ARRAYSZ] / sizeof(size_t);
+            size_t* fn = laddr(p, dyn[DT_INIT_ARRAY]);
+            while (n--)
+                ((void (*)(void)) * fn++)();
+        }
+    }
+}
+#endif
+
 /*
 **==============================================================================
 **
@@ -56,8 +99,20 @@
 **==============================================================================
 */
 
+/* TODO: Prototype implementation breaks OP-TEE as it doesn't get to construct
+ * the link_info objects. Need to split this impl by platform */
 void oe_call_init_functions(void)
 {
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+    /* Walk the DSO in reverse order to perform initialization */
+    dso_t* dso_head = (dso_t*)oe_get_dso_head();
+    dso_t* dso_tail = dso_head;
+    for (; dso_tail; dso_tail = dso_tail->next)
+        if (!dso_tail->next)
+            break;
+
+    do_init_fini(dso_tail);
+#else
     const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
 
     /* Call the start functions of each module in order. */
@@ -82,6 +137,7 @@ void oe_call_init_functions(void)
             }
         }
     }
+#endif
 }
 
 /*
@@ -128,8 +184,32 @@ void oe_call_init_functions(void)
 **==============================================================================
 */
 
+/* TODO: Prototype implementation breaks OP-TEE as it doesn't get to construct
+ * the link_info objects. Need to split this impl by platform */
 void oe_call_fini_functions(void)
 {
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+    // NOTE: Equivalent of MUSL __libc_exit_fini()
+    dso_t* p;
+    size_t dyn[DYN_CNT];
+    for (p = fini_head; p; p = p->fini_next)
+    {
+        if (!p->constructed)
+            continue;
+        decode_vec(p->dynv, dyn, DYN_CNT);
+        if (dyn[0] & (1 << DT_FINI_ARRAY))
+        {
+            size_t n = dyn[DT_FINI_ARRAYSZ] / sizeof(size_t);
+            size_t* fn = (size_t*)laddr(p, dyn[DT_FINI_ARRAY]) + n;
+            while (n--)
+                ((void (*)(void)) * --fn)();
+        }
+        /* MUSL supports legacy init/fini functions which OE
+         * does not, but could be added with: */
+        // if ((dyn[0] & (1 << DT_FINI)) && dyn[DT_FINI])
+        //     fpaddr(p, dyn[DT_FINI])();
+    }
+#else
     const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
 
     /* Call the finalization functions of each module in reverse order. */
@@ -154,4 +234,5 @@ void oe_call_fini_functions(void)
             }
         }
     }
+#endif
 }

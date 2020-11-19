@@ -15,6 +15,10 @@
 #include "openenclave/internal/link.h"
 #include "td.h"
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+#include <openenclave/internal/dynlink.h>
+#endif
+
 /*
 **==============================================================================
 **
@@ -229,12 +233,27 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
 {
     oe_result_t result = OE_FAILURE;
     uint8_t* fs = _get_fs_from_td(td);
-    uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_base();
 
     if (td == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+    // NOTE: See __copy_tls()  in musl/musl/src/env/__init_tls.c for a
+    // comparison. The OE version here does not track DTV indices.
+    dso_t* dso_head = (dso_t*)oe_get_dso_head();
+    for (dso_t* p = dso_head; p; p = p->next)
+    {
+        if (p->tls.size)
+        {
+            uint8_t* tls_start = fs - p->tls.offset;
+            if (!oe_is_within_enclave(tls_start, p->tls.size))
+                oe_abort();
+            oe_memcpy_s(tls_start, p->tls.size, p->tls.image, p->tls.len);
+        }
+    }
+#else
     /* Initialize thread-locals for each module. */
+    uint8_t* enclave_base = (uint8_t*)__oe_get_enclave_base();
     int64_t previous_module_tls_start_offset = 0;
     for (size_t i = 0; i < OE_MAX_NUM_MODULES; ++i)
     {
@@ -277,7 +296,7 @@ oe_result_t oe_thread_local_init(oe_sgx_td_t* td)
             previous_module_tls_start_offset = tls_start_offset;
         }
     }
-
+#endif
     // To properly initialize the allocator, oe_allocator_init must first be
     // called with the heap start and end addresses. The allocator can
     // initialize itself during this call. Then, every time an enclave
@@ -343,6 +362,32 @@ oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
         td->num_tls_atexit_functions = 0;
     }
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+    // Invoke the cleanup function even when the thread-local data is
+    // empty (i.e., tls_start is NULL when tdata and tbss are zero).
+    oe_allocator_thread_cleanup();
+
+    // NOTE: This can probably be optimized so that it does not need to be
+    // recalculated on every init and cleanup
+    uint8_t* fs = _get_fs_from_td(td);
+    size_t tls_size = 0;
+    dso_t* dso_head = (dso_t*)oe_get_dso_head();
+    for (dso_t* p = dso_head; p; p = p->next)
+    {
+        if (p->tls.size)
+        {
+            tls_size += p->tls.size;
+        }
+    }
+    if (tls_size)
+    {
+        uint8_t* tls_start = fs - tls_size;
+        if (!oe_is_within_enclave(tls_start, tls_size))
+            oe_abort();
+
+        oe_memset_s(tls_start, tls_size, 0, tls_size);
+    }
+#else
     /* Find the start of the tls section of all modules combined */
     uint8_t* fs = _get_fs_from_td(td);
     int64_t tls_start_offset = 0;
@@ -368,5 +413,6 @@ oe_result_t oe_thread_local_cleanup(oe_sgx_td_t* td)
         oe_memset_s(tls_start, tls_size, 0, tls_size);
     }
 
+#endif
     return OE_OK;
 }

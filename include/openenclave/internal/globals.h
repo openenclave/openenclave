@@ -16,10 +16,17 @@ const void* __oe_get_enclave_base(void);
 size_t __oe_get_enclave_size(void);
 const void* __oe_get_enclave_elf_header(void);
 
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+/* DSO info */
+void* oe_get_dso_head(void);
+size_t oe_get_dso_data_size(void);
+void* oe_get_dso_end(void);
+#else
 /* Reloc */
 const void* __oe_get_reloc_base(void);
 const void* __oe_get_reloc_end(void);
 size_t __oe_get_reloc_size(void);
+#endif
 
 /* Heap */
 const void* __oe_get_heap_base(void);
