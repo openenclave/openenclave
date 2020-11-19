@@ -11,12 +11,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "tls_e2e_u.h"
 
 #include <condition_variable>
 #include <exception>
 #include <mutex>
 #include <thread>
+
+#if defined(_WIN32)
+#include <windows.h>
+#define sleep(x) Sleep(1000 * (x))
+#else
+#include <unistd.h>
+#endif
 
 #define SERVER_PORT "12345"
 #define SERVER_IP "127.0.0.1"
@@ -26,7 +34,11 @@
 #define SKIP_RETURN_CODE 2
 
 // A fatal error occured, eg the chain is too long or the vrfy callback failed
-#define FATAL_TLS_HANDSHAKE_ERROR -0x3000
+#ifdef OE_USE_OPENSSL
+#define FATAL_TLS_HANDSHAKE_ERROR -0x1 // for openssl server handshake error
+#else
+#define FATAL_TLS_HANDSHAKE_ERROR -0x3000 // for mbedtls handshake error
+#endif
 
 typedef struct _tls_thread_context_config
 {
@@ -330,6 +342,16 @@ int run_scenarios_tests()
                 "This is a %s test case. Expect %s errors\n",
                 (unittests_configs[j].negative_test ? "negative" : "positive"),
                 (unittests_configs[j].negative_test ? "" : "no"));
+
+#ifdef OE_USE_OPENSSL
+            if (j == 1)
+                sleep(90);
+                // This delay is introduced intentionally.
+                // After successful OpenSSL client/server communication, sockets
+                // are staying in TIME_WAIT state for a minute.
+                // https://superuser.com/questions/173535/what-are-close-wait-and-time-wait-states
+                // Issue is observed on ubuntu too.
+#endif
 
             ret = run_test_with_config(&test_configs);
             if (ret)
