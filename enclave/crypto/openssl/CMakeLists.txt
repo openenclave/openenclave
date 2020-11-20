@@ -34,6 +34,9 @@ enclave_include_directories(
 
 enclave_link_libraries(oecryptoopenssl PUBLIC openssl)
 
+# Enforce the correct build dependency such that OpenSSL will be built first.
+add_enclave_dependencies(oecryptoopenssl opensslcrypto)
+
 set_enclave_property(TARGET oecryptoopenssl PROPERTY ARCHIVE_OUTPUT_DIRECTORY
                      ${OE_LIBDIR}/openenclave/enclave)
 
