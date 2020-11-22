@@ -23,7 +23,7 @@ add_definitions(-DCLIENT_CERT_VERIFY_CALLBACK)
 
 add_executable(
   tls_client_enc
-  ecalls.cpp client.cpp ../../common/cert_verifier.cpp
+  ecalls.cpp mbedtls_client.cpp ../../common/cert_verifier.cpp
   ../../common/identity_verifier.cpp ../../common/utility.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/tls_client_t.c)
 
