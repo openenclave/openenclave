@@ -13,6 +13,7 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/sgx/plugin.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/utils.h>
 #include "platform_t.h"
 
@@ -125,6 +126,9 @@ oe_result_t sgx_create_report(
     if (report_data != NULL)
         OE_CHECK(oe_memcpy_s(
             &rd, sizeof(sgx_report_data_t), report_data, report_data_size));
+
+    if (oe_sgx_get_td()->simulate)
+        OE_RAISE(OE_UNSUPPORTED);
 
     /* Invoke EREPORT instruction */
     asm volatile("ENCLU"
