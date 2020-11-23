@@ -25,10 +25,13 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E sleep 1
   COMMAND ${CMAKE_COMMAND} -E remove temp.dmp)
 
+add_definitions(-DSERVER_CERT_VERIFY_CALLBACK)
+
 add_executable(
   tls_server_enc
-  ecalls.cpp server.cpp cert_verifier.cpp identity_verifier.cpp
-  ../../common/utility.cpp ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
+  ecalls.cpp server.cpp ../../common/cert_verifier.cpp
+  ../../common/identity_verifier.cpp ../../common/utility.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
 
 if (WIN32)
   maybe_build_using_clangw(tls_server_enc)
@@ -42,8 +45,8 @@ target_include_directories(
           ${CMAKE_BINARY_DIR}/server/enc)
 
 target_link_libraries(
-  tls_server_enc openenclave::oeenclave openenclave::oelibcxx
-  openenclave::oehostsock openenclave::oehostresolver)
+  tls_server_enc openenclave::oeenclave openenclave::oecryptombedtls
+  openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
 
 add_custom_target(tls_server_sign_enc ALL DEPENDS tls_server_enc.signed
                                                   tls_server_enc_mrenclave.h)

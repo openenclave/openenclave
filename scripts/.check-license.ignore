@@ -79,6 +79,7 @@ docs/CODEOWNERS
 LICENSE
 THIRD_PARTY_NOTICES
 VERSION
+OWNERS
 \.check-license\.ignore
 \.clang-format
 \.cspellignore

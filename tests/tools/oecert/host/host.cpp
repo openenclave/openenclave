@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 #include <limits.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
@@ -15,6 +17,8 @@
 
 #define INPUT_PARAM_OPTION_CERT "--cert"
 #define INPUT_PARAM_OPTION_REPORT "--report"
+#define INPUT_PARAM_OPTION_EVIDENCE "--evidence"
+#define INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME "--endorsements"
 #define INPUT_PARAM_OPTION_OUT_FILE "--out"
 
 // Structure to store input parameters
@@ -25,8 +29,10 @@ typedef struct _input_params
     const char* private_key_filename;
     const char* public_key_filename;
     const char* out_filename;
-    bool gen_cert;
-    bool gen_report;
+    const char* endorsements_filename;
+    bool generate_certificate;
+    bool generate_report;
+    bool generate_evidence;
 } input_params_t;
 
 static input_params_t _params;
@@ -71,7 +77,7 @@ done:
     return result;
 }
 
-static oe_result_t _gen_cert(
+static oe_result_t _generate_certificate(
     oe_enclave_t* enclave,
     uint8_t* private_key,
     size_t private_key_size,
@@ -110,11 +116,7 @@ static oe_result_t _gen_cert(
         FILE* file = NULL;
 
         printf("Creating certificate file: %s\n", out_filename);
-#ifdef _WIN32
         fopen_s(&file, out_filename, "wb");
-#else
-        file = fopen(out_filename, "wb");
-#endif
         if (file == NULL)
         {
             printf("Failed to open file: %s\n", out_filename);
@@ -145,7 +147,7 @@ exit:
     return result;
 }
 
-static oe_result_t _gen_report(
+static oe_result_t _generate_report(
     oe_enclave_t* enclave,
     const char* report_filename)
 {
@@ -165,11 +167,7 @@ static oe_result_t _gen_report(
         // Write report to file
         {
             FILE* output = NULL;
-#ifdef _WIN32
             fopen_s(&output, report_filename, "wb");
-#else
-            output = fopen(report_filename, "wb");
-#endif
             if (!output)
             {
                 printf("Failed to open report file %s\n", report_filename);
@@ -213,7 +211,7 @@ static oe_result_t _gen_report(
                 sizeof(collateral_filename),
                 "%s.col",
                 report_filename);
-            printf("Generatting collateral file: %s\n", collateral_filename);
+            printf("Generating collateral file: %s\n", collateral_filename);
 
             result = oe_get_sgx_endorsements(
                 header->report,
@@ -228,11 +226,7 @@ static oe_result_t _gen_report(
             }
 
             FILE* col_fp;
-#ifdef _WIN32
             fopen_s(&col_fp, collateral_filename, "wb");
-#else
-            col_fp = fopen(collateral_filename, "wb");
-#endif
             if (!col_fp)
             {
                 printf(
@@ -262,17 +256,113 @@ exit:
     return result;
 }
 
+static oe_result_t _generate_evidence(
+    oe_enclave_t* enclave,
+    const char* evidence_filename,
+    const char* endorsements_filename)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    size_t evidence_size = 0;
+    uint8_t evidence[65536];
+    size_t endorsements_size = 0;
+    uint8_t endorsements[65536];
+
+    OE_CHECK_MSG(
+        get_plugin_evidence(
+            enclave,
+            &result,
+            evidence,
+            sizeof(evidence),
+            &evidence_size,
+            endorsements,
+            sizeof(endorsements),
+            &endorsements_size),
+        "Failed to create evidence. Error: %s\n",
+        oe_result_str(result));
+
+    printf("get_plugin_evidence succeeded\n");
+    printf("evidence_size = %zu\n", evidence_size);
+
+    // Write evidence to file
+    {
+        FILE* output = NULL;
+        fopen_s(&output, evidence_filename, "wb");
+        if (!output)
+            OE_RAISE_MSG(
+                OE_FAILURE,
+                "Failed to open evidence file %s\n",
+                evidence_filename);
+        fwrite(evidence, evidence_size, 1, output);
+        fclose(output);
+    }
+
+    // Verify evidence
+    {
+        oe_claim_t* claims = NULL;
+        size_t claims_length = 0;
+
+        OE_CHECK(oe_verifier_initialize());
+
+        OE_CHECK_MSG(
+            oe_verify_evidence(
+                NULL,
+                evidence,
+                evidence_size,
+                endorsements,
+                endorsements_size,
+                NULL,
+                0,
+                &claims,
+                &claims_length),
+            "Failed to verify evidence. result=%u (%s)\n",
+            result,
+            oe_result_str(result));
+
+        OE_CHECK(oe_free_claims(claims, claims_length));
+        OE_CHECK(oe_verifier_shutdown());
+    }
+
+    // Write endorsements
+    if (endorsements_filename)
+    {
+        FILE* endorsements_file;
+        fopen_s(&endorsements_file, endorsements_filename, "wb");
+        if (!endorsements_file)
+            OE_RAISE_MSG(
+                OE_FAILURE,
+                "Failed to open endorsements file %s\n",
+                endorsements_filename);
+
+        fwrite(endorsements, endorsements_size, 1, endorsements_file);
+        fclose(endorsements_file);
+        printf("endorsements_size = %zu\n", endorsements_size);
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 static void _display_help(const char* cmd)
 {
     printf("Usage: %s ENCLAVE_PATH Options\n", cmd);
     printf("\tOptions:\n");
     printf(
-        "\t%s PRIVKEY PUBKEY: generate der remote attestation certificate.\n",
+        "\t%s PRIVKEY PUBKEY: generate der remote attestation "
+        "certificate.\n",
         INPUT_PARAM_OPTION_CERT);
     printf(
-        "\t%s : generate binary enclave evidence and endorsements.\n",
+        "\t%s : generate binary enclave report and collateral.\n",
         INPUT_PARAM_OPTION_REPORT);
+    printf(
+        "\t%s : generate binary enclave evidence.\n",
+        INPUT_PARAM_OPTION_EVIDENCE);
     printf("\t%s : output filename.\n", INPUT_PARAM_OPTION_OUT_FILE);
+    printf(
+        "\t%s : file for endorsements (use with %s).\n",
+        INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME,
+        INPUT_PARAM_OPTION_EVIDENCE);
 
     // TODO: Add option to display certs
     // TODO: Add option to create pem version of the certs.
@@ -288,8 +378,9 @@ static int _parse_args(int argc, const char* argv[])
 
     // clear params memory
     memset(&_params, 0, sizeof(_params));
-    _params.gen_report = false;
-    _params.gen_cert = false;
+    _params.generate_report = false;
+    _params.generate_certificate = false;
+    _params.generate_evidence = false;
 
     int i = 1; // current index
     // save
@@ -298,11 +389,7 @@ static int _parse_args(int argc, const char* argv[])
 
     // Verify enclave file is valid
     FILE* fp;
-#ifdef _WIN32
     fopen_s(&fp, _params.enclave_filename, "rb");
-#else
-    fp = fopen(_params.enclave_filename, "rb");
-#endif
     if (!fp)
     {
         printf("Failed to find file: %s\n", _params.enclave_filename);
@@ -317,7 +404,7 @@ static int _parse_args(int argc, const char* argv[])
         {
             if (argc >= (i + 2))
             {
-                _params.gen_cert = true;
+                _params.generate_certificate = true;
                 _params.private_key_filename = argv[i + 1];
                 _params.public_key_filename = argv[i + 2];
 
@@ -336,7 +423,7 @@ static int _parse_args(int argc, const char* argv[])
         {
             if (argc >= i)
             {
-                _params.gen_report = true;
+                _params.generate_report = true;
                 i += 1;
             }
             else
@@ -348,6 +435,40 @@ static int _parse_args(int argc, const char* argv[])
                 return 1;
             }
         }
+        else if (strcmp(INPUT_PARAM_OPTION_EVIDENCE, argv[i]) == 0)
+        {
+            if (argc >= i)
+            {
+                _params.generate_evidence = true;
+                i += 1;
+            }
+            else
+            {
+                printf(
+                    "%s has invalid number of parameters.\n",
+                    INPUT_PARAM_OPTION_EVIDENCE);
+                _display_help(argv[0]);
+                return 1;
+            }
+        }
+        else if (strcmp(INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME, argv[i]) == 0)
+        {
+            if (argc >= i + 1)
+            {
+                i += 1;
+                _params.endorsements_filename = argv[i];
+                i += 1;
+            }
+            else
+            {
+                printf(
+                    "%s has invalid number of parameters.\n",
+                    INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME);
+                _display_help(argv[0]);
+                return 1;
+            }
+        }
+
         else if (strcmp(INPUT_PARAM_OPTION_OUT_FILE, argv[i]) == 0)
         {
             if (argc >= i + 1)
@@ -371,9 +492,11 @@ static int _parse_args(int argc, const char* argv[])
         }
     }
 
-    if (_params.gen_cert && _params.gen_report)
+    if (_params.generate_certificate && _params.generate_report &&
+        _params.generate_evidence)
     {
-        printf("Please specify to generate a certificate or a report.\n");
+        printf("Please specify to generate a certificate, a report, or "
+               "evidence.\n");
         return 1;
     }
 
@@ -383,11 +506,7 @@ static int _parse_args(int argc, const char* argv[])
 static oe_result_t _read_key(const char* filename, uint8_t** data, size_t* size)
 {
     FILE* fp;
-#ifdef _WIN32
     fopen_s(&fp, filename, "rb");
-#else
-    fp = fopen(filename, "rb");
-#endif
     size_t file_size;
     oe_result_t result = OE_FAILURE;
     uint8_t* memory = NULL;
@@ -438,7 +557,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_FAILURE;
 
-    if (_params.gen_cert)
+    if (_params.generate_certificate)
     {
         size_t private_key_size;
         uint8_t* private_key;
@@ -454,7 +573,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
                 _params.public_key_filename, &public_key, &public_key_size) ==
                 OE_OK)
         {
-            result = _gen_cert(
+            result = _generate_certificate(
                 enclave,
                 private_key,
                 private_key_size,
@@ -463,9 +582,14 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
                 _params.out_filename);
         }
     }
-    else if (_params.gen_report)
+    else if (_params.generate_report)
     {
-        result = _gen_report(enclave, _params.out_filename);
+        result = _generate_report(enclave, _params.out_filename);
+    }
+    else if (_params.generate_evidence)
+    {
+        result = _generate_evidence(
+            enclave, _params.out_filename, _params.endorsements_filename);
     }
 
     return result;

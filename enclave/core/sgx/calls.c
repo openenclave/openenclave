@@ -12,6 +12,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/crypto/init.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
@@ -40,11 +41,10 @@
 #include "report.h"
 #include "switchlesscalls.h"
 #include "td.h"
+#include "xstate.h"
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
-
-extern bool oe_disable_debug_malloc_check;
 
 /*
 **==============================================================================
@@ -170,6 +170,13 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
             /* Initialize the CPUID table before calling global constructors. */
             OE_CHECK(oe_initialize_cpuid());
+
+            /* Initialize the xstate settings
+             * Depends on TD and sgx_create_report, so can't happen earlier */
+            OE_CHECK(oe_set_is_xsave_supported());
+
+            /* Initialize the OE crypto library. */
+            oe_crypto_initialize();
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
@@ -410,13 +417,8 @@ static void _handle_ecall(
             /* Cleanup verifiers */
             oe_verifier_shutdown();
 
-#if defined(OE_USE_DEBUG_MALLOC)
-
             /* If memory still allocated, print a trace and return an error */
-            if (!oe_disable_debug_malloc_check && oe_debug_malloc_check() != 0)
-                result = OE_MEMORY_LEAK;
-
-#endif /* defined(OE_USE_DEBUG_MALLOC) */
+            OE_CHECK(oe_check_memory_leaks());
 
             /* Cleanup the allocator */
             oe_allocator_cleanup();
@@ -481,6 +483,17 @@ OE_INLINE void _handle_oret(
     td->oret_func = func;
     td->oret_result = result;
     td->oret_arg = arg;
+
+    /* Restore the FXSTATE and flags */
+    asm volatile("pushq %[rflags] \n\t" // Restore flags.
+                 "popfq \n\t"
+                 "fldcw %[fcw] \n\t"     // Restore x87 control word
+                 "ldmxcsr %[mxcsr] \n\t" // Restore MXCSR
+                 : [mxcsr] "=m"(callsite->mxcsr),
+                   [fcw] "=m"(callsite->fcw),
+                   [rflags] "=m"(callsite->rflags)
+                 :
+                 : "cc");
 
     oe_longjmp(&callsite->jmpbuf, 1);
 }
@@ -645,6 +658,17 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     /* Check for unexpected failures */
     if (!td_initialized(td))
         OE_RAISE_NO_TRACE(OE_FAILURE);
+
+    /* Preserve the FXSTATE and flags */
+    asm volatile("stmxcsr %[mxcsr] \n\t" // Save MXCSR
+                 "fstcw %[fcw] \n\t"     // Save x87 control word
+                 "pushfq \n\t"           // Save flags.
+                 "popq %[rflags] \n\t"
+                 :
+                 : [mxcsr] "m"(callsite->mxcsr),
+                   [fcw] "m"(callsite->fcw),
+                   [rflags] "m"(callsite->rflags)
+                 :);
 
     /* Save call site where execution will resume after OCALL */
     if (oe_setjmp(&callsite->jmpbuf) == 0)

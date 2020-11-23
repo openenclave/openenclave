@@ -24,6 +24,7 @@ OE_EXTERNC_BEGIN
 #define SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
 #define SGX_FLAGS_PROVISION_KEY 0x0000000000000010ULL
 #define SGX_FLAGS_EINITTOKEN_KEY 0x0000000000000020ULL
+#define SGX_FLAGS_KSS 0x0000000000000080ULL
 
 /* Legacy XFRM which includes basic feature bits required by SGX i.e. X87
  * (bit 0) and SSE state (bit 1)
@@ -192,7 +193,10 @@ typedef struct _sgx_sigstruct
     uint32_t miscmask;
 
     /* (908) Reserved. Must be 0. */
-    uint8_t reserved2[20];
+    uint8_t reserved2[4];
+
+    /* (912) ISV assigned Product Family Id, must be 0 for SGX1 devices*/
+    uint8_t isvfamilyid[16];
 
     /* (928) Enclave Attributes that must be set */
     sgx_attributes_t attributes;
@@ -204,7 +208,10 @@ typedef struct _sgx_sigstruct
     uint8_t enclavehash[OE_SHA256_SIZE];
 
     /* (992) Must be 0 */
-    uint8_t reserved3[32];
+    uint8_t reserved3[16];
+
+    /* (1008) ISV assigned extended Product ID, must be 0 for SGX1 devices */
+    uint8_t isvextprodid[16];
 
     /* (1024) ISV assigned Product ID */
     uint16_t isvprodid;
@@ -579,7 +586,10 @@ typedef struct _sgx_report_body
     uint32_t miscselect;
 
     /* (20) Reserved */
-    uint8_t reserved1[28];
+    uint8_t reserved1[12];
+
+    /* (32) Enclave extended product ID */
+    uint8_t isvextprodid[16];
 
     /* (48) Enclave attributes */
     sgx_attributes_t attributes;
@@ -587,14 +597,17 @@ typedef struct _sgx_report_body
     /* (64) Enclave measurement */
     uint8_t mrenclave[OE_SHA256_SIZE];
 
-    /* (96) */
+    /* (96) Reserved */
     uint8_t reserved2[32];
 
     /* (128) The value of the enclave's SIGNER measurement */
     uint8_t mrsigner[OE_SHA256_SIZE];
 
-    /* (160) */
-    uint8_t reserved3[96];
+    /* (160) Reserved */
+    uint8_t reserved3[32];
+
+    /* (192) Enclave Configuration ID*/
+    uint8_t configid[64];
 
     /* (256) Enclave product ID */
     uint16_t isvprodid;
@@ -602,8 +615,14 @@ typedef struct _sgx_report_body
     /* (258) Enclave security version */
     uint16_t isvsvn;
 
-    /* (260) Reserved */
-    uint8_t reserved4[60];
+    /* (260) Enclave Configuration Security Version*/
+    uint16_t configsvn;
+
+    /* (262) Reserved */
+    uint8_t reserved4[42];
+
+    /* (304) Enclave family ID */
+    uint8_t isvfamilyid[16];
 
     /* (320) User report data */
     sgx_report_data_t report_data;
@@ -1028,6 +1047,11 @@ typedef struct _sgx_key
 {
     uint8_t buf[16];
 } sgx_key_t;
+
+/* Enclave MISCSELECT Flags Bit Masks, additional information to an SSA frame */
+/* If set, then the enclave page fault and general protection exception are
+ * reported*/
+#define SGX_MISC_FLAGS_PF_GP_EXIT_INFO 0x0000000000000001ULL
 
 /* Enclave Flags Bit Masks */
 /* If set, then the enclave is initialized */

@@ -26,6 +26,15 @@
 #define OE_SGX_TCS_HEADER_BYTE_SIZE 0x48
 
 //
+// SGX control pages, excluding thread data and local storage:
+// 1 TCS page + 2 SSA pages + 1 guard page
+//
+
+#define OE_SGX_TCS_CONTROL_PAGES 4
+
+#define OE_SGX_TCS_THREAD_DATA_PAGES 1
+
+//
 // oe_context_t Structure size and offset definitions.
 //
 
@@ -56,10 +65,11 @@
 // XSTATE constants.
 //
 
-#define XSAVE_ALIGNMENT 0x40
-#define LEGACY_XSAVE_AREA 0X200
-#define XSAVE_HEADER_LENGTH 0X40
-#define MINIMAL_XSTATE_AREA_LENGTH (LEGACY_XSAVE_AREA + XSAVE_HEADER_LENGTH)
+#define OE_FXSAVE_ALIGNMENT 0x10
+#define OE_FXSAVE_AREA_SIZE 0X200
+#define OE_XSAVE_ALIGNMENT 0x40
+#define OE_XSAVE_HEADER_SIZE 0X40
+#define OE_MINIMAL_XSTATE_AREA_SIZE (OE_FXSAVE_AREA_SIZE + OE_XSAVE_HEADER_SIZE)
 
 //
 //  AMD64 ABI related constants.

@@ -69,7 +69,7 @@ static void _free_claim(oe_claim_t* claim)
     oe_free(claim->value);
 }
 
-oe_result_t sgx_attestation_plugin_free_claims_list(
+oe_result_t oe_sgx_free_claims_list(
     oe_verifier_t* context,
     oe_claim_t* claims,
     size_t claims_length)
@@ -185,7 +185,7 @@ done:
     return result;
 }
 
-static oe_result_t _add_claim(
+oe_result_t oe_sgx_add_claim(
     oe_claim_t* claim,
     const void* name,
     size_t name_size, // Must cover the '\0' at end of string
@@ -226,28 +226,38 @@ static oe_result_t _fill_with_known_claims(
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t parsed_report = {0};
     oe_identity_t* id = &parsed_report.identity;
+    const sgx_report_body_t* sgx_report_body = NULL;
     size_t claims_index = 0;
     oe_datetime_t valid_from = {0};
     oe_datetime_t valid_until = {0};
+    bool flag;
 
-    if (claims_length < OE_REQUIRED_CLAIMS_COUNT)
+    if (claims_length < OE_REQUIRED_CLAIMS_COUNT + OE_SGX_REQUIRED_CLAIMS_COUNT)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (format_type == SGX_FORMAT_TYPE_LOCAL)
-        OE_CHECK(oe_parse_sgx_report_body(
-            &((sgx_report_t*)report_body)->body, false, &parsed_report));
+    {
+        sgx_report_body = &((sgx_report_t*)report_body)->body;
+        OE_CHECK(
+            oe_parse_sgx_report_body(sgx_report_body, false, &parsed_report));
+    }
+
     else
-        OE_CHECK(oe_parse_sgx_report_body(
-            &((sgx_quote_t*)report_body)->report_body, true, &parsed_report));
+    {
+        sgx_report_body = &((sgx_quote_t*)report_body)->report_body;
+        OE_CHECK(
+            oe_parse_sgx_report_body(sgx_report_body, true, &parsed_report));
+    }
 
     // Optional claims are needed for SGX quotes for remote attestation
     if (format_type != SGX_FORMAT_TYPE_LOCAL &&
         claims_length < OE_REQUIRED_CLAIMS_COUNT + OE_OPTIONAL_CLAIMS_COUNT +
-                            OE_SGX_CLAIMS_COUNT)
+                            OE_SGX_REQUIRED_CLAIMS_COUNT +
+                            OE_SGX_OPTIONAL_CLAIMS_COUNT)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // ID version.
-    OE_CHECK(_add_claim(
+    OE_CHECK(oe_sgx_add_claim(
         &claims[claims_index++],
         OE_CLAIM_ID_VERSION,
         sizeof(OE_CLAIM_ID_VERSION),
@@ -255,7 +265,7 @@ static oe_result_t _fill_with_known_claims(
         sizeof(id->id_version)));
 
     // Security version.
-    OE_CHECK(_add_claim(
+    OE_CHECK(oe_sgx_add_claim(
         &claims[claims_index++],
         OE_CLAIM_SECURITY_VERSION,
         sizeof(OE_CLAIM_SECURITY_VERSION),
@@ -263,7 +273,7 @@ static oe_result_t _fill_with_known_claims(
         sizeof(id->security_version)));
 
     // Attributes.
-    OE_CHECK(_add_claim(
+    OE_CHECK(oe_sgx_add_claim(
         &claims[claims_index++],
         OE_CLAIM_ATTRIBUTES,
         sizeof(OE_CLAIM_ATTRIBUTES),
@@ -271,7 +281,7 @@ static oe_result_t _fill_with_known_claims(
         sizeof(id->attributes)));
 
     // Unique ID
-    OE_CHECK(_add_claim(
+    OE_CHECK(oe_sgx_add_claim(
         &claims[claims_index++],
         OE_CLAIM_UNIQUE_ID,
         sizeof(OE_CLAIM_UNIQUE_ID),
@@ -279,7 +289,7 @@ static oe_result_t _fill_with_known_claims(
         sizeof(id->unique_id)));
 
     // Signer ID
-    OE_CHECK(_add_claim(
+    OE_CHECK(oe_sgx_add_claim(
         &claims[claims_index++],
         OE_CLAIM_SIGNER_ID,
         sizeof(OE_CLAIM_SIGNER_ID),
@@ -287,7 +297,7 @@ static oe_result_t _fill_with_known_claims(
         sizeof(id->signer_id)));
 
     // Product ID
-    OE_CHECK(_add_claim(
+    OE_CHECK(oe_sgx_add_claim(
         &claims[claims_index++],
         OE_CLAIM_PRODUCT_ID,
         sizeof(OE_CLAIM_PRODUCT_ID),
@@ -295,12 +305,89 @@ static oe_result_t _fill_with_known_claims(
         sizeof(id->product_id)));
 
     // Plugin UUID
-    OE_CHECK(_add_claim(
+    OE_CHECK(oe_sgx_add_claim(
         &claims[claims_index++],
         OE_CLAIM_FORMAT_UUID,
         sizeof(OE_CLAIM_FORMAT_UUID),
         format_id,
         sizeof(*format_id)));
+
+    // SGX Exit Info Reported to an SSA Frame or Not
+    flag = !!(sgx_report_body->miscselect & SGX_MISC_FLAGS_PF_GP_EXIT_INFO);
+    OE_CHECK(oe_sgx_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SGX_PF_GP_EXINFO_ENABLED,
+        sizeof(OE_CLAIM_SGX_PF_GP_EXINFO_ENABLED),
+        &flag,
+        sizeof(flag)));
+
+    // SGX Report ISV Extended Product ID
+    OE_CHECK(oe_sgx_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SGX_ISV_EXTENDED_PRODUCT_ID,
+        sizeof(OE_CLAIM_SGX_ISV_EXTENDED_PRODUCT_ID),
+        sgx_report_body->isvextprodid,
+        sizeof(sgx_report_body->isvextprodid)));
+
+    // SGX Report Is Mode 64bit or Not
+    flag = !!(sgx_report_body->attributes.flags & SGX_FLAGS_MODE64BIT);
+    OE_CHECK(oe_sgx_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SGX_IS_MODE64BIT,
+        sizeof(OE_CLAIM_SGX_IS_MODE64BIT),
+        &flag,
+        sizeof(flag)));
+
+    // SGX Report Has Provision Key or Not
+    flag = !!(sgx_report_body->attributes.flags & SGX_FLAGS_PROVISION_KEY);
+    OE_CHECK(oe_sgx_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SGX_HAS_PROVISION_KEY,
+        sizeof(OE_CLAIM_SGX_HAS_PROVISION_KEY),
+        &flag,
+        sizeof(flag)));
+
+    // SGX Report Has Einittoken Key or Not
+    flag = !!(sgx_report_body->attributes.flags & SGX_FLAGS_EINITTOKEN_KEY);
+    OE_CHECK(oe_sgx_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SGX_HAS_EINITTOKEN_KEY,
+        sizeof(OE_CLAIM_SGX_HAS_EINITTOKEN_KEY),
+        &flag,
+        sizeof(flag)));
+
+    // SGX Use KSS or Not
+    flag = !!(sgx_report_body->attributes.flags & SGX_FLAGS_KSS);
+    OE_CHECK(oe_sgx_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SGX_USES_KSS,
+        sizeof(OE_CLAIM_SGX_USES_KSS),
+        &flag,
+        sizeof(flag)));
+
+    // SGX Report Config ID
+    OE_CHECK(oe_sgx_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SGX_CONFIG_ID,
+        sizeof(OE_CLAIM_SGX_CONFIG_ID),
+        sgx_report_body->configid,
+        sizeof(sgx_report_body->configid)));
+
+    // SGX Report Config SVN
+    OE_CHECK(oe_sgx_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SGX_CONFIG_SVN,
+        sizeof(OE_CLAIM_SGX_CONFIG_SVN),
+        &sgx_report_body->configsvn,
+        sizeof(sgx_report_body->configsvn)));
+
+    // SGX Report ISV Family ID
+    OE_CHECK(oe_sgx_add_claim(
+        &claims[claims_index++],
+        OE_CLAIM_SGX_ISV_FAMILY_ID,
+        sizeof(OE_CLAIM_SGX_ISV_FAMILY_ID),
+        sgx_report_body->isvfamilyid,
+        sizeof(sgx_report_body->isvfamilyid)));
 
     if (format_type != SGX_FORMAT_TYPE_LOCAL)
     {
@@ -313,7 +400,7 @@ static oe_result_t _fill_with_known_claims(
             &valid_until));
 
         // Validity from.
-        OE_CHECK(_add_claim(
+        OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
             OE_CLAIM_VALIDITY_FROM,
             sizeof(OE_CLAIM_VALIDITY_FROM),
@@ -321,7 +408,7 @@ static oe_result_t _fill_with_known_claims(
             sizeof(valid_from)));
 
         // Validity to.
-        OE_CHECK(_add_claim(
+        OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
             OE_CLAIM_VALIDITY_UNTIL,
             sizeof(OE_CLAIM_VALIDITY_UNTIL),
@@ -329,7 +416,7 @@ static oe_result_t _fill_with_known_claims(
             sizeof(valid_until)));
 
         // TCB info
-        OE_CHECK(_add_claim(
+        OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
             OE_CLAIM_SGX_TCB_INFO,
             sizeof(OE_CLAIM_SGX_TCB_INFO),
@@ -337,7 +424,7 @@ static oe_result_t _fill_with_known_claims(
             sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_TCB_INFO].size));
 
         // TCB issuer chain
-        OE_CHECK(_add_claim(
+        OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
             OE_CLAIM_SGX_TCB_ISSUER_CHAIN,
             sizeof(OE_CLAIM_SGX_TCB_ISSUER_CHAIN),
@@ -347,7 +434,7 @@ static oe_result_t _fill_with_known_claims(
                 .size));
 
         // PCK CRL
-        OE_CHECK(_add_claim(
+        OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
             OE_CLAIM_SGX_PCK_CRL,
             sizeof(OE_CLAIM_SGX_PCK_CRL),
@@ -356,7 +443,7 @@ static oe_result_t _fill_with_known_claims(
                 .size));
 
         // Root CA CRL
-        OE_CHECK(_add_claim(
+        OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
             OE_CLAIM_SGX_ROOT_CA_CRL,
             sizeof(OE_CLAIM_SGX_ROOT_CA_CRL),
@@ -366,7 +453,7 @@ static oe_result_t _fill_with_known_claims(
                 .size));
 
         // CRL Issuer Chain
-        OE_CHECK(_add_claim(
+        OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
             OE_CLAIM_SGX_CRL_ISSUER_CHAIN,
             sizeof(OE_CLAIM_SGX_CRL_ISSUER_CHAIN),
@@ -378,7 +465,7 @@ static oe_result_t _fill_with_known_claims(
                 .size));
 
         // QE ID info
-        OE_CHECK(_add_claim(
+        OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
             OE_CLAIM_SGX_QE_ID_INFO,
             sizeof(OE_CLAIM_SGX_QE_ID_INFO),
@@ -386,7 +473,7 @@ static oe_result_t _fill_with_known_claims(
             sgx_endorsements->items[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO].size));
 
         // QE ID issuer chain
-        OE_CHECK(_add_claim(
+        OE_CHECK(oe_sgx_add_claim(
             &claims[claims_index++],
             OE_CLAIM_SGX_QE_ID_ISSUER_CHAIN,
             sizeof(OE_CLAIM_SGX_QE_ID_ISSUER_CHAIN),
@@ -481,13 +568,15 @@ oe_result_t oe_sgx_extract_claims(
 
     // Get the number of claims we need and allocate the claims.
     OE_CHECK(oe_safe_add_u64(
-        OE_REQUIRED_CLAIMS_COUNT, additional_claim, &claims_length));
+        OE_REQUIRED_CLAIMS_COUNT + OE_SGX_REQUIRED_CLAIMS_COUNT,
+        additional_claim,
+        &claims_length));
 
     if (format_type != SGX_FORMAT_TYPE_LOCAL)
     {
         OE_CHECK(oe_safe_add_u64(
             claims_length,
-            OE_OPTIONAL_CLAIMS_COUNT + OE_SGX_CLAIMS_COUNT,
+            OE_OPTIONAL_CLAIMS_COUNT + OE_SGX_OPTIONAL_CLAIMS_COUNT,
             &claims_length));
     }
 
@@ -516,7 +605,7 @@ oe_result_t oe_sgx_extract_claims(
         {
             // Add custom claims buffer
             char* name = OE_CLAIM_CUSTOM_CLAIMS_BUFFER;
-            OE_CHECK(_add_claim(
+            OE_CHECK(oe_sgx_add_claim(
                 claims + claims_added,
                 name,
                 oe_strlen(name) + 1,
@@ -527,7 +616,7 @@ oe_result_t oe_sgx_extract_claims(
         {
             // Add SGX report data claim
             char* name = OE_CLAIM_SGX_REPORT_DATA;
-            OE_CHECK(_add_claim(
+            OE_CHECK(oe_sgx_add_claim(
                 claims + claims_added,
                 name,
                 oe_strlen(name) + 1,
@@ -543,11 +632,11 @@ oe_result_t oe_sgx_extract_claims(
 
 done:
     if (claims)
-        sgx_attestation_plugin_free_claims_list(NULL, claims, claims_length);
+        oe_sgx_free_claims_list(NULL, claims, claims_length);
     return result;
 }
 
-static oe_result_t _verify_evidence(
+oe_result_t oe_sgx_verify_evidence(
     oe_verifier_t* context,
     const uint8_t* evidence_buffer,
     size_t evidence_buffer_size,
@@ -641,8 +730,11 @@ static oe_result_t _verify_evidence(
     {
         report_body = evidence_buffer;
         report_body_size = sizeof(sgx_report_t);
-        custom_claims_buffer = report_body + report_body_size;
-        custom_claims_buffer_size = evidence_buffer_size - report_body_size;
+        if (evidence_buffer_size > report_body_size)
+        {
+            custom_claims_buffer = report_body + report_body_size;
+            custom_claims_buffer_size = evidence_buffer_size - report_body_size;
+        }
 
         OE_CHECK(_verify_local_report(report_body, report_body_size));
     }
@@ -654,8 +746,12 @@ static oe_result_t _verify_evidence(
 
             report_body = evidence_buffer;
             report_body_size = sizeof(*quote) + quote->signature_len;
-            custom_claims_buffer = report_body + report_body_size;
-            custom_claims_buffer_size = evidence_buffer_size - report_body_size;
+            if (evidence_buffer_size > report_body_size)
+            {
+                custom_claims_buffer = report_body + report_body_size;
+                custom_claims_buffer_size =
+                    evidence_buffer_size - report_body_size;
+            }
         }
         else if (format_type == SGX_FORMAT_TYPE_LEGACY_REPORT)
         {
@@ -875,9 +971,9 @@ static oe_result_t _get_verifier_plugins(
         plugin->base.on_register = &_on_register;
         plugin->base.on_unregister = &_on_unregister;
         plugin->get_format_settings = &_get_format_settings;
-        plugin->verify_evidence = &_verify_evidence;
+        plugin->verify_evidence = &oe_sgx_verify_evidence;
         plugin->verify_report = &_verify_report;
-        plugin->free_claims = &sgx_attestation_plugin_free_claims_list;
+        plugin->free_claims = &oe_sgx_free_claims_list;
     }
     *verifiers_length = uuid_count;
     result = OE_OK;

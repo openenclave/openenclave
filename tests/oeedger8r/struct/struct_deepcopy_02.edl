@@ -1,0 +1,16 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    struct ms_t
+    {
+        uint64_t   count;
+        size_t     size;
+        [count=count] uint64_t* mem_buf;
+        [size=size] uint64_t* mem_buf2;
+    };
+
+    trusted {
+        public uint64_t ecall([out] struct ms_t* func_ptr);
+    };
+};

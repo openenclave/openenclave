@@ -195,6 +195,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --cert keyec.pem publicec.pem --out sgx_cert_ec.der
                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der
                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --report --out sgx_report.bin
+                           ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --evidence --out sgx_evidence.bin --endorsements sgx_endorsements.bin
                            popd
                            """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-8", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
@@ -202,6 +203,7 @@ def ACCHostVerificationTest(String version, String build_type) {
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
                 def report_created = fileExists 'build/tests/host_verify/host/sgx_report.bin'
+                def evidence_created = fileExists 'build/tests/host_verify/host/sgx_evidence.bin'
                 if (ec_cert_created) {
                     println("EC cert file created successfully!")
                 } else {
@@ -216,6 +218,11 @@ def ACCHostVerificationTest(String version, String build_type) {
                     println("SGX report file created successfully!")
                 } else {
                     error("Failed to create SGX report file.")
+                }
+                if (evidence_created) {
+                    println("SGX evidence file created successfully!")
+                } else {
+                    error("Failed to create SGX evidence file.")
                 }
 
                 stash includes: 'build/tests/host_verify/host/*.der,build/tests/host_verify/host/*.bin', name: "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
@@ -283,6 +290,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --cert keyec.pem publicec.pem --out sgx_cert_ec.der
                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --cert keyrsa.pem publicrsa.pem --out sgx_cert_rsa.der
                            ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --report --out sgx_report.bin
+                           ../../tools/oecert/host/oecert ../../tools/oecert/enc/oecert_enc --evidence --out sgx_evidence.bin --endorsements sgx_endorsements.bin
                            popd
                            """
                 oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", "clang-8", task, "--cap-add=SYS_PTRACE --device /dev/sgx:/dev/sgx")
@@ -290,6 +298,7 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                 def ec_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_ec.der'
                 def rsa_cert_created = fileExists 'build/tests/host_verify/host/sgx_cert_rsa.der'
                 def report_created = fileExists 'build/tests/host_verify/host/sgx_report.bin'
+                def evidence_created = fileExists 'build/tests/host_verify/host/sgx_evidence.bin'
                 if (ec_cert_created) {
                     println("EC cert file created successfully!")
                 } else {
@@ -304,6 +313,11 @@ def ACCHostVerificationPackageTest(String version, String build_type) {
                     println("SGX report file created successfully!")
                 } else {
                     error("Failed to create SGX report file.")
+                }
+                if (evidence_created) {
+                    println("SGX evidence file created successfully!")
+                } else {
+                    error("Failed to create SGX evidence file.")
                 }
 
                 stash includes: 'build/tests/host_verify/host/*.der,build/tests/host_verify/host/*.bin', name: "linux_host_verify-${version}-${build_type}-${BUILD_NUMBER}"
@@ -425,7 +439,7 @@ try{
 
         "ACC1604 clang-8 Debug LVI e2e":                 { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'clang-8', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
         "ACC1804 gcc Debug LVI e2e":                     { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
-    
+
         "RHEL-8 clang-8 simulation Release e2e":         { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
         "RHEL-8 ACC clang-8 SGX1 Release e2e":           { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
 
@@ -520,7 +534,7 @@ try{
                 "ACC1804 clang-8 Release LVI FULL Tests":          { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 gcc Debug LVI":                           { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc',     'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "ACC1804 gcc Release LVI":                         { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'gcc',     'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "ACC1804 Code Coverage Test" :                     { ACCCodeCoverageTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Debug') },
+                //"ACC1804 Code Coverage Test" :                     { ACCCodeCoverageTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-7', 'Debug') },
 
                 "ACC1604 clang-8 Release LVI snmalloc":            { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON']) },
                 "ACC1804 clang-8 Release LVI FULL Tests snmalloc": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },

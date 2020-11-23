@@ -111,11 +111,11 @@ int main(int argc, const char* argv[])
         argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
     OE_TEST(result == OE_OK);
 
-    run_runtime_test(enclave);
-    register_sgx(enclave);
-    test_sgx(enclave);
-    unregister_sgx(enclave);
-    OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
+    OE_TEST_CODE(run_runtime_test(enclave), OE_OK);
+    OE_TEST_CODE(register_sgx(enclave), OE_OK);
+    OE_TEST_CODE(test_sgx(enclave), OE_OK);
+    OE_TEST_CODE(unregister_sgx(enclave), OE_OK);
+    OE_TEST_CODE(oe_terminate_enclave(enclave), OE_OK);
 
     // Run runtime test on the host.
     test_runtime();

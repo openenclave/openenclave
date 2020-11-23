@@ -51,12 +51,30 @@ typedef struct _oe_eeid
     /** Entry point of the image. */
     uint64_t entry_point;
 
+    /* Number of pages needed for thread-local data */
+    uint64_t tls_page_count;
+
     /** Size of actual EEID data. */
     uint64_t data_size;
 
     /** Buffer holding EEID data and signature. */
     uint8_t data[];
 } oe_eeid_t;
+OE_PACK_END
+
+OE_PACK_BEGIN
+/**
+ * Structure to keep EEID endorsements.
+ */
+typedef struct
+{
+    /** Size of the underlying SGX endorsements. */
+    size_t sgx_endorsements_size;
+    /** Size of EEID endorsements (EEID data). */
+    size_t eeid_endorsements_size;
+    /** Buffer holding the data (same order as the sizes). */
+    uint8_t data[];
+} oe_eeid_endorsements_t;
 OE_PACK_END
 
 OE_EXTERNC_END

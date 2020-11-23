@@ -7,9 +7,9 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 
-#include "../magic.h"
 #include "bcrypt.h"
 #include "key.h"
+#include "magic.h"
 #include "pem.h"
 
 /* can't use an engine with bcrypt */
@@ -516,7 +516,13 @@ oe_result_t oe_private_key_sign(
     if (required_size > *signature_size)
     {
         *signature_size = required_size;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (signature)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If buf_out is null, this call is intented to get the correct
+         * signature_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     status = BCryptSignHash(

@@ -279,3 +279,68 @@ oe_result_t oe_get_supported_attester_format_ids_ocall(
 
     return result;
 }
+
+oe_result_t oe_verify_quote_ocall(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    const void* p_quote,
+    uint32_t quote_size,
+    const time_t expiration_check_date,
+    uint32_t* p_collateral_expiration_status,
+    uint32_t* p_quote_verification_result,
+    void* p_qve_report_info,
+    uint32_t qve_report_size,
+    void* p_supplemental_data,
+    uint32_t supplemental_data_size,
+    uint32_t* p_supplemental_data_size_out,
+    uint32_t collateral_version,
+    const void* p_tcb_info,
+    uint32_t tcb_info_size,
+    const void* p_tcb_info_issuer_chain,
+    uint32_t tcb_info_issuer_chain_size,
+    const void* p_pck_crl,
+    uint32_t pck_crl_size,
+    const void* p_root_ca_crl,
+    uint32_t root_ca_crl_size,
+    const void* p_pck_crl_issuer_chain,
+    uint32_t pck_crl_issuer_chain_size,
+    const void* p_qe_identity,
+    uint32_t qe_identity_size,
+    const void* p_qe_identity_issuer_chain,
+    uint32_t qe_identity_issuer_chain_size)
+{
+    oe_result_t result;
+
+    result = sgx_verify_quote(
+        format_id,
+        opt_params,
+        opt_params_size,
+        p_quote,
+        quote_size,
+        expiration_check_date,
+        p_collateral_expiration_status,
+        p_quote_verification_result,
+        p_qve_report_info,
+        qve_report_size,
+        p_supplemental_data,
+        supplemental_data_size,
+        p_supplemental_data_size_out,
+        collateral_version,
+        p_tcb_info,
+        tcb_info_size,
+        p_tcb_info_issuer_chain,
+        tcb_info_issuer_chain_size,
+        p_pck_crl,
+        pck_crl_size,
+        p_root_ca_crl,
+        root_ca_crl_size,
+        p_pck_crl_issuer_chain,
+        pck_crl_issuer_chain_size,
+        p_qe_identity,
+        qe_identity_size,
+        p_qe_identity_issuer_chain,
+        qe_identity_issuer_chain_size);
+
+    return result;
+}

@@ -37,7 +37,7 @@ add_test(
 
 set_tests_properties(
   tests/oesign-engine-valid-short-args
-  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Launch of signed enclave succeeded")
+  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Signed enclave test app succeeded")
 
 # Test oesign succeeds with valid long form of engine signing parameters
 set(OESIGN_ENGINE_VALID_LONG_ARGS
@@ -53,7 +53,7 @@ add_test(
 
 set_tests_properties(
   tests/oesign-engine-valid-long-args
-  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Launch of signed enclave succeeded")
+  PROPERTIES PASS_REGULAR_EXPRESSION "PASS: Signed enclave test app succeeded")
 
 # Test invalid --load-path (-p) argument
 add_test(

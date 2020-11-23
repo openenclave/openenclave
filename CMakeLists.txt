@@ -164,6 +164,24 @@ if (BUILD_OPENSSL AND OE_TRUSTZONE)
   message(FATAL_ERROR "BUILD_OPENSSL is not supported on ARM yet.")
 endif ()
 
+set(DEFAULT_TEST_ENCLAVE_CRYPTO_LIB
+    "mbedtls"
+    CACHE STRING "Default crypto library used by the enclaves.")
+string(TOLOWER "${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB}"
+               DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER)
+if ((NOT DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "mbedtls")
+    AND (NOT DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl"))
+  message(
+    FATAL_ERROR "Unsupported crypto library: ${DEFAULT_ENCLAVE_CRYPTO_LIB}")
+endif ()
+if ((DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOWER STREQUAL "openssl")
+    AND (NOT BUILD_OPENSSL))
+  message(
+    FATAL_ERROR
+      "Cannot set OpenSSL as the default crypto library when BUILD_OPENSSL is OFF"
+  )
+endif ()
+
 if (WIN32)
   # NOTE: On Windows we have found that we must use Git Bash, not the
   # Bash from the Windows Subsystem for Linux. Hence this is
@@ -239,9 +257,9 @@ include(add_enclave)
 # TODO: See #756: Fix this because it is incompatible with
 # multi-configuration generators
 if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-  # In debug builds, debug_malloc is on by default
+  # In debug builds, enclaves are linked with liboedebugmalloc.a by default.
   option(USE_DEBUG_MALLOC
-         "Build oeenclave with memory leak detection capability." ON)
+         "Build enclaves with memory leak detection capability." ON)
 endif ()
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Build Windows enclave tests" OFF)
@@ -275,9 +293,7 @@ option(
   "[EXPERIMENTAL] Include support for Extended Enclave Initialization Data."
   OFF)
 
-if (WITH_EEID AND WIN32)
-  message(FATAL_ERROR "WITH_EEID is not supported on Windows yet.")
-elseif (WITH_EEID AND OE_TRUSTZONE)
+if (WITH_EEID AND OE_TRUSTZONE)
   message(FATAL_ERROR "WITH_EEID is not supported on ARM yet.")
 endif ()
 

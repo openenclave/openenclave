@@ -3,6 +3,7 @@
 
 #include <fcntl.h>
 #include <limits.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/host.h>
 #include <openenclave/host_verify.h>
 #include <openenclave/internal/error.h>
@@ -35,6 +36,8 @@
 
 #define REPORT_FILENAME "sgx_report.bin"
 #define REPORT_BAD_FILENAME "sgx_report_bad.bin"
+#define EVIDENCE_FILENAME "sgx_evidence.bin"
+#define ENDORSEMENTS_FILENAME "sgx_endorsements.bin"
 
 oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
 {
@@ -268,6 +271,64 @@ static int _verify_report(
     return ret;
 }
 
+static int _verify_evidence(
+    const char* evidence_filename,
+    const char* endorsements_filename,
+    bool expect_failure)
+{
+    size_t evidence_size = 0;
+    size_t endorsements_size = 0;
+    uint8_t* evidence = NULL;
+    uint8_t* endorsements = NULL;
+    oe_result_t result = OE_FAILURE;
+    oe_claim_t* claims = NULL;
+    size_t claims_length = 0;
+
+    OE_TRACE_INFO(
+        "\n\nVerifying evidence %s, endorsements: %s\n",
+        evidence_filename,
+        endorsements_filename);
+
+    _read_binary_file(evidence_filename, &evidence, &evidence_size);
+    if (endorsements_filename)
+        _read_binary_file(
+            endorsements_filename, &endorsements, &endorsements_size);
+
+    OE_TEST(oe_verifier_initialize() == OE_OK);
+
+    result = oe_verify_evidence(
+        NULL,
+        evidence,
+        evidence_size,
+        NULL,
+        0,
+        NULL,
+        0,
+        &claims,
+        &claims_length);
+
+    if (!expect_failure)
+        OE_TEST(result == OE_OK);
+    else
+    {
+        OE_TEST(result != OE_OK);
+        OE_TRACE_INFO(
+            "evidence %s verification failed as expected. Failure %d(%s)\n",
+            evidence_filename,
+            result,
+            oe_result_str(result));
+    }
+
+    OE_TEST(oe_verifier_shutdown() == OE_OK);
+
+    OE_TRACE_INFO("evidence %s verified successfully!\n\n", evidence_filename);
+
+    free(evidence);
+    free(endorsements);
+
+    return 0;
+}
+
 int main()
 {
     //
@@ -286,6 +347,17 @@ int main()
 
     if (_validate_file(REPORT_FILENAME, false))
         _verify_report(REPORT_FILENAME, NULL, true);
+
+    if (_validate_file(EVIDENCE_FILENAME, false))
+    {
+        const char* endorsements_filename = NULL;
+        if (_validate_file(ENDORSEMENTS_FILENAME, false))
+        {
+            endorsements_filename = ENDORSEMENTS_FILENAME;
+            _verify_evidence(EVIDENCE_FILENAME, endorsements_filename, false);
+        }
+        _verify_evidence(EVIDENCE_FILENAME, NULL, false);
+    }
 
     // These files are checked in and should always exist.
     if (_validate_file(CERT_EC_BAD_FILENAME, true))

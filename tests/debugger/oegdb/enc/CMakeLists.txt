@@ -15,6 +15,11 @@ add_enclave(
   oe_gdb_test_enc
   UUID
   ff375399-0b06-4189-9ddc-df5e38612e6d
+  # The test would fail with the OpenSSL-based crypto wrapper
+  # because the invocations of cpuid is not handled properly
+  # (i.e., the SIGILL signal).
+  CRYPTO_LIB
+  mbedtls
   SOURCES
   enc.c
   contract.c

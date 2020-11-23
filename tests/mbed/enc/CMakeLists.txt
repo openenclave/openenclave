@@ -57,6 +57,8 @@ function (add_mbed_test_enclave NAME)
     # Building the enclave by default when enabling LVI mitigation to
     # test linking against LVI-mitigated libraries.
     ADD_LVI_MITIGATION
+    CRYPTO_LIB
+    MbedTLS
     SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c
     enc.c
@@ -133,6 +135,8 @@ function (add_mbed_selftest_enclave)
     mbedtest_selftest
     UUID
     f4e07b3e-af0a-4558-bd7e-b692bd441b5d
+    CRYPTO_LIB
+    MbedTLS
     SOURCES
     selftest_wrapper.c
     enc.c

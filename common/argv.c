@@ -57,7 +57,13 @@ oe_result_t oe_argv_to_buffer(
     if (buf_size < required_size)
     {
         *buf_size_out = required_size;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (buf_out)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If buf_out is null, this call is intented to get the correct buf_size
+         * so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Copy the strings onto the allocated buffer. */

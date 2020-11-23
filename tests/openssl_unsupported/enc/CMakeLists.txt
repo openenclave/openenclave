@@ -41,21 +41,26 @@ function (add_unsupported_test NAME)
             --config $<CONFIGURATION>
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
-  # In addition to expecting the compilation to fail, checking whether the log includes
-  # the specific error message, which indicates the unsupported.h header is
-  # correctly included.
-  set_tests_properties(
-    openssl_unsupported_${NAME}
-    PROPERTIES
-      WILL_FAIL
-      TRUE
-      FAIL_REGULAR_EXPRESSION
-      "warning: .* is deprecated: The function|macro may be unsafe inside an enclave"
-  )
+  # The compilation of the baseline case (i.e., not linking against any of unsupported APIs
+  # but simply including the headers) is expected to succeed.
+  if (NOT ${NAME} STREQUAL "baseline")
+    # In addition to expecting the compilation to fail, checking whether the log includes
+    # the specific error message, which indicates the unsupported.h header is
+    # correctly included.
+    set_tests_properties(
+      openssl_unsupported_${NAME}
+      PROPERTIES
+        WILL_FAIL
+        TRUE
+        FAIL_REGULAR_EXPRESSION
+        "warning: .* is deprecated: The function|macro may be unsafe inside an enclave"
+    )
+  endif ()
 
 endfunction (add_unsupported_test)
 
 set(UNSUPPORTED_LIST
+    BASELINE
     OPENSSL_INIT_LOAD_CONFIG
     SSL_CTX_set_default_verify_paths
     SSL_CTX_set_default_verify_dir

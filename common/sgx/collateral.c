@@ -10,6 +10,7 @@
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/safecrt.h>
@@ -305,19 +306,36 @@ oe_result_t oe_validate_revocation_list(
 
     // Read CRLs for each cert other than root. If any CRL is missing, the read
     // will error out.
-    for (uint32_t i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; ++i)
+    for (uint32_t i = OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT, j = 0;
+         j < OE_SGX_ENDORSEMENTS_CRL_COUNT;
+         ++i, ++j)
     {
-        OE_CHECK_MSG(
-            oe_crl_read_pem(
-                &crls[i],
-                sgx_endorsements
-                    ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT + i]
-                    .data,
-                sgx_endorsements
-                    ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT + i]
-                    .size),
-            "Failed to read CRL. %s",
-            oe_result_str(result));
+        // v1/v2 CRL is PEM encoded which starts with "-----BEGIN X509 CRL-----"
+        if (sgx_endorsements->items[i].size >= OE_PEM_BEGIN_CRL_LEN &&
+            memcmp(
+                (const char*)sgx_endorsements->items[i].data,
+                OE_PEM_BEGIN_CRL,
+                OE_PEM_BEGIN_CRL_LEN) == 0)
+        {
+            OE_CHECK_MSG(
+                oe_crl_read_pem(
+                    &crls[j],
+                    sgx_endorsements->items[i].data,
+                    sgx_endorsements->items[i].size),
+                "Failed to read CRL. %s",
+                oe_result_str(result));
+        }
+        // Otherwise, CRL should have v3 structure which is Der encoded
+        else
+        {
+            OE_CHECK_MSG(
+                oe_crl_read_der(
+                    &crls[j],
+                    sgx_endorsements->items[i].data,
+                    sgx_endorsements->items[i].size),
+                "Failed to read CRL. %s",
+                oe_result_str(result));
+        }
     }
 
     // Verify the leaf cert.

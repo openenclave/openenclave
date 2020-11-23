@@ -655,12 +655,30 @@ static ssize_t _epoll_read(oe_fd_t* epoll_, void* buf, size_t count)
 
     oe_errno = 0;
 
-    if (!file)
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/read.html for
+     * for more detail.
+     */
+    if (!file || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_read_ocall(&ret, file->host_fd, buf, count) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
     return ret;
@@ -669,13 +687,34 @@ done:
 static ssize_t _epoll_write(oe_fd_t* epoll_, const void* buf, size_t count)
 {
     ssize_t ret = -1;
-    epoll_t* epoll = _cast_epoll(epoll_);
+    epoll_t* file = _cast_epoll(epoll_);
 
     oe_errno = 0;
 
-    /* Call the host. */
-    if (oe_syscall_write_ocall(&ret, epoll->host_fd, buf, count) != OE_OK)
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/write.html for
+     * for more detail.
+     */
+    if (!file || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Call the host. */
+    if (oe_syscall_write_ocall(&ret, file->host_fd, buf, count) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
     return ret;
@@ -690,18 +729,40 @@ static ssize_t _epoll_readv(
     epoll_t* file = _cast_epoll(desc);
     void* buf = NULL;
     size_t buf_size = 0;
+    size_t data_size = 0;
 
     if (!file || (iovcnt && !iov) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size, &data_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /*
+     * According to the POSIX specification, when the data_size is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/readv.html for
+     * for more detail.
+     */
+    if (data_size > OE_SSIZE_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_readv_ocall(&ret, file->host_fd, buf, iovcnt, buf_size) !=
         OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed data_size.
+     */
+    if (ret > (ssize_t)data_size)
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
@@ -726,18 +787,40 @@ static ssize_t _epoll_writev(
     epoll_t* file = _cast_epoll(desc);
     void* buf = NULL;
     size_t buf_size = 0;
+    size_t data_size = 0;
 
     if (!file || (iovcnt && !iov) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size, &data_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /*
+     * According to the POSIX specification, when the data_size is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/writev.html
+     * for more detail.
+     */
+    if (data_size > OE_SSIZE_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_writev_ocall(&ret, file->host_fd, buf, iovcnt, buf_size) !=
         OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed data_size.
+     */
+    if (ret > (ssize_t)data_size)
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 

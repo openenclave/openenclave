@@ -8,8 +8,6 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/sgxcreate.h>
 
-#define OE_SGX_NUM_CONTROL_PAGES 4
-
 OE_EXTERNC_BEGIN
 
 OE_INLINE bool oe_sgx_is_simulation_load_context(
@@ -22,6 +20,11 @@ OE_INLINE bool oe_sgx_is_debug_load_context(
     const oe_sgx_load_context_t* context)
 {
     return (context && (context->attributes.flags & OE_ENCLAVE_FLAG_DEBUG));
+}
+
+OE_INLINE bool oe_sgx_is_kss_load_context(const oe_sgx_load_context_t* context)
+{
+    return (context && (context->attributes.flags & OE_ENCLAVE_FLAG_SGX_KSS));
 }
 
 oe_result_t oe_sgx_create_enclave(

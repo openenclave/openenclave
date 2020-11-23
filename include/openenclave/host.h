@@ -46,6 +46,7 @@ OE_EXTERNC_BEGIN
 #define _strdup strdup
 #define strncat_s(destination, destination_size, source, source_size) \
     strncat(destination, source, source_size)
+#define fopen_s(pfp, name, mode) *(pfp) = fopen((name), (mode))
 #endif
 
 /**
@@ -68,6 +69,13 @@ OE_EXTERNC_BEGIN
 /**
  * @cond DEV
  */
+
+/**
+ *  Flag reserved for internal use to indicate the enclave was configured to run
+ * in kss mode
+ */
+#define OE_ENCLAVE_FLAG_SGX_KSS 0x00000004u
+
 #define OE_ENCLAVE_FLAG_RESERVED \
     (~(OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_SIMULATE))
 

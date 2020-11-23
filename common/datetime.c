@@ -265,3 +265,31 @@ void oe_datetime_log(const char* msg, const oe_datetime_t* date)
         OE_TRACE_VERBOSE("%s %s\n", msg, str);
     }
 }
+
+oe_result_t oe_datetime_to_time_t(const oe_datetime_t* datetime, time_t* value)
+{
+    oe_result_t result = OE_FAILURE;
+    time_t tmp = 0;
+    struct tm timeinfo = {0};
+
+    if (datetime == NULL || value == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(oe_datetime_is_valid(datetime));
+
+    // Update timeinfo based on input oe_date_time
+    timeinfo.tm_year = (int)datetime->year - 1900;
+    timeinfo.tm_mon = (int)datetime->month - 1;
+    timeinfo.tm_mday = (int)datetime->day;
+    timeinfo.tm_hour = (int)datetime->hours;
+    timeinfo.tm_min = (int)datetime->minutes;
+    timeinfo.tm_sec = (int)datetime->seconds;
+
+    tmp = timegm(&timeinfo);
+
+    *value = tmp;
+
+    result = OE_OK;
+done:
+    return result;
+}

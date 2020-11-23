@@ -49,7 +49,9 @@ void unregister_sgx()
 
 static void _test_sgx_remote()
 {
+#ifdef OE_USE_DEBUG_MALLOC
     oe_use_debug_malloc = false;
+#endif
 
     printf("====== running _test_sgx_remote\n");
     uint8_t* evidence = NULL;
@@ -364,7 +366,9 @@ static void _test_sgx_remote()
 
     printf("====== done _test_sgx_remote\n");
 
+#ifdef OE_USE_DEBUG_MALLOC
     oe_use_debug_malloc = true;
+#endif
 }
 
 static void _test_sgx_local()
@@ -459,6 +463,6 @@ OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
     true, /* Debug */
-    320,  /* NumHeapPages */
+    1024, /* NumHeapPages */
     128,  /* NumStackPages */
     1);   /* NumTCS */

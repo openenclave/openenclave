@@ -43,7 +43,7 @@
 
 /* OE_ALWAYS_INLINE */
 #if defined(__GNUC__)
-#define OE_ALWAYS_INLINE __attribute__((always_inline))
+#define OE_ALWAYS_INLINE __attribute__((always_inline)) inline
 #elif defined(_MSC_VER)
 #define OE_ALWAYS_INLINE __forceinline
 #endif

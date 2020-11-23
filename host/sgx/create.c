@@ -38,6 +38,7 @@ static char* get_fullpath(const char* path)
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/eeid.h>
 #include <openenclave/internal/load.h>
@@ -60,12 +61,17 @@ static char* get_fullpath(const char* path)
 #include "exception.h"
 #include "platform_u.h"
 #include "sgxload.h"
+#include "xstate.h"
 
 #if !defined(OEHOSTMR)
 static oe_once_type _enclave_init_once;
 
-static void _initialize_exception_handling(void)
+/* Global for caching the result of AVX check used by oe_enter */
+bool oe_is_avx_enabled = false;
+
+static void _initialize_enclave_host_impl(void)
 {
+    oe_is_avx_enabled = oe_get_xfrm() & (SGX_XFRM_AVX | SGX_XFRM_AVX512);
     oe_initialize_host_exception();
 }
 
@@ -79,9 +85,24 @@ static void _initialize_exception_handling(void)
 
 static void _initialize_enclave_host()
 {
-    oe_once(&_enclave_init_once, _initialize_exception_handling);
+    oe_once(&_enclave_init_once, _initialize_enclave_host_impl);
 }
 #endif // OEHOSTMR
+
+static bool _is_kss_supported()
+{
+    uint32_t eax, ebx, ecx, edx;
+    eax = ebx = ecx = edx = 0;
+
+    // Obtain feature information using CPUID
+    oe_get_cpuid(0x12, 0x1, &eax, &ebx, &ecx, &edx);
+
+    // Check if KSS (bit 7) is supported by the processor
+    if (!(eax & (1 << 7)))
+        return false;
+    else
+        return true;
+}
 
 static oe_result_t _add_filled_pages(
     oe_sgx_load_context_t* context,
@@ -163,6 +184,7 @@ static oe_result_t _add_control_pages(
     uint64_t enclave_addr,
     uint64_t enclave_size,
     uint64_t entry,
+    size_t tls_page_count,
     uint64_t* vaddr,
     oe_enclave_t* enclave)
 {
@@ -227,8 +249,7 @@ static oe_result_t _add_control_pages(
          * segment.
          */
         tcs->fsbase =
-            *vaddr +
-            (context->num_tls_pages + OE_SGX_NUM_CONTROL_PAGES) * OE_PAGE_SIZE;
+            *vaddr + (tls_page_count + OE_SGX_TCS_CONTROL_PAGES) * OE_PAGE_SIZE;
 
         /* The existing Windows SGX enclave debugger finds the start of the
          * thread data by assuming that it is located at the start of the GS
@@ -268,8 +289,9 @@ static oe_result_t _add_control_pages(
     (*vaddr) += OE_PAGE_SIZE;
 
     /* Add blank pages (for either FS segment or GS segment) */
-    OE_CHECK(_add_filled_pages(
-        context, enclave_addr, vaddr, context->num_tls_pages, 0, true));
+    if (tls_page_count)
+        OE_CHECK(_add_filled_pages(
+            context, enclave_addr, vaddr, tls_page_count, 0, true));
 
     /* Add one page for thread-specific data (TSD) slots */
     OE_CHECK(_add_filled_pages(context, enclave_addr, vaddr, 1, 0, true));
@@ -285,6 +307,7 @@ done:
 
 static oe_result_t _calculate_enclave_size(
     size_t image_size,
+    size_t tls_page_count,
     const oe_sgx_enclave_properties_t* props,
     size_t* loaded_enclave_pages_size,
     size_t* enclave_size)
@@ -293,6 +316,7 @@ static oe_result_t _calculate_enclave_size(
     oe_result_t result = OE_UNEXPECTED;
     size_t heap_size;
     size_t stack_size;
+    size_t tls_size;
     size_t control_size;
     const oe_enclave_size_settings_t* size_settings;
 
@@ -310,13 +334,17 @@ static oe_result_t _calculate_enclave_size(
                  + (size_settings->num_stack_pages * OE_PAGE_SIZE) +
                  OE_PAGE_SIZE; // guard page
 
-    /* Compute the control size in bytes (6 pages total) */
-    control_size = 6 * OE_PAGE_SIZE;
+    /* Compute size of the TLS */
+    tls_size = tls_page_count * OE_PAGE_SIZE;
+
+    /* Compute the control size in bytes (5 pages total) */
+    control_size = (OE_SGX_TCS_CONTROL_PAGES + OE_SGX_TCS_THREAD_DATA_PAGES) *
+                   OE_PAGE_SIZE;
 
     /* Compute end of the enclave */
     *loaded_enclave_pages_size =
         image_size + heap_size +
-        (size_settings->num_tcs * (stack_size + control_size));
+        (size_settings->num_tcs * (stack_size + tls_size + control_size));
 
     if (enclave_size)
     {
@@ -338,6 +366,7 @@ static oe_result_t _add_data_pages(
     oe_enclave_t* enclave,
     const oe_sgx_enclave_properties_t* props,
     uint64_t entry,
+    size_t tls_page_count,
     uint64_t* vaddr)
 
 {
@@ -364,7 +393,13 @@ static oe_result_t _add_data_pages(
 
         /* Add the "control" pages */
         OE_CHECK(_add_control_pages(
-            context, enclave->addr, enclave->size, entry, vaddr, enclave));
+            context,
+            enclave->addr,
+            enclave->size,
+            entry,
+            tls_page_count,
+            vaddr,
+            enclave));
     }
 
     result = OE_OK;
@@ -574,6 +609,24 @@ oe_result_t oe_sgx_validate_enclave_properties(
         goto done;
     }
 
+    if (!(properties->config.attributes & OE_SGX_FLAGS_KSS))
+    {
+        if (!oe_sgx_is_unset_uuid(
+                (uint8_t*)properties->config.extended_product_id))
+        {
+            OE_TRACE_ERROR("oe_sgx_is_unset_uuid failed: extended_product_id "
+                           "should be empty");
+            result = OE_FAILURE;
+            goto done;
+        }
+        if (!oe_sgx_is_unset_uuid((uint8_t*)properties->config.family_id))
+        {
+            OE_TRACE_ERROR(
+                "oe_sgx_is_unset_uuid failed: family_id should be empty");
+            result = OE_FAILURE;
+            goto done;
+        }
+    }
     result = OE_OK;
 
 done:
@@ -585,6 +638,7 @@ static oe_result_t _add_eeid_marker_page(
     oe_sgx_load_context_t* context,
     oe_enclave_t* enclave,
     size_t image_size,
+    size_t tls_page_count,
     uint64_t entry_point,
     oe_sgx_enclave_properties_t* props,
     uint64_t* vaddr)
@@ -604,6 +658,7 @@ static oe_result_t _add_eeid_marker_page(
         oe_sha256_save(hctx, eeid->hash_state.H, eeid->hash_state.N);
         eeid->entry_point = entry_point;
         eeid->vaddr = *vaddr;
+        eeid->tls_page_count = tls_page_count;
         eeid->signature_size = sizeof(sgx_sigstruct_t);
         memcpy(
             eeid->data + eeid->data_size,
@@ -618,7 +673,8 @@ static oe_result_t _add_eeid_marker_page(
          * commit size of the base image and dynamically configured data
          * pages (stacks + heap) excluding the EEID data size.
          */
-        _calculate_enclave_size(image_size, props, &marker->offset, NULL);
+        _calculate_enclave_size(
+            image_size, tls_page_count, props, &marker->offset, NULL);
 
         uint64_t addr = enclave->addr + *vaddr;
         uint64_t src = (uint64_t)page;
@@ -627,7 +683,7 @@ static oe_result_t _add_eeid_marker_page(
         OE_CHECK(oe_sgx_load_enclave_data(
             context, enclave->addr, addr, src, flags, false));
         (*vaddr) += OE_PAGE_SIZE;
-        free(page);
+        oe_memalign_free(page);
 
         // Marker page counts as a heap page
         if (props->header.size_settings.num_heap_pages > 0)
@@ -661,6 +717,8 @@ static oe_result_t _eeid_resign(
             properties->config.security_version,
             OE_DEBUG_SIGN_KEY,
             OE_DEBUG_SIGN_KEY_SIZE,
+            properties->config.family_id,
+            properties->config.extended_product_id,
             sigstruct));
     }
 
@@ -721,6 +779,7 @@ oe_result_t oe_sgx_build_enclave(
     oe_enclave_image_t oeimage;
     void* ecall_data = NULL;
     size_t image_size;
+    size_t tls_page_count;
     uint64_t vaddr = 0;
     oe_sgx_enclave_properties_t props;
 
@@ -802,9 +861,31 @@ oe_result_t oe_sgx_build_enclave(
     /* Calculate the size of image */
     OE_CHECK(oeimage.calculate_size(&oeimage, &image_size));
 
+    /* Calculate the number of pages needed for thread-local data */
+    OE_CHECK(oeimage.get_tls_page_count(&oeimage, &tls_page_count));
+
     /* Calculate the size of this enclave in memory */
     OE_CHECK(_calculate_enclave_size(
-        image_size, &props, &loaded_enclave_pages_size, &enclave_size));
+        image_size,
+        tls_page_count,
+        &props,
+        &loaded_enclave_pages_size,
+        &enclave_size));
+
+    if (props.config.attributes & OE_SGX_FLAGS_KSS)
+    {
+        if ((context->type == OE_SGX_LOAD_TYPE_CREATE) && !_is_kss_supported())
+        {
+            // Fail if the CPU does not support KSS and the enclave specifies
+            // the KSS flag
+            OE_RAISE_MSG(
+                OE_UNSUPPORTED,
+                "Enclave image was signed with kss flag but CPU doesn't "
+                "support KSS\n",
+                NULL);
+        }
+        context->attributes.flags |= OE_ENCLAVE_FLAG_SGX_KSS;
+    }
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
@@ -822,12 +903,23 @@ oe_result_t oe_sgx_build_enclave(
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_CHECK(_add_eeid_marker_page(
-        context, enclave, image_size, oeimage.elf.entry_rva, &props, &vaddr));
+        context,
+        enclave,
+        image_size,
+        tls_page_count,
+        oeimage.elf.entry_rva,
+        &props,
+        &vaddr));
 #endif
 
     /* Add data pages */
     OE_CHECK(_add_data_pages(
-        context, enclave, &props, oeimage.elf.entry_rva, &vaddr));
+        context,
+        enclave,
+        &props,
+        oeimage.elf.entry_rva,
+        tls_page_count,
+        &vaddr));
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     /* Add optional EEID pages */
