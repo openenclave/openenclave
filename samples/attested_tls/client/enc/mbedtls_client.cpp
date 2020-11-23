@@ -11,7 +11,7 @@
 #include <mbedtls/ssl.h>
 #include <openenclave/enclave.h>
 #include <string.h>
-#include "../../common/utility.h"
+#include "../../common/mbedtls_utility.h"
 
 extern "C"
 {
