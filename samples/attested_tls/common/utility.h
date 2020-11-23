@@ -23,3 +23,5 @@ const oe_claim_t* find_claim(
     const oe_claim_t* claims,
     size_t claims_size,
     const char* name);
+
+oe_result_t load_oe_modules();

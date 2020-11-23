@@ -295,19 +295,10 @@ int setup_tls_server(char* server_port, bool keep_server_up)
     mbedtls_net_context listen_fd, client_fd;
     const char* pers = "tls_server";
 
-    // Explicitly enabling features
-    if ((result = oe_load_module_host_resolver()) != OE_OK)
+    /* Load host resolver and socket interface modules explicitly*/
+    if (load_oe_modules() != OE_OK)
     {
-        printf(
-            TLS_SERVER "oe_load_module_host_resolver failed with %s\n",
-            oe_result_str(result));
-        goto exit;
-    }
-    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
-    {
-        printf(
-            TLS_SERVER "oe_load_module_host_socket_interface failed with %s\n",
-            oe_result_str(result));
+        printf(TLS_SERVER "loading required oe modules failed \n");
         goto exit;
     }
 

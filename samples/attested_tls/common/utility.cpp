@@ -111,3 +111,26 @@ const oe_claim_t* find_claim(
     }
     return nullptr;
 }
+
+oe_result_t load_oe_modules()
+{
+    oe_result_t result = OE_FAILURE;
+
+    // Explicitly enabling features
+    if ((result = oe_load_module_host_resolver()) != OE_OK)
+    {
+        printf(
+            "oe_load_module_host_resolver failed with %s\n",
+            oe_result_str(result));
+        goto exit;
+    }
+    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
+    {
+        printf(
+            "oe_load_module_host_socket_interface failed with %s\n",
+            oe_result_str(result));
+        goto exit;
+    }
+exit:
+    return result;
+}

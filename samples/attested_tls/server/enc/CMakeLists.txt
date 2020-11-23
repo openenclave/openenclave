@@ -27,15 +27,22 @@ add_custom_command(
 
 add_definitions(-DSERVER_CERT_VERIFY_CALLBACK)
 
-add_executable(
-  tls_server_enc
-  ecalls.cpp
-  mbedtls_server.cpp
-  ../../common/cert_verifier.cpp
-  ../../common/identity_verifier.cpp
-  ../../common/utility.cpp
-  ../../common/mbedtls_utility.cpp
-  ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
+if (${OE_CRYPTO_LIB} MATCHES "openssl")
+  add_executable(
+    tls_server_enc
+    ecalls.cpp openssl_server.cpp ../../common/utility.cpp
+    ../../common/openssl_utility.cpp ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
+elseif (${OE_CRYPTO_LIB} MATCHES "mbedtls")
+  add_executable(
+    tls_server_enc
+    ecalls.cpp
+    mbedtls_server.cpp
+    ../../common/cert_verifier.cpp
+    ../../common/identity_verifier.cpp
+    ../../common/utility.cpp
+    ../../common/mbedtls_utility.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/tls_server_t.c)
+endif ()
 
 if (WIN32)
   maybe_build_using_clangw(tls_server_enc)
@@ -48,9 +55,15 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
           ${CMAKE_BINARY_DIR}/server/enc)
 
-target_link_libraries(
-  tls_server_enc openenclave::oeenclave openenclave::oecrypto${OE_CRYPTO_LIB}
-  openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
+if (${OE_CRYPTO_LIB} MATCHES "openssl")
+  target_link_libraries(
+    tls_server_enc openenclave::oeenclave openenclave::oecryptoopenssl
+    openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
+elseif (${OE_CRYPTO_LIB} MATCHES "mbedtls")
+  target_link_libraries(
+    tls_server_enc openenclave::oeenclave openenclave::oecryptombedtls
+    openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
+endif ()
 
 add_custom_target(tls_server_sign_enc ALL DEPENDS tls_server_enc.signed
                                                   tls_server_enc_mrenclave.h)
