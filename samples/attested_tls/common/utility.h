@@ -7,6 +7,9 @@
 #include <string.h>
 #include "common.h"
 
+const unsigned char certificate_subject_name[] =
+    "CN=Open Enclave SDK,O=OESDK TLS,C=US";
+
 oe_result_t generate_key_pair(
     uint8_t** public_key,
     size_t* public_key_size,

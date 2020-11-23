@@ -31,11 +31,11 @@ if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
       -port:12341
     COMMAND ${CMAKE_COMMAND} -E sleep 2
     COMMENT
-      "Launch processes to establish an Attested TLS between an non-encalve TLS client and an TLS server running inside an enclave "
+      "Launch processes to establish an Attested TLS between an non-enclave TLS client and an TLS server running inside an enclave "
     COMMAND
       bash -c
-      "${CMAKE_BINARY_DIR}/server/host/tls_server_host ${CMAKE_BINARY_DIR}/server/enc/tls_server_enc.signed -port:12341 &"
+      "${CMAKE_BINARY_DIR}/server/host/tls_server_host ${CMAKE_BINARY_DIR}/server/enc/tls_server_enc.signed -port:12345 &"
     COMMAND ${CMAKE_COMMAND} -E sleep 2
     COMMAND ${CMAKE_BINARY_DIR}/non_enc_client/tls_non_enc_client
-            -server:localhost -port:12341)
+            -server:localhost -port:12345)
 endif ()

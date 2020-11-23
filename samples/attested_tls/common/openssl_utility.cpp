@@ -2,54 +2,64 @@
 // Licensed under the MIT License.
 
 #include "openssl_utility.h"
-#include <stdio.h>
-#include <string.h>
 
-oe_result_t generate_certificate_and_pkey(X509*& cert, EVP_PKEY*& pkey)
+oe_result_t generate_certificate_and_pkey(X509*& certificate, EVP_PKEY*& pkey)
 {
     oe_result_t result = OE_FAILURE;
-    SSL_CTX_set_ecdh_auto(ctx, 1);
-    uint8_t* output_cert = nullptr;
-    size_t output_cert_size = 0;
-    uint8_t* private_key_buf = nullptr;
-    size_t private_key_buf_size = 0;
-    uint8_t* public_key_buf = nullptr;
-    size_t public_key_buf_size = 0;
-    const unsigned char* cert_buf_ptr = nullptr;
+    uint8_t* output_certificate = nullptr;
+    size_t output_certificate_size = 0;
+    uint8_t* private_key_buffer = nullptr;
+    size_t private_key_buffer_size = 0;
+    uint8_t* public_key_buffer = nullptr;
+    size_t public_key_buffer_size = 0;
+    const unsigned char* certificate_buffer_ptr = nullptr;
     BIO* mem = nullptr;
 
     result = generate_key_pair(
-        &public_key_buf,
-        &public_key_buf_size,
-        &private_key_buf,
-        &private_key_buf_size);
+        &public_key_buffer,
+        &public_key_buffer_size,
+        &private_key_buffer,
+        &private_key_buffer_size);
 
-    // OE_CHECK_MSG(result, " failed with %s\n", oe_result_str(result));
-    printf("public_key_buf_size:[%ld]\n", public_key_buf_size);
-    printf("public key used:\n[%s]", public_key_buf);
-
-    result = oe_generate_attestation_certificate(
-        (const unsigned char*)"CN=Open Enclave SDK,O=OESDK TLS,C=US",
-        private_key_buf,
-        private_key_buf_size,
-        public_key_buf,
-        public_key_buf_size,
-        &output_cert,
-        &output_cert_size);
-    // OE_CHECK_MSG(result, " failed with %s\n", oe_result_str(result));
-
-    // temporary buffer required as if d2i_x509 call is successful cert_buf_ptr
-    // is incremented to the byte following the parsed data. sending
-    // cert_buf_ptr as argument will keep output_cert pointer undisturbed.
-    cert_buf_ptr = output_cert;
-
-    if ((cert = d2i_X509(nullptr, &cert_buf_ptr, (long)output_cert_size)) ==
-        nullptr)
+    if (result != OE_OK)
     {
-        printf("Failed to convert DER fromat certificate to X509 structure\n");
+        printf(" failed with %s\n", oe_result_str(result));
         goto done;
     }
-    mem = BIO_new_mem_buf((void*)private_key_buf, -1);
+
+    printf("public_key_buf_size:[%ld]\n", public_key_buffer_size);
+    printf("public key used:\n[%s]", public_key_buffer);
+
+    result = oe_generate_attestation_certificate(
+        certificate_subject_name,
+        private_key_buffer,
+        private_key_buffer_size,
+        public_key_buffer,
+        public_key_buffer_size,
+        &output_certificate,
+        &output_certificate_size);
+
+    if (result != OE_OK)
+    {
+        printf(" failed with %s\n", oe_result_str(result));
+        goto done;
+    }
+
+    // temporary buffer required as if d2i_x509 call is successful
+    // certificate_buffer_ptr is incremented to the byte following the parsed
+    // data. sending certificate_buffer_ptr as argument will keep
+    // output_certificate pointer undisturbed.
+    certificate_buffer_ptr = output_certificate;
+
+    if ((certificate = d2i_X509(
+             nullptr,
+             &certificate_buffer_ptr,
+             (long)output_certificate_size)) == nullptr)
+    {
+        printf("Failed to convert DER format certificate to X509 structure\n");
+        goto done;
+    }
+    mem = BIO_new_mem_buf((void*)private_key_buffer, -1);
     if (!mem)
     {
         printf("Failed to convert private key buf into BIO_mem\n");
@@ -63,26 +73,26 @@ oe_result_t generate_certificate_and_pkey(X509*& cert, EVP_PKEY*& pkey)
 
     result = OE_OK;
 done:
-    cert_buf_ptr = nullptr;
+    certificate_buffer_ptr = nullptr;
     BIO_free(mem);
-    oe_free_key(private_key_buf, private_key_buf_size, nullptr, 0);
-    oe_free_key(public_key_buf, public_key_buf_size, nullptr, 0);
-    oe_free_attestation_certificate(output_cert);
+    oe_free_key(private_key_buffer, private_key_buffer_size, nullptr, 0);
+    oe_free_key(public_key_buffer, public_key_buffer_size, nullptr, 0);
+    oe_free_attestation_certificate(output_certificate);
     return result;
 }
 
-oe_result_t load_ssl_certificates_and_keys(
+oe_result_t load_tls_certificates_and_keys(
     SSL_CTX* ctx,
-    X509*& cert,
+    X509*& certificate,
     EVP_PKEY*& pkey)
 {
     oe_result_t result = OE_FAILURE;
-    if (generate_certificate_and_pkey(cert, pkey) != OE_OK)
+    if (generate_certificate_and_pkey(certificate, pkey) != OE_OK)
     {
         printf("Cannot generate certificate and pkey\n");
         goto exit;
     }
-    if (!SSL_CTX_use_certificate(ctx, cert))
+    if (!SSL_CTX_use_certificate(ctx, certificate))
     {
         printf("Cannot load certificate on the server\n");
         goto exit;
@@ -105,19 +115,94 @@ exit:
     return result;
 }
 
+oe_result_t initalize_ssl_context(SSL_CONF_CTX*& ssl_conf_ctx, SSL_CTX*& ctx)
+{
+    oe_result_t ret = OE_FAILURE;
+    // Configure the SSL context based on Open Enclave's security guidance.
+    const char* cipher_list_tlsv12_below =
+        "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-"
+        "AES128-GCM-SHA256:"
+        "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-"
+        "AES256-SHA384:"
+        "ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384";
+    const char* cipher_list_tlsv13 =
+        "TLS13-AES-256-GCM-SHA384:TLS13-AES-128-GCM-SHA256";
+    const char* supported_curves = "P-521:P-384:P-256";
+
+    SSL_CONF_CTX_set_ssl_ctx(ssl_conf_ctx, ctx);
+    SSL_CONF_CTX_set_flags(
+        ssl_conf_ctx,
+        SSL_CONF_FLAG_FILE | SSL_CONF_FLAG_SERVER | SSL_CONF_FLAG_CLIENT);
+    int ssl_conf_return_value = -1;
+    if ((ssl_conf_return_value =
+             SSL_CONF_cmd(ssl_conf_ctx, "MinProtocol", "TLSv1.2")) < 0)
+    {
+        printf(
+            "Setting MinProtocol for ssl context configuration failed with "
+            "error %d \n",
+            ssl_conf_return_value);
+        goto exit;
+    }
+    if ((ssl_conf_return_value =
+             SSL_CONF_cmd(ssl_conf_ctx, "MaxProtocol", "TLSv1.3")) < 0)
+    {
+        printf(
+            "Setting MaxProtocol for ssl context configuration failed with "
+            "error %d \n",
+            ssl_conf_return_value);
+        goto exit;
+    }
+    if ((ssl_conf_return_value = SSL_CONF_cmd(
+             ssl_conf_ctx, "CipherString", cipher_list_tlsv12_below)) < 0)
+    {
+        printf(
+            "Setting CipherString for ssl context configuration failed with "
+            "error %d \n",
+            ssl_conf_return_value);
+        goto exit;
+    }
+    if ((ssl_conf_return_value = SSL_CONF_cmd(
+             ssl_conf_ctx, "Ciphersuites", cipher_list_tlsv13)) < 0)
+    {
+        printf(
+            "Setting Ciphersuites for ssl context configuration failed with "
+            "error %d \n",
+            ssl_conf_return_value);
+        goto exit;
+    }
+    if ((ssl_conf_return_value =
+             SSL_CONF_cmd(ssl_conf_ctx, "Curves", supported_curves)) < 0)
+    {
+        printf(
+            "Setting Curves for ssl context configuration failed with error %d "
+            "\n",
+            ssl_conf_return_value);
+        goto exit;
+    }
+    if (!SSL_CONF_CTX_finish(ssl_conf_ctx))
+    {
+        printf("Error finishing ssl context configuration \n");
+        goto exit;
+    }
+    ret = OE_OK;
+exit:
+    return ret;
+}
+
 int read_from_session_peer(
     SSL*& ssl_session,
     const char* payload,
     size_t payload_length)
 {
     int ret = -1;
-    unsigned char buf[200];
+    unsigned char buffer[200]; // the expected payload to be read from peer is
+                               // at maximum of size 200
     int bytes_read = 0;
     do
     {
-        int len = sizeof(buf) - 1;
-        memset(buf, 0, sizeof(buf));
-        bytes_read = SSL_read(ssl_session, buf, (size_t)len);
+        int len = sizeof(buffer) - 1;
+        memset(buffer, 0, sizeof(buffer));
+        bytes_read = SSL_read(ssl_session, buffer, (size_t)len);
 
         if (bytes_read <= 0)
         {
@@ -134,7 +219,7 @@ int read_from_session_peer(
 
         // check to see if received payload is expected
         if ((bytes_read != payload_length) ||
-            (memcmp(payload, buf, bytes_read) != 0))
+            (memcmp(payload, buffer, bytes_read) != 0))
         {
             printf(
                 "ERROR: expected reading %lu bytes but only "
@@ -150,8 +235,6 @@ int read_from_session_peer(
             ret = 0;
             break;
         }
-
-        printf("Verified: the contents of peer payload were expected\n\n");
     } while (1);
 
 exit:
@@ -177,7 +260,7 @@ int write_to_session_peer(
         goto exit;
     }
 
-    printf("%lu bytes written to session peer \n\n", payload_length);
+    printf("%lu bytes written to session peer\n\n", payload_length);
 exit:
     return ret;
 }

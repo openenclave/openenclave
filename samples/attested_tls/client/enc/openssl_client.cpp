@@ -1,66 +1,29 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifdef _WIN32
-#include <ws2tcpip.h>
-#define close closesocket
-#else
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <resolv.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#endif
-
-#include <string.h>
-
-#include <openenclave/host.h>
+#include <errno.h>
+#include <openenclave/enclave.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
+#include <string.h>
+#include "../../common/openssl_utility.h"
 
-#include "../common/common.h"
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 int verify_callback(int preverify_ok, X509_STORE_CTX* ctx);
-int create_socket(char* server_name, char* server_port);
 
-int parse_arguments(
-    int argc,
-    char** argv,
-    char** server_name,
-    char** server_port)
+extern "C"
 {
-    int ret = 1;
-    const char* option = nullptr;
-    int param_len = 0;
-
-    if (argc != 3)
-        goto print_usage;
-
-    option = "-server:";
-    param_len = strlen(option);
-    if (strncmp(argv[1], option, param_len) != 0)
-        goto print_usage;
-    *server_name = (char*)(argv[1] + param_len);
-
-    option = "-port:";
-    param_len = strlen(option);
-    if (strncmp(argv[2], option, param_len) != 0)
-        goto print_usage;
-
-    *server_port = (char*)(argv[2] + param_len);
-    ret = 0;
-    goto done;
-
-print_usage:
-    printf(TLS_CLIENT "Usage: %s -server:<name> -port:<port>\n", argv[0]);
-done:
-    return ret;
-}
+    int launch_tls_client(char* server_name, char* server_port);
+};
 
 // This routine conducts a simple HTTP request/response communication with
 // server
@@ -107,7 +70,6 @@ int communicate_with_server(SSL* ssl)
         }
 
         printf(TLS_CLIENT " %d bytes read\n", bytes_read);
-#ifdef ADD_TEST_CHECKING
         // check to to see if received payload is expected
         if ((bytes_read != SERVER_PAYLOAD_SIZE) ||
             (memcmp(SERVER_PAYLOAD, buf, bytes_read) != 0))
@@ -127,8 +89,6 @@ int communicate_with_server(SSL* ssl)
             ret = 0;
             break;
         }
-        printf("Verified: the contents of server payload were expected\n\n");
-#endif
     } while (1);
     ret = 0;
 done:
@@ -141,17 +101,8 @@ int create_socket(char* server_name, char* server_port)
     int sockfd = -1;
     char* addr_ptr = nullptr;
     int port = 0;
-    struct addrinfo hints, *dest_info, *curr_di;
+    struct addrinfo hints, *dest_info = nullptr, *curr_di = nullptr;
     int res;
-
-#ifdef _WIN32
-    WSADATA wsaData;
-    if ((res = WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0)
-    {
-        printf(TLS_CLIENT "Error: WSAStartup failed: %d\n", res);
-        goto done;
-    }
-#endif
 
     hints = {0};
     hints.ai_family = AF_INET;
@@ -173,7 +124,6 @@ int create_socket(char* server_name, char* server_port)
         {
             break;
         }
-
         curr_di = curr_di->ai_next;
     }
 
@@ -194,7 +144,7 @@ int create_socket(char* server_name, char* server_port)
 
     if (connect(
             sockfd,
-            (struct sockaddr*)curr_di->ai_addr,
+            (struct sockaddr*)dest_info->ai_addr,
             sizeof(struct sockaddr)) == -1)
     {
         printf(
@@ -215,65 +165,68 @@ done:
     return sockfd;
 }
 
-int main(int argc, char** argv)
+int launch_tls_client(char* server_name, char* server_port)
 {
-    int ret = 1;
+    printf(TLS_CLIENT " called launch tls client\n");
+
+    int ret = 0;
+
+    SSL_CTX* ssl_client_ctx = nullptr;
+    SSL* ssl_session = nullptr;
+
     X509* cert = nullptr;
-    SSL_CTX* ctx = nullptr;
-    SSL* ssl = nullptr;
-    int serversocket = 0;
-    char* server_name = nullptr;
-    char* server_port = nullptr;
+    EVP_PKEY* pkey = nullptr;
+    SSL_CONF_CTX* ssl_confctx = SSL_CONF_CTX_new();
+
+    int client_socket = -1;
     int error = 0;
+    oe_result_t result = OE_FAILURE;
+
+    /* Load host resolver and socket interface modules explicitly */
+    if (load_oe_modules() != OE_OK)
+    {
+        printf(TLS_CLIENT "loading required Open Enclave modules failed\n");
+        goto done;
+    }
 
     printf("\nStarting" TLS_CLIENT "\n\n\n");
-    if ((error = parse_arguments(argc, argv, &server_name, &server_port)) != 0)
+
+    if ((ssl_client_ctx = SSL_CTX_new(TLS_client_method())) == nullptr)
     {
-        printf(
-            TLS_CLIENT "TLS client:parse input parmeter failed (%d)!\n", error);
+        printf(TLS_CLIENT "unable to create a new SSL context\n");
         goto done;
     }
 
-    // initialize openssl library and register algorithms
-    OpenSSL_add_all_algorithms();
-    ERR_load_BIO_strings();
-    ERR_load_crypto_strings();
-    SSL_load_error_strings();
+    if (initalize_ssl_context(ssl_confctx, ssl_client_ctx) != OE_OK)
+    {
+        printf(TLS_CLIENT "unable to create a initialize SSL context\n ");
+        goto done;
+    }
 
-    if (SSL_library_init() < 0)
+    // specify the verify_callback for custom verification
+    SSL_CTX_set_verify(ssl_client_ctx, SSL_VERIFY_PEER, &verify_callback);
+
+    if (load_tls_certificates_and_keys(ssl_client_ctx, cert, pkey) != 0)
     {
         printf(TLS_CLIENT
-               "TLS client: could not initialize the OpenSSL library !\n");
+               " unable to load certificate and private key on the server\n");
         goto done;
     }
 
-    if ((ctx = SSL_CTX_new(SSLv23_client_method())) == nullptr)
-    {
-        printf(TLS_CLIENT "TLS client: unable to create a new SSL context\n");
-        goto done;
-    }
-
-    // choose TLSv1.2 by excluding SSLv2, SSLv3 ,TLS 1.0 and TLS 1.1
-    SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
-    SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv3);
-    SSL_CTX_set_options(ctx, SSL_OP_NO_TLSv1);
-    SSL_CTX_set_options(ctx, SSL_OP_NO_TLSv1_1);
-    // specify the verify_callback for custom verification
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, &verify_callback);
-
-    if ((ssl = SSL_new(ctx)) == nullptr)
+    if ((ssl_session = SSL_new(ssl_client_ctx)) == nullptr)
     {
         printf(TLS_CLIENT
                "Unable to create a new SSL connection state object\n");
         goto done;
     }
 
-    serversocket = create_socket(server_name, server_port);
-    if (serversocket == -1)
+    printf(TLS_CLIENT "new ssl connection getting created\n");
+    client_socket = create_socket(server_name, server_port);
+    if (client_socket == -1)
     {
         printf(
             TLS_CLIENT
-            "create a socket and initate a TCP connect to server: %s:%s "
+            "create a socket and initiate a TCP connect to server: %s:%s "
             "(errno=%d)\n",
             server_name,
             server_port,
@@ -281,42 +234,53 @@ int main(int argc, char** argv)
         goto done;
     }
 
-    // setup ssl socket and initiate TLS connection with TLS server
-    SSL_set_fd(ssl, serversocket);
-    if ((error = SSL_connect(ssl)) != 1)
+    // set up ssl socket and initiate TLS connection with TLS server
+    SSL_set_fd(ssl_session, client_socket);
+
+    if ((error = SSL_connect(ssl_session)) != 1)
     {
         printf(
-            TLS_CLIENT "Error: Could not establish an SSL session ret2=%d "
+            TLS_CLIENT "Error: Could not establish a TLS session ret2=%d "
                        "SSL_get_error()=%d\n",
             error,
-            SSL_get_error(ssl, error));
+            SSL_get_error(ssl_session, error));
         goto done;
     }
     printf(
         TLS_CLIENT "successfully established TLS channel:%s\n",
-        SSL_get_version(ssl));
+        SSL_get_version(ssl_session));
 
     // start the client server communication
-    if ((error = communicate_with_server(ssl)) != 0)
+    if ((error = communicate_with_server(ssl_session)) != 0)
     {
         printf(TLS_CLIENT "Failed: communicate_with_server (ret=%d)\n", error);
         goto done;
     }
 
     // Free the structures we don't need anymore
-    if (serversocket != -1)
-        close(serversocket);
-
     ret = 0;
 done:
-    if (ssl)
-        SSL_free(ssl);
+
+    if (client_socket != -1)
+        close(client_socket);
+
+    if (ssl_session)
+    {
+        SSL_shutdown(ssl_session);
+        SSL_free(ssl_session);
+    }
 
     if (cert)
         X509_free(cert);
 
-    if (ctx)
-        SSL_CTX_free(ctx);
+    if (pkey)
+        EVP_PKEY_free(pkey);
+
+    if (ssl_client_ctx)
+        SSL_CTX_free(ssl_client_ctx);
+
+    if (ssl_confctx)
+        SSL_CONF_CTX_free(ssl_confctx);
 
     printf(TLS_CLIENT " %s\n", (ret == 0) ? "success" : "failed");
     return (ret);

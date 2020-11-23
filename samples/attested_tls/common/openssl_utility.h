@@ -15,7 +15,9 @@ int write_to_session_peer(
     const char* payload,
     size_t payload_length);
 
-oe_result_t load_ssl_certificates_and_keys(
+oe_result_t load_tls_certificates_and_keys(
     SSL_CTX* ctx,
-    X509*& cert,
+    X509*& certificate,
     EVP_PKEY*& pkey);
+
+oe_result_t initalize_ssl_context(SSL_CONF_CTX*& ssl_conf_ctx, SSL_CTX*& ctx);
