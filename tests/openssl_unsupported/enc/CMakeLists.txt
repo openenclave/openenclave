@@ -23,9 +23,8 @@ function (add_unsupported_test NAME)
 
   enclave_compile_definitions(openssl_unsupported_${NAME}_enc PRIVATE ${DEFINE})
 
-  enclave_include_directories(
-    openssl_unsupported_${NAME}_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
-    ${OE_INCDIR}/openenclave)
+  enclave_include_directories(openssl_unsupported_${NAME}_enc PRIVATE
+                              ${CMAKE_CURRENT_BINARY_DIR})
 
   enclave_link_libraries(openssl_unsupported_${NAME}_enc openssl oelibc
                          oehostsock oehostfs oehostresolver)
