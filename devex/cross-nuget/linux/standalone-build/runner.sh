@@ -1,6 +1,9 @@
-set -o xtrace
+#!/usr/bin/env bash
 
-OS_CODENAME=$(cat /etc/os-release | grep UBUNTU_CODENAME | cut -d= -f2)
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+OS_CODENAME=$('cat /etc/os-release | grep UBUNTU_CODENAME | cut -d= -f2')
 if [[ $OS_CODENAME == "" ]]; then
     OS_CODENAME="xenial"
 fi
@@ -12,17 +15,17 @@ OPTEE_DEBUG_GRAPEBOARD_OUT_PATH=$PWD/build/optee/3.6.0/ls-ls1012grapeboard/debug
 OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH=$PWD/build/optee/3.6.0/vexpress-qemu_armv8a/release
 OPTEE_RELEASE_GRAPEBOARD_OUT_PATH=$PWD/build/optee/3.6.0/ls-ls1012grapeboard/release
 
-mkdir -p $OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH
-mkdir -p $OPTEE_DEBUG_GRAPEBOARD_OUT_PATH
-mkdir -p $OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH
-mkdir -p $OPTEE_RELEASE_GRAPEBOARD_OUT_PATH
+mkdir -p "$OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH"
+mkdir -p "$OPTEE_DEBUG_GRAPEBOARD_OUT_PATH"
+mkdir -p "$OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH"
+mkdir -p "$OPTEE_RELEASE_GRAPEBOARD_OUT_PATH"
 
 # SDK Build Output (SGX)
 SDK_DEBUG_SGX_DEFAULT_OUT_PATH=$PWD/build/$OS_CODENAME/sdk/sgx/default/debug
 SDK_RELEASE_SGX_DEFAULT_OUT_PATH=$PWD/build/$OS_CODENAME/sdk/sgx/default/release
 
-mkdir -p $SDK_DEBUG_SGX_DEFAULT_OUT_PATH
-mkdir -p $SDK_RELEASE_SGX_DEFAULT_OUT_PATH
+mkdir -p "$SDK_DEBUG_SGX_DEFAULT_OUT_PATH"
+mkdir -p "$SDK_RELEASE_SGX_DEFAULT_OUT_PATH"
 
 # SDK Build Output (OP-TEE)
 SDK_DEBUG_OPTEE_QEMU_ARMV8_OUT_PATH=$PWD/build/$OS_CODENAME/sdk/optee/3.6.0/vexpress-qemu_armv8a/debug
@@ -31,14 +34,14 @@ SDK_DEBUG_OPTEE_GRAPEBOARD_OUT_PATH=$PWD/build/$OS_CODENAME/sdk/optee/3.6.0/ls-l
 SDK_RELEASE_OPTEE_QEMU_ARMV8_OUT_PATH=$PWD/build/$OS_CODENAME/sdk/optee/3.6.0/vexpress-qemu_armv8a/release
 SDK_RELEASE_OPTEE_GRAPEBOARD_OUT_PATH=$PWD/build/$OS_CODENAME/sdk/optee/3.6.0/ls-ls1012grapeboard/release
 
-mkdir -p $SDK_DEBUG_OPTEE_QEMU_ARMV8_OUT_PATH
-mkdir -p $SDK_DEBUG_OPTEE_GRAPEBOARD_OUT_PATH
-mkdir -p $SDK_RELEASE_OPTEE_QEMU_ARMV8_OUT_PATH
-mkdir -p $SDK_RELEASE_OPTEE_GRAPEBOARD_OUT_PATH
+mkdir -p "$SDK_DEBUG_OPTEE_QEMU_ARMV8_OUT_PATH"
+mkdir -p "$SDK_DEBUG_OPTEE_GRAPEBOARD_OUT_PATH"
+mkdir -p "$SDK_RELEASE_OPTEE_QEMU_ARMV8_OUT_PATH"
+mkdir -p "$SDK_RELEASE_OPTEE_GRAPEBOARD_OUT_PATH"
 
 # Source Paths
-OE_SDK_PATH=$PWD/sdk
-OPTEE_PATH=$OE_SDK_PATH/3rdparty/optee/optee_os
+OE_SDK_PATH="$PWD/sdk"
+OPTEE_PATH="$OE_SDK_PATH/3rdparty/optee/optee_os"
 
 ## ========================================
 ## Build OP-TEE
@@ -100,59 +103,59 @@ EOF
 
     # Build OP-TEE for QEMU ARMv8 Debug
     echo "Building: OP-TEE/QEMU/Debug" >> runner.$OS_CODENAME
-    pushd $OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH
-    ARCH=arm make -j$(nproc) -C $OPTEE_PATH            \
+    pushd "$OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH" || exit 1
+    ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
         PLATFORM=vexpress-qemu_armv8a                  \
-        O=$PWD                                         \
-        $OPTEE_DEBUG_FLAGS                             \
+        O="$PWD"                                       \
+        "$OPTEE_DEBUG_FLAGS"                           \
         CROSS_COMPILE="$CROSS_COMPILE"                 \
         CROSS_COMPILE_core="$CROSS_COMPILE"            \
         CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
         CROSS_COMPILE_ta_arm32="$TA_CROSS_COMPILE_32"  \
         CFG_ARM64_core=y || exit 1
-    popd
+    popd || exit 1
 
     # Build OP-TEE for the Scalys Grapeboard Debug
     echo "Building: OP-TEE/Grapeboard/Debug" >> runner.$OS_CODENAME
-    pushd $OPTEE_DEBUG_GRAPEBOARD_OUT_PATH
-    ARCH=arm make -j$(nproc) -C $OPTEE_PATH            \
+    pushd "$OPTEE_DEBUG_GRAPEBOARD_OUT_PATH" || exit 1
+    ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
         PLATFORM=ls-ls1012grapeboard                   \
-        O=$PWD                                         \
-        $OPTEE_DEBUG_FLAGS                             \
+        O="$PWD"                                       \
+        "$OPTEE_DEBUG_FLAGS"                           \
         CROSS_COMPILE="$CROSS_COMPILE"                 \
         CROSS_COMPILE_core="$CROSS_COMPILE"            \
         CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
         CROSS_COMPILE_ta_arm32="$TA_CROSS_COMPILE_32"  \
         CFG_ARM64_core=y || exit 1
-    popd
+    popd || exit 1
 
     # Build OP-TEE for QEMU ARMv8 Release
     echo "Building: OP-TEE/QEMU/Release" >> runner.$OS_CODENAME
-    pushd $OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH
-    ARCH=arm make -j$(nproc) -C $OPTEE_PATH            \
+    pushd "$OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH" || exit 1
+    ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
         PLATFORM=vexpress-qemu_armv8a                  \
-        O=$PWD                                         \
-        $OPTEE_RELEASE_FLAGS                           \
+        O="$PWD"                                       \
+        "$OPTEE_RELEASE_FLAGS"                         \
         CROSS_COMPILE="$CROSS_COMPILE"                 \
         CROSS_COMPILE_core="$CROSS_COMPILE"            \
         CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
         CROSS_COMPILE_ta_arm32="$TA_CROSS_COMPILE_32"  \
         CFG_ARM64_core=y || exit 1
-    popd
+    popd || exit 1
 
     # Build OP-TEE for the Scalys Grapeboard Release
     echo "Building: OP-TEE/Grapeboard/Release" >> runner.$OS_CODENAME
-    pushd $OPTEE_RELEASE_GRAPEBOARD_OUT_PATH
-    ARCH=arm make -j$(nproc) -C $OPTEE_PATH            \
+    pushd "$OPTEE_RELEASE_GRAPEBOARD_OUT_PATH" || exit 1
+    ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
         PLATFORM=ls-ls1012grapeboard                   \
-        O=$PWD                                         \
-        $OPTEE_RELEASE_FLAGS                           \
+        O="$PWD"                                       \
+        "$OPTEE_RELEASE_FLAGS"                         \
         CROSS_COMPILE="$CROSS_COMPILE"                 \
         CROSS_COMPILE_core="$CROSS_COMPILE"            \
         CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
         CROSS_COMPILE_ta_arm32="$TA_CROSS_COMPILE_32"  \
         CFG_ARM64_core=y || exit 1
-    popd
+    popd || exit 1
 
     # Clear OP-TEE build variables
     unset OPTEE_DEBUG_FLAGS
@@ -168,8 +171,8 @@ fi
 
 # Build the SDK for Intel SGX Default Debug
 echo "Building: SDK/SGX/Default/Debug" >> runner.$OS_CODENAME
-pushd $SDK_DEBUG_SGX_DEFAULT_OUT_PATH
-cmake -G Ninja $OE_SDK_PATH                                  \
+pushd "$SDK_DEBUG_SGX_DEFAULT_OUT_PATH" || exit 1
+cmake -G Ninja "$OE_SDK_PATH"                                \
     -DLVI_MITIGATION=ControlFlow                             \
     -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
     -DCMAKE_BUILD_TYPE=Debug                                 \
@@ -178,16 +181,16 @@ cmake -G Ninja $OE_SDK_PATH                                  \
 ninja package || exit 1
 
 mkdir expand
-pushd expand
+pushd expand || exit 1
 7z x ../*.deb || exit 1
 tar xf data.tar || exit 1
-popd
-popd  # SDK Build Done
+popd || exit 1
+popd || exit 1  # SDK Build Done
 
 # Build the SDK for Intel SGX Default Release
 echo "Building: SDK/SGX/Default/Release" >> runner.$OS_CODENAME
-pushd $SDK_RELEASE_SGX_DEFAULT_OUT_PATH
-cmake -G Ninja $OE_SDK_PATH                                  \
+pushd "$SDK_RELEASE_SGX_DEFAULT_OUT_PATH" || exit 1
+cmake -G Ninja "$OE_SDK_PATH"                                \
     -DLVI_MITIGATION=ControlFlow                             \
     -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin    \
     -DCMAKE_BUILD_TYPE=Release                               \
@@ -196,11 +199,11 @@ cmake -G Ninja $OE_SDK_PATH                                  \
 ninja package || exit 1
 
 mkdir expand
-pushd expand
+pushd expand || exit 1
 7z x ../*.deb || exit 1
 tar xf data.tar || exit 1
-popd
-popd  # SDK Build Done
+popd || exit 1
+popd || exit 1  # SDK Build Done
 
 ## ========================================
 ## Build SDK (OP-TEE)
@@ -208,76 +211,76 @@ popd  # SDK Build Done
 
 # Build the SDK for OP-TEE on QEMU ARMv8 Debug
 echo "Building: SDK/OP-TEE/QEMU/Debug" >> runner.$OS_CODENAME
-pushd $SDK_DEBUG_OPTEE_QEMU_ARMV8_OUT_PATH
-DEV_KIT=$OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH
-cmake -G Ninja $OE_SDK_PATH                                    \
+pushd "$SDK_DEBUG_OPTEE_QEMU_ARMV8_OUT_PATH" || exit 1
+DEV_KIT="$OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH"
+cmake -G Ninja "$OE_SDK_PATH"                                  \
     -DCMAKE_BUILD_TYPE=Debug                                   \
     -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'             \
     -DCPACK_GENERATOR=DEB                                      \
-    -DCMAKE_TOOLCHAIN_FILE=$OE_SDK_PATH/cmake/arm-cross.cmake  \
-    -DOE_TA_DEV_KIT_DIR=$DEV_KIT/export-ta_arm64 || exit 1
+    -DCMAKE_TOOLCHAIN_FILE="$OE_SDK_PATH"/cmake/arm-cross.cmake\
+    -DOE_TA_DEV_KIT_DIR="$DEV_KIT"/export-ta_arm64 || exit 1
 ninja package || exit 1
 
 mkdir expand
-pushd expand
+pushd expand || exit 1
 7z x ../*.deb || exit 1
 tar xf data.tar || exit 1
-popd
-popd  # SDK Build Done
+popd || exit 1
+popd || exit 1  # SDK Build Done
 
 # Build the SDK for OP-TEE on the Scalys Grapeboard Debug
 echo "Building: SDK/OP-TEE/Grapeboard/Debug" >> runner.$OS_CODENAME
-pushd $SDK_DEBUG_OPTEE_GRAPEBOARD_OUT_PATH
-DEV_KIT=$OPTEE_DEBUG_GRAPEBOARD_OUT_PATH
-cmake -G Ninja $OE_SDK_PATH                                    \
+pushd "$SDK_DEBUG_OPTEE_GRAPEBOARD_OUT_PATH" || exit 1
+DEV_KIT="$OPTEE_DEBUG_GRAPEBOARD_OUT_PATH"
+cmake -G Ninja "$OE_SDK_PATH"                                  \
     -DCMAKE_BUILD_TYPE=Debug                                   \
     -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'             \
     -DCPACK_GENERATOR=DEB                                      \
-    -DCMAKE_TOOLCHAIN_FILE=$OE_SDK_PATH/cmake/arm-cross.cmake  \
-    -DOE_TA_DEV_KIT_DIR=$DEV_KIT/export-ta_arm64 || exit 1
+    -DCMAKE_TOOLCHAIN_FILE="$OE_SDK_PATH"/cmake/arm-cross.cmake\
+    -DOE_TA_DEV_KIT_DIR="$DEV_KIT"/export-ta_arm64 || exit 1
 ninja package || exit 1
 
 mkdir expand
-pushd expand
+pushd expand || exit 1
 7z x ../*.deb || exit 1
 tar xf data.tar || exit 1
-popd
-popd  # SDK Build Done
+popd || exit 1
+popd || exit 1  # SDK Build Done
 
 # Build the SDK for OP-TEE on QEMU ARMv8 Release
 echo "Building: SDK/OP-TEE/QEMU/Release" >> runner.$OS_CODENAME
-pushd $SDK_RELEASE_OPTEE_QEMU_ARMV8_OUT_PATH
-DEV_KIT=$OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH
-cmake -G Ninja $OE_SDK_PATH                                    \
+pushd "$SDK_RELEASE_OPTEE_QEMU_ARMV8_OUT_PATH" || exit 1
+DEV_KIT="$OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH"
+cmake -G Ninja "$OE_SDK_PATH"                                  \
     -DCMAKE_BUILD_TYPE=Release                                 \
     -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'             \
     -DCPACK_GENERATOR=DEB                                      \
-    -DCMAKE_TOOLCHAIN_FILE=$OE_SDK_PATH/cmake/arm-cross.cmake  \
-    -DOE_TA_DEV_KIT_DIR=$DEV_KIT/export-ta_arm64 || exit 1
+    -DCMAKE_TOOLCHAIN_FILE="$OE_SDK_PATH"/cmake/arm-cross.cmake\
+    -DOE_TA_DEV_KIT_DIR="$DEV_KIT"/export-ta_arm64 || exit 1
 ninja package || exit 1
 
 mkdir expand
-pushd expand
+pushd expand || exit 1
 7z x ../*.deb || exit 1
 tar xf data.tar || exit 1
-popd
-popd  # SDK Build Done
+popd || exit 1
+popd || exit 1  # SDK Build Done
 
 # Build the SDK for OP-TEE on the Scalys Grapeboard Release
 echo "Building: SDK/OP-TEE/Grapeboard/Release" >> runner.$OS_CODENAME
-pushd $SDK_RELEASE_OPTEE_GRAPEBOARD_OUT_PATH
-DEV_KIT=$OPTEE_RELEASE_GRAPEBOARD_OUT_PATH
-cmake -G Ninja $OE_SDK_PATH                                    \
+pushd "$SDK_RELEASE_OPTEE_GRAPEBOARD_OUT_PATH" || exit 1
+DEV_KIT="$OPTEE_RELEASE_GRAPEBOARD_OUT_PATH"
+cmake -G Ninja "$OE_SDK_PATH"                                  \
     -DCMAKE_BUILD_TYPE=Release                                 \
     -DCMAKE_INSTALL_PREFIX:PATH='/opt/openenclave'             \
     -DCPACK_GENERATOR=DEB                                      \
-    -DCMAKE_TOOLCHAIN_FILE=$OE_SDK_PATH/cmake/arm-cross.cmake  \
-    -DOE_TA_DEV_KIT_DIR=$DEV_KIT/export-ta_arm64 || exit 1
+    -DCMAKE_TOOLCHAIN_FILE="$OE_SDK_PATH"/cmake/arm-cross.cmake\
+    -DOE_TA_DEV_KIT_DIR="$DEV_KIT"/export-ta_arm64 || exit 1
 ninja package || exit 1
 
 mkdir expand
-pushd expand
+pushd expand || exit 1
 7z x ../*.deb || exit 1
 tar xf data.tar || exit 1
-popd
-popd  # SDK Build Done
+popd || exit 1
+popd || exit 1  # SDK Build Done

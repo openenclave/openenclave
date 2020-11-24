@@ -23,7 +23,7 @@ done
 
 # Clone the SDK
 if [ ! -d sdk ]; then
-    git clone --recursive --depth=1 https://github.com/openenclave/openenclave sdk -b $OE_SDK_TAG
+    git clone --recursive --depth=1 https://github.com/openenclave/openenclave sdk -b "$OE_SDK_TAG"
 fi
 
 # Delete all previous output

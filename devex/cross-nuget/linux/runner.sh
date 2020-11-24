@@ -5,7 +5,7 @@
 
 WORKING_DIR=$1
 
-OS_CODENAME=$(grep UBUNTU_CODENAME /etc/os-release | cut -d= -f2)
+OS_CODENAME=$('grep UBUNTU_CODENAME /etc/os-release | cut -d= -f2')
 
 cd "$WORKING_DIR" || exit 1
 
