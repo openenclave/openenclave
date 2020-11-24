@@ -911,13 +911,16 @@ add_enclave_library(
 
 enclave_include_directories(
   opensslcrypto PRIVATE $<BUILD_INTERFACE:${OPENSSL_BUILD_INCLUDES}>
-  $<BUILD_INTERFACE:${OPENSSL_DIR}> $<BUILD_INTERFACE:${OPENSSL_DIR}/include>
+  $<BUILD_INTERFACE:${OPENSSL_DIR}> $<BUILD_INTERFACE:${OPENSSL_DIR}/include>)
+
+# Only mark the directories that include headers to be published as PUBLIC.
+enclave_include_directories(
+  opensslcrypto PUBLIC $<BUILD_INTERFACE:${OE_INCDIR}/openenclave>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
 
 enclave_include_directories(
   opensslssl PRIVATE $<BUILD_INTERFACE:${OPENSSL_BUILD_INCLUDES}>
-  $<BUILD_INTERFACE:${OPENSSL_DIR}> $<BUILD_INTERFACE:${OPENSSL_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty>)
+  $<BUILD_INTERFACE:${OPENSSL_DIR}> $<BUILD_INTERFACE:${OPENSSL_DIR}/include>)
 
 maybe_build_using_clangw(opensslcrypto)
 maybe_build_using_clangw(opensslssl)
