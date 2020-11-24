@@ -1,7 +1,7 @@
-# OpenEnclave Init-time Configuration Interface
+# Open Enclave Init-time Configuration Interface
 
 In this paper, we present the interface design for Init-time Configuration
-support in OpenEnclave. OpenEnclave Init-time Configuration feature supports
+support in Open Enclave. Open Enclave Init-time Configuration feature supports
 configurable enclave functionality beyond the static functionality implemented
 by the enclave code and initialized data inside the enclave at the enclave
 initialization time.
@@ -113,7 +113,7 @@ On SGX CPUs supporting the KSS feature, configid and configsvn are available in
 the SGX `REPORT`. The OE SDK libs will provide an API to retrieve configid and
 configsvn within the enclave.
 
-In the future, when more TEEs support Init-time Configuration Data, the interface might be expanded to support TEE-agnostic `OE_ENCLAVE_INITTIME_CONFIGURATION_DATA`.
+In the future, when more TEEs support Init-time Configuration Data, the interface might be expanded to support TEE-agnostic Init-time Configuration Data.
 
 ## Attester and Verifier Plugin support
 
