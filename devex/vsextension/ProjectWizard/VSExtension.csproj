@@ -154,7 +154,7 @@
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
-    <Content Include="Packages\open-enclave-cross.0.11.0-rc1-cbe4dedc-2.nupkg">
+    <Content Include="Packages\open-enclave-cross.0.12.0.2.nupkg">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="VCTargets\OpenEnclave.Cpp.Common.props">
@@ -487,7 +487,7 @@
   </Target>
   <Import Project="..\packages\Microsoft.VisualStudio.SDK.EmbedInteropTypes.15.0.10\build\Microsoft.VisualStudio.SDK.EmbedInteropTypes.targets" Condition="Exists('..\packages\Microsoft.VisualStudio.SDK.EmbedInteropTypes.15.0.10\build\Microsoft.VisualStudio.SDK.EmbedInteropTypes.targets')" />
   <PropertyGroup>
-    <PreBuildEvent>curl --proto "=https" --tlsv1.2 -sSfL https://www.nuget.org/api/v2/package/open-enclave-cross/0.11.0-rc1-cbe4dedc-2 --output $(ProjectDir)\packages\open-enclave-cross.0.11.0-rc1-cbe4dedc-2.nupkg -z $(ProjectDir)\packages\open-enclave-cross.0.11.0-rc1-cbe4dedc-2.nupkg</PreBuildEvent>
+    <PreBuildEvent>curl --proto "=https" --tlsv1.2 -sSfL https://www.nuget.org/api/v2/package/open-enclave-cross/0.12.0.2 --output $(ProjectDir)\packages\open-enclave-cross.0.12.0.2.nupkg -z $(ProjectDir)\packages\open-enclave-cross.0.12.0.2.nupkg</PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Microsoft.VisualStudio.Threading.Analyzers.16.7.56\build\Microsoft.VisualStudio.Threading.Analyzers.targets" Condition="Exists('..\packages\Microsoft.VisualStudio.Threading.Analyzers.16.7.56\build\Microsoft.VisualStudio.Threading.Analyzers.targets')" />
   <Import Project="..\packages\Microsoft.VisualStudio.SDK.EmbedInteropTypes.15.0.34\build\Microsoft.VisualStudio.SDK.EmbedInteropTypes.targets" Condition="Exists('..\packages\Microsoft.VisualStudio.SDK.EmbedInteropTypes.15.0.34\build\Microsoft.VisualStudio.SDK.EmbedInteropTypes.targets')" />
