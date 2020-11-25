@@ -36,25 +36,27 @@ can be set as the hash of the signing key or cert to verify the metadata, and
 
 The scheme of committing the Enclave configuration data into the enclave
 identity produced by the CPU at the enclave initialization time is critical for
-SGX. For the use case of loading additional code/data, `CONFIGID` and
-`CONFIGSVN` reflect the identity of the additional code/data allowed to be
-loaded into the enclave. The identity must be immutable at enclave run time.
-Otherwise, the loaded code/data might be able to spoof its own identity. For
-instance, consider an enclave containing a JavaScript interpreter that executes
-user scripts that originate from the untrusted host in shared enclave memory,
-and which has access to the `oe_get_evidence` API. It is impossible to know
-which script has been executed by such an enclave based on traditional evidence,
-even if the hash of the script is supposed to be included in the
-`REPORT.report_data`, because a malicious script can set `REPORT.report_data`
-and obtain valid evidence via `oe_get_evidence`. Similarly, if an enclave loads
-and executes arbitrary assembly code from the host, this assembly code can use
-the SGX `EREPORT` instruction to create valid evidence reporting a spoofed
-identity of the loaded code. With `CONFIGID` and `CONFIGSVN` set at enclave
-initialization time, and accessible to the enclave code, the static code of the
-enclave makes sure the user script or assembly code loaded into the enclave
-match the identity captured in `CONFIGID` and `CONFIGSVN`, before transferring
-the execution control to the loaded code. Even if the loaded code is malicious,
-the code has no ability to spoof its own identity.  
+SGX. For the use case of loading additional code, `CONFIGID` and `CONFIGSVN`
+reflect the identity of the additional code allowed to be loaded into the
+enclave. As SGX Technology does not inherently provide privilege isolation among
+SW modules within the enclave, the identity must be immutable at enclave run
+time. Otherwise, the loaded code might be able to produce the attestation
+evidence and spoof its own identity,  For instance, consider an enclave
+containing a JavaScript interpreter that executes user scripts that originate
+from the untrusted host in shared enclave memory, and which has access to the
+`oe_get_evidence` API. It is impossible to know which script has been executed
+by such an enclave based on traditional evidence, even if the hash of the script
+is supposed to be included in the `REPORT.report_data`, because a malicious
+script can set `REPORT.report_data` and obtain valid evidence via
+`oe_get_evidence`. Similarly, if an enclave loads and executes arbitrary
+assembly code from the host, this assembly code can use the SGX `EREPORT`
+instruction to create valid evidence reporting a spoofed identity of the loaded
+code. With `CONFIGID` and `CONFIGSVN` set at enclave initialization time, and
+accessible to the enclave code, the static code of the enclave makes sure the
+user script or assembly code loaded into the enclave match the identity captured
+in `CONFIGID` and `CONFIGSVN`, before transferring the execution control to the
+loaded code. Even if the loaded code is malicious, the code has no ability to
+spoof its own identity.  
 
 ## Enclave Creation Interface
 
@@ -97,8 +99,8 @@ SECS.CONFIGSVN according to the table below.
 
 | CONFIGURATION_DATA | Behavior
 |-------|-----------------------------------
-|   -   | On system where SGX-KSS feature is not available or disabled: No Action; On system with SGX-KSS enabled: loader sets SECS.CONFIGID and SECS.CONFIGSVN as 0
-|   x   | On system where SGX-KSS feature is not available or disabled: Invalid;  On system with SGX-KSS enabled: loader copies _oe_sgx_config_data to SECS.CONFIGID and SECS.CONFIGSVN
+|   -   | On systems where SGX-KSS feature is not available or disabled: No Action; On systems with SGX-KSS enabled: loader sets SECS.CONFIGID and SECS.CONFIGSVN as 0
+|   x   | On systems where SGX-KSS feature is not available or disabled: Invalid;  On systems with SGX-KSS enabled: loader copies _oe_sgx_config_data to SECS.CONFIGID and SECS.CONFIGSVN
 
 The enclave developer is responsible for the host side code that produces the
 Enclave Configuration Data and pass the data to the enclave loader. The enclave
@@ -119,10 +121,10 @@ In the future, when more TEEs support Init-time Configuration Data, the interfac
 
 The Enclave Attestation Attester and Verifier plugins will include the Enclave
 Init-time Configuration Data as base claims and may include the additional
-content as custom claims. For TEE environment that does not support Enclave
+content as custom claims. For a TEE environment that does not support Enclave
 Init-time Configuration, for example, a SGX enclave running on a SGX CPU that
-does not support KSS feature, the Enclave Init-time Configuration Data claims
-should be 0.
+does not support KSS, the Enclave Init-time Configuration Data claims should be
+0.
 
 Currently, the `oe_result_t oe_get_evidence(...)` function each Attester Plugin
 must support specifies the `custom_claims_buffer` as a variable length
@@ -162,7 +164,7 @@ Init-time Configuration Data is defined by the enclave developer, a single
 implementation of Verifier Plugin can not accommodate all possible definitions
 of Enclave Init-time Configuration Data. The Verifier Plugin should support a
 default definition of Enclave Init-time Configuration Data, where the first 32
-bytes of the the Enclave Init-time Configuration Data is defined as the SHA256
+bytes of the Enclave Init-time Configuration Data is defined as the SHA256
 hash of the `inittime_custom_claims_buffer` content, and verify the integrity of
 the content. As defined below, the `inittime_custom_claims_buffer` contains an
 integrity algorithm ID, with ID 0 as the default definition each Verifier Plugin
@@ -197,7 +199,7 @@ configid/configsvn.
  * @param[in] inittime_custom_claims_buffer The optional inittime custom claims
  * buffer. When provided, the content of the buffer is included in the
  * evidence_buffer as plaintext. The integrity protection of the content is
- * provided by the underlining TEE and the enclave SW outside the plugin.
+ * provided by the underlying TEE and the enclave SW outside the plugin.
  * @param[in] inittime_custom_claims_buffer_size The number of bytes in the
  * inittime custom claims buffer.
  * @param[in] optional_parameters The optional format-specific input parameters.
