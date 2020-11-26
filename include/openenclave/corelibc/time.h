@@ -23,8 +23,6 @@ struct oe_tm
     int tm_isdst;
 };
 
-time_t oe_time(time_t* tloc);
-
 struct oe_tm* oe_gmtime(const time_t* timep);
 
 struct oe_tm* oe_gmtime_r(const time_t* timep, struct oe_tm* result);
@@ -49,12 +47,6 @@ struct timespec
     time_t tv_sec;
     long tv_nsec;
 };
-
-OE_INLINE
-time_t time(time_t* tloc)
-{
-    return oe_time(tloc);
-}
 
 OE_INLINE
 struct tm* gmtime(const time_t* timep)

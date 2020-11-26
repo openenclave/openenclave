@@ -69,7 +69,6 @@ void memory_management(
     int memory_size)
 {
     oe_result_t result;
-    oe_result_t return_value;
     oe_enclave_t* enclave = NULL;
 
     result = oe_create_stress_enclave(
@@ -82,8 +81,8 @@ void memory_management(
     printf("Start to do malloc in enclave: \n");
     for (i = 0; i < memory_count; i++)
     {
-        result = do_malloc(enclave, &return_value, memory_size);
-        OE_TEST(result == OE_OK);
+		if ((result = do_malloc(enclave, memory_size)) != OE_OK)
+            oe_put_err("do_malloc: %d, result=%u", i, result);
     }
     printf("finish doing malloc in enclave: %d\n", i);
 

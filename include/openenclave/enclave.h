@@ -33,6 +33,10 @@ OE_EXTERNC_BEGIN
  * @endcond
  */
 
+#ifndef _WIN32
+#define sscanf_s sscanf
+#endif
+
 /**
  * OP-TEE provides single-threaded enclaves only, and its ELF loader does not
  * support thread-local relocations. Hence, any enclave that includes a

@@ -21,5 +21,4 @@ add_enclave(
 
 enclave_include_directories(SampleApp PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                             ${CMAKE_CURRENT_SOURCE_DIR})
-
 enclave_link_libraries(SampleApp oelibc)

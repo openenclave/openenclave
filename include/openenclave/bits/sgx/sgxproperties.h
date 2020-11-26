@@ -31,6 +31,7 @@ typedef struct _oe_sgx_enclave_image_info_t
 // oe_sgx_enclave_properties_t SGX enclave properties derived type
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
+#define OE_SGX_FLAGS_KSS 0x0000000000000080ULL
 #define OE_SGX_SIGSTRUCT_SIZE 1808
 
 typedef struct oe_sgx_enclave_config_t
@@ -41,7 +42,9 @@ typedef struct oe_sgx_enclave_config_t
     /* Padding to make packed and unpacked size the same */
     uint32_t padding;
 
-    /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
+    uint8_t family_id[16];
+    uint8_t extended_product_id[16];
+    /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT | OE_SGX_FLAGS_KSS) */
     uint64_t attributes;
 
     /* XSave Feature Request Mask */
@@ -71,8 +74,9 @@ typedef struct _oe_sgx_enclave_properties
     OE_EXTERNC __attribute__((section(OE_INFO_SECTION_NAME)))
 #define OE_INFO_SECTION_END
 
-#define OE_MAKE_ATTRIBUTES(ALLOW_DEBUG) \
-    (OE_SGX_FLAGS_MODE64BIT | (ALLOW_DEBUG ? OE_SGX_FLAGS_DEBUG : 0))
+#define OE_MAKE_ATTRIBUTES(ALLOW_DEBUG, REQUIRE_KSS)                   \
+    (OE_SGX_FLAGS_MODE64BIT | (ALLOW_DEBUG ? OE_SGX_FLAGS_DEBUG : 0) | \
+     (REQUIRE_KSS ? OE_SGX_FLAGS_KSS : 0))
 
 // This macro initializes and injects an oe_sgx_enclave_properties_t struct
 // into the .oeinfo section.
@@ -84,24 +88,33 @@ typedef struct _oe_sgx_enclave_properties
  * an enclave binary. These properties can be overwritten at sign time by
  * the oesign tool.
  *
- * @param PRODUCT_ID ISV assigned Product ID (ISVPRODID) to use in the
+ * @param[in] PRODUCT_ID ISV assigned Product ID (ISVPRODID) to use in the
  * enclave signature
- * @param SECURITY_VERSION ISV assigned Security Version number (ISVSVN)
+ * @param[in] SECURITY_VERSION ISV assigned Security Version number (ISVSVN)
  * to use in the enclave signature
- * @param ALLOW_DEBUG If true, allows the enclave to be created with
+ * @param[in] EXTENDED_PRODUCT_ID ISV assigned Extended Product ID
+ * (ISVEXTPRODID) to use in the enclave signature
+ * @param[in] FAMILY_ID ISV assigned Product Family ID (ISVFAMILYID)
+ * to use in the enclave signature
+ * @param[in] ALLOW_DEBUG If true, allows the enclave to be created with
  * OE_ENCLAVE_FLAG_DEBUG and debugged at runtime
- * @param HEAP_PAGE_COUNT Number of heap pages to allocate in the enclave
- * @param STACK_PAGE_COUNT Number of stack pages per thread to reserve in
+ * @param[in] REQUIRE_KSS If true, allows the enclave to be created with
+ * kss properties
+ * @param[in] HEAP_PAGE_COUNT Number of heap pages to allocate in the enclave
+ * @param[in] STACK_PAGE_COUNT Number of stack pages per thread to reserve in
  * the enclave
- * @param TCS_COUNT Number of concurrent threads in an enclave to support
+ * @param[in] TCS_COUNT Number of concurrent threads in an enclave to support
  */
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
 
-#define OE_SET_ENCLAVE_SGX(                                               \
+#define _OE_SET_ENCLAVE_SGX_IMPL(                                         \
     PRODUCT_ID,                                                           \
     SECURITY_VERSION,                                                     \
+    EXTENDED_PRODUCT_ID,                                                  \
+    FAMILY_ID,                                                            \
     ALLOW_DEBUG,                                                          \
+    REQUIRE_KSS,                                                            \
     HEAP_PAGE_COUNT,                                                      \
     STACK_PAGE_COUNT,                                                     \
     TCS_COUNT)                                                            \
@@ -124,7 +137,9 @@ typedef struct _oe_sgx_enclave_properties
             .product_id = PRODUCT_ID,                                     \
             .security_version = SECURITY_VERSION,                         \
             .padding = 0,                                                 \
-            .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG)                 \
+            .family_id = FAMILY_ID,                                       \
+            .extended_product_id = EXTENDED_PRODUCT_ID,                   \
+            .attributes = OE_MAKE_ATTRIBUTES(ALLOW_DEBUG, REQUIRE_KSS)    \
         },                                                                \
         .image_info =                                                     \
         {                                                                 \
@@ -137,6 +152,80 @@ typedef struct _oe_sgx_enclave_properties
         .end_marker = 0xecececececececec,                                 \
     };                                                                    \
     OE_INFO_SECTION_END
+
+/**
+ * Defines the SGX properties for an enclave without KSS properties
+ *
+ * Maps to _OE_SET_ENCLAVE_SGX_IMPL with zero arrays for FAMILY_ID
+ * and EXTENDED_PRODUCT_ID and false for REQUIRE_KSS
+ * @param[in] PRODUCT_ID ISV assigned Product ID (ISVPRODID) to use in the
+ * enclave signature
+ * @param[in] SECURITY_VERSION ISV assigned Security Version number (ISVSVN)
+ * to use in the enclave signature
+ * @param[in] ALLOW_DEBUG If true, allows the enclave to be created with
+ * OE_ENCLAVE_FLAG_DEBUG and debugged at runtime
+ * @param[in] HEAP_PAGE_COUNT Number of heap pages to allocate in the enclave
+ * @param[in] STACK_PAGE_COUNT Number of stack pages per thread to reserve in
+ * the enclave
+ * @param[in] TCS_COUNT Number of concurrent threads in an enclave to support
+ */
+
+#define OE_SET_ENCLAVE_SGX(                                               \
+    PRODUCT_ID,                                                           \
+    SECURITY_VERSION,                                                     \
+    ALLOW_DEBUG,                                                          \
+    HEAP_PAGE_COUNT,                                                      \
+    STACK_PAGE_COUNT,                                                     \
+    TCS_COUNT)                                                            \
+ _OE_SET_ENCLAVE_SGX_IMPL(                                                \
+    PRODUCT_ID,                                                           \
+    SECURITY_VERSION,                                                     \
+    {0},                                                                  \
+    {0},                                                                  \
+    ALLOW_DEBUG,                                                          \
+    false,                                                                \
+    HEAP_PAGE_COUNT,                                                      \
+    STACK_PAGE_COUNT,                                                     \
+    TCS_COUNT)
+
+/**
+ * Defines the SGX properties for an enclave with KSS properties
+ *
+ * Maps to _OE_SET_ENCLAVE_SGX_IMPL and set the KSS attribute bit
+ * @param[in] PRODUCT_ID ISV assigned Product ID (ISVPRODID) to use in the
+ * enclave signature
+ * @param[in] SECURITY_VERSION ISV assigned Security Version number (ISVSVN)
+ * to use in the enclave signature
+ * @param[in] EXTENDED_PRODUCT_ID ISV assigned Extended Product ID (ISVEXTPRODID)
+ *  to use in the enclave signature
+ * @param[in] FAMILY_ID ISV assigned Product Family ID (ISVFAMILYID)
+ * to use in the enclave signature
+ * @param[in] ALLOW_DEBUG If true, allows the enclave to be created with
+ * OE_ENCLAVE_FLAG_DEBUG and debugged at runtime
+ * @param[in] HEAP_PAGE_COUNT Number of heap pages to allocate in the enclave
+ * @param[in] STACK_PAGE_COUNT Number of stack pages per thread to reserve in
+ * the enclave
+ * @param[in] TCS_COUNT Number of concurrent threads in an enclave to support
+ */
+ #define OE_SET_ENCLAVE_SGX_KSS(                                          \
+    PRODUCT_ID,                                                           \
+    SECURITY_VERSION,                                                     \
+    EXTENDED_PRODUCT_ID,                                                  \
+    FAMILY_ID,                                                            \
+    ALLOW_DEBUG,                                                          \
+    HEAP_PAGE_COUNT,                                                      \
+    STACK_PAGE_COUNT,                                                     \
+    TCS_COUNT)                                                            \
+ _OE_SET_ENCLAVE_SGX_IMPL(                                                \
+    PRODUCT_ID,                                                           \
+    SECURITY_VERSION,                                                     \
+    EXTENDED_PRODUCT_ID,                                                  \
+    FAMILY_ID,                                                            \
+    ALLOW_DEBUG,                                                          \
+    true,                                                                 \
+    HEAP_PAGE_COUNT,                                                      \
+    STACK_PAGE_COUNT,                                                     \
+    TCS_COUNT)
 
 // clang-format on
 

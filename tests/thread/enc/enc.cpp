@@ -82,6 +82,17 @@ void enc_test_mutex_counts(size_t* count1, size_t* count2)
     OE_TEST(oe_mutex_unlock(&mutex2) == 0);
 }
 
+void enc_test_spin_trylock()
+{
+    oe_spinlock_t lock = OE_SPINLOCK_INITIALIZER;
+    OE_TEST(oe_spin_trylock(&lock) == 0);
+    OE_TEST(oe_spin_trylock(&lock) != 0);
+    OE_TEST(oe_spin_unlock(&lock) == 0);
+    OE_TEST(oe_spin_trylock(&lock) == 0);
+    OE_TEST(oe_spin_trylock(&lock) != 0);
+    OE_TEST(oe_spin_unlock(&lock) == 0);
+}
+
 static oe_cond_t cond = OE_COND_INITIALIZER;
 static oe_mutex_t cond_mutex = OE_MUTEX_INITIALIZER;
 

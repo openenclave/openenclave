@@ -1,7 +1,5 @@
-Testing and CI/CD Special Interest Group
+Testing Special Interest Group
 ========================================
-
-All things testing within the OE SDK project.
 
 This SIG is specifically interested in making it easier for the OE SDK community
 to run and contribute tests, as well as integrate downstream testing, to ensure

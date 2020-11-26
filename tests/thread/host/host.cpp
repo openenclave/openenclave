@@ -48,6 +48,12 @@ void test_mutex(oe_enclave_t* enclave)
     OE_TEST(count2 == NUM_THREADS);
 }
 
+void test_spinlock(oe_enclave_t* enclave)
+{
+    oe_result_t result = enc_test_spin_trylock(enclave);
+    OE_TEST(result == OE_OK);
+}
+
 void* waiter_thread(oe_enclave_t* enclave)
 {
     oe_result_t result = enc_wait(enclave, NUM_THREADS);
@@ -326,6 +332,8 @@ int main(int argc, const char* argv[])
     }
 
     test_mutex(enclave);
+
+    test_spinlock(enclave);
 
     test_cond(enclave);
 

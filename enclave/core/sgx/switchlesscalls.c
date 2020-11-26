@@ -10,6 +10,7 @@
 #include <openenclave/internal/utils.h>
 #include "arena.h"
 #include "handle_ecall.h"
+#include "openenclave/internal/safemath.h"
 #include "platform_t.h"
 
 // The number of host thread workers. Initialized by host through ECALL
@@ -114,7 +115,8 @@ oe_result_t oe_sgx_init_context_switchless_ecall(
         OE_RAISE(OE_ALREADY_INITIALIZED);
     }
 
-    contexts_size = sizeof(oe_host_worker_context_t) * num_host_workers;
+    OE_CHECK(oe_safe_mul_u64(
+        sizeof(oe_host_worker_context_t), num_host_workers, &contexts_size));
 
     // Ensure the contexts are outside of enclave
     if (!oe_is_outside_enclave(host_worker_contexts, contexts_size) ||

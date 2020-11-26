@@ -17,6 +17,9 @@ add_enclave(
   0ed4cfa8-3d98-4ef6-a8e6-b3120517ccad
   CONFIG
   enc.conf
+  # The implementation of EEID currently relies on Mbed TLS.
+  CRYPTO_LIB
+  mbedtls
   SOURCES
   enc.c
   ../test_helpers.c

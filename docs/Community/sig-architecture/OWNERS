@@ -14,6 +14,7 @@ reviewers:
   - sig-release-chair
   - sig-sgx-chair
   - sig-optee-chair
+  - sig-ci-chair
 
 # NOTE(Aeva): sig-website is not listed here because the website
 # represents output from, not input into, the design process

@@ -3,6 +3,18 @@
 
 set(EDL_FILE ../oesign_test.edl)
 
+string(TOLOWER "${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB}"
+               DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOW)
+if (DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOW STREQUAL "mbedtls")
+  set(oecrypto_lib oecryptombedtls)
+elseif (DEFAULT_TEST_ENCLAVE_CRYPTO_LIB_LOW STREQUAL "openssl")
+  set(oecrypto_lib oecryptoopenssl)
+else ()
+  message(
+    FATAL_ERROR "Unsupported crypto library ${DEFAULT_TEST_ENCLAVE_CRYPTO_LIB}."
+  )
+endif ()
+
 # Use the edger8r to generate C bindings from the EDL file.
 add_custom_command(
   OUTPUT oesign_test_t.h oesign_test_t.c oesign_test_args.h
@@ -30,7 +42,7 @@ target_compile_definitions(oesign_test_enc PUBLIC OE_API_VERSION=2)
 # Need for the generated file oesign_test_t.h
 target_include_directories(oesign_test_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(oesign_test_enc oeenclave oelibc)
+target_link_libraries(oesign_test_enc oeenclave ${oecrypto_lib})
 
 # Generate an alternative version of the same test enclave with an additional
 # function and preconfigured SGX properties prior to signing.
@@ -46,5 +58,5 @@ target_compile_definitions(oesign_test_alt_enc PUBLIC OE_API_VERSION=2)
 target_include_directories(oesign_test_alt_enc
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(oesign_test_alt_enc oeenclave oelibc
+target_link_libraries(oesign_test_alt_enc oeenclave ${oecrypto_lib}
                       -Wl,--undefined=oesign_test_extra_function)

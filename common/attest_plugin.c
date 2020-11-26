@@ -295,67 +295,84 @@ oe_result_t oe_verify_evidence(
     size_t plugin_endorsements_size = 0;
 
     if (!evidence_buffer || !evidence_buffer_size ||
-        (!endorsements_buffer && endorsements_buffer_size) ||
-        (endorsements_buffer && !endorsements_buffer_size))
+        (!endorsements_buffer != !endorsements_buffer_size) ||
+        (!claims != !claims_length))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!format_id)
     {
-        oe_attestation_header_t* evidence =
-            (oe_attestation_header_t*)evidence_buffer;
+        // check whether evidence buffer structure is oe_report
+        oe_report_header_t* report = (oe_report_header_t*)evidence_buffer;
 
-        if (evidence_buffer_size < sizeof(oe_attestation_header_t) ||
-            evidence->version != OE_ATTESTATION_HEADER_VERSION)
-            OE_RAISE_MSG(
-                OE_INVALID_PARAMETER,
-                "Invalid attestation header version %d, expected %d",
-                evidence->version,
-                OE_ATTESTATION_HEADER_VERSION);
-
-        if (evidence_buffer_size !=
-            (evidence->data_size + sizeof(oe_attestation_header_t)))
-            OE_RAISE_MSG(
-                OE_INVALID_PARAMETER,
-                "Evidence size is invalid. "
-                "Header data size: %d bytes, evidence buffer size: %d",
-                evidence->data_size,
-                evidence_buffer_size);
-
-        if (endorsements_buffer)
+        if (evidence_buffer_size >= sizeof(oe_report_header_t) &&
+            report->version == OE_REPORT_HEADER_VERSION)
         {
-            oe_attestation_header_t* endorsements =
-                (oe_attestation_header_t*)endorsements_buffer;
+            format_id = &_uuid_legacy_report_remote;
+            plugin_evidence = evidence_buffer;
+            plugin_evidence_size = evidence_buffer_size;
+            plugin_endorsements = endorsements_buffer;
+            plugin_endorsements_size = endorsements_buffer_size;
+        }
+        else
+        {
+            oe_attestation_header_t* evidence =
+                (oe_attestation_header_t*)evidence_buffer;
 
-            if (endorsements_buffer_size < sizeof(oe_attestation_header_t) ||
-                endorsements->version != OE_ATTESTATION_HEADER_VERSION)
+            if (evidence_buffer_size < sizeof(oe_attestation_header_t) ||
+                evidence->version != OE_ATTESTATION_HEADER_VERSION)
                 OE_RAISE_MSG(
                     OE_INVALID_PARAMETER,
                     "Invalid attestation header version %d, expected %d",
-                    endorsements->version,
+                    evidence->version,
                     OE_ATTESTATION_HEADER_VERSION);
 
-            if (endorsements_buffer_size !=
-                (endorsements->data_size + sizeof(oe_attestation_header_t)))
+            if (evidence_buffer_size !=
+                (evidence->data_size + sizeof(oe_attestation_header_t)))
                 OE_RAISE_MSG(
                     OE_INVALID_PARAMETER,
-                    "Endorsements buffer size is invalid. "
-                    "Header data size: %d bytes, endorsements buffer size: %d",
-                    endorsements->data_size,
-                    endorsements_buffer_size);
+                    "Evidence size is invalid. "
+                    "Header data size: %d bytes, evidence buffer size: %d",
+                    evidence->data_size,
+                    evidence_buffer_size);
 
-            if (memcmp(
-                    &evidence->format_id,
-                    &endorsements->format_id,
-                    sizeof(evidence->format_id)) != 0)
-                OE_RAISE(OE_CONSTRAINT_FAILED);
+            if (endorsements_buffer)
+            {
+                oe_attestation_header_t* endorsements =
+                    (oe_attestation_header_t*)endorsements_buffer;
 
-            plugin_endorsements = endorsements->data;
-            plugin_endorsements_size = endorsements->data_size;
+                if (endorsements_buffer_size <
+                        sizeof(oe_attestation_header_t) ||
+                    endorsements->version != OE_ATTESTATION_HEADER_VERSION)
+                    OE_RAISE_MSG(
+                        OE_INVALID_PARAMETER,
+                        "Invalid attestation header version %d, expected %d",
+                        endorsements->version,
+                        OE_ATTESTATION_HEADER_VERSION);
+
+                if (endorsements_buffer_size !=
+                    (endorsements->data_size + sizeof(oe_attestation_header_t)))
+                    OE_RAISE_MSG(
+                        OE_INVALID_PARAMETER,
+                        "Endorsements buffer size is invalid. "
+                        "Header data size: %d bytes, endorsements buffer size: "
+                        "%d",
+                        endorsements->data_size,
+                        endorsements_buffer_size);
+
+                if (memcmp(
+                        &evidence->format_id,
+                        &endorsements->format_id,
+                        sizeof(evidence->format_id)) != 0)
+                    OE_RAISE(OE_CONSTRAINT_FAILED);
+
+                plugin_endorsements = endorsements->data;
+                plugin_endorsements_size = endorsements->data_size;
+            }
+
+            plugin_evidence = evidence->data;
+            plugin_evidence_size = evidence->data_size;
+            format_id = &evidence->format_id;
         }
-
-        plugin_evidence = evidence->data;
-        plugin_evidence_size = evidence->data_size;
-        format_id = &evidence->format_id;
     }
     else
     {
@@ -405,7 +422,7 @@ oe_result_t oe_verify_attestation_certificate_with_evidence(
     oe_cert_t cert = {0};
     uint8_t* report = NULL;
     size_t report_size = 0;
-    oe_report_header_t* header = NULL;
+    oe_attestation_header_t* header = NULL;
     uint8_t* pub_key_buff = NULL;
     size_t pub_key_buff_size = KEY_BUFF_SIZE;
     oe_claim_t* claims = NULL;
@@ -472,7 +489,7 @@ oe_result_t oe_verify_attestation_certificate_with_evidence(
     if (oid_array_index >= 2) // oid_oe_evidence or oid_new_oe_evidence
     {
         // find the report version
-        header = (oe_report_header_t*)report;
+        header = (oe_attestation_header_t*)report;
         if (header->version != OE_ATTESTATION_HEADER_VERSION)
             OE_RAISE_MSG(
                 OE_INVALID_PARAMETER,

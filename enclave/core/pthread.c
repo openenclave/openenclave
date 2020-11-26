@@ -116,6 +116,11 @@ int oe_pthread_spin_lock(oe_pthread_spinlock_t* spinlock)
     return _to_errno(oe_spin_lock((oe_spinlock_t*)spinlock));
 }
 
+int oe_pthread_spin_trylock(oe_pthread_spinlock_t* spinlock)
+{
+    return _to_errno(oe_spin_trylock((oe_spinlock_t*)spinlock));
+}
+
 int oe_pthread_spin_unlock(oe_pthread_spinlock_t* spinlock)
 {
     return _to_errno(oe_spin_unlock((oe_spinlock_t*)spinlock));

@@ -17,8 +17,9 @@ Test various OE synchronization primitives:
   1. *TestReadersWriterLock* : Tests readers-writer lock invariants by launching multiple reader and writer threads racing against each other. Asserts that multiple/all readers can be simultaneously active, only one writer is active,  readers and writers are never simultaneously active.
 
   **oe_spinlock_t**
-  DISABLED: These tests are disabled due to an open investigation into
-  deadlock in the oethread/pthread tests.
+  1. *TestTrylock* : Tests basic oe_spin_trylock usage.
+
+  DISABLED: These tests are disabled due to an open investigation into deadlock in the oethread/pthread tests.
   1. *TestErrnoMultiThreadsSameenclave* : Tests errno can be set correctly in multi-threads for same enclaves.
   2. *TestErrnoMultiThreadsDiffenclave* : Tests errno can be set correctly in multi-threads for different enclaves.
 

@@ -5,11 +5,13 @@
 
 #include <openenclave/attestation/sgx/eeid_verifier.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/eeid.h>
 #include <openenclave/internal/plugin.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 
+#include "../../../common/attest_plugin.h"
 #include "../../../common/sgx/endorsements.h"
 #include "../../../host/sgx/quote.h"
 #include "../test_helpers.h"
@@ -41,6 +43,7 @@ void host_ocall_verify(
             &claims_length),
         OE_OK);
 
+    oe_free_claims(claims, claims_length);
     claims = NULL;
     claims_length = 0;
 
@@ -57,6 +60,8 @@ void host_ocall_verify(
             &claims,
             &claims_length),
         OE_OK);
+
+    oe_free_claims(claims, claims_length);
 }
 
 void host_remote_verify(oe_enclave_t* enclave)
@@ -65,10 +70,10 @@ void host_remote_verify(oe_enclave_t* enclave)
 
     oe_result_t result;
 
-    size_t evidence_size = 65536, evidence_out_size = 0;
-    uint8_t evidence[evidence_size];
-    size_t endorsements_size = 65536, endorsements_out_size = 0;
-    uint8_t endorsements[endorsements_size];
+    size_t evidence_out_size = 0;
+    uint8_t evidence[65536];
+    size_t endorsements_out_size = 0;
+    uint8_t endorsements[65536];
     oe_claim_t* claims = NULL;
     size_t claims_length = 0;
 
@@ -77,10 +82,10 @@ void host_remote_verify(oe_enclave_t* enclave)
             enclave,
             &result,
             evidence,
-            evidence_size,
+            sizeof(evidence),
             &evidence_out_size,
             endorsements,
-            endorsements_size,
+            sizeof(endorsements),
             &endorsements_out_size),
         OE_OK);
 
@@ -157,6 +162,33 @@ void free_stuff(enclave_stuff_t* stuff)
     free(stuff->endorsements);
 }
 
+oe_result_t make_half_endorsements(
+    const oe_uuid_t* format_id,
+    const oe_eeid_t* eeid,
+    uint8_t** header_out,
+    size_t* header_out_size)
+{
+    size_t endorsements_size = sizeof(oe_eeid_endorsements_t) + eeid->data_size;
+    size_t header_size = sizeof(oe_attestation_header_t) + endorsements_size;
+    oe_attestation_header_t* header = malloc(header_size);
+    if (!header)
+        return OE_OUT_OF_MEMORY;
+    header->version = OE_ATTESTATION_HEADER_VERSION;
+    header->data_size = endorsements_size;
+    memcpy(&header->format_id, format_id, sizeof(oe_uuid_t));
+    oe_eeid_endorsements_t* endorsements = malloc(endorsements_size);
+    if (!endorsements)
+        return OE_OUT_OF_MEMORY;
+    endorsements->sgx_endorsements_size = 0;
+    endorsements->eeid_endorsements_size = eeid->data_size;
+    memcpy(endorsements->data, eeid->data, eeid->data_size);
+    oe_eeid_endorsements_hton(endorsements, header->data, header->data_size);
+    free(endorsements);
+    *header_out = (uint8_t*)header;
+    *header_out_size = header_size;
+    return OE_OK;
+}
+
 void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -183,6 +215,7 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
     stuff->claims = NULL;
     stuff->claims_length = 0;
 
+    /* Get evidence */
     OE_TEST_CODE(
         get_eeid_evidence(
             stuff->enclave,
@@ -196,6 +229,7 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
         OE_OK);
     OE_TEST(result == OE_OK);
 
+    /* Verify evidence without endorsements */
     OE_TEST(
         oe_verify_evidence(
             NULL,
@@ -208,6 +242,7 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
             &stuff->claims,
             &stuff->claims_length) == OE_OK);
 
+    /* Verify evidence with endorsements */
     OE_TEST(
         oe_verify_evidence(
             NULL,
@@ -220,6 +255,30 @@ void start_enclave(const char* filename, uint32_t flags, enclave_stuff_t* stuff)
             &stuff->claims,
             &stuff->claims_length) == OE_OK);
 
+    /* Verify evidence with EEID endorsements (copy of EEID data), but without
+     * SGX endorsements */
+    uint8_t* half_endorsements;
+    size_t half_endorsements_size;
+    OE_TEST(
+        make_half_endorsements(
+            &((oe_attestation_header_t*)stuff->evidence)->format_id,
+            stuff->eeid,
+            &half_endorsements,
+            &half_endorsements_size) == OE_OK);
+    OE_TEST(
+        oe_verify_evidence(
+            NULL,
+            stuff->evidence,
+            stuff->evidence_out_size,
+            half_endorsements,
+            half_endorsements_size,
+            0,
+            0,
+            &stuff->claims,
+            &stuff->claims_length) == OE_OK);
+    free(half_endorsements);
+
+    /* Extract some claims */
     stuff->enclave_hash = NULL;
     for (size_t i = 0; i < stuff->claims_length; i++)
         if (strcmp(stuff->claims[i].name, OE_CLAIM_UNIQUE_ID) == 0)

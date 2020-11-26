@@ -8,7 +8,7 @@
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/syscall.h>
+#include <openenclave/internal/syscall/hook.h>
 #include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/syscall/sys/syscall.h>
 #include <openenclave/internal/thread.h>

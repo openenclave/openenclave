@@ -120,25 +120,27 @@ if (UNIX)
   list(
     APPEND
     PLATFORM_HOST_ONLY_SRC
-    ../common/cert.c
-    crypto/openssl/asn1.c
-    crypto/openssl/cert.c
-    crypto/openssl/crl.c
-    crypto/openssl/ec.c
+    ${PROJECT_SOURCE_DIR}/common/cert.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/asn1.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/cert.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/crl.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/ec.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/key.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/rsa.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/sha.c
     crypto/openssl/init.c
-    crypto/openssl/key.c
     crypto/openssl/rsa.c
-    crypto/openssl/sha.c
     linux/hostthread.c
     linux/time.c)
 
-  list(APPEND PLATFORM_SDK_ONLY_SRC ../common/asn1.c crypto/openssl/hmac.c
+  list(APPEND PLATFORM_SDK_ONLY_SRC ${PROJECT_SOURCE_DIR}/common/asn1.c
+       ${PROJECT_SOURCE_DIR}/common/crypto/openssl/hmac.c
        crypto/openssl/random.c linux/syscall.c)
 elseif (WIN32)
   list(
     APPEND
     PLATFORM_HOST_ONLY_SRC
-    ../common/cert.c
+    ${PROJECT_SOURCE_DIR}/common/cert.c
     crypto/bcrypt/cert.c
     crypto/bcrypt/crl.c
     crypto/bcrypt/ec.c
@@ -153,10 +155,10 @@ elseif (WIN32)
   list(
     APPEND
     PLATFORM_SDK_ONLY_SRC
-    ../3rdparty/mbedtls/mbedtls/library/bignum.c
-    ../3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
-    ../common/asn1.c
-    ../common/cert.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/bignum.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
+    ${PROJECT_SOURCE_DIR}/common/asn1.c
+    ${PROJECT_SOURCE_DIR}/common/cert.c
     crypto/bcrypt/cert.c
     crypto/bcrypt/crl.c
     crypto/bcrypt/ec.c
@@ -193,29 +195,33 @@ if (OE_SGX)
   list(
     APPEND
     PLATFORM_HOST_ONLY_SRC
-    ../common/sgx/endorsements.c
-    ../common/sgx/qeidentity.c
-    ../common/sgx/quote.c
-    ../common/sgx/report.c
-    ../common/sgx/report_helper.c
-    ../common/sgx/collateral.c
-    ../common/sgx/sgxcertextensions.c
-    ../common/sgx/sgxmeasure.c
-    ../common/sgx/tcbinfo.c
-    ../common/sgx/tlsverifier.c
-    ../common/sgx/verifier.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/endorsements.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/qeidentity.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/quote.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/report.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/report_helper.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/collateral.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/sgxcertextensions.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/sgxmeasure.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/tcbinfo.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/tlsverifier.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/verifier.c
     sgx/hostverify_report.c
     sgx/report_common.c
-    sgx/sgxquoteprovider.c)
+    sgx/sgxquoteprovider.c
+    sgx/quote.c
+    sgx/sgxquote.c)
 
   if (WITH_EEID)
-    list(APPEND PLATFORM_HOST_ONLY_SRC ../common/sgx/eeid_verifier.c
-         ../common/sgx/eeid.c)
+    list(APPEND PLATFORM_HOST_ONLY_SRC
+         ${PROJECT_SOURCE_DIR}/common/sgx/eeid_verifier.c
+         ${PROJECT_SOURCE_DIR}/common/sgx/eeid.c)
   endif ()
 
   list(
     APPEND
     PLATFORM_SDK_ONLY_SRC
+    ${PROJECT_SOURCE_DIR}/common/sgx/cpuid.c
     sgx/calls.c
     sgx/create.c
     sgx/elf.c
@@ -241,7 +247,8 @@ if (OE_SGX)
 
   # OS specific as well.
   if (UNIX)
-    list(APPEND PLATFORM_HOST_ONLY_SRC sgx/linux/sgxquoteproviderloader.c)
+    list(APPEND PLATFORM_HOST_ONLY_SRC sgx/linux/sgxquoteproviderloader.c
+         sgx/linux/sgxquoteexloader.c)
 
     list(
       APPEND
@@ -254,7 +261,8 @@ if (OE_SGX)
       sgx/linux/sgxquoteexloader.c
       sgx/linux/xstate.c)
   else ()
-    list(APPEND PLATFORM_HOST_ONLY_SRC sgx/windows/sgxquoteproviderloader.c)
+    list(APPEND PLATFORM_HOST_ONLY_SRC sgx/windows/sgxquoteproviderloader.c
+         sgx/windows/sgxquoteexloader.c)
 
     list(
       APPEND
@@ -299,11 +307,12 @@ endif ()
 list(
   APPEND
   PLATFORM_HOST_ONLY_SRC
-  ../common/attest_plugin.c
-  ../common/custom_claims.c
-  ../common/datetime.c
-  ../common/safecrt.c
-  ../common/sha.c
+  ${PROJECT_SOURCE_DIR}/common/attest_plugin.c
+  ${PROJECT_SOURCE_DIR}/common/custom_claims.c
+  ${PROJECT_SOURCE_DIR}/common/datetime.c
+  ${PROJECT_SOURCE_DIR}/common/safecrt.c
+  ${PROJECT_SOURCE_DIR}/common/sha.c
+  memalign.c
   hexdump.c
   dupenv.c
   fopen.c
@@ -315,8 +324,8 @@ list(
 list(
   APPEND
   PLATFORM_SDK_ONLY_SRC
-  ../common/kdf.c
-  ../common/argv.c
+  ${PROJECT_SOURCE_DIR}/common/kdf.c
+  ${PROJECT_SOURCE_DIR}/common/argv.c
   asym_keys.c
   ecall_ids.c
   calls.c
@@ -327,7 +336,6 @@ list(
   error.c
   files.c
   fopen.c
-  memalign.c
   signkey.c
   strings.c
   traceh_enclave.c)
@@ -344,6 +352,9 @@ target_link_libraries(oehost PUBLIC oe_includes)
 if (OE_SGX)
   target_include_directories(
     oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
+  target_include_directories(
+    oehostverify PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
+
 endif ()
 
 if (WIN32)

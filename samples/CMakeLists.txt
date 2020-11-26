@@ -3,7 +3,7 @@
 
 if (BUILD_ENCLAVES)
   install(
-    DIRECTORY remote_attestation
+    DIRECTORY attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     PATTERN
       "gen_pubkey_header.sh"
@@ -28,25 +28,9 @@ if (BUILD_ENCLAVES)
         GROUP_READ
         WORLD_EXECUTE
         WORLD_READ)
-endif ()
 
-if (BUILD_ENCLAVES)
-  install(
-    DIRECTORY local_attestation
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    PATTERN
-      "gen_pubkey_header.sh"
-      PERMISSIONS
-        OWNER_EXECUTE
-        OWNER_WRITE
-        OWNER_READ
-        GROUP_EXECUTE
-        GROUP_READ
-        WORLD_EXECUTE
-        WORLD_READ)
-
-  install(DIRECTORY data-sealing file-encryptor helloworld log_callback
-                    switchless
+  install(DIRECTORY data-sealing debugmalloc file-encryptor helloworld
+                    log_callback switchless
           DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
   if (COMPILER_SUPPORTS_SNMALLOC)
@@ -55,26 +39,20 @@ if (BUILD_ENCLAVES)
   endif ()
 endif ()
 
-if (OE_SGX)
-  set(BUILD_HOSTVERIFY_INLINE ON)
-  add_subdirectory(host_verify)
-endif ()
-
 install(
   DIRECTORY host_verify
   DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
   COMPONENT OEHOSTVERIFY)
 
-install(
-  FILES README.md BuildSamplesWindows.md BuildSamplesLinux.md
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+install(FILES README.md BuildSamplesWindows.md BuildSamplesLinux.md
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
-if(UNIX)
+if (UNIX)
   install(
     FILES config.mk
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     COMPONENT OEHOSTVERIFY)
-endif()
+endif ()
 
 if (WIN32)
   add_test(

@@ -867,9 +867,11 @@ elseif (CMAKE_C_COMPILER_ID MATCHES Clang OR USE_CLANGW)
 endif ()
 
 # Disable optimizations for twalk.c to avoid Clang 8 compiler bug, see #2556
-if (CMAKE_C_COMPILER_ID MATCHES Clang
-    AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 8
-    AND CMAKE_C_COMPILER_VERSION VERSION_LESS 9.0)
+# Always dose this on Windows as we cannot know the version of clang.
+if (WIN32
+    OR (CMAKE_C_COMPILER_ID MATCHES Clang
+        AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 8
+        AND CMAKE_C_COMPILER_VERSION VERSION_LESS 9.0))
   set_source_files_properties(${MUSLSRC}/search/twalk.c PROPERTIES COMPILE_FLAGS
                                                                    -O0)
 endif ()

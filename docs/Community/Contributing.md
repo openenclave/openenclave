@@ -19,13 +19,7 @@ is defined in the documents linked below:
 Reporting Security Issues
 -------------------------
 
-Security issues and bugs should be reported privately, via email, to the
-Microsoft Security Response Center (MSRC) at <secure@microsoft.com>. You should
-receive a response within 24 hours. If for some reason you do not, please follow
-up via email to ensure we received your original message. Further information,
-including the [MSRC PGP](https://technet.microsoft.com/en-us/security/dn606155)
-key, can be found in the [Security
-TechCenter](https://technet.microsoft.com/en-us/security/default).
+To report a security issue, please follow the [process to report a vulnerability](/SECURITY.md#reporting-a-vulnerability).
 
 Opening Issues
 --------------
@@ -316,7 +310,9 @@ Copying Files from Other Projects
 
 Open Enclave uses some files from other projects, typically to provide a default
 level of functionality within the enclave where a binary distribution does not
-exist or would be inconvenient.
+exist or would be inconvenient.  Using submodules is preferred over copying
+source files from other projects, however.  When a fork is needed, see the
+[Repository Guidelines](Repositories.md).
 
 The following rules must be followed for PRs that include files from another
 project:

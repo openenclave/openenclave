@@ -7,10 +7,9 @@
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/utils.h>
 
-#include "../magic.h"
-#include "../rsa.h"
 #include "bcrypt.h"
 #include "key.h"
+#include "magic.h"
 #include "rsa.h"
 
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
@@ -344,7 +343,13 @@ oe_result_t oe_rsa_public_key_get_modulus(
     if (keyblob->cbModulus > *modulus_size)
     {
         *modulus_size = keyblob->cbModulus;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (modulus)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If modulus is null, this call is intented to get the correct
+         * modulus_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     /*
@@ -404,7 +409,13 @@ oe_result_t oe_rsa_public_key_get_exponent(
     if (keyblob->cbPublicExp > *exponent_size)
     {
         *exponent_size = keyblob->cbPublicExp;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+
+        if (exponent)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        /* If exponent is null, this call is intented to get the correct
+         * exponent_size so no need to trace OE_BUFFER_TOO_SMALL */
+        else
+            OE_RAISE_NO_TRACE(OE_BUFFER_TOO_SMALL);
     }
 
     /*
@@ -544,6 +555,70 @@ done:
         free(key_blob);
         key_blob_size = 0;
     }
+
+    return result;
+}
+
+oe_result_t oe_rsa_public_key_from_modulus(
+    const uint8_t* modulus,
+    size_t modulus_size,
+    const uint8_t* exponent,
+    size_t exponent_size,
+    oe_rsa_public_key_t* public_key)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    NTSTATUS status;
+    BCRYPT_KEY_HANDLE key_handle;
+    uint8_t* key_data_bytes = NULL;
+    size_t key_data_size = 0;
+
+    if (!public_key || modulus_size > ULONG_MAX || exponent_size > ULONG_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    key_data_size = sizeof(BCRYPT_RSAKEY_BLOB) + exponent_size + modulus_size;
+    key_data_bytes = malloc(key_data_size);
+    if (!key_data_bytes)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    BCRYPT_RSAKEY_BLOB* blob = (BCRYPT_RSAKEY_BLOB*)key_data_bytes;
+
+    blob->BitLength = (ULONG)modulus_size;
+    blob->cbModulus = (ULONG)modulus_size;
+    blob->cbPublicExp = (ULONG)exponent_size;
+    blob->Magic = BCRYPT_RSAPUBLIC_MAGIC;
+    blob->cbPrime1 = 0;
+    blob->cbPrime2 = 0;
+
+    OE_CHECK(oe_memcpy_s(
+        key_data_bytes + sizeof(BCRYPT_RSAKEY_BLOB),
+        (ULONG)exponent_size,
+        exponent,
+        (ULONG)exponent_size));
+    OE_CHECK(oe_memcpy_s(
+        key_data_bytes + sizeof(BCRYPT_RSAKEY_BLOB) + exponent_size,
+        (ULONG)modulus_size,
+        modulus,
+        (ULONG)modulus_size));
+
+    status = BCryptImportKeyPair(
+        BCRYPT_RSA_ALG_HANDLE,
+        NULL,
+        BCRYPT_RSAPUBLIC_BLOB,
+        &key_handle,
+        (PUCHAR)key_data_bytes,
+        (ULONG)key_data_size,
+        BCRYPT_NO_KEY_VALIDATION);
+
+    if (!BCRYPT_SUCCESS(status))
+        OE_RAISE_MSG(
+            OE_CRYPTO_ERROR, "BCryptImportKeyPair failed with %#x", status);
+
+    oe_rsa_public_key_init(public_key, key_handle);
+
+    result = OE_OK;
+
+done:
+    free(key_data_bytes);
 
     return result;
 }

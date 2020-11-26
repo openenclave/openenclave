@@ -20,6 +20,7 @@ signal.h | No | - |
 stdalign.h | No | - |
 stdarg.h | Yes | - |
 stdatomic.h | No | - |
+socket.h | Partial | Functions implicitly call out to untrusted host. Full support available on Linux hosts. Partial support available on Windows hosts. |
 stdbool.h | Yes | - |
 stddef.h | Yes | - |
 stdint.h | Yes | - |
@@ -35,3 +36,24 @@ uchar.h | Yes | - |
 wchar.h | Partial | Only basic support for C/POSIX locale. <br> **Unsupported functions:** <br> - All I/O (e.g. swprintf()) <br> - All multi-byte & wide string conversions (e.g. mbrtowc()) |
 wctype.h | Yes | - |
 
+## <socket.h>
+
+| Function | OCall | Linux Support | Windows Support | Comments |
+| :---: | :---: | :---: | :---: | --- |
+| accept | Yes | Yes | Yes | - |
+| bind | Yes | Yes | Yes | - |
+| connect | Yes | Yes | Yes | - |
+| getpeername | Yes | Yes | Yes | - |
+| getsockname | Yes | Yes | Yes | - |
+| getsockopt | Yes | Yes | Partial | Only socket-level options are supported on Windows. |
+| listen | Yes | Yes | Yes | - |
+| recv | Yes | Yes | Yes | - |
+| recvfrom | Yes | Yes | Yes | - |
+| recvmsg | Yes | Yes | No | - |
+| send | Yes | Yes | Yes | - |
+| sendmsg | Yes | Yes | No | - |
+| sendto | Yes | Yes | Yes | - |
+| setsockopt | Yes | Yes | Partial | Only socket-level options are supported on Windows. |
+| shutdown | Yes | Yes | Yes | - |
+| socket | Yes | Yes | Yes | - |
+| socketpair | Yes | Yes | No | - |

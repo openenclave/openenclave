@@ -17,7 +17,16 @@ enclave {
             size_t private_key_size,
             [in, count=public_key_size] uint8_t *public_key,
             size_t public_key_size,
-            [out] unsigned char **data, 
+            [out] unsigned char **data,
             [out] size_t *data_size);
+
+        public oe_result_t get_plugin_evidence(
+          [out, size=evidence_size] uint8_t* evidence_out,
+          size_t evidence_size,
+          [out] size_t* evidence_out_size,
+          [out, size=endorsements_size] uint8_t* endorsements,
+          size_t endorsements_size,
+          [out] size_t* endorsements_out_size
+        );
     };
 };

@@ -58,6 +58,10 @@ enclave_enable_code_coverage(oesyscall)
 
 add_enclave_dependencies(oesyscall syscall_trusted_edl)
 
+# Depend on oelibc in order to include bits/syscall.h which contains MUSL definitions of syscall enums.
+# Syscall infrastructure will assert that MUSL enums (e.g SYS_open) match the corresponding OE enums (e.g OE_SYS_open).
+enclave_link_libraries(oesyscall PRIVATE oelibc_includes)
+
 enclave_include_directories(
   oesyscall PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
   ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)

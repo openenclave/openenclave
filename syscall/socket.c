@@ -197,7 +197,7 @@ ssize_t oe_recvfrom(
     void* buf,
     size_t len,
     int flags,
-    const struct oe_sockaddr* src_addr,
+    struct oe_sockaddr* src_addr,
     oe_socklen_t* addrlen)
 {
     ssize_t ret = -1;

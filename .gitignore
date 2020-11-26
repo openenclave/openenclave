@@ -10,6 +10,16 @@ graphviz/
 build/
 winbuild/
 
+devex/cross-nuget/linux/build
+devex/cross-nuget/linux/pack
+devex/cross-nuget/linux/sdk
+devex/cross-nuget/linux/runner.bionic
+devex/cross-nuget/linux/runner.xenial
+
+devex/cross-nuget/windows/Build
+devex/cross-nuget/windows/Pack
+devex/cross-nuget/windows/SDK
+
 devex/vscode-extension/node_modules
 devex/vscode-extension/out
 devex/vscode-extension/*.vsix

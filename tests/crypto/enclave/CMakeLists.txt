@@ -6,4 +6,8 @@ if (BUILD_ENCLAVES)
 endif ()
 
 add_subdirectory(host)
-add_enclave_test(tests/crypto/enclave cryptohost crypto_enc)
+add_enclave_test(tests/crypto/enclave_mbedtls cryptohost crypto_mbedtls_enc)
+
+if (BUILD_OPENSSL)
+  add_enclave_test(tests/crypto/enclave_openssl cryptohost crypto_openssl_enc)
+endif ()

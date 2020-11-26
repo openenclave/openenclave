@@ -7,7 +7,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/syscall.h>
+#include <openenclave/internal/syscall/hook.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -79,7 +79,7 @@ set(ENCLAVE_CLIBS_1
     -Wl,-gc-sections
     -L\${libdir}/openenclave/enclave
     -loeenclave
-    -loecryptombed
+    -loecryptombedtls
     -lmbedx509
     -lmbedcrypto)
 
@@ -107,7 +107,7 @@ if (LVI_MITIGATION MATCHES ControlFlow)
       -Wl,-gc-sections
       -L\${libdir}/openenclave/enclave
       -loeenclave-lvi-cfg
-      -loecryptombed-lvi-cfg
+      -loecryptombedtls-lvi-cfg
       -lmbedx509-lvi-cfg
       -lmbedcrypto-lvi-cfg)
 

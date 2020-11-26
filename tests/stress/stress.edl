@@ -11,6 +11,6 @@ enclave {
 
     trusted {
         public void do_ecall(int arg);
-        public oe_result_t do_malloc(int memory_size);
+        public void do_malloc(int memory_size);
     };
 };

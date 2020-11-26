@@ -90,13 +90,15 @@ function (add_openssl_test_enc NAME BUILDTEST)
     # Building the enclave by default when enabling LVI mitigation to
     # test linking against LVI-mitigated libraries.
     ADD_LVI_MITIGATION
+    CRYPTO_LIB
+    OpenSSL
     SOURCES
     ${TEST_SRC}
     enc.c
     ${CMAKE_CURRENT_BINARY_DIR}/openssl_t.c)
 
   enclave_include_directories(
-    openssl-${NAME}_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+    openssl-${NAME}_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}
     ${OPENSSL_DIR}/include ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
 
   enclave_compile_options(
@@ -123,14 +125,8 @@ function (add_openssl_test_enc NAME BUILDTEST)
 
   enclave_include_directories(openssl-${NAME}_enc PRIVATE ${INCLUDE_PATHS})
 
-  enclave_link_libraries(
-    openssl-${NAME}_enc
-    openssl-support
-    openssl
-    oelibc
-    oehostsock
-    oehostfs
-    oehostresolver)
+  enclave_link_libraries(openssl-${NAME}_enc openssl-support oehostsock
+                         oehostfs oehostresolver)
 
   if (WIN32)
     maybe_build_using_clangw(openssl-${NAME}_enc)

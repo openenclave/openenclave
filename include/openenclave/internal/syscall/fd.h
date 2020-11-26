@@ -110,7 +110,7 @@ typedef struct _oe_socket_ops
         void* buf,
         size_t len,
         int flags,
-        const struct oe_sockaddr* src_addr,
+        struct oe_sockaddr* src_addr,
         oe_socklen_t* addrlen);
 
     ssize_t (*sendmsg)(oe_fd_t* sock, const struct oe_msghdr* msg, int flags);

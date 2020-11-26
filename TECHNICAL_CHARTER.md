@@ -10,13 +10,13 @@ This charter (the "Charter") sets forth the responsibilities and procedures for 
 
     b. The scope of the Project includes collaborative development under the Project License (as defined herein) supporting the mission, including documentation, testing, integration and the creation of other artifacts that aid the development, deployment, operation or adoption of the open source project.
 
-2. **Technical Steering Committee**
+2. **Community Governance Committee**
 
-    a. The Technical Steering Committee (the "TSC") will be responsible for all technical oversight of the open source Project.
+    a. The Community Governance Committee (the "CGC") will be ultimately responsible for all technical oversight of the open source Project.
 
-    b. The TSC voting members are initially the Project's Committers. At the inception of the project, the Committers of the Project will be as set forth within the "CONTRIBUTING" file within the Project's code repository. The TSC may choose an alternative approach for determining the voting members of the TSC, and any such alternative approach will be documented in the CONTRIBUTING file. Any meetings of the Technical Steering Committee are intended to be open to the public, and can be conducted electronically, via teleconference, or in person.
+    b. The CGC voting members are initially the Project's Committers. At the inception of the project, the Committers of the Project will be as set forth within the "CONTRIBUTING" file within the Project's code repository. The CGC may choose an alternative approach for determining the voting members of the CGC, and any such alternative approach will be documented in the CONTRIBUTING file.  Regular meetings of the Community Governance Committee are open to the public, and can be conducted electronically, via teleconference, or in person.
 
-    c. TSC projects generally will involve Contributors and Committers. The TSC may adopt or modify roles so long as the roles are documented in the CONTRIBUTING file. Unless otherwise documented:
+    c. CGC projects generally will involve Contributors and Committers. The CGC may adopt or modify roles so long as the roles are documented in the CONTRIBUTING file. Unless otherwise documented:
 
         i. Contributors include anyone in the technical community that contributes code, documentation, or other technical artifacts to the Project;
 
@@ -26,11 +26,11 @@ This charter (the "Charter") sets forth the responsibilities and procedures for 
 
     d. Participation in the Project through becoming a Contributor and Committer is open to anyone so long as they abide by the terms of this Charter.
 
-    e. The TSC may (1) establish work flow procedures for the submission, approval, and closure/archiving of projects, (2) set requirements for the promotion of Contributors to Committer status, as applicable, and (3) amend, adjust, refine and/or eliminate the roles of Contributors, and Committers, and create new roles, and publicly document any TSC roles, as it sees fit.
+    e. The CGC may (1) establish work flow procedures for the submission, approval, and closure/archiving of projects, (2) set requirements for the promotion of Contributors to Committer status, as applicable, and (3) amend, adjust, refine and/or eliminate the roles of Contributors, and Committers, and create new roles, and publicly document any CGC roles, as it sees fit.
 
-    f. The TSC may elect a TSC Chair, who will preside over meetings of the TSC and will serve until their resignation or replacement by the TSC. The TSC Chair, or any other TSC member so designated by the TSC, will serve as the primary communication contact between the Project and the Confidential Computing Consortium of The Linux Foundation.
+    f. The CGC may elect a CGC Chair, who will preside over meetings of the CGC and will serve until their resignation or replacement by the CGC. The CGC Chair, or any other CGC member so designated by the CGC, will serve as the primary communication contact between the Project and the Confidential Computing Consortium of The Linux Foundation.
 
-    g. Responsibilities: The TSC will be responsible for all aspects of oversight relating to the Project, which may include:
+    g. Responsibilities: The CGC will be responsible for all aspects of oversight relating to the Project, which may include:
 
         i. coordinating the technical direction of the Project;
 
@@ -50,25 +50,25 @@ This charter (the "Charter") sets forth the responsibilities and procedures for 
 
         ix. coordinating any marketing, events, or communications regarding the Project.
 
-3. **TSC Voting**
+3. **CGC Voting**
 
-    a. While the Project aims to operate as a consensus-based community, if any TSC decision requires a vote to move the Project forward, the voting members of the TSC will vote on a one vote per voting member basis.
+    a. While the Project aims to operate as a consensus-based community, if any CGC decision requires a vote to move the Project forward, the voting members of the CGC will vote on a one vote per voting member basis.
 
-    b. Quorum for TSC meetings requires at least two-thirds of all voting members of the TSC to be present. The TSC may continue to meet if quorum is not met but will be prevented from making any decisions at the meeting.
+    b. Quorum for CGC meetings requires at least two-thirds of all voting members of the CGC to be present. The CGC may continue to meet if quorum is not met but will be prevented from making any decisions at the meeting.
 
-    c. Except as provided in Section 7.c. and 8.a, all decisions by vote require a super-majority (two-thirds) vote of all voting members of the TSC.
+    c. Except as provided in Section 7.c. and 8.a, all decisions by vote require a super-majority (two-thirds) vote of all voting members of the CGC.
 
-    d. In the event a vote cannot be resolved by the TSC, any voting member of the TSC may refer the matter to the Series Manager for assistance in reaching a resolution.
+    d. In the event a vote cannot be resolved by the CGC, any voting member of the CGC may refer the matter to the Series Manager for assistance in reaching a resolution.
 
 4. **Compliance with Policies**
 
     a. This Charter is subject to the Series Agreement for the Project and the Operating Agreement of LF Projects. Contributors will comply with the policies of LF Projects as may be adopted and amended by LF Projects, including, without limitation the policies listed at https://lfprojects.org/policies/.
 
-    b. The TSC may adopt a code of conduct ("CoC") for the Project, which is subject to approval by the Series Manager. In the event that a Project-specific CoC has not been approved, the LF Projects Code of Conduct listed at https://lfprojects.org/policies will apply for all Collaborators in the Project.
+    b. The CGC may adopt a code of conduct ("CoC") for the Project, which is subject to approval by the Series Manager. In the event that a Project-specific CoC has not been approved, the LF Projects Code of Conduct listed at https://lfprojects.org/policies will apply for all Collaborators in the Project.
 
     c. When amending or adopting any policy applicable to the Project, LF Projects will publish such policy, as to be amended or adopted, on its web site at least 30 days prior to such policy taking effect; provided, however, that in the case of any amendment of the Trademark Policy or Terms of Use of LF Projects, any such amendment is effective upon publication on LF Project's web site.
 
-    d. All Collaborators must allow open participation from any individual or organization meeting the requirements for contributing under this Charter and any policies adopted for all Collaborators by the TSC, regardless of competitive interests. Put another way, the Project community must not seek to exclude any participant based on any criteria, requirement, or reason other than those that are reasonable and applied on a non-discriminatory basis to all Collaborators in the Project community.
+    d. All Collaborators must allow open participation from any individual or organization meeting the requirements for contributing under this Charter and any policies adopted for all Collaborators by the CGC, regardless of competitive interests. Put another way, the Project community must not seek to exclude any participant based on any criteria, requirement, or reason other than those that are reasonable and applied on a non-discriminatory basis to all Collaborators in the Project community.
 
     e. The Project will operate in a transparent, open, collaborative, and ethical manner at all times. The output of all Project discussions, proposals, timelines, decisions, and status should be made open and easily visible to all. Any potential violations of this requirement should be reported immediately to the Series Manager.
 
@@ -96,7 +96,7 @@ This charter (the "Charter") sets forth the responsibilities and procedures for 
 
         i. All new inbound code contributions to the Project must be made using the MIT License, available at https://opensource.org/licenses/MIT (the "Project License").
 
-        ii. All new inbound code contributions must also be accompanied by a Developer Certificate of Origin (http://developercertificate.org) sign-off in the source code system that is submitted through a TSC-approved contribution process which will bind the authorized contributor and, if not self-employed, their employer to the applicable license;
+        ii. All new inbound code contributions must also be accompanied by a Developer Certificate of Origin (http://developercertificate.org) sign-off in the source code system that is submitted through a CGC-approved contribution process which will bind the authorized contributor and, if not self-employed, their employer to the applicable license;
 
         iii. All outbound code will be made available under the Project License.
 
@@ -104,10 +104,10 @@ This charter (the "Charter") sets forth the responsibilities and procedures for 
 
         v. The Project may seek to integrate and contribute back to other open source projects ("Upstream Projects"). In such cases, the Project will conform to all license requirements of the Upstream Projects, including dependencies, leveraged by the Project. Upstream Project code contributions not stored within the Project's main code repository will comply with the contribution process and license terms for the applicable Upstream Project.
 
-    c. The TSC may approve the use of an alternative license or licenses for inbound or outbound contributions on an exception basis. To request an exception, please describe the contribution, the alternative open source license(s), and the justification for using an alternative open source license for the Project. License exceptions must be approved by a two-thirds vote of the entire TSC.
+    c. The CGC may approve the use of an alternative license or licenses for inbound or outbound contributions on an exception basis. To request an exception, please describe the contribution, the alternative open source license(s), and the justification for using an alternative open source license for the Project. License exceptions must be approved by a two-thirds vote of the entire CGC.
 
     d. Contributed files should contain license information, such as SPDX short form identifiers, indicating the open source license or licenses pertaining to the file.
 
 8. **Amendments**
 
-    a. This charter may be amended by a two-thirds vote of the entire TSC and is subject to approval by LF Projects.
+    a. This charter may be amended by a two-thirds vote of the entire CGC and is subject to approval by LF Projects.

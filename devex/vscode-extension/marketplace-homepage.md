@@ -259,7 +259,7 @@ system you run the extension on.
     build-essential clang-7 docker.io g++-aarch64-linux-gnu                  \
     gcc-aarch64-linux-gnu gdb gdb-multiarch libc6 libc6-dev:arm64 libfdt1    \
     libglib2.0-0 libpcre3 libpixman-1-0 libprotobuf10 libsgx-dcap-ql         \
-    libsgx-dcap-ql-dev libsgx-enclave-common libsgx-enclave-common-dev       \
+    libsgx-dcap-ql-dev libsgx-enclave-common                                 \
     libssl-dev libssl-dev:arm64 libstdc++6 open-enclave python python-crypto \
     python-pip qemu-user-static zlib1g
   ```
