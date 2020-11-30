@@ -44,10 +44,48 @@
   register: install_sgx
   until: install_sgx is success
 
-- name: Install the Intel DCAP packages
+- name: Download Intel SGX DCAP Packages
+  get_url:
+    url: "{{ intel_dcap_packages_url }}"
+    dest: "/tmp/"
+    mode: 0755
+    timeout: 120
+  retries: 3
+  when: flc_enabled|bool
+  register: get_dcap_package
+
+- name: Create Intel DCAP directory
+  file:
+    path: "{{ intel_dcap_packages_directory }}"
+    state: directory
+
+- name: Clean local rpm repo if it exists
+  file:
+    path: "{{ intel_dcap_packages_directory }}/sgx_rpm_local_repo"
+    state: absent
+
+- name: Unarchive Intel DCAP local rpm repo tgz
+  unarchive:
+    src: "{{ get_dcap_package.dest }}"
+    dest: "{{ intel_dcap_packages_directory }}"
+    remote_src: yes
+  when:
+    - get_dcap_package.changed
+    - get_dcap_package.dest
+
+- name: Enable local Intel DCAP repo
+  yum_repository:
+    name: intel-dcap-local-repo
+    description: Intel DCAP local RPM repository
+    baseurl: "file://{{ intel_dcap_packages_directory }}/sgx_rpm_local_repo"
+    enabled: no
+    gpgcheck: no
+
+- name: Install Intel DCAP packages
   yum:
     name: "{{ intel_dcap_packages }}"
-    state: latest
+    state: present
+    enablerepo: intel-dcap-local-repo
   when: flc_enabled|bool
   retries: 10
   register: install_dcap
@@ -55,5 +93,5 @@
 
 - name: Cleanup installation
   file:
-    path: "/tmp/sgx_rpm_local_repo.tgz"
+    path: "{{ get_dcap_package.dest }}"
     state: absent
