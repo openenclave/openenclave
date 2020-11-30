@@ -78,10 +78,13 @@ set(ENCLAVE_CLIBS_1
     -Wl,-z,now
     -Wl,-gc-sections
     -L\${libdir}/openenclave/enclave
-    -loeenclave
-    -loecryptombedtls
-    -lmbedx509
-    -lmbedcrypto)
+    -loeenclave)
+
+set(ENCLAVE_MBEDTLS_CRYPTO_WRAPPER_LIBS -loecryptombedtls -lmbedx509 -lmbedtls
+                                        -lmbedcrypto)
+
+set(ENCLAVE_OPENSSL_CRYPTO_WRAPPER_LIBS -loecryptoopenssl -lopensslssl
+                                        -lopensslcrypto)
 
 set(ENCLAVE_CLIBS_2 -loelibc -loesyscall -loecore)
 
@@ -89,7 +92,12 @@ set(ENCLAVE_CLIBS_LIST ${ENCLAVE_CLIBS_1} ${ENCLAVE_CLIBS_2})
 list(JOIN ENCLAVE_CLIBS_LIST " " ENCLAVE_CLIBS)
 
 set(ENCLAVE_CXXLIBS_LIST ${ENCLAVE_CLIBS_1} -loelibcxx ${ENCLAVE_CLIBS_2})
+list(APPEND ENCLAVE_MBEDTLS_CRYPTO_WRAPPER_LIBS ${ENCLAVE_CLIBS_2})
+list(APPEND ENCLAVE_OPENSSL_CRYPTO_WRAPPER_LIBS ${ENCLAVE_CLIBS_2})
+
 list(JOIN ENCLAVE_CXXLIBS_LIST " " ENCLAVE_CXXLIBS)
+list(JOIN ENCLAVE_MBEDTLS_CRYPTO_WRAPPER_LIBS " " ENCLAVE_MBEDTLS_CRYPTO_LIBS)
+list(JOIN ENCLAVE_OPENSSL_CRYPTO_WRAPPER_LIBS " " ENCLAVE_OPENSSL_CRYPTO_LIBS)
 
 if (LVI_MITIGATION MATCHES ControlFlow)
   set(LVI_MITIGATION_CLIBS_1
@@ -106,10 +114,14 @@ if (LVI_MITIGATION MATCHES ControlFlow)
       -Wl,-z,now
       -Wl,-gc-sections
       -L\${libdir}/openenclave/enclave
-      -loeenclave-lvi-cfg
-      -loecryptombedtls-lvi-cfg
-      -lmbedx509-lvi-cfg
+      -loeenclave-lvi-cfg)
+
+  set(LVI_MITIGATION_MBEDTLS_CRYPTO_WRAPPER_LIBS
+      -loecryptombedtls-lvi-cfg -lmbedx509-lvi-cfg -lmbedtls-lvi-cfg
       -lmbedcrypto-lvi-cfg)
+
+  set(LVI_MITIGATION_OPENSSL_CRYPTO_WRAPPER_LIBS
+      -loecryptoopenssl-lvi-cfg -lopensslssl-lvi-cfg -lopensslcrypto-lvi-cfg)
 
   # See `cmake/apply_lvi_mitigation.cmake`.
   if (GLIBC_VERSION GREATER_EQUAL 2.27)
@@ -126,6 +138,16 @@ if (LVI_MITIGATION MATCHES ControlFlow)
   set(LVI_MITIGATION_CXXLIBS_LIST ${LVI_MITIGATION_CLIBS_1} -loelibcxx-lvi-cfg
                                   ${LVI_MITIGATION_CLIBS_2})
   list(JOIN LVI_MITIGATION_CXXLIBS_LIST " " ENCLAVE_LVI_MITIGATION_CXXLIBS)
+
+  list(APPEND LVI_MITIGATION_MBEDTLS_CRYPTO_WRAPPER_LIBS
+       ${LVI_MITIGATION_CLIBS_2})
+  list(APPEND LVI_MITIGATION_OPENSSL_CRYPTO_WRAPPER_LIBS
+       ${LVI_MITIGATION_CLIBS_2})
+
+  list(JOIN LVI_MITIGATION_MBEDTLS_CRYPTO_WRAPPER_LIBS " "
+       LVI_MITIGATION_MBEDTLS_CRYPTO_LIBS)
+  list(JOIN LVI_MITIGATION_OPENSSL_CRYPTO_WRAPPER_LIBS " "
+       LVI_MITIGATION_OPENSSL_CRYPTO_LIBS)
 
 endif ()
 
@@ -164,235 +186,73 @@ set(HOST_CXXLIBS "${HOST_CLIBS}")
 
 ##==============================================================================
 ##
-## oeenclave-gcc.pc:
+## Function to configure and install package config file in mentioned component
 ##
 ##==============================================================================
 
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-gcc.pc
-  ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-gcc.pc @ONLY)
+function (configure_and_install_pkg_config PKG_CONFIG_FILE_NAME COMPONENT_NAME)
 
-install(FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-gcc.pc
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig")
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/${PKG_CONFIG_FILE_NAME}
+    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/${PKG_CONFIG_FILE_NAME} @ONLY)
 
-##==============================================================================
-##
-## oeenclave-g++.pc:
-##
-##==============================================================================
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-g++.pc
-  ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-g++.pc @ONLY)
-
-install(FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-g++.pc
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig")
+  if (NOT COMPONENT_NAME)
+    install(
+      FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/${PKG_CONFIG_FILE_NAME}
+      DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig")
+  else ()
+    install(
+      FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/${PKG_CONFIG_FILE_NAME}
+      DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
+      COMPONENT ${COMPONENT_NAME})
+  endif ()
+endfunction ()
 
 ##==============================================================================
 ##
-## oeenclave-gcc-lvi-cfg.pc:
+## package config file list
 ##
 ##==============================================================================
+
+set(PACKAGE_CONFIG_FILES_LIST oeenclave-gcc.pc oeenclave-g++.pc
+                              oeenclave-clang.pc oeenclave-clang++.pc)
+
+##==============================================================================
+##
+## package config file list with LVI mitigation
+##
+##==============================================================================
+
+set(LVI_MITIGATION_PACKAGE_CONFIG_FILES_LIST
+    oeenclave-gcc-lvi-cfg.pc oeenclave-g++-lvi-cfg.pc
+    oeenclave-clang-lvi-cfg.pc oeenclave-clang++-lvi-cfg.pc)
+
+##==============================================================================
+##
+## host verify package config file list
+##
+##==============================================================================
+
+set(HOST_VERIFY_PACKAGE_CONFIG_FILES_LIST
+    oehost-gcc.pc
+    oehost-g++.pc
+    oehostverify-gcc.pc
+    oehostverify-g++.pc
+    oehost-clang.pc
+    oehost-clang++.pc
+    oehostverify-clang.pc
+    oehostverify-clang++.pc)
+
+foreach (file_name ${PACKAGE_CONFIG_FILES_LIST})
+  configure_and_install_pkg_config(${file_name} "")
+endforeach (file_name)
 
 if (LVI_MITIGATION MATCHES ControlFlow)
-  configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-gcc-lvi-cfg.pc
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-gcc-lvi-cfg.pc @ONLY)
-
-  install(
-    FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-gcc-lvi-cfg.pc
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig")
+  foreach (file_name ${LVI_MITIGATION_PACKAGE_CONFIG_FILES_LIST})
+    configure_and_install_pkg_config(${file_name} "")
+  endforeach (file_name)
 endif ()
 
-##==============================================================================
-##
-## oeenclave-g++-lvi-cfg.pc:
-##
-##==============================================================================
-
-if (LVI_MITIGATION MATCHES ControlFlow)
-  configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-g++-lvi-cfg.pc
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-g++-lvi-cfg.pc @ONLY)
-
-  install(
-    FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-g++-lvi-cfg.pc
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig")
-endif ()
-
-##==============================================================================
-##
-## oehost-gcc.pc:
-##
-##==============================================================================
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/oehost-gcc.pc
-               ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-gcc.pc @ONLY)
-
-install(
-  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-gcc.pc
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-  COMPONENT OEHOSTVERIFY)
-
-##==============================================================================
-##
-## oehost-g++.pc:
-##
-##==============================================================================
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/oehost-g++.pc
-               ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-g++.pc @ONLY)
-
-install(
-  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-g++.pc
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-  COMPONENT OEHOSTVERIFY)
-
-##==============================================================================
-##
-## oehostverify-gcc.pc:
-##
-##==============================================================================
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-gcc.pc
-  ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-gcc.pc @ONLY)
-
-install(
-  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-gcc.pc
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-  COMPONENT OEHOSTVERIFY)
-
-##==============================================================================
-##
-## oehostverify-g++.pc:
-##
-##==============================================================================
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-g++.pc
-  ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-g++.pc @ONLY)
-
-install(
-  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-g++.pc
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-  COMPONENT OEHOSTVERIFY)
-
-##==============================================================================
-##
-## oeenclave-clang.pc:
-##
-##==============================================================================
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-clang.pc
-  ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang.pc @ONLY)
-
-install(FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang.pc
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig")
-
-##==============================================================================
-##
-## oeenclave-clang++.pc:
-##
-##==============================================================================
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-clang++.pc
-  ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang++.pc @ONLY)
-
-install(FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang++.pc
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig")
-
-##==============================================================================
-##
-## oeenclave-clang-lvi-cfg.pc:
-##
-##==============================================================================
-
-if (LVI_MITIGATION MATCHES ControlFlow)
-  configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-clang-lvi-cfg.pc
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang-lvi-cfg.pc @ONLY)
-
-  install(
-    FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang-lvi-cfg.pc
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig")
-endif ()
-
-##==============================================================================
-##
-## oeenclave-clang++-lvi-cfg.pc:
-##
-##==============================================================================
-
-if (LVI_MITIGATION MATCHES ControlFlow)
-  configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/oeenclave-clang++-lvi-cfg.pc
-    ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang++-lvi-cfg.pc
-    @ONLY)
-
-  install(
-    FILES
-      ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oeenclave-clang++-lvi-cfg.pc
-    DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig")
-endif ()
-
-##==============================================================================
-##
-## oehost-clang.pc:
-##
-##==============================================================================
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/oehost-clang.pc
-               ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang.pc @ONLY)
-
-install(
-  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang.pc
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-  COMPONENT OEHOSTVERIFY)
-
-##==============================================================================
-##
-## oehost-clang++.pc:
-##
-##==============================================================================
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/oehost-clang++.pc
-  ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang++.pc @ONLY)
-
-install(
-  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehost-clang++.pc
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-  COMPONENT OEHOSTVERIFY)
-
-##==============================================================================
-##
-## oehostverify-clang.pc:
-##
-##==============================================================================
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-clang.pc
-  ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang.pc @ONLY)
-
-install(
-  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang.pc
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-  COMPONENT OEHOSTVERIFY)
-
-##==============================================================================
-##
-## oehostverify-clang++.pc:
-##
-##==============================================================================
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/oehostverify-clang++.pc
-  ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang++.pc @ONLY)
-
-install(
-  FILES ${CMAKE_BINARY_DIR}/output/share/pkgconfig/oehostverify-clang++.pc
-  DESTINATION "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-  COMPONENT OEHOSTVERIFY)
+foreach (file_name ${HOST_VERIFY_PACKAGE_CONFIG_FILES_LIST})
+  configure_and_install_pkg_config(${file_name} OEHOSTVERIFY)
+endforeach (file_name)
