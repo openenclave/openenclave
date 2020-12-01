@@ -143,9 +143,27 @@ oe_continue_execution:
     // Restore rdi.
     movq    OE_CONTEXT_RDI(%rdi), %rdi
 
-    // Recovery the correct rsp.
-    add     $(ABI_REDZONE_BYTE_SIZE + 8), %rsp
+    // LVI mitigation strategy:
+    // Since no register is free, we cannot load the target into a register and
+    // then issue an lfence. Instead, we use retq (return) instruction to carry
+    // out a jump. The return address is at 0(RSP). RSP is ABI_REDZONE_BYTE_SIZE
+    // + 8 bytes below the correct RSP which was fetched from the context.
+    // We issue a
+    //     retq $ABI_REDZONE_BYTE_SIZE
+    // This has the following effect:
+    //     - The return address is popped and control is transferred to
+    //       the target address.
+    //     - Additionally, ABI_REDZONE_BYTE_SIZE is subtracted from RSP,
+    //       thereby restoring RSP correctly.
+    //     - Ideally assembler's LVI mitigation would insert lfence as appropriate.
+    //       Since it does not seem to handle retq with an immediate value, the
+    //       LVI mitigation is manually inserted.
 
-    // Jump to the target.
-    jmp     *-(ABI_REDZONE_BYTE_SIZE + 8)(%rsp)
+    // Manual LVI mitigation since the assember does not handle the retq below.
+    notq (%rsp)
+    notq (%rsp)
+    lfence
+
+    // Jump to the target and restore RSP.
+    retq $ABI_REDZONE_BYTE_SIZE
 .cfi_endproc
