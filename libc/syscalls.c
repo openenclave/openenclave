@@ -8,6 +8,7 @@
 #include <openenclave/corelibc/errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/syscall/declarations.h>
 #include <openenclave/internal/syscall/hook.h>
 #include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/syscall/sys/syscall.h>
@@ -29,26 +30,29 @@ static const uint64_t _SEC_TO_MSEC = 1000UL;
 static const uint64_t _MSEC_TO_USEC = 1000UL;
 static const uint64_t _MSEC_TO_NSEC = 1000000UL;
 
-static long _syscall_mmap(long n, ...)
+OE_DEFINE_SYSCALL6(SYS_mmap)
 {
     /* Always fail */
-    OE_UNUSED(n);
     return EPERM;
 }
 
-static long _syscall_clock_gettime(long n, long x1, long x2)
+OE_DEFINE_SYSCALL2(SYS_munmap)
 {
-    clockid_t clk_id = (clockid_t)x1;
-    struct timespec* tp = (struct timespec*)x2;
+    /* Always fail */
+    return EPERM;
+}
+
+OE_DEFINE_SYSCALL2(SYS_clock_gettime)
+{
+    clockid_t clock_id = (clockid_t)arg1;
+    struct timespec* tp = (struct timespec*)arg2;
     int ret = -1;
     uint64_t msec;
-
-    OE_UNUSED(n);
 
     if (!tp)
         goto done;
 
-    if (clk_id != CLOCK_REALTIME)
+    if (clock_id != CLOCK_REALTIME)
     {
         /* Only supporting CLOCK_REALTIME */
         oe_assert("clock_gettime(): panic" == NULL);
@@ -68,14 +72,12 @@ done:
     return ret;
 }
 
-static long _syscall_gettimeofday(long n, long x1, long x2)
+OE_DEFINE_SYSCALL2(SYS_gettimeofday)
 {
-    struct timeval* tv = (struct timeval*)x1;
-    void* tz = (void*)x2;
+    struct timeval* tv = (struct timeval*)arg1;
+    void* tz = (void*)arg2;
     int ret = -1;
     uint64_t msec;
-
-    OE_UNUSED(n);
 
     if (tv)
         memset(tv, 0, sizeof(struct timeval));
@@ -211,12 +213,10 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     /* Handle syscall internally if possible. */
     switch (n)
     {
-        case SYS_gettimeofday:
-            return _syscall_gettimeofday(n, x1, x2);
-        case SYS_clock_gettime:
-            return _syscall_clock_gettime(n, x1, x2);
-        case SYS_mmap:
-            return _syscall_mmap(n, x1, x2, x3, x4, x5, x6);
+        OE_SYSCALL_DISPATCH(SYS_clock_gettime, x1, x2);
+        OE_SYSCALL_DISPATCH(SYS_gettimeofday, x1, x2);
+        OE_SYSCALL_DISPATCH(SYS_mmap, x1, x2, x3, x4, x5, x6);
+
         default:
             /* Drop through and let the code below handle the syscall. */
             break;
@@ -239,12 +239,6 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     /* All other MUSL-initiated syscalls are aborted. */
     fprintf(stderr, "error: unhandled syscall: n=%lu\n", n);
     abort();
-}
-
-/* Intercept __syscalls_cp() from MUSL */
-long __syscall_cp(long n, long x1, long x2, long x3, long x4, long x5, long x6)
-{
-    return __syscall(n, x1, x2, x3, x4, x5, x6);
 }
 
 long syscall(long number, ...)
