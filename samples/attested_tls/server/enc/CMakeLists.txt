@@ -45,7 +45,7 @@ target_include_directories(
           ${CMAKE_BINARY_DIR}/server/enc)
 
 target_link_libraries(
-  tls_server_enc openenclave::oeenclave openenclave::oecryptombedtls
+  tls_server_enc openenclave::oeenclave openenclave::oecrypto${OE_CRYPTO_LIB}
   openenclave::oelibcxx openenclave::oehostsock openenclave::oehostresolver)
 
 add_custom_target(tls_server_sign_enc ALL DEPENDS tls_server_enc.signed

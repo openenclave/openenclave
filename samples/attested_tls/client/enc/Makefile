@@ -7,6 +7,7 @@ CFLAGS=$(shell pkg-config oeenclave-$(C_COMPILER) --cflags)
 CXXFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --cflags)
 LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
 INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
+CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
 
 .PHONY: all build clean run
 
@@ -21,7 +22,7 @@ build:
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 -DCLIENT_CERT_VERIFY_CALLBACK ecalls.cpp client.cpp ../../common/cert_verifier.cpp ../../common/identity_verifier.cpp ../../common/utility.cpp
 	$(CC) -c $(CFLAGS) $(CINCLUDES) ./tls_client_t.c
-	$(CXX) -o tls_client_enclave ecalls.o client.o cert_verifier.o identity_verifier.o utility.o tls_client_t.o $(LDFLAGS) -lmbedtls -lmbedcrypto -loehostsock -loehostresolver -loecore -loelibc -loesyscall
+	$(CXX) -o tls_client_enclave ecalls.o client.o cert_verifier.o identity_verifier.o utility.o tls_client_t.o $(LDFLAGS) $(CRYPTO_LDFLAGS) -loehostsock -loehostresolver
 
 sign:
 	oesign sign -e tls_client_enclave -c  enc.conf -k private.pem

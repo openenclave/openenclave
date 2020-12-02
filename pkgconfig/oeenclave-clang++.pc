@@ -5,6 +5,8 @@ prefix=${pcfiledir}/../..
 exec_prefix=${prefix}
 includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+mbedtlslibs=@ENCLAVE_MBEDTLS_CRYPTO_LIBS@
+openssllibs=@ENCLAVE_OPENSSL_CRYPTO_LIBS@
 
 Name: Open Enclave
 Description: Open Enclave clang++ flags and libraries for building enclaves.

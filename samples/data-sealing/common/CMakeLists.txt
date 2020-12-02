@@ -25,7 +25,7 @@ target_link_libraries(
          # Alternatively we could use a CMake OBJECT library, but that
          # requires a newish version of CMake.
          $<$<PLATFORM_ID:Linux>:-Wl,--require-defined=__oe_ecalls_table>
-         openenclave::oeenclave openenclave::oecryptombedtls
+         openenclave::oeenclave openenclave::oecrypto${OE_CRYPTO_LIB}
          openenclave::oelibcxx)
 if (WIN32)
   maybe_build_using_clangw(common)
