@@ -13,9 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Breaking Changes
 - liboecryptombed is now called liboecryptombedtls and will no longer be automatically included as a link dependency when linking liboeenclave in CMake.
      - The `openenclave-config.cmake` and `openenclave-lvi-mitigation-config.cmake` will not specify the renamed liboecryptombedtls as a `PUBLIC` link requirement for liboeenclave.
-     - Enclave apps that build with CMake and use the Open Enclave cmake configurations must now explicitly include `openenclave::oecryptombedtls` when linking `openenclave::oeenclave`.
-     - See the [CMakeLists.txt in the helloworld sample](samples/helloworld/enclave/CMakeLists.txt#L32) for an example.
-     - This change does not currently affect enclave apps relying on pkgconfig.
+     - Enclave apps that are built with CMake and use the Open Enclave's CMake configurations must now explicitly include OE crypto wrapper library when linking `openenclave::oeenclave`.
+     - See the [CMakeLists.txt in the helloworld sample](samples/helloworld/enclave/CMakeLists.txt#L32) for an example. Here `OE_CRYPTO_LIB` is set to `mbedtls` in [parent CMakeList file](samples/helloworld/CMakeLists.txt#L22).
+     - Enclave apps that are built with Make and rely on Open Enclave's pkgconfig must now explicitly include OE crypto wrapper library in linker dependency flags.
+     - See the [Makefile in the helloworld sample](samples/helloworld/enclave/Makefile#L34) for an example. Here `OE_CRYPTO_LIB` is set to `mbedtls` in [parent MakeList file](samples/helloworld/Makefile#L9).
 
 [v0.12.0][v0.12.0_log]
 --------------
