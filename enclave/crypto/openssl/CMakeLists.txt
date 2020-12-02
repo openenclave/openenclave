@@ -24,9 +24,6 @@ maybe_build_using_clangw(oecryptoopenssl)
 
 enclave_enable_code_coverage(oecryptoopenssl)
 
-enclave_include_directories(oecryptoopenssl PUBLIC
-                            $<BUILD_INTERFACE:${OE_INCDIR}/openenclave>)
-
 enclave_include_directories(
   oecryptoopenssl PRIVATE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include>
@@ -35,7 +32,7 @@ enclave_include_directories(
 enclave_link_libraries(oecryptoopenssl PUBLIC openssl)
 
 # Enforce the correct build dependency such that OpenSSL will be built first.
-add_enclave_dependencies(oecryptoopenssl opensslcrypto)
+add_enclave_dependencies(oecryptoopenssl openssl)
 
 set_enclave_property(TARGET oecryptoopenssl PROPERTY ARCHIVE_OUTPUT_DIRECTORY
                      ${OE_LIBDIR}/openenclave/enclave)

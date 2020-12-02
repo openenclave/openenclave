@@ -292,7 +292,8 @@ ExternalProject_Add(
   INSTALL_COMMAND "")
 
 add_dependencies(openssl_includes openssl_configure)
-add_dependencies(openssl_generated openssl_configure)
+add_dependencies(openssl_copied openssl_configure)
+add_dependencies(openssl_generated openssl_includes)
 add_dependencies(openssl_generated openssl_copied)
 
 # Add opensslcrypto (the libcrypto in openssl).

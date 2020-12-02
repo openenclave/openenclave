@@ -67,6 +67,7 @@ if (BUILD_OPENSSL)
     enclave_compile_definitions(crypto_openssl_enc PRIVATE CODE_COVERAGE)
   endif ()
 
-  enclave_include_directories(crypto_openssl_enc PRIVATE
-                              ${CMAKE_CURRENT_BINARY_DIR})
+  enclave_include_directories(
+    crypto_openssl_enc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR})
 endif ()
