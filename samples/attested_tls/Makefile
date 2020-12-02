@@ -5,6 +5,12 @@
 
 all: build
 
+# set OE_CRYPTO_LIB to either "mbedtls" or "openssl" based on the crypto wrapper to be used.
+# OE_CRYPTO_LIB is case sensitive. Use all lowercase letters.
+
+OE_CRYPTO_LIB := mbedtls
+export OE_CRYPTO_LIB
+
 build:
 	$(MAKE) -C server
 	$(MAKE) -C client

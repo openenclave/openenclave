@@ -5,6 +5,9 @@ cmake_minimum_required(VERSION 3.11)
 
 project("Attested TLS sample" LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 11)
+# set OE_CRYPTO_LIB to either "mbedtls" or "openssl" based on the crypto wrapper to be used.
+# OE_CRYPTO_LIB is case sensitive. Use all lowercase letters.
+set(OE_CRYPTO_LIB mbedtls)
 
 find_package(OpenEnclave CONFIG REQUIRED)
 

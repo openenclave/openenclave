@@ -3,6 +3,8 @@
 
 include ../../config.mk
 
+CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
+
 ifeq ($(LVI_MITIGATION), ControlFlow)
 	ifeq ($(LVI_MITIGATION_BINDIR),)
 		$(error LVI_MITIGATION_BINDIR is not set)
@@ -12,6 +14,7 @@ ifeq ($(LVI_MITIGATION), ControlFlow)
 		CC := $(LVI_MITIGATION_BINDIR)/$(CC)
 	endif
 	COMPILER := $(COMPILER)-lvi-cfg
+	CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libslvicfg)
 endif
 
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
@@ -32,8 +35,8 @@ build:
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) -DOE_API_VERSION=2 enc.cpp -o enc.o
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 allocator_demo_t.c -o allocator_demo_t.o
-	$(CC) -o enclave_default allocator_demo_t.o enc.o $(LDFLAGS) -loelibcxx -loelibc -loecore
-	$(CC) -o enclave_custom allocator_demo_t.o enc.o $(LDFLAGS_CUSTOM) -loelibcxx -loelibc -loecore
+	$(CC) -o enclave_default allocator_demo_t.o enc.o $(LDFLAGS) $(CRYPTO_LDFLAGS) -loelibcxx -loelibc -loecore
+	$(CC) -o enclave_custom allocator_demo_t.o enc.o $(LDFLAGS_CUSTOM) $(CRYPTO_LDFLAGS) -loelibcxx -loelibc -loecore
 
 sign:
 	oesign sign -e enclave_default -c allocator_demo.conf -k private.pem
