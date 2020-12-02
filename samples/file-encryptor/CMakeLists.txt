@@ -24,9 +24,9 @@ add_custom_command(
 # Sign enclave
 add_custom_command(
   OUTPUT enclave/enclave.signed
-  DEPENDS enclave enclave/file-encryptor.conf private.pem
+  DEPENDS enclave enclave/common/file-encryptor.conf private.pem
   COMMAND openenclave::oesign sign -e $<TARGET_FILE:enclave> -c
-          ${CMAKE_SOURCE_DIR}/enclave/file-encryptor.conf -k private.pem)
+          ${CMAKE_SOURCE_DIR}/enclave/common/file-encryptor.conf -k private.pem)
 
 add_custom_target(sign ALL DEPENDS enclave/enclave.signed)
 
