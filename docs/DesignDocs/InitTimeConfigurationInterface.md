@@ -26,8 +26,8 @@ the enclave initialization time.
 
 The exact usage of `CONFIGID` and `CONFIGSVN` depends on the enclave
 implementation. For the use case of loading additional code/data into the
-enclave, `CONFIGID` might be used to reflect the hash of additional code/data
-to be accepted by the enclave post enclave initialization, or the hash of a
+enclave, `CONFIGID` might be used to reflect the hash of additional code/data to
+be accepted by the enclave post enclave initialization, or the hash of a
 metadata to be loaded into the enclave and used by the enclave code to verify
 extra code/data to load. `CONFIGSVN` might be used in case `CONFIGID` does not
 fully reflect the identity of the additional content. For example, `CONFIGID`
@@ -63,10 +63,11 @@ spoof its own identity.
 The configurable enclave functionality concept is not limited to SGX TEE. Other
 TEEs can potentially support this concept, including the aspect of immutable
 identity of additional code/code allowed to be loaded into the enclave post
-enclave initialization. But at the time of the writing, only SGX with KSS feature supports Init-time Configuration Data.  
+enclave initialization. But at the time of the writing, only SGX with KSS
+feature supports Init-time Configuration Data.  
 
 An OE SGX application passes the Init-time Configuration Data to the enclave
-loader through the `OE_SGX_CONFIG_DATA` enclave setting context:
+loader through the `OE_SGX_CONFIGURATION_DATA` enclave setting context:
 
 ```C
 /**
@@ -82,25 +83,25 @@ typedef enum _oe_enclave_setting_type
      *  reflected in TEE-produced enclave identity evidence. Currently only
      *  supported by SGX Enclaves with KSS feature enabled.
      */
-    OE_SGX_CONFIG_DATA = 0x78b5b41d
+    OE_SGX_CONFIGURATION_DATA = 0x78b5b41d
 } oe_enclave_setting_type_t;
 
-typedef struct _oe_sgx_config_data
+typedef struct _oe_sgx_configuration_data
 {
-    uint8_t configid[8];
-    uint16_t configsvn;
+    uint8_t config_id[8];
+    uint16_t config_svn;
 }
-oe_sgx_config_data_t;
+oe_sgx_configuration_data_t;
 ```
 
-For SGX, based on whether `OE_SGX_CONFIG_DATA` is provided and whether SGX-KSS
-feature is supported, the SGX enclave loader sets SECS.CONFIGID and
-SECS.CONFIGSVN according to the table below.
+For SGX, based on whether `OE_SGX_CONFIGURATION_DATA` is provided and whether
+SGX-KSS feature is supported, the SGX enclave loader sets `SECS.CONFIGID` and
+`SECS.CONFIGSVN` according to the table below.
 
 | CONFIGURATION_DATA | Behavior
 |-------|-----------------------------------
-|   -   | On systems where SGX-KSS feature is not available or disabled: No Action; On systems with SGX-KSS enabled: loader sets SECS.CONFIGID and SECS.CONFIGSVN as 0
-|   x   | On systems where SGX-KSS feature is not available or disabled: Invalid;  On systems with SGX-KSS enabled: loader copies _oe_sgx_config_data to SECS.CONFIGID and SECS.CONFIGSVN
+|   -   | On systems where SGX-KSS feature is not available or disabled: No Action; On systems with SGX-KSS enabled: loader sets `SECS.CONFIGID` and `SECS.CONFIGSVN` as 0
+|   x   | On systems where SGX-KSS feature is not available or disabled: Invalid;  On systems with SGX-KSS enabled: loader copies _oe_sgx_configuration_data to `SECS.CONFIGID` and `SECS.CONFIGSVN`
 
 The enclave developer is responsible for the host side code that produces the
 Enclave Configuration Data and pass the data to the enclave loader. The enclave
@@ -111,11 +112,13 @@ is used to covey the identity of the extra content. The exact relationship
 between the extra content and the Enclave Configuration Data is defined by the
 enclave developer.
 
-On SGX CPUs supporting the KSS feature, configid and configsvn are available in
-the SGX `REPORT`. The OE SDK libs will provide an API to retrieve configid and
-configsvn within the enclave.
+On SGX CPUs supporting the KSS feature, `CONFIGID` and `CONFIGSVN` are available
+in the SGX `REPORT`. The OE SDK libs will provide an API to retrieve config_id
+and config_svn within the enclave.
 
-In the future, when more TEEs support Init-time Configuration Data, the interface might be expanded to support TEE-agnostic Init-time Configuration Data.
+In the future, when more TEEs support Init-time Configuration Data, the
+interface might be expanded to support TEE-agnostic Init-time Configuration
+Data.
 
 ## Attester and Verifier Plugin support
 
@@ -145,9 +148,10 @@ considered "init-time" claims. Combining the "init-time" claims and the
 "run-time" claims in the `custom_claims_buffer` field as a single variable
 length byte-array is possible, but would either require the caller to be aware
 of plugin-specific implementation of the internal structure of the combined
-`custom_claims_buffer` field, or the Verifier to be aware of the caller defined internal structure.
+`custom_claims_buffer` field, or the Verifier to be aware of the caller defined
+internal structure.
 
-### Plugin API change with explicit init-time custom claim buffer support 
+### Plugin API change with explicit init-time custom claim buffer support
 
 One solution is to explicitly support the optional "run-time" custom claim
 buffer and "init-time" custom claim buffer. Similar to the handling of the
@@ -164,9 +168,9 @@ Init-time Configuration Data is defined by the enclave developer, a single
 implementation of Verifier Plugin can not accommodate all possible definitions
 of Enclave Init-time Configuration Data. The Verifier Plugin should support a
 default definition of Enclave Init-time Configuration Data, where the first 32
-bytes of the Enclave Init-time Configuration Data is defined as the SHA256
-hash of the `inittime_custom_claims_buffer` content, and verify the integrity of
-the content. As defined below, the `inittime_custom_claims_buffer` contains an
+bytes of the Enclave Init-time Configuration Data is defined as the SHA256 hash
+of the `inittime_custom_claims_buffer` content, and verify the integrity of the
+content. As defined below, the `inittime_custom_claims_buffer` contains an
 integrity algorithm ID, with ID 0 as the default definition each Verifier Plugin
 should support if the Plugin supports `inittime_custom_claims_buffer`. A
 Verifier Plugin might support other integrity algorithms. If the caller of the
@@ -175,7 +179,7 @@ supported by the Verifier Plugin, the Verifier Plugin should output the
 `inittime_custom_claims_buffer` as it is, as an unverified init-time claim. In
 that case, the consumer of the outputted claims is responsible to verify the
 integrity of the `inittime_custom_claims_buffer` claim using the base claim of
-configid/configsvn.
+config_id/config_svn.
 
 ```C
 /**
@@ -249,18 +253,18 @@ The following pseudocode demonstrates how the proposed interface can be used.
     /// Untrusted Code of the OE Application
     ///
 
-    // Set up extra content and configid
+    // Set up extra content and config_id
     rsa3072_public_key_t  pubkey = {...};
-    oe_sgx_config_data_t = 
+    oe_sgx_configuration_data_t configdata=
     {
-        SHA256(pubkey), // configid
+        SHA256(pubkey), // config_id
         0
     };
     oe_enclave_setting_t settings[] =
     {
         {
-            setting_type = OE_SGX_CONFIG_DATA,
-            u.oe_sgx_config_data_t = &oe_sgx_config_data_t
+            setting_type = OE_SGX_CONFIGURATION_DATA,
+            u.oe_sgx_configuration_data_t = &configdata
         }
     };
     // Create enclave
@@ -270,12 +274,12 @@ The following pseudocode demonstrates how the proposed interface can be used.
     ///
 
     // Load the pubkey into enclave memory and verify it against
-    // configid
+    // config_id
     ...
 
     // Set up init-time claims for attestation
     uint8 claim_buffer[sizeof(uint32_t)+sizeof(rsa3072_public_key_t)];
-    oe_inittime_custom_claim_buffer_t *p_inittime_custom_claims_buffer 
+    oe_inittime_custom_claim_buffer_t *p_inittime_custom_claims_buffer
                                           = claim_buffer;
 
     p_inittime_custom_claims_buffer->integrity_algorithm_id = 0;
@@ -324,16 +328,16 @@ The following pseudocode demonstrates how the proposed interface can be used.
     size_t* claims_length)
     {
         ...
-        //extract the init_time_claims_buffer and verify it 
+        //extract the init_time_claims_buffer and verify it
         inittime_claims_buffer = _find_init_time_claim_buffer(evidence_buffer,
                                    evidence_buffer_size);
-        inittime_claims_buffer_size = _find_init_time_claim_buffer_si(
+        inittime_claims_buffer_size = _find_init_time_claim_buffer_size(
                                         evidence_buffer, evidence_buffer_size);
-        configid = _find_config_id(evidence_buffer, evidence_buffer_size);
+        config_id = _find_config_id(evidence_buffer, evidence_buffer_size);
         if (inittime_claim_buffer.integrity_algorithm_id ! = 0 )
             return error;
         if (SHA256(inittime_claim_buffer.buffer, inittime_claims_buffer_size)
-              != configid)
+              != config_id)
             return error;
         //output init_time claims
         ...
@@ -365,7 +369,8 @@ Verifier, which is expected to verify the integrity of the "init-time" claim
 buffer received using the Enclave Init-time Configuration Data base claim. In
 this approach, the upper level SW within the attesting Enclave app and the
 Verifier should establish an agreement on the implementation-specific integrity
-algorithm. In this solution, the `oe_get_evidence` API does not require any change other than clarification on the `custom_claims_buffer` definition.
+algorithm. In this solution, the `oe_get_evidence` API does not require any
+change other than clarification on the `custom_claims_buffer` definition.
 
 ```C
 /**
@@ -414,24 +419,25 @@ oe_result_t oe_get_evidence(
     size_t* endorsements_buffer_size);
 ```
 
-The following pseudocode demonstrates how the proposed interface can be used. 
+The following pseudocode demonstrates how the proposed interface can be used.
+
 ```C
 
     /// Untrusted Code of the OE Application
     ///
 
-    // Set up extra content and configid
+    // Set up extra content and config_id
     rsa3072_public_key_t  pubkey = {...};
-    oe_sgx_config_data_t = 
+    oe_sgx_configuration_data_t configdata =
     {
-        SHA256(pubkey), // configid
+        SHA256(pubkey), // config_id
         0
     };
     oe_enclave_setting_t settings[] =
     {
         {
-            setting_type = OE_SGX_CONFIG_DATA,
-            u.oe_sgx_config_data_t = &oe_sgx_config_data_t
+            setting_type = OE_SGX_CONFIGURATION_DATA,
+            u.oe_sgx_configuration_data_t = &configdata
         }
     };
     // Create enclave
@@ -441,7 +447,7 @@ The following pseudocode demonstrates how the proposed interface can be used.
     ///
 
     // Load the pubkey into enclave memory and verify it against
-    // configid
+    // config_id
     ...
 
     // Set up init-time claims for attestation
@@ -480,8 +486,6 @@ The following pseudocode demonstrates how the proposed interface can be used.
     oe_get_evidence(...,
         runtime_custom_claims_buffer_2,
         runtime_custom_claims_buffer_size_2,
-        p_inittime_custom_claims_buffer,
-        inittime_custom_claims_buffer_size,
         evidence_buffer_2,
         ...);
 
@@ -489,7 +493,7 @@ The following pseudocode demonstrates how the proposed interface can be used.
     ...
     data_buffer->evidence_buffer_size = evidence_buffer_size_2;
     data_buffer->inittime_claims_buffer_size = inittime_custom_claims_buffer_size;
-    memcpy(data_buffer->data, evidence_buffer_1, evidence_buffer_size_2);
+    memcpy(data_buffer->data, evidence_buffer_2, evidence_buffer_size_2);
     memcpy(data_buffer->data + evidence_buffer_size_2;
       p_inittime_custom_claims_buffer, inittime_custom_claims_buffer_size);
     ...
@@ -512,9 +516,9 @@ The following pseudocode demonstrates how the proposed interface can be used.
     {
         ...
         //extract the customer_claims_buffer and verify it
-        custom_claims_buffer = _find_custom_time_claim_buffer(evidence_buffer,
+        custom_claims_buffer = _find_custom_claim_buffer(evidence_buffer,
                                evidence_buffer_size);
-        custom_claims_buffer_size = _find_init_time_claim_buffer_size(
+        custom_claims_buffer_size = _find_custom_claim_buffer_size(
                                     evidence_buffer, evidence_buffer_size);
         report_data = _find_report_data(evidence_buffer, evidence_buffer_size);
         if (SHA256(custom_claims_buffer, custom_claims_buffer_size) != report_data)
@@ -540,30 +544,30 @@ The following pseudocode demonstrates how the proposed interface can be used.
     // Check claims provided by Verifier Plugin against policy,
     ...
     // Verifier has to validate init-time claims buffer
-    configid = _find_claim(claims, claims_length, OE_SGX_CONFIGID);
+    config_id = _find_claim(claims, claims_length, OE_SGX_CONFIG_ID);
     // check init-time claim  
     p_init_time_custom_claims_buffer = data_buffer->data + evidence_buffer_size;
     if (p_inittime_claim_buffer->integrity_algorithm_id ! = 0 )
             return error;
     if (SHA256(p_inittime_claim_buffer->buffer,
         data_buffer->inittime_claims_buffer_size -
-        sizeof(p_inittime_claim_buffer->integrity_algorithm_id)) != configid)
+        sizeof(p_inittime_claim_buffer->integrity_algorithm_id)) != config_id)
             return error;
     ...
     // Check p_inittime_claim_buffer->buffer against policy.
     ...
 ```
 
-In the alternative design, the caller of `oe_get_evidence` is not supposed to include the init-time customer claim buffer inside the `custom_claim_buffer` input to the API. If the caller does so indeed, the Verifier logic would have to change. The The following pseudocode shows the difference.
+In the alternative design, the caller of `oe_get_evidence` is not supposed to include the init-time customer claim buffer inside the `custom_claim_buffer` input to the API. If the caller does so indeed, the Verifier logic would have to change. The following pseudocode shows the difference.
 
 ```C
 
     /// Untrusted Code of the OE Application
     ///
 
-    // Set up extra content and configid
+    // Set up extra content and config_id
     rsa3072_public_key_t  pubkey = {...};
-    oe_sgx_config_data_t = 
+    oe_sgx_configuration_data_t configdata =
     {
         SHA256(pubkey), // configid
         0
@@ -571,8 +575,8 @@ In the alternative design, the caller of `oe_get_evidence` is not supposed to in
     oe_enclave_setting_t settings[] =
     {
         {
-            setting_type = OE_SGX_CONFIG_DATA,
-            u.oe_sgx_config_data_t = &oe_sgx_config_data_t
+            setting_type = OE_SGX_CONFIGURATION_DATA,
+            u.oe_sgx_configuration_data_t = &configdata
         }
     };
 
@@ -583,7 +587,7 @@ In the alternative design, the caller of `oe_get_evidence` is not supposed to in
     ///
 
     // Load the pubkey into enclave memory and verify it against
-    // configid
+    // config_id
     ...
 
     // Set up init-time claims for attestation
@@ -656,9 +660,9 @@ In the alternative design, the caller of `oe_get_evidence` is not supposed to in
     {
         ...
         //extract the customer_claims_buffer and verify it
-        custom_claims_buffer = _find_custom_time_claim_buffer(evidence_buffer,
+        custom_claims_buffer = _find_custom_claim_buffer(evidence_buffer,
                                 evidence_buffer_size);
-        custom_claims_buffer_size = _find_init_time_claim_buffer_size(
+        custom_claims_buffer_size = _find_custom_claim_buffer_size(
                                      evidence_buffer, evidence_buffer_size);
         report_data = _find_report_data(evidence_buffer, evidence_buffer_size);
         if (SHA256(custom_claims_buffer, custom_claims_buffer_size) != report_data)
@@ -685,7 +689,7 @@ In the alternative design, the caller of `oe_get_evidence` is not supposed to in
     ...
     // Verifier has to validate init-time claims buffer within the
     // OE_SGX_CUSTOM_CLAIM_BUFFER claim
-    configid = _find_claim(claims, claims_length, OE_SGX_CONFIGID);
+    config_id = _find_claim(claims, claims_length, OE_SGX_CONFIG_ID);
     data_buffer = _find_claim(claims, claims_length, OE_SGX_CUSTOM_CLAIM_BUFFER);
     // check init-time claim buffer within the data_buffer
     p_init_time_custom_claims_buffer = data_buffer->data +
@@ -695,7 +699,7 @@ In the alternative design, the caller of `oe_get_evidence` is not supposed to in
     if (SHA256(p_inittime_claim_buffer->buffer,
                data_buffer->inittime_claims_buffer_size
                  - sizeof(p_inittime_claim_buffer->integrity_algorithm_id))
-        != configid)
+        != config_id)
             return error;
     ...
     // Check p_inittime_claim_buffer->buffer against policy.
@@ -709,8 +713,9 @@ The alternative design where the caller of the Plugins is responsible for
 clear designation of the responsibilities between the Plugin developers and
 Application developers.
 
-It's suggested that The Application developers
-concatenate "init-time" claims buffer and the evidence buffer returned by the Attester Plugin based on their own protocol.
+It's suggested that the Application developers concatenate "init-time" claims
+buffer and the evidence buffer returned by the Attester Plugin based on their
+own protocol.
 
 ## Authors
 
