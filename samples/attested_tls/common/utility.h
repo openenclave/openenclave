@@ -1,17 +1,20 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <mbedtls/pk.h>
-#include <mbedtls/rsa.h>
-#include <mbedtls/sha256.h>
-#include <mbedtls/x509_crt.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/enclave.h>
+#include <stdio.h>
+#include <string.h>
 #include "common.h"
 
-oe_result_t generate_certificate_and_pkey(
-    mbedtls_x509_crt* cert,
-    mbedtls_pk_context* private_key);
+const unsigned char certificate_subject_name[] =
+    "CN=Open Enclave SDK,O=OESDK TLS,C=US";
+
+oe_result_t generate_key_pair(
+    uint8_t** public_key,
+    size_t* public_key_size,
+    uint8_t** private_key,
+    size_t* private_key_size);
 
 bool verify_signer_id(
     const char* siging_public_key_buf,
@@ -23,3 +26,5 @@ const oe_claim_t* find_claim(
     const oe_claim_t* claims,
     size_t claims_size,
     const char* name);
+
+oe_result_t load_oe_modules();

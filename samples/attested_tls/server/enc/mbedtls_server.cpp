@@ -16,11 +16,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include "../../common/utility.h"
+#include "../../common/mbedtls_utility.h"
 
 extern "C"
 {
-    int setup_tls_server(char* server_port, bool keep_server_up);
+    int set_up_tls_server(char* server_port, bool keep_server_up);
 };
 
 #define MAX_ERROR_BUFF_SIZE 256
@@ -151,7 +151,7 @@ waiting_for_connection_request:
         char errbuf[512];
         mbedtls_strerror(ret, errbuf, sizeof(errbuf));
         printf(
-            TLS_SERVER " failed\n  ! mbedtls_net_accept returned %d\n %s\n",
+            TLS_SERVER " failed\n  ! mbedtls_net_accept returned %d \n %s\n",
             ret,
             errbuf);
         goto done;
@@ -217,7 +217,7 @@ waiting_for_connection_request:
         printf(TLS_SERVER "%d bytes received from client:\n", len);
 
         // For testing purpose, valdiate received data's content and size
-#ifdef ADD_TEST_CHECKING
+
         if (((size_t)len != CLIENT_PAYLOAD_SIZE) ||
             (memcmp(CLIENT_PAYLOAD, buf, (size_t)len) != 0))
         {
@@ -231,7 +231,7 @@ waiting_for_connection_request:
         }
         printf(TLS_SERVER
                "Verified: the contents of client payload were expected\n\n");
-#endif
+
         if ((size_t)ret == CLIENT_PAYLOAD_SIZE)
             break;
     } while (1);
@@ -281,7 +281,7 @@ done:
     return ret;
 }
 
-int setup_tls_server(char* server_port, bool keep_server_up)
+int set_up_tls_server(char* server_port, bool keep_server_up)
 {
     int ret = 0;
     oe_result_t result = OE_FAILURE;
@@ -295,19 +295,10 @@ int setup_tls_server(char* server_port, bool keep_server_up)
     mbedtls_net_context listen_fd, client_fd;
     const char* pers = "tls_server";
 
-    // Explicitly enabling features
-    if ((result = oe_load_module_host_resolver()) != OE_OK)
+    /* Load host resolver and socket interface modules explicitly */
+    if (load_oe_modules() != OE_OK)
     {
-        printf(
-            TLS_SERVER "oe_load_module_host_resolver failed with %s\n",
-            oe_result_str(result));
-        goto exit;
-    }
-    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
-    {
-        printf(
-            TLS_SERVER "oe_load_module_host_socket_interface failed with %s\n",
-            oe_result_str(result));
+        printf(TLS_SERVER "loading required Open Enclave modules failed\n");
         goto exit;
     }
 

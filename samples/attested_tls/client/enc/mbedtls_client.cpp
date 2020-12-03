@@ -11,7 +11,7 @@
 #include <mbedtls/ssl.h>
 #include <openenclave/enclave.h>
 #include <string.h>
-#include "../../common/utility.h"
+#include "../../common/mbedtls_utility.h"
 
 extern "C"
 {
@@ -196,19 +196,10 @@ int launch_tls_client(char* server_name, char* server_port)
     mbedtls_x509_crt client_cert;
     mbedtls_pk_context pkey;
 
-    // Explicitly enabling host resolver and socket features
-    if ((result = oe_load_module_host_resolver()) != OE_OK)
+    /* Load host resolver and socket interface modules explicitly */
+    if (load_oe_modules() != OE_OK)
     {
-        printf(
-            TLS_CLIENT "oe_load_module_host_resolver failed with %s\n",
-            oe_result_str(result));
-        goto exit;
-    }
-    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
-    {
-        printf(
-            TLS_CLIENT "oe_load_module_host_socket_interface failed with %s\n",
-            oe_result_str(result));
+        printf(TLS_CLIENT "loading required Open Enclave modules failed \n");
         goto exit;
     }
 
@@ -221,7 +212,6 @@ int launch_tls_client(char* server_name, char* server_port)
     mbedtls_pk_init(&pkey);
     oe_verifier_initialize();
 
-#ifdef ADD_TEST_CHECKING
     if (CLIENT_PAYLOAD_SIZE != strlen(CLIENT_PAYLOAD))
     {
         printf(TLS_CLIENT
@@ -230,7 +220,6 @@ int launch_tls_client(char* server_name, char* server_port)
         exit_code = MBEDTLS_EXIT_FAILURE;
         goto exit;
     }
-#endif
 
     printf(TLS_CLIENT "\nSeeding the random number generator...\n");
     mbedtls_entropy_init(&entropy);

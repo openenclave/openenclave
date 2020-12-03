@@ -11,6 +11,14 @@ CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_L
 
 .PHONY: all build clean run
 
+SRC_FILES = ecalls.cpp mbedtls_server.cpp cert_verify_config.cpp ../../common/identity_verifier.cpp ../../common/cert_verifier.cpp ../../common/utility.cpp ../../common/mbedtls_utility.cpp
+OBJ_FILES = ecalls.o mbedtls_server.o cert_verify_config.o cert_verifier.o identity_verifier.o utility.o mbedtls_utility.o tls_server_t.o
+
+ifeq (${OE_CRYPTO_LIB}, openssl)
+	SRC_FILES = ecalls.cpp openssl_server.cpp cert_verify_config.cpp ../../common/verify_callback.cpp ../../common/utility.cpp ../../common/openssl_utility.cpp
+	OBJ_FILES = ecalls.o openssl_server.o cert_verify_config.o verify_callback.o utility.o openssl_utility.o tls_server_t.o
+endif
+
 all:
 	$(MAKE) build
 	$(MAKE) sign
@@ -21,9 +29,11 @@ build:
 		--trusted-dir . \
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
-	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -std=c++11 -DSERVER_CERT_VERIFY_CALLBACK ecalls.cpp server.cpp ../../common/identity_verifier.cpp ../../common/cert_verifier.cpp ../../common/utility.cpp
-	$(CC) -c $(CFLAGS) $(CINCLUDES) tls_server_t.c
-	$(CXX) -o tls_server_enc ecalls.o server.o cert_verifier.o identity_verifier.o utility.o tls_server_t.o $(LDFLAGS) $(CRYPTO_LDFLAGS) -loehostsock -loehostresolver
+
+
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I. -std=c++11 ${SRC_FILES}
+	$(CC) -c $(CFLAGS) $(CINCLUDES) -I. tls_server_t.c
+	$(CXX) -o tls_server_enc $(OBJ_FILES) $(LDFLAGS) $(CRYPTO_LDFLAGS) -loehostsock -loehostresolver
 
 sign:
 	oesign sign -e tls_server_enc -c enc.conf -k private.pem

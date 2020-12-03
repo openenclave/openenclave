@@ -11,19 +11,8 @@
 #include <mbedtls/platform.h>
 #include <mbedtls/ssl.h>
 #include <string.h>
+#include "cert_verify_config.h"
 #include "utility.h"
-
-#if defined(CLIENT_CERT_VERIFY_CALLBACK)
-#include "tls_server_enc_mrenclave.h"
-#include "tls_server_enc_pubkey.h"
-#define TLS_ENCLAVE TLS_CLIENT
-#elif defined(SERVER_CERT_VERIFY_CALLBACK)
-#include "tls_client_enc_pubkey.h"
-#define TLS_ENCLAVE TLS_SERVER
-#else
-#error \
-    "Either one of compile time flags CLIENT_CERT_VERIFY_CALLBACK or SERVER_CERT_VERIFY_CALLBACK should be defined"
-#endif
 
 oe_result_t enclave_claims_verifier_callback(
     oe_claim_t* claims,
@@ -73,11 +62,6 @@ int cert_verify_callback(
     }
     ret = 0;
     *flags = 0;
-
-#if defined(SERVER_CERT_VERIFY_CALLBACK)
-    printf(TLS_ENCLAVE "\n\n---------Establishing an Attested TLS channel "
-                       "between two enclaves---------\n\n");
-#endif
 
 exit:
     return ret;
