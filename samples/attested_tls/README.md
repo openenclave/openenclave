@@ -71,7 +71,57 @@ Note: Both of them can run on the same machine or separate machines.
 
 ## Build and run
 
-To build and run the samples, refer to documentation in the main [README file](../README.md#building-the-samples.md).
+### Linux
+
+#### CMake
+- Use Mbed TLS
+  ```bash
+  mkdir build
+  cd build
+  cmake -DOE_CRYPTO_LIB=mbedtls ..
+  make
+  make run
+  ```
+- Use OpenSSL
+  ```bash
+  mkdir build
+  cd build
+  cmake -DOE_CRYPTO_LIB=openssl ..
+  make
+  make run
+  ```
+
+#### GNU Make
+- Use Mbed TLS
+  ```bash
+  make OE_CRYPTO_LIB=mbedtls build
+  make run
+  ```
+- Use OpenSSL
+  ```bash
+  make OE_CRYPTO_LIB=openssl build
+  make run
+  ```
+
+### Windows
+
+#### CMake
+- Use Mbed TLS
+  ```bash
+  mkdir build
+  cd build
+  cmake -G Ninja -DOE_CRYPTO_LIB=mbedtls ..
+  ninja
+  ninja run
+  ```
+- Use OpenSSL
+  ```bash
+  mkdir build
+  cd build
+  cmake -G Ninja -DOE_CRYPTO_LIB=openssl ..
+  ninja
+  ninja run
+  ```
 
 Note: This sample has a dependency on the [socket support](../../docs/UsingTheIOSubsystem.md#a-socket-example) added in the OE SDK v0.6.0 release, so it needs to be linked against the liboehostsock and libhostresolver libraries. For more details, see [Using the Open Enclave I/O subsystem](../../docs/UsingTheIOSubsystem.md#opting-in).
 

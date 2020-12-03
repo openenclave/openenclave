@@ -15,9 +15,9 @@ project("Debug Malloc Sample" LANGUAGES C CXX)
 find_package(OpenEnclave CONFIG REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)
-# set OE_CRYPTO_LIB to either "mbedtls" or "openssl" based on the crypto wrapper to be used.
-# OE_CRYPTO_LIB is case sensitive. Use all lowercase letters.
-set(OE_CRYPTO_LIB mbedtls)
+set(OE_CRYPTO_LIB
+    mbedtls
+    CACHE STRING "Crypto library used by enclaves.")
 
 add_subdirectory(enclave)
 add_subdirectory(host)
