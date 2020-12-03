@@ -11,7 +11,6 @@ extern struct tls_control_args g_control_config;
 oe_result_t generate_certificate_and_pkey(X509*& cert, EVP_PKEY*& pkey)
 {
     oe_result_t result = OE_FAILURE;
-    SSL_CTX_set_ecdh_auto(ctx, 1);
     uint8_t* output_cert = nullptr;
     size_t output_cert_size = 0;
     uint8_t* private_key_buf = nullptr;

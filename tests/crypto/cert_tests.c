@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #if defined(OE_USE_OPENSSL)
-#include "../../../enclave/crypto/openssl/cert.h"
+#include "../../../../enclave/crypto/openssl/cert.h"
 #endif
 
 /* Test the internal API that is only avaiable on OpenSSL-based implementation.

@@ -87,9 +87,6 @@ In addition, OpenSSL by default disables the following algorithms/features
 - Heartbeats extension
 - SCTP (Stream Control Transimission Protocol) protocol
 
-*NOTE*: The current support is still experimental and for SGX only. To use OpenSSL libraries, developers should specify
-`-DBUILD_OPENSSL=ON` cmake option when building the OE SDK.
-
 # How to use RAND APIs
 
 *Note:* Starting from v0.13, users no longer need to manually opt into the RDRAND engine (as described in this

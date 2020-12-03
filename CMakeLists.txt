@@ -158,10 +158,9 @@ else () # NOT OE_SGX
   endif ()
 endif ()
 
-option(BUILD_OPENSSL "[EXPERIMENTAL] Build OpenSSL libraries." OFF)
-
-if (BUILD_OPENSSL AND OE_TRUSTZONE)
-  message(FATAL_ERROR "BUILD_OPENSSL is not supported on ARM yet.")
+if (OE_SGX)
+  # Currently we only support OpenSSL on SGX.
+  set(BUILD_OPENSSL ON)
 endif ()
 
 set(DEFAULT_TEST_ENCLAVE_CRYPTO_LIB
