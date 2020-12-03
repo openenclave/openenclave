@@ -42,10 +42,12 @@ endif ()
 if (BUILD_ENCLAVES)
   set(SAMPLES_LIST debugmalloc file-encryptor helloworld log_callback
                    switchless)
+  set(CRYPTO_LIB_LIST mbedtls mbedtls mbedtls mbedtls mbedtls)
   # Debug malloc will set allocated memory to a fixed pattern.
   # Hence do not enable pluggable_allocator test under USE_DEBUG_MALLOC.
   if (COMPILER_SUPPORTS_SNMALLOC AND NOT USE_DEBUG_MALLOC)
     list(APPEND SAMPLES_LIST pluggable_allocator)
+    list(APPEND CRYPTO_LIB_LIST mbedtls)
   endif ()
 endif ()
 
@@ -64,11 +66,13 @@ else ()
   # that cause they directly interface with the AESM service.
   if (BUILD_ENCLAVES)
     list(APPEND SAMPLES_LIST data-sealing)
+    list(APPEND CRYPTO_LIB_LIST mbedtls)
 
     # These tests can only run with SGX-FLC, meaning they were built
     # against SGX.
     if (HAS_QUOTE_PROVIDER)
-      list(APPEND SAMPLES_LIST attested_tls attestation)
+      list(APPEND SAMPLES_LIST attested_tls attested_tls attestation)
+      list(APPEND CRYPTO_LIB_LIST mbedtls openssl mbedtls)
     endif ()
   endif ()
 endif ()
@@ -95,9 +99,26 @@ endif ()
 # A variable to know if all samples ran successfully
 set(ALL_TEST_RESULT 0)
 
-foreach (SAMPLE ${SAMPLES_LIST})
+list(LENGTH SAMPLES_LIST len)
+math(EXPR len "${len} - 1")
+foreach (i RANGE ${len})
+  if (NOT SAMPLES_LIST)
+    break()
+  endif ()
+
+  list(GET SAMPLES_LIST ${i} SAMPLE)
+  list(GET CRYPTO_LIB_LIST ${i} CRYPTO_LIB)
+
   set(SAMPLE_BUILD_DIR ${BUILD_DIR}/samples/${SAMPLE})
   set(SAMPLE_SOURCE_DIR ${INSTALL_DIR}/share/openenclave/samples/${SAMPLE})
+  set(CMAKE_CRYPTO_LIB_DEFINE "")
+  set(MAKE_CRYPTO_LIB_DEFINE "")
+
+  if (CRYPTO_LIB MATCHES "openssl")
+    set(SAMPLE_BUILD_DIR "${SAMPLE_BUILD_DIR}_openssl")
+    set(CMAKE_CRYPTO_LIB_DEFINE "-DOE_CRYPTO_LIB=openssl")
+    set(MAKE_CRYPTO_LIB_DEFINE "OE_CRYPTO_LIB=openssl")
+  endif ()
 
   execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
                           ${SAMPLE_BUILD_DIR})
@@ -108,12 +129,14 @@ foreach (SAMPLE ${SAMPLES_LIST})
       COMMAND
         ${CMAKE_COMMAND}
         -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/openenclave/cmake -G Ninja
-        -DNUGET_PACKAGE_PATH=${NUGET_PACKAGE_PATH} ${SAMPLE_SOURCE_DIR}
+        -DNUGET_PACKAGE_PATH=${NUGET_PACKAGE_PATH} ${CMAKE_CRYPTO_LIB_DEFINE}
+        ${SAMPLE_SOURCE_DIR}
       WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
   else ()
     execute_process(
       COMMAND ${CMAKE_COMMAND} -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
-              ${SAMPLE_SOURCE_DIR} WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
+              ${CMAKE_CRYPTO_LIB_DEFINE} ${SAMPLE_SOURCE_DIR}
+      WORKING_DIRECTORY ${SAMPLE_BUILD_DIR})
   endif ()
 
   execute_process(COMMAND ${CMAKE_COMMAND} --build ${SOURCE_DIR}/${SAMPLE}
@@ -121,30 +144,39 @@ foreach (SAMPLE ${SAMPLES_LIST})
 
   if (NOT SIMULATION)
     # Build with the CMake package
-    message(STATUS "Samples test '${SAMPLE}' with CMake running...")
+    message(
+      STATUS "Samples test '${SAMPLE}-${CRYPTO_LIB}' with CMake running...")
     execute_process(COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR}
                             --target run RESULT_VARIABLE TEST_RESULT)
     if (TEST_RESULT)
-      message(WARNING "Samples test '${SAMPLE}' with CMake failed!")
+      message(
+        WARNING "Samples test '${SAMPLE}-${CRYPTO_LIB}' with CMake failed!")
       set(ALL_TEST_RESULT 1)
     else ()
-      message(STATUS "Samples test '${SAMPLE}' with CMake passed!")
+      message(
+        STATUS "Samples test '${SAMPLE}-${CRYPTO_LIB}' with CMake passed!")
     endif ()
 
     if (UNIX)
       # Build with pkg-config if not running on Windows.
-      message(STATUS "Samples test '${SAMPLE}' with pkg-config running...")
+      message(
+        STATUS
+          "Samples test '${SAMPLE}-${CRYPTO_LIB}' with pkg-config running...")
       execute_process(
         COMMAND
           ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH}
           PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig/ make -C
-          ${SAMPLE_SOURCE_DIR} clean build run
+          ${SAMPLE_SOURCE_DIR} clean build ${MAKE_CRYPTO_LIB_DEFINE} run
         RESULT_VARIABLE TEST_RESULT)
       if (TEST_RESULT)
-        message(WARNING "Samples test '${SAMPLE}' with pkg-config failed!")
+        message(
+          WARNING
+            "Samples test '${SAMPLE}-${CRYPTO_LIB}' with pkg-config failed!")
         set(ALL_TEST_RESULT 1)
       else ()
-        message(STATUS "Samples test '${SAMPLE}' with pkg-config passed!")
+        message(
+          STATUS
+            "Samples test '${SAMPLE}-${CRYPTO_LIB}' with pkg-config passed!")
       endif ()
     endif ()
   endif ()
@@ -156,39 +188,48 @@ foreach (SAMPLE ${SAMPLES_LIST})
     if (${SAMPLE} MATCHES "(file-encryptor|helloworld)")
       # Build with the CMake package
       message(
-        STATUS "Samples test '${SAMPLE}' in simulation with CMake running...")
+        STATUS
+          "Samples test '${SAMPLE}-${CRYPTO_LIB}' in simulation with CMake running..."
+      )
       execute_process(
         COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR} --target simulate
         RESULT_VARIABLE TEST_SIMULATE_RESULT)
       if (TEST_SIMULATE_RESULT)
         message(
-          WARNING "Samples test '${SAMPLE}' in simulation with CMake failed!")
+          WARNING
+            "Samples test '${SAMPLE}-${CRYPTO_LIB}' in simulation with CMake failed!"
+        )
         set(ALL_TEST_RESULT 1)
       else ()
         message(
-          STATUS "Samples test '${SAMPLE}' in simulation with CMake passed!")
+          STATUS
+            "Samples test '${SAMPLE}-${CRYPTO_LIB}' in simulation with CMake passed!"
+        )
       endif ()
 
       # Build with pkg-config
       message(
         STATUS
-          "Samples test '${SAMPLE}' in simulation with pkg-config running...")
+          "Samples test '${SAMPLE}-${CRYPTO_LIB}' in simulation with pkg-config running..."
+      )
       message(WARNING "PKG_CONFIG_PATH=${INSTALL_DIR}")
       execute_process(
         COMMAND
           ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH}
           PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig make -C
-          ${SAMPLE_SOURCE_DIR} clean build simulate
+          ${SAMPLE_SOURCE_DIR} clean build ${MAKE_CRYPTO_LIB_DEFINE} simulate
         RESULT_VARIABLE TEST_SIMULATE_RESULT)
       if (TEST_SIMULATE_RESULT)
         message(
           WARNING
-            "Samples test '${SAMPLE}' in simulation with pkg-config failed!")
+            "Samples test '${SAMPLE}-${CRYPTO_LIB}' in simulation with pkg-config failed!"
+        )
         set(TEST_SIMULATE_RESULT 1)
       else ()
         message(
           STATUS
-            "Samples test '${SAMPLE}' in simulation with pkg-config passed!")
+            "Samples test '${SAMPLE}-${CRYPTO_LIB}' in simulation with pkg-config passed!"
+        )
       endif ()
     endif ()
   endif ()
