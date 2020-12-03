@@ -92,6 +92,9 @@ In addition, OpenSSL by default disables the following algorithms/features
 
 # How to use RAND APIs
 
+*Note:* Starting from v0.13, users no longer need to manually opt into the RDRAND engine (as described in this
+section) when linking an enclave against `oecryptoopenssl`.
+
 Currently, the default RAND method used by RAND APIs is not supported by OE. More specifically,
 the default OpenSSL RAND method relies on the `rdtsc` instruction, which is not supported by SGXv1 enclaves.
 Therefore, OE currently does not support RAND APIs if users try to use them directly (by default, the RAND APIs depend on the default
@@ -148,7 +151,9 @@ Note that the code snippet for the RDRAND engine opt-in is required to use not o
 but also other OpenSSL APIs that internally depend on the RAND APIs. Alternatively, developers
 can implement their own RAND method to replace the default method via `RAND_set_rand_method` API.
 
-## Security Guidance for using OpenSSL APIs/Macros
+## Security Guidance
+
+#### OpenSSL APIs/Macros
 
 OpenSSL provides APIs that allow users to configure sensitive settings like certificate trust and cipher suite preference from files.
 Because the host file system is considered untrusted in contexts such as SGX enclaves, OE SDK marks these APIs as unsupported to discourage their use.
@@ -172,6 +177,40 @@ X509_STORE_set_default_paths | x509_vfy.h | The API adds X509_LOOKUP_file or X50
 X509_load_cert_file | x509_vfy.h | The API loads certificates from the untrusted host filesystem and adds the certificates to the `X509_STORE` via the X509_STORE_add_cert API. The API is used internally by X509_LOOKUP_hash_dir and X509_LOOKUP_file methods. | The recommendation is not to use this API. An alternative is obtaining in-memory certificates in a secure manner (e.g., secure channel, encrypted storage) and adding the certificates to the `X509_STORE` via X509_STORE_add_cert. |
 X509_load_crl_file | x509_vfy.h | The API loads CRL from the untrusted host filesystem and adds the CRL to the `X509_STORE` via the X509_STORE_add_crl API. The API is used internally by X509_LOOKUP_hash_dir and X509_LOOKUP_file methods. | The recommendation is not to use this API. An alternative is obtaining in-memory certificates in a secure manner (e.g., secure channel, encrypted storage) and adding the CRL to the `X509_STORE` via X509_STORE_add_crl. |
 X509_load_cert_crl_file | x509_vfy.h | The API is the combination of X509_load_cert_file and X509_load_crl_file. | The recommendation is not to use this API. An alternative is obtaining in-memory certificates in a secure manner (e.g., secure channel, encrypted storage) and adding the certificates/CRL to the `X509_STORE` via X509_STORE_add_cert/X509_STORE_add_crl. |
+
+#### OpenSSL TLS/SSL Configuration
+
+Given that TLS 1.0 and 1.1 are no longer considered secure (have been deprecated by major browsers),
+OE SDK recommends users to use TLS 1.2 and above. However, the default set of cipher suites
+and elliptic curves come with TLS 1.2 and 1.3 configurations in OpenSSL still include less secure ones.
+To help reducing the risk, OE SDK recommends users to configure a TLS/SSL server to use the following cipher suites
+(with the exact order) and elliptic curves.
+
+- TLS 1.3 cipher suites
+  ```
+  TLS13-AES-256-GCM-SHA384
+  TLS13-AES-128-GCM-SHA256
+  ```
+- TLS 1.2 cipher suites:
+  ```
+  ECDHE-ECDSA-AES128-GCM-SHA256
+  ECDHE-ECDSA-AES256-GCM-SHA384
+  ECDHE-RSA-"AES128-GCM-SHA256
+  ECDHE-RSA-AES256-GCM-SHA384
+  ECDHE-ECDSA-AES128-SHA256
+  ECDHE-ECDSA-AES256-SHA384
+  ECDHE-RSA-AES128-SHA256
+  ECDHE-RSA-AES256-SHA384
+  ```
+- Elliptic curve algorithms
+  ```
+  P-521
+  P-384
+  P-256
+  ```
+
+Refer to the [attested tls sample](/samples/attested_tls/README.md) as an example of how to
+configure a TLS/SSL server with the recommended configuration.
 
 ## API Support
 
