@@ -16,6 +16,8 @@ set -x
 OUTPUT_DIR="/output"
 INTERACTIVE=false
 COMMIT=false
+DO_CHECK=false
+DEB_PACKAGE=true
 
 while getopts "o:tic" opt; do
   case ${opt} in
@@ -24,7 +26,7 @@ while getopts "o:tic" opt; do
         echo "output dir = ${OUTPUT_DIR}"
       ;;
     t ) # run tests with build
-        DO_TESTS=true
+        DO_CHECK=true
       ;;
     i ) # Dont execute nix-build.sh, just bash
         INTERACTIVE=true
@@ -78,16 +80,25 @@ else
     RUNCMD="/home/azureuser/nix-build.sh"
 fi
 
-if $DO_TESTS
+if $DO_CHECK
 then 
-   DO_TESTS_ARG="--env DO_TESTS=true"
+   DO_CHECK_ARG="--env DO_CHECK=true"
+else
+   DO_CHECK_ARG="--env DO_CHECK=false"
+fi
+
+if $DEB_PACKAGE
+then 
+   DEB_PACKAGE_ARG="--env DEB_PACKAGE=true"
+else
+   DEB_PACKAGE_ARG="--env DEB_PACKAGE=false"
 fi
 
 CONTAINER_NAME="oe-nix-build-$(date +"%Y%j%H%M")"
 #
 # build.env specifies the commit or tag, and sha of the build. 
 docker run -it ${SGX_DEVICE} --name ${CONTAINER_NAME} -v ${OUTPUT_DIR}:/output \
-           -v /var/run/aesmd:/var/run/aesmd --cap-add=SYS_PTRACE ${DO_TESTS_ARG} \
+           -v /var/run/aesmd:/var/run/aesmd --cap-add=SYS_PTRACE ${DO_CHECK_ARG} ${DEB_PACKAGE_ARG} \
            --env-file ./build.env -m 24G --memory-swap=-1 openenclave-build $RUNCMD
 
 if $COMMIT

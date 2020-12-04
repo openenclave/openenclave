@@ -263,7 +263,7 @@ Dockerfile.nix prepares the build image by:
 
 - creates the build user and directories, groups etc.
 
-- creates a nix expression for building openenclave via (shell.nix).
+- creates a nix expression for building openenclave via (openenclave-sdk.nix).
 
 - installs nix as the build user
 
