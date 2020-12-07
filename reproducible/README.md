@@ -25,7 +25,7 @@ you are using.
 
 Since the build outputs are measured, producing globally unique names, built versions can be cached. By default, 
 there is a global cache at https://cache.nixos.org which contains cached built derivations for the officially 
-released packages.  It is not necessary to use this cache. The cache protocol is simple http get/put protocol, so
+released packages.  It is not necessary to use this cache. The cache protocol is a simple HTTP get/put protocol, so
 any url that points to the correct heirarchy can be used. If no prebuilt version of a package is available at
 the cache, the package will be built. Since the package has a fixed output, there is no difference in output
 using the cached version or one custom built.. 
