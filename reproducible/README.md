@@ -221,7 +221,7 @@ The nix packages repo serves two purposes, somewhat at odds with each other.
 The official branches in nixpkgs are prebuilt and available at cache.nixos.org. Caching is keyed to the build outputs
 sha digest, so custom environments will be able to use those prebuilts so long as no changes have been made. 
 If any changes are made to that package, any package related to the changed package will need to be custom
-built and cached in nix store.
+built and cached in the nix store.
 
 
 ## A Nix build system for OpenEnclave SDK
