@@ -1,4 +1,4 @@
-## Nix Build system for OpenEnclave SDK
+## Nix Build system for the Open Enclave SDK
 
 ### Required Background: Nix short description:
 
