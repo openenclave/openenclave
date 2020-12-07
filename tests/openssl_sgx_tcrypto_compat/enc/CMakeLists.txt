@@ -22,18 +22,14 @@ add_enclave(
   ${CMAKE_CURRENT_SOURCE_DIR}/../common_code/common_digest_tests.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/openssl_sgx_tcrypto_compat_t.c)
 
-enclave_compile_options(
-  openssl_sgx_tcrypto_compat_enc PRIVATE -Wno-shorten-64-to-32
-  -Wno-sign-conversion -Wno-conversion -Wno-unused-parameter)
-
 enclave_include_directories(
   openssl_sgx_tcrypto_compat_enc
   PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/../include
   ${OPENSSL_DIR}
   ${OPENSSL_DIR}/include
   ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/..
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common_code
-  ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common_code)
 enclave_link_libraries(openssl_sgx_tcrypto_compat_enc oelibc openssl)

@@ -8,9 +8,6 @@
 #include "include_openssl.h"
 #include "string.h"
 
-#define O_ENCLAVE 0
-#define O_NATIVE 1
-
 #define RD_BUFF_SIZE (1 << 20)
 
 struct random_buffer
@@ -37,39 +34,26 @@ class CSchemaChecker
     CSchemaChecker(t_openssl_schema* schema, uint schema_size);
     virtual ~CSchemaChecker();
 
-    // random buffer methods
-    int initialize_random_buffer(bool native);
-    void RewindRandomBuffer();
-    int UnsetRandomBuffers();
-    int SetRandomBuffers();
-    int DisableRandomInjection();
-    int EnablebackEnclaveRandomInjection();
-
     // schema methods
     virtual int allocate_api_param(openssl_api_param* p);
     virtual int free_api_param(openssl_api_param* p);
     virtual void randomize_api_param(openssl_api_param* p);
     virtual void copy_api_param(openssl_api_param* p2, openssl_api_param* p1);
-    virtual int check_openssl(openssl_api_param* p1, openssl_api_param* p2);
     virtual int SetupParams(openssl_api_id id, uint schema_id);
     virtual int CleanUpParams();
     const char* GetApiName(int schema_id);
-    openssl_api_id GetApiId(int idx);
     virtual void OverideRandomizedValue(
-        openssl_api_id id,
-        uint param_number,
         uint64_t type,
-        uint origin,
-        unsigned char* buf,
-        uint buflen)
+        unsigned char* buffer,
+        uint buf_length)
     {
-        if (SSL_VARLEN(type) && (buflen == sizeof(size_t)))
+        if (SSL_VARLEN(type) && (buf_length == sizeof(size_t)))
         {
-            size_t v = *(size_t*)buf;
+            size_t v = *(size_t*)buffer;
             v = v % 0x10000;
             if (v == 0)
                 v = 1;
-            *(size_t*)buf = v;
+            *(size_t*)buffer = v;
         }
     }
 
@@ -84,9 +68,9 @@ class CSchemaChecker
 
     openssl_api_id m_api_id;
     t_openssl_schema* m_schema;
-    uint m_schema_num_apis;
+    uint m_schema_api_count;
     bool m_own_enclave;
     uint thread_number;
-    uint m_schema_idx;
+    uint m_schema_index;
     uint m_varlen_values[MAX_VAR_LEN_VALUES];
 };

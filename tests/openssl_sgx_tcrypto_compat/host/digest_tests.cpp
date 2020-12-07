@@ -12,8 +12,7 @@
 #include "openssl_sgx_tcrypto_compat_u.h"
 
 t_openssl_schema _openssl_digest[] = {
-    //  api id		,#params, { length of each param          }, { type of each
-    //  param}
+    //  api id, #params, { length of each param }, { type of each param}
     {"SHA1_init",
      e_sha1_init,
      1,
@@ -306,16 +305,6 @@ t_openssl_schema _openssl_digest[] = {
 
 };
 
-t_openssl_schema* get_digest_schema()
-{
-    return _openssl_digest;
-}
-
-uint get_digest_schema_length()
-{
-    return sizeof(_openssl_digest) / sizeof(_openssl_digest[0]);
-}
-
 class CSchemaChecker_Digest : public CSchemaChecker
 {
   public:
@@ -329,18 +318,18 @@ oe_result_t schema_test_digest(oe_enclave_t* enclave)
 {
     oe_result_t result;
     int retval;
-    uint num_apis = get_digest_schema_length();
-    t_openssl_schema* schema = get_digest_schema();
+    uint api_count = OE_COUNTOF(_openssl_digest);
+    t_openssl_schema* schema = _openssl_digest;
     CSchemaChecker_Digest* checker =
-        new CSchemaChecker_Digest(schema, num_apis);
-    printf("total test number: %u\n", num_apis);
+        new CSchemaChecker_Digest(schema, api_count);
+    printf("total test number: %u\n", api_count);
 
-    for (int i = 0; i < (int)num_apis; i++)
+    for (int i = 0; i < (int)api_count; i++)
     {
         checker->SetupParams((schema + i)->id, (uint32_t)i);
         printf("Test case: %s\tstarts \n", (schema + i)->api_name);
-        result = ecall_schema_run_digest_tests(
-            enclave, &retval, (void*)(&(checker->m_p1)));
+        result =
+            ecall_schema_run_digest_tests(enclave, &retval, &(checker->m_p1));
         OE_TEST(result == OE_OK);
         OE_TEST(retval >= 0);
         printf("Test case: %s\tends \n", (schema + i)->api_name);

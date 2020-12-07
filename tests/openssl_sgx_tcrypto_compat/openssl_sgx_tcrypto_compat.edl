@@ -8,11 +8,11 @@ enclave {
 #else
     from "openenclave/edl/optee/platform.edl" import *;
 #endif
-
+    include "openssl_schema.h"
     trusted {
         public void ecall_set_rdrand_engine(void);
 
-        public int ecall_schema_run_digest_tests([user_check]void* buf);
+        public int ecall_schema_run_digest_tests([user_check]struct openssl_api_param* parameter);
     };
 
     untrusted {

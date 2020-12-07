@@ -7,7 +7,7 @@
 #include "openssl_schema.h"
 #include "openssl_sgx_tcrypto_compat_t.h"
 
-extern int common_digest_tests(void* buf);
+extern int common_digest_tests(openssl_api_param* parameter);
 void ecall_set_rdrand_engine()
 {
     ENGINE* eng = nullptr;
@@ -40,7 +40,7 @@ done:
     return;
 }
 
-int ecall_schema_run_digest_tests(void* buf)
+int ecall_schema_run_digest_tests(openssl_api_param* parameter)
 {
-    return common_digest_tests(buf);
+    return common_digest_tests(parameter);
 }

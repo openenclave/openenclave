@@ -123,68 +123,68 @@ static size_t _scpy(char* p1, const char* p2)
     *p1 = 0;
     return size + 1;
 }
-static int _update_sha1_test(openssl_api_param* p, int iter)
+static int _update_sha1_test(openssl_api_param* parameter, int iter)
 {
-    SHA_CTX* ctx = (SHA_CTX*)p->p[0];
-    unsigned char* data = (unsigned char*)p->p[1];
-    size_t len = (size_t)p->p[2];
-    int ret = SHA1_Init(ctx);
+    SHA_CTX* ctx = (SHA_CTX*)parameter->p[0];
+    unsigned char* data = (unsigned char*)parameter->p[1];
+    size_t length = (size_t)parameter->p[2];
+    int return_value = SHA1_Init(ctx);
 
-    if (1 != ret)
-        return ret;
+    if (1 != return_value)
+        return return_value;
 
     for (int i = 0; i < iter; i++)
     {
-        ret = SHA1_Update(ctx, data, len);
-        if (1 != ret)
+        return_value = SHA1_Update(ctx, data, length);
+        if (1 != return_value)
             break;
     }
 
-    return ret;
+    return return_value;
 }
-static int _final_sha1_test(openssl_api_param* p, int iter)
+static int _final_sha1_test(openssl_api_param* parameter, int iter)
 {
-    int ret;
-    SHA_CTX* ctx = (SHA_CTX*)p->p[0];
-    unsigned char* hash = (unsigned char*)p->p[3];
+    int return_value;
+    SHA_CTX* ctx = (SHA_CTX*)parameter->p[0];
+    unsigned char* hash = (unsigned char*)parameter->p[3];
 
-    ret = _update_sha1_test(p, iter);
-    if (1 != ret)
-        return ret;
+    return_value = _update_sha1_test(parameter, iter);
+    if (1 != return_value)
+        return return_value;
 
     SHA1_Final(hash, ctx);
-    return ret;
+    return return_value;
 }
-static int _update_sha256_test(openssl_api_param* p, int iter)
+static int _update_sha256_test(openssl_api_param* parameter, int iter)
 {
-    SHA256_CTX* ctx = (SHA256_CTX*)p->p[0];
-    unsigned char* data = (unsigned char*)p->p[1];
-    size_t len = (size_t)p->p[2];
-    int ret = SHA256_Init(ctx);
+    SHA256_CTX* ctx = (SHA256_CTX*)parameter->p[0];
+    unsigned char* data = (unsigned char*)parameter->p[1];
+    size_t length = (size_t)parameter->p[2];
+    int return_value = SHA256_Init(ctx);
 
-    if (1 != ret)
-        return ret;
+    if (1 != return_value)
+        return return_value;
 
     for (int i = 0; i < iter; i++)
     {
-        ret = SHA256_Update(ctx, data, len);
-        if (1 != ret)
+        return_value = SHA256_Update(ctx, data, length);
+        if (1 != return_value)
             break;
     }
 
-    return ret;
+    return return_value;
 }
-static int _final_sha256_test(openssl_api_param* p, int iter)
+static int _final_sha256_test(openssl_api_param* parameter, int iter)
 {
-    SHA256_CTX* ctx = (SHA256_CTX*)p->p[0];
-    unsigned char* hash = (unsigned char*)p->p[3];
-    int ret = _update_sha256_test(p, iter);
+    SHA256_CTX* ctx = (SHA256_CTX*)parameter->p[0];
+    unsigned char* hash = (unsigned char*)parameter->p[3];
+    int return_value = _update_sha256_test(parameter, iter);
 
-    if (1 != ret)
-        return ret;
+    if (1 != return_value)
+        return return_value;
 
     SHA256_Final(hash, ctx);
-    return ret;
+    return return_value;
 }
 #define _pkcs7_sign 0
 #define _pkcs7_get_info 1
@@ -203,9 +203,9 @@ static size_t serialize_ASN1_OBJECT(char* b, ASN1_OBJECT* obj)
     return size;
 }
 
-static int _test_pkcs7_sign(openssl_api_param* p, int info)
+static int _test_pkcs7_sign(openssl_api_param* parameter, int info)
 {
-    int ret = 0;
+    int return_value = 0;
     EVP_PKEY* pkey = NULL;
     PKCS7* p7 = NULL;
     RSA* rsa = NULL;
@@ -223,8 +223,8 @@ static int _test_pkcs7_sign(openssl_api_param* p, int info)
     if (NULL == rsa)
         goto Exit;
     set_key(rsa, ctext_ex);
-    ret = EVP_PKEY_assign_RSA(pkey, rsa);
-    if (1 != ret)
+    return_value = EVP_PKEY_assign_RSA(pkey, rsa);
+    if (1 != return_value)
         goto Exit;
 
     // build certificate
@@ -244,14 +244,14 @@ static int _test_pkcs7_sign(openssl_api_param* p, int info)
         name, "CN", MBSTRING_ASC, (unsigned char*)"localhost", -1, -1, 0);
     X509_sign(x509, pkey, EVP_md5());
 
-    in_bio = BIO_new_mem_buf((void*)p->p[0], *(int*)&(p->p[1]));
+    in_bio = BIO_new_mem_buf((void*)parameter->p[0], *(int*)&(parameter->p[1]));
     BIO_get_mem_ptr(in_bio, &y);
-    y->length = (size_t)p->p[1];
+    y->length = (size_t)parameter->p[1];
 
     p7 = PKCS7_sign(x509, pkey, NULL, in_bio, 0);
     if (!p7)
     {
-        ret = 0;
+        return_value = 0;
         goto Exit;
     }
 
@@ -259,11 +259,11 @@ static int _test_pkcs7_sign(openssl_api_param* p, int info)
     {
         STACK_OF(PKCS7_SIGNER_INFO) * sinfos;
         PKCS7_SIGNER_INFO* sitmp;
-        char* buffer = p->p[2];
+        char* buffer = parameter->p[2];
         sinfos = PKCS7_get_signer_info(p7);
         if (!sinfos)
         {
-            ret = 0;
+            return_value = 0;
         }
 
         // serialize partially the sinfos object in order to compare in checker
@@ -287,21 +287,21 @@ static int _test_pkcs7_sign(openssl_api_param* p, int info)
     }
     else if (_pkcs7_sign == info)
     {
-        size_t len;
+        size_t length;
         // write signature to buffer
         out_bio = BIO_new(BIO_s_mem());
         if (NULL == out_bio)
             goto Exit;
-        ret = SMIME_write_PKCS7(out_bio, p7, in_bio, 0);
-        if (1 != ret)
+        return_value = SMIME_write_PKCS7(out_bio, p7, in_bio, 0);
+        if (1 != return_value)
         {
-            ret = 0;
+            return_value = 0;
             goto Exit;
         }
 
         BIO_get_mem_ptr(out_bio, &y);
-        len = (size_t)p->p[1];
-        _cpy(p->p[2], y->data, len);
+        length = (size_t)parameter->p[1];
+        _cpy(parameter->p[2], y->data, length);
     }
     else if (_pkcs7_verify == info)
     {
@@ -311,7 +311,8 @@ static int _test_pkcs7_sign(openssl_api_param* p, int info)
         if (NULL == chain)
             goto Exit;
         sk_X509_push(chain, x509);
-        ret = PKCS7_verify(p7, chain, NULL, NULL, NULL, PKCS7_NOVERIFY);
+        return_value =
+            PKCS7_verify(p7, chain, NULL, NULL, NULL, PKCS7_NOVERIFY);
         sk_X509_pop(chain);
         sk_X509_free(chain);
     }
@@ -322,7 +323,7 @@ static int _test_pkcs7_sign(openssl_api_param* p, int info)
             goto Exit;
         X509_LOOKUP* lookup = X509_STORE_add_lookup(store, X509_LOOKUP_file());
 
-        ret = X509_STORE_add_cert(lookup->store_ctx, x509);
+        return_value = X509_STORE_add_cert(lookup->store_ctx, x509);
         X509_STORE_free(store);
     }
 
@@ -338,7 +339,7 @@ Exit:
         EVP_PKEY_free(pkey);
     if (p7)
         PKCS7_free(p7);
-    return ret;
+    return return_value;
 }
 
 static void Reset_EVP_MD_CTX(char* p)
@@ -381,90 +382,95 @@ static int Create_EVP_MD_CTX()
     }
 }
 
-int common_digest_tests(void* buf)
+int common_digest_tests(openssl_api_param* parameter)
 {
-    openssl_api_param* p = (openssl_api_param*)buf;
-    int ret = 1;
+    int return_value = 1;
 
     OpenSSL_add_all_algorithms();
 
     try
     {
-        switch (p->id)
+        switch (parameter->id)
         {
             case e_sha1_init:
             {
-                SHA_CTX* ctx = (SHA_CTX*)p->p[0];
-                ret = SHA1_Init(ctx);
+                SHA_CTX* ctx = (SHA_CTX*)parameter->p[0];
+                return_value = SHA1_Init(ctx);
             }
             break;
             case e_sha1_update:
-                ret = _update_sha1_test(p, 1);
+                return_value = _update_sha1_test(parameter, 1);
                 break;
             case e_sha1_final:
-                ret = _final_sha1_test(p, 1);
+                return_value = _final_sha1_test(parameter, 1);
                 break;
             case e_sha256_init:
             {
-                SHA256_CTX* ctx = (SHA256_CTX*)p->p[0];
-                ret = SHA256_Init(ctx);
+                SHA256_CTX* ctx = (SHA256_CTX*)parameter->p[0];
+                return_value = SHA256_Init(ctx);
                 break;
             }
             case e_sha256_update:
-                ret = _update_sha256_test(p, 1);
+                return_value = _update_sha256_test(parameter, 1);
                 break;
             case e_sha256_final:
-                ret = _final_sha256_test(p, 1);
+                return_value = _final_sha256_test(parameter, 1);
                 break;
             case e_EVP_Sha256:
             {
                 const EVP_MD* q = EVP_sha256();
-                _cpy(p->p[0], (char*)q, sizeof(EVP_MD));
+                _cpy(parameter->p[0], (char*)q, sizeof(EVP_MD));
                 break;
             }
             case e_EVP_Sha384:
             {
                 const EVP_MD* q = EVP_sha384();
-                _cpy(p->p[0], (char*)q, sizeof(EVP_MD));
+                _cpy(parameter->p[0], (char*)q, sizeof(EVP_MD));
                 break;
             }
             case e_EVP_MD_CTX_init:
-                Reset_EVP_MD_CTX(p->p[0]);
+                Reset_EVP_MD_CTX(parameter->p[0]);
                 break;
             case e_EVP_SignInit_ex:
             {
                 const EVP_MD* emd;
-                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)p->p[0];
+                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)parameter->p[0];
                 unsigned char c = *((unsigned char*)emd_ctx);
 
                 emd = some_EVP_sha(c);
-                Reset_EVP_MD_CTX(p->p[0]);
-                ret = EVP_SignInit_ex(emd_ctx, emd, NULL);
-                _cpy(p->p[1], (char*)emd_ctx->digest, sizeof(*emd_ctx->digest));
+                Reset_EVP_MD_CTX(parameter->p[0]);
+                return_value = EVP_SignInit_ex(emd_ctx, emd, NULL);
+                _cpy(
+                    parameter->p[1],
+                    (char*)emd_ctx->digest,
+                    sizeof(*emd_ctx->digest));
                 break;
             }
             case e_EVP_SignUpdate:
             {
                 const EVP_MD* emd;
-                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)p->p[0];
-                unsigned char* data = (unsigned char*)(p->p[1]);
-                size_t len = (size_t)p->p[2];
+                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)parameter->p[0];
+                unsigned char* data = (unsigned char*)(parameter->p[1]);
+                size_t length = (size_t)parameter->p[2];
                 unsigned char c = *((unsigned char*)emd_ctx);
 
                 emd = some_EVP_sha(c);
 
-                Reset_EVP_MD_CTX(p->p[0]);
-                ret = EVP_SignInit_ex(emd_ctx, emd, NULL);
-                if (1 != ret)
+                Reset_EVP_MD_CTX(parameter->p[0]);
+                return_value = EVP_SignInit_ex(emd_ctx, emd, NULL);
+                if (1 != return_value)
                     break;
 
-                ret = EVP_SignUpdate(emd_ctx, data, len);
-                _cpy(p->p[3], (char*)emd_ctx->digest, sizeof(*emd_ctx->digest));
+                return_value = EVP_SignUpdate(emd_ctx, data, length);
+                _cpy(
+                    parameter->p[3],
+                    (char*)emd_ctx->digest,
+                    sizeof(*emd_ctx->digest));
                 break;
             }
             case e_EVP_SignFinal:
             {
-                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)p->p[0];
+                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)parameter->p[0];
                 const EVP_MD* emd;
                 EVP_PKEY* pkey;
                 RSA* rsa;
@@ -475,12 +481,12 @@ int common_digest_tests(void* buf)
                 emd = some_EVP_sha(c);
 
                 Reset_EVP_MD_CTX((char*)emd_ctx);
-                ret = EVP_SignInit_ex(emd_ctx, emd, NULL);
-                if (1 != ret)
+                return_value = EVP_SignInit_ex(emd_ctx, emd, NULL);
+                if (1 != return_value)
                     break;
 
-                ret = EVP_SignUpdate(emd_ctx, "hello ", 6);
-                if (1 != ret)
+                return_value = EVP_SignUpdate(emd_ctx, "hello ", 6);
+                if (1 != return_value)
                     break;
 
                 pkey = EVP_PKEY_new();
@@ -491,49 +497,61 @@ int common_digest_tests(void* buf)
                     goto Exit;
                 set_key(rsa, ctext_ex);
 
-                ret = EVP_PKEY_assign_RSA(pkey, rsa);
-                if (1 != ret)
+                return_value = EVP_PKEY_assign_RSA(pkey, rsa);
+                if (1 != return_value)
                     break;
 
                 sig = (unsigned char*)malloc((uint32_t)EVP_PKEY_size(pkey));
-                ret = EVP_SignFinal(emd_ctx, sig, (unsigned int*)p->p[2], pkey);
-                _cpy(p->p[4], (char*)emd_ctx->digest, sizeof(*emd_ctx->digest));
+                return_value = EVP_SignFinal(
+                    emd_ctx, sig, (unsigned int*)parameter->p[2], pkey);
+                _cpy(
+                    parameter->p[4],
+                    (char*)emd_ctx->digest,
+                    sizeof(*emd_ctx->digest));
                 free(sig);
                 EVP_PKEY_free(pkey);
                 break;
             }
             case e_EVP_VerifyInit_ex:
             {
-                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)p->p[0];
+                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)parameter->p[0];
                 const EVP_MD* md;
                 unsigned char c = *((unsigned char*)emd_ctx);
 
                 md = some_EVP_sha(c);
                 Reset_EVP_MD_CTX((char*)emd_ctx);
-                ret = EVP_VerifyInit_ex(emd_ctx, md, NULL);
-                _cpy(p->p[1], (char*)emd_ctx->digest, sizeof(*emd_ctx->digest));
+                return_value = EVP_VerifyInit_ex(emd_ctx, md, NULL);
+                _cpy(
+                    parameter->p[1],
+                    (char*)emd_ctx->digest,
+                    sizeof(*emd_ctx->digest));
                 break;
             }
             case e_EVP_VerifyUpdate:
             {
-                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)p->p[0];
+                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)parameter->p[0];
                 const EVP_MD* md;
                 unsigned char c = *((unsigned char*)emd_ctx);
 
                 md = some_EVP_sha(c);
                 Reset_EVP_MD_CTX((char*)emd_ctx);
-                ret = EVP_VerifyInit_ex(emd_ctx, md, NULL);
-                if (1 != ret)
+                return_value = EVP_VerifyInit_ex(emd_ctx, md, NULL);
+                if (1 != return_value)
                     break;
 
-                ret = EVP_VerifyUpdate(
-                    emd_ctx, (void*)p->p[1], *(unsigned int*)&(p->p[2]));
-                _cpy(p->p[3], (char*)emd_ctx->digest, sizeof(*emd_ctx->digest));
+                return_value = EVP_VerifyUpdate(
+                    emd_ctx,
+                    (void*)parameter->p[1],
+                    *(unsigned int*)&(parameter->p[2]));
+                _cpy(
+                    parameter->p[3],
+                    (char*)emd_ctx->digest,
+                    sizeof(*emd_ctx->digest));
                 break;
             }
             case e_EVP_VerifyFinal:
             {
-                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)p->p[0];
+                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)parameter->p[0];
                 const EVP_MD* md;
                 EVP_PKEY* pkey;
                 RSA* rsa;
@@ -542,12 +560,13 @@ int common_digest_tests(void* buf)
 
                 md = some_EVP_sha(c);
                 Reset_EVP_MD_CTX((char*)emd_ctx);
-                ret = EVP_VerifyInit_ex(emd_ctx, md, NULL);
-                if (1 != ret)
+                return_value = EVP_VerifyInit_ex(emd_ctx, md, NULL);
+                if (1 != return_value)
                     break;
 
-                ret = EVP_VerifyUpdate(emd_ctx, (void*)"Hello buffer", 12);
-                if (1 != ret)
+                return_value =
+                    EVP_VerifyUpdate(emd_ctx, (void*)"Hello buffer", 12);
+                if (1 != return_value)
                     break;
 
                 pkey = EVP_PKEY_new();
@@ -558,94 +577,100 @@ int common_digest_tests(void* buf)
                     goto Exit;
                 set_key(rsa, ctext_ex);
 
-                ret = EVP_PKEY_assign_RSA(pkey, rsa);
-                if (1 != ret)
+                return_value = EVP_PKEY_assign_RSA(pkey, rsa);
+                if (1 != return_value)
                     break;
 
                 if (_ELLEPH < EVP_PKEY_size(pkey))
                 {
-                    ret = -1;
+                    return_value = -1;
                     break;
                 }
 
-                ret = EVP_VerifyFinal(
-                    emd_ctx, (const unsigned char*)p->p[1], _ELLEPH, pkey);
-                _cpy(p->p[4], (char*)emd_ctx->digest, sizeof(*emd_ctx->digest));
+                return_value = EVP_VerifyFinal(
+                    emd_ctx,
+                    (const unsigned char*)parameter->p[1],
+                    _ELLEPH,
+                    pkey);
+                _cpy(
+                    parameter->p[4],
+                    (char*)emd_ctx->digest,
+                    sizeof(*emd_ctx->digest));
                 EVP_PKEY_free(pkey);
                 goto Exit;
             }
 
             case e_PKCS7_sign:
-                ret = _test_pkcs7_sign(p, _pkcs7_sign);
+                return_value = _test_pkcs7_sign(parameter, _pkcs7_sign);
                 break;
             case e_PKCS7_get_signer_info:
-                ret = _test_pkcs7_sign(p, _pkcs7_get_info);
+                return_value = _test_pkcs7_sign(parameter, _pkcs7_get_info);
                 break;
             case e_PKCS7_verify:
-                ret = _test_pkcs7_sign(p, _pkcs7_verify);
+                return_value = _test_pkcs7_sign(parameter, _pkcs7_verify);
                 break;
             case e_EVP_MD_CTX_create:
             case e_EVP_MD_CTX_destroy:
             {
-                ret = Create_EVP_MD_CTX();
+                return_value = Create_EVP_MD_CTX();
                 break;
             }
             case e_SSLeay_version:
             {
-                int type = *((int*)p->p[0]) % 10;
+                int type = *((int*)parameter->p[0]) % 10;
                 const char* version = SSLeay_version(type);
                 if (SSLEAY_VERSION_NUMBER == type || SSLEAY_PLATFORM == type)
-                    _scpy(p->p[1], version);
+                    _scpy(parameter->p[1], version);
                 break;
             }
             case e_X509_STORE_add_cert:
-                ret = _test_pkcs7_sign(p, _x509_cert);
+                return_value = _test_pkcs7_sign(parameter, _x509_cert);
                 break;
             case e_EVP_EncodeInit:
             {
-                EVP_ENCODE_CTX* ctx = (EVP_ENCODE_CTX*)p->p[0];
+                EVP_ENCODE_CTX* ctx = (EVP_ENCODE_CTX*)parameter->p[0];
                 EVP_EncodeInit(ctx);
-                ret = 1;
+                return_value = 1;
             }
             break;
             case e_EVP_EncodeUpdate:
             {
-                EVP_ENCODE_CTX* ctx = (EVP_ENCODE_CTX*)p->p[0];
+                EVP_ENCODE_CTX* ctx = (EVP_ENCODE_CTX*)parameter->p[0];
                 EVP_EncodeInit(ctx);
-                unsigned char* out = (unsigned char*)p->p[1];
-                int outl = *(int*)&(p->p[2]);
+                unsigned char* out = (unsigned char*)parameter->p[1];
+                int outl = *(int*)&(parameter->p[2]);
                 int inl = (int)(outl * 0.7);
-                const unsigned char* in = (const unsigned char*)p->p[3];
+                const unsigned char* in = (const unsigned char*)parameter->p[3];
                 EVP_EncodeUpdate(ctx, out, &outl, in, inl);
-                ret = outl;
+                return_value = outl;
             }
             break;
             case e_EVP_DecodeInit:
             {
-                EVP_ENCODE_CTX* ctx = (EVP_ENCODE_CTX*)p->p[0];
+                EVP_ENCODE_CTX* ctx = (EVP_ENCODE_CTX*)parameter->p[0];
                 EVP_DecodeInit(ctx);
-                ret = 1;
+                return_value = 1;
             }
             break;
             case e_EVP_DecodeUpdate:
             {
                 EVP_ENCODE_CTX ctx;
                 EVP_EncodeInit(&ctx);
-                unsigned char* out = (unsigned char*)p->p[1];
-                int outl = *(int*)&(p->p[2]);
+                unsigned char* out = (unsigned char*)parameter->p[1];
+                int outl = *(int*)&(parameter->p[2]);
                 int inl = (int)(outl * 0.7);
-                unsigned char* in = (unsigned char*)p->p[3];
+                unsigned char* in = (unsigned char*)parameter->p[3];
                 unsigned char* tmpout =
                     (unsigned char*)OPENSSL_malloc((uint32_t)outl);
                 if (!tmpout)
                 {
-                    ret = -1;
+                    return_value = -1;
                     break;
                 }
                 EVP_EncodeUpdate(&ctx, tmpout, &outl, in, inl);
-                EVP_ENCODE_CTX* ctx1 = (EVP_ENCODE_CTX*)p->p[0];
+                EVP_ENCODE_CTX* ctx1 = (EVP_ENCODE_CTX*)parameter->p[0];
                 EVP_DecodeInit(ctx1);
-                ret = EVP_DecodeUpdate(ctx1, out, &outl, tmpout, outl);
+                return_value = EVP_DecodeUpdate(ctx1, out, &outl, tmpout, outl);
                 OPENSSL_free(tmpout);
             }
             break;
@@ -654,21 +679,22 @@ int common_digest_tests(void* buf)
                 BIO* my_bio = BIO_new(BIO_s_mem());
                 if (NULL == my_bio)
                     goto Exit;
-                unsigned char* buf = (unsigned char*)p->p[1];
-                int buflen = *(int*)&(p->p[2]);
-                buflen = (int)(buflen * 0.7);
+                unsigned char* buf = (unsigned char*)parameter->p[1];
+                int buf_length = *(int*)&(parameter->p[2]);
+                buf_length = (int)(buf_length * 0.7);
 
-                int ret = PEM_write_bio(
-                    my_bio, "my test", "", (unsigned char*)buf, buflen);
+                int return_value = PEM_write_bio(
+                    my_bio, "my test", "", (unsigned char*)buf, buf_length);
                 char* name;
                 char* header;
                 unsigned char* data;
-                long datalen;
-                ret = PEM_read_bio(my_bio, &name, &header, &data, &datalen);
-                if (memcmp(data, buf, (uint32_t)buflen))
-                    ret = 0; // Error
+                long data_length;
+                return_value =
+                    PEM_read_bio(my_bio, &name, &header, &data, &data_length);
+                if (memcmp(data, buf, (uint32_t)buf_length))
+                    return_value = 0; // Error
                 else
-                    ret = 1; // OK
+                    return_value = 1; // OK
                 BIO_free_all(my_bio);
                 if (name)
                     OPENSSL_free(name);
@@ -680,41 +706,42 @@ int common_digest_tests(void* buf)
             break;
             case e_EVP_DigestInit_ex:
             {
-                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)p->p[0];
+                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)parameter->p[0];
                 const EVP_MD* md = EVP_sha1();
 
-                Reset_EVP_MD_CTX(p->p[0]);
-                ret = EVP_DigestInit_ex(emd_ctx, md, NULL);
+                Reset_EVP_MD_CTX(parameter->p[0]);
+                return_value = EVP_DigestInit_ex(emd_ctx, md, NULL);
             }
             break;
             case e_EVP_DigestUpdate:
             {
-                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)p->p[0];
-                unsigned char* data = (unsigned char*)(p->p[1]);
-                size_t len = (size_t)p->p[2];
+                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)parameter->p[0];
+                unsigned char* data = (unsigned char*)(parameter->p[1]);
+                size_t length = (size_t)parameter->p[2];
                 const EVP_MD* md = EVP_sha1();
 
-                Reset_EVP_MD_CTX(p->p[0]);
-                ret = EVP_DigestInit_ex(emd_ctx, md, NULL);
-                if (1 != ret)
+                Reset_EVP_MD_CTX(parameter->p[0]);
+                return_value = EVP_DigestInit_ex(emd_ctx, md, NULL);
+                if (1 != return_value)
                     break;
 
-                ret = EVP_DigestUpdate(emd_ctx, data, len);
+                return_value = EVP_DigestUpdate(emd_ctx, data, length);
             }
             break;
             case e_EVP_DigestFinal_ex:
             {
-                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)p->p[0];
-                unsigned char* md_value = (unsigned char*)(p->p[1]);
-                unsigned int md_len = *(unsigned int*)&(p->p[2]);
+                EVP_MD_CTX* emd_ctx = (EVP_MD_CTX*)parameter->p[0];
+                unsigned char* md_value = (unsigned char*)(parameter->p[1]);
+                unsigned int md_length = *(unsigned int*)&(parameter->p[2]);
                 const EVP_MD* md = EVP_sha1();
 
-                Reset_EVP_MD_CTX(p->p[0]);
-                ret = EVP_DigestInit_ex(emd_ctx, md, NULL);
-                if (1 != ret)
+                Reset_EVP_MD_CTX(parameter->p[0]);
+                return_value = EVP_DigestInit_ex(emd_ctx, md, NULL);
+                if (1 != return_value)
                     break;
 
-                ret = EVP_DigestFinal_ex(emd_ctx, md_value, &md_len);
+                return_value =
+                    EVP_DigestFinal_ex(emd_ctx, md_value, &md_length);
             }
             break;
             default:
@@ -724,12 +751,12 @@ int common_digest_tests(void* buf)
     }
     catch (char* msg)
     {
-        ret = 0;
+        return_value = 0;
     }
 
 Exit:
 
     EVP_cleanup();
 
-    return ret;
+    return return_value;
 }

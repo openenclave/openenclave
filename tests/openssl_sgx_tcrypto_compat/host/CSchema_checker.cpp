@@ -11,8 +11,8 @@
 
 CSchemaChecker::CSchemaChecker(t_openssl_schema* schema, uint schema_size)
 {
-    m_schema_idx = 0;
-    m_schema_num_apis = schema_size;
+    m_schema_index = 0;
+    m_schema_api_count = schema_size;
 
     memset(m_p1.p, 0, sizeof(m_p1.p));
     memset(m_p2.p, 0, sizeof(m_p2.p));
@@ -41,12 +41,12 @@ void CSchemaChecker::randomize_api_param(openssl_api_param* p)
 {
     // for 1 api - randomize params
     uint64_t type;
-    size_t len;
+    size_t length;
     char* buffer;
     if (!m_schema)
         return;
 
-    t_openssl_schema* api_schema = &m_schema[m_schema_idx];
+    t_openssl_schema* api_schema = &m_schema[m_schema_index];
     for (int i = 0; i < OPENSSL_MAX_PARAMETER_COUNT; i++)
     {
         buffer = p->p[i];
@@ -56,19 +56,17 @@ void CSchemaChecker::randomize_api_param(openssl_api_param* p)
 
         if (SSL_FIXLEN(type))
         {
-            len = api_schema->length[i];
-            for (size_t j = 0; j < len; j++)
+            length = api_schema->length[i];
+            for (size_t j = 0; j < length; j++)
                 buffer[j] = (char)(rand());
-            OverideRandomizedValue(
-                m_api_id, (uint)i, type, 1, (unsigned char*)buffer, (uint)len);
+            OverideRandomizedValue(type, (unsigned char*)buffer, (uint)length);
         }
         else if (SSL_VARLEN_X(type))
         {
-            len = (size_t)m_varlen_values[SSL_WHICH_VARLEN(type)];
-            for (size_t j = 0; j < len; j++)
+            length = (size_t)m_varlen_values[SSL_WHICH_VARLEN(type)];
+            for (size_t j = 0; j < length; j++)
                 buffer[j] = (char)(rand());
-            OverideRandomizedValue(
-                m_api_id, (uint)i, type, 1, (unsigned char*)buffer, (uint)len);
+            OverideRandomizedValue(type, (unsigned char*)buffer, (uint)length);
         }
     }
 }
@@ -78,11 +76,11 @@ void CSchemaChecker::copy_api_param(
     openssl_api_param* p1)
 {
     uint64_t type;
-    size_t len;
+    size_t length;
 
     if (!m_schema)
         return;
-    t_openssl_schema* api_schema = &m_schema[m_schema_idx];
+    t_openssl_schema* api_schema = &m_schema[m_schema_index];
 
     assert(p1->id == p2->id);
     for (int i = 0; i < OPENSSL_MAX_PARAMETER_COUNT; i++)
@@ -96,20 +94,20 @@ void CSchemaChecker::copy_api_param(
 
         if (SSL_FIXLEN(type))
         {
-            len = api_schema->length[i];
+            length = api_schema->length[i];
 
-            p2->p[i] = new (std::nothrow) char[len];
+            p2->p[i] = new (std::nothrow) char[length];
             b2 = p2->p[i];
             assert(b2);
-            memcpy(b2, b1, len);
+            memcpy(b2, b1, length);
         }
         else if (SSL_VARLEN_X(type))
         {
-            len = (size_t)m_varlen_values[SSL_WHICH_VARLEN(type)];
-            p2->p[i] = new (std::nothrow) char[len];
+            length = (size_t)m_varlen_values[SSL_WHICH_VARLEN(type)];
+            p2->p[i] = new (std::nothrow) char[length];
             assert(NULL != p2->p[i]);
             b2 = p2->p[i];
-            memcpy(b2, b1, len);
+            memcpy(b2, b1, length);
         }
         else if (SSL_LEN_X(type))
         {
@@ -118,26 +116,19 @@ void CSchemaChecker::copy_api_param(
     }
 }
 
-int CSchemaChecker::check_openssl(openssl_api_param* p1, openssl_api_param* p2)
-{
-    assert(p1->id == p2->id);
-
-    return 0;
-}
-
 int CSchemaChecker::SetupParams(openssl_api_id id, uint schema_id)
 {
     // per 1 api
     m_api_id = id;
     m_p1.id = m_p2.id = id;
-    m_schema_idx = schema_id;
+    m_schema_index = schema_id;
     if (allocate_api_param(&m_p1))
     {
         printf(
             "in openssl_checker::SetupParams() Parameter allocation failure - "
             "p1 of api %d (%s)\n",
             m_api_id,
-            GetApiName((int)m_schema_idx));
+            GetApiName((int)m_schema_index));
         goto cleanup;
     }
     // randomize ctx1 and copy to ctx2
@@ -162,48 +153,42 @@ int CSchemaChecker::allocate_varlen(
     int param_index,
     uint64_t type)
 {
-    size_t len = 0;
+    size_t length = 0;
 
     if (m_varlen_values[varlen_index] == 0xFFFF)
     {
-        len = (uint32_t)rand();
-        OverideRandomizedValue(
-            m_api_id,
-            (uint32_t)param_index,
-            type,
-            0,
-            (unsigned char*)&len,
-            sizeof(len));
-        m_varlen_values[varlen_index] = (uint32_t)len;
+        length = (uint32_t)rand();
+        OverideRandomizedValue(type, (unsigned char*)&length, sizeof(length));
+        m_varlen_values[varlen_index] = (uint32_t)length;
     }
     else
-        len = m_varlen_values[varlen_index];
-    p->p[param_index] = new (std::nothrow) char[len];
+        length = m_varlen_values[varlen_index];
+    p->p[param_index] = new (std::nothrow) char[length];
     if (!p->p[param_index])
     {
         printf(
             "Error: allocating %d bytes for paramter %d in "
             "openssl_checker::allocate_api_param of api %d (%s)\n",
-            (int)len,
+            (int)length,
             param_index,
             m_api_id,
             "apiname");
         return 1;
     }
-    return (int)len;
+    return (int)length;
 }
 
 int CSchemaChecker::allocate_api_param(openssl_api_param* p)
 {
     uint64_t type;
-    size_t len;
+    size_t length;
 
     memset(p, 0, sizeof(*p));
     for (uint i = 0; i < MAX_VAR_LEN_VALUES; i++)
         m_varlen_values[i] = 0xFFFF;
     if (!m_schema)
         return 0;
-    t_openssl_schema* api_schema = &m_schema[m_schema_idx];
+    t_openssl_schema* api_schema = &m_schema[m_schema_index];
     p->id = m_api_id;
     for (int i = 0; i < OPENSSL_MAX_PARAMETER_COUNT; i++)
     {
@@ -213,15 +198,15 @@ int CSchemaChecker::allocate_api_param(openssl_api_param* p)
 
         if (SSL_FIXLEN(type))
         {
-            len = api_schema->length[i];
-            p->p[i] = new (std::nothrow) char[len];
+            length = api_schema->length[i];
+            p->p[i] = new (std::nothrow) char[length];
 
             if (!p->p[i])
             {
                 printf(
                     "Error: allocating %zu bytes for paramter %d in "
                     "openssl_checker::allocate_api_param of api %d (%s)\n",
-                    len,
+                    length,
                     i,
                     m_api_id,
                     "apiname");
@@ -230,7 +215,8 @@ int CSchemaChecker::allocate_api_param(openssl_api_param* p)
         }
         else if (SSL_VARLEN_X(type))
         {
-            len = (uint32_t)allocate_varlen(p, SSL_WHICH_VARLEN(type), i, type);
+            length =
+                (uint32_t)allocate_varlen(p, SSL_WHICH_VARLEN(type), i, type);
         }
     }
     int check_duplicate_slen[MAX_VAR_LEN_VALUES] = {0};
@@ -243,8 +229,8 @@ int CSchemaChecker::allocate_api_param(openssl_api_param* p)
         {
             int which_len = SSL_WHICH_LEN(type);
             check_duplicate_slen[which_len]++;
-            uint len = m_varlen_values[which_len];
-            *((size_t*)&(p->p[i])) = len;
+            uint length = m_varlen_values[which_len];
+            *((size_t*)&(p->p[i])) = length;
         }
     }
     for (uint i = 0; i < MAX_VAR_LEN_VALUES; i++)
@@ -265,7 +251,7 @@ int CSchemaChecker::free_api_param(openssl_api_param* p)
     // for 1 api - free params
     if (!m_schema)
         return 0;
-    t_openssl_schema* api_schema = &m_schema[m_schema_idx];
+    t_openssl_schema* api_schema = &m_schema[m_schema_index];
 
     uint64_t type;
 
@@ -287,72 +273,10 @@ int CSchemaChecker::free_api_param(openssl_api_param* p)
     return 0;
 }
 
-int compare_evp_cipher_ctx_struct(char* p1, char* p2, size_t len, int fips)
-{
-    EVP_CIPHER_CTX* b1 = (EVP_CIPHER_CTX*)p1;
-    EVP_CIPHER_CTX* b2 = (EVP_CIPHER_CTX*)p2;
-    len = 0;
-    fips = 0;
-    if ((b1->encrypt != b2->encrypt) || (b1->buf_len != b2->buf_len) ||
-        (b1->num != b2->num) || (b1->key_len != b2->key_len) ||
-        (b1->flags != b2->flags) || (b1->final_used != b2->final_used) ||
-        (b1->block_mask != b2->block_mask))
-    {
-        return 1;
-    }
-    return 0;
-}
-
-int compare_evp_md(char* p1, char* p2, size_t len, int fips)
-{
-    EVP_MD* b1 = (EVP_MD*)p1;
-    EVP_MD* b2 = (EVP_MD*)p2;
-    len = 0;
-    fips = 0;
-    if (!b1 && !b2)
-        return 1;
-
-    if (!b1 || !b2)
-        return 0;
-
-    if (b1->type != b2->type)
-        return 1;
-    if (b1->pkey_type != b2->pkey_type)
-        return 1;
-    if (b1->md_size != b2->md_size)
-        return 1;
-    if (b1->flags != b2->flags)
-        return 1;
-    if (b1->block_size != b2->block_size)
-        return 1;
-    if (b1->ctx_size != b2->ctx_size)
-        return 1;
-    return 0;
-}
-
-int compare_evp_md_ctx(char* p1, char* p2, size_t len, int fips)
-{
-    EVP_MD_CTX* b1 = (EVP_MD_CTX*)p1;
-    EVP_MD_CTX* b2 = (EVP_MD_CTX*)p2;
-    len = 0;
-    fips = 0;
-
-    if (!p1 && !p2)
-        return 0;
-
-    if (!p1 || !p2)
-        return 1;
-
-    if (b1->flags != b2->flags)
-        return 1;
-
-    return 0;
-}
-
 int CSchemaChecker::CleanUpParams()
 {
-    int ret = 0;
-    ret = free_api_param(&m_p1);
-    ret = free_api_param(&m_p2);
-    return 0;
+    int return_value = 0;
+    return_value |= free_api_param(&m_p1);
+    return_value |= free_api_param(&m_p2);
+    return return_value;
 }
