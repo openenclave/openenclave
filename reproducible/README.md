@@ -72,7 +72,7 @@ There is no sequencing as such. Functions are composed through expression evalua
     this that the_other 
 ```
 will execute the function "the_other" and return its value as an argument to "that" which in turn returns its value to
-"this".  There are various caching facilities, so its possible that one or mor e of those arguments will be 
+"this".  There are various caching facilities, so it's possible that one or more of those arguments will be 
 replaced with a cached evaluation of the functions. 
 
 Because of that part, there is no idea of "file io" in nix.  Even builtins.trace does not provide assurances of when 
