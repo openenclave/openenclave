@@ -4,7 +4,7 @@
 # 
 
 #
-# Setup a host for docker builds using nix. This assumes nix has been installed
+# Set up a host for docker builds using nix. This assumes nix has been installed.
 # Setting up the nix build on the host as opposed to completely restricting the build
 # infrastructure means we don't need to set up libsgx infrastructure in the container
 # and can instead run tests separately. This is desirable as many build machines don't support
