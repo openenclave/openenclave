@@ -52,7 +52,7 @@ docker container allows the nix system to be encapsulated, and add some addition
 
 - Nix package versions are a function of the nixpkgs branch contents. In principle, Nix allows packages to specify
   the versions of dependents by git tag, url, or git commit. In practice that only works in cases where the source
-  is not patched and other processing steps are not performed.  If dependent package versions are overriden, 
+  is not patched and other processing steps are not performed.  If dependent package versions are overridden, 
   they must be built on each project rebuild. The nix store will contain the previous builds once packages are built 
   so that helps considerably if the store is saved.
 
