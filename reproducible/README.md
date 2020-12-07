@@ -37,7 +37,7 @@ Java is a C++ derivitive, which is to say it carries over syntactic conventions 
 completely, and adds some features not in Haskell.
 
 The basis for the language is the function.  A function is an expression which returns a value, the value can
-be a singleton (for example integer), set (indicated by braces), or list (indicated by brackets []). Functions
+be a singleton (for example integer), set (indicated by curly braces {}), or list (indicated by brackets []). Functions
 may include functions. They must be declared in the "let" section of the declaration.  Functions are called only 
 when referenced and reduced to values.
 
