@@ -67,7 +67,7 @@ popd
 # We can also force a complete build from source by building openenclave via
 # nix-build --substituters '' .... . Since the build result is deterministic, 
 # we can verify we are getting the packages we think we are, as the output will have
-# the same sha256.
+# the same sha256 hash.
 #
 
 if [ $(uname -m) == "aarch64" ]
