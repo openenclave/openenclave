@@ -300,7 +300,7 @@ The output of the process is a .deb and a .nar file containing an exported nix s
 Open Enclave SDK apps using nix.
 
 
-### workflow
+### Workflow
 
 ```
    ./build-oe-nix-image.sh
