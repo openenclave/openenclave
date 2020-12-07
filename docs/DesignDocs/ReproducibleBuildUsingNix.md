@@ -298,7 +298,7 @@ built and cached in the nix store.
 
 ## A Nix build system for Open Enclave SDK
 
-We propose to add an optional nix based build environment for OpenEnclave SDK using docker containers.
+We propose to add an optional nix based build environment for Open Enclave SDK using docker containers.
 
 This would consist of :
 - Dockerfile.nix and build-oe-nix-build.sh for building the oe nix docker image locally.
