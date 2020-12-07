@@ -5,7 +5,7 @@ ARG BASE_IMAGE="ubuntu@sha256:fff16eea1a8ae92867721d90c59a75652ea66d29c05294e6e2
 FROM $BASE_IMAGE
 
 #
-# Build container to produce reproducible nix derivation and .deb package of the OpenEnclave SDK
+# Build container to produce reproducible nix derivation and .deb package of the Open Enclave SDK
 # 
 # Uses nix package manager to wrap the standard build process.
 #
