@@ -186,7 +186,7 @@ stdenv.mkDerivation rec {
 }
 ```
   
-In the above, let is the initialisation/declaration part of the expression. The actual expression proper begins after
+In the above, "let" is the initialisation/declaration part of the expression. The actual expression proper begins after
 "in".  The "rec" keyword is used to allow the function definition to be visible to itself.
 
 nix-instantiate will produce the store derivation in the file :
