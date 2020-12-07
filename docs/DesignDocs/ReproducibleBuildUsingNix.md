@@ -2,7 +2,7 @@
 
 ### Problem Description.
 
-In the software supply line, the most difficult phase to detect and defend from attacker is the build process. 
+In the software supply line, the most difficult phase to detect and defend from attackers is the build process. 
 Detection of attacks can be greatly improved by ensuring a constant output from the build process, which can
 be inspected by comparing to a known sha256sum for the package.
 
