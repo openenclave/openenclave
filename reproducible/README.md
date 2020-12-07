@@ -311,7 +311,7 @@ will build the nix docker image. This can be pushed:
 ```
 and later pulled, or just used locally.
 
-To build the openenclave sdk 
+To build the Open Enclave SDK
 ```
    ./build_openenclave.sh -o ~/result
 ```
