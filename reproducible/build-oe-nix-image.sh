@@ -3,7 +3,7 @@
 # Licensed under the MIT License.
 # 
 # build-oe-nix-image.sh  
-# Builds the nix based build image for OpenEnclave SDK
+# Builds the nix based build image for the Open Enclave SDK
 
 #
 # We fix the user name and id or else the tar files in the deb won't match from location to location. It is possible
