@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
      - Enclave apps that are built with Make and rely on Open Enclave's pkgconfig must now explicitly include OE crypto wrapper library in linker dependency flags.
      - See the [Makefile in the helloworld sample](samples/helloworld/enclave/Makefile#L34) for an example. Here `OE_CRYPTO_LIB` is set to `mbedtls` in [parent MakeList file](samples/helloworld/Makefile#L9).
 
+### Changed
+- Syscalls are internally dispatched directly to their implementation functions instead of via a switch-case.
+  This allows the linker to eliminate unused syscalls, leading to slightly reduced TCB.
+  The command `objdump -t enclave-filename | grep oe_SYS_` can be used to figure out the list of syscalls invoked by
+  code within the enclave. While most syscall implementations make OCALLs, some may be implemented entirely within
+  the enclave or may be noops (e.g SYS_futex).
+
 [v0.12.0][v0.12.0_log]
 --------------
 
