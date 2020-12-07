@@ -20,7 +20,7 @@ application and its dependents is given by the filename. The only provable relat
 package is again given by the filename, with no way whatsoever of proving that source produced that binary, or 
 how it did it.
 
-High security applications using OpenEnclave SDK require a highly auditable and reproducible build process. They
+High security applications using the Open Enclave SDK require a highly auditable and reproducible build process. They
 are able to trade off some effort and time for this end.
 
 ### Proposed Approach:
