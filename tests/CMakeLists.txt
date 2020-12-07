@@ -143,6 +143,7 @@ if (UNIX
     if (BUILD_OPENSSL)
       add_subdirectory(openssl)
       add_subdirectory(openssl_unsupported)
+      add_subdirectory(openssl_sgx_tcrypto_compat)
     endif ()
   endif ()
 
