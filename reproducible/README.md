@@ -60,8 +60,8 @@ in
      
 ```
 
-if then else exists, but the form is similar to the C conditional,  if <cond> then <alt1> else <alt2> where cond,
-alt1 and alt2 are all function calls.  if returns a value.
+"if then else exists", but the form is similar to the C conditional,  `if <cond> then <alt1> else <alt2>` where `cond`,
+`alt1` and `alt2` are all function calls.  "if" returns a value.
 
 ```
     arch = if platform ? arch then platform.arch else "x86_64-linux"
