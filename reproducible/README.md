@@ -224,7 +224,7 @@ If any changes are made to that package, any package related to the changed pack
 built and cached in the nix store.
 
 
-## A Nix build system for OpenEnclave SDK
+## A Nix build system for the Open Enclave SDK
 
 We propose to add an optional nix based build environment for the Open Enclave SDK using docker containers.
 
