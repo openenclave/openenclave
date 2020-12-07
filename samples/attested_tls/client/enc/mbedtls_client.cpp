@@ -185,7 +185,6 @@ int launch_tls_client(char* server_name, char* server_port)
 {
     int ret = 1;
     const char* pers = "ssl_client";
-    oe_result_t result = OE_FAILURE;
     int exit_code = MBEDTLS_EXIT_FAILURE;
 
     mbedtls_net_context server_fd;

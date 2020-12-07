@@ -284,7 +284,6 @@ done:
 int set_up_tls_server(char* server_port, bool keep_server_up)
 {
     int ret = 0;
-    oe_result_t result = OE_FAILURE;
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_ssl_context ssl;
