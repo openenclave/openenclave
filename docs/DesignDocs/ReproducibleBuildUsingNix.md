@@ -99,7 +99,7 @@ there is a global cache at https://cache.nixos.org which contains cached built d
 released packages.  It is not necessary to use this cache. The cache protocol is simple http get/put protocol, so
 any url that points to the correct heirarchy can be used. If no prebuilt version of a package is available at
 the cache, the package will be built. Since the package has a fixed output, there is no difference in output
-using the cached version or one custom built.. 
+using the cached version or one custom built.
 
 #### Language:
 
