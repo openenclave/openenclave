@@ -214,7 +214,7 @@ The nix packages repo serves two purposes, somewhat at odds with each other.
 
   While it is not difficult to change the version of glibc in a custom repo branch, since glibc is linked 
   by every package, to do so would require a custom repo build. In that case, it would require a custom 
-  cache to provide prebuilding, or everything would require everything be built from source..
+  cache to provide prebuilding, or everything would require everything be built from source.
 
 ### Caching and Hydra
 
