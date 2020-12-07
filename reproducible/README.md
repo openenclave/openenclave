@@ -45,8 +45,8 @@ When you see what appears to be regular code with braces and a series of semicol
 being used as an argument.
 
 There are no variables, just functions returning contants. Datatypes are a property of values, but once declared
-the function has a constant datatype. function results can be transformed but there is no casting as such. The let
-clause is where a number of functions can be declared. The in clause is where they are used.
+the function has a constant datatype. function results can be transformed but there is no casting as such. The "let"
+clause is where a number of functions can be declared. The "in" clause is where they are used.
 
 ```
 let
