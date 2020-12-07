@@ -297,7 +297,7 @@ repo.
 
 Runs the image produced by docker build, with arguments resolved.
 The output of the process is a .deb and a .nar file containing an exported nix store for use in developing 
-openenclave sdk apps using nix.
+Open Enclave SDK apps using nix.
 
 
 ### workflow
