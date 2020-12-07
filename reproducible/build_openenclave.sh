@@ -28,7 +28,7 @@ while getopts "o:tic" opt; do
     t ) # run tests with build
         DO_CHECK=true
       ;;
-    i ) # Dont execute nix-build.sh, just bash
+    i ) # Don't execute nix-build.sh, just bash
         INTERACTIVE=true
       ;;
     c ) # run tests with build
