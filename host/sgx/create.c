@@ -71,7 +71,9 @@ bool oe_is_avx_enabled = false;
 
 static void _initialize_enclave_host_impl(void)
 {
-    oe_is_avx_enabled = oe_get_xfrm() & (SGX_XFRM_AVX | SGX_XFRM_AVX512);
+    uint64_t xfrm = oe_get_xfrm();
+    oe_is_avx_enabled = ((xfrm & SGX_XFRM_AVX) == SGX_XFRM_AVX) ||
+                        ((xfrm & SGX_XFRM_AVX512) == SGX_XFRM_AVX512);
     oe_initialize_host_exception();
 }
 
