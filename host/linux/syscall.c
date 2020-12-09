@@ -389,6 +389,13 @@ int oe_syscall_truncate_ocall(const char* path, oe_off_t length)
     return truncate(path, length);
 }
 
+int oe_syscall_ftruncate_ocall(oe_host_fd_t fd, oe_off_t length)
+{
+    errno = 0;
+
+    return ftruncate((int)fd, length);
+}
+
 int oe_syscall_mkdir_ocall(const char* pathname, oe_mode_t mode)
 {
     errno = 0;

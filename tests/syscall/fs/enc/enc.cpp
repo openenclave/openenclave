@@ -397,12 +397,33 @@ static void test_truncate_file(FILE_SYSTEM& fs, const char* tmp_dir)
 
     mkpath(path, tmp_dir, "alphabet");
 
-    /* Remove the file. */
+    /* Truncate the file. */
     OE_TEST(fs.truncate(path, 5) == 0);
 
     /* Stat the file. */
     OE_TEST(fs.stat(path, &buf) == 0);
     OE_TEST(buf.st_size == 5);
+}
+
+template <class FILE_SYSTEM>
+static void test_ftruncate_file(FILE_SYSTEM& fs, const char* tmp_dir)
+{
+    char path[OE_PAGE_SIZE];
+    typename FILE_SYSTEM::stat_type buf;
+
+    printf("--- %s()\n", __FUNCTION__);
+
+    mkpath(path, tmp_dir, "alphabet");
+
+    /* Truncate the file. */
+    const auto file = fs.open(path, O_WRONLY, 0);
+    OE_TEST(file);
+    OE_TEST(fs.ftruncate(file, 4) == 0);
+    OE_TEST(fs.close(file) == 0);
+
+    /* Stat the file. */
+    OE_TEST(fs.stat(path, &buf) == 0);
+    OE_TEST(buf.st_size == 4);
 }
 
 template <class FILE_SYSTEM>
@@ -444,6 +465,7 @@ void test_common(FILE_SYSTEM& fs, const char* tmp_dir)
     test_rename_file(fs, tmp_dir);
     test_readdir(fs, tmp_dir);
     test_truncate_file(fs, tmp_dir);
+    test_ftruncate_file(fs, tmp_dir);
     test_unlink_file(fs, tmp_dir);
     test_invalid_path(fs);
     cleanup(fs, tmp_dir);

@@ -782,6 +782,7 @@ add_enclave_library(
   ${MUSLSRC}/unistd/close.c
   ${MUSLSRC}/unistd/fdatasync.c
   ${MUSLSRC}/unistd/fsync.c
+  ${MUSLSRC}/unistd/ftruncate.c
   ${MUSLSRC}/unistd/getgid.c
   ${MUSLSRC}/unistd/getegid.c
   ${MUSLSRC}/unistd/getuid.c

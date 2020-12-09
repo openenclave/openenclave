@@ -545,6 +545,20 @@ done:
     return ret;
 }
 
+int oe_ftruncate(int fd, oe_off_t length)
+{
+    int ret = -1;
+    oe_fd_t* file;
+
+    if (!(file = oe_fdtable_get(fd, OE_FD_TYPE_FILE)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = file->ops.file.ftruncate(file, length);
+
+done:
+    return ret;
+}
+
 oe_off_t oe_lseek(int fd, oe_off_t offset, int whence)
 {
     oe_off_t ret = -1;

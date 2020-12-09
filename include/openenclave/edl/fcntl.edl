@@ -177,6 +177,11 @@ enclave
             oe_off_t length)
             propagate_errno;
 
+        int oe_syscall_ftruncate_ocall(
+            oe_host_fd_t fd,
+            oe_off_t length)
+            propagate_errno;
+
         int oe_syscall_mkdir_ocall(
             [in, string] const char* pathname,
             oe_mode_t mode)

@@ -175,6 +175,7 @@ OE_DECLARE_SYSCALL2(SYS_flock);
 OE_DECLARE_SYSCALL2(SYS_fstat);
 OE_DECLARE_SYSCALL4(SYS_fstatat);
 OE_DECLARE_SYSCALL1_M(SYS_fsync);
+OE_DECLARE_SYSCALL2(SYS_ftruncate);
 // SYS_futex is needed for compiling musl/src/internal/pthread_impl.h
 // It doesn't have to be implemented.
 // It is called with 3 or 4 arguments.
