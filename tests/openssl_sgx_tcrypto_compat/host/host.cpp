@@ -32,8 +32,6 @@ int main(int argc, const char* argv[])
     oe_result_t result = oe_create_openssl_sgx_tcrypto_compat_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, nullptr, 0, &enclave);
     OE_TEST(result == OE_OK);
-    result = ecall_set_rdrand_engine(enclave);
-    OE_TEST(result == OE_OK);
     switch (test_group)
     {
         case TEST_GROUP_DIGEST:

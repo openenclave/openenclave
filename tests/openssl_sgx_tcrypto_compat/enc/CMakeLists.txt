@@ -16,11 +16,15 @@ add_enclave(
   CXX
   UUID
   90c020e8-e5dd-11ea-adc1-0242ac120002
+  CRYPTO_LIB
+  openssl
   SOURCES
   enc.cpp
   tests_ecalls.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common_code/common_digest_tests.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/openssl_sgx_tcrypto_compat_t.c)
+
+enclave_compile_definitions(tls_cert_openssl_enc PRIVATE OE_USE_OPENSSL)
 
 enclave_include_directories(
   openssl_sgx_tcrypto_compat_enc
@@ -32,4 +36,3 @@ enclave_include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/..
   ${CMAKE_CURRENT_SOURCE_DIR}/../common_code)
-enclave_link_libraries(openssl_sgx_tcrypto_compat_enc oelibc openssl)
