@@ -5,7 +5,7 @@ ARG BASE_IMAGE="ubuntu@sha256:fff16eea1a8ae92867721d90c59a75652ea66d29c05294e6e2
 FROM $BASE_IMAGE
 
 #
-# Build container to produce reproducible nix derivation and .deb package of the Open Enclave SDK
+# Build container to produce reproducible nix derivation and .deb package of the OpenEnclave SDK
 # 
 # Uses nix package manager to wrap the standard build process.
 #
@@ -19,7 +19,7 @@ RUN apt-get update \
         && rm -rf /var/lib/apt/lists/*
 
 ADD https://oejenkins.blob.core.windows.net/oejenkins/oe-nix-artifacts/nix-libs.tar.gz /tmp
-RUN chmod a+rw /tmp/nix-libs.tar.gz
+RUN chmod a+r /tmp/nix-libs.tar.gz
 RUN mkdir -p /output
 RUN mkdir -p /output/build
 RUN chmod -R 777 /output
@@ -66,8 +66,3 @@ ADD ./nix-shell.sh /home/$BUILD_USER
 ADD ./nix-ctest.sh /home/$BUILD_USER
 ADD ./build_deb_pkg.sh /home/$BUILD_USER
 RUN mkdir -p /home/$BUILD_USER/.nix_libs
-#RUN cp /tmp/nix-libs/libsgx_enclave_common.so /home/$BUILD_USER/.nix_libs \
-#    && cp /tmp/nix-libs/libsgx_enclave_common.so.1 /home/$BUILD_USER/.nix_libs \
-#    && cp /tmp/nix-libs/libsgx_launch.so.1  /home/$BUILD_USER/.nix_libs \
-#    && cp /tmp/nix-libs/libprotobuf.so.22  /home/$BUILD_USER/.nix_libs \
-#    && cp /tmp/nix-libs/libstdc++.so.6  /home/$BUILD_USER/.nix_libs

@@ -40,7 +40,7 @@ with pkgs;
                 chmod -R a+rw $src 
                 mkdir -p $out 
                 cd $out 
-                $OE_SIMULATION cmake -G "Unix Makefiles" $src -DCMAKE_BUILD_TYPE=RelWithDebInfo  
+                cmake -G "Unix Makefiles" $src -DCMAKE_BUILD_TYPE=RelWithDebInfo  -DCMAKE_INSTALL_PREFIX=$out/install
             ''; 
   
         buildPhase = '' 
@@ -53,6 +53,7 @@ with pkgs;
 
         installPhase = '' 
                 echo "install phase skipped " 
+                make install
             ''; 
 
         fixupPhase = '' 

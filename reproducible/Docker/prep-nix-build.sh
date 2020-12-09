@@ -4,7 +4,7 @@
 # 
 
 #
-# Set up a host for docker builds using nix. This assumes nix has been installed.
+# Setup a host for docker builds using nix. This assumes nix has been installed
 # Setting up the nix build on the host as opposed to completely restricting the build
 # infrastructure means we don't need to set up libsgx infrastructure in the container
 # and can instead run tests separately. This is desirable as many build machines don't support
@@ -67,7 +67,7 @@ popd
 # We can also force a complete build from source by building openenclave via
 # nix-build --substituters '' .... . Since the build result is deterministic, 
 # we can verify we are getting the packages we think we are, as the output will have
-# the same sha256 hash.
+# the same sha256.
 #
 
 if [ $(uname -m) == "aarch64" ]

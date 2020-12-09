@@ -17,4 +17,6 @@ export BUILD_USER_HOME=/home/azureuser
 # Do not assume that for other cases.
 export BUILD_BASE_IMAGE="ubuntu@sha256:fff16eea1a8ae92867721d90c59a75652ea66d29c05294e6e2f898704bdb8cf1"
 
+pushd Docker
 docker build -f Dockerfile.nix --build-arg BASE_IMAGE=$BUILD_BASE_IMAGE --build-arg BUILD_USER=$BUILD_USER --build-arg BUILD_USER_ID=$BUILD_USER_ID --build-arg BUILD_USER_HOME=$BUILD_USER_HOME --no-cache . -t openenclave-build
+popd
