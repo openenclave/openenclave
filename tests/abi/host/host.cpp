@@ -284,6 +284,10 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_abi_enclave(): result=%u", result);
     }
 
+    // oe_is_avx_enabled has already been setup by the host runtime.
+    // Pass it along to the enclave.
+    OE_TEST(enclave_set_oe_is_avx_enabled(enclave, oe_is_avx_enabled) == OE_OK);
+
     result = test_abi_roundtrip(enclave);
     OE_TEST(result == OE_OK || result == OE_UNSUPPORTED);
 

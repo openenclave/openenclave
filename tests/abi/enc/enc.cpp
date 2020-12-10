@@ -9,6 +9,17 @@
 #include "../abi_utils.h"
 #include "abi_t.h"
 
+OE_EXTERNC_BEGIN
+// By default, assume avx is available. This is the case with most processors
+// with SGX support.
+bool oe_is_avx_enabled = true;
+OE_EXTERNC_END
+
+void enclave_set_oe_is_avx_enabled(bool enabled)
+{
+    oe_is_avx_enabled = enabled;
+}
+
 double enclave_add_float()
 {
     double my_res = 0;
