@@ -683,7 +683,7 @@ int common_digest_tests(openssl_api_param* parameter)
                 int buf_length = *(int*)&(parameter->p[2]);
                 buf_length = (int)(buf_length * 0.7);
 
-                int return_value = PEM_write_bio(
+                return_value = PEM_write_bio(
                     my_bio, "my test", "", (unsigned char*)buf, buf_length);
                 char* name;
                 char* header;
