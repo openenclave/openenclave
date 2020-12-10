@@ -33,8 +33,8 @@ endif ()
 # Set compiler search order to prefer Clang
 # This has to be done before `project`
 # http://cmake.3232098.n2.nabble.com/Prefer-clang-over-gcc-td7597742.html
-set(CMAKE_C_COMPILER_NAMES clang-7 cc)
-set(CMAKE_CXX_COMPILER_NAMES clang++-7 c++)
+set(CMAKE_C_COMPILER_NAMES clang-8 clang-7 cc)
+set(CMAKE_CXX_COMPILER_NAMES clang++-8 clang++-7 c++)
 
 # Will be overwritten during the cmake initialization.
 set(LVI_MITIGATION
