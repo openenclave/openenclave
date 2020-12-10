@@ -180,7 +180,6 @@ int launch_tls_client(char* server_name, char* server_port)
 
     int client_socket = -1;
     int error = 0;
-    oe_result_t result = OE_FAILURE;
 
     /* Load host resolver and socket interface modules explicitly */
     if (load_oe_modules() != OE_OK)
