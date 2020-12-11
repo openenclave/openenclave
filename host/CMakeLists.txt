@@ -435,7 +435,7 @@ endif ()
 # For including edge routines.
 target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-# Compile definitions and options
+# Compile definitions and options for oehost and oehostverify
 target_compile_definitions(
   oehost
   PUBLIC # NOTE: This definition is public to the rest of our project's
@@ -444,13 +444,23 @@ target_compile_definitions(
          $<BUILD_INTERFACE:OE_API_VERSION=2>
   PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
           OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
+target_compile_definitions(
+  oehostverify
+  PUBLIC # NOTE: This definition is public to the rest of our project's
+         # targets, but should not be exposed to consumers of our
+         # package.
+         $<BUILD_INTERFACE:OE_API_VERSION=2>
+  PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+          OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
 
 if (USE_DEBUG_MALLOC)
   target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
+  target_compile_definitions(oehostverify PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
 if (WITH_EEID)
   target_compile_definitions(oehost PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+  target_compile_definitions(oehostverify PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()
 
 if (UNIX)
@@ -462,22 +472,20 @@ if (UNIX)
     oehost
     PRIVATE _GNU_SOURCE
     PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
+  target_compile_options(
+    oehostverify
+    PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
+    PUBLIC -fstack-protector-strong)
+  target_compile_definitions(
+    oehostverify
+    PRIVATE _GNU_SOURCE
+    PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
 endif ()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oehost PRIVATE -Wjump-misses-init)
+  target_compile_options(oehostverify PRIVATE -Wjump-misses-init)
 endif ()
-
-# Use the same the compile options and definitions from oehost.
-target_compile_options(
-  oehostverify
-  PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_OPTIONS>
-  INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_OPTIONS>)
-
-target_compile_definitions(
-  oehostverify
-  PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_DEFINITIONS>
-  INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_DEFINITIONS>)
 
 target_compile_definitions(oehostverify PUBLIC OE_BUILD_HOST_VERIFY)
 
@@ -494,12 +502,11 @@ endif ()
 install(
   TARGETS oehost
   EXPORT openenclave-targets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
-          COMPONENT OEHOSTVERIFY)
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
 
 install(
   TARGETS oehostverify
-  EXPORT openenclave-targets
+  EXPORT openenclave-hostverify-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
           COMPONENT OEHOSTVERIFY)
 

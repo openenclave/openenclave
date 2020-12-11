@@ -6,6 +6,13 @@
 
 #include <openenclave/bits/defs.h>
 
+OE_EXTERNC_BEGIN
+// oe_is_avx_enabled is an internal variable setup and used by OE SDK host
+// runtime. It is OK for the abi test to depend on it do selectively perform
+// checks.
+extern bool oe_is_avx_enabled;
+OE_EXTERNC_END
+
 // User-mode settable RFLAGS that are not commonly modified and usually
 // survive function calls: IF:9, NT:14
 #define TEST_RFLAGS 0x4200
@@ -82,28 +89,29 @@ OE_ALWAYS_INLINE void set_test_xmm_state(void)
                                          0xCA,
                                          0xFE};
 
-    asm("vmovdqu %0, %%xmm6;"
-        "vmovdqu %0, %%xmm7;"
-        "vmovdqu %0, %%xmm8;"
-        "vmovdqu %0, %%xmm9;"
-        "vmovdqu %0, %%xmm10;"
-        "vmovdqu %0, %%xmm11;"
-        "vmovdqu %0, %%xmm12;"
-        "vmovdqu %0, %%xmm13;"
-        "vmovdqu %0, %%xmm14;"
-        "vmovdqu %0, %%xmm15;"
-        :
-        : "m"(test_xmm)
-        : "xmm6",
-          "xmm7",
-          "xmm8",
-          "xmm9",
-          "xmm10",
-          "xmm11",
-          "xmm12",
-          "xmm13",
-          "xmm14",
-          "xmm15");
+    if (oe_is_avx_enabled)
+        asm("vmovdqu %0, %%xmm6;"
+            "vmovdqu %0, %%xmm7;"
+            "vmovdqu %0, %%xmm8;"
+            "vmovdqu %0, %%xmm9;"
+            "vmovdqu %0, %%xmm10;"
+            "vmovdqu %0, %%xmm11;"
+            "vmovdqu %0, %%xmm12;"
+            "vmovdqu %0, %%xmm13;"
+            "vmovdqu %0, %%xmm14;"
+            "vmovdqu %0, %%xmm15;"
+            :
+            : "m"(test_xmm)
+            : "xmm6",
+              "xmm7",
+              "xmm8",
+              "xmm9",
+              "xmm10",
+              "xmm11",
+              "xmm12",
+              "xmm13",
+              "xmm14",
+              "xmm15");
 }
 
 OE_ALWAYS_INLINE void set_test_abi_state(void)
@@ -136,31 +144,32 @@ OE_ALWAYS_INLINE void reset_test_abi_state(void)
 
 OE_ALWAYS_INLINE void read_abi_state(abi_state_t* state)
 {
-    asm("movq %%rbx, (%0);"
-        "movq %%rbp, 8(%0);"
-        "movq %%rsp, 16(%0);"
-        "movq %%r12, 24(%0);"
-        "movq %%r13, 32(%0);"
-        "movq %%r14, 40(%0);"
-        "movq %%r15, 48(%0);"
-        "pushfq;"
-        "popq 56(%0);"
-        "stmxcsr 64(%0);"
-        "fstcw 68(%0);"
-        "movq    %%rsi, (%1);"
-        "movq    %%rdi, 8(%1);"
-        "vmovdqu %%xmm6, 16(%1);"
-        "vmovdqu %%xmm7, 32(%1);"
-        "vmovdqu %%xmm8, 48(%1);"
-        "vmovdqu %%xmm9, 64(%1);"
-        "vmovdqu %%xmm10, 80(%1);"
-        "vmovdqu %%xmm11, 96(%1);"
-        "vmovdqu %%xmm12, 112(%1);"
-        "vmovdqu %%xmm13, 128(%1);"
-        "vmovdqu %%xmm14, 144(%1);"
-        "vmovdqu %%xmm15, 160(%1);"
-        :
-        : "r"(state), "r"(&state->win_abi));
+    if (oe_is_avx_enabled)
+        asm("movq %%rbx, (%0);"
+            "movq %%rbp, 8(%0);"
+            "movq %%rsp, 16(%0);"
+            "movq %%r12, 24(%0);"
+            "movq %%r13, 32(%0);"
+            "movq %%r14, 40(%0);"
+            "movq %%r15, 48(%0);"
+            "pushfq;"
+            "popq 56(%0);"
+            "stmxcsr 64(%0);"
+            "fstcw 68(%0);"
+            "movq    %%rsi, (%1);"
+            "movq    %%rdi, 8(%1);"
+            "vmovdqu %%xmm6, 16(%1);"
+            "vmovdqu %%xmm7, 32(%1);"
+            "vmovdqu %%xmm8, 48(%1);"
+            "vmovdqu %%xmm9, 64(%1);"
+            "vmovdqu %%xmm10, 80(%1);"
+            "vmovdqu %%xmm11, 96(%1);"
+            "vmovdqu %%xmm12, 112(%1);"
+            "vmovdqu %%xmm13, 128(%1);"
+            "vmovdqu %%xmm14, 144(%1);"
+            "vmovdqu %%xmm15, 160(%1);"
+            :
+            : "r"(state), "r"(&state->win_abi));
 }
 
 OE_ALWAYS_INLINE bool is_same_abi_state(abi_state_t* a, abi_state_t* b)
