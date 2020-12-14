@@ -708,8 +708,8 @@ oe_result_t oe_sgx_qe_get_quote(
         }
         else // ECDSA
         {
-            // For EPID, opt_params_size should be zero.
-            if (opt_params_size)
+            // For ECDSA, opt_params_size should be zero.
+            if (opt_params || opt_params_size)
                 OE_RAISE(OE_INVALID_PARAMETER);
         }
 
@@ -734,6 +734,10 @@ oe_result_t oe_sgx_qe_get_quote(
     }
     else
     {
+        // Only ECDSA is supported, opt_params_size should be zero.
+        if (opt_params || opt_params_size)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
         if (quote_size > OE_MAX_UINT32)
             OE_RAISE(OE_INVALID_PARAMETER);
 
