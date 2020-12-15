@@ -786,6 +786,13 @@ bool StackUnwind()
     return true;
 }
 
+// See ~BarClass08() for why this function is needed.
+OE_NEVER_INLINE
+void ThrowExceptionInUnwind()
+{
+    throw "X";
+}
+
 class BarClass08 : public std::exception
 {
   public:
@@ -795,7 +802,50 @@ class BarClass08 : public std::exception
 
     ~BarClass08() throw()
     {
-        throw "X";
+        // throw "X";
+        // If the throw "X" is enabled above, then it triggers a code-generation
+        // bug with clang-8 and above. The bug happens only when Spectre
+        // mitigation (-mllvm -x86-speculative-load-hardening) is enabled and
+        // optimizations are turned on. In such a case, the compiler inlines the
+        // destructor of BarClass08. The following code in ExceptionInUnwind
+        // function below
+        //      BarClass08 obj;
+        //      throw 'X';
+        // which is internally
+        //      BarClass08 obj;
+        //      throw 'X';
+        //      ~BarClass08();
+        // becoms
+        //      BarClass08 obj;
+        //      throw 'X';
+        //      throw "X";
+        // when ~BarClass08() is inlined.
+        // Speculative load hardening causes the following code to be emitted:
+        //      BarClass08 obj;
+        // (A)  throw 'X';
+        // (B)  assembly code to set rax to 0 in speculative execution path
+        //                                  1 in normal execution path
+        // (C)  or rax, rsp      # rax expected to be 0, rsp will be unchanged
+        //      throw "X";
+        // Due to what looks like incorrect exception unwinding information,
+        // when unwinding the callstack for exception thrown in (A), instead of
+        // executing (B) and then (C) which would correctly setup RAX, the
+        // control skips (B) and directly reaches (C) thereby failing to setup
+        // RAX. The value of RAX is non-zero since its setup code (B) has been
+        // skipped. (C) executes and corrupts RSP and subsequently when a callq
+        // instruction is executed for throw "X", a SIGBUS is raised.
+        //
+        // This incorrect code-generation has been observed only
+        //   1) When spectre mitigation is turned on AND
+        //   2) During unwinding the inlined destructor for a class is executed
+        //   whose sole statement throws an exception.
+        //
+        // Since 2) is a scenario that rarely happens in practice, this
+        // code-generation bug is expected to not affect any real enclaves.
+        //
+        // The workaound is to move the body of the destructor into a separate
+        // function that is not inlined.
+        ThrowExceptionInUnwind();
     }
 };
 
