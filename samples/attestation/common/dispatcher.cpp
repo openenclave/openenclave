@@ -85,19 +85,28 @@ int ecall_dispatcher::get_enclave_format_settings(
         goto exit;
     }
 
-    // Allocate memory on the host and copy the format settings over.
-    // TODO: the following code is not TEE-agnostic, as it assumes the
-    // enclave can directly write into host memory
-    *format_settings_buffer = (uint8_t*)oe_host_malloc(format_settings_size);
-    if (*format_settings_buffer == nullptr)
+    if (format_settings && format_settings_size)
     {
-        ret = OE_OUT_OF_MEMORY;
-        TRACE_ENCLAVE("copying format_settings failed, out of memory");
-        goto exit;
+        // Allocate memory on the host and copy the format settings over.
+        // TODO: the following code is not TEE-agnostic, as it assumes the
+        // enclave can directly write into host memory
+        *format_settings_buffer =
+            (uint8_t*)oe_host_malloc(format_settings_size);
+        if (*format_settings_buffer == nullptr)
+        {
+            ret = OE_OUT_OF_MEMORY;
+            TRACE_ENCLAVE("copying format_settings failed, out of memory");
+            goto exit;
+        }
+        memcpy(*format_settings_buffer, format_settings, format_settings_size);
+        *format_settings_buffer_size = format_settings_size;
+        oe_verifier_free_format_settings(format_settings);
     }
-    memcpy(*format_settings_buffer, format_settings, format_settings_size);
-    *format_settings_buffer_size = format_settings_size;
-    oe_verifier_free_format_settings(format_settings);
+    else
+    {
+        *format_settings_buffer = nullptr;
+        *format_settings_buffer_size = 0;
+    }
     ret = 0;
 
 exit:
