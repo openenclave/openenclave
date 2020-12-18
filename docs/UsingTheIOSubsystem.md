@@ -140,7 +140,7 @@ int create_alphabet_file(const char* path)
         return -1;
 
     /* Write the letters of the alphabet to the file. */
-    if (fwrite(alphabet, 1, sizeof(alphabet), stream) != sizeof(ALPHABET))
+    if (fwrite(ALPHABET, 1, sizeof(ALPHABET), stream) != sizeof(ALPHABET))
     {
         fclose(stream);
         return -1;
@@ -471,7 +471,6 @@ functions.
 | closedir          | none                                                     |
 | opendir           | none                                                     |
 | readdir           | none                                                     |
-| readdir_r         | none                                                     |
 | rewinddir         | none                                                     |
 | telldir           | none                                                     |
 |                   | <img width="1000">                                       |
