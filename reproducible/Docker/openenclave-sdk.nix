@@ -40,7 +40,7 @@ with pkgs;
                 chmod -R a+rw $src 
                 mkdir -p $out 
                 cd $out 
-                cmake -G "Unix Makefiles" $src -DCMAKE_BUILD_TYPE=RelWithDebInfo  -DCMAKE_INSTALL_PREFIX=$out/install
+                cmake -G "Unix Makefiles" $src -DCMAKE_BUILD_TYPE=RelWithDebInfo 
             ''; 
   
         buildPhase = '' 
@@ -58,6 +58,8 @@ with pkgs;
 
         fixupPhase = '' 
                 echo "fixup phase skipped " 
+                cd $out
+                chmod -R a+rw *
             ''; 
         
         shellHook = '' 

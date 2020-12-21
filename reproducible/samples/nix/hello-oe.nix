@@ -60,7 +60,21 @@ with pkgs;
             ''; 
 
         fixupPhase = '' 
-                echo "fixup phase skipped " 
+                echo "==== fixup phase " 
+             
+                    if [ $(uname -m) == "aarch64" ]
+                    then 
+                        LD_INTERPRETER="/lib/aarch64-linux-gnu/ld-linux-aarch64.so.1"
+                    elif [ $(uname -m) == "x86_64" ]
+                    then
+                        LD_INTERPRETER="/lib64/ld-linux-x86-64.so.2"
+                    else
+                        LD_INTERPRETER="UNSUPPORTED ARCHITECTURE"
+                    fi
+
+                    echo "=== FIXUP $LD_INTERPRETER"
+                    find $out -type f -executable -exec patchelf --set-interpreter $LD_INTERPRETER {} \;
+                    find $out -type f -executable -exec patchelf --remove-rpath {} \;
             ''; 
         
         shellHook = '' 
