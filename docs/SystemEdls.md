@@ -83,6 +83,7 @@ oe_syscall_link_ocall | link | - |
 oe_syscall_unlink_ocall | unlink | - |
 oe_syscall_rename_ocall | rename | - |
 oe_syscall_truncate_ocall | truncate | - |
+oe_syscall_ftruncate_ocall | ftruncate | - |
 oe_syscall_mkdir_ocall | mkdir | - |
 oe_syscall_rmdir_ocall | rmdir | - |
 oe_syscall_fcntl_ocall | fcntl | - |

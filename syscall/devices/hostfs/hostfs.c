@@ -1359,6 +1359,24 @@ done:
     return ret;
 }
 
+static int _hostfs_ftruncate(oe_fd_t* desc, oe_off_t length)
+{
+    int ret = -1;
+    const file_t* const file = _cast_file(desc);
+    int retval = -1;
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_ftruncate_ocall(&retval, file->host_fd, length) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    ret = retval;
+
+done:
+    return ret;
+}
+
 static int _hostfs_mkdir(
     oe_device_t* device,
     const char* pathname,
@@ -1441,6 +1459,7 @@ static oe_file_ops_t _file_ops =
     .pwrite = _hostfs_pwrite,
     .getdents64 = _hostfs_getdents64,
     .fstat = _hostfs_fstat,
+    .ftruncate = _hostfs_ftruncate,
     .fsync = _hostfs_fsync,
     .fdatasync = _hostfs_fdatasync,
 };

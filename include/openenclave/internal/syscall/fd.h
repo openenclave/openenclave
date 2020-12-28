@@ -66,6 +66,8 @@ typedef struct _oe_file_ops
 
     int (*fstat)(oe_fd_t* file, struct oe_stat_t* buf);
 
+    int (*ftruncate)(oe_fd_t* file, oe_off_t length);
+
     int (*fsync)(oe_fd_t* file);
     int (*fdatasync)(oe_fd_t* file);
 } oe_file_ops_t;

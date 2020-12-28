@@ -146,6 +146,11 @@ class oe_fd_file_system
         return oe_truncate(path, length);
     }
 
+    int ftruncate(file_handle file, off_t length)
+    {
+        return oe_ftruncate(file, length);
+    }
+
   private:
 };
 
@@ -304,6 +309,11 @@ class fd_file_system
     int truncate(const char* path, off_t length)
     {
         return ::truncate(path, length);
+    }
+
+    int ftruncate(file_handle file, off_t length)
+    {
+        return ::ftruncate(file, length);
     }
 
   private:
@@ -582,6 +592,11 @@ class stream_file_system
     int truncate(const char* path, off_t length)
     {
         return ::truncate(path, length);
+    }
+
+    int ftruncate(file_handle file, off_t length)
+    {
+        return ::ftruncate(fileno(file), length);
     }
 
   private:

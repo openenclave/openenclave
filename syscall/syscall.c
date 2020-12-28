@@ -316,6 +316,14 @@ OE_WEAK OE_DEFINE_SYSCALL1_M(SYS_fsync)
     return oe_fsync(fd);
 }
 
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_ftruncate)
+{
+    oe_errno = 0;
+    const int fd = (int)arg1;
+    const ssize_t length = (ssize_t)arg2;
+    return oe_ftruncate(fd, length);
+}
+
 OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_futex)
 {
     OE_UNUSED(arg1);
@@ -1107,6 +1115,7 @@ static long _syscall(
         OE_SYSCALL_DISPATCH(SYS_flock, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_fstat, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_fsync, arg1);
+        OE_SYSCALL_DISPATCH(SYS_ftruncate, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_getcwd, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_getdents64, arg1, arg2, arg3);
         OE_SYSCALL_DISPATCH(SYS_getegid);

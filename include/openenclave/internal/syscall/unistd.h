@@ -52,6 +52,8 @@ int oe_truncate(const char* path, oe_off_t length);
 
 int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length);
 
+int oe_ftruncate(int fd, oe_off_t length);
+
 #endif /* !defined(WIN32) */
 
 int oe_link(const char* oldpath, const char* newpath);

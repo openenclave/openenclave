@@ -2032,6 +2032,41 @@ done:
     return ret;
 }
 
+int oe_syscall_ftruncate_ocall(oe_host_fd_t fd, oe_off_t length)
+{
+    const HANDLE h = (HANDLE)fd;
+    LARGE_INTEGER new_offset = {0};
+    LARGE_INTEGER old_offset = {0};
+
+    if (!SetFilePointerEx(h, new_offset, &old_offset, FILE_CURRENT))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        return -1;
+    }
+
+    new_offset.QuadPart = length;
+    if (!SetFilePointerEx(h, new_offset, NULL, FILE_BEGIN))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        return -1;
+    }
+
+    if (!SetEndOfFile(h))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        SetFilePointerEx(h, old_offset, NULL, FILE_BEGIN);
+        return -1;
+    }
+
+    if (!SetFilePointerEx(h, old_offset, NULL, FILE_BEGIN))
+    {
+        _set_errno(_winerr_to_errno(GetLastError()));
+        return -1;
+    }
+
+    return 0;
+}
+
 int oe_syscall_mkdir_ocall(const char* pathname, oe_mode_t mode)
 {
     int ret = -1;
