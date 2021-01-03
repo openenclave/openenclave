@@ -22,6 +22,7 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
     uint64_t exit_code = context->rax;
     uint64_t tcs_address = context->rbx;
     uint64_t exit_address = context->rip;
+    uint64_t segv_address = context->cr2;
 
     // Check if the signal happens inside the enclave.
     if ((exit_address == OE_AEP_ADDRESS) && (exit_code == ENCLU_ERESUME))
@@ -48,6 +49,8 @@ uint64_t oe_host_handle_exception(oe_host_exception_context_t* context)
 
         /* TODO PRP: We need to save the exception information in
          * oe_exception_record */
+        oe_exception_record.segv_address = segv_address;
+        oe_exception_record.segv_pkey = context->pkey;
 
         // Call into enclave first pass exception handler.
         uint64_t arg_out = 0;

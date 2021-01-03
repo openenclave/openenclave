@@ -152,7 +152,8 @@ typedef struct _oe_exception_record
 
     uint32_t flags; /**< Exception flags */
 
-    uint64_t address; /**< Exception address */
+    uint32_t segv_pkey;
+    uint64_t segv_address; /**< SEGV Exception address */
 
     oe_context_t* context; /**< Exception context */
 } oe_exception_record_t;

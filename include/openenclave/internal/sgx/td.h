@@ -81,7 +81,7 @@ oe_thread_data_t* oe_get_thread_data(void);
  * Due to the inability to use OE_OFFSETOF on a struct while defining its
  * members, this value is computed and hard-coded.
  */
-#define OE_THREAD_SPECIFIC_DATA_SIZE (3744)
+#define OE_THREAD_SPECIFIC_DATA_SIZE (3728)
 
 typedef struct _oe_callsite oe_callsite_t;
 
@@ -148,6 +148,8 @@ typedef struct _td
     uint32_t exception_flags;
     // The rip when exception happened.
     uint64_t exception_address;
+    uint64_t segv_address;
+    uint64_t segv_pkey;
 
     /* The threads implementations uses this to put threads on queues */
     struct _td* next;

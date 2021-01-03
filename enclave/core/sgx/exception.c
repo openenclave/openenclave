@@ -317,7 +317,8 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     oe_exception_record_t oe_exception_record = {0};
     oe_exception_record.code = td->exception_code;
     oe_exception_record.flags = td->exception_flags;
-    oe_exception_record.address = td->exception_address;
+    oe_exception_record.segv_pkey = (uint16_t)td->segv_pkey;
+    oe_exception_record.segv_address = td->segv_address;
     oe_exception_record.context = oe_context;
 
     // Refer to oe_enter in host/sgx/enter.c. The contract we defined for EENTER
@@ -394,6 +395,8 @@ void oe_virtual_exception_dispatcher(
         if (oe_exception_record)
         {
             td->exception_address = ssa_gpr->rip;
+            td->segv_pkey = oe_exception_record->segv_pkey;
+            td->segv_address = oe_exception_record->segv_address;
 
             /* TODO PRP: We need to read the exception information from
              * oe_exception_record instead */

@@ -37,6 +37,8 @@ static void _host_signal_handler(
     host_context.rax = (uint64_t)context->uc_mcontext.gregs[REG_RAX];
     host_context.rbx = (uint64_t)context->uc_mcontext.gregs[REG_RBX];
     host_context.rip = (uint64_t)context->uc_mcontext.gregs[REG_RIP];
+    host_context.cr2 = (uint64_t)context->uc_mcontext.gregs[REG_CR2];
+    host_context.pkey = sig_info->si_pkey;
 
     // Call platform neutral handler.
     uint64_t action = oe_host_handle_exception(&host_context);
