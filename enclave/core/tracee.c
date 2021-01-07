@@ -70,6 +70,8 @@ void oe_log_init_ecall(const char* enclave_path, uint32_t log_level)
     }
 
     _debug_allowed_enclave = is_enclave_debug_allowed();
+
+    oe_dump_relocations();
 }
 
 oe_result_t oe_log(oe_log_level_t level, const char* fmt, ...)

@@ -335,3 +335,84 @@ bool oe_apply_relocations(void)
 #endif
     return true;
 }
+
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+static void _dump_dso_relocs(
+    dso_t* dso,
+    size_t* rel,
+    size_t rel_size,
+    size_t stride)
+{
+    for (; rel_size; rel += stride, rel_size -= stride * sizeof(size_t))
+    {
+        int type = (int)ELF64_R_TYPE(rel[1]);
+        if (type == R_X86_64_NONE)
+            continue;
+        size_t* reloc_addr = laddr(dso, rel[0]);
+        OE_TRACE_INFO(
+            "Type=%d, Target=%#lx, Value=%#lx\n",
+            type,
+            reloc_addr,
+            *reloc_addr);
+    }
+}
+#else
+static uint64_t _dump_relocs(
+    const uint8_t* baseaddr,
+    const elf64_rela_t* relocs,
+    size_t nrelocs)
+{
+    for (size_t i = 0; i < nrelocs; i++)
+    {
+        const elf64_rela_t* p = &relocs[i];
+        if (p->r_offset == 0)
+            return oe_round_up_to_page_size((uint64_t)p);
+
+        uint64_t* dest = (uint64_t*)(baseaddr + p->r_offset);
+        int type = (int)ELF64_R_TYPE(p->r_info);
+        OE_TRACE_INFO("Type=%d, Target=%#lx, Value=%#lx\n", type, dest, *dest);
+    }
+    return (uint64_t)(relocs + (nrelocs * sizeof(elf64_rela_t)));
+}
+#endif
+
+void oe_dump_relocations(void)
+{
+#if defined(OE_USE_DSO_DYNAMIC_BINDING)
+    /* Dump DSO relocations */
+    OE_TRACE_INFO("=== DSO Relocations ===\n");
+    uint64_t dso_base = (uint64_t)oe_get_dso_head();
+    dso_t* p = (dso_t*)dso_base;
+
+    for (; p; p = p->next)
+    {
+        size_t dyn[DYN_CNT];
+        if (!p->relocated)
+            continue;
+        decode_vec(p->dynv, dyn, DYN_CNT);
+
+        OE_TRACE_INFO("===> DT_PLTRELSZ:\n");
+        _dump_dso_relocs(
+            p,
+            (size_t*)laddr(p, dyn[DT_JMPREL]),
+            dyn[DT_PLTRELSZ],
+            2 + (dyn[DT_PLTREL] == DT_RELA));
+        OE_TRACE_INFO("===> DT_REL:\n");
+        _dump_dso_relocs(p, (size_t*)laddr(p, dyn[DT_REL]), dyn[DT_RELSZ], 2);
+        OE_TRACE_INFO("===> DT_RELA:\n");
+        _dump_dso_relocs(p, (size_t*)laddr(p, dyn[DT_RELA]), dyn[DT_RELASZ], 3);
+    }
+#else
+    /* Dump legacy relocations */
+    const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
+    uint64_t relocs = (uint64_t)__oe_get_reloc_base();
+    uint64_t reloc_end = relocs + __oe_get_reloc_size();
+
+    OE_TRACE_INFO("=== Legacy Relocations ===\n");
+    while (relocs < reloc_end)
+    {
+        size_t nrelocs = (reloc_end - relocs) / sizeof(elf64_rela_t);
+        relocs = _dump_relocs(baseaddr, (const elf64_rela_t*)relocs, nrelocs);
+    }
+#endif
+}

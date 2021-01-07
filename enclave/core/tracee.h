@@ -4,3 +4,5 @@
 #include <openenclave/corelibc/stdbool.h>
 
 bool is_enclave_debug_allowed();
+
+void oe_dump_relocations(void);
