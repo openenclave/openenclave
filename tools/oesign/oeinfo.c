@@ -27,8 +27,7 @@ oe_result_t oe_read_oeinfo_sgx(
     OE_CHECK(oe_load_enclave_image(path, &oeimage));
 
     /* Load the SGX enclave properties */
-    OE_CHECK(oe_sgx_load_enclave_properties(
-        &oeimage, OE_INFO_SECTION_NAME, properties));
+    OE_CHECK(oe_sgx_load_enclave_properties(&oeimage, properties));
 
     result = OE_OK;
 
@@ -67,8 +66,7 @@ oe_result_t oe_write_oeinfo_sgx(
 
     /* Write the .oeinfo section. */
     OE_CHECK_ERR(
-        oe_sgx_update_enclave_properties(
-            &oeimage, OE_INFO_SECTION_NAME, properties),
+        oe_sgx_update_enclave_properties(&oeimage, properties),
         "Cannot write section: %s",
         OE_INFO_SECTION_NAME);
 
