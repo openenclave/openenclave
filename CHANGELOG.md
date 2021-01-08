@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - -Wno-<option>: Disable the corresponding warning.
   - -Werror: Turn warnings into errors.
   - -Werror=<option>: Turn the specified warning into an error.
+- `libsgx-quote-ex` and SGX AESM plugins will be installed on Linux starting from v0.15.0.
 
 ### Changed
 - oe_get_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_get_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.

@@ -17,6 +17,7 @@
 #include <string.h>
 #include "../../common/oe_host_stdlib.h"
 #include "../../common/sgx/endorsements.h"
+#include "../dupenv.h"
 #include "../hostthread.h"
 #include "sgxquote_ex.h"
 
@@ -287,14 +288,12 @@ static void _load_quote_ex_library_once(void)
         status =
             _quote_ex_library.sgx_get_supported_att_key_id_num(&att_key_id_num);
         if (status != SGX_SUCCESS || att_key_id_num == 0)
-        {
-            OE_TRACE_ERROR(
+            OE_RAISE_MSG(
+                OE_QUOTE_PROVIDER_LOAD_ERROR,
                 "_load_quote_ex_library_once() "
                 "sgx_get_supported_att_key_id_num() status=%d num=%d\n",
                 status,
                 att_key_id_num);
-            OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
-        }
 
         local_mapped = (bool*)oe_malloc(att_key_id_num * sizeof(bool));
         local_uuid = (oe_uuid_t*)oe_malloc(att_key_id_num * sizeof(oe_uuid_t));

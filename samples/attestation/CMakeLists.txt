@@ -16,6 +16,13 @@ if (UNIX)
   endif ()
 endif ()
 
+# Set up the environment variable `SGX_AESM_ADDR` if it is not set.
+if (UNIX)
+  if (NOT DEFINED ENV{SGX_AESM_ADDR})
+    set(ENV{SGX_AESM_ADDR} "1")
+  endif ()
+endif ()
+
 project("Attestation Sample" LANGUAGES C CXX)
 
 find_package(OpenEnclave CONFIG REQUIRED)

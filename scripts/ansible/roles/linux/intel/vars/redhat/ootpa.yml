@@ -16,7 +16,11 @@ intel_sgx_package_dependencies:
 intel_dcap_packages_url: "https://download.01.org/intel-sgx/sgx-dcap/1.10/linux/distro/rhel8.2-server/sgx_rpm_local_repo.tgz"
 intel_dcap_packages_directory: "/tmp/sgx_linux_dcap_packages"
 intel_dcap_packages:
-  - "libsgx-ae-qve"
   - "libsgx-dcap-ql"
   - "libsgx-dcap-ql-devel"
   - "libsgx-urts"
+  - "libsgx-quote-ex"
+  - "sgx-aesm-service"
+  - "libsgx-aesm-ecdsa-plugin"
+  - "libsgx-aesm-pce-plugin"
+  - "libsgx-aesm-quote-ex-plugin"

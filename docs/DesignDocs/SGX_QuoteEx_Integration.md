@@ -169,18 +169,18 @@ by working with an AESM service on the local platform.
 
 ### Priority between the SGX DCAP and quote-ex Libraries
 
-An SGX platform can have either the DCAP library or the quote-ex library,
-or both of them installed.
+An SGX platform can have either the DCAP library or the quote-ex library, or both of them installed.
 
-* When only the DCAP library is installed, it will be used.
+* When only the DCAP library is installed, it will be used, and only in-process quote generation is supported.
+    * In this case, `SGX_AESM_ADDR` must be unset. Otherwise, the DCAP library will return an error.
 * When only the quote-ex library is installed, it will be used.
+    * In this case, `SGX_AESM_ADDR` must be set. Otherwise, the OE SDK will try to load the unavailable DCAP library and will fail.
 * When both libraries are installed:
-    * If the DCAP library is configured for in-process quote generation, the DCAP
-    library is chosen, so this default behavior for existing applications is
-    preserved.
-    * Otherwise if the DCAP library is configured for out-of-process quote
-    generation, the quote-ex library will be used, as it supports more evidence
-    formats.
+    * If `SGX_AESM_ADDR` is not set, the DCAP library is used and is configured for in-process quote generation. This preserves the default behavior for the OE SDK before the integration of the quote-ex library.
+    * Otherwise if `SGX_AESM_ADDR` is set, the quote-ex library will be used, as it supports more evidence formats.
+
+On Linux platforms, to be able to use the DCAP library for in-process quote generation, the user running the process needs to be added to the `sgx_prv` group, with the following command:
+    * `sudo usermod -a -G sgx_prv <username>`
 
 #### Options for Host-side Plugin Library Link with the SGX DCAP and quote-ex Libraries
 
