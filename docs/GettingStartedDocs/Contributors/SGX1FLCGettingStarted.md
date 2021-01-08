@@ -127,3 +127,16 @@ Follow the instructions in the [Install Info](LinuxInstallInfo.md) document to i
 ## Build and run samples
 
 To build and run the samples, please look [here](/samples/README.md).
+
+## Determine call path for SGX quote generation in attestation sample
+
+In the attestation sample, you can either take the in-process call path or out-of-process call path to generate evidence of format `OE_FORMAT_UUID_SGX_ECDSA`. If you wish to specify the call path it takes to generate a quote, here is what you can do:
+* To perform in-process quote generation, unset the environment variable `SGX_AESM_ADDR` and ensure that the DCAP library is installed.
+* To perform out-of-process quote generation, set the environment variable `SGX_AESM_ADDR` to any value and ensure that SGX SDK quote-ex Library is installed.
+
+If `SGX_AESM_ADDR` is not set, one can run an existing OE app with out-of-process attestation, using `$ SGX_AESM_ADDR=1 <app_name>`.
+* If `SGX_AESM_ADDR=1` is added to `/etc/environment` instead, then it will set `SGX_AESM_ADDR` for the whole system. To unset it for the whole system, simply remove the line. These actions require elevated privileges.
+* If `SGX_AESM_ADDR` is set by default globally, to run an existing OE app with in-process attestation, one can use `$ env -u SGX_AESM_ADDR <app_name>`.
+
+Please refer to the following document for more information:
+* [Attestation: OE SDK Integration with Intel® SGX SDK quote-ex Library for Generation of Evidence in New Formats](https://github.com/openenclave/openenclave/blob/master/docs/DesignDocs/SGX_QuoteEx_Integration.md)

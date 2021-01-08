@@ -4,6 +4,7 @@
 #include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/host.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "attestation_u.h"
 
 // SGX Local Attestation UUID.
@@ -174,6 +175,18 @@ int main(int argc, const char* argv[])
     {
         goto exit;
     }
+
+#ifdef __linux__
+    // verify if SGX_AESM_ADDR is successfully set
+    if (getenv("SGX_AESM_ADDR"))
+    {
+        printf("Host: environment variable SGX_AESM_ADDR is set\n");
+    }
+    else
+    {
+        printf("Host: environment variable SGX_AESM_ADDR is not set\n");
+    }
+#endif
 
     // attest enclave A to enclave B
     ret = attest_one_enclave_to_the_other(

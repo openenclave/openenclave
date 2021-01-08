@@ -169,18 +169,22 @@ by working with an AESM service on the local platform.
 
 ### Priority between the SGX DCAP and quote-ex Libraries
 
-An SGX platform can have either the DCAP library or the quote-ex library,
-or both of them installed.
+An SGX platform can have either the DCAP library or the quote-ex library, or both of them installed.
 
-* When only the DCAP library is installed, it will be used.
-* When only the quote-ex library is installed, it will be used.
-* When both libraries are installed:
-    * If the DCAP library is configured for in-process quote generation, the DCAP
-    library is chosen, so this default behavior for existing applications is
-    preserved.
-    * Otherwise if the DCAP library is configured for out-of-process quote
-    generation, the quote-ex library will be used, as it supports more evidence
-    formats.
+* If `SGX_AESM_ADDR` is not set, then the DCAP library must be installed. During quote generation, SGX quoting enclaves will be loaded in the application process.
+* If `SGX_AESM_ADDR` is set, then the quote-ex library as well as the AESM plugins must be installed. During quote generation, SGX quoting enclaves will be loaded in the SGX AESM service. The necessary libraries and plugins are listed as follows:
+  * `libsgx-quote-ex`
+  * `sgx-aesm-service`
+  * `libsgx-aesm-ecdsa-plugin`
+  * `libsgx-aesm-pce-plugin`
+  * `libsgx-aesm-quote-ex-plugin`
+
+On Linux platforms running kernel 5.11 or later, to be able to use the DCAP library for in-process quote generation, the user running the process needs to be added to the `sgx_prv` group, with the following command:
+* `sudo usermod -a -G sgx_prv <username>`
+
+Note that this requires a new session to take effect. If this group has not been created, create it before adding the user to the group.
+
+For more information, see [SGX DCAP in-proc quote](https://github.com/intel/SGXDataCenterAttestationPrimitives/blob/master/driver/linux/README.kernel.md#apps-with-in-process-quote).
 
 #### Options for Host-side Plugin Library Link with the SGX DCAP and quote-ex Libraries
 
