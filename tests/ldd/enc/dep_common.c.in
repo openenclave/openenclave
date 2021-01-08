@@ -1,0 +1,33 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+#include <openenclave/bits/types.h>
+
+__thread int tls_var_@LDD_TEST_DEP_SUFFIX@ = @LDD_TEST_DEP_MAGIC@;
+
+int multiply_local_const_@LDD_TEST_DEP_SUFFIX@(int a)
+{
+    const int magic = tls_var_@LDD_TEST_DEP_SUFFIX@;
+    return a * magic;
+}
+
+int global_@LDD_TEST_DEP_SUFFIX@ = @LDD_TEST_DEP_MAGIC@ * 10;
+
+__attribute__((constructor)) static void constructor_@LDD_TEST_DEP_SUFFIX@(void)
+{
+    global_@LDD_TEST_DEP_SUFFIX@ += 1;
+}
+
+__attribute__((destructor)) static void destructor_@LDD_TEST_DEP_SUFFIX@(void)
+{
+    global_@LDD_TEST_DEP_SUFFIX@ = -(@LDD_TEST_DEP_MAGIC@ * 10);
+}
+
+int add_global_@LDD_TEST_DEP_SUFFIX@(int a, int b)
+{
+    return a + b + global_@LDD_TEST_DEP_SUFFIX@;
+}
+
+void _start()
+{
+}

@@ -136,6 +136,10 @@ if (UNIX
       add_subdirectory(create-rapid)
     endif ()
 
+    if (USE_DSO_DYNAMIC_BINDING)
+      add_subdirectory(ldd)
+    endif ()
+
     if (WITH_EEID)
       add_subdirectory(eeid_plugin)
     endif ()
