@@ -129,6 +129,16 @@ void oe_notify_debugger_enclave_termination(const oe_debug_enclave_t* enclave)
     }
 }
 
+void oe_notify_debugger_module_load(oe_debug_module_t* module)
+{
+    OE_UNUSED(module);
+}
+
+void oe_notify_debugger_module_unload(oe_debug_module_t* module)
+{
+    OE_UNUSED(module);
+}
+
 #elif defined __GNUC__
 
 #include <pthread.h>
@@ -173,6 +183,20 @@ OE_NEVER_INLINE void oe_notify_debugger_enclave_termination(
 {
     OE_UNUSED(enclave);
     return;
+}
+
+OE_EXPORT
+OE_NEVER_INLINE
+void oe_notify_debugger_module_load(oe_debug_module_t* module)
+{
+    OE_UNUSED(module);
+}
+
+OE_EXPORT
+OE_NEVER_INLINE
+void oe_notify_debugger_module_unload(oe_debug_module_t* module)
+{
+    OE_UNUSED(module);
 }
 
 OE_NO_OPTIMIZE_END
@@ -340,4 +364,16 @@ done:
         spin_unlock();
 
     return result;
+}
+
+oe_result_t oe_debug_notify_module_loaded(oe_debug_module_t* module)
+{
+    oe_notify_debugger_module_load(module);
+    return OE_OK;
+}
+
+oe_result_t oe_debug_notify_module_unloaded(oe_debug_module_t* module)
+{
+    oe_notify_debugger_module_unload(module);
+    return OE_OK;
 }

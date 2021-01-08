@@ -114,6 +114,9 @@ struct _oe_enclave_image
         const oe_sgx_enclave_properties_t* properties);
 
     oe_result_t (*unload)(oe_enclave_image_t* image);
+
+    oe_result_t (
+        *get_debug_info)(oe_enclave_image_t* image, oe_enclave_t* enclave);
 };
 
 oe_result_t oe_load_enclave_image(const char* path, oe_enclave_image_t* image);

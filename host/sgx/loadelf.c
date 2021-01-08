@@ -832,6 +832,16 @@ done:
     return result;
 }
 
+static oe_result_t _get_debug_info(
+    oe_enclave_image_t* image,
+    oe_enclave_t* enclave)
+{
+    /* This is a no-op for single module enclaves */
+    OE_UNUSED(image);
+    OE_UNUSED(enclave);
+    return OE_OK;
+}
+
 oe_result_t oe_load_elf_enclave_image(
     const char* path,
     oe_enclave_image_t* image)
@@ -864,6 +874,7 @@ oe_result_t oe_load_elf_enclave_image(
     image->sgx_load_enclave_properties = _sgx_load_enclave_properties;
     image->sgx_update_enclave_properties = _sgx_update_enclave_properties;
     image->unload = _unload_image;
+    image->get_debug_info = _get_debug_info;
 
     result = OE_OK;
 
