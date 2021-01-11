@@ -34,15 +34,9 @@ try {
     parallel "Libcxx ACC1604 clang-7 Debug" :          { ACCLibcxxTest(XENIAL_LABEL, 'clang-7', 'Debug') },
              "Libcxx ACC1604 clang-7 Release" :        { ACCLibcxxTest(XENIAL_LABEL, 'clang-7','Release') },
              "Libcxx ACC1604 clang-7 RelWithDebInfo" : { ACCLibcxxTest(XENIAL_LABEL, 'clang-7', 'RelWithDebInfo') },
-             "Libcxx ACC1604 gcc Debug" :              { ACCLibcxxTest(XENIAL_LABEL, 'gcc', 'Debug') },
-             "Libcxx ACC1604 gcc Release" :            { ACCLibcxxTest(XENIAL_LABEL, 'gcc', 'Release') },
-             "Libcxx ACC1604 gcc RelWithDebInfo" :     { ACCLibcxxTest(XENIAL_LABEL, 'gcc', 'RelWithDebInfo') },
              "Libcxx ACC1804 clang-7 Debug" :          { ACCLibcxxTest(BIONIC_LABEL, 'clang-7', 'Debug') },
              "Libcxx ACC1804 clang-7 Release" :        { ACCLibcxxTest(BIONIC_LABEL, 'clang-7', 'Release') },
-             "Libcxx ACC1804 clang-7 RelWithDebInfo" : { ACCLibcxxTest(BIONIC_LABEL, 'clang-7', 'RelWithDebInfo') },
-             "Libcxx ACC1804 gcc Debug" :              { ACCLibcxxTest(BIONIC_LABEL, 'gcc', 'Debug') },
-             "Libcxx ACC1804 gcc Release" :            { ACCLibcxxTest(BIONIC_LABEL, 'gcc', 'Release') },
-             "Libcxx ACC1804 gcc RelWithDebInfo" :     { ACCLibcxxTest(BIONIC_LABEL, 'gcc', 'RelWithDebInfo') }
+             "Libcxx ACC1804 clang-7 RelWithDebInfo" : { ACCLibcxxTest(BIONIC_LABEL, 'clang-7', 'RelWithDebInfo') }
 } catch(Exception e) {
     println "Caught global pipeline exception :" + e
     GLOBAL_ERROR = e
