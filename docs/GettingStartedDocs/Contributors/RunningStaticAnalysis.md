@@ -2,7 +2,7 @@
 
 ## scan-build
 
-*Note: scan-build only works with clang and gcc and as such is only currently supported for linux builds*
+*Note: While scan-build works with Clang and GCC, only Clang is currently supported for Linux builds*
 
 1. Install scan-build-7 (or whatever version matches your version of clang)
 

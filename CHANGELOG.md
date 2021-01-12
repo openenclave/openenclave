@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
+### Deprecated
+
+- Compiling Open Enclave SDK for Intel SGX from source with GCC is no longer supported. The recommended compiler is Clang.
 
 [v0.13.0][v0.13.0_log]
 --------------
