@@ -7,14 +7,14 @@
 1. Install scan-build-7 (or whatever version matches your version of clang)
 
     ```
-    $ apt install clang-tools-7
+    $ apt install clang-tools-8
     ```
 
 2. (Optional) Create symlinks for scan-build and scan-view to avoid needing to specify a version. If you skip this step, just add the clang version to each `scan-*` command e.g. `scan-build-7 ...`
 
     ```{bash}
-    $ ln -s /usr/bin/scan-build /usr/bin/scan-build-7
-    $ ln -s /usr/bin/scan-view /usr/bin/scan-view-7
+    $ ln -s /usr/bin/scan-build /usr/bin/scan-build-8
+    $ ln -s /usr/bin/scan-view /usr/bin/scan-view-8
     ```
 
 3. Run scan-build for cmake and make build commands
@@ -52,17 +52,9 @@ bugs and should be fixed.
 
 ## Excluding directories
 
-Clang 8 adds the ability to exclude specific directories from static analysis.
+To exclude specific directories from static analysis.
 
 ```{bash}
 $ scan-build-8 cmake .. -G Ninja
 $ scan-build-8 --exclude 3rdparty/ ninja
-```
-
-Additionally, scan-build can be run with a mismatched version of clang. For example,
-scan-build-8 can use clang-7 as a compiler:
-
-```
-$ scan-build-8 --use-analyzer=/usr/bin/clang-7 cmake .. -G Ninja
-$ scan-build-8 --use-analyzer=/usr/bin/clang-7 --exclude 3rdparty/ ninja
 ```

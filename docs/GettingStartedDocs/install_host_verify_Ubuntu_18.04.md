@@ -20,7 +20,7 @@ wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add 
 ### 2. Install the Intel and Open Enclave Host-Verify packages and dependencies
 ```bash
 sudo apt update
-sudo apt -y install clang-7 libssl-dev gdb libprotobuf10 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave-hostverify
+sudo apt -y install clang-8 libssl-dev gdb libprotobuf10 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave-hostverify
 ```
 
 > This step also installs the [az-dcap-client](https://github.com/microsoft/azure-dcap-client)

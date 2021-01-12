@@ -6,7 +6,7 @@
   // Open Enclave SDK from Visual 2017. It is based on the default
   // CMakeSettings.json.
   // Prerequisites:
-  //  1. clang (preferable clang-7) must be installed on the machine
+  //  1. clang (preferable clang-8) must be installed on the machine
   //     The following programs must be available in the path:
   //         clang
   //         llvm-ar

@@ -52,7 +52,7 @@ sudo ./sgx_linux_x64_driver.bin
 ### 3. Install the Intel and Open Enclave packages and dependencies
 
 ```bash
-sudo apt -y install clang-7 libssl-dev gdb libsgx-enclave-common libprotobuf9v5 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave
+sudo apt -y install clang-8 libssl-dev gdb libsgx-enclave-common libprotobuf9v5 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client open-enclave
 ```
 
 > This step also installs the [az-dcap-client](https://github.com/microsoft/azure-dcap-client)
