@@ -177,7 +177,7 @@ LVI mitigation. `clang-7`, `clang++-7`, `gcc`, and `g++` are the copies of previ
 customized `as` and `ld` when compiling enclave code with LVI mitigation. The remaining files with the `_symlink`
 suffix link to the actual compilers installed in the system, which are required by the wrappers.
 
-**Note**: `clang-7` and `clang++-7` may be missing if the system does not have the `clang` version 7 installed.
+**Note**: `clang-7` and `clang++-7` may be missing if the system does not have the `clang` version 7 installed. If you encounter this, you will need to install Clang as GCC is not supported.
 
 **Note**: If the version of `glibc` is older than `2.27`, the `ld` will be missing in the above output.
 Consequently, `ld` will not be installed. Without a compatible version of `ld`,
