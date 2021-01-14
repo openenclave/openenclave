@@ -3,7 +3,7 @@
 
 ---
 cmake_target_version: "3.13.1"
-clang_target_version: "8.0.1"
+clang_target_version: "8.0.0"
 shellcheck_target_version: "0.4.6"
 cmake_prefix: "/usr/local"
 
@@ -11,6 +11,7 @@ clang_binary_name: "clang-8"
 
 apt_packages:
   - "curl"
+  - "clang-format-7"
   - "make"
   - "ninja-build"
   - "shellcheck"
