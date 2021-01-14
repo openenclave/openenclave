@@ -192,13 +192,19 @@ list(APPEND NEEDS_STDC_NAMES ${MUSL_SRC_DIR}/prng/rand.c
 
 list(APPEND W_NO_CONVERSION ${MUSL_SRC_DIR}/prng/rand.c)
 
-set_property(SOURCE ${W_NO_CONVERSION} APPEND_STRING PROPERTY COMPILE_FLAGS
-                                                              "-Wno-conversion")
+set_property(
+  SOURCE ${W_NO_CONVERSION}
+  APPEND_STRING
+  PROPERTY COMPILE_FLAGS "-Wno-conversion")
 
-set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND_STRING
-             PROPERTY COMPILE_FLAGS " -I${CORELIBC_INCLUDES}")
-set_property(SOURCE ${NEEDS_STDC_NAMES} APPEND PROPERTY COMPILE_DEFINITIONS
-                                                        OE_NEED_STDC_NAMES)
+set_property(
+  SOURCE ${NEEDS_STDC_NAMES}
+  APPEND_STRING
+  PROPERTY COMPILE_FLAGS " -I${CORELIBC_INCLUDES}")
+set_property(
+  SOURCE ${NEEDS_STDC_NAMES}
+  APPEND
+  PROPERTY COMPILE_DEFINITIONS OE_NEED_STDC_NAMES)
 
 maybe_build_using_clangw(oecore)
 
@@ -220,7 +226,8 @@ if (OE_TRUSTZONE)
     oecore PRIVATE ${PROJECT_SOURCE_DIR}/include/openenclave/corelibc)
 endif ()
 
-enclave_link_libraries(oecore PUBLIC oe_includes ${DEFAULT_ALLOCATOR_LIB})
+enclave_link_libraries(oecore PUBLIC oe_includes ${DEFAULT_ALLOCATOR_LIB}
+                       oecompilerrt_obj)
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   enclave_compile_options(oecore PRIVATE -Wjump-misses-init)

@@ -30,6 +30,7 @@ tests/mbed/tests\..*$
 tests/openssl/tests\..*$
 
 # Directories
+3rdparty/compiler-rt/compiler-rt
 3rdparty/dlmalloc/dlmalloc/.*
 3rdparty/libcxx/libcxx/.*
 3rdparty/libcxxrt/libcxxrt/.*
