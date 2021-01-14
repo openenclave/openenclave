@@ -102,6 +102,7 @@ typedef enum _oe_enclave_setting_type
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA = 0x976a8f66,
 #endif
+    OE_SGX_ENCLAVE_CONFIG_DATA = 0x78b5b41d
 } oe_enclave_setting_type_t;
 
 /**
@@ -123,6 +124,16 @@ typedef struct _oe_enclave_setting_context_switchless
 } oe_enclave_setting_context_switchless_t;
 
 /**
+ * The setting for config_id/config_svn on Ice Lake platform.
+ */
+typedef struct _oe_sgx_enclave_setting_config_data
+{
+    uint8_t config_id[64];
+    uint16_t config_svn;
+    bool ignore_if_unsupported;
+} oe_sgx_enclave_setting_config_data;
+
+/**
  * The uniform structure type containing a specific type of enclave
  * setting.
  */
@@ -142,6 +153,7 @@ typedef struct _oe_enclave_setting
 #ifdef OE_WITH_EXPERIMENTAL_EEID
         oe_eeid_t* eeid;
 #endif
+        const oe_sgx_enclave_setting_config_data* config_data;
         /* Add new setting types here. */
     } u;
 } oe_enclave_setting_t;
