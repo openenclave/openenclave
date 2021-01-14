@@ -372,7 +372,7 @@ static oe_result_t _switchless_call_enclave_function_impl(
     bool switchless_call_posted = false;
     oe_call_enclave_function_args_t args;
     oe_switchless_call_manager_t* manager = enclave->switchless_manager;
-    oe_enclave_worker_context_t* contexts = manager->enclave_worker_contexts;
+    oe_enclave_worker_context_t* contexts = NULL;
     size_t tries = 0;
 
     /* Reject invalid parameters */
@@ -390,65 +390,75 @@ static oe_result_t _switchless_call_enclave_function_impl(
         args.result = OE_UNEXPECTED;
     }
 
-    // Schedule the switchless call.
-    OE_ATOMIC_MEMORY_BARRIER_RELEASE();
-    args.result = __OE_RESULT_MAX; // Means the call hasn't been processed.
-
-    // Cycle through the worker contexts until we find a free worker.
-    tries = manager->num_enclave_workers;
-    while (tries--)
+    /* Do the switchless ECALL only if the manager is initialized. */
+    if (manager)
     {
-        // Check if the worker's slot is free.
-        if (contexts[tries].call_arg == NULL)
+        contexts = manager->enclave_worker_contexts;
+        // Schedule the switchless call.
+        OE_ATOMIC_MEMORY_BARRIER_RELEASE();
+        args.result = __OE_RESULT_MAX; // Means the call hasn't been processed.
+
+        // Cycle through the worker contexts until we find a free worker.
+        tries = manager->num_enclave_workers;
+        while (tries--)
         {
-            // Try to atomically grab the slot by placing args in the slot.
-            // If the atomic operation was successful, then the worker thread
-            // will execute this switchless ecall. If the atomic operation
-            // failed, this means that the slot was grabbed by another
-            // switchless ocall and therefore, we must scan for another worker
-            // thread with a free slot.
-            if (oe_atomic_compare_and_swap_ptr(
-                    (void* volatile*)&contexts[tries].call_arg, NULL, &args))
+            // Check if the worker's slot is free.
+            if (contexts[tries].call_arg == NULL)
             {
-                // The worker thread has been marked to execute this switchless
-                // call. Determine if it needs to be woken up or not.
-                //
-                // If event is 0, it means that it has gone to sleep. Wake it by
-                // making an ocall (oe_sgx_wake_switchless_worker_ocall).
-                // Note: it is important to use an atomic cas operation to set
-                // the value to 1 before making the ocall. Setting the value to
-                // 1 prevents the host worker from simulataneously going to
-                // sleep. If instead, just a compare operation is used to
-                // determine if the host thread is sleeping or not, the host
-                // thread could go to sleep after the enclave has determined
-                // that the host is not sleeping, causing a deadlock.
-                //
-                // If event is 1, that indicates a pending wake notification.
-                uint32_t oldval = 0;
-                uint32_t newval = 1;
-                // Weak operation could sporadically fail.
-                // We need a strong operation.
-                if (oe_atomic_compare_and_swap_32(
-                        (uint32_t*)&contexts[tries].event, oldval, newval))
+                // Try to atomically grab the slot by placing args in the slot.
+                // If the atomic operation was successful, then the worker
+                // thread will execute this switchless ecall. If the atomic
+                // operation failed, this means that the slot was grabbed by
+                // another switchless ocall and therefore, we must scan for
+                // another worker thread with a free slot.
+                if (oe_atomic_compare_and_swap_ptr(
+                        (void* volatile*)&contexts[tries].call_arg,
+                        NULL,
+                        &args))
                 {
-                    // The pevious value of the event was 0 which means that the
-                    // worker was previously sleeping.
-                    // Wake it.
-                    oe_enclave_worker_wake(&contexts[tries]);
-                }
+                    // The worker thread has been marked to execute this
+                    // switchless call. Determine if it needs to be woken up or
+                    // not.
+                    //
+                    // If event is 0, it means that it has gone to sleep. Wake
+                    // it by making an ocall
+                    // (oe_sgx_wake_switchless_worker_ocall). Note: it is
+                    // important to use an atomic cas operation to set the value
+                    // to 1 before making the ocall. Setting the value to 1
+                    // prevents the host worker from simulataneously going to
+                    // sleep. If instead, just a compare operation is used to
+                    // determine if the host thread is sleeping or not, the host
+                    // thread could go to sleep after the enclave has determined
+                    // that the host is not sleeping, causing a deadlock.
+                    //
+                    // If event is 1, that indicates a pending wake
+                    // notification.
+                    uint32_t oldval = 0;
+                    uint32_t newval = 1;
+                    // Weak operation could sporadically fail.
+                    // We need a strong operation.
+                    if (oe_atomic_compare_and_swap_32(
+                            (uint32_t*)&contexts[tries].event, oldval, newval))
+                    {
+                        // The pevious value of the event was 0 which means that
+                        // the worker was previously sleeping. Wake it.
+                        oe_enclave_worker_wake(&contexts[tries]);
+                    }
 
-                switchless_call_posted = true;
-                // Wait for the  call to complete.
-                while (true)
-                {
-                    if (oe_atomic_load((uint64_t*)&contexts[tries].call_arg) !=
-                        (uint64_t)&args)
-                        break;
+                    switchless_call_posted = true;
+                    // Wait for the  call to complete.
+                    while (true)
+                    {
+                        if (oe_atomic_load(
+                                (uint64_t*)&contexts[tries].call_arg) !=
+                            (uint64_t)&args)
+                            break;
 
-                    /* Yield CPU */
-                    oe_yield_cpu();
+                        /* Yield CPU */
+                        oe_yield_cpu();
+                    }
+                    break;
                 }
-                break;
             }
         }
     }
