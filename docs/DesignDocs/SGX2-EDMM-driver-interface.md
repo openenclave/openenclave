@@ -7,6 +7,12 @@ This document describes possible driver interfaces to facilitate discussions amo
 
 Although interfaces described here are inspired to be as likely as possible a candidate for future kernel adoption, they are not intended to be a proposal for kernel implementation and are assumed to be implemented as an OOT driver. We hope from discussions enabled by this document, requirements and usage models can be identified to help shape future kernel interfaces. 
 
+Without losing generality, this document may describe how upper layer user space components would use the interfaces. However, details of design and implementation of those components are intentionally left out. The PR mentioned above would provide more contexts on other user space components and their relationships. Further, for those who may want to learn basic principles behind Intel(R) SGX EDMM instructions and how they are typically used, please refer to following references:
+- [HASP@ISCA 2016: 11:1-11:9](https://caslab.csl.yale.edu/workshops/hasp2016/HASP16-17.pdf)
+- [Intel SDM Vol.4, Ch.36-42](https://software.intel.com/content/www/us/en/develop/articles/intel-sdm.html)
+
+For design and implementation of current SGX1 support in upstream kernel (merged in 5.11RC), please refer to [this patch series](https://lwn.net/Articles/837121/)
+
 ## Basic EDMM flows
 
 SGX EDMM instructions support dynamic EPC page allocation/deallocation for enclaves and page property modification post-EINIT.  Following are the basic EDMM flows on which other more advanced usages of EDMM can be built.
@@ -89,9 +95,9 @@ This IOCTL emulates the mprotect syscall with SGX specific extensions. In future
              PROT_READ
              PROT_WRITE
              PROT_EXEC
-             PROT_TRIM (new): change the page type to PT_TRIM, implies RW. User space should immediately EACCEPT, and then optionally call mprotect with PROT_EACCEPT.
+             PROT_TRIM (new): change the page type to PT_TRIM, implies RW. User space should immediately EACCEPT, and then  call mprotect with PROT_NONE.
              PROT_TCS (new): change the page type to PT_TCS
-             PROT_EACCEPT (new): notify kernel EACCEPT is done for PT_TRIM type changes. This can be optional. Kernel will try EREMOVE on PT_TRIM pages in best effort on its own if user space does not notify EACCEPT.
+	     PROT_NONE: Signal the kernel EACCEPT is done for PT_TRIM pages. Kernel can EREMOVE the pages at a time it deems appropriate.
  */
 struct sgx_enclave_mprotect {
 	__u64	addr;
@@ -104,6 +110,7 @@ struct sgx_enclave_mprotect {
 
 Kernel should ensure that SGX instructions can succeed or catch and handle any fault.
   - The kernel may maintain EPCM information on each page which includes access permission RWX, page types of PT_REG, PT_TRIM, PT_TCS.
+  - The kernel should EREMOVE pages of PT_TRIM only after user space signals kernel EACCEPT is done with mprotect(...,PROT_NONE,...). This is because EACCEPT may cause undesired #PF if the target page is already EREMOVED.
   - The kernel catches fault on EMODPR, EMODT and converts to error code returned to user space.
 
 The enclave run-time (or trusted run-time) may implement a parallel memory management structure which would provide information to the enclave on the enclave memory mappings.  The run-time can have a trusted API analogous to mmap which makes a call out of the enclave to issue the mmap  and then either perform EACCEPT on the pages and update the internal memory structures or configure the enclave to perform the EACCEPT when a #PF is delivered to the enclave.  With the outlined kernel interface, either implementation is possible.
