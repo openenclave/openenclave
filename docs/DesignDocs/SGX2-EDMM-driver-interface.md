@@ -52,7 +52,7 @@ After enclave is initialized (EINIT IOCTL done), the standard Linux mmap syscall
 ### Remarks
 
 - To create a mapping for dynamic enclave memory allocation, mmap must be called with an open enclave file descriptor and with PROT_READ | PROT_WRITE for protection flags. 
-  - Enclave must issue EACCEPT for the pages after mmap, then enclave may modify the content of the pages and extend/reduce permissions in secure way.
+  - Enclave must issue EACCEPT for the pages after mmap before it can modify the content of the pages and extend/reduce permissions in secure way.
 - The offset in mmap parameter must be zero for enclaves.
 - MAP_* flags must be MAP_SHARED  | MAP_FIXED masked with optional flags:
     - MAP_POPULATE: hint for kernel to EAUG pages as soon as possible.  
