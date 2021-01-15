@@ -7,7 +7,7 @@ CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPT
 
 ifeq ($(LVI_MITIGATION), ControlFlow)
     ifeq ($(LVI_MITIGATION_BINDIR),)
-    $(error LVI_MITIGATION_BINDIR is not set)
+        $(error LVI_MITIGATION_BINDIR is not set)
     endif
     # Only run once.
     ifeq (,$(findstring $(LVI_MITIGATION_BINDIR),$(CC)))
