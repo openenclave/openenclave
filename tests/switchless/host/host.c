@@ -114,7 +114,10 @@ void* launch_enclave_thread(void* a)
     return NULL;
 }
 
-void test_switchless_ocalls(oe_enclave_t* enclave, uint64_t num_enclave_threads)
+void test_switchless_ocalls(
+    oe_enclave_t* enclave_switchess,
+    oe_enclave_t* enclave_normal,
+    uint64_t num_enclave_threads)
 {
     // Measure switchless ocall performance.
     uint64_t num_extra_enc_threads = num_enclave_threads - 1;
@@ -122,7 +125,7 @@ void test_switchless_ocalls(oe_enclave_t* enclave, uint64_t num_enclave_threads)
     for (uint64_t i = 0; i < num_extra_enc_threads; ++i)
     {
         int ret = 0;
-        tinfo[i].enclave = enclave;
+        tinfo[i].enclave = enclave_switchess;
         if ((ret = oe_thread_create(
                  &tinfo[i].tid, launch_enclave_thread, &tinfo[i])))
         {
@@ -131,7 +134,7 @@ void test_switchless_ocalls(oe_enclave_t* enclave, uint64_t num_enclave_threads)
         printf("Launched enclave producer thread %" PRIu64 "\n", i);
     }
     // Launch switchless calls in main thread as well.
-    double elapsed = make_repeated_switchless_ocalls(enclave);
+    double elapsed = make_repeated_switchless_ocalls(enclave_switchess);
 
     // Wait for launched threads to finish.
     for (uint64_t i = 0; i < num_extra_enc_threads; ++i)
@@ -161,16 +164,34 @@ void test_switchless_ocalls(oe_enclave_t* enclave, uint64_t num_enclave_threads)
 
     OE_TEST(
         enc_test_echo_regular(
-            enclave, &return_val, "Hello World", out, NUM_OCALLS) == OE_OK);
+            enclave_switchess, &return_val, "Hello World", out, NUM_OCALLS) ==
+        OE_OK);
 
     end = get_relative_time_in_microseconds();
     regular_microseconds = end - start;
+
+    // Measure switchless ocall performance without switchless settings.
+    double no_switchless_microseconds = 0;
+    start = get_relative_time_in_microseconds();
+
+    OE_TEST(
+        enc_test_echo_switchless(
+            enclave_normal, &return_val, "Hello World", out, NUM_OCALLS) ==
+        OE_OK);
+
+    end = get_relative_time_in_microseconds();
+    no_switchless_microseconds = end - start;
 
     // Print performance measurements.
     printf(
         "Time spent in %d regular OCALLs : %d milliseconds\n",
         NUM_OCALLS,
         (int)regular_microseconds / 1000);
+    printf(
+        "Time spent in %d switchless OCALLs without switchless settings: %d "
+        "milliseconds\n",
+        NUM_OCALLS,
+        (int)no_switchless_microseconds / 1000);
     printf(
         "Time spent in %d switchless OCALLs (fastest thread) : %d "
         "milliseconds\n",
@@ -301,7 +322,10 @@ void* launch_host_thread(void* a)
     return NULL;
 }
 
-void test_switchless_ecalls(oe_enclave_t* enclave, uint64_t num_host_threads)
+void test_switchless_ecalls(
+    oe_enclave_t* enclave_switchless,
+    oe_enclave_t* enclave_normal,
+    uint64_t num_host_threads)
 {
     // Measure switchless ecall performance.
     uint64_t num_extra_host_threads = num_host_threads - 1;
@@ -309,7 +333,7 @@ void test_switchless_ecalls(oe_enclave_t* enclave, uint64_t num_host_threads)
     for (uint64_t i = 0; i < num_extra_host_threads; ++i)
     {
         int ret = 0;
-        tinfo[i].enclave = enclave;
+        tinfo[i].enclave = enclave_switchless;
         if ((ret = oe_thread_create(
                  &tinfo[i].tid, launch_host_thread, &tinfo[i])))
         {
@@ -318,7 +342,7 @@ void test_switchless_ecalls(oe_enclave_t* enclave, uint64_t num_host_threads)
         printf("Launched host producer thread %" PRIu64 "\n", i);
     }
     // Launch switchless calls in main thread as well.
-    double elapsed = make_repeated_switchless_ecalls(enclave);
+    double elapsed = make_repeated_switchless_ecalls(enclave_switchless);
 
     // Wait for launched threads to finish.
     for (uint64_t i = 0; i < num_extra_host_threads; ++i)
@@ -346,16 +370,34 @@ void test_switchless_ecalls(oe_enclave_t* enclave, uint64_t num_host_threads)
     start = get_relative_time_in_microseconds();
 
     OE_TEST(
-        host_test_echo_regular(enclave, "Hello World", out, NUM_ECALLS) == 0);
+        host_test_echo_regular(
+            enclave_switchless, "Hello World", out, NUM_ECALLS) == 0);
 
     end = get_relative_time_in_microseconds();
     regular_microseconds = end - start;
+
+    // Measure switchless ecall performance without switchless settings.
+    printf("Using main host thread to make regular ecalls\n");
+    double no_switchless_microseconds = 0;
+    start = get_relative_time_in_microseconds();
+
+    OE_TEST(
+        host_test_echo_switchless(
+            enclave_normal, "Hello World", out, NUM_ECALLS) == 0);
+
+    end = get_relative_time_in_microseconds();
+    no_switchless_microseconds = end - start;
 
     // Print performance measurements.
     printf(
         "Time spent in %d regular ECALLs : %d milliseconds\n",
         NUM_OCALLS,
         (int)regular_microseconds / 1000);
+    printf(
+        "Time spent in %d switchless ECALLs without switchless settings : %d "
+        "milliseconds\n",
+        NUM_OCALLS,
+        (int)no_switchless_microseconds / 1000);
     printf(
         "Time spent in %d switchless ECALLs (fastest thread) : %d "
         "milliseconds\n",
@@ -376,7 +418,7 @@ void test_switchless_ecalls(oe_enclave_t* enclave, uint64_t num_host_threads)
 
 int main(int argc, const char* argv[])
 {
-    oe_enclave_t* enclave = NULL;
+    oe_enclave_t *enclave_switchless = NULL, *enclave_normal = NULL;
     oe_result_t result;
 
     if (argc < 2)
@@ -446,15 +488,22 @@ int main(int argc, const char* argv[])
              flags,
              settings,
              OE_COUNTOF(settings),
-             &enclave)) != OE_OK)
+             &enclave_switchless)) != OE_OK)
+        oe_put_err("oe_create_enclave(): result=%u", result);
+
+    if ((result = oe_create_switchless_test_enclave(
+             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave_normal)) !=
+        OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     if (test_ecalls)
-        test_switchless_ecalls(enclave, num_host_threads);
+        test_switchless_ecalls(
+            enclave_switchless, enclave_normal, num_host_threads);
     else
-        test_switchless_ocalls(enclave, num_enclave_threads);
+        test_switchless_ocalls(
+            enclave_switchless, enclave_normal, num_enclave_threads);
 
-    result = oe_terminate_enclave(enclave);
+    result = oe_terminate_enclave(enclave_switchless);
     OE_TEST(result == OE_OK);
 
     printf("=== passed all tests (switchless)\n");
