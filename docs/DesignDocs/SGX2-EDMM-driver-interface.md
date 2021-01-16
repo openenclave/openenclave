@@ -114,6 +114,27 @@ Kernel should ensure that SGX instructions can succeed or catch and handle any f
   - The kernel catches fault on EMODPR, EMODT and converts to error code returned to user space.
 
 The enclave run-time (or trusted run-time) may implement a parallel memory management structure which would provide information to the enclave on the enclave memory mappings.  The run-time can have a trusted API analogous to mmap which makes a call out of the enclave to issue the mmap  and then either perform EACCEPT on the pages and update the internal memory structures or configure the enclave to perform the EACCEPT when a #PF is delivered to the enclave.  With the outlined kernel interface, either implementation is possible.
+## Sequence Diagrams for Basic Flows
+
+### Direct Allocation with MAP_POPULATE
+
+![SGX2 direct allocation flow](images/SGX2-alloc-direct.svg)
+
+### \#PF Based Allocation
+
+![SGX2 #PF based allocation flow](images/SGX2-alloc-pf.svg)
+
+### EPC Deallocation
+
+![SGX2 deallocation flow](images/SGX2-trim.svg)
+
+### Permission Changes
+
+![SGX2 permissions change flow](images/SGX2-perms.svg)
+
+### TCS Allocation
+
+![SGX2 TCS allocation flow](images/SGX2-tcs.svg)
 
 ## Example advanced flows
 
