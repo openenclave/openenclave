@@ -20,7 +20,7 @@ SGX EDMM instructions support dynamic EPC page allocation/deallocation for encla
 **Note:** The term "kernel" and "kernel space" are used in this document when general kernel space actions are described whether implemented in an OOT driver or in kernel tree. Kernel specific implementation details will be explicitly stated as "future kernel" or "kernel patches".  And implementation details such as OCalls issued by enclaves, ETRACK and inter-process interrupts (IPIs) issued in kernel are generally omitted for brevity.
 
 - Allocate a new page at an address in ELRANGE of an enclave. 
-  - This can be an explicit syscall or triggered by #PF  when an unavailable page is accessed.
+  - This can be an explicit syscall or triggered by a page fault (#PF) when an unavailable page is accessed.
   - Kernel issues EAUG for the page. All new pages should have RW permissions initially.
   - The enclave then issues EACCEPT.
 - Deallocate an existing page
@@ -179,4 +179,3 @@ An enclave can lazily expand its stacks as follows.
 6. Enclave issues EACCEPT, returns to untrusted signal handler of the hosting process, which returns to kernel fault handler.
 7. Kernel fault handler returns to enclave AEX address at which an ERESUME instruction is stored
 8. Enclave resumed and the original push instruction is retried and succeeds.
-
