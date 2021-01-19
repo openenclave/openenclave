@@ -17,7 +17,7 @@ For design and implementation of current SGX1 support in upstream Linux kernel (
 
 SGX EDMM instructions support dynamic EPC page allocation/deallocation for enclaves and page property modification post-EINIT.  Following are the basic EDMM flows on which other more advanced usages of EDMM can be built.
 
-**Note:** This document is Linux specific. The term "kernel" and "kernel space" are used in this document when general Linux kernel space actions are described whether implemented in an OOT driver or in kernel tree. Kernel specific implementation details will be explicitly stated as "future kernel" or "kernel patches".  And implementation details such as OCalls issued by enclaves, ETRACK and inter-process interrupts (IPIs) issued in kernel are generally omitted for brevity.
+**Note:** This document is Linux specific. The term "kernel" and "kernel space" are used in this document when general Linux kernel space actions are described whether implemented in an OOT driver or in kernel tree. Kernel specific implementation details will be explicitly stated as "future kernel" or "kernel patches".  And implementation details such as OCalls issued by enclaves, ETRACK and inter-processor interrupts (IPIs) issued in kernel are generally omitted for brevity.
 
 - Allocate a new page at an address in ELRANGE of an enclave. 
   - This can be an explicit syscall or triggered by a page fault (#PF) when an unavailable page is accessed.
