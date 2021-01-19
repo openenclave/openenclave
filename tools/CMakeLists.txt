@@ -14,11 +14,26 @@ set(BINARY
     ${CMAKE_CURRENT_BINARY_DIR}/oeedger8r-cpp/src/oeedger8r${CMAKE_EXECUTABLE_SUFFIX}
 )
 
+if (OE_SGX)
+  # For SGX, use the same compilers as OE SDK.
+  set(EDGER8R_C_COMPILER ${CMAKE_C_COMPILER})
+  set(EDGER8R_CXX_COMPILER ${CMAKE_CXX_COMPILER})
+else ()
+  # For OPTEE, CMAKE_C_COMPILER and CMAKE_CXX_COMPILERS are set up as
+  # cross-compilers, and ought not be used. Determine host compilers to use.
+  # Prefer clang, but fallback to GCC since, unlike SGX, we cannot be sure that
+  # clang exists in the build environment for OPTEE.
+  find_program(EDGER8R_C_COMPILER clang-8 clang gcc)
+  find_program(EDGER8R_CXX_COMPILER clang++-8 clang++ g++)
+endif ()
+
 ExternalProject_Add(
   oeedger8r-cpp
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oeedger8r-cpp
   BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/oeedger8r-cpp
   CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+             -DCMAKE_C_COMPILER=${EDGER8R_C_COMPILER}
+             -DCMAKE_CXX_COMPILER=${EDGER8R_CXX_COMPILER}
   BUILD_ALWAYS on
   TEST_BEFORE_INSTALL on
   INSTALL_COMMAND ""
