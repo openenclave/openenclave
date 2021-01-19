@@ -134,7 +134,20 @@ The enclave run-time (or trusted run-time) may implement a parallel memory manag
 
 **Notes:**
 - EACCEPT is needed for enclave to ensure untrusted runtime and OS indeed invoke EMODPR and EPCM permissions are set as expected.
-- It is assumed that both OS and enclave keep track of page permissions. However, it is possible to avoid that as the current [Intel SDK implementation](https://github.com/intel/linux-sgx/blob/master/sdk/trts/trts_ecall.cpp#L561) demostrates.
+- It is assumed that both OS and enclave keep track of page permissions. However, it is possible for enclave to avoid that with implementation like this:
+
+```
+//Change page permission to perms_target in EPCM without remember previous permissions.
+//The tradeoff here is possibly more ocall, emodpr, emodpe, eaccept than necessary.
+trusted_mprotect(..., perms_target, ...){
+    ocall_mprotect(..., perms_target, ...);   //expect EPCM.perms<=perms_target
+    emodpe(..., perms_target, ...);           //expect EPCM.perms>=perms_target
+    eaccept(..., perms_target);               //verify EPCM.perms==perms_target
+    assert( ZF == 0);
+}
+```
+
+
 
 
 ### TCS Allocation
