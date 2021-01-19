@@ -46,6 +46,8 @@ double enclave_check_abi()
     typedef struct _host_check_abi_args_t
     {
         oe_result_t _result;
+        void* deepcopy_out_buffer;
+        size_t deepcopy_out_buffer_size;
         double _retval;
     } host_check_abi_args_t;
 
@@ -69,7 +71,10 @@ double enclave_check_abi()
          .output_buffer_size = sizeof(args_template.check_abi_args),
          .output_bytes_written = 0,
          .result = OE_UNEXPECTED},
-        {._result = OE_UNEXPECTED, ._retval = 0}};
+        {._result = OE_UNEXPECTED,
+         .deepcopy_out_buffer = NULL,
+         .deepcopy_out_buffer_size = 0,
+         ._retval = 0}};
 
     /* Alloc and initialize host_check_abi OCALL args buffer */
     flat_ocall_args_t* args =

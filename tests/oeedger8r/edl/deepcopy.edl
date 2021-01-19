@@ -22,6 +22,18 @@ enclave {
     [count=count] uint64_t* ptr;
   };
 
+  struct SizeStruct {
+    uint64_t count;
+    size_t size;
+    [size=16] uint64_t* ptr;
+  };
+
+  struct CountSizeStruct {
+    uint64_t count;
+    size_t size;
+    [count=2, size=12] uint64_t* ptr;
+  };
+
   struct SizeParamStruct {
     uint64_t count;
     size_t size;
@@ -44,6 +56,24 @@ enclave {
   struct SuperNestedStruct {
     // TODO: We should eventually support count being a member of the struct.
     [count=2] NestedStruct* more_structs;
+  };
+
+  struct CountParamNestedStruct
+  {
+    size_t num;
+    [count=num] CountParamStruct* array_of_struct;
+  };
+
+  struct MultipleNestedStruct
+  {
+    size_t num_1;
+    [count=num_1] CountParamStruct* array_of_struct_1;
+    size_t num_2;
+    [count=num_2] SizeParamStruct* array_of_struct_2;
+    size_t num_3;
+    [count=num_3] CountSizeParamStruct* array_of_struct_3;
+    size_t num_4;
+    [count=num_4] CountParamNestedStruct* array_of_struct_4;
   };
 
   struct IOVEC
@@ -70,6 +100,8 @@ enclave {
 
     // TODO: We should have a `SizeStruct` to test deep copying where
     // the size attribute is correctly used with a hard-coded value.
+    public void deepcopy_size([in, out, count=1] SizeStruct* s);
+    public void deepcopy_countsize([in, out, count=1] CountSizeStruct* s);
 
     // Deep copy of one `SizeParamStruct` with an embedded array
     // should take place.
@@ -117,5 +149,82 @@ enclave {
 
     // Test a real-world scenario.
     public void deepcopy_iovec([in, out, count=n] IOVEC* iov, size_t n);
+
+    // Expect the callee to set a large count value on return.
+    public void deepcopy_countparam_return_large([in, out, count=1] CountParamStruct* s);
+
+    // Expect the callee to set a large size value on return.
+    public void deepcopy_sizeparam_return_large([in, out, count=1] SizeParamStruct* s);
+
+    // Expect the callee to set a large size and count value on return.
+    public void deepcopy_countsizeparam_return_large([in, out, count=1] CountSizeParamStruct* s);
+
+    // Expect the callee to set a large size and count value on return.
+    public void deepcopy_countsize_return_large([in, out, count=1] CountSizeStruct* s);
+
+    public void test_deepcopy_ocalls();
+
+    public void deepcopy_countparam_out([out, count=1] CountParamStruct* s) transition_using_threads;
+    public void deepcopy_countparamarray_out([out, count=2] CountParamStruct* s) transition_using_threads;
+    public void deepcopy_countparamarray_partial_out([out, count=2] CountParamStruct* s) transition_using_threads;
+    public void deepcopy_sizeparam_out([out, count=1] SizeParamStruct* s) transition_using_threads;
+    public void deepcopy_countsizeparam_out([out, count=1] CountSizeParamStruct* s) transition_using_threads;
+    public void deepcopy_countsize_out([out, count=1] CountSizeStruct* s) transition_using_threads;
+    public void deepcopy_nested_out([out, count=1] NestedStruct* n) transition_using_threads;
+    public void deepcopy_nested_countparam_out([out, count=1] CountParamNestedStruct* n) transition_using_threads;
+    public void deepcopy_multiple_nested_out([out, count=1] MultipleNestedStruct* n) transition_using_threads;
+    public void deepcopy_multiple_nested_partial_out([out, count=1] MultipleNestedStruct* n) transition_using_threads;
+    public void deepcopy_mix([in, count=1] SizeParamStruct* s_in,
+                             [in, out, count=1] SizeParamStruct* s_inout,
+                             [out, count=1] SizeParamStruct* s_out,
+                             [user_check] SizeParamStruct* s_user_check,
+                             [out, count=1] SizeParamStruct* s_out_2) transition_using_threads;
+  };
+
+  untrusted
+  {
+    // Deep copy of one `CountParamStruct` with an embedded array
+    // should take place.
+    void ocall_deepcopy_countparam([in, out, count=1] CountParamStruct* s);
+
+    // Deep copy of one `SizeParamStruct` with an embedded array
+    // should take place.
+    void ocall_deepcopy_sizeparam([in, out, count=1] SizeParamStruct* s);
+
+    // Deep copy of two `CountSizeParamStruct`s each with an embedded
+    // array and different counts should take place.
+    void ocall_deepcopy_countsizeparam([in, out, count=1] CountSizeParamStruct* s);
+
+    // Deep copy of one `CountSizeStruct` with an embedded
+    // array should take place.
+    void ocall_deepcopy_countsize([in, out, count=1] CountSizeStruct* s);
+
+    // Expect the callee to set a large count value on return.
+    void ocall_deepcopy_countparam_return_large([in, out, count=1] CountParamStruct* s);
+
+    // Expect the callee to set a large count value on return.
+    void ocall_deepcopy_sizeparam_return_large([in, out, count=1] SizeParamStruct* s);
+
+    // Expect the callee to set a large count value on return.
+    void ocall_deepcopy_countsizeparam_return_large([in, out, count=1] CountSizeParamStruct* s);
+
+    // Expect the callee to set a large count value on return.
+    void ocall_deepcopy_countsize_return_large([in, out, count=1] CountSizeStruct* s);
+
+    void ocall_deepcopy_countparam_out([out, count=1] CountParamStruct* s) transition_using_threads;
+    void ocall_deepcopy_countparamarray_out([out, count=2] CountParamStruct* s) transition_using_threads;
+    void ocall_deepcopy_countparamarray_partial_out([out, count=2] CountParamStruct* s) transition_using_threads;
+    void ocall_deepcopy_sizeparam_out([out, count=1] SizeParamStruct* s) transition_using_threads;
+    void ocall_deepcopy_countsizeparam_out([out, count=1] CountSizeParamStruct* s) transition_using_threads;
+    void ocall_deepcopy_countsize_out([out, count=1] CountSizeStruct* s) transition_using_threads;
+    void ocall_deepcopy_nested_out([out, count=1] NestedStruct* n) transition_using_threads;
+    void ocall_deepcopy_nested_countparam_out([out, count=1] CountParamNestedStruct* n) transition_using_threads;
+    void ocall_deepcopy_multiple_nested_out([out, count=1] MultipleNestedStruct* n) transition_using_threads;
+    void ocall_deepcopy_multiple_nested_partial_out([out, count=1] MultipleNestedStruct* n) transition_using_threads;
+    void ocall_deepcopy_mix([in, count=1] SizeParamStruct* s_in,
+                            [in, out, count=1] SizeParamStruct* s_inout,
+                            [out, count=1] SizeParamStruct* s_out,
+                            [user_check] SizeParamStruct* s_user_check,
+                            [out, count=1] SizeParamStruct* s_out_2) transition_using_threads;
   };
 };
