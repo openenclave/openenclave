@@ -132,6 +132,11 @@ The enclave run-time (or trusted run-time) may implement a parallel memory manag
 
 ![SGX2 permissions change flow](images/SGX2-perms.svg)
 
+**Notes:**
+- EACCEPT is needed for enclave to ensure untrusted runtime and OS indeed invoke EMODPR and EPCM permissions are set as expected.
+- It is assumed that both OS and enclave keep track of page permissions. However, it is possible to avoid that as the current [Intel SDK implementation](https://github.com/intel/linux-sgx/blob/master/sdk/trts/trts_ecall.cpp#L561) demostrates.
+
+
 ### TCS Allocation
 
 ![SGX2 TCS allocation flow](images/SGX2-tcs.svg)
