@@ -1,23 +1,23 @@
-SGX EDMM Driver Interface Design
+SGX EDMM Linux Driver Interface Design
 =====================================
 
 ## Motivation
 
-This document describes possible driver interfaces to facilitate discussions among SGX runtime implementors (e.g., https://github.com/openenclave/openenclave/pull/3639) on supporting different SGX EDMM flows.
+This document describes possible Linux driver interfaces to facilitate discussions among SGX runtime implementors (e.g., https://github.com/openenclave/openenclave/pull/3639) on supporting different SGX EDMM flows.
 
-Although interfaces described here are inspired to be as likely as possible a candidate for future kernel adoption, they are not intended to be a proposal for kernel implementation and are assumed to be implemented as an OOT driver. We hope from discussions enabled by this document, requirements and usage models can be identified to help shape future kernel interfaces. 
+Although interfaces described here are inspired to be as likely as possible a candidate for future Linux kernel adoption, they are not intended to be a proposal for kernel implementation and are assumed to be implemented as an OOT driver. We hope from discussions enabled by this document, requirements and usage models can be identified to help shape future kernel interfaces. 
 
 Without losing generality, this document may describe how upper layer user space components would use the interfaces. However, details of design and implementation of those components are intentionally left out. The PR mentioned above would provide more contexts on other user space components and their relationships. Further, for those who may want to learn basic principles behind Intel(R) SGX EDMM instructions and how they are typically used, please refer to following references:
 - [HASP@ISCA 2016: 11:1-11:9](https://caslab.csl.yale.edu/workshops/hasp2016/HASP16-17.pdf)
 - [Intel SDM Vol.4, Ch.36-42](https://software.intel.com/content/www/us/en/develop/articles/intel-sdm.html)
 
-For design and implementation of current SGX1 support in upstream kernel (merged in 5.11RC), please refer to [this patch series](https://lwn.net/Articles/837121/)
+For design and implementation of current SGX1 support in upstream Linux kernel (merged in 5.11RC), please refer to [this patch series](https://lwn.net/Articles/837121/)
 
 ## Basic EDMM flows
 
 SGX EDMM instructions support dynamic EPC page allocation/deallocation for enclaves and page property modification post-EINIT.  Following are the basic EDMM flows on which other more advanced usages of EDMM can be built.
 
-**Note:** The term "kernel" and "kernel space" are used in this document when general kernel space actions are described whether implemented in an OOT driver or in kernel tree. Kernel specific implementation details will be explicitly stated as "future kernel" or "kernel patches".  And implementation details such as OCalls issued by enclaves, ETRACK and inter-process interrupts (IPIs) issued in kernel are generally omitted for brevity.
+**Note:** This document is Linux specific. The term "kernel" and "kernel space" are used in this document when general Linux kernel space actions are described whether implemented in an OOT driver or in kernel tree. Kernel specific implementation details will be explicitly stated as "future kernel" or "kernel patches".  And implementation details such as OCalls issued by enclaves, ETRACK and inter-process interrupts (IPIs) issued in kernel are generally omitted for brevity.
 
 - Allocate a new page at an address in ELRANGE of an enclave. 
   - This can be an explicit syscall or triggered by a page fault (#PF) when an unavailable page is accessed.
