@@ -6,15 +6,15 @@ include ../../config.mk
 CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
 
 ifeq ($(LVI_MITIGATION), ControlFlow)
-	ifeq ($(LVI_MITIGATION_BINDIR),)
-		$(error LVI_MITIGATION_BINDIR is not set)
-	endif
-	# Only run once.
-	ifeq (,$(findstring $(LVI_MITIGATION_BINDIR),$(CC)))
-		CC := $(LVI_MITIGATION_BINDIR)/$(CC)
-	endif
-	COMPILER := $(COMPILER)-lvi-cfg
-	CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libslvicfg)
+    ifeq ($(LVI_MITIGATION_BINDIR),)
+        $(error LVI_MITIGATION_BINDIR is not set)
+    endif
+    # Only run once.
+    ifeq (,$(findstring $(LVI_MITIGATION_BINDIR),$(CC)))
+        CC := $(LVI_MITIGATION_BINDIR)/$(CC)
+    endif
+    COMPILER := $(COMPILER)-lvi-cfg
+    CRYPTO_LDFLAGS := $(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libslvicfg)
 endif
 
 CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
