@@ -11,7 +11,7 @@ check_submodule_not_empty(oeedger8r-cpp)
 # would trigger a rebuild.
 include(ExternalProject)
 set(BINARY
-    ${CMAKE_CURRENT_BINARY_DIR}/oeedger8r-cpp/oeedger8r${CMAKE_EXECUTABLE_SUFFIX}
+    ${CMAKE_CURRENT_BINARY_DIR}/oeedger8r-cpp/src/oeedger8r${CMAKE_EXECUTABLE_SUFFIX}
 )
 
 ExternalProject_Add(

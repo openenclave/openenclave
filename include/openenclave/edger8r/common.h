@@ -153,6 +153,34 @@ done:
 
 #define OE_WRITE_IN_OUT_PARAM OE_WRITE_IN_PARAM
 
+#define OE_WRITE_DEEPCOPY_OUT_PARAM(argname, argsize)                          \
+    if (argname)                                                               \
+    {                                                                          \
+        void* p = (void*)(_deepcopy_out_buffer + _deepcopy_out_buffer_offset); \
+        OE_ADD_SIZE(_deepcopy_out_buffer_offset, (size_t)(argsize));           \
+        memcpy(p, argname, (size_t)(argsize));                                 \
+    }
+
+#define OE_SET_DEEPCOPY_OUT_PARAM(argname, argsize, argtype)               \
+    if (argname)                                                           \
+    {                                                                      \
+        argname = (argtype)malloc(argsize);                                \
+        if (!argname)                                                      \
+        {                                                                  \
+            _result = OE_OUT_OF_MEMORY;                                    \
+            goto done;                                                     \
+        }                                                                  \
+        argtype _ptr =                                                     \
+            (argtype)(_deepcopy_out_buffer + _deepcopy_out_buffer_offset); \
+        OE_ADD_SIZE(_deepcopy_out_buffer_offset, (size_t)(argsize));       \
+        if (_deepcopy_out_buffer_offset > _deepcopy_out_buffer_size)       \
+        {                                                                  \
+            _result = OE_BUFFER_TOO_SMALL;                                 \
+            goto done;                                                     \
+        }                                                                  \
+        memcpy(argname, _ptr, argsize);                                    \
+    }
+
 /**
  * Read an output parameter from output buffer.
  */

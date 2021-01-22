@@ -212,6 +212,21 @@ typedef struct _oe_call_host_function_args
 /*
 **==============================================================================
 **
+** oe_call_function_return_args_t
+**
+**==============================================================================
+*/
+
+typedef struct _oe_call_function_return_args
+{
+    oe_result_t result;
+    void* deepcopy_out_buffer;
+    size_t deepcopy_out_buffer_size;
+} oe_call_function_return_args_t;
+
+/*
+**==============================================================================
+**
 ** oe_call_host_function_internal()
 **
 **==============================================================================

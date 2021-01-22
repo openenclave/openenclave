@@ -46,6 +46,8 @@ oe_result_t test_abi_roundtrip(oe_enclave_t* enclave)
     typedef struct _enclave_check_abi_args_t
     {
         oe_result_t _result;
+        void* deepcopy_out_buffer;
+        size_t deepcopy_out_buffer_size;
         double _retval;
     } enclave_check_abi_args_t;
 
@@ -69,7 +71,10 @@ oe_result_t test_abi_roundtrip(oe_enclave_t* enclave)
          .output_buffer_size = sizeof(args_template.check_abi_args),
          .output_bytes_written = 0,
          .result = OE_UNEXPECTED},
-        {._result = OE_UNEXPECTED, ._retval = 0}};
+        {._result = OE_UNEXPECTED,
+         .deepcopy_out_buffer = NULL,
+         .deepcopy_out_buffer_size = 0,
+         ._retval = 0}};
 
     /* Skip the ABI state test in simulation mode since OE SDK doesn't
      * provide special ABI handling on simulated enclave transition */

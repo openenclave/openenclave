@@ -199,7 +199,8 @@ done:
  */
 oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
 {
-    oe_call_enclave_function_args_t args, *args_ptr;
+    oe_call_enclave_function_args_t args = {0}, *args_ptr;
+    oe_call_function_return_args_t* return_args_ptr = NULL;
     oe_result_t result = OE_OK;
     oe_ecall_func_t func = NULL;
     uint8_t* buffer = NULL;
@@ -279,15 +280,60 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
         args.output_buffer_size,
         &output_bytes_written);
 
-    // The output_buffer is expected to point to a marshaling struct,
-    // whose first field is an oe_result_t. The function is expected
-    // to fill this field with the status of the ecall.
-    result = *(oe_result_t*)output_buffer;
+    /*
+     * The output_buffer is expected to point to a marshaling struct.
+     * The function is expected to fill the struct.
+     */
+    return_args_ptr = (oe_call_function_return_args_t*)output_buffer;
 
+    result = return_args_ptr->result;
     if (result == OE_OK)
     {
+        /*
+         * Error out the case if the deepcopy_out_buffer is NULL but the
+         * deepcopy_out_buffer_size is not zero or if the deepcopy_out_buffer is
+         * not NULL but the deepcopy_out_buffer_size is zero. Note that this
+         * should only occur if the oeedger8r was not used or if
+         * oeedger8r-generated routine is modified.
+         */
+        if ((!return_args_ptr->deepcopy_out_buffer &&
+             return_args_ptr->deepcopy_out_buffer_size) ||
+            (return_args_ptr->deepcopy_out_buffer &&
+             !return_args_ptr->deepcopy_out_buffer_size))
+            OE_RAISE(OE_UNEXPECTED);
+
+        /*
+         * Nonzero deepcopy_out_buffer and deepcopy_out_buffer_size fields
+         * indicate that there is deep-copied content that needs to be
+         * transmitted to the host.
+         */
+        if (return_args_ptr->deepcopy_out_buffer &&
+            return_args_ptr->deepcopy_out_buffer_size)
+        {
+            /*
+             * Ensure that the content lies in enclave memory.
+             * Note that this should only fail if oeedger8r was not used or if
+             * the oeedger8r-generated routine is modified.
+             */
+            if (!oe_is_within_enclave(
+                    return_args_ptr->deepcopy_out_buffer,
+                    return_args_ptr->deepcopy_out_buffer_size))
+                OE_RAISE(OE_UNEXPECTED);
+
+            void* host_buffer =
+                oe_host_malloc(return_args_ptr->deepcopy_out_buffer_size);
+            /* Copy the deep-copied content to host memory. */
+            memcpy(
+                host_buffer,
+                return_args_ptr->deepcopy_out_buffer,
+                return_args_ptr->deepcopy_out_buffer_size);
+            /* Release the memory on the enclave heap. */
+            oe_free(return_args_ptr->deepcopy_out_buffer);
+            return_args_ptr->deepcopy_out_buffer = host_buffer;
+        }
+
         // Copy outputs to host memory.
-        memcpy(args.output_buffer, output_buffer, output_bytes_written);
+        memcpy(args.output_buffer, output_buffer, args.output_buffer_size);
 
         // The ecall succeeded.
         args_ptr->output_bytes_written = output_bytes_written;
@@ -297,6 +343,17 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
 done:
     if (buffer)
         oe_free(buffer);
+
+    if (result != OE_OK && return_args_ptr && args.output_buffer)
+    {
+        return_args_ptr->result = result;
+        return_args_ptr->deepcopy_out_buffer = NULL;
+        return_args_ptr->deepcopy_out_buffer_size = 0;
+        memcpy(
+            args.output_buffer,
+            return_args_ptr,
+            sizeof(oe_call_function_return_args_t));
+    }
 
     return result;
 }
@@ -714,6 +771,7 @@ oe_result_t oe_call_host_function_internal(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_call_host_function_args_t* args = NULL;
+    oe_call_function_return_args_t return_args, *return_args_ptr = NULL;
 
     /* Reject invalid parameters */
     if (!input_buffer || input_buffer_size == 0)
@@ -775,10 +833,73 @@ oe_result_t oe_call_host_function_internal(
     /* Check the result */
     OE_CHECK(args->result);
 
+    return_args_ptr = (oe_call_function_return_args_t*)output_buffer;
+    /* Copy the marshaling struct from the host memory to avoid TOCTOU issues.
+     */
+    return_args = *return_args_ptr;
+
+    if (return_args.result == OE_OK)
+    {
+        /*
+         * Error out the case if the deepcopy_out_buffer is NULL but the
+         * deepcopy_out_buffer_size is not zero or if the deepcopy_out_buffer is
+         * not NULL but the deepcopy_out_buffer_size is zero. Note that this
+         * should only occur if the oeedger8r was not used or if
+         * oeedger8r-generated routine is modified.
+         */
+        if ((!return_args.deepcopy_out_buffer &&
+             return_args.deepcopy_out_buffer_size) ||
+            (return_args.deepcopy_out_buffer &&
+             !return_args.deepcopy_out_buffer_size))
+            OE_RAISE(OE_UNEXPECTED);
+
+        /*
+         * Nonzero deepcopy_out_buffer and deepcopy_out_buffer_size fields
+         * indicate that there is deep-copied content that needs to be
+         * transmitted from the host.
+         */
+        if (return_args.deepcopy_out_buffer &&
+            return_args.deepcopy_out_buffer_size)
+        {
+            /*
+             * Ensure that the content lies in host memory.
+             * Note that this should only fail if oeedger8r was not used or if
+             * the oeedger8r-generated routine is modified.
+             */
+            if (!oe_is_outside_enclave(
+                    return_args.deepcopy_out_buffer,
+                    return_args.deepcopy_out_buffer_size))
+                OE_RAISE(OE_UNEXPECTED);
+
+            void* enclave_buffer =
+                oe_malloc(return_args.deepcopy_out_buffer_size);
+            /* Copy the deep-copied content to enclave memory. */
+            memcpy(
+                enclave_buffer,
+                return_args.deepcopy_out_buffer,
+                return_args.deepcopy_out_buffer_size);
+            /* Release the memory on host heap. */
+            oe_host_free(return_args.deepcopy_out_buffer);
+            /*
+             * Update the deepcopy_out_buffer field.
+             * Note that the field is still in host memory. Currently, the
+             * oeedger8r-generated code will perform an additional check that
+             * ensures the buffer stays within the enclave memory.
+             */
+            return_args_ptr->deepcopy_out_buffer = enclave_buffer;
+        }
+    }
+
     *output_bytes_written = args->output_bytes_written;
     result = OE_OK;
 
 done:
+    if (result != OE_OK && return_args_ptr)
+    {
+        return_args_ptr->result = result;
+        return_args_ptr->deepcopy_out_buffer = NULL;
+        return_args_ptr->deepcopy_out_buffer_size = 0;
+    }
 
     return result;
 }

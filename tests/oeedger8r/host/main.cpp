@@ -109,18 +109,44 @@ int main(int argc, const char* argv[])
 
     test_deepcopy_edl_ecalls(enclave);
 
-    OE_TEST(test_switchless_edl_ocalls(enclave) == OE_OK);
-
     if (flags & OE_ENCLAVE_FLAG_SIMULATE)
         printf("Skipping security test in Simulation Mode.\n");
     else
         test_security(enclave);
+
+    /* Test enclave with switchless call enabled. */
+    oe_enclave_setting_context_switchless_t switchless_setting = {1, 1};
+    oe_enclave_t* enclave_switchless = NULL;
+    oe_enclave_setting_t switchless_settings;
+    switchless_settings.setting_type = OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS,
+    switchless_settings.u.context_switchless_setting = &switchless_setting;
+
+    result = oe_create_all_enclave(
+        argv[1],
+        OE_ENCLAVE_TYPE_SGX,
+        flags,
+        &switchless_settings,
+        1,
+        &enclave_switchless);
+    if (result != OE_OK)
+    {
+        fprintf(
+            stderr,
+            "%s: cannot create enclave with switchless call enabled: %u\n",
+            argv[0],
+            result);
+        return 1;
+    }
+
+    OE_TEST(test_switchless_edl_ocalls(enclave_switchless) == OE_OK);
+    test_deepcopy_edl_ecalls(enclave_switchless);
 
 #ifdef FALSE
 // See above
 done:
 #endif
     oe_terminate_enclave(enclave);
+    oe_terminate_enclave(enclave_switchless);
 
     printf("=== passed all tests (file)\n");
 

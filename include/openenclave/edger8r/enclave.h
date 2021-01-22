@@ -156,6 +156,12 @@ void* oe_allocate_switchless_ocall_buffer(size_t size);
 void oe_free_switchless_ocall_buffer(void* buffer);
 
 /**
+ * Forward declarations of malloc and free for deep-copy out parameter support.
+ */
+void* malloc(size_t size);
+void free(void* buffer);
+
+/**
  * For hand-written enclaves, that use the older calling mechanism, define empty
  * ecall tables.
  */

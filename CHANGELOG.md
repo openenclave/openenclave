@@ -9,8 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased][Unreleased_log]
 --------------
-### Deprecated
+### Added
+- Add the deep-copy out parameter support as an experimental, SGX-only feature. To use the feature, pass `--experimental` when invoking oeedger8r. Refer to the [design document](docs/DesignDocs/DeepCopyOutParameters.md) for more detail.
 
+### Deprecated
 - Compiling Open Enclave SDK for Intel SGX from source with GCC is no longer supported. The recommended compiler is Clang.
 
 [v0.13.0][v0.13.0_log]
