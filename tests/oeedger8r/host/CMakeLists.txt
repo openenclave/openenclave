@@ -58,7 +58,7 @@ add_executable(
 
 # The tests intentionally use floats etc in size context.
 # Disable warnings.
-if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set_source_files_properties(
     all_u_wrapper.cpp PROPERTIES COMPILE_FLAGS
                                  "-Wno-conversion -Wno-sign-compare")
