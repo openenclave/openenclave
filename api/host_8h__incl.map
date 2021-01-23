@@ -1,0 +1,6 @@
+<map id="host.h" name="host.h">
+<area shape="rect" id="node11" href="$bits_2evidence_8h.html" title="This file defines structures and options for SGX evidence generation and verification. " alt="" coords="1058,95,1179,121"/>
+<area shape="rect" id="node13" href="$report_8h.html" title="This file defines structures and options passed to oe_get_report functions. " alt="" coords="1055,184,1129,211"/>
+<area shape="rect" id="node14" href="$types_8h.html" title="This file defines the types used by the OE SDK. " alt="" coords="1131,259,1202,285"/>
+<area shape="rect" id="node15" href="$result_8h.html" title="This file defines Open Enclave return codes (results). " alt="" coords="1255,184,1353,211"/>
+</map>

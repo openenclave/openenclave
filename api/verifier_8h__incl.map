@@ -1,0 +1,6 @@
+<map id="attestation/verifier.h" name="attestation/verifier.h">
+<area shape="rect" id="node2" href="$bits_2evidence_8h.html" title="This file defines structures and options for SGX evidence generation and verification. " alt="" coords="5,80,213,107"/>
+<area shape="rect" id="node5" href="$types_8h.html" title="This file defines the types used by the OE SDK. " alt="" coords="165,229,235,256"/>
+<area shape="rect" id="node6" href="$result_8h.html" title="This file defines Open Enclave return codes (results). " alt="" coords="288,155,475,181"/>
+<area shape="rect" id="node4" href="$report_8h.html" title="This file defines structures and options passed to oe_get_report functions. " alt="" coords="89,155,162,181"/>
+</map>

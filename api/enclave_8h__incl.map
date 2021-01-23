@@ -1,0 +1,9 @@
+<map id="enclave.h" name="enclave.h">
+<area shape="rect" id="node4" href="$bits_2evidence_8h.html" title="This file defines structures and options for SGX evidence generation and verification. " alt="" coords="318,87,439,114"/>
+<area shape="rect" id="node7" href="$types_8h.html" title="This file defines the types used by the OE SDK. " alt="" coords="493,244,563,271"/>
+<area shape="rect" id="node8" href="$exception_8h.html" title="This file defines data structures to set up vectored exception handlers in the enclave. " alt="" coords="515,87,642,114"/>
+<area shape="rect" id="node13" href="$module_8h.html" title="This file defines functions to load the optional modules available. " alt="" coords="718,87,829,114"/>
+<area shape="rect" id="node14" href="$result_8h.html" title="This file defines Open Enclave return codes (results). " alt="" coords="819,169,1005,196"/>
+<area shape="rect" id="node15" href="$properties_8h.html" title="This file defines the properties for an enclave. " alt="" coords="904,87,1032,114"/>
+<area shape="rect" id="node6" href="$report_8h.html" title="This file defines structures and options passed to oe_get_report functions. " alt="" coords="315,169,389,196"/>
+</map>
