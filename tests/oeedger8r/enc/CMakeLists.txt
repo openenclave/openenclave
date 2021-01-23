@@ -59,15 +59,11 @@ add_enclave(
 
 # The tests intentionally use floats etc in size context.
 # Disable warnings.
-if (CMAKE_CXX_COMPILER_ID MATCHES GNU
-    OR CMAKE_CXX_COMPILER_ID MATCHES Clang
-    OR USE_CLANGW)
-  set_source_files_properties(
-    all_t_wrapper.cpp PROPERTIES COMPILE_FLAGS
-                                 "-Wno-conversion -Wno-sign-compare")
-  set_source_files_properties(testpointer.cpp
-                              PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
-endif ()
+set_source_files_properties(
+  all_t_wrapper.cpp PROPERTIES COMPILE_FLAGS
+                               "-Wno-conversion -Wno-sign-compare")
+set_source_files_properties(testpointer.cpp PROPERTIES COMPILE_FLAGS
+                                                       "-Wno-unused-parameter")
 
 enclave_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
                             ${CMAKE_CURRENT_SOURCE_DIR}/..)

@@ -29,12 +29,6 @@ if (ENABLE_FULL_LIBCXX_TESTS)
   enclave_compile_definitions(libcxxtest-support PRIVATE FULL_LIBCXX_TESTS)
 endif ()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-  enclave_compile_options(
-    libcxxtest-support PRIVATE -Wno-error=maybe-uninitialized
-    -Wno-error=unused-but-set-variable)
-endif ()
-
 enclave_link_libraries(libcxxtest-support PRIVATE oelibcxx oeenclave)
 enclave_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 
@@ -84,7 +78,7 @@ function (add_libcxx_test_enc NAME CXXFILE)
     -UNDEBUG)
 
   # Clang does not support variants of operator delete[] taking size_t in C++14 unless
-  # -fsized-deallocation is passed explicity. (Note, gcc 4.7/4.8/4.9 do not support this either.)
+  # -fsized-deallocation is passed explicity.
   # NOTE: This only matters when `ENABLE_FULL_LIBCXX_TESTS=ON`.
   if (NAME MATCHES "sized_delete")
     enclave_compile_options(libcxxtest-${NAME}_enc PRIVATE -fsized-deallocation)
@@ -166,44 +160,10 @@ foreach (testcase ${alltests})
     endif ()
   endif ()
 
-  # Few functions invoked in these tests are not supported in gnu and excluded from GCC builds
-  if ("${name}" IN_LIST GCC_UNSUPPORTED_LIST)
-    if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-      continue()
-    endif ()
-  endif ()
-
   # The following test fails when built with clang, see #830 -- Skipping this test in clang
   if ("${name}" MATCHES
       "array_sized_delete_array_calls_unsized_delete_array.pass")
     if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
-      continue()
-    endif ()
-  endif ()
-
-  # The following test fails on GCC version 7, see  #1523 -- Skipping this test in GCC 7.0 -> 8.0
-  if ("${name}" MATCHES
-      "std_utilities_function.objects_comparisons_constexpr_init.pass")
-    if (CMAKE_CXX_COMPILER_ID MATCHES GNU
-        AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7
-        AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
-      continue()
-    endif ()
-  endif ()
-
-  # The following test fails on GCC 7 or newer, see #1559 -- Skip this test on GCC 7.0 and above in non debug builds
-  if ("${name}" MATCHES "std_containers_associative_map_map.access_at.pass")
-    string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
-    if (CMAKE_CXX_COMPILER_ID MATCHES GNU AND BUILD_TYPE_UPPER MATCHES REL)
-      continue()
-    endif ()
-  endif ()
-
-  # Skip the following tests on GCC version less than 7 because a bug is not fixed or C++17 features are not supported.
-  if ("${name}" IN_LIST GCC_LESS_7_UNSUPPORTED_LIST OR "${testcase}" IN_LIST
-                                                       CXX_17_TEST_LIST)
-    if (CMAKE_CXX_COMPILER_ID MATCHES GNU AND CMAKE_CXX_COMPILER_VERSION
-                                              VERSION_LESS 7.0)
       continue()
     endif ()
   endif ()

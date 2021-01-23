@@ -11,6 +11,11 @@ if (CMAKE_C_COMPILER_ID MATCHES Clang)
   endif ()
 endif ()
 
+if (OE_SGX AND CMAKE_C_COMPILER_ID MATCHES GNU)
+  message(WARNING "The GCC support on x86 platforms has been deprecated. "
+                  "Build problems may occur. Consider using Clang instead.")
+endif ()
+
 if (NOT CMAKE_C_COMPILER_ID STREQUAL CMAKE_CXX_COMPILER_ID)
   message(FATAL_ERROR "Your C and C++ compilers have different vendors: "
                       "${CMAKE_C_COMPILER_ID} != ${CMAKE_CXX_COMPILER_ID}")
