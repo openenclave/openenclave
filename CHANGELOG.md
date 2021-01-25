@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 --------------
 ### Added
 - Add the deep-copy out parameter support as an experimental, SGX-only feature. To use the feature, pass `--experimental` when invoking oeedger8r. Refer to the [design document](docs/DesignDocs/DeepCopyOutParameters.md) for more detail.
+- OE SDK is now built using clang-8. It is required to upgrade the compile to clang-8 if you are building the SDK from source.
 
 ### Deprecated
 - The support of building the SDK for Intel SGX with GCC from source is no longer supported. The recommended compiler is Clang.
