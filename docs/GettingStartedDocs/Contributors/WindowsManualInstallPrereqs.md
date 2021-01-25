@@ -13,7 +13,7 @@
 ## Software prerequisites
 - [Microsoft Visual Studio Build Tools 2019](https://aka.ms/vs/15/release/vs_buildtools.exe)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
-- [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
+- [Clang/LLVM for Windows 64-bit](https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe)
 - [Python 3](https://www.python.org/downloads/windows/)
 - [ShellCheck](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip)
 - [OpenSSL 1.1.1](https://slproweb.com/products/Win32OpenSSL.html)
@@ -47,7 +47,7 @@ builds. It is also useful to have the `Git\mingw64\bin` folder added to PATH.
 
 ## Clang
 
-Install Clang 7.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
+Install Clang 8.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
 to PATH. Open Enclave SDK uses clang to build the enclave binaries.
 
 Open up a command prompt and ensure that clang is added to PATH.
