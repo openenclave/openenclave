@@ -30,11 +30,18 @@ elseif (WIN32)
   set(OE_ASM ASM_MASM)
 endif ()
 
-# Set compiler search order to prefer Clang
-# This has to be done before `project`
-# http://cmake.3232098.n2.nabble.com/Prefer-clang-over-gcc-td7597742.html
-set(CMAKE_C_COMPILER_NAMES clang-8 clang-7 cc)
-set(CMAKE_CXX_COMPILER_NAMES clang++-8 clang++-7 c++)
+# If CC environment variable has been specified or if CMAKE_C_COMPILER
+# cmake variable has been passed to cmake, use the C compiler that has
+# been specified. Otherwise, prefer clang. Same for C++ compiler.
+# This must be done before `project` command.
+if (UNIX)
+  if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
+    find_program(CMAKE_C_COMPILER clang-8 clang)
+  endif ()
+  if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
+    find_program(CMAKE_CXX_COMPILER clang++-8 clang++)
+  endif ()
+endif ()
 
 # Will be overwritten during the cmake initialization.
 set(LVI_MITIGATION
@@ -422,15 +429,18 @@ if (WIN32)
           DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
   install(FILES ./scripts/install-windows-prereqs.ps1
           DESTINATION ${CMAKE_INSTALL_BINDIR}/scripts/)
-  install(FILES ./cmake/maybe_build_using_clangw.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-          COMPONENT OEHOSTVERIFY)
-  install(FILES ./cmake/add_dcap_client_target.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-          COMPONENT OEHOSTVERIFY)
-  install(FILES ./cmake/copy_oedebugrt_target.cmake
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
-          COMPONENT OEHOSTVERIFY)
+  install(
+    FILES ./cmake/maybe_build_using_clangw.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+    COMPONENT OEHOSTVERIFY)
+  install(
+    FILES ./cmake/add_dcap_client_target.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+    COMPONENT OEHOSTVERIFY)
+  install(
+    FILES ./cmake/copy_oedebugrt_target.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/cmake
+    COMPONENT OEHOSTVERIFY)
 endif ()
 
 # Install necessary files for LVI mitigation.
