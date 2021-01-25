@@ -61,7 +61,7 @@ include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
 # Apply Spectre mitigations if available.
-set(SPECTRE_MITIGATION_FLAGS -mspeculative-load-hardening)
+set(SPECTRE_MITIGATION_FLAGS -mllvm -x86-speculative-load-hardening)
 if (UNIX)
   check_c_compiler_flag("${SPECTRE_MITIGATION_FLAGS}"
                         SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)
