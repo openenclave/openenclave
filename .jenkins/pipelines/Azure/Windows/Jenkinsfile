@@ -18,6 +18,7 @@ AGENTS_LABELS = [
 ]
 
 def windowsLinuxElfBuild(String label, String version, String compiler, String build_type, String lvi_mitigation = 'None', String lvi_mitigation_skip_tests = 'OFF', List extra_cmake_args = []) {
+    cross_compiler = compiler == "clang-8" ? "clang" : compiler
     stage("Ubuntu ${version} SGX1 ${compiler} ${build_type} LVI_MITIGATION=${lvi_mitigation}") {
         node(AGENTS_LABELS["ubuntu-nonsgx"]) {
             timeout(GLOBAL_TIMEOUT_MINUTES) {
@@ -35,7 +36,7 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
                                ${extra_cmake_args.join(' ')}
                            ninja -v
                            """
-                oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", compiler, task, "--cap-add=SYS_PTRACE")
+                oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", cross_compiler, task, "--cap-add=SYS_PTRACE")
                 stash includes: 'build/tests/**', name: "linux-${label}-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${version}-${BUILD_NUMBER}"
             }
         }
