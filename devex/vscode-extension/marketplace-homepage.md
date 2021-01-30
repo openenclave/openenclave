@@ -256,7 +256,7 @@ system you run the extension on.
 
   # Install all prerequisites.
   sudo apt install -y apt-transport-https az-dcap-client binfmt-support      \
-    build-essential clang-7 docker.io g++-aarch64-linux-gnu                  \
+    build-essential clang-8 docker.io g++-aarch64-linux-gnu                  \
     gcc-aarch64-linux-gnu gdb gdb-multiarch libc6 libc6-dev:arm64 libfdt1    \
     libglib2.0-0 libpcre3 libpixman-1-0 libprotobuf10 libsgx-dcap-ql         \
     libsgx-dcap-ql-dev libsgx-enclave-common                                 \
