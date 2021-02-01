@@ -3,6 +3,19 @@
 
 cmake_minimum_required(VERSION 3.11)
 
+# If the CC environment variable has been specified or if the CMAKE_C_COMPILER
+# cmake variable has been passed to cmake, use the C compiler that has been
+# specified. Otherwise, prefer clang. Same for C++ compiler.
+# This must be done before the `project` command.
+if (UNIX)
+  if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
+    find_program(CMAKE_C_COMPILER clang-8 clang)
+  endif ()
+  if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
+    find_program(CMAKE_CXX_COMPILER clang++-8 clang++)
+  endif ()
+endif ()
+
 project("Data Sealing Sample" LANGUAGES C CXX)
 
 find_package(OpenEnclave CONFIG REQUIRED)
