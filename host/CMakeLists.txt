@@ -457,6 +457,10 @@ if (WITH_EEID)
   target_compile_definitions(oehost PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()
 
+if (SGX_MAX_TCS)
+  target_compile_definitions(oehost PRIVATE OE_SGX_MAX_TCS=${SGX_MAX_TCS})
+endif ()
+
 if (UNIX)
   target_compile_options(
     oehost
