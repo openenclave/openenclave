@@ -31,7 +31,10 @@ set(ENCLAVE_CFLAGS_LIST
     -fstack-protector-strong
     -fno-omit-frame-pointer
     -ffunction-sections
-    -fdata-sections)
+    -fdata-sections
+    # Treat warnings as errors by default, which is consistent to the behavior
+    # of the clangw script.
+    -Werror)
 
 set(ENCLAVE_CFLAGS_CLANG_LIST ${ENCLAVE_CFLAGS_LIST}
                               ${SPECTRE_MITIGATION_FLAGS})
