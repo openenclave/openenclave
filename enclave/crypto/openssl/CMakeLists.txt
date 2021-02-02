@@ -18,6 +18,7 @@ add_enclave_library(
   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/rsa.c
   ${PROJECT_SOURCE_DIR}/common/crypto/openssl/sha.c
   cert.c
+  gcm.c
   init.c)
 
 maybe_build_using_clangw(oecryptoopenssl)

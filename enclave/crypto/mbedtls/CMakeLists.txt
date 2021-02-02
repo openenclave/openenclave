@@ -13,6 +13,7 @@ add_enclave_library(
   crl.c
   ctr_drbg.c
   ec.c
+  gcm.c
   hmac.c
   init.c
   key.c
