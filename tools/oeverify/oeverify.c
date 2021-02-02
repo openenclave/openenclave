@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
+#include <openenclave/attestation/custom_claims.h>
 #include <openenclave/attestation/sgx/evidence.h>
 #include <openenclave/attestation/verifier.h>
 #include <stdio.h>
@@ -153,6 +154,38 @@ oe_result_t print_and_verify_claims(oe_claim_t* claims, size_t claims_length)
             }
             fprintf(stdout, "\n");
         }
+        // Also dump custom claims individually if any
+        else if (strcmp(claim->name, OE_CLAIM_CUSTOM_CLAIMS_BUFFER) == 0)
+        {
+            fprintf(stdout, "Custom claims:\n");
+            oe_result_t result = OE_FAILURE;
+            oe_claim_t* custom_claims = NULL;
+            size_t custom_claims_length = 0;
+
+            result = oe_deserialize_custom_claims(
+                claims[i].value,
+                claims[i].value_size,
+                &custom_claims,
+                &custom_claims_length);
+            if (result != OE_OK)
+            {
+                oe_free_custom_claims(custom_claims, custom_claims_length);
+                fprintf(stderr, "Failed to deserialize custom claims\n");
+                return result;
+            }
+
+            for (size_t j = 0; j < custom_claims_length; j++)
+            {
+                fprintf(stdout, "%s: 0x", custom_claims[j].name);
+                for (size_t k = 0; k < custom_claims[j].value_size; k++)
+                {
+                    fprintf(stdout, "%02x", custom_claims[j].value[k]);
+                }
+                fprintf(stdout, "\n");
+            }
+
+            oe_free_custom_claims(custom_claims, custom_claims_length);
+        }
     }
 
     return OE_OK;
@@ -182,7 +215,6 @@ oe_result_t verify_evidence(
                 &endorsement_file_size);
         }
 
-        oe_verifier_initialize();
         result = oe_verify_evidence(
             &format,
             evidence_data,
@@ -207,6 +239,11 @@ oe_result_t verify_evidence(
         free(endorsement_data);
     }
 
+    if (claims != NULL)
+    {
+        oe_free_claims(claims, claims_length);
+    }
+
     return result;
 }
 
@@ -216,7 +253,6 @@ oe_result_t sgx_enclave_claims_verifier(
     void* arg)
 {
     (void)arg;
-
     fprintf(stdout, "sgx_enclave_claims_verifier is called with claims:\n");
     return print_and_verify_claims(claims, claims_length);
 }
@@ -229,7 +265,6 @@ oe_result_t verify_cert(const char* filename)
 
     if (read_binary_file(filename, &cert_data, &cert_file_size))
     {
-        oe_verifier_initialize();
         result = oe_verify_attestation_certificate_with_evidence(
             cert_data, cert_file_size, sgx_enclave_claims_verifier, NULL);
     }
@@ -244,7 +279,6 @@ oe_result_t verify_cert(const char* filename)
 
 bool get_evidence_format(const char* format_name, oe_uuid_t* format)
 {
-    bool format_is_known = false;
     for (unsigned int i = 0; i < (sizeof(valid_evidence_formats) /
                                   sizeof(valid_evidence_formats[0]));
          i++)
@@ -252,11 +286,10 @@ bool get_evidence_format(const char* format_name, oe_uuid_t* format)
         if (strcmp(format_name, valid_evidence_formats[i].name) == 0)
         {
             *format = valid_evidence_formats[i].uuid;
-            format_is_known = true;
+            return true;
         }
     }
-
-    return format_is_known;
+    return false;
 }
 
 void print_allowed_formats()
@@ -355,6 +388,8 @@ int main(int argc, const char* argv[])
             return 1;
         }
 
+        oe_verifier_initialize();
+
         if (evidence_filename != NULL)
         {
             fprintf(stdout, "Verifying evidence %s...\n", evidence_filename);
@@ -378,6 +413,8 @@ int main(int argc, const char* argv[])
                 (result == OE_OK) ? "succeeded" : "failed",
                 result);
         }
+
+        oe_verifier_shutdown();
     }
 
     return 0;
