@@ -287,16 +287,6 @@ done:
     return result;
 }
 
-size_t oe_get_num_stack_pages_hook(size_t tcs_index);
-
-/* this function may be overriden by user code */
-OE_WEAK size_t oe_get_num_stack_pages_hook(size_t tcs_index)
-{
-    (void)tcs_index;
-    /* zero size indicates that the hook is not implemented for this index */
-    return 0;
-}
-
 static oe_result_t _calculate_enclave_size(
     oe_region_context_t* region_context,
     size_t image_size,
@@ -308,7 +298,7 @@ static oe_result_t _calculate_enclave_size(
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t heap_size;
-    size_t total_stack_size = 0;
+    size_t stack_size;
     size_t tls_size;
     size_t control_size;
     const oe_enclave_size_settings_t* size_settings;
@@ -331,32 +321,22 @@ static oe_result_t _calculate_enclave_size(
     /* Compute size in bytes of the heap */
     heap_size = size_settings->num_heap_pages * OE_PAGE_SIZE;
 
+    /* Compute size of the stack (one per TCS; include guard pages) */
+    stack_size = OE_PAGE_SIZE // guard page
+                 + (size_settings->num_stack_pages * OE_PAGE_SIZE) +
+                 OE_PAGE_SIZE; // guard page
+
     /* Compute size of the TLS */
     tls_size = tls_page_count * OE_PAGE_SIZE;
 
     /* Compute the control size in bytes (5 pages total) */
     control_size = (OE_SGX_TCS_CONTROL_PAGES + OE_SGX_TCS_THREAD_DATA_PAGES) *
-        OE_PAGE_SIZE;
-
-    /* Calculate the total stack size */
-    for (size_t i = 0; i < size_settings->num_tcs; i++)
-    {
-        size_t num_stack_pages = oe_get_num_stack_pages_hook(i);
-
-        /* If custom stack sizing hook returns zero, fall back on settings */
-        if (num_stack_pages == 0)
-            num_stack_pages = size_settings->num_stack_pages;
-
-        total_stack_size += OE_PAGE_SIZE; /* guard page */
-        total_stack_size += num_stack_pages * OE_PAGE_SIZE;
-        total_stack_size += OE_PAGE_SIZE; /* guard page */
-    }
+                   OE_PAGE_SIZE;
 
     /* Compute end of the enclave */
     *loaded_enclave_pages_size =
         image_size + regions_size + heap_size +
-        (size_settings->num_tcs * (tls_size + control_size)) +
-        total_stack_size;
+        (size_settings->num_tcs * (stack_size + tls_size + control_size));
 
     if (enclave_size)
     {
@@ -397,18 +377,12 @@ static oe_result_t _add_data_pages(
 
     for (i = 0; i < size_settings->num_tcs; i++)
     {
-        size_t num_stack_pages = oe_get_num_stack_pages_hook(i);
-
-        /* If custom stack sizing hook returns zero, fall back on settings */
-        if (num_stack_pages == 0)
-            num_stack_pages = size_settings->num_stack_pages;
-
         /* Add guard page */
         *vaddr += OE_PAGE_SIZE;
 
         /* Add the stack for this thread control structure */
         OE_CHECK(_add_stack_pages(
-            context, enclave->addr, vaddr, num_stack_pages));
+            context, enclave->addr, vaddr, size_settings->num_stack_pages));
 
         /* Add guard page */
         *vaddr += OE_PAGE_SIZE;
