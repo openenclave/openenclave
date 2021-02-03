@@ -93,6 +93,14 @@ function (enclave_link_libraries NAME)
   endforeach (lib)
 endfunction (enclave_link_libraries)
 
+# Wrapper of `target_link_options`
+macro (enclave_link_options NAME)
+  target_link_options(${NAME} ${ARGN})
+  if (TARGET ${NAME}-lvi-cfg)
+    target_link_options(${NAME}-lvi-cfg ${ARGN})
+  endif ()
+endmacro (enclave_link_options)
+
 # Wrapper of `set_tests_properties`
 macro (set_enclave_tests_properties NAME PROPERTIES PROP)
   set_tests_properties(${NAME} PROPERTIES ${PROP} "${ARGN}")

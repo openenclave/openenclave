@@ -30,7 +30,7 @@ if (ENABLE_FULL_LIBCXX_TESTS)
 endif ()
 
 enclave_link_libraries(libcxxtest-support PRIVATE oelibcxx oeenclave)
-enclave_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
+enclave_link_options(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 
 enclave_include_directories(libcxxtest-support PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})

@@ -58,7 +58,7 @@ add_enclave(
 enclave_include_directories(thread_local_enc_stripped PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})
 
-enclave_link_libraries(thread_local_enc_stripped "-s")
+enclave_link_options(thread_local_enc_stripped PRIVATE -s)
 
 # Build enclave with exported thread-locals.
 add_enclave(
@@ -78,4 +78,4 @@ enclave_compile_definitions(thread_local_enc_exported_stripped PRIVATE
 enclave_include_directories(thread_local_enc_exported_stripped PRIVATE
                             ${CMAKE_CURRENT_BINARY_DIR})
 
-enclave_link_libraries(thread_local_enc_exported_stripped "-s")
+enclave_link_options(thread_local_enc_exported_stripped PRIVATE -s)

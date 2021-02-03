@@ -494,8 +494,8 @@ set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY
                                     ${OE_LIBDIR}/openenclave/host)
 
 if (UNIX)
-  target_link_libraries(oehost INTERFACE -Wl,-z,noexecstack)
-  target_link_libraries(oehostverify INTERFACE -Wl,-z,noexecstack -rdynamic)
+  target_link_options(oehost INTERFACE -Wl,-z,noexecstack)
+  target_link_options(oehostverify INTERFACE -Wl,-z,noexecstack -rdynamic)
 endif ()
 
 # Install targets
