@@ -34,8 +34,16 @@ ExternalProject_Add(
   CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
              -DCMAKE_C_COMPILER=${EDGER8R_C_COMPILER}
              -DCMAKE_CXX_COMPILER=${EDGER8R_CXX_COMPILER}
-  BUILD_ALWAYS on
-  TEST_BEFORE_INSTALL on
+  # cmake can evaluate dependencies of oeedger8r-cpp since
+  # it is a rather straight forward external project.
+  # There is no need to always build it.
+  BUILD_ALWAYS off
+  # Since tests in tests/oeedger8r are run on actual hardware,
+  # there is no benefit to running edger8r's "virtual environment"
+  # tests as part of OE SDK build. Additionallt, while ninja ensures
+  # that these tests would run only once, make runs them every time it
+  # is invoked. Hence TEST_BEFORE_INSTALL is off.
+  TEST_BEFORE_INSTALL off
   INSTALL_COMMAND ""
   BUILD_BYPRODUCTS ${BINARY})
 
