@@ -34,6 +34,20 @@ enclave_link_libraries(openssl-support PRIVATE oelibc oe_includes)
 enclave_include_directories(openssl-support PRIVATE ${OPENSSL_DIR}/include
                             ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
 
+# Create an object library to avoid recompiling these files.
+# These cannot be added to openssl-support since they'd result in multiple
+# definition errors due to the way test_cleanup.c is written.
+add_enclave_library(openssl-common OBJECT enc.c
+                    ${CMAKE_CURRENT_BINARY_DIR}/openssl_t.c)
+
+enclave_link_libraries(openssl-common PRIVATE oelibc oe_includes)
+enclave_include_directories(
+  openssl-common PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}/include
+  ${OPENSSL_DIR}/test/testutil
+  ${CMAKE_BINARY_DIR}/3rdparty/openssl/build/include)
+
+maybe_build_using_clangw(openssl-common)
+
 # Add the dependency to the opensslconf.h.
 add_enclave_dependencies(openssl-support openssl_generated)
 
@@ -93,9 +107,7 @@ function (add_openssl_test_enc NAME BUILDTEST)
     CRYPTO_LIB
     OpenSSL
     SOURCES
-    ${TEST_SRC}
-    enc.c
-    ${CMAKE_CURRENT_BINARY_DIR}/openssl_t.c)
+    ${TEST_SRC})
 
   enclave_include_directories(
     openssl-${NAME}_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${OPENSSL_DIR}
@@ -125,8 +137,8 @@ function (add_openssl_test_enc NAME BUILDTEST)
 
   enclave_include_directories(openssl-${NAME}_enc PRIVATE ${INCLUDE_PATHS})
 
-  enclave_link_libraries(openssl-${NAME}_enc openssl-support oehostsock
-                         oehostfs oehostresolver)
+  enclave_link_libraries(openssl-${NAME}_enc openssl-support openssl-common
+                         oehostsock oehostfs oehostresolver)
 
   if (WIN32)
     maybe_build_using_clangw(openssl-${NAME}_enc)
