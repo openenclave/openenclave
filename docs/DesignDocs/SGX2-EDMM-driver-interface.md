@@ -63,7 +63,7 @@ After enclave is initialized (EINIT IOCTL done), the standard Linux mmap syscall
 
 **Implementation Notes:** Current [SGX kernel patches](https://patchwork.kernel.org/project/intel-sgx/patch/20201112220135.165028-11-jarkko@kernel.org/) limit PTE permissions to the EPCM permissions given in SEC_INFO during EADD IOCTL calls. The dynamic allocation mappings should not be subject to those limits. A possible implementation may have these changes:
   - sgx_encl_may_map 
-    - enforces RW permissions for pages other than those loaded due to EADD or ECREAT.
+    - enforces RW permissions for pages other than those loaded due to EADD or ECREATE.
     - set up flags to track dynamic pages: type, permissions flag
   - sgx_vma_mprotect
     - Allow permissions changes to dynamic pages within limitations of OS policies, e.g.,
@@ -154,6 +154,7 @@ trusted_mprotect(..., perms_target, ...){
 
 ![SGX2 TCS allocation flow](images/SGX2-tcs.svg)
 
+
 ## Example advanced flows
 
 More advanced flows can be implemented as combinations of the basic flows. Here we present a few examples. 
@@ -173,9 +174,83 @@ An enclave can load trusted code to a new EPC page with execution permission usi
 An enclave can lazily expand its stacks as follows.
 1. Enclave calls mmap with MAP_GROWSDOWN for a stack region in enclave ELRANGE
 2. At some time later, enclave pushes to the top of the stack where no EPC page is populated yet, this results in #PF, causing enclave AEX.
-3. Kernel determines faulting address is in a stack region in enclave, EAUGs a page, injects a SIGBUS signal to enclave hosting process.
-4. User space untrusted side signal handler catches the SIGBUS and delivers it into enclave exception handler
+3. Kernel determines faulting address is in a stack region in enclave, EAUGs a page, invole user space handler.
+4. User space handler delivers it into enclave exception handler
 5. The enclave exception handler checks the faulting address against its record, determines the fault has happened in a stack area not yet EACCEPT'ed.
 6. Enclave issues EACCEPT, returns to untrusted signal handler of the hosting process, which returns to kernel fault handler.
 7. Kernel fault handler returns to enclave AEX address at which an ERESUME instruction is stored
 8. Enclave resumed and the original push instruction is retried and succeeds.
+
+## Exception Handling
+
+This section focuses on changes around \#PF handling which is affected by the new page states (i.e. states in EPCM) introduced by SGX/EDMM, along with the mechanisms for handling exceptions in enclaves. 
+
+An exception or interrupt during enclave execution will trigger an enclave exit, i.e., Asynchronous Enclave Exits (AEX). To protect the secrecy of the enclave, SGX CPU at AEX would save the state of certain registers within enclave memory, specifically, the thread's current State Save Area (SSA). Then it loads those registers with fixed values called synthetic state, of which the RIP (Instruction Pointer Register) is always set to the AEP (Asynchronous Exit Pointer) address. The AEP is passed in as an operand for the EENTER instruction and points to a trampoline code sequence which ualtimately invokes the ERESUME instruction to reenter the enclave.  
+
+As with all non-enclave exception scenarios, the kernel fault handler registered in the Interrupt Descriptor Table (IDT) would be the first in line to handle exceptions for AEX, and it needs to either handle it in kernel space, or if it can't handle, invoke user space exception handler. In both cases, after handlers return, control is tranferred to AEP trampoline, which enventually invokes ERESUME to reenter enclave. 
+
+Current kernel implementation (in release 5.11) can invoke user space exception handler in two ways depending on how EENTER and AEP trampoline are managed:
+
+  1. Direct EENTER in runtime: the user space runtime manages EENTER, AEP trampoline directly and use Linux signal APIs to register and handle exceptions.
+  2. vDSO interface: the user space invokes [__vdso_sgx_enter_enclave](https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git/tree/arch/x86/include/uapi/asm/sgx.h?h=x86/sgx#n124), passing in a callback for exception handling, and the vDSO implementation manages EENTER and AEP trampoline. 
+
+   The direct EENTER method requires signal handling in runtime library which is known to be challenging in Linux environment. Therefore, the vDSO interface is preferred. For more details about the new SGX vDSO interface please refer to documentation in the [kernel header file](https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git/tree/arch/x86/include/uapi/asm/sgx.h?h=x86/sgx#n124). General sequence is as follows:
+
+  1. User space initialize an sgx_enclave_run struct, run = {..., TCS, sgx_enclave_user_handler, ...}
+  2. User space calls __vdso_sgx_enter_enclave (..., EENTER, run, ...)
+  3. vDSO invoke EENTER (TCS, vDSO AEP) to enter enclave, the vDSO AEP points to an ERESUME instruction in vDSO code.
+  4. if enclave finishes sucessfully, and EEXIT from enclave, vDSO set run.function = EEXIT, goto step 7.
+  5. In an event of AEX, kernel handles the fault if possible, e.g. EAUG on #PF, returns to vDSO AEP.
+  6. Otherwise, the kernel dispatches the fault to vDSO (via an entry in exception fix-up table), which copies exception info to run.exception_vector, run.exception_error_code, run.exception_addr, last seen ENCLU leave in RAX (ERESUME) to run.function
+  7. vDSO invokes sgx_enclave_user_handler(..., run)
+  8. The sgx_enclave_user_handler process enclave exit event:
+      * If run.function == EENTER, error case, return negative to fail last  __vdso_sgx_enter_enclave call
+      * If run.function == EEXIT, return 0 for normal enclave ecall return, return EENTER after invoking proper ocall with runtime specific convention.
+      * If run.function == RESUME, invokes  calls __vdso_sgx_enter_enclave (..., EENTER, run2, ...) to handle exception inside enclave, then return ERESUME.
+  9. vDSO returns to caller if user handler's return is not EENTER or ERESUME, otherwise use ERESUME or EENTER accordingly to reenter enclave.
+
+
+### Fault Handling in Kernel
+
+SGX enclave execution may cause “EPCM Induced #PF”. For those #PFs, SGX enabled CPUs set the SGX bit (bit 15) in Page Fault Error Code (PFEC). It is always generated in the PFEC register if the fault is due to an EPCM attribute mismatch. The kernel #PF handler will only see the faulting address (via CR3) and the PFEC codes on a page fault.  It must rely on this information and its own stored information about the address of the fault (VMA and PTE) to make a decision on how to handle the fault.  In many cases, the kernel can only issue a signal or call a callback function registered in the SGX vDSO function with run.function=ERESUME.  
+
+Once the exception is passed into enclave, the enclave has to rely on trusted info stored in the active SSA by CPU during AEX to make right decisions in handling the exception. It should not rely on any info passed in from untrusted side. To gain access fault related info in SSA, an enclave configured to use SGX2 EDMM features should also configure the SECS.MISCSELECT to report EXIINFO in the State Save Area frame on a #PF or a General Protection (#GP) Fault. This will ensure that the enclave has the following information in the SSA frame on a #PF:
+* ExitInfo.Vector = #PF identifies that a #PF caused an asynchronous exit
+* MISC.EXINFO.MADDR = the linear address that page faulted (analogous to CR2)
+* MISC.EXINFO.ERRCD = Page-Fault Error Code - information about the page fault
+
+This table summarizes kernel actions and info in SSA for enclaves in different fault scenarios. All exceptions considered here happen inside enclave causing AEX, so the kernel will have a chance to convert it to the synchronous callback thru vDSO interface if needed. 
+
+| Fault Condition  | Key #PF PFEC Contents  | Kernel/vDSO Action  | EXITINFO/MISC.EXINFO<br>Information | Enclave Action   |
+|---|---|---|---|---|
+| Access a page which has been swapped out | #PF where PFEC.P=0   |  ELD the page from backing store, ERSUME | Vector = #PF<br>MADDR=address<br>ERRCD(PFEC).P=0   | N/A    |
+| Access Page Mapped PROT_NONE<br>(page that the enclave has not mmap'ed)  | #PF where PFEC.P=0   |  invoke user handler | Vector = #PF<br>MADDR=address<br>ERRCD(PFEC).P=0   | call custom handler for on-demand mapping or abort    |
+| Access Page Mapped PROT_W (Page had been mmap'ed by enclave, but not EAUG'ed)  | #PF where PFEC.P=0   | EAUG and map the page then ERESUME   | Vector = #PF<br>MADDR = faulting address<br>ERRCD(PFEC).P=0  |  N/A  |
+| Page Protection mismatch in PTE| #PF where PFEC.W/R or PFEC.I/D will not match PTE  |  invoke user handler  | Vector = #PF<br>MADDR = faulting address<br>ERRCD(PFEC).W/R or I/D does not match protections   |  call custom handler or abort  |
+| Page Protection mismatch in EPCM| #PF where PFEC.SGX=1  | invoke user handler   | Vector = #PF<br>MADDR = faulting address <br>ERRCD(PFEC).SGX=1<br> ERRCD(PFEC).W/R or I/D does not match protections    |  Check if EMODPE in progress and wait if so, <br>or call custom handler or abort  |
+| Access Page with EPCM.Pending  | #PF where PFEC.SGX=1   | invoke user handler   | Vector = #PF<br>MADDR = faulting address<br>ERRCD(PFEC).SGX=1  | Enclave is operating on the page, the handler should wait on the operation to complete. |
+| Access Page with EPCM.Modified | #PF where PFEC.SGX=1   | invoke user handler   | Vector = #PF<br>MADDR = faulting address<br>ERRCD(PFEC).SGX=1  | Enclave is operating on the page, the handler should wait on the operation to complete. |
+| Access Page with type PT_TRIM  | #PF where PFEC.SGX=1  | invoke user handler  | Vector = #PF<br>MADDR = faulting address<br>ERRCD(PFEC).SGX=1  | Memory Access Error - accessing a TRIM'ed page, call custom handler or abort   |
+
+# Enclave Handling of Faults
+
+To securely handle all faulting scenarios and EDMM flows, in addition to information stored in SSA, the enclave should store information about its own memory configuration and relevant states.  This can be an array or table of structures storing information about each mapped region of enclave memory.  The information that the enclave should store includes:
+* Address Range: Range of Enclave Linear Addresses that are covered by the region
+* Permissions: Combination of Read, Write, Execute
+* Page Type: SGX page type of pages in the region - PT_TCS, PT_REG, or PT_TRIM
+* State: the state of the region.  The state may indicate that the region is in transition.  For example is is changing page type or permissions.  
+* Table of information about the EACCEPT state of each page in the region.  This may be a temporary structure which keeps track of pages which are EACCEPTed for operations requiring EACCEPT.  This can ensure that the enclave does not EACCEPT a page twice.  For example, when a page is EAUG'ed to an enclave linear address, the enclave should only EACCEPT that page once.  If the enclave could be convinced to EACCEPT the page twice, then the OS can potentially EAUG two pages at the same enclave linear address and freely swap them by modifying PTEs.
+
+Enclaves should prevent two threads from simultaneously operating on the same region, e.g, trying to EMODPE on a page while permission change is in progress in another thread.  One way to ensure this is to use some lock/synchronization mechanism to protect the state of each region, have the second thread wait if page is in transition state. 
+
+When an enclave is called after faulting, the enclave can consult its stored memory region states and the ExitInfo.Vector and MISC.EXINFO in SSA to determine what to do with the fault.  The following table lists actions on specific page faults.
+
+| EXITINFO/MISC.EXINFO<br>Information | State of Region | Cause of Fault | Enclave Action   |
+|---|---|---|---|
+| ERRCD(PFEC).P=0   | n/a | Enclave has accessed an unallocated memory region|Call exception handlers, abort if not handled |
+| ERRCD(PFEC).W/R or I/D does not match protections | Not In-Transition | Enclave has incorrectly accessed memory region|Call exception handlers, abort if not handled |
+| ERRCD(PFEC).W/R or I/D does not match protections | In-Transition | Enclave has incorrectly accessed memory region which may be changing protections|If future protections will allow access then pend on Lock/Mutex for region, else call exception handlers, abort if not handled |
+| ERRCD(PFEC).SGX=1  | Not In-Transition | Error in run-time or kernel | Depending on run-time design, the enclave should not encounter this. |
+| ERRCD(PFEC).SGX=1  | In-Transition | Page is being accessed during transition | If future protections/page-type will allow access then pend on Lock/Mutex for region, else call exception handlers, abort if not handled |
+
+
