@@ -41,12 +41,13 @@
 
 - name: Download as/ld tarball
   get_url:
-    url: 'https://download.01.org/intel-sgx/sgx-linux/2.10/as.ld.objdump.gold.r2.tar.gz'
-    dest: '/tmp/as.ld.objdump.gold.r2.tar.gz'
+    url: 'https://download.01.org/intel-sgx/sgx-linux/2.13/as.ld.objdump.gold.r3.tar.gz'
+    dest: '/tmp/'
+  register: asldobjdump
 
 - name: Extract as and ld binaries
   unarchive:
-    src: '/tmp/as.ld.objdump.gold.r2.tar.gz'
+    src: "{{ asldobjdump.dest }}"
     dest: '{{ local_lvi_directory }}/'
     remote_src: yes
 

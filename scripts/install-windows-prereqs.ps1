@@ -14,16 +14,16 @@ Param(
     [string]$VSBuildToolsHash = '',
     [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe',
     [string]$ClangHash = 'E3AF139C2F93075C13DCBC4091C1311F66FC6E4E8705649FCAF9BEF8B3368F41',
-    [string]$IntelPSWURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/17361/Intel%20SGX%20PSW%20for%20Windows%20v2.11.100.3.exe',
-    [string]$IntelPSWHash = '72D0C5DCFC24E0DB5B9FB3C2CB5B0242002D1A0DE2A8D4B4AEC862D88C7CBC13',
+    [string]$IntelPSWURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/17553/Intel%20SGX%20PSW%20for%20Windows%20v2.12.100.4.exe',
+    [string]$IntelPSWHash = 'B3F70CCEAD59CAFF7114B9CBF25863E8B930447CC989878352E7C6442EC3C981',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
     [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/17362/Intel%20SGX%20DCAP%20for%20Windows%20v1.9.100.3.exe',
-    [string]$IntelDCAPHash = '7B09D4455FDFC3DE10B6BC7F4645C16E2E450E41118D0C3E69878078192B4BA4',
+    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/17550/Intel%20SGX%20DCAP%20for%20Windows%20v1.10.100.4.exe',
+    [string]$IntelDCAPHash = '1F2C2D42AEBAD87D3D622B7B33BB6125D5F06F9613F011ACD9A339BAEC66C0D8',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.6.0',
@@ -553,7 +553,7 @@ function Install-DCAP-Dependencies {
                     'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
                 }
                 'sgx_dcap' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2019_Windows10"
+                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\psw\WindowsServer2019_Windows10\dcap"
                     'location'    = 'root\SgxLCDevice_DCAP'
                     'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
                 }
@@ -565,7 +565,7 @@ function Install-DCAP-Dependencies {
                     'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
                 }
                 'sgx_dcap' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2019_Windows10"
+                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\psw\WindowsServer2019_Windows10\dcap"
                     'location'    = 'root\SgxLCDevice_DCAP'
                     'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
                 }
