@@ -7,5 +7,8 @@
     "image_sku": "8-gen2",
     "vm_size": "Standard_DC2s",
     "ansible_group": "linux-agents",
-    "playbook_file_name": "oe-linux-acc-setup.yml"
+    "playbook_file_name": "oe-linux-acc-setup.yml",
+    "base_gallery_image_version": "latest",
+    "base_gallery_image_name": "RHEL_8_Gen2",
+    "base_gallery_name": "Vanilla_Images"
 }
