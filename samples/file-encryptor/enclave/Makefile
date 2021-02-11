@@ -19,12 +19,12 @@ build:
 	oeedger8r ../fileencryptor.edl --trusted \
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
-	$(CXX) -g -c $(CXXFLAGS) -DOE_API_VERSION=2 -std=c++11 ecalls.cpp encryptor.cpp keys.cpp
+	$(CXX) -g -c $(CXXFLAGS) -DOE_API_VERSION=2 -std=c++11 ${OE_CRYPTO_LIB}/ecalls.cpp $(OE_CRYPTO_LIB)/encryptor.cpp $(OE_CRYPTO_LIB)/keys.cpp
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 fileencryptor_t.c -o fileencryptor_t.o
 	$(CXX) -o file-encryptorenc ecalls.o encryptor.o keys.o fileencryptor_t.o $(LDFLAGS) $(CRYPTO_LDFLAGS)
 
 sign:
-	oesign sign -e file-encryptorenc -c file-encryptor.conf -k private.pem
+	oesign sign -e file-encryptorenc -c common/file-encryptor.conf -k private.pem
 
 clean:
 	rm -f file-encryptorenc file-encryptorenc.signed *.o fileencryptor_t.* fileencryptor_args.h private.pem public.pem

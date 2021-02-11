@@ -3,7 +3,7 @@
 
 #include "encryptor.h"
 #include <string.h>
-#include "common.h"
+#include "../common/trace.h"
 
 ecall_dispatcher::ecall_dispatcher() : m_encrypt(true), m_header(NULL)
 {

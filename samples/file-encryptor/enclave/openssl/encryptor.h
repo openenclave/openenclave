@@ -3,12 +3,11 @@
 
 #pragma once
 
-#include <mbedtls/aes.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/entropy.h>
 #include <openenclave/enclave.h>
+#include <openssl/aes.h>
+#include <openssl/evp.h>
 #include <string>
-#include "../shared.h"
+#include "../../shared.h"
 
 using namespace std;
 
@@ -17,7 +16,8 @@ using namespace std;
 class ecall_dispatcher
 {
   private:
-    mbedtls_aes_context m_aescontext;
+    EVP_CIPHER_CTX* m_encryption_cipher_ctx;
+    EVP_CIPHER_CTX* m_decryption_cipher_ctx;
     bool m_encrypt;
     string m_password;
 
@@ -25,9 +25,8 @@ class ecall_dispatcher
 
     // initialization vector
     unsigned char m_original_iv[IV_SIZE];
-    unsigned char m_operating_iv[IV_SIZE];
 
-    // key for encrypting  data
+    // key for encrypting data
     unsigned char m_encryption_key[ENCRYPTION_KEY_SIZE_IN_BYTES];
 
   public:
@@ -58,7 +57,7 @@ class ecall_dispatcher
         unsigned int input_data_size,
         unsigned char* encrypt_key,
         unsigned char* output_data,
-        unsigned int output_data_size);
+        int output_data_size);
     int Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32]);
     void dump_data(const char* name, unsigned char* data, size_t data_size);
     int process_encryption_header(
