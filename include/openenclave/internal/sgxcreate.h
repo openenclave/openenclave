@@ -7,12 +7,14 @@
 #include <openenclave/bits/eeid.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
+#include "../host.h"
 #include "crypto/sha.h"
 #include "load.h"
 
 OE_EXTERNC_BEGIN
 
 typedef struct _oe_enclave oe_enclave_t;
+typedef oe_sgx_enclave_setting_config_data oe_config_data_t;
 
 typedef enum _oe_sgx_load_type
 {
@@ -65,6 +67,9 @@ struct _oe_sgx_load_context
     /* EEID data needed during enclave creation */
     oe_eeid_t* eeid;
 #endif
+
+    const oe_config_data_t* config_data;
+    bool use_config_id;
 };
 
 oe_result_t oe_sgx_initialize_load_context(

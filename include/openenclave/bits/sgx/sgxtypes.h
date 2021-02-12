@@ -279,20 +279,22 @@ void __sgx_dump_sigstruct(const sgx_sigstruct_t* p);
 
 typedef struct _sgx_secs
 {
-    uint64_t size;          /* 0 */
-    uint64_t base;          /* 8 */
-    uint32_t ssaframesize;  /* 16 */
-    uint32_t misc_select;   /* 20 */
-    uint8_t reserved1[24];  /* 24 */
-    uint64_t flags;         /* 48 */
-    uint64_t xfrm;          /* 56 */
-    uint32_t mrenclave[8];  /* 64 */
-    uint8_t reserved2[32];  /* 96 */
-    uint32_t mrsigner[8];   /* 128 */
-    uint8_t reserved3[96];  /* 160 */
-    uint16_t isvvprodid;    /* 256 */
-    uint16_t isvsvn;        /* 258 */
-    uint8_t reserved[3836]; /* 260 */
+    uint64_t size;           /* 0 */
+    uint64_t base;           /* 8 */
+    uint32_t ssaframesize;   /* 16 */
+    uint32_t misc_select;    /* 20 */
+    uint8_t reserved1[24];   /* 24 */
+    uint64_t flags;          /* 48 */
+    uint64_t xfrm;           /* 56 */
+    uint32_t mrenclave[8];   /* 64 */
+    uint8_t reserved2[32];   /* 96 */
+    uint32_t mrsigner[8];    /* 128 */
+    uint8_t reserved3[32];   /* 160 */
+    uint8_t config_id[64];   /* 192 */
+    uint16_t isvvprodid;     /* 256 */
+    uint16_t isvsvn;         /* 258 */
+    uint16_t config_svn;     /* 260 */
+    uint8_t reserved4[3834]; /* 262 */
 } sgx_secs_t;
 
 OE_CHECK_SIZE(sizeof(sgx_secs_t), 4096);
