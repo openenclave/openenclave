@@ -3,6 +3,9 @@
 
 #include "openssl_utility.h"
 
+// SGX Remote Attestation UUID.
+static oe_uuid_t _uuid_sgx_ecdsa = {OE_FORMAT_UUID_SGX_ECDSA};
+
 oe_result_t generate_certificate_and_pkey(X509*& certificate, EVP_PKEY*& pkey)
 {
     oe_result_t result = OE_FAILURE;
@@ -12,6 +15,8 @@ oe_result_t generate_certificate_and_pkey(X509*& certificate, EVP_PKEY*& pkey)
     size_t private_key_buffer_size = 0;
     uint8_t* public_key_buffer = nullptr;
     size_t public_key_buffer_size = 0;
+    uint8_t* optional_parameters = nullptr;
+    size_t optional_parameters_size = 0;
     const unsigned char* certificate_buffer_ptr = nullptr;
     BIO* mem = nullptr;
 
@@ -30,12 +35,16 @@ oe_result_t generate_certificate_and_pkey(X509*& certificate, EVP_PKEY*& pkey)
     printf("public_key_buf_size:[%ld]\n", public_key_buffer_size);
     printf("public key used:\n[%s]", public_key_buffer);
 
-    result = oe_generate_attestation_certificate(
+    oe_attester_initialize();
+    result = oe_get_attestation_certificate_with_evidence_v2(
+        &_uuid_sgx_ecdsa,
         certificate_subject_name,
         private_key_buffer,
         private_key_buffer_size,
         public_key_buffer,
         public_key_buffer_size,
+        optional_parameters,
+        optional_parameters_size,
         &output_certificate,
         &output_certificate_size);
 

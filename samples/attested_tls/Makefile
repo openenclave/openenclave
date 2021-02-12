@@ -24,7 +24,7 @@ run:
 	echo "Launch processes to establish an Attested TLS between two enclaves"
 	./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12341 &
 	sleep 2
-	./client/host/tls_client_host ./client/enc/tls_client_enclave.signed -server:localhost -port:12341
+	./client/host/tls_client_host ./client/enc/tls_client_enc.signed -server:localhost -port:12341
 	echo "Launch processes to establish an Attested TLS between an non-encalve TLS client and an TLS server running inside an enclave"
 	./server/host/tls_server_host ./server/enc/tls_server_enc.signed -port:12345 &
 	sleep 2

@@ -1,6 +1,9 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/sgx/evidence.h>
+#include <openenclave/attestation/sgx/report.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>

@@ -31,10 +31,10 @@ build:
 
 	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) -I. -std=c++11 $(SRC_FILES)
 	$(CC) -c $(CFLAGS) $(CINCLUDES) -I. ./tls_client_t.c
-	$(CXX) -o tls_client_enclave $(OBJ_FILES) $(LDFLAGS) $(CRYPTO_LDFLAGS) -loehostsock -loehostresolver
+	$(CXX) -o tls_client_enc $(OBJ_FILES) $(LDFLAGS) $(CRYPTO_LDFLAGS) -loehostsock -loehostresolver
 
 sign:
-	oesign sign -e tls_client_enclave -c  enc.conf -k private.pem
+	oesign sign -e tls_client_enc -c  enc.conf -k private.pem
 
 clean:
-	rm -f ./*.o tls_client_enclave tls_client_enclave.signed enclave1.signed.so tls_client_t.* tls_client_args.h
+	rm -f ./*.o tls_client_enc tls_client_enc.signed enclave1.signed.so tls_client_t.* tls_client_args.h
