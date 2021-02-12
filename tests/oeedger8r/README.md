@@ -26,7 +26,7 @@ Test constructs supported by `oeedger8r`.
   3. *host/testbasic.cpp*: Defines ocall implementations. Also `test_enum_edl_ecalls` function to test ecalls.
 
 - **errno.edl**
-  1. *Purpose*: Test propagate_errno annotation. Lock down initial value of errno, propagation/non-propagation of errno value from host to enclave depending on annotation, generation/non-generation of _ocall_errno field.
+  1. *Purpose*: Test propagate_errno annotation. Lock down initial value of errno, propagation/non-propagation of errno value from host to enclave depending on annotation, generation/non-generation of ocall_errno field.
   2. *enc/testerrno.cpp* : Defines ecall implementations.
   3. *host/testerrno.cpp* : Defines ocall implementations.
 
