@@ -1,18 +1,10 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <mbedtls/aes.h>
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/error.h>
-#include <mbedtls/md.h>
-#include <mbedtls/pk.h>
-#include <mbedtls/pkcs5.h>
-#include <mbedtls/rsa.h>
-#include <mbedtls/sha256.h>
+#include <openssl/rand.h>
+#include <string.h>
 
-#include "common.h"
+#include "../common/trace.h"
 #include "encryptor.h"
 
 #define ENCRYPT_OPERATION true
@@ -37,81 +29,68 @@ int ecall_dispatcher::Sha256(
     size_t data_size,
     uint8_t sha256[32])
 {
-    int ret = 0;
-    mbedtls_sha256_context ctx;
+    int ret = -1;
+    unsigned int sha_length_in_bytes = 32;
+    EVP_MD_CTX* mdctx;
 
-    mbedtls_sha256_init(&ctx);
-
-    ret = mbedtls_sha256_starts_ret(&ctx, 0);
-    if (ret)
+    if ((mdctx = EVP_MD_CTX_new()) == NULL)
+    {
+        TRACE_ENCLAVE("EVP_MD_CTX_new failed");
         goto exit;
+    }
 
-    ret = mbedtls_sha256_update_ret(&ctx, data, data_size);
-    if (ret)
+    if (!(ret = EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL)))
+    {
+        TRACE_ENCLAVE(
+            "EVP_DigestInit_ex SHA-256 failed with returncode %d", ret);
         goto exit;
+    }
 
-    ret = mbedtls_sha256_finish_ret(&ctx, sha256);
-    if (ret)
+    if (!(ret = EVP_DigestUpdate(mdctx, data, data_size)))
+    {
+        TRACE_ENCLAVE("EVP_DigestUpdate failed with returncode %d", ret);
         goto exit;
+    }
 
+    if (!(ret = EVP_DigestFinal_ex(mdctx, sha256, &sha_length_in_bytes)))
+    {
+        TRACE_ENCLAVE("EVP_DigestFinal_ex failed with return code %d", ret);
+        goto exit;
+    }
+
+    ret = 0;
 exit:
-    mbedtls_sha256_free(&ctx);
+    EVP_MD_CTX_free(mdctx);
     return ret;
 }
 
-// This routine uses the mbed_tls library to derive an AES key from the input
-// password and produces a password-based key.
+// This routine uses the openssl library to derive an AES key from the input
+// password and produce a password based key.
 int ecall_dispatcher::generate_password_key(
     const char* password,
     unsigned char* salt,
     unsigned char* key,
     unsigned int key_len)
 {
-    mbedtls_md_context_t sha_ctx;
-    const mbedtls_md_info_t* info_sha;
-    int ret = 0;
-    mbedtls_md_init(&sha_ctx);
+    int ret = -1;
 
-    TRACE_ENCLAVE("generate_password_key");
-
-    memset(key, 0, key_len);
-    info_sha = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
-    if (info_sha == NULL)
+    if (PKCS5_PBKDF2_HMAC(
+            (const char*)password,          // password
+            strlen((const char*)password),  // password length
+            salt,                           // salt
+            SALT_SIZE_IN_BYTES,             // salt length
+            100000,                         // iteration count
+            EVP_sha256(),                   // digest function
+            key_len,                        // key length  
+            key) == 0)                      // key
     {
-        ret = 1;
+        TRACE_ENCLAVE("Key generation from password using method "
+                      "PKCS5_PBKDF2_HMAC failed");
         goto exit;
     }
 
-    // setting up hash algorithm context
-    ret = mbedtls_md_setup(&sha_ctx, info_sha, 1);
-    if (ret != 0)
-    {
-        TRACE_ENCLAVE("mbedtls_md_setup() failed with -0x%04x", -ret);
-        goto exit;
-    }
-
-    // Derive a key from a password using PBKDF2.
-    // PBKDF2 (Password-Based Key Derivation Function 2) are key derivation
-    // functions with a sliding computational cost, aimed to reduce the
-    // vulnerability of encrypted keys to brute force attacks. See
-    // (https://en.wikipedia.org/wiki/PBKDF2) for more details.
-    ret = mbedtls_pkcs5_pbkdf2_hmac(
-        &sha_ctx,                       // Generic HMAC context
-        (const unsigned char*)password, // Password to use when generating key
-        strlen((const char*)password),  // Length of password
-        salt,                           // salt to use when generating key
-        SALT_SIZE_IN_BYTES,             // size of salt
-        100000,                         // iteration count
-        key_len,                        // length of generated key in bytes
-        key);                           // generated key
-    if (ret != 0)
-    {
-        TRACE_ENCLAVE("mbedtls_pkcs5_pbkdf2_hmac failed with -0x%04x", -ret);
-        goto exit;
-    }
-    TRACE_ENCLAVE("Key based on password successfully generated");
+    ret = 0;
 exit:
-    mbedtls_md_free(&sha_ctx);
     return ret;
 }
 
@@ -120,49 +99,23 @@ int ecall_dispatcher::generate_encryption_key(
     unsigned char* key,
     unsigned int key_len)
 {
-    mbedtls_ctr_drbg_context ctr_drbg;
-    mbedtls_entropy_context entropy;
-    const char pers[] = "EncryptionKey";
-    int ret = 0;
+    TRACE_ENCLAVE("generating encryption key");
+    int ret = -1;
 
-    TRACE_ENCLAVE("generate_encryption_key:");
-
-    mbedtls_entropy_init(&entropy);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
     memset(key, 0, key_len);
 
-    // mbedtls_ctr_drbg_seed seeds and sets up the CTR_DRBG entropy source for
-    // future reseeds.
-    ret = mbedtls_ctr_drbg_seed(
-        &ctr_drbg,
-        mbedtls_entropy_func,
-        &entropy,
-        (unsigned char*)pers,
-        sizeof(pers));
-    if (ret != 0)
+    if (!(ret = RAND_bytes(key, key_len)))
     {
-        TRACE_ENCLAVE("mbedtls_ctr_drbg_init failed with -0x%04x\n", -ret);
+        TRACE_ENCLAVE("RAND_bytes failed with return code %d", ret);
         goto exit;
     }
 
-    // mbedtls_ctr_drbg_random uses CTR_DRBG to generate random data
-    ret = mbedtls_ctr_drbg_random(&ctr_drbg, key, key_len);
-    if (ret != 0)
-    {
-        TRACE_ENCLAVE("mbedtls_ctr_drbg_random failed with -0x%04x\n", -ret);
-        goto exit;
-    }
-    TRACE_ENCLAVE(
-        "Encryption key successfully generated: a %d byte key (hex):  ",
-        key_len);
-
+    ret = 0;
 exit:
-    mbedtls_ctr_drbg_free(&ctr_drbg);
-    mbedtls_entropy_free(&entropy);
     return ret;
 }
 
-// The encryption key is encrypted before it was written back to the encryption
+// The encryption key is encrypted before it is written back to the encryption
 // header as part of the encryption metadata.
 int ecall_dispatcher::cipher_encryption_key(
     bool encrypt,
@@ -173,48 +126,86 @@ int ecall_dispatcher::cipher_encryption_key(
     unsigned char* output_data,
     unsigned int output_data_size)
 {
-    int ret = 0;
-    (void)output_data_size;
-    mbedtls_aes_context aescontext;
+    int ret = -1;
+    int last_cipher_block_length = 0;
 
     TRACE_ENCLAVE(
         "cipher_encryption_key: %s", encrypt ? "encrypting" : "decrypting");
 
-    // init context
-    mbedtls_aes_init(&aescontext);
+    EVP_CIPHER_CTX* ctx;
 
-    // set aes key
-    if (encrypt)
+    /* Create and initialize the context */
+    if (!(ctx = EVP_CIPHER_CTX_new()))
     {
-        ret = mbedtls_aes_setkey_enc(
-            &aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
-    }
-    else
-    {
-        ret = mbedtls_aes_setkey_dec(
-            &aescontext, encrypt_key, ENCRYPTION_KEY_SIZE);
-    }
-    if (ret != 0)
-    {
-        TRACE_ENCLAVE("mbedtls_aes_setkey_enc/dec failed with %d", ret);
+        TRACE_ENCLAVE(
+            "Context instantiation for key encryption/decryption failed");
         goto exit;
     }
 
-    ret = mbedtls_aes_crypt_cbc(
-        &aescontext,
-        encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT,
-        input_data_size, // input data length in bytes,
-        iv,              // Initialization vector (updated after use)
-        input_data,
-        output_data);
-    if (ret != 0)
+    if (encrypt)
     {
-        TRACE_ENCLAVE("mbedtls_aes_crypt_cbc failed with %d", ret);
+        if (!(ret = EVP_EncryptInit_ex(
+                ctx, EVP_aes_256_cbc(), NULL, encrypt_key, iv)))
+        {
+            TRACE_ENCLAVE("EVP_EncryptInit_ex failed with return code %d", ret);
+            goto exit;
+        }
+
+        EVP_CIPHER_CTX_set_padding(ctx, 0);
+        EVP_CIPHER_CTX_set_key_length(ctx, ENCRYPTION_KEY_SIZE_IN_BYTES);
+
+        if (!(ret = EVP_EncryptUpdate(
+                ctx,
+                output_data,
+                (int *) &output_data_size,
+                input_data,
+                (int) input_data_size)))
+        {
+            TRACE_ENCLAVE("EVP_EncryptUpdate failed return code %d", ret);
+            goto exit;
+        }
+
+        if (!(ret = EVP_EncryptFinal_ex(
+                ctx, output_data + output_data_size, &last_cipher_block_length)))
+        {
+            TRACE_ENCLAVE("EVP_EncryptFinal_ex failed with return code %d", ret);
+            goto exit;
+        }
     }
+    else
+    {
+        if (!(ret = EVP_DecryptInit_ex(
+            ctx, EVP_aes_256_cbc(), NULL, encrypt_key, iv)))
+        {
+            TRACE_ENCLAVE("EVP_DecryptInit_ex failed with return code %d", ret);
+            goto exit;
+        }
+
+        EVP_CIPHER_CTX_set_padding(ctx, 0);
+        EVP_CIPHER_CTX_set_key_length(ctx, ENCRYPTION_KEY_SIZE_IN_BYTES);
+
+        if (!(ret = EVP_DecryptUpdate(
+                ctx,
+                output_data,
+                (int *) &output_data_size,
+                input_data,
+                (int) input_data_size)))
+        {
+            TRACE_ENCLAVE("EVP_DecryptUpdate failed with return code %d", ret);
+            goto exit;
+        }
+
+        if (!(ret = EVP_DecryptFinal_ex(
+                ctx, output_data + output_data_size, &last_cipher_block_length)))
+        {
+            TRACE_ENCLAVE("EVP_DecryptFinal_ex failedwith return code %d", ret);
+            goto exit;
+        }
+    }
+
+    ret = 0;
 exit:
-    // free aes context
-    mbedtls_aes_free(&aescontext);
-    TRACE_ENCLAVE("ecall_dispatcher::cipher_encryption_key");
+    EVP_CIPHER_CTX_free(ctx);
     return ret;
 }
 
@@ -233,13 +224,11 @@ int ecall_dispatcher::prepare_encryption_header(
     encryption_header_t* header,
     string password)
 {
-    mbedtls_ctr_drbg_context ctr_drbg;
-    mbedtls_entropy_context entropy;
-    int ret = 0;
-    unsigned char digest[HASH_VALUE_SIZE_IN_BYTES]; // password derived key
+    int ret = -1;
+    unsigned char digest[HASH_VALUE_SIZE_IN_BYTES]; // sha256 digest of password
     unsigned char
-        password_key[ENCRYPTION_KEY_SIZE_IN_BYTES]; // encrypted encryption key
-    unsigned char encrypted_key[ENCRYPTION_KEY_SIZE_IN_BYTES];
+        password_key[ENCRYPTION_KEY_SIZE_IN_BYTES]; // password derived key
+    unsigned char encrypted_key[ENCRYPTION_KEY_SIZE_IN_BYTES]; // encrypted encryption key
     unsigned char salt[SALT_SIZE_IN_BYTES];
     const char seed[] = "file_encryptor_sample";
 
@@ -250,32 +239,16 @@ int ecall_dispatcher::prepare_encryption_header(
         goto exit;
     }
 
-    mbedtls_entropy_init(&entropy);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
-
-    // Initialize CTR-DRBG seed
-    ret = mbedtls_ctr_drbg_seed(
-        &ctr_drbg,
-        mbedtls_entropy_func,
-        &entropy,
-        (const unsigned char*)seed,
-        strlen(seed));
-    if (ret != 0)
-    {
-        TRACE_ENCLAVE("mbedtls_ctr_drbg_seed() failed with -0x%04x", -ret);
-        goto exit;
-    }
+    TRACE_ENCLAVE("prepare_encryption_header");
 
     // Generate random salt
-    ret = mbedtls_ctr_drbg_random(&ctr_drbg, salt, SALT_SIZE_IN_BYTES);
-    if (ret != 0)
+    if (!(ret = RAND_bytes(salt, SALT_SIZE_IN_BYTES)))
     {
-        TRACE_ENCLAVE("mbedtls_ctr_drbg_random() failed with -0x%04x", -ret);
+        TRACE_ENCLAVE("RAND_bytes failed with return code %d", ret);
         goto exit;
     }
     memcpy(header->salt, salt, SALT_SIZE_IN_BYTES);
 
-    TRACE_ENCLAVE("prepare_encryption_header");
     // derive a key from the password using PBDKF2
     ret = generate_password_key(
         password.c_str(), salt, password_key, ENCRYPTION_KEY_SIZE_IN_BYTES);
@@ -329,10 +302,10 @@ int ecall_dispatcher::prepare_encryption_header(
         goto exit;
     }
     memcpy(header->encrypted_key, encrypted_key, ENCRYPTION_KEY_SIZE_IN_BYTES);
+
     TRACE_ENCLAVE("Done with prepare_encryption_header successfully.");
+    ret = 0;
 exit:
-    mbedtls_ctr_drbg_free(&ctr_drbg);
-    mbedtls_entropy_free(&entropy);
     return ret;
 }
 
@@ -345,7 +318,7 @@ int ecall_dispatcher::parse_encryption_header(
     encryption_header_t* header,
     string password)
 {
-    int ret = 0;
+    int ret = -1;
     if (header == NULL)
     {
         TRACE_ENCLAVE("parse_encryption_header() failed with a null argument"
@@ -403,13 +376,14 @@ int ecall_dispatcher::parse_encryption_header(
         goto exit;
     }
 
+    ret = 0;
 exit:
     return ret;
 }
 
 int ecall_dispatcher::process_encryption_header(encryption_header_t* header)
 {
-    int ret = 0;
+    int ret = -1;
 
     if (header == NULL)
     {
@@ -426,6 +400,7 @@ int ecall_dispatcher::process_encryption_header(encryption_header_t* header)
             (encryption_header_t*)oe_host_malloc(sizeof(encryption_header_t));
         if (m_header == NULL)
         {
+            TRACE_ENCLAVE("oe_host_malloc failed");
             ret = 1;
             goto exit;
         }
@@ -447,6 +422,8 @@ int ecall_dispatcher::process_encryption_header(encryption_header_t* header)
             goto exit;
         }
     }
+
+    ret = 0;
 exit:
     return ret;
 }

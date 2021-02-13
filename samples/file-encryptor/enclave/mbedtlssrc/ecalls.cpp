@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include "../shared.h"
+#include "../../shared.h"
+#include "../fileencryptor_t.h"
 #include "encryptor.h"
-#include "fileencryptor_t.h"
 
 // Declare a static dispatcher object for enabling for better organization
 // of enclave-wise global variables
