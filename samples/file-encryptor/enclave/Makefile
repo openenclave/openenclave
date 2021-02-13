@@ -20,8 +20,8 @@ build:
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
 	$(CXX) -g -c $(CXXFLAGS) -DOE_API_VERSION=2 -std=c++11 \
-		$(SAMPLE_CRYPTO_DIR)/ecalls.cpp $(SAMPLE_CRYPTO_DIR)/encryptor.cpp \
-		$(SAMPLE_CRYPTO_DIR)/keys.cpp
+		$(SAMPLE_CRYPTO_SRC)/ecalls.cpp $(SAMPLE_CRYPTO_SRC)/encryptor.cpp \
+		$(SAMPLE_CRYPTO_SRC)/keys.cpp
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 fileencryptor_t.c -o fileencryptor_t.o
 	$(CXX) -o file-encryptorenc ecalls.o encryptor.o keys.o fileencryptor_t.o $(LDFLAGS) $(CRYPTO_LDFLAGS)
 
