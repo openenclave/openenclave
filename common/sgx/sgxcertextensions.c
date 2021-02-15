@@ -41,8 +41,11 @@ static const char* _tcb_comp_svn_oids[16] = {
 #define PCEID_OID SGX_EXTENSION_OID "\x03"
 #define FMSPC_OID SGX_EXTENSION_OID "\x04"
 #define SGX_TYPE_OID SGX_EXTENSION_OID "\x05"
-#define OPT_DYNAMIC_PLATFORM_OID SGX_EXTENSION_OID "\x06"
-#define OPT_CACHED_KEYS_OID SGX_EXTENSION_OID "\x07"
+#define OPT_PLATFORM_INSTANCE_ID_OID SGX_EXTENSION_OID "\x06"
+#define OPT_CONFIGURATION_OID SGX_EXTENSION_OID "\x07"
+#define OPT_DYNAMIC_PLATFORM_OID OPT_CONFIGURATION_OID "\x01"
+#define OPT_CACHED_KEYS_OID OPT_CONFIGURATION_OID "\x02"
+#define OPT_SMT_ENABLED_OID OPT_CONFIGURATION_OID "\x03"
 
 // ASN1 tag fields are single-byte values consisting of the following
 // bit-fields:
@@ -416,6 +419,9 @@ oe_result_t ParseSGXExtensions(
     uint8_t* tcb_itr = NULL;
     size_t tcb_length = 0;
     uint8_t* tcb_end = NULL;
+    uint8_t* config_itr = NULL;
+    size_t config_length = 0;
+    uint8_t* config_end = NULL;
 
     if (cert == NULL || buffer == NULL || buffer_size == NULL ||
         parsed_info == NULL)
@@ -474,7 +480,7 @@ oe_result_t ParseSGXExtensions(
 
     // Assert that all bytes of tcb extension have been read.
     if (tcb_itr != tcb_end)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
     // Read other first level extensions.
     OE_CHECK(_read_octet_extension(
@@ -501,21 +507,51 @@ oe_result_t ParseSGXExtensions(
 
     if (itr != end)
     {
-        // There are two possible optional extensions. They are expected to be
+        // There are two possible optional extensions. The second one have
+        // another three sub-extensions nested in it. They are expected to be
         // in increasing order of OIDs. Their values are ignored.
+        OE_CHECK(_read_octet_extension(
+            "opt_platform_instance_id",
+            OPT_PLATFORM_INSTANCE_ID_OID,
+            &itr,
+            end,
+            parsed_info->opt_platform_instance_id,
+            sizeof(parsed_info->opt_platform_instance_id)));
+
+        // Read configuration extension and nested component extensions.
+        OE_CHECK(_read_extension(
+            &itr,
+            end,
+            OPT_CONFIGURATION_OID,
+            SGX_SEQUENCE_TAG,
+            &config_itr,
+            &config_length));
+        config_end = config_itr + config_length;
+
         _read_boolean_extension(
             "opt-dynamic-platform",
             OPT_DYNAMIC_PLATFORM_OID,
-            &itr,
-            end,
+            &config_itr,
+            config_end,
             &parsed_info->opt_dynamic_platform);
 
         _read_boolean_extension(
             "opt-cached-keys",
             OPT_CACHED_KEYS_OID,
-            &itr,
-            end,
+            &config_itr,
+            config_end,
             &parsed_info->opt_cached_keys);
+
+        _read_boolean_extension(
+            "opt_smt_enabled",
+            OPT_SMT_ENABLED_OID,
+            &config_itr,
+            config_end,
+            &parsed_info->opt_smt_enabled);
+
+        // Assert that all bytes of configuration extension have been read.
+        if (config_itr != config_end)
+            OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
         // Assert that the optional extensions have been read.
         if (itr != end)

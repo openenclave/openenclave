@@ -2,8 +2,10 @@
 // Licensed under the MIT License.
 
 enclave {
-   trusted {
-        public int setup_tls_server([in, string] char* port);
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
 
+    trusted {
+        public int set_up_tls_server([in, string] char* port, bool keep_server_up);
     };
 };

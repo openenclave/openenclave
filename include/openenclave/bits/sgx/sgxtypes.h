@@ -24,6 +24,7 @@ OE_EXTERNC_BEGIN
 #define SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
 #define SGX_FLAGS_PROVISION_KEY 0x0000000000000010ULL
 #define SGX_FLAGS_EINITTOKEN_KEY 0x0000000000000020ULL
+#define SGX_FLAGS_KSS 0x0000000000000080ULL
 
 /* Legacy XFRM which includes basic feature bits required by SGX i.e. X87
  * (bit 0) and SSE state (bit 1)
@@ -133,10 +134,17 @@ OE_CHECK_SIZE(sizeof(sgx_attributes_t), 16);
 #define SGX_SIGSTRUCT_MISCMASK 0xffffffff
 
 /* sgx_sigstruct_t.flags */
+/* Mask all bits except bit 2 for MODE64BIT */
 #define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0XfffffffffffffffbULL
 
 /* sgx_sigstruct_t.xfrm */
-#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0x0000000000000000ULL
+/* Mask all bits except for OS-controlled AVX enablement bits:
+ *  - bit 2: AVX enable
+ *  - bit 5: opmask for AVX-512
+ *  - bit 6: XMM_hi256 for AVX-512 enable
+ *  - bit 7: Hi16_ZMM for AVX-512 enable
+ */
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0Xffffffffffffff1bULL
 
 /* 1808 bytes */
 OE_PACK_BEGIN
@@ -185,7 +193,10 @@ typedef struct _sgx_sigstruct
     uint32_t miscmask;
 
     /* (908) Reserved. Must be 0. */
-    uint8_t reserved2[20];
+    uint8_t reserved2[4];
+
+    /* (912) ISV assigned Product Family Id, must be 0 for SGX1 devices*/
+    uint8_t isvfamilyid[16];
 
     /* (928) Enclave Attributes that must be set */
     sgx_attributes_t attributes;
@@ -197,7 +208,10 @@ typedef struct _sgx_sigstruct
     uint8_t enclavehash[OE_SHA256_SIZE];
 
     /* (992) Must be 0 */
-    uint8_t reserved3[32];
+    uint8_t reserved3[16];
+
+    /* (1008) ISV assigned extended Product ID, must be 0 for SGX1 devices */
+    uint8_t isvextprodid[16];
 
     /* (1024) ISV assigned Product ID */
     uint16_t isvprodid;
@@ -265,20 +279,22 @@ void __sgx_dump_sigstruct(const sgx_sigstruct_t* p);
 
 typedef struct _sgx_secs
 {
-    uint64_t size;          /* 0 */
-    uint64_t base;          /* 8 */
-    uint32_t ssaframesize;  /* 16 */
-    uint32_t misc_select;   /* 20 */
-    uint8_t reserved1[24];  /* 24 */
-    uint64_t flags;         /* 48 */
-    uint64_t xfrm;          /* 56 */
-    uint32_t mrenclave[8];  /* 64 */
-    uint8_t reserved2[32];  /* 96 */
-    uint32_t mrsigner[8];   /* 128 */
-    uint8_t reserved3[96];  /* 160 */
-    uint16_t isvvprodid;    /* 256 */
-    uint16_t isvsvn;        /* 258 */
-    uint8_t reserved[3836]; /* 260 */
+    uint64_t size;           /* 0 */
+    uint64_t base;           /* 8 */
+    uint32_t ssaframesize;   /* 16 */
+    uint32_t misc_select;    /* 20 */
+    uint8_t reserved1[24];   /* 24 */
+    uint64_t flags;          /* 48 */
+    uint64_t xfrm;           /* 56 */
+    uint32_t mrenclave[8];   /* 64 */
+    uint8_t reserved2[32];   /* 96 */
+    uint32_t mrsigner[8];    /* 128 */
+    uint8_t reserved3[32];   /* 160 */
+    uint8_t config_id[64];   /* 192 */
+    uint16_t isvvprodid;     /* 256 */
+    uint16_t isvsvn;         /* 258 */
+    uint16_t config_svn;     /* 260 */
+    uint8_t reserved4[3834]; /* 262 */
 } sgx_secs_t;
 
 OE_CHECK_SIZE(sizeof(sgx_secs_t), 4096);
@@ -572,7 +588,10 @@ typedef struct _sgx_report_body
     uint32_t miscselect;
 
     /* (20) Reserved */
-    uint8_t reserved1[28];
+    uint8_t reserved1[12];
+
+    /* (32) Enclave extended product ID */
+    uint8_t isvextprodid[16];
 
     /* (48) Enclave attributes */
     sgx_attributes_t attributes;
@@ -580,14 +599,17 @@ typedef struct _sgx_report_body
     /* (64) Enclave measurement */
     uint8_t mrenclave[OE_SHA256_SIZE];
 
-    /* (96) */
+    /* (96) Reserved */
     uint8_t reserved2[32];
 
     /* (128) The value of the enclave's SIGNER measurement */
     uint8_t mrsigner[OE_SHA256_SIZE];
 
-    /* (160) */
-    uint8_t reserved3[96];
+    /* (160) Reserved */
+    uint8_t reserved3[32];
+
+    /* (192) Enclave Configuration ID*/
+    uint8_t configid[64];
 
     /* (256) Enclave product ID */
     uint16_t isvprodid;
@@ -595,8 +617,14 @@ typedef struct _sgx_report_body
     /* (258) Enclave security version */
     uint16_t isvsvn;
 
-    /* (260) Reserved */
-    uint8_t reserved4[60];
+    /* (260) Enclave Configuration Security Version*/
+    uint16_t configsvn;
+
+    /* (262) Reserved */
+    uint8_t reserved4[42];
+
+    /* (304) Enclave family ID */
+    uint8_t isvfamilyid[16];
 
     /* (320) User report data */
     sgx_report_data_t report_data;
@@ -660,6 +688,27 @@ typedef struct _sgx_quote
 OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(sgx_quote_t), 436);
+
+/*
+**==============================================================================
+**
+** sgx_ql_attestation_algorithm_id_t
+**
+**==============================================================================
+*/
+// Enumerates the different attestation key algorithms
+// For the sign_type field in sgx_quote_t
+typedef enum
+{
+    SGX_QL_ALG_EPID = 0,       // EPID 2.0 - Anonymous: EPID unlinkable
+    SGX_QL_ALG_RESERVED_1 = 1, // Reserved: EPID linkable
+    SGX_QL_ALG_ECDSA_P256 = 2, // ECDSA-256-with-P-256 curve
+    SGX_QL_ALG_ECDSA_P384 = 3, // ECDSA-384-with-P-384 curve (not supported)
+    SGX_QL_ALG_MAX = 4
+} sgx_ql_attestation_algorithm_id_t;
+
+// The required "version" value in sgx_quote_t for ECDSA quotes
+#define SGX_QE3_QUOTE_VERSION 3
 
 // Size of actual data within the quote excluding authentication information.
 // This data is signed for quote verification.
@@ -1001,6 +1050,11 @@ typedef struct _sgx_key
     uint8_t buf[16];
 } sgx_key_t;
 
+/* Enclave MISCSELECT Flags Bit Masks, additional information to an SSA frame */
+/* If set, then the enclave page fault and general protection exception are
+ * reported*/
+#define SGX_MISC_FLAGS_PF_GP_EXIT_INFO 0x0000000000000001ULL
+
 /* Enclave Flags Bit Masks */
 /* If set, then the enclave is initialized */
 #define SGX_FLAGS_INITTED 0x0000000000000001ULL
@@ -1034,6 +1088,17 @@ typedef struct _sgx_key
 #define OE_SEALKEY_DEFAULT_FLAGSMASK (~SGX_FLAGS_NON_SECURITY_BITS)
 #define OE_SEALKEY_DEFAULT_MISCMASK (~SGX_MISC_NON_SECURITY_BITS)
 #define OE_SEALKEY_DEFAULT_XFRMMASK (0X0ULL)
+
+#define SGX_QL_MK_ERROR(x) (0x0000E000 | (x))
+
+// clang-format off
+/** Define quote3_error_t enumerations  used by OE attestation code. */
+typedef enum _quote3_error_t {
+    SGX_QL_SUCCESS = 0x0000,                                         ///< Success
+    SGX_QL_ERROR_UNEXPECTED = SGX_QL_MK_ERROR(0x0001),               ///< Unexpected error
+    SGX_QL_ERROR_MAX = SGX_QL_MK_ERROR(0x00FF),                      ///< Indicate max error to allow better translation.
+} quote3_error_t;
+// clang-format on
 
 OE_EXTERNC_END
 

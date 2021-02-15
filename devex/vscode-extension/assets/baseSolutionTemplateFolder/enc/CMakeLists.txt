@@ -14,6 +14,6 @@ add_custom_command(
 add_enclave(
   TARGET [[project-name]]_enclave
   UUID [[generated-uuid]]
-  SOURCES
+    SOURCES
     enc.c
     ${CMAKE_CURRENT_BINARY_DIR}/[[project-name]]_t.c)

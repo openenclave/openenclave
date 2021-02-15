@@ -24,7 +24,7 @@ Out of these 33 tests, 11 tests can be compiled and run properly and are listed
 in the test.supported file. The remaining 22 tests were moved to the
 test.unsupported file.
 
-All the tests in test.supported can be compiled and run proprely in debug 
+All the tests in test.supported can be compiled and run properly in debug 
 mode("-O2"). In release mode("-O3"), a couple of tests (Gtest-exc and Ltest-exc)
 were failing. Those tests were also failing in system dependent side when
 compiled with -O3. By adding GCC flag "fno-inline-function" with -O3 flag
@@ -72,4 +72,3 @@ SL.No | Tests_Name  | Compile? | Run? | Comments |
 run-coredump-unwind does not have support for execinfo.h which declares the functions backtrace, backtrace_symbols, backtrace_symbols_fd.
 Currently enc/CMakeLists.txt have  support  for the tests in tests.supported.
 To compile any of the test from test.unsupported you have to add the corresponding support libraries in the enc/CMakeLists.txt.
-

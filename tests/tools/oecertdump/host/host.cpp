@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
@@ -11,20 +12,17 @@
 #include <string.h>
 #include "oecertdump_u.h"
 
-#if defined(__linux__)
-#include <dlfcn.h>
-#include <openssl/bio.h>
-#include <openssl/pem.h>
-#include <openssl/x509.h>
-#endif
-
 #include "sgx_quote.h"
 
-#ifdef OE_LINK_SGX_DCAP_QL
-
-#define INPUT_PARAM_OPTION_OUT_FILE "--out"
 #define INPUT_PARAM_USAGE "--help"
-#define DEFAULT_OUTPUTFILE "oecertdump_out.log"
+#define INPUT_PARAM_OUT_FILE "--out"
+#define DEFAULT_OUT_FILE "oecertdump_out.log"
+#define INPUT_PARAM_OUT_TYPE "--type"
+#define INPUT_PARAM_OUT_TYPE_REPORT "report"
+#define INPUT_PARAM_OUT_TYPE_EC "ec"
+#define INPUT_PARAM_OUT_TYPE_RSA "rsa"
+#define DEFAULT_OUT_TYPE INPUT_PARAM_OUT_TYPE_REPORT
+#define INPUT_PARAM_VERBOSE "--verbose"
 
 // Structure to store input parameters
 //
@@ -32,11 +30,13 @@ typedef struct _input_params
 {
     const char* enclave_filename;
     const char* out_filename;
+    const char* out_type;
+    bool verbose;
 } input_params_t;
 
 static input_params_t _params;
 
-FILE* log_file = NULL;
+FILE* log_file = nullptr;
 
 // This is the identity validation callback. A TLS connecting party (client or
 // server) can verify the passed in "identity" information to decide whether to
@@ -78,53 +78,47 @@ done:
     return result;
 }
 
-void output_certificate(const uint8_t* data, size_t data_len)
-{
-#if defined(__linux__)
-    if (log_file)
-    {
-        fprintf(log_file, "\n");
-        X509* x509;
-        BIO* input = BIO_new_mem_buf(data, (int)data_len);
-        x509 = d2i_X509_bio(input, NULL);
-        if (x509)
-        {
-            X509_print_ex_fp(
-                log_file, x509, XN_FLAG_COMPAT, XN_FLAG_SEP_CPLUS_SPC);
-        }
-        BIO_free_all(input);
-        fprintf(log_file, "\n");
-    }
-#endif
-    OE_UNUSED(data);
-    OE_UNUSED(data_len);
-}
-
-void validate_certificate(uint8_t* cert, size_t cert_size)
+oe_result_t validate_certificate(uint8_t* certificate, size_t certificate_size)
 {
     oe_result_t result;
 
     result = oe_verify_attestation_certificate(
-        cert, cert_size, enclave_identity_verifier, NULL);
+        certificate, certificate_size, enclave_identity_verifier, nullptr);
 
     log("Certificate verification result: %s\n", oe_result_str(result));
+
+    return result;
 }
 
-static oe_result_t _gen_cert(oe_enclave_t* enclave)
+oe_result_t generate_certificate(oe_enclave_t* enclave, bool verbose)
 {
     oe_result_t result = OE_FAILURE;
     oe_result_t ecall_result;
-    unsigned char* cert = NULL;
-    size_t cert_size = 0;
+    unsigned char* certificate = nullptr;
+    size_t certificate_size = 0;
+    uint8_t* report = nullptr;
+    size_t report_size = 0;
 
-    log("========== Getting certificates\n");
+    if (strcmp(INPUT_PARAM_OUT_TYPE_EC, _params.out_type) == 0)
+    {
+        result = get_tls_cert_signed_with_ec_key(
+            enclave, &ecall_result, &certificate, &certificate_size);
+    }
+    else if (strcmp(INPUT_PARAM_OUT_TYPE_RSA, _params.out_type) == 0)
+    {
+        result = get_tls_cert_signed_with_rsa_key(
+            enclave, &ecall_result, &certificate, &certificate_size);
+    }
+    else
+    {
+        printf("Invalid out type - %s.\n", _params.out_type);
+        return OE_INVALID_PARAMETER;
+    }
 
-    // EC Key
-    result = get_tls_cert_signed_with_ec_key(
-        enclave, &ecall_result, &cert, &cert_size);
     if ((result != OE_OK) || (ecall_result != OE_OK))
     {
-        log("Failed to create EC certificate. Enclave: %s, Host: %s\n",
+        printf(
+            "Failed to create certificate. Enclave: %s, Host: %s\n",
             oe_result_str(ecall_result),
             oe_result_str(result));
 
@@ -132,46 +126,46 @@ static oe_result_t _gen_cert(oe_enclave_t* enclave)
     }
     else
     {
-        output_certificate(cert, cert_size);
-        validate_certificate(cert, cert_size);
-    }
-    if (cert)
-    {
-        free(cert);
-        cert = NULL;
-    }
-    cert_size = 0;
+        result = validate_certificate(certificate, certificate_size);
 
-    // RSA Key
-    result = get_tls_cert_signed_with_rsa_key(
-        enclave, &ecall_result, &cert, &cert_size);
-    if ((result != OE_OK) || (ecall_result != OE_OK))
-    {
-        log("Failed to create RSA certificate. Enclave: %s, Host: %s\n",
-            oe_result_str(ecall_result),
-            oe_result_str(result));
+        if (verbose)
+        {
+            printf("\n");
+            output_certificate(certificate, certificate_size);
 
-        goto exit;
-    }
-    else
-    {
-        output_certificate(cert, cert_size);
-        validate_certificate(cert, cert_size);
+            if (get_sgx_report_from_certificate(
+                    certificate, certificate_size, &report, &report_size) ==
+                OE_OK)
+            {
+                output_sgx_report(report, report_size);
+            }
+        }
     }
 
 exit:
-    // deallcate resources
-    if (cert)
-        free(cert);
+    if (certificate)
+        free(certificate);
+    if (report)
+        free(report);
 
     return result;
 }
 
 static void _display_help(const char* cmd)
 {
-    printf("Usage: %s ENCLAVE_PATH Options\n", cmd);
-    printf("\tOptions:\n");
-    printf("\t%s : output filename.\n", INPUT_PARAM_OPTION_OUT_FILE);
+    printf("Usage: %s ENCLAVE_PATH [Options]\n\n", cmd);
+    printf("Options:\n");
+    printf(
+        " %s <output-type>: %s (default), %s, or %s\n",
+        INPUT_PARAM_OUT_TYPE,
+        INPUT_PARAM_OUT_TYPE_REPORT,
+        INPUT_PARAM_OUT_TYPE_EC,
+        INPUT_PARAM_OUT_TYPE_RSA);
+    printf(
+        " %s <output-filename>: %s (default).\n",
+        INPUT_PARAM_OUT_FILE,
+        DEFAULT_OUT_FILE);
+    printf(" %s\n", INPUT_PARAM_VERBOSE);
 }
 
 static int _parse_args(int argc, const char* argv[])
@@ -188,7 +182,9 @@ static int _parse_args(int argc, const char* argv[])
     int i = 1; // current index
     // save
     _params.enclave_filename = argv[i++];
-    _params.out_filename = DEFAULT_OUTPUTFILE;
+    _params.out_filename = DEFAULT_OUT_FILE;
+    _params.out_type = DEFAULT_OUT_TYPE;
+    _params.verbose = false;
 
     // Verify enclave file is valid
     FILE* fp;
@@ -207,9 +203,9 @@ static int _parse_args(int argc, const char* argv[])
 
     while (i < argc)
     {
-        if (strcmp(INPUT_PARAM_OPTION_OUT_FILE, argv[i]) == 0)
+        if (strcmp(INPUT_PARAM_OUT_FILE, argv[i]) == 0)
         {
-            if (argc >= i + 1)
+            if (argc >= i + 2)
             {
                 _params.out_filename = argv[i + 1];
                 i += 2;
@@ -218,10 +214,31 @@ static int _parse_args(int argc, const char* argv[])
             {
                 printf(
                     "%s has invalid number of parameters.\n",
-                    INPUT_PARAM_OPTION_OUT_FILE);
+                    INPUT_PARAM_OUT_FILE);
                 _display_help(argv[0]);
                 return 1;
             }
+        }
+        else if (strcmp(INPUT_PARAM_OUT_TYPE, argv[i]) == 0)
+        {
+            if (argc >= i + 2)
+            {
+                _params.out_type = argv[i + 1];
+                i += 2;
+            }
+            else
+            {
+                printf(
+                    "%s has invalid number of parameters.\n",
+                    INPUT_PARAM_OUT_TYPE);
+                _display_help(argv[0]);
+                return 1;
+            }
+        }
+        else if (strcmp(INPUT_PARAM_VERBOSE, argv[i]) == 0)
+        {
+            _params.verbose = true;
+            i++;
         }
         else if (strcmp(INPUT_PARAM_USAGE, argv[i]) == 0)
         {
@@ -242,24 +259,31 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_FAILURE;
 
-    result = gen_report(enclave);
-    if (result != OE_OK)
-        return result;
-
-    result = _gen_cert(enclave);
+    if (strcmp(INPUT_PARAM_OUT_TYPE_REPORT, _params.out_type) == 0)
+    {
+        result = generate_sgx_report(enclave, _params.verbose);
+    }
+    else
+    {
+        result = generate_certificate(enclave, _params.verbose);
+    }
 
     return result;
 }
-
-#endif // OE_LINK_SGX_DCAP_QL
 
 int main(int argc, const char* argv[])
 {
     int ret = 0;
 
-#ifdef OE_LINK_SGX_DCAP_QL
+    if (!oe_has_sgx_quote_provider())
+    {
+        fprintf(
+            stderr, "FAILURE: DCAP libraries must be present for this test.\n");
+        return -1;
+    }
+
     oe_result_t result;
-    oe_enclave_t* enclave = NULL;
+    oe_enclave_t* enclave = nullptr;
 
     const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
@@ -276,7 +300,7 @@ int main(int argc, const char* argv[])
              _params.enclave_filename,
              OE_ENCLAVE_TYPE_AUTO,
              OE_ENCLAVE_FLAG_DEBUG,
-             NULL,
+             nullptr,
              0,
              &enclave)) != OE_OK)
     {
@@ -326,12 +350,5 @@ exit:
         fclose(log_file);
     }
 
-#else
-#pragma message( \
-    "OE_LINK_SGX_DCAP_QL is not set to ON.  This tool requires DCAP libraries.")
-    OE_UNUSED(argc);
-    OE_UNUSED(argv);
-    printf("oecertdump requires DCAP libraries.\n");
-#endif
     return ret;
 }

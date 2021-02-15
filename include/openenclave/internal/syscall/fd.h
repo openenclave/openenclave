@@ -8,6 +8,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/syscall/sys/epoll.h>
 #include <openenclave/internal/syscall/sys/socket.h>
+#include <openenclave/internal/syscall/sys/stat.h>
 #include <openenclave/internal/syscall/sys/uio.h>
 #include <openenclave/internal/syscall/types.h>
 
@@ -35,6 +36,8 @@ typedef struct _oe_fd_ops
 
     ssize_t (*writev)(oe_fd_t* desc, const struct oe_iovec* iov, int iovcnt);
 
+    int (*flock)(oe_fd_t* desc, int operation);
+
     int (*dup)(oe_fd_t* desc, oe_fd_t** new_fd);
 
     int (*ioctl)(oe_fd_t* desc, unsigned long request, uint64_t arg);
@@ -60,6 +63,13 @@ typedef struct _oe_file_ops
         *pwrite)(oe_fd_t* desc, const void* buf, size_t count, oe_off_t offset);
 
     int (*getdents64)(oe_fd_t* file, struct oe_dirent* dirp, uint32_t count);
+
+    int (*fstat)(oe_fd_t* file, struct oe_stat_t* buf);
+
+    int (*ftruncate)(oe_fd_t* file, oe_off_t length);
+
+    int (*fsync)(oe_fd_t* file);
+    int (*fdatasync)(oe_fd_t* file);
 } oe_file_ops_t;
 
 /* Socket operations .*/
@@ -102,7 +112,7 @@ typedef struct _oe_socket_ops
         void* buf,
         size_t len,
         int flags,
-        const struct oe_sockaddr* src_addr,
+        struct oe_sockaddr* src_addr,
         oe_socklen_t* addrlen);
 
     ssize_t (*sendmsg)(oe_fd_t* sock, const struct oe_msghdr* msg, int flags);

@@ -86,10 +86,10 @@ void set_globals(
 OE_SET_ENCLAVE_SGX(
     1234, /* ProductID */
     5678, /* SecurityVersion */
-    true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    64,   /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    128,  /* NumHeapPages */
+    64,   /* NumStackPages */
+    4);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* 62f73b00-bdfe-4763-a06a-dc561a3a34d8 */           \
@@ -103,6 +103,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     1 * 1024 * 1024,
     12 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "Initializers test")

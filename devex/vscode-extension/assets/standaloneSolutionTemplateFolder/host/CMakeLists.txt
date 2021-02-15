@@ -10,10 +10,10 @@ add_custom_command(
   COMMAND openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/[[project-name]].edl)
 
 add_executable([[project-name]]
-  host.c
-  main.c
-  ${CMAKE_CURRENT_BINARY_DIR}/[[project-name]]_u.c)
+    host.c
+    main.c
+    ${CMAKE_CURRENT_BINARY_DIR}/[[project-name]]_u.c)
 
 target_include_directories([[project-name]] PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries([[project-name]] openenclave::oehostapp)
+target_link_libraries([[project-name]] openenclave::oehost)

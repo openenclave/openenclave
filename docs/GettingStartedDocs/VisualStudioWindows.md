@@ -10,6 +10,7 @@ Studio Code, see the
 You will need the following:
 
 - A development machine with support for SGX1 or SGX1 with Flexible Launch Control (FLC) (see [instructions for determining the SGX support level](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/SGXSupportLevel.md) if needed).
+  - If you would like to install the Open Enclave Host-Verify SDK and build evidence verification applications without enclaves, then this is not necessary. For more information about the Open Enclave Host-Verify SDK, see the [installation instructions](https://github.com/microsoft/openenclave/blob/master/docs/GettingStartedDocs/install_host_verify_Windows.md).
 - Visual Studio 2019, v16.5 or later
   (Community edition, or any other edition) with the "Desktop development
   with C++" workload

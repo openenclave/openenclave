@@ -10,20 +10,18 @@ set(CMAKE_C_COMPILER_ID GNU)
 # Allow the developer to target a runtime environment other than that of the
 # build host.
 if (OE_PROGRAM_PATH AND OE_SYSROOT)
-    set(CMAKE_PROGRAM_PATH ${OE_PROGRAM_PATH})
-    set(CMAKE_SYSROOT ${OE_SYSROOT})
-    set(CMAKE_FIND_ROOT_PATH ${OE_SYSROOT})
-    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
-    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-    set(ENV{PKG_CONFIG_SYSROOT_DIR} ${OE_SYSROOT})
+  set(CMAKE_PROGRAM_PATH ${OE_PROGRAM_PATH})
+  set(CMAKE_SYSROOT ${OE_SYSROOT})
+  set(CMAKE_FIND_ROOT_PATH ${OE_SYSROOT})
+  set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+  set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+  set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+  set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+  set(ENV{PKG_CONFIG_SYSROOT_DIR} ${OE_SYSROOT})
 endif ()
 
 # When using GCC to compile assembly files.
-set(OE_TZ_TA_S_FLAGS
-    -DASM=1
-    -pipe)
+set(OE_TZ_TA_S_FLAGS -DASM=1 -pipe)
 
 # When using GCC to compile C/CXX files.
 set(OE_TZ_TA_C_FLAGS
@@ -43,11 +41,12 @@ set(OE_TZ_TA_C_FLAGS
     -gdwarf)
 
 # Path to required bits of the TA Dev Kit.
-set(OE_TZ_TA_DEV_KIT_CONF                   ${OE_TA_DEV_KIT_DIR}/host_include/conf.h)
+set(OE_TZ_TA_DEV_KIT_CONF ${OE_TA_DEV_KIT_DIR}/host_include/conf.h)
 set(OE_TZ_TA_DEV_KIT_LINKER_SCRIPT_TEMPLATE ${OE_TA_DEV_KIT_DIR}/src/ta.ld.S)
-set(OE_TZ_TA_DEV_KIT_HEADER_SOURCE          ${OE_TA_DEV_KIT_DIR}/src/user_ta_header.c)
-set(OE_TZ_TA_DEV_KIT_DEFAULT_SIGNING_KEY    ${OE_TA_DEV_KIT_DIR}/keys/default_ta.pem)
-set(OE_TZ_TA_DEV_KIT_SIGN_TOOL              ${OE_TA_DEV_KIT_DIR}/scripts/sign.py)
+set(OE_TZ_TA_DEV_KIT_HEADER_SOURCE ${OE_TA_DEV_KIT_DIR}/src/user_ta_header.c)
+set(OE_TZ_TA_DEV_KIT_DEFAULT_SIGNING_KEY
+    ${OE_TA_DEV_KIT_DIR}/keys/default_ta.pem)
+set(OE_TZ_TA_DEV_KIT_SIGN_TOOL ${OE_TA_DEV_KIT_DIR}/scripts/sign.py)
 
 # Path to OP-TEE OS.
 set(OE_TZ_OPTEE_SRC ${PROJECT_SOURCE_DIR}/3rdparty/optee/optee_os)

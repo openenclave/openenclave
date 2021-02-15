@@ -4,12 +4,12 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/switchless.h>
 #include <openenclave/internal/utils.h>
 #include "../calls.h"
 #include "../hostthread.h"
-#include "../ocalls.h"
 #include "enclave.h"
 #include "platform_u.h"
 
@@ -22,6 +22,58 @@
  * Number of iterations an ecall worker thread would spin before going to sleep
  */
 #define OE_ENCLAVE_WORKER_SPIN_COUNT_THRESHOLD (4096U)
+
+/**
+ * Declare the prototypes of the following functions to avoid missing-prototypes
+ * warning.
+ */
+OE_UNUSED_FUNC oe_result_t _oe_sgx_init_context_switchless_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    oe_host_worker_context_t* host_worker_contexts,
+    uint64_t num_host_workers);
+OE_UNUSED_FUNC oe_result_t _oe_sgx_switchless_enclave_worker_thread_ecall(
+    oe_enclave_t* enclave,
+    oe_enclave_worker_context_t* context);
+
+/**
+ * Make the following ECALLs weak to support the system EDL opt-in.
+ * When the user does not opt into (import) the EDL, the linker will pick
+ * the following default implementations. If the user opts into the EDL,
+ * the implementions (which are also weak) in the oeedger8r-generated code will
+ * be used. This behavior is guaranteed by the linker; i.e., the linker will
+ * pick the symbols defined in the object before those in the library.
+ */
+oe_result_t _oe_sgx_init_context_switchless_ecall(
+    oe_enclave_t* enclave,
+    oe_result_t* _retval,
+    oe_host_worker_context_t* host_worker_contexts,
+    uint64_t num_host_workers)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(host_worker_contexts);
+    OE_UNUSED(num_host_workers);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_sgx_init_context_switchless_ecall,
+    oe_sgx_init_context_switchless_ecall);
+
+oe_result_t _oe_sgx_switchless_enclave_worker_thread_ecall(
+    oe_enclave_t* enclave,
+    oe_enclave_worker_context_t* context)
+{
+    OE_UNUSED(enclave);
+    OE_UNUSED(context);
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(
+    _oe_sgx_switchless_enclave_worker_thread_ecall,
+    oe_sgx_switchless_enclave_worker_thread_ecall);
 
 /*
 ** The thread function that handles switchless ocalls
@@ -41,7 +93,7 @@ static void* _switchless_ocall_worker(void* arg)
             // will be scheduled in another available work thread and get
             // handled immediately.
             oe_handle_call_host_function(
-                (uint64_t)local_call_arg, context->enclave);
+                (uint64_t)local_call_arg, context->enc);
 
             // After handling the switchless call, mark this worker thread
             // as free by clearing the slot.
@@ -85,8 +137,8 @@ static void* _switchless_ecall_worker(void* arg)
     oe_enclave_worker_context_t* context = (oe_enclave_worker_context_t*)arg;
 
     // Enter enclave to process ecall messages.
-    if (oe_sgx_switchless_enclave_worker_thread_ecall(
-            context->enclave, context) != OE_OK)
+    if (oe_sgx_switchless_enclave_worker_thread_ecall(context->enc, context) !=
+        OE_OK)
     {
         OE_TRACE_ERROR("Switchless enclave worker thread failed\n");
     }
@@ -197,7 +249,7 @@ oe_result_t oe_start_switchless_manager(
     for (size_t i = 0; i < num_host_workers; i++)
     {
         OE_TRACE_INFO("Creating switchless host worker thread %d\n", (int)i);
-        manager->host_worker_contexts[i].enclave = enclave;
+        manager->host_worker_contexts[i].enc = enclave;
         if (oe_thread_create(
                 &manager->host_worker_threads[i],
                 _switchless_ocall_worker,
@@ -206,25 +258,6 @@ oe_result_t oe_start_switchless_manager(
             OE_RAISE(OE_THREAD_CREATE_ERROR);
         }
     }
-
-    // Start the enclave worker threads, and assign each one a private context.
-    for (size_t i = 0; i < num_enclave_workers; i++)
-    {
-        OE_TRACE_INFO("Creating switchless enclave worker thread %d\n", (int)i);
-        manager->enclave_worker_contexts[i].enclave = enclave;
-        manager->enclave_worker_contexts[i].spin_count_threshold =
-            OE_ENCLAVE_WORKER_SPIN_COUNT_THRESHOLD;
-        if (oe_thread_create(
-                &manager->enclave_worker_threads[i],
-                _switchless_ecall_worker,
-                &manager->enclave_worker_contexts[i]) != 0)
-        {
-            OE_RAISE(OE_THREAD_CREATE_ERROR);
-        }
-    }
-
-    // Each enclave has at most one switchless manager.
-    enclave->switchless_manager = manager;
 
     // Inform the enclave about the switchless manager through an ECALL
     if (num_host_workers > 0)
@@ -237,9 +270,46 @@ oe_result_t oe_start_switchless_manager(
         OE_CHECK(result_out);
     }
 
+    // Start the enclave worker threads, and assign each one a private context.
+    // ecall worker threads are initialized after the regular ecall above to
+    // oe_sgx_init_context_switchless_ecall is complete.
+    for (size_t i = 0; i < num_enclave_workers; i++)
+    {
+        OE_TRACE_INFO("Creating switchless enclave worker thread %d\n", (int)i);
+        manager->enclave_worker_contexts[i].enc = enclave;
+        manager->enclave_worker_contexts[i].spin_count_threshold =
+            OE_ENCLAVE_WORKER_SPIN_COUNT_THRESHOLD;
+        if (oe_thread_create(
+                &manager->enclave_worker_threads[i],
+                _switchless_ecall_worker,
+                &manager->enclave_worker_contexts[i]) != 0)
+        {
+            OE_RAISE(OE_THREAD_CREATE_ERROR);
+        }
+
+        // Wait until the enclave worker thread has started.
+        // If so, spin_count and/or total_spin_count will be non zero.
+        // This ensures that each ecall worker thread has a dedicated tcs.
+        volatile oe_enclave_worker_context_t* ctx =
+            &manager->enclave_worker_contexts[i];
+        while (!ctx->spin_count && !ctx->total_spin_count)
+        {
+            oe_yield_cpu();
+        }
+    }
+
+    // Each enclave has at most one switchless manager.
+    enclave->switchless_manager = manager;
+
     result = OE_OK;
 
 done:
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING(
+            "Switchless call is not supported. To enable, please add \n\n"
+            "from \"openenclave/edl/sgx/switchless.edl\" import *;\n\n"
+            "in the edl file.\n");
+
     if (result != OE_OK)
     {
         oe_stop_switchless_manager(enclave);
@@ -280,9 +350,17 @@ void oe_sgx_wake_switchless_worker_ocall(oe_host_worker_context_t* context)
     oe_host_worker_wake(context);
 }
 
-static oe_result_t oe_switchless_call_enclave_function_by_table_id(
+/*
+**==============================================================================
+**
+** _switchless_call_enclave_function_impl()
+**
+** Switchlessly call the enclave function specified by the given function-id.
+**
+**==============================================================================
+*/
+static oe_result_t _switchless_call_enclave_function_impl(
     oe_enclave_t* enclave,
-    uint64_t table_id,
     uint64_t function_id,
     const void* input_buffer,
     size_t input_buffer_size,
@@ -294,7 +372,7 @@ static oe_result_t oe_switchless_call_enclave_function_by_table_id(
     bool switchless_call_posted = false;
     oe_call_enclave_function_args_t args;
     oe_switchless_call_manager_t* manager = enclave->switchless_manager;
-    oe_enclave_worker_context_t* contexts = manager->enclave_worker_contexts;
+    oe_enclave_worker_context_t* contexts = NULL;
     size_t tries = 0;
 
     /* Reject invalid parameters */
@@ -303,7 +381,6 @@ static oe_result_t oe_switchless_call_enclave_function_by_table_id(
 
     /* Initialize the call_enclave_args structure */
     {
-        args.table_id = table_id;
         args.function_id = function_id;
         args.input_buffer = input_buffer;
         args.input_buffer_size = input_buffer_size;
@@ -313,65 +390,75 @@ static oe_result_t oe_switchless_call_enclave_function_by_table_id(
         args.result = OE_UNEXPECTED;
     }
 
-    // Schedule the switchless call.
-    OE_ATOMIC_MEMORY_BARRIER_RELEASE();
-    args.result = __OE_RESULT_MAX; // Means the call hasn't been processed.
-
-    // Cycle through the worker contexts until we find a free worker.
-    tries = manager->num_enclave_workers;
-    while (tries--)
+    /* Do the switchless ECALL only if the manager is initialized. */
+    if (manager)
     {
-        // Check if the worker's slot is free.
-        if (contexts[tries].call_arg == NULL)
+        contexts = manager->enclave_worker_contexts;
+        // Schedule the switchless call.
+        OE_ATOMIC_MEMORY_BARRIER_RELEASE();
+        args.result = __OE_RESULT_MAX; // Means the call hasn't been processed.
+
+        // Cycle through the worker contexts until we find a free worker.
+        tries = manager->num_enclave_workers;
+        while (tries--)
         {
-            // Try to atomically grab the slot by placing args in the slot.
-            // If the atomic operation was successful, then the worker thread
-            // will execute this switchless ecall. If the atomic operation
-            // failed, this means that the slot was grabbed by another
-            // switchless ocall and therefore, we must scan for another worker
-            // thread with a free slot.
-            if (oe_atomic_compare_and_swap_ptr(
-                    (void* volatile*)&contexts[tries].call_arg, NULL, &args))
+            // Check if the worker's slot is free.
+            if (contexts[tries].call_arg == NULL)
             {
-                // The worker thread has been marked to execute this switchless
-                // call. Determine if it needs to be woken up or not.
-                //
-                // If event is 0, it means that it has gone to sleep. Wake it by
-                // making an ocall (oe_sgx_wake_switchless_worker_ocall).
-                // Note: it is important to use an atomic cas operation to set
-                // the value to 1 before making the ocall. Setting the value to
-                // 1 prevents the host worker from simulataneously going to
-                // sleep. If instead, just a compare operation is used to
-                // determine if the host thread is sleeping or not, the host
-                // thread could go to sleep after the enclave has determined
-                // that the host is not sleeping, causing a deadlock.
-                //
-                // If event is 1, that indicates a pending wake notification.
-                uint32_t oldval = 0;
-                uint32_t newval = 1;
-                // Weak operation could sporadically fail.
-                // We need a strong operation.
-                if (oe_atomic_compare_and_swap_32(
-                        (uint32_t*)&contexts[tries].event, oldval, newval))
+                // Try to atomically grab the slot by placing args in the slot.
+                // If the atomic operation was successful, then the worker
+                // thread will execute this switchless ecall. If the atomic
+                // operation failed, this means that the slot was grabbed by
+                // another switchless ocall and therefore, we must scan for
+                // another worker thread with a free slot.
+                if (oe_atomic_compare_and_swap_ptr(
+                        (void* volatile*)&contexts[tries].call_arg,
+                        NULL,
+                        &args))
                 {
-                    // The pevious value of the event was 0 which means that the
-                    // worker was previously sleeping.
-                    // Wake it.
-                    oe_enclave_worker_wake(&contexts[tries]);
-                }
+                    // The worker thread has been marked to execute this
+                    // switchless call. Determine if it needs to be woken up or
+                    // not.
+                    //
+                    // If event is 0, it means that it has gone to sleep. Wake
+                    // it by making an ocall
+                    // (oe_sgx_wake_switchless_worker_ocall). Note: it is
+                    // important to use an atomic cas operation to set the value
+                    // to 1 before making the ocall. Setting the value to 1
+                    // prevents the host worker from simulataneously going to
+                    // sleep. If instead, just a compare operation is used to
+                    // determine if the host thread is sleeping or not, the host
+                    // thread could go to sleep after the enclave has determined
+                    // that the host is not sleeping, causing a deadlock.
+                    //
+                    // If event is 1, that indicates a pending wake
+                    // notification.
+                    uint32_t oldval = 0;
+                    uint32_t newval = 1;
+                    // Weak operation could sporadically fail.
+                    // We need a strong operation.
+                    if (oe_atomic_compare_and_swap_32(
+                            (uint32_t*)&contexts[tries].event, oldval, newval))
+                    {
+                        // The pevious value of the event was 0 which means that
+                        // the worker was previously sleeping. Wake it.
+                        oe_enclave_worker_wake(&contexts[tries]);
+                    }
 
-                switchless_call_posted = true;
-                // Wait for the  call to complete.
-                while (true)
-                {
-                    if (oe_atomic_load((uint64_t*)&contexts[tries].call_arg) !=
-                        (uint64_t)&args)
-                        break;
+                    switchless_call_posted = true;
+                    // Wait for the  call to complete.
+                    while (true)
+                    {
+                        if (oe_atomic_load(
+                                (uint64_t*)&contexts[tries].call_arg) !=
+                            (uint64_t)&args)
+                            break;
 
-                    /* Yield CPU */
-                    oe_yield_cpu();
+                        /* Yield CPU */
+                        oe_yield_cpu();
+                    }
+                    break;
                 }
-                break;
             }
         }
     }
@@ -405,20 +492,27 @@ done:
 */
 oe_result_t oe_switchless_call_enclave_function(
     oe_enclave_t* enclave,
-    uint32_t function_id,
+    uint64_t* global_id,
+    const char* name,
     const void* input_buffer,
     size_t input_buffer_size,
     void* output_buffer,
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    return oe_switchless_call_enclave_function_by_table_id(
+    oe_result_t result = OE_UNEXPECTED;
+    uint64_t function_id = OE_UINT64_MAX;
+
+    OE_CHECK(oe_get_ecall_ids(enclave, name, global_id, &function_id));
+
+    result = _switchless_call_enclave_function_impl(
         enclave,
-        OE_UINT64_MAX,
         function_id,
         input_buffer,
         input_buffer_size,
         output_buffer,
         output_buffer_size,
         output_bytes_written);
+done:
+    return result;
 }

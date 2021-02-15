@@ -71,6 +71,16 @@ class oe_fd_file_system
         return oe_pwrite(file, buf, count, offset);
     }
 
+    int fsync(file_handle file)
+    {
+        return oe_fsync(file);
+    }
+
+    int fdatasync(file_handle file)
+    {
+        return oe_fdatasync(file);
+    }
+
     int close(file_handle file)
     {
         return oe_close(file);
@@ -126,9 +136,19 @@ class oe_fd_file_system
         return oe_stat(pathname, buf);
     }
 
+    int fstat(file_handle file, struct oe_stat_t* buf)
+    {
+        return oe_fstat(file, buf);
+    }
+
     int truncate(const char* path, off_t length)
     {
         return oe_truncate(path, length);
+    }
+
+    int ftruncate(file_handle file, off_t length)
+    {
+        return oe_ftruncate(file, length);
     }
 
   private:
@@ -216,6 +236,16 @@ class fd_file_system
         return ::pwrite(file, buf, count, offset);
     }
 
+    int fsync(file_handle file)
+    {
+        return ::fsync(file);
+    }
+
+    int fdatasync(file_handle file)
+    {
+        return ::fdatasync(file);
+    }
+
     int close(file_handle file)
     {
         return ::close(file);
@@ -271,9 +301,19 @@ class fd_file_system
         return ::stat(pathname, (struct stat*)buf);
     }
 
+    int fstat(file_handle file, struct oe_stat_t* buf)
+    {
+        return ::fstat(file, (struct stat*)buf);
+    }
+
     int truncate(const char* path, off_t length)
     {
         return ::truncate(path, length);
+    }
+
+    int ftruncate(file_handle file, off_t length)
+    {
+        return ::ftruncate(file, length);
     }
 
   private:
@@ -479,6 +519,16 @@ class stream_file_system
         return ret;
     }
 
+    int fsync(file_handle file)
+    {
+        return fflush(file);
+    }
+
+    int fdatasync(file_handle file)
+    {
+        return fflush(file);
+    }
+
     int close(file_handle file)
     {
         return ::fclose(file);
@@ -534,9 +584,19 @@ class stream_file_system
         return ::stat(pathname, buf);
     }
 
+    int fstat(file_handle file, struct stat* buf)
+    {
+        return ::fstat(fileno(file), buf);
+    }
+
     int truncate(const char* path, off_t length)
     {
         return ::truncate(path, length);
+    }
+
+    int ftruncate(file_handle file, off_t length)
+    {
+        return ::ftruncate(fileno(file), length);
     }
 
   private:

@@ -355,6 +355,23 @@ typedef enum _oe_result
      */
     OE_QUOTE_HASH_MISMATCH,
 
+    /**
+     * The signing key provided cannot be used for SGX signing. This is
+     * usually because the key is not an 3084-bit RSA key with exponent 3.
+     */
+    OE_INVALID_SGX_SIGNING_KEY,
+
+    /**
+     * The binary image being loaded into the enclave could not be parsed.
+     */
+    OE_INVALID_IMAGE,
+
+    /**
+     * Failed to load the quote library used for quote generation and
+     * attestation.
+     */
+    OE_QUOTE_LIBRARY_LOAD_ERROR,
+
     __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
 /**< typedef enum _oe_result oe_result_t*/

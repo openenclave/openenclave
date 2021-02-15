@@ -11,6 +11,7 @@
 #include <openenclave/internal/syscall/raise.h>
 #include <openenclave/internal/syscall/sys/socket.h>
 #include <openenclave/internal/syscall/netdb.h>
+#include <openenclave/internal/syscall/netinet/in.h>
 #include <openenclave/internal/syscall/resolver.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/calls.h>
@@ -23,6 +24,14 @@
 #include "syscall_t.h"
 
 #define RESOLV_MAGIC 0x536f636b
+
+/*
+ * The definition of AF_INET6 on Windows (i.e., 23) is different from that of on
+ * Linux (i.e., 10). Given that the internal socket.h conforms to the
+ * implementation of Linux, we explicitly define the Windows-specific value
+ * here for being compatible with a Windows host.
+ */
+#define OE_AF_INET6_WIN 23
 
 // The host resolver is not actually a device in the file descriptor sense.
 typedef struct _resolver
@@ -116,27 +125,25 @@ static int _hostresolver_getaddrinfo(
     for (;;)
     {
         int retval = 0;
-        size_t canonnamelen = 0;
+        size_t canonnamelen_in = 0;
+        size_t canonnamelen_out = 0;
+        struct oe_addrinfo p_out;
 
-        if (!(p = oe_calloc(1, sizeof(struct oe_addrinfo))))
-        {
-            ret = OE_EAI_MEMORY;
-            goto done;
-        }
+        memset(&p_out, 0, sizeof(struct oe_addrinfo));
 
         /* Determine required size ai_addr and ai_canonname buffers. */
         if (oe_syscall_getaddrinfo_read_ocall(
                 &retval,
                 handle,
-                &p->ai_flags,
-                &p->ai_family,
-                &p->ai_socktype,
-                &p->ai_protocol,
-                p->ai_addrlen,
-                &p->ai_addrlen,
+                &p_out.ai_flags,
+                &p_out.ai_family,
+                &p_out.ai_socktype,
+                &p_out.ai_protocol,
+                p_out.ai_addrlen,
+                &p_out.ai_addrlen,
                 NULL,
-                canonnamelen,
-                &canonnamelen,
+                canonnamelen_in,
+                &canonnamelen_out,
                 NULL) != OE_OK)
         {
             ret = OE_EAI_SYSTEM;
@@ -154,17 +161,60 @@ static int _hostresolver_getaddrinfo(
             OE_RAISE_ERRNO(oe_errno);
         }
 
-        if (p->ai_addrlen && !(p->ai_addr = oe_calloc(1, p->ai_addrlen)))
+        /*
+         * Guard the special case that a host sets an arbitrarily large value.
+         * Based on the implementation of MUSL, the ai_addrlen can only be
+         * sizeof(struct sockaddr_in) when the family is AF_INET or
+         * sizeof(struct sockaddr_in6) when the family is AF_INET6.
+         * When the family is AF_UNSPEC, OE checks the ai_addrlen against
+         * sizeof(struct sockaddr_in6) as it should cover AF_INET and
+         * AF_INET6 cases. Besides, OE errors out other family types.
+         */
+        switch (p_out.ai_family)
+        {
+            case OE_AF_INET:
+                if (p_out.ai_addrlen != sizeof(struct oe_sockaddr))
+                {
+                    ret = OE_EAI_FAIL;
+                    goto done;
+                }
+                break;
+            case OE_AF_INET6:
+            case OE_AF_INET6_WIN:
+            case OE_AF_UNSPEC:
+                if (p_out.ai_addrlen != sizeof(struct oe_sockaddr_in6))
+                {
+                    ret = OE_EAI_FAIL;
+                    goto done;
+                }
+                break;
+            default:
+                ret = OE_EAI_FAIL;
+                goto done;
+        }
+
+        if (!(p = oe_calloc(1, sizeof(struct oe_addrinfo))))
         {
             ret = OE_EAI_MEMORY;
             goto done;
         }
 
-        if (canonnamelen && !(p->ai_canonname = oe_calloc(1, canonnamelen)))
+        if (p_out.ai_addrlen && !(p->ai_addr = oe_calloc(1, p_out.ai_addrlen)))
         {
             ret = OE_EAI_MEMORY;
             goto done;
         }
+
+        if (canonnamelen_out &&
+            !(p->ai_canonname = oe_calloc(1, canonnamelen_out)))
+        {
+            ret = OE_EAI_MEMORY;
+            goto done;
+        }
+
+        /* Set canonnamelen_in to the expected length of p->ai_cannonname
+         * returned by the host. */
+        canonnamelen_in = canonnamelen_out;
 
         if (oe_syscall_getaddrinfo_read_ocall(
                 &retval,
@@ -173,15 +223,32 @@ static int _hostresolver_getaddrinfo(
                 &p->ai_family,
                 &p->ai_socktype,
                 &p->ai_protocol,
-                p->ai_addrlen,
+                p_out.ai_addrlen,
                 &p->ai_addrlen,
                 p->ai_addr,
-                canonnamelen,
-                &canonnamelen,
+                canonnamelen_in,
+                &canonnamelen_out,
                 p->ai_canonname) != OE_OK)
         {
             ret = OE_EAI_SYSTEM;
             OE_RAISE_ERRNO(OE_EINVAL);
+        }
+
+        /*
+         * Lock down the out parameters, which are expected
+         * to be the same as the first invocation. Also,
+         * p->ai_cannonname is expected to be NULL-terminated.
+         */
+        if ((p->ai_flags != p_out.ai_flags) ||
+            (p->ai_family != p_out.ai_family) ||
+            (p->ai_socktype != p_out.ai_socktype) ||
+            (p->ai_protocol != p_out.ai_protocol) ||
+            (p->ai_addrlen != p_out.ai_addrlen) ||
+            (canonnamelen_out != canonnamelen_in) ||
+            (canonnamelen_out && p->ai_canonname[canonnamelen_out - 1] != '\0'))
+        {
+            ret = OE_EAI_FAIL;
+            goto done;
         }
 
         /* Append to the list. */

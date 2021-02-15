@@ -7,11 +7,11 @@
 # by cmake on windows, transforms them to their clang equivalents and
 # then passes them along to clang.
 
-# It is similar to clang-cl. However clang-cl cannot be used for 
+# It is similar to clang-cl. However clang-cl cannot be used for
 # cross-compiling since it also does not understand options like -fPIC,
 # -fvisibility=hidden etc.
 
-# clangw must be called with a single string argument that contains all 
+# clangw must be called with a single string argument that contains all
 # the arguments for clang.
 # Example:
 #    clangw "-O2 enclave\core\calls.c"
@@ -21,7 +21,7 @@
 function call_clang {
     lvi_mitigation="NONE"
     args=()
- 
+
     # Transform the arguments from a mix of MSVC and clang syntax
     # to pure clang syntax
     for a; do
@@ -59,6 +59,7 @@ function call_clang {
         [ "$a" == "/Zi" ]        && args+="-g "         && continue
         [ "$a" == "/ZI" ]        && args+="-g "         && continue
         [ "$a" == "/O2" ]        && args+="-O2 "        && continue
+        [ "$a" == "-std:c11" ]   && args+="-std=gnu11 " && continue
         [ "$a" == "-std:c++11" ] && args+="-std=c++11 " && continue
         [ "$a" == "-std:c++14" ] && args+="-std=c++14 " && continue
         [ "$a" == "-std:c++17" ] && args+="-std=c++17 " && continue
@@ -88,6 +89,7 @@ function call_clang {
 
     # Call clang with the transformed arguments arguments
     if [ $linking ]; then
+        # shellcheck disable=SC2230
         clang -target x86_64-pc-linux ${args[@]} -o "$output" -fuse-ld="`which ld.lld`"
     else
         # Check if the LVI mitigation is enabled.

@@ -13,12 +13,11 @@
 ## Software prerequisites
 - [Microsoft Visual Studio Build Tools 2019](https://aka.ms/vs/15/release/vs_buildtools.exe)
 - [Git for Windows 64-bit](https://git-scm.com/download/win)
-- [Node.js 10.x](https://nodejs.org/en/download/)
-- [esy](https://esy.sh/)
-- [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe)
+- [Clang/LLVM for Windows 64-bit](https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe)
 - [Python 3](https://www.python.org/downloads/windows/)
 - [ShellCheck](https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip)
 - [OpenSSL 1.1.1](https://slproweb.com/products/Win32OpenSSL.html)
+- [cmake format](https://github.com/cheshirekow/cmake_format)
 
 ## Prerequisites specific to SGX support on your system
 
@@ -48,7 +47,7 @@ builds. It is also useful to have the `Git\mingw64\bin` folder added to PATH.
 
 ## Clang
 
-Install Clang 7.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
+Install Clang 8.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
 to PATH. Open Enclave SDK uses clang to build the enclave binaries.
 
 Open up a command prompt and ensure that clang is added to PATH.
@@ -62,32 +61,12 @@ C:\> where ld.lld
 C:\Program Files\LLVM\bin\ld.lld.exe
 ```
 
-## OCaml via esy with Node.js
-
-Install [Node.js 10.x](https://nodejs.org/en/download/) from the "Previous
-Releases" page. Ensure `npm` is in your `PATH` (should be done by the MSI
-installer).
-
-Then install [esy](https://esy.sh/) via `npm`.
-
-```cmd
-npm install -g esy@0.5.8
-```
-
-OCaml (managed via `esy`) is used to build the oeedger8r tool as part of the OE SDK.
-
-Open up a command prompt and ensure that `esy` is added to the `PATH`.
-
-```cmd
-C:\Users\test> where esy
-C:\Users\test\AppData\Roaming\npm\esy
-```
-
 ## Python 3
 
 Install [Python 3 for Windows](https://www.python.org/downloads/windows/) and ensure that python.exe is available in your PATH.
+Make sure the checkbox for PIP is checked when installing.
 
-Python 3 is used as part of the mbedtls tests.
+Python 3 is used as part of the mbedtls tests and for cmake-format.
 
 ## ShellCheck
 
@@ -99,3 +78,18 @@ Inside it there is a shellcheck-v0.7.0.exe which must be copied to a directory i
 ## OpenSSL
 
 Download and install the latest [Win64 OpenSSL 1.1.1](https://slproweb.com/products/Win32OpenSSL.html). Do not choose the light version; for example, use Win64OpenSSL-1_1_1g.exe, not Win64OpenSSL_Light-1_1_1g.exe.
+
+## cmake format
+
+Install `cmake-format` as follows.
+
+```cmd
+pip install cmake_format
+```
+
+Open up a command prompt and ensure that `cmake-format` is added to the `PATH`.
+
+```cmd
+C:\Users\test> where cmake-format
+C:\Users\test\AppData\Local\Programs\Python\Python37-32\Scripts\cmake-format.exe
+```

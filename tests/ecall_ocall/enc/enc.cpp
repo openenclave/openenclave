@@ -145,10 +145,12 @@ void enc_make_ocall(int n)
     host_ocall_pointer(&n);
 }
 
+#define NUM_TCS 5
+
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    256,  /* HeapPageCount */
-    16,   /* StackPageCount */
-    5);   /* TCSCount */
+    1,                             /* ProductID */
+    1,                             /* SecurityVersion */
+    true,                          /* Debug */
+    OE_TEST_MT_HEAP_SIZE(NUM_TCS), /* NumHeapPages */
+    16,                            /* NumStackPages */
+    NUM_TCS);                      /* NumTCS */

@@ -10,6 +10,7 @@
 #include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/safecrt.h>
@@ -41,6 +42,22 @@ oe_result_t __oe_sgx_set_minimum_crl_tcb_issue_date(
     result = OE_OK;
 done:
     return result;
+}
+
+// determine CA provider type by platform_instance_id from SGX PCK certificate
+// which is 16 bytes long
+static oe_result_t _get_crl_ca_type(
+    uint8_t* platform_instance_id,
+    oe_get_sgx_quote_verification_collateral_args_t* args)
+{
+    uint8_t null_platform_id[16] = {0};
+    if (memcmp(
+            platform_instance_id, null_platform_id, sizeof(null_platform_id)) ==
+        0)
+        args->collateral_provider = CRL_CA_PROCESSOR;
+    else
+        args->collateral_provider = CRL_CA_PLATFORM;
+    return OE_OK;
 }
 
 static oe_result_t _get_tcb_info_validity(
@@ -203,6 +220,9 @@ oe_result_t oe_get_sgx_quote_verification_collateral_from_certs(
         parsed_extension_info.fmspc,
         sizeof(parsed_extension_info.fmspc)));
 
+    // Use platform instance id to determine the collateral provider (PCK CA)
+    OE_CHECK(
+        _get_crl_ca_type(parsed_extension_info.opt_platform_instance_id, args));
     OE_CHECK(oe_get_sgx_quote_verification_collateral(args));
 
     result = OE_OK;
@@ -221,7 +241,7 @@ oe_result_t oe_validate_revocation_list(
 
     ParsedExtensionInfo parsed_extension_info = {{0}};
     oe_cert_chain_t tcb_issuer_chain = {0};
-    oe_cert_chain_t crl_issuer_chain[3] = {{{0}}};
+    oe_cert_chain_t crl_issuer_chain = {0};
     oe_cert_t tcb_cert = {0};
     oe_parsed_tcb_info_t parsed_tcb_info = {0};
     oe_tcb_info_tcb_level_t platform_tcb_level = {{0}};
@@ -247,8 +267,9 @@ oe_result_t oe_validate_revocation_list(
             version,
             OE_SGX_ENDORSEMENTS_VERSION);
 
-    OE_STATIC_ASSERT(
-        OE_COUNTOF(crl_issuer_chain) >= OE_SGX_ENDORSEMENTS_CRL_COUNT);
+    OE_STATIC_ASSERT(OE_COUNTOF(crls) >= OE_SGX_ENDORSEMENTS_CRL_COUNT);
+
+    OE_STATIC_ASSERT(OE_COUNTOF(crl_ptrs) >= OE_SGX_ENDORSEMENTS_CRL_COUNT);
 
     OE_CHECK_MSG(
         _parse_sgx_extensions(pck_cert, &parsed_extension_info),
@@ -265,40 +286,56 @@ oe_result_t oe_validate_revocation_list(
         "Failed to read TCB chain certificate. %s",
         oe_result_str(result));
 
+    OE_CHECK_MSG(
+        oe_cert_chain_read_pem(
+            &crl_issuer_chain,
+            sgx_endorsements
+                ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT]
+                .data,
+            sgx_endorsements
+                ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT]
+                .size),
+        "Failed to read CRL issuer cert chain. %s",
+        oe_result_str(result));
+
+    OE_TRACE_VERBOSE(
+        "CRL certificate: \n[%s]\n",
+        (const char*)sgx_endorsements
+            ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT]
+            .data);
+
     // Read CRLs for each cert other than root. If any CRL is missing, the read
     // will error out.
-    for (uint32_t i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; ++i)
+    for (uint32_t i = OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT, j = 0;
+         j < OE_SGX_ENDORSEMENTS_CRL_COUNT;
+         ++i, ++j)
     {
-        OE_CHECK_MSG(
-            oe_crl_read_pem(
-                &crls[i],
-                sgx_endorsements
-                    ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT + i]
-                    .data,
-                sgx_endorsements
-                    ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_PCK_CERT + i]
-                    .size),
-            "Failed to read CRL. %s",
-            oe_result_str(result));
-        OE_CHECK_MSG(
-            oe_cert_chain_read_pem(
-                &crl_issuer_chain[i],
-                sgx_endorsements
-                    ->items
-                        [OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT + i]
-                    .data,
-                sgx_endorsements
-                    ->items
-                        [OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT + i]
-                    .size),
-            "Failed to read CRL cert chain. %s",
-            oe_result_str(result));
-        OE_TRACE_VERBOSE(
-            "CRL certificate[%d]: \n[%s]\n",
-            i,
-            (const char*)sgx_endorsements
-                ->items[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_CERT + i]
-                .data);
+        // v1/v2 CRL is PEM encoded which starts with "-----BEGIN X509 CRL-----"
+        if (sgx_endorsements->items[i].size >= OE_PEM_BEGIN_CRL_LEN &&
+            memcmp(
+                (const char*)sgx_endorsements->items[i].data,
+                OE_PEM_BEGIN_CRL,
+                OE_PEM_BEGIN_CRL_LEN) == 0)
+        {
+            OE_CHECK_MSG(
+                oe_crl_read_pem(
+                    &crls[j],
+                    sgx_endorsements->items[i].data,
+                    sgx_endorsements->items[i].size),
+                "Failed to read CRL. %s",
+                oe_result_str(result));
+        }
+        // Otherwise, CRL should have v3 structure which is Der encoded
+        else
+        {
+            OE_CHECK_MSG(
+                oe_crl_read_der(
+                    &crls[j],
+                    sgx_endorsements->items[i].data,
+                    sgx_endorsements->items[i].size),
+                "Failed to read CRL. %s",
+                oe_result_str(result));
+        }
     }
 
     // Verify the leaf cert.
@@ -318,7 +355,7 @@ oe_result_t oe_validate_revocation_list(
     // for certificates in the chain.
     OE_CHECK_MSG(
         oe_cert_verify(
-            pck_cert, crl_issuer_chain, crl_ptrs, OE_COUNTOF(crl_ptrs)),
+            pck_cert, &crl_issuer_chain, crl_ptrs, OE_COUNTOF(crl_ptrs)),
         "Failed to verify leaf certificate. %s",
         oe_result_str(result));
 
@@ -339,6 +376,28 @@ oe_result_t oe_validate_revocation_list(
             &parsed_tcb_info),
         "Failed to parse TCB info or Platform TCB is not up-to-date. %s",
         oe_result_str(result));
+
+    if (memcmp(
+            parsed_extension_info.fmspc,
+            parsed_tcb_info.fmspc,
+            sizeof(parsed_extension_info.fmspc)) != 0)
+    {
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "Failed to verify fmspc in TCB. %s",
+            oe_result_str(result));
+    }
+
+    if (memcmp(
+            parsed_extension_info.pce_id,
+            parsed_tcb_info.pceid,
+            sizeof(parsed_extension_info.pce_id)) != 0)
+    {
+        OE_RAISE_MSG(
+            OE_VERIFY_FAILED,
+            "Failed to verify pceid in TCB. %s",
+            oe_result_str(result));
+    }
 
     OE_CHECK_MSG(
         oe_verify_ecdsa256_signature(
@@ -415,11 +474,8 @@ done:
     {
         oe_crl_free(&crls[i]);
     }
-    for (uint32_t i = 0; i < OE_SGX_ENDORSEMENTS_CRL_COUNT; ++i)
-    {
-        oe_cert_chain_free(&crl_issuer_chain[i]);
-    }
     oe_cert_chain_free(&tcb_issuer_chain);
+    oe_cert_chain_free(&crl_issuer_chain);
     oe_cert_free(&tcb_cert);
 
     return result;

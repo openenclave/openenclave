@@ -387,34 +387,47 @@ static void _move_to_end_of_tcb_levels(const uint8_t** itr, const uint8_t* end)
 static oe_result_t _read_tcb_info_tcb_level_v1(
     const uint8_t** itr,
     const uint8_t* end,
-    oe_tcb_info_tcb_level_t* platform_tcb_level)
+    oe_tcb_info_tcb_level_t* platform_tcb_level,
+    oe_tcb_info_tcb_level_t* tcb_level)
 {
     oe_result_t result = OE_JSON_INFO_PARSE_ERROR;
-    oe_tcb_info_tcb_level_t tcb_level = {{0}};
     const uint8_t* status = NULL;
     size_t status_length = 0;
 
-    OE_CHECK(_read('{', itr, end));
+    OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
+    OE_CHECK(_read('[', itr, end));
 
-    OE_TRACE_VERBOSE("Reading tcb");
-    OE_CHECK(_read_property_name_and_colon("tcb", itr, end));
-    OE_CHECK(_read_tcb_info_tcb_level(itr, end, &tcb_level));
-    OE_CHECK(_read(',', itr, end));
-
-    OE_TRACE_VERBOSE("Reading status");
-    OE_CHECK(_read_property_name_and_colon("status", itr, end));
-    OE_CHECK(_read_string(itr, end, &status, &status_length));
-    OE_CHECK(_trace_json_string(status, status_length));
-
-    OE_CHECK(_read('}', itr, end));
-
-    tcb_level.status = _parse_tcb_status(status, status_length);
-    if (tcb_level.status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
+    // Read each tcbLevel
+    while (*itr < end)
     {
-        _determine_platform_tcb_info_tcb_level(platform_tcb_level, &tcb_level);
-        result = OE_OK;
+        OE_CHECK(_read('{', itr, end));
+
+        OE_TRACE_VERBOSE("Reading tcb");
+        OE_CHECK(_read_property_name_and_colon("tcb", itr, end));
+        OE_CHECK(_read_tcb_info_tcb_level(itr, end, tcb_level));
+        OE_CHECK(_read(',', itr, end));
+
+        OE_TRACE_VERBOSE("Reading status");
+        OE_CHECK(_read_property_name_and_colon("status", itr, end));
+        OE_CHECK(_read_string(itr, end, &status, &status_length));
+        OE_CHECK(_trace_json_string(status, status_length));
+
+        OE_CHECK(_read('}', itr, end));
+
+        tcb_level->status = _parse_tcb_status(status, status_length);
+        if (tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
+        {
+            _determine_platform_tcb_info_tcb_level(
+                platform_tcb_level, tcb_level);
+        }
+        // Read end of array or comma separator.
+        if (*itr < end && **itr == ']')
+            break;
+        OE_CHECK(_read(',', itr, end));
     }
 
+    OE_CHECK(_read(']', itr, end));
+    result = OE_OK;
 done:
     return result;
 }
@@ -447,54 +460,76 @@ static oe_result_t _read_tcb_info_tcb_level_v2(
     const uint8_t* date_str = NULL;
     size_t date_size = 0;
 
-    OE_CHECK(_read('{', itr, end));
+    OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
+    OE_CHECK(_read('[', itr, end));
 
-    OE_TRACE_VERBOSE("Reading tcb");
-    OE_CHECK(_read_property_name_and_colon("tcb", itr, end));
-    OE_CHECK(_read_tcb_info_tcb_level(itr, end, tcb_level));
-    OE_CHECK(_read(',', itr, end));
-
-    OE_TRACE_VERBOSE("Reading tcbDate");
-    OE_CHECK(_read_property_name_and_colon("tcbDate", itr, end));
-    OE_CHECK(_read_string(itr, end, &date_str, &date_size));
-    if (oe_datetime_from_string(
-            (const char*)date_str, date_size, &tcb_level->tcb_date) != OE_OK)
-        OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
-    OE_CHECK(_read(',', itr, end));
-
-    OE_TRACE_VERBOSE("Reading tcbStatus");
-    OE_CHECK(_read_property_name_and_colon("tcbStatus", itr, end));
-    OE_CHECK(_read_string(itr, end, &status, &status_length));
-    OE_CHECK(_trace_json_string(status, status_length));
-
-    // Optional advisoryIDs field
-    if (OE_JSON_INFO_PARSE_ERROR != _read(',', itr, end))
+    // Read each tcbLevel
+    while (*itr < end)
     {
-        OE_TRACE_VERBOSE("Reading advisoryIDs");
-        OE_CHECK(_read_property_name_and_colon("advisoryIDs", itr, end));
-        OE_CHECK(_read('[', itr, end));
+        OE_CHECK(_read('{', itr, end));
 
-        tcb_level->advisory_ids_offset = (size_t)(*itr - info_json);
-        size_t size = 0;
+        OE_TRACE_VERBOSE("Reading tcb");
+        OE_CHECK(_read_property_name_and_colon("tcb", itr, end));
+        OE_CHECK(_read_tcb_info_tcb_level(itr, end, tcb_level));
+        OE_CHECK(_read(',', itr, end));
 
-        while (*itr < end && **itr != ']')
+        OE_TRACE_VERBOSE("Reading tcbDate");
+        OE_CHECK(_read_property_name_and_colon("tcbDate", itr, end));
+        OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+        if (oe_datetime_from_string(
+                (const char*)date_str, date_size, &tcb_level->tcb_date) !=
+            OE_OK)
+            OE_RAISE(OE_JSON_INFO_PARSE_ERROR);
+        OE_CHECK(_read(',', itr, end));
+
+        OE_TRACE_VERBOSE("Reading tcbStatus");
+        OE_CHECK(_read_property_name_and_colon("tcbStatus", itr, end));
+        OE_CHECK(_read_string(itr, end, &status, &status_length));
+        OE_CHECK(_trace_json_string(status, status_length));
+
+        // Optional advisoryIDs field
+        if (OE_JSON_INFO_PARSE_ERROR != _read(',', itr, end))
         {
-            (*itr)++;
-            size++;
+            OE_TRACE_VERBOSE("Reading advisoryIDs");
+            OE_CHECK(_read_property_name_and_colon("advisoryIDs", itr, end));
+            OE_CHECK(_read('[', itr, end));
+
+            tcb_level->advisory_ids_offset = (size_t)(*itr - info_json);
+            size_t size = 0;
+
+            while (*itr < end && **itr != ']')
+            {
+                (*itr)++;
+                size++;
+            }
+            OE_CHECK(_read(']', itr, end));
+            tcb_level->advisory_ids_size = size;
         }
-        OE_CHECK(_read(']', itr, end));
-        tcb_level->advisory_ids_size = size;
+
+        OE_CHECK(_read('}', itr, end));
+
+        tcb_level->status = _parse_tcb_status(status, status_length);
+        if (tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
+        {
+            _determine_platform_tcb_info_tcb_level(
+                platform_tcb_level, tcb_level);
+        }
+
+        // Optimization
+        if (platform_tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
+        {
+            // Found matching TCB level, go to the end of the array.
+            _move_to_end_of_tcb_levels(itr, end);
+        }
+
+        // Read end of array or comma separator.
+        if (*itr < end && **itr == ']')
+            break;
+        OE_CHECK(_read(',', itr, end));
     }
 
-    OE_CHECK(_read('}', itr, end));
-
-    tcb_level->status = _parse_tcb_status(status, status_length);
-    if (tcb_level->status.AsUINT32 != OE_TCB_LEVEL_STATUS_UNKNOWN)
-    {
-        _determine_platform_tcb_info_tcb_level(platform_tcb_level, tcb_level);
-        result = OE_OK;
-    }
-
+    OE_CHECK(_read(']', itr, end));
+    result = OE_OK;
 done:
     return result;
 }
@@ -592,63 +627,39 @@ static oe_result_t _read_tcb_info(
 
     if (parsed_info->version == 2)
     {
-        OE_TRACE_VERBOSE("V2: Reading tcbType");
+        OE_TRACE_VERBOSE("Reading tcbType");
         OE_CHECK(_read_property_name_and_colon("tcbType", itr, end));
         OE_CHECK(_read_integer(itr, end, &value));
+
+        // HW representation of CPUSVN for a given FMSPC is not architecturally
+        // defined to provide designers more flexibility. SW needs "tcbType" to
+        // determine how to decompose the CPUSVN. Each FMSPC has its own
+        // tcbType. For now, there is only one tcbType(0) has been defined.
+        if (value != 0)
+            OE_RAISE_MSG(
+                OE_JSON_INFO_PARSE_ERROR, "Unsupported tcbType(%d).", value);
         parsed_info->tcb_type = (uint32_t)value;
         OE_CHECK(_read(',', itr, end));
 
-        OE_TRACE_VERBOSE("V2: Reading tcbEvaluationDataNumber");
+        OE_TRACE_VERBOSE("Reading tcbEvaluationDataNumber");
         OE_CHECK(
             _read_property_name_and_colon("tcbEvaluationDataNumber", itr, end));
         OE_CHECK(_read_integer(itr, end, &value));
         parsed_info->tcb_evaluation_data_number = (uint32_t)value;
         OE_CHECK(_read(',', itr, end));
-
-        OE_TRACE_VERBOSE("Reading tcbLevels (V2)");
-        OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
-        OE_CHECK(_read('[', itr, end));
-        while (*itr < end)
-        {
-            OE_CHECK(_read_tcb_info_tcb_level_v2(
-                tcb_info_json,
-                itr,
-                end,
-                platform_tcb_level,
-                &parsed_info->tcb_level));
-
-            // Optimization
-            if (platform_tcb_level->status.AsUINT32 !=
-                OE_TCB_LEVEL_STATUS_UNKNOWN)
-            {
-                // Found matching TCB level, go to the end of the array.
-                _move_to_end_of_tcb_levels(itr, end);
-            }
-
-            // Read end of array or comma separator.
-            if (*itr < end && **itr == ']')
-                break;
-
-            OE_CHECK(_read(',', itr, end));
-        }
-        OE_CHECK(_read(']', itr, end));
     }
-    else if (parsed_info->version == 1)
-    {
-        OE_TRACE_VERBOSE("Reading tcbLevels (V1)");
-        OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
-        OE_CHECK(_read('[', itr, end));
-        while (*itr < end)
-        {
-            OE_CHECK(_read_tcb_info_tcb_level_v1(itr, end, platform_tcb_level));
-            // Read end of array or comma separator.
-            if (*itr < end && **itr == ']')
-                break;
 
-            OE_CHECK(_read(',', itr, end));
-        }
-        OE_CHECK(_read(']', itr, end));
-    }
+    OE_TRACE_VERBOSE("Reading tcbLevels");
+    if (parsed_info->version == 1)
+        OE_CHECK(_read_tcb_info_tcb_level_v1(
+            itr, end, platform_tcb_level, &parsed_info->tcb_level));
+    else if (parsed_info->version == 2)
+        OE_CHECK(_read_tcb_info_tcb_level_v2(
+            tcb_info_json,
+            itr,
+            end,
+            platform_tcb_level,
+            &parsed_info->tcb_level));
     else
     {
         OE_RAISE_MSG(

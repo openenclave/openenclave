@@ -1,13 +1,13 @@
 Attestation: OE SDK Integration with Intel® SGX SDK quote-ex Library for Generation of Evidence in New Formats
 ====
 
-This design document proposes an extension of the OE SDK implementation
+This design document proposes an extension of the OE SDK V0.9 implementation
 for integration with the Intel® SGX SDK quote-ex library, for support of
 generation of evidence in new SGX formats such as Enhanced Privacy ID (EPID).
 
 # Motivation
 
-The existing implementation of OE SDK SGX attestation,
+The V0.9 implementation of the OE SDK SGX attestation,
 based on the Intel® SGX SDK Data Center Attestation Primitives (DCAP)
 quote generation library (simply called the DCAP library),
 only supports generation of evidence in a single SGX ECDSA-p256 format.
@@ -27,10 +27,10 @@ and outside of data centers.
 
 The proposed extension only changes the internal implementation of the OE SDK
 attestation software stack. It does not impact the
-[OE SDK attestation API](https://github.com/openenclave/openenclave/blob/master/docs/DesignDocs/CustomAttestation_V3.md).
+[OE SDK attestation API](Attestation_API_Proposal.md).
 With the integration of the quote-ex library, an attester application enclave's
-call to OE SDK API `oe_get_attester_plugins()` returns the list of all the
-SGX evidence attester plugins available to the calling enclave instance.
+call to OE SDK API `oe_attester_initialize()` triggers enumeration and
+registration of all supported attester plugins
 
 Integration of the quote-ex library depends on the installation of the
 Intel® SGX SDK quote-ex library package and its dependencies,
@@ -40,23 +40,23 @@ and configuration are outside the scope of this document.
 
 # Specification
 
-## Existing OE SDK Implementation
+## Existing OE SDK V0.9 Implementation
 
 ### Evidence Format Enumeration and Plugin Registration
 
-The existing OE SDK implementation based on the DCAP library only supports
+The existing OE SDK V0.9 implementation based on the DCAP library only supports
 generation of evidence in a single SGX ECDSA-p256 format,
 so there is no need for enumeration of supported evidence formats.
 As implemented in code file `enclave/sgx/attester.c`,
 a single attester plugin is created for the SGX ECDSA-p256 evidence format.
 
-- Note: in the current OE SDK implementation, the UUID for the ECDSA-p256
+- Note: in the OE SDK V0.9 implementation, the UUID for the ECDSA-p256
 evidence format is still called `OE_SGX_PLUGIN_UUID`,
 which is the same as `OE_SGX_ECDSA_P256_PLUGIN_UUID`.
 
 ### Implementation of OE SDK API `oe_get_evidence()`
 
-The current implementation of OE SDK API `oe_get_evidence()`,
+The V0.9 implementation of OE SDK API `oe_get_evidence()`,
 in code file `common/attest_plugin.c`,
 searches for an attester plugin that supports the requested evidence format,
 and invokes the `get_evidence()` entry point of the selected plugin.
@@ -64,7 +64,7 @@ and invokes the `get_evidence()` entry point of the selected plugin.
 The SGX ECDSA-p256 attester plugin is implemented in code file
 `enclave/sgx/attester.c` and other relevant enclave-side and host-side code files,
 called enclave-side and host-side plugin libraries in this document.
-he enclave-side plugin library interacts with the host-side plugin library
+The enclave-side plugin library interacts with the host-side plugin library
 via OCALLs defined in interface definition file `edl/sgx/platform.edl`.
 For SGX ECDSA-p256 evidence generation, there are 2 OCALLs:
 
@@ -100,8 +100,8 @@ in support of the above two OCALLs, as defined in its
 ### Project Compilation and Linking
 
 As defined in `cmake` configuration file `host/CMakeLists.txt`,
-for OE SDK built on an SGX platform, the host-side plugin library code is
-linked with the DCAP static library.
+when the OE SDK V0.9 is built on an SGX platform, the host-side plugin library
+code is linked with the DCAP library.
 
 ## Proposed Changes
 
@@ -114,8 +114,6 @@ library has the following relevant API functions defined in its
 - `sgx_get_supported_att_key_ids(sgx_att_key_id_ext_t *p_att_key_id_list, uint32_t *p_att_key_id_list_size)`
     - Return the list of supported attestation key IDs (which can be mapped
     to OE SDK evidence formats) on the current platform.
-    - Note: this function is not yet available in the current release,
-    but will be added in a future release.
 - `sgx_init_quote_ex(const sgx_att_key_id_t* p_att_key_id, sgx_target_info_t *p_qe_target_info, size_t* p_pub_key_id_size, uint8_t* p_pub_key_id);`
     - Return the SGX Quoting Enclave (QE) target information for the given
     attestation key ID.
@@ -139,45 +137,67 @@ function takes an input attestation key ID in its parameter list.
 With DCAP, the quote generation can be done either in-process,
 or out-of-process by working with a background service (called AESM) running
 on the same platform.
+  - Environment variable `SGX_AESM_ADDR` controls the selection.
+    - If `SGX_AESM_ADDR` is defined (regardless of its value), out-of-process
+    quote generation is done.
+    - Otherwise if it is not defined, in-process quote generation is done.
+  - On Linux platforms, access control for quote generation is enforced by
+  the SGX Linux driver.
+    - Every process that hosts a Quoting
+    Enclave (QE) is required to run in an account that belongs to a special group `sgx_prv`,
+    as documented in the DCAP library [readme](https://github.com/intel/SGXDataCenterAttestationPrimitives/blob/master/QuoteGeneration/README.md) and the DCAP driver [readme](https://github.com/intel/SGXDataCenterAttestationPrimitives/blob/master/driver/linux/README.md).
+      - This access control mechanism does not require an QE to be signed by Intel.
+      - Note: `sgx_prv` is an SGX provisioning access control mechanism implemented
+      in the DCAP driver since version V1.22, and in the new upstream SGX Linux driver.
+    - Impact to DCAP library usage:
+      - For in-process quote generation, every process that calls the DCAP library
+      is required to run in an account that belongs to the special `sgx_prv` group.
+      - On the other hand, for out-of-process quote generation, only the AESM
+      service process account needs to be added to the special group `sgx_prv`.
+  - Note: on Windows platforms, quote generation access control takes a
+  different approach. The QE in the DCAP library is permitted by the
+  Intel-provided Launch Control (LC) driver set for quote generation, and can run
+  in any user account.
+    - This LC driver set only allows an Intel-signed QE for quote generation.
+    - More details about the LC driver set and Windows access control for quote
+    generation are described in document
+    [Intel® Software Guard Extensions Data Center Attestation Primitives Installation Guide For Windows* OS](https://download.01.org/intel-sgx/latest/dcap-latest/windows/docs/Intel_SGX_DCAP_Windows_SW_Installation_Guide.pdf).
 - The quote-ex library supports generation of SGX quotes in multiple formats
 (including ECDSA-p256 and EPID variations).
 With quote-ex, quote generation is always done out-of-process
-by working with a background service (called AESM) on the local platform.
+by working with an AESM service on the local platform.
 
-An SGX platform can have either the quote-ex library or the DCAP library,
+### Priority between the SGX DCAP and quote-ex Libraries
+
+An SGX platform can have either the DCAP library or the quote-ex library,
 or both of them installed.
-Installation and configuration of the AESM background service is independent
-of the installation of the two libraries.
 
-When both libraries and the background services are all installed and configured,
-the quote-ex should library takes precedence, as it supports more evidence
-formats.
+* When only the DCAP library is installed, it will be used.
+* When only the quote-ex library is installed, it will be used.
+* When both libraries are installed:
+    * If the DCAP library is configured for in-process quote generation, the DCAP
+    library is chosen, so this default behavior for existing applications is
+    preserved.
+    * Otherwise if the DCAP library is configured for out-of-process quote
+    generation, the quote-ex library will be used, as it supports more evidence
+    formats.
 
 #### Options for Host-side Plugin Library Link with the SGX DCAP and quote-ex Libraries
 
 There are several options for the OE SDK host-side plugin library to
 link with the SGX DCAP and quote-ex libraries.
-Experiments in implementation will help choose the most suitable option.
-In any case, from the software stack point of view,
-the choice only impacts the implementation of the host-side plugin library.
-It does not impact the enclave-side plugin library or the OCALL interface.
+From the software stack point of view,
+the options only differ in the implementation of the host-side plugin library.
+They share the same enclave-side plugin library implementation and the same
+OCALL interface.
 
-##### Option 1: Dynamic Detection and Loading of the Two Libraries
+##### Option 1: Runtime Detection and Loading of the Two Libraries
 
 With this option, the OE SDK host-side plugin library dynamically detects
-the presence of the two libraries and loads them at runtime.
-If the quote-ex library is present, it loads this library and calls into it
-to check if the dependent background service is available.
-If so the quote-ex library is used. Otherwise the DCAP library is loaded
-and used.
+the presence of the two libraries, and choose to use one of them in the
+priority defined in the previous section.
 
 ##### Option 2: Built-time Link with the quote-ex Library
-
-Run-time dynamic detection and loading of multiple shared libraries
-complicates implementation.
-It also increases the risk of API version mismatch between OE SDK and
-the loaded libraries, since the API version of the loaded libraries is not
-checked at build time against library headers.
 
 As described previously, the quote-ex library supports a superset of formats
 as compared to the DCAP library, though it always depends on
@@ -186,24 +206,35 @@ a background service for quote generation.
 If on SGX platforms the OE SDK always installs with the AESM background service
 (as a hard dependency), then it is possible for the host-side plugin library
 to be linked at build-time only with the quote-ex library. With this option,
-the dependency on the DCAP library is dropped.
+the dependency on the DCAP library will be dropped.
 
 ##### Option 3: Link with Both Libraries
 
 To avoid the complication of dynamic library loading and to keep the flexibility
 of using either one of the the libraries, the host-side plugin library can be
-built to be linked to both the DCAP and the quote-ex libraries.
-It first calls into the quote-ex library to check if the dependent background
-service is available.
-If so, the quote-ex library is used, otherwise the DCAP library is used.
+built to be linked to both the DCAP and the quote-ex libraries, and one of
+the two libraries will be used in the priority defined in the previous section.
+
+##### Option 4: Link with DCAP and Dynamic Load of quote-ex
+
+With this option, the existing OE SDK build and run-time behavior (that depends
+on the DCAP library for in-process quote generation) stays the same.
+But on a platform which has the quote-ex library installed, one of
+the two libraries will be used in the priority defined in the previous section.
+
+#### Proposal: Implement Option 1
+
+The proposal is to implement option 1. With runtime detection and loading of
+both the SGX DCAP and quote-ex libraries, it's possible for the OE SDK to be
+built on a non-SGX platform.
 
 ### Support of SGX Evidence Formats Enumeration
 
 The SGX plugin code file `enclave/sgx/attester.c` implements the OE SDK API
-`oe_get_attester_plugins()`.
+`oe_attester_initialize()`.
 The implementation enumerates all supported SGX evidence formats,
-creates a list of attester plugins for them, and returns the created list
-to the caller.
+and registers them with the OE SDK framework using its helper function
+`oe_register_attester_plugin()`.
 
 For SGX evidence formats enumeration, a new OCALL is added to interface
 definition file `edl/sgx/platform.edl` and implemented in the host-side
@@ -218,9 +249,9 @@ SGX plugin library:
 
 In the implementation of this OCALL by the host-side SGX plugin library:
 
-- If the DCAP library is loaded, a list with a single evidence format ID for
+- If the DCAP library is used, a list with a single evidence format ID for
 ECDSA-p256 is returned.
-- Otherwise if the quote-ex library is loaded, its API
+- Otherwise if the quote-ex library is used, its API
 `sgx_get_supported_att_key_ids()` is invoked, and the returned list of
 attestation key IDs is converted to a list of OE SDK evidence format IDs.
 
@@ -240,25 +271,21 @@ evidence format ID and its companion optional parameters, as shown below:
 
 In the host-side SGX plugin library implementation:
 
-- If the DCAP library is loaded, only evidence format of ECDSA-p256 is accepted,
+- If the DCAP library is used, only evidence format of ECDSA-p256 is accepted,
 and the corresponding DCAP API entry point functions are invoked to get the
 QE target info or to generate the quote.
-- If the quote-ex library is loaded, the host-side library maps the input
+- If the quote-ex library is used, the host-side library maps the input
 evidence format ID to the corresponding SGX attestation key ID and applies
 the optional parameter to the key ID structure (if any), and invokes the
 quote-ex API entry point functions to get the QE target info or to generate
 the quote.
 
-# Alternates
+# Alternatives
 
 The SGX quote-ex library is the only option available to support SGX evidence
 formats other than ECDSA-p256.
 
 # Authors
 
-- Name: Shanwei Cen
-    - email: shanwei.cen@intel.com
-    - github user name: shnwc
-- Name: Yen Lee
-    - email: yenlee@microsoft.com
-    - github username: yentsanglee
+- Shanwei Cen (@shnwc)
+- Yen Lee (@yentsanglee)

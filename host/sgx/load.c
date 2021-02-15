@@ -8,8 +8,6 @@
 
 #if defined(_WIN32)
 #include <windows.h>
-#elif defined(__linux__)
-#include "../linux/windows.h"
 #endif
 
 static oe_result_t _get_image_type(const char* path, oe_image_type* type)

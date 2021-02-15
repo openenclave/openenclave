@@ -205,11 +205,29 @@ static ssize_t _consolefs_read(oe_fd_t* file_, void* buf, size_t count)
     ssize_t ret = -1;
     file_t* file = _cast_file(file_);
 
-    if (!file)
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/read.html for
+     * for more detail.
+     */
+    if (!file || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_syscall_read_ocall(&ret, file->host_fd, buf, count) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
     return ret;
@@ -220,11 +238,29 @@ static ssize_t _consolefs_write(oe_fd_t* file_, const void* buf, size_t count)
     ssize_t ret = -1;
     file_t* file = _cast_file(file_);
 
-    if (!file)
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/write.html for
+     * for more detail.
+     */
+    if (!file || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_syscall_write_ocall(&ret, file->host_fd, buf, count) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
     return ret;
@@ -239,18 +275,40 @@ static ssize_t _consolefs_readv(
     file_t* file = _cast_file(desc);
     void* buf = NULL;
     size_t buf_size = 0;
+    size_t data_size = 0;
 
     if (!file || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size, &data_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /*
+     * According to the POSIX specification, when the data_size is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/readv.html for
+     * for more detail.
+     */
+    if (data_size > OE_SSIZE_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_readv_ocall(&ret, file->host_fd, buf, iovcnt, buf_size) !=
         OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed data_size.
+     */
+    if (ret > (ssize_t)data_size)
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
@@ -275,18 +333,40 @@ static ssize_t _consolefs_writev(
     file_t* file = _cast_file(desc);
     void* buf = NULL;
     size_t buf_size = 0;
+    size_t data_size = 0;
 
     if (!file || (!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size, &data_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /*
+     * According to the POSIX specification, when the data_size is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/writev.html
+     * for more detail.
+     */
+    if (data_size > OE_SSIZE_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_writev_ocall(&ret, file->host_fd, buf, iovcnt, buf_size) !=
         OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed data_size.
+     */
+    if (ret > (ssize_t)data_size)
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
@@ -401,6 +481,32 @@ done:
     return -1;
 }
 
+static int _consolefs_fstat(oe_fd_t* file, struct oe_stat_t* buf)
+{
+    OE_UNUSED(file);
+    OE_UNUSED(buf);
+    OE_RAISE_ERRNO(OE_ENOTSUP);
+done:
+    return -1;
+}
+
+static int _consolefs_ftruncate(oe_fd_t* file, oe_off_t length)
+{
+    OE_UNUSED(file);
+    OE_UNUSED(length);
+    OE_RAISE_ERRNO(OE_EINVAL);
+done:
+    return -1;
+}
+
+static int _consolefs_fsync(oe_fd_t* file)
+{
+    OE_UNUSED(file);
+    OE_RAISE_ERRNO(OE_EINVAL);
+done:
+    return -1;
+}
+
 static oe_file_ops_t _ops = {
     .fd.read = _consolefs_read,
     .fd.write = _consolefs_write,
@@ -415,6 +521,10 @@ static oe_file_ops_t _ops = {
     .pread = _consolefs_pread,
     .pwrite = _consolefs_pwrite,
     .getdents64 = _consolefs_getdents64,
+    .fstat = _consolefs_fstat,
+    .ftruncate = _consolefs_ftruncate,
+    .fsync = _consolefs_fsync,
+    .fdatasync = _consolefs_fsync,
 };
 
 static oe_file_ops_t _get_ops(void)

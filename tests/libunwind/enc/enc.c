@@ -80,13 +80,18 @@ int test(char test_name[201], uint32_t pid)
     strncpy(test_name, __TEST__, STRLEN_MAX);
 
     free(__environ);
+
+#ifdef CODE_COVERAGE
+    // Set __environ to NULL to avoid failing with code coverage test.
+    __environ = NULL;
+#endif
     return rval;
 }
 
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

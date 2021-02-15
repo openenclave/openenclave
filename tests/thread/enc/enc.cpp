@@ -82,6 +82,17 @@ void enc_test_mutex_counts(size_t* count1, size_t* count2)
     OE_TEST(oe_mutex_unlock(&mutex2) == 0);
 }
 
+void enc_test_spin_trylock()
+{
+    oe_spinlock_t lock = OE_SPINLOCK_INITIALIZER;
+    OE_TEST(oe_spin_trylock(&lock) == 0);
+    OE_TEST(oe_spin_trylock(&lock) != 0);
+    OE_TEST(oe_spin_unlock(&lock) == 0);
+    OE_TEST(oe_spin_trylock(&lock) == 0);
+    OE_TEST(oe_spin_trylock(&lock) != 0);
+    OE_TEST(oe_spin_unlock(&lock) == 0);
+}
+
 static oe_cond_t cond = OE_COND_INITIALIZER;
 static oe_mutex_t cond_mutex = OE_MUTEX_INITIALIZER;
 
@@ -289,10 +300,12 @@ size_t enc_tcs_used_thread_count()
     return g_tcs_used_thread_count;
 }
 
+#define NUM_TCS 16
+
 OE_SET_ENCLAVE_SGX(
-    1,    /* ProductID */
-    1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    128,  /* HeapPageCount */
-    16,   /* StackPageCount */
-    16);  /* TCSCount */
+    1,                                  /* ProductID */
+    1,                                  /* SecurityVersion */
+    true,                               /* Debug */
+    OE_TEST_MT_HEAP_SIZE(NUM_TCS) + 64, /* NumHeapPages */
+    16,                                 /* NumStackPages */
+    NUM_TCS);                           /* NumTCS */

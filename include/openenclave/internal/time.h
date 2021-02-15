@@ -22,6 +22,20 @@ OE_EXTERNC_BEGIN
 
 uint64_t oe_get_time(void);
 
+#ifdef _WIN32
+/*
+**==============================================================================
+**
+** gettimeofday()
+**
+**     Get seconds and useconds elapsed since the Epoch.
+**
+**==============================================================================
+*/
+
+int gettimeofday(struct timeval* tv, struct timezone* tz);
+#endif
+
 OE_EXTERNC_END
 
 #endif /* _OE_INCLUDE_TIME_H */

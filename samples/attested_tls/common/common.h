@@ -3,8 +3,8 @@
 //
 #define ADD_TEST_CHECKING
 
-#define TLS_CLIENT "TLS client:"
-#define TLS_SERVER "TLS server:"
+#define TLS_CLIENT "TLS client: "
+#define TLS_SERVER "TLS server: "
 
 #define CLIENT_PAYLOAD "GET / HTTP/1.0\r\n\r\n"
 #define SERVER_PAYLOAD                                   \

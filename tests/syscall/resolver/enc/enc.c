@@ -197,7 +197,7 @@ int ecall_getaddrinfo(struct oe_addrinfo** res)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    256,  /* HeapPageCount */
-    256,  /* StackPageCount */
-    1);   /* TCSCount */
+    true, /* Debug */
+    256,  /* NumHeapPages */
+    256,  /* NumStackPages */
+    1);   /* NumTCS */

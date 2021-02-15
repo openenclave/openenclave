@@ -17,7 +17,8 @@ int oe_iov_pack(
     const struct oe_iovec* iov,
     int iovcnt,
     void** buf_out,
-    size_t* buf_size_out)
+    size_t* buf_size_out,
+    size_t* data_size_out)
 {
     int ret = -1;
     struct oe_iovec* buf = NULL;
@@ -30,8 +31,12 @@ int oe_iov_pack(
     if (buf_size_out)
         *buf_size_out = 0;
 
+    if (data_size_out)
+        *data_size_out = 0;
+
     /* Reject invalid parameters. */
-    if (iovcnt < 0 || (iovcnt > 0 && !iov) || !buf_out || !buf_size_out)
+    if (iovcnt < 0 || (iovcnt > 0 && !iov) || !buf_out || !buf_size_out ||
+        !data_size_out)
         goto done;
 
     /* Handle zero-sized iovcnt up front. */
@@ -47,6 +52,7 @@ int oe_iov_pack(
 
         *buf_out = buf;
         *buf_size_out = buf_size;
+        *data_size_out = data_size;
         buf = NULL;
         ret = 0;
         goto done;
@@ -56,7 +62,7 @@ int oe_iov_pack(
     for (int i = 0; i < iovcnt; i++)
         data_size += iov[i].iov_len;
 
-    /* Caculate the total size of the resulting buffer. */
+    /* Calculate the total size of the resulting buffer. */
     buf_size = (sizeof(struct oe_iovec) * (size_t)iovcnt) + data_size;
 
     /* Allocate the output buffer. */
@@ -97,6 +103,7 @@ int oe_iov_pack(
 
     *buf_out = buf;
     *buf_size_out = buf_size;
+    *data_size_out = data_size;
     buf = NULL;
     ret = 0;
 
@@ -155,7 +162,8 @@ int oe_iov_sync(
                 if (src_size != dest_size)
                     goto done;
 
-                if (src < (uint8_t*)buf || src > (uint8_t*)buf + buf_size)
+                if (src < (uint8_t*)buf || src + src_size < src ||
+                    src + src_size > (uint8_t*)buf + buf_size)
                     goto done;
 
                 if (oe_memcpy_s(dest, dest_size, src, src_size) != OE_OK)

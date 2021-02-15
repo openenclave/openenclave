@@ -288,6 +288,48 @@ done:
     return ret;
 }
 
+int oe_flock(int fd, int operation)
+{
+    int ret = -1;
+    oe_fd_t* desc;
+
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = desc->ops.fd.flock(desc, operation);
+
+done:
+    return ret;
+}
+
+int oe_fsync(int fd)
+{
+    int ret = -1;
+    oe_fd_t* desc;
+
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_FILE)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = desc->ops.file.fsync(desc);
+
+done:
+    return ret;
+}
+
+int oe_fdatasync(int fd)
+{
+    int ret = -1;
+    oe_fd_t* desc;
+
+    if (!(desc = oe_fdtable_get(fd, OE_FD_TYPE_FILE)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = desc->ops.file.fdatasync(desc);
+
+done:
+    return ret;
+}
+
 int oe_dup(int oldfd)
 {
     int ret = -1;
@@ -498,6 +540,20 @@ int oe_truncate_d(uint64_t devid, const char* path, oe_off_t length)
 
         ret = dev->ops.fs.truncate(dev, path, length);
     }
+
+done:
+    return ret;
+}
+
+int oe_ftruncate(int fd, oe_off_t length)
+{
+    int ret = -1;
+    oe_fd_t* file;
+
+    if (!(file = oe_fdtable_get(fd, OE_FD_TYPE_FILE)))
+        OE_RAISE_ERRNO(oe_errno);
+
+    ret = file->ops.file.ftruncate(file, length);
 
 done:
     return ret;

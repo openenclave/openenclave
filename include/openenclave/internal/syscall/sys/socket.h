@@ -133,6 +133,9 @@ OE_EXTERNC_BEGIN
 #define OE_SO_BSDCOMPAT 14
 #define OE_SO_REUSEPORT 15
 
+/* Socket message flags. */
+#define OE_MSG_CTRUNC 0x0008
+
 /* oe_shutdown() options. */
 #define OE_SHUT_RD 0
 #define OE_SHUT_WR 1
@@ -204,7 +207,7 @@ ssize_t oe_recvfrom(
     void* buf,
     size_t len,
     int flags,
-    const struct oe_sockaddr* src_addr,
+    struct oe_sockaddr* src_addr,
     oe_socklen_t* addrlen);
 
 ssize_t oe_sendmsg(int sockfd, const struct oe_msghdr* buf, int flags);

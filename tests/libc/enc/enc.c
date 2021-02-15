@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/constants_x64.h>
 #include <openenclave/internal/tests.h>
 #include <search.h>
 #include <stdarg.h>
@@ -27,10 +28,35 @@
 #endif
 
 #if defined(XMM_OK)
-/* Type of the control word.  */
-typedef unsigned int fpu_control_t __attribute__((__mode__(__HI__)));
-/* Macros for accessing the hardware control word.  */
-#define _FPU_GETCW(cw) __asm__ __volatile__("fnstcw %0" : "=m"(*&cw))
+void _reset_fxsave_state()
+{
+    /* Initialize the FXSAVE state values to Linux x86-64 ABI defined values:
+     * FCW = 0x037F, MXCSR = 0x1F80, MXCSR mask = 0xFFFF */
+    static OE_ALIGNED(OE_FXSAVE_ALIGNMENT) const uint64_t
+        _initial_fxstate[OE_FXSAVE_AREA_SIZE / sizeof(uint64_t)] = {
+            0x037F, 0, 0, 0xFFFF00001F80,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+            0,      0, 0, 0,
+        };
+
+    asm volatile("fxrstor %[fx_state] \n\t"
+                 :
+                 : [fx_state] "m"(_initial_fxstate)
+                 :);
+}
 #endif
 
 int t_status = 0;
@@ -41,26 +67,11 @@ int device_init()
     OE_TEST(oe_load_module_host_socket_interface() == OE_OK);
     // OE_TEST(oe_load_module_host_epoll() == OE_OK);
 
+#ifndef CODE_COVERAGE
     OE_TEST(mount("/", "/", OE_HOST_FILE_SYSTEM, 0, NULL) == 0);
-
+#endif
     return 0;
 }
-
-#if defined(XMM_OK)
-int my_printfpu_control()
-{
-    fpu_control_t cw;
-    _FPU_GETCW(cw);
-    return cw;
-}
-
-uint32_t my_getmxcsr()
-{
-    uint32_t csr;
-    asm volatile("stmxcsr %0" : "=m"(csr));
-    return csr;
-}
-#endif
 
 int t_printf(const char* s, ...)
 {
@@ -91,13 +102,12 @@ int run_test_helper(const char* test_name, libc_test_function_t test_function)
     printf("=== running: %s\n", test_name);
 
 #if defined(XMM_OK)
-    /* Verify that the FPU control word and SSE control/status flags are set
-     * correctly before each test */
-    uint32_t cw = my_printfpu_control();
-    OE_TEST(cw == 0x37f);
-
-    uint32_t csr = my_getmxcsr();
-    OE_TEST(csr == 0x1f80);
+    /* Reset the FXSAVE state between tests.
+     * The original libc tests for floating point math were compiled as
+     * individual executables and assume ABI-initialized floating point and
+     * MXCSR state. Since the enclave runs multiple tests in the same enclave
+     * consecutively, we reset the FXSAVE state on each run. */
+    _reset_fxsave_state();
 #endif
 
     /* Disable Open Enclave debug malloc checks. */
@@ -166,10 +176,10 @@ int run_all_tests()
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    512,  /* HeapPageCount */
-    256,  /* StackPageCount */
-    4);   /* TCSCount */
+    true, /* Debug */
+    512,  /* NumHeapPages */
+    256,  /* NumStackPages */
+    4);   /* NumTCS */
 
 #define TA_UUID                                            \
     { /* d7fe296a-24e9-46d1-aa78-9c7395082a41 */           \
@@ -183,6 +193,6 @@ OE_SET_ENCLAVE_OPTEE(
     TA_UUID,
     1 * 1024 * 1024,
     12 * 1024,
-    TA_FLAG_EXEC_DDR,
+    0,
     "1.0.0",
     "libc test")

@@ -1,10 +1,8 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(EDL_DIR ${CMAKE_SOURCE_DIR}/edl)
-if (OE_SGX)
-    set(SGX_EDL_DIR ${CMAKE_SOURCE_DIR}/edl/sgx)
-endif()
+set(OE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+set(EDL_DIR ${PROJECT_SOURCE_DIR}/include/openenclave/edl)
 
 ##==============================================================================
 ##
@@ -14,66 +12,52 @@ endif()
 ##==============================================================================
 
 set(CORE_EDL_FILE ${EDL_DIR}/core.edl)
-if (COMPILE_SYSTEM_EDL)
-  add_custom_command(
-      OUTPUT core_u.h core_u.c core_args.h
-      DEPENDS ${CORE_EDL_FILE} edger8r
-      COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${CORE_EDL_FILE})
+# Only generate headers
+add_custom_command(
+  OUTPUT core_u.h core_args.h
+  DEPENDS ${CORE_EDL_FILE} edger8r
+  COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --untrusted
+          ${CORE_EDL_FILE})
 
-  add_custom_target(core_untrusted_edl DEPENDS core_u.h core_u.c core_args.h)
-
-  list(APPEND PLATFORM_SDK_ONLY_SRC core_u_wrapper.c)
-else ()
-  # Only generate headers
-  add_custom_command(
-      OUTPUT core_u.h core_args.h
-      DEPENDS ${CORE_EDL_FILE} edger8r
-      COMMAND edger8r --header-only --search-path ${EDL_DIR}
-                      --untrusted ${CORE_EDL_FILE})
-
-  add_custom_target(core_untrusted_edl DEPENDS core_u.h core_args.h)
-endif()
+add_custom_target(core_untrusted_edl DEPENDS core_u.h core_args.h)
 
 ##==============================================================================
 ##
 ## Generate header (*_args.h) that defines data structures from EDL files.
-## Note that doing this on the host side to ensure publishing the header with 
+## Note that doing this on the host side to ensure publishing the header with
 ## the case of `BUILD_ENCLAVES=OFF`.
 ##
 ##==============================================================================
 
 set(OE_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/bits)
 set(OE_PRIV_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/internal/bits)
+set(OE_PRIV_SGX_EDL_INCLUDE_DIR ${OE_INCDIR}/openenclave/internal/bits/sgx)
 
-list(APPEND EDL_PUBLIC_STRUCTURES
-  "${EDL_DIR}/asym_keys.edl"
-  "${EDL_DIR}/time.edl")
-list(APPEND EDL_PRIVATE_STRUCTURES
-  "${EDL_DIR}/fcntl.edl"
-  "${EDL_DIR}/poll.edl"
-  "${EDL_DIR}/socket.edl"
-  "${EDL_DIR}/utsname.edl")
+list(APPEND EDL_PUBLIC_STRUCTURES "${EDL_DIR}/asym_keys.edl"
+     "${EDL_DIR}/time.edl")
+list(APPEND EDL_PRIVATE_STRUCTURES "${EDL_DIR}/fcntl.edl" "${EDL_DIR}/poll.edl"
+     "${EDL_DIR}/socket.edl" "${EDL_DIR}/utsname.edl")
+list(APPEND EDL_PRIVATE_SGX_STRUCTURES "${EDL_DIR}/sgx/switchless.edl")
 
-function(edl_to_header EDL_FILE OUT_DIR)
+function (edl_to_header EDL_FILE OUT_DIR)
   get_filename_component(name ${EDL_FILE} NAME_WE)
 
   add_custom_command(
-      OUTPUT ${name}_args.h
-      DEPENDS ${EDL_FILE} edger8r
-      COMMAND edger8r --header-only --untrusted ${EDL_FILE})
+    OUTPUT ${name}_args.h
+    DEPENDS ${EDL_FILE} edger8r
+    COMMAND edger8r --header-only --untrusted ${EDL_FILE})
 
   add_custom_command(
-      OUTPUT ${OUT_DIR}/${name}.h
-      COMMAND ${CMAKE_COMMAND} -E copy ${name}_args.h ${OUT_DIR}/${name}.h
-      DEPENDS ${name}_args.h)
+    OUTPUT ${OUT_DIR}/${name}.h
+    COMMAND ${CMAKE_COMMAND} -E copy ${name}_args.h ${OUT_DIR}/${name}.h
+    DEPENDS ${name}_args.h)
 
-  add_custom_target(gen_edl_headers_${name}
-      DEPENDS ${OUT_DIR}/${name}.h)
+  add_custom_target(gen_edl_headers_${name} DEPENDS ${OUT_DIR}/${name}.h)
 
   # Add dependencies to `oe_includes` so that the published header will be ready before
   # other files consume it.
   add_dependencies(oe_includes gen_edl_headers_${name})
-endfunction()
+endfunction ()
 
 foreach (struct_file ${EDL_PUBLIC_STRUCTURES})
   edl_to_header(${struct_file} ${OE_EDL_INCLUDE_DIR})
@@ -83,9 +67,13 @@ foreach (struct_file ${EDL_PRIVATE_STRUCTURES})
   edl_to_header(${struct_file} ${OE_PRIV_EDL_INCLUDE_DIR})
 endforeach ()
 
+foreach (struct_file ${EDL_PRIVATE_SGX_STRUCTURES})
+  edl_to_header(${struct_file} ${OE_PRIV_SGX_EDL_INCLUDE_DIR})
+endforeach ()
+
 # Only install the public EDL headers
 install(DIRECTORY ${OE_EDL_INCLUDE_DIR}
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
 
 ##==============================================================================
 ##
@@ -94,26 +82,15 @@ install(DIRECTORY ${OE_EDL_INCLUDE_DIR}
 ##
 ##==============================================================================
 
-set(SGX_EDL_FILE ${SGX_EDL_DIR}/platform.edl)
-if (OE_SGX AND COMPILE_SYSTEM_EDL)
+set(SGX_EDL_FILE ${EDL_DIR}/sgx/platform.edl)
+if (OE_SGX)
   add_custom_command(
-      OUTPUT platform_u.h platform_u.c platform_args.h
-      DEPENDS ${SGX_EDL_FILE} edger8r
-      COMMAND edger8r --search-path ${SGX_EDL_DIR} --untrusted ${SGX_EDL_FILE})
+    OUTPUT platform_u.h platform_args.h
+    DEPENDS ${SGX_EDL_FILE} edger8r
+    COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --untrusted
+            ${SGX_EDL_FILE})
 
-  add_custom_target(platform_untrusted_edl
-      DEPENDS platform_u.h platform_u.c platform_args.h)
-
-  list(APPEND PLATFORM_SDK_ONLY_SRC sgx/platform_u_wrapper.c)
-elseif (OE_SGX)
-  add_custom_command(
-      OUTPUT platform_u.h platform_args.h
-      DEPENDS ${SGX_EDL_FILE} edger8r
-      COMMAND edger8r --header-only --search-path ${SGX_EDL_DIR}
-                      --untrusted ${SGX_EDL_FILE})
-
-  add_custom_target(platform_untrusted_edl
-      DEPENDS platform_u.h platform_args.h)
+  add_custom_target(platform_untrusted_edl DEPENDS platform_u.h platform_args.h)
 endif ()
 
 ##==============================================================================
@@ -124,35 +101,13 @@ endif ()
 ##==============================================================================
 
 set(SYSCALL_EDL ${EDL_DIR}/syscall.edl)
-if (COMPILE_SYSTEM_EDL)
-  add_custom_command(
-      OUTPUT syscall_u.h syscall_u.c syscall_args.h
-      DEPENDS ${SYSCALL_EDL} edger8r
-      COMMAND edger8r --search-path ${EDL_DIR} --untrusted ${SYSCALL_EDL})
+add_custom_command(
+  OUTPUT syscall_u.h syscall_args.h
+  DEPENDS ${SYSCALL_EDL} edger8r
+  COMMAND edger8r --header-only --search-path ${OE_INCLUDE_DIR} --untrusted
+          ${SYSCALL_EDL})
 
-  add_custom_target(syscall_untrusted_edl
-      DEPENDS syscall_u.h syscall_u.c syscall_args.h)
-
-  list(APPEND PLATFORM_SDK_ONLY_SRC syscall_u_wrapper.c)
-else ()
-  add_custom_command(
-      OUTPUT syscall_u.h syscall_args.h
-      DEPENDS ${SYSCALL_EDL} edger8r
-      COMMAND edger8r --header-only --search-path ${EDL_DIR}
-                      --untrusted ${SYSCALL_EDL})
-
-  add_custom_target(syscall_untrusted_edl
-      DEPENDS syscall_u.h syscall_args.h)
-endif ()
-
-##==============================================================================
-##
-## Install all system EDL files to be included by user EDL
-##
-##==============================================================================
-
-install(DIRECTORY ../edl/ DESTINATION
-  ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/edl/)
+add_custom_target(syscall_untrusted_edl DEPENDS syscall_u.h syscall_args.h)
 
 ##==============================================================================
 ##
@@ -162,28 +117,30 @@ install(DIRECTORY ../edl/ DESTINATION
 
 # OS specific but arch agnostic files.
 if (UNIX)
-  list(APPEND PLATFORM_HOST_ONLY_SRC
-    ../common/cert.c
-    crypto/openssl/asn1.c
-    crypto/openssl/cert.c
-    crypto/openssl/crl.c
-    crypto/openssl/ec.c
+  list(
+    APPEND
+    PLATFORM_HOST_ONLY_SRC
+    ${PROJECT_SOURCE_DIR}/common/cert.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/asn1.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/cert.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/crl.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/ec.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/key.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/rsa.c
+    ${PROJECT_SOURCE_DIR}/common/crypto/openssl/sha.c
     crypto/openssl/init.c
-    crypto/openssl/key.c
     crypto/openssl/rsa.c
-    crypto/openssl/sha.c
-    linux/hostthread.c)
+    linux/hostthread.c
+    linux/time.c)
 
-  list(APPEND PLATFORM_SDK_ONLY_SRC
-    ../common/asn1.c
-    crypto/openssl/hmac.c
-    crypto/openssl/random.c
-    linux/syscall.c
-    linux/time.c
-    linux/windows.c)
+  list(APPEND PLATFORM_SDK_ONLY_SRC ${PROJECT_SOURCE_DIR}/common/asn1.c
+       ${PROJECT_SOURCE_DIR}/common/crypto/openssl/hmac.c
+       crypto/openssl/random.c linux/syscall.c)
 elseif (WIN32)
-  list(APPEND PLATFORM_HOST_ONLY_SRC
-    ../common/cert.c
+  list(
+    APPEND
+    PLATFORM_HOST_ONLY_SRC
+    ${PROJECT_SOURCE_DIR}/common/cert.c
     crypto/bcrypt/cert.c
     crypto/bcrypt/crl.c
     crypto/bcrypt/ec.c
@@ -192,13 +149,16 @@ elseif (WIN32)
     crypto/bcrypt/sha.c
     crypto/bcrypt/pem.c
     crypto/bcrypt/util.c
-    windows/hostthread.c)
+    windows/hostthread.c
+    windows/time.c)
 
-  list(APPEND PLATFORM_SDK_ONLY_SRC
-    ../3rdparty/mbedtls/mbedtls/library/bignum.c
-    ../3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
-    ../common/asn1.c
-    ../common/cert.c
+  list(
+    APPEND
+    PLATFORM_SDK_ONLY_SRC
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/bignum.c
+    ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/library/platform_util.c #Used by bignum.c
+    ${PROJECT_SOURCE_DIR}/common/asn1.c
+    ${PROJECT_SOURCE_DIR}/common/cert.c
     crypto/bcrypt/cert.c
     crypto/bcrypt/crl.c
     crypto/bcrypt/ec.c
@@ -209,10 +169,10 @@ elseif (WIN32)
     crypto/bcrypt/rsa.c
     crypto/bcrypt/sha.c
     windows/hostthread.c
-    windows/syscall.c
-    windows/time.c)
+    windows/syscall.c)
 else ()
-  message(FATAL_ERROR "Unknown OS. The only supported OSes are Linux and Windows")
+  message(
+    FATAL_ERROR "Unknown OS. The only supported OSes are Linux and Windows")
 endif ()
 
 if (OE_SGX AND WIN32)
@@ -223,31 +183,45 @@ if (OE_SGX AND WIN32)
   # compiled with the -fomit-frame-pointer flag so that the compiler does not
   # set up the frame pointer.
   add_custom_command(
-     OUTPUT enter.obj
-     DEPENDS sgx/enter.c
-     COMMAND clang  -c -O2 -fomit-frame-pointer -m64
-             -I${PROJECT_SOURCE_DIR}/include
-             -I${OE_INCDIR}
-             ${CMAKE_CURRENT_SOURCE_DIR}/sgx/enter.c
-             -o enter.obj)
+    OUTPUT enter.obj
+    DEPENDS sgx/enter.c
+    COMMAND
+      clang -c -O2 -fomit-frame-pointer -m64 -I${PROJECT_SOURCE_DIR}/include
+      -I${OE_INCDIR} ${CMAKE_CURRENT_SOURCE_DIR}/sgx/enter.c -o enter.obj)
 endif ()
 
 # SGX specific files.
 if (OE_SGX)
-  list(APPEND PLATFORM_HOST_ONLY_SRC
-    ../common/sgx/endorsements.c
-    ../common/sgx/qeidentity.c
-    ../common/sgx/quote.c
-    ../common/sgx/report.c
-    ../common/sgx/collateral.c
-    ../common/sgx/sgxcertextensions.c
-    ../common/sgx/tcbinfo.c
-    ../common/sgx/tlsverifier.c
-    ../common/sgx/verifier.c
+  list(
+    APPEND
+    PLATFORM_HOST_ONLY_SRC
+    ${PROJECT_SOURCE_DIR}/common/sgx/endorsements.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/qeidentity.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/quote.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/report.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/report_helper.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/collateral.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/sgxcertextensions.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/sgxmeasure.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/tcbinfo.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/tlsverifier.c
+    ${PROJECT_SOURCE_DIR}/common/sgx/verifier.c
     sgx/hostverify_report.c
-    sgx/sgxquoteprovider.c)
+    sgx/report_common.c
+    sgx/sgxquoteprovider.c
+    sgx/quote.c
+    sgx/sgxquote.c)
 
-  list(APPEND PLATFORM_SDK_ONLY_SRC
+  if (WITH_EEID)
+    list(APPEND PLATFORM_HOST_ONLY_SRC
+         ${PROJECT_SOURCE_DIR}/common/sgx/eeid_verifier.c
+         ${PROJECT_SOURCE_DIR}/common/sgx/eeid.c)
+  endif ()
+
+  list(
+    APPEND
+    PLATFORM_SDK_ONLY_SRC
+    ${PROJECT_SOURCE_DIR}/common/sgx/cpuid.c
     sgx/calls.c
     sgx/create.c
     sgx/elf.c
@@ -256,52 +230,60 @@ if (OE_SGX)
     sgx/exception.c
     sgx/load.c
     sgx/loadelf.c
-    sgx/ocalls.c
+    sgx/ocalls/debug.c
+    sgx/ocalls/ocalls.c
+    sgx/ocalls/thread.c
     sgx/quote.c
     sgx/registers.c
+    sgx/report_common.c
     sgx/report.c
+    sgx/sgx_enclave_common_wrapper.c
     sgx/sgxload.c
-    sgx/sgxmeasure.c
     sgx/sgxquote.c
     sgx/sgxsign.c
     sgx/sgxtypes.c
-    sgx/switchless.c)
-
+    sgx/switchless.c
+    sgx/tests.c)
 
   # OS specific as well.
   if (UNIX)
-    list(APPEND PLATFORM_HOST_ONLY_SRC
-        sgx/linux/sgxquoteproviderloader.c)
+    list(APPEND PLATFORM_HOST_ONLY_SRC sgx/linux/sgxquoteproviderloader.c
+         sgx/linux/sgxquoteexloader.c)
 
-    list(APPEND PLATFORM_SDK_ONLY_SRC
+    list(
+      APPEND
+      PLATFORM_SDK_ONLY_SRC
       sgx/linux/aep.S
       sgx/enter.c
       sgx/linux/exception.c
       sgx/linux/sgxioctl.c
       sgx/linux/switchless.c
+      sgx/linux/sgxquoteexloader.c
       sgx/linux/xstate.c)
   else ()
-    list(APPEND PLATFORM_HOST_ONLY_SRC
-      sgx/windows/sgxquoteproviderloader.c)
+    list(APPEND PLATFORM_HOST_ONLY_SRC sgx/windows/sgxquoteproviderloader.c
+         sgx/windows/sgxquoteexloader.c)
 
-    list(APPEND PLATFORM_SDK_ONLY_SRC
+    list(
+      APPEND
+      PLATFORM_SDK_ONLY_SRC
       sgx/windows/aep.asm
       ${CMAKE_CURRENT_BINARY_DIR}/enter.obj
       sgx/windows/exception.c
       sgx/windows/switchless.c
+      sgx/windows/sgxquoteexloader.c
       sgx/windows/xstate.c)
   endif ()
 
   set(PLATFORM_FLAGS "-m64")
 elseif (OE_TRUSTZONE)
-  list(APPEND PLATFORM_SDK_ONLY_SRC
-    optee/log.c)
+  list(APPEND PLATFORM_SDK_ONLY_SRC optee/log.c)
 
   if (UNIX)
-    list(APPEND PLATFORM_SDK_ONLY_SRC
-      optee/linux/enclave.c)
+    list(APPEND PLATFORM_SDK_ONLY_SRC optee/linux/enclave.c)
   else ()
-    message(FATAL_ERROR "OP-TEE is not yet supported on platforms other than Linux.")
+    message(
+      FATAL_ERROR "OP-TEE is not yet supported on platforms other than Linux.")
   endif ()
 
   set(PLATFORM_FLAGS "")
@@ -309,8 +291,7 @@ endif ()
 
 if (OE_SGX AND WIN32)
   # oedebugrt is accessed via a bridge on Win32 and need not be linked.
-  list(APPEND PLATFORM_SDK_ONLY_SRC
-    sgx/windows/debugrtbridge.c)
+  list(APPEND PLATFORM_SDK_ONLY_SRC sgx/windows/debugrtbridge.c)
 
   # __oe_dispatch_ocall function must have debug symbols for debuggers to
   # stitch the ocall stack. Use /Z7 flag to embed the debugging information
@@ -319,16 +300,19 @@ if (OE_SGX AND WIN32)
   # application. Using /Z7 avoids having to distribut oehost.pdb.
   # Note: This is a temporary fix and debuggers will not have this requirement
   # when ocall stack stitching is also done via the debugger contract.
-  set_source_files_properties(
-    sgx/calls.c
-    PROPERTIES COMPILE_FLAGS "/Z7")
+  set_source_files_properties(sgx/calls.c PROPERTIES COMPILE_FLAGS "/Z7")
 endif ()
 
 # Common host verification files that work on any OS/architecture.
-list(APPEND PLATFORM_HOST_ONLY_SRC
-  ../common/attest_plugin.c
-  ../common/datetime.c
-  ../common/safecrt.c
+list(
+  APPEND
+  PLATFORM_HOST_ONLY_SRC
+  ${PROJECT_SOURCE_DIR}/common/attest_plugin.c
+  ${PROJECT_SOURCE_DIR}/common/custom_claims.c
+  ${PROJECT_SOURCE_DIR}/common/datetime.c
+  ${PROJECT_SOURCE_DIR}/common/safecrt.c
+  ${PROJECT_SOURCE_DIR}/common/sha.c
+  memalign.c
   hexdump.c
   dupenv.c
   fopen.c
@@ -337,34 +321,45 @@ list(APPEND PLATFORM_HOST_ONLY_SRC
   traceh.c)
 
 # Common files that are used in the OE SDK only.
-list(APPEND PLATFORM_SDK_ONLY_SRC
-  ../common/kdf.c
-  ../common/argv.c
+list(
+  APPEND
+  PLATFORM_SDK_ONLY_SRC
+  ${PROJECT_SOURCE_DIR}/common/kdf.c
+  ${PROJECT_SOURCE_DIR}/common/argv.c
   asym_keys.c
+  ecall_ids.c
   calls.c
-  ocalls.c
+  ocalls/log.c
+  ocalls/ocalls.c
+  ocalls/memory.c
+  ocalls/write.c
   error.c
   files.c
   fopen.c
-  memalign.c
   signkey.c
   strings.c
   traceh_enclave.c)
 
 # Combine the following common code along with the platform specific code and
 # host verification code to get the full oehost target provided by the OE SDK.
-add_library(oehost STATIC
-  ${PLATFORM_HOST_ONLY_SRC}
-  ${PLATFORM_SDK_ONLY_SRC})
+add_library(oehost STATIC ${PLATFORM_HOST_ONLY_SRC} ${PLATFORM_SDK_ONLY_SRC})
 
 add_library(oehostverify STATIC ${PLATFORM_HOST_ONLY_SRC})
 
 target_link_libraries(oehostverify PUBLIC oe_includes)
 target_link_libraries(oehost PUBLIC oe_includes)
 
-if(WIN32)
+if (OE_SGX)
+  target_include_directories(
+    oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
+  target_include_directories(
+    oehostverify PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/sgxsdk/include)
+
+endif ()
+
+if (WIN32)
   target_link_libraries(oehost PUBLIC ws2_32 shlwapi)
-endif()
+endif ()
 
 if (OE_SGX AND UNIX)
   # Link oedebugrt static library.
@@ -374,10 +369,8 @@ if (OE_SGX AND UNIX)
   # for ocall stack-stitching by using the -fno-omit-frame-pointer flag.
   # It is compiled with -O2 flag to retain the same generated assembly
   # code in both debug and release builds.
-  set_source_files_properties(oehost
-    sgx/enter.c
-    PROPERTIES
-    COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
+  set_source_files_properties(
+    oehost sgx/enter.c PROPERTIES COMPILE_FLAGS "-O2 -fno-omit-frame-pointer")
 endif ()
 
 add_dependencies(oehost syscall_untrusted_edl)
@@ -396,7 +389,8 @@ if (UNIX)
     else ()
       message("-- Looking for crypto library - found")
       add_library(openenclave::crypto SHARED IMPORTED)
-      set_target_properties(openenclave::crypto PROPERTIES IMPORTED_LOCATION ${CRYPTO_LIB})
+      set_target_properties(openenclave::crypto PROPERTIES IMPORTED_LOCATION
+                                                           ${CRYPTO_LIB})
     endif ()
   endif ()
 
@@ -407,7 +401,8 @@ if (UNIX)
     else ()
       message("-- Looking for dl library - found")
       add_library(openenclave::dl SHARED IMPORTED)
-      set_target_properties(openenclave::dl PROPERTIES IMPORTED_LOCATION ${DL_LIB})
+      set_target_properties(openenclave::dl PROPERTIES IMPORTED_LOCATION
+                                                       ${DL_LIB})
     endif ()
   endif ()
 endif ()
@@ -415,28 +410,23 @@ endif ()
 find_package(Threads REQUIRED)
 
 if (UNIX)
-  target_link_libraries(oehost PRIVATE
-      openenclave::crypto
-      openenclave::dl
-      Threads::Threads)
-  target_link_libraries(oehostverify PRIVATE
-      openenclave::crypto
-      openenclave::dl
-      Threads::Threads)
+  target_link_libraries(oehost PRIVATE openenclave::crypto openenclave::dl
+                                       Threads::Threads)
+  target_link_libraries(oehostverify PRIVATE openenclave::crypto
+                                             openenclave::dl Threads::Threads)
 
   if (OE_TRUSTZONE)
-    target_include_directories(oehost PRIVATE
-      ${OE_TZ_OPTEE_CLIENT_INC})
+    target_include_directories(oehost PRIVATE ${OE_TZ_OPTEE_CLIENT_INC})
     target_link_libraries(oehost PRIVATE teec)
   endif ()
 elseif (WIN32)
-  target_include_directories(oehost PRIVATE
-    ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
+  target_include_directories(
+    oehost PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   # Synchronization library is needed for WaitOnAddress/WakeByAddress functions
   # used by switchless ocalls worker threads.
   target_link_libraries(oehost PRIVATE bcrypt Crypt32 Synchronization)
-  target_include_directories(oehostverify PRIVATE
-    ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
+  target_include_directories(
+    oehostverify PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/include)
   target_link_libraries(oehostverify PRIVATE bcrypt Crypt32)
 
   # TODO: Handle TrustZone on Windows.
@@ -445,128 +435,79 @@ endif ()
 # For including edge routines.
 target_include_directories(oehost PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-if (OE_SGX)
-  # Always link with the EnclaveCommonAPI
-  if (WIN32)
-    set(LIBPATHS ${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/lib/native/x64-Release)
-    set(INCPATHS "${NUGET_PACKAGE_PATH}/EnclaveCommonAPI/Header Files")
-  endif ()
-  if (NOT LIBPATHS)
-    set(LIBPATHS "/usr")
-  endif ()
-  find_library(LIBSGX_COMMON NAMES sgx_enclave_common HINTS ${LIBPATHS})
-  if (NOT LIBSGX_COMMON)
-    message(FATAL_ERROR "Intel SGX EnclaveCommonAPI library not found, aborting!")
-  endif ()
-  add_library(sgx_enclave_common SHARED IMPORTED)
-  if (WIN32)
-     set_target_properties(sgx_enclave_common PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${INCPATHS}"
-        IMPORTED_LOCATION $ENV{WINDIR}/System32
-        IMPORTED_IMPLIB ${LIBSGX_COMMON})
-  elseif (UNIX)
-    set_target_properties(sgx_enclave_common PROPERTIES IMPORTED_LOCATION ${LIBSGX_COMMON})
-  endif ()
-  target_link_libraries(oehost PUBLIC $<BUILD_INTERFACE:sgx_enclave_common>)
-
-  # Optionally link in DCAP library
-  if (HAS_QUOTE_PROVIDER)
-    if (WIN32)
-      list(APPEND LIBPATHS
-          ${NUGET_PACKAGE_PATH}/DCAP_Components/build/lib/native/Libraries)
-      list(APPEND INCPATHS
-          "${NUGET_PACKAGE_PATH}/DCAP_Components/build/Header Files")
-    endif ()
-    find_library(LIBSGX_QE NAMES sgx_dcap_ql HINTS ${LIBPATHS})
-    if (NOT LIBSGX_QE)
-      message(FATAL_ERROR "No quote provider library found, aborting! Set -DHAS_QUOTE_PROVIDER=OFF to ignore.")
-    endif ()
-    add_library(sgx_dcap_ql SHARED IMPORTED)
-    if (WIN32)
-      set_target_properties(sgx_dcap_ql PROPERTIES
-          INTERFACE_INCLUDE_DIRECTORIES "${INCPATHS}"
-          IMPORTED_LOCATION $ENV{WINDIR}/System32
-          IMPORTED_IMPLIB ${LIBSGX_QE})
-    elseif (UNIX)
-      set_target_properties(sgx_dcap_ql PROPERTIES IMPORTED_LOCATION ${LIBSGX_QE})
-    endif ()
-    target_link_libraries(oehost PUBLIC $<BUILD_INTERFACE:sgx_dcap_ql>)
-    # turn on 'OE_LINK_SGX_DCAP_QL' for the preprocessor
-    target_compile_definitions(oehost PUBLIC OE_LINK_SGX_DCAP_QL)
-  endif ()
-endif ()
-
-# Compile definitions and options
-target_compile_definitions(oehost
-  PUBLIC
-  # NOTE: This definition is public to the rest of our project's
-  # targets, but should not yet be exposed to consumers of our
-  # package.
-  $<BUILD_INTERFACE:OE_API_VERSION=2>
-  PRIVATE
-  OE_BUILD_UNTRUSTED
-  OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
-  OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
+# Compile definitions and options for oehost and oehostverify
+target_compile_definitions(
+  oehost
+  PUBLIC # NOTE: This definition is public to the rest of our project's
+         # targets, but should not yet be exposed to consumers of our
+         # package.
+         $<BUILD_INTERFACE:OE_API_VERSION=2>
+  PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+          OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
+target_compile_definitions(
+  oehostverify
+  PUBLIC # NOTE: This definition is public to the rest of our project's
+         # targets, but should not be exposed to consumers of our
+         # package.
+         $<BUILD_INTERFACE:OE_API_VERSION=2>
+  PRIVATE OE_BUILD_UNTRUSTED OE_REPO_BRANCH_NAME="${GIT_BRANCH}"
+          OE_REPO_LAST_COMMIT="${GIT_COMMIT}")
 
 if (USE_DEBUG_MALLOC)
   target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
+  target_compile_definitions(oehostverify PRIVATE OE_USE_DEBUG_MALLOC)
 endif ()
 
-if (COMPILE_SYSTEM_EDL)
-  target_compile_definitions(oehost PRIVATE OE_USE_BUILTIN_EDL)
+if (WITH_EEID)
+  target_compile_definitions(oehost PRIVATE OE_WITH_EXPERIMENTAL_EEID)
+  target_compile_definitions(oehostverify PRIVATE OE_WITH_EXPERIMENTAL_EEID)
 endif ()
 
 if (UNIX)
-  target_compile_options(oehost
-     PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
-     PUBLIC -fstack-protector-strong)
-  target_compile_definitions(oehost
-     PRIVATE _GNU_SOURCE
-     PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
+  target_compile_options(
+    oehost
+    PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
+    PUBLIC -fstack-protector-strong)
+  target_compile_definitions(
+    oehost
+    PRIVATE _GNU_SOURCE
+    PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
+  target_compile_options(
+    oehostverify
+    PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC ${PLATFORM_FLAGS}
+    PUBLIC -fstack-protector-strong)
+  target_compile_definitions(
+    oehostverify
+    PRIVATE _GNU_SOURCE
+    PUBLIC $<$<NOT:$<CONFIG:debug>>:_FORTIFY_SOURCE=2>)
 endif ()
 
 if (CMAKE_C_COMPILER_ID MATCHES GNU)
   target_compile_options(oehost PRIVATE -Wjump-misses-init)
+  target_compile_options(oehostverify PRIVATE -Wjump-misses-init)
 endif ()
 
-# Use the same the compile options and definitions from oehost.
-target_compile_options(oehostverify
-  PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_OPTIONS>
-  INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_OPTIONS>)
-
-target_compile_definitions(oehostverify
-  PRIVATE $<TARGET_PROPERTY:oehost,COMPILE_DEFINITIONS>
-  INTERFACE $<TARGET_PROPERTY:oehost,INTERFACE_COMPILE_DEFINITIONS>)
-
+target_compile_definitions(oehostverify PUBLIC OE_BUILD_HOST_VERIFY)
 
 # TODO: Remove this hard coded output directory.
-set_property(TARGET oehost PROPERTY
-  ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
-
-# Convenience library for creating a host-app (that needs the
-# -rdynamic link flag). We do this by default for the oehostverify target too.
-add_library(oehostapp INTERFACE)
-
-target_link_libraries(oehostapp INTERFACE oehost)
+set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY
+                                    ${OE_LIBDIR}/openenclave/host)
 
 if (UNIX)
-  target_link_libraries(oehost INTERFACE
-      -Wl,-z,noexecstack)
-  target_link_libraries(oehostapp INTERFACE
-      -rdynamic)
-  target_link_libraries(oehostverify INTERFACE
-      -Wl,-z,noexecstack
-      -rdynamic)
+  target_link_libraries(oehost INTERFACE -Wl,-z,noexecstack)
+  target_link_libraries(oehostverify INTERFACE -Wl,-z,noexecstack -rdynamic)
 endif ()
 
 # Install targets
-install(TARGETS oehost EXPORT openenclave-targets
+install(
+  TARGETS oehost
+  EXPORT openenclave-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
 
-install(TARGETS oehostapp EXPORT openenclave-targets)
-
-install(TARGETS oehostverify EXPORT openenclave-targets
+install(
+  TARGETS oehostverify
+  EXPORT openenclave-hostverify-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host
-  COMPONENT OEHOSTVERIFY)
+          COMPONENT OEHOSTVERIFY)
 
 include(measure/CMakeLists.txt)

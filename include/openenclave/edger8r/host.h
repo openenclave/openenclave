@@ -30,6 +30,9 @@
 
 OE_EXTERNC_BEGIN
 
+#define OE_GLOBAL_ECALL_ID_NULL OE_UINT64_MAX
+#define OE_ECALL_ID_NULL OE_UINT64_MAX
+
 /**
  * Perform a high-level enclave function call (ECALL).
  *
@@ -46,7 +49,8 @@ OE_EXTERNC_BEGIN
  * the call and not of the underlying function. The ECALL implementation must
  * define its own error reporting scheme via the arguments or return value.
  *
- * @param function_id The id of the enclave function that will be called.
+ * @param global_id The global id of the enclave function that will be called.
+ * @param name The name of the function that will be called.
  * @param input_buffer Buffer containing inputs data.
  * @param input_buffer_size Size of the input data buffer.
  * @param output_buffer Buffer where the outputs of the host function are
@@ -64,7 +68,8 @@ OE_EXTERNC_BEGIN
  */
 oe_result_t oe_call_enclave_function(
     oe_enclave_t* enclave,
-    uint32_t function_id,
+    uint64_t* global_id,
+    const char* name,
     const void* input_buffer,
     size_t input_buffer_size,
     void* output_buffer,
@@ -76,7 +81,8 @@ oe_result_t oe_call_enclave_function(
  */
 oe_result_t oe_switchless_call_enclave_function(
     oe_enclave_t* enclave,
-    uint32_t function_id,
+    uint64_t* global_id,
+    const char* name,
     const void* input_buffer,
     size_t input_buffer_size,
     void* output_buffer,
@@ -94,6 +100,18 @@ oe_result_t oe_switchless_call_enclave_function(
 OE_INLINE void* oe_malloc(size_t size)
 {
     return malloc(size);
+}
+
+OE_INLINE
+void oe_free(void* ptr)
+{
+    free(ptr);
+}
+
+OE_INLINE
+void* oe_realloc(void* ptr, size_t size)
+{
+    return realloc(ptr, size);
 }
 
 OE_INLINE size_t oe_strlen(const char* s)

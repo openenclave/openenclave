@@ -2,10 +2,12 @@
 
 ## Platform requirements
 
-- A system with support for SGX1 with Flexible Launch Control (FLC).
-Note: To check if your system has support for SGX1 with or without FLC, please look [here](./SGXSupportLevel.md).
+-  An x86-64 machine
 
-- Windows Server 2016 or 2019
+- Check if your system has support for SGX1 with or without FLC, please look [here](./SGXSupportLevel.md)
+    - If your system does not support SGX1+FLC, simulation mode can be used.
+
+- Windows Server 2016 or 2019, or Windows 10 (1709 or newer)
 
 ## Software Prerequisites
 
@@ -41,8 +43,8 @@ C:\Program Files\Git\mingw64\bin\openssl.exe
 
 ### Clang
 
-Download [Clang/LLVM for Windows 64-bit](http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe).
-Install Clang 7.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
+Download [Clang/LLVM for Windows 64-bit](https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe).
+Install Clang 8.0.1 and add the LLVM folder (typically C:\Program Files\LLVM\bin)
 to PATH. Open Enclave SDK uses clang to build the enclave binaries.
 
 Open up a command prompt and ensure that clang is added to PATH.
@@ -56,9 +58,13 @@ C:\> where ld.lld
 C:\Program Files\LLVM\bin\ld.lld.exe
 ```
 
-### SGX1 with Flexible Launch Control (FLC) Prerequisites
+### Prerequisites based on the SGX support level of your system
 
-Instructions to install Intel's PSW, Intel's Data Center Attestation Primitives, and related dependencies can be found [here](Contributors/WindowsManualSGX1FLCDCAPPrereqs.md).
+Check the [SGX support level](./SGXSupportLevel.md) for your system.
+
+- If the support level is SGX1+FLC and you would like to use the SDK to leverage this support, please install [Intel packages for SGX1+FLC](Contributors/WindowsManualSGX1FLCDCAPPrereqs.md).
+
+- If there is no SGX support on your system, you can use the package in simulation mode.
 
 ## Download and install the Open Enclave SDK NuGet Package
 

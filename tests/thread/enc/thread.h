@@ -32,6 +32,7 @@ typedef pthread_mutex_t oe_mutex_t;
 typedef pthread_spinlock_t oe_spinlock_t;
 #define OE_SPINLOCK_INITIALIZER 0
 #define oe_spin_lock pthread_spin_lock
+#define oe_spin_trylock pthread_spin_trylock
 #define oe_spin_unlock pthread_spin_unlock
 
 typedef pthread_cond_t oe_cond_t;

@@ -51,7 +51,7 @@ void atexit_with_ecall_ecall(void)
 OE_SET_ENCLAVE_SGX(
     1,    /* ProductID */
     1,    /* SecurityVersion */
-    true, /* AllowDebug */
-    8,    /* HeapPageCount */
-    8,    /* StackPageCount */
-    1);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    1);   /* NumTCS */

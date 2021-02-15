@@ -1,0 +1,21 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/logging.edl" import oe_write_ocall;
+    from "openenclave/edl/fcntl.edl" import *;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
+
+    trusted {
+        public void test_fs(
+            [string, in] const char* src_dir,
+            [string, in] const char* tmp_dir);
+        public void test_fs_linux(
+            [string, in] const char* src_dir,
+            [string, in] const char* tmp_dir);
+    };
+};

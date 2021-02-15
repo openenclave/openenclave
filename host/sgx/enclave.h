@@ -12,6 +12,7 @@
 #include <openenclave/internal/sgxcreate.h>
 #include <openenclave/internal/switchless.h>
 #include <stdbool.h>
+#include "../ecall_ids.h"
 #include "../hostthread.h"
 #include "asmdefs.h"
 
@@ -87,8 +88,8 @@ typedef struct _thread_binding
 oe_thread_binding_t* oe_get_thread_binding(void);
 
 /**
- *  This structure must be kept in sync with the defines in
- *  debugger/pythonExtension/gdb_sgx_plugin.py.
+ * Host-side representation of properties associated with each
+ * enclave instance.
  */
 typedef struct _oe_enclave
 {
@@ -100,9 +101,6 @@ typedef struct _oe_enclave
 
     /* Base address of enclave within enclave address space (BASEADDR) */
     uint64_t addr;
-
-    /* Address of .text section (for gdb) */
-    uint64_t text;
 
     /* Size of enclave in bytes */
     uint64_t size;
@@ -130,6 +128,11 @@ typedef struct _oe_enclave
 
     /* Manager for switchless calls */
     oe_switchless_call_manager_t* switchless_manager;
+
+    /* Table of global to local ecall ids */
+    oe_ecall_id_t* ecall_id_table;
+    size_t ecall_id_table_size;
+    size_t num_ecalls;
 } oe_enclave_t;
 
 /* Get the event for the given TCS */

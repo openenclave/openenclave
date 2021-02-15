@@ -31,6 +31,8 @@ void test_hostfs_posix(const char* enclave_path, const char* tmp_dir)
 }
 
 #if defined(_WIN32)
+int recursive_rmdir(const wchar_t* path);
+
 int wmain(int argc, const wchar_t* argv[])
 {
     if (argc != 3)
@@ -57,6 +59,8 @@ int wmain(int argc, const wchar_t* argv[])
     }
     char* win_path = oe_win_path_to_posix(argv[2]);
 
+    recursive_rmdir(argv[2]);
+
     test_hostfs_posix(enclave_path, win_path);
 
     free(win_path);
@@ -65,6 +69,7 @@ int wmain(int argc, const wchar_t* argv[])
 }
 
 #else /* !_WIN32 */
+int recursive_rmdir(const char* path);
 
 int main(int argc, const char* argv[])
 {
@@ -73,6 +78,8 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "Usage: %s ENCLAVE_PATH TMP_DIR\n", argv[0]);
         return 1;
     }
+
+    recursive_rmdir(argv[2]);
 
     test_hostfs_posix(argv[1], argv[2]);
 

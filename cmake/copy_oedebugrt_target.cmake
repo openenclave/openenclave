@@ -9,28 +9,36 @@
 ## TARGET_NAME: Name of the target to add for oe_debugrt. This should be unique for each caller.
 ##
 
-function(copy_oedebugrt_target TARGET_NAME)
+function (copy_oedebugrt_target TARGET_NAME)
 
-    if (UNIX)
-        message(WARNING "copy_oedebugrt_target is only intended for WIN32 build environments. Check if this invocation is needed.")
-    endif ()
+  if (UNIX)
+    message(
+      WARNING
+        "copy_oedebugrt_target is only intended for WIN32 build environments. Check if this invocation is needed."
+    )
+  endif ()
 
-    get_property(OEDEBUGRTLOCATION TARGET openenclave::oedebugrt PROPERTY LOCATION)
-    # Add copy actions for the dependencies
-    add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.dll
-        DEPENDS ${OEDEBUGRTLOCATION}
-        COMMAND ${CMAKE_COMMAND} -E copy ${OEDEBUGRTLOCATION} ${CMAKE_CURRENT_BINARY_DIR})
+  get_property(
+    OEDEBUGRTLOCATION
+    TARGET openenclave::oedebugrt
+    PROPERTY LOCATION)
+  # Add copy actions for the dependencies
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.dll
+    DEPENDS ${OEDEBUGRTLOCATION}
+    COMMAND ${CMAKE_COMMAND} -E copy ${OEDEBUGRTLOCATION}
+            ${CMAKE_CURRENT_BINARY_DIR})
 
-    get_filename_component(OEDEBUGRTFOLDER "${OEDEBUGRTLOCATION}" DIRECTORY)
-    add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.pdb
-        DEPENDS ${OEDEBUGRTFOLDER}/oedebugrt.pdb
-        COMMAND ${CMAKE_COMMAND} -E copy ${OEDEBUGRTFOLDER}/oedebugrt.pdb ${CMAKE_CURRENT_BINARY_DIR})
+  get_filename_component(OEDEBUGRTFOLDER "${OEDEBUGRTLOCATION}" DIRECTORY)
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.pdb
+    DEPENDS ${OEDEBUGRTFOLDER}/oedebugrt.pdb
+    COMMAND ${CMAKE_COMMAND} -E copy ${OEDEBUGRTFOLDER}/oedebugrt.pdb
+            ${CMAKE_CURRENT_BINARY_DIR})
 
-    # Always create the requested target, which may have an empty dependency list
-    add_custom_target(${TARGET_NAME} DEPENDS 
-      ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.dll
-      ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.pdb)
+  # Always create the requested target, which may have an empty dependency list
+  add_custom_target(
+    ${TARGET_NAME} DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.dll
+                           ${CMAKE_CURRENT_BINARY_DIR}/oedebugrt.pdb)
 
-endfunction( copy_oedebugrt_target )
+endfunction (copy_oedebugrt_target)

@@ -9,7 +9,7 @@
 #include <openenclave/internal/safemath.h>
 
 #include "../../calls.h"
-#include "../../ocalls.h"
+#include "../../ocalls/ocalls.h"
 #include "enclave.h"
 
 // clang-format off
@@ -80,14 +80,6 @@
  * the value is indeed at least as large as we assume it to be. */
 OE_STATIC_ASSERT(TEEC_CONFIG_PAYLOAD_REF_COUNT >= 4);
 
-static void _initialize_enclave_host()
-{
-#ifdef OE_USE_BUILTIN_EDL
-    oe_register_core_ocall_function_table();
-    oe_register_syscall_ocall_function_table();
-#endif // OE_USE_BUILTIN_EDL
-}
-
 static oe_result_t _handle_call_host_function(
     void* inout_buffer,
     size_t inout_buffer_size,
@@ -116,23 +108,8 @@ static oe_result_t _handle_call_host_function(
     if (args_ptr == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Resolve which OCALL table to use. */
-    if (args_ptr->table_id == OE_UINT64_MAX)
-    {
-        ocall_table.ocalls = enclave->ocalls;
-        ocall_table.num_ocalls = enclave->num_ocalls;
-    }
-    else
-    {
-        if (args_ptr->table_id >= OE_MAX_OCALL_TABLES)
-            OE_RAISE(OE_NOT_FOUND);
-
-        ocall_table.ocalls = _ocall_tables[args_ptr->table_id].ocalls;
-        ocall_table.num_ocalls = _ocall_tables[args_ptr->table_id].num_ocalls;
-
-        if (!ocall_table.ocalls)
-            OE_RAISE(OE_NOT_FOUND);
-    }
+    ocall_table.ocalls = enclave->ocalls;
+    ocall_table.num_ocalls = enclave->num_ocalls;
 
     /* Fetch matching function */
     if (args_ptr->function_id >= ocall_table.num_ocalls)
@@ -393,6 +370,40 @@ static oe_result_t _uuid_from_string(const char* uuid_str, TEEC_UUID* uuid)
     return OE_OK;
 }
 
+oe_result_t oe_get_ecall_id_table(
+    oe_enclave_t* enclave,
+    oe_ecall_id_t** ecall_id_table,
+    uint64_t* ecall_id_table_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    if (!enclave || !ecall_id_table || !ecall_id_table_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    *ecall_id_table = enclave->ecall_id_table;
+    *ecall_id_table_size = enclave->ecall_id_table_size;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_set_ecall_id_table(
+    oe_enclave_t* enclave,
+    oe_ecall_id_t* ecall_id_table,
+    uint64_t ecall_id_table_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    if (!enclave || !ecall_id_table || !ecall_id_table_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    enclave->ecall_id_table = ecall_id_table;
+    enclave->ecall_id_table_size = ecall_id_table_size;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 oe_result_t oe_create_enclave(
     const char* enclave_path,
     oe_enclave_type_t enclave_type,
@@ -401,6 +412,8 @@ oe_result_t oe_create_enclave(
     uint32_t setting_count,
     const oe_ocall_func_t* ocall_table,
     uint32_t ocall_count,
+    const oe_ecall_info_t* ecall_name_table,
+    uint32_t ecall_count,
     oe_enclave_t** enclave_out)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -413,8 +426,6 @@ oe_result_t oe_create_enclave(
     bool have_mutex = false;
     bool have_context = false;
     bool have_session = false;
-
-    _initialize_enclave_host();
 
     if (enclave_out)
         *enclave_out = NULL;
@@ -483,6 +494,10 @@ oe_result_t oe_create_enclave(
     enclave->ocalls = (const oe_ocall_func_t*)ocall_table;
     enclave->num_ocalls = ocall_count;
 
+    /* Register ecalls */
+    enclave->num_ecalls = ecall_count;
+    oe_register_ecalls(enclave, ecall_name_table, ecall_count);
+
     *enclave_out = enclave;
     result = OE_OK;
 
@@ -548,6 +563,10 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 
     /* Finalize the context against OP-TEE */
     TEEC_FinalizeContext(&enclave->ctx);
+
+    /* Destroy the ecall id table */
+    if (enclave->ecall_id_table)
+        free(enclave->ecall_id_table);
 
     /* Destroy the concurrency mutex */
     pthread_mutex_destroy(&enclave->mutex);

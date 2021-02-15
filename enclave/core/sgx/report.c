@@ -12,8 +12,81 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/safemath.h>
+#include <openenclave/internal/sgx/plugin.h>
+#include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/utils.h>
 #include "platform_t.h"
+
+/**
+ * Declare the prototypes of the following functions to avoid the
+ * missing-prototypes warning.
+ */
+oe_result_t _oe_get_qetarget_info_ocall(
+    oe_result_t* _retval,
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    sgx_target_info_t* target_info);
+oe_result_t _oe_get_quote_ocall(
+    oe_result_t* _retval,
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    const sgx_report_t* sgx_report,
+    void* quote,
+    size_t quote_size,
+    size_t* quote_size_out);
+
+/**
+ * Make the following OCALLs weak to support the system EDL opt-in.
+ * When the user does not opt into (import) the EDL, the linker will pick
+ * the following default implementations. If the user opts into the EDL,
+ * the implementations (which are strong) in the oeedger8r-generated code will
+ * be used.
+ */
+oe_result_t _oe_get_qetarget_info_ocall(
+    oe_result_t* _retval,
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    sgx_target_info_t* target_info)
+{
+    OE_UNUSED(format_id);
+    OE_UNUSED(opt_params);
+    OE_UNUSED(opt_params_size);
+    OE_UNUSED(target_info);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_get_qetarget_info_ocall, oe_get_qetarget_info_ocall);
+
+oe_result_t _oe_get_quote_ocall(
+    oe_result_t* _retval,
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    const sgx_report_t* sgx_report,
+    void* quote,
+    size_t quote_size,
+    size_t* quote_size_out)
+{
+    OE_UNUSED(format_id);
+    OE_UNUSED(opt_params);
+    OE_UNUSED(opt_params_size);
+    OE_UNUSED(sgx_report);
+    OE_UNUSED(quote);
+    OE_UNUSED(quote_size);
+    OE_UNUSED(quote_size_out);
+
+    if (_retval)
+        *_retval = OE_UNSUPPORTED;
+
+    return OE_UNSUPPORTED;
+}
+OE_WEAK_ALIAS(_oe_get_quote_ocall, oe_get_quote_ocall);
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
@@ -53,6 +126,9 @@ oe_result_t sgx_create_report(
     if (report_data != NULL)
         OE_CHECK(oe_memcpy_s(
             &rd, sizeof(sgx_report_data_t), report_data, report_data_size));
+
+    if (oe_sgx_get_td()->simulate)
+        OE_RAISE(OE_UNSUPPORTED);
 
     /* Invoke EREPORT instruction */
     asm volatile("ENCLU"
@@ -120,17 +196,33 @@ done:
     return result;
 }
 
-static oe_result_t _get_sgx_target_info(sgx_target_info_t* target_info)
+static oe_result_t _get_sgx_target_info(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
+    sgx_target_info_t* target_info)
 {
+    oe_result_t result = OE_UNEXPECTED;
     uint32_t retval;
 
-    if (oe_get_qetarget_info_ocall(&retval, target_info) != OE_OK)
-        return OE_FAILURE;
+    OE_CHECK(oe_get_qetarget_info_ocall(
+        &retval, format_id, opt_params, opt_params_size, target_info));
+    result = (oe_result_t)retval;
 
-    return (oe_result_t)retval;
+done:
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING(
+            "SGX remote attestation is not enabled. To "
+            "enable, please add\n\n"
+            "from \"openenclave/edl/sgx/attestation.edl\" import *;\n\n"
+            "in the edl file.\n");
+    return result;
 }
 
 static oe_result_t _get_quote(
+    const oe_uuid_t* format_id,
+    const void* opt_params,
+    size_t opt_params_size,
     const sgx_report_t* sgx_report,
     uint8_t* quote,
     size_t* quote_size)
@@ -145,15 +237,28 @@ static oe_result_t _get_quote(
         *quote_size = 0;
 
     OE_CHECK(oe_get_quote_ocall(
-        &retval, sgx_report, quote, *quote_size, quote_size));
+        &retval,
+        format_id,
+        opt_params,
+        opt_params_size,
+        sgx_report,
+        quote,
+        *quote_size,
+        quote_size));
     result = (oe_result_t)retval;
 
 done:
-
+    if (result == OE_UNSUPPORTED)
+        OE_TRACE_WARNING(
+            "SGX remote attestation is not enabled. To "
+            "enable, please add\n\n"
+            "from \"openenclave/edl/sgx/attestation.edl\" import *;\n\n"
+            "in the edl file.\n");
     return result;
 }
 
 oe_result_t oe_get_remote_report(
+    const oe_uuid_t* format_id,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -167,11 +272,6 @@ oe_result_t oe_get_remote_report(
     size_t sgx_report_size = sizeof(sgx_report);
     sgx_quote_t* sgx_quote = NULL;
 
-    // For remote attestation, the Quoting Enclave's target info is used.
-    // opt_params must not be supplied.
-    if (opt_params != NULL || opt_params_size != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     /*
      * OCall: Get target info from Quoting Enclave.
      * This involves a call to host. The target provided by targetinfo does not
@@ -179,7 +279,8 @@ oe_result_t oe_get_remote_report(
      * requires privacy. The trust decision is one of integrity verification
      * on the part of the report recipient.
      */
-    OE_CHECK(_get_sgx_target_info(&sgx_target_info));
+    OE_CHECK(_get_sgx_target_info(
+        format_id, opt_params, opt_params_size, &sgx_target_info));
 
     /*
      * Get enclave's local report passing in the quoting enclave's target info.
@@ -195,7 +296,13 @@ oe_result_t oe_get_remote_report(
     /*
      * OCall: Get the quote for the local report.
      */
-    result = _get_quote(&sgx_report, report_buffer, report_buffer_size);
+    result = _get_quote(
+        format_id,
+        opt_params,
+        opt_params_size,
+        &sgx_report,
+        report_buffer,
+        report_buffer_size);
     if (result == OE_BUFFER_TOO_SMALL)
         OE_CHECK_NO_TRACE(result);
     else
@@ -231,6 +338,7 @@ done:
 
 static oe_result_t _oe_get_report_internal(
     uint32_t flags,
+    const oe_uuid_t* format_id,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -255,6 +363,7 @@ static oe_result_t _oe_get_report_internal(
     if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
     {
         result = oe_get_remote_report(
+            format_id,
             report_data,
             report_data_size,
             opt_params,
@@ -296,8 +405,9 @@ done:
     return result;
 }
 
-oe_result_t oe_get_report_v2(
+oe_result_t oe_get_report_v2_internal(
     uint32_t flags,
+    const oe_uuid_t* format_id,
     const uint8_t* report_data,
     size_t report_data_size,
     const void* opt_params,
@@ -320,6 +430,7 @@ oe_result_t oe_get_report_v2(
 
     result = _oe_get_report_internal(
         flags,
+        format_id,
         report_data,
         report_data_size,
         opt_params,
@@ -341,6 +452,7 @@ oe_result_t oe_get_report_v2(
     out_buffer_size = tmp_buffer_size;
     OE_CHECK(_oe_get_report_internal(
         flags,
+        format_id,
         report_data,
         report_data_size,
         opt_params,
@@ -362,11 +474,6 @@ done:
         oe_free(tmp_buffer);
 
     return result;
-}
-
-void oe_free_report(uint8_t* report_buffer)
-{
-    oe_free(report_buffer);
 }
 
 oe_result_t oe_get_sgx_report_ecall(

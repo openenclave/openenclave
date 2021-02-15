@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 
 #include "../calls.h"
+#include <openenclave/advanced/allocator.h>
+#include <openenclave/attestation/attester.h>
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
@@ -9,6 +12,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/crypto/init.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
@@ -21,11 +25,13 @@
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/types.h>
 #include <openenclave/internal/utils.h>
+#include "../../../common/sgx/sgxmeasure.h"
 #include "../../sgx/report.h"
-#include "../arena.h"
 #include "../atexit.h"
 #include "../tracee.h"
+#include "arena.h"
 #include "asmdefs.h"
 #include "core_t.h"
 #include "cpuid.h"
@@ -35,11 +41,10 @@
 #include "report.h"
 #include "switchlesscalls.h"
 #include "td.h"
+#include "xstate.h"
 
 oe_result_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
-
-extern bool oe_disable_debug_malloc_check;
 
 /*
 **==============================================================================
@@ -158,14 +163,6 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
         {
             oe_enclave_t* enclave = (oe_enclave_t*)arg_in;
 
-#ifdef OE_USE_BUILTIN_EDL
-            /* Install the common TEE ECALL function table. */
-            OE_CHECK(oe_register_core_ecall_function_table());
-
-            /* Install the SGX ECALL function table. */
-            OE_CHECK(oe_register_platform_ecall_function_table());
-#endif // OE_USE_BUILTIN_EDL
-
             if (!oe_is_outside_enclave(enclave, 1))
                 OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -173,6 +170,13 @@ static oe_result_t _handle_init_enclave(uint64_t arg_in)
 
             /* Initialize the CPUID table before calling global constructors. */
             OE_CHECK(oe_initialize_cpuid());
+
+            /* Initialize the xstate settings
+             * Depends on TD and sgx_create_report, so can't happen earlier */
+            OE_CHECK(oe_set_is_xsave_supported());
+
+            /* Initialize the OE crypto library. */
+            oe_crypto_initialize();
 
             /* Call global constructors. Now they can safely use simulated
              * instructions like CPUID. */
@@ -195,7 +199,8 @@ done:
  */
 oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
 {
-    oe_call_enclave_function_args_t args, *args_ptr;
+    oe_call_enclave_function_args_t args = {0}, *args_ptr;
+    oe_call_function_return_args_t* return_args_ptr = NULL;
     oe_result_t result = OE_OK;
     oe_ecall_func_t func = NULL;
     uint8_t* buffer = NULL;
@@ -239,23 +244,10 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
     OE_CHECK(oe_safe_add_u64(
         args.input_buffer_size, args.output_buffer_size, &buffer_size));
 
-    // Resolve which ecall table to use.
-    if (args_ptr->table_id == OE_UINT64_MAX)
-    {
-        ecall_table.ecalls = __oe_ecalls_table;
-        ecall_table.num_ecalls = __oe_ecalls_table_size;
-    }
-    else
-    {
-        if (args_ptr->table_id >= OE_MAX_ECALL_TABLES)
-            OE_RAISE(OE_NOT_FOUND);
-
-        ecall_table.ecalls = _ecall_tables[args_ptr->table_id].ecalls;
-        ecall_table.num_ecalls = _ecall_tables[args_ptr->table_id].num_ecalls;
-
-        if (!ecall_table.ecalls)
-            OE_RAISE(OE_NOT_FOUND);
-    }
+    // The __oe_ecall_table is defined in the oeedger8r-generated
+    // code.
+    ecall_table.ecalls = oe_ecalls_table;
+    ecall_table.num_ecalls = oe_ecalls_table_size;
 
     // Fetch matching function.
     if (args.function_id >= ecall_table.num_ecalls)
@@ -288,15 +280,60 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
         args.output_buffer_size,
         &output_bytes_written);
 
-    // The output_buffer is expected to point to a marshaling struct,
-    // whose first field is an oe_result_t. The function is expected
-    // to fill this field with the status of the ecall.
-    result = *(oe_result_t*)output_buffer;
+    /*
+     * The output_buffer is expected to point to a marshaling struct.
+     * The function is expected to fill the struct.
+     */
+    return_args_ptr = (oe_call_function_return_args_t*)output_buffer;
 
+    result = return_args_ptr->result;
     if (result == OE_OK)
     {
+        /*
+         * Error out the case if the deepcopy_out_buffer is NULL but the
+         * deepcopy_out_buffer_size is not zero or if the deepcopy_out_buffer is
+         * not NULL but the deepcopy_out_buffer_size is zero. Note that this
+         * should only occur if the oeedger8r was not used or if
+         * oeedger8r-generated routine is modified.
+         */
+        if ((!return_args_ptr->deepcopy_out_buffer &&
+             return_args_ptr->deepcopy_out_buffer_size) ||
+            (return_args_ptr->deepcopy_out_buffer &&
+             !return_args_ptr->deepcopy_out_buffer_size))
+            OE_RAISE(OE_UNEXPECTED);
+
+        /*
+         * Nonzero deepcopy_out_buffer and deepcopy_out_buffer_size fields
+         * indicate that there is deep-copied content that needs to be
+         * transmitted to the host.
+         */
+        if (return_args_ptr->deepcopy_out_buffer &&
+            return_args_ptr->deepcopy_out_buffer_size)
+        {
+            /*
+             * Ensure that the content lies in enclave memory.
+             * Note that this should only fail if oeedger8r was not used or if
+             * the oeedger8r-generated routine is modified.
+             */
+            if (!oe_is_within_enclave(
+                    return_args_ptr->deepcopy_out_buffer,
+                    return_args_ptr->deepcopy_out_buffer_size))
+                OE_RAISE(OE_UNEXPECTED);
+
+            void* host_buffer =
+                oe_host_malloc(return_args_ptr->deepcopy_out_buffer_size);
+            /* Copy the deep-copied content to host memory. */
+            memcpy(
+                host_buffer,
+                return_args_ptr->deepcopy_out_buffer,
+                return_args_ptr->deepcopy_out_buffer_size);
+            /* Release the memory on the enclave heap. */
+            oe_free(return_args_ptr->deepcopy_out_buffer);
+            return_args_ptr->deepcopy_out_buffer = host_buffer;
+        }
+
         // Copy outputs to host memory.
-        memcpy(args.output_buffer, output_buffer, output_bytes_written);
+        memcpy(args.output_buffer, output_buffer, args.output_buffer_size);
 
         // The ecall succeeded.
         args_ptr->output_bytes_written = output_bytes_written;
@@ -306,6 +343,17 @@ oe_result_t oe_handle_call_enclave_function(uint64_t arg_in)
 done:
     if (buffer)
         oe_free(buffer);
+
+    if (result != OE_OK && return_args_ptr && args.output_buffer)
+    {
+        return_args_ptr->result = result;
+        return_args_ptr->deepcopy_out_buffer = NULL;
+        return_args_ptr->deepcopy_out_buffer_size = 0;
+        memcpy(
+            args.output_buffer,
+            return_args_ptr,
+            sizeof(oe_call_function_return_args_t));
+    }
 
     return result;
 }
@@ -365,7 +413,7 @@ static void _handle_ecall(
     oe_result_t result = OE_OK;
 
     /* Insert ECALL context onto front of oe_sgx_td_t.ecalls list */
-    Callsite callsite = {{0}};
+    oe_callsite_t callsite = {{0}};
     uint64_t arg_out = 0;
 
     td_push_callsite(td, &callsite);
@@ -420,13 +468,17 @@ static void _handle_ecall(
             /* Call all finalization functions */
             oe_call_fini_functions();
 
-#if defined(OE_USE_DEBUG_MALLOC)
+            /* Cleanup attesters */
+            oe_attester_shutdown();
+
+            /* Cleanup verifiers */
+            oe_verifier_shutdown();
 
             /* If memory still allocated, print a trace and return an error */
-            if (!oe_disable_debug_malloc_check && oe_debug_malloc_check() != 0)
-                result = OE_MEMORY_LEAK;
+            OE_CHECK(oe_check_memory_leaks());
 
-#endif /* defined(OE_USE_DEBUG_MALLOC) */
+            /* Cleanup the allocator */
+            oe_allocator_cleanup();
 
             break;
         }
@@ -480,7 +532,7 @@ OE_INLINE void _handle_oret(
     uint16_t result,
     uint64_t arg)
 {
-    Callsite* callsite = td->callsites;
+    oe_callsite_t* callsite = td->callsites;
 
     if (!callsite)
         return;
@@ -488,6 +540,17 @@ OE_INLINE void _handle_oret(
     td->oret_func = func;
     td->oret_result = result;
     td->oret_arg = arg;
+
+    /* Restore the FXSTATE and flags */
+    asm volatile("pushq %[rflags] \n\t" // Restore flags.
+                 "popfq \n\t"
+                 "fldcw %[fcw] \n\t"     // Restore x87 control word
+                 "ldmxcsr %[mxcsr] \n\t" // Restore MXCSR
+                 : [mxcsr] "=m"(callsite->mxcsr),
+                   [fcw] "=m"(callsite->fcw),
+                   [rflags] "=m"(callsite->rflags)
+                 :
+                 : "cc");
 
     oe_longjmp(&callsite->jmpbuf, 1);
 }
@@ -562,6 +625,7 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
 {
     static bool _initialized = false;
     static bool _stitch_ocall_stack = false;
+    oe_sgx_td_t* td = oe_sgx_get_td();
 
     // Since determining whether an enclave supports debugging is a stateless
     // idempotent operation, there is no need to lock. The result is cached
@@ -575,7 +639,6 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
 
     if (_stitch_ocall_stack)
     {
-        oe_sgx_td_t* td = oe_sgx_get_td();
         oe_ecall_context_t* host_ecall_context = td->host_ecall_context;
 
         // Make sure the context is valid.
@@ -591,7 +654,7 @@ static void _exit_enclave(uint64_t arg1, uint64_t arg2)
             host_ecall_context->debug_eexit_rip = frame[1];
         }
     }
-    oe_asm_exit(arg1, arg2);
+    oe_asm_exit(arg1, arg2, td);
 }
 
 /*
@@ -638,7 +701,7 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_td_t* td = oe_sgx_get_td();
-    Callsite* callsite = td->callsites;
+    oe_callsite_t* callsite = td->callsites;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
@@ -652,6 +715,17 @@ oe_result_t oe_ocall(uint16_t func, uint64_t arg_in, uint64_t* arg_out)
     /* Check for unexpected failures */
     if (!td_initialized(td))
         OE_RAISE_NO_TRACE(OE_FAILURE);
+
+    /* Preserve the FXSTATE and flags */
+    asm volatile("stmxcsr %[mxcsr] \n\t" // Save MXCSR
+                 "fstcw %[fcw] \n\t"     // Save x87 control word
+                 "pushfq \n\t"           // Save flags.
+                 "popq %[rflags] \n\t"
+                 :
+                 : [mxcsr] "m"(callsite->mxcsr),
+                   [fcw] "m"(callsite->fcw),
+                   [rflags] "m"(callsite->rflags)
+                 :);
 
     /* Save call site where execution will resume after OCALL */
     if (oe_setjmp(&callsite->jmpbuf) == 0)
@@ -686,8 +760,7 @@ done:
 **==============================================================================
 */
 
-oe_result_t oe_call_host_function_by_table_id(
-    uint64_t table_id,
+oe_result_t oe_call_host_function_internal(
     uint64_t function_id,
     const void* input_buffer,
     size_t input_buffer_size,
@@ -698,6 +771,7 @@ oe_result_t oe_call_host_function_by_table_id(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_call_host_function_args_t* args = NULL;
+    oe_call_function_return_args_t return_args, *return_args_ptr = NULL;
 
     /* Reject invalid parameters */
     if (!input_buffer || input_buffer_size == 0)
@@ -719,7 +793,6 @@ oe_result_t oe_call_host_function_by_table_id(
         OE_RAISE(OE_UNEXPECTED);
     }
 
-    args->table_id = table_id;
     args->function_id = function_id;
     args->input_buffer = input_buffer;
     args->input_buffer_size = input_buffer_size;
@@ -760,10 +833,73 @@ oe_result_t oe_call_host_function_by_table_id(
     /* Check the result */
     OE_CHECK(args->result);
 
+    return_args_ptr = (oe_call_function_return_args_t*)output_buffer;
+    /* Copy the marshaling struct from the host memory to avoid TOCTOU issues.
+     */
+    return_args = *return_args_ptr;
+
+    if (return_args.result == OE_OK)
+    {
+        /*
+         * Error out the case if the deepcopy_out_buffer is NULL but the
+         * deepcopy_out_buffer_size is not zero or if the deepcopy_out_buffer is
+         * not NULL but the deepcopy_out_buffer_size is zero. Note that this
+         * should only occur if the oeedger8r was not used or if
+         * oeedger8r-generated routine is modified.
+         */
+        if ((!return_args.deepcopy_out_buffer &&
+             return_args.deepcopy_out_buffer_size) ||
+            (return_args.deepcopy_out_buffer &&
+             !return_args.deepcopy_out_buffer_size))
+            OE_RAISE(OE_UNEXPECTED);
+
+        /*
+         * Nonzero deepcopy_out_buffer and deepcopy_out_buffer_size fields
+         * indicate that there is deep-copied content that needs to be
+         * transmitted from the host.
+         */
+        if (return_args.deepcopy_out_buffer &&
+            return_args.deepcopy_out_buffer_size)
+        {
+            /*
+             * Ensure that the content lies in host memory.
+             * Note that this should only fail if oeedger8r was not used or if
+             * the oeedger8r-generated routine is modified.
+             */
+            if (!oe_is_outside_enclave(
+                    return_args.deepcopy_out_buffer,
+                    return_args.deepcopy_out_buffer_size))
+                OE_RAISE(OE_UNEXPECTED);
+
+            void* enclave_buffer =
+                oe_malloc(return_args.deepcopy_out_buffer_size);
+            /* Copy the deep-copied content to enclave memory. */
+            memcpy(
+                enclave_buffer,
+                return_args.deepcopy_out_buffer,
+                return_args.deepcopy_out_buffer_size);
+            /* Release the memory on host heap. */
+            oe_host_free(return_args.deepcopy_out_buffer);
+            /*
+             * Update the deepcopy_out_buffer field.
+             * Note that the field is still in host memory. Currently, the
+             * oeedger8r-generated code will perform an additional check that
+             * ensures the buffer stays within the enclave memory.
+             */
+            return_args_ptr->deepcopy_out_buffer = enclave_buffer;
+        }
+    }
+
     *output_bytes_written = args->output_bytes_written;
     result = OE_OK;
 
 done:
+    if (result != OE_OK && return_args_ptr)
+    {
+        return_args_ptr->result = result;
+        return_args_ptr->deepcopy_out_buffer = NULL;
+        return_args_ptr->deepcopy_out_buffer_size = 0;
+    }
 
     return result;
 }
@@ -785,8 +921,7 @@ oe_result_t oe_call_host_function(
     size_t output_buffer_size,
     size_t* output_bytes_written)
 {
-    return oe_call_host_function_by_table_id(
-        OE_UINT64_MAX,
+    return oe_call_host_function_internal(
         function_id,
         input_buffer,
         input_buffer_size,

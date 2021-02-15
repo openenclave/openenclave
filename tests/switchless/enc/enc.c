@@ -6,7 +6,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
 #include <string.h>
-#include "switchless_t.h"
+#include "switchless_test_t.h"
 
 #define STRING_LEN 100
 #define STRING_HELLO "Hello World"
@@ -106,9 +106,9 @@ int enc_echo_regular(
 }
 
 OE_SET_ENCLAVE_SGX(
-    1,        /* ProductID */
-    1,        /* SecurityVersion */
-    true,     /* AllowDebug */
-    64,       /* HeapPageCount */
-    64,       /* StackPageCount */
-    NUM_TCS); /* TCSCount */
+    1,                             /* ProductID */
+    1,                             /* SecurityVersion */
+    true,                          /* Debug */
+    OE_TEST_MT_HEAP_SIZE(NUM_TCS), /* NumHeapPages */
+    64,                            /* NumStackPages */
+    NUM_TCS);                      /* NumTCS */

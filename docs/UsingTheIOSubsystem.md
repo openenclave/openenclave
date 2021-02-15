@@ -110,7 +110,7 @@ int setup()
     oe_result_t result;
 
     /* Load the host file system module. */
-    if ((result = oe_load_module_host_socket_interface()) != OE_OK)
+    if ((result = oe_load_module_host_file_system()) != OE_OK)
         return -1;
 
     /* Mount the host file system on the root directory. */
@@ -140,7 +140,7 @@ int create_alphabet_file(const char* path)
         return -1;
 
     /* Write the letters of the alphabet to the file. */
-    if (fwrite(alphabet, 1, sizeof(alphabet), stream) != sizeof(ALPHABET))
+    if (fwrite(ALPHABET, 1, sizeof(ALPHABET), stream) != sizeof(ALPHABET))
     {
         fclose(stream);
         return -1;
@@ -380,6 +380,9 @@ functions.
 | close             | none                                                     |
 | dup               | none                                                     |
 | dup2              | none                                                     |
+| fdatasync         | none                                                     |
+| fsync             | none                                                     |
+| ftruncate         | none                                                     |
 | getcwd            | none                                                     |
 | getdomainname     | none                                                     |
 | getegid           | none                                                     |
@@ -399,6 +402,7 @@ functions.
 | read              | none                                                     |
 | rmdir             | none                                                     |
 | sleep             | none                                                     |
+| truncate          | none                                                     |
 | unlink            | none                                                     |
 | write             | none                                                     |
 |                   | <img width="1000">                                       |
@@ -469,7 +473,6 @@ functions.
 | closedir          | none                                                     |
 | opendir           | none                                                     |
 | readdir           | none                                                     |
-| readdir_r         | none                                                     |
 | rewinddir         | none                                                     |
 | telldir           | none                                                     |
 |                   | <img width="1000">                                       |
@@ -541,6 +544,7 @@ following functions.
 
 | Function          | Limitations                                              |
 | :---              | :---                                                     |
+| fstat             | none                                                     |
 | mkdir             | none                                                     |
 | stat              | none                                                     |
 |                   | <img width="1000">                                       |

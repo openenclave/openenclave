@@ -1,4 +1,3 @@
-
 # The helloworld sample
 
 - Written in C
@@ -11,8 +10,9 @@
 ## Prerequisites
 
 - Use an OE SDK-supported machine or development environment (like Intel SGX).
-- Install the OE SDK package and dependencies for your environment. Install the OE SDK package and dependencies for your environment. See the [Getting Started documentation](/../../../openenclave#getting-started) to find OS-specific installation instructions.
-- Read the common sample information page to learn how to prepare the sample on [Linux](../README_Linux.md#building-open-enclave-sdk-samples-on-linux) and [Windows](../README_Windows.md#building-open-enclave-sdk-samples-on-windows).
+- Install the OE SDK package and dependencies for your environment. Install the OE SDK package and dependencies for your environment. The documentation for necessary prerequisites is provided in the [getting started page of the Open Enclave SDK](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/README.md).
+
+- Read the common [sample information page](../README.md#building-the-samples) to learn how to prepare the sample.
 
 ## About the helloworld sample
 
@@ -58,12 +58,19 @@ void host_helloworld();
 
 The reverse is also true for functions defined in the untrusted host that the trusted enclave needs to call into. The untrusted host will implement this function and the `oeedger8r` tool generates some marshaling code in the enclave directory with the same signature as the function in the host.
 
-To generate the functions with the marshaling code the `oeedger8r` is called in both the host and enclave directories from their Makefiles:
+To generate the functions with the marshaling code the `oeedger8r` is called in both the host and enclave directories.
+To generate the marshaling code the untrusted host uses to call into the trusted enclave, the `--untrusted` argument as shown below. `oeedger8r` needs the search path as an input to figure out where to search for the edl files.
 
-To generate the marshaling code the untrusted host uses to call into the trusted enclave the following command is run:
+On Linux, if the openenclave package is installed at `/opt/openenclave` and you are looking to build an enclave application targetting SGX, you would need to run the following command:
 
 ```bash
-oeedger8r ../helloworld.edl --untrusted
+oeedger8r --search-path /opt/openenclave/include --search-path /opt/openenclave/include/openenclave/edl/sgx ../helloworld.edl --untrusted
+```
+
+On Windows, if the openenclave package is installed at `c:\openenclave` and the developer is looking to build an enclave application targetting SGX, the developer would need to run the following command:
+
+```cmd
+oeedger8r --search-path c:\openenclave\include --search-path c:\openenclave\include\openenclave\edl\sgx ..\helloworld.edl --untrusted
 ```
 
 This command compiles the `helloworld.edl` file and generates the following files within the host directory:
@@ -74,61 +81,33 @@ This command compiles the `helloworld.edl` file and generates the following file
 | host/helloworld_u.c | Contains the `enclave_helloworld()` function with the marshaling code to call into the enclave version of the `enclave_helloworld()` function |
 | host/helloworld_u.h | Function prototype for `enclave_helloworld()` function |
 
-To generate the marshaling code the trusted enclave uses to call into the untrusted host the following command is run:
+To generate the marshaling code the trusted enclave uses to call into the untrusted host, the `--trusted` argument as shown below. `oeedger8r` needs the search path as an input to figure out where to search for the edl files.
+
+On Linux, if the openenclave package is installed at `/opt/openenclave` and you are looking to build an enclave application targetting SGX, you would need to run the following command:
 
 ```bash
-oeedger8r ../helloworld.edl --trusted
+oeedger8r --search-path /opt/openenclave/include --search-path /opt/openenclave/include/openenclave/edl/sgx ../helloworld.edl --trusted
 ```
 
+On Windows, if the openenclave package is installed at `c:\openenclave` and the developer is looking to build an enclave application targetting SGX, the developer would need to run the following command:
+
+```cmd
+oeedger8r --search-path c:\openenclave\include --search-path c:\openenclave\include\openenclave\edl\sgx ..\helloworld.edl --trusted
+```
+
+This command compiles the `helloworld.edl` file and generates the following files within the enclave directory:
 | file | description |
 |---|---|
 | enclave/helloworld_args.h | Defines the parameters that are passed to all functions defined in the edl file |
 | enclave/helloworld_t.c | Contains the `host_helloworld()` function with the marshaling code to call into the host version of the `host_helloworld()` function |
 | enclave/helloworld_t.h | function prototype for `host_helloworld()` function |
 
-The Makefile in the root of this sample directory has three rules
-
-- build: Calls into the Makefiles in the host and enclave directories to build
-- clean: Calls in to the Makefiles in the host and enclave directories to clean all generated files
-- run: Runs the generated host executable, passing the signed enclave executable as a parameter
-
-```make
-build:
-        $(MAKE) -C enclave
-        $(MAKE) -C host
-
-clean:
-        $(MAKE) -C enclave clean
-        $(MAKE) -C host clean
-
-run:
-        host/helloworldhost ./enclave/helloworldenc.signed
-```
-
-Build the project with the following command:
-
-```bash
-make build
-```
-
-Clean the project with the following command:
-
-```bash
-make clean
-```
-
-Run the built sample with the following command:
-
-```bash
-make run
-```
-
 ## Enclave component
-  
+
 This section shows how to develop and build a simple enclave called helloworld.
-  
+
 ### Develop an enclave
-  
+
 An enclave exposes its functionality to the host application in the form of a set of trusted methods that are defined in the `helloworld.edl` file and implemented within the enclave project.
 
 The helloworld sample implements a single function named `enclave_helloworld` which is called by the host. All it does is print out a message and then call back to the host. No parameters are passed in this sample for simplicity.
@@ -159,7 +138,7 @@ void enclave_helloworld()
     oe_result_t result = host_helloworld();
     if (result != OE_OK)
     {
-        fprintf(stderr, "Call to host_helloworld failed: result=%u (%s)\n", result, 
+        fprintf(stderr, "Call to host_helloworld failed: result=%u (%s)\n", result,
          oe_result_str(result));
     }
 }
@@ -206,6 +185,7 @@ The following enclave files come with the sample:
 | File | Description |
 | --- | --- |
 | enc.c | Source code for the enclave `enclave_helloworld` function |
+| CMakeLists.txt | CMake file to build the enclave |
 | Makefile | Makefile used to build the enclave |
 | helloworld.conf | Configuration parameters for the enclave |
 
@@ -225,64 +205,27 @@ The following files are generated during the build.
 
 Only the signed version of the enclave `helloworldenc.signed` is loadable on Linux as enclaves are required to be digitally signed.
 
-#### Under the hood for the `make build` operation
+#### Linking the enclave application
 
-Here is a listing of key components in the helloworld/enclave/Makefile. Also see the [complete listing](enclave/Makefile).
-
-```make
-include ../../config.mk
-
-CFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --cflags)
-LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --libs)
-
-all:
-	$(MAKE) build
-	$(MAKE) keys
-	$(MAKE) sign
-
-build:
-	@ echo "Compilers used: $(CC), $(CXX)"
-	oeedger8r ../helloworld.edl --trusted
-	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 enc.c -o enc.o
-	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 helloworld_t.c -o helloworld_t.o
-	$(CC) -o helloworldenc helloworld_t.o enc.o $(LDFLAGS)
-
-sign:
-	oesign sign -e helloworldenc -c helloworld.conf -k private.pem
-
-clean:
-	rm -f enc.o helloworldenc helloworldenc.signed private.pem public.pem helloworld_t.o helloworld_t.h helloworld_t.c helloworld_args.h
-
-keys:
-	openssl genrsa -out private.pem -3 3072
-	openssl rsa -in private.pem -pubout -out public.pem
-```
-
-All OE samples use the `pkg-config` tool for building.
-
-If you are interested in its details, you can find OE pkg-config pc files in package_installtation_destination/share/pkgconfig.
-
-For example: /opt/openenclave/share/pkgconfig
-
-##### Build
-
-The Makefile's `build` target is for compiling enclave source code and linking its library with its dependent libraries (in the following order):
+The enclave in this samples links against the Open Enclave SDK libraries (in the following order):
 
 - oeenclave
-- mbedx509
-- mbedcrypto
+- oecryptombedtls**
 - oelibc
 - oesyscall
 - oecore
 
+** Developer can link against `oecryptoopenssl` library by changing `OE_CRYPTO_LIB` variable in Makefile.
+
 When compiling with LVI mitigation, it links against the LVI-mitigated versions of those libraries instead:
 
 - oeenclave-lvi-cfg
-- mbedx509-lvi-cfg
-- mbedcrypto-lvi-cfg
+- oecryptombedtls-lvi-cfg**
 - oelibc-lvi-cfg
 - oesyscall-lvi-cfg
 - oecore-lvi-cfg
+
+** Developer can link against `oecryptoopenssl-lvi-cfg` library by changing `OE_CRYPTO_LIB` variable in Makefile.
 
 `helloworldenc` is the resulting enclave executable (unsigned).
 
@@ -323,7 +266,7 @@ The full source for the host implementation is here: [helloworld/host/host.c](ho
 #include <stdio.h>
 
 // Include the untrusted helloworld header that is generated
-// during the build. This file is generated by calling the 
+// during the build. This file is generated by calling the
 // sdk tool oeedger8r against the helloworld.edl file.
 #include "helloworld_u.h"
 
@@ -416,7 +359,7 @@ This function creates an enclave for use in the host process. This includes:
 - Measuring the resulting enclave identity and ensuring it matches the enclave signature.
 - Initializing the enclave so that it is ready to be called from the host.
 
-The helloworld sample creates an enclave by calling `oe_create_helloworld_enclave` with the path to the signed enclave library file, which happens to be passed as the first parameter to the launching application. 
+The helloworld sample creates an enclave by calling `oe_create_helloworld_enclave` with the path to the signed enclave library file, which happens to be passed as the first parameter to the launching application.
 
 The `OE_ENCLAVE_FLAG_DEBUG` flag allows the enclave to be created without the enclave binary being signed. It also gives a developer permission to debug the process and get access to enclave memory. What this means is ** DO NOT SHIP CODE WITH THE `OE_ENCLAVE_FLAG_DEBUG` ** because it is insecure. What it gives is the ability to develop your enclave more easily. Before you ship the code, you need to have a proper code signing story for the enclave executable. Some newer Intel SGX platforms allow self-signed certificates to be used, but some of the older Intel SGX platforms require Intel to sign your enclave executable.
 
@@ -445,44 +388,12 @@ Terminates the enclave and frees up all resources associated with it.
 
 ### Build a host
 
-The helloworld sample comes with a Makefile with a `build` target. You can run `make build` to generate the marshaling files and build the host app.
-
-Listing of [helloworld/host/Makefile](host/Makefile)
-
-```make
-# Detect C and C++ compiler options
-# if not gcc, default to clang-7
-
-COMPILER=$(notdir $(CC))
-ifeq ($(COMPILER), gcc)
-        USE_GCC = true
-endif
-
-ifeq ($(USE_GCC),)
-        CC = clang-7
-        COMPILER=clang
-endif
-
-CFLAGS=$(shell pkg-config oehost-$(COMPILER) --cflags)
-LDFLAGS=$(shell pkg-config oehost-$(COMPILER) --libs)
-
-build:
-	@ echo "Compilers used: $(CC), $(CXX)"
-	oeedger8r ../helloworld.edl --untrusted
-	$(CC) -c $(CFLAGS) host.c
-	$(CC) -c $(CFLAGS) helloworld_u.c
-	$(CC) -o helloworldhost helloworld_u.o host.o $(LDFLAGS)
-
-clean:
-	rm -f helloworldhost host.o helloworld_u.o helloworld_u.c helloworld_u.h helloworld_args.h
-
-```
-
 The following host files come with the sample:
 
 | File | Description |
 | --- | --- |
 | host.c | Source code for the host `host_helloworld` function, as well as the executable `main` function. |
+| CMakeLists.txt | CMake file to build the host |
 | Makefile | Makefile used to build the host |
 
 The following files are generated during the build.
@@ -496,7 +407,6 @@ The following files are generated during the build.
 | helloworld_u.h | Function prototype for `enclave_helloworld()` function |
 | helloworld_u.o | compiled helloworld_u.c source file |
 
-
 ## Build and run
 
 Open Enclave SDK supports building the sample on both Linux and Windows.
@@ -504,6 +414,10 @@ Linux supports two types of build systems, GNU Make with `pkg-config` and CMake,
 while Windows supports only CMake.
 
 ### Linux
+
+### Source the openenclaverc file
+
+Information on this can be found in [Sourcing the openenclaverc file](../BuildSamplesLinux.md#source-the-openenclaverc-file)
 
 #### CMake
 
@@ -526,9 +440,13 @@ make run
 
 ### Windows
 
+### Set up the environemt
+
+Information on this can be found in [Steps to build and run samples](../BuildSamplesWindows.md#steps-to-build-and-run-samples)
+
 #### CMake
 
-```bash
+```cmd
 mkdir build && cd build
 cmake .. -G Ninja -DNUGET_PACKAGE_PATH=C:\oe_prereqs
 ninja
@@ -549,7 +467,7 @@ With this support, you can build the sample with LVI mitigation, which ensures:
 Use the `install_lvi_mitigation_bindir` script in the installation package to install the
 dependencies the LVI mitigation.
 
-The following exapmle shows how to use the script (assume the package resides in `/opt/openenclave`).
+The following example shows how to use the script (assume the package resides in `/opt/openenclave`).
 
 ```bash
 ~/openenclave/share/openenclave/samples$ /opt/openenclave/bin/scripts/lvi-mitigation/install_lvi_mitigation_bindir
@@ -595,12 +513,18 @@ ninja run
 
 helloworld sample can run under OE simulation mode.
 
-To run the helloworld sample in simulation mode from the command like, use the following:
+On Linux, to run the helloworld sample in simulation mode from the command like, use the following:
 
 ```bash
 ./host/helloworldhost ./enclave/helloworldenc.signed --simulate
 ```
 
+On Windows, to run the helloworld sample in simulation mode from the command like, use the following:
+
+```cmd
+.\host\helloworldhost .\enclave]helloworldenc.signed --simulate
+```
+
 ## Next steps
 
-In this tutorial, you built and ran the helloword sample. Next, try out more OE SDK samples on [Linux](https://github.com/JBCook/openenclave/blob/master/samples/README_Linux.md#samples) and [Windows](https://github.com/JBCook/openenclave/blob/master/samples/README_Windows.md#samples).
+In this tutorial, you built and ran the helloword sample. Next, try out more OE SDK samples on [Linux](../README.md#samples).

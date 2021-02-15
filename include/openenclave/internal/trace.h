@@ -1,25 +1,15 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#ifndef _OE_TRACE_H
-#define _OE_TRACE_H
+#ifndef _OE_INTERNAL_TRACE_H
+#define _OE_INTERNAL_TRACE_H
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/log.h>
 
 OE_EXTERNC_BEGIN
-
-typedef enum _oe_log_level
-{
-    OE_LOG_LEVEL_NONE = 0,
-    OE_LOG_LEVEL_FATAL,
-    OE_LOG_LEVEL_ERROR,
-    OE_LOG_LEVEL_WARNING,
-    OE_LOG_LEVEL_INFO,
-    OE_LOG_LEVEL_VERBOSE,
-    OE_LOG_LEVEL_MAX
-} oe_log_level_t;
 
 extern oe_log_level_t _log_level;
 

@@ -17,7 +17,6 @@
 
 #define ENCRYPT_OPERATION true
 #define DECRYPT_OPERATION false
-#define SALT_SIZE_IN_BYTES 16 // Length of salt size
 
 void ecall_dispatcher::dump_data(
     const char* name,
@@ -61,39 +60,16 @@ exit:
 }
 
 // This routine uses the mbed_tls library to derive an AES key from the input
-// password and produce a password based key. Note : A set of hardcoded salt
-// values are used here for the purpose simplifying this sample, which caused
-// this routine to return the same key when taking the same password. This saves
-// the sample from having to write salt values to the encryption header. In a
-// real world application, randomly generated salt values are recommended.
+// password and produces a password-based key.
 int ecall_dispatcher::generate_password_key(
     const char* password,
+    unsigned char* salt,
     unsigned char* key,
     unsigned int key_len)
 {
-    mbedtls_ctr_drbg_context ctr_drbg;
-    mbedtls_entropy_context entropy;
     mbedtls_md_context_t sha_ctx;
     const mbedtls_md_info_t* info_sha;
     int ret = 0;
-    unsigned char salt[SALT_SIZE_IN_BYTES] = {0xb2,
-                                              0x4b,
-                                              0xf2,
-                                              0xf7,
-                                              0x7a,
-                                              0xc5,
-                                              0xec,
-                                              0x0c,
-                                              0x5e,
-                                              0x1f,
-                                              0x4d,
-                                              0xc1,
-                                              0xae,
-                                              0x46,
-                                              0x5e,
-                                              0x75};
-    mbedtls_entropy_init(&entropy);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
     mbedtls_md_init(&sha_ctx);
 
     TRACE_ENCLAVE("generate_password_key");
@@ -135,8 +111,6 @@ int ecall_dispatcher::generate_password_key(
     }
     TRACE_ENCLAVE("Key based on password successfully generated");
 exit:
-    mbedtls_ctr_drbg_free(&ctr_drbg);
-    mbedtls_entropy_free(&entropy);
     mbedtls_md_free(&sha_ctx);
     return ret;
 }
@@ -189,36 +163,19 @@ exit:
 }
 
 // The encryption key is encrypted before it was written back to the encryption
-// header as part of the encryption metadata. Note: using fixed initialization
-// vector (iv) is good enough because its used only for the purpose of
-// encrypting encryption key, just once.
+// header as part of the encryption metadata.
 int ecall_dispatcher::cipher_encryption_key(
     bool encrypt,
     unsigned char* input_data,
     unsigned int input_data_size,
     unsigned char* encrypt_key,
+    unsigned char* iv,
     unsigned char* output_data,
     unsigned int output_data_size)
 {
     int ret = 0;
     (void)output_data_size;
     mbedtls_aes_context aescontext;
-    unsigned char iv[IV_SIZE] = {0xb2,
-                                 0x4b,
-                                 0xf2,
-                                 0xf7,
-                                 0x7a,
-                                 0xc5,
-                                 0xec,
-                                 0x0c,
-                                 0x5e,
-                                 0x1f,
-                                 0x4d,
-                                 0xc1,
-                                 0xae,
-                                 0x46,
-                                 0x5e,
-                                 0x75};
 
     TRACE_ENCLAVE(
         "cipher_encryption_key: %s", encrypt ? "encrypting" : "decrypting");
@@ -276,16 +233,52 @@ int ecall_dispatcher::prepare_encryption_header(
     encryption_header_t* header,
     string password)
 {
+    mbedtls_ctr_drbg_context ctr_drbg;
+    mbedtls_entropy_context entropy;
     int ret = 0;
     unsigned char digest[HASH_VALUE_SIZE_IN_BYTES]; // password derived key
     unsigned char
         password_key[ENCRYPTION_KEY_SIZE_IN_BYTES]; // encrypted encryption key
     unsigned char encrypted_key[ENCRYPTION_KEY_SIZE_IN_BYTES];
+    unsigned char salt[SALT_SIZE_IN_BYTES];
+    const char seed[] = "file_encryptor_sample";
+
+    if (header == NULL)
+    {
+        TRACE_ENCLAVE("prepare_encryption_header() failed with null argument"
+                      " for encryption_header_t*");
+        goto exit;
+    }
+
+    mbedtls_entropy_init(&entropy);
+    mbedtls_ctr_drbg_init(&ctr_drbg);
+
+    // Initialize CTR-DRBG seed
+    ret = mbedtls_ctr_drbg_seed(
+        &ctr_drbg,
+        mbedtls_entropy_func,
+        &entropy,
+        (const unsigned char*)seed,
+        strlen(seed));
+    if (ret != 0)
+    {
+        TRACE_ENCLAVE("mbedtls_ctr_drbg_seed() failed with -0x%04x", -ret);
+        goto exit;
+    }
+
+    // Generate random salt
+    ret = mbedtls_ctr_drbg_random(&ctr_drbg, salt, SALT_SIZE_IN_BYTES);
+    if (ret != 0)
+    {
+        TRACE_ENCLAVE("mbedtls_ctr_drbg_random() failed with -0x%04x", -ret);
+        goto exit;
+    }
+    memcpy(header->salt, salt, SALT_SIZE_IN_BYTES);
 
     TRACE_ENCLAVE("prepare_encryption_header");
     // derive a key from the password using PBDKF2
     ret = generate_password_key(
-        password.c_str(), password_key, ENCRYPTION_KEY_SIZE_IN_BYTES);
+        password.c_str(), salt, password_key, ENCRYPTION_KEY_SIZE_IN_BYTES);
     if (ret != 0)
     {
         TRACE_ENCLAVE("password_key");
@@ -326,6 +319,8 @@ int ecall_dispatcher::prepare_encryption_header(
         m_encryption_key,
         ENCRYPTION_KEY_SIZE_IN_BYTES,
         password_key,
+        salt, // iv for encryption, decryption. In this sample we use
+              // the salt in encryption header as iv.
         encrypted_key,
         ENCRYPTION_KEY_SIZE_IN_BYTES);
     if (ret != 0)
@@ -336,21 +331,31 @@ int ecall_dispatcher::prepare_encryption_header(
     memcpy(header->encrypted_key, encrypted_key, ENCRYPTION_KEY_SIZE_IN_BYTES);
     TRACE_ENCLAVE("Done with prepare_encryption_header successfully.");
 exit:
+    mbedtls_ctr_drbg_free(&ctr_drbg);
+    mbedtls_entropy_free(&entropy);
     return ret;
 }
 
 // Parse an input header for validating the password and getting the encryption
 // key in preparation for decryption/encryption operations
 //  1)Check password by comparing their digests
-//  2)reproduce a encryption key from the password
+//  2)reproduce a password key from the password
 //  3)decrypt the encryption key with a password key
 int ecall_dispatcher::parse_encryption_header(
     encryption_header_t* header,
     string password)
 {
     int ret = 0;
+    if (header == NULL)
+    {
+        TRACE_ENCLAVE("parse_encryption_header() failed with a null argument"
+                      " for encryption_header_t*");
+        goto exit;
+    }
+
     unsigned char digest[HASH_VALUE_SIZE_IN_BYTES];
     unsigned char password_key[ENCRYPTION_KEY_SIZE_IN_BYTES];
+    unsigned char salt[SALT_SIZE_IN_BYTES];
 
     // check password by comparing their digests
     ret =
@@ -368,20 +373,25 @@ int ecall_dispatcher::parse_encryption_header(
         goto exit;
     }
 
+    memcpy(salt, header->salt, SALT_SIZE_IN_BYTES);
+
     // derive a key from the password using PBDKF2
     ret = generate_password_key(
-        password.c_str(), password_key, ENCRYPTION_KEY_SIZE_IN_BYTES);
+        password.c_str(), salt, password_key, ENCRYPTION_KEY_SIZE_IN_BYTES);
     if (ret != 0)
     {
         TRACE_ENCLAVE("generate_password_key failed with %d", ret);
         goto exit;
     }
+
     // decrypt the "encrypted encryption key" using the password key
     ret = cipher_encryption_key(
         DECRYPT_OPERATION,
         header->encrypted_key,
         ENCRYPTION_KEY_SIZE_IN_BYTES,
         password_key,
+        salt, // iv for encryption, decryption. In this sample we use
+              // the salt in encryption header as iv.
         (unsigned char*)m_encryption_key,
         ENCRYPTION_KEY_SIZE_IN_BYTES);
     if (ret != 0)
@@ -392,21 +402,21 @@ int ecall_dispatcher::parse_encryption_header(
                 "m_encryption_key[%d] =0x%02x", i, m_encryption_key[i]);
         goto exit;
     }
+
 exit:
     return ret;
 }
 
-int ecall_dispatcher::process_encryption_header(
-    bool encrypt,
-    const char* password,
-    size_t password_len,
-    encryption_header_t* header)
+int ecall_dispatcher::process_encryption_header(encryption_header_t* header)
 {
     int ret = 0;
 
-    m_password = std::string(password, password + password_len);
-    m_encrypt = encrypt;
-    m_header = header;
+    if (header == NULL)
+    {
+        TRACE_ENCLAVE("process_encryption_header() failed with a null argument"
+                      " for encryption_header_t*");
+        goto exit;
+    }
 
     if (m_encrypt)
     {

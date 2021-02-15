@@ -17,12 +17,20 @@ void TestSHA(void)
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
-    OE_SHA256 hash = {0};
-    oe_sha256_context_t ctx = {0};
-    oe_sha256_init(&ctx);
-    oe_sha256_update(&ctx, ALPHABET, strlen(ALPHABET));
-    oe_sha256_final(&ctx, &hash);
-    OE_TEST(memcmp(&hash, &ALPHABET_HASH, sizeof(OE_SHA256)) == 0);
+    {
+        OE_SHA256 hash = {0};
+        oe_sha256_context_t ctx = {0};
+        oe_sha256_init(&ctx);
+        oe_sha256_update(&ctx, ALPHABET, strlen(ALPHABET));
+        oe_sha256_final(&ctx, &hash);
+        OE_TEST(memcmp(&hash, &ALPHABET_HASH, sizeof(OE_SHA256)) == 0);
+    }
+
+    {
+        OE_SHA256 hash = {0};
+        OE_TEST(oe_sha256(ALPHABET, strlen(ALPHABET), &hash) == OE_OK);
+        OE_TEST(memcmp(&hash, &ALPHABET_HASH, sizeof(OE_SHA256)) == 0);
+    }
 
     printf("=== passed %s()\n", __FUNCTION__);
 }

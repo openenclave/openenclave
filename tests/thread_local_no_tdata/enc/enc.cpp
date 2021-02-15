@@ -35,10 +35,12 @@ uint64_t enc_get_value()
     return _local_foo.bar;
 }
 
+#define NUM_TCS 16
+
 OE_SET_ENCLAVE_SGX(
-    0,    /* ProductID */
-    0,    /* SecurityVersion */
-    true, /* AllowDebug */
-    64,   /* HeapPageCount */
-    16,   /* StackPageCount */
-    16);  /* TCSCount */
+    0,                             /* ProductID */
+    0,                             /* SecurityVersion */
+    true,                          /* Debug */
+    OE_TEST_MT_HEAP_SIZE(NUM_TCS), /* NumHeapPages */
+    16,                            /* NumStackPages */
+    NUM_TCS);                      /* NumTCS */

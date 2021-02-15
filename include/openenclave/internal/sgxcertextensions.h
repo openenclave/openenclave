@@ -20,8 +20,10 @@ typedef struct _parsed_extension_info
     uint8_t pce_id[2];
     uint8_t fmspc[6];
     uint8_t sgx_type;
+    uint8_t opt_platform_instance_id[16];
     bool opt_dynamic_platform;
     bool opt_cached_keys;
+    bool opt_smt_enabled;
 } ParsedExtensionInfo;
 
 oe_result_t ParseSGXExtensions(

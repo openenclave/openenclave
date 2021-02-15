@@ -3,8 +3,8 @@
 
 add_executable(enclave_b ecalls.cpp)
 
-if(WIN32)
+if (WIN32)
   maybe_build_using_clangw(enclave_b)
-endif()
+endif ()
 
 target_link_libraries(enclave_b common)

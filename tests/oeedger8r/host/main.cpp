@@ -7,7 +7,8 @@
 #include <algorithm>
 #include <string>
 #include "all_u.h"
-#include "other_u.h" // Test that multiple enclaves can be shared with one host.
+// #include "other_u.h" // Test that multiple enclaves can be shared with one
+// host.
 
 // The types wchar_t, long, unsigned long and long double have different sizes
 // in Linux and Windows. Therefore enclaves built in Linux cannot be safely
@@ -24,6 +25,7 @@ void test_enum_edl_ecalls(oe_enclave_t* enclave);
 void test_foreign_edl_ecalls(oe_enclave_t* enclave);
 void test_other_edl_ecalls(oe_enclave_t* enclave);
 void test_deepcopy_edl_ecalls(oe_enclave_t* enclave);
+void test_security(oe_enclave_t* enclave);
 
 int main(int argc, const char* argv[])
 {
@@ -38,6 +40,9 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
+#if FALSE
+    // This portion of the test is currently broken. See ../CMakeLists.txt
+    // for more details
     std::string other("edl_other_enc");
     std::string other_lvi_cfg("edl_other_enc-lvi-cfg");
     // If we loaded `edl_other_enc` instead of `edl_enc`...
@@ -60,6 +65,7 @@ int main(int argc, const char* argv[])
         OE_TEST(test_other_edl_ocalls(enclave) == OE_OK);
         goto done;
     }
+#endif // FALSE
 
     result = oe_create_all_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
@@ -103,9 +109,44 @@ int main(int argc, const char* argv[])
 
     test_deepcopy_edl_ecalls(enclave);
 
-    OE_TEST(test_switchless_edl_ocalls(enclave) == OE_OK);
+    if (flags & OE_ENCLAVE_FLAG_SIMULATE)
+        printf("Skipping security test in Simulation Mode.\n");
+    else
+        test_security(enclave);
+
+    /* Test enclave with switchless call enabled. */
+    oe_enclave_setting_context_switchless_t switchless_setting = {1, 1};
+    oe_enclave_t* enclave_switchless = NULL;
+    oe_enclave_setting_t switchless_settings;
+    switchless_settings.setting_type = OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS,
+    switchless_settings.u.context_switchless_setting = &switchless_setting;
+
+    result = oe_create_all_enclave(
+        argv[1],
+        OE_ENCLAVE_TYPE_SGX,
+        flags,
+        &switchless_settings,
+        1,
+        &enclave_switchless);
+    if (result != OE_OK)
+    {
+        fprintf(
+            stderr,
+            "%s: cannot create enclave with switchless call enabled: %u\n",
+            argv[0],
+            result);
+        return 1;
+    }
+
+    OE_TEST(test_switchless_edl_ocalls(enclave_switchless) == OE_OK);
+    test_deepcopy_edl_ecalls(enclave_switchless);
+
+#ifdef FALSE
+// See above
 done:
+#endif
     oe_terminate_enclave(enclave);
+    oe_terminate_enclave(enclave_switchless);
 
     printf("=== passed all tests (file)\n");
 

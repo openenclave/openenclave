@@ -17,24 +17,17 @@ oe_result_t test_verify_qe_identity_info(
     oe_qe_identity_info_tcb_level_t* platform_tcb_level,
     oe_parsed_qe_identity_info_t* parsed_info)
 {
-#ifdef OE_LINK_SGX_DCAP_QL
     return oe_parse_qe_identity_info_json(
         (const uint8_t*)info_json,
         strlen(info_json) + 1,
         platform_tcb_level,
         parsed_info);
-#else
-    OE_UNUSED(info_json);
-    OE_UNUSED(platform_tcb_level);
-    OE_UNUSED(parsed_info);
-    return OE_OK;
-#endif
 }
 
 OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */
-    true, /* AllowDebug */
-    1024, /* HeapPageCount */
-    1024, /* StackPageCount */
-    2);   /* TCSCount */
+    true, /* Debug */
+    1024, /* NumHeapPages */
+    1024, /* NumStackPages */
+    2);   /* NumTCS */

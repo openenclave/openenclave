@@ -13,8 +13,12 @@ OE_EXTERNC_BEGIN
 // ISO 8601 format: YYYY-MM-DDThh:mm:ssZ
 #define OE_DATETIME_FORMAT ("YYYY-MM-DDThh:mm:ssZ")
 
+// Size of buffer to hold oe_datatime_t in string format.
+#define OE_DATETIME_STRING_SIZE 21
+
 #ifdef _WIN32
 #define gmtime_r(now, timeinfo) gmtime_s(timeinfo, now)
+#define timegm(tm) _mkgmtime(tm)
 #endif
 
 /**
@@ -54,6 +58,11 @@ oe_result_t oe_datetime_now(oe_datetime_t* value);
  * Log the given datetime.
  */
 void oe_datetime_log(const char* msg, const oe_datetime_t* date);
+
+/**
+ * Convert oe datetime to time_t.
+ */
+oe_result_t oe_datetime_to_time_t(const oe_datetime_t* datetime, time_t* value);
 
 OE_EXTERNC_END
 

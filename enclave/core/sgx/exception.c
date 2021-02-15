@@ -3,18 +3,10 @@
 
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/calls.h>
-#include <openenclave/internal/constants_x64.h>
-#include <openenclave/internal/context.h>
 #include <openenclave/internal/cpuid.h>
-#include <openenclave/internal/fault.h>
-#include <openenclave/internal/globals.h>
-#include <openenclave/internal/jump.h>
-#include <openenclave/internal/safecrt.h>
 #include <openenclave/internal/sgx/td.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/internal/trace.h>
-#include "asmdefs.h"
+#include "context.h"
 #include "cpuid.h"
 #include "init.h"
 #include "td.h"
@@ -248,15 +240,15 @@ void oe_real_exception_dispatcher(oe_context_t* oe_context)
     oe_sgx_td_t* td = oe_sgx_get_td();
 
     // Change the rip of oe_context to the real exception address.
-    oe_context->rip = td->base.exception_address;
+    oe_context->rip = td->exception_address;
 
     // Compose the oe_exception_record_t.
     // N.B. In second pass exception handling, the XSTATE is recovered by SGX
     // hardware correctly on ERESUME, so we don't touch the XSTATE.
     oe_exception_record_t oe_exception_record = {0};
-    oe_exception_record.code = td->base.exception_code;
-    oe_exception_record.flags = td->base.exception_flags;
-    oe_exception_record.address = td->base.exception_address;
+    oe_exception_record.code = td->exception_code;
+    oe_exception_record.flags = td->exception_flags;
+    oe_exception_record.address = td->exception_address;
     oe_exception_record.context = oe_context;
 
     // Refer to oe_enter in host/sgx/enter.c. The contract we defined for EENTER
@@ -335,31 +327,31 @@ void oe_virtual_exception_dispatcher(
     }
 
     // Get the exception address, code, and flags.
-    td->base.exception_address = ssa_gpr->rip;
-    td->base.exception_code = OE_EXCEPTION_UNKNOWN;
+    td->exception_address = ssa_gpr->rip;
+    td->exception_code = OE_EXCEPTION_UNKNOWN;
     for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
          i++)
     {
         if (g_vector_to_exception_code_mapping[i].sgx_vector ==
             ssa_gpr->exit_info.as_fields.vector)
         {
-            td->base.exception_code =
+            td->exception_code =
                 g_vector_to_exception_code_mapping[i].exception_code;
             break;
         }
     }
 
-    td->base.exception_flags = 0;
+    td->exception_flags = 0;
     if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HARDWARE)
     {
-        td->base.exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
+        td->exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
     }
     else if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
     {
-        td->base.exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
+        td->exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
     }
 
-    if (td->base.exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
+    if (td->exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
         _emulate_illegal_instruction(ssa_gpr) == 0)
     {
         // Restore the RBP & RSP as required by return from EENTER
@@ -384,40 +376,5 @@ void oe_virtual_exception_dispatcher(
     // Acknowledge this exception is an enclave exception, host should let keep
     // running, and let enclave handle the exception.
     *arg_out = OE_EXCEPTION_CONTINUE_EXECUTION;
-    return;
-}
-
-/*
-**==============================================================================
-**
-** void oe_cleanup_xstates(void)
-**
-**  Cleanup all XSTATE registers that include both legacy registers and extended
-**  registers.
-**
-**==============================================================================
-*/
-
-void oe_cleanup_xstates(void)
-{
-    // Temporary workaround for #144 xrstor64 fault with optimized builds as
-    // reserved guard pages
-    // are incorrectly accessed. Xsave area is increased from 0x240 to 0x1000.
-    // Making these static
-    OE_ALIGNED(XSAVE_ALIGNMENT)
-    static uint8_t
-        xsave_area[MINIMAL_XSTATE_AREA_LENGTH]; //#144 Making this static
-//__builtin_ia32_xrstor64 has different argument types in clang and gcc
-#ifdef __clang__
-    uint64_t restore_mask = ~((uint64_t)0x0);
-#else
-    int64_t restore_mask = ~(0x0);
-#endif
-
-    // The legacy registers(F87, SSE) values will be loaded from the
-    // LEGACY_XSAVE_AREA that at beginning of xsave_area.The extended registers
-    // will be initialized to their default values.
-    __builtin_ia32_xrstor64(xsave_area, restore_mask);
-
     return;
 }

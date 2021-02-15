@@ -2,7 +2,13 @@
 // Licensed under the MIT License.
 
 #include <ctype.h>
+
+#ifdef OE_BUILD_ENCLAVE
 #include <openenclave/corelibc/string.h>
+#else
+#include "../../host/strings.h"
+#endif
+
 #include "readfile.h"
 
 FILE* read_file(const char* filename, const char* mode)

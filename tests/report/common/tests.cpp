@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "../common/tests.h"
+#include <openenclave/attestation/sgx/report.h>
 #include <openenclave/internal/crypto/cmac.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
@@ -17,6 +18,9 @@
 #include "../../../common/sgx/quote.h"
 
 #include <time.h>
+#include <array>
+
+using namespace std;
 
 /**
  * Get collateral data which can be used with future function
@@ -171,9 +175,6 @@ static oe_result_t oe_verify_report_with_collaterals(
     {
 #ifndef OE_BUILD_ENCLAVE
         // Intialize the quote provider if we want to verify a remote quote.
-        // Note that we don't have the OE_LINK_SGX_DCAP_QL guard here since we
-        // don't need the sgx libraries to verify the quote. All we need is the
-        // quote provider.
         OE_CHECK(oe_initialize_quote_provider());
 #endif
 
@@ -281,9 +282,6 @@ static oe_result_t oe_get_quote_validity_with_collaterals(
     {
 #ifndef OE_BUILD_ENCLAVE
         // Intialize the quote provider if we want to verify a remote quote.
-        // Note that we don't have the OE_LINK_SGX_DCAP_QL guard here since we
-        // don't need the sgx libraries to verify the quote. All we need is the
-        // quote provider.
         OE_CHECK(oe_initialize_quote_provider());
 #endif
 
@@ -679,7 +677,7 @@ void test_local_report(sgx_target_info_t* target_info)
      *     4. opt_params can be a valid target info.
      */
     {
-        OE_TEST(
+        OE_TEST_CODE(
             GetReport_v2(
                 0,
                 NULL,
@@ -687,8 +685,9 @@ void test_local_report(sgx_target_info_t* target_info)
                 NULL,
                 sizeof(opt_params),
                 &report_buffer_ptr,
-                &report_ptr_size) == OE_INVALID_PARAMETER);
-        OE_TEST(
+                &report_ptr_size),
+            OE_INVALID_PARAMETER);
+        OE_TEST_CODE(
             GetReport(
                 0,
                 NULL,
@@ -696,11 +695,12 @@ void test_local_report(sgx_target_info_t* target_info)
                 NULL,
                 sizeof(opt_params),
                 &report_buffer_ptr,
-                &report_ptr_size) == OE_INVALID_PARAMETER);
+                &report_ptr_size),
+            OE_INVALID_PARAMETER);
     }
 
     {
-        OE_TEST(
+        OE_TEST_CODE(
             GetReport_v2(
                 0,
                 NULL,
@@ -708,8 +708,9 @@ void test_local_report(sgx_target_info_t* target_info)
                 opt_params,
                 5,
                 &report_buffer_ptr,
-                &report_ptr_size) == OE_INVALID_PARAMETER);
-        OE_TEST(
+                &report_ptr_size),
+            OE_INVALID_PARAMETER);
+        OE_TEST_CODE(
             GetReport(
                 0,
                 NULL,
@@ -717,11 +718,12 @@ void test_local_report(sgx_target_info_t* target_info)
                 opt_params,
                 5,
                 &report_buffer_ptr,
-                &report_ptr_size) == OE_INVALID_PARAMETER);
+                &report_ptr_size),
+            OE_INVALID_PARAMETER);
 
-        OE_TEST(
+        OE_TEST_CODE(
             GetReport_v2(
-                0, NULL, 0, NULL, 0, &report_buffer_ptr, &report_ptr_size) ==
+                0, NULL, 0, NULL, 0, &report_buffer_ptr, &report_ptr_size),
             OE_OK);
         ValidateReport(
             report_buffer_ptr,
@@ -731,9 +733,9 @@ void test_local_report(sgx_target_info_t* target_info)
             OE_REPORT_DATA_SIZE);
         oe_free_report(report_buffer_ptr);
         report_buffer_ptr = NULL;
-        OE_TEST(
+        OE_TEST_CODE(
             GetReport(
-                0, NULL, 0, NULL, 0, &report_buffer_ptr, &report_ptr_size) ==
+                0, NULL, 0, NULL, 0, &report_buffer_ptr, &report_ptr_size),
             OE_OK);
         ValidateReport(
             report_buffer_ptr,
@@ -746,7 +748,7 @@ void test_local_report(sgx_target_info_t* target_info)
     }
 
     {
-        OE_TEST(
+        OE_TEST_CODE(
             GetReport_v2(
                 0,
                 NULL,
@@ -754,7 +756,8 @@ void test_local_report(sgx_target_info_t* target_info)
                 opt_params,
                 sizeof(sgx_target_info_t),
                 &report_buffer_ptr,
-                &report_ptr_size) == OE_OK);
+                &report_ptr_size),
+            OE_OK);
         OE_TEST(report_ptr_size == OE_LOCAL_REPORT_SIZE);
         ValidateReport(
             report_buffer_ptr,
@@ -765,7 +768,7 @@ void test_local_report(sgx_target_info_t* target_info)
         oe_free_report(report_buffer_ptr);
         report_buffer_ptr = NULL;
 
-        OE_TEST(
+        OE_TEST_CODE(
             GetReport(
                 0,
                 NULL,
@@ -773,7 +776,8 @@ void test_local_report(sgx_target_info_t* target_info)
                 opt_params,
                 sizeof(sgx_target_info_t),
                 &report_buffer_ptr,
-                &report_ptr_size) == OE_OK);
+                &report_ptr_size),
+            OE_OK);
         OE_TEST(report_ptr_size == OE_LOCAL_REPORT_SIZE);
         ValidateReport(
             report_buffer_ptr,
@@ -786,7 +790,7 @@ void test_local_report(sgx_target_info_t* target_info)
     }
 
     {
-        OE_TEST(
+        OE_TEST_CODE(
             GetReport_v2(
                 0,
                 NULL,
@@ -794,7 +798,8 @@ void test_local_report(sgx_target_info_t* target_info)
                 target_info,
                 sizeof(opt_params),
                 &report_buffer_ptr,
-                &report_ptr_size) == OE_OK);
+                &report_ptr_size),
+            OE_OK);
         OE_TEST(report_ptr_size == OE_LOCAL_REPORT_SIZE);
         ValidateReport(
             report_buffer_ptr,
@@ -804,7 +809,7 @@ void test_local_report(sgx_target_info_t* target_info)
             OE_REPORT_DATA_SIZE);
         oe_free_report(report_buffer_ptr);
 
-        OE_TEST(
+        OE_TEST_CODE(
             GetReport(
                 0,
                 NULL,
@@ -812,7 +817,8 @@ void test_local_report(sgx_target_info_t* target_info)
                 target_info,
                 sizeof(opt_params),
                 &report_buffer_ptr,
-                &report_ptr_size) == OE_OK);
+                &report_ptr_size),
+            OE_OK);
         OE_TEST(report_ptr_size == OE_LOCAL_REPORT_SIZE);
         ValidateReport(
             report_buffer_ptr,
@@ -833,7 +839,7 @@ void test_local_report(sgx_target_info_t* target_info)
         sgx_target_info_t* target_ptr;
         size_t target_ptr_size = 0;
 
-        OE_TEST(
+        OE_TEST_CODE(
             GetReport_v2(
                 0,
                 NULL,
@@ -841,63 +847,64 @@ void test_local_report(sgx_target_info_t* target_info)
                 target_info,
                 sizeof(opt_params),
                 &report_buffer_ptr,
-                &report_ptr_size) == OE_OK);
+                &report_ptr_size),
+            OE_OK);
 
-        OE_TEST(
+        OE_TEST_CODE(
             oe_get_target_info_v2(
                 report_buffer_ptr,
                 report_ptr_size,
                 (void**)&target_ptr,
-                &target_ptr_size) == OE_OK);
+                &target_ptr_size),
+            OE_OK);
         OE_TEST(target_ptr_size == sizeof(target));
         oe_free_target_info(target_ptr);
 
         target_ptr = NULL;
         target_ptr_size = 0;
-        OE_TEST(
+        OE_TEST_CODE(
             oe_get_target_info(
                 report_buffer_ptr,
                 report_ptr_size,
                 (void**)&target_ptr,
-                &target_ptr_size) == OE_OK);
+                &target_ptr_size),
+            OE_OK);
         OE_TEST(target_ptr_size == sizeof(target));
         oe_free_target_info(target_ptr);
 
         /* Failure cases. */
-        OE_TEST(
+        OE_TEST_CODE(
             oe_get_target_info_v2(
-                NULL, report_ptr_size, (void**)&target_ptr, &target_ptr_size) ==
+                NULL, report_ptr_size, (void**)&target_ptr, &target_ptr_size),
             OE_INVALID_PARAMETER);
-        OE_TEST(
+        OE_TEST_CODE(
             oe_get_target_info(
-                NULL, report_ptr_size, (void**)&target_ptr, &target_ptr_size) ==
+                NULL, report_ptr_size, (void**)&target_ptr, &target_ptr_size),
             OE_INVALID_PARAMETER);
 
-        OE_TEST(
+        OE_TEST_CODE(
             oe_get_target_info_v2(
                 report_buffer_ptr,
                 sizeof(oe_report_header_t) + sizeof(sgx_report_t) - 1,
                 (void**)&target_ptr,
-                &target_ptr_size) == OE_INVALID_PARAMETER);
-        OE_TEST(
+                &target_ptr_size),
+            OE_INVALID_PARAMETER);
+        OE_TEST_CODE(
             oe_get_target_info(
                 report_buffer_ptr,
                 sizeof(oe_report_header_t) + sizeof(sgx_report_t) - 1,
                 (void**)&target_ptr,
-                &target_ptr_size) == OE_INVALID_PARAMETER);
+                &target_ptr_size),
+            OE_INVALID_PARAMETER);
 
-        OE_TEST(
+        OE_TEST_CODE(
             oe_get_target_info_v2(
-                report_buffer_ptr,
-                report_ptr_size,
-                (void**)&target_ptr,
-                NULL) == OE_INVALID_PARAMETER);
-        OE_TEST(
+                report_buffer_ptr, report_ptr_size, (void**)&target_ptr, NULL),
+            OE_INVALID_PARAMETER);
+        OE_TEST_CODE(
             oe_get_target_info_v2(
-                report_buffer_ptr,
-                report_ptr_size,
-                (void**)&target_ptr,
-                NULL) == OE_INVALID_PARAMETER);
+                report_buffer_ptr, report_ptr_size, (void**)&target_ptr, NULL),
+            OE_INVALID_PARAMETER);
 
         oe_free_report(report_buffer_ptr);
     }
@@ -1037,12 +1044,48 @@ void test_remote_report()
         oe_free_report(report_buffer_ptr);
         report_buffer_ptr = NULL;
     }
+
+    {
+        uint8_t* report_buffer = NULL;
+        oe_report_t parsed_report = {0};
+        size_t report_size = OE_MAX_REPORT_SIZE;
+
+        // Get a valid remote report and tweak fields.
+        OE_TEST(
+            GetReport_v2(
+                OE_REPORT_FLAGS_REMOTE_ATTESTATION,
+                NULL,
+                0,
+                NULL,
+                0,
+                &report_buffer,
+                &report_size) == OE_OK);
+        OE_TEST(
+            oe_parse_report(report_buffer, report_size, &parsed_report) ==
+            OE_OK);
+
+        const auto header =
+            reinterpret_cast<oe_report_header_t*>(report_buffer);
+
+        // 1. Header's report_size is too small.
+        // ie: header->report_size < sizeof(sgx_quote_t)
+        header->report_size = sizeof(sgx_quote_t) - 1;
+        report_size = header->report_size + sizeof(oe_report_header_t);
+        OE_TEST(
+            oe_parse_report(report_buffer, report_size, &parsed_report) ==
+            OE_INCORRECT_REPORT_SIZE);
+
+        oe_free_report(report_buffer);
+    }
 }
 
 void test_parse_report_negative()
 {
     uint8_t* report_buffer = NULL;
     oe_report_t parsed_report = {0};
+    size_t header_report_size = 0;
+    size_t report_size = OE_MAX_REPORT_SIZE;
+    size_t temp_report_size;
 
     // 1. Null report passed in.
     OE_TEST(oe_parse_report(NULL, 0, &parsed_report) == OE_INVALID_PARAMETER);
@@ -1066,7 +1109,6 @@ void test_parse_report_negative()
         OE_INVALID_PARAMETER);
 
     // Get a valid report and tweak fields.
-    size_t report_size = OE_MAX_REPORT_SIZE;
     OE_TEST(
         GetReport_v2(0, NULL, 0, NULL, 0, &report_buffer, &report_size) ==
         OE_OK);
@@ -1094,7 +1136,19 @@ void test_parse_report_negative()
     OE_TEST(
         oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
 
-    // 7. Header's report_type is invalid.
+    // 7. Header's report_size is too small.
+    // ie: header->report_size < sizeof(sgx_report_t)
+    header_report_size = header->report_size;
+    header->report_size = sizeof(sgx_report_t) - 1;
+    temp_report_size = header->report_size + sizeof(oe_report_header_t);
+    OE_TEST(
+        oe_parse_report(report_buffer, temp_report_size, &parsed_report) ==
+        OE_INCORRECT_REPORT_SIZE);
+    header->report_size = header_report_size;
+    OE_TEST(
+        oe_parse_report(report_buffer, report_size, &parsed_report) == OE_OK);
+
+    // 8. Header's report_type is invalid.
     header->report_type = (oe_report_type_t)20;
     OE_TEST(
         oe_parse_report(report_buffer, report_size, &parsed_report) ==
@@ -1151,7 +1205,7 @@ void test_local_verify_report()
     GetSGXTargetInfo((sgx_target_info_t*)target_info);
 
     // 1. Report with no custom report data.
-    OE_TEST(
+    OE_TEST_CODE(
         GetReport_v2(
             0,
             NULL,
@@ -1159,13 +1213,14 @@ void test_local_verify_report()
             target_info,
             target_info_size,
             &report_ptr,
-            &report_size) == OE_OK);
-    OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_OK);
+            &report_size),
+        OE_OK);
+    OE_TEST_CODE(VerifyReport(report_ptr, report_size, NULL), OE_OK);
     oe_free_report(report_ptr);
 
 // 2. Report with full custom report data.
 #ifdef OE_BUILD_ENCLAVE
-    OE_TEST(
+    OE_TEST_CODE(
         GetReport_v2(
             0,
             report_data,
@@ -1173,12 +1228,13 @@ void test_local_verify_report()
             target_info,
             target_info_size,
             &report_ptr,
-            &report_size) == OE_OK);
-    OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_OK);
+            &report_size),
+        OE_OK);
+    OE_TEST_CODE(VerifyReport(report_ptr, report_size, NULL), OE_OK);
     oe_free_report(report_ptr);
 
     // 3. Report with partial custom report data.
-    OE_TEST(
+    OE_TEST_CODE(
         GetReport_v2(
             0,
             report_data,
@@ -1186,8 +1242,9 @@ void test_local_verify_report()
             target_info,
             target_info_size,
             &report_ptr,
-            &report_size) == OE_OK);
-    OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_OK);
+            &report_size),
+        OE_OK);
+    OE_TEST_CODE(VerifyReport(report_ptr, report_size, NULL), OE_OK);
     oe_free_report(report_ptr);
 #endif
 
@@ -1197,7 +1254,7 @@ void test_local_verify_report()
     tampered_target_info = (sgx_target_info_t*)target_info;
     tampered_target_info->mrenclave[0]++;
 
-    OE_TEST(
+    OE_TEST_CODE(
         GetReport_v2(
             0,
             NULL,
@@ -1205,9 +1262,10 @@ void test_local_verify_report()
             target_info,
             target_info_size,
             &report_ptr,
-            &report_size) == OE_OK);
-    OE_TEST(
-        VerifyReport(report_ptr, report_size, NULL) ==
+            &report_size),
+        OE_OK);
+    OE_TEST_CODE(
+        VerifyReport(report_ptr, report_size, NULL),
         OE_VERIFY_FAILED_AES_CMAC_MISMATCH);
     oe_free_report(report_ptr);
 }
@@ -1217,7 +1275,7 @@ void test_remote_verify_report()
     uint8_t* report_ptr;
     size_t report_size;
 
-#if OE_BUILD_ENCLAVE
+#ifdef OE_BUILD_ENCLAVE
     uint8_t report_data[sizeof(sgx_report_data_t)];
     size_t report_data_size = sizeof(report_data);
 
@@ -1237,15 +1295,15 @@ void test_remote_verify_report()
      * On host side, report data is not a valid parameter
      */
     {
-        OE_TEST(
-            GetReport_v2(flags, NULL, 0, NULL, 0, &report_ptr, &report_size) ==
+        OE_TEST_CODE(
+            GetReport_v2(flags, NULL, 0, NULL, 0, &report_ptr, &report_size),
             OE_OK);
-        OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_OK);
+        OE_TEST_CODE(VerifyReport(report_ptr, report_size, NULL), OE_OK);
         oe_free_report(report_ptr);
 
-#if OE_BUILD_ENCLAVE
+#ifdef OE_BUILD_ENCLAVE
         report_data_size = 16;
-        OE_TEST(
+        OE_TEST_CODE(
             GetReport_v2(
                 flags,
                 report_data,
@@ -1253,8 +1311,9 @@ void test_remote_verify_report()
                 NULL,
                 0,
                 &report_ptr,
-                &report_size) == OE_OK);
-        OE_TEST(VerifyReport(report_ptr, report_size, NULL) == OE_OK);
+                &report_size),
+            OE_OK);
+        OE_TEST_CODE(VerifyReport(report_ptr, report_size, NULL), OE_OK);
         oe_free_report(report_ptr);
 #endif
     }
@@ -1386,4 +1445,72 @@ void test_verify_report_with_collaterals()
 
     collaterals_buffer_ptr = NULL;
     report_buffer_ptr = NULL;
+}
+
+void test_get_signer_id_from_public_key()
+{
+    static const char pem[] =
+        "-----BEGIN PUBLIC KEY-----\n"
+        "MIIBoDANBgkqhkiG9w0BAQEFAAOCAY0AMIIBiAKCAYEAqhEGbnOzUfNffyL98nRj\n"
+        "FOXYb+4d1Q/CluY3GlbDFv9OphD9zwY8TnSUz/cIBMdphAadGlnjIi8SS9Yey1If\n"
+        "RcIW1pMnRaAS8J1Kwh9WgBqBZlA/bFB4a45ZC16l+oeG5/u3MeQsKDsNIT1kfHJD\n"
+        "Sb18UHlvEPNcrzIDy+TAcAhd7q/aav1lDp28TgT7kUdVb5HitBzBQ67s4/L6Xzlo\n"
+        "yAMqSybT56nnTeADcNa/tvom8vqz0lZ5nXAQ7ZAhGKJKCWk+9aT5oxLNBCrUYQ+U\n"
+        "tnJ8429uzBYvG/fyaMcAGjkcfnW2irYSpwfFbpN6Ew2252V6O6KYTcFGKBGQaXKe\n"
+        "zflTOOQ6yRUr5a4GqwTsVc6TH+NvpIyL1SgY2zzSkwciqTRyHBh7UpfCC3E3ZNJK\n"
+        "T4CUPXu5eINL6v2Wmz8CRbc2hoPoD+oIvLoqcgClihZs3XlGp3D6ULEgKBP5ortC\n"
+        "gpUbitgtA0zGLrQlJhKHVkGgwxax1U9wLHPNLxzzsGaJAgED\n"
+        "-----END PUBLIC KEY-----\n";
+
+    static const array<uint8_t, OE_SIGNER_ID_SIZE> expected_signer_id{
+        0x6c, 0x1c, 0x59, 0xc8, 0x9e, 0xd4, 0xdd, 0x98, 0x25, 0x64, 0x94,
+        0x94, 0xfc, 0xb2, 0xeb, 0xf9, 0x6a, 0x8a, 0x61, 0x7a, 0x1d, 0x05,
+        0x89, 0xfe, 0x01, 0x47, 0xf0, 0xef, 0x1b, 0x3f, 0x78, 0x4d};
+
+    array<uint8_t, OE_SIGNER_ID_SIZE> actual_signer_id{};
+    size_t size = actual_signer_id.size();
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), actual_signer_id.data(), &size) == OE_OK);
+    OE_TEST(size == OE_SIGNER_ID_SIZE);
+    OE_TEST(expected_signer_id == actual_signer_id);
+
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            nullptr, sizeof(pem), actual_signer_id.data(), &size) ==
+        OE_INVALID_PARAMETER);
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, 0, actual_signer_id.data(), &size) == OE_INVALID_PARAMETER);
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem) - 1, actual_signer_id.data(), &size) ==
+        OE_INVALID_PARAMETER);
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), nullptr, nullptr) == OE_INVALID_PARAMETER);
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), actual_signer_id.data(), nullptr) ==
+        OE_INVALID_PARAMETER);
+
+    size = 0;
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), actual_signer_id.data(), &size) ==
+        OE_BUFFER_TOO_SMALL);
+    OE_TEST(size == OE_SIGNER_ID_SIZE);
+
+    size = 0;
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), nullptr, &size) == OE_BUFFER_TOO_SMALL);
+    OE_TEST(size == OE_SIGNER_ID_SIZE);
+
+    size = OE_SIGNER_ID_SIZE - 1;
+    OE_TEST(
+        oe_sgx_get_signer_id_from_public_key(
+            pem, sizeof(pem), actual_signer_id.data(), &size) ==
+        OE_BUFFER_TOO_SMALL);
+    OE_TEST(size == OE_SIGNER_ID_SIZE);
 }

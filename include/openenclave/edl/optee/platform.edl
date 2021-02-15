@@ -1,0 +1,19 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** optee/platform.edl:
+**
+**     This is a temporary wrapper for aggregating all OPTEE-specific ECALLs and
+**     OCALLs for convenient use by oecore.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    // OPTEE no longer has a hard requirement on memory.edl.
+    // This platform.edl can be removed in next release.
+};

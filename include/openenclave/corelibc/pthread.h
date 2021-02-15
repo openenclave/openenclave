@@ -4,8 +4,8 @@
 #ifndef _OE_PTHREAD_H
 #define _OE_PTHREAD_H
 
+#include <openenclave/bits/time.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/corelibc/time.h>
 
 OE_EXTERNC_BEGIN
 
@@ -86,6 +86,8 @@ int oe_pthread_once(oe_pthread_once_t* once, void (*func)(void));
 int oe_pthread_spin_init(oe_pthread_spinlock_t* spinlock, int pshared);
 
 int oe_pthread_spin_lock(oe_pthread_spinlock_t* spinlock);
+
+int oe_pthread_spin_trylock(oe_pthread_spinlock_t* spinlock);
 
 int oe_pthread_spin_unlock(oe_pthread_spinlock_t* spinlock);
 

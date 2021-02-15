@@ -14,15 +14,26 @@ Meetings
 
 Regular meetings: TBD
 
-SIG leads
+SIG Chair
 ---------
 
-TBD
+Yen Lee ([yentsanglee](https://github.com/yentsanglee))
 
-Meeting Chair
+SIG Approvers
 -------------
 
-TBD
+* Shruti Ratnam ([shruti25ratnam](https://github.com/shruti25ratnam))
+* Jiri Appl ([jiria](https://github.com/jiria))
+* Sergio Wong ([jazzybluesea](https://github.com/jazzybluesea))
+* Akash Gupta ([gupta-ak](https://github.com/gupta-ak))
+* Brian Telfer ([Britel](https://github.com/Britel))
+* Cheng-mean Liu ([soccerGB](https://github.com/soccerGB))
+* Shanwei Cen ([shnwc](https://github.com/shnwc))
+
+SIG Reviewers
+-------------
+
+(none)
 
 Charter
 -------

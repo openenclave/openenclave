@@ -4,8 +4,7 @@
 add_subdirectory(host)
 
 if (BUILD_ENCLAVES)
-    add_subdirectory(enc)
-endif()
+  add_subdirectory(enc)
+endif ()
 
-add_enclave_test(tests/enclaveparam
-    enclaveparam_host enclaveparam_enc)
+add_enclave_test(tests/enclaveparam enclaveparam_host enclaveparam_enc)

@@ -1,0 +1,22 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+/*
+**==============================================================================
+**
+** sgx/platform.edl:
+**
+**     This is a temporary wrapper for aggregating all SGX-specific ECALLs and
+**     OCALLs for convenient use by oecore.
+**
+**==============================================================================
+*/
+
+enclave
+{
+    from "openenclave/edl/sgx/attestation.edl" import *;
+    from "openenclave/edl/sgx/cpu.edl" import *;
+    from "openenclave/edl/sgx/debug.edl" import *;
+    from "openenclave/edl/sgx/thread.edl" import *;
+    from "openenclave/edl/sgx/switchless.edl" import *;
+};

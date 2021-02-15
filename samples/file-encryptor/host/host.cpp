@@ -58,6 +58,13 @@ void dump_header(encryption_header_t* _header)
         cout << "Host: key[" << i << "]=" << std::hex
              << (unsigned int)(_header->encrypted_key[i]) << endl;
     }
+
+    cout << "Host: salt and IV" << endl;
+    for (int i = 0; i < SALT_SIZE_IN_BYTES; i++)
+    {
+        cout << "Host: salt[" << i << "]=" << std::hex
+             << (unsigned int)(_header->salt[i]) << endl;
+    }
 }
 
 // get the file size
@@ -267,13 +274,12 @@ int encrypt_file(
             ret = 1;
             goto exit;
         }
+
         bytes_left -= requested_read_size;
         if (bytes_left == 0)
             break;
         if (bytes_left < DATA_BLOCK_SIZE)
-        {
             requested_read_size = bytes_left;
-        }
     }
 
     if (encrypt)

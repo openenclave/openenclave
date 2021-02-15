@@ -437,6 +437,52 @@ static oe_fd_t* _hostfs_open(
     }
 }
 
+static int _hostfs_flock(oe_fd_t* desc, int operation)
+{
+    int ret = -1;
+    file_t* file = _cast_file(desc);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    /* Call the host to perform the flock(). */
+    if (oe_syscall_flock_ocall(&ret, file->host_fd, operation) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return ret;
+}
+
+static int _hostfs_fsync(oe_fd_t* desc)
+{
+    int ret = -1;
+    file_t* file = _cast_file(desc);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_fsync_ocall(&ret, file->host_fd) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return ret;
+}
+
+static int _hostfs_fdatasync(oe_fd_t* desc)
+{
+    int ret = -1;
+    file_t* file = _cast_file(desc);
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_fdatasync_ocall(&ret, file->host_fd) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+done:
+    return ret;
+}
+
 static int _hostfs_dup(oe_fd_t* desc, oe_fd_t** new_file_out)
 {
     int ret = -1;
@@ -492,12 +538,30 @@ static ssize_t _hostfs_read(oe_fd_t* desc, void* buf, size_t count)
     ssize_t ret = -1;
     file_t* file = _cast_file(desc);
 
-    if (!file)
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/read.html for
+     * for more detail.
+     */
+    if (!file || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host to perform the read(). */
     if (oe_syscall_read_ocall(&ret, file->host_fd, buf, count) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
     return ret;
@@ -552,13 +616,31 @@ static ssize_t _hostfs_write(oe_fd_t* desc, const void* buf, size_t count)
     ssize_t ret = -1;
     file_t* file = _cast_file(desc);
 
-    /* Check parameters. */
-    if (!file || (count && !buf))
+    /*
+     * Check parameters.
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/write.html for
+     * for more detail.
+     */
+    if (!file || (count && !buf) || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_write_ocall(&ret, file->host_fd, buf, count) != OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
     return ret;
@@ -573,18 +655,40 @@ static ssize_t _hostfs_readv(
     file_t* file = _cast_file(desc);
     void* buf = NULL;
     size_t buf_size = 0;
+    size_t data_size = 0;
 
     if (!file || (!iov && iovcnt) || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size, &data_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /*
+     * According to the POSIX specification, when the data_size is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/readv.html for
+     * for more detail.
+     */
+    if (data_size > OE_SSIZE_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_readv_ocall(&ret, file->host_fd, buf, iovcnt, buf_size) !=
         OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed data_size.
+     */
+    if (ret > (ssize_t)data_size)
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
@@ -612,18 +716,40 @@ static ssize_t _hostfs_writev(
     file_t* file = _cast_file(desc);
     void* buf = NULL;
     size_t buf_size = 0;
+    size_t data_size = 0;
 
     if (!file || !iov || iovcnt < 0 || iovcnt > OE_IOV_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Flatten the IO vector into contiguous heap memory. */
-    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size) != 0)
+    if (oe_iov_pack(iov, iovcnt, &buf, &buf_size, &data_size) != 0)
         OE_RAISE_ERRNO(OE_ENOMEM);
+
+    /*
+     * According to the POSIX specification, when the data_size is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/writev.html
+     * for more detail.
+     */
+    if (data_size > OE_SSIZE_MAX)
+        OE_RAISE_ERRNO(OE_EINVAL);
 
     /* Call the host. */
     if (oe_syscall_writev_ocall(&ret, file->host_fd, buf, iovcnt, buf_size) !=
         OE_OK)
     {
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed data_size.
+     */
+    if (ret > (ssize_t)data_size)
+    {
+        ret = -1;
         OE_RAISE_ERRNO(OE_EINVAL);
     }
 
@@ -710,12 +836,30 @@ static ssize_t _hostfs_pread(
     ssize_t ret = -1;
     file_t* file = _cast_file(desc);
 
-    if (!file)
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/pread.html for
+     * for more detail.
+     */
+    if (!file || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_syscall_pread_ocall(&ret, file->host_fd, buf, count, offset) !=
         OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
     return ret;
@@ -730,12 +874,30 @@ static ssize_t _hostfs_pwrite(
     ssize_t ret = -1;
     file_t* file = _cast_file(desc);
 
-    if (!file)
+    /*
+     * According to the POSIX specification, when the count is greater
+     * than SSIZE_MAX, the result is implementation-defined. OE raises an
+     * error in this case.
+     * Refer to
+     * https://pubs.opengroup.org/onlinepubs/9699919799/functions/pwrite.html
+     * for more detail.
+     */
+    if (!file || count > OE_SSIZE_MAX)
         OE_RAISE_ERRNO(OE_EINVAL);
 
     if (oe_syscall_pwrite_ocall(&ret, file->host_fd, buf, count, offset) !=
         OE_OK)
         OE_RAISE_ERRNO(OE_EINVAL);
+
+    /*
+     * Guard the special case that a host sets an arbitrarily large value.
+     * The returned value should not exceed count.
+     */
+    if (ret > (ssize_t)count)
+    {
+        ret = -1;
+        OE_RAISE_ERRNO(OE_EINVAL);
+    }
 
 done:
     return ret;
@@ -1028,6 +1190,28 @@ done:
     return ret;
 }
 
+static int _hostfs_fstat(oe_fd_t* desc, struct oe_stat_t* buf)
+{
+    int ret = -1;
+    file_t* file = _cast_file(desc);
+    int retval = -1;
+
+    if (buf)
+        oe_memset_s(buf, sizeof(*buf), 0, sizeof(*buf));
+
+    if (!file || !buf)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_fstat_ocall(&retval, file->host_fd, buf) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    ret = retval;
+
+done:
+
+    return ret;
+}
+
 static int _hostfs_access(oe_device_t* device, const char* pathname, int mode)
 {
     int ret = -1;
@@ -1175,6 +1359,24 @@ done:
     return ret;
 }
 
+static int _hostfs_ftruncate(oe_fd_t* desc, oe_off_t length)
+{
+    int ret = -1;
+    const file_t* const file = _cast_file(desc);
+    int retval = -1;
+
+    if (!file)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    if (oe_syscall_ftruncate_ocall(&retval, file->host_fd, length) != OE_OK)
+        OE_RAISE_ERRNO(OE_EINVAL);
+
+    ret = retval;
+
+done:
+    return ret;
+}
+
 static int _hostfs_mkdir(
     oe_device_t* device,
     const char* pathname,
@@ -1246,6 +1448,7 @@ static oe_file_ops_t _file_ops =
     .fd.write = _hostfs_write,
     .fd.readv = _hostfs_readv,
     .fd.writev = _hostfs_writev,
+    .fd.flock = _hostfs_flock,
     .fd.dup = _hostfs_dup,
     .fd.ioctl = _hostfs_ioctl,
     .fd.fcntl = _hostfs_fcntl,
@@ -1255,6 +1458,10 @@ static oe_file_ops_t _file_ops =
     .pread = _hostfs_pread,
     .pwrite = _hostfs_pwrite,
     .getdents64 = _hostfs_getdents64,
+    .fstat = _hostfs_fstat,
+    .ftruncate = _hostfs_ftruncate,
+    .fsync = _hostfs_fsync,
+    .fdatasync = _hostfs_fdatasync,
 };
 // clang-format on
 

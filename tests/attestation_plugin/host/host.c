@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgx/tests.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 
@@ -17,6 +19,8 @@
 #define SKIP_RETURN_CODE 2
 
 void host_verify(
+    const oe_uuid_t* format_id,
+    bool wrapped_with_header,
     uint8_t* evidence,
     size_t evidence_size,
     uint8_t* endorsements,
@@ -24,18 +28,27 @@ void host_verify(
 {
     printf("====== running host_verify.\n");
     verify_sgx_evidence(
+        format_id,
+        wrapped_with_header,
         evidence,
         evidence_size,
         endorsements,
         endorsements_size,
+        endorsements,
+        endorsements_size,
         test_claims,
-        NUM_TEST_CLAIMS,
-        false);
+        TEST_CLAIMS_SIZE);
 }
 
 int main(int argc, const char* argv[])
 {
-#ifdef OE_LINK_SGX_DCAP_QL
+    if (!oe_has_sgx_quote_provider())
+    {
+        // this test should not run on any platforms where DCAP libraries are
+        // not found.
+        OE_TRACE_INFO("=== tests skipped when DCAP libraries are not found.\n");
+        return SKIP_RETURN_CODE;
+    }
 
 #ifdef _WIN32
     /* This is a workaround for running in Visual Studio 2017 Test Explorer
@@ -98,11 +111,11 @@ int main(int argc, const char* argv[])
         argv[1], OE_ENCLAVE_TYPE_AUTO, flags, NULL, 0, &enclave);
     OE_TEST(result == OE_OK);
 
-    run_runtime_test(enclave);
-    register_sgx(enclave);
-    test_sgx(enclave);
-    unregister_sgx(enclave);
-    OE_TEST(oe_terminate_enclave(enclave) == OE_OK);
+    OE_TEST_CODE(run_runtime_test(enclave), OE_OK);
+    OE_TEST_CODE(register_sgx(enclave), OE_OK);
+    OE_TEST_CODE(test_sgx(enclave), OE_OK);
+    OE_TEST_CODE(unregister_sgx(enclave), OE_OK);
+    OE_TEST_CODE(oe_terminate_enclave(enclave), OE_OK);
 
     // Run runtime test on the host.
     test_runtime();
@@ -110,12 +123,4 @@ int main(int argc, const char* argv[])
     // Unregister verifier.
     unregister_verifier();
     return 0;
-#else
-    // This test should not run on any platforms where HAS_QUOTE_PROVIDER is not
-    // defined.
-    OE_UNUSED(argc);
-    OE_UNUSED(argv);
-    printf("=== tests skipped when built with HAS_QUOTE_PROVIDER=OFF\n");
-    return SKIP_RETURN_CODE;
-#endif
 }

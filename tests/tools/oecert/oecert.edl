@@ -2,13 +2,31 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/attestation.edl" import *;
+    from "openenclave/edl/logging.edl" import *;
+    from "openenclave/edl/fcntl.edl" import *;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/platform.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
+
     trusted {
         public oe_result_t get_tls_cert_signed_with_key(
             [in, count=private_key_size] uint8_t *private_key,
             size_t private_key_size,
             [in, count=public_key_size] uint8_t *public_key,
             size_t public_key_size,
-            [out] unsigned char **data, 
+            [out] unsigned char **data,
             [out] size_t *data_size);
+
+        public oe_result_t get_plugin_evidence(
+          [out, size=evidence_size] uint8_t* evidence_out,
+          size_t evidence_size,
+          [out] size_t* evidence_out_size,
+          [out, size=endorsements_size] uint8_t* endorsements,
+          size_t endorsements_size,
+          [out] size_t* endorsements_out_size
+        );
     };
 };

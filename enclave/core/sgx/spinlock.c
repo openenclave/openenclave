@@ -50,6 +50,19 @@ oe_result_t oe_spin_lock(oe_spinlock_t* spinlock)
     return OE_OK;
 }
 
+oe_result_t oe_spin_trylock(oe_spinlock_t* spinlock)
+{
+    if (!spinlock)
+        return OE_INVALID_PARAMETER;
+
+    if (_spin_set_locked((volatile unsigned int*)spinlock) == 0)
+    {
+        return OE_OK;
+    }
+
+    return OE_BUSY;
+}
+
 oe_result_t oe_spin_unlock(oe_spinlock_t* spinlock)
 {
     if (!spinlock)

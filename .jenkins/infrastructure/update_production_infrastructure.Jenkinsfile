@@ -8,6 +8,7 @@ GLOBAL_TIMEOUT_MINUTES = 240
 
 OETOOLS_REPO_NAME = "oejenkinscidockerregistry.azurecr.io"
 OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
+OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID = "oeciteamdockerhub"
 
 DOCKER_IMAGES_NAMES = ["oetools-full-16.04", "oetools-full-18.04", "oetools-minimal-18.04", "oetools-deploy"]
 AZURE_IMAGES_MAP = [
@@ -42,10 +43,15 @@ def update_production_docker_images() {
     node(IMAGES_BUILD_LABEL) {
         timeout(GLOBAL_TIMEOUT_MINUTES) {
             stage("Update production Docker images") {
-                docker.withRegistry("https://${OETOOLS_REPO_NAME}", OETOOLS_REPO_CREDENTIAL_ID) {
-                    for (image_name in DOCKER_IMAGES_NAMES) {
+                for (image_name in DOCKER_IMAGES_NAMES) {
+                    docker.withRegistry("https://${OETOOLS_REPO_NAME}", OETOOLS_REPO_CREDENTIAL_ID) {
                         def image = docker.image("${OETOOLS_REPO_NAME}/${image_name}:${env.DOCKER_TAG}")
                         oe.exec_with_retry { image.pull() }
+                        oe.exec_with_retry { image.push("latest") }
+                    }
+                    sh("docker tag ${OETOOLS_REPO_NAME}/${image_name}:${env.DOCKER_TAG} oeciteam/${image_name}:latest")
+                    docker.withRegistry('', OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID) {
+                        def image = docker.image("oeciteam/${image_name}:latest")
                         oe.exec_with_retry { image.push("latest") }
                     }
                 }

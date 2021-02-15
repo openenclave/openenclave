@@ -9,7 +9,7 @@
 #ifndef _OE_MOCK_ATTESTER_H
 #define _OE_MOCK_ATTESTER_H
 
-#include <openenclave/attestation/plugin.h>
+#include <openenclave/internal/plugin.h>
 #include <string.h>
 
 #define MOCK_EVIDENCE "123"
@@ -45,11 +45,12 @@ static inline oe_result_t mock_attester_unregister(
     return OE_OK;
 }
 
+#ifdef OE_BUILD_ENCLAVE
+
 static inline oe_result_t mock_get_evidence(
     oe_attester_t* context,
-    uint32_t flags,
-    const oe_claim_t* custom_claims,
-    size_t custom_claims_length,
+    const void* custom_claims_buffer,
+    size_t custom_claims_buffer_size,
     const void* opt_params,
     size_t opt_params_size,
     uint8_t** evidence_buffer,
@@ -57,20 +58,46 @@ static inline oe_result_t mock_get_evidence(
     uint8_t** endorsements_buffer,
     size_t* endorsements_buffer_size)
 {
+    oe_result_t result = OE_UNEXPECTED;
+
     OE_UNUSED(context);
-    OE_UNUSED(flags);
-    OE_UNUSED(custom_claims);
-    OE_UNUSED(custom_claims_length);
+    OE_UNUSED(custom_claims_buffer);
+    OE_UNUSED(custom_claims_buffer_size);
     OE_UNUSED(opt_params);
     OE_UNUSED(opt_params_size);
-    *evidence_buffer = (uint8_t*)MOCK_EVIDENCE;
+
+    if (!evidence_buffer || !evidence_buffer_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // The evidence buffer must be a dynamically allocated one.
+    *evidence_buffer = oe_malloc(sizeof(MOCK_EVIDENCE));
+    if (!*evidence_buffer)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    memcpy(*evidence_buffer, (uint8_t*)MOCK_EVIDENCE, sizeof(MOCK_EVIDENCE));
     *evidence_buffer_size = sizeof(MOCK_EVIDENCE);
+
     if (endorsements_buffer)
     {
-        *endorsements_buffer = (uint8_t*)MOCK_ENDORSEMENTS;
+        if (!endorsements_buffer_size)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        // The endorsements buffer must be a dynamically allocated one.
+        *endorsements_buffer = oe_malloc(sizeof(MOCK_ENDORSEMENTS));
+        if (!*endorsements_buffer)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        memcpy(
+            *endorsements_buffer,
+            (uint8_t*)MOCK_ENDORSEMENTS,
+            sizeof(MOCK_ENDORSEMENTS));
         *endorsements_buffer_size = sizeof(MOCK_ENDORSEMENTS);
     }
-    return OE_OK;
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 static inline oe_result_t mock_free_evidence(
@@ -78,7 +105,7 @@ static inline oe_result_t mock_free_evidence(
     uint8_t* evidence_buffer)
 {
     OE_UNUSED(context);
-    OE_UNUSED(evidence_buffer);
+    oe_free(evidence_buffer);
     return OE_OK;
 }
 
@@ -87,9 +114,11 @@ static inline oe_result_t mock_free_endorsements(
     uint8_t* endorsements_buffer)
 {
     OE_UNUSED(context);
-    OE_UNUSED(endorsements_buffer);
+    oe_free(endorsements_buffer);
     return OE_OK;
 }
+
+#endif
 
 static inline oe_result_t mock_verify_evidence(
     oe_verifier_t* context,
@@ -129,7 +158,7 @@ static inline oe_result_t mock_verify_evidence(
     for (int i = 0; i < OE_REQUIRED_CLAIMS_COUNT; i++)
     {
         (*claims)[i].name = (char*)(OE_REQUIRED_CLAIMS[i]);
-        if (strcmp(OE_REQUIRED_CLAIMS[i], OE_CLAIM_PLUGIN_UUID) == 0)
+        if (strcmp(OE_REQUIRED_CLAIMS[i], OE_CLAIM_FORMAT_UUID) == 0)
         {
             (*claims)[i].value = (uint8_t*)&context->base.format_id;
             (*claims)[i].value_size = sizeof(oe_uuid_t);
@@ -167,7 +196,7 @@ static inline oe_result_t mock_verify_evidence_bad(
     for (int i = 0; i < OE_REQUIRED_CLAIMS_COUNT - 1; i++)
     {
         (*claims)[i].name = (char*)(OE_REQUIRED_CLAIMS[i]);
-        if (strcmp(OE_REQUIRED_CLAIMS[i], OE_CLAIM_PLUGIN_UUID) == 0)
+        if (strcmp(OE_REQUIRED_CLAIMS[i], OE_CLAIM_FORMAT_UUID) == 0)
         {
             (*claims)[i].value = (uint8_t*)&context->base.format_id;
             (*claims)[i].value_size = sizeof(oe_uuid_t);
@@ -178,7 +207,7 @@ static inline oe_result_t mock_verify_evidence_bad(
     return OE_OK;
 }
 
-static inline oe_result_t mock_free_claims_list(
+static inline oe_result_t mock_free_claims(
     oe_verifier_t* context,
     oe_claim_t* claims,
     size_t claims_length)
@@ -188,6 +217,8 @@ static inline oe_result_t mock_free_claims_list(
     free(claims);
     return OE_OK;
 }
+
+#ifdef OE_BUILD_ENCLAVE
 
 static oe_attester_t mock_attester1 = {
     .base =
@@ -200,6 +231,8 @@ static oe_attester_t mock_attester1 = {
     .free_evidence = &mock_free_evidence,
     .free_endorsements = &mock_free_endorsements};
 
+#endif
+
 static oe_verifier_t mock_verifier1 = {
     .base =
         {
@@ -208,7 +241,9 @@ static oe_verifier_t mock_verifier1 = {
             .on_unregister = &mock_attester_unregister,
         },
     .verify_evidence = &mock_verify_evidence,
-    .free_claims_list = &mock_free_claims_list};
+    .free_claims = &mock_free_claims};
+
+#ifdef OE_BUILD_ENCLAVE
 
 // Same implementation but different UUID.
 static oe_attester_t mock_attester2 = {
@@ -222,6 +257,8 @@ static oe_attester_t mock_attester2 = {
     .free_evidence = &mock_free_evidence,
     .free_endorsements = &mock_free_endorsements};
 
+#endif // OE_BUILD_ENCLAVE
+
 static oe_verifier_t mock_verifier2 = {
     .base =
         {
@@ -230,7 +267,9 @@ static oe_verifier_t mock_verifier2 = {
             .on_unregister = &mock_attester_unregister,
         },
     .verify_evidence = &mock_verify_evidence,
-    .free_claims_list = &mock_free_claims_list};
+    .free_claims = &mock_free_claims};
+
+#ifdef OE_BUILD_ENCLAVE
 
 static oe_verifier_t bad_verifier = {
     .base =
@@ -240,6 +279,8 @@ static oe_verifier_t bad_verifier = {
             .on_unregister = &mock_attester_unregister,
         },
     .verify_evidence = &mock_verify_evidence_bad,
-    .free_claims_list = &mock_free_claims_list};
+    .free_claims = &mock_free_claims};
+
+#endif // OE_BUILD_ENCLAVE
 
 #endif /* _OE_MOCK_ATTESTER_H */

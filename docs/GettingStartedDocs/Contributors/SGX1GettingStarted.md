@@ -11,7 +11,7 @@
 Use the following command to download the source code (make sure `git` is installed before doing this):
 
 ```bash
-git clone https://github.com/openenclave/openenclave.git
+git clone --recursive https://github.com/openenclave/openenclave.git
 ```
 
 This creates a source tree under the directory called openenclave.
@@ -50,14 +50,14 @@ cd build/
 Then run `cmake` to configure the build and generate the make files and build:
 
 ```bash
-cmake -DHAS_QUOTE_PROVIDER=OFF ..
+cmake ..
 make
 ```
 
 To build with LVI mitigation, run
 
 ```bash
-cmake -DHAS_QUOTE_PROVIDER=OFF .. \
+cmake .. \
 -DLVI_MITIGATION=ControlFlow \
 -DLVI_MITIGATION_BINDIR=/usr/local/lvi-mitigation/bin
 make

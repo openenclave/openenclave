@@ -6,6 +6,7 @@
 
 #ifndef __ASSEMBLER__
 #include <openenclave/enclave.h>
+#include <openenclave/internal/sgx/td.h>
 #endif
 
 #define ENCLU_EGETKEY 1
@@ -49,7 +50,7 @@
 void oe_exit_enclave(uint64_t arg1, uint64_t arg2) OE_NO_RETURN;
 
 /* This is the actual implementation of eexit */
-void oe_asm_exit(uint64_t arg1, uint64_t arg2) OE_NO_RETURN;
+void oe_asm_exit(uint64_t arg1, uint64_t arg2, oe_sgx_td_t* td) OE_NO_RETURN;
 #endif
 
 #ifndef __ASSEMBLER__

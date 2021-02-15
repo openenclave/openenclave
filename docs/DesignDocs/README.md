@@ -32,7 +32,7 @@ Specification
 
 What are the design details?
 
-Alternates
+Alternatives
 ----------
 
 What other designs were considered?

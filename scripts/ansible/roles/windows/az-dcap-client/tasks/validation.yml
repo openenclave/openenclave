@@ -27,26 +27,6 @@
       register: reg_key
       failed_when: reg_key.value != 1
 
-    - name: Azure DCAP Client | Download devcon.exe
-      win_get_url:
-        url: "{{ devcon_bin_url }}"
-        dest: "{{ tmp_dir }}\\devcon.exe"
-        timeout: 60
-      retries: 3
-
-    - name: Azure DCAP Client | Check if Sgx* drivers are installed
-      win_shell: "{{ tmp_dir }}\\devcon.exe find '{{ item }}'"
-      register: result
-      failed_when: result.stdout.find('1 matching device(s) found.') == -1
-      with_items:
-        - 'root\SgxLCDevice'
-        - 'root\SgxLCDevice_DCAP'
-
-    - name: Azure DCAP Client | Remove temp devcon.exe
-      win_file:
-        state: absent
-        path: "{{ tmp_dir }}\\devcon.exe"
-
     - name: Azure DCAP Client | Check if Intel SGX is installed
       win_shell: '(Get-CimInstance -ClassName Win32_Product -Filter "Name=''Intel® Software Guard Extensions Platform Software''") -eq $null'
       register: result

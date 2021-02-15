@@ -20,6 +20,8 @@ oe_result_t ecall_string_no_null_terminator_modified(
 {
     oe_result_t _result = OE_FAILURE;
 
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
+
     /* Marshalling struct */
     ecall_string_no_null_terminator_args_t _args, *_pargs_in = NULL,
                                                   *_pargs_out = NULL;
@@ -46,15 +48,15 @@ oe_result_t ecall_string_no_null_terminator_modified(
     OE_ADD_SIZE(
         _input_buffer_size, sizeof(ecall_string_no_null_terminator_args_t));
     if (s1)
-        OE_ADD_SIZE(_input_buffer_size, _args.s1_len * sizeof(char));
+        OE_ADD_ARG_SIZE(_input_buffer_size, _args.s1_len, sizeof(char));
     if (s2)
-        OE_ADD_SIZE(_input_buffer_size, _args.s2_len * sizeof(char));
+        OE_ADD_ARG_SIZE(_input_buffer_size, _args.s2_len, sizeof(char));
 
     /* Compute output buffer size. Include out and in-out parameters. */
     OE_ADD_SIZE(
         _output_buffer_size, sizeof(ecall_string_no_null_terminator_args_t));
     if (s2)
-        OE_ADD_SIZE(_output_buffer_size, _args.s2_len * sizeof(char));
+        OE_ADD_ARG_SIZE(_output_buffer_size, _args.s2_len, sizeof(char));
 
     /* Allocate marshalling buffer */
     _total_buffer_size = _input_buffer_size;
@@ -73,8 +75,8 @@ oe_result_t ecall_string_no_null_terminator_modified(
     _pargs_in = (ecall_string_no_null_terminator_args_t*)_input_buffer;
     OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
 
-    OE_WRITE_IN_PARAM(s1, _args.s1_len * sizeof(char), char*);
-    OE_WRITE_IN_OUT_PARAM(s2, _args.s2_len * sizeof(char), char*);
+    OE_WRITE_IN_PARAM(s1, _args.s1_len, sizeof(char), char*);
+    OE_WRITE_IN_OUT_PARAM(s2, _args.s2_len, sizeof(char), char*);
 
     /* Copy args structure (now filled) to input buffer */
     memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
@@ -82,7 +84,9 @@ oe_result_t ecall_string_no_null_terminator_modified(
     /* Call enclave function */
     if ((_result = oe_call_enclave_function(
              enclave,
-             all_fcn_id_ecall_string_no_null_terminator,
+             &global_id,
+             _all_ecall_info_table[all_fcn_id_ecall_string_no_null_terminator]
+                 .name,
              _input_buffer,
              _input_buffer_size,
              _output_buffer,
@@ -95,7 +99,7 @@ oe_result_t ecall_string_no_null_terminator_modified(
     OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
 
     /* Check if the call succeeded */
-    if ((_result = _pargs_out->_result) != OE_OK)
+    if ((_result = _pargs_out->result) != OE_OK)
         goto done;
 
     /* Currently exactly _output_buffer_size bytes must be written */
@@ -108,7 +112,7 @@ oe_result_t ecall_string_no_null_terminator_modified(
     /* Unmarshal return value and out, in-out parameters */
     OE_CHECK_NULL_TERMINATOR(
         _output_buffer + _output_buffer_offset, _args.s2_len);
-    OE_READ_IN_OUT_PARAM(s2, (size_t)(_args.s2_len * sizeof(char)));
+    OE_READ_IN_OUT_PARAM(s2, _args.s2_len, sizeof(char));
 
     _result = OE_OK;
 done:
@@ -125,6 +129,8 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     size_t s2_len)
 {
     oe_result_t _result = OE_FAILURE;
+
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
 
     /* Marshalling struct */
     ecall_wstring_no_null_terminator_args_t _args, *_pargs_in = NULL,
@@ -152,15 +158,15 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     OE_ADD_SIZE(
         _input_buffer_size, sizeof(ecall_wstring_no_null_terminator_args_t));
     if (s1)
-        OE_ADD_SIZE(_input_buffer_size, _args.s1_len * sizeof(wchar_t));
+        OE_ADD_ARG_SIZE(_input_buffer_size, _args.s1_len, sizeof(wchar_t));
     if (s2)
-        OE_ADD_SIZE(_input_buffer_size, _args.s2_len * sizeof(wchar_t));
+        OE_ADD_ARG_SIZE(_input_buffer_size, _args.s2_len, sizeof(wchar_t));
 
     /* Compute output buffer size. Include out and in-out parameters. */
     OE_ADD_SIZE(
         _output_buffer_size, sizeof(ecall_wstring_no_null_terminator_args_t));
     if (s2)
-        OE_ADD_SIZE(_output_buffer_size, _args.s2_len * sizeof(wchar_t));
+        OE_ADD_ARG_SIZE(_output_buffer_size, _args.s2_len, sizeof(wchar_t));
 
     /* Allocate marshalling buffer */
     _total_buffer_size = _input_buffer_size;
@@ -179,8 +185,8 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     _pargs_in = (ecall_wstring_no_null_terminator_args_t*)_input_buffer;
     OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
 
-    OE_WRITE_IN_PARAM(s1, _args.s1_len * sizeof(wchar_t), wchar_t*);
-    OE_WRITE_IN_OUT_PARAM(s2, _args.s2_len * sizeof(wchar_t), wchar_t*);
+    OE_WRITE_IN_PARAM(s1, _args.s1_len, sizeof(wchar_t), wchar_t*);
+    OE_WRITE_IN_OUT_PARAM(s2, _args.s2_len, sizeof(wchar_t), wchar_t*);
 
     /* Copy args structure (now filled) to input buffer */
     memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
@@ -188,7 +194,9 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     /* Call enclave function */
     if ((_result = oe_call_enclave_function(
              enclave,
-             all_fcn_id_ecall_wstring_no_null_terminator,
+             &global_id,
+             _all_ecall_info_table[all_fcn_id_ecall_wstring_no_null_terminator]
+                 .name,
              _input_buffer,
              _input_buffer_size,
              _output_buffer,
@@ -201,7 +209,7 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
 
     /* Check if the call succeeded */
-    if ((_result = _pargs_out->_result) != OE_OK)
+    if ((_result = _pargs_out->result) != OE_OK)
         goto done;
 
     /* Currently exactly _output_buffer_size bytes must be written */
@@ -214,7 +222,7 @@ oe_result_t ecall_wstring_no_null_terminator_modified(
     /* Unmarshal return value and out, in-out parameters */
     OE_CHECK_NULL_TERMINATOR_WIDE(
         _output_buffer + _output_buffer_offset, _args.s2_len);
-    OE_READ_IN_OUT_PARAM(s2, (size_t)(_args.s2_len * sizeof(wchar_t)));
+    OE_READ_IN_OUT_PARAM(s2, _args.s2_len, sizeof(wchar_t));
 
     _result = OE_OK;
 done:
@@ -357,6 +365,7 @@ void ocall_string_fun5(char* s)
 
 void ocall_string_fun6(const char* s)
 {
+    OE_UNUSED(s);
     ocall_string_fun6_args_t args;
     // constness is discarded when marshaling.
     check_type<char*>(args.s);
@@ -468,6 +477,7 @@ void ocall_wstring_fun5(wchar_t* s)
 
 void ocall_wstring_fun6(const wchar_t* s)
 {
+    OE_UNUSED(s);
     ocall_wstring_fun6_args_t args;
     // constness is discarded when marshaling.
     check_type<wchar_t*>(args.s);

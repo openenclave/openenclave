@@ -12,6 +12,8 @@
 #include <sys/user.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "contract.h"
+#include "sgxtypes.h"
 
 typedef struct _ssa_info
 {
@@ -22,7 +24,7 @@ typedef struct _ssa_info
 /*
 **==============================================================================
 **
-** oe_read_process_memory()
+** sgx_read_process_memory()
 **
 **     This function is used to read process memory.
 **
@@ -41,7 +43,7 @@ typedef struct _ssa_info
 **==============================================================================
 */
 
-int oe_read_process_memory(
+int sgx_read_process_memory(
     pid_t proc,
     void* base_addr,
     void* buffer,
@@ -92,7 +94,7 @@ cleanup:
 /*
 **==============================================================================
 **
-** oe_write_process_memory()
+** sgx_write_process_memory()
 **
 **     This function is used to write process memory.
 **
@@ -111,7 +113,7 @@ cleanup:
 **==============================================================================
 */
 
-int oe_write_process_memory(
+int sgx_write_process_memory(
     pid_t proc,
     void* base_addr,
     void* buffer,
@@ -161,37 +163,33 @@ cleanup:
 
 static int _get_enclave_ssa_frame_size(
     pid_t pid,
-    void* tcs_addr,
+    void* td_t_addr,
     uint64_t* ssa_frame_size)
 {
     int ret;
-    oe_thread_data_t oe_thread_data;
+    uint64_t td_ssa_frame_size = 0;
     size_t read_byte_length = 0;
 
-    // oe_sgx_td_t is in OE_TD_FROM_TCS_BYTE_OFFSET from tcs.
-    // It is defined by enclave layout in td.c.
-    oe_sgx_td_t* td =
-        (oe_sgx_td_t*)(((unsigned char*)tcs_addr) + OE_TD_FROM_TCS_BYTE_OFFSET);
-    ret = oe_read_process_memory(
+    ret = sgx_read_process_memory(
         pid,
-        (void*)td,
-        (void*)&oe_thread_data,
-        sizeof(oe_thread_data_t),
+        (char*)td_t_addr + GS_SSA_FRAME_SIZE_OFFSET,
+        (void*)&td_ssa_frame_size,
+        sizeof(td_ssa_frame_size),
         &read_byte_length);
     if (ret != 0)
     {
         return ret;
     }
 
-    if (read_byte_length != sizeof(oe_thread_data_t))
+    if (read_byte_length != sizeof(td_ssa_frame_size))
     {
         return -1;
     }
 
-    *ssa_frame_size = oe_thread_data.__ssa_frame_size;
+    *ssa_frame_size = td_ssa_frame_size;
     if (*ssa_frame_size == 0)
     {
-        *ssa_frame_size = OE_DEFAULT_SSA_FRAME_SIZE;
+        *ssa_frame_size = DEFAULT_SSA_FRAME_SIZE;
     }
 
     return 0;
@@ -206,26 +204,41 @@ static int _get_enclave_thread_current_ssa_info(
     size_t read_byte_length;
     uint64_t ssa_frame_size = 0;
     sgx_tcs_t tcs;
+    void* enclave_base_address;
+    void* td_t_addr;
 
     // Read TCS header.
-    ret = oe_read_process_memory(
-        pid,
-        tcs_addr,
-        (void*)&tcs,
-        OE_SGX_TCS_HEADER_BYTE_SIZE,
-        &read_byte_length);
+    ret = sgx_read_process_memory(
+        pid, tcs_addr, (void*)&tcs, TCS_HEADER_BYTE_SIZE, &read_byte_length);
     if (ret != 0)
     {
         return ret;
     }
 
-    if (read_byte_length != OE_SGX_TCS_HEADER_BYTE_SIZE)
+    if (read_byte_length != TCS_HEADER_BYTE_SIZE)
     {
         return -1;
     }
 
+    // SSA is assigned to the page immediately after the tcs page.
+    // SSA address is also derived from adding tcs.ossa to enclave base address.
+    // See: host/sgx/create.c
+    // See:
+    // https://github.com/intel/linux-sgx/blob/62b116c502b09b125db9acc965694d3ecff8e698/sdk/debugger_interface/linux/se_ptrace.c#L194-L199
+    // This can be used to compute the enclave base address:
+    //    encave-base-address + tcs.ossa = tcs_addr + page-size
+    //    enclave-base-address = tcs_addr + page-size - tcs.ossa
+    enclave_base_address = (uint8_t*)tcs_addr + ENCLAVE_PAGE_SIZE - tcs.ossa;
+
+    // GS register will point to td_t. GS register value can be computed by
+    // adding tcs.gsbase to enclave base address.
+    // Note: FS register will also point to td_t upon enclave entry, but
+    // enclaves can modify FS register to implement their own threading
+    // libraries.
+    td_t_addr = (uint8_t*)enclave_base_address + tcs.gsbase;
+
     // Get SSA frame size
-    _get_enclave_ssa_frame_size(pid, tcs_addr, &ssa_frame_size);
+    _get_enclave_ssa_frame_size(pid, td_t_addr, &ssa_frame_size);
     if (ret != 0)
     {
         return ret;
@@ -233,8 +246,8 @@ static int _get_enclave_thread_current_ssa_info(
 
     // Get current SSA base addr and size.
     ssa_info->base_address =
-        (void*)(((uint8_t*)tcs_addr) + OE_SSA_FROM_TCS_BYTE_OFFSET + (tcs.cssa - 1) * ssa_frame_size * OE_PAGE_SIZE);
-    ssa_info->frame_byte_size = ssa_frame_size * OE_PAGE_SIZE;
+        (void*)(((uint8_t*)tcs_addr) + OSSA_FROM_TCS + (tcs.cssa - 1) * ssa_frame_size * ENCLAVE_PAGE_SIZE);
+    ssa_info->frame_byte_size = ssa_frame_size * ENCLAVE_PAGE_SIZE;
     return 0;
 }
 
@@ -299,7 +312,7 @@ static inline void _user_regs_to_ssa_gpr(
 /*
 **==============================================================================
 **
-** oe_get_enclave_thread_gpr()
+** sgx_get_enclave_thread_gpr()
 **
 **     This function is used get the GPR registers of the enclave thread.
 **
@@ -315,7 +328,7 @@ static inline void _user_regs_to_ssa_gpr(
 **==============================================================================
 */
 
-int oe_get_enclave_thread_gpr(
+int sgx_get_enclave_thread_gpr(
     pid_t pid,
     void* tcs_addr,
     struct user_regs_struct* regs)
@@ -335,10 +348,10 @@ int oe_get_enclave_thread_gpr(
 
     // Get gpr base address. Gpr is at the end of an SSA frame.
     gpr_addr =
-        (void*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
+        (void*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - SGX_GPR_BYTE_SIZE);
 
     // Read gpr from ssa.
-    ret = oe_read_process_memory(
+    ret = sgx_read_process_memory(
         pid,
         gpr_addr,
         (void*)&ssa_gpr,
@@ -363,7 +376,7 @@ int oe_get_enclave_thread_gpr(
 /*
 **==============================================================================
 **
-** oe_set_enclave_thread_gpr()
+** sgx_set_enclave_thread_gpr()
 **
 **     This function is used get the GPR registers of the enclave thread.
 **
@@ -379,7 +392,7 @@ int oe_get_enclave_thread_gpr(
 **==============================================================================
 */
 
-int oe_set_enclave_thread_gpr(
+int sgx_set_enclave_thread_gpr(
     pid_t pid,
     void* tcs_addr,
     struct user_regs_struct* regs)
@@ -400,10 +413,10 @@ int oe_set_enclave_thread_gpr(
 
     // Get gpr base address. Gpr is at the end of an SSA frame.
     gpr_addr =
-        (void*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
+        (void*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - SGX_GPR_BYTE_SIZE);
 
     // Read gpr from ssa.
-    ret = oe_read_process_memory(
+    ret = sgx_read_process_memory(
         pid,
         gpr_addr,
         (void*)&ssa_gpr,
@@ -423,7 +436,7 @@ int oe_set_enclave_thread_gpr(
     _user_regs_to_ssa_gpr(regs, &ssa_gpr);
 
     // Write gpr value to ssa.
-    ret = oe_write_process_memory(
+    ret = sgx_write_process_memory(
         pid,
         gpr_addr,
         (void*)&ssa_gpr,
@@ -445,7 +458,7 @@ int oe_set_enclave_thread_gpr(
 /*
 **==============================================================================
 **
-** oe_get_enclave_thread_fpr()
+** sgx_get_enclave_thread_fpr()
 **
 **     This function is used get the FPR registers of the enclave thread.
 **
@@ -461,7 +474,7 @@ int oe_set_enclave_thread_gpr(
 **==============================================================================
 */
 
-int oe_get_enclave_thread_fpr(
+int sgx_get_enclave_thread_fpr(
     pid_t pid,
     void* tcs_addr,
     struct user_fpregs_struct* regs)
@@ -478,7 +491,7 @@ int oe_get_enclave_thread_fpr(
     }
 
     // Read fpr values from ssa.
-    ret = oe_read_process_memory(
+    ret = sgx_read_process_memory(
         pid,
         ssa_info.base_address,
         (void*)regs,
@@ -500,7 +513,7 @@ int oe_get_enclave_thread_fpr(
 /*
 **==============================================================================
 **
-** oe_set_enclave_thread_fpr()
+** sgx_set_enclave_thread_fpr()
 **
 **     This function is used get the FPR registers of the enclave thread.
 **
@@ -516,7 +529,7 @@ int oe_get_enclave_thread_fpr(
 **==============================================================================
 */
 
-int oe_set_enclave_thread_fpr(
+int sgx_set_enclave_thread_fpr(
     pid_t pid,
     void* tcs_addr,
     struct user_fpregs_struct* regs)
@@ -533,7 +546,7 @@ int oe_set_enclave_thread_fpr(
     }
 
     // Write fpr values to ssa.
-    ret = oe_write_process_memory(
+    ret = sgx_write_process_memory(
         pid,
         ssa_info.base_address,
         (void*)regs,
@@ -555,7 +568,7 @@ int oe_set_enclave_thread_fpr(
 /*
 **==============================================================================
 **
-** oe_get_enclave_thread_xstate()
+** sgx_get_enclave_thread_xstate()
 **
 **     This function is used get the XState of the enclave thread.
 **
@@ -572,7 +585,7 @@ int oe_set_enclave_thread_fpr(
 **==============================================================================
 */
 
-int oe_get_enclave_thread_xstate(
+int sgx_get_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
@@ -596,7 +609,7 @@ int oe_get_enclave_thread_xstate(
     }
 
     // Read xstate from ssa.
-    ret = oe_read_process_memory(
+    ret = sgx_read_process_memory(
         pid,
         ssa_info.base_address,
         (void*)xstate,
@@ -618,7 +631,7 @@ int oe_get_enclave_thread_xstate(
 /*
 **==============================================================================
 **
-** oe_set_enclave_thread_xstate()
+** sgx_set_enclave_thread_xstate()
 **
 **     This function is used set the XState of the enclave thread.
 **
@@ -635,7 +648,7 @@ int oe_get_enclave_thread_xstate(
 **==============================================================================
 */
 
-int oe_set_enclave_thread_xstate(
+int sgx_set_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
@@ -659,7 +672,7 @@ int oe_set_enclave_thread_xstate(
     }
 
     // Write xstate values to ssa.
-    ret = oe_write_process_memory(
+    ret = sgx_write_process_memory(
         pid,
         ssa_info.base_address,
         (void*)xstate,
@@ -681,7 +694,7 @@ int oe_set_enclave_thread_xstate(
 /*
 **==============================================================================
 **
-** oe_is_aep()
+** sgx_is_aep()
 **
 **     This function is used to check if the input thread is on a OE AEP.
 **
@@ -696,7 +709,7 @@ int oe_set_enclave_thread_xstate(
 **==============================================================================
 */
 
-bool oe_is_aep(pid_t pid, struct user_regs_struct* regs)
+bool sgx_is_aep(pid_t pid, struct user_regs_struct* regs)
 {
     uint32_t op_code;
 
@@ -706,7 +719,7 @@ bool oe_is_aep(pid_t pid, struct user_regs_struct* regs)
         return false;
     }
 
-    if (oe_read_process_memory(
+    if (sgx_read_process_memory(
             pid, (void*)regs->rip, (char*)&op_code, sizeof(op_code), NULL) != 0)
     {
         return false;

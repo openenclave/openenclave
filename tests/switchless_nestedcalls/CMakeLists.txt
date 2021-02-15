@@ -4,7 +4,8 @@
 add_subdirectory(host)
 
 if (BUILD_ENCLAVES)
-	add_subdirectory(enc)
-endif()
+  add_subdirectory(enc)
+endif ()
 
-add_enclave_test(tests/switchless_nestedcalls switchless_nestedcalls_host switchless_nestedcalls_enc)
+add_enclave_test(tests/switchless_nestedcalls switchless_nestedcalls_host
+                 switchless_nestedcalls_enc)

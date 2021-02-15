@@ -11,7 +11,7 @@
 Use the following command to download the source code.
 
 ```bash
-git clone https://github.com/openenclave/openenclave.git
+git clone --recursive https://github.com/openenclave/openenclave.git
 ```
 
 This creates a source tree under the directory called openenclave.
@@ -39,6 +39,8 @@ If you are not running in an ACC VM, you should instead run:
 ```bash
 ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
+
+To learn more about setting up Open Enclave SGX on Linux in a Non-Azure Confidential Computing machine, read the document [Configure OE SDK SGX on Linux in non-ACC Machines](/docs/GettingStartedDocs/Contributors//NonAccMachineSGXLinuxGettingStarted.md).
 
 To support LVI mitigation, the command creates
 `/usr/local/lvi-mitigation/bin` that includes the dependencies.
@@ -124,4 +126,4 @@ Follow the instructions in the [Install Info](LinuxInstallInfo.md) document to i
 
 ## Build and run samples
 
-To build and run the samples, please look [here](/samples/README_Linux.md).
+To build and run the samples, please look [here](/samples/README.md).

@@ -102,7 +102,7 @@ void TestVerifyTCBInfo(
             (const char*)&tcbInfo[0],
             platform_tcb_level,
             parsed_info) == OE_OK);
-    OE_TEST(ecall_result == expected);
+    OE_TEST_CODE(ecall_result, expected);
     AssertParsedValues(*parsed_info, version);
 
     oe_datetime_t nextUpdate = {2019, 6, 6, 10, 12, 17};
@@ -199,52 +199,16 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave, const char* test_filename)
     printf("Unknown TCB Level determination test passed.\n");
 
     printf("TestVerifyTCBInfo: Positive Tests passed\n");
-
-    const char* negative_files[] = {
-        // In the following files, a property in corresponding level has been
-        // capitalized. JSON is case sensitive and therefore schema validation
-        // should fail.
-        "./data/tcbInfoNegativePropertyMissingLevel0.json",
-        "./data/tcbInfoNegativePropertyMissingLevel1.json",
-        "./data/tcbInfoNegativePropertyMissingLevel2.json",
-        "./data/tcbInfoNegativePropertyMissingLevel3.json",
-        // In the following files, a property in corresponding level has wrong
-        // type.
-        "./data/tcbInfoNegativePropertyWrongTypeLevel0.json",
-        "./data/tcbInfoNegativePropertyWrongTypeLevel1.json",
-        "./data/tcbInfoNegativePropertyWrongTypeLevel2.json",
-        "./data/tcbInfoNegativePropertyWrongTypeLevel3.json",
-
-        // Comp Svn greater than uint8_t
-        "./data/tcbInfoNegativeCompSvn.json",
-
-        // pce Svn greater than uint16_t
-        "./data/tcbInfoNegativePceSvn.json",
-
-        // Invalid issueDate field.
-        "./data/tcbInfoNegativeInvalidIssueDate.json",
-
-        // Invalid nextUpdate field.
-        "./data/tcbInfoNegativeInvalidNextUpdate.json",
-
-        // Missing nextUpdate field.
-        "./data/tcbInfoNegativeMissingNextUpdate.json",
-
-        // Signature != 64 bytes
-        "./data/tcbInfoNegativeSignature.json",
-
-        // Unsupported JSON constructs
-        "./data/tcbInfoNegativeStringEscape.json",
-        "./data/tcbInfoNegativeIntegerOverflow.json",
-        "./data/tcbInfoNegativeIntegerWithSign.json",
-        "./data/tcbInfoNegativeFloat.json",
-    };
-
-    for (size_t i = 0; i < sizeof(negative_files) / sizeof(negative_files[0]);
-         ++i)
+}
+void TestVerifyTCBInfo_Negative(
+    oe_enclave_t* enclave,
+    const char* file_names[],
+    size_t file_cnt)
+{
+    for (size_t i = 0; i < file_cnt; ++i)
     {
         std::vector<uint8_t> tcbInfo;
-        OE_TEST(FileToBytes(negative_files[i], &tcbInfo) == 0);
+        OE_TEST(FileToBytes(file_names[i], &tcbInfo) == 0);
 
         oe_parsed_tcb_info_t parsed_info = {0};
         oe_tcb_info_tcb_level_t platform_tcb_level = {{0}};
@@ -257,8 +221,7 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave, const char* test_filename)
                 &platform_tcb_level,
                 &parsed_info) == OE_OK);
         OE_TEST(ecall_result == OE_JSON_INFO_PARSE_ERROR);
-        printf(
-            "TestVerifyTCBInfo: Negative Test %s passed\n", negative_files[i]);
+        printf("TestVerifyTCBInfo: Negative Test %s passed\n", file_names[i]);
     }
 }
 
@@ -403,73 +366,12 @@ void TestVerifyTCBInfoV2(oe_enclave_t* enclave, const char* test_filename)
     printf("Unknown TCB Level determination test passed.\n");
 
     printf("TestVerifyTCBInfo V2: Positive Tests passed\n");
-
-    const char* negative_files[] = {
-        // In the following files, a property in corresponding level has been
-        // capitalized. JSON is case sensitive and therefore schema validation
-        // should fail.
-        "./data_v2/tcbInfoNegativePropertyMissingLevel0.json",
-        "./data_v2/tcbInfoNegativePropertyMissingLevel1.json",
-        "./data_v2/tcbInfoNegativePropertyMissingLevel2.json",
-        "./data_v2/tcbInfoNegativePropertyMissingLevel3.json",
-        // In the following files, a property in corresponding level has wrong
-        // type.
-        "./data_v2/tcbInfoNegativePropertyWrongTypeLevel0.json",
-        "./data_v2/tcbInfoNegativePropertyWrongTypeLevel1.json",
-        "./data_v2/tcbInfoNegativePropertyWrongTypeLevel2.json",
-        "./data_v2/tcbInfoNegativePropertyWrongTypeLevel3.json",
-
-        // Comp Svn greater than uint8_t
-        "./data_v2/tcbInfoNegativeCompSvn.json",
-
-        // pce Svn greater than uint16_t
-        "./data_v2/tcbInfoNegativePceSvn.json",
-
-        // Invalid issueDate field.
-        "./data_v2/tcbInfoNegativeInvalidIssueDate.json",
-
-        // Invalid nextUpdate field.
-        "./data_v2/tcbInfoNegativeInvalidNextUpdate.json",
-
-        // Missing nextUpdate field.
-        "./data_v2/tcbInfoNegativeMissingNextUpdate.json",
-
-        // Signature != 64 bytes
-        "./data_v2/tcbInfoNegativeSignature.json",
-
-        // Unsupported JSON constructs
-        "./data_v2/tcbInfoNegativeStringEscape.json",
-        "./data_v2/tcbInfoNegativeIntegerOverflow.json",
-        "./data_v2/tcbInfoNegativeIntegerWithSign.json",
-        "./data_v2/tcbInfoNegativeFloat.json",
-    };
-
-    for (size_t i = 0; i < sizeof(negative_files) / sizeof(negative_files[0]);
-         ++i)
-    {
-        std::vector<uint8_t> tcbInfo;
-        OE_TEST(FileToBytes(negative_files[i], &tcbInfo) == 0);
-
-        oe_parsed_tcb_info_t parsed_info = {0};
-        oe_tcb_info_tcb_level_t platform_tcb_level = {{0}};
-        oe_result_t ecall_result = OE_FAILURE;
-        OE_TEST(
-            test_verify_tcb_info(
-                enclave,
-                &ecall_result,
-                (const char*)&tcbInfo[0],
-                &platform_tcb_level,
-                &parsed_info) == OE_OK);
-        OE_TEST(ecall_result == OE_JSON_INFO_PARSE_ERROR);
-        printf(
-            "TestVerifyTCBInfoV2: Negative Test %s passed\n",
-            negative_files[i]);
-    }
 }
 
-void TestVerifyTCBInfoV2_AdvisoryIDs(
+void TestVerifyTCBInfo_AdvisoryIDs(
     oe_enclave_t* enclave,
-    const char* test_filename)
+    const char* test_filename,
+    uint32_t version)
 {
     std::vector<uint8_t> tcbInfo;
     oe_result_t ecall_result = OE_FAILURE;
@@ -497,7 +399,7 @@ void TestVerifyTCBInfoV2_AdvisoryIDs(
     OE_TEST(ecall_result == OE_OK);
     OE_TEST(platform_tcb_level.status.fields.up_to_date == 1);
 
-    AssertParsedValues(parsed_info, 2);
+    AssertParsedValues(parsed_info, version);
     oe_datetime_t nextUpdate = {2019, 6, 6, 10, 12, 17};
     OE_TEST(oe_datetime_compare(&parsed_info.next_update, &nextUpdate) == 0);
 
@@ -534,5 +436,5 @@ void TestVerifyTCBInfoV2_AdvisoryIDs(
                 expectedAdvisoryIDs[i],
                 advisoryIDs_length[i]) == 0);
     }
-    printf("TCB Info V2 positive test, with advisoryIDs. PASSED\n");
+    printf("TestVerifyTCBInfo: Positive Tests %s passed\n", test_filename);
 }

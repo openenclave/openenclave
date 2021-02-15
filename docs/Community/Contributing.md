@@ -19,13 +19,7 @@ is defined in the documents linked below:
 Reporting Security Issues
 -------------------------
 
-Security issues and bugs should be reported privately, via email, to the
-Microsoft Security Response Center (MSRC) at <secure@microsoft.com>. You should
-receive a response within 24 hours. If for some reason you do not, please follow
-up via email to ensure we received your original message. Further information,
-including the [MSRC PGP](https://technet.microsoft.com/en-us/security/dn606155)
-key, can be found in the [Security
-TechCenter](https://technet.microsoft.com/en-us/security/default).
+To report a security issue, please follow the [process to report a vulnerability](/SECURITY.md#reporting-a-vulnerability).
 
 Opening Issues
 --------------
@@ -116,7 +110,9 @@ Please do:
 - **DO** ensure your correct name and email are on each commit.
 - **DO** address PR feedback in an additional commit(s) rather than amending the
   existing commits, and only rebase/squash them when necessary. This makes it
-  easier for reviewers to track changes.
+  easier for reviewers to track changes. After addressing comments, mark as resolved 
+  comments where you did exactly what the reviewer asked, and leave it up to the
+  reviewer to mark anything else as resolved.
 
 Please do not:
 
@@ -189,9 +185,13 @@ After a bors run, there is a known issue where Jenkins builds don't have links
 to the build logs for each pipeline. Please see #2878 for a workaround for
 this issue.
 
+After a successful bors run, the code coverage report is available to developers. See [Code Coverage](../GettingStartedDocs/Contributors/CodeCoverage.md##code-coverage-reports-for-prs) for more details.
+
 Note: If reviewers on a PR make suggestions which you accept using the "Commit
 Suggestion" button on Github, you would need to pull those changes and sign them
-off as required by [DCO](#developer-certificate-of-origin).
+off as required by [DCO](#developer-certificate-of-origin). If instead, you
+would like to sign changes off in the browser, you can use [DCO Github UI]
+(https://github.com/scottrigby/dco-gh-ui), or other similar browser extensions.
 
 Commit Messages
 ---------------
@@ -310,7 +310,9 @@ Copying Files from Other Projects
 
 Open Enclave uses some files from other projects, typically to provide a default
 level of functionality within the enclave where a binary distribution does not
-exist or would be inconvenient.
+exist or would be inconvenient.  Using submodules is preferred over copying
+source files from other projects, however.  When a fork is needed, see the
+[Repository Guidelines](Repositories.md).
 
 The following rules must be followed for PRs that include files from another
 project:

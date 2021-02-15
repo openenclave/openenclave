@@ -1,6 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
+#include <openenclave/attestation/verifier.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
@@ -15,6 +16,7 @@
 #define KEY_BUFF_SIZE 2048
 
 static const char* oid_oe_report = X509_OID_FOR_QUOTE_STRING;
+static const char* oid_new_oe_report = X509_OID_FOR_NEW_QUOTE_STRING;
 
 // verify report user data against peer certificate
 static oe_result_t verify_report_user_data(
@@ -112,17 +114,34 @@ oe_result_t oe_verify_attestation_certificate(
 
     // determine the size of the extension
     if (oe_cert_find_extension(
-            &cert, (const char*)oid_oe_report, NULL, &report_size) !=
+            &cert, (const char*)oid_oe_report, NULL, &report_size) ==
         OE_BUFFER_TOO_SMALL)
-        OE_RAISE(OE_FAILURE);
+    {
+        report = (uint8_t*)oe_malloc(report_size);
+        if (!report)
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
-    report = (uint8_t*)oe_malloc(report_size);
-    if (!report)
-        OE_RAISE(OE_OUT_OF_MEMORY);
+        OE_CHECK(oe_cert_find_extension(
+            &cert, (const char*)oid_oe_report, report, &report_size));
+    }
+    else if (
+        oe_cert_find_extension(
+            &cert, (const char*)oid_new_oe_report, NULL, &report_size) ==
+        OE_BUFFER_TOO_SMALL)
+    {
+        report = (uint8_t*)oe_malloc(report_size);
+        if (!report)
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
-    // find the extension
-    OE_CHECK(oe_cert_find_extension(
-        &cert, (const char*)oid_oe_report, report, &report_size));
+        OE_CHECK(oe_cert_find_extension(
+            &cert, (const char*)oid_new_oe_report, report, &report_size));
+    }
+    else
+    {
+        OE_RAISE_MSG(
+            OE_FAILURE, "No expected certificate extension matched", NULL);
+    }
+
     OE_TRACE_VERBOSE("extract_x509_report_extension() succeeded");
 
 #ifdef OE_BUILD_ENCLAVE

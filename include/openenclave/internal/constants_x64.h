@@ -21,10 +21,18 @@
 //
 
 #define OE_SSA_FROM_TCS_BYTE_OFFSET OE_PAGE_SIZE
-#define OE_TD_FROM_TCS_BYTE_OFFSET (5 * OE_PAGE_SIZE)
 #define OE_DEFAULT_SSA_FRAME_SIZE 0x1
 #define OE_SGX_GPR_BYTE_SIZE 0xb8
 #define OE_SGX_TCS_HEADER_BYTE_SIZE 0x48
+
+//
+// SGX control pages, excluding thread data and local storage:
+// 1 TCS page + 2 SSA pages + 1 guard page
+//
+
+#define OE_SGX_TCS_CONTROL_PAGES 4
+
+#define OE_SGX_TCS_THREAD_DATA_PAGES 1
 
 //
 // oe_context_t Structure size and offset definitions.
@@ -57,12 +65,11 @@
 // XSTATE constants.
 //
 
-#define XSAVE_ALIGNMENT 0x40
-#define LEGACY_XSAVE_AREA 0X200
-#define XSAVE_HEADER_LENGTH 0X40
-//#define MINIMAL_XSTATE_AREA_LENGTH  (LEGACY_XSAVE_AREA + XSAVE_HEADER_LENGTH)
-// Workaround for #144 xrstor64 fault - Increasing from 0x240 to 0x1000
-#define MINIMAL_XSTATE_AREA_LENGTH 0x1000
+#define OE_FXSAVE_ALIGNMENT 0x10
+#define OE_FXSAVE_AREA_SIZE 0X200
+#define OE_XSAVE_ALIGNMENT 0x40
+#define OE_XSAVE_HEADER_SIZE 0X40
+#define OE_MINIMAL_XSTATE_AREA_SIZE (OE_FXSAVE_AREA_SIZE + OE_XSAVE_HEADER_SIZE)
 
 //
 //  AMD64 ABI related constants.
@@ -70,11 +77,5 @@
 
 //  AMD64 ABI needs a 128 bytes red zone.
 #define ABI_REDZONE_BYTE_SIZE 0x80
-
-// MXCSR initialization value for Linux x86_64 ABI in enclave
-#define ABI_MXCSR_INIT 0x1F80
-
-// x87 FPU control word initialization value for Linux x86_64 ABI in enclave
-#define ABI_FPUCW_INIT 0x037F
 
 #endif /* _OE_INTERNAL_CONSTANTS_X64_H */

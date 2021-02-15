@@ -42,7 +42,7 @@ source /opt/openenclave/share/openenclave/openenclaverc
 One way to determine if your machine is correctly configured to build and run
 Open Enclave apps is to execute the samples. A description of all the included samples,
 what each one illustrates, and how to build and run them  can be found in
-[share/openenclave/samples/README.md](/samples/README_Linux.md).
+[share/openenclave/samples/README.md](/samples/README.md#building-the-samples).
 
 Additional documentation is also available for:
 - [Building and signing enclaves](/docs/GettingStartedDocs/buildandsign.md)

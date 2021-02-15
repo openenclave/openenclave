@@ -32,5 +32,10 @@ val_is_nonzero:
     mov 40(%rdi),%r13
     mov 48(%rdi),%r14
     mov 56(%rdi),%r15
-    jmp *16(%rdi)
+
+    // Load indirect jump address into register and then perform the jump.
+    // This pattern allows the assembler to detect and add lfence as
+    // appropriate.
+    mov 16(%rdi),%rdi
+    jmp *%rdi
 .cfi_endproc

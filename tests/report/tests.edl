@@ -2,6 +2,17 @@
 // Licensed under the MIT License.
 
 enclave {
+    from "openenclave/edl/logging.edl" import oe_write_ocall;
+    from "openenclave/edl/fcntl.edl" import *;
+    from "openenclave/edl/attestation.edl" import *;
+#ifdef OE_SGX
+    from "openenclave/edl/sgx/attestation.edl" import *;
+    from "openenclave/edl/sgx/cpu.edl" import *;
+    from "openenclave/edl/sgx/thread.edl" import *;
+#else
+    from "openenclave/edl/optee/platform.edl" import *;
+#endif
+
     include "includes.h"
 
     trusted {
@@ -25,10 +36,9 @@ enclave {
         public void enclave_test_local_verify_report();
         public void enclave_test_remote_verify_report();
         public void enclave_test_verify_report_with_collaterals();
+        public void enclave_test_get_signer_id_from_public_key();
     };
 
     untrusted {
-      
     };
 };
-

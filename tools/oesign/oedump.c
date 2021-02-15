@@ -1,143 +1,19 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <inttypes.h>
-#include <openenclave/bits/defs.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
+#include <openenclave/internal/crypto/sha.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/raise.h>
-#include <openenclave/internal/safecrt.h>
-#include <openenclave/internal/sgxcreate.h>
-#include <openenclave/internal/utils.h>
-#include <stdarg.h>
+#include <openenclave/internal/types.h>
 #include <stdio.h>
 #include <string.h>
-
-size_t errors = 0;
+#include "oe_err.h"
+#include "oeinfo.h"
 
 static bool verbose_opt = false;
 
-/* Find enclave property struct within an .oeinfo section */
-static oe_result_t _find_enclave_properties(
-    uint8_t* section_data,
-    size_t section_size,
-    oe_enclave_type_t enclave_type,
-    size_t struct_size,
-    oe_sgx_enclave_properties_t** enclave_properties)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    uint8_t* ptr = section_data;
-    size_t bytes_remaining = section_size;
-
-    *enclave_properties = NULL;
-
-    /* While there are more enclave property structures */
-    while (bytes_remaining >= struct_size)
-    {
-        oe_sgx_enclave_properties_t* p = (oe_sgx_enclave_properties_t*)ptr;
-
-        if (p->header.enclave_type == enclave_type)
-        {
-            if (p->header.size != struct_size)
-            {
-                result = OE_FAILURE;
-                goto done;
-            }
-
-            /* Found it! */
-            *enclave_properties = p;
-            break;
-        }
-
-        /* If size of structure extends beyond end of section */
-        if (p->header.size > bytes_remaining)
-            break;
-
-        ptr += p->header.size;
-        bytes_remaining -= p->header.size;
-    }
-
-    if (*enclave_properties == NULL)
-    {
-        result = OE_NOT_FOUND;
-        goto done;
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-oe_result_t oe_sgx_load_properties(
-    const elf64_t* elf,
-    const char* section_name,
-    oe_sgx_enclave_properties_t* properties)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    uint8_t* section_data;
-    size_t section_size;
-
-    if (properties)
-        memset(properties, 0, sizeof(*properties));
-
-    /* Check for null parameter */
-    if (!elf || !section_name || !properties)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
-
-    /* Get pointer to and size of the given section */
-    if (elf64_find_section(elf, section_name, &section_data, &section_size) !=
-        0)
-    {
-        result = OE_NOT_FOUND;
-        goto done;
-    }
-
-    /* Find SGX enclave property struct */
-    {
-        oe_sgx_enclave_properties_t* enclave_properties;
-
-        if ((result = _find_enclave_properties(
-                 section_data,
-                 section_size,
-                 OE_ENCLAVE_TYPE_SGX,
-                 sizeof(oe_sgx_enclave_properties_t),
-                 &enclave_properties)) != OE_OK)
-        {
-            result = OE_NOT_FOUND;
-            goto done;
-        }
-
-        OE_CHECK(oe_memcpy_s(
-            properties,
-            sizeof(*properties),
-            enclave_properties,
-            sizeof(*enclave_properties)));
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-OE_PRINTF_FORMAT(1, 2)
-void err(const char* fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    fprintf(stderr, "*** Error: ");
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
-    va_end(ap);
-    errors++;
-}
-
-void dump_entry_point(elf64_t* elf)
+static void _dump_entry_point(const elf64_t* elf)
 {
     elf64_sym_t sym;
     const char* name;
@@ -145,29 +21,50 @@ void dump_entry_point(elf64_t* elf)
     if (elf64_find_dynamic_symbol_by_address(
             elf, elf64_get_header(elf)->e_entry, STT_FUNC, &sym) != 0)
     {
-        err("cannot find entry point symbol");
+        oe_err("Cannot find entry point symbol");
         return;
     }
 
     if (!(name = elf64_get_string_from_dynstr(elf, sym.st_name)))
     {
-        err("cannot resolve entry point name");
+        oe_err("Cannot resolve entry point name");
         return;
     }
 
     if (strcmp(name, "_start") != 0)
     {
-        err("invalid entry point name: %s", name);
+        oe_err("Invalid entry point name: %s", name);
         return;
     }
 
     printf("=== Entry point: \n");
     printf("name=%s\n", name);
-    printf("address=%016llx\n", OE_LLX(sym.st_value));
+    printf("address=%#016llx\n", OE_LLX(sym.st_value));
     printf("\n");
 }
 
-void dump_enclave_properties(const oe_sgx_enclave_properties_t* props)
+/* The provided public_key_modulus must be in little-endian
+ * format for this function, which is the format used in the
+ * sgx_sigstruct_t.modulus field.
+ */
+static void _dump_mrsigner(
+    const uint8_t* public_key_modulus,
+    size_t public_key_modulus_size)
+{
+    OE_SHA256 mrsigner = {0};
+
+    /* Check if modulus value is not set */
+    size_t i = 0;
+    while (i < public_key_modulus_size && public_key_modulus[i] == 0)
+        i++;
+
+    if (public_key_modulus_size > i)
+        oe_sha256(public_key_modulus, public_key_modulus_size, &mrsigner);
+
+    oe_hex_dump(mrsigner.buf, sizeof(mrsigner.buf));
+}
+
+static void _dump_enclave_properties(const oe_sgx_enclave_properties_t* props)
 {
     const sgx_sigstruct_t* sigstruct;
 
@@ -180,7 +77,7 @@ void dump_enclave_properties(const oe_sgx_enclave_properties_t* props)
     bool debug = props->config.attributes & OE_SGX_FLAGS_DEBUG;
     printf("debug=%u\n", debug);
 
-    printf("xfrm=%" PRIx64 "\n", props->config.xfrm);
+    printf("xfrm=%#016llx\n", OE_LLX(props->config.xfrm));
 
     printf(
         "num_heap_pages=%llu\n",
@@ -196,6 +93,9 @@ void dump_enclave_properties(const oe_sgx_enclave_properties_t* props)
 
     printf("mrenclave=");
     oe_hex_dump(sigstruct->enclavehash, sizeof(sigstruct->enclavehash));
+
+    printf("mrsigner=");
+    _dump_mrsigner(sigstruct->modulus, sizeof(sigstruct->modulus));
 
     printf("signature=");
     oe_hex_dump(sigstruct->signature, sizeof(sigstruct->signature));
@@ -215,31 +115,27 @@ int oedump(const char* enc_bin)
     /* Load the ELF-64 object */
     if (elf64_load(enc_bin, &elf) != 0)
     {
-        fprintf(stderr, "failed to load %s\n", enc_bin);
+        oe_err("Failed to load %s as ELF64", enc_bin);
         goto done;
     }
 
     /* Load the SGX enclave properties */
-    if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, &props) != OE_OK)
+    if (oe_read_oeinfo_sgx(enc_bin, &props) != OE_OK)
     {
-        err("failed to load SGX enclave properties from %s section",
+        oe_err(
+            "Failed to load SGX enclave properties from %s section",
             OE_INFO_SECTION_NAME);
     }
 
     printf("\n");
 
     /* Dump the entry point */
-    dump_entry_point(&elf);
+    _dump_entry_point(&elf);
 
     /* Dump the signature section */
-    dump_enclave_properties(&props);
+    _dump_enclave_properties(&props);
 
-    if (errors)
-    {
-        fprintf(stderr, "*** Found %zu errors\n", errors);
-        goto done;
-    }
-
+    oe_print_err_count();
     ret = 0;
 
 done:

@@ -28,15 +28,12 @@ static oe_result_t oe_create_sgx_endorsements(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_endorsements_t* endorsements = NULL;
-    uint8_t* root_ca_crl_issuer_chain =
-        oe_malloc(quote_verification_collateral->pck_crl_issuer_chain_size);
     char creation_datetime[CREATION_DATETIME_SIZE];
     uint32_t* buffer32 = NULL;
     uint8_t* buffer = NULL;
     uint32_t offset;
     uint32_t offsets_size;
     uint32_t size;
-    uint32_t root_ca_crl_issuer_chain_size;
     uint32_t remaining_size;
 
     OE_TRACE_INFO("Enter call %s\n", __FUNCTION__);
@@ -57,16 +54,6 @@ static oe_result_t oe_create_sgx_endorsements(
     size += (uint32_t)quote_verification_collateral->pck_crl_size;
     size += (uint32_t)quote_verification_collateral->root_ca_crl_size;
     size += (uint32_t)quote_verification_collateral->pck_crl_issuer_chain_size;
-
-    root_ca_crl_issuer_chain_size =
-        (uint32_t)quote_verification_collateral->pck_crl_issuer_chain_size;
-    size += root_ca_crl_issuer_chain_size;
-
-    OE_CHECK(oe_memcpy_s(
-        root_ca_crl_issuer_chain,
-        root_ca_crl_issuer_chain_size,
-        quote_verification_collateral->pck_crl_issuer_chain,
-        quote_verification_collateral->pck_crl_issuer_chain_size));
 
     size += CREATION_DATETIME_SIZE;
     if (size > OE_ATTESTATION_ENDORSEMENT_MAX_SIZE)
@@ -124,14 +111,12 @@ static oe_result_t oe_create_sgx_endorsements(
     offset +=
         (uint32_t)quote_verification_collateral->pck_crl_issuer_chain_size;
 
-    buffer32[OE_SGX_ENDORSEMENT_FIELD_CRL_ISSUER_CHAIN_PCK_PROC_CA] = offset;
-    offset += root_ca_crl_issuer_chain_size;
-
     buffer32[OE_SGX_ENDORSEMENT_FIELD_QE_ID_INFO] = offset;
     offset += (uint32_t)quote_verification_collateral->qe_identity_size;
     buffer32[OE_SGX_ENDORSEMENT_FIELD_QE_ID_ISSUER_CHAIN] = offset;
     offset +=
         (uint32_t)quote_verification_collateral->qe_identity_issuer_chain_size;
+
     buffer32[OE_SGX_ENDORSEMENT_FIELD_CREATION_DATETIME] = offset;
     offset += CREATION_DATETIME_SIZE;
 
@@ -203,14 +188,6 @@ static oe_result_t oe_create_sgx_endorsements(
     remaining_size -=
         (uint32_t)quote_verification_collateral->pck_crl_issuer_chain_size;
 
-    OE_CHECK(oe_memcpy_s(
-        buffer,
-        remaining_size,
-        root_ca_crl_issuer_chain,
-        root_ca_crl_issuer_chain_size));
-    buffer += root_ca_crl_issuer_chain_size;
-    remaining_size -= (uint32_t)root_ca_crl_issuer_chain_size;
-
     // Copy QE ID Info
     OE_CHECK(oe_memcpy_s(
         buffer,
@@ -253,11 +230,6 @@ done:
     if ((result != OE_OK) && endorsements)
         oe_free(endorsements);
 
-    if (root_ca_crl_issuer_chain)
-    {
-        oe_free(root_ca_crl_issuer_chain);
-    }
-
     OE_TRACE_INFO(
         "Exit call %s: %d(%s)\n", __FUNCTION__, result, oe_result_str(result));
 
@@ -291,9 +263,10 @@ oe_result_t oe_parse_sgx_endorsements(
         (endorsements->enclave_type != OE_ENCLAVE_TYPE_SGX))
         OE_RAISE_MSG(
             OE_INVALID_PARAMETER,
-            "Failed to parse SGX endorsement. Invalid version or enclave "
-            "type.",
-            NULL);
+            "Failed to parse SGX endorsement. "
+            "Invalid version=%d or enclave type=%d",
+            endorsements->version,
+            endorsements->enclave_type);
 
     if (endorsements->num_elements != OE_SGX_ENDORSEMENT_COUNT)
         OE_RAISE_MSG(
@@ -329,14 +302,21 @@ oe_result_t oe_parse_sgx_endorsements(
         uint8_t* item_ptr = data_ptr_start + offsets[i];
         uint32_t item_size;
 
-        if (offsets[i] >= endorsements->buffer_size)
+        if (offsets[i] >= data_size)
             OE_RAISE_MSG(
                 OE_INVALID_PARAMETER,
                 "Offset value when creating SGX endorsement is incorrect.",
                 NULL);
 
         if (i < OE_SGX_ENDORSEMENT_COUNT - 1)
+        {
+            if (offsets[i + 1] <= offsets[i])
+                OE_RAISE_MSG(
+                    OE_INVALID_PARAMETER,
+                    "Endorsement offset values should be in ascending order.",
+                    NULL);
             item_size = offsets[i + 1] - offsets[i];
+        }
         else
             item_size = data_size - offsets[i];
 

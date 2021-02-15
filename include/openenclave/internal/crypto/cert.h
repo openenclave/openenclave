@@ -377,7 +377,9 @@ typedef struct _oe_cert_config
     size_t ext_oid_size;
 } oe_cert_config_t;
 
-#define OE_MAX_CERT_SIZE 8192
+/* includes all the headers from version number to subject unique identifier of
+ * a X509 certificate */
+#define OE_MIN_CERT_SIZE 2048
 
 oe_result_t oe_gen_custom_x509_cert(
     oe_cert_config_t* cert_config,
