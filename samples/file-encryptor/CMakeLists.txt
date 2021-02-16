@@ -24,6 +24,9 @@ set(CMAKE_CXX_STANDARD 11)
 set(OE_CRYPTO_LIB
     mbedtls
     CACHE STRING "Crypto library used by enclaves.")
+set(SAMPLE_CRYPTO_SRC
+    ${OE_CRYPTO_LIB}src
+    CACHE STRING "source directory that use OE_CRYPTO_LIB")
 
 add_subdirectory(enclave)
 add_subdirectory(host)
