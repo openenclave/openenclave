@@ -175,12 +175,21 @@ size_t oe_sgx_enclave_load_data(
     uint32_t data_properties,
     uint32_t* enclave_error)
 {
-    return _enclave_load_data(
+    size_t retval = _enclave_load_data(
         target_address,
         target_size,
         source_buffer,
         data_properties,
         enclave_error);
+#ifdef _WIN32
+    if (retval)
+    {
+        DWORD error = GetLastError();
+        OE_TRACE_ERROR(
+            "oe_sgx_enclave_load_data: GetLastError returned : %d", (int)error);
+    }
+#endif
+    return retval;
 }
 
 bool oe_sgx_enclave_initialize(
