@@ -10,6 +10,52 @@ import load_symbol_cmd
 
 POINTER_SIZE = 8
 
+# These constant definitions must align with oe_debug_enclave_t structure defined in debugrt/common.h
+class oe_debug_module_t:
+    OFFSETOF_MAGIC = 0
+    SIZEOF_MAGIC = 8
+    MAGIC_VALUE = 0xf67ae6230a18a2ce
+
+    OFFSETOF_VERSION = 8
+    SIZEOF_VERSION = 8
+
+    OFFSETOF_NEXT = 16
+    SIZEOF_NEXT = 8
+
+    OFFSETOF_PATH = 24
+    SIZEOF_PATH = 8
+
+    OFFSETOF_PATH_LENGTH = 32
+    SIZEOF_PATH_LENGTH = 8
+
+    OFFSETOF_BASE_ADDRESS = 40
+    SIZEOF_BASE_ADDRESS = 8
+
+    OFFSETOF_SIZE = 48
+    SIZEOF_SIZE = 8
+
+    OFFSETOF_ENCLAVE = 56
+    SIZEOF_ENCLAVE = 8
+
+    def __init__(self, addr):
+        if addr:
+            self.magic = read_int_from_memory(addr + self.OFFSETOF_MAGIC, self.SIZEOF_MAGIC)
+        if not self.is_valid():
+            return
+
+        self.version = read_int_from_memory(addr + self.OFFSETOF_VERSION, self.SIZEOF_VERSION)
+        self.next = read_int_from_memory(addr + self.OFFSETOF_NEXT, self.SIZEOF_NEXT)
+
+        path = read_int_from_memory(addr + self.OFFSETOF_PATH, self.SIZEOF_PATH)
+        path_length = read_int_from_memory(addr + self.OFFSETOF_PATH_LENGTH, self.SIZEOF_PATH_LENGTH)
+        self.path = bytes(read_from_memory(path, path_length)).decode('utf-8')
+
+        self.base_address = read_int_from_memory(addr + self.OFFSETOF_BASE_ADDRESS, self.SIZEOF_BASE_ADDRESS)
+        self.enclave = read_int_from_memory(addr + self.OFFSETOF_ENCLAVE, self.SIZEOF_ENCLAVE)
+
+    def is_valid(self):
+        return self.magic == self.MAGIC_VALUE
+
 # These constant definitions must align with oe_debug_enclave_t structure defined in debugrt/host.h
 class oe_debug_enclave_t:
     OFFSETOF_MAGIC = 0
@@ -37,13 +83,16 @@ class oe_debug_enclave_t:
     OFFSETOF_TCS_ARRAY = 56
     SIZEOF_TCS_ARRAY = 8
 
-    OFFSETOF_NUM_TCS = 64
-    SIZEOF_NUM_TCS = 8
+    OFFSETOF_TCS_COUNT = 64
+    SIZEOF_TCS_COUNT = 8
 
     OFFSETOF_FLAGS = 72
     SIZEOF_FLAGS = 8
     MASK_DEBUG = 0x01
     MASK_SIMULATE = 0x02
+
+    OFFSETOF_MODULES = 80
+    SIZEOF_MODULES = 8
 
     def __init__(self, addr):
         if addr:
@@ -61,7 +110,7 @@ class oe_debug_enclave_t:
         self.base_address = read_int_from_memory(addr + self.OFFSETOF_BASE_ADDRESS, self.SIZEOF_BASE_ADDRESS)
 
         self.tcs = []
-        self.num_tcs = read_int_from_memory(addr + self.OFFSETOF_NUM_TCS, self.SIZEOF_NUM_TCS)
+        self.num_tcs = read_int_from_memory(addr + self.OFFSETOF_TCS_COUNT, self.SIZEOF_TCS_COUNT)
         tcs_ptr = read_int_from_memory(addr + self.OFFSETOF_TCS_ARRAY, self.SIZEOF_TCS_ARRAY)
         for i in range(0, self.num_tcs):
             tcs = read_int_from_memory(tcs_ptr, 8) # sizeof pointer is hard-coded to 8
@@ -72,6 +121,7 @@ class oe_debug_enclave_t:
         self.debug = bool(flags & self.MASK_DEBUG)
         self.simulate = bool(flags & self.MASK_SIMULATE)
 
+        self.modules = read_int_from_memory(addr + self.OFFSETOF_MODULES, self.SIZEOF_MODULES)
 
     def is_valid(self):
         return self.magic == self.MAGIC_VALUE
@@ -216,22 +266,9 @@ def enable_oeenclave_debug(oe_enclave_addr):
     print("oegdb: All tcs set to debug for enclave \n")
     return True
 
-def update_untrusted_ocall_frame(frame_pointer, ocallcontext_tuple):
-    """Update the untrusted ocall frame, so that untrusted stack can stitch withe the trusted stack"""
-    if frame_pointer == 0 or ocallcontext_tuple == 0:
-        return False
-    # print ("Trusted ocall context at:{:#x}, rbp:{:#x}, return address:{:#x}" .format(ocallcontext_tuple[0], ocallcontext_tuple[OCALLCONTEXT_RBP], ocallcontext_tuple[OCALLCONTEXT_RET]))
-    gdb_cmd = "set *(long *)%#x = %#x" %(frame_pointer, ocallcontext_tuple[OCALLCONTEXT_RBP])
-    # print ("set ocall frame to trusted rbp, {}" .format(gdb_cmd))
-    gdb.execute(gdb_cmd, False, True)
-    gdb_cmd = "set *(long *)%#x = %#x" %(frame_pointer + POINTER_SIZE, ocallcontext_tuple[OCALLCONTEXT_RET])
-    # print ("set ocall frame to trusted ret, {}" .format(gdb_cmd))
-    gdb.execute(gdb_cmd, False, True)
-    return True
-
 class EnclaveCreationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="oe_notify_debugger_enclave_creation", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_debug_enclave_created_hook", internal=1)
 
     def stop(self):
         enclave_addr = int(gdb.parse_and_eval("$rdi"))
@@ -240,7 +277,7 @@ class EnclaveCreationBreakpoint(gdb.Breakpoint):
 
 class EnclaveTerminationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="oe_notify_debugger_enclave_termination", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="oe_debug_enclave_terminated_hook", internal=1)
 
     def stop(self):
         enclave_addr = int(gdb.parse_and_eval("$rdi"))

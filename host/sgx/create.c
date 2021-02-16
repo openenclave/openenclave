@@ -1145,7 +1145,7 @@ oe_result_t oe_create_enclave(
         {
             debug_enclave->tcs_array[i] = (sgx_tcs_t*)enclave->bindings[i].tcs;
         }
-        debug_enclave->num_tcs = enclave->num_bindings;
+        debug_enclave->tcs_count = enclave->num_bindings;
 
         debug_enclave->flags = 0;
         if (enclave->debug)

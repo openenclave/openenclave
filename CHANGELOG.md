@@ -21,9 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - -Werror: Turn warnings into errors.
   - -Werror=<option>: Turn the specified warning into an error.
 - oesign sign now allows option -o/--output-file, to specify location to write signature of enclave image.
+- Debugger Contract has been extended to support multiple modules.
+  - Refer to [design document](docs/DesignDocs/DebuggerSupportForMultiModuleEnclaves.md) for details.
 
 ### Changed
 - oe_get_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_get_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
+- Debugger Contract
+  - `path` fields in `oe_debug_enclave_t` and `oe_debug_module_t` are now defined to be in
+    UTF-8 encoding. Previously the encoding was undefined. To ensure smooth transition, debuggers
+	are required to try out both UTF-8 as well as the previous encoding and pick the one that works.
 
 ### Security
 - Update mbedTLS to version 2.16.9. Refer to the [2.16.9](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.9) release notes for the set of issues addressed.
