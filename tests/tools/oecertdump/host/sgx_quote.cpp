@@ -305,14 +305,22 @@ oe_result_t output_sgx_report(const uint8_t* report, size_t report_size)
     printf("            cpusvn (hex): ");
     oe_hex_dump(report_body->cpusvn, OE_COUNTOF(report_body->cpusvn));
     printf("            miscselect: 0x%x\n", report_body->miscselect);
+    printf("            isvextprodid (hex): ");
+    oe_hex_dump(
+        report_body->isvextprodid, OE_COUNTOF(report_body->isvextprodid));
     printf("            attributes (hex): ");
     oe_hex_dump(&report_body->attributes, sizeof(report_body->attributes));
     printf("            mrenclave (hex): ");
-    oe_hex_dump(report_body->mrenclave, sizeof(report_body->mrenclave));
+    oe_hex_dump(report_body->mrenclave, OE_COUNTOF(report_body->mrenclave));
     printf("            mrsigner (hex): ");
-    oe_hex_dump(report_body->mrsigner, sizeof(report_body->mrsigner));
+    oe_hex_dump(report_body->mrsigner, OE_COUNTOF(report_body->mrsigner));
+    printf("            configid (hex): ");
+    oe_hex_dump(report_body->configid, OE_COUNTOF(report_body->configid));
     printf("            isvprodid: 0x%x\n", report_body->isvprodid);
     printf("            isvsvn: 0x%x\n", report_body->isvsvn);
+    printf("            configsvn: 0x%x\n", report_body->configsvn);
+    printf("            isvfamilyid (hex): ");
+    oe_hex_dump(report_body->isvfamilyid, OE_COUNTOF(report_body->isvfamilyid));
     printf("            report_data (hex): ");
     oe_hex_dump(&report_body->report_data, sizeof(report_body->report_data));
     printf("        } report_body\n");
@@ -337,9 +345,10 @@ oe_result_t output_sgx_report(const uint8_t* report, size_t report_size)
     oe_hex_dump(
         &qe_report_body->attributes, sizeof(qe_report_body->attributes));
     printf("                    mrenclave (hex): ");
-    oe_hex_dump(qe_report_body->mrenclave, sizeof(qe_report_body->mrenclave));
+    oe_hex_dump(
+        qe_report_body->mrenclave, OE_COUNTOF(qe_report_body->mrenclave));
     printf("                    mrsigner (hex): ");
-    oe_hex_dump(qe_report_body->mrsigner, sizeof(qe_report_body->mrsigner));
+    oe_hex_dump(qe_report_body->mrsigner, OE_COUNTOF(qe_report_body->mrsigner));
     printf("                    isvprodid: 0x%x\n", qe_report_body->isvprodid);
     printf("                    isvsvn: 0x%x\n", qe_report_body->isvsvn);
     printf("                    report_data (hex): ");
