@@ -4,7 +4,7 @@
 .PHONY: all build clean run simulate
 
 # Set OE_CRYPTO_LIB as "mbedtls" or "openssl", to use the respective cryptolibs
-OE_CRYPTO_LIB := openssl
+OE_CRYPTO_LIB := mbedtls
 export OE_CRYPTO_LIB
 
 SAMPLE_CRYPTO_SRC := "$(OE_CRYPTO_LIB)src"
