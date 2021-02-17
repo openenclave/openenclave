@@ -8,7 +8,7 @@
 #include <openssl/evp.h>
 #include <string>
 
-#include "../../shared.h"
+#include "shared.h"
 
 using namespace std;
 

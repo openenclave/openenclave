@@ -12,7 +12,7 @@
 #include <mbedtls/rsa.h>
 #include <mbedtls/sha256.h>
 
-#include "../common/trace.h"
+#include "common/trace.h"
 #include "encryptor.h"
 
 #define ENCRYPT_OPERATION true

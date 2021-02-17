@@ -1,9 +1,10 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include "encryptor.h"
 #include <string.h>
-#include "../common/trace.h"
+
+#include "common/trace.h"
+#include "encryptor.h"
 
 ecall_dispatcher::ecall_dispatcher() : m_encrypt(true), m_header(NULL)
 {

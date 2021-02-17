@@ -4,7 +4,7 @@
 #include <openssl/rand.h>
 #include <string.h>
 
-#include "../common/trace.h"
+#include "common/trace.h"
 #include "encryptor.h"
 
 #define ENCRYPT_OPERATION true
