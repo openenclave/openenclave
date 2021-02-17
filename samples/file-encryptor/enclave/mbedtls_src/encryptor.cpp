@@ -1,18 +1,27 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include "encryptor.h"
+#include <mbedtls/aes.h>
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/entropy.h>
 #include <string.h>
-#include "common.h"
 
-ecall_dispatcher::ecall_dispatcher() : m_encrypt(true), m_header(NULL)
+#include "common/encryptor.h"
+#include "common/trace.h"
+
+struct aes_context
+{
+    mbedtls_aes_context ctx;
+};
+
+ecall_dispatcher::ecall_dispatcher() : m_encrypt(true), m_header(nullptr)
 {
 }
 
 int ecall_dispatcher::initialize(
     bool encrypt,
     const char* password,
-    size_t password_len,
+    size_t password_size,
     encryption_header_t* header)
 {
     int ret = 0;
@@ -20,14 +29,14 @@ int ecall_dispatcher::initialize(
         "ecall_dispatcher::initialize : %s request",
         encrypt ? "encrypting" : "decrypting");
 
-    if (header == NULL)
+    if (header == nullptr)
     {
-        TRACE_ENCLAVE("initialize() failed as NULL was passed in place of "
+        TRACE_ENCLAVE("initialize() failed as nullptr was passed in place of "
                       "(encryption_header_t *)");
         goto exit;
     }
 
-    m_password = std::string(password, password + password_len);
+    m_password = string(password, password + password_size);
     m_encrypt = encrypt;
     m_header = header;
 
@@ -41,15 +50,23 @@ int ecall_dispatcher::initialize(
     }
 
     // initialize aes context
-    mbedtls_aes_init(&m_aescontext);
+    m_aescontext = (struct aes_context*)malloc(sizeof(struct aes_context));
+    if (m_aescontext == nullptr)
+    {
+        ret = 1;
+        TRACE_ENCLAVE("allocate m_aescontext failed with %d", ret);
+        goto exit;
+    }
+
+    mbedtls_aes_init(&(m_aescontext->ctx));
 
     // set aes key
     if (encrypt)
         ret = mbedtls_aes_setkey_enc(
-            &m_aescontext, m_encryption_key, ENCRYPTION_KEY_SIZE);
+            &(m_aescontext->ctx), m_encryption_key, ENCRYPTION_KEY_SIZE);
     else
         ret = mbedtls_aes_setkey_dec(
-            &m_aescontext, m_encryption_key, ENCRYPTION_KEY_SIZE);
+            &(m_aescontext->ctx), m_encryption_key, ENCRYPTION_KEY_SIZE);
 
     if (ret != 0)
     {
@@ -65,22 +82,24 @@ exit:
 
 int ecall_dispatcher::encrypt_block(
     bool encrypt,
-    unsigned char* input_buf,
-    unsigned char* output_buf,
+    unsigned char* input_buffer,
+    unsigned char* output_buffer,
     size_t size)
 {
     int ret = 0;
+
     ret = mbedtls_aes_crypt_cbc(
-        &m_aescontext,
+        &(m_aescontext->ctx),
         encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT,
         size,           // input data length in bytes,
         m_operating_iv, // Initialization vector (updated after use)
-        input_buf,
-        output_buf);
+        input_buffer,
+        output_buffer);
     if (ret != 0)
     {
         TRACE_ENCLAVE("mbedtls_aes_crypt_cbc failed with %d", ret);
     }
+
     return ret;
 }
 
@@ -89,10 +108,10 @@ void ecall_dispatcher::close()
     if (m_encrypt)
     {
         oe_host_free(m_header);
-        m_header = NULL;
+        m_header = nullptr;
     }
 
     // free aes context
-    mbedtls_aes_free(&m_aescontext);
+    mbedtls_aes_free(&(m_aescontext->ctx));
     TRACE_ENCLAVE("ecall_dispatcher::close");
 }

@@ -10,8 +10,10 @@ add_custom_command(
     --search-path ${OE_INCLUDEDIR} --search-path
     ${OE_INCLUDEDIR}/openenclave/edl/sgx)
 
-add_executable(enclave ecalls.cpp encryptor.cpp keys.cpp
-                       ${CMAKE_CURRENT_BINARY_DIR}/fileencryptor_t.c)
+set(CRYPTO_SRC ${OE_CRYPTO_LIB}_src)
+add_executable(
+  enclave common/ecalls.cpp ${CRYPTO_SRC}/encryptor.cpp
+          ${CRYPTO_SRC}/keys.cpp ${CMAKE_CURRENT_BINARY_DIR}/fileencryptor_t.c)
 if (WIN32)
   maybe_build_using_clangw(enclave)
 endif ()
@@ -21,7 +23,8 @@ target_compile_definitions(enclave PUBLIC OE_API_VERSION=2)
 target_include_directories(
   enclave
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} # Needed for #include "../shared.h"
-          ${CMAKE_CURRENT_BINARY_DIR})
+          ${CMAKE_CURRENT_BINARY_DIR}
+          ${CMAKE_SOURCE_DIR})
 
 target_link_libraries(
   enclave openenclave::oeenclave openenclave::oecrypto${OE_CRYPTO_LIB}
