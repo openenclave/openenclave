@@ -7,9 +7,6 @@
 OE_CRYPTO_LIB := mbedtls
 export OE_CRYPTO_LIB
 
-SAMPLE_CRYPTO_SRC := "$(OE_CRYPTO_LIB)src"
-export SAMPLE_CRYPTO_SRC
-
 all: build
 
 build:

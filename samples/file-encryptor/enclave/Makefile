@@ -9,6 +9,12 @@ LDFLAGS=$(shell pkg-config oeenclave-$(CXX_COMPILER) --libs)
 INCDIR=$(shell pkg-config oeenclave-$(C_COMPILER) --variable=includedir)
 CRYPTO_LDFLAGS=$(shell pkg-config oeenclave-$(COMPILER) --variable=${OE_CRYPTO_LIB}libs)
 
+CRYPTO_SRC= $(OE_CRYPTO_LIB)_src
+CXXINCDIR= -I. -I../ -I../..
+CXXSRCS= $(CRYPTO_SRC)/ecalls.cpp \
+	  $(CRYPTO_SRC)/encryptor.cpp \
+	  $(CRYPTO_SRC)/keys.cpp \
+
 all:
 	$(MAKE) build
 	$(MAKE) keys
@@ -19,9 +25,8 @@ build:
 	oeedger8r ../fileencryptor.edl --trusted \
 		--search-path $(INCDIR) \
 		--search-path $(INCDIR)/openenclave/edl/sgx
-	$(CXX) -g -c $(CXXFLAGS) -DOE_API_VERSION=2 -std=c++11 -I. -I.. -I../.. \
-		$(SAMPLE_CRYPTO_SRC)/ecalls.cpp $(SAMPLE_CRYPTO_SRC)/encryptor.cpp \
-		$(SAMPLE_CRYPTO_SRC)/keys.cpp
+	$(CXX) -g -c $(CXXFLAGS) -DOE_API_VERSION=2 -std=c++11 $(CXXINCDIR) \
+		$(CXXSRCS)
 	$(CC) -g -c $(CFLAGS) -DOE_API_VERSION=2 fileencryptor_t.c -o fileencryptor_t.o
 	$(CXX) -o file-encryptorenc ecalls.o encryptor.o keys.o fileencryptor_t.o $(LDFLAGS) $(CRYPTO_LDFLAGS)
 
