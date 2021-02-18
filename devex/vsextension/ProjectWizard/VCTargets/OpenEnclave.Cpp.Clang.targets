@@ -273,7 +273,7 @@ that use Clang Front-End.
       <OutDirTrimmed>$(OutDir.TrimEnd({'\\'))</OutDirTrimmed>
     </PropertyGroup>
 
-    <Exec Command='"$(ClangToolExe)" -target x86_64-pc-linux $(ObjectsListSpaced) -o "$(OutDir)$(TargetName).elf" -nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id -Wl,-z,noexecstack -Wl,-z,now -Wl,-gc-sections -fuse-ld=lld %(Link.AdditionalOptions) "-L$(OutDirTrimmed)" $(LibsListSpaced) -loeenclave -loelibcxx -loelibc -loecryptombed -lmbedtls -lmbedx509 -lmbedcrypto -loelibc -loesyscall -loecore'>
+    <Exec Command='"$(ClangToolExe)" -target x86_64-pc-linux $(ObjectsListSpaced) -o "$(OutDir)$(TargetName).elf" -nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,--build-id -Wl,-z,noexecstack -Wl,-z,now -Wl,-gc-sections -fuse-ld=lld %(Link.AdditionalOptions) "-L$(OutDirTrimmed)" $(LibsListSpaced) -loeenclave -loelibcxx -loelibc -loecryptombedtls -lmbedtls -lmbedx509 -lmbedcrypto -loelibc -loesyscall -loecore'>
     </Exec>
   </Target>
 

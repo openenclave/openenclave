@@ -41,7 +41,7 @@
   <!-- Open Enclave settings -->
   <PropertyGroup>
     <ClangToolExe>clang.exe</ClangToolExe>
-    <ClangVersion>7.0</ClangVersion>
+    <ClangVersion>8.0.1</ClangVersion>
     <ClangTarget>x86_64-pc-linux</ClangTarget>
     <GNUMode>true</GNUMode>
     <ToolchainFriendlyName>Clang</ToolchainFriendlyName>
