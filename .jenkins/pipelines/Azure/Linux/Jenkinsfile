@@ -10,12 +10,10 @@ GLOBAL_ERROR = null
 
 DOCKER_TAG = env.DOCKER_TAG ?: "latest"
 AGENTS_LABELS = [
-    "acc-ubuntu-16.04":         env.UBUNTU_1604_CUSTOM_LABEL ?: "ACC-1604",
     "acc-ubuntu-18.04":         env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
     "acc-rhel-8":               env.RHEL_8_CUSTOM_LABEL ?: "ACC-RHEL-8",
     "ubuntu-nonsgx":            env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX",
     "windows-nonsgx":           env.WINDOWS_NONSGX_CUSTOM_LABEL ?: "nonSGX-Windows",
-    "acc-ubuntu-16.04-vanilla": env.UBUNTU_VANILLA_1604_CUSTOM_LABEL ?: "vanilla-ubuntu-1604",
     "acc-ubuntu-18.04-vanilla": env.UBUNTU_VANILLA_1804_CUSTOM_LABEL ?: "vanilla-ubuntu-1804",
     "acc-rhel-8-vanilla":       env.RHEL_8_VANILLA_CUSTOM_LABEL ?: "vanilla-rhel-8"
 ]
@@ -401,10 +399,8 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
 try{
     oe.emailJobStatus('STARTED')
     def testing_stages = [
-        "Host verification 1604 Release":                { ACCHostVerificationTest('16.04', 'Release') },
         "Host verification 1804 Release":                { ACCHostVerificationTest('18.04', 'Release') },
 
-        "Host verification package 1604 RelWithDebInfo": { ACCHostVerificationPackageTest('16.04', 'RelWithDebInfo') },
         "Host verification package 1804 RelWithDebInfo": { ACCHostVerificationPackageTest('18.04', 'RelWithDebInfo') },
 
         "ACC1804 clang-8 Release EEID Experimental LVI FULL Tests": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DWITH_EEID=ON']) },
@@ -414,8 +410,6 @@ try{
         "RHEL-8 ACC clang-8 SGX1 Release":               { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF']) },
         "RHEL-8 ACC clang-8 SGX1 Debug":                 { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF']) },
 
-        "ACC1604 clang-8 Debug LVI e2e":                 { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'clang-8', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON'], [], true) },
-
         "RHEL-8 clang-8 simulation Release e2e":         { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], ['OE_SIMULATION=1'], true) },
         "RHEL-8 ACC clang-8 SGX1 Release e2e":           { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
 
@@ -424,19 +418,13 @@ try{
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-                "Host verification 1604 Debug":           { ACCHostVerificationTest('16.04', 'Debug') },
                 "Host verification 1804 Debug":           { ACCHostVerificationTest('18.04', 'Debug') },
 
-                "Host verification package 1604 Debug":   { ACCHostVerificationPackageTest('16.04', 'Debug') },
                 "Host verification package 1804 Debug":   { ACCHostVerificationPackageTest('18.04', 'Debug') },
 
-                "ACC1604 Package RelWithDebInfo":         { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC1604 Package RelWithDebInfo LVI":     { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 Package RelWithDebInfo":         { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 Package RelWithDebInfo LVI":     { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
 
-                "ACC1604 Container RelWithDebInfo":       { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC1604 Container RelWithDebInfo LVI":   { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 Container RelWithDebInfo":       { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 Container RelWithDebInfo LVI":   { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
 
@@ -449,40 +437,28 @@ try{
                 "RHEL-8 ACC clang-8 SGX1 Release e2e":    { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
                 "RHEL-8 ACC clang-8 SGX1 Debug e2e":      { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Debug',   ['-DHAS_QUOTE_PROVIDER=OFF'], [], true) },
 
-                "ACC1604 clang-8 Debug":                  { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-8', 'Debug',   ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC1604 clang-8 Release":                { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC1604 clang-8 Debug LVI":              { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-8', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
-                "ACC1604 clang-8 Release LVI":            { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 clang-8 Debug":                  { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Debug',   ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 clang-8 Release":                { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=None',        '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 clang-8 Debug LVI":              { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
                 "ACC1804 clang-8 Release LVI":            { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
 
-                "ACC1604 clang-8 Release LVI e2e":        { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) },
                 "ACC1804 clang-8 Debug LVI e2e":          { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-8', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) },
                 "ACC1804 clang-8 Release LVI e2e":        { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF'], [], true) },
 
-                "ACC1604 Package RelWithDebInfo LVI snmalloc":     { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
                 "ACC1804 Package RelWithDebInfo LVI snmalloc":     { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF',  '-DUSE_SNMALLOC=ON']) },
 
-                "ACC1604 clang-8 Release LVI e2e snmalloc":        { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04-vanilla"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
                 "ACC1804 clang-8 Debug LVI e2e snmalloc":          { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-8', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
                 "ACC1804 clang-8 Release LVI e2e snmalloc":        { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04-vanilla"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON'], [], true) },
-                "ACC1604 clang-8 Release LVI snmalloc":            { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
             ]
             parallel testing_stages
         }
     } else {
         stage("PR Testing") {
             testing_stages += [
-                "ACC1604 Package RelWithDebInfo LVI":              { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "ACC1804 Package RelWithDebInfo LVI":              { ACCPackageTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
 
-                "ACC1604 Container RelWithDebInfo LVI":            { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-16.04"], '16.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "ACC1804 Container RelWithDebInfo LVI":            { ACCContainerTest(AGENTS_LABELS["acc-ubuntu-18.04"], '18.04', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
 
-                "ACC1604 clang-8 Debug LVI":                       { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-8', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
-                "ACC1604 clang-8 Release LVI":                     { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "ACC1804 clang-8 Debug LVI":                       { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Debug',   ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON']) },
                 "ACC1804 clang-8 Release LVI FULL Tests":          { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF']) },
 
@@ -493,7 +469,6 @@ try{
 
                  //"ACC1804 Code Coverage Test" :                     { ACCCodeCoverageTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Debug') },
 
-                "ACC1604 clang-8 Release LVI snmalloc":            { ACCTest(AGENTS_LABELS["acc-ubuntu-16.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=ON', '-DUSE_SNMALLOC=ON']) },
                 "ACC1804 clang-8 Release LVI FULL Tests snmalloc": { ACCTest(AGENTS_LABELS["acc-ubuntu-18.04"], 'clang-8', 'Release', ['-DLVI_MITIGATION=ControlFlow', '-DLVI_MITIGATION_SKIP_TESTS=OFF', '-DUSE_SNMALLOC=ON']) },
                 ]
             parallel testing_stages

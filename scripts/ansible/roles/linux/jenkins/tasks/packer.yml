@@ -40,7 +40,6 @@
   shell: |
     set -o errexit
     docker login {{ docker_registry }} -u {{ docker_user_name }} -p {{ docker_user_password }}
-    docker pull {{ docker_registry }}/oetools-full-16.04:{{ docker_tag }}
     docker pull {{ docker_registry }}/oetools-full-18.04:{{ docker_tag }}
     docker pull {{ docker_registry }}/oetools-minimal-18.04:{{ docker_tag }}
     docker pull {{ docker_registry }}/oetools-deploy:{{ docker_tag }}

@@ -89,10 +89,6 @@ try{
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-                "Win2016 Ubuntu1604 clang-8 Debug Linux-Elf-build":       { windowsLinuxElfBuild('acc-win2016-dcap', '16.04', 'clang-8', 'Debug') },
-                "Win2016 Ubuntu1604 clang-8 Release Linux-Elf-build":     { windowsLinuxElfBuild('acc-win2016-dcap', '16.04', 'clang-8', 'Release') },
-                "Win2016 Ubuntu1604 clang-8 Debug Linux-Elf-build LVI":   { windowsLinuxElfBuild('acc-win2016-dcap', '16.04', 'clang-8', 'Debug', 'ControlFlow') },
-                "Win2016 Ubuntu1604 clang-8 Release Linux-Elf-build LVI": { windowsLinuxElfBuild('acc-win2016-dcap', '16.04', 'clang-8', 'Release', 'ControlFlow') },
                 "Win2016 Ubuntu1804 clang-8 Debug Linux-Elf-build":       { windowsLinuxElfBuild('acc-win2016-dcap', '18.04', 'clang-8', 'Debug') },
                 "Win2016 Ubuntu1804 clang-8 Release Linux-Elf-build":     { windowsLinuxElfBuild('acc-win2016-dcap', '18.04', 'clang-8', 'Release') },
                 "Win2016 Ubuntu1804 clang-8 Debug Linux-Elf-build LVI":   { windowsLinuxElfBuild('acc-win2016-dcap', '18.04', 'clang-8', 'Debug', 'ControlFlow') },
@@ -105,10 +101,6 @@ try{
                 "Win2016 Release Cross Compile with DCAP libs":           { windowsCrossCompile('acc-win2016', 'Release', 'ON') },
                 "Win2016 Debug Cross Compile DCAP LVI":                   { windowsCrossCompile('acc-win2016', 'Debug', 'ON', 'ControlFlow') },
                 "Win2016 Release Cross Compile DCAP LVI":                 { windowsCrossCompile('acc-win2016', 'Release', 'ON', 'ControlFlow') },
-                "Win2019 Ubuntu1604 clang-8 Debug Linux-Elf-build":       { windowsLinuxElfBuild('acc-win2019-dcap', '16.04', 'clang-8', 'Debug') },
-                "Win2019 Ubuntu1604 clang-8 Release Linux-Elf-build":     { windowsLinuxElfBuild('acc-win2019-dcap', '16.04', 'clang-8', 'Release') },
-                "Win2019 Ubuntu1604 clang-8 Debug Linux-Elf-build LVI":   { windowsLinuxElfBuild('acc-win2019-dcap', '16.04', 'clang-8', 'Debug', 'ControlFlow') },
-                "Win2019 Ubuntu1604 clang-8 Release Linux-Elf-build LVI": { windowsLinuxElfBuild('acc-win2019-dcap', '16.04', 'clang-8', 'Release', 'ControlFlow') },
                 "Win2019 Ubuntu1804 clang-8 Debug Linux-Elf-build":       { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Debug') },
                 "Win2019 Ubuntu1804 clang-8 Release Linux-Elf-build":     { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Release') },
                 "Win2019 Ubuntu1804 clang-8 Debug Linux-Elf-build LVI":   { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Debug', 'ControlFlow') },
