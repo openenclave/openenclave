@@ -5,7 +5,18 @@ This directory includes the necessary files to build the OpenSSL libraries, incl
 that work with Open Enclave. The structure of the directory is as follows.
 
 - openssl/
-  The clone of official OpenSSL repository that is included as a git submodule.
+  The clone of official OpenSSL repository that is included as a git submodule, which points to
+  a recent release tag. To update the submodule, we use the following procedure:
+  - Checkout the tag that we want to update to.
+    ```
+    cd openssl
+    git checkout <tag>
+    ```
+  - Check the diff between the tag and the previous tag and update the tests in test/openssl.
+    ```
+    git diff <previous tag> <tag> --stat
+    ```
+  - Ensure the OE SDK builds and tests run successfully.
 
 - intel-sgx-ssl/
   The clone of Intel SGX SSL that includes the necessary changes to support full LVI mitigation.
