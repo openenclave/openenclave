@@ -509,6 +509,9 @@ static oe_result_t _configure_enclave(
                 break;
             }
 #endif
+            case OE_ENCLAVE_SETTING_PROPERTY_OVERRIDE:
+                // Nothing to do
+                break;
             default:
                 OE_RAISE(OE_INVALID_PARAMETER);
         }
@@ -1014,6 +1017,7 @@ oe_result_t oe_create_enclave(
     oe_result_t result = OE_UNEXPECTED;
     oe_enclave_t* enclave = NULL;
     oe_sgx_load_context_t context;
+    oe_sgx_enclave_properties_t* enclave_properties = NULL;
 
     _initialize_enclave_host();
 
@@ -1067,17 +1071,23 @@ oe_result_t oe_create_enclave(
     OE_CHECK(oe_sgx_initialize_load_context(
         &context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
-#ifdef OE_WITH_EXPERIMENTAL_EEID
     for (size_t i = 0; i < setting_count; i++)
+    {
+#ifdef OE_WITH_EXPERIMENTAL_EEID
         if (settings[i].setting_type == OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA)
         {
             context.eeid = settings[i].u.eeid;
             break;
         }
 #endif
+        if (settings[i].setting_type == OE_ENCLAVE_SETTING_PROPERTY_OVERRIDE)
+        {
+            enclave_properties = settings[i].u.enclave_properties;
+        }
+    }
 
     /* Build the enclave */
-    OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));
+    OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, enclave_properties, enclave));
 
     /* Push the new created enclave to the global list. */
     if (oe_push_enclave_instance(enclave) != 0)
