@@ -94,6 +94,7 @@ typedef enum _oe_enclave_setting_type
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA = 0x976a8f66,
 #endif
+    OE_ENCLAVE_SETTING_PROPERTY_OVERRIDE = 0xa8f67e9b,
 } oe_enclave_setting_type_t;
 
 /**
@@ -113,6 +114,8 @@ typedef struct _oe_enclave_setting_context_switchless
      */
     size_t max_enclave_workers;
 } oe_enclave_setting_context_switchless_t;
+
+typedef struct _oe_sgx_enclave_properties oe_sgx_enclave_properties_t;
 
 /**
  * The uniform structure type containing a specific type of enclave
@@ -134,6 +137,7 @@ typedef struct _oe_enclave_setting
 #ifdef OE_WITH_EXPERIMENTAL_EEID
         oe_eeid_t* eeid;
 #endif
+        oe_sgx_enclave_properties_t* enclave_properties;
         /* Add new setting types here. */
     } u;
 } oe_enclave_setting_t;
