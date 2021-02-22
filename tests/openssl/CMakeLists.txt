@@ -437,7 +437,8 @@ foreach (testcase ${openssltests})
   if ("${name}" STREQUAL verify_extra_test)
     add_openssl_test(
       "${name}" "${name}" ${OPENSSL_TEST_DIR}/certs/roots.pem
-      ${OPENSSL_TEST_DIR}/certs/untrusted.pem ${OPENSSL_TEST_DIR}/certs/bad.pem)
+      ${OPENSSL_TEST_DIR}/certs/untrusted.pem ${OPENSSL_TEST_DIR}/certs/bad.pem
+      ${OPENSSL_TEST_DIR}/certs/rootCA.pem)
     continue()
   endif ()
 
@@ -480,7 +481,8 @@ foreach (testcase ${openssltests})
       ${OPENSSL_TEST_DIR}/certs/roots.pem
       ${OPENSSL_TEST_DIR}/certs/root+anyEKU.pem
       ${OPENSSL_TEST_DIR}/certs/root-anyEKU.pem
-      ${OPENSSL_TEST_DIR}/certs/root-cert.pem)
+      ${OPENSSL_TEST_DIR}/certs/root-cert.pem
+      ${OPENSSL_TEST_DIR}/certs/invalid-cert.pem)
     continue()
   endif ()
 
