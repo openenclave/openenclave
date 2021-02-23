@@ -49,13 +49,7 @@ def WindowsPackaging(String version, String build_type, String lvi_mitigation = 
 
 try{
     oe.emailJobStatus('STARTED')
-    parallel "1604 SGX1FLC Package Debug" :          { LinuxPackaging('1604', 'Debug') },
-         "1604 SGX1FLC Package Debug LVI" :          { LinuxPackaging('1604', 'Debug', 'ControlFlow') },
-         "1604 SGX1FLC Package Release" :            { LinuxPackaging('1604', 'Release') },
-         "1604 SGX1FLC Package Release LVI" :        { LinuxPackaging('1604', 'Release', 'ControlFlow') },
-         "1604 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('1604', 'RelWithDebInfo') },
-         "1604 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('1604', 'RelWithDebInfo', 'ControlFlow') },
-         "1804 SGX1FLC Package Debug" :              { LinuxPackaging('1804', 'Debug') },
+    parallel "1804 SGX1FLC Package Debug" :          { LinuxPackaging('1804', 'Debug') },
          "1804 SGX1FLC Package Debug LVI" :          { LinuxPackaging('1804', 'Debug', 'ControlFlow') },
          "1804 SGX1FLC Package Release" :            { LinuxPackaging('1804', 'Release') },
          "1804 SGX1FLC Package Release LVI" :        { LinuxPackaging('1804', 'Release', 'ControlFlow') },

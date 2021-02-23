@@ -10,11 +10,10 @@ OETOOLS_REPO_NAME = "oejenkinscidockerregistry.azurecr.io"
 OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
 OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID = "oeciteamdockerhub"
 
-DOCKER_IMAGES_NAMES = ["oetools-full-16.04", "oetools-full-18.04", "oetools-minimal-18.04", "oetools-deploy"]
+DOCKER_IMAGES_NAMES = ["oetools-full-18.04", "oetools-minimal-18.04", "oetools-deploy"]
 AZURE_IMAGES_MAP = [
     // Mapping between shared gallery image definition name and
     // generated Azure managed image name
-    "ubuntu-16.04":    "${env.IMAGE_ID}-ubuntu-16.04-SGX",
     "ubuntu-18.04":    "${env.IMAGE_ID}-ubuntu-18.04-SGX",
     "rhel-8":          "${env.IMAGE_ID}-rhel-8-SGX",
     "ws2016-nonSGX":   "${env.IMAGE_ID}-ws2016-nonSGX",
