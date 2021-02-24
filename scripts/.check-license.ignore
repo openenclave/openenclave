@@ -58,8 +58,8 @@ docs/*
 3rdparty/mbedtls/config\.h
 3rdparty/mbedtls/mbedtls
 3rdparty/musl/COPYRIGHT
-3rdparty/musl/endian\.h\.prefix
-3rdparty/musl/endian\.h\.suffix
+3rdparty/musl/libc-test
+3rdparty/musl/musl
 3rdparty/optee/optee_client
 3rdparty/optee/optee_os
 3rdparty/snmalloc

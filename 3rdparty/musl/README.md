@@ -1,21 +1,44 @@
-# Musl libc and libc-test projects
+musl libc
+================
 
-This directory contains the musl libc library and acompanying libc-test test
-suite.
+This directory contains the musl libc library and the accompanying libc-test test
+suite. The structure of the directory is as follows.
 
-See `./update.make` for specific information regarding the source and version
-of these projects.
+- musl/ (tag: `v1.1.21`)
 
-## musl libc:
+  The clone of musl libc that is included as a git submodule, which points to
+  a recent release tag. To update the submodule, we use the following procedure:
+  - Checkout the tag that we want to update to.
+    ```
+    cd musl
+    git checkout <new tag>
+    ```
+  - Check the diff between the tag and the previous tag and update the <openenclave-root>/libc/ correspondingly.
+    ```
+    git diff <old tag> <new tag> --stat
+    ```
+  - Ensure the OE SDK builds and tests run successfully.
 
-This directory contains **musl libc**
+- libc-test/ (commit: `a51df71b050f3f9dfdc0a7d90978b57277b582ec`)
 
-Typing **make** installs the source tree under the build directory and
-applies patches to it. Nothing is built though, as building is performed
-from the **libc** directory.
+  The clone of libc-test that is included as a git submodule, which points to a recent
+  commit. We usually update the submodule along with musl libc with following procedure:
+  - Checkout the more recent commit (the date that matches the version of musl libc)
+    ```
+    cd libc-test
+    git fetch
+    git checkout <commit>
+    ```
+  - Check the code diff and update the <openenclave-root>/tests/libc correspondingly.
+  - Ensure the OE SDK builds and tests run successfully.
+  Refer to https://repo.or.cz/libc-test.git for the commit history.
 
-## libc-test:
+- patches/
+  The list of OE-specific patches that we apply to the musl libc.
 
-libc-test is a generic libc testing framework.
+- CMakeLists.txt
+  The cmake script for installing the musl libc headers.
 
-Building for OE tests is performed from tests/libc/CMakeLists.txt.
+- append-deprecations
+  The script to append the `#include <bits/deprecations.h>` to musl libc headers. The patched
+  headers will be installed as part of OE release packages.
