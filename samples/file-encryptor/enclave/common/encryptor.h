@@ -8,14 +8,15 @@
 #include <mbedtls/entropy.h>
 #include <openenclave/enclave.h>
 #include <string>
-#include "../shared.h"
+
+#include "shared.h"
 
 using namespace std;
 
 class ecall_dispatcher
 {
   private:
-    mbedtls_aes_context m_aescontext;
+    struct aes_context* m_aescontext;
     bool m_encrypt;
     string m_password;
 
@@ -46,8 +47,8 @@ class ecall_dispatcher
         const char* password,
         unsigned char* salt,
         unsigned char* key,
-        unsigned int key_len);
-    int generate_encryption_key(unsigned char* key, unsigned int key_len);
+        unsigned int key_size);
+    int generate_encryption_key(unsigned char* key, unsigned int key_size);
     int prepare_encryption_header(encryption_header_t* header, string password);
     int parse_encryption_header(encryption_header_t* header, string password);
     int cipher_encryption_key(
@@ -58,7 +59,9 @@ class ecall_dispatcher
         unsigned char* salt,
         unsigned char* output_data,
         unsigned int output_data_size);
-    int Sha256(const uint8_t* data, size_t data_size, uint8_t sha256[32]);
-    void dump_data(const char* name, unsigned char* data, size_t data_size);
+    int Sha256(
+        const uint8_t* data,
+        size_t data_size,
+        uint8_t sha256[HASH_VALUE_SIZE_IN_BYTES]);
     int process_encryption_header(encryption_header_t* header);
 };

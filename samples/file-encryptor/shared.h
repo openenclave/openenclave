@@ -4,8 +4,8 @@
 #ifndef _ARGS_H
 #define _ARGS_H
 
-#define HASH_VALUE_SIZE_IN_BYTES 32
-#define ENCRYPTION_KEY_SIZE 256
+#define HASH_VALUE_SIZE_IN_BYTES 32 // sha256 hashing algorithm
+#define ENCRYPTION_KEY_SIZE 256     // AES256-CBC encryption algorithm
 #define ENCRYPTION_KEY_SIZE_IN_BYTES (ENCRYPTION_KEY_SIZE / 8)
 #define IV_SIZE 16 // determined by AES256-CBC
 #define SALT_SIZE_IN_BYTES IV_SIZE
