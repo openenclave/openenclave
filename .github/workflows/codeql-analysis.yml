@@ -1,0 +1,46 @@
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+name: "CodeQL"
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-18.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: ${{ matrix.language }}
+        config-file: .github/codeql/codeql-config.yml
+
+    - name: Install Dependencies
+      run: |
+        sudo apt install -y doxygen
+        git submodule update --init --recursive
+
+    - name: Build
+      run: |
+       mkdir build
+       cd build
+       cmake .. -DBUILD_TESTS=OFF
+       make -j8
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
