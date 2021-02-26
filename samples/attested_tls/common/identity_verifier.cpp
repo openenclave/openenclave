@@ -7,7 +7,7 @@
 #include "cert_verify_config.h"
 #include "utility.h"
 
-oe_result_t enclave_claims_verifier_callback(
+oe_result_t claims_verifier_callback(
     oe_claim_t* claims,
     size_t claims_length,
     void* arg)
@@ -18,7 +18,7 @@ oe_result_t enclave_claims_verifier_callback(
     const oe_claim_t* claim;
 
     printf(TLS_ENCLAVE
-           "enclave_claims_verifier_callback is called with enclave "
+           "claims_verifier_callback is called with enclave "
            "identity information extracted from the evidence claims:\n");
 
     // Enclave's security version

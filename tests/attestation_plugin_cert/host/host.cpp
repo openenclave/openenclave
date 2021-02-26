@@ -27,7 +27,7 @@
 // This is the claims validation callback. A TLS connecting party (client or
 // server) can verify the passed in claims to decide whether to
 // accept a connection request
-oe_result_t sgx_enclave_claims_verifier(
+oe_result_t enclave_claims_verifier(
     oe_claim_t* claims,
     size_t claims_length,
     void* arg)
@@ -35,7 +35,7 @@ oe_result_t sgx_enclave_claims_verifier(
     oe_result_t result = OE_VERIFY_FAILED;
 
     (void)arg;
-    OE_TRACE_INFO("sgx_enclave_claims_verifier is called with claims:\n");
+    OE_TRACE_INFO("enclave_claims_verifier is called with claims:\n");
 
     for (size_t i = 0; i < claims_length; i++)
     {
@@ -127,7 +127,7 @@ void run_test(oe_enclave_t* enclave, int test_type)
     OE_TRACE_INFO("Host: Verifying tls certificate\n");
     OE_TRACE_INFO("Host: cert = %p cert_size = %d\n", cert, cert_size);
     result = oe_verify_attestation_certificate_with_evidence(
-        cert, cert_size, sgx_enclave_claims_verifier, nullptr);
+        cert, cert_size, enclave_claims_verifier, nullptr);
     OE_TRACE_INFO(
         "Host: Verifying the certificate from a host ... %s\n",
         result == OE_OK ? "Success" : "Fail");

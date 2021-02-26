@@ -413,10 +413,63 @@ done:
 }
 
 oe_result_t oe_verify_attestation_certificate_with_evidence(
-    uint8_t* cert_in_der,
-    size_t cert_in_der_len,
+    uint8_t* certificate_in_der,
+    size_t certificate_in_der_size,
     oe_verify_claims_callback_t claim_verify_callback,
     void* arg)
+{
+    oe_result_t result = OE_FAILURE;
+    oe_claim_t* claims = NULL;
+    size_t claims_length = 0;
+
+    result = oe_verify_attestation_certificate_with_evidence_v2(
+        certificate_in_der,
+        certificate_in_der_size,
+        NULL,
+        0,
+        NULL,
+        0,
+        &claims,
+        &claims_length);
+
+    if (result != OE_OK)
+        OE_RAISE_MSG(
+            result,
+            "oe_verify_attestation_certificate_with_evidence() failed with "
+            "error = %s\n",
+            oe_result_str(result));
+
+    //---------------------------------------
+    // call client to further check claims
+    // --------------------------------------
+    if (claim_verify_callback)
+    {
+        result = claim_verify_callback(claims, claims_length, arg);
+        OE_CHECK(result);
+        OE_TRACE_VERBOSE("claim_verify_callback() succeeded");
+    }
+    else
+    {
+        OE_TRACE_WARNING(
+            "No claim_verify_callback provided in "
+            "oe_verify_attestation_certificate_with_evidence call",
+            NULL);
+    }
+
+done:
+    oe_free_claims(claims, claims_length);
+    return result;
+}
+
+oe_result_t oe_verify_attestation_certificate_with_evidence_v2(
+    uint8_t* certificate_in_der,
+    size_t certificate_in_der_size,
+    uint8_t* endorsements_buffer,
+    size_t endorsements_buffer_size,
+    oe_policy_t* policies,
+    size_t policies_size,
+    oe_claim_t** claims,
+    size_t* claims_length)
 {
     oe_result_t result = OE_FAILURE;
     oe_cert_t cert = {0};
@@ -425,8 +478,6 @@ oe_result_t oe_verify_attestation_certificate_with_evidence(
     oe_attestation_header_t* header = NULL;
     uint8_t* pub_key_buff = NULL;
     size_t pub_key_buff_size = KEY_BUFF_SIZE;
-    oe_claim_t* claims = NULL;
-    size_t claims_length = 0;
 
     const char* oid_array[] = {
         oid_oe_report, oid_new_oe_report, oid_oe_evidence, oid_new_oe_evidence};
@@ -437,8 +488,9 @@ oe_result_t oe_verify_attestation_certificate_with_evidence(
     if (!pub_key_buff)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    result = oe_cert_read_der(&cert, cert_in_der, cert_in_der_len);
-    OE_CHECK_MSG(result, "cert_in_der_len=%d", cert_in_der_len);
+    result =
+        oe_cert_read_der(&cert, certificate_in_der, certificate_in_der_size);
+    OE_CHECK_MSG(result, "certificate_in_der_size=%d", certificate_in_der_size);
 
     // validate the certificate signature
     result = oe_cert_verify(&cert, NULL, NULL, 0);
@@ -504,12 +556,12 @@ oe_result_t oe_verify_attestation_certificate_with_evidence(
             NULL,
             report,
             report_size,
-            NULL,
-            0,
-            NULL,
-            0,
-            &claims,
-            &claims_length);
+            endorsements_buffer,
+            endorsements_buffer_size,
+            policies,
+            policies_size,
+            claims,
+            claims_length);
     }
     else // oid_oe_report or oid_new_oe_report
     {
@@ -519,12 +571,12 @@ oe_result_t oe_verify_attestation_certificate_with_evidence(
             &_uuid_legacy_report_remote,
             report,
             report_size,
-            NULL,
-            0,
-            NULL,
-            0,
-            &claims,
-            &claims_length);
+            endorsements_buffer,
+            endorsements_buffer_size,
+            policies,
+            policies_size,
+            claims,
+            claims_length);
     }
 
     OE_CHECK(result);
@@ -540,30 +592,12 @@ oe_result_t oe_verify_attestation_certificate_with_evidence(
         "oe_cert_write_public_key_pem pub_key_buf_size=%d", pub_key_buff_size);
 
     result = _verify_public_key_claim(
-        claims, claims_length, pub_key_buff, pub_key_buff_size);
+        *claims, *claims_length, pub_key_buff, pub_key_buff_size);
     OE_CHECK(result);
     OE_TRACE_VERBOSE("user data: hash(public key) validation passed", NULL);
 
-    //---------------------------------------
-    // call client to further check claims
-    // --------------------------------------
-    if (claim_verify_callback)
-    {
-        result = claim_verify_callback(claims, claims_length, arg);
-        OE_CHECK(result);
-        OE_TRACE_VERBOSE("claim_verify_callback() succeeded");
-    }
-    else
-    {
-        OE_TRACE_WARNING(
-            "No claim_verify_callback provided in "
-            "oe_verify_attestation_certificate_with_evidence call",
-            NULL);
-    }
-
 done:
     oe_free(pub_key_buff);
-    oe_free_claims(claims, claims_length);
     oe_cert_free(&cert);
     oe_free(report);
     return result;

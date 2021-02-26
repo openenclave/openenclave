@@ -189,7 +189,7 @@ oe_result_t verify_evidence(
     return result;
 }
 
-oe_result_t sgx_enclave_claims_verifier(
+oe_result_t enclave_claims_verifier(
     oe_claim_t* claims,
     size_t claims_length,
     void* arg)
@@ -197,7 +197,7 @@ oe_result_t sgx_enclave_claims_verifier(
     oe_result_t result = OE_VERIFY_FAILED;
 
     (void)arg;
-    printf("sgx_enclave_claims_verifier is called with claims:\n");
+    printf("enclave_claims_verifier is called with claims:\n");
 
     for (size_t i = 0; i < claims_length; i++)
     {
@@ -240,11 +240,15 @@ oe_result_t verify_cert(const char* filename)
     oe_result_t result = OE_FAILURE;
     size_t cert_file_size = 0;
     uint8_t* cert_data = NULL;
+    uint8_t* endorsements_buffer = NULL;
+    size_t endorsements_buffer_size = 0;
+    oe_policy_t* policies = NULL;
+    size_t policies_size = 0;
 
     if (read_binary_file(filename, &cert_data, &cert_file_size))
     {
         result = oe_verify_attestation_certificate_with_evidence(
-            cert_data, cert_file_size, sgx_enclave_claims_verifier, NULL);
+            cert_data, cert_file_size, enclave_claims_verifier, NULL);
     }
 
     if (cert_data != NULL)

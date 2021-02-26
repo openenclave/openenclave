@@ -247,13 +247,13 @@ oe_result_t verify_evidence(
     return result;
 }
 
-oe_result_t sgx_enclave_claims_verifier(
+oe_result_t enclave_claims_verifier(
     oe_claim_t* claims,
     size_t claims_length,
     void* arg)
 {
     (void)arg;
-    fprintf(stdout, "sgx_enclave_claims_verifier is called with claims:\n");
+    fprintf(stdout, "enclave_claims_verifier is called with claims:\n");
     return print_and_verify_claims(claims, claims_length);
 }
 
@@ -266,7 +266,7 @@ oe_result_t verify_cert(const char* filename)
     if (read_binary_file(filename, &cert_data, &cert_file_size))
     {
         result = oe_verify_attestation_certificate_with_evidence(
-            cert_data, cert_file_size, sgx_enclave_claims_verifier, NULL);
+            cert_data, cert_file_size, enclave_claims_verifier, NULL);
     }
 
     if (cert_data != NULL)
