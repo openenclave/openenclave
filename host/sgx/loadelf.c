@@ -40,6 +40,8 @@ static void _unload_elf_image(oe_enclave_elf_image_t* image)
 
         if (image->reloc_data)
             oe_memalign_free(image->reloc_data);
+
+        memset(image, 0, sizeof(*image));
     }
 }
 
