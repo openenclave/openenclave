@@ -623,21 +623,9 @@ OE_NEVER_INLINE
 OE_NO_RETURN
 static void _exit_enclave(uint64_t arg1, uint64_t arg2)
 {
-    static bool _initialized = false;
-    static bool _stitch_ocall_stack = false;
     oe_sgx_td_t* td = oe_sgx_get_td();
-
-    // Since determining whether an enclave supports debugging is a stateless
-    // idempotent operation, there is no need to lock. The result is cached
-    // for performance since is_enclave_debug_allowed uses local report to
-    // securely determine if an enclave supports debugging or not.
-    if (!_initialized)
-    {
-        _stitch_ocall_stack = is_enclave_debug_allowed();
-        _initialized = true;
-    }
-
-    if (_stitch_ocall_stack)
+    bool stitch_ocall_stack = oe_is_enclave_debug_allowed();
+    if (stitch_ocall_stack)
     {
         oe_ecall_context_t* host_ecall_context = td->host_ecall_context;
 
@@ -1074,14 +1062,17 @@ void __oe_handle_main(
             return;
         }
     }
+    /* Get pointer to the thread data structure */
+    oe_sgx_td_t* td = td_from_tcs(tcs);
+
+    // Setup whether enclave can be debugged or not.
+    // This is used by tracing, ocall statck stitching, and relocations.
+    oe_initialize_is_enclave_debug_allowed(td);
 
     // Initialize the enclave the first time it is ever entered. Note that
     // this function DOES NOT call global constructors. Global construction
     // is performed while handling OE_ECALL_INIT_ENCLAVE.
     oe_initialize_enclave();
-
-    /* Get pointer to the thread data structure */
-    oe_sgx_td_t* td = td_from_tcs(tcs);
 
     /* If this is a normal (non-exception) entry */
     if (cssa == 0)

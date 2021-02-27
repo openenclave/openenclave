@@ -2,5 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/corelibc/stdbool.h>
+#include <openenclave/internal/sgx/td.h>
 
-bool is_enclave_debug_allowed();
+void oe_initialize_is_enclave_debug_allowed(oe_sgx_td_t* td);
+bool oe_is_enclave_debug_allowed();

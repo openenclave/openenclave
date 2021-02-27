@@ -102,6 +102,7 @@ oe_result_t sgx_create_report(
     sgx_report_t* report)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_sgx_td_t* td = oe_sgx_get_td();
 
     // Allocate aligned objects as required by EREPORT instruction.
     sgx_target_info_t ti OE_ALIGNED(512) = {{0}};
@@ -127,7 +128,7 @@ oe_result_t sgx_create_report(
         OE_CHECK(oe_memcpy_s(
             &rd, sizeof(sgx_report_data_t), report_data, report_data_size));
 
-    if (oe_sgx_get_td()->simulate)
+    if (td && td->simulate)
         OE_RAISE(OE_UNSUPPORTED);
 
     /* Invoke EREPORT instruction */

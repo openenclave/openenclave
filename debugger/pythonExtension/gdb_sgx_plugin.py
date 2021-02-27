@@ -4,6 +4,7 @@
 from __future__ import print_function
 import gdb
 import struct
+import subprocess
 import os.path
 from ctypes import create_string_buffer
 import load_symbol_cmd
@@ -309,6 +310,23 @@ def oe_debugger_init():
     oe_debugger_cleanup()
     EnclaveCreationBreakpoint()
     EnclaveTerminationBreakpoint()
+
+    # Setup path subsitution for apkman libraries.
+    apkman_root = None
+    try:
+        result = subprocess.run(['apkman', 'root'], stdout=subprocess.PIPE)
+        if result.returncode == 0:
+            apkman_root = result.stdout.decode('utf-8')
+    except:
+        pass
+
+    if not apkman_root:
+        apkman_root = os.path.expanduser("~/.apkman/alpine-fs")
+
+    cmd = "set substitute-path /home/buildozer/aports %s/apkbuild/aports" % apkman_root.strip()
+    print(cmd)
+    gdb.execute(cmd, False, True)
+    
     return
 
 def oe_debugger_cleanup():

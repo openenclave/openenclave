@@ -1915,6 +1915,22 @@ oe_result_t elf64_load_relocations(
         if (reloc_type != R_X86_64_RELATIVE && reloc_type != R_X86_64_TPOFF64 &&
             reloc_type != R_X86_64_GLOB_DAT)
         {
+            if (reloc_type == R_X86_64_64)
+            {
+                // Unresolved symbols result in R_X86_64_64 relocations.
+                // They are ignored on the host side. Production enclaves
+                // will fail during enclave side relocation. Debug enclaves
+                // will load so that the enclave developer and figure out
+                // whether to implement the unresolved symbol or to eliminate
+                // it.
+                continue;
+            }
+
+            // Sometimes the linker can optimize away the relocation; but still
+            // retain the entry.
+            if (reloc_type == R_X86_64_NONE)
+                continue;
+
             // Relocations are critical for correct code behavior.
             // Error out for unsupported relocations
             OE_RAISE_MSG(

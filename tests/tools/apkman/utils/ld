@@ -1,0 +1,6 @@
+#!/bin/bash
+# Copyright (c) Open Enclave SDK contributors.
+# Licensed under the MIT License.
+
+SCRIPT_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+"$SCRIPT_DIR/../../../../tools/apkman/apkman" exec ld "$@"

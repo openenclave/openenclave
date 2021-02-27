@@ -28,6 +28,15 @@ tests/libcxxrt/tests\..*$
 tests/libunwind/tests\..*$
 tests/mbed/tests\..*$
 tests/openssl/tests\..*$
+# Public domain code
+tests/tools/apkman/libs/gmp/enc/chudnovsky.c
+tests/tools/apkman/libs/hiredis/enc/example.c
+tests/tools/apkman/libs/zlib/enc/zpipe.c
+tests/tools/apkman/runtimes/lua/scripts/.*
+tests/tools/apkman/runtimes/ocaml/enc/lexer.mll
+tests/tools/apkman/runtimes/ocaml/enc/parser.mly
+tests/tools/apkman/runtimes/ocaml/enc/program.ml
+tests/tools/apkman/runtimes/quickjs/scripts/.*
 
 # Directories
 3rdparty/dlmalloc/dlmalloc/.*

@@ -42,7 +42,7 @@ OE_DEFINE_SYSCALL2(SYS_munmap)
     return EPERM;
 }
 
-OE_DEFINE_SYSCALL2(SYS_clock_gettime)
+weak OE_DEFINE_SYSCALL2(SYS_clock_gettime)
 {
     clockid_t clock_id = (clockid_t)arg1;
     struct timespec* tp = (struct timespec*)arg2;
@@ -241,7 +241,9 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     abort();
 }
 
-long syscall(long number, ...)
+// Declared as weak alias to allow enclave authors to implement unsupported
+// syscalls selectively without increasing TCB.
+long syscall_impl(long number, ...)
 {
     va_list ap;
 
@@ -257,6 +259,8 @@ long syscall(long number, ...)
 
     return ret;
 }
+
+OE_WEAK_ALIAS(syscall_impl, syscall);
 
 long __syscall_ret(unsigned long r)
 {

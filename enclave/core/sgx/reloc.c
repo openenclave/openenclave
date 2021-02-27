@@ -4,7 +4,23 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/globals.h>
+#include "../tracee.h"
 #include "init.h"
+
+static bool _allow_unresolved_symbols()
+{
+    // Undefined symbols are allowed only for development.
+    // Since this code is executed during relocation, dependencies are
+    // kept to minimum.
+    static bool allowed = false;
+    static bool first_time = true;
+    if (first_time)
+    {
+        allowed = oe_is_enclave_debug_allowed();
+        first_time = false;
+    }
+    return allowed;
+}
 
 /*
 **==============================================================================
@@ -41,6 +57,13 @@ bool oe_apply_relocations(void)
         if (reloc_type == R_X86_64_RELATIVE)
         {
             *dest = (uint64_t)(baseaddr + p->r_addend);
+        }
+        else if (reloc_type == R_X86_64_64)
+        {
+            if (_allow_unresolved_symbols())
+                continue;
+            else
+                oe_abort();
         }
     }
 
