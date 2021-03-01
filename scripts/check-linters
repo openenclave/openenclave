@@ -23,6 +23,11 @@ for i in $filelist; do
     if [[ $i =~ ^3rdparty/ ]]; then
         continue;
     fi
+    # Temporary, to remove later
+    # Quotes around compiler flags break OP-TEE builds
+    if [[ $i =~ ^devex/ ]]; then
+        continue;
+    fi
 
     if ! file -b "$i" | grep -q "shell script"; then
         continue;

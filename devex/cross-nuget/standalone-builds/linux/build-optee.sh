@@ -5,15 +5,17 @@
 
 set +x
 
-OPENENCLAVE_DIR="$PWD"
-OPTEE_PATH="${OPENENCLAVE_DIR}/3rdparty/optee/optee_os"
+OPTEE_PATH=${OE_SDK_PATH}/3rdparty/optee/optee_os
+
+echo "Override OE_SDK_PATH: $OE_SDK_PATH, OPTEE_PATH: $OPTEE_PATH, OPTEE_BUILD_PATH: $OPTEE_BUILD_PATH"
+
 
 # OP-TEE Build Output Folders
-OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH=${OPENENCLAVE_DIR}/build/optee/3.6.0/vexpress-qemu_armv8a/debug
-OPTEE_DEBUG_GRAPEBOARD_OUT_PATH=${OPENENCLAVE_DIR}/build/optee/3.6.0/ls-ls1012grapeboard/debug
+OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH=${OPTEE_BUILD_PATH}/3.6.0/vexpress-qemu_armv8a/debug
+OPTEE_DEBUG_GRAPEBOARD_OUT_PATH=${OPTEE_BUILD_PATH}/3.6.0/ls-ls1012grapeboard/debug
 
-OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH=${OPENENCLAVE_DIR}/build/optee/3.6.0/vexpress-qemu_armv8a/release
-OPTEE_RELEASE_GRAPEBOARD_OUT_PATH=${OPENENCLAVE_DIR}/build/optee/3.6.0/ls-ls1012grapeboard/release
+OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH=${OPTEE_BUILD_PATH}/3.6.0/vexpress-qemu_armv8a/release
+OPTEE_RELEASE_GRAPEBOARD_OUT_PATH=${OPTEE_BUILD_PATH}/3.6.0/ls-ls1012grapeboard/release
 
 # Create OP-TEE build directories
 mkdir -p "$OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH"
@@ -48,7 +50,7 @@ EOF
 )
 
 # OP-TEE Build Release Flags
-OPTEE_DEBUG_FLAGS=$(cat << EOF
+OPTEE_RELEASE_FLAGS=$(cat << EOF
 platform-cflags-optimization=-Os 
 CFG_CRYPTO_SIZE_OPTIMIZATION=y 
 CFG_PAGED_USER_TA=n 
@@ -81,9 +83,10 @@ fi
 # Build OP-TEE for QEMU ARMv8 Debug
 echo "Building: OP-TEE/QEMU/Debug"
 cd "$OPTEE_DEBUG_QEMU_ARMV8_OUT_PATH" || exit 1
-ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
+ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"      \
   PLATFORM=vexpress-qemu_armv8a                  \
-  "$OPTEE_DEBUG_FLAGS"                           \
+  O="$PWD"                                       \
+  $OPTEE_DEBUG_FLAGS                             \
   CROSS_COMPILE="$CROSS_COMPILE"                 \
   CROSS_COMPILE_core="$CROSS_COMPILE"            \
   CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
@@ -93,9 +96,10 @@ ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
 # Build OP-TEE for the Scalys Grapeboard Debug
 echo "Building: OP-TEE/Grapeboard/Debug"
 cd "$OPTEE_DEBUG_GRAPEBOARD_OUT_PATH" || exit 1
-ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
+ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"      \
   PLATFORM=ls-ls1012grapeboard                   \
-  "$OPTEE_DEBUG_FLAGS"                           \
+  O="$PWD"                                       \
+  $OPTEE_DEBUG_FLAGS                             \
   CROSS_COMPILE="$CROSS_COMPILE"                 \
   CROSS_COMPILE_core="$CROSS_COMPILE"            \
   CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
@@ -105,9 +109,10 @@ ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
 # Build OP-TEE for QEMU ARMv8 Release
 echo "Building: OP-TEE/QEMU/Release"
 cd "$OPTEE_RELEASE_QEMU_ARMV8_OUT_PATH" || exit 1
-ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
+ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"      \
   PLATFORM=vexpress-qemu_armv8a                  \
-  "$OPTEE_RELEASE_FLAGS"                         \
+  O="$PWD"                                       \
+  $OPTEE_RELEASE_FLAGS                           \
   CROSS_COMPILE="$CROSS_COMPILE"                 \
   CROSS_COMPILE_core="$CROSS_COMPILE"            \
   CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
@@ -117,9 +122,10 @@ ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
 # Build OP-TEE for the Scalys Grapeboard Release
 echo "Building: OP-TEE/Grapeboard/Release"
 cd "$OPTEE_RELEASE_GRAPEBOARD_OUT_PATH" || exit 1
-ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"        \
+ARCH=arm make -j"$(nproc)" -C "$OPTEE_PATH"      \
   PLATFORM=ls-ls1012grapeboard                   \
-  "$OPTEE_RELEASE_FLAGS"                         \
+  O="$PWD"                                       \
+  $OPTEE_RELEASE_FLAGS                           \
   CROSS_COMPILE="$CROSS_COMPILE"                 \
   CROSS_COMPILE_core="$CROSS_COMPILE"            \
   CROSS_COMPILE_ta_arm64="$TA_CROSS_COMPILE"     \
