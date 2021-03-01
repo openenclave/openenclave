@@ -32,6 +32,8 @@ The primary responsibilities of this Committee are:
 - to define the governance structures of the Open Enclave SDK project as a whole
 - to assist in the resolution of disagreements between community organizations when necessary
 - to support the community through handling any code of conduct incidents and reports
+- to work with the mentor assigned by the Confidential Computing Consortium
+(CCC) in tracking a [growth plan](growth-plan.md)
 
 This Committee is not intended to make technical decisions, as those should
 generally be made by agreement among contributors PRs are reviewed and merged,
