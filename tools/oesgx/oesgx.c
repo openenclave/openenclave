@@ -65,7 +65,6 @@ static int _CPUID(Regs* regs)
     // Check if no sub-leaves are supported
     if (regs->eax == 0 && regs->ebx == 0 && regs->ecx == 0 && regs->edx == 0)
     {
-        printf("Error getting CPUID. Returned: %d", regs->eax);
         result = 1;
     }
     return result;
@@ -152,9 +151,9 @@ int main(int argc, const char* argv[])
 
     /* Enumeration of Intel SGX Capabilities: figure out EPC size */
     {
-        Regs regs = {SGX_CAPABILITY_ENUMERATION, 0, 0x2, 0};
+        unsigned int ecx = 0x2;
+        Regs regs = {SGX_CAPABILITY_ENUMERATION, 0, ecx, 0};
         uint64_t epc_size = 0;
-
         result = _CPUID(&regs);
         if (result)
         {
@@ -162,15 +161,35 @@ int main(int argc, const char* argv[])
             dump_regs(&regs);
             return result;
         }
+
         if (!HAVE_EPC_SUBLEAF(regs))
         {
             printf("No EPC section\n");
             dump_regs(&regs);
             return 0;
         }
-        epc_size =
-            ((regs.ecx & 0x0fffff000) |
-             ((uint64_t)(regs.edx & 0x0fffff) << 32));
+
+        /*
+           Find out if SUBLEAF exists by iterating over ecx incremented by 1.
+           If SUBLEAF exists and _CPUID returns a valid response, then the EPC
+           memory of the subleaf is add to the total EPC memory used.
+           When _CPUID call fails for a ecx value, the loop is terminated.
+        */
+        while (!result && HAVE_EPC_SUBLEAF(regs))
+        {
+            epc_size +=
+                ((regs.ecx & 0x0fffff000) |
+                 ((uint64_t)(regs.edx & 0x0fffff) << 32));
+
+            ecx++;
+            /* re-populate regs to check if _CPUID is valid
+               for current ecx */
+            regs.eax = SGX_CAPABILITY_ENUMERATION;
+            regs.ebx = 0;
+            regs.ecx = ecx;
+            regs.edx = 0;
+            result = _CPUID(&regs);
+        }
         printf(
             "EPC size on the platform: %llu\n", (unsigned long long)epc_size);
     }
