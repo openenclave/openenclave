@@ -264,6 +264,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
 }
 
 parallel "Build Ubuntu 18.04"              : { buildLinuxManagedImage("ubuntu", "18.04") },
+         "Build Ubuntu 20.04"              : { buildLinuxManagedImage("ubuntu", "20.04") },
          "Build RHEL 8"                    : { buildLinuxManagedImage("rhel", "8") },
          "Build Windows 2016 SGX1"         : { buildWindowsManagedImage("win2016", "ws2016-SGX", "SGX1") },
          "Build Windows 2016 SGX1FLC DCAP" : { buildWindowsManagedImage("win2016", "ws2016-SGX-DCAP", "SGX1FLC") },
