@@ -139,6 +139,10 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
                     def deploy_script = """
                         ${az_login_script}
 
+                        az vm restart \
+                            --resource-group ${vm_rg_name} \
+                            --name ${vm_name}
+
                         VM_DETAILS=\$(az vm show --resource-group ${vm_rg_name} \
                                                 --name ${vm_name} \
                                                 --show-details)

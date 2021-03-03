@@ -428,7 +428,7 @@ function Install-PSW {
         $psw_dir = Get-Item "$tempInstallDir\Intel*SGX*\PSW_INF*\"
         Start-ExecuteWithRetry -RetryInterval 5 -ScriptBlock {
             pnputil /add-driver $psw_dir\sgx_psw.inf /install
-            Get-Service "AESMService"
+            pnputil /enum-drivers
         }
     }
     Start-ExecuteWithRetry -ScriptBlock {
