@@ -5,7 +5,7 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 
 OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
-oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
+oe = library("OpenEnclaveCommonCyan@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
 
 GLOBAL_TIMEOUT_MINUTES = 480
 
