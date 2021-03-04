@@ -147,6 +147,8 @@ oe_result_t get_tls_cert_signed_with_key(
     size_t private_key_size = 0;
     uint8_t* public_key = nullptr;
     size_t public_key_size = 0;
+    uint8_t* optional_parameters = nullptr;
+    size_t optional_parameters_size = 0;
     const oe_uuid_t format = {OE_FORMAT_UUID_SGX_ECDSA};
 
     OE_TRACE_INFO("called into enclave\n");
@@ -175,13 +177,15 @@ oe_result_t get_tls_cert_signed_with_key(
     // Initialize built-in OE attesters.
     oe_attester_initialize();
 
-    result = oe_get_attestation_certificate_with_evidence(
+    result = oe_get_attestation_certificate_with_evidence_v2(
         &format,
         (const unsigned char*)"CN=Open Enclave SDK,O=OESDK TLS,C=US",
         private_key,
         private_key_size,
         public_key,
         public_key_size,
+        optional_parameters,
+        optional_parameters_size,
         &output_cert,
         &output_cert_size);
     if (result != OE_OK)

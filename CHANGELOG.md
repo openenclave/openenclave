@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - -Werror: Turn warnings into errors.
   - -Werror=<option>: Turn the specified warning into an error.
 
+### Changed
+- oe_get_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_get_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
+
+
 [v0.14.0][v0.14.0_log]
 --------------
 

@@ -21,6 +21,8 @@ oe_result_t generate_certificate_and_pkey(
     size_t private_key_buffer_size = 0;
     uint8_t* public_key_buffer = nullptr;
     size_t public_key_buffer_size = 0;
+    uint8_t* optional_parameters = nullptr;
+    size_t optional_parameters_size = 0;
     int ret = 0;
 
     result = generate_key_pair(
@@ -38,19 +40,21 @@ oe_result_t generate_certificate_and_pkey(
 
     // both ec key such ASYMMETRIC_KEY_EC_SECP256P1 or RSA key work
     oe_attester_initialize();
-    result = oe_get_attestation_certificate_with_evidence(
+    result = oe_get_attestation_certificate_with_evidence_v2(
         &_uuid_sgx_ecdsa,
         certificate_subject_name,
         private_key_buffer,
         private_key_buffer_size,
         public_key_buffer,
         public_key_buffer_size,
+        optional_parameters,
+        optional_parameters_size,
         &output_certificate,
         &output_certificate_size);
     if (result != OE_OK)
     {
         printf(
-            "oe_generate_attestation_certificate failed with %s\n",
+            "oe_get_attestation_certificate_with_evidence_v2 failed with %s\n",
             oe_result_str(result));
         goto exit;
     }
