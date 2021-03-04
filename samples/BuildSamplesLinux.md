@@ -27,7 +27,7 @@ Before you can build and run samples, you would need to install the prerequisite
 
 Building samples involves writing files into the working directory, which is not allowed in `/opt` unless it's running in the context of superuser (`sudo`).
 
-Before building any of the samples, please copy them out of the `/opt/openenclave/share/openenclave/samples directory` to a directory where your current user has write permissions.
+Before building any of the samples, please copy them out of the `/opt/openenclave/share/openenclave/samples` directory to a directory where your current user has write permissions.
 
 For example, assuming the Open Enclave SDK is installed to the default location `/opt/openenclave`:
 
