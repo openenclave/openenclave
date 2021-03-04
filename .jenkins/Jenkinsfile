@@ -17,11 +17,9 @@ AGENTS_LABELS = [
     "acc-ubuntu-18.04": env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
     "ubuntu-nonsgx":    env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX",
     "acc-rhel-8":       env.RHEL_8_CUSTOM_LABEL ?: "ACC-RHEL-8",
-    "acc-win2016":      env.WINDOWS_2016_CUSTOM_LABEL ?: "SGX-Windows-2016",
-    "acc-win2016-dcap": env.WINDOWS_2016_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2016-DCAP",
     "acc-win2019":      env.WINDOWS_2019_CUSTOM_LABEL ?: "SGX-Windows-2019",
     "acc-win2019-dcap": env.WINDOWS_2019_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2019-DCAP",
-    "windows-nonsgx":   env.WINDOWS_NONSGX_CUSTOM_LABEL ?: "nonSGX-Windows"
+    "windows-nonsgx":   env.WINDOWS_NONSGX_CUSTOM_LABEL ?: "nonSGX-Windows-2019"
 ]
 
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
