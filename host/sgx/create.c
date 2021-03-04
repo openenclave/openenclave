@@ -508,6 +508,10 @@ static oe_result_t _configure_enclave(
                     enclave, max_host_workers, max_enclave_workers));
                 break;
             }
+            case OE_SGX_ENCLAVE_CONFIG_DATA:
+            {
+                break;
+            }
 #ifdef OE_WITH_EXPERIMENTAL_EEID
             case OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA:
             {
@@ -889,6 +893,25 @@ oe_result_t oe_sgx_build_enclave(
         context->attributes.flags |= OE_ENCLAVE_FLAG_SGX_KSS;
     }
 
+    // if config_id data is passed and OE_SGX_FLAGS_KSS were not set in
+    // properties file
+    if (context->use_config_id &&
+        !(context->attributes.flags & OE_ENCLAVE_FLAG_SGX_KSS))
+    {
+        if (!context->config_data->ignore_if_unsupported)
+        {
+            OE_RAISE_MSG(
+                OE_UNSUPPORTED,
+                "Enclave image requires config_id/config_svn settings but "
+                "OE_SGX_FLAGS_KSS is not set in properties\n",
+                NULL);
+        }
+        else
+        {
+            context->use_config_id = false;
+        }
+    }
+
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
         context, enclave_size, loaded_enclave_pages_size, &enclave_addr));
@@ -898,7 +921,7 @@ oe_result_t oe_sgx_build_enclave(
     enclave->size = enclave_size;
 
     /* Patch image */
-    OE_CHECK(oeimage.sgx_patch(&oeimage, context, enclave_size));
+    OE_CHECK(oeimage.sgx_patch(&oeimage, enclave_size));
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
@@ -1075,14 +1098,21 @@ oe_result_t oe_create_enclave(
     OE_CHECK(oe_sgx_initialize_load_context(
         &context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
-#ifdef OE_WITH_EXPERIMENTAL_EEID
     for (size_t i = 0; i < setting_count; i++)
+    {
+        if (settings[i].setting_type == OE_SGX_ENCLAVE_CONFIG_DATA)
+        {
+            context.config_data = settings[i].u.config_data;
+            context.use_config_id = true;
+        }
+
+#ifdef OE_WITH_EXPERIMENTAL_EEID
         if (settings[i].setting_type == OE_EXTENDED_ENCLAVE_INITIALIZATION_DATA)
         {
             context.eeid = settings[i].u.eeid;
-            break;
         }
 #endif
+    }
 
     /* Build the enclave */
     OE_CHECK(oe_sgx_build_enclave(&context, enclave_path, NULL, enclave));

@@ -65,7 +65,6 @@ stage("Run tests on new Agents") {
                        string(name: 'BRANCH_NAME', value: env.BRANCH),
                        string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                        string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
-                       string(name: 'UBUNTU_1604_CUSTOM_LABEL', value: env.UBUNTU_1604_LABEL),
                        string(name: 'UBUNTU_1804_CUSTOM_LABEL', value: env.UBUNTU_1804_LABEL),
                        string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: env.UBUNTU_NONSGX_LABEL),
                        string(name: 'RHEL_8_CUSTOM_LABEL', value: env.RHEL_8_LABEL),
@@ -89,6 +88,6 @@ if(env.PRODUCTION_IMAGES_GALLERY_NAME) {
                          string(name: 'IMAGE_ID', value: IMAGE_ID),
                          string(name: 'IMAGE_VERSION', value: IMAGE_VERSION),
                          string(name: 'DOCKER_TAG', value: DOCKER_TAG),
-                         string(name: 'IMAGES_BUILD_LABEL', value: env.UBUNTU_1604_LABEL)]
+                         string(name: 'IMAGES_BUILD_LABEL', value: env.UBUNTU_1804_LABEL)]
     }
 }

@@ -247,12 +247,14 @@ oe_result_t sgx_verify_quote(
     if (p_qve_report_info != NULL)
     {
         OE_TRACE_INFO(
-            "SGX DCAP QvE-based quote verification is used, res: %s\n", result);
+            "SGX DCAP QvE-based quote verification is used, res: %s\n",
+            oe_result_str(result));
     }
     else
     {
         OE_TRACE_INFO(
-            "SGX DCAP QVL-based quote verification is used, res: %s\n", result);
+            "SGX DCAP QVL-based quote verification is used, res: %s\n",
+            oe_result_str(result));
     }
 done:
 

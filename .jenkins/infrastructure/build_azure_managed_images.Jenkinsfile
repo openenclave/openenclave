@@ -62,7 +62,10 @@ def buildLinuxManagedImage(String os_type, String version) {
                 oe.azureEnvironment(az_cleanup_existing_image_version_script, params.OE_DEPLOY_IMAGE)
                 withCredentials([usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
                                                   usernameVariable: "DOCKER_USER_NAME",
-                                                  passwordVariable: "DOCKER_USER_PASSWORD")]) {
+                                                  passwordVariable: "DOCKER_USER_PASSWORD"),
+                                usernamePassword(credentialsId: JENKINS_USER_CREDS_ID,
+                                                  usernameVariable: "SSH_USERNAME",
+                                                  passwordVariable: "SSH_PASSWORD")]) {
                     withEnv(["DOCKER_REGISTRY=${OETOOLS_REPO}",
                              "MANAGED_IMAGE_NAME_ID=${managed_image_name_id}",
                              "GALLERY_IMAGE_VERSION=${gallery_image_version}"]) {
@@ -200,8 +203,7 @@ def buildWindowsManagedImage(String os_series, String img_name_suffix, String la
     }
 }
 
-parallel "Build Ubuntu 16.04"              : { buildLinuxManagedImage("ubuntu", "16.04") },
-         "Build Ubuntu 18.04"              : { buildLinuxManagedImage("ubuntu", "18.04") },
+parallel "Build Ubuntu 18.04"              : { buildLinuxManagedImage("ubuntu", "18.04") },
          "Build RHEL 8"                    : { buildLinuxManagedImage("rhel", "8") },
          "Build Windows 2016 SGX1"         : { buildWindowsManagedImage("win2016", "ws2016-SGX", "SGX1") },
          "Build Windows 2016 SGX1FLC DCAP" : { buildWindowsManagedImage("win2016", "ws2016-SGX-DCAP", "SGX1FLC") },

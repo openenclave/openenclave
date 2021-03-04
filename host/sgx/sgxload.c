@@ -152,6 +152,16 @@ static sgx_secs_t* _new_secs(
     /* secs->flags |= SGX_FLAGS_EINITTOKEN_KEY; */
     /* secs->flags |= SGX_FLAGS_PROVISION_KEY; */
 
+    /* Update config_id and config_svn of secs from context. */
+    if (context->use_config_id)
+    {
+        memcpy(
+            secs->config_id,
+            context->config_data->config_id,
+            sizeof(secs->config_id));
+        secs->config_svn = context->config_data->config_svn;
+    }
+
     return secs;
 }
 

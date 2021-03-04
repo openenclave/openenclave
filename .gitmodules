@@ -20,7 +20,6 @@
 [submodule "3rdparty/openssl/openssl"]
 	path = 3rdparty/openssl/openssl
 	url = https://github.com/openssl/openssl
-	branch = OpenSSL_1_1_1-stable
 [submodule "3rdparty/mbedtls/mbedtls"]
 	path = 3rdparty/mbedtls/mbedtls
 	url = https://github.com/openenclave/openenclave-mbedtls.git
@@ -28,3 +27,9 @@
 [submodule "3rdparty/openssl/intel-sgx-ssl"]
 	path = 3rdparty/openssl/intel-sgx-ssl
 	url = https://github.com/intel/intel-sgx-ssl
+[submodule "3rdparty/musl/musl"]
+	path = 3rdparty/musl/musl
+	url = git://git.musl-libc.org/musl
+[submodule "3rdparty/musl/libc-test"]
+	path = 3rdparty/musl/libc-test
+	url = git://repo.or.cz/libc-test.git

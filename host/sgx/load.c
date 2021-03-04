@@ -76,24 +76,20 @@ oe_result_t oe_unload_enclave_image(oe_enclave_image_t* oeimage)
 
 oe_result_t oe_sgx_load_enclave_properties(
     const oe_enclave_image_t* oeimage,
-    const char* section_name,
     oe_sgx_enclave_properties_t* properties)
 {
     if (!oeimage || !oeimage->sgx_load_enclave_properties)
         return OE_INVALID_PARAMETER;
 
-    return oeimage->sgx_load_enclave_properties(
-        oeimage, section_name, properties);
+    return oeimage->sgx_load_enclave_properties(oeimage, properties);
 }
 
 oe_result_t oe_sgx_update_enclave_properties(
     const oe_enclave_image_t* oeimage,
-    const char* section_name,
     const oe_sgx_enclave_properties_t* properties)
 {
     if (!oeimage || !oeimage->sgx_update_enclave_properties)
         return OE_INVALID_PARAMETER;
 
-    return oeimage->sgx_update_enclave_properties(
-        oeimage, section_name, properties);
+    return oeimage->sgx_update_enclave_properties(oeimage, properties);
 }

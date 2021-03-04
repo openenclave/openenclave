@@ -1,6 +1,6 @@
 # SGX1 with Flexible Launch Control (FLC) Prerequisites on Windows
 
-## [Intel Platform Software for Windows (PSW) v2.11]https://registrationcenter-download.intel.com/akdlm/irc_nas/17361/Intel%20SGX%20PSW%20for%20Windows%20v2.11.100.3.exe)
+## [Intel Platform Software for Windows (PSW) v2.12]https://registrationcenter-download.intel.com/akdlm/irc_nas/17361/Intel%20SGX%20PSW%20for%20Windows%20v2.12.100.4.exe)
 
 The PSW only needs to be manually installed if you are running on Windows Server
 2016 or a version of Windows client lower than 1709. It should be installed automatically
@@ -12,7 +12,7 @@ To install the PSW on Windows Server 2016 and Windows client < 1709, unpack the 
 ZIP executable, and run the installer under `PSW_EXE_RS2_and_before`:
 
 ```cmd
-"C:\Intel SGX PSW for Windows v2.11.100.3\PSW_EXE_RS2_and_before\Intel(R)_SGX_Windows_x64_PSW_2.11.100.3.exe"
+"C:\Intel SGX PSW for Windows v2.12.100.4\PSW_EXE_RS2_and_before\Intel(R)_SGX_Windows_x64_PSW_2.12.100.4.exe"
 ```
 
 If you would like to manually update the PSW on Windows Server 2019 or Windows
@@ -32,18 +32,25 @@ You can verify that the correct version of Intel SGX PSW is installed by using
 Windows Explorer to open `C:\Windows\System32`. You should be able to find
 file `sgx_urts.dll` if PSW is installed. Right click on `sgx_urts.dll`,
 choose `Properties` and then find `Product version` on the `Details` tab.
-The version should be "2.11.xxx.xxx" or above.
+The version should be "2.12.xxx.xxx" or above.
 
 ## [Azure DCAP client for Windows](https://github.com/Microsoft/Azure-DCAP-Client/tree/master/src/Windows) [optional]
 
 Note that this is optional since you can choose an alternate implementation of the DCAP client or create your own.
-The Azure DCAP client for Windows is necessary if you would like to perform enclave attestation on a Azure Confidential Computing VM. It is available from [nuget.org](https://www.nuget.org/packages/Microsoft.Azure.DCAP/) and can be installed directly via command below.
+The Azure DCAP client for Windows is necessary if you would like to perform enclave attestation on a Azure Confidential Computing VM. It is available from [nuget.org](https://www.nuget.org/packages/Microsoft.Azure.DCAP/) and can be downloaded directly via the command below.
 
 ```cmd
-nuget.exe install Microsoft.Azure.DCAP -ExcludeVersion -Version 1.6.0 -OutputDirectory C:\oe_prereqs
+nuget.exe install Microsoft.Azure.DCAP -ExcludeVersion -OutputDirectory C:\oe_prereqs
 ```
 
-This example assumes you would like to install the package to `C:\oe_prereqs`.
+This example assumes you would like to download the package to `C:\oe_prereqs`. Complete the installation by following the instructions in the file `C:\oe_prereqs\Microsoft.Azure.DCAP\README.txt`.
+
+Verify successful installation of Azure DCAP by ensuring that the file `dcap_quotprov.dll` is on the PATH and located in the `C:\Windows\System32` directory.
+
+```cmd
+C:\>where dcap_quoteprov.dll
+C:\Windows\System32\dcap_quoteprov.dll
+```
 
 ## [Intel Data Center Attestation Primitives (DCAP) Libraries v1.9](https://registrationcenter-download.intel.com/akdlm/irc_nas/17362/Intel%20SGX%20DCAP%20for%20Windows%20v1.9.100.3.exe)
 

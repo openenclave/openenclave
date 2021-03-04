@@ -32,7 +32,7 @@
   </WizardExtension>
   <WizardData>
     <packages repository="extension" repositoryId="OpenEnclaveVisualStudioExtension-1">
-      <package id="open-enclave-cross" version="0.12.0.2" />
+      <package id="open-enclave-cross" version="0.14.0" />
     </packages>
   </WizardData>
 </VSTemplate>

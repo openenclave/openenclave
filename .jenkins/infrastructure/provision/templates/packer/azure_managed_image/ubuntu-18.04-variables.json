@@ -2,10 +2,10 @@
     "managed_image_name_suffix": "ubuntu-18.04-SGX",
     "os_type": "Linux",
     "gallery_image_name": "ubuntu-18.04",
-    "image_publisher": "Canonical",
-    "image_offer": "UbuntuServer",
-    "image_sku": "18_04-lts-gen2",
     "vm_size": "Standard_DC2s",
     "ansible_group": "linux-agents",
-    "playbook_file_name": "oe-linux-acc-setup.yml"
+    "playbook_file_name": "oe-linux-acc-setup.yml",
+    "base_gallery_image_version": "latest",
+    "base_gallery_image_name": "Ubuntu_1804_LTS_Gen2",
+    "base_gallery_name": "Vanilla_Images"
 }

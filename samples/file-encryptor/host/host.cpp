@@ -58,6 +58,13 @@ void dump_header(encryption_header_t* _header)
         cout << "Host: key[" << i << "]=" << std::hex
              << (unsigned int)(_header->encrypted_key[i]) << endl;
     }
+
+    cout << "Host: salt and IV" << endl;
+    for (int i = 0; i < SALT_SIZE_IN_BYTES; i++)
+    {
+        cout << "Host: salt[" << i << "]=" << std::hex
+             << (unsigned int)(_header->salt[i]) << endl;
+    }
 }
 
 // get the file size
@@ -119,6 +126,7 @@ int encrypt_file(
     unsigned char* r_buffer = NULL;
     unsigned char* w_buffer = NULL;
     size_t bytes_read;
+    size_t bytes_to_write;
     size_t bytes_written;
     size_t src_file_size = 0;
     size_t src_data_size = 0;
@@ -229,7 +237,8 @@ int encrypt_file(
     {
         bytes_left = src_data_size - leftover_bytes;
     }
-    requested_read_size = DATA_BLOCK_SIZE;
+    requested_read_size =
+        bytes_left > DATA_BLOCK_SIZE ? DATA_BLOCK_SIZE : bytes_left;
     cout << "Host: start " << (encrypt ? "encrypting" : "decrypting") << endl;
 
     // It loops through DATA_BLOCK_SIZE blocks one at a time then followed by
@@ -245,6 +254,8 @@ int encrypt_file(
         // block size (bytes_read), needs to be a multiple of CIPHER_BLOCK_SIZE.
         // In this sample, DATA_BLOCK_SIZE is used except the last block, which
         // will have to pad it to be a multiple of CIPHER_BLOCK_SIZE.
+        // Eg. If testfile data size is 260 bytes, then the last block will be
+        // 4 data + 12 padding bytes = 16 bytes (CIPHER_BLOCK_SIZE).
         result = encrypt_block(
             enclave, &ret, encrypt, r_buffer, w_buffer, bytes_read);
         if (result != OE_OK)
@@ -259,21 +270,30 @@ int encrypt_file(
             goto exit;
         }
 
+        bytes_to_write = bytes_read;
+        // The data size is always padded to align with CIPHER_BLOCK_SIZE
+        // during encryption. Therefore, remove the padding (if any) from the
+        // last block during decryption.
+        if (!encrypt && bytes_left <= DATA_BLOCK_SIZE)
+        {
+            bytes_to_write = header.file_data_size % DATA_BLOCK_SIZE;
+            bytes_to_write = bytes_to_write > 0 ? bytes_to_write : bytes_read;
+        }
+
         if ((bytes_written = fwrite(
-                 w_buffer, sizeof(unsigned char), bytes_read, dest_file)) !=
-            bytes_read)
+                 w_buffer, sizeof(unsigned char), bytes_to_write, dest_file)) !=
+            bytes_to_write)
         {
             cerr << "Host: fwrite error  " << output_file << endl;
             ret = 1;
             goto exit;
         }
+
         bytes_left -= requested_read_size;
         if (bytes_left == 0)
             break;
         if (bytes_left < DATA_BLOCK_SIZE)
-        {
             requested_read_size = bytes_left;
-        }
     }
 
     if (encrypt)

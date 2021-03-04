@@ -1132,6 +1132,11 @@ static struct oe_dirent* _hostfs_readdir(oe_fd_t* desc)
     if (retval != 0)
         OE_RAISE_ERRNO(OE_EINVAL);
 
+    /* Guard the special case that a host sets an arbitrarily value for
+     * d_reclen. */
+    if (dir->entry.d_reclen != sizeof(struct oe_dirent))
+        OE_RAISE_ERRNO(OE_EINVAL);
+
     ret = &dir->entry;
 
 done:

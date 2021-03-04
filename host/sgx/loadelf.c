@@ -40,6 +40,8 @@ static void _unload_elf_image(oe_enclave_elf_image_t* image)
 
         if (image->reloc_data)
             oe_memalign_free(image->reloc_data);
+
+        memset(image, 0, sizeof(*image));
     }
 }
 
@@ -535,9 +537,8 @@ static uint64_t _make_secinfo_flags(uint32_t flags)
 
 static oe_result_t _add_relocation_pages(
     oe_sgx_load_context_t* context,
-    uint64_t enclave_addr,
-    const void* reloc_data,
-    const size_t reloc_size,
+    uint64_t enclave_base,
+    const oe_enclave_elf_image_t* image,
     uint64_t* vaddr)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -545,20 +546,20 @@ static oe_result_t _add_relocation_pages(
     if (!context || !vaddr)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (reloc_data && reloc_size)
+    if (image->reloc_data && image->reloc_size)
     {
-        const oe_page_t* pages = (const oe_page_t*)reloc_data;
-        size_t npages = reloc_size / sizeof(oe_page_t);
+        const oe_page_t* pages = (const oe_page_t*)image->reloc_data;
+        size_t npages = image->reloc_size / sizeof(oe_page_t);
 
         for (size_t i = 0; i < npages; i++)
         {
-            uint64_t addr = enclave_addr + *vaddr;
+            uint64_t addr = enclave_base + *vaddr;
             uint64_t src = (uint64_t)&pages[i];
             uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
             bool extend = true;
 
             OE_CHECK(oe_sgx_load_enclave_data(
-                context, enclave_addr, addr, src, flags, extend));
+                context, enclave_base, addr, src, flags, extend));
             (*vaddr) += sizeof(oe_page_t);
         }
     }
@@ -571,43 +572,46 @@ done:
 
 static oe_result_t _add_segment_pages(
     oe_sgx_load_context_t* context,
-    uint64_t enclave_addr,
-    const oe_elf_segment_t* segment,
-    void* image)
+    uint64_t enclave_base,
+    const oe_enclave_elf_image_t* image,
+    uint64_t* vaddr)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint64_t flags;
-    uint64_t page_rva;
-    uint64_t segment_end;
 
     assert(context);
-    assert(segment);
     assert(image);
+    assert(vaddr);
 
-    /* Take into account that segment base address may not be page aligned */
-    page_rva = oe_round_down_to_page_size(segment->vaddr);
-    segment_end = segment->vaddr + segment->memsz;
-    flags = _make_secinfo_flags(segment->flags);
-
-    if (flags == 0)
+    for (size_t i = 0; i < image->num_segments; i++)
     {
-        OE_RAISE_MSG(
-            OE_UNEXPECTED, "Segment with no page protections found.", NULL);
+        oe_elf_segment_t* segment = &image->segments[i];
+
+        /* Align if segment base address is not page aligned */
+        uint64_t page_rva = oe_round_down_to_page_size(segment->vaddr);
+        uint64_t segment_end = segment->vaddr + segment->memsz;
+        uint64_t flags = _make_secinfo_flags(segment->flags);
+
+        if (flags == 0)
+        {
+            OE_RAISE_MSG(
+                OE_UNEXPECTED, "Segment with no page protections found.", NULL);
+        }
+
+        flags |= SGX_SECINFO_REG;
+
+        for (; page_rva < segment_end; page_rva += OE_PAGE_SIZE)
+        {
+            OE_CHECK(oe_sgx_load_enclave_data(
+                context,
+                enclave_base,
+                enclave_base + *vaddr + page_rva,
+                (uint64_t)image->image_base + page_rva,
+                flags,
+                true));
+        }
     }
 
-    flags |= SGX_SECINFO_REG;
-
-    for (; page_rva < segment_end; page_rva += OE_PAGE_SIZE)
-    {
-        OE_CHECK(oe_sgx_load_enclave_data(
-            context,
-            enclave_addr,
-            enclave_addr + page_rva,
-            (uint64_t)image + page_rva,
-            flags,
-            true));
-    }
-
+    *vaddr = *vaddr + image->image_size;
     result = OE_OK;
 
 done:
@@ -615,7 +619,7 @@ done:
 }
 
 static oe_result_t _add_elf_image_pages(
-    oe_enclave_elf_image_t* image,
+    const oe_enclave_elf_image_t* image,
     oe_sgx_load_context_t* context,
     oe_enclave_t* enclave,
     uint64_t* vaddr)
@@ -630,17 +634,10 @@ static oe_result_t _add_elf_image_pages(
     assert(enclave->size > image->image_size);
 
     /* Add the program segments first */
-    for (size_t i = 0; i < image->num_segments; i++)
-    {
-        OE_CHECK(_add_segment_pages(
-            context, enclave->addr, &image->segments[i], image->image_base));
-    }
-
-    *vaddr = image->image_size;
+    OE_CHECK(_add_segment_pages(context, enclave->addr, image, vaddr));
 
     /* Add the relocation pages (contain relocation entries) */
-    OE_CHECK(_add_relocation_pages(
-        context, enclave->addr, image->reloc_data, image->reloc_size, vaddr));
+    OE_CHECK(_add_relocation_pages(context, enclave->addr, image, vaddr));
 
     result = OE_OK;
 
@@ -650,7 +647,7 @@ done:
 
 /* Add image to enclave */
 static oe_result_t _add_pages(
-    oe_enclave_image_t* image,
+    const oe_enclave_image_t* image,
     oe_sgx_load_context_t* context,
     oe_enclave_t* enclave,
     uint64_t* vaddr)
@@ -700,15 +697,12 @@ done:
 
 static oe_result_t _patch_elf_image(
     oe_enclave_elf_image_t* image,
-    oe_sgx_load_context_t* context,
     size_t enclave_size,
     size_t tls_page_count)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t* oeprops;
     uint64_t enclave_rva = 0;
-
-    OE_UNUSED(context);
 
     oeprops =
         (oe_sgx_enclave_properties_t*)(image->image_base + image->oeinfo_rva);
@@ -745,12 +739,13 @@ static oe_result_t _patch_elf_image(
     oeprops->image_info.reloc_rva = image->image_size;
     oeprops->image_info.reloc_size = image->reloc_size;
     OE_CHECK(_set_uint64_t_dynamic_symbol_value(
-        image, "_reloc_rva", image->image_size));
+        image, "_reloc_rva", oeprops->image_info.reloc_rva));
     OE_CHECK(_set_uint64_t_dynamic_symbol_value(
-        image, "_reloc_size", image->reloc_size));
+        image, "_reloc_size", oeprops->image_info.reloc_size));
 
-    /* heap right after image */
-    oeprops->image_info.heap_rva = image->image_size + image->reloc_size;
+    /* heap is right after all the relocs */
+    oeprops->image_info.heap_rva =
+        oeprops->image_info.reloc_rva + oeprops->image_info.reloc_size;
 
     if (image->tdata_size)
     {
@@ -782,17 +777,13 @@ done:
     return result;
 }
 
-static oe_result_t _patch(
-    oe_enclave_image_t* image,
-    oe_sgx_load_context_t* context,
-    size_t enclave_size)
+static oe_result_t _patch(oe_enclave_image_t* image, size_t enclave_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t tls_page_count;
 
     OE_CHECK(image->get_tls_page_count(image, &tls_page_count));
-    OE_CHECK(
-        _patch_elf_image(&image->elf, context, enclave_size, tls_page_count));
+    OE_CHECK(_patch_elf_image(&image->elf, enclave_size, tls_page_count));
 
     result = OE_OK;
 done:
@@ -801,11 +792,9 @@ done:
 
 static oe_result_t _sgx_load_enclave_properties(
     const oe_enclave_image_t* image,
-    const char* section_name,
     oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-    OE_UNUSED(section_name);
 
     /* Copy from the image at oeinfo_rva. */
     OE_CHECK(oe_memcpy_s(
@@ -822,11 +811,9 @@ done:
 
 static oe_result_t _sgx_update_enclave_properties(
     const oe_enclave_image_t* image,
-    const char* section_name,
     const oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
-    OE_UNUSED(section_name);
 
     /* Copy to both the image and ELF file*/
     OE_CHECK(oe_memcpy_s(

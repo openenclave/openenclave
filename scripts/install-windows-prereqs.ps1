@@ -5,8 +5,8 @@
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
     [string]$GitHash = '5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793',
-    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1i.exe',
-    [string]$OpenSSLHash = '20BCA2B22AE0CA9E592820828EDFE07781A25CBC14C925495A74E5F1F32B541C',
+    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1j.exe',
+    [string]$OpenSSLHash = 'EAF2BD1FCD9B362B632A4E3F0FB22F35C904BD0C0862C8FD35EA4534E0587D2C',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
@@ -14,16 +14,16 @@ Param(
     [string]$VSBuildToolsHash = '',
     [string]$ClangURL = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/LLVM-8.0.1-win64.exe',
     [string]$ClangHash = 'E3AF139C2F93075C13DCBC4091C1311F66FC6E4E8705649FCAF9BEF8B3368F41',
-    [string]$IntelPSWURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/17361/Intel%20SGX%20PSW%20for%20Windows%20v2.11.100.3.exe',
-    [string]$IntelPSWHash = '72D0C5DCFC24E0DB5B9FB3C2CB5B0242002D1A0DE2A8D4B4AEC862D88C7CBC13',
+    [string]$IntelPSWURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/17553/Intel%20SGX%20PSW%20for%20Windows%20v2.12.100.4.exe',
+    [string]$IntelPSWHash = 'B3F70CCEAD59CAFF7114B9CBF25863E8B930447CC989878352E7C6442EC3C981',
     [string]$ShellCheckURL = 'https://oejenkins.blob.core.windows.net/oejenkins/shellcheck-v0.7.0.zip',
     [string]$ShellCheckHash = '02CFA14220C8154BB7C97909E80E74D3A7FE2CBB7D80AC32ADCAC7988A95E387',
     [string]$NugetURL = 'https://www.nuget.org/api/v2/package/NuGet.exe/3.4.3',
     [string]$NugetHash = '2D4D38666E5C7D27EE487C60C9637BD9DD63795A117F0E0EDC68C55EE6DFB71F',
     [string]$DevconURL = 'https://download.microsoft.com/download/7/D/D/7DD48DE6-8BDA-47C0-854A-539A800FAA90/wdk/Installers/787bee96dbd26371076b37b13c405890.cab',
     [string]$DevconHash = 'A38E409617FC89D0BA1224C31E42AF4344013FEA046D2248E4B9E03F67D5908A',
-    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/17362/Intel%20SGX%20DCAP%20for%20Windows%20v1.9.100.3.exe',
-    [string]$IntelDCAPHash = '7B09D4455FDFC3DE10B6BC7F4645C16E2E450E41118D0C3E69878078192B4BA4',
+    [string]$IntelDCAPURL = 'https://registrationcenter-download.intel.com/akdlm/irc_nas/17550/Intel%20SGX%20DCAP%20for%20Windows%20v1.10.100.4.exe',
+    [string]$IntelDCAPHash = '1F2C2D42AEBAD87D3D622B7B33BB6125D5F06F9613F011ACD9A339BAEC66C0D8',
     [string]$VCRuntime2012URL = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe',
     [string]$VCRuntime2012Hash = '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064',
     [string]$AzureDCAPNupkgURL = 'https://www.nuget.org/api/v2/package/Microsoft.Azure.DCAP/1.6.0',
@@ -33,7 +33,7 @@ Param(
     [string]$NSISURL = 'https://oejenkins.blob.core.windows.net/oejenkins/nsis-3.05-setup.exe',
     [string]$NSISHash = '1A3CC9401667547B9B9327A177B13485F7C59C2303D4B6183E7BC9E6C8D6BFDB',
     [string]$GetPipURL = 'https://bootstrap.pypa.io/3.4/get-pip.py',
-    [string]$GetPipHash = '564FABC2FBABD9085A71F4A5E43DBF06D5CCEA9AB833E260F30EE38E8CE63A69',
+    [string]$GetPipHash = 'DBD5DAE3D1E7F6DF844D630CDF65E0F0D98E483C9997DAEA17C7C9D86F7B38AD',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
@@ -424,6 +424,7 @@ function Install-PSW {
             Throw "Failed to install Intel PSW"
         }
     } else {
+        # For Windows Server 2019 and Windows 10, Intel SGX PSW package 2.12+ will install both PSW and DCAP
         $psw_dir = Get-Item "$tempInstallDir\Intel*SGX*\PSW_INF*\"
         Start-ExecuteWithRetry -RetryInterval 5 -ScriptBlock {
             pnputil /add-driver $psw_dir\sgx_psw.inf /install
@@ -431,7 +432,7 @@ function Install-PSW {
         }
     }
     Start-ExecuteWithRetry -ScriptBlock {
-        Start-Service "AESMService" -ErrorAction Stop
+        Start-Service -Name "AESMService" -ErrorAction Stop
     } -RetryMessage "Failed to start AESMService. Retrying"
 }
 
@@ -527,6 +528,8 @@ function Remove-DCAPDriver {
 
 
 function Install-DCAP-Dependencies {
+    Install-Tool -InstallerPath $PACKAGES["psw"]["local_file"] `
+                 -ArgumentList @('/auto', "$PACKAGES_DIRECTORY\Intel_SGX_PSW")
     Install-Tool -InstallerPath $PACKAGES["dcap"]["local_file"] `
                  -ArgumentList @('/auto', "$PACKAGES_DIRECTORY\Intel_SGX_DCAP")
 
@@ -536,7 +539,7 @@ function Install-DCAP-Dependencies {
         $drivers = @{
             'WinServer2016' = @{
                 'sgx_base_dev' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\base\WindowsServer2016"
+                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_PSW\Intel*SGX*PSW*\base\WindowsServer2016"
                     'location'    = 'root\SgxLCDevice'
                     'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
                 }
@@ -548,26 +551,16 @@ function Install-DCAP-Dependencies {
             }
             'WinServer2019' = @{
                 'sgx_base' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\base\WindowsServer2019_Windows10"
+                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_PSW\Intel*SGX*PSW*\base\WindowsServer2019_Windows10"
                     'location'    = 'root\SgxLCDevice'
                     'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
-                }
-                'sgx_dcap' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2019_Windows10"
-                    'location'    = 'root\SgxLCDevice_DCAP'
-                    'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
                 }
             }
             'Win10' = @{
                 'sgx_base' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\base\WindowsServer2019_Windows10"
+                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_PSW\Intel*SGX*PSW*\base\WindowsServer2019_Windows10"
                     'location'    = 'root\SgxLCDevice'
                     'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
-                }
-                'sgx_dcap' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2019_Windows10"
-                    'location'    = 'root\SgxLCDevice_DCAP'
-                    'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
                 }
             }
         }
@@ -608,6 +601,11 @@ function Install-DCAP-Dependencies {
                 Write-Output $install
             }
         }
+    }
+
+    # Starting from Intel SGX 2.12, the Intel SGX PSW package contains DCAP and PSW for Windows Server 2016/2019, and Windows 10.
+    if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers")) {
+        Install-PSW
     }
 
     $TEMP_NUGET_DIR = "$PACKAGES_DIRECTORY\Azure_DCAP_Client_nupkg"
@@ -687,14 +685,7 @@ try {
     Install-Shellcheck
     Install-NSIS
 
-    if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers"))
-    {
-        Install-PSW
-        Install-DCAP-Dependencies
-    } elseif($DCAPClientType -eq "Azure") {
-        # This has an edge case which is a user uses windows 2019, turns off Windows Update, runs this scripts and has an old PSW
-        # and then the latest dcap.. change would require splitting and refactoring the below into seperate functions but there seems
-        # to be an issue with EnclaveCommonAPI. Opening https://github.com/openenclave/openenclave/issues/3524 to tracK
+    if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers") -or ($DCAPClientType -eq "Azure")) {
         Install-DCAP-Dependencies
     }
 

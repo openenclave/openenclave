@@ -72,7 +72,7 @@ EOF
 )
 
     # OP-TEE Build Release Flags
-    OPTEE_DEBUG_FLAGS=$(cat << EOF
+    OPTEE_RELEASE_FLAGS=$(cat << EOF
 platform-cflags-optimization=-Os
 CFG_CRYPTO_SIZE_OPTIMIZATION=y
 CFG_PAGED_USER_TA=n

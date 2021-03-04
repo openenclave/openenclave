@@ -71,8 +71,22 @@ else ()
     # These tests can only run with SGX-FLC, meaning they were built
     # against SGX.
     if (HAS_QUOTE_PROVIDER)
-      list(APPEND SAMPLES_LIST attested_tls attested_tls attestation)
-      list(APPEND CRYPTO_LIB_LIST mbedtls openssl mbedtls)
+      list(
+        APPEND
+        SAMPLES_LIST
+        attested_tls
+        attested_tls
+        attestation
+        file-encryptor
+        file-encryptor)
+      list(
+        APPEND
+        CRYPTO_LIB_LIST
+        mbedtls
+        openssl
+        mbedtls
+        mbedtls
+        openssl)
     endif ()
   endif ()
 endif ()
