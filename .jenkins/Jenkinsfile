@@ -12,6 +12,8 @@ REPOSITORY_NAME = env.REPOSITORY_NAME ?: "openenclave/openenclave"
 BRANCH_NAME = env.BRANCH_NAME ?: "master"
 DOCKER_TAG = env.DOCKER_TAG ?: "latest"
 FULL_TEST_SUITE = env.FULL_TEST_SUITE ?: false
+// Regex that includes directory you want to ignore for CI builds.
+String IGNORED_DIRS = "^(docs|\\.jenkins/infrastructure)|\\.md\$"
 
 AGENTS_LABELS = [
     "acc-ubuntu-20.04": env.UBUNTU_2004_CUSTOM_LABEL ?: "ACC-2004",
@@ -28,6 +30,38 @@ properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '90',
                                       daysToKeepStr: '90',
                                       numToKeepStr: '180')),
             [$class: 'JobRestrictionProperty']])
+
+stage("Compare changes") {
+    node(AGENTS_LABELS["nonsgx"]) {
+        cleanWs()
+        checkout([
+            $class: 'GitSCM',
+            branches: scm.branches + [[name: '*/master']],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [[$class: 'SubmoduleOption',
+                            disableSubmodules: true,
+                            recursiveSubmodules: false,
+                            trackingSubmodules: false]], 
+            submoduleCfg: [],
+            userRemoteConfigs: scm.userRemoteConfigs
+        ])
+        // Check if git diff vs origin/master contains changes outside of ignored directories
+        gitChanges = sh (
+            script: """
+                    git diff --name-only HEAD origin/master | grep --invert-match --extended-regexp \'${IGNORED_DIRS}\' || true
+                    """,
+            returnStdout: true
+        ).trim()
+    }
+}
+
+// Skip build with a success if gitChanges is defined and empty (no changes outside of ignored directories).
+if (gitChanges != null && gitChanges == '') {
+    currentBuild.result = 'SUCCESS'
+    return
+} else {
+    println("Detected the follow file changes: " + gitChanges)
+}
 
 try {
     oe.emailJobStatus('STARTED')
