@@ -22,6 +22,6 @@
     state: latest
     update_cache: yes
     install_recommends: no
-  retries: 10
+  retries: 100
   register: install
   until: install is success

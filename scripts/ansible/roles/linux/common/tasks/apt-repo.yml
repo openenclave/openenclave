@@ -2,11 +2,12 @@
 # Licensed under the MIT License.
 
 ---
+
 - name: Install apt-transport-https APT package
   apt:
     name: apt-transport-https
     state: latest
-  retries: 10
+  retries: 100
   register: add_transport
   until: add_transport is success
 
