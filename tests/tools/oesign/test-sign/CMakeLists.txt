@@ -16,7 +16,7 @@ add_custom_target(
 
 # Test oesign succeeds with valid short form of engine signing parameters
 set(OESIGN_SIGN_VALID_SHORT_ARGS
-    "[-c,${OESIGN_TEST_INPUTS_DIR}/valid.conf,-k,${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem]"
+    "[-c,${OESIGN_TEST_INPUTS_DIR}/valid.conf,-k,${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem,-o,test_enclave.signed]"
 )
 
 add_test(
@@ -32,7 +32,7 @@ set_tests_properties(
 
 # Test oesign succeeds with valid long form of engine signing parameters
 set(OESIGN_SIGN_VALID_LONG_ARGS
-    "[--config-file,${OESIGN_TEST_INPUTS_DIR}/valid.conf,--key-file,${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem]"
+    "[--config-file,${OESIGN_TEST_INPUTS_DIR}/valid.conf,--key-file,${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem,--output-file,test_enclave.signed]"
 )
 
 add_test(
