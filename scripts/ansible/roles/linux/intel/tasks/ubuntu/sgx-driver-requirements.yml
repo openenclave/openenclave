@@ -9,3 +9,6 @@
     state: latest
     update_cache: yes
     install_recommends: no
+  retries: 100
+  register: result
+  until: result is succeeded

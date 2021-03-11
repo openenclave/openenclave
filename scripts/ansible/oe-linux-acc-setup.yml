@@ -22,6 +22,7 @@
     - import_role:
         name: linux/az-dcap-client
         tasks_from: stable-install.yml
+      when: ansible_distribution_version != "20.04"
 
     - import_role:
         name: linux/openenclave
@@ -38,3 +39,4 @@
     - import_role:
         name: linux/az-dcap-client
         tasks_from: validation.yml
+      when: ansible_distribution_version != "20.04"
