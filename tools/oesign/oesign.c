@@ -597,6 +597,7 @@ int oesign(
     const char* conffile,
     const char* keyfile,
     const char* digest_signature,
+    const char* output_file,
     const char* x509,
     const char* engine_id,
     const char* engine_load_path,
@@ -713,7 +714,7 @@ int oesign(
 
     /* Create signature section and write out new file */
     OE_CHECK_ERR(
-        oe_write_oeinfo_sgx(enclave, &properties),
+        oe_write_oeinfo_sgx(enclave, output_file, &properties),
         "oe_write_oeinfo_sgx(): result=%s (%#x)",
         oe_result_str(result),
         result);

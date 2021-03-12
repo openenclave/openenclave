@@ -2,11 +2,15 @@
 # Licensed under the MIT License.
 
 ---
+- name: Include distribution vars
+  include_vars:
+    file: "{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.yml"
+
 - name: Install apt-transport-https APT package
   apt:
     name: apt-transport-https
     state: latest
-  retries: 10
+  retries: 100
   register: add_transport
   until: add_transport is success
 

@@ -52,6 +52,7 @@ static char* _make_signed_lib_name(const char* path)
 
 oe_result_t oe_write_oeinfo_sgx(
     const char* path,
+    const char* output_file,
     const oe_sgx_enclave_properties_t* properties)
 {
     oe_result_t result = OE_FAILURE;
@@ -72,7 +73,11 @@ oe_result_t oe_write_oeinfo_sgx(
 
     /* Write new signed executable */
     {
-        char* p = _make_signed_lib_name(path);
+        char* p;
+        if (output_file != NULL)
+            p = (char*)output_file;
+        else
+            p = _make_signed_lib_name(path);
 
         if (!p)
         {
@@ -102,7 +107,8 @@ oe_result_t oe_write_oeinfo_sgx(
 
         printf("Created %s\n", p);
 
-        free(p);
+        if (output_file == NULL)
+            free(p);
     }
 
     result = OE_OK;
