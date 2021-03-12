@@ -22,6 +22,7 @@ int oesign(
     const char* conffile,
     const char* keyfile,
     const char* digest_signature,
+    const char* output_file,
     const char* x509,
     const char* engine_id,
     const char* engine_load_path,
@@ -60,6 +61,9 @@ static const char _usage_sign[] =
     "                           certificate used to sign the digest file.\n"
     "  -d, --digest-file        path to the signed digest file matching the\n"
     "                           enclave image and specified configuration.\n"
+    "  -o, --output-file        [optional] file name (with path) where the\n"
+    "                           signature of the enclave image will be\n"
+    "                           written.\n"
 #if HAS_ENGINE_SUPPORT
     "\n"
     "  OR\n"
@@ -285,6 +289,7 @@ int sign_parser(int argc, const char* argv[])
     const char* conffile = NULL;
     const char* keyfile = NULL;
     const char* digest_signature = NULL;
+    const char* output_file = NULL;
     const char* x509 = NULL;
     const char* engine_id = NULL;
     const char* engine_load_path = NULL;
@@ -296,6 +301,7 @@ int sign_parser(int argc, const char* argv[])
         {"config-file", required_argument, NULL, 'c'},
         {"key-file", required_argument, NULL, 'k'},
         {"digest-signature", required_argument, NULL, 'd'},
+        {"output-file", required_argument, NULL, 'o'},
         {"x509", required_argument, NULL, 'x'},
 #if HAS_ENGINE_SUPPORT
         {"engine", required_argument, NULL, 'n'},
@@ -304,7 +310,7 @@ int sign_parser(int argc, const char* argv[])
 #endif
         {NULL, 0, NULL, 0},
     };
-    const char short_options[] = "he:c:k:n:p:i:d:x:";
+    const char short_options[] = "he:c:k:n:p:i:d:o:x:";
 
     int c;
 
@@ -341,6 +347,9 @@ int sign_parser(int argc, const char* argv[])
                 break;
             case 'd':
                 digest_signature = optarg;
+                break;
+            case 'o':
+                output_file = optarg;
                 break;
             case 'x':
                 x509 = optarg;
@@ -429,6 +438,7 @@ int sign_parser(int argc, const char* argv[])
             conffile,
             keyfile,
             digest_signature,
+            output_file,
             x509,
             engine_id,
             engine_load_path,
