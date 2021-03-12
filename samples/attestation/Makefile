@@ -7,12 +7,12 @@ OE_CRYPTO_LIB := mbedtls
 export OE_CRYPTO_LIB
 
 ifneq ($(OS),Windows_NT)
-	ifeq ($(shell uname -s),Linux)
-		ifeq ($(SGX_AESM_ADDR),)
-			SGX_AESM_ADDR := 1
-			export SGX_AESM_ADDR
-		endif
-	endif
+    ifeq ($(shell uname -s),Linux)
+        ifeq ($(SGX_AESM_ADDR),)
+            SGX_AESM_ADDR := 1
+            export SGX_AESM_ADDR
+        endif
+    endif
 endif
 
 all: build
