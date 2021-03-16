@@ -249,12 +249,12 @@
     <!-- Additional Include Directories for Enclaves and Hosts -->
     <ItemDefinitionGroup Condition="$(OEIsLinux) == False">
         <ClCompile>
-            <AdditionalIncludeDirectories>$(OEIncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(OEIncludePath)</AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
     <ItemDefinitionGroup Condition="$(OEIsLinux) == True">
         <ClCompile>
-            <AdditionalIncludeDirectories>$(OEIncludePath);/opt/openenclave/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(OEIncludePath);/opt/openenclave/include</AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
 
@@ -269,8 +269,8 @@
             <PositionIndependentCode>false</PositionIndependentCode>
         </ClCompile>
         <ClCompile Condition="$(OEIsLinux) == False">
-            <AdditionalCPPIncludeDirectories>$(OEIncludePath)\openenclave\3rdparty\libcxx;$(OEIncludePath)\openenclave\3rdparty\libc;$(OEIncludePath)\openenclave\3rdparty;%(AdditionalIncludeDirectories)</AdditionalCPPIncludeDirectories>
-            <AdditionalCIncludeDirectories>$(OEIncludePath)\openenclave\3rdparty\libc;$(OEIncludePath)\openenclave\3rdparty;%(AdditionalIncludeDirectories)</AdditionalCIncludeDirectories>
+            <AdditionalCPPIncludeDirectories>%(AdditionalIncludeDirectories);$(OEIncludePath)\openenclave\3rdparty\libcxx;$(OEIncludePath)\openenclave\3rdparty\libc;$(OEIncludePath)\openenclave\3rdparty</AdditionalCPPIncludeDirectories>
+            <AdditionalCIncludeDirectories>%(AdditionalIncludeDirectories);$(OEIncludePath)\openenclave\3rdparty\libc;$(OEIncludePath)\openenclave\3rdparty</AdditionalCIncludeDirectories>
 
             <AdditionalOptions>-Wpointer-arith -Wextra -Wno-conversion -fpermissive -Wno-missing-field-initializers -fno-strict-aliasing -mxsave -fno-builtin-malloc -fno-builtin-calloc -fno-builtin -mllvm -x86-speculative-load-hardening -m64 -fPIE -nostdinc -fstack-protector-strong -fvisibility=hidden -fno-omit-frame-pointer -ffunction-sections -fdata-sections -ftls-model=local-exec %(AdditionalOptions)</AdditionalOptions>
             <PositionIndependentCode>false</PositionIndependentCode>
