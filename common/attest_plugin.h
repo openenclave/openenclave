@@ -14,8 +14,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "common.h"
-
 #include <openenclave/internal/plugin.h>
 
 OE_EXTERNC_BEGIN
