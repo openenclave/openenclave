@@ -51,6 +51,10 @@ install(
   TARGETS oe_includes
   EXPORT openenclave-hostverify-targets
   COMPONENT OEHOSTVERIFY)
+install(FILES openenclave/seal.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
+install(DIRECTORY openenclave/sgx
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
 
 # Install parts of oelibc needed by edger8r-generated code
 list(

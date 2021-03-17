@@ -119,7 +119,7 @@ endmacro (set_enclave_property)
 # Wrapper of `install`. Note that this wrapper only supports the subset
 # of `install` supported arguments, which is sufficient for current needs.
 function (install_enclaves)
-  set(options ARCHIVE)
+  set(options ARCHIVE OBJECTS)
   set(onevalueArgs EXPORT DESTINATION)
   set(multiValueArgs TARGETS)
   cmake_parse_arguments(ENCLAVE "${options}" "${onevalueArgs}"
@@ -135,6 +135,17 @@ function (install_enclaves)
           TARGETS ${target}-lvi-cfg
           EXPORT ${ENCLAVE_EXPORT}
           ARCHIVE DESTINATION ${ENCLAVE_DESTINATION})
+      endif ()
+    elseif (ENCLAVE_OBJECTS AND ENCLAVE_DESTINATION)
+      install(
+        TARGETS ${target}
+        EXPORT ${ENCLAVE_EXPORT}
+        OBJECTS DESTINATION ${ENCLAVE_DESTINATION})
+      if (TARGET ${target}-lvi-cfg)
+        install(
+          TARGETS ${target}-lvi-cfg
+          EXPORT ${ENCLAVE_EXPORT}
+          OBJECTS DESTINATION ${ENCLAVE_DESTINATION})
       endif ()
     else ()
       install(TARGETS ${target} EXPORT ${ENCLAVE_EXPORT})

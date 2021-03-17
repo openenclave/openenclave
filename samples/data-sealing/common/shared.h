@@ -9,7 +9,7 @@
 #define POLICY_UNIQUE 1
 #define POLICY_PRODUCT 2
 
-#define MAX_OPT_MESSAGE_LEN 128
+#define MAX_OPTIONAL_MESSAGE_SIZE 128
 #define IV_SIZE 16
 #define SIGNATURE_LEN 32
 
@@ -25,14 +25,8 @@
 
 typedef struct _sealed_data_t
 {
-    size_t total_size;
-    unsigned char signature[SIGNATURE_LEN];
-    unsigned char opt_msg[MAX_OPT_MESSAGE_LEN];
-    unsigned char iv[IV_SIZE];
-    size_t key_info_size;
-    size_t original_data_size;
-    size_t encrypted_data_len;
-    unsigned char encrypted_data[1];
+    unsigned char optional_message[MAX_OPTIONAL_MESSAGE_SIZE];
+    size_t sealed_blob_size;
 } sealed_data_t;
 
 #endif /* _SHARED_H */

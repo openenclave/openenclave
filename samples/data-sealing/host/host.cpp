@@ -60,8 +60,8 @@ int unseal_data_and_verify_result(
     unsigned char* target_data,
     size_t target_data_size)
 {
-    oe_result_t result = OE_FAILURE;
-    int ret = 0;
+    oe_result_t result;
+    int ret;
     unsigned char* data = NULL;
     size_t data_size = 0;
 
@@ -72,7 +72,8 @@ int unseal_data_and_verify_result(
     if ((result != OE_OK) || (ret != 0))
     {
         cout << "Host: ecall unseal_data returned " << oe_result_str(result)
-             << " ret = " << ret << (ret ? " (failed)" : "(success)") << endl;
+             << " ret = " << ret << (ret ? " (failed)" : " (success)") << endl;
+        ret = ERROR_SIGNATURE_VERIFY_FAIL;
         goto exit;
     }
 
@@ -89,18 +90,13 @@ int unseal_data_and_verify_result(
         cout << "Host: Unsealed data is not equal to the original data."
              << endl;
         ret = ERROR_UNSEALED_DATA_FAIL;
-        result = OE_FAILURE;
         goto exit;
     }
 exit:
     if (data)
         free(data);
 
-    if (ret != 0)
-        result = OE_FAILURE;
-
-    cout << "Host: exit unseal_data_and_verify_result with "
-         << oe_result_str(result) << endl;
+    cout << "Host: exit unseal_data_and_verify_result with " << ret << endl;
     return ret;
 }
 

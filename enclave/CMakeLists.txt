@@ -3,6 +3,7 @@
 
 add_subdirectory(core)
 add_subdirectory(crypto)
+add_subdirectory(sealing)
 
 if (OE_SGX)
   set(PLATFORM_SRC
