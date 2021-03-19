@@ -3,7 +3,6 @@
 ## Platform requirements
 
 - Ubuntu 18.04-LTS 64-bit.
-    - Instructions are also available for [Ubuntu 16.04-LTS 64-bit](/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_16.04.md).
 - SGX1-capable system with support for Flexible Launch Control (FLC).
     - You can acquire a VM with the required features from [Azure Confidential Compute](https://azure.microsoft.com/en-us/solutions/confidential-compute/).
     - If you are setting up your own device, [check if your existing device supports SGX with FLC](/docs/GettingStartedDocs/Contributors/building_oe_sdk.md#1-determine-the-sgx-support-level-on-your-developmenttarget-system).
