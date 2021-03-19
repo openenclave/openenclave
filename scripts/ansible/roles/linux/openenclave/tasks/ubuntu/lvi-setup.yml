@@ -53,14 +53,14 @@
 
 - name: Create symbolic link to as
   file:
-    src: '{{ local_lvi_directory }}/external/toolset/ubuntu18.04/as'
+    src: '{{ local_lvi_directory }}/external/toolset/ubuntu{{ ansible_distribution_version }}/as'
     dest: '{{ local_lvi_directory }}/bin/as'
     state: link
     force: yes
 
 - name: Create symbolic link to ld
   file:
-    src: '{{ local_lvi_directory }}/external/toolset/ubuntu18.04/ld'
+    src: '{{ local_lvi_directory }}/external/toolset/ubuntu{{ ansible_distribution_version }}/ld'
     dest: '{{ local_lvi_directory }}/bin/ld'
     state: link
     force: yes
