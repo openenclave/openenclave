@@ -33,6 +33,8 @@ apt_packages:
   - "libncurses5-dev"
   - "clang-8"
   - "clang-format-8"
+  - "clang-10"
+  - "clang-format-10"
 
 apt_arm_packages:
   - "gcc-arm-linux-gnueabi"
@@ -49,6 +51,7 @@ apt_arm_packages:
 validation_distribution_binaries:
   - "/usr/bin/shellcheck"
   - "/usr/bin/clang-8"
+  - "/usr/bin/clang-10"
 
 validation_distribution_files:
   - "/usr/lib/x86_64-linux-gnu/libssl.so"
