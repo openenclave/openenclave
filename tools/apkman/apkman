@@ -35,26 +35,21 @@ print_usage()
 {
     usage="\
 apkman -  package manager and toolbox for enclave development.
-          version 0.1a, alpine-linux 3.13, proot v5.2.0-alpha-8c0ccf7d
+          version 0.1a, alpine-linux 3.13-stable
 
-apkman uses \`proot\` to manage multiple user-space installations of alpine-linux.
+apkman uses \`unshare\`/\`proot\` to manage an installation of alpine-linux.
 Alpine linux exists as a normal directory on the host machine and thus headers
 and libraries can be transparently used to build enclaves on the host machine.
 apkman also sets up the a development environment for fine-tuning and building
-packages specifically for enclaves. Use this development environment if you want
-to use specific a specific compiler (e.g clang) or specific compiler flags
-(e.g -mspeculative-load-hardening) or want to turn-off certain features
-(e.g HAVE_MONOTONIC_CLOCK) to make a package more appropriate for your enclave.
-You can also build your enclaves entirely within this environment and use it on
-your host machine.
+packages specifically for enclaves.
 
 Links:
 Open Enclave SDK  : https://openenclave.io/sdk/
-Proot             : https://proot-me.github.io/
 Alpine Linux Wiki : https://wiki.alpinelinux.org/wiki/Main_Page
 Building Packages : https://wiki.alpinelinux.org/wiki/Abuild_and_Helpers
 Package Search    : https://pkgs.alpinelinux.org/packages
 Search Contents   : https://pkgs.alpinelinux.org/contents
+Proot             : https://proot-me.github.io/
 
 usage: apkman COMMAND [<ARGUMENTS>]
 
@@ -80,6 +75,16 @@ Using packages:
              Specify library paths to linker:
                 -L \`apkman root\`/usr/lib
 
+Execute commands:
+  exec       Execute a command in the current working directory. Current user's
+             home folder made as well as /home is made  available to alpine
+             linux. Tools in the alpine-linux distribution can thus be run on
+              any file under the home folder.
+             E.g:
+                 apkman exec clang -c foo.c
+                 Compile foo.c in current folder using the clang compiler from
+                 the alpine install.
+
 Building packages:
   build-init Set up the environment for building packages. This needs to be done once
              per apkman instance. apkman will install compilers and tools (build-base)
@@ -93,24 +98,6 @@ Building packages:
                  -L \`apkman root\`/apkbuild/pkgs/usr/lib
              to the linker to find the custom built version of the package.
 
-Execute commands:
-  exec       Execute a command in the current working directory. Current user's
-             home folder made as well as /home is made  available to alpine
-             linux. Tools in the alpine-linux distribution can thus be run on
-              any file under the home folder.
-             E.g:
-                 apkman exec clang -c foo.c
-                 Compile foo.c in current folder using the clang compiler from
-                 the alpine install.
-
-Development:
- shell      Enter the Alpine linux install using proot.
-            This environment is ideal for package management, and development.
-            Almost everything works in this environment with the notable exception of
-            GDB. For that use chroot.
- chroot     Enter the Alpine linux install using chroot. This requires root access.
-            Use this when the proot environment is not sufficient.
-
 Help:
  help       Print usage.
 "
@@ -118,119 +105,101 @@ Help:
     echo "$usage"
 }
 
-ensure_apkman_dir()
-{
-    mkdir -p "$APKMAN_DIR" && cd "$APKMAN_DIR" || exit 1
-    if [ -n "$SUDO_USER" ]; then
-	chown "$SUDO_USER":"$SUDO_USER" $APKMAN_DIR
-    fi
-}
-
-download_files()
-{
-    if ! command -v tar > /dev/null; then
-        echo "Install tar to proceed." && exit 1
-    fi
-    if ! command -v curl > /dev/null; then
-	if ! command -v wget > /dev/null; then
-	    echo "Install curl or wget to proceed." && exit 1
-	fi
-    fi
-
-    if command -v curl > /dev/null; then
-	curl -L -o alpine-minirootfs.tar.gz "$ALPINE_ROOTFS_URL"
-	curl -L -o proot.zip "$PROOT_URL"
-    elif command -v wget > /dev/null; then
-	wget -O alpine-minirootfs.tar.gz  "$ALPINE_ROOTFS_URL"
-	wget -O proot.zip "$PROOT_URL"
-    else
-	echo "Install curl or wget to proceed." && exit 1
-    fi
-}
-
 setup_alpine_fs()
 {
+    mkdir -p "$APKMAN_DIR" && cd "$APKMAN_DIR" || exit 1
     if ! test -d "${ALPINE_FS}"; then
-	download_files
-	sh -c "mkdir -p tmp && cd tmp && tar xf ../alpine-minirootfs.tar.gz"
-	cp /etc/resolv.conf tmp/etc/resolv.conf
-	echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> tmp/etc/apk/repositories
-	mkdir tmp/apkbuild
-	mv tmp "${ALPINE_FS}"
-	alpine-fs/lib/ld-musl-x86_64.so.1 alpine-fs/bin/busybox unzip proot.zip
-	proot_exec sh -c "apk update && apk add bash"
-	exit 0
+
+        if ! command -v tar > /dev/null; then
+            echo "Install tar to proceed." && exit 1
+        fi
+        if ! command -v curl > /dev/null; then
+            if ! command -v wget > /dev/null; then
+                echo "Install curl or wget to proceed." && exit 1
+            fi
+        fi
+
+        if command -v curl > /dev/null; then
+            curl -L -o alpine-minirootfs.tar.gz "$ALPINE_ROOTFS_URL"
+            #curl -L -o proot.zip "$PROOT_URL"
+        elif command -v wget > /dev/null; then
+            wget -O alpine-minirootfs.tar.gz  "$ALPINE_ROOTFS_URL"
+            #wget -O proot.zip "$PROOT_URL"
+        else
+            echo "Install curl or wget to proceed." && exit 1
+        fi
+
+        sh -c "mkdir -p tmp && cd tmp && tar xf ../alpine-minirootfs.tar.gz"
+        cp /etc/resolv.conf tmp/etc/resolv.conf
+        echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> tmp/etc/apk/repositories
+        mkdir tmp/apkbuild
+
+        cat <<EOF > tmp/bin/alpine-exec
+#!/bin/sh
+SCRIPT_NAME=\$(basename "\$0")
+SCRIPT_DIR=\$(CDPATH= cd -- "\$(dirname -- "\$0")" && pwd)
+if [ "\$1" = "--chroot" ]; then
+    FS="\$2"
+    shift 2
+    mount --bind /home "\$FS/home"
+    mount --bind \$HOME "\$FS/\$HOME"
+    mount --rbind /proc "\$FS/proc"
+    mount --rbind /dev "\$FS/dev"
+    mount --rbind /sys "\$FS/sys"
+    chroot "\$FS" "\$0" --exec "\$PWD" "\$@"
+elif [ "\$1" = "--exec" ]; then
+    DIR="\$2"
+    shift 2
+    cd "\$DIR"
+    export PS1="\w $ "
+    "\$@"
+else
+    unshare --map-root-user  --mount --propagation unchanged \
+        "\$SCRIPT_DIR/\$SCRIPT_NAME" --chroot "\$SCRIPT_DIR/.."  "\$@"
+fi
+EOF
+        chmod +x tmp/bin/alpine-exec
+        mv tmp "${ALPINE_FS}"
+        USE_UNSHARE=$("$APKMAN_DIR/$ALPINE_FS/bin/alpine-exec" echo yes 2> /dev/null)
+        if [ "$USE_UNSHARE" != "yes" ]; then
+            # Download and use proot
+            if command -v curl > /dev/null; then
+                curl -L -o proot.zip "$PROOT_URL"
+            else
+                wget -O proot.zip "$PROOT_URL"
+            fi
+            "$ALPINE_FS/lib/ld-musl-x86_64.so.1" "$ALPINE_FS/bin/busybox" unzip proot.zip
+        fi
+
+        # Initialize apk
+        alpine_exec sh -c "apk update && apk add bash"
     fi
 }
 
-enter_chroot()
-{
-    mkdir -p "${ALPINE_FS}/home/$USER"
-    mount --bind "/home/$USER" "${ALPINE_FS}/home/$USER"
-    mount --bind /dev     "${ALPINE_FS}/dev"
-    mount --bind /dev/pts "${ALPINE_FS}/dev/pts"
-    mount --bind /dev/shm "${ALPINE_FS}/dev/shm"
-    mount --bind /proc    "${ALPINE_FS}/proc"
-    mount --bind /sys     "${ALPINE_FS}/sys"
-    SHELL=/bin/sh
-    TERM=xterm-256color
-    PS1="apkman chroot \w# "
-    sudo chroot "${ALPINE_FS}" /usr/bin/env -i \
-	 TERM=$TERM SHELL=$SHELL PS1="$PS1" /bin/sh
-    umount --recursive "${ALPINE_FS}/home/$USER"
-    umount --recursive "${ALPINE_FS}/dev"
-    umount --recursive "${ALPINE_FS}/proc"
-    umount --recursive "${ALPINE_FS}/sys"
-}
-
-proot_exec()
+alpine_exec()
 {
     export SHELL=/bin/sh
     export TERM=xterm-256color
     export PS1="apkman \w$ "
     export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
-    dist/proot -b /dev -b /dev/pts -b /proc -b /sys -b /dev/shm \
-	       -0 \
-               -r alpine-fs \
-               -w / \
-               "$@"
-}
 
-proot_exec_host()
-{
-    export SHELL=/bin/sh
-    export TERM=xterm-256color
-    export PS1="apkman \w$ "
-    export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
-    # Root home folder is /root. Therefore bind both $HOME and /home
-    dist/proot -b /dev -b /dev/pts -b /proc -b /sys -b /dev/shm \
-	  -b "$HOME" \
-          -b /home \
-          -r alpine-fs \
-          -w "$CURRENT_DIR" \
-          "$@"
+    USE_UNSHARE=$("$APKMAN_DIR/$ALPINE_FS/bin/alpine-exec" echo yes 2> /dev/null)
+    if [ "$USE_UNSHARE" == "yes" ]; then
+        cd "$CURRENT_DIR" || exit 1
+        "$APKMAN_DIR/$ALPINE_FS/bin/alpine-exec" "$@"
+    else
+        # Root home folder is /root. Therefore bind both $HOME and /home
+        dist/proot -b /dev -b /dev/pts -b /proc -b /sys -b /dev/shm \
+                   -b "$HOME" \
+                   -b /home \
+                   -r alpine-fs \
+                   -w "$CURRENT_DIR" \
+                   "$@"
+    fi
 }
 
 
-if [ -n "$SUDO_USER" ]; then
-    case "$1" in
-        chroot )
-            USER=$SUDO_USER
-            unset SUDO_USER
-            runuser -u "$USER" -- "$0" --init
-            cd "$APKMAN_DIR" || exit 1
-            enter_chroot
-	    exit 0
-            ;;
-
-        *)
-    esac
-    # Execute commands normally
-fi
-
-ensure_apkman_dir
 setup_alpine_fs
-
 
 wrap_ld()
 {
@@ -327,7 +296,7 @@ if ! test -f git.clone.done; then
   touch git.clone.done
 fi
 "
-    proot_exec flock "$LOCK_FILE" sh -c "$PREREQS_CMD"
+    alpine_exec flock "$LOCK_FILE" sh -c "$PREREQS_CMD"
     wrap_ld
 }
 
@@ -353,7 +322,7 @@ abuild -F deps
 abuild -F unpack
 abuild -F prepare
 EOM
-    proot_exec sh /apkbuild/prepare.sh "$1"
+    alpine_exec sh /apkbuild/prepare.sh "$1"
 }
 abuild_build()
 {
@@ -378,7 +347,7 @@ mkdir -p /apkbuild/pkgs
 cp -r pkg/\$1/* /apkbuild/pkgs
 echo Done!
 EOM
-    proot_exec sh /apkbuild/build.sh "$1"
+    alpine_exec sh /apkbuild/build.sh "$1"
 }
 
 ROOTFS_PATH="${APKMAN_DIR}/${ALPINE_FS}"
@@ -386,21 +355,21 @@ ROOTFS_PATH="${APKMAN_DIR}/${ALPINE_FS}"
 
 case "$1" in
     "search")
-	proot_exec flock "$LOCK_FILE" apk "$@" -v | sort
+        alpine_exec flock "$LOCK_FILE" apk "$@" -v | sort
         ;;
 
     "add")
-        proot_exec flock "$LOCK_FILE" apk "$@" && exit 0
-	ret=$?
-	if [ "$ret" -gt 0 ]; then
-	    echo "Safe to ignore above  error  when running in container."
-	else
-	    exit $ret
-	fi
+        alpine_exec flock "$LOCK_FILE" apk "$@" && exit 0
+        ret=$?
+        if [ "$ret" -gt 0 ]; then
+            echo "Safe to ignore above  error  when running in container."
+        else
+            exit $ret
+        fi
         ;;
 
     "del")
-        proot_exec flock "$LOCK_FILE" apk "$@"
+        alpine_exec flock "$LOCK_FILE" apk "$@"
         ;;
 
     "root")
@@ -408,7 +377,7 @@ case "$1" in
         ;;
 
     "build-init")
-	ensure_apkbuild_prereqs
+        ensure_apkbuild_prereqs
         ;;
 
     "prepare")
@@ -423,17 +392,7 @@ case "$1" in
 
     "exec")
         shift
-        proot_exec_host "$@"
-        ;;
-
-    "shell")
-        proot_exec sh
-        ;;
-
-    "chroot")
-        SCRIPTPATH="$( cd "$(dirname "$0")" || return  >/dev/null 2>&1 ; pwd -P )"
-        echo "Using sudo to enter chroot"
-        sudo "$SCRIPTPATH/apkman" chroot
+        alpine_exec "$@"
         ;;
 
     "help")
