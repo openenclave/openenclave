@@ -121,10 +121,8 @@ setup_alpine_fs()
 
         if command -v curl > /dev/null; then
             curl -L -o alpine-minirootfs.tar.gz "$ALPINE_ROOTFS_URL"
-            #curl -L -o proot.zip "$PROOT_URL"
         elif command -v wget > /dev/null; then
             wget -O alpine-minirootfs.tar.gz  "$ALPINE_ROOTFS_URL"
-            #wget -O proot.zip "$PROOT_URL"
         else
             echo "Install curl or wget to proceed." && exit 1
         fi
@@ -133,46 +131,26 @@ setup_alpine_fs()
         cp /etc/resolv.conf tmp/etc/resolv.conf
         echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> tmp/etc/apk/repositories
         mkdir tmp/apkbuild
-
-        cat <<EOF > tmp/bin/alpine-exec
-#!/bin/sh
-SCRIPT_NAME=\$(basename "\$0")
-SCRIPT_DIR=\$(CDPATH= cd -- "\$(dirname -- "\$0")" && pwd)
-if [ "\$1" = "--chroot" ]; then
-    FS="\$2"
-    shift 2
-    mount --bind /home "\$FS/home"
-    mount --bind \$HOME "\$FS/\$HOME"
-    mount --rbind /proc "\$FS/proc"
-    mount --rbind /dev "\$FS/dev"
-    mount --rbind /sys "\$FS/sys"
-    chroot "\$FS" "\$0" --exec "\$PWD" "\$@"
-elif [ "\$1" = "--exec" ]; then
-    DIR="\$2"
-    shift 2
-    cd "\$DIR"
-    export PS1="\w $ "
-    "\$@"
-else
-    unshare --map-root-user  --mount --propagation unchanged \
-        "\$SCRIPT_DIR/\$SCRIPT_NAME" --chroot "\$SCRIPT_DIR/.."  "\$@"
-fi
-EOF
-        chmod +x tmp/bin/alpine-exec
         mv tmp "${ALPINE_FS}"
-        USE_UNSHARE=$("$APKMAN_DIR/$ALPINE_FS/bin/alpine-exec" echo yes 2> /dev/null)
-        if [ "$USE_UNSHARE" != "yes" ]; then
+
+        echo "Checking if unshare works..."
+        if ! alpine_exec echo "unshare works" 2>/dev/null; then
             # Download and use proot
+            echo "unshare doesn't work"
             if command -v curl > /dev/null; then
                 curl -L -o proot.zip "$PROOT_URL"
             else
                 wget -O proot.zip "$PROOT_URL"
             fi
             "$ALPINE_FS/lib/ld-musl-x86_64.so.1" "$ALPINE_FS/bin/busybox" unzip proot.zip
+            MODE="proot"
+        else
+            MODE="unshare"
         fi
 
         # Initialize apk
         alpine_exec sh -c "apk update && apk add bash"
+        echo "apkman configured to use \`$MODE\`"
     fi
 }
 
@@ -183,18 +161,26 @@ alpine_exec()
     export PS1="apkman \w$ "
     export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
-    USE_UNSHARE=$("$APKMAN_DIR/$ALPINE_FS/bin/alpine-exec" echo yes 2> /dev/null)
-    if [ "$USE_UNSHARE" == "yes" ]; then
-        cd "$CURRENT_DIR" || exit 1
-        "$APKMAN_DIR/$ALPINE_FS/bin/alpine-exec" "$@"
-    else
+    if test -f dist/proot; then
         # Root home folder is /root. Therefore bind both $HOME and /home
         dist/proot -b /dev -b /dev/pts -b /proc -b /sys -b /dev/shm \
                    -b "$HOME" \
                    -b /home \
                    -r alpine-fs \
+                   -0 \
                    -w "$CURRENT_DIR" \
-                   "$@"
+                    "$@"
+
+    else
+        ALPINE_EXEC_CMD="
+            mount --bind /home \"$ALPINE_FS/home\"
+            mount -t proc /proc \"$ALPINE_FS/proc\"
+            mount --rbind /dev \"$ALPINE_FS/dev\"
+            mount --rbind  /sys \"$ALPINE_FS/sys\"
+            chroot \"$ALPINE_FS\" sh -c 'cd \"$CURRENT_DIR\" && \"\$@\"' apkman \"\$@\"
+        "
+        unshare --map-root-user --pid --fork --mount --propagation unchanged \
+                sh -c "$ALPINE_EXEC_CMD" apkman "$@"
     fi
 }
 
@@ -407,6 +393,10 @@ case "$1" in
 
     "--wrap-ld")
         wrap_ld
+        ;;
+
+    "")
+        exit 0
         ;;
 
     *)
