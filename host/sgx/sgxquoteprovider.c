@@ -91,12 +91,12 @@ oe_result_t oe_get_sgx_quote_verification_collateral(
         OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
     }
 
-    if (collateral->version != SGX_QL_QVE_COLLATERAL_VERSION)
+    if (collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_1 &&
+        collateral->version != SGX_QL_QVE_COLLATERAL_VERSION_3)
     {
         OE_RAISE_MSG(
             OE_INVALID_ENDORSEMENT,
-            "Expected version to be %d, but got %d",
-            SGX_QL_QVE_COLLATERAL_VERSION,
+            "Invalid collateral version %d",
             collateral->version);
     }
 

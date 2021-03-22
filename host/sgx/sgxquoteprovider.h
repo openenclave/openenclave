@@ -31,8 +31,14 @@ typedef struct _oe_sgx_quote_provider
 #define SGX_QL_FREE_QUOTE_VERIFICATION_COLLATERAL_NAME \
     "sgx_ql_free_quote_verification_collateral"
 
-/*! Version of the supported SGX quote verification collateral  */
-#define SGX_QL_QVE_COLLATERAL_VERSION (1)
+/**
+ * Version of the supported SGX quote verification collateral, which will
+ * reflect the version of the PCCS/PCS API used to retrieve the collateral.
+ * For V1 and V2 APIs, the ‘version’ field with have a value of 1.
+ * For V3 APIs, the ‘version’ field will have the value of 3."
+ */
+#define SGX_QL_QVE_COLLATERAL_VERSION_1 (1)
+#define SGX_QL_QVE_COLLATERAL_VERSION_3 (3)
 
 OE_EXTERNC_END
 
