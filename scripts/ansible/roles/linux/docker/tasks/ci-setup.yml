@@ -38,4 +38,3 @@
 - import_role:
     name: linux/az-dcap-client
     tasks_from: stable-install.yml
-  when: ansible_distribution_version != "20.04"
