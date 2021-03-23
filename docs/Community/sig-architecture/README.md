@@ -13,12 +13,15 @@ Regular SIG-Architecture meeting: TBD
 SIG Chair
 ---------
 
-Simon Leet (CodeMonkeyLeet)
+TBD [Mark Shanahan (MWShan) nominated]
 
 SIG Approvers
 -------------
 
-Simon Leet (CodeMonkeyLeet)
+Anand Krishnamoorthi (anakrish)
+Dave Thaler (dthaler)
+Mark Shanahan (MWShan)
+Ming-Wei Shih (mingweishih)
 
 SIG Reviewers
 -------------

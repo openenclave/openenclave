@@ -8,7 +8,6 @@ approvers:
   - johnkord
   - mikbras
   - radhikaj
-  - CodeMonkeyLeet
 reviewers:
   - AevaOnline
   - gupta-ak
@@ -19,7 +18,7 @@ reviewers:
   - johnkord
   - mikbras
   - radhikaj
-  - CodeMonkeyLeet
 
 emeritus_approvers:
   - jhand2    # 2020-11-05
+  - CodeMonkeyLeet #2021-04-05
