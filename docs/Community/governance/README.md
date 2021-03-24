@@ -22,6 +22,7 @@ Members
 | Aeva Black           | Microsoft   | aeva@dont.io                  | AevaOnline     |
 | Anand Krishnamoorthi | Microsoft   | anakrish@microsoft.com        | anakrish       |
 | Dave Thaler          | Microsoft   | dthaler@microsoft.com         | dthaler        |
+| Mark Shanahan        | Intel       | mark.shanahan@intel.com       | MWShan         |
 | Radhika Jandhyala    | Microsoft   | radhikaj@microsoft.com        | radhikaj       |
 | Simon Leet           | Microsoft   | simon.leet@microsoft.com      | CodeMonkeyLeet |
 
