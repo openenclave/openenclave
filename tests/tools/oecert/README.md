@@ -1,18 +1,26 @@
 oecert
 =====
 
-oecert is a utility that generates certificates (in der format) and
-OE reports in binary format.  For certificates, the user can pass
-in the public/private key
+oecert is a utility that generates certificates (in der format),
+evidence (OE report and OE evidence), and endorsements for evidence in binary format. For certificates, the user can pass
+in the public/private key.
+
  1. Self-signed certificates used for remote attestation over TLS.
  2. Binary file format of an OE report.
+ 3. Binary file format of an OE evidence.
+ 4. Binary file format of an endorsement.
 
 Usage: oecert ENCLAVE_PATH Options
 
 where Options are:
+
     --cert PRIVKEY PUBKEY : generate der remote attestation certificate.
-    --report              : generate binary enclave report.
-    --out FILENAME        : specify output filename.
+    --report              : generate binary OE report.
+    --evidence            : generate binary OE evidence.
+    --out FILENAME        : specify certificate/report/evidence output filename.
+    --endorsements        : specify endorsements output filename.
+    --log LOG_FILENAME    : log file name, default: oecert.log
+    --verbose             : dump verbose info of evidence
 
 Creating RSA and EC keys pairs in linux using openssl.
 Generate an RSA private key, of size 2048, and output it to a file named key.pem

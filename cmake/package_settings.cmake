@@ -43,13 +43,8 @@ set(OE_LIBDIR
     CACHE INTERNAL "Library collector")
 
 # Make directories for build systems (NMake) that don't automatically make them.
-file(
-  MAKE_DIRECTORY
-  ${OE_BINDIR}
-  ${OE_DATADIR}
-  ${OE_DOCDIR}
-  ${OE_INCDIR}
-  ${OE_LIBDIR})
+file(MAKE_DIRECTORY ${OE_BINDIR} ${OE_DATADIR} ${OE_DOCDIR} ${OE_INCDIR}
+     ${OE_LIBDIR})
 
 # Generate and install CMake export file for consumers using CMake
 include(CMakePackageConfigHelpers)
