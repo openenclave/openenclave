@@ -2,7 +2,7 @@
 
 ## Platform requirements
 
-- Ubuntu 16.04-LTS 64-bits or Ubuntu 18.04-LTS 64-bits.
+- Ubuntu 18.04-LTS 64-bits.
 - For RHEL8 support, please see [ExperimentalSupportRHEL8.md](ExperimentalSupportRHEL8.md).
 - SGX1 capable system with Flexible Launch Control support. Most likely this will be an Intel Coffeelake system.
 

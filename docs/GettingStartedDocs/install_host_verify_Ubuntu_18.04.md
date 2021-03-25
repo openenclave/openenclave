@@ -3,7 +3,6 @@
 ## Platform requirements
 
 - Ubuntu 18.04-LTS 64-bit.
-    - Instructions are also available for [Ubuntu 16.04-LTS 64-bit](/docs/GettingStartedDocs/install_host_verify-Ubuntu_16.04.md).
 
 ### 1. Configure the Intel and Microsoft APT Repositories
 ```bash

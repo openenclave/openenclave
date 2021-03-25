@@ -11,12 +11,11 @@
 2. Install the appropriate Intel SGX Driver for your platform. For example, if you're running on an SGX1 with FLC system, you'll probably want to install the Intel SGX DCAP Driver for your platfrom: https://01.org/intel-software-guard-extensions/downloads
     - If you're running on an SGX with FLC system, you'll probably want to install the Intel SGX DCAP Driver for your platfrom: https://01.org/intel-softwareguard-extensions/downloads/intel-sgx-dcap-linux-1.4-release
     - If you're running on an SGX without FLC system, you'll want to install the Intel SGX Driver for your platform: https://01.org/intel-softwareguard-extensions/downloads/intel-sgx-linux-2.8-release
-    - The driver you're looking for is a ".bin" file, for either Ubuntu 16.04 or 18.04 releases. It will be named something like: `sgx_linux_x64_driver_1.21.bin`
+    - The driver you're looking for is a ".bin" file for Ubuntu 18.04 release. It will be named something like: `sgx_linux_x64_driver_1.21.bin`
     - To install this driver, simply run it as root like this:
         - `sudo bash ./sgx_linux_x64_driver_1.21.bin`
 
-3. Pull the latest oetools-full image for Open Enclave from *either* of these two distributions:
-    - https://hub.docker.com/r/oeciteam/oetools-full-16.04
+3. Pull the latest oetools-full image for Open Enclave from this distribution:
     - https://hub.docker.com/r/oeciteam/oetools-full-18.04
 
 4. Run an interactive container of one of these images. If you're using the Intel SGX DCAP driver, for example, you'll want to expose the /dev/sgx device to the container:

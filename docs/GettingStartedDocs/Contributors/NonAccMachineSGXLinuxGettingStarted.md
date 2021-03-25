@@ -4,7 +4,7 @@
 This document is to provide a viable solution to enable Open Enclave SGX DCAP remote attestation to run on non-Azure Confidential Computing (ACC) machines. It relies on several Intel components and services which are subject to Intel's changes.
 
 ## 1. Platform requirements
-- Ubuntu 18.04-LTS 64-bits (should also work on 16.04 LTS but hasn't been tested).
+- Ubuntu 18.04-LTS 64-bits.
 - SGX1 capable system with Flexible Launch Control support. This feature is only available on Intel Coffee Lake processor (8th gen) or newer.
 - Strongly recommend to update your BIOS to newest version before start. With the setup described by this document, all attestation will be against the most recent collateral. Old BIOS versions, which may have lower CPU SVN, will cause attestation to fail.
 
@@ -55,11 +55,6 @@ On Ubuntu 18.04:
 echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | sudo tee /etc/apt/sources.list.d/intelsgx.list
 ```
 
-On Ubuntu 16.04:
-```bash
-echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu xenial main' | sudo tee /etc/apt/sources.list.d/intelsgx.list
-```
-
 Add the key to the list of trusted keys used by the apt to authenticate packages:
 ```bash
 wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
@@ -72,7 +67,7 @@ sudo apt-get update
 
 - Or Install Intel DCAP Quote Provider with dpkg manually
 
-The [libsgx-dcap-default-qpl directory](https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/) lists all different version of libsgx-dcap-default-qpl, please download the most recent version that matches your OS version. For Ubuntu 18.04 (code name [Bionic Beaver](https://wiki.ubuntu.com/BionicBeaver)), please download the version libsgx-dcap-default-qpl_{version}-bionic1_amd64.deb. For Ubuntu 16.04 (code name [Xenial Xerus](https://wiki.ubuntu.com/XenialXerus)), please download the version libsgx-dcap-default-qpl_{version}-xenial1_amd64.deb.
+The [libsgx-dcap-default-qpl directory](https://download.01.org/intel-sgx/sgx-dcap/1.8/linux/distro/ubuntu18.04-server/debian_pkgs/libs/libsgx-dcap-default-qpl/) lists all different version of libsgx-dcap-default-qpl, please download the most recent version that matches your OS version. For Ubuntu 18.04 (code name [Bionic Beaver](https://wiki.ubuntu.com/BionicBeaver)), please download the version libsgx-dcap-default-qpl_{version}-bionic1_amd64.deb.
 
 In this document, we use libsgx-dcap-default-qpl_1.8.100.2-bionic1_amd64.deb as an example, run the command below to download the package
 ```bash
