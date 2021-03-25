@@ -17,8 +17,6 @@ AGENTS_LABELS = [
     "acc-ubuntu-18.04": env.UBUNTU_1804_CUSTOM_LABEL ?: "ACC-1804",
     "ubuntu-nonsgx":    env.UBUNTU_NONSGX_CUSTOM_LABEL ?: "nonSGX",
     "acc-rhel-8":       env.RHEL_8_CUSTOM_LABEL ?: "ACC-RHEL-8",
-    "acc-win2016":      env.WINDOWS_2016_CUSTOM_LABEL ?: "SGX-Windows-2016",
-    "acc-win2016-dcap": env.WINDOWS_2016_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2016-DCAP",
     "acc-win2019":      env.WINDOWS_2019_CUSTOM_LABEL ?: "SGX-Windows-2019",
     "acc-win2019-dcap": env.WINDOWS_2019_DCAP_CUSTOM_LABEL ?: "SGXFLC-Windows-2019-DCAP",
     "windows-nonsgx":   env.WINDOWS_NONSGX_CUSTOM_LABEL ?: "nonSGX-Windows"
@@ -61,8 +59,6 @@ try {
                                   string(name: 'BRANCH_NAME', value: BRANCH_NAME),
                                   string(name: 'DOCKER_TAG', value: DOCKER_TAG),
                                   string(name: 'UBUNTU_NONSGX_CUSTOM_LABEL', value: AGENTS_LABELS["ubuntu-nonsgx"]),
-                                  string(name: 'WINDOWS_2016_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2016"]),
-                                  string(name: 'WINDOWS_2016_DCAP_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2016-dcap"]),
                                   string(name: 'WINDOWS_2019_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2019"]),
                                   string(name: 'WINDOWS_2019_DCAP_CUSTOM_LABEL', value: AGENTS_LABELS["acc-win2019-dcap"]),
                                   string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
