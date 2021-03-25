@@ -87,7 +87,7 @@ try{
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
             testing_stages += [
-               "Win2019 Ubuntu1804 clang-8 Debug Linux-Elf-build":       { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Debug') },
+                "Win2019 Ubuntu1804 clang-8 Debug Linux-Elf-build":       { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Debug') },
                 "Win2019 Ubuntu1804 clang-8 Release Linux-Elf-build":     { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Release') },
                 "Win2019 Ubuntu1804 clang-8 Debug Linux-Elf-build LVI":   { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Debug', 'ControlFlow') },
                 "Win2019 Ubuntu1804 clang-8 Release Linux-Elf-build LVI": { windowsLinuxElfBuild('acc-win2019-dcap', '18.04', 'clang-8', 'Release', 'ControlFlow') },

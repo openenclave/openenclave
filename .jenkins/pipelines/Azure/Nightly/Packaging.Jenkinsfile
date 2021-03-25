@@ -54,7 +54,8 @@ try{
          "1804 SGX1FLC Package Release" :            { LinuxPackaging('1804', 'Release') },
          "1804 SGX1FLC Package Release LVI" :        { LinuxPackaging('1804', 'Release', 'ControlFlow') },
          "1804 SGX1FLC Package RelWithDebInfo" :     { LinuxPackaging('1804', 'RelWithDebInfo') },
-         "1804 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('1804', 'RelWithDebInfo', 'ControlFlow') },"Windows 2019 Debug" :                      { WindowsPackaging('2019','Debug') },
+         "1804 SGX1FLC Package RelWithDebInfo LVI" : { LinuxPackaging('1804', 'RelWithDebInfo', 'ControlFlow') },
+         "Windows 2019 Debug" :                      { WindowsPackaging('2019','Debug') },
          "Windows 2019 Debug LVI" :                  { WindowsPackaging('2019','Debug', 'ControlFlow') },
          "Windows 2019 Release" :                    { WindowsPackaging('2019','Release') },
          "Windows 2019 Release LVI" :                { WindowsPackaging('2019','Release', 'ControlFlow') }
