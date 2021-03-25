@@ -2,7 +2,7 @@
 
 ## Platform requirements
 
-- Windows 10, Server 2016 or Server 2019
+- Windows 10 or Windows Server 2019
 
 ## Software Prerequisites
 
