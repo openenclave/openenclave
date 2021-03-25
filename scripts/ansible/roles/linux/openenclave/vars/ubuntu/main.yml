@@ -35,6 +35,7 @@ apt_packages:
   - "clang-format-8"
   - "clang-10"
   - "clang-format-10"
+  - "unzip"
 
 apt_arm_packages:
   - "gcc-arm-linux-gnueabi"
