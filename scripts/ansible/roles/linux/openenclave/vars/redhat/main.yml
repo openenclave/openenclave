@@ -32,6 +32,7 @@ yum_packages:
   - "gdb"
   - "git"
   - "perl-Digest-SHA"
+  - "unzip"
 
 validation_distribution_binaries:
   - "/usr/bin/shellcheck"
