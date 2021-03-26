@@ -109,15 +109,6 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/floor.c
     3rdparty/musl/libc-test/src/math/floorf.c
     3rdparty/musl/libc-test/src/math/floorl.c
-    3rdparty/musl/libc-test/src/math/fma.c
-    3rdparty/musl/libc-test/src/math/fmaf.c
-    3rdparty/musl/libc-test/src/math/fmal.c
-    3rdparty/musl/libc-test/src/math/fmax.c
-    3rdparty/musl/libc-test/src/math/fmaxf.c
-    3rdparty/musl/libc-test/src/math/fmaxl.c
-    3rdparty/musl/libc-test/src/math/fmin.c
-    3rdparty/musl/libc-test/src/math/fminf.c
-    3rdparty/musl/libc-test/src/math/fminl.c
     3rdparty/musl/libc-test/src/math/fmod.c
     3rdparty/musl/libc-test/src/math/fmodf.c
     3rdparty/musl/libc-test/src/math/fmodl.c
@@ -128,9 +119,6 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/hypot.c
     3rdparty/musl/libc-test/src/math/hypotf.c
     3rdparty/musl/libc-test/src/math/hypotl.c
-    3rdparty/musl/libc-test/src/math/ilogb.c
-    3rdparty/musl/libc-test/src/math/ilogbf.c
-    3rdparty/musl/libc-test/src/math/ilogbl.c
     3rdparty/musl/libc-test/src/math/isless.c
     3rdparty/musl/libc-test/src/math/j0.c
     3rdparty/musl/libc-test/src/math/j0f.c
@@ -185,12 +173,9 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/nexttoward.c
     3rdparty/musl/libc-test/src/math/nexttowardf.c
     3rdparty/musl/libc-test/src/math/nexttowardl.c
-    3rdparty/musl/libc-test/src/math/pow.c
     3rdparty/musl/libc-test/src/math/pow10.c
     3rdparty/musl/libc-test/src/math/pow10f.c
     3rdparty/musl/libc-test/src/math/pow10l.c
-    3rdparty/musl/libc-test/src/math/powf.c
-    3rdparty/musl/libc-test/src/math/powl.c
     3rdparty/musl/libc-test/src/math/remainder.c
     3rdparty/musl/libc-test/src/math/remainderf.c
     3rdparty/musl/libc-test/src/math/remainderl.c
@@ -229,18 +214,9 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/tanhf.c
     3rdparty/musl/libc-test/src/math/tanhl.c
     3rdparty/musl/libc-test/src/math/tanl.c
-    3rdparty/musl/libc-test/src/math/tgamma.c
-    3rdparty/musl/libc-test/src/math/tgammaf.c
-    3rdparty/musl/libc-test/src/math/tgammal.c
     3rdparty/musl/libc-test/src/math/trunc.c
     3rdparty/musl/libc-test/src/math/truncf.c
     3rdparty/musl/libc-test/src/math/truncl.c
-    3rdparty/musl/libc-test/src/math/y0.c
-    3rdparty/musl/libc-test/src/math/y0f.c
-    3rdparty/musl/libc-test/src/math/y1.c
-    3rdparty/musl/libc-test/src/math/y1f.c
-    3rdparty/musl/libc-test/src/math/yn.c
-    3rdparty/musl/libc-test/src/math/ynf.c
     3rdparty/musl/libc-test/src/regression/fpclassify-invalid-ld80.c
     3rdparty/musl/libc-test/src/regression/iswspace-null.c
     3rdparty/musl/libc-test/src/regression/lrand48-signextend.c
