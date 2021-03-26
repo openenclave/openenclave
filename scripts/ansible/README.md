@@ -60,4 +60,4 @@ ansible-playbook jenkins-setup.yml
 * Ubuntu 16.04
 * Ubuntu 18.04
 * Red Hat Enterprise Linux 8
-* Windows Server 2016 (ACC VM)
+* Windows Server 2019 (ACC VM)
