@@ -678,28 +678,6 @@ done:
     return result;
 }
 
-static oe_result_t _set_bytes_dynamic_symbol_value(
-    oe_enclave_elf_image_t* image,
-    const char* name,
-    const void* bytes,
-    size_t count)
-{
-    oe_result_t result = OE_OK;
-    elf64_sym_t sym = {0};
-    uint64_t* symbol_address = NULL;
-
-    if (elf64_find_dynamic_symbol_by_name(&image->elf, name, &sym) != 0)
-    {
-        OE_RAISE(OE_FAILURE);
-    }
-
-    symbol_address = (uint64_t*)(image->image_base + sym.st_value);
-    memcpy(symbol_address, bytes, count);
-
-done:
-    return result;
-}
-
 static oe_result_t _set_uint64_t_dynamic_symbol_value(
     oe_enclave_elf_image_t* image,
     const char* name,
@@ -725,7 +703,7 @@ static oe_result_t _patch_elf_image(
     oe_sgx_load_context_t* context,
     size_t enclave_size,
     size_t tls_page_count,
-    size_t regions_size)
+    size_t extra_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sgx_enclave_properties_t* oeprops;
@@ -776,7 +754,7 @@ static oe_result_t _patch_elf_image(
     oeprops->image_info.heap_rva = image->image_size + image->reloc_size;
 
     /* move heap past regions */
-    oeprops->image_info.heap_rva += regions_size;
+    oeprops->image_info.heap_rva += extra_size;
 
     if (image->tdata_size)
     {
@@ -799,15 +777,6 @@ static oe_result_t _patch_elf_image(
         image,
         "_td_from_tcs_offset",
         (tls_page_count + OE_SGX_TCS_CONTROL_PAGES) * OE_PAGE_SIZE);
-
-    if (image->num_regions)
-    {
-        OE_CHECK(_set_bytes_dynamic_symbol_value(
-            image, "_oe_regions", image->regions, sizeof(image->regions)));
-
-        OE_CHECK(_set_uint64_t_dynamic_symbol_value(
-            image, "_oe_num_regions", image->num_regions));
-    }
 
     /* Clear the hash when taking the measure */
     memset(oeprops->sigstruct, 0, sizeof(oeprops->sigstruct));

@@ -35,7 +35,6 @@ static char* get_fullpath(const char* path)
 #include <assert.h>
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/eeid.h>
-#include <openenclave/bits/sgx/region.h>
 #include <openenclave/bits/sgx/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
@@ -61,7 +60,6 @@ static char* get_fullpath(const char* path)
 #include "enclave.h"
 #include "exception.h"
 #include "platform_u.h"
-#include "region.h"
 #include "sgxload.h"
 
 #if !defined(OEHOSTMR)
@@ -287,14 +285,84 @@ done:
     return result;
 }
 
+oe_result_t oe_load_extra_enclave_data_hook(void* arg, uint64_t baseaddr);
+
+#define OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC 0x793d33e0efb446d0
+
+typedef struct oe_load_extra_enclave_data_hook_arg
+{
+    uint64_t magic;
+    oe_sgx_load_context_t* sgx_load_context;
+    uint64_t enclave_addr;
+    uint64_t base_vaddr;
+    uint64_t vaddr;
+}
+oe_load_extra_enclave_data_hook_arg_t;
+
+/* This weak form may be overriden by the enclave application */
+OE_WEAK
+oe_result_t oe_load_extra_enclave_data_hook(void* arg, uint64_t baseaddr)
+{
+    /* no-op */
+    (void)arg;
+    (void)baseaddr;
+
+    return OE_OK;
+}
+
+oe_result_t oe_load_extra_enclave_data(
+    void* arg_,
+    uint64_t vaddr,
+    const void* page,
+    uint64_t flags,
+    bool extend);
+
+oe_result_t oe_load_extra_enclave_data(
+    void* arg_,
+    uint64_t vaddr,
+    const void* page,
+    uint64_t flags,
+    bool extend)
+{
+    oe_result_t result = OE_OK;
+    oe_load_extra_enclave_data_hook_arg_t* arg =
+        (oe_load_extra_enclave_data_hook_arg_t*)arg_;
+
+    if (!arg || arg->magic != OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!page)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (vaddr < arg->vaddr)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (arg->sgx_load_context)
+    {
+        uint64_t addr = arg->enclave_addr + arg->base_vaddr + vaddr;
+
+        OE_CHECK(oe_sgx_load_enclave_data(
+            arg->sgx_load_context,
+            arg->enclave_addr,
+            addr,
+            (uint64_t)page,
+            flags,
+            extend));
+    }
+
+    arg->vaddr = vaddr + OE_PAGE_SIZE;
+
+done:
+    return result;
+}
+
 static oe_result_t _calculate_enclave_size(
-    oe_region_context_t* region_context,
     size_t image_size,
     size_t tls_page_count,
     const oe_sgx_enclave_properties_t* props,
     size_t* loaded_enclave_pages_size,
     size_t* enclave_size,
-    size_t* regions_size_out)
+    size_t* extra_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t heap_size;
@@ -302,18 +370,24 @@ static oe_result_t _calculate_enclave_size(
     size_t tls_size;
     size_t control_size;
     const oe_enclave_size_settings_t* size_settings;
-    size_t regions_size = 0;
 
     size_settings = &props->header.size_settings;
 
     if (enclave_size)
         *enclave_size = 0;
 
-    /* Calculate the size of the regions (if any) */
+    /* Calculate the total size of the extra enclave data (if any) */
     {
-        uint64_t start_vaddr = region_context->vaddr;
-        OE_CHECK(oe_region_add_regions(region_context, start_vaddr));
-        regions_size = region_context->vaddr - start_vaddr;
+        oe_load_extra_enclave_data_hook_arg_t arg =
+        {
+            .magic = OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC,
+            .sgx_load_context = NULL,
+            .enclave_addr = 0,
+            .base_vaddr = 0,
+            .vaddr = 0,
+        };
+        OE_CHECK(oe_load_extra_enclave_data_hook(&arg, 0));
+        *extra_size = arg.vaddr;
     }
 
     *loaded_enclave_pages_size = 0;
@@ -335,7 +409,7 @@ static oe_result_t _calculate_enclave_size(
 
     /* Compute end of the enclave */
     *loaded_enclave_pages_size =
-        image_size + regions_size + heap_size +
+        image_size + *extra_size + heap_size +
         (size_settings->num_tcs * (stack_size + tls_size + control_size));
 
     if (enclave_size)
@@ -348,8 +422,6 @@ static oe_result_t _calculate_enclave_size(
             /* Calculate the total size of the enclave */
             *enclave_size = oe_round_u64_to_pow2(*loaded_enclave_pages_size);
     }
-
-    *regions_size_out = regions_size;
 
     result = OE_OK;
 
@@ -761,8 +833,7 @@ oe_result_t oe_sgx_build_enclave(
     size_t tls_page_count;
     uint64_t vaddr = 0;
     oe_sgx_enclave_properties_t props;
-    oe_region_context_t region_context;
-    size_t regions_size = 0;
+    size_t extra_size = 0;
 
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -846,21 +917,13 @@ oe_result_t oe_sgx_build_enclave(
     OE_CHECK(oeimage.get_tls_page_count(&oeimage, &tls_page_count));
 
     /* Calculate the size of this enclave in memory */
-    {
-        memset(&region_context, 0, sizeof(region_context));
-        region_context.enclave_addr = 0;
-        region_context.sgx_load_context = NULL;
-        region_context.vaddr = image_size;
-
-        OE_CHECK(_calculate_enclave_size(
-            &region_context,
-            image_size,
-            tls_page_count,
-            &props,
-            &loaded_enclave_pages_size,
-            &enclave_size,
-            &regions_size));
-    }
+    OE_CHECK(_calculate_enclave_size(
+        image_size,
+        tls_page_count,
+        &props,
+        &loaded_enclave_pages_size,
+        &enclave_size,
+        &extra_size));
 
     /* Perform the ECREATE operation */
     OE_CHECK(oe_sgx_create_enclave(
@@ -870,33 +933,25 @@ oe_result_t oe_sgx_build_enclave(
     enclave->addr = enclave_addr;
     enclave->size = enclave_size;
 
-    /* Populate the oeimage regions so they will be patched below */
-    memcpy(
-        oeimage.elf.regions,
-        region_context.regions,
-        sizeof(oeimage.elf.regions));
-    oeimage.elf.num_regions = region_context.num_regions;
-
     /* Patch image */
-    OE_CHECK(oeimage.sgx_patch(&oeimage, context, enclave_size, regions_size));
+    OE_CHECK(oeimage.sgx_patch(&oeimage, context, enclave_size, extra_size));
 
     /* Add image to enclave */
     OE_CHECK(oeimage.add_pages(&oeimage, context, enclave, &vaddr));
 
-    /* Add the regions to the enclave */
+    /* Add any extra data to the enclave */
     {
-        memset(&region_context, 0, sizeof(region_context));
-        region_context.enclave_addr = enclave_addr;
-        region_context.sgx_load_context = context;
-        region_context.vaddr = vaddr;
-        OE_CHECK(oe_region_add_regions(&region_context, vaddr));
-        vaddr = region_context.vaddr;
+        oe_load_extra_enclave_data_hook_arg_t arg =
+        {
+            .magic = OE_LOAD_EXTRA_ENCLAVE_DATA_HOOK_ARG_MAGIC,
+            .sgx_load_context = context,
+            .enclave_addr = enclave_addr,
+            .base_vaddr = vaddr,
+            .vaddr = 0,
+        };
+        OE_CHECK(oe_load_extra_enclave_data_hook(&arg, enclave_addr + vaddr));
+        vaddr += arg.vaddr;
     }
-
-    /* Copy the region context into the enclave */
-    memcpy(&enclave->region_context, &region_context, sizeof(region_context));
-
-    /* ATTN:MEB: release debug paths here */
 
 #ifdef OE_WITH_EXPERIMENTAL_EEID
     OE_CHECK(_add_eeid_marker_page(
@@ -1127,8 +1182,6 @@ oe_result_t oe_create_enclave(
 
         enclave->debug_enclave = debug_enclave;
         oe_debug_notify_enclave_created(debug_enclave);
-
-        oe_region_debug_notify_loaded(&enclave->region_context);
     }
 
     /* Enclave initialization invokes global constructors which could make
@@ -1194,7 +1247,6 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 
     if (enclave->debug_enclave)
     {
-        oe_region_debug_notify_unloaded(&enclave->region_context);
         oe_debug_notify_enclave_terminated(enclave->debug_enclave);
         free(enclave->debug_enclave->tcs_array);
         free(enclave->debug_enclave);
@@ -1249,12 +1301,3 @@ done:
     return result;
 }
 #endif // OEHOSTMR
-
-/* This weak form may be overriden by the enclave application */
-OE_WEAK
-oe_result_t oe_region_add_regions(oe_region_context_t* context, uint64_t vaddr)
-{
-    (void)context;
-    (void)vaddr;
-    return OE_OK;
-}
