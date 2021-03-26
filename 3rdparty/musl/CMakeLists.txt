@@ -68,6 +68,8 @@ ExternalProject_Add(
           ${MUSL_INCLUDES}/bits
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${MUSL_DIR}/arch/${ARCH}/bits
           ${MUSL_INCLUDES}/bits
+  COMMAND ${CMAKE_COMMAND} -E copy ${MUSL_DIR}/arch/generic/fp_arch.h
+          ${MUSL_INCLUDES}/fp_arch.h
   # bash -c requires the command string to be in a single line
   COMMAND
     ${OE_BASH} -c

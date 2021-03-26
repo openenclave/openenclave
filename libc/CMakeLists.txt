@@ -286,6 +286,10 @@ add_enclave_library(
   ${MUSLSRC}/math/exp10l.c
   ${MUSLSRC}/math/exp2.c
   ${MUSLSRC}/math/exp2f.c
+  ${MUSLSRC}/math/exp2f_data.c
+  ${MUSLSRC}/math/exp2f_data.h
+  ${MUSLSRC}/math/exp_data.c
+  ${MUSLSRC}/math/exp_data.h
   ${MUSLSRC}/math/exp.c
   ${MUSLSRC}/math/expf.c
   ${MUSLSRC}/math/expl.c
@@ -357,7 +361,15 @@ add_enclave_library(
   ${MUSLSRC}/math/log1pf.c
   #${MUSLSRC}/math/log1pl.c
   ${MUSLSRC}/math/log2.c
+  ${MUSLSRC}/math/log2_data.c
+  ${MUSLSRC}/math/log2_data.h
   ${MUSLSRC}/math/log2f.c
+  ${MUSLSRC}/math/log2f_data.c
+  ${MUSLSRC}/math/log2f_data.h
+  ${MUSLSRC}/math/log_data.c
+  ${MUSLSRC}/math/log_data.h
+  ${MUSLSRC}/math/logf_data.c
+  ${MUSLSRC}/math/logf_data.h
   #${MUSLSRC}/math/log2l.c
   ${MUSLSRC}/math/logb.c
   ${MUSLSRC}/math/logbf.c
@@ -371,6 +383,16 @@ add_enclave_library(
   ${MUSLSRC}/math/lround.c
   ${MUSLSRC}/math/lroundf.c
   ${MUSLSRC}/math/lroundl.c
+  ${MUSLSRC}/math/__math_divzero.c
+  ${MUSLSRC}/math/__math_divzerof.c
+  ${MUSLSRC}/math/__math_invalid.c
+  ${MUSLSRC}/math/__math_invalidf.c
+  ${MUSLSRC}/math/__math_oflow.c
+  ${MUSLSRC}/math/__math_oflowf.c
+  ${MUSLSRC}/math/__math_uflow.c
+  ${MUSLSRC}/math/__math_uflowf.c
+  ${MUSLSRC}/math/__math_xflow.c
+  ${MUSLSRC}/math/__math_xflowf.c
   ${MUSLSRC}/math/modf.c
   ${MUSLSRC}/math/modff.c
   ${MUSLSRC}/math/modfl.c
@@ -388,7 +410,11 @@ add_enclave_library(
   ${MUSLSRC}/math/nexttowardl.c
   ${MUSLSRC}/math/__polevll.c
   ${MUSLSRC}/math/pow.c
+  ${MUSLSRC}/math/pow_data.c
+  ${MUSLSRC}/math/pow_data.h
   ${MUSLSRC}/math/powf.c
+  ${MUSLSRC}/math/powf_data.c
+  ${MUSLSRC}/math/powf_data.h
   ${MUSLSRC}/math/powl.c
   ${MUSLSRC}/math/remainder.c
   ${MUSLSRC}/math/remainderf.c
