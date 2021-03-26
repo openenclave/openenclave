@@ -387,16 +387,3 @@ void oe_fdtable_foreach(
 
     oe_spin_unlock(&_lock);
 }
-
-long oe_get_host_fd(int fd)
-{
-    oe_fd_t* fdp;
-
-    if (!(fdp = oe_fdtable_get(fd, OE_FD_TYPE_ANY)))
-        return -OE_EBADF;
-
-    if (!fdp->ops.fd.get_host_fd)
-        return -OE_EBADF;
-
-    return (long)fdp->ops.fd.get_host_fd(fdp);
-}

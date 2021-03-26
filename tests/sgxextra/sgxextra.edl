@@ -9,6 +9,6 @@ enclave
 
     trusted
     {
-        public int region_ecall();
+        public int sgxextra_ecall();
     };
 };

@@ -7,6 +7,4 @@ if (BUILD_ENCLAVES)
   add_subdirectory(enc)
 endif ()
 
-set(ENCLAVE "./enc/region_enc")
-
-add_test(tests/region ./host/region_host ${ENCLAVE})
+add_test(tests/sgxextra ./host/sgxextra_host ./enc/sgxextra_enc)

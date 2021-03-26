@@ -1,10 +1,10 @@
 # Copyright (c) Open Enclave SDK contributors.
 # Licensed under the MIT License.
 
-set(EDL_FILE ../region.edl)
+set(EDL_FILE ../sgxextra.edl)
 
 add_custom_command(
-  OUTPUT region_t.h region_t.c
+  OUTPUT sgxextra_t.h sgxextra_t.c
   DEPENDS ${EDL_FILE} edger8r
   COMMAND
     edger8r --trusted ${EDL_FILE} --search-path ${PROJECT_SOURCE_DIR}/include
@@ -12,12 +12,13 @@ add_custom_command(
 
 add_enclave(
   TARGET
-  region_enc
+  sgxextra_enc
   UUID
-  71b0822f-42a3-4543-a97c-ca491f76b82c
+  e5c9ed77-a22d-4998-ab76-ac1c0cd08d45
   SOURCES
   enc.c
-  ${CMAKE_CURRENT_BINARY_DIR}/region_t.c)
+  ${CMAKE_CURRENT_BINARY_DIR}/sgxextra_t.c)
 
-enclave_include_directories(region_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-enclave_link_libraries(region_enc oelibc)
+enclave_include_directories(sgxextra_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+enclave_link_libraries(sgxextra_enc oelibc)
