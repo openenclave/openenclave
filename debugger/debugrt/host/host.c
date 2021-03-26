@@ -81,7 +81,7 @@ static bool raise_debugger_events()
     }
 }
 
-void oe_notify_debugger_enclave_creation(const oe_debug_enclave_t* enclave)
+void oe_debug_enclave_created_hook(const oe_debug_enclave_t* enclave)
 {
     if (raise_debugger_events())
     {
@@ -105,7 +105,7 @@ void oe_notify_debugger_enclave_creation(const oe_debug_enclave_t* enclave)
     }
 }
 
-void oe_notify_debugger_enclave_termination(const oe_debug_enclave_t* enclave)
+void oe_debug_enclave_terminated_hook(const oe_debug_enclave_t* enclave)
 {
     if (raise_debugger_events())
     {
@@ -161,14 +161,14 @@ static uint64_t get_current_thread_id()
 OE_NO_OPTIMIZE_BEGIN
 
 OE_EXPORT
-OE_NEVER_INLINE void oe_notify_debugger_enclave_creation(
+OE_NEVER_INLINE void oe_debug_enclave_created_hook(
     const oe_debug_enclave_t* enclave)
 {
     OE_UNUSED(enclave);
     return;
 }
 
-OE_NEVER_INLINE void oe_notify_debugger_enclave_termination(
+OE_NEVER_INLINE void oe_debug_enclave_terminated_hook(
     const oe_debug_enclave_t* enclave)
 {
     OE_UNUSED(enclave);
@@ -213,7 +213,7 @@ oe_result_t oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave)
 
     result = OE_OK;
 
-    oe_notify_debugger_enclave_creation(enclave);
+    oe_debug_enclave_created_hook(enclave);
 
 done:
     if (locked)
@@ -255,7 +255,7 @@ oe_result_t oe_debug_notify_enclave_terminated(oe_debug_enclave_t* enclave)
     enclave->next = NULL;
     result = OE_OK;
 
-    oe_notify_debugger_enclave_termination(enclave);
+    oe_debug_enclave_terminated_hook(enclave);
 
 done:
     if (locked)
