@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 	are required to try out both UTF-8 as well as the previous encoding and pick the one that works.
 
 ### Security
-- Update mbedTLS to version 2.16.9. Refer to the [2.16.9](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.9) release notes for the set of issues addressed.
+- Update mbedTLS to version 2.16.10. Refer to the [2.16.10](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.10) and [2.16.9](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.9) release notes for the set of issues addressed.
 
 [v0.14.0][v0.14.0_log]
 --------------
