@@ -58,10 +58,10 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/asinhf.c
     3rdparty/musl/libc-test/src/math/asinhl.c
     3rdparty/musl/libc-test/src/math/asinl.c
+    3rdparty/musl/libc-test/src/math/atan.c
     3rdparty/musl/libc-test/src/math/atan2.c
     3rdparty/musl/libc-test/src/math/atan2f.c
     3rdparty/musl/libc-test/src/math/atan2l.c
-    3rdparty/musl/libc-test/src/math/atan.c
     3rdparty/musl/libc-test/src/math/atanf.c
     3rdparty/musl/libc-test/src/math/atanh.c
     3rdparty/musl/libc-test/src/math/atanhf.c
@@ -90,13 +90,13 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/erfcl.c
     3rdparty/musl/libc-test/src/math/erff.c
     3rdparty/musl/libc-test/src/math/erfl.c
+    3rdparty/musl/libc-test/src/math/exp.c
     3rdparty/musl/libc-test/src/math/exp10.c
     3rdparty/musl/libc-test/src/math/exp10f.c
     3rdparty/musl/libc-test/src/math/exp10l.c
     3rdparty/musl/libc-test/src/math/exp2.c
     3rdparty/musl/libc-test/src/math/exp2f.c
     3rdparty/musl/libc-test/src/math/exp2l.c
-    3rdparty/musl/libc-test/src/math/exp.c
     3rdparty/musl/libc-test/src/math/expf.c
     3rdparty/musl/libc-test/src/math/expl.c
     3rdparty/musl/libc-test/src/math/expm1.c
@@ -110,7 +110,13 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/floorf.c
     3rdparty/musl/libc-test/src/math/floorl.c
     3rdparty/musl/libc-test/src/math/fma.c
+    3rdparty/musl/libc-test/src/math/fmaf.c
+    3rdparty/musl/libc-test/src/math/fmal.c
+    3rdparty/musl/libc-test/src/math/fmax.c
+    3rdparty/musl/libc-test/src/math/fmaxf.c
     3rdparty/musl/libc-test/src/math/fmaxl.c
+    3rdparty/musl/libc-test/src/math/fmin.c
+    3rdparty/musl/libc-test/src/math/fminf.c
     3rdparty/musl/libc-test/src/math/fminl.c
     3rdparty/musl/libc-test/src/math/fmod.c
     3rdparty/musl/libc-test/src/math/fmodf.c
@@ -122,6 +128,9 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/hypot.c
     3rdparty/musl/libc-test/src/math/hypotf.c
     3rdparty/musl/libc-test/src/math/hypotl.c
+    3rdparty/musl/libc-test/src/math/ilogb.c
+    3rdparty/musl/libc-test/src/math/ilogbf.c
+    3rdparty/musl/libc-test/src/math/ilogbl.c
     3rdparty/musl/libc-test/src/math/isless.c
     3rdparty/musl/libc-test/src/math/j0.c
     3rdparty/musl/libc-test/src/math/j0f.c
@@ -143,9 +152,12 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/llround.c
     3rdparty/musl/libc-test/src/math/llroundf.c
     3rdparty/musl/libc-test/src/math/llroundl.c
+    3rdparty/musl/libc-test/src/math/log.c
     3rdparty/musl/libc-test/src/math/log10.c
     3rdparty/musl/libc-test/src/math/log10f.c
     3rdparty/musl/libc-test/src/math/log10l.c
+    3rdparty/musl/libc-test/src/math/log1p.c
+    3rdparty/musl/libc-test/src/math/log1pf.c
     3rdparty/musl/libc-test/src/math/log1pl.c
     3rdparty/musl/libc-test/src/math/log2.c
     3rdparty/musl/libc-test/src/math/log2f.c
@@ -153,7 +165,6 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/logb.c
     3rdparty/musl/libc-test/src/math/logbf.c
     3rdparty/musl/libc-test/src/math/logbl.c
-    3rdparty/musl/libc-test/src/math/log.c
     3rdparty/musl/libc-test/src/math/logf.c
     3rdparty/musl/libc-test/src/math/logl.c
     3rdparty/musl/libc-test/src/math/lrint.c
@@ -174,9 +185,12 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/nexttoward.c
     3rdparty/musl/libc-test/src/math/nexttowardf.c
     3rdparty/musl/libc-test/src/math/nexttowardl.c
+    3rdparty/musl/libc-test/src/math/pow.c
     3rdparty/musl/libc-test/src/math/pow10.c
     3rdparty/musl/libc-test/src/math/pow10f.c
     3rdparty/musl/libc-test/src/math/pow10l.c
+    3rdparty/musl/libc-test/src/math/powf.c
+    3rdparty/musl/libc-test/src/math/powl.c
     3rdparty/musl/libc-test/src/math/remainder.c
     3rdparty/musl/libc-test/src/math/remainderf.c
     3rdparty/musl/libc-test/src/math/remainderl.c
@@ -194,6 +208,9 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/scalbln.c
     3rdparty/musl/libc-test/src/math/scalblnf.c
     3rdparty/musl/libc-test/src/math/scalblnl.c
+    3rdparty/musl/libc-test/src/math/scalbn.c
+    3rdparty/musl/libc-test/src/math/scalbnf.c
+    3rdparty/musl/libc-test/src/math/scalbnl.c
     3rdparty/musl/libc-test/src/math/sin.c
     3rdparty/musl/libc-test/src/math/sincos.c
     3rdparty/musl/libc-test/src/math/sincosf.c
@@ -212,10 +229,18 @@ set(LIBC_TESTS
     3rdparty/musl/libc-test/src/math/tanhf.c
     3rdparty/musl/libc-test/src/math/tanhl.c
     3rdparty/musl/libc-test/src/math/tanl.c
+    3rdparty/musl/libc-test/src/math/tgamma.c
+    3rdparty/musl/libc-test/src/math/tgammaf.c
     3rdparty/musl/libc-test/src/math/tgammal.c
     3rdparty/musl/libc-test/src/math/trunc.c
     3rdparty/musl/libc-test/src/math/truncf.c
     3rdparty/musl/libc-test/src/math/truncl.c
+    3rdparty/musl/libc-test/src/math/y0.c
+    3rdparty/musl/libc-test/src/math/y0f.c
+    3rdparty/musl/libc-test/src/math/y1.c
+    3rdparty/musl/libc-test/src/math/y1f.c
+    3rdparty/musl/libc-test/src/math/yn.c
+    3rdparty/musl/libc-test/src/math/ynf.c
     3rdparty/musl/libc-test/src/regression/fpclassify-invalid-ld80.c
     3rdparty/musl/libc-test/src/regression/iswspace-null.c
     3rdparty/musl/libc-test/src/regression/lrand48-signextend.c

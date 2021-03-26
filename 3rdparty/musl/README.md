@@ -4,7 +4,7 @@ musl libc
 This directory contains the musl libc library and the accompanying libc-test test
 suite. The structure of the directory is as follows.
 
-- musl/ (tag: `v1.1.21`)
+- musl/ (tag: `v1.1.23`)
 
   The clone of musl libc that is included as a git submodule, which points to
   a recent release tag. To update the submodule, we use the following procedure:
