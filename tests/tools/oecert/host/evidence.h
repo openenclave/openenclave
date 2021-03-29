@@ -45,12 +45,14 @@ oe_result_t generate_oe_report(
     oe_enclave_t* enclave,
     const char* report_filename,
     const char* endorsements_filename,
+    bool verify,
     bool verbose);
 
 oe_result_t generate_oe_evidence(
     oe_enclave_t* enclave,
     const char* evidence_filename,
     const char* endorsements_filename,
+    bool verify,
     bool verbose);
 
 #endif // _SGX_QUOTE

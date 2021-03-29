@@ -19,6 +19,7 @@ where Options are:
     --evidence            : generate binary OE evidence.
     --out FILENAME        : specify certificate/report/evidence output filename.
     --endorsements        : specify endorsements output filename.
+    --verify              : verify generated certificate/report/evidence
     --log LOG_FILENAME    : log file name, default: oecert.log
     --verbose             : dump verbose info of evidence
 

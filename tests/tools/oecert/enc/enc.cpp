@@ -142,22 +142,24 @@ oe_result_t get_plugin_evidence(
         0,
         &local_evidence,
         &local_evidence_size,
-        &local_endorsements,
-        &local_endorsements_size));
-
+        endorsements ? &local_endorsements : NULL,
+        endorsements ? &local_endorsements_size : 0));
     if (local_evidence_size > evidence_size ||
         local_endorsements_size > endorsements_size)
         return OE_BUFFER_TOO_SMALL;
 
     oe_memcpy_s(evidence, evidence_size, local_evidence, local_evidence_size);
-    oe_memcpy_s(
-        endorsements,
-        endorsements_size,
-        local_endorsements,
-        local_endorsements_size);
-
     *evidence_out_size = local_evidence_size;
-    *endorsements_out_size = local_endorsements_size;
+
+    if (endorsements)
+    {
+        oe_memcpy_s(
+            endorsements,
+            endorsements_size,
+            local_endorsements,
+            local_endorsements_size);
+        *endorsements_out_size = local_endorsements_size;
+    }
 
     OE_CHECK(oe_attester_shutdown());
 
@@ -165,7 +167,8 @@ oe_result_t get_plugin_evidence(
 
 done:
     oe_free_evidence(local_evidence);
-    oe_free_endorsements(local_endorsements);
+    if (local_endorsements)
+        oe_free_endorsements(local_endorsements);
 
     return result;
 }
