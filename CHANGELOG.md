@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Update mbedTLS to version 2.16.9. Refer to the [2.16.9](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.9) release notes for the set of issues addressed.
 
+- OPENSSL is updated to version 1.1.1k.
+
 [v0.14.0][v0.14.0_log]
 --------------
 
