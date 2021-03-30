@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+[v0.15.0][v0.15.0_log]
+--------------
 ### Added
 - Oeedger8r now supports the warning flag -W<option>. The available options include:
   - -Wreturn-ptr: Check if an OCALL or ECALL returns a pointer.
@@ -597,7 +599,9 @@ as listed below.
 
 Initial private preview release, no longer supported.
 
-[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.14.0...HEAD
+[Unreleased_log]:https://github.com/openenclave/openenclave/compare/v0.15.0...HEAD
+
+[v0.15.0_log]:https://github.com/openenclave/openenclave/compare/v0.14.0...v0.15.0
 
 [v0.14.0_log]:https://github.com/openenclave/openenclave/compare/v0.13.0...v0.14.0
 
