@@ -21,11 +21,12 @@
 #define INPUT_PARAM_OPTION_REPORT "--report"
 #define INPUT_PARAM_OPTION_EVIDENCE "--evidence"
 #define INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME "--endorsements"
+#define INPUT_PARAM_OPTION_VERIFY "--verify"
 #define DEFAULT_OUT_FILE "out.bin"
 #define INPUT_PARAM_OPTION_OUT_FILE "--out"
 #define DEFAULT_LOG_FILE "oecert.log"
 #define INPUT_PARAM_OPTION_LOG_FILE "--log"
-#define INPUT_PARAM_VERBOSE "--verbose"
+#define INPUT_PARAM_OPTION_VERBOSE "--verbose"
 
 // Structure to store input parameters
 //
@@ -40,6 +41,7 @@ typedef struct _input_params
     bool generate_certificate;
     bool generate_report;
     bool generate_evidence;
+    bool verify;
     bool verbose;
 } input_params_t;
 
@@ -94,6 +96,7 @@ static oe_result_t generate_certificate(
     uint8_t* public_key,
     size_t public_key_size,
     const char* out_filename,
+    bool verify,
     bool verbose)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -137,12 +140,19 @@ static oe_result_t generate_certificate(
         }
     }
 
-    // validate cert
     log("========== Got cert = %p cert_size = %zu\n", cert, cert_size);
-    result = oe_verify_attestation_certificate(
-        cert, cert_size, enclave_identity_verifier, NULL);
-    log("========== Cert verification %s\n",
-        result == OE_OK ? "succeeded." : "failed.");
+
+    if (verify) // validate cert
+    {
+        OE_CHECK_MSG(
+            oe_verify_attestation_certificate(
+                cert, cert_size, enclave_identity_verifier, NULL),
+            "Failed to verify certificate. result=%u (%s)\n",
+            result,
+            oe_result_str(result));
+
+        log("========== Certificate verified\n\n");
+    }
     fflush(stdout);
 
 done:
@@ -177,10 +187,13 @@ static void _display_help(const char* cmd)
         INPUT_PARAM_OPTION_REPORT,
         INPUT_PARAM_OPTION_EVIDENCE);
     printf(
+        "\t%s : verify the generated certificate, report or evidence\n",
+        INPUT_PARAM_OPTION_VERIFY);
+    printf(
         "\t%s <log filename> (default: %s)\n",
         INPUT_PARAM_OPTION_LOG_FILE,
         DEFAULT_LOG_FILE);
-    printf("\t%s\n", INPUT_PARAM_VERBOSE);
+    printf("\t%s\n", INPUT_PARAM_OPTION_VERBOSE);
 }
 
 static int _parse_args(int argc, const char* argv[])
@@ -201,7 +214,9 @@ static int _parse_args(int argc, const char* argv[])
     // save
     _params.enclave_filename = argv[i++];
     _params.out_filename = DEFAULT_OUT_FILE;
+    _params.endorsements_filename = NULL;
     _params.log_filename = DEFAULT_LOG_FILE;
+    _params.verify = false;
     _params.verbose = false;
 
     // Verify enclave file is valid
@@ -272,9 +287,8 @@ static int _parse_args(int argc, const char* argv[])
         {
             if (argc >= i + 1)
             {
-                i += 1;
-                _params.endorsements_filename = argv[i];
-                i += 1;
+                _params.endorsements_filename = argv[i + 1];
+                i += 2;
             }
             else
             {
@@ -303,6 +317,12 @@ static int _parse_args(int argc, const char* argv[])
             }
         }
 
+        else if (strcmp(INPUT_PARAM_OPTION_VERIFY, argv[i]) == 0)
+        {
+            _params.verify = true;
+            i++;
+        }
+
         else if (strcmp(INPUT_PARAM_OPTION_LOG_FILE, argv[i]) == 0)
         {
             if (argc >= i + 1)
@@ -320,11 +340,12 @@ static int _parse_args(int argc, const char* argv[])
             }
         }
 
-        else if (strcmp(INPUT_PARAM_VERBOSE, argv[i]) == 0)
+        else if (strcmp(INPUT_PARAM_OPTION_VERBOSE, argv[i]) == 0)
         {
             _params.verbose = true;
             i++;
         }
+
         else
         {
             printf("Invalid option: %s\n", argv[i]);
@@ -420,6 +441,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
                 public_key,
                 public_key_size,
                 _params.out_filename,
+                _params.verify,
                 _params.verbose);
         }
     }
@@ -429,6 +451,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
             enclave,
             _params.out_filename,
             _params.endorsements_filename,
+            _params.verify,
             _params.verbose);
     }
     else if (_params.generate_evidence)
@@ -437,6 +460,7 @@ static oe_result_t _process_params(oe_enclave_t* enclave)
             enclave,
             _params.out_filename,
             _params.endorsements_filename,
+            _params.verify,
             _params.verbose);
     }
 

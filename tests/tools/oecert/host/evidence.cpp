@@ -587,6 +587,7 @@ oe_result_t generate_oe_report(
     oe_enclave_t* enclave,
     const char* report_filename,
     const char* endorsements_filename,
+    bool verify,
     bool verbose)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -641,6 +642,7 @@ oe_result_t generate_oe_report(
     }
 
     // Log endorsements
+    if (endorsements_filename)
     {
         uint8_t* endorsements = nullptr;
         size_t endorsements_size = 0;
@@ -662,18 +664,15 @@ oe_result_t generate_oe_report(
             oe_result_str(result));
 
         // Write endorsements
-        if (endorsements_filename)
-        {
-            OE_CHECK_MSG(
-                output_file(
-                    endorsements_filename, endorsements, endorsements_size),
-                "Failed to open endorsement file %s\n",
-                endorsements_filename);
-        }
+        OE_CHECK_MSG(
+            output_file(endorsements_filename, endorsements, endorsements_size),
+            "Failed to open endorsement file %s\n",
+            endorsements_filename);
+
         oe_free_sgx_endorsements(endorsements);
     }
 
-    // Verify report
+    if (verify) // Verify report
     {
         log("========== Verifying OE report\n");
 
@@ -702,6 +701,7 @@ oe_result_t generate_oe_evidence(
     oe_enclave_t* enclave,
     const char* evidence_filename,
     const char* endorsements_filename,
+    bool verify,
     bool verbose)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -717,21 +717,43 @@ oe_result_t generate_oe_evidence(
 
     log("========== Getting OE evidence\n");
 
-    OE_CHECK_MSG(
-        get_plugin_evidence(
-            enclave,
-            &result,
-            evidence,
-            sizeof(evidence),
-            &evidence_size,
-            endorsements,
-            sizeof(endorsements),
-            &endorsements_size),
-        "Failed to create OE evidence. Error: %s\n",
-        oe_result_str(result));
+    // only retrieve endorsements when need to output endorsements file or
+    // verify envidence
+    if (endorsements_filename || verify)
+    {
+        OE_CHECK_MSG(
+            get_plugin_evidence(
+                enclave,
+                &result,
+                evidence,
+                sizeof(evidence),
+                &evidence_size,
+                endorsements,
+                sizeof(endorsements),
+                &endorsements_size),
+            "Failed to create OE evidence. Error: %s\n",
+            oe_result_str(result));
+    }
+    else
+    {
+        OE_CHECK_MSG(
+            get_plugin_evidence(
+                enclave,
+                &result,
+                evidence,
+                sizeof(evidence),
+                &evidence_size,
+                NULL,
+                0,
+                NULL),
+            "Failed to create OE evidence. Error: %s\n",
+            oe_result_str(result));
+
+        OE_UNUSED(endorsements);
+        OE_UNUSED(endorsements_size);
+    }
 
     log("========== Got OE evidence, size = %zu\n\n", evidence_size);
-    log("========== Got endorsements, size = %zu\n", endorsements_size);
 
     // Write evidence to file
     OE_CHECK_MSG(
@@ -762,14 +784,19 @@ oe_result_t generate_oe_evidence(
         oe_hex_dump(quote->report_body.cpusvn, SGX_CPUSVN_SIZE);
         printf("PCE_SVN: %02x\n", quote->pce_svn);
     }
+
     // Log endorsements
+    if (endorsements_filename || verify)
     {
+        log("========== Got endorsements, size = %zu\n", endorsements_size);
+
         OE_CHECK_MSG(
             dump_oe_endorsements(
                 ((oe_attestation_header_t*)endorsements)->data,
                 ((oe_attestation_header_t*)endorsements)->data_size),
             "Failed to dump endorsements. Error: (%s)\n",
             oe_result_str(result));
+
         // Write endorsements
         if (endorsements_filename)
         {
@@ -781,7 +808,7 @@ oe_result_t generate_oe_evidence(
         }
     }
 
-    // Verify evidence
+    if (verify) // Verify evidence
     {
         log("========== Verifying OE evidence\n");
 
@@ -805,9 +832,10 @@ oe_result_t generate_oe_evidence(
             result,
             oe_result_str(result));
 
-        log("========== OE evidence verified.\n", claims_length);
+        log("========== OE evidence verified.\n\n");
 
-        dump_claims(claims, claims_length);
+        if (verbose)
+            dump_claims(claims, claims_length);
 
         OE_CHECK(oe_free_claims(claims, claims_length));
         OE_CHECK(oe_verifier_shutdown());
