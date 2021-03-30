@@ -24,8 +24,6 @@ Members
 | Dave Thaler          | Microsoft   | dthaler@microsoft.com         | dthaler        |
 | Mark Shanahan        | Intel       | mark.shanahan@intel.com       | MWShan         |
 | Radhika Jandhyala    | Microsoft   | radhikaj@microsoft.com        | radhikaj       |
-| Simon Leet           | Microsoft   | simon.leet@microsoft.com      | CodeMonkeyLeet |
-
 
 Emeritus Members
 ----------------
@@ -37,7 +35,7 @@ Emeritus Members
 | Andrew Schwartzmeyer | Microsoft   | andrew@schwartzmeyer.com      | andschwa       |
 | John Kordich         | Independent | jkordich@gmail.com            | johnkord       |
 | Mike Brasher         | Microsoft   | mikbras@microsoft.com         | mikbras        |
-
+| Simon Leet           | Microsoft   | simon.leet@microsoft.com      | CodeMonkeyLeet |
 
 TODO
 ----

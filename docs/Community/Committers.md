@@ -22,7 +22,6 @@ therefore should usually be consulted for changes relating to that area.
 | Andrew Schwartzmeyer  | andschwa            | EDL, CMake, Dev Tools, Website |
 | Brett McLaren         | BRMcLaren           | Build, CMake, CI               |
 | Brian Telfer          | Britel              | TrustZone, Attestation         |
-| Simon Leet            | CodeMonkeyLeet      | SGX, APIs                      |
 | Dave Thaler           | dthaler             | TrustZone, APIs, Dev Tools     |
 | Emil Alexandru Stoica | EmilAlexandruStoica | Build, CMake, CI, Ansible      |
 | Akash Gupta           | gupta-ak            | SGX, Attestation, APIs         |

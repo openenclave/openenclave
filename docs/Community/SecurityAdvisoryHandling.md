@@ -13,7 +13,6 @@ Once a vulnerability related to the Open Enclave SDK is reported to MSRC, the re
 
 - Anand Krishnamoorthi ([@anakrish](https://github.com/anakrish))
 - Ming-Wei Shih ([@mingweishih](https://github.com/mingweishih))
-- Simon Leet ([@codemonkeyleet](https://github.com/codemonkeyleet))
 
 > - [ ] TODO: Formalize SIG-Security and its membership with the CGC.
 
