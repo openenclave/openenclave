@@ -2,12 +2,10 @@
 
 ## [Intel Platform Software for Windows (PSW) v2.12]https://registrationcenter-download.intel.com/akdlm/irc_nas/17361/Intel%20SGX%20PSW%20for%20Windows%20v2.12.100.4.exe)
 
-The PSW only needs to be manually installed if you are running on Windows Server
-2016 or a version of Windows client lower than 1709. It should be installed automatically
-with Windows Update on newer versions of Windows client and Windows Server 2019.
+The PSW only needs to be manually installed if you are running on version of Windows client lower than 1709. It should be installed automatically with Windows Update on newer versions of Windows client and Windows Server 2019.
 You can check your version of Windows by running `winver` on the command line.
 
-To install the PSW on Windows Server 2016 and Windows client < 1709, unpack the self-extracting
+To install the PSW on Windows client < 1709, unpack the self-extracting
 ZIP executable, and run the installer under `PSW_EXE_RS2_and_before`:
 
 ```cmd

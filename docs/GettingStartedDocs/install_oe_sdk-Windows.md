@@ -7,7 +7,7 @@
 - Check if your system has support for SGX1 with or without FLC, please look [here](./SGXSupportLevel.md)
     - If your system does not support SGX1+FLC, simulation mode can be used.
 
-- Windows Server 2016 or 2019, or Windows 10 (1709 or newer)
+- Windows Server 2019 or Windows 10 (1709 or newer)
 
 ## Software Prerequisites
 
