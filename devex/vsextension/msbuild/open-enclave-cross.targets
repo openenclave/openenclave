@@ -81,6 +81,22 @@
         </When>
     </Choose>
 
+    <!-- CryptoLib Shorthands -->
+    <Choose>
+        <When Condition="'$(CryptoLib)' == 'openssl'">
+            <PropertyGroup>
+                <CryptoLibs>-loecryptoopenssl -lopensslssl -lopensslcrypto</CryptoLibs>
+                <CryptoDependencies>oecryptoopenssl;opensslssl;opensslcrypto</CryptoDependencies>
+            </PropertyGroup>
+        </When>
+        <Otherwise>
+            <PropertyGroup>
+                <CryptoLibs>-loecryptombedtls -lmbedtls -lmbedx509 -lmbedcrypto</CryptoLibs>
+                <CryptoDependencies>oecryptombedtls;mbedtls;mbedx509;mbedcrypto</CryptoDependencies>
+            </PropertyGroup>
+        </Otherwise>
+    </Choose>
+
     <!-- TEE Shorthands -->
     <Choose>
         <When Condition="('$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Prerelease' Or '$(Configuration)' == 'Release' Or '$(Configuration)' == 'SGX-Debug') And ($(OEIsX86) == True Or $(OEIsX64) == True)">
@@ -344,7 +360,7 @@
             <IgnoreAllDefaultLibraries Condition="!($(OEIsTz) == True And $(OEIsSim) == True)">True</IgnoreAllDefaultLibraries>
 
             <AdditionalOptions Condition="$(OEIsSgx) == True And $(OEIsLinux) == True">-nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,--build-id %(AdditionalOptions)</AdditionalOptions>
-            <LibraryDependencies>oeenclave;mbedx509;mbedcrypto;oelibcxx;oelibc;oecore;%(LibraryDependencies)</LibraryDependencies>
+            <LibraryDependencies>oeenclave;$(CryptoDependencies);oelibcxx;oelibc;oecore;%(LibraryDependencies)</LibraryDependencies>
         </Link>
     </ItemDefinitionGroup>
 
