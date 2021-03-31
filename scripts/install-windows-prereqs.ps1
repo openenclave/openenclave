@@ -174,26 +174,6 @@ function Start-LocalPackagesDownload {
     Write-Output "Finished downloading all the packages"
 }
 
-function Get-WindowsRelease {
-    $releases = @{
-        18363 = "Win10"
-        18362 = "Win10"
-        17763 = "WinServer2019"
-        14393 = "WinServer2016"
-    }
-    $osBuild = [System.Environment]::OSVersion.Version.Build
-    $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
-    $releaseName = $releases[$osBuild]
-    # ProductType: 1 - Work Station, 3 - Server
-    if (($osBuild -eq 17763) -and ($osInfo.ProductType -eq 1)) {
-        $releaseName = "Win10"
-    }
-    if (!$releaseName) {
-        Throw "Cannot find the Windows release name"
-    }
-    return $releaseName
-}
-
 function Start-ExecuteWithRetry {
     Param(
         [Parameter(Mandatory=$true)]
@@ -402,35 +382,20 @@ function Install-7Zip {
 
 function Install-PSW {
 
-    $OS_VERSION = Get-WindowsRelease
     $tempInstallDir = "$PACKAGES_DIRECTORY\Intel_SGX_PSW"
     if(Test-Path $tempInstallDir) {
         Remove-Item -Recurse -Force $tempInstallDir
     }
     Install-ZipTool -ZipPath $PACKAGES["psw"]["local_file"] `
                     -InstallDirectory $tempInstallDir
-    if ($OS_VERSION -eq "WinServer2016") {
-        $installer = Get-Item "$tempInstallDir\Intel*SGX*\PSW_EXE*\Intel(R)_SGX_Windows_x64_PSW_*.exe"
-        if(!$installer) {
-            Throw "Cannot find the installer executable"
-        }
-        if($installer.Count -gt 1) {
-            Throw "Multiple installer executables found"
-        }
-        $unattendedParams = @('--s', '--a', 'install', "--output=$tempInstallDir\psw-installer.log", '--eula=accept', '--no-progress')
-        $p = Start-Process -Wait -NoNewWindow -FilePath $installer -ArgumentList $unattendedParams -PassThru
-        if($p.ExitCode -ne 0) {
-            Get-Content "$tempInstallDir\psw-installer.log"
-            Throw "Failed to install Intel PSW"
-        }
-    } else {
-        # For Windows Server 2019 and Windows 10, Intel SGX PSW package 2.12+ will install both PSW and DCAP
-        $psw_dir = Get-Item "$tempInstallDir\Intel*SGX*\PSW_INF*\"
-        Start-ExecuteWithRetry -RetryInterval 5 -ScriptBlock {
-            pnputil /add-driver $psw_dir\sgx_psw.inf /install
-            Get-Service "AESMService"
-        }
+    
+    # For Windows Server 2019 and Windows 10, Intel SGX PSW package 2.12+ will install both PSW and DCAP
+    $psw_dir = Get-Item "$tempInstallDir\Intel*SGX*\PSW_INF*\"
+    Start-ExecuteWithRetry -RetryInterval 5 -ScriptBlock {
+        pnputil /add-driver $psw_dir\sgx_psw.inf /install
+        Get-Service "AESMService"
     }
+
     Start-ExecuteWithRetry -ScriptBlock {
         Start-Service -Name "AESMService" -ErrorAction Stop
     } -RetryMessage "Failed to start AESMService. Retrying"
@@ -533,40 +498,18 @@ function Install-DCAP-Dependencies {
     Install-Tool -InstallerPath $PACKAGES["dcap"]["local_file"] `
                  -ArgumentList @('/auto', "$PACKAGES_DIRECTORY\Intel_SGX_DCAP")
 
-    $OS_VERSION = Get-WindowsRelease
     if (($LaunchConfiguration -eq "SGX1FLC") -or ($DCAPClientType -eq "Azure"))
     {
         $drivers = @{
-            'WinServer2016' = @{
-                'sgx_base_dev' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_PSW\Intel*SGX*PSW*\base\WindowsServer2016"
-                    'location'    = 'root\SgxLCDevice'
-                    'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
-                }
-                'sgx_dcap_dev' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_DCAP\Intel*SGX*DCAP*\dcap\WindowsServer2016"
-                    'location'    = 'root\SgxLCDevice_DCAP'
-                    'description' = 'Intel(R) Software Guard Extensions DCAP Components Device'
-                }
-            }
-            'WinServer2019' = @{
-                'sgx_base' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_PSW\Intel*SGX*PSW*\base\WindowsServer2019_Windows10"
-                    'location'    = 'root\SgxLCDevice'
-                    'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
-                }
-            }
-            'Win10' = @{
-                'sgx_base' = @{
-                    'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_PSW\Intel*SGX*PSW*\base\WindowsServer2019_Windows10"
-                    'location'    = 'root\SgxLCDevice'
-                    'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
-                }
+            'sgx_base' = @{
+                'path'        = "$PACKAGES_DIRECTORY\Intel_SGX_PSW\Intel*SGX*PSW*\base\WindowsServer2019_Windows10"
+                'location'    = 'root\SgxLCDevice'
+                'description' = 'Intel(R) Software Guard Extensions Launch Configuration Service'
             }
         }
         $devConBinaryPath = Get-DevconBinary
-        foreach($driver in $drivers[${OS_VERSION}].Keys) {
-            $path = $drivers[${OS_VERSION}][$driver]['path']
+        foreach($driver in $drivers.Keys) {
+            $path = $drivers[$driver]['path']
             $inf = Get-Item "$path\$driver.inf"
             if(!$inf) {
                 Throw "Cannot find $driver.inf file"
@@ -577,33 +520,13 @@ function Install-DCAP-Dependencies {
             }
             if($LaunchConfiguration -eq "SGX1FLC")
             {
-                # Check if the driver is already installed and delete it
-                $output = & $devConBinaryPath find "$($drivers[${OS_VERSION}][$driver]['location'])"
-                if($LASTEXITCODE) {
-                    Throw "Failed searching for $driver driver"
-                }
-                $output | ForEach-Object {
-                    if($_.Contains($drivers[${OS_VERSION}][$driver]['description'])) {
-                        Write-Output "Removing driver $($drivers[${OS_VERSION}][$driver]['location'])"
-                        Remove-DCAPDriver -Name $drivers[${OS_VERSION}][$driver]['location']
-                    }
-                }
-                Write-Output "Installing driver $($drivers[${OS_VERSION}][$driver]['location'])"
-                if($OS_VERSION -eq "WinServer2016")
-                {
-                    $install = & $devConBinaryPath install "$($inf.FullName)" $drivers[${OS_VERSION}][$driver]['location']
-                    if($LASTEXITCODE) {
-                        Throw "Failed to install $driver driver"
-                    }
-                } else{
-                    $install = & pnputil /add-driver "$($inf.FullName)" /install
-                }
+                $install = & pnputil /add-driver "$($inf.FullName)" /install
                 Write-Output $install
             }
         }
     }
 
-    # Starting from Intel SGX 2.12, the Intel SGX PSW package contains DCAP and PSW for Windows Server 2016/2019, and Windows 10.
+    # Starting from Intel SGX 2.12, the Intel SGX PSW package contains DCAP and PSW for Windows Server 2019 and Windows 10.
     if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers")) {
         Install-PSW
     }
@@ -648,7 +571,7 @@ function Install-DCAP-Dependencies {
         Throw "Failed to install nuget EnclaveCommonAPI"
     }
 
-    if (($LaunchConfiguration -eq "SGX1FLC") -or (${OS_VERSION} -eq "WinServer2019"))
+    if ($LaunchConfiguration -eq "SGX1FLC")
     {
         # Please refer to Intel's Windows DCAP documentation for this registry setting: https://download.01.org/intel-sgx/dcap-1.2/windows/docs/Intel_SGX_DCAP_Windows_SW_Installation_Guide.pdf
         New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\sgx_lc_msr\Parameters" -Name "SGX_Launch_Config_Optin" -Value 1 -PropertyType DWORD -Force
