@@ -65,6 +65,7 @@ def windowsCrossCompile(String label, String build_type, String lvi_mitigation =
         node(node_label) {
             withEnv(["OE_SIMULATION=${OE_SIMULATION}"]) {
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
+                    // OFF value of quote provider until https://github.com/openenclave/openenclave-ci/pull/29 is merged
                     oe.WinCompilePackageTest("build/X64-${build_type}", build_type, 'OFF', CTEST_TIMEOUT_SECONDS, lvi_mitigation, lvi_mitigation_skip_tests, extra_cmake_args)
                 }
             }
