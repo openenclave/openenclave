@@ -413,7 +413,7 @@ try{
         "RHEL-8 clang-8 simulation Release e2e":         { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', [], ['OE_SIMULATION=1'], true) },
         "RHEL-8 ACC clang-8 SGX1 Release e2e":           { ACCTest(AGENTS_LABELS['acc-rhel-8-vanilla'], 'clang', 'Release', [], [], true) },
 
-        "RHEL-8 ACC clang-8 SGX1 Release snmalloc":      { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', [], '-DUSE_SNMALLOC=ON']) }
+        "RHEL-8 ACC clang-8 SGX1 Release snmalloc":      { ACCTest(AGENTS_LABELS['acc-rhel-8'], 'clang', 'Release', [], ['-DUSE_SNMALLOC=ON']) }
     ]
     if(FULL_TEST_SUITE == "true") {
         stage("Full Test Suite") {
