@@ -55,20 +55,26 @@ ARG GNAME=jenkins
 ARG UID=1000
 ARG GID=1000
 
-COPY ./ /oe
-
 ARG devkits_uri
-RUN cd /oe/scripts/ansible && \
-    ./install-ansible.sh && \
-    ansible localhost --playbook-dir=/oe/scripts/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv && \
-    ./remove-ansible.sh && \
-    cd / && \
-    rm -rf /oe && \
-    # Configure Git in target image to enable merge/rebase actions.
-    git config --global user.email "oeciteam@microsoft.com" && \
-    git config --global user.name "OE CI Team" && \
-    groupadd --gid ${GID} ${GNAME} && \
-    useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME} && \
-    curl ${devkits_uri} | tar xvz --no-same-permissions --no-same-owner && \
-    echo ${devkits_uri##*/} > /devkits/TARBALL && \
-    echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+# Check to make sure devkits_uri is defined as build arg
+RUN test ! -z ${devkits_uri+x}
+
+# Run Ansible
+COPY ./ /oe
+RUN /oe/scripts/ansible/install-ansible.sh
+RUN ansible localhost --playbook-dir=/oe/scripts/ansible -m import_role -a "name=linux/docker tasks_from=ci-setup.yml" -vvv
+RUN /oe/scripts/ansible/remove-ansible.sh
+RUN rm -rf /oe
+
+# Configure Git in target image to enable merge/rebase actions.
+RUN git config --global user.email "oeciteam@microsoft.com"
+RUN git config --global user.name "OE CI Team"
+
+# Create user
+RUN groupadd --gid ${GID} ${GNAME}
+RUN useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
+RUN echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Setup devkit
+RUN curl ${devkits_uri} | tar xvz --no-same-permissions --no-same-owner
+RUN echo ${devkits_uri##*/} > /devkits/TARBALL

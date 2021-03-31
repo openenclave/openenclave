@@ -10,15 +10,17 @@ ARG GNAME=jenkins
 ARG UID=1000
 ARG GID=1000
 
-COPY ./ /oe
+# Install essential packages
+RUN apt-get update
+RUN apt-get install --no-install-recommends -y lsb-release wget ca-certificates git
 
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y lsb-release wget ca-certificates git && \
-    cd /oe/scripts/ansible && \
-    ./install-ansible.sh && \
-    ansible localhost --playbook-dir=/oe/scripts/ansible -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" -vvv && \
-    ./remove-ansible.sh && \
-    cd / && \
-    rm -rf /oe && \
-    groupadd --gid ${GID} ${GNAME} && \
-    useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
+# Run Ansible
+COPY ./ /oe
+RUN /oe/scripts/ansible/install-ansible.sh
+RUN ansible localhost --playbook-dir=/oe/scripts/ansible -m import_role -a "name=linux/openenclave tasks_from=environment-setup.yml" -vvv
+RUN /oe/scripts/ansible/remove-ansible.sh
+RUN rm -rf /oe
+
+# Create user
+RUN groupadd --gid ${GID} ${GNAME}
+RUN useradd --create-home --uid ${UID} --gid ${GID} --shell /bin/bash ${UNAME}
