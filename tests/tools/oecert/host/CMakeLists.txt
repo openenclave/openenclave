@@ -24,3 +24,7 @@ target_link_libraries(oecert oehost OpenSSL::SSL)
 if (WIN32)
   target_compile_options(oecert PRIVATE /W2)
 endif ()
+
+# Generate the oecert binary in the the same directory with enclave binary
+set_target_properties(oecert PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+                                        "${CMAKE_CURRENT_BINARY_DIR}/..")

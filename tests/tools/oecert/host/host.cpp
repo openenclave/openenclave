@@ -1,8 +1,8 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <limits.h>
 #include <openenclave/attestation/verifier.h>
+#include <openenclave/corelibc/limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
@@ -11,12 +11,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if defined(__linux__)
+#include <unistd.h>
+#elif defined(_WIN32)
+#include <windows.h>
+#endif
 #include "oecert_u.h"
 
 #include "evidence.h"
 
 #include "../../../../common/sgx/endorsements.h"
 
+#define ENCLAVE_FILENAME_SUFFIX "_enc.signed"
 #define INPUT_PARAM_OPTION_CERT "--cert"
 #define INPUT_PARAM_OPTION_REPORT "--report"
 #define INPUT_PARAM_OPTION_EVIDENCE "--evidence"
@@ -32,7 +38,6 @@
 //
 typedef struct _input_params
 {
-    const char* enclave_filename;
     const char* private_key_filename;
     const char* public_key_filename;
     const char* out_filename;
@@ -196,9 +201,59 @@ static void _display_help(const char* cmd)
     printf("\t%s\n", INPUT_PARAM_OPTION_VERBOSE);
 }
 
+// Get full path of oecert running executable, then get enclave filename by:
+// In linux, replace "<path>/oecert" with "<path>/oecert_enc.signed"
+// In windows, replace "<path>/oecert.exe" with "<path>/oecert_enc.signed"
+static char* _get_enclave_filename()
+{
+    char* enclave_filename = nullptr;
+    char path[OE_PATH_MAX];
+    size_t path_size = 0;
+
+#if defined(__linux__)
+    path_size += (size_t)readlink("/proc/self/exe", path, OE_PATH_MAX);
+#elif defined(_WIN32)
+    path_size += (size_t)GetModuleFileName(NULL, path, OE_PATH_MAX);
+    path_size -= strlen(".exe");
+#endif
+
+    if (path_size < 0 || path_size >= OE_PATH_MAX)
+    {
+        printf("Failed to read enclave full path.\n");
+        goto done;
+    }
+    path[path_size] = '\0';
+
+    enclave_filename =
+        (char*)malloc(path_size + sizeof(ENCLAVE_FILENAME_SUFFIX));
+
+    if (enclave_filename == nullptr)
+    {
+        printf("Failed to malloc enclave_filename.\n");
+        goto done;
+    }
+
+    strcpy(enclave_filename, path);
+    strcat(enclave_filename, ENCLAVE_FILENAME_SUFFIX);
+
+    // Verify enclave file is valid
+    FILE* fp;
+    fopen_s(&fp, enclave_filename, "rb");
+    if (!fp)
+    {
+        printf("Enclave file does not exist: %s.\n", enclave_filename);
+        goto done;
+    }
+    else
+        fclose(fp);
+
+done:
+    return enclave_filename;
+}
+
 static int _parse_args(int argc, const char* argv[])
 {
-    if (argc < 3)
+    if (argc < 2)
     {
         _display_help(argv[0]);
         return 1;
@@ -212,23 +267,11 @@ static int _parse_args(int argc, const char* argv[])
 
     int i = 1; // current index
     // save
-    _params.enclave_filename = argv[i++];
     _params.out_filename = DEFAULT_OUT_FILE;
     _params.endorsements_filename = NULL;
     _params.log_filename = DEFAULT_LOG_FILE;
     _params.verify = false;
     _params.verbose = false;
-
-    // Verify enclave file is valid
-    FILE* fp;
-    fopen_s(&fp, _params.enclave_filename, "rb");
-    if (!fp)
-    {
-        printf("Failed to find file: %s\n", _params.enclave_filename);
-        return 1;
-    }
-    else
-        fclose(fp);
 
     while (i < argc)
     {
@@ -479,7 +522,8 @@ int main(int argc, const char* argv[])
     }
 
     oe_result_t result;
-    oe_enclave_t* enclave = NULL;
+    oe_enclave_t* enclave = nullptr;
+    char* enclave_filename = nullptr;
 
     const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
@@ -488,12 +532,19 @@ int main(int argc, const char* argv[])
         goto done;
     }
 
+    enclave_filename = _get_enclave_filename();
+    if (enclave_filename == nullptr)
+    {
+        printf("Fail to get enclave filename.\n");
+        goto done;
+    }
+
     ret = _parse_args(argc, argv);
     if (ret != 0)
         goto done;
 
     if ((result = oe_create_oecert_enclave(
-             _params.enclave_filename,
+             enclave_filename,
              OE_ENCLAVE_TYPE_AUTO,
              OE_ENCLAVE_FLAG_DEBUG,
              NULL,
@@ -534,5 +585,7 @@ int main(int argc, const char* argv[])
     result = oe_terminate_enclave(enclave);
 done:
 
+    if (enclave_filename)
+        free(enclave_filename);
     return ret;
 }
