@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "init_fini.h"
+#include <openenclave/internal/globals.h>
 
 /*
 **==============================================================================
@@ -55,16 +56,37 @@
 **==============================================================================
 */
 
-void oe_call_init_functions(void)
+static void _call_init_functions(
+    void (**init_array_start)(void),
+    void (**init_array_end)(void))
 {
     void (**fn)(void);
-    extern void (*__init_array_start)(void);
-    extern void (*__init_array_end)(void);
 
-    for (fn = &__init_array_start; fn < &__init_array_end; fn++)
+    for (fn = init_array_start; fn < init_array_end; fn++)
     {
         (*fn)();
     }
+}
+
+void oe_call_init_functions(void)
+{
+    extern void (*__init_array_start)(void);
+    extern void (*__init_array_end)(void);
+    const uint64_t baseaddr = (uint64_t)__oe_get_enclave_base();
+    const oe_enclave_module_info_t* module_info = oe_get_module_info();
+
+    if (module_info && module_info->base_rva && module_info->init_array_rva &&
+        module_info->init_array_size)
+    {
+        uint64_t init_array_start = baseaddr + module_info->init_array_rva;
+        uint64_t init_array_end = baseaddr + module_info->init_array_rva +
+                                  module_info->init_array_size;
+        _call_init_functions(
+            (void (**)(void))(init_array_start),
+            (void (**)(void))(init_array_end));
+    }
+
+    _call_init_functions(&__init_array_start, &__init_array_end);
 }
 
 /*
@@ -111,14 +133,35 @@ void oe_call_init_functions(void)
 **==============================================================================
 */
 
-void oe_call_fini_functions(void)
+static void _call_fini_functions(
+    void (**fini_array_start)(void),
+    void (**fini_array_end)(void))
 {
     void (**fn)(void);
-    extern void (*__fini_array_start)(void);
-    extern void (*__fini_array_end)(void);
 
-    for (fn = &__fini_array_end - 1; fn >= &__fini_array_start; fn--)
+    for (fn = fini_array_end - 1; fn >= fini_array_start; fn--)
     {
         (*fn)();
+    }
+}
+
+void oe_call_fini_functions(void)
+{
+    extern void (*__fini_array_start)(void);
+    extern void (*__fini_array_end)(void);
+    const uint64_t baseaddr = (uint64_t)__oe_get_enclave_base();
+    const oe_enclave_module_info_t* module_info = oe_get_module_info();
+
+    _call_fini_functions(&__fini_array_start, &__fini_array_end);
+
+    if (module_info && module_info->base_rva && module_info->fini_array_rva &&
+        module_info->fini_array_size)
+    {
+        uint64_t fini_array_start = baseaddr + module_info->fini_array_rva;
+        uint64_t fini_array_end = baseaddr + module_info->fini_array_rva +
+                                  module_info->fini_array_size;
+        _call_fini_functions(
+            (void (**)(void))(fini_array_start),
+            (void (**)(void))(fini_array_end));
     }
 }

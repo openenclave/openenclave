@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased][Unreleased_log]
 --------------
 
+### Added
+- Add the initial support of cryptographic module loading in SGX enclaves. Refer to the [design document](docs/DesignDocs/CryptoModuleLoadingSupport.md) for more detail.
+
+### Changed
+- The OpenEnclave CMake configuration now explicitly sets CMAKE_SKIP_RPATH to TRUE. This change should not affect fully static-linked enclaves.
+
 [v0.15.0][v0.15.0_log]
 --------------
 ### Added

@@ -269,3 +269,17 @@ uint64_t oe_get_num_pages(void)
 {
     return __oe_get_enclave_size() / OE_PAGE_SIZE;
 }
+
+/*
+**==============================================================================
+**
+** Information for the module.
+**
+**==============================================================================
+*/
+OE_EXPORT const volatile oe_enclave_module_info_t _module_info;
+
+const oe_enclave_module_info_t* oe_get_module_info(void)
+{
+    return (const oe_enclave_module_info_t*)&_module_info;
+}

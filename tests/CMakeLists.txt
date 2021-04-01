@@ -108,6 +108,7 @@ if (UNIX
     add_subdirectory(libcxxrt)
     add_subdirectory(libunwind)
     add_subdirectory(mbed)
+    add_subdirectory(module_loading)
     add_subdirectory(ocall-create)
     add_subdirectory(oeedger8r)
     add_subdirectory(print)

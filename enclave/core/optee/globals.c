@@ -50,3 +50,17 @@ const void* __oe_get_heap_end()
 {
     return (const uint8_t*)__oe_get_heap_base() + __oe_get_heap_size();
 }
+
+/*
+**==============================================================================
+**
+** Information for the module.
+**
+**==============================================================================
+*/
+
+/* Module loading is currently not supported in the OP-TEE. */
+const oe_enclave_module_info_t* oe_get_module_info(void)
+{
+    return NULL;
+}

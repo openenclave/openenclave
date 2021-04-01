@@ -40,7 +40,10 @@ bool oe_apply_relocations(void)
         /* Relocate the reference */
         if (reloc_type == R_X86_64_RELATIVE)
         {
-            *dest = (uint64_t)(baseaddr + p->r_addend);
+            int64_t addend = p->r_addend;
+            /* Process only if the symbol is defined */
+            if (addend)
+                *dest = (uint64_t)(baseaddr + p->r_addend);
         }
     }
 

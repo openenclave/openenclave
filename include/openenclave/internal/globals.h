@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/module.h>
 #include <openenclave/internal/types.h>
 
 OE_EXTERNC_BEGIN
@@ -36,6 +37,8 @@ uint64_t oe_get_num_pages(void);
 /* Extended enclave initialization data */
 const void* __oe_get_eeid(void);
 #endif
+
+const oe_enclave_module_info_t* oe_get_module_info(void);
 
 OE_EXTERNC_END
 

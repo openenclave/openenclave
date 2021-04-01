@@ -136,8 +136,16 @@ ELF_EXTERNC_BEGIN
 #define STT_LOPROC 13 /* Processor-specific use */
 #define STT_HIPROC 15
 
+/* elf64_dyn.d_tag */
+#define DT_NEEDED 1
+#define DT_STRTAB 5
+#define DT_RPATH 15
+#define DT_RUNPATH 29
+
 /* elf64_rel.r_info */
+#define R_X86_64_64 1
 #define R_X86_64_GLOB_DAT 6
+#define R_X86_64_JUMP_SLOT 7
 #define R_X86_64_RELATIVE 8
 
 /* Supported thread-local storage relocations */
@@ -239,6 +247,15 @@ typedef struct
     /* File image size */
     size_t size;
 } elf64_t;
+
+typedef struct
+{
+    elf64_sxword_t d_tag;
+    union {
+        elf64_xword_t d_val;
+        elf64_addr_t d_ptr;
+    } d_un;
+} elf64_dyn_t;
 
 int elf64_test_header(const elf64_ehdr_t* header);
 

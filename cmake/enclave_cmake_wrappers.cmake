@@ -29,8 +29,8 @@ macro (add_enclave_library NAME)
   add_library(${NAME} ${ARGN})
   if (LVI_MITIGATION MATCHES ControlFlow)
     add_library(${NAME}-lvi-cfg ${ARGN})
-    # Compiler options are only applicable to non-interface library.
-    if (NOT ${ARGV1} MATCHES INTERFACE)
+    # Compiler options are only applicable to non-interface, non-imported libraries.
+    if ((NOT ${ARGV1} MATCHES INTERFACE) AND (NOT ${ARGV2} MATCHES IMPORTED))
       apply_lvi_mitigation(${NAME}-lvi-cfg)
     endif ()
   endif ()
