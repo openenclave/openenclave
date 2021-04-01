@@ -731,14 +731,17 @@ static oe_result_t _link_elf_image(
     assert(image);
     assert(dependency);
 
+    elf64_rela_t* relocs = NULL;
+    uint64_t nrelocs = 0;
     const elf64_sym_t* symtab = NULL;
     size_t symtab_size = 0;
+
     if (elf64_get_dynamic_symbol_table(&image->elf, &symtab, &symtab_size) != 0)
         goto done;
 
     /* Iterate through relocation records in the target image */
-    elf64_rela_t* relocs = (elf64_rela_t*)image->reloc_data;
-    uint64_t nrelocs = image->reloc_size / sizeof(relocs[0]);
+    relocs = (elf64_rela_t*)image->reloc_data;
+    nrelocs = image->reloc_size / sizeof(relocs[0]);
 
     for (size_t i = 0; i < nrelocs; i++)
     {
