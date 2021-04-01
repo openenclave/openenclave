@@ -39,8 +39,9 @@ struct _oe_enclave_elf_image
 {
     elf64_t elf;
 
-    char* image_base;  /* Base of the loaded segment contents */
-    size_t image_size; /* Size of all loaded segment contents */
+    char* image_base;   /* Base of the loaded segment contents */
+    uint64_t image_rva; /* RVA of the loaded segment contents */
+    size_t image_size;  /* Size of all loaded segment contents */
 
     /* Cached properties of loadable segments for enclave page add */
     oe_elf_segment_t* segments;
@@ -88,6 +89,10 @@ struct _oe_enclave_image
     /* Note: this can be part of a union distinguished by type if
      * other enclave binary formats are supported later */
     oe_enclave_elf_image_t elf;
+
+    /* Pointer to the dependent image for the enclave
+     * Only up to one such .so dependecy is currently allowed */
+    oe_enclave_elf_image_t* submodule;
 
     /* Image type specific callbacks to handle enclave loading */
     oe_result_t (
