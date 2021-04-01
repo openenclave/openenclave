@@ -345,7 +345,7 @@ OE_WEAK OE_DEFINE_SYSCALL2(SYS_getcwd)
     }
     else
     {
-        ret = (long)size;
+        ret = (long)oe_strlen(buf) + 1;
     }
 
     return ret;
