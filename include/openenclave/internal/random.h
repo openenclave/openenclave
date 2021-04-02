@@ -6,6 +6,10 @@
 
 #include <openenclave/bits/result.h>
 
+/* Flags for use with getrandom.  */
+#define OE_GRND_NONBLOCK 0x01
+#define OE_GRND_RANDOM 0x02
+
 OE_EXTERNC_BEGIN
 
 /**

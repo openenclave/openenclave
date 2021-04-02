@@ -194,6 +194,8 @@ OE_DECLARE_SYSCALL0(SYS_getpgrp);
 #endif
 OE_DECLARE_SYSCALL0(SYS_getpid);
 OE_DECLARE_SYSCALL0(SYS_getppid);
+/* musl getrandom() invokes the syscall via syscall_cp */
+OE_DECLARE_SYSCALL3_M(SYS_getrandom);
 OE_DECLARE_SYSCALL3_M(SYS_getsockname);
 OE_DECLARE_SYSCALL5_M(SYS_getsockopt);
 OE_DECLARE_SYSCALL2(SYS_gettimeofday);

@@ -238,6 +238,7 @@ add_enclave_library(
   ${MUSLSRC}/locale/textdomain.c
   ${MUSLSRC}/locale/wcscoll.c
   ${MUSLSRC}/locale/wcsxfrm.c
+  ${MUSLSRC}/linux/getrandom.c
   ${MUSLSRC}/linux/mount.c
   ${MUSLSRC}/linux/epoll.c
   ${MUSLSRC}/linux/flock.c

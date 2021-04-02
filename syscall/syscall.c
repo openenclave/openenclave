@@ -8,6 +8,7 @@
 #include <openenclave/corelibc/stdlib.h>
 #include <openenclave/corelibc/string.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/random.h>
 #include <openenclave/internal/safemath.h>
 #include <openenclave/internal/syscall/device.h>
 #include <openenclave/internal/syscall/dirent.h>
@@ -345,7 +346,7 @@ OE_WEAK OE_DEFINE_SYSCALL2(SYS_getcwd)
     }
     else
     {
-        ret = (long)size;
+        ret = (long)oe_strlen(buf) + 1;
     }
 
     return ret;
@@ -1067,6 +1068,40 @@ OE_WEAK OE_DEFINE_SYSCALL2(SYS_umount2)
     return oe_umount(target);
 }
 
+OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_getrandom)
+{
+    oe_errno = 0;
+    long ret = -1;
+    void* buf = (void*)arg1;
+    size_t buflen = (size_t)arg2;
+    unsigned int flags = (unsigned int)arg3;
+
+    if (!buf || !buflen)
+    {
+        oe_errno = OE_EINVAL;
+        goto done;
+    }
+
+    /* Maintain the compatibility with the valid flags (though the flags
+     * are not effective) */
+    if (flags && flags != OE_GRND_RANDOM && flags != OE_GRND_NONBLOCK)
+    {
+        oe_errno = OE_EINVAL;
+        goto done;
+    }
+
+    if (oe_random_internal(buf, buflen) != OE_OK)
+    {
+        oe_errno = OE_EAGAIN;
+        goto done;
+    }
+
+    ret = (long)buflen;
+
+done:
+    return ret;
+}
+
 static long _syscall(
     long number,
     long arg1,
@@ -1190,6 +1225,7 @@ static long _syscall(
 #endif
         OE_SYSCALL_DISPATCH(SYS_unlinkat, arg1, arg2, arg3);
         OE_SYSCALL_DISPATCH(SYS_umount2, arg1, arg2);
+        OE_SYSCALL_DISPATCH(SYS_getrandom, arg1, arg2, arg3);
     }
 
     oe_errno = OE_ENOSYS;
