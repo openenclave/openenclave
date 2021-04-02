@@ -14,7 +14,7 @@
 #include "cert_verify_config.h"
 #include "utility.h"
 
-oe_result_t enclave_claims_verifier_callback(
+oe_result_t claims_verifier_callback(
     oe_claim_t* claims,
     size_t claims_length,
     void* arg);
@@ -50,7 +50,7 @@ int cert_verify_callback(
         goto exit;
 
     result = oe_verify_attestation_certificate_with_evidence(
-        cert_buf, cert_size, enclave_claims_verifier_callback, NULL);
+        cert_buf, cert_size, claims_verifier_callback, NULL);
     if (result != OE_OK)
     {
         printf(

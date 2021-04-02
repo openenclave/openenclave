@@ -86,7 +86,7 @@ oe_result_t oe_get_attestation_certificate_with_evidence_v2(
 
 Upon receiving a certificate from the peer endpoint, a connecting party needs to perform peer certificate validation.
 
-In this feature, instead of using the TLS API's default authentication routine, which validates the certificate against a pre-determined CAs for authentication, an application needs to conduct "Extended custom certificate validation" inside the peer custom certificate verification callback (cert_verify_callback), which is supported by all the popular TLS APIs.
+In this feature, instead of using the TLS API's default authentication routine, which validates the certificate against a pre-determined CAs for authentication, an application needs to conduct "Extended custom certificate validation" inside the peer custom certificate verification callback (`cert_verify_callback`), which is supported by all the popular TLS APIs.
 
 ```
 For example:
@@ -104,18 +104,17 @@ For example:
 ```
 ##### Custom extended certificate validation
 
-The following four validation steps are performed inside the cert_verify_callback
-  1. Validate certificate
+The following three validation steps are performed inside `cert_verify_callback`:
+  1. Validate certificate.
      - Verify the signature of the self-signed certificate to ascertain that the attestation evidence is genuine and unmodified.
-  2. Validate the evidence
-     - Extract this evidence extension from the certificate
-     - Perform evidence validation
-  3. Validate peer enclave's identity
+  2. Validate the evidence.
+     - Extract this evidence extension from the certificate and perform evidence validation.
+  3. Validate peer enclave's identity.
      - Validate the enclave’s identity (e.g., MRENCLAVE in SGX) against the expected list. This check ensures only the intended party is allowed to connect to.
 
-  A new OE API, oe_verify_attestation_certificate_with_evidence(), was added to perform step 1-2 and leaving step 3 to application for business logic, which can be done inside a caller-registered callback, enclave_identity_callback, a callback parameter to oe_verify_attestation_certificate_with_evidence() call.
+  An OE API, `oe_verify_attestation_certificate_with_evidence()`, was added to perform step 1-2 and leaving step 3 to application for business logic, which can be done inside a caller-registered callback, `enclave_identity_callback`, a callback parameter to `oe_verify_attestation_certificate_with_evidence()` call. The API then calls another OE API, `oe_verify_attestation_certificate_with_evidence_v2()`, which was added in order to take endorsements and policies as input.
 
-  A caller wants to fail cert_verify_callback with non-zero code if either certificate signature validation failed or unexpected TEE identity was found. This failure return will cause the TLS handshaking process to terminate immediately, thus preventing establishing connection with an unqualified connecting party.
+  A caller wants to fail `cert_verify_callback` with non-zero code if either certificate signature validation failed or unexpected TEE identity was found. This failure return will cause the TLS handshaking process to terminate immediately, thus preventing establishing connection with an unqualified connecting party.
 
 ```
 /**
