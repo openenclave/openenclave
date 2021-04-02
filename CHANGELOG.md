@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Refer to [design document](docs/DesignDocs/DebuggerSupportForMultiModuleEnclaves.md) for details.
 
 ### Changed
+- Open Enclave SDK will be built with clang-10 starting v0.16.0 release. We recommend that developers move to clang-10 starting v0.16.0 release.
 - oe_get_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_get_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
 - Debugger Contract
   - `path` fields in `oe_debug_enclave_t` and `oe_debug_module_t` are now defined to be in
@@ -37,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update mbedTLS to version 2.16.10. Refer to the [2.16.10](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.10) and [2.16.9](https://github.com/ARMmbed/mbedtls/releases/tag/v2.16.9) release notes for the set of issues addressed.
 
 - OPENSSL is updated to version 1.1.1k.
+
+- The current version of wcsnrtombs function in oelibc (based on musl 1.1.21) has known vulnerability (refer to [CVE-2020-28928](https://www.openwall.com/lists/musl/2020/11/19/1)), which will be fixed via upgrading musl to 1.2.2 in the next release. Please do not use wcsnrtombs with this version or earlier versions of Open Enclave SDK.
 
 [v0.14.0][v0.14.0_log]
 --------------
