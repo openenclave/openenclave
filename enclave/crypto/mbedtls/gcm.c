@@ -71,19 +71,28 @@ oe_result_t oe_aes_gcm_decrypt(
     uint8_t* output,
     const uint8_t* tag)
 {
+    mbedtls_cipher_type_t cipher_type;
     const mbedtls_cipher_info_t* info;
     mbedtls_cipher_context_t gcm;
     oe_result_t result = OE_OK;
     size_t size;
 
+    switch (key_size)
+    {
+        case 16:
+            cipher_type = MBEDTLS_CIPHER_AES_128_GCM;
+            break;
+        case 32:
+            cipher_type = MBEDTLS_CIPHER_AES_256_GCM;
+        default:
+            return OE_UNSUPPORTED;
+    }
+
     mbedtls_cipher_init(&gcm);
 
-    info = mbedtls_cipher_info_from_type(MBEDTLS_CIPHER_AES_128_GCM);
-    if (info == NULL)
+    info = mbedtls_cipher_info_from_type(cipher_type);
+    if (info == NULL || key_size * 8 != info->key_bitlen)
         return OE_CRYPTO_ERROR;
-
-    if (key_size * 8 != info->key_bitlen)
-        return OE_UNSUPPORTED;
 
     if (mbedtls_cipher_setup(&gcm, info) ||
         mbedtls_cipher_setkey(
