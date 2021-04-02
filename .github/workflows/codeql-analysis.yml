@@ -15,6 +15,9 @@ jobs:
     name: Analyze
     runs-on: ubuntu-18.04
 
+    container:
+      image: oeciteam/oetools-full-18.04
+
     strategy:
       fail-fast: false
       matrix:
@@ -22,18 +25,15 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v1
+      with:
+        submodules: recursive
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
         languages: ${{ matrix.language }}
         config-file: .github/codeql/codeql-config.yml
-
-    - name: Install Dependencies
-      run: |
-        sudo apt install -y doxygen
-        git submodule update --init --recursive
 
     - name: Build
       run: |
