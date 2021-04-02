@@ -4,14 +4,15 @@ musl libc
 This directory contains the musl libc library and the accompanying libc-test test
 suite. The structure of the directory is as follows.
 
-- musl/ (tag: `v1.1.21`)
+- musl/ (branch: `openenclave-musl-1.1.21`)
 
-  The clone of musl libc that is included as a git submodule, which points to
-  a recent release tag. To update the submodule, we use the following procedure:
-  - Checkout the tag that we want to update to.
+  The clone of musl libc mirror (hosted under the openenclave github organization) that
+  is included as a git submodule, which points to a branch corresponding to a musl's release tag.
+  To update the submodule, we use the following procedure:
+  - Checkout the tag that we want to update to (assume the mirror has the corresponding branch)
     ```
     cd musl
-    git checkout <new tag>
+    git checkout <openenclave-musl-1.x.x>
     ```
   - Check the diff between the tag and the previous tag and update the <openenclave-root>/libc/ correspondingly.
     ```

@@ -29,7 +29,8 @@
 	url = https://github.com/intel/intel-sgx-ssl
 [submodule "3rdparty/musl/musl"]
 	path = 3rdparty/musl/musl
-	url = git://git.musl-libc.org/musl
+	url = https://github.com/openenclave/openenclave-musl.git
+	branch = openenclave-musl-1.1.21
 [submodule "3rdparty/musl/libc-test"]
 	path = 3rdparty/musl/libc-test
-	url = git://repo.or.cz/libc-test.git
+	url = https://repo.or.cz/libc-test.git
