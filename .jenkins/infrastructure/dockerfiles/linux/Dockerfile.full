@@ -45,6 +45,11 @@
 # the oejenkinscidockerregistry Container registry in Azure at this link,
 # assuming you have proper permissions:
 # https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/e5839dfd-61f0-4b2f-b06f-de7fc47b5998/resourceGroups/OE-Jenkins-CI/providers/Microsoft.ContainerRegistry/registries/oejenkinscidockerregistry/overview
+#
+# This image includes out-of-proc attestation using Intel SGX by default.
+# To allow this, the Intel SGX AESM Service will need to be made available by creating the container with the following parameter:
+#   --volume /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket
+# 
 
 ARG ubuntu_version=18.04
 
@@ -78,3 +83,6 @@ RUN echo "${UNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 # Setup devkit
 RUN curl ${devkits_uri} | tar xvz --no-same-permissions --no-same-owner
 RUN echo ${devkits_uri##*/} > /devkits/TARBALL
+
+# Set up out-of-proc attestation
+ENV SGX_AESM_ADDR=1

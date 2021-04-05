@@ -57,3 +57,9 @@
     state: started
     enabled: yes
   when: "'aesmd.service' in ansible_facts.services"
+
+- name: Set out-of-proc attestation by default
+  lineinfile:
+    path: /etc/environment
+    state: present
+    line: SGX_AESM_ADDR=1
