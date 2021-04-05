@@ -968,6 +968,42 @@ oe_result_t oe_sgx_build_enclave(
     if (context->type == OE_SGX_LOAD_TYPE_CREATE)
         enclave->magic = ENCLAVE_MAGIC;
 
+    // Create debugging structures only for debug enclaves.
+    if (enclave->debug)
+    {
+        oe_debug_enclave_t* debug_enclave =
+            (oe_debug_enclave_t*)calloc(1, sizeof(*debug_enclave));
+
+        debug_enclave->magic = OE_DEBUG_ENCLAVE_MAGIC;
+        debug_enclave->version = OE_DEBUG_ENCLAVE_VERSION;
+        debug_enclave->next = NULL;
+
+        debug_enclave->path = enclave->path;
+        debug_enclave->path_length = strlen(enclave->path);
+
+        debug_enclave->base_address = (void*)enclave->addr;
+        debug_enclave->size = enclave->size;
+
+        debug_enclave->tcs_array =
+            (sgx_tcs_t**)calloc(enclave->num_bindings, sizeof(sgx_tcs_t*));
+        for (uint64_t i = 0; i < enclave->num_bindings; ++i)
+        {
+            debug_enclave->tcs_array[i] = (sgx_tcs_t*)enclave->bindings[i].tcs;
+        }
+        debug_enclave->tcs_count = enclave->num_bindings;
+
+        debug_enclave->flags = 0;
+        if (enclave->debug)
+            debug_enclave->flags |= OE_DEBUG_ENCLAVE_MASK_DEBUG;
+        if (enclave->simulate)
+            debug_enclave->flags |= OE_DEBUG_ENCLAVE_MASK_SIMULATE;
+
+        enclave->debug_enclave = debug_enclave;
+
+        OE_CHECK(oeimage.sgx_get_debug_modules(
+            &oeimage, enclave, &enclave->debug_modules));
+    }
+
     result = OE_OK;
 
 done:
@@ -1123,38 +1159,17 @@ oe_result_t oe_create_enclave(
         OE_RAISE(OE_FAILURE);
     }
 
-    // Create debugging structures only for debug enclaves.
+    // Notify debugger above the enclave and any modules.
     if (enclave->debug)
     {
-        oe_debug_enclave_t* debug_enclave =
-            (oe_debug_enclave_t*)calloc(1, sizeof(*debug_enclave));
-
-        debug_enclave->magic = OE_DEBUG_ENCLAVE_MAGIC;
-        debug_enclave->version = OE_DEBUG_ENCLAVE_VERSION;
-        debug_enclave->next = NULL;
-
-        debug_enclave->path = enclave->path;
-        debug_enclave->path_length = strlen(enclave->path);
-
-        debug_enclave->base_address = (void*)enclave->addr;
-        debug_enclave->size = enclave->size;
-
-        debug_enclave->tcs_array =
-            (sgx_tcs_t**)calloc(enclave->num_bindings, sizeof(sgx_tcs_t*));
-        for (uint64_t i = 0; i < enclave->num_bindings; ++i)
+        oe_debug_notify_enclave_created(enclave->debug_enclave);
+        oe_debug_module_t* debug_module = enclave->debug_modules;
+        while (debug_module)
         {
-            debug_enclave->tcs_array[i] = (sgx_tcs_t*)enclave->bindings[i].tcs;
+            oe_debug_module_t* next = debug_module->next;
+            oe_debug_notify_module_loaded(debug_module);
+            debug_module = next;
         }
-        debug_enclave->tcs_count = enclave->num_bindings;
-
-        debug_enclave->flags = 0;
-        if (enclave->debug)
-            debug_enclave->flags |= OE_DEBUG_ENCLAVE_MASK_DEBUG;
-        if (enclave->simulate)
-            debug_enclave->flags |= OE_DEBUG_ENCLAVE_MASK_SIMULATE;
-
-        enclave->debug_enclave = debug_enclave;
-        oe_debug_notify_enclave_created(debug_enclave);
     }
 
     /* Enclave initialization invokes global constructors which could make
@@ -1220,6 +1235,16 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 
     if (enclave->debug_enclave)
     {
+        while (enclave->debug_enclave->modules)
+        {
+            oe_debug_module_t* module = enclave->debug_enclave->modules;
+            oe_debug_notify_module_unloaded(module);
+            // Notification removes the module from the list of modules.
+            // Free the module here.
+            free((void*)module->path);
+            free(module);
+        }
+
         oe_debug_notify_enclave_terminated(enclave->debug_enclave);
         free(enclave->debug_enclave->tcs_array);
         free(enclave->debug_enclave);

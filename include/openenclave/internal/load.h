@@ -7,6 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/debugrt/host.h>
 #include <openenclave/internal/elf.h>
 #include "types.h"
 
@@ -38,6 +39,8 @@ typedef struct _oe_elf_segment
 struct _oe_enclave_elf_image
 {
     elf64_t elf;
+
+    const char* path; /* Path of the ELF binary */
 
     char* image_base;   /* Base of the loaded segment contents */
     uint64_t image_rva; /* RVA of the loaded segment contents */
@@ -109,6 +112,11 @@ struct _oe_enclave_image
         uint64_t* vaddr);
 
     oe_result_t (*sgx_patch)(oe_enclave_image_t* image, size_t enclave_size);
+
+    oe_result_t (*sgx_get_debug_modules)(
+        oe_enclave_image_t* image,
+        oe_enclave_t* enclave,
+        oe_debug_module_t** modules);
 
     oe_result_t (*sgx_load_enclave_properties)(
         const oe_enclave_image_t* image,

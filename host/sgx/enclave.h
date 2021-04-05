@@ -125,6 +125,7 @@ typedef struct _oe_enclave
 
     /* Meta-data needed by debugrt  */
     oe_debug_enclave_t* debug_enclave;
+    oe_debug_module_t* debug_modules;
 
     /* Manager for switchless calls */
     oe_switchless_call_manager_t* switchless_manager;

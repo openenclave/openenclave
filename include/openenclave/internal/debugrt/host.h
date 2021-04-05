@@ -145,6 +145,31 @@ OE_DEBUGRT_EXPORT extern oe_debug_thread_binding_t*
  */
 #define OE_DEBUGRT_ENCLAVE_TERMINATED_EVENT 0x0edeb647
 
+/**
+ * The following event is raised by the runtime after a module is loaded:
+ *   ULONG_PTR args[1] = { oe_debug_module_t_ptr };
+ *   RaiseException(OE_DEBUGRT_MODULE_LOADED_EVENT,
+ *                  0,  // dwExceptionFlags
+ *                  1,  // always 1 (number of argument)
+ *                  args)
+ * The oe_debug_module_t structure corresponding to the loaded module is
+ * passed as the sole element of the argument array.
+ */
+#define OE_DEBUGRT_MODULE_LOADED_EVENT 0x0edeb648
+
+/**
+ * The following event is raised by the runtime after a module has been
+ * unloaded:
+ *   ULONG_PTR args[1] = { oe_debug_module_t_ptr };
+ *   RaiseException(OE_DEBUGRT_MODULE_UNLOADED_EVENT,
+ *                  0,  // dwExceptionFlags
+ *                  1,  // always 1 (number of argument)
+ *                  args)
+ * The oe_debug_module_t structure corresponding to the unloaded module is
+ * passed as the sole element of the argument array.
+ */
+#define OE_DEBUGRT_MODULE_UNLOADED_EVENT 0x0edeb649
+
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
