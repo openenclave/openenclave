@@ -7,10 +7,20 @@ add_custom_command(
   COMMAND edger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../oecert.edl
           --search-path ${PROJECT_SOURCE_DIR}/include ${DEFINE_OE_SGX})
 
-add_enclave(TARGET oecert_enc SOURCES enc.cpp
-            ${CMAKE_CURRENT_BINARY_DIR}/oecert_t.c)
+add_enclave(
+  TARGET
+  oecert_enc
+  SOURCES
+  enc.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/oecert_t.c
+  CONFIG
+  enc.conf)
 
 # Need for the generated file oecert_t.h
 enclave_include_directories(oecert_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 enclave_link_libraries(oecert_enc oeenclave oelibc)
+
+# Generate the enclave binary in the the same directory with the oecert binary
+set_enclave_properties(oecert_enc PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+                       "${CMAKE_CURRENT_BINARY_DIR}/..")
