@@ -723,31 +723,33 @@ oe_result_t generate_oe_evidence(
     // verify envidence
     if (endorsements_filename || verify)
     {
+        get_plugin_evidence(
+            enclave,
+            &result,
+            evidence,
+            sizeof(evidence),
+            &evidence_size,
+            endorsements,
+            sizeof(endorsements),
+            &endorsements_size);
         OE_CHECK_MSG(
-            get_plugin_evidence(
-                enclave,
-                &result,
-                evidence,
-                sizeof(evidence),
-                &evidence_size,
-                endorsements,
-                sizeof(endorsements),
-                &endorsements_size),
+            result,
             "Failed to create OE evidence. Error: %s\n",
             oe_result_str(result));
     }
     else
     {
+        get_plugin_evidence(
+            enclave,
+            &result,
+            evidence,
+            sizeof(evidence),
+            &evidence_size,
+            NULL,
+            0,
+            NULL);
         OE_CHECK_MSG(
-            get_plugin_evidence(
-                enclave,
-                &result,
-                evidence,
-                sizeof(evidence),
-                &evidence_size,
-                NULL,
-                0,
-                NULL),
+            result,
             "Failed to create OE evidence. Error: %s\n",
             oe_result_str(result));
 

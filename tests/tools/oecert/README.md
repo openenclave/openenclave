@@ -18,6 +18,7 @@ where `Options` are:
     --cert PRIVKEY PUBKEY : generate der remote attestation certificate.
     --report              : generate binary OE report.
     --evidence            : generate binary OE evidence.
+    --quote-proc <in|out> : use sgx in process or out-of-process quoting, default: use original quote process.
     --out FILENAME        : specify certificate/report/evidence output filename, default: no file output.
     --endorsements        : specify endorsements output filename, default: no endorsements output.
     --verify              : verify generated certificate/report/evidence
