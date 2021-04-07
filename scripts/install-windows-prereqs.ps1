@@ -5,8 +5,8 @@
 Param(
     [string]$GitURL = 'https://github.com/git-for-windows/git/releases/download/v2.19.1.windows.1/Git-2.19.1-64-bit.exe',
     [string]$GitHash = '5E11205840937DD4DFA4A2A7943D08DA7443FAA41D92CCC5DAFBB4F82E724793',
-    [string]$OpenSSLURL = 'https://slproweb.com/download/Win64OpenSSL-1_1_1k.exe',
-    [string]$OpenSSLHash = 'E04B056B83572E8395AA680733FB988C6FC005B86E45F9AC0569796DFCBEAF13',
+    [string]$OpenSSLURL = 'https://oejenkins.blob.core.windows.net/oejenkins/openssl.1.1.1506.73.nupkg',
+    [string]$OpenSSLHash = '1744DF0BCCC11C5C31846E450D8DF02D5F376073EB4AC77BA1F7B2DD82093A26',
     [string]$SevenZipURL = 'https://www.7-zip.org/a/7z1806-x64.msi',
     [string]$SevenZipHash = 'F00E1588ED54DDF633D8652EB89D0A8F95BD80CCCFC3EED362D81927BEC05AA5',
     # We skip the hash check for the vs_buildtools.exe file because it is regularly updated without a change to the URL, unfortunately.
@@ -103,7 +103,7 @@ $PACKAGES = @{
     "openssl" = @{
         "url" = $OpenSSLURL
         "hash" = $OpenSSLHash
-        "local_file" = Join-Path $PACKAGES_DIRECTORY "Win64OpenSSL-1_1_1g.exe"
+        "local_file" = Join-Path $PACKAGES_DIRECTORY "openssl.nupkg"
     }
     "python3" = @{
         "url" = $Python3ZipURL
@@ -365,11 +365,8 @@ function Install-Git {
 }
 
 function Install-OpenSSL {
-    $installDir = Join-Path $env:ProgramFiles "OpenSSL-Win64"
-    Install-Tool -InstallerPath $PACKAGES["openssl"]["local_file"] `
-                 -InstallDirectory $installDir `
-                 -ArgumentList @("/silent", "/eula=accept") `
-                 -EnvironmentPath @("$installDir\bin")
+    $installDir = Join-Path $InstallPath "OpenSSL"
+    nuget.exe install openssl -Source $PACKAGES_DIRECTORY -OutputDirectory $InstallPath -ExcludeVersion
 }
 
 function Install-7Zip {
@@ -602,7 +599,6 @@ try {
     Install-Nuget
     Install-Python3
     Install-VisualStudio
-    Install-OpenSSL
     Install-LLVM
     Install-Git
     Install-Shellcheck
@@ -611,7 +607,10 @@ try {
     if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers") -or ($DCAPClientType -eq "Azure")) {
         Install-DCAP-Dependencies
     }
-
+    # There is a bug with the dcap dependency installation where it will overwrite the installation path folder. 
+    # This is a bug in the upstream DCAP package itself. 
+    # As we want OpenSSL installed in the same location to be picked up automatically by cmake, just install after dcap installation.
+    Install-OpenSSL
     Install-VCRuntime
 
 
