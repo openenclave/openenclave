@@ -15,22 +15,22 @@
 */
 int oe_thread_create(oe_thread_t* thread, void* (*func)(void*), void* arg)
 {
-    return pthread_create(thread, NULL, func, arg);
+    return pthread_create((pthread_t*)thread, NULL, func, arg);
 }
 
 int oe_thread_join(oe_thread_t thread)
 {
-    return pthread_join(thread, NULL);
+    return pthread_join((pthread_t)thread, NULL);
 }
 
 oe_thread_t oe_thread_self(void)
 {
-    return pthread_self();
+    return (oe_thread_t)pthread_self();
 }
 
 int oe_thread_equal(oe_thread_t thread1, oe_thread_t thread2)
 {
-    return pthread_equal(thread1, thread2);
+    return pthread_equal((pthread_t)thread1, (pthread_t)thread2);
 }
 
 /*
@@ -60,8 +60,7 @@ int oe_mutex_init(oe_mutex* Lock)
 
     pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
-    if ((err = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP)) !=
-        0)
+    if ((err = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE)) != 0)
         return err;
     pthread_mutex_init(Lock, &attr);
     pthread_mutexattr_destroy(&attr);

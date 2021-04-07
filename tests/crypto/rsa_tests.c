@@ -36,8 +36,8 @@ static char _DER_CERT[max_cert_size];
 /* RSA exponent of CERT */
 static const char _CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
 
-size_t rsa_modulus_size;
-size_t sign_size;
+static size_t rsa_modulus_size;
+static size_t sign_size;
 
 // Test RSA signing operation over an ASCII alphabet string.
 static void _test_sign()

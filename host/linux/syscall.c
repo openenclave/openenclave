@@ -9,14 +9,14 @@
 #include <openenclave/corelibc/limits.h>
 #include <openenclave/internal/syscall/sys/uio.h>
 #include <openenclave/internal/syscall/types.h>
+#include <poll.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
-#include <sys/poll.h>
-#include <sys/signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/uio.h>

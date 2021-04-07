@@ -31,7 +31,20 @@ typedef pthread_once_t oe_once_type;
 #define OE_H_ONCE_INITIALIZER PTHREAD_ONCE_INIT
 
 typedef pthread_mutex_t oe_mutex;
+#ifdef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+// GLIBC
 #define OE_H_MUTEX_INITIALIZER PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+#else
+// MUSL. From musl/ldso/dynlink.c. _m_type is the first field.
+#define OE_H_MUTEX_INITIALIZER          \
+    {                                   \
+        {                               \
+            {                           \
+                PTHREAD_MUTEX_RECURSIVE \
+            }                           \
+        }                               \
+    }
+#endif
 
 typedef pthread_key_t oe_thread_key;
 

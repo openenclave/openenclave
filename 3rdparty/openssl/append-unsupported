@@ -35,7 +35,9 @@ do
     if [[ "${i}" != *"crypto.h" ]] && [[ "${i}" != *"ssl.h" ]] && [[ "${i}" != *"x509_vfy.h" ]]; then
         continue
     fi
-    name="$(basename -s .h $i)"
+    # Use basename + cut which is portable.
+    # Alpine/busybox has very basic implementation of basename.
+    name=$(echo "$(basename $i)" | cut -f 1 -d '.')
     # We assume that every header ends with #endif, which is the case for OpenSSL.
     sed -i '$d' ${i}
     echo -e "#include <openssl/${name}_unsupported.h>\n#endif" >> ${i}

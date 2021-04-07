@@ -31,7 +31,7 @@ oe_result_t test_malloc()
     }
 
     /* Verify that at least 15.9 gigabytes of heap memory are available */
-    if (!(heap_remaining > (float)(15.9 * (double)GIGABYTE)))
+    if (!((float)heap_remaining > (float)(15.9 * (double)GIGABYTE)))
     {
         return_value = OE_FAILURE;
         goto done;
