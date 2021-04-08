@@ -43,3 +43,18 @@ add_enclave_test(tests/module_loading_negative_runpath module_loading_host
 set_enclave_tests_properties(
   tests/module_loading_negative_runpath PROPERTIES PASS_REGULAR_EXPRESSION
   "RPATH or RUNPATH should not be used in the enclave binary")
+
+string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE_UPPER)
+if (BUILD_TYPE_UPPER STREQUAL "DEBUG" OR BUILD_TYPE_UPPER STREQUAL
+                                         "RELWITHDEBINFO")
+  if (UNIX)
+    add_test(
+      NAME oegdb-multi-module-test
+      COMMAND
+        ${OE_BINDIR}/oegdb --batch -nh # Do not use user's gdbinit
+        --command=${CMAKE_CURRENT_SOURCE_DIR}/commands.gdb
+        --return-child-result # This fails the test in case of any error.
+        -arg host/module_loading_host enc/module_loading_enc)
+
+  endif ()
+endif ()

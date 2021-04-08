@@ -26,6 +26,7 @@
 #elif defined(_WIN32)
 #include <io.h>
 #define access _access
+#define strdup _strdup
 #define F_OK 0
 #endif
 #include "../memalign.h"
@@ -39,6 +40,9 @@ static void _unload_elf_image(oe_enclave_elf_image_t* image)
     {
         if (image->elf.data)
             free(image->elf.data);
+
+        if (image->path)
+            free((void*)image->path);
 
         if (image->image_base)
             oe_memalign_free(image->image_base);
@@ -445,6 +449,7 @@ static oe_result_t _load_elf_image(
     if (oe_get_current_logging_level() >= OE_LOG_LEVEL_VERBOSE)
         _dump_relocations(image->reloc_data, image->reloc_size);
 
+    image->path = strdup(path);
     image->elf.magic = ELF_MAGIC;
     result = OE_OK;
 
@@ -1025,6 +1030,46 @@ done:
     return result;
 }
 
+static oe_result_t _get_debug_modules(
+    oe_enclave_image_t* image,
+    oe_enclave_t* enclave,
+    oe_debug_module_t** modules)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_debug_module_t* debug_module = NULL;
+
+    *modules = NULL;
+    if (image->submodule)
+    {
+        debug_module = (oe_debug_module_t*)calloc(sizeof(*debug_module), 1);
+        if (!debug_module)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        debug_module->magic = OE_DEBUG_MODULE_MAGIC;
+        debug_module->version = 1;
+        debug_module->next = NULL;
+
+        debug_module->path = strdup(image->submodule->path);
+        if (!debug_module->path)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+        debug_module->path_length = strlen(debug_module->path);
+
+        debug_module->base_address =
+            (void*)(enclave->addr + image->submodule->image_rva);
+        debug_module->size = image->submodule->image_size;
+
+        debug_module->enclave = enclave->debug_enclave;
+        *modules = debug_module;
+        debug_module = NULL;
+    }
+    result = OE_OK;
+done:
+    if (debug_module)
+        free(debug_module);
+
+    return result;
+}
+
 static oe_result_t _sgx_load_enclave_properties(
     const oe_enclave_image_t* image,
     oe_sgx_enclave_properties_t* properties)
@@ -1276,6 +1321,7 @@ oe_result_t oe_load_elf_enclave_image(
     image->get_tls_page_count = _get_tls_page_count;
     image->add_pages = _add_pages;
     image->sgx_patch = _patch;
+    image->sgx_get_debug_modules = _get_debug_modules;
     image->sgx_load_enclave_properties = _sgx_load_enclave_properties;
     image->sgx_update_enclave_properties = _sgx_update_enclave_properties;
     image->unload = _unload_image;

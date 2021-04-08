@@ -129,6 +129,54 @@ void oe_debug_enclave_terminated_hook(const oe_debug_enclave_t* enclave)
     }
 }
 
+void oe_debug_module_loaded_hook(oe_debug_module_t* module)
+{
+    if (raise_debugger_events())
+    {
+        __try
+        {
+            ULONG_PTR args[1] = {(ULONG_PTR)module};
+            RaiseException(
+                OE_DEBUGRT_MODULE_LOADED_EVENT,
+                0, // dwFlags
+                1, // number of args
+                args);
+        }
+        __except (
+            GetExceptionCode() == OE_DEBUGRT_MODULE_LOADED_EVENT
+                ? EXCEPTION_EXECUTE_HANDLER
+                : EXCEPTION_CONTINUE_SEARCH)
+        {
+            // Debugger attached but did not handle the event.
+            // Ignore and continue execution.
+        }
+    }
+}
+
+void oe_debug_module_unloaded_hook(oe_debug_module_t* module)
+{
+    if (raise_debugger_events())
+    {
+        __try
+        {
+            ULONG_PTR args[1] = {(ULONG_PTR)module};
+            RaiseException(
+                OE_DEBUGRT_MODULE_UNLOADED_EVENT,
+                0, // dwFlags
+                1, // number of args
+                args);
+        }
+        __except (
+            GetExceptionCode() == OE_DEBUGRT_MODULE_UNLOADED_EVENT
+                ? EXCEPTION_EXECUTE_HANDLER
+                : EXCEPTION_CONTINUE_SEARCH)
+        {
+            // Debugger attached but did not handle the event.
+            // Ignore and continue execution.
+        }
+    }
+}
+
 #elif defined __GNUC__
 
 #include <pthread.h>
@@ -175,7 +223,15 @@ OE_NEVER_INLINE void oe_debug_enclave_terminated_hook(
     return;
 }
 
-OE_NO_OPTIMIZE_END
+OE_NEVER_INLINE void oe_debug_module_loaded_hook(oe_debug_module_t* module)
+{
+    OE_UNUSED(module);
+}
+
+OE_NEVER_INLINE void oe_debug_module_unloaded_hook(oe_debug_module_t* module)
+{
+    OE_UNUSED(module);
+}
 
 #else
 
@@ -188,7 +244,7 @@ OE_NO_OPTIMIZE_END
  * For development purposes, this value can be overridden by setting
  * the OE_DEBUGGER_CONTRACT_VERSION enviroment variable.
  */
-uint32_t oe_debugger_contract_version = 1;
+uint32_t oe_debugger_contract_version = 2;
 
 oe_debug_enclave_t* oe_debug_enclaves_list = NULL;
 oe_debug_thread_binding_t* oe_debug_thread_bindings_list = NULL;
@@ -211,9 +267,8 @@ oe_result_t oe_debug_notify_enclave_created(oe_debug_enclave_t* enclave)
     enclave->next = oe_debug_enclaves_list;
     oe_debug_enclaves_list = enclave;
 
-    result = OE_OK;
-
     oe_debug_enclave_created_hook(enclave);
+    result = OE_OK;
 
 done:
     if (locked)
@@ -253,9 +308,81 @@ oe_result_t oe_debug_notify_enclave_terminated(oe_debug_enclave_t* enclave)
 
     *itr = enclave->next;
     enclave->next = NULL;
-    result = OE_OK;
 
     oe_debug_enclave_terminated_hook(enclave);
+    result = OE_OK;
+
+done:
+    if (locked)
+        spin_unlock();
+
+    return result;
+}
+
+oe_result_t oe_debug_notify_module_loaded(oe_debug_module_t* module)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    bool locked = false;
+
+    if (module == NULL || module->magic != OE_DEBUG_MODULE_MAGIC ||
+        module->enclave == NULL)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    // Prepend module to enclave's list of module.
+    spin_lock();
+    locked = true;
+
+    module->next = module->enclave->modules;
+    module->enclave->modules = module;
+
+    oe_debug_module_loaded_hook(module);
+    result = OE_OK;
+
+done:
+    if (locked)
+        spin_unlock();
+
+    return result;
+}
+
+oe_result_t oe_debug_notify_module_unloaded(oe_debug_module_t* module)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    bool locked = false;
+
+    if (module == NULL || module->enclave == NULL ||
+        module->magic != OE_DEBUG_MODULE_MAGIC)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    spin_lock();
+    locked = true;
+
+    // Remove module from list
+    oe_debug_module_t** itr = &module->enclave->modules;
+    while (*itr)
+    {
+        if (*itr == module)
+            break;
+        itr = &(*itr)->next;
+    }
+
+    if (*itr == NULL)
+    {
+        result = OE_NOT_FOUND;
+        goto done;
+    }
+
+    *itr = module->next;
+    module->next = NULL;
+
+    oe_debug_module_unloaded_hook(module);
+    result = OE_OK;
 
 done:
     if (locked)

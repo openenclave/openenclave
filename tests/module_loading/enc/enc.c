@@ -7,12 +7,13 @@
 
 #include "module_loading_t.h"
 
-int square(int a);
-__attribute__((weak)) int add_with_constant(int a, int b);
+int square(volatile int a);
+__attribute__((weak)) int add_with_constant(volatile int a, volatile int b);
 __attribute__((weak)) int sub(int a, int b);
 
 int is_enclave_init;
 
+__attribute__((visibility("default"))) int debugger_test;
 __attribute__((visibility("default"))) int is_module_init;
 
 __attribute__((constructor)) void init_enclave()

@@ -285,6 +285,28 @@ class EnclaveTerminationBreakpoint(gdb.Breakpoint):
         unload_enclave_symbol(enclave.path, enclave.base_address)
         return False
 
+class ModuleLoadedBreakpoint(gdb.Breakpoint):
+    def __init__(self):
+        gdb.Breakpoint.__init__ (self, spec="oe_debug_module_loaded_hook", internal=1)
+
+    def stop(self):
+        module_addr = int(gdb.parse_and_eval("$rdi"))
+        debug_module = oe_debug_module_t(module_addr)
+        load_enclave_symbol(debug_module.path, debug_module.base_address)
+        print ("oegdb: Loaded enclave module %s" % debug_module.path)
+        return False
+
+class ModuleUnloadedBreakpoint(gdb.Breakpoint):
+    def __init__(self):
+        gdb.Breakpoint.__init__ (self, spec="oe_debug_module_unloaded_hook", internal=1)
+
+    def stop(self):
+        module_addr = int(gdb.parse_and_eval("$rdi"))
+        debug_module = oe_debug_module_t(module_addr)
+        unload_enclave_symbol(debug_module.path, debug_module.base_address)
+        print ("oegdb: Unloaded enclave module %s" % debug_module.path)
+        return False
+
 def new_objfile_handler(event):
     global g_enclave_list_parsed
     if not g_enclave_list_parsed:
@@ -346,6 +368,8 @@ def oe_debugger_init():
     oe_debugger_cleanup()
     EnclaveCreationBreakpoint()
     EnclaveTerminationBreakpoint()
+    ModuleLoadedBreakpoint()
+    ModuleUnloadedBreakpoint()
     return
 
 def oe_debugger_cleanup():

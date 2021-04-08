@@ -102,8 +102,7 @@ oe_debug_notify_module_unloaded(oe_debug_module_t* module);
  * module. This can happen if the debugger is attached after the module has been
  * added to the list of modules, but before the hook function is called.
  */
-OE_DEBUGRT_EXPORT oe_result_t
-oe_debug_notify_module_loaded_hook(oe_debug_module_t* module);
+OE_DEBUGRT_EXPORT void oe_debug_module_loaded_hook(oe_debug_module_t* module);
 
 /**
  * The debugger is expected to set a breakpoint in the hook function and read
@@ -112,8 +111,7 @@ oe_debug_notify_module_loaded_hook(oe_debug_module_t* module);
  * it has no record of. This can happen if the debugger is attached after the
  * module has been removed from the list, but before the hook is called.
  */
-OE_DEBUGRT_EXPORT oe_result_t
-oe_debug_notify_module_unloaded_hook(oe_debug_module_t* module);
+OE_DEBUGRT_EXPORT void oe_debug_module_unloaded_hook(oe_debug_module_t* module);
 
 OE_EXTERNC_END
 
