@@ -287,7 +287,7 @@ oe_result_t output_file(
     fopen_s(&output, file_name, "wb");
     if (!output)
     {
-        log("Failed to open report file %s\n", file_name);
+        log("Failed to open output file %s\n", file_name);
         return OE_FAILURE;
     }
     fwrite(data, data_size, 1, output);
@@ -617,10 +617,13 @@ oe_result_t generate_oe_report(
     quote_size = header->report_size;
 
     // Write report to file
-    OE_CHECK_MSG(
-        output_file(report_filename, remote_report, report_size),
-        "Failed to open report file %s\n",
-        report_filename);
+    if (report_filename)
+    {
+        OE_CHECK_MSG(
+            output_file(report_filename, remote_report, report_size),
+            "Failed to open report file %s\n",
+            report_filename);
+    }
 
     // Dump report
     if (verbose)
@@ -756,10 +759,13 @@ oe_result_t generate_oe_evidence(
     log("========== Got OE evidence, size = %zu\n\n", evidence_size);
 
     // Write evidence to file
-    OE_CHECK_MSG(
-        output_file(evidence_filename, evidence, evidence_size),
-        "Failed to open evidence file %s\n",
-        evidence_filename);
+    if (evidence_filename)
+    {
+        OE_CHECK_MSG(
+            output_file(evidence_filename, evidence, evidence_size),
+            "Failed to open evidence file %s\n",
+            evidence_filename);
+    }
 
     evidence_header = (oe_attestation_header_t*)evidence;
     report_header = (oe_report_header_t*)evidence_header->data;

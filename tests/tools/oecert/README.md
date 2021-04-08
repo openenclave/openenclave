@@ -1,33 +1,34 @@
 oecert
 =====
 
-oecert is a utility that generates certificates (in der format),
-evidence (OE report and OE evidence), and endorsements for evidence in binary format. For certificates, the user can pass
-in the public/private key.
+`oecert` is a utility that generates the following files in binary format, or dump them in readable text, and verify them:
 
- 1. Self-signed certificates used for remote attestation over TLS.
- 2. Binary file format of an OE report.
- 3. Binary file format of an OE evidence.
- 4. Binary file format of an endorsement.
+ 1. Self-signed certificates (in der format) used for remote attestation over TLS.
+ 2. An OE report.
+ 3. An OE evidence.
+ 4. An endorsement for OE report/evidence.
 
-Usage: oecert Options
+For certificates, the user can pass in the public/private key.
 
-where Options are:
+
+Usage: `oecert Options`
+
+where `Options` are:
 
     --cert PRIVKEY PUBKEY : generate der remote attestation certificate.
     --report              : generate binary OE report.
     --evidence            : generate binary OE evidence.
-    --out FILENAME        : specify certificate/report/evidence output filename, default: out.bin
-    --endorsements        : specify endorsements output filename.
+    --out FILENAME        : specify certificate/report/evidence output filename, default: no file output.
+    --endorsements        : specify endorsements output filename, default: no endorsements output.
     --verify              : verify generated certificate/report/evidence
     --log LOG_FILENAME    : log file name, default: oecert.log
     --verbose             : dump verbose info of evidence
 
-Example 1 Generate, verify and dump a ceritificate, output certificate to default output file "out.bin":
+Example 1 Generate, verify and dump a ceritificate. Without "--out", there will be no certificate output file:
 
     ./oecert --cert keyecec.pem publickeyec.pem --verify --verbose
 
-Example 2 Generate an OE report and output its endorsements binary, output OE report to "report.bin":
+Example 2 Generate an OE report and output its endorsements binary to "endorsements.bin", and output OE report to "report.bin":
 
     ./oecert --report --endorsements endorsements.bin --out report.bin
 

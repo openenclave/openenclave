@@ -28,7 +28,6 @@
 #define INPUT_PARAM_OPTION_EVIDENCE "--evidence"
 #define INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME "--endorsements"
 #define INPUT_PARAM_OPTION_VERIFY "--verify"
-#define DEFAULT_OUT_FILE "out.bin"
 #define INPUT_PARAM_OPTION_OUT_FILE "--out"
 #define DEFAULT_LOG_FILE "oecert.log"
 #define INPUT_PARAM_OPTION_LOG_FILE "--log"
@@ -100,13 +99,13 @@ static oe_result_t generate_certificate(
     size_t private_key_size,
     uint8_t* public_key,
     size_t public_key_size,
-    const char* out_filename,
+    const char* certificate_filename,
     bool verify,
     bool verbose)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_result_t ecall_result;
-    unsigned char* cert = NULL;
+    unsigned char* cert = nullptr;
     size_t cert_size = 0;
     uint8_t* report = nullptr;
     size_t report_size = 0;
@@ -128,10 +127,18 @@ static oe_result_t generate_certificate(
             "Failed to create certificate. Enclave: %s, Host: %s\n",
             oe_result_str(ecall_result),
             oe_result_str(result));
-        fflush(stdout);
         goto done;
     }
-    output_file(out_filename, cert, cert_size);
+    if (certificate_filename)
+    {
+        result = output_file(certificate_filename, cert, cert_size);
+        if (result != OE_OK)
+        {
+            printf(
+                "Failed to open certificate file %s\n", certificate_filename);
+            goto done;
+        }
+    }
 
     if (verbose)
     {
@@ -151,20 +158,20 @@ static oe_result_t generate_certificate(
     {
         OE_CHECK_MSG(
             oe_verify_attestation_certificate(
-                cert, cert_size, enclave_identity_verifier, NULL),
+                cert, cert_size, enclave_identity_verifier, nullptr),
             "Failed to verify certificate. result=%u (%s)\n",
             result,
             oe_result_str(result));
 
         log("========== Certificate verified\n\n");
     }
-    fflush(stdout);
 
 done:
     // deallcate resources
     if (cert)
         free(cert);
 
+    fflush(stdout);
     return result;
 }
 
@@ -182,10 +189,8 @@ static void _display_help(const char* cmd)
         "\t%s : generate binary enclave evidence.\n",
         INPUT_PARAM_OPTION_EVIDENCE);
     printf(
-        "\t%s <output filename> : file for certificate, report or evidence "
-        "(default: %s)\n",
-        INPUT_PARAM_OPTION_OUT_FILE,
-        DEFAULT_OUT_FILE);
+        "\t%s <output filename> : file for certificate, report or evidence.\n",
+        INPUT_PARAM_OPTION_OUT_FILE);
     printf(
         "\t%s : file for endorsements (use with %s or %s).\n",
         INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME,
@@ -213,7 +218,7 @@ static char* _get_enclave_filename()
 #if defined(__linux__)
     path_size += (size_t)readlink("/proc/self/exe", path, OE_PATH_MAX);
 #elif defined(_WIN32)
-    path_size += (size_t)GetModuleFileName(NULL, path, OE_PATH_MAX);
+    path_size += (size_t)GetModuleFileName(nullptr, path, OE_PATH_MAX);
     path_size -= strlen(".exe");
 #endif
 
@@ -267,8 +272,8 @@ static int _parse_args(int argc, const char* argv[])
 
     int i = 1; // current index
     // save
-    _params.out_filename = DEFAULT_OUT_FILE;
-    _params.endorsements_filename = NULL;
+    _params.out_filename = nullptr;
+    _params.endorsements_filename = nullptr;
     _params.log_filename = DEFAULT_LOG_FILE;
     _params.verify = false;
     _params.verbose = false;
@@ -277,87 +282,40 @@ static int _parse_args(int argc, const char* argv[])
     {
         if (strcmp(INPUT_PARAM_OPTION_CERT, argv[i]) == 0)
         {
-            if (argc >= (i + 2))
-            {
-                _params.generate_certificate = true;
-                _params.private_key_filename = argv[i + 1];
-                _params.public_key_filename = argv[i + 2];
+            if (argc < i + 3)
+                break;
 
-                i += 3;
-            }
-            else
-            {
-                printf(
-                    "%s has invalid number of parameters.\n",
-                    INPUT_PARAM_OPTION_CERT);
-                _display_help(argv[0]);
-                return 1;
-            }
+            _params.generate_certificate = true;
+            _params.private_key_filename = argv[i + 1];
+            _params.public_key_filename = argv[i + 2];
+            i += 3;
         }
         else if (strcmp(INPUT_PARAM_OPTION_REPORT, argv[i]) == 0)
         {
-            if (argc >= i)
-            {
-                _params.generate_report = true;
-                i += 1;
-            }
-            else
-            {
-                printf(
-                    "%s has invalid number of parameters.\n",
-                    INPUT_PARAM_OPTION_REPORT);
-                _display_help(argv[0]);
-                return 1;
-            }
+            _params.generate_report = true;
+            i++;
         }
         else if (strcmp(INPUT_PARAM_OPTION_EVIDENCE, argv[i]) == 0)
         {
-            if (argc >= i)
-            {
-                _params.generate_evidence = true;
-                i += 1;
-            }
-            else
-            {
-                printf(
-                    "%s has invalid number of parameters.\n",
-                    INPUT_PARAM_OPTION_EVIDENCE);
-                _display_help(argv[0]);
-                return 1;
-            }
+            _params.generate_evidence = true;
+            i++;
         }
         else if (strcmp(INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME, argv[i]) == 0)
         {
-            if (argc >= i + 1)
-            {
-                _params.endorsements_filename = argv[i + 1];
-                i += 2;
-            }
-            else
-            {
-                printf(
-                    "%s has invalid number of parameters.\n",
-                    INPUT_PARAM_OPTION_ENDORSEMENTS_FILENAME);
-                _display_help(argv[0]);
-                return 1;
-            }
+            if (argc < i + 2)
+                break;
+
+            _params.endorsements_filename = argv[i + 1];
+            i += 2;
         }
 
         else if (strcmp(INPUT_PARAM_OPTION_OUT_FILE, argv[i]) == 0)
         {
-            if (argc >= i + 1)
-            {
-                _params.out_filename = argv[i + 1];
-                i += 2;
-            }
-            else
-            {
-                printf(
-                    "%s has invalid number of parameters.\n",
-                    INPUT_PARAM_OPTION_OUT_FILE);
-                _display_help(argv[0]);
-                return 1;
-            }
+            if (argc < i + 2)
+                break;
+
+            _params.out_filename = argv[i + 1];
+            i += 2;
         }
 
         else if (strcmp(INPUT_PARAM_OPTION_VERIFY, argv[i]) == 0)
@@ -368,19 +326,11 @@ static int _parse_args(int argc, const char* argv[])
 
         else if (strcmp(INPUT_PARAM_OPTION_LOG_FILE, argv[i]) == 0)
         {
-            if (argc >= i + 1)
-            {
-                _params.log_filename = argv[i + 1];
-                i += 2;
-            }
-            else
-            {
-                printf(
-                    "%s has invalid number of parameters.\n",
-                    INPUT_PARAM_OPTION_LOG_FILE);
-                _display_help(argv[0]);
-                return 1;
-            }
+            if (argc < i + 2)
+                break;
+
+            _params.log_filename = argv[i + 1];
+            i += 2;
         }
 
         else if (strcmp(INPUT_PARAM_OPTION_VERBOSE, argv[i]) == 0)
@@ -391,9 +341,17 @@ static int _parse_args(int argc, const char* argv[])
 
         else
         {
-            printf("Invalid option: %s\n", argv[i]);
+            printf("Invalid option: %s\n\n", argv[i]);
+            _display_help(argv[0]);
             return 1;
         }
+    }
+
+    if (i < argc)
+    {
+        printf("%s has invalid number of parameters.\n\n", argv[i]);
+        _display_help(argv[0]);
+        return 1;
     }
 
     if (_params.generate_certificate && _params.generate_report &&
@@ -413,9 +371,9 @@ static oe_result_t _read_key(const char* filename, uint8_t** data, size_t* size)
     fopen_s(&fp, filename, "rb");
     size_t file_size;
     oe_result_t result = OE_FAILURE;
-    uint8_t* memory = NULL;
+    uint8_t* memory = nullptr;
 
-    if (fp == NULL)
+    if (fp == nullptr)
         goto done;
 
     // Find file size
@@ -425,7 +383,7 @@ static oe_result_t _read_key(const char* filename, uint8_t** data, size_t* size)
 
     // Account for '\0'
     memory = (uint8_t*)malloc(file_size + 1);
-    if (memory == NULL)
+    if (memory == nullptr)
     {
         printf("Failed to allocate memory.\n");
         goto done;
@@ -444,7 +402,7 @@ static oe_result_t _read_key(const char* filename, uint8_t** data, size_t* size)
 
     *data = memory;
     *size = file_size + 1;
-    memory = NULL;
+    memory = nullptr;
 
     result = OE_OK;
 
@@ -547,7 +505,7 @@ int main(int argc, const char* argv[])
              enclave_filename,
              OE_ENCLAVE_TYPE_AUTO,
              OE_ENCLAVE_FLAG_DEBUG,
-             NULL,
+             nullptr,
              0,
              &enclave)) != OE_OK)
     {
