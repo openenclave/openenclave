@@ -139,7 +139,7 @@ static void _run_malloc_test(size_t size)
 
     // Make sure that the value can fit within a double since we use
     // double arithmetic below.
-    OE_TEST(original_size == (double)original_size);
+    OE_TEST(original_size == (size_t)(double)original_size);
 
     for (int i = 0; i < ITERS; i++)
     {

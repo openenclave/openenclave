@@ -8,7 +8,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ptrace.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <sys/user.h>
@@ -16,14 +15,18 @@
 #include "enclave_context.h"
 #include "inferior_status.h"
 
+// ptrace has slightly different signatures on various platforms.
+// The first parameter is an int or an enum. Mangle the name
+// so that we can declare it with the type we want.
+#define ptrace ptrace_
+#include <sys/ptrace.h>
+#undef ptrace
+
 #define COUNTOF(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 // Function pointer definitions.
-typedef int64_t (*sgx_ptrace_func_t)(
-    enum __ptrace_request request,
-    pid_t pid,
-    void* addr,
-    void* data);
+typedef int64_t (
+    *sgx_ptrace_func_t)(int request, pid_t pid, void* addr, void* data);
 
 typedef pid_t (*sgx_waitpid_func_t)(pid_t pid, int* status, int options);
 
@@ -255,7 +258,7 @@ static int64_t sgx_single_step_handler(pid_t pid, void* addr, void* data)
 
 // Customized ptrace request handler table.
 typedef int64_t (*sgx_ptrace_request_handler)(pid_t, void*, void*);
-typedef enum __ptrace_request sgx_ptrace_request_type;
+typedef int sgx_ptrace_request_type;
 
 struct
 {
@@ -293,7 +296,7 @@ struct
 **
 **==============================================================================
 */
-
+int64_t ptrace(sgx_ptrace_request_type __request, ...);
 int64_t ptrace(sgx_ptrace_request_type __request, ...)
 {
     pid_t pid;

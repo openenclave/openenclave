@@ -715,7 +715,6 @@ oe_result_t generate_oe_evidence(
 
     oe_attestation_header_t* evidence_header = nullptr;
     oe_report_header_t* report_header = nullptr;
-    uint64_t quote_size = 0;
     sgx_quote_t* quote = nullptr;
 
     log("========== Getting OE evidence\n");
@@ -770,7 +769,6 @@ oe_result_t generate_oe_evidence(
     evidence_header = (oe_attestation_header_t*)evidence;
     report_header = (oe_report_header_t*)evidence_header->data;
     quote = (sgx_quote_t*)report_header->report;
-    quote_size = report_header->report_size;
 
     // Dump evidence
     if (verbose)

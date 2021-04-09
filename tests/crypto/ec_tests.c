@@ -48,10 +48,10 @@ static uint8_t _SIGNATURE[max_sign_size];
 static uint8_t x_data[max_coordinates_size];
 static uint8_t y_data[max_coordinates_size];
 
-size_t private_key_size;
-size_t public_key_size;
-size_t sign_size;
-size_t x_size, y_size;
+static size_t private_key_size;
+static size_t public_key_size;
+static size_t sign_size;
+static size_t x_size, y_size;
 
 static const uint8_t _P256_GROUP_ORDER[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
