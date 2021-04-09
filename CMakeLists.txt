@@ -223,10 +223,14 @@ if (WIN32)
   endif ()
 
   if (NOT NUGET_PACKAGE_PATH)
-    message(
-      FATAL_ERROR
-        "NUGET_PACKAGE_PATH not defined. Please define NUGET_PACKAGE_PATH as the path to the installed Intel and DCAP Client nuget packages."
-    )
+    # try with a default option if user has not specified a NUGET_PACKAGE_PATH
+    set(NUGET_PACKAGE_PATH "C:\\oe_prereqs")
+    if (NOT EXISTS "${NUGET_PACKAGE_PATH}")
+      message(
+        FATAL_ERROR
+          "NUGET_PACKAGE_PATH not defined. Please define NUGET_PACKAGE_PATH as the path to the installed Intel and DCAP Client nuget packages."
+      )
+    endif ()
   endif ()
 else ()
   find_program(OE_BASH bash)
