@@ -648,13 +648,13 @@ static oe_result_t _init_sigstruct(
                 sigstruct->isvfamilyid,
                 sizeof(sigstruct->isvfamilyid),
                 family_id,
-                sizeof(*family_id)));
+                sizeof(sigstruct->isvfamilyid)));
         if (extended_product_id)
             OE_CHECK(oe_memcpy_s(
                 sigstruct->isvextprodid,
                 sizeof(sigstruct->isvextprodid),
                 extended_product_id,
-                sizeof(*extended_product_id)));
+                sizeof(sigstruct->isvextprodid)));
         sigstruct->attributemask.flags |= SGX_FLAGS_KSS;
     }
 
