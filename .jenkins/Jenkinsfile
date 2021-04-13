@@ -53,6 +53,10 @@ try {
                                   string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
                                   booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
            },
+           "Intel Linux" : {
+               build job: '/pipelines/Intel-Agnostic',
+                     parameters: [booleanParam(name: 'FULL_TEST_SUITE',value: FULL_TEST_SUITE)]
+           },
            "Azure Windows" : {
                build job: '/pipelines/Azure-Windows',
                      parameters: [string(name: 'REPOSITORY_NAME', value: REPOSITORY_NAME),
