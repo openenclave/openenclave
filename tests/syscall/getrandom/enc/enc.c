@@ -19,18 +19,14 @@ void test_getrandom()
     size_t buflen = 256;
     ssize_t size;
 
-    /* Test with the zero flags */
+    /* Test with the zero flags (required by OE) */
     size = getrandom((void*)buf, sizeof(buflen), 0);
     OE_TEST((size_t)size == sizeof(buflen));
 
-    /* Test with valid flags */
-    size = getrandom((void*)buf, sizeof(buflen), GRND_RANDOM);
-    OE_TEST((size_t)size == sizeof(buflen));
-    size = getrandom((void*)buf, sizeof(buflen), GRND_NONBLOCK);
-    OE_TEST((size_t)size == sizeof(buflen));
-
-    /* Test with invalid flags */
-    OE_TEST(getrandom((void*)buf, sizeof(buflen), 3) == -1);
+    /* Test with unsupported flags */
+    OE_TEST(getrandom((void*)buf, sizeof(buflen), GRND_RANDOM) == -1);
+    OE_TEST(errno == EINVAL);
+    OE_TEST(getrandom((void*)buf, sizeof(buflen), GRND_NONBLOCK) == -1);
     OE_TEST(errno == EINVAL);
 }
 

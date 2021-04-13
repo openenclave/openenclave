@@ -1076,15 +1076,8 @@ OE_WEAK OE_DEFINE_SYSCALL3_M(SYS_getrandom)
     size_t buflen = (size_t)arg2;
     unsigned int flags = (unsigned int)arg3;
 
-    if (!buf || !buflen)
-    {
-        oe_errno = OE_EINVAL;
-        goto done;
-    }
-
-    /* Maintain the compatibility with the valid flags (though the flags
-     * are not effective) */
-    if (flags && flags != OE_GRND_RANDOM && flags != OE_GRND_NONBLOCK)
+    /* Flags (e.g., GRND_RANDOM and GRND_NONBLOCK) are not supported. */
+    if (!buf || !buflen || flags)
     {
         oe_errno = OE_EINVAL;
         goto done;
