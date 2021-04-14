@@ -93,8 +93,8 @@ try{
                 "Win2019 Sim Release Cross Compile":                      { windowsCrossCompile('acc-win2019', 'Release', 'None', '1') },
                 "Win2019 Sim Debug Cross Compile LVI ":                   { windowsCrossCompile('acc-win2019', 'Debug', 'ControlFlow', '1') },
                 "Win2019 Sim Release Cross Compile LVI ":                 { windowsCrossCompile('acc-win2019', 'Release', 'ControlFlow', '1') },
-                "Win2019 Debug Cross Compile with DCAP libs":             { windowsCrossCompile('acc-win2019', 'Debug' },
-                "Win2019 Release Cross Compile with DCAP libs":           { windowsCrossCompile('acc-win2019', 'Release' },
+                "Win2019 Debug Cross Compile with DCAP libs":             { windowsCrossCompile('acc-win2019', 'Debug') },
+                "Win2019 Release Cross Compile with DCAP libs":           { windowsCrossCompile('acc-win2019', 'Release') },
                 "Win2019 Debug Cross Compile DCAP LVI":                   { windowsCrossCompile('acc-win2019', 'Debug', 'ControlFlow') },
                 "Win2019 Release Cross Compile DCAP LVI":                 { windowsCrossCompile('acc-win2019', 'Release', 'ControlFlow') },
 
