@@ -2,7 +2,8 @@
 # Licensed under the MIT License.
 
 if (WIN32)
-  set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};C:\\oe_prereqs\\OpenSSL\\x64\\release")
+  set(CMAKE_PREFIX_PATH
+      "${CMAKE_PREFIX_PATH};C:\\oe_prereqs\\OpenSSL\\x64\\release")
   find_package(OpenSSL REQUIRED)
 else ()
   find_package(OpenSSL REQUIRED)
@@ -10,7 +11,7 @@ endif ()
 
 add_custom_command(
   OUTPUT oecert_u.h oecert_u.c oecert_args.h
-  DEPENDS ../oecert.edl edger8r
+  DEPENDS ../oecert.edl edger8r oecert_enclave_signed
   COMMAND edger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../oecert.edl
           --search-path ${PROJECT_SOURCE_DIR}/include ${DEFINE_OE_SGX})
 

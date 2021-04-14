@@ -6,34 +6,26 @@
 
 #include <openenclave/host.h>
 #include "../../../../host/sgx/platformquoteprovider.h"
+#include "../oecert_enc_pubkey.h"
 
 void log(const char* fmt, ...);
 void oecert_quote_provider_log(sgx_ql_log_level_t level, const char* message);
 void set_log_callback();
 
 void dump_certificate(const uint8_t* data, size_t data_len);
-void decode_certificate_pem(FILE* file, const uint8_t* data, size_t data_len);
-void decode_crl_pem(const uint8_t* data, size_t data_len);
-void parse_certificate_extension(const uint8_t* data, size_t data_len);
-void dump_certificate_chain(
-    const uint8_t* data,
-    size_t data_len,
-    bool is_report_buffer);
-void dump_claims(const oe_claim_t* claims, size_t claims_size);
 
 oe_result_t output_file(
     const char* file_name,
     const uint8_t* data,
     size_t data_size);
-oe_result_t dump_sgx_quote(
-    const uint8_t* quote_buffer,
-    const uint8_t* boundary,
-    size_t boundary_size);
+
+oe_result_t verify_signer_id(
+    const char* siging_public_key,
+    size_t siging_public_key_size,
+    uint8_t* signer_id,
+    size_t signer_id_size);
+
 oe_result_t dump_oe_report(const uint8_t* report, size_t report_size);
-oe_result_t dump_oe_evidence(const uint8_t* evidence, size_t evidence_size);
-oe_result_t dump_oe_endorsements(
-    const uint8_t* endorsements,
-    size_t endorsements_size);
 
 oe_result_t get_oe_report_from_certificate(
     const uint8_t* certificate_in_der,

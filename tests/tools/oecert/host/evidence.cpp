@@ -4,6 +4,7 @@
 #include "evidence.h"
 
 #include <ctype.h>
+#include <openenclave/attestation/sgx/report.h>
 #include <openenclave/attestation/verifier.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/hexdump.h>
@@ -204,6 +205,24 @@ void dump_certificate_chain(
             end++;
         pem = end;
     }
+}
+
+/**
+ * Helper function used to make the claim-finding process more convenient. Given
+ * the claim name, claim list, and its size, returns the claim with that claim
+ * name in the list.
+ */
+static const oe_claim_t* find_claim(
+    const oe_claim_t* claims,
+    size_t claims_size,
+    const char* name)
+{
+    for (size_t i = 0; i < claims_size; i++)
+    {
+        if (strcmp(claims[i].name, name) == 0)
+            return &(claims[i]);
+    }
+    return nullptr;
 }
 
 void dump_claims(const oe_claim_t* claims, size_t claims_length)
@@ -542,6 +561,43 @@ oe_result_t dump_oe_endorsements(
     return result;
 }
 
+oe_result_t verify_signer_id(
+    const char* siging_public_key,
+    size_t siging_public_key_size,
+    uint8_t* signer_id,
+    size_t signer_id_size)
+{
+    oe_result_t result = OE_FAILURE;
+    uint8_t signer[OE_SIGNER_ID_SIZE];
+    size_t signer_size = sizeof(signer);
+
+    if (signer_id_size != OE_SIGNER_ID_SIZE)
+    {
+        printf("Invalid signer id size: %zu", signer_id_size);
+        goto done;
+    }
+
+    OE_CHECK_MSG(
+        oe_sgx_get_signer_id_from_public_key(
+            siging_public_key, siging_public_key_size, signer, &signer_size),
+        "Failed to get signer id from public key. Error: (%s)\n",
+        oe_result_str(result));
+
+    if (memcmp(signer, signer_id, signer_id_size) != 0)
+    {
+        printf("mrsigner is not equal!\n");
+        for (size_t i = 0; i < signer_id_size; i++)
+        {
+            printf("0x%x - 0x%x\n", (uint8_t)signer[i], (uint8_t)signer_id[i]);
+        }
+        goto done;
+    }
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 oe_result_t get_oe_report_from_certificate(
     const uint8_t* certificate_in_der,
     size_t certificate_in_der_length,
@@ -687,6 +743,16 @@ oe_result_t generate_oe_report(
             "Failed to verify report. Error: (%s)\n",
             oe_result_str(result));
 
+        // verify signer id
+        OE_CHECK_MSG(
+            verify_signer_id(
+                (char*)OECERT_ENC_PUBLIC_KEY,
+                sizeof(OECERT_ENC_PUBLIC_KEY),
+                parsed_report.identity.signer_id,
+                sizeof(parsed_report.identity.signer_id)),
+            "Failed to verify signer id. Error: (%s)\n",
+            oe_result_str(result));
+
         log("========== OE report verified\n\n");
     }
     printf("generate_oe_report succeeded, more info in log file.\n");
@@ -820,6 +886,7 @@ oe_result_t generate_oe_evidence(
 
         oe_claim_t* claims = NULL;
         size_t claims_length = 0;
+        const oe_claim_t* claim;
 
         OE_CHECK(oe_verifier_initialize());
 
@@ -836,6 +903,22 @@ oe_result_t generate_oe_evidence(
                 &claims_length),
             "Failed to verify evidence. result=%u (%s)\n",
             result,
+            oe_result_str(result));
+
+        // verify signer id
+        claim = find_claim(claims, claims_length, OE_CLAIM_SIGNER_ID);
+        if (claim == nullptr)
+        {
+            printf("cannot find oe_claim: %s.\n", OE_CLAIM_SIGNER_ID);
+            goto done;
+        }
+        OE_CHECK_MSG(
+            verify_signer_id(
+                (char*)OECERT_ENC_PUBLIC_KEY,
+                sizeof(OECERT_ENC_PUBLIC_KEY),
+                claim->value,
+                claim->value_size),
+            "Failed to verify signer id. Error: (%s)\n",
             oe_result_str(result));
 
         log("========== OE evidence verified.\n\n");

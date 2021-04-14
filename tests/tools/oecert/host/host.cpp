@@ -84,13 +84,23 @@ oe_result_t enclave_identity_verifier(oe_identity_t* identity, void* arg)
     // Dump an enclave's unique ID, signer ID and Product ID. They are
     // MRENCLAVE, MRSIGNER and ISVPRODID for SGX enclaves.  In a real scenario,
     // custom id checking should be done here
-    printf("identity->signer_id :\n");
+    printf("identity->unique_id :\n");
     for (int i = 0; i < OE_UNIQUE_ID_SIZE; i++)
-        printf("0x%0x ", (uint8_t)identity->signer_id[i]);
+        printf("0x%0x ", (uint8_t)identity->unique_id[i]);
 
     printf("\nidentity->signer_id :\n");
     for (int i = 0; i < OE_SIGNER_ID_SIZE; i++)
         printf("0x%0x ", (uint8_t)identity->signer_id[i]);
+
+    // verify signer id
+    OE_CHECK_MSG(
+        verify_signer_id(
+            (char*)OECERT_ENC_PUBLIC_KEY,
+            sizeof(OECERT_ENC_PUBLIC_KEY),
+            identity->signer_id,
+            sizeof(identity->signer_id)),
+        "Failed to verify signer id. Error: (%s)\n",
+        oe_result_str(result));
 
     printf("\nidentity->product_id :\n");
     for (int i = 0; i < OE_PRODUCT_ID_SIZE; i++)
@@ -591,7 +601,8 @@ done:
 int main(int argc, const char* argv[])
 {
     int ret = 0;
-
+    printf("NOTICE: oecert is purely a debugging utility and not suitable for "
+           "production use.\n\n");
     if (!oe_has_sgx_quote_provider())
     {
         fprintf(
