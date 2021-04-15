@@ -25,6 +25,9 @@ OS_NAME_MAP = [
 ]
 
 def get_image_version() {
+    if (params.IMAGE_VERSION) {
+        return "${params.IMAGE_VERSION}"
+    }
     def now = LocalDateTime.now()
     return (now.format(DateTimeFormatter.ofPattern("yyyy")) + "." + \
             now.format(DateTimeFormatter.ofPattern("MM")) + "." + \

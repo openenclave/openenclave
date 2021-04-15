@@ -33,7 +33,7 @@ def windowsLinuxElfBuild(String label, String version, String compiler, String b
                                ${extra_cmake_args.join(' ')}
                            ninja -v
                            """
-                oe.ContainerRun("oetools-full-${version}:${DOCKER_TAG}", cross_compiler, task, "--cap-add=SYS_PTRACE")
+                oe.ContainerRun("oetools-${version}:${DOCKER_TAG}", cross_compiler, task, "--cap-add=SYS_PTRACE")
                 stash includes: 'build/tests/**', name: "linux-${label}-${compiler}-${build_type}-lvi_mitigation=${lvi_mitigation}-${version}-${BUILD_NUMBER}"
             }
         }

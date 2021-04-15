@@ -1,70 +1,36 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-OECI_LIB_VERSION = env.OECI_LIB_VERSION ?: "master"
-oe = library("OpenEnclaveCommon@${OECI_LIB_VERSION}").jenkins.common.Openenclave.new()
-
 GLOBAL_TIMEOUT_MINUTES = 240
 
 OETOOLS_REPO = "https://oejenkinscidockerregistry.azurecr.io"
 OETOOLS_REPO_CREDENTIAL_ID = "oejenkinscidockerregistry"
 OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID = "oeciteamdockerhub"
 
-def buildDockerImages() {
-    node(params.AGENTS_LABEL) {
-        timeout(GLOBAL_TIMEOUT_MINUTES) {
-            stage("Checkout") {
-                cleanWs()
-                checkout scm
-            }
-            String buildArgs = oe.dockerBuildArgs("UID=\$(id -u)", "UNAME=\$(id -un)",
-                                                  "GID=\$(id -g)", "GNAME=\$(id -gn)")
-            stage("Build Ubuntu 18.04 Full Docker Image") {
-                oefull1804 = oe.dockerImage("oetools-full-18.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/linux/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${DEVKITS_URI}")
-                puboefull1804 = oe.dockerImage("oeciteam/oetools-full-18.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/linux/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=18.04 --build-arg devkits_uri=${DEVKITS_URI}")
-            }
-            stage("Build Ubuntu 18.04 Minimal Docker image") {
-                oeminimal1804 = oe.dockerImage("oetools-minimal-18.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/linux/Dockerfile.minimal", "${buildArgs} --build-arg ubuntu_version=18.04")
-                puboeminimal1804 = oe.dockerImage("oeciteam/oetools-minimal-18.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/linux/Dockerfile.minimal", "${buildArgs} --build-arg ubuntu_version=18.04")
-            }
-            stage("Build Ubuntu 20.04 Full Docker Image") {
-                oefull2004 = oe.dockerImage("oetools-full-20.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/linux/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${DEVKITS_URI}")
-                puboefull2004 = oe.dockerImage("oeciteam/oetools-full-20.04:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/linux/Dockerfile.full", "${buildArgs} --build-arg ubuntu_version=20.04 --build-arg devkits_uri=${DEVKITS_URI}")
-            }
-            stage("Build Ubuntu Deploy Docker image") {
-                oeDeploy = oe.dockerImage("oetools-deploy:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/linux/Dockerfile.deploy", buildArgs)
-                puboeDeploy = oe.dockerImage("oeciteam/oetools-deploy:${DOCKER_TAG}", ".jenkins/infrastructure/dockerfiles/linux/Dockerfile.deploy", buildArgs)
-            }
-            stage("Push to OE Docker Registry") {
-                docker.withRegistry(OETOOLS_REPO, OETOOLS_REPO_CREDENTIAL_ID) {
-                    oe.exec_with_retry { oefull1804.push() }
-                    oe.exec_with_retry { oefull2004.push() }
-                    oe.exec_with_retry { oeminimal1804.push() }
-                    oe.exec_with_retry { oeDeploy.push() }
-                    if(TAG_LATEST == "true") {
-                        oe.exec_with_retry { oefull1804.push('latest') }
-                        oe.exec_with_retry { oefull2004.push('latest') }
-                        oe.exec_with_retry { oeminimal1804.push('latest') }
-                        oe.exec_with_retry { oeDeploy.push('latest') }
-                    }
-                }
-            }
-            stage("Push to OE Docker Hub Registry") {
-                docker.withRegistry('', OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID) {
-                    if(TAG_LATEST == "true") {
-                        oe.exec_with_retry { puboefull1804.push() }
-                        oe.exec_with_retry { puboefull2004.push() }
-                        oe.exec_with_retry { puboeminimal1804.push() }
-                        oe.exec_with_retry { puboeDeploy.push() }
-                        oe.exec_with_retry { puboefull1804.push('latest') }
-                        oe.exec_with_retry { puboefull2004.push('latest') }
-                        oe.exec_with_retry { puboeminimal1804.push('latest') }
-                        oe.exec_with_retry { puboeDeploy.push('latest') }
-                    }
-                }
-            }
+parallel "Windows Stage": {
+        stage("Build Windows Docker Containers") {
+          build job: '/CI-CD_Infrastructure/Windows-Docker-Container-Build',
+          parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY_NAME),
+                       string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
+                       string(name: 'INTERNAL_REPO', value: OETOOLS_REPO),
+                       string(name: 'INTERNAL_REPO_CREDS', value: OETOOLS_REPO_CREDENTIAL_ID),
+                       string(name: 'DOCKERHUB_REPO_CREDS', value: OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID),
+                       string(name: 'DOCKER_TAG', value: env.DOCKER_TAG),
+                       string(name: 'AGENTS_LABEL', value: env.WINDOWS_AGENTS_LABEL),
+                       string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                       booleanParam(name: 'TAG_LATEST', value: env.TAG_LATEST)]
+        }
+    }, "Linux Stage": {
+        stage("Build Linux Docker Containers") {
+          build job: '/CI-CD_Infrastructure/Linux-Docker-Container-Build',
+          parameters: [string(name: 'REPOSITORY_NAME', value: env.REPOSITORY_NAME),
+                       string(name: 'BRANCH_NAME', value: env.BRANCH_NAME),
+                       string(name: 'INTERNAL_REPO', value: OETOOLS_REPO),
+                       string(name: 'INTERNAL_REPO_CREDS', value: OETOOLS_REPO_CREDENTIAL_ID),
+                       string(name: 'DOCKERHUB_REPO_CREDS', value: OETOOLS_DOCKERHUB_REPO_CREDENTIAL_ID),
+                       string(name: 'DOCKER_TAG', value: env.DOCKER_TAG),
+                       string(name: 'AGENTS_LABEL', value: env.AGENTS_LABEL),
+                       string(name: 'OECI_LIB_VERSION', value: OECI_LIB_VERSION),
+                       booleanParam(name: 'TAG_LATEST', value: env.TAG_LATEST)]
         }
     }
-}
-
-buildDockerImages()
