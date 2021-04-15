@@ -37,6 +37,7 @@ Param(
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
     [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
+    [Parameter(mandatory=$false)][switch]$InstallDocker=$false
 )
 
 $ErrorActionPreference = "Stop"
@@ -592,6 +593,12 @@ function Install-NSIS {
                  -EnvironmentPath @($installDir, "${installDir}\Bin")
 }
 
+function Install-Docker {
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+    Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
+    Install-Package -Name docker -ProviderName DockerMsftProvider -Force
+}
+
 try {
     Start-LocalPackagesDownload
 
@@ -604,6 +611,10 @@ try {
     Install-Shellcheck
     Install-NSIS
 
+    if ($InstallDocker) {
+        Install-Docker
+    }
+
     if (($LaunchConfiguration -ne "SGX1FLC-NoIntelDrivers") -and ($LaunchConfiguration -ne "SGX1-NoIntelDrivers") -or ($DCAPClientType -eq "Azure")) {
         Install-DCAP-Dependencies
     }
@@ -612,7 +623,6 @@ try {
     # As we want OpenSSL installed in the same location to be picked up automatically by cmake, just install after dcap installation.
     Install-OpenSSL
     Install-VCRuntime
-
 
     # The Open Enclave source directory tree might have file paths exceeding
     # the default limit of 260 characters (especially the 3rd party libraries
