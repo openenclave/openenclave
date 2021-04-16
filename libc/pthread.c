@@ -52,12 +52,15 @@ OE_STATIC_ASSERT(sizeof(pthread_rwlock_t) >= sizeof(oe_rwlock_t));
 
 static __thread struct __pthread _pthread_self = {.locale = C_LOCALE};
 
-pthread_t __pthread_self()
+pthread_t __get_tp()
 {
     return &_pthread_self;
 }
 
-OE_WEAK_ALIAS(__pthread_self, pthread_self);
+pthread_t pthread_self()
+{
+    return &_pthread_self;
+}
 
 static oe_pthread_hooks_t* _pthread_hooks;
 

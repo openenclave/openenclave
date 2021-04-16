@@ -139,6 +139,27 @@ hidden long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
 #define __SC_recvmmsg 19
 #define __SC_sendmmsg 20
 
+#ifndef SO_RCVTIMEO_OLD
+#define SO_RCVTIMEO_OLD 20
+#endif
+#ifndef SO_SNDTIMEO_OLD
+#define SO_SNDTIMEO_OLD 21
+#endif
+
+#define SO_TIMESTAMP_OLD 29
+#define SO_TIMESTAMPNS_OLD 35
+#define SO_TIMESTAMPING_OLD 37
+#define SCM_TIMESTAMP_OLD SO_TIMESTAMP_OLD
+#define SCM_TIMESTAMPNS_OLD SO_TIMESTAMPNS_OLD
+#define SCM_TIMESTAMPING_OLD SO_TIMESTAMPING_OLD
+
+#ifndef SIOCGSTAMP_OLD
+#define SIOCGSTAMP_OLD 0x8906
+#endif
+#ifndef SIOCGSTAMPNS_OLD
+#define SIOCGSTAMPNS_OLD 0x8907
+#endif
+
 // Open syscall is dispatched via the following macros.
 #ifdef SYS_open
 #define __sys_open(...) __syscall(SYS_open, __VA_ARGS__)

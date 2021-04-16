@@ -143,6 +143,7 @@ OE_DECLARE_SYSCALL2(SYS_access);
 OE_DECLARE_SYSCALL3_M(SYS_bind);
 OE_DECLARE_SYSCALL1(SYS_chdir);
 OE_DECLARE_SYSCALL2(SYS_clock_gettime);
+OE_DECLARE_SYSCALL4_M(SYS_clock_nanosleep);
 OE_DECLARE_SYSCALL1_M(SYS_close);
 OE_DECLARE_SYSCALL3_M(SYS_connect);
 #if __x86_64__ || _M_X64
@@ -209,6 +210,13 @@ OE_DECLARE_SYSCALL2(SYS_link);
 OE_DECLARE_SYSCALL5(SYS_linkat);
 OE_DECLARE_SYSCALL2_M(SYS_listen);
 OE_DECLARE_SYSCALL3(SYS_lseek);
+/*
+ * lstat is required to compile musl/src/stat/fstatat.c, and hence
+ * musl/src/stat/stat.c. SYS_lstat need not be implemented.
+ */
+#if __x86_64__ || _M_X64
+OE_DECLARE_SYSCALL2(SYS_lstat);
+#endif
 #if __x86_64__ || _M_X64
 OE_DECLARE_SYSCALL2(SYS_mkdir);
 #endif
@@ -258,6 +266,11 @@ OE_DECLARE_SYSCALL4_M(SYS_socketpair);
 #if __x86_64__ || _M_X64
 OE_DECLARE_SYSCALL2(SYS_stat);
 #endif
+/*
+ * statx is required to compile musl/src/stat/fstatat.c, and hence
+ * musl/src/stat/stat.c. SYS_statx need not be implemented.
+ */
+OE_DECLARE_SYSCALL5(SYS_statx);
 OE_DECLARE_SYSCALL2(SYS_truncate);
 // Needed by musl/src/stdio/pclose.c
 OE_DECLARE_SYSCALL4(SYS_wait4);

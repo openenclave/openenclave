@@ -4,9 +4,7 @@
 #ifndef _OE_MUSL_PATCHES_PTHREAD_H
 #define _OE_MUSL_PATCHES_PTHREAD_H
 
-struct __pthread* __pthread_self();
-
-#define TP_ADJ(p) (p)
+struct __pthread* __get_tp();
 
 #define MC_PC gregs[REG_RIP]
 
