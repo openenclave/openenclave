@@ -3,9 +3,9 @@
 
 # Check Clang version.
 if (CMAKE_C_COMPILER_ID MATCHES Clang)
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS 8 OR CMAKE_C_COMPILER_VERSION
-                                                 VERSION_GREATER 8.99)
-    message(WARNING "Open Enclave officially supports Clang 8 only, "
+  if (CMAKE_C_COMPILER_VERSION VERSION_LESS 10 OR CMAKE_C_COMPILER_VERSION
+                                                  VERSION_GREATER 10.99)
+    message(WARNING "Open Enclave officially supports Clang 10 only, "
                     "but your Clang version (${CMAKE_C_COMPILER_VERSION}) "
                     "is older or newer than that. Build problems may occur.")
   endif ()
@@ -61,7 +61,7 @@ include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
 # Apply Spectre mitigation if available.
-set(SPECTRE_MITIGATION_FLAGS -mllvm -x86-speculative-load-hardening)
+set(SPECTRE_MITIGATION_FLAGS -mspeculative-load-hardening)
 if (UNIX)
   check_c_compiler_flag("${SPECTRE_MITIGATION_FLAGS}"
                         SPECTRE_MITIGATION_C_FLAGS_SUPPORTED)

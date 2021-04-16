@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - The OpenEnclave CMake configuration now explicitly sets CMAKE_SKIP_RPATH to TRUE. This change should not affect fully static-linked enclaves.
 - oe_verify_attestation_certificate_with_evidence() has been deprecated because it has been deemed insufficient for security. Use the new, experimental oe_verify_attestation_certificate_with_evidence_v2() instead to generate a self-signed certificate for use in the TLS handshaking process.
+- OE SDK is now built using clang-10. It is required to upgrade the compiler to clang-10 if you are building the SDK from source.
 
 [v0.15.0][v0.15.0_log]
 --------------

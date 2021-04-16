@@ -22,7 +22,7 @@ macro (detect_compiler BINDIR CC)
     else ()
       # Build enclave applications. Try to search newer versions of clang/clang++.
       # Be consistent to the logic implemented by samples/config.mk.
-      foreach (VERSION 9 8 7)
+      foreach (VERSION 10 9 8)
         set(CLANG_VERSION "")
         if (EXISTS "${BINDIR}/${${COMPILER}}-${VERSION}")
           set(CLANG_VERSION ${VERSION})
@@ -48,9 +48,9 @@ function (configure_lvi_mitigation_build)
   endif ()
 
   if (NOT OE_IN_PACKAGE)
-    # Default to clang-8 when building SDK.
-    set(C_COMPILER clang-8)
-    set(CXX_COMPILER clang++-8)
+    # Default to clang-10 when building SDK.
+    set(C_COMPILER clang-10)
+    set(CXX_COMPILER clang++-10)
   else ()
     # Default to clang when building enclave applications.
     set(C_COMPILER clang)
