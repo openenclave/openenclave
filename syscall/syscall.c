@@ -72,6 +72,17 @@ OE_WEAK OE_DEFINE_SYSCALL1(SYS_chdir)
     return oe_chdir(path);
 }
 
+// TODO issue #3933: Implement correctly and add tests
+OE_WEAK OE_DEFINE_SYSCALL4_M(SYS_clock_nanosleep)
+{
+    OE_UNUSED(arg1);
+    OE_UNUSED(arg2);
+    oe_errno = 0;
+    struct oe_timespec* req = (struct oe_timespec*)arg3;
+    struct oe_timespec* rem = (struct oe_timespec*)arg4;
+    return (long)oe_nanosleep(req, rem);
+}
+
 OE_WEAK OE_DEFINE_SYSCALL1_M(SYS_close)
 {
     oe_errno = 0;
@@ -537,6 +548,16 @@ OE_WEAK OE_WEAK OE_DEFINE_SYSCALL3(SYS_lseek)
     int whence = (int)arg3;
     return oe_lseek(fd, off, whence);
 }
+
+#if __x86_64__ || _M_X64
+OE_WEAK OE_DEFINE_SYSCALL2(SYS_lstat)
+{
+    OE_UNUSED(arg1);
+    OE_UNUSED(arg2);
+    oe_errno = OE_ENOSYS;
+    return -1;
+}
+#endif
 
 #if __x86_64__ || _M_X64
 OE_WEAK OE_DEFINE_SYSCALL2(SYS_mkdir)
@@ -1117,6 +1138,7 @@ static long _syscall(
         OE_SYSCALL_DISPATCH(SYS_bind, arg1, arg2, arg3);
         OE_SYSCALL_DISPATCH(SYS_chdir, arg1);
         OE_SYSCALL_DISPATCH(SYS_close, arg1);
+        OE_SYSCALL_DISPATCH(SYS_clock_nanosleep, arg1, arg2, arg3, arg4);
         OE_SYSCALL_DISPATCH(SYS_connect, arg1, arg2, arg3);
 #if __x86_64__ || _M_X64
         OE_SYSCALL_DISPATCH(SYS_creat, arg1, arg2);
@@ -1167,6 +1189,9 @@ static long _syscall(
         OE_SYSCALL_DISPATCH(SYS_linkat, arg1, arg2, arg3, arg4, arg5);
         OE_SYSCALL_DISPATCH(SYS_listen, arg1, arg2);
         OE_SYSCALL_DISPATCH(SYS_lseek, arg1, arg2, arg3);
+#if __x86_64__ || _M_X64
+        OE_SYSCALL_DISPATCH(SYS_lstat, arg1, arg2);
+#endif
 #if __x86_64__ || _M_X64
         OE_SYSCALL_DISPATCH(SYS_mkdir, arg1, arg2);
 #endif

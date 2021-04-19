@@ -47,6 +47,8 @@ ExternalProject_Add(
   PATCH_COMMAND
   COMMAND ${CMAKE_COMMAND} -E copy ${MUSL_DIR}/arch/${ARCH}/syscall_arch.h
           ${MUSL_DIR}/arch/${ARCH}/__syscall_arch.h
+  COMMAND ${CMAKE_COMMAND} -E copy ${MUSL_DIR}/arch/generic/fp_arch.h
+          ${MUSL_DIR}/src/include/fp_arch.h
   COMMAND ${CMAKE_COMMAND} -E copy ${PATCHES_DIR}/syscall.h
           ${MUSL_DIR}/src/internal/syscall.h
   COMMAND ${CMAKE_COMMAND} -E copy ${PATCHES_DIR}/syscall_arch.h

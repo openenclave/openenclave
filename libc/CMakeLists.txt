@@ -17,9 +17,6 @@ if (OE_SGX)
     ${MUSLSRC}/math/x86_64/log2l.s
     ${MUSLSRC}/math/x86_64/logl.s
     #${MUSLSRC}/math/x86_64/exp2l.s
-    ${MUSLSRC}/math/x86_64/sqrt.s
-    ${MUSLSRC}/math/x86_64/sqrtl.s
-    ${MUSLSRC}/math/x86_64/sqrtf.s
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
     ${MUSLSRC}/setjmp/x86_64/setjmp.s
     ${MUSLSRC}/string/x86_64/memcpy.s
@@ -50,7 +47,8 @@ endif ()
 set(PLATFORM_SRC "")
 
 if (OE_SGX)
-  list(APPEND PLATFORM_SRC sgx/arc4random.c)
+  list(APPEND PLATFORM_SRC sgx/arc4random.c ${MUSLSRC}/math/x86_64/sqrt.c
+       ${MUSLSRC}/math/x86_64/sqrtl.c ${MUSLSRC}/math/x86_64/sqrtf.c)
 else ()
   list(
     APPEND
@@ -242,6 +240,16 @@ add_enclave_library(
   ${MUSLSRC}/linux/mount.c
   ${MUSLSRC}/linux/epoll.c
   ${MUSLSRC}/linux/flock.c
+  ${MUSLSRC}/math/__math_divzero.c
+  ${MUSLSRC}/math/__math_divzerof.c
+  ${MUSLSRC}/math/__math_invalid.c
+  ${MUSLSRC}/math/__math_invalidf.c
+  ${MUSLSRC}/math/__math_oflow.c
+  ${MUSLSRC}/math/__math_oflowf.c
+  ${MUSLSRC}/math/__math_uflow.c
+  ${MUSLSRC}/math/__math_uflowf.c
+  ${MUSLSRC}/math/__math_xflow.c
+  ${MUSLSRC}/math/__math_xflowf.c
   ${MUSLSRC}/math/acos.c
   ${MUSLSRC}/math/acosf.c
   ${MUSLSRC}/math/acosh.c
@@ -282,11 +290,13 @@ add_enclave_library(
   ${MUSLSRC}/math/erf.c
   ${MUSLSRC}/math/erff.c
   ${MUSLSRC}/math/erfl.c
+  ${MUSLSRC}/math/exp_data.c
   ${MUSLSRC}/math/exp10.c
   ${MUSLSRC}/math/exp10f.c
   ${MUSLSRC}/math/exp10l.c
   ${MUSLSRC}/math/exp2.c
   ${MUSLSRC}/math/exp2f.c
+  ${MUSLSRC}/math/exp2f_data.c
   ${MUSLSRC}/math/exp.c
   ${MUSLSRC}/math/expf.c
   ${MUSLSRC}/math/expl.c
@@ -358,13 +368,17 @@ add_enclave_library(
   ${MUSLSRC}/math/log1pf.c
   #${MUSLSRC}/math/log1pl.c
   ${MUSLSRC}/math/log2.c
+  ${MUSLSRC}/math/log2_data.c
   ${MUSLSRC}/math/log2f.c
+  ${MUSLSRC}/math/log2f_data.c
   #${MUSLSRC}/math/log2l.c
   ${MUSLSRC}/math/logb.c
   ${MUSLSRC}/math/logbf.c
   ${MUSLSRC}/math/logbl.c
   ${MUSLSRC}/math/log.c
+  ${MUSLSRC}/math/log_data.c
   ${MUSLSRC}/math/logf.c
+  ${MUSLSRC}/math/logf_data.c
   #${MUSLSRC}/math/logl.c
   ${MUSLSRC}/math/lrint.c
   ${MUSLSRC}/math/lrintf.c
@@ -389,7 +403,9 @@ add_enclave_library(
   ${MUSLSRC}/math/nexttowardl.c
   ${MUSLSRC}/math/__polevll.c
   ${MUSLSRC}/math/pow.c
+  ${MUSLSRC}/math/pow_data.c
   ${MUSLSRC}/math/powf.c
+  ${MUSLSRC}/math/powf_data.c
   ${MUSLSRC}/math/powl.c
   ${MUSLSRC}/math/remainder.c
   ${MUSLSRC}/math/remainderf.c
@@ -550,6 +566,7 @@ add_enclave_library(
   ${MUSLSRC}/search/tsearch.c
   ${MUSLSRC}/search/twalk.c
   ${MUSLSRC}/stat/fstat.c
+  ${MUSLSRC}/stat/fstatat.c
   ${MUSLSRC}/stat/stat.c
   ${MUSLSRC}/stdio/asprintf.c
   ${MUSLSRC}/stdio/asprintf.c
@@ -641,7 +658,6 @@ add_enclave_library(
   ${MUSLSRC}/stdio/__stdio_write.c
   ${MUSLSRC}/stdio/stdout.c
   ${MUSLSRC}/stdio/__stdout_write.c
-  ${MUSLSRC}/stdio/__string_read.c
   ${MUSLSRC}/stdio/swprintf.c
   ${MUSLSRC}/stdio/swscanf.c
   ${MUSLSRC}/stdio/__toread.c
@@ -763,6 +779,7 @@ add_enclave_library(
   ${MUSLSRC}/thread/__lock.c
   ${MUSLSRC}/thread/__wait.c
   ${MUSLSRC}/time/clock_gettime.c
+  ${MUSLSRC}/time/clock_nanosleep.c
   ${MUSLSRC}/time/difftime.c
   ${MUSLSRC}/time/gettimeofday.c
   ${MUSLSRC}/time/gmtime.c

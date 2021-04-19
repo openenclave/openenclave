@@ -30,7 +30,7 @@
 [submodule "3rdparty/musl/musl"]
 	path = 3rdparty/musl/musl
 	url = https://github.com/openenclave/openenclave-musl.git
-	branch = openenclave-musl-1.1.21
+	branch = openenclave-musl-1.2.2
 [submodule "3rdparty/musl/libc-test"]
 	path = 3rdparty/musl/libc-test
 	url = https://repo.or.cz/libc-test.git
