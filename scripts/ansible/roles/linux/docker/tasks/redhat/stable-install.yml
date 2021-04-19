@@ -2,6 +2,12 @@
 # Licensed under the MIT License.
 
 ---
+# Runc conflicts with Docker installation
+- name: Uninstall runc if present
+  yum:
+    name: runc
+    state: absent
+
 - name: Enable Docker CE stable repository
   get_url:
     url: https://download.docker.com/linux/centos/docker-ce.repo
