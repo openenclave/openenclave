@@ -60,6 +60,7 @@ def buildLinuxManagedImage(String os_type, String version) {
                 oe.azureEnvironment(az_cleanup_existing_image_version_script, params.OE_DEPLOY_IMAGE)
             }
             stage("${os_type}-${version}-build") {
+                checkout scm
                 timeout(GLOBAL_TIMEOUT_MINUTES) {
                     withCredentials([usernamePassword(credentialsId: OETOOLS_REPO_CREDENTIALS_ID,
                                                     usernameVariable: "DOCKER_USER_NAME",
