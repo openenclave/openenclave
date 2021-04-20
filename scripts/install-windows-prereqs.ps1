@@ -36,7 +36,7 @@ Param(
     [string]$GetPipHash = 'DBD5DAE3D1E7F6DF844D630CDF65E0F0D98E483C9997DAEA17C7C9D86F7B38AD',
     [Parameter(mandatory=$true)][string]$InstallPath,
     [Parameter(mandatory=$true)][ValidateSet("SGX1FLC", "SGX1", "SGX1FLC-NoIntelDrivers", "SGX1-NoIntelDrivers")][string]$LaunchConfiguration,
-    [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType
+    [Parameter(mandatory=$true)][ValidateSet("None", "Azure")][string]$DCAPClientType,
     [Parameter(mandatory=$false)][switch]$InstallDocker=$false
 )
 
