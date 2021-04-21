@@ -160,8 +160,15 @@ foreach (i RANGE ${len})
     # Build with the CMake package
     message(
       STATUS "Samples test '${SAMPLE}-${CRYPTO_LIB}' with CMake running...")
-    execute_process(COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR}
-                            --target run RESULT_VARIABLE TEST_RESULT)
+    if (SAMPLE MATCHES "attestation")
+      execute_process(
+        COMMAND ${CMAKE_COMMAND} -E env SGX_AESM_ADDR=1 ${CMAKE_COMMAND} --build
+                ${SAMPLE_BUILD_DIR} --target run RESULT_VARIABLE TEST_RESULT)
+    else ()
+      execute_process(COMMAND ${CMAKE_COMMAND} --build ${SAMPLE_BUILD_DIR}
+                              --target run RESULT_VARIABLE TEST_RESULT)
+    endif ()
+
     if (TEST_RESULT)
       message(
         WARNING "Samples test '${SAMPLE}-${CRYPTO_LIB}' with CMake failed!")
@@ -176,12 +183,21 @@ foreach (i RANGE ${len})
       message(
         STATUS
           "Samples test '${SAMPLE}-${CRYPTO_LIB}' with pkg-config running...")
-      execute_process(
-        COMMAND
-          ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH}
-          PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig/ make -C
-          ${SAMPLE_SOURCE_DIR} clean build ${MAKE_CRYPTO_LIB_DEFINE} run
-        RESULT_VARIABLE TEST_RESULT)
+      if (SAMPLE MATCHES "attestation")
+        execute_process(
+          COMMAND
+            ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH}
+            PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig/ SGX_AESM_ADDR=1 make
+            -C ${SAMPLE_SOURCE_DIR} clean build ${MAKE_CRYPTO_LIB_DEFINE} run
+          RESULT_VARIABLE TEST_RESULT)
+      else ()
+        execute_process(
+          COMMAND
+            ${CMAKE_COMMAND} -E env PATH=${INSTALL_DIR}/bin:$ENV{PATH}
+            PKG_CONFIG_PATH=${INSTALL_DIR}/share/pkgconfig/ make -C
+            ${SAMPLE_SOURCE_DIR} clean build ${MAKE_CRYPTO_LIB_DEFINE} run
+          RESULT_VARIABLE TEST_RESULT)
+      endif ()
       if (TEST_RESULT)
         message(
           WARNING
